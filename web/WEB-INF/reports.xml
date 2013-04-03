@@ -120,18 +120,10 @@ Monad.getContext().getAttribute("net.sf.chellow.jinja").get("render")(inv, templ
               Market Roles
             </a>
           </li>
-          <li>Parties
-              <ul>
-              <li>
-              <a href="{{ context_path }}/reports/137/output/">DNOs
-              </a>
-              </li>
-              <li><a href="{{ context_path }}/reports/45/output/">
-                Providers
-                </a>
-              </li>
-              </ul>
+          <li>
+            <a href="{{ context_path }}/reports/137/output/">DNOs</a>
           </li>
+          <li><a href="{{ context_path }}/reports/45/output/">Parties</a></li>
           <li><a href="{{ context_path }}/reports/53/output/">
             Profile Classes
             </a>
@@ -197,67 +189,57 @@ Monad.getContext().getAttribute("net.sf.chellow.jinja").get("render")(inv, templ
                         </a>
                     </li>
                 </ul>
-        </div>
-        <div id="for-editors">
-    <h3>For Editors</h3>
-    <ul>
-      <li>
-                        <a href="{{ context_path }}/non-core-contracts/">
-                            Non-core Contracts
-                        </a>
-                    </li>
-                    <li>
-                        <a href="{{ context_path }}/reports/">
-                            Reports
-                        </a>
-                    </li>
-                    <li>General Import / Export
-                        <ul>
-                        <li><a href="{{ context_path }}/general-imports/">Import (CSV and XML)</a></li>
-                        <li><a href="{{ context_path }}/reports/151/output/">Export (XML)</a></li>
-                        </ul>
-                    </li>
-                    <li>
-                        <a href="{{ context_path }}/reports/255/output/">
-                            Users
-                        </a>
-                        <ul>
-                            <li>
-                                <a href="{{ context_path }}/users/me/">
-                                    Me
-                                </a>
-                            </li>
-                        </ul>
-                    </li>
-                    <li>
-                        <a href="{{ context_path }}/user-roles/">
-                            User Roles
-                        </a>
-                    </li>
-                    <li>
-                        <a
-                            href="{{ context_path }}/configuration/">
-                            Configuration
-                        </a>
-                    </li>
-                    <li>
-                        <a
-                            href="{{ context_path }}/reports/165/output/">DB Consistency Check
-                        </a>
-                    </li>
-                    <li>
-                        <a
-                            href="{{ context_path }}/reports/171/output/">System</a>
-                    </li>
-                    <li>
-                        <a
-                            href="{{ context_path }}/reports/195/output/">Comparison against ECOES</a>
-                    </li>
-                    <li>
-                        <a
-                            href="{{ context_path }}/reports/243/output/">MDD Updater</a>
-                    </li>
+      </div>
+      <div id="for-editors">
+        <h3>For Editors</h3>
 
+        <ul>
+          <li>
+            <a href="{{ context_path }}/reports/259/output/">
+              Non-core Contracts
+            </a>
+          </li>
+          <li>
+            <a href="{{ context_path }}/reports/">Reports</a>
+          </li>
+          <li>General Import / Export
+            <ul>
+              <li>
+                <a href="{{ context_path }}/general-imports/">Import (CSV and XML)</a>
+              </li>
+              <li>
+                <a href="{{ context_path }}/reports/151/output/">Export (XML)</a>
+              </li>
+            </ul>
+          </li>
+          <li>
+            <a href="{{ context_path }}/reports/255/output/">Users</a>
+            <ul>
+              <li>
+                <a href="{{ context_path }}/users/me/">Me</a>
+              </li>
+            </ul>
+          </li>
+          <li>
+            <a href="{{ context_path }}/reports/261/output/">User Roles</a>
+          </li>
+          <li>
+            <a href="{{ context_path }}/configuration/">
+              Configuration
+            </a>
+          </li>
+          <li>
+            <a href="{{ context_path }}/reports/165/output/">DB Consistency Check</a>
+          </li>
+          <li>
+            <a href="{{ context_path }}/reports/171/output/">System</a>
+          </li>
+          <li>
+            <a href="{{ context_path }}/reports/195/output/">Comparison against ECOES</a>
+          </li>
+          <li>
+            <a href="{{ context_path }}/reports/243/output/">MDD Updater</a>
+          </li>
           <li>Importers
             <ul>
               <li>
@@ -5459,7 +5441,7 @@ for cls in ['render']:
 sess = None
 try:
     sess = session()
-    parties = sess.query(Contract).from_statement("select party.* from party, market_role where party.market_role_id = market_role.id order by party.code, market_role.code").all()
+    parties = sess.query(Party).from_statement("select party.* from party, market_role where party.market_role_id = market_role.id order by party.name, market_role.code").all()
     render(inv, template, {'parties': parties})
 finally:
     sess.close()]]></value>
@@ -5473,7 +5455,7 @@ finally:
   </head>
   <body>
     <p>
-      <a href="{{ context_path }}/reports/1/output/">Chellow</a> &gt; Providers
+      <a href="{{ context_path }}/reports/1/output/">Chellow</a> &gt; Parties
     </p>
     <br />
     {% if messages %}
@@ -5487,6 +5469,7 @@ finally:
       <thead>
         <th>Name</th>
         <th>Market Role</th>
+        <th>Participant</th>
       </thead>
       <tbody>
         {% for party in parties %}
@@ -5495,7 +5478,10 @@ finally:
               <a href="{{ context_path }}/reports/47/output/?party_id={{ party.id }}">{{ party.name }}</a>
             </td>
             <td>
-              <a href="{{ context_path }}/reports/121/output/?role-id={{ party.role.id }}">{{ party.role.description }}" /></a>
+              <a href="{{ context_path }}/reports/121/output/?market_role_id={{ party.market_role.id }}">{{ party.market_role.description }}</a>
+            </td>
+            <td>
+              <a href="{{ context_path }}/reports/73/output/?participant-id={{ party.participant.id }}">{{ party.participant.code }}</a>
             </td>
           </tr>
         {% endfor %}
@@ -5509,188 +5495,107 @@ finally:
 		<value><![CDATA[report]]></value>
 		<value><![CDATA[47]]></value>
 		<value><![CDATA[true]]></value>
-		<value><![CDATA[Provider]]></value>
-		<value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree
-from net.sf.chellow.billing import Provider
-from net.sf.chellow.physical import MarketRole
+		<value><![CDATA[Party]]></value>
+		<value><![CDATA[from net.sf.chellow.monad import Monad
+from sqlalchemy.orm import joinedload_all
 
-provider_id = inv.getLong('provider-id')
-provider = Provider.getProvider(provider_id)
-provider_element = provider.toXml(doc, XmlTree('participant').put('role'))
-source.appendChild(provider_element)
-provider_role_code = provider.getRole().getCode()
-query = None
-if provider_role_code == MarketRole.HHDC:
-    query = Hiber.session().createQuery("from HhdcContract contract where contract.party = :party order by contract.party.name").setEntity('party', provider)
-elif provider_role_code == MarketRole.SUPPLIER:
-    query = Hiber.session().createQuery("from SupplierContract contract where contract.party = :party order by contract.party.name").setEntity('party', provider)
-elif provider_role_code == MarketRole.NON_CORE_ROLE:
-    query = Hiber.session().createQuery("from NonCoreContract contract where contract.party = :party order by contract.party.name").setEntity('party', provider)
-elif provider_role_code == MarketRole.MOP:
-    query = Hiber.session().createQuery("from MopContract contract where contract.party = :party order by contract.party.name").setEntity('party', provider)
+db = Monad.getContext().getAttribute("net.sf.chellow.db")
+for cls in ['Contract', 'Party', 'UserRole', 'set_read_write', 'session']:
+   globals()[cls] = db.get(cls)
 
-if query != None:
-    for contract in query.list():
-        contract_element = contract.toXml(doc, XmlTree('rateScripts'))
-        start_rate_script = contract.getStartRateScript()
-        start_rate_script.setLabel('start')
-        contract_element.appendChild(start_rate_script.toXml(doc))
-        finish_rate_script = contract.getFinishRateScript()
-        finish_rate_script.setLabel('finish')
-        contract_element.appendChild(finish_rate_script.toXml(doc))
-        provider_element.appendChild(contract_element)]]></value>
-		<value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
-<xsl:stylesheet version="1.0"
-    xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
-    <xsl:output method="html" encoding="US-ASCII"
-        doctype-public="-//W3C//DTD HTML 4.01//EN"
-        doctype-system="http://www.w3.org/TR/html4/strict.dtd" indent="yes" />
-    <xsl:template match="/">
-        <html>
-            <head>
-                <link rel="stylesheet" type="text/css"
-                    href="{/source/request/@context-path}/reports/19/output/" />
-                <title>
-                    Chellow &gt; Providers &gt;
-                    <xsl:value-of select="/source/provider/@name" />
-                </title>
-            </head>
-            <body>
-                <p>
-                    <a
-                        href="{/source/request/@context-path}/reports/1/output/">
-                        <xsl:value-of select="'Chellow'" />
-                    </a>
-                    &gt;
-                    <a
-                        href="{/source/request/@context-path}/reports/45/output/">
-                        <xsl:value-of select="'Providers'" />
-                    </a>
-                    &gt;
-                    <xsl:value-of select="/source/provider/@name" />
-                </p>
-                <br />
-                <xsl:if test="//message">
-                    <ul>
-                        <xsl:for-each select="//message">
-                            <li>
-                                <xsl:value-of select="@description" />
-                            </li>
-                        </xsl:for-each>
-                    </ul>
-                </xsl:if>
-                <table>
-                    <tr>
-                        <th>Name</th>
-                        <td>
-                            <xsl:value-of
-                                select="/source/provider/@name" />
-                        </td>
-                    </tr>
+utils = Monad.getContext().getAttribute("net.sf.chellow.utils")
+for cls in ['UserException']:
+   globals()[cls] = utils.get(cls)
 
-                    <tr>
-                        <th>Participant</th>
-                        <td>
-                            <a
-                                href="{/source/request/@context-path}/reports/73/output/?participant-id={/source/provider/participant/@id}">
-                                <xsl:value-of
-                                    select="/source/provider/participant/@name" />
-                            </a>
-                        </td>
-                    </tr>
-                    <tr>
-                        <th>Role</th>
-                        <td>
-                            <a
-                                href="{/source/request/@context-path}/reports/123/output/?role-id={/source/provider/market-role/@id}">
-                                <xsl:value-of
-                                    select="/source/provider/market-role/@description" />
-                            </a>
-                        </td>
-                    </tr>
-                    <xsl:if
-                        test="/source/provider/market-role/@code='R'">
-                        <tr>
-                            <th>DNO Code</th>
-                            <td>
-                                <xsl:value-of
-                                    select="/source/provider/@dno-code" />
-                            </td>
-                        </tr>
-                    </xsl:if>
-                </table>
-                <br />
-                <table>
-                    <caption>
-                        Contracts
-                    </caption>
-                    <thead>
-                        <tr>
-                            <th>Name</th>
-                            <th>Start Date</th>
-                            <th>Finish Date</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <xsl:for-each
-                            select="/source/provider/hhdc-contract | /source/provider/supplier-contract | /source/provider/mop-contract">
-                            <tr>
-                                <td>
-                                    <xsl:choose>
-                                        <xsl:when
-                                            test="/source/provider/market-role/@code = 'C'">
-                                            <a
-                                                href="{/source/request/@context-path}/reports/113/output/?contract-id={@id}">
-                                               <xsl:value-of select="@name" />
-                                            </a>
-                                        </xsl:when>
-                                        <xsl:when
-                                            test="/source/provider/market-role/@code = 'R'">
-                                            <a
-                                                href="{/source/request/@context-path}/reports/113/output/?contract-id={@id}">
-                                               <xsl:value-of select="@name" />
-                                            </a>
-                                        </xsl:when>
-                                        <xsl:when
-                                            test="/source/provider/market-role/@code = 'X'">
-                                            <a
-                                                href="{/source/request/@context-path}/reports/77/output/?supplier-contract-id={@id}">
-                                                <xsl:value-of select="@name" />
-                                            </a>
-                                        </xsl:when>
-                                        <xsl:when
-                                            test="/source/provider/market-role/@code = 'M'">
-                                            <a
-                                                href="{/source/request/@context-path}/reports/107/output/?mop-contract-id={@id}">
-                                                <xsl:value-of select="@name" />
-                                            </a>
-                                        </xsl:when>
-                                    </xsl:choose>
-                                </td>
-                                <td>
-                                    <xsl:value-of
-                                        select="concat(rate-script[@label='start']/hh-start-date[@label='start']/@year, '-', rate-script[@label='start']/hh-start-date[@label='start']/@month, '-', rate-script[@label='start']/hh-start-date[@label='start']/@day)" />
-                                </td>
-                                <td>
-                                    <xsl:choose>
-                                        <xsl:when
-                                            test="rate-script[@label='finish']/hh-start-date[@label='finish']">
-                                            <xsl:value-of
-                                                select="concat(rate-script[@label='finish']/hh-start-date[@label='finish']/@year, '-', rate-script[@label='finish']/hh-start-date[@label='finish']/@month, '-', rate-script[@label='finish']/hh-start-date[@label='finish']/@day)" />
-                                        </xsl:when>
-                                        <xsl:otherwise>
-                                            Ongoing
-                                        </xsl:otherwise>
-                                    </xsl:choose>
-                                </td>
-                            </tr>
-                        </xsl:for-each>
-                    </tbody>
-                </table>
-          </body>
-        </html>
-    </xsl:template>
-</xsl:stylesheet>]]></value>
+jinja = Monad.getContext().getAttribute("net.sf.chellow.jinja")
+for cls in ['render']:
+   globals()[cls] = jinja.get(cls)
+
+sess = None
+try:
+    sess = session()
+    party_id = inv.getLong('party_id')
+    party = Party.get_by_id(sess, party_id)
+    render(inv, template, {'party': party})
+finally:
+    sess.close()]]></value>
+		<value><![CDATA[<!doctype html>
+<html>
+  <head>
+    <link rel="stylesheet" type="text/css"
+      href="{{ context_path }}/reports/19/output/"
+    >
+    <title>Chellow &gt; Parties &gt; {{ party.name }}</title>
+  </head>
+  <body>
+    <p>
+      <a href="{{ context_path }}/reports/1/output/">Chellow</a> &gt;
+      <a href="{{ context_path }}/reports/45/output/">Parties</a> &gt;
+      {{ party.name }}
+    </p>
+    <br />
+    {% if messages %}
+      <ul>
+        {% for message in messages %}
+          <li>{{ message }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+    <table>
+      <tr>
+        <th>Name</th>
+        <td>{{ party.name }}</td>
+      </tr>
+      <tr>
+        <th>Participant</th>
+        <td><a href="{{ context_path }}/reports/73/output/?participant_id={{ party.participant.id }}">{{ party.participant.name }}</a>
+        </td>
+      </tr>
+      <tr>
+        <th>Role</th>
+        <td>
+          <a href="{{ context_path }}/reports/123/output/?market_role_id={{ party.market_role.id }}">{{ party.market_role.description }}</a>
+        </td>
+      </tr>
+        {% if party.market_role.code == 'R' %}
+          <tr>
+            <th>DNO Code</th>
+            <td>{{ party.dno_code }}</td>
+          </tr>
+        {% endif %}
+    </table>
+    <br />
+    <table>
+      <caption>Contracts</caption>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Start Date</th>
+          <th>Finish Date</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for contract in party.contracts %}
+          <tr>
+            <td>
+              {% if contract.market_role.code == 'C' %}
+                <a href="{{ context_path }}/reports/113/output/?contract-id={{ contract.id }}">{{ contract.name }}</a>
+              {% elif contract.market_role.code == 'R' %}
+                <a href="{{ context_path }}/reports/113/output/?contract-id={{ contract.id }}">{{ contract.name }}</a>
+              {% elif contract.market_role.code == 'X' %}
+                <a href="{{ context_path }}/reports/77/output/?supplier-contract-id={{ contract.id }}">{{ contract.name }}</a>
+              {% elif contract.market_role.code == 'M' %}
+                <a href="{{ context_path }}/reports/107/output/?mop-contract-id={{ contract.id }}">{{ contract.name }}</a>
+              {% endif %}
+            </td>
+            <td>{{ contract.start_rate_script.start_date|hh_format }}</td>
+            <td>{{ contract.finish_rate_script.finish_date|hh_format }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </body>
+</html>]]></value>
 	</line>
 	<line>
 		<value><![CDATA[insert]]></value>
@@ -6936,70 +6841,69 @@ source.appendChild(script.toXml(doc, XmlTree('contract', XmlTree('party'))))]]><
 		<value><![CDATA[71]]></value>
 		<value><![CDATA[true]]></value>
 		<value><![CDATA[Participants]]></value>
-		<value><![CDATA[from net.sf.chellow.monad import Hiber
+		<value><![CDATA[from net.sf.chellow.monad import Monad
+from sqlalchemy.orm import joinedload_all
 
-for participant in Hiber.session().createQuery('from Participant participant order by participant.code').list():
-    source.appendChild(participant.toXml(doc))]]></value>
-		<value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
-<xsl:stylesheet version="1.0"
-    xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
-    <xsl:output method="html" encoding="US-ASCII"
-        doctype-public="-//W3C//DTD HTML 4.01//EN"
-        doctype-system="http://www.w3.org/TR/html4/strict.dtd" indent="yes" />
-    <xsl:template match="/">
-        <html>
-            <head>
-                <link rel="stylesheet" type="text/css"
-                    href="{/source/request/@context-path}/reports/19/output/" />
-                <title>
-                    Chellow &gt; Participants
-                </title>
-            </head>
-            <body>
-                <p>
-                    <a
-                        href="{/source/request/@context-path}/reports/1/output/">
-                        <xsl:value-of select="'Chellow'" />
-                    </a>
-                    &gt;
-                    <xsl:value-of select="'Participants'" />
-                </p>
-                <br />
-                <xsl:if test="//message">
-                    <ul>
-                        <xsl:for-each select="//message">
-                            <li>
-                                <xsl:value-of select="@description" />
-                            </li>
-                        </xsl:for-each>
-                    </ul>
-                </xsl:if>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Code</th>
-                            <th>Name</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <xsl:for-each select="/source/participant">
-                            <tr>
-                                <td>
-<a
-                                        href="{/source/request/@context-path}/reports/73/output/?participant-id={@id}">
-                                    <xsl:value-of select="@code" /></a>
-                                </td>
-                                <td>
-                                    <xsl:value-of select="@name" />
-                                </td>
-                            </tr>
-                        </xsl:for-each>
-                    </tbody>
-                </table>
-            </body>
-        </html>
-    </xsl:template>
-</xsl:stylesheet>]]></value>
+db = Monad.getContext().getAttribute("net.sf.chellow.db")
+for cls in ['Contract', 'Party', 'Participant', 'set_read_write', 'session']:
+   globals()[cls] = db.get(cls)
+
+utils = Monad.getContext().getAttribute("net.sf.chellow.utils")
+for cls in ['UserException']:
+   globals()[cls] = utils.get(cls)
+
+jinja = Monad.getContext().getAttribute("net.sf.chellow.jinja")
+for cls in ['render']:
+   globals()[cls] = jinja.get(cls)
+
+sess = None
+try:
+    sess = session()
+    participants = sess.query(Participant).from_statement("select * from participant order by participant.code").all()
+    render(inv, template, {'participants': participants})
+finally:
+    sess.close()]]></value>
+		<value><![CDATA[<!doctype html>
+<html>
+  <head>
+    <link rel="stylesheet" type="text/css"
+      href="{{ context_path }}/reports/19/output/"
+    >
+    <title>Chellow &gt; Participants</title>
+  </head>
+  <body>
+    <p>
+      <a href="{{ context_path }}/reports/1/output/">Chellow</a> &gt;
+      Participants
+    </p>
+    <br />
+    {% if messages %}
+      <ul>
+        {% for message in messages %}
+          <li>{{ message }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+    <table>
+      <thead>
+        <tr>
+          <th>Code</th>
+          <th>Name</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for participant in participants %}
+          <tr>
+            <td>
+              <a href="{{ context_path }}/reports/73/output/?participant_id={{ participant.id }}">{{ participant.code }}</a>
+            </td>
+            <td>{{ participant.name }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </body>
+</html>]]></value>
 	</line>
 	<line>
 		<value><![CDATA[insert]]></value>
@@ -7007,117 +6911,93 @@ for participant in Hiber.session().createQuery('from Participant participant ord
 		<value><![CDATA[73]]></value>
 		<value><![CDATA[true]]></value>
 		<value><![CDATA[Participant]]></value>
-		<value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree
-from net.sf.chellow.physical import Participant
+		<value><![CDATA[from net.sf.chellow.monad import Monad
+from sqlalchemy.orm import joinedload_all
 
-participant_id = inv.getLong('participant-id')
-participant = Participant.getParticipant(participant_id)
-participant_element = participant.toXml(doc)
-source.appendChild(participant_element);
-for party in Hiber.session().createQuery("from Party party where party.participant = :participant order by party.role.code").setEntity('participant', participant).list():
-    participant_element.appendChild(party.toXml(doc, XmlTree('role')))]]></value>
-		<value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
-<xsl:stylesheet version="1.0"
-    xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
-    <xsl:output method="html" encoding="US-ASCII"
-        doctype-public="-//W3C//DTD HTML 4.01//EN"
-        doctype-system="http://www.w3.org/TR/html4/strict.dtd" indent="yes" />
-    <xsl:template match="/">
-        <html>
-            <head>
-                <link rel="stylesheet" type="text/css"
-                    href="{/source/request/@context-path}/reports/19/output/" />
-                <title>
-                    Chellow &gt; Market Participants &gt;
-                    <xsl:value-of select="/source/participant/@name" />
-                </title>
-            </head>
-            <body>
-                <p>
-                    <a
-                        href="{/source/request/@context-path}/reports/1/output/">
-                        <xsl:value-of select="'Chellow'" />
-                    </a>
-                    &gt;
-                    <a
-                        href="{/source/request/@context-path}/reports/71/output/">
-                        <xsl:value-of select="'Market Participants'" />
-                    </a>
-                    &gt;
-                    <xsl:value-of select="/source/participant/@name" />
-                </p>
-                <br />
-                <xsl:if test="//message">
-                    <ul>
-                        <xsl:for-each select="//message">
-                            <li>
-                                <xsl:value-of select="@description" />
-                            </li>
-                        </xsl:for-each>
-                    </ul>
-                </xsl:if>
-                <table>
-                    <tbody>
-                        <tr>
-                            <th>Code</th>
-                            <td>
-                                <xsl:value-of
-                                    select="/source/participant/@code" />
-                            </td>
-                        </tr>
-                        <tr>
-                            <th>Name</th>
-                            <td>
-                                <xsl:value-of
-                                    select="/source/participant/@name" />
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-<br/>
-                <table>
-                    <caption>Parties</caption>
-                    <thead>
-                        <tr>
-                            <th>Name</th>
-                            <th>Market Role</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <xsl:for-each
-                            select="/source/participant[provider or dno]/*">
-                            <tr>
-                                <td>
-                                  <xsl:choose>
-                                    <xsl:when test="../provider">
-                                      <a
-                                          href="{/source/request/@context-path}/reports/47/output/?provider-id={@id}">
-                                          <xsl:value-of select="@name" />
-                                      </a>
-                                    </xsl:when>
-                                    <xsl:otherwise>
-                                      <a
-                                          href="{/source/request/@context-path}/reports/139/output/?dno-id={@id}">
-                                          <xsl:value-of select="@name" />
-                                      </a>
-                                    </xsl:otherwise>
-                                   </xsl:choose>
-                                </td>
-                                <td>
-                                    <a
-                                        href="{/source/request/@context-path}/reports/123/output/?role-id={market-role/@id}">
-                                        <xsl:value-of
-                                            select="market-role/@description" />
-                                    </a>
-                                </td>
-                            </tr>
-                        </xsl:for-each>
-                    </tbody>
-                </table>
-            </body>
-        </html>
-    </xsl:template>
-</xsl:stylesheet>]]></value>
+db = Monad.getContext().getAttribute("net.sf.chellow.db")
+for cls in ['Contract', 'Party', 'Participant', 'set_read_write', 'session']:
+   globals()[cls] = db.get(cls)
+
+utils = Monad.getContext().getAttribute("net.sf.chellow.utils")
+for cls in ['UserException']:
+   globals()[cls] = utils.get(cls)
+
+jinja = Monad.getContext().getAttribute("net.sf.chellow.jinja")
+for cls in ['render']:
+   globals()[cls] = jinja.get(cls)
+
+sess = None
+try:
+    sess = session()
+    participant_id = inv.getLong('participant_id')
+    participant = Participant.get_by_id(sess, participant_id)
+    render(inv, template, {'participant': participant})
+finally:
+    sess.close()]]></value>
+		<value><![CDATA[<!doctype html>
+<html>
+  <head>
+    <link rel="stylesheet" type="text/css"
+      href="{{ context_path }}/reports/19/output/"
+    >
+    <title>Chellow &gt; Market Participants &gt; {{ participant.name}}</title>
+  </head>
+  <body>
+    <p>
+      <a href="{{ context_path }}/reports/1/output/">Chellow</a> &gt;
+      <a href="{{ context_path }}/reports/71/output/">Market Participants</a>
+      &gt; {{ participant.name }}
+    </p>
+    <br />
+    {% if messages %}
+      <ul>
+        {% for message in messages %}
+          <li>{{ message }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+    <table>
+      <tbody>
+        <tr>
+          <th>Code</th>
+          <td>{{ participant.code }}</td>
+        </tr>
+        <tr>
+          <th>Name</th>
+          <td>{{ participant.name }}</td>
+        </tr>
+      </tbody>
+    </table>
+    <br/>
+    <table>
+      <caption>Parties</caption>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Market Role</th>
+          <th>DNO Code</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for party in participant.parties %}
+          <tr>
+            <td>
+              <a href="{{ context_path }}/reports/47/output/?party_id={{ party.id }}">{{ party.name }}</a>
+            </td>
+            <td>
+              <a href="{{ context_path }}/reports/123/output/?market_role_id={{ party.market_role.id }}">{{ party.market_role.description }}</a>
+            </td>
+            <td>
+              {% if party.market_role.code == 'R' %}
+                {{ party.dno_code }}
+              {% endif %}
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </body>
+</html>]]></value>
 	</line>
 	<line>
 		<value><![CDATA[insert]]></value>
@@ -10458,74 +10338,69 @@ source.appendChild(snag.toXml(doc, XmlTree("site")))]]></value>
 		<value><![CDATA[121]]></value>
 		<value><![CDATA[true]]></value>
 		<value><![CDATA[Market Roles]]></value>
-		<value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree
+		<value><![CDATA[from net.sf.chellow.monad import Monad
+from sqlalchemy.orm import joinedload_all
 
-roles_element = doc.createElement('roles')
-source.appendChild(roles_element)
-for role in Hiber.session().createQuery("from MarketRole role order by role.code").list():
-    roles_element.appendChild(role.toXml(doc))]]></value>
-		<value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
-<xsl:stylesheet version="1.0"
-    xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
-    <xsl:output method="html" encoding="US-ASCII"
-        doctype-public="-//W3C//DTD HTML 4.01//EN"
-        doctype-system="http://www.w3.org/TR/html4/strict.dtd" indent="yes" />
-    <xsl:template match="/">
-        <html>
-            <head>
-                <link rel="stylesheet" type="text/css"
-                    href="{/source/request/@context-path}/reports/19/output/" />
-                <title>
-                    Chellow &gt; Market Roles
-                </title>
-            </head>
-            <body>
-                <p>
-                    <a
-                        href="{/source/request/@context-path}/reports/1/output/">
-                        <xsl:value-of select="'Chellow'" />
-                    </a>
-                    &gt;
-                    <xsl:value-of select="'Market Roles'" />
-                </p>
-                <br />
-                <xsl:if test="//message">
-                    <ul>
-                        <xsl:for-each select="//message">
-                            <li>
-                                <xsl:value-of select="@description" />
-                            </li>
-                        </xsl:for-each>
-                    </ul>
-                </xsl:if>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Code</th>
-                            <th>Description</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <xsl:for-each
-                            select="/source/roles/market-role">
-                            <tr>
-                                <td>
-                                    <a
-                                        href="{/source/request/@context-path}/reports/123/output/?role-id={@id}">
-                                       <xsl:value-of select="@code" />
-                                    </a>
-                                </td>
-                                <td>
-                                    <xsl:value-of select="@description" />
-                                </td>
-                            </tr>
-                        </xsl:for-each>
-                    </tbody>
-                </table>
-            </body>
-        </html>
-    </xsl:template>
-</xsl:stylesheet>]]></value>
+db = Monad.getContext().getAttribute("net.sf.chellow.db")
+for cls in ['Contract', 'Party', 'MarketRole', 'set_read_write', 'session']:
+   globals()[cls] = db.get(cls)
+
+utils = Monad.getContext().getAttribute("net.sf.chellow.utils")
+for cls in ['UserException']:
+   globals()[cls] = utils.get(cls)
+
+jinja = Monad.getContext().getAttribute("net.sf.chellow.jinja")
+for cls in ['render']:
+   globals()[cls] = jinja.get(cls)
+
+sess = None
+try:
+    sess = session()
+    market_roles = sess.query(MarketRole).from_statement("select market_role.* from market_role order by market_role.code").all()
+    render(inv, template, {'market_roles': market_roles})
+finally:
+    sess.close()]]></value>
+		<value><![CDATA[<!doctype html>
+<html>
+  <head>
+    <link rel="stylesheet" type="text/css"
+      href="{{ context_path }}/reports/19/output/"
+    >
+    <title>Chellow &gt; Market Roles</title>
+  </head>
+  <body>
+    <p>
+      <a href="{{ context_path }}/reports/1/output/">Chellow</a> &gt;
+        Market Roles
+    </p>
+    <br />
+    {% if messages %}
+      <ul>
+        {% for message in messages %}
+          <li>{{ message }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+    <table>
+      <thead>
+        <tr>
+          <th>Code</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for role in market_roles %}
+          <tr>
+            <td>
+              <a href="{{ context_path }}/reports/123/output/?market_role_id={{ role.id }}">{{ role.code }}</a>
+            </td>
+            <td>{{ role.description }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </body>
+</html>]]></value>
 	</line>
 	<line>
 		<value><![CDATA[insert]]></value>
@@ -10533,135 +10408,91 @@ for role in Hiber.session().createQuery("from MarketRole role order by role.code
 		<value><![CDATA[123]]></value>
 		<value><![CDATA[true]]></value>
 		<value><![CDATA[Market Role]]></value>
-		<value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree
-from net.sf.chellow.physical import MarketRole
+		<value><![CDATA[from net.sf.chellow.monad import Monad
+from sqlalchemy.orm import joinedload_all
 
-role_id = inv.getLong('role-id')
-role = MarketRole.getMarketRole(role_id)
-role_element = role.toXml(doc)
-source.appendChild(role_element)
-for party in Hiber.session().createQuery("from Party party where party.role = :role order by party.participant.code").setEntity("role", role).list():
-    role_element.appendChild(party.toXml(doc, XmlTree('participant')))]]></value>
-		<value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
-<xsl:stylesheet version="1.0"
-    xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
-    <xsl:output method="html" encoding="US-ASCII"
-        doctype-public="-//W3C//DTD HTML 4.01//EN"
-        doctype-system="http://www.w3.org/TR/html4/strict.dtd" indent="yes" />
-    <xsl:template match="/">
-        <html>
-            <head>
-                <link rel="stylesheet" type="text/css"
-                    href="{/source/request/@context-path}/reports/19/output/" />
-                <title>
-                    Chellow &gt; Market Roles &gt;
-                    <xsl:value-of
-                        select="/source/market-role/@description" />
-                </title>
-            </head>
-            <body>
-                <p>
-                    <a
-                        href="{/source/request/@context-path}/reports/1/output/">
-                        <xsl:value-of select="'Chellow'" />
-                    </a>
-                    &gt;
-                    <a
-                        href="{/source/request/@context-path}/reports/121/output/">
-                        <xsl:value-of select="'Market Roles'" />
-                    </a>
-                    &gt;
-                    <xsl:value-of
-                        select="/source/market-role/@description" />
-                </p>
-                <br />
-                <xsl:if test="//message">
-                    <ul>
-                        <xsl:for-each select="//message">
-                            <li>
-                                <xsl:value-of select="@description" />
-                            </li>
-                        </xsl:for-each>
-                    </ul>
-                </xsl:if>
-                <table>
-                    <tr>
-                        <th>Code</th>
-                        <td>
-                            <xsl:value-of
-                                select="/source/market-role/@code" />
-                        </td>
-                    </tr>
-                    <tr>
+db = Monad.getContext().getAttribute("net.sf.chellow.db")
+for cls in ['Contract', 'Party', 'MarketRole', 'set_read_write', 'session']:
+   globals()[cls] = db.get(cls)
 
-                        <th>Description</th>
-                        <td>
-                            <xsl:value-of
-                                select="/source/market-role/@description" />
-                        </td>
-                    </tr>
-                </table>
-                <br />
-                <xsl:choose>
-                    <xsl:when test="/source/market-role/@code='R'">
-                        <table>
-                            <caption>DNOs</caption>
-                            <thead>
-                                <tr>
-                                    <th>Code</th>
-                                    <th>Name</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <xsl:for-each
-                                    select="/source/market-role/dno">
-                                    <tr>
-                                        <td>
-                                            <a
-                                                href="{/source/request/@context-path}/reports/139/output/?dno-id={@id}">
-                                                <xsl:value-of
-                                                select="@code" />
-                                            </a>
-                                        </td>
-                                        <td>
-                                            <xsl:value-of
-                                                select="@name" />
-                                        </td>
-                                    </tr>
-                                </xsl:for-each>
-                            </tbody>
-                        </table>
-                    </xsl:when>
-                    <xsl:otherwise>
-                        <table>
-                            <caption>Providers</caption>
-                            <thead>
-                                <tr>
-                                    <th>Name</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <xsl:for-each
-                                    select="/source/market-role/provider">
-                                    <tr>
-                                        <td>
-                                            <a
-                                                href="{/source/request/@context-path}/reports/47/output/?provider-id={@id}">
-                                                <xsl:value-of
-                                                select="@name" />
-                                            </a>
-                                        </td>
-                                    </tr>
-                                </xsl:for-each>
-                            </tbody>
-                        </table>
+utils = Monad.getContext().getAttribute("net.sf.chellow.utils")
+for cls in ['UserException']:
+   globals()[cls] = utils.get(cls)
 
-                    </xsl:otherwise>
-                </xsl:choose>
-            </body>
-        </html>
-    </xsl:template>
-</xsl:stylesheet>]]></value>
+jinja = Monad.getContext().getAttribute("net.sf.chellow.jinja")
+for cls in ['render']:
+   globals()[cls] = jinja.get(cls)
+
+sess = None
+try:
+    sess = session()
+    market_role_id = inv.getLong('market_role_id')
+    market_role = MarketRole.get_by_id(sess, market_role_id)
+    render(inv, template, {'market_role': market_role})
+finally:
+    sess.close()]]></value>
+		<value><![CDATA[<!doctype html>
+<html>
+  <head>
+    <link rel="stylesheet" type="text/css"
+      href="{{ context_path }}/reports/19/output/"
+    >
+    <title>Chellow &gt; Market Roles &gt; {{ market_role.description }}</title>
+  </head>
+  <body>
+    <p>
+      <a href="{{ context_path }}/reports/1/output/">Chellow</a> &gt;
+      <a href="{{ context_path }}/reports/121/output/">Market Roles</a> &gt;
+      {{ market_role.description }}
+    </p>
+    <br />
+    {% if messages %}
+      <ul>
+        {% for message in messages %}
+          <li>{{ message }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+    <table>
+      <tr>
+        <th>Code</th>
+        <td>{{ market_role.code }}</td>
+      </tr>
+      <tr>
+        <th>Description</th>
+        <td>{{ market_role.description }}</td>
+      </tr>
+    </table>
+    <br />
+    <table>
+      <caption>Parties</caption>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Participant</th>
+          {% if market_role.code == 'R' %}
+            <th>DNO Code</th>
+          {% endif %}
+        </tr>
+      </thead>
+      <tbody>
+        {% for party in market_role.parties %}
+          <tr>
+            <td>
+              <a href="{{ context_path }}/reports/47/output/?party_id={{ party.id }}">{{ party.name }}</a>
+            </td>
+            <td>
+              <a href="{{ context_path }}/reports/73/output/?participant_id={{ party.participant.id }}">{{ party.participant.code }}</a>
+            </td>
+            {% if market_role.code == 'R' %}
+              <td>{{ party.dno_code }}</td>
+            {% endif %}
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </body>
+</html>]]></value>
 	</line>
 	<line>
 		<value><![CDATA[insert]]></value>
@@ -18821,7 +18652,7 @@ try:
     def users_context(message=None):
         users = session.query(User).order_by(User.email_address).all()
         parties = session.query(Party).from_statement("select party.* from party, " +
-                "market_role, participant where party.role_id = market_role.id " +
+                "market_role, participant where party.market_role_id = market_role.id " +
                 "and party.participant_id = participant.id order by " +
                 "market_role.code, participant.code").all()
         return {'users': users, 'parties': parties, 'messages': None if message is None else [message]}
@@ -18889,7 +18720,7 @@ finally:
             <tr>
               <td><a href="{{ context_path }}/reports/257/output/?user_id={{user.id}}">view</a></td>
               <td>{{ user.email_address }}</td>
-              <td>{{ user.role.code }}</td>
+              <td>{{ user.user_role.code }}</td>
               <td>{{ user.party.name }}</td>
             </tr>
           {% endfor %}
@@ -18945,7 +18776,7 @@ finally:
                   selected
                 {% endif %}
               >{{ party.name }} {{ party.participant.code }}
-                {{ party.role.description }}
+                {{ party.market_role.description }}
               </option>
             {% endfor %}
           </select>
@@ -19222,12 +19053,85 @@ finally:
     <link rel="stylesheet" type="text/css"
       href="{{ context_path }}/reports/19/output/"
     >
-    <title>Chellow &gt; Non-core Contracts</title>
+    <title>Chellow &gt; Non-core Contracts &gt</title>
   </head>
   <body>
     <p>
       <a href="{{ context_path }}/reports/1/output/">Chellow</a> &gt;
-      HHDC Contracts [<a href="{{ context_path }}/reports/261/output/">add</a>]
+      Non-core Contracts
+      [<a href="{{ context_path }}/reports/265/output/">add</a>]
+    </p>
+    {% if messages %}
+      <ul>
+        {% for message in messages %}
+          <li>{{ message }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+    <br />
+
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Start Date</th>
+          <th>Finish Date</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for contract in non_core_contracts %}
+          <tr>
+            <td>
+              <a href="{{ context_path }}/reports/267/output/?non_core_contract_id={{ contract.id }}">{{ contract.name }}</a>
+            </td>
+            <td>{{ contract.start_rate_script.start_date|hh_format }}</td>
+            <td>{{ contract.finish_rate_script.finish_date|hh_format }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </body>
+</html>]]></value>
+	</line>
+	<line>
+		<value><![CDATA[insert]]></value>
+		<value><![CDATA[report]]></value>
+		<value><![CDATA[261]]></value>
+		<value><![CDATA[true]]></value>
+		<value><![CDATA[User Roles]]></value>
+		<value><![CDATA[from net.sf.chellow.monad import Monad
+from sqlalchemy.orm import joinedload_all
+
+db = Monad.getContext().getAttribute("net.sf.chellow.db")
+for cls in ['Contract', 'Party', 'UserRole', 'set_read_write', 'session']:
+   globals()[cls] = db.get(cls)
+
+utils = Monad.getContext().getAttribute("net.sf.chellow.utils")
+for cls in ['UserException']:
+   globals()[cls] = utils.get(cls)
+
+jinja = Monad.getContext().getAttribute("net.sf.chellow.jinja")
+for cls in ['render']:
+   globals()[cls] = jinja.get(cls)
+
+sess = None
+try:
+    sess = session()
+    user_roles = sess.query(UserRole).from_statement("select * from user_role order by user_role.code").all()
+    render(inv, template, {'user_roles': user_roles})
+finally:
+    sess.close()]]></value>
+		<value><![CDATA[<!doctype html>
+<html>
+  <head>
+    <link rel="stylesheet" type="text/css"
+      href="{{ context_path }}/reports/19/output/"
+    >
+    <title>Chellow &gt; User Roles</title>
+  </head>
+  <body>
+    <p>
+      <a href="{{ context_path }}/reports/1/output/">Chellow</a> &gt; User Roles
     </p>
     <br />
     {% if messages %}
@@ -19237,28 +19141,406 @@ finally:
         {% endfor %}
       </ul>
     {% endif %}
-
     <table>
       <thead>
-        <tr>
-          <th>Name</th>
-          <th>Start Date</th>
-          <th>Finish Date</th>
-          <th>HHDC</th>
-        </tr>
+        <th>Code</th>
       </thead>
       <tbody>
-        {% for contract in non_core_contracts %}
+        {% for user_role in user_roles %}
           <tr>
             <td>
-              <a href="{/source/request/@context-path}/reports/263/output/?non_core_contract_id={@id}">{{ contract.name }}</a>
+              <a href="{{ context_path }}/reports/263/output/?user_role_id={{ user_role.id }}">{{ user_role.code }}</a>
             </td>
-            <td>{{ contract.start_rate_script.start_date|hh_format }}</td>
-            <td>{{ contract.finish_rate_script.finish_date|hh_format }}</td>
           </tr>
         {% endfor %}
       </tbody>
     </table>
+  </body>
+</html>]]></value>
+	</line>
+	<line>
+		<value><![CDATA[insert]]></value>
+		<value><![CDATA[report]]></value>
+		<value><![CDATA[263]]></value>
+		<value><![CDATA[true]]></value>
+		<value><![CDATA[User Role]]></value>
+		<value><![CDATA[from net.sf.chellow.monad import Monad
+from sqlalchemy.orm import joinedload_all
+
+db = Monad.getContext().getAttribute("net.sf.chellow.db")
+for cls in ['Contract', 'Party', 'UserRole', 'set_read_write', 'session']:
+   globals()[cls] = db.get(cls)
+
+utils = Monad.getContext().getAttribute("net.sf.chellow.utils")
+for cls in ['UserException']:
+   globals()[cls] = utils.get(cls)
+
+jinja = Monad.getContext().getAttribute("net.sf.chellow.jinja")
+for cls in ['render']:
+   globals()[cls] = jinja.get(cls)
+
+sess = None
+try:
+    sess = session()
+    user_role_id = inv.getLong('user_role_id')
+    user_role = UserRole.get_by_id(sess, user_role_id)
+    render(inv, template, {'user_role': user_role})
+finally:
+    sess.close()]]></value>
+		<value><![CDATA[<!doctype html>
+<html>
+  <head>
+    <link rel="stylesheet" type="text/css"
+      href="{{ context_path }}/reports/19/output/"
+    >
+    <title>Chellow &gt; User Roles &gt; {{ user_role.code }}</title>
+  </head>
+  <body>
+    <p>
+      <a href="{{ context_path }}/reports/1/output/">Chellow</a> &gt;
+      <a href="{{ context_path }}/reports/261/output/">User Roles</a> &gt;
+      {{ user_role.code }}
+    </p>
+    <br />
+    {% if messages %}
+      <ul>
+        {% for message in messages %}
+          <li>{{ message }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+    <table>
+      <tr>
+        <th>Code</th>
+        <td>{{ user_role.code }}</td>
+      </tr>
+    </table>
+  </body>
+</html>]]></value>
+	</line>
+	<line>
+		<value><![CDATA[insert]]></value>
+		<value><![CDATA[report]]></value>
+		<value><![CDATA[265]]></value>
+		<value><![CDATA[true]]></value>
+		<value><![CDATA[Non-core Contract Add]]></value>
+		<value><![CDATA[from net.sf.chellow.monad import Monad
+from sqlalchemy.orm import joinedload_all
+from datetime import datetime
+import pytz
+
+db = Monad.getContext().getAttribute("net.sf.chellow.db")
+for cls in ['Contract', 'Party', 'Participant', 'set_read_write', 'session']:
+   globals()[cls] = db.get(cls)
+
+utils = Monad.getContext().getAttribute("net.sf.chellow.utils")
+for cls in ['UserException', 'form_date']:
+   globals()[cls] = utils.get(cls)
+
+jinja = Monad.getContext().getAttribute("net.sf.chellow.jinja")
+for cls in ['render']:
+   globals()[cls] = jinja.get(cls)
+
+def make_fields():
+    initial_date = datetime.utcnow().replace(tzinfo=pytz.utc)
+    initial_date = datetime(initial_date.year, initial_date.month, 1)
+    return {'initial_date': initial_date}
+
+sess = None
+try:
+    sess = session()
+    if inv.getRequest().getMethod() == 'GET':
+        render(inv, template, make_fields())
+    else:
+        set_read_write(sess)
+        name = inv.getString('name')
+        is_core = inv.getBoolean('is_core')
+        start_date = form_date(inv, 'start')
+        participant = Participant.get_by_code(sess, 'CALB')
+        contract = Contract.insert_non_core(sess, is_core, name, participant,
+            '', '', start_date, None, '')
+        sess.commit()
+        inv.sendSeeOther('/reports/267/output/?non_core_contract_id=' +
+            str(contract.id))
+finally:
+    sess.close()]]></value>
+		<value><![CDATA[<!doctype html>
+<html>
+  <head>
+    <link rel="stylesheet" type="text/css"
+      href="{{ context_path }}/reports/19/output/"
+    >
+    <title>Chellow &gt; Non-core Contracts</title>
+  </head>
+  <body>
+    <p>
+      <a href="{{ context_path }}/reports/1/output/">Chellow</a> &gt;
+      <a href="{{ context_path }}/reports/259/output/">Non-core Contracts</a>
+      &gt; Add
+    </p>
+    <br />
+    {% if messages %}
+      <ul>
+        {% for message in messages %}
+          <li>{{ message }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+    <form action="{{ context_path }}/reports/265/output/" method="post">
+      <fieldset>
+        <legend>Add a non-core contract</legend>
+        <br />
+    <label>
+          Is Core?
+          <input type="checkbox" name="is_core" value="true"
+            {% if request.getParameter('is_core') %}
+              checked
+            {% endif %}
+          >
+        </label>
+        <br />
+        <br />
+        <label>
+          Name
+          <input name="name" value="
+            {%- if request.getParameter('name') -%}
+              {{ request.getParameter('name') }}
+            {%- endif -%}
+          ">
+        </label>
+        <br />
+        <br />
+        <fieldset>
+          <legend>Start Date</legend>
+          {{ input_date('start', request, initial_date) }}
+        </fieldset>
+        <br />
+        <br />
+        <input type="submit" value="Add">
+        <input type="reset" value="Reset">
+      </fieldset>
+    </form>
+  </body>
+</html>]]></value>
+	</line>
+	<line>
+		<value><![CDATA[insert]]></value>
+		<value><![CDATA[report]]></value>
+		<value><![CDATA[267]]></value>
+		<value><![CDATA[true]]></value>
+		<value><![CDATA[Non-core Contract]]></value>
+		<value><![CDATA[from net.sf.chellow.monad import Monad
+from sqlalchemy.orm import joinedload_all
+
+db = Monad.getContext().getAttribute("net.sf.chellow.db")
+for cls in ['Contract', 'RateScript', 'UserRole', 'set_read_write', 'session']:
+   globals()[cls] = db.get(cls)
+
+utils = Monad.getContext().getAttribute("net.sf.chellow.utils")
+for cls in ['UserException']:
+   globals()[cls] = utils.get(cls)
+
+jinja = Monad.getContext().getAttribute("net.sf.chellow.jinja")
+for cls in ['render']:
+   globals()[cls] = jinja.get(cls)
+
+sess = None
+try:
+    sess = session()
+    contract_id = inv.getLong('non_core_contract_id')
+    contract = Contract.get_non_core_by_id(sess, contract_id)
+    rate_scripts = sess.query(RateScript).from_statement("select * from rate_script where rate_script.contract_id = :contract_id order by start_date desc").params(contract_id=contract_id).all()
+    render(inv, template, {'contract': contract, 'rate_scripts': rate_scripts})
+finally:
+    sess.close()]]></value>
+		<value><![CDATA[<!doctype html>
+<html>
+  <head>
+    <link rel="stylesheet" type="text/css"
+      href="{{ context_path }}/reports/19/output/"
+    >
+    <title>Chellow &gt; Non-core Contracts &gt; {{ contract.name }}</title>
+  </head>
+  <body>
+    <p>
+      <a href="{{ context_path }}/reports/1/output/">Chellow</a> &gt;
+      <a href="{{ context_path }}/reports/259/output/">Non-core Contracts</a>
+      &gt; {{ contract.name }} [<a href="{{ context_path }}/reports/269/output/?non_core_contract_id={{ contract.id }}">edit</a>]
+    </p>
+    {% if messages %}
+      <ul>
+        {% for message in messages %}
+          <li>{{ message }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+    <br />
+
+    <table>
+      <tr>
+        <th>Is Core?</th>
+        <td>{{ contract.is_core }}</td>
+      </tr>
+    </table>
+    <br>
+    <table>
+      <caption>
+          Rate Scripts
+          [<a href="{{ context_path }}/reports/269/output/?non_core_contract_id={{ contract.id }}">add</a>]
+      </caption>
+      <thead>
+        <tr>
+          <th></th>
+          <th>Start Date</th>
+          <th>Finish Date</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for rate_script in rate_scripts %}
+          <tr>
+            <td>
+              <a href="{{ context_path }}/reports/271/output/?">View</a>
+            </td>
+            <td>{{ rate_script.start_date|hh_format }}</td>
+            <td>{{ rate_script.finish_date|hh_format }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    <h3>Charge Script</h3>
+
+    <pre>{{ contract.charge_script }}</pre>
+
+  </body>
+</html>]]></value>
+	</line>
+	<line>
+		<value><![CDATA[insert]]></value>
+		<value><![CDATA[report]]></value>
+		<value><![CDATA[269]]></value>
+		<value><![CDATA[true]]></value>
+		<value><![CDATA[Non-core Contract Edit]]></value>
+		<value><![CDATA[from net.sf.chellow.monad import Monad
+from sqlalchemy.orm import joinedload_all
+
+db = Monad.getContext().getAttribute("net.sf.chellow.db")
+for cls in ['Contract', 'RateScript', 'UserRole', 'set_read_write', 'session']:
+   globals()[cls] = db.get(cls)
+
+utils = Monad.getContext().getAttribute("net.sf.chellow.utils")
+for cls in ['UserException']:
+   globals()[cls] = utils.get(cls)
+
+jinja = Monad.getContext().getAttribute("net.sf.chellow.jinja")
+for cls in ['render']:
+   globals()[cls] = jinja.get(cls)
+
+
+sess = None
+try:
+    sess = session()
+    if inv.getRequest().getMethod() == 'GET':
+        contract_id = inv.getLong('non_core_contract_id')
+        contract = Contract.get_non_core_by_id(sess, contract_id)
+        render(inv, template, {'contract': contract})
+    else:
+        set_read_write(sess)
+        contract_id = inv.getLong('non_core_contract_id')
+        contract = Contract.get_non_core_by_id(sess, contract_id)
+        if inv.hasParameter('delete'):
+            contract.delete()
+            sess.commit()
+        else:
+            name = inv.getString('name')
+            charge_script = inv.getString('charge_script')
+            contract.update(contract.is_core, name, contract.party,
+                charge_script)
+finally:
+    sess.close()]]></value>
+		<value><![CDATA[<!doctype html>
+<html>
+  <head>
+    <link rel="stylesheet" type="text/css"
+      href="{{ context_path }}/reports/19/output/"
+    >
+    <title>Chellow &gt; Non-core Contracts &gt;    {{ contract.name }}</title>
+  </head>
+  <body>
+    <p>
+      <a href="{{ context_path }}/reports/1/output/">Chellow</a> &gt;
+      <a href="{{ context_path }}/reports/259/output/">Non-core Contracts</a>
+      &gt;
+      <a href="{{ context_path }}/reports/267/output/?non_core_contract_id={{ contract.id }}">{{ contract.name }}</a>
+      &gt; Edit
+    </p>
+    {% if messages %}
+      <ul>
+        {% for message in messages %}
+          <li>{{ message }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+    {% if request.getMethod() == 'GET' and request.getParameter('view') == 'confirm-delete' %}
+      <form method="post" action="{{ context_path }}/reports/269/output/">
+        <fieldset>
+          <legend>
+            Are you sure you want to delete this contract?
+          </legend>
+          <input type="hidden" name="non_core_contract_id"
+            value="{{ contract.id }}"
+          >
+          <input type="submit" name="delete" value="Delete">
+        </fieldset>
+      </form>
+      <p>
+        <a href="{{ context_path }}/reports/269/output/?non_core_contract_id={{ contract.id }}">Cancel</a>
+      </p>
+    {% else %}
+      <p>
+        Is Core? {{ contract.is_core }}
+      </p>
+      <form action="{{ context_path }}/reports/269/output/" method="post">
+        <fieldset>
+          <legend>Update Contract</legend>
+          <br>
+          <label>
+            Name <input name="name" value="
+              {%- if request.getParameter('name') -%}
+                {{ request.getParameter('name') }}
+              {%- else -%}
+                {{ contract.name }}
+              {%- endif -%}
+            ">
+          </label>
+          <br>
+          <br>
+          Charge script
+          <br>
+          <textarea name="charge_script" rows="40" cols="80">
+            {%- if request.getParameter('charge_script') -%}
+              {{ request.getParameter('charge_script') }}
+            {%- else -%}
+              {{ contract.charge_script }}
+            {%- endif -%}
+          </textarea>
+          <br />
+          <br />
+          <input type="submit" value="Update" />
+          <input type="reset" value="Reset" />
+        </fieldset>
+      </form>
+      <br />
+      <form action="{{ context_path }}/reports/269/output/">
+        <fieldset>
+          <legend>Delete this contract</legend>
+          <input type="hidden" name="non_core_contract_id"
+              value="{{ contract.id }}">
+          <input type="hidden" name="view" value="confirm-delete">
+          <input type="submit" value="Delete">
+        </fieldset>
+      </form>
+    {% endif %}
   </body>
 </html>]]></value>
 	</line>
