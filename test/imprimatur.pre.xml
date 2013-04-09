@@ -2484,7 +2484,7 @@ def import_virtual_bill(supply_source):
 		<test name="Check can view a supply.">
 			<request path="/chellow/reports/7/output/?supply-id=3">
 				<!-- Check there's a link to raw HH data -->
-				<regex pattern="/reports/17/output/\?"/>
+				<regex pattern="/reports/17/output/\?" />
 				<response-code value="200" />
 			</request>
 		</test>
@@ -2839,10 +2839,10 @@ def import_virtual_bill(supply_source):
 				<control name="account" value="02" />
 				<control name="bill-type-id" value="1" />
 				<control name="breakdown" value="" />
-				<regex pattern="/chellow/supplier-contracts/4/batches/6/bills/14/" />
+				<regex pattern="/chellow/supplier-contracts/4/batches/6/bills/15/" />
 				<response-code value="303" />
 			</request>
-			<request path="/chellow/supplier-contracts/4/batches/6/bills/14/">
+			<request path="/chellow/supplier-contracts/4/batches/6/bills/15/">
 				<regex
 					pattern='&lt;select name="start-day"&gt;&lt;option value="01"&gt;01&lt;/option&gt;&lt;option value="02"&gt;02&lt;/option&gt;&lt;option value="03"&gt;03&lt;/option&gt;&lt;option value="04"&gt;04&lt;/option&gt;&lt;option value="05"&gt;05&lt;/option&gt;&lt;option value="06" selected&gt;06&lt;/option&gt;&lt;option value="07"&gt;07&lt;/option&gt;&lt;option value="08"&gt;08&lt;/option&gt;&lt;option value="09"&gt;09&lt;/option&gt;&lt;option value="10"&gt;10&lt;/option&gt;&lt;option value="11"&gt;11&lt;/option&gt;&lt;option value="12"&gt;12&lt;/option&gt;&lt;option value="13"&gt;13&lt;/option&gt;&lt;option value="14"&gt;14&lt;/option&gt;&lt;option value="15"&gt;15&lt;/option&gt;&lt;option value="16"&gt;16&lt;/option&gt;&lt;option value="17"&gt;17&lt;/option&gt;&lt;option value="18"&gt;18&lt;/option&gt;&lt;option value="19"&gt;19&lt;/option&gt;&lt;option value="20"&gt;20&lt;/option&gt;&lt;option value="21"&gt;21&lt;/option&gt;&lt;option value="22"&gt;22&lt;/option&gt;&lt;option value="23"&gt;23&lt;/option&gt;&lt;option value="24"&gt;24&lt;/option&gt;&lt;option value="25"&gt;25&lt;/option&gt;&lt;option value="26"&gt;26&lt;/option&gt;&lt;option value="27"&gt;27&lt;/option&gt;&lt;option value="28"&gt;28&lt;/option&gt;&lt;option value="29"&gt;29&lt;/option&gt;&lt;option value="30"&gt;30&lt;/option&gt;&lt;option value="31"&gt;31&lt;/option&gt;&lt;/select&gt; &lt;select name="start-hour"&gt;&lt;option value="00" selected&gt;00&lt;/option&gt;&lt;option value="01"&gt;01&lt;/option&gt;&lt;option value="02"&gt;02&lt;/option&gt;&lt;option value="03"&gt;03&lt;/option&gt;&lt;option value="04"&gt;04&lt;/option&gt;&lt;option value="05"&gt;05&lt;/option&gt;&lt;option value="06"&gt;06&lt;/option&gt;&lt;option value="07"&gt;07&lt;/option&gt;&lt;option value="08"&gt;08&lt;/option&gt;&lt;option value="09"&gt;09&lt;/option&gt;&lt;option value="10"&gt;10&lt;/option&gt;&lt;option value="11"&gt;11&lt;/option&gt;&lt;option value="12"&gt;12&lt;/option&gt;&lt;option value="13"&gt;13&lt;/option&gt;&lt;option value="14"&gt;14&lt;/option&gt;&lt;option value="15"&gt;15&lt;/option&gt;&lt;option value="16"&gt;16&lt;/option&gt;&lt;option value="17"&gt;17&lt;/option&gt;&lt;option value="18"&gt;18&lt;/option&gt;&lt;option value="19"&gt;19&lt;/option&gt;&lt;option value="20"&gt;20&lt;/option&gt;&lt;option value="21"&gt;21&lt;/option&gt;&lt;option value="22"&gt;22&lt;/option&gt;&lt;option value="23"&gt;23&lt;/option&gt;&lt;/select&gt;:&lt;select name="start-minute"&gt;&lt;option value="00" selected&gt;00&lt;/option&gt;&lt;option value="30"&gt;30&lt;/option&gt;&lt;/select&gt;' />
 				<regex
@@ -2917,6 +2917,11 @@ def import_virtual_bill(supply_source):
 					pattern='&lt;td&gt;[\r\n] *&lt;a href="/chellow/reports/203/output/\?batch-id=8"&gt;001-7t&lt;/a&gt;[\r\n] *&lt;/td&gt;[\r\n] *&lt;td&gt;00031&lt;/td&gt;[\r\n] *&lt;td&gt;22 0883 6932 301&lt;/td&gt;' />
 				<regex
 					pattern='&lt;td&gt;[\r\n] *&lt;a href="/chellow/reports/193/output/\?batch-id=9"&gt;99/992&lt;/a&gt;[\r\n] *&lt;/td&gt;[\r\n] *&lt;td&gt;06&lt;/td&gt;[\r\n] *&lt;td&gt;22 0883 6932 301&lt;/td&gt;' />
+
+				<!-- Check that MOP bill before supply start is displayed -->
+				<regex
+					pattern='&lt;td&gt;[\r\n] *&lt;a href="/chellow/reports/193/output/\?batch-id=9"&gt;99/992&lt;/a&gt;[\r\n] *&lt;/td&gt;[\r\n] *&lt;td&gt;08&lt;/td&gt;[\r\n] *&lt;td&gt;22 0883 6932 301&lt;/td&gt;' />
+
 				<response-code value="200" />
 			</request>
 		</test>

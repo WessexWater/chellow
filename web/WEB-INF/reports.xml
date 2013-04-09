@@ -821,7 +821,8 @@ from java.io import StringReader
 supply_id = inv.getLong("supply-id")
 supply = Supply.getSupply(supply_id)
 era_bundles = []
-for era in Hiber.session().createQuery("from SupplyGeneration generation where generation.supply = :supply order by generation.startDate desc").setEntity('supply', supply).list():
+eras = Hiber.session().createQuery("from SupplyGeneration generation where generation.supply = :supply order by generation.startDate desc").setEntity('supply', supply).list()
+for era_idx, era in enumerate(eras):
     import_mpan = era.getImportMpan()
     export_mpan = era.getExportMpan()
     physical_site = Hiber.session().createQuery("select ssgen.site from SiteSupplyGeneration ssgen where ssgen.isPhysical = true and ssgen.supplyGeneration = :generation").setEntity('generation', era).uniqueResult()
@@ -846,13 +847,19 @@ for era in Hiber.session().createQuery("from SupplyGeneration generation where g
         era_bundle['import_bills']['inner_headers'] = inner_headers
         inner_header_codes = [tpr.code if tpr is not None else 'md' for tpr in inner_headers]
 
-    if era.getFinishDate() is None:
-        bills_query = Hiber.session().createQuery("from Bill bill where bill.supply = :supply and bill.startDate >= :startDate")
+    is_last = era == eras[-1]
+
+    if era.getFinishDate() is None and not is_last:
+        bills_query = Hiber.session().createQuery("from Bill bill where bill.supply = :supply and bill.startDate >= :startDate").setTimestamp('startDate', era.getStartDate().getDate())
+    elif era.getFinishDate() is None and is_last:
+        bills_query = Hiber.session().createQuery("from Bill bill where bill.supply = :supply")
+    elif era.getFinishDate() is not None and is_last:
+        bills_query = Hiber.session().createQuery("from Bill bill where bill.supply = :supply and bill.startDate <= :finishDate").setTimestamp('finishDate', era.getFinishDate().getDate())
     else:
-        bills_query = Hiber.session().createQuery("from Bill bill where bill.supply = :supply and bill.startDate >= :startDate and bill.startDate <= :finishDate").setTimestamp('finishDate', era.getFinishDate().getDate())
+        bills_query = Hiber.session().createQuery("from Bill bill where bill.supply = :supply and bill.startDate >= :startDate and bill.startDate <= :finishDate").setTimestamp('startDate', era.getStartDate().getDate()).setTimestamp('finishDate', era.getFinishDate().getDate())
 
     num_outer_cols = 0
-    for bill in bills_query.setEntity('supply', supply).setTimestamp('startDate', era.getStartDate().getDate()).list():
+    for bill in bills_query.setEntity('supply', supply).list():
         bill_contract = bill.getBatch().getContract()
         bill_role_code = bill_contract.getParty().getRole().getCode()
         if bill_role_code == 'X':
@@ -911,6 +918,7 @@ for era in Hiber.session().createQuery("from SupplyGeneration generation where g
             bill_dict['rows_high'] = rows_high
 
     era_bundle['import_bills']['num_outer_cols'] = num_outer_cols
+    prev_era = era
 
 RELATIVE_YEAR = relativedelta(years=1)
 
@@ -1422,6 +1430,7 @@ Monad.getContext().getAttribute("net.sf.chellow.jinja").get("render")(inv, templ
                 {% endfor %}
             </tbody>
         </table>
+        <br/>
     {% endfor %}
 
     <br />
