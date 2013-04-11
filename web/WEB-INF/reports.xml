@@ -850,13 +850,13 @@ for era_idx, era in enumerate(eras):
     is_last = era == eras[-1]
 
     if era.getFinishDate() is None and not is_last:
-        bills_query = Hiber.session().createQuery("from Bill bill where bill.supply = :supply and bill.startDate >= :startDate").setTimestamp('startDate', era.getStartDate().getDate())
+        bills_query = Hiber.session().createQuery("from Bill bill where bill.supply = :supply and bill.startDate >= :startDate order by bill.startDate.date desc").setTimestamp('startDate', era.getStartDate().getDate())
     elif era.getFinishDate() is None and is_last:
-        bills_query = Hiber.session().createQuery("from Bill bill where bill.supply = :supply")
+        bills_query = Hiber.session().createQuery("from Bill bill where bill.supply = :supply order by bill.startDate.date desc")
     elif era.getFinishDate() is not None and is_last:
-        bills_query = Hiber.session().createQuery("from Bill bill where bill.supply = :supply and bill.startDate <= :finishDate").setTimestamp('finishDate', era.getFinishDate().getDate())
+        bills_query = Hiber.session().createQuery("from Bill bill where bill.supply = :supply and bill.startDate <= :finishDate order by bill.startDate.date desc").setTimestamp('finishDate', era.getFinishDate().getDate())
     else:
-        bills_query = Hiber.session().createQuery("from Bill bill where bill.supply = :supply and bill.startDate >= :startDate and bill.startDate <= :finishDate").setTimestamp('startDate', era.getStartDate().getDate()).setTimestamp('finishDate', era.getFinishDate().getDate())
+        bills_query = Hiber.session().createQuery("from Bill bill where bill.supply = :supply and bill.startDate >= :startDate and bill.startDate <= :finishDate order by bill.startDate.date desc").setTimestamp('startDate', era.getStartDate().getDate()).setTimestamp('finishDate', era.getFinishDate().getDate())
 
     num_outer_cols = 0
     for bill in bills_query.setEntity('supply', supply).list():
