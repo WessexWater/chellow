@@ -20,9 +20,17 @@
  *******************************************************************************/
 package net.sf.chellow.physical;
 
+import java.net.URI;
+
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
+import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.NotFoundException;
+import net.sf.chellow.monad.types.MonadUri;
 
 public class ClockInterval extends PersistentEntity {
 	static public ClockInterval getClockInterval(long id) throws HttpException {
@@ -143,4 +151,29 @@ public class ClockInterval extends PersistentEntity {
 	void setEndMinute(int endMinute) {
 		this.endMinute = endMinute;
 	}
+	
+	@Override
+    public URI getViewUri() throws HttpException {
+            // TODO Auto-generated method stub
+            return null;
+    }
+	
+	public Node toXml(Document doc) throws HttpException {
+        Element element = super.toXml(doc, "clock-interval");
+        element.setAttribute("day-of-week", String.valueOf(dayOfWeek));
+        element.setAttribute("start-day", String.valueOf(startDay));
+        element.setAttribute("start-month", String.valueOf(startMonth));
+        element.setAttribute("end-day", String.valueOf(endDay));
+        element.setAttribute("end-month", String.valueOf(endMonth));
+        element.setAttribute("start-hour", String.valueOf(startHour));
+        element.setAttribute("start-minute", String.valueOf(startMinute));
+        element.setAttribute("end-hour", String.valueOf(endHour));
+        element.setAttribute("end-minute", String.valueOf(endMinute));
+        return element;
+}
+	
+	public MonadUri getEditUri() throws InternalException {
+        // TODO Auto-generated method stub
+        return null;
+}
 }

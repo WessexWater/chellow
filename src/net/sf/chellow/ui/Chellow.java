@@ -1,6 +1,6 @@
 /*******************************************************************************
  * 
- *  Copyright (c) 2005, 2009 Wessex Water Services Limited
+ *  Copyright (c) 2005-2013 Wessex Water Services Limited
  *  
  *  This file is part of Chellow.
  * 
@@ -46,9 +46,14 @@ import net.sf.chellow.monad.UnauthorizedException;
 import net.sf.chellow.monad.Urlable;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
+import net.sf.chellow.physical.GeneratorTypes;
+import net.sf.chellow.physical.GspGroups;
 import net.sf.chellow.physical.MarketRole;
+import net.sf.chellow.physical.SiteSnags;
+import net.sf.chellow.physical.Supplies;
 import net.sf.chellow.physical.User;
 import net.sf.chellow.physical.UserRole;
+import net.sf.chellow.ui.GeneralImports;
 
 public class Chellow extends Monad implements Urlable {
 	private static final long serialVersionUID = 1L;
@@ -58,6 +63,16 @@ public class Chellow extends Monad implements Urlable {
 	static public final Reports REPORTS_INSTANCE = new Reports();
 
 	static public final NonCoreContracts NON_CORE_CONTRACTS_INSTANCE = new NonCoreContracts();
+
+	static public final GeneralImports GENERAL_IMPORTS_INSTANCE = new GeneralImports();
+
+	static public final Supplies SUPPLIES_INSTANCE = new Supplies();
+
+	static public final SiteSnags SITE_SNAGS_INSTANCE = new SiteSnags();
+
+	static public final GeneratorTypes GENERATOR_TYPES_INSTANCE = new GeneratorTypes();
+
+	static public final GspGroups GSP_GROUPS_INSTANCE = new GspGroups();
 
 	static {
 		try {
@@ -190,6 +205,10 @@ public class Chellow extends Monad implements Urlable {
 			return REPORTS_INSTANCE;
 		} else if (NonCoreContracts.URI_ID.equals(uriId)) {
 			return NON_CORE_CONTRACTS_INSTANCE;
+		} else if (GeneralImports.URI_ID.equals(uriId)) {
+			return GENERAL_IMPORTS_INSTANCE;
+		} else if (Supplies.URI_ID.equals(uriId)) {
+			return SUPPLIES_INSTANCE;
 		} else {
 			return null;
 		}

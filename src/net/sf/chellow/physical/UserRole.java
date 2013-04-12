@@ -21,9 +21,15 @@
 
 package net.sf.chellow.physical;
 
+import java.net.URI;
+
+import org.w3c.dom.Document;
+import org.w3c.dom.Node;
+
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.UserException;
+import net.sf.chellow.monad.types.MonadUri;
 
 public class UserRole extends PersistentEntity {
 	public static final String EDITOR = "editor";
@@ -83,5 +89,23 @@ public class UserRole extends PersistentEntity {
 			isEqual = user.getId().equals(getId());
 		}
 		return isEqual;
+	}
+
+	@Override
+	public MonadUri getEditUri() throws HttpException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public URI getViewUri() throws HttpException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Node toXml(Document doc) throws HttpException {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

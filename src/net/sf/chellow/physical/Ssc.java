@@ -20,12 +20,17 @@
  *******************************************************************************/
 package net.sf.chellow.physical;
 
+import java.net.URI;
 import java.util.Date;
 import java.util.Set;
+
+import org.w3c.dom.Document;
+import org.w3c.dom.Node;
 
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.UserException;
+import net.sf.chellow.monad.types.MonadUri;
 
 public class Ssc extends PersistentEntity {
 	public static Ssc getSsc(String code) throws HttpException {
@@ -125,5 +130,23 @@ public class Ssc extends PersistentEntity {
 		Hiber.session().save(mr);
 		Hiber.session().flush();
 		return mr;
+	}
+
+	@Override
+	public MonadUri getEditUri() throws HttpException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public URI getViewUri() throws HttpException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Node toXml(Document doc) throws HttpException {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

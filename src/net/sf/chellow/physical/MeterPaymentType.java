@@ -21,12 +21,17 @@
 
 package net.sf.chellow.physical;
 
+import java.net.URI;
 import java.util.Date;
+
+import org.w3c.dom.Document;
+import org.w3c.dom.Node;
 
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.NotFoundException;
 import net.sf.chellow.monad.UserException;
+import net.sf.chellow.monad.types.MonadUri;
 
 public class MeterPaymentType extends PersistentEntity {
 	static public MeterPaymentType getMtcPaymentType(String code)
@@ -106,5 +111,23 @@ public class MeterPaymentType extends PersistentEntity {
 
 	void setValidTo(Date validTo) {
 		this.validTo = validTo;
+	}
+
+	@Override
+	public MonadUri getEditUri() throws HttpException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public URI getViewUri() throws HttpException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Node toXml(Document doc) throws HttpException {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

@@ -30,10 +30,6 @@
 			<one-to-many class="SiteEra" />
 		</set>
 
-		<many-to-one name="dnoContract" class="net.sf.chellow.billing.Contract"
-			column="dno_contract_id" foreign-key="fkey_mpan_dno_contract"
-			not-null="true" />
-
 		<many-to-one name="mopContract" class="net.sf.chellow.billing.Contract"
 			column="mop_contract_id" foreign-key="fkey_mpan_mop_contract"
 			not-null="true" />
@@ -81,29 +77,24 @@
 			not-null="true" />
 
 		<many-to-one name="impLlfc" class="Llfc" column="imp_llfc_id"
-			not-null="true" foreign-key="fkey_era__imp_llfc" />
+			foreign-key="fkey_era__imp_llfc" />
 
 		<many-to-one name="impSupplierContract" class="net.sf.chellow.billing.Contract"
-			column="imp_supplier_contract_id" foreign-key="fkey_era_imp_supplier_contract"
-			not-null="true" />
+			column="imp_supplier_contract_id" foreign-key="fkey_era_imp_supplier_contract" />
 
-		<property type="string" name="impSupplierAccount" column="imp_supplier_account"
-			not-null="true" />
-		<property type="int" name="impSc" column="imp_sc" not-null="true" />
+		<property type="string" name="impSupplierAccount" column="imp_supplier_account" />
+		<property type="int" name="impSc" column="imp_sc" />
 
-		<property type="string" name="expMpanCore" column="exp_mpan_core"
-			not-null="true" />
+		<property type="string" name="expMpanCore" column="exp_mpan_core" />
 
 		<many-to-one name="expLlfc" class="Llfc" column="exp_llfc_id"
-			not-null="true" foreign-key="fkey_era__exp_llfc" />
+			foreign-key="fkey_era__exp_llfc" />
 
 		<many-to-one name="expSupplierContract" class="net.sf.chellow.billing.Contract"
-			column="exp_supplier_contract_id" foreign-key="fkey_era_exp_supplier_contract"
-			not-null="true" />
+			column="exp_supplier_contract_id" foreign-key="fkey_era_exp_supplier_contract" />
 
-		<property type="string" name="expSupplierAccount" column="exp_supplier_account"
-			not-null="true" />
-		<property type="int" name="expSc" column="exp_sc" not-null="true" />
+		<property type="string" name="expSupplierAccount" column="exp_supplier_account" />
+		<property type="int" name="expSc" column="exp_sc" />
 
 		<set name="channels" inverse="true" cascade="all,delete-orphan"
 			order-by="is_import desc, is_kwh desc">

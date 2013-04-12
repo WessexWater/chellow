@@ -21,12 +21,68 @@
 
 package net.sf.chellow.physical;
 
+import java.net.URI;
 import java.text.DecimalFormat;
 import java.util.Date;
 
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+
+import net.sf.chellow.billing.Contract;
 import net.sf.chellow.billing.Party;
+import net.sf.chellow.monad.Hiber;
+import net.sf.chellow.monad.HttpException;
+import net.sf.chellow.monad.UserException;
+import net.sf.chellow.monad.types.MonadDate;
+import net.sf.chellow.monad.types.MonadUri;
 
 public class Mtc extends PersistentEntity {
+	static public Mtc getMtc(Contract dnoContract, String code)
+			throws HttpException {
+		Party dno = dnoContract.getParty();
+		Mtc mtc = findMtc(dno, code);
+		if (mtc == null) {
+			throw new UserException("There isn't a meter timeswitch with DNO '"
+					+ (dno == null ? dno : dno.getDnoCode())
+					+ "' and Meter Timeswitch Code '" + code + "'");
+		}
+		return mtc;
+	}
+
+	static public boolean hasDno(int code) {
+		return !((code > 499 && code < 510) || (code > 799 && code < 1000));
+	}
+
+	static public Mtc findMtc(Party dno, String codeStr) throws HttpException {
+		int code = Integer.parseInt(codeStr);
+		dno = hasDno(code) ? dno : null;
+		Mtc mtc = null;
+		if (dno == null) {
+			mtc = (Mtc) Hiber
+					.session()
+					.createQuery(
+							"from Mtc as mtc where mtc.dno is null and mtc.code = :mtcCode")
+					.setInteger("mtcCode", code).uniqueResult();
+		} else {
+			mtc = (Mtc) Hiber
+					.session()
+					.createQuery(
+							"from Mtc as mtc where mtc.dno = :dno and mtc.code = :mtcCode")
+					.setEntity("dno", dno).setInteger("mtcCode", code)
+					.uniqueResult();
+		}
+		return mtc;
+	}
+
+	static public Mtc getMtc(Long id) throws HttpException {
+		Mtc mtc = (Mtc) Hiber.session().get(Mtc.class, id);
+		if (mtc == null) {
+			throw new UserException(
+					"There is no meter timeswitch with that id.");
+		}
+		return mtc;
+	}
 
 	private Party dno;
 
@@ -133,9 +189,45 @@ public class Mtc extends PersistentEntity {
 	void setValidTo(Date to) {
 		this.validTo = to;
 	}
-	
+
 	public String toString() {
 		DecimalFormat mtcFormat = new DecimalFormat("000");
-		return mtcFormat.format(code);		
+		return mtcFormat.format(code);
+	}
+
+	@Override
+	public URI getViewUri() throws HttpException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public Node toXml(Document doc) throws HttpException {
+		Element element = super.toXml(doc, "mtc");
+		element.setAttribute("code", toString());
+		element.setAttribute("description", description);
+		element.setAttribute("has-related-metering",
+				Boolean.toString(hasRelatedMetering));
+		if (hasComms != null) {
+			element.setAttribute("has-comms", hasComms.toString());
+		}
+		if (isHh != null) {
+			element.setAttribute("is-hh", isHh.toString());
+		}
+		if (tprCount != null) {
+			element.setAttribute("tpr-count", String.valueOf(tprCount));
+		}
+		MonadDate fromDate = new MonadDate(validFrom);
+		fromDate.setLabel("from");
+		element.appendChild(fromDate.toXml(doc));
+		if (validTo != null) {
+			MonadDate toDate = new MonadDate(validTo);
+			toDate.setLabel("to");
+			element.appendChild(toDate.toXml(doc));
+		}
+		return element;
+	}
+
+	public MonadUri getEditUri() {
+		return null;
 	}
 }

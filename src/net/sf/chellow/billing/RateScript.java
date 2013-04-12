@@ -21,6 +21,8 @@
 
 package net.sf.chellow.billing;
 
+import java.net.URI;
+
 import javax.script.Invocable;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
@@ -29,12 +31,15 @@ import javax.script.ScriptException;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.UserException;
+import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.physical.HhStartDate;
 import net.sf.chellow.physical.PersistentEntity;
 import net.sf.chellow.ui.GeneralImport;
 
 import org.python.util.PythonInterpreter;
+import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.Node;
 
 public class RateScript extends PersistentEntity {
 	static public RateScript getRateScript(Long id) {
@@ -184,5 +189,23 @@ public class RateScript extends PersistentEntity {
 			throw new UserException(e.getMessage());
 		}
 		return invocableEngine;
+	}
+
+	@Override
+	public MonadUri getEditUri() throws HttpException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public URI getViewUri() throws HttpException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Node toXml(Document doc) throws HttpException {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

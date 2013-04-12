@@ -1,6 +1,6 @@
 /*******************************************************************************
  * 
- *  Copyright (c) 2005, 2013 Wessex Water Services Limited
+ *  Copyright (c) 2005-2013 Wessex Water Services Limited
  *  
  *  This file is part of Chellow.
  * 
@@ -21,14 +21,25 @@
 
 package net.sf.chellow.billing;
 
+import java.math.BigDecimal;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.Date;
+
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.UserException;
+import net.sf.chellow.monad.types.MonadUri;
+import net.sf.chellow.physical.HhStartDate;
 import net.sf.chellow.physical.PersistentEntity;
+import net.sf.chellow.physical.Supply;
+import net.sf.chellow.ui.GeneralImport;
 
 import org.hibernate.HibernateException;
 import org.hibernate.exception.ConstraintViolationException;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 
 public class Batch extends PersistentEntity {
 	public static Batch getBatch(Long id) throws HttpException {
@@ -47,6 +58,67 @@ public class Batch extends PersistentEntity {
 			throw new InternalException(e);
 		}
 	}
+	
+	 public static void generalImport(String action, String[] values,
+             Element csvElement) throws HttpException {
+     if (action.equals("insert")) {
+             String roleName = GeneralImport.addField(csvElement, "Role Name",
+                             values, 0);
+             roleName = roleName.toLowerCase();
+             String contractName = GeneralImport.addField(csvElement,
+                             "Contract Name", values, 1);
+             Contract contract = null;
+
+             if (roleName.equals("hhdc")) {
+                     contract = Contract.getHhdcContract(contractName);
+             } else if (roleName.equals("supplier")) {
+                     contract = Contract.getSupplierContract(contractName);
+             } else if (roleName.equals("mop")) {
+                     contract = Contract.getMopContract(contractName);
+             } else {
+                     throw new UserException(
+                                     "The role name must be one of hhdc, supplier or mop.");
+             }
+             String reference = GeneralImport.addField(csvElement, "Reference",
+                             values, 2);
+
+             String description = GeneralImport.addField(csvElement,
+                             "Description", values, 3);
+
+             contract.insertBatch(reference, description);
+     } else if (action.equals("update")) {
+             String roleName = GeneralImport.addField(csvElement, "Role Name",
+                             values, 0);
+             roleName = roleName.toLowerCase();
+
+             String contractName = GeneralImport.addField(csvElement,
+                             "Contract Name", values, 1);
+             Contract contract = null;
+
+             if (roleName.equals("hhdc")) {
+                     contract = Contract.getHhdcContract(contractName);
+             } else if (roleName.equals("supplier")) {
+                     contract = Contract.getSupplierContract(contractName);
+             } else if (roleName.equals("mop")) {
+                     contract = Contract.getMopContract(contractName);
+             } else {
+                     throw new UserException(
+                                     "The role name must be one of hhdc, supplier or mop.");
+             }
+             String oldReference = GeneralImport.addField(csvElement,
+                             "Old Reference", values, 2);
+             Batch batch = contract.getBatch(oldReference);
+
+             String newReference = GeneralImport.addField(csvElement,
+                             "New Reference", values, 3);
+
+             String description = GeneralImport.addField(csvElement,
+                             "Description", values, 4);
+
+             batch.update(newReference, description);
+     }
+}
+
 	
 	private Contract contract;
 
@@ -104,4 +176,46 @@ public class Batch extends PersistentEntity {
 							+ reference + ".");
 		}
 	}
+	
+	public MonadUri getEditUri() throws HttpException {
+        return null;
+}
+
+public URI getViewUri() throws HttpException {
+        String report = null;
+        String contractUrl = contract.getEditUri().toString();
+        if (contractUrl.contains("supplier-contracts")) {
+                report = "91";
+        } else if (contractUrl.contains("hhdc-contracts")) {
+                report = "203";
+        } else if (contractUrl.contains("mop-contracts")) {
+                report = "193";
+        } else {
+                throw new InternalException("Unkown contract type.");
+        }
+        try {
+                return new URI("/reports/" + report + "/output/?batch-id=" + getId());
+        } catch (URISyntaxException e) {
+                throw new InternalException(e);
+        }
+}
+
+	
+	public Element toXml(Document doc) throws HttpException {
+        Element element = super.toXml(doc, "batch");
+        element.setAttribute("reference", reference);
+        element.setAttribute("description", description);
+        return element;
+}
+	
+	public Bill insertBill(Supply supply, String account, String reference,
+            Date issueDate, HhStartDate startDate, HhStartDate finishDate,
+            BigDecimal kwh, BigDecimal net, BigDecimal vat, BigDecimal gross,
+            BillType type, String breakdown) throws HttpException {
+    Bill bill = new Bill(this, supply, account, reference, issueDate,
+                    startDate, finishDate, kwh, net, vat, gross, type, breakdown);
+    Hiber.session().save(bill);
+    Hiber.flush();
+    return bill;
+}
 }

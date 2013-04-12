@@ -20,9 +20,15 @@
  *******************************************************************************/
 package net.sf.chellow.physical;
 
+import java.net.URI;
+
+import org.w3c.dom.Document;
+import org.w3c.dom.Node;
+
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.NotFoundException;
+import net.sf.chellow.monad.types.MonadUri;
 
 public class ReadType extends PersistentEntity {	
 	public static final String TYPE_NORMAL = "N";
@@ -88,5 +94,23 @@ public class ReadType extends PersistentEntity {
 
 	public void setDescription(String description) {
 		this.description = description;
+	}
+
+	@Override
+	public MonadUri getEditUri() throws HttpException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public URI getViewUri() throws HttpException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Node toXml(Document doc) throws HttpException {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

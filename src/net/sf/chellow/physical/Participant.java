@@ -20,12 +20,15 @@
  *******************************************************************************/
 package net.sf.chellow.physical;
 
+import java.net.URI;
+
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.NotFoundException;
+import net.sf.chellow.monad.types.MonadUri;
 
 public class Participant extends PersistentEntity {
 	static public Participant getParticipant(Long id) throws HttpException {
@@ -85,5 +88,17 @@ public class Participant extends PersistentEntity {
 		element.setAttribute("code", code);
         element.setAttribute("name", name);
 		return element;
+	}
+
+	@Override
+	public MonadUri getEditUri() throws HttpException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public URI getViewUri() throws HttpException {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

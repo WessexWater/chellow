@@ -21,16 +21,67 @@
 
 package net.sf.chellow.physical;
 
+import java.net.URI;
 import java.util.Date;
 
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+
+import net.sf.chellow.billing.Contract;
 import net.sf.chellow.billing.Party;
+import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
+import net.sf.chellow.monad.Urlable;
+import net.sf.chellow.monad.UserException;
+import net.sf.chellow.monad.types.MonadDate;
+import net.sf.chellow.monad.types.MonadUri;
+import net.sf.chellow.monad.types.UriPathElement;
 
 public class Llfc extends PersistentEntity {
+	public Llfc getLlfc(String code, Date date) throws HttpException {
+		Llfc llfc = (Llfc) Hiber
+				.session()
+				.createQuery(
+						"from Llfc llfc where llfc.dno = :dno and llfc.code = :code and llfc.validFrom <= :date and (llfc.validTo is null or llfc.validTo >= :date)")
+				.setEntity("dno", this)
+				.setInteger("code", Integer.parseInt(code))
+				.setTimestamp("date", date).uniqueResult();
+		if (llfc == null) {
+			throw new UserException(
+					"There is no line loss factor with the code " + code
+							+ " associated with the DNO '"
+							+ getCode().toString() + "' for the date "
+							+ date.toString() + ".");
+		}
+		return llfc;
+	}
+
+	public static Llfc getLlfc(Contract dnoContract, String code) throws HttpException {
+		Party dno = dnoContract.getParty();
+		Integer llfcInt = null;
+		try {
+			llfcInt = Integer.parseInt(code);
+		} catch (NumberFormatException e) {
+			throw new UserException(
+					"The LLFC must be an integer between 0 and 999.");
+		}
+
+		Llfc llfc = (Llfc) Hiber
+				.session()
+				.createQuery(
+						"from Llfc llfc where llfc.dno = :dno and llfc.code = :code")
+				.setEntity("dno", dno).setInteger("code", llfcInt)
+				.uniqueResult();
+		if (llfc == null) {
+			throw new UserException("There is no LLFC with the code " + code
+					+ " associated with the DNO " + dno.getDnoCode() + ".");
+		}
+		return llfc;
+	}
 
 	private Party dno;
 
-	private int code;
+	private String code;
 
 	private String description;
 
@@ -47,7 +98,7 @@ public class Llfc extends PersistentEntity {
 	Llfc() {
 	}
 
-	public Llfc(Party dno, int code, String description,
+	public Llfc(Party dno, String code, String description,
 			VoltageLevel voltageLevel, boolean isSubstation, boolean isImport,
 			Date validFrom, Date validTo) throws HttpException {
 		setDno(dno);
@@ -68,11 +119,11 @@ public class Llfc extends PersistentEntity {
 		this.dno = dno;
 	}
 
-	public int getCode() {
+	public String getCode() {
 		return code;
 	}
 
-	void setCode(int code) {
+	void setCode(String code) {
 		this.code = code;
 	}
 
@@ -122,5 +173,37 @@ public class Llfc extends PersistentEntity {
 
 	void setValidTo(Date to) {
 		this.validTo = to;
+	}
+
+	@Override
+	public URI getViewUri() throws HttpException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public MonadUri getEditUri() {
+		return null;
+	}
+
+	public Urlable getChild(UriPathElement uriId) throws HttpException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public Element toXml(Document doc) throws HttpException {
+		Element element = super.toXml(doc, "llfc");
+		element.setAttribute("code", toString());
+		element.setAttribute("description", description);
+		element.setAttribute("is-substation", Boolean.toString(isSubstation));
+		element.setAttribute("is-import", Boolean.toString(isImport));
+		MonadDate fromDate = new MonadDate(validFrom);
+		fromDate.setLabel("from");
+		element.appendChild(fromDate.toXml(doc));
+		if (validTo != null) {
+			MonadDate toDate = new MonadDate(validTo);
+			toDate.setLabel("to");
+			element.appendChild(toDate.toXml(doc));
+		}
+		return element;
 	}
 }

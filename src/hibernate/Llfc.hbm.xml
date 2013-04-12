@@ -22,7 +22,7 @@
 
 		<many-to-one name="dno" class="net.sf.chellow.billing.Party"
 			column="dno_id" not-null="true" foreign-key="fkey_llfc_dno" />
-		<property type="integer" name="code" column="code" not-null="true" />
+		<property type="string" name="code" column="code" not-null="true" />
 
 		<property name="description" column="description" not-null="true" />
 

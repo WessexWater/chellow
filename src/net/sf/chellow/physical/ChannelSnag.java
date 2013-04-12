@@ -1,6 +1,6 @@
 /*******************************************************************************
  * 
- *  Copyright (c) 2005, 2011 Wessex Water Services Limited
+ *  Copyright (c) 2005-2013 Wessex Water Services Limited
  *  
  *  This file is part of Chellow.
  * 
@@ -21,9 +21,18 @@
 
 package net.sf.chellow.physical;
 
+import java.net.URI;
+import java.util.List;
+
+import org.hibernate.Query;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.NotFoundException;
+import net.sf.chellow.monad.types.MonadUri;
+import net.sf.chellow.ui.GeneralImport;
 
 public class ChannelSnag extends SnagDateBounded {
 	public static final long SNAG_CHECK_LEAD_TIME = 1000 * 60 * 60 * 24 * 5;
@@ -53,6 +62,58 @@ public class ChannelSnag extends SnagDateBounded {
 		}
 		return snag;
 	}
+	
+	@SuppressWarnings("unchecked")
+    public static void generalImport(String action, String[] values,
+                    Element csvElement) throws HttpException {
+            if (action.equals("insert")) {
+                    String mpanCore = GeneralImport.addField(csvElement,
+                                    "MPAN Core", values, 0);
+                    mpanCore = Era.normalizeMpanCore(mpanCore);
+                    String isImportStr = GeneralImport.addField(csvElement,
+                                    "Is Import?", values, 1);
+                    boolean isImport = Boolean.parseBoolean(isImportStr);
+                    String isKwhStr = GeneralImport.addField(csvElement, "Is Kwh?",
+                                    values, 2);
+                    boolean isKwh = Boolean.parseBoolean(isKwhStr);
+                    String snagDescription = GeneralImport.addField(csvElement,
+                                    "Snag Description", values, 3);
+                    String startStr = GeneralImport.addField(csvElement, "From",
+                                    values, 4);
+                    HhStartDate startDate = new HhStartDate(startStr);
+                    String finishStr = GeneralImport.addField(csvElement, "To", values,
+                                    5);
+                    HhStartDate finishDate = null;
+                    if (finishStr.length() > 0) {
+                            finishDate = new HhStartDate(finishStr);
+                    }
+                    for (Era generation : Supply.getSupply(mpanCore)
+                                    .getEras(startDate, finishDate)) {
+                            Query channelQuery = null;
+                            if (finishDate == null) {
+                                    channelQuery = Hiber
+                                                    .session()
+                                                    .createQuery(
+                                                                    "from ChannelSnag snag where snag.channel.supplyGeneration = :generation and snag.channel.isImport = :isImport and snag.channel.isKwh = :isKwh and snag.isIgnored is false and snag.description = :description and (snag.finishDate is null or snag.finishDate.date >= :startDate)");
+                            } else {
+                                    channelQuery = Hiber
+                                                    .session()
+                                                    .createQuery(
+                                                                    "from ChannelSnag snag where snag.channel.supplyGeneration = :generation and snag.channel.isImport = :isImport and snag.channel.isKwh = :isKwh and snag.isIgnored is false and snag.description = :description and snag.startDate.date <= :finishDate and (snag.finishDate is null or snag.finishDate.date >= :startDate)")
+                                                    .setTimestamp("finishDate", finishDate.getDate());
+                            }
+                            for (ChannelSnag snag : (List<ChannelSnag>) channelQuery
+                                            .setEntity("generation", generation)
+                                            .setBoolean("isImport", isImport)
+                                            .setBoolean("isKwh", isKwh)
+                                            .setString("description", snagDescription)
+                                            .setTimestamp("startDate", startDate.getDate()).list()) {
+                                    snag.setIsIgnored(true);
+                            }
+                    }
+            } else if (action.equals("update")) {
+            }
+    }
 
 	private Channel channel;
 
@@ -72,4 +133,19 @@ public class ChannelSnag extends SnagDateBounded {
 	void setChannel(Channel channel) {
 		this.channel = channel;
 	}
+	
+	public MonadUri getEditUri() throws HttpException {
+        return null;
+}
+	
+	public Element toXml(Document doc) throws HttpException {
+        Element element = super.toXml(doc, "channel-snag");
+        return element;
+}
+	
+	@Override
+    public URI getViewUri() throws HttpException {
+            // TODO Auto-generated method stub
+            return null;
+    }
 }

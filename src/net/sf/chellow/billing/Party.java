@@ -21,6 +21,7 @@
 
 package net.sf.chellow.billing;
 
+import java.net.URI;
 import java.util.Date;
 
 import org.w3c.dom.Document;
@@ -30,6 +31,7 @@ import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.NotFoundException;
 import net.sf.chellow.monad.types.MonadDate;
+import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.physical.MarketRole;
 import net.sf.chellow.physical.Participant;
 import net.sf.chellow.physical.PersistentEntity;
@@ -157,5 +159,17 @@ public class Party extends PersistentEntity {
 			element.appendChild(MonadDate.toXML(validTo, "to", doc));
 		}
 		return element;
+	}
+
+	@Override
+	public MonadUri getEditUri() throws HttpException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public URI getViewUri() throws HttpException {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

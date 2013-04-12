@@ -12,12 +12,17 @@ from java.io import StringReader
 from java.lang import System
 from net.sf.chellow.monad import Monad
 
+Monad.getUtils()['imprt'](globals(), {
+        'db': ['Contract', 'Party', 'RateScript', 'set_read_write', 'session'], 
+        'utils': ['UserException'],
+        'templater': ['render'],
+        'bsuos': []})
 
 config = Configuration.getConfiguration()
 properties = Properties()
 properties.load(StringReader(config.getProperties()))
 
-Monad.getContext().getAttribute("net.sf.chellow.jinja").get("render")(inv, template, {'local_reports_id': properties.get('local.reports')})]]></value>
+render(inv, template, {'local_reports_id': properties.get('local.reports')})]]></value>
 		<value><![CDATA[<!DOCTYPE html>
 <html>
   <head>
@@ -50,14 +55,17 @@ Monad.getContext().getAttribute("net.sf.chellow.jinja").get("render")(inv, templ
           </li>
           <li>Contracts
             <ul>
-              <li><a href="{{ context_path }}/reports/113/output/">HHDC
-            </a>
+              <li>
+                <a href="{{ context_path }}/reports/113/output/">HHDC</a>
               </li>
-              <li><a href="{{ context_path }}/reports/185/output/">MOP
-            </a>
+              <li>
+                <a href="{{ context_path }}/reports/185/output/">MOP</a>
               </li>
-              <li><a href="{{ context_path }}/reports/75/output/">Supplier
-                  </a>
+              <li>
+                <a href="{{ context_path }}/reports/75/output/">Supplier</a>
+              </li>
+              <li>
+                <a href="{{ context_path }}/reports/259/output/">Non-Core</a>
               </li>
             </ul>
           </li>
@@ -195,11 +203,6 @@ Monad.getContext().getAttribute("net.sf.chellow.jinja").get("render")(inv, templ
 
         <ul>
           <li>
-            <a href="{{ context_path }}/reports/259/output/">
-              Non-core Contracts
-            </a>
-          </li>
-          <li>
             <a href="{{ context_path }}/reports/">Reports</a>
           </li>
           <li>General Import / Export
@@ -246,13 +249,7 @@ Monad.getContext().getAttribute("net.sf.chellow.jinja").get("render")(inv, templ
                 <a href="{{ context_path }}/reports/221/output/">System Price Importer</a>
               </li>
               <li>
-                <a href="{{ context_path }}/reports/223/output/">TLM Importer</a>
-              </li>
-              <li>
                 <a href="{{ context_path }}/reports/225/output/">RCRC Importer</a>
-              </li>
-              <li>
-                <a href="{{ context_path }}/reports/227/output/">BSUoS Importer</a>
               </li>
             </ul>
           </li>
@@ -5426,17 +5423,10 @@ for group in Hiber.session().createQuery("from GspGroup group order by group.cod
 		<value><![CDATA[from net.sf.chellow.monad import Monad
 from sqlalchemy.orm import joinedload_all
 
-db = Monad.getContext().getAttribute("net.sf.chellow.db")
-for cls in ['Contract', 'Party', 'UserRole', 'set_read_write', 'session']:
-   globals()[cls] = db.get(cls)
-
-utils = Monad.getContext().getAttribute("net.sf.chellow.utils")
-for cls in ['UserException']:
-   globals()[cls] = utils.get(cls)
-
-jinja = Monad.getContext().getAttribute("net.sf.chellow.jinja")
-for cls in ['render']:
-   globals()[cls] = jinja.get(cls)
+inv.getUtils()['imprt'](globals(), {
+        'db': ['Contract', 'Party', 'RateScript', 'set_read_write', 'session'], 
+        'utils': ['UserException'],
+        'templater': ['render']})
 
 sess = None
 try:
@@ -16723,137 +16713,109 @@ source.setAttribute('debug', debug)]]></value>
 		<value><![CDATA[true]]></value>
 		<value><![CDATA[Transmission Loss Multiplier Importer]]></value>
 		<value><![CDATA[from java.lang import Thread, System
-from net.sf.chellow.billing import NonCoreContract, HhdcContract
-from net.sf.chellow.monad import XmlTree, UserException, Monad, MonadMessage
-from net.sf.chellow.monad.types import MonadUri
+from net.sf.chellow.monad import Monad
 
-debug = ''
 
-computer = NonCoreContract.getNonCoreContract('computer')
-comterp = computer.callFunction('create_comterp', [])
-contract_f = comterp.get('contract_function')
+Monad.getContext().getAttribute("net.sf.chellow.utils")['imprt'](globals(), {
+        'db': ['Contract', 'Party', 'RateScript', 'set_read_write', 'session'], 
+        'utils': ['UserException'],
+        'templater': ['render'],
+        'tlms': []})
 
-REPORT_URI = MonadUri("/reports/223/output/")
-
-source = doc.getDocumentElement()
-
-tlm_contract = NonCoreContract.getNonCoreContract('tlms')
-ctx = inv.getMonad().getServletConfig().getServletContext()
-
-task = tlm_contract.callFunction('get_tlm_task', [ctx])
-
-if task is not None:
-    importer_element = doc.createElement("importer")
-    source.appendChild(importer_element);
-    importer_element.setAttribute('is-locked', str(task.is_locked()))
-
-    for message in task.messages:
-        log_item_element = doc.createElement('log-item')
-        importer_element.appendChild(log_item_element)
-        log_item_element.setAttribute('message', message)
-
+sess = None
+task = None
 try:
+    sess = session()
+    debug = ''
+    REPORT_URI = "/reports/223/output/"
+    contract = Contract.get_non_core_by_name(sess, 'tlms')
+    ctx = inv.getMonad().getServletConfig().getServletContext()
+    task = tlms['get_tlm_task'](ctx)
+
     if inv.hasParameter('remove'):
-        contract_f(tlm_contract, 'remove_tlm_task', System.err)(ctx)
+        tlms['remove_tlm_task'](ctx)
         inv.sendSeeOther(REPORT_URI)
     elif inv.hasParameter('start'):
-        contract_f(tlm_contract, 'start_tlm_task', System.err)(ctx)
+        tlms['start_tlm_task'](ctx)
         inv.sendSeeOther(REPORT_URI)
     elif inv.hasParameter('now'):
         Thread(task, "TLM Import Now").start()
         inv.sendSeeOther(REPORT_URI)
+    else:
+        render(inv, template, {'task': task, 'contract': contract})
 except UserException, e:
-    source.appendChild(MonadMessage(e.getMessage()).toXml(doc))
+    render(inv, template, {'messages': [str(e)], 'task': task,
+            'contract': contract})
+finally:
+    sess.close()]]></value>
+		<value><![CDATA[<!DOCTYPE html>
+<html>
+  <head>
+    <link rel="stylesheet" type="text/css"
+      href="{{ context_path }}/reports/19/output/" />
+    <title>
+      Chellow &gt; Non-core Contracts &gt; TLMs &gt; Automatic Importer
+    </title>
+  </head>
+  <body>
+<p>
+      <a href="{{ context_path }}/reports/1/output/">Chellow</a> &gt;
+      <a href="{{ context_path }}/reports/259/output/">Non-Core Contracts</a>
+      &gt;
+      <a href="{{ context_path }}/reports/267/output/?non_core_contract_id={{ contract.id }}">{{ contract.name }}</a>
+      &gt; Automatic Importer
+    </p>
+    <br />
+    {% if messages %}
+      <ul>
+        {% for message in messages %}
+          <li>{{ message }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
 
-source.setAttribute('debug', debug)]]></value>
-		<value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
-<xsl:stylesheet version="1.0"
-    xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
-    <xsl:output method="html" encoding="US-ASCII"
-        doctype-public="-//W3C//DTD HTML 4.01//EN" doctype-system="http://www.w3.org/TR/html4/strict.dtd"
-        indent="yes" />
+    <p><a href=".">Refresh page</a>{{ debug }}</p>
+    {% if task %}
+      <table>
+        <tr>
+          <th>Is Locked?</th>
+          <td>{{ task.is_locked() }}</td>
+        </tr>
+      </table>
+      <br/>
+      {% if not task.is_locked() %}
+        <form action="{{ context_path }}/reports/227/output/">
+          <fieldset>
+            <legend>Remove Importer</legend>
+            <input type="submit" value="Remove" name="remove" />
+          </fieldset>
+        </form>
+        <br/>
+        <form action="{{ context_path }}/reports/227/output/">
+          <fieldset>
+            <legend>Import Now</legend>
+            <input type="submit" value="Import" name="now">
+          </fieldset>
+        </form>
+      {% endif %}
 
-    <xsl:template match="/">
-        <html>
-            <head>
-                <link rel="stylesheet" type="text/css"
-                    href="{/source/request/@context-path}/reports/19/output/" />
-
-                <title>
-                    Chellow &gt; TLM Importer
-                </title>
-
-            </head>
-            <body>
-                <p>
-                    <a
-                        href="{/source/request/@context-path}/reports/1/output/">
-                        <xsl:value-of select="'Chellow'" />
-                    </a>
-                    &gt;
-                    <xsl:value-of select="'TLM Importer'" />
-                </p>
-                <br />
-<xsl:if test="//message">
-                    <ul>
-                        <xsl:for-each select="//message">
-                            <li>
-                                <xsl:value-of select="@description" />
-                            </li>
-                        </xsl:for-each>
-                    </ul>
-                </xsl:if>
-
-<p><a href=".">Refresh page</a><xsl:value-of select="/source/@debug"/></p>
-
-                <xsl:choose>
-                <xsl:when test="/source/importer">
-<table>
-                    <tr>
-                        <th>Is Locked?</th>
-                        <td>
-                            <xsl:value-of select="/source/importer/@is-locked"/>
-                        </td>
-                    </tr>
-                </table>
-                <br/>
-                <xsl:if test="/source/importer/@is-locked='False'">
-                <form action=".">
-                            <fieldset>
-                                <legend>Remove Importer</legend>
-                                <input type="submit" value="Remove" name="remove" />
-                            </fieldset>
-                        </form>
-                        <br/>
-<form action=".">
-                            <fieldset>
-                                <legend>Import Now</legend>
-                                <input type="submit" value="Import" name="now" />
-                            </fieldset>
-                        </form>
-                 </xsl:if>
-<h3>Log</h3>
-                <ul>
-                    <xsl:for-each select="/source/importer/log-item">
-                        <li>
-                            <xsl:value-of select="@message" />
-                        </li>
-                    </xsl:for-each>
-                </ul>
-                </xsl:when>
-                <xsl:otherwise>
-                   <form action=".">
-                            <fieldset>
-                                <legend>Start Importer</legend>
-                                <input type="submit" value="Start" name="start" />
-                            </fieldset>
-                        </form>
-                </xsl:otherwise>
-                </xsl:choose>
-            </body>
-        </html>
-    </xsl:template>
-</xsl:stylesheet>]]></value>
+      <h3>Log</h3>
+        
+      <ul>
+        {% for message in task.messages %}
+          <li>{{ message }}</li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <form action="{{ context_path }}/reports/227/output/">
+        <fieldset>
+          <legend>Start Importer</legend>
+          <input type="submit" value="Start" name="start" />
+        </fieldset>
+      </form>
+    {% endif %}
+  </body>
+</html>]]></value>
 	</line>
 	<line>
 		<value><![CDATA[insert]]></value>
@@ -17000,138 +16962,116 @@ source.setAttribute('debug', debug)]]></value>
 		<value><![CDATA[227]]></value>
 		<value><![CDATA[true]]></value>
 		<value><![CDATA[Importer: BSUoS]]></value>
-		<value><![CDATA[from java.lang import Thread, System
-from net.sf.chellow.billing import Contract
-from net.sf.chellow.monad import XmlTree, UserException, Monad, MonadMessage
-from net.sf.chellow.monad.types import MonadUri
+		<value><![CDATA[from net.sf.chellow.monad import Monad
+from sqlalchemy.orm import joinedload_all
+import sys
 
-debug = ''
+Monad.getContext().getAttribute("net.sf.chellow.utils")['imprt'](globals(), {
+        'db': ['Contract', 'Party', 'RateScript', 'set_read_write', 'session'], 
+        'utils': ['UserException'],
+        'templater': ['render'],
+        'bsuos': []})
 
-computer = Contract.getNonCoreContract('computer')
-comterp = computer.callFunction('create_comterp', [])
-contract_f = comterp.get('contract_function')
 
-REPORT_URI = MonadUri("/reports/227/output/")
-
-source = doc.getDocumentElement()
-
-bsuos_contract = Contract.getNonCoreContract('bsuos')
-ctx = inv.getMonad().getServletConfig().getServletContext()
-
-task = bsuos_contract.callFunction('get_bsuos_task', [ctx])
-
-if task is not None:
-    importer_element = doc.createElement("importer")
-    source.appendChild(importer_element);
-    importer_element.setAttribute('is-locked', str(task.is_locked()))
-
-    for message in task.messages:
-        log_item_element = doc.createElement('log-item')
-        importer_element.appendChild(log_item_element)
-        log_item_element.setAttribute('message', message)
-
+sess = None
+task = None
 try:
+    sess = session()
+    debug = ''
+
+    REPORT_URI = "/reports/227/output/"
+
+    contract = Contract.get_non_core_by_name(sess, 'bsuos')
+
+    ctx = inv.getMonad().getServletConfig().getServletContext()
+    task = bsuos['get_bsuos_task'](ctx)
+
     if inv.hasParameter('remove'):
-        contract_f(bsuos_contract, 'remove_bsuos_task', System.err)(ctx)
+        bsuos['remove_bsuos_task'](ctx)
         inv.sendSeeOther(REPORT_URI)
     elif inv.hasParameter('start'):
-        contract_f(bsuos_contract, 'start_bsuos_task', System.err)(ctx)
+        bsuos['start_bsuos_task'](ctx)
         inv.sendSeeOther(REPORT_URI)
     elif inv.hasParameter('now'):
         Thread(task, "BSUoS Import Now").start()
         inv.sendSeeOther(REPORT_URI)
+    else:
+        render(inv, template, {'task': task, 'contract': contract})
 except UserException, e:
-    source.appendChild(MonadMessage(e.getMessage()).toXml(doc))
+    render(inv, template, {'messages': [str(e)], 'task': task,
+        'contract': contract})
+finally:
+    sess.close()]]></value>
+		<value><![CDATA[<!DOCTYPE html>
+<html>
+  <head>
+    <link rel="stylesheet" type="text/css"
+      href="{{ context_path }}/reports/19/output/" />
+    <title>
+      Chellow &gt; Non-core Contracts &gt; BSUoS
+      &gt; Automatic Importer
+    </title>
+  </head>
+  <body>
+    <p>
+      <a href="{{ context_path }}/reports/1/output/">Chellow</a> &gt;
+      <a href="{{ context_path }}/reports/259/output/">Non-Core Contracts</a>
+      &gt;
+      <a href="{{ context_path }}/reports/267/output/?non_core_contract_id={{ contract.id }}">{{ contract.name }}</a>
+      &gt; Automatic Importer
+    </p>
+    <br>
+    {% if messages %}
+      <ul>
+        {% for message in messages %}
+          <li>{{ message }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+    <p>
+      <a href=".">Refresh page</a>{{ debug }}
+    </p>
+    {% if task %}
+      <table>
+        <tr>
+          <th>Is Locked?</th>
+          <td>{{ task.is_locked() }}</td>
+        </tr>
+      </table>
+      <br/>
+      {% if not task.is_locked() %}
+        <form action="{{ context_path }}/reports/227/output/">
+          <fieldset>
+            <legend>Remove Importer</legend>
+            <input type="submit" value="Remove" name="remove" />
+          </fieldset>
+        </form>
+        <br/>
+        <form action="{{ context_path }}/reports/227/output/">
+          <fieldset>
+            <legend>Import Now</legend>
+            <input type="submit" value="Import" name="now">
+          </fieldset>
+        </form>
+      {% endif %}
 
-source.setAttribute('debug', debug)]]></value>
-		<value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
-<xsl:stylesheet version="1.0"
-    xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
-    <xsl:output method="html" encoding="US-ASCII"
-        doctype-public="-//W3C//DTD HTML 4.01//EN" doctype-system="http://www.w3.org/TR/html4/strict.dtd"
-        indent="yes" />
-
-    <xsl:template match="/">
-        <html>
-            <head>
-                <link rel="stylesheet" type="text/css"
-                    href="{/source/request/@context-path}/reports/19/output/" />
-
-                <title>
-                    Chellow &gt; Admin &gt; BSUoS
-                </title>
-
-            </head>
-            <body>
-                <p>
-                    <a
-                        href="{/source/request/@context-path}/reports/1/output/">
-                        <xsl:value-of select="'Chellow'" />
-                    </a>
-                    &gt;
-                    <xsl:value-of select="'BSUoS Importer'" />
-                </p>
-                <br />
-<xsl:if test="//message">
-                    <ul>
-                        <xsl:for-each select="//message">
-                            <li>
-                                <xsl:value-of select="@description" />
-                            </li>
-                        </xsl:for-each>
-                    </ul>
-                </xsl:if>
-
-<p><a href=".">Refresh page</a><xsl:value-of select="/source/@debug"/></p>
-
-                <xsl:choose>
-                <xsl:when test="/source/importer">
-<table>
-                    <tr>
-                        <th>Is Locked?</th>
-                        <td>
-                            <xsl:value-of select="/source/importer/@is-locked"/>
-                        </td>
-                    </tr>
-                </table>
-                <br/>
-                <xsl:if test="/source/importer/@is-locked='False'">
-                <form action=".">
-                            <fieldset>
-                                <legend>Remove Importer</legend>
-                                <input type="submit" value="Remove" name="remove" />
-                            </fieldset>
-                        </form>
-                        <br/>
-<form action=".">
-                            <fieldset>
-                                <legend>Import Now</legend>
-                                <input type="submit" value="Import" name="now" />
-                            </fieldset>
-                        </form>
-                 </xsl:if>
-<h3>Log</h3>
-                <ul>
-                    <xsl:for-each select="/source/importer/log-item">
-                        <li>
-                            <xsl:value-of select="@message" />
-                        </li>
-                    </xsl:for-each>
-                </ul>
-                </xsl:when>
-                <xsl:otherwise>
-                   <form action=".">
-                            <fieldset>
-                                <legend>Start Importer</legend>
-                                <input type="submit" value="Start" name="start" />
-                            </fieldset>
-                        </form>
-                </xsl:otherwise>
-                </xsl:choose>
-            </body>
-        </html>
-    </xsl:template>
-</xsl:stylesheet>]]></value>
+      <h3>Log</h3>
+        
+      <ul>
+        {% for message in task.messages %}
+          <li>{{ message }}</li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <form action="{{ context_path }}/reports/227/output/">
+        <fieldset>
+          <legend>Start Importer</legend>
+          <input type="submit" value="Start" name="start" />
+        </fieldset>
+      </form>
+    {% endif %}
+  </body>
+</html>]]></value>
 	</line>
 	<line>
 		<value><![CDATA[insert]]></value>
@@ -18633,51 +18573,51 @@ else:
 		<value><![CDATA[255]]></value>
 		<value><![CDATA[true]]></value>
 		<value><![CDATA[Users]]></value>
-		<value><![CDATA[from net.sf.chellow.monad import Monad
+		<value><![CDATA[from java.lang import System
+from net.sf.chellow.monad import Monad
 from sqlalchemy.orm import joinedload_all
+import sys
 
-db = Monad.getContext().getAttribute("net.sf.chellow.db")
-for cls in ['User', 'Party', 'UserRole', 'set_read_write', 'UserException']:
-   globals()[cls] = db.get(cls)
+Monad.getUtils()['imprt'](globals(), {
+        'db': [
+                'Contract', 'Party', 'User', 'set_read_write', 'session', 
+                'UserRole'], 
+        'utils': ['UserException'],
+        'templater': ['render']})
 
-utils = Monad.getContext().getAttribute("net.sf.chellow.utils")
-for cls in ['UserException']:
-   globals()[cls] = utils.get(cls)
+def users_context(sess, message=None):
+    users = sess.query(User).order_by(User.email_address).all()
+    parties = sess.query(Party).from_statement("select party.* from party, " +
+            "market_role, participant where party.market_role_id = market_role.id " +
+            "and party.participant_id = participant.id order by " +
+            "market_role.code, participant.code").all()
+    return {'users': users, 'parties': parties, 'messages': None if message is None else [message]}
 
-
-session = db.get("session")()
+sess = None
 try:
-    render = Monad.getContext().getAttribute("net.sf.chellow.jinja").get("render")
-
-    def users_context(message=None):
-        users = session.query(User).order_by(User.email_address).all()
-        parties = session.query(Party).from_statement("select party.* from party, " +
-                "market_role, participant where party.market_role_id = market_role.id " +
-                "and party.participant_id = participant.id order by " +
-                "market_role.code, participant.code").all()
-        return {'users': users, 'parties': parties, 'messages': None if message is None else [message]}
-
+    sess = session()
     if inv.getRequest().getMethod() == 'POST':
-        set_read_write(session)
+        set_read_write(sess)
         email_address = inv.getString('email_address')
         password = inv.getString('password')
         user_role_id = inv.getLong('user_role_id')
-        role = session.query(UserRole).get(user_role_id)
+        role = UserRole.get_by_id(sess, user_role_id)
         try:
             party = None
             if role.code == 'party-viewer':
                 party_id = inv.getLong('party_id')
-                party = session.query(Party).get(party_id)
-            user = User.insert(session, email_address, role, party, User.digest(password))
-            session.commit()
+                party = sess.query(Party).get(party_id)
+            user = User.insert(sess, email_address, User.digest(password), role,
+                    party)
+            sess.commit()
             inv.sendSeeOther('/reports/255/output/?user_id=' + str(user.id))
         except UserException, e:
-            session.rollback()
-            render(inv, template, users_context(message=str(e)), 400)
+            sess.rollback()
+            render(inv, template, users_context(sess, message=str(e)), 400)
     else:
-        render(inv, template, users_context())
+        render(inv, template, users_context(sess))
 finally:
-    session.close()]]></value>
+    sess.close()]]></value>
 		<value><![CDATA[<!doctype html>
 <html>
   <head>
@@ -18800,37 +18740,37 @@ finally:
 from net.sf.chellow.physical import User as JUser
 from sqlalchemy.orm import joinedload_all
 
-db = Monad.getContext().getAttribute("net.sf.chellow.db")
-for cls in ['User', 'Party', 'UserRole', 'set_read_write']:
-   globals()[cls] = db.get(cls)
+Monad.getUtils()['imprt'](globals(), {
+        'db': [
+                'Contract', 'Party', 'User', 'set_read_write', 'session', 
+                'UserRole'], 
+        'utils': ['UserException'],
+        'templater': ['render']})
 
-utils = Monad.getContext().getAttribute("net.sf.chellow.utils")
-for cls in ['UserException']:
-   globals()[cls] = utils.get(cls)
+def user_fields(sess, user, message=None):
+    parties = sess.query(Party).from_statement("""select party.* from party,
+        market_role, participant where party.market_role_id = market_role.id
+        and party.participant_id = participant.id order by market_role.code, 
+        participant.code""").all()
+    return {'user': user, 'parties': parties,
+            'messages': None if message is None else [message]}
 
-render = Monad.getContext().getAttribute("net.sf.chellow.jinja").get("render")
 
-session = db.get("session")()
-
+sess = None
 try:
-    def user_fields(user):
-        parties = session.query(Party).from_statement("""select party.* from party,
-            market_role, participant where party.role_id = market_role.id and 
-            party.participant_id = participant.id order by market_role.code, 
-            participant.code""").all()
-        return {'user': user, 'parties': parties}
+    sess = session()
 
     if inv.getRequest().getMethod() == 'GET':
         user_id = inv.getInteger('user_id')
-        user = User.get_by_id(session, user_id)
-        render(inv, template, user_fields(user))
+        user = User.get_by_id(sess, user_id)
+        render(inv, template, user_fields(sess, user))
     else:
-        set_read_write(session)
+        set_read_write(sess)
         user_id = inv.getInteger('user_id')
-        user = User.get_by_id(session, user_id)
+        user = User.get_by_id(sess, user_id)
         if inv.hasParameter('delete'):
-            session.remove(user)
-            session.commit()
+            sess.remove(user)
+            sess.commit()
             inv.sendSeeOther('/reports/255/output/?user_id=' + str(user.id))
         elif inv.hasParameter('current_password'):
             current_password = inv.getString('current_password')
@@ -18844,21 +18784,23 @@ try:
                 raise UserException("The password must be at least 6 " +
                         "characters long.")
             user.password_digest = JUser.digest(new_password)
-            session.commit()
+            sess.commit()
             inv.sendSeeOther('/reports/255/output/?user_id=' + str(user.id))
         else:
             email_address = inv.getString('email_address')
             role_id = inv.getInteger('user_role_id')
-            role = UserRole.get_by_id(session, role_id)
+            role = UserRole.get_by_id(sess, role_id)
             party = None
             if role.code == 'party-viewer':
                 party_id = inv.getInteger('party_id')
-                party = Party.get_by_id(session, party_id)
+                party = Party.get_by_id(sess, party_id)
             user.update(email_address, role, party)
-            session.commit()
+            sess.commit()
             inv.sendSeeOther('/reports/255/output/?user_id=' + str(user.id))
+except UserException, e:
+    render(inv, template, user_fields(sess, user, str(e)))
 finally:
-    session.close()]]></value>
+    sess.close()]]></value>
 		<value><![CDATA[<!doctype html>
 <html>
   <head>
@@ -18916,7 +18858,7 @@ finally:
                     checked
                   {%- endif -%}
                 {%- else -%}
-                  {%- if user.role.id == 1 -%}
+                  {%- if user.user_role.id == 1 -%}
                     checked
                   {%- endif -%}
                 {%- endif -%}
@@ -18931,7 +18873,7 @@ finally:
                     checked
                   {% endif %}
                 {% else %}
-                  {% if user.role.id == 3 %}
+                  {% if user.user_role.id == 3 %}
                     checked
                   {% endif %}
                 {% endif %}
@@ -18946,7 +18888,7 @@ finally:
                     checked
                   {%- endif -%}
                 {%- else -%}
-                  {%- if user.role.id == 2 -%}
+                  {%- if user.user_role.id == 2 -%}
                     checked
                   {% endif %}
                 {% endif %}
@@ -18967,7 +18909,7 @@ finally:
                   {%- endif -%}
                 >
                   {{ party.name }} {{ party.participant.code }}
-                  {{ party.role.description }}
+                  {{ party.market_role.description }}
                 </option>
               {% endfor %}
             </select>
@@ -19028,17 +18970,10 @@ finally:
 		<value><![CDATA[from net.sf.chellow.monad import Monad
 from sqlalchemy.orm import joinedload_all
 
-db = Monad.getContext().getAttribute("net.sf.chellow.db")
-for cls in ['Contract', 'Party', 'UserRole', 'set_read_write', 'session']:
-   globals()[cls] = db.get(cls)
-
-utils = Monad.getContext().getAttribute("net.sf.chellow.utils")
-for cls in ['UserException']:
-   globals()[cls] = utils.get(cls)
-
-jinja = Monad.getContext().getAttribute("net.sf.chellow.jinja")
-for cls in ['render']:
-   globals()[cls] = jinja.get(cls)
+Monad.getUtils()['imprt'](globals(), {
+        'db': ['Contract', 'Party', 'RateScript', 'set_read_write', 'session'], 
+        'utils': ['UserException'],
+        'templater': ['render']})
 
 sess = None
 try:
@@ -19229,17 +19164,10 @@ from sqlalchemy.orm import joinedload_all
 from datetime import datetime
 import pytz
 
-db = Monad.getContext().getAttribute("net.sf.chellow.db")
-for cls in ['Contract', 'Party', 'Participant', 'set_read_write', 'session']:
-   globals()[cls] = db.get(cls)
-
-utils = Monad.getContext().getAttribute("net.sf.chellow.utils")
-for cls in ['UserException', 'form_date']:
-   globals()[cls] = utils.get(cls)
-
-jinja = Monad.getContext().getAttribute("net.sf.chellow.jinja")
-for cls in ['render']:
-   globals()[cls] = jinja.get(cls)
+inv.getUtils()['imprt'](globals(), {
+        'db': ['Contract', 'Party', 'RateScript', 'set_read_write', 'session'], 
+        'utils': ['UserException'],
+        'templater': ['render']})
 
 def make_fields():
     initial_date = datetime.utcnow().replace(tzinfo=pytz.utc)
@@ -19332,17 +19260,10 @@ finally:
 		<value><![CDATA[from net.sf.chellow.monad import Monad
 from sqlalchemy.orm import joinedload_all
 
-db = Monad.getContext().getAttribute("net.sf.chellow.db")
-for cls in ['Contract', 'RateScript', 'UserRole', 'set_read_write', 'session']:
-   globals()[cls] = db.get(cls)
-
-utils = Monad.getContext().getAttribute("net.sf.chellow.utils")
-for cls in ['UserException']:
-   globals()[cls] = utils.get(cls)
-
-jinja = Monad.getContext().getAttribute("net.sf.chellow.jinja")
-for cls in ['render']:
-   globals()[cls] = jinja.get(cls)
+Monad.getUtils()['imprt'](globals(), {
+        'db': ['Contract', 'Party', 'RateScript', 'set_read_write', 'session'], 
+        'utils': ['UserException'],
+        'templater': ['render']})
 
 sess = None
 try:
@@ -19382,11 +19303,20 @@ finally:
         <td>{{ contract.is_core }}</td>
       </tr>
     </table>
+    {% if contract.name == 'bsuos' %}
+      <p>
+        <a href="{{ context_path }}/reports/227/output/">Automatic Importer</a>
+      </p>
+    {% elif contract.name == 'tlms' %}
+      <p>
+        <a href="{{ context_path }}/reports/223/output/">Automatic Importer</a>
+      </p>
+    {% endif %}
     <br>
     <table>
       <caption>
           Rate Scripts
-          [<a href="{{ context_path }}/reports/269/output/?non_core_contract_id={{ contract.id }}">add</a>]
+          [<a href="{{ context_path }}/reports/275/output/?non_core_contract_id={{ contract.id }}">add</a>]
       </caption>
       <thead>
         <tr>
@@ -19399,7 +19329,7 @@ finally:
         {% for rate_script in rate_scripts %}
           <tr>
             <td>
-              <a href="{{ context_path }}/reports/271/output/?">View</a>
+              <a href="{{ context_path }}/reports/271/output/?rate_script_id={{ rate_script.id }}">View</a>
             </td>
             <td>{{ rate_script.start_date|hh_format }}</td>
             <td>{{ rate_script.finish_date|hh_format }}</td>
@@ -19424,18 +19354,10 @@ finally:
 		<value><![CDATA[from net.sf.chellow.monad import Monad
 from sqlalchemy.orm import joinedload_all
 
-db = Monad.getContext().getAttribute("net.sf.chellow.db")
-for cls in ['Contract', 'RateScript', 'UserRole', 'set_read_write', 'session']:
-   globals()[cls] = db.get(cls)
-
-utils = Monad.getContext().getAttribute("net.sf.chellow.utils")
-for cls in ['UserException']:
-   globals()[cls] = utils.get(cls)
-
-jinja = Monad.getContext().getAttribute("net.sf.chellow.jinja")
-for cls in ['render']:
-   globals()[cls] = jinja.get(cls)
-
+Monad.getUtils()['imprt'](globals(), {
+        'db': ['Contract', 'Party', 'RateScript', 'set_read_write', 'session'], 
+        'utils': ['UserException'],
+        'templater': ['render']})
 
 sess = None
 try:
@@ -19449,13 +19371,19 @@ try:
         contract_id = inv.getLong('non_core_contract_id')
         contract = Contract.get_non_core_by_id(sess, contract_id)
         if inv.hasParameter('delete'):
-            contract.delete()
+            contract.delete(sess)
             sess.commit()
+            inv.sendSeeOther('/reports/259/output/')
         else:
             name = inv.getString('name')
             charge_script = inv.getString('charge_script')
-            contract.update(contract.is_core, name, contract.party,
+            contract.update(sess, contract.is_core, name, contract.party,
                 charge_script)
+            sess.commit()
+            inv.sendSeeOther('/reports/267/output/?non_core_contract_id='
+                + str(contract.id))
+except UserException, e:
+    render(inv, template, {'contract': contract, 'messages': [str(e)]})
 finally:
     sess.close()]]></value>
 		<value><![CDATA[<!doctype html>
@@ -19503,6 +19431,9 @@ finally:
       <form action="{{ context_path }}/reports/269/output/" method="post">
         <fieldset>
           <legend>Update Contract</legend>
+          <input type="hidden" name="non_core_contract_id"
+            value="{{ contract.id }}"
+          >
           <br>
           <label>
             Name <input name="name" value="
@@ -19541,6 +19472,292 @@ finally:
         </fieldset>
       </form>
     {% endif %}
+  </body>
+</html>]]></value>
+	</line>
+	<line>
+		<value><![CDATA[insert]]></value>
+		<value><![CDATA[report]]></value>
+		<value><![CDATA[271]]></value>
+		<value><![CDATA[true]]></value>
+		<value><![CDATA[Non-core Contract Rate Script]]></value>
+		<value><![CDATA[from net.sf.chellow.monad import Monad
+from sqlalchemy.orm import joinedload_all
+
+Monad.getUtils()['imprt'](globals(), {
+        'db': ['Contract', 'Party', 'RateScript', 'set_read_write', 'session'], 
+        'utils': ['UserException'],
+        'templater': ['render']})
+
+sess = None
+try:
+    sess = session()
+    rate_script_id = inv.getLong('rate_script_id')
+    rate_script = RateScript.get_by_id(sess, rate_script_id)
+    render(inv, template, {'rate_script': rate_script})
+finally:
+    sess.close()]]></value>
+		<value><![CDATA[<!DOCTYPE html>
+<html>
+  <head>
+    <link rel="stylesheet" type="text/css"
+      href="{{ context_path }}/reports/19/output/" />
+    <title>
+      Chellow &gt; Non-core Contracts &gt; {{ rate_script.contract.name }}
+      &gt; {{ rate_script.start_date|hh_format }}
+    </title>
+  </head>
+  <body>
+    <p>
+      <a href="{{ context_path }}/reports/1/output/">Chellow</a> &gt;
+      <a href="{{ context_path }}/reports/259/output/">Non-core Contracts</a>
+      &gt;
+      <a href="{{ context_path }}/reports/267/output/?non_core_contract_id={{ rate_script.contract.id }}">{{ rate_script.contract.name }}</a> &gt;
+      {{ rate_script.start_date|hh_format }} [<a
+      href="{{ context_path }}/reports/273/output/?rate_script_id={{ rate_script.id }}">edit</a>]
+    </p>
+    <br />
+    {% if messages %}
+      <ul>
+        {% for message in messages %}
+          <li>{{ message }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+
+    <table>
+      <tr>
+        <th>Start Date</th>
+        <td>{{ rate_script.start_date|hh_format }}</td>
+      </tr>
+      <tr>
+        <th>Finish Date</th>
+        <td>{{ rate_script.finish_date|hh_format }}</td>
+      </tr>
+    </table>
+
+    <h2>Script</h2>
+
+    <pre>{{ rate_script.script }}</pre>
+  </body>
+</html>]]></value>
+	</line>
+	<line>
+		<value><![CDATA[insert]]></value>
+		<value><![CDATA[report]]></value>
+		<value><![CDATA[273]]></value>
+		<value><![CDATA[true]]></value>
+		<value><![CDATA[Non-core Contract Rate Script Edit]]></value>
+		<value><![CDATA[from net.sf.chellow.monad import Monad
+from sqlalchemy.orm import joinedload_all
+
+Monad.getUtils()['imprt'](globals(), {
+        'db': ['Contract', 'Party', 'RateScript', 'set_read_write', 'session'], 
+        'utils': ['UserException'],
+        'templater': ['render']})
+
+
+sess = None
+try:
+    sess = session()
+    if inv.getRequest().getMethod() == 'GET':
+        rate_script_id = inv.getLong('rate_script_id')
+        rate_script = RateScript.get_by_id(sess, rate_script_id)
+        render(inv, template, {'rate_script': rate_script})
+    else:
+        set_read_write(sess)
+        rate_script_id = inv.getLong('rate_script_id')
+        rate_script = RateScript.get_by_id(sess, rate_script_id)
+        contract = rate_script.contract
+        if inv.hasParameter('delete'):
+            contract.delete_rate_script(sess, rate_script)
+            sess.commit()
+            inv.sendSeeOther('/reports/267/output/?non_core_contract_id='
+                + str(contract.id))
+        else:
+            script = inv.getString('script')
+            start_date = form_date(inv, 'start')
+            if inv.hasParameter('has_finished'):
+                finish_date = form_date('finish')
+            else:
+                finish_date = None
+            contract.update(sess, rate_script, start_date, finish_date)
+            sess.commit()
+            inv.sendSeeOther('/reports/267/output/?non_core_contract_id='
+                    + str(contract.id))
+finally:
+    sess.close()]]></value>
+		<value><![CDATA[<!doctype html>
+<html>
+  <head>
+    <link rel="stylesheet" type="text/css"
+      href="{{ context_path }}/reports/19/output/"
+    >
+    <title>
+      Chellow &gt; Non-core Contracts &gt;
+      {{ rate_script.contract.name }} &gt; Rate Scripts &gt;
+      {{ rate_script.start_date|hh_format }} &gt; Edit
+    </title>
+  </head>
+  <body>
+    <p>
+      <a href="{{ context_path }}/reports/1/output/">Chellow</a> &gt;
+      <a href="{{ context_path }}/reports/259/output/">Non-core Contracts</a>
+      &gt;
+      <a href="{{ context_path }}/reports/267/output/?non_core_contract_id={{ rate_script.contract.id }}">{{ rate_script.contract.name }}</a> &gt;
+      <a href="{{ context_path }}/reports/271/output/?rate_script_id={{ rate_script.id }}">{{ rate_script.start_date|hh_format }}</a> &gt; Edit
+    </p>
+    <br />
+    {% if messages %}
+      <ul>
+        {% for message in messages %}
+          <li>{{ message }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+    {% if request.getMethod() == 'GET' and
+        request.getParameter('delete') %}
+      <form method="post" action="{{ context_path }}/reports/273/output/">
+        <fieldset>
+          <legend>
+            Are you sure you want to delete this rate script?
+          </legend>
+          <input type="hidden" name="rate_script_id"
+              value="{{ rate_script.id }}">
+          <input type="submit" name="delete" value="Delete" />
+        </fieldset>
+      </form>
+      <p>
+        <a href="{{ context_path }}/reports/273/output/?rate_script_id={{ rate_script_id }}">Cancel</a>
+      </p>
+    {% else %}
+      <form action="{{ context_path }}/reports/273/output/" method="post">
+        <fieldset>
+          <legend>Update Rate Script</legend>
+          <input type="hidden" name="rate_script_id"
+              value="{{ rate_script.id }}">
+          <br />
+          <fieldset>
+            <legend>Start date</legend>
+            {{ input_date('start', request, rate_script.start_date) }}
+          </fieldset>
+          <br />
+          <fieldset>
+            <legend>Finish date</legend>
+            <label>
+              Ended? {{ input_checkbox('has_finished', request, rate_script.finish_date != None) }}
+            </label>
+            {{ input_date('finish', request, rate_script.finish_date) }}
+          </fieldset>
+          <br>
+          <br>
+          Script
+          <br>
+          {{ input_textarea('script', request, rate_script.script, 40, 80) }}
+          <br />
+      <br />
+      <input type="submit" value="Update">
+          <input type="reset" value="Reset">
+        </fieldset>
+      </form>
+      <br />
+      <form action="{{ context_path }}/reports/273/output/">
+        <fieldset>
+          <legend>Delete this Rate Script</legend>
+          <input type="hidden" name="rate_script_id"
+              value="{{ rate_script.id }}">
+          <input type="submit" name="delete" value="Delete" />
+        </fieldset>
+      </form>
+    {% endif %}
+  </body>
+</html>]]></value>
+	</line>
+	<line>
+		<value><![CDATA[insert]]></value>
+		<value><![CDATA[report]]></value>
+		<value><![CDATA[275]]></value>
+		<value><![CDATA[true]]></value>
+		<value><![CDATA[Non-Core Contract Rate Script Add]]></value>
+		<value><![CDATA[from net.sf.chellow.monad import Monad
+from sqlalchemy.orm import joinedload_all
+from datetime import datetime
+import pytz
+
+Monad.getUtils()['imprt'](globals(), {
+        'db': ['Contract', 'Party', 'RateScript', 'set_read_write', 'session'], 
+        'utils': ['UserException', 'form_date'],
+        'templater': ['render']})
+
+def page_fields(contract, message=None):
+    now = datetime.now(pytz.utc)
+    initial_date = datetime(now.year, now.month, 1, tzinfo=pytz.utc)
+    messages = None if message is None else [message]
+    return {'contract': contract, 'initial_date': initial_date,
+        'messages': messages}
+
+sess = None
+try:
+    sess = session()
+    if inv.getRequest().getMethod() == 'GET':
+        contract_id = inv.getLong('non_core_contract_id')
+        contract = Contract.get_non_core_by_id(sess, contract_id)
+        render(inv, template, page_fields(contract))
+    else:
+        set_read_write(sess)
+        contract_id = inv.getLong('non_core_contract_id')
+        contract = Contract.get_non_core_by_id(sess, contract_id)
+        start_date = form_date(inv, 'start')
+        rate_script = contract.insert_rate_script(sess, start_date, '')
+        sess.commit()
+        inv.sendSeeOther('/reports/271/output/?rate_script_id='
+                + str(rate_script.id))
+except UserException, e:
+        render(inv, template, page_fields(contract, str(e)))
+finally:
+    sess.close()]]></value>
+		<value><![CDATA[<!doctype html>
+<html>
+  <head>
+    <link rel="stylesheet" type="text/css"
+      href="{{ context_path }}/reports/19/output/"
+    >
+    <title>
+      Chellow &gt; Non-Core Contracts &gt; {{ contract.name }}
+      &gt; Add Rate Script
+    </title>
+  </head>
+  <body>
+    <p>
+      <a href="{{ context_path }}/reports/1/output/">Chellow</a> &gt;
+      <a href="{{ context_path }}/reports/259/output/">Non-Core Contracts</a>
+      &gt;
+      <a href="{{ context_path }}/reports/267/output/?non_core_contract_id={{ contract.id }}">{{ contract.name }}</a> &gt; Add Rate Scripts
+    </p>
+    {% if messages %}
+      <ul>
+        {% for message in messages %}
+          <li>{{ message }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+    <br />
+    <form action="{{ context_path }}/reports/275/output/" method="post">
+      <fieldset>
+        <legend>Add a rate script</legend>
+        <input type="hidden" name="non_core_contract_id"
+            value="{{ contract.id }}"
+        >
+        <br />
+        <fieldset>
+          <legend>Start Date</legend>
+          {{ input_date('start', request, initial_date) }}
+        </fieldset>
+        <br />
+        <br />
+        <input type="submit" value="Add" />
+      </fieldset>
+    </form>
   </body>
 </html>]]></value>
 	</line>

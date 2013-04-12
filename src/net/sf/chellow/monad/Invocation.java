@@ -621,7 +621,7 @@ public class Invocation {
 	}
 
 	public void sendUser(Document doc) throws HttpException {
-		res.setStatus(418);
+		res.setStatus(400);
 		returnPage(doc, req.getPathInfo(), "template.xsl");
 	}
 

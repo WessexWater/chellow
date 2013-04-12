@@ -21,12 +21,51 @@
 
 package net.sf.chellow.physical;
 
+import java.net.URI;
+import java.util.List;
+
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.NotFoundException;
+import net.sf.chellow.monad.types.MonadUri;
+import net.sf.chellow.ui.Chellow;
+import net.sf.chellow.ui.GeneralImport;
 
 public class SiteSnag extends SnagDateBounded {
+	
+	 @SuppressWarnings("unchecked")
+     public static void generalImport(String action, String[] values,
+                     Element csvElement) throws HttpException {
+             if (action.equals("insert")) {
+                     String siteCodeStr = GeneralImport.addField(csvElement,
+                                     "Site Code", values, 0);
+                     Site site = Site.getSite(siteCodeStr);
+                     String snagDescription = GeneralImport.addField(csvElement,
+                                     "Snag Description", values, 1);
+                     String startDateStr = GeneralImport.addField(csvElement,
+                                     "Start Date", values, 2);
+                     HhStartDate startDate = new HhStartDate(startDateStr);
+                     String finishDateStr = GeneralImport.addField(csvElement,
+                                     "Finish Date", values, 3);
+                     HhStartDate finishDate = new HhStartDate(finishDateStr);
+
+                     for (SiteSnag snag : (List<SiteSnag>) Hiber
+                                     .session()
+                                     .createQuery(
+                                                     "from SiteSnag snag where snag.site = :site and snag.description = :description and snag.startDate.date <= :finishDate and (snag.finishDate is null or snag.finishDate.date >= :startDate)")
+                                     .setEntity("site", site).setString("description",
+                                                     snagDescription).setTimestamp("startDate",
+                                                     startDate.getDate()).setTimestamp("finishDate",
+                                                     finishDate.getDate()).list()) {
+                             snag.setIsIgnored(true);
+                     }
+             } else if (action.equals("update")) {
+             }
+     }
 	public static void insertSiteSnag(SiteSnag snag) {
 		Hiber.session().save(snag);
 	}
@@ -69,4 +108,24 @@ public class SiteSnag extends SnagDateBounded {
 		cloned.setId(null);
 		return cloned;
 	}
+	
+	public void delete() {
+        Hiber.session().delete(this);
+}
+	
+	@Override
+    public URI getViewUri() throws HttpException {
+            // TODO Auto-generated method stub
+            return null;
+    }
+	
+	public Element toXml(Document doc) throws HttpException {
+        Element element = super.toXml(doc, "site-snag");
+        return element;
+}
+	
+	public MonadUri getEditUri() throws HttpException {
+        return Chellow.SITE_SNAGS_INSTANCE.getEditUri().resolve(getUriId()).append(
+                        "/");
+}
 }

@@ -30,7 +30,7 @@
 		<property type="string" name="name" column="name" not-null="true"
 			unique-key="contract_unique" />
 
-		<property type="string" name="chargeScript">
+		<property type="string" name="chargeScript" not-null="true">
 			<column name="charge_script" sql-type="text" />
 		</property>
 

@@ -36,7 +36,6 @@ import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.Invocation;
 import net.sf.chellow.monad.MonadUtils;
 import net.sf.chellow.monad.NotFoundException;
-import net.sf.chellow.monad.Urlable;
 import net.sf.chellow.monad.UserException;
 import net.sf.chellow.monad.types.MonadDate;
 import net.sf.chellow.monad.types.MonadUri;
@@ -57,32 +56,25 @@ import org.python.util.PythonInterpreter;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-public class Contract extends PersistentEntity implements Comparable<Contract>,
-		Urlable {
+public class Contract extends PersistentEntity implements Comparable<Contract> {
 	public static Contract getNonCoreContract(String name) throws HttpException {
-		Contract contract = (Contract) Hiber
-				.session()
-				.createQuery(
-						"from Contract contract where contract.role.code = 'Z' and contract.name = :name")
-				.setString("name", name).uniqueResult();
-		if (contract == null) {
-			throw new UserException(
-					"There isn't a non-core contract with name: " + name);
-		}
-		return contract;
+		return getContract("Z", name);
 	}
 
 	public static Contract getDnoContract(String name) throws HttpException {
-		Contract contract = (Contract) Hiber
-				.session()
-				.createQuery(
-						"from Contract contract where contract.role.code = 'R' and contract.name = :name")
-				.setString("name", name).uniqueResult();
-		if (contract == null) {
-			throw new UserException(
-					"There isn't a non-core contract with name: " + name);
-		}
-		return contract;
+		return getContract("R", name);
+	}
+	
+	public static Contract getSupplierContract(String name) throws HttpException {
+		return getContract("X", name);
+	}
+	
+	public static Contract getHhdcContract(String name) throws HttpException {
+		return getContract("C", name);
+	}
+	
+	public static Contract getMopContract(String name) throws HttpException {
+		return getContract("M", name);
 	}
 
 	public static Contract getHhdcContract(Long id) throws HttpException {
@@ -97,6 +89,20 @@ public class Contract extends PersistentEntity implements Comparable<Contract>,
 		}
 		return contract;
 	}
+	
+	public static Contract getContract(String marketRoleCode, String name) throws HttpException {
+		Contract contract = (Contract) Hiber
+				.session()
+				.createQuery(
+						"from Contract contract where contract.role.code = :roleCode and contract.name = :name")
+				.setString("name", name).setString("roleCode", marketRoleCode).uniqueResult();
+		if (contract == null) {
+			throw new UserException(
+					"There isn't a contract with name " + name + " and market role code " + marketRoleCode);
+		}
+		return contract;
+	}
+
 
 	public static void generalImportNonCore(String action, String[] values,
 			Element csvElement) throws HttpException {
@@ -161,7 +167,7 @@ public class Contract extends PersistentEntity implements Comparable<Contract>,
 					startDate, finishDate, chargeScript, rateScript);
 		}
 	}
-
+	
 	static public Contract insertNonCoreContract(boolean isCore,
 			Participant participant, String name, HhStartDate startDate,
 			HhStartDate finishDate, String chargeScript, String rateScript)
@@ -177,7 +183,21 @@ public class Contract extends PersistentEntity implements Comparable<Contract>,
 		return insertContract(isCore, 'R', participant, name, startDate,
 				finishDate, chargeScript, rateScript);
 	}
+	
+	static public Contract insertMopContract(Participant participant, String name, HhStartDate startDate,
+			HhStartDate finishDate, String chargeScript, String rateScript)
+			throws HttpException {
+		return insertContract(false, 'M', participant, name, startDate,
+				finishDate, chargeScript, rateScript);
+	}
 
+	static public Contract insertSupplierContract(Participant participant, String name, HhStartDate startDate,
+			HhStartDate finishDate, String chargeScript, String rateScript)
+			throws HttpException {
+		return insertContract(false, 'X', participant, name, startDate,
+				finishDate, chargeScript, rateScript);
+	}
+	
 	static public Contract insertContract(boolean isCore, char roleCode,
 			Participant participant, String name, HhStartDate startDate,
 			HhStartDate finishDate, String chargeScript, String rateScript)

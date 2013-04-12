@@ -21,12 +21,19 @@
 
 package net.sf.chellow.physical;
 
+import java.net.URI;
+
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.Invocation;
 import net.sf.chellow.monad.MethodNotAllowedException;
 import net.sf.chellow.monad.NotFoundException;
 import net.sf.chellow.monad.UserException;
+import net.sf.chellow.monad.types.MonadUri;
+import net.sf.chellow.ui.Chellow;
 
 public class GspGroup extends PersistentEntity {
 	public static GspGroup getGspGroup(Long id) throws HttpException {
@@ -38,9 +45,9 @@ public class GspGroup extends PersistentEntity {
 	}
 
 	public static GspGroup getGspGroup(String code) throws HttpException {
-		GspGroup group = (GspGroup) Hiber.session().createQuery(
-				"from GspGroup group where group.code = :code").setString(
-				"code", code).uniqueResult();
+		GspGroup group = (GspGroup) Hiber.session()
+				.createQuery("from GspGroup group where group.code = :code")
+				.setString("code", code).uniqueResult();
 		if (group == null) {
 			throw new NotFoundException(
 					"There isn't a GSP group with the code " + code + ".");
@@ -77,5 +84,24 @@ public class GspGroup extends PersistentEntity {
 
 	public void httpPost(Invocation inv) throws HttpException {
 		throw new MethodNotAllowedException();
+	}
+
+	@Override
+	public URI getViewUri() throws HttpException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public MonadUri getEditUri() throws HttpException {
+		return Chellow.GSP_GROUPS_INSTANCE.getEditUri().resolve(getUriId())
+				.append("/");
+	}
+
+	public Element toXml(Document doc) throws HttpException {
+		Element element = super.toXml(doc, "gsp-group");
+
+		element.setAttribute("code", code);
+		element.setAttribute("description", description);
+		return element;
 	}
 }

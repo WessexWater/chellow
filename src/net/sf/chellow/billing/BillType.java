@@ -20,9 +20,15 @@
  *******************************************************************************/
 package net.sf.chellow.billing;
 
+import java.net.URI;
+
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.NotFoundException;
+import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.physical.PersistentEntity;
 
 public class BillType extends PersistentEntity {	
@@ -83,4 +89,24 @@ public class BillType extends PersistentEntity {
 	public void setDescription(String description) {
 		this.description = description;
 	}
+	
+	@Override
+    public MonadUri getEditUri() throws HttpException {
+            // TODO Auto-generated method stub
+            return null;
+    }
+	
+	@Override
+    public URI getViewUri() throws HttpException {
+            // TODO Auto-generated method stub
+            return null;
+    }
+	
+	public Element toXml(Document doc) throws HttpException {
+        Element element = super.toXml(doc, "bill-type");
+
+        element.setAttribute("code", code);
+        element.setAttribute("description", description);
+        return element;
+}
 }

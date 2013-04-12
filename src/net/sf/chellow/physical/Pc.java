@@ -21,11 +21,16 @@
 
 package net.sf.chellow.physical;
 
+import java.net.URI;
 import java.text.DecimalFormat;
+
+import org.w3c.dom.Document;
+import org.w3c.dom.Node;
 
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.UserException;
+import net.sf.chellow.monad.types.MonadUri;
 
 public class Pc extends PersistentEntity {
 	static public Pc getPc(Long id) throws HttpException {
@@ -86,5 +91,23 @@ public class Pc extends PersistentEntity {
 	public String toString() {
 		DecimalFormat pcFormat = new DecimalFormat("00");
 		return pcFormat.format(code);
+	}
+
+	@Override
+	public MonadUri getEditUri() throws HttpException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public URI getViewUri() throws HttpException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Node toXml(Document doc) throws HttpException {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

@@ -21,15 +21,23 @@
 package net.sf.chellow.physical;
 
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.Reader;
 import java.io.StringReader;
+import java.io.StringWriter;
+import java.io.UnsupportedEncodingException;
+import java.net.URI;
 import java.util.Properties;
 
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.InternalException;
+import net.sf.chellow.monad.Monad;
+import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
 import net.sf.chellow.ui.GeneralImport;
 
+import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 public class Configuration extends PersistentEntity {
@@ -44,8 +52,8 @@ public class Configuration extends PersistentEntity {
 	}
 
 	static public Configuration getConfiguration() {
-		Configuration config = (Configuration) Hiber.session().createQuery(
-				"from Configuration").uniqueResult();
+		Configuration config = (Configuration) Hiber.session()
+				.createQuery("from Configuration").uniqueResult();
 		if (config == null) {
 			config = new Configuration("");
 			Hiber.setReadWrite();
@@ -147,7 +155,7 @@ public class Configuration extends PersistentEntity {
 	public void setUserRateScriptId(long id) {
 		userRateScriptId = id;
 	}
-	
+
 	public void update(String properties) throws HttpException {
 		Properties props = new Properties();
 		try {
@@ -196,5 +204,38 @@ public class Configuration extends PersistentEntity {
 	public long nextUserRateScriptId() {
 		userRateScriptId += 2;
 		return userRateScriptId;
+	}
+
+	public MonadUri getEditUri() {
+		return null;
+	}
+
+	@Override
+	public URI getViewUri() throws HttpException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Element toXml(Document doc) throws HttpException {
+		Element element = doc.createElement("configuration");
+		try {
+			Reader is = new InputStreamReader(Monad.getContext()
+					.getResource("/WEB-INF/VERSION").openStream(), "UTF-8");
+			int c;
+			StringWriter sr = new StringWriter();
+			while ((c = is.read()) != -1) {
+				sr.write(c);
+			}
+			element.setAttribute("version", sr.toString());
+		} catch (UnsupportedEncodingException e) {
+			throw new InternalException(e);
+		} catch (IOException e) {
+			throw new InternalException(e);
+		}
+		Element propsElement = doc.createElement("properties");
+		element.appendChild(propsElement);
+		propsElement.setTextContent(properties);
+		return element;
 	}
 }
