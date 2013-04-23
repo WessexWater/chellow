@@ -1436,8 +1436,8 @@ Monad.getContext().getAttribute("net.sf.chellow.jinja").get("render")(inv, templ
     <br />
     <ul>
         <li>kWh, kVA, MD etc. by month:
-            <a href="{{ context_path }}/reports/15/output/?supply-id={{ supply.id }}&amp;is_import=true">Import</a>
-            <a href="{{ context_path }}/reports/15/output/?supply-id={{ supply.id }}&amp;is_import=false">Export</a>
+            <a href="{{ context_path }}/reports/15/output/?supply_id={{ supply.id }}&amp;is_import=true">Import</a>
+            <a href="{{ context_path }}/reports/15/output/?supply_id={{ supply.id }}&amp;is_import=false">Export</a>
         </li>
         <li>
             <a href="{{ context_path }}/reports/17/output/?supply-id={{ supply.id }}&amp;months=1&amp;finish-year={{ now.year }}&amp;finish-month={{ now.month }}">Raw HH data</a>
@@ -2471,10 +2471,10 @@ from net.sf.chellow.monad.types import MonadDate
 from java.util import Calendar, Locale, TimeZone, GregorianCalendar
 from net.sf.chellow.physical import HhStartDate, Supply
 
-supply_id = inv.getLong("supply-id")
+supply_id = inv.getLong("supply_id")
 supply = Supply.getSupply(supply_id)
 source.appendChild(supply.toXml(doc))
-is_import = inv.getBoolean("is-import");
+is_import = inv.getBoolean("is_import");
 cal = GregorianCalendar(TimeZone.getTimeZone("GMT"), Locale.UK)
 source.appendChild(MonadDate().toXml(doc))
 if inv.hasParameter('year'):
@@ -2571,7 +2571,7 @@ for i in range(12 * years):
                     &gt;
                     <xsl:choose>
                         <xsl:when
-                            test="/source/request/parameter[@name='is-import']/value = 'true'">
+                            test="/source/request/parameter[@name='is_import']/value = 'true'">
                             Import
                         </xsl:when>
                         <xsl:otherwise>Export</xsl:otherwise>
@@ -2591,8 +2591,8 @@ for i in range(12 * years):
                 </xsl:if>
                 <form action=".">
                     <fieldset>
-                        <input type="hidden" name="is-import" value="{/source/request/parameter[@name='is-import']/value}"/>
-                        <input type="hidden" name="supply-id" value="{/source/supply/@id}"/>
+                        <input type="hidden" name="is_import" value="{/source/request/parameter[@name='is_import']/value}"/>
+                        <input type="hidden" name="supply_id" value="{/source/supply/@id}"/>
                         <legend>View Supply Months</legend>
 <br/>
 

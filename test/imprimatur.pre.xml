@@ -1938,7 +1938,8 @@ def triad_estimates():
 			</request>
 		</test>
 		<test name="Try 'Supply MPAN Months' report.">
-			<request path="/chellow/reports/15/output/?supply-id=2&amp;is-import=true">
+			<request path="/chellow/reports/15/output/?supply_id=2&amp;is_import=true">
+				<regex pattern="&amp;gt;\s*Import\s*data by month" />
 				<response-code value="200" />
 			</request>
 		</test>
@@ -2963,7 +2964,7 @@ directory0=.]]></control>
 		</test>
 		<test name="Check that later bills are at the top.">
 			<request path="/chellow/reports/7/output/?supply-id=8">
-				<regex pattern="bill-id=7.*bill-id=1"/>
+				<regex pattern="bill-id=7.*bill-id=1" />
 				<response-code value="200" />
 			</request>
 		</test>
