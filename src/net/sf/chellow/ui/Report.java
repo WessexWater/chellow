@@ -256,7 +256,7 @@ public class Report extends PersistentEntity implements Urlable {
 									+ ' ' + new MonadDate() + ' '
 									+ inv.getRequest().getRemoteAddr())
 							.toString());
-
+            Hiber.close();
 			interp.exec(script);
 		} catch (Throwable e) {
 			throw new UserException(e.getMessage() + " "

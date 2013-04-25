@@ -78,14 +78,26 @@ public class Contract extends PersistentEntity implements Comparable<Contract> {
 	}
 
 	public static Contract getHhdcContract(Long id) throws HttpException {
+		return getContract("C", id);
+	}
+	
+	public static Contract getSupplierContract(Long id) throws HttpException {
+		return getContract("X", id);
+	}
+	
+	public static Contract getMopContract(Long id) throws HttpException {
+		return getContract("M", id);
+	}
+	
+	public static Contract getContract(String marketRoleCode, Long id) throws HttpException {
 		Contract contract = (Contract) Hiber
 				.session()
 				.createQuery(
-						"from Contract contract where contract.role.code = 'C' and contract.id = :id")
-				.setLong("id", id).uniqueResult();
+						"from Contract contract where contract.market_role.code = :market_role_code and contract.id = :id")
+				.setString("marketRoleCode", marketRoleCode).setLong("id", id).uniqueResult();
 		if (contract == null) {
-			throw new UserException("There isn't a HHDC contract with id: "
-					+ id);
+			throw new UserException(
+					"There isn't a contract with id " + id + " and market role code " + marketRoleCode);
 		}
 		return contract;
 	}
@@ -580,7 +592,7 @@ public class Contract extends PersistentEntity implements Comparable<Contract> {
 	}
 
 	public Element toXml(Document doc) throws HttpException {
-		Element element = doc.createElement("non-core-contract");
+		Element element = doc.createElement("contract");
 
 		element.setAttribute("id", getId().toString());
 
@@ -618,7 +630,7 @@ public class Contract extends PersistentEntity implements Comparable<Contract> {
 				.session()
 				.createQuery(
 						"from Party party where party.role.code = :roleCode order by party.name")
-				.setCharacter("roleCode", MarketRole.NON_CORE_ROLE).list()) {
+				.setCharacter("roleCode", role.getCode()).list()) {
 			Element ptyElement = party.toXml(doc);
 			source.appendChild(ptyElement);
 			Element ptcptElement = party.getParticipant().toXml(doc);

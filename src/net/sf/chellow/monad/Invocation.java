@@ -238,11 +238,11 @@ public class Invocation {
 	}
 
 	public Date getDateTime(String baseName) throws HttpException {
-		Integer year = getInteger(baseName + "_year");
-		Integer month = getInteger(baseName + "_month");
-		Integer day = getInteger(baseName + "_day");
-		Integer hour = getInteger(baseName + "_hour");
-		Integer minute = getInteger(baseName + "_minute");
+		Integer year = getInteger(baseName + "-year");
+		Integer month = getInteger(baseName + "-month");
+		Integer day = getInteger(baseName + "-day");
+		Integer hour = getInteger(baseName + "-hour");
+		Integer minute = getInteger(baseName + "-minute");
 		Date date = null;
 		if (isValid()) {
 			MonadDate mDate = new MonadDate(year, month, day, hour, minute);

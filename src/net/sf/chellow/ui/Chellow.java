@@ -33,6 +33,7 @@ import javax.servlet.ServletException;
 import net.sf.chellow.billing.Contract;
 import net.sf.chellow.billing.NonCoreContracts;
 import net.sf.chellow.billing.Party;
+import net.sf.chellow.billing.SupplierContracts;
 import net.sf.chellow.monad.ForbiddenException;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
@@ -50,6 +51,7 @@ import net.sf.chellow.physical.GeneratorTypes;
 import net.sf.chellow.physical.GspGroups;
 import net.sf.chellow.physical.MarketRole;
 import net.sf.chellow.physical.SiteSnags;
+import net.sf.chellow.physical.Sites;
 import net.sf.chellow.physical.Supplies;
 import net.sf.chellow.physical.User;
 import net.sf.chellow.physical.UserRole;
@@ -73,6 +75,10 @@ public class Chellow extends Monad implements Urlable {
 	static public final GeneratorTypes GENERATOR_TYPES_INSTANCE = new GeneratorTypes();
 
 	static public final GspGroups GSP_GROUPS_INSTANCE = new GspGroups();
+	
+	static public final Sites SITES_INSTANCE = new Sites();
+	
+	static public final SupplierContracts SUPPLIER_CONTRACTS_INSTANCE = new SupplierContracts();
 
 	static {
 		try {
@@ -209,6 +215,10 @@ public class Chellow extends Monad implements Urlable {
 			return GENERAL_IMPORTS_INSTANCE;
 		} else if (Supplies.URI_ID.equals(uriId)) {
 			return SUPPLIES_INSTANCE;
+		} else if (Sites.URI_ID.equals(uriId)) {
+			return SITES_INSTANCE;
+		} else if (SupplierContracts.URI_ID.equals(uriId)) {
+			return SUPPLIER_CONTRACTS_INSTANCE;
 		} else {
 			return null;
 		}

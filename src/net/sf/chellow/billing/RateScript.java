@@ -39,7 +39,6 @@ import net.sf.chellow.ui.GeneralImport;
 import org.python.util.PythonInterpreter;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import org.w3c.dom.Node;
 
 public class RateScript extends PersistentEntity {
 	static public RateScript getRateScript(Long id) {
@@ -203,9 +202,16 @@ public class RateScript extends PersistentEntity {
 		return null;
 	}
 
-	@Override
-	public Node toXml(Document doc) throws HttpException {
-		// TODO Auto-generated method stub
-		return null;
+	public Element toXml(Document doc) throws HttpException {
+		Element element = super.toXml(doc, "rate-script");
+
+		startDate.setLabel("start");
+		element.appendChild(startDate.toXml(doc));
+		if (finishDate != null) {
+			finishDate.setLabel("finish");
+			element.appendChild(finishDate.toXml(doc));
+		}
+		element.setAttribute("script", script);
+		return element;
 	}
 }

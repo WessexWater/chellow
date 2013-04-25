@@ -122,42 +122,40 @@
 		</test>
 
 		<test name="HHDC contracts">
-			<request path="/chellow/hhdc-contracts/" method="post">
-				<control name="participant-id" value="56" /> <!-- DASL -->
+			<request path="/chellow/reports/277/output/" method="post">
+				<control name="participant_id" value="58" /> <!-- DASL -->
 				<control name="name" value="HH contract" />
-				<control name="start-year" value="2000" />
-				<control name="start-month" value="01" />
-				<control name="start-day" value="03" />
-				<control name="start-hour" value="00" />
-				<control name="start-minute" value="00" />
-				<control name="has-finished" value="false" />
+				<control name="start_year" value="2000" />
+				<control name="start_month" value="01" />
+				<control name="start_day" value="03" />
+				<control name="start_hour" value="00" />
+				<control name="start_minute" value="00" />
+				<control name="has_finished" value="false" />
 				<response-code value="303" />
-				<regex pattern="/hhdc-contracts/0/" />
+				<regex pattern="/reports/115/output/\?hhdc_contract_id=47" />
 			</request>
 
-
-
-
 			<!-- Update Contract -->
-			<request path="/chellow/hhdc-contracts/0/" method="post">
-				<control name="participant-id" value="56" /> <!-- DASL -->
+			<request path="/chellow/reports/279/output/" method="post">
+				<control name="hhdc_contract_id" value="47" />
+				<control name="party_id" value="30" /> <!-- DASL -->
 				<control name="name" value="HH contract" />
-				<control name="charge-script"><![CDATA[
+				<control name="charge_script"><![CDATA[
 def virtual_bill_titles():
     return ['net-gbp']
 
 def virtual_bill(supply_source):
     return {'net-gbp': 0}]]></control>
-				<control name="properties" value="" />
+				<control name="properties" value="{}" />
 				<response-code value="303" />
 			</request>
-			<request path="/chellow/hhdc-contracts/0/">
+			<request path="/chellow/reports/279/output/?hhdc_contract_id=47">
 				<regex pattern="HH contract" />
 				<response-code value="200" />
 			</request>
 
 			<!-- Check that we can see the edit view of an HHDC rate script okay -->
-			<request path="/chellow/reports/249/output/?rate_script_id=0">
+			<request path="/chellow/reports/249/output/?rate_script_id=263">
 				<!-- Check that 'has_finished' field is there -->
 				<regex pattern="has_finished" />
 				<response-code value="200" />
@@ -165,94 +163,87 @@ def virtual_bill(supply_source):
 
 			<!-- Check that we can update an HHDC rate script okay -->
 			<request path="/chellow/reports/249/output/" method="post">
-				<control name="rate_script_id" value="0" />
+				<control name="rate_script_id" value="263" />
 				<control name="start-year" value="2000" />
 				<control name="start-month" value="01" />
 				<control name="start-day" value="03" />
 				<control name="start-hour" value="00" />
 				<control name="start-minute" value="00" />
-				<control name="script" value="" />
+				<control name="script" value="{}" />
 				<response-code value="303" />
 			</request>
-
-
 
 			<!-- Add another HHDC contract -->
-			<request path="/chellow/hhdc-contracts/" method="post">
-				<control name="participant-id" value="56" />
+			<request path="/chellow/reports/277/output/" method="post">
+				<control name="participant_id" value="58" />
 				<control name="name" value="Dynamat data" />
-				<control name="start-year" value="2000" />
-				<control name="start-month" value="01" />
-				<control name="start-day" value="03" />
-				<control name="start-hour" value="00" />
-				<control name="start-minute" value="00" />
+				<control name="start_year" value="2000" />
+				<control name="start_month" value="01" />
+				<control name="start_day" value="03" />
+				<control name="start_hour" value="00" />
+				<control name="start_minute" value="00" />
 				<response-code value="303" />
-				<regex pattern="/hhdc-contracts/2/" />
+				<regex pattern="/reports/115/output/\?hhdc_contract_id=48" />
 			</request>
 
-
-
-
-
-			<request path="/chellow/hhdc-contracts/2/" method="post">
-				<control name="participant-id" value="56" />
+			<!-- Update the newly added HHDC -->
+			<request path="/chellow/reports/279/output/" method="post">
+				<control name="hhdc_contract_id" value="48" />
+				<control name="party_id" value="30" />
 				<control name="name" value="Dynamat data" />
-				<control name="charge-script"><![CDATA[
+				<control name="charge_script"><![CDATA[
 def virtual_bill_titles():
     return ['net-gbp']
 
 def virtual_bill(supply_source):
     return {'net-gbp': 0}]]></control>
-				<control name="properties" value="properties" />
+				<control name="properties" value='{"props": 1}' />
 				<response-code value="303" />
 			</request>
 
-			<request path="/chellow/hhdc-contracts/2/" method="post">
-				<control name="update-state" value="" />
-				<control name="state" value="state" />
+			<!-- Update state of Dynamat HHDC -->
+			<request path="/chellow/reports/279/output/" method="post">
+				<control name="hhdc_contract_id" value="48" />
+				<control name="update_state" value="" />
+				<control name="state" value='{"stat": 2}' />
 				<response-code value="303" />
 			</request>
-			<!-- after here -->
 
-
-			<request path="/chellow/hhdc-contracts/2/">
+			<!-- View Dynamat HHDC -->
+			<request path="/chellow/reports/279/output/?hhdc_contract_id=48">
 				<response-code value="200" />
 				<regex
-					pattern='&lt;textarea name="charge-script" rows="40" cols="80"&gt;[\r\n]def virtual_bill_title' />
+					pattern='&lt;textarea name="charge_script" rows="40" cols="80"&gt;\s*def virtual_bill_title' />
 				<regex
-					pattern='&lt;textarea name="properties" rows="40" cols="80"&gt;properties&lt;/textarea&gt;' />
+					pattern='&lt;textarea name="properties" rows="40" cols="80"&gt;\{&amp;#34;props&amp;#34;: 1\}&lt;/textarea&gt;' />
 				<regex
-					pattern='&lt;textarea name="state" rows="40" cols="80"&gt;state&lt;/textarea&gt;' />
+					pattern='&lt;textarea name="state" rows="40" cols="80"&gt;\{&amp;#34;stat&amp;#34;: 2\}&lt;/textarea&gt;' />
 			</request>
-
-			<!-- before here -->
-
 		</test>
 
-
 		<test name="Check one can update the participant for an HHDC contract.">
-			<request path="/chellow/hhdc-contracts/2/" method="post">
-				<control name="participant-id" value="301" /> <!-- UKDC -->
+			<request path="/chellow/reports/279/output/" method="post">
+				<control name="hhdc_contract_id" value="48"/>
+				<control name="party_id" value="651" /> <!-- UKDC -->
 				<control name="name" value="Dynamat data" />
-				<control name="start-year" value="2000" />
-				<control name="start-month" value="01" />
-				<control name="start-day" value="03" />
-				<control name="has-finished" value="false" />
-				<control name="charge-script"><![CDATA[
+				<control name="start_year" value="2000" />
+				<control name="start_month" value="01" />
+				<control name="start_day" value="03" />
+				<control name="has_finished" value="false" />
+				<control name="charge_script"><![CDATA[
 def virtual_bill_titles():
     return ['net-gbp']
 
 def virtual_bill(supply_source):
     return {'net-gbp': 0}]]></control>
-				<control name="properties"></control>
+				<control name="properties" value="{}"/>
 				<response-code value="303" />
 			</request>
 
-
 			<!-- Check it's still there -->
-			<request path="/chellow/hhdc-contracts/2/">
+			<request path="/chellow/reports/279/output/?hhdc_contract_id=48">
 				<response-code value="200" />
-				<regex pattern='option value="301" selected' />
+				<regex pattern='option value="651" selected' />
 			</request>
 		</test>
 		<test name="Manipulate supplier contracts">
@@ -264,7 +255,7 @@ def virtual_bill(supply_source):
 
 			<!-- Create a new supplier contract -->
 			<request path="/chellow/supplier-contracts/" method="post">
-				<control name="participant-id" value="40" /> <!-- CGEN -->
+				<control name="participant-id" value="42" /> <!-- CGEN -->
 				<control name="name" value="Half-hourlies 2007" />
 				<control name="start-year" value="2000" />
 				<control name="start-month" value="01" />
@@ -272,33 +263,33 @@ def virtual_bill(supply_source):
 				<control name="start-hour" value="00" />
 				<control name="start-minute" value="00" />
 
-				<regex pattern="/chellow/supplier-contracts/4/" />
+				<regex pattern="/chellow/supplier-contracts/49/" />
 				<response-code value="303" />
 			</request>
 
 			<!-- Update the supplier contract -->
-			<request path="/chellow/supplier-contracts/4/" method="post">
-				<control name="participant-id" value="23" /> <!-- BIZZ -->
+			<request path="/chellow/supplier-contracts/49/" method="post">
+				<control name="party-id" value="25" /> <!-- BIZZ -->
 				<control name="name" value="Half-hourlies 2007" />
 				<control name="charge-script">
 				<![CDATA[
 def virtual_bill(supply, startDate, finishDate, pw):
     return {'net-gbp': 0.0, 'vat-gbp':0.0, 'gross-gbp': 0.0, 'problem': ''}]]>
 				</control>
-				<regex pattern='&lt;option value="23" selected&gt;' />
+				<regex pattern='&lt;option value="25" selected&gt;' />
 				<response-code value="200" />
 			</request>
 
 			<!-- Check that it's displayed properly -->
-			<request path="/chellow/supplier-contracts/4/">
-				<regex pattern='&lt;option value="23" selected&gt;' />
+			<request path="/chellow/supplier-contracts/49/">
+				<regex pattern='&lt;option value="25" selected&gt;' />
 				<response-code value="200" />
 			</request>
 
 			<!-- Update the associated rate script -->
-			<request path="/chellow/supplier-contracts/4/rate-scripts/4/"
+			<request path="/chellow/supplier-contracts/49/rate-scripts/4/"
 				method="post">
-				<control name="start-year">2000</control>
+				<control name="start-year" value="2000"/>
 				<control name="start-month" value="01" />
 				<control name="start-day" value="03" />
 				<control name="start-hour" value="00" />
@@ -317,9 +308,6 @@ def virtual_bill(supply, startDate, finishDate, pw):
 			</request>
 
 		</test>
-
-
-
 
 		<test name="Manipulate non-core contracts">
 			<!-- Create a new non-core contract -->
@@ -380,13 +368,7 @@ def totalElement(account, startDate, finishDate):
 			<request path="/chellow/mop-contracts/8/rate-scripts/">
 				<response-code value="200" />
 			</request>
-
-
-
-
 		</test>
-
-
 
 		<test name="supplies">
 			<!-- Give proper error if there are too few fields -->
@@ -1941,7 +1923,8 @@ def triad_estimates():
 			</request>
 		</test>
 		<test name="Try 'Supply MPAN Months' report.">
-			<request path="/chellow/reports/15/output/?supply-id=2&amp;is-import=true">
+			<request path="/chellow/reports/15/output/?supply_id=2&amp;is_import=true">
+				<regex pattern="&amp;gt;\s*Import\s*data by month" />
 				<response-code value="200" />
 			</request>
 		</test>
@@ -2920,7 +2903,7 @@ def import_virtual_bill(supply_source):
 					pattern='&lt;td&gt;[\r\n] *&lt;a href="/chellow/reports/203/output/\?batch-id=8"&gt;001-7t&lt;/a&gt;[\r\n] *&lt;/td&gt;[\r\n] *&lt;td&gt;00031&lt;/td&gt;[\r\n] *&lt;td&gt;22 0883 6932 301&lt;/td&gt;' />
 				<regex
 					pattern='&lt;td&gt;[\r\n] *&lt;a href="/chellow/reports/193/output/\?batch-id=9"&gt;99/992&lt;/a&gt;[\r\n] *&lt;/td&gt;[\r\n] *&lt;td&gt;06&lt;/td&gt;[\r\n] *&lt;td&gt;22 0883 6932 301&lt;/td&gt;' />
-					
+
 				<!-- Check that MOP bill before supply start is displayed -->
 				<regex
 					pattern='&lt;td&gt;[\r\n] *&lt;a href="/chellow/reports/193/output/\?batch-id=9"&gt;99/992&lt;/a&gt;[\r\n] *&lt;/td&gt;[\r\n] *&lt;td&gt;08&lt;/td&gt;[\r\n] *&lt;td&gt;22 0883 6932 301&lt;/td&gt;' />
@@ -2966,7 +2949,7 @@ directory0=.]]></control>
 		</test>
 		<test name="Check that later bills are at the top.">
 			<request path="/chellow/reports/7/output/?supply-id=8">
-				<regex pattern="bill-id=7.*bill-id=1"/>
+				<regex pattern="bill-id=7.*bill-id=1" />
 				<response-code value="200" />
 			</request>
 		</test>

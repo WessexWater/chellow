@@ -38,7 +38,7 @@
 						<label>
 							Supplier
 							<select name="participant-id">
-								<xsl:for-each select="/source/provider">
+								<xsl:for-each select="/source/party">
 									<option value="{participant/@id}">
 										<xsl:if
 											test="/source/request/parameter[@name='participant-id']/value = participant/@id">

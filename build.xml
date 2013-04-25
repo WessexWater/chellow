@@ -133,6 +133,14 @@
 			<arg value="${test.home}/imprimatur.xml" />
 		</java>
 	</target>
+	
+	<target name="imprimatur" description="Imprimatur">
+			<copy file="${test.home}/imprimatur.pre.xml" tofile="${test.home}/imprimatur.xml" />
+			<replace file="${test.home}/imprimatur.xml" token="@@test.port@@" value="${test.port}" />
+			<java jar="${imprimatur.jar}" fork="true" failonerror="true">
+				<arg value="${test.home}/imprimatur.xml" />
+			</java>
+	</target>
 
 	<target name="prepare">
 		<mkdir dir="${build.home}" />
