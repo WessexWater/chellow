@@ -31,6 +31,7 @@ import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 
 import net.sf.chellow.billing.Contract;
+import net.sf.chellow.billing.MopContracts;
 import net.sf.chellow.billing.NonCoreContracts;
 import net.sf.chellow.billing.Party;
 import net.sf.chellow.billing.SupplierContracts;
@@ -79,6 +80,8 @@ public class Chellow extends Monad implements Urlable {
 	static public final Sites SITES_INSTANCE = new Sites();
 	
 	static public final SupplierContracts SUPPLIER_CONTRACTS_INSTANCE = new SupplierContracts();
+
+	static public final MopContracts MOP_CONTRACTS_INSTANCE = new MopContracts();
 
 	static {
 		try {
@@ -219,6 +222,8 @@ public class Chellow extends Monad implements Urlable {
 			return SITES_INSTANCE;
 		} else if (SupplierContracts.URI_ID.equals(uriId)) {
 			return SUPPLIER_CONTRACTS_INSTANCE;
+		} else if (MopContracts.URI_ID.equals(uriId)) {
+			return MOP_CONTRACTS_INSTANCE;
 		} else {
 			return null;
 		}

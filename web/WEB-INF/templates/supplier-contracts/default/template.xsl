@@ -25,7 +25,7 @@
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/reports/77/output/?supplier-contract-id={/source/contract/@id}">
+						href="{/source/request/@context-path}/reports/77/output/?supplier_contract_id={/source/contract/@id}">
 						<xsl:value-of select="/source/contract/@name" />
 					</a>
 					&gt; Edit
@@ -63,14 +63,14 @@
 								<br />
 								<label>
 									Supplier
-									<select name="party-id">
+									<select name="party_id">
 										<xsl:for-each select="/source/party">
 											<option value="{@id}">
 												<xsl:choose>
 													<xsl:when
-														test="/source/request/parameter[@name='party-id']">
+														test="/source/request/parameter[@name='party_id']">
 														<xsl:if
-															test="/source/request/parameter[@name='party-id']/value/text() = @id">
+															test="/source/request/parameter[@name='party_id']/value/text() = @id">
 															<xsl:attribute name="selected" />
 														</xsl:if>
 													</xsl:when>

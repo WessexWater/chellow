@@ -22,6 +22,7 @@
 package net.sf.chellow.billing;
 
 import java.net.URI;
+import java.util.Date;
 
 import javax.script.Invocable;
 import javax.script.ScriptEngine;
@@ -30,7 +31,11 @@ import javax.script.ScriptException;
 
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
+import net.sf.chellow.monad.Invocation;
+import net.sf.chellow.monad.MonadUtils;
 import net.sf.chellow.monad.UserException;
+import net.sf.chellow.monad.XmlTree;
+import net.sf.chellow.monad.types.MonadDate;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.physical.HhStartDate;
 import net.sf.chellow.physical.PersistentEntity;
@@ -214,4 +219,60 @@ public class RateScript extends PersistentEntity {
 		element.setAttribute("script", script);
 		return element;
 	}
+	
+    public void httpGet(Invocation inv) throws HttpException {
+        inv.sendOk(document());
+}
+
+public void httpPost(Invocation inv) throws HttpException {
+        Hiber.setReadWrite();
+        if (inv.hasParameter("delete")) {
+                try {
+                        contract.delete(this);
+                        Hiber.commit();
+                } catch (UserException e) {
+                        Hiber.rollBack();
+                        e.setDocument(document());
+                        throw e;
+                }
+                inv.sendSeeOther(contract.rateScriptsInstance().getEditUri());
+        } else {
+                String script = inv.getString("script");
+                Date startDate = inv.getDateTime("start");
+                HhStartDate finishDate = null;
+                boolean hasFinished = inv.getBoolean("has-finished");
+                if (!inv.isValid()) {
+                        throw new UserException(document());
+                }
+                script = script.replace("\r", "").replace("\t", "    ");
+                if (hasFinished) {
+                        Date finishDateRaw = inv.getDateTime("finish");
+                        if (!inv.isValid()) {
+                                throw new UserException(document());
+                        }
+                        finishDate = HhStartDate.roundDown(finishDateRaw);
+                }
+                try {
+                        update(HhStartDate.roundDown(startDate), finishDate, script);
+                } catch (HttpException e) {
+                        e.setDocument(document());
+                        throw e;
+                }
+                Hiber.commit();
+                inv.sendOk(document());
+        }
+}
+
+private Document document() throws HttpException {
+        Document doc = MonadUtils.newSourceDocument();
+        Element sourceElement = doc.getDocumentElement();
+        sourceElement.appendChild(toXml(doc, new XmlTree("contract",
+                        new XmlTree("party"))));
+        sourceElement.appendChild(MonadDate.getMonthsXml(doc));
+        sourceElement.appendChild(MonadDate.getDaysXml(doc));
+        sourceElement.appendChild(MonadDate.getHoursXml(doc));
+        sourceElement.appendChild(HhStartDate.getHhMinutesXml(doc));
+        sourceElement.appendChild(new MonadDate().toXml(doc));
+        return doc;
+}
 }

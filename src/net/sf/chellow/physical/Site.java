@@ -412,17 +412,18 @@ public class Site extends PersistentEntity {
 
 	public Supply insertSupply(Source source, GeneratorType generatorType,
 			String supplyName, HhStartDate startDate, HhStartDate finishDate,
-			GspGroup gspGroup, String note, Contract mopContract,
-			String mopAccount, Contract hhdcContract, String hhdcAccount,
-			String meterSerialNumber, Pc pc, String mtcCode, Cop cop, Ssc ssc,
-			String importMpanStr, String importLlfcCode,
-			Contract importSupplierContract, String importSupplierAccount,
-			Integer importAgreedSupplyCapacity, String exportMpanStr,
-			String exportLlfcCode, Contract exportSupplierContract,
+			Contract dnoContract, GspGroup gspGroup, String note,
+			Contract mopContract, String mopAccount, Contract hhdcContract,
+			String hhdcAccount, String meterSerialNumber, Pc pc,
+			String mtcCode, Cop cop, Ssc ssc, String importMpanStr,
+			String importLlfcCode, Contract importSupplierContract,
+			String importSupplierAccount, Integer importAgreedSupplyCapacity,
+			String exportMpanStr, String exportLlfcCode,
+			Contract exportSupplierContract,
 			String exportSupplierAccountReference,
 			Integer exportAgreedSupplyCapacity) throws HttpException {
-		Supply supply = new Supply(supplyName, source, generatorType, gspGroup,
-				note);
+		Supply supply = new Supply(supplyName, source, generatorType,
+				dnoContract, gspGroup, note);
 		try {
 			Hiber.session().save(supply);
 			Hiber.flush();
@@ -545,6 +546,7 @@ public class Site extends PersistentEntity {
 			try {
 				String name = inv.getString("name");
 				Long sourceId = inv.getLong("source-id");
+				Long dnoContractId = inv.getLong("dno-contract-id");
 				Long gspGroupId = inv.getLong("gsp-group-id");
 				Long mopContractId = inv.getLong("mop-contract-id");
 				String mopAccount = inv.getString("mop-account");
@@ -570,6 +572,7 @@ public class Site extends PersistentEntity {
 					generatorType = GeneratorType
 							.getGeneratorType(generatorTypeId);
 				}
+				Contract dnoContract = Contract.getDnoContract(dnoContractId);
 				GspGroup gspGroup = GspGroup.getGspGroup(gspGroupId);
 				Contract mopContract = null;
 				if (mopContractId != null) {
@@ -639,9 +642,9 @@ public class Site extends PersistentEntity {
 					}
 				}
 				Supply supply = insertSupply(source, generatorType, name,
-						new HhStartDate(startDate), null, gspGroup, "",
-						mopContract, mopAccount, hhdcContract, hhdcAccount,
-						meterSerialNumber, pc, mtcCode, cop, ssc,
+						new HhStartDate(startDate), null, dnoContract,
+						gspGroup, "", mopContract, mopAccount, hhdcContract,
+						hhdcAccount, meterSerialNumber, pc, mtcCode, cop, ssc,
 						importMpanCoreStr, importLlfcCode,
 						importSupplierContract, importSupplierAccount,
 						importAgreedSupplyCapacity, exportMpanCoreStr,

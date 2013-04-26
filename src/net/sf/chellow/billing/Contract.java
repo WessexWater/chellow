@@ -36,6 +36,7 @@ import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.Invocation;
 import net.sf.chellow.monad.MonadUtils;
 import net.sf.chellow.monad.NotFoundException;
+import net.sf.chellow.monad.Urlable;
 import net.sf.chellow.monad.UserException;
 import net.sf.chellow.monad.types.MonadDate;
 import net.sf.chellow.monad.types.MonadUri;
@@ -64,15 +65,16 @@ public class Contract extends PersistentEntity implements Comparable<Contract> {
 	public static Contract getDnoContract(String name) throws HttpException {
 		return getContract("R", name);
 	}
-	
-	public static Contract getSupplierContract(String name) throws HttpException {
+
+	public static Contract getSupplierContract(String name)
+			throws HttpException {
 		return getContract("X", name);
 	}
-	
+
 	public static Contract getHhdcContract(String name) throws HttpException {
 		return getContract("C", name);
 	}
-	
+
 	public static Contract getMopContract(String name) throws HttpException {
 		return getContract("M", name);
 	}
@@ -80,41 +82,48 @@ public class Contract extends PersistentEntity implements Comparable<Contract> {
 	public static Contract getHhdcContract(Long id) throws HttpException {
 		return getContract("C", id);
 	}
-	
+
 	public static Contract getSupplierContract(Long id) throws HttpException {
 		return getContract("X", id);
 	}
-	
+
 	public static Contract getMopContract(Long id) throws HttpException {
 		return getContract("M", id);
 	}
-	
-	public static Contract getContract(String marketRoleCode, Long id) throws HttpException {
+
+	public static Contract getDnoContract(Long id) throws HttpException {
+		return getContract("R", id);
+	}
+
+	public static Contract getContract(String marketRoleCode, Long id)
+			throws HttpException {
 		Contract contract = (Contract) Hiber
 				.session()
 				.createQuery(
 						"from Contract contract where contract.market_role.code = :market_role_code and contract.id = :id")
-				.setString("marketRoleCode", marketRoleCode).setLong("id", id).uniqueResult();
+				.setString("marketRoleCode", marketRoleCode).setLong("id", id)
+				.uniqueResult();
 		if (contract == null) {
-			throw new UserException(
-					"There isn't a contract with id " + id + " and market role code " + marketRoleCode);
-		}
-		return contract;
-	}
-	
-	public static Contract getContract(String marketRoleCode, String name) throws HttpException {
-		Contract contract = (Contract) Hiber
-				.session()
-				.createQuery(
-						"from Contract contract where contract.role.code = :roleCode and contract.name = :name")
-				.setString("name", name).setString("roleCode", marketRoleCode).uniqueResult();
-		if (contract == null) {
-			throw new UserException(
-					"There isn't a contract with name " + name + " and market role code " + marketRoleCode);
+			throw new UserException("There isn't a contract with id " + id
+					+ " and market role code " + marketRoleCode);
 		}
 		return contract;
 	}
 
+	public static Contract getContract(String marketRoleCode, String name)
+			throws HttpException {
+		Contract contract = (Contract) Hiber
+				.session()
+				.createQuery(
+						"from Contract contract where contract.role.code = :roleCode and contract.name = :name")
+				.setString("name", name).setString("roleCode", marketRoleCode)
+				.uniqueResult();
+		if (contract == null) {
+			throw new UserException("There isn't a contract with name " + name
+					+ " and market role code " + marketRoleCode);
+		}
+		return contract;
+	}
 
 	public static void generalImportNonCore(String action, String[] values,
 			Element csvElement) throws HttpException {
@@ -179,7 +188,7 @@ public class Contract extends PersistentEntity implements Comparable<Contract> {
 					startDate, finishDate, chargeScript, rateScript);
 		}
 	}
-	
+
 	static public Contract insertNonCoreContract(boolean isCore,
 			Participant participant, String name, HhStartDate startDate,
 			HhStartDate finishDate, String chargeScript, String rateScript)
@@ -195,21 +204,21 @@ public class Contract extends PersistentEntity implements Comparable<Contract> {
 		return insertContract(isCore, 'R', participant, name, startDate,
 				finishDate, chargeScript, rateScript);
 	}
-	
-	static public Contract insertMopContract(Participant participant, String name, HhStartDate startDate,
-			HhStartDate finishDate, String chargeScript, String rateScript)
-			throws HttpException {
+
+	static public Contract insertMopContract(Participant participant,
+			String name, HhStartDate startDate, HhStartDate finishDate,
+			String chargeScript, String rateScript) throws HttpException {
 		return insertContract(false, 'M', participant, name, startDate,
 				finishDate, chargeScript, rateScript);
 	}
 
-	static public Contract insertSupplierContract(Participant participant, String name, HhStartDate startDate,
-			HhStartDate finishDate, String chargeScript, String rateScript)
-			throws HttpException {
+	static public Contract insertSupplierContract(Participant participant,
+			String name, HhStartDate startDate, HhStartDate finishDate,
+			String chargeScript, String rateScript) throws HttpException {
 		return insertContract(false, 'X', participant, name, startDate,
 				finishDate, chargeScript, rateScript);
 	}
-	
+
 	static public Contract insertContract(boolean isCore, char roleCode,
 			Participant participant, String name, HhStartDate startDate,
 			HhStartDate finishDate, String chargeScript, String rateScript)
@@ -645,62 +654,111 @@ public class Contract extends PersistentEntity implements Comparable<Contract> {
 	public void httpGet(Invocation inv) throws HttpException {
 		inv.sendOk(document());
 	}
-	
-    public void httpPost(Invocation inv) throws HttpException {
-        Hiber.setReadWrite();
-        if (inv.hasParameter("delete")) {
-                delete();
-                Hiber.commit();
-                inv.sendSeeOther(Chellow.NON_CORE_CONTRACTS_INSTANCE.getEditUri());
-        } else {
-                String name = inv.getString("name");
-                String chargeScript = inv.getString("charge-script");
-                if (!inv.isValid()) {
-                        throw new UserException(document());
-                }
-                chargeScript = chargeScript.replace("\r", "").replace("\t", "    ");
-                try {
-                        update(name, chargeScript);
-                } catch (HttpException e) {
-                        e.setDocument(document());
-                        throw e;
-                }
-                Hiber.commit();
-                inv.sendOk(document());
-        }
-}
-    
- 
-    protected void internalUpdate(String name, String chargeScript)
-            throws HttpException {
-    name = name.trim();
-    if (name.length() == 0) {
-            throw new UserException("The contract name can't be blank.");
-    }
-    setName(name);
-    PythonInterpreter interp = new PythonInterpreter();
-    interp.set("contract", this);
-    try {
-            interp.compile(chargeScript);
-    } catch (Throwable e) {
-            throw new UserException(HttpException.getStackTraceString(e));
-    }
-    setChargeScript(chargeScript);
-}
 
-public void update(String name, String chargeScript) throws HttpException {
-    internalUpdate(name, chargeScript);
-    Hiber.flush();
-    onUpdate();
-}
+	public void httpPost(Invocation inv) throws HttpException {
+		Hiber.setReadWrite();
+		if (inv.hasParameter("delete")) {
+			delete();
+			Hiber.commit();
+			inv.sendSeeOther(Chellow.NON_CORE_CONTRACTS_INSTANCE.getEditUri());
+		} else {
+			String name = inv.getString("name");
+			String chargeScript = inv.getString("charge-script");
+			Long partyId = inv.getLong("party_id");
+			if (!inv.isValid()) {
+				throw new UserException(document());
+			}
+			chargeScript = chargeScript.replace("\r", "").replace("\t", "    ");
+			Party party = Party.getParty(partyId);
+			try {
+				update(party, name, chargeScript);
+			} catch (HttpException e) {
+				e.setDocument(document());
+				throw e;
+			}
+			Hiber.commit();
+			inv.sendOk(document());
+		}
+	}
 
-void onUpdate(HhStartDate from, HhStartDate to) throws HttpException {
-        // TODO Auto-generated method stub
+	protected void internalUpdate(Party party, String name, String chargeScript)
+			throws HttpException {
+		if (party.getRole() != this.role) {
+			throw new UserException(
+					"The party role doesn't match the contract market role.");
+		}
+		setParty(party);
+		name = name.trim();
+		if (name.length() == 0) {
+			throw new UserException("The contract name can't be blank.");
+		}
+		setName(name);
+		PythonInterpreter interp = new PythonInterpreter();
+		interp.set("contract", this);
+		try {
+			interp.compile(chargeScript);
+		} catch (Throwable e) {
+			throw new UserException(HttpException.getStackTraceString(e));
+		}
+		setChargeScript(chargeScript);
+	}
 
-}
+	public void update(Party party, String name, String chargeScript)
+			throws HttpException {
+		internalUpdate(party, name, chargeScript);
+		Hiber.flush();
+		onUpdate();
+	}
 
-void onUpdate() throws HttpException {
-    onUpdate(null, null);
-}
+	void onUpdate(HhStartDate from, HhStartDate to) throws HttpException {
+		// TODO Auto-generated method stub
 
+	}
+
+	void onUpdate() throws HttpException {
+		onUpdate(null, null);
+	}
+
+	public Urlable getChild(UriPathElement uriId) throws HttpException {
+		if (Batches.URI_ID.equals(uriId)) {
+			return new Batches(this);
+		} else if (RateScripts.URI_ID.equals(uriId)) {
+			return new RateScripts(this);
+		} else {
+			throw new NotFoundException();
+		}
+	}
+
+	@SuppressWarnings("unchecked")
+	public void delete(RateScript rateScript) throws HttpException {
+		List<RateScript> rateScriptList = (List<RateScript>) Hiber
+				.session()
+				.createQuery(
+						"from RateScript script where script.contract = :contract order by script.startDate.date")
+				.setEntity("contract", this).list();
+		if (rateScriptList.size() < 2) {
+			throw new UserException("You can't delete the last rate script.");
+		}
+		rateScripts.remove(rateScript);
+		if (rateScriptList.get(0).equals(rateScript)) {
+			setStartRateScript(rateScriptList.get(1));
+			Hiber.flush();
+			rateScriptList.get(1).setStartDate(rateScript.getStartDate());
+		} else if (rateScriptList.get(rateScriptList.size() - 1).equals(
+				rateScript)) {
+			setFinishRateScript(rateScriptList.get(rateScriptList.size() - 2));
+			Hiber.flush();
+			rateScriptList.get(rateScriptList.size() - 2).setFinishDate(
+					rateScript.getFinishDate());
+		} else {
+			RateScript prevScript = getPreviousRateScript(rateScript);
+			prevScript.setFinishDate(rateScript.getFinishDate());
+		}
+		Hiber.flush();
+		onUpdate(rateScript.getStartDate(), rateScript.getFinishDate());
+	}
+
+	RateScripts rateScriptsInstance() {
+		return new RateScripts(this);
+	}
 }

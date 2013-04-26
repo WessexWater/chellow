@@ -62,74 +62,77 @@ public class Supply extends PersistentEntity {
 			}
 			String supplyName = GeneralImport.addField(csvElement,
 					"Supply Name", values, 3);
+			String dnoCode = GeneralImport.addField(csvElement, "DNO Code",
+					values, 4);
+			Contract dnoContract = Contract.getDnoContract(dnoCode);
 			String gspGroupCode = GeneralImport.addField(csvElement,
-					"GSP Group", values, 4);
+					"GSP Group", values, 5);
 			GspGroup gspGroup = GspGroup.getGspGroup(gspGroupCode);
 			String startDateStr = GeneralImport.addField(csvElement,
-					"Start date", values, 5);
+					"Start date", values, 6);
 			HhStartDate startDate = HhStartDate.roundUp(new MonadDate(
 					startDateStr).getDate());
 			String finishDateStr = GeneralImport.addField(csvElement,
-					"Finish date", values, 6);
+					"Finish date", values, 7);
 			HhStartDate finishDate = finishDateStr.trim().length() > 0 ? HhStartDate
 					.roundUp(new MonadDate(finishDateStr).getDate()) : null;
 			String mopContractName = GeneralImport.addField(csvElement,
-					"MOP Contract", values, 7);
+					"MOP Contract", values, 8);
 			Contract mopContract = mopContractName.length() == 0 ? null
 					: Contract.getMopContract(mopContractName);
 			String mopAccount = GeneralImport.addField(csvElement,
-					"MOP Account", values, 8);
+					"MOP Account", values, 9);
 			String hhdcContractName = GeneralImport.addField(csvElement,
-					"HHDC Contract", values, 9);
+					"HHDC Contract", values, 10);
 			Contract hhdcContract = hhdcContractName.length() == 0 ? null
 					: Contract.getHhdcContract(hhdcContractName);
 			String hhdcAccount = GeneralImport.addField(csvElement,
-					"HHDC Account", values, 10);
+					"HHDC Account", values, 11);
 			String hasImportKwhStr = GeneralImport.addField(csvElement,
-					"Has HH import kWh", values, 11);
+					"Has HH import kWh", values, 12);
 			boolean hasImportKwh = Boolean.parseBoolean(hasImportKwhStr);
 			String hasImportKvarhStr = GeneralImport.addField(csvElement,
-					"Has HH import kVArh", values, 12);
+					"Has HH import kVArh", values, 13);
 			boolean hasImportKvarh = Boolean.parseBoolean(hasImportKvarhStr);
 			String hasExportKwhStr = GeneralImport.addField(csvElement,
-					"Has HH export kWh", values, 13);
+					"Has HH export kWh", values, 14);
 			boolean hasExportKwh = Boolean.parseBoolean(hasExportKwhStr);
 			String hasExportKvarhStr = GeneralImport.addField(csvElement,
-					"Has HH export kVArh", values, 14);
+					"Has HH export kVArh", values, 15);
 			boolean hasExportKvarh = Boolean.parseBoolean(hasExportKvarhStr);
 			String meterSerialNumber = GeneralImport.addField(csvElement,
-					"Meter Serial Number", values, 15);
+					"Meter Serial Number", values, 16);
 
 			String pcCode = GeneralImport.addField(csvElement, "Profile Class",
-					values, 16);
+					values, 17);
 			Pc pc = Pc.getPc(pcCode);
 
 			String mtcCode = GeneralImport.addField(csvElement,
-					"Meter Timeswitch Class", values, 17);
+					"Meter Timeswitch Class", values, 18);
 
 			String copCode = GeneralImport.addField(csvElement, "CoP", values,
-					18);
+					19);
 			Cop cop = Cop.getCop(copCode);
 
 			String sscCode = GeneralImport.addField(csvElement,
-					"Standard Settlement Configuration", values, 19);
+					"Standard Settlement Configuration", values, 20);
 			Ssc ssc = null;
 			if (sscCode.length() > 0) {
 				ssc = Ssc.getSsc(sscCode);
 			}
 
 			String importMpanStr = GeneralImport.addField(csvElement,
-					"Import MPAN Core", values, 20);
+					"Import MPAN Core", values, 21);
 			Integer importAgreedSupplyCapacity = null;
 			Contract importSupplierContract = null;
 			String importLlfcCode = GeneralImport.addField(csvElement,
-					"Import LLFC", values, 21);
+					"Import LLFC", values, 22);
 			String importAgreedSupplyCapacityStr = GeneralImport.addField(
-					csvElement, "Import Agreed Supply Capacity", values, 22);
+					csvElement, "Import Agreed Supply Capacity", values, 23);
 			String importSupplierContractName = GeneralImport.addField(
-					csvElement, "Import Supplier Contract", values, 23);
+					csvElement, "Import Supplier Contract", values, 24);
 			String importSupplierAccount = GeneralImport.addField(csvElement,
-					"Import Supplier Account", values, 24);
+					"Import Supplier Account", values, 25);
 			if (importMpanStr != null && importMpanStr.length() != 0) {
 				try {
 					importAgreedSupplyCapacity = new Integer(
@@ -173,8 +176,8 @@ public class Supply extends PersistentEntity {
 				}
 			}
 			Supply supply = site.insertSupply(source, generatorType,
-					supplyName, startDate, finishDate, gspGroup, "",
-					mopContract, mopAccount, hhdcContract, hhdcAccount,
+					supplyName, startDate, finishDate, dnoContract, gspGroup,
+					"", mopContract, mopAccount, hhdcContract, hhdcAccount,
 					meterSerialNumber, pc, mtcCode, cop, ssc, importMpanStr,
 					importLlfcCode, importSupplierContract,
 					importSupplierAccount, importAgreedSupplyCapacity,
@@ -201,10 +204,12 @@ public class Supply extends PersistentEntity {
 					"Source Code", values, 1);
 			String generatorType = GeneralImport.addField(csvElement,
 					"Generator Type", values, 2);
+			String dnoCode = GeneralImport.addField(csvElement, "DNO Code",
+					values, 3);
 			String gspGroupCode = GeneralImport.addField(csvElement,
-					"GSP Group", values, 3);
+					"GSP Group", values, 4);
 			String supplyName = GeneralImport.addField(csvElement,
-					"Supply Name", values, 4);
+					"Supply Name", values, 5);
 			Supply supply = Supply.getSupply(mpanCore);
 			supply.update(
 					supplyName.equals(GeneralImport.NO_CHANGE) ? supply
@@ -214,6 +219,9 @@ public class Supply extends PersistentEntity {
 					generatorType.equals(GeneralImport.NO_CHANGE) ? supply
 							.getGeneratorType() : GeneratorType
 							.getGeneratorType(generatorType),
+					dnoCode.equals(GeneralImport.NO_CHANGE) ? supply
+							.getDnoContract() : Contract
+							.getDnoContract(dnoCode),
 					gspGroupCode.equals(GeneralImport.NO_CHANGE) ? supply
 							.getGspGroup() : GspGroup.getGspGroup(gspGroupCode));
 		} else if (action.equals("delete")) {
@@ -264,14 +272,15 @@ public class Supply extends PersistentEntity {
 	}
 
 	Supply(String name, Source source, GeneratorType generatorType,
-			GspGroup gspGroup, String note) throws HttpException {
+			Contract dnoContract, GspGroup gspGroup, String note)
+			throws HttpException {
 		setEras(new HashSet<Era>());
-		update(name, source, generatorType, gspGroup);
+		update(name, source, generatorType, dnoContract, gspGroup);
 		setNote(note);
 	}
 
 	public void update(String name, Source source, GeneratorType generatorType,
-			GspGroup gspGroup) throws HttpException {
+			Contract dnoContract, GspGroup gspGroup) throws HttpException {
 		if (name == null) {
 			throw new InternalException("The supply name " + "cannot be null.");
 		}
@@ -288,6 +297,7 @@ public class Supply extends PersistentEntity {
 					"If the source is 'gen' or 'gen-net', there must be a generator type.");
 		}
 		setGeneratorType(generatorType);
+		setDnoContract(dnoContract);
 		setGspGroup(gspGroup);
 
 		if (getSource().getCode().equals(Source.NETWORK_CODE)

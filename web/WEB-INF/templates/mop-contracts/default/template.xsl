@@ -11,7 +11,7 @@
 					href="{/source/request/@context-path}/reports/19/output/" />
 				<title>
 					Chellow &gt; MOP Contracts &gt;
-					<xsl:value-of select="/source/mop-contract/@name" />
+					<xsl:value-of select="/source/contract/@name" />
 				</title>
 			</head>
 			<body>
@@ -25,8 +25,8 @@
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/reports/107/output/?mop-contract-id={/source/mop-contract/@id}">
-						<xsl:value-of select="/source/mop-contract/@name" />
+						href="{/source/request/@context-path}/reports/107/output/?mop_contract_id={/source/contract/@id}">
+						<xsl:value-of select="/source/contract/@name" />
 					</a>
 					&gt; Edit
 				</p>
@@ -63,20 +63,18 @@
 								<legend>Update Contract</legend>
 								<label>
 									MOP
-									<select name="participant-id">
-										<xsl:for-each select="/source/provider">
+									<select name="party_id">
+										<xsl:for-each select="/source/party">
 											<option value="{participant/@id}">
 												<xsl:choose>
-													<xsl:when
-														test="/source/request/parameter[@name='participant-id']">
+													<xsl:when test="/source/request/parameter[@name='party_id']">
 														<xsl:if
-															test="/source/request/parameter[@name='participant-id']/value/text() = participant/@id">
+															test="/source/request/parameter[@name='party_id']/value/text() = @id">
 															<xsl:attribute name="selected" />
 														</xsl:if>
 													</xsl:when>
 													<xsl:otherwise>
-														<xsl:if
-															test="/source/mop-contract/provider/participant/@id = participant/@id">
+														<xsl:if test="/source/contract/party/@id = @id">
 															<xsl:attribute name="selected" />
 														</xsl:if>
 													</xsl:otherwise>
@@ -99,7 +97,7 @@
 											select="/source/request/parameter[@name = 'name']/value" />
 										</xsl:when>
 										<xsl:otherwise>
-											<xsl:value-of select="/source/mop-contract/@name" />
+											<xsl:value-of select="/source/contract/@name" />
 										</xsl:otherwise>
 									</xsl:choose>
 								</xsl:attribute>
@@ -115,7 +113,7 @@
 											<xsl:value-of select="/source/@charge-script" />
 										</xsl:when>
 										<xsl:otherwise>
-											<xsl:value-of select="/source/mop-contract/@charge-script" />
+											<xsl:value-of select="/source/contract/@charge-script" />
 										</xsl:otherwise>
 									</xsl:choose>
 								</textarea>

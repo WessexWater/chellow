@@ -7244,17 +7244,22 @@ finally:
 		<value><![CDATA[true]]></value>
 		<value><![CDATA[Supplier Contract Rate Script]]></value>
 		<value><![CDATA[from net.sf.chellow.monad import Monad
-from net.sf.chellow.billing import RateScript
-db = Monad.getContext().getAttribute("net.sf.chellow.db")
-for cls in ['RateScript']:
-   globals()[cls] = db.get(cls)
+from sqlalchemy.orm import joinedload_all
 
-session = db.get('session')()
+Monad.getUtils()['imprt'](globals(), {
+        'db': ['Contract', 'Party', 'RateScript', 'set_read_write', 'session'], 
+        'utils': ['UserException'],
+        'templater': ['render']})
 
-rate_script_id = inv.getLong('rate_script_id')
-rate_script = RateScript.get(session, rate_script_id)
-
-Monad.getContext().getAttribute("net.sf.chellow.jinja").get("render")(inv, template, {'rate_script': rate_script})]]></value>
+sess = None
+try:
+    sess = session()
+    rate_script_id = inv.getLong('rate_script_id')
+    rate_script = RateScript.get_by_id(sess, rate_script_id)
+    render(inv, template, {'rate_script': rate_script})
+finally:
+    if sess is not None:
+        sess.close()]]></value>
 		<value><![CDATA[<!DOCTYPE html>
 <html>
   <head>
@@ -9127,168 +9132,109 @@ except SyntaxError:
 		<value><![CDATA[107]]></value>
 		<value><![CDATA[true]]></value>
 		<value><![CDATA[MOP Contract]]></value>
-		<value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree, UserException
-from net.sf.chellow.billing import MopContract
+		<value><![CDATA[from net.sf.chellow.monad import Monad
+from sqlalchemy.orm import joinedload_all
 
-contract_id = inv.getLong('mop-contract-id')
-contract = MopContract.getMopContract(contract_id)
-source.appendChild(contract.toXml(doc, XmlTree('party', XmlTree('participant')).put('rateScripts')))]]></value>
-		<value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
-<xsl:stylesheet version="1.0"
-    xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
-    <xsl:output method="html" encoding="US-ASCII"
-        doctype-public="-//W3C//DTD HTML 4.01//EN"
-        doctype-system="http://www.w3.org/TR/html4/strict.dtd" indent="yes" />
-    <xsl:template match="/">
-        <html>
-            <head>
-                <link rel="stylesheet" type="text/css"
-                    href="{/source/request/@context-path}/reports/19/output/" />
+Monad.getUtils()['imprt'](globals(), {
+        'db': ['Contract', 'Party', 'RateScript', 'set_read_write', 'session'], 
+        'utils': ['UserException'],
+        'templater': ['render']})
 
-                <title>
-                    Chellow &gt; MOP Contracts &gt;
-                    <xsl:value-of select="/source/mop-contract/@name" />
-                </title>
-            </head>
-            <body>
-                <p>
-                    <a
-                        href="{/source/request/@context-path}/reports/1/output/">
-                        <xsl:value-of
-                            select="'Chellow'" />
-                    </a>
-                    &gt;
-                    <a
-                        href="{/source/request/@context-path}/reports/185/output/">
-                        <xsl:value-of select="'MOP Contracts'" />
-                    </a>
-                    &gt;
-                    <xsl:value-of
-                        select="concat(/source/mop-contract/@name, ' [')" />
-                    <a
-                        href="{/source/request/@context-path}/mop-contracts/{/source/mop-contract/@id}/">
-                        <xsl:value-of select="'edit'" />
-                    </a>
-                    <xsl:value-of select="']'" />
-                </p>
-                <br />
-                <xsl:if test="//message">
-                    <ul>
-                        <xsl:for-each select="//message">
-                            <li>
-                                <xsl:value-of select="@description" />
-                            </li>
-                        </xsl:for-each>
-                    </ul>
-                </xsl:if>
-                <table>
-                    <tbody>
-                            <tr>
-                                <th>Provider</th>
-                                <td>
-                                    <a
-                                        href="{/source/request/@context-path}/reports/47/output/?provider-id={/source/mop-contract/provider/@id}">
-                                        <xsl:value-of
-                                            select="/source/mop-contract/provider/@name" />
-                                    </a>
-                                </td>
-                            </tr>
-                        <tr>
-                            <th>Name</th>
-                            <td>
-                                <xsl:value-of
-                                    select="/source/mop-contract/@name" />
-                            </td>
-                        </tr>
-                        <tr>
-                            <th>Start Date</th>
-                            <td>
-                                <xsl:value-of
-                                    select="concat(/source/mop-contract/rate-script[position()=1]/hh-start-date[@label='start']/@year, '-', /source/mop-contract/rate-script[position()=1]/hh-start-date[@label='start']/@month, '-', /source/mop-contract/rate-script[position()=1]/hh-start-date[@label='start']/@day)" />
-                            </td>
-                        </tr>
-                        <tr>
-                            <th>Finish Date</th>
-                            <td>
-                                <xsl:choose>
-                                    <xsl:when
-                                        test="/source/mop-contract/rate-script[position()=last()]/hh-start-date[@label='finish']">
-                                        <xsl:value-of
-                                            select="concat(/source/mop-contract/rate-script[position()=last()]/hh-start-date[@label='finish']/@year, '-', /source/mop-contract/rate-script[position()=last()]/hh-start-date[@label='finish']/@month, '-', /source/mop-contract/rate-script[position()=last()]/hh-start-date[@label='finish']/@day)" />
-                                    </xsl:when>
-                                    <xsl:otherwise>
-                                        Ongoing
-                                    </xsl:otherwise>
-                                </xsl:choose>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-                <br />
-                    <table>
-                    <caption>Rate Scripts [<a href="{/source/request/@context-path}/mop-contracts/{/source/mop-contract/@id}/rate-scripts/">edit</a>]</caption>
-                    <thead>
-                    <tr>
-                    <th></th>
-                    <th>From</th>
-                    <th>To</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    <xsl:for-each
-                    select="/source/mop-contract/rate-script">
-                    <tr>
-                    <td>
-                    <a
-                    href="{/source/request/@context-path}/reports/205/output/?rate-script-id={@id}">
-                    <xsl:value-of select="'view'" />
-                    </a>
-                    </td>
-                    <td>
-                    <xsl:value-of
-                    select="concat(hh-start-date[@label='start']/@year, '-', hh-start-date[@label='start']/@month, '-', hh-start-date[@label='start']/@day, ' ', hh-start-date[@label='start']/@hour, ':', hh-start-date[@label='start']/@minute)" />
-                    </td>
-                    <td>
-                    <xsl:choose>
-                    <xsl:when
-                    test="hh-start-date[@label='finish']">
-                    <xsl:value-of
-                    select="concat(hh-start-date[@label='finish']/@year, '-', hh-start-date[@label='finish']/@month, '-', hh-start-date[@label='finish']/@day, ' ', hh-start-date[@label='finish']/@hour, ':', hh-start-date[@label='finish']/@minute)" />
-                    </xsl:when>
-                    <xsl:otherwise>
-                    Ongoing
-                    </xsl:otherwise>
-                    </xsl:choose>
-                    </td>
-                    </tr>
-                    </xsl:for-each>
-                    </tbody>
-                    </table>
-                <ul>
-                        <li>
-                        <a
-                        href="{/source/request/@context-path}/reports/191/output/?mop-contract-id={/source/mop-contract/@id}">
-                        Batches
-                        </a>
-                        </li>
-                    <li>
-                        <a
-                            href="{/source/request/@context-path}/reports/229/output/?mop-contract-id={/source/mop-contract/@id}">
-                            Virtual Bills
-                        </a>
-                    </li>
+sess = None
+try:
+    sess = session()
+    contract_id = inv.getLong('mop_contract_id')
+    contract = Contract.get_mop_by_id(sess, contract_id)
+    rate_scripts = sess.query(RateScript).from_statement("select * from rate_script where rate_script.contract_id = :contract_id order by start_date desc").params(contract_id=contract_id).all()
+    render(inv, template, {'contract': contract, 'rate_scripts': rate_scripts})
+finally:
+    if sess is not None:
+        sess.close()]]></value>
+		<value><![CDATA[<!doctype html>
+<html>
+  <head>
+    <link rel="stylesheet" type="text/css"
+      href="{{ context_path }}/reports/19/output/"
+    >
+    <title>Chellow &gt; MOP Contracts &gt; {{contract.name}}</title>
+  </head>
+  <body>
+    <p>
+      <a href="{{context_path}}/reports/1/output/">Chellow</a> &gt;
+      <a href="{{context_path}}/reports/185/output/">MOP Contracts</a> &gt;
+      {{contract.name}}
+      [<a href="{{context_path}}/mop-contracts/{{ contract.id}}/">edit</a>]
+    </p>
+    <br />
+    {% if messages %}
+      <ul>
+        {% for message in messages %}
+          <li>{{ message }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+    <table>
+      <tbody>
+        <tr>
+          <th>Party</th>
+          <td>
+            <a href="{{context_path}}/reports/47/output/?party_id={{contract.party.id}}">{{contract.party.name}}</a>
+          </td>
+        </tr>
+        <tr>
+          <th>Name</th>
+          <td>{{contract.name}}</td>
+        </tr>
+        <tr>
+          <th>Start Date</th>
+          <td>{{contract.start_rate_script.start_date|hh_format}}</td>
+        </tr>
+        <tr>
+          <th>Finish Date</th>
+          <td>{{contract.finish_rate_script.finish_date|hh_format}}</td>
+        </tr>
+      </tbody>
+    </table>
+    <br>
+    <table>
+      <caption>
+        Rate Scripts
+        [<a href="{{context_path}}/mop-contracts/{{contract.id}}/rate-scripts/">add</a>]
+      </caption>
+      <thead>
+        <tr>
+          <th></th>
+          <th>From</th>
+          <th>To</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for rate_script in rate_scripts %}
+          <tr>
+            <td>
+              <a href="{{context_path}}/reports/205/output/?rate_script_id={{ rate_script.id }}">view</a>
+            </td>
+            <td>{{ rate_script.start_date|hh_format }}</td>
+            <td>{{ rate_script.finish_date|hh_format }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
 
-                </ul>
+    <ul>
+      <li>
+        <a href="{{context_path}}/reports/191/output/?mop-contract-id={{contract.id}}">Batches</a>
+      </li>
+      <li>
+        <a href="{{ context_path }}/reports/229/output/?mop-contract-id={{contract.id}}">Virtual Bills</a>
+      </li>
+    </ul>
 
-                    <h2>Script</h2>
-                    <pre>
-                    <xsl:value-of
-                    select="/source/mop-contract/@charge-script" />
-                    </pre>
-            </body>
-        </html>
-    </xsl:template>
-</xsl:stylesheet>]]></value>
+    <h2>Script</h2>
+
+    <pre>{{contract.charge_script}}</pre>
+  </body>
+</html>]]></value>
 	</line>
 	<line>
 		<value><![CDATA[insert]]></value>
@@ -13835,107 +13781,69 @@ pw.close()]]></value>
 		<value><![CDATA[185]]></value>
 		<value><![CDATA[true]]></value>
 		<value><![CDATA[MOP Contracts]]></value>
-		<value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree
+		<value><![CDATA[from net.sf.chellow.monad import Monad
+from sqlalchemy.orm import joinedload_all
 
-contracts_element = doc.createElement('contracts')
-source.appendChild(contracts_element)
-for contract in Hiber.session().createQuery("from MopContract contract order by contract.startRateScript.startDate.date").list():
-    contract_element = contract.toXml(doc, XmlTree('party'))
-    contracts_element.appendChild(contract_element)
-    start_rate_script = contract.getStartRateScript()
-    start_rate_script.setLabel('start')
-    contract_element.appendChild(start_rate_script.toXml(doc))
-    finish_rate_script = contract.getFinishRateScript()
-    finish_rate_script.setLabel('finish')
-    contract_element.appendChild(finish_rate_script.toXml(doc))]]></value>
-		<value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
-<xsl:stylesheet version="1.0"
-    xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
-    <xsl:output method="html" encoding="US-ASCII"
-        doctype-public="-//W3C//DTD HTML 4.01//EN"
-        doctype-system="http://www.w3.org/TR/html4/strict.dtd" indent="yes" />
-    <xsl:template match="/">
-        <html>
-            <head>
-                <link rel="stylesheet" type="text/css"
-                    href="{/source/request/@context-path}/reports/19/output/" />
-                <title>
-                    Chellow &gt; MOP Contracts
-                </title>
-            </head>
-            <body>
-                <p>
-                    <a
-                        href="{/source/request/@context-path}/reports/1/output/">
-                        <xsl:value-of select="'Chellow'" />
-                    </a>
-                    &gt;
-                    <xsl:value-of select="'MOP Contracts ['" />
-                    <a
-                        href="{/source/request/@context-path}/mop-contracts/">
-                        <xsl:value-of select="'edit'" />
-                    </a>
-                    <xsl:value-of select="']'" />
-                </p>
-                <br />
-                <xsl:if test="//message">
-                    <ul>
-                        <xsl:for-each select="//message">
-                            <li>
-                                <xsl:value-of select="@description" />
-                            </li>
-                        </xsl:for-each>
-                    </ul>
-                </xsl:if>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Name</th>
-                            <th>Start Date</th>
-                            <th>Finish Date</th>
-                            <th>MOP</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <xsl:for-each
-                            select="/source/contracts/mop-contract">
-                            <tr>
-                                <td>
-<a href="{/source/request/@context-path}/reports/107/output/?mop-contract-id={@id}">
-                                    <xsl:value-of select="@name" />
-                                    </a>
-                                </td>
-                                <td>
-                                    <xsl:value-of
-                                        select="concat(rate-script[@label='start']/hh-start-date[@label='start']/@year, '-', rate-script[@label='start']/hh-start-date[@label='start']/@month, '-', rate-script[@label='start']/hh-start-date[@label='start']/@day)" />
-                                </td>
-                                <td>
-                                    <xsl:choose>
-                                        <xsl:when
-                                            test="rate-script[@label='finish']/hh-start-date[@label='finish']">
-                                            <xsl:value-of
-                                                select="concat(rate-script[@label='finish']/hh-start-date[@label='finish']/@year, '-', rate-script[@label='finish']/hh-start-date[@label='finish']/@month, '-', rate-script[@label='finish']/hh-start-date[@label='finish']/@day)" />
-                                        </xsl:when>
-                                        <xsl:otherwise>
-                                            Ongoing
-                                        </xsl:otherwise>
-                                    </xsl:choose>
-                                </td>
-                                <td>
-                                    <a
-                                        href="{/source/request/@context-path}/reports/47/output/?provider-id={provider/@id}">
-                                        <xsl:value-of
-                                            select="provider/@name" />
-                                    </a>
-                                </td>
-                            </tr>
-                        </xsl:for-each>
-                    </tbody>
-                </table>
-            </body>
-        </html>
-    </xsl:template>
-</xsl:stylesheet>]]></value>
+Monad.getUtils()['imprt'](globals(), {
+        'db': ['Contract', 'Party', 'RateScript', 'set_read_write', 'session'], 
+        'utils': ['UserException'],
+        'templater': ['render']})
+
+sess = None
+try:
+    sess = session()
+    mop_contracts = sess.query(Contract).from_statement("select contract.* from contract, market_role where contract.market_role_id = market_role.id and market_role.code = 'M' order by contract.name").all()
+    render(inv, template, {'mop_contracts': mop_contracts})
+finally:
+    sess.close()]]></value>
+		<value><![CDATA[<!doctype html>
+<html>
+  <head>
+    <link rel="stylesheet" type="text/css"
+      href="{{ context_path }}/reports/19/output/"
+    >
+    <title>Chellow &gt; MOP Contracts</title>
+  </head>
+  <body>
+    <p>
+      <a href="{{ context_path }}/reports/1/output/">Chellow</a> &gt;
+      MOP Contracts
+      [<a href="{{ context_path }}/mop-contracts/">add</a>]
+    </p>
+    <br />
+    {% if messages %}
+      <ul>
+        {% for message in messages %}
+          <li>{{ message }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Start Date</th>
+          <th>Finish Date</th>
+          <th>MOP</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for contract in mop_contracts %}
+          <tr>
+            <td>
+              <a href="{{context_path}}/reports/107/output/?mop_contract_id={{contract.id}}">{{contract.name}}</a>
+            </td>
+            <td>{{contract.start_rate_script.start_date|hh_format }}</td>
+            <td>{{contract.finish_rate_script.finish_date|hh_format}}</td>
+            <td>
+              <a href="{{context_path}}/reports/47/output/?party_id={{contract.party.id}}">{{contract.party.name}}</a>
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </body>
+</html>]]></value>
 	</line>
 	<line>
 		<value><![CDATA[insert]]></value>
@@ -18980,8 +18888,8 @@ try:
         name = inv.getString('name')
         is_core = inv.getBoolean('is_core')
         start_date = form_date(inv, 'start')
-        contract = Contract.insert_non_core(sess, is_core, name, '', '',
-                start_date, None, '')
+        contract = Contract.insert_non_core(sess, is_core, name, '{}', '{}',
+                start_date, None, '{}')
         sess.commit()
         inv.sendSeeOther('/reports/267/output/?non_core_contract_id=' +
             str(contract.id))
@@ -19173,7 +19081,7 @@ try:
             name = inv.getString('name')
             charge_script = inv.getString('charge_script')
             contract.update(sess, contract.is_core, name, contract.party,
-                    charge_script)
+                    charge_script, '{}')
             sess.commit()
             inv.sendSeeOther('/reports/267/output/?non_core_contract_id='
                 + str(contract.id))

@@ -51,8 +51,8 @@ for table in ["GSP_Group", "Market_Participant", "Market_Role",
                         converted.writerow([id, line[0], line[1],
                                 to_iso(line[2]), to_iso(line[3])])
                     elif table == 'Profile_Class':
-                        converted.writerow([id] + [line[table_field] for
-                                table_field in [0, 2]])
+                        pc_code = "0" + line[0]
+                        converted.writerow([id, pc_code, line[2]])
                     elif table == 'Standard_Settlement_Configuration':
                         if line[4] == 'I':
                             is_import = '1'
@@ -89,7 +89,7 @@ for table in ["GSP_Group", "Market_Participant", "Market_Role",
                 else:
                     if table == 'Profile_Class':
                         converted.writerow(["Chellow Id"] +
-                                [line[table_field] for table_field in [0, 2]])
+                                [line[i] for i in [0, 2]])
                     elif table == 'Standard_Settlement_Configuration':
                         converted.writerow(["Chellow Id", line[0], line[3],
                                 line[4], line[1], line[2]])
@@ -108,7 +108,7 @@ for table in ["GSP_Group", "Market_Participant", "Market_Role",
                         converted.writerow(["Chellow Id"] + line)
                 id += 1
             if table == 'Profile_Class':
-                converted.writerow([9, "0", "Half-hourly"])
+                converted.writerow([9, "00", "Half-hourly"])
 
 table_name = "Clock_Interval"
 copy_file(table_name)

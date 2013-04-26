@@ -42,17 +42,19 @@ public class Pc extends PersistentEntity {
 	}
 
 	static public Pc getPc(String code) throws HttpException {
-		Pc profileClass = findPc(Integer.parseInt(code));
+		Pc profileClass = findPc(code);
 		if (profileClass == null) {
-			throw new UserException("There is no profile class with that code.");
+			throw new UserException("There is no profile class with the code '"
+					+ code + "'.");
 		}
 		return profileClass;
 	}
 
-	static public Pc findPc(int code) {
-		return (Pc) Hiber.session().createQuery(
-				"from Pc pc where pc.code = :code").setInteger("code",
-				code).uniqueResult();
+	static public Pc findPc(String code) {
+		code = code.trim();
+		return (Pc) Hiber.session()
+				.createQuery("from Pc pc where pc.code = :code")
+				.setString("code", code).uniqueResult();
 	}
 
 	private String code;
@@ -101,11 +103,10 @@ public class Pc extends PersistentEntity {
 	}
 
 	public Node toXml(Document doc) throws HttpException {
-        Element element = super.toXml(doc, "pc");
-        
+		Element element = super.toXml(doc, "pc");
 
-        element.setAttribute("code", toString());
-        element.setAttribute("description", description);
-        return element;
-}
+		element.setAttribute("code", toString());
+		element.setAttribute("description", description);
+		return element;
+	}
 }

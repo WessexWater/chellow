@@ -223,7 +223,7 @@ def virtual_bill(supply_source):
 
 		<test name="Check one can update the participant for an HHDC contract.">
 			<request path="/chellow/reports/279/output/" method="post">
-				<control name="hhdc_contract_id" value="48"/>
+				<control name="hhdc_contract_id" value="48" />
 				<control name="party_id" value="651" /> <!-- UKDC -->
 				<control name="name" value="Dynamat data" />
 				<control name="start_year" value="2000" />
@@ -236,7 +236,7 @@ def virtual_bill_titles():
 
 def virtual_bill(supply_source):
     return {'net-gbp': 0}]]></control>
-				<control name="properties" value="{}"/>
+				<control name="properties" value="{}" />
 				<response-code value="303" />
 			</request>
 
@@ -269,7 +269,7 @@ def virtual_bill(supply_source):
 
 			<!-- Update the supplier contract -->
 			<request path="/chellow/supplier-contracts/49/" method="post">
-				<control name="party-id" value="25" /> <!-- BIZZ -->
+				<control name="party_id" value="25" /> <!-- BIZZ -->
 				<control name="name" value="Half-hourlies 2007" />
 				<control name="charge-script">
 				<![CDATA[
@@ -287,9 +287,9 @@ def virtual_bill(supply, startDate, finishDate, pw):
 			</request>
 
 			<!-- Update the associated rate script -->
-			<request path="/chellow/supplier-contracts/49/rate-scripts/4/"
+			<request path="/chellow/supplier-contracts/49/rate-scripts/265/"
 				method="post">
-				<control name="start-year" value="2000"/>
+				<control name="start-year" value="2000" />
 				<control name="start-month" value="01" />
 				<control name="start-day" value="03" />
 				<control name="start-hour" value="00" />
@@ -311,48 +311,48 @@ def virtual_bill(supply, startDate, finishDate, pw):
 
 		<test name="Manipulate non-core contracts">
 			<!-- Create a new non-core contract -->
-			<request path="/chellow/non-core-contracts/" method="post">
-				<control name="participant-id" value="31" /> <!-- CALB -->
+			<request path="/chellow/reports/265/output/" method="post">
+				<control name="participant_id" value="31" /> <!-- CALB -->
+				<control name="is_core" value="false" />
 				<control name="name" value="VAT" />
-				<control name="start-year" value="2000" />
-				<control name="start-month" value="01" />
-				<control name="start-day" value="03" />
-				<control name="start-hour" value="00" />
-				<control name="start-minute" value="00" />
-				<regex pattern="/chellow/non-core-contracts/6/" />
+				<control name="start_year" value="2000" />
+				<control name="start_month" value="01" />
+				<control name="start_day" value="03" />
+				<control name="start_hour" value="00" />
+				<control name="start_minute" value="00" />
+				<regex pattern="/chellow/reports/267/output/\?non_core_contract_id=50" />
 				<response-code value="303" />
 			</request>
-			<request path="/chellow/non-core-contracts/6/" method="post">
-				<control name="participant-id" value="286" /> <!-- STCL -->
-				<control name="name" value="VAT 2" />
-				<control name="start-year" value="2000" />
-				<control name="start-month" value="01" />
-				<control name="start-day" value="03" />
-				<control name="charge-script"><![CDATA[import sys]]>&#13;<![CDATA[
-import net.sf.chellow.billing
-import net.sf.chellow.monad.ui
-import net.sf.chellow.physical
 
+			<!-- Update the new non-core contract -->
+			<request path="/chellow/reports/269/output/" method="post">
+				<control name="non_core_contract_id" value="50" />
+				<control name="name" value="VAT 2" />
+				<control name="start_year" value="2000" />
+				<control name="start_month" value="01" />
+				<control name="start_day" value="03" />
+				<control name="charge_script"><![CDATA[import sys
+				
 def totalElement(account, startDate, finishDate):
-    totalElement = net.sf.chellow.billing.BillElement("total", 22.3, "VAT cost")
-    return totalElement]]>
+    return ["total", 22.3, "VAT cost"]]]>
 				</control>
-				<response-code value="200" />
+				<response-code value="303" />
 			</request>
-			<request path="/chellow/non-core-contracts/6/">
-				<regex pattern="import sys\nimport" />
+			<request path="/chellow/reports/267/output/?non_core_contract_id=50">
+				<regex pattern="import sys\s*def" />
 				<response-code value="200" />
 			</request>
 
 			<!-- Delete it -->
-			<request path="/chellow/non-core-contracts/6/" method="post">
+			<request path="/chellow/reports/269/output/" method="post">
+				<control name="non_core_contract_id" value="50" />
 				<control name="delete" />
 				<response-code value="303" />
 			</request>
 		</test>
 		<test name="Insert MOP contract">
 			<request path="/chellow/mop-contracts/" method="post">
-				<control name="participant-id" value="198" /> <!-- LENG -->
+				<control name="participant-id" value="241" /> <!-- LENG -->
 				<control name="name" value="MOP Contract" />
 				<control name="start-year" value="2000" />
 				<control name="start-month" value="01" />
@@ -361,11 +361,11 @@ def totalElement(account, startDate, finishDate):
 				<control name="start-minute" value="00" />
 				<control name="has-finished" value="false" />
 				<response-code value="303" />
-				<regex pattern="/mop-contracts/8/" />
+				<regex pattern="/reports/107/output/\?mop_contract_id=51" />
 			</request>
 
 			<!-- Check we can see the rate scripts -->
-			<request path="/chellow/mop-contracts/8/rate-scripts/">
+			<request path="/chellow/mop-contracts/51/rate-scripts/">
 				<response-code value="200" />
 			</request>
 		</test>
@@ -2908,6 +2908,8 @@ def import_virtual_bill(supply_source):
 				<regex
 					pattern='&lt;td&gt;[\r\n] *&lt;a href="/chellow/reports/193/output/\?batch-id=9"&gt;99/992&lt;/a&gt;[\r\n] *&lt;/td&gt;[\r\n] *&lt;td&gt;08&lt;/td&gt;[\r\n] *&lt;td&gt;22 0883 6932 301&lt;/td&gt;' />
 
+				<!-- Check that channel type is displayed -->
+				<regex pattern='&lt;td&gt;\s*kVArh\s*kWh\s*&lt;/td&gt;' />
 				<response-code value="200" />
 			</request>
 		</test>
