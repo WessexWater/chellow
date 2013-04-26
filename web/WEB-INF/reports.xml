@@ -1132,7 +1132,7 @@ Monad.getContext().getAttribute("net.sf.chellow.jinja").get("render")(inv, templ
             <tr>
               <td>
                 {% for channel in era_bundle['import_channels'] %}
-                  {% if channel.is_kwh %}
+                  {% if channel.getIsKwh() %}
                     kWh
                   {% else %}
                     kVArh
@@ -1178,7 +1178,7 @@ Monad.getContext().getAttribute("net.sf.chellow.jinja").get("render")(inv, templ
             <tr>
               <td>
                 {% for channel in era_bundle['export_channels'] %}
-                  {% if channel.is_kwh %}
+                  {% if channel.getIsKwh() %}
                     kWh
                   {% else %}
                     kVArh
