@@ -11,7 +11,7 @@
 					href="{/source/request/@context-path}/reports/19/output/" />
 				<title>
 					Chellow &gt; Supplier Contracts &gt;
-					<xsl:value-of select="/source/contract/@name" />
+					<xsl:value-of select="/source/supplier-contract/@name" />
 				</title>
 			</head>
 			<body>
@@ -25,8 +25,8 @@
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/reports/77/output/?supplier_contract_id={/source/contract/@id}">
-						<xsl:value-of select="/source/contract/@name" />
+						href="{/source/request/@context-path}/reports/77/output/?supplier_contract_id={/source/supplier-contract/@id}">
+						<xsl:value-of select="/source/supplier-contract/@name" />
 					</a>
 					&gt; Edit
 				</p>
@@ -76,7 +76,7 @@
 													</xsl:when>
 													<xsl:otherwise>
 														<xsl:if
-															test="/source/contract/party/@id = @id">
+															test="/source/supplier-contract/party/@id = @id">
 															<xsl:attribute name="selected" />
 														</xsl:if>
 													</xsl:otherwise>
@@ -99,7 +99,7 @@
 											select="/source/request/parameter[@name = 'name']/value" />
 										</xsl:when>
 										<xsl:otherwise>
-											<xsl:value-of select="/source/contract/@name" />
+											<xsl:value-of select="/source/supplier-contract/@name" />
 										</xsl:otherwise>
 									</xsl:choose>
 								</xsl:attribute>
@@ -116,7 +116,7 @@
 												select="translate(/source/request/parameter[@name='charge-script']/value, '&#xD;','')" />
 										</xsl:when>
 										<xsl:otherwise>
-											<xsl:value-of select="/source/contract/@charge-script" />
+											<xsl:value-of select="/source/supplier-contract/@charge-script" />
 										</xsl:otherwise>
 									</xsl:choose>
 								</textarea>

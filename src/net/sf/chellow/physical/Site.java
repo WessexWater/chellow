@@ -412,16 +412,28 @@ public class Site extends PersistentEntity {
 
 	public Supply insertSupply(Source source, GeneratorType generatorType,
 			String supplyName, HhStartDate startDate, HhStartDate finishDate,
-			Contract dnoContract, GspGroup gspGroup, String note,
-			Contract mopContract, String mopAccount, Contract hhdcContract,
-			String hhdcAccount, String meterSerialNumber, Pc pc,
-			String mtcCode, Cop cop, Ssc ssc, String importMpanStr,
-			String importLlfcCode, Contract importSupplierContract,
-			String importSupplierAccount, Integer importAgreedSupplyCapacity,
-			String exportMpanStr, String exportLlfcCode,
+			GspGroup gspGroup, String note, Contract mopContract,
+			String mopAccount, Contract hhdcContract, String hhdcAccount,
+			String meterSerialNumber, Pc pc, String mtcCode, Cop cop, Ssc ssc,
+			String importMpanStr, String importLlfcCode,
+			Contract importSupplierContract, String importSupplierAccount,
+			Integer impSc, String exportMpanStr, String exportLlfcCode,
 			Contract exportSupplierContract,
 			String exportSupplierAccountReference,
 			Integer exportAgreedSupplyCapacity) throws HttpException {
+		String mpanStr = null;
+		if (importMpanStr == null) {
+			mpanStr = exportMpanStr;
+		} else {
+			mpanStr = importMpanStr;
+		}
+		if (mpanStr == null) {
+			throw new UserException(
+					"Either the import or export MPAN core must be present.");
+		}
+		mpanStr = Era.normalizeMpanCore(mpanStr);
+		String dnoCode = mpanStr.substring(0, 2);
+		Contract dnoContract = Contract.getDnoContract(dnoCode);
 		Supply supply = new Supply(supplyName, source, generatorType,
 				dnoContract, gspGroup, note);
 		try {
@@ -446,9 +458,9 @@ public class Site extends PersistentEntity {
 				mopContract, mopAccount, hhdcContract, hhdcAccount,
 				meterSerialNumber, pc, mtcCode, cop, ssc, importMpanStr,
 				importLlfcCode, importSupplierContract, importSupplierAccount,
-				importAgreedSupplyCapacity, exportMpanStr, exportLlfcCode,
-				exportSupplierContract, exportSupplierAccountReference,
-				exportAgreedSupplyCapacity, false, false, false, false);
+				impSc, exportMpanStr, exportLlfcCode, exportSupplierContract,
+				exportSupplierAccountReference, exportAgreedSupplyCapacity,
+				false, false, false, false);
 		era.update(era.getStartDate(), finishDate);
 		Hiber.flush();
 		return supply;
@@ -469,9 +481,8 @@ public class Site extends PersistentEntity {
 				.createQuery(
 						"select era from Era era join era.siteEras siteEra where siteEra.site = :site order by era.finishDate.date")
 				.setEntity("site", this).list()) {
-			siteElement.appendChild(era.toXml(doc, new XmlTree("mpans",
-					new XmlTree("core").put("llfc")).put("supply", new XmlTree(
-					"source"))));
+			siteElement.appendChild(era.toXml(doc, new XmlTree("supply",
+					new XmlTree("source"))));
 		}
 		for (Source source : (List<Source>) Hiber.session()
 				.createQuery("from Source source order by source.code").list()) {
@@ -546,7 +557,6 @@ public class Site extends PersistentEntity {
 			try {
 				String name = inv.getString("name");
 				Long sourceId = inv.getLong("source-id");
-				Long dnoContractId = inv.getLong("dno-contract-id");
 				Long gspGroupId = inv.getLong("gsp-group-id");
 				Long mopContractId = inv.getLong("mop-contract-id");
 				String mopAccount = inv.getString("mop-account");
@@ -572,7 +582,6 @@ public class Site extends PersistentEntity {
 					generatorType = GeneratorType
 							.getGeneratorType(generatorTypeId);
 				}
-				Contract dnoContract = Contract.getDnoContract(dnoContractId);
 				GspGroup gspGroup = GspGroup.getGspGroup(gspGroupId);
 				Contract mopContract = null;
 				if (mopContractId != null) {
@@ -642,9 +651,9 @@ public class Site extends PersistentEntity {
 					}
 				}
 				Supply supply = insertSupply(source, generatorType, name,
-						new HhStartDate(startDate), null, dnoContract,
-						gspGroup, "", mopContract, mopAccount, hhdcContract,
-						hhdcAccount, meterSerialNumber, pc, mtcCode, cop, ssc,
+						new HhStartDate(startDate), null, gspGroup, "",
+						mopContract, mopAccount, hhdcContract, hhdcAccount,
+						meterSerialNumber, pc, mtcCode, cop, ssc,
 						importMpanCoreStr, importLlfcCode,
 						importSupplierContract, importSupplierAccount,
 						importAgreedSupplyCapacity, exportMpanCoreStr,

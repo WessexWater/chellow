@@ -56,22 +56,16 @@ public class Llfc extends PersistentEntity {
 		return llfc;
 	}
 
-	public static Llfc getLlfc(Contract dnoContract, String code) throws HttpException {
+	public static Llfc getLlfc(Contract dnoContract, String code)
+			throws HttpException {
 		Party dno = dnoContract.getParty();
-		Integer llfcInt = null;
-		try {
-			llfcInt = Integer.parseInt(code);
-		} catch (NumberFormatException e) {
-			throw new UserException(
-					"The LLFC must be an integer between 0 and 999.");
-		}
+		code = code.trim();
 
 		Llfc llfc = (Llfc) Hiber
 				.session()
 				.createQuery(
 						"from Llfc llfc where llfc.dno = :dno and llfc.code = :code")
-				.setEntity("dno", dno).setInteger("code", llfcInt)
-				.uniqueResult();
+				.setEntity("dno", dno).setString("code", code).uniqueResult();
 		if (llfc == null) {
 			throw new UserException("There is no LLFC with the code " + code
 					+ " associated with the DNO " + dno.getDnoCode() + ".");
@@ -191,8 +185,8 @@ public class Llfc extends PersistentEntity {
 	}
 
 	public Element toXml(Document doc) throws HttpException {
-		Element element = super.toXml(doc, "llfc");
-		element.setAttribute("code", toString());
+		Element element = super.toXml(doc, isImport ? "imp-llfc" : "exp-llfc");
+		element.setAttribute("code", code);
 		element.setAttribute("description", description);
 		element.setAttribute("is-substation", Boolean.toString(isSubstation));
 		element.setAttribute("is-import", Boolean.toString(isImport));

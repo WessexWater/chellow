@@ -22,7 +22,7 @@
 			</generator>
 		</id>
 		<many-to-one name="supply" class="Supply" column="supply_id"
-			not-null="true" foreign-key="fkey_supply_generation_supply" />
+			not-null="true" foreign-key="fkey_supply_era_supply" />
 
 		<set name="siteEras" inverse="true" cascade="all,delete-orphan"
 			order-by="site_id">
@@ -46,35 +46,34 @@
 
 		<component name="startDate" class="HhStartDate">
 			<property type="timestamp" name="date"
-				index="supply_generation__start_date__idx">
+				index="supply_era__start_date__idx">
 				<column name="start_date" sql-type="timestamp with time zone" />
 			</property>
 		</component>
 
 		<component name="finishDate" class="HhStartDate">
 			<property type="timestamp" name="date"
-				index="supply_generation__finish_date__idx">
+				index="supply_era__finish_date__idx">
 				<column name="finish_date" sql-type="timestamp with time zone" />
 			</property>
 		</component>
 
 		<many-to-one name="pc" class="Pc" column="pc_id" not-null="true"
-			foreign-key="fkey_generation__pc" />
+			foreign-key="fkey_era__pc" />
 
 		<property type="string" name="msn" column="msn" not-null="true" />
 
 		<many-to-one name="mtc" class="Mtc" column="mtc_id"
-			not-null="true" foreign-key="fkey_generation__mtc" />
+			not-null="true" foreign-key="fkey_era__mtc" />
 
 		<many-to-one name="cop" class="Cop" column="cop_id"
-			not-null="true" foreign-key="fkey_generation__cop" />
+			not-null="true" foreign-key="fkey_era__cop" />
 
 		<many-to-one name="ssc" class="Ssc" column="ssc_id"
-			foreign-key="fkey_generation__ssc" />
+			foreign-key="fkey_era__ssc" />
 
 
-		<property type="string" name="impMpanCore" column="imp_mpan_core"
-			not-null="true" />
+		<property type="string" name="impMpanCore" column="imp_mpan_core" />
 
 		<many-to-one name="impLlfc" class="Llfc" column="imp_llfc_id"
 			foreign-key="fkey_era__imp_llfc" />
@@ -98,7 +97,7 @@
 
 		<set name="channels" inverse="true" cascade="all,delete-orphan"
 			order-by="is_import desc, is_kwh desc">
-			<key column="supply_generation_id" />
+			<key column="supply_era_id" />
 			<one-to-many class="Channel" />
 		</set>
 	</class>

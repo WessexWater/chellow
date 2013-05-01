@@ -184,7 +184,7 @@ public class ContextListener implements ServletContextListener {
 			for (Exception exception : exceptions) {
 				exception.printStackTrace();
 			}
-			throw new UserException("Errors in schema generation.");
+			throw new UserException("Errors in schema era.");
 		}
 		Hiber.setReadWrite();
 		Configuration.getConfiguration();
@@ -323,13 +323,13 @@ public class ContextListener implements ServletContextListener {
 		 * con.setAutoCommit(false);
 		 * stmt.executeUpdate("begin isolation level serializable read write");
 		 * stmt.executeUpdate(
-		 * "alter table supply_generation alter column mop_contract_id set not null"
+		 * "alter table supply_era alter column mop_contract_id set not null"
 		 * ); stmt.executeUpdate(
-		 * "alter table supply_generation alter column mop_account set not null"
+		 * "alter table supply_era alter column mop_account set not null"
 		 * ); stmt.executeUpdate(
-		 * "alter table supply_generation alter column hhdc_contract_id set not null"
+		 * "alter table supply_era alter column hhdc_contract_id set not null"
 		 * ); stmt.executeUpdate(
-		 * "alter table supply_generation alter column hhdc_account set not null"
+		 * "alter table supply_era alter column hhdc_account set not null"
 		 * ); stmt.executeUpdate("commit"); con.setAutoCommit(false);
 		 * con.close(); } catch (SQLException sqle) { throw new
 		 * InternalException(sqle); }

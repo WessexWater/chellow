@@ -229,7 +229,7 @@ public class GeneralImport extends Thread implements Urlable, XmlDescriber {
 
 					if (type.equals("site")) {
 						Site.generalImport(action, values, csvElement);
-					} else if (type.equals("site-supply-generation")) {
+					} else if (type.equals("site-supply-era")) {
 						SiteEra.generalImport(action, values,
 								csvElement);
 					} else if (type.equals("supply")) {

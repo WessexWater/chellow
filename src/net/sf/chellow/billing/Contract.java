@@ -119,8 +119,13 @@ public class Contract extends PersistentEntity implements Comparable<Contract> {
 				.setString("name", name).setString("roleCode", marketRoleCode)
 				.uniqueResult();
 		if (contract == null) {
-			throw new UserException("There isn't a contract with name " + name
-					+ " and market role code " + marketRoleCode);
+			if (marketRoleCode == "R") {
+				throw new UserException("There is no DNO with the code '"
+						+ name + "'.");
+			} else {
+				throw new UserException("There isn't a contract with name "
+						+ name + " and market role code " + marketRoleCode);
+			}
 		}
 		return contract;
 	}
@@ -601,7 +606,23 @@ public class Contract extends PersistentEntity implements Comparable<Contract> {
 	}
 
 	public Element toXml(Document doc) throws HttpException {
-		Element element = doc.createElement("contract");
+		String elName = null;
+		char roleCode = role.getCode();
+		if (roleCode == 'R') {
+			elName = "dno-contract";
+		} else if (roleCode == 'Z') {
+			elName = "non-core-contract";
+		} else if (roleCode == 'M') {
+			elName = "mop-contract";
+		} else if (roleCode == 'C') {
+			elName = "hhdc-contract";
+		} else if (roleCode == 'X') {
+			elName = "supplier-contract";
+		} else {
+			throw new UserException("Role code " + roleCode
+					+ " not recognized.");
+		}
+		Element element = doc.createElement(elName);
 
 		element.setAttribute("id", getId().toString());
 

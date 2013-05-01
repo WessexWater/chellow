@@ -437,6 +437,7 @@ def totalElement(account, startDate, finishDate):
 				<regex pattern="The site 'zzznozzz' cannot be found\." />
 				<response-code value="200" />
 			</request>
+			
 			<!-- Valid import of supplies -->
 			<request path="/chellow/general-imports/" method="post">
 				<control type="file" name="import-file" value="supplies.csv" />
@@ -476,12 +477,12 @@ def totalElement(account, startDate, finishDate):
 		<!-- Can we see a supply ok? -->
 		<test name="view a supply">
 			<request path="/chellow/supplies/2/">
-				<!-- Check link to generations -->
-				<regex pattern='&lt;a href="generations/"&gt;.*Generations.*&lt;/a&gt;' />
+				<!-- Check link to eras -->
+				<regex pattern='&lt;a href="eras/"&gt;\s*Eras\s*&lt;/a&gt;' />
 				<response-code value="200" />
 			</request>
-			<request path="/chellow/supplies/2/generations/">
-				<!-- Check link to ongoing generation -->
+			<request path="/chellow/supplies/2/eras/">
+				<!-- Check link to ongoing era -->
 				<regex
 					pattern='2&lt;/td&gt;&lt;td&gt;2003-08-03 00:00&lt;/td&gt;&lt;td&gt;.*Ongoing' />
 				<response-code value="200" />
@@ -507,55 +508,55 @@ def totalElement(account, startDate, finishDate):
 			</request>
 		</test>
 
-		<!-- Can we see a supply generation ok? -->
-		<test name="view supply generation">
-			<request path="/chellow/supplies/2/generations/2/">
+		<!-- Can we see a supply era ok? -->
+		<test name="view supply era">
+			<request path="/chellow/supplies/2/eras/2/">
 				<!-- Check start date year is there -->
 				<regex pattern="start-year" />
-				<regex pattern='&lt;option value="0" selected&gt;HH contract&lt;/option&gt;' />
+				<regex pattern='&lt;option value="47" selected&gt;HH contract&lt;/option&gt;' />
 				<regex
-					pattern='"import-supplier-contract-id"&gt;&lt;option value="4" selected&gt;Half-hourlies 2007' />
+					pattern='"import-supplier-contract-id"&gt;&lt;option value="49" selected&gt;Half-hourlies 2007' />
 
 				<!-- Can we see the MOP account? -->
 				<regex pattern='"mc-22 9205 6799 106"' />
 
 				<response-code value="200" />
 			</request>
-			<request path="/chellow/supplies/3/generations/3/">
+			<request path="/chellow/supplies/3/eras/3/">
 				<!-- Check site code is correct -->
 				<regex pattern='&lt;td&gt;CI004&lt;/td&gt;' />
 				<response-code value="200" />
 			</request>
 		</test>
-		<test name="Manipulating supply generations">
+		<test name="Manipulating supply eras">
 
-			<!-- Can we add a new supply generation ok? -->
-			<request path="/chellow/supplies/3/generations/" method="post">
+			<!-- Can we add a new supply era ok? -->
+			<request path="/chellow/supplies/3/eras/" method="post">
 				<control name="start-year" value="2006" />
 				<control name="start-month" value="07" />
 				<control name="start-day" value="20" />
 				<control name="start-hour" value="00" />
 				<control name="start-minute" value="00" />
 
-				<regex pattern="/chellow/supplies/3/generations/9/" />
+				<regex pattern="/chellow/supplies/3/eras/9/" />
 				<response-code value="303" />
 			</request>
 
 			<!-- Let's check it's carried forward the import mpan -->
-			<request path="/chellow/supplies/3/generations/9/">
+			<request path="/chellow/supplies/3/eras/9/">
 				<regex pattern="22 9813 2107 763" />
 				<regex pattern='name="mtc-code" size="3" maxlength="3" value="845"' />
 				<response-code value="200" />
 			</request>
 
-			<!-- Can we delete the generation ok? -->
-			<request path="/chellow/supplies/3/generations/9/?view=confirm-delete">
+			<!-- Can we delete the era ok? -->
+			<request path="/chellow/supplies/3/eras/9/?view=confirm-delete">
 				<regex pattern="Are you sure you want to delete this" />
 				<response-code value="200" />
 			</request>
 
-			<!-- When a supply generation is ended, check that the snags are updated -->
-			<request path="/chellow/supplies/6/generations/6/" method="post">
+			<!-- When a supply era is ended, check that the snags are updated -->
+			<request path="/chellow/supplies/6/eras/6/" method="post">
 				<control name="start-year" value="2003" />
 				<control name="start-month" value="08" />
 				<control name="start-day" value="03" />
@@ -600,7 +601,7 @@ def totalElement(account, startDate, finishDate):
 				<!-- Check the end date is right -->
 				<regex pattern='&lt;a title="2003-08-13 23:30"&gt;2003-08-13&lt;/a&gt;' />
 			</request>
-			<request path="/chellow/supplies/6/generations/6/channels/18/snags/">
+			<request path="/chellow/supplies/6/eras/6/channels/18/snags/">
 				<response-code value="200" />
 				<!-- Check the end date is right -->
 				<regex pattern='&lt;td&gt;export&lt;/td&gt;&lt;td&gt;kVArh&lt;/td&gt;' />
@@ -611,7 +612,7 @@ def totalElement(account, startDate, finishDate):
 			<!-- Check that if the hhdc contract is changed, the hhdc contract of 
 				the snags change -->
 			<!-- Check the export supply capacity can be updated as well -->
-			<request path="/chellow/supplies/6/generations/6/" method="post">
+			<request path="/chellow/supplies/6/eras/6/" method="post">
 				<control name="meter-serial-number" value="" />
 				<control name="start-year" value="2003" />
 				<control name="start-month" value="08" />
@@ -645,7 +646,7 @@ def totalElement(account, startDate, finishDate):
 					pattern='&lt;input name="import-agreed-supply-capacity" size="9" maxlength="9" value="430"&gt;' />
 			</request>
 
-			<request path="/chellow/supplies/6/generations/6/channels/18/snags/">
+			<request path="/chellow/supplies/6/eras/6/channels/18/snags/">
 				<response-code value="200" />
 				<regex pattern='&lt;td&gt;export&lt;/td&gt;&lt;td&gt;kVArh&lt;/td&gt;' />
 
@@ -654,7 +655,7 @@ def totalElement(account, startDate, finishDate):
 					pattern='&lt;td&gt;Missing&lt;/td&gt;&lt;td&gt;2003-08-03T00:00Z&lt;/td&gt;&lt;td&gt;2003-08-13T23:30Z&lt;/td&gt;' />
 			</request>
 			<!-- Put it back to how it was -->
-			<request path="/chellow/supplies/6/generations/6/" method="post">
+			<request path="/chellow/supplies/6/eras/6/" method="post">
 				<control name="meter-serial-number" value="" />
 				<control name="start-year" value="2003" />
 				<control name="start-month" value="08" />
@@ -680,9 +681,9 @@ def totalElement(account, startDate, finishDate):
 				<response-code value="200" />
 			</request>
 
-			<!-- Valid bulk update of supply generations -->
+			<!-- Valid bulk update of supply eras -->
 			<request path="/chellow/general-imports/" method="post">
-				<control type="file" name="import-file" value="supply-generation-update.csv" />
+				<control type="file" name="import-file" value="supply-era-update.csv" />
 				<response-code value="303" />
 				<regex pattern="/chellow/general-imports/8/" />
 			</request>
@@ -704,8 +705,8 @@ def totalElement(account, startDate, finishDate):
 				<response-code value="200" />
 			</request>
 
-			<!-- Attach another site to a supply generation -->
-			<request path="/chellow/supplies/3/generations/3/" method="post">
+			<!-- Attach another site to a supply era -->
+			<request path="/chellow/supplies/3/eras/3/" method="post">
 				<control name="site-code" value="CI005" />
 				<control name="attach" value="Attach" />
 				<response-code value="200" />
@@ -713,7 +714,7 @@ def totalElement(account, startDate, finishDate):
 
 			<!-- Check that we prevent mpan cores from changing without an overlapping 
 				period -->
-			<request path="/chellow/supplies/3/generations/9/" method="post">
+			<request path="/chellow/supplies/3/eras/9/" method="post">
 				<control name="meter-serial-number" value="" />
 				<control name="start-year" value="2006" />
 				<control name="start-month" value="07" />
@@ -767,7 +768,7 @@ def totalElement(account, startDate, finishDate):
 				<regex pattern="The import has completed.*successfully." />
 				<response-code value="200" />
 			</request>
-			<request path="/chellow/supplies/2/generations/2/channels/4/snags/">
+			<request path="/chellow/supplies/2/eras/2/channels/4/snags/">
 				<regex pattern='&lt;td&gt;export&lt;/td&gt;&lt;td&gt;kVArh&lt;/td&gt;' />
 				<regex
 					pattern='&lt;tr&gt;[\r\n]&lt;td&gt;&lt;a href="4/"&gt;4&lt;/a&gt;&lt;/td&gt;&lt;td&gt;Missing&lt;/td&gt;&lt;td&gt;2003-08-03T00:00Z&lt;/td&gt;' />
@@ -837,7 +838,7 @@ def totalElement(account, startDate, finishDate):
 				<regex pattern="The import has completed.*successfully." />
 				<response-code value="200" />
 			</request>
-			<request path="/chellow/supplies/2/generations/2/channels/3/snags/">
+			<request path="/chellow/supplies/2/eras/2/channels/3/snags/">
 				<regex pattern='&lt;td&gt;export&lt;/td&gt;&lt;td&gt;kWh&lt;/td&gt;' />
 				<regex
 					pattern="&lt;td&gt;Estimated&lt;/td&gt;&lt;td&gt;2005-12-15T07:00Z&lt;/td&gt;&lt;td&gt;2005-12-15T08:00Z&lt;/td&gt;" />
@@ -856,7 +857,7 @@ def totalElement(account, startDate, finishDate):
 				<regex pattern="The import has completed.*successfully." />
 				<response-code value="200" />
 			</request>
-			<request path="/chellow/supplies/2/generations/2/channels/3/snags/">
+			<request path="/chellow/supplies/2/eras/2/channels/3/snags/">
 				<regex pattern="&lt;td&gt;export&lt;/td&gt;&lt;td&gt;kWh&lt;/td&gt;" />
 				<regex
 					pattern="&lt;td&gt;Estimated&lt;/td&gt;&lt;td&gt;2005-12-15T07:00Z&lt;/td&gt;&lt;td&gt;2005-12-15T09:30Z&lt;/td&gt;" />
@@ -878,7 +879,7 @@ def totalElement(account, startDate, finishDate):
 			</request>
 			<!-- Check that the imported HH datum is correct -->
 			<request
-				path="/chellow/supplies/2/generations/2/channels/3/hh-data/?year=2005&amp;month=09">
+				path="/chellow/supplies/2/eras/2/channels/3/hh-data/?year=2005&amp;month=09">
 				<regex
 					pattern='&lt;td&gt;2005-09-15T00:00&lt;/td&gt;&lt;td&gt;1.0&lt;/td&gt;&lt;td&gt;A&lt;/td&gt;' />
 			</request>
@@ -929,7 +930,7 @@ def totalElement(account, startDate, finishDate):
 		</test>
 		<test name="Manipulate channels">
 			<!-- Make sure 'show HH data' button works -->
-			<request path="/chellow/supplies/7/generations/7/channels/19/">
+			<request path="/chellow/supplies/7/eras/7/channels/19/">
 				<regex pattern='Import' />
 				<regex pattern='kWh' />
 				<response-code value="200" />
@@ -937,7 +938,7 @@ def totalElement(account, startDate, finishDate):
 		</test>
 		<!-- Manipulate Hh data" -->
 		<test name="Make sure 'show HH data' button works">
-			<request path="/chellow/supplies/7/generations/7/channels/21/hh-data/">
+			<request path="/chellow/supplies/7/eras/7/channels/21/hh-data/">
 				<regex pattern='kVArh' />
 				<regex pattern='Export' />
 				<regex pattern='action="\."&gt;' />
@@ -946,7 +947,7 @@ def totalElement(account, startDate, finishDate):
 		</test>
 		<test name="Give good error for invalid date.">
 			<request
-				path="/chellow/supplies/7/generations/7/channels/21/hh-data/?year=2006&amp;month=13">
+				path="/chellow/supplies/7/eras/7/channels/21/hh-data/?year=2006&amp;month=13">
 				<regex pattern='Invalid date' />
 				<response-code value="400" />
 			</request>
@@ -966,32 +967,31 @@ def totalElement(account, startDate, finishDate):
 			</request>
 		</test>
 		<test name="Check view of channel level snag">
-			<request path="/chellow/supplies/2/generations/2/channels/1/snags/4/">
+			<request path="/chellow/supplies/2/eras/2/channels/1/snags/4/">
 				<response-code value="200" />
 			</request>
 		</test>
 
 		<test name="Channel without data unchecked">
-			<!-- Check that for a supply with multiple generations, if a channel without 
+			<!-- Check that for a supply with multiple eras, if a channel without 
 				any data is unchecked, it goes ahead without a user exception. This test 
 				needs some hh data loaded somewhere -->
-			<request path="/chellow/supplies/3/generations/9/channels/27/"
+			<request path="/chellow/supplies/3/eras/9/channels/27/"
 				method="post">
 				<control name="delete">Delete</control>
 				<response-code value="303" />
 			</request>
 
 			<!-- Put it back to how it was before -->
-			<request path="/chellow/supplies/3/generations/9/channels/"
-				method="post">
+			<request path="/chellow/supplies/3/eras/9/channels/" method="post">
 				<control name="is-import" value="false" />
 				<control name="is-kwh" value="true" />
 				<response-code value="303" />
 			</request>
 
 			<!-- Check it gives an error if the hhdc contract is removed from a supply 
-				generation that has data -->
-			<request path="/chellow/supplies/2/generations/2/" method="post">
+				era that has data -->
+			<request path="/chellow/supplies/2/eras/2/" method="post">
 				<control name="start-year" value="2003" />
 				<control name="start-month" value="08" />
 				<control name="start-day" value="03" />
@@ -1133,7 +1133,7 @@ def virtual_bill(supply_source):
 				<response-code value="200" />
 			</request>
 			<!-- Check values have been imported correctly -->
-			<request path="/chellow/supplies/12/generations/13/">
+			<request path="/chellow/supplies/12/eras/13/">
 				<regex pattern="K87D74429" />
 				<response-code value="200" />
 			</request>
@@ -1160,7 +1160,7 @@ def virtual_bill(supply_source):
 		</test>
 		<test name="Check that resolved HH estimates have their snags cleared.">
 			<!-- Set a previously estimated HH to actual -->
-			<request path="/chellow/supplies/2/generations/2/channels/3/hh-data/11/"
+			<request path="/chellow/supplies/2/eras/2/channels/3/hh-data/11/"
 				method="post">
 				<control name="value" value="0.5" />
 				<control name="status" value="A" />
@@ -1168,13 +1168,13 @@ def virtual_bill(supply_source):
 			</request>
 
 			<!-- Check that the snag has been cleared -->
-			<request path="/chellow/supplies/2/generations/2/channels/3/snags/">
+			<request path="/chellow/supplies/2/eras/2/channels/3/snags/">
 				<regex pattern='&lt;td&gt;export&lt;/td&gt;&lt;td&gt;kWh&lt;/td&gt;' />
 				<regex
 					pattern='&lt;td&gt;Estimated&lt;/td&gt;&lt;td&gt;2005-12-15T07:30Z&lt;/td&gt;&lt;td&gt;2005-12-15T09:30Z&lt;/td&gt;' />
 			</request>
 			<!-- Change it back -->
-			<request path="/chellow/supplies/2/generations/2/channels/3/hh-data/11/"
+			<request path="/chellow/supplies/2/eras/2/channels/3/hh-data/11/"
 				method="post">
 				<control name="value" value="0.5" />
 				<control name="status" value="E" />
@@ -1199,13 +1199,12 @@ def virtual_bill(supply_source):
 		<test
 			name="Check the BGlobal data is imported to the right number of sig figs">
 			<request
-				path="/chellow/supplies/2/generations/2/channels/1/hh-data/?year=2008&amp;month=07">
+				path="/chellow/supplies/2/eras/2/channels/1/hh-data/?year=2008&amp;month=07">
 				<regex pattern="0\.262" />
 			</request>
 		</test>
-		<test
-			name="Check okay if supply generation update is interupted by an error.">
-			<request path="/chellow/supplies/10/generations/11/" method="post">
+		<test name="Check okay if supply era update is interupted by an error.">
+			<request path="/chellow/supplies/10/eras/11/" method="post">
 				<control name="meter-serial-number" value="P96C93722" />
 				<control name="start-year" value="2005" />
 				<control name="start-month" value="08" />
@@ -1264,17 +1263,17 @@ def virtual_bill(supply_source):
 					pattern="All the bills have been successfully loaded and attached to the batch\." />
 			</request>
 		</test>
-		<test name="Check one is able to delete a generation ok">
-			<request path="/chellow/supplies/10/generations/" method="post">
+		<test name="Check one is able to delete a era ok">
+			<request path="/chellow/supplies/10/eras/" method="post">
 				<control name="start-year" value="2009" />
 				<control name="start-month" value="01" />
 				<control name="start-day" value="20" />
 				<control name="start-hour" value="00" />
 				<control name="start-minute" value="00" />
-				<regex pattern="/chellow/supplies/10/generations/14/" />
+				<regex pattern="/chellow/supplies/10/eras/14/" />
 				<response-code value="303" />
 			</request>
-			<request path="/chellow/supplies/10/generations/14/" method="post">
+			<request path="/chellow/supplies/10/eras/14/" method="post">
 				<control name="delete" value="Delete" />
 				<response-code value="303" />
 			</request>
@@ -1286,20 +1285,20 @@ def virtual_bill(supply_source):
 			</request>
 		</test>
 		<test
-			name="Check that if supply generation dates change, hh data move with them.'">
-			<request path="/chellow/supplies/2/generations/" method="post">
+			name="Check that if supply era dates change, hh data move with them.'">
+			<request path="/chellow/supplies/2/eras/" method="post">
 				<control name="start-year" value="2008" />
 				<control name="start-month" value="7" />
 				<control name="start-day" value="7" />
 				<control name="start-hour" value="00" />
 				<control name="start-minute" value="00" />
-				<regex pattern="/chellow/supplies/2/generations/15/" />
+				<regex pattern="/chellow/supplies/2/eras/15/" />
 				<response-code value="303" />
 			</request>
 			<request
-				path="/chellow/supplies/2/generations/15/channels/30/hh-data/?year=2008&amp;month=07">
+				path="/chellow/supplies/2/eras/15/channels/30/hh-data/?year=2008&amp;month=07">
 				<regex
-					pattern='&lt;td&gt;&lt;a href="/chellow/supplies/2/generations/15/channels/30/hh-data/65/"&gt;65&lt;/a&gt;&lt;/td&gt;&lt;td&gt;2008-07-07T00:00&lt;/td&gt;&lt;td&gt;0.247&lt;/td&gt;&lt;td&gt;A&lt;/td&gt;' />
+					pattern='&lt;td&gt;&lt;a href="/chellow/supplies/2/eras/15/channels/30/hh-data/65/"&gt;65&lt;/a&gt;&lt;/td&gt;&lt;td&gt;2008-07-07T00:00&lt;/td&gt;&lt;td&gt;0.247&lt;/td&gt;&lt;td&gt;A&lt;/td&gt;' />
 				<response-code value="200" />
 			</request>
 		</test>
@@ -1329,7 +1328,7 @@ def virtual_bill(supply_source):
 		</test>
 		<test name="Check last HH is deleted when a day of HH data is deleted.">
 			<!-- Delete a day of data -->
-			<request path="/chellow/supplies/2/generations/15/channels/30/hh-data/"
+			<request path="/chellow/supplies/2/eras/15/channels/30/hh-data/"
 				method="post">
 				<control name="delete-from-year" value="2008" />
 				<control name="delete-from-month" value="07" />
@@ -1340,23 +1339,23 @@ def virtual_bill(supply_source):
 			</request>
 			<!-- Check the last HH of the day is deleted -->
 			<request
-				path="/chellow/supplies/2/generations/15/channels/30/hh-data/?year=2008&amp;month=07">
+				path="/chellow/supplies/2/eras/15/channels/30/hh-data/?year=2008&amp;month=07">
 				<regex
-					pattern='&lt;tbody&gt;[\r\n]*&lt;tr&gt;[\r\n]*&lt;td&gt;&lt;a href="/chellow/supplies/2/generations/15/channels/30/hh-data/113/"&gt;113&lt;/a&gt;&lt;/td&gt;&lt;td&gt;2008-07-08T00:00&lt;/td&gt;&lt;td&gt;0.299&lt;/td&gt;&lt;td&gt;A&lt;/td&gt;' />
+					pattern='&lt;tbody&gt;[\r\n]*&lt;tr&gt;[\r\n]*&lt;td&gt;&lt;a href="/chellow/supplies/2/eras/15/channels/30/hh-data/113/"&gt;113&lt;/a&gt;&lt;/td&gt;&lt;td&gt;2008-07-08T00:00&lt;/td&gt;&lt;td&gt;0.299&lt;/td&gt;&lt;td&gt;A&lt;/td&gt;' />
 				<response-code value="200" />
 			</request>
 		</test>
 		<test name="Check one is redirected to hh data when a datum is deleted.">
-			<request path="/chellow/supplies/2/generations/2/channels/1/hh-data/23/"
+			<request path="/chellow/supplies/2/eras/2/channels/1/hh-data/23/"
 				method="post">
 				<control name="delete" value="Delete" />
 				<response-code value="303" />
-				<regex pattern="/chellow/supplies/2/generations/2/channels/1/hh-data/" />
+				<regex pattern="/chellow/supplies/2/eras/2/channels/1/hh-data/" />
 			</request>
 		</test>
 		<test
 			name="Test that removing HHDC while HH data still present gives proper message.">
-			<request path="/chellow/supplies/6/generations/6/" method="post">
+			<request path="/chellow/supplies/6/eras/6/" method="post">
 				<control name="meter-serial-number" value="" />
 				<control name="start-year" value="2003" />
 				<control name="start-month" value="08" />
@@ -1383,8 +1382,8 @@ def virtual_bill(supply_source):
 					pattern="Can't remove the HHDC account while there are still channels there\." />
 			</request>
 		</test>
-		<test name="Test that profile 05 is displayed for a supply generation.">
-			<request path="/chellow/supplies/10/generations/11/">
+		<test name="Test that profile 05 is displayed for a supply era.">
+			<request path="/chellow/supplies/10/eras/11/">
 				<regex
 					pattern='&lt;option value="5" selected&gt;05 - Non-domestic, MD, load factor 0-20%&lt;/option&gt;' />
 				<response-code value="200" />
@@ -1431,7 +1430,7 @@ def virtual_bill(supply_source):
 			</request>
 		</test>
 		<test
-			name="Try adding a second rate script (set to 'ongoing'), and see if the supply generation can be updated.">
+			name="Try adding a second rate script (set to 'ongoing'), and see if the supply era can be updated.">
 			<request path="/chellow/supplier-contracts/4/rate-scripts/"
 				method="post">
 				<control name="start-year" value="2009" />
@@ -1442,7 +1441,7 @@ def virtual_bill(supply_source):
 				<control name="script" value="" />
 				<response-code value="303" />
 			</request>
-			<request path="/chellow/supplies/2/generations/15/" method="post">
+			<request path="/chellow/supplies/2/eras/15/" method="post">
 				<control name="start-year" value="2008" />
 				<control name="start-month" value="07" />
 				<control name="start-day" value="07" />
@@ -1498,8 +1497,8 @@ lastImportName0=Example]]></control>
 				<regex pattern="Minority Report" />
 			</request>
 		</test>
-		<test name="Check dates are correct for four supply generations.">
-			<request path="/chellow/supplies/2/generations/" method="post">
+		<test name="Check dates are correct for four supply eras.">
+			<request path="/chellow/supplies/2/eras/" method="post">
 				<control name="start-year" value="2008" />
 				<control name="start-month" value="08" />
 				<control name="start-day" value="07" />
@@ -1507,7 +1506,7 @@ lastImportName0=Example]]></control>
 				<control name="start-minute" value="00" />
 				<response-code value="303" />
 			</request>
-			<request path="/chellow/supplies/2/generations/" method="post">
+			<request path="/chellow/supplies/2/eras/" method="post">
 				<control name="start-year" value="2008" />
 				<control name="start-month" value="09" />
 				<control name="start-day" value="07" />
@@ -1515,7 +1514,7 @@ lastImportName0=Example]]></control>
 				<control name="start-minute" value="00" />
 				<response-code value="303" />
 			</request>
-			<request path="/chellow/supplies/2/generations/">
+			<request path="/chellow/supplies/2/eras/">
 				<regex
 					pattern='2&lt;/td&gt;&lt;td&gt;2003-08-03 00:00&lt;/td&gt;&lt;td&gt;2008-07-06 23:30' />
 				<response-code value="200" />
@@ -1527,7 +1526,7 @@ lastImportName0=Example]]></control>
 			</request>
 		</test>
 		<test name="Check there isn't an empty link to the HHDC Contract.">
-			<request path="/chellow/supplies/10/generations/11/">
+			<request path="/chellow/supplies/10/eras/11/">
 				<regex
 					pattern='&lt;option value="0"&gt;HH contract&lt;/option&gt;&lt;/select&gt;&lt;/label&gt; Dynamat data&lt;br&gt;' />
 			</request>
@@ -1731,8 +1730,8 @@ def import_virtual_bill(supply_source):
 			</request>
 		</test>
 		<test
-			name="Check that when there are gt 2 generations, the previous generation is updated.">
-			<request path="/chellow/supplies/2/generations/17/" method="post">
+			name="Check that when there are gt 2 eras, the previous era is updated.">
+			<request path="/chellow/supplies/2/eras/17/" method="post">
 				<control name="start-year" value="2008" />
 				<control name="start-month" value="09" />
 				<control name="start-day" value="06" />
@@ -1758,7 +1757,7 @@ def import_virtual_bill(supply_source):
 				<response-code value="200" />
 			</request>
 
-			<request path="/chellow/supplies/2/generations/16/">
+			<request path="/chellow/supplies/2/eras/16/">
 				<regex
 					pattern='&lt;select name="finish-day"&gt;&lt;option value="01"&gt;01&lt;/option&gt;&lt;option value="02"&gt;02&lt;/option&gt;&lt;option value="03"&gt;03&lt;/option&gt;&lt;option value="04"&gt;04&lt;/option&gt;&lt;option value="05" selected&gt;05&lt;/option&gt;' />
 			</request>
@@ -1771,7 +1770,7 @@ def import_virtual_bill(supply_source):
 		</test>
 		<test
 			name="Generate a 'There are HH data before the start of the updated supply.' message.">
-			<request path="/chellow/supplies/6/generations/6/" method="post">
+			<request path="/chellow/supplies/6/eras/6/" method="post">
 				<control name="start-year" value="2010" />
 				<control name="start-month" value="08" />
 				<control name="start-day" value="03" />
@@ -1940,7 +1939,7 @@ def triad_estimates():
 				<response-code value="200" />
 			</request>
 		</test>
-		<test name="Try generation graph report.">
+		<test name="Try era graph report.">
 			<request
 				path="/chellow/reports/23/output/?site-id=7&amp;finish-year=2008&amp;finish-month=7&amp;months=1">
 				<response-code value="200" />
@@ -2055,7 +2054,7 @@ def triad_estimates():
 			</request>
 
 			<!-- Check that it shows a dead supply properly -->
-			<request path="/chellow/supplies/12/generations/13/" method="post">
+			<request path="/chellow/supplies/12/eras/13/" method="post">
 				<control name="start-year" value="2005" />
 				<control name="start-month" value="10" />
 				<control name="start-day" value="03" />
@@ -2094,7 +2093,7 @@ def triad_estimates():
 		</test>
 		<test name="Try a pre 2010-04-01 DNO 20 bill.">
 			<!-- Turn a supply into a 20 supply -->
-			<request path="/chellow/supplies/7/generations/7/" method="post">
+			<request path="/chellow/supplies/7/eras/7/" method="post">
 				<control name="meter-serial-number" value="" />
 				<control name="start-year" value="2003" />
 				<control name="start-month" value="08" />
@@ -2191,19 +2190,19 @@ def import_virtual_bill(supply_source):
 				<response-code value="200" />
 			</request>
 
-			<!-- Add new generation -->
-			<request path="/chellow/supplies/11/generations/" method="post">
+			<!-- Add new era -->
+			<request path="/chellow/supplies/11/eras/" method="post">
 				<control name="start-year" value="2010" />
 				<control name="start-month" value="01" />
 				<control name="start-day" value="01" />
 				<control name="start-hour" value="00" />
 				<control name="start-minute" value="00" />
-				<regex pattern="/chellow/supplies/11/generations/19/" />
+				<regex pattern="/chellow/supplies/11/eras/19/" />
 				<response-code value="303" />
 			</request>
 
 			<!-- Change to new supplier contract -->
-			<request path="/chellow/supplies/11/generations/19/" method="post">
+			<request path="/chellow/supplies/11/eras/19/" method="post">
 				<control name="start-year" value="2010" />
 				<control name="start-month" value="01" />
 				<control name="start-day" value="03" />
@@ -2388,14 +2387,14 @@ def import_virtual_bill(supply_source):
 				<response-code value="200" />
 			</request>
 		</test>
-		<test name="Check that a generation can be deleted.">
-			<request path="/chellow/supplies/2/generations/15/" method="post">
+		<test name="Check that a era can be deleted.">
+			<request path="/chellow/supplies/2/eras/15/" method="post">
 				<control name="delete" value="Delete" />
 				<response-code value="303" />
 			</request>
 		</test>
 		<test
-			name="Check a contract virtual bill that crosses a generation boundary comes out correctly.">
+			name="Check a contract virtual bill that crosses a era boundary comes out correctly.">
 			<!-- Put in an import virtual bill function -->
 			<request path="/chellow/supplier-contracts/10/" method="post">
 				<control name="participant-id" value="180" /> <!-- HYDE -->
@@ -2475,8 +2474,8 @@ def import_virtual_bill(supply_source):
 			</request>
 		</test>
 		<test
-			name="Check that if the end date of a generation is altered, it can tell if there's a succeeding generation.">
-			<request path="/chellow/supplies/11/generations/12/" method="post">
+			name="Check that if the end date of a era is altered, it can tell if there's a succeeding era.">
+			<request path="/chellow/supplies/11/eras/12/" method="post">
 				<control name="start-year" value="2005" />
 				<control name="start-month" value="09" />
 				<control name="start-day" value="06" />
@@ -2509,9 +2508,9 @@ def import_virtual_bill(supply_source):
 			</request>
 		</test>
 		<test
-			name="Check that it works if a supply generation is inserted by CSV before the beginning of a supply ">
+			name="Check that it works if a supply era is inserted by CSV before the beginning of a supply ">
 			<request path="/chellow/general-imports/" method="post">
-				<control type="file" name="import-file" value="supply-generation-insert.csv" />
+				<control type="file" name="import-file" value="supply-era-insert.csv" />
 				<response-code value="303" />
 				<regex pattern="/general-imports/16/" />
 			</request>
@@ -2521,7 +2520,7 @@ def import_virtual_bill(supply_source):
 				<regex pattern="The file has been imported successfully" />
 				<response-code value="200" />
 			</request>
-			<request path="/chellow/supplies/10/generations/22/">
+			<request path="/chellow/supplies/10/eras/22/">
 				<!-- Check the import supplier account is there -->
 				<regex pattern="341664" />
 				<response-code value="200" />
@@ -2571,10 +2570,9 @@ def import_virtual_bill(supply_source):
 					pattern="&lt;td&gt;2010-01-19 00:00&lt;/td&gt;&lt;td&gt;2010-04-20 23:30&lt;/td&gt;" />
 			</request>
 		</test>
-		<test name="Test supply generation update for a supply with 2 mpans.">
+		<test name="Test supply era update for a supply with 2 mpans.">
 			<request path="/chellow/general-imports/" method="post">
-				<control type="file" name="import-file"
-					value="supply-generation-update-2-mpans.csv" />
+				<control type="file" name="import-file" value="supply-era-update-2-mpans.csv" />
 				<response-code value="303" />
 				<regex pattern="/chellow/general-imports/18/" />
 			</request>
@@ -2885,15 +2883,15 @@ def import_virtual_bill(supply_source):
 			</request>
 		</test>
 		<test
-			name="Check good error message if new generation has same start date as existing generation.">
-			<!-- Can we add a new supply generation ok? -->
-			<request path="/chellow/supplies/11/generations/" method="post">
+			name="Check good error message if new era has same start date as existing era.">
+			<!-- Can we add a new supply era ok? -->
+			<request path="/chellow/supplies/11/eras/" method="post">
 				<control name="start-year" value="2005" />
 				<control name="start-month" value="09" />
 				<control name="start-day" value="06" />
 				<control name="start-hour" value="00" />
 				<control name="start-minute" value="00" />
-				<regex pattern="There's already a generation with that start date\." />
+				<regex pattern="There's already a era with that start date\." />
 				<response-code value="400" />
 			</request>
 		</test>

@@ -170,7 +170,7 @@
 						</form>
 						<ul>
 							<li>
-								<a href="generations/">Generations</a>
+								<a href="eras/">Eras</a>
 							</li>
 						</ul>
 					</xsl:otherwise>

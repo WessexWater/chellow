@@ -111,7 +111,7 @@ public class SiteEra extends PersistentEntity {
 	}
 
 	public Element toXml(Document doc) throws HttpException {
-		Element element = super.toXml(doc, "site-supply-generation");
+		Element element = super.toXml(doc, "site-era");
 
 		element.setAttribute("is-physical", Boolean.toString(isPhysical));
 		return element;

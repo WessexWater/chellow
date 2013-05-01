@@ -23,6 +23,7 @@ package net.sf.chellow.physical;
 
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -36,6 +37,7 @@ import org.w3c.dom.Element;
 import net.sf.chellow.billing.Contract;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
+import net.sf.chellow.monad.Invocation;
 import net.sf.chellow.monad.MonadUtils;
 import net.sf.chellow.monad.NotFoundException;
 import net.sf.chellow.monad.Urlable;
@@ -583,8 +585,8 @@ public class Era extends PersistentEntity {
 		if (checkInt != actualCheck) {
 			throw new UserException("The check digit is incorrect.");
 		}
-		return core.substring(0, 2) + " " + core.substring(2, 4) + " "
-				+ core.substring(6, 4) + " " + core.substring(10, 3);
+		return core.substring(0, 2) + " " + core.substring(2, 6) + " "
+				+ core.substring(6, 10) + " " + core.substring(10, 13);
 	}
 
 	private Supply supply;
@@ -613,7 +615,7 @@ public class Era extends PersistentEntity {
 	private String impMpanCore;
 	private String expMpanCore;
 	private Llfc expLlfc;
-	private int expSc;
+	private Integer expSc;
 	private Contract expSupplierContract;
 	private String expSupplierAccount;
 
@@ -622,8 +624,8 @@ public class Era extends PersistentEntity {
 
 	Era(Supply supply, HhStartDate startDate, HhStartDate finishDate,
 			Contract mopContract, String mopAccount, Contract hhdcContract,
-			String hhdcAccount, String meterSerialNumber, Pc pc,
-			String mtcCode, Cop cop, Ssc ssc) throws HttpException {
+			String hhdcAccount, String msn, Pc pc, String mtcCode, Cop cop,
+			Ssc ssc) throws HttpException {
 		setChannels(new HashSet<Channel>());
 		setSupply(supply);
 		setSiteEras(new HashSet<SiteEra>());
@@ -811,8 +813,8 @@ public class Era extends PersistentEntity {
 		return expLlfc;
 	}
 
-	public void setExpLlfc(Llfc impLlfc) {
-		this.impLlfc = impLlfc;
+	public void setExpLlfc(Llfc expLlfc) {
+		this.expLlfc = expLlfc;
 	}
 
 	public Integer getExpSc() {
@@ -894,7 +896,7 @@ public class Era extends PersistentEntity {
 	}
 
 	public Element toXml(Document doc) throws HttpException {
-		Element element = super.toXml(doc, "supply-generation");
+		Element element = super.toXml(doc, "era");
 		startDate.setLabel("start");
 		element.appendChild(startDate.toXml(doc));
 		if (finishDate != null) {
@@ -908,6 +910,22 @@ public class Era extends PersistentEntity {
 			element.setAttribute("mop-account", mopAccount);
 		}
 		element.setAttribute("meter-serial-number", msn);
+		if (impMpanCore != null) {
+			element.setAttribute("imp-mpan-core", impMpanCore);
+			Element supElem = impSupplierContract.toXml(doc);
+			element.appendChild(supElem);
+			supElem.setAttribute("is-import", Boolean.TRUE.toString());
+			element.setAttribute("imp-supplier-account", impSupplierAccount);
+			element.setAttribute("imp-sc", Integer.toString(impSc));
+		}
+		if (expMpanCore != null) {
+			element.setAttribute("exp-mpan-core", expMpanCore);
+			Element supElem = expSupplierContract.toXml(doc);
+			element.appendChild(supElem);
+			supElem.setAttribute("is-import", Boolean.FALSE.toString());
+			element.setAttribute("exp-supplier-account", expSupplierAccount);
+			element.setAttribute("exp-sc", Integer.toString(expSc));
+		}
 		return element;
 	}
 
@@ -997,9 +1015,10 @@ public class Era extends PersistentEntity {
 		setSsc(ssc);
 
 		if (impMpanCore == null) {
+			setImpMpanCore(null);
 			if (impLlfcCode != null) {
 				throw new UserException(
-						"If the import MPAN core is null, the import LLFC must also be null.");				
+						"If the import MPAN core is null, the import LLFC must also be null.");
 			}
 			setImpLlfc(null);
 			if (impSupplierContract != null) {
@@ -1012,20 +1031,22 @@ public class Era extends PersistentEntity {
 						"If the import MPAN core is null, the import supplier account must also be null.");
 			}
 			setImpSupplierAccount(null);
-			if (impSc == null) {
+			if (impSc != null) {
 				throw new UserException(
 						"If the import MPAN core is null, the import supply capacity must also be null.");
 			}
 			setImpSc(null);
 		} else {
 			impMpanCore = normalizeMpanCore(impMpanCore);
-			if (!impMpanCore.substring(0, 2).equals(supply.getDnoContract().getParty().getDnoCode())) {
+			if (!impMpanCore.substring(0, 2).equals(
+					supply.getDnoContract().getParty().getDnoCode())) {
 				throw new UserException(
-						"The DNO of the import MPAN core must match the supply's DNO.");				
+						"The DNO of the import MPAN core must match the supply's DNO.");
 			}
+			setImpMpanCore(impMpanCore);
 			if (impLlfcCode == null) {
 				throw new UserException(
-						"If the import MPAN core is present, the import LLFC must also be present.");				
+						"If the import MPAN core is present, the import LLFC must also be present.");
 			}
 			setImpLlfc(Llfc.getLlfc(supply.getDnoContract(), impLlfcCode));
 			if (!getImpLlfc().getIsImport()) {
@@ -1046,15 +1067,15 @@ public class Era extends PersistentEntity {
 			if (impSupplierContract.getStartRateScript().getStartDate()
 					.after(startDate)) {
 				throw new UserException(
-						"The import supplier contract starts after the supply generation.");
+						"The import supplier contract starts after the supply era.");
 			}
 			if (HhStartDate.isBefore(impSupplierContract.getFinishRateScript()
 					.getFinishDate(), finishDate)) {
 				throw new UserException(
-						"The import supplier contract finishes before the supply generation.");
+						"The import supplier contract finishes before the supply era.");
 			}
 
-			if (impSc != null) {
+			if (impSc == null) {
 				throw new UserException(
 						"If the import MPAN core is present, the import supply capacity must also be present.");
 			}
@@ -1062,9 +1083,10 @@ public class Era extends PersistentEntity {
 		}
 		Hiber.flush();
 		if (expMpanCore == null) {
+			setExpMpanCore(null);
 			if (expLlfcCode != null) {
 				throw new UserException(
-						"If the export MPAN core is null, the export LLFC must also be null.");				
+						"If the export MPAN core is null, the export LLFC must also be null.");
 			}
 			setExpLlfc(null);
 			if (expSupplierContract != null) {
@@ -1077,27 +1099,28 @@ public class Era extends PersistentEntity {
 						"If the export MPAN core is null, the export supplier account must also be null.");
 			}
 			setExpSupplierAccount(null);
-			if (expSc == null) {
+			if (expSc != null) {
 				throw new UserException(
 						"If the export MPAN core is null, the export supply capacity must also be null.");
 			}
 			setExpSc(null);
 		} else {
 			expMpanCore = normalizeMpanCore(expMpanCore);
-			if (!expMpanCore.substring(0, 2).equals(supply.getDnoContract().getParty().getDnoCode())) {
+			if (!expMpanCore.substring(0, 2).equals(
+					supply.getDnoContract().getParty().getDnoCode())) {
 				throw new UserException(
-						"The DNO of the export MPAN core must match the supply's DNO.");				
+						"The DNO of the export MPAN core must match the supply's DNO.");
 			}
+			setExpMpanCore(expMpanCore);
 			if (expLlfcCode == null) {
 				throw new UserException(
-						"If the export MPAN core is present, the export LLFC must also be present.");				
+						"If the export MPAN core is present, the export LLFC must also be present.");
 			}
 			setExpLlfc(Llfc.getLlfc(supply.getDnoContract(), expLlfcCode));
 			if (getExpLlfc().getIsImport()) {
 				throw new UserException(
 						"Problem with the export MPAN with core '"
-								+ expMpanCore
-								+ "'. The Line Loss Factor '"
+								+ expMpanCore + "'. The Line Loss Factor '"
 								+ getExpLlfc().getCode()
 								+ "' says that the MPAN is actually import.");
 			}
@@ -1114,15 +1137,15 @@ public class Era extends PersistentEntity {
 			if (expSupplierContract.getStartRateScript().getStartDate()
 					.after(startDate)) {
 				throw new UserException(
-						"The export supplier contract starts after the supply generation.");
+						"The export supplier contract starts after the supply era.");
 			}
 			if (HhStartDate.isBefore(expSupplierContract.getFinishRateScript()
 					.getFinishDate(), finishDate)) {
 				throw new UserException(
-						"The export supplier contract finishes before the supply generation.");
+						"The export supplier contract finishes before the supply era.");
 			}
 
-			if (expSc != null) {
+			if (expSc == null) {
 				throw new UserException(
 						"If the export MPAN core is present, the export supply capacity must also be present.");
 			}
@@ -1131,11 +1154,11 @@ public class Era extends PersistentEntity {
 
 		if (impMpanCore == null && expMpanCore == null) {
 			throw new UserException(document(),
-					"A supply generation must have at least one MPAN.");
+					"A supply era must have at least one MPAN.");
 		}
 		if (impMpanCore != null && expMpanCore != null) {
-			if (!getImpLlfc().getVoltageLevel()
-					.equals(getExpLlfc().getVoltageLevel())) {
+			if (!getImpLlfc().getVoltageLevel().equals(
+					getExpLlfc().getVoltageLevel())) {
 				throw new UserException(
 						"The voltage level indicated by the Line Loss Factor must be the same for both the MPANs.");
 			}
@@ -1161,7 +1184,7 @@ public class Era extends PersistentEntity {
 			if (((Long) Hiber
 					.session()
 					.createQuery(
-							"select count(*) from HhDatum datum where datum.channel.supplyGeneration.supply  = :supply and datum.startDate.date < :date")
+							"select count(*) from HhDatum datum where datum.channel.era.supply  = :supply and datum.startDate.date < :date")
 					.setEntity("supply", supply)
 					.setTimestamp("date", startDate.getDate()).uniqueResult()) > 0) {
 				throw new UserException(
@@ -1195,7 +1218,7 @@ public class Era extends PersistentEntity {
 					&& ((Long) Hiber
 							.session()
 							.createQuery(
-									"select count(*) from HhDatum datum where datum.channel.supplyGeneration.supply  = :supply and datum.startDate.date > :date")
+									"select count(*) from HhDatum datum where datum.channel.era.supply  = :supply and datum.startDate.date > :date")
 							.setEntity("supply", supply)
 							.setTimestamp("date", finishDate.getDate())
 							.uniqueResult()) > 0) {
@@ -1240,14 +1263,14 @@ public class Era extends PersistentEntity {
 					.getStartRateScript().getStartDate();
 			if (hhdcContractStartDate.after(startDate)) {
 				throw new UserException(
-						"The HHDC contract starts after the supply generation.");
+						"The HHDC contract starts after the supply era.");
 			}
 			HhStartDate hhdcContractFinishDate = hhdcContract
 					.getFinishRateScript().getFinishDate();
 			if (HhStartDate.isBefore(hhdcContractFinishDate, finishDate)) {
 				throw new UserException("The HHDC contract "
 						+ hhdcContract.getId()
-						+ " finishes before the supply generation.");
+						+ " finishes before the supply era.");
 			}
 		}
 		Hiber.flush();
@@ -1267,14 +1290,14 @@ public class Era extends PersistentEntity {
 					.getStartDate();
 			if (mopContractStartDate.after(startDate)) {
 				throw new UserException(
-						"The MOP contract starts after the supply generation.");
+						"The MOP contract starts after the supply era.");
 			}
 			HhStartDate mopContractFinishDate = mopContract
 					.getFinishRateScript().getFinishDate();
 			if (HhStartDate.isBefore(mopContractFinishDate, finishDate)) {
 				throw new UserException("The MOP contract "
 						+ mopContract.getId()
-						+ " finishes before the supply generation.");
+						+ " finishes before the supply era.");
 			}
 		}
 
@@ -1298,14 +1321,14 @@ public class Era extends PersistentEntity {
 		}
 		Hiber.flush();
 
-		// See if we have to move hh data from one generation to the other
+		// See if we have to move hh data from one era to the other
 		for (Boolean isImport : new Boolean[] { true, false }) {
 			for (Boolean isKwh : new Boolean[] { true, false }) {
 				Channel targetChannel = getChannel(isImport, isKwh);
 				Query query = Hiber
 						.session()
 						.createQuery(
-								"select datum.startDate, datum.value, datum.status from HhDatum datum where datum.channel.supplyGeneration.supply = :supply and datum.channel.isImport = :isImport and datum.channel.isKwh = :isKwh and datum.startDate.date >= :from"
+								"select datum.startDate, datum.value, datum.status from HhDatum datum where datum.channel.era.supply = :supply and datum.channel.isImport = :isImport and datum.channel.isKwh = :isKwh and datum.startDate.date >= :from"
 										+ (finishDate == null ? ""
 												: " and datum.startDate.date <= :to")
 										+ (targetChannel == null ? ""
@@ -1329,13 +1352,13 @@ public class Era extends PersistentEntity {
 								+ (isImport ? "import" : "export") + " "
 								+ (isKwh ? "kWh" : "kVArh")
 								+ " HH datum starting " + groupStart.toString()
-								+ " to move to in the generation starting "
+								+ " to move to in the era starting "
 								+ startDate + ", finishing " + finishDate + ".");
 					}
 					Query channelUpdate = Hiber
 							.session()
 							.createSQLQuery(
-									"update hh_datum set channel_id = :targetChannelId from channel, supply_generation where hh_datum.start_date >= :startDate and channel.id = hh_datum.channel_id and supply_generation.id = channel.supply_generation_id and channel.is_import = :isImport and channel.is_kwh = :isKwh and supply_generation.supply_id = :supplyId"
+									"update hh_datum set channel_id = :targetChannelId from channel, supply_era where hh_datum.start_date >= :startDate and channel.id = hh_datum.channel_id and supply_era.id = channel.supply_era_id and channel.is_import = :isImport and channel.is_kwh = :isKwh and supply_era.supply_id = :supplyId"
 											+ (finishDate == null ? ""
 													: " and hh_datum.start_date <= :finishDate"))
 							.setLong("supplyId", supply.getId())
@@ -1431,82 +1454,250 @@ public class Era extends PersistentEntity {
 		}
 		Hiber.flush();
 	}
-	
+
 	@SuppressWarnings("unchecked")
-    private Document document() throws HttpException {
-            Document doc = MonadUtils.newSourceDocument();
-            Element source = doc.getDocumentElement();
-            Element generationElement = (Element) toXml(
-                            doc,
-                            new XmlTree("siteEras", new XmlTree("site"))
-                                            .put("pc").put("mtc").put("cop").put("ssc")
-                                            .put("supply", new XmlTree("source").put("gspGroup"))
-                                            .put("mopContract", new XmlTree("party"))
-                                            .put("hhdcContract", new XmlTree("party")));
-            source.appendChild(generationElement);
-            source.appendChild(MonadDate.getMonthsXml(doc));
-            source.appendChild(MonadDate.getDaysXml(doc));
-            source.appendChild(MonadDate.getHoursXml(doc));
-            source.appendChild(HhStartDate.getHhMinutesXml(doc));
-            source.appendChild(new MonadDate().toXml(doc));
-            for (Pc pc : (List<Pc>) Hiber.session()
-                            .createQuery("from Pc pc order by pc.code").list()) {
-                    source.appendChild(pc.toXml(doc));
-            }
-            for (Cop cop : (List<Cop>) Hiber.session()
-                            .createQuery("from Cop cop order by cop.code").list()) {
-                    source.appendChild(cop.toXml(doc));
-            }
-            for (GspGroup group : (List<GspGroup>) Hiber.session()
-                            .createQuery("from GspGroup group order by group.code").list()) {
-                    source.appendChild(group.toXml(doc));
-            }
-            for (Contract contract : (List<Contract>) Hiber
-                            .session()
-                            .createQuery("from Contract contract order by contract.name")
-                            .list()) {
-                    source.appendChild(contract.toXml(doc));
-            }
-            for (Contract contract : (List<Contract>) Hiber
-                            .session()
-                            .createQuery(
-                                            "from Contract contract order by contract.name")
-                            .list()) {
-                    source.appendChild(contract.toXml(doc));
-            }
-            for (Contract contract : (List<Contract>) Hiber
-                            .session()
-                            .createQuery(
-                                            "from Supplier contract order by contract.name")
-                            .list()) {
-                    source.appendChild(contract.toXml(doc));
-            }
-            source.setAttribute("num-generations",
-                            Integer.toString(supply.getEras().size()));
-            return doc;
-    }
+	private Document document() throws HttpException {
+		Document doc = MonadUtils.newSourceDocument();
+		Element source = doc.getDocumentElement();
+		Element eraElement = (Element) toXml(
+				doc,
+				new XmlTree("siteEras", new XmlTree("site")).put("pc")
+						.put("impLlfc").put("expLlfc").put("mtc").put("cop")
+						.put("ssc")
+						.put("supply", new XmlTree("source").put("gspGroup"))
+						.put("mopContract", new XmlTree("party"))
+						.put("hhdcContract", new XmlTree("party")));
+		source.appendChild(eraElement);
+		source.appendChild(MonadDate.getMonthsXml(doc));
+		source.appendChild(MonadDate.getDaysXml(doc));
+		source.appendChild(MonadDate.getHoursXml(doc));
+		source.appendChild(HhStartDate.getHhMinutesXml(doc));
+		source.appendChild(new MonadDate().toXml(doc));
+		for (Pc pc : (List<Pc>) Hiber.session()
+				.createQuery("from Pc pc order by pc.code").list()) {
+			source.appendChild(pc.toXml(doc));
+		}
+		for (Cop cop : (List<Cop>) Hiber.session()
+				.createQuery("from Cop cop order by cop.code").list()) {
+			source.appendChild(cop.toXml(doc));
+		}
+		for (GspGroup group : (List<GspGroup>) Hiber.session()
+				.createQuery("from GspGroup group order by group.code").list()) {
+			source.appendChild(group.toXml(doc));
+		}
+		for (Contract contract : (List<Contract>) Hiber
+				.session()
+				.createQuery(
+						"from Contract contract where contract.role.code = 'M' order by contract.name")
+				.list()) {
+			source.appendChild(contract.toXml(doc));
+		}
+		for (Contract contract : (List<Contract>) Hiber
+				.session()
+				.createQuery(
+						"from Contract contract where contract.role.code = 'C' order by contract.name")
+				.list()) {
+			source.appendChild(contract.toXml(doc));
+		}
+		for (Contract contract : (List<Contract>) Hiber
+				.session()
+				.createQuery(
+						"from Contract contract where contract.role.code = 'X' order by contract.name")
+				.list()) {
+			source.appendChild(contract.toXml(doc));
+		}
+		source.setAttribute("num-eras",
+				Integer.toString(supply.getEras().size()));
+		return doc;
+	}
+
 	public Channels getChannelsInstance() {
-        return new Channels(this);
-}
-	
+		return new Channels(this);
+	}
+
 	void delete() throws HttpException {
-        List<SiteEra> ssGens = new ArrayList<SiteEra>();
-        for (SiteEra ssGen : siteEras) {
-                ssGens.add(ssGen);
-        }
-        for (SiteEra ssGen : ssGens) {
-                siteEras.remove(ssGen);
-                Hiber.flush();
-                ssGen.getSite().detachSiteEra(ssGen);
-                Hiber.flush();
-        }
-        List<Channel> ssChannels = new ArrayList<Channel>();
-        for (Channel channel : channels) {
-                ssChannels.add(channel);
-        }
-        for (Channel channel : ssChannels) {
-                deleteChannel(channel.getIsImport(), channel.getIsKwh());
-        }
-}
+		List<SiteEra> ssGens = new ArrayList<SiteEra>();
+		for (SiteEra ssGen : siteEras) {
+			ssGens.add(ssGen);
+		}
+		for (SiteEra ssGen : ssGens) {
+			siteEras.remove(ssGen);
+			Hiber.flush();
+			ssGen.getSite().detachSiteEra(ssGen);
+			Hiber.flush();
+		}
+		List<Channel> ssChannels = new ArrayList<Channel>();
+		for (Channel channel : channels) {
+			ssChannels.add(channel);
+		}
+		for (Channel channel : ssChannels) {
+			deleteChannel(channel.getIsImport(), channel.getIsKwh());
+		}
+	}
+
+	public void httpGet(Invocation inv) throws HttpException {
+		inv.sendOk(document());
+	}
+
+	public void httpPost(Invocation inv) throws HttpException {
+		Hiber.setReadWrite();
+		Hiber.session().setReadOnly(this, false);
+		Document doc = document();
+		try {
+			if (inv.hasParameter("delete")) {
+				supply.deleteEra(this);
+				Hiber.commit();
+				inv.sendSeeOther(new Eras(supply).getEditUri());
+			} else if (inv.hasParameter("attach")) {
+				String siteCode = inv.getString("site-code");
+				if (!inv.isValid()) {
+					throw new UserException(document());
+				}
+				Site site = Site.getSite(siteCode);
+				attachSite(site);
+				Hiber.commit();
+				inv.sendOk(document());
+			} else if (inv.hasParameter("detach")) {
+				Long siteId = inv.getLong("site-id");
+				if (!inv.isValid()) {
+					throw new UserException(document());
+				}
+				Site site = Site.getSite(siteId);
+				detachSite(site);
+				Hiber.commit();
+				inv.sendOk(document());
+			} else if (inv.hasParameter("set-location")) {
+				Long siteId = inv.getLong("site-id");
+				if (!inv.isValid()) {
+					throw new UserException(document());
+				}
+				Site site = Site.getSite(siteId);
+				setPhysicalLocation(site);
+				Hiber.commit();
+				inv.sendOk(document());
+			} else {
+				Date startDate = inv.getDateTime("start");
+				Long mopContractId = inv.getLong("mop-contract-id");
+				Long hhdcContractId = inv.getLong("hhdc-contract-id");
+				String meterSerialNumber = inv.getString("meter-serial-number");
+				Long pcId = inv.getLong("pc-id");
+				String mtcCode = inv.getString("mtc-code");
+				Long copId = inv.getLong("cop-id");
+				String sscCode = inv.getString("ssc-code");
+
+				if (!inv.isValid()) {
+					throw new UserException();
+				}
+				HhStartDate finishDate = null;
+				Cop cop = Cop.getCop(copId);
+				Ssc ssc = null;
+				if (sscCode.trim().length() > 0) {
+					ssc = Ssc.getSsc(sscCode);
+				}
+
+				String importMpanCoreStr = null;
+				Integer importAgreedSupplyCapacity = null;
+				Contract mopContract = null;
+				Contract hhdcContract = null;
+				Contract importSupplierContract = null;
+				String importSupplierAccount = null;
+				boolean isEnded = inv.getBoolean("is-ended");
+				if (isEnded) {
+					Date finishDateRaw = inv.getDateTime("finish");
+					if (!inv.isValid()) {
+						throw new UserException();
+					}
+					finishDate = new HhStartDate(finishDateRaw);
+				}
+				String mopAccount = null;
+				if (mopContractId != null) {
+					mopContract = Contract.getMopContract(mopContractId);
+					mopAccount = inv.getString("mop-account");
+				}
+				String hhdcAccount = null;
+				if (hhdcContractId != null) {
+					hhdcContract = Contract.getHhdcContract(hhdcContractId);
+					hhdcAccount = inv.getString("hhdc-account");
+				}
+				Pc pc = Pc.getPc(pcId);
+				boolean hasImportMpan = inv.getBoolean("has-import-mpan");
+				String importLlfcCode = null;
+
+				if (hasImportMpan) {
+					importMpanCoreStr = inv.getString("import-mpan-core");
+					importLlfcCode = inv.getString("import-llfc-code");
+					Long importSupplierContractId = inv
+							.getLong("import-supplier-contract-id");
+					importSupplierAccount = inv
+							.getString("import-supplier-account");
+					importAgreedSupplyCapacity = inv
+							.getInteger("import-agreed-supply-capacity");
+
+					if (!inv.isValid()) {
+						throw new UserException(document());
+					}
+
+					importSupplierContract = Contract
+							.getSupplierContract(importSupplierContractId);
+				}
+				String exportMpanCoreStr = null;
+				String exportLlfcCode = null;
+				Integer exportAgreedSupplyCapacity = null;
+				String exportSupplierAccount = null;
+				Contract exportSupplierContract = null;
+				boolean hasExportMpan = inv.getBoolean("has-export-mpan");
+				if (hasExportMpan) {
+					exportMpanCoreStr = inv.getString("export-mpan-core");
+					exportLlfcCode = inv.getString("export-llfc-code");
+					exportAgreedSupplyCapacity = inv
+							.getInteger("export-agreed-supply-capacity");
+					Long exportSupplierContractId = inv
+							.getLong("export-supplier-contract-id");
+					exportSupplierAccount = inv
+							.getString("export-supplier-account");
+
+					if (!inv.isValid()) {
+						throw new UserException();
+					}
+					exportSupplierContract = Contract
+							.getSupplierContract(exportSupplierContractId);
+				}
+				supply.updateEra(this, new HhStartDate(startDate), finishDate,
+						mopContract, mopAccount, hhdcContract, hhdcAccount,
+						meterSerialNumber, pc, mtcCode, cop, ssc,
+						importMpanCoreStr, importLlfcCode,
+						importSupplierContract, importSupplierAccount,
+						importAgreedSupplyCapacity, exportMpanCoreStr,
+						exportLlfcCode, exportSupplierContract,
+						exportSupplierAccount, exportAgreedSupplyCapacity);
+				Hiber.commit();
+				inv.sendOk(document());
+			}
+		} catch (HttpException e) {
+			e.setDocument(doc);
+			throw e;
+		}
+	}
+
+	public void detachSite(Site site) throws HttpException {
+		if (siteEras.size() < 2) {
+			throw new UserException(
+					"A supply has to be attached to at least one site.");
+		}
+		SiteEra siteEra = (SiteEra) Hiber
+				.session()
+				.createQuery(
+						"from SiteEra siteEra where siteEra.era = :era and siteEra.site = :site")
+				.setEntity("era", this).setEntity("site", site).uniqueResult();
+		if (siteEra == null) {
+			throw new UserException(
+					"Can't detach this site, as it wasn't attached in the first place.");
+		}
+		siteEras.remove(siteEra);
+		siteEras.iterator().next().setIsPhysical(true);
+		Hiber.flush();
+		site.detachSiteEra(siteEra);
+		Hiber.flush();
+	}
 
 }

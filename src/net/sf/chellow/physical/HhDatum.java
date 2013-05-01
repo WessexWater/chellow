@@ -62,8 +62,8 @@ public class HhDatum extends PersistentEntity {
 		Calendar cal = MonadDate.getCalendar();
 		HhDatumRaw datum = rawData.next();
 		String mpanCore = datum.getMpanCore();
-		Era generation = Era.getEra(mpanCore, datum.getStartDate());
-		if (generation == null) {
+		Era era = Era.getEra(mpanCore, datum.getStartDate());
+		if (era == null) {
 			throw new UserException(
 					"This datum is either before or after the supply: "
 							+ datum.toString() + ".");
@@ -71,12 +71,12 @@ public class HhDatum extends PersistentEntity {
 		long previousDate = datum.getStartDate().getDate().getTime();
 		boolean isImport = datum.getIsImport();
 		boolean isKwh = datum.getIsKwh();
-		Channel channel = generation.getChannel(isImport, isKwh);
+		Channel channel = era.getChannel(isImport, isKwh);
 		if (channel == null) {
 			throw new UserException("There is no channel for the datum: "
 					+ datum.toString() + ".");
 		}
-		HhStartDate genFinishDate = generation.getFinishDate();
+		HhStartDate genFinishDate = era.getFinishDate();
 		List<HhDatumRaw> data = new ArrayList<HhDatumRaw>();
 		data.add(datum);
 		// HhDatumRaw firstDatum = datum;
@@ -101,7 +101,7 @@ public class HhDatum extends PersistentEntity {
 				Hiber.setReadWrite();
 				data.clear();
 				String mpanCoreStr = datum.getMpanCore();
-				Era era = Era.getEra(mpanCoreStr, datum.getStartDate());
+				era = Era.getEra(mpanCoreStr, datum.getStartDate());
 				if (era == null) {
 					throw new UserException(
 							"This datum is either before or after the supply: "
@@ -109,13 +109,13 @@ public class HhDatum extends PersistentEntity {
 				}
 				isImport = datum.getIsImport();
 				isKwh = datum.getIsKwh();
-				channel = generation.getChannel(isImport, isKwh);
+				channel = era.getChannel(isImport, isKwh);
 				if (channel == null) {
 					throw new UserException(
 							"There is no channel for the datum: "
 									+ datum.toString() + ".");
 				}
-				genFinishDate = generation.getFinishDate();
+				genFinishDate = era.getFinishDate();
 			}
 			data.add(datum);
 			previousDate = startDate.getTime();
@@ -134,6 +134,8 @@ public class HhDatum extends PersistentEntity {
 	private BigDecimal value;
 
 	private char status;
+
+	private Date lastModified;
 
 	public HhDatum() {
 	}
@@ -181,6 +183,14 @@ public class HhDatum extends PersistentEntity {
 		this.status = status;
 	}
 
+	public Date getLastModified() {
+		return lastModified;
+	}
+
+	void setLastModified(Date lastModified) {
+		this.lastModified = lastModified;
+	}
+
 	public void update(BigDecimal value, char status) throws HttpException {
 		if (status != ESTIMATE && status != ACTUAL && status != PADDING) {
 			throw new UserException("The status character must be E, A or C.");
@@ -218,8 +228,8 @@ public class HhDatum extends PersistentEntity {
 	private Document document(String message) throws HttpException {
 		Document doc = MonadUtils.newSourceDocument();
 		Element source = doc.getDocumentElement();
-		source.appendChild(toXml(doc, new XmlTree("channel", new XmlTree(
-				"supplyGeneration", new XmlTree("supply")))));
+		source.appendChild(toXml(doc, new XmlTree("channel", new XmlTree("era",
+				new XmlTree("supply")))));
 		if (message != null) {
 			source.appendChild(new MonadMessage(message).toXml(doc));
 		}

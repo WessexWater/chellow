@@ -87,23 +87,23 @@ public class ChannelSnag extends SnagDateBounded {
                     if (finishStr.length() > 0) {
                             finishDate = new HhStartDate(finishStr);
                     }
-                    for (Era generation : Supply.getSupply(mpanCore)
+                    for (Era era : Supply.getSupply(mpanCore)
                                     .getEras(startDate, finishDate)) {
                             Query channelQuery = null;
                             if (finishDate == null) {
                                     channelQuery = Hiber
                                                     .session()
                                                     .createQuery(
-                                                                    "from ChannelSnag snag where snag.channel.supplyGeneration = :generation and snag.channel.isImport = :isImport and snag.channel.isKwh = :isKwh and snag.isIgnored is false and snag.description = :description and (snag.finishDate is null or snag.finishDate.date >= :startDate)");
+                                                                    "from ChannelSnag snag where snag.channel.era = :era and snag.channel.isImport = :isImport and snag.channel.isKwh = :isKwh and snag.isIgnored is false and snag.description = :description and (snag.finishDate is null or snag.finishDate.date >= :startDate)");
                             } else {
                                     channelQuery = Hiber
                                                     .session()
                                                     .createQuery(
-                                                                    "from ChannelSnag snag where snag.channel.supplyGeneration = :generation and snag.channel.isImport = :isImport and snag.channel.isKwh = :isKwh and snag.isIgnored is false and snag.description = :description and snag.startDate.date <= :finishDate and (snag.finishDate is null or snag.finishDate.date >= :startDate)")
+                                                                    "from ChannelSnag snag where snag.channel.era = :era and snag.channel.isImport = :isImport and snag.channel.isKwh = :isKwh and snag.isIgnored is false and snag.description = :description and snag.startDate.date <= :finishDate and (snag.finishDate is null or snag.finishDate.date >= :startDate)")
                                                     .setTimestamp("finishDate", finishDate.getDate());
                             }
                             for (ChannelSnag snag : (List<ChannelSnag>) channelQuery
-                                            .setEntity("generation", generation)
+                                            .setEntity("era", era)
                                             .setBoolean("isImport", isImport)
                                             .setBoolean("isKwh", isKwh)
                                             .setString("description", snagDescription)

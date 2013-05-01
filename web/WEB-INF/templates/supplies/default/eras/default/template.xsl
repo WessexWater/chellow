@@ -9,9 +9,9 @@
 			<head>
 				<title>
 					Chellow &gt; Supplies &gt;
-					<xsl:value-of select="/source/supply-generation/supply/@id" />
-					&gt; Generation
-					<xsl:value-of select="/source/supply-generation/@id" />
+					<xsl:value-of select="/source/era/supply/@id" />
+					&gt; Era
+					<xsl:value-of select="/source/era/@id" />
 				</title>
 				<link rel="stylesheet" type="text/css"
 					href="{/source/request/@context-path}/reports/19/output/" />
@@ -27,12 +27,11 @@
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/reports/7/output/?supply-id={/source/supply-generation/supply/@id}">
-						<xsl:value-of select="/source/supply-generation/supply/@id" />
+						href="{/source/request/@context-path}/reports/7/output/?supply-id={/source/era/supply/@id}">
+						<xsl:value-of select="/source/era/supply/@id" />
 					</a>
 					&gt;
-					<xsl:value-of
-						select="concat('Generation ', /source/supply-generation/@id)" />
+					<xsl:value-of select="concat('Era ', /source/era/@id)" />
 				</p>
 				<xsl:if test="//message">
 					<ul>
@@ -50,7 +49,7 @@
 							<fieldset>
 								<legend>
 									Are you sure you want to delete this
-									supply generation?
+									supply era?
 								</legend>
 								<input type="submit" name="delete" value="Delete" />
 							</fieldset>
@@ -66,8 +65,7 @@
 								<tr>
 									<th>Code</th>
 									<th>Name</th>
-									<xsl:if
-										test="count(/source/supply-generation/site-supply-generation) > 1">
+									<xsl:if test="count(/source/era/site-era) > 1">
 										<th></th>
 										<th></th>
 										<th></th>
@@ -75,7 +73,7 @@
 								</tr>
 							</thead>
 							<tbody>
-								<xsl:for-each select="/source/supply-generation/site-supply-generation">
+								<xsl:for-each select="/source/era/site-era">
 									<tr>
 										<td>
 											<xsl:value-of select="site/@code" />
@@ -83,8 +81,7 @@
 										<td>
 											<xsl:value-of select="site/@name" />
 										</td>
-										<xsl:if
-											test="count(/source/supply-generation/site-supply-generation) > 1">
+										<xsl:if test="count(/source/era/site-era) > 1">
 											<td>
 												<xsl:if test="@is-physical = 'true'">
 													Located here
@@ -139,7 +136,7 @@
 						<form action="." method="post">
 							<fieldset>
 								<legend>
-									Update this supply generation
+									Update this era
 								</legend>
 								<fieldset>
 									<legend>Start date</legend>
@@ -154,7 +151,7 @@
 											<xsl:otherwise>
 												<xsl:attribute name="value">
 													<xsl:value-of
-													select="/source/supply-generation/hh-start-date[@label='start']/@year" />
+													select="/source/era/hh-start-date[@label='start']/@year" />
 												</xsl:attribute>
 											</xsl:otherwise>
 										</xsl:choose>
@@ -172,7 +169,7 @@
 													</xsl:when>
 													<xsl:otherwise>
 														<xsl:if
-															test="/source/supply-generation/hh-start-date[@label='start']/@month = @number">
+															test="/source/era/hh-start-date[@label='start']/@month = @number">
 															<xsl:attribute name="selected" />
 														</xsl:if>
 													</xsl:otherwise>
@@ -194,7 +191,7 @@
 													</xsl:when>
 													<xsl:otherwise>
 														<xsl:if
-															test="/source/supply-generation/hh-start-date[@label='start']/@day = @number">
+															test="/source/era/hh-start-date[@label='start']/@day = @number">
 															<xsl:attribute name="selected" />
 														</xsl:if>
 													</xsl:otherwise>
@@ -216,7 +213,7 @@
 													</xsl:when>
 													<xsl:otherwise>
 														<xsl:if
-															test="/source/supply-generation/hh-start-date[@label='start']/@hour = @number">
+															test="/source/era/hh-start-date[@label='start']/@hour = @number">
 															<xsl:attribute name="selected" />
 														</xsl:if>
 													</xsl:otherwise>
@@ -238,7 +235,7 @@
 													</xsl:when>
 													<xsl:otherwise>
 														<xsl:if
-															test="/source/supply-generation/hh-start-date[@label='start']/@minute = @number">
+															test="/source/era/hh-start-date[@label='start']/@minute = @number">
 															<xsl:attribute name="selected" />
 														</xsl:if>
 													</xsl:otherwise>
@@ -263,8 +260,7 @@
 													</xsl:if>
 												</xsl:when>
 												<xsl:otherwise>
-													<xsl:if
-														test="/source/supply-generation/hh-start-date[@label='finish']">
+													<xsl:if test="/source/era/hh-start-date[@label='finish']">
 														<xsl:attribute name="checked">
 															checked
 														</xsl:attribute>
@@ -281,10 +277,9 @@
 													<xsl:value-of
 											select="/source/request/parameter[@name='finish-year']/value/text()" />
 												</xsl:when>
-												<xsl:when
-											test="/source/supply-generation/hh-start-date[@label='finish']">
+												<xsl:when test="/source/era/hh-start-date[@label='finish']">
 													<xsl:value-of
-											select="/source/supply-generation/hh-start-date[@label='finish']/@year" />
+											select="/source/era/hh-start-date[@label='finish']/@year" />
 												</xsl:when>
 												<xsl:otherwise>
 													<xsl:value-of select="/source/date/@year" />
@@ -305,10 +300,9 @@
 															<xsl:attribute name="selected" />
 														</xsl:if>
 													</xsl:when>
-													<xsl:when
-														test="/source/supply-generation/hh-start-date[@label='finish']">
+													<xsl:when test="/source/era/hh-start-date[@label='finish']">
 														<xsl:if
-															test="/source/supply-generation/hh-start-date[@label='finish']/@month = @number">
+															test="/source/era/hh-start-date[@label='finish']/@month = @number">
 															<xsl:attribute name="selected" />
 														</xsl:if>
 													</xsl:when>
@@ -333,10 +327,9 @@
 															<xsl:attribute name="selected" />
 														</xsl:if>
 													</xsl:when>
-													<xsl:when
-														test="/source/supply-generation/hh-start-date[@label='finish']">
+													<xsl:when test="/source/era/hh-start-date[@label='finish']">
 														<xsl:if
-															test="/source/supply-generation/hh-start-date[@label='finish']/@day = @number">
+															test="/source/era/hh-start-date[@label='finish']/@day = @number">
 															<xsl:attribute name="selected" />
 														</xsl:if>
 													</xsl:when>
@@ -361,10 +354,9 @@
 															<xsl:attribute name="selected" />
 														</xsl:if>
 													</xsl:when>
-													<xsl:when
-														test="/source/supply-generation/hh-start-date[@label='finish']">
+													<xsl:when test="/source/era/hh-start-date[@label='finish']">
 														<xsl:if
-															test="/source/supply-generation/hh-start-date[@label='finish']/@hour = @number">
+															test="/source/era/hh-start-date[@label='finish']/@hour = @number">
 															<xsl:attribute name="selected" />
 														</xsl:if>
 													</xsl:when>
@@ -390,10 +382,9 @@
 															<xsl:attribute name="selected" />
 														</xsl:if>
 													</xsl:when>
-													<xsl:when
-														test="/source/supply-generation/hh-start-date[@label='finish']">
+													<xsl:when test="/source/era/hh-start-date[@label='finish']">
 														<xsl:if
-															test="/source/supply-generation/hh-start-date[@label='finish']/@minute = @number">
+															test="/source/era/hh-start-date[@label='finish']/@minute = @number">
 															<xsl:attribute name="selected" />
 														</xsl:if>
 													</xsl:when>
@@ -424,7 +415,7 @@
 														</xsl:if>
 													</xsl:when>
 													<xsl:otherwise>
-														<xsl:if test="@id = /source/supply-generation/mop-contract/@id">
+														<xsl:if test="@id = /source/era/mop-contract/@id">
 															<xsl:attribute name="selected" />
 														</xsl:if>
 													</xsl:otherwise>
@@ -445,7 +436,7 @@
 											select="/source/request/parameter[@name='mop-account']/value" />
 													</xsl:when>
 													<xsl:otherwise>
-														<xsl:value-of select="/source/supply-generation/@mop-account" />
+														<xsl:value-of select="/source/era/@mop-account" />
 													</xsl:otherwise>
 												</xsl:choose>
 											</xsl:attribute>
@@ -468,8 +459,7 @@
 														</xsl:if>
 													</xsl:when>
 													<xsl:otherwise>
-														<xsl:if
-															test="@id = /source/supply-generation/hhdc-contract/@id">
+														<xsl:if test="@id = /source/era/hhdc-contract/@id">
 															<xsl:attribute name="selected" />
 														</xsl:if>
 													</xsl:otherwise>
@@ -479,9 +469,9 @@
 										</xsl:for-each>
 									</select>
 								</label>
-								<xsl:if test="/source/supply-generation/hhdc-contract">
+								<xsl:if test="/source/era/hhdc-contract">
 									<xsl:value-of select="' '" />
-									<xsl:value-of select="/source/supply-generation/hhdc-contract/@name" />
+									<xsl:value-of select="/source/era/hhdc-contract/@name" />
 								</xsl:if>
 								<br />
 								<label>
@@ -495,7 +485,7 @@
 											select="/source/request/parameter[@name='hhdc-account']/value" />
 													</xsl:when>
 													<xsl:otherwise>
-														<xsl:value-of select="/source/supply-generation/@hhdc-account" />
+														<xsl:value-of select="/source/era/@hhdc-account" />
 													</xsl:otherwise>
 												</xsl:choose>
 											</xsl:attribute>
@@ -514,8 +504,7 @@
 											select="/source/request/parameter[@name='meter-serial-number']/value" />
 												</xsl:when>
 												<xsl:otherwise>
-													<xsl:value-of
-											select="/source/supply-generation/@meter-serial-number" />
+													<xsl:value-of select="/source/supply-era/@meter-serial-number" />
 												</xsl:otherwise>
 											</xsl:choose>
 										</xsl:attribute>
@@ -535,7 +524,7 @@
 														</xsl:if>
 													</xsl:when>
 													<xsl:otherwise>
-														<xsl:if test="@id = /source/supply-generation/pc/@id">
+														<xsl:if test="@id = /source/era/pc/@id">
 															<xsl:attribute name="selected" />
 														</xsl:if>
 													</xsl:otherwise>
@@ -556,14 +545,13 @@
 											select="/source/request/parameter[@name='mtc-code']/value" />
 													</xsl:when>
 													<xsl:otherwise>
-														<xsl:value-of select="/source/supply-generation/mtc/@code" />
+														<xsl:value-of select="/source/era/mtc/@code" />
 													</xsl:otherwise>
 												</xsl:choose>
 											</xsl:attribute>
 									</input>
 								</label>
-								<xsl:value-of
-									select="concat(' ', /source/supply-generation/mtc/@description)" />
+								<xsl:value-of select="concat(' ', /source/era/mtc/@description)" />
 
 								<br />
 								<label>
@@ -579,7 +567,7 @@
 														</xsl:if>
 													</xsl:when>
 													<xsl:otherwise>
-														<xsl:if test="@id = /source/supply-generation/cop/@id">
+														<xsl:if test="@id = /source/supply-era/cop/@id">
 															<xsl:attribute name="selected" />
 														</xsl:if>
 													</xsl:otherwise>
@@ -600,14 +588,13 @@
 											select="/source/request/parameter[@name='ssc-code']/value" />
 													</xsl:when>
 													<xsl:otherwise>
-														<xsl:value-of select="/source/supply-generation/ssc/@code" />
+														<xsl:value-of select="/source/supply-era/ssc/@code" />
 													</xsl:otherwise>
 												</xsl:choose>
 											</xsl:attribute>
 									</input>
 								</label>
-								<xsl:value-of
-									select="concat(' ', /source/supply-generation/ssc/@description)" />
+								<xsl:value-of select="concat(' ', /source/era/ssc/@description)" />
 
 								<br />
 								<br />
@@ -623,8 +610,7 @@
 														<xsl:value-of select="'checked'" />
 													</xsl:attribute>
 												</xsl:when>
-												<xsl:when
-													test="/source/supply-generation/mpan[llfc/@is-import='true']">
+												<xsl:when test="/source/era/@imp-mpan-core">
 													<xsl:attribute name="checked">
 														<xsl:value-of select="'checked'" />
 													</xsl:attribute>
@@ -646,14 +632,14 @@
 													</xsl:when>
 													<xsl:otherwise>
 														<xsl:value-of
-												select="/source/supply-generation/mpan[llfc/@is-import='true']/llfc/@code" />
+												select="/source/era/imp-llfc/@code" />
 													</xsl:otherwise>
 												</xsl:choose>
 											</xsl:attribute>
 										</input>
 									</label>
 									<xsl:value-of
-										select="concat(' ', /source/supply-generation/mpan[llfc/@is-import='true']/llfc/@description)" />
+										select="concat(' ', /source/era/imp-llfc/@description)" />
 									<br />
 									<label>
 										<xsl:value-of select="'MPAN Core '" />
@@ -668,7 +654,7 @@
 														</xsl:when>
 														<xsl:otherwise>
 																<xsl:value-of
-												select="/source/supply-generation/mpan[llfc/@is-import='true']/mpan-core/@core" />
+												select="/source/era/@imp-mpan-core" />
 														</xsl:otherwise>
 														</xsl:choose>
 											</xsl:attribute>
@@ -687,8 +673,7 @@
 												select="/source/request/parameter[@name='import-agreed-supply-capacity']/value" />
 													</xsl:when>
 													<xsl:otherwise>
-														<xsl:value-of
-												select="/source/supply-generation/mpan[llfc/@is-import='true']/@agreed-supply-capacity" />
+														<xsl:value-of select="/source/era/@imp-sc" />
 													</xsl:otherwise>
 												</xsl:choose>
 											</xsl:attribute>
@@ -711,7 +696,7 @@
 														</xsl:when>
 														<xsl:otherwise>
 															<xsl:if
-																test="@id = /source/supply-generation/mpan[llfc/@is-import='true']/supplier-contract/@id">
+																test="@id = /source/era/supplier-contract[@is-import='true']/@id">
 																<xsl:attribute name="selected" />
 															</xsl:if>
 														</xsl:otherwise>
@@ -728,13 +713,13 @@
 											<xsl:attribute name="value">
 												<xsl:choose>
 													<xsl:when
-												test="/source/request/parameter[@name='import-supplier-account']">
+												test="/source/request/parameter[@name='imp-supplier-account']">
 														<xsl:value-of
-												select="/source/request/parameter[@name='import-supplier-account']/value" />
+												select="/source/request/parameter[@name='imp-supplier-account']/value" />
 													</xsl:when>
 													<xsl:otherwise>
 														<xsl:value-of
-												select="/source/supply-generation/mpan[llfc/@is-import='true']/@supplier-account" />
+												select="/source/era/@imp-supplier-account" />
 													</xsl:otherwise>
 												</xsl:choose>
 											</xsl:attribute>
@@ -755,8 +740,7 @@
 														<xsl:value-of select="'checked'" />
 													</xsl:attribute>
 												</xsl:when>
-												<xsl:when
-													test="/source/supply-generation/mpan[llfc/@is-import='false']">
+												<xsl:when test="/source/era/@exp-mpan-core">
 													<xsl:attribute name="checked">
 														<xsl:value-of select="'checked'" />
 													</xsl:attribute>
@@ -778,14 +762,13 @@
 													</xsl:when>
 													<xsl:otherwise>
 														<xsl:value-of
-												select="/source/supply-generation/mpan[llfc/@is-import='false']/llfc/@code" />
+												select="/source/era/exp-llfc/@code" />
 													</xsl:otherwise>
 												</xsl:choose>
 											</xsl:attribute>
 										</input>
 									</label>
-									<xsl:value-of
-										select="concat(' ', /source/supply-generation/mpan[llfc/@is-import='false']/llfc/@description)" />
+									<xsl:value-of select="concat(' ', /source/era/exp-llfc/@description)" />
 									<br />
 									<label>
 										<xsl:value-of select="'MPAN Core '" />
@@ -799,8 +782,7 @@
 															</xsl:value-of>
 														</xsl:when>
 														<xsl:otherwise>
-																<xsl:value-of
-												select="/source/supply-generation/mpan[llfc/@is-import='false']/mpan-core/@core" />
+																<xsl:value-of select="/source/era/@exp-mpan-core" />
 														</xsl:otherwise>
 														</xsl:choose>
 											</xsl:attribute>
@@ -819,8 +801,7 @@
 												select="/source/request/parameter[@name='export-agreed-supply-capacity']/value" />
 													</xsl:when>
 													<xsl:otherwise>
-														<xsl:value-of
-												select="/source/supply-generation/mpan[llfc/@is-import='false']/@agreed-supply-capacity" />
+														<xsl:value-of select="/source/era/@exp-sc" />
 													</xsl:otherwise>
 												</xsl:choose>
 											</xsl:attribute>
@@ -843,7 +824,7 @@
 														</xsl:when>
 														<xsl:otherwise>
 															<xsl:if
-																test="@id = /source/supply-generation/mpan[llfc/@is-import='false']/supplier-contract/@id">
+																test="@id = /source/era/supplier-contract[@is-import='false']/@id">
 																<xsl:attribute name="selected" />
 															</xsl:if>
 														</xsl:otherwise>
@@ -855,9 +836,9 @@
 									</label>
 									<xsl:value-of select="' '" />
 									<a
-										href="{/source/request/@context-path}/supplier-contracts/{/source/supply-generation/mpan[llfc/@is-import='false']/account/supplier-contract/@id}">
+										href="{/source/request/@context-path}/supplier-contracts/{/source/era/supplier-contract[@is-import='false']/@id}">
 										<xsl:value-of
-											select="/source/supply-generation/mpan[llfc/@is-import='false']/account/supplier-contract/@name" />
+											select="/source/era/supplier-contract[@is-import='false']/@name" />
 									</a>
 									<br />
 									<label>
@@ -871,8 +852,7 @@
 												select="/source/request/parameter[@name='export-supplier-account']/value" />
 													</xsl:when>
 													<xsl:otherwise>
-														<xsl:value-of
-												select="/source/supply-generation/mpan[llfc/@is-import='false']/@supplier-account" />
+														<xsl:value-of select="/source/era/@exp-supplier-account" />
 													</xsl:otherwise>
 												</xsl:choose>
 											</xsl:attribute>
@@ -886,11 +866,11 @@
 							</fieldset>
 						</form>
 						<br />
-						<xsl:if test="not(/source/@num-generations='1')">
+						<xsl:if test="not(/source/@num-eras='1')">
 							<form action=".">
 								<fieldset>
 									<legend>
-										Delete this supply generation
+										Delete this supply era
 									</legend>
 									<input type="hidden" name="view" value="confirm-delete" />
 									<input type="submit" value="Delete" />

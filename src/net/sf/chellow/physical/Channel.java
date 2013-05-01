@@ -308,7 +308,7 @@ public class Channel extends PersistentEntity {
 		List<ChannelSnag> snags = (List<ChannelSnag>) Hiber
 				.session()
 				.createQuery(
-						"from ChannelSnag snag where snag.channel = :channel and snag.startDate.date < snag.channel.supplyGeneration.startDate.date order by snag.startDate.date")
+						"from ChannelSnag snag where snag.channel = :channel and snag.startDate.date < snag.channel.era.startDate.date order by snag.startDate.date")
 				.setEntity("channel", this).list();
 		if (!snags.isEmpty()) {
 			HhStartDate startDate = snags.get(0).getStartDate();

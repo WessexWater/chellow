@@ -302,7 +302,7 @@ def hh_time_beginning_20(ds, hh):
 
 def year_md_095(data_source, finish):
     if data_source.site is None:
-        return year_md_095_supply(data_source.supply_generation.getSupply(),
+        return year_md_095_supply(data_source.supply_era.getSupply(),
                 finish)
     else:
         return year_md_095_site(data_source, finish)

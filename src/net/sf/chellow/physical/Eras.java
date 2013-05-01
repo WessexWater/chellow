@@ -39,105 +39,100 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 public class Eras extends EntityList {
-        public static final UriPathElement URI_ID;
+	public static final UriPathElement URI_ID;
 
-        static {
-                try {
-                        URI_ID = new UriPathElement("generations");
-                } catch (HttpException e) {
-                        throw new RuntimeException(e);
-                }
-        }
+	static {
+		try {
+			URI_ID = new UriPathElement("eras");
+		} catch (HttpException e) {
+			throw new RuntimeException(e);
+		}
+	}
 
-        private Supply supply;
+	private Supply supply;
 
-        Eras(Supply supply) {
-                setSupply(supply);
-        }
+	Eras(Supply supply) {
+		setSupply(supply);
+	}
 
-        void setSupply(Supply supply) {
-                this.supply = supply;
-        }
+	void setSupply(Supply supply) {
+		this.supply = supply;
+	}
 
-        public Supply getSupply() {
-                return supply;
-        }
+	public Supply getSupply() {
+		return supply;
+	}
 
-        public MonadUri getEditUri() throws HttpException {
-                return supply.getEditUri().resolve(getUriId()).append("/");
-        }
+	public MonadUri getEditUri() throws HttpException {
+		return supply.getEditUri().resolve(getUriId()).append("/");
+	}
 
-        public UriPathElement getUriId() {
-                return URI_ID;
-        }
+	public UriPathElement getUriId() {
+		return URI_ID;
+	}
 
-        public void httpPost(Invocation inv) throws HttpException {
-                Hiber.setReadWrite();
-                Date startDate = inv.getDateTime("start");
-                Document doc = document();
-                if (!inv.isValid()) {
-                        throw new UserException(doc);
-                }
-                Era era = null;
-                try {
-                        era = supply.insertEra(HhStartDate
-                                        .roundDown(startDate));
-                        Hiber.commit();
-                } catch (UserException e) {
-                        Hiber.rollBack();
-                        e.setDocument(doc);
-                        throw e;
-                }
-                inv.sendSeeOther(era.getEditUri());
-        }
+	public void httpPost(Invocation inv) throws HttpException {
+		Hiber.setReadWrite();
+		Date startDate = inv.getDateTime("start");
+		Document doc = document();
+		if (!inv.isValid()) {
+			throw new UserException(doc);
+		}
+		Era era = null;
+		try {
+			era = supply.insertEra(HhStartDate.roundDown(startDate));
+			Hiber.commit();
+		} catch (UserException e) {
+			Hiber.rollBack();
+			e.setDocument(doc);
+			throw e;
+		}
+		inv.sendSeeOther(era.getEditUri());
+	}
 
-        public void httpGet(Invocation inv) throws HttpException {
-                inv.sendOk(document());
-        }
+	public void httpGet(Invocation inv) throws HttpException {
+		inv.sendOk(document());
+	}
 
-        public Document document() throws HttpException {
-                Document doc = MonadUtils.newSourceDocument();
-                Element source = doc.getDocumentElement();
-                Element generationsElement = toXml(doc);
-                source.appendChild(generationsElement);
-                generationsElement.appendChild(supply.toXml(doc,
-                                new XmlTree("gspGroup")));
-                for (Era era : supply.getEras()) {
-                        generationsElement.appendChild(era.toXml(
-                                        doc,
-                                        new XmlTree("mpans", new XmlTree("core").put("llfc")).put(
-                                                        "mtc").put("pc")));
-                }
-                source.appendChild(new MonadDate().toXml(doc));
-                source.appendChild(MonadDate.getMonthsXml(doc));
-                source.appendChild(MonadDate.getDaysXml(doc));
-                source.appendChild(MonadDate.getHoursXml(doc));
-                source.appendChild(HhStartDate.getHhMinutesXml(doc));
-                return doc;
-        }
+	public Document document() throws HttpException {
+		Document doc = MonadUtils.newSourceDocument();
+		Element source = doc.getDocumentElement();
+		Element erasElement = toXml(doc);
+		source.appendChild(erasElement);
+		erasElement.appendChild(supply.toXml(doc, new XmlTree("gspGroup")));
+		for (Era era : supply.getEras()) {
+			erasElement
+					.appendChild(era.toXml(doc, new XmlTree("mtc").put("pc")));
+		}
+		source.appendChild(new MonadDate().toXml(doc));
+		source.appendChild(MonadDate.getMonthsXml(doc));
+		source.appendChild(MonadDate.getDaysXml(doc));
+		source.appendChild(MonadDate.getHoursXml(doc));
+		source.appendChild(HhStartDate.getHhMinutesXml(doc));
+		return doc;
+	}
 
-        public Era getChild(UriPathElement uriId) throws HttpException {
-                Era era = (Era) Hiber
-                                .session()
-                                .createQuery(
-                                                "from Era era where era.supply = :supply and era.id = :eraId")
-                                .setEntity("supply", supply)
-                                .setLong("eraId", Long.parseLong(uriId.toString()))
-                                .uniqueResult();
-                if (era == null) {
-                        throw new NotFoundException(
-                                        "The era cannot be found.");
-                }
-                return era;
-        }
+	public Era getChild(UriPathElement uriId) throws HttpException {
+		Era era = (Era) Hiber
+				.session()
+				.createQuery(
+						"from Era era where era.supply = :supply and era.id = :eraId")
+				.setEntity("supply", supply)
+				.setLong("eraId", Long.parseLong(uriId.toString()))
+				.uniqueResult();
+		if (era == null) {
+			throw new NotFoundException("The era cannot be found.");
+		}
+		return era;
+	}
 
-        public Element toXml(Document doc) throws HttpException {
-                return doc.createElement("supply-generations");
-        }
+	public Element toXml(Document doc) throws HttpException {
+		return doc.createElement("eras");
+	}
 
-        @Override
-        public URI getViewUri() throws HttpException {
-                // TODO Auto-generated method stub
-                return null;
-        }
+	@Override
+	public URI getViewUri() throws HttpException {
+		// TODO Auto-generated method stub
+		return null;
+	}
 }

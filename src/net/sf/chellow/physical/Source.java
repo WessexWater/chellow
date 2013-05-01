@@ -1,6 +1,6 @@
 /*******************************************************************************
  * 
- *  Copyright (c) 2005, 2009 Wessex Water Services Limited
+ *  Copyright (c) 2005-2013 Wessex Water Services Limited
  *  
  *  This file is part of Chellow.
  * 
@@ -122,10 +122,10 @@ public class Source extends PersistentEntity {
 	}
 
 	public Element toXml(Document doc) throws HttpException {
-        Element element = super.toXml(doc, "site");
+        Element element = super.toXml(doc, "source");
 
-        element.setAttribute("name", name);
         element.setAttribute("code", code);
+        element.setAttribute("name", name);
         return element;
 }
 }

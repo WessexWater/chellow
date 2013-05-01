@@ -11,7 +11,7 @@
 					href="{/source/request/@context-path}/reports/19/output/" />
 				<title>
 					Chellow &gt; Supplies &gt;
-					<xsl:value-of select="/source/supply-generations/supply/@id" />
+					<xsl:value-of select="/source/supply-eras/supply/@id" />
 					&gt; Generations
 				</title>
 			</head>
@@ -26,10 +26,10 @@
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/reports/7/output/?supply-id={/source/supply-generations/supply/@id}">
-						<xsl:value-of select="/source/supply-generations/supply/@id" />
+						href="{/source/request/@context-path}/reports/7/output/?supply-id={/source/eras/supply/@id}">
+						<xsl:value-of select="/source/eras/supply/@id" />
 					</a>
-					&gt; Generations
+					&gt; Eras
 				</p>
 				<br />
 				<xsl:if test="//message">
@@ -42,7 +42,7 @@
 					</ul>
 				</xsl:if>
 				<table>
-					<caption>Generations</caption>
+					<caption>Eras</caption>
 					<thead>
 						<tr>
 							<th rowspan="2">Chellow Id</th>
@@ -56,7 +56,7 @@
 						</tr>
 					</thead>
 					<tbody>
-						<xsl:for-each select="/source/supply-generations/supply-generation">
+						<xsl:for-each select="/source/eras/era">
 							<tr>
 								<td>
 									<xsl:value-of select="@id" />
@@ -77,10 +77,10 @@
 									</xsl:choose>
 								</td>
 								<td>
-									<xsl:value-of select="mpan[llfc/@is-import='true']/mpan-core/@core" />
+									<xsl:value-of select="@imp-mpan-core" />
 								</td>
 								<td>
-									<xsl:value-of select="mpan[llfc/@is-import='false']/mpan-core/@core" />
+									<xsl:value-of select="@exp-mpan-core" />
 								</td>
 							</tr>
 						</xsl:for-each>
@@ -90,8 +90,8 @@
 				<form method="post" action=".">
 					<fieldset>
 						<legend>
-							Add new supply generation
-								</legend>
+							Add new supply era
+						</legend>
 						<br />
 						<label>
 							<xsl:value-of select="'Start date '" />

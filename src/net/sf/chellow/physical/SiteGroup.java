@@ -98,7 +98,7 @@ public class SiteGroup {
                 Query query = Hiber
                                 .session()
                                 .createQuery(
-                                                "select datum.startDate.date , datum.value from HhDatum datum where datum.channel.supplyGeneration.supply = :supply and datum.channel.isImport = :isImport and datum.channel.isKwh = true and datum.startDate.date >= :from and datum.startDate.date <= :to order by datum.startDate.date")
+                                                "select datum.startDate.date , datum.value from HhDatum datum where datum.channel.era.supply = :supply and datum.channel.isImport = :isImport and datum.channel.isKwh = true and datum.startDate.date >= :from and datum.startDate.date <= :to order by datum.startDate.date")
                                 .setTimestamp("from", from.getDate()).setTimestamp("to",
                                                 to.getDate());
                 List<List<Double>> hhStreams = new ArrayList<List<Double>>();
