@@ -38,7 +38,7 @@
 						</tr>
 					</thead>
 					<tbody>
-						<xsl:for-each select="/source/non-core-contracts/contract">
+						<xsl:for-each select="/source/non-core-contracts/non-core-contract">
 							<tr>
 								<td>
 									<a href="{/source/request/@context-path}/non-core-contracts/{@id}/">

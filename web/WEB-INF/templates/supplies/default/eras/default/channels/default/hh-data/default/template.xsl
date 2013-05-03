@@ -4,7 +4,6 @@
 	<xsl:output method="html" encoding="US-ASCII"
 		doctype-public="-//W3C//DTD HTML 4.01//EN" doctype-system="http://www.w3.org/TR/html4/strict.dtd"
 		indent="yes" />
-
 	<xsl:template match="/">
 		<html>
 			<head>
@@ -13,9 +12,9 @@
 				<title>
 					Chellow &gt; Supplies &gt;
 					<xsl:value-of
-						select="/source/hh-datum/channel/supply-era/supply/@id" />
+						select="/source/hh-datum/channel/era/supply/@id" />
 					&gt; Supply Generations &gt;
-					<xsl:value-of select="/source/hh-datum/channel/supply-era/@id" />
+					<xsl:value-of select="/source/hh-datum/channel/era/@id" />
 					&gt; Channels &gt;
 					<xsl:value-of select="/source/hh-datum/channel/@id" />
 					&gt; HH Data &gt;
@@ -33,24 +32,24 @@
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/reports/7/output/?supply-id={/source/hh-datum/channel/supply-era/supply/@id}">
+						href="{/source/request/@context-path}/reports/7/output/?supply-id={/source/hh-datum/channel/era/supply/@id}">
 						<xsl:value-of
-							select="/source/hh-datum/channel/supply-era/supply/@id" />
+							select="/source/hh-datum/channel/era/supply/@id" />
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/supplies/{/source/hh-datum/channel/supply-era/supply/@id}/eras/{/source/hh-datum/channel/supply-era/@id}/channels/">
+						href="{/source/request/@context-path}/supplies/{/source/hh-datum/channel/era/supply/@id}/eras/{/source/hh-datum/channel/era/@id}/channels/">
 						<xsl:value-of
-							select="concat('Generation ', /source/hh-datum/channel/supply-era/@id, ' channels')" />
+							select="concat('Generation ', /source/hh-datum/channel/era/@id, ' channels')" />
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/supplies/{/source/hh-datum/channel/supply-era/supply/@id}/eras/{/source/hh-datum/channel/supply-era/@id}/channels/{/source/hh-datum/channel/@id}/">
+						href="{/source/request/@context-path}/supplies/{/source/hh-datum/channel/era/supply/@id}/eras/{/source/hh-datum/channel/era/@id}/channels/{/source/hh-datum/channel/@id}/">
 						<xsl:value-of select="/source/hh-datum/channel/@id" />
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/supplies/{/source/hh-datum/channel/supply-era/supply/@id}/eras/{/source/hh-datum/channel/supply-era/@id}/channels/{/source/hh-datum/channel/@id}/hh-data/">
+						href="{/source/request/@context-path}/supplies/{/source/hh-datum/channel/era/supply/@id}/eras/{/source/hh-datum/channel/era/@id}/channels/{/source/hh-datum/channel/@id}/hh-data/">
 						<xsl:value-of select="'HH Data'" />
 					</a>
 					&gt;
@@ -71,7 +70,7 @@
 						<td>Start Date</td>
 						<td>
 							<xsl:value-of
-								select="concat(/source/hh-datum/channel/supply-era/hh-start-date[@label='start']/@year, '-', /source/hh-datum/channel/supply-era/hh-start-date[@label='start']/@month, '-', /source/hh-datum/channel/supply-era/hh-start-date[@label='start']/@day, ' ', /source/hh-datum/channel/supply-era/hh-start-date[@label='start']/@hour, ':', /source/hh-datum/channel/supply-era/hh-start-date[@label='start']/@minute)" />
+								select="concat(/source/hh-datum/channel/era/hh-start-date[@label='start']/@year, '-', /source/hh-datum/channel/era/hh-start-date[@label='start']/@month, '-', /source/hh-datum/channel/era/hh-start-date[@label='start']/@day, ' ', /source/hh-datum/channel/era/hh-start-date[@label='start']/@hour, ':', /source/hh-datum/channel/era/hh-start-date[@label='start']/@minute)" />
 						</td>
 					</tr>
 					<tr>
@@ -79,9 +78,9 @@
 						<td>
 							<xsl:choose>
 								<xsl:when
-									test="/source/hh-datum/channel/supply-era/hh-start-date[@label='finish']">
+									test="/source/hh-datum/channel/era/hh-start-date[@label='finish']">
 									<xsl:value-of
-										select="concat(/source/hh-datum/channel/supply-era/hh-start-date[@label='finish']/@year, '-', /source/hh-datum/channel/supply-era/hh-start-date[@label='finish']/@month, '-', /source/hh-datum/channel/supply-era/hh-start-date[@label='finish']/@day, ' ', /source/hh-datum/channel/supply-era/hh-start-date[@label='finish']/@hour, ':', /source/hh-datum/channel/supply-era/hh-start-date[@label='finish']/@minute)" />
+										select="concat(/source/hh-datum/channel/era/hh-start-date[@label='finish']/@year, '-', /source/hh-datum/channel/era/hh-start-date[@label='finish']/@month, '-', /source/hh-datum/channel/era/hh-start-date[@label='finish']/@day, ' ', /source/hh-datum/channel/era/hh-start-date[@label='finish']/@hour, ':', /source/hh-datum/channel/era/hh-start-date[@label='finish']/@minute)" />
 								</xsl:when>
 								<xsl:otherwise>
 									Ongoing

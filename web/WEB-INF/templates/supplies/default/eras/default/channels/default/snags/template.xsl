@@ -11,10 +11,9 @@
 					href="{/source/request/@context-path}/reports/19/output/" />
 				<title>
 					Chellow &gt; Supplies &gt;
-					<xsl:value-of
-						select="/source/channel-snags/channel/supply-era/supply/@id" />
+					<xsl:value-of select="/source/channel-snags/channel/era/supply/@id" />
 					&gt; Supply Generations &gt;
-					<xsl:value-of select="/source/channel-snags/channel/supply-era/@id" />
+					<xsl:value-of select="/source/channel-snags/channel/era/@id" />
 					&gt; Channels &gt;
 					<xsl:value-of select="/source/channel-snags/channel/@id" />
 					&gt; Snags
@@ -40,19 +39,18 @@
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/reports/7/output/?supply-id={/source/channel-snags/channel/supply-era/supply/@id}">
-						<xsl:value-of
-							select="/source/channel-snags/channel/supply-era/supply/@id" />
+						href="{/source/request/@context-path}/reports/7/output/?supply-id={/source/channel-snags/channel/era/supply/@id}">
+						<xsl:value-of select="/source/channel-snags/channel/era/supply/@id" />
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/supplies/{/source/channel-snags/channel/supply-era/supply/@id}/eras/{/source/channel-snags/channel/supply-era/@id}/channels/">
+						href="{/source/request/@context-path}/supplies/{/source/channel-snags/channel/era/supply/@id}/eras/{/source/channel-snags/channel/era/@id}/channels/">
 						<xsl:value-of
-							select="concat('Generation ', /source/channel-snags/channel/supply-era/@id, ' channels')" />
+							select="concat('Generation ', /source/channel-snags/channel/era/@id, ' channels')" />
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/supplies/{/source/channel-snags/channel/supply-era/supply/@id}/eras/{/source/channel-snags/channel/supply-era/@id}/channels/{/source/channel-snags/channel/@id}/">
+						href="{/source/request/@context-path}/supplies/{/source/channel-snags/channel/era/supply/@id}/eras/{/source/channel-snags/channel/era/@id}/channels/{/source/channel-snags/channel/@id}/">
 						<xsl:value-of select="/source/channel-snags/channel/@id" />
 					</a>
 					&gt; Snags

@@ -159,12 +159,15 @@ public class Supply extends PersistentEntity {
 			Contract exportSupplierContract = null;
 			Integer exportAgreedSupplyCapacity = null;
 			String exportLlfcCode = null;
-			String exportMpanStr = null;
+			String expMpanCore = null;
 			String exportSupplierAccount = null;
 			if (values.length > 25) {
-				exportMpanStr = GeneralImport.addField(csvElement,
+				expMpanCore = GeneralImport.addField(csvElement,
 						"Export MPAN Core", values, 25);
-				if (exportMpanStr != null && exportMpanStr.trim().length() != 0) {
+				if (expMpanCore.length() == 0) {
+					expMpanCore = null;
+				}
+				if (expMpanCore != null) {
 					exportLlfcCode = GeneralImport.addField(csvElement,
 							"Export LLFC", values, 26);
 					String exportAgreedSupplyCapacityStr = GeneralImport
@@ -191,9 +194,8 @@ public class Supply extends PersistentEntity {
 					mopContract, mopAccount, hhdcContract, hhdcAccount,
 					meterSerialNumber, pc, mtcCode, cop, ssc, impMpanCore,
 					importLlfcCode, impSupplierContract, impSupplierAccount,
-					impSc, exportMpanStr, exportLlfcCode,
-					exportSupplierContract, exportSupplierAccount,
-					exportAgreedSupplyCapacity);
+					impSc, expMpanCore, exportLlfcCode, exportSupplierContract,
+					exportSupplierAccount, exportAgreedSupplyCapacity);
 			Hiber.flush();
 			Era era = supply.getEraFirst();
 			if (hasImportKwh) {
@@ -445,21 +447,46 @@ public class Supply extends PersistentEntity {
 				hasImportKwh, hasImportKvarh, hasExportKwh, hasExportKvarh);
 	}
 
+	@SuppressWarnings("unchecked")
 	public Era insertEra(Site physicalSite, List<Site> logicalSites,
 			HhStartDate startDate, Contract mopContract, String mopAccount,
 			Contract hhdcContract, String hhdcAccount, String msn, Pc pc,
-			String mtcCode, Cop cop, Ssc ssc, String importMpanCoreStr,
+			String mtcCode, Cop cop, Ssc ssc, String impMpanCore,
 			String importLlfcCode, Contract importSupplierContract,
-			String importSupplierAccount, Integer impSc,
-			String exportMpanCoreStr, String exportLlfcCode,
-			Contract exportSupplierContract, String exportSupplierAccount,
-			Integer exportAgreedSupplyCapacity, boolean hasImportKwh,
-			boolean hasImportKvarh, boolean hasExportKwh, boolean hasExportKvarh)
-			throws HttpException {
+			String importSupplierAccount, Integer impSc, String expMpanCore,
+			String exportLlfcCode, Contract exportSupplierContract,
+			String exportSupplierAccount, Integer exportAgreedSupplyCapacity,
+			boolean hasImportKwh, boolean hasImportKvarh, boolean hasExportKwh,
+			boolean hasExportKvarh) throws HttpException {
 		HhStartDate finishDate = null;
 		Era coveredEra = null;
 
-		if (!eras.isEmpty()) {
+		if (eras.isEmpty()) {
+			if (impMpanCore != null) {
+
+				List<Era> existingEras = (List<Era>) Hiber
+						.session()
+						.createQuery(
+								"from Era era where era.impMpanCore = :mpanCore or era.expMpanCore = :mpanCore")
+						.setString("mpanCore", impMpanCore).list();
+				if (!existingEras.isEmpty()) {
+					throw new UserException("The MPAN core " + impMpanCore
+							+ " is already attached to another supply.");
+				}
+			}
+			if (expMpanCore != null) {
+
+				List<Era> existingEras = (List<Era>) Hiber
+						.session()
+						.createQuery(
+								"from Era era where era.impMpanCore = :mpanCore or era.expMpanCore = :mpanCore")
+						.setString("mpanCore", expMpanCore).list();
+				if (!existingEras.isEmpty()) {
+					throw new UserException("The MPAN core " + expMpanCore
+							+ " is already attached to another supply.");
+				}
+			}
+		} else {
 			if (startDate.after(getEraLast().getFinishDate())) {
 				throw new UserException(
 						"One can't add a era that starts after the supply has finished.");
@@ -503,9 +530,9 @@ public class Supply extends PersistentEntity {
 		Hiber.flush();
 		era.update(startDate, finishDate, mopContract, mopAccount,
 				hhdcContract, hhdcAccount, msn, pc, mtcCode, cop, ssc,
-				importMpanCoreStr, importLlfcCode, importSupplierContract,
-				importSupplierAccount, impSc, exportMpanCoreStr,
-				exportLlfcCode, exportSupplierContract, exportSupplierAccount,
+				impMpanCore, importLlfcCode, importSupplierContract,
+				importSupplierAccount, impSc, expMpanCore, exportLlfcCode,
+				exportSupplierContract, exportSupplierAccount,
 				exportAgreedSupplyCapacity);
 		Hiber.flush();
 		if (coveredEra != null) {

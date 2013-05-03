@@ -14,9 +14,9 @@
 				<title>
 					Chellow &gt; Supplies &gt;
 					<xsl:value-of
-						select="/source/hh-data/channel/supply-era/supply/@id" />
+						select="/source/hh-data/channel/era/supply/@id" />
 					&gt; Supply Generations &gt;
-					<xsl:value-of select="/source/hh-data/channel/supply-era/@id" />
+					<xsl:value-of select="/source/hh-data/channel/era/@id" />
 					&gt; Channels &gt;
 					<xsl:value-of select="/source/hh-data/channel/@id" />
 					&gt; HH Data
@@ -33,18 +33,18 @@
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/reports/7/output/?supply-id={/source/hh-data/channel/supply-era/supply/@id}">
+						href="{/source/request/@context-path}/reports/7/output/?supply-id={/source/hh-data/channel/era/supply/@id}">
 						<xsl:value-of
-							select="/source/hh-data/channel/supply-era/supply/@id" />
+							select="/source/hh-data/channel/era/supply/@id" />
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/supplies/{/source/hh-data/channel/supply-era/supply/@id}/eras/{/source/hh-data/channel/supply-era/@id}/channels/">
-						<xsl:value-of select="concat('Generation ', /source/hh-data/channel/supply-era/@id, ' channels')" />
+						href="{/source/request/@context-path}/supplies/{/source/hh-data/channel/era/supply/@id}/eras/{/source/hh-data/channel/era/@id}/channels/">
+						<xsl:value-of select="concat('Generation ', /source/hh-data/channel/era/@id, ' channels')" />
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/supplies/{/source/hh-data/channel/supply-era/supply/@id}/eras/{/source/hh-data/channel/supply-era/@id}/channels/{/source/hh-data/channel/@id}/">
+						href="{/source/request/@context-path}/supplies/{/source/hh-data/channel/era/supply/@id}/eras/{/source/hh-data/channel/era/@id}/channels/{/source/hh-data/channel/@id}/">
 						<xsl:value-of select="/source/hh-data/channel/@id" />
 					</a>
 					&gt; HH Data
@@ -65,7 +65,7 @@
 						<th>Start Date</th>
 						<td>
 							<xsl:value-of
-								select="concat(/source/hh-data/channel/supply-era/hh-start-date[@label='start']/@year, '-', /source/hh-data/channel/supply-era/hh-start-date[@label='start']/@month, '-', /source/hh-data/channel/supply-era/hh-start-date[@label='start']/@day, ' ', /source/hh-data/channel/supply-era/hh-start-date[@label='start']/@hour, ':', /source/hh-data/channel/supply-era/hh-start-date[@label='start']/@minute, ' Z')" />
+								select="concat(/source/hh-data/channel/era/hh-start-date[@label='start']/@year, '-', /source/hh-data/channel/era/hh-start-date[@label='start']/@month, '-', /source/hh-data/channel/era/hh-start-date[@label='start']/@day, ' ', /source/hh-data/channel/era/hh-start-date[@label='start']/@hour, ':', /source/hh-data/channel/era/hh-start-date[@label='start']/@minute, ' Z')" />
 						</td>
 					</tr>
 					<tr>
@@ -73,9 +73,9 @@
 						<td>
 							<xsl:choose>
 								<xsl:when
-									test="/source/hh-data/channel/supply-era/hh-start-date[@label='finish']">
+									test="/source/hh-data/channel/era/hh-start-date[@label='finish']">
 									<xsl:value-of
-										select="concat(/source/hh-data/channel/supply-era/hh-start-date[@label='finish']/@year, '-', /source/hh-data/channel/supply-era/hh-start-date[@label='finish']/@month, '-', /source/hh-data/channel/supply-era/hh-start-date[@label='finish']/@day, ' ', /source/hh-data/channel/supply-era/hh-start-date[@label='finish']/@hour, ':', /source/hh-data/channel/supply-era/hh-start-date[@label='finish']/@minute, ' Z')" />
+										select="concat(/source/hh-data/channel/era/hh-start-date[@label='finish']/@year, '-', /source/hh-data/channel/era/hh-start-date[@label='finish']/@month, '-', /source/hh-data/channel/era/hh-start-date[@label='finish']/@day, ' ', /source/hh-data/channel/era/hh-start-date[@label='finish']/@hour, ':', /source/hh-data/channel/era/hh-start-date[@label='finish']/@minute, ' Z')" />
 								</xsl:when>
 								<xsl:otherwise>
 									Ongoing
@@ -212,7 +212,7 @@
 									<tr>
 										<td>
 											<a
-												href="{/source/request/@context-path}/supplies/{/source/hh-data/channel/supply-era/supply/@id}/eras/{/source/hh-data/channel/supply-era/@id}/channels/{/source/hh-data/channel/@id}/hh-data/{@id}/">
+												href="{/source/request/@context-path}/supplies/{/source/hh-data/channel/era/supply/@id}/eras/{/source/hh-data/channel/era/@id}/channels/{/source/hh-data/channel/@id}/hh-data/{@id}/">
 												<xsl:value-of select="@id" />
 											</a>
 										</td>

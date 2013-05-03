@@ -84,12 +84,12 @@ public class SiteSnags extends EntityList {
                         ScrollableResults snags = Hiber
                                         .session()
                                         .createQuery(
-                                                        "from SiteSnag snag where snag.finishDate < :ignoreDate")
+                                                        "from Snag snag where snag.site is not null and snag.finishDate < :ignoreDate")
                                         .setTimestamp(
                                                         "ignoreDate", ignoreDate).scroll(
                                                         ScrollMode.FORWARD_ONLY);
                         while (snags.next()) {
-                                SiteSnag snag = (SiteSnag) snags.get(0);
+                                Snag snag = (Snag) snags.get(0);
                                 snag.setIsIgnored(true);
                                 Hiber.session().flush();
                                 Hiber.session().clear();
@@ -100,7 +100,7 @@ public class SiteSnags extends EntityList {
         }
 
         public Urlable getChild(UriPathElement urlId) throws HttpException {
-                return SiteSnag.getSiteSnag(urlId.toLong());
+                return Snag.getSnag(urlId.toLong());
         }
 
         public MonadUri getMonadUri() throws InternalException {

@@ -33,9 +33,7 @@
 		<mapping resource="hibernate/Era.hbm.xml" />
 		<mapping resource="hibernate/Supply.hbm.xml" />
 		<mapping resource="hibernate/HhDatum.hbm.xml" />
-		<mapping resource="hibernate/ChannelSnag.hbm.xml" />
 		<mapping resource="hibernate/Snag.hbm.xml" />
-		<mapping resource="hibernate/SiteSnag.hbm.xml" />
 		<mapping resource="hibernate/Configuration.hbm.xml" />
 		<mapping resource="hibernate/Channel.hbm.xml" />
 		<mapping resource="hibernate/SiteEra.hbm.xml" />

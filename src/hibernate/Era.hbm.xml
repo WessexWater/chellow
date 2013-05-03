@@ -97,7 +97,7 @@
 
 		<set name="channels" inverse="true" cascade="all,delete-orphan"
 			order-by="is_import desc, is_kwh desc">
-			<key column="supply_era_id" />
+			<key column="era_id" />
 			<one-to-many class="Channel" />
 		</set>
 	</class>

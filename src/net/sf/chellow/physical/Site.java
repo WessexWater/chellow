@@ -172,8 +172,8 @@ public class Site extends PersistentEntity {
 			throw new UserException(
 					"This site can't be deleted while there are still supply eras attached to it.");
 		}
-		for (SiteSnag snag : (List<SiteSnag>) Hiber.session()
-				.createQuery("from SiteSnag snag where site = :site")
+		for (Snag snag : (List<Snag>) Hiber.session()
+				.createQuery("from Snag snag where site = :site")
 				.setEntity("site", site).list()) {
 			snag.delete();
 		}

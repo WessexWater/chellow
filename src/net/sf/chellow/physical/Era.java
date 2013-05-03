@@ -549,14 +549,13 @@ public class Era extends PersistentEntity {
 			return (Era) Hiber
 					.session()
 					.createQuery(
-							"from Era era where era.impMpanCore = :mpanCore or era.expMpanCore = :mpanCore and era.finishDate is null)")
+							"from Era era where (era.impMpanCore = :mpanCore or era.expMpanCore = :mpanCore) and era.finishDate is null)")
 					.setString("mpanCore", mpanCore).uniqueResult();
 		} else {
-
 			return (Era) Hiber
 					.session()
 					.createQuery(
-							"from Era era where era.impMpanCore = :mpanCore or era.expMpanCore = :mpanCore and era.startDate.date <= :date and (era.finishDate.date >= :date or era.finishDate.date is null)")
+							"from Era era where (era.impMpanCore = :mpanCore or era.expMpanCore = :mpanCore) and era.startDate.date <= :date and (era.finishDate.date >= :date or era.finishDate.date is null)")
 					.setString("mpanCore", mpanCore)
 					.setTimestamp("date", date.getDate()).uniqueResult();
 		}
@@ -944,7 +943,7 @@ public class Era extends PersistentEntity {
 					+ isImport + " and kWh: " + isKwh + ".");
 		}
 		channels.add(channel);
-		channel.addSnag(ChannelSnag.SNAG_MISSING, getStartDate(),
+		channel.addSnag(Snag.SNAG_MISSING, getStartDate(),
 				getFinishDate());
 		return channel;
 	}
@@ -1379,14 +1378,14 @@ public class Era extends PersistentEntity {
 					while (hhData.next()) {
 						HhStartDate hhStartDate = (HhStartDate) hhData.get(0);
 						if (groupFinish.getNext().before(hhStartDate)) {
-							targetChannel.deleteSnag(ChannelSnag.SNAG_MISSING,
+							targetChannel.deleteSnag(Snag.SNAG_MISSING,
 									groupStart, groupFinish);
 							groupStart = groupFinish = hhStartDate;
 						} else {
 							groupFinish = hhStartDate;
 						}
 						if (((BigDecimal) hhData.get(1)).doubleValue() < 0) {
-							targetChannel.addSnag(ChannelSnag.SNAG_NEGATIVE,
+							targetChannel.addSnag(Snag.SNAG_NEGATIVE,
 									hhStartDate, hhStartDate);
 						}
 						if ((Character) hhData.get(2) != HhDatum.ACTUAL) {
@@ -1397,15 +1396,15 @@ public class Era extends PersistentEntity {
 						}
 
 						if (estStart != null && !hhStartDate.equals(estFinish)) {
-							targetChannel.addSnag(ChannelSnag.SNAG_ESTIMATED,
+							targetChannel.addSnag(Snag.SNAG_ESTIMATED,
 									estStart, estFinish);
 							estStart = null;
 						}
 					}
-					targetChannel.deleteSnag(ChannelSnag.SNAG_MISSING,
+					targetChannel.deleteSnag(Snag.SNAG_MISSING,
 							groupStart, groupFinish);
 					if (estStart != null) {
-						targetChannel.addSnag(ChannelSnag.SNAG_ESTIMATED,
+						targetChannel.addSnag(Snag.SNAG_ESTIMATED,
 								estStart, estFinish);
 					}
 					hhData.close();
@@ -1428,12 +1427,12 @@ public class Era extends PersistentEntity {
 					"One can't delete a channel if there are still HH data attached to it.");
 		}
 		// delete any concommitant snags
-		for (ChannelSnag snag : (List<ChannelSnag>) Hiber
+		for (Snag snag : (List<Snag>) Hiber
 				.session()
 				.createQuery(
-						"from ChannelSnag snag where snag.channel = :channel")
+						"from Snag snag where snag.channel = :channel")
 				.setEntity("channel", channel).list()) {
-			ChannelSnag.deleteChannelSnag(snag);
+			snag.delete();
 		}
 		channels.remove(channel);
 		Hiber.session().flush();

@@ -38,6 +38,7 @@ import net.sf.chellow.monad.types.MonadDate;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.physical.HhStartDate;
 import net.sf.chellow.physical.PersistentEntity;
+import net.sf.chellow.physical.RawRegisterRead;
 import net.sf.chellow.physical.ReadType;
 import net.sf.chellow.physical.RegisterRead;
 import net.sf.chellow.physical.Supply;
@@ -483,5 +484,15 @@ public class Bill extends PersistentEntity {
      Hiber.flush();
      read.attach();
      return read;
+}
+	 
+	 public RegisterRead insertRead(RawRegisterRead rawRead)
+             throws HttpException {
+     return insertRead(rawRead.getTpr(), rawRead.getCoefficient(),
+                     rawRead.getUnits(), rawRead.getMeterSerialNumber(),
+                     rawRead.getMpanStr(), rawRead.getPreviousDate(),
+                     rawRead.getPreviousValue(), rawRead.getPreviousType(),
+                     rawRead.getPresentDate(), rawRead.getPresentValue(),
+                     rawRead.getPresentType());
 }
 }

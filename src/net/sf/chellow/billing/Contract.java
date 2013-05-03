@@ -21,9 +21,12 @@
 
 package net.sf.chellow.billing;
 
+import java.io.IOException;
+import java.io.StringReader;
 import java.net.URI;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Properties;
 import java.util.Set;
 
 import javax.script.Invocable;
@@ -33,6 +36,7 @@ import javax.script.ScriptException;
 
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
+import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Invocation;
 import net.sf.chellow.monad.MonadUtils;
 import net.sf.chellow.monad.NotFoundException;
@@ -100,7 +104,7 @@ public class Contract extends PersistentEntity implements Comparable<Contract> {
 		Contract contract = (Contract) Hiber
 				.session()
 				.createQuery(
-						"from Contract contract where contract.market_role.code = :market_role_code and contract.id = :id")
+						"from Contract contract where contract.role.code = :marketRoleCode and contract.id = :id")
 				.setString("marketRoleCode", marketRoleCode).setLong("id", id)
 				.uniqueResult();
 		if (contract == null) {
@@ -636,8 +640,21 @@ public class Contract extends PersistentEntity implements Comparable<Contract> {
 	}
 
 	public MonadUri getEditUri() throws HttpException {
-		return Chellow.NON_CORE_CONTRACTS_INSTANCE.getEditUri()
-				.resolve(getUriId()).append("/");
+		char marketRoleCode = role.getCode();
+		if (marketRoleCode == 'Z') {
+			return Chellow.NON_CORE_CONTRACTS_INSTANCE.getEditUri()
+					.resolve(getUriId()).append("/");
+		} else if (marketRoleCode == 'X') {
+			return Chellow.SUPPLIER_CONTRACTS_INSTANCE.getEditUri()
+					.resolve(getUriId()).append("/");
+		} else {
+			throw new UserException("The market role " + marketRoleCode
+					+ " isn't recognized.");
+		}
+	}
+
+	public Batches batchesInstance() {
+		return new Batches(this);
 	}
 
 	@Override
@@ -781,5 +798,15 @@ public class Contract extends PersistentEntity implements Comparable<Contract> {
 
 	RateScripts rateScriptsInstance() {
 		return new RateScripts(this);
+	}
+
+	public String getProperty(String name) throws HttpException {
+		Properties properties = new Properties();
+		try {
+			properties.load(new StringReader(getProperties()));
+		} catch (IOException e) {
+			throw new InternalException(e);
+		}
+		return properties.getProperty(name);
 	}
 }

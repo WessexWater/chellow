@@ -5111,9 +5111,9 @@ source.setAttribute("pending-site-count", str(totalSites - activeSites))]]></val
 		<value><![CDATA[true]]></value>
 		<value><![CDATA[Site Group Snags]]></value>
 		<value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree
-from net.sf.chellow.billing import HhdcContract
+from net.sf.chellow.billing import Contract
 
-snags = Hiber.session().createQuery("select snag, snag.site from SiteSnag snag where snag.isIgnored = false order by snag.site.code, snag.startDate.date desc").list()
+snags = Hiber.session().createQuery("select snag, snag.site from Snag snag where snag.site is not null and snag.isIgnored = false order by snag.site.code, snag.startDate.date desc").list()
 snags_element = doc.createElement('site-snags')
 source.appendChild(snags_element)
 for snag_row in snags:
@@ -5121,7 +5121,7 @@ for snag_row in snags:
     snags_element.appendChild(snag_element)
     site_element = snag_row[1].toXml(doc)
     snag_element.appendChild(site_element)
-sites = Hiber.session().createQuery("select count(distinct snag.site) from SiteSnag snag where snag.isIgnored = false").uniqueResult()
+sites = Hiber.session().createQuery("select count(distinct snag.site) from Snag snag where snag.site is not null and snag.isIgnored = false").uniqueResult()
 snags_element.setAttribute("snag-count", str(len(snags)))
 snags_element.setAttribute("site-count", str(sites))]]></value>
 		<value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
@@ -6447,7 +6447,7 @@ source.appendChild(mtc.toXml(doc, XmlTree('meterType').put('paymentType').put('d
 		<value><![CDATA[65]]></value>
 		<value><![CDATA[true]]></value>
 		<value><![CDATA[HHDC Contract HH Data Import]]></value>
-		<value><![CDATA[from net.sf.chellow.billing import HhdcContract
+		<value><![CDATA[from net.sf.chellow.billing import Contract
 from net.sf.chellow.monad import XmlTree, MonadMessage
 
 hhdc_contract_id = inv.getLong('hhdc-contract-id')
@@ -6455,7 +6455,7 @@ process_id = inv.getLong('process-id')
 
 processes =  inv.getMonad().getServletConfig().getServletContext().getAttribute('net.sf.chellow.hh_import_map')
 
-contract = HhdcContract.getHhdcContract(hhdc_contract_id)
+contract = Contract.getHhdcContract(hhdc_contract_id)
 
 process = processes[hhdc_contract_id][process_id]
 
@@ -7033,7 +7033,7 @@ for contract in Hiber.session().createQuery("from Contract contract where contra
                     </thead>
                     <tbody>
                         <xsl:for-each
-                            select="/source/contracts/contract">
+                            select="/source/contracts/supplier-contract">
                             <tr>
                                 <td>
 <a href="{/source/request/@context-path}/reports/77/output/?supplier_contract_id={@id}">
@@ -7721,10 +7721,10 @@ pw.close()]]></value>
 		<value><![CDATA[true]]></value>
 		<value><![CDATA[Supplier Contract Batches]]></value>
 		<value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree, UserException
-from net.sf.chellow.billing import SupplierContract
+from net.sf.chellow.billing import Contract
 
 contract_id = inv.getLong('supplier-contract-id')
-contract = SupplierContract.getSupplierContract(contract_id)
+contract = Contract.getSupplierContract(contract_id)
 batches_element = doc.createElement('batches')
 source.appendChild(batches_element)
 batches_element.appendChild(contract.toXml(doc, XmlTree('party')))
@@ -7762,7 +7762,7 @@ for batch in Hiber.session().createQuery("from Batch batch where batch.contract 
                     </a>
                     &gt;
                     <a
-                        href="{/source/request/@context-path}/reports/77/output/?supplier-contract-id={/source/batches/supplier-contract/@id}">
+                        href="{/source/request/@context-path}/reports/77/output/?supplier_contract_id={/source/batches/supplier-contract/@id}">
                         <xsl:value-of
                             select="/source/batches/supplier-contract/@name" />
                     </a>
@@ -8255,180 +8255,134 @@ Monad.getContext().getAttribute("net.sf.chellow.jinja").get("render")(inv, templ
 		<value><![CDATA[99]]></value>
 		<value><![CDATA[true]]></value>
 		<value><![CDATA[Supplies]]></value>
-		<value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree, Debug
-from net.sf.chellow.monad.types import MonadUri
+		<value><![CDATA[from net.sf.chellow.monad import Monad
+from sqlalchemy.orm import joinedload_all
 
-if inv.hasParameter("search-pattern"):
-    pattern = inv.getString("search-pattern")
-    pattern = pattern.strip()
-    reduced_pattern = pattern.replace(" ", "")
-    last_supply = None
-    eras = []
-    for era_res in Hiber.session().createQuery("select era, era.startDate, era.supply from Era era where lower(era.impMpanCore) like lower(:reducedPattern) or lower(era.impSupplierAccount) like lower(:pattern) or lower(era.expMpanCore) like lower(:reducedPattern) or lower(era.expSupplierAccount) like lower(:pattern) or lower(era.hhdcAccount) like lower(:pattern) or lower(era.mopAccount) like lower(:pattern) or lower(era.msn) like lower(:pattern) order by era.supply.id, era.startDate desc").setString("pattern", "%" + pattern + "%").setString("reducedPattern", "%" + reduced_pattern + "%").setMaxResults(50).list():
-        era = era_res[0]
-        supply_id = era.getSupply().getId()
-        if supply_id == last_supply:
-            continue
-        last_supply = supply_id
-        eras.append(era)
+Monad.getUtils()['imprt'](globals(), {
+        'db': ['Contract', 'Party', 'Era', 'set_read_write', 'session'], 
+        'utils': ['UserException'],
+        'templater': ['render']})
 
-    if len(eras) == 1:
-        inv.sendTemporaryRedirect("/reports/7/output/?supply-id=" + str(eras[0].getSupply().getId()))
+sess = None
+try:
+    sess = session()
+    if inv.hasParameter('search_pattern'):
+        pattern = inv.getString("search_pattern")
+        pattern = pattern.strip()
+        reduced_pattern = pattern.replace(" ", "")
+        eras = []
+        for era in sess.query(Era).from_statement("select * from era where replace(lower(imp_mpan_core), ' ', '') like lower(:reducedPattern) or lower(imp_supplier_account) like lower(:pattern) or replace(lower(exp_mpan_core), ' ', '') like lower(:reducedPattern) or lower(exp_supplier_account) like lower(:pattern) or lower(hhdc_account) like lower(:pattern) or lower(mop_account) like lower(:pattern) or lower(msn) like lower(:pattern) order by supply_id, start_date desc limit 50").params(pattern="%" + pattern + "%", reducedPattern="%" + reduced_pattern + "%").all():
+            if len(eras) == 0 or eras[-1].supply_id != era.supply_id:
+                eras.append(era)
+        if len(eras) == 1:
+            inv.sendTemporaryRedirect("/reports/7/output/?supply-id=" + str(eras[0].supply.id))
+        else:
+            render(inv, template, {'eras': eras})
     else:
-        for era in eras:
-            tree = XmlTree("supply").put('hhdcContract').put('pc').put('mtc').put('impLlfc').put('expLlfc')
-            elem = era.toXml(doc, tree)
-            source.appendChild(elem)]]></value>
-		<value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
-<xsl:stylesheet version="1.0"
-    xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
-    <xsl:output method="html" encoding="US-ASCII"
-        doctype-public="-//W3C//DTD HTML 4.01//EN"
-        doctype-system="http://www.w3.org/TR/html4/strict.dtd" indent="yes" />
-    <xsl:template match="/">
-        <html>
-            <head>
-                <link rel="stylesheet" type="text/css"
-                    href="{/source/request/@context-path}/reports/19/output/" />
-
-                <title>
-                    Chellow &gt; Supplies
-                </title>
-            </head>
-            <body>
-                <p>
-                    <a
-                        href="{/source/request/@context-path}/reports/1/output/">
-                        <xsl:value-of select="'Chellow'" />
-                    </a>
-                    &gt; Supplies
-                </p>
-                <br />
-                <xsl:if test="//message">
-                    <ul>
-
-
-                        <xsl:for-each select="//message">
-
-                            <li>
-                                <xsl:value-of select="@description" />
-                            </li>
-                        </xsl:for-each>
-                    </ul>
-                </xsl:if>
-                <form action=".">
-                    <fieldset><legend>Search for supply eras by MPAN core, account number or meter serial number</legend>
-                        <input name="search-pattern"
-                            value="{/source/request/parameter[@name='search-pattern']/value}" />
-                        <xsl:value-of select="' '" />
-                        <input type="submit" value="Search" />
-                    </fieldset>
-                </form>
-                <xsl:choose>
-                    <xsl:when test="/source/era">
-                        <p>
-                            Only the first 50 supply eras of the search
-                            results are shown.
-                        </p>
-                        <table>
-                            <caption>
-                                Supplies
-                            </caption>
-                            <tr>
-                                <th rowspan="3">Supply</th>
-                                <th rowspan="3">Meter Serial Number</th>
-                                <th colspan="2">HHDC</th>
-                                <th colspan="3">Import</th>
-                                <th colspan="3">Export</th>
-                            </tr>
-                            <tr>
-                                <th rowspan="2">Contract</th>
-                                <th rowspan="2">Account</th>
-                                <th rowspan="2">Mpan</th>
-                                <th colspan="2">Supplier</th>
-                                <th rowspan="2">Mpan</th>
-                                <th colspan="2">Supplier</th>
-                            </tr>
-                            <tr>
-                                <th>Contract</th>
-                                <th>Account</th> 
-                                <th>Contract</th>
-                                <th>Account</th> 
-                           </tr>
-                            <xsl:for-each
-                                select="/source/era">
-                                <tr>
-                                    <td>
-                                        <a
-                                            href="{/source/request/@context-path}/reports/7/output/?supply-id={supply/@id}">
-                                            <xsl:value-of
-                                                select="'supply'" />
-                                        </a>
-                                    </td>
-                                    <td>
-                                        <xsl:value-of
-                                            select="@meter-serial-number" />
-                                    </td>
-                                    <td>
-                                        <a
-                                            href="{/source/request/@context-path}/reports/115/output/?hhdc_contract_id={hhdc-contract/@id}">
-                                        <xsl:value-of
-                                            select="hhdc-contract/@name" />
-                                        </a>
-                                    </td>
-                                    <td>
-                                        <xsl:value-of
-                                            select="@hhdc-account" />
-                                    </td>
-                                    <td>
-                                      <xsl:if test="@imp-mpan-core">
-                                        <xsl:value-of
-                                            select="concat(pc/@code, ' ', mtc/@code, ' ', imp-llfc/@code, ' ', @imp-mpan-core)" />
-                                      </xsl:if>
-                                    </td>
-                                    <td>
-                                      <xsl:if test="@imp-mpan-core">
-                                         <a href="{/source/request/@context-path}/reports/77/output/?supplier_contract_id={supplier-contract[@is-import='true']/@id}">
-                                        <xsl:value-of
-                                            select="supplier-contract[@is-import='true']/@name" />
-                                         </a>
-                                      </xsl:if>
-                                    </td>
-                                    <td>
-                                        <xsl:value-of
-                                            select="@imp-supplier-account" />
-                                    </td>
-                                    <td>
-                                      <xsl:if test="@exp-mpan-core">
-                                        <xsl:value-of
-                                            select="concat(pc/@code, ' ', mtc/@code, ' ', imp-llfc/@code, ' ', /@imp-mpan-core)" />
-                                      </xsl:if>
-                                    </td>
-                                    <td>
-                                      <xsl:if test="@exp-mpan-core">
-                                         <a href="{/source/request/@context-path}/reports/77/output/?supplier_contract_id={supplier-contract[@is-import='false']/@id}">
-                                        <xsl:value-of
-                                            select="supplier-contract[@is-import='false']/@name" />
-                                         </a>
-                                      </xsl:if>
-                                    </td>
-<td>
-                                      <xsl:value-of
-                                            select="@exp-supplier-account" />
-                                    </td>
-                                </tr>
-                            </xsl:for-each>
-                        </table>
-                    </xsl:when>
-                    <xsl:when
-                        test="/source/request/parameter[@name='search-pattern']">
-                        <p>No supplies matched your search</p>
-                    </xsl:when>
-                </xsl:choose>
-            </body>
-        </html>
-    </xsl:template>
-</xsl:stylesheet>]]></value>
+        render(inv, template, {})
+finally:
+    if sess is not None:
+        sess.close()]]></value>
+		<value><![CDATA[<!doctype html>
+<html>
+  <head>
+    <link rel="stylesheet" type="text/css"
+      href="{{ context_path }}/reports/19/output/">
+    <title>Chellow &gt; Supplies</title>
+  </head>
+  <body>
+    <p>
+      <a href="{{context_path}}/reports/1/output/">Chellow</a> &gt; Supplies
+    </p>
+    <br />
+    {% if messages %}
+      <ul>
+        {% for message in messages %}
+          <li>{{ message }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+    <form action="{{context_path}}/reports/99/output/">
+      <fieldset>
+        <legend>
+          Search for supply eras by MPAN core, account number or meter serial
+          number
+        </legend>
+        {{input_text('search_pattern', request, '')}}
+        <input type="submit" value="Search">
+      </fieldset>
+    </form>
+    {% if eras %}
+      <p>
+        Only the first 50 supply eras of the search results are shown.
+      </p>
+      <table>
+        <caption>Supplies</caption>
+        <tr>
+          <th rowspan="3">Supply</th>
+          <th rowspan="3">Meter Serial Number</th>
+          <th colspan="2">HHDC</th>
+          <th colspan="3">Import</th>
+          <th colspan="3">Export</th>
+        </tr>
+        <tr>
+          <th rowspan="2">Contract</th>
+          <th rowspan="2">Account</th>
+          <th rowspan="2">Mpan</th>
+          <th colspan="2">Supplier</th>
+          <th rowspan="2">Mpan</th>
+          <th colspan="2">Supplier</th>
+        </tr>
+        <tr>
+          <th>Contract</th>
+          <th>Account</th> 
+          <th>Contract</th>
+          <th>Account</th> 
+        </tr>
+        {% for era in eras %}
+          <tr>
+            <td>
+              <a href="{{context_path}}/reports/7/output/?supply-id={{era.supply_id}}">supply</a>
+            </td>
+            <td>{{era.msn}}</td>
+            <td>
+              <a href="{{context_path}}/reports/115/output/?hhdc_contract_id={{ era.hhdc_contract.id}}">{{era.hhdc_contract.name}}</a>
+            </td>
+            <td>{{era.hhdc_account}}</td>
+            <td>
+              {{era.pc.code}} {{era.mtc.code}} {{era.imp_llfc.code}}
+              {{era.imp_mpan_core}}
+            </td>
+            <td>
+              {% if era.imp_mpan_core %}
+                <a href="{{context_path}}/reports/77/output/?supplier_contract_id={{era.imp_supplier_contract.id}}">{{era.imp_supplier_contract.name}}</a>
+              {% endif %}
+            </td>
+            <td>{{era.imp_supplier_account}}</td>
+            <td>
+              {% if era.exp_mpan_core %}
+                {{era.pc.code}} {{era.mtc.code}} {{era.exp_llfc.code}}
+                {{era.exp_mpan_core}}
+              {% endif %}
+            </td>
+            <td>
+              {% if era.exp_mpan_core %}
+                <a href="{{context_path}}/reports/77/output/?supplier_contract_id={{era.exp_supplier_contract.id}}">{{era.exp_supplier_contract.name}}</a>
+              {% endif %}
+            </td>
+            <td>
+              {% if era.exp_mpan_core %}
+                {{era.exp_supplier_account}}
+              {% endif %}
+            </td>
+          </tr>
+        {% endfor %}
+      </table>
+    {% elif request.getParameter('search_pattern') %}
+      <p>No supplies matched your search</p>
+    {% endif %}
+  </body>
+</html>]]></value>
 	</line>
 	<line>
 		<value><![CDATA[insert]]></value>
@@ -15621,17 +15575,17 @@ source.setAttribute('year', str(cal.get(Calendar.YEAR)))]]></value>
 		<value><![CDATA[true]]></value>
 		<value><![CDATA[HHDC Contract HH Data Imports]]></value>
 		<value><![CDATA[from net.sf.chellow.monad import XmlTree
-from net.sf.chellow.billing import NonCoreContract, HhdcContract
+from net.sf.chellow.billing import Contract
 from net.sf.chellow.monad import HttpException, UserException
 from java.lang import Long
 
 debug = ''
 processes =  inv.getMonad().getServletConfig().getServletContext().getAttribute('net.sf.chellow.hh_import_map')
 
-hh_importer_contract = NonCoreContract.getNonCoreContract('hh-importer')
+hh_importer_contract = Contract.getNonCoreContract('hh-importer')
 
 hhdc_contract_id = inv.getLong('hhdc-contract-id')
-contract = HhdcContract.getHhdcContract(hhdc_contract_id)
+contract = Contract.getHhdcContract(hhdc_contract_id)
 
 def document():
     hh_data_imports_element = doc.createElement("hh-data-imports")

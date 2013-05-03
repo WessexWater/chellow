@@ -21,10 +21,10 @@
 			</generator>
 		</id>
 		<many-to-one name="era" class="Era" column="era_id"
-			unique-key="hh_datum_unique" foreign-key="fkey_channel_era" />
+			unique-key="channel_unique" foreign-key="fkey_channel_era" />
 		<property name="isImport" column="is_import" type="boolean"
-			not-null="true" unique-key="hh_datum_unique" />
+			not-null="true" unique-key="channel_unique" />
 		<property name="isKwh" column="is_kwh" type="boolean"
-			not-null="true" unique-key="hh_datum_unique" />
+			not-null="true" unique-key="channel_unique" />
 	</class>
 </hibernate-mapping>

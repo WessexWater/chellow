@@ -195,6 +195,9 @@ public class HhDatum extends PersistentEntity {
 		if (status != ESTIMATE && status != ACTUAL && status != PADDING) {
 			throw new UserException("The status character must be E, A or C.");
 		}
+		if (!value.equals(this.value) || this.status != status) {
+			setLastModified(new Date());
+		}
 		setValue(value);
 		setStatus(status);
 	}

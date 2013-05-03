@@ -23,6 +23,7 @@ package net.sf.chellow.hhimport;
 import java.math.BigDecimal;
 
 import net.sf.chellow.monad.HttpException;
+import net.sf.chellow.physical.Era;
 import net.sf.chellow.physical.HhStartDate;
 
 public class HhDatumRaw {
@@ -41,7 +42,7 @@ public class HhDatumRaw {
 	public HhDatumRaw(String core, boolean isImport, boolean isKwh,
 			HhStartDate startDate, BigDecimal value, char status)
 			throws HttpException {
-		this.core = core;
+		this.core = Era.normalizeMpanCore(core);
 		this.isImport = isImport;
 		this.isKwh = isKwh;
 		this.startDate = startDate;

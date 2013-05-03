@@ -35,8 +35,13 @@ import org.w3c.dom.Element;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.InternalException;
+import net.sf.chellow.monad.Invocation;
+import net.sf.chellow.monad.MonadUtils;
+import net.sf.chellow.monad.Urlable;
 import net.sf.chellow.monad.UserException;
+import net.sf.chellow.monad.XmlTree;
 import net.sf.chellow.monad.types.MonadUri;
+import net.sf.chellow.monad.types.UriPathElement;
 import net.sf.chellow.hhimport.HhDatumRaw;
 
 public class Channel extends PersistentEntity {
@@ -112,7 +117,7 @@ public class Channel extends PersistentEntity {
 		PreparedStatement stmt;
 		try {
 			stmt = con
-					.prepareStatement("INSERT INTO hh_datum VALUES (nextval('hh_datum_id_sequence'), ?, ?, ?, ?)");
+					.prepareStatement("INSERT INTO hh_datum VALUES (nextval('hh_datum_id_sequence'), ?, ?, ?, ?, ?)");
 		} catch (SQLException e1) {
 			throw new InternalException(e1);
 		}
@@ -141,6 +146,8 @@ public class Channel extends PersistentEntity {
 							.getDate().getTime()));
 					stmt.setBigDecimal(3, datumRaw.getValue());
 					stmt.setString(4, Character.toString(datumRaw.getStatus()));
+					stmt.setTimestamp(5,
+							new Timestamp(System.currentTimeMillis()));
 					stmt.addBatch();
 					batchSize++;
 				} catch (SQLException e) {
@@ -177,11 +184,10 @@ public class Channel extends PersistentEntity {
 				}
 				siteCheckTo = datumRaw.getStartDate();
 				if (datumRaw.getValue().doubleValue() < 0) {
-					addSnag(ChannelSnag.SNAG_NEGATIVE, datumRaw.getStartDate(),
+					addSnag(Snag.SNAG_NEGATIVE, datumRaw.getStartDate(),
 							datumRaw.getStartDate());
 				} else if (altered && originalDatumValue.doubleValue() < 0) {
-					deleteSnag(ChannelSnag.SNAG_NEGATIVE,
-							datumRaw.getStartDate());
+					deleteSnag(Snag.SNAG_NEGATIVE, datumRaw.getStartDate());
 				}
 				if (HhDatum.ACTUAL != datumRaw.getStatus()) {
 					if (notActualFrom == null) {
@@ -189,8 +195,7 @@ public class Channel extends PersistentEntity {
 					}
 					notActualTo = datumRaw.getStartDate();
 				} else if (altered && originalDatumStatus != HhDatum.ACTUAL) {
-					deleteSnag(ChannelSnag.SNAG_ESTIMATED,
-							datumRaw.getStartDate());
+					deleteSnag(Snag.SNAG_ESTIMATED, datumRaw.getStartDate());
 				}
 			}
 			if (lastAdditionDate != null
@@ -218,7 +223,7 @@ public class Channel extends PersistentEntity {
 			if (notActualTo != null && notActualTo.equals(prevStartDate)) {
 				// Debug.print("Started not actual: "
 				// + (System.currentTimeMillis() - now));
-				addSnag(ChannelSnag.SNAG_ESTIMATED, notActualFrom, notActualTo);
+				addSnag(Snag.SNAG_ESTIMATED, notActualFrom, notActualTo);
 				// Debug.print("Finished not actual: "
 				// + (System.currentTimeMillis() - now));
 				notActualFrom = null;
@@ -228,7 +233,7 @@ public class Channel extends PersistentEntity {
 					&& deleteMissingTo.equals(prevStartDate)) {
 				// Debug.print("Starting resolvedMissing: "
 				// + (System.currentTimeMillis() - now));
-				deleteSnag(ChannelSnag.SNAG_MISSING, deleteMissingFrom,
+				deleteSnag(Snag.SNAG_MISSING, deleteMissingFrom,
 						deleteMissingTo);
 				deleteMissingFrom = null;
 				deleteMissingTo = null;
@@ -257,15 +262,14 @@ public class Channel extends PersistentEntity {
 		if (notActualTo != null && notActualTo.equals(prevStartDate)) {
 			// Debug.print("About to start not actual 2: "
 			// + (System.currentTimeMillis() - now));
-			addSnag(ChannelSnag.SNAG_ESTIMATED, notActualFrom, notActualTo);
+			addSnag(Snag.SNAG_ESTIMATED, notActualFrom, notActualTo);
 			// Debug.print("About to finsih not actual 2: "
 			// + (System.currentTimeMillis() - now));
 		}
 		if (deleteMissingTo != null && deleteMissingTo.equals(prevStartDate)) {
 			// Debug.print("About to start resolvem 2: "
 			// + (System.currentTimeMillis() - now));
-			deleteSnag(ChannelSnag.SNAG_MISSING, deleteMissingFrom,
-					deleteMissingTo);
+			deleteSnag(Snag.SNAG_MISSING, deleteMissingFrom, deleteMissingTo);
 			// Debug.print("About to finish resolvem 2: "
 			// + (System.currentTimeMillis() - now));
 		}
@@ -275,14 +279,12 @@ public class Channel extends PersistentEntity {
 
 	public void addSnag(String description, HhStartDate startDate,
 			HhStartDate finishDate) throws HttpException {
-		SnagDateBounded
-				.addChannelSnag(this, description, startDate, finishDate);
+		Snag.addSnag(null, this, description, startDate, finishDate);
 	}
 
 	void deleteSnag(String description, HhStartDate startDate,
 			HhStartDate finishDate) throws HttpException {
-		SnagDateBounded.deleteChannelSnag(this, description, startDate,
-				finishDate);
+		Snag.removeSnag(null, this, description, startDate, finishDate);
 	}
 
 	public void deleteSnag(String description, HhStartDate date)
@@ -305,25 +307,25 @@ public class Channel extends PersistentEntity {
 
 	@SuppressWarnings("unchecked")
 	public void onEraChange() throws HttpException {
-		List<ChannelSnag> snags = (List<ChannelSnag>) Hiber
+		List<Snag> snags = (List<Snag>) Hiber
 				.session()
 				.createQuery(
-						"from ChannelSnag snag where snag.channel = :channel and snag.startDate.date < snag.channel.era.startDate.date order by snag.startDate.date")
+						"from Snag snag where snag.channel = :channel and snag.startDate.date < snag.channel.era.startDate.date order by snag.startDate.date")
 				.setEntity("channel", this).list();
 		if (!snags.isEmpty()) {
 			HhStartDate startDate = snags.get(0).getStartDate();
 			HhStartDate finishDate = era.getStartDate().getPrevious();
-			deleteSnag(ChannelSnag.SNAG_MISSING, startDate, finishDate);
-			deleteSnag(ChannelSnag.SNAG_DATA_IGNORED, startDate, finishDate);
-			deleteSnag(ChannelSnag.SNAG_NEGATIVE, startDate, finishDate);
-			deleteSnag(ChannelSnag.SNAG_ESTIMATED, startDate, finishDate);
+			deleteSnag(Snag.SNAG_MISSING, startDate, finishDate);
+			deleteSnag(Snag.SNAG_DATA_IGNORED, startDate, finishDate);
+			deleteSnag(Snag.SNAG_NEGATIVE, startDate, finishDate);
+			deleteSnag(Snag.SNAG_ESTIMATED, startDate, finishDate);
 		}
 		if (era.getFinishDate() != null) {
 			HhStartDate startDate = era.getFinishDate().getNext();
-			deleteSnag(ChannelSnag.SNAG_MISSING, startDate, null);
-			deleteSnag(ChannelSnag.SNAG_DATA_IGNORED, startDate, null);
-			deleteSnag(ChannelSnag.SNAG_NEGATIVE, startDate, null);
-			deleteSnag(ChannelSnag.SNAG_ESTIMATED, startDate, null);
+			deleteSnag(Snag.SNAG_MISSING, startDate, null);
+			deleteSnag(Snag.SNAG_DATA_IGNORED, startDate, null);
+			deleteSnag(Snag.SNAG_NEGATIVE, startDate, null);
+			deleteSnag(Snag.SNAG_ESTIMATED, startDate, null);
 		}
 
 		// find date of first datum
@@ -333,13 +335,12 @@ public class Channel extends PersistentEntity {
 						"from HhDatum datum where datum.channel = :channel order by datum.startDate.date")
 				.setEntity("channel", this).setMaxResults(1).uniqueResult();
 		if (firstDatum == null) {
-			addSnag(ChannelSnag.SNAG_MISSING, era.getStartDate(),
-					era.getFinishDate());
+			addSnag(Snag.SNAG_MISSING, era.getStartDate(), era.getFinishDate());
 		} else {
 			if (firstDatum.getStartDate().getDate()
 					.after(era.getStartDate().getDate())) {
-				addSnag(ChannelSnag.SNAG_MISSING, era.getStartDate(),
-						firstDatum.getStartDate().getPrevious());
+				addSnag(Snag.SNAG_MISSING, era.getStartDate(), firstDatum
+						.getStartDate().getPrevious());
 			}
 			HhDatum lastDatum = (HhDatum) Hiber
 					.session()
@@ -349,8 +350,8 @@ public class Channel extends PersistentEntity {
 			if (era.getFinishDate() == null
 					|| lastDatum.getStartDate().getDate()
 							.before(era.getFinishDate().getDate())) {
-				addSnag(ChannelSnag.SNAG_MISSING, lastDatum.getStartDate()
-						.getNext(), era.getFinishDate());
+				addSnag(Snag.SNAG_MISSING, lastDatum.getStartDate().getNext(),
+						era.getFinishDate());
 			}
 		}
 	}
@@ -373,7 +374,8 @@ public class Channel extends PersistentEntity {
 			throw new UserException(
 					"There aren't any data to delete for this period.");
 		}
-		addSnag(ChannelSnag.SNAG_MISSING, from, to);
+		addSnag(Snag.SNAG_MISSING, from, to);
+		deleteSnag(Snag.SNAG_ESTIMATED, from, to);
 		siteCheck(from, to);
 	}
 
@@ -384,13 +386,52 @@ public class Channel extends PersistentEntity {
 		return element;
 	}
 
+	private Document document() throws HttpException {
+		Document doc = MonadUtils.newSourceDocument();
+		Element source = doc.getDocumentElement();
+		source.appendChild(toXml(doc, new XmlTree("era", new XmlTree("supply"))));
+		return doc;
+	}
+
+	public void httpGet(Invocation inv) throws HttpException {
+		inv.sendOk(document());
+	}
+
+	public void httpPost(Invocation inv) throws HttpException {
+		Hiber.setReadWrite();
+		try {
+			if (inv.hasParameter("delete")) {
+				era.deleteChannel(isImport, isKwh);
+				Hiber.commit();
+				inv.sendSeeOther(era.getChannelsInstance().getEditUri());
+			}
+		} catch (HttpException e) {
+			e.setDocument(document());
+			throw e;
+		}
+	}
+
 	@Override
 	public URI getViewUri() throws HttpException {
 		// TODO Auto-generated method stub
 		return null;
 	}
-	
+
 	public HhData getHhDataInstance() {
-        return new HhData(this);
-}
+		return new HhData(this);
+	}
+
+	public Urlable getChild(UriPathElement uriId) throws HttpException {
+		if (HhData.URI_ID.equals(uriId)) {
+			return new HhData(this);
+		} else if (ChannelSnags.URI_ID.equals(uriId)) {
+			return snagsInstance();
+		} else {
+			return null;
+		}
+	}
+
+	public ChannelSnags snagsInstance() {
+		return new ChannelSnags(this);
+	}
 }

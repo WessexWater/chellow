@@ -11,9 +11,9 @@
 					href="{/source/request/@context-path}/reports/19/output/" />
 				<title>
 					Chellow &gt; Supplies &gt;
-					<xsl:value-of select="/source/channels/supply-era/supply/@id" />
-					&gt; Generations &gt;
-					<xsl:value-of select="/source/channels/supply-era/@id" />
+					<xsl:value-of select="/source/channels/era/supply/@id" />
+					&gt; Eras &gt;
+					<xsl:value-of select="/source/channels/era/@id" />
 					&gt; Channels
 				</title>
 			</head>
@@ -37,12 +37,12 @@
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/reports/7/output/?supply-id={/source/channels/supply-era/supply/@id}">
-						<xsl:value-of select="/source/channels/supply-era/supply/@id" />
+						href="{/source/request/@context-path}/reports/7/output/?supply-id={/source/channels/era/supply/@id}">
+						<xsl:value-of select="/source/channels/era/supply/@id" />
 					</a>
 					&gt;
 					<xsl:value-of
-						select="concat('Generation ', /source/channels/supply-era/@id, ' channels')" />
+						select="concat('Generation ', /source/channels/era/@id, ' channels')" />
 				</p>
 				<br />
 				<table>

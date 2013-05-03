@@ -76,9 +76,9 @@ public class Chellow extends Monad implements Urlable {
 	static public final GeneratorTypes GENERATOR_TYPES_INSTANCE = new GeneratorTypes();
 
 	static public final GspGroups GSP_GROUPS_INSTANCE = new GspGroups();
-	
+
 	static public final Sites SITES_INSTANCE = new Sites();
-	
+
 	static public final SupplierContracts SUPPLIER_CONTRACTS_INSTANCE = new SupplierContracts();
 
 	static public final MopContracts MOP_CONTRACTS_INSTANCE = new MopContracts();
@@ -224,6 +224,8 @@ public class Chellow extends Monad implements Urlable {
 			return SUPPLIER_CONTRACTS_INSTANCE;
 		} else if (MopContracts.URI_ID.equals(uriId)) {
 			return MOP_CONTRACTS_INSTANCE;
+		} else if (SiteSnags.URI_ID.equals(uriId)) {
+			return SITE_SNAGS_INSTANCE;
 		} else {
 			return null;
 		}

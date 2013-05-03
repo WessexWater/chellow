@@ -44,8 +44,8 @@ import javax.xml.stream.events.XMLEvent;
 
 import net.sf.chellow.billing.Batch;
 import net.sf.chellow.billing.Bill;
-import net.sf.chellow.billing.RateScript;
 import net.sf.chellow.billing.Contract;
+import net.sf.chellow.billing.RateScript;
 import net.sf.chellow.hhimport.HhDatumRaw;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
@@ -59,16 +59,15 @@ import net.sf.chellow.monad.XmlDescriber;
 import net.sf.chellow.monad.XmlTree;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
-import net.sf.chellow.physical.ChannelSnag;
 import net.sf.chellow.physical.Configuration;
+import net.sf.chellow.physical.Era;
 import net.sf.chellow.physical.HhDatum;
 import net.sf.chellow.physical.HhStartDate;
 import net.sf.chellow.physical.RegisterRead;
 import net.sf.chellow.physical.Site;
-import net.sf.chellow.physical.SiteSnag;
 import net.sf.chellow.physical.SiteEra;
+import net.sf.chellow.physical.Snag;
 import net.sf.chellow.physical.Supply;
-import net.sf.chellow.physical.Era;
 import net.sf.chellow.physical.User;
 
 import org.w3c.dom.Document;
@@ -230,13 +229,11 @@ public class GeneralImport extends Thread implements Urlable, XmlDescriber {
 					if (type.equals("site")) {
 						Site.generalImport(action, values, csvElement);
 					} else if (type.equals("site-supply-era")) {
-						SiteEra.generalImport(action, values,
-								csvElement);
+						SiteEra.generalImport(action, values, csvElement);
 					} else if (type.equals("supply")) {
 						Supply.generalImport(action, values, csvElement);
 					} else if (type.equals("era")) {
-						Era.generalImport(action, values,
-								csvElement);
+						Era.generalImport(action, values, csvElement);
 					} else if (type.equals("report")) {
 						Report.generalImport(action, values, csvElement);
 					} else if (type.equals("non-core-contract")) {
@@ -254,9 +251,9 @@ public class GeneralImport extends Thread implements Urlable, XmlDescriber {
 					} else if (type.equals("configuration")) {
 						Configuration.generalImport(action, values, csvElement);
 					} else if (type.equals("channel-snag-ignore")) {
-						ChannelSnag.generalImport(action, values, csvElement);
+						Snag.generalImportChannel(action, values, csvElement);
 					} else if (type.equals("site-snag-ignore")) {
-						SiteSnag.generalImport(action, values, csvElement);
+						Snag.generalImportSite(action, values, csvElement);
 					} else if (type.equals("batch")) {
 						Batch.generalImport(action, values, csvElement);
 					} else if (type.equals("bill")) {

@@ -9,9 +9,9 @@
 			<head>
 				<title>
 					Chellow &gt; Supplies &gt;
-					<xsl:value-of select="/source/channel/supply-era/supply/@id" />
+					<xsl:value-of select="/source/channel/era/supply/@id" />
 					&gt; Generations &gt;
-					<xsl:value-of select="/source/channel/supply-era/supply/@id" />
+					<xsl:value-of select="/source/channel/era/supply/@id" />
 					&gt; Channels &gt;
 					<xsl:value-of select="/source/channel/@id" />
 				</title>
@@ -29,14 +29,14 @@
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/reports/7/output/?supply-id={/source/channel/supply-era/supply/@id}">
-						<xsl:value-of select="/source/channel/supply-era/supply/@id" />
+						href="{/source/request/@context-path}/reports/7/output/?supply-id={/source/channel/era/supply/@id}">
+						<xsl:value-of select="/source/channel/era/supply/@id" />
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/supplies/{/source/channel/supply-era/supply/@id}/eras/{/source/channel/supply-era/@id}/channels/">
+						href="{/source/request/@context-path}/supplies/{/source/channel/era/supply/@id}/eras/{/source/channel/era/@id}/channels/">
 						<xsl:value-of
-							select="concat('Generation ', /source/channel/supply-era/@id, ' channels')" />
+							select="concat('Generation ', /source/channel/era/@id, ' channels')" />
 					</a>
 					&gt;
 					<xsl:value-of select="/source/channel/@id" />

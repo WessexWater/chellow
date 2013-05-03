@@ -25,19 +25,19 @@ import java.util.Date;
 import java.util.Set;
 
 import org.w3c.dom.Document;
-import org.w3c.dom.Node;
-
+import org.w3c.dom.Element;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.UserException;
+import net.sf.chellow.monad.types.MonadDate;
 import net.sf.chellow.monad.types.MonadUri;
 
 public class Ssc extends PersistentEntity {
 	public static Ssc getSsc(String code) throws HttpException {
 		try {
-			Ssc ssc = (Ssc) Hiber.session().createQuery(
-					"from Ssc ssc where ssc.code = :code").setInteger("code",
-					Integer.parseInt(code)).uniqueResult();
+			Ssc ssc = (Ssc) Hiber.session()
+					.createQuery("from Ssc ssc where ssc.code = :code")
+					.setInteger("code", Integer.parseInt(code)).uniqueResult();
 			if (ssc == null) {
 				throw new UserException("There isn't an SSC with code: " + code
 						+ ".");
@@ -144,9 +144,20 @@ public class Ssc extends PersistentEntity {
 		return null;
 	}
 
-	@Override
-	public Node toXml(Document doc) throws HttpException {
-		// TODO Auto-generated method stub
-		return null;
+	public Element toXml(Document doc) throws HttpException {
+		Element element = super.toXml(doc, "ssc");
+
+		element.setAttribute("code", toString());
+		element.setAttribute("is-import", Boolean.toString(isImport));
+		element.setAttribute("description", description);
+		MonadDate fromDate = new MonadDate(validFrom);
+		fromDate.setLabel("from");
+		element.appendChild(fromDate.toXml(doc));
+		if (validTo != null) {
+			MonadDate toDate = new MonadDate(validTo);
+			toDate.setLabel("to");
+			element.appendChild(toDate.toXml(doc));
+		}
+		return element;
 	}
 }

@@ -113,7 +113,7 @@ public class Cop extends PersistentEntity {
 	public Element toXml(Document doc) throws HttpException {
 		Element element = super.toXml(doc, "cop");
 
-		element.setAttribute("code", String.valueOf(code));
+		element.setAttribute("code", code);
 		element.setAttribute("description", description);
 		return element;
 	}
