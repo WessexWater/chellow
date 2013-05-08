@@ -27,7 +27,7 @@
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/reports/7/output/?supply-id={/source/era/supply/@id}">
+						href="{/source/request/@context-path}/reports/7/output/?supply_id={/source/era/supply/@id}">
 						<xsl:value-of select="/source/era/supply/@id" />
 					</a>
 					&gt;
@@ -495,16 +495,15 @@
 								<br />
 								<label>
 									<xsl:value-of select="'Meter Serial Number '" />
-									<input name="meter-serial-number">
+									<input name="msn">
 										<xsl:attribute name="value">
 											<xsl:choose>
-												<xsl:when
-											test="/source/request/parameter[@name='meter-serial-number']">
+												<xsl:when test="/source/request/parameter[@name='msn']">
 													<xsl:value-of
-											select="/source/request/parameter[@name='meter-serial-number']/value" />
+											select="/source/request/parameter[@name='msn']/value" />
 												</xsl:when>
 												<xsl:otherwise>
-													<xsl:value-of select="/source/supply-era/@meter-serial-number" />
+													<xsl:value-of select="/source/era/@msn" />
 												</xsl:otherwise>
 											</xsl:choose>
 										</xsl:attribute>
@@ -567,7 +566,7 @@
 														</xsl:if>
 													</xsl:when>
 													<xsl:otherwise>
-														<xsl:if test="@id = /source/supply-era/cop/@id">
+														<xsl:if test="@id = /source/era/cop/@id">
 															<xsl:attribute name="selected" />
 														</xsl:if>
 													</xsl:otherwise>
@@ -588,7 +587,7 @@
 											select="/source/request/parameter[@name='ssc-code']/value" />
 													</xsl:when>
 													<xsl:otherwise>
-														<xsl:value-of select="/source/supply-era/ssc/@code" />
+														<xsl:value-of select="/source/era/ssc/@code" />
 													</xsl:otherwise>
 												</xsl:choose>
 											</xsl:attribute>
@@ -631,15 +630,13 @@
 												select="/source/request/parameter[@name='import-llfc-code']/value" />
 													</xsl:when>
 													<xsl:otherwise>
-														<xsl:value-of
-												select="/source/era/imp-llfc/@code" />
+														<xsl:value-of select="/source/era/imp-llfc/@code" />
 													</xsl:otherwise>
 												</xsl:choose>
 											</xsl:attribute>
 										</input>
 									</label>
-									<xsl:value-of
-										select="concat(' ', /source/era/imp-llfc/@description)" />
+									<xsl:value-of select="concat(' ', /source/era/imp-llfc/@description)" />
 									<br />
 									<label>
 										<xsl:value-of select="'MPAN Core '" />
@@ -653,8 +650,7 @@
 															</xsl:value-of>
 														</xsl:when>
 														<xsl:otherwise>
-																<xsl:value-of
-												select="/source/era/@imp-mpan-core" />
+																<xsl:value-of select="/source/era/@imp-mpan-core" />
 														</xsl:otherwise>
 														</xsl:choose>
 											</xsl:attribute>
@@ -718,8 +714,7 @@
 												select="/source/request/parameter[@name='imp-supplier-account']/value" />
 													</xsl:when>
 													<xsl:otherwise>
-														<xsl:value-of
-												select="/source/era/@imp-supplier-account" />
+														<xsl:value-of select="/source/era/@imp-supplier-account" />
 													</xsl:otherwise>
 												</xsl:choose>
 											</xsl:attribute>
@@ -761,8 +756,7 @@
 												select="/source/request/parameter[@name='export-llfc-code']/value" />
 													</xsl:when>
 													<xsl:otherwise>
-														<xsl:value-of
-												select="/source/era/exp-llfc/@code" />
+														<xsl:value-of select="/source/era/exp-llfc/@code" />
 													</xsl:otherwise>
 												</xsl:choose>
 											</xsl:attribute>

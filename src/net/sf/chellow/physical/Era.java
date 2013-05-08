@@ -908,7 +908,7 @@ public class Era extends PersistentEntity {
 		if (mopAccount != null) {
 			element.setAttribute("mop-account", mopAccount);
 		}
-		element.setAttribute("meter-serial-number", msn);
+		element.setAttribute("msn", msn);
 		if (impMpanCore != null) {
 			element.setAttribute("imp-mpan-core", impMpanCore);
 			Element supElem = impSupplierContract.toXml(doc);
@@ -943,8 +943,7 @@ public class Era extends PersistentEntity {
 					+ isImport + " and kWh: " + isKwh + ".");
 		}
 		channels.add(channel);
-		channel.addSnag(Snag.SNAG_MISSING, getStartDate(),
-				getFinishDate());
+		channel.addSnag(Snag.SNAG_MISSING, getStartDate(), getFinishDate());
 		return channel;
 	}
 
@@ -1247,30 +1246,24 @@ public class Era extends PersistentEntity {
 		}
 
 		if (hhdcContract == null) {
-			hhdcAccount = null;
-			if (!channels.isEmpty()) {
-				throw new UserException(
-						"Can't remove the HHDC account while there are still channels there.");
-			}
-		} else {
-			hhdcAccount = hhdcAccount == null ? null : hhdcAccount.trim();
-			if (hhdcAccount == null || hhdcAccount.length() == 0) {
-				throw new UserException(
-						"If there's a HHDC contract, there must be an account reference.");
-			}
-			HhStartDate hhdcContractStartDate = hhdcContract
-					.getStartRateScript().getStartDate();
-			if (hhdcContractStartDate.after(startDate)) {
-				throw new UserException(
-						"The HHDC contract starts after the supply era.");
-			}
-			HhStartDate hhdcContractFinishDate = hhdcContract
-					.getFinishRateScript().getFinishDate();
-			if (HhStartDate.isBefore(hhdcContractFinishDate, finishDate)) {
-				throw new UserException("The HHDC contract "
-						+ hhdcContract.getId()
-						+ " finishes before the supply era.");
-			}
+			throw new UserException("The HHDC contract can't be null.");
+		}
+		hhdcAccount = hhdcAccount == null ? null : hhdcAccount.trim();
+		if (hhdcAccount == null || hhdcAccount.length() == 0) {
+			throw new UserException(
+					"If there's a HHDC contract, there must be an account reference.");
+		}
+		HhStartDate hhdcContractStartDate = hhdcContract.getStartRateScript()
+				.getStartDate();
+		if (hhdcContractStartDate.after(startDate)) {
+			throw new UserException(
+					"The HHDC contract starts after the supply era.");
+		}
+		HhStartDate hhdcContractFinishDate = hhdcContract.getFinishRateScript()
+				.getFinishDate();
+		if (HhStartDate.isBefore(hhdcContractFinishDate, finishDate)) {
+			throw new UserException("The HHDC contract " + hhdcContract.getId()
+					+ " finishes before the supply era.");
 		}
 		Hiber.flush();
 		setHhdcAccount(hhdcAccount);
@@ -1357,7 +1350,7 @@ public class Era extends PersistentEntity {
 					Query channelUpdate = Hiber
 							.session()
 							.createSQLQuery(
-									"update hh_datum set channel_id = :targetChannelId from channel, supply_era where hh_datum.start_date >= :startDate and channel.id = hh_datum.channel_id and supply_era.id = channel.supply_era_id and channel.is_import = :isImport and channel.is_kwh = :isKwh and supply_era.supply_id = :supplyId"
+									"update hh_datum set channel_id = :targetChannelId from channel, era where hh_datum.start_date >= :startDate and channel.id = hh_datum.channel_id and era.id = channel.era_id and channel.is_import = :isImport and channel.is_kwh = :isKwh and era.supply_id = :supplyId"
 											+ (finishDate == null ? ""
 													: " and hh_datum.start_date <= :finishDate"))
 							.setLong("supplyId", supply.getId())
@@ -1401,11 +1394,11 @@ public class Era extends PersistentEntity {
 							estStart = null;
 						}
 					}
-					targetChannel.deleteSnag(Snag.SNAG_MISSING,
-							groupStart, groupFinish);
+					targetChannel.deleteSnag(Snag.SNAG_MISSING, groupStart,
+							groupFinish);
 					if (estStart != null) {
-						targetChannel.addSnag(Snag.SNAG_ESTIMATED,
-								estStart, estFinish);
+						targetChannel.addSnag(Snag.SNAG_ESTIMATED, estStart,
+								estFinish);
 					}
 					hhData.close();
 				}
@@ -1427,10 +1420,8 @@ public class Era extends PersistentEntity {
 					"One can't delete a channel if there are still HH data attached to it.");
 		}
 		// delete any concommitant snags
-		for (Snag snag : (List<Snag>) Hiber
-				.session()
-				.createQuery(
-						"from Snag snag where snag.channel = :channel")
+		for (Snag snag : (List<Snag>) Hiber.session()
+				.createQuery("from Snag snag where snag.channel = :channel")
 				.setEntity("channel", channel).list()) {
 			snag.delete();
 		}

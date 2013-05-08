@@ -160,9 +160,9 @@ with open("original/" + table_name + ".csv") as fl:
                 for pattern in ['C', 'D']:
                     if pattern in fields[6]:
                         is_import = '0'
-                converter.writerow([id, dno_lookup[fields[0]], fields[3],
-                        fields[5], vl_id, is_substation, is_import,
-                        to_iso(fields[2]), to_iso(fields[-1])])
+                converter.writerow([id, dno_lookup[fields[0]],
+                        fields[3].zfill(3), fields[5], vl_id, is_substation,
+                        is_import, to_iso(fields[2]), to_iso(fields[-1])])
             else:
                 converter.writerow(["Chellow Id", "DNO Chellow Id",
                         "Line Loss Factor Class Id",

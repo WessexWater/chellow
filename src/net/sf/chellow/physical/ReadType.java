@@ -22,15 +22,15 @@ package net.sf.chellow.physical;
 
 import java.net.URI;
 
-import org.w3c.dom.Document;
-import org.w3c.dom.Node;
-
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.NotFoundException;
 import net.sf.chellow.monad.types.MonadUri;
 
-public class ReadType extends PersistentEntity {	
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+
+public class ReadType extends PersistentEntity {
 	public static final String TYPE_NORMAL = "N";
 	public static final String TYPE_NORMAL_3RD_PARTY = "N3";
 	public static final String TYPE_CUSTOMER = "C";
@@ -45,18 +45,20 @@ public class ReadType extends PersistentEntity {
 	static public ReadType getReadType(Long id) throws HttpException {
 		ReadType readType = (ReadType) Hiber.session().get(ReadType.class, id);
 		if (readType == null) {
-			throw new NotFoundException("The Read Type with id " + id + " can't be found.");
+			throw new NotFoundException("The Read Type with id " + id
+					+ " can't be found.");
 		}
 		return readType;
 	}
 
 	static public ReadType getReadType(String code) throws HttpException {
 		code = code.trim();
-		ReadType type = (ReadType) Hiber.session().createQuery(
-				"from ReadType type where type.code = :code").setString(
-				"code", code).uniqueResult();
+		ReadType type = (ReadType) Hiber.session()
+				.createQuery("from ReadType type where type.code = :code")
+				.setString("code", code).uniqueResult();
 		if (type == null) {
-			throw new NotFoundException("The Read Type with code " + code + " can't be found.");
+			throw new NotFoundException("The Read Type with code " + code
+					+ " can't be found.");
 		}
 		return type;
 	}
@@ -108,9 +110,11 @@ public class ReadType extends PersistentEntity {
 		return null;
 	}
 
-	@Override
-	public Node toXml(Document doc) throws HttpException {
-		// TODO Auto-generated method stub
-		return null;
+	public Element toXml(Document doc) throws HttpException {
+		Element element = super.toXml(doc, "read-type");
+
+		element.setAttribute("code", String.valueOf(code));
+		element.setAttribute("description", description);
+		return element;
 	}
 }

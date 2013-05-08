@@ -104,7 +104,7 @@ public class Supply extends PersistentEntity {
 			String hasExportKvarhStr = GeneralImport.addField(csvElement,
 					"Has HH export kVArh", values, 14);
 			boolean hasExportKvarh = Boolean.parseBoolean(hasExportKvarhStr);
-			String meterSerialNumber = GeneralImport.addField(csvElement,
+			String msn = GeneralImport.addField(csvElement,
 					"Meter Serial Number", values, 15);
 
 			String pcCode = GeneralImport.addField(csvElement, "Profile Class",
@@ -191,10 +191,10 @@ public class Supply extends PersistentEntity {
 			}
 			Supply supply = site.insertSupply(source, generatorType,
 					supplyName, startDate, finishDate, gspGroup, "",
-					mopContract, mopAccount, hhdcContract, hhdcAccount,
-					meterSerialNumber, pc, mtcCode, cop, ssc, impMpanCore,
-					importLlfcCode, impSupplierContract, impSupplierAccount,
-					impSc, expMpanCore, exportLlfcCode, exportSupplierContract,
+					mopContract, mopAccount, hhdcContract, hhdcAccount, msn,
+					pc, mtcCode, cop, ssc, impMpanCore, importLlfcCode,
+					impSupplierContract, impSupplierAccount, impSc,
+					expMpanCore, exportLlfcCode, exportSupplierContract,
 					exportSupplierAccount, exportAgreedSupplyCapacity);
 			Hiber.flush();
 			Era era = supply.getEraFirst();

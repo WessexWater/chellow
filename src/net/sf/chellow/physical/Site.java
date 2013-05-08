@@ -414,7 +414,7 @@ public class Site extends PersistentEntity {
 			String supplyName, HhStartDate startDate, HhStartDate finishDate,
 			GspGroup gspGroup, String note, Contract mopContract,
 			String mopAccount, Contract hhdcContract, String hhdcAccount,
-			String meterSerialNumber, Pc pc, String mtcCode, Cop cop, Ssc ssc,
+			String msn, Pc pc, String mtcCode, Cop cop, Ssc ssc,
 			String importMpanStr, String importLlfcCode,
 			Contract importSupplierContract, String importSupplierAccount,
 			Integer impSc, String exportMpanStr, String exportLlfcCode,
@@ -456,7 +456,7 @@ public class Site extends PersistentEntity {
 		}
 		Era era = supply.insertEra(this, new ArrayList<Site>(), startDate,
 				mopContract, mopAccount, hhdcContract, hhdcAccount,
-				meterSerialNumber, pc, mtcCode, cop, ssc, importMpanStr,
+				msn, pc, mtcCode, cop, ssc, importMpanStr,
 				importLlfcCode, importSupplierContract, importSupplierAccount,
 				impSc, exportMpanStr, exportLlfcCode, exportSupplierContract,
 				exportSupplierAccountReference, exportAgreedSupplyCapacity,

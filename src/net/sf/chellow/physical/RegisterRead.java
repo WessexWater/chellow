@@ -76,7 +76,7 @@ public class RegisterRead extends PersistentEntity {
 			String msn = GeneralImport.addField(csvElement,
 					"Meter Serial Number", values, 4);
 			if (msn.equals(GeneralImport.NO_CHANGE)) {
-				msn = read.getMeterSerialNumber();
+				msn = read.getMsn();
 			}
 
 			String mpanStr = GeneralImport.addField(csvElement, "MPAN", values,
@@ -156,7 +156,7 @@ public class RegisterRead extends PersistentEntity {
 
 	private Bill bill;
 
-	private String meterSerialNumber;
+	private String msn;
 
 	private String mpanStr;
 
@@ -196,7 +196,7 @@ public class RegisterRead extends PersistentEntity {
 	}
 
 	public void update(Tpr tpr, BigDecimal coefficient, Units units,
-			String meterSerialNumber, String mpanStr, HhStartDate previousDate,
+			String msn, String mpanStr, HhStartDate previousDate,
 			BigDecimal previousValue, ReadType previousType,
 			HhStartDate presentDate, BigDecimal presentValue,
 			ReadType presentType) throws HttpException {
@@ -213,7 +213,7 @@ public class RegisterRead extends PersistentEntity {
 		setPresentDate(presentDate);
 		setPresentValue(presentValue);
 		setPresentType(presentType);
-		setMeterSerialNumber(meterSerialNumber);
+		setMsn(msn);
 		setMpanStr(mpanStr);
 	}
 
@@ -225,12 +225,12 @@ public class RegisterRead extends PersistentEntity {
 		this.mpanStr = mpanStr;
 	}
 
-	public String getMeterSerialNumber() {
-		return meterSerialNumber;
+	public String getMsn() {
+		return msn;
 	}
 
-	void setMeterSerialNumber(String meterSerialNumber) {
-		this.meterSerialNumber = meterSerialNumber;
+	void setMsn(String msn) {
+		this.msn = msn;
 	}
 
 	public Bill getBill() {
@@ -312,9 +312,9 @@ public class RegisterRead extends PersistentEntity {
 	void setPresentType(ReadType presentType) {
 		this.presentType = presentType;
 	}
-	
+
 	public void attach() {
-    }
+	}
 
 	@Override
 	public MonadUri getEditUri() throws HttpException {

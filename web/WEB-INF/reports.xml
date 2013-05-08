@@ -65,6 +65,9 @@ render(inv, template, {'local_reports_id': properties.get('local.reports')})]]><
                 <a href="{{ context_path }}/reports/75/output/">Supplier</a>
               </li>
               <li>
+                <a href="{{ context_path }}/reports/137/output/">DNO</a>
+              </li>
+              <li>
                 <a href="{{ context_path }}/reports/259/output/">Non-Core</a>
               </li>
             </ul>
@@ -127,9 +130,6 @@ render(inv, template, {'local_reports_id': properties.get('local.reports')})]]><
             <a href="{{ context_path }}/reports/121/output/">
               Market Roles
             </a>
-          </li>
-          <li>
-            <a href="{{ context_path }}/reports/137/output/">DNOs</a>
           </li>
           <li><a href="{{ context_path }}/reports/45/output/">Parties</a></li>
           <li><a href="{{ context_path }}/reports/53/output/">
@@ -792,7 +792,7 @@ from java.io import StringReader
 Monad.getUtils()['imprt'](globals(), {
         'templater': ['render']})
 
-supply_id = inv.getLong("supply-id")
+supply_id = inv.getLong("supply_id")
 supply = Supply.getSupply(supply_id)
 era_bundles = []
 for era in Hiber.session().createQuery("from Era era where era.supply = :supply order by era.startDate desc").setEntity('supply', supply).list():
@@ -830,7 +830,7 @@ for era in Hiber.session().createQuery("from Era era where era.supply = :supply 
         bill_contract = bill.getBatch().getContract()
         bill_role_code = bill_contract.getParty().getRole().getCode()
         if bill_role_code == 'X':
-            if export_mpan is not None and bill_contract == export_mpan.getSupplierContract():
+            if export_mpan_core is not None and bill_contract == era.impSupplierContract:
                 bill_group_name = 'export_bills'
             else:
                 bill_group_name = 'import_bills'
@@ -5580,228 +5580,159 @@ finally:
 		<value><![CDATA[report]]></value>
 		<value><![CDATA[49]]></value>
 		<value><![CDATA[true]]></value>
-		<value><![CDATA[DNO LLFCs]]></value>
-		<value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree
-from net.sf.chellow.billing import Dno
+		<value><![CDATA[DNO Contract LLFCs]]></value>
+		<value><![CDATA[from net.sf.chellow.monad import Monad
+from sqlalchemy.orm import joinedload_all
 
-dno_id = inv.getLong('dno-id')
-dno = Dno.getDno(dno_id)
-llfcs_element = doc.createElement('llfcs')
-source.appendChild(llfcs_element)
-for llfc in Hiber.session().createQuery("from Llfc llfc where llfc.dno = :dno order by llfc.code").setEntity("dno", dno).list():
-    llfcs_element.appendChild(llfc.toXml(doc, XmlTree("voltageLevel")))
-llfcs_element.appendChild(dno.toXml(doc))]]></value>
-		<value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
-<xsl:stylesheet version="1.0"
-    xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
-    <xsl:output method="html" encoding="US-ASCII"
-        doctype-public="-//W3C//DTD HTML 4.01//EN"
-        doctype-system="http://www.w3.org/TR/html4/strict.dtd" indent="yes" />
-    <xsl:template match="/">
-        <html>
-            <head>
-                <link rel="stylesheet" type="text/css"
-                    href="{/source/request/@context-path}/reports/19/output/" />
-                <title>
-                    Chellow &gt; DNOs &gt;
-                    <xsl:value-of
-                        select="/source/llfcs/dno/@code" />
-                    &gt; LLFCs
-                </title>
-            </head>
-            <body>
-                <p>
-                    <a
-                        href="{/source/request/@context-path}/reports/1/output/">
-                        <xsl:value-of select="'Chellow'" />
-                    </a>
-                    &gt;
-                    <a
-                        href="{/source/request/@context-path}/reports/137/output/">
-                        <xsl:value-of select="'DNOs'"/>
-                    </a>
-                    &gt;
-                    <a
-                        href="{/source/request/@context-path}/reports/139/output/?dno-id={/source/llfcs/dno/@id}">
-                        <xsl:value-of
-                            select="/source/llfcs/dno/@code" />
-                    </a>
-                    &gt; LLFCs
-                </p>
-                <br />
-                <xsl:if test="//message">
-                    <ul>
-                        <xsl:for-each select="//message">
-                            <li>
-                                <xsl:value-of select="@description" />
-                            </li>
-                        </xsl:for-each>
-                    </ul>
-                </xsl:if>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Code</th>
-                            <th>Description</th>
-                            <th>Voltage Level</th>
-                            <th>Is Substation?</th>
-                            <th>Is Import?</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <xsl:for-each select="/source/llfcs/llfc">
-                            <tr>
-                                <td>
-                                    <a
-                                        href="{/source/request/@context-path}/reports/51/output/?llfc-id={@id}">
-                                    <xsl:value-of select="@code" />
-                                    </a>
-                                </td>
-                                <td>
-                                    <xsl:value-of select="@description" />
-                                </td>
-                                <td>
-                                    <xsl:value-of
-                                        select="concat(voltage-level/@code, ' - ', voltage-level/@name)" />
-                                </td>
-                                <td>
-                                    <xsl:choose>
-                                        <xsl:when
-                                            test="@is-substation='true'">
-                                            Has Substation
-                                        </xsl:when>
-                                        <xsl:otherwise>
-                                            No Substation
-                                        </xsl:otherwise>
-                                    </xsl:choose>
-                                </td>
-                                <td>
-                                    <xsl:choose>
-                                        <xsl:when
-                                            test="@is-import='true'">
-                                            Import
-                                        </xsl:when>
-                                        <xsl:otherwise>
-                                            Export
-                                        </xsl:otherwise>
-                                    </xsl:choose>
-                                </td>
-                            </tr>
-                        </xsl:for-each>
-                    </tbody>
-                </table>
-            </body>
-        </html>
-    </xsl:template>
-</xsl:stylesheet>]]></value>
+Monad.getUtils()['imprt'](globals(), {
+        'db': ['Contract', 'Party', 'Llfc', 'set_read_write', 'session'], 
+        'utils': ['UserException'],
+        'templater': ['render']})
+
+sess = None
+try:
+    sess = session()
+    dno_contract_id = inv.getLong('dno_contract_id')
+    contract = Contract.get_dno_by_id(sess, dno_contract_id)
+    llfcs = sess.query(Llfc).from_statement("select * from llfc where dno_id = :dno_id order by code").params(dno_id=contract.party.id).all()
+    render(inv, template, {'llfcs': llfcs, 'contract': contract})
+finally:
+    sess.close()]]></value>
+		<value><![CDATA[<!doctype html>
+<html>
+  <head>
+    <link rel="stylesheet" type="text/css"
+      href="{{ context_path }}/reports/19/output/">
+    <title>Chellow &gt; DNO Contracts &gt; {{contract.name}} &gt; LLFCs</title>
+  </head>
+  <body>
+    <p>
+      <a href="{{context_path}}/reports/1/output/">Chellow</a> &gt;
+      <a href="{{context_path}}/reports/137/output/">DNO Contracts</a> &gt;
+      <a href="{{context_path}}/reports/67/output/?dno_contract_id={{contract.id}}">{{ contract.name }}</a>
+      &gt; LLFCs
+    </p>
+    <br />
+    {% if messages %}
+      <ul>
+        {% for message in messages %}
+          <li>{{ message }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+    <table>
+      <thead>
+        <tr>
+          <th>Code</th>
+          <th>Description</th>
+          <th>Voltage Level</th>
+          <th>Is Substation?</th>
+          <th>Is Import?</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for llfc in llfcs %}
+          <tr>
+            <td>
+              <a href="{{context_path}}/reports/51/output/?llfc_id={{llfc.id}}">{{llfc.code}}</a>
+            </td>
+            <td>{{llfc.description}}</td>
+            <td>{{llfc.voltage_level.code}} - {{llfc.voltage_level.name}}</td>
+            <td>
+              {% if llfc.is_substation %}
+                Has Substation
+              {% else %}
+                No Substation
+              {% endif %}
+            </td>
+            <td>
+              {% if llfc.is_import %}
+                Import
+              {% else %}
+                Export
+              {% endif %}
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </body>
+</html>]]></value>
 	</line>
 	<line>
 		<value><![CDATA[insert]]></value>
 		<value><![CDATA[report]]></value>
 		<value><![CDATA[51]]></value>
 		<value><![CDATA[true]]></value>
-		<value><![CDATA[DNO LLFC]]></value>
-		<value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree
-from net.sf.chellow.physical import Llfc
+		<value><![CDATA[DNO Contract LLFC]]></value>
+		<value><![CDATA[from net.sf.chellow.monad import Monad
+from sqlalchemy.orm import joinedload_all
 
-llfc_id = inv.getLong('llfc-id')
-llfc = Llfc.getLlfc(llfc_id)
-source.appendChild(llfc.toXml(doc, XmlTree('dno').put('voltageLevel')))]]></value>
-		<value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
-<xsl:stylesheet version="1.0"
-    xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
-    <xsl:output method="html" encoding="US-ASCII"
-        doctype-public="-//W3C//DTD HTML 4.01//EN"
-        doctype-system="http://www.w3.org/TR/html4/strict.dtd" indent="yes" />
-    <xsl:template match="/">
-        <html>
-            <head>
-                <link rel="stylesheet" type="text/css"
-                    href="{/source/request/@context-path}/reports/19/output/" />
-                <title>
-                    Chellow &gt; DNOs &gt;
-                    <xsl:value-of
-                        select="/source/llfc/dno/@code" />
-                    &gt; LLFCs &gt;
-                    <xsl:value-of select="/source/llfc/@code" />
-                </title>
-            </head>
-            <body>
-                <p>
-                    <a
-                        href="{/source/request/@context-path}/reports/1/output/">
-                        <xsl:value-of select="'Chellow'" />
-                    </a>
-                    &gt;
-                    <a
-                        href="{/source/request/@context-path}/reports/137/output/">
-                        <xsl:value-of select="'DNOs'" />
-                    </a>
-                    &gt;
-                    <a
-                        href="{/source/request/@context-path}/reports/139/output/?dno-id={/source/llfc/dno/@id}">
-                        <xsl:value-of
-                            select="/source/llfc/dno/@code" />
-                    </a>
-                    &gt;
-                    <a
-                        href="{/source/request/@context-path}/reports/49/output/?dno-id={/source/llfc/dno/@id}">
-                        <xsl:value-of select="'LLFCs'" />
-                    </a>
-                    &gt;
-                    <xsl:value-of select="/source/llfc/@code" />
-                </p>
-                <br />
-                <xsl:if test="//message">
-                    <ul>
-                        <xsl:for-each select="//message">
-                            <li>
-                                <xsl:value-of select="@description" />
-                            </li>
-                        </xsl:for-each>
-                    </ul>
-                </xsl:if>
-                <table>
-                    <tr>
-                        <th>Code</th>
-                        <td>
-                            <xsl:value-of select="/source/llfc/@code" />
-                        </td>
-                    </tr>
-                    <tr>
-                        <th>Description</th>
-                        <td>
-                            <xsl:value-of
-                                select="/source/llfc/@description" />
-                        </td>
+Monad.getUtils()['imprt'](globals(), {
+        'db': ['Contract', 'Party', 'Llfc', 'set_read_write', 'session'], 
+        'utils': ['UserException'],
+        'templater': ['render']})
 
-                    </tr>
-                    <tr>
-                        <th>Voltage Level</th>
-                        <td>
-                            <xsl:value-of
-                                select="concat(/source/llfc/voltage-level/@code, ' - ', /source/llfc/voltage-level/@name)" />
-                        </td>
-                    </tr>
-                    <tr>
-                        <th>Is Substation?</th>
-                        <td>
-                            <xsl:value-of
-                                select="/source/llfc/@is-substation" />
-                        </td>
-                    </tr>
-                    <tr>
-                        <th>Is Import?</th>
-                        <td>
-                            <xsl:value-of
-                                select="/source/llfc/@is-import" />
-                        </td>
-                    </tr>
-                </table>
-            </body>
-        </html>
-    </xsl:template>
-</xsl:stylesheet>]]></value>
+sess = None
+try:
+    sess = session()
+    llfc_id = inv.getLong('llfc_id')
+    llfc = Llfc.get_by_id(sess, llfc_id)
+    dno_contract = Contract.get_dno_by_name(sess, llfc.dno.dno_code)
+    render(inv, template, {'llfc': llfc, 'dno_contract': dno_contract})
+finally:
+    if sess is not None:
+        sess.close()]]></value>
+		<value><![CDATA[<!doctype html>
+<html>
+  <head>
+    <link rel="stylesheet" type="text/css"
+      href="{{ context_path }}/reports/19/output/">
+    <title>
+      Chellow &gt; DNO Contracts &gt; {{dno_contract.name}} &gt;
+      LLFCs &gt; {{llfc.code}}
+    </title>
+  </head>
+  <body>
+    <p>
+      <a href="{{context_path}}/reports/1/output/">Chellow</a> &gt;
+      <a href="{{context_path}}/reports/137/output/">DNO Contracts</a> &gt;
+      <a href="{{context_path}}/reports/67/output/?dno_contract_id={{ dno_contract.id}}">{{ dno_contract.name }}</a> &gt;
+      <a href="{{context_path}}/reports/49/output/?dno_contract_id={{dno_contract.id}}">LLFCs</a>
+      &gt; {{llfc.code}}
+    </p>
+    <br>
+    {% if messages %}
+      <ul>
+        {% for message in messages %}
+          <li>{{ message }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+    <table>
+      <tr>
+        <th>Code</th>
+        <td>{{llfc.code}}</td>
+      </tr>
+      <tr>
+        <th>Description</th>
+        <td>{{llfc.description}}</td>
+      </tr>
+      <tr>
+        <th>Voltage Level</th>
+        <td>{{llfc.voltage_level.code}} - {{llfc.voltage_level.name}}</td>
+      </tr>
+      <tr>
+        <th>Is Substation?</th>
+        <td>{{llfc.is_substation}}</td>
+      </tr>
+      <tr>
+        <th>Is Import?</th>
+        <td>{{llfc.is_import}}</td>
+      </tr>
+    </table>
+  </body>
+</html>]]></value>
 	</line>
 	<line>
 		<value><![CDATA[insert]]></value>
@@ -6556,150 +6487,131 @@ if not process.isAlive():
 		<value><![CDATA[67]]></value>
 		<value><![CDATA[true]]></value>
 		<value><![CDATA[DNO Contract]]></value>
-		<value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree
-from net.sf.chellow.billing import DnoContract
+		<value><![CDATA[from net.sf.chellow.monad import Monad
+from java.util import Properties
+from java.io import StringReader
+from net.sf.chellow.physical import Configuration
+from sqlalchemy.orm import joinedload_all
 
-contract_id = inv.getLong('dno-contract-id')
-contract = DnoContract.getDnoContract(contract_id)
-contract_element = contract.toXml(doc, XmlTree('party'))
-source.appendChild(contract_element)
-for rate_script in contract.getRateScripts():
-    contract_element.appendChild(rate_script.toXml(doc))]]></value>
-		<value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
-<xsl:stylesheet version="1.0"
-    xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
-    <xsl:output method="html" encoding="US-ASCII"
-        doctype-public="-//W3C//DTD HTML 4.01//EN"
-        doctype-system="http://www.w3.org/TR/html4/strict.dtd" indent="yes" />
-    <xsl:template match="/">
-        <html>
-            <head>
-                <link rel="stylesheet" type="text/css"
-                    href="{/source/request/@context-path}/reports/19/output/" />
-                <title>
-                    Chellow &gt; DNOs &gt;
-                    <xsl:value-of
-                        select="/source/dno-contract/dno/@code" />
-                    &gt; Contract: <xsl:value-of select="/source/dno-contract/@name" />
-                </title>
-            </head>
-            <body>
-                <p>
-                    <a
-                        href="{/source/request/@context-path}/reports/1/output/">
-                        <xsl:value-of select="'Chellow'" />
-                    </a>
-                    &gt;
-                    <a
-                        href="{/source/request/@context-path}/reports/137/output/">
-                        <xsl:value-of select="'DNOs'" />
-                    </a>
-                    &gt;
-                    <a
-                        href="{/source/request/@context-path}/reports/139/output/?dno-id={/source/dno-contract/dno/@id}">
-                        <xsl:value-of
-                            select="/source/dno-contract/dno/@code" />
-                    </a>
-                    &gt;
-                    <xsl:value-of select="concat('Contract ', /source/dno-contract/@name, ' [')" />
-                    <a
-                        href="{/source/request/@context-path}/dnos/{/source/dno-contract/dno/@id}/contracts/{/source/dno-contract/@id}/">
-                        <xsl:value-of select="'edit'" />
-                    </a>
-                    <xsl:value-of select="']'" />
-                </p>
-                <xsl:if test="//message">
-                    <ul>
-                        <xsl:for-each select="//message">
-                            <li>
-                                <xsl:value-of select="@description" />
-                            </li>
-                        </xsl:for-each>
-                    </ul>
-                </xsl:if>
-                <table>
-                    <tbody>
-                        <tr>
-                            <th>Name</th>
-                            <td>
-                                <xsl:value-of
-                                    select="/source/dno-contract/@name" />
-                            </td>
-                        </tr>
-                        <tr>
-                            <th>Start Date</th>
-                            <td>
-                                <xsl:value-of
-                                    select="concat(/source/dno-contract/rate-script[position()=1]/hh-start-date[@label='start']/@year, '-', /source/dno-contract/rate-script[position()=1]/hh-start-date[@label='start']/@month, '-', /source/dno-contract/rate-script[position()=1]/hh-start-date[@label='start']/@day, ' ', /source/dno-contract/rate-script[position()=1]/hh-start-date[@label='start']/@hour, ':', /source/dno-contract/rate-script[position()=1]/hh-start-date[@label='start']/@minute)" />
-                            </td>
-                        </tr>
-                        <tr>
-                            <th>Finish Date</th>
-                            <td>
-                                <xsl:choose>
-                                    <xsl:when
-                                        test="/source/dno-contract/rate-script[position()=last()]/hh-start-date[@label='finish']">
-                                        <xsl:value-of
-                                            select="concat(/source/dno-contract/rate-script[position()=last()]/hh-start-date[@label='finish']/@year, '-', /source/dno-contract/rate-script[position()=last()]/hh-start-date[@label='finish']/@month, '-', /source/dno-contract/rate-script[position()=last()]/hh-start-date[@label='finish']/@day)" />
-                                    </xsl:when>
-                                    <xsl:otherwise>
-                                        Ongoing
-                                    </xsl:otherwise>
-                                </xsl:choose>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-                <br/>
-                <table><caption>Rate Scripts [<a href="{/source/request/@context-path}/dnos/{/source/dno-contract/dno/@id}/contracts/{/source/dno-contract/@id}/rate-scripts/">edit</a>]</caption>
-                    <thead>
-                        <tr>
-                            <th></th>
-                            <th>From</th>
-                            <th>To</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <xsl:for-each
-                            select="/source/dno-contract/rate-script">
-                            <tr>
-                                <td>
-                                    <a
-                                        href="{/source/request/@context-path}/reports/69/output/?dno-rate-script-id={@id}">
-                                        <xsl:value-of select="'View'" />
-                                    </a>
-                                </td>
-                                <td>
-                                    <xsl:value-of
-                                        select="concat(hh-start-date[@label='start']/@year, '-', hh-start-date[@label='start']/@month, '-', hh-start-date[@label='start']/@day)" />
-                                </td>
-                                <td>
-                                    <xsl:choose>
-                                        <xsl:when
-                                            test="hh-start-date[@label='finish']">
-                                            <xsl:value-of
-                                                select="concat(hh-start-date[@label='finish']/@year, '-', hh-start-date[@label='finish']/@month, '-', hh-start-date[@label='finish']/@day)" />
-                                        </xsl:when>
-                                        <xsl:otherwise>
-                                            Ongoing
-                                        </xsl:otherwise>
-                                    </xsl:choose>
-                                </td>
-                            </tr>
-                        </xsl:for-each>
-                    </tbody>
-                </table>
+Monad.getUtils()['imprt'](globals(), {
+        'db': ['Contract', 'Party', 'RateScript', 'set_read_write', 'session'], 
+        'utils': ['UserException'],
+        'templater': ['render']})
 
-                <h2>Script</h2>
-                <pre>
-                    <xsl:value-of
-                        select="/source/dno-contract/@charge-script" />
-                </pre>
+sess = None
+try:
+    sess = session()
+    contract_id = inv.getLong('dno_contract_id')
+    contract = Contract.get_dno_by_id(sess, contract_id)
+    rate_scripts = sess.query(RateScript).from_statement("select * from rate_script where rate_script.contract_id = :contract_id order by start_date desc").params(contract_id=contract_id).all()
+    config = Configuration.getConfiguration()
+    properties = Properties()
+    properties.load(StringReader(config.getProperties()))
 
-            </body>
-        </html>
-    </xsl:template>
-</xsl:stylesheet>]]></value>
+    reports = []
+    for key in properties.propertyNames():
+        if key.startswith('dno.report.'):
+            dno_report_id = properties.get(key)
+            if dno_report_id is not None:
+                reports.append(Report.getReport(int(dno_report_id)))
+
+    render(inv, template, {'contract': contract, 'rate_scripts': rate_scripts, 'reports': reports})
+finally:
+    if sess is not None:
+        sess.close()]]></value>
+		<value><![CDATA[<!doctype html>
+<html>
+  <head>
+    <link rel="stylesheet" type="text/css"
+      href="{{ context_path }}/reports/19/output/">
+    <title>Chellow &gt; DNO Contracts &gt; {{contract.name}}</title>
+  </head>
+  <body>
+    <p>
+      <a href="{{context_path}}/reports/1/output/">Chellow</a> &gt;
+      <a href="{{context_path}}/reports/137/output/">DNO Contracts</a> &gt;
+      {{ contract.name }}
+      [<a href="{{context_path}}/reports/139/output/?dno_contract_id={{contract.id}}">edit</a>]
+    </p>
+    {% if messages %}
+      <ul>
+        {% for message in messages %}
+          <li>{{ message }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+    <table>
+      <tbody>
+        <tr>
+          <th>Name</th>
+          <td>{{contract.name}}</td>
+        </tr>
+        <tr>
+          <th>Start Date</th>
+          <td>{{ contract.start_rate_script.start_date|hh_format }}</td>
+        </tr>
+        <tr>
+          <th>Finish Date</th>
+          <td>{{ contract.finish_rate_script.start_date|hh_format }}</td>
+        </tr>
+        <tr>
+          <th>Custom Reports</th>
+          <td>
+            <ul>
+              {% for report in custom_reports %}
+                <li>
+                  <a href="{{context_path}}/reports/{{ report.id }}/output/?dno_id={{contract.id}}">{{report.name}}</a>
+                </li>
+              {% endfor %}
+            </ul>
+          </td>
+        </tr>
+        <tr>
+          <th>Party</th>
+          <td>
+            <a href="{{context_path}}/reports/47/output/?party_id={{ contract.party.id }}">{{ contract.party.name }}</a>
+          </td>
+        </tr>
+        <tr>
+          <th>Line Loss Factor Classes</th>
+          <td>
+            <a href="{{context_path}}/reports/49/output/?dno_contract_id={{ contract.id }}">LLFCs</a>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <br/>
+    <table>
+      <caption>
+        Rate Scripts
+        [<a href="{{context_path}}/reports/243/output/?dno_contract_id={{contract.id}}">add</a>]
+      </caption>
+      <thead>
+        <tr>
+          <th></th>
+          <th>From</th>
+          <th>To</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for rate_script in rate_scripts %}
+          <tr>
+            <td>
+              <a href="{{context_path}}/reports/69/output/?dno_rate_script_id={{rate_script.id}}">View</a>
+            </td>
+            <td>{{ rate_script.start_date|hh_format }}</td>
+            <td>{{ rate_script.finish_date|hh_format }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    <h2>Script</h2>
+    <pre>{{ contract.charge_script }}</pre>
+
+  </body>
+</html>]]></value>
 	</line>
 	<line>
 		<value><![CDATA[insert]]></value>
@@ -6707,111 +6619,66 @@ for rate_script in contract.getRateScripts():
 		<value><![CDATA[69]]></value>
 		<value><![CDATA[true]]></value>
 		<value><![CDATA[DNO Contract Rate Script]]></value>
-		<value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree
-from net.sf.chellow.billing import RateScript
+		<value><![CDATA[from net.sf.chellow.monad import Monad
+from sqlalchemy.orm import joinedload_all
 
-script_id = inv.getLong('dno-rate-script-id')
-script = RateScript.getRateScript(script_id)
-source.appendChild(script.toXml(doc, XmlTree('contract', XmlTree('party'))))]]></value>
-		<value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
-<xsl:stylesheet version="1.0"
-    xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
-    <xsl:output method="html" encoding="US-ASCII"
-        doctype-public="-//W3C//DTD HTML 4.01//EN"
-        doctype-system="http://www.w3.org/TR/html4/strict.dtd" indent="yes" />
-    <xsl:template match="/">
-        <html>
-            <head>
-                <link rel="stylesheet" type="text/css"
-                    href="{/source/request/@context-path}/reports/19/output/" />
-                <title>
-                    Chellow &gt; DNOs &gt;
-                    <xsl:value-of
-                        select="/source/rate-script/dno-contract/dno/@code" />
-                    &gt; Contracts &gt;
-                    <xsl:value-of
-                        select="/source/rate-script/dno-contract/@name" />
-                    &gt; Rate Script
-                    <xsl:value-of select="/source/rate-script/@id" />
-                </title>
-            </head>
-            <body>
-                <p>
-                    <a
-                        href="{/source/request/@context-path}/reports/1/output/">
-                        <xsl:value-of select="'Chellow'" />
-                    </a>
-                    &gt;
-                    <a
-                        href="{/source/request/@context-path}/reports/137/output/">
-                        <xsl:value-of select="'DNOs'" />
-                    </a>
-                    &gt;
-                    <a
-                        href="{/source/request/@context-path}/reports/139/output/?dno-id={/source/rate-script/dno-contract/dno/@id}">
-                        <xsl:value-of
-                            select="/source/rate-script/dno-contract/dno/@code" />
-                    </a>
-                    &gt;
-                    <a
-                        href="{/source/request/@context-path}/reports/67/output/?dno-contract-id={/source/rate-script/dno-contract/@id}">
-                        <xsl:value-of
-                            select="concat('Contract ', /source/rate-script/dno-contract/@name)" />
-                    </a>
-                    &gt; Rate Script
-                    <xsl:value-of select="concat(/source/rate-script/@id, ' [')" />
-                    <a
-                        href="{/source/request/@context-path}/dnos/{/source/rate-script/dno-contract/dno/@id}/contracts/{/source/rate-script/dno-contract/@id}/rate-scripts/{/source/rate-script/@id}/">
-                        <xsl:value-of select="'edit'" />
-                    </a>
-                    <xsl:value-of select="']'" />
-                </p>
-                <br />
-                <xsl:if test="//message">
-                    <ul>
-                        <xsl:for-each select="//message">
-                            <li>
-                                <xsl:value-of select="@description" />
-                            </li>
-                        </xsl:for-each>
-                    </ul>
-                </xsl:if>
-                <table>
-                    <tbody>
-                        <tr>
-                            <th>Start Date</th>
-                            <td>
-                                <xsl:value-of
-                                    select="concat(/source/rate-script/hh-start-date[@label='start']/@year, '-', /source/rate-script/hh-start-date[@label='start']/@month, '-', /source/rate-script/hh-start-date[@label='start']/@day, ' ', /source/rate-script/hh-start-date[@label='start']/@hour, ':', /source/rate-script/hh-start-date[@label='start']/@minute)" />
-                            </td>
-                        </tr>
-                        <tr>
-                            <th>Finish Date</th>
-                            <td>
-                                <xsl:choose>
-                                    <xsl:when
-                                        test="/source/rate-script/hh-start-date[@label='finish']">
-                                        <xsl:value-of
-                                            select="concat(/source/rate-script/hh-start-date[@label='finish']/@year, '-', /source/rate-script/hh-start-date[@label='finish']/@month, '-', /source/rate-script/hh-start-date[@label='finish']/@day, ' ', /source/rate-script/hh-start-date[@label='finish']/@hour, ':', /source/rate-script/hh-start-date[@label='finish']/@minute)" />
-                                    </xsl:when>
-                                    <xsl:otherwise>
-                                        Ongoing
-                                    </xsl:otherwise>
-                                </xsl:choose>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
+Monad.getUtils()['imprt'](globals(), {
+        'db': ['Contract', 'Party', 'RateScript', 'set_read_write', 'session'], 
+        'utils': ['UserException'],
+        'templater': ['render']})
 
-                <h2>Script</h2>
+sess = None
+try:
+    sess = session()
+    rate_script_id = inv.getLong('dno_rate_script_id')
+    rate_script = RateScript.get_by_id(sess, rate_script_id)
+    render(inv, template, {'rate_script': rate_script})
+finally:
+    sess.close()]]></value>
+		<value><![CDATA[<!DOCTYPE html>
+<html>
+  <head>
+    <link rel="stylesheet" type="text/css"
+      href="{{context_path}}/reports/19/output/">
+    <title>
+      Chellow &gt; DNO Contracts &gt; {{rate_script.contract.name}} &gt;
+      {{rate_script.start_date|hh_format}}
+    </title>
+  </head>
+  <body>
+    <p>
+      <a href="{{context_path}}/reports/1/output/">Chellow</a> &gt;
+      <a href="{{context_path}}/reports/137/output/">DNO Contracts</a> &gt;
+      <a href="{{context_path}}/reports/67/output/?dno_contract_id={{rate_script.contract.id}}">{{rate_script.contract.name}}</a> &gt;
+      {{rate_script.start_date|hh_format}}
+      [<a href="{{context_path}}/reports/285/output/?dno_rate_script_id={{rate_script.id}}">edit</a>]
+    </p>
+    <br />
+    {% if messages %}
+      <ul>
+        {% for message in messages %}
+          <li>{{ message }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+    <table>
+      <tbody>
+        <tr>
+          <th>Start Date</th>
+          <td>{{rate_script.start_date|hh_format}}</td>
+        </tr>
+        <tr>
+          <th>Finish Date</th>
+          <td>{{rate_script.finish_date|hh_format}}</td>
+        </tr>
+      </tbody>
+    </table>
 
-                <pre>
-                    <xsl:value-of select="/source/rate-script/@script" />
-                </pre>
-            </body>
-        </html>
-    </xsl:template>
-</xsl:stylesheet>]]></value>
+    <h2>Script</h2>
+
+    <pre>{{rate_script.script}}</pre>
+  </body>
+</html>]]></value>
 	</line>
 	<line>
 		<value><![CDATA[insert]]></value>
@@ -8342,7 +8209,7 @@ finally:
         {% for era in eras %}
           <tr>
             <td>
-              <a href="{{context_path}}/reports/7/output/?supply-id={{era.supply_id}}">supply</a>
+              <a href="{{context_path}}/reports/7/output/?supply_id={{era.supply_id}}">supply</a>
             </td>
             <td>{{era.msn}}</td>
             <td>
@@ -10697,84 +10564,65 @@ source.appendChild(type.toXml(doc))]]></value>
 		<value><![CDATA[report]]></value>
 		<value><![CDATA[137]]></value>
 		<value><![CDATA[true]]></value>
-		<value><![CDATA[DNOs]]></value>
-		<value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree
+		<value><![CDATA[DNO Contracts]]></value>
+		<value><![CDATA[from net.sf.chellow.monad import Monad
+from sqlalchemy.orm import joinedload_all
 
-for dno in Hiber.session().createQuery(
-                'from Dno dno order by dno.code').list():
-    source.appendChild(dno.toXml(doc, XmlTree('participant').put('role')))]]></value>
-		<value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
-<xsl:stylesheet version="1.0"
-    xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
-    <xsl:output method="html" encoding="US-ASCII"
-        doctype-public="-//W3C//DTD HTML 4.01//EN"
-        doctype-system="http://www.w3.org/TR/html4/strict.dtd" indent="yes" />
-    <xsl:template match="/">
-        <html>
-            <head>
-                <link rel="stylesheet" type="text/css"
-                    href="{/source/request/@context-path}/reports/19/output/" />
-                <title>Chellow &gt; DNOs</title>
-            </head>
-            <body>
-                <p>
-                    <a
-                        href="{/source/request/@context-path}/reports/1/output/">
-                        <xsl:value-of select="'Chellow'" />
-                    </a>
-                    &gt; DNOs
-                </p>
-                <br />
-                <xsl:if test="//message">
-                    <ul>
-                        <xsl:for-each select="//message">
-                            <li>
-                                <xsl:value-of select="@description" />
-                            </li>
-                        </xsl:for-each>
-                    </ul>
-                </xsl:if>
-                <p>
-                    This is a list of parties that have the
-                    <a
-                        href="{/source/request/@context-path}/reports/123/output/?role-id=22">
-                        <xsl:value-of select="'distributor'" />
-                    </a>
-                    role.
-                </p>
-                <table>
-                    <thead>
-                        <th>Code</th>
-                        <th>Name</th>
-                        <th>Participant</th>
-                    </thead>
-                    <tbody>
-                        <xsl:for-each select="/source/dno">
-                            <tr>
-                                <td>
-                                    <a
-                                        href="{/source/request/@context-path}/reports/139/output/?dno-id={@id}">
-                                       <xsl:value-of select="@code" />
-                                    </a>
-                                </td>
-                                <td>
-                                    <xsl:value-of select="@name" />
-                                </td>
-                                <td>
-                                    <a
-                                        href="{/source/request/@context-path}/reports/73/output/?participant-id={participant/@id}">
-                                        <xsl:value-of
-                                            select="participant/@name" />
-                                    </a>
-                                </td>
-                            </tr>
-                        </xsl:for-each>
-                    </tbody>
-                </table>
-            </body>
-        </html>
-    </xsl:template>
-</xsl:stylesheet>]]></value>
+Monad.getUtils()['imprt'](globals(), {
+        'db': ['Contract', 'Party', 'RateScript', 'set_read_write', 'session'], 
+        'utils': ['UserException'],
+        'templater': ['render']})
+
+sess = None
+try:
+    sess = session()
+    dno_contracts = sess.query(Contract).from_statement("select contract.* from contract, market_role where contract.market_role_id = market_role.id and market_role.code = 'R' order by contract.name").all()
+    render(inv, template, {'dno_contracts': dno_contracts})
+finally:
+    sess.close()]]></value>
+		<value><![CDATA[<!doctype html>
+<html>
+  <head>
+    <link rel="stylesheet" type="text/css"
+      href="{{ context_path }}/reports/19/output/">
+    <title>Chellow &gt; DNO Contracts</title>
+  </head>
+  <body>
+    <p>
+      <a href="{{context_path}}/reports/1/output/">Chellow</a> &gt;
+      DNO Contracts
+    </p>
+    <br />
+    {% if messages %}
+      <ul>
+        {% for message in messages %}
+          <li>{{ message }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+    <p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Start Date</th>
+          <th>Finish Date</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for contract in dno_contracts %}
+          <tr>
+            <td>
+              <a href="{{ context_path }}/reports/67/output/?dno_contract_id={{ contract.id }}">{{ contract.name }}</a>
+            </td>
+            <td>{{ contract.start_rate_script.start_date|hh_format }}</td>
+            <td>{{ contract.finish_rate_script.finish_date|hh_format }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </body>
+</html>]]></value>
 	</line>
 	<line>
 		<value><![CDATA[insert]]></value>
@@ -10782,174 +10630,81 @@ for dno in Hiber.session().createQuery(
 		<value><![CDATA[139]]></value>
 		<value><![CDATA[true]]></value>
 		<value><![CDATA[DNO]]></value>
-		<value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree
-from net.sf.chellow.billing import Dno
-from net.sf.chellow.physical import Configuration
-from java.util import Properties
-from java.io import StringReader
-from net.sf.chellow.ui import Report
+		<value><![CDATA[from net.sf.chellow.monad import Monad
+from sqlalchemy.orm import joinedload_all
 
+Monad.getUtils()['imprt'](globals(), {
+        'db': ['Contract', 'Party', 'RateScript', 'set_read_write', 'session'], 
+        'utils': ['UserException'],
+        'templater': ['render']})
 
-dno_id = inv.getLong('dno-id')
-dno = Dno.getDno(dno_id)
-dno_element = dno.toXml(doc, XmlTree('participant').put('role'))
-source.appendChild(dno_element)
-for contract in Hiber.session().createQuery("from DnoContract contract where contract.party = :dno order by contract.name").setEntity('dno', dno).list():
-    contract_element = contract.toXml(doc)
-    dno_element.appendChild(contract_element)
-    start_rate_script = contract.getStartRateScript()
-    start_rate_script.setLabel('start')
-    contract_element.appendChild(start_rate_script.toXml(doc))
-    finish_rate_script = contract.getFinishRateScript()
-    finish_rate_script.setLabel('finish')
-    contract_element.appendChild(finish_rate_script.toXml(doc))
+sess = None
+try:
+    sess = session()
+    if inv.getRequest().getMethod() == 'GET':
+        contract_id = inv.getLong('dno_contract_id')
+        contract = Contract.get_dno_by_id(sess, contract_id)
+        render(inv, template, {'contract': contract})
+    else:
+        set_read_write(sess)
+        contract_id = inv.getLong('dno_contract_id')
+        contract = Contract.get_dno_by_id(sess, contract_id)
+        name = inv.getString('name')
+        charge_script = inv.getString('charge_script')
+        contract.update(sess, True, name, contract.party,
+                    charge_script, '{}')
+        sess.commit()
+        inv.sendSeeOther('/reports/67/output/?dno_contract_id='
+                + str(contract.id))
+except UserException, e:
+    render(inv, template, {'contract': contract, 'messages': [str(e)]})
+finally:
+    sess.close()]]></value>
+		<value><![CDATA[<!doctype html>
+<html>
+  <head>
+    <link rel="stylesheet" type="text/css"
+      href="{{ context_path }}/reports/19/output/">
+    <title>
+      Chellow &gt; DNO Contracts &gt; {{contract.name}} &gt; Edit
+    </title>
+  </head>
+  <body>
+    <p>
+      <a href="{{context_path}}/reports/1/output/">Chellow</a> &gt;
+      <a href="{{context_path}}/reports/137/output/">DNO Contracts</a> &gt;
+      <a href="{{context_path}}/reports/67/output/?dno_contract_id={{contract.id}}">{{contract.name}}</a> &gt; Edit
+    </p>
+    <br />
+    {% if messages %}
+      <ul>
+        {% for message in messages %}
+          <li>{{ message }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
 
-config = Configuration.getConfiguration()
-properties = Properties()
-properties.load(StringReader(config.getProperties()))
-
-for key in properties.propertyNames():
-    if key.startswith('dno.report.'):
-        dno_report_id = properties.get(key)
-        if dno_report_id is not None:
-            report = Report.getReport(int(dno_report_id))
-            source.appendChild(report.toXml(doc))]]></value>
-		<value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
-<xsl:stylesheet version="1.0"
-    xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
-    <xsl:output method="html" encoding="US-ASCII"
-        doctype-public="-//W3C//DTD HTML 4.01//EN"
-        doctype-system="http://www.w3.org/TR/html4/strict.dtd" indent="yes" />
-    <xsl:template match="/">
-        <html>
-            <head>
-                <link rel="stylesheet" type="text/css"
-                    href="{/source/request/@context-path}/reports/19/output/" />
-                <title>
-                    Chellow &gt; DNOs &gt;
-                    <xsl:value-of select="/source/dno/@name" />
-                </title>
-            </head>
-            <body>
-                <p>
-                    <a
-                        href="{/source/request/@context-path}/reports/1/output/">
-                        <xsl:value-of select="'Chellow'" />
-                    </a>
-                    &gt;
-                    <a
-                        href="{/source/request/@context-path}/reports/137/output/">
-                        <xsl:value-of select="'DNOs'" />
-                    </a>
-                    &gt;
-                    <xsl:value-of select="/source/dno/@code" />
-                </p>
-                <br />
-                <xsl:if test="//message">
-                    <ul>
-                        <xsl:for-each select="//message">
-                            <li>
-                                <xsl:value-of select="@description" />
-                            </li>
-                        </xsl:for-each>
-                    </ul>
-                </xsl:if>
-                <table>
-                    <tr>
-                        <th>Name</th>
-                        <td>
-                            <xsl:value-of select="/source/dno/@name" />
-                        </td>
-                    </tr>
-
-                    <tr>
-                        <th>Participant</th>
-                        <td>
-                            <a
-                                href="{/source/request/@context-path}/reports/73/output/?participant-id={/source/dno/participant/@id}">
-                                <xsl:value-of
-                                    select="/source/dno/participant/@name" />
-                            </a>
-                        </td>
-                    </tr>
-                    <tr>
-                        <th>Role</th>
-                        <td>
-                            <a
-                                href="{/source/request/@context-path}/reports/123/output/?role-id={/source/dno/market-role/@id}">
-                                <xsl:value-of
-                                    select="/source/dno/market-role/@description" />
-                            </a>
-                        </td>
-                    </tr>
-                    <tr>
-                        <th>Code</th>
-                        <td>
-                            <xsl:value-of select="/source/dno/@code" />
-                        </td>
-                    </tr>
-                    <tr>
-                        <th>Custom Reports</th>
-<td>
-                        <ul>
-                        <xsl:for-each select="/source/report">
-                        <li><a
-                        href="{/source/request/@context-path}/reports/{@id}/output/?dno-id={/source/dno/@id}">
-<xsl:value-of select="@name"/></a></li>
-                        </xsl:for-each>
-                        </ul>
-                    </td>
-                    </tr>
-                </table>
-                <br />
-                <table><caption>Contracts [<a href="{/source/request/@context-path}/dnos/{/source/dno/@id}/contracts/">edit</a>]</caption>
-                    <thead>
-                        <tr>
-                            <th>Name</th>
-                            <th>Start Date</th>
-                            <th>Finish Date</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <xsl:for-each
-                            select="/source/dno/dno-contract">
-                            <tr>
-                                <td><a href="{/source/request/@context-path}/reports/67/output/?dno-contract-id={@id}">
-                                    <xsl:value-of select="@name" /></a>
-                                </td>
-                                <td>
-                                    <xsl:value-of
-                                        select="concat(rate-script[@label='start']/hh-start-date[@label='start']/@year, '-', rate-script[@label='start']/hh-start-date[@label='start']/@month, '-', rate-script[@label='start']/hh-start-date[@label='start']/@day, ' ', rate-script[@label='start']/hh-start-date[@label='start']/@hour, ':', rate-script[@label='start']/hh-start-date[@label='start']/@minute)" />
-                                </td>
-                                <td>
-                                    <xsl:choose>
-                                        <xsl:when
-                                            test="rate-script[@label='finish']/hh-start-date[@label='finish']">
-                                            <xsl:value-of
-                                                select="concat(rate-script[@label='finish']/hh-start-date[@label='finish']/@year, '-', rate-script[@label='finish']/hh-start-date[@label='finish']/@month, '-', rate-script[@label='finish']/hh-start-date[@label='finish']/@day, ' ', rate-script[@label='finish']/hh-start-date[@label='finish']/@hour, ':', rate-script[@label='finish']/hh-start-date[@label='finish']/@minute)" />
-                                        </xsl:when>
-                                        <xsl:otherwise>
-                                            Ongoing
-                                        </xsl:otherwise>
-                                    </xsl:choose>
-                                </td>
-                            </tr>
-                        </xsl:for-each>
-                    </tbody>
-                </table>
-
-                <ul>
-                    <li>
-                        <a
-                            href="{/source/request/@context-path}/reports/49/output/?dno-id={/source/dno/@id}">
-                            Line Loss Factors
-                        </a>
-                    </li>
-                </ul>
-            </body>
-        </html>
-    </xsl:template>
-</xsl:stylesheet>]]></value>
+    <form action="{{context_path}}/reports/139/output/" method="post">
+      <fieldset>
+        <legend>Update Contract</legend>
+        <input type="hidden" name="dno_contract_id" value="{{contract.id}}">
+        <br />
+        <label>
+          Name {{ input_text('name', request, contract.name) }}
+        </label>
+        <br>
+        <br>
+        Charge script
+        <br>
+        {{ input_textarea('charge_script', request, contract.charge_script, 40, 80) }}
+        <br>
+        <br>
+        <input type="submit" value="Update">
+      </fieldset>
+    </form>
+    <br />
+  </body>
+</html>]]></value>
 	</line>
 	<line>
 		<value><![CDATA[insert]]></value>
@@ -11336,7 +11091,7 @@ from java.util import GregorianCalendar, TimeZone, Locale, Calendar, Date
 from net.sf.chellow.physical import HhStartDate, Supply
 from java.sql import Timestamp, ResultSet
 from org.python.util import PythonInterpreter
-from net.sf.chellow.billing import NonCoreContract
+from net.sf.chellow.billing import Contract
 from java.lang import Long, System
 from net.sf.chellow.monad.types import MonadDate
 
@@ -11344,26 +11099,32 @@ inv.getResponse().setContentType("text/csv")
 inv.getResponse().setHeader('Content-Disposition', 'attachment; filename="output.csv"')
 pw = inv.getResponse().getWriter()
 
-computer = NonCoreContract.getNonCoreContract('computer')
+computer = Contract.getNonCoreContract('computer')
 comterp = computer.callFunction('create_comterp', [])
 forecast_date = HhStartDate.roundDown(Date(Long.MAX_VALUE))
+dno_contract = Contract.getNonCoreContract('dno')
 
 def mpan_bit(query, kvarh_at_md_query, is_import, hh_count_query, num_hh, eras, chunk_start, chunk_finish):
-    mpan_core_str = ''
-    llfc_str = ''
+    mpan_core = ''
+    llfc_code = ''
     sc_str = ''
     supplier_contract_name = ''
     gsp_kwh = ''
     for era in eras:
-        mpan = era.getMpan(is_import)
-        if mpan is None:
+        mpan_core = era.impMpanCore if is_import else era.expMpanCore
+        if mpan_core is None:
             continue
-        supplier_contract_name = mpan.getSupplierContract().getName()
-        llfc = mpan.getLlfc()
-        llfc_str = str(llfc)
-        mpan_core_str = mpan.getCore().toString()
-        sc_str = str(mpan.getAgreedSupplyCapacity())
-        if llfc.getIsImport() and era.getPc().getCode() == 0:
+        if is_import:
+            supplier_contract_name = era.impSupplierContract.name
+            llfc = era.impLlfc
+            sc = era.impSc
+        else:
+            supplier_contract_name = era.expSupplierContract.name
+            llfc = era.expLlfc
+            sc = era.expSc
+        llfc_code = llfc.code
+        sc_str = str(sc)
+        if llfc.isImport and era.pc.code == '00':
             if gsp_kwh == '':
                 gsp_kwh = 0
 
@@ -11376,8 +11137,9 @@ def mpan_bit(query, kvarh_at_md_query, is_import, hh_count_query, num_hh, eras, 
             else:
                 block_finish = era.getFinishDate()
 
-            supply_source = comterp.get('SupplySource')(block_start, block_finish, forecast_date, mpan, comterp, pw)
-            supply_source.add_duos_elements()
+            supply_source = comterp.get('SupplySource')(block_start, block_finish, forecast_date, era, is_import, comterp, pw, caches)
+
+            comterp.get('contract_function')(dno_contract, 'vb', System.err)(supply_source)
 
             gsp_kwh += sum([datum['gsp-kwh'] for datum in supply_source.hh_data])
 
@@ -11408,7 +11170,7 @@ def mpan_bit(query, kvarh_at_md_query, is_import, hh_count_query, num_hh, eras, 
         kva_at_md = str(((kvarh_at_md.doubleValue() * 2)**2 + kw_at_md**2)**0.5)
     num_bad = str(num_hh - hh_count_query.setBoolean('isImport', is_import).uniqueResult() + num_na)
         
-    return ','.join(str(val) for val in [llfc_str, mpan_core_str, sc_str, supplier_contract_name, sum_kwh, non_actual, gsp_kwh, kw_at_md, date_at_md, kva_at_md, num_bad])
+    return ','.join(str(val) for val in [llfc_code, mpan_core, sc_str, supplier_contract_name, sum_kwh, non_actual, gsp_kwh, kw_at_md, date_at_md, kva_at_md, num_bad])
     
 start_year = inv.getInteger("start-year")
 start_month = inv.getInteger("start-month")
@@ -11445,6 +11207,8 @@ cal.set(Calendar.SECOND, 0)
 cal.set(Calendar.MILLISECOND, 0)
 finish_date = HhStartDate(cal.getTime())
 
+caches = {}
+
 query = Hiber.session().createQuery("select datum.value, datum.status, datum.startDate from HhDatum datum where datum.channel.era.supply = :supply and datum.channel.isImport is :isImport and datum.channel.isKwh is true and datum.startDate.date >= :startDate and datum.startDate.date <= :finishDate").setTimestamp('startDate', start_date.getDate()).setTimestamp('finishDate', finish_date.getDate())
 
 kva_at_md_query = Hiber.session().createQuery("select datum.value from HhDatum datum where datum.channel.era.supply = :supply and datum.channel.isImport is :isImport and datum.channel.isKwh is false and datum.startDate.date = :mdDate")
@@ -11472,7 +11236,7 @@ while supplies.next():
     supply = supplies.get(0)
     site_codes = ''
     site_names = ''
-    eras = supply.getGenerations(start_date, finish_date)
+    eras = supply.getEras(start_date, finish_date)
     era = eras[len(eras) - 1]
     for site_supply_era in era.getSiteEras():
         site = site_supply_era.getSite();
@@ -11489,11 +11253,8 @@ while supplies.next():
     else:
         generator_type = generator_type.getCode()
 
-    ssc = era.getSsc()
-    if ssc is None:
-        ssc_code = ''
-    else:
-        ssc_code = str(ssc)
+    ssc = era.ssc
+    ssc_code = '' if ssc is None else ssc.code
 
     prime_reads = {}
     bill_query.setEntity('supply', supply)
@@ -11513,12 +11274,12 @@ while supplies.next():
                 if Hiber.session().createQuery("select count(*) from RegisterRead read where read.bill = :bill and read.presentDate.date = :readDate and read.meterSerialNumber = :msn and read.presentType.code not in ('C', 'N', 'N3')").setEntity('bill', prime_bill).setTimestamp('readDate', read.getPresentDate().getDate()).setString('msn', read.getMeterSerialNumber()).uniqueResult() is not None:
                     prime_reads[key] = read
 
-    pc = era.getPc()
-    if pc.getCode() == 0:
+    pc = era.pc
+    if pc.code == '00':
         supply_type = 'hh'
     elif len(era.getChannels()) > 0:
         supply_type = 'amr'
-    elif era.getMtc().getMeterType().getCode() == 'UM':
+    elif era.mtc.meterType.code == 'UM':
         supply_type = 'unmetered'
     else:
         supply_type = 'nhh'
@@ -11535,7 +11296,7 @@ while supplies.next():
 
     num_hh = (chunk_finish.getDate().getTime() - chunk_start.getPrevious().getDate().getTime()) / (30 * 60 * 1000)
 
-    pw.print(','.join(('"' + str(value) + '"') for value in [supply.getId(), supply.getName(), supply.getSource().getCode(), generator_type, site_codes, site_names, start_date, finish_date, era.getPc(), era.getMtc(), era.getCop(), ssc_code, len(prime_reads), supply_type]) + ',')
+    pw.print(','.join(('"' + str(value) + '"') for value in [supply.id, supply.name, supply.source.code, generator_type, site_codes, site_names, start_date, finish_date, era.pc.code, era.mtc.code, era.cop.code, ssc_code, len(prime_reads), supply_type]) + ',')
     pw.flush()
     pw.println(mpan_bit(query, kva_at_md_query, True, hh_count_query, num_hh, eras, chunk_start, chunk_finish) + "," + mpan_bit(query, kva_at_md_query, False, hh_count_query, num_hh, eras, chunk_start, chunk_finish))
     pw.flush()
@@ -17326,8 +17087,44 @@ pw.close()]]></value>
 		<value><![CDATA[report]]></value>
 		<value><![CDATA[243]]></value>
 		<value><![CDATA[true]]></value>
-		<value><![CDATA[Free 243]]></value>
-		<value><![CDATA[]]>
+		<value><![CDATA[DNO Contract Rate Script Add]]></value>
+		<value><![CDATA[from net.sf.chellow.monad import Monad
+from sqlalchemy.orm import joinedload_all
+from datetime import datetime
+import pytz
+
+Monad.getUtils()['imprt'](globals(), {
+        'db': ['Contract', 'Party', 'RateScript', 'set_read_write', 'session'], 
+        'utils': ['UserException', 'form_date'],
+        'templater': ['render']})
+
+def page_fields(contract, message=None):
+    now = datetime.now(pytz.utc)
+    initial_date = datetime(now.year, now.month, 1, tzinfo=pytz.utc)
+    messages = None if message is None else [message]
+    return {'contract': contract, 'initial_date': initial_date,
+        'messages': messages}
+
+sess = None
+try:
+    sess = session()
+    if inv.getRequest().getMethod() == 'GET':
+        contract_id = inv.getLong('dno_contract_id')
+        contract = Contract.get_dno_by_id(sess, contract_id)
+        render(inv, template, page_fields(contract))
+    else:
+        set_read_write(sess)
+        contract_id = inv.getLong('dno_contract_id')
+        contract = Contract.get_dno_by_id(sess, contract_id)
+        start_date = form_date(inv, 'start')
+        rate_script = contract.insert_rate_script(sess, start_date, '')
+        sess.commit()
+        inv.sendSeeOther('/reports/69/output/?rate_script_id='
+                + str(rate_script.id))
+except UserException, e:
+        render(inv, template, page_fields(contract, str(e)))
+finally:
+    sess.close()]]>
 		</value>
 		<value><![CDATA[]]>
 		</value>
@@ -19828,6 +19625,137 @@ finally:
 		<value><![CDATA[]]>
 		</value>
 		<value><![CDATA[]]>
+		</value>
+	</line>
+		<line>
+		<value><![CDATA[insert]]></value>
+		<value><![CDATA[report]]></value>
+		<value><![CDATA[285]]></value>
+		<value><![CDATA[true]]></value>
+		<value><![CDATA[DNO Contract Rate Script Edit]]></value>
+		<value><![CDATA[from net.sf.chellow.monad import Monad
+from sqlalchemy.orm import joinedload_all
+
+Monad.getUtils()['imprt'](globals(), {
+        'db': ['Contract', 'Party', 'RateScript', 'set_read_write', 'session'], 
+        'utils': ['UserException'],
+        'templater': ['render']})
+
+sess = None
+try:
+    sess = session()
+    if inv.getRequest().getMethod() == 'GET':
+        rate_script_id = inv.getLong('dno_rate_script_id')
+        rate_script = RateScript.get_by_id(sess, rate_script_id)
+        render(inv, template, {'rate_script': rate_script})
+    else:
+        set_read_write(sess)
+        rate_script_id = inv.getLong('rate_script_id')
+        rate_script = RateScript.get_by_id(sess, rate_script_id)
+        contract = rate_script.contract
+        if inv.hasParameter('delete'):
+            contract.delete_rate_script(sess, rate_script)
+            sess.commit()
+            inv.sendSeeOther('/reports/67/output/?dno_contract_id='
+                + str(contract.id))
+        else:
+            script = inv.getString('script')
+            start_date = form_date(inv, 'start')
+            if inv.hasParameter('has_finished'):
+                finish_date = form_date('finish')
+            else:
+                finish_date = None
+            contract.update(sess, rate_script, start_date, finish_date)
+            sess.commit()
+            inv.sendSeeOther('/reports/69/output/?dno_rate_script_id='
+                    + str(script.id))
+finally:
+    sess.close()]]>
+		</value>
+		<value><![CDATA[<!doctype html>
+<html>
+  <head>
+    <link rel="stylesheet" type="text/css"
+      href="{{ context_path }}/reports/19/output/"
+    >
+    <title>
+      Chellow &gt; DNO Contracts &gt;
+      {{ rate_script.contract.name }} &gt; Rate Scripts &gt;
+      {{ rate_script.start_date|hh_format }} &gt; Edit
+    </title>
+  </head>
+  <body>
+    <p>
+      <a href="{{ context_path }}/reports/1/output/">Chellow</a> &gt;
+      <a href="{{ context_path }}/reports/137/output/">DNO Contracts</a> &gt;
+      <a href="{{ context_path }}/reports/67/output/?dno_contract_id={{ rate_script.contract.id }}">{{ rate_script.contract.name }}</a> &gt;
+      <a href="{{ context_path }}/reports/69/output/?dno_rate_script_id={{ rate_script.id }}">{{ rate_script.start_date|hh_format }}</a> &gt; Edit
+    </p>
+    <br />
+    {% if messages %}
+      <ul>
+        {% for message in messages %}
+          <li>{{ message }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+    {% if request.getMethod() == 'GET' and
+        request.getParameter('delete') %}
+      <form method="post" action="{{ context_path }}/reports/285/output/">
+        <fieldset>
+          <legend>
+            Are you sure you want to delete this rate script?
+          </legend>
+          <input type="hidden" name="rate_script_id"
+              value="{{ rate_script.id }}">
+          <input type="submit" name="delete" value="Delete" />
+        </fieldset>
+      </form>
+      <p>
+        <a href="{{ context_path }}/reports/285/output/?rate_script_id={{ rate_script_id }}">Cancel</a>
+      </p>
+    {% else %}
+      <form action="{{ context_path }}/reports/285/output/" method="post">
+        <fieldset>
+          <legend>Update Rate Script</legend>
+          <input type="hidden" name="rate_script_id"
+              value="{{rate_script.id}}">
+          <br>
+          <fieldset>
+            <legend>Start date</legend>
+            {{ input_date('start', request, rate_script.start_date) }}
+          </fieldset>
+          <br />
+          <fieldset>
+            <legend>Finish date</legend>
+            <label>
+              Ended? {{ input_checkbox('has_finished', request, rate_script.finish_date != None) }}
+            </label>
+            {{ input_date('finish', request, rate_script.finish_date) }}
+          </fieldset>
+          <br>
+          <br>
+          Script
+          <br>
+          {{ input_textarea('script', request, rate_script.script, 40, 80) }}
+          <br />
+      <br />
+      <input type="submit" value="Update">
+          <input type="reset" value="Reset">
+        </fieldset>
+      </form>
+      <br />
+      <form action="{{ context_path }}/reports/285/output/">
+        <fieldset>
+          <legend>Delete this Rate Script</legend>
+          <input type="hidden" name="rate_script_id"
+              value="{{ rate_script.id }}">
+          <input type="submit" name="delete" value="Delete" />
+        </fieldset>
+      </form>
+    {% endif %}
+  </body>
+</html>]]>
 		</value>
 	</line>
 </csv>

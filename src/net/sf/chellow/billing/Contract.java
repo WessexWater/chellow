@@ -266,8 +266,10 @@ public class Contract extends PersistentEntity implements Comparable<Contract> {
 	public Contract(boolean isCore, char roleCode, Participant participant,
 			String name, HhStartDate startDate, HhStartDate finishDate,
 			String chargeScript) throws HttpException {
-		setRole(MarketRole.getMarketRole(roleCode));
-		internalUpdate(isCore, participant, name, chargeScript);
+		MarketRole marketRole = MarketRole.getMarketRole(roleCode);
+		setRole(marketRole);
+		Party party = Party.getParty(participant, marketRole);
+		internalUpdate(isCore, party, name, chargeScript);
 	}
 
 	public MarketRole getRole() {
@@ -334,9 +336,13 @@ public class Contract extends PersistentEntity implements Comparable<Contract> {
 		this.rateScripts = rateScripts;
 	}
 
-	protected void internalUpdate(boolean isCore, Participant participant,
-			String name, String chargeScript) throws HttpException {
-		setParty(Party.getParty(participant, role));
+	protected void internalUpdate(boolean isCore, Party party, String name,
+			String chargeScript) throws HttpException {
+		if (!party.getRole().equals(role)) {
+			throw new UserException(
+					"The party market role doesn't match the contract market role.");
+		}
+		setParty(party);
 		setIsCore(isCore);
 		name = name.trim();
 		if (name.length() == 0) {

@@ -29,7 +29,6 @@ import org.hibernate.Query;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-import net.sf.chellow.monad.Debug;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.InternalException;
@@ -146,9 +145,6 @@ public class Snag extends PersistentEntity implements Cloneable {
 
 	public static void addSnag(Site site, Channel channel, String description,
 			HhStartDate startDate, HhStartDate finishDate) throws HttpException {
-		Debug.print("Adding snag for site " + site + " channel " + channel
-				+ " description " + description + " start date " + startDate
-				+ " finish date " + finishDate);
 		HhStartDate backgroundStart = startDate;
 		for (Snag snag : getCoveredSnags(site, channel, description, startDate,
 				finishDate)) {
@@ -159,8 +155,6 @@ public class Snag extends PersistentEntity implements Cloneable {
 			backgroundStart = snag.getFinishDate() == null ? null : snag
 					.getFinishDate().getNext();
 		}
-		Debug.print("background start is " + backgroundStart + " finish date"
-				+ finishDate);
 		if (backgroundStart != null
 				&& !HhStartDate.isAfter(backgroundStart, finishDate)) {
 			insertSnag(site, channel, description, backgroundStart, finishDate);
@@ -169,7 +163,6 @@ public class Snag extends PersistentEntity implements Cloneable {
 		for (Snag snag : getCoveredSnags(site, channel, description,
 				startDate.getPrevious(),
 				finishDate == null ? null : finishDate.getNext())) {
-			Debug.print("candidate combine " + snag);
 			if (prevSnag != null
 					&& prevSnag.getFinishDate().getNext()
 							.equals(snag.getStartDate())

@@ -24,13 +24,13 @@ import java.net.URI;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.w3c.dom.Document;
-import org.w3c.dom.Node;
-
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.UserException;
 import net.sf.chellow.monad.types.MonadUri;
+
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 
 public class Tpr extends PersistentEntity {
 	static public Tpr findTpr(String code) {
@@ -139,9 +139,12 @@ public class Tpr extends PersistentEntity {
 		return null;
 	}
 
-	@Override
-	public Node toXml(Document doc) throws HttpException {
-		// TODO Auto-generated method stub
-		return null;
-	}
+	public Element toXml(Document doc) throws HttpException {
+        Element element = super.toXml(doc, "tpr");
+
+        element.setAttribute("code", code);
+        element.setAttribute("is-teleswitch", String.valueOf(isTeleswitch));
+        element.setAttribute("is-gmt", String.valueOf(isGmt));
+        return element;
+}
 }
