@@ -11,7 +11,7 @@
 					href="{/source/request/@context-path}/reports/19/output/" />
 				<title>
 					Chellow &gt; Supplier Contracts &gt;
-					<xsl:value-of select="/source/rate-script/contract/@name" />
+					<xsl:value-of select="/source/rate-script/supplier-contract/@name" />
 					&gt; Rate Scripts &gt;
 					<xsl:value-of select="/source/rate-script/@id" />
 				</title>
@@ -27,8 +27,8 @@
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/reports/77/output/?supplier_contract_id={/source/rate-script/contract/@id}">
-						<xsl:value-of select="/source/rate-script/contract/@name" />
+						href="{/source/request/@context-path}/reports/77/output/?supplier_contract_id={/source/rate-script/supplier-contract/@id}">
+						<xsl:value-of select="/source/rate-script/supplier-contract/@name" />
 					</a>
 					&gt;
 					<a

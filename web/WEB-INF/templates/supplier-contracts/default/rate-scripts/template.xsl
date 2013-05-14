@@ -26,7 +26,7 @@
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/reports/77/output/?supplier-contract-id={/source/rate-scripts/supplier-contract/@id}">
+						href="{/source/request/@context-path}/reports/77/output/?supplier_contract_id={/source/rate-scripts/supplier-contract/@id}">
 						<xsl:value-of select="/source/rate-scripts/supplier-contract/@name" />
 					</a>
 					&gt; Rate Scripts

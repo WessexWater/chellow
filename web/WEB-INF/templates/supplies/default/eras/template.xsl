@@ -26,7 +26,7 @@
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/reports/7/output/?supply-id={/source/eras/supply/@id}">
+						href="{/source/request/@context-path}/reports/7/output/?supply_id={/source/eras/supply/@id}">
 						<xsl:value-of select="/source/eras/supply/@id" />
 					</a>
 					&gt; Eras

@@ -34,19 +34,14 @@ import net.sf.chellow.monad.types.MonadUri;
 
 public class Ssc extends PersistentEntity {
 	public static Ssc getSsc(String code) throws HttpException {
-		try {
-			Ssc ssc = (Ssc) Hiber.session()
-					.createQuery("from Ssc ssc where ssc.code = :code")
-					.setInteger("code", Integer.parseInt(code)).uniqueResult();
-			if (ssc == null) {
-				throw new UserException("There isn't an SSC with code: " + code
-						+ ".");
-			}
-			return ssc;
-		} catch (NumberFormatException e) {
-			throw new UserException("An SSC code must be an integer. "
-					+ e.getMessage());
+		Ssc ssc = (Ssc) Hiber.session()
+				.createQuery("from Ssc ssc where ssc.code = :code")
+				.setString("code", code).uniqueResult();
+		if (ssc == null) {
+			throw new UserException("There isn't an SSC with code: " + code
+					+ ".");
 		}
+		return ssc;
 	}
 
 	public static Ssc getSsc(long id) throws HttpException {
@@ -57,7 +52,7 @@ public class Ssc extends PersistentEntity {
 		return ssc;
 	}
 
-	private int code;
+	private String code;
 	private Date validFrom;
 	private Date validTo;
 	private String description;
@@ -69,18 +64,18 @@ public class Ssc extends PersistentEntity {
 
 	public Ssc(String code, Date validFrom, Date validTo, String description,
 			boolean isImport) throws HttpException {
-		setCode(Integer.parseInt(code));
+		setCode(code);
 		setValidFrom(validFrom);
 		setValidTo(validTo);
 		setDescription(description);
 		setIsImport(isImport);
 	}
 
-	public int getCode() {
+	public String getCode() {
 		return code;
 	}
 
-	void setCode(int code) {
+	void setCode(String code) {
 		this.code = code;
 	}
 
@@ -147,7 +142,7 @@ public class Ssc extends PersistentEntity {
 	public Element toXml(Document doc) throws HttpException {
 		Element element = super.toXml(doc, "ssc");
 
-		element.setAttribute("code", toString());
+		element.setAttribute("code", code);
 		element.setAttribute("is-import", Boolean.toString(isImport));
 		element.setAttribute("description", description);
 		MonadDate fromDate = new MonadDate(validFrom);

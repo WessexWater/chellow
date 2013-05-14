@@ -769,14 +769,14 @@ def duos_tariffs():
     'day-gbp-per-kwh': 0.00508,
     'capacity-<=200-gbp-per-kva-per-month': 1.06,
     'capacity->200-gbp-per-kva-per-month': 0.93,
-    'excess-capacity-gbp-per-kva-per-month': 0.42},
+    'excess-gbp-per-kva-per-month': 0.42},
 'llfc(453)-pc(00)': {
     'fixed-gbp-per-month': 14.91,
     'day-gbp-per-kwh': 0.00606,
     'night-gbp-per-kwh': 0.00118,
     'capacity-<=200-gbp-per-kva-per-month': 1.06,
     'capacity->200-gbp-per-kva-per-month': 0.93,
-    'excess-capacity-gbp-per-kva-per-month': 0.42},
+    'excess-gbp-per-kva-per-month': 0.42},
 'llfc(520)-pc(00)': {
     'fixed-gbp-per-month': 51.50,
     'day-gbp-per-kwh':  0.01157},
@@ -785,14 +785,14 @@ def duos_tariffs():
     'day-gbp-per-kwh':   0.00379,
     'capacity-<=200-gbp-per-kva-per-month': 0.86,
     'capacity->200-gbp-per-kva-per-month': 0.86,
-    'excess-capacity-gbp-per-kva-per-month': 0.40},
+    'excess-gbp-per-kva-per-month': 0.40},
 'llfc(658)-pc(00)': {
     'fixed-gbp-per-month': 98.23,
     'day-gbp-per-kwh': 0.00433,
     'night-gbp-per-kwh': 0.00108,
     'capacity-<=200-gbp-per-kva-per-month': 0.86,
     'capacity->200-gbp-per-kva-per-month': 0.86,
-    'excess-capacity-gbp-per-kva-per-month': 0.40}}
+    'excess-gbp-per-kva-per-month': 0.40}}
 
 def lafs():
     return {
@@ -822,14 +822,14 @@ def duos_tariffs():
     'day-gbp-per-kwh': 0.00508,
     'capacity-<=200-gbp-per-kva-per-month': 1.06,
     'capacity->200-gbp-per-kva-per-month': 0.93,
-    'excess-capacity-gbp-per-kva-per-month': 0.42},
+    'excess-gbp-per-kva-per-month': 0.42},
 'llfc(453)-pc(00)': {
     'fixed-gbp-per-month': 14.91,
     'day-gbp-per-kwh': 0.00606,
     'night-gbp-per-kwh': 0.00118,
     'capacity-<=200-gbp-per-kva-per-month': 1.06,
     'capacity->200-gbp-per-kva-per-month': 0.93,
-    'excess-capacity-gbp-per-kva-per-month': 0.42},
+    'excess-gbp-per-kva-per-month': 0.42},
 'llfc(520)-pc(00)': {
     'fixed-gbp-per-month': 51.50,
     'day-gbp-per-kwh':  0.01157},
@@ -838,14 +838,14 @@ def duos_tariffs():
     'day-gbp-per-kwh':   0.00379,
     'capacity-<=200-gbp-per-kva-per-month': 0.86,
     'capacity->200-gbp-per-kva-per-month': 0.86,
-    'excess-capacity-gbp-per-kva-per-month': 0.40},
+    'excess-gbp-per-kva-per-month': 0.40},
 'llfc(658)-pc(00)': {
     'fixed-gbp-per-month': 98.23,
     'day-gbp-per-kwh': 0.00433,
     'night-gbp-per-kwh': 0.00108,
     'capacity-<=200-gbp-per-kva-per-month': 0.86,
     'capacity->200-gbp-per-kva-per-month': 0.86,
-    'excess-capacity-gbp-per-kva-per-month': 0.40}}
+    'excess-gbp-per-kva-per-month': 0.40}}
 
 def lafs():
     return {
@@ -875,14 +875,14 @@ def duos_tariffs():
     'day-gbp-per-kwh': 0.00508,
     'capacity-<=200-gbp-per-kva-per-month': 1.06,
     'capacity->200-gbp-per-kva-per-month': 0.93,
-    'excess-capacity-gbp-per-kva-per-month': 0.42},
+    'excess-gbp-per-kva-per-month': 0.42},
 'llfc(453)-pc(00)': {
     'fixed-gbp-per-month': 14.91,
     'day-gbp-per-kwh': 0.00606,
     'night-gbp-per-kwh': 0.00118,
     'capacity-<=200-gbp-per-kva-per-month': 1.06,
     'capacity->200-gbp-per-kva-per-month': 0.93,
-    'excess-capacity-gbp-per-kva-per-month': 0.42},
+    'excess-gbp-per-kva-per-month': 0.42},
 'llfc(520)-pc(00)': {
     'fixed-gbp-per-month': 51.50,
     'day-gbp-per-kwh':  0.01157},
@@ -891,14 +891,14 @@ def duos_tariffs():
     'day-gbp-per-kwh':   0.00379,
     'capacity-<=200-gbp-per-kva-per-month': 0.86,
     'capacity->200-gbp-per-kva-per-month': 0.86,
-    'excess-capacity-gbp-per-kva-per-month': 0.40},
+    'excess-gbp-per-kva-per-month': 0.40},
 'llfc(658)-pc(00)': {
     'fixed-gbp-per-month': 98.23,
     'day-gbp-per-kwh': 0.00433,
     'night-gbp-per-kwh': 0.00108,
     'capacity-<=200-gbp-per-kva-per-month': 0.86,
     'capacity->200-gbp-per-kva-per-month': 0.86,
-    'excess-capacity-gbp-per-kva-per-month': 0.40}}
+    'excess-gbp-per-kva-per-month': 0.40}}
 
 def lafs():
     return {
@@ -952,43 +952,43 @@ def duos_tariffs():
             'night-gbp-per-kwh': 0.00126,
             'capacity-<=200-gbp-per-kva-per-month': 1.13,
             'capacity->200-gbp-per-kva-per-month': 1.00,
-            'excess-capacity-gbp-per-kva-per-month': 0.45},
+            'excess-gbp-per-kva-per-month': 0.45},
         'llfc(453,470)-pc(00)': {
             'fixed-gbp-per-month': 15.97,
             'day-gbp-per-kwh': 0.00649,
             'night-gbp-per-kwh': 0.00126,
             'capacity-<=200-gbp-per-kva-per-month': 1.13,
             'capacity->200-gbp-per-kva-per-month': 1.00,
-            'excess-capacity-gbp-per-kva-per-month': 0.45},
+            'excess-gbp-per-kva-per-month': 0.45},
         'llfc(658,476)-pc(00)': {
             'fixed-gbp-per-month': 105.18,
             'day-gbp-per-kwh': 0.00464,
             'night-gbp-per-kwh': 0.00116,
             'capacity-<=200-gbp-per-kva-per-month': 0.92,
             'capacity->200-gbp-per-kva-per-month': 0.92,
-            'excess-capacity-gbp-per-kva-per-month': 0.43},
+            'excess-gbp-per-kva-per-month': 0.43},
         'llfc(605)-pc(05-08)': {
             'fixed-gbp-per-month': 107.80,
             'day-gbp-per-kwh':  0.00406,
             'capacity-<=200-gbp-per-kva-per-month': 0.92,
             'capacity->200-gbp-per-kva-per-month': 0.92,
-            'excess-capacity-gbp-per-kva-per-month': 0.43,},
+            'excess-gbp-per-kva-per-month': 0.43,},
         'llfc(450)-pc(00)': {
             'fixed-gbp-per-month': 15.97,
             'day-gbp-per-kwh':   0.00544,
             'capacity-<=200-gbp-per-kva-per-month': 1.13,
             'capacity->200-gbp-per-kva-per-month': 1.00,
-            'excess-capacity-gbp-per-kva-per-month': 0.45,},
+            'excess-gbp-per-kva-per-month': 0.45,},
         'llfc(655)-pc(00)': {
             'fixed-gbp-per-month': 105.18,
             'day-gbp-per-kwh': 0.00406,
             'capacity-<=200-gbp-per-kva-per-month': 0.92,
             'capacity->200-gbp-per-kva-per-month': 0.92,
-            'excess-capacity-gbp-per-kva-per-month': 0.43,},
+            'excess-gbp-per-kva-per-month': 0.43,},
         'llfc(909,477)-pc(00)': {
-            'capacity-gbp-per-kva-per-month': 0.51},
+            'gbp-per-kva-per-month': 0.51},
         'llfc(910,478)-pc(00)': {
-            'capacity-gbp-per-kva-per-month': 0.51}}
+            'gbp-per-kva-per-month': 0.51}}
 
 def lafs():
     return {
@@ -1023,11 +1023,11 @@ def lafs():
 def duos_tariffs():
     return {
         'llfc(002)-pc(00)': {
-            'capacity-gbp-per-kva-per-month': 0.51,
+            'gbp-per-kva-per-month': 0.51,
             'fixed-gbp-per-day': 0,
             'day-gbp-per-kwh': 0},
         'llfc(006)-pc(00)': {
-            'capacity-gbp-per-kva-per-month': 0.51,
+            'gbp-per-kva-per-month': 0.51,
             'fixed-gbp-per-day': 0,
             'day-gbp-per-kwh': 0},
         'llfc(126)-pc(03)': {
@@ -1050,43 +1050,43 @@ def duos_tariffs():
             'night-gbp-per-kwh': 0.00126,
             'capacity-<=200-gbp-per-kva-per-month': 1.13,
             'capacity->200-gbp-per-kva-per-month': 1.00,
-            'excess-capacity-gbp-per-kva-per-month': 0.45},
+            'excess-gbp-per-kva-per-month': 0.45},
         'llfc(453,470)-pc(00)': {
             'fixed-gbp-per-month': 15.97,
             'day-gbp-per-kwh': 0.00649,
             'night-gbp-per-kwh': 0.00126,
             'capacity-<=200-gbp-per-kva-per-month': 1.13,
             'capacity->200-gbp-per-kva-per-month': 1.00,
-            'excess-capacity-gbp-per-kva-per-month': 0.45},
+            'excess-gbp-per-kva-per-month': 0.45},
         'llfc(658,476)-pc(00)': {
             'fixed-gbp-per-month': 105.18,
             'day-gbp-per-kwh': 0.00464,
             'night-gbp-per-kwh': 0.00116,
             'capacity-<=200-gbp-per-kva-per-month': 0.92,
             'capacity->200-gbp-per-kva-per-month': 0.92,
-            'excess-capacity-gbp-per-kva-per-month': 0.43},
+            'excess-gbp-per-kva-per-month': 0.43},
         'llfc(605)-pc(05-08)': {
             'fixed-gbp-per-month': 107.80,
             'day-gbp-per-kwh':  0.00406,
             'capacity-<=200-gbp-per-kva-per-month': 0.92,
             'capacity->200-gbp-per-kva-per-month': 0.92,
-            'excess-capacity-gbp-per-kva-per-month': 0.43},
+            'excess-gbp-per-kva-per-month': 0.43},
         'llfc(450)-pc(00)': {
             'fixed-gbp-per-month': 15.97,
             'day-gbp-per-kwh':   0.00544,
             'capacity-<=200-gbp-per-kva-per-month': 1.13,
             'capacity->200-gbp-per-kva-per-month': 1.00,
-            'excess-capacity-gbp-per-kva-per-month': 0.45},
+            'excess-gbp-per-kva-per-month': 0.45},
         'llfc(655)-pc(00)': {
             'fixed-gbp-per-month': 105.18,
             'day-gbp-per-kwh': 0.00406,
             'capacity-<=200-gbp-per-kva-per-month': 0.92,
             'capacity->200-gbp-per-kva-per-month': 0.92,
-            'excess-capacity-gbp-per-kva-per-month': 0.43},
+            'excess-gbp-per-kva-per-month': 0.43},
         'llfc(909,477)-pc(00)': {
-            'capacity-gbp-per-kva-per-month': 0.51},
+            'gbp-per-kva-per-month': 0.51},
         'llfc(910,478)-pc(00)': {
-            'capacity-gbp-per-kva-per-month': 0.51}}
+            'gbp-per-kva-per-month': 0.51}}
 
 def lafs():
     return {
@@ -2285,32 +2285,32 @@ def totalElement(account, startDate, finishDate):
 def tariffs():
     return {
         '510': {
-            'capacity-gbp-per-kva-per-day': 0.0372,
+            'gbp-per-kva-per-day': 0.0372,
             'day-gbp-per-kwh': 0.0047,
             'night-gbp-per-kwh': 0.0014,
             'reactive-gbp-per-kvarh': 0.0023},
         '520': {
-            'capacity-gbp-per-kva-per-day': 0.0372,
+            'gbp-per-kva-per-day': 0.0372,
             'day-gbp-per-kwh': 0.0047,
             'night-gbp-per-kwh': 0.0014,
             'reactive-gbp-per-kvarh': 0.0023},
         '540': {
-            'capacity-gbp-per-kva-per-day': 0.0352,
+            'gbp-per-kva-per-day': 0.0352,
             'day-gbp-per-kwh': 0.0080,
             'night-gbp-per-kwh': 0.0028,
             'reactive-gbp-per-kvarh': 0.0033},
         '550': {
-            'capacity-gbp-per-kva-per-day': 0.0352,
+            'gbp-per-kva-per-day': 0.0352,
             'day-gbp-per-kwh': 0.0080,
             'night-gbp-per-kwh': 0.0039,
             'reactive-gbp-per-kvarh': 0.0033},
         '570': {
-            'capacity-gbp-per-kva-per-day': 0.0332,
+            'gbp-per-kva-per-day': 0.0332,
             'day-gbp-per-kwh': 0.0121,
             'night-gbp-per-kwh': 0.0040,
             'reactive-gbp-per-kvarh': 0.0042},
         '580': {
-            'capacity-gbp-per-kva-per-day': 0.0332,
+            'gbp-per-kva-per-day': 0.0332,
             'day-gbp-per-kwh': 0.0121,
             'night-gbp-per-kwh': 0.0040,
             'reactive-gbp-per-kvarh': 0.0042}}]]></value>
@@ -2342,32 +2342,32 @@ def tariffs():
 def tariffs():
     return {
         '510': {
-            'capacity-gbp-per-kva-per-day': 0.0372,
+            'gbp-per-kva-per-day': 0.0372,
             'day-gbp-per-kwh': 0.0047,
             'night-gbp-per-kwh': 0.0014,
             'reactive-gbp-per-kvarh': 0.0023},
         '520': {
-            'capacity-gbp-per-kva-per-day': 0.0372,
+            'gbp-per-kva-per-day': 0.0372,
             'day-gbp-per-kwh': 0.0047,
             'night-gbp-per-kwh': 0.0014,
             'reactive-gbp-per-kvarh': 0.0023},
         '540': {
-            'capacity-gbp-per-kva-per-day': 0.0352,
+            'gbp-per-kva-per-day': 0.0352,
             'day-gbp-per-kwh': 0.0080,
             'night-gbp-per-kwh': 0.0028,
             'reactive-gbp-per-kvarh': 0.0033},
         '550': {
-            'capacity-gbp-per-kva-per-day': 0.0352,
+            'gbp-per-kva-per-day': 0.0352,
             'day-gbp-per-kwh': 0.0080,
             'night-gbp-per-kwh': 0.0039,
             'reactive-gbp-per-kvarh': 0.0033},
         '570': {
-            'capacity-gbp-per-kva-per-day': 0.0332,
+            'gbp-per-kva-per-day': 0.0332,
             'day-gbp-per-kwh': 0.0121,
             'night-gbp-per-kwh': 0.0040,
             'reactive-gbp-per-kvarh': 0.0042},
         '580': {
-            'capacity-gbp-per-kva-per-day': 0.0332,
+            'gbp-per-kva-per-day': 0.0332,
             'day-gbp-per-kwh': 0.0121,
             'night-gbp-per-kwh': 0.0040,
             'reactive-gbp-per-kvarh': 0.0042}}]]></value>
@@ -2398,41 +2398,41 @@ def tariffs():
 def tariffs():
     return {
         '510': {
-            'capacity-gbp-per-kva-per-day': 0.0378,
+            'gbp-per-kva-per-day': 0.0378,
             'day-gbp-per-kwh': 0.0039,
             'night-gbp-per-kwh': 0.0012,
             'reactive-gbp-per-kvarh': 0.0023},
         '520': {
-            'capacity-gbp-per-kva-per-day': 0.0378,
+            'gbp-per-kva-per-day': 0.0378,
             'day-gbp-per-kwh': 0.0039,
             'night-gbp-per-kwh': 0.0012,
             'reactive-gbp-per-kvarh': 0.0023},
         '521': {
-            'capacity-gbp-per-kva-per-day': 0.0174,
+            'gbp-per-kva-per-day': 0.0174,
             'day-gbp-per-kwh': 0,
             'night-gbp-per-kwh': 0},
         '540': {
-            'capacity-gbp-per-kva-per-day': 0.0368,
+            'gbp-per-kva-per-day': 0.0368,
             'day-gbp-per-kwh': 0.0073,
             'night-gbp-per-kwh': 0.0026,
             'reactive-gbp-per-kvarh': 0.0033},
         '550': {
-            'capacity-gbp-per-kva-per-day': 0.0368,
+            'gbp-per-kva-per-day': 0.0368,
             'day-gbp-per-kwh': 0.0073,
             'night-gbp-per-kwh': 0.0026,
             'reactive-gbp-per-kvarh': 0.0033},
         '570': {
-            'capacity-gbp-per-kva-per-day': 0.0358,
+            'gbp-per-kva-per-day': 0.0358,
             'day-gbp-per-kwh': 0.0115,
             'night-gbp-per-kwh': 0.0038,
             'reactive-gbp-per-kvarh': 0.0042},
         '580': {
-            'capacity-gbp-per-kva-per-day': 0.0358,
+            'gbp-per-kva-per-day': 0.0358,
             'day-gbp-per-kwh': 0.0115,
             'night-gbp-per-kwh': 0.0038,
             'reactive-gbp-per-kvarh': 0.0042},
         '581': {
-            'capacity-gbp-per-kva-per-day': 0.0167,
+            'gbp-per-kva-per-day': 0.0167,
             'day-gbp-per-kwh': 0,
             'night-gbp-per-kwh': 0}}]]></value>
 	</line>
@@ -2543,32 +2543,32 @@ def duos_reactive_lv_sub_gbp_per_kvarh():
 def tariffs():
     return {
         '510': {
-            'capacity-gbp-per-kva-per-day': 0.038700,
+            'gbp-per-kva-per-day': 0.038700,
             'day-gbp-per-kwh': 0.004700,
             'night-gbp-per-kwh': 0.001400,
             'reactive-gbp-per-kvarh': 0.002300},
         '520': {
-            'capacity-gbp-per-kva-per-day': 0.038700,
+            'gbp-per-kva-per-day': 0.038700,
             'day-gbp-per-kwh': 0.004700,
             'night-gbp-per-kwh': 0.001400,
             'reactive-gbp-per-kvarh': 0.002300},
         '540': {
-            'capacity-gbp-per-kva-per-day': 0.038900,
+            'gbp-per-kva-per-day': 0.038900,
             'day-gbp-per-kwh': 0.008100,
             'night-gbp-per-kwh': 0.002800,
             'reactive-gbp-per-kvarh': 0.003300},
         '550': {
-            'capacity-gbp-per-kva-per-day': 0.038900,
+            'gbp-per-kva-per-day': 0.038900,
             'day-gbp-per-kwh': 0.008100,
             'night-gbp-per-kwh': 0.002800,
             'reactive-gbp-per-kvarh': 0.003300},
         '570': {
-            'capacity-gbp-per-kva-per-day': 0.039000,
+            'gbp-per-kva-per-day': 0.039000,
             'day-gbp-per-kwh': 0.012700,
             'night-gbp-per-kwh': 0.004500,
             'reactive-gbp-per-kvarh': 0.004200},
         '580': {
-            'capacity-gbp-per-kva-per-day': 0.039000,
+            'gbp-per-kva-per-day': 0.039000,
             'day-gbp-per-kwh': 0.012700,
             'night-gbp-per-kwh': 0.004500,
             'reactive-gbp-per-kvarh': 0.004200}}]]></value>
@@ -2605,43 +2605,43 @@ def tariffs():
             'day-gbp-per-kwh': 0.026700,
             'night-gbp-per-kwh': 0.004800},
         '510': {
-            'capacity-gbp-per-kva-per-day': 0.038700,
+            'gbp-per-kva-per-day': 0.038700,
             'day-gbp-per-kwh': 0.004700,
             'night-gbp-per-kwh': 0.001400,
             'reactive-gbp-per-kvarh': 0.002300},
         '520': {
-            'capacity-gbp-per-kva-per-day': 0.038700,
+            'gbp-per-kva-per-day': 0.038700,
             'day-gbp-per-kwh': 0.004700,
             'night-gbp-per-kwh': 0.001400,
             'reactive-gbp-per-kvarh': 0.002300},
         '521': {
-            'capacity-gbp-per-kva-per-day': 0.018600,
+            'gbp-per-kva-per-day': 0.018600,
             'reactive-gbp-per-kvarh': 0.002300},
         '524': {
-            'capacity-gbp-per-kva-per-day': 0.018600},
+            'gbp-per-kva-per-day': 0.018600},
         '526': {
-            'capacity-gbp-per-kva-per-day': 0.018600},
+            'gbp-per-kva-per-day': 0.018600},
         '527': {
-            'capacity-gbp-per-kva-per-day': 0.018600},
+            'gbp-per-kva-per-day': 0.018600},
         '540': {
-            'capacity-gbp-per-kva-per-day': 0.038900,
+            'gbp-per-kva-per-day': 0.038900,
             'day-gbp-per-kwh': 0.008100,
             'night-gbp-per-kwh': 0.002800,
             'reactive-gbp-per-kvarh': 0.003300},
         '550': {
-            'capacity-gbp-per-kva-per-day': 0.038900,
+            'gbp-per-kva-per-day': 0.038900,
             'day-gbp-per-kwh': 0.008100,
             'night-gbp-per-kwh': 0.002800,
             'reactive-gbp-per-kvarh': 0.003300},
         '551': {
-            'capacity-gbp-per-kva-per-day': 0.018200},
+            'gbp-per-kva-per-day': 0.018200},
         '570': {
-            'capacity-gbp-per-kva-per-day': 0.039000,
+            'gbp-per-kva-per-day': 0.039000,
             'day-gbp-per-kwh': 0.012700,
             'night-gbp-per-kwh': 0.004500,
             'reactive-gbp-per-kvarh': 0.004200},
         '580': {
-            'capacity-gbp-per-kva-per-day': 0.039000,
+            'gbp-per-kva-per-day': 0.039000,
             'day-gbp-per-kwh': 0.012700,
             'night-gbp-per-kwh': 0.004500,
             'reactive-gbp-per-kvarh': 0.004200}}]]></value>

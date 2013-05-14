@@ -20,7 +20,7 @@
 					<a href="{/source/request/@context-path}/reports/75/output/">
 						<xsl:value-of select="'Supplier Contracts'" />
 					</a>
-					&gt; Edit
+					&gt; Add
 				</p>
 				<xsl:if test="//message">
 					<ul>

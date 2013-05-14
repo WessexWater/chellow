@@ -12,14 +12,14 @@
 				<control name="user_role_id" value="1" />
 				<control name="password" value="alan" />
 				<response-code value="303" />
-				<regex pattern="/reports/255/output/\?user_id=1" />
+				<regex pattern="/reports/257/output/\?user_id=1" />
 			</request>
 			<request path="/chellow/reports/255/output/" method="post">
 				<control name="email_address" value="lydgate@localhost" />
 				<control name="user_role_id" value="1" />
 				<control name="password" value="science" />
 				<response-code value="303" />
-				<regex pattern="/reports/255/output/\?user_id=2" />
+				<regex pattern="/reports/257/output/\?user_id=2" />
 			</request>
 			<request path="/chellow/reports/255/output/?user_id=2">
 				<response-code value="200" />
@@ -1380,30 +1380,29 @@ def virtual_bill(supply_source):
 				<control name="import-supplier-account" value="01" />
 				<control name="has-export-mpan" value="false" />
 				<response-code value="400" />
-				<regex
-					pattern="The HHDC contract can't be null\." />
+				<regex pattern="The HHDC contract can't be null\." />
 			</request>
 		</test>
 		<test name="Test that profile 05 is displayed for a supply era.">
-			<request path="/chellow/supplies/9/eras/10/">
+			<request path="/chellow/supplies/9/eras/9/">
 				<regex
 					pattern='&lt;option value="5" selected&gt;05 - Non-domestic, MD, load factor 0-20%&lt;/option&gt;' />
 				<response-code value="200" />
 			</request>
 		</test>
 		<test name="Try adding a party viewer.">
-			<request path="/chellow/users/" method="post">
-				<control name="email-address" value="mishka@localhost" />
+			<request path="/chellow/reports/255/output/" method="post">
+				<control name="email_address" value="mishka@localhost" />
 				<control name="password" value="fyodor" />
-				<control name="user-role-id" value="2" />
-				<control name="party-id" value="102" /> <!-- DASL HHDC -->
+				<control name="user_role_id" value="2" />
+				<control name="party_id" value="30" /> <!-- BMET HHDC -->
 				<response-code value="303" />
-				<regex pattern="/chellow/users/4/" />
+				<regex pattern="/chellow/reports/257/output/\?user_id=4" />
 			</request>
 		</test>
 		<test name="Check that the party viewer is able to view snags.">
 			<request
-				path="/chellow/reports/37/output/?hhdc-contract-id=0&amp;hidden-days=5">
+				path="/chellow/reports/37/output/?hhdc-contract-id=48&amp;hidden-days=5">
 				<credentials username="mishka@localhost" password="fyodor" />
 				<response-code value="200" />
 			</request>
@@ -1432,8 +1431,8 @@ def virtual_bill(supply_source):
 			</request>
 		</test>
 		<test
-			name="Try adding a second rate script (set to 'ongoing'), and see if the supply era can be updated.">
-			<request path="/chellow/supplier-contracts/4/rate-scripts/"
+			name="Try adding a second rate script (set to 'ongoing'), and see if the era can be updated.">
+			<request path="/chellow/supplier-contracts/50/rate-scripts/"
 				method="post">
 				<control name="start-year" value="2009" />
 				<control name="start-month" value="08" />
@@ -1443,16 +1442,16 @@ def virtual_bill(supply_source):
 				<control name="script" value="" />
 				<response-code value="303" />
 			</request>
-			<request path="/chellow/supplies/1/eras/14/" method="post">
+			<request path="/chellow/supplies/1/eras/13/" method="post">
 				<control name="start-year" value="2008" />
 				<control name="start-month" value="07" />
 				<control name="start-day" value="07" />
 				<control name="start-hour" value="00" />
 				<control name="start-minute" value="00" />
 				<control name="is-ended" value="false" />
-				<control name="mop-contract-id" value="8" />
+				<control name="mop-contract-id" value="52" />
 				<control name="mop-account" value="mc-22 0470 7514 535" />
-				<control name="hhdc-contract-id" value="0" />
+				<control name="hhdc-contract-id" value="48" />
 				<control name="hhdc-account" value="01" />
 				<control name="meter-serial-number" value="" />
 				<control name="pc-id" value="9" />
@@ -1464,20 +1463,21 @@ def virtual_bill(supply_source):
 				<control name="export-llfc-code" value="581" />
 				<control name="export-mpan-core" value="22 0470 7514 535" />
 				<control name="export-agreed-supply-capacity" value="150" />
-				<control name="export-supplier-contract-id" value="4" />
+				<control name="export-supplier-contract-id" value="50" />
 				<control name="export-supplier-account" value="010" />
 				<response-code value="200" />
 			</request>
 		</test>
 		<test name="Check updating of HHDC contract state.">
-			<request path="/chellow/hhdc-contracts/0/" method="post">
+			<request path="/chellow/reports/279/output/" method="post">
+				<control name="hhdc_contract_id" value="48" />
 				<control name="state"><![CDATA[
 lastImportDate0=2008-11-30
 lastImportName0=Example]]></control>
-				<control name="update-state" value="Update State" />
+				<control name="update_state" value="Update State" />
 				<response-code value="303" />
 			</request>
-			<request path="/chellow/hhdc-contracts/0/">
+			<request path="/chellow/reports/115/output/?hhdc_contract_id=48">
 				<response-code value="200" />
 				<regex pattern="lastImportDate0=2008-11-30\nlastImportName0=Example" />
 			</request>
@@ -1518,33 +1518,36 @@ lastImportName0=Example]]></control>
 			</request>
 			<request path="/chellow/supplies/1/eras/">
 				<regex
-					pattern='2&lt;/td&gt;&lt;td&gt;2003-08-03 00:00&lt;/td&gt;&lt;td&gt;2008-07-06 23:30' />
+					pattern='1&lt;/td&gt;&lt;td&gt;2003-08-03 00:00&lt;/td&gt;&lt;td&gt;2008-07-06 23:30' />
 				<response-code value="200" />
 			</request>
 		</test>
 		<test name="Test 'view' link from supplier contract rate scripts.">
-			<request path="/chellow/supplier-contracts/4/rate-scripts/">
-				<regex pattern="/chellow/reports/77/output/\?supplier-contract-id=4" />
+			<request path="/chellow/supplier-contracts/50/rate-scripts/">
+				<regex pattern="/chellow/reports/77/output/\?supplier_contract_id=50" />
 			</request>
 		</test>
 		<test name="Check there isn't an empty link to the HHDC Contract.">
-			<request path="/chellow/supplies/9/eras/10/">
+			<request path="/chellow/supplies/9/eras/9/">
 				<regex
-					pattern='&lt;option value="0"&gt;HH contract&lt;/option&gt;&lt;/select&gt;&lt;/label&gt; Dynamat data&lt;br&gt;' />
+					pattern='&lt;option value="48"&gt;HH contract&lt;/option&gt;&lt;/select&gt;&lt;/label&gt; Dynamat data&lt;br&gt;' />
 			</request>
 		</test>
 		<test name="Try bulk delete of HHDC snags.">
-			<request path="/chellow/hhdc-contracts/2/" method="post">
-				<control name="ignore-year" value="2010" />
-				<control name="ignore-month" value="01" />
-				<control name="ignore-day" value="13" />
-				<control name="ignore-snags" />
-				<response-code value="200" />
+			<request path="/chellow/reports/279/output/" method="post">
+				<control name="hhdc_contract_id" value="49" />
+				<control name="ignore_year" value="2010" />
+				<control name="ignore_month" value="01" />
+				<control name="ignore_day" value="13" />
+				<control name="ignore_hour" value="00" />
+				<control name="ignore_minute" value="00" />
+				<control name="ignore_snags" />
+				<response-code value="303" />
 			</request>
 		</test>
 		<test name="Check python compile error gives a reasonable message.">
-			<request path="/chellow/supplier-contracts/4/" method="post">
-				<control name="participant-id" value="21" />
+			<request path="/chellow/supplier-contracts/50/" method="post">
+				<control name="party_id" value="25" /> <!-- BIZZ -->
 				<control name="name" value="Half-hourlies 2007" />
 				<control name="charge-script">
 				<![CDATA[
@@ -1555,23 +1558,24 @@ def virtual_bill(supply, startDate, finishDate, pw):
 				<response-code value="400" />
 			</request>
 			<!-- Put back to how it was before -->
-			<request path="/chellow/supplier-contracts/4/" method="post">
-				<control name="participant-id" value="21" />
+			<request path="/chellow/supplier-contracts/50/" method="post">
+				<control name="party_id" value="25" />
 				<control name="name" value="Half-hourlies 2007" />
 				<control name="charge-script">
-				<![CDATA[                                
+				<![CDATA[                                                
 from net.sf.chellow.monad import Hiber
 from java.util import GregorianCalendar, TimeZone, Locale, Calendar
-from net.sf.chellow.physical import MpanCore, HhStartDate, Supply, Site
-from net.sf.chellow.billing import NonCoreContract, SupplierContract, Dno
+from net.sf.chellow.physical import HhStartDate, Supply, Site
+from net.sf.chellow.billing import Contract
 from net.sf.chellow.monad.types import MonadDate
 from java.lang import System
 
-computer_contract = NonCoreContract.getNonCoreContract('computer')
-triad_contract = NonCoreContract.getNonCoreContract('TRIAD')
-ccl_contract = NonCoreContract.getNonCoreContract('ccl')
-bsuos_contract = NonCoreContract.getNonCoreContract('bsuos')
-tlms_contract = NonCoreContract.getNonCoreContract('tlms')
+computer_contract = Contract.getNonCoreContract('computer')
+triad_contract = Contract.getNonCoreContract('triad')
+ccl_contract = Contract.getNonCoreContract('ccl')
+bsuos_contract = Contract.getNonCoreContract('bsuos')
+tlms_contract = Contract.getNonCoreContract('tlms')
+dno_contract = Contract.getNonCoreContract('dno')
 
 def import_virtual_bill_titles():
     return ['net-gbp', 'tlm', 'ccl-kwh', 'ccl-rate', 'ccl-gbp', 'data-collection-gbp', 'duos-availability-agreed-kva', 'duos-availability-billed-kva', 'duos-availability-rate', 'duos-availability-gbp', 'duos-day-kwh', 'duos-day-gbp', 'duos-night-kwh', 'duos-night-gbp', 'duos-reactive-rate', 'duos-reactive-gbp', 'duos-standing-gbp', 'settlement-gbp', 'night-msp-kwh', 'night-gsp-kwh', 'night-gbp', 'other-msp-kwh', 'other-gsp-kwh', 'other-gbp', 'summer-pk-msp-kwh', 'summer-pk-gsp-kwh', 'summer-pk-gbp', 'winter-low-pk-msp-kwh', 'winter-low-pk-gsp-kwh', 'winter-low-pk-gbp', 'winter-off-pk-msp-kwh', 'winter-off-pk-gsp-kwh', 'winter-off-pk-gbp', 'winter-pk-msp-kwh', 'winter-pk-gsp-kwh', 'winter-pk-gbp', 'bsuos-kwh', 'bsuos-rate', 'bsuos-gbp', 'triad-actual-0-date', 'triad-actual-0-msp-kw', 'triad-actual-0-status', 'triad-actual-0-laf', 'triad-actual-0-gsp-kw', 'triad-actual-1-date', 'triad-actual-1-msp-kw', 'triad-actual-1-status', 'triad-actual-1-laf', 'triad-actual-1-gsp-kw', 'triad-actual-2-date', 'triad-actual-2-msp-kw', 'triad-actual-2-status', 'triad-actual-2-laf', 'triad-actual-2-gsp-kw', 'triad-actual-gsp-kw', 'triad-actual-rate', 'triad-actual-gbp', 'triad-estimate-0-date', 'triad-estimate-0-msp-kw', 'triad-estimate-0-status', 'triad-estimate-0-laf', 'triad-estimate-0-gsp-kw', 'triad-estimate-1-date', 'triad-estimate-1-msp-kw', 'triad-estimate-1-status', 'triad-estimate-1-laf', 'triad-estimate-1-gsp-kw', 'triad-estimate-2-date', 'triad-estimate-2-msp-kw', 'triad-estimate-2-status', 'triad-estimate-2-laf', 'triad-estimate-2-gsp-kw', 'triad-estimate-gsp-kw', 'triad-estimate-rate', 'triad-estimate-months', 'triad-estimate-gbp', 'triad-all-estimates-months', 'triad-all-estimates-gbp']
@@ -1600,7 +1604,7 @@ def displaced_virtual_bill(supply_source):
     contract_func = comterp.get('contract_function')
 
     supply_source.is_green = False
-    supply_source.add_duos_elements()
+    contract_func(dno_contract, 'dno_vb', supply_source.pw)(supply_source)
 
     for datum in supply_source.hh_data:
         is_weekday = datum['utc-day-of-week'] != Calendar.SATURDAY and datum['utc-day-of-week'] != Calendar.SUNDAY
@@ -1620,15 +1624,15 @@ def displaced_virtual_bill(supply_source):
         bill[slot_keys['msp-kwh']] += datum['msp-kwh']
         bill[slot_keys['gsp-kwh']] += datum['gsp-kwh']
 
-    contract_func(ccl_contract, 'ccl', supply_source.pw)(supply_source)
+    contract_func(ccl_contract, 'ccl_vb', supply_source.pw)(supply_source)
 
     for suffix in ['kwh', 'rate', 'gbp']:
         key = 'lec-' + suffix
         if key in bill:
             del bill[key]
 
-    contract_func(triad_contract, 'triad_bill', supply_source.pw)(supply_source)
-    contract_func(tlms_contract, 'hh', supply_source.pw)(supply_source)
+    contract_func(triad_contract, 'triad_vb', supply_source.pw)(supply_source)
+    contract_func(tlms_contract, 'tlms_vb', supply_source.pw)(supply_source)
     contract_func(bsuos_contract, 'hh', supply_source.pw)(supply_source)
 
     rates = supply_source.hh_rate(contract, supply_source.finish_date.getDate(), 'gsp_gbp_per_kwh')
@@ -1643,7 +1647,9 @@ def displaced_virtual_bill(supply_source):
 
 
 def import_virtual_bill(supply_source):
-    supply_source.add_duos_elements()
+    comterp = supply_source.comterp
+
+    supply_source.contract_function(dno_contract, 'dno_vb')(supply_source)
     bill = supply_source.supplier_bill
     bill.update({'net-gbp': 0, 'data-collection-gbp': 0, 'settlement-gbp': 0, 'problem': ''})
 
@@ -1652,7 +1658,6 @@ def import_virtual_bill(supply_source):
         bill[slot_keys['msp-kwh']] = 0
         bill[slot_keys['gsp-kwh']] = 0
 
-    comterp = supply_source.comterp
 
     llfc_code = supply_source.llfc_code
     voltage_level = supply_source.voltage_level_code
@@ -1722,27 +1727,18 @@ def import_virtual_bill(supply_source):
 				<response-code value="200" />
 			</request>
 		</test>
-		<test name="Test that ignore snags works.">
-			<request path="/chellow/hhdc-contracts/2/" method="post">
-				<control name="ignore-year" value="2010" />
-				<control name="ignore-month" value="01" />
-				<control name="ignore-day" value="13" />
-				<control name="ignore-snags" />
-				<response-code value="200" />
-			</request>
-		</test>
 		<test
 			name="Check that when there are gt 2 eras, the previous era is updated.">
-			<request path="/chellow/supplies/1/eras/16/" method="post">
+			<request path="/chellow/supplies/1/eras/15/" method="post">
 				<control name="start-year" value="2008" />
 				<control name="start-month" value="09" />
 				<control name="start-day" value="06" />
 				<control name="start-hour" value="00" />
 				<control name="start-minute" value="00" />
 				<control name="is-ended" value="false" />
-				<control name="mop-contract-id" value="8" />
+				<control name="mop-contract-id" value="52" />
 				<control name="mop-account" value="mc-22 0470 7514 535" />
-				<control name="hhdc-contract-id" value="0" />
+				<control name="hhdc-contract-id" value="48" />
 				<control name="hhdc-account" value="01" />
 				<control name="meter-serial-number" value="" />
 				<control name="pc-id" value="9" />
@@ -1754,12 +1750,12 @@ def import_virtual_bill(supply_source):
 				<control name="export-llfc-code" value="581" />
 				<control name="export-mpan-core" value="22 0470 7514 535" />
 				<control name="export-agreed-supply-capacity" value="150" />
-				<control name="export-supplier-contract-id" value="4" />
+				<control name="export-supplier-contract-id" value="50" />
 				<control name="export-supplier-account" value="010" />
 				<response-code value="200" />
 			</request>
 
-			<request path="/chellow/supplies/1/eras/15/">
+			<request path="/chellow/supplies/1/eras/14/">
 				<regex
 					pattern='&lt;select name="finish-day"&gt;&lt;option value="01"&gt;01&lt;/option&gt;&lt;option value="02"&gt;02&lt;/option&gt;&lt;option value="03"&gt;03&lt;/option&gt;&lt;option value="04"&gt;04&lt;/option&gt;&lt;option value="05" selected&gt;05&lt;/option&gt;' />
 			</request>
@@ -1784,15 +1780,15 @@ def import_virtual_bill(supply_source):
 				<control name="mtc-code" value="845" />
 				<control name="cop-id" value="5" />
 				<control name="ssc-code" value="" />
-				<control name="mop-contract-id" value="8" />
+				<control name="mop-contract-id" value="52" />
 				<control name="mop-account" value="mc-22 0883 6932 301" />
-				<control name="hhdc-contract-id" value="0" />
+				<control name="hhdc-contract-id" value="48" />
 				<control name="hhdc-account" value="22 0883 6932 301" />
 				<control name="has-import-mpan" value="true" />
 				<control name="import-llfc-code" value="570" />
 				<control name="import-mpan-core" value="22 0883 6932 301" />
 				<control name="import-agreed-supply-capacity" value="350" />
-				<control name="import-supplier-contract-id" value="4" />
+				<control name="import-supplier-contract-id" value="50" />
 				<control name="import-supplier-account" value="01" />
 				<control name="has-export-mpan" value="false" />
 				<response-code value="400" />
@@ -1802,7 +1798,7 @@ def import_virtual_bill(supply_source):
 		<test name="Test deleting of supplier contracts">
 			<!-- Create a new supplier contract -->
 			<request path="/chellow/supplier-contracts/" method="post">
-				<control name="participant-id" value="196" /> <!-- RWED -->
+				<control name="participant-id" value="308" /> <!-- RWED -->
 				<control name="name" value="GDF" />
 				<control name="start-year" value="2000" />
 				<control name="start-month" value="01" />
@@ -1810,46 +1806,44 @@ def import_virtual_bill(supply_source):
 				<control name="start-hour" value="00" />
 				<control name="start-minute" value="00" />
 
-				<regex pattern="/chellow/supplier-contracts/12/" />
+				<regex pattern="/chellow/supplier-contracts/54/" />
 				<response-code value="303" />
 			</request>
 
 			<!-- Now delete the contract -->
-			<request path="/chellow/supplier-contracts/12/" method="post">
+			<request path="/chellow/supplier-contracts/54/" method="post">
 				<control name="delete" value="Delete" />
 				<response-code value="303" />
 			</request>
 
 			<!-- Check that it's really gone -->
-			<request path="/chellow/supplier-contracts/12/">
+			<request path="/chellow/supplier-contracts/54/">
 				<response-code value="404" />
 			</request>
 		</test>
 		<test name="Test deleting of HHDC contracts">
 			<!-- Create an HHDC contract -->
-			<request path="/chellow/hhdc-contracts/" method="post">
-				<control name="participant-id" value="301" /> <!-- UKDC -->
+			<request path="/chellow/reports/277/output/" method="post">
+				<control name="participant_id" value="344" /> <!-- UKDC -->
 				<control name="name" value="Siemens Contract" />
-				<control name="start-year" value="2000" />
-				<control name="start-month" value="01" />
-				<control name="start-day" value="03" />
-				<control name="start-hour" value="00" />
-				<control name="start-minute" value="00" />
-				<control name="has-finished" value="false" />
-				<control name="charge-script"></control>
-				<control name="properties" value=" " />
+				<control name="start_year" value="2000" />
+				<control name="start_month" value="01" />
+				<control name="start_day" value="03" />
+				<control name="start_hour" value="00" />
+				<control name="start_minute" value="00" />
 				<response-code value="303" />
-				<regex pattern="/hhdc-contracts/14/" />
+				<regex pattern="/chellow/reports/115/output/\?hhdc_contract_id=55" />
 			</request>
 
 			<!-- Now delete the contract -->
-			<request path="/chellow/hhdc-contracts/14/" method="post">
+			<request path="/chellow/reports/279/output/" method="post">
+				<control name="hhdc_contract_id" value="55" />
 				<control name="delete" value="Delete" />
 				<response-code value="303" />
 			</request>
 
 			<!-- Check that it's really gone -->
-			<request path="/chellow/hhdc-contracts/14/">
+			<request path="/chellow/reports/115/output/?hhdc_contract_id=55">
 				<response-code value="404" />
 			</request>
 		</test>
@@ -1868,34 +1862,34 @@ def import_virtual_bill(supply_source):
 			</request>
 
 			<!-- Create the virtual bill -->
-			<request path="/chellow/non-core-contracts/" method="post">
-				<control name="participant-id" value="31" /> <!-- CALB -->
+			<request path="/chellow/reports/265/output/" method="post">
 				<control name="is-core" value="false" />
 				<control name="name" value="TRIAD Estimates" />
-				<control name="start-year" value="2000" />
-				<control name="start-month" value="01" />
-				<control name="start-day" value="03" />
-				<control name="start-hour" value="00" />
-				<control name="start-minute" value="00" />
-				<regex pattern="/non-core-contracts/16/" />
+				<control name="start_year" value="2000" />
+				<control name="start_month" value="01" />
+				<control name="start_day" value="03" />
+				<control name="start_hour" value="00" />
+				<control name="start_minute" value="00" />
+				<regex pattern="/reports/267/output/\?non_core_contract_id=56" />
 				<response-code value="303" />
 			</request>
-			<request path="/chellow/non-core-contracts/16/rate-scripts/18/"
-				method="post">
-				<control name="start-year" value="2000" />
-				<control name="start-month" value="01" />
-				<control name="start-day" value="03" />
-				<control name="start-hour" value="00" />
-				<control name="start-minute" value="00" />
+			<!-- Edit the rate script -->
+			<request path="/chellow/reports/273/output/" method="post">
+				<control name="rate_script_id" value="273" />
+				<control name="start_year" value="2000" />
+				<control name="start_month" value="01" />
+				<control name="start_day" value="03" />
+				<control name="start_hour" value="00" />
+				<control name="start_minute" value="00" />
 				<control name="script">
 				<![CDATA[
 def triad_estimates():
     return {}]]>
 				</control>
-				<response-code value="200" />
+				<response-code value="303" />
 			</request>
 			<request
-				path="/chellow/reports/87/output/?supply-id=7&amp;supply-polarity=import&amp;start-year=2009&amp;start-month=03&amp;start-day=01&amp;start-hour=00&amp;finish-year=2009&amp;finish-month=03&amp;finish-day=31&amp;finish-hour=23">
+				path="/chellow/reports/87/output/?supply_id=7&amp;supply-polarity=import&amp;start-year=2009&amp;start-month=03&amp;start-day=01&amp;start-hour=00&amp;finish-year=2009&amp;finish-month=03&amp;finish-day=31&amp;finish-hour=23">
 				<response-code value="200" />
 				<regex
 					pattern="MPAN Core,Site Code,Site Name,Account,From,To,net-gbp,tlm,ccl-kwh,ccl-rate,ccl-gbp,data-collection-gbp,duos-availability-agreed-kva,duos-availability-billed-kva,duos-availability-rate,duos-availability-gbp,duos-day-kwh,duos-day-gbp,duos-night-kwh,duos-night-gbp,duos-reactive-rate,duos-reactive-gbp,duos-standing-gbp,settlement-gbp,night-msp-kwh,night-gsp-kwh,night-gbp,other-msp-kwh,other-gsp-kwh,other-gbp,summer-pk-msp-kwh,summer-pk-gsp-kwh,summer-pk-gbp,winter-low-pk-msp-kwh,winter-low-pk-gsp-kwh,winter-low-pk-gbp,winter-off-pk-msp-kwh,winter-off-pk-gsp-kwh,winter-off-pk-gbp,winter-pk-msp-kwh,winter-pk-gsp-kwh,winter-pk-gbp,bsuos-kwh,bsuos-rate,bsuos-gbp,triad-actual-0-date,triad-actual-0-msp-kw,triad-actual-0-status,triad-actual-0-laf,triad-actual-0-gsp-kw,triad-actual-1-date,triad-actual-1-msp-kw,triad-actual-1-status,triad-actual-1-laf,triad-actual-1-gsp-kw,triad-actual-2-date,triad-actual-2-msp-kw,triad-actual-2-status,triad-actual-2-laf,triad-actual-2-gsp-kw,triad-actual-gsp-kw,triad-actual-rate,triad-actual-gbp,triad-estimate-0-date,triad-estimate-0-msp-kw,triad-estimate-0-status,triad-estimate-0-laf,triad-estimate-0-gsp-kw,triad-estimate-1-date,triad-estimate-1-msp-kw,triad-estimate-1-status,triad-estimate-1-laf,triad-estimate-1-gsp-kw,triad-estimate-2-date,triad-estimate-2-msp-kw,triad-estimate-2-status,triad-estimate-2-laf,triad-estimate-2-gsp-kw,triad-estimate-gsp-kw,triad-estimate-rate,triad-estimate-months,triad-estimate-gbp,triad-all-estimates-months,triad-all-estimates-gbp" />
@@ -1904,14 +1898,14 @@ def triad_estimates():
 			</request>
 
 			<!-- Try looking at it using the TRIAD report -->
-			<request path="/chellow/reports/41/output/?supply-id=4&amp;year=2010">
+			<request path="/chellow/reports/41/output/?supply_id=4&amp;year=2010">
 				<response-code value="200" />
 				<regex
 					pattern='CI005,"Wheal Rodney","1",net,,22 6158 2968 220,2010-01-07T17:00Z,0,E,1.058,0.0,2010-01-25T17:00Z,0,E,1.058,0.0,2009-12-15T17:00Z,0,E,1.058,0.0,0.0,25.631634,0.0,22 3479 7618 470,2010-01-07T17:00Z,0,E,1.058,0.0,2010-01-25T17:00Z,0,E,1.058,0.0,2009-12-15T17:00Z,0,E,1.058,0.0,0.0,25.631634,0.0' />
 			</request>
 		</test>
 		<test name="Check we can delete a rate script (when it's not the only one)">
-			<request path="/chellow/supplier-contracts/4/rate-scripts/12/"
+			<request path="/chellow/supplier-contracts/50/rate-scripts/270/"
 				method="post">
 				<control name="delete" value="Delete" />
 				<response-code value="303" />
@@ -1931,7 +1925,7 @@ def triad_estimates():
 		</test>
 		<test name="Try 'Supply Raw HH Data' report.">
 			<request
-				path="/chellow/reports/17/output/?supply-id=1&amp;months=1&amp;finish-year=2008&amp;finish-month=07">
+				path="/chellow/reports/17/output/?supply_id=1&amp;months=1&amp;finish-year=2008&amp;finish-month=07">
 				<response-code value="200" />
 			</request>
 		</test>
@@ -1955,7 +1949,7 @@ def triad_estimates():
 		</test>
 		<test name="Try HHDC virtual bills.">
 			<request
-				path="/chellow/reports/81/output/?contract-id=0&amp;months=1&amp;end-year=2008&amp;end-month=7">
+				path="/chellow/reports/81/output/?contract-id=48&amp;months=1&amp;end-year=2008&amp;end-month=7">
 				<response-code value="200" />
 				<regex
 					pattern='Import MPAN Core, Export MPAN Core, Start Date, Finish Date,net-gbp' />
@@ -1973,44 +1967,35 @@ def triad_estimates():
 			<request
 				path="/chellow/reports/149/output/?start-year=2009&amp;start-month=03&amp;start-day=1&amp;start-hour=0&amp;finish-year=2009&amp;finish-month=03&amp;finish-day=31&amp;finish-hour=23">
 				<regex
-					pattern='"8","1","net","","CH023","Treglisson","2009-03-01T00:00Z","2009-03-31T23:30Z","00","845","5","","0","hh",540,22 4862 4512 332,230,Half-hourlies 2007,148925.71,0,158159.10402,399.72,2009-03-13T08:00Z,None,0,,,,,0,0,,0,None,None,1488' />
+					pattern='"7","1","net","","CH023","Treglisson","2009-03-01T00:00Z","2009-03-31T23:30Z","00","845","5","","0","hh",540,22 4862 4512 332,230,Half-hourlies 2007,148925.71,0,158159.10402,399.72,2009-03-13T08:00Z,None,0,,,,,0,0,,0,None,None,1488' />
 			</request>
 		</test>
+
 		<test name="Manipulate dno contracts">
-			<!-- Insert DNO contract -->
-			<request path="/chellow/dnos/138/contracts/" method="post"> <!-- Contract of DNO 10 -->
-				<control name="name" value="main 2010-04-01" />
-				<control name="start-year" value="2010" />
-				<control name="start-month" value="04" />
-				<control name="start-day" value="01" />
-				<regex pattern="/chellow/dnos/138/contracts/103/" />
-				<response-code value="303" />
-			</request>
-
-			<!-- Check start time of rate script -->
-			<request path="/chellow/dnos/138/contracts/103/rate-scripts/773/">
-				<regex
-					pattern='&lt;select name="start-hour"&gt;&lt;option value="00" selected&gt;00&lt;/option&gt;' />
-				<regex
-					pattern='&lt;select name="start-minute"&gt;&lt;option value="00" selected&gt;00&lt;/option&gt;' />
-				<response-code value="200" />
-			</request>
-
+			<!-- - Insert DNO contract - <request path="/chellow/dnos/138/contracts/" 
+				method="post"> - Contract of DNO 10 - <control name="name" value="main 2010-04-01" 
+				/> <control name="start-year" value="2010" /> <control name="start-month" 
+				value="04" /> <control name="start-day" value="01" /> <regex pattern="/chellow/dnos/138/contracts/103/" 
+				/> <response-code value="303" /> </request> - Check start time of rate script 
+				- <request path="/chellow/dnos/138/contracts/103/rate-scripts/773/"> <regex 
+				pattern='&lt;select name="start-hour"&gt;&lt;option value="00" selected&gt;00&lt;/option&gt;' 
+				/> <regex pattern='&lt;select name="start-minute"&gt;&lt;option value="00" 
+				selected&gt;00&lt;/option&gt;' /> <response-code value="200" /> </request> -->
 			<!-- Insert rate script -->
-			<request path="/chellow/dnos/138/contracts/103/rate-scripts/"
-				method="post">
-				<control name="start-year" value="2010" />
-				<control name="start-month" value="05" />
-				<control name="start-day" value="01" />
-				<control name="start-hour" value="00" />
-				<control name="start-minute" value="00" />
-				<regex pattern="/chellow/dnos/138/contracts/103/rate-scripts/775/" />
+			<request path="/chellow/reports/243/output/" method="post">
+				<control name="dno_contract_id" value="1" />
+				<control name="start_year" value="2010" />
+				<control name="start_month" value="05" />
+				<control name="start_day" value="01" />
+				<control name="start_hour" value="00" />
+				<control name="start_minute" value="00" />
+				<regex pattern="/chellow/reports/69/output/\?dno_rate_script_id=274" />
 				<response-code value="303" />
 			</request>
 
 			<!-- Delete rate script -->
-			<request path="/chellow/dnos/138/contracts/103/rate-scripts/775/"
-				method="post">
+			<request path="/chellow/reports/285/output/" method="post">
+				<control name="dno_rate_script_id" value="274" />
 				<control name="delete" value="Delete" />
 				<response-code value="303" />
 			</request>
