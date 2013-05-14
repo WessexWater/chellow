@@ -15584,7 +15584,7 @@ source.appendChild(script.toXml(doc, XmlTree('contract', XmlTree('party'))))]]><
         <value><![CDATA[report]]></value>
         <value><![CDATA[207]]></value>
         <value><![CDATA[true]]></value>
-        <value><![CDATA[CSV CRC - Faulty]]></value>
+        <value><![CDATA[CSV CRC]]></value>
         <value><![CDATA[from net.sf.chellow.monad import Hiber, UserException
 from java.lang import System, Math
 from net.sf.chellow.monad.types import MonadDate
@@ -15600,7 +15600,7 @@ inv.getResponse().setContentType("text/csv")
 inv.getResponse().setHeader('Content-Disposition', 'attachment; filename="output.csv"')
 pw = inv.getResponse().getWriter()
 
-pw.println("MPAN Core,Site Id,Site Name,From,To,Breakdown,Normal Days,Max Normal Days,Is Normal?, Is Part Amr?")
+pw.println("Chellow Supply Id, MPAN Core,Site Id,Site Name,From,To,NHH Breakdown,HH Normal Days, AMR Normal Days, NHH Normal Days, Unmetered Normal Days, Total Normal Days,Max Normal Days,Data Type")
 pw.flush()
 
 cal = MonadDate.getCalendar()
@@ -15621,8 +15621,9 @@ if inv.hasParameter('supply-id'):
     supply_id = inv.getLong('supply-id')
     supplies = Hiber.session().createQuery("from Supply supply where supply = :supply").setEntity('supply', Supply.getSupply(supply_id)).scroll()
 else:
-    supplies = Hiber.session().createQuery("select distinct generation.supply from SupplyGeneration generation where generation.supply.source.code in ('net', 'gen-net') and generation.importMpan is not null and generation.startDate.date <= :finishDate and (generation.finishDate is null or generation.finishDate.date >= :startDate) and generation.pc.code != 0 and generation.channels.size = 0").setTimestamp('startDate', year_start.getDate()).setTimestamp('finishDate', year_finish.getDate()).scroll()
+    supplies = Hiber.session().createQuery("select distinct generation.supply from SupplyGeneration generation where generation.supply.source.code in ('net', 'gen-net') and generation.importMpan is not null and generation.startDate.date <= :finishDate and (generation.finishDate is null or generation.finishDate.date >= :startDate)").setTimestamp('startDate', year_start.getDate()).setTimestamp('finishDate', year_finish.getDate()).scroll()
 
+'''
 cal.setTime(year_start.getDate())
 cal.add(Calendar.YEAR, -1)
 early_cutoff = HhStartDate(cal.getTime())
@@ -15630,392 +15631,237 @@ early_cutoff = HhStartDate(cal.getTime())
 cal.setTime(year_finish.getDate())
 cal.add(Calendar.YEAR, 1)
 late_cutoff = HhStartDate(cal.getTime())
+'''
 
-bill_query = Hiber.session().createQuery("select distinct read.bill, read.bill.issueDate, read.bill.type.code from RegisterRead read where read.bill.supply = :supply and read.bill.finishDate.date >= :readDate and read.bill.startDate <= :readDate order by read.bill.issueDate desc, read.bill.type.code").setMaxResults(1)
+early_cutoff = year_start
+late_cutoff = year_finish
 
-prior_present_read_query = Hiber.session().createQuery("select read, read.bill from RegisterRead read where read.units.int = 0 and read.presentType.code in ('N', 'N3', 'C') and read.bill.supply = :supply and read.presentDate.date <= :startDate and read.presentDate.date >= :earlyCutoff order by read.presentDate.date desc, read.bill.issueDate desc, read.bill.type.code").setTimestamp('earlyCutoff', early_cutoff.getDate()).setMaxResults(1)
+wtype = Hiber.session().createQuery("from BillType btype where btype.code = 'W'").uniqueResult()
 
-prior_previous_read_query = Hiber.session().createQuery("select read, read.bill from RegisterRead read where read.units.int = 0 and read.previousType.code in ('N', 'N3', 'C') and read.bill.supply = :supply and read.previousDate.date <= :startDate and read.previousDate.date >= :earlyCutoff order by read.previousDate.date desc, read.bill.issueDate desc, read.bill.type.code").setTimestamp('earlyCutoff', early_cutoff.getDate()).setMaxResults(1)
+bill_query = Hiber.session().createQuery("select distinct read.bill, read.bill.issueDate, read.bill.type.code from RegisterRead read where read.bill.supply = :supply and read.bill.finishDate.date >= :readDate and read.bill.startDate <= :readDate and read.bill.type != :wtype order by read.bill.issueDate desc, read.bill.type.code").setEntity('wtype', wtype).setMaxResults(1)
 
-present_reads_query = Hiber.session().createQuery("from RegisterRead read where read.units.int = 0 and read.bill = :bill and read.presentDate.date = :readDate and read.meterSerialNumber = :msn")
+prior_pres_read_query = Hiber.session().createQuery("select read, read.bill from RegisterRead read where read.units.int = 0 and read.presentType.code in ('N', 'N3', 'C') and read.bill.supply = :supply and read.presentDate.date < :searchDate and read.bill.type != :wtype order by read.presentDate.date desc").setEntity('wtype', wtype)
 
-previous_reads_query = Hiber.session().createQuery("from RegisterRead read where read.units.int = 0 and read.bill = :bill and read.previousDate.date = :readDate and read.meterSerialNumber = :msn")
+prior_prev_read_query = Hiber.session().createQuery("select read, read.bill from RegisterRead read where read.units.int = 0 and read.previousType.code in ('N', 'N3', 'C') and read.bill.supply = :supply and read.previousDate.date < :searchDate and read.bill.type != :wtype order by read.previousDate.date desc").setEntity('wtype', wtype)
 
-next_present_read_query = Hiber.session().createQuery("select read, read.bill from RegisterRead read where read.units.int = 0 and read.presentType.code in ('N', 'N3', 'C') and read.bill.supply = :supply and read.presentDate.date >= :finishDate and read.presentDate.date <= :lateCutoff order by read.presentDate.date, read.bill.issueDate desc, read.bill.type.code").setTimestamp('lateCutoff', late_cutoff.getDate()).setMaxResults(1)
+next_pres_read_query = Hiber.session().createQuery("select read, read.bill from RegisterRead read where read.units.int = 0 and read.presentType.code in ('N', 'N3', 'C') and read.bill.supply = :supply and read.presentDate.date >= :searchDate and read.bill.type != :wtype order by read.presentDate.date").setEntity('wtype', wtype)
 
-next_previous_read_query = Hiber.session().createQuery("select read, read.bill from RegisterRead read where read.units.int = 0 and read.previousType.code in ('N', 'N3', 'C') and read.bill.supply = :supply and read.previousDate.date >= :finishDate and read.previousDate.date <= :lateCutoff order by read.previousDate.date, read.bill.issueDate desc, read.bill.type.code").setTimestamp('lateCutoff', late_cutoff.getDate()).setMaxResults(1)
+next_prev_read_query = Hiber.session().createQuery("select read, read.bill from RegisterRead read where read.units.int = 0 and read.previousType.code in ('N', 'N3', 'C') and read.bill.supply = :supply and read.previousDate.date >= :searchDate and read.bill.type != :wtype order by read.previousDate.date").setEntity('wtype', wtype)
+
+pres_reads_query = Hiber.session().createQuery("from RegisterRead read where read.units.int = 0 and read.bill = :bill and read.presentDate.date = :readDate and read.meterSerialNumber = :msn")
+
+prev_reads_query = Hiber.session().createQuery("from RegisterRead read where read.units.int = 0 and read.bill = :bill and read.previousDate.date = :readDate and read.meterSerialNumber = :msn")
+
+hh_kwh_query = Hiber.session().createQuery("select sum(datum.value) from HhDatum datum where datum.channel.isImport = true and datum.channel.isKwh = true and datum.channel.supplyGeneration.supply = :supply and datum.startDate.date >= :startDate and datum.startDate.date <= :finishDate")
+
+hh_count_query = Hiber.session().createQuery("select count(datum.value) from HhDatum datum where datum.channel.isImport = true and datum.channel.isKwh = true and datum.channel.supplyGeneration.supply = :supply and datum.startDate.date >= :startDate and datum.startDate.date <= :finishDate and datum.status = 'A'")
+
+
+meter_types = ['hh', 'amr', 'nhh', 'unmetered']
 
 while supplies.next():
     kwh = 0
-    normal_days = 0
+    normal_days = dict([(mtype, 0) for mtype in meter_types])
     breakdown = ''
-    is_part_amr = False
     supply = supplies.get(0)
-    generations = supply.getGenerations(year_start, year_finish)
-    first_generation = generations[0]
-    last_generation = first_generation
-    for generation in generations:
-        if len(generation.getChannels()) > 0:
-            is_part_amr = True
-            break
-        last_generation = generation
+    max_normal_days = 0
+    chunk_start = year_finish
+    chunk_finish = year_start
 
-    first_generation_start = first_generation.getStartDate()
-    if first_generation_start.after(year_start):
-        period_start = first_generation_start
-    else:
-        period_start = year_start
-
-    last_generation_finish = last_generation.getFinishDate()
-    if last_generation_finish is None or last_generation_finish.after(year_finish):
-        period_finish = year_finish
-    else:
-        period_finish = last_generation_finish
-
-    max_normal_days = float(period_finish.getDate().getTime() - period_start.getDate().getTime()) / (1000 * 60 * 60 * 24)
-
-    mpan = last_generation.getImportMpan()
-    mpan_core = mpan.getCore()
-    site = Hiber.session().createQuery("select ssgen.site from SiteSupplyGeneration ssgen where ssgen.isPhysical is true and ssgen.supplyGeneration = :supplyGeneration").setEntity('supplyGeneration', last_generation).uniqueResult()
-
-    pw.print(','.join('"' + str(val) + '"' for val in [mpan_core, site.getCode(), site.getName(), period_start, period_finish]))
+    pw.print(str(supply.getId()) + ',')
     pw.flush()
 
-    bill_query.setEntity('supply', supply)
-    prior_present_read_query.setEntity('supply', supply)
-    prior_previous_read_query.setEntity('supply', supply)
-    next_present_read_query.setEntity('supply', supply)
-    next_previous_read_query.setEntity('supply', supply)
+    for generation in supply.getGenerations(year_start, year_finish):
+        if generation.pc.code == 0:
+            meter_type = 'hh'
+        elif len(generation.getChannels()) > 0:
+            meter_type = 'amr'
+        elif generation.mtc.getMeterType().code == 'UM':
+            meter_type = 'unmetered'
+        else:
+            meter_type = 'nhh'
 
-    search_date = period_start
-    search_msn = ''
-    read_0 = None
-    read_1 = None
-    read_2 = None
-    read_3 = None
+        generation_start = generation.getStartDate()
 
-    read_dict = None
+        if generation_start.after(year_start):
+            period_start = generation_start
+        else:
+            period_start = year_start
 
-    tie = False
-    while True:
-        #s elf.pw.println('search date ' + str(search_date))
-        present_read_prime = False
-        previous_read_prime = False
-        #s elf.pw.println('first loop, ' + str(supply.getId()))
-        present_read = prior_present_read_query.setTimestamp('startDate', search_date.getDate()).uniqueResult()
-        if present_read is not None:
-            present_read = present_read[0]
+        generation_finish = generation.getFinishDate()
 
-        previous_read = prior_previous_read_query.setTimestamp('startDate', search_date.getDate()).uniqueResult()
-        if previous_read is not None:
-            previous_read = previous_read[0]
+        if HhStartDate.isAfter(generation_finish, year_finish):
+            period_finish = year_finish
+        else:
+            period_finish = generation_finish
 
-        #s elf.pw.println('prev read ' + str(previous_read) + ' pres read ' + str(present_read))
-        if present_read is None and previous_read is None:
-            break
+        if period_start.before(chunk_start):
+            chunk_start = period_start
 
-        if previous_read is not None:
-            #s elf.pw.println('prev read ' + str(previous_read.getId()) + ' bill id ' + str(previous_read.getBill().getId()))
-            previous_bill = bill_query.setTimestamp('readDate', previous_read.getBill().getStartDate().getDate()).uniqueResult()[0]
+        if period_finish.after(chunk_finish):
+            chunk_finish = period_finish
 
-            #s elf.pw.println('prev bill id ' + str(previous_bill.getId()))
+        #p w.println("Doing a generation from " + str(period_start) + " to " + str(period_finish))
 
-            if  previous_bill.getId() == previous_read.getBill().getId():
-                previous_read_prime = True
+        max_normal_days += float(period_finish.getDate().getTime() + (1000 * 60 * 30) - period_start.getDate().getTime()) / (1000 * 60 * 60 * 24)
 
-        if present_read is not None:
-            #s elf.pw.println('pres read ' + str(present_read.getId()) + ' bill id ' + str(present_read.getBill().getId()))
+        mpan = generation.getImportMpan()
+        mpan_core = mpan.getCore()
+        site = Hiber.session().createQuery("select ssgen.site from SiteSupplyGeneration ssgen where ssgen.isPhysical is true and ssgen.supplyGeneration = :supplyGeneration").setEntity('supplyGeneration', generation).uniqueResult()
+        if meter_type == 'nhh':
 
-            present_bill = bill_query.setTimestamp('readDate', present_read.getBill().getStartDate().getDate()).uniqueResult()[0]
-            #s elf.pw.println('pres bill ' + str(present_bill.getId()))
-            if  present_bill.getId() == present_read.getBill().getId():
-                if previous_read_prime:
-                    #s elf.pw.println('prev read pot prime, pres prime pres read date' + str(present_read.getPresentDate()) + ' prev read date ' + str(previous_read.getPreviousDate()))
+            read_list = []
+            read_keys = {}
+            pairs = []
 
-                    if present_read.getPresentDate().after(previous_read.getPreviousDate()):
-                        present_read_prime = True
-                        previous_read_prime = False
-                    elif previous_read.getPreviousDate().getDate().getTime() == present_read.getPresentDate().getDate().getTime() and previous_read.getMeterSerialNumber() != present_read.getMeterSerialNumber():
-                        if tie:
-                            tie = False
-                            previous_read_prime = False
-                            present_read_prime = True
-                        else:
-                            tie = True
-            
+            bill_query.setEntity('supply', supply)
+            prior_pres_reads = prior_pres_read_query.setEntity('supply', supply).setTimestamp('searchDate', chunk_start.getDate()).scroll()
+            prior_prev_reads = prior_prev_read_query.setEntity('supply', supply).setTimestamp('searchDate', chunk_start.getDate()).scroll()
+            next_pres_reads = next_pres_read_query.setEntity('supply', supply).setTimestamp('searchDate', chunk_start.getDate()).scroll()
+            next_prev_reads = next_prev_read_query.setEntity('supply', supply).setTimestamp('searchDate', chunk_start.getDate()).scroll()
+
+            for is_forwards in [False, True]:
+                if is_forwards:
+                    pres_reads = next_pres_reads
+                    prev_reads = next_prev_reads
+                    read_list.reverse()
                 else:
-                    present_read_prime = True
+                    pres_reads = prior_pres_reads
+                    prev_reads = prior_prev_reads
 
-        if present_read_prime:
-            #s elf.pw.println('pres supply prime pres bill ' + str(present_bill.getId()))
+                prime_pres_read = None
+                prime_prev_read = None
+                while True:
+                    #s elf.p w.println('starting mid loop, ' + str(System.currentTimeMillis()))
+              
+                    while prime_pres_read is None and pres_reads.next():
+                        #s elf.p w.println('starting pres loop, ' + str(System.currentTimeMillis()))
 
-            if not tie:
-                cal.setTime(present_read.getPresentDate().getDate())
-                cal.add(Calendar.MONTH, -3)
-                search_date = HhStartDate(cal.getTime())
+                        pres_read = pres_reads.get(0)
+                        pres_date = pres_read.getPresentDate()
+                        pres_msn = pres_read.getMeterSerialNumber()
+                        read_key = '_'.join([str(pres_date), pres_msn]) 
+                        if read_key in read_keys:
+                            continue
 
-            #s elf.pw.println('present read ' + str(present_read.getId()) + ' present read bill ' + str(present_read.getBill().getId()) + ' present bill ' + str(present_bill.getId()))
-            reads = {}
-            present_reads = present_reads_query.setEntity('bill', present_bill).setTimestamp('readDate', present_read.getPresentDate().getDate()).setString('msn', present_read.getMeterSerialNumber()).list()
-            #s elf.pw.println('present reads ' + str(present_reads))
-            for read in present_reads:
-                tpr = read.getTpr()
-                reads[tpr.getCode()] = {'tpr': read.getTpr(), 'value': read.getPresentValue().doubleValue() * read.getCoefficient().doubleValue(), 'msn': read.getMeterSerialNumber()}
+                        pres_bill = bill_query.setTimestamp('readDate', pres_read.getPresentDate().getDate()).uniqueResult()[0]
 
-            read_dict = {'date': present_read.getPresentDate(), 'reads': reads, 'msn': present_reads[0].getMeterSerialNumber()}
+                        if pres_bill.getId() != pres_read.getBill().getId():
+                            continue
 
-        if previous_read_prime:
-            #s elf.pw.println('prev supply prime prev bill ' + str(previous_bill.getId()))
-            if not tie:
-                cal.setTime(previous_read.getPreviousDate().getDate())
-                cal.add(Calendar.MONTH, -3)
-                search_date = HhStartDate(cal.getTime())
-            reads = {}
-            previous_reads = previous_reads_query.setEntity('bill', previous_bill).setTimestamp('readDate', previous_read.getPreviousDate().getDate()).setString('msn', previous_read.getMeterSerialNumber()).list()
-            for read in previous_reads:
-                tpr = read.getTpr()
-                reads[tpr.getCode()] = {'tpr': read.getTpr(), 'value': read.getPreviousValue().doubleValue() * read.getCoefficient().doubleValue()}
-                        
-            read_dict = {'date': previous_read.getPreviousDate(), 'reads': reads, 'msn': previous_reads[0].getMeterSerialNumber()}
+                        reads = dict((read.tpr.getCode(), read.getPresentValue().doubleValue() * read.getCoefficient().doubleValue())for read in pres_reads_query.setEntity('bill', pres_bill).setTimestamp('readDate', pres_date.getDate()).setString('msn', pres_msn).list())
 
-        if previous_read_prime or present_read_prime:
-            if read_2 is None:
-                read_2 = read_dict
-            elif read_1 is None:
-                read_1 = read_dict
-                if read_1['msn'] == read_2['msn']:
-                    break
-            else:
-                read_0 = read_dict
-                break
-                        
+                        prime_pres_read = {'date': pres_date, 'reads': reads, 'msn': pres_msn}
+                        read_keys[read_key] = None
 
-        if not previous_read_prime and not present_read_prime:
-            if previous_read is None:
-                search_date = present_read.getPresentDate().getPrevious()
-            elif present_read is None:
-                search_date = previous_read.getPreviousDate().getPrevious()
-            elif previous_read.getPreviousDate().before(present_read.getPresentDate()):
-                search_date = present_read.getPresentDate().getPrevious()
-            else:
-                search_date = previous_read.getPreviousDate().getPrevious()
+                    while prime_prev_read is None and prev_reads.next():
+                        prev_read = prev_reads.get(0)
+                        prev_date = prev_read.getPreviousDate()
+                        prev_msn = prev_read.getMeterSerialNumber()
+                        read_key = '_'.join([str(prev_date), prev_msn])
+                        if read_key in read_keys:
+                            continue
 
-    #s elf.pw.println('initial read_0 ' + str(read_0) + ' read_1 ' + str(read_1) + ' read_2 ' + str(read_2))
-                            
+                        prev_bill = bill_query.setTimestamp('readDate', prev_read.getBill().getStartDate().getDate()).uniqueResult()[0]
+                        if prev_bill.getId() != prev_read.getBill().getId():
+                            continue
 
-    search_date = period_start
-    keep_going = True
+                        reads = dict((read.tpr.getCode(), read.getPreviousValue().doubleValue() * read.getCoefficient().doubleValue()) for read in prev_reads_query.setEntity('bill', prev_bill).setTimestamp('readDate', prev_date.getDate()).setString('msn', prev_msn).list())  
 
-    tie = False
-    while keep_going:
-        while True:
-            present_read_prime = False
-            previous_read_prime = False
-            #s elf.pw.println('first loop, ' + str(supply.getId()))
-            present_read = next_present_read_query.setTimestamp('finishDate', search_date.getDate()).uniqueResult()
-            if present_read is not None:
-                present_read = present_read[0]
-            previous_read = next_previous_read_query.setTimestamp('finishDate', search_date.getDate()).uniqueResult()
-            if previous_read is not None:
-                previous_read = previous_read[0]
+                        prime_prev_read = {'date': prev_date, 'reads': reads, 'msn': prev_msn}
+                        read_keys[read_key] = None
 
-            if present_read is None and previous_read is None:
-                keep_going = False
-                break
-
-            if present_read is not None:
-                present_bill = bill_query.setTimestamp('readDate', present_read.getPresentDate().getDate()).uniqueResult()[0]
-                #s elf.pw.println('bill id ' + str(bill.getId()))
-
-                if present_bill.getId() == present_read.getBill().getId():
-                    present_read_prime = True
-
-            if previous_read is not None:
-                #s elf.pw.println('previous read id ' + str(previous_read.getId()) + ' date ' + str(previous_read.getPreviousDate()) + ' prev bill id ' + str(previous_bill.getId()))
-                #s elf.pw.println('bill id ' + str(bill.getId()))
-
-                previous_bill = bill_query.setTimestamp('readDate', previous_read.getBill().getStartDate().getDate()).uniqueResult()[0]
-                #s elf.pw.println(' prev bill id ' + str(previous_bill.getId()))
-                if previous_bill.getId() == previous_read.getBill().getId():
-                    if present_read_prime:
-                        if previous_read.getPreviousDate().before(present_read.getPresentDate()):
-                            previous_read_prime = True
-                            present_read_prime = False
-                        elif previous_read.getPreviousDate().getDate().getTime() == present_read.getPresentDate().getDate().getTime() and previous_read.getMeterSerialNumber() != present_read.getMeterSerialNumber():
-                            #s elf.pw.println('it is a tie ' + str(tie) + ' search date ' + str(search_date))
-
-                            if tie:
-                                tie = False
-                                previous_read_prime = True
-                                present_read_prime = False
+                    if prime_pres_read is None and prime_prev_read is None:
+                        break
+                    elif prime_pres_read is None:
+                        read_list.append(prime_prev_read)
+                        prime_prev_read = None
+                    elif prime_prev_read is None:
+                        read_list.append(prime_pres_read)
+                        prime_pres_read = None
+                    else:
+                        if is_forwards:
+                            if prime_prev_read['date'].equals(prime_pres_read['date']) or prime_pres_read['date'].before(prime_prev_read['date']):
+                                read_list.append(prime_pres_read)
+                                prime_pres_read = None
                             else:
-                                tie = True
-                    else:
-                        previous_read_prime = True
+                                read_list.append(prime_prev_read)
+                                prime_prev_read = None
+                        else:
+                            if prime_prev_read['date'].equals(prime_pres_read['date']) or prime_prev_read['date'].after(prime_pres_read['date']):
+                                read_list.append(prime_prev_read)
+                                prime_prev_read = None
+                            else:
+                                read_list.append(prime_pres_read)
+                                prime_pres_read = None
 
+                    if len(read_list) > 1:
+                        if is_forwards:
+                            aft_read = read_list[-2]
+                            fore_read = read_list[-1]
+                        else:
+                            aft_read = read_list[-1]
+                            fore_read = read_list[-2]
 
-            if present_read_prime:
-                if not tie:
-                    if present_read.getPresentDate().after(period_finish):
-                        cal.setTime(present_read.getPresentDate().getDate())
-                        cal.add(Calendar.MONTH, 3)
-                        search_date = HhStartDate(cal.getTime())
-                    else:
-                        search_date = present_read.getPresentDate().getNext()
-                #s elf.pw.println('present read ' + str(present_read.getId()) + ' present read bill ' + str(present_read.getBill().getId()) + ' present bill ' + str(present_bill.getId()))
+                        if aft_read['msn'] == fore_read['msn']:
+                            pair_start_date = aft_read['date'].getNext()
+                            pair_finish_date = fore_read['date']
 
-                reads = {}
-                present_reads = present_reads_query.setEntity('bill', present_bill).setTimestamp('readDate', present_read.getPresentDate().getDate()).setString('msn', present_read.getMeterSerialNumber()).list()
-                #s elf.pw.println('present readns next ' + str(present_reads))
-                for read in present_reads:
-                    tpr = read.getTpr()
-                    reads[tpr.getCode()] = {'tpr': tpr, 'value': read.getPresentValue().doubleValue() * read.getCoefficient().doubleValue()}
+                            num_hh = float(pair_finish_date.getDate().getTime() + (30 * 60 * 1000) - pair_start_date.getDate().getTime()) / (30 * 60 * 1000)
 
-                read_3 = {'date': present_read.getPresentDate(), 'reads': reads, 'msn': present_reads[0].getMeterSerialNumber()}
-                break
-                #s elf.pw.println('got 3 ')
+                            tprs = {}
+                            for tpr_code, initial_val in aft_read['reads'].iteritems():
+                                if tpr_code in fore_read['reads']:
+                                    end_val = fore_read['reads'][tpr_code]
+                                else:
+                                    continue
                             
-            if previous_read_prime:
-                if not tie:
-                    if previous_read.getPreviousDate().after(period_finish):
-                        cal.setTime(previous_read.getPreviousDate().getDate())
-                        cal.add(Calendar.MONTH, 3)
-                        search_date = HhStartDate(cal.getTime())
-                    else:
-                        search_date = previous_read.getPreviousDate().getNext()
-                reads = {}
-                previous_reads = previous_reads_query.setEntity('bill', previous_bill).setTimestamp('readDate', previous_read.getPreviousDate().getDate()).setString('msn', previous_read.getMeterSerialNumber()).list()
-                for read in previous_reads:
-                    tpr = read.getTpr()
-                    reads[tpr.getCode()] = {'tpr': tpr, 'value': read.getPreviousValue().doubleValue() * read.getCoefficient().doubleValue()}
+                                kwh =  end_val - initial_val
+
+                                if kwh < 0:
+                                    digits = int(Math.log10(initial_val)) + 1
+                                    kwh = 10 ** digits + kwh
+
+                                tprs[tpr_code] = float(kwh) / num_hh
+
+                            pairs.append({'start-date': pair_start_date, 'finish-date': pair_finish_date, 'tprs': tprs})
                         
-                read_3 = {'date': previous_read.getPreviousDate(), 'reads': reads, 'msn': previous_reads[0].getMeterSerialNumber()}
-                break
+                            if len(pairs) > 0 and (not is_forwards or (is_forwards and read_list[-1]['date'].after(chunk_finish))):
+                                    break
 
-            if not previous_read_prime and not present_read_prime:
-                if previous_read is None:
-                    search_date = present_read.getPresentDate().getNext()
-                elif present_read is None:
-                    search_date = previous_read.getPreviousDate().getNext()
-                elif previous_read.getPreviousDate().before(present_read.getPresentDate()):
-                    search_date = previous_read.getPreviousDate().getNext()
-                else:
-                    search_date = present_read.getPresentDate().getNext()
-
-
-        #s elf.pw.println('read_0 ' + str(read_0) + ' read_1 ' + str(read_1) + ' read_2 ' + str(read_2) + ' read_3 ' + str(read_3))
-                    
-
-        passes = []
-        if read_3 is None or (read_2 is not None and read_3['msn'] != read_2['msn']):
-            if read_1 is not None and read_2 is not None and read_1['msn'] == read_2['msn']:
-                if read_1['msn'] == read_2['msn']:
-                    aft_read = read_1
-                    fore_read = read_2
-                else:
-                    aft_read = read_0
-                    fore_read = read_1
-
-                if period_start.before(read_2['date'].getNext()):
-                    chunk_start = read_2['date'].getNext()
-                else:
-                    chunk_start = period_start
-
-                if read_3 is None or read_3['date'].after(period_finish):
-                    chunk_finish = period_finish
-                else:
-                    chunk_finish = read_3['date']
-
-                passes.append({'aft-read': aft_read, 'fore-read': fore_read, 'chunk-finish': chunk_finish, 'chunk-start': chunk_start})
-            elif read_0 is not None and read_1 is not None and read_0['msn'] == read_1['msn']:
-                if period_start.before(read_1['date']):
-                    chunk_start = read_1['date'].getNext()
-                else:
-                    chunk_start = period_start
-                passes.append({'aft-read': read_0, 'fore-read': read_1, 'chunk-finish': period_finish, 'chunk-start': chunk_start})
-        elif read_2 is not None:
-            if period_finish.before(read_3['date']):
-                chunk_finish = period_finish
-            else:
-                chunk_finish = read_3['date']
-
-            if period_start.after(read_2['date']):
-                chunk_start = period_start
-            else:
-                chunk_start = read_2['date'].getNext()
-
-            passes.append({'aft-read': read_2, 'fore-read': read_3, 'chunk-start': chunk_start, 'chunk-finish': chunk_finish})
-            if read_1 is None and read_2['date'].after(period_start):
-                #s elf.pw.println('doing extra bit ')                             
-                if read_2['date'].after(period_finish):
-                    chunk_finish = period_finish
-                else:
-                    chunk_finish = read_2['date'].getPrevious()
-                passes.append({'aft-read': read_2, 'fore-read': read_3, 'chunk-finish': period_finish, 'chunk-start': period_start})
-                                
-        #s elf.pw.println('aft read ' + str(aft_read.getPresentDate()) + ' aft bill ' + str(aft_bill.getId()) + ' fore read ' + str(fore_read.getPresentDate()) + ' fore bill ' + str(fore_bill.getId()))
-                            
-        #s elf.pw.println('chunk start ' + str(chunk_start) + ' chunk finish ' + str(chunk_finish))
-        #p w.println('passed ' + str(passes))
-            
-        for read_pass in passes:
-            aft_read = read_pass['aft-read']
-            fore_read = read_pass['fore-read']
-            chunk_start = read_pass['chunk-start']
-            chunk_finish = read_pass['chunk-finish']
-
-            fore_aft_duration = float(fore_read['date'].getDate().getTime() - aft_read['date'].getDate().getTime())
-
-            if not aft_read['date'].before(period_start) and not fore_read['date'].after(period_finish) and aft_read['date'].getNext().equals(chunk_start) and fore_read['date'].equals(chunk_finish):
-                ndays = fore_aft_duration / float(1000 * 60 * 60 * 24)
-            else:
-                ndays = 0
-            normal_days += ndays
-
-            '''                   
-            pass_kwh = 0
-            for tpr_code, initial_read in aft_read['reads'].iteritems():
-                #s elf.pw.println('read ' + str(initial_read.getId()))
-                            
-                tpr = initial_read['tpr']
-                if tpr_code in fore_read['reads']:
-                    end_read = fore_read['reads'][tpr_code]
-                else:
+            prior_pres_reads.close()
+            prior_prev_reads.close()
+            next_pres_reads.close()
+            next_prev_reads.close()
+            for pair in pairs:
+                pair_start = pair['start-date']
+                pair_finish = pair['finish-date']
+                if pair_start.before(period_start):
+                    continue
+                if pair_finish.after(period_finish):
                     continue
 
-                initial_val = initial_read['value']
-                end_val = end_read['value']
-                tpr_kwh =  end_val - initial_val
-                if tpr_kwh < 0:
-                    digits = int(Math.log10(initial_val)) + 1
-                    tpr_kwh = 10 ** digits - initial_val + end_val
-                if fore_aft_duration == 0:
-                    kwh_rate = 0
-                else:
-                    kwh_rate = float(tpr_kwh) / fore_aft_duration
-                pass_kwh += kwh_rate * (chunk_finish.getDate().getTime() - chunk_start.getDate().getTime() + 30 * 60 * 1000)
-            kwh += pass_kwh
-            '''
+                ndays = (pair_finish.getDate().getTime() - (pair_start.getDate().getTime() + 1000 * 60 * 30)) / (1000 * 60 * 60 * 24)
+                normal_days[meter_type] += ndays
+                breakdown += "From " + str(pair_start) + " to " + str(pair_finish) + " " + str(ndays) + " normal days,"
+        elif meter_type == 'hh':
+            kwh_res = hh_kwh_query.setEntity('supply', supply).setTimestamp('startDate', period_start.getDate()).setTimestamp('finishDate', period_finish.getDate()).uniqueResult()
+            if kwh_res is not None:
+                kwh += kwh_res.doubleValue()
+            normal_days[meter_type] += float(hh_count_query.setEntity('supply', supply).setTimestamp('startDate', period_start.getDate()).setTimestamp('finishDate', period_finish.getDate()).uniqueResult()) / 48
+        elif meter_type == 'amr':
+            kwh_res = hh_kwh_query.setEntity('supply', supply).setTimestamp('startDate', period_start.getDate()).setTimestamp('finishDate', period_finish.getDate()).uniqueResult()
+            if kwh_res is not None:
+                kwh += kwh_res.doubleValue()
+            normal_days[meter_type] += float(hh_count_query.setEntity('supply', supply).setTimestamp('startDate', period_start.getDate()).setTimestamp('finishDate', period_finish.getDate()).uniqueResult()) / 48
+        elif meter_type == 'unmetered':
+            normal_days[meter_type] += (period_finish.getDate().getTime() + (1000 * 60 * 30) - period_start.getDate().getTime()) / (1000 * 60 * 60 * 24)
 
-            breakdown += "read-from: " + str(aft_read['date']) + " read-to: " + str(fore_read['date']) + " from: " + str(chunk_start) + " to: " + str(chunk_finish) +  " normal-days: " + str(ndays) + ", "
-
-        if read_3 is None:
-            keep_going = False
-
-        if keep_going and read_2 is not None and read_2['date'].after(period_finish):
-            keep_going = False
-
-        if keep_going and read_3['date'].after(period_finish) and not (read_2 is None and read_3['date'].after(period_start)):
-            keep_going = False
-
-        read_0 = read_1
-        read_1 = read_2
-        read_2 = read_3
-        read_3 = None
-        #s elf.pw.println('finished scond inner loop ' + str(prev_read.getPresentDate()) + ', ' + str(System.currentTimeMillis()))
-        #s elf.pw.println('finished section, ' + str(System.currentTimeMillis()))
     # for full year 183
-    pw.println(',' + ','.join('"' + str(val) + '"' for val in [breakdown, normal_days, max_normal_days, float(normal_days) / max_normal_days >= float(183) / 365, is_part_amr]))
+    total_normal_days = sum(normal_days.values())
+    is_normal = float(total_normal_days) / max_normal_days >= float(183) / 365
+    vals = [mpan_core, site.getCode(), site.getName(), year_start, year_finish, breakdown] + [normal_days[type] for type in meter_types] + [total_normal_days, max_normal_days, "Actual" if is_normal else "Estimated"]
+    pw.println(','.join('"' + str(val) + '"' for val in vals))
     pw.flush()
     Hiber.session().clear()
 pw.close()]]></value>
