@@ -759,34 +759,33 @@ def totalElement(account, startDate, finishDate):
 		</value>
 		<value><![CDATA[]]>
 		</value>
-		<value><![CDATA[def llfc_groups():
-    return {}
+		<value><![CDATA[
 
 def duos_tariffs():
     return {
-'llfc(450)-pc(00)': {
+'450': {
     'fixed-gbp-per-month': 14.91,
     'day-gbp-per-kwh': 0.00508,
     'capacity-<=200-gbp-per-kva-per-month': 1.06,
     'capacity->200-gbp-per-kva-per-month': 0.93,
     'excess-gbp-per-kva-per-month': 0.42},
-'llfc(453)-pc(00)': {
+'453': {
     'fixed-gbp-per-month': 14.91,
     'day-gbp-per-kwh': 0.00606,
     'night-gbp-per-kwh': 0.00118,
     'capacity-<=200-gbp-per-kva-per-month': 1.06,
     'capacity->200-gbp-per-kva-per-month': 0.93,
     'excess-gbp-per-kva-per-month': 0.42},
-'llfc(520)-pc(00)': {
+'520': {
     'fixed-gbp-per-month': 51.50,
     'day-gbp-per-kwh':  0.01157},
-'llfc(655)-pc(00)': {
+'655': {
     'fixed-gbp-per-month': 98.23,
     'day-gbp-per-kwh':   0.00379,
     'capacity-<=200-gbp-per-kva-per-month': 0.86,
     'capacity->200-gbp-per-kva-per-month': 0.86,
     'excess-gbp-per-kva-per-month': 0.40},
-'llfc(658)-pc(00)': {
+'658': {
     'fixed-gbp-per-month': 98.23,
     'day-gbp-per-kwh': 0.00433,
     'night-gbp-per-kwh': 0.00108,
@@ -812,34 +811,32 @@ def lafs():
 		<value><![CDATA[dno-contract-rate-script]]></value>
 		<value><![CDATA[20]]></value>
 		<value><![CDATA[2007-04-01T00:00Z]]></value>
-		<value><![CDATA[def llfc_groups():
-    return {}
-
+		<value><![CDATA[
 def duos_tariffs():
     return {
-'llfc(450)-pc(00)': {
+'450': {
     'fixed-gbp-per-month': 14.91,
     'day-gbp-per-kwh': 0.00508,
     'capacity-<=200-gbp-per-kva-per-month': 1.06,
     'capacity->200-gbp-per-kva-per-month': 0.93,
     'excess-gbp-per-kva-per-month': 0.42},
-'llfc(453)-pc(00)': {
+'453': {
     'fixed-gbp-per-month': 14.91,
     'day-gbp-per-kwh': 0.00606,
     'night-gbp-per-kwh': 0.00118,
     'capacity-<=200-gbp-per-kva-per-month': 1.06,
     'capacity->200-gbp-per-kva-per-month': 0.93,
     'excess-gbp-per-kva-per-month': 0.42},
-'llfc(520)-pc(00)': {
+'520': {
     'fixed-gbp-per-month': 51.50,
     'day-gbp-per-kwh':  0.01157},
-'llfc(655)-pc(00)': {
+'655': {
     'fixed-gbp-per-month': 98.23,
     'day-gbp-per-kwh':   0.00379,
     'capacity-<=200-gbp-per-kva-per-month': 0.86,
     'capacity->200-gbp-per-kva-per-month': 0.86,
     'excess-gbp-per-kva-per-month': 0.40},
-'llfc(658)-pc(00)': {
+'658': {
     'fixed-gbp-per-month': 98.23,
     'day-gbp-per-kwh': 0.00433,
     'night-gbp-per-kwh': 0.00108,
@@ -865,34 +862,32 @@ def lafs():
 		<value><![CDATA[dno-contract-rate-script]]></value>
 		<value><![CDATA[20]]></value>
 		<value><![CDATA[2008-04-01T00:00Z]]></value>
-		<value><![CDATA[def llfc_groups():
-    return {}
-
+		<value><![CDATA[
 def duos_tariffs():
     return {
-'llfc(450)-pc(00)': {
+'450': {
     'fixed-gbp-per-month': 14.91,
     'day-gbp-per-kwh': 0.00508,
     'capacity-<=200-gbp-per-kva-per-month': 1.06,
     'capacity->200-gbp-per-kva-per-month': 0.93,
     'excess-gbp-per-kva-per-month': 0.42},
-'llfc(453)-pc(00)': {
+'453': {
     'fixed-gbp-per-month': 14.91,
     'day-gbp-per-kwh': 0.00606,
     'night-gbp-per-kwh': 0.00118,
     'capacity-<=200-gbp-per-kva-per-month': 1.06,
     'capacity->200-gbp-per-kva-per-month': 0.93,
     'excess-gbp-per-kva-per-month': 0.42},
-'llfc(520)-pc(00)': {
+'520': {
     'fixed-gbp-per-month': 51.50,
     'day-gbp-per-kwh':  0.01157},
-'llfc(655)-pc(00)': {
+'655': {
     'fixed-gbp-per-month': 98.23,
     'day-gbp-per-kwh':   0.00379,
     'capacity-<=200-gbp-per-kva-per-month': 0.86,
     'capacity->200-gbp-per-kva-per-month': 0.86,
     'excess-gbp-per-kva-per-month': 0.40},
-'llfc(658)-pc(00)': {
+'658': {
     'fixed-gbp-per-month': 98.23,
     'day-gbp-per-kwh': 0.00433,
     'night-gbp-per-kwh': 0.00108,
@@ -918,76 +913,65 @@ def lafs():
 		<value><![CDATA[dno-contract-rate-script]]></value>
 		<value><![CDATA[20]]></value>
 		<value><![CDATA[2009-04-01T00:00Z]]></value>
-		<value><![CDATA[def llfc_groups():
-    return {
-        '127': '127,473',
-        '473': '127,473',
-        '453': '453,470',
-        '658': '658,476',
-        '476': '658,476',
-        '401': '401,475',
-        '475': '401,475',
-        '909': '909,477',
-        '910': '910,478'}
-
+		<value><![CDATA[
 def duos_tariffs():
     return {
-        'llfc(126)-pc(03)': {
+        '126': {
             'fixed-gbp-per-day': 0.0562,
             'day-gbp-per-kwh': 0.01645},
-        'llfc(127,473)-pc(03)': {
+        '127,473': {
             'fixed-gbp-per-day': 0.0808,
             'day-gbp-per-kwh': 0.01645},
-        'llfc(129)-pc(04)': {
+        '129': {
             'fixed-gbp-per-day': 0.0632,
             'day-gbp-per-kwh': 0.01737,
             'night-gbp-per-kwh': 0.00197},
-        'llfc(130)-pc(04)': {
+        '130': {
             'fixed-gbp-per-day': 0.0758,
             'day-gbp-per-kwh': 0.01737,
             'night-gbp-per-kwh': 0.00197},
-        'llfc(401,475)-pc(05-08)': {
+        '401,475': {
             'fixed-gbp-per-month': 18.58,
             'day-gbp-per-kwh': 0.00649,
             'night-gbp-per-kwh': 0.00126,
             'capacity-<=200-gbp-per-kva-per-month': 1.13,
             'capacity->200-gbp-per-kva-per-month': 1.00,
             'excess-gbp-per-kva-per-month': 0.45},
-        'llfc(453,470)-pc(00)': {
+        '453,470': {
             'fixed-gbp-per-month': 15.97,
             'day-gbp-per-kwh': 0.00649,
             'night-gbp-per-kwh': 0.00126,
             'capacity-<=200-gbp-per-kva-per-month': 1.13,
             'capacity->200-gbp-per-kva-per-month': 1.00,
             'excess-gbp-per-kva-per-month': 0.45},
-        'llfc(658,476)-pc(00)': {
+        '658,476': {
             'fixed-gbp-per-month': 105.18,
             'day-gbp-per-kwh': 0.00464,
             'night-gbp-per-kwh': 0.00116,
             'capacity-<=200-gbp-per-kva-per-month': 0.92,
             'capacity->200-gbp-per-kva-per-month': 0.92,
             'excess-gbp-per-kva-per-month': 0.43},
-        'llfc(605)-pc(05-08)': {
+        '605': {
             'fixed-gbp-per-month': 107.80,
             'day-gbp-per-kwh':  0.00406,
             'capacity-<=200-gbp-per-kva-per-month': 0.92,
             'capacity->200-gbp-per-kva-per-month': 0.92,
             'excess-gbp-per-kva-per-month': 0.43,},
-        'llfc(450)-pc(00)': {
+        '450': {
             'fixed-gbp-per-month': 15.97,
             'day-gbp-per-kwh':   0.00544,
             'capacity-<=200-gbp-per-kva-per-month': 1.13,
             'capacity->200-gbp-per-kva-per-month': 1.00,
             'excess-gbp-per-kva-per-month': 0.45,},
-        'llfc(655)-pc(00)': {
+        '655': {
             'fixed-gbp-per-month': 105.18,
             'day-gbp-per-kwh': 0.00406,
             'capacity-<=200-gbp-per-kva-per-month': 0.92,
             'capacity->200-gbp-per-kva-per-month': 0.92,
             'excess-gbp-per-kva-per-month': 0.43,},
-        'llfc(909,477)-pc(00)': {
+        '909,477': {
             'gbp-per-kva-per-month': 0.51},
-        'llfc(910,478)-pc(00)': {
+        '910,478': {
             'gbp-per-kva-per-month': 0.51}}
 
 def lafs():
@@ -1008,18 +992,7 @@ def lafs():
 		<value><![CDATA[dno-contract-rate-script]]></value>
 		<value><![CDATA[20]]></value>
 		<value><![CDATA[2009-10-01T00:00Z]]></value>
-		<value><![CDATA[def llfc_groups():
-    return {
-        '127': '127,473',
-        '473': '127,473',
-        '453': '453,470',
-        '658': '658,476',
-        '476': '658,476',
-        '401': '401,475',
-        '475': '401,475',
-        '909': '909,477',
-        '910': '910,478'}
-
+		<value><![CDATA[
 def duos_tariffs():
     return {
         'llfc(002)-pc(00)': {
@@ -1106,8 +1079,6 @@ def lafs():
 		<value><![CDATA[dno-contract-rate-script]]></value>
 		<value><![CDATA[20]]></value>
 		<value><![CDATA[2010-04-01T00:00Z]]></value>
-		<value><![CDATA[]]>
-		</value>
 		<value><![CDATA[def lafs():
     return {
         'lv-net': {
@@ -1130,22 +1101,6 @@ def lafs():
             'winter-weekday': 1.039,
             'other': 1.034,
             'night': 1.029}}
-
-def llfc_groups():
-    return {
-        '001': '001,477,909',
-        '006': '006,478,910',
-        '127': '127,473',
-        '401': '401,475',
-        '453': '453,470',
-        '473': '127,473',
-        '475': '401,475',
-        '476': '658,476',
-        '477': '001,477,909',
-        '478': '006,478,910',
-        '658': '658,476',
-        '909': '001,477,909',
-        '910': '006,478,910'}
 
 def tariffs():
     return {
@@ -1304,21 +1259,6 @@ def tariffs():
             'other': 1.018,
             'night': 1.016}}
 
-def llfc_groups():
-    return {
-        '001': '001,477,909',
-        '006': '006,478,910',
-        '127': '127,473',
-        '401': '401,475',
-        '453': '453,470',
-        '473': '127,473',
-        '475': '401,475',
-        '476': '658,476',
-        '477': '001,477,909',
-        '478': '006,478,910',
-        '658': '658,476',
-        '909': '001,477,909',
-        '910': '006,478,910'}
 
 def tariffs():
     return {
@@ -1478,21 +1418,6 @@ def tariffs():
             'other': 1.018,
             'night': 1.017}}
 
-def llfc_groups():
-    return {
-        '001': '001,477,909',
-        '006': '006,478,910',
-        '127': '127,473',
-        '401': '401,475',
-        '453': '453,470',
-        '473': '127,473',
-        '475': '401,475',
-        '476': '658,476',
-        '477': '001,477,909',
-        '478': '006,478,910',
-        '658': '658,476',
-        '909': '001,477,909',
-        '910': '006,478,910'}
 
 def tariffs():
     return {
@@ -1633,21 +1558,6 @@ def tariffs():
             'other': 1.018,
             'night': 1.017}}
 
-def llfc_groups():
-    return {
-        '001': '001,477,909',
-        '006': '006,478,910',
-        '127': '127,473',
-        '401': '401,475',
-        '453': '453,470',
-        '473': '127,473',
-        '475': '401,475',
-        '476': '658,476',
-        '477': '001,477,909',
-        '478': '006,478,910',
-        '658': '658,476',
-        '909': '001,477,909',
-        '910': '006,478,910'}
 
 def tariffs():
     return {
@@ -1787,22 +1697,6 @@ def tariffs():
             'winter-weekday': 1.020,
             'other': 1.018,
             'night': 1.017}}
-
-def llfc_groups():
-    return {
-        '001': '001,477,909',
-        '006': '006,478,910',
-        '127': '127,473',
-        '401': '401,475',
-        '453': '453,470',
-        '473': '127,473',
-        '475': '401,475',
-        '476': '658,476',
-        '477': '001,477,909',
-        '478': '006,478,910',
-        '658': '658,476',
-        '909': '001,477,909',
-        '910': '006,478,910'}
 
 def tariffs():
     return {
@@ -1952,21 +1846,6 @@ def tariffs():
             'other': 1.018,
             'night': 1.016}}
 
-def llfc_groups():
-    return {
-        '001': '001,477,909',
-        '006': '006,478,910',
-        '127': '127,473',
-        '401': '401,475',
-        '453': '453,470',
-        '473': '127,473',
-        '475': '401,475',
-        '476': '658,476',
-        '477': '001,477,909',
-        '478': '006,478,910',
-        '658': '658,476',
-        '909': '001,477,909',
-        '910': '006,478,910'}
 
 def tariffs():
     return {
@@ -2107,21 +1986,6 @@ def tariffs():
             'other': 1.018,
             'night': 1.016}}
 
-def llfc_groups():
-    return {
-        '001': '001,477,909',
-        '006': '006,478,910',
-        '127': '127,473',
-        '401': '401,475',
-        '453': '453,470',
-        '473': '127,473',
-        '475': '401,475',
-        '476': '658,476',
-        '477': '001,477,909',
-        '478': '006,478,910',
-        '658': '658,476',
-        '909': '001,477,909',
-        '910': '006,478,910'}
 
 def tariffs():
     return {

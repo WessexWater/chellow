@@ -32,6 +32,7 @@ import java.util.Map;
 import java.util.Set;
 
 import net.sf.chellow.billing.Contract;
+import net.sf.chellow.monad.Debug;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.InternalException;
@@ -421,6 +422,7 @@ public class Site extends PersistentEntity {
 			Contract exportSupplierContract,
 			String exportSupplierAccountReference,
 			Integer exportAgreedSupplyCapacity) throws HttpException {
+		Debug.print("Started insert supply.");
 		String mpanStr = null;
 		if (importMpanStr == null) {
 			mpanStr = exportMpanStr;
@@ -439,6 +441,7 @@ public class Site extends PersistentEntity {
 		try {
 			Hiber.session().save(supply);
 			Hiber.flush();
+			Debug.print("Successfully saved supply.");
 		} catch (HibernateException e) {
 			Hiber.rollBack();
 			if (HttpException
@@ -455,12 +458,13 @@ public class Site extends PersistentEntity {
 			}
 		}
 		Era era = supply.insertEra(this, new ArrayList<Site>(), startDate,
-				mopContract, mopAccount, hhdcContract, hhdcAccount,
-				msn, pc, mtcCode, cop, ssc, importMpanStr,
-				importLlfcCode, importSupplierContract, importSupplierAccount,
-				impSc, exportMpanStr, exportLlfcCode, exportSupplierContract,
+				mopContract, mopAccount, hhdcContract, hhdcAccount, msn, pc,
+				mtcCode, cop, ssc, importMpanStr, importLlfcCode,
+				importSupplierContract, importSupplierAccount, impSc,
+				exportMpanStr, exportLlfcCode, exportSupplierContract,
 				exportSupplierAccountReference, exportAgreedSupplyCapacity,
 				false, false, false, false);
+
 		era.update(era.getStartDate(), finishDate);
 		Hiber.flush();
 		return supply;
@@ -509,18 +513,24 @@ public class Site extends PersistentEntity {
 			docElem.appendChild(cop.toXml(doc));
 		}
 
-		for (Contract contract : (List<Contract>) Hiber.session()
-				.createQuery("from Contract contract order by contract.name")
+		for (Contract contract : (List<Contract>) Hiber
+				.session()
+				.createQuery(
+						"from Contract contract where contract.role.code = 'M' order by contract.name")
 				.list()) {
 			docElem.appendChild(contract.toXml(doc));
 		}
-		for (Contract contract : (List<Contract>) Hiber.session()
-				.createQuery("from Contract contract order by contract.name")
+		for (Contract contract : (List<Contract>) Hiber
+				.session()
+				.createQuery(
+						"from Contract contract where contract.role.code = 'C' order by contract.name")
 				.list()) {
 			docElem.appendChild(contract.toXml(doc));
 		}
-		for (Contract contract : (List<Contract>) Hiber.session()
-				.createQuery("from Contract contract order by contract.name")
+		for (Contract contract : (List<Contract>) Hiber
+				.session()
+				.createQuery(
+						"from Contract contract where contract.role.code = 'X' order by contract.name")
 				.list()) {
 			docElem.appendChild(contract.toXml(doc));
 		}
@@ -567,8 +577,8 @@ public class Site extends PersistentEntity {
 				String mtcCode = inv.getString("mtc-code");
 				Long copId = inv.getLong("cop-id");
 				String sscCode = inv.getString("ssc-code");
-				String importMpanCoreStr = inv.getString("import-mpan-core");
-				String exportMpanCoreStr = inv.getString("export-mpan-core");
+				String importMpanCore = inv.getString("import-mpan-core");
+				String exportMpanCore = inv.getString("export-mpan-core");
 				Date startDate = inv.getDate("start");
 				if (!inv.isValid()) {
 					throw new UserException();
@@ -602,7 +612,7 @@ public class Site extends PersistentEntity {
 				String importSupplierAccount = null;
 				Integer importAgreedSupplyCapacity = null;
 				String importLlfcCode = null;
-				if (importMpanCoreStr.trim().length() > 0) {
+				if (importMpanCore.trim().length() > 0) {
 					importLlfcCode = inv.getString("import-llfc-code");
 					Long importSupplierContractId = inv
 							.getLong("import-supplier-contract-id");
@@ -623,12 +633,14 @@ public class Site extends PersistentEntity {
 								"The import supply capacity must be an integer."
 										+ e.getMessage());
 					}
+				} else {
+					importMpanCore = null;
 				}
 				Contract exportSupplierContract = null;
 				String exportLlfcCode = null;
 				Integer exportAgreedSupplyCapacity = null;
 				String exportSupplierAccount = null;
-				if (exportMpanCoreStr.trim().length() > 0) {
+				if (exportMpanCore.trim().length() > 0) {
 					exportLlfcCode = inv.getString("export-llfc-code");
 					Long exportSupplierContractId = inv
 							.getLong("export-supplier-contract-id");
@@ -649,19 +661,23 @@ public class Site extends PersistentEntity {
 								"The export supply capacity must be an integer."
 										+ e.getMessage());
 					}
+				} else {
+					exportMpanCore = null;
 				}
+
 				Supply supply = insertSupply(source, generatorType, name,
 						new HhStartDate(startDate), null, gspGroup, "",
 						mopContract, mopAccount, hhdcContract, hhdcAccount,
 						meterSerialNumber, pc, mtcCode, cop, ssc,
-						importMpanCoreStr, importLlfcCode,
-						importSupplierContract, importSupplierAccount,
-						importAgreedSupplyCapacity, exportMpanCoreStr,
-						exportLlfcCode, exportSupplierContract,
+						importMpanCore, importLlfcCode, importSupplierContract,
+						importSupplierAccount, importAgreedSupplyCapacity,
+						exportMpanCore, exportLlfcCode, exportSupplierContract,
 						exportSupplierAccount, exportAgreedSupplyCapacity);
 				Hiber.commit();
 				inv.sendSeeOther(supply.getEditUri());
-			} catch (HttpException e) {
+			} catch (UserException e) {
+				Hiber.rollBack();
+				Hiber.close();
 				e.setDocument(document());
 				throw e;
 			}

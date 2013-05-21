@@ -81,6 +81,9 @@ render(inv, template, {'local_reports_id': properties.get('local.reports')})]]><
             </li>
           {% endif %}
         <li>
+          <a href="{{ context_path }}/general-imports/">General Import</a>
+        </li>
+        <li>
           <a href="https://bitbucket.org/ww_tlocke/chellow" target="_blank">Docs</a>
         </li>
       </ul>
@@ -204,16 +207,6 @@ render(inv, template, {'local_reports_id': properties.get('local.reports')})]]><
         <ul>
           <li>
             <a href="{{ context_path }}/reports/">Reports</a>
-          </li>
-          <li>General Import / Export
-            <ul>
-              <li>
-                <a href="{{ context_path }}/general-imports/">Import (CSV and XML)</a>
-              </li>
-              <li>
-                <a href="{{ context_path }}/reports/151/output/">Export (XML)</a>
-              </li>
-            </ul>
           </li>
           <li>
             <a href="{{ context_path }}/reports/255/output/">Users</a>
@@ -409,7 +402,7 @@ for time_key in time_keys:
         era_group_element = first_era.getSupply().toXml(doc, XmlTree('source').put('generatorType').put('dnoContract'))
         site_element.appendChild(era_group_element)
 
-        if first_era.getPc().getCode() == 0:
+        if first_era.pc.code == '00':
             meter_cat = 'HH'
         elif first_era.getChannels().size() > 0:
             meter_cat = 'AMR'
@@ -616,17 +609,21 @@ Ongoing
 </a>
 <xsl:value-of select="' '"/>
 <xsl:value-of
- select="substring(era/@imp-mpan-core, 3, 13)" />
+ select="substring(era/@imp-mpan-core, 3, 14)" />
                                      </xsl:if>
                                 </td>
-                                <td>
+<td>
                                     <xsl:if
                                         test="era/@exp-mpan-core">
-                                        <xsl:value-of
-                                            select="era/@imp-mpan-core" />
-                                    </xsl:if>
-                                </td>
-                                <td>
+<a href="{/source/request/@context-path}/reports/67/output/?dno_contract_id={dno-contract/@id}">
+<xsl:value-of
+ select="dno-contract/@name" />
+</a>
+<xsl:value-of select="' '"/>
+<xsl:value-of
+ select="substring(era/@exp-mpan-core, 3, 14)" />
+                                     </xsl:if>
+                                </td>                              <td>
                                   <xsl:choose>
                                   <xsl:when test="/source/site/@id=era[position()=1]/site-era[@is-physical='true']/site/@id">
                                   this site
@@ -1113,7 +1110,7 @@ render(inv, template, {'triad_year': triad_year, 'now': now, 'last_month_start':
               </td>
               <td>
                 {% if era.impMpanCore %}
-                  <a title="{{ supply.dnoContract.name }}" href="{{ context_path }}/reports/139/output/?dno-id={{ supply.dnoContract.id }}">{{ supply.dnoContract.name }}</a> {{ era.impMpanCore[3:] }}
+                  <a title="{{ supply.dnoContract.name }}" href="{{ context_path }}/reports/67/output/?dno_contract_id={{ supply.dnoContract.id }}">{{ supply.dnoContract.name }}</a> {{ era.impMpanCore[3:] }}
                 {% endif %}
               <td>
                 {% if era.impMpanCore %}
@@ -1158,7 +1155,7 @@ render(inv, template, {'triad_year': triad_year, 'now': now, 'last_month_start':
               </td>
               <td>
                 {% if era.expMpanCore %}
-                  <a title="{{ era.supply.dnoContract.name }}" href="{{ context_path }}/reports/139/output/?dno-id={{ era.supply.dnoContract.id }}">{{ era.supply.dnoContract.name }}</a> {{ era.expMpanCore[3:] }}
+                  <a title="{{ era.supply.dnoContract.name }}" href="{{ context_path }}/reports/67/output/?dno_contract_id={{ era.supply.dnoContract.id }}">{{ era.supply.dnoContract.name }}</a> {{ era.expMpanCore[3:] }}
                 {% endif %}
               </td>
               <td>
@@ -1416,9 +1413,9 @@ render(inv, template, {'triad_year': triad_year, 'now': now, 'last_month_start':
 
     <form action="{{ context_path }}/reports/87/output/?supply-id">
       <fieldset>
-        <input type="hidden" name="supply-id" value="{{ supply.id }}">
+        <input type="hidden" name="supply_id" value="{{ supply.id }}">
         <legend>Supplier Virtual Bills</legend>
-        <select name="supply-polarity">
+        <select name="supply_polarity">
           <option value="import">
             Import
           </option>
@@ -4145,410 +4142,9 @@ pw.close()]]></value>
 		<value><![CDATA[report]]></value>
 		<value><![CDATA[31]]></value>
 		<value><![CDATA[true]]></value>
-		<value><![CDATA[Admin: CSV Export]]></value>
-		<value><![CDATA[from net.sf.chellow.monad import Hiber, UserException, MonadUtils
-from net.sf.chellow.monad.types import UriPathElement, MonadDate
-from java.util import GregorianCalendar, TimeZone, Locale, Calendar, Date
-from net.sf.chellow.physical import HhStartDate, Configuration, MpanCore
-from java.text import DateFormat
-from java.util.zip import ZipOutputStream, ZipEntry
-from java.io import OutputStreamWriter, PrintWriter
-from java.security import MessageDigest
-from com.Ostermiller.util import Base64
-from java.lang import String, System, Boolean
-
-def mpan_fields(mpan):
-    if mpan is None:
-        return ['', '', '', '', '']
-    else:
-        return [mpan.getCore(), mpan.getLlfc(), mpan.getAgreedSupplyCapacity(), mpan.getSupplierContract().getName(), mpan.getSupplierAccount()]
-
-#inv.getResponse().setContentType('application/zip')
-#inv.getResponse().setHeader('Content-Disposition', 'filename=output.zip;')
-#sout = inv.getResponse().getOutputStream()
-#zout = ZipOutputStream(sout)
-#pw = PrintWriter(OutputStreamWriter(zout, 'UTF-8'))
-#zout.putNextEntry(ZipEntry('out.xml'))
-
-inv.getResponse().setContentType('text/xml')
-inv.getResponse().setHeader('Content-Disposition', 'attachment; filename="output.xml"')
-pw = inv.getResponse().getWriter()
-
-def print_line(values):
-    pw.println('    <line>')
-    for value in values:
-        if value is None:
-            value = ''
-        else:
-            value = str(value)
-        pw.println('        <value><' + '![CDATA[' + value + ']]' + '></value>')
-    pw.println('    </line>')
-    pw.flush()
-
-
-def print_batches(contract, role_name):
-    reads_query = Hiber.session().createQuery("select read.meterSerialNumber, read.mpanStr, read.coefficient, read.units, read.tpr.code, read.previousDate, read.previousValue, read.previousType.code, read.presentDate, read.presentValue, read.presentType.code from RegisterRead read where read.bill = :bill order by read.id")
-
-    range_11 = range(11)
-
-    bills_query = Hiber.session().createQuery("select bill from Bill bill where bill.batch = :batch order by bill.id")
-
-    batches = Hiber.session().createQuery("from Batch batch where batch.contract.id = :contractId order by batch.id").setLong('contractId', contract.getId()).scroll()
-    while batches.next():
-        batch = batches.get(0)
-        print_line(['insert', 'batch', role_name, contract.getName(), batch.getReference(), batch.getDescription()])
-        bills = bills_query.setEntity('batch', batch).scroll()
-        while bills.next():
-            bill = bills.get(0)
-            values = ['insert', 'bill', role_name, contract.getName(), batch.getReference(), bill.getSupply().getMpanCores().iterator().next(), MonadDate(bill.getIssueDate()), bill.getStartDate(), bill.getFinishDate(), bill.getNet(), bill.getVat(), bill.getGross(), bill.getAccount(), bill.getReference(), bill.getType(), bill.getBreakdown(), bill.getKwh()]
-            reads = reads_query.setEntity('bill', bill).scroll()
-            while reads.next():
-                values += [reads.get(i) for i in range_11]
-            reads.close()
-            print_line(values)
-            Hiber.session().clear()
-        bills.close()
-        Hiber.session().clear()
-    batches.close()
-
-
-
-is_core = inv.getBoolean('is-core')
-has_dno_contracts = inv.getBoolean('has-dno-contracts')    
-has_non_core_contracts = inv.getBoolean('has-non-core-contracts')
-has_reports = inv.getBoolean('has-reports')
-has_supplier_contracts = inv.getBoolean('has-supplier-contracts')
-has_supplier_batches = inv.getBoolean('has-supplier-batches')
-has_hhdc_contracts = inv.getBoolean('has-hhdc-contracts')
-has_mop_contracts = inv.getBoolean('has-mop-contracts')
-has_sites = inv.getBoolean('has-sites')    
-has_supplies = inv.getBoolean('has-supplies')
-has_hh_data = inv.getBoolean('has-hh-data')
-has_users = inv.getBoolean('has-users')
-has_configuration = inv.getBoolean('has-configuration')
-has_channel_snag_ignores = inv.getBoolean('has-channel-snag-ignores')
-has_site_snag_ignores = inv.getBoolean('has-site-snag-ignores')
-
-if not inv.isValid():
-    raise UserException()
-
-if has_supplies:
-    mpan_core_str = inv.getString('mpan-core')
-
-pw.println('<' + '?xml version="1.0"?>')
-pw.flush()
-pw.println('<csv>')
-
-if has_reports:
-    query = Hiber.session().createQuery("from Report report where mod(report.id, 2) = :remainder order by report.id")
-    if is_core:
-        query.setInteger('remainder', 1)
-        is_core_str = 'true'
-    else:
-        query.setInteger('remainder', 0)
-        is_core_str = 'false'
-    reports = query.scroll()
-    while reports.next():
-        report = reports.get(0)
-        template = report.getTemplate()
-        if template is not None:
-            template = template.replace("<!" + "[CDATA[", "&" + "lt;![CDATA[").replace("]]" + ">", "]]" + "&" + "gt;")
-        print_line(['insert', 'report', str(report.getId()), is_core_str, report.getName(), report.getScript().replace("<!" + "[CDATA[", "&" + "lt;![CDATA[").replace("]]" + ">", "]]" + "&" + "gt;"), template])
-    reports.close()
-
-if has_dno_contracts and is_core:
-    contracts = Hiber.session().createQuery("from DnoContract contract order by contract.party.code, contract.name").scroll()
-    while contracts.next():
-        contract = contracts.get(0)
-        contract_name = contract.getName()
-        rate_scripts = Hiber.session().createQuery("from RateScript script where script.contract.id = :contractId order by script.startDate.date").setLong('contractId', contract.getId()).list()
-        start_rate_script = rate_scripts[0]
-        print_line(['insert', 'dno-contract', contract.getParty().getCode(), contract.getId(), contract_name, start_rate_script.getStartDate(), rate_scripts[len(rate_scripts) - 1].getFinishDate(), contract.getChargeScript(), start_rate_script.getId(), start_rate_script.getScript()])
-        for i in range(1, len(rate_scripts)):
-            rate_script = rate_scripts[i]
-            print_line(['insert', 'dno-contract-rate-script', contract.getParty().getCode(), contract.getName(), rate_script.getId(), rate_script.getStartDate(), rate_script.getScript()])
-    Hiber.session().clear()
-    contracts.close()
-
-
-if has_non_core_contracts:
-    query = Hiber.session().createQuery("from NonCoreContract contract where mod(contract.id, 2) = :remainder order by contract.name")
-    if is_core:
-        query.setInteger('remainder', 1)
-    else:
-        query.setInteger('remainder', 0)
-
-    contracts = query.scroll()
-    while contracts.next():
-        contract = contracts.get(0)
-        contract_name = contract.getName()
-        rate_scripts = Hiber.session().createQuery("from RateScript script where script.contract = :contract order by script.startDate.date").setEntity('contract', contract).list()
-        start_rate_script = rate_scripts[0]
-        print_line(['insert', 'non-core-contract', contract.getId(), None, contract.getParty().getParticipant().getCode(), contract_name, contract.getChargeScript(), start_rate_script.getId(), start_rate_script.getStartDate(), rate_scripts[len(rate_scripts) - 1].getFinishDate(), start_rate_script.getScript()])
-        for i in range(1, len(rate_scripts)):
-            rate_script = rate_scripts[i]
-            print_line(['insert', 'non-core-contract-rate-script', contract_name, rate_script.getId(), rate_script.getStartDate(), rate_script.getScript()])
-    Hiber.session().clear()
-    contracts.close()
-
-
-if has_users:
-    users = Hiber.session().createQuery("from User user order by user.id").scroll()
-    while users.next():
-        user = users.get(0)
-        print_line(['insert', 'user', user.getEmailAddress(), '', user.getPasswordDigest(), user.getRole().getCode(), '', ''])
-    users.close()
-
-
-if has_configuration:
-    print_line(['update', 'configuration', Configuration.getConfiguration().getProperties()])
-
-
-if has_sites and not is_core:
-    sites = Hiber.session().createQuery("from Site site order by site.id").scroll()
-    while sites.next():
-        site = sites.get(0)
-        print_line(['insert', 'site', site.getCode(), site.getName()])
-    sites.close()
-
-
-if has_hhdc_contracts and not is_core:
-    contracts = Hiber.session().createQuery("from HhdcContract contract order by contract.id").scroll()
-    while contracts.next():
-        contract = contracts.get(0)
-        rate_scripts = Hiber.session().createQuery("from RateScript script where script.contract.id = :contractId order by script.startDate.date").setLong('contractId', contract.getId()).list()
-        start_rate_script = contract.getStartRateScript()
-        finish_rate_script = contract.getFinishRateScript()
-        print_line(['insert', 'hhdc-contract', contract.getId(), contract.getParty().getParticipant().getCode(), contract.getName(), start_rate_script.getStartDate(), finish_rate_script.getFinishDate(), contract.getChargeScript(), contract.getProperties(), contract.getState(), start_rate_script.getId(), start_rate_script.getScript()])
-        if len(rate_scripts) > 1:
-            for rate_script in rate_scripts[1:]:
-                print_line(['insert', 'hhdc-contract-rate-script', contract.getName(), rate_script.getId(), rate_script.getStartDate(), rate_script.getScript()])
-        Hiber.session().clear()
-    contracts.close()
-
-if has_mop_contracts and not is_core:
-    contracts = Hiber.session().createQuery("from MopContract contract order by contract.id").scroll()
-    while contracts.next():
-        contract = contracts.get(0)
-        rate_scripts = Hiber.session().createQuery("from RateScript script where script.contract.id = :contractId order by script.startDate.date").setLong('contractId', contract.getId()).list()
-        start_rate_script = rate_scripts[0]
-        finish_rate_script = rate_scripts[len(rate_scripts) - 1]
-        print_line(['insert', 'mop-contract', contract.getId(), contract.getParty().getParticipant().getCode(), contract.getName(), start_rate_script.getStartDate(),  finish_rate_script.getFinishDate(), contract.getChargeScript(), start_rate_script.getId(), start_rate_script.getScript()])
-        if len(rate_scripts) > 1:
-            for rate_script in rate_scripts[1:]:
-                print_line(['insert', 'mop-contract-rate-script', contract.getName(), rate_script.getId(), rate_script.getStartDate(), rate_script.getScript()])
-        Hiber.session().clear()
-    contracts.close()
-
-
-if has_supplier_contracts and not is_core:
-    contracts = Hiber.session().createQuery("from SupplierContract contract order by contract.id").scroll()
-    while contracts.next():
-        contract = contracts.get(0)
-        contract_name = contract.getName()
-
-        rate_scripts = Hiber.session().createQuery("from RateScript script where script.contract.id = :contractId order by script.startDate.date").setLong('contractId', contract.getId()).list()
-
-        start_rate_script = rate_scripts.get(0)
-        finish_rate_script = rate_scripts.get(len(rate_scripts) - 1)
-        print_line(['insert', 'supplier-contract', contract.getId(), contract.getParty().getParticipant().getCode(), contract_name, start_rate_script.getStartDate(), finish_rate_script.getFinishDate(), contract.getChargeScript(), start_rate_script.getId(), start_rate_script.getScript()])
-
-        for i in range(1, len(rate_scripts)):
-            rate_script = rate_scripts[i]
-            print_line(['insert', 'supplier-contract-rate-script', rate_script.getContract().getName(), rate_script.getId(), rate_script.getStartDate(), rate_script.getScript()])
-            Hiber.session().clear()
-        Hiber.session().clear()
-    contracts.close()
-
-if has_supplies and not is_core:
-    if len(mpan_core_str) == 0:
-        supplies = Hiber.session().createQuery("from Supply supply order by supply.id").scroll()
-    else:
-        supplies = Hiber.session().createQuery("from Supply supply where supply = :supply").setEntity('supply', MpanCore.getMpanCore(mpan_core_str)
-.getSupply()).scroll()
-    while supplies.next():
-        supply = supplies.get(0) 
-        eras = Hiber.session().createQuery('from Era era where era.supply = :supply order by era.startDate.date').setEntity('supply', supply).list()
-        first_era = eras[0]
-        last_era = eras[len(eras) - 1]
-        physical_site = Hiber.session().createQuery("select siteEra.site from SiteEra siteEra where siteEra.era = :era and siteEra.isPhysical is true").setEntity('era', last_era).uniqueResult()
-        site_code = physical_site.getCode()
-        supply_name = supply.getName()
-        start_date = first_era.getStartDate().toString()
-        finish_date = last_era.getFinishDate()
-        if finish_date is None:
-            finish_date = ''
-        else:
-            finish_date = finish_date.toString()
-        source = supply.getSource().getCode()
-        generator_type = supply.getGeneratorType()
-        if generator_type is None:
-            generator_type = ''
-        else:
-            generator_type = generator_type.getCode()
-
-        mop_contract = first_era.getMopContract()
-        if mop_contract is None:
-            mop_contract_name = ''
-            mop_account = ''
-        else:
-            mop_contract_name = mop_contract.getName()
-            mop_account = first_era.getMopAccount()
-
-        hhdc_contract = first_era.getHhdcContract()
-        if hhdc_contract is None:
-            hhdc_contract_name = ''
-            hhdc_account = ''
-        else:
-            hhdc_contract_name = hhdc_contract.getName()
-            hhdc_account = first_era.getHhdcAccount()
-        values = ['insert', 'supply', site_code, source, generator_type, supply_name, supply.getGspGroup().getCode(), start_date, finish_date, mop_contract_name, mop_account, hhdc_contract_name, hhdc_account]
-        for is_import in [True, False]:
-            for is_kwh in [True, False]:
-                values.append(Boolean(first_era.getChannel(is_import, is_kwh) != None))
-
-        values += [first_era.getMeterSerialNumber(), first_era.getPc(), first_era.getMtc(), first_era.getCop().getCode(), first_era.getSsc()] + mpan_fields(first_era.getImportMpan()) + mpan_fields(first_era.getExportMpan())
-        first_mpan_core_str = str(first_era.getMpans().iterator().next().getCore())
-        print_line(values)
-        eras = Hiber.session().createQuery("from Era era where era.supply = :supply order by era.startDate.date").setEntity('supply', supply).scroll()
-        eras.next()
-        while eras.next():
-            era = eras.get(0)
-            physical_site = Hiber.session().createQuery("select siteEra.site from SiteEra siteEra where siteEra.era = :era and siteEra.isPhysical is true").setEntity('era', last_era).uniqueResult()
-            site_code = physical_site.getCode()
-            start_date = era.getStartDate()
-
-            mop_contract = era.getMopContract()
-            if mop_contract is None:
-                mop_contract_name = ''
-                mop_account = ''
-            else:
-                mop_contract_name = mop_contract.getName()
-                mop_account = era.getMopAccount()
-
-            hhdc_contract = era.getHhdcContract()
-            if hhdc_contract is None:
-                hhdc_contract_name = ''
-                hhdc_account = ''
-            else:
-                hhdc_contract_name = hhdc_contract.getName()
-                hhdc_account = era.getHhdcAccount()
-            values = ['insert', 'supply-era', first_mpan_core_str, start_date, site_code, mop_contract_name, mop_account, hhdc_contract_name, hhdc_account]
-            for is_import in [True, False]:
-                for is_kwh in [True, False]:
-                    values.append(Boolean(era.getChannel(is_import, is_kwh) != None))
-
-            values += [era.getMeterSerialNumber(), era.getPc(), era.getMtc(), era.getCop().getCode(), era.getSsc()] + mpan_fields(era.getImportMpan()) + mpan_fields(era.getExportMpan())
-            print_line(values)
-        eras.beforeFirst()
-        while eras.next():
-            era = eras.get(0)
-            start_date = era.getStartDate()
-            finish_date = era.getFinishDate()
-            site_supply_eras = Hiber.session().createQuery("from SiteEra siteEra where siteEra.era = :era and siteEra.isPhysical is false").setEntity('era', era).scroll()
-            while site_supply_eras.next():
-                site_supply_era = site_supply_eras.get(0)
-                print_line(['insert', 'site-supply-era', site_supply_era.getSite().getCode(), first_mpan_core_str, start_date, 'false'])
-            site_supply_eras.close()
-            query = "select datum.startDate, datum.value, datum.status from HhDatum datum where datum.channel.era.supply = :supply and datum.channel.isImport = :isImport and datum.channel.isKwh = :isKwh and datum.startDate.date >= :startDate"
-            if finish_date is None:
-                hh_data_q = Hiber.session().createQuery(query + " order by datum.startDate.date").setTimestamp('startDate', start_date.getDate())
-            else:
-                hh_data_q = Hiber.session().createQuery(query + " and datum.startDate.date <= :finishDate  order by datum.startDate.date").setTimestamp('finishDate', finish_date.getDate())
-            hh_data_q.setTimestamp('startDate', start_date.getDate()).setEntity('supply', supply)
-            channels = Hiber.session().createQuery("from Channel channel where channel.era = :era").setEntity('era', era).scroll()
-            while channels.next():
-                channel = channels.get(0)
-                if channel.getIsImport():
-                    is_import = 'true'
-                else:
-                    is_import = 'false'
-                if channel.getIsKwh():
-                    is_kwh = 'true'
-                else:
-                    is_kwh = 'false'
-                if has_hh_data:
-                    hh_data_q.setBoolean('isImport', channel.getIsImport()).setBoolean('isKwh', channel.getIsKwh()),
-                    hh_data = hh_data_q.scroll()
-                    hh_str = ''
-                    prev_end_date = None
-                    count = 0
-                    while hh_data.next():
-                        end_date = hh_data.get(0)
-                        if prev_end_date is None or not prev_end_date.getNext().getDate().equals(end_date.getDate()) or count > 1000:
-                            if prev_end_date is not None:
-                                pw.println('</value>')
-                                pw.println('    </line>')
-                            pw.println('    <line>')
-                            for value in ['insert', 'hh-datum', first_mpan_core_str, str(end_date), is_import, is_kwh]:
-                                pw.println('        <value>' + value + '</value>')
-                            pw.print('        <value>')
-                            count = 0
-                        else:
-                            pw.print(',')
-                        status = hh_data.get(2)
-                        if status is None:
-                            status = ''
-                        pw.print(str(hh_data.get(1)) + ',' + status)
-                        prev_end_date = end_date
-                        count = count + 1
-                    if prev_end_date is not None:
-                        pw.println('</value>')
-                        pw.println('    </line>')
-                    hh_data.close()
-            channels.close()
-        eras.close()
-        Hiber.session().clear()
-    supplies.close()
-
-if has_channel_snag_ignores and not is_core:
-    timing = System.currentTimeMillis()
-    #pw.println('about to start ' + str(System.currentTimeMillis() - timing))
-    snags = Hiber.session().createQuery("from ChannelSnag snag where snag.isIgnored is true").scroll()
-    #pw.println('finished ' + str(System.currentTimeMillis() - timing))
-    while snags.next():
-        snag = snags.get(0)
-        channel = snag.getChannel()
-        print_line(['insert', 'channel-snag-ignore', channel.getEra().getMpans().iterator().next().getCore().toString(), Boolean(channel.getIsImport()), Boolean(channel.getIsKwh()), snag.getDescription(), snag.getStartDate(), snag.getFinishDate()])
-        Hiber.session().clear()
-    snags.close()
-
-
-if has_site_snag_ignores and not is_core:
-    snags = Hiber.session().createQuery("from SiteSnag snag where snag.isIgnored is true").scroll()
-    while snags.next():
-        snag = snags.get(0)
-        print_line(['insert', 'site-snag-ignore', snag.getSite().getCode(), snag.getDescription(), snag.getStartDate(), snag.getFinishDate()])
-        Hiber.session().clear()
-    snags.close()
-
-if has_hhdc_contracts and not is_core:
-    contracts = Hiber.session().createQuery("from HhdcContract contract order by contract.id").scroll()
-    while contracts.next():
-        print_batches(contracts.get(0), 'hhdc')
-        Hiber.session().clear()
-    contracts.close()
-
-
-if has_mop_contracts and not is_core:
-    contracts = Hiber.session().createQuery("from MopContract contract order by contract.id").scroll()
-    while contracts.next():
-        print_batches(contracts.get(0), 'mop')
-        Hiber.session().clear()
-    contracts.close()
-
-
-if has_supplier_batches and not is_core:
-    contracts = Hiber.session().createQuery("from SupplierContract contract order by contract.id").scroll()
-    while contracts.next():
-        print_batches(contracts.get(0), 'supplier')
-        Hiber.session().clear()
-    contracts.close()
-
-
-pw.println('</csv>')
-pw.flush()
-pw.close()]]></value>
+		<value><![CDATA[Free 31]]></value>
+		<value><![CDATA[]]>
+		</value>
 		<value><![CDATA[]]>
 		</value>
 	</line>
@@ -7449,17 +7045,17 @@ inv.getResponse().setContentType("text/csv")
 inv.getResponse().addHeader('Content-Disposition', 'attachment; filename="output.csv"')
 pw = inv.getResponse().getWriter()
 
-start_year = inv.getInteger('start-year')
-start_month = inv.getInteger('start-month')
-start_day = inv.getInteger('start-day')
-start_hour = inv.getInteger('start-hour')
+start_year = inv.getInteger('start_year')
+start_month = inv.getInteger('start_month')
+start_day = inv.getInteger('start_day')
+start_hour = inv.getInteger('start_hour')
 
-finish_year = inv.getInteger('finish-year')
-finish_month = inv.getInteger('finish-month')
-finish_day = inv.getInteger('finish-day')
-finish_hour = inv.getInteger('finish-hour')
+finish_year = inv.getInteger('finish_year')
+finish_month = inv.getInteger('finish_month')
+finish_day = inv.getInteger('finish_day')
+finish_hour = inv.getInteger('finish_hour')
 
-supply_polarity = inv.getString('supply-polarity')
+supply_polarity = inv.getString('supply_polarity')
 
 if not inv.isValid():
     raise UserException()
@@ -7909,10 +7505,7 @@ try:
         render(inv, template, {'contract': contract, 'batches': batches})
 finally:
     if sess is not None:
-        sess.close()
-
-
-]]></value>
+        sess.close()]]></value>
 		<value><![CDATA[<!doctype html>
 <html>
   <head>
@@ -7951,7 +7544,7 @@ finally:
         {% for batch in batches %}
           <tr>
             <td>
-              <a href="{{ context_path }}/reports/203/output/?batch_id={{ batch.id }}">
+              <a href="{{ context_path }}/reports/203/output/?hhdc_batch_id={{ batch.id }}">
                 {{ batch.reference }}
               </a>
             </td>
@@ -8752,7 +8345,7 @@ except SyntaxError:
                     </a>
                     &gt;
                     <a
-                        href="{/source/request/@context-path}/reports/77/output/?supplier-contract-id={/source/bill/batch/supplier-contract/@id}">
+                        href="{/source/request/@context-path}/reports/77/output/?supplier_contract_id={/source/bill/batch/supplier-contract/@id}">
                         <xsl:value-of
                             select="/source/bill/batch/supplier-contract/@name" />
                     </a>
@@ -9070,11 +8663,13 @@ finally:
 		<value><![CDATA[Supplier Contract Displaced Virtual Bills]]></value>
 		<value><![CDATA[from net.sf.chellow.monad import Hiber, UserException
 from java.util import GregorianCalendar, TimeZone, Locale, Calendar, Date
-from net.sf.chellow.physical import MpanCore, HhStartDate, Supply, Site
-from net.sf.chellow.billing import SupplierContract, NonCoreContract
+from net.sf.chellow.physical import HhStartDate, Supply, Site
+from net.sf.chellow.billing import Contract
 from java.text import DecimalFormat
 from java.sql import Timestamp, ResultSet
 from net.sf.chellow.monad.types import MonadDate
+
+caches = {}
 
 end_year = inv.getInteger('end-year')
 end_month = inv.getInteger('end-month')
@@ -9087,7 +8682,7 @@ inv.getResponse().setContentType("text/csv")
 inv.getResponse().setHeader('Content-Disposition', 'attachment; filename="output.csv"')
 pw = inv.getResponse().getWriter()
 
-computer = NonCoreContract.getNonCoreContract('computer')
+computer = Contract.getNonCoreContract('computer')
 comterp = computer.callFunction('create_comterp', [])
 cont_func = comterp.get('contract_function')
 
@@ -9122,7 +8717,7 @@ if inv.hasParameter('site-id'):
     bill_titles = ['net-gbp']
 elif inv.hasParameter('contract-id'):
     contract_id = inv.getLong('contract-id')
-    contract = SupplierContract.getSupplierContract(contract_id)
+    contract = Contract.getSupplierContract(contract_id)
     site_query = Hiber.session().createQuery("select distinct ssgen.site from SiteEra ssgen where ((ssgen.era.finishDate is null or ssgen.era.finishDate.date >= :startDate) and ssgen.era.startDate <= :finishDate) and (ssgen.era.supply.source.code in ('gen', 'gen-net') or ssgen.era.exportMpan is not null)").setTimestamp('startDate', start_date.getDate()).setTimestamp('finishDate', finish_date.getDate())
     bill_titles = cont_func(contract, 'displaced_virtual_bill_titles', pw)()
 else:
@@ -9154,10 +8749,10 @@ while sites.next():
             else:
                 chunk_finish = site_group.getTo()
 
-            displaced_mpan = comterp.get('displaced_mpan')(site_group, chunk_start, chunk_finish)
-            if displaced_mpan is None:
+            displaced_era = comterp.get('displaced_era')(site_group, chunk_start, chunk_finish)
+            if displaced_era is None:
                 continue
-            supplier_contract = displaced_mpan.getSupplierContract()
+            supplier_contract = displaced_era.impSupplierContract
             if contract is not None and not contract.equals(supplier_contract):
                 continue
         
@@ -9170,7 +8765,7 @@ while sites.next():
             con = Hiber.session().connection()
             supplies_sql = ','.join(str(supply.getId()) for supply in site_group.getSupplies())
 
-            stmt = con.prepareStatement("select supply.id, hh_datum.value, hh_datum.start_date, channel.is_import, source.code, generator_type.code as gen_type_code from hh_datum, channel, source, supply_era, supply left outer join generator_type on supply.generator_type_id = generator_type.id where hh_datum.channel_id = channel.id and channel.supply_era_id = supply_era.id and supply_era.supply_id = supply.id and supply.source_id = source.id and channel.is_kwh is true and not (source.code = 'net' and channel.is_import is true) and hh_datum.start_date >= ? and hh_datum.start_date <= ? and supply.id in (" + supplies_sql + ") order by hh_datum.start_date, supply.id", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.CLOSE_CURSORS_AT_COMMIT)
+            stmt = con.prepareStatement("select supply.id, hh_datum.value, hh_datum.start_date, channel.is_import, source.code, generator_type.code as gen_type_code from hh_datum, channel, source, era, supply left outer join generator_type on supply.generator_type_id = generator_type.id where hh_datum.channel_id = channel.id and channel.era_id = era.id and era.supply_id = supply.id and supply.source_id = source.id and channel.is_kwh is true and not (source.code = 'net' and channel.is_import is true) and hh_datum.start_date >= ? and hh_datum.start_date <= ? and supply.id in (" + supplies_sql + ") order by hh_datum.start_date, supply.id", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.CLOSE_CURSORS_AT_COMMIT)
             stmt.setTimestamp(1, Timestamp(chunk_start.getDate().getTime()))
             stmt.setTimestamp(2, Timestamp(chunk_finish.getDate().getTime()))
             stmt.setFetchSize(100)
@@ -9221,7 +8816,7 @@ while sites.next():
             for title in ['chp', 'lm', 'turb']:
                 pw.print(',' + str(total_gen_breakdown.get(title, '')))
 
-            site_ds = comterp.get('SiteSource')(site, chunk_start, chunk_finish, forecast_date, comterp, pw, displaced_mpan)
+            site_ds = comterp.get('SiteSource')(site, chunk_start, chunk_finish, forecast_date, comterp, pw, caches, displaced_era)
             disp_func = cont_func(supplier_contract, 'displaced_virtual_bill', pw)
             bill = disp_func(site_ds)
             for title in bill_titles:
@@ -9258,35 +8853,18 @@ from net.sf.chellow.monad.types import MonadDate
 from java.sql import Timestamp, ResultSet
 from java.util import GregorianCalendar, Calendar, TimeZone, Locale, Date
 from net.sf.chellow.physical import HhStartDate
-from net.sf.chellow.billing import Batch, NonCoreContract, Bill, SupplierContract, HhdcContract, MopContract
+from net.sf.chellow.billing import Batch, Contract, Bill
 from org.python.util import PythonInterpreter
 import collections
 import operator
 
-
-def find_contract_type(ctract):
-    contract_id = ctract.getId()
-    try:
-        SupplierContract.getSupplierContract(contract_id)
-        contract_type = 'supplier'
-    except:
-        try:
-            HhdcContract.getHhdcContract(contract_id)
-            contract_type = 'dc'
-        except:
-            try:
-                MopContract.getMopContract(contract_id)
-                contract_type = 'mop'
-            except:
-                raise UserException('contract type not found')
-    return contract_type
-
+caches = {}
 
 inv.getResponse().setContentType("text/csv")
 inv.getResponse().setHeader('Content-Disposition', 'attachment; filename="output.csv"')
 pw = inv.getResponse().getWriter()
 
-computer = NonCoreContract.getNonCoreContract('computer')
+computer = Contract.getNonCoreContract('computer')
 comterp = PythonInterpreter()
 comterp.exec(computer.getChargeScript())
 forecast_date = HhStartDate.roundDown(Date(Long.MAX_VALUE))
@@ -9306,7 +8884,7 @@ elif inv.hasParameter('bill-id'):
     batch = bill.getBatch()
 
 contract = batch.getContract()
-contract_type = find_contract_type(contract)
+contract_market_role_code = contract.role.code
 
 contract_function = comterp.get('contract_function')
 
@@ -9335,9 +8913,9 @@ while bills.next():
         cal.add(Calendar.MINUTE, -30)
         gen_finish = HhStartDate(cal.getTime())
         msn_match = False
-        read_msn = read.getMeterSerialNumber()
-        for read_era in supply.getGenerations(gen_start, gen_finish):
-            if read_msn == read_era.getMeterSerialNumber():
+        read_msn = read.msn
+        for read_era in supply.getEras(gen_start, gen_finish):
+            if read_msn == read_era.msn:
                 msn_match = True
                 break
 
@@ -9345,7 +8923,7 @@ while bills.next():
             problem += "The MSN " + read_msn + " of the register read " + str(read.getId()) + " doesn't match the MSN of the era."
 
         for dt, type in [(read.getPresentDate(), read.getPresentType()), (read.getPreviousDate(), read.getPreviousType())]:
-            key = str(dt) + "-" + read.getMeterSerialNumber()
+            key = str(dt) + "-" + read.msn
             try:
                 if type != read_dict[key]:
                     problem += " Reads taken on " + str(dt) + " have differing read types."
@@ -9355,15 +8933,14 @@ while bills.next():
     bill_start = bill.getStartDate()
     bill_finish = bill.getFinishDate()
 
-    era = supply.getGeneration(bill.getFinishDate())
+    era = supply.getEra(bill.getFinishDate())
     if era is None:
         pw.println(",,,,,,,,,,Extraordinary! There isn't a era for this bill!")
         continue
-    mpan = era.getImportMpan()
 
-    pw.print(','.join('"' + str(val) + '"' for val in [batch.getReference(), bill.getReference(), bill.getType(), bill.getKwh(), bill.getNet(), bill.getVat(), bill_start, bill_finish, mpan.getCore()]) + ",")
+    pw.print(','.join('"' + str(val) + '"' for val in [batch.reference, bill.reference, bill.type.code, bill.getKwh(), bill.getNet(), bill.getVat(), bill_start, bill_finish, era.impMpanCore]) + ",")
 
-    msn = era.getMeterSerialNumber()
+    msn = era.msn
 
     covered_start = bill_start
     covered_finish = bill_finish
@@ -9375,7 +8952,7 @@ while bills.next():
     while enlarged:
         enlarged = False
         for covered_bill in covered_query.setTimestamp('finishDate', covered_finish.getDate()).setTimestamp('startDate', covered_start.getDate()).list():
-            if contract_type != find_contract_type(covered_bill.getBatch().getContract()):
+            if contract_market_role_code != covered_bill.getBatch().contract.role.code:
                 continue
 
             if covered_primary_bill is None and covered_bill.getReads() is not None and len(covered_bill.getReads()) > 0:
@@ -9390,7 +8967,7 @@ while bills.next():
                 break
 
     for covered_bill in covered_query.setTimestamp('finishDate', covered_finish.getDate()).setTimestamp('startDate', covered_start.getDate()).list():
-        if contract_type != find_contract_type(covered_bill.getBatch().getContract()):
+        if contract_market_role_code != covered_bill.batch.contract.role.code:
             continue
         covered_bill_ids.append(covered_bill.getId())
         covered_bdown['net-gbp'] += covered_bill.getNet().doubleValue()
@@ -9410,7 +8987,7 @@ while bills.next():
 
     site_query = Hiber.session().createQuery("select ssgen.site from SiteEra ssgen where ssgen.isPhysical is true and ssgen.era = :era")
 
-    eras = Hiber.session().createQuery("select distinct era from Era era where era.supply = :supply and era.importMpan is not null and era.startDate.date <= :finishDate and (era.finishDate is null or era.finishDate.date >= :startDate)").setEntity('supply', supply).setTimestamp('startDate', covered_start.getDate()).setTimestamp('finishDate', covered_finish.getDate()).scroll()
+    eras = Hiber.session().createQuery("select distinct era from Era era where era.supply = :supply and era.impMpanCore is not null and era.startDate.date <= :finishDate and (era.finishDate is null or era.finishDate.date >= :startDate)").setEntity('supply', supply).setTimestamp('startDate', covered_start.getDate()).setTimestamp('finishDate', covered_finish.getDate()).scroll()
     while eras.next():
         era = eras.get(0)
         site = site_query.setEntity('era', era).uniqueResult()
@@ -9425,7 +9002,7 @@ while bills.next():
         else:
             chunk_finish = era.getFinishDate()
 
-        data_source = comterp.get('SupplySource')(chunk_start, chunk_finish, forecast_date, era.getImportMpan(), comterp, pw, covered_primary_bill)
+        data_source = comterp.get('SupplySource')(chunk_start, chunk_finish, forecast_date, era, True, comterp, pw, caches, covered_primary_bill)
 
         for k, v in vbf(data_source).iteritems():
             try:
@@ -10442,75 +10019,61 @@ source.appendChild(type.toXml(doc))]]></value>
 		<value><![CDATA[133]]></value>
 		<value><![CDATA[true]]></value>
 		<value><![CDATA[MTC Payment Types]]></value>
-		<value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree
+		<value><![CDATA[from net.sf.chellow.monad import Monad
+from sqlalchemy.orm import joinedload_all
 
-types_element = doc.createElement('meter-payment-types')
-source.appendChild(types_element)
-for type in Hiber.session().createQuery("from MeterPaymentType type order by type.code").list():
-    types_element.appendChild(type.toXml(doc))]]></value>
-		<value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
-<xsl:stylesheet version="1.0"
-    xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
-    <xsl:output method="html" encoding="US-ASCII"
-        doctype-public="-//W3C//DTD HTML 4.01//EN"
-        doctype-system="http://www.w3.org/TR/html4/strict.dtd" indent="yes" />
-    <xsl:template match="/">
-        <html>
-            <head>
-                <link rel="stylesheet" type="text/css"
-                    href="{/source/request/@context-path}/reports/19/output/" />
-                <title>
-                    Chellow &gt; Meter Payment Types
-                </title>
-            </head>
-            <body>
-                <p>
-                    <a
-                        href="{/source/request/@context-path}/reports/1/output/">
-                        <xsl:value-of select="'Chellow'" />
-                    </a>
-                    &gt;
-                    <xsl:value-of select="'Meter Payment Types'" />
-                </p>
-                <br />
-                <xsl:if test="//message">
-                    <ul>
-                        <xsl:for-each select="//message">
-                            <li>
-                                <xsl:value-of select="@description" />
-                            </li>
-                        </xsl:for-each>
-                    </ul>
-                </xsl:if>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Code</th>
-                            <th>Description</th>
-                        </tr>
-                    </thead>
-                    <tbody>
+Monad.getUtils()['imprt'](globals(), {
+        'db': ['Contract', 'MeterPaymentType', 'set_read_write', 'session'], 
+        'utils': ['UserException'],
+        'templater': ['render']})
 
-                        <xsl:for-each
-                            select="/source/meter-payment-types/meter-payment-type">
-                            <tr>
-                                <td>
-                                    <a
-                                        href="{/source/request/@context-path}/reports/135/output/?type-id={@id}">
-                                        <xsl:value-of select="@code" />
-                                    </a>
-                                </td>
-                                <td>
-                                    <xsl:value-of select="@description" />
-                                </td>
-                            </tr>
-                        </xsl:for-each>
-                    </tbody>
-                </table>
-            </body>
-        </html>
-    </xsl:template>
-</xsl:stylesheet>]]></value>
+sess = None
+try:
+    sess = session()
+    meter_payment_types = sess.query(MeterPaymentType).from_statement("""select * from meter_payment_type order by code""").all()
+    render(inv, template, {'meter_payment_types': meter_payment_types})
+finally:
+    sess.close()]]></value>
+		<value><![CDATA[<!DOCTYPE html>
+<html>
+  <head>
+    <link rel="stylesheet" type="text/css"
+        href="{{ context_path }}/reports/19/output/" />
+    <title>Chellow &gt; Meter Payment Types</title>
+  </head>
+  <body>
+    <p>
+      <a href="{{context_path}}/reports/1/output/">Chellow</a> &gt;
+      Meter Payment Types
+    </p>
+    <br />
+    {% if messages %}
+      <ul>
+        {% for message in messages %}
+          <li>{{ message }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+    <table>
+      <thead>
+        <tr>
+          <th>Code</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for meter_payment_type in meter_payment_types %}
+          <tr>
+            <td>
+              <a href="{{context_path}}/reports/135/output/?meter_payment_type_id={{meter_payment_type.id}}">{{meter_payment_type.code}}</a>
+            </td>
+            <td>{{ meter_payment_type.description }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </body>
+</html>]]></value>
 	</line>
 	<line>
 		<value><![CDATA[insert]]></value>
@@ -10518,74 +10081,57 @@ for type in Hiber.session().createQuery("from MeterPaymentType type order by typ
 		<value><![CDATA[135]]></value>
 		<value><![CDATA[true]]></value>
 		<value><![CDATA[MTC Payment Type]]></value>
-		<value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree
-from net.sf.chellow.physical import MeterPaymentType
+		<value><![CDATA[from net.sf.chellow.monad import Monad
+from sqlalchemy.orm import joinedload_all
 
-type_id = inv.getLong('type-id')
-type = MeterPaymentType.getMeterPaymentType(type_id)
-source.appendChild(type.toXml(doc))]]></value>
-		<value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
-<xsl:stylesheet version="1.0"
-    xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
-    <xsl:output method="html" encoding="US-ASCII"
-        doctype-public="-//W3C//DTD HTML 4.01//EN"
-        doctype-system="http://www.w3.org/TR/html4/strict.dtd" indent="yes" />
-    <xsl:template match="/">
-        <html>
-            <head>
-                <link rel="stylesheet" type="text/css"
-                    href="{/source/request/@context-path}/reports/19/output/" />
-                <title>
-                    Chellow &gt; Meter Payment Types &gt;
-                    <xsl:value-of
-                        select="/source/meter-payment-type/@description" />
-                </title>
-            </head>
-            <body>
-                <p>
-                    <a
-                        href="{/source/request/@context-path}/reports/1/output/">
-                        <xsl:value-of select="'Chellow'" />
-                    </a>
-                    &gt;
-                    <a
-                        href="{/source/request/@context-path}/reports/133/output/">
-                        <xsl:value-of select="'Meter Payment Types'" />
-                    </a>
-                    &gt;
-                    <xsl:value-of
-                        select="/source/meter-payment-type/@description" />
-                </p>
-                <br />
-                <xsl:if test="//message">
-                    <ul>
-                        <xsl:for-each select="//message">
-                            <li>
-                                <xsl:value-of select="@description" />
-                            </li>
-                        </xsl:for-each>
-                    </ul>
-                </xsl:if>
-                <table>
-                    <tr>
-                        <th>Code</th>
-                        <td>
-                            <xsl:value-of
-                                select="/source/meter-payment-type/@code" />
-                        </td>
-                    </tr>
-                    <tr>
-                        <th>Description</th>
-                        <td>
-                            <xsl:value-of
-                                select="/source/meter-payment-type/@description" />
-                        </td>
-                    </tr>
-                </table>
-            </body>
-        </html>
-    </xsl:template>
-</xsl:stylesheet>]]></value>
+Monad.getUtils()['imprt'](globals(), {
+        'db': ['MeterPaymentType', 'Ssc', 'set_read_write', 'session'], 
+        'utils': ['UserException'],
+        'templater': ['render']})
+
+sess = None
+try:
+    sess = session()
+    meter_payment_type_id = inv.getLong('meter_payment_type_id')
+    meter_payment_type = MeterPaymentType.get_by_id(sess, meter_payment_type_id)
+    render(inv, template, {'meter_payment_type': meter_payment_type})
+finally:
+    sess.close()]]></value>
+		<value><![CDATA[<!DOCTYPE html>
+<html>
+  <head>
+    <link rel="stylesheet" type="text/css"
+      href="{{ context_path }}/reports/19/output/" />
+    <title>
+      Chellow &gt; Meter Payment Types &gt; {{meter_payment_type.code}}
+    </title>
+  </head>
+  <body>
+    <p>
+      <a href="{{context_path}}/reports/1/output/">Chellow</a> &gt;
+      <a href="{{context_path}}/reports/133/output/">Meter Payment Types</a>
+      &gt; {{meter_payment_type.description}}
+    </p>
+    <br />
+    {% if messages %}
+      <ul>
+        {% for message in messages %}
+          <li>{{ message }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+    <table>
+      <tr>
+        <th>Code</th>
+        <td>{{meter_payment_type.code}}</td>
+      </tr>
+      <tr>
+        <th>Description</th>
+        <td>{{meter_payment_type.description}}</td>
+      </tr>
+    </table>
+  </body>
+</html>]]></value>
 	</line>
 	<line>
 		<value><![CDATA[insert]]></value>
@@ -11339,121 +10885,11 @@ supplies.close()]]></value>
 		<value><![CDATA[report]]></value>
 		<value><![CDATA[151]]></value>
 		<value><![CDATA[true]]></value>
-		<value><![CDATA[Admin: CSV Export Selector]]></value>
-		<value><![CDATA[from java.util import GregorianCalendar, TimeZone, Locale, Calendar
-from net.sf.chellow.monad.types import MonadDate
-
-cal = GregorianCalendar(TimeZone.getTimeZone("GMT"), Locale.UK)
-source.appendChild(MonadDate(cal.getTime()).toXml(doc))
-source.appendChild(MonadDate.getMonthsXml(doc))
-source.appendChild(MonadDate.getDaysXml(doc))]]></value>
-		<value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
-<xsl:stylesheet version="1.0"
-    xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
-    <xsl:output method="html" encoding="US-ASCII"
-        doctype-public="-//W3C//DTD HTML 4.01//EN"
-        doctype-system="http://www.w3.org/TR/html4/strict.dtd" indent="yes" />
-    <xsl:template match="/">
-        <html>
-            <head>
-                <link rel="stylesheet" type="text/css"
-                    href="{/source/request/@context-path}/reports/19/output/" />
-                <title>
-                    Chellow &gt; General Export
-                </title>
-            </head>
-            <body>
-                <p>
-                    <a
-                        href="{/source/request/@context-path}/">
-                        <xsl:value-of select="'Chellow'" />
-                    </a>
-                    &gt; General Export
-                </p>
-                <br />
-                <xsl:if test="//message">
-                    <ul>
-                        <xsl:for-each select="//message">
-                            <li>
-                                <xsl:value-of select="@description" />
-                            </li>
-                        </xsl:for-each>
-                    </ul>
-                </xsl:if>
-                <br />
-                <form action="{/source/request/@context-path}/reports/31/output/">
-                <fieldset>
-                        <legend>Download XML</legend>
-                        <label>Core<input type="radio" name="is-core" value="true" checked="true"/></label>
-                        <label>User<input type="radio" name="is-core" value="false"/></label>
-                    <br/>
-<br/>
-<table>
-  <tr>
-    <td>DNO Contracts</td>
-    <td><input type="checkbox" name="has-dno-contracts" value="true"/></td>
-  </tr>
-  <tr>
-    <td>Non-core contracts</td>
-    <td><input type="checkbox" name="has-non-core-contracts" value="true"/></td>
-  </tr>
-  <tr>
-    <td>Reports</td>
-    <td><input type="checkbox" name="has-reports" value="true" /></td>
-  </tr>
-  <tr>
-    <td>Supplier Contracts</td>
-    <td><input type="checkbox" name="has-supplier-contracts" value="true"/></td>
-  </tr>
-  <tr>
-    <td>Supplier Batches</td>
-    <td><input type="checkbox" name="has-supplier-batches" value="true"/></td>
-  </tr>
-  <tr>
-    <td>HHDC Contracts</td>
-    <td><input type="checkbox" name="has-hhdc-contracts" value="true"/></td>
-  </tr>
-  <tr>
-    <td>MOP Contracts</td>
-    <td><input type="checkbox" name="has-mop-contracts" value="true"/></td>
-  </tr>
-  <tr>
-    <td>Sites</td>
-    <td><input type="checkbox" name="has-sites" value="true" /></td>
-  </tr>
-  <tr>
-    <td>Supplies</td>
-    <td><input type="checkbox" name="has-supplies" value="true"/><xsl:value-of select="' '"/><label>MPAN Core<xsl:value-of select="' '"/><input name="mpan-core"/></label></td>
-  </tr>
-  <tr>
-    <td>HH Data</td>
-    <td><input type="checkbox" name="has-hh-data" value="true" /></td>
-  </tr>
-  <tr>
-    <td>Users</td>
-    <td><input type="checkbox" name="has-users" value="true" /></td>
-  </tr>
-  <tr>
-    <td>Configuration</td>
-    <td><input type="checkbox" name="has-configuration" value="true"/></td>
-  </tr>
-  <tr>
-    <td>Channel Snag Ignores</td>
-    <td><input type="checkbox" name="has-channel-snag-ignores" value="true"/></td>
-  </tr>
-  <tr>
-    <td>Site Snag Ignores</td>
-    <td><input type="checkbox" name="has-site-snag-ignores" value="true"/></td>
-  </tr>
-</table>
-    <br/>
-    <input type="submit" value="Download"/><xsl:value-of select="' '"/><input type="reset" value="Reset"/>
-    </fieldset>
-                </form>
-            </body>
-        </html>
-    </xsl:template>
-</xsl:stylesheet>]]></value>
+		<value><![CDATA[Free 151]]></value>
+		<value><![CDATA[]]>
+		</value>
+		<value><![CDATA[]]>
+		</value>
 	</line>
 	<line>
 		<value><![CDATA[insert]]></value>
@@ -11972,7 +11408,7 @@ def process_site(site, month_start, month_finish, forecast_date, tmp_file, bill_
         #tmp_file.println("getting site ds, " + str(System.currentTimeMillis()))
 
         displaced_era = comterp.get('displaced_era')(group, chunk_start, chunk_finish)
-        site_ds = comterp.get('SiteSource')(site, chunk_start, chunk_finish, forecast_date, comterp, tmp_file, caches, displaced_era, True)
+        site_ds = comterp.get('SiteSource')(site, chunk_start, chunk_finish, forecast_date, comterp, tmp_file, caches, displaced_era)
         if displaced_era != None:
             #tmp_file.println("starting displaced, " + str(System.currentTimeMillis()))
             month_data['msp-gbp'] += comterp.get('contract_function')(displaced_era.impSupplierContract, 'displaced_virtual_bill', tmp_file)(site_ds)['net-gbp']
@@ -12854,7 +12290,7 @@ while rs.next():
 		<value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree
 from net.sf.chellow.billing import RateScript
 
-script_id = inv.getLong('rate-script-id')
+script_id = inv.getLong('rate_script_id')
 script = RateScript.getRateScript(script_id)
 source.appendChild(script.toXml(doc, XmlTree('contract', XmlTree('party'))))]]></value>
 		<value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
@@ -13818,10 +13254,10 @@ source.appendChild(MonadDate.getMonthsXml(doc))]]></value>
 		<value><![CDATA[true]]></value>
 		<value><![CDATA[MOP Contract Batches]]></value>
 		<value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree, UserException
-from net.sf.chellow.billing import MopContract
+from net.sf.chellow.billing import Contract
 
 contract_id = inv.getLong('mop-contract-id')
-contract = MopContract.getMopContract(contract_id)
+contract = Contract.getMopContract(contract_id)
 batches_element = doc.createElement('batches')
 source.appendChild(batches_element)
 batches_element.appendChild(contract.toXml(doc, XmlTree('party')))
@@ -13854,12 +13290,12 @@ for batch in Hiber.session().createQuery("from Batch batch where batch.contract 
                     </a>
                     &gt;
                     <a
-                        href="{/source/request/@context-path}/reports/185/output/?mop-id={/source/batches/mop-contract/@id}">
+                        href="{/source/request/@context-path}/reports/185/output/">
                         <xsl:value-of select="'MOP Contracts'" />
                     </a>
                     &gt;
                     <a
-                        href="{/source/request/@context-path}/reports/107/output/?mop-contract-id={/source/batches/mop-contract/@id}">
+                        href="{/source/request/@context-path}/reports/107/output/?mop_contract_id={/source/batches/mop-contract/@id}">
                         <xsl:value-of
                             select="/source/batches/mop-contract/@name" />
                     </a>
@@ -13975,7 +13411,7 @@ for key in properties.propertyNames():
                     </a>
                     &gt;
                     <a
-                        href="{/source/request/@context-path}/reports/107/output/?mop-contract-id={/source/batch/mop-contract/@id}">
+                        href="{/source/request/@context-path}/reports/107/output/?mop_contract_id={/source/batch/mop-contract/@id}">
                         <xsl:value-of
                             select="/source/batch/mop-contract/@name" />
                     </a>
@@ -14647,7 +14083,7 @@ finally:
       <a href="{{ context_path }}/reports/113/output/">HHDC Contracts</a> &gt;
       <a href="{{ context_path }}/reports/115/output/?hhdc_contract_id={{ batch.contract.id }}">{{ batch.contract.name }}</a> &gt;
       <a href="{{ context_path }}/reports/93/output/?hhdc_contract_id={{ batch.contract.id }}">Batches</a> &gt;
-      {{ batch.reference }} [<a href="{{ context_path }}/reports/283/output/?hhdc_batch_id={{ batch.id }}">edit</a>]
+      {{ batch.reference }} [<a href="{{ context_path }}/hhdc-contracts/{{ batch.contract.id }}/batches/{{ batch.id }}/">edit</a>]
     </p>
     <br>
     {% if messages %}
@@ -14695,7 +14131,7 @@ finally:
       </li>
     </ul>
     <table>
-      <caption>Bills [<a href="{{ context_path }}/hhdc-contracts/{{ contract.id }}/batches/{{ batch.id }}/bills/">edit</a>]</caption>
+      <caption>Bills [<a href="{{ context_path }}/hhdc-contracts/{{ batch.contract.id }}/batches/{{ batch.id }}/bills/">edit</a>]</caption>
       <thead>
         <tr>
           <th>Edit</th>
@@ -19011,6 +18447,8 @@ try:
     rate_script_id = inv.getLong('rate_script_id')
     rate_script = RateScript.get_by_id(sess, rate_script_id)
     render(inv, template, {'rate_script': rate_script})
+except NotFoundException, e:
+    inv.sendNotFound(str(e))
 finally:
     sess.close()]]></value>
 		<value><![CDATA[<!DOCTYPE html>
@@ -19069,7 +18507,7 @@ from sqlalchemy.orm import joinedload_all
 
 Monad.getUtils()['imprt'](globals(), {
         'db': ['Contract', 'Party', 'RateScript', 'set_read_write', 'session'], 
-        'utils': ['UserException', 'form_date'],
+        'utils': ['UserException', 'NotFoundException', 'form_date'],
         'templater': ['render']})
 
 
@@ -19101,6 +18539,8 @@ try:
             sess.commit()
             inv.sendSeeOther('/reports/271/output/?rate_script_id='
                     + str(rate_script.id))
+except NotFoundException, e:
+    inv.sendNotFound(str(e))
 finally:
     sess.close()]]></value>
 		<value><![CDATA[<!doctype html>
@@ -19688,7 +19128,7 @@ finally:
 		<value><![CDATA[]]>
 		</value>
 	</line>
-		<line>
+	<line>
 		<value><![CDATA[insert]]></value>
 		<value><![CDATA[report]]></value>
 		<value><![CDATA[285]]></value>

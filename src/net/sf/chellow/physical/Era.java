@@ -241,7 +241,7 @@ public class Era extends PersistentEntity {
 							"Export LLFC", values, 23);
 					if (expLlfcCode.equals(GeneralImport.NO_CHANGE)) {
 						expLlfcCode = era.getExpMpanCore() == null ? null : era
-								.getImpLlfc().getCode();
+								.getExpLlfc().getCode();
 					}
 					String expScStr = GeneralImport.addField(csvElement,
 							"Export Agreed Supply Capacity", values, 24);

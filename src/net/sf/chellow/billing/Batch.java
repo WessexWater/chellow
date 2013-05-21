@@ -191,12 +191,12 @@ public class Batch extends PersistentEntity {
 
 	public URI getViewUri() throws HttpException {
 		String report = null;
-		String contractUrl = contract.getEditUri().toString();
-		if (contractUrl.contains("supplier-contracts")) {
+		char marketRoleCode = contract.getRole().getCode();
+		if (marketRoleCode == 'X') {
 			report = "91";
-		} else if (contractUrl.contains("hhdc-contracts")) {
+		} else if (marketRoleCode == 'C') {
 			report = "203";
-		} else if (contractUrl.contains("mop-contracts")) {
+		} else if (marketRoleCode == 'M') {
 			report = "193";
 		} else {
 			throw new InternalException("Unkown contract type.");
@@ -237,6 +237,46 @@ public class Batch extends PersistentEntity {
 
 	public void httpGet(Invocation inv) throws HttpException {
 		inv.sendOk(document());
+	}
+
+	public void httpPost(Invocation inv) throws HttpException {
+		Hiber.setReadWrite();
+		if (inv.hasParameter("delete")) {
+			Long contractId = getContract().getId();
+			try {
+				delete();
+			} catch (HttpException e) {
+				Batch batch = Batch.getBatch(getId());
+				e.setDocument(batch.document());
+				throw e;
+			}
+			Hiber.commit();
+			inv.sendSeeOther(Contract.getContract(contractId).batchesInstance()
+					.getViewUri());
+		} else {
+			String reference = inv.getString("reference");
+			String description = inv.getString("description");
+			if (!inv.isValid()) {
+				throw new UserException(document());
+			}
+			Document doc = document();
+			try {
+				update(reference, description);
+			} catch (UserException e) {
+				e.setDocument(doc);
+				throw e;
+			}
+			Hiber.commit();
+			inv.sendOk(document());
+		}
+	}
+
+	private void delete() throws HttpException {
+		Hiber.session()
+				.createQuery("delete from Bill bill where bill.batch = :batch")
+				.setEntity("batch", this).executeUpdate();
+		Batch batch = Batch.getBatch(getId());
+		Hiber.session().delete(batch);
 	}
 
 	public Element toXml(Document doc) throws HttpException {

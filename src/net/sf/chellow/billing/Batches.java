@@ -22,10 +22,12 @@
 package net.sf.chellow.billing;
 
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.List;
 
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
+import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Invocation;
 import net.sf.chellow.monad.MonadUtils;
 import net.sf.chellow.monad.NotFoundException;
@@ -40,99 +42,112 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
 public class Batches extends EntityList {
-        public static final UriPathElement URI_ID;
+	public static final UriPathElement URI_ID;
 
-        static {
-                try {
-                        URI_ID = new UriPathElement("batches");
-                } catch (HttpException e) {
-                        throw new RuntimeException(e);
-                }
-        }
+	static {
+		try {
+			URI_ID = new UriPathElement("batches");
+		} catch (HttpException e) {
+			throw new RuntimeException(e);
+		}
+	}
 
-        private Contract contract;
+	private Contract contract;
 
-        public Batches(Contract contract) {
-                setContract(contract);
-        }
+	public Batches(Contract contract) {
+		setContract(contract);
+	}
 
-        public Contract getContract() {
-                return contract;
-        }
+	public Contract getContract() {
+		return contract;
+	}
 
-        void setContract(Contract contract) {
-                this.contract = contract;
-        }
+	void setContract(Contract contract) {
+		this.contract = contract;
+	}
 
-        public UriPathElement getUrlId() {
-                return URI_ID;
-        }
+	public UriPathElement getUrlId() {
+		return URI_ID;
+	}
 
-        public MonadUri getEditUri() throws HttpException {
-                return contract.getEditUri().resolve(getUrlId()).append("/");
-        }
+	public MonadUri getEditUri() throws HttpException {
+		return contract.getEditUri().resolve(getUrlId()).append("/");
+	}
 
-        public URI getViewUri() throws HttpException {
-                return null;
-        }
+	public URI getViewUri() throws HttpException {
+		char roleCode = contract.getRole().getCode();
+		try {
+			if (roleCode == 'C') {
+				return new URI("/reports/93/output/?hhdc_contract_id="
+						+ contract.getId());
+			} else if (roleCode == 'M') {
+				return new URI("/reports/191/output/?mop-contract-id="
+						+ contract.getId());
+			} else {
+				throw new InternalException("Market role code not recognized.");
+			}
+		} catch (URISyntaxException e) {
+			throw new InternalException(e);
+		}
+	}
 
-        public void httpPost(Invocation inv) throws HttpException {
-                Hiber.setReadWrite();
-                String reference = inv.getString("reference");
-                String description = inv.getString("description");
+	public void httpPost(Invocation inv) throws HttpException {
+		Hiber.setReadWrite();
+		String reference = inv.getString("reference");
+		String description = inv.getString("description");
 
-                if (!inv.isValid()) {
-                        throw new UserException(document());
-                }
-                Document doc = document();
-                Batch batch = null;
-                try {
-                        batch = contract.insertBatch(reference, description);
-                } catch (UserException e) {
-                        e.setDocument(doc);
-                        throw e;
-                }
-                Hiber.commit();
-                inv.sendSeeOther(batch.getViewUri());
-        }
+		if (!inv.isValid()) {
+			throw new UserException(document());
+		}
+		Document doc = document();
+		Batch batch = null;
+		try {
+			batch = contract.insertBatch(reference, description);
+		} catch (UserException e) {
+			e.setDocument(doc);
+			throw e;
+		}
+		Hiber.commit();
+		inv.sendSeeOther(batch.getViewUri());
+	}
 
-        public void httpGet(Invocation inv) throws HttpException {
-                inv.sendOk(document());
-        }
+	public void httpGet(Invocation inv) throws HttpException {
+		inv.sendOk(document());
+	}
 
-        public Batch getChild(UriPathElement uriId) throws HttpException {
-                Batch batch = (Batch) Hiber
-                                .session()
-                                .createQuery(
-                                                "from Batch batch where batch.contract = :contract and batch.id = :batchId")
-                                .setEntity("contract", contract)
-                                .setLong("batchId", Long.parseLong(uriId.getString()))
-                                .uniqueResult();
-                if (batch == null) {
-                        throw new NotFoundException("Can't find the batch " + uriId + ".");
-                }
-                return batch;
-        }
+	public Batch getChild(UriPathElement uriId) throws HttpException {
+		Batch batch = (Batch) Hiber
+				.session()
+				.createQuery(
+						"from Batch batch where batch.contract = :contract and batch.id = :batchId")
+				.setEntity("contract", contract)
+				.setLong("batchId", Long.parseLong(uriId.getString()))
+				.uniqueResult();
+		if (batch == null) {
+			throw new NotFoundException("Can't find the batch " + uriId + ".");
+		}
+		return batch;
+	}
 
-        public Node toXml(Document doc) throws HttpException {
-                Element batchesElement = doc.createElement("batches");
-                return batchesElement;
-        }
+	public Node toXml(Document doc) throws HttpException {
+		Element batchesElement = doc.createElement("batches");
+		return batchesElement;
+	}
 
-        @SuppressWarnings("unchecked")
-        private Document document() throws HttpException {
-                Document doc = MonadUtils.newSourceDocument();
-                Element source = doc.getDocumentElement();
-                Element batchesElement = (Element) toXml(doc);
-                source.appendChild(batchesElement);
-                batchesElement.appendChild(contract.toXml(doc, new XmlTree("party")));
-                for (Batch batch : (List<Batch>) Hiber
-                                .session()
-                                .createQuery(
-                                                "from Batch batch where batch.contract = :contract order by batch.reference")
-                                .setEntity("contract", contract).list()) {
-                        batchesElement.appendChild(batch.toXml(doc));
-                }
-                return doc;
-        }
+	@SuppressWarnings("unchecked")
+	private Document document() throws HttpException {
+		Document doc = MonadUtils.newSourceDocument();
+		Element source = doc.getDocumentElement();
+		Element batchesElement = (Element) toXml(doc);
+		source.appendChild(batchesElement);
+		batchesElement.appendChild(contract.toXml(doc, new XmlTree("party")));
+		for (Batch batch : (List<Batch>) Hiber
+				.session()
+				.createQuery(
+						"from Batch batch where batch.contract = :contract order by batch.reference")
+				.setEntity("contract", contract).list()) {
+			batchesElement.appendChild(batch.toXml(doc));
+		}
+		return doc;
+	}
 }

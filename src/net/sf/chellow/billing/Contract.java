@@ -269,6 +269,7 @@ public class Contract extends PersistentEntity implements Comparable<Contract> {
 		MarketRole marketRole = MarketRole.getMarketRole(roleCode);
 		setRole(marketRole);
 		Party party = Party.getParty(participant, marketRole);
+		setProperties("{}");
 		internalUpdate(isCore, party, name, chargeScript);
 	}
 
@@ -653,8 +654,14 @@ public class Contract extends PersistentEntity implements Comparable<Contract> {
 		} else if (marketRoleCode == 'X') {
 			return Chellow.SUPPLIER_CONTRACTS_INSTANCE.getEditUri()
 					.resolve(getUriId()).append("/");
+		} else if (marketRoleCode == 'C') {
+			return Chellow.HHDC_CONTRACTS_INSTANCE.getEditUri()
+					.resolve(getUriId()).append("/");
+		} else if (marketRoleCode == 'M') {
+			return Chellow.MOP_CONTRACTS_INSTANCE.getEditUri()
+					.resolve(getUriId()).append("/");
 		} else {
-			throw new UserException("The market role " + marketRoleCode
+			throw new InternalException("The market role " + marketRoleCode
 					+ " isn't recognized.");
 		}
 	}

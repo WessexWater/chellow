@@ -283,9 +283,6 @@
 								<label>
 									<xsl:value-of select="'MOP Contract '" />
 									<select name="mop-contract-id">
-										<option value="null">
-											<xsl:value-of select="'None'" />
-										</option>
 										<xsl:for-each select="/source/mop-contract">
 											<option value="{@id}">
 												<xsl:if
@@ -308,9 +305,6 @@
 								<label>
 									<xsl:value-of select="'HHDC Contract '" />
 									<select name="hhdc-contract-id">
-										<option value="null">
-											<xsl:value-of select="'None'" />
-										</option>
 										<xsl:for-each select="/source/hhdc-contract">
 											<option value="{@id}">
 												<xsl:if

@@ -33,7 +33,7 @@
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/reports/7/output/?supply-id={/source/hh-data/channel/era/supply/@id}">
+						href="{/source/request/@context-path}/reports/7/output/?supply_id={/source/hh-data/channel/era/supply/@id}">
 						<xsl:value-of
 							select="/source/hh-data/channel/era/supply/@id" />
 					</a>

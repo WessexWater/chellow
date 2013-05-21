@@ -67,8 +67,8 @@ public class Llfc extends PersistentEntity {
 						"from Llfc llfc where llfc.dno = :dno and llfc.code = :code")
 				.setEntity("dno", dno).setString("code", code).uniqueResult();
 		if (llfc == null) {
-			throw new UserException("There is no LLFC with the code " + code
-					+ " associated with the DNO " + dno.getDnoCode() + ".");
+			throw new UserException("There is no LLFC with the code '" + code
+					+ "' associated with the DNO " + dno.getDnoCode() + ".");
 		}
 		return llfc;
 	}

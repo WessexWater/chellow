@@ -37,17 +37,17 @@
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/reports/115/output/?hhdc-contract-id={/source/batch/hhdc-contract/@id}">
+						href="{/source/request/@context-path}/reports/115/output/?hhdc_contract_id={/source/batch/hhdc-contract/@id}">
 						<xsl:value-of select="/source/batch/hhdc-contract/@name" />
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/reports/93/output/?hhdc-contract-id={/source/batch/hhdc-contract/@id}">
+						href="{/source/request/@context-path}/reports/93/output/?hhdc_contract_id={/source/batch/hhdc-contract/@id}">
 						<xsl:value-of select="'Batches'" />
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/reports/203/output/?batch-id={/source/batch/@id}">
+						href="{/source/request/@context-path}/reports/203/output/?hhdc_batch_id={/source/batch/@id}">
 						<xsl:value-of select="/source/batch/@reference" />
 					</a>
 					&gt; Edit

@@ -34,6 +34,10 @@ import net.sf.chellow.monad.types.MonadUri;
 
 public class Ssc extends PersistentEntity {
 	public static Ssc getSsc(String code) throws HttpException {
+		code = code.trim();
+		while (code.length() < 4) {
+			code = "0" + code;
+		}
 		Ssc ssc = (Ssc) Hiber.session()
 				.createQuery("from Ssc ssc where ssc.code = :code")
 				.setString("code", code).uniqueResult();
