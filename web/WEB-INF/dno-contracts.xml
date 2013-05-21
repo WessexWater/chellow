@@ -761,7 +761,7 @@ def totalElement(account, startDate, finishDate):
 		</value>
 		<value><![CDATA[
 
-def duos_tariffs():
+def tariffs():
     return {
 '450': {
     'fixed-gbp-per-month': 14.91,
@@ -812,7 +812,7 @@ def lafs():
 		<value><![CDATA[20]]></value>
 		<value><![CDATA[2007-04-01T00:00Z]]></value>
 		<value><![CDATA[
-def duos_tariffs():
+def tariffs():
     return {
 '450': {
     'fixed-gbp-per-month': 14.91,
@@ -863,7 +863,7 @@ def lafs():
 		<value><![CDATA[20]]></value>
 		<value><![CDATA[2008-04-01T00:00Z]]></value>
 		<value><![CDATA[
-def duos_tariffs():
+def tariffs():
     return {
 '450': {
     'fixed-gbp-per-month': 14.91,
@@ -914,7 +914,7 @@ def lafs():
 		<value><![CDATA[20]]></value>
 		<value><![CDATA[2009-04-01T00:00Z]]></value>
 		<value><![CDATA[
-def duos_tariffs():
+def tariffs():
     return {
         '126': {
             'fixed-gbp-per-day': 0.0562,
@@ -993,7 +993,7 @@ def lafs():
 		<value><![CDATA[20]]></value>
 		<value><![CDATA[2009-10-01T00:00Z]]></value>
 		<value><![CDATA[
-def duos_tariffs():
+def tariffs():
     return {
         'llfc(002)-pc(00)': {
             'gbp-per-kva-per-month': 0.51,
