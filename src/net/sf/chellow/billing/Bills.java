@@ -46,128 +46,127 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 public class Bills extends EntityList {
-        public static final UriPathElement URI_ID;
+	public static final UriPathElement URI_ID;
 
-        static {
-                try {
-                        URI_ID = new UriPathElement("bills");
-                } catch (HttpException e) {
-                        throw new RuntimeException(e);
-                }
-        }
+	static {
+		try {
+			URI_ID = new UriPathElement("bills");
+		} catch (HttpException e) {
+			throw new RuntimeException(e);
+		}
+	}
 
-        private Batch batch;
+	private Batch batch;
 
-        public Bills(Batch batch) {
-                setBatch(batch);
-        }
+	public Bills(Batch batch) {
+		setBatch(batch);
+	}
 
-        public Batch getBatch() {
-                return batch;
-        }
+	public Batch getBatch() {
+		return batch;
+	}
 
-        void setBatch(Batch batch) {
-                this.batch = batch;
-        }
+	void setBatch(Batch batch) {
+		this.batch = batch;
+	}
 
-        public UriPathElement getUrlId() {
-                return URI_ID;
-        }
+	public UriPathElement getUrlId() {
+		return URI_ID;
+	}
 
-        public MonadUri getEditUri() throws HttpException {
-                return batch.getEditUri().resolve(getUrlId()).append("/");
-        }
+	public MonadUri getEditUri() throws HttpException {
+		return batch.getEditUri().resolve(getUrlId()).append("/");
+	}
 
-        public void httpPost(Invocation inv) throws HttpException {
-                Hiber.setReadWrite();
-                String mpanCore = inv.getString("mpan-core");
-                mpanCore = Era.normalizeMpanCore(mpanCore);
-                String account = inv.getString("account");
-                String reference = inv.getString("reference");
-                Date issueDate = inv.getDate("issue");
-                Date startDate = inv.getDate("start");
-                Date finishDate = inv.getDate("finish");
-                BigDecimal kwh = inv.getBigDecimal("kwh");
-                BigDecimal net = inv.getBigDecimal("net");
-                BigDecimal vat = inv.getBigDecimal("vat");
-                BigDecimal gross = inv.getBigDecimal("gross");
-                Long billTypeId = inv.getLong("bill-type-id");
-                String breakdown = inv.getString("breakdown");
+	public void httpPost(Invocation inv) throws HttpException {
+		Hiber.setReadWrite();
+		String mpanCore = inv.getString("mpan-core");
+		mpanCore = Era.normalizeMpanCore(mpanCore);
+		String account = inv.getString("account");
+		String reference = inv.getString("reference");
+		Date issueDate = inv.getDate("issue");
+		Date startDate = inv.getDate("start");
+		Date finishDate = inv.getDate("finish");
+		BigDecimal kwh = inv.getBigDecimal("kwh");
+		BigDecimal net = inv.getBigDecimal("net");
+		BigDecimal vat = inv.getBigDecimal("vat");
+		BigDecimal gross = inv.getBigDecimal("gross");
+		Long billTypeId = inv.getLong("bill-type-id");
+		String breakdown = inv.getString("breakdown");
 
-                if (!inv.isValid()) {
-                        throw new UserException(document());
-                }
-                Calendar cal = MonadDate.getCalendar();
-                cal.setTime(finishDate);
-                cal.set(Calendar.HOUR_OF_DAY, 23);
-                cal.set(Calendar.MINUTE, 30);
-                Bill bill = null;
-                try {
-                        bill = batch.insertBill(Supply.getSupply(mpanCore)
-                                        , account, reference, issueDate,
-                                        new HhStartDate(startDate), new HhStartDate(cal.getTime()),
-                                        kwh, net, vat, gross, BillType.getBillType(billTypeId),
-                                        breakdown);
-                } catch (UserException e) {
-                        e.setDocument(document());
-                        throw e;
-                }
-                Hiber.commit();
-                inv.sendSeeOther(bill.getEditUri());
-        }
+		if (!inv.isValid()) {
+			throw new UserException(document());
+		}
+		Calendar cal = MonadDate.getCalendar();
+		cal.setTime(finishDate);
+		cal.set(Calendar.HOUR_OF_DAY, 23);
+		cal.set(Calendar.MINUTE, 30);
+		Bill bill = null;
+		try {
+			bill = batch.insertBill(Supply.getSupply(mpanCore), account,
+					reference, issueDate, new HhStartDate(startDate),
+					new HhStartDate(cal.getTime()), kwh, net, vat, gross,
+					BillType.getBillType(billTypeId), breakdown);
+		} catch (UserException e) {
+			e.setDocument(document());
+			throw e;
+		}
+		Hiber.commit();
+		inv.sendSeeOther(bill.getViewUri());
+	}
 
-        public void httpGet(Invocation inv) throws HttpException {
-                inv.sendOk(document());
-        }
+	public void httpGet(Invocation inv) throws HttpException {
+		inv.sendOk(document());
+	}
 
-        @SuppressWarnings("unchecked")
-        private Document document() throws HttpException {
-                Document doc = MonadUtils.newSourceDocument();
-                Element source = doc.getDocumentElement();
-                Element billsElement = toXml(doc);
-                source.appendChild(billsElement);
-                billsElement.appendChild(batch.toXml(doc, new XmlTree("contract",
-                                new XmlTree("party"))));
-                for (Bill bill : (List<Bill>) Hiber
-                                .session()
-                                .createQuery(
-                                                "from Bill bill where bill.batch = :batch order by bill.reference, bill.startDate.date")
-                                .setEntity("batch", batch).list()) {
-                        billsElement.appendChild(bill.toXml(doc,
-                                        new XmlTree("supply").put("type")));
-                }
-                for (BillType type : (List<BillType>) Hiber.session()
-                                .createQuery("from BillType type order by type.code").list()) {
-                        source.appendChild(type.toXml(doc));
-                }
-                source.appendChild(MonadDate.getMonthsXml(doc));
-                source.appendChild(MonadDate.getDaysXml(doc));
-                source.appendChild(new MonadDate().toXml(doc));
-                return doc;
-        }
+	@SuppressWarnings("unchecked")
+	private Document document() throws HttpException {
+		Document doc = MonadUtils.newSourceDocument();
+		Element source = doc.getDocumentElement();
+		Element billsElement = toXml(doc);
+		source.appendChild(billsElement);
+		billsElement.appendChild(batch.toXml(doc, new XmlTree("contract",
+				new XmlTree("party"))));
+		for (Bill bill : (List<Bill>) Hiber
+				.session()
+				.createQuery(
+						"from Bill bill where bill.batch = :batch order by bill.reference, bill.startDate.date")
+				.setEntity("batch", batch).list()) {
+			billsElement.appendChild(bill.toXml(doc,
+					new XmlTree("supply").put("type")));
+		}
+		for (BillType type : (List<BillType>) Hiber.session()
+				.createQuery("from BillType type order by type.code").list()) {
+			source.appendChild(type.toXml(doc));
+		}
+		source.appendChild(MonadDate.getMonthsXml(doc));
+		source.appendChild(MonadDate.getDaysXml(doc));
+		source.appendChild(new MonadDate().toXml(doc));
+		return doc;
+	}
 
-        public Bill getChild(UriPathElement uriId) throws HttpException {
-                Bill bill = (Bill) Hiber
-                                .session()
-                                .createQuery(
-                                                "from Bill bill where bill.batch = :batch and bill.id = :billId")
-                                .setEntity("batch", batch)
-                                .setLong("billId", Long.parseLong(uriId.getString()))
-                                .uniqueResult();
-                if (bill == null) {
-                        throw new NotFoundException();
-                }
-                return bill;
-        }
+	public Bill getChild(UriPathElement uriId) throws HttpException {
+		Bill bill = (Bill) Hiber
+				.session()
+				.createQuery(
+						"from Bill bill where bill.batch = :batch and bill.id = :billId")
+				.setEntity("batch", batch)
+				.setLong("billId", Long.parseLong(uriId.getString()))
+				.uniqueResult();
+		if (bill == null) {
+			throw new NotFoundException();
+		}
+		return bill;
+	}
 
-        public Element toXml(Document doc) throws HttpException {
-                Element billsElement = doc.createElement("bills");
-                return billsElement;
-        }
+	public Element toXml(Document doc) throws HttpException {
+		Element billsElement = doc.createElement("bills");
+		return billsElement;
+	}
 
-        @Override
-        public URI getViewUri() throws HttpException {
-                // TODO Auto-generated method stub
-                return null;
-        }
+	@Override
+	public URI getViewUri() throws HttpException {
+		// TODO Auto-generated method stub
+		return null;
+	}
 }

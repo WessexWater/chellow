@@ -792,7 +792,8 @@ Monad.getUtils()['imprt'](globals(), {
 supply_id = inv.getLong("supply_id")
 supply = Supply.getSupply(supply_id)
 era_bundles = []
-for era in Hiber.session().createQuery("from Era era where era.supply = :supply order by era.startDate desc").setEntity('supply', supply).list():
+eras = Hiber.session().createQuery("from Era era where era.supply = :supply order by era.startDate desc").setEntity('supply', supply).list()
+for era in eras:
     import_mpan_core = era.getImpMpanCore()
     export_mpan_core = era.getExpMpanCore()
     physical_site = Hiber.session().createQuery("select ssgen.site from SiteEra ssgen where ssgen.isPhysical = true and ssgen.era = :era").setEntity('era', era).uniqueResult()
@@ -810,22 +811,27 @@ for era in Hiber.session().createQuery("from Era era where era.supply = :supply 
     if export_mpan_core is not None:
         era_bundle['exp_shared_supplier_accounts'] = Hiber.session().createQuery("select distinct era.supply from Era era where era.supply != :supply and era.expSupplierAccount = :account and era.expSupplierContract = :contract").setEntity('supply', supply).setString('account', era.getExpSupplierAccount()).setEntity('contract', era.getExpSupplierContract()).list()
 
-    if era.getPc().getCode() != '00':
+    if era.pc.code != '00':
         inner_headers = [tpr for tpr in Hiber.session().createQuery("select mr.tpr from MeasurementRequirement mr where mr.ssc = :ssc order by mr.tpr.code").setEntity('ssc', era.getSsc()).list()]
         if era.getPc().getCode() in ['05', '06', '07', '08']:
             inner_headers.append(None)
         era_bundle['import_bills']['inner_headers'] = inner_headers
         inner_header_codes = [tpr.code if tpr is not None else 'md' for tpr in inner_headers]
-
-    if era.getFinishDate() is None:
-        bills_query = Hiber.session().createQuery("from Bill bill where bill.supply = :supply and bill.startDate >= :startDate")
+    if era == eras[-1]:
+        if era.finishDate is None:
+            bills_query = Hiber.session().createQuery("from Bill bill where bill.supply = :supply")
+        else:
+            bills_query = Hiber.session().createQuery("from Bill bill where bill.supply = :supply and bill.startDate <= :finishDate").setTimestamp('finishDate', era.getFinishDate().getDate())
     else:
-        bills_query = Hiber.session().createQuery("from Bill bill where bill.supply = :supply and bill.startDate >= :startDate and bill.startDate <= :finishDate").setTimestamp('finishDate', era.getFinishDate().getDate())
+        if era.finishDate is None:
+            bills_query = Hiber.session().createQuery("from Bill bill where bill.supply = :supply and bill.startDate >= :startDate").setTimestamp('startDate', era.getStartDate().getDate())
+        else:
+            bills_query = Hiber.session().createQuery("from Bill bill where bill.supply = :supply and bill.startDate >= :startDate and bill.startDate <= :finishDate").setTimestamp('finishDate', era.getFinishDate().getDate()).setTimestamp('startDate', era.getStartDate().getDate())
 
     num_outer_cols = 0
-    for bill in bills_query.setEntity('supply', supply).setTimestamp('startDate', era.getStartDate().getDate()).list():
-        bill_contract = bill.getBatch().getContract()
-        bill_role_code = bill_contract.getParty().getRole().getCode()
+    for bill in bills_query.setEntity('supply', supply).list():
+        bill_contract = bill.batch.contract
+        bill_role_code = bill_contract.party.role.code
         if bill_role_code == 'X':
             if export_mpan_core is not None and bill_contract == era.impSupplierContract:
                 bill_group_name = 'export_bills'
@@ -1095,7 +1101,7 @@ render(inv, template, {'triad_year': triad_year, 'now': now, 'last_month_start':
             <tr>
               <td>
                 {% for channel in era_bundle['import_channels'] %}
-                  {% if channel.is_kwh %}
+                  {% if channel.isKwh %}
                     kWh
                   {% else %}
                     kVArh
@@ -1393,6 +1399,7 @@ render(inv, template, {'triad_year': triad_year, 'now': now, 'last_month_start':
                 {% endfor %}
             </tbody>
         </table>
+        <br>
     {% endfor %}
 
     <br />
@@ -13500,7 +13507,7 @@ for key in properties.propertyNames():
                                     <xsl:value-of select="@reference" />
                                 </td>
                                 <td>
-                                <a href="{/source/request/@context-path}/reports/7/output/?supply-id={supply/@id}"><xsl:value-of select="'Supply'" /></a>
+                                <a href="{/source/request/@context-path}/reports/7/output/?supply_id={supply/@id}"><xsl:value-of select="'Supply'" /></a>
                                 </td>
                                 <td>
                                 <xsl:value-of select="@account"/>
@@ -14040,7 +14047,7 @@ from datetime import datetime
 import pytz
 
 Monad.getUtils()['imprt'](globals(), {
-        'db': ['Contract', 'Batch', 'Participant', 'set_read_write', 'session', 'Bill'], 
+        'db': ['Contract', 'Batch', 'Participant', 'set_read_write', 'session', 'Bill', 'Report'], 
         'utils': ['UserException', 'form_date'],
         'templater': ['render']})
 
@@ -14061,7 +14068,7 @@ try:
         if 'batch_reports' in properties:
             batch_reports = []
             for report_id in properties['batch_reports']:
-                batch_reports.append(Report.get_by_id(report_id))
+                batch_reports.append(Report.get_by_id(sess, report_id))
             fields['batch_reports'] = batch_reports
         render(inv, template, fields)
 finally:
@@ -18226,7 +18233,7 @@ try:
     render(inv, template, {'contract': contract, 'rate_scripts': rate_scripts})
 finally:
     sess.close()]]></value>
-		<value><![CDATA[<!doctype html>
+    		<value><![CDATA[<!doctype html>
 <html>
   <head>
     <link rel="stylesheet" type="text/css"
@@ -18294,6 +18301,10 @@ finally:
 
     <pre>{{ contract.charge_script }}</pre>
 
+    <h3>Properties</h3>
+
+    <pre>{{ contract.properties }}</pre>
+
   </body>
 </html>]]></value>
 	</line>
@@ -18329,8 +18340,9 @@ try:
         else:
             name = inv.getString('name')
             charge_script = inv.getString('charge_script')
+            properties = inv.getString('properties')
             contract.update(sess, contract.is_core, name, contract.party,
-                    charge_script, '{}')
+                    charge_script, properties)
             sess.commit()
             inv.sendSeeOther('/reports/267/output/?non_core_contract_id='
                 + str(contract.id))
@@ -18407,6 +18419,11 @@ finally:
               {{ contract.charge_script }}
             {%- endif -%}
           </textarea>
+          <br>
+          <br>
+          Properties
+          <br>
+          {{ input_textarea('properties', request, contract.properties, 20, 80) }}
           <br />
           <br />
           <input type="submit" value="Update" />

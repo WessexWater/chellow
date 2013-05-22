@@ -23,6 +23,7 @@ package net.sf.chellow.billing;
 
 import java.math.BigDecimal;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
@@ -474,7 +475,18 @@ public class Bill extends PersistentEntity {
 	}
 
 	public URI getViewUri() throws HttpException {
-		return null;
+		char marketRoleCode = getBatch().getContract().getRole().getCode();
+		try {
+			if (marketRoleCode == 'X') {
+				return new URI(
+						"http://localhost:8080/chellow/reports/105/output/?bill-id="
+								+ getId());
+			} else {
+				throw new InternalException("Market role not recognized.");
+			}
+		} catch (URISyntaxException e) {
+			throw new InternalException(e);
+		}
 	}
 
 	public RegisterRead insertRead(Tpr tpr, BigDecimal coefficient,

@@ -83,6 +83,9 @@ public class Batches extends EntityList {
 			} else if (roleCode == 'M') {
 				return new URI("/reports/191/output/?mop-contract-id="
 						+ contract.getId());
+			} else if (roleCode == 'X') {
+				return new URI("/reports/89/output/?supplier-contract-id="
+						+ contract.getId());
 			} else {
 				throw new InternalException("Market role code not recognized.");
 			}

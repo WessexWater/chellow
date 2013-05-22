@@ -27,12 +27,16 @@ import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
+import java.text.DecimalFormat;
 import java.util.Properties;
 
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.InternalException;
+import net.sf.chellow.monad.Invocation;
 import net.sf.chellow.monad.Monad;
+import net.sf.chellow.monad.MonadUtils;
+import net.sf.chellow.monad.UserException;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
 import net.sf.chellow.ui.GeneralImport;
@@ -237,5 +241,49 @@ public class Configuration extends PersistentEntity {
 		element.appendChild(propsElement);
 		propsElement.setTextContent(properties);
 		return element;
+	}
+
+	public void httpGet(Invocation inv) throws HttpException {
+		inv.sendOk(document());
+	}
+
+	public void httpPost(Invocation inv) throws HttpException {
+		Hiber.setReadWrite();
+		Document doc = MonadUtils.newSourceDocument();
+		Element source = doc.getDocumentElement();
+
+		String properties = inv.getString("properties");
+		if (!inv.isValid()) {
+			throw new UserException();
+		}
+		properties = properties.replace("\r", "").replace("\t", "    ");
+
+		Element propertiesElement = doc.createElement("properties");
+		source.appendChild(propertiesElement);
+		propertiesElement.setTextContent(properties);
+
+		try {
+			update(properties);
+		} catch (UserException e) {
+			e.setDocument(doc);
+			throw e;
+		}
+		Hiber.commit();
+		Element configElement = toXml(doc);
+		source.appendChild(configElement);
+		inv.sendOk(doc);
+	}
+
+	private Document document() throws HttpException {
+		Document doc = MonadUtils.newSourceDocument();
+		Element source = doc.getDocumentElement();
+		Element configElement = toXml(doc);
+		source.appendChild(configElement);
+		DecimalFormat df = new DecimalFormat("###,###,###,###,##0");
+		Runtime runtime = Runtime.getRuntime();
+		source.setAttribute("free-memory", df.format(runtime.freeMemory()));
+		source.setAttribute("max-memory", df.format(runtime.maxMemory()));
+		source.setAttribute("total-memory", df.format(runtime.totalMemory()));
+		return doc;
 	}
 }

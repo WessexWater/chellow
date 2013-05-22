@@ -49,6 +49,7 @@ import net.sf.chellow.monad.UnauthorizedException;
 import net.sf.chellow.monad.Urlable;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
+import net.sf.chellow.physical.Configuration;
 import net.sf.chellow.physical.GeneratorTypes;
 import net.sf.chellow.physical.GspGroups;
 import net.sf.chellow.physical.MarketRole;
@@ -231,6 +232,8 @@ public class Chellow extends Monad implements Urlable {
 			return HHDC_CONTRACTS_INSTANCE;
 		} else if (SiteSnags.URI_ID.equals(uriId)) {
 			return SITE_SNAGS_INSTANCE;
+		} else if (Configuration.URI_ID.equals(uriId)) {
+			return Configuration.getConfiguration();
 		} else {
 			return null;
 		}
