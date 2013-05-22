@@ -18438,7 +18438,7 @@ from sqlalchemy.orm import joinedload_all
 
 Monad.getUtils()['imprt'](globals(), {
         'db': ['Contract', 'Party', 'RateScript', 'set_read_write', 'session'], 
-        'utils': ['UserException'],
+        'utils': ['UserException', 'NotFoundException'],
         'templater': ['render']})
 
 sess = None

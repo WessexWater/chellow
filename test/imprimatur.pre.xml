@@ -2746,7 +2746,7 @@ def import_virtual_bill(supply_source):
 				<control name="start_minute" value="00" />
 				<control name="insert" value="Insert" />
 
-				<regex pattern="/chellow/reports/273/output/\?rate_script_id=277" />
+				<regex pattern="/chellow/reports/271/output/\?rate_script_id=277" />
 				<response-code value="303" />
 			</request>
 			<request path="/chellow/reports/273/output/?rate_script_id=277">
