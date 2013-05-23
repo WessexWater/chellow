@@ -287,7 +287,7 @@ def virtual_bill(supply, startDate, finishDate, pw):
 			</request>
 
 			<!-- Update the associated rate script -->
-			<request path="/chellow/supplier-contracts/50/rate-scripts/266/"
+			<request path="/chellow/supplier-contracts/50/rate-scripts/268/"
 				method="post">
 				<control name="start-year" value="2000" />
 				<control name="start-month" value="01" />
@@ -1879,7 +1879,7 @@ def import_virtual_bill(supply_source):
 			</request>
 			<!-- Edit the rate script -->
 			<request path="/chellow/reports/273/output/" method="post">
-				<control name="rate_script_id" value="273" />
+				<control name="rate_script_id" value="275" />
 				<control name="start_year" value="2000" />
 				<control name="start_month" value="01" />
 				<control name="start_day" value="03" />
@@ -1909,7 +1909,7 @@ def triad_estimates():
 			</request>
 		</test>
 		<test name="Check we can delete a rate script (when it's not the only one)">
-			<request path="/chellow/supplier-contracts/50/rate-scripts/270/"
+			<request path="/chellow/supplier-contracts/50/rate-scripts/272/"
 				method="post">
 				<control name="delete" value="Delete" />
 				<response-code value="303" />
@@ -1976,15 +1976,6 @@ def triad_estimates():
 		</test>
 
 		<test name="Manipulate dno contracts">
-			<!-- - Insert DNO contract - <request path="/chellow/dnos/138/contracts/" 
-				method="post"> - Contract of DNO 10 - <control name="name" value="main 2010-04-01" 
-				/> <control name="start-year" value="2010" /> <control name="start-month" 
-				value="04" /> <control name="start-day" value="01" /> <regex pattern="/chellow/dnos/138/contracts/103/" 
-				/> <response-code value="303" /> </request> - Check start time of rate script 
-				- <request path="/chellow/dnos/138/contracts/103/rate-scripts/773/"> <regex 
-				pattern='&lt;select name="start-hour"&gt;&lt;option value="00" selected&gt;00&lt;/option&gt;' 
-				/> <regex pattern='&lt;select name="start-minute"&gt;&lt;option value="00" 
-				selected&gt;00&lt;/option&gt;' /> <response-code value="200" /> </request> -->
 			<!-- Insert rate script -->
 			<request path="/chellow/reports/243/output/" method="post">
 				<control name="dno_contract_id" value="1" />
@@ -1993,13 +1984,13 @@ def triad_estimates():
 				<control name="start_day" value="01" />
 				<control name="start_hour" value="00" />
 				<control name="start_minute" value="00" />
-				<regex pattern="/chellow/reports/69/output/\?dno_rate_script_id=274" />
+				<regex pattern="/chellow/reports/69/output/\?dno_rate_script_id=276" />
 				<response-code value="303" />
 			</request>
 
 			<!-- Delete rate script -->
 			<request path="/chellow/reports/285/output/" method="post">
-				<control name="dno_rate_script_id" value="274" />
+				<control name="dno_rate_script_id" value="276" />
 				<control name="delete" value="Delete" />
 				<response-code value="303" />
 			</request>
@@ -2720,20 +2711,20 @@ def import_virtual_bill(supply_source):
 				<control name="start_minute" value="00" />
 				<control name="insert" value="Insert" />
 
-				<regex pattern="/chellow/reports/271/output/\?rate_script_id=276" />
+				<regex pattern="/chellow/reports/271/output/\?rate_script_id=278" />
 				<response-code value="303" />
 			</request>
 			<request
-				path="/chellow/reports/273/output/?rate_script_id=276&amp;delete=Delete">
+				path="/chellow/reports/273/output/?rate_script_id=278&amp;delete=Delete">
 				<regex pattern="Are you sure you want to delete this rate script\?" />
 				<response-code value="200" />
 			</request>
 			<request path="/chellow/reports/273/output/" method="post">
-				<control name="rate_script_id" value="276" />
+				<control name="rate_script_id" value="278" />
 				<control name="delete" value="Delete" />
 				<response-code value="303" />
 			</request>
-			<request path="/chellow/reports/271/output/?rate_script_id=276">
+			<request path="/chellow/reports/271/output/?rate_script_id=278">
 				<response-code value="404" />
 			</request>
 		</test>
@@ -2747,10 +2738,10 @@ def import_virtual_bill(supply_source):
 				<control name="start_minute" value="00" />
 				<control name="insert" value="Insert" />
 
-				<regex pattern="/chellow/reports/271/output/\?rate_script_id=277" />
+				<regex pattern="/chellow/reports/271/output/\?rate_script_id=279" />
 				<response-code value="303" />
 			</request>
-			<request path="/chellow/reports/273/output/?rate_script_id=277">
+			<request path="/chellow/reports/273/output/?rate_script_id=279">
 				<regex
 					pattern='&lt;input name="finish_year" maxlength="4" size="4" value="2010"&gt;' />
 
@@ -2760,7 +2751,7 @@ def import_virtual_bill(supply_source):
 				<response-code value="200" />
 			</request>
 			<request path="/chellow/reports/273/output/" method="post">
-				<control name="rate_script_id" value="277" />
+				<control name="rate_script_id" value="279" />
 				<control name="delete" value="Delete" />
 				<response-code value="303" />
 			</request>
