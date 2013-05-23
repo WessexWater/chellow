@@ -32,7 +32,6 @@ import java.util.Map;
 import java.util.Set;
 
 import net.sf.chellow.billing.Contract;
-import net.sf.chellow.monad.Debug;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.InternalException;
@@ -422,7 +421,6 @@ public class Site extends PersistentEntity {
 			Contract exportSupplierContract,
 			String exportSupplierAccountReference,
 			Integer exportAgreedSupplyCapacity) throws HttpException {
-		Debug.print("Started insert supply.");
 		String mpanStr = null;
 		if (importMpanStr == null) {
 			mpanStr = exportMpanStr;
@@ -441,7 +439,6 @@ public class Site extends PersistentEntity {
 		try {
 			Hiber.session().save(supply);
 			Hiber.flush();
-			Debug.print("Successfully saved supply.");
 		} catch (HibernateException e) {
 			Hiber.rollBack();
 			if (HttpException
@@ -572,7 +569,7 @@ public class Site extends PersistentEntity {
 				String mopAccount = inv.getString("mop-account");
 				Long hhdcContractId = inv.getLong("hhdc-contract-id");
 				String hhdcAccount = inv.getString("hhdc-account");
-				String meterSerialNumber = inv.getString("meter-serial-number");
+				String meterSerialNumber = inv.getString("msn");
 				Long pcId = inv.getLong("pc-id");
 				String mtcCode = inv.getString("mtc-code");
 				Long copId = inv.getLong("cop-id");

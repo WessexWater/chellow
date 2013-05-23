@@ -133,13 +133,13 @@
 			<arg value="${test.home}/imprimatur.xml" />
 		</java>
 	</target>
-	
+
 	<target name="imprimatur" description="Imprimatur">
-			<copy file="${test.home}/imprimatur.pre.xml" tofile="${test.home}/imprimatur.xml" />
-			<replace file="${test.home}/imprimatur.xml" token="@@test.port@@" value="${test.port}" />
-			<java jar="${imprimatur.jar}" fork="true" failonerror="true">
-				<arg value="${test.home}/imprimatur.xml" />
-			</java>
+		<copy file="${test.home}/imprimatur.pre.xml" tofile="${test.home}/imprimatur.xml" />
+		<replace file="${test.home}/imprimatur.xml" token="@@test.port@@" value="${test.port}" />
+		<java jar="${imprimatur.jar}" fork="true" failonerror="true">
+			<arg value="${test.home}/imprimatur.xml" />
+		</java>
 	</target>
 
 	<target name="prepare">
@@ -189,6 +189,9 @@
 			<filelist dir="${javalib.home}/slf4j-1.7.2">
 				<file name="slf4j-nop-1.7.2.jar" />
 				<file name="slf4j-api-1.7.2.jar" />
+			</filelist>
+			<filelist dir="${javalib.home}/jakarta-oro-2.0.8">
+				<file name="jakarta-oro-2.0.8.jar" />
 			</filelist>
 		</copy>
 	</target>

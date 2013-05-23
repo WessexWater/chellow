@@ -1569,7 +1569,7 @@ public class Era extends PersistentEntity {
 				Date startDate = inv.getDateTime("start");
 				Long mopContractId = inv.getLong("mop-contract-id");
 				Long hhdcContractId = inv.getLong("hhdc-contract-id");
-				String meterSerialNumber = inv.getString("meter-serial-number");
+				String meterSerialNumber = inv.getString("msn");
 				Long pcId = inv.getLong("pc-id");
 				String mtcCode = inv.getString("mtc-code");
 				Long copId = inv.getLong("cop-id");

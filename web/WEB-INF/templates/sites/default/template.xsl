@@ -259,8 +259,8 @@
 								<br />
 								<label>
 									<xsl:value-of select="'Meter Serial Number '" />
-									<input name="meter-serial-number"
-										value="{/source/request/parameter[@name = 'meter-serial-number']/value}" />
+									<input name="msn"
+										value="{/source/request/parameter[@name = 'msn']/value}" />
 								</label>
 								<br />
 								<br />
