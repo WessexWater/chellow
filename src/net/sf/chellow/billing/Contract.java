@@ -612,7 +612,7 @@ public class Contract extends PersistentEntity implements Comparable<Contract> {
 		return state;
 	}
 
-	void setState(String state) {
+	public void setState(String state) {
 		this.state = state;
 	}
 

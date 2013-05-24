@@ -225,9 +225,6 @@ render(inv, template, {'local_reports_id': properties.get('local.reports')})]]><
             </a>
           </li>
           <li>
-            <a href="{{ context_path }}/reports/165/output/">DB Consistency Check</a>
-          </li>
-          <li>
             <a href="{{ context_path }}/reports/171/output/">System</a>
           </li>
           <li>
@@ -235,13 +232,6 @@ render(inv, template, {'local_reports_id': properties.get('local.reports')})]]><
           </li>
           <li>
             <a href="{{ context_path }}/reports/243/output/">MDD Updater</a>
-          </li>
-          <li>Importers
-            <ul>
-              <li>
-                <a href="{{ context_path }}/reports/225/output/">RCRC Importer</a>
-              </li>
-            </ul>
           </li>
         </ul>
       </div>
@@ -14978,12 +14968,12 @@ source.setAttribute('debug', debug)]]></value>
                     </a>
                     &gt;
                     <a
-                        href="{/source/request/@context-path}/reports/113/output/?hhdc-id={/source/hhdc-contract/@id}">
+                        href="{/source/request/@context-path}/reports/113/output/">
                         <xsl:value-of select="'HHDC Contracts'" />
                     </a>
                     &gt;
                     <a
-                        href="{/source/request/@context-path}/reports/115/output/?hhdc-contract-id={/source/hhdc-contract/@id}">
+                        href="{/source/request/@context-path}/reports/115/output/?hhdc_contract_id={/source/hhdc-contract/@id}">
                         <xsl:value-of
                             select="/source/hhdc-contract/@name" />
                     </a>
@@ -15696,6 +15686,8 @@ REPORT_URI = MonadUri("/reports/225/output/")
 source = doc.getDocumentElement()
 
 rcrc_contract = Contract.getNonCoreContract('rcrc')
+source.appendChild(rcrc_contract.toXml(doc))
+
 ctx = inv.getMonad().getServletConfig().getServletContext()
 
 task = rcrc_contract.callFunction('get_rcrc_task', [ctx])
@@ -15738,18 +15730,23 @@ source.setAttribute('debug', debug)]]></value>
                     href="{/source/request/@context-path}/reports/19/output/" />
 
                 <title>
-                    Chellow &gt; Admin &gt; RCRC
+                    Chellow &gt; Non-Core Contracts &gt; <xsl:value-of select="/source/non-core-contract/@name"/> &gt; Automatic Importer
                 </title>
-
             </head>
             <body>
                 <p>
                     <a
                         href="{/source/request/@context-path}/reports/1/output/">
                         <xsl:value-of select="'Chellow'" />
-                    </a>
-                    &gt;
-                    <xsl:value-of select="'RCRC Importer'" />
+                    </a> &gt;
+                    <a
+                        href="{/source/request/@context-path}/reports/259/output/">
+
+                    <xsl:value-of select="'Non-Core Contracts'" /></a> &gt;
+
+                    <a
+                        href="{/source/request/@context-path}/reports/267/output/?non_core_contract_id={/source/non-core-contract/@id}">
+                    <xsl:value-of select="/source/non-core-contract/@name" /></a> &gt; Automatic Importer
                 </p>
                 <br />
 <xsl:if test="//message">
@@ -17925,12 +17922,12 @@ finally:
     <link rel="stylesheet" type="text/css"
       href="{{ context_path }}/reports/19/output/"
     >
-    <title>Chellow &gt; Non-core Contracts &gt</title>
+    <title>Chellow &gt; Non-Core Contracts &gt</title>
   </head>
   <body>
     <p>
       <a href="{{ context_path }}/reports/1/output/">Chellow</a> &gt;
-      Non-core Contracts
+      Non-Core Contracts
       [<a href="{{ context_path }}/reports/265/output/">add</a>]
     </p>
     {% if messages %}
@@ -18216,12 +18213,12 @@ finally:
     <link rel="stylesheet" type="text/css"
       href="{{ context_path }}/reports/19/output/"
     >
-    <title>Chellow &gt; Non-core Contracts &gt; {{ contract.name }}</title>
+    <title>Chellow &gt; Non-Core Contracts &gt; {{ contract.name }}</title>
   </head>
   <body>
     <p>
       <a href="{{ context_path }}/reports/1/output/">Chellow</a> &gt;
-      <a href="{{ context_path }}/reports/259/output/">Non-core Contracts</a>
+      <a href="{{ context_path }}/reports/259/output/">Non-Core Contracts</a>
       &gt; {{ contract.name }} [<a href="{{ context_path }}/reports/269/output/?non_core_contract_id={{ contract.id }}">edit</a>]
     </p>
     {% if messages %}
@@ -18249,7 +18246,11 @@ finally:
       </p>
     {% elif contract.name == 'system-price' %}
       <p>
-        <a href="{{ context_path }}/reports/221/output/">System Price Importer</a>
+        <a href="{{ context_path }}/reports/221/output/">Automatic Importer</a>
+      </p>
+    {% elif contract.name == 'rcrc' %}
+      <p>
+        <a href="{{ context_path }}/reports/225/output/">Automatic Importer</a>
       </p>
     {% endif %}
     <br>
