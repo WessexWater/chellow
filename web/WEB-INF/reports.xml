@@ -239,9 +239,6 @@ render(inv, template, {'local_reports_id': properties.get('local.reports')})]]><
           <li>Importers
             <ul>
               <li>
-                <a href="{{ context_path }}/reports/221/output/">System Price Importer</a>
-              </li>
-              <li>
                 <a href="{{ context_path }}/reports/225/output/">RCRC Importer</a>
               </li>
             </ul>
@@ -15444,6 +15441,7 @@ REPORT_URI = MonadUri("/reports/221/output/")
 source = doc.getDocumentElement()
 
 system_price_contract = Contract.getNonCoreContract('system-price')
+source.appendChild(system_price_contract.toXml(doc))
 ctx = inv.getMonad().getServletConfig().getServletContext()
 
 task = system_price_contract.callFunction('get_system_price_task', [ctx])
@@ -15486,7 +15484,7 @@ source.setAttribute('debug', debug)]]></value>
                     href="{/source/request/@context-path}/reports/19/output/" />
 
                 <title>
-                    Chellow &gt; System Price Importer
+                    Chellow &gt; Non-Core Contracts &gt; <xsl:value-of select="/source/non-core-contract/@name" /> &gt; Automatic Importer
                 </title>
 
             </head>
@@ -15496,7 +15494,12 @@ source.setAttribute('debug', debug)]]></value>
             <xsl:value-of select="'Chellow'" />
            </a>
                     &gt;
-                    <xsl:value-of select="'System Price Importer'" />
+ <a href="{/source/request/@context-path}/reports/259/output/">
+            <xsl:value-of select="'Non-Core Contracts'" />
+           </a>
+                    &gt; <a href="{/source/request/@context-path}/reports/267/output/?non_core_contract_id={/source/non-core-contract/@id}">
+                    <xsl:value-of select="/source/non-core-contract/@name" /></a>
+ &gt; Automatic Importer
                 </p>
                 <br />
 <xsl:if test="//message">
@@ -15638,14 +15641,14 @@ finally:
       </table>
       <br/>
       {% if not task.is_locked() %}
-        <form action="{{ context_path }}/reports/227/output/">
+        <form action="{{ context_path }}/reports/223/output/">
           <fieldset>
             <legend>Remove Importer</legend>
             <input type="submit" value="Remove" name="remove" />
           </fieldset>
         </form>
         <br/>
-        <form action="{{ context_path }}/reports/227/output/">
+        <form action="{{ context_path }}/reports/223/output/">
           <fieldset>
             <legend>Import Now</legend>
             <input type="submit" value="Import" name="now">
@@ -15661,7 +15664,7 @@ finally:
         {% endfor %}
       </ul>
     {% else %}
-      <form action="{{ context_path }}/reports/227/output/">
+      <form action="{{ context_path }}/reports/223/output/">
         <fieldset>
           <legend>Start Importer</legend>
           <input type="submit" value="Start" name="start" />
@@ -18243,6 +18246,10 @@ finally:
     {% elif contract.name == 'tlms' %}
       <p>
         <a href="{{ context_path }}/reports/223/output/">Automatic Importer</a>
+      </p>
+    {% elif contract.name == 'system-price' %}
+      <p>
+        <a href="{{ context_path }}/reports/221/output/">System Price Importer</a>
       </p>
     {% endif %}
     <br>
