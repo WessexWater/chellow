@@ -2,21 +2,16 @@
 <!DOCTYPE hibernate-mapping PUBLIC
       "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
           "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
-	<!--
-
-		Copyright 2005, 2011 Wessex Water Limited This file is part of
-		Chellow. Chellow is free software; you can redistribute it and/or
-		modify it under the terms of the GNU General Public License as
-		published by the Free Software Foundation; either version 2 of the
-		License, or (at your option) any later version. Chellow is distributed
-		in the hope that it will be useful, but WITHOUT ANY WARRANTY; without
-		even the implied warranty of MERCHANTABILITY or FITNESS FOR A
-		PARTICULAR PURPOSE. See the GNU General Public License for more
-		details. You should have received a copy of the GNU General Public
-		License along with Chellow; if not, write to the Free Software
-		Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301
-		USA
-	-->
+<!-- Copyright 2005-2013 Wessex Water Limited This file is part of Chellow. 
+	Chellow is free software; you can redistribute it and/or modify it under 
+	the terms of the GNU General Public License as published by the Free Software 
+	Foundation; either version 2 of the License, or (at your option) any later 
+	version. Chellow is distributed in the hope that it will be useful, but WITHOUT 
+	ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS 
+	FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details. 
+	You should have received a copy of the GNU General Public License along with 
+	Chellow; if not, write to the Free Software Foundation, Inc., 51 Franklin 
+	St, Fifth Floor, Boston, MA 02110-1301 USA -->
 
 <hibernate-mapping package="net.sf.chellow.billing">
 	<class name="Bill" table="bill" lazy="true">
@@ -43,29 +38,29 @@
 				<column name="finish_date" sql-type="timestamp with time zone" />
 			</property>
 		</component>
-		<property name="net" type="big_decimal" not-null="true">
-			<column name="net" sql-type="numeric" />
+		<property name="net" type="big_decimal">
+			<column name="net" sql-type="numeric" not-null="true" />
 		</property>
-		<property name="vat" type="big_decimal" not-null="true">
-			<column name="vat" sql-type="numeric" />
+		<property name="vat" type="big_decimal">
+			<column name="vat" sql-type="numeric" not-null="true" />
 		</property>
-		<property name="gross" type="big_decimal" not-null="true">
-			<column name="gross" sql-type="numeric" />
+		<property name="gross" type="big_decimal">
+			<column name="gross" sql-type="numeric" not-null="true" />
 		</property>
 		<many-to-one name="type" class="BillType" column="bill_type_id"
 			foreign-key="fkey_bill__bill_type" />
-		<property name="kwh" type="big_decimal" not-null="true">
-			<column name="kwh" sql-type="numeric" />
+		<property name="kwh" type="big_decimal">
+			<column name="kwh" sql-type="numeric" not-null="true" />
 		</property>
 		<property type="string" name="reference" column="reference"
 			not-null="true" />
 		<property type="string" name="account" column="account"
 			not-null="true" />
-		<property type="string" name="breakdown" not-null="true">
-			<column name="breakdown" sql-type="text" />
+		<property type="string" name="breakdown">
+			<column name="breakdown" sql-type="text" not-null="true" />
 		</property>
 		<set name="reads" inverse="true" lazy="true" cascade="all,delete-orphan">
-			<key column="bill_id" on-delete="cascade"/>
+			<key column="bill_id" on-delete="cascade" />
 			<one-to-many class="net.sf.chellow.physical.RegisterRead" />
 		</set>
 	</class>

@@ -236,7 +236,7 @@ with open("converted/Meter_Timeswitch_Class.csv", "w") as conv:
                         is_hh = '0'
                     meter_type_id = table_ids['MTC_Meter_Type'][fields[6]]
                     payment_type_id = table_ids['MTC_Payment_Type'][fields[7]]
-                    converted.writerow([id, "", fields[0], fields[3],
+                    converted.writerow([id, "", fields[0].zfill(3), fields[3],
                             has_related_meter, has_comms, is_hh, meter_type_id,
                             payment_type_id, fields[10], to_iso(fields[1]),
                             to_iso(fields[2])])
@@ -268,7 +268,8 @@ with open("converted/Meter_Timeswitch_Class.csv", "w") as conv:
                     dno_id = dno_lookup[fields[2]]
                     meter_type_id = table_ids['MTC_Meter_Type'][fields[6]]
                     payment_type_id = table_ids['MTC_Payment_Type'][fields[7]]
-                    converted.writerow([id, dno_id, fields[0], fields[5],
+                    converted.writerow([id, dno_id, fields[0].zfill(3),
+                            fields[5],
                             has_related_meter, has_comms, is_hh, meter_type_id,
                             payment_type_id, fields[10], to_iso(fields[1]),
                             to_iso(fields[4])])

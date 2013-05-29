@@ -157,7 +157,7 @@ public class Era extends PersistentEntity {
 			String mtcCode = GeneralImport.addField(csvElement,
 					"Meter Timeswitch Class", values, 14);
 			if (mtcCode.equals(GeneralImport.NO_CHANGE)) {
-				mtcCode = era.getMtc().toString();
+				mtcCode = era.getMtc().getCode();
 			}
 
 			String copCode = GeneralImport.addField(csvElement, "CoP", values,
@@ -402,7 +402,7 @@ public class Era extends PersistentEntity {
 			String mtcCode = GeneralImport.addField(csvElement,
 					"Meter Timeswitch Class", values, 13);
 			if (mtcCode.equals(GeneralImport.NO_CHANGE)) {
-				mtcCode = existingEra.getMtc().toString();
+				mtcCode = existingEra.getMtc().getCode();
 			}
 
 			Cop cop = null;
@@ -631,7 +631,7 @@ public class Era extends PersistentEntity {
 		setPc(pc);
 		Mtc anMtc = (Mtc) Hiber.session()
 				.createQuery("from Mtc mtc where mtc.code = :code")
-				.setInteger("code", Integer.parseInt(mtcCode)).setMaxResults(1)
+				.setString("code", mtcCode.trim()).setMaxResults(1)
 				.uniqueResult();
 		if (anMtc == null) {
 			throw new UserException("MTC not recognized.");
@@ -973,8 +973,7 @@ public class Era extends PersistentEntity {
 			return;
 		} else {
 			update(startDate, finishDate, mopContract, mopAccount,
-					hhdcContract, hhdcAccount, msn, pc, mtc.toString(), cop,
-					ssc);
+					hhdcContract, hhdcAccount, msn, pc, mtc.getCode(), cop, ssc);
 		}
 	}
 

@@ -440,11 +440,11 @@ public class Supply extends PersistentEntity {
 				templateEra.getMopContract(), templateEra.getMopAccount(),
 				templateEra.getHhdcContract(), templateEra.getHhdcAccount(),
 				templateEra.getMsn(), templateEra.getPc(), templateEra.getMtc()
-						.toString(), templateEra.getCop(),
-				templateEra.getSsc(), impMpanCore, impLlfcCode,
-				impSupplierContract, impSupplierAccount, impSc, expMpanCore,
-				expLlfcCode, expSupplierContract, expSupplierAccount, expSc,
-				hasImportKwh, hasImportKvarh, hasExportKwh, hasExportKvarh);
+						.getCode(), templateEra.getCop(), templateEra.getSsc(),
+				impMpanCore, impLlfcCode, impSupplierContract,
+				impSupplierAccount, impSc, expMpanCore, expLlfcCode,
+				expSupplierContract, expSupplierAccount, expSc, hasImportKwh,
+				hasImportKvarh, hasExportKwh, hasExportKvarh);
 	}
 
 	@SuppressWarnings("unchecked")

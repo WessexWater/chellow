@@ -50,12 +50,13 @@ public class Mtc extends PersistentEntity {
 		return mtc;
 	}
 
-	static public boolean hasDno(int code) {
-		return !((code > 499 && code < 510) || (code > 799 && code < 1000));
+	static public boolean hasDno(String code) {
+		int codeInt = Integer.parseInt(code);
+		return !((codeInt > 499 && codeInt < 510) || (codeInt > 799 && codeInt < 1000));
 	}
 
-	static public Mtc findMtc(Party dno, String codeStr) throws HttpException {
-		int code = Integer.parseInt(codeStr);
+	static public Mtc findMtc(Party dno, String code) throws HttpException {
+		code = code.trim();
 		dno = hasDno(code) ? dno : null;
 		Mtc mtc = null;
 		if (dno == null) {
@@ -63,13 +64,13 @@ public class Mtc extends PersistentEntity {
 					.session()
 					.createQuery(
 							"from Mtc as mtc where mtc.dno is null and mtc.code = :mtcCode")
-					.setInteger("mtcCode", code).uniqueResult();
+					.setString("mtcCode", code).uniqueResult();
 		} else {
 			mtc = (Mtc) Hiber
 					.session()
 					.createQuery(
 							"from Mtc as mtc where mtc.dno = :dno and mtc.code = :mtcCode")
-					.setEntity("dno", dno).setInteger("mtcCode", code)
+					.setEntity("dno", dno).setString("mtcCode", code)
 					.uniqueResult();
 		}
 		return mtc;
@@ -86,7 +87,7 @@ public class Mtc extends PersistentEntity {
 
 	private Party dno;
 
-	private int code;
+	private String code;
 
 	private String description;
 
@@ -110,11 +111,11 @@ public class Mtc extends PersistentEntity {
 		return dno;
 	}
 
-	public int getCode() {
+	public String getCode() {
 		return code;
 	}
 
-	void setCode(int code) {
+	void setCode(String code) {
 		this.code = code;
 	}
 
@@ -203,7 +204,7 @@ public class Mtc extends PersistentEntity {
 
 	public Node toXml(Document doc) throws HttpException {
 		Element element = super.toXml(doc, "mtc");
-		element.setAttribute("code", toString());
+		element.setAttribute("code", code);
 		element.setAttribute("description", description);
 		element.setAttribute("has-related-metering",
 				Boolean.toString(hasRelatedMetering));

@@ -21,8 +21,7 @@
 		</id>
 		<many-to-one name="dno" class="net.sf.chellow.billing.Party"
 			column="dno_id" unique-key="mtc_unique" foreign-key="fkey_mtc_dno" />
-		<property type="integer" name="code" column="code"
-			unique-key="mtc_unique" />
+		<property type="string" name="code" column="code" unique-key="mtc_unique" />
 		<property type="string" name="description" />
 		<property type="boolean" name="hasRelatedMetering" column="has_related_metering"
 			not-null="true" />

@@ -102,7 +102,7 @@ public class ContextListener implements ServletContextListener {
 			try {
 				// Find if DB has been created
 				ResultSet rs = stmt
-						.executeQuery("select * from contract where name = 'system';");
+						.executeQuery("select * from contract where name = 'configuration';");
 				boolean upgrade = true;
 				while (rs.next()) {
 					upgrade = false;
@@ -318,21 +318,173 @@ public class ContextListener implements ServletContextListener {
 	}
 
 	private void upgradeFrom666(Connection con) throws HttpException {
-		/*
-		 * try { Statement stmt = con.createStatement();
-		 * con.setAutoCommit(false);
-		 * stmt.executeUpdate("begin isolation level serializable read write");
-		 * stmt.executeUpdate(
-		 * "alter table supply_era alter column mop_contract_id set not null"
-		 * ); stmt.executeUpdate(
-		 * "alter table supply_era alter column mop_account set not null"
-		 * ); stmt.executeUpdate(
-		 * "alter table supply_era alter column hhdc_contract_id set not null"
-		 * ); stmt.executeUpdate(
-		 * "alter table supply_era alter column hhdc_account set not null"
-		 * ); stmt.executeUpdate("commit"); con.setAutoCommit(false);
-		 * con.close(); } catch (SQLException sqle) { throw new
-		 * InternalException(sqle); }
-		 */
+
+		try {
+			Statement stmt = con.createStatement();
+			con.setAutoCommit(false);
+			stmt.executeUpdate("begin isolation level serializable read write");
+
+			stmt.executeUpdate("alter table dno_contract drop constraint fkey_dno_contract_contract;");
+
+			stmt.executeUpdate("alter table channel rename supply_generation_id to era_id");
+
+			stmt.executeUpdate("alter table snag add channel_id bigint default null references channel (id)");
+			stmt.executeUpdate("alter table snag add site_id bigint default null references site (id)");
+			stmt.executeUpdate("alter table snag add start_date timestamp with time zone default null");
+			stmt.executeUpdate("alter table snag add finish_date timestamp with time zone default null");
+			stmt.executeUpdate("update snag set channel_id = channel_snag.channel_id, start_date = channel_snag.start_date from channel_snag where snag.id = channel_snag.snag_id");
+			stmt.executeUpdate("update snag set site_id = site_snag.site_id, start_date = site_snag.start_date from site_snag where snag.id = site_snag.snag_id");
+			stmt.executeUpdate("alter table snag alter channel_id drop default");
+			stmt.executeUpdate("alter table snag alter site_id drop default");
+			stmt.executeUpdate("alter table snag alter start_date drop default");
+			stmt.executeUpdate("alter table snag alter finish_date drop default");
+
+			stmt.executeUpdate("drop table channel_snag;");
+			stmt.executeUpdate("drop table site_snag;");
+
+			stmt.executeUpdate("alter table bill alter net set not null");
+			stmt.executeUpdate("alter table bill alter vat set not null");
+			stmt.executeUpdate("alter table bill alter gross set not null");
+			stmt.executeUpdate("alter table bill alter kwh set not null");
+
+			stmt.executeUpdate("alter table party rename role_id to market_role_id");
+			stmt.executeUpdate("alter table party add dno_code character varying(255) default null");
+			stmt.executeUpdate("update party set dno_code = dno.code from dno where party.id = dno.party_id");
+
+			stmt.executeUpdate("alter table contract add market_role_id bigint default null references market_role (id)");
+			stmt.executeUpdate("alter table contract add is_core boolean not null default true");
+			stmt.executeUpdate("alter table contract add properties text default ''");
+			stmt.executeUpdate("alter table contract add state text default ''");
+			stmt.executeUpdate("alter table contract add party_id bigint default null references party (id)");
+			stmt.executeUpdate("update contract set market_role_id = (select id from market_role where code = 'Z'), is_core = (contract.id % 2 = 1), party_id = non_core_contract.provider_id from non_core_contract where contract.id = non_core_contract.non_core_id");
+			stmt.executeUpdate("update contract set market_role_id = (select id from market_role where code = 'C'), is_core = false, party_id = hhdc_contract.provider_id from hhdc_contract where contract.id = hhdc_contract.contract_id");
+			stmt.executeUpdate("update contract set market_role_id = (select id from market_role where code = 'X'), is_core = false, party_id = supplier_contract.provider_id from supplier_contract where contract.id = supplier_contract.contract_id");
+			stmt.executeUpdate("update contract set market_role_id = (select id from market_role where code = 'M'), is_core = false, party_id = mop_contract.provider_id from mop_contract where contract.id = mop_contract.contract_id");
+			stmt.executeUpdate("alter table contract alter market_role_id drop default");
+			stmt.executeUpdate("alter table contract alter is_core drop default");
+			stmt.executeUpdate("alter table contract alter properties drop default");
+			stmt.executeUpdate("alter table contract alter state drop default");
+			stmt.executeUpdate("alter table contract alter party_id drop default");
+			stmt.executeUpdate("create sequence contract_id_sequence owned by contract.id;");
+			stmt.execute("select setval('contract_id_sequence', (select max(id) + 1 from contract), false);");
+			stmt.executeUpdate("update contract set start_rate_script_id = null, finish_rate_script_id = null  where id in (select contract_id from dno_contract);");
+			stmt.executeUpdate("delete from rate_script where contract_id in (select contract_id from dno_contract);");
+			stmt.executeUpdate("delete from contract where id in (select contract_id from dno_contract);");
+
+			stmt.executeUpdate("alter table contract alter market_role_id set not null");
+			stmt.executeUpdate("alter table contract alter party_id set not null");
+
+			stmt.executeUpdate("alter table site_supply_generation rename to site_era;");
+			stmt.executeUpdate("alter table site_era rename supply_generation_id to era_id");
+			stmt.executeUpdate("alter sequence site_supply_generation_id_sequence rename to site_era_id_sequence;");
+
+			stmt.executeUpdate("alter table supply_generation rename to era;");
+			stmt.executeUpdate("alter sequence supply_generation_id_sequence rename to era_id_sequence;");
+			stmt.executeUpdate("alter table era drop constraint fkey_mpan_hhdc_contract;");
+			stmt.executeUpdate("alter table era add foreign key (hhdc_contract_id) references contract(id);");
+			stmt.executeUpdate("alter table era drop constraint fkey_mpan_mop_contract;");
+			stmt.executeUpdate("alter table era add foreign key (mop_contract_id) references contract(id);");
+			stmt.executeUpdate("alter table era add imp_mpan_core character varying(255) default null");
+			stmt.executeUpdate("alter table era add imp_sc int default null");
+			stmt.executeUpdate("alter table era add imp_llfc_id bigint default null references llfc(id)");
+			stmt.executeUpdate("alter table era add imp_supplier_contract_id bigint default null references contract(id)");
+			stmt.executeUpdate("alter table era add imp_supplier_account character varying(255) default null");
+			stmt.executeUpdate("alter table era add exp_mpan_core character varying(255) default null");
+			stmt.executeUpdate("alter table era add exp_sc int default null");
+			stmt.executeUpdate("alter table era add exp_llfc_id bigint default null references llfc(id)");
+			stmt.executeUpdate("alter table era add exp_supplier_contract_id bigint default null references contract(id)");
+			stmt.executeUpdate("alter table era add exp_supplier_account character varying(255) default null");
+			stmt.executeUpdate("update era set imp_mpan_core = (select dno.code || ' ' || mpan_core.unique_part || ' ' || mpan_core.check_digit from dno, mpan_core, mpan where mpan.id = era.import_mpan_id and mpan.core_id = mpan_core.id and mpan_core.dno_id = dno.party_id)");
+			stmt.executeUpdate("update era set imp_sc = (select mpan.agreed_supply_capacity from mpan where mpan.id = era.import_mpan_id)");
+			stmt.executeUpdate("update era set imp_llfc_id = (select mpan.llfc_id from mpan where mpan.id = era.import_mpan_id)");
+			stmt.executeUpdate("update era set imp_supplier_contract_id = (select mpan.supplier_contract_id from mpan where mpan.id = era.import_mpan_id)");
+			stmt.executeUpdate("update era set imp_supplier_account = (select mpan.supplier_account from mpan where mpan.id = era.import_mpan_id)");
+			stmt.executeUpdate("update era set exp_mpan_core = (select dno.code || ' ' || mpan_core.unique_part || ' ' || mpan_core.check_digit from dno, mpan_core, mpan where mpan.id = era.export_mpan_id and mpan.core_id = mpan_core.id and mpan_core.dno_id = dno.party_id)");
+			stmt.executeUpdate("update era set exp_sc = (select mpan.agreed_supply_capacity from mpan where mpan.id = era.export_mpan_id)");
+			stmt.executeUpdate("update era set exp_llfc_id = (select mpan.llfc_id from mpan where mpan.id = era.export_mpan_id)");
+			stmt.executeUpdate("update era set exp_supplier_contract_id = (select mpan.supplier_contract_id from mpan where mpan.id = era.export_mpan_id)");
+			stmt.executeUpdate("update era set exp_supplier_account = (select mpan.supplier_account from mpan where mpan.id = era.export_mpan_id)");
+			stmt.executeUpdate("alter table era drop import_mpan_id");
+			stmt.executeUpdate("alter table era drop export_mpan_id");
+			stmt.executeUpdate("alter table era alter imp_mpan_core drop default");
+			stmt.executeUpdate("alter table era alter exp_mpan_core drop default");
+			stmt.executeUpdate("alter table era alter imp_supplier_account drop default");
+			stmt.executeUpdate("alter table era alter exp_supplier_account drop default");
+			stmt.executeUpdate("alter table era rename meter_serial_number to msn");
+
+			stmt.executeUpdate("create sequence rate_script_id_sequence owned by rate_script.id;");
+			stmt.execute("select setval('rate_script_id_sequence', (select max(id) + 1 from rate_script), false);");
+			
+			stmt.executeUpdate("alter table pc alter code type character varying(255) using to_char(code, '00')");
+
+			stmt.executeUpdate("alter table llfc alter code type character varying(255) using to_char(code, '000')");
+			stmt.executeUpdate("alter table llfc drop constraint fkey_llfc_dno;");
+			stmt.executeUpdate("alter table llfc add foreign key (dno_id) references party(id);");
+
+			stmt.executeUpdate("alter table mtc alter code type character varying(255) using to_char(code, '000')");
+			stmt.executeUpdate("alter table mtc drop constraint fkey_mtc_dno;");
+			stmt.executeUpdate("alter table mtc add foreign key (dno_id) references party(id);");
+			
+			stmt.executeUpdate("alter table ssc alter code type character varying(255) using to_char(code, '0000')");
+
+			stmt.executeUpdate("alter table user rename role_id to user_role_id");
+			
+			stmt.executeUpdate("alter table supply alter note drop default");
+			stmt.executeUpdate("alter table supply alter note set not null");
+			stmt.executeUpdate("alter table supply add dno_contract_id bigint default null references contract(id)");
+
+			stmt.executeUpdate("alter table register_read rename meter_serial_number to msn");
+
+			//batch_contract_id_key
+			
+			stmt.executeUpdate("drop table mpan cascade;");
+			stmt.executeUpdate("drop table mpan_core cascade;");
+			stmt.executeUpdate("drop table non_core_contract cascade;");
+			stmt.executeUpdate("drop table hhdc_contract cascade;");
+			stmt.executeUpdate("drop table supplier_contract cascade;");
+			stmt.executeUpdate("drop table mop_contract cascade;");
+			stmt.executeUpdate("drop table dno_contract cascade;");
+
+			stmt.executeUpdate("drop table provider cascade;");
+			stmt.executeUpdate("drop table dno cascade;");
+
+			// takes ages
+			// stmt.executeUpdate("alter table hh_datum add last_modified timestamp with time zone not null default 'epoch'");
+			// stmt.executeUpdate("alter table hh_datum alter last_modified drop default");
+
+			stmt.executeUpdate("commit");
+			con.setAutoCommit(false);
+			con.close();
+		} catch (SQLException sqle) {
+			throw new InternalException(sqle);
+		}
+		Hiber.setReadWrite();
+		try {
+			GeneralImport process = new GeneralImport(null, context
+					.getResource("/WEB-INF/dno-contracts.xml").openStream(),
+					"xml");
+			process.run();
+			List<MonadMessage> errors = process.getErrors();
+			if (!errors.isEmpty()) {
+				throw new InternalException(errors.get(0).getDescription());
+			}
+		} catch (UnsupportedEncodingException e) {
+			throw new InternalException(e);
+		} catch (IOException e) {
+			throw new InternalException(e);
+		}
+		
+		try {
+			Statement stmt = con.createStatement();
+			con.setAutoCommit(false);
+			
+			stmt.executeUpdate("update supply set dno_contract_id = (select id from contract where (dno_code = (select imp_mpan_core from era where supply_id = supply.id and imp_mpan_core is not null limit 1) || ' ' || mpan_core.unique_part || ' ' || mpan_core.check_digit from dno, mpan_core, mpan where mpan.id = era.import_mpan_id and mpan.core_id = mpan_core.id and mpan_core.dno_id = dno.party_id)");
+			
+			stmt.executeUpdate("commit");
+			con.setAutoCommit(false);
+			con.close();
+		} catch (SQLException sqle) {
+			throw new InternalException(sqle);
+		}
 	}
 }

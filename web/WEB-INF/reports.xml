@@ -1522,7 +1522,7 @@ render(inv, template, {'triad_year': triad_year, 'now': now, 'last_month_start':
             <a href="{{ context_path }}/reports/15/output/?supply-id={{ supply.id }}&amp;is_import=false">Export</a>
         </li>
         <li>
-            <a href="{{ context_path }}/reports/17/output/?supply-id={{ supply.id }}&amp;months=1&amp;finish-year={{ now.year }}&amp;finish-month={{ now.month }}">Raw HH data</a>
+            <a href="{{ context_path }}/reports/17/output/?supply_id={{ supply.id }}&amp;months=1&amp;finish-year={{ now.year }}&amp;finish-month={{ now.month }}">Raw HH data</a>
         </li>
         <li>
             <a href="{{ context_path }}/reports/101/output/?supply-id={{ supply.id }}">Supplier Virtual Bill</a>
@@ -2845,7 +2845,7 @@ cal.add(Calendar.MINUTE, 30)
 
 cal.add(Calendar.MONTH, months * -1)
 start_date = cal.getTime()
-dateFormat = SimpleDateFormat("yyyy-MM-dd' 'HH:mm'Z'")
+dateFormat = SimpleDateFormat("yyyy-MM-dd' 'HH:mm")
 dateFormat.setCalendar(cal)
 supply = Supply.getSupply(supply_id)
 supplyElement = supply.toXml(doc, XmlTree("eraLast").put("source"))
@@ -2853,7 +2853,7 @@ source.appendChild(supplyElement)
 source.appendChild(MonadDate.getMonthsXml(doc))
 source.appendChild(MonadDate.getDaysXml(doc))
 con = Hiber.session().connection()
-stmt = con.prepareStatement("select hh_datum.value, hh_datum.start_date, hh_datum.status, channel.is_import, channel.is_kwh from hh_datum, channel, era where hh_datum.channel_id = channel.id and channel.era_id = era.id and era.supply_id = ? and hh_datum.start_date >= ? and hh_datum.start_date <= ? order by hh_datum.start_date", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.CLOSE_CURSORS_AT_COMMIT)
+stmt = con.prepareStatement("select hh_datum.value, hh_datum.start_date, hh_datum.status, hh_datum.last_modified, channel.is_import, channel.is_kwh from hh_datum, channel, era where hh_datum.channel_id = channel.id and channel.era_id = era.id and era.supply_id = ? and hh_datum.start_date >= ? and hh_datum.start_date <= ? order by hh_datum.start_date", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.CLOSE_CURSORS_AT_COMMIT)
 stmt.setInt(1, supply.getId())
 stmt.setTimestamp(2, Timestamp(start_date.getTime()))
 stmt.setTimestamp(3, Timestamp(finish_date.getTime()))
@@ -2867,9 +2867,11 @@ if rs.next():
     isImport = rs.getBoolean("is_import")
     isKwh = rs.getBoolean("is_kwh")
     status = rs.getString("status")
+    last_modified = rs.getTimestamp('last_modified')
     finishDateMillis = finish_date.getTime()
     cal = MonadDate.getCalendar()
     while hhDate <= finishDateMillis:
+        last_modified_str = dateFormat.format(last_modified)
         datumElement = doc.createElement("datum")
         supplyElement.appendChild(datumElement)
         datumElement.setAttribute("timestamp", dateFormat.format(Date(hhDate)))
@@ -2878,22 +2880,27 @@ if rs.next():
                 if isKwh:
                     datumElement.setAttribute("import-kwh-value", value_str)
                     datumElement.setAttribute("import-kwh-status", status)
+                    datumElement.setAttribute("import-kwh-last-modified", last_modified_str)
                 else:
                     datumElement.setAttribute("import-kvarh-value", value_str)
                     datumElement.setAttribute("import-kvarh-status", status)
+                    datumElement.setAttribute("import-kvarh-last-modified", last_modified_str)
             else:
                 if isKwh:
                     datumElement.setAttribute("export-kwh-value", value_str)
                     datumElement.setAttribute("export-kwh-status", status)
+                    datumElement.setAttribute("export-kwh-last-modified", last_modified_str)
                 else:
                     datumElement.setAttribute("export-kvarh-value", value_str)
                     datumElement.setAttribute("export-kvarh-status", status)
+                    datumElement.setAttribute("export-kvarh-last-modified", last_modified_str)
             if rs.next():
                 value_str = rs.getBigDecimal("value").toString()
                 hhChannelStartDate = rs.getTimestamp("start_date")
                 isImport = rs.getBoolean("is_import")
                 isKwh = rs.getBoolean("is_kwh")
                 status = rs.getString("status")
+                last_modified = rs.getTimestamp('last_modified')
             else:
                 hhChannelStartDate = None
         hhDate = HhStartDate.getNext(cal, hhDate)
@@ -3009,24 +3016,28 @@ rs.close()]]></value>
                     <thead>
                         <tr>
                             <th rowspan="3">HH Starting</th>
-                            <th colspan="4">Import</th>
-                            <th colspan="4">Export</th>
+                            <th colspan="6">Import</th>
+                            <th colspan="6">Export</th>
                         </tr>
                         <tr>
-                            <th colspan="2">kWh</th>
-                            <th colspan="2">kVArh</th>
-                            <th colspan="2">kWh</th>
-                            <th colspan="2">kVArh</th>
+                            <th colspan="3">kWh</th>
+                            <th colspan="3">kVArh</th>
+                            <th colspan="3">kWh</th>
+                            <th colspan="3">kVArh</th>
                         </tr>
                         <tr>
                             <th>Value</th>
                             <th>Status</th>
+                            <th>Last Modified</th>                              
                             <th>Value</th>
                             <th>Status</th>
+                            <th>Last Modified</th>                              
                             <th>Value</th>
                             <th>Status</th>
+                            <th>Last Modified</th>                              
                             <th>Value</th>
                             <th>Status</th>
+                            <th>Last Modified</th>                              
                         </tr>
                     </thead>
                     <tbody>
@@ -3045,11 +3056,19 @@ rs.close()]]></value>
                                 </td>
                                 <td>
                                     <xsl:value-of
+                                        select="@import-kwh-last-modified" />
+                                </td>
+                                <td>
+                                    <xsl:value-of
                                         select="@import-kvarh-value" />
                                 </td>
                                 <td>
                                     <xsl:value-of
                                         select="@import-kvarh-status" />
+                                </td>
+                                <td>
+                                    <xsl:value-of
+                                        select="@import-kvarh-last-modified" />
                                 </td>
                                 <td>
                                     <xsl:value-of
@@ -3061,11 +3080,19 @@ rs.close()]]></value>
                                 </td>
                                 <td>
                                     <xsl:value-of
+                                        select="@export-kwh-last-modified" />
+                                </td>
+                                <td>
+                                    <xsl:value-of
                                         select="@export-kvarh-value" />
                                 </td>
                                 <td>
                                     <xsl:value-of
                                         select="@export-kvarh-status" />
+                                </td>
+                                <td>
+                                    <xsl:value-of
+                                        select="@export-kvarh-last-modified" />
                                 </td>
                             </tr>
                         </xsl:for-each>
@@ -15154,33 +15181,31 @@ era_query = Hiber.session().createQuery("from Era era where era.supply = :supply
 
 mpan_query = Hiber.session().createQuery("from Mpan mpan where mpan.supplyGeneration = :generation and mpan.llfc.isImport = :polarity")
 
-events = []
 
-def add_event(date, code, mpans):
+def add_event(events, date, code, mpans):
     for mpan in mpans:
         events.append({'date': date, 'code': code, 'mpan-core': mpan.getCore()})
 
 while supplies.next():
     supply = supplies.get(0)
     generations = [generation for generation in generation_query.setEntity('supply', supply).list()]
-    global events
     events = []
     first_generation = generations[0]
     first_generation_start = first_generation.getStartDate()
     if first_generation_start.after(year_start):
-        add_event(first_generation_start, "New Supply", first_generation.getMpans())
+        add_event(events, first_generation_start, "New Supply", first_generation.getMpans())
 
     last_generation = generations[-1]
     last_generation_finish = last_generation.getFinishDate()
     if HhStartDate.isBefore(last_generation_finish, year_finish):
-        add_event(last_generation_finish, "Disconnection", last_generation.getMpans())
+        add_event(events, last_generation_finish, "Disconnection", last_generation.getMpans())
     
     prev_gen = first_generation
     for generation in generations[1:]:
         if generation.getMeterSerialNumber() != prev_gen.getMeterSerialNumber():
-            add_event(generation.getStartDate(), "Meter Change", generation.getMpans())
+            add_event(events, generation.getStartDate(), "Meter Change", generation.getMpans())
         if generation.getPc().getCode() != prev_gen.getPc().getCode():
-            add_event(generation.getStartDate(), "Change Of Profile Class", generation.getMpans())
+            add_event(events, generation.getStartDate(), "Change Of Profile Class", generation.getMpans())
 
         gen_mop_id = generation.getMopContract()
         if gen_mop_id is not None:
@@ -15189,7 +15214,7 @@ while supplies.next():
         if prev_mop_id is not None:
             prev_mop_id = prev_mop_id.getId()
         if gen_mop_id != prev_mop_id:
-            add_event(generation.getStartDate(), "Change Of MOP", generation.getMpans())
+            add_event(events, generation.getStartDate(), "Change Of MOP", generation.getMpans())
 
         gen_dc_id = generation.getHhdcContract()
         if gen_dc_id is not None:
@@ -15198,7 +15223,7 @@ while supplies.next():
         if prev_dc_id is not None:
             prev_dc_id = prev_dc_id.getId()
         if gen_dc_id != prev_dc_id:
-            add_event(generation.getStartDate(), "Change Of DC", generation.getMpans())
+            add_event(events, generation.getStartDate(), "Change Of DC", generation.getMpans())
 
         for polarity in [True, False]:
             gen_mpan_sup_id = mpan_query.setEntity('generation', generation).setBoolean('polarity', polarity).uniqueResult()
@@ -15212,11 +15237,11 @@ while supplies.next():
                 prev_mpan_sup_id = prev_mpan_sup_id.getSupplierContract().getId()
             
             if gen_mpan_sup_id is None and prev_mpan_sup_id is not None:
-                add_event(generation.getStartDate(), "End of supply", [reporting_mpan])
+                add_event(events, generation.getStartDate(), "End of supply", [reporting_mpan])
             elif gen_mpan_sup_id is not None and prev_mpan_sup_id is None:
-                add_event(generation.getStartDate(), "Start of supply", [reporting_mpan])
+                add_event(events, generation.getStartDate(), "Start of supply", [reporting_mpan])
             elif gen_mpan_sup_id is not None and prev_mpan_sup_id is not None and gen_mpan_sup_id != prev_mpan_sup_id:
-                add_event(generation.getStartDate(), "Change Of Supplier", [reporting_mpan])
+                add_event(events, generation.getStartDate(), "Change Of Supplier", [reporting_mpan])
         
         prev_gen = generation
 
