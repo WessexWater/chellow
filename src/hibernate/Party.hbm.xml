@@ -20,10 +20,10 @@
 			</generator>
 		</id>
 		<many-to-one name="role" class="net.sf.chellow.physical.MarketRole"
-			column="market_role_id" foreign-key="fkey_party_role" />
+			column="market_role_id" foreign-key="party_market_role_id_fkey" />
 
 		<many-to-one name="participant" class="net.sf.chellow.physical.Participant"
-			column="participant_id" foreign-key="fkey_party_participant" />
+			column="participant_id" foreign-key="party_participant_id_fkey" />
 
 		<property name="name" column="name" not-null="true" />
 

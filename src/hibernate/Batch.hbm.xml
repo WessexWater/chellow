@@ -25,7 +25,7 @@
 			</generator>
 		</id>
 		<many-to-one name="contract" class="Contract" column="contract_id"
-			unique-key="contract-reference" foreign-key="fkey_batch_contract" />
+			unique-key="contract-reference" foreign-key="batch_contract_id_fkey" />
 		<property type="string" name="reference" column="reference"
 			not-null="true" unique-key="contract-reference" />
 		<property type="string" name="description" not-null="true" />

@@ -21,7 +21,7 @@
 			</generator>
 		</id>
 		<many-to-one name="contract" class="Contract" column="contract_id"
-			foreign-key="fkey_rate_script_contract" unique-key="contract_start_date" />
+			foreign-key="rate_script_contract_id_fkey" unique-key="contract_start_date" />
 		<component name="startDate" class="net.sf.chellow.physical.HhStartDate">
 			<property type="timestamp" name="date">
 				<column name="start_date" sql-type="timestamp with time zone"

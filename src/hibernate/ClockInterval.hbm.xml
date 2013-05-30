@@ -33,7 +33,7 @@
 			</generator>
 		</id>
 		<many-to-one name="tpr" class="Tpr" column="tpr_id"
-			foreign-key="fkey_clock_interval_tpr" />
+			foreign-key="clock_interval_tpr_id_fkey" />
 		<property type="integer" name="dayOfWeek" column="day_of_week"
 			not-null="true" />
 		<property type="integer" name="startDay" column="start_day"

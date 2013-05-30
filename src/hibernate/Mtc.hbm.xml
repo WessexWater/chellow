@@ -20,7 +20,7 @@
 			</generator>
 		</id>
 		<many-to-one name="dno" class="net.sf.chellow.billing.Party"
-			column="dno_id" unique-key="mtc_unique" foreign-key="fkey_mtc_dno" />
+			column="dno_id" unique-key="mtc_unique" foreign-key="mtc_dno_id_fkey" />
 		<property type="string" name="code" column="code" unique-key="mtc_unique" />
 		<property type="string" name="description" />
 		<property type="boolean" name="hasRelatedMetering" column="has_related_metering"
@@ -29,9 +29,9 @@
 		<property type="boolean" name="isHh" column="is_hh" />
 
 		<many-to-one name="meterType" class="MeterType" column="meter_type_id"
-			foreign-key="fkey_mtc_meter_type" />
+			foreign-key="mtc_meter_type_id_fkey" />
 		<many-to-one name="paymentType" class="MeterPaymentType"
-			column="payment_type_id" foreign-key="fkey_mtc_payment_type" />
+			column="meter_payment_type_id" foreign-key="mtc_meter_payment_type_id_fkey" />
 		<property type="integer" name="tprCount" column="tpr_count" />
 		<property type="timestamp" name="validFrom" not-null="true">
 			<column name="valid_from" sql-type="timestamp with time zone" />

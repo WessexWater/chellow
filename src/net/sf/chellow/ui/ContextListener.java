@@ -58,6 +58,8 @@ import net.sf.chellow.monad.UserException;
 import net.sf.chellow.physical.Configuration;
 import net.sf.chellow.physical.Cop;
 import net.sf.chellow.physical.GeneratorType;
+import net.sf.chellow.physical.HhStartDate;
+import net.sf.chellow.physical.Participant;
 import net.sf.chellow.physical.ReadType;
 import net.sf.chellow.physical.Source;
 import net.sf.chellow.physical.UserRole;
@@ -328,6 +330,7 @@ public class ContextListener implements ServletContextListener {
 
 			stmt.executeUpdate("alter table channel rename supply_generation_id to era_id");
 			stmt.executeUpdate("alter index channel_supply_generation_id_key rename to channel_era_id_is_import_is_kwh_key");
+			stmt.executeUpdate("alter table channel drop constraint fkey_channel_supply_generation;");
 			
 			stmt.executeUpdate("alter table snag add channel_id bigint default null references channel (id)");
 			stmt.executeUpdate("alter table snag add site_id bigint default null references site (id)");
@@ -340,7 +343,8 @@ public class ContextListener implements ServletContextListener {
 			stmt.executeUpdate("alter table snag alter start_date drop default");
 			stmt.executeUpdate("alter table snag alter finish_date drop default");
 			stmt.executeUpdate("alter index description_idx rename to snag_description_idx");
-			stmt.executeUpdate("alter index finish_date_idx rename to snag_finish_date_idx");
+			stmt.executeUpdate("create index snag_finish_date_idx on snag (finish_date);");
+			stmt.executeUpdate("create index snag_start_date_idx on snag (start_date);");
 			stmt.executeUpdate("alter index is_ignored_idx rename to snag_is_ignored_idx");
 
 			stmt.executeUpdate("alter table bill alter net set not null");
@@ -350,11 +354,22 @@ public class ContextListener implements ServletContextListener {
 			stmt.executeUpdate("alter index finish_date_idx rename to bill_finish_date_idx");
 			stmt.executeUpdate("alter index issue_date_idx rename to bill_issue_date_idx");
 			stmt.executeUpdate("alter index start_date_idx rename to bill_start_date_idx");
-
+			stmt.executeUpdate("alter table bill drop constraint fkey_bill__bill_type");
+			stmt.executeUpdate("alter table bill add foreign key (bill_type_id) references bill_type(id);");
+			stmt.executeUpdate("alter table bill drop constraint fkey_bill_batch");
+			stmt.executeUpdate("alter table bill add foreign key (batch_id) references batch (id);");			
+			stmt.executeUpdate("alter table bill drop constraint fkey_bill_supply");
+			stmt.executeUpdate("alter table bill add foreign key (supply_id) references supply (id);");			
+			
 			stmt.executeUpdate("alter table party rename role_id to market_role_id");
 			stmt.executeUpdate("alter table party add dno_code character varying(255) default null");
 			stmt.executeUpdate("update party set dno_code = dno.code from dno where party.id = dno.party_id");
 			stmt.executeUpdate("alter table party alter dno_code drop default");
+			stmt.executeUpdate("update party set market_role_id = (select id from market_role where code = 'R') where dno_code = '99'");
+			stmt.executeUpdate("alter table party drop constraint fkey_party_participant");
+			stmt.executeUpdate("alter table party add foreign key (participant_id) references participant (id);");
+			stmt.executeUpdate("alter table party drop constraint fkey_party_role");
+			stmt.executeUpdate("alter table party add foreign key (market_role_id) references market_role (id);");
 			
 			stmt.executeUpdate("alter table contract add market_role_id bigint default null references market_role (id)");
 			stmt.executeUpdate("alter table contract add is_core boolean not null default true");
@@ -378,12 +393,19 @@ public class ContextListener implements ServletContextListener {
 			stmt.executeUpdate("alter table contract alter market_role_id set not null");
 			stmt.executeUpdate("alter table contract alter party_id set not null");
 			stmt.executeUpdate("alter table contract add constraint contract_market_role_id_name_key unique (market_role_id, name);");
+			stmt.executeUpdate("alter table contract drop constraint fkey_contract_finish_rate_script");
+			stmt.executeUpdate("alter table contract add foreign key (finish_rate_script_id) references rate_script (id);");
+			stmt.executeUpdate("alter table contract drop constraint fkey_contract_start_rate_script");
+			stmt.executeUpdate("alter table contract add foreign key (start_rate_script_id) references rate_script (id);");
 
 			stmt.executeUpdate("alter table site_supply_generation rename to site_era;");
 			stmt.executeUpdate("alter table site_era rename supply_generation_id to era_id");
 			stmt.executeUpdate("alter sequence site_supply_generation_id_sequence rename to site_era_id_sequence;");
 			stmt.executeUpdate("alter index site_supply_generation_pkey rename to site_era_pkey");
-			
+			stmt.executeUpdate("alter table site_era drop constraint fkey_site_supply_generation_site");
+			stmt.executeUpdate("alter table site_era add foreign key (site_id) references site(id);");
+			stmt.executeUpdate("alter table site_era drop constraint fkey_site_supply_generation_supply_generation");
+
 			stmt.executeUpdate("alter table supply_generation rename to era;");
 			stmt.executeUpdate("alter sequence supply_generation_id_sequence rename to era_id_sequence;");
 			stmt.executeUpdate("alter table era drop constraint fkey_mpan_hhdc_contract;");
@@ -418,21 +440,42 @@ public class ContextListener implements ServletContextListener {
 			stmt.executeUpdate("alter table era alter exp_supplier_account drop default");
 			stmt.executeUpdate("alter table era rename meter_serial_number to msn");
 			stmt.executeUpdate("alter index supply_generation_pkey rename to era_pkey");
+			stmt.executeUpdate("alter table era drop constraint fkey_supply_generation_supply");
+			stmt.executeUpdate("alter table era add foreign key (supply_id) references supply(id);");
+			stmt.executeUpdate("alter index supply_generation__finish_date__idx rename to era_finish_date_idx");
+			stmt.executeUpdate("alter index supply_generation__start_date__idx rename to era_start_date_idx");
+			stmt.executeUpdate("alter table era drop constraint fkey_generation__cop");
+			stmt.executeUpdate("alter table era add foreign key (cop_id) references cop (id);");
+			stmt.executeUpdate("alter table era drop constraint fkey_generation__mtc");
+			stmt.executeUpdate("alter table era add foreign key (mtc_id) references mtc (id);");
+			stmt.executeUpdate("alter table era drop constraint fkey_generation__pc");
+			stmt.executeUpdate("alter table era add foreign key (pc_id) references pc (id);");
+			stmt.executeUpdate("alter table era drop constraint fkey_generation__ssc");
+			stmt.executeUpdate("alter table era add foreign key (ssc_id) references ssc (id);");
 			
 			stmt.executeUpdate("create sequence rate_script_id_sequence owned by rate_script.id;");
 			stmt.execute("select setval('rate_script_id_sequence', (select max(id) + 1 from rate_script), false);");
 			stmt.execute("alter table rate_script add constraint rate_script_contract_id_start_date_key unique (contract_id, start_date)");
+			stmt.executeUpdate("alter table rate_script drop constraint fkey_rate_script_contract");
+			stmt.executeUpdate("alter table rate_script add foreign key (contract_id) references contract (id);");
 			
 			stmt.executeUpdate("alter table pc alter code type character varying(255) using to_char(code, '00')");
 
 			stmt.executeUpdate("alter table llfc alter code type character varying(255) using to_char(code, '000')");
 			stmt.executeUpdate("alter table llfc drop constraint fkey_llfc_dno;");
 			stmt.executeUpdate("alter table llfc add foreign key (dno_id) references party(id);");
-
+			stmt.executeUpdate("alter table llfc drop constraint fkey_llfc_voltage_level;");
+			stmt.executeUpdate("alter table llfc add foreign key (voltage_level_id) references voltage_level (id);");
+			
+			stmt.executeUpdate("alter table mtc rename payment_type_id to meter_payment_type_id");
 			stmt.executeUpdate("alter table mtc alter code type character varying(255) using to_char(code, '000')");
 			stmt.executeUpdate("alter table mtc drop constraint fkey_mtc_dno;");
 			stmt.executeUpdate("alter table mtc add foreign key (dno_id) references party(id);");
 			stmt.executeUpdate("alter index mtc_dno_id_key rename to mtc_dno_id_code_key");
+			stmt.executeUpdate("alter table mtc drop constraint fkey_mtc_meter_type;");
+			stmt.executeUpdate("alter table mtc add foreign key (meter_type_id) references meter_type (id);");
+			stmt.executeUpdate("alter table mtc drop constraint fkey_mtc_payment_type;");
+			stmt.executeUpdate("alter table mtc add foreign key (meter_payment_type_id) references meter_payment_type (id);");
 			
 			stmt.executeUpdate("alter table ssc alter code type character varying(255) using to_char(code, '0000')");
 
@@ -441,11 +484,31 @@ public class ContextListener implements ServletContextListener {
 			stmt.executeUpdate("alter table supply alter note drop default");
 			stmt.executeUpdate("alter table supply alter note set not null");
 			stmt.executeUpdate("alter table supply add dno_contract_id bigint default null references contract(id)");
+			stmt.executeUpdate("alter table supply drop constraint fkey_supply_generation__gsp_group;");
+			stmt.executeUpdate("alter table supply add foreign key (gsp_group_id) references gsp_group(id);");
+			stmt.executeUpdate("alter table supply drop constraint fkey_supply_generator_type;");
+			stmt.executeUpdate("alter table supply add foreign key (generator_type_id) references generator_type (id);");
+			stmt.executeUpdate("alter table supply drop constraint fkey_supply_source;");
+			stmt.executeUpdate("alter table supply add foreign key (source_id) references source (id);");
 			
 			stmt.executeUpdate("alter table register_read rename meter_serial_number to msn");
 			stmt.executeUpdate("alter index meter_serial_number__idx rename to register_read_msn_idx");
 			stmt.executeUpdate("alter index present_date__idx rename to register_read_present_date_idx");
 			stmt.executeUpdate("alter index previous_date__idx rename to register_read_previous_date_idx");
+			stmt.executeUpdate("alter table register_read drop constraint fkey_bill__register_read;");
+			stmt.executeUpdate("alter table register_read add foreign key (bill_id) references bill(id);");
+			stmt.executeUpdate("alter table register_read drop constraint fkey_present_type__register_read;");
+			stmt.executeUpdate("alter table register_read add foreign key (present_type_id) references read_type (id);");
+			stmt.executeUpdate("alter table register_read drop constraint fkey_previous_type__register_read;");
+			stmt.executeUpdate("alter table register_read add foreign key (previous_type_id) references read_type (id);");
+			stmt.executeUpdate("alter table register_read drop constraint fkey_tpr__register_read;");
+			stmt.executeUpdate("alter table register_read add foreign key (tpr_id) references tpr (id);");
+			stmt.executeUpdate("alter table register_read drop constraint register_read_bill_id_fkey;");
+			stmt.executeUpdate("alter table register_read add foreign key (bill_id) references bill (id) on delete cascade;");
+			
+			
+			stmt.executeUpdate("alter table batch drop constraint fkey_batch_contract;");
+			stmt.executeUpdate("alter table batch add foreign key (contract_id) references contract(id);");
 			
 			stmt.executeUpdate("alter index batch_contract_id_key rename to batch_contract_id_reference_key");
 			
@@ -464,13 +527,20 @@ public class ContextListener implements ServletContextListener {
 			stmt.executeUpdate("drop table channel_snag cascade;");
 			stmt.executeUpdate("drop table site_snag cascade;");
 
+			stmt.executeUpdate("alter table site_era add foreign key (era_id) references era(id);");
+			stmt.executeUpdate("alter table channel add foreign key (era_id) references era (id);");
+			
+			stmt.executeUpdate("alter index hh_datum_channel_id_key rename to hh_datum_channel_id_start_date_key;");
+			
+			stmt.executeUpdate("alter table clock_interval drop constraint fkey_clock_interval_tpr;");
+			stmt.executeUpdate("alter table clock_interval add foreign key (tpr_id) references tpr (id);");
+			
 			// takes ages
-			// stmt.executeUpdate("alter table hh_datum add last_modified timestamp with time zone not null default 'epoch'");
-			// stmt.executeUpdate("alter table hh_datum alter last_modified drop default");
+			stmt.executeUpdate("alter table hh_datum add last_modified timestamp with time zone not null default 'epoch'");
+			stmt.executeUpdate("alter table hh_datum alter last_modified drop default");
 
 			stmt.executeUpdate("commit");
 			con.setAutoCommit(false);
-			con.close();
 		} catch (SQLException sqle) {
 			throw new InternalException(sqle);
 		}
@@ -494,14 +564,19 @@ public class ContextListener implements ServletContextListener {
 			Statement stmt = con.createStatement();
 			con.setAutoCommit(false);
 			
-			stmt.executeUpdate("update supply set dno_contract_id = (select id from contract where dno_code = (select substring(imp_mpan_core from 1 for 2) from era where supply_id = supply.id and imp_mpan_core is not null limit 1))");
-			stmt.executeUpdate("update supply set dno_contract_id = (select id from contract where dno_code = (select substring(exp_mpan_core from 1 for 2) from era where supply_id = supply.id and exp_mpan_core is not null limit 1))");
-			
+			stmt.executeUpdate("update supply set dno_contract_id = (select id from contract where name = (select substring(imp_mpan_core from 1 for 2) from era where supply_id = supply.id and imp_mpan_core is not null limit 1)) where supply.dno_contract_id is null");
+			stmt.executeUpdate("update supply set dno_contract_id = (select id from contract where name = (select substring(exp_mpan_core from 1 for 2) from era where supply_id = supply.id and exp_mpan_core is not null limit 1)) where supply.dno_contract_id is null");
+			stmt.executeUpdate("alter table supply alter dno_contract_id set not null");
+			stmt.executeUpdate("update contract set charge_script = 'return' where name = 'startup'");
 			stmt.executeUpdate("commit");
 			con.setAutoCommit(false);
 			con.close();
 		} catch (SQLException sqle) {
 			throw new InternalException(sqle);
 		}
+		Hiber.setReadWrite();
+		Contract.insertNonCoreContract(true, Participant.getParticipant("CALB"), "configuration", new HhStartDate("1990-01-01T00:00Z"), new HhStartDate("1990-01-01T00:00Z"), "", "");
+		Hiber.commit();
+		Hiber.close();
 	}
 }

@@ -20,11 +20,10 @@
 			</generator>
 		</id>
 		<property name="name" column="name" />
-		
-		<many-to-one name="dnoContract" class="net.sf.chellow.billing.Contract"
-			column="dno_contract_id" foreign-key="fkey_mpan_dno_contract"
-			not-null="true" />
 
+		<many-to-one name="dnoContract" class="net.sf.chellow.billing.Contract"
+			column="dno_contract_id" foreign-key="supply_dno_contract_id_fkey"
+			not-null="true" />
 
 		<many-to-one name="source" class="Source" column="source_id"
 			not-null="true" foreign-key="supply_source_id_fkey" />
@@ -32,9 +31,9 @@
 			<column name="note" sql-type="text" not-null="true" />
 		</property>
 		<many-to-one name="generatorType" class="GeneratorType"
-			column="generator_type_id" foreign-key="fkey_supply_generator_type" />
+			column="generator_type_id" foreign-key="supply_generator_type_id_fkey" />
 		<many-to-one name="gspGroup" class="GspGroup" column="gsp_group_id"
-			foreign-key="supply_gsp_group_id" />
+			foreign-key="supply_gsp_group_id_fkey" />
 		<set name="eras" inverse="true" cascade="all,delete-orphan"
 			order-by="start_date desc">
 			<key column="supply_id" />

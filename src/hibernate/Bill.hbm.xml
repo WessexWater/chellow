@@ -25,7 +25,7 @@
 		<many-to-one name="supply" class="net.sf.chellow.physical.Supply"
 			column="supply_id" foreign-key="bill_supply_id_fkey" />
 		<property name="issueDate" type="timestamp" not-null="true"
-			index="issue_date_idx">
+			index="bill_issue_date_idx">
 			<column name="issue_date" sql-type="timestamp with time zone" />
 		</property>
 		<component name="startDate" class="net.sf.chellow.physical.HhStartDate">

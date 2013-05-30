@@ -22,7 +22,7 @@
 			</generator>
 		</id>
 		<many-to-one name="supply" class="Supply" column="supply_id"
-			not-null="true" foreign-key="fkey_supply_era_supply" />
+			not-null="true" foreign-key="era_supply_id_fkey" />
 
 		<set name="siteEras" inverse="true" cascade="all,delete-orphan"
 			order-by="site_id">
@@ -76,7 +76,7 @@
 		<property type="string" name="impMpanCore" column="imp_mpan_core" />
 
 		<many-to-one name="impLlfc" class="Llfc" column="imp_llfc_id"
-			foreign-key="fkey_era__imp_llfc" />
+			foreign-key="era_imp_llfc_id_fkey" />
 
 		<many-to-one name="impSupplierContract" class="net.sf.chellow.billing.Contract"
 			column="imp_supplier_contract_id" foreign-key="era_imp_supplier_contract_id_fkey" />

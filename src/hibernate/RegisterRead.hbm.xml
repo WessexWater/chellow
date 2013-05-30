@@ -29,7 +29,7 @@
 		<property name="mpanStr" type="string" column="mpan_str"
 			not-null="true" />
 		<many-to-one name="tpr" class="Tpr" column="tpr_id"
-			foreign-key="register_read_tpr_id" />
+			foreign-key="register_read_tpr_id_fkey" />
 		<component name="presentDate" class="HhStartDate">
 			<property name="date" type="timestamp" not-null="true">
 				<column name="present_date" sql-type="timestamp with time zone"
