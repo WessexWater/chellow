@@ -21,7 +21,7 @@
 			</generator>
 		</id>
 		<many-to-one name="era" class="Era" column="era_id"
-			unique-key="channel_unique" foreign-key="fkey_channel_era" />
+			unique-key="channel_unique" foreign-key="channel_era_id_fkey" />
 		<property name="isImport" column="is_import" type="boolean"
 			not-null="true" unique-key="channel_unique" />
 		<property name="isKwh" column="is_kwh" type="boolean"

@@ -77,7 +77,11 @@ public class Party extends PersistentEntity {
 				.setEntity("participant", participant).setEntity("role", role)
 				.uniqueResult();
 		if (party == null) {
-			throw new NotFoundException();
+			throw new NotFoundException(
+					"Can't find the party with participant with code '"
+							+ participant.getCode()
+							+ "' and market role with code '" + role.getCode()
+							+ "'.");
 		}
 		return party;
 	}

@@ -20,38 +20,38 @@
 			</generator>
 		</id>
 		<many-to-one name="bill" class="net.sf.chellow.billing.Bill"
-			column="bill_id" not-null="true" foreign-key="fkey_bill__register_read" />
+			column="bill_id" not-null="true" foreign-key="register_read_bill_id_fkey" />
 		<property name="coefficient" type="big_decimal" not-null="true">
 			<column name="coefficient" sql-type="numeric" />
 		</property>
 		<property name="msn" type="string" column="msn" not-null="true"
-			index="msn__idx" />
+			index="register_read_msn_idx" />
 		<property name="mpanStr" type="string" column="mpan_str"
 			not-null="true" />
 		<many-to-one name="tpr" class="Tpr" column="tpr_id"
-			foreign-key="fkey_tpr__register_read" />
+			foreign-key="register_read_tpr_id" />
 		<component name="presentDate" class="HhStartDate">
 			<property name="date" type="timestamp" not-null="true">
 				<column name="present_date" sql-type="timestamp with time zone"
-					index="present_date__idx" />
+					index="register_read_present_date_idx" />
 			</property>
 		</component>
 		<property name="presentValue" type="big_decimal" not-null="true">
 			<column name="present_value" sql-type="numeric" />
 		</property>
 		<many-to-one name="presentType" class="ReadType" column="present_type_id"
-			not-null="true" foreign-key="fkey_present_type__register_read" />
+			not-null="true" foreign-key="register_read_present_type_id_fkey" />
 		<component name="previousDate" class="HhStartDate">
 			<property name="date" type="timestamp" not-null="true">
 				<column name="previous_date" sql-type="timestamp with time zone"
-					index="previous_date__idx" />
+					index="register_read_previous_date_idx" />
 			</property>
 		</component>
 		<property name="previousValue" type="big_decimal" not-null="true">
 			<column name="previous_value" sql-type="numeric" />
 		</property>
 		<many-to-one name="previousType" class="ReadType" column="previous_type_id"
-			not-null="true" foreign-key="fkey_previous_type__register_read" />
+			not-null="true" foreign-key="register_read_previous_type_id_fkey" />
 		<component name="units" class="Units">
 			<property name="int" column="units" />
 		</component>

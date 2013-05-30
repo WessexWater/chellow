@@ -21,20 +21,20 @@
 			</generator>
 		</id>
 		<many-to-one name="batch" class="Batch" column="batch_id"
-			foreign-key="fkey_bill_batch" />
+			foreign-key="bill_batch_id_fkey" />
 		<many-to-one name="supply" class="net.sf.chellow.physical.Supply"
-			column="supply_id" foreign-key="fkey_bill_supply" />
+			column="supply_id" foreign-key="bill_supply_id_fkey" />
 		<property name="issueDate" type="timestamp" not-null="true"
 			index="issue_date_idx">
 			<column name="issue_date" sql-type="timestamp with time zone" />
 		</property>
 		<component name="startDate" class="net.sf.chellow.physical.HhStartDate">
-			<property type="timestamp" name="date" index="start_date_idx">
+			<property type="timestamp" name="date" index="bill_start_date_idx">
 				<column name="start_date" sql-type="timestamp with time zone" />
 			</property>
 		</component>
 		<component name="finishDate" class="net.sf.chellow.physical.HhStartDate">
-			<property type="timestamp" name="date" index="finish_date_idx">
+			<property type="timestamp" name="date" index="bill_finish_date_idx">
 				<column name="finish_date" sql-type="timestamp with time zone" />
 			</property>
 		</component>
@@ -48,7 +48,7 @@
 			<column name="gross" sql-type="numeric" not-null="true" />
 		</property>
 		<many-to-one name="type" class="BillType" column="bill_type_id"
-			foreign-key="fkey_bill__bill_type" />
+			foreign-key="bill_bill_type_id_fkey" />
 		<property name="kwh" type="big_decimal">
 			<column name="kwh" sql-type="numeric" not-null="true" />
 		</property>

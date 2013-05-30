@@ -327,7 +327,8 @@ public class ContextListener implements ServletContextListener {
 			stmt.executeUpdate("alter table dno_contract drop constraint fkey_dno_contract_contract;");
 
 			stmt.executeUpdate("alter table channel rename supply_generation_id to era_id");
-
+			stmt.executeUpdate("alter index channel_supply_generation_id_key rename to channel_era_id_is_import_is_kwh_key");
+			
 			stmt.executeUpdate("alter table snag add channel_id bigint default null references channel (id)");
 			stmt.executeUpdate("alter table snag add site_id bigint default null references site (id)");
 			stmt.executeUpdate("alter table snag add start_date timestamp with time zone default null");
@@ -338,19 +339,23 @@ public class ContextListener implements ServletContextListener {
 			stmt.executeUpdate("alter table snag alter site_id drop default");
 			stmt.executeUpdate("alter table snag alter start_date drop default");
 			stmt.executeUpdate("alter table snag alter finish_date drop default");
-
-			stmt.executeUpdate("drop table channel_snag;");
-			stmt.executeUpdate("drop table site_snag;");
+			stmt.executeUpdate("alter index description_idx rename to snag_description_idx");
+			stmt.executeUpdate("alter index finish_date_idx rename to snag_finish_date_idx");
+			stmt.executeUpdate("alter index is_ignored_idx rename to snag_is_ignored_idx");
 
 			stmt.executeUpdate("alter table bill alter net set not null");
 			stmt.executeUpdate("alter table bill alter vat set not null");
 			stmt.executeUpdate("alter table bill alter gross set not null");
 			stmt.executeUpdate("alter table bill alter kwh set not null");
+			stmt.executeUpdate("alter index finish_date_idx rename to bill_finish_date_idx");
+			stmt.executeUpdate("alter index issue_date_idx rename to bill_issue_date_idx");
+			stmt.executeUpdate("alter index start_date_idx rename to bill_start_date_idx");
 
 			stmt.executeUpdate("alter table party rename role_id to market_role_id");
 			stmt.executeUpdate("alter table party add dno_code character varying(255) default null");
 			stmt.executeUpdate("update party set dno_code = dno.code from dno where party.id = dno.party_id");
-
+			stmt.executeUpdate("alter table party alter dno_code drop default");
+			
 			stmt.executeUpdate("alter table contract add market_role_id bigint default null references market_role (id)");
 			stmt.executeUpdate("alter table contract add is_core boolean not null default true");
 			stmt.executeUpdate("alter table contract add properties text default ''");
@@ -370,14 +375,15 @@ public class ContextListener implements ServletContextListener {
 			stmt.executeUpdate("update contract set start_rate_script_id = null, finish_rate_script_id = null  where id in (select contract_id from dno_contract);");
 			stmt.executeUpdate("delete from rate_script where contract_id in (select contract_id from dno_contract);");
 			stmt.executeUpdate("delete from contract where id in (select contract_id from dno_contract);");
-
 			stmt.executeUpdate("alter table contract alter market_role_id set not null");
 			stmt.executeUpdate("alter table contract alter party_id set not null");
+			stmt.executeUpdate("alter table contract add constraint contract_market_role_id_name_key unique (market_role_id, name);");
 
 			stmt.executeUpdate("alter table site_supply_generation rename to site_era;");
 			stmt.executeUpdate("alter table site_era rename supply_generation_id to era_id");
 			stmt.executeUpdate("alter sequence site_supply_generation_id_sequence rename to site_era_id_sequence;");
-
+			stmt.executeUpdate("alter index site_supply_generation_pkey rename to site_era_pkey");
+			
 			stmt.executeUpdate("alter table supply_generation rename to era;");
 			stmt.executeUpdate("alter sequence supply_generation_id_sequence rename to era_id_sequence;");
 			stmt.executeUpdate("alter table era drop constraint fkey_mpan_hhdc_contract;");
@@ -411,9 +417,11 @@ public class ContextListener implements ServletContextListener {
 			stmt.executeUpdate("alter table era alter imp_supplier_account drop default");
 			stmt.executeUpdate("alter table era alter exp_supplier_account drop default");
 			stmt.executeUpdate("alter table era rename meter_serial_number to msn");
-
+			stmt.executeUpdate("alter index supply_generation_pkey rename to era_pkey");
+			
 			stmt.executeUpdate("create sequence rate_script_id_sequence owned by rate_script.id;");
 			stmt.execute("select setval('rate_script_id_sequence', (select max(id) + 1 from rate_script), false);");
+			stmt.execute("alter table rate_script add constraint rate_script_contract_id_start_date_key unique (contract_id, start_date)");
 			
 			stmt.executeUpdate("alter table pc alter code type character varying(255) using to_char(code, '00')");
 
@@ -424,21 +432,27 @@ public class ContextListener implements ServletContextListener {
 			stmt.executeUpdate("alter table mtc alter code type character varying(255) using to_char(code, '000')");
 			stmt.executeUpdate("alter table mtc drop constraint fkey_mtc_dno;");
 			stmt.executeUpdate("alter table mtc add foreign key (dno_id) references party(id);");
+			stmt.executeUpdate("alter index mtc_dno_id_key rename to mtc_dno_id_code_key");
 			
 			stmt.executeUpdate("alter table ssc alter code type character varying(255) using to_char(code, '0000')");
 
-			stmt.executeUpdate("alter table user rename role_id to user_role_id");
+			stmt.executeUpdate("alter table \"user\" rename role_id to user_role_id");
 			
 			stmt.executeUpdate("alter table supply alter note drop default");
 			stmt.executeUpdate("alter table supply alter note set not null");
 			stmt.executeUpdate("alter table supply add dno_contract_id bigint default null references contract(id)");
-
+			
 			stmt.executeUpdate("alter table register_read rename meter_serial_number to msn");
-
-			//batch_contract_id_key
+			stmt.executeUpdate("alter index meter_serial_number__idx rename to register_read_msn_idx");
+			stmt.executeUpdate("alter index present_date__idx rename to register_read_present_date_idx");
+			stmt.executeUpdate("alter index previous_date__idx rename to register_read_previous_date_idx");
+			
+			stmt.executeUpdate("alter index batch_contract_id_key rename to batch_contract_id_reference_key");
 			
 			stmt.executeUpdate("drop table mpan cascade;");
+			stmt.executeUpdate("drop sequence mpan_id_sequence cascade;");
 			stmt.executeUpdate("drop table mpan_core cascade;");
+			stmt.executeUpdate("drop sequence mpan_core_id_sequence cascade;");
 			stmt.executeUpdate("drop table non_core_contract cascade;");
 			stmt.executeUpdate("drop table hhdc_contract cascade;");
 			stmt.executeUpdate("drop table supplier_contract cascade;");
@@ -447,6 +461,8 @@ public class ContextListener implements ServletContextListener {
 
 			stmt.executeUpdate("drop table provider cascade;");
 			stmt.executeUpdate("drop table dno cascade;");
+			stmt.executeUpdate("drop table channel_snag cascade;");
+			stmt.executeUpdate("drop table site_snag cascade;");
 
 			// takes ages
 			// stmt.executeUpdate("alter table hh_datum add last_modified timestamp with time zone not null default 'epoch'");
@@ -478,7 +494,8 @@ public class ContextListener implements ServletContextListener {
 			Statement stmt = con.createStatement();
 			con.setAutoCommit(false);
 			
-			stmt.executeUpdate("update supply set dno_contract_id = (select id from contract where (dno_code = (select imp_mpan_core from era where supply_id = supply.id and imp_mpan_core is not null limit 1) || ' ' || mpan_core.unique_part || ' ' || mpan_core.check_digit from dno, mpan_core, mpan where mpan.id = era.import_mpan_id and mpan.core_id = mpan_core.id and mpan_core.dno_id = dno.party_id)");
+			stmt.executeUpdate("update supply set dno_contract_id = (select id from contract where dno_code = (select substring(imp_mpan_core from 1 for 2) from era where supply_id = supply.id and imp_mpan_core is not null limit 1))");
+			stmt.executeUpdate("update supply set dno_contract_id = (select id from contract where dno_code = (select substring(exp_mpan_core from 1 for 2) from era where supply_id = supply.id and exp_mpan_core is not null limit 1))");
 			
 			stmt.executeUpdate("commit");
 			con.setAutoCommit(false);

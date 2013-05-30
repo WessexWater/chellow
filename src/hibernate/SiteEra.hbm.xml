@@ -23,9 +23,9 @@
 			</generator>
 		</id>
 		<many-to-one name="era" class="Era" column="era_id"
-			not-null="true" foreign-key="fkey_site_era_era" />
+			not-null="true" foreign-key="site_era_era_id_fkey" />
 		<many-to-one name="site" class="Site" column="site_id"
-			not-null="true" foreign-key="fkey_site_era_site" />
+			not-null="true" foreign-key="site_era_site_id_fkey" />
 		<property name="isPhysical" column="is_physical" not-null="true" />
 	</class>
 </hibernate-mapping>

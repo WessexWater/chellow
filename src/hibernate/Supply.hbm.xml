@@ -27,14 +27,14 @@
 
 
 		<many-to-one name="source" class="Source" column="source_id"
-			not-null="true" foreign-key="fkey_supply_source" />
+			not-null="true" foreign-key="supply_source_id_fkey" />
 		<property type="string" name="note" lazy="true">
 			<column name="note" sql-type="text" not-null="true" />
 		</property>
 		<many-to-one name="generatorType" class="GeneratorType"
 			column="generator_type_id" foreign-key="fkey_supply_generator_type" />
 		<many-to-one name="gspGroup" class="GspGroup" column="gsp_group_id"
-			foreign-key="fkey_supply_era__gsp_group" />
+			foreign-key="supply_gsp_group_id" />
 		<set name="eras" inverse="true" cascade="all,delete-orphan"
 			order-by="start_date desc">
 			<key column="supply_id" />

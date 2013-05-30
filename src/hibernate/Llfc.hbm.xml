@@ -21,13 +21,13 @@
 		</id>
 
 		<many-to-one name="dno" class="net.sf.chellow.billing.Party"
-			column="dno_id" not-null="true" foreign-key="fkey_llfc_dno" />
+			column="dno_id" not-null="true" foreign-key="llfc_dno_id_fkey" />
 		<property type="string" name="code" column="code" not-null="true" />
 
 		<property name="description" column="description" not-null="true" />
 
 		<many-to-one name="voltageLevel" class="VoltageLevel"
-			column="voltage_level_id" not-null="true" foreign-key="fkey_llfc_voltage_level" />
+			column="voltage_level_id" not-null="true" foreign-key="llfc_voltage_level_id_fkey" />
 
 		<property type="boolean" name="isSubstation" column="is_substation" />
 

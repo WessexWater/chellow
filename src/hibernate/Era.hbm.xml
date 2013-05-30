@@ -31,14 +31,14 @@
 		</set>
 
 		<many-to-one name="mopContract" class="net.sf.chellow.billing.Contract"
-			column="mop_contract_id" foreign-key="fkey_mpan_mop_contract"
+			column="mop_contract_id" foreign-key="era_mop_contract_id_fkey"
 			not-null="true" />
 
 		<property type="string" name="mopAccount" column="mop_account"
 			not-null="true" />
 
 		<many-to-one name="hhdcContract" class="net.sf.chellow.billing.Contract"
-			column="hhdc_contract_id" foreign-key="fkey_mpan_hhdc_contract"
+			column="hhdc_contract_id" foreign-key="era_hhdc_contract_id_fkey"
 			not-null="true" />
 
 		<property type="string" name="hhdcAccount" column="hhdc_account"
@@ -46,31 +46,31 @@
 
 		<component name="startDate" class="HhStartDate">
 			<property type="timestamp" name="date"
-				index="supply_era__start_date__idx">
+				index="era_start_date_idx">
 				<column name="start_date" sql-type="timestamp with time zone" />
 			</property>
 		</component>
 
 		<component name="finishDate" class="HhStartDate">
 			<property type="timestamp" name="date"
-				index="supply_era__finish_date__idx">
+				index="era_finish_date_idx">
 				<column name="finish_date" sql-type="timestamp with time zone" />
 			</property>
 		</component>
 
 		<many-to-one name="pc" class="Pc" column="pc_id" not-null="true"
-			foreign-key="fkey_era__pc" />
+			foreign-key="era_pc_id_fkey" />
 
 		<property type="string" name="msn" column="msn" not-null="true" />
 
 		<many-to-one name="mtc" class="Mtc" column="mtc_id"
-			not-null="true" foreign-key="fkey_era__mtc" />
+			not-null="true" foreign-key="era_mtc_id_fkey" />
 
 		<many-to-one name="cop" class="Cop" column="cop_id"
-			not-null="true" foreign-key="fkey_era__cop" />
+			not-null="true" foreign-key="era_cop_id_fkey" />
 
 		<many-to-one name="ssc" class="Ssc" column="ssc_id"
-			foreign-key="fkey_era__ssc" />
+			foreign-key="era_ssc_id_fkey" />
 
 
 		<property type="string" name="impMpanCore" column="imp_mpan_core" />
@@ -79,7 +79,7 @@
 			foreign-key="fkey_era__imp_llfc" />
 
 		<many-to-one name="impSupplierContract" class="net.sf.chellow.billing.Contract"
-			column="imp_supplier_contract_id" foreign-key="fkey_era_imp_supplier_contract" />
+			column="imp_supplier_contract_id" foreign-key="era_imp_supplier_contract_id_fkey" />
 
 		<property type="string" name="impSupplierAccount" column="imp_supplier_account" />
 		<property type="int" name="impSc" column="imp_sc" />
@@ -87,10 +87,10 @@
 		<property type="string" name="expMpanCore" column="exp_mpan_core" />
 
 		<many-to-one name="expLlfc" class="Llfc" column="exp_llfc_id"
-			foreign-key="fkey_era__exp_llfc" />
+			foreign-key="era_exp_llfc_id_fkey" />
 
 		<many-to-one name="expSupplierContract" class="net.sf.chellow.billing.Contract"
-			column="exp_supplier_contract_id" foreign-key="fkey_era_exp_supplier_contract" />
+			column="exp_supplier_contract_id" foreign-key="era_exp_supplier_contract_id_fkey" />
 
 		<property type="string" name="expSupplierAccount" column="exp_supplier_account" />
 		<property type="int" name="expSc" column="exp_sc" />

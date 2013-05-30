@@ -26,24 +26,24 @@
 		</property>
 
 		<property name="description" column="description" type="string"
-			not-null="true" index="description_idx" />
+			not-null="true" index="snag_description_idx" />
 
 		<property name="isIgnored" type="boolean" not-null="true">
-			<column name="is_ignored" default="false" index="is_ignored_idx" />
+			<column name="is_ignored" default="false" index="snag_is_ignored_idx" />
 		</property>
 		<many-to-one name="channel" class="Channel" column="channel_id"
-			foreign-key="fkey_snag_channel_channel" />
+			foreign-key="snag_channel_id_fkey" />
 		<many-to-one name="site" class="Site" column="site_id"
-			foreign-key="fkey_site_snag_site" />
+			foreign-key="snag_site_id_fkey" />
 		<component name="startDate" class="HhStartDate">
 			<property name="date" type="timestamp" not-null="true"
-				index="channel_snag_start_date_idx">
+				index="snag_start_date_idx">
 				<column name="start_date" sql-type="timestamp with time zone" />
 			</property>
 		</component>
 		<component name="finishDate" class="HhStartDate">
 			<property name="date" type="timestamp" not-null="true"
-				index="channel_snag_finish_date_idx">
+				index="snag_finish_date_idx">
 				<column name="finish_date" sql-type="timestamp with time zone" />
 			</property>
 		</component>
