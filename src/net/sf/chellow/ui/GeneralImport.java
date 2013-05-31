@@ -1,6 +1,6 @@
 /*******************************************************************************
  * 
- *  Copyright (c) 2005, 2010 Wessex Water Services Limited
+ *  Copyright (c) 2005, 2013 Wessex Water Services Limited
  *  
  *  This file is part of Chellow.
  * 
@@ -101,8 +101,6 @@ public class GeneralImport extends Thread implements Urlable, XmlDescriber {
 
 	private Digester digester;
 
-	private int lineNumber;
-
 	private MonadUri uri;
 
 	public GeneralImport(MonadUri uri, InputStream is, String extension)
@@ -141,7 +139,11 @@ public class GeneralImport extends Thread implements Urlable, XmlDescriber {
 	}
 
 	public int getLineNumber() {
-		return lineNumber;
+		if (digester == null) {
+			return 0;
+		} else {
+			return digester.getLineNumber();
+		}
 	}
 
 	public void run() {
@@ -305,7 +307,7 @@ public class GeneralImport extends Thread implements Urlable, XmlDescriber {
 			ChellowLogger.getLogger().log(Level.SEVERE,
 					"From header import process", e);
 		} finally {
-			source.setAttribute("line-number", String.valueOf(lineNumber));
+			source.setAttribute("line-number", String.valueOf(getLineNumber()));
 			Hiber.rollBack();
 			Hiber.close();
 		}
@@ -379,8 +381,9 @@ public class GeneralImport extends Thread implements Urlable, XmlDescriber {
 		return null;
 	}
 
-	private class Digester {
+	public static class Digester {
 		private CSVParser shredder = null;
+		private int lineNumber = 0;
 
 		private XMLEventReader r;
 
@@ -401,6 +404,10 @@ public class GeneralImport extends Thread implements Urlable, XmlDescriber {
 				throw new UserException("The file extension was '" + extension
 						+ "' but only csv or xml is recognized.");
 			}
+		}
+		
+		public int getLineNumber() {
+			return lineNumber;
 		}
 
 		public String[] getLine() throws HttpException {

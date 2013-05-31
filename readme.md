@@ -489,8 +489,3 @@ Chellow is written in Java. I work with the Java code, using:
   * Testing is done with [Imprimatur](https://imprimatur.wikispaces.com/). 
   * Reports are written in [Python 2.5](http://www.python.org/). 
   * [HTML 5](http://www.w3.org/html/wg/drafts/html/master/Overview.html)
-  
-### Todo
-
-* Remove Mpan and MpanCore classes and have attributes of era directly.
-* Have a single Contract class. Don't subclass.

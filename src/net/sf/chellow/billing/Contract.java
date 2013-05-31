@@ -66,6 +66,10 @@ public class Contract extends PersistentEntity implements Comparable<Contract> {
 		return getContract("Z", name);
 	}
 
+	public static Contract findNonCoreContract(String name) throws HttpException {
+		return findContract("Z", name);
+	}
+
 	public static Contract getDnoContract(String name) throws HttpException {
 		return getContract("R", name);
 	}
@@ -113,15 +117,21 @@ public class Contract extends PersistentEntity implements Comparable<Contract> {
 		}
 		return contract;
 	}
-
-	public static Contract getContract(String marketRoleCode, String name)
+	
+	public static Contract findContract(String marketRoleCode, String name)
 			throws HttpException {
-		Contract contract = (Contract) Hiber
+		
+		return (Contract) Hiber
 				.session()
 				.createQuery(
 						"from Contract contract where contract.role.code = :roleCode and contract.name = :name")
 				.setString("name", name).setString("roleCode", marketRoleCode)
 				.uniqueResult();
+	}
+
+	public static Contract getContract(String marketRoleCode, String name)
+			throws HttpException {
+		Contract contract = findContract(marketRoleCode, name);
 		if (contract == null) {
 			if (marketRoleCode == "R") {
 				throw new UserException("There is no DNO with the code '"

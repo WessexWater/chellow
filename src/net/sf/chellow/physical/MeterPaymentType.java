@@ -25,12 +25,14 @@ import java.net.URI;
 import java.util.Date;
 
 import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.NotFoundException;
 import net.sf.chellow.monad.UserException;
+import net.sf.chellow.monad.types.MonadDate;
 import net.sf.chellow.monad.types.MonadUri;
 
 public class MeterPaymentType extends PersistentEntity {
@@ -125,9 +127,19 @@ public class MeterPaymentType extends PersistentEntity {
 		return null;
 	}
 
-	@Override
-	public Node toXml(Document doc) throws HttpException {
-		// TODO Auto-generated method stub
-		return null;
-	}
+    public Node toXml(Document doc) throws HttpException {
+        Element element = super.toXml(doc, "meter-payment-type");
+
+        element.setAttribute("code", code);
+        element.setAttribute("description", description);
+        MonadDate fromDate = new MonadDate(validFrom);
+        fromDate.setLabel("from");
+        element.appendChild(fromDate.toXml(doc));
+        if (validTo != null) {
+                MonadDate toDate = new MonadDate(validTo);
+                toDate.setLabel("to");
+                element.appendChild(toDate.toXml(doc));
+        }
+        return element;
+}
 }

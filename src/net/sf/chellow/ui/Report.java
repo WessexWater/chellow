@@ -87,9 +87,13 @@ public class Report extends PersistentEntity implements Urlable {
 			report.update(name, script, template);
 		}
 	}
+	
+	public static Report findReport(Long id) throws HttpException {
+		return (Report) Hiber.session().get(Report.class, id);
+	}
 
 	public static Report getReport(Long id) throws HttpException {
-		Report report = (Report) Hiber.session().get(Report.class, id);
+		Report report = findReport(id);
 		if (report == null) {
 			throw new NotFoundException("The report " + id + " can't be found.");
 		}

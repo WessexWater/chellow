@@ -21,6 +21,7 @@
 package net.sf.chellow.ui;
 
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.sql.Connection;
@@ -36,6 +37,7 @@ import java.util.logging.FileHandler;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
+import java.util.Date;
 
 import javax.naming.InitialContext;
 import javax.servlet.ServletContext;
@@ -64,6 +66,7 @@ import net.sf.chellow.physical.ReadType;
 import net.sf.chellow.physical.Source;
 import net.sf.chellow.physical.UserRole;
 import net.sf.chellow.physical.VoltageLevel;
+import net.sf.chellow.ui.GeneralImport.Digester;
 
 import org.hibernate.Session;
 import org.hibernate.jdbc.Work;
@@ -331,7 +334,7 @@ public class ContextListener implements ServletContextListener {
 			stmt.executeUpdate("alter table channel rename supply_generation_id to era_id");
 			stmt.executeUpdate("alter index channel_supply_generation_id_key rename to channel_era_id_is_import_is_kwh_key");
 			stmt.executeUpdate("alter table channel drop constraint fkey_channel_supply_generation;");
-			
+
 			stmt.executeUpdate("alter table snag add channel_id bigint default null references channel (id)");
 			stmt.executeUpdate("alter table snag add site_id bigint default null references site (id)");
 			stmt.executeUpdate("alter table snag add start_date timestamp with time zone default null");
@@ -357,10 +360,10 @@ public class ContextListener implements ServletContextListener {
 			stmt.executeUpdate("alter table bill drop constraint fkey_bill__bill_type");
 			stmt.executeUpdate("alter table bill add foreign key (bill_type_id) references bill_type(id);");
 			stmt.executeUpdate("alter table bill drop constraint fkey_bill_batch");
-			stmt.executeUpdate("alter table bill add foreign key (batch_id) references batch (id);");			
+			stmt.executeUpdate("alter table bill add foreign key (batch_id) references batch (id);");
 			stmt.executeUpdate("alter table bill drop constraint fkey_bill_supply");
-			stmt.executeUpdate("alter table bill add foreign key (supply_id) references supply (id);");			
-			
+			stmt.executeUpdate("alter table bill add foreign key (supply_id) references supply (id);");
+
 			stmt.executeUpdate("alter table party rename role_id to market_role_id");
 			stmt.executeUpdate("alter table party add dno_code character varying(255) default null");
 			stmt.executeUpdate("update party set dno_code = dno.code from dno where party.id = dno.party_id");
@@ -370,7 +373,7 @@ public class ContextListener implements ServletContextListener {
 			stmt.executeUpdate("alter table party add foreign key (participant_id) references participant (id);");
 			stmt.executeUpdate("alter table party drop constraint fkey_party_role");
 			stmt.executeUpdate("alter table party add foreign key (market_role_id) references market_role (id);");
-			
+
 			stmt.executeUpdate("alter table contract add market_role_id bigint default null references market_role (id)");
 			stmt.executeUpdate("alter table contract add is_core boolean not null default true");
 			stmt.executeUpdate("alter table contract add properties text default ''");
@@ -452,23 +455,23 @@ public class ContextListener implements ServletContextListener {
 			stmt.executeUpdate("alter table era add foreign key (pc_id) references pc (id);");
 			stmt.executeUpdate("alter table era drop constraint fkey_generation__ssc");
 			stmt.executeUpdate("alter table era add foreign key (ssc_id) references ssc (id);");
-			
+
 			stmt.executeUpdate("create sequence rate_script_id_sequence owned by rate_script.id;");
 			stmt.execute("select setval('rate_script_id_sequence', (select max(id) + 1 from rate_script), false);");
 			stmt.execute("alter table rate_script add constraint rate_script_contract_id_start_date_key unique (contract_id, start_date)");
 			stmt.executeUpdate("alter table rate_script drop constraint fkey_rate_script_contract");
 			stmt.executeUpdate("alter table rate_script add foreign key (contract_id) references contract (id);");
-			
-			stmt.executeUpdate("alter table pc alter code type character varying(255) using to_char(code, '00')");
 
-			stmt.executeUpdate("alter table llfc alter code type character varying(255) using to_char(code, '000')");
+			stmt.executeUpdate("alter table pc alter code type character varying(255) using to_char(code, 'FM00')");
+
+			stmt.executeUpdate("alter table llfc alter code type character varying(255) using to_char(code, 'FM000')");
 			stmt.executeUpdate("alter table llfc drop constraint fkey_llfc_dno;");
 			stmt.executeUpdate("alter table llfc add foreign key (dno_id) references party(id);");
 			stmt.executeUpdate("alter table llfc drop constraint fkey_llfc_voltage_level;");
 			stmt.executeUpdate("alter table llfc add foreign key (voltage_level_id) references voltage_level (id);");
-			
+
 			stmt.executeUpdate("alter table mtc rename payment_type_id to meter_payment_type_id");
-			stmt.executeUpdate("alter table mtc alter code type character varying(255) using to_char(code, '000')");
+			stmt.executeUpdate("alter table mtc alter code type character varying(255) using to_char(code, 'FM000')");
 			stmt.executeUpdate("alter table mtc drop constraint fkey_mtc_dno;");
 			stmt.executeUpdate("alter table mtc add foreign key (dno_id) references party(id);");
 			stmt.executeUpdate("alter index mtc_dno_id_key rename to mtc_dno_id_code_key");
@@ -476,11 +479,11 @@ public class ContextListener implements ServletContextListener {
 			stmt.executeUpdate("alter table mtc add foreign key (meter_type_id) references meter_type (id);");
 			stmt.executeUpdate("alter table mtc drop constraint fkey_mtc_payment_type;");
 			stmt.executeUpdate("alter table mtc add foreign key (meter_payment_type_id) references meter_payment_type (id);");
-			
-			stmt.executeUpdate("alter table ssc alter code type character varying(255) using to_char(code, '0000')");
+
+			stmt.executeUpdate("alter table ssc alter code type character varying(255) using to_char(code, 'FM0000')");
 
 			stmt.executeUpdate("alter table \"user\" rename role_id to user_role_id");
-			
+
 			stmt.executeUpdate("alter table supply alter note drop default");
 			stmt.executeUpdate("alter table supply alter note set not null");
 			stmt.executeUpdate("alter table supply add dno_contract_id bigint default null references contract(id)");
@@ -490,7 +493,7 @@ public class ContextListener implements ServletContextListener {
 			stmt.executeUpdate("alter table supply add foreign key (generator_type_id) references generator_type (id);");
 			stmt.executeUpdate("alter table supply drop constraint fkey_supply_source;");
 			stmt.executeUpdate("alter table supply add foreign key (source_id) references source (id);");
-			
+
 			stmt.executeUpdate("alter table register_read rename meter_serial_number to msn");
 			stmt.executeUpdate("alter index meter_serial_number__idx rename to register_read_msn_idx");
 			stmt.executeUpdate("alter index present_date__idx rename to register_read_present_date_idx");
@@ -505,13 +508,12 @@ public class ContextListener implements ServletContextListener {
 			stmt.executeUpdate("alter table register_read add foreign key (tpr_id) references tpr (id);");
 			stmt.executeUpdate("alter table register_read drop constraint register_read_bill_id_fkey;");
 			stmt.executeUpdate("alter table register_read add foreign key (bill_id) references bill (id) on delete cascade;");
-			
-			
+
 			stmt.executeUpdate("alter table batch drop constraint fkey_batch_contract;");
 			stmt.executeUpdate("alter table batch add foreign key (contract_id) references contract(id);");
-			
+
 			stmt.executeUpdate("alter index batch_contract_id_key rename to batch_contract_id_reference_key");
-			
+
 			stmt.executeUpdate("drop table mpan cascade;");
 			stmt.executeUpdate("drop sequence mpan_id_sequence cascade;");
 			stmt.executeUpdate("drop table mpan_core cascade;");
@@ -529,12 +531,12 @@ public class ContextListener implements ServletContextListener {
 
 			stmt.executeUpdate("alter table site_era add foreign key (era_id) references era(id);");
 			stmt.executeUpdate("alter table channel add foreign key (era_id) references era (id);");
-			
+
 			stmt.executeUpdate("alter index hh_datum_channel_id_key rename to hh_datum_channel_id_start_date_key;");
-			
+
 			stmt.executeUpdate("alter table clock_interval drop constraint fkey_clock_interval_tpr;");
 			stmt.executeUpdate("alter table clock_interval add foreign key (tpr_id) references tpr (id);");
-			
+
 			// takes ages
 			stmt.executeUpdate("alter table hh_datum add last_modified timestamp with time zone not null default 'epoch'");
 			stmt.executeUpdate("alter table hh_datum alter last_modified drop default");
@@ -559,23 +561,105 @@ public class ContextListener implements ServletContextListener {
 		} catch (IOException e) {
 			throw new InternalException(e);
 		}
-		
+
 		try {
 			Statement stmt = con.createStatement();
 			con.setAutoCommit(false);
-			
+
 			stmt.executeUpdate("update supply set dno_contract_id = (select id from contract where name = (select substring(imp_mpan_core from 1 for 2) from era where supply_id = supply.id and imp_mpan_core is not null limit 1)) where supply.dno_contract_id is null");
 			stmt.executeUpdate("update supply set dno_contract_id = (select id from contract where name = (select substring(exp_mpan_core from 1 for 2) from era where supply_id = supply.id and exp_mpan_core is not null limit 1)) where supply.dno_contract_id is null");
-			stmt.executeUpdate("alter table supply alter dno_contract_id set not null");
-			stmt.executeUpdate("update contract set charge_script = 'return' where name = 'startup'");
+			stmt.executeUpdate("alter table supply alter dno_contract_id set not null"); //
+			stmt.executeUpdate("update contract set charge_script = E'def on_start_up(ctx):\n    pass' where name = 'startup'");
 			stmt.executeUpdate("commit");
 			con.setAutoCommit(false);
 			con.close();
 		} catch (SQLException sqle) {
 			throw new InternalException(sqle);
 		}
-		Hiber.setReadWrite();
-		Contract.insertNonCoreContract(true, Participant.getParticipant("CALB"), "configuration", new HhStartDate("1990-01-01T00:00Z"), new HhStartDate("1990-01-01T00:00Z"), "", "");
+
+		String name = null;
+		try {
+			Hiber.setReadWrite();
+			Digester digester = null;
+			try {
+				digester = new Digester(new InputStreamReader(context
+						.getResource("/WEB-INF/non-core-contracts.xml")
+						.openStream(), "UTF-8"), "xml");
+			} catch (UnsupportedEncodingException e) {
+				throw new InternalException(e);
+			} catch (MalformedURLException e) {
+				throw new InternalException(e);
+			} catch (IOException e) {
+				throw new InternalException(e);
+			}
+			String[] values = digester.getLine();
+
+			while (values != null) {
+				if (values.length < 2) {
+					throw new UserException(
+							"There must be an 'Action' field followed "
+									+ "by a 'Type' field.");
+				}
+				Hiber.setReadWrite();
+				String action = values[0].trim().toLowerCase();
+				String type = values[1].trim().toLowerCase();
+				if (action.equals("insert") && type.equals("non-core-contract")) {
+					name = values[4];
+					String script = values[5];
+					Contract contract = Contract.findNonCoreContract(name);
+					if (contract == null) {
+						Contract.insertNonCoreContract(true,
+								Participant.getParticipant("CALB"), name,
+								HhStartDate.roundDown(new Date()), null,
+								script, "");
+					} else {
+						contract.update(contract.getParty(),
+								contract.getName(), script);
+					}
+				}
+				Hiber.commit();
+				values = digester.getLine();
+			}
+			Hiber.setReadWrite();
+			digester = null;
+			try {
+				digester = new Digester(new InputStreamReader(context
+						.getResource("/WEB-INF/reports.xml").openStream(),
+						"UTF-8"), "xml");
+			} catch (UnsupportedEncodingException e) {
+				throw new InternalException(e);
+			} catch (MalformedURLException e) {
+				throw new InternalException(e);
+			} catch (IOException e) {
+				throw new InternalException(e);
+			}
+			values = digester.getLine();
+			while (values != null) {
+				if (values.length < 2) {
+					throw new UserException(
+							"There must be an 'Action' field followed "
+									+ "by a 'Type' field.");
+				}
+				Hiber.setReadWrite();
+				String action = values[0].trim().toLowerCase();
+				String type = values[1].trim().toLowerCase();
+				if (action.equals("insert") && type.equals("report")) {
+					String idStr = values[2];
+					long id = Long.parseLong(idStr.trim());
+					Report report = Report.findReport(id);
+					if (report != null) {
+						name = values[4];
+						String script = values[5];
+						String template = values[6];
+						report.update(name, script, template);
+					}
+				}
+				Hiber.commit();
+				values = digester.getLine();
+			}
+		} catch (Throwable e) {
+			throw new InternalException("Problem with name '" + name + "'", e);
+		}
 		Hiber.commit();
 		Hiber.close();
 	}

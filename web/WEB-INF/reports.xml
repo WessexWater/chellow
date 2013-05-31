@@ -798,7 +798,6 @@ for era in eras:
 
     if export_mpan_core is not None:
         era_bundle['exp_shared_supplier_accounts'] = Hiber.session().createQuery("select distinct era.supply from Era era where era.supply != :supply and era.expSupplierAccount = :account and era.expSupplierContract = :contract").setEntity('supply', supply).setString('account', era.getExpSupplierAccount()).setEntity('contract', era.getExpSupplierContract()).list()
-
     if era.pc.code != '00':
         inner_headers = [tpr for tpr in Hiber.session().createQuery("select mr.tpr from MeasurementRequirement mr where mr.ssc = :ssc order by mr.tpr.code").setEntity('ssc', era.getSsc()).list()]
         if era.getPc().getCode() in ['05', '06', '07', '08']:
@@ -1074,17 +1073,17 @@ render(inv, template, {'triad_year': triad_year, 'now': now, 'last_month_start':
               </td>
               <td rowspan="4">
                 {% if era.getSsc() %}
-                  <a href="{{ context_path }}/reports/127/output/?ssc-id={{ era.ssc.id }}" title="{{ era.ssc.description }}">{{ era.ssc.code }}</a>
+                  <a href="{{ context_path }}/reports/127/output/?ssc_id={{ era.ssc.id }}" title="{{ era.ssc.description }}">{{ era.ssc.code }}</a>
                 {% endif %}
               </td>
               <td rowspan="4">
-                <a href="{{ context_path }}/reports/107/output/?mop-contract-id={{ era.mopContract.id }}">{{ era.mopContract.name }}</a>
+                <a href="{{ context_path }}/reports/107/output/?mop_contract_id={{ era.mopContract.id }}">{{ era.mopContract.name }}</a>
               </td>
               <td rowspan="4">
                 {{ era.mopAccount }}
               </td>
               <td rowspan="4">
-                <a href="{{ context_path }}/reports/115/output/?hhdc-contract-id={{ era.hhdcContract.id }}">{{ era.hhdcContract.name }}</a>
+                <a href="{{ context_path }}/reports/115/output/?hhdc_contract_id={{ era.hhdcContract.id }}">{{ era.hhdcContract.name }}</a>
               </td>
               <td rowspan="4">{{ era.hhdcAccount }}</td>
               <th colspan="6">Import</th>
@@ -1200,7 +1199,7 @@ render(inv, template, {'triad_year': triad_year, 'now': now, 'last_month_start':
                 {% if tpr == None %}
                   MD
                 {% else %}
-                  <a href="{{ context_path }}/reports/97/output/?tpr-id={{ tpr.id }}">{{ tpr.code }}</a>
+                  <a href="{{ context_path }}/reports/97/output/?tpr_id={{ tpr.id }}">{{ tpr.code }}</a>
                 {% endif %}
               </th>
             {% endfor %}
@@ -1518,8 +1517,8 @@ render(inv, template, {'triad_year': triad_year, 'now': now, 'last_month_start':
     <br />
     <ul>
         <li>kWh, kVA, MD etc. by month:
-            <a href="{{ context_path }}/reports/15/output/?supply-id={{ supply.id }}&amp;is_import=true">Import</a>
-            <a href="{{ context_path }}/reports/15/output/?supply-id={{ supply.id }}&amp;is_import=false">Export</a>
+            <a href="{{ context_path }}/reports/15/output/?supply_id={{ supply.id }}&amp;is_import=true">Import</a>
+            <a href="{{ context_path }}/reports/15/output/?supply_id={{ supply.id }}&amp;is_import=false">Export</a>
         </li>
         <li>
             <a href="{{ context_path }}/reports/17/output/?supply_id={{ supply.id }}&amp;months=1&amp;finish-year={{ now.year }}&amp;finish-month={{ now.month }}">Raw HH data</a>
@@ -2646,7 +2645,7 @@ for i in range(12 * years):
                     </a>
                     &gt;
                     <a
-                        href="{/source/request/@context-path}/reports/7/output/?supply-id={/source/supply/@id}">
+                        href="{/source/request/@context-path}/reports/7/output/?supply_id={/source/supply/@id}">
                         <xsl:value-of select="/source/supply/@id" />
                     </a>
                     &gt;
@@ -2673,7 +2672,7 @@ for i in range(12 * years):
                 <form action=".">
                     <fieldset>
                         <input type="hidden" name="is_import" value="{/source/request/parameter[@name='is_import']/value}"/>
-                        <input type="hidden" name="supply-id" value="{/source/supply/@id}"/>
+                        <input type="hidden" name="supply_id" value="{/source/supply/@id}"/>
                         <legend>View Supply Months</legend>
 <br/>
 
@@ -3142,8 +3141,7 @@ pw.println("    font-family: 'Overclock', sans-serif;                      ")
 pw.println("    background-color: rgb(255, 236, 139);                      ")
 pw.println("}                                                              ")
 pw.close()]]></value>
-		<value><![CDATA[]]>
-		</value>
+		<value><![CDATA[]]></value>
 	</line>
 	<line>
 		<value><![CDATA[insert]]></value>
@@ -3321,8 +3319,7 @@ graphics.setColor(Color.BLACK)
 #graphics.drawString("report took..." + str(java.lang.System.currentTimeMillis() - start) + "ms", 10, 390)
 ImageIO.write(image, "png", os)
 os.close()]]></value>
-		<value><![CDATA[]]>
-		</value>
+		<value><![CDATA[]]></value>
 	</line>
 	<line>
 		<value><![CDATA[insert]]></value>
@@ -3731,8 +3728,7 @@ graphics.setColor(Color.BLACK)
 #graphics.drawString("report took..." + str(java.lang.System.currentTimeMillis() - start) + "ms", 10, 390)
 ImageIO.write(image, "png", os)
 os.close()]]></value>
-		<value><![CDATA[]]>
-		</value>
+		<value><![CDATA[]]></value>
 	</line>
 	<line>
 		<value><![CDATA[insert]]></value>
@@ -4159,8 +4155,7 @@ while bills.next():
 
 bills.close()
 pw.close()]]></value>
-		<value><![CDATA[]]>
-		</value>
+		<value><![CDATA[]]></value>
 	</line>
 	<line>
 		<value><![CDATA[insert]]></value>
@@ -4281,8 +4276,7 @@ if rs.next():
         hhDate = HhStartDate.getNext(cal, hhDate)
         Hiber.session().clear()
 pw.close()]]></value>
-		<value><![CDATA[]]>
-		</value>
+		<value><![CDATA[]]></value>
 	</line>
 	<line>
 		<value><![CDATA[insert]]></value>
@@ -4290,10 +4284,8 @@ pw.close()]]></value>
 		<value><![CDATA[31]]></value>
 		<value><![CDATA[true]]></value>
 		<value><![CDATA[Free 31]]></value>
-		<value><![CDATA[]]>
-		</value>
-		<value><![CDATA[]]>
-		</value>
+		<value><![CDATA[]]></value>
+		<value><![CDATA[]]></value>
 	</line>
 	<line>
 		<value><![CDATA[insert]]></value>
@@ -4537,8 +4529,7 @@ while eras.next():
     pw.flush()
 eras.close()
 pw.close()]]></value>
-		<value><![CDATA[]]>
-		</value>
+		<value><![CDATA[]]></value>
 	</line>
 	<line>
 		<value><![CDATA[insert]]></value>
@@ -5070,8 +5061,7 @@ while eras.next():
     Hiber().session().clear()
 eras.close()
 pw.close()]]></value>
-		<value><![CDATA[]]>
-		</value>
+		<value><![CDATA[]]></value>
 	</line>
 	<line>
 		<value><![CDATA[insert]]></value>
@@ -5820,8 +5810,7 @@ while sites.next():
     Hiber.session().clear()
 sites.close()
 pw.close()]]></value>
-		<value><![CDATA[]]>
-		</value>
+		<value><![CDATA[]]></value>
 	</line>
 	<line>
 		<value><![CDATA[insert]]></value>
@@ -5833,7 +5822,7 @@ pw.close()]]></value>
 
 mtcs_element = doc.createElement('mtcs')
 source.appendChild(mtcs_element)
-for mt in Hiber.session().createQuery("select mtc from Mtc mtc left outer join mtc.dno dno order by mtc.code, dno.code").list():
+for mt in Hiber.session().createQuery("select mtc from Mtc mtc left outer join mtc.dno dno order by mtc.code, dno.dnoCode").list():
     mtcs_element.appendChild(mt.toXml(doc, XmlTree('dno').put('meterType')))]]></value>
 		<value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
 <xsl:stylesheet version="1.0"
@@ -6068,7 +6057,7 @@ source.appendChild(mtc.toXml(doc, XmlTree('meterType').put('paymentType').put('d
                         <th>Payment Type</th>
                         <td>
                             <a
-                                href="{/source/request/@context-path}/reports/135/output/?type-id={/source/mtc/meter-payment-type/@id}">
+                                href="{/source/request/@context-path}/reports/135/output/?meter_payment_type_id={/source/mtc/meter-payment-type/@id}">
                                 <xsl:value-of
                                     select="/source/mtc/meter-payment-type/@description" />
                             </a>
@@ -6232,6 +6221,7 @@ if not process.isAlive():
 from java.util import Properties
 from java.io import StringReader
 from net.sf.chellow.physical import Configuration
+from net.sf.chellow.ui import Report
 from sqlalchemy.orm import joinedload_all
 
 Monad.getUtils()['imprt'](globals(), {
@@ -6996,8 +6986,7 @@ while eras.next():
     Hiber.session().clear()
 eras.close()
 pw.close()]]></value>
-		<value><![CDATA[]]>
-		</value>
+		<value><![CDATA[]]></value>
 	</line>
 	<line>
 		<value><![CDATA[insert]]></value>
@@ -7324,8 +7313,7 @@ while not month_start.after(finish_date):
     utc_cal.add(Calendar.MINUTE, -30)
     month_finish = HhStartDate(utc_cal.getTime())
 pw.close()]]></value>
-		<value><![CDATA[]]>
-		</value>
+		<value><![CDATA[]]></value>
 	</line>
 	<line>
 		<value><![CDATA[insert]]></value>
@@ -8013,7 +8001,7 @@ finally:
 from net.sf.chellow.monad.types import MonadDate
 from java.util import Calendar, Locale, TimeZone, GregorianCalendar
 from net.sf.chellow.physical import HhStartDate, Supply
-from net.sf.chellow.billing import NonCoreContract
+from net.sf.chellow.billing import Contract
 from java.io import StringWriter
 
 supply_id = inv.getLong("supply-id")
@@ -8070,7 +8058,7 @@ finish_date.setLabel('finish')
 source.appendChild(finish_date.toXml(doc))
 
 pw = StringWriter()
-computer = NonCoreContract.getNonCoreContract('computer')
+computer = Contract.getNonCoreContract('computer')
 comterp = computer.callFunction('create_comterp', [])
 forecast_date = comterp.get('forecast_date')()
 
@@ -8091,6 +8079,8 @@ me_cal.add(Calendar.MINUTE, -30)
 
 net_gbp = 0
 
+caches = {}
+
 while not mb_cal.getTime().after(finish_date.getDate()):
     month_begin = HhStartDate(mb_cal.getTime())
     month_end = HhStartDate(me_cal.getTime())
@@ -8104,7 +8094,7 @@ while not mb_cal.getTime().after(finish_date.getDate()):
         chunk_finish = month_end
     eras_element = doc.createElement('eras')
     source.appendChild(eras_element)
-    eras = Hiber.session().createQuery("select distinct era from Era era where era.supply = :supply and era.importMpan is not null and era.startDate.date <= :finishDate and (era.finishDate is null or era.finishDate.date >= :startDate)").setEntity('supply', supply).setTimestamp('startDate', chunk_start.getDate()).setTimestamp('finishDate', chunk_finish.getDate()).scroll()
+    eras = Hiber.session().createQuery("select distinct era from Era era where era.supply = :supply and era.impMpanCore is not null and era.startDate.date <= :finishDate and (era.finishDate is null or era.finishDate.date >= :startDate)").setEntity('supply', supply).setTimestamp('startDate', chunk_start.getDate()).setTimestamp('finishDate', chunk_finish.getDate()).scroll()
     while eras.next():
         era_element = doc.createElement('era')
         eras_element.appendChild(era_element)
@@ -8119,11 +8109,9 @@ while not mb_cal.getTime().after(finish_date.getDate()):
         else:
             block_finish = era.getFinishDate()
 
-        mpan = era.getImportMpan()
-        contract = mpan.getSupplierContract()
-        mpan_core = mpan.getCore()
-        mpan_core_str = str(mpan_core)
-        data_source = comterp.get('SupplySource')(block_start, block_finish, forecast_date, mpan, comterp, pw)
+        mpan_core = era.impMpanCore
+        contract = era.impSupplierContract
+        data_source = comterp.get('SupplySource')(block_start, block_finish, forecast_date, era, True, comterp, pw, caches)
         for name, value in [('id', data_source.id), ('supplier contract', contract.getName()), ('account', data_source.supplier_account), ('start date', data_source.start_date), ('finish date', data_source.finish_date)]:
             field_element = doc.createElement('field')
             era_element.appendChild(field_element)
@@ -8373,8 +8361,7 @@ while sites.next():
         Hiber.session().clear()
 sites.close()
 pw.close()]]></value>
-		<value><![CDATA[]]>
-		</value>
+		<value><![CDATA[]]></value>
 	</line>
 	<line>
 		<value><![CDATA[insert]]></value>
@@ -8631,7 +8618,7 @@ except SyntaxError:
                                 <xsl:value-of select="@units" />
                             </td>
                             <td>
-                                <a href="{/source/request/@context-path}/reports/97/output/?tpr-id={tpr/@id}">
+                                <a href="{/source/request/@context-path}/reports/97/output/?tpr_id={tpr/@id}">
                                     <xsl:value-of select="tpr/@code" />
                                 </a>
                             </td>
@@ -8792,7 +8779,7 @@ finally:
         <a href="{{context_path}}/reports/191/output/?mop-contract-id={{contract.id}}">Batches</a>
       </li>
       <li>
-        <a href="{{ context_path }}/reports/229/output/?mop-contract-id={{contract.id}}">Virtual Bills</a>
+        <a href="{{ context_path }}/reports/229/output/?mop_contract_id={{contract.id}}">Virtual Bills</a>
       </li>
     </ul>
 
@@ -8985,8 +8972,7 @@ while sites.next():
         month_finish = HhStartDate(cal.getTime())
 sites.close()
 pw.close()]]></value>
-		<value><![CDATA[]]>
-		</value>
+		<value><![CDATA[]]></value>
 	</line>
 	<line>
 		<value><![CDATA[insert]]></value>
@@ -9197,8 +9183,7 @@ while bills.next():
     Hiber.session().clear()
 bills.close()
 pw.close()]]></value>
-		<value><![CDATA[]]>
-		</value>
+		<value><![CDATA[]]></value>
 	</line>
 	<line>
 		<value><![CDATA[insert]]></value>
@@ -11024,8 +11009,7 @@ while supplies.next():
     pw.flush()
     Hiber.session().clear()
 supplies.close()]]></value>
-		<value><![CDATA[]]>
-		</value>
+		<value><![CDATA[]]></value>
 	</line>
 	<line>
 		<value><![CDATA[insert]]></value>
@@ -11033,10 +11017,8 @@ supplies.close()]]></value>
 		<value><![CDATA[151]]></value>
 		<value><![CDATA[true]]></value>
 		<value><![CDATA[Free 151]]></value>
-		<value><![CDATA[]]>
-		</value>
-		<value><![CDATA[]]>
-		</value>
+		<value><![CDATA[]]></value>
+		<value><![CDATA[]]></value>
 	</line>
 	<line>
 		<value><![CDATA[insert]]></value>
@@ -11656,8 +11638,7 @@ def long_process():
         
 threading.Thread(target=long_process).start()
 inv.sendSeeOther("/reports/251/output/")]]></value>
-		<value><![CDATA[]]>
-		</value>
+		<value><![CDATA[]]></value>
 	</line>
 	<line>
 		<value><![CDATA[insert]]></value>
@@ -11909,8 +11890,7 @@ for line in summary:
     pw.println(line)
 pw.close()
 ''']]></value>
-		<value><![CDATA[]]>
-		</value>
+		<value><![CDATA[]]></value>
 	</line>
 	<line>
 		<value><![CDATA[insert]]></value>
@@ -12133,8 +12113,7 @@ while supplies.next():
     pw.flush()
 supplies.close()
 pw.close()]]></value>
-		<value><![CDATA[]]>
-		</value>
+		<value><![CDATA[]]></value>
 	</line>
 	<line>
 		<value><![CDATA[insert]]></value>
@@ -12821,8 +12800,7 @@ for i in range(months):
     supplies.close()
     #pw.println("finishing site " + str(System.currentTimeMillis() - timing))
 pw.close()]]></value>
-		<value><![CDATA[]]>
-		</value>
+		<value><![CDATA[]]></value>
 	</line>
 	<line>
 		<value><![CDATA[insert]]></value>
@@ -12979,8 +12957,7 @@ while sites.next():
     Hiber().session().clear()
 sites.close()
 pw.close()]]></value>
-		<value><![CDATA[]]>
-		</value>
+		<value><![CDATA[]]></value>
 	</line>
 	<line>
 		<value><![CDATA[insert]]></value>
@@ -13089,8 +13066,7 @@ while sites.next():
     Hiber.session().clear()
 sites.close()
 pw.close()]]></value>
-		<value><![CDATA[]]>
-		</value>
+		<value><![CDATA[]]></value>
 	</line>
 	<line>
 		<value><![CDATA[insert]]></value>
@@ -13293,8 +13269,7 @@ pw.println('MPAN Core,kWh')
 for summary in summaries:
     pw.println(summary)
 pw.close()]]></value>
-		<value><![CDATA[]]>
-		</value>
+		<value><![CDATA[]]></value>
 	</line>
 	<line>
 		<value><![CDATA[insert]]></value>
@@ -13946,8 +13921,7 @@ for mpan_core_str in mpans:
     pw.flush()
     Hiber.session().clear()
 pw.close()]]></value>
-		<value><![CDATA[]]>
-		</value>
+		<value><![CDATA[]]></value>
 	</line>
 	<line>
 		<value><![CDATA[insert]]></value>
@@ -14708,8 +14682,7 @@ while supplies.next():
     pw.flush()
     Hiber.session().clear()
 pw.close()]]></value>
-		<value><![CDATA[]]>
-		</value>
+		<value><![CDATA[]]></value>
 	</line>
 	<line>
 		<value><![CDATA[insert]]></value>
@@ -15256,8 +15229,7 @@ while supplies.next():
     Hiber.session().clear()
 supplies.close()
 pw.close()]]></value>
-		<value><![CDATA[]]>
-		</value>
+		<value><![CDATA[]]></value>
 	</line>
 	<line>
 		<value><![CDATA[insert]]></value>
@@ -15431,8 +15403,7 @@ while reads.next():
 
 reads.close()
 pw.close()]]></value>
-		<value><![CDATA[]]>
-		</value>
+		<value><![CDATA[]]></value>
 	</line>
 	<line>
 		<value><![CDATA[insert]]></value>
@@ -15961,13 +15932,13 @@ finally:
 		<value><![CDATA[from java.util import GregorianCalendar, TimeZone, Locale, Calendar
 from net.sf.chellow.monad.types import MonadDate
 from net.sf.chellow.monad import Hiber, UserException
-from net.sf.chellow.billing import MopContract
+from net.sf.chellow.billing import Contract
 
-contract_id = inv.getLong('mop-contract-id')
+contract_id = inv.getLong('mop_contract_id')
 if not inv.isValid():
     raise UserException()
 
-contract = MopContract.getMopContract(contract_id)
+contract = Contract.getMopContract(contract_id)
 
 
 cal = GregorianCalendar(TimeZone.getTimeZone("GMT"), Locale.UK)
@@ -16062,7 +16033,7 @@ from net.sf.chellow.monad.types import MonadDate
 from java.util import GregorianCalendar, TimeZone, Locale, Calendar
 from net.sf.chellow.physical import HhStartDate, Supply
 from java.sql import Timestamp, ResultSet
-from net.sf.chellow.billing import MopContract, NonCoreContract
+from net.sf.chellow.billing import Contract
     
 inv.getResponse().setContentType("text/csv")
 inv.getResponse().setHeader('Content-Disposition', 'filename=output.csv;')
@@ -16074,7 +16045,9 @@ contract_id = inv.getLong('contract-id')
 if not inv.isValid():
     raise UserException()
 
-contract = MopContract.getMopContract(contract_id)
+caches = {}
+
+contract = Contract.getMopContract(contract_id)
 
 cal = GregorianCalendar(TimeZone.getTimeZone("GMT"), Locale.UK)
 cal.set(Calendar.YEAR, end_year)
@@ -16092,7 +16065,7 @@ cal.add(Calendar.MINUTE, 30)
 cal.add(Calendar.MONTH, months * -1)
 start_date = HhStartDate(cal.getTime())
 
-computer = NonCoreContract.getNonCoreContract('computer')
+computer = Contract.getNonCoreContract('computer')
 comterp = computer.callFunction('create_comterp', [])
 
 forecast_date = comterp.get('forecast_date')()
@@ -16107,22 +16080,24 @@ pw.flush()
 eras = Hiber.session().createQuery("select distinct era from Era era where (era.finishDate.date is null or era.finishDate.date >= :startDate) and era.startDate.date <= :finishDate and era.mopContract = :contract order by era.supply.id").setEntity('contract', contract).setTimestamp('startDate', start_date.getDate()).setTimestamp('finishDate', finish_date.getDate()).scroll()
 while eras.next():
     era = eras.get(0)
-    import_mpan = era.getImportMpan()
-    if import_mpan is None:
+    import_mpan_core = era.impMpanCore
+    if import_mpan_core is None:
         import_mpan_core_str = ''
     else:
-        mpan = import_mpan
-        import_mpan_core_str = import_mpan.getCore().toString()
+        mpan_core = import_mpan_core
+        is_import = True
+        import_mpan_core_str = mpan_core
 
-    export_mpan = era.getExportMpan()
-    if export_mpan is None:
+    export_mpan_core = era.expMpanCore
+    if export_mpan_core is None:
         export_mpan_core_str = ''
     else:
-        mpan = export_mpan
-        export_mpan_core_str = export_mpan.getCore().toString()
+        is_import = False
+        mpan_core = export_mpan_core
+        export_mpan_core_str = mpan_core
 
     pw.print(import_mpan_core_str + ',' + export_mpan_core_str + ',' + str(start_date) + ',' + str(finish_date) + ',')
-    supply_source = comterp.get('SupplySource')(start_date, finish_date, forecast_date, mpan, comterp, pw)
+    supply_source = comterp.get('SupplySource')(start_date, finish_date, forecast_date, era, is_import, comterp, pw, caches)
     bill = supply_source.contract_function(contract, 'virtual_bill')(supply_source)
     for title in bill_titles:
         pw.print('"' + str(bill.get(title, '')) + '",')
@@ -16137,8 +16112,7 @@ while eras.next():
     Hiber.session().clear()
 eras.close()
 pw.close()]]></value>
-		<value><![CDATA[]]>
-		</value>
+		<value><![CDATA[]]></value>
 	</line>
 	<line>
 		<value><![CDATA[insert]]></value>
@@ -16198,8 +16172,7 @@ while snags.next():
     Hiber.session().clear()
 snags.close()
 pw.close()]]></value>
-		<value><![CDATA[]]>
-		</value>
+		<value><![CDATA[]]></value>
 	</line>
 	<line>
 		<value><![CDATA[insert]]></value>
@@ -16383,8 +16356,7 @@ while hh_date <= finish_date_millis:
     pw.flush()
     hh_date = HhStartDate.getNext(cal, hh_date)
 pw.close()]]></value>
-		<value><![CDATA[]]>
-		</value>
+		<value><![CDATA[]]></value>
 	</line>
 	<line>
 		<value><![CDATA[insert]]></value>
@@ -16547,8 +16519,7 @@ while not day_start.after(finish_date):
     cal.add(Calendar.DAY_OF_MONTH, 1)
     day_start = HhStartDate(cal.getTime())
 pw.close()]]></value>
-		<value><![CDATA[]]>
-		</value>
+		<value><![CDATA[]]></value>
 	</line>
 	<line>
 		<value><![CDATA[insert]]></value>
@@ -16940,8 +16911,7 @@ while not month_start.after(to_date):
     cal.add(Calendar.MONTH, 1)
     month_start = HhStartDate(cal.getTime())
 pw.close()]]></value>
-		<value><![CDATA[]]>
-		</value>
+		<value><![CDATA[]]></value>
 	</line>
 	<line>
 		<value><![CDATA[insert]]></value>
@@ -19147,10 +19117,8 @@ finally:
 		<value><![CDATA[283]]></value>
 		<value><![CDATA[true]]></value>
 		<value><![CDATA[HHDC Contract Batch Edit]]></value>
-		<value><![CDATA[]]>
-		</value>
-		<value><![CDATA[]]>
-		</value>
+		<value><![CDATA[]]></value>
+		<value><![CDATA[]]></value>
 	</line>
 	<line>
 		<value><![CDATA[insert]]></value>
