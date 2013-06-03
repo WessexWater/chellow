@@ -71,6 +71,9 @@
 		<copy todir="${build.home}/WEB-INF/lib-python/pg8000">
 			<fileset dir="${user.home}/venv/lib/python2.5/site-packages/pg8000" />
 		</copy>
+		<copy todir="${build.home}/WEB-INF/lib-python/pytz">
+			<fileset dir="${user.home}/venv/lib/python2.5/site-packages/pytz" />
+		</copy>
 
 		<copy overwrite="true" todir="${build.home}/WEB-INF/lib-python/pg8000" file="${web.home}/WEB-INF/protocol.py" />
 
@@ -131,6 +134,14 @@
 		</java>
 	</target>
 
+	<target name="imprimatur" description="Imprimatur">
+		<copy file="${test.home}/imprimatur.pre.xml" tofile="${test.home}/imprimatur.xml" />
+		<replace file="${test.home}/imprimatur.xml" token="@@test.port@@" value="${test.port}" />
+		<java jar="${imprimatur.jar}" fork="true" failonerror="true">
+			<arg value="${test.home}/imprimatur.xml" />
+		</java>
+	</target>
+
 	<target name="prepare">
 		<mkdir dir="${build.home}" />
 		<mkdir dir="${build.home}/WEB-INF" />
@@ -160,6 +171,7 @@
 			<filelist dir="/usr/share/java">
 				<file name="commons-fileupload.jar" />
 				<file name="commons-io.jar" />
+				<file name="commons-net.jar" />
 				<file name="commons-logging.jar" />
 				<file name="httpclient.jar" />
 				<file name="httpcore.jar" />
@@ -178,8 +190,8 @@
 				<file name="slf4j-nop-1.7.2.jar" />
 				<file name="slf4j-api-1.7.2.jar" />
 			</filelist>
-			<filelist dir="${javalib.home}/commons-net-3.2">
-				<file name="commons-net-3.2.jar" />
+			<filelist dir="${javalib.home}/jakarta-oro-2.0.8">
+				<file name="jakarta-oro-2.0.8.jar" />
 			</filelist>
 		</copy>
 	</target>

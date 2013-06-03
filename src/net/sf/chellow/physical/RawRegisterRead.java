@@ -30,109 +30,109 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 public class RawRegisterRead extends MonadObject {
-	private String meterSerialNumber;
-	
-	private String mpanStr;
+        private String meterSerialNumber;
+        
+        private String mpanStr;
 
-	private Tpr tpr;
+        private Tpr tpr;
 
-	private BigDecimal coefficient;
+        private BigDecimal coefficient;
 
-	private Units units;
+        private Units units;
 
-	private HhStartDate previousDate;
+        private HhStartDate previousDate;
 
-	private BigDecimal previousValue;
+        private BigDecimal previousValue;
 
-	private ReadType previousType;
+        private ReadType previousType;
 
-	private HhStartDate presentDate;
+        private HhStartDate presentDate;
 
-	private BigDecimal presentValue;
+        private BigDecimal presentValue;
 
-	private ReadType presentType;
+        private ReadType presentType;
 
-	public RawRegisterRead(String meterSerialNumber, String mpanStr, BigDecimal coefficient,
-			Units units, Tpr tpr,
-			HhStartDate previousDate, BigDecimal previousValue,
-			ReadType previousType, HhStartDate presentDate,
-			BigDecimal presentValue, ReadType presentType) throws InternalException {
-		this.coefficient = coefficient;
-		this.meterSerialNumber = meterSerialNumber;
-		this.mpanStr = mpanStr;
-		this.units = units;
-		this.tpr = tpr;
-		this.previousDate = previousDate;
-		this.previousValue = previousValue;
-		this.previousType = previousType;
-		this.presentDate = presentDate;
-		this.presentValue = presentValue;
-		this.presentType = presentType;
-	}
+        public RawRegisterRead(String meterSerialNumber, String mpanStr, BigDecimal coefficient,
+                        Units units, Tpr tpr,
+                        HhStartDate previousDate, BigDecimal previousValue,
+                        ReadType previousType, HhStartDate presentDate,
+                        BigDecimal presentValue, ReadType presentType) throws InternalException {
+                this.coefficient = coefficient;
+                this.meterSerialNumber = meterSerialNumber;
+                this.mpanStr = mpanStr;
+                this.units = units;
+                this.tpr = tpr;
+                this.previousDate = previousDate;
+                this.previousValue = previousValue;
+                this.previousType = previousType;
+                this.presentDate = presentDate;
+                this.presentValue = presentValue;
+                this.presentType = presentType;
+        }
 
-	public BigDecimal getCoefficient() {
-		return coefficient;
-	}
-	
-	public String getMpanStr() {
-		return mpanStr;
-	}
+        public BigDecimal getCoefficient() {
+                return coefficient;
+        }
+        
+        public String getMpanStr() {
+                return mpanStr;
+        }
 
-	public String getMeterSerialNumber() {
-		return meterSerialNumber;
-	}
+        public String getMeterSerialNumber() {
+                return meterSerialNumber;
+        }
 
-	public Units getUnits() {
-		return units;
-	}
+        public Units getUnits() {
+                return units;
+        }
 
-	public Tpr getTpr() {
-		return tpr;
-	}
+        public Tpr getTpr() {
+                return tpr;
+        }
 
-	public HhStartDate getPreviousDate() {
-		return previousDate;
-	}
+        public HhStartDate getPreviousDate() {
+                return previousDate;
+        }
 
-	public BigDecimal getPreviousValue() {
-		return previousValue;
-	}
+        public BigDecimal getPreviousValue() {
+                return previousValue;
+        }
 
-	public ReadType getPreviousType() {
-		return previousType;
-	}
+        public ReadType getPreviousType() {
+                return previousType;
+        }
 
-	public HhStartDate getPresentDate() {
-		return presentDate;
-	}
+        public HhStartDate getPresentDate() {
+                return presentDate;
+        }
 
-	public BigDecimal getPresentValue() {
-		return presentValue;
-	}
+        public BigDecimal getPresentValue() {
+                return presentValue;
+        }
 
-	public ReadType getPresentType() {
-		return presentType;
-	}
+        public ReadType getPresentType() {
+                return presentType;
+        }
 
-	public Element toXml(Document doc) throws HttpException {
-		Element element = doc.createElement("raw-register-read");
-		element.setAttribute("coefficient", coefficient.toString());
-		element.setAttribute("units", Units.name(units));
-		if (tpr != null) {
-			element.appendChild(tpr.toXml(doc));
-		}
-		previousDate.setLabel("previous");
-		element.appendChild(previousDate.toXml(doc));
-		element.setAttribute("previous-value", previousValue.toString());
-		previousType.setLabel("previous");
-		element.appendChild(previousType.toXml(doc));
-		presentDate.setLabel("present");
-		element.appendChild(presentDate.toXml(doc));
-		element.setAttribute("present-value", presentValue.toString());
-		presentType.setLabel("present");
-		element.appendChild(presentType.toXml(doc));
-		element.setAttribute("mpan", mpanStr);
-		element.setAttribute("meter-serial-number", meterSerialNumber);
-		return element;
-	}
+        public Element toXml(Document doc) throws HttpException {
+                Element element = doc.createElement("raw-register-read");
+                element.setAttribute("coefficient", coefficient.toString());
+                element.setAttribute("units", Units.name(units));
+                if (tpr != null) {
+                        element.appendChild(tpr.toXml(doc));
+                }
+                previousDate.setLabel("previous");
+                element.appendChild(previousDate.toXml(doc));
+                element.setAttribute("previous-value", previousValue.toString());
+                previousType.setLabel("previous");
+                element.appendChild(previousType.toXml(doc));
+                presentDate.setLabel("present");
+                element.appendChild(presentDate.toXml(doc));
+                element.setAttribute("present-value", presentValue.toString());
+                presentType.setLabel("present");
+                element.appendChild(presentType.toXml(doc));
+                element.setAttribute("mpan", mpanStr);
+                element.setAttribute("meter-serial-number", meterSerialNumber);
+                return element;
+        }
 }

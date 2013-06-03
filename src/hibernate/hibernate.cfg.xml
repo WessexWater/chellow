@@ -2,7 +2,7 @@
 <!DOCTYPE hibernate-configuration PUBLIC
     "-//Hibernate/Hibernate Configuration DTD//EN"
     "http://hibernate.sourceforge.net/hibernate-configuration-3.0.dtd">
-<!-- Copyright (c) 2005, 2012 Wessex Water Services Limited This file is 
+<!-- Copyright (c) 2005-2013 Wessex Water Services Limited This file is 
 	part of Chellow. Chellow is free software: you can redistribute it and/or 
 	modify it under the terms of the GNU General Public License as published 
 	by the Free Software Foundation, either version 3 of the License, or (at 
@@ -30,32 +30,21 @@
 		<mapping resource="hibernate/VoltageLevel.hbm.xml" />
 		<mapping resource="hibernate/Source.hbm.xml" />
 		<mapping resource="hibernate/Site.hbm.xml" />
-		<mapping resource="hibernate/SupplyGeneration.hbm.xml" />
+		<mapping resource="hibernate/Era.hbm.xml" />
 		<mapping resource="hibernate/Supply.hbm.xml" />
-		<mapping resource="hibernate/Mpan.hbm.xml" />
-		<mapping resource="hibernate/MpanCore.hbm.xml" />
 		<mapping resource="hibernate/HhDatum.hbm.xml" />
-		<mapping resource="hibernate/ChannelSnag.hbm.xml" />
 		<mapping resource="hibernate/Snag.hbm.xml" />
-		<mapping resource="hibernate/SiteSnag.hbm.xml" />
 		<mapping resource="hibernate/Configuration.hbm.xml" />
 		<mapping resource="hibernate/Channel.hbm.xml" />
-		<mapping resource="hibernate/SiteSupplyGeneration.hbm.xml" />
+		<mapping resource="hibernate/SiteEra.hbm.xml" />
 		<mapping resource="hibernate/Llfc.hbm.xml" />
 		<mapping resource="hibernate/Pc.hbm.xml" />
 		<mapping resource="hibernate/Mtc.hbm.xml" />
 		<mapping resource="hibernate/Party.hbm.xml" />
 		<mapping resource="hibernate/User.hbm.xml" />
-		<mapping resource="hibernate/Provider.hbm.xml" />
-		<mapping resource="hibernate/SupplierContract.hbm.xml" />
-		<mapping resource="hibernate/MopContract.hbm.xml" />
-		<mapping resource="hibernate/HhdcContract.hbm.xml" />
-		<mapping resource="hibernate/NonCoreContract.hbm.xml" />
 		<mapping resource="hibernate/Batch.hbm.xml" />
 		<mapping resource="hibernate/Bill.hbm.xml" />
 		<mapping resource="hibernate/RateScript.hbm.xml" />
-		<mapping resource="hibernate/DnoContract.hbm.xml" />
-		<mapping resource="hibernate/Dno.hbm.xml" />
 		<mapping resource="hibernate/Tpr.hbm.xml" />
 		<mapping resource="hibernate/RegisterRead.hbm.xml" />
 		<mapping resource="hibernate/Ssc.hbm.xml" />

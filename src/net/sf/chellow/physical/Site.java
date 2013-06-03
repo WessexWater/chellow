@@ -1,6 +1,6 @@
 /*******************************************************************************
  * 
- *  Copyright (c) 2005, 2010 Wessex Water Services Limited
+ *  Copyright (c) 2005-2013 Wessex Water Services Limited
  *  
  *  This file is part of Chellow.
  * 
@@ -31,9 +31,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import net.sf.chellow.billing.HhdcContract;
-import net.sf.chellow.billing.MopContract;
-import net.sf.chellow.billing.SupplierContract;
+import net.sf.chellow.billing.Contract;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.InternalException;
@@ -57,6 +55,21 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 public class Site extends PersistentEntity {
+	static public Site insertSite(String code, String name)
+			throws HttpException {
+		Site site = null;
+		try {
+			site = new Site(code, name);
+			Hiber.session().save(site);
+			Hiber.flush();
+		} catch (ConstraintViolationException e) {
+			throw new UserException(
+					"Problem saving site, perhaps there's a duplicate code or name. "
+							+ HttpException.getUserMessage(e));
+		}
+		return site;
+	}
+
 	static public void generalImport(String action, String[] values,
 			Element csvElement) throws HttpException {
 		Site site = null;
@@ -83,30 +96,6 @@ public class Site extends PersistentEntity {
 		}
 	}
 
-	static public Site insertSite(String code, String name)
-			throws HttpException {
-		Site site = null;
-		try {
-			site = new Site(code, name);
-			Hiber.session().save(site);
-			Hiber.flush();
-		} catch (ConstraintViolationException e) {
-			throw new UserException(
-					"Problem saving site, perhaps there's a duplicate code or name. "
-							+ HttpException.getUserMessage(e));
-		}
-		return site;
-	}
-
-	static public Site getSite(Long id) throws HttpException {
-		Site site = (Site) Hiber.session().get(Site.class, id);
-		if (site == null) {
-			throw new NotFoundException("There isn't a site with the id " + id
-					+ ".");
-		}
-		return site;
-	}
-
 	static public Site findSite(String siteCode) throws HttpException {
 		return (Site) Hiber.session()
 				.createQuery("from Site as site where site.code = :siteCode")
@@ -122,30 +111,20 @@ public class Site extends PersistentEntity {
 		return site;
 	}
 
-	@SuppressWarnings("unchecked")
-	static public void deleteSite(Site site) throws HttpException {
-		if (Hiber
-				.session()
-				.createQuery(
-						"from SiteSupplyGeneration ssg where ssg.site = :site")
-				.setEntity("site", site).list().size() > 0) {
-			throw new UserException(
-					"This site can't be deleted while there are still supply generations attached to it.");
+	static public Site getSite(Long id) throws HttpException {
+		Site site = (Site) Hiber.session().get(Site.class, id);
+		if (site == null) {
+			throw new NotFoundException("There isn't a site with the id " + id
+					+ ".");
 		}
-		for (SiteSnag snag : (List<SiteSnag>) Hiber.session()
-				.createQuery("from SiteSnag snag where site = :site")
-				.setEntity("site", site).list()) {
-			snag.delete();
-		}
-		Hiber.session().delete(site);
-		Hiber.flush();
+		return site;
 	}
 
 	private String code;
 
 	private String name;
 
-	private Set<SiteSupplyGeneration> siteSupplyGenerations;
+	private Set<SiteEra> siteEras;
 
 	public Site() {
 	}
@@ -170,13 +149,12 @@ public class Site extends PersistentEntity {
 		this.name = name;
 	}
 
-	public Set<SiteSupplyGeneration> getSiteSupplyGenerations() {
-		return siteSupplyGenerations;
+	public Set<SiteEra> getSiteEras() {
+		return siteEras;
 	}
 
-	protected void setSiteSupplyGenerations(
-			Set<SiteSupplyGeneration> siteSupplyGenerations) {
-		this.siteSupplyGenerations = siteSupplyGenerations;
+	protected void setSiteEras(Set<SiteEra> siteEras) {
+		this.siteEras = siteEras;
 	}
 
 	public void update(String code, String name) throws HttpException {
@@ -184,6 +162,38 @@ public class Site extends PersistentEntity {
 		MonadString.update("name", name, true, 200, 0,
 				Character.UnicodeBlock.BASIC_LATIN, false);
 		setName(name);
+	}
+
+	@SuppressWarnings("unchecked")
+	static public void deleteSite(Site site) throws HttpException {
+		if (Hiber.session()
+				.createQuery("from SiteEra ssg where ssg.site = :site")
+				.setEntity("site", site).list().size() > 0) {
+			throw new UserException(
+					"This site can't be deleted while there are still supply eras attached to it.");
+		}
+		for (Snag snag : (List<Snag>) Hiber.session()
+				.createQuery("from Snag snag where site = :site")
+				.setEntity("site", site).list()) {
+			snag.delete();
+		}
+		Hiber.session().delete(site);
+		Hiber.flush();
+	}
+
+	public Urlable getChild(UriPathElement uriId) throws HttpException {
+		throw new NotFoundException();
+	}
+
+	public MonadUri getEditUri() throws HttpException {
+		return Chellow.SITES_INSTANCE.getUrlPath().resolve(getUriId())
+				.append("/");
+	}
+
+	@Override
+	public URI getViewUri() throws HttpException {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 	public Element toXml(Document doc) throws HttpException {
@@ -194,49 +204,45 @@ public class Site extends PersistentEntity {
 		return element;
 	}
 
-	public Supply insertSupply(Source source, GeneratorType generatorType,
-			String supplyName, HhStartDate startDate, HhStartDate finishDate,
-			GspGroup gspGroup, String note, MopContract mopContract,
-			String mopAccount, HhdcContract hhdcContract, String hhdcAccount,
-			String meterSerialNumber, Pc pc, String mtcCode, Cop cop, Ssc ssc,
-			String importMpanStr, String importLlfcCode,
-			SupplierContract importSupplierContract,
-			String importSupplierAccount, Integer importAgreedSupplyCapacity,
-			String exportMpanStr, String exportLlfcCode,
-			SupplierContract exportSupplierContract,
-			String exportSupplierAccountReference,
-			Integer exportAgreedSupplyCapacity) throws HttpException {
-		Supply supply = new Supply(supplyName, source, generatorType, gspGroup,
-				note);
-		try {
-			Hiber.session().save(supply);
-			Hiber.flush();
-		} catch (HibernateException e) {
-			Hiber.rollBack();
-			if (HttpException
-					.isSQLException(e,
-							"ERROR: duplicate key violates unique constraint \"mpan_dno_id_key\"")) {
-				BatchUpdateException be = (BatchUpdateException) e.getCause();
-				String message = be.getMessage();
-				boolean isImport = message.charAt(message.lastIndexOf(',') - 1) == '0';
-				throw new UserException("An MPAN with this "
-						+ (isImport ? "import" : "export")
-						+ " MPAN core already exists.");
+	public void attachSiteEra(SiteEra siteEra) {
+		siteEras.add(siteEra);
+		Hiber.flush();
+	}
+
+	public List<SiteGroup> groups(HhStartDate from, HhStartDate to,
+			boolean primaryOnly) throws HttpException {
+		List<SiteGroup> groups = new ArrayList<SiteGroup>();
+		HhStartDate checkFrom = from;
+		HhStartDate checkTo = to;
+		while (!checkFrom.getDate().after(to.getDate())) {
+			List<Site> sites = new ArrayList<Site>();
+			List<Supply> supplies = new ArrayList<Supply>();
+			sites.add(this);
+			if (walkGroup(sites, supplies, checkFrom, checkTo)) {
+				Collections.sort(sites, new Comparator<Site>() {
+					public int compare(Site site1, Site site2) {
+						int physicalSupplies1 = site1.physicalSupplies();
+						int physicalSupplies2 = site2.physicalSupplies();
+						return physicalSupplies1 == physicalSupplies2 ? site2
+								.getCode().compareTo(site1.getCode())
+								: physicalSupplies2 - physicalSupplies1;
+					}
+				});
+				if (!primaryOnly || sites.get(0).equals(this)) {
+					groups.add(new SiteGroup(checkFrom, checkTo, sites,
+							supplies));
+				}
+				checkFrom = checkTo.getNext();
+				checkTo = to;
 			} else {
-				throw new InternalException(e);
+				checkTo = HhStartDate
+						.roundDown(new Date(
+								(long) Math.floor(((double) (checkTo.getDate()
+										.getTime() - checkFrom.getDate()
+										.getTime())) / 2)));
 			}
 		}
-		SupplyGeneration generation = supply.insertGeneration(this,
-				new ArrayList<Site>(), startDate, mopContract, mopAccount,
-				hhdcContract, hhdcAccount, meterSerialNumber, pc, mtcCode, cop,
-				ssc, importMpanStr, importLlfcCode, importSupplierContract,
-				importSupplierAccount, importAgreedSupplyCapacity,
-				exportMpanStr, exportLlfcCode, exportSupplierContract,
-				exportSupplierAccountReference, exportAgreedSupplyCapacity,
-				false, false, false, false);
-		generation.update(generation.getStartDate(), finishDate);
-		Hiber.flush();
-		return supply;
+		return groups;
 	}
 
 	public void hhCheck(HhStartDate from, HhStartDate to) throws HttpException {
@@ -338,44 +344,16 @@ public class Site extends PersistentEntity {
 		}
 	}
 
-	public List<SiteGroup> groups(HhStartDate from, HhStartDate to,
-			boolean primaryOnly) throws HttpException {
-		List<SiteGroup> groups = new ArrayList<SiteGroup>();
-		HhStartDate checkFrom = from;
-		HhStartDate checkTo = to;
-		while (!checkFrom.getDate().after(to.getDate())) {
-			List<Site> sites = new ArrayList<Site>();
-			List<Supply> supplies = new ArrayList<Supply>();
-			sites.add(this);
-			if (walkGroup(sites, supplies, checkFrom, checkTo)) {
-				Collections.sort(sites, new Comparator<Site>() {
-					public int compare(Site site1, Site site2) {
-						int physicalSupplies1 = site1.physicalSupplies();
-						int physicalSupplies2 = site2.physicalSupplies();
-						return physicalSupplies1 == physicalSupplies2 ? site2
-								.getCode().compareTo(site1.getCode())
-								: physicalSupplies2 - physicalSupplies1;
-					}
-				});
-				if (!primaryOnly || sites.get(0).equals(this)) {
-					groups.add(new SiteGroup(checkFrom, checkTo, sites,
-							supplies));
-				}
-				checkFrom = checkTo.getNext();
-				checkTo = to;
-			} else {
-				checkTo = HhStartDate
-						.roundDown(new Date(
-								(long) Math.floor(((double) (checkTo.getDate()
-										.getTime() - checkFrom.getDate()
-										.getTime())) / 2)));
+	public int physicalSupplies() {
+		int physicalSupplies = 0;
+		for (SiteEra siteEra : siteEras) {
+			if (siteEra.getIsPhysical()) {
+				physicalSupplies++;
 			}
 		}
-		return groups;
+		return physicalSupplies;
 	}
 
-	// return true if the supply is continuously attached to the site for the
-	// given period.
 	@SuppressWarnings("unchecked")
 	private boolean walkGroup(List<Site> groupSites,
 			List<Supply> groupSupplies, HhStartDate from, HhStartDate to) {
@@ -384,16 +362,16 @@ public class Site extends PersistentEntity {
 		for (Supply candidateSupply : (List<Supply>) Hiber
 				.session()
 				.createQuery(
-						"select distinct supply from Supply supply join supply.generations supplyGeneration join supplyGeneration.siteSupplyGenerations siteSupplyGeneration where siteSupplyGeneration.site = :site and supplyGeneration.startDate.date <= :to and (supplyGeneration.finishDate.date is null or supplyGeneration.finishDate.date >= :from)")
+						"select distinct supply from Supply supply join supply.eras era join era.siteEras siteEra where siteEra.site = :site and era.startDate.date <= :to and (era.finishDate.date is null or era.finishDate.date >= :from)")
 				.setEntity("site", newSite)
 				.setTimestamp("from", from.getDate())
 				.setTimestamp("to", to.getDate()).list()) {
 			if (!groupSupplies.contains(candidateSupply)) {
 				// check if continuously attached.
-				if (candidateSupply.getGenerations(from, to).size() == Hiber
+				if (candidateSupply.getEras(from, to).size() == Hiber
 						.session()
 						.createQuery(
-								"select distinct generation from SupplyGeneration generation join generation.siteSupplyGenerations siteSupplyGeneration where generation.supply = :supply and siteSupplyGeneration.site = :site and generation.startDate.date <= :to and (generation.finishDate.date is null or generation.finishDate.date >= :from)")
+								"select distinct era from Era era join era.siteEras siteEra where era.supply = :supply and siteEra.site = :site and era.startDate.date <= :to and (era.finishDate.date is null or era.finishDate.date >= :from)")
 						.setEntity("supply", candidateSupply)
 						.setEntity("site", newSite)
 						.setTimestamp("from", from.getDate())
@@ -402,7 +380,7 @@ public class Site extends PersistentEntity {
 					for (Site site : (List<Site>) Hiber
 							.session()
 							.createQuery(
-									"select distinct siteSupplyGeneration.site from SupplyGeneration generation join generation.siteSupplyGenerations siteSupplyGeneration where generation.supply = :supply and generation.startDate.date <= :to and (generation.finishDate.date is null or generation.finishDate.date >= :from)")
+									"select distinct siteEra.site from Era era join era.siteEras siteEra where era.supply = :supply and era.startDate.date <= :to and (era.finishDate.date is null or era.finishDate.date >= :from)")
 							.setEntity("supply", candidateSupply)
 							.setTimestamp("from", from.getDate())
 							.setTimestamp("to", to.getDate()).list()) {
@@ -428,34 +406,65 @@ public class Site extends PersistentEntity {
 		return true;
 	}
 
-	public int physicalSupplies() {
-		int physicalSupplies = 0;
-		for (SiteSupplyGeneration siteSupplyGeneration : siteSupplyGenerations) {
-			if (siteSupplyGeneration.getIsPhysical()) {
-				physicalSupplies++;
+	public void detachSiteEra(SiteEra siteEra) throws HttpException {
+		siteEras.remove(siteEra);
+	}
+
+	public Supply insertSupply(Source source, GeneratorType generatorType,
+			String supplyName, HhStartDate startDate, HhStartDate finishDate,
+			GspGroup gspGroup, String note, Contract mopContract,
+			String mopAccount, Contract hhdcContract, String hhdcAccount,
+			String msn, Pc pc, String mtcCode, Cop cop, Ssc ssc,
+			String importMpanStr, String importLlfcCode,
+			Contract importSupplierContract, String importSupplierAccount,
+			Integer impSc, String exportMpanStr, String exportLlfcCode,
+			Contract exportSupplierContract,
+			String exportSupplierAccountReference,
+			Integer exportAgreedSupplyCapacity) throws HttpException {
+		String mpanStr = null;
+		if (importMpanStr == null) {
+			mpanStr = exportMpanStr;
+		} else {
+			mpanStr = importMpanStr;
+		}
+		if (mpanStr == null) {
+			throw new UserException(
+					"Either the import or export MPAN core must be present.");
+		}
+		mpanStr = Era.normalizeMpanCore(mpanStr);
+		String dnoCode = mpanStr.substring(0, 2);
+		Contract dnoContract = Contract.getDnoContract(dnoCode);
+		Supply supply = new Supply(supplyName, source, generatorType,
+				dnoContract, gspGroup, note);
+		try {
+			Hiber.session().save(supply);
+			Hiber.flush();
+		} catch (HibernateException e) {
+			Hiber.rollBack();
+			if (HttpException
+					.isSQLException(e,
+							"ERROR: duplicate key violates unique constraint \"mpan_dno_id_key\"")) {
+				BatchUpdateException be = (BatchUpdateException) e.getCause();
+				String message = be.getMessage();
+				boolean isImport = message.charAt(message.lastIndexOf(',') - 1) == '0';
+				throw new UserException("An MPAN with this "
+						+ (isImport ? "import" : "export")
+						+ " MPAN core already exists.");
+			} else {
+				throw new InternalException(e);
 			}
 		}
-		return physicalSupplies;
-	}
+		Era era = supply.insertEra(this, new ArrayList<Site>(), startDate,
+				mopContract, mopAccount, hhdcContract, hhdcAccount, msn, pc,
+				mtcCode, cop, ssc, importMpanStr, importLlfcCode,
+				importSupplierContract, importSupplierAccount, impSc,
+				exportMpanStr, exportLlfcCode, exportSupplierContract,
+				exportSupplierAccountReference, exportAgreedSupplyCapacity,
+				false, false, false, false);
 
-	public void attachSiteSupplyGeneration(
-			SiteSupplyGeneration siteSupplyGeneration) {
-		siteSupplyGenerations.add(siteSupplyGeneration);
+		era.update(era.getStartDate(), finishDate);
 		Hiber.flush();
-	}
-
-	public MonadUri getEditUri() throws HttpException {
-		return Chellow.SITES_INSTANCE.getEditUri().resolve(getUriId())
-				.append("/");
-	}
-
-	public boolean equals(Object obj) {
-		boolean isEqual = false;
-
-		if (obj instanceof Site) {
-			isEqual = ((Site) obj).getId().equals(getId());
-		}
-		return isEqual;
+		return supply;
 	}
 
 	public void httpGet(Invocation inv) throws HttpException {
@@ -468,14 +477,13 @@ public class Site extends PersistentEntity {
 		Element docElem = doc.getDocumentElement();
 		Element siteElement = toXml(doc);
 		docElem.appendChild(siteElement);
-		for (SupplyGeneration generation : (List<SupplyGeneration>) Hiber
+		for (Era era : (List<Era>) Hiber
 				.session()
 				.createQuery(
-						"select supplyGeneration from SupplyGeneration supplyGeneration join supplyGeneration.siteSupplyGenerations siteSupplyGeneration where siteSupplyGeneration.site = :site order by supplyGeneration.finishDate.date")
+						"select era from Era era join era.siteEras siteEra where siteEra.site = :site order by era.finishDate.date")
 				.setEntity("site", this).list()) {
-			siteElement.appendChild(generation.toXml(doc, new XmlTree("mpans",
-					new XmlTree("core").put("llfc")).put("supply", new XmlTree(
-					"source"))));
+			siteElement.appendChild(era.toXml(doc, new XmlTree("supply",
+					new XmlTree("source"))));
 		}
 		for (Source source : (List<Source>) Hiber.session()
 				.createQuery("from Source source order by source.code").list()) {
@@ -502,23 +510,24 @@ public class Site extends PersistentEntity {
 			docElem.appendChild(cop.toXml(doc));
 		}
 
-		for (MopContract contract : (List<MopContract>) Hiber
+		for (Contract contract : (List<Contract>) Hiber
 				.session()
-				.createQuery("from MopContract contract order by contract.name")
+				.createQuery(
+						"from Contract contract where contract.role.code = 'M' order by contract.name")
 				.list()) {
 			docElem.appendChild(contract.toXml(doc));
 		}
-		for (HhdcContract contract : (List<HhdcContract>) Hiber
+		for (Contract contract : (List<Contract>) Hiber
 				.session()
 				.createQuery(
-						"from HhdcContract contract order by contract.name")
+						"from Contract contract where contract.role.code = 'C' order by contract.name")
 				.list()) {
 			docElem.appendChild(contract.toXml(doc));
 		}
-		for (SupplierContract contract : (List<SupplierContract>) Hiber
+		for (Contract contract : (List<Contract>) Hiber
 				.session()
 				.createQuery(
-						"from SupplierContract contract order by contract.name")
+						"from Contract contract where contract.role.code = 'X' order by contract.name")
 				.list()) {
 			docElem.appendChild(contract.toXml(doc));
 		}
@@ -560,13 +569,13 @@ public class Site extends PersistentEntity {
 				String mopAccount = inv.getString("mop-account");
 				Long hhdcContractId = inv.getLong("hhdc-contract-id");
 				String hhdcAccount = inv.getString("hhdc-account");
-				String meterSerialNumber = inv.getString("meter-serial-number");
+				String meterSerialNumber = inv.getString("msn");
 				Long pcId = inv.getLong("pc-id");
 				String mtcCode = inv.getString("mtc-code");
 				Long copId = inv.getLong("cop-id");
 				String sscCode = inv.getString("ssc-code");
-				String importMpanCoreStr = inv.getString("import-mpan-core");
-				String exportMpanCoreStr = inv.getString("export-mpan-core");
+				String importMpanCore = inv.getString("import-mpan-core");
+				String exportMpanCore = inv.getString("export-mpan-core");
 				Date startDate = inv.getDate("start");
 				if (!inv.isValid()) {
 					throw new UserException();
@@ -581,13 +590,13 @@ public class Site extends PersistentEntity {
 							.getGeneratorType(generatorTypeId);
 				}
 				GspGroup gspGroup = GspGroup.getGspGroup(gspGroupId);
-				MopContract mopContract = null;
+				Contract mopContract = null;
 				if (mopContractId != null) {
-					mopContract = MopContract.getMopContract(mopContractId);
+					mopContract = Contract.getMopContract(mopContractId);
 				}
-				HhdcContract hhdcContract = null;
+				Contract hhdcContract = null;
 				if (hhdcContractId != null) {
-					hhdcContract = HhdcContract.getHhdcContract(hhdcContractId);
+					hhdcContract = Contract.getHhdcContract(hhdcContractId);
 				}
 				Pc pc = Pc.getPc(pcId);
 				Cop cop = Cop.getCop(copId);
@@ -596,11 +605,11 @@ public class Site extends PersistentEntity {
 				if (sscCode.length() > 0) {
 					ssc = Ssc.getSsc(sscCode);
 				}
-				SupplierContract importSupplierContract = null;
+				Contract importSupplierContract = null;
 				String importSupplierAccount = null;
 				Integer importAgreedSupplyCapacity = null;
 				String importLlfcCode = null;
-				if (importMpanCoreStr.trim().length() > 0) {
+				if (importMpanCore.trim().length() > 0) {
 					importLlfcCode = inv.getString("import-llfc-code");
 					Long importSupplierContractId = inv
 							.getLong("import-supplier-contract-id");
@@ -611,7 +620,7 @@ public class Site extends PersistentEntity {
 					if (!inv.isValid()) {
 						throw new UserException();
 					}
-					importSupplierContract = SupplierContract
+					importSupplierContract = Contract
 							.getSupplierContract(importSupplierContractId);
 					try {
 						importAgreedSupplyCapacity = new Integer(
@@ -621,12 +630,14 @@ public class Site extends PersistentEntity {
 								"The import supply capacity must be an integer."
 										+ e.getMessage());
 					}
+				} else {
+					importMpanCore = null;
 				}
-				SupplierContract exportSupplierContract = null;
+				Contract exportSupplierContract = null;
 				String exportLlfcCode = null;
 				Integer exportAgreedSupplyCapacity = null;
 				String exportSupplierAccount = null;
-				if (exportMpanCoreStr.trim().length() > 0) {
+				if (exportMpanCore.trim().length() > 0) {
 					exportLlfcCode = inv.getString("export-llfc-code");
 					Long exportSupplierContractId = inv
 							.getLong("export-supplier-contract-id");
@@ -637,7 +648,7 @@ public class Site extends PersistentEntity {
 					if (!inv.isValid()) {
 						throw new UserException();
 					}
-					exportSupplierContract = SupplierContract
+					exportSupplierContract = Contract
 							.getSupplierContract(exportSupplierContractId);
 					try {
 						exportAgreedSupplyCapacity = new Integer(
@@ -647,37 +658,26 @@ public class Site extends PersistentEntity {
 								"The export supply capacity must be an integer."
 										+ e.getMessage());
 					}
+				} else {
+					exportMpanCore = null;
 				}
+
 				Supply supply = insertSupply(source, generatorType, name,
 						new HhStartDate(startDate), null, gspGroup, "",
 						mopContract, mopAccount, hhdcContract, hhdcAccount,
 						meterSerialNumber, pc, mtcCode, cop, ssc,
-						importMpanCoreStr, importLlfcCode,
-						importSupplierContract, importSupplierAccount,
-						importAgreedSupplyCapacity, exportMpanCoreStr,
-						exportLlfcCode, exportSupplierContract,
+						importMpanCore, importLlfcCode, importSupplierContract,
+						importSupplierAccount, importAgreedSupplyCapacity,
+						exportMpanCore, exportLlfcCode, exportSupplierContract,
 						exportSupplierAccount, exportAgreedSupplyCapacity);
 				Hiber.commit();
 				inv.sendSeeOther(supply.getEditUri());
-			} catch (HttpException e) {
+			} catch (UserException e) {
+				Hiber.rollBack();
+				Hiber.close();
 				e.setDocument(document());
 				throw e;
 			}
 		}
-	}
-
-	public Urlable getChild(UriPathElement urlId) throws HttpException {
-		throw new NotFoundException();
-	}
-
-	public void detachSiteSupplyGeneration(
-			SiteSupplyGeneration siteSupplyGeneration) throws HttpException {
-		siteSupplyGenerations.remove(siteSupplyGeneration);
-	}
-
-	@Override
-	public URI getViewUri() throws HttpException {
-		// TODO Auto-generated method stub
-		return null;
 	}
 }

@@ -38,8 +38,9 @@ import net.sf.chellow.monad.types.MonadDate;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
 import net.sf.chellow.physical.EntityList;
+import net.sf.chellow.physical.Era;
 import net.sf.chellow.physical.HhStartDate;
-import net.sf.chellow.physical.MpanCore;
+import net.sf.chellow.physical.Supply;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -79,7 +80,8 @@ public class Bills extends EntityList {
 
 	public void httpPost(Invocation inv) throws HttpException {
 		Hiber.setReadWrite();
-		String mpanCoreStr = inv.getString("mpan-core");
+		String mpanCore = inv.getString("mpan-core");
+		mpanCore = Era.normalizeMpanCore(mpanCore);
 		String account = inv.getString("account");
 		String reference = inv.getString("reference");
 		Date issueDate = inv.getDate("issue");
@@ -101,17 +103,16 @@ public class Bills extends EntityList {
 		cal.set(Calendar.MINUTE, 30);
 		Bill bill = null;
 		try {
-			bill = batch.insertBill(MpanCore.getMpanCore(mpanCoreStr)
-					.getSupply(), account, reference, issueDate,
-					new HhStartDate(startDate), new HhStartDate(cal.getTime()),
-					kwh, net, vat, gross, BillType.getBillType(billTypeId),
-					breakdown);
+			bill = batch.insertBill(Supply.getSupply(mpanCore), account,
+					reference, issueDate, new HhStartDate(startDate),
+					new HhStartDate(cal.getTime()), kwh, net, vat, gross,
+					BillType.getBillType(billTypeId), breakdown);
 		} catch (UserException e) {
 			e.setDocument(document());
 			throw e;
 		}
 		Hiber.commit();
-		inv.sendSeeOther(bill.getEditUri());
+		inv.sendSeeOther(bill.getViewUri());
 	}
 
 	public void httpGet(Invocation inv) throws HttpException {

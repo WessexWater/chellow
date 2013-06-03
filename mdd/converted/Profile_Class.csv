@@ -1,10 +1,10 @@
 Chellow Id,Profile Class ID,Profile Class Description
-1,1,Domestic Unrestricted
-2,2,Domestic Economy 7
-3,3,Non-domestic Unrestricted
-4,4,Non-domestic Economy 7
-5,5,"Non-domestic, MD, load factor 0-20%"
-6,6,"Non-domestic, MD, load factor 20-30%"
-7,7,"Non-domestic, MD, load factor 30-40%"
-8,8,"Non-domestic, MD, load factor 40%+"
-9,0,Half-hourly
+1,01,Domestic Unrestricted
+2,02,Domestic Economy 7
+3,03,Non-domestic Unrestricted
+4,04,Non-domestic Economy 7
+5,05,"Non-domestic, MD, load factor 0-20%"
+6,06,"Non-domestic, MD, load factor 20-30%"
+7,07,"Non-domestic, MD, load factor 30-40%"
+8,08,"Non-domestic, MD, load factor 40%+"
+9,00,Half-hourly

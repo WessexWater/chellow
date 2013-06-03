@@ -23,10 +23,14 @@ package net.sf.chellow.billing;
 
 import java.math.BigDecimal;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
@@ -41,7 +45,6 @@ import net.sf.chellow.monad.types.MonadDate;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
 import net.sf.chellow.physical.HhStartDate;
-import net.sf.chellow.physical.MpanCore;
 import net.sf.chellow.physical.PersistentEntity;
 import net.sf.chellow.physical.RawRegisterRead;
 import net.sf.chellow.physical.ReadType;
@@ -52,10 +55,7 @@ import net.sf.chellow.physical.Tpr;
 import net.sf.chellow.physical.Units;
 import net.sf.chellow.ui.GeneralImport;
 
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-
-public class Bill extends PersistentEntity implements Urlable {
+public class Bill extends PersistentEntity {
 	public static void generalImport(String action, String[] values,
 			Element csvElement) throws HttpException {
 		if (action.equals("insert")) {
@@ -66,11 +66,11 @@ public class Bill extends PersistentEntity implements Urlable {
 
 			Contract contract = null;
 			if (roleName.equals("hhdc")) {
-				contract = HhdcContract.getHhdcContract(contractName);
+				contract = Contract.getHhdcContract(contractName);
 			} else if (roleName.equals("supplier")) {
-				contract = SupplierContract.getSupplierContract(contractName);
+				contract = Contract.getSupplierContract(contractName);
 			} else if (roleName.equals("mop")) {
-				contract = MopContract.getMopContract(contractName);
+				contract = Contract.getMopContract(contractName);
 			} else {
 				throw new UserException(
 						"The role name must be one of hhdc, supplier or mop.");
@@ -79,9 +79,8 @@ public class Bill extends PersistentEntity implements Urlable {
 					"Batch Reference", values, 2);
 
 			Batch batch = contract.getBatch(batchReference);
-			String mpanCoreStr = GeneralImport.addField(csvElement,
-					"Mpan Core", values, 3);
-			MpanCore mpanCore = MpanCore.getMpanCore(mpanCoreStr);
+			String mpanCore = GeneralImport.addField(csvElement, "Mpan Core",
+					values, 3);
 			String issueDateStr = GeneralImport.addField(csvElement,
 					"Issue Date", values, 4);
 			Date issueDate = new MonadDate(issueDateStr).getDate();
@@ -118,7 +117,7 @@ public class Bill extends PersistentEntity implements Urlable {
 					14);
 			BigDecimal kwh = new BigDecimal(kwhStr);
 
-			Bill bill = batch.insertBill(mpanCore.getSupply(), account,
+			Bill bill = batch.insertBill(Supply.getSupply(mpanCore), account,
 					reference, issueDate, startDate, finishDate, kwh, net, vat,
 					gross, type, breakdown);
 			for (int i = 15; i < values.length; i += 11) {
@@ -471,6 +470,87 @@ public class Bill extends PersistentEntity implements Urlable {
 		return element;
 	}
 
+	public MonadUri getEditUri() throws HttpException {
+		return null;
+	}
+
+	public URI getViewUri() throws HttpException {
+		char marketRoleCode = getBatch().getContract().getRole().getCode();
+		try {
+			if (marketRoleCode == 'X') {
+				return new URI(
+						"http://localhost:8080/chellow/reports/105/output/?bill-id="
+								+ getId());
+			} else {
+				throw new InternalException("Market role not recognized.");
+			}
+		} catch (URISyntaxException e) {
+			throw new InternalException(e);
+		}
+	}
+
+	public RegisterRead insertRead(Tpr tpr, BigDecimal coefficient,
+			Units units, String meterSerialNumber, String mpanStr,
+			HhStartDate previousDate, BigDecimal previousValue,
+			ReadType previousType, HhStartDate presentDate,
+			BigDecimal presentValue, ReadType presentType) throws HttpException {
+		RegisterRead read = new RegisterRead(this, tpr, coefficient, units,
+				meterSerialNumber, mpanStr, previousDate, previousValue,
+				previousType, presentDate, presentValue, presentType);
+		if (reads == null) {
+			reads = new HashSet<RegisterRead>();
+		}
+		reads.add(read);
+		Hiber.flush();
+		read.attach();
+		return read;
+	}
+
+	public RegisterRead insertRead(RawRegisterRead rawRead)
+			throws HttpException {
+		return insertRead(rawRead.getTpr(), rawRead.getCoefficient(),
+				rawRead.getUnits(), rawRead.getMeterSerialNumber(),
+				rawRead.getMpanStr(), rawRead.getPreviousDate(),
+				rawRead.getPreviousValue(), rawRead.getPreviousType(),
+				rawRead.getPresentDate(), rawRead.getPresentValue(),
+				rawRead.getPresentType());
+	}
+
+	public Urlable getChild(UriPathElement uriId) throws HttpException {
+		if (RegisterReads.URI_ID.equals(uriId)) {
+			return registerReadsInstance();
+		} else {
+			throw new NotFoundException();
+		}
+	}
+
+	public RegisterReads registerReadsInstance() {
+		return new RegisterReads(this);
+	}
+
+	public void httpGet(Invocation inv) throws HttpException {
+		inv.sendOk(document());
+	}
+
+	@SuppressWarnings("unchecked")
+	private Document document() throws HttpException {
+		Document doc = MonadUtils.newSourceDocument();
+		Element source = doc.getDocumentElement();
+		Element billElement = (Element) toXml(doc,
+				new XmlTree("batch", new XmlTree("contract", new XmlTree(
+						"party"))).put("type").put("reads").put("supply"));
+		source.appendChild(billElement);
+		source.appendChild(MonadDate.getMonthsXml(doc));
+		source.appendChild(MonadDate.getDaysXml(doc));
+		source.appendChild(MonadDate.getHoursXml(doc));
+		source.appendChild(HhStartDate.getHhMinutesXml(doc));
+		for (BillType type : (List<BillType>) Hiber.session()
+				.createQuery("from BillType type order by type.code").list()) {
+			source.appendChild(type.toXml(doc));
+		}
+		return doc;
+	}
+
 	public void httpPost(Invocation inv) throws HttpException {
 		if (inv.hasParameter("delete")) {
 			delete();
@@ -506,78 +586,8 @@ public class Bill extends PersistentEntity implements Urlable {
 		}
 	}
 
-	@SuppressWarnings("unchecked")
-	private Document document() throws HttpException {
-		Document doc = MonadUtils.newSourceDocument();
-		Element source = doc.getDocumentElement();
-		Element billElement = (Element) toXml(doc,
-				new XmlTree("batch", new XmlTree("contract", new XmlTree(
-						"party"))).put("type").put("reads").put("supply"));
-		source.appendChild(billElement);
-		source.appendChild(MonadDate.getMonthsXml(doc));
-		source.appendChild(MonadDate.getDaysXml(doc));
-		source.appendChild(MonadDate.getHoursXml(doc));
-		source.appendChild(HhStartDate.getHhMinutesXml(doc));
-		for (BillType type : (List<BillType>) Hiber.session()
-				.createQuery("from BillType type order by type.code").list()) {
-			source.appendChild(type.toXml(doc));
-		}
-		return doc;
-	}
-
-	public void httpGet(Invocation inv) throws HttpException {
-		inv.sendOk(document());
-	}
-
-	public MonadUri getEditUri() throws HttpException {
-		return batch.billsInstance().getEditUri().resolve(getUriId()).append("/");
-	}
-
-	public Urlable getChild(UriPathElement uriId) throws HttpException {
-		if (RegisterReads.URI_ID.equals(uriId)) {
-			return registerReadsInstance();
-		} else {
-			throw new NotFoundException();
-		}
-	}
-
-	public RegisterReads registerReadsInstance() {
-		return new RegisterReads(this);
-	}
-
-	public RegisterRead insertRead(Tpr tpr, BigDecimal coefficient,
-			Units units, String meterSerialNumber, String mpanStr,
-			HhStartDate previousDate, BigDecimal previousValue,
-			ReadType previousType, HhStartDate presentDate,
-			BigDecimal presentValue, ReadType presentType) throws HttpException {
-		RegisterRead read = new RegisterRead(this, tpr, coefficient, units,
-				meterSerialNumber, mpanStr, previousDate, previousValue,
-				previousType, presentDate, presentValue, presentType);
-		if (reads == null) {
-			reads = new HashSet<RegisterRead>();
-		}
-		reads.add(read);
-		Hiber.flush();
-		read.attach();
-		return read;
-	}
-
-	public RegisterRead insertRead(RawRegisterRead rawRead)
-			throws HttpException {
-		return insertRead(rawRead.getTpr(), rawRead.getCoefficient(),
-				rawRead.getUnits(), rawRead.getMeterSerialNumber(),
-				rawRead.getMpanStr(), rawRead.getPreviousDate(),
-				rawRead.getPreviousValue(), rawRead.getPreviousType(),
-				rawRead.getPresentDate(), rawRead.getPresentValue(),
-				rawRead.getPresentType());
-	}
-
 	public void delete() throws HttpException {
 		Hiber.session().delete(this);
 		Hiber.flush();
-	}
-	
-	public URI getViewUri() throws HttpException {
-        return null;
 	}
 }

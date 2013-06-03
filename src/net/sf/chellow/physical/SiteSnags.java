@@ -1,6 +1,6 @@
 /*******************************************************************************
  * 
- *  Copyright (c) 2005, 2011 Wessex Water Services Limited
+ *  Copyright (c) 2005-2013 Wessex Water Services Limited
  *  
  *  This file is part of Chellow.
  * 
@@ -40,80 +40,80 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 public class SiteSnags extends EntityList {
-	public static final UriPathElement URI_ID;
+        public static final UriPathElement URI_ID;
 
-	static {
-		try {
-			URI_ID = new UriPathElement("site-snags");
-		} catch (HttpException e) {
-			throw new RuntimeException(e);
-		}
-	}
+        static {
+                try {
+                        URI_ID = new UriPathElement("site-snags");
+                } catch (HttpException e) {
+                        throw new RuntimeException(e);
+                }
+        }
 
-	public SiteSnags() {
-	}
+        public SiteSnags() {
+        }
 
-	public UriPathElement getUriId() {
-		return URI_ID;
-	}
+        public UriPathElement getUriId() {
+                return URI_ID;
+        }
 
-	public MonadUri getEditUri() throws HttpException {
-		return Chellow.ROOT_URI.resolve(getUriId()).append("/");
-	}
+        public MonadUri getEditUri() throws HttpException {
+                return Chellow.ROOT_URI.resolve(getUriId()).append("/");
+        }
 
-	public void httpGet(Invocation inv) throws HttpException {
-		inv.sendOk(document());
-	}
+        public void httpGet(Invocation inv) throws HttpException {
+                inv.sendOk(document());
+        }
 
-	private Document document() throws HttpException {
-		Document doc = MonadUtils.newSourceDocument();
-		Element source = doc.getDocumentElement();
-		source.appendChild(MonadDate.getMonthsXml(doc));
-		source.appendChild(MonadDate.getDaysXml(doc));
-		source.appendChild(MonadDate.getHoursXml(doc));
-		source.appendChild(HhStartDate.getHhMinutesXml(doc));
-		source.appendChild(new MonadDate().toXml(doc));
-		return doc;
-	}
+        private Document document() throws HttpException {
+                Document doc = MonadUtils.newSourceDocument();
+                Element source = doc.getDocumentElement();
+                source.appendChild(MonadDate.getMonthsXml(doc));
+                source.appendChild(MonadDate.getDaysXml(doc));
+                source.appendChild(MonadDate.getHoursXml(doc));
+                source.appendChild(HhStartDate.getHhMinutesXml(doc));
+                source.appendChild(new MonadDate().toXml(doc));
+                return doc;
+        }
 
-	public void httpPost(Invocation inv) throws HttpException {
-		Hiber.setReadWrite();
-		if (inv.hasParameter("ignore")) {
-			Date ignoreDate = inv.getDate("ignore");
+        public void httpPost(Invocation inv) throws HttpException {
+                Hiber.setReadWrite();
+                if (inv.hasParameter("ignore")) {
+                        Date ignoreDate = inv.getDate("ignore");
 
-			ScrollableResults snags = Hiber
-					.session()
-					.createQuery(
-							"from SiteSnag snag where snag.finishDate < :ignoreDate")
-					.setTimestamp(
-							"ignoreDate", ignoreDate).scroll(
-							ScrollMode.FORWARD_ONLY);
-			while (snags.next()) {
-				SiteSnag snag = (SiteSnag) snags.get(0);
-				snag.setIsIgnored(true);
-				Hiber.session().flush();
-				Hiber.session().clear();
-			}
-			Hiber.commit();
-			inv.sendOk(document());
-		}
-	}
+                        ScrollableResults snags = Hiber
+                                        .session()
+                                        .createQuery(
+                                                        "from Snag snag where snag.site is not null and snag.finishDate < :ignoreDate")
+                                        .setTimestamp(
+                                                        "ignoreDate", ignoreDate).scroll(
+                                                        ScrollMode.FORWARD_ONLY);
+                        while (snags.next()) {
+                                Snag snag = (Snag) snags.get(0);
+                                snag.setIsIgnored(true);
+                                Hiber.session().flush();
+                                Hiber.session().clear();
+                        }
+                        Hiber.commit();
+                        inv.sendOk(document());
+                }
+        }
 
-	public Urlable getChild(UriPathElement urlId) throws HttpException {
-		return SiteSnag.getSiteSnag(urlId.toLong());
-	}
+        public Urlable getChild(UriPathElement urlId) throws HttpException {
+                return Snag.getSnag(urlId.toLong());
+        }
 
-	public MonadUri getMonadUri() throws InternalException {
-		return null;
-	}
+        public MonadUri getMonadUri() throws InternalException {
+                return null;
+        }
 
-	public Element toXml(Document doc) throws HttpException {
-		return doc.createElement("site-snags");
-	}
+        public Element toXml(Document doc) throws HttpException {
+                return doc.createElement("site-snags");
+        }
 
-	@Override
-	public URI getViewUri() throws HttpException {
-		// TODO Auto-generated method stub
-		return null;
-	}
+        @Override
+        public URI getViewUri() throws HttpException {
+                // TODO Auto-generated method stub
+                return null;
+        }
 }

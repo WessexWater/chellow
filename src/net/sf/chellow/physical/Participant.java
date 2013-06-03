@@ -1,6 +1,6 @@
 /*******************************************************************************
  * 
- *  Copyright (c) 2005, 2009 Wessex Water Services Limited
+ *  Copyright (c) 2005-2013 Wessex Water Services Limited
  *  
  *  This file is part of Chellow.
  * 
@@ -22,19 +22,13 @@ package net.sf.chellow.physical;
 
 import java.net.URI;
 
-import net.sf.chellow.billing.Provider;
-import net.sf.chellow.monad.Hiber;
-import net.sf.chellow.monad.HttpException;
-import net.sf.chellow.monad.Invocation;
-import net.sf.chellow.monad.MonadUtils;
-import net.sf.chellow.monad.NotFoundException;
-import net.sf.chellow.monad.Urlable;
-import net.sf.chellow.monad.types.MonadUri;
-import net.sf.chellow.monad.types.UriPathElement;
-
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import org.w3c.dom.Node;
+
+import net.sf.chellow.monad.Hiber;
+import net.sf.chellow.monad.HttpException;
+import net.sf.chellow.monad.NotFoundException;
+import net.sf.chellow.monad.types.MonadUri;
 
 public class Participant extends PersistentEntity {
 	static public Participant getParticipant(Long id) throws HttpException {
@@ -86,55 +80,20 @@ public class Participant extends PersistentEntity {
 	public void setName(String name) {
 		this.name = name;
 	}
-
-	@Override
-	public Urlable getChild(UriPathElement uriId) throws HttpException {
-		// TODO Auto-generated method stub
-		return null;
+	
+	public Element toXml(Document doc) throws HttpException {
+		Element element = doc.createElement("participant");
+		
+		element.setAttribute("id", getId().toString());
+		element.setAttribute("code", code);
+        element.setAttribute("name", name);
+		return element;
 	}
 
 	@Override
 	public MonadUri getEditUri() throws HttpException {
 		// TODO Auto-generated method stub
 		return null;
-	}
-
-	@Override
-	public void httpDelete(Invocation inv) throws HttpException {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public void httpGet(Invocation inv) throws HttpException {
-		Document doc = MonadUtils.newSourceDocument();
-		Element source = (Element) doc.getFirstChild();
-
-		source.appendChild(toXml(doc));
-		inv.sendOk(doc);
-	}
-
-	@Override
-	public void httpPost(Invocation inv) throws HttpException {
-		// TODO Auto-generated method stub
-
-	}
-
-	public Node toXml(Document doc) throws HttpException {
-		Element element = super.toXml(doc, "participant");
-
-		element.setAttribute("code", code);
-		element.setAttribute("name", name);
-		return element;
-	}
-
-	public Provider getProvider(char roleCode) {
-		return (Provider) Hiber
-				.session()
-				.createQuery(
-						"from Provider provider where provider.participant = :participant and provider.role.code = :roleCode")
-				.setEntity("participant", this).setCharacter("roleCode",
-						roleCode).uniqueResult();
 	}
 
 	@Override

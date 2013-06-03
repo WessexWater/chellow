@@ -98,9 +98,9 @@ public class SiteGroup {
 		Query query = Hiber
 				.session()
 				.createQuery(
-						"select datum.startDate.date , datum.value from HhDatum datum where datum.channel.supplyGeneration.supply = :supply and datum.channel.isImport = :isImport and datum.channel.isKwh = true and datum.startDate.date >= :from and datum.startDate.date <= :to order by datum.startDate.date")
-				.setTimestamp("from", from.getDate()).setTimestamp("to",
-						to.getDate());
+						"select datum.startDate.date , datum.value from HhDatum datum where datum.channel.era.supply = :supply and datum.channel.isImport = :isImport and datum.channel.isKwh = true and datum.startDate.date >= :from and datum.startDate.date <= :to order by datum.startDate.date")
+				.setTimestamp("from", from.getDate())
+				.setTimestamp("to", to.getDate());
 		List<List<Double>> hhStreams = new ArrayList<List<Double>>();
 		for (Supply supply : getSupplies()) {
 			query.setEntity("supply", supply);
@@ -150,8 +150,8 @@ public class SiteGroup {
 					long datumStartDate = hhData.getDate(0).getTime();
 					double datumValue = hhData.getBigDecimal(1).doubleValue();
 					for (long end = getFrom().getDate().getTime(); end <= getTo()
-							.getDate().getTime(); end = HhStartDate.getNext(cal,
-							end)) {
+							.getDate().getTime(); end = HhStartDate.getNext(
+							cal, end)) {
 						if (datumStartDate == end) {
 							for (List<Double> hhStream : hhStreams) {
 								hhStream.set(i, hhStream.get(i) + datumValue);
@@ -174,13 +174,11 @@ public class SiteGroup {
 
 	public void addSiteSnag(String description, HhStartDate startDate,
 			HhStartDate finishDate) throws HttpException {
-		SnagDateBounded.addSiteSnag(sites.get(0), description, startDate,
-				finishDate);
+		Snag.addSnag(sites.get(0), null, description, startDate, finishDate);
 	}
 
 	public void deleteHhdcSnag(String description, HhStartDate startDate,
 			HhStartDate finishDate) throws HttpException {
-		SnagDateBounded.deleteSiteSnag(sites.get(0), description, startDate,
-				finishDate);
+		Snag.removeSnag(sites.get(0), null, description, startDate, finishDate);
 	}
 }

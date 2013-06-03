@@ -9,7 +9,7 @@
 			<head>
 				<link rel="stylesheet" type="text/css"
 					href="{/source/request/@context-path}/reports/19/output/" />
-				<title>Chellow &gt; MOP Contracts</title>
+				<title>Chellow &gt; MOP Contracts &gt; Add</title>
 			</head>
 			<body>
 				<p>
@@ -20,7 +20,7 @@
 					<a href="{/source/request/@context-path}/reports/185/output/">
 						<xsl:value-of select="'MOP Contracts'" />
 					</a>
-					&gt; Edit
+					&gt; Add
 				</p>
 				<xsl:if test="//message">
 					<ul>
@@ -39,7 +39,7 @@
 						<label>
 							MOP
 							<select name="participant-id">
-								<xsl:for-each select="/source/provider">
+								<xsl:for-each select="/source/party">
 									<option value="{participant/@id}">
 										<xsl:if
 											test="/source/request/parameter[@name='participant-id']/value = @id">

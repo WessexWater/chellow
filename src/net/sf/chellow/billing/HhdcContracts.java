@@ -22,23 +22,17 @@
 package net.sf.chellow.billing;
 
 import java.net.URI;
-import java.util.Date;
-import java.util.List;
 
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.Invocation;
 import net.sf.chellow.monad.MonadUtils;
 import net.sf.chellow.monad.NotFoundException;
-import net.sf.chellow.monad.UserException;
-import net.sf.chellow.monad.XmlTree;
 import net.sf.chellow.monad.types.MonadDate;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
 import net.sf.chellow.physical.EntityList;
 import net.sf.chellow.physical.HhStartDate;
-import net.sf.chellow.physical.MarketRole;
-import net.sf.chellow.physical.Participant;
 import net.sf.chellow.ui.Chellow;
 
 import org.w3c.dom.Document;
@@ -67,39 +61,13 @@ public class HhdcContracts extends EntityList {
 	}
 
 	public void httpPost(Invocation inv) throws HttpException {
-		Hiber.setReadWrite();
-		Long participantId = inv.getLong("participant-id");
-		String name = inv.getString("name");
-		Date startDate = inv.getDateTime("start");
-		if (!inv.isValid()) {
-			throw new UserException(document());
-		}
-		try {
-			HhdcContract contract = HhdcContract.insertHhdcContract(null,
-					Participant.getParticipant(participantId), name,
-					HhStartDate.roundDown(startDate), null, "", "", "", null,
-					"");
-			Hiber.commit();
-			inv.sendSeeOther(contract.getEditUri());
-		} catch (UserException e) {
-			e.setDocument(document());
-			throw e;
-		}
 	}
 
-	@SuppressWarnings("unchecked")
 	private Document document() throws HttpException {
 		Document doc = MonadUtils.newSourceDocument();
 		Element source = doc.getDocumentElement();
 		Element contractsElement = toXml(doc);
 		source.appendChild(contractsElement);
-		for (Provider provider : (List<Provider>) Hiber
-				.session()
-				.createQuery(
-						"from Provider provider where provider.role.code = :roleCode order by provider.participant.code")
-				.setCharacter("roleCode", MarketRole.HHDC).list()) {
-			source.appendChild(provider.toXml(doc, new XmlTree("participant")));
-		}
 		source.appendChild(MonadDate.getMonthsXml(doc));
 		source.appendChild(MonadDate.getDaysXml(doc));
 		source.appendChild(MonadDate.getHoursXml(doc));
@@ -112,11 +80,11 @@ public class HhdcContracts extends EntityList {
 		inv.sendOk(document());
 	}
 
-	public HhdcContract getChild(UriPathElement uriId) throws HttpException {
-		HhdcContract contract = (HhdcContract) Hiber
+	public Contract getChild(UriPathElement uriId) throws HttpException {
+		Contract contract = (Contract) Hiber
 				.session()
 				.createQuery(
-						"from HhdcContract contract where contract.id = :contractId")
+						"from Contract contract where contract.role.code = 'C' and contract.id = :contractId")
 				.setLong("contractId", Long.parseLong(uriId.getString()))
 				.uniqueResult();
 		if (contract == null) {

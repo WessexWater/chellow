@@ -1,6 +1,6 @@
 /*******************************************************************************
  * 
- *  Copyright (c) 2005, 2013 Wessex Water Services Limited
+ *  Copyright (c) 2005-2013 Wessex Water Services Limited
  *  
  *  This file is part of Chellow.
  * 
@@ -26,16 +26,16 @@ import java.util.List;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.Invocation;
+import net.sf.chellow.monad.MethodNotAllowedException;
 import net.sf.chellow.monad.MonadUtils;
 import net.sf.chellow.monad.Urlable;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
-import net.sf.chellow.physical.EntityList;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-public class Reports extends EntityList {
+public class Reports implements Urlable {
 	public static final UriPathElement URI_ID;
 
 	static {
@@ -56,8 +56,11 @@ public class Reports extends EntityList {
 		Element reportsElement = toXml(doc);
 
 		source.appendChild(reportsElement);
-		for (Report report : (List<Report>) Hiber.session().createQuery(
-				"from Report report order by mod(report.id, 2) desc, report.name").list()) {
+		for (Report report : (List<Report>) Hiber
+				.session()
+				.createQuery(
+						"from Report report order by mod(report.id, 2) desc, report.name")
+				.list()) {
 			reportsElement.appendChild(report.toXml(doc));
 		}
 		return doc;
@@ -68,7 +71,8 @@ public class Reports extends EntityList {
 	}
 
 	public MonadUri getEditUri() throws HttpException {
-		return Chellow.getUrlableRoot().getEditUri().resolve(URI_ID).append("/");
+		return Chellow.getUrlableRoot().getEditUri().resolve(URI_ID)
+				.append("/");
 	}
 
 	public void httpGet(Invocation inv) throws HttpException {
@@ -95,6 +99,10 @@ public class Reports extends EntityList {
 
 	public Element toXml(Document doc) throws HttpException {
 		return doc.createElement("reports");
+	}
+
+	public void httpDelete(Invocation inv) throws HttpException {
+		throw new MethodNotAllowedException();
 	}
 
 	@Override

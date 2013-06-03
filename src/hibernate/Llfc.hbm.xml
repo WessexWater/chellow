@@ -2,26 +2,15 @@
 <!DOCTYPE hibernate-mapping PUBLIC
       "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
           "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
-<!-- 
-	
-   Copyright (c) 2005, 2009 Wessex Water Services Limited
-   
-   This file is part of Chellow.
-  
-   Chellow is free software: you can redistribute it and/or modify
-   it under the terms of the GNU General Public License as published by
-   the Free Software Foundation, either version 3 of the License, or
-   (at your option) any later version.
-  
-   Chellow is distributed in the hope that it will be useful,
-   but WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-   GNU General Public License for more details.
-  
-   You should have received a copy of the GNU General Public License
-   along with Chellow.  If not, see <http://www.gnu.org/licenses/>.
-	
--->
+<!-- Copyright (c) 2005-2013 Wessex Water Services Limited This file is part 
+	of Chellow. Chellow is free software: you can redistribute it and/or modify 
+	it under the terms of the GNU General Public License as published by the 
+	Free Software Foundation, either version 3 of the License, or (at your option) 
+	any later version. Chellow is distributed in the hope that it will be useful, 
+	but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY 
+	or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for 
+	more details. You should have received a copy of the GNU General Public License 
+	along with Chellow. If not, see <http://www.gnu.org/licenses/>. -->
 
 <hibernate-mapping package="net.sf.chellow.physical">
 	<class name="Llfc" table="llfc" lazy="true">
@@ -30,22 +19,24 @@
 				<param name="sequence">llfc_id_sequence</param>
 			</generator>
 		</id>
-		<many-to-one name="dno" class="net.sf.chellow.billing.Dno"
-			column="dno_id" not-null="true" foreign-key="fkey_llfc_dno" />
-			<property type="integer" name="code" column="code"
-				not-null="true" />
-		<property name="description" column="description"
-			not-null="true" />
+
+		<many-to-one name="dno" class="net.sf.chellow.billing.Party"
+			column="dno_id" not-null="true" foreign-key="llfc_dno_id_fkey" />
+		<property type="string" name="code" column="code" not-null="true" />
+
+		<property name="description" column="description" not-null="true" />
+
 		<many-to-one name="voltageLevel" class="VoltageLevel"
-			column="voltage_level_id" not-null="true"
-			foreign-key="fkey_llfc_voltage_level" />
-		<property type="boolean" name="isSubstation"
-			column="is_substation" />
+			column="voltage_level_id" not-null="true" foreign-key="llfc_voltage_level_id_fkey" />
+
+		<property type="boolean" name="isSubstation" column="is_substation" />
+
 		<property type="boolean" name="isImport" column="is_import" />
+
 		<property type="timestamp" name="validFrom" not-null="true">
-			<column name="valid_from"
-				sql-type="timestamp with time zone" />
+			<column name="valid_from" sql-type="timestamp with time zone" />
 		</property>
+
 		<property type="timestamp" name="validTo">
 			<column name="valid_to" sql-type="timestamp with time zone" />
 		</property>

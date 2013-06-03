@@ -22,10 +22,12 @@
 package net.sf.chellow.billing;
 
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.List;
 
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
+import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Invocation;
 import net.sf.chellow.monad.MonadUtils;
 import net.sf.chellow.monad.NotFoundException;
@@ -73,7 +75,23 @@ public class Batches extends EntityList {
 	}
 
 	public URI getViewUri() throws HttpException {
-		return null;
+		char roleCode = contract.getRole().getCode();
+		try {
+			if (roleCode == 'C') {
+				return new URI("/reports/93/output/?hhdc_contract_id="
+						+ contract.getId());
+			} else if (roleCode == 'M') {
+				return new URI("/reports/191/output/?mop-contract-id="
+						+ contract.getId());
+			} else if (roleCode == 'X') {
+				return new URI("/reports/89/output/?supplier-contract-id="
+						+ contract.getId());
+			} else {
+				throw new InternalException("Market role code not recognized.");
+			}
+		} catch (URISyntaxException e) {
+			throw new InternalException(e);
+		}
 	}
 
 	public void httpPost(Invocation inv) throws HttpException {

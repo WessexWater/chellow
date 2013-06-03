@@ -20,7 +20,7 @@
 					<a href="{/source/request/@context-path}/reports/75/output/">
 						<xsl:value-of select="'Supplier Contracts'" />
 					</a>
-					&gt; Edit
+					&gt; Add
 				</p>
 				<xsl:if test="//message">
 					<ul>
@@ -38,7 +38,7 @@
 						<label>
 							Supplier
 							<select name="participant-id">
-								<xsl:for-each select="/source/provider">
+								<xsl:for-each select="/source/party">
 									<option value="{participant/@id}">
 										<xsl:if
 											test="/source/request/parameter[@name='participant-id']/value = participant/@id">

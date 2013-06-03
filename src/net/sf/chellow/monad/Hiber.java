@@ -123,7 +123,6 @@ public class Hiber {
 			stmt = con.createStatement();
 
 			stmt.executeUpdate("set transaction isolation level serializable read write");
-			stmt.close();
 		} catch (SQLException e) {
 			throw new InternalException(e);
 		}

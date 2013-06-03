@@ -28,21 +28,21 @@ import java.util.List;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.Invocation;
+import net.sf.chellow.monad.MethodNotAllowedException;
 import net.sf.chellow.monad.MonadUtils;
 import net.sf.chellow.monad.NotFoundException;
+import net.sf.chellow.monad.Urlable;
 import net.sf.chellow.monad.UserException;
-import net.sf.chellow.monad.XmlTree;
 import net.sf.chellow.monad.types.MonadDate;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
-import net.sf.chellow.physical.EntityList;
 import net.sf.chellow.physical.HhStartDate;
 import net.sf.chellow.physical.Participant;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-public class NonCoreContracts extends EntityList {
+public class NonCoreContracts implements Urlable {
 	public static final UriPathElement URI_ID;
 
 	static {
@@ -67,17 +67,17 @@ public class NonCoreContracts extends EntityList {
 	public void httpPost(Invocation inv) throws HttpException {
 		Hiber.setReadWrite();
 		Long participantId = inv.getLong("participant-id");
-		Boolean isCore = inv.getBoolean("is-core");
+		boolean isCore = inv.getBoolean("is-core");
 		String name = inv.getString("name");
 		Date startDate = inv.getDateTime("start");
 		if (!inv.isValid()) {
 			throw new UserException(document());
 		}
-		NonCoreContract contract = NonCoreContract.insertNonCoreContract(null,
-				isCore, Participant.getParticipant(participantId), name,
-				HhStartDate.roundDown(startDate), null, "", null, "");
+		Contract contract = Contract.insertNonCoreContract(isCore,
+				Participant.getParticipant(participantId), name,
+				HhStartDate.roundDown(startDate), null, "", "");
 		Hiber.commit();
-		inv.sendSeeOther(contract.getEditUri());
+		inv.sendSeeOther("/non-core-contracts/" + contract.getId());
 	}
 
 	@SuppressWarnings("unchecked")
@@ -86,20 +86,23 @@ public class NonCoreContracts extends EntityList {
 		Element source = doc.getDocumentElement();
 		Element contractsElement = toXml(doc);
 		source.appendChild(contractsElement);
-		for (NonCoreContract contract : (List<NonCoreContract>) Hiber
+		for (Contract contract : (List<Contract>) Hiber
 				.session()
 				.createQuery(
-						"from NonCoreContract contract order by contract.finishRateScript.finishDate.date desc, contract.party.participant.code")
+						"from Contract contract order by contract.finishRateScript.finishDate.date desc, contract.party.participant.code")
 				.list()) {
-			contractsElement.appendChild(contract.toXml(doc, new XmlTree(
-					"party")));
+			Element contractElement = contract.toXml(doc);
+			contractsElement.appendChild(contractElement);
+			contractElement.appendChild(contract.getParty().toXml(doc));
 		}
-		for (Provider provider : (List<Provider>) Hiber
+		for (Party party : (List<Party>) Hiber
 				.session()
 				.createQuery(
-						"from Provider provider where provider.role.code = 'Z' order by provider.participant.code, provider.name")
+						"from Party party where party.role.code = 'Z' order by party.participant.code, party.name")
 				.list()) {
-			source.appendChild(provider.toXml(doc, new XmlTree("participant")));
+			Element partyElement = party.toXml(doc);
+			source.appendChild(partyElement);
+			partyElement.appendChild(party.getParticipant().toXml(doc));
 		}
 		source.appendChild(MonadDate.getMonthsXml(doc));
 		source.appendChild(MonadDate.getDaysXml(doc));
@@ -113,11 +116,11 @@ public class NonCoreContracts extends EntityList {
 		inv.sendOk(document());
 	}
 
-	public NonCoreContract getChild(UriPathElement uriId) throws HttpException {
-		NonCoreContract contract = (NonCoreContract) Hiber
+	public Contract getChild(UriPathElement uriId) throws HttpException {
+		Contract contract = (Contract) Hiber
 				.session()
 				.createQuery(
-						"from NonCoreContract contract where contract.id = :contractId")
+						"from Contract contract where contract.id = :contractId")
 				.setLong("contractId", Long.parseLong(uriId.getString()))
 				.uniqueResult();
 		if (contract == null) {
@@ -129,6 +132,10 @@ public class NonCoreContracts extends EntityList {
 	public Element toXml(Document doc) throws HttpException {
 		Element contractsElement = doc.createElement("non-core-contracts");
 		return contractsElement;
+	}
+
+	public void httpDelete(Invocation inv) throws HttpException {
+		throw new MethodNotAllowedException();
 	}
 
 	@Override

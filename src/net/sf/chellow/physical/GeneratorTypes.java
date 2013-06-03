@@ -37,59 +37,59 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 public class GeneratorTypes implements Urlable {
-	public static final UriPathElement URI_ID;
+        public static final UriPathElement URI_ID;
 
-	static {
-		try {
-			URI_ID = new UriPathElement("generator-types");
-		} catch (HttpException e) {
-			throw new RuntimeException(e);
-		}
-	}
+        static {
+                try {
+                        URI_ID = new UriPathElement("generator-types");
+                } catch (HttpException e) {
+                        throw new RuntimeException(e);
+                }
+        }
 
-	public GeneratorTypes() {
-	}
+        public GeneratorTypes() {
+        }
 
-	public UriPathElement getUriId() {
-		return URI_ID;
-	}
+        public UriPathElement getUriId() {
+                return URI_ID;
+        }
 
-	public MonadUri getUrlPath() throws HttpException {
-		return Chellow.getUrlableRoot().getEditUri().resolve(getUriId());
-	}
+        public MonadUri getUrlPath() throws HttpException {
+                return Chellow.getUrlableRoot().getEditUri().resolve(getUriId());
+        }
 
-	@SuppressWarnings("unchecked")
-	public void httpGet(Invocation inv) throws HttpException {
-		Document doc = MonadUtils.newSourceDocument();
-		Element sourceElement = doc.getDocumentElement();
+        @SuppressWarnings("unchecked")
+        public void httpGet(Invocation inv) throws HttpException {
+                Document doc = MonadUtils.newSourceDocument();
+                Element sourceElement = doc.getDocumentElement();
 
-		for (GeneratorType type : (List<GeneratorType>) Hiber.session()
-				.createQuery("from GeneratorType type order by type.code")
-				.list()) {
-			sourceElement.appendChild(type.toXml(doc));
-		}
-		inv.sendOk(doc);
-	}
+                for (GeneratorType type : (List<GeneratorType>) Hiber.session()
+                                .createQuery("from GeneratorType type order by type.code")
+                                .list()) {
+                        sourceElement.appendChild(type.toXml(doc));
+                }
+                inv.sendOk(doc);
+        }
 
-	public void httpPost(Invocation inv) throws HttpException {
-		throw new MethodNotAllowedException();
-	}
+        public void httpPost(Invocation inv) throws HttpException {
+                throw new MethodNotAllowedException();
+        }
 
-	public GeneratorType getChild(UriPathElement urlId) throws HttpException {
-		return GeneratorType.getGeneratorType(Long.parseLong(urlId.toString()));
-	}
+        public GeneratorType getChild(UriPathElement urlId) throws HttpException {
+                return GeneratorType.getGeneratorType(Long.parseLong(urlId.toString()));
+        }
 
-	public void httpDelete(Invocation inv) throws HttpException {
-		throw new MethodNotAllowedException();
-	}
+        public void httpDelete(Invocation inv) throws HttpException {
+                throw new MethodNotAllowedException();
+        }
 
-	public MonadUri getEditUri() throws HttpException {
-		return Chellow.getUrlableRoot().getEditUri().resolve(getEditUri());
-	}
+        public MonadUri getEditUri() throws HttpException {
+                return Chellow.getUrlableRoot().getEditUri().resolve(getEditUri());
+        }
 
-	@Override
-	public URI getViewUri() throws HttpException {
-		// TODO Auto-generated method stub
-		return null;
-	}
+        @Override
+        public URI getViewUri() throws HttpException {
+                // TODO Auto-generated method stub
+                return null;
+        }
 }

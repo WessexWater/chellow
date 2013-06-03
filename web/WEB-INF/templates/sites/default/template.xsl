@@ -92,7 +92,7 @@
 						</form>
 						<br />
 						<table>
-							<caption>Supply generations</caption>
+							<caption>Eras</caption>
 							<tr>
 								<th>Chellow Id</th>
 								<th>Supply</th>
@@ -102,11 +102,11 @@
 								<th>From</th>
 								<th>To</th>
 							</tr>
-							<xsl:for-each select="/source/site/supply-generation">
+							<xsl:for-each select="/source/site/era">
 								<tr>
 									<td>
 										<a
-											href="{/source/request/@context-path}/supplies/{supply/@id}/generations/{@id}/">
+											href="{/source/request/@context-path}/supplies/{supply/@id}/eras/{@id}/">
 											<xsl:value-of select="@id" />
 										</a>
 									</td>
@@ -119,14 +119,11 @@
 										<xsl:value-of select="supply/source/@code" />
 									</td>
 									<td>
-										<xsl:if test="mpan[llfc/@is-import='true']">
-											<xsl:value-of select="mpan[llfc/@is-import='true']/mpan-core/@core" />
-										</xsl:if>
+										<xsl:value-of select="@imp-mpan-core" />
+
 									</td>
 									<td>
-										<xsl:if test="mpan[llfc/@is-import='false']">
-											<xsl:value-of select="mpan[llfc/@is-import='false']/mpan-core/@core" />
-										</xsl:if>
+										<xsl:value-of select="@exp-mpan-core" />
 									</td>
 									<td>
 										<xsl:value-of
@@ -262,8 +259,8 @@
 								<br />
 								<label>
 									<xsl:value-of select="'Meter Serial Number '" />
-									<input name="meter-serial-number"
-										value="{/source/request/parameter[@name = 'meter-serial-number']/value}" />
+									<input name="msn"
+										value="{/source/request/parameter[@name = 'msn']/value}" />
 								</label>
 								<br />
 								<br />
@@ -286,9 +283,6 @@
 								<label>
 									<xsl:value-of select="'MOP Contract '" />
 									<select name="mop-contract-id">
-										<option value="null">
-											<xsl:value-of select="'None'" />
-										</option>
 										<xsl:for-each select="/source/mop-contract">
 											<option value="{@id}">
 												<xsl:if
@@ -311,9 +305,6 @@
 								<label>
 									<xsl:value-of select="'HHDC Contract '" />
 									<select name="hhdc-contract-id">
-										<option value="null">
-											<xsl:value-of select="'None'" />
-										</option>
 										<xsl:for-each select="/source/hhdc-contract">
 											<option value="{@id}">
 												<xsl:if

@@ -1,6 +1,6 @@
 /*******************************************************************************
  * 
- *  Copyright (c) 2005, 2009 Wessex Water Services Limited
+ *  Copyright (c) 2005-2013 Wessex Water Services Limited
  *  
  *  This file is part of Chellow.
  * 
@@ -22,21 +22,15 @@ package net.sf.chellow.physical;
 
 import java.net.URI;
 
-import net.sf.chellow.monad.Hiber;
-import net.sf.chellow.monad.HttpException;
-import net.sf.chellow.monad.InternalException;
-import net.sf.chellow.monad.Invocation;
-import net.sf.chellow.monad.MethodNotAllowedException;
-import net.sf.chellow.monad.MonadUtils;
-import net.sf.chellow.monad.NotFoundException;
-import net.sf.chellow.monad.Urlable;
-import net.sf.chellow.monad.XmlTree;
-import net.sf.chellow.monad.types.MonadUri;
-import net.sf.chellow.monad.types.UriPathElement;
-
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
+
+import net.sf.chellow.monad.Hiber;
+import net.sf.chellow.monad.HttpException;
+import net.sf.chellow.monad.InternalException;
+import net.sf.chellow.monad.NotFoundException;
+import net.sf.chellow.monad.types.MonadUri;
 
 public class ClockInterval extends PersistentEntity {
 	static public ClockInterval getClockInterval(long id) throws HttpException {
@@ -157,49 +151,29 @@ public class ClockInterval extends PersistentEntity {
 	void setEndMinute(int endMinute) {
 		this.endMinute = endMinute;
 	}
-
-	public Urlable getChild(UriPathElement uriId) throws InternalException {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	public MonadUri getEditUri() throws InternalException {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	public void httpDelete(Invocation inv) throws HttpException {
-		throw new MethodNotAllowedException();
-	}
-
-	public void httpGet(Invocation inv) throws HttpException {
-		Document doc = MonadUtils.newSourceDocument();
-		Element source = doc.getDocumentElement();
-		source.appendChild(toXml(doc, new XmlTree("tpr")));
-		inv.sendOk(doc);
-	}
-
-	public void httpPost(Invocation inv) throws HttpException {
-		throw new MethodNotAllowedException();
-	}
-
-	public Node toXml(Document doc) throws HttpException {
-		Element element = super.toXml(doc, "clock-interval");
-		element.setAttribute("day-of-week", String.valueOf(dayOfWeek));
-		element.setAttribute("start-day", String.valueOf(startDay));
-		element.setAttribute("start-month", String.valueOf(startMonth));
-		element.setAttribute("end-day", String.valueOf(endDay));
-		element.setAttribute("end-month", String.valueOf(endMonth));
-		element.setAttribute("start-hour", String.valueOf(startHour));
-		element.setAttribute("start-minute", String.valueOf(startMinute));
-		element.setAttribute("end-hour", String.valueOf(endHour));
-		element.setAttribute("end-minute", String.valueOf(endMinute));
-		return element;
-	}
-
+	
 	@Override
-	public URI getViewUri() throws HttpException {
-		// TODO Auto-generated method stub
-		return null;
-	}
+    public URI getViewUri() throws HttpException {
+            // TODO Auto-generated method stub
+            return null;
+    }
+	
+	public Node toXml(Document doc) throws HttpException {
+        Element element = super.toXml(doc, "clock-interval");
+        element.setAttribute("day-of-week", String.valueOf(dayOfWeek));
+        element.setAttribute("start-day", String.valueOf(startDay));
+        element.setAttribute("start-month", String.valueOf(startMonth));
+        element.setAttribute("end-day", String.valueOf(endDay));
+        element.setAttribute("end-month", String.valueOf(endMonth));
+        element.setAttribute("start-hour", String.valueOf(startHour));
+        element.setAttribute("start-minute", String.valueOf(startMinute));
+        element.setAttribute("end-hour", String.valueOf(endHour));
+        element.setAttribute("end-minute", String.valueOf(endMinute));
+        return element;
+}
+	
+	public MonadUri getEditUri() throws InternalException {
+        // TODO Auto-generated method stub
+        return null;
+}
 }

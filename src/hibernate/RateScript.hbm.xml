@@ -2,28 +2,26 @@
 <!DOCTYPE hibernate-mapping PUBLIC
       "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
           "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
-	<!--
 
-		Copyright (c) 2005, 2010 Wessex Water Services Limited This file is
-		part of Chellow. Chellow is free software: you can redistribute it
-		and/or modify it under the terms of the GNU General Public License as
-		published by the Free Software Foundation, either version 3 of the
-		License, or (at your option) any later version. Chellow is distributed
-		in the hope that it will be useful, but WITHOUT ANY WARRANTY; without
-		even the implied warranty of MERCHANTABILITY or FITNESS FOR A
-		PARTICULAR PURPOSE. See the GNU General Public License for more
-		details. You should have received a copy of the GNU General Public
-		License along with Chellow. If not, see
-		<http://www.gnu.org/licenses/>.
-	-->
+<!-- Copyright (c) 2005-2013 Wessex Water Services Limited This file is part 
+	of Chellow. Chellow is free software: you can redistribute it and/or modify 
+	it under the terms of the GNU General Public License as published by the 
+	Free Software Foundation, either version 3 of the License, or (at your option) 
+	any later version. Chellow is distributed in the hope that it will be useful, 
+	but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY 
+	or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for 
+	more details. You should have received a copy of the GNU General Public License 
+	along with Chellow. If not, see <http://www.gnu.org/licenses/>. -->
 
 <hibernate-mapping package="net.sf.chellow.billing">
 	<class name="RateScript" table="rate_script" lazy="true">
 		<id name="id">
-			<generator class="assigned" />
+			<generator class="sequence">
+				<param name="sequence">rate_script_id_sequence</param>
+			</generator>
 		</id>
 		<many-to-one name="contract" class="Contract" column="contract_id"
-			foreign-key="fkey_rate_script_contract" unique-key="contract_start_date"/>
+			foreign-key="rate_script_contract_id_fkey" unique-key="contract_start_date" />
 		<component name="startDate" class="net.sf.chellow.physical.HhStartDate">
 			<property type="timestamp" name="date">
 				<column name="start_date" sql-type="timestamp with time zone"

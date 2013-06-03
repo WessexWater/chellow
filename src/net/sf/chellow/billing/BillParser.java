@@ -27,7 +27,7 @@ import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.HttpException;
 
 public interface BillParser {
-	public List<RawBill> getRawBills() throws HttpException, InternalException;
+        public List<RawBill> getRawBills() throws HttpException, InternalException;
 
-	public String getProgress();
+        public String getProgress();
 }

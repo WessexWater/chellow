@@ -1,6 +1,6 @@
 /*******************************************************************************
  * 
- *  Copyright (c) 2005, 2010 Wessex Water Services Limited
+ *  Copyright (c) 2005-2013 Wessex Water Services Limited
  *  
  *  This file is part of Chellow.
  * 
@@ -60,7 +60,6 @@ import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.MonadValidatable;
 import net.sf.chellow.monad.types.UriPathElement;
 import net.sf.chellow.physical.User;
-import net.sf.chellow.ui.Chellow;
 
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.FileItemFactory;
@@ -244,6 +243,22 @@ public class Invocation {
 		Integer day = getInteger(baseName + "-day");
 		Integer hour = getInteger(baseName + "-hour");
 		Integer minute = getInteger(baseName + "-minute");
+		Date date = null;
+		if (isValid()) {
+			MonadDate mDate = new MonadDate(year, month, day, hour, minute);
+			if (isValid()) {
+				date = mDate.getDate();
+			}
+		}
+		return date;
+	}
+
+	public Date get_datetime(String baseName) throws HttpException {
+		Integer year = getInteger(baseName + "_year");
+		Integer month = getInteger(baseName + "_month");
+		Integer day = getInteger(baseName + "_day");
+		Integer hour = getInteger(baseName + "_hour");
+		Integer minute = getInteger(baseName + "_minute");
 		Date date = null;
 		if (isValid()) {
 			MonadDate mDate = new MonadDate(year, month, day, hour, minute);
@@ -606,7 +621,7 @@ public class Invocation {
 	}
 
 	public void sendUser(Document doc) throws HttpException {
-		res.setStatus(418);
+		res.setStatus(400);
 		returnPage(doc, req.getPathInfo(), "template.xsl");
 	}
 
@@ -700,7 +715,7 @@ public class Invocation {
 	public void sendSeeOther(MonadUri uri) throws InternalException {
 		sendSeeOther(uri.toUri());
 	}
-	
+
 	public void sendSeeOther(String location) throws InternalException {
 		try {
 			sendSeeOther(new URI(location));
@@ -722,8 +737,13 @@ public class Invocation {
 			// "The Authorisation header must contain a base64 encoded string
 			// consisting of a username and password separated by a ':'.");
 		}
-		User user = Chellow.USERS_INSTANCE.findUser(new EmailAddress(
-				usernameAndPassword[0]));
+		User user = (User) Hiber
+				.session()
+				.createQuery(
+						"from User user where user.emailAddress.address = :emailAddress")
+				.setString("emailAddress",
+						new EmailAddress(usernameAndPassword[0]).toString())
+				.uniqueResult();
 		if (user == null) {
 			return null;
 		} else if (!user.getPasswordDigest().equals(

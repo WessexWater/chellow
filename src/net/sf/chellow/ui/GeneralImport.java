@@ -1,6 +1,6 @@
 /*******************************************************************************
  * 
- *  Copyright (c) 2005, 2010 Wessex Water Services Limited
+ *  Copyright (c) 2005, 2013 Wessex Water Services Limited
  *  
  *  This file is part of Chellow.
  * 
@@ -44,11 +44,8 @@ import javax.xml.stream.events.XMLEvent;
 
 import net.sf.chellow.billing.Batch;
 import net.sf.chellow.billing.Bill;
-import net.sf.chellow.billing.DnoContract;
-import net.sf.chellow.billing.MopContract;
-import net.sf.chellow.billing.NonCoreContract;
+import net.sf.chellow.billing.Contract;
 import net.sf.chellow.billing.RateScript;
-import net.sf.chellow.billing.SupplierContract;
 import net.sf.chellow.hhimport.HhDatumRaw;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
@@ -62,16 +59,15 @@ import net.sf.chellow.monad.XmlDescriber;
 import net.sf.chellow.monad.XmlTree;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
-import net.sf.chellow.physical.ChannelSnag;
 import net.sf.chellow.physical.Configuration;
+import net.sf.chellow.physical.Era;
 import net.sf.chellow.physical.HhDatum;
 import net.sf.chellow.physical.HhStartDate;
 import net.sf.chellow.physical.RegisterRead;
 import net.sf.chellow.physical.Site;
-import net.sf.chellow.physical.SiteSnag;
-import net.sf.chellow.physical.SiteSupplyGeneration;
+import net.sf.chellow.physical.SiteEra;
+import net.sf.chellow.physical.Snag;
 import net.sf.chellow.physical.Supply;
-import net.sf.chellow.physical.SupplyGeneration;
 import net.sf.chellow.physical.User;
 
 import org.w3c.dom.Document;
@@ -104,8 +100,6 @@ public class GeneralImport extends Thread implements Urlable, XmlDescriber {
 	private List<MonadMessage> errors = new ArrayList<MonadMessage>();
 
 	private Digester digester;
-
-	private int lineNumber;
 
 	private MonadUri uri;
 
@@ -145,7 +139,11 @@ public class GeneralImport extends Thread implements Urlable, XmlDescriber {
 	}
 
 	public int getLineNumber() {
-		return lineNumber;
+		if (digester == null) {
+			return 0;
+		} else {
+			return digester.getLineNumber();
+		}
 	}
 
 	public void run() {
@@ -232,53 +230,38 @@ public class GeneralImport extends Thread implements Urlable, XmlDescriber {
 
 					if (type.equals("site")) {
 						Site.generalImport(action, values, csvElement);
-					} else if (type.equals("site-supply-generation")) {
-						SiteSupplyGeneration.generalImport(action, values,
-								csvElement);
+					} else if (type.equals("site-supply-era")) {
+						SiteEra.generalImport(action, values, csvElement);
 					} else if (type.equals("supply")) {
 						Supply.generalImport(action, values, csvElement);
-					} else if (type.equals("supply-generation")) {
-						SupplyGeneration.generalImport(action, values,
-								csvElement);
+					} else if (type.equals("era")) {
+						Era.generalImport(action, values, csvElement);
 					} else if (type.equals("report")) {
 						Report.generalImport(action, values, csvElement);
-					} else if (type.equals("hhdc-contract-rate-script")) {
-						RateScript
-								.generalImportHhdc(action, values, csvElement);
 					} else if (type.equals("non-core-contract")) {
-						NonCoreContract.generalImport(action, values,
+						Contract.generalImportNonCore(action, values,
 								csvElement);
 					} else if (type.equals("non-core-contract-rate-script")) {
 						RateScript.generalImportNonCore(action, values,
 								csvElement);
-					} else if (type.equals("supplier-contract")) {
-						SupplierContract.generalImport(action, values,
-								csvElement);
-					} else if (type.equals("supplier-contract-rate-script")) {
-						RateScript.generalImportSupplier(action, values,
-								csvElement);
 					} else if (type.equals("user")) {
 						User.generalImport(action, values, csvElement);
 					} else if (type.equals("dno-contract")) {
-						DnoContract.generalImport(action, values, csvElement);
+						Contract.generalImportDno(action, values, csvElement);
 					} else if (type.equals("dno-contract-rate-script")) {
 						RateScript.generalImportDno(action, values, csvElement);
 					} else if (type.equals("configuration")) {
 						Configuration.generalImport(action, values, csvElement);
 					} else if (type.equals("channel-snag-ignore")) {
-						ChannelSnag.generalImport(action, values, csvElement);
+						Snag.generalImportChannel(action, values, csvElement);
 					} else if (type.equals("site-snag-ignore")) {
-						SiteSnag.generalImport(action, values, csvElement);
+						Snag.generalImportSite(action, values, csvElement);
 					} else if (type.equals("batch")) {
 						Batch.generalImport(action, values, csvElement);
 					} else if (type.equals("bill")) {
 						Bill.generalImport(action, values, csvElement);
 					} else if (type.equals("register-read")) {
 						RegisterRead.generalImport(action, values, csvElement);
-					} else if (type.equals("mop-contract")) {
-						MopContract.generalImport(action, values, csvElement);
-					} else if (type.equals("mop-contract-rate-script")) {
-						RateScript.generalImportMop(action, values, csvElement);
 					} else {
 						throw new UserException("The type " + type
 								+ " isn't recognized.");
@@ -324,7 +307,7 @@ public class GeneralImport extends Thread implements Urlable, XmlDescriber {
 			ChellowLogger.getLogger().log(Level.SEVERE,
 					"From header import process", e);
 		} finally {
-			source.setAttribute("line-number", String.valueOf(lineNumber));
+			source.setAttribute("line-number", String.valueOf(getLineNumber()));
 			Hiber.rollBack();
 			Hiber.close();
 		}
@@ -398,8 +381,9 @@ public class GeneralImport extends Thread implements Urlable, XmlDescriber {
 		return null;
 	}
 
-	private class Digester {
+	public static class Digester {
 		private CSVParser shredder = null;
+		private int lineNumber = 0;
 
 		private XMLEventReader r;
 
@@ -420,6 +404,10 @@ public class GeneralImport extends Thread implements Urlable, XmlDescriber {
 				throw new UserException("The file extension was '" + extension
 						+ "' but only csv or xml is recognized.");
 			}
+		}
+		
+		public int getLineNumber() {
+			return lineNumber;
 		}
 
 		public String[] getLine() throws HttpException {

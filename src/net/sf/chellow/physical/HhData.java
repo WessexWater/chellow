@@ -1,6 +1,6 @@
 /*******************************************************************************
  * 
- *  Copyright (c) 2005, 2009 Wessex Water Services Limited
+ *  Copyright (c) 2005-2013 Wessex Water Services Limited
  *  
  *  This file is part of Chellow.
  * 
@@ -80,21 +80,17 @@ public class HhData extends EntityList {
 		source.appendChild(hhDataElement);
 		Element channelElement = channel.toXml(doc);
 		hhDataElement.appendChild(channelElement);
-		Element supplyGenerationElement = channel.getSupplyGeneration().toXml(
-				doc);
-		channelElement.appendChild(supplyGenerationElement);
-		Element supplyElement = channel.getSupplyGeneration().getSupply()
-				.toXml(doc);
-		supplyGenerationElement.appendChild(supplyElement);
+		Element eraElement = channel.getEra().toXml(doc);
+		channelElement.appendChild(eraElement);
+		Element supplyElement = channel.getEra().getSupply().toXml(doc);
+		eraElement.appendChild(supplyElement);
 		source.appendChild(MonadDate.getMonthsXml(doc));
 		source.appendChild(MonadDate.getDaysXml(doc));
 		source.appendChild(MonadDate.getHoursXml(doc));
 		Calendar cal = MonadDate.getCalendar();
-		HhStartDate generationStartDate = channel.getSupplyGeneration()
-				.getStartDate();
-		HhStartDate generationFinishDate = channel.getSupplyGeneration()
-				.getFinishDate();
-		HhStartDate defaultDate = generationFinishDate;
+		HhStartDate eraStartDate = channel.getEra().getStartDate();
+		HhStartDate eraFinishDate = channel.getEra().getFinishDate();
+		HhStartDate defaultDate = eraFinishDate;
 		if (defaultDate == null) {
 			defaultDate = HhStartDate.roundDown(new Date());
 		}
@@ -124,11 +120,11 @@ public class HhData extends EntityList {
 		cal.add(Calendar.MONTH, 1);
 		cal.add(Calendar.MINUTE, -30);
 		Date finishDate = cal.getTime();
-		if ((generationFinishDate != null && generationFinishDate.getDate()
+		if ((eraFinishDate != null && eraFinishDate.getDate()
 				.before(startDate))
-				|| generationStartDate.getDate().after(finishDate)) {
+				|| eraStartDate.getDate().after(finishDate)) {
 			throw new UserException(doc,
-					"This month doesn't overlap with the generation.");
+					"This month doesn't overlap with the era.");
 		}
 		for (HhDatum datum : (List<HhDatum>) Hiber
 				.session()
@@ -174,18 +170,21 @@ public class HhData extends EntityList {
 					.session()
 					.createQuery(
 							"from HhDatum datum where datum.channel = :channel and datum.startDate.date = :startDate")
-					.setEntity("channel", channel).setTimestamp("startDate",
-							hhStartDate.getDate()).uniqueResult() != null) {
+					.setEntity("channel", channel)
+					.setTimestamp("startDate", hhStartDate.getDate())
+					.uniqueResult() != null) {
 				throw new UserException(doc(inv),
 						"There's already an HH datum with this time.");
 			}
 			List<HhDatumRaw> data = new ArrayList<HhDatumRaw>();
-			data.add(new HhDatumRaw(channel.getSupplyGeneration().getMpans()
-					.iterator().next().getCore().toString(), channel
-					.getIsImport(), channel.getIsKwh(), hhStartDate, value,
-					status));
-			HhDatum.insert(data.iterator(), Arrays
-					.asList(new Boolean[] { Boolean.FALSE }));
+			String mpanCore = channel.getEra().getImpMpanCore();
+			if (mpanCore == null) {
+				mpanCore = channel.getEra().getExpMpanCore();
+			}
+			data.add(new HhDatumRaw(mpanCore, channel.getIsImport(), channel
+					.getIsKwh(), hhStartDate, value, status));
+			HhDatum.insert(data.iterator(),
+					Arrays.asList(new Boolean[] { Boolean.FALSE }));
 			Hiber.commit();
 			inv.sendOk(doc(inv));
 		}
@@ -196,8 +195,9 @@ public class HhData extends EntityList {
 				.session()
 				.createQuery(
 						"from HhDatum datum where datum.channel = :channel and datum.id = :datumId")
-				.setEntity("channel", channel).setLong("datumId",
-						Long.parseLong(uriId.getString())).uniqueResult();
+				.setEntity("channel", channel)
+				.setLong("datumId", Long.parseLong(uriId.getString()))
+				.uniqueResult();
 		if (hhDatum == null) {
 			throw new NotFoundException();
 		}

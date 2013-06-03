@@ -7,13 +7,12 @@ Chellow is released under the [GPL v3](http://www.gnu.org/licenses/gpl.html).
 ###  Introduction
 
 Chellow is a web application for checking UK electricity bills. It's designed
-for organizations with high electricity consumption. The software is
-[hosted on BitBucket](https://bitbucket.org/ww_tlocke/chellow).
+for organizations with high electricity consumption. The software is hosted at
+ http://sourceforge.net/projects/chellow/)
 
 ###  Installation
 
-1. [Download](https://bitbucket.org/ww_tlocke/chellow/downloads) the latest
-   version of Chellow. The file names are of the form `chellow-###.zip`.
+1. [Download](http://sourceforge.net/projects/chellow/files/) the latest version of Chellow.
 2.  Make sure the following are installed: 
     * PostgreSQL 9.1 with the JDBC4 PostgreSQL Driver, Version 9.2-1002
     * OpenJDK 1.7.0_13 (in server mode)
@@ -24,12 +23,12 @@ for organizations with high electricity consumption. The software is
 
         <Resource name="jdbc/chellow" auth="Container"
             type="javax.sql.DataSource" username="postgres" password="hello"
-            driverClassName="org.postgresql.Driver"
+    	    driverClassName="org.postgresql.Driver"
             url="jdbc:postgresql://localhost:5432/chellow" maxActive="8" maxIdle="4"
             accessToUnderlyingConnectionAllowed="true" defaultTransactionIsolation="8"
             readOnly="true" />
 
-    2.  Put the [JDBC driver](http://jdbc.postgresql.org/download/postgresql-9.2-1002.jdbc4.jar) in the Tomcat `/lib/` directory.
+    2.  Put the [JDBC driver](http://jdbc.postgresql.org/download/postgresql-9.1-903.jdbc4.jar) in the Tomcat `/lib/` directory.
 5.  Deploy the file chellow.war to Tomcat.
 
 ###  Getting Started
@@ -224,12 +223,12 @@ Action | Type
 *insert* | *site* | Site Code  | Site Name
 *delete* | *site* | Site Code
 *update* | *site* | Current Site Code  | New Site Code  | Site Name
-*insert* | *supply* | Site Code  | Source Code  | Generator Type  | Supply Name  | GSP Group (geographic location)  | Start date (yyyy-MM-dd)  | Finish Date  | MOP Contract  | MOP Account  | HHDC Contract  | HHDC Account  | Has import HH kWh? (true/false)  | Has import HH kVArh? (true/false)  | Has export HH kWh? (true/false)  | Has export HH kVArh? (true/false)  | Meter Serial Number  | Profile Class  | Meter Timeswitch Class  | CoP  | Standard Settlement Configuration (blank for HH supplies)  | Import MPAN Core  | Import LLFC  | Import Supply Capacity  | Import Supplier Contract  | Import Supplier Account  | Export MPAN Core  | Export LLFC  | Export Supply Capacity  | Export Supplier Contract  | Export Supplier Account
-*update* | *supply* | MPAN Core  | Source Code  | Generator Type  | Supply Name
-*insert* | *supply-generation* | Mpan Core  | Start date (yyyy-MM-dd)  | Site Code  | MOP Contract  | MOP Account  | HHDC Contract  | HHDC Account  | Has import kWh? (yes/no)  | Has import kVArh?  | Has export kWh?  | Has export kVArh?  | Meter Serial Number  | Profile Class  | MTC  | CoP  | SSC  | Import MPAN Core  | Import LLFC  | Import Supply Capacity  | Import Supplier Contract  | Import Supplier Account  | Export MPAN Core  | Export LLFC  | Export Supply Capacity  | Export Supplier Contract  | Export Supplier Account
-*update* | *supply-generation* | MPAN Core  | Date  | Start date  | Finish date  | MOP Contract  | MOP Account  | HHDC Contract  | HHDC Account  | Has import HH kWh?  | Has import HH kVArh?  | Has export HH kWh?  | Has export HH kVArh?  | Meter Serial Number  | Profile Class  | MTC  | CoP  | SSC  | Import MPAN Core  | Import LLFC  | Import Supply Capacity  | Import Supplier Contract  | Import Supplier Account  | Export MPAN Core  | Export LLFC  | Export Supply Capacity  | Export Supplier Contract  | Export Supplier Account
-*delete* | *supply-generation* | MPAN Core  | Date
-*insert* | *site-supply-generation* | Site Code  | Core MPAN  | Generation Start Date  | Is Physical?
+*insert* | *supply* | Site Code  | Source Code  | Generator Type  | Supply Name | GSP Group (geographic location)  | Start date (yyyy-MM-dd)  | Finish Date  | MOP Contract  | MOP Account  | HHDC Contract  | HHDC Account  | Has import HH kWh? (true/false)  | Has import HH kVArh? (true/false)  | Has export HH kWh? (true/false)  | Has export HH kVArh? (true/false)  | Meter Serial Number  | Profile Class  | Meter Timeswitch Class  | CoP  | Standard Settlement Configuration (blank for HH supplies)  | Import MPAN Core  | Import LLFC  | Import Supply Capacity  | Import Supplier Contract  | Import Supplier Account  | Export MPAN Core  | Export LLFC  | Export Supply Capacity  | Export Supplier Contract  | Export Supplier Account
+*update* | *supply* | MPAN Core  | Source Code  | Generator Type  | Supply Name | GSP Group
+*insert* | *era* | Mpan Core  | Start date (yyyy-MM-dd)  | Site Code  | MOP Contract  | MOP Account  | HHDC Contract  | HHDC Account  | Has import kWh? (yes/no)  | Has import kVArh?  | Has export kWh?  | Has export kVArh?  | Meter Serial Number  | Profile Class  | MTC  | CoP  | SSC  | Import MPAN Core  | Import LLFC  | Import Supply Capacity  | Import Supplier Contract  | Import Supplier Account  | Export MPAN Core  | Export LLFC  | Export Supply Capacity  | Export Supplier Contract  | Export Supplier Account
+*update* | *era* | MPAN Core  | Date  | Start date  | Finish date  | MOP Contract  | MOP Account  | HHDC Contract  | HHDC Account  | Has import HH kWh?  | Has import HH kVArh?  | Has export HH kWh?  | Has export HH kVArh?  | Meter Serial Number  | Profile Class  | MTC  | CoP  | SSC  | Import MPAN Core  | Import LLFC  | Import Supply Capacity  | Import Supplier Contract  | Import Supplier Account  | Export MPAN Core  | Export LLFC  | Export Supply Capacity  | Export Supplier Contract  | Export Supplier Account
+*delete* | *era* | MPAN Core  | Date
+*insert* | *site-era* | Site Code  | Core MPAN  | Era Start Date  | Is Physical?
 *insert* | *hh-datum* | MPAN Core  | Date  | Is Import?  | Is kWh?  | (Value, Status)*
 *insert* | *user* | Email Address  | Password  | Password Digest  | User Role  | Participant Code  | Role Code
 *update* | *user* | Current Email Address  | Email Address  | Password  | Password Digest  | User Role  | Participant Code  | Role Code
@@ -391,6 +390,7 @@ EDF Energy Proprietary | mm
 CSV                    | csv
 BGB EDI File           | bgb.edi
 SSE EDI File           | sse.edi
+GDF CSV                | gdf.csv
 
 #### CSV Format
 
@@ -489,8 +489,3 @@ Chellow is written in Java. I work with the Java code, using:
   * Testing is done with [Imprimatur](https://imprimatur.wikispaces.com/). 
   * Reports are written in [Python 2.5](http://www.python.org/). 
   * [HTML 5](http://www.w3.org/html/wg/drafts/html/master/Overview.html)
-  
-### Todo
-
-* Remove Mpan and MpanCore classes and have attributes of era directly.
-* Have a single Contract class. Don't subclass.

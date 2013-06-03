@@ -61,11 +61,9 @@ public class HhDatum extends PersistentEntity {
 		}
 		Calendar cal = MonadDate.getCalendar();
 		HhDatumRaw datum = rawData.next();
-		String mpanCoreStr = datum.getMpanCore();
-		MpanCore mpanCore = MpanCore.getMpanCore(mpanCoreStr);
-		SupplyGeneration generation = mpanCore.getSupply().getGeneration(
-				datum.getStartDate());
-		if (generation == null) {
+		String mpanCore = datum.getMpanCore();
+		Era era = Era.getEra(mpanCore, datum.getStartDate());
+		if (era == null) {
 			throw new UserException(
 					"This datum is either before or after the supply: "
 							+ datum.toString() + ".");
@@ -73,12 +71,12 @@ public class HhDatum extends PersistentEntity {
 		long previousDate = datum.getStartDate().getDate().getTime();
 		boolean isImport = datum.getIsImport();
 		boolean isKwh = datum.getIsKwh();
-		Channel channel = generation.getChannel(isImport, isKwh);
+		Channel channel = era.getChannel(isImport, isKwh);
 		if (channel == null) {
 			throw new UserException("There is no channel for the datum: "
 					+ datum.toString() + ".");
 		}
-		HhStartDate genFinishDate = generation.getFinishDate();
+		HhStartDate genFinishDate = era.getFinishDate();
 		List<HhDatumRaw> data = new ArrayList<HhDatumRaw>();
 		data.add(datum);
 		// HhDatumRaw firstDatum = datum;
@@ -90,7 +88,7 @@ public class HhDatum extends PersistentEntity {
 			datum = rawData.next();
 			Date startDate = datum.getStartDate().getDate();
 			if (data.size() > 1000
-					|| !(mpanCoreStr.equals(datum.getMpanCore())
+					|| !(mpanCore.equals(datum.getMpanCore())
 							&& datum.getIsImport() == isImport
 							&& datum.getIsKwh() == isKwh && startDate.getTime() == HhStartDate
 							.getNext(cal, previousDate))
@@ -102,24 +100,22 @@ public class HhDatum extends PersistentEntity {
 				Hiber.close();
 				Hiber.setReadWrite();
 				data.clear();
-				mpanCoreStr = datum.getMpanCore();
-				mpanCore = MpanCore.getMpanCore(mpanCoreStr);
-				generation = mpanCore.getSupply().getGeneration(
-						datum.getStartDate());
-				if (generation == null) {
+				String mpanCoreStr = datum.getMpanCore();
+				era = Era.getEra(mpanCoreStr, datum.getStartDate());
+				if (era == null) {
 					throw new UserException(
 							"This datum is either before or after the supply: "
 									+ datum.toString() + ".");
 				}
 				isImport = datum.getIsImport();
 				isKwh = datum.getIsKwh();
-				channel = generation.getChannel(isImport, isKwh);
+				channel = era.getChannel(isImport, isKwh);
 				if (channel == null) {
 					throw new UserException(
 							"There is no channel for the datum: "
 									+ datum.toString() + ".");
 				}
-				genFinishDate = generation.getFinishDate();
+				genFinishDate = era.getFinishDate();
 			}
 			data.add(datum);
 			previousDate = startDate.getTime();
@@ -138,6 +134,8 @@ public class HhDatum extends PersistentEntity {
 	private BigDecimal value;
 
 	private char status;
+
+	private Date lastModified;
 
 	public HhDatum() {
 	}
@@ -185,9 +183,20 @@ public class HhDatum extends PersistentEntity {
 		this.status = status;
 	}
 
+	public Date getLastModified() {
+		return lastModified;
+	}
+
+	void setLastModified(Date lastModified) {
+		this.lastModified = lastModified;
+	}
+
 	public void update(BigDecimal value, char status) throws HttpException {
 		if (status != ESTIMATE && status != ACTUAL && status != PADDING) {
 			throw new UserException("The status character must be E, A or C.");
+		}
+		if (!value.equals(this.value) || this.status != status) {
+			setLastModified(new Date());
 		}
 		setValue(value);
 		setStatus(status);
@@ -222,8 +231,8 @@ public class HhDatum extends PersistentEntity {
 	private Document document(String message) throws HttpException {
 		Document doc = MonadUtils.newSourceDocument();
 		Element source = doc.getDocumentElement();
-		source.appendChild(toXml(doc, new XmlTree("channel", new XmlTree(
-				"supplyGeneration", new XmlTree("supply")))));
+		source.appendChild(toXml(doc, new XmlTree("channel", new XmlTree("era",
+				new XmlTree("supply")))));
 		if (message != null) {
 			source.appendChild(new MonadMessage(message).toXml(doc));
 		}
@@ -249,10 +258,12 @@ public class HhDatum extends PersistentEntity {
 			}
 			try {
 				List<HhDatumRaw> dataRaw = new ArrayList<HhDatumRaw>();
-				dataRaw.add(new HhDatumRaw(channel.getSupplyGeneration()
-						.getMpans().iterator().next().getCore().toString(),
-						channel.getIsImport(), channel.getIsKwh(), startDate,
-						value, status));
+				String mpanCore = channel.getEra().getImpMpanCore();
+				if (mpanCore == null) {
+					mpanCore = channel.getEra().getExpMpanCore();
+				}
+				dataRaw.add(new HhDatumRaw(mpanCore, channel.getIsImport(),
+						channel.getIsKwh(), startDate, value, status));
 				channel.addHhData(dataRaw);
 				Hiber.commit();
 			} catch (HttpException e) {
@@ -268,4 +279,5 @@ public class HhDatum extends PersistentEntity {
 		// TODO Auto-generated method stub
 		return null;
 	}
+
 }

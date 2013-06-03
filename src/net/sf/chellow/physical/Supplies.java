@@ -34,51 +34,51 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 public class Supplies extends EntityList {
-	public static final UriPathElement URI_ID;
+        public static final UriPathElement URI_ID;
 
-	static {
-		try {
-			URI_ID = new UriPathElement("supplies");
-		} catch (HttpException e) {
-			throw new RuntimeException(e);
-		}
-	}
+        static {
+                try {
+                        URI_ID = new UriPathElement("supplies");
+                } catch (HttpException e) {
+                        throw new RuntimeException(e);
+                }
+        }
 
-	public Supplies() {
-	}
+        public Supplies() {
+        }
 
-	public MonadUri getUrlPath() throws HttpException {
-		return Chellow.ROOT_URI.resolve(getUriId()).append("/");
-	}
+        public MonadUri getUrlPath() throws HttpException {
+                return Chellow.ROOT_URI.resolve(getUriId()).append("/");
+        }
 
-	public UriPathElement getUriId() {
-		return URI_ID;
-	}
+        public UriPathElement getUriId() {
+                return URI_ID;
+        }
 
-	public void httpGet(Invocation inv) throws HttpException {
-		inv.sendOk();
-	}
+        public void httpGet(Invocation inv) throws HttpException {
+                inv.sendOk();
+        }
 
-	public void httpPost(Invocation inv) throws HttpException {
-		throw new MethodNotAllowedException();
-	}
+        public void httpPost(Invocation inv) throws HttpException {
+                throw new MethodNotAllowedException();
+        }
 
-	public Supply getChild(UriPathElement uriId) throws HttpException {
-		return Supply.getSupply(Long.parseLong(uriId.getString()));
-	}
+        public Supply getChild(UriPathElement uriId) throws HttpException {
+                return Supply.getSupply(Long.parseLong(uriId.getString()));
+        }
 
-	public MonadUri getEditUri() throws HttpException {
-		return Chellow.ROOT_URI.resolve(getUriId());
-	}
+        public MonadUri getEditUri() throws HttpException {
+                return Chellow.ROOT_URI.resolve(getUriId());
+        }
 
-	public Element toXml(Document doc) throws HttpException {
-		Element element = doc.createElement("supplies");
-		return element;
-	}
+        public Element toXml(Document doc) throws HttpException {
+                Element element = doc.createElement("supplies");
+                return element;
+        }
 
-	@Override
-	public URI getViewUri() throws HttpException {
-		// TODO Auto-generated method stub
-		return null;
-	}
+        @Override
+        public URI getViewUri() throws HttpException {
+                // TODO Auto-generated method stub
+                return null;
+        }
 }

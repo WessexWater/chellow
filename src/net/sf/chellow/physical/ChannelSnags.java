@@ -70,13 +70,12 @@ public class ChannelSnags extends EntityList {
 		Element source = doc.getDocumentElement();
 		Element snagsElement = toXml(doc);
 		source.appendChild(snagsElement);
-		snagsElement
-				.appendChild(channel.toXml(doc, new XmlTree("supplyGeneration",
-						new XmlTree("supply").put("hhdcContract"))));
-		for (ChannelSnag snag : (List<ChannelSnag>) Hiber
+		snagsElement.appendChild(channel.toXml(doc, new XmlTree("era",
+				new XmlTree("supply").put("hhdcContract"))));
+		for (Snag snag : (List<Snag>) Hiber
 				.session()
 				.createQuery(
-						"from ChannelSnag snag where snag.channel = :channel order by snag.description, snag.startDate.date")
+						"from Snag snag where snag.channel = :channel order by snag.description, snag.startDate.date")
 				.setEntity("channel", channel).setMaxResults(PAGE_SIZE).list()) {
 			snagsElement.appendChild(snag.toXml(doc));
 		}

@@ -1,6 +1,6 @@
 /*******************************************************************************
  * 
- *  Copyright (c) 2005, 2010 Wessex Water Services Limited
+ *  Copyright (c) 2005-2013 Wessex Water Services Limited
  *  
  *  This file is part of Chellow.
  * 
@@ -22,17 +22,15 @@ package net.sf.chellow.physical;
 
 import java.net.URI;
 
-import net.sf.chellow.monad.Hiber;
-import net.sf.chellow.monad.HttpException;
-import net.sf.chellow.monad.Invocation;
-import net.sf.chellow.monad.MonadUtils;
-import net.sf.chellow.monad.NotFoundException;
-import net.sf.chellow.monad.types.MonadUri;
-
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-public class Cop extends PersistentEntity {	
+import net.sf.chellow.monad.Hiber;
+import net.sf.chellow.monad.HttpException;
+import net.sf.chellow.monad.NotFoundException;
+import net.sf.chellow.monad.types.MonadUri;
+
+public class Cop extends PersistentEntity {
 	public static final String COP_1 = "1";
 	public static final String COP_2 = "2";
 	public static final String COP_3 = "3";
@@ -47,18 +45,20 @@ public class Cop extends PersistentEntity {
 	static public Cop getCop(Long id) throws HttpException {
 		Cop cop = (Cop) Hiber.session().get(Cop.class, id);
 		if (cop == null) {
-			throw new NotFoundException("The CoP with id " + id + " can't be found.");
+			throw new NotFoundException("The CoP with id " + id
+					+ " can't be found.");
 		}
 		return cop;
 	}
 
 	static public Cop getCop(String code) throws HttpException {
 		code = code.trim();
-		Cop type = (Cop) Hiber.session().createQuery(
-				"from Cop cop where cop.code = :code").setString(
-				"code", code).uniqueResult();
+		Cop type = (Cop) Hiber.session()
+				.createQuery("from Cop cop where cop.code = :code")
+				.setString("code", code).uniqueResult();
 		if (type == null) {
-			throw new NotFoundException("The CoP with code " + code + " can't be found.");
+			throw new NotFoundException("The CoP with code " + code
+					+ " can't be found.");
 		}
 		return type;
 	}
@@ -105,28 +105,16 @@ public class Cop extends PersistentEntity {
 	}
 
 	@Override
-	public void httpGet(Invocation inv) throws HttpException {
-		Document doc = MonadUtils.newSourceDocument();
-		Element source = doc.getDocumentElement();
-		source.appendChild(toXml(doc));
-		inv.sendOk(doc);
+	public URI getViewUri() throws HttpException {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 	public Element toXml(Document doc) throws HttpException {
 		Element element = super.toXml(doc, "cop");
 
-		element.setAttribute("code", String.valueOf(code));
+		element.setAttribute("code", code);
 		element.setAttribute("description", description);
 		return element;
-	}
-
-	public String toString() {
-		return code;
-	}
-
-	@Override
-	public URI getViewUri() throws HttpException {
-		// TODO Auto-generated method stub
-		return null;
 	}
 }

@@ -27,12 +27,12 @@
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/reports/77/output/?supplier-contract-id={/source/rate-script/supplier-contract/@id}">
+						href="{/source/request/@context-path}/reports/77/output/?supplier_contract_id={/source/rate-script/supplier-contract/@id}">
 						<xsl:value-of select="/source/rate-script/supplier-contract/@name" />
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/reports/79/output/?rate-script-id={/source/rate-script/@id}">
+						href="{/source/request/@context-path}/reports/79/output/?rate_script_id={/source/rate-script/@id}">
 						<xsl:value-of select="concat('Rate Script ', /source/rate-script/@id)" />
 					</a>
 					&gt; Edit

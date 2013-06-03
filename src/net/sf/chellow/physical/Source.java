@@ -1,6 +1,6 @@
 /*******************************************************************************
  * 
- *  Copyright (c) 2005, 2009 Wessex Water Services Limited
+ *  Copyright (c) 2005-2013 Wessex Water Services Limited
  *  
  *  This file is part of Chellow.
  * 
@@ -25,20 +25,14 @@ import java.net.URI;
 
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
-import net.sf.chellow.monad.Invocation;
-import net.sf.chellow.monad.MonadUtils;
 import net.sf.chellow.monad.NotFoundException;
-import net.sf.chellow.monad.Urlable;
 import net.sf.chellow.monad.UserException;
 import net.sf.chellow.monad.types.MonadUri;
-import net.sf.chellow.monad.types.UriPathElement;
-import net.sf.chellow.ui.Chellow;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import org.w3c.dom.Node;
 
-public class Source extends PersistentEntity implements Urlable {
+public class Source extends PersistentEntity {
 	static public final String NETWORK_CODE = "net";
 	static public final String GENERATOR_CODE = "gen";
 	static public final String GENERATOR_NETWORK_CODE = "gen-net";
@@ -115,27 +109,10 @@ public class Source extends PersistentEntity implements Urlable {
 		setName(name);
 	}
 
-	public Node toXml(Document doc) throws HttpException {
-		Element element = super.toXml(doc, "source");
-
-		element.setAttribute("code", code);
-		element.setAttribute("name", name);
-		return element;
-	}
-
+	@Override
 	public MonadUri getEditUri() throws HttpException {
-		return Chellow.SOURCES_INSTANCE.getEditUri().resolve(getUriId()).append("/");
-	}
-
-	public void httpGet(Invocation inv) throws HttpException {
-		Document doc = MonadUtils.newSourceDocument();
-		Element sourceElement = doc.getDocumentElement();
-		sourceElement.appendChild(toXml(doc));
-		inv.sendOk(doc);
-	}
-
-	public Urlable getChild(UriPathElement uriId) throws HttpException {
-		throw new NotFoundException();
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 	@Override
@@ -143,4 +120,12 @@ public class Source extends PersistentEntity implements Urlable {
 		// TODO Auto-generated method stub
 		return null;
 	}
+
+	public Element toXml(Document doc) throws HttpException {
+        Element element = super.toXml(doc, "source");
+
+        element.setAttribute("code", code);
+        element.setAttribute("name", name);
+        return element;
+}
 }

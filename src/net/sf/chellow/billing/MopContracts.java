@@ -75,11 +75,12 @@ public class MopContracts extends EntityList {
 			throw new UserException(document());
 		}
 		try {
-			MopContract contract = MopContract.insertMopContract(null,
+			Contract contract = Contract.insertMopContract(
 					Participant.getParticipant(participantId), name,
-					HhStartDate.roundDown(startDate), null, "", null, "");
+					HhStartDate.roundDown(startDate), null, "{}", "{}");
 			Hiber.commit();
-			inv.sendSeeOther(contract.getEditUri());
+			inv.sendSeeOther("/reports/107/output/?mop_contract_id="
+					+ contract.getId());
 		} catch (UserException e) {
 			e.setDocument(document());
 			throw e;
@@ -91,12 +92,12 @@ public class MopContracts extends EntityList {
 		Document doc = MonadUtils.newSourceDocument();
 		Element source = doc.getDocumentElement();
 
-		for (Provider provider : (List<Provider>) Hiber
+		for (Party party : (List<Party>) Hiber
 				.session()
 				.createQuery(
-						"from Provider provider where provider.role.code = :roleCode order by provider.participant.code")
+						"from Party party where party.role.code = :roleCode order by party.participant.code")
 				.setCharacter("roleCode", MarketRole.MOP).list()) {
-			source.appendChild(provider.toXml(doc, new XmlTree("participant")));
+			source.appendChild(party.toXml(doc, new XmlTree("participant")));
 		}
 		source.appendChild(MonadDate.getMonthsXml(doc));
 		source.appendChild(MonadDate.getDaysXml(doc));
@@ -110,11 +111,11 @@ public class MopContracts extends EntityList {
 		inv.sendOk(document());
 	}
 
-	public MopContract getChild(UriPathElement uriId) throws HttpException {
-		MopContract contract = (MopContract) Hiber
+	public Contract getChild(UriPathElement uriId) throws HttpException {
+		Contract contract = (Contract) Hiber
 				.session()
 				.createQuery(
-						"from MopContract contract where contract.id = :contractId")
+						"from Contract contract where contract.id = :contractId")
 				.setLong("contractId", Long.parseLong(uriId.getString()))
 				.uniqueResult();
 		if (contract == null) {

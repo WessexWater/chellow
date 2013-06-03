@@ -1,6 +1,6 @@
 /*******************************************************************************
  * 
- *  Copyright (c) 2005, 2013 Wessex Water Services Limited
+ *  Copyright (c) 2005-2013 Wessex Water Services Limited
  *  
  *  This file is part of Chellow.
  * 
@@ -33,41 +33,35 @@ import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.Invocation;
 import net.sf.chellow.monad.MonadUtils;
-import net.sf.chellow.monad.NotFoundException;
-import net.sf.chellow.monad.Urlable;
 import net.sf.chellow.monad.UserException;
 import net.sf.chellow.monad.XmlTree;
 import net.sf.chellow.monad.types.MonadDate;
 import net.sf.chellow.monad.types.MonadUri;
-import net.sf.chellow.monad.types.UriPathElement;
-import net.sf.chellow.physical.Configuration;
 import net.sf.chellow.physical.HhStartDate;
 import net.sf.chellow.physical.PersistentEntity;
 import net.sf.chellow.ui.GeneralImport;
 
-import org.python.core.PyException;
 import org.python.util.PythonInterpreter;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 public class RateScript extends PersistentEntity {
-	public static void generalImportHhdc(String action, String[] values,
+	static public RateScript getRateScript(Long id) {
+		return (RateScript) Hiber.session().get(RateScript.class, id);
+	}
+
+	public static void generalImportNonCore(String action, String[] values,
 			Element csvElement) throws HttpException {
 		if (action.equals("insert")) {
 			String contractName = GeneralImport.addField(csvElement,
 					"Contract Name", values, 0);
-			HhdcContract contract = HhdcContract.getHhdcContract(contractName);
-			String idStr = GeneralImport.addField(csvElement, "Id", values, 1);
-			Long id = null;
-			if (idStr.length() > 0) {
-				id = new Long(idStr);
-			}
+			Contract contract = Contract.getNonCoreContract(contractName);
 			String startDateStr = GeneralImport.addField(csvElement,
-					"Start Date", values, 2);
+					"Start Date", values, 1);
 			HhStartDate startDate = new HhStartDate(startDateStr);
 			String script = GeneralImport.addField(csvElement, "Script",
-					values, 3);
-			contract.insertRateScript(id, startDate, script);
+					values, 2);
+			contract.insertRateScript(startDate, script);
 		} else if (action.equals("update")) {
 		}
 	}
@@ -77,92 +71,15 @@ public class RateScript extends PersistentEntity {
 		if (action.equals("insert")) {
 			String dnoCode = GeneralImport.addField(csvElement, "Dno Code",
 					values, 0);
-			Dno dno = Dno.getDno(dnoCode);
-			String contractName = GeneralImport.addField(csvElement,
-					"Contract Name", values, 1);
-			DnoContract contract = dno.getContract(contractName);
-			String idStr = GeneralImport.addField(csvElement, "Id", values, 2);
-			Long id = null;
-			if (idStr.length() > 0) {
-				id = new Long(idStr);
-			}
+			Contract contract = Contract.getDnoContract(dnoCode);
 			String startDateStr = GeneralImport.addField(csvElement,
-					"Start Date", values, 3);
+					"Start Date", values, 1);
 			HhStartDate startDate = new HhStartDate(startDateStr);
 			String script = GeneralImport.addField(csvElement, "Script",
-					values, 4);
-			contract.insertRateScript(id, startDate, script);
+					values, 2);
+			contract.insertRateScript(startDate, script);
 		} else if (action.equals("update")) {
 		}
-	}
-
-	public static void generalImportSupplier(String action, String[] values,
-			Element csvElement) throws HttpException {
-		if (action.equals("insert")) {
-			String contractName = GeneralImport.addField(csvElement,
-					"Contract Name", values, 0);
-			SupplierContract contract = SupplierContract
-					.getSupplierContract(contractName);
-			String idStr = GeneralImport.addField(csvElement, "Id", values, 1);
-			Long id = null;
-			if (idStr.length() > 0) {
-				id = new Long(idStr);
-			}
-			String startDateStr = GeneralImport.addField(csvElement,
-					"Start Date", values, 2);
-			HhStartDate startDate = new HhStartDate(startDateStr);
-			String script = GeneralImport.addField(csvElement, "Script",
-					values, 3);
-			contract.insertRateScript(id, startDate, script);
-		} else if (action.equals("update")) {
-		}
-	}
-
-	public static void generalImportMop(String action, String[] values,
-			Element csvElement) throws HttpException {
-		if (action.equals("insert")) {
-			String contractName = GeneralImport.addField(csvElement,
-					"Contract Name", values, 0);
-			MopContract contract = MopContract.getMopContract(contractName);
-			String idStr = GeneralImport.addField(csvElement, "Id", values, 1);
-			Long id = null;
-			if (idStr.length() > 0) {
-				id = new Long(idStr);
-			}
-			String startDateStr = GeneralImport.addField(csvElement,
-					"Start Date", values, 2);
-			HhStartDate startDate = new HhStartDate(startDateStr);
-			String script = GeneralImport.addField(csvElement, "Script",
-					values, 3);
-			contract.insertRateScript(id, startDate, script);
-		} else if (action.equals("update")) {
-		}
-	}
-
-	public static void generalImportNonCore(String action, String[] values,
-			Element csvElement) throws HttpException {
-		if (action.equals("insert")) {
-			String contractName = GeneralImport.addField(csvElement,
-					"Contract Name", values, 0);
-			NonCoreContract contract = NonCoreContract
-					.getNonCoreContract(contractName);
-			String idStr = GeneralImport.addField(csvElement, "Id", values, 1);
-			Long id = null;
-			if (idStr.length() > 0) {
-				id = new Long(idStr);
-			}
-			String startDateStr = GeneralImport.addField(csvElement,
-					"Start Date", values, 2);
-			HhStartDate startDate = new HhStartDate(startDateStr);
-			String script = GeneralImport.addField(csvElement, "Script",
-					values, 3);
-			contract.insertRateScript(id, startDate, script);
-		} else if (action.equals("update")) {
-		}
-	}
-
-	static public RateScript getRateScript(Long id) {
-		return (RateScript) Hiber.session().get(RateScript.class, id);
 	}
 
 	private Contract contract;
@@ -176,28 +93,8 @@ public class RateScript extends PersistentEntity {
 	public RateScript() {
 	}
 
-	public RateScript(Contract contract, Long id, HhStartDate startDate,
+	public RateScript(Contract contract, HhStartDate startDate,
 			HhStartDate finishDate, String script) throws HttpException {
-		Configuration configuration = Configuration.getConfiguration();
-
-		if (id == null) {
-			if (contract.isCore()) {
-				id = configuration.nextCoreRateScriptId();
-			} else {
-				id = configuration.nextUserRateScriptId();
-			}
-		} else {
-			if (contract.isCore()) {
-				if (id > configuration.getCoreRateScriptId()) {
-					configuration.setCoreRateScriptId(id);
-				}
-			} else {
-				if (id > configuration.getUserRateScriptId()) {
-					configuration.setUserRateScriptId(id);
-				}
-			}
-		}
-		setId(id);
 		setContract(contract);
 		internalUpdate(startDate, finishDate, script);
 	}
@@ -254,8 +151,6 @@ public class RateScript extends PersistentEntity {
 
 	public void update(HhStartDate startDate, HhStartDate finishDate,
 			String script) throws HttpException {
-		HhStartDate originalStartDate = getStartDate();
-		HhStartDate originalFinishDate = getFinishDate();
 		RateScript previousRateScript = contract.getPreviousRateScript(this);
 		RateScript nextRateScript = contract.getNextRateScript(this);
 
@@ -285,88 +180,6 @@ public class RateScript extends PersistentEntity {
 					nextRateScript.getFinishDate(), nextRateScript.getScript());
 		}
 		Hiber.flush();
-		contract.onUpdate(
-				originalStartDate.before(startDate) ? originalStartDate
-						: startDate, HhStartDate.isAfter(originalFinishDate,
-						finishDate) ? originalFinishDate : finishDate);
-	}
-
-	public Element toXml(Document doc) throws HttpException {
-		Element element = super.toXml(doc, "rate-script");
-
-		startDate.setLabel("start");
-		element.appendChild(startDate.toXml(doc));
-		if (finishDate != null) {
-			finishDate.setLabel("finish");
-			element.appendChild(finishDate.toXml(doc));
-		}
-		element.setAttribute("script", script);
-		return element;
-	}
-
-	public Urlable getChild(UriPathElement uriId) throws HttpException {
-		throw new NotFoundException();
-	}
-
-	public MonadUri getEditUri() throws HttpException {
-		return getContract().rateScriptsInstance().getEditUri().resolve(getUriId())
-				.append("/");
-	}
-
-	public void httpGet(Invocation inv) throws HttpException {
-		inv.sendOk(document());
-	}
-
-	public void httpPost(Invocation inv) throws HttpException {
-		Hiber.setReadWrite();
-		if (inv.hasParameter("delete")) {
-			try {
-				contract.delete(this);
-				Hiber.commit();
-			} catch (UserException e) {
-				Hiber.rollBack();
-				e.setDocument(document());
-				throw e;
-			}
-			inv.sendSeeOther(contract.rateScriptsInstance().getEditUri());
-		} else {
-			String script = inv.getString("script");
-			Date startDate = inv.getDateTime("start");
-			HhStartDate finishDate = null;
-			boolean hasFinished = inv.getBoolean("has-finished");
-			if (!inv.isValid()) {
-				throw new UserException(document());
-			}
-			script = script.replace("\r", "").replace("\t", "    ");
-			if (hasFinished) {
-				Date finishDateRaw = inv.getDateTime("finish");
-				if (!inv.isValid()) {
-					throw new UserException(document());
-				}
-				finishDate = HhStartDate.roundDown(finishDateRaw);
-			}
-			try {
-				update(HhStartDate.roundDown(startDate), finishDate, script);
-			} catch (HttpException e) {
-				e.setDocument(document());
-				throw e;
-			}
-			Hiber.commit();
-			inv.sendOk(document());
-		}
-	}
-
-	private Document document() throws HttpException {
-		Document doc = MonadUtils.newSourceDocument();
-		Element sourceElement = doc.getDocumentElement();
-		sourceElement.appendChild(toXml(doc, new XmlTree("contract",
-				new XmlTree("party"))));
-		sourceElement.appendChild(MonadDate.getMonthsXml(doc));
-		sourceElement.appendChild(MonadDate.getDaysXml(doc));
-		sourceElement.appendChild(MonadDate.getHoursXml(doc));
-		sourceElement.appendChild(HhStartDate.getHhMinutesXml(doc));
-		sourceElement.appendChild(new MonadDate().toXml(doc));
-		return doc;
 	}
 
 	public Invocable invocableEngine() throws HttpException {
@@ -382,24 +195,10 @@ public class RateScript extends PersistentEntity {
 		return invocableEngine;
 	}
 
-	public Object getRate(String rateName) throws HttpException {
-		Object rate = null;
-		try {
-			rate = invocableEngine().invokeFunction(rateName, new Object[0]);
-		} catch (ScriptException e) {
-			throw new UserException(e.getMessage());
-		} catch (NoSuchMethodException e) {
-			throw new UserException("The rate script " + getEditUri()
-					+ " has no such method: " + e.getMessage());
-		} catch (PyException e) {
-			Object obj = e.value.__tojava__(HttpException.class);
-			if (obj instanceof HttpException) {
-				throw (HttpException) obj;
-			} else {
-				throw new UserException(e.toString());
-			}
-		}
-		return rate;
+	@Override
+	public MonadUri getEditUri() throws HttpException {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 	@Override
@@ -407,4 +206,73 @@ public class RateScript extends PersistentEntity {
 		// TODO Auto-generated method stub
 		return null;
 	}
+
+	public Element toXml(Document doc) throws HttpException {
+		Element element = super.toXml(doc, "rate-script");
+
+		startDate.setLabel("start");
+		element.appendChild(startDate.toXml(doc));
+		if (finishDate != null) {
+			finishDate.setLabel("finish");
+			element.appendChild(finishDate.toXml(doc));
+		}
+		element.setAttribute("script", script);
+		return element;
+	}
+	
+    public void httpGet(Invocation inv) throws HttpException {
+        inv.sendOk(document());
+}
+
+public void httpPost(Invocation inv) throws HttpException {
+        Hiber.setReadWrite();
+        if (inv.hasParameter("delete")) {
+                try {
+                        contract.delete(this);
+                        Hiber.commit();
+                } catch (UserException e) {
+                        Hiber.rollBack();
+                        e.setDocument(document());
+                        throw e;
+                }
+                inv.sendSeeOther(contract.rateScriptsInstance().getEditUri());
+        } else {
+                String script = inv.getString("script");
+                Date startDate = inv.getDateTime("start");
+                HhStartDate finishDate = null;
+                boolean hasFinished = inv.getBoolean("has-finished");
+                if (!inv.isValid()) {
+                        throw new UserException(document());
+                }
+                script = script.replace("\r", "").replace("\t", "    ");
+                if (hasFinished) {
+                        Date finishDateRaw = inv.getDateTime("finish");
+                        if (!inv.isValid()) {
+                                throw new UserException(document());
+                        }
+                        finishDate = HhStartDate.roundDown(finishDateRaw);
+                }
+                try {
+                        update(HhStartDate.roundDown(startDate), finishDate, script);
+                } catch (HttpException e) {
+                        e.setDocument(document());
+                        throw e;
+                }
+                Hiber.commit();
+                inv.sendOk(document());
+        }
+}
+
+private Document document() throws HttpException {
+        Document doc = MonadUtils.newSourceDocument();
+        Element sourceElement = doc.getDocumentElement();
+        sourceElement.appendChild(toXml(doc, new XmlTree("contract",
+                        new XmlTree("party"))));
+        sourceElement.appendChild(MonadDate.getMonthsXml(doc));
+        sourceElement.appendChild(MonadDate.getDaysXml(doc));
+        sourceElement.appendChild(MonadDate.getHoursXml(doc));
+        sourceElement.appendChild(HhStartDate.getHhMinutesXml(doc));
+        sourceElement.appendChild(new MonadDate().toXml(doc));
+        return doc;
+}
 }

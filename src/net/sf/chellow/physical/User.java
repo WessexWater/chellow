@@ -1,6 +1,6 @@
 /*******************************************************************************
  * 
- *  Copyright (c) 2005, 2013 Wessex Water Services Limited
+ *  Copyright (c) 2005-2013 Wessex Water Services Limited
  *  
  *  This file is part of Chellow.
  * 
@@ -26,28 +26,21 @@ import java.net.URI;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
-import java.util.List;
 
 import net.sf.chellow.billing.Party;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.InternalException;
-import net.sf.chellow.monad.Invocation;
-import net.sf.chellow.monad.MonadMessage;
-import net.sf.chellow.monad.MonadUtils;
-import net.sf.chellow.monad.NotFoundException;
-import net.sf.chellow.monad.Urlable;
 import net.sf.chellow.monad.UserException;
-import net.sf.chellow.monad.XmlTree;
 import net.sf.chellow.monad.types.EmailAddress;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
-import net.sf.chellow.ui.Chellow;
 import net.sf.chellow.ui.GeneralImport;
 
 import org.hibernate.exception.ConstraintViolationException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.Node;
 
 import com.Ostermiller.util.Base64;
 
@@ -237,105 +230,20 @@ public class User extends PersistentEntity {
 		return isEqual;
 	}
 
-	public String toString() {
-		try {
-			return getUriId().toString();
-		} catch (HttpException e) {
-			throw new RuntimeException(e);
-		}
-	}
-
-	public Element toXml(Document doc) throws HttpException {
-		Element element = super.toXml(doc, "user");
-		element.setAttributeNode(emailAddress.toXml(doc));
-		return element;
-	}
-
+	@Override
 	public MonadUri getEditUri() throws HttpException {
-		return Chellow.USERS_INSTANCE.getEditUri().resolve(getUriId())
-				.append("/");
-	}
-
-	public Urlable getChild(UriPathElement uriId) throws HttpException {
-		throw new NotFoundException();
-	}
-
-	public void httpGet(Invocation inv) throws HttpException {
-		inv.sendOk(document());
-	}
-
-	private Document document() throws HttpException {
-		return document(null);
-	}
-
-	@SuppressWarnings("unchecked")
-	private Document document(String message) throws HttpException {
-		Document doc = MonadUtils.newSourceDocument();
-		Element source = doc.getDocumentElement();
-		source.appendChild(toXml(doc, new XmlTree("party", new XmlTree(
-				"participant").put("role")).put("role")));
-		for (Party party : (List<Party>) Hiber
-				.session()
-				.createQuery(
-						"from Party party order by party.role.code, party.participant.code")
-				.list()) {
-			source.appendChild(party.toXml(doc,
-					new XmlTree("participant").put("role")));
-		}
-		if (message != null) {
-			source.appendChild(new MonadMessage(message).toXml(doc));
-		}
-		return doc;
-	}
-
-	public void httpPost(Invocation inv) throws HttpException {
-		Hiber.setReadWrite();
-		if (inv.hasParameter("delete")) {
-			Hiber.session().delete(this);
-			Hiber.close();
-			inv.sendSeeOther(Chellow.USERS_INSTANCE.getEditUri());
-		} else if (inv.hasParameter("current-password")) {
-			String currentPassword = inv.getString("current-password");
-			String newPassword = inv.getString("new-password");
-			String confirmNewPassword = inv.getString("confirm-new-password");
-
-			if (!inv.isValid()) {
-				throw new UserException(document());
-			}
-			if (!getPasswordDigest().equals(digest(currentPassword))) {
-				throw new UserException("The current password is incorrect.");
-			}
-			if (!newPassword.equals(confirmNewPassword)) {
-				throw new UserException("The new passwords aren't the same.");
-			}
-			if (newPassword.length() < 6) {
-				throw new UserException(
-						"The password must be at least 6 characters long.");
-			}
-			setPasswordDigest(digest(newPassword));
-			Hiber.commit();
-			inv.sendOk(document("New password set successfully."));
-		} else {
-			EmailAddress emailAddress = inv.getEmailAddress("email-address");
-			Long userRoleId = inv.getLong("user-role-id");
-			UserRole userRole = UserRole.getUserRole(userRoleId);
-			if (!inv.isValid()) {
-				throw new UserException(document());
-			}
-			Party party = null;
-			if (userRole.getCode().equals(UserRole.PARTY_VIEWER)) {
-				Long partyId = inv.getLong("party-id");
-
-				party = Party.getParty(partyId);
-			}
-			update(emailAddress, null, getPasswordDigest(), userRole, party);
-			Hiber.commit();
-			inv.sendOk(document("Updated successfully."));
-		}
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 	@Override
 	public URI getViewUri() throws HttpException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Node toXml(Document doc) throws HttpException {
 		// TODO Auto-generated method stub
 		return null;
 	}

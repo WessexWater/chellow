@@ -1,6 +1,6 @@
 /*******************************************************************************
  * 
- *  Copyright (c) 2005, 2009 Wessex Water Services Limited
+ *  Copyright (c) 2005-2013 Wessex Water Services Limited
  *  
  *  This file is part of Chellow.
  * 
@@ -23,41 +23,42 @@ package net.sf.chellow.physical;
 
 import java.net.URI;
 
-import net.sf.chellow.monad.Hiber;
-import net.sf.chellow.monad.HttpException;
-import net.sf.chellow.monad.Invocation;
-import net.sf.chellow.monad.MonadUtils;
-import net.sf.chellow.monad.NotFoundException;
-import net.sf.chellow.monad.Urlable;
-import net.sf.chellow.monad.UserException;
-import net.sf.chellow.monad.types.MonadUri;
-import net.sf.chellow.monad.types.UriPathElement;
-import net.sf.chellow.ui.Chellow;
-
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
+import net.sf.chellow.monad.Hiber;
+import net.sf.chellow.monad.HttpException;
+import net.sf.chellow.monad.NotFoundException;
+import net.sf.chellow.monad.UserException;
+import net.sf.chellow.monad.types.MonadUri;
+import net.sf.chellow.ui.Chellow;
+
 public class GeneratorType extends PersistentEntity {
 	static public GeneratorType getGeneratorType(Long id) throws HttpException {
-		GeneratorType type = (GeneratorType) Hiber.session().get(GeneratorType.class, id);
+		GeneratorType type = (GeneratorType) Hiber.session().get(
+				GeneratorType.class, id);
 		if (type == null) {
 			throw new UserException("There is no generator type with that id.");
 		}
 		return type;
 	}
 
-	static public GeneratorType getGeneratorType(String code) throws HttpException {
+	static public GeneratorType getGeneratorType(String code)
+			throws HttpException {
 		GeneratorType type = findGeneratorType(code);
 		if (type == null) {
-			throw new NotFoundException("There's no generator type with the code '"
-					+ code + "'");
+			throw new NotFoundException(
+					"There's no generator type with the code '" + code + "'");
 		}
 		return type;
 	}
 
-	static public GeneratorType findGeneratorType(String code) throws HttpException {
-		return (GeneratorType) Hiber.session().createQuery(
-				"from GeneratorType type where " + "type.code = :code")
+	static public GeneratorType findGeneratorType(String code)
+			throws HttpException {
+		return (GeneratorType) Hiber
+				.session()
+				.createQuery(
+						"from GeneratorType type where " + "type.code = :code")
 				.setString("code", code).uniqueResult();
 	}
 
@@ -101,32 +102,22 @@ public class GeneratorType extends PersistentEntity {
 		setDescription(description);
 	}
 
+	@Override
+	public URI getViewUri() throws HttpException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public MonadUri getEditUri() throws HttpException {
+		return Chellow.GENERATOR_TYPES_INSTANCE.getEditUri()
+				.resolve(getUriId()).append("/");
+	}
+
 	public Element toXml(Document doc) throws HttpException {
 		Element element = super.toXml(doc, "generator-type");
 
 		element.setAttribute("code", code);
 		element.setAttribute("description", description);
 		return element;
-	}
-
-	public MonadUri getEditUri() throws HttpException {
-		return Chellow.GENERATOR_TYPES_INSTANCE.getEditUri().resolve(getUriId()).append("/");
-	}
-
-	public void httpGet(Invocation inv) throws HttpException {
-		Document doc = MonadUtils.newSourceDocument();
-		Element sourceElement = doc.getDocumentElement();
-		sourceElement.appendChild(toXml(doc));
-		inv.sendOk(doc);
-	}
-
-	public Urlable getChild(UriPathElement uriId) throws HttpException {
-		throw new NotFoundException();
-	}
-
-	@Override
-	public URI getViewUri() throws HttpException {
-		// TODO Auto-generated method stub
-		return null;
 	}
 }

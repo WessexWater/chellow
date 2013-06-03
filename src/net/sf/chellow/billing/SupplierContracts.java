@@ -76,13 +76,11 @@ public class SupplierContracts extends EntityList {
 			throw new UserException(document());
 		}
 		try {
-			SupplierContract contract = SupplierContract
-					.insertSupplierContract(null,
-							Participant.getParticipant(participantId), name,
-							HhStartDate.roundDown(startDate), null, "", null,
-							"");
+			Contract contract = Contract.insertSupplierContract(
+					Participant.getParticipant(participantId), name,
+					HhStartDate.roundDown(startDate), null, "", "");
 			Hiber.commit();
-			inv.sendSeeOther(contract.getEditUri());
+			inv.sendSeeOther("/supplier-contracts/" + contract.getId() + "/");
 		} catch (UserException e) {
 			e.setDocument(document());
 			throw e;
@@ -95,12 +93,12 @@ public class SupplierContracts extends EntityList {
 		Element source = doc.getDocumentElement();
 		Element contractsElement = toXml(doc);
 		source.appendChild(contractsElement);
-		for (Provider provider : (List<Provider>) Hiber
+		for (Party party : (List<Party>) Hiber
 				.session()
 				.createQuery(
-						"from Provider provider where provider.role.code = :roleCode order by provider.participant.code")
+						"from Party party where party.role.code = :roleCode order by party.participant.code")
 				.setCharacter("roleCode", MarketRole.SUPPLIER).list()) {
-			source.appendChild(provider.toXml(doc, new XmlTree("participant")));
+			source.appendChild(party.toXml(doc, new XmlTree("participant")));
 		}
 		source.appendChild(MonadDate.getMonthsXml(doc));
 		source.appendChild(MonadDate.getDaysXml(doc));
@@ -114,12 +112,12 @@ public class SupplierContracts extends EntityList {
 		inv.sendOk(document());
 	}
 
-	public SupplierContract getChild(UriPathElement uriId)
-			throws HttpException, InternalException {
-		SupplierContract contract = (SupplierContract) Hiber
+	public Contract getChild(UriPathElement uriId) throws HttpException,
+			InternalException {
+		Contract contract = (Contract) Hiber
 				.session()
 				.createQuery(
-						"from SupplierContract contract where contract.id = :contractId")
+						"from Contract contract where contract.id = :contractId")
 				.setLong("contractId", Long.parseLong(uriId.getString()))
 				.uniqueResult();
 		if (contract == null) {

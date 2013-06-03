@@ -49,7 +49,7 @@ import org.python.util.PythonInterpreter;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-public class Report extends PersistentEntity {
+public class Report extends PersistentEntity implements Urlable {
 	public static void generalImport(String action, String[] values,
 			Element csvElement) throws HttpException {
 		if (action.equals("insert")) {
@@ -87,9 +87,13 @@ public class Report extends PersistentEntity {
 			report.update(name, script, template);
 		}
 	}
+	
+	public static Report findReport(Long id) throws HttpException {
+		return (Report) Hiber.session().get(Report.class, id);
+	}
 
 	public static Report getReport(Long id) throws HttpException {
-		Report report = (Report) Hiber.session().get(Report.class, id);
+		Report report = findReport(id);
 		if (report == null) {
 			throw new NotFoundException("The report " + id + " can't be found.");
 		}
@@ -256,7 +260,7 @@ public class Report extends PersistentEntity {
 									+ ' ' + new MonadDate() + ' '
 									+ inv.getRequest().getRemoteAddr())
 							.toString());
-
+            Hiber.close();
 			interp.exec(script);
 		} catch (Throwable e) {
 			throw new UserException(e.getMessage() + " "
@@ -327,7 +331,10 @@ public class Report extends PersistentEntity {
 	}
 
 	public Element toXml(Document doc) throws HttpException {
-		Element element = super.toXml(doc, "report");
+		Element element = doc.createElement("report");
+
+		element.setAttribute("id", getId().toString());
+
 		element.setAttribute("is-core",
 				new Boolean(getId() % 2 == 1).toString());
 		element.setAttribute("name", name);

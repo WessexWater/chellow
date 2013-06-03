@@ -1,6 +1,6 @@
 /*******************************************************************************
  * 
- *  Copyright (c) 2005, 2010 Wessex Water Services Limited
+ *  Copyright (c) 2005-2013 Wessex Water Services Limited
  *  
  *  This file is part of Chellow.
  * 
@@ -78,11 +78,11 @@ public class Batch extends PersistentEntity {
 			Contract contract = null;
 
 			if (roleName.equals("hhdc")) {
-				contract = HhdcContract.getHhdcContract(contractName);
+				contract = Contract.getHhdcContract(contractName);
 			} else if (roleName.equals("supplier")) {
-				contract = SupplierContract.getSupplierContract(contractName);
+				contract = Contract.getSupplierContract(contractName);
 			} else if (roleName.equals("mop")) {
-				contract = MopContract.getMopContract(contractName);
+				contract = Contract.getMopContract(contractName);
 			} else {
 				throw new UserException(
 						"The role name must be one of hhdc, supplier or mop.");
@@ -104,11 +104,11 @@ public class Batch extends PersistentEntity {
 			Contract contract = null;
 
 			if (roleName.equals("hhdc")) {
-				contract = HhdcContract.getHhdcContract(contractName);
+				contract = Contract.getHhdcContract(contractName);
 			} else if (roleName.equals("supplier")) {
-				contract = SupplierContract.getSupplierContract(contractName);
+				contract = Contract.getSupplierContract(contractName);
 			} else if (roleName.equals("mop")) {
-				contract = MopContract.getMopContract(contractName);
+				contract = Contract.getMopContract(contractName);
 			} else {
 				throw new UserException(
 						"The role name must be one of hhdc, supplier or mop.");
@@ -184,11 +184,59 @@ public class Batch extends PersistentEntity {
 		}
 	}
 
-	public Element toXml(Document doc) throws HttpException {
-		Element element = super.toXml(doc, "batch");
-		element.setAttribute("reference", reference);
-		element.setAttribute("description", description);
-		return element;
+	public MonadUri getEditUri() throws HttpException {
+		return contract.batchesInstance().getEditUri().resolve(getUriId())
+				.append("/");
+	}
+
+	public URI getViewUri() throws HttpException {
+		String report = null;
+		char marketRoleCode = contract.getRole().getCode();
+		if (marketRoleCode == 'X') {
+			report = "91";
+		} else if (marketRoleCode == 'C') {
+			report = "203";
+		} else if (marketRoleCode == 'M') {
+			report = "193";
+		} else {
+			throw new InternalException("Unkown contract type.");
+		}
+		try {
+			return new URI("/reports/" + report + "/output/?batch-id="
+					+ getId());
+		} catch (URISyntaxException e) {
+			throw new InternalException(e);
+		}
+	}
+
+	private Document document() throws HttpException {
+		Document doc = MonadUtils.newSourceDocument();
+		Element source = doc.getDocumentElement();
+		source.appendChild(toXml(doc, new XmlTree("contract", new XmlTree(
+				"party"))));
+		return doc;
+	}
+
+	public BillImports billImportsInstance() {
+		return new BillImports(this);
+	}
+
+	public Urlable getChild(UriPathElement uriId) throws HttpException {
+		if (BillImports.URI_ID.equals(uriId)) {
+			return billImportsInstance();
+		} else if (Bills.URI_ID.equals(uriId)) {
+			return billsInstance();
+		} else {
+			throw new NotFoundException();
+		}
+	}
+
+	public Bills billsInstance() {
+		return new Bills(this);
+	}
+
+	public void httpGet(Invocation inv) throws HttpException {
+		inv.sendOk(document());
 	}
 
 	public void httpPost(Invocation inv) throws HttpException {
@@ -204,7 +252,7 @@ public class Batch extends PersistentEntity {
 			}
 			Hiber.commit();
 			inv.sendSeeOther(Contract.getContract(contractId).batchesInstance()
-					.getEditUri());
+					.getViewUri());
 		} else {
 			String reference = inv.getString("reference");
 			String description = inv.getString("description");
@@ -231,63 +279,22 @@ public class Batch extends PersistentEntity {
 		Hiber.session().delete(batch);
 	}
 
-	private Document document() throws HttpException {
-		Document doc = MonadUtils.newSourceDocument();
-		Element source = doc.getDocumentElement();
-		source.appendChild(toXml(doc, new XmlTree("contract", new XmlTree(
-				"party"))));
-		return doc;
+	public Element toXml(Document doc) throws HttpException {
+		Element element = super.toXml(doc, "batch");
+		element.setAttribute("reference", reference);
+		element.setAttribute("description", description);
+		return element;
 	}
 
-	public void httpGet(Invocation inv) throws HttpException {
-		inv.sendOk(document());
-	}
-
-	public MonadUri getEditUri() throws HttpException {
-		return contract.batchesInstance().getEditUri().resolve(getUriId())
-				.append("/");
-	}
-
-	public URI getViewUri() throws HttpException {
-		String report = null;
-		String contractUrl = contract.getEditUri().toString();
-		if (contractUrl.contains("supplier-contracts")) {
-			report = "91";
-		} else if (contractUrl.contains("hhdc-contracts")) {
-			report = "203";
-		} else if (contractUrl.contains("mop-contracts")) {
-			report = "193";
-		} else {
-			throw new InternalException("Unkown contract type.");
-		}
-		try {
-			return new URI("/reports/" + report + "/output/?batch-id=" + getId());
-		} catch (URISyntaxException e) {
-			throw new InternalException(e);
-		}
-	}
-
-	public Urlable getChild(UriPathElement uriId) throws HttpException {
-		if (BillImports.URI_ID.equals(uriId)) {
-			return billImportsInstance();
-		} else if (Bills.URI_ID.equals(uriId)) {
-			return billsInstance();
-		} else {
-			throw new NotFoundException();
-		}
-	}
-
-	public void httpDelete(Invocation inv) throws HttpException {
-		deleteBatch(this);
-		inv.sendOk();
-	}
-
-	public Bills billsInstance() {
-		return new Bills(this);
-	}
-
-	public BillImports billImportsInstance() {
-		return new BillImports(this);
+	public Bill insertBill(Supply supply, String account, String reference,
+			Date issueDate, HhStartDate startDate, HhStartDate finishDate,
+			BigDecimal kwh, BigDecimal net, BigDecimal vat, BigDecimal gross,
+			BillType type, String breakdown) throws HttpException {
+		Bill bill = new Bill(this, supply, account, reference, issueDate,
+				startDate, finishDate, kwh, net, vat, gross, type, breakdown);
+		Hiber.session().save(bill);
+		Hiber.flush();
+		return bill;
 	}
 
 	public Bill insertBill(RawBill rawBill) throws HttpException {
@@ -302,17 +309,6 @@ public class Batch extends PersistentEntity {
 		return bill;
 	}
 
-	public Bill insertBill(Supply supply, String account, String reference,
-			Date issueDate, HhStartDate startDate, HhStartDate finishDate,
-			BigDecimal kwh, BigDecimal net, BigDecimal vat, BigDecimal gross,
-			BillType type, String breakdown) throws HttpException {
-		Bill bill = new Bill(this, supply, account, reference, issueDate,
-				startDate, finishDate, kwh, net, vat, gross, type, breakdown);
-		Hiber.session().save(bill);
-		Hiber.flush();
-		return bill;
-	}
-
 	@SuppressWarnings("unchecked")
 	public Bill insertBill(String account, String reference, Date issueDate,
 			HhStartDate startDate, HhStartDate finishDate, BigDecimal kwh,
@@ -321,14 +317,15 @@ public class Batch extends PersistentEntity {
 		List<Supply> supplyList = (List<Supply>) Hiber
 				.session()
 				.createQuery(
-						"select mpan.supplyGeneration.supply from Mpan mpan where ((mpan.supplierContract = :contract and mpan.supplierAccount = :account) or (mpan.supplyGeneration.hhdcContract = :contract and mpan.supplyGeneration.hhdcAccount = :account) or (mpan.supplyGeneration.mopContract = :contract and mpan.supplyGeneration.mopAccount = :account)) order by mpan.core.dno.code, mpan.core.uniquePart")
+						"select era.supply from Era era where (era.impSupplierContract = :contract and era.impSupplierAccount = :account) or (era.expSupplierContract = :contract and era.expSupplierAccount = :account) or (era.hhdcContract = :contract and era.hhdcAccount = :account) or (era.mopContract = :contract and era.mopAccount = :account)) order by era.impMpanCore, era.expMpanCore")
 				.setEntity("contract", getContract())
 				.setString("account", account).list();
 		if (supplyList.isEmpty()) {
 			throw new UserException(
-					"Can't find a supply generation with this contract and account number.");
+					"Can't find an era with this contract and account number.");
 		}
 		return insertBill(supplyList.get(0), account, reference, issueDate,
 				startDate, finishDate, kwh, net, vat, gross, type, breakdown);
 	}
+
 }

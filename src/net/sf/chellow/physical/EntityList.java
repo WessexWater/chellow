@@ -31,15 +31,15 @@ import net.sf.chellow.monad.XmlDescriber;
 import net.sf.chellow.monad.XmlTree;
 
 public abstract class EntityList implements Urlable, XmlDescriber {
-	public void httpDelete(Invocation inv) throws HttpException {
-		throw new MethodNotAllowedException();
-	}
-	
-	public void httpPost(Invocation inv) throws HttpException {
-		throw new MethodNotAllowedException();
-	}
-	
-	public Node toXml(Document doc, XmlTree tree) throws HttpException {
-		return null;
-	}
+        public void httpDelete(Invocation inv) throws HttpException {
+                throw new MethodNotAllowedException();
+        }
+        
+        public void httpPost(Invocation inv) throws HttpException {
+                throw new MethodNotAllowedException();
+        }
+        
+        public Node toXml(Document doc, XmlTree tree) throws HttpException {
+                return null;
+        }
 }

@@ -1,6 +1,6 @@
 /*******************************************************************************
  * 
- *  Copyright (c) 2005, 2010 Wessex Water Services Limited
+ *  Copyright (c) 2005-2013 Wessex Water Services Limited
  *  
  *  This file is part of Chellow.
  * 
@@ -21,43 +21,31 @@
 package net.sf.chellow.physical;
 
 import java.net.URI;
-import java.text.DecimalFormat;
 import java.util.Date;
 import java.util.Set;
 
-import net.sf.chellow.monad.DeployerException;
-import net.sf.chellow.monad.DesignerException;
-import net.sf.chellow.monad.Hiber;
-import net.sf.chellow.monad.HttpException;
-import net.sf.chellow.monad.InternalException;
-import net.sf.chellow.monad.Invocation;
-import net.sf.chellow.monad.MethodNotAllowedException;
-import net.sf.chellow.monad.MonadUtils;
-import net.sf.chellow.monad.Urlable;
-import net.sf.chellow.monad.UserException;
-import net.sf.chellow.monad.XmlTree;
-import net.sf.chellow.monad.types.MonadDate;
-import net.sf.chellow.monad.types.MonadUri;
-import net.sf.chellow.monad.types.UriPathElement;
-
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import net.sf.chellow.monad.Hiber;
+import net.sf.chellow.monad.HttpException;
+import net.sf.chellow.monad.UserException;
+import net.sf.chellow.monad.types.MonadDate;
+import net.sf.chellow.monad.types.MonadUri;
 
 public class Ssc extends PersistentEntity {
 	public static Ssc getSsc(String code) throws HttpException {
-		try {
-			Ssc ssc = (Ssc) Hiber.session().createQuery(
-					"from Ssc ssc where ssc.code = :code").setInteger("code",
-					Integer.parseInt(code)).uniqueResult();
-			if (ssc == null) {
-				throw new UserException("There isn't an SSC with code: " + code
-						+ ".");
-			}
-			return ssc;
-		} catch (NumberFormatException e) {
-			throw new UserException("An SSC code must be an integer. "
-					+ e.getMessage());
+		code = code.trim();
+		while (code.length() < 4) {
+			code = "0" + code;
 		}
+		Ssc ssc = (Ssc) Hiber.session()
+				.createQuery("from Ssc ssc where ssc.code = :code")
+				.setString("code", code).uniqueResult();
+		if (ssc == null) {
+			throw new UserException("There isn't an SSC with code: " + code
+					+ ".");
+		}
+		return ssc;
 	}
 
 	public static Ssc getSsc(long id) throws HttpException {
@@ -68,7 +56,7 @@ public class Ssc extends PersistentEntity {
 		return ssc;
 	}
 
-	private int code;
+	private String code;
 	private Date validFrom;
 	private Date validTo;
 	private String description;
@@ -80,18 +68,18 @@ public class Ssc extends PersistentEntity {
 
 	public Ssc(String code, Date validFrom, Date validTo, String description,
 			boolean isImport) throws HttpException {
-		setCode(Integer.parseInt(code));
+		setCode(code);
 		setValidFrom(validFrom);
 		setValidTo(validTo);
 		setDescription(description);
 		setIsImport(isImport);
 	}
 
-	public int getCode() {
+	public String getCode() {
 		return code;
 	}
 
-	void setCode(int code) {
+	void setCode(String code) {
 		this.code = code;
 	}
 
@@ -135,42 +123,30 @@ public class Ssc extends PersistentEntity {
 		this.mrs = mrs;
 	}
 
-	public Urlable getChild(UriPathElement uriId) throws InternalException,
-			HttpException {
-		return null;
+	public MeasurementRequirement insertMeasurementRequirement(Tpr tpr)
+			throws HttpException {
+		MeasurementRequirement mr = new MeasurementRequirement(this, tpr);
+		Hiber.session().save(mr);
+		Hiber.session().flush();
+		return mr;
 	}
 
-	public MonadUri getEditUri() throws InternalException, HttpException {
+	@Override
+	public MonadUri getEditUri() throws HttpException {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
-	public void httpDelete(Invocation inv) throws InternalException,
-			DesignerException, HttpException, DeployerException {
+	@Override
+	public URI getViewUri() throws HttpException {
 		// TODO Auto-generated method stub
-
-	}
-
-	public void httpGet(Invocation inv) throws HttpException {
-		Document doc = MonadUtils.newSourceDocument();
-		Element source = doc.getDocumentElement();
-		source.appendChild(toXml(doc, new XmlTree("measurementRequirements",
-				new XmlTree("tpr"))));
-		inv.sendOk(doc);
-	}
-
-	public void httpPost(Invocation inv) throws HttpException {
-		throw new MethodNotAllowedException();
-	}
-
-	public String toString() {
-		return new DecimalFormat("0000").format(code);
+		return null;
 	}
 
 	public Element toXml(Document doc) throws HttpException {
 		Element element = super.toXml(doc, "ssc");
 
-		element.setAttribute("code", toString());
+		element.setAttribute("code", code);
 		element.setAttribute("is-import", Boolean.toString(isImport));
 		element.setAttribute("description", description);
 		MonadDate fromDate = new MonadDate(validFrom);
@@ -182,19 +158,5 @@ public class Ssc extends PersistentEntity {
 			element.appendChild(toDate.toXml(doc));
 		}
 		return element;
-	}
-
-	public MeasurementRequirement insertMeasurementRequirement(Tpr tpr)
-			throws HttpException {
-		MeasurementRequirement mr = new MeasurementRequirement(this, tpr);
-		Hiber.session().save(mr);
-		Hiber.session().flush();
-		return mr;
-	}
-
-	@Override
-	public URI getViewUri() throws HttpException {
-		// TODO Auto-generated method stub
-		return null;
 	}
 }

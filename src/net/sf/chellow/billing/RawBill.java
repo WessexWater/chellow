@@ -39,155 +39,155 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 public class RawBill extends MonadObject {
-	private BillType type;
+        private BillType type;
 
-	private Date issueDate;
+        private Date issueDate;
 
-	private HhStartDate startDate;
+        private HhStartDate startDate;
 
-	private HhStartDate finishDate;
+        private HhStartDate finishDate;
 
-	private BigDecimal kwh;
+        private BigDecimal kwh;
 
-	private BigDecimal net;
+        private BigDecimal net;
 
-	private BigDecimal vat;
-	
-	private BigDecimal gross;
+        private BigDecimal vat;
+        
+        private BigDecimal gross;
 
-	private String accountReference;
+        private String accountReference;
 
-	private String reference;
-	
-	private String breakdown;
+        private String reference;
+        
+        private String breakdown;
 
-	private List<String> mpanStrings;
+        private List<String> mpanStrings;
 
-	private Set<RawRegisterRead> reads = new HashSet<RawRegisterRead>();
+        private Set<RawRegisterRead> reads = new HashSet<RawRegisterRead>();
 
-	public RawBill(BillType type, String accountReference,
-			List<String> mpanStrings, String reference, Date issueDate,
-			HhStartDate startDate, HhStartDate finishDate, BigDecimal kwh, BigDecimal net,
-			BigDecimal vat, BigDecimal gross, String breakdown, List<RawRegisterRead> registerReads)
-			throws HttpException {
-		if (type == null) {
-			throw new InternalException("The type can't be null.");
-		}
-		this.type = type;
-		if (issueDate == null) {
-			throw new InternalException("The issue date can't be null.");
-		}
-		this.issueDate = issueDate;
-		if (startDate == null) {
-			throw new InternalException("The start date can't be null.");
-		}
-		this.startDate = startDate;
-		if (finishDate == null) {
-			throw new InternalException("The finish date can't be null.");
-		}
-		this.finishDate = finishDate;
-		this.kwh = kwh;
-		this.net = net;
-		this.vat = vat;
-		this.gross = gross;
+        public RawBill(BillType type, String accountReference,
+                        List<String> mpanStrings, String reference, Date issueDate,
+                        HhStartDate startDate, HhStartDate finishDate, BigDecimal kwh, BigDecimal net,
+                        BigDecimal vat, BigDecimal gross, String breakdown, List<RawRegisterRead> registerReads)
+                        throws HttpException {
+                if (type == null) {
+                        throw new InternalException("The type can't be null.");
+                }
+                this.type = type;
+                if (issueDate == null) {
+                        throw new InternalException("The issue date can't be null.");
+                }
+                this.issueDate = issueDate;
+                if (startDate == null) {
+                        throw new InternalException("The start date can't be null.");
+                }
+                this.startDate = startDate;
+                if (finishDate == null) {
+                        throw new InternalException("The finish date can't be null.");
+                }
+                this.finishDate = finishDate;
+                this.kwh = kwh;
+                this.net = net;
+                this.vat = vat;
+                this.gross = gross;
 
-		if (reference == null) {
-			throw new InternalException(
-					"The bill reference parameter is required.");
-		}
-		this.reference = reference;
-		if (accountReference == null) {
-			throw new UserException(
-					"The accountReference parameter is required.");
-		}
-		this.accountReference = accountReference;
-		if (mpanStrings == null) {
-			throw new InternalException(
-					"The mpanStrings parameter must not be null.");
-		}
-		this.breakdown = breakdown;
-		this.mpanStrings = mpanStrings;
-		if (registerReads != null) {
-			for (RawRegisterRead read : registerReads) {
-				this.reads.add(read);
-			}
-		}
-	}
+                if (reference == null) {
+                        throw new InternalException(
+                                        "The bill reference parameter is required.");
+                }
+                this.reference = reference;
+                if (accountReference == null) {
+                        throw new UserException(
+                                        "The accountReference parameter is required.");
+                }
+                this.accountReference = accountReference;
+                if (mpanStrings == null) {
+                        throw new InternalException(
+                                        "The mpanStrings parameter must not be null.");
+                }
+                this.breakdown = breakdown;
+                this.mpanStrings = mpanStrings;
+                if (registerReads != null) {
+                        for (RawRegisterRead read : registerReads) {
+                                this.reads.add(read);
+                        }
+                }
+        }
 
-	public BillType getType() {
-		return type;
-	}
+        public BillType getType() {
+                return type;
+        }
 
-	public List<String> getMpanStrings() {
-		return mpanStrings;
-	}
+        public List<String> getMpanStrings() {
+                return mpanStrings;
+        }
 
-	public Date getIssueDate() {
-		return issueDate;
-	}
+        public Date getIssueDate() {
+                return issueDate;
+        }
 
-	public HhStartDate getStartDate() {
-		return startDate;
-	}
+        public HhStartDate getStartDate() {
+                return startDate;
+        }
 
-	public HhStartDate getFinishDate() {
-		return finishDate;
-	}
-	
-	public BigDecimal getKwh() {
-		return kwh;
-	}
-	
-	public BigDecimal getNet() {
-		return net;
-	}
+        public HhStartDate getFinishDate() {
+                return finishDate;
+        }
+        
+        public BigDecimal getKwh() {
+                return kwh;
+        }
+        
+        public BigDecimal getNet() {
+                return net;
+        }
 
-	public BigDecimal getVat() {
-		return vat;
-	}
-	
-	public BigDecimal getGross() {
-		return gross;
-	}
+        public BigDecimal getVat() {
+                return vat;
+        }
+        
+        public BigDecimal getGross() {
+                return gross;
+        }
 
-	public String getReference() {
-		return reference;
-	}
+        public String getReference() {
+                return reference;
+        }
 
-	public String getAccount() {
-		return accountReference;
-	}
-	
-	public String getBreakdown() {
-		return breakdown;
-	}
-	
-	public Set<RawRegisterRead> getRegisterReads() {
-		return reads;
-	}
+        public String getAccount() {
+                return accountReference;
+        }
+        
+        public String getBreakdown() {
+                return breakdown;
+        }
+        
+        public Set<RawRegisterRead> getRegisterReads() {
+                return reads;
+        }
 
-	public Element toXml(Document doc) throws HttpException {
-		Element element = doc.createElement("raw-bill");
-		element.setAttribute("reference", reference);
-		element.appendChild(new MonadDate("issue", issueDate).toXml(doc));
-		startDate.setLabel("start");
-		element.appendChild(startDate.toXml(doc));
-		finishDate.setLabel("finish");
-		element.appendChild(finishDate.toXml(doc));
-		element.setAttribute("kwh", kwh.toString());
-		element.setAttribute("net", net.toString());
-		element.setAttribute("vat", vat.toString());
-		element.setAttribute("account-reference", accountReference);
-		StringBuilder mpans = new StringBuilder();
-		for (String mpan : mpanStrings) {
-			mpans.append(mpan + ", ");
-		}
-		if (mpans.length() > 0) {
-			element.setAttribute("mpans", mpans
-					.substring(0, mpans.length() - 2));
-		} else {
-			element.setAttribute("mpans", mpans.toString());
-		}
-		return element;
-	}
+        public Element toXml(Document doc) throws HttpException {
+                Element element = doc.createElement("raw-bill");
+                element.setAttribute("reference", reference);
+                element.appendChild(new MonadDate("issue", issueDate).toXml(doc));
+                startDate.setLabel("start");
+                element.appendChild(startDate.toXml(doc));
+                finishDate.setLabel("finish");
+                element.appendChild(finishDate.toXml(doc));
+                element.setAttribute("kwh", kwh.toString());
+                element.setAttribute("net", net.toString());
+                element.setAttribute("vat", vat.toString());
+                element.setAttribute("account-reference", accountReference);
+                StringBuilder mpans = new StringBuilder();
+                for (String mpan : mpanStrings) {
+                        mpans.append(mpan + ", ");
+                }
+                if (mpans.length() > 0) {
+                        element.setAttribute("mpans", mpans
+                                        .substring(0, mpans.length() - 2));
+                } else {
+                        element.setAttribute("mpans", mpans.toString());
+                }
+                return element;
+        }
 }

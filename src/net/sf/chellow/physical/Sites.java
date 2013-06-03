@@ -86,6 +86,10 @@ public class Sites extends EntityList {
 		return URI_ID;
 	}
 
+	public MonadUri getUrlPath() throws HttpException {
+		return Chellow.ROOT_URI.resolve(getUriId()).append("/");
+	}
+
 	public Site getChild(UriPathElement uriId) throws HttpException {
 		Site site = (Site) Hiber.session()
 				.createQuery("from Site site where id = :siteId")

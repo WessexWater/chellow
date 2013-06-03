@@ -1,6 +1,6 @@
 /*******************************************************************************
  * 
- *  Copyright (c) 2005, 2010 Wessex Water Services Limited
+ *  Copyright (c) 2005-2013 Wessex Water Services Limited
  *  
  *  This file is part of Chellow.
  * 
@@ -32,12 +32,10 @@ import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Invocation;
 import net.sf.chellow.monad.MonadMessage;
 import net.sf.chellow.monad.MonadUtils;
-import net.sf.chellow.monad.Urlable;
 import net.sf.chellow.monad.UserException;
 import net.sf.chellow.monad.XmlTree;
 import net.sf.chellow.monad.types.MonadDate;
 import net.sf.chellow.monad.types.MonadUri;
-import net.sf.chellow.monad.types.UriPathElement;
 import net.sf.chellow.ui.GeneralImport;
 
 import org.w3c.dom.Document;
@@ -85,7 +83,7 @@ public class RegisterRead extends PersistentEntity {
 			String msn = GeneralImport.addField(csvElement,
 					"Meter Serial Number", values, 4);
 			if (msn.equals(GeneralImport.NO_CHANGE)) {
-				msn = read.getMeterSerialNumber();
+				msn = read.getMsn();
 			}
 
 			String mpanStr = GeneralImport.addField(csvElement, "MPAN", values,
@@ -165,7 +163,7 @@ public class RegisterRead extends PersistentEntity {
 
 	private Bill bill;
 
-	private String meterSerialNumber;
+	private String msn;
 
 	private String mpanStr;
 
@@ -205,7 +203,7 @@ public class RegisterRead extends PersistentEntity {
 	}
 
 	public void update(Tpr tpr, BigDecimal coefficient, Units units,
-			String meterSerialNumber, String mpanStr, HhStartDate previousDate,
+			String msn, String mpanStr, HhStartDate previousDate,
 			BigDecimal previousValue, ReadType previousType,
 			HhStartDate presentDate, BigDecimal presentValue,
 			ReadType presentType) throws HttpException {
@@ -222,7 +220,7 @@ public class RegisterRead extends PersistentEntity {
 		setPresentDate(presentDate);
 		setPresentValue(presentValue);
 		setPresentType(presentType);
-		setMeterSerialNumber(meterSerialNumber);
+		setMsn(msn);
 		setMpanStr(mpanStr);
 	}
 
@@ -234,12 +232,12 @@ public class RegisterRead extends PersistentEntity {
 		this.mpanStr = mpanStr;
 	}
 
-	public String getMeterSerialNumber() {
-		return meterSerialNumber;
+	public String getMsn() {
+		return msn;
 	}
 
-	void setMeterSerialNumber(String meterSerialNumber) {
-		this.meterSerialNumber = meterSerialNumber;
+	void setMsn(String msn) {
+		this.msn = msn;
 	}
 
 	public Bill getBill() {
@@ -322,17 +320,46 @@ public class RegisterRead extends PersistentEntity {
 		this.presentType = presentType;
 	}
 
-	public Urlable getChild(UriPathElement uriId) throws HttpException {
-		return null;
+	public void attach() {
 	}
 
-	public MonadUri getEditUri() throws InternalException, HttpException {
+	@Override
+	public MonadUri getEditUri() throws HttpException {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
+	@Override
+	public URI getViewUri() throws HttpException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public Node toXml(Document doc) throws HttpException {
+		Element element = super.toXml(doc, "register-read");
+		element.setAttribute("coefficient", coefficient.toString());
+		element.setAttribute("units", units.toString());
+		element.setAttribute("meter-serial-number", msn);
+		previousDate.setLabel("previous");
+		element.appendChild(previousDate.toXml(doc));
+		element.setAttribute("previous-value", previousValue.toString());
+		previousType.setLabel("previous");
+		element.appendChild(previousType.toXml(doc));
+		presentDate.setLabel("present");
+		element.appendChild(presentDate.toXml(doc));
+		element.setAttribute("present-value", presentValue.toString());
+		presentType.setLabel("present");
+		element.appendChild(presentType.toXml(doc));
+		element.setAttribute("mpan-str", mpanStr);
+		return element;
+	}
+
 	public void httpGet(Invocation inv) throws HttpException {
 		inv.sendOk(document());
+	}
+
+	public void delete() {
+		Hiber.session().delete(this);
 	}
 
 	public void httpPost(Invocation inv) throws HttpException {
@@ -371,10 +398,6 @@ public class RegisterRead extends PersistentEntity {
 		}
 	}
 
-	public void delete() {
-		Hiber.session().delete(this);
-	}
-
 	@SuppressWarnings("unchecked")
 	private Document document() throws HttpException {
 		Document doc = MonadUtils.newSourceDocument();
@@ -390,33 +413,5 @@ public class RegisterRead extends PersistentEntity {
 			source.appendChild(type.toXml(doc));
 		}
 		return doc;
-	}
-
-	public Node toXml(Document doc) throws HttpException {
-		Element element = super.toXml(doc, "register-read");
-		element.setAttribute("coefficient", coefficient.toString());
-		element.setAttribute("units", units.toString());
-		element.setAttribute("meter-serial-number", meterSerialNumber);
-		previousDate.setLabel("previous");
-		element.appendChild(previousDate.toXml(doc));
-		element.setAttribute("previous-value", previousValue.toString());
-		previousType.setLabel("previous");
-		element.appendChild(previousType.toXml(doc));
-		presentDate.setLabel("present");
-		element.appendChild(presentDate.toXml(doc));
-		element.setAttribute("present-value", presentValue.toString());
-		presentType.setLabel("present");
-		element.appendChild(presentType.toXml(doc));
-		element.setAttribute("mpan-str", mpanStr);
-		return element;
-	}
-
-	public void attach() {
-	}
-
-	@Override
-	public URI getViewUri() throws HttpException {
-		// TODO Auto-generated method stub
-		return null;
 	}
 }

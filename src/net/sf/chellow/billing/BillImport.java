@@ -124,8 +124,8 @@ public class BillImport extends Thread implements Urlable, XmlDescriber {
 			locationOfDot = location2Dot;
 		}
 		String extension = fileName.substring(locationOfDot + 1);
-		NonCoreContract parserContract = NonCoreContract
-				.getNonCoreContract("bill-parser-" + extension);
+		Contract parserContract = Contract.getNonCoreContract("bill-parser-"
+				+ extension);
 		try {
 			PythonInterpreter interpreter = new PythonInterpreter();
 			interpreter.exec(parserContract.getChargeScript());

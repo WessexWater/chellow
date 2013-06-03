@@ -1,6 +1,6 @@
 /*******************************************************************************
  * 
- *  Copyright (c) 2005, 2009 Wessex Water Services Limited
+ *  Copyright (c) 2005-2013 Wessex Water Services Limited
  *  
  *  This file is part of Chellow.
  * 
@@ -22,19 +22,11 @@
 package net.sf.chellow.physical;
 
 import java.net.URI;
-import java.text.DecimalFormat;
 
-import net.sf.chellow.monad.DeployerException;
-import net.sf.chellow.monad.DesignerException;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
-import net.sf.chellow.monad.InternalException;
-import net.sf.chellow.monad.Invocation;
-import net.sf.chellow.monad.MonadUtils;
-import net.sf.chellow.monad.Urlable;
 import net.sf.chellow.monad.UserException;
 import net.sf.chellow.monad.types.MonadUri;
-import net.sf.chellow.monad.types.UriPathElement;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -50,20 +42,22 @@ public class Pc extends PersistentEntity {
 	}
 
 	static public Pc getPc(String code) throws HttpException {
-		Pc profileClass = findPc(Integer.parseInt(code));
+		Pc profileClass = findPc(code);
 		if (profileClass == null) {
-			throw new UserException("There is no profile class with that code.");
+			throw new UserException("There is no profile class with the code '"
+					+ code + "'.");
 		}
 		return profileClass;
 	}
 
-	static public Pc findPc(int code) {
-		return (Pc) Hiber.session().createQuery(
-				"from Pc pc where pc.code = :code").setInteger("code",
-				code).uniqueResult();
+	static public Pc findPc(String code) {
+		code = code.trim();
+		return (Pc) Hiber.session()
+				.createQuery("from Pc pc where pc.code = :code")
+				.setString("code", code).uniqueResult();
 	}
 
-	private int code;
+	private String code;
 
 	private String description;
 
@@ -71,20 +65,15 @@ public class Pc extends PersistentEntity {
 	}
 
 	public Pc(String code, String description) {
-		this(null, code, description);
-	}
-
-	public Pc(String label, String code, String description) {
-		setLabel(label);
-		this.code = Integer.parseInt(code);
+		this.code = code;
 		this.description = description;
 	}
 
-	void setCode(int code) {
+	void setCode(String code) {
 		this.code = code;
 	}
 
-	public int getCode() {
+	public String getCode() {
 		return code;
 	}
 
@@ -100,55 +89,24 @@ public class Pc extends PersistentEntity {
 		setDescription(description);
 		Hiber.flush();
 	}
-	
-	public String toString() {
-		DecimalFormat pcFormat = new DecimalFormat("00");
-		return pcFormat.format(code);
-	}
 
-	public Node toXml(Document doc) throws HttpException {
-		Element element = super.toXml(doc, "pc");
-		
-
-		element.setAttribute("code", toString());
-		element.setAttribute("description", description);
-		return element;
-	}
-
-	public MonadUri getEditUri() {
-		return null;
-	}
-
-	public Urlable getChild(UriPathElement uriId) throws InternalException,
-			HttpException {
+	@Override
+	public MonadUri getEditUri() throws HttpException {
 		// TODO Auto-generated method stub
 		return null;
-	}
-
-	public void httpGet(Invocation inv) throws DesignerException,
-			InternalException, HttpException, DeployerException {
-		Document doc = MonadUtils.newSourceDocument();
-		Element source = doc.getDocumentElement();
-
-		source.appendChild(toXml(doc));
-		inv.sendOk(doc);
-	}
-
-	public void httpPost(Invocation inv) throws InternalException,
-			HttpException {
-		// TODO Auto-generated method stub
-
-	}
-
-	public void httpDelete(Invocation inv) throws InternalException,
-			DesignerException, HttpException, DeployerException {
-		// TODO Auto-generated method stub
-
 	}
 
 	@Override
 	public URI getViewUri() throws HttpException {
 		// TODO Auto-generated method stub
 		return null;
+	}
+
+	public Node toXml(Document doc) throws HttpException {
+		Element element = super.toXml(doc, "pc");
+
+		element.setAttribute("code", code);
+		element.setAttribute("description", description);
+		return element;
 	}
 }

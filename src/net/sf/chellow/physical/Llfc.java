@@ -1,6 +1,6 @@
 /*******************************************************************************
  * 
- *  Copyright (c) 2005, 2009 Wessex Water Services Limited
+ *  Copyright (c) 2005-2013 Wessex Water Services Limited
  *  
  *  This file is part of Chellow.
  * 
@@ -22,73 +22,60 @@
 package net.sf.chellow.physical;
 
 import java.net.URI;
-import java.text.DecimalFormat;
 import java.util.Date;
-import java.util.List;
 
-import net.sf.chellow.billing.Dno;
-import net.sf.chellow.billing.Provider;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+
+import net.sf.chellow.billing.Contract;
+import net.sf.chellow.billing.Party;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
-import net.sf.chellow.monad.InternalException;
-import net.sf.chellow.monad.Invocation;
-import net.sf.chellow.monad.MonadUtils;
 import net.sf.chellow.monad.Urlable;
 import net.sf.chellow.monad.UserException;
-import net.sf.chellow.monad.XmlTree;
 import net.sf.chellow.monad.types.MonadDate;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
 
-import org.hibernate.HibernateException;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-
 public class Llfc extends PersistentEntity {
-	static public Llfc getLlfc(Long id) throws HttpException {
-		Llfc llfc = (Llfc) Hiber.session().get(Llfc.class, id);
+	public Llfc getLlfc(String code, Date date) throws HttpException {
+		Llfc llfc = (Llfc) Hiber
+				.session()
+				.createQuery(
+						"from Llfc llfc where llfc.dno = :dno and llfc.code = :code and llfc.validFrom <= :date and (llfc.validTo is null or llfc.validTo >= :date)")
+				.setEntity("dno", this)
+				.setInteger("code", Integer.parseInt(code))
+				.setTimestamp("date", date).uniqueResult();
 		if (llfc == null) {
-			throw new UserException("There is no LLFC with that id.");
+			throw new UserException(
+					"There is no line loss factor with the code " + code
+							+ " associated with the DNO '"
+							+ getCode().toString() + "' for the date "
+							+ date.toString() + ".");
 		}
 		return llfc;
 	}
 
-	@SuppressWarnings("unchecked")
-	static public List<Llfc> find(Provider dno, Pc profileClass,
-			boolean isSubstation, boolean isImport, VoltageLevel voltageLevel)
-			throws InternalException, HttpException {
-		try {
-			return (List<Llfc>) Hiber
-					.session()
-					.createQuery(
-							"from Llf llf where llf.dno = :dno and llf.profileClass = :profileClass and llf.isSubstation.boolean = :isSubstation and llf.isImport.boolean = :isImport and llf.voltageLevel = :voltageLevel")
-					.setEntity("dno", dno).setEntity("profileClass",
-							profileClass).setBoolean("isSubstation",
-							isSubstation).setBoolean("isImport", isImport)
-					.setEntity("voltageLevel", voltageLevel).list();
-		} catch (HibernateException e) {
-			throw new InternalException(e);
-		}
-	}
-
-	@SuppressWarnings("unchecked")
-	static public List<Llfc> find(Provider dno, Pc profileClass)
+	public static Llfc getLlfc(Contract dnoContract, String code)
 			throws HttpException {
-		try {
-			return (List<Llfc>) Hiber
-					.session()
-					.createQuery(
-							"from Llf llf where llf.dno = :dno and llf.profileClass = :profileClass order by llf.code.string")
-					.setEntity("dno", dno).setEntity("profileClass",
-							profileClass).list();
-		} catch (HibernateException e) {
-			throw new InternalException(e);
+		Party dno = dnoContract.getParty();
+		code = code.trim();
+
+		Llfc llfc = (Llfc) Hiber
+				.session()
+				.createQuery(
+						"from Llfc llfc where llfc.dno = :dno and llfc.code = :code")
+				.setEntity("dno", dno).setString("code", code).uniqueResult();
+		if (llfc == null) {
+			throw new UserException("There is no LLFC with the code '" + code
+					+ "' associated with the DNO " + dno.getDnoCode() + ".");
 		}
+		return llfc;
 	}
 
-	private Dno dno;
+	private Party dno;
 
-	private int code;
+	private String code;
 
 	private String description;
 
@@ -99,12 +86,13 @@ public class Llfc extends PersistentEntity {
 	private boolean isImport;
 
 	private Date validFrom;
+
 	private Date validTo;
 
 	Llfc() {
 	}
 
-	public Llfc(Dno dno, int code, String description,
+	public Llfc(Party dno, String code, String description,
 			VoltageLevel voltageLevel, boolean isSubstation, boolean isImport,
 			Date validFrom, Date validTo) throws HttpException {
 		setDno(dno);
@@ -117,19 +105,19 @@ public class Llfc extends PersistentEntity {
 		setValidTo(validTo);
 	}
 
-	public Dno getDno() {
+	public Party getDno() {
 		return dno;
 	}
 
-	public void setDno(Dno dno) {
+	public void setDno(Party dno) {
 		this.dno = dno;
 	}
 
-	public int getCode() {
+	public String getCode() {
 		return code;
 	}
 
-	void setCode(int code) {
+	void setCode(String code) {
 		this.code = code;
 	}
 
@@ -181,9 +169,24 @@ public class Llfc extends PersistentEntity {
 		this.validTo = to;
 	}
 
+	@Override
+	public URI getViewUri() throws HttpException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public MonadUri getEditUri() {
+		return null;
+	}
+
+	public Urlable getChild(UriPathElement uriId) throws HttpException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
 	public Element toXml(Document doc) throws HttpException {
-		Element element = super.toXml(doc, "llfc");
-		element.setAttribute("code", toString());
+		Element element = super.toXml(doc, isImport ? "imp-llfc" : "exp-llfc");
+		element.setAttribute("code", code);
 		element.setAttribute("description", description);
 		element.setAttribute("is-substation", Boolean.toString(isSubstation));
 		element.setAttribute("is-import", Boolean.toString(isImport));
@@ -196,37 +199,5 @@ public class Llfc extends PersistentEntity {
 			element.appendChild(toDate.toXml(doc));
 		}
 		return element;
-	}
-
-	public MonadUri getEditUri() {
-		return null;
-	}
-
-	public Urlable getChild(UriPathElement uriId) throws HttpException {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	public void httpGet(Invocation inv) throws HttpException {
-		Document doc = MonadUtils.newSourceDocument();
-		Element source = doc.getDocumentElement();
-
-		source.appendChild(toXml(doc, new XmlTree("dno").put("voltageLevel")));
-		inv.sendOk(doc);
-	}
-
-	public void httpPost(Invocation inv) throws HttpException {
-		// TODO Auto-generated method stub
-
-	}
-
-	public String toString() {
-		return new DecimalFormat("000").format(code);
-	}
-
-	@Override
-	public URI getViewUri() throws HttpException {
-		// TODO Auto-generated method stub
-		return null;
 	}
 }

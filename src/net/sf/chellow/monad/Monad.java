@@ -390,6 +390,10 @@ public abstract class Monad extends HttpServlet implements Urlable {
 		}
 		return urlable;
 	}
+	
+	public static Object getUtils() {
+		return Monad.getContext().getAttribute("net.sf.chellow.utils");
+	}
 
 	public MonadUri getEditUri() throws InternalException {
 		return URI;

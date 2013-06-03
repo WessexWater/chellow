@@ -1,6 +1,6 @@
 /*******************************************************************************
  * 
- *  Copyright (c) 2005, 2011 Wessex Water Services Limited
+ *  Copyright (c) 2005-2013 Wessex Water Services Limited
  *  
  *  This file is part of Chellow.
  * 
@@ -81,11 +81,12 @@ public class RateScripts extends EntityList {
 			throw new UserException(document());
 		}
 		try {
-			RateScript rateScript = contract.insertRateScript(null, HhStartDate
-					.roundDown(startDate), "");
+			RateScript rateScript = contract.insertRateScript(
+					HhStartDate.roundDown(startDate), "");
 			Hiber.commit();
 			Hiber.flush();
-			inv.sendSeeOther(rateScript.getEditUri());
+			inv.sendSeeOther("/reports/79/output/?rate_script_id="
+					+ rateScript.getId());
 		} catch (HttpException e) {
 			Hiber.rollBack();
 			e.setDocument(document());
@@ -102,8 +103,9 @@ public class RateScripts extends EntityList {
 				.session()
 				.createQuery(
 						"from RateScript script where script.contract = :contract and script.id = :scriptId")
-				.setEntity("contract", contract).setLong("scriptId",
-						Long.parseLong(uriId.getString())).uniqueResult();
+				.setEntity("contract", contract)
+				.setLong("scriptId", Long.parseLong(uriId.getString()))
+				.uniqueResult();
 		if (script == null) {
 			throw new NotFoundException();
 		}
