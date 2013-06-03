@@ -17494,6 +17494,7 @@ elif method == 'POST':
     inv.sendSeeOther("/reports/251/output/")
 else:
     raise UserException("Don't recognize the method: " + method)]]></value>
+    	<value><![CDATA[]]></value>
 	</line>
 	<line>
 		<value><![CDATA[insert]]></value>
