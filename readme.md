@@ -8,11 +8,11 @@ Chellow is released under the [GPL v3](http://www.gnu.org/licenses/gpl.html).
 
 Chellow is a web application for checking UK electricity bills. It's designed
 for organizations with high electricity consumption. The software is hosted at
- http://sourceforge.net/projects/chellow/)
+ https://bitbucket.org/ww_tlocke/chellow)
 
 ###  Installation
 
-1. [Download](http://sourceforge.net/projects/chellow/files/) the latest version of Chellow.
+1. [Download](https://bitbucket.org/ww_tlocke/chellow/downloads) the latest version of Chellow.
 2.  Make sure the following are installed: 
     * PostgreSQL 9.1 with the JDBC4 PostgreSQL Driver, Version 9.2-1002
     * OpenJDK 1.7.0_21 (in server mode)
