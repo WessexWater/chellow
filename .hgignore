@@ -1,6 +1,0 @@
-^build/
-^dist/
-^bin/
-.*\.swp
-^test/imprimatur.xml
-^mdd/download/.*
