@@ -5001,13 +5001,13 @@ cal.add(Calendar.YEAR, -1)
 year_start = HhStartDate(cal.getTime())
 
 triad_contract = Contract.getNonCoreContract('triad')
-dno_contract = Contract.getNonCoreContract('dno')
+duos_contract = Contract.getNonCoreContract('duos')
 
 def triad_csv(supply_source):
     if supply_source is None or supply_source.id.startswith('99'):
         return ['' for item in range(19)]
 
-    supply_source.contract_function(dno_contract, 'dno_vb')(supply_source)
+    supply_source.contract_function(duos_contract, 'dno_vb')(supply_source)
     supply_source.contract_function(triad_contract, 'triad_bill')(supply_source)
 
     bill = supply_source.supplier_bill
@@ -6775,7 +6775,7 @@ finally:
 
     <ul>
       <li>
-        <a href="{{ context_path }}/reports/89/output/?supplier-contract-id={{ contract.id }}">Batches</a>
+        <a href="{{ context_path }}/reports/89/output/?supplier_contract_id={{ contract.id }}">Batches</a>
       </li>
     </ul>
 
@@ -6783,11 +6783,11 @@ finally:
 
     <form action="{{ context_path }}/reports/87/output/">
       <fieldset>
-        <input type="hidden" name="contract-id" value="{{ contract.id }}"/>
+        <input type="hidden" name="contract_id" value="{{ contract.id }}"/>
         <legend>Download Supply Level Virtual Bills</legend>
         <br/>
         For 
-        <select name="supply-polarity">
+        <select name="supply_polarity">
           <option value="import">
             Import
           </option>
@@ -10808,7 +10808,7 @@ pw = inv.getResponse().getWriter()
 computer = Contract.getNonCoreContract('computer')
 comterp = computer.callFunction('create_comterp', [])
 forecast_date = HhStartDate.roundDown(Date(Long.MAX_VALUE))
-dno_contract = Contract.getNonCoreContract('dno')
+duos_contract = Contract.getNonCoreContract('duos')
 
 def mpan_bit(query, kvarh_at_md_query, is_import, hh_count_query, num_hh, eras, chunk_start, chunk_finish):
     mpan_core_str = ''
@@ -10846,7 +10846,7 @@ def mpan_bit(query, kvarh_at_md_query, is_import, hh_count_query, num_hh, eras, 
 
             supply_source = comterp.get('SupplySource')(block_start, block_finish, forecast_date, era, is_import, comterp, pw, caches)
 
-            comterp.get('contract_function')(dno_contract, 'dno_vb', System.err)(supply_source)
+            comterp.get('contract_function')(duos_contract, 'dno_vb', System.err)(supply_source)
 
             gsp_kwh += sum([datum['gsp-kwh'] for datum in supply_source.hh_data])
 
@@ -12905,7 +12905,7 @@ cal.add(Calendar.MONTH, -1)
 march_start = HhStartDate(cal.getTime())
 
 triad_contract = Contract.getNonCoreContract('triad')
-dno_contract = Contract.getNonCoreContract('dno')
+duos_contract = Contract.getNonCoreContract('duos')
 
 pw.println("Site Code, Site Name, Displaced TRIAD 1 Date, Displaced TRIAD 1 MSP kW, Displaced TRIAD LAF, Displaced TRIAD 1 GSP kW, Displaced TRIAD 2 Date, Displaced TRIAD 2 MSP kW, Displaced TRIAD 2 LAF, Displaced TRIAD 2 GSP kW, Displaced TRIAD 3 Date, Displaced TRIAD 3 MSP kW, Displaced TRIAD 3 LAF, Displaced TRIAD 3 GSP kW, Displaced GSP kW, Displaced Rate GBP / kW, GBP")
 pw.flush()
@@ -12938,7 +12938,7 @@ while sites.next():
             continue
 
         site_ds = comterp.get('SiteSource')(site, chunk_start, chunk_finish, forecast_date, comterp, pw, caches, displaced_era)
-        site_ds.contract_function(dno_contract, 'dno_vb')(site_ds)
+        site_ds.contract_function(duos_contract, 'dno_vb')(site_ds)
         site_ds.contract_function(triad_contract, 'triad_bill')(site_ds)
 
         bill = site_ds.supplier_bill

@@ -1576,7 +1576,7 @@ triad_contract = Contract.getNonCoreContract('triad')
 ccl_contract = Contract.getNonCoreContract('ccl')
 bsuos_contract = Contract.getNonCoreContract('bsuos')
 tlms_contract = Contract.getNonCoreContract('tlms')
-dno_contract = Contract.getNonCoreContract('dno')
+duos_contract = Contract.getNonCoreContract('duos')
 
 def import_virtual_bill_titles():
     return ['net-gbp', 'tlm', 'ccl-kwh', 'ccl-rate', 'ccl-gbp', 'data-collection-gbp', 'duos-availability-agreed-kva', 'duos-availability-billed-kva', 'duos-availability-rate', 'duos-availability-gbp', 'duos-day-kwh', 'duos-day-gbp', 'duos-night-kwh', 'duos-night-gbp', 'duos-reactive-rate', 'duos-reactive-gbp', 'duos-standing-gbp', 'settlement-gbp', 'night-msp-kwh', 'night-gsp-kwh', 'night-gbp', 'other-msp-kwh', 'other-gsp-kwh', 'other-gbp', 'summer-pk-msp-kwh', 'summer-pk-gsp-kwh', 'summer-pk-gbp', 'winter-low-pk-msp-kwh', 'winter-low-pk-gsp-kwh', 'winter-low-pk-gbp', 'winter-off-pk-msp-kwh', 'winter-off-pk-gsp-kwh', 'winter-off-pk-gbp', 'winter-pk-msp-kwh', 'winter-pk-gsp-kwh', 'winter-pk-gbp', 'bsuos-kwh', 'bsuos-rate', 'bsuos-gbp', 'triad-actual-0-date', 'triad-actual-0-msp-kw', 'triad-actual-0-status', 'triad-actual-0-laf', 'triad-actual-0-gsp-kw', 'triad-actual-1-date', 'triad-actual-1-msp-kw', 'triad-actual-1-status', 'triad-actual-1-laf', 'triad-actual-1-gsp-kw', 'triad-actual-2-date', 'triad-actual-2-msp-kw', 'triad-actual-2-status', 'triad-actual-2-laf', 'triad-actual-2-gsp-kw', 'triad-actual-gsp-kw', 'triad-actual-rate', 'triad-actual-gbp', 'triad-estimate-0-date', 'triad-estimate-0-msp-kw', 'triad-estimate-0-status', 'triad-estimate-0-laf', 'triad-estimate-0-gsp-kw', 'triad-estimate-1-date', 'triad-estimate-1-msp-kw', 'triad-estimate-1-status', 'triad-estimate-1-laf', 'triad-estimate-1-gsp-kw', 'triad-estimate-2-date', 'triad-estimate-2-msp-kw', 'triad-estimate-2-status', 'triad-estimate-2-laf', 'triad-estimate-2-gsp-kw', 'triad-estimate-gsp-kw', 'triad-estimate-rate', 'triad-estimate-months', 'triad-estimate-gbp', 'triad-all-estimates-months', 'triad-all-estimates-gbp']
@@ -1605,7 +1605,7 @@ def displaced_virtual_bill(supply_source):
     contract_func = comterp.get('contract_function')
 
     supply_source.is_green = False
-    contract_func(dno_contract, 'dno_vb', supply_source.pw)(supply_source)
+    contract_func(duos_contract, 'dno_vb', supply_source.pw)(supply_source)
 
     for datum in supply_source.hh_data:
         is_weekday = datum['utc-day-of-week'] != Calendar.SATURDAY and datum['utc-day-of-week'] != Calendar.SUNDAY
@@ -1653,7 +1653,7 @@ def displaced_virtual_bill(supply_source):
 def import_virtual_bill(supply_source):
     comterp = supply_source.comterp
 
-    supply_source.contract_function(dno_contract, 'dno_vb')(supply_source)
+    supply_source.contract_function(duos_contract, 'dno_vb')(supply_source)
     bill = supply_source.supplier_bill
     bill.update({'net-gbp': 0, 'data-collection-gbp': 0, 'settlement-gbp': 0, 'problem': ''})
 

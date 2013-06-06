@@ -376,12 +376,12 @@ def lafs():
 		<value><![CDATA[2010-04-01T00:00Z]]></value>
 		<value><![CDATA[def lafs():
     return {
-        'lv': {
+        'lv-net': {
             'night': 1.051,
             'winter-weekday-peak': 1.075,
             'winter-weekday-day': 1.065,
             'other': 1.087},
-        'hv': {
+        'hv-net': {
             'night': 1.017,
             'winter-weekday-peak': 1.025,
             'winter-weekday-day': 1.022,
@@ -433,7 +433,7 @@ def tariffs():
 		<value><![CDATA[2011-04-01T00:00Z]]></value>
 		<value><![CDATA[def lafs():
     return {
-        'lv': {
+        'lv-net': {
             'night': 1.051,
             'winter-weekday-peak': 1.075,
             'winter-weekday-day': 1.065,
@@ -490,12 +490,12 @@ def tariffs():
 		<value><![CDATA[2011-10-01T00:00Z]]></value>
 		<value><![CDATA[def lafs():
     return {
-        'lv': {
+        'lv-net': {
             'night': 1.051,
             'winter-weekday-peak': 1.075,
             'winter-weekday-day': 1.065,
             'other': 1.087},
-        'hv': {
+        'hv-net': {
             'night': 1.017,
             'winter-weekday-peak': 1.025,
             'winter-weekday-day': 1.022,
@@ -547,12 +547,12 @@ def tariffs():
 		<value><![CDATA[2012-04-01T00:00Z]]></value>
 		<value><![CDATA[def lafs():
     return {
-        'lv': {
+        'lv-net': {
             'night': 1.052,
             'winter-weekday-peak': 1.077,
             'winter-weekday-day': 1.069,
             'other': 1.060},
-        'hv': {
+        'hv-net': {
             'night': 1.031,
             'winter-weekday-peak': 1.044,
             'winter-weekday-day': 1.041,
@@ -604,12 +604,12 @@ def tariffs():
 		<value><![CDATA[2013-04-01T00:00Z]]></value>
 		<value><![CDATA[def lafs():
     return {
-        'lv': {
+        'lv-net': {
             'night': 1.052,
             'winter-weekday-peak': 1.077,
             'winter-weekday-day': 1.069,
             'other': 1.060},
-        'hv': {
+        'hv-net': {
             'night': 1.031,
             'winter-weekday-peak': 1.044,
             'winter-weekday-day': 1.041,
@@ -2527,7 +2527,7 @@ def tariffs():
             'winter-weekday-day': 1.066,
             'night': 1.060,
             'other': 1.062},
-        'hv': {
+        'hv-net': {
             'winter-weekday-peak': 1.058,
             'winter-weekday-day': 1.051,
             'night': 1.040,
@@ -2688,7 +2688,7 @@ def tariffs():
             'winter-weekday-day': 1.072,
             'night': 1.065,
             'other': 1.068},
-        'hv': {
+        'hv-net': {
             'winter-weekday-peak': 1.065,
             'winter-weekday-day': 1.058,
             'night': 1.046,
@@ -2849,7 +2849,7 @@ def tariffs():
             'winter-weekday-day': 1.072,
             'night': 1.065,
             'other': 1.068},
-        'hv': {
+        'hv-net': {
             'winter-weekday-peak': 1.065,
             'winter-weekday-day': 1.058,
             'night': 1.046,
@@ -2988,7 +2988,7 @@ def tariffs():
             'winter-weekday-day': 1.072,
             'night': 1.065,
             'other': 1.068},
-        'hv': {
+        'hv-net': {
             'winter-weekday-peak': 1.065,
             'winter-weekday-day': 1.058,
             'night': 1.046,
@@ -3127,7 +3127,7 @@ def tariffs():
             'winter-weekday-day': 1.072,
             'night': 1.065,
             'other': 1.068},
-        'hv': {
+        'hv-net': {
             'winter-weekday-peak': 1.065,
             'winter-weekday-day': 1.058,
             'night': 1.046,
