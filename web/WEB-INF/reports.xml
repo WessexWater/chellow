@@ -19121,7 +19121,7 @@ from sqlalchemy.orm import joinedload_all
 
 Monad.getUtils()['imprt'](globals(), {
         'db': ['Contract', 'Party', 'RateScript', 'set_read_write', 'session'], 
-        'utils': ['UserException'],
+        'utils': ['UserException', 'form_date'],
         'templater': ['render']})
 
 sess = None
@@ -19148,10 +19148,10 @@ try:
                 finish_date = form_date('finish')
             else:
                 finish_date = None
-            contract.update(sess, rate_script, start_date, finish_date)
+            contract.update_rate_script(sess, rate_script, start_date, finish_date, script)
             sess.commit()
             inv.sendSeeOther('/reports/69/output/?dno_rate_script_id='
-                    + str(script.id))
+                    + str(rate_script.id))
 finally:
     sess.close()]]>
 		</value>
@@ -19188,7 +19188,7 @@ finally:
           <legend>
             Are you sure you want to delete this rate script?
           </legend>
-          <input type="hidden" name="rate_script_id"
+          <input type="hidden" name="dno_rate_script_id"
               value="{{ rate_script.id }}">
           <input type="submit" name="delete" value="Delete" />
         </fieldset>
@@ -19200,7 +19200,7 @@ finally:
       <form action="{{ context_path }}/reports/285/output/" method="post">
         <fieldset>
           <legend>Update Rate Script</legend>
-          <input type="hidden" name="rate_script_id"
+          <input type="hidden" name="dno_rate_script_id"
               value="{{rate_script.id}}">
           <br>
           <fieldset>
