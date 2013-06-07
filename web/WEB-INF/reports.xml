@@ -6690,6 +6690,8 @@ try:
     sess = session()
 
     contract_id = inv.getLong('supplier_contract_id')
+    if contract_id is None:
+        contract_id = inv.getLong('supplier-contract-id')
     contract = Contract.get_supplier_by_id(sess, contract_id)
     rate_scripts = sess.query(RateScript).from_statement("""select * from 
             rate_script where contract_id = :contract_id order by
@@ -7321,98 +7323,75 @@ pw.close()]]></value>
 		<value><![CDATA[89]]></value>
 		<value><![CDATA[true]]></value>
 		<value><![CDATA[Supplier Contract Batches]]></value>
-		<value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree, UserException
-from net.sf.chellow.billing import Contract
+		<value><![CDATA[from net.sf.chellow.monad import Monad
 
-contract_id = inv.getLong('supplier-contract-id')
-contract = Contract.getSupplierContract(contract_id)
-batches_element = doc.createElement('batches')
-source.appendChild(batches_element)
-batches_element.appendChild(contract.toXml(doc, XmlTree('party')))
-source.appendChild(batches_element)
-for batch in Hiber.session().createQuery("from Batch batch where batch.contract = :contract order by batch.reference").setEntity("contract", contract).list():
-    batches_element.appendChild(batch.toXml(doc))]]></value>
-		<value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
-<xsl:stylesheet version="1.0"
-    xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
-    <xsl:output method="html" encoding="US-ASCII"
-        doctype-public="-//W3C//DTD HTML 4.01//EN"
-        doctype-system="http://www.w3.org/TR/html4/strict.dtd" indent="yes" />
-    <xsl:template match="/">
-        <html>
-            <head>
-                <link rel="stylesheet" type="text/css"
-                    href="{/source/request/@context-path}/reports/19/output/" />
-                <title>
-                    Chellow &gt; Supplier Contracts &gt;
-                    <xsl:value-of
-                        select="/source/batches/supplier-contract/@name" />
-                    &gt; Batches
-                </title>
-            </head>
-            <body>
-                <p>
-                    <a
-                        href="{/source/request/@context-path}/reports/1/output/">
-                        <xsl:value-of select="'Chellow'" />
-                    </a>
-                    &gt;
-                    <a
-                        href="{/source/request/@context-path}/reports/75/output/?supplier-id={/source/batches/supplier-contract/@id}">
-                        <xsl:value-of select="'Supplier Contracts'" />
-                    </a>
-                    &gt;
-                    <a
-                        href="{/source/request/@context-path}/reports/77/output/?supplier_contract_id={/source/batches/supplier-contract/@id}">
-                        <xsl:value-of
-                            select="/source/batches/supplier-contract/@name" />
-                    </a>
-                    &gt;
-                    <xsl:value-of select="'Batches ['" />
-                    <a
-                        href="{/source/request/@context-path}/supplier-contracts/{/source/batches/supplier-contract/@id}/batches/">
-                        <xsl:value-of select="'edit'" />
-                    </a>
-                    <xsl:value-of select="']'" />
-                </p>
-                <br />
-                <xsl:if test="//message">
-                    <ul>
-                        <xsl:for-each select="//message">
-                            <li>
-                                <xsl:value-of select="@description" />
-                            </li>
-                        </xsl:for-each>
-                    </ul>
-                </xsl:if>
-                <table>
-                    <caption>Batches</caption>
-                    <thead>
-                        <tr>
-                            <th>Reference</th>
-                            <th>Description</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <xsl:for-each select="/source/batches/batch">
-                            <tr>
-                                <td>
-                                    <a
-                                        href="{/source/request/@context-path}/reports/91/output/?batch-id={@id}">
-                                        <xsl:value-of select="@reference" />
-                                    </a>
-                                </td>
-                                <td>
-                                    <xsl:value-of select="@description" />
-                                </td>
-                            </tr>
-                        </xsl:for-each>
-                    </tbody>
-                </table>
-            </body>
-        </html>
-    </xsl:template>
-</xsl:stylesheet>]]></value>
+Monad.getUtils()['imprt'](globals(), {
+        'db': ['Contract', 'session', 'Batch'], 
+        'utils': ['UserException', 'prev_hh', 'next_hh', 'hh_after', 'hh_before', 'HH'],
+        'templater': ['render']})
+
+
+sess = None
+try:
+    sess = session()
+    if inv.getRequest().getMethod() == 'GET':
+        contract_id = inv.getLong('supplier_contract_id')
+        if contract_id is None:
+            contract_id = inv.getLong('supplier-contract-id')
+        contract = Contract.get_supplier_by_id(sess, contract_id)
+        batches = sess.query(Batch).from_statement("""select * from batch where
+                contract_id = :contract_id order by
+                reference""").params(contract_id=contract_id).all()
+        render(inv, template, {'contract': contract, 'batches': batches})
+finally:
+    if sess is not None:
+        sess.close()]]></value>
+		<value><![CDATA[<!doctype html>
+<html>
+  <head>
+    <link rel="stylesheet" type="text/css"
+      href="{{ context_path }}/reports/19/output/">
+    <title>
+      Chellow &gt; Supplier Contracts &gt; {{contract.name}} &gt; Batches
+    </title>
+  </head>
+  <body>
+    <p>
+      <a href="{{context_path}}/reports/1/output/">Chellow</a> &gt;
+      <a href="{{context_path}}/reports/75/output/">Supplier Contracts</a> &gt;
+      <a href="{{context_path}}/reports/77/output/?supplier_contract_id={{contract.id}}">{{contract.name}}</a> &gt;
+      Batches
+      [<a href="{{context_path}}/reports/287/output/?supplier_contract_id={{contract.id}}">add</a>]
+    </p>
+    <br>
+    {% if messages %}
+      <ul>
+        {% for message in messages %}
+          <li>{{ message }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+    <table>
+      <caption>Batches</caption>
+      <thead>
+        <tr>
+          <th>Reference</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for batch in batches %}
+          <tr>
+            <td>
+              <a href="{{context_path}}/reports/91/output/?supplier_batch_id={{batch.id}}">{{batch.reference}}</a>
+            </td>
+            <td>{{batch.description}}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </body>
+</html>]]></value>
 	</line>
 	<line>
 		<value><![CDATA[insert]]></value>
@@ -7420,199 +7399,148 @@ for batch in Hiber.session().createQuery("from Batch batch where batch.contract 
 		<value><![CDATA[91]]></value>
 		<value><![CDATA[true]]></value>
 		<value><![CDATA[Supplier Contract Batch]]></value>
-		<value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree, UserException
-from net.sf.chellow.billing import Batch
-from net.sf.chellow.physical import Configuration
-from java.util import Properties
-from java.io import StringReader
-from net.sf.chellow.ui import Report
+		<value><![CDATA[from net.sf.chellow.monad import Monad
+from sqlalchemy.orm import joinedload_all
+from datetime import datetime
+import pytz
+
+Monad.getUtils()['imprt'](globals(), {
+        'db': ['Contract', 'Batch', 'Participant', 'set_read_write', 'session', 'Bill', 'Report'], 
+        'utils': ['UserException', 'form_date'],
+        'templater': ['render']})
 
 
-batch_id = inv.getLong('batch-id')
-batch = Batch.getBatch(batch_id)
-batch_element = batch.toXml(doc, XmlTree('contract', XmlTree('party')))
-source.appendChild(batch_element)
-bills = Hiber.session().createQuery("from Bill bill where bill.batch = :batch order by bill.reference, bill.startDate.date").setEntity("batch", batch).list()
-for bill in bills:
-    batch_element.appendChild(bill.toXml(doc, XmlTree("supply").put('type')))
-source.setAttribute('bill-count', str(len(bills)))
+sess = None
+try:
+    sess = session()
+    if inv.getRequest().getMethod() == 'GET':
+        batch_id = inv.getLong('supplier_batch_id')
+        if batch_id is None:
+            batch_id = inv.getLong('batch-id')
+        batch = Batch.get_by_id(sess, batch_id)
+        bills = sess.query(Bill).from_statement("""select * from bill where
+                batch_id = :batch_id order by reference,
+                start_date""").params(batch_id=batch.id).all()
 
-config = Configuration.getConfiguration()
-properties = Properties()
-properties.load(StringReader(config.getProperties()))
-
-for key in properties.propertyNames():
-    if key.startswith('batch.report.'):
-        batch_report_id = properties.get(key)
-        if batch_report_id is not None:
-            report = Report.getReport(int(batch_report_id))
-            batch_element.appendChild(report.toXml(doc))]]></value>
-		<value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
-<xsl:stylesheet version="1.0"
-    xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
-    <xsl:output method="html" encoding="US-ASCII"
-        doctype-public="-//W3C//DTD HTML 4.01//EN"
-        doctype-system="http://www.w3.org/TR/html4/strict.dtd" indent="yes" />
-    <xsl:template match="/">
-        <html>
-            <head>
-                <link rel="stylesheet" type="text/css"
-                    href="{/source/request/@context-path}/reports/19/output/" />
-
-                <title>
-                    Chellow &gt; Supplier Contracts &gt;
-                    <xsl:value-of
-                        select="/source/batch/supplier-contract/@name" />
-                    &gt; Batches &gt;
-                    <xsl:value-of select="/source/batch/@reference" />
-                </title>
-            </head>
-            <body>
-                <p>
-                    <a
-                        href="{/source/request/@context-path}/reports/1/output/">
-                        <xsl:value-of select="'Chellow'" />
-                    </a>
-                    &gt;
-                    <a
-                        href="{/source/request/@context-path}/reports/75/output/">
-                        <xsl:value-of select="'Supplier Contracts'" />
-                    </a>
-                    &gt;
-                    <a
-                        href="{/source/request/@context-path}/reports/77/output/?supplier-contract-id={/source/batch/supplier-contract/@id}">
-                        <xsl:value-of
-                            select="/source/batch/supplier-contract/@name" />
-                    </a>
-                    &gt;
-                    <a
-                        href="{/source/request/@context-path}/reports/89/output/?supplier-contract-id={/source/batch/supplier-contract/@id}">
-                        <xsl:value-of select="'Batches'" />
-                    </a>
-                    &gt;
-                    <xsl:value-of
-                        select="concat(/source/batch/@reference, ' [')" />
-                    <a
-                        href="{/source/request/@context-path}/supplier-contracts/{/source/batch/supplier-contract/@id}/batches/{/source/batch/@id}/">
-                        <xsl:value-of select="'edit'" />
-                    </a>
-                    <xsl:value-of select="']'" />
-                </p>
-                <br />
-                <xsl:if test="//message">
-                    <ul>
-                        <xsl:for-each select="//message">
-                            <li>
-                                <xsl:value-of select="@description" />
-                            </li>
-                        </xsl:for-each>
-                    </ul>
-                </xsl:if>
-                <table>
-                  <tr>
-                    <th>Reference</th>
-                    <td><xsl:value-of select="/source/batch/@reference"/></td>
-                  </tr>
-                  <tr>
-                    <th>Description</th>
-                    <td><xsl:value-of select="/source/batch/@description"/></td>
-                  </tr>
-                  <tr>
-                    <th>Number Of Bills</th>
-                    <td><xsl:value-of select="/source/@bill-count"/></td>
-                  </tr>
-                  <xsl:if test="/source/batch/report">
-                  <tr>
-                    <th>Custom Reports</th>
-                    <td>
-                        <ul>
-                        <xsl:for-each select="/source/batch/report">
-                        <li><a
-                        href="{/source/request/@context-path}/reports/{@id}/output/?batch-id={/source/batch/@id}">
-<xsl:value-of select="@name"/></a></li>
-                        </xsl:for-each>
-                        </ul>
-                    </td>
-                  </tr>
-                  </xsl:if>
-                </table>
-                <br/>
-                    <ul>
-                    <li><a href="{/source/request/@context-path}/reports/111/output/?batch-id={/source/batch/@id}">Check Bills</a>
-                    </li>
-                    <li>[<a href="{/source/request/@context-path}/supplier-contracts/{/source/batch/supplier-contract/@id}/batches/{/source/batch/@id}/bill-imports/">Bill Imports</a>]</li>
-                    </ul>
-                <table>
-                    <caption>Bills [<a href="{/source/request/@context-path}/supplier-contracts/{/source/batch/supplier-contract/@id}/batches/{/source/batch/@id}/bills/">edit</a>]</caption>
-                    <thead>
-                        <tr>
-                            <th>View</th>
-                            <th>Reference</th>
-                            <th>Account</th>
-                            <th>Issued</th>
-                            <th>From</th>
-                            <th>To</th>
-                            <th>kWh</th>
-                            <th>Net</th>
-                            <th>VAT</th>
-                            <th>Gross</th>
-                            <th>Type</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <xsl:for-each select="/source/batch/bill">
-                            <tr>
-                                <td>
-<a
-                                        href="{/source/request/@context-path}/reports/105/output/?bill-id={@id}">
-                                    <xsl:value-of select="'view'" />
- </a>
-                                </td>
-
-                                <td>
-                                    <xsl:value-of select="@reference" />
-                                </td>
-                                <td>
-                                    <xsl:value-of select="@account" />
-                                </td>
-
-                                <td>
-                                    <xsl:value-of
-                                        select="concat(date[@label='issue']/@year, '-', date[@label='issue']/@month, '-', date[@label='issue']/@day, ' ', date[@label='issue']/@hour, ':', date[@label='issue']/@minute)" />
-                                </td>
-                                <td>
-                                    <xsl:value-of
-                                        select="concat(hh-start-date[@label='start']/@year, '-', hh-start-date[@label='start']/@month, '-', hh-start-date[@label='start']/@day, ' ', hh-start-date[@label='start']/@hour, ':', hh-start-date[@label='start']/@minute)" />
-                                </td>
-                                <td>
-                                    <xsl:value-of
-                                        select="concat(hh-start-date[@label='finish']/@year, '-', hh-start-date[@label='finish']/@month, '-', hh-start-date[@label='finish']/@day, ' ', hh-start-date[@label='finish']/@hour, ':', hh-start-date[@label='finish']/@minute)" />
-                                </td>
-                                <td>
-                                    <xsl:value-of select="@kwh" />
-                                </td>
-                                <td>
-                                    <xsl:value-of select="@net" />
-                                </td>
-                                <td>
-                                    <xsl:value-of select="@vat" />
-                                </td>
-                                <td>
-                                    <xsl:value-of select="@gross" />
-                                </td>
-                                <td>
-                                  <a href="{/source/request/@context-path}/reports/201/output/?bill-type-id={bill-type/@id}" title="{bill-type/@description}">
-                                  <xsl:value-of select="bill-type/@code" />
-                                  </a>
-                                </td>
-                            </tr>
-                        </xsl:for-each>
-                    </tbody>
-                </table>
-            </body>
-        </html>
-    </xsl:template>
-</xsl:stylesheet>]]></value>
+        config_contract = Contract.get_non_core_by_name(sess, 'configuration')
+        properties = config_contract.make_properties()
+        fields = {'batch': batch, 'bills': bills}
+        if 'batch_reports' in properties:
+            batch_reports = []
+            for report_id in properties['batch_reports']:
+                batch_reports.append(Report.get_by_id(sess, report_id))
+            fields['batch_reports'] = batch_reports
+        render(inv, template, fields)
+finally:
+    sess.close()]]></value>
+		<value><![CDATA[<!doctype html>
+<html>
+  <head>
+    <link rel="stylesheet" type="text/css"
+      href="{{ context_path }}/reports/19/output/">
+    <title>
+      Chellow &gt; Supplier Contracts &gt; {{batch.contract.name}} &gt;
+      Batches &gt; {{batch.reference}}
+    </title>
+  </head>
+  <body>
+    <p>
+      <a href="{{context_path}}/reports/1/output/">Chellow</a> &gt;
+      <a href="{{context_path}}/reports/75/output/">Supplier Contracts</a> &gt;
+      <a href="{{context_path}}/reports/77/output/?supplier_contract_id={{batch.contract.id}}">{{batch.contract.name}}</a> &gt;
+      <a href="{{context_path}}/reports/89/output/?supplier_contract_id={{batch.contract.id}}">Batches</a> &gt;
+      {{batch.reference}}
+      [<a href="{{context_path}}/reports/289/output/?supplier_batch_id={{batch.id}}">edit</a>]
+    </p>
+    <br>
+    {% if messages %}
+      <ul>
+        {% for message in messages %}
+          <li>{{ message }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+    <table>
+      <tr>
+        <th>Reference</th>
+        <td>{{batch.reference}}</td>
+      </tr>
+      <tr>
+        <th>Description</th>
+        <td>{{batch.description}}</td>
+      </tr>
+      <tr>
+        <th>Number Of Bills</th>
+        <td>{{ bills|length }}</td>
+      </tr>
+      {% if batch_reports %}
+        <tr>
+          <th>Custom Reports</th>
+          <td>
+            <ul>
+              {% for report in batch_reports %}
+                <li>
+                  <a href="{{context_path}}/reports/{{report.id}}/output/?supplier_batch_id={{batch.id}}">{{report.name}}</a>
+                </li>
+              {% endfor %}
+            </ul>
+          </td>
+        </tr>
+      {% endif %}
+    </table>
+    <br>
+    <ul>
+      <li>
+        <a href="{{context_path}}/reports/111/output/?supplier_batch_id={{batch.id}}">Check Bills</a>
+      </li>
+      <li>
+        <a href="{{context_path}}/supplier-contracts/{{batch.contract.id}}/batches/{{batch.id}}/bill-imports/">Bill Imports</a>
+      </li>
+    </ul>
+    <table>
+      <caption>
+        Bills
+        [<a href="{{context_path}}/reports/291/output/?supplier_batch_id={{batch.id}}">add</a>]
+      </caption>
+      <thead>
+        <tr>
+          <th>View</th>
+          <th>Reference</th>
+          <th>Account</th>
+          <th>Issued</th>
+          <th>From</th>
+          <th>To</th>
+          <th>kWh</th>
+          <th>Net</th>
+          <th>VAT</th>
+          <th>Gross</th>
+          <th>Type</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for bill in bills %}
+          <tr>
+            <td>
+              <a href="{{context_path}}/reports/105/output/?supplier_bill_id={{bill.id}}">View</a>
+            </td>
+            <td>{{bill.reference}}</td>
+            <td>{{bill.account}}</td>
+            <td>{{bill.issue_date|hh_format}}</td>
+            <td>{{bill.start_date|hh_format}}</td>
+            <td>{{bill.finish_date|hh_format}}</td>
+            <td>{{bill.kwh}}</td>
+            <td>{{bill.net}}</td>
+            <td>{{bill.vat}}</td>
+            <td>{{gross}}</td>
+            <td>
+              <a href="{{context_path}}/reports/201/output/?bill_type_id={{bill.bill_type.id}}" title="{{bill.bill_type.description}}">{{bill.bill_type.code}}</a>
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </body>
+</html>]]></value>
 	</line>
 	<line>
 		<value><![CDATA[insert]]></value>
@@ -9002,14 +8930,14 @@ comterp = PythonInterpreter()
 comterp.exec(computer.getChargeScript())
 forecast_date = HhStartDate.roundDown(Date(Long.MAX_VALUE))
 
-if inv.hasParameter('batch-id'):
-    batch_id = inv.getLong("batch-id")
+if inv.hasParameter('supplier_batch_id'):
+    batch_id = inv.getLong("supplier_batch_id")
     if not inv.isValid():
         raise UserException()
     batch = Batch.getBatch(batch_id)
     bills = Hiber.session().createQuery("from Bill bill where bill.batch = :batch order by bill.reference").setEntity('batch', batch).scroll()
-elif inv.hasParameter('bill-id'):
-    bill_id = inv.getLong("bill-id")
+elif inv.hasParameter('supplier_bill_id'):
+    bill_id = inv.getLong("supplier_bill_id")
     if not inv.isValid():
         raise UserException()
     bill = Bill.getBill(bill_id)
@@ -11767,129 +11695,8 @@ for bill in Hiber.session().createQuery("from Bill bill where bill.account = :ac
 		<value><![CDATA[report]]></value>
 		<value><![CDATA[165]]></value>
 		<value><![CDATA[true]]></value>
-		<value><![CDATA[Admin: DB Consistency Check]]></value>
-		<value><![CDATA[from net.sf.chellow.monad import UserException, Hiber
-from net.sf.chellow.monad.types import MonadDate
-from java.text import SimpleDateFormat
-from java.util import Locale, Calendar, TimeZone, GregorianCalendar
-from net.sf.chellow.physical import MpanCore, SiteGroup
-
-from net.sf.chellow.monad import Hiber, UserException
-from java.lang import System, Math
-from net.sf.chellow.monad.types import MonadDate
-from java.sql import Timestamp, ResultSet
-from java.util import GregorianCalendar, Calendar, TimeZone, Locale, Date
-from net.sf.chellow.physical import HhStartDate, Supply
-from net.sf.chellow.billing import Batch, NonCoreContract, Bill
-from org.python.util import PythonInterpreter
-
-inv.getResponse().setContentType("text/csv")
-inv.getResponse().setHeader('Content-Disposition', 'attachment; filename="output.csv"')
-pw = inv.getResponse().getWriter()
-
-pw.println("#update,register-read,Chellow Id,TPR,Coefficient,Units,Meter Serial Number,MPAN,Previous Date,Previous Value,Previous Type,Present Date,Present Value,Present Type")
-pw.flush()
-
-cal = MonadDate.getCalendar()
-
-present_reads = Hiber.session().createQuery("select read, read.tpr, read.presentDate, read.bill.supply from RegisterRead read, Era era where read.bill.supply = era.supply and read.bill.type.code != 'W' and read.presentDate.date >= era.startDate.date and (era.finishDate is null or read.presentDate.date <= era.finishDate.date) and read.meterSerialNumber != era.meterSerialNumber order by read.presentDate.date, read.meterSerialNumber").scroll()
-
-previous_reads = Hiber.session().createQuery("select read, read.tpr, read.previousDate, read.bill.supply from RegisterRead read, Era era where read.bill.supply = era.supply and read.bill.type.code != 'W' and read.previousDate.date >= era.startDate.date and (era.finishDate is null or read.previousDate.date <= era.finishDate.date) and read.meterSerialNumber != era.meterSerialNumber order by read.previousDate.date, read.meterSerialNumber").scroll()
-
-#reads = Hiber.session().createQuery("from RegisterRead read order by read.presentDate.date, read.meterSerialNumber").setMaxResults(500).scroll()
-
-def closest_date(ref_date, date1, date2):
-   if date1 is None:
-       return date2
-   if date2 is None:
-       return date1
-
-   if abs(date1.getDate().getTime() - ref_date.getDate().getTime()) <= abs(date2.getDate().getTime() - ref_date.getDate().getTime()):
-       return date1
-   else:
-       return date2
-
-for reads, read_cat in [(previous_reads, 'previous'), (present_reads, 'present')]:
-    while reads.next():
-        read = reads.get(0)
-        tpr = reads.get(1)
-        read_date = reads.get(2)
-        supply = reads.get(3)
-
-        if tpr is None:
-            tpr_code = ''
-        else:
-            tpr_code = tpr.getCode()
-    
-        cal.setTime(read_date.getDate())
-        cal.set(Calendar.HOUR_OF_DAY, 0)    
-        cal.set(Calendar.MINUTE, 0)
-        day_start = HhStartDate(cal.getTime())
-        cal.add(Calendar.DAY_OF_MONTH, 1)
-        cal.add(Calendar.MINUTE, -30)
-        day_finish = HhStartDate(cal.getTime())
-        eras = supply.getGenerations(day_start, day_finish)
-
-        pw.println("#checking " + read_cat + " msn '" + read.getMeterSerialNumber() + "'")
-        if len(eras) > 1:
-            new_read_date = None
-            for era in eras:
-                if read.getMeterSerialNumber() == era.getMeterSerialNumber():
-                    new_read_date = closest_date(read_date, new_read_date, era.getStartDate())
-                    new_read_date = closest_date(read_date, new_read_date, era.getFinishDate())
-
-            if new_read_date is None:
-                pw.println("#," + ','.join('"' + str(val) + '"' for val in ["mismatch but couldn't correct", read.getId(), tpr_code, read.getCoefficient(), read.getUnits(), read.getMeterSerialNumber(), read.getMpanStr(), read.getPreviousDate(), read.getPreviousValue(), read.getPreviousType(), read.getPresentDate(), read.getPresentValue(), read.getPresentType()]))
-            else:
-                if read_cat == 'previous':
-                    previous_date = new_read_date
-                    present_date = read.getPresentDate()
-                else:
-                    previous_date = read.getPreviousDate()
-                    present_date = new_read_date
-
-                pw.println(','.join('"' + str(val) + '"' for val in ['update', 'register-read', read.getId(), tpr_code, read.getCoefficient(), read.getUnits(), read.getMeterSerialNumber(), read.getMpanStr(), previous_date, read.getPreviousValue(), read.getPreviousType(), present_date, read.getPresentValue(), read.getPresentType()]))
-        pw.flush()
-        Hiber.session().clear()
-
-previous_reads.close()
-present_reads.close()
-pw.close()
-'''
-inv.getResponse().setContentType('text/csv')
-pw = inv.getResponse().getWriter()
-pw.println("Checking for the 100 most recent bogus site snags...")
-summary = []
-for site_snag in Hiber.session().createQuery("from SiteSnag snag order by snag.finishDate.date desc").setMaxResults(100).list():
-    pw.println("Checking site snag " + str(site_snag.getId()))
-    site = site_snag.getSite()
-    description = site_snag.getDescription()
-    groups = site.groups(site_snag.getStartDate(), site_snag.getFinishDate(), False)
-    for group in groups:
-        pw.println('Checking group')
-        hh_data = group.hhData()
-        import_from_net = hh_data.get('import-net')
-        export_to_net = hh_data.get('export-net')
-        import_from_gen = hh_data.get('import-gen')
-        export_to_gen = hh_data.get('export-gen')
-        for i in range(len(import_from_net)):
-            if description == SiteGroup.EXPORT_NET_GT_IMPORT_GEN:
-                if export_to_net[i] <= import_from_gen[i]:
-                    msg = "Bogus dude! Snag " + str(site_snag.getId()) + " num supplies " + str(group.getSupplies().size()) + " site " + str(site.getId()) + " " + site.getName() + " Export to net " + str(export_to_net[i]) + " is less than or equal to import from gen " + str(import_from_gen[i]) + " from " + site_snag.getStartDate().toString() + " to " + site_snag.getFinishDate().toString()
-                    pw.println(msg)
-                    summary.append(msg)
-                else:
-                    pw.println("Genuine")
-            elif description == SiteGroup.EXPORT_GEN_GT_IMPORT:
-                pass
-            else:
-                summary.append("Description not recognized.")
-pw.println('')
-pw.println('Summary')
-for line in summary:
-    pw.println(line)
-pw.close()
-''']]></value>
+		<value><![CDATA[Free 165]]></value>
+		<value><![CDATA[]]></value>
 		<value><![CDATA[]]></value>
 	</line>
 	<line>
@@ -19233,6 +19040,216 @@ finally:
           <input type="hidden" name="dno_rate_script_id"
               value="{{ rate_script.id }}">
           <input type="submit" name="delete" value="Delete" />
+        </fieldset>
+      </form>
+    {% endif %}
+  </body>
+</html>]]>
+		</value>
+	</line>
+	<line>
+		<value><![CDATA[insert]]></value>
+		<value><![CDATA[report]]></value>
+		<value><![CDATA[287]]></value>
+		<value><![CDATA[true]]></value>
+		<value><![CDATA[Supplier Contract Batch Add]]></value>
+		<value><![CDATA[from net.sf.chellow.monad import Monad
+
+Monad.getUtils()['imprt'](globals(), {
+        'db': ['Contract', 'session', 'Batch', 'set_read_write'],
+        'utils': ['UserException', 'prev_hh', 'next_hh', 'hh_after', 'hh_before', 'HH'],
+        'templater': ['render']})
+
+
+def make_fields(sess, contract, message=None):
+        batches = sess.query(Batch).from_statement("""select * from batch where
+                contract_id = :contract_id order by
+                reference""").params(contract_id=contract.id).all()
+        messages = [] if message is None else [str(e)]
+        return {'contract': contract, 'batches': batches, 'messages': messages}
+
+sess = None
+try:
+    sess = session()
+    if inv.getRequest().getMethod() == 'GET':
+        contract_id = inv.getLong('supplier_contract_id')
+        contract = Contract.get_supplier_by_id(sess, contract_id)
+        render(inv, template, make_fields(sess, contract))
+    else:
+        set_read_write(sess)
+        contract_id = inv.getLong('supplier_contract_id')
+        contract = Contract.get_supplier_by_id(sess, contract_id)
+        reference = inv.getString("reference")
+        description = inv.getString("description")
+
+        batch = contract.insert_batch(sess, reference, description)
+        sess.commit()
+        inv.sendSeeOther("/reports/91/output/?supplier_batch_id=" + str(batch.id))
+
+except UserException, e:
+    render(inv, template, make_fields(sess, contract, e))
+finally:
+    if sess is not None:
+        sess.close()]]>
+		</value>
+		<value><![CDATA[<!doctype html>
+<html>
+  <head>
+    <link rel="stylesheet" type="text/css"
+      href="{{ context_path }}/reports/19/output/">
+    <title>
+      Chellow &gt; Supplier Contracts &gt; {{contract.name}} &gt; Batches &gt;
+      Add
+    </title>
+  </head>
+  <body>
+    <p>
+      <a href="{{context_path}}/reports/1/output/">Chellow</a> &gt;
+      <a href="{{context_path}}/reports/75/output/">Supplier Contracts</a> &gt;
+      <a href="{{context_path}}/reports/77/output/?supplier_contract_id={{contract.id}}">{{ contract.name }}</a> &gt;
+      <a href="{{context_path}}/reports/89/output/?supplier_contract_id={{contract.id}}">Batches</a> &gt;
+      Add
+    </p>
+    <br>
+    {% if messages %}
+      <ul>
+        {% for message in messages %}
+          <li>{{ message }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+    <form action="{{context_path}}/reports/287/output/" method="post">
+      <fieldset>
+        <legend>Add a batch</legend>
+        <input type="hidden" name="supplier_contract_id" value="{{contract.id}}">
+        <br>
+        <label>
+          Reference {{ input_text('reference', request, '') }}
+        </label>
+        <br>
+        <label>
+          Description {{ input_text('description', request, '') }}
+        </label>
+        <br>
+        <br>
+        <input type="submit" value="Add">
+      </fieldset>
+    </form>
+  </body>
+</html>]]>
+		</value>
+	</line>
+	<line>
+		<value><![CDATA[insert]]></value>
+		<value><![CDATA[report]]></value>
+		<value><![CDATA[289]]></value>
+		<value><![CDATA[true]]></value>
+		<value><![CDATA[Supplier Contract Batch Edit]]></value>
+		<value><![CDATA[from net.sf.chellow.monad import Monad
+from sqlalchemy.orm import joinedload_all
+from sqlalchemy.sql.expression import text
+from datetime import datetime
+import pytz
+
+Monad.getUtils()['imprt'](globals(), {
+        'db': ['Contract', 'Batch', 'Participant', 'set_read_write', 'session'], 
+        'utils': ['UserException', 'form_date'],
+        'templater': ['render']})
+
+
+def make_fields(sess, batch, message=None):
+    messages = [] if message is None else [str(message)]
+    return {'batch': batch, 'messages': messages}
+
+sess = None
+try:
+    sess = session()
+    if inv.getRequest().getMethod() == 'GET':
+        batch_id = inv.getLong('supplier_batch_id')
+        batch = Batch.get_by_id(sess, batch_id)
+        render(inv, template, make_fields(sess, batch))
+    else:
+        set_read_write(sess)
+        batch_id = inv.getLong('supplier_batch_id')
+        batch = Batch.get_by_id(sess, batch_id)
+        if inv.hasParameter('update'):
+            reference = inv.getString('reference')
+            description = inv.getString('description')
+            batch.update(sess, reference, description)
+            sess.commit()
+            inv.sendSeeOther("/reports/91/output/?supplier_batch_id=" +
+                    str(batch.id))
+        elif inv.hasParameter("delete"):
+            batch.delete(sess)
+            sess.commit()
+            inv.sendSeeOther("/reports/89/output/?supplier_contract_id=" + str(batch.contract.id))
+except UserException, e:
+    render(inv, template, make_fields(sess, batch, e))
+finally:
+    sess.close()]]>
+		</value>
+		<value><![CDATA[<!doctype html>
+<html>
+  <head>
+    <link rel="stylesheet" type="text/css"
+      href="{{ context_path }}/reports/19/output/">
+    <title>
+      Chellow &gt; Supplier Contracts &gt; {{batch.contract.name}} &gt;
+      Batches &gt; {{batch.reference}}
+    </title>
+  </head>
+  <body>
+    <p>
+      <a href="{{context_path}}/reports/1/output/">Chellow</a> &gt;
+      <a href="{{context_path}}/reports/75/output/">Supplier Contracts</a> &gt;
+      <a href="{{context_path}}/reports/77/output/?supplier_contract_id={{batch.contract.id}}">{{batch.contract.name}}</a>
+      &gt;
+      <a href="{{context_path}}/reports/89/output/?supplier_contract_id={{batch.contract.id}}">Batches</a>
+      &gt;
+      <a href="{{context_path}}/reports/91/output/?supplier_batch_id={{batch.id}}">{{batch.reference}}</a> &gt; Edit
+    </p>
+    {% if messages %}
+      <ul>
+        {% for message in messages %}
+          <li>{{ message }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+    <br>
+    {% if request.getMethod() == 'GET' and request.getParameter('confirm_delete') %}
+      <form method="post" action=".">
+        <fieldset>
+          <legend>Delete</legend>
+          <input type="hidden" name="supplier_batch_id" value="{{batch.id}}">
+          <p>Are you sure you want to delete this batch and all its bills?</p>
+          <input type="submit" name="delete" value="Delete">
+        </fieldset>
+      </form>
+      <p><a href=".">Cancel</a></p>
+    {% else %}
+      <form action="." method="post">
+        <fieldset>
+          <legend>Update batch</legend>
+          <input type="hidden" name="supplier_batch_id" value="{{batch.id}}">
+          <br>
+          <label>
+            Reference {{input_text('reference', request, batch.reference)}}
+          </label>
+          <br>
+          <label>
+            Description {{input_text('description', request, batch.description)}}
+          </label>
+          <br>
+          <br>
+          <input type="submit" name="update" value="Update">
+        </fieldset>
+      </form>
+      <br>
+      <form action=".">
+        <fieldset>
+          <legend>Delete this batch</legend>
+          <input type="hidden" name="supplier_batch_id" value="{{batch.id}}">
+   <input type="submit" name="confirm_delete" value="Delete">
         </fieldset>
       </form>
     {% endif %}
