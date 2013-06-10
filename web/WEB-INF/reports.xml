@@ -764,156 +764,164 @@ Ongoing
 		<value><![CDATA[7]]></value>
 		<value><![CDATA[true]]></value>
 		<value><![CDATA[Supply]]></value>
-		<value><![CDATA[from net.sf.chellow.physical import Supply, Configuration, RegisterRead
-from net.sf.chellow.billing import Contract
-from net.sf.chellow.monad import Hiber, Debug, Monad
+		<value><![CDATA[from net.sf.chellow.monad import Monad
+from sqlalchemy.orm import joinedload_all
+from dateutil.relativedelta import relativedelta
 import collections
 from datetime import datetime
-from dateutil.relativedelta import relativedelta
-from java.util import Properties
-from java.io import StringReader
-
 
 Monad.getUtils()['imprt'](globals(), {
+        'db': ['Contract', 'Supply', 'RateScript', 'set_read_write', 'session', 'Era', 'SiteEra', 'Channel', 'Tpr', 'Bill', 'RegisterRead'], 
+        'utils': ['UserException'],
         'templater': ['render']})
 
-supply_id = inv.getLong("supply_id")
-supply = Supply.getSupply(supply_id)
-era_bundles = []
-eras = Hiber.session().createQuery("from Era era where era.supply = :supply order by era.startDate desc").setEntity('supply', supply).list()
-for era in eras:
-    import_mpan_core = era.getImpMpanCore()
-    export_mpan_core = era.getExpMpanCore()
-    physical_site = Hiber.session().createQuery("select ssgen.site from SiteEra ssgen where ssgen.isPhysical = true and ssgen.era = :era").setEntity('era', era).uniqueResult()
-    other_sites = Hiber.session().createQuery("select ssgen.site from SiteEra ssgen where ssgen.isPhysical = false and ssgen.era = :era").setEntity('era', era).list()
-    import_channels = Hiber.session().createQuery("from Channel channel where channel.era = :era and channel.isImport = true order by channel.isKwh").setEntity('era', era).list()
-    export_channels = Hiber.session().createQuery("from Channel channel where channel.era = :era and channel.isImport = false order by channel.isKwh").setEntity('era', era).list()
-    era_bundle = {'era': era, 'physical_site': physical_site, 'other_sites':
-            other_sites, 'import_channels': import_channels, 'export_channels':
-            export_channels, 'import_bills': {'bill_dicts': []}, 'export_bills': {'bill_dicts': []}, 'hhdc_bills': {'bill_dicts': []}, 'mop_bills': {'bill_dicts': []}}
-    era_bundles.append(era_bundle)
+sess = None
+rate_scripts = None
+try:
+    sess = session()
+    era_bundles = []
+    supply_id = inv.getLong('supply_id')
+    supply = Supply.get_by_id(sess, supply_id)
+    eras = sess.query(Era).from_statement("select * from era where supply_id = :supply_id order by era.start_date desc").params(supply_id=supply.id).all()
+    for era in eras:
+        imp_mpan_core = era.imp_mpan_core
+        exp_mpan_core = era.exp_mpan_core
+        physical_site = sess.query(SiteEra).from_statement("select * from site_era where is_physical is true and era_id = :era_id").params(era_id=era.id).one()
+        other_sites = sess.query(SiteEra).from_statement("select * from site_era where is_physical is not true and era_id = :era_id").params(era_id=era.id).all()
+        imp_channels = sess.query(Channel).from_statement("select * from channel where era_id = :era_id and is_import is true order by is_kwh").params(era_id=era.id).all()
+        exp_channels = sess.query(Channel).from_statement("select * from channel where era_id = :era_id and is_import is not true order by is_kwh").params(era_id=era.id).all()
+        era_bundle = {'era': era, 'physical_site': physical_site, 'other_sites':
+            other_sites, 'imp_channels': imp_channels, 'exp_channels':
+            exp_channels, 'imp_bills': {'bill_dicts': []}, 'exp_bills': {'bill_dicts': []}, 'hhdc_bills': {'bill_dicts': []}, 'mop_bills': {'bill_dicts': []}}
+        era_bundles.append(era_bundle)
 
-    if import_mpan_core is not None:
-        era_bundle['imp_shared_supplier_accounts'] = Hiber.session().createQuery("select distinct era.supply from Era era where era.supply != :supply and era.impSupplierAccount = :account and era.impSupplierContract = :contract").setEntity('supply', supply).setString('account', era.getImpSupplierAccount()).setEntity('contract', era.getImpSupplierContract()).list()
+        if imp_mpan_core is not None:
+            era_bundle['imp_shared_supplier_accounts'] = sess.query(Supply).from_statement("select distinct supply.* from era, supply where era.supply_id = supply.id and era.supply_id != :supply_id and era.imp_supplier_account = :account and era.imp_supplier_contract_id = :contract_id").params(supply_id=supply.id, account=era.imp_supplier_account, contract_id=era.imp_supplier_contract_id).all()
 
-    if export_mpan_core is not None:
-        era_bundle['exp_shared_supplier_accounts'] = Hiber.session().createQuery("select distinct era.supply from Era era where era.supply != :supply and era.expSupplierAccount = :account and era.expSupplierContract = :contract").setEntity('supply', supply).setString('account', era.getExpSupplierAccount()).setEntity('contract', era.getExpSupplierContract()).list()
-    if era.pc.code != '00':
-        inner_headers = [tpr for tpr in Hiber.session().createQuery("select mr.tpr from MeasurementRequirement mr where mr.ssc = :ssc order by mr.tpr.code").setEntity('ssc', era.getSsc()).list()]
-        if era.getPc().getCode() in ['05', '06', '07', '08']:
-            inner_headers.append(None)
-        era_bundle['import_bills']['inner_headers'] = inner_headers
-        inner_header_codes = [tpr.code if tpr is not None else 'md' for tpr in inner_headers]
-    if era == eras[-1]:
-        if era.finishDate is None:
-            bills_query = Hiber.session().createQuery("from Bill bill where bill.supply = :supply order by bill.startDate.date desc")
-        else:
-            bills_query = Hiber.session().createQuery("from Bill bill where bill.supply = :supply and bill.startDate <= :finishDate order by bill.startDate.date desc").setTimestamp('finishDate', era.getFinishDate().getDate())
-    else:
-        if era.finishDate is None:
-            bills_query = Hiber.session().createQuery("from Bill bill where bill.supply = :supply and bill.startDate >= :startDate order by bill.startDate.date desc").setTimestamp('startDate', era.getStartDate().getDate())
-        else:
-            bills_query = Hiber.session().createQuery("from Bill bill where bill.supply = :supply and bill.startDate >= :startDate and bill.startDate <= :finishDate order by bill.startDate.date desc").setTimestamp('finishDate', era.getFinishDate().getDate()).setTimestamp('startDate', era.getStartDate().getDate())
-
-    num_outer_cols = 0
-    for bill in bills_query.setEntity('supply', supply).list():
-        bill_contract = bill.batch.contract
-        bill_role_code = bill_contract.party.role.code
-        if bill_role_code == 'X':
-            if export_mpan_core is not None and bill_contract == era.expSupplierContract:
-                bill_group_name = 'export_bills'
+        if exp_mpan_core is not None:
+            era_bundle['exp_shared_supplier_accounts'] = sess.query(Supply).from_statement("select distinct supply.* from era, supply where era.supply_id = supply.id and era.supply_id != :supply_id and era.exp_supplier_account = :account and era.exp_supplier_contract_id = :contract_id").params(supply_id=supply.id, account=era.exp_supplier_account, contract=era.exp_supplier_contract_id).all()
+        if era.pc.code != '00':
+            inner_headers = [tpr for tpr in sess.query(Tpr).from_statement("select tpr.* from measurement_requirement, tpr where measurement_requirement.tpr_id = tpr.id and measurement_requirement.ssc_id = :ssc_id order by tpr.code").params(ssc_id=era.ssc.id).all()]
+            if era.pc.code in ['05', '06', '07', '08']:
+                inner_headers.append(None)
+            era_bundle['imp_bills']['inner_headers'] = inner_headers
+            inner_header_codes = [tpr.code if tpr is not None else 'md' for tpr in inner_headers]
+        if era == eras[-1]:
+            if era.finish_date is None:
+                bills_query = sess.query(Bill).from_statement("select * from bill where bill.supply_id = :supply_id order by start_date desc")
             else:
-                bill_group_name = 'import_bills'
-
-        elif bill_role_code == 'C':
-            bill_group_name = 'hhdc_bills'
-        elif bill_role_code == 'M':
-            bill_group_name = 'mop_bills'
+                bills_query = sess.query(Bill).from_statement("select * from bill where supply_id = :supply_id and start_date <= :finish_date order by start_date desc").params(finish_date=era.finish_date)
         else:
-            raise UserException("""bill group name not found for
-                    bill_contract_id """ + str(bill_contract.getId()))
+            if era.finish_date is None:
+                bills_query = sess.query(Bill).from_statement("select * from bill where supply_id = :supply_id and start_date >= :start_date order by start_date desc").params(start_date=era.start_date)
+            else:
+                bills_query = sess.query(Bill).from_statement("select * from bill where supply_id = :supply_id and start_date >= :start_date and start_date <= :finish_date order by start_date desc").params(finish_date=era.finish_date, start_date=era.start_date)
 
-        bill_group = era_bundle[bill_group_name]
-        rows_high = 1
-        bill_dict = {'bill': bill}
-        bill_group['bill_dicts'].append(bill_dict)
-        if bill_group_name == 'import_bills' and era.pc.code != '00':
-            inner_tpr_map = dict((code, []) for code in inner_header_codes)
-            outer_tpr_map = collections.defaultdict(list)
+        num_outer_cols = 0
+        for bill in bills_query.params(supply_id=supply.id):
+            bill_contract = bill.batch.contract
+            bill_role_code = bill_contract.party.market_role.code
+            if bill_role_code == 'X':
+                if exp_mpan_core is not None and bill_contract == era.exp_supplier_contract:
+                    bill_group_name = 'exp_bills'
+                else:
+                    bill_group_name = 'imp_bills'
 
-            for read in Hiber.session().createQuery("from RegisterRead read where read.bill = :bill order by read.tpr.id, read.presentDate").setEntity('bill', bill).list():
-                tpr = read.tpr
-                tpr_code = 'md' if tpr is None else tpr.code
-                try:
-                    inner_tpr_map[tpr_code].append(read)
-                except KeyError:
-                    outer_tpr_map[tpr_code].append(read)                   
-                
-            rows_high = max([len(val) for val in (inner_tpr_map.values() + outer_tpr_map.values())] + [rows_high])
+            elif bill_role_code == 'C':
+                bill_group_name = 'hhdc_bills'
+            elif bill_role_code == 'M':
+                bill_group_name = 'mop_bills'
+            else:
+                raise UserException("""bill group name not found for
+                    bill_contract_id """ + str(bill_contract.id))
 
-            read_rows = []
-            bill_dict['read_rows'] = read_rows
+            bill_group = era_bundle[bill_group_name]
+            rows_high = 1
+            bill_dict = {'bill': bill}
+            bill_group['bill_dicts'].append(bill_dict)
+            if bill_group_name == 'imp_bills' and era.pc.code != '00':
+                inner_tpr_map = dict((code, []) for code in inner_header_codes)
+                outer_tpr_map = collections.defaultdict(list)
 
-            for i in range(rows_high):
-                inner_reads = []
-                row_dict = {'inner_reads': inner_reads, 'outer_reads': []}
-                read_rows.append(row_dict)
-                for tpr_code in inner_header_codes:
+                for read in sess.query(RegisterRead).from_statement("select register_read.* from register_read, tpr where register_read.tpr_id = tpr.id and bill_id = :bill_id order by tpr.id, register_read.present_date").params(bill_id=bill.id):
+                    tpr = read.tpr
+                    tpr_code = 'md' if tpr is None else tpr.code
                     try:
-                        inner_reads.append(inner_tpr_map[tpr_code][i])
-                    except IndexError:
-                        row_dict['inner_reads'].append(None)
-
-                for tpr_code, read_list in outer_tpr_map.iteritems():
-                    try:
-                        row_dict['outer_reads'].append(read_list[i])
+                        inner_tpr_map[tpr_code].append(read)
                     except KeyError:
-                        row_dict['outer_reads'].append(None)
+                        outer_tpr_map[tpr_code].append(read)                   
+                
+                rows_high = max([len(val) for val in (inner_tpr_map.values() + outer_tpr_map.values())] + [rows_high])
 
-            num_outer_cols = max(num_outer_cols, len(outer_tpr_map))
+                read_rows = []
+                bill_dict['read_rows'] = read_rows
+
+                for i in range(rows_high):
+                    inner_reads = []
+                    row_dict = {'inner_reads': inner_reads, 'outer_reads': []}
+                    read_rows.append(row_dict)
+                    for tpr_code in inner_header_codes:
+                        try:
+                            inner_reads.append(inner_tpr_map[tpr_code][i])
+                        except IndexError:
+                            row_dict['inner_reads'].append(None)
+
+                    for tpr_code, read_list in outer_tpr_map.iteritems():
+                        try:
+                            row_dict['outer_reads'].append(read_list[i])
+                        except KeyError:
+                            row_dict['outer_reads'].append(None)
+
+                num_outer_cols = max(num_outer_cols, len(outer_tpr_map))
 
 
-            bill_dict['rows_high'] = rows_high
+                bill_dict['rows_high'] = rows_high
 
-    era_bundle['import_bills']['num_outer_cols'] = num_outer_cols
-    era_bundle['export_bills']['num_outer_cols'] = 0
+        era_bundle['imp_bills']['num_outer_cols'] = num_outer_cols
+        era_bundle['exp_bills']['num_outer_cols'] = 0
 
-RELATIVE_YEAR = relativedelta(years=1)
+    RELATIVE_YEAR = relativedelta(years=1)
 
-now = datetime.utcnow()
-triad_year = (now - RELATIVE_YEAR).year if now.month < 3 else now.year
-this_month_start = datetime(now.year, now.month, 1)
-last_month_start = this_month_start - relativedelta(months=1) 
-last_month_finish = this_month_start - relativedelta(minutes=30)
+    now = datetime.utcnow()
+    triad_year = (now - RELATIVE_YEAR).year if now.month < 3 else now.year
+    this_month_start = datetime(now.year, now.month, 1)
+    last_month_start = this_month_start - relativedelta(months=1) 
+    last_month_finish = this_month_start - relativedelta(minutes=30)
 
-config = Configuration.getConfiguration()
-properties = Properties()
-properties.load(StringReader(config.getProperties()))
+    batch_reports = []
+    config_contract = Contract.get_non_core_by_name(sess, 'configuration')
+    properties = config_contract.make_properties()
+    if 'supply_reports' in properties:
+        for report_id in properties['supply_reports']:
+            batch_reports.append(Report.get_by_id(sess, report_id))
+    
+    truncated_note = None
+    is_truncated = False
+    note = supply.note
+    if note is not None:
+        lines = note.splitlines()
+        if len(lines) > 0:
+            trunc_line = lines[0][:50]
+            if len(lines) > 1 or len(lines[0]) > len(trunc_line):
+                is_truncated = True
+                truncated_note = trunc_line
 
-for key in properties.propertyNames():
-    if key.startswith('supply.report.'):
-        supply_report_id = properties.get(key)
-        if supply_report_id is not None:
-            report = Report.getReport(int(supply_report_id))
-            source.appendChild(report.toXml(doc))
-truncated_note = None
-is_truncated = False
-note = supply.getNote()
-if note is not None:
-    lines = note.splitlines()
-    if len(lines) > 0:
-        trunc_line = lines[0][:50]
-        if len(lines) > 1 or len(lines[0]) > len(trunc_line):
-            is_truncated = True
-            truncated_note = trunc_line
+    render(inv, template, {'triad_year': triad_year, 'now': now, 'last_month_start': last_month_start, 'last_month_finish': last_month_finish, 'era_bundles': era_bundles, 'supply': supply, 'system_properties': properties, 'is_truncated': is_truncated, 'truncated_note': truncated_note, 'this_month_start': this_month_start, 'batch_reports': batch_reports})
 
-render(inv, template, {'triad_year': triad_year, 'now': now, 'last_month_start': last_month_start, 'last_month_finish': last_month_finish, 'era_bundles': era_bundles, 'supply': supply, 'system_properties': properties, 'is_truncated': is_truncated, 'truncated_note': truncated_note, 'this_month_start': this_month_start})]]></value>
+except UserException, e:
+    if str(e).startswith("There isn't a contract"):
+        inv.sendNotFound(str(e))
+    else:
+        render(inv, template, {'messages': [str(e)], 'contract': contract, 'rate_scripts': rate_scripts})
+finally:
+    if sess is not None:
+        sess.close()]]></value>
 		<value><![CDATA[<!DOCTYPE html>
 <html>
   <head>
     <link rel="stylesheet" type="text/css"
       href="{{ context_path }}/reports/19/output/" />
-    <title>Chellow &gt; Supplies &gt; {{ supply.getId() }}</title>
+    <title>Chellow &gt; Supplies &gt; {{ supply.id }}</title>
 
     <script type="text/javascript" language="javascript">    
       function hideText() {
@@ -931,7 +939,7 @@ render(inv, template, {'triad_year': triad_year, 'now': now, 'last_month_start':
     <p>
       <a href="{{ context_path }}/reports/1/output/">Chellow</a> &gt;
       <a href="{{ context_path }}/reports/99/output/">Supplies</a> &gt;
-      {{ supply.getId() }} [<a href="{{ context_path }}/supplies/{{ supply.getId() }}/">edit</a>]
+      {{ supply.id }} [<a href="{{ context_path }}/supplies/{{ supply.id }}/">edit</a>]
     </p>
 
     {% if messages %}
@@ -945,21 +953,21 @@ render(inv, template, {'triad_year': triad_year, 'now': now, 'last_month_start':
     <table>
       <tr>
         <th>Name</th>
-        <td>{{ supply.getName() }}</td>
+        <td>{{ supply.name }}</td>
       </tr>
       <tr>
         <th>Source</th>
         <td>
           {{ supply.source.code }} - {{ supply.source.name }}
           {% if supply.source.code == 'gen' %}
-            ( {{ supply.generatorType.code }} {{ supply.generatorType.name }})
+            ( {{ supply.generator_type.code }} {{ supply.generator_type.name }})
           {% endif %}
         </td>
       </tr>
       <tr>
         <th>GSP Group</th>
         <td>
-          {{ supply.gspGroup.code }} {{ supply.gspGroup.description }}
+          {{ supply.gsp_group.code }} {{ supply.gsp_group.description }}
         </td>
       </tr>
         {% if system_properties['supply_links'] %}
@@ -986,11 +994,11 @@ render(inv, template, {'triad_year': triad_year, 'now': now, 'last_month_start':
               {{ truncated_note }} <a href="JavaScript:void()" onClick="showText()" />More...</a>
             </div>
             <div id="full_note" style="display: none;">
-              <pre>{{ supply.getNote() }}</pre>
+              <pre>{{ supply.note }}</pre>
               <a href="JavaScript:void()" onClick="hideText()" />Less...</a>
             </div>
           {% else %}
-              <pre style="display: inline;">{{ supply.getNote() }}</pre>
+              <pre style="display: inline;">{{ supply.note }}</pre>
           {% endif %}
         </td>
       </tr>
@@ -1046,10 +1054,10 @@ render(inv, template, {'triad_year': triad_year, 'now': now, 'last_month_start':
           <tbody>
             <tr>
               <td rowspan="4">
-                <a title="{{ era.startDate|hh_format }}">{{ era.startDate|hh_format(modifier='date') }}</a>
+                <a title="{{ era.start_date|hh_format }}">{{ era.start_date|hh_format(modifier='date') }}</a>
               </td>
               <td rowspan="4">
-                <a title="{{ era.finishDate|hh_format }}">{{ era.finishDate|hh_format(modifier='date') }}</a>
+                <a title="{{ era.finish_date|hh_format }}">{{ era.finish_date|hh_format(modifier='date') }}</a>
               </td>
               <td rowspan="4">
                 <a href="{{ context_path }}/reports/5/output/?site-id={{ physical_site.id }}" title="{{ physical_site.name }}">{{ physical_site.code }}</a>
@@ -1072,26 +1080,26 @@ render(inv, template, {'triad_year': triad_year, 'now': now, 'last_month_start':
                 <a href="{{ context_path }}/reports/197/output/?cop-id={{ era.cop.id }}" title="{{ era.cop.description }}">{{ era.cop.code }}</a>
               </td>
               <td rowspan="4">
-                {% if era.getSsc() %}
+                {% if era.ssc %}
                   <a href="{{ context_path }}/reports/127/output/?ssc_id={{ era.ssc.id }}" title="{{ era.ssc.description }}">{{ era.ssc.code }}</a>
                 {% endif %}
               </td>
               <td rowspan="4">
-                <a href="{{ context_path }}/reports/107/output/?mop_contract_id={{ era.mopContract.id }}">{{ era.mopContract.name }}</a>
+                <a href="{{ context_path }}/reports/107/output/?mop_contract_id={{ era.mop_contract.id }}">{{ era.mop_contract.name }}</a>
               </td>
               <td rowspan="4">
-                {{ era.mopAccount }}
+                {{ era.mop_account }}
               </td>
               <td rowspan="4">
-                <a href="{{ context_path }}/reports/115/output/?hhdc_contract_id={{ era.hhdcContract.id }}">{{ era.hhdcContract.name }}</a>
+                <a href="{{ context_path }}/reports/115/output/?hhdc_contract_id={{ era.hhdc_contract.id }}">{{ era.hhdc_contract.name }}</a>
               </td>
-              <td rowspan="4">{{ era.hhdcAccount }}</td>
+              <td rowspan="4">{{ era.hhdc_account }}</td>
               <th colspan="6">Import</th>
             </tr>
             <tr>
               <td>
-                {% for channel in era_bundle['import_channels'] %}
-                  {% if channel.isKwh %}
+                {% for channel in era_bundle['imp_channels'] %}
+                  {% if channel.is_kwh %}
                     kWh
                   {% else %}
                     kVArh
@@ -1099,28 +1107,28 @@ render(inv, template, {'triad_year': triad_year, 'now': now, 'last_month_start':
                 {% endfor %}
               </td>
               <td>
-                {% if era.impMpanCore %}
-                  <a href="{{ context_path }}/reports/51/output/?llfc_id={{ era.impLlfc.id }}" title="{{ era.impLlfc.description }}">{{ era.impLlfc.code }}
+                {% if era.imp_mpan_core %}
+                  <a href="{{ context_path }}/reports/51/output/?llfc_id={{ era.imp_llfc.id }}" title="{{ era.imp_llfc.description }}">{{ era.imp_llfc.code }}
                   </a>
                 {% endif %}
               </td>
               <td>
-                {% if era.impMpanCore %}
-                  <a title="{{ supply.dnoContract.name }}" href="{{ context_path }}/reports/67/output/?dno_contract_id={{ supply.dnoContract.id }}">{{ supply.dnoContract.name }}</a> {{ era.impMpanCore[3:] }}
+                {% if era.imp_mpan_core %}
+                  <a title="{{ supply.dno_contract.name }}" href="{{ context_path }}/reports/67/output/?dno_contract_id={{ supply.dno_contract.id }}">{{ supply.dno_contract.name }}</a> {{ era.imp_mpan_core[3:] }}
                 {% endif %}
               <td>
-                {% if era.impMpanCore %}
-                  {{ era.impSc }}
+                {% if era.imp_mpan_core %}
+                  {{ era.imp_sc }}
                 {% endif %}
               </td>      
               <td>
-                {% if era.impMpanCore %}
-                  <a href="{{ context_path }}/reports/77/output/?supplier_contract_id={{ era.impSupplierContract.id }}">{{ era.impSupplierContract.name }}</a>
+                {% if era.imp_mpan_core %}
+                  <a href="{{ context_path }}/reports/77/output/?supplier_contract_id={{ era.imp_supplier_contract.id }}">{{ era.imp_supplier_contract.name }}</a>
                 {% endif %}
               </td>
               <td>
-                {% if era.impMpanCore %}  
-                  {{ era.impSupplierAccount }}
+                {% if era.imp_mpan_core %}  
+                  {{ era.imp_supplier_account }}
                   {% if era_bundle['imp_shared_supplier_accounts'] %}(
                     {%- for sup in era_bundle['imp_shared_supplier_accounts'] -%}
                       {%- if not loop.first    -%} {%- endif -%}
@@ -1136,7 +1144,7 @@ render(inv, template, {'triad_year': triad_year, 'now': now, 'last_month_start':
             </tr>
             <tr>
               <td>
-                {% for channel in era_bundle['export_channels'] %}
+                {% for channel in era_bundle['exp_channels'] %}
                   {% if channel.is_kwh %}
                     kWh
                   {% else %}
@@ -1145,28 +1153,28 @@ render(inv, template, {'triad_year': triad_year, 'now': now, 'last_month_start':
                 {% endfor %}
               </td>
               <td>
-                {% if era.expMpanCore %}
-                  <a href="{{ context_path }}/reports/51/output/?llfc_id={{ era.expLlfc.id }}" title="{{ era.expLlfc.description }}">{{ era.expLlfc.code }}</a>
+                {% if era.exp_mpan_core %}
+                  <a href="{{ context_path }}/reports/51/output/?llfc_id={{ era.exp_llfc.id }}" title="{{ era.exp_llfc.description }}">{{ era.exp_llfc.code }}</a>
                 {% endif %}
               </td>
               <td>
-                {% if era.expMpanCore %}
-                  <a title="{{ era.supply.dnoContract.name }}" href="{{ context_path }}/reports/67/output/?dno_contract_id={{ era.supply.dnoContract.id }}">{{ era.supply.dnoContract.name }}</a> {{ era.expMpanCore[3:] }}
+                {% if era.exp_mpan_core %}
+                  <a title="{{ era.supply.dno_contract.name }}" href="{{ context_path }}/reports/67/output/?dno_contract_id={{ era.supply.dno_contract.id }}">{{ era.supply.dno_contract.name }}</a> {{ era.exp_mpan_core[3:] }}
                 {% endif %}
               </td>
               <td>
-                {% if era.expMpanCore %}
-                  {{ era.expSc }}
+                {% if era.exp_mpan_core %}
+                  {{ era.exp_sc }}
                 {% endif %}
               </td>
               <td>
-                {% if era.expMpanCore %}
-                  <a href="{{ context_path }}/reports/77/output/?supplier_contract_id={{ era.expSupplierContract.id }}">{{ era.expSupplierContract.name }}</a>
+                {% if era.exp_mpan_core %}
+                  <a href="{{ context_path }}/reports/77/output/?supplier_contract_id={{ era.exp_supplier_contract.id }}">{{ era.exp_supplier_contract.name }}</a>
                 {% endif %}
               </td>
               <td>
-                {% if era.expMpanCore %}
-                  {{ era.expSupplierAccount }}
+                {% if era.exp_mpan_core %}
+                  {{ era.exp_supplier_account }}
                   {% if era_bundle['exp_shared_supplier_accounts'] %}(
                     {%- for sup in era_bundle['exp_shared_supplier_accounts'] -%}
                     {%- if not loop.first    -%} {%- endif -%}
@@ -1181,7 +1189,7 @@ render(inv, template, {'triad_year': triad_year, 'now': now, 'last_month_start':
       </table>
       <br/>
       <table>
-        {% set import_bills = era_bundle['import_bills'] %}
+        {% set imp_bills = era_bundle['imp_bills'] %}
         <caption>Import Supplier Bills</caption>
         <thead>
           <tr>
@@ -1194,7 +1202,7 @@ render(inv, template, {'triad_year': triad_year, 'now': now, 'last_month_start':
             <th rowspan="2">Net</th>
             <th rowspan="2">VAT</th>
             <th rowspan="2">Type</th>
-            {% for tpr in import_bills['inner_headers'] %}
+            {% for tpr in imp_bills['inner_headers'] %}
               <th colspan="4">
                 {% if tpr == None %}
                   MD
@@ -1203,7 +1211,7 @@ render(inv, template, {'triad_year': triad_year, 'now': now, 'last_month_start':
                 {% endif %}
               </th>
             {% endfor %}
-            {% for i in range(import_bills['num_outer_cols']) %}
+            {% for i in range(imp_bills['num_outer_cols']) %}
               <th colspan="5">
                 {{ loop.index }}
               </th>
@@ -1211,11 +1219,11 @@ render(inv, template, {'triad_year': triad_year, 'now': now, 'last_month_start':
           </tr>
 
           <tr>
-            {% for tpr in import_bills['inner_headers'] %}
+            {% for tpr in imp_bills['inner_headers'] %}
               <th colspan="2">Previous</th>
               <th colspan="2">Present</th>
             {% endfor %}
-            {% for i in range(import_bills['num_outer_cols']) %}
+            {% for i in range(imp_bills['num_outer_cols']) %}
               <th>TPR</th>
               <th colspan="2">Previous</th>
               <th colspan="2">Present</th>
@@ -1223,86 +1231,89 @@ render(inv, template, {'triad_year': triad_year, 'now': now, 'last_month_start':
           </tr>
         </thead>
         <tbody>
-          {% for bill_dict in import_bills['bill_dicts'] %}
+          {% for bill_dict in imp_bills['bill_dicts'] %}
             {% set read_rows = bill_dict['read_rows'] %}
             {% set bill = bill_dict['bill'] %}
             {% set rows_high = bill_dict['rows_high'] %}
             <tr>
               <td rowspan="{{ rows_high }}">
                 <a href="{{ context_path }}/reports/105/output/?bill-id={{ bill.id }}">View</a>
+                </td>
+                <td rowspan="{{ rows_high }}">
+                  <a title="{{ bill.start_date|hh_format }}">{{ bill.start_date|hh_format('date') }}</a>
+                </td>
+                <td rowspan="{{ rows_high }}">
+                  <a title="{{ bill.finish_date|hh_format }}">{{ bill.finish_date|hh_format('date') }}</a>
+                </td>
+                <td rowspan="{{ rows_high }}">
+                  <a href="{{ context_path }}/reports/91/output/?batch-id={{ bill.batch.id }}">{{ bill.batch.reference }}</a>
+                </td>
+                <td rowspan="{{ rows_high }}">{{ bill.reference }}</td>
+                <td rowspan="{{ rows_high }}">{{ bill.kwh }}</td>
+                <td rowspan="{{ rows_high }}">{{ bill.net }}</td>
+                <td rowspan="{{ rows_high }}">{{ bill.vat }}</td>
+                <td rowspan="{{ rows_high }}">
+                  <a href="{{ context_path }}/reports/201/output/?bill-type-id={{ bill.bill_type.id }}" title="{{ bill.bill_type.description }}">{{ bill.bill_type.code }}</a>
               </td>
-              <td rowspan="{{ rows_high }}">
-                <a title="{{ bill.startDate|hh_format }}">{{ bill.startDate|hh_format('date') }}</a>
-              </td>
-              <td rowspan="{{ rows_high }}">
-                <a title="{{ bill.finishDate|hh_format }}">{{ bill.finishDate|hh_format('date') }}</a>
-              </td>
-              <td rowspan="{{ rows_high }}">
-                <a href="{{ context_path }}/reports/91/output/?batch-id={{ bill.batch.id }}">{{ bill.batch.reference }}</a>
-              </td>
-              <td rowspan="{{ rows_high }}">{{ bill.reference }}</td>
-              <td rowspan="{{ rows_high }}">{{ bill.kwh }}</td>
-              <td rowspan="{{ rows_high }}">{{ bill.net }}</td>
-              <td rowspan="{{ rows_high }}">{{ bill.vat }}</td>
-              <td rowspan="{{ rows_high }}">
-                <a href="{{ context_path }}/reports/201/output/?bill-type-id={{ bill.type.id }}" title="{{ bill.type.description }}">{{ bill.type.code }}</a>
-              </td>
-
-              {% for read_row in read_rows %} 
+              {% for read_row in read_rows %}
+                {% if not loop.first %}
+                  <tr>
+                {% endif %}
                 {% for read in read_row['inner_reads'] %}
                   <td style="border-right: none;">
                     {% if read %}
-                      <a title="{{ read.previousDate|hh_format }} {{ read.msn }}">{{ read.previousValue }}</a>
+                      <a title="{{ read.previous_date|hh_format }} {{ read.msn }}">{{ read.previous_value }}</a>
                     {% endif %}
                   </td>
                   <td style="border-left: none;">
                     {% if read %}
-                      {{ read.previousType.code }}
+                      {{ read.previous_type.code }}
                     {% endif %}
                   </td>
                   <td style="border-right: none;">
                     {% if read %}
-                      <a title="{{ read.presentDate|hh_format }} {{ read.msn }}">{{ read.presentValue }}</a>
+                      <a title="{{ read.present_date|hh_format }} {{ read.msn }}">{{ read.present_value }}</a>
                     {% endif %}
                   </td>
                   <td style="border-left: none;">
                     {% if read %}
-                      {{ read.presentType.code }}
+                      {{ read.present_type.code }}
                     {% endif %}
                   </td>
                 {% endfor %}
-                {% if loop.first %}
-                  {% for read in read_row['outer_reads'] %}
-                    <td>
-                      {% if read.tpr %}
-                        <a href="{{ context_path }}/reports/97/output/?tpr-id={{ read.tpr.id }}">{{ read.tpr.code }}</a>
-                      {% else %}
-                        MD
-                      {% endif %}
-                    </td>
-                    <td style="border-right: none;">
-                      <a title="{{ read.previousDate|hh_format }} {{ read.msn }}">{{ read.previousValue }}</a>
-                    </td>
-                    <td style="border-left: none;">
-                      {{ read.previousType.code }}
-                    </td>
-                    <td style="border-right: none;">
-                      <a title="{{ read.presentDate|hh_format }} {{ read.msn }}">{{ read.presentValue }}</a>
-                    </td>
-                    <td style="border-left: none;">
-                      {{ read.presentType.code }}
-                    </td>
-                  {% endfor %}
-                {% endif %}
-              {% endfor %}
-            </tr>
+                {% for read in read_row['outer_reads'] %}
+                  <td>
+                    {% if read.tpr %}
+                      <a href="{{ context_path }}/reports/97/output/?tpr-id={{ read.tpr.id }}">{{ read.tpr.code }}</a>
+                    {% else %}
+                      MD
+                    {% endif %}
+                  </td>
+                  <td style="border-right: none;">
+                    <a title="{{ read.previous_date|hh_format }} {{ read.msn }}">{{ read.previous_value }}</a>
+                  </td>
+                  <td style="border-left: none;">
+                    {{ read.previous_type.code }}
+                  </td>
+                  <td style="border-right: none;">
+                    <a title="{{ read.present_date|hh_format }} {{ read.msn }}">{{ read.present_value }}</a>
+                  </td>
+                  <td style="border-left: none;">
+                    {{ read.present_type.code }}
+                  </td>
+                  {% if not loop.first %}
+                    </tr>
+                  {% endif %}
+                {% endfor %}
+              </tr>
+            {% endfor %}
           {% endfor %}
         </tbody>
       </table>
       <br />
 
       <table>
-        {% set export_bills = era_bundle['export_bills'] %}
+        {% set exp_bills = era_bundle['exp_bills'] %}
         <caption>Export Supplier Bills</caption>
         <thead>
           <tr>
@@ -1315,7 +1326,7 @@ render(inv, template, {'triad_year': triad_year, 'now': now, 'last_month_start':
             <th rowspan="2">Net</th>
             <th rowspan="2">VAT</th>
             <th rowspan="2">Type</th>
-            {% for tpr in export_bills['inner_headers'] %}
+            {% for tpr in exp_bills['inner_headers'] %}
               <th colspan="4">
                 {% if tpr == None %}
                   MD
@@ -1324,7 +1335,7 @@ render(inv, template, {'triad_year': triad_year, 'now': now, 'last_month_start':
                 {% endif %}
               </th>
             {% endfor %}
-            {% for i in range(export_bills['num_outer_cols']) %}
+            {% for i in range(exp_bills['num_outer_cols']) %}
               <th colspan="5">
                 {{ loop.index }}
               </th>
@@ -1332,11 +1343,11 @@ render(inv, template, {'triad_year': triad_year, 'now': now, 'last_month_start':
           </tr>
 
           <tr>
-            {% for tpr in export_bills['inner_headers'] %}
+            {% for tpr in exp_bills['inner_headers'] %}
               <th colspan="2">Previous</th>
               <th colspan="2">Present</th>
             {% endfor %}
-            {% for i in range(export_bills['num_outer_cols']) %}
+            {% for i in range(exp_bills['num_outer_cols']) %}
               <th>TPR</th>
               <th colspan="2">Previous</th>
               <th colspan="2">Present</th>
@@ -1344,7 +1355,7 @@ render(inv, template, {'triad_year': triad_year, 'now': now, 'last_month_start':
           </tr>
         </thead>
         <tbody>
-          {% for bill_dict in export_bills['bill_dicts'] %}
+          {% for bill_dict in exp_bills['bill_dicts'] %}
             {% set read_rows = bill_dict['read_rows'] %}
             {% set bill = bill_dict['bill'] %}
             {% set rows_high = bill_dict['rows_high'] %}
@@ -1353,10 +1364,10 @@ render(inv, template, {'triad_year': triad_year, 'now': now, 'last_month_start':
                 <a href="{{ context_path }}/reports/105/output/?bill-id={{ bill.id }}">View</a>
               </td>
               <td rowspan="{{ rows_high }}">
-                <a title="{{ bill.startDate|hh_format }}">{{ bill.startDate|hh_format('date') }}</a>
+                <a title="{{ bill.start_date|hh_format }}">{{ bill.start_date|hh_format('date') }}</a>
               </td>
               <td rowspan="{{ rows_high }}">
-                <a title="{{ bill.finishDate|hh_format }}">{{ bill.finishDate|hh_format('date') }}</a>
+                <a title="{{ bill.finish_date|hh_format }}">{{ bill.finish_date|hh_format('date') }}</a>
               </td>
               <td rowspan="{{ rows_high }}">
                 <a href="{{ context_path }}/reports/91/output/?batch-id={{ bill.batch.id }}">{{ bill.batch.reference }}</a>
@@ -1366,14 +1377,14 @@ render(inv, template, {'triad_year': triad_year, 'now': now, 'last_month_start':
               <td rowspan="{{ rows_high }}">{{ bill.net }}</td>
               <td rowspan="{{ rows_high }}">{{ bill.vat }}</td>
               <td rowspan="{{ rows_high }}">
-                <a href="{{ context_path }}/reports/201/output/?bill-type-id={{ bill.type.id }}" title="{{ bill.type.description }}">{{ bill.type.code }}</a>
+                <a href="{{ context_path }}/reports/201/output/?bill-type-id={{ bill.bill_type.id }}" title="{{ bill.bill_type.description }}">{{ bill.bill_type.code }}</a>
               </td>
 
               {% for read_row in read_rows %} 
                 {% for read in read_row['inner_reads'] %}
                   <td style="border-right: none;">
                     {% if read %}
-                      <a title="{{ read.previousDate|hh_format }} {{ read.msn }}">{{ read.previousValue }}</a>
+                      <a title="{{ read.previous_date|hh_format }} {{ read.msn }}">{{ read.previous_value }}</a>
                     {% endif %}
                   </td>
                   <td style="border-left: none;">
@@ -1402,16 +1413,16 @@ render(inv, template, {'triad_year': triad_year, 'now': now, 'last_month_start':
                       {% endif %}
                     </td>
                     <td style="border-right: none;">
-                      <a title="{{ read.previousDate|hh_format }} {{ read.msn }}">{{ read.previousValue }}</a>
+                      <a title="{{ read.previous_date|hh_format }} {{ read.msn }}">{{ read.previous_value }}</a>
                     </td>
                     <td style="border-left: none;">
-                      {{ read.previousType.code }}
+                      {{ read.previous_type.code }}
                     </td>
                     <td style="border-right: none;">
-                      <a title="{{ read.presentDate|hh_format }} {{ read.msn }}">{{ read.presentValue }}</a>
+                      <a title="{{ read.present_date|hh_format }} {{ read.msn }}">{{ read.present_value }}</a>
                     </td>
                     <td style="border-left: none;">
-                      {{ read.presentType.code }}
+                      {{ read.present_type.code }}
                     </td>
                   {% endfor %}
                 {% endif %}
@@ -1445,22 +1456,22 @@ render(inv, template, {'triad_year': triad_year, 'now': now, 'last_month_start':
             {% set bill = bill_dict['bill'] %}
             <tr>
               <td>
-                [<a href="{{ context_path }}/hhdc-contracts/{{ era.hhdcContract.id }}/batches/{{ bill.batch.id }}/bills/{{ bill.id }}/">edit</a>]
+                [<a href="{{ context_path }}/hhdc-contracts/{{ era.hhdc_contract.id }}/batches/{{ bill.batch.id }}/bills/{{ bill.id }}/">edit</a>]
               </td>
               <td>
                 <a href="{{ context_path }}/reports/203/output/?batch-id={{ bill.batch.id }}">{{ bill.batch.reference }}</a>
               </td>
-              <td>{{ bill.getReference() }}</td>
+              <td>{{ bill.reference }}</td>
               <td>{{ bill.account }}</td>
-              <td>{{ bill.issueDate|hh_format }}</td>
-              <td>{{ bill.startDate|hh_format }}</td>
-              <td>{{ bill.finishDate|hh_format }}</td>
+              <td>{{ bill.issue_date|hh_format }}</td>
+              <td>{{ bill.start_date|hh_format }}</td>
+              <td>{{ bill.finish_date|hh_format }}</td>
               <td>{{ bill.kwh }}</td>
               <td>{{ bill.net }}</td>
               <td>{{ bill.vat }}</td>
               <td>{{ bill.gross }}</td>
               <td>
-                <a href="{{ context_path }}/reports/201/output/?bill-type-id={{ bill.type.id }}" title="{{ bill.type.description }}">{{ bill.type.code }}</a>
+                <a href="{{ context_path }}/reports/201/output/?bill-type-id={{ bill.bill_type.id }}" title="{{ bill.bill_type.description }}">{{ bill.bill_type.code }}</a>
               </td>
             </tr>
           {% endfor %}
@@ -1490,22 +1501,22 @@ render(inv, template, {'triad_year': triad_year, 'now': now, 'last_month_start':
             {% set bill = bill_dict['bill'] %}
                     <tr>
                         <td>
-                          [<a href="{{ context_path }}/mop-contracts/{{ era.mopContract.id }}/batches/{{ bill.batch.id }}/bills/{{ bill.id }}">edit</a>]
+                          [<a href="{{ context_path }}/mop-contracts/{{ era.mop_contract.id }}/batches/{{ bill.batch.id }}/bills/{{ bill.id }}">edit</a>]
                         </td>
                         <td>
                             <a href="{{ context_path }}/reports/193/output/?batch-id={{ bill.batch.id }}">{{ bill.batch.reference }}</a>
                         </td>
                         <td>{{ bill.reference }}</td>
                         <td>{{ bill.account }}</td>
-                        <td>{{ bill.issueDate|hh_format }}</td>
-                        <td>{{ bill.startDate|hh_format }}</td>
-                        <td>{{ bill.finishDate|hh_format }}</td>
+                        <td>{{ bill.issue_date|hh_format }}</td>
+                        <td>{{ bill.start_date|hh_format }}</td>
+                        <td>{{ bill.finish_date|hh_format }}</td>
                         <td>{{ bill.kwh }}</td>
                         <td>{{ bill.net }}</td>
                         <td>{{ bill.vat }}</td>
                         <td>{{ bill.gross }}</td>
                         <td>
-                            <a href="{{ context_path }}/reports/201/output/?bill-type-id={{ bill.type.id }}" title="{{ bill.type.description }}">{{ bill.type.code }}</a>
+                            <a href="{{ context_path }}/reports/201/output/?bill-type-id={{ bill.bill_type.id }}" title="{{ bill.bill_type.description }}">{{ bill.bill_type.code }}</a>
                         </td>
                     </tr>
                 {% endfor %}
@@ -3119,7 +3130,6 @@ pw.println("td {                                                           ")
 pw.println("    border: thin solid gray;                                   ")
 pw.println("    padding-left: 0.2em;                                       ")
 pw.println("    padding-right: 0.2em;                                      ")
-pw.println("    text-align: '.' center;                                    ")
 pw.println("}                                                              ")
 pw.println("th {                                                           ")
 pw.println("    border: thin solid gray;                                   ")
