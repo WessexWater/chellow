@@ -1072,7 +1072,7 @@ finally:
               <td rowspan="4">
                 <a href="{{ context_path }}/reports/55/output/?pc-id={{ era.pc.id }}" title="{{ era.pc.description }}">{{ era.pc.code }}</a>
               </td>
-              <td rowspan="4">{{ era.meterSerialNumber }}</td>
+              <td rowspan="4">{{ era.msn }}</td>
               <td rowspan="4">
                 <a href="{{ context_path }}/reports/63/output/?mtc-id={{ era.mtc.id }}" title="{{ era.mtc.description }}">{{ era.mtc.code }}</a>
               </td>
