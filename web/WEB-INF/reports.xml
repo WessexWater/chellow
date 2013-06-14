@@ -18333,7 +18333,7 @@ try:
             script = inv.getString('script')
             start_date = form_date(inv, 'start')
             if inv.hasParameter('has_finished'):
-                finish_date = form_date('finish')
+                finish_date = form_date(inv, 'finish')
             else:
                 finish_date = None
             contract.update_rate_script(sess, rate_script, start_date, finish_date, script)
