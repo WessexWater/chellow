@@ -5017,7 +5017,7 @@ def triad_csv(supply_source):
     if supply_source is None or supply_source.id.startswith('99'):
         return ['' for item in range(19)]
 
-    supply_source.contract_function(duos_contract, 'dno_vb')(supply_source)
+    supply_source.contract_function(duos_contract, 'duos_vb')(supply_source)
     supply_source.contract_function(triad_contract, 'triad_bill')(supply_source)
 
     bill = supply_source.supplier_bill
@@ -10784,7 +10784,7 @@ def mpan_bit(query, kvarh_at_md_query, is_import, hh_count_query, num_hh, eras, 
 
             supply_source = comterp.get('SupplySource')(block_start, block_finish, forecast_date, era, is_import, comterp, pw, caches)
 
-            comterp.get('contract_function')(duos_contract, 'dno_vb', System.err)(supply_source)
+            comterp.get('contract_function')(duos_contract, 'duos_vb', System.err)(supply_source)
 
             gsp_kwh += sum([datum['gsp-kwh'] for datum in supply_source.hh_data])
 
@@ -12755,7 +12755,7 @@ while sites.next():
             continue
 
         site_ds = comterp.get('SiteSource')(site, chunk_start, chunk_finish, forecast_date, comterp, pw, caches, displaced_era)
-        site_ds.contract_function(duos_contract, 'dno_vb')(site_ds)
+        site_ds.contract_function(duos_contract, 'duos_vb')(site_ds)
         site_ds.contract_function(triad_contract, 'triad_bill')(site_ds)
 
         bill = site_ds.supplier_bill
