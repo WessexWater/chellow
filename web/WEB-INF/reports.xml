@@ -8654,7 +8654,7 @@ finally:
       <a href="{{context_path}}/reports/1/output/">Chellow</a> &gt;
       <a href="{{context_path}}/reports/185/output/">MOP Contracts</a> &gt;
       {{contract.name}}
-      [<a href="{{context_path}}/mop-contracts/{{ contract.id}}/">edit</a>]
+      [<a href="{{context_path}}/reports/151/output/?mop_contract_id={{contract.id}}">edit</a>]
     </p>
     <br />
     {% if messages %}
@@ -10954,9 +10954,196 @@ supplies.close()]]></value>
 		<value><![CDATA[report]]></value>
 		<value><![CDATA[151]]></value>
 		<value><![CDATA[true]]></value>
-		<value><![CDATA[Free 151]]></value>
-		<value><![CDATA[]]></value>
-		<value><![CDATA[]]></value>
+		<value><![CDATA[Mop Contract Edit]]></value>
+		<value><![CDATA[from net.sf.chellow.monad import Monad
+from sqlalchemy.orm import joinedload_all
+from sqlalchemy.sql.expression import text
+from datetime import datetime
+import pytz
+
+Monad.getUtils()['imprt'](globals(), {
+        'db': ['Contract', 'Party', 'Participant', 'set_read_write', 'session'], 
+        'utils': ['UserException', 'form_date'],
+        'templater': ['render']})
+
+
+def make_fields(sess, contract, message=None):
+    parties = sess.query(Party).from_statement("""select party.* from party, market_role, participant where party.market_role_id = market_role.id and party.participant_id = participant.id and market_role.code = 'M' order by participant.code""").all()
+    initial_date = datetime.now(pytz.utc)
+    if message is None:
+        messages = []
+    else:
+        messages = [str(message)]
+    return {'contract': contract, 'parties': parties, 'initial_date': datetime(initial_date.year, initial_date.month, initial_date.day), 'messages': messages}
+
+sess = None
+try:
+    sess = session()
+    if inv.getRequest().getMethod() == 'GET':
+        contract_id = inv.getLong('mop_contract_id')
+        contract = Contract.get_mop_by_id(sess, contract_id)
+        render(inv, template, make_fields(sess, contract))
+    else:
+        set_read_write(sess)
+        contract_id = inv.getLong('mop_contract_id')
+        contract = Contract.get_mop_by_id(sess, contract_id)
+        if inv.hasParameter("update_state"):
+            state = inv.getString("state")
+            contract.state = state
+            sess.commit()
+            inv.sendSeeOther("/reports/107/output/?mop_contract_id=" +
+                    str(contract.id))
+        elif inv.hasParameter("ignore_snags"):
+            ignore_date = form_date(inv, "ignore")
+            sess.execute(text("""update snag set is_ignored = true from channel, era where snag.channel_id = channel.id and channel.era_id = era.id and era.hhdc_contract_id = :contract_id and snag.finish_date < :ignore_date"""), params=dict(contract_id=contract.id, ignore_date=ignore_date))
+            sess.commit()
+            inv.sendSeeOther("/reports/107/output/?mop_contract_id=" +
+                    str(contract.id))
+        elif inv.hasParameter("delete"):
+            contract.delete(sess)
+            sess.commit()
+            inv.sendSeeOther("/reports/185/output/");
+        else:
+            party_id = inv.getLong("party_id")
+            name = inv.getString("name")
+            charge_script = inv.getString("charge_script")
+            properties = inv.getString("properties")
+            party = Party.get_by_id(sess, party_id)
+            contract.update(sess, False, name, party, charge_script,
+                    properties)
+            sess.commit()
+            inv.sendSeeOther("/reports/107/output/?mop_contract_id=" +
+                    str(contract.id))
+except UserException, e:
+    render(inv, template, make_fields(sess, contract, e))
+finally:
+    sess.close()]]></value>
+		<value><![CDATA[<!doctype html>
+<html>
+  <head>
+    <link rel="stylesheet" type="text/css"
+      href="{{ context_path }}/reports/19/output/"
+    >
+    <title>Chellow &gt; MOP Contracts &gt; {{contract.name}}</title>
+  </head>
+  <body>
+    <p>
+      <a href="{{ context_path }}/reports/1/output/">Chellow</a> &gt;
+      <a href="{{ context_path }}/reports/185/output/">MOP Contracts</a> &gt;
+      <a href="{{ context_path }}/reports/107/output/?mop_contract_id={{ contract.id }}">{{ contract.name }}</a>
+      &gt; Edit
+    </p>
+    {% if messages %}
+      <ul>
+        {% for message in messages %}
+          <li>{{ message }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+    {% if request.getMethod() == 'GET' and request.getParameter('view') == 'confirm-delete' %}
+      <form method="post" action=".">
+        <fieldset>
+          <legend>
+            Are you sure you want to delete this contract?
+          </legend>
+          <input type="hidden" name="mop_contract_id"
+            value="{{ contract.id }}"
+          >
+          <input type="submit" name="delete" value="Delete">
+        </fieldset>
+      </form>
+      <p>
+        <a href="{{ context_path }}/reports/151/output/?mop_contract_id={{ contract.id }}">Cancel</a>
+      </p>
+    {% else %}
+      <form action="{{ context_path }}/reports/151/output/" method="post">
+        <fieldset>
+          <legend>Update Contract</legend>
+          <input type="hidden" name="mop_contract_id"
+            value="{{ contract.id }}"
+          >
+          <br>
+          <label>Party</label>
+          <select name="party_id">
+            {% for party in parties %}
+              {{ input_option('party_id', party.id, party.participant.code + ' : ' + party.name, contract.party.id) }}
+            {% endfor %}
+          </select>
+          <br>
+          <label>
+            Name <input name="name" value="
+              {%- if request.getParameter('name') -%}
+                {{ request.getParameter('name') }}
+              {%- else -%}
+                {{ contract.name }}
+              {%- endif -%}
+            ">
+          </label>
+          <br>
+          <br>
+          Charge script
+          <br>
+          <textarea name="charge_script" rows="40" cols="80">
+            {%- if request.getParameter('charge_script') -%}
+              {{ request.getParameter('charge_script') }}
+            {%- else -%}
+              {{ contract.charge_script }}
+            {%- endif -%}
+          </textarea>
+          <br />
+          <br>
+          Properties
+          <br>
+          <textarea name="properties" rows="40" cols="80">
+            {%- if request.getParameter('properties') -%}
+              {{ request.getParameter('properties') }}
+            {%- else -%}
+              {{ contract.properties }}
+            {%- endif -%}
+          </textarea>
+          <br />
+          <br />
+          <h4>Example</h4>
+          <code><pre>
+has.importer=yes
+file.type=.df2
+hostname=example.com
+username=username
+password=password
+directory0=downloads1
+directory1=downloads2
+          </pre></code>
+          <input type="submit" value="Update">
+        </fieldset>
+      </form>
+      <br />
+      <br />
+      <form action="." method="post">
+        <fieldset>
+          <legend>Update State</legend>
+          <input type="hidden" name="mop_contract_id"
+                  value="{{ contract.id }}">
+          <label>State</label>
+          <br>
+          {{ input_textarea('state', request, contract.state, 40, 80) }}
+          <br>
+          <input type="submit" name="update_state" value="Update">
+        </fieldset>
+      </form>
+      <br>
+ 
+      <form action=".">
+        <fieldset>
+          <legend>Delete this contract</legend>
+          <input type="hidden" name="mop_contract_id" value="{{contract.id}}">
+          <input type="hidden" name="view" value="confirm-delete">
+          <input type="submit" value="Delete">
+        </fieldset>
+      </form>
+      <br>
+    {% endif %}
+  </body>
+</html>]]></value>
 	</line>
 	<line>
 		<value><![CDATA[insert]]></value>
