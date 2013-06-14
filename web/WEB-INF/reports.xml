@@ -1534,7 +1534,7 @@ finally:
             <a href="{{ context_path }}/reports/15/output/?supply_id={{ supply.id }}&amp;is_import=false">Export</a>
         </li>
         <li>
-            <a href="{{ context_path }}/reports/17/output/?supply_id={{ supply.id }}&amp;months=1&amp;finish-year={{ now.year }}&amp;finish-month={{ now.month }}">Raw HH data</a>
+            <a href="{{ context_path }}/reports/17/output/?supply_id={{ supply.id }}&amp;months=1&amp;finish_year={{ now.year }}&amp;finish_month={{ now.month }}">Raw HH data</a>
         </li>
         <li>
             <a href="{{ context_path }}/reports/101/output/?supply-id={{ supply.id }}">Supplier Virtual Bill</a>
@@ -2832,288 +2832,191 @@ for i in range(12 * years):
 		<value><![CDATA[17]]></value>
 		<value><![CDATA[true]]></value>
 		<value><![CDATA[Supply Raw HH Data]]></value>
-		<value><![CDATA[from net.sf.chellow.monad import Hiber, UserException, XmlTree
-from java.util import Calendar, GregorianCalendar, TimeZone, Locale, Date
-from net.sf.chellow.monad.types import MonadDate
-from java.sql import Timestamp, ResultSet
-from java.text import SimpleDateFormat
-from net.sf.chellow.physical import HhStartDate, HhDatum, Supply
+		<value><![CDATA[from net.sf.chellow.monad import Monad
+from sqlalchemy.orm import joinedload_all
+from datetime import datetime
+import pytz
+from dateutil.relativedelta import relativedelta
+from java.lang import System
 
-cal = GregorianCalendar(TimeZone.getTimeZone("GMT"), Locale.UK)
-supply_id = inv.getLong("supply_id")
-months = inv.getInteger('months')
-finish_year = inv.getInteger("finish-year")
-finish_month = inv.getInteger("finish-month")
-if not inv.isValid():
-    raise UserException()
+Monad.getUtils()['imprt'](globals(), {
+        'db': ['Contract', 'Batch', 'Participant', 'set_read_write', 'session', 'Bill', 'Report', 'Supply', 'HhDatum', 'Era'], 
+        'utils': ['UserException', 'form_date', 'HH'],
+        'templater': ['render']})
 
-cal.clear()
-cal.set(Calendar.YEAR, finish_year)
-cal.set(Calendar.MONTH, finish_month - 1)
-cal.add(Calendar.MONTH, 1)
-cal.add(Calendar.MINUTE, -30)
-finish_date = cal.getTime()
-cal.add(Calendar.MINUTE, 30)
 
-cal.add(Calendar.MONTH, months * -1)
-start_date = cal.getTime()
-dateFormat = SimpleDateFormat("yyyy-MM-dd' 'HH:mm")
-dateFormat.setCalendar(cal)
-supply = Supply.getSupply(supply_id)
-supplyElement = supply.toXml(doc, XmlTree("eraLast").put("source"))
-source.appendChild(supplyElement)
-source.appendChild(MonadDate.getMonthsXml(doc))
-source.appendChild(MonadDate.getDaysXml(doc))
-con = Hiber.session().connection()
-stmt = con.prepareStatement("select hh_datum.value, hh_datum.start_date, hh_datum.status, hh_datum.last_modified, channel.is_import, channel.is_kwh from hh_datum, channel, era where hh_datum.channel_id = channel.id and channel.era_id = era.id and era.supply_id = ? and hh_datum.start_date >= ? and hh_datum.start_date <= ? order by hh_datum.start_date", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.CLOSE_CURSORS_AT_COMMIT)
-stmt.setInt(1, supply.getId())
-stmt.setTimestamp(2, Timestamp(start_date.getTime()))
-stmt.setTimestamp(3, Timestamp(finish_date.getTime()))
-stmt.setFetchSize(100)
-rs = stmt.executeQuery()
-hhDate = start_date.getTime()
-actualStatus = HhDatum.ACTUAL
-if rs.next():
-    value_str = rs.getBigDecimal("value").toString()
-    hhChannelStartDate = rs.getTimestamp("start_date")
-    isImport = rs.getBoolean("is_import")
-    isKwh = rs.getBoolean("is_kwh")
-    status = rs.getString("status")
-    last_modified = rs.getTimestamp('last_modified')
-    finishDateMillis = finish_date.getTime()
-    cal = MonadDate.getCalendar()
-    while hhDate <= finishDateMillis:
-        last_modified_str = dateFormat.format(last_modified)
-        datumElement = doc.createElement("datum")
-        supplyElement.appendChild(datumElement)
-        datumElement.setAttribute("timestamp", dateFormat.format(Date(hhDate)))
-        while hhChannelStartDate != None and hhChannelStartDate.getTime() == hhDate:
-            if isImport:
-                if isKwh:
-                    datumElement.setAttribute("import-kwh-value", value_str)
-                    datumElement.setAttribute("import-kwh-status", status)
-                    datumElement.setAttribute("import-kwh-last-modified", last_modified_str)
-                else:
-                    datumElement.setAttribute("import-kvarh-value", value_str)
-                    datumElement.setAttribute("import-kvarh-status", status)
-                    datumElement.setAttribute("import-kvarh-last-modified", last_modified_str)
-            else:
-                if isKwh:
-                    datumElement.setAttribute("export-kwh-value", value_str)
-                    datumElement.setAttribute("export-kwh-status", status)
-                    datumElement.setAttribute("export-kwh-last-modified", last_modified_str)
-                else:
-                    datumElement.setAttribute("export-kvarh-value", value_str)
-                    datumElement.setAttribute("export-kvarh-status", status)
-                    datumElement.setAttribute("export-kvarh-last-modified", last_modified_str)
-            if rs.next():
-                value_str = rs.getBigDecimal("value").toString()
-                hhChannelStartDate = rs.getTimestamp("start_date")
-                isImport = rs.getBoolean("is_import")
-                isKwh = rs.getBoolean("is_kwh")
-                status = rs.getString("status")
-                last_modified = rs.getTimestamp('last_modified')
-            else:
-                hhChannelStartDate = None
-        hhDate = HhStartDate.getNext(cal, hhDate)
-rs.close()]]></value>
-		<value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
-<xsl:stylesheet version="1.0"
-    xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
-    <xsl:output method="xml" encoding="US-ASCII"
-        doctype-public="-//W3C//DTD XHTML 1.1//EN"
-        doctype-system="http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd"
-        indent="yes" />
+sess = None
+try:
+    sess = session()
+    if inv.getRequest().getMethod() == 'GET':
+        supply_id = inv.getLong('supply_id')
+        months = inv.getInteger('months')
+        finish_year = inv.getInteger("finish_year")
+        finish_month = inv.getInteger("finish_month")
+        supply = Supply.get_by_id(sess, supply_id)
 
-    <xsl:template match="/">
-        <html>
-            <head>
-                <link rel="stylesheet" type="text/css"
-                    href="{/source/request/@context-path}/reports/19/output/" />
+        finish_date = datetime(finish_year, finish_month, 1, tzinfo=pytz.utc) + relativedelta(months=1) - HH
+        start_date = datetime(finish_year, finish_month, 1, tzinfo=pytz.utc) - relativedelta(months=months-1)
 
-                <title>
-                    Chellow &gt; Supplies &gt;
-                    <xsl:value-of select="/source/supply/@name" />
-                    &gt; Hh data
-                </title>
-            </head>
-            <body>
-                <p>
-                    <a
-                        href="{/source/request/@context-path}/reports/1/output/">
-                        <xsl:value-of select="'Chellow'" />
-                    </a>
-                    &gt;
-                    <a
-                        href="{/source/request/@context-path}/reports/99/output/">
-                        <xsl:value-of select="'Supplies'" />
-                    </a>
-                    &gt;
-                    <a
-                        href="{/source/request/@context-path}/reports/7/output/?supply-id={/source/supply/@id}">
-                        <xsl:value-of select="/source/supply/@name" />
-                    </a>
-                    &gt; HH Data
-                </p>
+        era = sess.query(Era).from_statement("select * from era where supply_id = :supply_id and start_date <= :finish_date and (finish_date is null or finish_date >= :start_date) order by start_date desc").params(supply_id=supply.id, start_date=start_date, finish_date=finish_date).first()
 
-                <xsl:if test="//message">
-                    <ul>
-                        <xsl:for-each select="//message">
+        keys = {True: {True: 'import_kwh', False: 'import_kvarh'},
+            False: {True: 'export_kwh', False: 'export_kvarh'}}
 
-                            <li>
-                                <xsl:value-of select="@description" />
-                            </li>
-                        </xsl:for-each>
-                    </ul>
-                </xsl:if>
+        hh_data = sess.query(HhDatum).from_statement("select hh_datum.* from hh_datum, channel, era where hh_datum.channel_id = channel.id and channel.era_id = era.id and era.supply_id = :supply_id and hh_datum.start_date >= :start_date and hh_datum.start_date <= :finish_date order by hh_datum.start_date").params(supply_id=supply.id, start_date=start_date, finish_date=finish_date).__iter__()
+        hh_lines = []
 
-                <table><caption>Supply</caption>
-                    <tr>
-                        <th>Name</th>
-                        <td><xsl:value-of select="/source/supply/@name" /></td>
-                    </tr>
-                    <tr>
-                        <th>Import MPAN core</th>
-                        <td><xsl:value-of
-                            select="/source/supply/era/@imp-mpan-core" /></td>
-                    </tr>
-                    <tr>
-                        <th>Export MPAN core</th>
-                        <td><xsl:value-of
-                            select="/source/supply/era/@exp-mpan-core" /></td>
-                    </tr>
-                    <tr>
-                        <th>Source Code</th>
-                        <td><xsl:value-of
-                            select="/source/supply/source/@code" /></td>
-                    </tr>
-                </table>
-                <br/>
-                <form action=".">
-                    <fieldset>
-                        <legend>Show HH Data</legend>
-                        <input type="hidden" name="supply_id"
-                            value="{/source/supply/@id}" />
-<br/>
-                        <xsl:value-of select="'For '"/>
-                        <input name="months" maxlength="2" size="2">
-                          <xsl:attribute name="value">
-                            <xsl:choose>
-                              <xsl:when test="/source/request/parameter[@name='months']">
-                                <xsl:value-of select="/source/request/parameter[@name='months']/value"/>
-                              </xsl:when>
-                              <xsl:otherwise>
-                                <xsl:value-of select="'1'"/>
-                              </xsl:otherwise>
-                            </xsl:choose>
-                          </xsl:attribute>
-                        </input>
-<xsl:value-of select="' month(s) finishing at the end of '"/>
-                        <input name="finish-year" value="{/source/request/parameter[@name='finish-year']/value}" maxlength="4" size="4"/><xsl:value-of select="' - '"/>
-                        <select name="finish-month">
-                            <xsl:for-each select="/source/months/month">
-                                <option value="{@number}">
-                                    <xsl:if test="@number=/source/request/parameter[@name='finish-month']/value">
-                                        <xsl:attribute name="selected">selected</xsl:attribute>
-                                    </xsl:if>
-                                    <xsl:value-of select="@number"/>
-                                </option>
-                            </xsl:for-each>
-                        </select>
-                        <input type="submit" value="Show"/>
-                    </fieldset>
-                </form>
-                <table>
-                    <caption>Hh Data</caption>
-                    <thead>
-                        <tr>
-                            <th rowspan="3">HH Starting</th>
-                            <th colspan="6">Import</th>
-                            <th colspan="6">Export</th>
-                        </tr>
-                        <tr>
-                            <th colspan="3">kWh</th>
-                            <th colspan="3">kVArh</th>
-                            <th colspan="3">kWh</th>
-                            <th colspan="3">kVArh</th>
-                        </tr>
-                        <tr>
-                            <th>Value</th>
-                            <th>Status</th>
-                            <th>Last Modified</th>                              
-                            <th>Value</th>
-                            <th>Status</th>
-                            <th>Last Modified</th>                              
-                            <th>Value</th>
-                            <th>Status</th>
-                            <th>Last Modified</th>                              
-                            <th>Value</th>
-                            <th>Status</th>
-                            <th>Last Modified</th>                              
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <xsl:for-each select="/source/supply/datum">
-                            <tr>
-                                <td>
-                                    <xsl:value-of select="@timestamp" />
-                                </td>
-                                <td>
-                                    <xsl:value-of
-                                        select="@import-kwh-value" />
-                                </td>
-                                <td>
-                                    <xsl:value-of
-                                        select="@import-kwh-status" />
-                                </td>
-                                <td>
-                                    <xsl:value-of
-                                        select="@import-kwh-last-modified" />
-                                </td>
-                                <td>
-                                    <xsl:value-of
-                                        select="@import-kvarh-value" />
-                                </td>
-                                <td>
-                                    <xsl:value-of
-                                        select="@import-kvarh-status" />
-                                </td>
-                                <td>
-                                    <xsl:value-of
-                                        select="@import-kvarh-last-modified" />
-                                </td>
-                                <td>
-                                    <xsl:value-of
-                                        select="@export-kwh-value" />
-                                </td>
-                                <td>
-                                    <xsl:value-of
-                                        select="@export-kwh-status" />
-                                </td>
-                                <td>
-                                    <xsl:value-of
-                                        select="@export-kwh-last-modified" />
-                                </td>
-                                <td>
-                                    <xsl:value-of
-                                        select="@export-kvarh-value" />
-                                </td>
-                                <td>
-                                    <xsl:value-of
-                                        select="@export-kvarh-status" />
-                                </td>
-                                <td>
-                                    <xsl:value-of
-                                        select="@export-kvarh-last-modified" />
-                                </td>
-                            </tr>
-                        </xsl:for-each>
-                    </tbody>
-                </table>
-            </body>
-        </html>
-    </xsl:template>
-</xsl:stylesheet>]]></value>
+        hh_date = start_date
+        try:
+            hh_datum = hh_data.next()
+        except StopIteration:
+            hh_datum = None
+        while hh_date <= finish_date:
+            hh_line = {'timestamp': hh_date}
+            hh_lines.append(hh_line)
+            while hh_datum is not None and hh_datum.start_date == hh_date:
+                channel = hh_datum.channel
+                hh_line[keys[channel.is_import][channel.is_kwh]] = hh_datum
+                try:
+                    hh_datum = hh_data.next()
+                except StopIteration:
+                    hh_datum = None
+
+            hh_date += HH
+        render(inv, template, {'supply': supply, 'era': era, 'hh_lines': hh_lines})
+finally:
+    sess.close()]]></value>
+		<value><![CDATA[<!DOCTYPE html>
+<html>
+  <head>
+    <link rel="stylesheet" type="text/css"
+      href="{{context_path}}/reports/19/output/" />
+    <title>Chellow &gt; Supplies &gt; {{supply.id}} &gt; Hh Data</title>
+  </head>
+  <body>
+    <p>
+      <a href="{{context_path}}/reports/1/output/">Chellow</a> &gt;
+      <a href="{{context_path}}/reports/99/output/">Supplies</a> &gt;
+      <a href="{{context_path}}/reports/7/output/?supply_id={{supply.id}}">{{supply.name}}</a>
+      &gt; HH Data
+    </p>
+    {% if messages %}
+      <ul>
+        {% for message in messages %}
+          <li>{{ message }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+
+    <table>
+      <caption>Supply</caption>
+      <tr>
+        <th>Name</th>
+        <td>{{supply.name}}</td>
+      </tr>
+      <tr>
+        <th>Import MPAN core</th>
+        <td>{{era.imp_mpan_core}}</td>
+      </tr>
+      <tr>
+        <th>Export MPAN core</th>
+        <td>{{era.exp_mpan_core}}</td>
+      </tr>
+      <tr>
+        <th>Source Code</th>
+        <td>{{supply.source.code}}</td>
+      </tr>
+    </table>
+    <br/>
+    <form action=".">
+      <fieldset>
+        <legend>Show HH Data</legend>
+          <input type="hidden" name="supply_id" value="{{supply.id}}">
+          <br/>
+          For {{ input_text('months', request, '1', 2, 2) }} month(s)
+          finishing at the end of
+          {{input_date('finish', request, None, 'month')}}
+          <input type="submit" value="Show">
+        </fieldset>
+      </form>
+      <br>
+      <table>
+        <caption>Hh Data</caption>
+        <thead>
+          <tr>
+            <th rowspan="3">HH Starting</th>
+            <th colspan="6">Import</th>
+            <th colspan="6">Export</th>
+          </tr>
+          <tr>
+            <th colspan="3">kWh</th>
+            <th colspan="3">kVArh</th>
+            <th colspan="3">kWh</th>
+            <th colspan="3">kVArh</th>
+          </tr>
+          <tr>
+            <th>Value</th>
+            <th>Status</th>
+            <th>Last Modified</th>                              
+            <th>Value</th>
+            <th>Status</th>
+            <th>Last Modified</th>                              
+            <th>Value</th>
+            <th>Status</th>
+            <th>Last Modified</th>                              
+            <th>Value</th>
+            <th>Status</th>
+            <th>Last Modified</th>                              
+          </tr>
+        </thead>
+      <tbody>
+        {% for hh_line in hh_lines %}
+          <tr>
+            <td>
+              {{hh_line.timestamp|hh_format}}
+            </td>
+            {% if hh_line.import_kwh %}
+              <td>{{hh_line.import_kwh.value}}</td>
+              <td>{{hh_line.import_kwh.status}}</td>
+              <td>{{hh_line.import_kwh.last_modified|hh_format}}</td>
+            {% else %}
+              <td></td>
+              <td></td>
+              <td></td>
+            {% endif %}
+            {% if hh_line.import_kvarh %}
+              <td>{{hh_line.import_kvarh.value}}</td>
+              <td>{{hh_line.import_kvarh.status}}</td>
+              <td>{{hh_line.import_kvarh.last_modified|hh_format}}</td>
+            {% else %}
+              <td></td>
+              <td></td>
+              <td></td>
+            {% endif %}
+            {% if hh_line.export_kwh %}
+              <td>{{hh_line.export_kwh.value}}</td>
+              <td>{{hh_line.export_kwh.status}}</td>
+              <td>{{hh_line.export_kwh.last_modified|hh_format}}</td>
+            {% else %}
+              <td></td>
+              <td></td>
+              <td></td>
+            {% endif %}
+            {% if hh_line.export_kvarh %}
+              <td>{{hh_line.export_kvarh.value}}</td>
+              <td>{{hh_line.export_kvarh.status}}</td>
+              <td>{{hh_line.export_kvarh.last_modified|hh_format}}</td>
+            {% else %}
+              <td></td>
+              <td></td>
+              <td></td>
+            {% endif %}
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </body>
+</html>]]></value>
 	</line>
 	<line>
 		<value><![CDATA[insert]]></value>
