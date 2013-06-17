@@ -771,7 +771,7 @@ import collections
 from datetime import datetime
 
 Monad.getUtils()['imprt'](globals(), {
-        'db': ['Contract', 'Supply', 'RateScript', 'set_read_write', 'session', 'Era', 'SiteEra', 'Channel', 'Tpr', 'Bill', 'RegisterRead'], 
+        'db': ['Contract', 'Supply', 'RateScript', 'set_read_write', 'session', 'Era', 'SiteEra', 'Channel', 'Tpr', 'Bill', 'RegisterRead', 'Site'], 
         'utils': ['UserException'],
         'templater': ['render']})
 
@@ -786,8 +786,8 @@ try:
     for era in eras:
         imp_mpan_core = era.imp_mpan_core
         exp_mpan_core = era.exp_mpan_core
-        physical_site = sess.query(SiteEra).from_statement("select * from site_era where is_physical is true and era_id = :era_id").params(era_id=era.id).one()
-        other_sites = sess.query(SiteEra).from_statement("select * from site_era where is_physical is not true and era_id = :era_id").params(era_id=era.id).all()
+        physical_site = sess.query(Site).from_statement("select site.* from site, site_era where site_era.site_id = site.id and site_era.is_physical is true and site_era.era_id = :era_id").params(era_id=era.id).one()
+        other_sites = sess.query(Site).from_statement("select site.* from site, site_era where site_era.site_id = site.id and site_era.is_physical is not true and site_era.era_id = :era_id").params(era_id=era.id).all()
         imp_channels = sess.query(Channel).from_statement("select * from channel where era_id = :era_id and is_import is true order by is_kwh").params(era_id=era.id).all()
         exp_channels = sess.query(Channel).from_statement("select * from channel where era_id = :era_id and is_import is not true order by is_kwh").params(era_id=era.id).all()
         era_bundle = {'era': era, 'physical_site': physical_site, 'other_sites':

@@ -2426,6 +2426,9 @@ def import_virtual_bill(supply_source):
 			<request path="/chellow/reports/7/output/?supply_id=2">
 				<!-- Check there's a link to raw HH data -->
 				<regex pattern="/reports/17/output/\?" />
+				
+				<!-- Check we can see the site -->
+				<regex pattern="CI004"/>
 				<response-code value="200" />
 			</request>
 		</test>
