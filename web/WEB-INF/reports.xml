@@ -7895,15 +7895,21 @@ finally:
             </td>
             <td>{{era.hhdc_account}}</td>
             <td>
-              {{era.pc.code}} {{era.mtc.code}} {{era.imp_llfc.code}}
-              {{era.imp_mpan_core}}
+              {% if era.imp_mpan_core %}
+                {{era.pc.code}} {{era.mtc.code}} {{era.imp_llfc.code}}
+                {{era.imp_mpan_core}}
+              {% endif %}
             </td>
             <td>
               {% if era.imp_mpan_core %}
                 <a href="{{context_path}}/reports/77/output/?supplier_contract_id={{era.imp_supplier_contract.id}}">{{era.imp_supplier_contract.name}}</a>
               {% endif %}
             </td>
-            <td>{{era.imp_supplier_account}}</td>
+            <td>
+              {% if era.imp_mpan_core %}
+                {{era.imp_supplier_account}}
+              {% endif %}
+            </td>
             <td>
               {% if era.exp_mpan_core %}
                 {{era.pc.code}} {{era.mtc.code}} {{era.exp_llfc.code}}
