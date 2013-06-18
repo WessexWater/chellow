@@ -781,6 +781,8 @@ try:
     sess = session()
     era_bundles = []
     supply_id = inv.getLong('supply_id')
+    if supply_id is None:
+        supply_id = inv.getLong('supply-id')
     supply = Supply.get_by_id(sess, supply_id)
     eras = sess.query(Era).from_statement("select * from era where supply_id = :supply_id order by era.start_date desc").params(supply_id=supply.id).all()
     for era in eras:
