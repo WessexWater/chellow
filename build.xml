@@ -152,10 +152,10 @@
 			<fileset dir="${web.home}" />
 		</copy>
 
-		<exec dir="${basedir}" executable="hg" output="${build.home}/WEB-INF/VERSION">
+		<exec dir="${basedir}" executable="git" output="${build.home}/WEB-INF/VERSION">
 			<arg value="log" />
-			<arg value="--rev=tip" />
-			<arg value="--template={node}" />
+			<arg value="-1" />
+			<arg value="--format=%H" />
 		</exec>
 
 		<mkdir dir="${build.lib}" />
