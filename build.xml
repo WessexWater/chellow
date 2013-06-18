@@ -76,6 +76,7 @@
 		</copy>
 
 		<copy overwrite="true" todir="${build.home}/WEB-INF/lib-python/pg8000" file="${web.home}/WEB-INF/protocol.py" />
+		<copy overwrite="true" todir="${build.home}/WEB-INF/lib-python/pg8000" file="${web.home}/WEB-INF/types.py" />
 
 		<taskdef name="instrument" classname="org.hibernate.tool.instrument.javassist.InstrumentTask" classpath="${javalib.home}/hibernate-distribution-3.6.10.Final/hibernate3.jar:${javalib.home}/slf4j-1.7.2/slf4j-api-1.7.2.jar:${javalib.home}/slf4j-1.7.2/slf4j-nop-1.7.2.jar" />
 
