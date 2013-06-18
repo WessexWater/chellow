@@ -18969,13 +18969,13 @@ finally:
           <br />
           <h4>Example</h4>
           <code><pre>
-has.importer=yes
-file.type=.df2
-hostname=example.com
-username=username
-password=password
-directory0=downloads1
-directory1=downloads2
+{
+    'has_importer': True,
+    'file_type': '.df2',
+    'hostname': 'example.com',
+    'username': 'username',
+    'password': 'password',
+    'directories': ['downloads1', 'downloads2']}
           </pre></code>
           <input type="submit" value="Update">
         </fieldset>
