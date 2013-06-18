@@ -5207,7 +5207,7 @@ finally:
               <a href="{{ context_path }}/reports/121/output/?market_role_id={{ party.market_role.id }}">{{ party.market_role.description }}</a>
             </td>
             <td>
-              <a href="{{ context_path }}/reports/73/output/?participant-id={{ party.participant.id }}">{{ party.participant.code }}</a>
+              <a href="{{ context_path }}/reports/73/output/?participant_id={{ party.participant.id }}">{{ party.participant.code }}</a>
             </td>
           </tr>
         {% endfor %}
