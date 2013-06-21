@@ -19062,16 +19062,19 @@ try:
             inv.sendSeeOther('/reports/67/output/?dno_contract_id='
                 + str(contract.id))
         else:
-            script = inv.getString('script')
-            start_date = form_date(inv, 'start')
-            if inv.hasParameter('has_finished'):
-                finish_date = form_date(inv, 'finish')
-            else:
-                finish_date = None
-            contract.update_rate_script(sess, rate_script, start_date, finish_date, script)
-            sess.commit()
-            inv.sendSeeOther('/reports/69/output/?dno_rate_script_id='
-                    + str(rate_script.id))
+            try:
+                script = inv.getString('script')
+                start_date = form_date(inv, 'start')
+                if inv.hasParameter('has_finished'):
+                    finish_date = form_date(inv, 'finish')
+                else:
+                    finish_date = None
+                contract.update_rate_script(sess, rate_script, start_date, finish_date, script)
+                sess.commit()
+                inv.sendSeeOther('/reports/69/output/?dno_rate_script_id='
+                        + str(rate_script.id))
+            except UserException, e:
+                render(inv, template, {'rate_script': rate_script, 'messages': [str(e)]}, 400)          
 finally:
     sess.close()]]>
 		</value>

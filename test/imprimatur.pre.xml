@@ -1986,7 +1986,20 @@ def triad_estimates():
 				<regex pattern="/chellow/reports/69/output/\?dno_rate_script_id=282" />
 				<response-code value="303" />
 			</request>
-
+			
+			<!-- Test bad syntax gives an error -->
+			<request path="/chellow/reports/285/output/" method="post">
+				<control name="dno_rate_script_id" value="282" />
+				<control name="start_year" value="2010" />
+				<control name="start_month" value="05" />
+				<control name="start_day" value="01" />
+				<control name="start_hour" value="00" />
+				<control name="start_minute" value="00" />
+				<control name="script" value="{{/0erk"/>
+				<control name="update" value="Update" />
+				<response-code value="400" />
+			</request>
+			
 			<!-- Delete rate script -->
 			<request path="/chellow/reports/285/output/" method="post">
 				<control name="dno_rate_script_id" value="282" />
