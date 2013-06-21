@@ -604,12 +604,12 @@ def tariffs():
 		<value><![CDATA[2013-04-01T00:00Z]]></value>
 		<value><![CDATA[def lafs():
     return {
-        'lv': {
+        'lv-net': {
             'night': 1.052,
             'winter-weekday-peak': 1.077,
             'winter-weekday-day': 1.069,
             'other': 1.060},
-    'lv-sub': {
+				'lv-sub': {
             'night': 1.052,
             'winter-weekday-peak': 1.077,
             'winter-weekday-day': 1.069,
