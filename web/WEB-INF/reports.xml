@@ -1633,7 +1633,7 @@ finally:
     <br />
     <form action="{{ context_path }}/reports/177/output/">
         <fieldset>
-            <input type="hidden" name="supply-id" value="{{ supply.id }}" />
+            <input type="hidden" name="supply_id" value="{{ supply.id }}" />
             <legend>Monthly Duration</legend>
             <br />
             For <input name="months" maxlength="2" size="2" value="1">
@@ -12497,20 +12497,22 @@ source.setAttribute('year', str(cal.get(Calendar.YEAR)))]]></value>
 from net.sf.chellow.monad.types import MonadDate
 from java.sql import Timestamp, ResultSet
 from java.util import Calendar, TimeZone, Locale, Date
-from net.sf.chellow.physical import HhStartDate, MpanCore, Site, Supply
+from net.sf.chellow.physical import HhStartDate, Site, Supply
 from java.text import SimpleDateFormat, DecimalFormat
 from java.lang import Math, System
-from net.sf.chellow.billing import SupplierContract, NonCoreContract
+from net.sf.chellow.billing import Contract
 from org.python.util import PythonInterpreter
 
-year = inv.getInteger("end-year")
-month = inv.getInteger("end-month")
+year = inv.getInteger("end_year")
+month = inv.getInteger("end_month")
 months = inv.getInteger("months")
+
+caches = {}
 
 if not inv.isValid():
     raise UserException()
 
-computer = NonCoreContract.getNonCoreContract('computer')
+computer = Contract.getNonCoreContract('computer')
 
 cal = MonadDate.getCalendar()
 cal.clear()
@@ -12536,8 +12538,8 @@ pw.flush()
 month_format = SimpleDateFormat("yyyy-MM-dd")
 month_format.setCalendar(cal)
 
-if inv.hasParameter('supply-id'):
-    supply_id = inv.getLong('supply-id')
+if inv.hasParameter('supply_id'):
+    supply_id = inv.getLong('supply_id')
     supplies_query = Hiber.session().createQuery("select distinct era.supply from Era era where era.supply = :supply and era.startDate.date <= :finishDate and (era.finishDate is null or era.finishDate.date >= :startDate)").setEntity('supply', Supply.getSupply(supply_id))
 else:
     supplies_query = Hiber.session().createQuery("select distinct era.supply from Era era where era.startDate.date <= :finishDate and (era.finishDate is null or era.finishDate.date >= :startDate)")
@@ -12581,15 +12583,15 @@ for i in range(months):
             generator_type = generator_type.getCode()
 
         source_code = supply.getSource().getCode()
-        eras = supply.getGenerations(month_start, month_finish)
+        eras = supply.getEras(month_start, month_finish)
         era = eras.get(len(eras) - 1)
 
-        pc_code = str(era.getPc())
+        pc_code = era.pc.code
         if pc_code == '00':
             metering_type = 'hh'
         elif era.getChannels().size() > 0:
             metering_type = 'amr'
-        elif era.getMtc().getMeterType().getCode() in ['UM', 'PH']:
+        elif era.mtc.meterType.code in ['UM', 'PH']:
             metering_type = 'unmetered'
         else:
             metering_type = 'nhh'
@@ -12598,16 +12600,15 @@ for i in range(months):
         kwh_query.setEntity('supply', supply)
         est_kwh_query.setEntity('supply', supply)
 
-        values = {'supply-name': supply.getName(), 'source-code': source_code, 'generator-type': generator_type, 'month': month_str, 'pc-code': pc_code, 'msn': era.getMeterSerialNumber(), 'site-code': site.getCode(), 'site-name': site.getName(), 'metering-type': metering_type, 'problem': ''}
+        values = {'supply-name': supply.getName(), 'source-code': source_code, 'generator-type': generator_type, 'month': month_str, 'pc-code': pc_code, 'msn': era.msn, 'site-code': site.getCode(), 'site-name': site.getName(), 'metering-type': metering_type, 'problem': ''}
 
         pw.print(str(supply.getId()) + ',')
 
-        for polarity, pol_name in [(True, 'import'), (False, 'export')]:
-            mpan = era.getMpan(polarity)
-            if mpan is None:
-                mpan_core = None
+        for is_import, pol_name in [(True, 'import'), (False, 'export')]:
+            if is_import:
+                mpan_core = era.impMpanCore
             else:
-                mpan_core = mpan.getCore()
+                mpan_core = era.expMpanCore
 
             values[pol_name + '-mpan-core'] = mpan_core
             kwh = 0
@@ -12618,8 +12619,8 @@ for i in range(months):
                 if est_kwh is None:
                     est_kwh = 0
 
-            if not (polarity and source_code in ['net', 'gen-net']):
-                kwhs = kwh_query.setBoolean('isImport', polarity).scroll()
+            if not (is_import and source_code in ['net', 'gen-net']):
+                kwhs = kwh_query.setBoolean('isImport', is_import).scroll()
                 while kwhs.next():
                     kwh += kwhs.get(0).doubleValue()
 
@@ -12660,19 +12661,19 @@ for i in range(months):
             else:
                 chunk_finish = era.getFinishDate()
 
-            import_mpan = era.getImportMpan()
-            if import_mpan is None:
+            import_mpan_core = era.impMpanCore
+            if import_mpan_core is None:
                 continue
 
             chunk_start_millis = chunk_start.getDate().getTime()
             chunk_finish_millis = chunk_finish.getDate().getTime()
 
-            supplier_contract = import_mpan.getSupplierContract()
+            supplier_contract = era.impSupplierContract
 
 
             if source_code in ['net', 'gen-net', '3rd-party']:
                 #p w.println("starting vbill, " + str(System.currentTimeMillis()))
-                supply_source = comterp.get('SupplySource')(chunk_start, chunk_finish, forecast_date, import_mpan, comterp, pw)
+                supply_source = comterp.get('SupplySource')(chunk_start, chunk_finish, forecast_date, era, True, comterp, pw, caches)
 
                 #p w.println('sum msp kwh ' + str(supply_source.summary['sum-msp-kwh']))
                 values['metered-import-kwh'] += sum(datum['msp-kwh'] for datum in supply_source.hh_data)
@@ -12688,7 +12689,7 @@ for i in range(months):
                     if 'net-gbp' in v_bill:
                         values['metered-import-net-gbp'] += v_bill['net-gbp']
                     else:
-                        values['problem'] += 'For the supply ' + import_mpan.toString() + ' the virtual bill ' + str(v_bill) + ' from the contract ' + supplier_contract.getName() + ' does not contain the net-gbp key.'
+                        values['problem'] += 'For the supply ' + import_mpan_core + ' the virtual bill ' + str(v_bill) + ' from the contract ' + supplier_contract.getName() + ' does not contain the net-gbp key.'
                     values['problem'] += supply_source.problem
                 #p w.println("done virtual bill , " + str(System.currentTimeMillis()))
 
