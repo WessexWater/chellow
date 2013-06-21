@@ -12615,7 +12615,7 @@ for i in range(months):
             est_kwh = 0
 
             if metering_type in ['hh', 'amr']:
-                est_kwh = est_kwh_query.setBoolean('isImport', polarity).uniqueResult()
+                est_kwh = est_kwh_query.setBoolean('isImport', is_import).uniqueResult()
                 if est_kwh is None:
                     est_kwh = 0
 
