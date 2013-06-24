@@ -3023,8 +3023,14 @@ def virtual_bill(supply_source):
 				<response-code value="200" />
 			</request>
 		</test>
-				<test name="Try monthly supply duration with a half-hourly.">
+		<test name="Try monthly supply duration with a half-hourly.">
 			<request path="/chellow/reports/177/output/?supply_id=4&amp;months=1&amp;end_year=2013&amp;end_month=05">			
+				<response-code value="200" />
+			</request>
+		</test>
+		<test name="Check supplies monthly duration page.">
+			<request path="/chellow/reports/155/output/">
+				<regex pattern="end_month"/>
 				<response-code value="200" />
 			</request>
 		</test>
