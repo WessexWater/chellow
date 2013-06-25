@@ -3051,7 +3051,7 @@ def virtual_bill(supply_source):
 		<test name="Check  CSV Supplies HH Data.">
 			<request path="/chellow/reports/169/output/?supply_id=1&amp;is_import=true&amp;is_kwh=true&amp;months=1&amp;end_year=2008&amp;end_month=07">
 				<!-- Check the HH data is there -->
-				<regex pattern="0\.262"/>
+				<regex pattern="NA,2008-07-06,0\.262"/>
 				<response-code value="200" />
 			</request>
 		</test>

@@ -11920,7 +11920,7 @@ try:
 
         while not current_date > finish_date:
             if current_date.hour == 0 and current_date.minute == 0:
-                pw.print("\r\n" + mpan_core_str + "," + current_date.strftime('%y-%m-%d HH:MM'))
+                pw.print("\r\n" + mpan_core_str + "," + current_date.strftime('%Y-%m-%d'))
             pw.print(",")
 
             if datum is not None and datum.start_date == current_date:
