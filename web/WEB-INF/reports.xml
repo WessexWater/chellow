@@ -10140,6 +10140,7 @@ finally:
     <table>
       <thead>
         <tr>
+          <th>Code</th>
           <th>Name</th>
           <th>Start Date</th>
           <th>Finish Date</th>
@@ -10150,6 +10151,9 @@ finally:
           <tr>
             <td>
               <a href="{{ context_path }}/reports/67/output/?dno_contract_id={{ contract.id }}">{{ contract.name }}</a>
+            </td>
+            <td>
+              {{ contract.party.name }}
             </td>
             <td>{{ contract.start_rate_script.start_date|hh_format }}</td>
             <td>{{ contract.finish_rate_script.finish_date|hh_format }}</td>
