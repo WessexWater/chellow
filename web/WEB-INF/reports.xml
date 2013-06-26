@@ -102,7 +102,6 @@ render(inv, template, {'local_reports_id': properties.get('local.reports')})]]><
         </tr>
         <tr><th>HH Data</th><td><a href="{{ context_path }}/reports/167/output/">Download</a></td><td><a href="{{ context_path }}/reports/145/output/">Download</a></td>
         </tr>
-        <tr><th>Patched HH Data</th><td><a href="{{ context_path }}/reports/189/output/">Download</a></td><td></td>
         </tr>
           <tr><th>TRIAD</th><td><a href="{{ context_path }}/reports/175/output/">Download</a></td><td><a href="{{ context_path }}/reports/179/output/">Download</a></td>
           </tr>
@@ -1548,16 +1547,12 @@ finally:
         <input type="hidden" name="supply_id" value="{{ supply.id }}">
         <legend>Supplier Virtual Bills</legend>
         <select name="supply_polarity">
-          <option value="import">
-            Import
-          </option>
-          <option value="export">
-            Export
-          </option>
+          <option value="import">Import</option>
+          <option value="export">Export</option>
         </select>
-          from {{ input_date('start', request, last_month_start) }} to
-          {{ input_date('finish', request, last_month_finish) }}
-          <input type="submit" value="Download">
+        from {{ input_date('start', request, last_month_start) }} to
+        {{ input_date('finish', request, last_month_finish) }}
+        <input type="submit" value="Download">
       </fieldset>
     </form>
     <br />
@@ -1566,12 +1561,8 @@ finally:
         <input type="hidden" name="supply-id" value="{{ supply.id }}">
         <legend>Daily Supplier Virtual Bills</legend>
         <select name="supply-polarity">
-          <option value="import">
-            Import
-          </option>
-          <option value="export">
-            Export
-          </option>
+          <option value="import">Import</option>
+          <option value="export">Export</option>
         </select>
         from {{ input_date('start', request, last_month_start, 'day') }}
         to {{ input_date('finish', request, last_month_finish, 'day') }} 
@@ -1581,42 +1572,41 @@ finally:
     <br />
     <form action="{{ context_path }}/reports/169/output/">
       <fieldset>
-        <legend>HH Data</legend>
-          <input type="hidden" name="supply_id" value="{{ supply.id }}">
-          <br />
-          <select name="is_import">
-            <option value="true">
-              Import
-            </option>
-            <option value="false">
-              Export
-            </option>
-          </select>
-          <select name="is_kwh">
-                <option value="true">
-                kWh
-                </option>
-                <option value="false">
-                kVArh
-                </option>
-            </select>
-             for 
-            <input name="months" maxlength="2" size="2" value="1">
-            month(s) finishing at the end of
-            {{ input_date('end', request, last_month_finish, 'month') }}
-            <input type="submit" value="Download" >
-        </fieldset>
+        <legend>HH Data: 48 Column Format</legend>
+        <input type="hidden" name="supply_id" value="{{supply.id}}">
+        <select name="is_import">
+          <option value="true">Import</option>
+          <option value="false">Export</option>
+        </select>
+        <select name="is_kwh">
+          <option value="true">kWh</option>
+          <option value="false">kVArh</option>
+        </select>
+        from {{ input_date('start', request, last_month_start) }} to
+        {{ input_date('finish', request, last_month_finish) }}
+        <input type="submit" value="Download">
+      </fieldset>
+    </form>
+    <br />
+    <form action="{{context_path}}/reports/187/output/">
+      <fieldset>
+        <legend>HH Data: HH Per Row</legend>
+        <input type="hidden" name="supply_id" value="{{supply.id}}">
+        From {{ input_date('start', request, last_month_start) }} to
+        {{ input_date('finish', request, last_month_finish) }}
+        <input type="submit" value="Download">
+      </fieldset>
     </form>
     <br />
     <form action="{{ context_path }}/reports/41/output/?supply-id">
-        <fieldset>
-            <legend>TRIAD</legend>
-            <input type="hidden" name="supply-id" value="{{ supply.id }}">
-            <br>
-            For financial year ending March
-            <input name="year" value="{{ triad_year }}" size="4" maxlength="4">
-            <input type="submit" value="Download" />
-        </fieldset>
+      <fieldset>
+        <legend>TRIAD</legend>
+        <input type="hidden" name="supply-id" value="{{ supply.id }}">
+        <br>
+        For financial year ending March
+        <input name="year" value="{{ triad_year }}" size="4" maxlength="4">
+        <input type="submit" value="Download" />
+      </fieldset>
     </form>
     <br />
     <form action="{{ context_path }}/reports/149/output/">
@@ -11745,110 +11735,80 @@ for bill in Hiber.session().createQuery("from Bill bill where bill.account = :ac
 		<value><![CDATA[167]]></value>
 		<value><![CDATA[true]]></value>
 		<value><![CDATA[CSV Supplies HH Data Selector]]></value>
-		<value><![CDATA[from java.util import GregorianCalendar, TimeZone, Locale, Calendar
-from net.sf.chellow.monad.types import MonadDate
+		<value><![CDATA[from net.sf.chellow.monad import Monad
+from datetime import datetime
+from dateutil.relativedelta import relativedelta
 
-cal = MonadDate.getCalendar()
-cal.add(Calendar.MONTH, -1)
-source.appendChild(MonadDate(cal.getTime()).toXml(doc))
-source.appendChild(MonadDate.getMonthsXml(doc))]]></value>
-		<value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
-<xsl:stylesheet version="1.0"
-    xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
-    <xsl:output method="xml" encoding="US-ASCII"
-        doctype-public="-//W3C//DTD XHTML 1.1//EN"
-        doctype-system="http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd"
-        indent="yes" />
-    <xsl:template match="/">
-        <html>
-            <head>
-                <link rel="stylesheet" type="text/css"
-                    href="{/source/request/@context-path}/reports/10/output/" />
+Monad.getUtils()['imprt'](globals(), {
+        'db': ['Contract', 'Party', 'RateScript', 'set_read_write', 'session'], 
+        'utils': ['UserException', 'HH'],
+        'templater': ['render']})
 
-                <title>Chellow &gt; CSV Supplies HH Data</title>
-            </head>
-            <body>
-                <p>
-                    <a
-                        href="{/source/request/@context-path}/reports/1/output/">
-                        <xsl:value-of select="'Chellow'" />
-                    </a>
-                    &gt;
-                    <xsl:value-of select="'CSV Supplies HH Data'" />
-                </p>
-                  <xsl:if test="//message">
-                    <ul>
-                        <xsl:for-each select="//message">
-                            <li>
-                                <xsl:value-of select="@description" />
-                            </li>
-                        </xsl:for-each>
-                    </ul>
-                </xsl:if>
-                <form action="{/source/request/@context-path}/reports/169/output/">
-                    <fieldset>
-                        <legend>Download HH Data</legend>
-<br/>
-<select name="measurement-class">
-                        <option value="all">
-                                    All
-                        </option>
-                        <option value="hh">
-                                    HH
-                        </option>
-                        <option value="nhh">
-                                    NHH
-                        </option>
-                        </select>
+sess = None
+try:
+    sess = session()
+    now = datetime.utcnow()
+    start_date = datetime(now.year, now.month, 1) - relativedelta(months=1)
+    finish_date = datetime(now.year, now.month, 1) - HH
 
-<xsl:value-of select="' '"/><select name="is-import">
-                        <option value="true">
-                                    Import
-                        </option>
-                        <option value="false">
-                                    Export
-                        </option>
-                        </select>
-<xsl:value-of select="' '"/><select name="is-kwh">
-                        <option value="true">
-                                    kWh
-                        </option>
-                        <option value="false">
-                                    kVArh
-                        </option>
-                        </select>
-                        <xsl:value-of select="' for '"/>
-                        <input name="months" maxlength="2" size="2">
-                          <xsl:attribute name="value">
-                            <xsl:choose>
-                              <xsl:when test="/source/request/parameter[@name='months']">
-                                <xsl:value-of select="/source/request/parameter[@name='months']/value"/>
-                              </xsl:when>
-                              <xsl:otherwise>
-                                <xsl:value-of select="'1'"/>
-                              </xsl:otherwise>
-                            </xsl:choose>
-                          </xsl:attribute>
-                        </input>
-                        <xsl:value-of select="' month(s) finishing at the end of '"/>
-<input name="end-year" value="{/source/date/@year}" maxlength="4" size="4"/><xsl:value-of select="' - '"/>
-                        <select name="end-month">
-                            <xsl:for-each select="/source/months/month">
-                                <option value="{@number}">
-                                    <xsl:if test="@number=/source/date/@month">
-                                        <xsl:attribute name="selected">selected</xsl:attribute>
-                                    </xsl:if>
-                                    <xsl:value-of select="@number"/>
-                                </option>
-                            </xsl:for-each>
-                        </select>
-                    <input type="submit" value="Download"/>
-                    </fieldset>
-                </form>
-            </body>
-        </html>
-    </xsl:template>
-</xsl:stylesheet>]]></value>
+    render(inv, template, {'start_date': start_date, 'finish_date': finish_date})
+finally:
+    sess.close()]]></value>
+		<value><![CDATA[<!DOCTYPE html>
+<html>
+  <head>
+    <link rel="stylesheet" type="text/css"
+      href="{{ context_path }}/reports/19/output/">
+    <title>Chellow &gt; CSV Supplies HH Duration</title>
+  </head>
+  <body>
+    <p>
+      <a href="{{context_path}}/reports/1/output/">Chellow</a> &gt;
+      CSV Supplies HH Duration
+    </p>
+    {% if messages %}
+      <ul>
+        {% for message in messages %}
+          <li>{{ message }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+    <br>
+    <form action="{{context_path}}/reports/169/output/">
+      <fieldset>
+        <legend>48 Column Format</legend>
+        <br/>
+        <select name="is_import">
+          <option value="true">Import</option>
+          <option value="false">Export</option>
+        </select>
+        <select name="is_kwh">
+          <option value="true">kWh</option>
+          <option value="false">kVArh</option>
+        </select> from {{input_date('start', request, start_date)}} to
+        {{input_date('finish', request, finish_date)}}
+        <input type="submit" value="Download">
+      </fieldset>
+    </form>
+    <br><br>
+    <form action="{{context_path}}/reports/167/output/">
+      <fieldset>
+        <legend>HH Per Row Format</legend>
+        <br/>
+        <select name="is_import">
+          <option value="true">Import</option>
+          <option value="false">Export</option>
+        </select>
+        <select name="is_kwh">
+          <option value="true">kWh</option>
+          <option value="false">kVArh</option>
+        </select> from {{input_date('start', request, start_date)}} to
+        {{input_date('finish', request, finish_date)}}
+        <input type="submit" value="Download">
+      </fieldset>
+    </form>
+  </body>
+</html>]]></value>
 	</line>
 	<line>
 		<value><![CDATA[insert]]></value>
@@ -11866,21 +11826,16 @@ import pytz
 
 Monad.getUtils()['imprt'](globals(), {
         'db': ['HhDatum', 'Party', 'Supply', 'set_read_write', 'session'], 
-        'utils': ['UserException', 'HH'],
+        'utils': ['UserException', 'HH', 'form_date'],
         'templater': ['render']})
 
 sess = None
 try:
     sess = session()
-    end_year = inv.getInteger('end_year')
-    end_month = inv.getInteger('end_month')
-    months = inv.getInteger('months')
+    start_date = form_date(inv, 'start')
+    finish_date = form_date(inv, 'finish')
     is_import = inv.getBoolean('is_import')
     is_kwh = inv.getBoolean('is_kwh')
-
-    finish_date = datetime(end_year, end_month, 1, tzinfo=pytz.utc) + relativedelta(months=1) - HH
-    start_date = datetime(end_year, end_month, 1, tzinfo=pytz.utc) - relativedelta(months=months - 1)
-
     
     #inv.getResponse().setContentType('text/csv')
     #inv.getResponse().addHeader('Content-Disposition', 'attachment; filename="report.csv"')
@@ -11915,7 +11870,7 @@ try:
             zout.putNextEntry(ZipEntry(mpan_core_str + '_' + str(supply.id) + '.csv'))
         pw.print("MPAN Core,Date,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48")
         current_date = start_date
-        hh_data = iter(sess.query(HhDatum).from_statement("select hh_datum.* from hh_datum, channel, era where hh_datum.channel_id = channel.id and channel.era_id = era.id and era.supply_id = :supply_id and hh_datum.start_date >= :start_date and hh_datum.start_date <= :finish_date and channel.is_import = :is_import and channel.is_kwh = :is_kwh order by hh_datum.start_date").params(supply_id=supply_id, start_date=start_date, finish_date=finish_date, is_import=is_import, is_kwh=is_kwh))
+        hh_data = iter(sess.query(HhDatum).from_statement("select hh_datum.* from hh_datum, channel, era where hh_datum.channel_id = channel.id and channel.era_id = era.id and era.supply_id = :supply_id and hh_datum.start_date >= :start_date and hh_datum.start_date <= :finish_date and channel.is_import = :is_import and channel.is_kwh = :is_kwh order by hh_datum.start_date").params(supply_id=supply.id, start_date=start_date, finish_date=finish_date, is_import=is_import, is_kwh=is_kwh))
 
         try:
             datum = hh_data.next()
@@ -13103,98 +13058,9 @@ pw.close()]]></value>
 		<value><![CDATA[report]]></value>
 		<value><![CDATA[189]]></value>
 		<value><![CDATA[true]]></value>
-		<value><![CDATA[CSV Supplies Patched HH Data Selector]]></value>
-		<value><![CDATA[from java.util import GregorianCalendar, TimeZone, Locale, Calendar
-from net.sf.chellow.monad.types import MonadDate
-
-cal = MonadDate.getCalendar()
-cal.add(Calendar.MONTH, -1)
-source.appendChild(MonadDate(cal.getTime()).toXml(doc))
-source.appendChild(MonadDate.getMonthsXml(doc))]]></value>
-		<value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
-<xsl:stylesheet version="1.0"
-    xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
-    <xsl:output method="xml" encoding="US-ASCII"
-        doctype-public="-//W3C//DTD XHTML 1.1//EN"
-        doctype-system="http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd"
-        indent="yes" />
-    <xsl:template match="/">
-        <html>
-            <head>
-                <link rel="stylesheet" type="text/css"
-                    href="{/source/request/@context-path}/reports/19/output/" />
-
-                <title>Chellow &gt; CSV Patched HH Data</title>
-            </head>
-            <body>
-                <p>
-                    <a
-                        href="{/source/request/@context-path}/reports/1/output/">
-                        <xsl:value-of select="'Chellow'" />
-                    </a>
-                    &gt;
-                    <xsl:value-of select="'CSV Patched HH Data'" />
-                </p>
-                  <xsl:if test="//message">
-                    <ul>
-                        <xsl:for-each select="//message">
-                            <li>
-                                <xsl:value-of select="@description" />
-                            </li>
-                        </xsl:for-each>
-                    </ul>
-                </xsl:if>
-                <form action="{/source/request/@context-path}/reports/187/output/">
-                    <fieldset>
-                        <legend>Download HH Data</legend>
-<br/>
-<xsl:value-of select="'Measurement Class '"/><select name="measurement-class">
-                        <option value="all">
-                                    All
-                        </option>
-                        <option value="hh">
-                                    HH
-                        </option>
-                        <option value="nhh">
-                                    NHH
-                        </option>
-                        </select>
-<br/>
-<br/>
-<p>
-                        <xsl:value-of select="'For '"/>
-                        <input name="months" maxlength="2" size="2">
-                          <xsl:attribute name="value">
-                            <xsl:choose>
-                              <xsl:when test="/source/request/parameter[@name='months']">
-                                <xsl:value-of select="/source/request/parameter[@name='months']/value"/>
-                              </xsl:when>
-                              <xsl:otherwise>
-                                <xsl:value-of select="'1'"/>
-                              </xsl:otherwise>
-                            </xsl:choose>
-                          </xsl:attribute>
-                        </input>
-                        <xsl:value-of select="' month(s) finishing at the end of '"/>
-<input name="end-year" value="{/source/date/@year}" maxlength="4" size="4"/><xsl:value-of select="' - '"/>
-                        <select name="end-month">
-                            <xsl:for-each select="/source/months/month">
-                                <option value="{@number}">
-                                    <xsl:if test="@number=/source/date/@month">
-                                        <xsl:attribute name="selected">selected</xsl:attribute>
-                                    </xsl:if>
-                                    <xsl:value-of select="@number"/>
-                                </option>
-                            </xsl:for-each>
-                        </select>
-                    </p>
-                    <input type="submit" value="Download"/>
-                    </fieldset>
-                </form>
-            </body>
-        </html>
-    </xsl:template>
-</xsl:stylesheet>]]></value>
+		<value><![CDATA[Free 189]]></value>
+		<value><![CDATA[]]></value>
+		<value><![CDATA[]]></value>
 	</line>
 	<line>
 		<value><![CDATA[insert]]></value>
