@@ -338,424 +338,269 @@ tabindex="1" />
 		<value><![CDATA[5]]></value>
 		<value><![CDATA[true]]></value>
 		<value><![CDATA[Site]]></value>
-		<value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree, UserException
-from net.sf.chellow.monad.types import MonadDate
-from java.util import GregorianCalendar, Calendar, TimeZone, Locale, Date, Properties
-from net.sf.chellow.physical import Site, HhStartDate, Supply, Configuration
-from java.lang import Long
-from java.io import StringReader
-from net.sf.chellow.ui import Report
+		<value><![CDATA[from net.sf.chellow.monad import Monad
+from sqlalchemy.orm import joinedload_all
+import operator
+from datetime import datetime
+from dateutil.relativedelta import relativedelta
+from java.lang import System
 
-site_id = inv.getLong("site-id")
-if not inv.isValid():
-    raise UserException()
-site = Site.getSite(site_id)
-site_element = site.toXml(doc)
-source.appendChild(site_element)
+Monad.getUtils()['imprt'](globals(), {
+        'db': ['Contract', 'Era', 'Site', 'set_read_write', 'session'], 
+        'utils': ['UserException', 'HH'],
+        'templater': ['render']})
 
-prev_supply_id = None
-prev_start_date = None
-era_group = None
-era_groups_time = {}
+sess = None
+try:
+    sess = session()
+    configuration_contract = Contract.get_non_core_by_name(sess, 'configuration')
+    site_id = inv.getLong("site_id")
+    site = Site.get_by_id(sess, site_id)
 
-debug_str = ''
+    eras = sess.query(Era).from_statement("select era.* from site_era, era where site_era.era_id = era.id and site_era.site_id = :site_id order by era.supply_id, era.start_date desc").params(site_id=site.id).all()
 
-for era in Hiber.session().createQuery("select siteEra.era from SiteEra siteEra where siteEra.site = :site order by siteEra.era.supply.id, siteEra.era.startDate.date desc").setEntity('site', site).list():
-    supply = era.getSupply()
-    era_finish_date = era.getFinishDate()
-    if prev_supply_id is None or prev_supply_id != supply.getId() or era_finish_date is None or not era_finish_date.getNext().equals(prev_start_date):
-        if era_finish_date is None:
-            key = Long.MAX_VALUE
-        else:
-            key = era_finish_date.getDate().getTime()
-        era_group = []
-        era_groups_id = era_groups_time.setdefault(key, {})
-        era_group = era_groups_id.setdefault(supply.getId(), [])
-    prev_supply_id = supply.getId()
-    prev_start_date = era.getStartDate()
-    era_group.append(era)
+    groups = []
+    for idx, era in enumerate(eras):
+        if idx == 0 or eras[idx - 1].supply_id != era.supply_id:
+            if era.pc.code == '00':
+                meter_cat = 'HH'
+            elif len(era.channels) > 0:
+                meter_cat = 'AMR'
+            elif era.mtc.meter_type.code in ['UM', 'PH']:
+                meter_cat = 'Unmetered'
+            else:
+                meter_cat = 'NHH'
+            physical_site = sess.query(Site).from_statement("select site.* from site, site_era where site_era.site_id = site.id and site_era.is_physical is true and site_era.era_id = :era_id").params(era_id=era.id).one()
+            groups.append({'last_era': era, 'is_ongoing': era.finish_date is None, 'meter_category': meter_cat, 'physical_site': physical_site})
+        if era == eras[-1] or era.supply_id != eras[idx + 1]:
+            groups[-1]['first_era'] = era
 
+    groups = sorted(groups, key=operator.itemgetter('is_ongoing'), reverse=True)
 
-time_keys = era_groups_time.keys()
-time_keys.sort(None, None, True)
-for time_key in time_keys:
-    era_groups_id = era_groups_time[time_key]
-    id_keys = era_groups_id.keys()
-    id_keys.sort()
-    for id_key in id_keys:
-        era_group = era_groups_id[id_key]
-        first_era = era_group[0]
-        era_group_element = first_era.getSupply().toXml(doc, XmlTree('source').put('generatorType').put('dnoContract'))
-        site_element.appendChild(era_group_element)
+    now = datetime.utcnow()
+    month_start = datetime(now.year, now.month, 1) - relativedelta(months=1)
+    month_finish = datetime(now.year, now.month, 1) - HH
 
-        if first_era.pc.code == '00':
-            meter_cat = 'HH'
-        elif first_era.getChannels().size() > 0:
-            meter_cat = 'AMR'
-        elif first_era.getMtc().getMeterType().getCode() in ['UM', 'PH']:
-            meter_cat = 'Unmetered'
-        else:
-            meter_cat = 'NHH'
-
-        era_group_element.setAttribute('meter-category', meter_cat)
-        for era in era_group:
-            era_group_element.appendChild(era.toXml(doc, XmlTree("siteEras", XmlTree('site'))))
-
-
-now = HhStartDate.roundDown(Date())
-
-cal = GregorianCalendar(TimeZone.getTimeZone("GMT"), Locale.UK)
-cal.setTime(now.getDate())
-cal.add(Calendar.MONTH, -1)
-last_month = MonadDate(cal.getTime())
-last_month.setLabel('last-month')
-source.appendChild(last_month.toXml(doc))
-source.appendChild(MonadDate.getMonthsXml(doc))
-
-cal.setTime(now.getDate())
-cal.add(Calendar.DAY_OF_MONTH, -1)
-yesterday = MonadDate(cal.getTime())
-yesterday.setLabel('yesterday')
-source.appendChild(yesterday.toXml(doc))
-
-group_element = doc.createElement('group')
-source.appendChild(group_element)
-for group_site in site.groups(now, now, False)[0].getSites():
-    if group_site.getId() != site.getId():
-        group_element.appendChild(group_site.toXml(doc))
-source.setAttribute('debug', debug_str)
-
-config = Configuration.getConfiguration()
-properties = Properties()
-properties.load(StringReader(config.getProperties()))
-
-for key in properties.propertyNames():
-    if key.startswith('site.report.'):
-        site_report_id = properties.get(key)
-        if site_report_id is not None:
-            report = Report.getReport(int(site_report_id))
-            source.appendChild(report.toXml(doc))
-    elif key.startswith('site.link.') and key.endswith('.url'):
-        link_element = doc.createElement("link")
-        source.appendChild(link_element)
-        link_element.setAttribute('href', properties.get(key))
-        link_element.setAttribute('name', properties.get(key[:-3] + "name"))]]></value>
-		<value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
-<xsl:stylesheet version="1.0"
-    xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
-    <xsl:output method="xml" encoding="US-ASCII"
-        doctype-public="-//W3C//DTD XHTML 1.1//EN"
-        doctype-system="http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd"
-        indent="yes" />
-  <xsl:template match="/">
-    <html>
-      <head>
-        <link rel="stylesheet" type="text/css" href="{/source/request/@context-path}/reports/19/output/" />
-          <title>
-            Chellow &gt; Sites &gt;
-              <xsl:value-of select="/source/site/@name" />
-          </title>
-        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
-      </head>
-      <body>
-        <p>
-          <a href="{/source/request/@context-path}/reports/1/output/"><xsl:value-of select="'Chellow'" /></a> &gt;
-          <a href="{/source/request/@context-path}/reports/3/output/"><xsl:value-of select="'Sites'" /></a>
-          &gt; <xsl:value-of select="concat(/source/site/@name, ' [')" />
-          <a href="{/source/request/@context-path}/sites/{/source/site/@id}/">
-          <xsl:value-of select="'edit'" /></a>
-          <xsl:value-of select="']'" />
-        </p>
-<xsl:value-of select="/source/@debug"/>
-    <xsl:if test="//message">
-                    <ul>
-                        <xsl:for-each select="//message">
-                            <li>
-                                <xsl:value-of select="@description" />
-                            </li>
-                        </xsl:for-each>
-                    </ul>
-                </xsl:if>
-                <table>
-                    <tr>
-                        <th>Code</th>
-                        <td>
-                            <xsl:value-of select="/source/site/@code" />
-                        </td>
-                    </tr>
-                    <tr>
-                        <th>Name</th>
-                        <td>
-                            <xsl:value-of select="/source/site/@name" />
-                        </td>
-                    </tr>
-                  <xsl:if test="/source/report">
-                  <tr>
-                    <th>Custom Reports</th>
-                    <td>
-                        <ul>
-                        <xsl:for-each select="/source/report">
-                        <li><a
-                        href="{/source/request/@context-path}/reports/{@id}/output/?site-id={/source/site/@id}">
-<xsl:value-of select="@name"/></a></li>
-                        </xsl:for-each>
-                        </ul>
-                    </td>
-                  </tr>
-                  </xsl:if>
-                  <xsl:if test="/source/link">
-                  <tr>
-                    <th>External Links</th>
-                    <td>
-                        <ul>
-                        <xsl:for-each select="/source/link">
-                        <li><a
-                        href="{@href}{/source/site/@code}">
-<xsl:value-of select="@name"/></a></li>
-                        </xsl:for-each>
-                        </ul>
-                    </td>
-                  </tr>
-                  </xsl:if>
-
-                </table>
-                <br/>
-                <xsl:if test="/source/group/site">
-                <table><caption>Other sites in this group</caption>
-                <tr><th>Code</th><th>Name</th></tr>
-                <xsl:for-each select="/source/group/site">
-                  <tr><td><a href="{/source/request/@context-path}/reports/5/output/?site-id={@id}"><xsl:value-of select="@code" /></a></td><td><xsl:value-of select="@name" /></td></tr>
-                </xsl:for-each>
-                </table>
-                </xsl:if>
-                <br/>
-                <table>
-                    <caption>Supplies that power this site</caption>
-                    <thead>
-                        <tr>
-                            <th>View</th>
-                            <th>Name</th>
-                            <th>From</th>
-                            <th>To</th>
-                            <th>Source</th>
-                            <th>Generator Type</th>
-                            <th>Import MPAN core</th>
-                            <th>Export MPAN core</th>
-                            <th>Physical Location</th>
-                            <th>Also Supplies</th>
-                            <th>Meter Category</th>
-                            <th>Meter Serial Number</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <xsl:for-each
-                            select="/source/site/supply">
-                            <tr>
-                                <xsl:attribute name="style">
-                                  <xsl:if test="era[1]/hh-start-date[@label='finish']">
-                                  color: silver;
-                                  </xsl:if>
-                                </xsl:attribute>
-                                <td>
-                                    <a
-                                        href="{/source/request/@context-path}/reports/7/output/?supply_id={@id}">
-                                        <xsl:value-of select="'view'" />
-                                    </a>
-                                </td>
-                                <td>
-                                    <xsl:value-of select="@name" />
-                                </td>
-                                <td>
-                                    <xsl:value-of
-                                        select="concat(era[last()]/hh-start-date[@label='start']/@year, '-', era[last()]/hh-start-date[@label='start']/@month, '-', era[last()]/hh-start-date[@label='start']/@day)" />
-                                </td>
-                                <td>
-<xsl:choose>
-<xsl:when test="era[1]/hh-start-date[@label='finish']">
-                                    <xsl:value-of
-                                        select="concat(era/hh-start-date[@label='finish']/@year, '-', era/hh-start-date[@label='finish']/@month, '-', era/hh-start-date[@label='finish']/@day)" />
-</xsl:when>
-<xsl:otherwise>
-Ongoing
-</xsl:otherwise>
-</xsl:choose>
-</td>
-                                <td>
-                                    <xsl:value-of select="source/@code" />
-                                </td>
-                                <td>
-                                    <xsl:value-of select="generator-type/@code" />
-                                </td>
-                                <td>
-                                    <xsl:if
-                                        test="era/@imp-mpan-core">
-<a href="{/source/request/@context-path}/reports/67/output/?dno_contract_id={dno-contract/@id}">
-<xsl:value-of
- select="dno-contract/@name" />
-</a>
-<xsl:value-of select="' '"/>
-<xsl:value-of
- select="substring(era/@imp-mpan-core, 3, 14)" />
-                                     </xsl:if>
-                                </td>
-<td>
-                                    <xsl:if
-                                        test="era/@exp-mpan-core">
-<a href="{/source/request/@context-path}/reports/67/output/?dno_contract_id={dno-contract/@id}">
-<xsl:value-of
- select="dno-contract/@name" />
-</a>
-<xsl:value-of select="' '"/>
-<xsl:value-of
- select="substring(era/@exp-mpan-core, 3, 14)" />
-                                     </xsl:if>
-                                </td>                              <td>
-                                  <xsl:choose>
-                                  <xsl:when test="/source/site/@id=era[position()=1]/site-era[@is-physical='true']/site/@id">
-                                  this site
-                                  </xsl:when>
-                                  <xsl:otherwise>
-<a href="{/source/request/@context-path}/reports/5/output/?site-id={era/site-era[@is-physical]/site/@id}"><xsl:value-of select="era[position()=1]/site-era[@is-physical='true']/site/@code"/></a>
-                                  </xsl:otherwise>
-                                  </xsl:choose>                  
-                                </td>
-                                <td>
-                                  <xsl:for-each select="era[position()=1]/site-era[@is-physical='false' and site/@id != /source/site/@id]/site">
-<a href="{/source/request/@context-path}/reports/5/output/?site-id={@id}"><xsl:value-of select="@code"/></a>
-                                  </xsl:for-each>                  
-                                </td>
-                                <td><xsl:value-of select="@meter-category" /></td>
-                                <td><xsl:value-of select="era/@meter-serial-number" /></td>
-                            </tr>
-                        </xsl:for-each>
-                    </tbody>
-                </table>
+    properties = configuration_contract.make_properties()
+    other_sites = site.groups(sess, now, now, False)[0].sites[1:]
+    render(inv, template, {'site': site, 'groups': groups, 'properties': properties, 'other_sites': other_sites, 'month_start': month_start, 'month_finish': month_finish})
+finally:
+    sess.close()]]></value>
+		<value><![CDATA[<!doctype html>
+<html>
+  <head>
+    <link rel="stylesheet" type="text/css"
+      href="{{ context_path }}/reports/19/output/">
+    <title>Chellow &gt; Sites &gt; {{site.name}}</title>
+  </head>
+  <body>
+    <p>
+      <a href="{{context_path}}/reports/1/output/">Chellow</a> &gt;
+      <a href="{{context_path}}/reports/3/output/">Sites</a> &gt;
+      {{site.name}}
+      [<a href="{{context_path}}/sites/{{site.id}}/">edit</a>]
+    </p>
+    {% if messages %}
       <ul>
-        <li><a href="{/source/request/@context-path}/reports/9/output/?site-id={/source/site/@id}&amp;months=1&amp;finish-year={/source/date[@label = 'yesterday']/@year}&amp;finish-month={/source/date[@label = 'yesterday']/@month}"><xsl:value-of select="'Graph of site usage'" /></a>
-         </li>
-         <li><a href="{/source/request/@context-path}/reports/11/output/?site-id={/source/site/@id}&amp;months=1&amp;finish-year={/source/date[@label = 'yesterday']/@year}&amp;finish-month={/source/date[@label = 'yesterday']/@month}">
-         <xsl:value-of select="'Generation Graphs'" />
-                        </a>
-          </li>
-          <li><a href="{/source/request/@context-path}/reports/13/output/?site-id={/source/site/@id}">
-<xsl:value-of select="'Table of site level monthly kWh, MD kWh etc.'" /></a>
-          </li>
-          <li>
-        <a href="{/source/request/@context-path}/reports/25/output/?site-code={/source/site/@code}&amp;year={/source/date[@label = 'yesterday']/@year}&amp;month={/source/date[@label = 'yesterday']/@month}">
-                            <xsl:value-of select="'Table of hh data'" />
-                        </a>
-          </li>
-        </ul>
+        {% for message in messages %}
+          <li>{{ message }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+    <table>
+      <tr>
+        <th>Code</th>
+        <td>{{site.code}}</td>
+      </tr>
+      <tr>
+        <th>Name</th>
+        <td>{{site.name}}</td>
+      </tr>
+      {% if properties.site_reports %}
+        <tr>
+          <th>Custom Reports</th>
+          <td>
+            <ul>
+              {% for report in properties.site_reports %}
+                <li>
+                  <a href="{{context_path}}/reports/{{report.id}}/output/?site_id={{site.id}}">{{report.name}}</a>
+                </li>
+              {% endfor %}
+            </ul>
+          </td>
+        </tr>
+      {% endif %}
+      {% if properties.site_links %}
+        <tr>
+          <th>External Links</th>
+          <td>
+            <ul>
+              {% for link in properties.site_reports %}
+                <li><a href="{{link.href}}{{site.code}}">{{link.name}}</a></li>
+              {% endfor %}
+            </ul>
+          </td>
+        </tr>
+      {% endif %}
+    </table>
+    <br>
+    {% if other_sites|length > 0 %}
+      <table>
+        <caption>Other sites in this group</caption>
+        <tr>
+          <th>Code</th>
+          <th>Name</th>
+        </tr>
+        {% for osite in other_sites %}
+          <tr>
+            <td>
+              <a href="{{context_path}}/reports/5/output/?site_id={{osite.id}}">{{osite.code}}</a>
+            </td>
+            <td>{{osite.name}}</td>
+          </tr>
+        {% endfor %}
+      </table>
+    {% endif %}
+    <br>
+    <table>
+      <caption>Supplies that power this site</caption>
+      <thead>
+        <tr>
+          <th>View</th>
+          <th>Name</th>
+          <th>From</th>
+          <th>To</th>
+          <th>Source</th>
+          <th>Generator Type</th>
+          <th>Import MPAN core</th>
+          <th>Export MPAN core</th>
+          <th>Physical Location</th>
+          <th>Also Supplies</th>
+          <th>Meter Category</th>
+          <th>Meter Serial Number</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for group in groups %}
+          {% set last_era = group['last_era'] %}
+          <tr
+            {% if not group['is_ongoing'] %}
+              style="color: silver;"
+            {% endif %}
+          >
+            <td>
+              <a href="{{context_path}}/reports/7/output/?supply_id={{last_era.supply_id}}">view</a>
+            </td>
+            <td>{{last_era.supply.name}}</td>
+            <td>{{group['first_era'].start_date|hh_format}}</td>
+            <td>{{last_era.finish_date|hh_format}}</td>
+            <td>{{last_era.supply.source.code}}</td>
+            <td>
+              {% if last_era.supply.generator_type %}
+                {{last_era.supply.generator_type.code}}
+              {% endif %}
+            </td>
+            <td>
+              {% if last_era.imp_mpan_core %}
+                <a href="{{context_path}}/reports/67/output/?dno_contract_id={{last_era.supply.dno_contract.id}}">{{last_era.supply.dno_contract.name}}</a>
+                {{last_era.imp_mpan_core[2:]}}
+              {% endif %}
+            </td>
+            <td>
+              {% if last_era.exp_mpan_core %}
+                <a href="{{context_path}}/reports/67/output/?dno_contract_id={{last_era.supply.dno_contract.id}}">{{last_era.supply.dno_contract.name}}</a>
+                {{last_era.exp_mpan_core[2:]}}
+              {% endif %}
+            </td>
+            <td>
+              {% if group.physical_site.id == site.id %}
+                this site
+              {% else %}
+                <a href="{{context_path}}/reports/5/output/?site_id={{group['physical_site'].id}}">{{group.physical_site.code}}</a>
+              {% endif %}
+            </td>
+            <td>
+              {% for osite in group.other_sites %}
+                <a href="{{context_path}}/reports/5/output/?site_id={{osite.id}}">{{osite.code}}</a>
+              {% endfor %}
+            </td>
+            <td>{{group.meter_category}}</td>
+            <td>{{last_era.msn}}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    <ul>
+      <li>
+        <a href="{{context_path}}/reports/9/output/?site_id={{site.id}}&amp;months=1&amp;finish_year={{month_finish.year}}&amp;finish_month={{month_finish.month}}">Graph of site usage</a>
+      </li>
+      <li>
+        <a href="{{context_path}}/reports/11/output/?site_id={{site.id}}&amp;months=1&amp;finish_year={{month_finish.year}}&amp;finish_month={{month_finish.month}}">Generation Graphs</a>
+      </li>
+      <li>
+        <a href="{{context_path}}/reports/13/output/?site_id={{site.id}}">
+Table of site level monthly kWh, MD kWh etc.</a>
+      </li>
+      <li>
+        <a href="{{context_path}}/reports/25/output/?site_id={{site.id}}&amp;year={{month_finish.year}}&amp;month={{month_finish.month}}">Table of hh data</a>
+      </li>
+    </ul>
 
-        <h3>CSV Downloads</h3>
-<form action="{/source/request/@context-path}/reports/161/output/">
-                    <fieldset>
-<input type="hidden" name="site-code" value="{/source/site/@code}" />
-                        <legend>Monthly Duration</legend>
-<br/>
-<xsl:value-of select="'For '"/>
-<input name="months" value="1" maxlength="2" size="2" />
-<xsl:value-of select="' month(s) until the end of '"/>
-                        <input name="end-year" value="{/source/date[@label='last-month']/@year}" maxlength="4" size="4" /><xsl:value-of select="' - '"/>
-                        <select name="end-month">
-                            <xsl:for-each select="/source/months/month">
-                                <option value="{@number}">
-                                    <xsl:if test="@number=/source/date[@label='last-month']/@month">
-                                        <xsl:attribute name="selected">selected</xsl:attribute>
-                                    </xsl:if>
-                                    <xsl:value-of select="@number"/>
-                                </option>
-                            </xsl:for-each>
-                        </select>
-                        <input type="submit" value="Download"/>
-                    </fieldset>
-                </form>
-                <br/>
-<form action="{/source/request/@context-path}/reports/181/output/">
-                    <fieldset>
-                    <input type="hidden" name="site-id" value="{/source/site/@id}" />
-                    
-                        <legend>Download TRIAD CSV</legend>
-                        <br/>
-                        <xsl:value-of select="'For financial year ending March '"/>
-                        <input name="year" value="{/source/date/@year}" size="4" maxlength="4"/>
-<xsl:value-of select="' '"/>
-                        <input type="submit" value="Download"/>
-                        <input type="reset" value="Reset"/>
-                    </fieldset>
-                </form>
-                <br/>
-                <form
-                    action="{/source/request/@context-path}/reports/29/output/">
-                    <fieldset>
-                        <legend>Download HH data (kWh)</legend>
-                        <input type="hidden" name="site-id"
-                            value="{/source/site/@id}" />
-                        <br/>
-                            <select name="type">
-                                <option value="used">Used</option>
-                                <option value="imported">
-                                    Imported
-                                </option>
-                                <option value="exported">
-                                    Exported
-                                </option>
-                                <option value="generated">
-                                    Generated
-                                </option>
-                                <option value="displaced">
-                                    Displaced
-                                </option>
-                                <option value="parasitic">
-                                    Parasitic
-                                </option>
-                            </select>
-                        <xsl:value-of select="' for '" /><input size="2" length="2" name="months" value="1" /><xsl:value-of select="' month(s) finishing at the end of '" /><input size="4" length="4" name="year" value="{/source/date/@year}" /><xsl:value-of select="' - '" />
-                                               <select name="month">
-                            <xsl:for-each
-                                select="/source/months/month">
-                                <option>
-                                    <xsl:if
-                                        test="/source/date[@label='last-month']/@month = @number">
-                                        <xsl:attribute
-                                    name="selected">selected</xsl:attribute>
-                                    </xsl:if>
-                                    <xsl:value-of select="@number" />
-                                </option>
-                            </xsl:for-each>
-                        </select>
-                        <xsl:value-of select="' '" />
-                        <input type="submit" value="Download" />
-                    </fieldset>
-                </form>
-<br/>
-<form action="{/source/request/@context-path}/reports/109/output/">
-                    <fieldset>
-                        <input type="hidden" name="site-id" value="{/source/site/@id}"/>
-                        <legend>Displaced Virtual Bills</legend>
-<br/>
-<xsl:value-of select="'For '"/>
-<input name="months" value="1" maxlength="2" size="2" />
-<xsl:value-of select="' month(s) until the end of '"/>
-                        <input name="end-year" value="{/source/date[@label='last-month']/@year}" maxlength="4" size="4" /><xsl:value-of select="' - '"/>
-                        <select name="end-month">
-                            <xsl:for-each select="/source/months/month">
-                                <option value="{@number}">
-                                    <xsl:if test="@number=/source/date[@label='last-month']/@month">
-                                        <xsl:attribute name="selected">selected</xsl:attribute>
-                                    </xsl:if>
-                                    <xsl:value-of select="@number"/>
-                                </option>
-                            </xsl:for-each>
-                        </select>
-<xsl:value-of select="' '"/>
-                        <input type="submit" value="Download"/>
-                    </fieldset>
-                </form>
-      </body>
-    </html>
-  </xsl:template>
-</xsl:stylesheet>]]></value>
+    <h3>CSV Downloads</h3>
+    
+    <form action="{{context_path}}/reports/161/output/">
+      <fieldset>
+        <input type="hidden" name="site_id" value="{{site.id}}">
+        <legend>Monthly Duration</legend>
+        <br>
+        For {{input_text('months', request, '1', size=2, maxlength=2)}}
+        month(s) until the end of {{input_date('finish', request, month_finish, resolution='month')}}
+        <input type="submit" value="Download"/>
+      </fieldset>
+    </form>
+    <br>
+    <form action="{{context_path}}/reports/181/output/">
+      <fieldset>
+        <input type="hidden" name="site_id" value="{{site.id}}">
+        <legend>Download TRIAD CSV</legend>
+        <br>
+        For financial year ending March
+        {{input_date(None, request, month_finish, resolution='year')}}
+        <input type="submit" value="Download">
+      </fieldset>
+    </form>
+    <br>
+    <form action="{{context_path}}/reports/29/output/">
+      <fieldset>
+        <legend>Download HH data (kWh)</legend>
+        <input type="hidden" name="site_id" value="{{site.id}}">
+        <br>
+        <select name="type">
+          <option value="used">Used</option>
+          <option value="imported">Imported</option>
+          <option value="exported">Exported</option>
+          <option value="generated">Generate</option>
+          <option value="displaced">Displaced</option>
+          <option value="parasitic">Parasitic</option>
+        </select>
+        for {{input_text('months', request, '1', size=2, maxlength=2)}}
+        month(s) until the end of {{input_date(None, request, month_finish, resolution='month')}}
+        <input type="submit" value="Download">
+      </fieldset>
+    </form>
+    <br>
+    <form action="{{context_path}}/reports/109/output/">
+      <fieldset>
+        <input type="hidden" name="site_id" value="{{site.id}}">
+        <legend>Displaced Virtual Bills</legend>
+        <br>
+        For {{input_text('months', request, '1', size=2, maxlength=2)}}
+        month(s) until the end of {{input_date('finish', request, month_finish, resolution='month')}}
+        <input type="submit" value="Download">
+      </fieldset>
+    </form>
+  </body>
+</html>]]></value>
 	</line>
 	<line>
 		<value><![CDATA[insert]]></value>
@@ -4076,7 +3921,7 @@ from net.sf.chellow.physical import HhStartDate, Site
 from java.sql import ResultSet, Timestamp
 
 TYPES = ['used', 'generated', 'exported', 'displaced', 'parasitic', 'imported']
-site_id = inv.getLong("site-id")
+site_id = inv.getLong("site_id")
 year = inv.getInteger("year")
 month = inv.getInteger("month")
 months = inv.getInteger("months")
@@ -8627,8 +8472,8 @@ from net.sf.chellow.monad.types import MonadDate
 
 caches = {}
 
-end_year = inv.getInteger('end-year')
-end_month = inv.getInteger('end-month')
+end_year = inv.getInteger('finish_year')
+end_month = inv.getInteger('finish_month')
 months = inv.getInteger('months')
 
 if not inv.isValid():
@@ -8666,8 +8511,8 @@ gbp_format = DecimalFormat("#,##0.00")
 
 forecast_date = comterp.get('forecast_date')()
 
-if inv.hasParameter('site-id'):
-    site_id = inv.getLong('site-id')
+if inv.hasParameter('site_id'):
+    site_id = inv.getLong('site_id')
     site_query = Hiber.session().createQuery("from Site site where site = :site").setEntity('site', Site.getSite(site_id))
     contract = None
     bill_titles = ['net-gbp']
@@ -10401,17 +10246,17 @@ from dateutil.relativedelta import relativedelta
 
 Monad.getUtils()['imprt'](globals(), {
         'db': ['Contract', 'Party', 'RateScript', 'set_read_write', 'session'], 
-        'utils': ['UserException'],
+        'utils': ['UserException', 'HH'],
         'templater': ['render']})
 
 sess = None
 try:
     sess = session()
-    init = datetime.utcnow()
-    init = datetime(init.year, init.month, 1) - relativedelta(months=1)
+    now = datetime.utcnow()
+    start_date = datetime(now.year, now.month, 1) - relativedelta(months=1)
+    finish_date = datetime(now.year, now.month, 1) - HH
 
-    render(inv, template, {'init': init})
-
+    render(inv, template, {'start_date': start_date, 'finish_date': finish_date})
 finally:
     sess.close()]]></value>
 		<value><![CDATA[<!DOCTYPE html>
@@ -10437,9 +10282,8 @@ finally:
       <fieldset>
         <legend>Download</legend>
         <br>
-        For {{input_text('months', request, 1, size=2, maxlength=2)}}
-        month(s) finishing at the end of
-        {{input_date(None, request, init, resolution='month')}}
+        From {{input_date('start', request, start_date)}} to
+        {{input_date('finish', request, finish_date)}}
         <input type="submit" value="Download">
       </fieldset>
     </form>
@@ -11325,8 +11169,8 @@ import threading
 
 caches = {}
 
-year = inv.getInteger("end-year")
-month = inv.getInteger("end-month")
+year = inv.getInteger("finish_year")
+month = inv.getInteger("finish_month")
 months = inv.getInteger("months")
 
 if not inv.isValid():
@@ -12749,107 +12593,75 @@ pw.close()]]></value>
 		<value><![CDATA[183]]></value>
 		<value><![CDATA[true]]></value>
 		<value><![CDATA[CSV Sites HH Data]]></value>
-		<value><![CDATA[from net.sf.chellow.monad import Hiber, UserException
-from java.lang import System
-from net.sf.chellow.monad.types import MonadDate
-from java.sql import Timestamp, ResultSet
-from java.util import GregorianCalendar, Calendar, TimeZone, Locale, Date
-from net.sf.chellow.physical import HhStartDate
+		<value><![CDATA[from net.sf.chellow.monad import Monad
+from sqlalchemy.orm import joinedload_all
+from datetime import datetime
+from dateutil.relativedelta import relativedelta
 from java.util.zip import ZipOutputStream, ZipEntry
-from java.io import OutputStreamWriter, PrintWriter
-from java.text import SimpleDateFormat
+from java.io import PrintWriter, OutputStreamWriter
+import pytz
 
-year = inv.getInteger("year")
-month = inv.getInteger("month")
-months = inv.getInteger("months")
+Monad.getUtils()['imprt'](globals(), {
+        'db': ['HhDatum', 'Site', 'Supply', 'set_read_write', 'session'], 
+        'utils': ['UserException', 'HH', 'form_date'],
+        'templater': ['render']})
 
-cal = GregorianCalendar(TimeZone.getTimeZone("GMT"), Locale.UK)
-cal.set(Calendar.YEAR, year)
-cal.set(Calendar.MONTH, month - 1)
-cal.set(Calendar.DAY_OF_MONTH, 1)
-cal.set(Calendar.HOUR_OF_DAY, 0)
-cal.set(Calendar.MINUTE, 0)
-cal.set(Calendar.SECOND, 0)
-cal.set(Calendar.MILLISECOND, 0)
-cal.add(Calendar.MONTH, 1)
-cal.add(Calendar.MINUTE, -30)
-finish_date = HhStartDate(cal.getTime())
+sess = None
+try:
+    sess = session()
+    start_date = form_date(inv, 'start')
+    finish_date = form_date(inv, 'finish')
+    is_import = inv.getBoolean('is_import')
+    is_kwh = inv.getBoolean('is_kwh')
+    
+    #inv.getResponse().setContentType('text/csv')
+    #inv.getResponse().addHeader('Content-Disposition', 'attachment; filename="report.csv"')
+    #pw = inv.getResponse().getWriter()
+    #pw.println('hello')
+    #pw.flush()
 
-cal.add(Calendar.MINUTE, 30)
-cal.add(Calendar.MONTH, -1 * months)
-start_date = HhStartDate(cal.getTime())
+    if inv.hasParameter('site_id'):
+        site_id = inv.getLong('site_id')
+        site = Site.get_by_id(sess, site_id)
+        sites = sess.query(Site).from_statement("select * from site where id = :site_id").params(site_id=site_id)
+        file_name = "sites_hh_data_" + str(site_id) + "_" + finish_date.strftime('%Y%m%d%M%H') + ".csv"
+        inv.getResponse().setContentType('text/csv')
+        inv.getResponse().setHeader('Content-Disposition', 'attachment; filename="' + file_name + '"')
+        pw = inv.getResponse().getWriter()
+        zout = None
+    else:
+        sites = sess.query(Site).from_statement("select site.* from site, site_era, era where site_era.site_id = site.id and site_era.era_id = era.id and site_era.is_physical is true and (era.finish_date is null or era.finish_date >= :start_date) and era.start_date <= :finish_date").params(start_date=start_date, finish_date=finish_date)
+        file_name = "supplies_hh_data_" + finish_date.strftime('%Y%m%d%M%H') + ".zip"
+        inv.getResponse().setContentType('application/zip')
+        inv.getResponse().setHeader('Content-Disposition', 'attachment; filename="' + file_name + '"')
+        sout = inv.getResponse().getOutputStream()
+        zout = ZipOutputStream(sout)
+        pw = PrintWriter(OutputStreamWriter(zout, 'UTF-8'))
 
-inv.getResponse().setContentType('application/zip')
-inv.getResponse().setHeader('Content-Disposition', 'attachment; filename="output.zip"')
-sout = inv.getResponse().getOutputStream()
-zout = ZipOutputStream(sout)
-pw = PrintWriter(OutputStreamWriter(zout, 'UTF-8'))
-
-#inv.getResponse().setContentType("text/csv")
-#inv.getResponse().setHeader('Content-Disposition', 'filename=output.csv;')
-#pw = inv.getResponse().getWriter()
-
-date_format = SimpleDateFormat("yyyy-MM-dd")
-date_format.setCalendar(cal)
-title_format = SimpleDateFormat("yyyy-MM-dd'T'hhmm'Z'")
-title_format.setCalendar(cal)
-
-sites = Hiber.session().createQuery("from Site site order by site.code").scroll()
-#sites.last()
-#sites.previous()
-while sites.next():
-    site = sites.get(0)
-    for group in site.groups(start_date, finish_date, True):
-        hh_date = start_date
-        zout.putNextEntry(ZipEntry(site.getCode() + '_' + title_format.format(group.getFrom().getDate()) + '.csv'))
-        pw.print("Site Code, Site Name, Associated Site Codes, Sources, Generator Types, From, To, Type,Date,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48")
-        pw.flush()
-        associates = ''
-        group_sites = group.getSites()
-        for i in range(1, len(group_sites)):
-            associates = associates + group_sites[i].getCode() + ' '
-
-        sources = []
-        gen_types = []
-        for a_supply in group.getSupplies():
-            source = a_supply.getSource().getCode()
-            if source not in sources:
-                sources.append(source)
-            gen_type = a_supply.getGeneratorType()
-            if gen_type is not None:
-                gen_type = gen_type.getCode()
-                if gen_type not in gen_types:
-                    gen_types.append(gen_type)
-        sources.sort()
-        sources_str = ''
-        for source in sources:
-            sources_str = sources_str + source + ' '
-        gen_types.sort()
-        gen_types_str = ''
-        for gen_type in gen_types:
-            gen_types_str = gen_types_str + gen_type + ''
-        
-        map = group.hhData()
-        import_from_net = map.get('import-net')
-        export_to_net = map.get('export-net')
-        import_from_gen = map.get('import-gen')
-        export_to_gen = map.get('export-gen')
-        for i in range(len(import_from_net)):
-            cal.setTime(hh_date.getDate())
-            if cal.get(Calendar.HOUR_OF_DAY) == 0 and cal.get(Calendar.MINUTE) == 0:
-                pw.print("\r\n" + site.getCode() + ',' + site.getName() + ',' + associates + ',' + sources_str + ',' + gen_types_str + ',' + group.getFrom().toString() + ',' + group.getTo().toString() + ',used,' + date_format.format(hh_date.getDate()))
-            exported_kwh = export_to_net[i]
-            imported_kwh = import_from_net[i]
-            generated_kwh = import_from_gen[i]
-            parasitic_kwh = export_to_gen[i]
-            displaced_kwh = generated_kwh - exported_kwh - parasitic_kwh
-            used_kwh = imported_kwh + displaced_kwh
-            pw.print(',' + str(round(used_kwh, 2)))
-            hh_date = hh_date.getNext()
-        pw.flush()
-    Hiber.session().clear()
-sites.close()
-pw.close()]]></value>
+    for site in sites:
+        for group in site.groups(sess, start_date, finish_date, True):
+            if zout is not None:
+                zout.putNextEntry(ZipEntry(site.code + '_' + group.finish_date.strftime('%Y%m%d%M%H') + '.csv'))
+            pw.print("Site Code, Site Name, Associated Site Codes, Sources, Generator Types, From, To,Type,Date," + ','.join(map(str, range(1, 49))))
+            pw.flush()
+            associates = ' '.join(site.code for site in group.sites[1:])
+            source_codes = ' '.join(sorted(set(sup.source.code for sup in group.supplies)))
+            gen_types = ' '.join(sorted(set(sup.generator_type.code for sup in group.supplies if supp.generator_type is not None)))
+            group_start_str = group.start_date.strftime('%Y-%m-%d %H:%M')
+            group_finish_str = group.finish_date.strftime('%Y-%m-%d %H:%M')
+            for hh in group.hh_data(sess):
+                hh_start = hh['start_date']
+                if hh_start.hour == 0 and hh_start.minute == 0:
+                    pw.print("\r\n" + ','.join('"' + str(val) + '"' for val in [site.code, site.name, associates, source_codes, gen_types, group_start_str, group_finish_str, 'used', hh_start.strftime('%Y-%m-%d')]))
+                used_gen_kwh = hh['import_gen'] - hh['export_net'] - hh['export_gen']
+                used_3p_kwh = hh['import_3p'] - hh['export_3p']
+                used_kwh = hh['import_net'] + used_gen_kwh + used_3p_kwh
+                pw.print(',' + str(round(used_kwh, 2)))
+            pw.flush()
+    pw.close()
+finally:
+    if sess is not None:
+        sess.close()]]></value>
 		<value><![CDATA[]]></value>
 	</line>
 	<line>
