@@ -11068,83 +11068,56 @@ source.appendChild(MonadDate.getMonthsXml(doc))]]></value>
 		<value><![CDATA[159]]></value>
 		<value><![CDATA[true]]></value>
 		<value><![CDATA[CSV Sites Monthly Duration Selector]]></value>
-		<value><![CDATA[from java.util import GregorianCalendar, TimeZone, Locale, Calendar
-from net.sf.chellow.monad.types import MonadDate
+		<value><![CDATA[from net.sf.chellow.monad import Monad
+from datetime import datetime
+from dateutil.relativedelta import relativedelta
 
-cal = GregorianCalendar(TimeZone.getTimeZone("GMT"), Locale.UK)
-cal.add(Calendar.MONTH, -1)
-source.appendChild(MonadDate(cal.getTime()).toXml(doc))
-source.appendChild(MonadDate.getMonthsXml(doc))]]></value>
-		<value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
-<xsl:stylesheet version="1.0"
-    xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
-    <xsl:output method="xml" encoding="US-ASCII"
-        doctype-public="-//W3C//DTD XHTML 1.1//EN"
-        doctype-system="http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd"
-        indent="yes" />
-    <xsl:template match="/">
-        <html>
-            <head>
-                <link rel="stylesheet" type="text/css"
-                    href="{/source/request/@context-path}/reports/19/output/" />
+Monad.getUtils()['imprt'](globals(), {
+        'db': ['Contract', 'Party', 'RateScript', 'set_read_write', 'session'], 
+        'utils': ['UserException', 'HH'],
+        'templater': ['render']})
 
-                <title>Chellow &gt; CSV Sites Monthly Duration</title>
-            </head>
-            <body>
-                <p>
-                    <a
-                        href="{/source/request/@context-path}/reports/1/output/">
-                        <xsl:value-of select="'Chellow'" />
-                    </a>
-                    &gt;
-                    <xsl:value-of select="'CSV Sites Monthly Duration'" />
-                </p>
-                  <xsl:if test="//message">
-                    <ul>
-                        <xsl:for-each select="//message">
-                            <li>
-                                <xsl:value-of select="@description" />
-                            </li>
-                        </xsl:for-each>
-                    </ul>
-                </xsl:if>
-                <form action="{/source/request/@context-path}/reports/161/output/">
-                    <fieldset>
-                        <legend>Download</legend>
-<br/>
-<p><xsl:value-of select="'For '"/>
-                        <input name="months" maxlength="2" size="2">
-                          <xsl:attribute name="value">
-                            <xsl:choose>
-                              <xsl:when test="/source/request/parameter[@name='months']">
-                                <xsl:value-of select="/source/request/parameter[@name='months']/value"/>
-                              </xsl:when>
-                              <xsl:otherwise>
-                                <xsl:value-of select="'1'"/>
-                              </xsl:otherwise>
-                            </xsl:choose>
-                          </xsl:attribute>
-                        </input>
-                        <xsl:value-of select="' month(s) finishing at the end of '"/>
-<input name="end-year" value="{/source/date/@year}" maxlength="4" size="4"/><xsl:value-of select="' - '"/>
-                        <select name="end-month">
-                            <xsl:for-each select="/source/months/month">
-                                <option value="{@number}">
-                                    <xsl:if test="@number=/source/date/@month">
-                                        <xsl:attribute name="selected">selected</xsl:attribute>
-                                    </xsl:if>
-                                    <xsl:value-of select="@number"/>
-                                </option>
-                            </xsl:for-each>
-                        </select>
-                    </p>
-                    <input type="submit" value="Download"/>
-                    </fieldset>
-                </form>
-            </body>
-        </html>
-    </xsl:template>
-</xsl:stylesheet>]]></value>
+sess = None
+try:
+    sess = session()
+    now = datetime.utcnow()
+    month_start = datetime(now.year, now.month, 1) - relativedelta(months=1)
+    month_finish = datetime(now.year, now.month, 1) - HH
+
+    render(inv, template, {'month_start': month_start, 'month_finish': month_finish})
+finally:
+    sess.close()]]></value>
+		<value><![CDATA[<!DOCTYPE html>
+<html>
+  <head>
+    <link rel="stylesheet" type="text/css"
+      href="{{context_path}}/reports/19/output/">
+    <title>Chellow &gt; CSV Sites Monthly Duration</title>
+  </head>
+  <body>
+    <p>
+      <a href="{{context_path}}/reports/1/output/">Chellow</a> &gt;
+      CSV Sites Monthly Duration
+    </p>
+    {% if messages %}
+      <ul>
+        {% for message in messages %}
+          <li>{{ message }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+    <form action="{{context_path}}/reports/161/output/">
+      <fieldset>
+        <legend>Download</legend>
+        <br>
+        For {{input_text('months', request, '1', size=2, maxlength=2)}}
+        month(s) finishing at the end of
+        {{input_date('finish', request, month_finish, resolution='month')}}
+        <input type="submit" value="Download">
+      </fieldset>
+    </form>
+  </body>
+</html>]]></value>
 	</line>
 	<line>
 		<value><![CDATA[insert]]></value>
