@@ -885,11 +885,11 @@ finally:
                 <a title="{{ era.finish_date|hh_format }}">{{ era.finish_date|hh_format(modifier='date') }}</a>
               </td>
               <td rowspan="4">
-                <a href="{{ context_path }}/reports/5/output/?site-id={{ physical_site.id }}" title="{{ physical_site.name }}">{{ physical_site.code }}</a>
+                <a href="{{ context_path }}/reports/5/output/?site_id={{ physical_site.id }}" title="{{ physical_site.name }}">{{ physical_site.code }}</a>
                 {% if other_sites %}
                   (also
                     {% for other_site in other_sites %}
-                      <a href="{{ context_path }}/reports/5/output/?site-id={{ other_site.id }}" title="{{ other_site.name }}">{{ other_site.code }}</a>
+                      <a href="{{ context_path }}/reports/5/output/?site_id={{ other_site.id }}" title="{{ other_site.name }}">{{ other_site.code }}</a>
                     {%- endfor -%}
                   )
                 {% endif %}
@@ -11129,10 +11129,16 @@ if not inv.isValid():
     raise UserException()
 
 
-if inv.hasParameter('site-code'):
-    search_term = inv.getString('site-code')
+if inv.hasParameter('site_id'):
+    st_id = inv.getLong('site_id')
+    st = Site.getSite(st_id)
+    base_name = "site_monthly_duration_for_" + st.code + "_" + str(months) + "_to_" + str(year) + "_" + str(month) + ".csv"
 else:
-    search_term = None
+    st = None
+    base_name = "site_monthly_duration_for_all_site_for_" + str(months) + "_to_" + str(year) + "_" + str(month) + ".csv"
+    
+running_name = "RUNNING_" + base_name
+finished_name = "FINISHED_" + base_name
 
 cal = MonadDate.getCalendar()
 cal.set(Calendar.YEAR, year)
@@ -11324,23 +11330,21 @@ def process_site(site, month_start, month_finish, forecast_date, tmp_file, bill_
 
 def long_process():
     now = datetime.datetime.utcnow()
-    if search_term is None:
-        query = Hiber.session().createQuery("from Site site order by site.code")
-        #query = Hiber.session().createQuery("from Site site where site.code in ('10014', '12057') order by site.code")
-        #query = Hiber.session().createQuery("from Site site order by site.code").setMaxResults(400)
-        base_name = "site_monthly_duration_for_all_site_for_" + str(months) + "_to_" + str(year) + "_" + str(month) + ".csv"
-    else:
-        query = Hiber.session().createQuery("from Site site where site.code = :siteCode").setString('siteCode', search_term.strip())
-        base_name = "site_monthly_duration_for_" + search_term + "_" + str(months) + "_to_" + str(year) + "_" + str(month) + ".csv"
     
-    running_name = "RUNNING_" + base_name
-    finished_name = "FINISHED_" + base_name
-
+    
     tmp_dir = Monad.getContext().getAttribute("net.sf.chellow.tmp_dir")
     os.chdir(tmp_dir)
     tmp_file = open(running_name, "w")
 
     try:
+        if st is None:
+            query = Hiber.session().createQuery("from Site site order by site.code")
+            #query = Hiber.session().createQuery("from Site site where site.code in ('10014', '12057') order by site.code")
+            #query = Hiber.session().createQuery("from Site site order by site.code").setMaxResults(400)
+        
+        else:
+            query = Hiber.session().createQuery("from Site site where site = :st").setEntity('st', st)
+
         computer = Contract.getNonCoreContract('computer')
 
         comterp = PythonInterpreter()
