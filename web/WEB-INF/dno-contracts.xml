@@ -1079,73 +1079,72 @@ def lafs():
 		<value><![CDATA[dno-contract-rate-script]]></value>
 		<value><![CDATA[20]]></value>
 		<value><![CDATA[2009-10-01T00:00Z]]></value>
-		<value><![CDATA[
-def tariffs():
+		<value><![CDATA[def tariffs():
     return {
-        'llfc(002)-pc(00)': {
+        '002': {
             'gbp-per-kva-per-month': 0.51,
             'fixed-gbp-per-day': 0,
             'day-gbp-per-kwh': 0},
-        'llfc(006)-pc(00)': {
+        '006': {
             'gbp-per-kva-per-month': 0.51,
             'fixed-gbp-per-day': 0,
             'day-gbp-per-kwh': 0},
-        'llfc(126)-pc(03)': {
+        '126': {
             'fixed-gbp-per-day': 0.0562,
             'day-gbp-per-kwh': 0.01645},
-        'llfc(127,473)-pc(03)': {
+        '127,473': {
             'fixed-gbp-per-day': 0.0808,
             'day-gbp-per-kwh': 0.01645},
-        'llfc(129)-pc(04)': {
+        '129': {
             'fixed-gbp-per-day': 0.0632,
             'day-gbp-per-kwh': 0.01737,
             'night-gbp-per-kwh': 0.00197},
-        'llfc(130)-pc(04)': {
+        '130': {
             'fixed-gbp-per-day': 0.0758,
             'day-gbp-per-kwh': 0.01737,
             'night-gbp-per-kwh': 0.00197},
-        'llfc(401,475)-pc(05-08)': {
+        '401,475': {
             'fixed-gbp-per-month': 18.58,
             'day-gbp-per-kwh': 0.00649,
             'night-gbp-per-kwh': 0.00126,
             'capacity-<=200-gbp-per-kva-per-month': 1.13,
             'capacity->200-gbp-per-kva-per-month': 1.00,
             'excess-gbp-per-kva-per-month': 0.45},
-        'llfc(453,470)-pc(00)': {
+        '453,470': {
             'fixed-gbp-per-month': 15.97,
             'day-gbp-per-kwh': 0.00649,
             'night-gbp-per-kwh': 0.00126,
             'capacity-<=200-gbp-per-kva-per-month': 1.13,
             'capacity->200-gbp-per-kva-per-month': 1.00,
             'excess-gbp-per-kva-per-month': 0.45},
-        'llfc(658,476)-pc(00)': {
+        '658,476': {
             'fixed-gbp-per-month': 105.18,
             'day-gbp-per-kwh': 0.00464,
             'night-gbp-per-kwh': 0.00116,
             'capacity-<=200-gbp-per-kva-per-month': 0.92,
             'capacity->200-gbp-per-kva-per-month': 0.92,
             'excess-gbp-per-kva-per-month': 0.43},
-        'llfc(605)-pc(05-08)': {
+        '605': {
             'fixed-gbp-per-month': 107.80,
             'day-gbp-per-kwh':  0.00406,
             'capacity-<=200-gbp-per-kva-per-month': 0.92,
             'capacity->200-gbp-per-kva-per-month': 0.92,
             'excess-gbp-per-kva-per-month': 0.43},
-        'llfc(450)-pc(00)': {
+        '450': {
             'fixed-gbp-per-month': 15.97,
             'day-gbp-per-kwh':   0.00544,
             'capacity-<=200-gbp-per-kva-per-month': 1.13,
             'capacity->200-gbp-per-kva-per-month': 1.00,
             'excess-gbp-per-kva-per-month': 0.45},
-        'llfc(655)-pc(00)': {
+        '655': {
             'fixed-gbp-per-month': 105.18,
             'day-gbp-per-kwh': 0.00406,
             'capacity-<=200-gbp-per-kva-per-month': 0.92,
             'capacity->200-gbp-per-kva-per-month': 0.92,
             'excess-gbp-per-kva-per-month': 0.43},
-        'llfc(909,477)-pc(00)': {
+        '909,477': {
             'gbp-per-kva-per-month': 0.51},
-        'llfc(910,478)-pc(00)': {
+        '910,478': {
             'gbp-per-kva-per-month': 0.51}}
 
 def lafs():
