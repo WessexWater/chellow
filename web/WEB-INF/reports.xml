@@ -4012,9 +4012,188 @@ pw.close()]]></value>
 		<value><![CDATA[report]]></value>
 		<value><![CDATA[31]]></value>
 		<value><![CDATA[true]]></value>
-		<value><![CDATA[Free 31]]></value>
-		<value><![CDATA[]]></value>
-		<value><![CDATA[]]></value>
+		<value><![CDATA[Supplier Read Edit]]></value>
+		<value><![CDATA[from net.sf.chellow.monad import Monad
+from sqlalchemy.orm import joinedload_all
+from sqlalchemy.sql.expression import text
+from datetime import datetime
+import pytz
+
+Monad.getUtils()['imprt'](globals(), {
+        'db': ['Bill', 'ReadType', 'Tpr', 'RegisterRead', 'set_read_write', 'session'], 
+        'utils': ['UserException', 'form_date', 'form_decimal'],
+        'templater': ['render']})
+
+
+def make_fields(sess, read, message=None):
+    read_types = sess.query(ReadType).from_statement("select * from read_type order by code")
+    tprs = sess.query(Tpr).from_statement("select * from tpr order by code")
+
+    messages = [] if message is None else [str(message)]
+    return {'read': read, 'read_types': read_types, 'tprs': tprs, 'messages': messages}
+
+sess = None
+try:
+    sess = session()
+    if inv.getRequest().getMethod() == 'GET':
+        read_id = inv.getLong('read_id')
+        read = RegisterRead.get_by_id(sess, read_id)
+        render(inv, template, make_fields(sess, read))
+    else:
+        set_read_write(sess)
+        read_id = inv.getLong('read_id')
+        read = RegisterRead.get_by_id(sess, read_id)
+        if inv.hasParameter('update'):
+            tpr_id = inv.getLong("tpr_id")
+            tpr = Tpr.get_by_id(sess, tpr_id)
+            coefficient = form_decimal(inv, "coefficient")
+            units = inv.getString("units")
+            msn = inv.getString("msn")
+            mpan_str = inv.getString("mpan")
+            previous_date = form_date(inv, "previous")
+            previous_value = form_decimal(inv, "previous_value")
+            previous_type_id = inv.getLong("previous_type_id")
+            previous_type = ReadType.get_by_id(sess, previous_type_id)
+            present_date = form_date(inv, "present")
+            present_value = form_decimal(inv, "present_value")
+            present_type_id = inv.getLong("present_type_id")
+            present_type = ReadType.get_by_id(sess, present_type_id)
+
+            read.update(tpr, coefficient, units, msn, mpan_str, previous_date, previous_value, previous_type, present_date, present_value, present_type)
+            sess.commit()
+            inv.sendSeeOther("/reports/105/output/?supplier_bill_id=" + str(read.bill.id))
+        elif inv.hasParameter("delete"):
+            read.delete()
+            sess.commit()
+            inv.sendSeeOther("/reports/105/output/?supplier_bill_id=" + str(read.bill.id))
+except UserException, e:
+    render(inv, template, make_fields(sess, read, e))
+finally:
+    sess.close()]]></value>
+		<value><![CDATA[<!doctype html>
+<html>
+  <head>
+    <link rel="stylesheet" type="text/css"
+      href="{{context_path}}/reports/19/output/">
+    <title>
+      Chellow &gt; Supplier Contracts &gt;
+      {{read.bill.batch.contract.name}} &gt; Batches &gt;
+      {{read.bill.batch.reference}} &gt; Bills &gt;
+      {{read.bill.id}} &gt; Read {{read.id}} Edit
+    </title>
+  </head>
+  <body>
+    <p>
+      <a href="{{context_path}}/reports/1/output/">Chellow</a> &gt;
+      <a href="{{context_path}}/reports/75/output/">Supplier Contracts</a> &gt;
+      <a href="{{context_path}}/reports/77/output/?supplier_contract_id={{read.bill.batch.contract.id}}">{{read.bill.batch.contract.name}}</a> &gt;
+      <a href="{{context_path}}/reports/89/output/?supplier_contract_id={{read.bill.batch.contract.id}}">Batches</a> &gt;
+      <a href="{{context_path}}/reports/91/output/?supplier_batch_id={{read.bill.batch.id}}">{{read.bill.batch.reference}}</a> &gt;
+      <a href="{{context_path}}/reports/105/output/?supplier_bill_id={{read.bill.id}}">Bill {{read.bill.id}}</a> &gt; Read {{read.id}} Edit
+    </p>
+    {% if messages %}
+      <ul>
+        {% for message in messages %}
+          <li>{{ message }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+    <br>
+    {% if request.getParameter('confirm_delete') %}
+      <form method="post" action=".">
+        <fieldset>
+          <legend>
+            Are you sure you want to delete this register read?
+          </legend>
+          <input type="submit" name="delete" value="Delete">
+        </fieldset>
+      </form>
+      <p><a href=".">Cancel</a></p>
+    {% else %}
+      <form action="." method="post">
+        <input type="hidden" name="read_id" value="{{read.id}}">
+        <fieldset>
+          <legend>Update this read</legend>
+          <br>
+          <label>MPAN {{input_text('mpan', request, read.mpan_str)}}</label>
+          <br>
+          <label>Coefficient
+            {{input_text('coefficient', request, read.coefficient)}}
+          </label>
+          <br>
+          <label>Meter Serial Number
+            {{input_text('msn', request, read.msn)}}
+          </label>
+          <br>
+          <label>Units
+            {{input_text('units', request, read.units_as_str())}}
+          </label>
+          <br>
+          <label>TPR
+            <select name="tpr_id">
+              {% for tpr in tprs %}
+                {{input_option('tpr_id', tpr.id, tpr.code)}}
+              {% endfor %}
+            </select>
+          </label>
+          <br>
+          <br>
+          <fieldset>
+            <legend>Previous Read</legend>
+            <fieldset>
+              <legend>Date</legend>
+              {{input_date('previous', request, read.previous_date)}}
+            </fieldset>
+            <br>
+            <label>Value
+              {{input_text('previous_value', request, read.previous_value)}}
+            </label>
+            <br>
+            <label>Type
+              <select name="previous_type_id">
+                {% for read_type in read_types %}
+                  {{input_option('previous_type_id', read_type.id, read_type.code + ' ' + read_type.description, read.previous_type.id)}}
+                {% endfor %}
+              </select>
+            </label>
+          </fieldset>
+          <br>
+          <br>
+          <fieldset>
+            <legend>Present Read</legend>
+            <fieldset>
+              <legend>Date</legend>
+              {{input_date('present', request, read.present_date)}}
+            </fieldset>
+            <br>
+            <label>Value
+              {{input_text('present_value', request, read.present_value)}}
+            </label>
+            <br>
+            <label>Type
+              <select name="present_type_id">
+                {% for read_type in read_types %}
+                  {{input_option('present_type_id', read_type.id, read_type.code + ' ' + read_type.description, read.present_type.id)}}
+                {% endfor %}
+              </select>
+            </label>
+          </fieldset>
+          <br>
+          <br>
+          <input type="submit" name="update" value="Update">
+        </fieldset>
+      </form>
+      <br>
+      <form action=".">
+        <fieldset>
+          <input type="hidden" name="read_id" value="{{read.id}}>
+          <legend>Delete this read</legend>
+          <input name="confirm_delete" type="submit" value="Delete">
+        </fieldset>
+      </form>
+    {% endif %}
+  </body>
+</html>]]></value>
 	</line>
 	<line>
 		<value><![CDATA[insert]]></value>
@@ -8189,7 +8368,7 @@ finally:
         {% for read in register_reads %}
           <tr>
             <td>
-              [<a href="{{context_path}}/supplier-contracts/{{bill.batch.contract.id}}/batches/{{bill.batch.id}}/bills/{{bill.id}}/reads/{{bill.id}}/">edit</a>]
+              [<a href="{{context_path}}/reports/31/output/?read_id={{read.id}}">edit</a>]
             </td>
             <td>{{read.mpan_str}}</td>
             <td>{{read.coefficient}}</td>
