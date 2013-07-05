@@ -2524,18 +2524,18 @@ def import_virtual_bill(supply_source):
 				<regex pattern="The file has been imported successfully" />
 				<response-code value="200" />
 			</request>
-			<request path="/chellow/reports/105/output/?bill-id=12">
+			<request path="/chellow/reports/105/output/?supplier_bill_id=12">
 				<refresh />
 				<!-- Check it's loaded ok -->
 				<regex
-					pattern='&lt;td&gt;38992&lt;/td&gt;&lt;td&gt;&lt;a title="Estimated" href="/chellow/reports/143/output/\?type-id=4"&gt;E&lt;/a&gt;&lt;/td&gt;&lt;td&gt;2007-01-17 00:00&lt;/td&gt;&lt;td&gt;39000&lt;/td&gt;&lt;td&gt;&lt;a title="Estimated" href="/chellow/reports/143/output/\?type-id=4"&gt;E&lt;/a&gt;&lt;/td&gt;' />
+					pattern='&lt;td&gt;38992&lt;/td&gt;\s*&lt;td&gt;\s*&lt;a title="Estimated"\s*href="/chellow/reports/143/output/\?type-id=4"&gt;E&lt;/a&gt;\s*&lt;/td&gt;\s*&lt;td&gt;2007-01-17 00:00&lt;/td&gt;\s*&lt;td&gt;39000\s*&lt;/td&gt;\s*&lt;td&gt;\s*&lt;a title="Estimated"\s*href="/chellow/reports/143/output/\?type-id=4"&gt;E&lt;/a&gt;\s*&lt;/td&gt;' />
 				<response-code value="200" />
 			</request>
 		</test>
 		<test name="Check the 'update bill' page.">
-			<request path="/chellow/supplier-contracts/57/batches/5/bills/8/">
+			<request path="/chellow/reports/165/output/?supplier_bill_id=8">
 				<response-code value="200" />
-				<regex pattern="type-id" />
+				<regex pattern="type_id" />
 				<regex pattern='&lt;option value="2" selected&gt;N Normal&lt;/option&gt;' />
 				<regex pattern='name="account" value="SA342376000"' />
 			</request>
