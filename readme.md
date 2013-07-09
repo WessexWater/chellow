@@ -294,7 +294,7 @@ Here's an example:
     
     
     		
-    #MPAN core, Is Import?, Is kWh?, Time, Value, Status
+    MPAN core, Is Import?, Is kWh?, Time, Value, Status
     99 9999 9999 999, true, true, 2006-01-01T00:30Z, 218.4 , E
     99 9999 9999 999, true, true, 2006-01-01T01:00Z, 220.4 , E
     99 9999 9999 999, true, true, 2006-01-01T01:30Z, 221.8 , E

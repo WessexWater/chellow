@@ -1724,6 +1724,10 @@ def import_virtual_bill(supply_source):
         slot_keys = slots[slot_name]
         bill[slot_keys['gbp']] = bill[slot_keys['gsp-kwh']] * rates[slot_name]
 
+    for rate_name, rate_set in supply_source.rate_sets.iteritems():
+        if len(rate_set) == 1:
+            bill[rate_name] = rate_set.pop()
+            
     bill['net-gbp'] = sum(v for k, v in bill.iteritems() if k[-4:] == '-gbp')
     return bill]]></control>
 				<response-code value="200" />
@@ -2116,13 +2120,41 @@ def triad_estimates():
 				<regex pattern="/chellow/supplies/12/" />
 				<response-code value="303" />
 			</request>
+			
+			<!-- Add import kWh channel -->
+			<request path="/chellow/supplies/12/eras/16/channels/" method="post">
+				<control name="is-import" value="true" />
+				<control name="is-kwh" value="true" />
+				<response-code value="303" />
+			</request>
+			
+			<!-- Try out simple.csv hh import format. -->
+			<request path="/chellow/reports/211/output/" method="post">
+				<control name="hhdc-contract-id" value="48" />
+				<control type="file" name="import-file" value="hh.simple.csv" />
+				<response-code value="303" />
+				<regex pattern="/reports/65/output/\?hhdc-contract-id=48&amp;process-id=13" />
+			</request>
+			<request
+				path="/chellow/reports/65/output/?hhdc-contract-id=48&amp;process-id=13">
+				<refresh />
+				<regex pattern="The import has completed.*successfully." />
+				<response-code value="200" />
+			</request>
+			<!-- Check that the first datum has been correctly loaded in -->
+			<request
+				path="/chellow/reports/17/output/?supply_id=7&amp;months=1&amp;finish_year=2010&amp;finish_month=02">
+				<regex
+					pattern="&lt;td&gt;\s*2010-02-04 20:00\s*&lt;/td&gt;\s*&lt;td&gt;30.4339&lt;/td&gt;" />
+				<response-code value="200" />
+			</request>
 			<request
 				path="/chellow/reports/87/output/?supply_id=12&amp;supply_polarity=import&amp;start_year=2009&amp;start_month=3&amp;start_day=01&amp;start_hour=00&amp;finish_year=2009&amp;finish_month=03&amp;finish_day=31&amp;finish_hour=23">
 				<response-code value="200" />
 				<regex
-					pattern="MPAN Core,Site Code,Site Name,Account,From,To,net-gbp,tlm,ccl-kwh,ccl-rate,ccl-gbp,data-collection-gbp,duos-availability-kva,duos-availability-days,duos-availability-rate,duos-availability-gbp,duos-excess-availability-kva,duos-excess-availability-days,duos-excess-availability-rate,duos-excess-availability-gbp,duos-day-kwh,duos-day-gbp,duos-night-kwh,duos-night-gbp,duos-reactive-rate,duos-reactive-gbp,duos-standing-gbp,settlement-gbp,night-msp-kwh,night-gsp-kwh,night-gbp,other-msp-kwh,other-gsp-kwh,other-gbp,summer-pk-msp-kwh,summer-pk-gsp-kwh,summer-pk-gbp,winter-low-pk-msp-kwh,winter-low-pk-gsp-kwh,winter-low-pk-gbp,winter-off-pk-msp-kwh,winter-off-pk-gsp-kwh,winter-off-pk-gbp,winter-pk-msp-kwh,winter-pk-gsp-kwh,winter-pk-gbp,bsuos-kwh,bsuos-rate,bsuos-gbp,triad-actual-0-date,triad-actual-0-msp-kw,triad-actual-0-status,triad-actual-0-laf,triad-actual-0-gsp-kw,triad-actual-1-date,triad-actual-1-msp-kw,triad-actual-1-status,triad-actual-1-laf,triad-actual-1-gsp-kw,triad-actual-2-date,triad-actual-2-msp-kw,triad-actual-2-status,triad-actual-2-laf,triad-actual-2-gsp-kw,triad-actual-gsp-kw,triad-actual-rate,triad-actual-gbp,triad-estimate-0-date,triad-estimate-0-msp-kw,triad-estimate-0-status,triad-estimate-0-laf,triad-estimate-0-gsp-kw,triad-estimate-1-date,triad-estimate-1-msp-kw,triad-estimate-1-status,triad-estimate-1-laf,triad-estimate-1-gsp-kw,triad-estimate-2-date,triad-estimate-2-msp-kw,triad-estimate-2-status,triad-estimate-2-laf,triad-estimate-2-gsp-kw,triad-estimate-gsp-kw,triad-estimate-rate,triad-estimate-months,triad-estimate-gbp,triad-all-estimates-months,triad-all-estimates-gbp" />
+					pattern="MPAN Core,Site Code,Site Name,Account,From,To,net-gbp,tlm,ccl-kwh,ccl-rate,ccl-gbp,data-collection-gbp,duos-availability-kva,duos-availability-days,duos-availability-rate,duos-availability-gbp,duos-excess-availability-kva,duos-excess-availability-days,duos-excess-availability-rate,duos-excess-availability-gbp,duos-day-kwh,duos-day-gbp,duos-night-kwh,duos-night-gbp,duos-reactive-rate,duos-reactive-gbp,duos-standing-gbp,settlement-gbp,night-msp-kwh,night-gsp-kwh,night-gbp,other-msp-kwh,other-gsp-kwh,other-gbp,summer-pk-msp-kwh,summer-pk-gsp-kwh,summer-pk-gbp,winter-low-pk-msp-kwh,winter-low-pk-gsp-kwh,winter-low-pk-gbp,winter-off-pk-msp-kwh,winter-off-pk-gsp-kwh,winter-off-pk-gbp,winter-pk-msp-kwh,winter-pk-gsp-kwh,winter-pk-gbp,bsuos-kwh,bsuos-rate,bsuos-gbp,triad-actual-0-date,triad-actual-0-msp-kw,triad-actual-0-status,triad-actual-0-laf,triad-actual-0-gsp-kw,triad-actual-1-date,triad-actual-1-msp-kw,triad-actual-1-status,triad-actual-1-laf,triad-actual-1-gsp-kw,triad-actual-2-date,triad-actual-2-msp-kw,triad-actual-2-status,triad-actual-2-laf,triad-actual-2-gsp-kw,triad-actual-gsp-kw,triad-actual-rate,triad-actual-gbp,triad-estimate-0-date,triad-estimate-0-msp-kw,triad-estimate-0-status,triad-estimate-0-laf,triad-estimate-0-gsp-kw,triad-estimate-1-date,triad-estimate-1-msp-kw,triad-estimate-1-status,triad-estimate-1-laf,triad-estimate-1-gsp-kw,triad-estimate-2-date,triad-estimate-2-msp-kw,triad-estimate-2-status,triad-estimate-2-laf,triad-estimate-2-gsp-kw,triad-estimate-gsp-kw,triad-estimate-rate,triad-estimate-months,triad-estimate-gbp,triad-all-estimates-months,triad-all-estimates-gbp,problem" />
 				<regex
-					pattern='"20 6354 2983 571","CI004","Lower Treave","141 5532","2009-03-01T00:00Z","2009-03-31T23:30Z","2273.8","1.0099028","0","0.00456","0","5.89","2300","0","0","2165.0","0","0","0","0","0","0","0","0.0","0","0","14.91","88","0","0","0.0","0","0.0","0.0","0","0","0.0","0","0","0.0","0","0","0.0","0","0","0.0","0.0","0.00080602","0.0","2009-01-06T17:00Z","0","E","1.095","0.0","2008-12-01T17:00Z","0","E","1.095","0.0","2008-12-15T17:00Z","0","E","1.095","0.0","0.0","22.19481","0.0","2007-12-17T17:00Z","0.0","E","1.095","0.0","2008-01-03T17:00Z","0.0","E","1.079","0.0","2007-11-26T17:00Z","0.0","E","1.095","0.0","0.0","22.19481","1","0.0","12","-0.0",""' />
+					pattern='"20 6354 2983 571","CI004","Lower Treave","141 5532","2009-03-01T00:00Z","2009-03-31T23:30Z","2274.51858148","1.0085469","0","0.00456","0","5.89","2300","0","0","2165.0","0","0","0","0","0","0","86.9732","0.102628376","0","0","14.91","88","86.9732","93.49619","0.585809728064","0","0","0.0","0","0","0.0","0","0","0.0","0","0","0.0","0","0","0.0","94.2952925863","0.00031967","0.0301433761811","2009-01-06T17:00Z","0","E","1.095","0.0","2008-12-01T17:00Z","0","E","1.095","0.0","2008-12-15T17:00Z","0","E","1.095","0.0","0.0","22.19481","0.0","2007-12-17T17:00Z","0","E","1.095","0.0","2008-01-03T17:00Z","0","E","1.079","0.0","2007-11-26T17:00Z","0","E","1.095","0.0","0.0","22.19481","1","0.0","12","-0.0",""' />
 			</request>
 			
 			<!-- Check it works when the DNO rate script contains a double LLFC 453,470 -->
@@ -2130,6 +2162,10 @@ def triad_estimates():
 				path="/chellow/reports/87/output/?supply_id=12&amp;supply_polarity=import&amp;start_year=2009&amp;start_month=6&amp;start_day=01&amp;start_hour=00&amp;finish_year=2009&amp;finish_month=06&amp;finish_day=30&amp;finish_hour=23">
 				<regex pattern='"20 6354 2983 571","CI004","Lower Treave","141 5532","2009-06-01T00:00Z","2009-06-30T23:30Z",'/>
 				<response-code value="200" />
+			</request>
+			<request path="/chellow/supplies/12/eras/16/channels/42/hh-data/6772/" method="post">
+				<control name="delete" value="Delete" />
+				<response-code value="303" />
 			</request>
 		</test>
 		<test name="Delete a supply.">
@@ -2651,27 +2687,6 @@ def import_virtual_bill(supply_source):
 				<regex
 					pattern="There is no LLFC with the code '' associated with the DNO 22\." />
 				<response-code value="400" />
-			</request>
-		</test>
-		<test name="Try out simple.csv hh import format.">
-			<request path="/chellow/reports/211/output/" method="post">
-				<control name="hhdc-contract-id" value="48" />
-				<control type="file" name="import-file" value="hh.simple.csv" />
-				<response-code value="303" />
-				<regex pattern="/reports/65/output/\?hhdc-contract-id=48&amp;process-id=13" />
-			</request>
-			<request
-				path="/chellow/reports/65/output/?hhdc-contract-id=48&amp;process-id=13">
-				<refresh />
-				<regex pattern="The import has completed.*successfully." />
-				<response-code value="200" />
-			</request>
-			<!-- Check that the datum has been correctly loaded in -->
-			<request
-				path="/chellow/reports/17/output/?supply_id=7&amp;months=1&amp;finish_year=2010&amp;finish_month=02">
-				<regex
-					pattern="&lt;td&gt;\s*2010-02-04 20:00\s*&lt;/td&gt;\s*&lt;td&gt;30.4339&lt;/td&gt;" />
-				<response-code value="200" />
 			</request>
 		</test>
 		<test name="Try view page of meter payment types.">
