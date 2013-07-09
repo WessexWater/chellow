@@ -2910,7 +2910,12 @@ def import_virtual_bill(supply_source):
 				<response-code value="200" />
 			</request>
 		</test>
-		<test name="Try adding a note.">
+		<test name="View the note editing page.">
+			<request path="/chellow/reports/239/output/?supply_id=2">
+				<response-code value="200" />
+			</request>
+		</test>
+		<test name="Try editing a note.">
 			<request path="/chellow/reports/239/output/" method="post">
 				<control name="supply_id" value="2" />
 				<control name="note"><![CDATA[Some people, when confronted with a problem, think “I know,
