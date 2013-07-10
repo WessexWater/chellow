@@ -4913,18 +4913,20 @@ duos_contract = Contract.getNonCoreContract('duos')
 
 def triad_csv(supply_source):
     if supply_source is None or supply_source.id.startswith('99'):
-        return ['' for item in range(19)]
+        return [''] * 19
 
     supply_source.contract_function(duos_contract, 'duos_vb')(supply_source)
     supply_source.contract_function(triad_contract, 'triad_bill')(supply_source)
 
     bill = supply_source.supplier_bill
-    values = [supply_source.id]
-    for i in range(3):
+    values = [supply_source.mpan_core]
+    for i in range(1, 4):
         triad_prefix = 'triad-actual-' + str(i)
         for suffix in ['-date', '-msp-kw', '-status', '-laf', '-gsp-kw']:
+            #supply_source.pw.println("looking for " + triad_prefix + suffix)
             values.append(bill[triad_prefix + suffix])
-
+    #supply_source.pw.println("values so far" + str(values))
+    
     values += [bill['triad-actual-' + suf] for suf in ['gsp-kw', 'rate', 'gbp']]
     return values
 
@@ -4961,9 +4963,9 @@ while eras.next():
         
     gen_type = supply.getGeneratorType()
     gen_type = '' if gen_type is None else gen_type.code
-
+    #pw.println("imp csv" + str(triad_csv(imp_supply_source)))
     for value in [gen_type] + triad_csv(imp_supply_source) + triad_csv(exp_supply_source):
-        pw.print("," + str(value))
+        pw.print(',"' + str(value) + '"')
     pw.println('')
     pw.flush()
     Hiber().session().clear()
