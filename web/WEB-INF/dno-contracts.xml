@@ -438,7 +438,7 @@ def tariffs():
             'winter-weekday-peak': 1.075,
             'winter-weekday-day': 1.065,
             'other': 1.087},
-        'hv': {
+        'hv-net': {
             'night': 1.017,
             'winter-weekday-peak': 1.025,
             'winter-weekday-day': 1.022,
