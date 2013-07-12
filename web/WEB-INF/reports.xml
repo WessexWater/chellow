@@ -1366,16 +1366,12 @@ finally:
 
     <h3>CSV Downloads</h3>
 
-    <form action="{{ context_path }}/reports/87/output/?supply-id">
+    <form action="{{ context_path }}/reports/291/output/?supply-id">
       <fieldset>
-        <input type="hidden" name="supply_id" value="{{ supply.id }}">
-        <legend>Supplier Virtual Bills</legend>
-        <select name="supply_polarity">
-          <option value="import">Import</option>
-          <option value="export">Export</option>
-        </select>
-        from {{ input_date('start', request, last_month_start) }} to
-        {{ input_date('finish', request, last_month_finish) }}
+        <input type="hidden" name="supply_id" value="{{supply.id}}">
+        <legend>Virtual Bills</legend>
+        From {{input_date('start', request, last_month_start)}} to
+        {{input_date('finish', request, last_month_finish)}}
         <input type="submit" value="Download">
       </fieldset>
     </form>
@@ -7944,10 +7940,10 @@ while not mb_cal.getTime().after(finish_date.getDate()):
             era_element.appendChild(field_element)
             field_element.setAttribute('name', name)
             field_element.setAttribute('value', str(value))
-        bill = comterp.get('contract_function')(contract, 'import_virtual_bill', pw)(data_source)
+        bill = comterp.get('contract_function')(contract, 'virtual_bill', pw)(data_source)
         net_gbp += bill['net-gbp']
         #raise UserException('start date ' + str(data_source.start_date) + ' finish date ' + str(data_source.finish_date) + ' ' + str(bill))
-        for title in comterp.get('contract_function')(contract, 'import_virtual_bill_titles', pw)():
+        for title in comterp.get('contract_function')(contract, 'virtual_bill_titles', pw)():
             if title == 'consumption-info':
                 del bill[title]
                 continue
@@ -8751,14 +8747,14 @@ comterp = PythonInterpreter()
 comterp.exec(computer.getChargeScript())
 forecast_date = HhStartDate.roundDown(Date(Long.MAX_VALUE))
 
-if inv.hasParameter('supplier_batch_id'):
-    batch_id = inv.getLong("supplier_batch_id")
+if inv.hasParameter('batch_id'):
+    batch_id = inv.getLong("batch_id")
     if not inv.isValid():
         raise UserException()
     batch = Batch.getBatch(batch_id)
     bills = Hiber.session().createQuery("from Bill bill where bill.batch = :batch order by bill.reference").setEntity('batch', batch).scroll()
-elif inv.hasParameter('supplier_bill_id'):
-    bill_id = inv.getLong("supplier_bill_id")
+elif inv.hasParameter('bill_id'):
+    bill_id = inv.getLong("bill_id")
     if not inv.isValid():
         raise UserException()
     bill = Bill.getBill(bill_id)
@@ -8770,11 +8766,14 @@ contract_market_role_code = contract.role.code
 
 contract_function = comterp.get('contract_function')
 
-vbf = contract_function(contract, 'import_virtual_bill', pw)
+vbf = contract_function(contract, 'virtual_bill', pw)
 if vbf is None:
-    raise UserException('The contract ' + contract.getName() + " doesn't have a function import_virtual_bill.")
+    raise UserException('The contract ' + contract.getName() + " doesn't have a function virtual_bill.")
 
-virtual_bill_titles = contract_function(contract, 'import_virtual_bill_titles', pw)()
+virtual_bill_titles_func = contract_function(contract, 'virtual_bill_titles', pw)
+if virtual_bill_titles_func is None:
+    raise UserException('The contract ' + contract.getName() + " doesn't have a function virtual_bill_titles.")
+virtual_bill_titles = virtual_bill_titles_func()
 
 pw.println("batch,bill-reference,bill-type,bill-kwh,bill-net-gbp,bill-vat-gbp, bill-start-date,bill-finish-date,bill-mpan-core,site-code,site-name,covered-from,covered-to,covered-bills," + ','.join('covered-' + val + ',virtual-' + val + (',difference-' + val if val.endswith('-gbp') else '') for val in virtual_bill_titles))
 pw.flush()
@@ -11358,9 +11357,9 @@ def process_site(site, month_start, month_finish, forecast_date, tmp_file, bill_
                     month_data['import-net-kwh'] += sum(hh['msp-kwh'] for hh in supply_source.hh_data)
 
                     #tmp_file.write("finished init from mpan, " + str(System.currentTimeMillis()))
-                    import_vb_function = comterp.get('contract_function')(supplier_contract, 'import_virtual_bill', tmp_file)
+                    import_vb_function = comterp.get('contract_function')(supplier_contract, 'virtual_bill', tmp_file)
                     if import_vb_function is None:
-                        problem += "Can't find the import_virtual_bill function in the supplier contract. "
+                        problem += "Can't find the virtual_bill function in the supplier contract. "
                     else:
                         v_bill = import_vb_function(supply_source)
                         #tmp_file.write("finishing vbill, " + str(System.currentTimeMillis()))
@@ -12612,9 +12611,9 @@ for i in range(months):
                 values['metered-import-kwh'] += sum(datum['msp-kwh'] for datum in supply_source.hh_data)
 
                 #p w.println("finished init from mpan, " + str(System.currentTimeMillis()))
-                import_vb_function = supply_source.contract_function(supplier_contract, 'import_virtual_bill')
+                import_vb_function = supply_source.contract_function(supplier_contract, 'virtual_bill')
                 if import_vb_function is None:
-                    values['problem'] += "Can't find the import_virtual_bill function in the supplier contract. "
+                    values['problem'] += "Can't find the virtual_bill function in the supplier contract. "
                 else:
                     v_bill = import_vb_function(supply_source)
                     #p w.println("finishing vbill, " + str(System.currentTimeMillis()))
@@ -14082,7 +14081,8 @@ finally:
       <a href="{{ context_path }}/reports/113/output/">HHDC Contracts</a> &gt;
       <a href="{{ context_path }}/reports/115/output/?hhdc_contract_id={{ batch.contract.id }}">{{ batch.contract.name }}</a> &gt;
       <a href="{{ context_path }}/reports/93/output/?hhdc_contract_id={{ batch.contract.id }}">Batches</a> &gt;
-      {{ batch.reference }} [<a href="{{ context_path }}/hhdc-contracts/{{ batch.contract.id }}/batches/{{ batch.id }}/">edit</a>]
+      {{ batch.reference }}
+      [<a href="{{context_path}}/reports/283/output/?hhdc_batch_id={{batch.id}}">edit</a>]
     </p>
     <br>
     {% if messages %}
@@ -19005,9 +19005,117 @@ finally:
 		<value><![CDATA[report]]></value>
 		<value><![CDATA[283]]></value>
 		<value><![CDATA[true]]></value>
-		<value><![CDATA[HHDC Contract Batch Edit]]></value>
-		<value><![CDATA[]]></value>
-		<value><![CDATA[]]></value>
+		<value><![CDATA[HHDC Batch Edit]]></value>
+		<value><![CDATA[from net.sf.chellow.monad import Monad
+from sqlalchemy.orm import joinedload_all
+from sqlalchemy.sql.expression import text
+from datetime import datetime
+import pytz
+
+Monad.getUtils()['imprt'](globals(), {
+        'db': ['Contract', 'Batch', 'Participant', 'set_read_write', 'session'], 
+        'utils': ['UserException', 'form_date'],
+        'templater': ['render']})
+
+
+def make_fields(sess, batch, message=None):
+    messages = [] if message is None else [str(message)]
+    return {'batch': batch, 'messages': messages}
+
+sess = None
+try:
+    sess = session()
+    if inv.getRequest().getMethod() == 'GET':
+        batch_id = inv.getLong('hhdc_batch_id')
+        batch = Batch.get_by_id(sess, batch_id)
+        render(inv, template, make_fields(sess, batch))
+    else:
+        set_read_write(sess)
+        batch_id = inv.getLong('hhdc_batch_id')
+        batch = Batch.get_by_id(sess, batch_id)
+        if inv.hasParameter('update'):
+            reference = inv.getString('reference')
+            description = inv.getString('description')
+            batch.update(sess, reference, description)
+            sess.commit()
+            inv.sendSeeOther("/reports/203/output/?hhdc_batch_id=" +
+                    str(batch.id))
+        elif inv.hasParameter("delete"):
+            batch.delete(sess)
+            sess.commit()
+            inv.sendSeeOther("/reports/93/output/?hhdc_contract_id=" + str(batch.contract.id))
+except UserException, e:
+    render(inv, template, make_fields(sess, batch, e))
+finally:
+    sess.close()]]></value>
+		<value><![CDATA[<!doctype html>
+<html>
+  <head>
+    <link rel="stylesheet" type="text/css"
+      href="{{ context_path }}/reports/19/output/">
+    <title>
+      Chellow &gt; HHDC Contracts &gt; {{batch.contract.name}} &gt;
+      Batches &gt; {{batch.reference}} &gt; Edit
+    </title>
+  </head>
+  <body>
+    <p>
+      <a href="{{context_path}}/reports/1/output/">Chellow</a> &gt;
+      <a href="{{context_path}}/reports/113/output/">HHDC Contracts</a> &gt;
+      <a href="{{context_path}}/reports/115/output/?hhdc_contract_id={{batch.contract.id}}">{{batch.contract.name}}</a>
+      &gt;
+      <a href="{{context_path}}/reports/93/output/?hhdc_contract_id={{batch.contract.id}}">Batches</a>
+      &gt;
+      <a href="{{context_path}}/reports/203/output/?hhdc_batch_id={{batch.id}}">{{batch.reference}}</a>
+      &gt; Edit
+    </p>
+    {% if messages %}
+      <ul>
+        {% for message in messages %}
+          <li>{{ message }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+    <br>
+    {% if request.getMethod() == 'GET' and request.getParameter('confirm_delete') %}
+      <form method="post" action=".">
+        <fieldset>
+          <legend>Delete</legend>
+          <input type="hidden" name="hhdc_batch_id" value="{{batch.id}}">
+          <p>Are you sure you want to delete this batch and all its bills?</p>
+          <input type="submit" name="delete" value="Delete">
+        </fieldset>
+      </form>
+      <p><a href=".">Cancel</a></p>
+    {% else %}
+      <form action="." method="post">
+        <fieldset>
+          <legend>Update batch</legend>
+          <input type="hidden" name="hhdc_batch_id" value="{{batch.id}}">
+          <br>
+          <label>
+            Reference {{input_text('reference', request, batch.reference)}}
+          </label>
+          <br>
+          <label>
+            Description {{input_text('description', request, batch.description)}}
+          </label>
+          <br>
+          <br>
+          <input type="submit" name="update" value="Update">
+        </fieldset>
+      </form>
+      <br>
+      <form action=".">
+        <fieldset>
+          <legend>Delete this batch</legend>
+          <input type="hidden" name="hhdc_batch_id" value="{{batch.id}}">
+   <input type="submit" name="confirm_delete" value="Delete">
+        </fieldset>
+      </form>
+    {% endif %}
+  </body>
+</html>]]></value>
 	</line>
 	<line>
 		<value><![CDATA[insert]]></value>
@@ -19350,6 +19458,106 @@ finally:
     {% endif %}
   </body>
 </html>]]>
+		</value>
+	</line>
+	<line>
+		<value><![CDATA[insert]]></value>
+		<value><![CDATA[report]]></value>
+		<value><![CDATA[291]]></value>
+		<value><![CDATA[true]]></value>
+		<value><![CDATA[Supply CSV Virtual Bills]]></value>
+		<value><![CDATA[from net.sf.chellow.monad import Hiber, UserException
+from java.util import GregorianCalendar, TimeZone, Locale, Calendar, Date
+from net.sf.chellow.physical import HhStartDate, Supply
+from net.sf.chellow.billing import Contract
+from java.text import DecimalFormat
+from java.lang import System
+
+caches = {}
+
+supply_id = inv.getLong('supply_id')
+supply = Supply.getSupply(supply_id)
+
+start_date = inv.get_datetime('start')
+start_date = HhStartDate(start_date)
+finish_date = inv.get_datetime('finish')
+finish_date = HhStartDate(finish_date)
+
+file_name = 'supply_virtual_bills_' + str(supply.id)
+
+inv.getResponse().setContentType("text/csv")
+inv.getResponse().addHeader('Content-Disposition', 'attachment; filename="' + file_name + '"')
+pw = inv.getResponse().getWriter()
+
+computer = Contract.getNonCoreContract('computer')
+comterp = computer.callFunction('create_comterp', [])
+contract_func = comterp.get('contract_function')
+forecast_date = comterp.get('forecast_date')()
+ct_cal = GregorianCalendar(TimeZone.getTimeZone("Europe/London"), Locale.UK)
+
+utc_cal = GregorianCalendar(TimeZone.getTimeZone("GMT"), Locale.UK)
+prev_imp_supplier_bill_titles = None
+month_start = start_date
+utc_cal.setTime(month_start.getDate())
+utc_cal.add(Calendar.MONTH, 1)
+
+output = {}
+while not month_start.after(finish_date):
+    utc_cal.setTime(month_start.getDate())
+    utc_cal.set(Calendar.DAY_OF_MONTH, 1)
+    utc_cal.set(Calendar.HOUR_OF_DAY, 0)
+    utc_cal.set(Calendar.MINUTE, 0)
+    utc_cal.add(Calendar.MONTH, 1)
+    utc_cal.add(Calendar.MINUTE, -30)
+    month_finish = HhStartDate(utc_cal.getTime())
+
+    if month_finish.after(finish_date):
+        period_finish = finish_date
+    else:
+        period_finish = month_finish
+
+    for era in Hiber.session().createQuery("select era from Era era where era.supply = :supply and era.startDate.date < :periodFinish and (era.finishDate.date is null or era.finishDate.date > :monthStart) order by era.startDate.date desc").setEntity('supply', supply).setTimestamp('monthStart', month_start.getDate()).setTimestamp('periodFinish', period_finish.getDate()).list():
+        if era.startDate.after(month_start):
+            chunk_start = era.startDate
+        else:
+            chunk_start = month_start
+
+        if period_finish.before(era.finishDate):
+            chunk_finish = period_finish
+        else:
+            chunk_finish = era.finishDate
+
+        site = Hiber.session().createQuery("select siteEra.site from SiteEra siteEra where siteEra.era = :era and siteEra.isPhysical = true").setEntity('era', era).uniqueResult()
+
+        if era.impSupplierContract is not None:
+            ds = comterp.get('SupplySource')(chunk_start, chunk_finish, forecast_date, era, True, comterp, pw, caches)
+
+            imp_supplier_bill_titles = contract_func(era.impSupplierContract, 'virtual_bill_titles', pw)()
+            if imp_supplier_bill_titles != prev_imp_supplier_bill_titles:
+                output['3_1_' + str(chunk_start)] = ['MPAN Core', 'Site Code', 'Site Name', 'Account', 'From', 'To'] + imp_supplier_bill_titles
+            output_line = [ds.mpan_core, site.code , site.name, ds.supplier_account, ds.start_date, ds.finish_date]
+
+            contract_func(era.impSupplierContract, 'virtual_bill', pw)(ds)
+            bill = ds.supplier_bill
+            for title in imp_supplier_bill_titles:
+                output_line.append(bill.get(title, ''))
+                if title in bill:
+                    del bill[title]
+
+            for k in sorted(bill.keys()):
+                output_line.extend([k, bill[k]]) 
+            output['3_0_' + str(chunk_start)] = output_line
+        for k in sorted(output.keys(), reverse=True):
+            pw.println(','.join('"' + str(v) + '"' for v in output[k]))
+        pw.flush()
+        Hiber.session().clear()
+
+    utc_cal.setTime(month_start.getDate())
+    utc_cal.add(Calendar.MONTH, 1)
+    month_start = HhStartDate(utc_cal.getTime())
+pw.close()]]>
+		</value>
+		<value><![CDATA[]]>
 		</value>
 	</line>
 </csv>
