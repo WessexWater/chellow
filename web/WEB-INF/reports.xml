@@ -4613,8 +4613,8 @@ source.setAttribute("pending-site-count", str(totalSites - activeSites))]]></val
                 </p>
                 <form action="{/source/request/@context-path}/reports/233/output/">
                 <fieldset><legend>Download CSV</legend>
-                <input type="hidden" name="dc-contract-id" value="{/source/hhdc-contract/@id}"/>
-                <label>Snags less than <input size="3" maxlength="3" name="hidden-days" value="1"/> GMT calendar day(s) old are hidden.</label>
+                <input type="hidden" name="hhdc_contract_id" value="{/source/hhdc-contract/@id}"/>
+                <label>Snags less than <input size="3" maxlength="3" name="hidden_days" value="0"/> GMT calendar day(s) old are hidden.</label>
                 <input type="submit" value="Download"/>
                 </fieldset>
                 </form>
@@ -6665,21 +6665,12 @@ finally:
 
     <h3>CSV Downloads</h3>
 
-    <form action="{{ context_path }}/reports/87/output/">
+    <form action="{{context_path}}/reports/87/output/">
       <fieldset>
         <input type="hidden" name="contract_id" value="{{ contract.id }}"/>
         <legend>Download Supply Level Virtual Bills</legend>
         <br/>
-        For 
-        <select name="supply_polarity">
-          <option value="import">
-            Import
-          </option>
-          <option value="export">
-            Export
-          </option>
-        </select>
-        from {{ input_date('start', request, month_start) }} to
+        From {{ input_date('start', request, month_start) }} to
         {{ input_date('finish', request, month_finish) }}
         <input type="submit" value="Download"/>
       </fieldset>
@@ -7075,40 +7066,18 @@ finish_month = inv.getInteger('finish_month')
 finish_day = inv.getInteger('finish_day')
 finish_hour = inv.getInteger('finish_hour')
 
-supply_polarity = inv.getString('supply_polarity')
+contract_id = inv.getLong('supplier_contract_id')
+contract = Contract.getSupplierContract(contract_id)
 
 if not inv.isValid():
     raise UserException()
 
 site_query = Hiber.session().createQuery("select siteEra.site from SiteEra siteEra where siteEra.era = :era and siteEra.isPhysical = true")
 
-if inv.hasParameter('contract_id'):
-    contract_id = inv.getLong('contract_id')
-    contract = Contract.getSupplierContract(contract_id)
-    supply = None
-elif inv.hasParameter('supply_id'):
-    supply_id = inv.getLong('supply_id')
-    supply = Supply.getSupply(supply_id)
-    contract = None
-else:
-    raise UserException("There must be either a contract_id or supply_id parameter.")
 
 computer = Contract.getNonCoreContract('computer')
 comterp = computer.callFunction('create_comterp', [])
 contract_func = comterp.get('contract_function')
-
-if supply is None:
-    pw.print('MPAN Core,Site Code,Site Name,Account,From,To')
-    pw.flush()
-    contract_function = comterp.get('contract_function')
-    #pw.println("contract func " + str(contract) + " " + supply_polarity)
-    titles_function = contract_function(contract, supply_polarity + '_virtual_bill_titles', pw)
-    #pw.println("titles func " + str(titles_function))
-    bill_titles = titles_function()
-    for title in bill_titles:
-        pw.print(',' + title)
-    pw.println('')
-    pw.flush()
 
 ct_cal = GregorianCalendar(TimeZone.getTimeZone("Europe/London"), Locale.UK)
 
@@ -7145,6 +7114,11 @@ utc_cal.add(Calendar.MONTH, 1)
 utc_cal.add(Calendar.MINUTE, -30)
 month_finish = HhStartDate(utc_cal.getTime())
 
+bill_titles = contract_func(contract, 'virtual_bill_titles', pw)()
+pw.print('MPAN Core,Site Code,Site Name,Account,From,To,' + ','.join(bill_titles))
+pw.println('')
+pw.flush()
+
 while not month_start.after(finish_date):
     if month_start.before(start_date):
         period_start = start_date
@@ -7156,41 +7130,45 @@ while not month_start.after(finish_date):
     else:
         period_finish = month_finish
 
-    for data_source in comterp.get(supply_polarity + '_data_sources')(contract, supply, period_start, period_finish, forecast_date, comterp, pw, caches):
+    eras = Hiber.session().createQuery("select distinct era from Era era where (era.impSupplierContract = :contract or era.expSupplierContract = :contract) and era.startDate.date <= :finishDate and (era.finishDate is null or era.finishDate.date >= :startDate)").setEntity('contract', contract).setTimestamp('startDate', period_start.getDate()).setTimestamp('finishDate', period_finish.getDate()).scroll()
+    while eras.next():
+        era = eras.get(0)
 
-        if contract is None:
-            era = supply.getEras(data_source.start_date, data_source.finish_date)[0]
-            if supply_polarity == 'import':
-                mpan_core = era.impMpanCore
-                sup_con = era.impSupplierContract
-            else:
-                mpan_core = era.expMpanCore
-                sup_con = era.expSupplierContract
+        era_start = era.getStartDate()
+        if month_start.before(era_start):
+            chunk_start = era_start
+        else:
+            chunk_start = month_start
+        era_finish = era.getFinishDate()
+        if month_finish.after(era_finish):
+            chunk_finish = era_finish
+        else:
+            chunk_finish = month_finish
+        polarities = []
+        if era.impSupplierContract == contract:
+            polarities.append(True)
+        if era.expSupplierContract == contract:
+            polarities.append(Fale)
+        for polarity in polarities:
+            data_source = comterp.get('SupplySource')(chunk_start, chunk_finish, forecast_date, era, polarity, comterp, pw, caches)
+            
+            site = site_query.setEntity('era', data_source.era).uniqueResult()
+            pw.print(','.join('"' + str(value) + '"' for value in [data_source.mpan_core, site.getCode() , site.getName(), data_source.supplier_account, data_source.start_date, data_source.finish_date]))
+            pw.flush()
 
-            bill_titles = contract_func(sup_con, supply_polarity + '_virtual_bill_titles', pw)()
-            pw.print('MPAN Core,Site Code,Site Name,Account,From,To,' + ','.join(bill_titles))
+            contract_func(contract, 'virtual_bill', pw)(data_source)
+            bill = data_source.supplier_bill
+            for title in bill_titles:
+                pw.print(',"' + str(bill.get(title, '')) + '"')
+                if title in bill:
+                    del bill[title]
+            keys = bill.keys()
+            keys.sort()
+            for k in keys:
+                pw.print(',"' + k + '","' + str(bill[k]) + '"')
             pw.println('')
             pw.flush()
-        else:
-            sup_con = contract
-
-        site = site_query.setEntity('era', data_source.era).uniqueResult()
-        pw.print(','.join('"' + str(value) + '"' for value in [data_source.mpan_core, site.getCode() , site.getName(), data_source.supplier_account, data_source.start_date, data_source.finish_date]))
-        pw.flush()
-
-        contract_func(sup_con, supply_polarity + '_virtual_bill', pw)(data_source)
-        bill = data_source.supplier_bill
-        for title in bill_titles:
-            pw.print(',"' + str(bill.get(title, '')) + '"')
-            if title in bill:
-                del bill[title]
-        keys = bill.keys()
-        keys.sort()
-        for k in keys:
-            pw.print(',"' + k + '","' + str(bill[k]) + '"')
-        pw.println('')
-        pw.flush()
-        Hiber.session().clear()
+            Hiber.session().clear()
 
     utc_cal.setTime(month_start.getDate())
     utc_cal.add(Calendar.MONTH, 1)
@@ -15990,7 +15968,7 @@ pw.close()]]></value>
 		<value><![CDATA[from net.sf.chellow.monad import XmlTree, Hiber, UserException
 from java.util import Date, Locale
 from java.lang import System
-from net.sf.chellow.billing import HhdcContract
+from net.sf.chellow.billing import Contract
 from net.sf.chellow.physical import HhStartDate
 from java.text import SimpleDateFormat
 
@@ -16000,15 +15978,15 @@ pw = inv.getResponse().getWriter()
 pw.println("Chellow Id,MPAN Core,Site Code,Site Name,Snag Description,Is Import?,Is kWh?,Start Date,Finish Date,Days Since Snag Finished,Duration Of Snag (Days),Is Ignored?")
 pw.flush()
 
-contract_id = inv.getLong('dc-contract-id')
+contract_id = inv.getLong('hhdc_contract_id')
 if not inv.isValid():
     raise UserException()
 
 formatter = SimpleDateFormat("yyyy/MM/dd HH:mm", Locale.UK)
 
-contract = HhdcContract.getHhdcContract(contract_id)
+contract = Contract.getHhdcContract(contract_id)
 
-snags = Hiber.session().createQuery("select snag, ss_gen.site, snag.channel, snag.channel.era from ChannelSnag snag join snag.channel.era.siteEras ss_gen where snag.channel.era.hhdcContract = :contract and ss_gen.isPhysical is true order by snag.isIgnored, snag.startDate.date, snag.id").setEntity('contract', contract).scroll()
+snags = Hiber.session().createQuery("select snag, ss_gen.site, snag.channel, snag.channel.era from Snag snag join snag.channel.era.siteEras ss_gen where snag.channel.era.hhdcContract = :contract and ss_gen.isPhysical is true order by snag.isIgnored, snag.startDate.date, snag.id").setEntity('contract', contract).scroll()
 
 MILLIS_IN_DAY = 1000 * 60 * 60 * 24
 
@@ -16019,7 +15997,10 @@ while snags.next():
     site = snags.get(1)
     channel = snags.get(2)
     era = snags.get(3)
-    mpan = era.getMpans().iterator().next()
+    if era.impMpanCore is None:
+        mpan_core = era.impMpanCore
+    else:
+        mpan_core = era.expMpanCore
     
     snag_start = snag.getStartDate()
     snag_finish = snag.getFinishDate()
@@ -16034,7 +16015,7 @@ while snags.next():
         duration = float(snag_finish_millis - snag_start_millis) / MILLIS_IN_DAY
         age_of_snag = (now - snag_finish_millis) / MILLIS_IN_DAY
 
-    pw.println(','.join('"' + str(val) + '"' for val in [snag.getId(), mpan.getCore(), site.getCode(), site.getName(), snag.getDescription(), channel.getIsImport(), channel.getIsKwh(), formatter.format(snag_start.getDate()), snag_finish_str, age_of_snag, duration, snag.getIsIgnored()]))
+    pw.println(','.join('"' + str(val) + '"' for val in [snag.getId(), mpan_core, site.getCode(), site.getName(), snag.getDescription(), channel.getIsImport(), channel.getIsKwh(), formatter.format(snag_start.getDate()), snag_finish_str, age_of_snag, duration, snag.getIsIgnored()]))
     pw.flush()
     Hiber.session().clear()
 snags.close()
