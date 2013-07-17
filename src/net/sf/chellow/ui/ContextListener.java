@@ -339,8 +339,8 @@ public class ContextListener implements ServletContextListener {
 			stmt.executeUpdate("alter table snag add site_id bigint default null references site (id)");
 			stmt.executeUpdate("alter table snag add start_date timestamp with time zone default null");
 			stmt.executeUpdate("alter table snag add finish_date timestamp with time zone default null");
-			stmt.executeUpdate("update snag set channel_id = channel_snag.channel_id, start_date = channel_snag.start_date from channel_snag where snag.id = channel_snag.snag_id");
-			stmt.executeUpdate("update snag set site_id = site_snag.site_id, start_date = site_snag.start_date from site_snag where snag.id = site_snag.snag_id");
+			stmt.executeUpdate("update snag set channel_id = channel_snag.channel_id, start_date = channel_snag.start_date, finish_date = channel_snag.finish_date from channel_snag where snag.id = channel_snag.snag_id");
+			stmt.executeUpdate("update snag set site_id = site_snag.site_id, start_date = site_snag.start_date, finish_date = site_snag.finish_date from site_snag where snag.id = site_snag.snag_id");
 			stmt.executeUpdate("alter table snag alter channel_id drop default");
 			stmt.executeUpdate("alter table snag alter site_id drop default");
 			stmt.executeUpdate("alter table snag alter start_date drop default");
@@ -425,12 +425,12 @@ public class ContextListener implements ServletContextListener {
 			stmt.executeUpdate("alter table era add exp_llfc_id bigint default null references llfc(id)");
 			stmt.executeUpdate("alter table era add exp_supplier_contract_id bigint default null references contract(id)");
 			stmt.executeUpdate("alter table era add exp_supplier_account character varying(255) default null");
-			stmt.executeUpdate("update era set imp_mpan_core = (select dno.code || ' ' || mpan_core.unique_part || ' ' || mpan_core.check_digit from dno, mpan_core, mpan where mpan.id = era.import_mpan_id and mpan.core_id = mpan_core.id and mpan_core.dno_id = dno.party_id)");
+			stmt.executeUpdate("update era set imp_mpan_core = (select dno.code || ' ' || substring(mpan_core.unique_part from 1 for 4) || ' ' || substring(mpan_core.unique_part from 5 for 4) || ' ' || substring(mpan_core.unique_part from 9 for 2) || mpan_core.check_digit from dno, mpan_core, mpan where mpan.id = era.import_mpan_id and mpan.core_id = mpan_core.id and mpan_core.dno_id = dno.party_id)");
 			stmt.executeUpdate("update era set imp_sc = (select mpan.agreed_supply_capacity from mpan where mpan.id = era.import_mpan_id)");
 			stmt.executeUpdate("update era set imp_llfc_id = (select mpan.llfc_id from mpan where mpan.id = era.import_mpan_id)");
 			stmt.executeUpdate("update era set imp_supplier_contract_id = (select mpan.supplier_contract_id from mpan where mpan.id = era.import_mpan_id)");
 			stmt.executeUpdate("update era set imp_supplier_account = (select mpan.supplier_account from mpan where mpan.id = era.import_mpan_id)");
-			stmt.executeUpdate("update era set exp_mpan_core = (select dno.code || ' ' || mpan_core.unique_part || ' ' || mpan_core.check_digit from dno, mpan_core, mpan where mpan.id = era.export_mpan_id and mpan.core_id = mpan_core.id and mpan_core.dno_id = dno.party_id)");
+			stmt.executeUpdate("update era set exp_mpan_core = (select dno.code || ' ' || substring(mpan_core.unique_part from 1 for 4) || ' ' || substring(mpan_core.unique_part from 5 for 4) || ' ' || substring(mpan_core.unique_part from 9 for 2) || mpan_core.check_digit from dno, mpan_core, mpan where mpan.id = era.export_mpan_id and mpan.core_id = mpan_core.id and mpan_core.dno_id = dno.party_id)");
 			stmt.executeUpdate("update era set exp_sc = (select mpan.agreed_supply_capacity from mpan where mpan.id = era.export_mpan_id)");
 			stmt.executeUpdate("update era set exp_llfc_id = (select mpan.llfc_id from mpan where mpan.id = era.export_mpan_id)");
 			stmt.executeUpdate("update era set exp_supplier_contract_id = (select mpan.supplier_contract_id from mpan where mpan.id = era.export_mpan_id)");
@@ -540,7 +540,6 @@ public class ContextListener implements ServletContextListener {
 			// takes ages
 			stmt.executeUpdate("alter table hh_datum add last_modified timestamp with time zone not null default 'epoch'");
 			stmt.executeUpdate("alter table hh_datum alter last_modified drop default");
-
 			stmt.executeUpdate("commit");
 			con.setAutoCommit(false);
 		} catch (SQLException sqle) {

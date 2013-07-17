@@ -15975,14 +15975,14 @@ from java.text import SimpleDateFormat
 inv.getResponse().setContentType("text/csv")
 inv.getResponse().setHeader('Content-Disposition', 'attachment; filename="output.csv"')
 pw = inv.getResponse().getWriter()
-pw.println("Chellow Id,MPAN Core,Site Code,Site Name,Snag Description,Is Import?,Is kWh?,Start Date,Finish Date,Days Since Snag Finished,Duration Of Snag (Days),Is Ignored?")
+pw.println("Chellow Id,Imp MPAN Core,Exp MPAN Core, Site Code,Site Name,Snag Description,Is Import?,Is kWh?,Start Date,Finish Date,Days Since Snag Finished,Duration Of Snag (Days),Is Ignored?")
 pw.flush()
 
 contract_id = inv.getLong('hhdc_contract_id')
 if not inv.isValid():
     raise UserException()
 
-formatter = SimpleDateFormat("yyyy/MM/dd HH:mm", Locale.UK)
+formatter = SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.UK)
 
 contract = Contract.getHhdcContract(contract_id)
 
@@ -15997,10 +15997,6 @@ while snags.next():
     site = snags.get(1)
     channel = snags.get(2)
     era = snags.get(3)
-    if era.impMpanCore is None:
-        mpan_core = era.impMpanCore
-    else:
-        mpan_core = era.expMpanCore
     
     snag_start = snag.getStartDate()
     snag_finish = snag.getFinishDate()
@@ -16015,7 +16011,7 @@ while snags.next():
         duration = float(snag_finish_millis - snag_start_millis) / MILLIS_IN_DAY
         age_of_snag = (now - snag_finish_millis) / MILLIS_IN_DAY
 
-    pw.println(','.join('"' + str(val) + '"' for val in [snag.getId(), mpan_core, site.getCode(), site.getName(), snag.getDescription(), channel.getIsImport(), channel.getIsKwh(), formatter.format(snag_start.getDate()), snag_finish_str, age_of_snag, duration, snag.getIsIgnored()]))
+    pw.println(','.join('"' + str(val) + '"' for val in [snag.getId(), era.impMpanCore, era.expMpanCore, site.getCode(), site.getName(), snag.getDescription(), channel.getIsImport(), channel.getIsKwh(), formatter.format(snag_start.getDate()), snag_finish_str, age_of_snag, duration, snag.getIsIgnored()]))
     pw.flush()
     Hiber.session().clear()
 snags.close()
