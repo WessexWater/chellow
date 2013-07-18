@@ -79,7 +79,8 @@ print things out to the CSV file:
     
     
     def virtual_bill(data_source):
-        data_source.pw.println('The start date is ' + str(data.source.start_date))
+        data_source.pw.println('The start date is ' +
+	     str(data.source.start_date))
         data_source.supplier_bill['net-gbp'] = 0
 
 To use half-hourly data to generate a bill based on a day / night tariff, you
@@ -215,9 +216,9 @@ network. It'll also put in some HH data for the beginning of October 2010.
 #### Key points when importing
 
   * Lines beginning with the '#' character are comment lines.
-  * You can import any amount of data, from any area.
+  * You can import any number of lines, and mix actions and types in a single file.
   * When updating a record, if the field contains {no change}, then that field won't be updated.
-  * When inserting records, the 'id' fields are optional. If left blank, Chellow will automatically generate an id.
+  * A blank date field means 'ongoing'.
 
 
 
