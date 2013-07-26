@@ -1062,7 +1062,7 @@ finally:
             {% set rows_high = bill_dict['rows_high'] %}
             <tr>
               <td rowspan="{{ rows_high }}">
-                <a href="{{ context_path }}/reports/105/output/?bill-id={{ bill.id }}">View</a>
+                <a href="{{ context_path }}/reports/105/output/?supplier_bill_id={{bill.id}}">View</a>
                 </td>
                 <td rowspan="{{ rows_high }}">
                   <a title="{{ bill.start_date|hh_format }}">{{ bill.start_date|hh_format('date') }}</a>
@@ -1186,7 +1186,7 @@ finally:
             {% set rows_high = bill_dict['rows_high'] %}
             <tr>
               <td rowspan="{{ rows_high }}">
-                <a href="{{ context_path }}/reports/105/output/?bill-id={{ bill.id }}">View</a>
+                <a href="{{context_path}}/reports/105/output/?supplier_bill_id={{bill.id}}">View</a>
               </td>
               <td rowspan="{{ rows_high }}">
                 <a title="{{ bill.start_date|hh_format }}">{{ bill.start_date|hh_format('date') }}</a>
