@@ -14673,7 +14673,7 @@ else:
                     </a>
                     &gt;
                     <a
-                        href="{/source/request/@context-path}/reports/115/output/?hhdc-contract-id={/source/hh-data-imports/hhdc-contract/@id}">
+                        href="{/source/request/@context-path}/reports/115/output/?hhdc_contract_id={/source/hh-data-imports/hhdc-contract/@id}">
                         <xsl:value-of select="/source/hh-data-imports/hhdc-contract/@name" />
                     </a>
                     &gt; HH Data Imports
