@@ -15,9 +15,7 @@
 <hibernate-mapping package="net.sf.chellow.physical">
 	<class name="Configuration" table="configuration">
 		<id name="id">
-			<generator class="sequence">
-				<param name="sequence">configuration_id_sequence</param>
-			</generator>
+			<generator class="identity"/>
 		</id>
 		<property type="string" name="properties">
 			<column name="properties" sql-type="text" />

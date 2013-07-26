@@ -26,9 +26,7 @@
 <hibernate-mapping package="net.sf.chellow.physical">
 	<class name="Participant" table="participant" lazy="true">
 		<id name="id">
-			<generator class="sequence">
-				<param name="sequence">participant_id_sequence</param>
-			</generator>
+			<generator class="identity"/>
 		</id>
 		<property name="code" column="code" unique="true"
 			not-null="true" />

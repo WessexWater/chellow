@@ -117,7 +117,7 @@ public class Channel extends PersistentEntity {
 		PreparedStatement stmt;
 		try {
 			stmt = con
-					.prepareStatement("INSERT INTO hh_datum VALUES (nextval('hh_datum_id_sequence'), ?, ?, ?, ?, ?)");
+					.prepareStatement("INSERT INTO hh_datum VALUES (nextval('hh_datum_id_seq'), ?, ?, ?, ?, ?)");
 		} catch (SQLException e1) {
 			throw new InternalException(e1);
 		}

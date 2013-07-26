@@ -15,9 +15,7 @@
 <hibernate-mapping package="net.sf.chellow.physical">
 	<class name="RegisterRead" table="register_read">
 		<id name="id">
-			<generator class="sequence">
-				<param name="sequence">register_read_id_sequence</param>
-			</generator>
+			<generator class="identity"/>
 		</id>
 		<many-to-one name="bill" class="net.sf.chellow.billing.Bill"
 			column="bill_id" not-null="true" foreign-key="register_read_bill_id_fkey" />

@@ -26,9 +26,7 @@
 <hibernate-mapping package="net.sf.chellow.physical">
 	<class name="ReadType" table="read_type">
 		<id name="id">
-			<generator class="sequence">
-				<param name="sequence">read_type_id_sequence</param>
-			</generator>
+			<generator class="identity"/>
 		</id>
 		<property type="string" name="code" column="code"
 			not-null="true" unique="true" />

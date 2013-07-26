@@ -15,11 +15,7 @@
 <hibernate-mapping package="net.sf.chellow.physical">
 	<class name="Era" table="era">
 		<id name="id">
-			<generator class="sequence">
-				<param name="sequence">
-					era_id_sequence
-				</param>
-			</generator>
+			<generator class="identity"/>
 		</id>
 		<many-to-one name="supply" class="Supply" column="supply_id"
 			not-null="true" foreign-key="era_supply_id_fkey" />

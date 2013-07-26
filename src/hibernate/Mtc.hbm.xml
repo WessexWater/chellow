@@ -15,9 +15,7 @@
 <hibernate-mapping package="net.sf.chellow.physical">
 	<class name="Mtc" table="mtc" lazy="true">
 		<id name="id">
-			<generator class="sequence">
-				<param name="sequence">mtc_id_sequence</param>
-			</generator>
+			<generator class="identity"/>
 		</id>
 		<many-to-one name="dno" class="net.sf.chellow.billing.Party"
 			column="dno_id" unique-key="mtc_unique" foreign-key="mtc_dno_id_fkey" />

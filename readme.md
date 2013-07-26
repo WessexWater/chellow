@@ -14,7 +14,7 @@ for organizations with high electricity consumption. The software is hosted at
 
 1. [Download](https://bitbucket.org/ww_tlocke/chellow/downloads) the latest version of Chellow.
 2.  Make sure the following are installed: 
-    * PostgreSQL 9.1 with the JDBC4 PostgreSQL Driver, Version 9.2-1002
+    * PostgreSQL 9.2 with the JDBC4 PostgreSQL Driver, Version 9.2-1002
     * OpenJDK 1.7.0_21 (in server mode)
     * Apache Tomcat 7.0.35
 3.  Create a PostgreSQL database called `chellow`. 
@@ -31,7 +31,7 @@ for organizations with high electricity consumption. The software is hosted at
         <Parameter name="db.username" value="postgres"/>
         <Parameter name="db.password" value="hello"/>
 
-    2.  Put the [JDBC driver](http://jdbc.postgresql.org/download/postgresql-9.1-903.jdbc4.jar) in the Tomcat `/lib/` directory.
+    2.  Put the [JDBC driver](http://jdbc.postgresql.org/download/postgresql-9.2-1002.jdbc4.jar) in the Tomcat `/lib/` directory.
 5.  Deploy the file chellow.war to Tomcat.
 
 ###  Getting Started
@@ -232,17 +232,17 @@ Action | Type
 *insert* | *era* | Mpan Core  | Start date (yyyy-MM-dd)  | Site Code  | MOP Contract  | MOP Account  | HHDC Contract  | HHDC Account  | Has import kWh? (yes/no)  | Has import kVArh?  | Has export kWh?  | Has export kVArh?  | Meter Serial Number  | Profile Class  | MTC  | CoP  | SSC  | Import MPAN Core  | Import LLFC  | Import Supply Capacity  | Import Supplier Contract  | Import Supplier Account  | Export MPAN Core  | Export LLFC  | Export Supply Capacity  | Export Supplier Contract  | Export Supplier Account
 *update* | *era* | MPAN Core  | Date  | Start date  | Finish date  | MOP Contract  | MOP Account  | HHDC Contract  | HHDC Account  | Has import HH kWh?  | Has import HH kVArh?  | Has export HH kWh?  | Has export HH kVArh?  | Meter Serial Number  | Profile Class  | MTC  | CoP  | SSC  | Import MPAN Core  | Import LLFC  | Import Supply Capacity  | Import Supplier Contract  | Import Supplier Account  | Export MPAN Core  | Export LLFC  | Export Supply Capacity  | Export Supplier Contract  | Export Supplier Account
 *delete* | *era* | MPAN Core  | Date
-*insert* | *site-era* | Site Code  | Core MPAN  | Era Start Date  | Is Physical?
-*insert* | *hh-datum* | MPAN Core  | Date  | Is Import?  | Is kWh?  | (Value, Status)*
+*insert* | *site_era* | Site Code  | Core MPAN  | Era Start Date  | Is Physical?
+*insert* | *hh_datum* | MPAN Core  | Date  | Is Import?  | Is kWh?  | (Value, Status)*
 *insert* | *user* | Email Address  | Password  | Password Digest  | User Role  | Participant Code  | Role Code
 *update* | *user* | Current Email Address  | Email Address  | Password  | Password Digest  | User Role  | Participant Code  | Role Code
-*insert* | *channel-snag-ignore* | MPAN Core  | Is Import?  | Is kWh?  | Description  | From  | To
-*insert* | *site-snag-ignore* | Site Code  | Description  | From  | To
+*insert* | *channel_snag_ignore* | MPAN Core  | Is Import?  | Is kWh?  | Description  | From  | To
+*insert* | *site_snag_ignore* | Site Code  | Description  | From  | To
 *insert* | *batch* | Role Name (hhdc, supplier or mop)  | Contract Name  | Reference  | Description
 *update* | *batch* | Role Name (hhdc, supplier or mop)  | Contract Name  | Old Reference  | New Reference  | Description
 *insert* | *bill* | Role Name(hhdc, supplier or mop)  | Contract Name  | Batch Reference  | Mpan Core  | Issue Date  | Start Date  | Finish Date  | Net  | Vat  | Gross  | Account Reference  | Reference  | Type  | Breakdown  | Kwh  | (Meter Serial Number  | Mpan  | Coefficient  | Units  | TPR  | Previous Date  | Previous Value  | Previous Type  | Present Date  | Present Value  | Present Type)*
 *update* | *bill* | Chellow Id  | Account  | Reference  | Issue Date  | Start Date  | Finish Date  | kwh  | Net  | Vat  | Type  | Paid?  | Breakdown
-*update* | *register-read* | Chellow Id  | TPR  | Coefficient  | Units  | Meter Serial Number  | MPAN  | Previous Date  | Previous Value  | Previous Type  | Present Date  | Present Value  | Present Type
+*update* | *register_read* | Chellow Id  | TPR  | Coefficient  | Units  | Meter Serial Number  | MPAN  | Previous Date  | Previous Value  | Previous Type  | Present Date  | Present Value  | Present Type
 
 ###  HH Data Formats
 

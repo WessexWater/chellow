@@ -15,9 +15,7 @@
 <hibernate-mapping package="net.sf.chellow.billing">
 	<class name="Party" table="party" lazy="true">
 		<id name="id">
-			<generator class="sequence">
-				<param name="sequence">party_id_sequence</param>
-			</generator>
+			<generator class="identity"/>
 		</id>
 		<many-to-one name="role" class="net.sf.chellow.physical.MarketRole"
 			column="market_role_id" foreign-key="party_market_role_id_fkey" />

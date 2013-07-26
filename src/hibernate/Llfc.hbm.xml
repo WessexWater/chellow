@@ -15,9 +15,7 @@
 <hibernate-mapping package="net.sf.chellow.physical">
 	<class name="Llfc" table="llfc" lazy="true">
 		<id name="id">
-			<generator class="sequence">
-				<param name="sequence">llfc_id_sequence</param>
-			</generator>
+			<generator class="identity"/>
 		</id>
 
 		<many-to-one name="dno" class="net.sf.chellow.billing.Party"

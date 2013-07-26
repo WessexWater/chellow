@@ -26,11 +26,7 @@
 <hibernate-mapping package="net.sf.chellow.physical">
 	<class name="ClockInterval" table="clock_interval" lazy="true">
 		<id name="id">
-			<generator class="sequence">
-				<param name="sequence">
-					clock_interval_id_sequence
-				</param>
-			</generator>
+			<generator class="identity"/>
 		</id>
 		<many-to-one name="tpr" class="Tpr" column="tpr_id"
 			foreign-key="clock_interval_tpr_id_fkey" />
