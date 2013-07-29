@@ -1925,7 +1925,7 @@ def tariffs():
             'peak': 1.044,
             'winter-weekday': 1.039,
             'other': 1.034,
-            'night': 1.028},
+            'night': 1.029},
         'hv-sub': {
             'peak': 1.021,
             'winter-weekday': 1.019,
@@ -2071,6 +2071,7 @@ def tariffs():
             'winter-weekday': 1.023,
             'other': 1.021,
             'night': 1.018}}
+
 
 def tariffs():
     return {
