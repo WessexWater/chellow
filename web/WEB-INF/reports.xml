@@ -12052,7 +12052,14 @@ while rs.next():
     for i in range(1, rs_meta.getColumnCount() + 1):
         cell_el = doc.createElement('cell')
         row_el.appendChild(cell_el)
-        cell_el.setAttribute('value', rs.getString(i))]]></value>
+        cell_el.setAttribute('value', rs.getString(i))
+
+pstmt = con.prepareStatement("show max_pred_locks_per_transaction")
+rs = pstmt.executeQuery()
+while rs.next():
+    source.setAttribute('max_pred_locks_per_transaction', str(rs.getString('max_pred_locks_per_transaction')))
+rs.close()
+]]></value>
 		<value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
 <xsl:stylesheet version="1.0"
     xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
@@ -12198,6 +12205,10 @@ while rs.next():
 <tr><th>Driver Name</th><td><xsl:value-of select="/source/@db-driver-name"/></td></tr>
 <tr><th>Driver Version</th><td><xsl:value-of select="/source/@db-driver-version"/></td></tr>
 <tr><th>Transaction Isolation (of current connection)</th><td><xsl:value-of select="/source/@transaction-isolation"/></td></tr>
+<tr>
+<th>Max pred locks per transaction</th>
+<td><xsl:value-of select="/source/@max_pred_locks_per_transaction"/></td>
+</tr>
 </table>
 
 <h4>PostgreSQL Current Activity</h4>
