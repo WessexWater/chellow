@@ -11840,18 +11840,11 @@ finally:
       </fieldset>
     </form>
     <br><br>
-    <form action="{{context_path}}/reports/167/output/">
+    <form action="{{context_path}}/reports/187/output/">
       <fieldset>
         <legend>HH Per Row Format</legend>
         <br/>
-        <select name="is_import">
-          <option value="true">Import</option>
-          <option value="false">Export</option>
-        </select>
-        <select name="is_kwh">
-          <option value="true">kWh</option>
-          <option value="false">kVArh</option>
-        </select> from {{input_date('start', request, start_date)}} to
+        From {{input_date('start', request, start_date)}} to
         {{input_date('finish', request, finish_date)}}
         <input type="submit" value="Download">
       </fieldset>
@@ -12953,132 +12946,43 @@ finally:
 		<value><![CDATA[report]]></value>
 		<value><![CDATA[187]]></value>
 		<value><![CDATA[true]]></value>
-		<value><![CDATA[CSV Supplies Patched HH Data]]></value>
-		<value><![CDATA[from net.sf.chellow.monad import Hiber, UserException
-from net.sf.chellow.monad.types import MonadDate
-from java.util import Calendar, GregorianCalendar, TimeZone, Locale
-from java.text import DateFormat
-from java.util.zip import ZipOutputStream, ZipEntry
-from java.io import OutputStreamWriter, PrintWriter
-from org.hibernate import CacheMode, ScrollMode
-from net.sf.chellow.physical import HhStartDate
-from java.lang import System, Long
-from net.sf.chellow.physical import Channel
+		<value><![CDATA[CSV Supplies HH Data Row]]></value>
+		<value><![CDATA[from net.sf.chellow.monad import Monad, Hiber, UserException
 
-end_year = inv.getInteger('end-year')
-end_month = inv.getInteger('end-month')
-months = inv.getInteger('months')
-measurement_class = inv.getString('measurement-class')
-if not inv.isValid():
-    raise UserException()
-cal = MonadDate.getCalendar()
-cal.clear()
-cal.set(Calendar.YEAR, end_year)
-cal.set(Calendar.MONTH, end_month - 1)
-cal.add(Calendar.MONTH, 1)
-cal.add(Calendar.MINUTE, -30)
-finishDate = cal.getTime()
+Monad.getUtils()['imprt'](globals(), {
+        'db': ['HhDatum', 'Site', 'Supply', 'set_read_write', 'session'], 
+        'utils': ['UserException', 'HH', 'form_date'],
+        'templater': ['render']})
 
-cal.add(Calendar.MINUTE, 30)
-cal.add(Calendar.MONTH, -1 * months)
-startDate = cal.getTime()
+start_date = form_date(inv, 'start')
+finish_date = form_date(inv, 'finish')
 
-dateFormat = DateFormat.getDateInstance(DateFormat.LONG, Locale.UK)
-dateFormat.applyLocalizedPattern("yyyy-MM-dd")
-dateFormat.setCalendar(cal)
+file_name = "hh_data_row_" + start_date.strftime("%Y%m%d%H%M") + ".csv"
 
-if measurement_class == 'all':
-    clause = ''
-elif measurement_class == 'hh':
-    clause = "and mpan.pc.code = 0"
-elif measurement_class == 'nhh':
-    clause = "and mpan.pc.code != 0"
-else:
-    raise UserException("I don't recognize the measurement class.")
+inv.getResponse().setContentType("text/csv")
+inv.getResponse().setHeader('Content-Disposition', 'filename="' + file_name + '";')
+pw = inv.getResponse().getWriter()
 
-inv.getResponse().setContentType('application/zip')
-inv.getResponse().setHeader('Content-Disposition', 'attachment; filename="output.zip"')
-sout = inv.getResponse().getOutputStream()
-zout = ZipOutputStream(sout)
-pw = PrintWriter(OutputStreamWriter(zout, 'UTF-8'))
-
-#inv.getResponse().setContentType("text/csv")
-#inv.getResponse().setHeader('Content-Disposition', 'filename=output.csv;')
-#pw = inv.getResponse().getWriter()
-
-summaries = []
-
-supplies = Hiber.session().createQuery("select distinct era.supply, era.supply.id from Era era join era.mpans mpan where (era.finishDate.date is null or era.finishDate.date > :finishDate) " + clause + " order by era.supply.id").setTimestamp("finishDate", finishDate).scroll()
-#channels.last()
-#channels.previous()
-while supplies.next():
-    supply = supplies.get(0)
-    era = supply.getGeneration(HhStartDate(finishDate))
-    if era == None or era.getImportMpan() == None:
-        mpanCoreStr = "NA"
-    else:
-        mpanCoreStr = era.getImportMpan().getCore().toString()
-    zout.putNextEntry(ZipEntry(mpanCoreStr + '_' + str(supply.getId()) + '.csv'))
-    pw.print("MPAN Core,Date,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48")
-    currentDate = HhStartDate.roundUp(startDate)
-    hhData = Hiber.session().createQuery("select datum.value, datum.startDate.date from HhDatum datum where datum.channel.era.supply = :supply and datum.startDate.date >= :startDate and datum.startDate.date <= :finishDate and datum.channel.isImport is true and datum.channel.isKwh is true order by datum.startDate.date").setEntity("supply", supply).setTimestamp("startDate", startDate).setTimestamp("finishDate", finishDate).list()
-    day_kwh = 0
-    day_count = 0
-    night_kwh = 0
-    night_count = 0
-    for row in hhData:
-        datum_value = row[0].doubleValue()
-        datum_end_date = row[1]
-        cal.setTime(datum_end_date)
-        decimal_hour = cal.get(Calendar.HOUR_OF_DAY) + cal.get(Calendar.MINUTE) / 60
-        if decimal_hour > 0 and decimal_hour < 7.5:
-            night_kwh = night_kwh + datum_value
-            night_count = night_count + 1
+sess = None
+try:
+    sess = session()
+    if inv.getRequest().getMethod() == 'GET':
+        if inv.hasParameter('supply_id'):
+            supply_id = inv.getLong('supply_id')
+            supply = Supply.get_by_id(sess, supply_id)
+            hh_data = sess.query(HhDatum).from_statement("select hh_datum.* from hh_datum, channel, era where hh_datum.channel_id = channel.id and channel.era_id = era.id and era.supply_id = :supply_id and hh_datum.start_date >= :start_date and hh_datum.start_date <= :finish_date order by hh_datum.start_date").params(supply_id=supply.id, start_date=start_date, finish_date=finish_date)
         else:
-            day_kwh = day_kwh + datum_value
-            day_count = day_count + 1
-    if day_count != 0:
-        av_day_kwh = day_kwh / day_count
-    else:
-        av_day_kwh = 0
-    if night_count != 0:
-        av_night_kwh = night_kwh / night_count
-    else:
-        av_night_kwh = 0
-    datumStartDate = None
-    datumValue = None
-    hh_data_count = 0
-    total_kwh = 0
-    while not currentDate.getDate().after(finishDate):
-        cal.setTime(currentDate.getDate())
-        if cal.get(Calendar.HOUR_OF_DAY) == 0 and cal.get(Calendar.MINUTE) == 30:
-            pw.print("\r\n" + mpanCoreStr + "," + dateFormat.format(currentDate.getDate()))
-        pw.print(",")
-        if (datumStartDate == None or datumStartDate.before(currentDate.getDate())) and hh_data_count < len(hhData):
-            row = hhData[hh_data_count]
-            hh_data_count = hh_data_count + 1
-            datumValue = row[0].doubleValue()
-            datumStartDate = row[1]
-        if datumStartDate is not None and datumStartDate.getTime() == currentDate.getDate().getTime():
-            hh_val = datumValue
-        else:
-            decimal_hour = cal.get(Calendar.HOUR_OF_DAY) + cal.get(Calendar.MINUTE) / 60
-            if decimal_hour > 0 and decimal_hour < 7.5:
-                hh_val = av_night_kwh
-            else:
-                hh_val = av_day_kwh
-        total_kwh = total_kwh + round(hh_val, 1)
-        pw.print(str(round(hh_val, 1)))
-        currentDate = currentDate.getNext()
-    Hiber.session().clear()
-    pw.flush()
-    summaries.append(mpanCoreStr + ',' + str(round(total_kwh, 1)))
-supplies.close()
-zout.putNextEntry(ZipEntry('summary.csv'))
-pw.println('MPAN Core,kWh')
-for summary in summaries:
-    pw.println(summary)
-pw.close()]]></value>
+            hh_data = sess.query(HhDatum).from_statement("select hh_datum.* from hh_datum, channel, era where hh_datum.channel_id = channel.id and channel.era_id = era.id and hh_datum.start_date >= :start_date and hh_datum.start_date <= :finish_date order by era.supply_id, hh_datum.start_date").params(start_date=start_date, finish_date=finish_date)
+
+        pw.println("Imp MPAN Core, Exp Mpan Core, Start Date, Is Import?, Is kWh?, Value, Status")
+
+        for hh in hh_data:
+            channel = hh.channel
+            era = channel.era
+            pw.println(','.join('"' + str(val) + '"' for val in [era.imp_mpan_core, era.exp_mpan_core, hh.start_date.strftime("%Y-%m-%d %H:%M"), channel.is_import, channel.is_kwh, hh.value, hh.status]))
+    pw.close()
+finally:
+    sess.close()]]></value>
 		<value><![CDATA[]]></value>
 	</line>
 	<line>
