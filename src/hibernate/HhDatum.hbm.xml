@@ -27,7 +27,8 @@
 		<component name="startDate" class="HhStartDate">
 			<property name="date" type="timestamp" not-null="true"
 				unique-key="channel_date_key">
-				<column name="start_date" sql-type="timestamp with time zone" />
+				<column name="start_date" sql-type="timestamp with time zone" 
+				index="hh_datum_start_date_idx"/>
 			</property>
 		</component>
 
@@ -40,7 +41,7 @@
 
 		<property name="lastModified" type="timestamp">
 			<column name="last_modified" sql-type="timestamp with time zone"
-				not-null="true" />
+				not-null="true" index="hh_datum_last_modified_idx"/>
 		</property>
 	</class>
 </hibernate-mapping>
