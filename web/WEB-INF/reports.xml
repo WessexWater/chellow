@@ -15553,6 +15553,7 @@ source.setAttribute('debug', debug)]]></value>
 		<value><![CDATA[true]]></value>
 		<value><![CDATA[Importer: BSUoS]]></value>
 		<value><![CDATA[from net.sf.chellow.monad import Monad
+from java.lang import Thread
 from sqlalchemy.orm import joinedload_all
 import sys
 
