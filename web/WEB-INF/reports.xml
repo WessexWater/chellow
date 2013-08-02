@@ -12961,7 +12961,7 @@ finish_date = form_date(inv, 'finish')
 file_name = "hh_data_row_" + start_date.strftime("%Y%m%d%H%M") + ".csv"
 
 inv.getResponse().setContentType("text/csv")
-inv.getResponse().setHeader('Content-Disposition', 'filename="' + file_name + '";')
+inv.getResponse().setHeader('Content-Disposition', 'attachment; filename="' + file_name + '"')
 pw = inv.getResponse().getWriter()
 
 sess = None
@@ -12976,11 +12976,13 @@ try:
             hh_data = sess.query(HhDatum).from_statement("select hh_datum.* from hh_datum, channel, era where hh_datum.channel_id = channel.id and channel.era_id = era.id and hh_datum.start_date >= :start_date and hh_datum.start_date <= :finish_date order by era.supply_id, hh_datum.start_date").params(start_date=start_date, finish_date=finish_date)
 
         pw.println("Imp MPAN Core, Exp Mpan Core, Start Date, Is Import?, Is kWh?, Value, Status")
+        pw.flush()
 
         for hh in hh_data:
             channel = hh.channel
             era = channel.era
             pw.println(','.join('"' + str(val) + '"' for val in [era.imp_mpan_core, era.exp_mpan_core, hh.start_date.strftime("%Y-%m-%d %H:%M"), channel.is_import, channel.is_kwh, hh.value, hh.status]))
+            pw.flush()
     pw.close()
 finally:
     sess.close()]]></value>
