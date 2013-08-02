@@ -745,7 +745,8 @@ finally:
 <html>
   <head>
     <link rel="stylesheet" type="text/css"
-      href="{{ context_path }}/reports/19/output/" />
+      href="{{context_path}}/reports/19/output/">
+    <meta http-equiv="X-UA-Compatible" content="IE=9">
     <title>Chellow &gt; Supplies &gt; {{ supply.id }}</title>
 
     <script type="text/javascript" language="javascript">    
