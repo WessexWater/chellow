@@ -2960,6 +2960,9 @@ def virtual_bill(supply_source):
 				<refresh />
 				<regex pattern="File stream obtained successfully\." />
 			</request>
+			<request path="/chellow/reports/115/output/?hhdc_contract_id=48">
+				<regex pattern="hh_data\.df2" />
+			</request>
 		</test>
 		<test name="Check that later bills are at the top.">
 			<request path="/chellow/reports/7/output/?supply_id=1">
