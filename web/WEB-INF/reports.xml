@@ -1598,13 +1598,13 @@ from net.sf.chellow.physical import Site
 from java.util import Calendar
 from java.lang import System
 
-site_id = inv.getLong("site-id")
+site_id = inv.getLong("site_id")
 if not inv.isValid():
     raise UserException()
 
-if inv.hasParameter('finish-year'):
-    year = inv.getInteger("finish-year")
-    month = inv.getInteger("finish-month")
+if inv.hasParameter('finish_year'):
+    year = inv.getInteger("finish_year")
+    month = inv.getInteger("finish_month")
     months = inv.getInteger("months")
     if not inv.isValid():
         raise UserException()
@@ -1616,7 +1616,7 @@ if inv.hasParameter('finish-year'):
 else:
     cal = MonadDate.getCalendar()
     cal.setTimeInMillis(System.currentTimeMillis())
-    inv.sendTemporaryRedirect('/reports/11/output/?site-id=' + str(site_id) + '&months=1&finish-month=' + str(cal.get(Calendar.MONTH) + 1) + '&finish-year=' + str(cal.get(Calendar.YEAR)))]]></value>
+    inv.sendTemporaryRedirect('/reports/11/output/?site_id=' + str(site_id) + '&months=1&finish_month=' + str(cal.get(Calendar.MONTH) + 1) + '&finish_year=' + str(cal.get(Calendar.YEAR)))]]></value>
 		<value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
 <xsl:stylesheet version="1.0"
     xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
@@ -1644,7 +1644,7 @@ else:
                     </a>
                     &gt;
                     <a
-                        href="{/source/request/@context-path}/reports/5/output/?site-id={/source/site/@id}">
+                        href="{/source/request/@context-path}/reports/5/output/?site_id={/source/site/@id}">
                         <xsl:value-of select="/source/site/@name" />
                     </a>
                     &gt; HH graph of era
@@ -1662,26 +1662,26 @@ else:
 
                 <p>
                     <img
-                        src="{/source/request/@context-path}/reports/23/output/?site-id={/source/site/@id}&amp;finish-year={/source/request/parameter[@name='finish-year']/value}&amp;finish-month={/source/request/parameter[@name='finish-month']/value}&amp;months={/source/request/parameter[@name='months']/value}" />
+                        src="{/source/request/@context-path}/reports/23/output/?site_id={/source/site/@id}&amp;finish_year={/source/request/parameter[@name='finish_year']/value}&amp;finish_month={/source/request/parameter[@name='finish_month']/value}&amp;months={/source/request/parameter[@name='months']/value}" />
                 </p>
                 <form action=".">
                     <fieldset>
                         <legend>Show graph</legend>
-                        <input type="hidden" name="site-id"
-                            value="{/source/request/parameter[@name='site-id']/value}" />
+                        <input type="hidden" name="site_id"
+                            value="{/source/request/parameter[@name='site_id']/value}" />
 
 
                         <xsl:value-of select="'For '" />
                         <input name="months" maxlength="2" size="2" value="{/source/request/parameter[@name='months']/value}"/>
                         <xsl:value-of select="' months finishing at the end of '" />
                         <input size="4" length="4"
-                            name="finish-year" value="{/source/request/parameter[@name='finish-year']/value}" />
+                            name="finish_year" value="{/source/request/parameter[@name='finish_year']/value}" />
                         <xsl:value-of select="' - '" />
-                        <select name="finish-month">
+                        <select name="finish_month">
                             <xsl:for-each select="/source/months/month">
                                 <option>
                                     <xsl:if
-                                        test="/source/request/parameter[@name='finish-month']/value = @number">
+                                        test="/source/request/parameter[@name='finish_month']/value = @number">
                                         <xsl:attribute
                                             name="selected">selected</xsl:attribute>
                                     </xsl:if>
@@ -3104,9 +3104,9 @@ def minimum_scale(min_scale, max_scale):
 
 start = System.currentTimeMillis()
 inv.getResponse().setContentType("image/png")
-site_id = inv.getLong("site-id")
-finishDateYear = inv.getInteger("finish-year")
-finishDateMonth = inv.getInteger("finish-month")
+site_id = inv.getLong("site_id")
+finishDateYear = inv.getInteger("finish_year")
+finishDateMonth = inv.getInteger("finish_month")
 months = inv.getInteger("months")
 if not inv.isValid():
     raise UserException()
