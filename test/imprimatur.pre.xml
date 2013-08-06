@@ -146,7 +146,7 @@ def virtual_bill_titles():
 
 def virtual_bill(supply_source):
     return {'net-gbp': 0}]]></control>
-				<control name="properties" value="{}" />
+				<control name="properties" value="{'mpan_map': {'maptest': '2292056799106'}}" />
 				<response-code value="303" />
 			</request>
 			<request path="/chellow/reports/279/output/?hhdc_contract_id=48">
