@@ -6047,7 +6047,7 @@ if not process.isAlive():
                     </a>
                     &gt;
                     <a
-                        href="{/source/request/@context-path}/reports/115/output/?hhdc-contract-id={/source/hh-data-import/hhdc-contract/@id}">
+                        href="{/source/request/@context-path}/reports/115/output/?hhdc_contract_id={/source/hh-data-import/hhdc-contract/@id}">
                         <xsl:value-of select="/source/hh-data-import/hhdc-contract/@name" />
                     </a>
                     &gt;

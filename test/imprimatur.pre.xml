@@ -769,6 +769,9 @@ def totalElement(account, startDate, finishDate):
 				<!-- Check it's loaded ok and has ignored the blank line and the #F2 
 					line -->
 				<regex pattern="The import has completed.*successfully." />
+				
+				<!-- Check link to hhdc is correct -->
+				<regex pattern="/chellow/reports/115/output/\?hhdc_contract_id=48" />
 				<response-code value="200" />
 			</request>
 			<request path="/chellow/supplies/1/eras/1/channels/4/snags/">
