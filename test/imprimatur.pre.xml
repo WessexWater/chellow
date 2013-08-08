@@ -3379,7 +3379,7 @@ def virtual_bill(supply_source):
 			<request
 				path="/chellow/reports/233/output/?hhdc_contract_id=48&amp;hidden_days=1">
 				<response-code value="200" />
-				<regex pattern='"82","22 0883 6932 301","None","CI005","Wheal Rodney","Missing","True","True","2002-01-01 00:00","2003-08-03 00:30",' />
+				<regex pattern='"82","22 0883 6932 301","None","CI005","Wheal Rodney","Missing","True","True","2002-01-01 00:00","2003-08-02 23:30",' />
 			</request>
 		</test>
 		<test name="Site use graph">

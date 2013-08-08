@@ -15864,57 +15864,57 @@ pw.close()]]></value>
 		<value><![CDATA[233]]></value>
 		<value><![CDATA[true]]></value>
 		<value><![CDATA[DC Channel Snags CSV]]></value>
-		<value><![CDATA[from net.sf.chellow.monad import XmlTree, Hiber, UserException
-from java.util import Date, Locale
-from java.lang import System
-from net.sf.chellow.billing import Contract
-from net.sf.chellow.physical import HhStartDate
-from java.text import SimpleDateFormat
+		<value><![CDATA[from net.sf.chellow.monad import Monad
+from sqlalchemy.orm import joinedload_all
+from sqlalchemy.sql.expression import text, select
+from sqlalchemy import and_
+import datetime
+from dateutil.relativedelta import relativedelta
+from java.util.zip import ZipOutputStream, ZipEntry
+from java.io import PrintWriter, OutputStreamWriter
+import pytz
 
-inv.getResponse().setContentType("text/csv")
-inv.getResponse().setHeader('Content-Disposition', 'attachment; filename="output.csv"')
-pw = inv.getResponse().getWriter()
-pw.println("Chellow Id,Imp MPAN Core,Exp MPAN Core, Site Code,Site Name,Snag Description,Is Import?,Is kWh?,Start Date,Finish Date,Days Since Snag Finished,Duration Of Snag (Days),Is Ignored?")
-pw.flush()
+Monad.getUtils()['imprt'](globals(), {
+        'db': ['HhDatum', 'Site', 'Supply', 'set_read_write', 'session', 'Contract', 'Snag', 'Channel', 'Era', 'SiteEra'], 
+        'utils': ['UserException', 'HH', 'form_date'],
+        'templater': ['render']})
 
-contract_id = inv.getLong('hhdc_contract_id')
-if not inv.isValid():
-    raise UserException()
-
-formatter = SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.UK)
-
-contract = Contract.getHhdcContract(contract_id)
-
-snags = Hiber.session().createQuery("select snag, ss_gen.site, snag.channel, snag.channel.era from Snag snag join snag.channel.era.siteEras ss_gen where snag.channel.era.hhdcContract = :contract and ss_gen.isPhysical is true order by snag.isIgnored, snag.startDate.date, snag.id").setEntity('contract', contract).scroll()
-
-MILLIS_IN_DAY = 1000 * 60 * 60 * 24
-
-now = Date().getTime()
-
-while snags.next():
-    snag = snags.get(0)
-    site = snags.get(1)
-    channel = snags.get(2)
-    era = snags.get(3)
+sess = None
+try:
+    sess = session()
+    contract_id = inv.getLong('hhdc_contract_id')
     
-    snag_start = snag.getStartDate()
-    snag_finish = snag.getFinishDate()
-    snag_start_millis = snag_start.getDate().getTime()
-    if snag_finish is None:
-        snag_finish_str = ''
-        duration = float(now - snag_start_millis) / MILLIS_IN_DAY
-        age_of_snag = 0
-    else:
-        snag_finish_millis = snag_finish.getDate().getTime()
-        snag_finish_str = formatter.format(snag_finish.getDate())
-        duration = float(snag_finish_millis - snag_start_millis) / MILLIS_IN_DAY
-        age_of_snag = (now - snag_finish_millis) / MILLIS_IN_DAY
-
-    pw.println(','.join('"' + str(val) + '"' for val in [snag.getId(), era.impMpanCore, era.expMpanCore, site.getCode(), site.getName(), snag.getDescription(), channel.getIsImport(), channel.getIsKwh(), formatter.format(snag_start.getDate()), snag_finish_str, age_of_snag, duration, snag.getIsIgnored()]))
+    file_name = "channel_snags.csv"
+    inv.getResponse().setContentType('text/csv')
+    inv.getResponse().addHeader('Content-Disposition', 'attachment; filename="' + file_name + '"')
+    pw = inv.getResponse().getWriter()
+    pw.println("Chellow Id,Imp MPAN Core,Exp MPAN Core, Site Code,Site Name,Snag Description,Is Import?,Is kWh?,Start Date,Finish Date,Days Since Snag Finished,Duration Of Snag (Days),Is Ignored?")
     pw.flush()
-    Hiber.session().clear()
-snags.close()
-pw.close()]]></value>
+
+    contract = Contract.get_hhdc_by_id(sess, contract_id)
+
+    MILLIS_IN_DAY = 1000 * 60 * 60 * 24
+
+    now = datetime.datetime.now(pytz.utc)
+
+    for snag, channel, era, site_era, site in sess.query(Snag, Channel, Era, SiteEra, Site).filter("snag.channel_id=channel.id", "channel.era_id=era.id", "site_era.era_id=era.id", "site_era.site_id=site.id", "site_era.is_physical is true", "era.hhdc_contract_id = :contract_id").order_by("snag.is_ignored", "snag.start_date", "snag.id").params(contract_id=contract.id):
+        snag_start = snag.start_date
+        snag_finish = snag.finish_date
+        if snag_finish is None:
+            snag_finish_str = ''
+            duration = now - snag_start
+            age_of_snag = datetime.timedelta(0)
+        else:
+            snag_finish_str = snag_finish.strftime("%Y-%m-%d %H:%M")
+            duration = snag_finish - snag_start
+            age_of_snag = now - snag_finish
+
+        pw.println(','.join('"' + str(val) + '"' for val in [snag.id, era.imp_mpan_core, era.exp_mpan_core, site.code, site.name, snag.description, channel.is_import, channel.is_kwh, snag_start.strftime("%Y-%m-%d %H:%M"), snag_finish_str, age_of_snag.days, duration.days, snag.is_ignored]))
+        pw.flush()
+    pw.close()
+finally:
+    if sess is not None:
+        sess.close()]]></value>
 		<value><![CDATA[]]></value>
 	</line>
 	<line>
