@@ -286,7 +286,7 @@ Name       | Description
 MPAN Core  |
 Is Import? | 'true' or 'false'
 Is kWh?    | 'true' or 'false'
-Time       | half-hour starting yyyy-MM-ddThh:mmZ ([ISO date format](http://www.w3.org/TR/NOTE-datetime))<a
+Time       | half-hour starting yyyy-MM-dd hh:mm ([ISO date format](http://www.w3.org/TR/NOTE-datetime))<a
 Value      | 
 Status     | 'A' - actual, 'E' - estimate, 'C' - padding.
 	
@@ -306,43 +306,7 @@ Here's an example:
     99 9999 9999 999, true, true, 2006-01-01T04:00Z, 155.2 , E
     99 9999 9999 999, true, true, 2006-01-01T04:30Z, 169.0 , E
     99 9999 9999 999, true, true, 2006-01-01T05:00Z, 171.0 , E
-    
-    	
 
-#### Stark CSV
-
-File extension '.stark.csv'.
-
-A CSV file with the following columns:
-
-Name      | Description
-----------|-----------------------------
-MPAN core | 
-Imp / Exp | '0' - import or '1' - export
-Units     | 'kWh' or 'kVArh'
-Time      | half-hour ending dd/MM/yy hh:mm in UTC.
-Value     | 
-Status    | '65' - actual, '69' - estimate
-
-	
-Here's an example:
-
-    
-    
-    		
-    MPAN core, Imp / Exp, Units, Time, Value, Status
-    99 9999 9999 999, 0, kWh, 01/01/2006 00:30, 218.4 , 69
-    99 9999 9999 999, 0, kWh, 01/01/2006 01:00, 220.4 , 69
-    99 9999 9999 999, 0, kWh, 01/01/2006 01:30, 221.8 , 69
-    99 9999 9999 999, 0, kWh, 01/01/2006 02:00, 223.4 , 69
-    99 9999 9999 999, 0, kWh, 01/01/2006 02:30, 224.6 , 69
-    99 9999 9999 999, 0, kWh, 01/01/2006 03:00, 226.8 , 69
-    99 9999 9999 999, 0, kWh, 01/01/2006 03:30, 203.8 , 69
-    99 9999 9999 999, 0, kWh, 01/01/2006 04:00, 155.2 , 69
-    99 9999 9999 999, 0, kWh, 01/01/2006 04:30, 169.0 , 69
-    99 9999 9999 999, 0, kWh, 01/01/2006 05:00, 171.0 , 69
-    
-    	
 
 #### bGlobal CSV
 

@@ -521,7 +521,7 @@ finally:
 Table of site level monthly kWh, MD kWh etc.</a>
       </li>
       <li>
-        <a href="{{context_path}}/reports/25/output/?site_id={{site.id}}&amp;year={{month_finish.year}}&amp;month={{month_finish.month}}">Table of hh data</a>
+        <a href="{{context_path}}/reports/25/output/?site_code={{site.code}}&amp;year={{month_finish.year}}&amp;month={{month_finish.month}}">Table of hh data</a>
       </li>
     </ul>
 
@@ -3462,338 +3462,204 @@ os.close()]]></value>
 		<value><![CDATA[25]]></value>
 		<value><![CDATA[true]]></value>
 		<value><![CDATA[Site HH figures]]></value>
-		<value><![CDATA[from net.sf.chellow.monad import Hiber, UserException, XmlTree
+		<value><![CDATA[from net.sf.chellow.monad import Monad
+from sqlalchemy.orm import joinedload_all
+import pytz
+import datetime
+from dateutil.relativedelta import relativedelta
 from java.lang import System
-from net.sf.chellow.monad.types import MonadDate
-import math
-from java.sql import Timestamp, ResultSet
-from java.util import GregorianCalendar, Calendar, TimeZone, Locale, Date
-from net.sf.chellow.physical import HhStartDate, Site, Supply
 
-debug_str = ''
+Monad.getUtils()['imprt'](globals(), {
+        'db': ['Contract', 'HhDatum', 'Site', 'Channel', 'Supply', 'Era', 'Source', 'set_read_write', 'session'], 
+        'utils': ['UserException', 'HH'],
+        'templater': ['render']})
 
-site_code = inv.getString("site-code")
-cal = MonadDate.getCalendar()
+sess = None
+try:
+    sess = session()
+    site_code = inv.getString('site_code')
+    site = Site.get_by_code(sess, site_code)
 
-year = inv.getInteger("year")
-month = inv.getInteger("month")
-if not inv.isValid():
-  raise UserException()
+    year = inv.getInteger('year')
+    month = inv.getInteger('month')
+    start_date = datetime.datetime(year, month, 1, tzinfo=pytz.utc)
+    finish_date = start_date + relativedelta(months=1) - HH
+    groups = []
 
-cal.set(Calendar.YEAR, year)
-cal.set(Calendar.MONTH, month - 1)
-cal.set(Calendar.DAY_OF_MONTH, 1)
-cal.set(Calendar.HOUR_OF_DAY, 0)
-cal.set(Calendar.MINUTE, 0)
-cal.set(Calendar.SECOND, 0)
-cal.set(Calendar.MILLISECOND, 0)
+    for group in site.groups(sess, start_date, finish_date, True):
+        sup_ids = sorted(supply.id for supply in group.supplies)
+        group_dict = {'supplies': [Supply.get_by_id(sess, id) for id in sup_ids]}
+        groups.append(group_dict)
 
-start_date = HhStartDate(cal.getTime())
-source.appendChild(start_date.toXml(doc))
+        data = iter(sess.query(HhDatum).join(Channel, Era, Supply, Source).filter(Channel.is_kwh==True, Supply.id.in_(sup_ids), HhDatum.start_date >= group.start_date, HhDatum.start_date <= group.finish_date).order_by(HhDatum.start_date, Supply.id))
+        try:
+            datum = data.next()
+        except StopIteration:
+            datum = None
 
-cal.add(Calendar.MONTH, 1)
-cal.add(Calendar.MINUTE, -30)
-finish_date = HhStartDate(cal.getTime())
+        hh_date = group.start_date
 
-site = Site.getSite(site_code)
+        hh_data = []
+        group_dict['hh_data'] = hh_data
 
-source.appendChild(site.toXml(doc))
-source.appendChild(MonadDate.getMonthsXml(doc))
+        while not hh_date > group.finish_date:
+            sups = []
+            hh_dict = {'start_date': hh_date, 'supplies': sups, 'export_kwh': 0, 'import_kwh': 0, 'parasitic_kwh': 0, 'generated_kwh': 0, 'third_party_import_kwh': 0, 'third_party_export_kwh': 0}
+            hh_data.append(hh_dict)
+            for sup_id in sup_ids:
+                sup_hh = {}
+                sups.append(sup_hh)
+                while datum is not None and datum.start_date == hh_date and datum.channel.era.supply.id == sup_id:
+                    channel = datum.channel
+                    is_import = channel.is_import
+                    hh_float_value = float(datum.value)
+                    source_code = channel.era.supply.source.code
 
-for group in Site.getSite(site.getId()).groups(start_date, finish_date, True):
-    group_element = doc.createElement('group')
-    source.appendChild(group_element)
+                    prefix = 'import_' if is_import else 'export_'
+                    sup_hh[prefix + 'kwh'] = datum.value
+                    sup_hh[prefix + 'status'] = datum.status
+ 
+                    if not is_import and source_code in ('net', 'gen-net'):
+                        hh_dict['export_kwh'] += hh_float_value
+                    if is_import and source_code in ('net', 'gen-net'):
+                        hh_dict['import_kwh'] += hh_float_value
+                    if (is_import and source_code == 'gen') or (not is_import and source_code == 'gen-net'):
+                        hh_dict['generated_kwh'] += hh_float_value
+                    if (not is_import and source_code == 'gen') or (is_import and source_code == 'gen-net'):
+                        hh_dict['parasitic_kwh'] += hh_float_value
+                    if (is_import and source_code == '3rd-party') or (not is_import and source_code == '3rd-party-reverse'):
+                        hh_dict['third_party_import'] += hh_float_value
+                    if (not is_import and source_code == '3rd-party') or (is_import and source_code == '3rd-party-reverse'):
+                        hh_dict['third_party_export'] += hh_float_value
+                    try:
+                        datum = data.next()
+                    except StopIteration:
+                        datum = None
 
-    sup_ids = sorted(supply.getId() for supply in group.getSupplies())
+            hh_dict['displaced_kwh'] = hh_dict['generated_kwh'] - hh_dict['export_kwh'] - hh_dict['parasitic_kwh']
+            hh_dict['used_kwh'] = hh_dict['import_kwh'] + hh_dict['displaced_kwh']
+            hh_date = hh_date + HH
 
-    for sup_id in sup_ids:
-        group_element.appendChild(Supply.getSupply(sup_id).toXml(doc, XmlTree('source').put('generatorType')))
+    render(inv, template, {'site': site, 'groups': groups})
+finally:
+    if sess is not None:
+        sess.close()]]></value>
+		<value><![CDATA[<!doctype html>
+<html>
+  <head>
+    <link rel="stylesheet" type="text/css"
+      href="{{context_path}}/reports/19/output/">
+    <title>
+      Chellow &gt; Sites &gt; {{site.code}} {{site.name}} &gt; HH data
+    </title>
+    <style>
+      colgroup.gray {
+        background: silver;
+      }
 
-    data = Hiber.session().createQuery("select datum.value, datum.startDate, datum.status, datum.channel.era.supply.source.code, datum.channel.isImport, datum.channel.era.supply.id from HhDatum datum where datum.channel.isKwh is true and datum.channel.era.supply.id in (" + ','.join(str(id) for id in sup_ids) + ") and datum.startDate.date >= :startDate and datum.startDate.date <= :finishDate order by datum.startDate.date, datum.channel.era.supply.id").setTimestamp('startDate', group.getFrom().getDate()).setTimestamp('finishDate', group.getTo().getDate()).scroll()
-    hh_value = None
-    if data.next():
-        hh_value = data.get(0)
-        hh_double_value = hh_value.doubleValue()
-        hh_start_date = data.get(1)
-        hh_status = data.get(2)
-        source_code = data.get(3)
-        is_import = data.get(4)
-        supply_id = data.get(5)
+      tr.error {
+        color: red;
+      }
+    </style>
+  </head>
+  <body>
+    <p>
+      <a href="{{context_path}}/reports/1/output/">Chellow</a> &gt;
+      <a href="{{context_path}}/reports/3/output/">Sites</a> &gt;
+      <a href="{{context_path}}/reports/5/output/?site_id={{site.id}}">
+      {{site.code}} {{site.name}}</a>
+      &gt; HH data
+    </p>
+    {% if messages %}
+      <ul>
+        {% for message in messages %}
+          <li>{{message}}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
 
-    hh_date = group.getFrom()
-    while not hh_date.after(group.getTo()):
-        export_kwh = 0
-        import_kwh = 0
-        parasitic_kwh = 0
-        generated_kwh = 0
-        third_party_import_kwh = 0
-        third_party_export_kwh = 0
+    <form action=".">
+      <fieldset>
+        <legend>Show data</legend>
+        <br>
+        <label>
+          Site Code {{input_text('site_code', request, site.code)}}
+        </label>
+        <br>
+        <br>
+        <fieldset>
+          <legend>Month</legend>
+          {{input_date(None, request, None, 'month')}}
+          <br>
+        </fieldset>
+        <br>
+        <input type="submit" value="Show">
+      </fieldset>
+    </form>
 
-        hh_element = doc.createElement("hh")
-        group_element.appendChild(hh_element)
-        hh_element.appendChild(hh_date.toXml(doc))
-        for sup_id in sup_ids:
-            datum = doc.createElement("datum")
-            hh_element.appendChild(datum)
-            #debug_str += 'hh value ' + str(hh_value) + ' hh start date ' + str(hh_start_date) + ' hh_date ' + str(hh_date) + ' sup_id ' + str(sup_id) + ' supply_id ' + str(supply_id)
-            while hh_value is not None and hh_start_date.getDate().getTime() == hh_date.getDate().getTime() and sup_id == supply_id:
-                if is_import:
-                    prefix = 'import'
-                else:
-                    prefix = 'export'
-                datum.setAttribute(prefix + '-kwh', str(hh_value))
-                datum.setAttribute(prefix + '-status', hh_status)
-
-                if not is_import and source_code in ('net', 'gen-net'):
-                    export_kwh += hh_double_value
-                if is_import and source_code in ('net', 'gen-net'):
-                    import_kwh += hh_double_value
-                if (is_import and source_code == 'gen') or (not is_import and source_code == 'gen-net'):
-                    generated_kwh += hh_double_value
-                if (not is_import and source_code == 'gen') or (is_import and source_code == 'gen-net'):
-                    parasitic_kwh += hh_double_value
-                if (is_import and source_code == '3rd-party') or (not is_import and source_code == '3rd-party-reverse'):
-                    third_party_import += hh_double_value
-                if (not is_import and source_code == '3rd-party') or (is_import and source_code == '3rd-party-reverse'):
-                    third_party_export += hh_double_value
-                if data.next():
-                    hh_value = data.get(0)
-                    hh_double_value = hh_value.doubleValue()
-                    hh_start_date = data.get(1)
-                    hh_status = data.get(2)
-                    source_code = data.get(3)
-                    is_import = data.get(4)
-                    supply_id = data.get(5)
-                else:
-                    hh_value = None
-
-        displaced_kwh = generated_kwh - export_kwh - parasitic_kwh
-        used_kwh = import_kwh + displaced_kwh
-        hh_element.setAttribute("exported-kwh", str(export_kwh))
-        hh_element.setAttribute("imported-kwh", str(import_kwh))
-        hh_element.setAttribute("generated-kwh", str(generated_kwh))
-        hh_element.setAttribute("parasitic-kwh", str(parasitic_kwh))
-        hh_element.setAttribute("displaced-kwh", str(displaced_kwh))
-        hh_element.setAttribute("used-kwh", str(used_kwh))
-        hh_date = hh_date.getNext()
-source.setAttribute('debug', debug_str)]]></value>
-		<value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
-<xsl:stylesheet version="1.0"
-    xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
-    <xsl:output method="html" encoding="US-ASCII"
-      doctype-public="-//W3C//DTD HTML 4.01//EN"
-      doctype-system="http://www.w3.org/TR/html4/strict.dtd" indent="yes" />
-    <xsl:template match="/">
-        <html>
-            <head>
-                <link rel="stylesheet" type="text/css"
-                    href="{/source/request/@context-path}/reports/19/output/" />
-                <title>
-                    Chellow &gt; Sites &gt;
-                    <xsl:value-of
-                        select="concat(/source/site/@code, ' ', /source/site/@name)" />
-                    &gt; HH data
-                </title>
-                <style>
-                    &lt;![CDATA[
-                colgroup.gray {
-                    background: silver;
-                }
-
-                tr.error {
-                    color: red;
-                }
-                ]]&gt;
-                </style>
-            </head>
-
-            <body>
-                <p>
-                    <a
-                        href="{/source/request/@context-path}/reports/1/output/">
-                        <xsl:value-of select="'Chellow'" />
-                    </a>
-                    &gt;
-                    <a
-                        href="{/source/request/@context-path}/reports/3/output/">
-                        <xsl:value-of select="'Sites'" />
-                    </a>
-                    &gt;
-                    <a
-                        href="{/source/request/@context-path}/reports/5/output/?site-id={/source/site/@id}">
-                        <xsl:value-of
-                            select="concat(/source/site/@code, ' ', /source/site/@name)" />
-                    </a>
-                    &gt; HH data
-                </p>
-
-                <xsl:if test="//message">
-                    <ul>
-                        <xsl:for-each select="//message">
-
-                            <li>
-                                <xsl:value-of select="@description" />
-                            </li>
-                        </xsl:for-each>
-                    </ul>
-                </xsl:if>
-                <xsl:value-of select="/source/@debug"/>
-                <form action=".">
-                    <fieldset>
-                        <legend>Show data</legend>
-                        <br />
-                        <label>
-                            <xsl:value-of select="'Site Code '" />
-                            <input name="site-code"
-                                value="{/source/request/parameter[@name='site-code']/value}" />
-                        </label>
-                        <br />
-                        <br />
-                        <fieldset>
-                            <legend>Month</legend>
-                            <br />
-                            <input size="4" length="4" name="year"
-                                value="{/source/hh-start-date/@year}" />
-                            <xsl:value-of select="' - '" />
-                            <select name="month">
-                                <xsl:for-each
-                                    select="/source/months/month">
-                                    <option>
-                                        <xsl:if
-                                            test="number(/source/hh-start-date/@month) = number(@number)">
-                                            <xsl:attribute
-                                                name="selected">selected</xsl:attribute>
-                                        </xsl:if>
-                                        <xsl:value-of select="@number" />
-                                    </option>
-                                </xsl:for-each>
-                            </select>
-                        </fieldset>
-                        <br />
-                        <input type="submit" value="Show" />
-                    </fieldset>
-                </form>
-            <xsl:for-each select="/source/group">
-                <table>
-                    <caption>HH Data</caption>
-                    <colgroup />
-                    <colgroup class="gray" />
-                    <colgroup />
-                    <colgroup class="gray" />
-                    <colgroup />
-                    <colgroup class="gray" />
-                    <thead>
-                        <tr>
-                            <th rowspan="3">HH Starting</th>
-                            <th colspan="6">kWh</th>
-                            <xsl:for-each select="supply">
-                            <th colspan="4"><xsl:value-of select="concat(@name, ' ', source/@code, ' ', generator-type/@code)"/></th>
-                            </xsl:for-each>
-                        </tr>
-                        <tr>
-                            <th rowspan="2">Imported</th>
-                            <th rowspan="2">Used</th>
-                            <th rowspan="2">Displaced</th>
-                            <th rowspan="2">Generated</th>
-                            <th rowspan="2">Exported</th>
-                            <th rowspan="2">Parasitic</th>
-                            <xsl:for-each select="supply">
-                            <th colspan="2">Import</th>
-                            <th colspan="2">Export</th>
-                            </xsl:for-each>
-                        </tr>
-                        <tr>
-<xsl:for-each select="supply">
-                            <th>kWh</th>
-                            <th>Status</th>
-                            <th>kWh</th>
-                            <th>Status</th>
-                            </xsl:for-each>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <xsl:for-each select="hh">
-                            <tr>
-                                <xsl:if test="@has-site-snags">
-                                    <xsl:attribute name="class">
-                                        <xsl:value-of select="'error'" />
-                                    </xsl:attribute>
-                                </xsl:if>
-                                <td>
-                                    <xsl:value-of
-                                        select="concat(hh-start-date/@year, '-', hh-start-date/@month, '-', hh-start-date/@day, ' ', hh-start-date/@hour, ':', hh-start-date/@minute, 'Z')" />
-                                </td>
-                                <td>
-                                    <xsl:value-of
-                                        select="@imported-kwh" />
-                                </td>
-                                <td>
-                                    <xsl:value-of select="@used-kwh" />
-                                </td>
-                                <td>
-                                    <xsl:value-of
-                                        select="@displaced-kwh" />
-                                </td>
-                                <td>
-                                    <xsl:value-of
-                                        select="@generated-kwh" />
-                                </td>
-                                <td>
-                                    <xsl:value-of
-                                        select="@exported-kwh" />
-                                </td>
-                                <td>
-                                    <xsl:value-of
-                                        select="@parasitic-kwh" />
-                                </td>
-                                <!--
-                                    <td>
-                                    <xsl:if
-                                    test="@has-site-snags = 'true'">
-                                    See
-                                    <a
-                                    href="{/source/request/@context-path}/orgs/1/reports/5/screen/output/?site-id={/source/site/@id}&amp;months=1&amp;finish-year={hh-start-date[@label='start']/@year}&amp;finish-month={hh-start-date[@label='start']/@month}">
-                                    era graph
-                                    </a>
-                                    for errors.
-                                    </xsl:if>
-                                    </td>
-                                -->
-                            <xsl:for-each select="datum">
-                            <td>
-                              <xsl:choose>
-                              <xsl:when test="@import-kwh">
-                              <xsl:value-of select="@import-kwh"/>
-                              </xsl:when>
-                              <xsl:otherwise>
-                              Missing
-                              </xsl:otherwise>
-                              </xsl:choose>
-                            </td>
-                            <td><xsl:value-of select="@import-status"/>
-                            </td>
-                            <td>
-                              <xsl:choose>
-                              <xsl:when test="@export-kwh">
-                              <xsl:value-of select="@export-kwh"/>
-                              </xsl:when>
-                              <xsl:otherwise>
-                              Missing
-                              </xsl:otherwise>
-                              </xsl:choose>
-                            </td>
-                            <td><xsl:value-of select="@export-status"/>
-                            </td>
-                            </xsl:for-each>
-                            </tr>
-                        </xsl:for-each>
-                    </tbody>
-                </table>
-            </xsl:for-each>
-            </body>
-        </html>
-    </xsl:template>
-</xsl:stylesheet>]]></value>
+    {% for group in groups %}
+      <table>
+        <caption>HH Data</caption>
+        <colgroup>
+        <colgroup class="gray">
+        <colgroup>
+        <colgroup class="gray">
+        <colgroup>
+        <colgroup class="gray">
+        <thead>
+          <tr>
+            <th rowspan="3">HH Starting</th>
+            <th colspan="6">kWh</th>
+            {% for supply in group.supplies %}
+              <th colspan="4">
+                {{supply.name}} {{supply.source.code}} {{supply.generator_type.code}}
+              </th>
+            {% endfor %}
+          </tr>
+          <tr>
+            <th rowspan="2">Imported</th>
+            <th rowspan="2">Used</th>
+            <th rowspan="2">Displaced</th>
+            <th rowspan="2">Generated</th>
+            <th rowspan="2">Exported</th>
+            <th rowspan="2">Parasitic</th>
+            {% for supply in group.supplies %}
+              <th colspan="2">Import</th>
+              <th colspan="2">Export</th>
+            {% endfor %}
+          </tr>
+          <tr>
+            {% for supply in group.supplies %}
+              <th>kWh</th>
+              <th>Status</th>
+              <th>kWh</th>
+              <th>Status</th>
+            {% endfor %}
+          </tr>
+        </thead>
+        <tbody>
+          {% for hh in group.hh_data %}
+            <tr>
+              <td>{{hh.start_date|hh_format}}</td>
+              <td>{{hh.import_kwh}}</td>
+              <td>{{hh.used_kwh}}</td>
+              <td>{{hh.displaced_kwh}}</td>
+              <td>{{hh.generated_kwh}}</td>
+              <td>{{hh.export_kwh}}</td>
+              <td>{{hh.parasitic_kwh}}</td>
+              {% for datum in hh.supplies %}
+                <td>{{datum.import_kwh}}</td>
+                <td>{{datum.import_status}}</td>
+                <td>{{datum.export_kwh}}</td>
+                <td>{{datum.export_status}}</td>
+              {% endfor %}
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% endfor %}
+  </body>
+</html>]]></value>
 	</line>
 	<line>
 		<value><![CDATA[insert]]></value>
@@ -5991,108 +5857,68 @@ source.appendChild(mtc.toXml(doc, XmlTree('meterType').put('paymentType').put('d
 		<value><![CDATA[65]]></value>
 		<value><![CDATA[true]]></value>
 		<value><![CDATA[HHDC Contract HH Data Import]]></value>
-		<value><![CDATA[from net.sf.chellow.billing import Contract
-from net.sf.chellow.monad import XmlTree, MonadMessage
+		<value><![CDATA[from net.sf.chellow.monad import Monad
+from sqlalchemy.orm import joinedload_all
 
-hhdc_contract_id = inv.getLong('hhdc-contract-id')
-process_id = inv.getLong('process-id')
+Monad.getUtils()['imprt'](globals(), {
+        'db': ['Contract', 'Party', 'RateScript', 'set_read_write', 'session'], 
+        'utils': ['UserException'],
+        'templater': ['render'],
+        'hh-importer': ['get_hh_import_processes']})
 
-processes =  inv.getMonad().getServletConfig().getServletContext().getAttribute('net.sf.chellow.hh_import_map')
+sess = None
+try:
+    sess = session()
+    contract_id = inv.getLong('hhdc_contract_id')
+    contract = Contract.get_hhdc_by_id(sess, contract_id)
+    process_id = inv.getLong('process_id')
+    process = get_hh_import_processes(contract_id)[process_id]
 
-contract = Contract.getHhdcContract(hhdc_contract_id)
+    render(inv, template, {'contract': contract, 'process': process})
+finally:
+    if sess is not None:
+        sess.close()]]></value>
+		<value><![CDATA[<!doctype html>
+<html>
+  <head>
+    <link rel="stylesheet" type="text/css"
+      href="{{context_path}}/reports/19/output/">
+    <title>
+      Chellow &gt; HHDC Contracts &gt; {{contract.name}} &gt;
+      HH Data Imports &gt; {{process.id}}
+    </title>
+  </head>
+  <body>
+    <p>
+      <a href="{{context_path}}/reports/1/output/">Chellow</a> &gt;
+      <a href="{{context_path}}/reports/113/output/">HHDC Contracts</a> &gt;
+      <a href="{{context_path}}/reports/115/output/?hhdc_contract_id={{contract.id}}">{{contract.name}}</a> &gt;
+      <a href="{{context_path}}/reports/211/output/?hhdc_contract_id={{contract.id}}">HH Data Imports</a> &gt;
+      {{process.id}}
+    </p>
+    <br>
+    {% if messages %}
+      <ul>
+        {% for message in messages %}
+          <li>{{ message }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
 
-process = processes[hhdc_contract_id][process_id]
-
-process_element = process.to_xml(doc)
-source.appendChild(process_element);
-process_element.appendChild(contract.toXml(doc, XmlTree("party")))
-
-if not process.isAlive():
-    messages = process.messages
-    if len(messages) == 0:
-        successful = True
-    else:
-        successful = False
-    process_element.setAttribute("successful", str(successful))
-
-    for message in messages:
-        process_element.appendChild(MonadMessage(message).toXml(doc))]]></value>
-		<value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
-<xsl:stylesheet version="1.0"
-    xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
-    <xsl:output method="html" encoding="US-ASCII"
-        doctype-public="-//W3C//DTD HTML 4.01//EN" doctype-system="http://www.w3.org/TR/html4/strict.dtd"
-        indent="yes" />
-    <xsl:template match="/">
-        <html>
-            <head>
-                <link rel="stylesheet" type="text/css"
-                    href="{/source/request/@context-path}/reports/19/output/" />
-
-                <title>
-                    Chellow &gt; HHDC Contracts &gt;
-                    <xsl:value-of select="/source/hh-data-import/hhdc-contract/@name" />
-                    &gt; HH Data Imports &gt;
-                    <xsl:value-of select="/source/hh-data-import/@uri-id" />
-                </title>
-            </head>
-            <body>
-                <p>
-                    <a href="{/source/request/@context-path}/reports/1/output/">
-                        <xsl:value-of select="'Chellow'" />
-                    </a>
-                    &gt;
-                    <a href="{/source/request/@context-path}/reports/113/output/">
-                        <xsl:value-of select="'HHDC Contracts'" />
-                    </a>
-                    &gt;
-                    <a
-                        href="{/source/request/@context-path}/reports/115/output/?hhdc_contract_id={/source/hh-data-import/hhdc-contract/@id}">
-                        <xsl:value-of select="/source/hh-data-import/hhdc-contract/@name" />
-                    </a>
-                    &gt;
-                    <a
-                        href="{/source/request/@context-path}/reports/211/output/?hhdc-contract-id={/source/hh-data-import/hhdc-contract/@id}">
-                        <xsl:value-of select="'HH Data Imports'" />
-                    </a>
-                    &gt;
-                    <xsl:value-of select="/source/hh-data-import/@id" />
-                </p>
-                <br />
-                <xsl:if test="//message">
-                    <ul>
-                        <xsl:for-each select="//message">
-                            <li>
-                                <xsl:value-of select="@description" />
-                            </li>
-                        </xsl:for-each>
-                    </ul>
-                </xsl:if>
-                <p>
-                    <xsl:choose>
-                        <xsl:when test="/source/hh-data-import/@successful">
-
-                            <xsl:choose>
-                                <xsl:when test="/source/hh-data-import/@successful = 'True'">
-
-                                    The import has completed
-                                    successfully.
-                                </xsl:when>
-                                <xsl:otherwise>
-                                    The import didn't complete
-                                    successfully.
-                                </xsl:otherwise>
-                            </xsl:choose>
-                        </xsl:when>
-                        <xsl:otherwise>
-                            <xsl:value-of select="/source/hh-data-import/@progress" />
-                        </xsl:otherwise>
-                    </xsl:choose>
-                </p>
-            </body>
-        </html>
-    </xsl:template>
-</xsl:stylesheet>]]></value>
+    {% if process.isAlive() %}
+      <p>Reached line number {{process.line_number}}.</p>
+    {% elif process.messages|length == 0 %}
+      <p>The import has completed successfully.</p>
+    {% else %}
+      <p>The import failed:</p>
+      <ul>
+        {% for message in process.messages %}
+          <li>{{message}}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+  </body>
+</html>]]></value>
 	</line>
 	<line>
 		<value><![CDATA[insert]]></value>
@@ -9016,16 +8842,15 @@ finally:
 <html>
   <head>
     <link rel="stylesheet" type="text/css"
-      href="{{ context_path }}/reports/19/output/"
-    >
-    <title>Chellow &gt; HHDC Contracts &gt; {{ contract.name }}</title>
+      href="{{context_path}}/reports/19/output/">
+    <title>Chellow &gt; HHDC Contracts &gt; {{contract.name}}</title>
   </head>
   <body>
     <p>
-      <a href="{{ context_path }}/reports/1/output/">Chellow</a> &gt;
-      <a href="{{ context_path }}/reports/113/output/">HHDC Contracts</a> &gt;
-      {{ contract.name }}
-      [<a href="{{ context_path }}/reports/279/output/?hhdc_contract_id={{ contract.id }}">edit</a>]
+      <a href="{{context_path}}/reports/1/output/">Chellow</a> &gt;
+      <a href="{{context_path}}/reports/113/output/">HHDC Contracts</a> &gt;
+      {{contract.name}}
+      [<a href="{{context_path}}/reports/279/output/?hhdc_contract_id={{contract.id}}">edit</a>]
     </p>
     <br />
     {% if messages %}
@@ -9068,10 +8893,10 @@ finally:
         <a href="{{ context_path }}/reports/83/output/?hhdc-contract-id={{ contract.id }}">Virtual Bills</a>
       </li>
       <li>
-        <a href="{{ context_path }}/reports/213/output/?hhdc-contract-id={{ contract.id }}">Automatic HH Data Importer</a>
+        <a href="{{context_path}}/reports/213/output/?hhdc_contract_id={{contract.id}}">Automatic HH Data Importer</a>
       </li>
       <li>
-        [<a href="{{ context_path }}/reports/211/output/?hhdc-contract-id={{ contract.id }}">HH data imports</a>]
+        [<a href="{{context_path}}/reports/211/output/?hhdc_contract_id={{ contract.id }}">HH data imports</a>]
       </li>
     </ul>
     <br />
@@ -11962,6 +11787,7 @@ if inv.getRequest().getMethod() == "POST":
     if inv.hasParameter('run_shutdown'):
         shutdown_contract = Contract.getNonCoreContract('shutdown')
         shutdown_contract.callFunction('on_shut_down', [Monad.getContext()])
+        source.setAttribute("msg", "Shut down successfully.")
 
     if inv.hasParameter('run_startup'):
         startup_contract = Contract.getNonCoreContract('startup')
@@ -12087,6 +11913,7 @@ rs.close()
                         </xsl:for-each>
                     </ul>
                 </xsl:if>
+                <xsl:value-of select="/source/@msg" />
 <p><a href=".">Refresh</a></p>
 <p>Chellow Version
                     <a href="https://bitbucket.org/ww_tlocke/chellow/commits/{/source/@chellow-version}" ><xsl:value-of select="/source/@chellow-version" /></a></p>
@@ -14516,123 +14343,97 @@ source.setAttribute('year', str(cal.get(Calendar.YEAR)))]]></value>
 		<value><![CDATA[211]]></value>
 		<value><![CDATA[true]]></value>
 		<value><![CDATA[HHDC Contract HH Data Imports]]></value>
-		<value><![CDATA[from net.sf.chellow.monad import XmlTree
-from net.sf.chellow.billing import Contract
-from net.sf.chellow.monad import HttpException, UserException
-from java.lang import Long
+		<value><![CDATA[from net.sf.chellow.monad import Monad
+from java.io import InputStreamReader
+import StringIO
 
-debug = ''
-processes =  inv.getMonad().getServletConfig().getServletContext().getAttribute('net.sf.chellow.hh_import_map')
-
-hh_importer_contract = Contract.getNonCoreContract('hh-importer')
-
-hhdc_contract_id = inv.getLong('hhdc-contract-id')
-contract = Contract.getHhdcContract(hhdc_contract_id)
-
-def document():
-    hh_data_imports_element = doc.createElement("hh-data-imports")
-    source.appendChild(hh_data_imports_element)
-    hh_data_imports_element.appendChild(contract.toXml(doc, XmlTree("party")))
-    contract_processes = processes[contract.getId()]
-    if contract_processes is not None:
-        for process in contract_processes.values():
-            hh_data_imports_element.appendChild(process.to_xml(doc))
-    source.setAttribute('debug', debug)
+Monad.getUtils()['imprt'](globals(), {
+        'db': ['Contract', 'session', 'Batch', 'set_read_write'],
+        'utils': ['UserException', 'prev_hh', 'next_hh', 'hh_after', 'hh_before', 'HH'],
+        'templater': ['render'],
+        'general_import': ['start_general_process', 'get_general_process_ids', 'get_general_process'],
+        'hh-importer': ['start_hh_import_process', 'get_hh_import_processes']})
 
 
-if inv.getRequest().getMethod() == "POST":
-    file_item = inv.getFileItem("import-file")
-    if not inv.isValid():
-        raise UserException(document())
+def make_fields(sess, contract, message=None):
+    messages = None if message is None else [str(message)]
+    return {'contract': contract, 'processes': get_hh_import_processes(contract.id), 'messages': messages}
 
-    try:
-        process_id = 0
-        for k, v in processes.iteritems():
-            for prid, proc in v.iteritems():
-                process_id += 1
+sess = None
+try:
+    sess = session()
+    hh_importer_contract = Contract.get_non_core_by_name(sess, 'hh-importer')
 
-        hh_import_process = hh_importer_contract.callFunction('create_import_process_from_item', [Long(hhdc_contract_id), process_id, file_item])
-        hh_import_process.start()
-        debug += "started process"
-        #raise UserException("stop")
-        contract_processes = processes[contract.getId()]
-        contract_processes[hh_import_process.process_id] = hh_import_process
-        inv.sendSeeOther("/reports/65/output/?hhdc-contract-id=" + str(contract.getId()) + "&process-id=" + str(hh_import_process.process_id))
-    except HttpException, e:
-        e.setDocument(document())
-        raise e
-else:
-    document()]]></value>
-		<value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
-<xsl:stylesheet version="1.0"
-    xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
-    <xsl:output method="html" encoding="US-ASCII"
-        doctype-public="-//W3C//DTD HTML 4.01//EN" doctype-system="http://www.w3.org/TR/html4/strict.dtd"
-        indent="yes" />
-    <xsl:template match="/">
-        <html>
-            <head>
-                <link rel="stylesheet" type="text/css"
-                    href="{/source/request/@context-path}/reports/19/output/" />
-                <title>
-                    Chellow &gt; HHDC Contracts
-                    <xsl:value-of select="/source/hh-data-imports/hhdc-contract/@id" />
-                    &gt; HH Data Imports
-                </title>
-            </head>
-            <body>
-                <p>
-                    <a href="{/source/request/@context-path}/reports/1/output/">
-                        <xsl:value-of select="'Chellow'" />
-                    </a>
-                    &gt;
-                    <a href="{/source/request/@context-path}/reports/113/output/">
-                        <xsl:value-of select="'HHDC Contracts'" />
-                    </a>
-                    &gt;
-                    <a
-                        href="{/source/request/@context-path}/reports/115/output/?hhdc_contract_id={/source/hh-data-imports/hhdc-contract/@id}">
-                        <xsl:value-of select="/source/hh-data-imports/hhdc-contract/@name" />
-                    </a>
-                    &gt; HH Data Imports
-                </p>
-                <br />
-                <xsl:if test="/source/@debug"><p><xsl:value-of select="/source/@debug"/></p></xsl:if>
-                <xsl:if test="/source/hh-data-imports/hh-data-import">
-                    <ul>
-                        <xsl:for-each select="/source/hh-data-imports/hh-data-import">
-                            <li>
-                                <a href="{/source/request/@context-path}/reports/65/output/?hhdc-contract-id={/source/hh-data-imports/hhdc-contract/@id}&amp;process-id={@id}">
-                                    <xsl:value-of select="@id" />
-                                </a>
-                            </li>
-                        </xsl:for-each>
-                    </ul>
-                </xsl:if>
-                <xsl:if test="//message[not(../../hh-data-import)]">
-                    <ul>
-                        <xsl:for-each select="//message">
-                            <li>
-                                <xsl:value-of select="@description" />
-                            </li>
-                        </xsl:for-each>
-                    </ul>
-                </xsl:if>
-                <form enctype="multipart/form-data" method="post" action=".">
-                    <fieldset>
-                        <input type="hidden" name="hhdc-contract-id" value="{/source/hh-data-imports/hhdc-contract/@id}"/>
-                        <legend>Import HH data</legend>
-                        <br />
-                        <input type="file" name="import-file" size="45"
-                            value="{/source/request/parameter[@name = 'import-file']}" />
-                        <input type="submit" value="Import" />
-                    </fieldset>
-                </form>
-                <br />
-            </body>
-        </html>
-    </xsl:template>
-</xsl:stylesheet>]]></value>
+    if inv.getRequest().getMethod() == 'GET':
+        hhdc_contract_id = inv.getLong('hhdc_contract_id')
+        contract = Contract.get_hhdc_by_id(sess, hhdc_contract_id)
+
+        render(inv, template, make_fields(sess, contract))
+    else:
+        hhdc_contract_id = inv.getLong('hhdc_contract_id')
+        contract = Contract.get_hhdc_by_id(sess, hhdc_contract_id)
+        file_item = inv.getFileItem("import_file")
+        stream = InputStreamReader(file_item.getInputStream(), 'utf-8')
+        f = StringIO.StringIO()
+        bt = stream.read()
+        while bt != -1:
+            f.write(unichr(bt))
+            bt = stream.read()
+        f.seek(0)
+        hh_import_process = start_hh_import_process(sess, hhdc_contract_id, f, file_item.getName(), file_item.getSize())
+        inv.sendSeeOther("/reports/65/output/?hhdc_contract_id=" + str(contract.id) + "&process_id=" + str(hh_import_process.id))
+except UserException, e:
+    render(inv, template, make_fields(sess, contract, e), 400)
+finally:
+    if sess is not None:
+        sess.close()]]></value>
+		<value><![CDATA[<!doctype html>
+<html>
+  <head>
+    <link rel="stylesheet" type="text/css"
+      href="{{context_path}}/reports/19/output/">
+    <title>
+      Chellow &gt; HHDC Contracts &gt; {{contract.name}} &gt; HH Data Imports
+    </title>
+  </head>
+  <body>
+    <p>
+      <a href="{{context_path}}/reports/1/output/">Chellow</a> &gt;
+      <a href="{{context_path}}/reports/113/output/">HHDC Contracts</a> &gt;
+      <a href="{{context_path}}/reports/115/output/?hhdc_contract_id={{contract.id}}">{{contract.name}}</a>
+      &gt; HH Data Imports
+    </p>
+    {% if messages %}
+      <ul>
+        {% for message in messages %}
+          <li>{{ message }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+
+    <form enctype="multipart/form-data" method="post" action=".">
+      <fieldset>
+        <input type="hidden" name="hhdc_contract_id" value="{{contract.id}}">
+        <legend>Import HH data</legend>
+        <br>
+        <input type="file" name="import_file" size="45"
+                            value="{{request.getParameter('import_file')}}">
+        <input type="submit" value="Import">
+      </fieldset>
+    </form>
+
+    {% if processes|length > 0 %}
+      <ul>
+        {% for proc in processes %}
+          <li>
+            <a href="{{context_path}}/reports/65/output/?hhdc_contract_id={{contract.id}}&amp;process_id={{proc.id}}">{{proc.id}}</a>
+          </li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+
+  </body>
+</html>]]></value>
 	</line>
 	<line>
 		<value><![CDATA[insert]]></value>
@@ -14640,225 +14441,98 @@ else:
 		<value><![CDATA[213]]></value>
 		<value><![CDATA[true]]></value>
 		<value><![CDATA[HHDC Contract HH Importer]]></value>
-		<value><![CDATA[from java.lang import Thread, System
-from net.sf.chellow.billing import Contract
-from net.sf.chellow.monad import XmlTree, UserException, Monad, MonadMessage
-from net.sf.chellow.monad.types import MonadUri
+		<value><![CDATA[from net.sf.chellow.monad import Monad
 
-debug = ''
-contract_id = inv.getLong('hhdc-contract-id')
-if not inv.isValid():
-    raise UserException()
+Monad.getUtils()['imprt'](globals(), {
+        'db': ['Contract', 'session', 'Batch', 'set_read_write'],
+        'utils': ['UserException', 'prev_hh', 'next_hh', 'hh_after', 'hh_before', 'HH'],
+        'templater': ['render'],
+        'hh-importer': ['get_hh_import_task']})
 
-contract = Contract.getHhdcContract(contract_id)
+def make_fields(contract, task, message=None):
+    messages = None if message is None else [str(message)]
+    return {'task': task, 'messages': messages, 'contract': contract}
 
-computer = Contract.getNonCoreContract('computer')
-comterp = computer.callFunction('create_comterp', [])
-contract_f = comterp.get('contract_function')
-
-def get_uri():
-    return MonadUri("/reports/213/output/?hhdc-contract-id=" + str(contract.getId()))
-
-source = doc.getDocumentElement();
-source.appendChild(contract.toXml(doc, XmlTree("party")))
-
-hh_importer_contract = Contract.getNonCoreContract('hh-importer')
-ctx = inv.getMonad().getServletConfig().getServletContext()
-
-hh_importer = hh_importer_contract.callFunction('get_hh_importer_task', [ctx, contract])
-
-if hh_importer is not None:
-    debug += str(hh_importer.messages)
-    importer_element = doc.createElement("hh-importer")
-    source.appendChild(importer_element);
-    importer_element.setAttribute('is-locked', str(hh_importer.is_locked()))
-    importer_element.setAttribute('status', hh_importer.get_status())
-
-    for message in hh_importer.messages:
-        log_item_element = doc.createElement('log-item')
-        importer_element.appendChild(log_item_element)
-        log_item_element.setAttribute('message', message)
-
+sess = None
+task = None
 try:
-    if inv.hasParameter('remove'):
-        contract_f(hh_importer_contract, 'remove_hh_importer_task', System.err)(ctx, contract)
-        inv.sendSeeOther(get_uri())
-    elif inv.hasParameter('start'):
-        contract_f(hh_importer_contract, 'start_hh_importer_task', System.err)(ctx, contract)
-        inv.sendSeeOther(get_uri())
-    elif inv.hasParameter('now'):
-        Thread(hh_importer, "Import Now: " + str(contract.getId())).start()
-        inv.sendSeeOther(get_uri())
+    sess = session()
+    contract_id = inv.getLong('hhdc_contract_id')
+    contract = Contract.get_hhdc_by_id(sess, contract_id)
+
+    if inv.getRequest().getMethod() == 'GET':
+        task = get_hh_import_task(contract)   
+        render(inv, template, make_fields(contract, task))
+    else:
+        task = get_hh_import_task(contract)
+        task.import_now()
+        render(inv, template, make_fields(contract, task))
 except UserException, e:
-    source.appendChild(MonadMessage(e.getMessage()).toXml(doc))
+    render(inv, template, make_fields(contract, task, e), 400)
+finally:
+    if sess is not None:
+        sess.close()]]></value>
+		<value><![CDATA[<!doctype html>
+<html>
+  <head>
+    <link rel="stylesheet" type="text/css"
+      href="{{context_path}}/reports/19/output/">
+    <title>
+      Chellow &gt; HHDC Contracts &gt; {{contract.name}} &gt;
+      Automatic HH Data Downloader
+    </title>
+  </head>
+  <body>
+    <p>
+      <a href="{{context_path}}/reports/1/output/">Chellow</a> &gt;
+      <a href="{{context_path}}/reports/113/output/">HHDC Contracts</a> &gt;
+      <a href="{{context_path}}/reports/115/output/?hhdc_contract_id={{contract.id}}">{{contract.name}}</a> &gt;
+      Automatic HH Data Downloader
+    </p>
+    <br>
+    {% if messages %}
+      <ul>
+        {% for message in messages %}
+          <li>{{message}}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
 
-source.setAttribute('debug', debug)]]></value>
-		<value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
-<xsl:stylesheet version="1.0"
-    xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
-    <xsl:output method="html" encoding="US-ASCII"
-        doctype-public="-//W3C//DTD HTML 4.01//EN" doctype-system="http://www.w3.org/TR/html4/strict.dtd"
-        indent="yes" />
+    <p><a href=".?hhdc_contract_id={{contract.id}}">Refresh page</a></p>
 
-    <xsl:template match="/">
-        <html>
-            <head>
-                <link rel="stylesheet" type="text/css"
-                    href="{/source/request/@context-path}/reports/19/output/" />
+    {% if task %}
+      <table>
+        <tr>
+          <th>Is Locked?</th>
+          <td>{{task.is_locked}}</td>
+        </tr>
+      </table>
+      <br>
 
-                <title>
-                    Chellow &gt; HHDC Contracts &gt;
-                    <xsl:value-of
-                        select="/source/hhdc-contract/@name" />
-                    &gt; Automatic HH Data Downloader
-                </title>
+      {% if not task.is_locked %}
+        <form action="." method="post">
+          <fieldset>
+            <legend>Import Now</legend>
+            <input type="hidden" name="hhdc_contract_id" value="{{contract.id}}">
+            <input type="submit" value="Import" name="now">
+          </fieldset>
+        </form>
+      {% endif %}
 
-            </head>
-            <body>
-                <p>
-                    <a
-                        href="{/source/request/@context-path}/reports/1/output/">
-                        <xsl:value-of select="'Chellow'" />
-                    </a>
-                    &gt;
-                    <a
-                        href="{/source/request/@context-path}/reports/113/output/">
-                        <xsl:value-of select="'HHDC Contracts'" />
-                    </a>
-                    &gt;
-                    <a
-                        href="{/source/request/@context-path}/reports/115/output/?hhdc_contract_id={/source/hhdc-contract/@id}">
-                        <xsl:value-of
-                            select="/source/hhdc-contract/@name" />
-                    </a>
-                    &gt;
-                    <xsl:value-of select="'Automatic HH Data Downloader'" />
-                </p>
-                <br />
-<xsl:if test="//message">
-                    <ul>
-                        <xsl:for-each select="//message">
-                            <li>
-                                <xsl:value-of select="@description" />
-                            </li>
-                        </xsl:for-each>
-                    </ul>
-                </xsl:if>
+      <h3>Log</h3>
 
-<p><a href=".?hhdc-contract-id={/source/hhdc-contract/@id}">Refresh page</a></p>
+      <p>{{task.status}}</p>
 
-                <xsl:choose>
-                <xsl:when test="/source/hh-importer">
-<table>
-                    <tr>
-                        <th>Is Locked?</th>
-                        <td>
-                            <xsl:value-of select="/source/hh-importer/@is-locked"/>
-                        </td>
-                    </tr>
-                </table>
-                <br/>
-                <xsl:if test="/source/hh-importer/@is-locked='False'">
-                <form action=".">
-                            <fieldset>
-                                <legend>Remove Importer</legend>
-                       <input type="hidden" name="hhdc-contract-id" value="{/source/hhdc-contract/@id}"/>
-                                <input type="submit" value="Remove" name="remove" />
-                            </fieldset>
-                        </form>
-                        <br/>
-<form action=".">
-                            <fieldset>
-                                <legend>Import Now</legend>
-                       <input type="hidden" name="hhdc-contract-id" value="{/source/hhdc-contract/@id}"/>
-                                <input type="submit" value="Import" name="now" />
-                            </fieldset>
-                        </form>
-                 </xsl:if>
-<h3>Log</h3>
-                <p><xsl:value-of select="/source/hh-importer/@status"/></p>
-                <ul>
-                    <xsl:for-each select="/source/hh-importer/log-item">
-                        <li>
-                            <xsl:value-of select="@message" />
-                        </li>
-                    </xsl:for-each>
-                </ul>
-                </xsl:when>
-                <xsl:otherwise>
-                   <form action=".">
-                            <fieldset>
-                                <legend>Start Importer</legend>
-                       <input type="hidden" name="hhdc-contract-id" value="{/source/hhdc-contract/@id}"/>
-                                <input type="submit" value="Start" name="start" />
-                            </fieldset>
-                        </form>
-                </xsl:otherwise>
-                </xsl:choose>
-<!--
-                <table>
-                    <tr>
-                        <th>Status</th>
-                        <td>
-                            <xsl:value-of select="/source/hh-importer/@status"/>
-                        </td>
-                    </tr>
-                    <tr>
-                        <th>Status of this particular import</th>
-                        <td>
-                            <xsl:value-of select="/source/@thread-status" />
-                        </td>
-                    </tr>
-                    <tr>
-                        <th>Is this particular import locked?</th>
-                        <td>
-                            <xsl:value-of select="/source/@is-locked" />
-                        </td>
-                    </tr>
-
-                    <tr>
-                        <th>Stack trace of this particular import</th>
-                        <td>
-                            <xsl:value-of select="/source/stack-trace/text()" />
-                        </td>
-                    </tr>
-                </table>
-                <p>
-                    <a href=".">Refresh page</a>
-                </p>
-                <xsl:choose>
-                    <xsl:when
-                        test="/source/@thread-status = 'null' or /source/@thread-status = 'dead'">
-                        <form action="." method="post">
-                            <fieldset>
-                                <legend>Import Now</legend>
-                                <input type="submit" value="Import" />
-                            </fieldset>
-                        </form>
-                        <br />
-                        <form action="." method="post">
-                            <fieldset>
-                                <legend>Restart Import Thread</legend>
-                                <input type="submit" value="Restart" name="restart" />
-                            </fieldset>
-                        </form>
-
-                    </xsl:when>
-                    <xsl:when test="/source/@thread-status = 'alive'">
-                        <form action="." method="post">
-                            <fieldset>
-                                <legend>Interrupt The Import</legend>
-                                <input type="submit" name="interrupt" value="Interrupt" />
-                            </fieldset>
-                        </form>
-                    </xsl:when>
-                </xsl:choose>
-                <br />
-                -->
-            </body>
-        </html>
-    </xsl:template>
-</xsl:stylesheet>]]></value>
+      <ul>
+        {% for message in task.messages %}
+          <li>{{message}}</li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p>The importer task has not been started.</p>
+    {% endif %}
+  </body>
+</html>]]></value>
 	</line>
 	<line>
 		<value><![CDATA[insert]]></value>
