@@ -859,7 +859,7 @@ finally:
               </th>
               <th rowspan="2">
                 Channels
-                      [<a href="{{ context_path }}/supplies/{{ supply.id }}/eras/{{ era.id }}/channels/">edit</a>]
+                      [<a href="{{context_path}}/reports/299/output/?era_id={{era.id}}">add</a>]
               </th>
               <th rowspan="2">
                 <a title="Line Loss Factor Class">LLFC</a>
@@ -925,11 +925,13 @@ finally:
             <tr>
               <td>
                 {% for channel in era_bundle['imp_channels'] %}
-                  {% if channel.is_kwh %}
-                    kWh
-                  {% else %}
-                    kVArh
-                  {% endif %}
+                  <a href="{{context_path}}/reports/301/output/?channel_id={{channel.id}}">
+                    {%- if channel.is_kwh -%}
+                      kWh
+                    {%- else -%}
+                      kVArh
+                    {%- endif -%}
+                  </a>
                 {% endfor %}
               </td>
               <td>
@@ -971,11 +973,13 @@ finally:
             <tr>
               <td>
                 {% for channel in era_bundle['exp_channels'] %}
-                  {% if channel.is_kwh %}
-                    kWh
-                  {% else %}
-                    kVArh
-                  {% endif %}
+                  <a href="{{context_path}}/reports/301/output/?channel_id={{channel.id}}">
+                    {%- if channel.is_kwh -%}
+                      kWh
+                    {%- else -%}
+                      kVArh
+                    {%- endif -%}
+                  </a>
                 {% endfor %}
               </td>
               <td>
@@ -8944,157 +8948,109 @@ finally:
 		<value><![CDATA[117]]></value>
 		<value><![CDATA[true]]></value>
 		<value><![CDATA[Channel Snag]]></value>
-		<value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree, UserException
-from net.sf.chellow.physical import ChannelSnag
+		<value><![CDATA[from net.sf.chellow.monad import Monad
+from sqlalchemy.orm import joinedload_all
+import datetime
+import pytz
+from dateutil.relativedelta import relativedelta
+from java.lang import System
 
-snag_id = inv.getLong('snag-id')
-snag = ChannelSnag.getChannelSnag(snag_id)
-source.appendChild(snag.toXml(doc, XmlTree("channel", XmlTree("era", XmlTree('supply').put("hhdcContract")))))]]></value>
-		<value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
-<xsl:stylesheet version="1.0"
-    xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
-    <xsl:output method="html" encoding="US-ASCII"
-        doctype-public="-//W3C//DTD HTML 4.01//EN"
-        doctype-system="http://www.w3.org/TR/html4/strict.dtd" indent="yes" />
-    <xsl:template match="/">
-        <html>
-            <head>
-                <link rel="stylesheet" type="text/css"
-                    href="{/source/request/@context-path}/reports/19/output/" />
-                <title>
-                    Chellow &gt; HHDC Contracts &gt;
-                    <xsl:value-of
-                        select="/source/channel-snag/channel/supply-era/account/hhdc-contract/@name" />
-                    &gt; Channel Snags &gt;
-                    <xsl:value-of select="/source/channel-snag/@id" />
-                </title>
-            </head>
-            <body>
-                <p>
-                    <a
-                        href="{/source/request/@context-path}/reports/1/output/">
-                        <xsl:value-of
-                            select="'Chellow'" />
-                    </a>
-                    &gt;
-                    <a
-                        href="{/source/request/@context-path}/reports/113/output/">
-                        <xsl:value-of select="'HHDC Contracts'" />
-                    </a>
-                    &gt;
-                    <a
-                        href="{/source/request/@context-path}/reports/115/output/?hhdc-contract-id={/source/channel-snag/channel/supply-era/hhdc-contract/@id}">
-                        <xsl:value-of
-                            select="/source/channel-snag/channel/supply-era/hhdc-contract/@name" />
-                    </a>
-                    &gt;
-                    <a
-                        href="{/source/request/@context-path}/reports/37/output/?hhdc-contract-id={/source/channel-snag/channel/supply-era/hhdc-contract/@id}&amp;hidden-days=5">
-                        <xsl:value-of select="'Channel Snags'" />
-                    </a>
-                    &gt;
-                    <xsl:value-of
-                        select="concat(/source/channel-snag/@id, ' [')" />
-                    <a
-                        href="{/source/request/@context-path}/supplies/{/source/channel-snag/channel/supply-era/supply/@id}/eras/{/source/channel-snag/channel/supply-era/@id}/channels/{/source/channel-snag/channel/@id}/snags/{/source/channel-snag/@id}/">
-                        <xsl:value-of select="'edit'" />
-                    </a>
-                    <xsl:value-of select="']'" />
+Monad.getUtils()['imprt'](globals(), {
+        'db': ['Channel', 'Era', 'HhDatum', 'Snag', 'set_read_write', 'session'], 
+        'utils': ['UserException', 'HH', 'hh_after'],
+        'templater': ['render']})
 
-                </p>
-                <br />
-                <xsl:if test="//message">
-                    <ul>
-                        <xsl:for-each select="//message">
-                            <li>
-                                <xsl:value-of select="@description" />
-                            </li>
-                        </xsl:for-each>
-                    </ul>
-                </xsl:if>
-                <table>
-                    <tbody>
-                        <tr>
-                            <th>Date Created</th>
-                            <td>
-                                <xsl:value-of
-                                    select="concat(/source/channel-snag/date[@label='created']/@year, '-', /source/channel-snag/date[@label='created']/@month, '-', /source/channel-snag/date[@label='created']/@day, 'T', /source/channel-snag/date[@label='created']/@hour, ':', /source/channel-snag/date[@label='created']/@minute, 'Z')" />
-                            </td>
-                        </tr>
-                        <tr>
-                            <th>Ignored?</th>
-                            <td>
-                                <xsl:choose>
-                                    <xsl:when
-                                        test="/source/channel-snag/@is-ignored='true'">
-                                        Ignored
-                                    </xsl:when>
-                                    <xsl:otherwise>
-                                        Not ignored
-                                    </xsl:otherwise>
-                                </xsl:choose>
-                            </td>
-                        </tr>
-                        <tr>
-                            <th>Description</th>
-                            <td>
-                                <xsl:value-of
-                                    select="/source/channel-snag/@description" />
-                            </td>
-                        </tr>
-                        <tr>
-                            <th>Channel</th>
-                            <td>
-                                <xsl:choose>
-                                    <xsl:when test="/source/channel-snag/channel/@is-import = 'true'">
-                                        Import
-                                    </xsl:when>
-                                    <xsl:otherwise>
-                                        Export
-                                    </xsl:otherwise>
-                                </xsl:choose>
-                                <xsl:choose>
-                                    <xsl:when test="/source/channel-snag/channel/@is-kwh = 'true'">
-                                        kWh
-                                    </xsl:when>
-                                    <xsl:otherwise>
-                                        kVArh
-                                    </xsl:otherwise>
-                                </xsl:choose>
-                                channel of <a
-                                    href="{/source/request/@context-path}/reports/7/output/?supply-id={/source/channel-snag/channel/supply-era/supply/@id}">
-                                    <xsl:value-of
-                                        select="concat('supply ', /source/channel-snag/channel/supply-era/supply/@name)" />
-                                </a>
-                            </td>
-                        </tr>
-                        <tr>
-                            <th>Start Date</th>
-                            <td>
-                                <xsl:value-of
-                                    select="concat(/source/channel-snag/hh-start-date[@label='start']/@year, '-', /source/channel-snag/hh-start-date[@label='start']/@month, '-', /source/channel-snag/hh-start-date[@label='start']/@day, 'T', /source/channel-snag/hh-start-date[@label='start']/@hour, ':', /source/channel-snag/hh-start-date[@label='start']/@minute, 'Z')" />
-                            </td>
-                        </tr>
-                        <tr>
-                            <th>Finish Date:</th>
-                            <td>
-                                <xsl:choose>
-                                <xsl:when test="/source/channel-snag/hh-start-date[@label='finish']">
-                                <xsl:value-of
-                                    select="concat(/source/channel-snag/hh-start-date[@label='finish']/@year, '-', /source/channel-snag/hh-start-date[@label='finish']/@month, '-', /source/channel-snag/hh-start-date[@label='finish']/@day, 'T', /source/channel-snag/hh-start-date[@label='finish']/@hour, ':', /source/channel-snag/hh-start-date[@label='finish']/@minute, 'Z')" />
-                                 </xsl:when>
-                                 <xsl:otherwise>
-                                     Ongoing
-                                 </xsl:otherwise>
-                                 </xsl:choose>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </body>
-        </html>
-    </xsl:template>
-</xsl:stylesheet>]]></value>
+def make_fields(sess, snag, message=None):
+    messages = [] if message is None else [str(message)]
+    return {'messages': messages, 'snag': snag}
+
+sess = None
+try:
+    sess = session()
+    if inv.getRequest().getMethod() == 'GET':
+        snag_id = inv.getLong('snag_id')
+        snag = Snag.get_by_id(sess, snag_id)
+        render(inv, template, make_fields(sess, snag))
+except UserException, e:
+    render(inv, template, make_fields(sess, snag, e), 400)
+finally:
+    sess.close()]]></value>
+		<value><![CDATA[<!doctype html>
+<html>
+  <head>
+    <link rel="stylesheet" type="text/css"
+      href="{{context_path}}/reports/19/output/">
+    <title>
+      Chellow &gt; HHDC Contracts &gt;
+      {{snag.channel.era.hhdc_contract.name}} &gt; Channel Snags &gt;
+      {{snag.id}}
+    </title>
+  </head>
+  <body>
+    <p>
+      <a href="{{context_path}}/reports/1/output/">Chellow</a> &gt;
+      <a href="{{context_path}}/reports/113/output/">HHDC Contracts</a> &gt;
+      <a href="{{context_path}}/reports/115/output/?hhdc_contract_id={{snag.channel.era.hhdc_contract.id}}">{{snag.channel.era.hhdc_contract.name}}</a> &gt;
+      <a href="{{context_path}}/reports/37/output/?hhdc_contract_id={{snag.channel.era.hhdc_contract.id}}&amp;hidden_days=5">Channel Snags</a> &gt;
+      {{snag.id}} [<a href="{{context_path}}/reports/305/output/?snag_id={{snag.id}}">edit</a>]
+    </p>
+    <br>
+    {% if messages %}
+      <ul>
+        {% for message in messages %}
+          <li>{{message}}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+
+    <table>
+      <tbody>
+        <tr>
+          <th>Date Created</th>
+          <td>{{snag.date_created|hh_format}}</td>
+        </tr>
+        <tr>
+          <th>Ignored?</th>
+          <td>
+            {% if snag.is_ignored %}
+              Ignored
+            {% else %}
+              Not ignored
+            {% endif %}
+          </td>
+        </tr>
+        <tr>
+          <th>Description</th>
+          <td>{{snag.description}}</td>
+        </tr>
+        <tr>
+          <th>Channel</th>
+          <td>
+            {% if snag.channel.is_import %}
+              Import
+            {% else %}
+              Export
+            {% endif %}
+            {% if snag.channel.is_kwh %}
+              kWh
+            {% else %}
+              kVArh
+            {% endif %}
+            channel of <a href="{{context_path}}/reports/7/output/?supply_id={{snag.channel.era.supply.id}}">supply {{snag.channel.era.supply.name}}</a>
+          </td>
+        </tr>
+        <tr>
+          <th>Start Date</th>
+          <td>{{snag.start_date|hh_format}}</td>
+        </tr>
+        <tr>
+          <th>Finish Date</th>
+          <td>{{snag.finish_date|hh_format}}</td>
+        </tr>
+      </tbody>
+    </table>
+  </body>
+</html>]]></value>
 	</line>
 	<line>
 		<value><![CDATA[insert]]></value>
@@ -19368,6 +19324,608 @@ finally:
         <input type="submit" value="Add">
       </fieldset>
     </form>
+  </body>
+</html>]]>
+		</value>
+	</line>
+    <line>
+		<value><![CDATA[insert]]></value>
+		<value><![CDATA[report]]></value>
+		<value><![CDATA[299]]></value>
+		<value><![CDATA[true]]></value>
+		<value><![CDATA[Channel Add]]></value>
+		<value><![CDATA[from net.sf.chellow.monad import Monad
+from sqlalchemy.orm import joinedload_all
+from datetime import datetime
+import pytz
+
+Monad.getUtils()['imprt'](globals(), {
+        'db': ['Channel', 'Era', 'Participant', 'set_read_write', 'session'], 
+        'utils': ['UserException', 'form_date'],
+        'templater': ['render']})
+
+def make_fields(sess, era, message=None):
+    channels = sess.query(Channel).filter(Channel.era_id == era.id).order_by(Channel.is_import, Channel.is_kwh)
+    return {'era': era, 'channels': channels, 'messages': None if message is None else [str(message)]}
+
+sess = None
+try:
+    sess = session()
+    if inv.getRequest().getMethod() == 'GET':
+        era_id = inv.getLong('era_id')
+        era = Era.get_by_id(sess, era_id)
+        render(inv, template, make_fields(sess, era))
+    else:
+        set_read_write(sess)
+        era_id = inv.getLong('era_id')
+        is_import = inv.getBoolean('is_import')
+        is_kwh = inv.getBoolean('is_kwh')
+       
+        era = Era.get_by_id(sess, era_id)
+        channel = era.insert_channel(sess, is_import, is_kwh)
+        sess.commit()
+        inv.sendSeeOther('/reports/301/output/?channel_id=' + str(channel.id))
+except UserException, e:
+    render(inv, template, make_fields(sess, era, e))
+finally:
+    sess.close()]]>
+		</value>
+		<value><![CDATA[<!doctype html>
+<html>
+  <head>
+    <link rel="stylesheet" type="text/css"
+      href="{{context_path}}/reports/19/output/">
+    <title>
+      Chellow &gt; Supplies &gt;
+      Supply {{era.supply.id}} Era {{era.start_date|hh_format}} &gt Add Channel
+    </title>
+  </head>
+  <body>
+    <p>
+      <a href="{{context_path}}/reports/1/output/">Chellow</a> &gt;
+      <a href="{{context_path}}/reports/99/output/">Supplies</a> &gt;
+      <a href="{{context_path}}/reports/7/output/?supply_id={{era.supply.id}}">Supply {{era.supply.id}}</a> Era {{era.start_date|hh_format}} &gt;
+      Add Channel
+    </p>
+    <br />
+    {% if messages %}
+      <ul>
+        {% for message in messages %}
+          <li>{{ message }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+
+    <table><caption>Existing Channels</caption>
+      <thead>
+        <tr>
+          <th>Import / Export</th>
+          <th>kWh / kVArh</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for channel in channels %}
+          <tr>
+            <td>
+              {% if channel.is_import %}
+                Import
+              {% else %}
+                Export
+              {% endif %}
+            </td>
+            <td>
+              {% if channel.is_kwh %}
+                kWh
+              {% else %}
+                kVArh
+              {% endif %}
+            </td>
+          </tr>
+        {% endfor %}
+      <tbody>
+    </table>
+    <br>
+    <form action="." method="post">
+      <fieldset>
+        <input type="hidden" name="era_id" value="{{era.id}}">
+        <legend>Add a channel</legend>
+        <br />
+        <label>
+          <select name="is_import">
+            {% for lb, vl in (('Import', 'True'), ('Export', 'False')) %}
+              {{input_option('is_import', vl, lb)}}
+            {% endfor %}
+          </select>
+        </label>
+        <label>
+          <select name="is_kwh">
+            {% for lb, vl in (('kWh', 'True'), ('kVArh', 'False')) %}
+              {{input_option('is_kwh', vl, lb)}}
+            {% endfor %}
+          </select>
+        </label>
+        <input type="submit" value="Add">
+      </fieldset>
+    </form>
+  </body>
+</html>]]>
+		</value>
+	</line>
+    <line>
+		<value><![CDATA[insert]]></value>
+		<value><![CDATA[report]]></value>
+		<value><![CDATA[301]]></value>
+		<value><![CDATA[true]]></value>
+		<value><![CDATA[Channel]]></value>
+		<value><![CDATA[from net.sf.chellow.monad import Monad
+from sqlalchemy.orm import joinedload_all
+import datetime
+import pytz
+from dateutil.relativedelta import relativedelta
+from java.lang import System
+
+Monad.getUtils()['imprt'](globals(), {
+        'db': ['Channel', 'Era', 'HhDatum', 'Snag', 'set_read_write', 'session'], 
+        'utils': ['UserException', 'HH', 'hh_after'],
+        'templater': ['render']})
+
+def make_fields(sess, channel, start_date, message=None):
+    messages = [] if message is None else [str(message)]
+    fields = {'messages': messages, 'channel': channel, 'start_date': start_date}
+    if start_date is not None:
+        finish_date = start_date + relativedelta(months=1) - HH
+        era = channel.era
+        if hh_after(finish_date, era.finish_date):
+            messages.append("The finish date is after the end of the era.")
+        if start_date < era.start_date:
+            messages.append("The start date is before the start of the era.")
+        hh_data = sess.query(HhDatum).filter(HhDatum.channel_id == channel.id, HhDatum.start_date >= start_date, HhDatum.start_date <= finish_date).order_by(HhDatum.start_date)
+        snags = sess.query(Snag).filter(Snag.channel_id == channel.id).order_by(Snag.start_date)
+        fields.update({'hh_data': hh_data, 'snags': snags})
+    return fields
+
+sess = None
+try:
+    sess = session()
+    if inv.getRequest().getMethod() == 'GET':
+        channel_id = inv.getLong('channel_id')
+        channel = Channel.get_by_id(sess, channel_id)
+        if inv.hasParameter('start_year'):
+            start_year = inv.getInteger('start_year')
+            start_month = inv.getInteger('start_month')
+            try:
+                start_date = datetime.datetime(start_year, start_month, 1, tzinfo=pytz.utc)
+            except ValueError, e:
+                start_date = None
+                raise UserException("Invalid date: " + str(e))
+        else:
+            era_finish = channel.era.finish_date
+            if era_finish is None:
+                start_date = datetime.datetime.utcnow().replace(tzinfo=pytz.utc)
+            else:
+                start_date = datetime.datetime(era_finish.year, era_finish.month, 1, tzinfo=pytz.utc)
+        
+        render(inv, template, make_fields(sess, channel, start_date))
+except UserException, e:
+    render(inv, template, make_fields(sess, channel, start_date, e), 400)
+finally:
+    sess.close()]]>
+		</value>
+		<value><![CDATA[<!doctype html>
+<html>
+  <head>
+    <link rel="stylesheet" type="text/css"
+      href="{{context_path}}/reports/19/output/">
+    <title>
+      Chellow &gt; Supplies &gt;
+      Supply {{channel.era.supply.name}} Era {{channel.era.start_date|hh_format}} &gt;
+      Channel {% if channel.is_import %}Import{% else %}Export{% endif %}
+      {% if channel.is_kwh %}kWh{% else %}kVArh{% endif %}
+    </title>
+  </head>
+  <body>
+    <p>
+      <a href="{{context_path}}/reports/1/output/">Chellow</a> &gt;
+      <a href="{{context_path}}/reports/99/output/">Supplies</a> &gt;
+      <a href="{{context_path}}/reports/7/output/?supply_id={{channel.era.supply.id }}">Supply {{channel.era.supply.name}} Era {{channel.era.start_date|hh_format}}</a> &gt;
+      Channel {% if channel.is_import %}Import{% else %}Export{% endif %}
+      {% if channel.is_kwh %}kWh{% else %}kVArh{% endif %}
+      [<a href="{{context_path}}/reports/303/output/?channel_id={{channel.id}}">edit</a>]
+    </p>
+    <br />
+    {% if messages %}
+      <ul>
+        {% for message in messages %}
+          <li>{{ message }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+
+    <form action=".">
+      <fieldset>
+        <legend>Show HH Data</legend>
+        <input type="hidden" name="channel_id" value="{{channel.id}}">
+        {{input_date('start', request, start_date, resolution='month')}}
+        <input type="submit" value="Show">
+      </fieldset>
+    </form>
+    <br>
+    <table><caption>HH Data</caption>
+      <thead>
+        <tr>
+          <th>Edit</th>
+          <th>Start Time</th>
+          <th>
+            {% if channel.is_import %}
+              Import
+            {% else %}
+              Export
+            {% endif %}
+
+            {% if channel.is_kwh %}
+              kWh
+            {% else %}
+              kVArh
+            {% endif %}
+          </th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for hh in hh_data %}
+          <tr>
+            <td>
+              [<a href="{{context_path}}/reports/309/output/?hh_datum_id={{hh.id}}">edit</a>]
+            </td>
+            <td>{{hh.start_date|hh_format}}</td>
+            <td>{{hh.value}}</td>
+            <td>{{hh.status}}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    <br>
+    <table><caption>Snags</caption>
+      <thead>
+        <tr>
+          <th>View</th>
+          <th>Start Date</th>
+          <th>Finish Date</th>
+          <th>Description</th>
+          <th>Ignored?</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for snag in snags %}
+          <tr>
+            <td>
+              <a href="{{context_path}}/reports/117/output/?snag_id={{snag.id}}">view</a>
+            </td>
+            <td>{{snag.start_date|hh_format}}</td>
+            <td>{{snag.finish_date|hh_format}}</td>
+            <td>{{snag.description}}</td>
+            <td>
+              {% if snag.is_ignored %}
+                Ignored
+              {% else %}
+                Not ignored
+              {% endif %}
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </body>
+</html>]]>
+		</value>
+	</line>
+    <line>
+		<value><![CDATA[insert]]></value>
+		<value><![CDATA[report]]></value>
+		<value><![CDATA[303]]></value>
+		<value><![CDATA[true]]></value>
+		<value><![CDATA[Channel Edit]]></value>
+		<value><![CDATA[from net.sf.chellow.monad import Monad
+from sqlalchemy.orm import joinedload_all
+import datetime
+import pytz
+
+Monad.getUtils()['imprt'](globals(), {
+        'db': ['Channel', 'Era', 'HhDatum', 'set_read_write', 'session'], 
+        'utils': ['UserException', 'form_date', 'form_decimal', 'hh_after', 'hh_before'],
+        'templater': ['render']})
+
+def make_fields(channel, message=None):
+    messages = [] if message is None else [str(message)]
+    now = datetime.datetime.utcnow().replace(tzinfo=pytz.utc)
+    return {'channel': channel, 'now': now, 'messages': messages}
+
+sess = None
+try:
+    sess = session()
+    if inv.getRequest().getMethod() == 'GET':
+        channel_id = inv.getLong('channel_id')
+        channel = Channel.get_by_id(sess, channel_id)
+        render(inv, template, make_fields(channel))
+    else:
+        set_read_write(sess)
+        channel_id = inv.getLong('channel_id')
+        channel = Channel.get_by_id(sess, channel_id)
+        if inv.hasParameter('delete'):
+            supply_id = channel.era.supply.id
+            channel.era.delete_channel(sess, channel.is_import, channel.is_kwh)
+            sess.commit()
+            inv.sendSeeOther('/reports/7/output/?supply_id=' + str(supply_id))
+        elif inv.hasParameter('delete_data'):
+            start_date = form_date(inv, 'start')
+            finish_date = form_date(inv, 'finish')
+            channel.delete_data(sess, start_date, finish_date)
+            sess.commit()
+            render(inv, template, make_fields(channel, "Data successfully deleted."))
+        elif inv.hasParameter('insert'):
+            start_date = form_date(inv, 'start')
+            value = form_decimal(inv, 'value')
+            status = inv.getString('status')
+            if start_date < channel.era.start_date:
+                raise UserException("The start date is before the start of this era.")
+            if hh_after(start_date, channel.era.finish_date):
+                raise UserException("The finish date is after the end of this era.")
+            hh_datum = sess.query(HhDatum).filter(HhDatum.channel_id == channel.id, HhDatum.start_date == start_date).one()
+            if hh_datum is not None:
+                raise UserException("There's already a datum in this channel at this time.")
+            mpan_core = channel.era.imp_mpan_core
+            if mpan_core is None:
+                mpan_core = channel.era.exp_mpan_core
+            HhDatum.insert(sess, [{'start_date': start_date, 'value': value, 'status': status, 'mpan_core': mpan_core, 'is_import': channel.is_import, 'is_kwh': channel.is_kwh}])
+            sess.commit()
+            now = datetime.datetime.utcnow().replace(tzinfo=pytz.utc)
+            inv.sendSeeOther('/reports/301/output/?channel_id=' + str(channel_id) + "&start_year=" + str(now.year) + "&start_month=" + str(now.month))
+except UserException, e:
+    render(inv, template, make_fields(channel, e))
+finally:
+    sess.close()]]>
+		</value>
+		<value><![CDATA[<!doctype html>
+<html>
+  <head>
+    <link rel="stylesheet" type="text/css"
+      href="{{context_path}}/reports/19/output/">
+    <title>
+      Chellow &gt; Supplies &gt;
+      Supply {{channel.era.supply.id}} Era {{channel.era.start_date|hh_format}} &gt;
+      Channel {% if channel.is_import %}Import{% else %}Export{% endif %}
+      {% if channel.is_kwh %}kWh{% else %}kVArh{% endif %}
+    </title>
+  </head>
+  <body>
+    <p>
+      <a href="{{context_path}}/reports/1/output/">Chellow</a> &gt;
+      <a href="{{context_path}}/reports/99/output/">Supplies</a> &gt;
+      <a href="{{context_path}}/reports/7/output/?supply_id={{channel.era.supply.id }}">Supply {{channel.era.supply.name}} Era {{channel.era.start_date|hh_format}}</a> &gt;
+      <a href="{{context_path}}/reports/301/output/?channel_id={{channel.id}}">Channel {% if channel.is_import %}Import{% else %}Export{% endif %}
+      {% if channel.is_kwh %}kWh{% else %}kVArh{% endif %}</a> &gt;
+      Edit
+
+    </p>
+    <br />
+    {% if messages %}
+      <ul>
+        {% for message in messages %}
+          <li>{{message}}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+    
+    {% if request.getMethod() == 'GET' and request.getParameter('delete') %}
+      <form method="post" action=".">
+        <fieldset>
+          <legend>
+            Are you sure you want to delete this channel?
+          </legend>
+          <input type="hidden" name="channel_id" value="{{channel.id}}">
+          <input type="submit" name="delete" value="Delete">
+        </fieldset>
+      </form>
+      <p>
+        <a href="{{context_path}}/reports/301/output/?channel_id={{channel.id}}">Cancel</a>
+      </p>
+    {% else %}
+      <form action="." method="post">
+        <fieldset>
+          <legend>Delete HH Data</legend>
+          <input type="hidden" name="channel_id" value="{{channel.id}}">
+          From {{input_date('start', request, None, 'minute')}} to
+          {{input_date('finish', request, None, 'minute')}}
+          <input type="submit" name="delete_data" value="Delete">
+        </fieldset>
+      </form>
+      <br>
+      <form action="." method="post">
+        <fieldset>
+          <legend>Insert HH datum</legend>
+          <input type="hidden" name="channel_id" value="{{channel.id}}">
+          <label>
+            Start Date {{input_date('start', request, None, 'minute')}}
+          </label>
+          <br>
+          Value {{input_text('value', request, '')}}
+          <br>
+          <label>Status
+            <select name="status">
+              {{input_option('status', 'E', 'E')}}
+              {{input_option('status', 'A', 'A')}}
+            </select>
+          </label>
+          <br>
+          <input type="submit" name="insert" value="Insert">
+        </fieldset>
+      </form>
+      <br>
+      <form action=".">
+        <fieldset>
+          <legend>
+            Delete this channel
+          </legend>
+          <input type="hidden" name="channel_id" value="{{channel.id}}">
+          <input type="hidden" name="start_year" value="{{now.year}}">
+          <input type="hidden" name="start_month" value="{{now.month}}">
+          <input type="submit" name="delete" value="Delete">
+        </fieldset>
+      </form>
+    {% endif %}
+  </body>
+</html>]]>
+		</value>
+	</line>
+    <line>
+		<value><![CDATA[insert]]></value>
+		<value><![CDATA[report]]></value>
+		<value><![CDATA[305]]></value>
+		<value><![CDATA[true]]></value>
+		<value><![CDATA[Free 305]]></value>
+		<value><![CDATA[]]>
+		</value>
+		<value><![CDATA[]]>
+		</value>
+	</line>
+    <line>
+		<value><![CDATA[insert]]></value>
+		<value><![CDATA[report]]></value>
+		<value><![CDATA[307]]></value>
+		<value><![CDATA[true]]></value>
+		<value><![CDATA[Free 307]]></value>
+		<value><![CDATA[]]>
+		</value>
+		<value><![CDATA[]]>
+		</value>
+	</line>
+	    <line>
+		<value><![CDATA[insert]]></value>
+		<value><![CDATA[report]]></value>
+		<value><![CDATA[309]]></value>
+		<value><![CDATA[true]]></value>
+		<value><![CDATA[HH Edit]]></value>
+		<value><![CDATA[from net.sf.chellow.monad import Monad
+from sqlalchemy.orm import joinedload_all
+import datetime
+import pytz
+
+Monad.getUtils()['imprt'](globals(), {
+        'db': ['Channel', 'Era', 'HhDatum', 'set_read_write', 'session'], 
+        'utils': ['UserException', 'form_date', 'form_decimal', 'hh_after', 'hh_before'],
+        'templater': ['render']})
+
+def make_fields(hh, message=None):
+    messages = [] if message is None else [str(message)]
+    return {'hh': hh, 'messages': messages}
+
+sess = None
+try:
+    sess = session()
+    if inv.getRequest().getMethod() == 'GET':
+        hh_id = inv.getLong('hh_datum_id')
+        hh = HhDatum.get_by_id(sess, hh_id)
+        render(inv, template, make_fields(hh))
+    else:
+        set_read_write(sess)
+        hh_id = inv.getLong('hh_datum_id')
+        hh = HhDatum.get_by_id(sess, hh_id)
+        channel_id = hh.channel.id
+        if inv.hasParameter('delete'):
+            hh.channel.delete_data(sess, hh.start_date, hh.start_date)
+            sess.commit()
+            inv.sendSeeOther('/reports/301/output/?channel_id=' + str(channel_id))
+        elif inv.hasParameter('update'):
+            value = form_decimal(inv, 'value')
+            status = inv.getString('status')
+            channel = hh.channel
+            mpan_core = channel.era.imp_mpan_core
+            if mpan_core is None:
+                mpan_core = channel.era.exp_mpan_core
+            HhDatum.insert(sess, [{'mpan_core': mpan_core, 'is_import': channel.is_import, 'is_kwh': channel.is_kwh, 'start_date': hh.start_date, 'value': value, 'status': status}])
+            sess.commit()
+            inv.sendSeeOther('/reports/301/output/?channel_id=' + str(channel_id))
+except UserException, e:
+    render(inv, template, make_fields(channel, e), 400)
+finally:
+    sess.close()]]>
+		</value>
+		<value><![CDATA[<!doctype html>
+<html>
+  <head>
+    <link rel="stylesheet" type="text/css"
+      href="{{context_path}}/reports/19/output/">
+    <title>
+      Chellow &gt; Supplies &gt;
+      Supply {{hh.channel.era.supply.id}} Era {{hh.channel.era.start_date|hh_format}} &gt;
+      Channel {% if hh.channel.is_import %}Import{% else %}Export{% endif %}
+      {% if hh.channel.is_kwh %}kWh{% else %}kVArh{% endif %} &gt;
+      HH {{hh.start_date|hh_format}} Edit
+    </title>
+  </head>
+  <body>
+    <p>
+      <a href="{{context_path}}/reports/1/output/">Chellow</a> &gt;
+      <a href="{{context_path}}/reports/99/output/">Supplies</a> &gt;
+      <a href="{{context_path}}/reports/7/output/?supply_id={{hh.channel.era.supply.id}}">Supply {{hh.channel.era.supply.name}} Era {{hh.channel.era.start_date|hh_format}}</a> &gt;
+      <a href="{{context_path}}/reports/301/output/?channel_id={{hh.channel.id}}">Channel {% if hh.channel.is_import %}Import{% else %}Export{% endif %} {% if hh.channel.is_kwh %}kWh{% else %}kVArh{% endif %}</a> &gt;
+      HH {{hh.start_date|hh_format}} Edit
+    </p>
+    <br>
+    {% if messages %}
+      <ul>
+        {% for message in messages %}
+          <li>{{message}}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+    
+    {% if request.getMethod() == 'GET' and request.getParameter('delete') %}
+      <form method="post" action=".">
+        <fieldset>
+          <legend>
+            Are you sure you want to delete this half-hour?
+          </legend>
+          <input type="hidden" name="hh_datum_id" value="{{hh.id}}">
+          <input type="submit" name="delete" value="Delete">
+        </fieldset>
+      </form>
+      <p>
+        <a href="{{context_path}}/reports/301/output/?channel_id={{hh.channel.id}}">Cancel</a>
+      </p>
+    {% else %}
+      <form action="." method="post">
+        <fieldset>
+          <legend>Update HH datum</legend>
+          <input type="hidden" name="hh_datum_id" value="{{hh.id}}">
+          <label>
+            Start Date {{input_date('start', request, hh.start_date)}}
+          </label>
+          <br>
+          Value {{input_text('value', request, hh.value)}}
+          <br>
+          <label>Status
+            <select name="status">
+              {% for rt in ['A', 'E'] %}
+                {{input_option('status', rt, rt, hh.status)}}
+              {% endfor %}
+            </select>
+          </label>
+          <br>
+          <input type="submit" name="update" value="Update">
+        </fieldset>
+      </form>
+      <br>
+      <form action=".">
+        <fieldset>
+          <legend>
+            Delete this half-hour
+          </legend>
+          <input type="hidden" name="hh_id" value="{{hh.id}}">
+          <input type="submit" name="delete" value="Delete">
+        </fieldset>
+      </form>
+    {% endif %}
   </body>
 </html>]]>
 		</value>
