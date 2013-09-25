@@ -18786,11 +18786,9 @@ Monad.getUtils()['imprt'](globals(), {
 
 
 def make_fields(sess, contract, message=None):
-        batches = sess.query(Batch).from_statement("""select * from batch where
-                contract_id = :contract_id order by
-                reference""").params(contract_id=contract.id).all()
-        messages = [] if message is None else [str(e)]
-        return {'contract': contract, 'batches': batches, 'messages': messages}
+    batches = sess.query(Batch).filter(Batch.contract == contract).order_by(Batch.reference.desc())
+    messages = [] if message is None else [str(e)]
+    return {'contract': contract, 'batches': batches, 'messages': messages}
 
 sess = None
 try:
@@ -18825,12 +18823,18 @@ finally:
       Chellow &gt; Supplier Contracts &gt; {{contract.name}} &gt; Batches &gt;
       Add
     </title>
+    <style>
+      label {
+        width: 6em;
+        float: left;
+      }
+    </style>
   </head>
   <body>
     <p>
       <a href="{{context_path}}/reports/1/output/">Chellow</a> &gt;
       <a href="{{context_path}}/reports/75/output/">Supplier Contracts</a> &gt;
-      <a href="{{context_path}}/reports/77/output/?supplier_contract_id={{contract.id}}">{{ contract.name }}</a> &gt;
+      <a href="{{context_path}}/reports/77/output/?supplier_contract_id={{contract.id}}">{{contract.name}}</a> &gt;
       <a href="{{context_path}}/reports/89/output/?supplier_contract_id={{contract.id}}">Batches</a> &gt;
       Add
     </p>
@@ -18847,18 +18851,32 @@ finally:
         <legend>Add a batch</legend>
         <input type="hidden" name="supplier_contract_id" value="{{contract.id}}">
         <br>
-        <label>
-          Reference {{ input_text('reference', request, '') }}
-        </label>
+        <label>Reference</label> {{ input_text('reference', request, '') }}
         <br>
-        <label>
-          Description {{ input_text('description', request, '') }}
-        </label>
+        <label>Description</label> {{ input_text('description', request, '') }}
         <br>
         <br>
         <input type="submit" value="Add">
       </fieldset>
     </form>
+    <br>
+    <table>
+      <caption>Existing Batches</caption>
+      <thead>
+        <tr>
+          <th>Reference</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for batch in batches %}
+          <tr>
+            <td>{{batch.reference}}</td>
+            <td>{{batch.description}}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
   </body>
 </html>]]>
 		</value>
