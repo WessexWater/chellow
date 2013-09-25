@@ -18428,13 +18428,8 @@ Monad.getUtils()['imprt'](globals(), {
 
 
 def make_fields(sess, contract, message=None):
-        batches = sess.query(Batch).from_statement("""select * from batch where
-                contract_id = :contract_id order by
-                reference""").params(contract_id=contract_id).all()
-        if message is None:
-            messages = []
-        else:
-            messages = [str(e)]
+        batches = sess.query(Batch).filter(Batch.contract == contract).order_by(Batch.reference.desc())
+        messages = None if message is None else [str(e)]
         return {'contract': contract, 'batches': batches, 'messages': messages}
 
 sess = None
@@ -18459,20 +18454,26 @@ except UserException, e:
     render(inv, template, make_fields(sess, contract, e))
 finally:
     if sess is not None:
-        sess.close()]]></value>
+        sess.close()
+]]></value>
 		<value><![CDATA[<!doctype html>
 <html>
   <head>
     <link rel="stylesheet" type="text/css"
-      href="{{ context_path }}/reports/19/output/"
-    >
+      href="{{context_path}}/reports/19/output/">
     <title>
       Chellow &gt; HHDC Contracts &gt; {{ contract.name }} &gt; Batches &gt; Add
     </title>
+    <style>
+      label {
+        width: 6em;
+        float: left;
+      }
+    </style>
   </head>
   <body>
     <p>
-      <a href="{{ context_path }}/reports/1/output/">Chellow</a> &gt;
+      <a href="{{context_path }}/reports/1/output/">Chellow</a> &gt;
       <a href="{{ context_path }}/reports/113/output/">HHDC Contracts</a> &gt;
       <a href="{{ context_path }}/reports/115/output/?hhdc_contract_id={{ contract.id }}">{{ contract.name }}</a> &gt;
       <a href="{{ context_path }}/reports/93/output/?hhdc_contract_id={{ contract.id }}">Batches</a> &gt;
@@ -18491,18 +18492,32 @@ finally:
         <legend>Add a batch</legend>
         <input type="hidden" name="hhdc_contract_id" value="{{ contract.id }}">
         <br>
-        <label>
-          Reference {{ input_text('reference', request, '') }}
-        </label>
+        <label>Reference</label> {{input_text('reference', request, '')}}
         <br>
-        <label>
-          Description {{ input_text('description', request, '') }}
-        </label>
+        <label>Description</label> {{input_text('description', request, '')}}
         <br>
         <br>
         <input type="submit" value="Add">
       </fieldset>
     </form>
+
+    <table>
+      <caption>Existing Batches</caption>
+      <thead>
+        <tr>
+          <th>Reference</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for batch in batches %}
+          <tr>
+            <td>{{batch.reference}}</td>
+            <td>{{batch.description}}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
   </body>
 </html>]]></value>
 	</line>
