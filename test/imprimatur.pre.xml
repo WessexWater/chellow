@@ -2133,9 +2133,11 @@ def triad_estimates():
 			</request>
 			
 			<!-- Add import kWh channel. Supply 12 -->
-			<request path="/chellow/reports/299/output/?era_id=16" method="post">
+			<request path="/chellow/reports/299/output/" method="post">
+			    <control name="era_id" value="16" />
 				<control name="is_import" value="true" />
 				<control name="is_kwh" value="true" />
+				<regex pattern="/chellow/reports/301/output/\?channel_id=42"/>
 				<response-code value="303" />
 			</request>
 			

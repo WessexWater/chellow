@@ -19377,14 +19377,14 @@ finally:
       href="{{context_path}}/reports/19/output/">
     <title>
       Chellow &gt; Supplies &gt;
-      Supply {{era.supply.id}} Era {{era.start_date|hh_format}} &gt Add Channel
+      Supply {{era.supply.id}} Era {{era.start_date|hh_format}} &gt; Add Channel
     </title>
   </head>
   <body>
     <p>
       <a href="{{context_path}}/reports/1/output/">Chellow</a> &gt;
       <a href="{{context_path}}/reports/99/output/">Supplies</a> &gt;
-      <a href="{{context_path}}/reports/7/output/?supply_id={{era.supply.id}}">Supply {{era.supply.id}}</a> Era {{era.start_date|hh_format}} &gt;
+      <a href="{{context_path}}/reports/7/output/?supply_id={{era.supply.id}}">Supply {{era.supply.id}} Era {{era.start_date|hh_format}}</a> &gt;
       Add Channel
     </p>
     <br />
@@ -19432,14 +19432,14 @@ finally:
         <br />
         <label>
           <select name="is_import">
-            {% for lb, vl in (('Import', 'True'), ('Export', 'False')) %}
+            {% for lb, vl in (('Import', 'true'), ('Export', 'false')) %}
               {{input_option('is_import', vl, lb)}}
             {% endfor %}
           </select>
         </label>
         <label>
           <select name="is_kwh">
-            {% for lb, vl in (('kWh', 'True'), ('kVArh', 'False')) %}
+            {% for lb, vl in (('kWh', 'true'), ('kVArh', 'false')) %}
               {{input_option('is_kwh', vl, lb)}}
             {% endfor %}
           </select>
