@@ -496,6 +496,7 @@ def totalElement(account, startDate, finishDate):
 				<regex pattern='option value="1" selected&gt;chp&lt;/option&gt;' />
 				<response-code value="200" />
 			</request>
+						
 			<request method="post" path="/chellow/reports/305/output/">
 				<!-- Change it back. -->
 				<control name="supply_id" value="1"/>
@@ -1995,7 +1996,7 @@ def triad_estimates():
 		</test>
 		<test name="Try 'Site HH bulk figures' report.">
 			<request
-				path="/chellow/reports/29/output/?site_id=7&amp;type=used&amp;months=1&amp;year=2008&amp;month=07">
+				path="/chellow/reports/29/output/?site_id=7&amp;type=used&amp;months=1&amp;finish_year=2008&amp;finish_month=07">
 				<response-code value="200" />
 			</request>
 		</test>
@@ -2010,6 +2011,20 @@ def triad_estimates():
 			</request>
 		</test>
 		<test name="CSV Sites HH Data">
+			<!-- Can we make a supply have source sub and view site level hh data okay? -->
+			<request method="post" path="/chellow/reports/305/output/">
+				<!-- Can we update a supply name? -->
+				<!-- Can we update a supply source? -->
+				<control name="supply_id" value="1"/>
+				<control name="name" value="Hello"/>
+				<control name="source_id" value="2"/>
+				<control name="generator_type_id" value="1" />
+				<control name="gsp_group_id" value="11" />
+				
+				<regex pattern='/reports/7/output/\?supply_id=1' />
+				<response-code value="303" />
+			</request>
+		
 			<request
 				path="/chellow/reports/183/output/?start_year=2008&amp;start_month=07&amp;start_day=1&amp;start_hour=0&amp;start_minute=0&amp;finish_year=2008&amp;finish_month=07&amp;finish_day=31&amp;finish_hour=23&amp;finish_minute=30">
 				<response-code value="200" />
@@ -3462,6 +3477,26 @@ def virtual_bill(supply_source):
 		<test name="Site generation graph">
 			<request
 				path="/chellow/reports/11/output/?site_id=7&amp;months=1&amp;finish_year=2013&amp;finish_month=7">
+				<response-code value="200" />
+			</request>
+		</test>
+		<test name="CSV Sites HH Data">
+			<!-- Can we make a supply have source sub and view site level hh data okay? -->
+			<request method="post" path="/chellow/reports/305/output/">
+				<!-- Can we update a supply name? -->
+				<!-- Can we update a supply source? -->
+				<control name="supply_id" value="1"/>
+				<control name="name" value="Hello"/>
+				<control name="source_id" value="2"/>
+				<control name="generator_type_id" value="1" />
+				<control name="gsp_group_id" value="11" />
+				
+				<regex pattern='/reports/7/output/\?supply_id=1' />
+				<response-code value="303" />
+			</request>
+		
+			<request
+				path="/chellow/reports/29/output/?site_id=7&amp;type=used&amp;months=1&amp;finish_year=2008&amp;finish_month=07">
 				<response-code value="200" />
 			</request>
 		</test>
