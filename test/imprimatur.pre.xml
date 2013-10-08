@@ -745,7 +745,7 @@ def totalElement(account, startDate, finishDate):
 				<control name="hhdc_account" value="01" />
 				<control name="pc_id" value="9" />
 				<control name="mtc_code" value="845" />
-				<control name="cop_id" value="5" />
+				<control name="cop_id" value="3" />
 				<control name="ssc_code" value="" />
 				<control name="imp_llfc_code" value="580" />
 				<control name="imp_mpan_core" value="2276930477695" />
@@ -754,6 +754,10 @@ def totalElement(account, startDate, finishDate):
 				<control name="imp_supplier_account" value="01" />
 				
 				<response-code value="400" />
+				
+				<!-- Also, we've changed the CoP to be 3. Check that this is remembered when there is an error. -->
+				<regex pattern='&lt;option value="3" selected&gt;3 CoP 3&lt;/option&gt;' />
+				
 				<regex pattern="MPAN cores can&amp;#39;t change without an overlapping period" />
 			</request>			
 		</test>
