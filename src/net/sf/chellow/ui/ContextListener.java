@@ -540,6 +540,27 @@ public class ContextListener implements ServletContextListener {
 			// takes ages
 			stmt.executeUpdate("alter table hh_datum add last_modified timestamp with time zone not null default 'epoch'");
 			stmt.executeUpdate("alter table hh_datum alter last_modified drop default");
+
+			for (String table : new String[]{"batch", "bill", "bill_type", "channel", "clock_interval", "contract", "cop", "era", "generator_type", "gsp_group", "hh_datum", "llfc", "market_role", "measurement_requirement", "meter_payment_type", "mtc", "participant", "party", "pc", "rate_script", "read_type", "register_read", "site", "site_era", "snag", "source", "ssc", "supply", "tpr", "user", "user_role", "voltage_level"}) {
+			    stmt.execute("alter sequence " + table + "_id_sequence rename to " + table + "_id_seq");				
+			}
+
+			stmt.execute("alter sequence mtc_meter_type_id_sequence rename to meter_type_id_seq");
+
+			stmt.execute("alter table \"user\" alter column id set default nextval('user_id_seq');");
+
+			for (String table : new String[]{"batch", "bill", "bill_type", "channel", "clock_interval", "contract", "cop", "era", "generator_type", "gsp_group", "hh_datum", "llfc", "market_role", "measurement_requirement", "meter_payment_type", "meter_type", "mtc", "participant", "party", "pc", "rate_script", "read_type", "register_read", "site", "site_era", "snag", "source", "ssc", "supply", "tpr", "user_role", "voltage_level"}) {
+			    stmt.execute("alter table " + table + " alter column id set default nextval('" + table + "_id_seq');");
+			}
+
+			stmt.execute("alter table batch alter column contract_id set not null;");
+			stmt.execute("alter table bill alter column batch_id set not null;");
+			
+			stmt.execute("alter table bill alter column batch_id set not null;");
+			stmt.execute("alter table bill alter column batch_id set not null;");
+			
+			stmt.executeUpdate("create index hh_datum_last_modified_idx on hh_datum (last_modified);");
+			stmt.executeUpdate("create index hh_datum_start_date_idx on hh_datum (start_date);");
 			stmt.executeUpdate("commit");
 			con.setAutoCommit(false);
 		} catch (SQLException sqle) {
