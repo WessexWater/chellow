@@ -624,7 +624,7 @@ try:
             era_bundle['imp_shared_supplier_accounts'] = sess.query(Supply).from_statement("select distinct supply.* from era, supply where era.supply_id = supply.id and era.supply_id != :supply_id and era.imp_supplier_account = :account and era.imp_supplier_contract_id = :contract_id").params(supply_id=supply.id, account=era.imp_supplier_account, contract_id=era.imp_supplier_contract_id).all()
 
         if exp_mpan_core is not None:
-            era_bundle['exp_shared_supplier_accounts'] = sess.query(Supply).from_statement("select distinct supply.* from era, supply where era.supply_id = supply.id and era.supply_id != :supply_id and era.exp_supplier_account = :account and era.exp_supplier_contract_id = :contract_id").params(supply_id=supply.id, account=era.exp_supplier_account, contract=era.exp_supplier_contract_id).all()
+            era_bundle['exp_shared_supplier_accounts'] = sess.query(Supply).join(Era).filter(Era.supply != supply, Era.exp_supplier_account == era.exp_supplier_account, Era.exp_supplier_contract == era.exp_supplier_contract).all()
         if era.pc.code != '00':
             inner_headers = [tpr for tpr in sess.query(Tpr).from_statement("select tpr.* from measurement_requirement, tpr where measurement_requirement.tpr_id = tpr.id and measurement_requirement.ssc_id = :ssc_id order by tpr.code").params(ssc_id=era.ssc.id).all()]
             if era.pc.code in ['05', '06', '07', '08']:
