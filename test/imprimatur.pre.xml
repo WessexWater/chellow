@@ -1084,19 +1084,19 @@ def totalElement(account, startDate, finishDate):
 		</test>
 		<test name="Batches">
 			<!-- Create a new batch -->
-			<request path="/chellow/supplier-contracts/51/batches/"
-				method="post">
+			<request path="/chellow/reports/287/output/" method="post">
+				<control name="supplier_contract_id" value="51" />
 				<control name="reference" value="04-003" />
 				<control name="description" value="Contract 4, batch number 3" />
 				<response-code value="303" />
 			</request>
 
 			<!-- Check it gives a good error message for a duplicate name -->
-			<request path="/chellow/supplier-contracts/51/batches/"
-				method="post">
+			<request path="/chellow/reports/287/output/" method="post">
+				<control name="supplier_contract_id" value="51" />
 				<control name="reference" value="04-003" />
 				<control name="description" value="dup batch" />
-				<regex pattern="There's already a batch with that reference\." />
+				<regex pattern="There&amp;#39;s already a batch attached to the contract Half-hourlies 2007 with the reference 04-003\." />
 				<response-code value="400" />
 			</request>
 		</test>
@@ -1167,12 +1167,13 @@ def virtual_bill(supply_source):
 			</request>
 
 			<!-- Create a new batch -->
-			<request path="/chellow/supplier-contracts/54/batches/"
-				method="post">
+			<request path="/chellow/reports/287/output/" method="post">
+				<control name="supplier_contract_id" value="54" />
 				<control name="reference" value="06-002" />
 				<control name="description" value="Bgb batch" />
 				<response-code value="303" />
 			</request>
+			
 			<request path="/chellow/supplier-contracts/54/batches/3/bill-imports/"
 				method="post">
 				<control type="file" name="file" value="bills.bgb.edi" />
@@ -1274,8 +1275,8 @@ def virtual_bill(supply_source):
 			</request>
 		</test>
 		<test name="CSV import">
-			<request path="/chellow/supplier-contracts/51/batches/"
-				method="post">
+			<request path="/chellow/reports/287/output/" method="post">
+				<control name="supplier_contract_id" value="51" />
 				<control name="reference" value="06-004" />
 				<control name="description" value="CSV batch" />
 				<response-code value="303" />
@@ -1853,27 +1854,28 @@ def virtual_bill(supply_source):
 		</test>
 		<test name="Test deleting of supplier contracts">
 			<!-- Create a new supplier contract -->
-			<request path="/chellow/supplier-contracts/" method="post">
-				<control name="participant-id" value="308" /> <!-- RWED -->
+			<request path="/chellow/reports/315/output/" method="post">
+				<control name="participant_id" value="308" /> <!-- RWED -->
 				<control name="name" value="GDF" />
-				<control name="start-year" value="2000" />
-				<control name="start-month" value="01" />
-				<control name="start-day" value="03" />
-				<control name="start-hour" value="00" />
-				<control name="start-minute" value="00" />
+				<control name="start_year" value="2000" />
+				<control name="start_month" value="01" />
+				<control name="start_day" value="03" />
+				<control name="start_hour" value="00" />
+				<control name="start_minute" value="00" />
 
-				<regex pattern="/chellow/supplier-contracts/55/" />
+				<regex pattern="/reports/77/output/\?supplier_contract_id=55" />
 				<response-code value="303" />
 			</request>
 
 			<!-- Now delete the contract -->
-			<request path="/chellow/supplier-contracts/55/" method="post">
+			<request path="/chellow/reports/317/output/" method="post">
+			    <control name="supplier_contract_id" value="55"/>
 				<control name="delete" value="Delete" />
 				<response-code value="303" />
 			</request>
 
 			<!-- Check that it's really gone -->
-			<request path="/chellow/supplier-contracts/55/">
+			<request path="/chellow/reports/317/output/?supplier_contract_id=55">
 				<response-code value="404" />
 			</request>
 		</test>
