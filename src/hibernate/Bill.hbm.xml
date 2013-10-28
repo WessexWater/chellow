@@ -28,12 +28,12 @@
 		</property>
 		<component name="startDate" class="net.sf.chellow.physical.HhStartDate">
 			<property type="timestamp" name="date" index="bill_start_date_idx">
-				<column name="start_date" sql-type="timestamp with time zone" />
+				<column name="start_date" sql-type="timestamp with time zone" not-null="true"/>
 			</property>
 		</component>
 		<component name="finishDate" class="net.sf.chellow.physical.HhStartDate">
 			<property type="timestamp" name="date" index="bill_finish_date_idx">
-				<column name="finish_date" sql-type="timestamp with time zone" />
+				<column name="finish_date" sql-type="timestamp with time zone" not-null="true"/>
 			</property>
 		</component>
 		<property name="net" type="big_decimal">

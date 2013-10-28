@@ -352,9 +352,9 @@ Format                 | Extension
 -----------------------|----------
 EDF Energy Proprietary | mm
 CSV                    | csv
-BGB EDI File           | bgb.edi
-SSE EDI File           | sse.edi
-GDF CSV                | gdf.csv
+BGB EDI File           | bgb_edi
+SSE EDI File           | sse_edi
+GDF CSV                | gdf_csv
 
 #### CSV Format
 
@@ -367,7 +367,7 @@ N - Normal, W - Withdrawn or F -Final |                   |       |             
 
 #### Read Types
 
-Chellow Code | Chellow Description | sse.edi Code | sse.edi Description                      | bgb.edi Code | bgb.edi Description
+Chellow Code | Chellow Description | sse_edi Code | sse_edi Description                      | bgb.edi Code | bgb.edi Description
 -------------|---------------------|--------------|------------------------------------------|--------------|-------------------------
 N            | Normal              | 00           | Normal Reading                           | 00           | Normal Reading - Default
 N3           | Normal 3rd Party    | 09           | Third Party Normal Reading               |              |

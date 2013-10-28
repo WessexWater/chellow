@@ -3832,12 +3832,12 @@ sess = None
 try:
     sess = session()
     if inv.getRequest().getMethod() == 'GET':
-        read_id = inv.getLong('read_id')
+        read_id = inv.getLong('supplier_read_id')
         read = RegisterRead.get_by_id(sess, read_id)
         render(inv, template, make_fields(sess, read))
     else:
         set_read_write(sess)
-        read_id = inv.getLong('read_id')
+        read_id = inv.getLong('supplier_read_id')
         read = RegisterRead.get_by_id(sess, read_id)
         if inv.hasParameter('update'):
             tpr_id = inv.getLong("tpr_id")
@@ -4323,7 +4323,7 @@ from net.sf.chellow.billing import Contract
 from net.sf.chellow.physical import HhStartDate
 
 contract_id = inv.getLong('hhdc-contract-id')
-hidden_days = inv.getLong('hidden-days')
+hidden_days = inv.getLong('hidden_days')
 if not inv.isValid():
     raise UserException()
 contract = Contract.getHhdcContract(contract_id)
@@ -6004,7 +6004,7 @@ sess = None
 try:
     sess = session()
     rate_script_id = inv.getLong('dno_rate_script_id')
-    rate_script = RateScript.get_by_id(sess, rate_script_id)
+    rate_script = RateScript.get_dno_by_id(sess, rate_script_id)
     render(inv, template, {'rate_script': rate_script})
 finally:
     sess.close()]]></value>
@@ -6344,18 +6344,18 @@ finally:
         </tr>
         <tr>
           <th>Start Date</th>
-          <td>{{ rate_scripts[0].start_date|hh_format }}</td>
+          <td>{{rate_scripts[0].start_date|hh_format}}</td>
         </tr>
         <tr>
           <th>Finish Date</th>
-          <td>{{ rate_scripts[0].start_date|hh_format }}</td>
+          <td>{{rate_scripts[-1].finish_date|hh_format}}</td>
         </tr>
       </tbody>
     </table>
     <br />
     <table>
       <caption>
-        Rate Scripts [<a href="{{ context_path }}/supplier-contracts/{{ contract.id }}/rate-scripts/">add</a>]
+        Rate Scripts [<a href="{{context_path}}/reports/325/output/?supplier_contract_id={{contract.id}}">add</a>]
       </caption>
       <thead>
         <tr>
@@ -6368,10 +6368,10 @@ finally:
         {% for rate_script in rate_scripts %}
           <tr>
             <td>
-              <a href="{{ context_path }}/reports/79/output/?rate_script_id={{ rate_script.id }}">view</a>
+              <a href="{{context_path}}/reports/79/output/?supplier_rate_script_id={{rate_script.id}}">view</a>
             </td>
-            <td>{{ rate_script.start_date|hh_format }}</td>
-            <td>{{ rate_script.finish_date|hh_format }}</td>
+            <td>{{rate_script.start_date|hh_format}}</td>
+            <td>{{rate_script.finish_date|hh_format}}</td>
           </tr>
         {% endfor %}
       </tbody>
@@ -6430,7 +6430,7 @@ finally:
 		<value><![CDATA[report]]></value>
 		<value><![CDATA[79]]></value>
 		<value><![CDATA[true]]></value>
-		<value><![CDATA[Supplier Contract Rate Script]]></value>
+		<value><![CDATA[Supplier Rate Script]]></value>
 		<value><![CDATA[from net.sf.chellow.monad import Monad
 from sqlalchemy.orm import joinedload_all
 
@@ -6442,8 +6442,8 @@ Monad.getUtils()['imprt'](globals(), {
 sess = None
 try:
     sess = session()
-    rate_script_id = inv.getLong('rate_script_id')
-    rate_script = RateScript.get_by_id(sess, rate_script_id)
+    rate_script_id = inv.getLong('supplier_rate_script_id')
+    rate_script = RateScript.get_supplier_by_id(sess, rate_script_id)
     render(inv, template, {'rate_script': rate_script})
 finally:
     if sess is not None:
@@ -6463,9 +6463,10 @@ finally:
       <a href="{{ context_path }}/reports/1/output/">Chellow</a> &gt;
       <a href="{{ context_path }}/reports/75/output/">Supplier Contracts</a>
       &gt;
-      <a href="{{ context_path }}/reports/77/output/?supplier_contract_id={{ rate_script.contract.id }}">{{ rate_script.contract.name }}</a> &gt; Rate Script
-      {{ rate_script.id }} [<a
-      href="{{ context_path }}/supplier-contracts/{{ rate_script.contract.id }}/rate-scripts/{{ rate_script.id }}">edit</a>]
+      <a href="{{context_path}}/reports/77/output/?supplier_contract_id={{rate_script.contract.id}}">{{rate_script.contract.name}}</a> &gt; Rate Script
+      {{rate_script.start_date|hh_format}}
+      [<a
+      href="{{context_path}}/reports/319/output/?supplier_rate_script_id={{ rate_script.id}}">edit</a>]
     </p>
     <br />
     {% if messages %}
@@ -6489,7 +6490,7 @@ finally:
 
     <h2>Script</h2>
 
-    <pre>{{ rate_script.script }}</pre>
+    <pre>{{rate_script.script}}</pre>
   </body>
 </html>]]></value>
 	</line>
@@ -6762,7 +6763,7 @@ for cop in Hiber.session().createQuery("from Cop cop order by cop.code").list():
 		<value><![CDATA[report]]></value>
 		<value><![CDATA[87]]></value>
 		<value><![CDATA[true]]></value>
-		<value><![CDATA[Supplier Contract Import Virtual Bills]]></value>
+		<value><![CDATA[Supplier Import Virtual Bills]]></value>
 		<value><![CDATA[from net.sf.chellow.monad import Hiber, UserException
 from java.util import GregorianCalendar, TimeZone, Locale, Calendar, Date
 from net.sf.chellow.physical import HhStartDate, Supply
@@ -6904,7 +6905,7 @@ pw.close()]]></value>
 		<value><![CDATA[report]]></value>
 		<value><![CDATA[89]]></value>
 		<value><![CDATA[true]]></value>
-		<value><![CDATA[Supplier Contract Batches]]></value>
+		<value><![CDATA[Supplier Batches]]></value>
 		<value><![CDATA[from net.sf.chellow.monad import Monad
 
 Monad.getUtils()['imprt'](globals(), {
@@ -6978,7 +6979,7 @@ finally:
 		<value><![CDATA[report]]></value>
 		<value><![CDATA[91]]></value>
 		<value><![CDATA[true]]></value>
-		<value><![CDATA[Supplier Contract Batch]]></value>
+		<value><![CDATA[Supplier Batch]]></value>
 		<value><![CDATA[from net.sf.chellow.monad import Monad
 from sqlalchemy.orm import joinedload_all
 from datetime import datetime
@@ -7068,10 +7069,10 @@ finally:
     <br>
     <ul>
       <li>
-        <a href="{{context_path}}/reports/111/output/?supplier_batch_id={{batch.id}}">Check Bills</a>
+        <a href="{{context_path}}/reports/111/output/?batch_id={{batch.id}}">Check Bills</a>
       </li>
       <li>
-        <a href="{{context_path}}/supplier-contracts/{{batch.contract.id}}/batches/{{batch.id}}/bill-imports/">Bill Imports</a>
+        <a href="{{context_path}}/reports/321/output/?supplier_batch_id={{batch.id}}">Bill Imports</a>
       </li>
     </ul>
     <table>
@@ -7806,7 +7807,7 @@ source.setAttribute('debug', pw.toString())]]></value>
 		<value><![CDATA[report]]></value>
 		<value><![CDATA[103]]></value>
 		<value><![CDATA[true]]></value>
-		<value><![CDATA[Supplier Contract 3rd Party Virtual Bills]]></value>
+		<value><![CDATA[Supplier 3rd Party Virtual Bills]]></value>
 		<value><![CDATA[from net.sf.chellow.monad import Hiber
 from java.util import GregorianCalendar, TimeZone, Locale, Calendar
 from net.sf.chellow.physical import MpanCore, HhStartDate, Supply
@@ -7884,7 +7885,7 @@ pw.close()]]></value>
 		<value><![CDATA[report]]></value>
 		<value><![CDATA[105]]></value>
 		<value><![CDATA[true]]></value>
-		<value><![CDATA[Supplier Contract Bill]]></value>
+		<value><![CDATA[Supplier Bill]]></value>
 		<value><![CDATA[from net.sf.chellow.monad import Monad
 from sqlalchemy.orm import joinedload_all
 import collections
@@ -8059,7 +8060,7 @@ finally:
         {% for read in register_reads %}
           <tr>
             <td>
-              [<a href="{{context_path}}/reports/31/output/?read_id={{read.id}}">edit</a>]
+              [<a href="{{context_path}}/reports/31/output/?supplier_read_id={{read.id}}">edit</a>]
             </td>
             <td>{{read.mpan_str}}</td>
             <td>{{read.coefficient}}</td>
@@ -8232,7 +8233,7 @@ finally:
 		<value><![CDATA[report]]></value>
 		<value><![CDATA[109]]></value>
 		<value><![CDATA[true]]></value>
-		<value><![CDATA[Supplier Contract Displaced Virtual Bills]]></value>
+		<value><![CDATA[Supplier Displaced Virtual Bills]]></value>
 		<value><![CDATA[from net.sf.chellow.monad import Hiber, UserException
 from java.util import GregorianCalendar, TimeZone, Locale, Calendar, Date
 from net.sf.chellow.physical import HhStartDate, Supply, Site
@@ -11273,7 +11274,7 @@ for bill in Hiber.session().createQuery("from Bill bill where bill.account = :ac
 		<value><![CDATA[report]]></value>
 		<value><![CDATA[165]]></value>
 		<value><![CDATA[true]]></value>
-		<value><![CDATA[Supplier Contract Bill Edit]]></value>
+		<value><![CDATA[Supplier Bill Edit]]></value>
 		<value><![CDATA[from net.sf.chellow.monad import Monad
 from sqlalchemy.orm import joinedload_all
 from sqlalchemy.sql.expression import text
@@ -11392,22 +11393,22 @@ finally:
           <br>
           <fieldset>
             <legend>Finish Date</legend>
-            {{input_date('finish', bill.start_date)}}
+            {{input_date('finish', bill.finish_date)}}
           </fieldset>
           <br>
           <label>
-            kWh {{input_text('kwh', bill.kwh)}}
+            kWh {{input_text('kwh', '' ~ bill.kwh)}}
           </label>
           <br>
           <label>
-            Net {{input_text('net', bill.net)}}
+            Net {{input_text('net', '' ~ bill.net)}}
           </label>
           <br>
           <label>
-            VAT {{input_text('vat', bill.vat)}}
+            VAT {{input_text('vat', '' ~ bill.vat)}}
           </label>
           <br>
-          <label>Gross {{input_text('gross', bill.gross)}}</label>
+          <label>Gross {{input_text('gross', '' ~ bill.gross)}}</label>
           <br>
           <label>Type
             <select name="bill_type_id">
@@ -13032,7 +13033,7 @@ for key in properties.propertyNames():
                 </table>
                 <br/>
                 <ul>
-                    <li>[<a href="{/source/request/@context-path}/mop-contracts/{/source/batch/mop-contract/@id}/batches/{/source/batch/@id}/bill-imports/">Bill Imports</a>]</li>
+                    <li>[<a href="{/source/request/@context-path}/reports/331/output/?mop_batch_id={/source/batch/@id}">Bill Imports</a>]</li>
                 </ul>
                 <table>
                     <caption>Bills [<a href="{/source/request/@context-path}/mop-contracts/{/source/batch/mop-contract/@id}/batches/{/source/batch/@id}/bills/">edit</a>]</caption>
@@ -13669,7 +13670,7 @@ finally:
         <a href="{{ context_path }}/reports/111/output/?batch_id={{ batch.id }}">Check Bills</a>
       </li>
       <li>
-        [<a href="{{ context_path }}/hhdc-contracts/{{ batch.contract.id }}/batches/{{ batch.id }}/bill-imports/">bill imports</a>]
+        [<a href="{{context_path}}/reports/327/output/?hhdc_batch_id={{batch.id}}">Bill Imports</a>]
       </li>
     </ul>
     <table>
@@ -13839,7 +13840,7 @@ inv.getResponse().setContentType("text/csv")
 inv.getResponse().setHeader('Content-Disposition', 'attachment; filename="output.csv"')
 pw = inv.getResponse().getWriter()
 
-pw.println("Chellow Supply Id, MPAN Core,Site Id,Site Name,From,To,NHH Breakdown,HH Normal Days, AMR Normal Days, NHH Normal Days, Unmetered Normal Days, Total Normal Days,Max Normal Days,Data Type")
+pw.println("Chellow Supply Id, MPAN Core, Site Id, Site Name, From, To, NHH Breakdown, Actual HH Normal Days, Actual AMR Normal Days, Actual NHH Normal Days, Actual Unmetered Normal Days, Max HH Normal Days, Max AMR Normal Days, Max NHH Normal Days, Max Unmetered Normal Days, Total Actual Normal Days, Total Max Normal Days,Data Type, HH kWh, AMR kWh, NHH kWh, Unmetered kwh, Total kWh")
 pw.flush()
 
 cal = MonadDate.getCalendar()
@@ -13899,11 +13900,12 @@ hh_count_query = Hiber.session().createQuery("select count(datum.value) from HhD
 meter_types = ['hh', 'amr', 'nhh', 'unmetered']
 
 while supplies.next():
-    kwh = 0
+    kwh = dict([(mtype, 0) for mtype in meter_types])
     normal_days = dict([(mtype, 0) for mtype in meter_types])
+    max_normal_days = dict([(mtype, 0) for mtype in meter_types])
+
     breakdown = ''
     supply = supplies.get(0)
-    max_normal_days = 0
     chunk_start = year_finish
     chunk_finish = year_start
 
@@ -13940,12 +13942,12 @@ while supplies.next():
         if period_finish.after(chunk_finish):
             chunk_finish = period_finish
 
-        #p w.println("Doing a generation from " + str(period_start) + " to " + str(period_finish))
+        #p w.println("Doing a era from " + str(period_start) + " to " + str(period_finish))
 
-        max_normal_days += float(period_finish.getDate().getTime() + (1000 * 60 * 30) - period_start.getDate().getTime()) / (1000 * 60 * 60 * 24)
+        max_normal_days[meter_type] += float(period_finish.getDate().getTime() + (1000 * 60 * 30) - period_start.getDate().getTime()) / (1000 * 60 * 60 * 24)
 
-        mpan_core = era.impMpanCore
-        site = Hiber.session().createQuery("select siteEra.site from SiteEra siteEra where siteEra.isPhysical is true and siteEra.era = :era").setEntity('era', era).uniqueResult()
+        mpan_core = era.getImpMpanCore()
+        site = Hiber.session().createQuery("select site_era.site from SiteEra site_era where site_era.isPhysical is true and site_era.era = :era").setEntity('era', era).uniqueResult()
         if meter_type == 'nhh':
 
             read_list = []
@@ -13977,7 +13979,7 @@ while supplies.next():
 
                         pres_read = pres_reads.get(0)
                         pres_date = pres_read.getPresentDate()
-                        pres_msn = pres_read.msn
+                        pres_msn = pres_read.getMsn()
                         read_key = '_'.join([str(pres_date), pres_msn]) 
                         if read_key in read_keys:
                             continue
@@ -13995,7 +13997,7 @@ while supplies.next():
                     while prime_prev_read is None and prev_reads.next():
                         prev_read = prev_reads.get(0)
                         prev_date = prev_read.getPreviousDate()
-                        prev_msn = prev_read.msn
+                        prev_msn = prev_read.getMsn()
                         read_key = '_'.join([str(prev_date), prev_msn])
                         if read_key in read_keys:
                             continue
@@ -14054,13 +14056,14 @@ while supplies.next():
                                 else:
                                     continue
                             
-                                kwh =  end_val - initial_val
+                                kwh_diff =  end_val - initial_val
 
-                                if kwh < 0:
+                                if kwh_diff < 0:
                                     digits = int(Math.log10(initial_val)) + 1
-                                    kwh = 10 ** digits + kwh
+                                    kwh_diff = 10 ** digits + kwh_diff
+                                kwh[meter_type] += kwh_diff
 
-                                tprs[tpr_code] = float(kwh) / num_hh
+                                tprs[tpr_code] = float(kwh_diff) / num_hh
 
                             pairs.append({'start-date': pair_start_date, 'finish-date': pair_finish_date, 'tprs': tprs})
                         
@@ -14085,20 +14088,22 @@ while supplies.next():
         elif meter_type == 'hh':
             kwh_res = hh_kwh_query.setEntity('supply', supply).setTimestamp('startDate', period_start.getDate()).setTimestamp('finishDate', period_finish.getDate()).uniqueResult()
             if kwh_res is not None:
-                kwh += kwh_res.doubleValue()
+                kwh[meter_type] += kwh_res.doubleValue()
             normal_days[meter_type] += float(hh_count_query.setEntity('supply', supply).setTimestamp('startDate', period_start.getDate()).setTimestamp('finishDate', period_finish.getDate()).uniqueResult()) / 48
         elif meter_type == 'amr':
             kwh_res = hh_kwh_query.setEntity('supply', supply).setTimestamp('startDate', period_start.getDate()).setTimestamp('finishDate', period_finish.getDate()).uniqueResult()
             if kwh_res is not None:
-                kwh += kwh_res.doubleValue()
+                kwh[meter_type] += kwh_res.doubleValue()
             normal_days[meter_type] += float(hh_count_query.setEntity('supply', supply).setTimestamp('startDate', period_start.getDate()).setTimestamp('finishDate', period_finish.getDate()).uniqueResult()) / 48
         elif meter_type == 'unmetered':
             normal_days[meter_type] += (period_finish.getDate().getTime() + (1000 * 60 * 30) - period_start.getDate().getTime()) / (1000 * 60 * 60 * 24)
 
     # for full year 183
     total_normal_days = sum(normal_days.values())
-    is_normal = float(total_normal_days) / max_normal_days >= float(183) / 365
-    vals = [mpan_core, site.getCode(), site.getName(), year_start, year_finish, breakdown] + [normal_days[type] for type in meter_types] + [total_normal_days, max_normal_days, "Actual" if is_normal else "Estimated"]
+    total_max_normal_days = sum(max_normal_days.values())
+    is_normal = float(total_normal_days) / total_max_normal_days >= float(183) / 365
+    total_kwh = sum(kwh.values())
+    vals = [mpan_core, site.getCode(), site.getName(), year_start, year_finish, breakdown] + [normal_days[type] for type in meter_types] + [max_normal_days[type] for type in meter_types] + [total_normal_days, total_max_normal_days, "Actual" if is_normal else "Estimated"] + [kwh[type] for type in meter_types] + [total_kwh]
     pw.println(','.join('"' + str(val) + '"' for val in vals))
     pw.flush()
     Hiber.session().clear()
@@ -17717,7 +17722,7 @@ sess = None
 try:
     sess = session()
     rate_script_id = inv.getLong('rate_script_id')
-    rate_script = RateScript.get_by_id(sess, rate_script_id)
+    rate_script = RateScript.get_non_core_by_id(sess, rate_script_id)
     render(inv, template, {'rate_script': rate_script})
 except NotFoundException, e:
     inv.sendNotFound(str(e))
@@ -17788,12 +17793,12 @@ try:
     sess = session()
     if inv.getRequest().getMethod() == 'GET':
         rate_script_id = inv.getLong('rate_script_id')
-        rate_script = RateScript.get_by_id(sess, rate_script_id)
+        rate_script = RateScript.get_non_core_by_id(sess, rate_script_id)
         render(inv, template, {'rate_script': rate_script})
     else:
         set_read_write(sess)
         rate_script_id = inv.getLong('rate_script_id')
-        rate_script = RateScript.get_by_id(sess, rate_script_id)
+        rate_script = RateScript.get_non_core_by_id(sess, rate_script_id)
         contract = rate_script.contract
         if inv.hasParameter('delete'):
             contract.delete_rate_script(sess, rate_script)
@@ -18540,12 +18545,12 @@ try:
     sess = session()
     if inv.getRequest().getMethod() == 'GET':
         rate_script_id = inv.getLong('dno_rate_script_id')
-        rate_script = RateScript.get_by_id(sess, rate_script_id)
+        rate_script = RateScript.get_dno_by_id(sess, rate_script_id)
         render(inv, template, {'rate_script': rate_script})
     else:
         set_read_write(sess)
         rate_script_id = inv.getLong('dno_rate_script_id')
-        rate_script = RateScript.get_by_id(sess, rate_script_id)
+        rate_script = RateScript.get_dno_by_id(sess, rate_script_id)
         contract = rate_script.contract
         if inv.hasParameter('delete'):
             contract.delete_rate_script(sess, rate_script)
@@ -18659,7 +18664,7 @@ finally:
 		<value><![CDATA[report]]></value>
 		<value><![CDATA[287]]></value>
 		<value><![CDATA[true]]></value>
-		<value><![CDATA[Supplier Contract Batch Add]]></value>
+		<value><![CDATA[Supplier Batch Add]]></value>
 		<value><![CDATA[from net.sf.chellow.monad import Monad
 
 Monad.getUtils()['imprt'](globals(), {
@@ -18770,7 +18775,7 @@ finally:
 		<value><![CDATA[report]]></value>
 		<value><![CDATA[289]]></value>
 		<value><![CDATA[true]]></value>
-		<value><![CDATA[Supplier Contract Batch Edit]]></value>
+		<value><![CDATA[Supplier Batch Edit]]></value>
 		<value><![CDATA[from net.sf.chellow.monad import Monad
 from sqlalchemy.orm import joinedload_all
 from sqlalchemy.sql.expression import text
@@ -18806,11 +18811,12 @@ try:
             inv.sendSeeOther("/reports/91/output/?supplier_batch_id=" +
                     str(batch.id))
         elif inv.hasParameter("delete"):
+            contract_id = batch.contract.id
             batch.delete(sess)
             sess.commit()
-            inv.sendSeeOther("/reports/89/output/?supplier_contract_id=" + str(batch.contract.id))
+            inv.sendSeeOther("/reports/89/output/?supplier_contract_id=" + str(contract_id))
 except UserException, e:
-    render(inv, template, make_fields(sess, batch, e))
+    render(inv, template, make_fields(sess, batch, e), 400)
 finally:
     sess.close()]]>
 		</value>
@@ -20761,8 +20767,8 @@ finally:
 		<value><![CDATA[from net.sf.chellow.monad import Monad
 
 Monad.getUtils()['imprt'](globals(), {
-        'db': ['Contract', 'session', 'Batch', 'BillType', 'Bill', 'set_read_write'],
-        'utils': ['UserException', 'prev_hh', 'next_hh', 'hh_after', 'hh_before', 'HH'],
+        'db': ['Contract', 'session', 'Batch', 'Supply', 'BillType', 'Bill', 'set_read_write'],
+        'utils': ['UserException', 'prev_hh', 'next_hh', 'hh_after', 'hh_before', 'HH', 'parse_mpan_core', 'form_date', 'form_decimal', 'validate_hh_start'],
         'templater': ['render']})
 
 
@@ -20796,11 +20802,13 @@ try:
         net = form_decimal(inv, "net")
         vat = form_decimal(inv, "vat")
         gross = form_decimal(inv, "gross")
-        bill_type_id = form_decimal(inv, "bill_type_id")
-        bill_type = BillType.get_by_id(bill_type_id)
-        breakdown = inv.getString("breakdown")
+        bill_type_id = inv.getLong("bill_type_id")
+        bill_type = BillType.get_by_id(sess, bill_type_id)
+        breakdown_str = inv.getString("breakdown")
 
-        bill = batch.insert_bill(sess, Supply.get_by_mpan_core(mpan_core), account, reference, issue_date, start_date, finish_date, kwh, net, vat, gross, bill_type_id, breakdown)
+        breakdown = eval(breakdown_str)
+        bill_type = BillType.get_by_id(sess, bill_type_id)
+        bill = batch.insert_bill(sess, account, reference, issue_date, start_date, finish_date, kwh, net, vat, gross, bill_type, breakdown, Supply.get_by_mpan_core(sess, mpan_core))
         sess.commit()
         inv.sendSeeOther("/reports/105/output/?supplier_bill_id=" + str(bill.id))
 
@@ -20894,7 +20902,7 @@ finally:
         </select>
         <br>
         <label>Breakdown</label>
-        {{input_text('breakdown')}}
+        {{input_text('breakdown', '{}')}}
         <br>
         <br>
         <input type="submit" value="Add">
@@ -21009,11 +21017,18 @@ finally:
 		<value><![CDATA[Supplier Contract Edit]]></value>
 		<value><![CDATA[from net.sf.chellow.monad import Monad
 from sqlalchemy.orm import joinedload_all
+from java.lang import System
 
 Monad.getUtils()['imprt'](globals(), {
-        'db': ['Contract', 'Party', 'RateScript', 'set_read_write', 'session'], 
+        'db': ['Contract', 'Party', 'MarketRole', 'Participant', 'set_read_write', 'session'], 
         'utils': ['UserException'],
         'templater': ['render']})
+
+def make_fields(sess, contract, message=None):
+    parties = sess.query(Party).join(MarketRole, Participant).filter(MarketRole.code=='X').order_by(Participant.code).all()
+    messages = None if message is None else [str(message)]
+    return {'contract': contract, 'messages': messages, 'parties': parties}
+
 
 sess = None
 try:
@@ -21021,7 +21036,7 @@ try:
     if inv.getRequest().getMethod() == 'GET':
         contract_id = inv.getLong('supplier_contract_id')
         contract = Contract.get_supplier_by_id(sess, contract_id)
-        render(inv, template, {'contract': contract})
+        render(inv, template, make_fields(sess, contract))
     else:
         set_read_write(sess)
         contract_id = inv.getLong('supplier_contract_id')
@@ -21031,10 +21046,11 @@ try:
             sess.commit()
             inv.sendSeeOther('/reports/75/output/')
         else:
+            party_id = inv.getLong('party_id')
+            party = Party.get_by_id(sess, party_id)
             name = inv.getString('name')
             charge_script = inv.getString('charge_script')
-            contract.update(sess, False, name, contract.party,
-                    charge_script, '{}')
+            contract.update(sess, False, name, party, charge_script, '{}')
             sess.commit()
             inv.sendSeeOther('/reports/77/output/?supplier_contract_id='
                 + str(contract.id))
@@ -21042,7 +21058,7 @@ except UserException, e:
     sess.rollback()
     if str(e).startswith("There isn't a contract"):
         inv.sendNotFound(str(e))
-    render(inv, template, {'contract': contract, 'messages': [str(e)]})
+    render(inv, template, make_fields(sess, contract, e), 400)
 finally:
     sess.close()]]>
 		</value>
@@ -21087,6 +21103,13 @@ finally:
           <legend>Update Contract</legend>
           <input type="hidden" name="supplier_contract_id" value="{{contract.id}}">
           <br>
+          <label>Party</label>
+          <select name="party_id">
+            {% for party in parties %}
+              {{ input_option('party_id', party.id, party.participant.code + ' : ' + party.name, contract.party.id) }}
+            {% endfor %}
+          </select>
+          <br>
           <label>Name</label>
           {{input_text('name', contract.name)}}
           <br>
@@ -21112,6 +21135,1027 @@ finally:
           <input type="submit" name="delete" value="Delete">
         </fieldset>
       </form>
+    {% endif %}
+  </body>
+</html>]]>
+		</value>
+	</line>
+    <line>
+		<value><![CDATA[insert]]></value>
+		<value><![CDATA[report]]></value>
+		<value><![CDATA[319]]></value>
+		<value><![CDATA[true]]></value>
+		<value><![CDATA[Supplier Rate Script Edit]]></value>
+		<value><![CDATA[from net.sf.chellow.monad import Monad
+from sqlalchemy.orm import joinedload_all
+
+Monad.getUtils()['imprt'](globals(), {
+        'db': ['Contract', 'Party', 'RateScript', 'set_read_write', 'session'], 
+        'utils': ['UserException', 'NotFoundException', 'form_date'],
+        'templater': ['render']})
+
+
+sess = None
+try:
+    sess = session()
+    if inv.getRequest().getMethod() == 'GET':
+        rate_script_id = inv.getLong('supplier_rate_script_id')
+        rate_script = RateScript.get_supplier_by_id(sess, rate_script_id)
+        render(inv, template, {'rate_script': rate_script})
+    else:
+        set_read_write(sess)
+        rate_script_id = inv.getLong('supplier_rate_script_id')
+        rate_script = RateScript.get_supplier_by_id(sess, rate_script_id)
+        contract = rate_script.contract
+        if inv.hasParameter('delete'):
+            contract.delete_rate_script(sess, rate_script)
+            sess.commit()
+            inv.sendSeeOther('/reports/77/output/?supplier_contract_id='
+                + str(contract.id))
+        else:
+            script = inv.getString('script')
+            start_date = form_date(inv, 'start')
+            has_finished = inv.getBoolean('has_finished')
+            finish_date = form_date(inv, 'finish') if has_finished else None
+            contract.update_rate_script(sess, rate_script, start_date, finish_date, script)
+            sess.commit()
+            inv.sendSeeOther('/reports/79/output/?supplier_rate_script_id='
+                    + str(rate_script.id))
+except NotFoundException, e:
+    inv.sendNotFound(str(e))
+finally:
+    sess.close()]]>
+		</value>
+		<value><![CDATA[<!doctype html>
+<html>
+  <head>
+    <link rel="stylesheet" type="text/css"
+      href="{{context_path}}/reports/19/output/">
+    <title>
+      Chellow &gt; Non-core Contracts &gt;
+      {{rate_script.contract.name}} &gt; Rate Scripts &gt;
+      {{rate_script.start_date|hh_format}} &gt; Edit
+    </title>
+  </head>
+  <body>
+    <p>
+      <a href="{{context_path}}/reports/1/output/">Chellow</a> &gt;
+      <a href="{{context_path}}/reports/75/output/">Supplier Contracts</a> &gt;
+      <a href="{{context_path}}/reports/77/output/?supplier_contract_id={{rate_script.contract.id}}">{{rate_script.contract.name}}</a> &gt;
+      <a href="{{context_path}}/reports/79/output/?supplier_rate_script_id={{rate_script.id}}">Rate Script {{rate_script.start_date|hh_format}}</a> &gt; Edit
+    </p>
+    <br />
+    {% if messages %}
+      <ul>
+        {% for message in messages %}
+          <li>{{ message }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+    {% if request.getMethod() == 'GET' and
+        request.getParameter('delete') %}
+      <form method="post" action=".">
+        <fieldset>
+          <legend>
+            Are you sure you want to delete this rate script?
+          </legend>
+          <input type="hidden" name="supplier_rate_script_id" value="{{rate_script.id}}">
+          <input type="submit" name="delete" value="Delete">
+        </fieldset>
+      </form>
+      <p>
+        <a href=".">Cancel</a>
+      </p>
+    {% else %}
+      <form action="." method="post">
+        <fieldset>
+          <legend>Update Rate Script</legend>
+          <input type="hidden" name="supplier_rate_script_id"
+              value="{{rate_script.id}}">
+          <br>
+          <fieldset>
+            <legend>Start date</legend>
+            {{ input_date('start', rate_script.start_date) }}
+          </fieldset>
+          <br />
+          <fieldset>
+            <legend>Finish date</legend>
+            <label>
+              Ended? {{ input_checkbox('has_finished', rate_script.finish_date != None) }}
+            </label>
+            {{ input_date('finish', rate_script.finish_date) }}
+          </fieldset>
+          <br>
+          <br>
+          Script
+          <br>
+          {{ input_textarea('script', rate_script.script, 40, 80) }}
+          <br />
+      <br />
+      <input type="submit" value="Update">
+          <input type="reset" value="Reset">
+        </fieldset>
+      </form>
+      <br />
+      <form action=".">
+        <fieldset>
+          <legend>Delete this Rate Script</legend>
+          <input type="hidden" name="rate_script_id"
+              value="{{ rate_script.id }}">
+          <input type="submit" name="delete" value="Delete">
+        </fieldset>
+      </form>
+    {% endif %}
+  </body>
+</html>]]>
+		</value>
+	</line>
+    <line>
+		<value><![CDATA[insert]]></value>
+		<value><![CDATA[report]]></value>
+		<value><![CDATA[321]]></value>
+		<value><![CDATA[true]]></value>
+		<value><![CDATA[Supplier Bill Imports]]></value>
+		<value><![CDATA[from net.sf.chellow.monad import Monad
+from java.lang import System
+from java.io import InputStreamReader
+import StringIO
+
+Monad.getUtils()['imprt'](globals(), {
+        'db': ['Contract', 'session', 'Batch', 'set_read_write'],
+        'utils': ['UserException', 'prev_hh', 'next_hh', 'hh_after', 'hh_before', 'HH'],
+        'templater': ['render'],
+        'bill_import': ['start_bill_importer', 'get_bill_importer_ids', 'get_bill_importer']})
+
+
+def make_fields(sess, batch, message=None):
+    messages = [] if message is None else [str(message)]
+    return {'messages': messages, 'importer_ids': sorted(get_bill_importer_ids(), reverse=True), 'batch': batch}
+
+sess = None
+try:
+    sess = session()
+    if inv.getRequest().getMethod() == 'GET':
+        batch_id = inv.getLong('supplier_batch_id')
+        batch = Batch.get_by_id(sess, batch_id)
+        render(inv, template, make_fields(sess, batch))
+    else:
+        batch_id = inv.getLong('supplier_batch_id')
+        batch = Batch.get_by_id(sess, batch_id)
+        file_item = inv.getFileItem("import_file")
+        stream = InputStreamReader(file_item.getInputStream(), 'utf-8')
+        f = StringIO.StringIO()
+        bt = stream.read()
+        while bt != -1:
+            f.write(chr(bt))
+            bt = stream.read()
+        f.seek(0)
+        id = start_bill_importer(sess, batch.id, file_item.getName(), file_item.getSize(), f)
+        inv.sendSeeOther("/reports/323/output/?importer_id=" + str(id))
+except UserException, e:
+    render(inv, template, make_fields(sess, batch, e), 400)
+finally:
+    if sess is not None:
+        sess.close()]]>
+		</value>
+		<value><![CDATA[<!doctype html>
+<html>
+  <head>
+    <link rel="stylesheet" type="text/css"
+      href="{{ context_path }}/reports/19/output/">
+    <title>
+      Chellow &gt; Supplier Contracts &gt; {{batch.contract.name}} &gt;
+      Batches &gt; {{batch.reference}} &gt; Bill Imports
+    </title>
+  </head>
+  <body>
+    <p>
+      <a href="{{context_path}}/reports/1/output/">Chellow</a> &gt;
+      <a href="{{context_path}}/reports/75/output/">Supplier Contracts</a> &gt;
+      <a href="{{context_path}}/reports/77/output/?supplier_contract_id={{batch.contract.id}}">{{batch.contract.name}}</a> &gt;
+      <a href="{{context_path}}/reports/89/output/?supplier_contract_id={{batch.contract.id}}">Batches</a> &gt;
+      <a href="{{context_path}}/reports/91/output/?supplier_batch_id={{batch.id}}">{{batch.reference}}</a> &gt; Bill Imports
+    </p>
+    <br>
+    {% if messages %}
+      <ul>
+        {% for message in messages %}
+          <li>{{ message }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+    
+    <form enctype="multipart/form-data" method="post" action=".">
+      <fieldset>
+        <input type="hidden" name="supplier_batch_id" value="{{batch.id}}">
+        <legend>Import Bill File</legend>
+        <input type="file" name="import_file" size="45"
+          value="{{request.getParameter('import_file')}}">
+        <input type="submit" value="Import">
+      </fieldset>
+    </form>
+    {% if importer_ids %}
+      <ul>
+        {% for id in importer_ids %}
+          <li>
+            <a href="{{context_path}}/reports/323/output/?importer_id={{id}}">{{id}}</a>
+          </li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+  </body>
+</html>]]>
+		</value>
+	</line>
+    <line>
+		<value><![CDATA[insert]]></value>
+		<value><![CDATA[report]]></value>
+		<value><![CDATA[323]]></value>
+		<value><![CDATA[true]]></value>
+		<value><![CDATA[Supplier Bill Import]]></value>
+		<value><![CDATA[from net.sf.chellow.monad import Monad
+from java.lang import System
+import tempfile
+
+Monad.getUtils()['imprt'](globals(), {
+        'db': ['Contract', 'session', 'Batch', 'set_read_write'],
+        'utils': ['UserException', 'prev_hh', 'next_hh', 'hh_after', 'hh_before', 'HH'],
+        'templater': ['render'],
+        'bill_import': ['get_bill_importer']})
+
+def make_fields(sess, importer, message=None):
+    messages = None if message is None else [str(message)]
+    batch = Batch.get_by_id(sess, importer.batch_id)
+    fields = {'batch': batch, 'messages': messages}
+    if importer is not None:
+        imp_fields = importer.make_fields()
+        if 'successful_bills' in imp_fields and len(imp_fields['successful_bills']) > 0:
+            fields['successful_max_registers'] = max(len(bill['reads']) for bill in imp_fields['successful_bills'])
+        fields.update(imp_fields)
+    return fields
+
+sess = None
+try:
+    sess = session()
+    imp_id = inv.getLong('importer_id')
+    importer = get_bill_importer(imp_id)
+    render(inv, template, make_fields(sess, importer))
+except UserException, e:
+    render(inv, template, make_fields(sess, e), 400)
+finally:
+    if sess is not None:
+        sess.close()]]>
+		</value>
+		<value><![CDATA[<!doctype html>
+<html>
+  <head>
+    <link rel="stylesheet" type="text/css"
+      href="{{context_path}}/reports/19/output/">
+    <title>
+      Chellow &gt; Supplier Contracts &gt; {{batch.contract.name}} &gt;
+      Batches &gt; {{batch.reference}} &gt; Bill Imports &gt; {{importer_id}}
+    </title>
+  </head>
+  <body>
+    <p>
+      <a href="{{context_path}}/reports/1/output/">Chellow</a> &gt;
+      <a href="{{context_path}}/reports/75/output/">Supplier Contracts</a> &gt;
+      <a href="{{context_path}}/reports/77/output/?supplier_contract_id={{batch.contract.id}}">{{batch.contract.name}}</a> &gt;
+      <a href="{{context_path}}/reports/89/output/?supplier_contract_id={{batch.contract.id}}">Batches</a> &gt;
+      <a href="{{context_path}}/reports/91/output/?supplier_batch_id={{batch.id}}">{{batch.reference}}</a> &gt; <a href="{{context_path}}/reports/321/output/?supplier_batch_id={{batch.id}}">Bill Imports</a> &gt; {{importer_id}}
+    </p>
+    <br>
+
+    {% if messages %}
+      <ul>
+        {% for message in messages %}
+          <li>{{ message }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+
+    {% if is_alive %}
+      <p>Still running. Refresh the page to see latest progress.</p>
+    {% endif %}
+
+    <ul>
+      {% for msg in log %}
+        <li>{{msg}}</li>
+      {% endfor %}
+    </ul>
+    
+    {% if failed_bills|length > 0 %}
+      <table>
+        <caption>Failed Bills</caption>
+        <thead>
+          <tr>
+            {% for k, v in failed_bills[0]|dictsort %}
+              <th>{{k}}</th>
+            {% endfor %}
+          </tr>
+        </thead>
+        <tbody>
+          {% for bill in failed_bills %}
+            <tr>
+              {% for k, v in bill|dictsort %}
+                <td>{{bill[k]}}</td>
+              {% endfor %}
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% endif %}
+
+    {% if successful_bills|length > 0 %}
+      <table>
+        <caption>Successful Bills</caption>
+        <thead>
+          <tr>
+            <th>Reference</th>
+            <th>Account</th>
+            <th>Bill Type</th>
+            <th>MPANs</th>
+            <th>Issue Date</th>
+            <th>Start Date</th>
+            <th>Finish Date</th>
+            <th>kWh</th>
+            <th>Net</th>
+            <th>VAT</th>
+            <th>Gross</th>
+            {% for i in range(successful_max_registers) %}
+              <th>R{{loop.index}} MPAN</th>
+              <th>R{{loop.index}} Meter Serial Number</th>
+              <th>R{{loop.index}} Coefficient</th>
+              <th>R{{loop.index}} Units</th>
+              <th>R{{loop.index}} TPR</th>
+              <th>R{{loop.index}} Previous Read Date</th>
+              <th>R{{loop.index}} Previous Read Value</th>
+              <th>R{{loop.index}} Previous Read Type</th>
+              <th>R{{loop.index}} Present Read Date</th>
+              <th>R{{loop.index}} Present Read Value</th>
+              <th>R{{loop.index}} Present Read Type</th>
+            {% endfor %}
+            <th>Breakdown</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for bill in successful_bills %}
+            <tr>
+              <td>{{bill.reference}}</td>
+              <td>{{bill.account}}</td>
+              <td>{{bill.bill_type_code}}</td>
+              <td>{{bill.mpans}}</td>
+              <td>{{bill.issue_date|hh_format}}</td>
+              <td>{{bill.start_date|hh_format}}</td>
+              <td>{{bill.finish_date|hh_format}}</td>
+              <td>{{bill.kwh}}</td>
+              <td>{{bill.net}}</td>
+              <td>{{bill.vat}}</td>
+              <td>{{bill.gross}}</td>
+              {% for read in bill.reads %}
+                <td>{{read.mpan}}</td>
+                <td>{{read.msn}}</td>
+                <td>{{read.coefficient}}</td>
+                <td>{{read.units}}</td>
+                <td>{{read.tpr_code}}</td>
+                <td>{{read.prev_date|hh_format}}</td>
+                <td>{{read.prev_value}}</td>
+                <td>{{read.prev_type_code}}</td>
+                <td>{{read.pres_date|hh_format}}</td>
+                <td>{{read.pres_value}}</td>
+                <td>{{read.pres_type_code}}</td>
+              {% endfor %}
+              <td>{{bill.breakdown}}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+        <p>No bills successfully loaded.</p>
+    {% endif %}
+  </body>
+</html>]]>
+		</value>
+	</line>
+    <line>
+		<value><![CDATA[insert]]></value>
+		<value><![CDATA[report]]></value>
+		<value><![CDATA[325]]></value>
+		<value><![CDATA[true]]></value>
+		<value><![CDATA[Supplier Rate Script Add]]></value>
+		<value><![CDATA[from net.sf.chellow.monad import Monad
+from sqlalchemy.orm import joinedload_all
+from datetime import datetime
+import pytz
+
+Monad.getUtils()['imprt'](globals(), {
+        'db': ['Contract', 'Party', 'RateScript', 'set_read_write', 'session'], 
+        'utils': ['UserException', 'form_date'],
+        'templater': ['render']})
+
+def page_fields(contract, message=None):
+    now = datetime.now(pytz.utc)
+    initial_date = datetime(now.year, now.month, 1, tzinfo=pytz.utc)
+    messages = None if message is None else [message]
+    return {'contract': contract, 'initial_date': initial_date,
+        'messages': messages}
+
+sess = None
+try:
+    sess = session()
+    if inv.getRequest().getMethod() == 'GET':
+        contract_id = inv.getLong('supplier_contract_id')
+        contract = Contract.get_supplier_by_id(sess, contract_id)
+        render(inv, template, page_fields(contract))
+    else:
+        set_read_write(sess)
+        contract_id = inv.getLong('supplier_contract_id')
+        contract = Contract.get_supplier_by_id(sess, contract_id)
+        start_date = form_date(inv, 'start')
+        rate_script = contract.insert_rate_script(sess, start_date, '')
+        sess.commit()
+        inv.sendSeeOther('/reports/79/output/?supplier_rate_script_id='
+                + str(rate_script.id))
+except UserException, e:
+        render(inv, template, page_fields(contract, str(e)), 400)
+finally:
+    sess.close()]]>
+		</value>
+		<value><![CDATA[<!doctype html>
+<html>
+  <head>
+    <link rel="stylesheet" type="text/css"
+      href="{{context_path}}/reports/19/output/">
+    <title>
+      Chellow &gt; Supplier Contracts &gt; {{contract.name}}
+      &gt; Add Rate Script
+    </title>
+  </head>
+  <body>
+    <p>
+      <a href="{{context_path}}/reports/1/output/">Chellow</a> &gt;
+      <a href="{{context_path}}/reports/75/output/">Supplier Contracts</a>
+      &gt;
+      <a href="{{context_path}}/reports/77/output/?supplier_contract_id={{contract.id}}">{{contract.name}}</a>
+      &gt; Add Rate Script
+    </p>
+    {% if messages %}
+      <ul>
+        {% for message in messages %}
+          <li>{{ message }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+    <br />
+    <form action="." method="post">
+      <fieldset>
+        <legend>Add a rate script</legend>
+        <input type="hidden" name="supplier_contract_id" value="{{contract.id}}">
+        <br>
+        <fieldset>
+          <legend>Start Date</legend>
+          {{input_date('start', initial_date)}}
+        </fieldset>
+        <br>
+        <br>
+        <input type="submit" value="Add">
+      </fieldset>
+    </form>
+  </body>
+</html>]]>
+		</value>
+	</line>
+    <line>
+		<value><![CDATA[insert]]></value>
+		<value><![CDATA[report]]></value>
+		<value><![CDATA[327]]></value>
+		<value><![CDATA[true]]></value>
+		<value><![CDATA[HHDC Bill Imports]]></value>
+		<value><![CDATA[from net.sf.chellow.monad import Monad
+from java.lang import System
+from java.io import InputStreamReader
+import StringIO
+
+Monad.getUtils()['imprt'](globals(), {
+        'db': ['Contract', 'session', 'Batch', 'set_read_write'],
+        'utils': ['UserException', 'prev_hh', 'next_hh', 'hh_after', 'hh_before', 'HH'],
+        'templater': ['render'],
+        'bill_import': ['start_bill_importer', 'get_bill_importer_ids', 'get_bill_importer']})
+
+
+def make_fields(sess, batch, message=None):
+    messages = [] if message is None else [str(message)]
+    return {'messages': messages, 'importer_ids': sorted(get_bill_importer_ids(), reverse=True), 'batch': batch}
+
+sess = None
+try:
+    sess = session()
+    if inv.getRequest().getMethod() == 'GET':
+        batch_id = inv.getLong('hhdc_batch_id')
+        batch = Batch.get_by_id(sess, batch_id)
+        render(inv, template, make_fields(sess, batch))
+    else:
+        batch_id = inv.getLong('hhdc_batch_id')
+        batch = Batch.get_by_id(sess, batch_id)
+        file_item = inv.getFileItem("import_file")
+        stream = InputStreamReader(file_item.getInputStream(), 'utf-8')
+        f = StringIO.StringIO()
+        bt = stream.read()
+        while bt != -1:
+            f.write(chr(bt))
+            bt = stream.read()
+        f.seek(0)
+        id = start_bill_importer(sess, batch.id, file_item.getName(), file_item.getSize(), f)
+        inv.sendSeeOther("/reports/329/output/?importer_id=" + str(id))
+except UserException, e:
+    render(inv, template, make_fields(sess, batch, e), 400)
+finally:
+    if sess is not None:
+        sess.close()]]>
+		</value>
+		<value><![CDATA[<!doctype html>
+<html>
+  <head>
+    <link rel="stylesheet" type="text/css"
+      href="{{ context_path }}/reports/19/output/">
+    <title>
+      Chellow &gt; HHDC Contracts &gt; {{batch.contract.name}} &gt;
+      Batches &gt; {{batch.reference}} &gt; Bill Imports
+    </title>
+  </head>
+  <body>
+    <p>
+      <a href="{{context_path}}/reports/1/output/">Chellow</a> &gt;
+      <a href="{{context_path}}/reports/113/output/">HHDC Contracts</a> &gt;
+      <a href="{{context_path}}/reports/115/output/?hhdc_contract_id={{batch.contract.id}}">{{batch.contract.name}}</a> &gt;
+      <a href="{{context_path}}/reports/93/output/?hhdc_contract_id={{batch.contract.id}}">Batches</a> &gt;
+      <a href="{{context_path}}/reports/203/output/?hhdc_batch_id={{batch.id}}">{{batch.reference}}</a> &gt; Bill Imports
+    </p>
+    <br>
+    {% if messages %}
+      <ul>
+        {% for message in messages %}
+          <li>{{ message }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+    
+    <form enctype="multipart/form-data" method="post" action=".">
+      <fieldset>
+        <input type="hidden" name="hhdc_batch_id" value="{{batch.id}}">
+        <legend>Import Bill File</legend>
+        <input type="file" name="import_file" size="45"
+          value="{{request.getParameter('import_file')}}">
+        <input type="submit" value="Import">
+      </fieldset>
+    </form>
+    {% if importer_ids %}
+      <ul>
+        {% for id in importer_ids %}
+          <li>
+            <a href="{{context_path}}/reports/329/output/?importer_id={{id}}">{{id}}</a>
+          </li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+  </body>
+</html>]]>
+		</value>
+	</line>
+    <line>
+		<value><![CDATA[insert]]></value>
+		<value><![CDATA[report]]></value>
+		<value><![CDATA[329]]></value>
+		<value><![CDATA[true]]></value>
+		<value><![CDATA[HHDC Bill Import]]></value>
+		<value><![CDATA[from net.sf.chellow.monad import Monad
+from java.lang import System
+import tempfile
+
+Monad.getUtils()['imprt'](globals(), {
+        'db': ['Contract', 'session', 'Batch', 'set_read_write'],
+        'utils': ['UserException', 'prev_hh', 'next_hh', 'hh_after', 'hh_before', 'HH'],
+        'templater': ['render'],
+        'bill_import': ['get_bill_importer']})
+
+def make_fields(sess, importer, message=None):
+    messages = None if message is None else [str(message)]
+    batch = Batch.get_by_id(sess, importer.batch_id)
+    fields = {'batch': batch, 'messages': messages}
+    if importer is not None:
+        imp_fields = importer.make_fields()
+        if 'successful_bills' in imp_fields and len(imp_fields['successful_bills']) > 0:
+            fields['successful_max_registers'] = max(len(bill['reads']) for bill in imp_fields['successful_bills'])
+        fields.update(imp_fields)
+    return fields
+
+sess = None
+try:
+    sess = session()
+    imp_id = inv.getLong('importer_id')
+    importer = get_bill_importer(imp_id)
+    render(inv, template, make_fields(sess, importer))
+except UserException, e:
+    render(inv, template, make_fields(sess, e), 400)
+finally:
+    if sess is not None:
+        sess.close()]]>
+		</value>
+		<value><![CDATA[<!doctype html>
+<html>
+  <head>
+    <link rel="stylesheet" type="text/css"
+      href="{{context_path}}/reports/19/output/">
+    <title>
+      Chellow &gt; HHDC Contracts &gt; {{batch.contract.name}} &gt;
+      Batches &gt; {{batch.reference}} &gt; Bill Imports &gt; {{importer_id}}
+    </title>
+  </head>
+  <body>
+    <p>
+      <a href="{{context_path}}/reports/1/output/">Chellow</a> &gt;
+      <a href="{{context_path}}/reports/113/output/">HHDC Contracts</a> &gt;
+      <a href="{{context_path}}/reports/115/output/?hhdc_contract_id={{batch.contract.id}}">{{batch.contract.name}}</a> &gt;
+      <a href="{{context_path}}/reports/93/output/?hhdc_contract_id={{batch.contract.id}}">Batches</a> &gt;
+      <a href="{{context_path}}/reports/203/output/?hhdc_batch_id={{batch.id}}">{{batch.reference}}</a> &gt;
+      <a href="{{context_path}}/reports/327/output/?hhdc_batch_id={{batch.id}}">Bill Imports</a> &gt; {{importer_id}}
+    </p>
+    <br>
+
+    {% if messages %}
+      <ul>
+        {% for message in messages %}
+          <li>{{ message }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+
+    {% if is_alive %}
+      <p>Still running. Refresh the page to see latest progress.</p>
+    {% endif %}
+
+    <ul>
+      {% for msg in log %}
+        <li>{{msg}}</li>
+      {% endfor %}
+    </ul>
+    
+    {% if failed_bills|length > 0 %}
+      <table>
+        <caption>Failed Bills</caption>
+        <thead>
+          <tr>
+            {% for k, v in failed_bills[0]|dictsort %}
+              <th>{{k}}</th>
+            {% endfor %}
+          </tr>
+        </thead>
+        <tbody>
+          {% for bill in failed_bills %}
+            <tr>
+              {% for k, v in bill|dictsort %}
+                <td>{{bill[k]}}</td>
+              {% endfor %}
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% endif %}
+
+    {% if successful_bills|length > 0 %}
+      <table>
+        <caption>Successful Bills</caption>
+        <thead>
+          <tr>
+            <th>Reference</th>
+            <th>Account</th>
+            <th>Bill Type</th>
+            <th>MPANs</th>
+            <th>Issue Date</th>
+            <th>Start Date</th>
+            <th>Finish Date</th>
+            <th>kWh</th>
+            <th>Net</th>
+            <th>VAT</th>
+            <th>Gross</th>
+            {% for i in range(successful_max_registers) %}
+              <th>R{{loop.index}} MPAN</th>
+              <th>R{{loop.index}} Meter Serial Number</th>
+              <th>R{{loop.index}} Coefficient</th>
+              <th>R{{loop.index}} Units</th>
+              <th>R{{loop.index}} TPR</th>
+              <th>R{{loop.index}} Previous Read Date</th>
+              <th>R{{loop.index}} Previous Read Value</th>
+              <th>R{{loop.index}} Previous Read Type</th>
+              <th>R{{loop.index}} Present Read Date</th>
+              <th>R{{loop.index}} Present Read Value</th>
+              <th>R{{loop.index}} Present Read Type</th>
+            {% endfor %}
+            <th>Breakdown</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for bill in successful_bills %}
+            <tr>
+              <td>{{bill.reference}}</td>
+              <td>{{bill.account}}</td>
+              <td>{{bill.bill_type_code}}</td>
+              <td>{{bill.mpans}}</td>
+              <td>{{bill.issue_date|hh_format}}</td>
+              <td>{{bill.start_date|hh_format}}</td>
+              <td>{{bill.finish_date|hh_format}}</td>
+              <td>{{bill.kwh}}</td>
+              <td>{{bill.net}}</td>
+              <td>{{bill.vat}}</td>
+              <td>{{bill.gross}}</td>
+              {% for read in bill.reads %}
+                <td>{{read.mpan}}</td>
+                <td>{{read.msn}}</td>
+                <td>{{read.coefficient}}</td>
+                <td>{{read.units}}</td>
+                <td>{{read.tpr_code}}</td>
+                <td>{{read.prev_date|hh_format}}</td>
+                <td>{{read.prev_value}}</td>
+                <td>{{read.prev_type_code}}</td>
+                <td>{{read.pres_date|hh_format}}</td>
+                <td>{{read.pres_value}}</td>
+                <td>{{read.pres_type_code}}</td>
+              {% endfor %}
+              <td>{{bill.breakdown}}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+        <p>No bills successfully loaded.</p>
+    {% endif %}
+  </body>
+</html>]]>
+		</value>
+	</line>
+    <line>
+		<value><![CDATA[insert]]></value>
+		<value><![CDATA[report]]></value>
+		<value><![CDATA[331]]></value>
+		<value><![CDATA[true]]></value>
+		<value><![CDATA[MOP Bill Imports]]></value>
+		<value><![CDATA[from net.sf.chellow.monad import Monad
+from java.lang import System
+from java.io import InputStreamReader
+import StringIO
+
+Monad.getUtils()['imprt'](globals(), {
+        'db': ['Contract', 'session', 'Batch', 'set_read_write'],
+        'utils': ['UserException', 'prev_hh', 'next_hh', 'hh_after', 'hh_before', 'HH'],
+        'templater': ['render'],
+        'bill_import': ['start_bill_importer', 'get_bill_importer_ids', 'get_bill_importer']})
+
+
+def make_fields(sess, batch, message=None):
+    messages = [] if message is None else [str(message)]
+    return {'messages': messages, 'importer_ids': sorted(get_bill_importer_ids(), reverse=True), 'batch': batch}
+
+sess = None
+try:
+    sess = session()
+    if inv.getRequest().getMethod() == 'GET':
+        batch_id = inv.getLong('mop_batch_id')
+        batch = Batch.get_by_id(sess, batch_id)
+        render(inv, template, make_fields(sess, batch))
+    else:
+        batch_id = inv.getLong('mop_batch_id')
+        batch = Batch.get_by_id(sess, batch_id)
+        file_item = inv.getFileItem("import_file")
+        stream = InputStreamReader(file_item.getInputStream(), 'utf-8')
+        f = StringIO.StringIO()
+        bt = stream.read()
+        while bt != -1:
+            f.write(chr(bt))
+            bt = stream.read()
+        f.seek(0)
+        id = start_bill_importer(sess, batch.id, file_item.getName(), file_item.getSize(), f)
+        inv.sendSeeOther("/reports/333/output/?importer_id=" + str(id))
+except UserException, e:
+    render(inv, template, make_fields(sess, batch, e), 400)
+finally:
+    if sess is not None:
+        sess.close()]]>
+		</value>
+		<value><![CDATA[<!doctype html>
+<html>
+  <head>
+    <link rel="stylesheet" type="text/css"
+      href="{{ context_path }}/reports/19/output/">
+    <title>
+      Chellow &gt; MOP Contracts &gt; {{batch.contract.name}} &gt;
+      Batches &gt; {{batch.reference}} &gt; Bill Imports
+    </title>
+  </head>
+  <body>
+    <p>
+      <a href="{{context_path}}/reports/1/output/">Chellow</a> &gt;
+      <a href="{{context_path}}/reports/185/output/">MOP Contracts</a> &gt;
+      <a href="{{context_path}}/reports/107/output/?mop_contract_id={{batch.contract.id}}">{{batch.contract.name}}</a> &gt;
+      <a href="{{context_path}}/reports/191/output/?mop-contract-id={{batch.contract.id}}">Batches</a> &gt;
+      <a href="{{context_path}}/reports/193/output/?batch-id={{batch.id}}">{{batch.reference}}</a> &gt; Bill Imports
+    </p>
+    <br>
+    {% if messages %}
+      <ul>
+        {% for message in messages %}
+          <li>{{ message }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+    
+    <form enctype="multipart/form-data" method="post" action=".">
+      <fieldset>
+        <input type="hidden" name="mop_batch_id" value="{{batch.id}}">
+        <legend>Import Bill File</legend>
+        <input type="file" name="import_file" size="45"
+          value="{{request.getParameter('import_file')}}">
+        <input type="submit" value="Import">
+      </fieldset>
+    </form>
+    {% if importer_ids %}
+      <ul>
+        {% for id in importer_ids %}
+          <li>
+            <a href="{{context_path}}/reports/333/output/?importer_id={{id}}">{{id}}</a>
+          </li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+  </body>
+</html>]]>
+		</value>
+	</line>
+    <line>
+		<value><![CDATA[insert]]></value>
+		<value><![CDATA[report]]></value>
+		<value><![CDATA[333]]></value>
+		<value><![CDATA[true]]></value>
+		<value><![CDATA[MOP Bill Import]]></value>
+		<value><![CDATA[from net.sf.chellow.monad import Monad
+from java.lang import System
+import tempfile
+
+Monad.getUtils()['imprt'](globals(), {
+        'db': ['Contract', 'session', 'Batch', 'set_read_write'],
+        'utils': ['UserException', 'prev_hh', 'next_hh', 'hh_after', 'hh_before', 'HH'],
+        'templater': ['render'],
+        'bill_import': ['get_bill_importer']})
+
+def make_fields(sess, importer, message=None):
+    messages = None if message is None else [str(message)]
+    batch = Batch.get_by_id(sess, importer.batch_id)
+    fields = {'batch': batch, 'messages': messages}
+    if importer is not None:
+        imp_fields = importer.make_fields()
+        if 'successful_bills' in imp_fields and len(imp_fields['successful_bills']) > 0:
+            fields['successful_max_registers'] = max(len(bill['reads']) for bill in imp_fields['successful_bills'])
+        fields.update(imp_fields)
+    return fields
+
+sess = None
+try:
+    sess = session()
+    imp_id = inv.getLong('importer_id')
+    importer = get_bill_importer(imp_id)
+    render(inv, template, make_fields(sess, importer))
+except UserException, e:
+    render(inv, template, make_fields(sess, e), 400)
+finally:
+    if sess is not None:
+        sess.close()]]>
+		</value>
+		<value><![CDATA[<!doctype html>
+<html>
+  <head>
+    <link rel="stylesheet" type="text/css"
+      href="{{context_path}}/reports/19/output/">
+    <title>
+      Chellow &gt; MOP Contracts &gt; {{batch.contract.name}} &gt;
+      Batches &gt; {{batch.reference}} &gt; Bill Imports &gt; {{importer_id}}
+    </title>
+  </head>
+  <body>
+    <p>
+      <a href="{{context_path}}/reports/1/output/">Chellow</a> &gt;
+      <a href="{{context_path}}/reports/185/output/">MOP Contracts</a> &gt;
+      <a href="{{context_path}}/reports/107/output/?mop_contract_id={{batch.contract.id}}">{{batch.contract.name}}</a> &gt;
+      <a href="{{context_path}}/reports/191/output/?mop-contract-id={{batch.contract.id}}">Batches</a> &gt;
+      <a href="{{context_path}}/reports/193/output/?batch-id={{batch.id}}">{{batch.reference}}</a> &gt;
+      <a href="{{context_path}}/reports/331/output/?mop_batch_id={{batch.id}}">Bill Imports</a> &gt; {{importer_id}}
+    </p>
+    <br>
+
+    {% if messages %}
+      <ul>
+        {% for message in messages %}
+          <li>{{ message }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+
+    {% if is_alive %}
+      <p>Still running. Refresh the page to see latest progress.</p>
+    {% endif %}
+
+    <ul>
+      {% for msg in log %}
+        <li>{{msg}}</li>
+      {% endfor %}
+    </ul>
+    
+    {% if failed_bills|length > 0 %}
+      <table>
+        <caption>Failed Bills</caption>
+        <thead>
+          <tr>
+            {% for k, v in failed_bills[0]|dictsort %}
+              <th>{{k}}</th>
+            {% endfor %}
+          </tr>
+        </thead>
+        <tbody>
+          {% for bill in failed_bills %}
+            <tr>
+              {% for k, v in bill|dictsort %}
+                <td>{{bill[k]}}</td>
+              {% endfor %}
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% endif %}
+
+    {% if successful_bills|length > 0 %}
+      <table>
+        <caption>Successful Bills</caption>
+        <thead>
+          <tr>
+            <th>Reference</th>
+            <th>Account</th>
+            <th>Bill Type</th>
+            <th>MPANs</th>
+            <th>Issue Date</th>
+            <th>Start Date</th>
+            <th>Finish Date</th>
+            <th>kWh</th>
+            <th>Net</th>
+            <th>VAT</th>
+            <th>Gross</th>
+            {% for i in range(successful_max_registers) %}
+              <th>R{{loop.index}} MPAN</th>
+              <th>R{{loop.index}} Meter Serial Number</th>
+              <th>R{{loop.index}} Coefficient</th>
+              <th>R{{loop.index}} Units</th>
+              <th>R{{loop.index}} TPR</th>
+              <th>R{{loop.index}} Previous Read Date</th>
+              <th>R{{loop.index}} Previous Read Value</th>
+              <th>R{{loop.index}} Previous Read Type</th>
+              <th>R{{loop.index}} Present Read Date</th>
+              <th>R{{loop.index}} Present Read Value</th>
+              <th>R{{loop.index}} Present Read Type</th>
+            {% endfor %}
+            <th>Breakdown</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for bill in successful_bills %}
+            <tr>
+              <td>{{bill.reference}}</td>
+              <td>{{bill.account}}</td>
+              <td>{{bill.bill_type_code}}</td>
+              <td>{{bill.mpans}}</td>
+              <td>{{bill.issue_date|hh_format}}</td>
+              <td>{{bill.start_date|hh_format}}</td>
+              <td>{{bill.finish_date|hh_format}}</td>
+              <td>{{bill.kwh}}</td>
+              <td>{{bill.net}}</td>
+              <td>{{bill.vat}}</td>
+              <td>{{bill.gross}}</td>
+              {% for read in bill.reads %}
+                <td>{{read.mpan}}</td>
+                <td>{{read.msn}}</td>
+                <td>{{read.coefficient}}</td>
+                <td>{{read.units}}</td>
+                <td>{{read.tpr_code}}</td>
+                <td>{{read.prev_date|hh_format}}</td>
+                <td>{{read.prev_value}}</td>
+                <td>{{read.prev_type_code}}</td>
+                <td>{{read.pres_date|hh_format}}</td>
+                <td>{{read.pres_value}}</td>
+                <td>{{read.pres_type_code}}</td>
+              {% endfor %}
+              <td>{{bill.breakdown}}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+        <p>No bills successfully loaded.</p>
     {% endif %}
   </body>
 </html>]]>
