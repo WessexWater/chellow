@@ -13892,6 +13892,7 @@ finally:
 		<value><![CDATA[true]]></value>
 		<value><![CDATA[HHDC Contract HH Importer]]></value>
 		<value><![CDATA[from net.sf.chellow.monad import Monad
+import threading
 
 Monad.getUtils()['imprt'](globals(), {
         'db': ['Contract', 'session', 'Batch', 'set_read_write'],
@@ -13915,13 +13916,14 @@ try:
         render(inv, template, make_fields(contract, task))
     else:
         task = get_hh_import_task(contract)
-        task.import_now()
+        task.go()
         render(inv, template, make_fields(contract, task))
 except UserException, e:
     render(inv, template, make_fields(contract, task, e), 400)
 finally:
     if sess is not None:
-        sess.close()]]></value>
+        sess.close()
+]]></value>
 		<value><![CDATA[<!doctype html>
 <html>
   <head>
@@ -13951,15 +13953,20 @@ finally:
     <p><a href=".?hhdc_contract_id={{contract.id}}">Refresh page</a></p>
 
     {% if task %}
+
       <table>
         <tr>
           <th>Is Locked?</th>
-          <td>{{task.is_locked}}</td>
+          <th>Is stopping?</th>
+        </tr>
+        <tr>
+          <td>{{task.is_locked()}}</td>
+          <td>{{task.stopped.isSet()}}</td>
         </tr>
       </table>
       <br>
 
-      {% if not task.is_locked %}
+      {% if not task.is_locked() %}
         <form action="." method="post">
           <fieldset>
             <legend>Import Now</legend>
@@ -13971,7 +13978,7 @@ finally:
 
       <h3>Log</h3>
 
-      <p>{{task.status}}</p>
+      <p>{{task.get_status()}}</p>
 
       <ul>
         {% for message in task.messages %}
@@ -13982,7 +13989,8 @@ finally:
       <p>The importer task has not been started.</p>
     {% endif %}
   </body>
-</html>]]></value>
+</html>
+]]></value>
 	</line>
 	<line>
 		<value><![CDATA[insert]]></value>
