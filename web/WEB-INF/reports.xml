@@ -517,7 +517,7 @@ finally:
         <a href="{{context_path}}/reports/11/output/?site_id={{site.id}}&amp;months=1&amp;finish_year={{month_finish.year}}&amp;finish_month={{month_finish.month}}">Generation Graphs</a>
       </li>
       <li>
-        <a href="{{context_path}}/reports/13/output/?site_id={{site.id}}">
+        <a href="{{context_path}}/reports/13/output/?site_id={{site.id}}&amp;finish_year={{month_finish.year}}&amp;finish_month={{month_finish.month}}">
 Table of site level monthly kWh, MD kWh etc.</a>
       </li>
       <li>
@@ -1710,664 +1710,269 @@ else:
 		<value><![CDATA[13]]></value>
 		<value><![CDATA[true]]></value>
 		<value><![CDATA[Site Monthly figures]]></value>
-		<value><![CDATA[from net.sf.chellow.monad import Hiber, UserException, XmlTree
-from java.lang import System
-from net.sf.chellow.monad.types import MonadDate
-import math
-from java.sql import Timestamp, ResultSet
-from java.util import GregorianCalendar, Calendar, TimeZone, Locale, Date
-from net.sf.chellow.physical import HhStartDate
-from net.sf.chellow.physical import Site
+		<value><![CDATA[from net.sf.chellow.monad import Monad
+from sqlalchemy.orm import joinedload_all
+from sqlalchemy import or_
+import pytz
+import datetime
+from dateutil.relativedelta import relativedelta
 
-site_id = inv.getLong("site-id")
-cal = GregorianCalendar(TimeZone.getTimeZone("GMT"), Locale.UK)
-if inv.hasParameter("finish-year"):
-    year = inv.getInteger("finish-year")
-    cal.set(Calendar.YEAR, year)
-if inv.hasParameter("finish-month"):
-    month = inv.getInteger("finish-month")
-    cal.set(Calendar.MONTH, month - 1)
-for i in range(12):
-    month_element = doc.createElement("month-in-year")
-    source.appendChild(month_element)
-    month_element.setAttribute('value', '%02d' % (i + 1))
-#source.appendChild(inv.requestXml(doc))
-if not inv.isValid():
-    raise UserException()
+Monad.getUtils()['imprt'](globals(), {
+        'db': ['Snag', 'Site', 'Contract', 'Party', 'RateScript', 'set_read_write', 'session'], 
+        'utils': ['UserException', 'HH'],
+        'templater': ['render']})
 
-cal.set(Calendar.DAY_OF_MONTH, 1)
-cal.set(Calendar.HOUR_OF_DAY, 0)
-cal.set(Calendar.MINUTE, 0)
-cal.set(Calendar.SECOND, 0)
-cal.set(Calendar.MILLISECOND, 0)
-cal.add(Calendar.MONTH, 1)
-cal.add(Calendar.MINUTE, -30)
-finish_date = HhStartDate(cal.getTime())
+sess = None
+try:
+    sess = session()
 
-source.setAttribute("finish-year", str(cal.get(Calendar.YEAR)))
-source.setAttribute("finish-month", str(cal.get(Calendar.MONTH) + 1))
-cal.add(Calendar.MINUTE, 30)
-cal.add(Calendar.MONTH, -12)
-start_date = HhStartDate(cal.getTime())
+    site_id = inv.getLong("site_id")
+    finish_year = inv.getInteger("finish_year")
+    finish_month = inv.getInteger("finish_month")
+    start_date = datetime.datetime(finish_year, finish_month, 1, tzinfo=pytz.utc)
+    start_date -= relativedelta(months=11)
 
-site = Site.getSite(site_id)
-source.appendChild(site.toXml(doc))
-supplies = Hiber.session().createQuery("select distinct supply from Supply supply join supply.eras era join era.siteEras siteEra where siteEra.site = :site and supply.source.code != 'sub'").setEntity('site', site).list()
-con = Hiber.session().connection()
-if len(supplies) == 0:
-    stmt = con.prepareStatement("select * from hh_datum where hh_datum.value = 0 and hh_datum.value = 1")
-else:
-    supplies_sql = ','.join(str(supply.getId()) for supply in supplies)
+    site = Site.get_by_id(sess, site_id)
 
-    stmt = con.prepareStatement("select hh_datum.value, hh_datum.start_date, hh_datum.status, channel.is_import, supply.name, source.code from hh_datum, channel, supply, era, source where hh_datum.channel_id = channel.id and channel.era_id = era.id and era.supply_id = supply.id and supply.source_id = source.id and channel.is_kwh is true and hh_datum.start_date >= ? and hh_datum.start_date <= ? and supply.id in (" + supplies_sql + ") order by hh_datum.start_date desc", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.CLOSE_CURSORS_AT_COMMIT)
-    stmt.setTimestamp(1, Timestamp(start_date.getDate().getTime()))
-    stmt.setTimestamp(2, Timestamp(finish_date.getDate().getTime()))
-    stmt.setFetchSize(100)
+    typs = ('imp_net', 'exp_net', 'used', 'displaced', 'imp_gen', 'exp_gen')
 
-rs = stmt.executeQuery()
-hhDate = finish_date.getDate().getTime()
-maxExportedKw = 0
-maxExportedKwDate = None
-maxExportedKwYear = 0
-maxExportedKwYearDate = None
-exportedKwhMonth = 0
-exportedKwhYear = 0
-exportedKwh = 0
-maxImportedKw = 0
-maxImportedKwDate = None
-maxImportedKwYear = 0
-maxImportedKwYearDate = None
-importedKwhMonth = 0
-importedKwhYear = 0
-importedKwh = 0
-maxGeneratedKw = 0
-maxGeneratedKwDate = None
-maxGeneratedKwYear = 0
-maxGeneratedKwYearDate = None
-generatedKwhMonth = 0
-generatedKwhYear = 0
-generatedKwh = 0
-maxParasiticKw = 0
-maxParasiticKwDate = None
-maxParasiticKwYear = 0
-maxParasiticKwYearDate = None
-parasiticKwhMonth = 0
-parasiticKwhYear = 0
-parasiticKwh = 0
-maxDisplacedKw = 0
-maxDisplacedKwDate = None
-maxDisplacedKwYear = 0
-maxDisplacedKwYearDate = None
-displacedKwhMonth = 0
-displacedKwhYear = 0
-displacedKwh = 0
-maxUsedKw = 0
-maxUsedKwDate = None
-maxUsedKwYear = 0
-maxUsedKwYearDate = None
-usedKwhMonth = 0
-usedKwhYear = 0
-usedKwh = 0
+    months = []
+    month_start = start_date
+    for i in range(12):
+        month_finish = month_start + relativedelta(months=1) - HH
+        month = dict((typ, {'md': 0, 'md_date': None, 'kwh': 0}) for typ in typs)
+        month['start_date'] = month_start
+        months.append(month)
 
-siteSnagQuery = Hiber.session().createQuery("select count(*) from Snag snag where snag.site = :site and snag.startDate.date <= :finishDate and snag.finishDate.date >= :startDate)").setEntity("site", site)
+        for group in site.groups(sess, month_start, month_finish, True):
+            for hh in group.hh_data(sess):
+                if hh['imp_net'] * 2 > month['imp_net']['md']:
+                    month['imp_net']['md'] = hh['imp_net'] * 2
+                    month['imp_net']['md_date'] = hh['start_date']
+                month['imp_net']['kwh'] += hh['imp_net']
 
-if rs.next():
-    hhChannelKw = rs.getFloat("value") * 2
-    hhChannelStartDate = rs.getTimestamp("start_date")
-    isImport = rs.getBoolean("is_import")
-    status = rs.getString("status")
-    sourceCode = rs.getString("code")
-    supplyName = rs.getString("name")
-    finishDateMillis = finish_date.getDate().getTime()
-    startDateMillis = start_date.getDate().getTime()
-    cal.clear()
-    cal.setTime(hhChannelStartDate)
-    previousMonth = cal.get(Calendar.MONTH)
-    while hhDate >= startDateMillis:
-        exportedKw = 0
-        importedKw = 0
-        parasiticKw = 0
-        generatedKw = 0
-        while hhChannelStartDate != None and hhChannelStartDate.getTime() == hhDate:
-            if not isImport and sourceCode in ('net', 'gen-net'):
-                exportedKw = exportedKw + hhChannelKw
-            if isImport and sourceCode in ('net', 'gen-net'):
-                importedKw = importedKw + hhChannelKw
-            if (isImport and sourceCode == 'gen') or (not isImport and sourceCode == 'gen-net'):
-                generatedKw = generatedKw + hhChannelKw
-            if (not isImport and sourceCode == 'gen') or (isImport and sourceCode == 'gen-net'):
-                parasiticKw = parasiticKw + hhChannelKw
-            if rs.next():
-                sourceCode = rs.getString("code")
-                supplyName = rs.getString("name")
-                hhChannelKw = rs.getFloat("value") * 2
-                hhChannelStartDate = rs.getTimestamp("start_date")
-                isImport = rs.getBoolean("is_import")
-                status = rs.getString("status")
-                cal.clear()
-                cal.setTime(hhChannelStartDate)
-                month = cal.get(Calendar.MONTH)
-            else:
-                hhChannelStartDate = None
-        if exportedKw > maxExportedKw:
-            maxExportedKw = exportedKw
-            maxExportedKwDate = hhDate
-        if importedKw > maxImportedKw:
-            maxImportedKw = importedKw
-            maxImportedKwDate = hhDate
-        if generatedKw > maxGeneratedKw:
-            maxGeneratedKw = generatedKw
-            maxGeneratedKwDate = hhDate
-        if parasiticKw > maxParasiticKw:
-            maxParasiticKw = parasiticKw
-            maxParasiticKwDate = hhDate
-        displacedKw = generatedKw - parasiticKw - exportedKw
-        if displacedKw > maxDisplacedKw:
-            maxDisplacedKw = displacedKw
-            maxDisplacedKwDate = hhDate
-        usedKw = importedKw + displacedKw
-        if usedKw > maxUsedKw:
-            maxUsedKw = usedKw
-            maxUsedKwDate = hhDate
-        exportedKwhMonth = exportedKwhMonth + exportedKw / 2
-        importedKwhMonth = importedKwhMonth + importedKw / 2
-        generatedKwhMonth = generatedKwhMonth + generatedKw / 2
-        parasiticKwhMonth = parasiticKwhMonth + parasiticKw / 2
-        displacedKwhMonth = displacedKwhMonth + displacedKw / 2
-        usedKwhMonth = usedKwhMonth + usedKw / 2
-        cal.clear()
-        cal.setTimeInMillis(hhDate)
-        if cal.get(Calendar.DAY_OF_MONTH) == 1 and cal.get(Calendar.HOUR_OF_DAY) == 0 and cal.get(Calendar.MINUTE) == 0:
-            monthElement = doc.createElement("month")
-            source.appendChild(monthElement)
-            cal.add(Calendar.MINUTE, 30)
-            monthStartDate = cal.getTime()
-            cal.add(Calendar.MONTH, 1)
-            cal.add(Calendar.MINUTE, -30)
-            monthFinishDate = cal.getTime()
-            if siteSnagQuery.setTimestamp("startDate", monthStartDate).setTimestamp("finishDate", monthFinishDate).uniqueResult() > 0:
-                monthElement.setAttribute("has-site-snags", "true")
-            monthStartMonadDate = HhStartDate(monthStartDate)
-            monthStartMonadDate.setLabel("start")
-            monthElement.appendChild(monthStartMonadDate.toXml(doc))
-            monthFinishMonadDate = HhStartDate(monthFinishDate)
-            monthFinishMonadDate.setLabel("finish")
-            monthElement.appendChild(monthFinishMonadDate.toXml(doc))
-            monthElement.setAttribute("max-exported-kw", str(int(round(maxExportedKw))))
-            if maxExportedKwDate != None:
-                monthElement.setAttribute("max-exported-kw-date", MonadDate(Date(maxExportedKwDate)).toString())
-            monthElement.setAttribute("exported-kwh", str(int(round(exportedKwhMonth))))
-            monthElement.setAttribute("max-imported-kw", str(int(round(maxImportedKw))))
-            if maxImportedKwDate != None:
-                monthElement.setAttribute("max-imported-kw-date", MonadDate(Date(maxImportedKwDate)).toString())
-            monthElement.setAttribute("imported-kwh", str(int(round(importedKwhMonth))))
-            monthElement.setAttribute("max-generated-kw", str(int(round(maxGeneratedKw))))
-            if maxGeneratedKwDate != None:
-                monthElement.setAttribute("max-generated-kw-date", MonadDate(Date(maxGeneratedKwDate)).toString())
-            monthElement.setAttribute("generated-kwh", str(int(round(generatedKwhMonth))))
-            monthElement.setAttribute("max-parasitic-kw", str(int(round(maxParasiticKw))))
-            if maxParasiticKwDate != None:
-                monthElement.setAttribute("max-parasitic-kw-date", MonadDate(Date(maxParasiticKwDate)).toString())
-            monthElement.setAttribute("parasitic-kwh", str(int(round(parasiticKwhMonth))))
-            monthElement.setAttribute("max-displaced-kw", str(int(round(maxDisplacedKw))))
-            if maxDisplacedKwDate != None:
-                monthElement.setAttribute("max-displaced-kw-date", MonadDate(Date(maxDisplacedKwDate)).toString())
-            monthElement.setAttribute("displaced-kwh", str(int(round(displacedKwhMonth))))
-            monthElement.setAttribute("max-used-kw", str(int(round(maxUsedKw))))
-            if maxUsedKwDate != None:
-                monthElement.setAttribute("max-used-kw-date", MonadDate(Date(maxUsedKwDate)).toString())
-            monthElement.setAttribute("used-kwh", str(int(round(usedKwhMonth))))
-            if maxExportedKw > maxExportedKwYear:
-                maxExportedKwYear = maxExportedKw
-                maxExportedKwYearDate = maxExportedKwDate
-            maxExportedKw = 0
-            maxExportedKwDate = None
-            exportedKwhYear = exportedKwhYear + exportedKwhMonth
-            exportedKwhMonth = 0
-            if maxImportedKw > maxImportedKwYear:
-                maxImportedKwYear = maxImportedKw
-                maxImportedKwYearDate = maxImportedKwDate
-            maxImportedKw = 0
-            maxImportedKwDate = None
-            importedKwhYear = importedKwhYear + importedKwhMonth
-            importedKwhMonth = 0
-            if maxGeneratedKw > maxGeneratedKwYear:
-                maxGeneratedKwYear = maxGeneratedKw
-                maxGeneratedKwYearDate = maxGeneratedKwDate
-            maxGeneratedKw = 0
-            maxGeneratedKwDate = None
-            generatedKwhYear = generatedKwhYear + generatedKwhMonth
-            generatedKwhMonth = 0
-            if maxParasiticKw > maxParasiticKwYear:
-                maxParasiticKwYear = maxParasiticKw
-                maxParasiticKwYearDate = maxParasiticKwDate
-            maxParasiticKw = 0
-            maxParasiticKwDate = None
-            parasiticKwhYear = parasiticKwhYear + parasiticKwhMonth
-            parasiticKwhMonth = 0
-            if maxDisplacedKw > maxDisplacedKwYear:
-                maxDisplacedKwYear = maxDisplacedKw
-                maxDisplacedKwYearDate = maxDisplacedKwDate
-            maxDisplacedKw = 0
-            maxDisplacedKwDate = None
-            displacedKwhYear = displacedKwhYear + displacedKwhMonth
-            displacedKwhMonth = 0
-            if maxUsedKw > maxUsedKwYear:
-                maxUsedKwYear = maxUsedKw
-                maxUsedKwYearDate = maxUsedKwDate
-            maxUsedKw = 0
-            maxUsedKwDate = None
-            usedKwhYear = usedKwhYear + usedKwhMonth
-            usedKwhMonth = 0
-        hhDate = HhStartDate.getPrevious(cal, hhDate)
-    source.setAttribute("max-exported-kw", str(int(round(maxExportedKwYear))))
-    if maxExportedKwYearDate != None:
-        source.setAttribute("max-exported-kw-date", MonadDate(Date(maxExportedKwYearDate)).toString())
-    source.setAttribute("exported-kwh", str(int(round(exportedKwhYear))))
-    source.setAttribute("max-imported-kw", str(int(round(maxImportedKwYear))))
-    if maxImportedKwYearDate != None:
-        source.setAttribute("max-imported-kw-date", MonadDate(Date(maxImportedKwYearDate)).toString())
-    source.setAttribute("imported-kwh", str(int(round(importedKwhYear))))
-    source.setAttribute("max-generated-kw", str(int(round(maxGeneratedKwYear))))
-    if maxGeneratedKwYearDate != None:
-        source.setAttribute("max-generated-kw-date", MonadDate(Date(maxGeneratedKwYearDate)).toString())
-    source.setAttribute("generated-kwh", str(int(round(generatedKwhYear))))
-    source.setAttribute("max-parasitic-kw", str(int(round(maxParasiticKwYear))))
-    if maxParasiticKwYearDate != None:
-        source.setAttribute("max-parasitic-kw-date", MonadDate(Date(maxParasiticKwYearDate)).toString())
-    source.setAttribute("parasitic-kwh", str(int(round(parasiticKwhYear))))
-    source.setAttribute("max-displaced-kw", str(int(round(maxDisplacedKwYear))))
-    if maxDisplacedKwYearDate != None:
-        source.setAttribute("max-displaced-kw-date", MonadDate(Date(maxDisplacedKwYearDate)).toString())
-    source.setAttribute("displaced-kwh", str(int(round(displacedKwhYear))))
-    source.setAttribute("max-used-kw", str(int(round(maxUsedKwYear))))
-    if maxUsedKwYearDate != None:
-        source.setAttribute("max-used-kw-date", MonadDate(Date(maxUsedKwYearDate)).toString())
-    source.setAttribute("used-kwh", str(int(round(usedKwhYear))))]]></value>
-		<value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
-<xsl:stylesheet version="1.0"
-    xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
-    <xsl:output method="xml" encoding="US-ASCII"
-        doctype-public="-//W3C//DTD XHTML 1.1//EN"
-        doctype-system="http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd"
-        indent="yes" />
-  <xsl:template match="/">
-    <html>
-      <head>
-        <link rel="stylesheet" type="text/css"
-            href="{/source/request/@context-path}/reports/19/output/" />
-        <title>Chellow &gt; Sites &gt; <xsl:value-of
-                        select="concat(/source/site/@code, ' ', /source/site/@name)" />
-                    &gt; Monthly figures
-        </title>
-                <style>
+                disp_kwh = hh['imp_gen'] - hh['exp_gen'] - hh['exp_net']
+                if disp_kwh * 2 > month['displaced']['md']:
+                    month['disp_net']['md'] = disp_kwh * 2
+                    month['disp_net']['md_date'] = hh['start_date']
+                month['displaced']['kwh'] += disp_kwh
 
-                colgroup.gray {
-                    background: silver;
-                }
+                used_kwh = disp_kwh + hh['imp_net']
+                if used_kwh * 2 > month['used']['md']:
+                    month['used_net']['md'] = used_kwh * 2
+                    month['used_net']['md_date'] = hh['start_date']
+                month['used']['kwh'] += used_kwh
 
-                tr.error {
-                    color: red;
-                }
-                </style>
-      </head>
-      <body>
-        <p><a href="{/source/request/@context-path}/reports/1/output/">
-                        <xsl:value-of select="'Chellow'" />
-                    </a>
-                    &gt;
-                    <a
-                        href="{/source/request/@context-path}/reports/3/output/">
-                        <xsl:value-of select="'Sites'" />
-                    </a>
-                    &gt;
-                    <a
-                        href="{/source/request/@context-path}/reports/5/output/?site-id={/source/site/@id}">
-                        <xsl:value-of
-                            select="concat(/source/site/@code, ' ', /source/site/@name)" />
-                    </a>
-                    &gt; Monthly figures
-                </p>
-                <xsl:if test="//message">
-                    <ul>
-                        <xsl:for-each select="//message">
-                            <li>
-                                <xsl:value-of select="@description" />
-                            </li>
-                        </xsl:for-each>
-                    </ul>
-                </xsl:if>
-                <form action=".">
-                    <fieldset>
-                        <legend>Show table</legend>
-                        <input type="hidden" name="site-id"
-                            value="{/source/request/parameter[@name='site-id']/value}" />
-                        <xsl:value-of
-                            select="'For 12 months finishing at the end of '" />
-                        <input size="4" length="4"
-                            name="finish-year" value="{/source/@finish-year}" />
-                        <xsl:value-of select="' - '" />
-                        <select name="finish-month">
-                            <xsl:for-each
-                                select="/source/month-in-year">
-                                <option>
-                                    <xsl:if
-                                        test="number(/source/@finish-month) = number(@value)">
-                                        <xsl:attribute
-                                            name="selected">selected</xsl:attribute>
-                                    </xsl:if>
-                                    <xsl:value-of select="@value" />
-                                </option>
-                            </xsl:for-each>
-                        </select>
-                        <xsl:value-of select="' '" />
-                        <input type="submit" value="Show" />
-                    </fieldset>
-                </form>
+                if hh['imp_gen'] * 2 > month['imp_gen']['md']:
+                    month['imp_gen']['md'] = hh['imp_gen'] * 2
+                    month['imp_gen']['md_date'] = hh['start_date']
+                month['imp_gen']['kwh'] += hh['imp_gen']
 
-                <table>
-                    <caption>Months</caption>
-                    <colgroup />
-                    <colgroup class="gray" span="3" />
-                    <colgroup span="3" />
-                    <colgroup class="gray" span="3" />
-                    <colgroup span="3" />
-                    <colgroup class="gray" span="3" />
-                    <colgroup span="3" />
-                    <tfoot>
-                        <tr>
-                            <th>For all months</th>
-                            <th>
-                                <xsl:value-of
-                                    select="/source/@max-imported-kw" />
-                            </th>
-                            <th>
-                                <xsl:choose>
-                                    <xsl:when
-                                        test="/source/@max-imported-kw-date">
-                                        <xsl:value-of
-                                            select="/source/@max-imported-kw-date" />
-                                    </xsl:when>
-                                    <xsl:otherwise>NA</xsl:otherwise>
-                                </xsl:choose>
-                            </th>
-                            <th>
-                                <xsl:value-of
-                                    select="/source/@imported-kwh" />
-                            </th>
-                            <th>
-                                <xsl:value-of
-                                    select="/source/@max-used-kw" />
-                            </th>
-                            <th>
-                                <xsl:choose>
-                                    <xsl:when
-                                        test="/source/@max-used-kw-date">
-                                        <xsl:value-of
-                                            select="/source/@max-used-kw-date" />
-                                    </xsl:when>
-                                    <xsl:otherwise>NA</xsl:otherwise>
-                                </xsl:choose>
-                            </th>
-                            <th>
-                                <xsl:value-of
-                                    select="/source/@used-kwh" />
-                            </th>
-                            <th>
-                                <xsl:value-of
-                                    select="/source/@max-displaced-kw" />
-                            </th>
-                            <th>
-                                <xsl:choose>
-                                    <xsl:when
-                                        test="/source/@max-displaced-kw-date">
-                                        <xsl:value-of
-                                            select="/source/@max-displaced-kw-date" />
-                                    </xsl:when>
-                                    <xsl:otherwise>NA</xsl:otherwise>
-                                </xsl:choose>
-                            </th>
-                            <th>
-                                <xsl:value-of
-                                    select="/source/@displaced-kwh" />
-                            </th>
-                            <th>
-                                <xsl:value-of
-                                    select="/source/@max-generated-kw" />
-                            </th>
-                            <th>
-                                <xsl:choose>
-                                    <xsl:when
-                                        test="/source/@max-generated-kw-date">
-                                        <xsl:value-of
-                                            select="/source/@max-generated-kw-date" />
-                                    </xsl:when>
-                                    <xsl:otherwise>NA</xsl:otherwise>
-                                </xsl:choose>
-                            </th>
-                            <th>
-                                <xsl:value-of
-                                    select="/source/@generated-kwh" />
-                            </th>
-                            <th>
-                                <xsl:value-of
-                                    select="/source/@max-exported-kw" />
-                            </th>
-                            <th>
-                                <xsl:choose>
-                                    <xsl:when
-                                        test="/source/@max-exported-kw-date">
-                                        <xsl:value-of
-                                            select="/source/@max-exported-kw-date" />
-                                    </xsl:when>
-                                    <xsl:otherwise>NA</xsl:otherwise>
-                                </xsl:choose>
-                            </th>
-                            <th>
-                                <xsl:value-of
-                                    select="/source/@exported-kwh" />
-                            </th>
-                            <th>
-                                <xsl:value-of
-                                    select="/source/@max-parasitic-kw" />
-                            </th>
-                            <th>
-                                <xsl:choose>
-                                    <xsl:when
-                                        test="/source/@max-parasitic-kw-date">
-                                        <xsl:value-of
-                                            select="/source/@max-parasitic-kw-date" />
-                                    </xsl:when>
-                                    <xsl:otherwise>NA</xsl:otherwise>
-                                </xsl:choose>
-                            </th>
-                            <th>
-                                <xsl:value-of
-                                    select="/source/@parasitic-kwh" />
-                            </th>
-                        </tr>
-                    </tfoot>
-                    <thead>
-                        <tr>
-                            <th rowspan="2">Month</th>
-                            <th colspan="3">Imported</th>
-                            <th colspan="3">Used</th>
-                            <th colspan="3">Displaced</th>
-                            <th colspan="3">Generated</th>
-                            <th colspan="3">Exported</th>
-                            <th colspan="3">Parasitic</th>
-                        </tr>
-                        <tr>
-                            <th>MD / kW</th>
-                            <th>Date of MD</th>
-                            <th>kWh</th>
-                            <th>MD / kW</th>
-                            <th>Date of MD</th>
-                            <th>kWh</th>
-                            <th>MD / kW</th>
-                            <th>Date of MD</th>
-                            <th>kWh</th>
-                            <th>MD / kW</th>
-                            <th>Date of MD</th>
-                            <th>kWh</th>
-                            <th>MD / kW</th>
-                            <th>Date of MD</th>
-                            <th>kWh</th>
-                            <th>MD / kW</th>
-                            <th>Date of MD</th>
-                            <th>kWh</th>
-                            <th>Data quality</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <xsl:for-each select="/source/month">
-                            <tr>
-                                <xsl:if test="@has-site-snags">
-                                    <xsl:attribute name="class">
-                                        <xsl:value-of select="'error'" />
-                                    </xsl:attribute>
-                                </xsl:if>
-                                <td>
-                                    <xsl:value-of
-                                        select="concat(hh-start-date[@label='start']/@year, '-', hh-start-date[@label='start']/@month)" />
-                                </td>
-                                <td>
-                                    <xsl:value-of
-                                        select="@max-imported-kw" />
-                                </td>
-                                <td>
-                                    <xsl:choose>
-                                        <xsl:when
-                                            test="@max-imported-kw-date">
-                                            <xsl:value-of
-                                                select="@max-imported-kw-date" />
-                                        </xsl:when>
-                                        <xsl:otherwise>
-                                            NA
-                                        </xsl:otherwise>
-                                    </xsl:choose>
-                                </td>
-                                <td>
-                                    <xsl:value-of
-                                        select="@imported-kwh" />
-                                </td>
-                                <td>
-                                    <xsl:value-of select="@max-used-kw" />
-                                </td>
-                                <td>
-                                    <xsl:choose>
-                                        <xsl:when
-                                            test="@max-used-kw-date">
-                                            <xsl:value-of
-                                                select="@max-used-kw-date" />
-                                        </xsl:when>
-                                        <xsl:otherwise>
-                                            NA
-                                        </xsl:otherwise>
-                                    </xsl:choose>
-                                </td>
-                                <td>
-                                    <xsl:value-of select="@used-kwh" />
-                                </td>
-                                <td>
-                                    <xsl:value-of
-                                        select="@max-displaced-kw" />
-                                </td>
-                                <td>
-                                    <xsl:choose>
-                                        <xsl:when
-                                            test="@max-displaced-kw-date">
-                                            <xsl:value-of
-                                                select="@max-displaced-kw-date" />
-                                        </xsl:when>
-                                        <xsl:otherwise>
-                                            NA
-                                        </xsl:otherwise>
-                                    </xsl:choose>
-                                </td>
-                                <td>
-                                    <xsl:value-of
-                                        select="@displaced-kwh" />
-                                </td>
-                                <td>
-                                    <xsl:value-of
-                                        select="@max-generated-kw" />
-                                </td>
-                                <td>
-                                    <xsl:choose>
-                                        <xsl:when
-                                            test="@max-generated-kw-date">
-                                            <xsl:value-of
-                                                select="@max-generated-kw-date" />
-                                        </xsl:when>
-                                        <xsl:otherwise>
-                                            NA
-                                        </xsl:otherwise>
-                                    </xsl:choose>
-                                </td>
-                                <td>
-                                    <xsl:value-of
-                                        select="@generated-kwh" />
-                                </td>
-                                <td>
-                                    <xsl:value-of
-                                        select="@max-exported-kw" />
-                                </td>
-                                <td>
-                                    <xsl:choose>
-                                        <xsl:when
-                                            test="@max-exported-kw-date">
-                                            <xsl:value-of
-                                                select="@max-exported-kw-date" />
-                                        </xsl:when>
-                                        <xsl:otherwise>
-                                            NA
-                                        </xsl:otherwise>
-                                    </xsl:choose>
-                                </td>
-                                <td>
-                                    <xsl:value-of
-                                        select="@exported-kwh" />
-                                </td>
-                                <td>
-                                    <xsl:value-of
-                                        select="@max-parasitic-kw" />
-                                </td>
-                                <td>
-                                    <xsl:choose>
-                                        <xsl:when
-                                            test="@max-parasitic-kw-date">
-                                            <xsl:value-of
-                                                select="@max-parasitic-kw-date" />
-                                        </xsl:when>
-                                        <xsl:otherwise>
-                                            NA
-                                        </xsl:otherwise>
-                                    </xsl:choose>
-                                </td>
-                                <td>
-                                    <xsl:value-of
-                                        select="@parasitic-kwh" />
-                                </td>
-                                <td>
-                                    <xsl:if
-                                        test="@has-site-snags = 'true'">
-                                        See
-                                        <a
-                                            href="{/source/request/@context-path}/reports/11/output/?site-id={/source/site/@id}&amp;months=1&amp;finish-year={hh-start-date[@label='start']/@year}&amp;finish-month={hh-start-date[@label='start']/@month}">
-                                            era graph
-                                        </a>
-                                        for errors.
-                                    </xsl:if>
-                                </td>
-                            </tr>
-                        </xsl:for-each>
-                    </tbody>
-                </table>
-            </body>
-        </html>
-    </xsl:template>
-</xsl:stylesheet>]]></value>
+                if hh['exp_gen'] * 2 > month['exp_gen']['md']:
+                    month['exp_gen']['md'] = hh['exp_gen'] * 2
+                    month['exp_gen']['md_date'] = hh['start_date']
+                month['exp_gen']['kwh'] += hh['exp_gen']
+
+                if hh['exp_net'] * 2 > month['exp_net']['md']:
+                    month['exp_net']['md'] = hh['exp_net'] * 2
+                    month['exp_net']['md_date'] = hh['start_date']
+                month['exp_net']['kwh'] += hh['exp_net']
+
+        has_snags = sess.query(Snag).filter(Snag.site==site, Snag.start_date <= month_finish, or_(Snag.finish_date is None, Snag.finish_date > month_start)).count() > 0
+        month['has_site_snags'] = has_snags
+
+        month_start += relativedelta(months=1)
+
+
+    totals = dict((typ, {'md': 0, 'md_date': None, 'kwh': 0}) for typ in typs)
+
+    for month in months:
+        for typ in typs:
+            if month[typ]['md'] > totals[typ]['md']:
+                totals[typ]['md'] = month[typ]['md']
+                totals[typ]['md_date'] = month[typ]['md_date']
+            totals[typ]['kwh'] += month[typ]['kwh']
+
+    months.append(totals)
+
+    render(inv, template, {'site': site, 'months': months})
+finally:
+    sess.close()]]></value>
+		<value><![CDATA[<!doctype html>
+<html>
+  <head>
+    <link rel="stylesheet" type="text/css"
+      href="{{context_path}}/reports/19/output/">
+    <title>
+      Chellow &gt; Sites &gt; {{site.code}} {{site.name}} &gt; Monthly figures
+    </title>
+    <style>
+      colgroup.gray {
+        background: silver;
+      }
+
+      tr.error {
+        color: red;
+      }
+    </style>
+  </head>
+  <body>
+  
+    <p>
+      <a href="{{context_path}}/reports/1/output/">Chellow</a> &gt;
+      <a href="{{context_path}}/reports/3/output/">Sites</a> &gt;
+      <a href="{{context_path}}/reports/5/output/?site_id={{site.id}}">{{site.code}} {{site.name}}</a>
+      &gt; Monthly figures
+    </p>
+
+    {% if messages %}
+      <ul>
+        {% for message in messages %}
+          <li>{{ message }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+
+    <form action=".">
+      <fieldset>
+        <legend>Show table</legend>
+        <input type="hidden" name="site_id" value="{{site.id}}">
+        For 12 months finishing at the end of {{input_date('finish', resolution='month')}}
+        <input type="submit" value="Show">
+      </fieldset>
+    </form>
+
+    <table>
+      <caption>Months</caption>
+      <colgroup />
+      <colgroup class="gray" span="3" />
+      <colgroup span="3" />
+      <colgroup class="gray" span="3" />
+      <colgroup span="3" />
+      <colgroup class="gray" span="3" />
+      <colgroup span="3" />
+      <tfoot>
+        <tr>
+          <th>For all months</th>
+          <th>{{months[-1].imp_net.md}}</th>
+          <th>{{months[-1].imp_net.md_date}}</th>
+          <th>{{months[-1].imp_net.kwh}}</th>
+          <th>{{months[-1].used.md}}</th>
+          <th>{{months[-1].used.md_date}}</th>
+          <th>{{months[-1].used.kwh}}</th>
+          <th>{{months[-1].displaced.md}}</th>
+          <th>{{months[-1].displaced.md_date}}</th>
+          <th>{{months[-1].displaced.kwh}}</th>
+          <th>{{months[-1].imp_gen.md}}</th>
+          <th>{{months[-1].imp_gen.md_date}}</th>
+          <th>{{months[-1].imp_gen.kwh}}</th>
+          <th>{{months[-1].exp_net.md}}</th>
+          <th>{{months[-1].exp_net.md_date}}</th>
+          <th>{{months[-1].exp_net.kwh}}</th>
+          <th>{{months[-1].exp_gen.md}}</th>
+          <th>{{months[-1].exp_gen.md_date}}</th>
+          <th>{{months[-1].exp_gen.kwh}}</th>
+        </tr>
+      </tfoot>
+      <thead>
+        <tr>
+          <th rowspan="2">Month</th>
+          <th colspan="3">Imported</th>
+          <th colspan="3">Used</th>
+          <th colspan="3">Displaced</th>
+          <th colspan="3">Generated</th>
+          <th colspan="3">Exported</th>
+          <th colspan="3">Parasitic</th>
+        </tr>
+        <tr>
+          <th>MD / kW</th>
+          <th>Date of MD</th>
+          <th>kWh</th>
+          <th>MD / kW</th>
+          <th>Date of MD</th>
+          <th>kWh</th>
+          <th>MD / kW</th>
+          <th>Date of MD</th>
+          <th>kWh</th>
+          <th>MD / kW</th>
+          <th>Date of MD</th>
+          <th>kWh</th>
+          <th>MD / kW</th>
+          <th>Date of MD</th>
+          <th>kWh</th>
+          <th>MD / kW</th>
+          <th>Date of MD</th>
+          <th>kWh</th>
+          <th>Data quality</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for month in months[:-1] %}
+          <tr
+            {%- if month.has_site_snags -%}
+              class="error"
+            {%- endif -%}
+          >
+            <td>{{month.start_date|hh_format('date')}}</td>
+            <td>{{month.imp_net.md}}</td>
+            <td>
+              {% if month.imp_net.md_date %}
+                {{month.imp_net.md_date|format}}
+              {% endif %}
+            </td>
+            <td>{{month.imp_net.kwh}}</td>
+
+            <td>{{month.used.md}}</td>
+            <td>
+              {% if month.used.md_date %}
+                {{month.used.md_date|format}}
+              {% endif %}
+            </td>
+            <td>{{month.used.kwh}}</td>
+
+            <td>{{month.displaced.md}}</td>
+            <td>
+              {% if month.displaced.md_date %}
+                {{month.displaced.md_date|format}}
+              {% endif %}
+            </td>
+            <td>{{month.displaced.kwh}}</td>
+
+            <td>{{month.imp_gen.md}}</td>
+            <td>
+              {% if month.imp_gen.md_date %}
+                {{month.imp_gen.md_date|format}}
+              {% endif %}
+            </td>
+            <td>{{month.imp_gen.kwh}}</td>
+
+            <td>{{month.exp_net.md}}</td>
+            <td>
+              {% if month.exp_net.md_date %}
+                {{month.exp_net.md_date|format}}
+              {% endif %}
+            </td>
+            <td>{{month.exp_net.kwh}}</td>
+
+            <td>{{month.exp_gen.md}}</td>
+            <td>
+              {% if month.exp_gen.md_date %}
+                {{month.exp_gen.md_date|format}}
+              {% endif %}
+            </td>
+            <td>{{month.exp_gen.kwh}}</td>
+
+            <td>
+              {% if month.has_site_snags %}
+                See <a href="{{context_path}}/reports/11/output/?site-id={{site.id}}&amp;months=1&amp;finish-year={{month.start_date.year}}&amp;finish-month={{month.start_date.month}}">era graph</a> for errors.
+              {% endif %}
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </body>
+</html>]]></value>
 	</line>
 	<line>
 		<value><![CDATA[insert]]></value>

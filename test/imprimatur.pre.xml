@@ -2000,7 +2000,7 @@ def triad_estimates():
 		</test>
 		<test name="Try the site level monthly data HTML report.">
 			<request
-				path="/chellow/reports/13/output/?site-id=7&amp;finish-year=2006&amp;finish-month=08">
+				path="/chellow/reports/13/output/?site_id=7&amp;finish_year=2006&amp;finish_month=08">
 				<response-code value="200" />
 			</request>
 		</test>
@@ -2393,7 +2393,7 @@ def virtual_bill(supply_source):
 				<control name="name" value="Bieling" />
 				<response-code value="303" />
 			</request>
-			<request path="/chellow/reports/13/output/?site-id=8">
+			<request path="/chellow/reports/13/output/?site_id=8&amp;finish_year=2008&amp;finish_month=07">
 				<response-code value="200" />
 			</request>
 		</test>
