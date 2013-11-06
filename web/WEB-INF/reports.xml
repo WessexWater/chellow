@@ -13830,7 +13830,7 @@ try:
             f.write(unichr(bt))
             bt = stream.read()
         f.seek(0)
-        hh_import_process = start_hh_import_process(sess, hhdc_contract_id, f, file_item.getName(), file_item.getSize())
+        hh_import_process = start_hh_import_process(hhdc_contract_id, f, file_item.getName(), file_item.getSize())
         inv.sendSeeOther("/reports/65/output/?hhdc_contract_id=" + str(contract.id) + "&process_id=" + str(hh_import_process.id))
 except UserException, e:
     render(inv, template, make_fields(sess, contract, e), 400)
