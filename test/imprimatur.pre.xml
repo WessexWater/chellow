@@ -1550,14 +1550,14 @@ def virtual_bill(supply_source):
 			<request path="/chellow/reports/279/output/" method="post">
 				<control name="hhdc_contract_id" value="50" />
 				<control name="state"><![CDATA[{
-'last_import_keys': ['1960-11-30T00:00Z_example.csv']}]]></control>
+'last_import_keys': {'.': '1960-11-30 00:00_example.csv'}}]]></control>
 				<control name="update_state" value="Update State" />
 				<response-code value="303" />
 			</request>
 			<request path="/chellow/reports/115/output/?hhdc_contract_id=50">
 				<response-code value="200" />
 				<regex
-					pattern="\{\s*&amp;#39;last_import_keys&amp;#39;: \[&amp;#39;1960-11-30T00:00Z_example.csv&amp;#39;\]\}" />
+					pattern="\{\s*&amp;#39;last_import_keys&amp;#39;: \{&amp;#39;.&amp;#39;: &amp;#39;1960-11-30 00:00_example.csv&amp;#39;\}\}" />
 			</request>
 		</test>
 		<test name="Check adding of user report.">

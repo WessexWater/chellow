@@ -11219,7 +11219,7 @@ finally:
 		<value><![CDATA[from java.text import DecimalFormat
 from java.lang import Runtime, System, Thread
 from java.io import StringWriter, InputStreamReader
-from net.sf.chellow.monad import Hiber, Monad
+from net.sf.chellow.monad import Hiber, Monad, MonadMessage
 from java.lang.management import OperatingSystemMXBean, ManagementFactory
 from com.jezhumble.javasysmon import JavaSysMon
 from net.sf.chellow.ui import ContextListener
@@ -11229,15 +11229,27 @@ interrupt_id = None
 if inv.getRequest().getMethod() == "POST":
     if inv.hasParameter('interrupt'):
         interrupt_id = inv.getLong('thread-id')
+        Monad.getUtils()['imprt'](globals(), {
+        'db': ['HhDatum', 'Site', 'Supply', 'set_read_write', 'session'], 
+        'utils': ['UserException', 'HH', 'form_date'],
+        'templater': ['render', 'on_start_report', 'get_report']})
 
-    if inv.hasParameter('run_shutdown'):
+    elif inv.hasParameter('run_shutdown'):
         shutdown_contract = Contract.getNonCoreContract('shutdown')
         shutdown_contract.callFunction('on_shut_down', [Monad.getContext()])
-        source.setAttribute("msg", "Shut down successfully.")
-
-    if inv.hasParameter('run_startup'):
+        source.appendChild(MonadMessage("Shut down successfully.").toXml(doc))
+        
+    elif inv.hasParameter('run_startup'):
         startup_contract = Contract.getNonCoreContract('startup')
         startup_contract.callFunction('on_start_up', [Monad.getContext()])
+    elif inv.hasParameter('cancel_backend'):
+        backend_pid = inv.getLong('backend_pid')
+        con = Hiber.session().connection()
+        stmt = con.createStatement()
+        stmt.execute("select pg_terminate_backend(" + str(backend_pid) + ")")
+        stmt.close()
+        Hiber.commit()
+        source.appendChild(MonadMessage("Cancelled backend.").toXml(doc))
 
 df = DecimalFormat("###,###,###,###,##0")
 runtime = Runtime.getRuntime()
@@ -11273,13 +11285,18 @@ for entry in Thread.getAllStackTraces().entrySet():
     source.appendChild(thread_element)
     thread = entry.getKey()
 
+    if interrupt_id is not None:
+        request = get_report(thread.getId())
+        if request is not None:
+            request.getResponse().getOutputStream().close()
+
     if thread.getId() == interrupt_id:
         thread.interrupt()
+    #if thread.getId() == 491:
+    #    thread.stop()
 
-    trace = ''
-    for trace_item in entry.getValue():
-        trace = trace + trace_item.toString() + "\r"
-    thread_element.setTextContent(trace)
+    trace = ''.join([str(item) + "\r\n" for item in entry.getValue()])
+    thread_element.setTextContent(trace + " " + str(dir(thread)))
     thread_element.setAttribute('id', str(thread.getId()))
     thread_element.setAttribute('name', thread.getName())
     thread_element.setAttribute('is-interrupted', str(thread.isInterrupted()))
@@ -11324,8 +11341,7 @@ pstmt = con.prepareStatement("show max_pred_locks_per_transaction")
 rs = pstmt.executeQuery()
 while rs.next():
     source.setAttribute('max_pred_locks_per_transaction', str(rs.getString('max_pred_locks_per_transaction')))
-rs.close()
-]]></value>
+rs.close()]]></value>
 		<value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
 <xsl:stylesheet version="1.0"
     xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
@@ -11359,7 +11375,6 @@ rs.close()
                         </xsl:for-each>
                     </ul>
                 </xsl:if>
-                <xsl:value-of select="/source/@msg" />
 <p><a href=".">Refresh</a></p>
 <p>Chellow Version
                     <a href="https://bitbucket.org/ww_tlocke/chellow/commits/{/source/@chellow-version}" ><xsl:value-of select="/source/@chellow-version" /></a></p>
@@ -11483,6 +11498,7 @@ rs.close()
 <table>
     <thead>
         <tr>
+            <th>Cancel</th>
             <xsl:for-each select="/source/pg-stat-activity/column">
                 <th><xsl:value-of select="@name"/></th>
             </xsl:for-each>
@@ -11491,6 +11507,14 @@ rs.close()
     <tbody>
         <xsl:for-each select="/source/pg-stat-activity/row">
             <tr>
+                <td>
+                  <form action="." method="post">
+                    <fieldset>
+                      <input type="hidden" name="backend_pid" value="{cell[3]/@value}" />
+                      <input type="submit" name="cancel_backend" value="Cancel" />
+                    </fieldset>
+                  </form>
+                </td>
                 <xsl:for-each select="cell">
                     <td><xsl:value-of select="@value"/></td>
                 </xsl:for-each>
