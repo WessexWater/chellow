@@ -225,7 +225,7 @@ public abstract class Monad extends HttpServlet implements Urlable {
 					inv.sendUser(doc);
 				} catch (Throwable te) {
 					logger.logp(Level.SEVERE, "uk.org.tlocke.monad.Monad",
-							"service", "Can't process request", e);
+							"service", "Can't process request xx " + req.getPathInfo() + req.getRequestURI(), e);
 					res.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
 							HttpException.getStackTraceString(te)
 									+ HttpException.getStackTraceString(e));

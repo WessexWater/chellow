@@ -12151,16 +12151,16 @@ try:
             pw.flush()
             associates = ' '.join(site.code for site in group.sites[1:])
             source_codes = ' '.join(sorted(set(sup.source.code for sup in group.supplies)))
-            gen_types = ' '.join(sorted(set(sup.generator_type.code for sup in group.supplies if supp.generator_type is not None)))
+            gen_types = ' '.join(sorted(set(sup.generator_type.code for sup in group.supplies if sup.generator_type is not None)))
             group_start_str = group.start_date.strftime('%Y-%m-%d %H:%M')
             group_finish_str = group.finish_date.strftime('%Y-%m-%d %H:%M')
             for hh in group.hh_data(sess):
                 hh_start = hh['start_date']
                 if hh_start.hour == 0 and hh_start.minute == 0:
                     pw.print("\r\n" + ','.join('"' + str(val) + '"' for val in [site.code, site.name, associates, source_codes, gen_types, group_start_str, group_finish_str, 'used', hh_start.strftime('%Y-%m-%d')]))
-                used_gen_kwh = hh['import_gen'] - hh['export_net'] - hh['export_gen']
-                used_3p_kwh = hh['import_3p'] - hh['export_3p']
-                used_kwh = hh['import_net'] + used_gen_kwh + used_3p_kwh
+                used_gen_kwh = hh['imp_gen'] - hh['exp_net'] - hh['exp_gen']
+                used_3p_kwh = hh['imp_3p'] - hh['exp_3p']
+                used_kwh = hh['imp_net'] + used_gen_kwh + used_3p_kwh
                 pw.print(',' + str(round(used_kwh, 2)))
             pw.flush()
     pw.close()
@@ -14719,35 +14719,25 @@ Monad.getContext().getAttribute("net.sf.chellow.utils")['imprt'](globals(), {
         'db': ['Contract', 'Party', 'RateScript', 'set_read_write', 'session'], 
         'utils': ['UserException'],
         'templater': ['render'],
-        'bsuos': []})
+        'bsuos': ['get_bsuos_importer']})
 
 
 sess = None
-task = None
+importer = None
 try:
     sess = session()
-    debug = ''
-
-    REPORT_URI = "/reports/227/output/"
-
-    contract = Contract.get_non_core_by_name(sess, 'bsuos')
-
-    ctx = inv.getMonad().getServletConfig().getServletContext()
-    task = bsuos['get_bsuos_task'](ctx)
-
-    if inv.hasParameter('remove'):
-        bsuos['remove_bsuos_task'](ctx)
-        inv.sendSeeOther(REPORT_URI)
-    elif inv.hasParameter('start'):
-        bsuos['start_bsuos_task'](ctx)
-        inv.sendSeeOther(REPORT_URI)
-    elif inv.hasParameter('now'):
-        Thread(task, "BSUoS Import Now").start()
-        inv.sendSeeOther(REPORT_URI)
+    if inv.getRequest().getMethod() == "GET":
+        importer = get_bsuos_importer()
+        contract = Contract.get_non_core_by_name(sess, 'bsuos')
+        render(inv, template, {'importer': importer, 'contract': contract})
     else:
-        render(inv, template, {'task': task, 'contract': contract})
+        importer = get_bsuos_importer()
+        contract = Contract.get_non_core_by_name(sess, 'bsuos')
+        importer.go()
+        inv.sendSeeOther("/reports/227/output/")
 except UserException, e:
-    render(inv, template, {'messages': [str(e)], 'task': task,
+    sess.rollback()
+    render(inv, template, {'messages': [str(e)], 'importer': importer,
         'contract': contract})
 finally:
     sess.close()]]></value>
@@ -14755,17 +14745,15 @@ finally:
 <html>
   <head>
     <link rel="stylesheet" type="text/css"
-      href="{{ context_path }}/reports/19/output/" />
+      href="{{context_path }}/reports/19/output/">
     <title>
-      Chellow &gt; Non-core Contracts &gt; BSUoS
-      &gt; Automatic Importer
+      Chellow &gt; Non-core Contracts &gt; BSUoS &gt; Automatic Importer
     </title>
   </head>
   <body>
     <p>
-      <a href="{{ context_path }}/reports/1/output/">Chellow</a> &gt;
-      <a href="{{ context_path }}/reports/259/output/">Non-Core Contracts</a>
-      &gt;
+      <a href="{{context_path }}/reports/1/output/">Chellow</a> &gt;
+      <a href="{{context_path}}/reports/259/output/">Non-Core Contracts</a> &gt;
       <a href="{{ context_path }}/reports/267/output/?non_core_contract_id={{ contract.id }}">{{ contract.name }}</a>
       &gt; Automatic Importer
     </p>
@@ -14780,23 +14768,16 @@ finally:
     <p>
       <a href=".">Refresh page</a>{{ debug }}
     </p>
-    {% if task %}
+    {% if importer %}
       <table>
         <tr>
           <th>Is Locked?</th>
-          <td>{{ task.is_locked() }}</td>
+          <td>{{ importer.is_locked() }}</td>
         </tr>
       </table>
       <br/>
-      {% if not task.is_locked() %}
-        <form action="{{ context_path }}/reports/227/output/">
-          <fieldset>
-            <legend>Remove Importer</legend>
-            <input type="submit" value="Remove" name="remove" />
-          </fieldset>
-        </form>
-        <br/>
-        <form action="{{ context_path }}/reports/227/output/">
+      {% if not importer.is_locked() %}
+        <form action="{{context_path}}/reports/227/output/" method="post">
           <fieldset>
             <legend>Import Now</legend>
             <input type="submit" value="Import" name="now">
@@ -14807,17 +14788,12 @@ finally:
       <h3>Log</h3>
         
       <ul>
-        {% for message in task.messages %}
+        {% for message in importer.messages %}
           <li>{{ message }}</li>
         {% endfor %}
       </ul>
     {% else %}
-      <form action="{{ context_path }}/reports/227/output/">
-        <fieldset>
-          <legend>Start Importer</legend>
-          <input type="submit" value="Start" name="start" />
-        </fieldset>
-      </form>
+      <p>Importer not present.</p>
     {% endif %}
   </body>
 </html>]]></value>
