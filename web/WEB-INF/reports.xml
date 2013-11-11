@@ -12740,14 +12740,8 @@ for key in properties.propertyNames():
 		<value><![CDATA[195]]></value>
 		<value><![CDATA[true]]></value>
 		<value><![CDATA[ECOES Comparison]]></value>
-		<value><![CDATA[from net.sf.chellow.monad import Hiber, UserException
-from java.lang import System, Integer, String
-from net.sf.chellow.monad.types import MonadDate
-from java.sql import Timestamp, ResultSet
-from java.util import GregorianCalendar, Calendar, TimeZone, Locale, Date, Properties
-from net.sf.chellow.physical import HhStartDate, Configuration, Supply
-from net.sf.chellow.billing import Batch, Contract
-from org.python.util import PythonInterpreter
+		<value><![CDATA[from net.sf.chellow.monad import Monad
+from java.lang import System
 from org.apache.http.protocol import HTTP
 from org.apache.http.client.entity import UrlEncodedFormEntity
 from org.apache.http.util import EntityUtils
@@ -12756,221 +12750,252 @@ from org.apache.http.conn.params import ConnRoutePNames
 from org.apache.http.impl.client import DefaultHttpClient
 from org.apache.http.message import BasicNameValuePair
 from org.apache.http.client.methods import HttpGet, HttpPost
-from java.io import StringReader
-from java.net import URL, URLEncoder
-from com.Ostermiller.util import CSVParser
 
+import csv
+import urllib
+import StringIO
 
-inv.getResponse().setContentType("text/csv")
-inv.getResponse().setHeader('Content-Disposition', 'attachment; filename="output.csv"')
-pw = inv.getResponse().getWriter()
+Monad.getUtils()['imprt'](globals(), {
+        'db': ['Source', 'Era', 'Contract', 'HhDatum', 'Site', 'Supply', 'set_read_write', 'session'], 
+        'utils': ['UserException', 'HH', 'form_date'],
+        'templater': ['render']})
 
-config = Configuration.getConfiguration()
-properties = Properties()
-properties.load(StringReader(config.getProperties()))
+sess = None
+try:
+    sess = session()
 
-ECOES_USER_NAME_KEY = 'ecoes.user.name'
-user_name = properties.get(ECOES_USER_NAME_KEY)
-if user_name is None:
-    raise UserException("The property " + ECOES_USER_NAME_KEY + " cannot be found in the configuration properties.")
+    inv.getResponse().setContentType("text/csv")
+    inv.getResponse().setHeader('Content-Disposition', 'attachment; filename="output.csv"')
+    pw = inv.getResponse().getWriter()
 
-ECOES_PASSWORD_KEY = 'ecoes.password'
-password = properties.get(ECOES_PASSWORD_KEY)
-if password is None:
-    raise UserException("The property " + ECOES_PASSWORD_KEY + " cannot be found in the configuration properties.")
+    props = Contract.get_non_core_by_name(sess, 'configuration').make_properties()
 
-PROXY_HOST_KEY = 'proxy.host'
-PROXY_PORT_KEY = 'proxy.port'
+    ECOES_USER_NAME_KEY = 'ecoes.user.name'
+    try:
+        user_name = props[ECOES_USER_NAME_KEY]
+    except KeyError:
+        raise UserException("The property " + ECOES_USER_NAME_KEY + " cannot be found in the configuration properties.")
 
-proxy_host = properties.get(PROXY_HOST_KEY)
+    ECOES_PASSWORD_KEY = 'ecoes.password'
+    try:
+        password = props[ECOES_PASSWORD_KEY]
+    except KeyError:
+        raise UserException("The property " + ECOES_PASSWORD_KEY + " cannot be found in the configuration properties.")
 
-client = DefaultHttpClient()
-if proxy_host is not None:
-    proxy_port = properties.get(PROXY_PORT_KEY)
-    if proxy_port is None:
-        raise UserException("The property " + PROXY_HOST_KEY + " is set, but the property " + PROXY_PORT_KEY + " is not.")
+    PROXY_HOST_KEY = 'proxy.host'
+    PROXY_PORT_KEY = 'proxy.port'
 
-    proxy = HttpHost(proxy_host, int(proxy_port), "http")
-    client.getParams().setParameter(ConnRoutePNames.DEFAULT_PROXY, proxy)
+    proxy_host = props.get(PROXY_HOST_KEY)
 
-http_get = HttpGet('https://www.ecoes.co.uk/')
-response = client.execute(http_get)
-EntityUtils.consume(response.getEntity())
+    client = DefaultHttpClient()
+    if proxy_host is not None:
+        proxy_port = props.get(PROXY_PORT_KEY)
+        if proxy_port is None:
+            raise UserException("The property " + PROXY_HOST_KEY + " is set, but the property " + PROXY_PORT_KEY + " is not.")
 
-http_post = HttpPost("https://www.ecoes.co.uk/login.asp")
-http_post.setEntity(UrlEncodedFormEntity([BasicNameValuePair("username", user_name), BasicNameValuePair("password", password), BasicNameValuePair('beenHereBefore', '1'), BasicNameValuePair('forceLogout', '1')], HTTP.UTF_8))
-response = client.execute(http_post)
-location_header = response.getFirstHeader('Location')
-location = location_header.getValue()
-EntityUtils.consume(response.getEntity())
-guid = URLEncoder.encode(location[19:])
+        proxy = HttpHost(proxy_host, int(proxy_port), "http")
+        client.getParams().setParameter(ConnRoutePNames.DEFAULT_PROXY, proxy)
 
-mpans = sorted([mpan for mpan in Hiber.session().createQuery("select era.impMpanCore from Era era where era.impMpanCore is not null and era.supply.dnoContract.name != '99' and era.finishDate is null and era.supply.source.code != '3rd-party' order by era.impMpanCore").list()] + [mpan for mpan in Hiber.session().createQuery("select era.expMpanCore from Era era where era.expMpanCore is not null and era.supply.dnoContract.name != '99' and era.finishDate is null and era.supply.source.code != '3rd-party' order by era.expMpanCore").list()])
+    http_get = HttpGet('http://www.ecoes.co.uk/')
+    response = client.execute(http_get)
+    EntityUtils.consume(response.getEntity())
+    http_post = HttpPost("https://www.ecoes.co.uk/login.asp")
+    http_post.setEntity(UrlEncodedFormEntity([BasicNameValuePair("username", user_name), BasicNameValuePair("password", password), BasicNameValuePair('beenHereBefore', '1'), BasicNameValuePair('forceLogout', '1')], HTTP.UTF_8))
+    response = client.execute(http_post)
+    location_header = response.getFirstHeader('Location')
+    location = location_header.getValue()
+    EntityUtils.consume(response.getEntity())
+    guid = urllib.quote_plus(location[19:])
 
-http_get = HttpGet('https://www.ecoes.co.uk/saveportfolioMpans.asp?guid=' + guid)
+    mpans = sess.query(Era.imp_mpan_core).join(Supply, Source).join(Supply.dno_contract).filter(Contract.name!='99', Era.finish_date==None, Source.code!='3rd-party', Era.imp_mpan_core!=None).distinct().order_by(Era.imp_mpan_core).all() + sess.query(Era.exp_mpan_core).join(Supply, Source).join(Supply.dno_contract).filter(Contract.name!='99', Era.finish_date==None, Source.code!='3rd-party', Era.exp_mpan_core!=None).distinct().order_by(Era.exp_mpan_core).all()
 
-pw.print("MPAN Core,MPAN Core No Spaces,ECOES PC,Chellow PC,ECOES MTC,Chellow MTC,ECOES LLFC,Chellow LLFC,ECOES SSC,Chellow SSC,ECOES Supplier, Chellow Supplier,ECOES DC,Chellow DC,ECOES MOP,Chellow MOP,ECOES GSP Group,Chellow GSP Group,ECOES MSN, Chellow MSN,ECOES Meter Type,Chellow Meter Type,Problem")
-pw.flush()
+    mpans = [v[0] for v in mpans]
 
-entity = client.execute(http_get).getEntity()
-csv_is = entity.getContent()
-parser = CSVParser(csv_is)
-values = parser.getLine()
-values = parser.getLine()
+    http_get = HttpGet('http://www.ecoes.co.uk/saveportfolioMpans.asp?guid=' + guid)
 
-ecoes_titles = ['mpan-core', 'address-line-1', 'address-line-2', 'address-line-3', 'address-line-4', 'address-line-5', 'address-line-6', 'address-line-7', 'address-line-8', 'address-line-9', 'post-code', 'supplier', 'registration-from', 'mtc', 'mtc-date', 'llfc', 'llfc-from', 'pc', 'ssc', 'measurement-class', 'energisation-status', 'da', 'dc', 'mop', 'mop-appoint-date', 'gsp-group', 'gsp-effective-from', 'dno', 'msn', 'meter-install-date', 'meter-type', 'map-id']
+    pw.print("MPAN Core,MPAN Core No Spaces,ECOES PC,Chellow PC,ECOES MTC,Chellow MTC,ECOES LLFC,Chellow LLFC,ECOES SSC,Chellow SSC,ECOES Supplier, Chellow Supplier,ECOES DC,Chellow DC,ECOES MOP,Chellow MOP,ECOES GSP Group,Chellow GSP Group,ECOES MSN, Chellow MSN,ECOES Meter Type,Chellow Meter Type,Problem")
+    pw.flush()
 
-while values != None:
-    problem = ''
+    entity = client.execute(http_get).getEntity()
+    csv_is = entity.getContent()
+    f = StringIO.StringIO()
+    bt = csv_is.read()
+    while bt != -1:
+        f.write(chr(bt))
+        bt = csv_is.read()
+    f.seek(0)
+    parser = iter(csv.reader(f))
+    parser.next()  # Skip titles
 
+    for values in parser:
+        problem = ''
 
-    ecoes = dict(zip(ecoes_titles, [values[i] for i in range(len(ecoes_titles))]))
+        ecoes_titles = ['mpan-core', 'address-line-1', 'address-line-2', 'address-line-3', 'address-line-4', 'address-line-5', 'address-line-6', 'address-line-7', 'address-line-8', 'address-line-9', 'post-code', 'supplier', 'registration-from', 'mtc', 'mtc-date', 'llfc', 'llfc-from', 'pc', 'ssc', 'measurement-class', 'energisation-status', 'da', 'dc', 'mop', 'mop-appoint-date', 'gsp-group', 'gsp-effective-from', 'dno', 'msn', 'meter-install-date', 'meter-type', 'map-id']
 
-    mpan_spaces = ecoes['mpan-core'][:2] + ' ' + ecoes['mpan-core'][2:6] + ' ' + ecoes['mpan-core'][6:10] + ' ' + ecoes['mpan-core'][-3:]
+        ecoes = dict(zip(ecoes_titles, values))
 
-    disconnected = len(ecoes['supplier']) == 0
-    current_chell = mpan_spaces in mpans
+        mpan_spaces = ecoes['mpan-core'][:2] + ' ' + ecoes['mpan-core'][2:6] + ' ' + ecoes['mpan-core'][6:10] + ' ' + ecoes['mpan-core'][-3:]
 
-    if disconnected and current_chell:
-        problem += "Disconnected in ECOES, but current in Chellow. "
-    elif not disconnected and not current_chell:
-        problem += "In ECOES (energized or de-energized), but not current in Chellow. "
+        disconnected = len(ecoes['supplier']) == 0
+        current_chell = mpan_spaces in mpans
 
-    if current_chell:
-        mpans.remove(mpan_spaces)
-        supply = Supply.getSupply(mpan_spaces)
-        era = supply.getEra(None)
-        if era.impMpanCore == mpan_spaces:
-            llfc = era.impLlfc
-            supplier_contract = era.impSupplierContract
+        if disconnected and current_chell:
+            problem += "Disconnected in ECOES, but current in Chellow. "
+        elif not disconnected and not current_chell:
+            problem += "In ECOES (energized or de-energized), but not current in Chellow. "
+
+        if current_chell:
+            mpans.remove(mpan_spaces)
+            supply = Supply.get_by_mpan_core(sess, mpan_spaces)
+            era = supply.find_era_at(sess, None)
+            if era.imp_mpan_core == mpan_spaces:
+                supplier_contract = era.imp_supplier_contract
+                llfc = era.imp_llfc
+            else:
+                supplier_contract = era.exp_supplier_contract
+                llfc = era.exp_llfc
+
+            chellow_pc = era.pc.code
+            try:
+                if int(ecoes['pc']) != int(chellow_pc):
+                    problem += "The PCs don't match. "
+            except ValueError:
+                problem += "Can't parse the PC. "
+
+            chellow_mtc = era.mtc.code
+            try:
+                if int(ecoes['mtc']) != int(chellow_mtc):
+                    problem += "The MTCs don't match. "
+            except ValueError:
+                problem += "Can't parse the MTC. "
+
+            chellow_llfc = llfc.code
+            try:
+                if int(ecoes['llfc']) != int(chellow_llfc):
+                    problem += "The LLFCs don't match. "
+            except ValueError:
+                problem += "Can't parse the LLFC. "
+
+            chellow_ssc = era.ssc
+            if chellow_ssc is None:
+                chellow_ssc = ''
+                chellow_ssc_int = None
+            else:
+                chellow_ssc = chellow_ssc.code
+                chellow_ssc_int = int(chellow_ssc)
+
+            ecoes_ssc_int = int(ecoes['ssc']) if len(ecoes['ssc']) > 0 else None
+
+            if ecoes_ssc_int != chellow_ssc_int and not (ecoes_ssc_int is None and chellow_ssc_int is None):
+                problem += "The SSCs don't match. "
+
+            chellow_supplier = supplier_contract.party.participant.code
+            if chellow_supplier != ecoes['supplier']:
+                problem += "The supplier codes don't match. "
+
+            hhdc_contract = era.hhdc_contract
+            if hhdc_contract is None:
+                chellow_dc = ''
+            else:
+                chellow_dc = hhdc_contract.party.participant.code
+
+            if chellow_dc != ecoes['dc']:
+                problem += "The DC codes don't match. "
+
+            mop_contract = era.mop_contract
+            if mop_contract is None:
+                chellow_mop = ''
+            else:
+                chellow_mop = mop_contract.party.participant.code
+
+            if chellow_mop != ecoes['mop']:
+                problem += "The MOP codes don't match. "
+
+            chellow_gsp_group = supply.gsp_group.code
+            if chellow_gsp_group != ecoes['gsp-group']:
+                 problem += "The GSP group codes don't match. "
+
+            chellow_msn = era.msn
+            if chellow_msn is None:
+                chellow_msn = ''
+            if chellow_msn != ecoes['msn']:
+                problem += "The meter serial numbers don't match. "
+
+            if chellow_pc == '00':
+                chellow_meter_type = 'H'
+            elif len(era.channels) > 0:
+                chellow_meter_type = 'RCAMR'
+            elif era.mtc.meter_type.code in ['UM', 'PH']:
+                chellow_meter_type = ''
+            else:
+                chellow_meter_type = 'N'
+
+            if chellow_meter_type != ecoes['meter-type']:
+                problem += "The meter types don't match. See http://dtc.mrasco.com/DataItem.aspx?ItemCounter=0483 "        
         else:
-            llfc = era.expLlfc
-            supplier_contract = era.expSupplierContract
-            
-        chellow_pc = era.getPc().getCode()
-        try:
-            if int(ecoes['pc']) != int(chellow_pc):
-                problem += "The PCs don't match. "
-        except ValueError:
-            problem += "Can't parse the PC. "
-
-        chellow_mtc = era.getMtc().getCode()
-        try:
-            if int(ecoes['mtc']) != int(chellow_mtc):
-                problem += "The MTCs don't match. "
-        except ValueError:
-            problem += "Can't parse the MTC. "
-
-        chellow_llfc = llfc.code
-        try:
-            if int(ecoes['llfc']) != int(chellow_llfc):
-                problem += "The LLFCs don't match. "
-        except ValueError:
-            problem += "Can't parse the LLFC. "
-
-        chellow_ssc = era.ssc
-        if chellow_ssc is None:
+            chellow_pc = ''
+            chellow_mtc = ''
+            chellow_llfc = ''
             chellow_ssc = ''
-            chellow_ssc_int = None
-        else:
-            chellow_ssc = chellow_ssc.code
-            chellow_ssc_int = int(chellow_ssc)
-
-        if len(ecoes['ssc']) > 0:
-            ecoes_ssc_int = int(ecoes['ssc'])
-        else:
-            ecoes_ssc_int = None
-
-        if ecoes_ssc_int != chellow_ssc_int and not (ecoes_ssc_int is None and chellow_ssc_int is None):
-            problem += "The SSCs don't match. "
-
-        chellow_supplier = supplier_contract.party.participant.code
-        if chellow_supplier != ecoes['supplier']:
-            problem += "The supplier codes don't match. "
-
-        hhdc_contract = era.getHhdcContract()
-        if hhdc_contract is None:
+            chellow_supplier = ''
             chellow_dc = ''
-        else:
-            chellow_dc = hhdc_contract.getParty().getParticipant().getCode()
-        if chellow_dc != ecoes['dc']:
-            problem += "The DC codes don't match. "
-
-        mop_contract = era.getMopContract()
-        if mop_contract is None:
             chellow_mop = ''
-        else:
-            chellow_mop = mop_contract.getParty().getParticipant().getCode()
-
-        if chellow_mop != ecoes['mop']:
-            problem += "The MOP codes don't match. "
-
-        chellow_gsp_group = supply.getGspGroup().getCode()
-        if chellow_gsp_group != ecoes['gsp-group']:
-            problem += "The GSP group codes don't match. "
-
-        chellow_msn = era.msn
-        if chellow_msn is None:
+            chellow_gsp_group = ''
             chellow_msn = ''
-        if chellow_msn != ecoes['msn']:
-            problem += "The meter serial numbers don't match. "
-
-        if chellow_pc == 0:
-            chellow_meter_type = 'H'
-        elif len(era.getChannels()) > 0:
-            chellow_meter_type = 'RCAMR'
-        elif era.getMtc().getMeterType().getCode() in ['UM', 'PH']:
             chellow_meter_type = ''
+
+        if len(problem) > 0:
+            pw.print('\n' + ','.join('"' + str(val) + '"' for val in [mpan_spaces, ecoes['mpan-core'], ecoes['pc'], chellow_pc, ecoes['mtc'], chellow_mtc, ecoes['llfc'], chellow_llfc, ecoes['ssc'], chellow_ssc, ecoes['supplier'], chellow_supplier, ecoes['dc'], chellow_dc, ecoes['mop'], chellow_mop, ecoes['gsp-group'], chellow_gsp_group, ecoes['msn'], chellow_msn, ecoes['meter-type'], chellow_meter_type, problem]))
         else:
-            chellow_meter_type = 'N'
+            pw.print(' ')
+        pw.flush()
+        sess.expunge_all()
 
-        if chellow_meter_type != ecoes['meter-type']:
-            problem += "The meter types don't match. See http://dtc.mrasco.com/DataItem.aspx?ItemCounter=0483 "        
-    else:
-        chellow_pc = ''
-        chellow_mtc = ''
-        chellow_llfc = ''
-        chellow_ssc = ''
-        chellow_supplier = ''
-        chellow_dc = ''
-        chellow_mop = ''
-        chellow_gsp_group = ''
-        chellow_msn = ''
-        chellow_meter_type = ''
-
-    if len(problem) > 0:
-        pw.print('\n' + ','.join('"' + str(val) + '"' for val in [mpan_spaces, ecoes['mpan-core'], ecoes['pc'], chellow_pc, ecoes['mtc'], chellow_mtc, ecoes['llfc'], chellow_llfc, ecoes['ssc'], chellow_ssc, ecoes['supplier'], chellow_supplier, ecoes['dc'], chellow_dc, ecoes['mop'], chellow_mop, ecoes['gsp-group'], chellow_gsp_group, ecoes['msn'], chellow_msn, ecoes['meter-type'], chellow_meter_type, problem]))
-    else:
-        pw.print(' ')
-    pw.flush()
-    Hiber.session().clear()
-    values = parser.getLine()
-
-parser.close()
-EntityUtils.consume(entity)
-
-for mpan_core in mpans:
-    supply = Supply.getSupply(mpan_core)
-    era = supply.getEra(None)
-    if mpan_core == era.impMpanCore:
-        supplier_contract = era.impSupplierContract
-        llfc = era.impLlfc
-    else:
-        supplier_contract = era.expSupplierContract
-        llfc = era.expLlfc
-
-    if era.getPc().getCode() == '00':
-        meter_type = 'H'
-    else:
-        if len(era.getChannels()) > 0:
-            meter_type = 'RCAMR'
+    EntityUtils.consume(entity)
+    pw.println(str(mpans))
+    for mpan_core in mpans:
+        supply = Supply.get_by_mpan_core(sess, mpan_core)
+        era = supply.find_era_at(sess, None)
+        if era.imp_mpan_core == mpan_core:
+            supplier_contract = era.imp_supplier_contract
+            llfc = era.imp_llfc
         else:
-            meter_type = 'N'
+            supplier_contract = era.exp_supplier_contract
+            llfc = era.exp_llfc
 
-    pw.print('\n' + ','.join('"' + ('' if val is None else str(val)) + '"' for val in [mpan_core_spaces, mpan_core_str, '', era.pc, '', era.mtc, '', llfc,'', era.ssc, '', supplierContract.party.participant.code, '', era.hhdcContract.party.participant.code, '', era.mopContract.party.participant.code, '', supply.gspGroup.code, '', msn, '', meter_type, 'In Chellow, but not in ECOES.']))
-    pw.flush()
-    Hiber.session().clear()
-pw.close()]]></value>
+        ssc = era.ssc
+        ssc = '' if ssc is None else ssc.code
+
+        hhdc_contract = era.hhdc_contract
+        if hhdc_contract is None:
+            dc = ''
+        else:
+            dc = hhdc_contract.party.participant.code
+
+        mop_contract = era.mop_contract
+        if mop_contract is None:
+            mop = ''
+        else:
+            mop = mop_contract.party.participant.code
+
+        msn = era.msn
+        if msn is None:
+            msn = ''
+
+        if era.pc.code == '00':
+            meter_type = 'H'
+        else:
+            if len(era.channels) > 0:
+                meter_type = 'RCAMR'
+            else:
+                meter_type = 'N'
+
+        pw.print('\n' + ','.join('"' + str(val) + '"' for val in [mpan_core, mpan_core.replace(' ', ''), '', era.pc.code, '', era.mtc.code, '', llfc.code, '', ssc, '', supplier_contract.party.participant.code, '', dc, '', mop, '', supply.gsp_group.code, '', msn, '', meter_type, 'In Chellow, but not in ECOES.']))
+        pw.flush()
+    pw.close()
+finally:
+    if sess is not None:
+        sess.close()]]></value>
 		<value><![CDATA[]]></value>
 	</line>
 	<line>
