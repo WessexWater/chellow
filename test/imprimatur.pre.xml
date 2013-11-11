@@ -3124,6 +3124,14 @@ def virtual_bill(supply_source):
 			<request path="/chellow/reports/115/output/?hhdc_contract_id=50">
 				<regex pattern="hh_data\.df2" />
 			</request>
+			
+			<!-- Try an 'import now' -->
+			<request path="/chellow/reports/213/output/" method="post">
+				<control name="hhdc_contract_id" value="50"/>
+				
+				<response-code value="303" />
+			</request>
+			
 		</test>
 		<test name="Check that later bills are at the top.">
 			<request path="/chellow/reports/7/output/?supply_id=1">
