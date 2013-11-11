@@ -1949,7 +1949,7 @@ def virtual_bill(supply_source):
 			</request>
 
 			<request path="/chellow/reports/295/output/?process_id=12">
-				<refresh max="26"/>
+				<refresh max="28"/>
 				<response-code value="200" />
 				<regex pattern="The file has been imported successfully\." />
 			</request>
