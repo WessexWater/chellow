@@ -20979,6 +20979,7 @@ def make_fields(sess, importer, message=None):
         if 'successful_bills' in imp_fields and len(imp_fields['successful_bills']) > 0:
             fields['successful_max_registers'] = max(len(bill['reads']) for bill in imp_fields['successful_bills'])
         fields.update(imp_fields)
+        fields['line_number'] = importer.parser.line_number
     return fields
 
 sess = None
@@ -21023,6 +21024,10 @@ finally:
 
     {% if is_alive %}
       <p>Still running. Refresh the page to see latest progress.</p>
+    {% endif %}
+
+    {% if line_number %}
+      <p>Reached line number {{line_number}}.</p>
     {% endif %}
 
     <ul>
