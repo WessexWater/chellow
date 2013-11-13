@@ -2507,6 +2507,24 @@ def virtual_bill(supply_source):
 				<regex
 					pattern="All the bills have been successfully loaded and attached to the batch\." />
 			</request>
+			
+			<request path="/chellow/reports/323/output/?importer_id=4">
+				<refresh />
+				<regex
+					pattern='&lt;th&gt;Reference&lt;/th&gt;\s*&lt;th&gt;Account&lt;/th&gt;\s*&lt;th&gt;Bill Type&lt;/th&gt;\s*&lt;th&gt;MPANs&lt;/th&gt;\s*&lt;th&gt;Issue Date&lt;/th&gt;\s*&lt;th&gt;Start Date&lt;/th&gt;\s*&lt;th&gt;Finish Date&lt;/th&gt;\s*&lt;th&gt;kWh&lt;/th&gt;\s*&lt;th&gt;Net&lt;/th&gt;\s*&lt;th&gt;VAT&lt;/th&gt;\s*&lt;th&gt;Gross&lt;/th&gt;\s*&lt;th&gt;Breakdown&lt;/th&gt;' />
+				<regex
+					pattern='&lt;td&gt;KUH773&lt;/td&gt;\s*&lt;td&gt;02&lt;/td&gt;\s*&lt;td&gt;N&lt;/td&gt;\s*&lt;td&gt;\[\]&lt;/td&gt;\s*&lt;td&gt;2010-06-09 00:00&lt;/td&gt;\s*&lt;td&gt;2010-05-01 00:00&lt;/td&gt;\s*&lt;td&gt;2010-05-31 23:30&lt;/td&gt;\s*&lt;td&gt;32124.5&lt;/td&gt;\s*&lt;td&gt;2219.41&lt;/td&gt;\s*&lt;td&gt;388.4&lt;/td&gt;\s*&lt;td&gt;2607.81&lt;/td&gt;' />
+				<response-code value="200" />
+				<regex
+					pattern="All the bills have been successfully loaded and attached to the batch\." />
+			</request>
+			
+			<!-- Check the bill appears correctly in batch view -->
+			<request path="/chellow/reports/91/output/?supplier_batch_id=6">
+				<regex
+					pattern='&lt;td&gt;2010-06-09 00:00&lt;/td&gt;\s*&lt;td&gt;2010-05-01 00:00&lt;/td&gt;\s*&lt;td&gt;2010-05-31 23:30&lt;/td&gt;' />
+				<response-code value="200" />
+			</request>
 		</test>
 		<test name="Test displaced virtual bill.">
 			<request
