@@ -2724,7 +2724,9 @@ def virtual_bill(supply_source):
 			</request>
 			<request path="/chellow/reports/105/output/?supplier_bill_id=12">
 				<refresh />
+				
 				<!-- Check it's loaded ok -->
+				<regex	pattern='&lt;td&gt;\s*&lt;a href="/chellow/reports/111/output/\?bill_id=12"&gt;Check&lt;/a&gt;\s*&lt;/td&gt;'/>
 				<regex
 					pattern='&lt;td&gt;38992&lt;/td&gt;\s*&lt;td&gt;\s*&lt;a title="Estimated"\s*href="/chellow/reports/143/output/\?type-id=4"&gt;E&lt;/a&gt;\s*&lt;/td&gt;\s*&lt;td&gt;2007-01-17 00:00&lt;/td&gt;\s*&lt;td&gt;39000\s*&lt;/td&gt;\s*&lt;td&gt;\s*&lt;a title="Estimated"\s*href="/chellow/reports/143/output/\?type-id=4"&gt;E&lt;/a&gt;\s*&lt;/td&gt;' />
 				<response-code value="200" />

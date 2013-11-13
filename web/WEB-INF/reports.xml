@@ -7629,7 +7629,7 @@ finally:
             <a href="{{context_path}}/reports/201/output/?bill-type-id={{bill.bill_type.id}}" title="{{bill.bill_type.description}}">{{bill.bill_type.code}}</a>
           </td>
           <td>
-            <a href="{{context_path}}/reports/111/output/?supplier_bill_id={{bill.id}}">Check</a>
+            <a href="{{context_path}}/reports/111/output/?bill_id={{bill.id}}">Check</a>
           </td>
         </tr>
       </tbody>
