@@ -2376,7 +2376,7 @@ def virtual_bill(supply_source):
 				<regex
 					pattern='&lt;th&gt;Reference&lt;/th&gt;\s*&lt;th&gt;Account&lt;/th&gt;\s*&lt;th&gt;Bill Type&lt;/th&gt;\s*&lt;th&gt;MPANs&lt;/th&gt;\s*&lt;th&gt;Issue Date&lt;/th&gt;\s*&lt;th&gt;Start Date&lt;/th&gt;\s*&lt;th&gt;Finish Date&lt;/th&gt;\s*&lt;th&gt;kWh&lt;/th&gt;\s*&lt;th&gt;Net&lt;/th&gt;\s*&lt;th&gt;VAT&lt;/th&gt;\s*&lt;th&gt;Gross&lt;/th&gt;\s*&lt;th&gt;R1 MPAN&lt;/th&gt;\s*&lt;th&gt;R1 Meter Serial Number&lt;/th&gt;\s*&lt;th&gt;R1 Coefficient&lt;/th&gt;\s*&lt;th&gt;R1 Units&lt;/th&gt;\s*&lt;th&gt;R1 TPR&lt;/th&gt;\s*&lt;th&gt;R1 Previous Read Date&lt;/th&gt;\s*&lt;th&gt;R1 Previous Read Value&lt;/th&gt;\s*&lt;th&gt;R1 Previous Read Type&lt;/th&gt;\s*&lt;th&gt;R1 Present Read Date&lt;/th&gt;\s*&lt;th&gt;R1 Present Read Value&lt;/th&gt;\s*&lt;th&gt;R1 Present Read Type&lt;/th&gt;\s*&lt;th&gt;Breakdown&lt;/th&gt;' />
 				<regex
-					pattern='&lt;td&gt;3423760005&lt;/td&gt;\s*&lt;td&gt;SA342376000&lt;/td&gt;\s*&lt;td&gt;N&lt;/td&gt;\s*&lt;td&gt;\[&amp;#39;03 801 110 22 10653921534&amp;#39;\]&lt;/td&gt;\s*&lt;td&gt;2010-05-12 00:00&lt;/td&gt;\s*&lt;td&gt;2010-01-19 00:00&lt;/td&gt;\s*&lt;td&gt;2010-04-20 23:30&lt;/td&gt;\s*&lt;td&gt;253&lt;/td&gt;\s*&lt;td&gt;36.16&lt;/td&gt;\s*&lt;td&gt;1.8&lt;/td&gt;\s*&lt;td&gt;0&lt;/td&gt;\s*&lt;td&gt;03 801 110 22 1065 3921 534&lt;/td&gt;\s*&lt;td&gt;K87D74429&lt;/td&gt;\s*&lt;td&gt;1&lt;/td&gt;\s*&lt;td&gt;kWh&lt;/td&gt;\s*&lt;td&gt;00001&lt;/td&gt;\s*&lt;td&gt;2010-01-18 23:30&lt;/td&gt;\s*&lt;td&gt;16963&lt;/td&gt;\s*&lt;td&gt;E&lt;/td&gt;\s*&lt;td&gt;2010-04-20 23:30&lt;/td&gt;\s*&lt;td&gt;17216&lt;/td&gt;\s*&lt;td&gt;E&lt;/td&gt;'/>
+					pattern='&lt;td&gt;3423760005&lt;/td&gt;\s*&lt;td&gt;SA342376000&lt;/td&gt;\s*&lt;td&gt;N&lt;/td&gt;\s*&lt;td&gt;\[u&amp;#39;03 801 110 22 10653921534&amp;#39;\]&lt;/td&gt;\s*&lt;td&gt;2010-05-12 00:00&lt;/td&gt;\s*&lt;td&gt;2010-01-19 00:00&lt;/td&gt;\s*&lt;td&gt;2010-04-20 23:30&lt;/td&gt;\s*&lt;td&gt;253&lt;/td&gt;\s*&lt;td&gt;36.16&lt;/td&gt;\s*&lt;td&gt;1.8&lt;/td&gt;\s*&lt;td&gt;0&lt;/td&gt;\s*&lt;td&gt;03 801 110 22 1065 3921 534&lt;/td&gt;\s*&lt;td&gt;K87D74429&lt;/td&gt;\s*&lt;td&gt;1&lt;/td&gt;\s*&lt;td&gt;kWh&lt;/td&gt;\s*&lt;td&gt;00001&lt;/td&gt;\s*&lt;td&gt;2010-01-18 23:30&lt;/td&gt;\s*&lt;td&gt;16963&lt;/td&gt;\s*&lt;td&gt;E&lt;/td&gt;\s*&lt;td&gt;2010-04-20 23:30&lt;/td&gt;\s*&lt;td&gt;17216&lt;/td&gt;\s*&lt;td&gt;E&lt;/td&gt;'/>
 				<response-code value="200" />
 				<regex
 					pattern="All the bills have been successfully loaded and attached to the batch\." />
@@ -2479,7 +2479,10 @@ def virtual_bill(supply_source):
 			<!-- Supplier contract 51 -->
 			<request path="/chellow/reports/321/output/" method="post">
 				<control name="supplier_batch_id" value="6"/>
+				
+				<!-- File has a character outside 8 bits to check unicode handling -->
 				<control type="file" name="import_file" value="bills.gdf_csv" />
+				
 				<response-code value="303" />
 				<regex pattern="/reports/323/output/\?importer_id=4" />
 			</request>

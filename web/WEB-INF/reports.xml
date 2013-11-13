@@ -20894,7 +20894,7 @@ try:
         f = StringIO.StringIO()
         bt = stream.read()
         while bt != -1:
-            f.write(chr(bt))
+            f.write(unichr(bt))
             bt = stream.read()
         f.seek(0)
         id = start_bill_importer(sess, batch.id, file_item.getName(), file_item.getSize(), f)
