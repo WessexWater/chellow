@@ -3017,6 +3017,9 @@ def virtual_bill(supply_source):
 		<test name="Check that bill with two sets of register reads gets displayed correctly.">
 			<request path="/chellow/reports/7/output/?supply_id=10">
 				<regex pattern='25927&lt;/a&gt;\s*&lt;/td&gt;\s*&lt;td style="border-left: none;"&gt;\s*E\s*&lt;/td&gt;\s*&lt;/tr&gt;'/>
+				
+				<!-- Check form action for virtual bills is correct -->
+				<regex pattern='&lt;form action="/chellow/reports/291/output/"&gt;'/>
 				<response-code value="200" />
 			</request>
 		</test>

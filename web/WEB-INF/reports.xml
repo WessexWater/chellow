@@ -1372,7 +1372,7 @@ finally:
 
     <h3>CSV Downloads</h3>
 
-    <form action="{{ context_path }}/reports/291/output/?supply-id">
+    <form action="{{ context_path }}/reports/291/output/">
       <fieldset>
         <input type="hidden" name="supply_id" value="{{supply.id}}">
         <legend>Virtual Bills</legend>
