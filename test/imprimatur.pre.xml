@@ -2431,10 +2431,11 @@ def virtual_bill(supply_source):
 			</request>
 		</test>
 		<test name="Create a supply, and then delete it.">
+		    <!-- Test that generator is set to None if source is 'net'. -->
 			<request path="/chellow/reports/311/output/" method="post">
 			    <control name="site_id" value="7" />
-				<control name="source_id" value="3" />
-				<control name="generator_type_id" value="2" />
+				<control name="source_id" value="1" />
+				<control name="generator_type_id" value="1" />
 				<control name="name" value="Supply H8" />
 				<control name="start_year" value="2010" />
 				<control name="start_month" value="05" />
@@ -2461,6 +2462,14 @@ def virtual_bill(supply_source):
 				<regex pattern="/reports/7/output/\?supply_id=13" />
 				<response-code value="303" />
 			</request>
+			
+			<!-- Check that the generator type 'chp' has been ignored. -->
+			<request path="/chellow/reports/5/output/?site_id=7">
+			
+				<regex pattern="&lt;td&gt;net&lt;/td&gt;\s*&lt;td&gt;\s*&lt;/td&gt;"/>
+				<response-code value="200" />
+			</request>
+			
 			<request path="/chellow/reports/305/output/" method="post">
 				<control name="supply_id" value="13"/>
 				<control name="delete" value="Delete" />
