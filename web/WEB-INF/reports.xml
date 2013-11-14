@@ -5904,8 +5904,8 @@ try:
             rate_script where contract_id = :contract_id order by
             start_date""").params(contract_id=contract.id).all()
 
-    now = datetime.datetime.utcnow()
-    month_start = datetime.datetime(now.year, now.month, now.day)
+    now = datetime.datetime.utcnow() - relativedelta(months=1)
+    month_start = datetime.datetime(now.year, now.month, 1)
     month_finish = month_start + relativedelta(months=1) - relativedelta(minutes=30)
 
     render(inv, template, {'contract': contract, 'month_start': month_start, 'month_finish': month_finish, 'rate_scripts': rate_scripts})
@@ -5992,7 +5992,7 @@ finally:
 
     <form action="{{context_path}}/reports/87/output/">
       <fieldset>
-        <input type="hidden" name="contract_id" value="{{ contract.id }}"/>
+        <input type="hidden" name="supplier_contract_id" value="{{contract.id}}"/>
         <legend>Download Supply Level Virtual Bills</legend>
         <br/>
         From {{ input_date('start', month_start) }} to
@@ -6013,17 +6013,6 @@ finally:
       </fieldset>
     </form>
     <br/>
-    <form action="{{ context_path }}/reports/103/output/">
-      <fieldset>
-        <input type="hidden" name="contract-id" value="{{ contract.id }}">
-        <legend>Download Third Party Virtual Bills</legend>
-        <br/>
-        For site code <input name="site-code" value="" maxlength="30" size="30">
-        for <input name="months" value="1" maxlength="2" size="2"> month(s)
-        until the end of {{ input_date('end', month_finish, 'month') }}
-        <input type="submit" value="Download">
-      </fieldset>
-    </form>
 
     <h3>Script</h3>
     <pre>{{ contract.charge_script }}</pre>
@@ -7412,7 +7401,7 @@ source.setAttribute('debug', pw.toString())]]></value>
 		<value><![CDATA[report]]></value>
 		<value><![CDATA[103]]></value>
 		<value><![CDATA[true]]></value>
-		<value><![CDATA[Supplier 3rd Party Virtual Bills]]></value>
+		<value><![CDATA[Free 103]]></value>
 		<value><![CDATA[from net.sf.chellow.monad import Hiber
 from java.util import GregorianCalendar, TimeZone, Locale, Calendar
 from net.sf.chellow.physical import MpanCore, HhStartDate, Supply
@@ -18502,7 +18491,7 @@ finish_date = HhStartDate(finish_date)
 file_name = 'supply_virtual_bills_' + str(supply.id)
 
 inv.getResponse().setContentType("text/csv")
-inv.getResponse().addHeader('Content-Disposition', 'attachment; filename="' + file_name + '"')
+inv.getResponse().addHeader('Content-Disposition', 'attachment; filename="' + file_name + '.csv"')
 pw = inv.getResponse().getWriter()
 
 computer = Contract.getNonCoreContract('computer')
