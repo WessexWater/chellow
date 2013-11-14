@@ -8370,7 +8370,7 @@ finally:
         <a href="{{ context_path }}/reports/93/output/?hhdc_contract_id={{ contract.id }}">Batches</a>
       </li>
       <li>
-        <a href="{{ context_path }}/reports/37/output/?hhdc-contract-id={{ contract.id }}&amp;hidden-days=5">Channel Snags</a>
+        <a href="{{context_path}}/reports/37/output/?hhdc-contract-id={{contract.id}}&amp;hidden_days=5">Channel Snags</a>
       </li>
       <li>
         <a href="{{ context_path }}/reports/83/output/?hhdc-contract-id={{ contract.id }}">Virtual Bills</a>

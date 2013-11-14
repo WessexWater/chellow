@@ -1558,6 +1558,9 @@ def virtual_bill(supply_source):
 				<response-code value="200" />
 				<regex
 					pattern="\{\s*&amp;#39;last_import_keys&amp;#39;: \{&amp;#39;.&amp;#39;: &amp;#39;1960-11-30 00:00_example.csv&amp;#39;\}\}" />
+				
+				<!-- Check link to channel snags -->
+				<regex pattern="hidden_days" />
 			</request>
 		</test>
 		<test name="Check adding of user report.">
