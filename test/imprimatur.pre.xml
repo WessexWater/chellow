@@ -2868,6 +2868,38 @@ def virtual_bill(supply_source):
 				<response-code value="400" />
 			</request>
 		</test>
+		<test name="If a new supply has a blank import sc field, check it gives a good error message.">
+			<request path="/chellow/reports/311/output/" method="post">
+				<control name="site_id" value="7" />
+				<control name="source_id" value="1" />
+				<control name="name" value="Supply 54" />
+				<control name="start_year" value="2010" />
+				<control name="start_month" value="05" />
+				<control name="start_day" value="26" />
+				<control name="start_hour" value="00" />
+				<control name="start_minute" value="00" />
+				<control name="msn" value="" />
+				<control name="gsp_group_id" value="3" />
+				<control name="mop_contract_id" value="54" />
+				<control name="mop_account" value="mc-22 9879 0084 358" />
+				<control name="hhdc_contract_id" value="50" />
+				<control name="hhdc_account" value="dc-22 9879 0084 358" />
+				<control name="pc_id" value="9" />
+				<control name="mtc_code" value="845" />
+				<control name="cop_id" value="5" />
+				<control name="ssc_code" value="" />
+				<control name="imp_mpan_core" value="22 9879 0084 358" />
+				<control name="imp_llfc_code" value="570" />
+				<control name="imp_sc" value="" />
+				<control name="imp_supplier_contract_id" value="52" />
+				<control name="imp_supplier_account" value="d" />
+
+				<control name="insert" value="Insert" />
+
+				<regex pattern="There&amp;#39;s an imp MPAN core, but no imp Supply Capacity\." />
+				<response-code value="400" />
+			</request>
+		</test>
 		<test name="Try view page of meter payment types.">
 			<request path="/chellow/reports/133/output/">
 				<response-code value="200" />
@@ -2901,7 +2933,7 @@ def virtual_bill(supply_source):
 				<control name="imp_supplier_account" value="taa2" />
 				<control name="insert" value="Insert" />
 
-				<regex pattern="/chellow/reports/7/output/\?supply_id=15" />
+				<regex pattern="/chellow/reports/7/output/\?supply_id=16" />
 				<response-code value="303" />
 			</request>
 			<request
@@ -3497,7 +3529,7 @@ def virtual_bill(supply_source):
 			
 			<!-- Supply 5 -->
 			<request path="/chellow/reports/307/output/" method="post">
-				<control name="era_id" value="23" />
+				<control name="era_id" value="24" />
 				<control name="start_year" value="2013" />
 				<control name="start_month" value="01" />
 				<control name="start_day" value="01" />
@@ -3576,12 +3608,12 @@ def virtual_bill(supply_source):
 				<control name="imp_supplier_account" value="sup-14 7206 6139 971" />
 				<control name="insert" value="insert" />
 
-				<regex pattern="/chellow/reports/7/output/\?supply_id=16" />
+				<regex pattern="/chellow/reports/7/output/\?supply_id=17" />
 				<response-code value="303" />
 			</request>
 			<!-- Try a pre 2010-04-01 DNO 14 bill. -->
 			<request
-				path="/chellow/reports/291/output/?supply_id=16&amp;start_year=2009&amp;start_month=06&amp;start_day=01&amp;start_hour=00&amp;start_minute=00&amp;finish_year=2009&amp;finish_month=06&amp;finish_day=30&amp;finish_hour=23&amp;finish_minute=30">
+				path="/chellow/reports/291/output/?supply_id=17&amp;start_year=2009&amp;start_month=06&amp;start_day=01&amp;start_hour=00&amp;start_minute=00&amp;finish_year=2009&amp;finish_month=06&amp;finish_day=30&amp;finish_hour=23&amp;finish_minute=30">
 				<response-code value="200" />
 				<regex
 					pattern='"MPAN Core","Site Code","Site Name","Account","From","To","net-gbp","tlm","ccl-kwh","ccl-rate","ccl-gbp","data-collection-gbp","duos-availability-kva","duos-availability-days","duos-availability-rate","duos-availability-gbp","duos-excess-availability-kva","duos-excess-availability-days","duos-excess-availability-rate","duos-excess-availability-gbp","duos-day-kwh","duos-day-gbp","duos-night-kwh","duos-night-gbp","duos-reactive-rate","duos-reactive-gbp","duos-standing-gbp","settlement-gbp","night-msp-kwh","night-gsp-kwh","night-gbp","other-msp-kwh","other-gsp-kwh","other-gbp","summer-pk-msp-kwh","summer-pk-gsp-kwh","summer-pk-gbp","winter-low-pk-msp-kwh","winter-low-pk-gsp-kwh","winter-low-pk-gbp","winter-off-pk-msp-kwh","winter-off-pk-gsp-kwh","winter-off-pk-gbp","winter-pk-msp-kwh","winter-pk-gsp-kwh","winter-pk-gbp","bsuos-kwh","bsuos-rate","bsuos-gbp","triad-actual-1-date","triad-actual-1-msp-kw","triad-actual-1-status","triad-actual-1-laf","triad-actual-1-gsp-kw","triad-actual-2-date","triad-actual-2-msp-kw","triad-actual-2-status","triad-actual-2-laf","triad-actual-2-gsp-kw","triad-actual-3-date","triad-actual-3-msp-kw","triad-actual-3-status","triad-actual-3-laf","triad-actual-3-gsp-kw","triad-actual-gsp-kw","triad-actual-rate","triad-actual-gbp","triad-estimate-1-date","triad-estimate-1-msp-kw","triad-estimate-1-status","triad-estimate-1-laf","triad-estimate-1-gsp-kw","triad-estimate-2-date","triad-estimate-2-msp-kw","triad-estimate-2-status","triad-estimate-2-laf","triad-estimate-2-gsp-kw","triad-estimate-3-date","triad-estimate-3-msp-kw","triad-estimate-3-status","triad-estimate-3-laf","triad-estimate-3-gsp-kw","triad-estimate-gsp-kw","triad-estimate-rate","triad-estimate-months","triad-estimate-gbp","triad-all-estimates-months","triad-all-estimates-gbp","problem"' />
