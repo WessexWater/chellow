@@ -4004,7 +4004,7 @@ finally:
     </form>
 
     <p>
-      There are {{total_snags}} snag(s) older then {{hidden_days}} days that aren't ignored.
+      There are {{total_snags}} snag(s) older than {{request.getParameter('hidden_days')}} days that aren't ignored.
     </p>
 
     <table>
