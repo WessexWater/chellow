@@ -21,7 +21,8 @@
 				<response-code value="303" />
 				<regex pattern="/reports/257/output/\?user_id=2" />
 			</request>
-			<request path="/chellow/reports/255/output/?user_id=2">
+			<request path="/chellow/reports/257/output/?user_id=2">
+				<regex pattern='&lt;input type="hidden" name="user_id" value="2"&gt;\s*&lt;legend&gt;Delete this user&lt;/legend&gt;'/>
 				<response-code value="200" />
 			</request>
 			<!-- Check that a duplicate email gives a proper error message -->

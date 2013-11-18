@@ -16492,7 +16492,7 @@ try:
         user_id = inv.getInteger('user_id')
         user = User.get_by_id(sess, user_id)
         if inv.hasParameter('delete'):
-            sess.remove(user)
+            sess.delete(user)
             sess.commit()
             inv.sendSeeOther('/reports/255/output/?user_id=' + str(user.id))
         elif inv.hasParameter('current_password'):
@@ -16544,13 +16544,14 @@ finally:
       </ul>
     {% endif %}
 
-    {% if request.getParameter('view') == 'confirm-delete' %}
+    {% if request.getParameter('delete') %}
       <form method="post" action=".">
         <fieldset>
+          <input type="hidden" name="user_id" value="{{user.id}}">
           <legend>
             Do you really want to delete the user '{{ user.email_address }}'?
           </legend>
-          <input type="submit" name="delete" value="Delete" />
+          <input type="submit" name="delete" value="Delete">
           <p><a href=".">Cancel</a></p>
         </fieldset>
       </form>
@@ -16577,11 +16578,11 @@ finally:
             <label>
               <input type="radio" name="user_role_id" value="1"
                 {%- if request.getParameter('user_role_id') -%}
-                  {%- if request.getParameter('user_role_id') == '1' -%}
+                  {%- if request.getParameter('user_role_id') == '1' %}
                     checked
                   {%- endif -%}
                 {%- else -%}
-                  {%- if user.user_role.id == 1 -%}
+                  {%- if user.user_role.id == 1 %}
                     checked
                   {%- endif -%}
                 {%- endif -%}
@@ -16622,11 +16623,11 @@ finally:
               {% for party in parties %}
                 <option value="{{ party.id }}"
                   {%- if request.getParameter('party_id') -%}
-                    {%- if request.getParameter('party_id') == party.id -%}
+                    {%- if request.getParameter('party_id') == party.id %}
                       selected
                     {%- endif -%}
                   {%- else -%}
-                    {%- if user.party.id == party.id -%}
+                    {%- if user.party.id == party.id %}
                       selected
                     {%- endif -%}
                   {%- endif -%}
@@ -16674,15 +16675,14 @@ finally:
       <br />
       <form action=".">
         <fieldset>
-          <input type="hidden" name="view" value="confirm-delete" />
+          <input type="hidden" name="user_id" value="{{user.id}}">
           <legend>Delete this user</legend>
-          <input type="submit" value="Delete" />
+          <input type="submit" name="delete" value="Delete">
         </fieldset>
       </form>
     {% endif %}
   </body>
-</html>
-]]></value>
+</html>]]></value>
 	</line>
 	<line>
 		<value><![CDATA[insert]]></value>
