@@ -3663,5 +3663,13 @@ def virtual_bill(supply_source):
 				<response-code value="200" />
 			</request>
 		</test>
+		<test name="Look at list of supplier contracts.">
+			<request path="/chellow/reports/75/output/">
+
+				<!-- Are the contract in alphabetical order? -->				
+				<regex pattern='&lt;tbody&gt;\s*&lt;tr&gt;\s*&lt;td&gt;\s*&lt;a href="/chellow/reports/77/output/\?supplier_contract_id=52"&gt;Half-hourlies 2007&lt;/a&gt;' />
+				<response-code value="200" />
+			</request>
+		</test>
 	</test-group>
 </imprimatur>

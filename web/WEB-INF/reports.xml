@@ -5759,7 +5759,7 @@ Monad.getUtils()['imprt'](globals(), {
 sess = None
 try:
     sess = session()
-    contracts = sess.query(Contract).join(MarketRole).filter(MarketRole.code == 'X')
+    contracts = sess.query(Contract).join(MarketRole).filter(MarketRole.code == 'X').order_by(Contract.name)
     render(inv, template, {'contracts': contracts})
 finally:
     sess.close()]]></value>
