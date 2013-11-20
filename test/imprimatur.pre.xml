@@ -2156,11 +2156,25 @@ def triad_estimates():
 					pattern='"CI017","Roselands","","net","","2009-04-30","0","0","0","0","0","0","0","0","2784.89","0","0","2784.89","0","0","0","hh","Can&#39;t find the virtual_bill function in the supplier contract. "' />
 			</request>
 		</test>
+		<test name="Set configuration properties">
+			<request path="/chellow/reports/269/output/" method="post">
+				<control name="non_core_contract_id" value="46"/>
+				<control name="name" value="configuration"/>
+				<control name="charge_script" value=""/>
+				<control name="properties"><![CDATA[{
+    'site_links': [
+        {'name': 'Google Maps', 'href': 'https://maps.google.com/maps?q='}]}
+]]>
+				</control>
+				<response-code value="303" />
+			</request>		
+		</test>
 		<test name="Site In View World">
 			<request path="/chellow/reports/5/output/?site_id=3">
 				<response-code value="200" />
 				<regex
 					pattern='&lt;a href="/chellow/reports/7/output/\?supply_id=2"&gt;view&lt;/a&gt;' />
+				<regex pattern='&lt;a href="https://maps.google.com/maps\?q=CI005"&gt;Google Maps&lt;/a&gt;' />
 			</request>
 
 			<!-- Check that it shows a dead supply properly. Supply 11 -->

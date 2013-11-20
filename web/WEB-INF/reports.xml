@@ -414,7 +414,7 @@ finally:
           <th>External Links</th>
           <td>
             <ul>
-              {% for link in properties.site_reports %}
+              {% for link in properties.site_links %}
                 <li><a href="{{link.href}}{{site.code}}">{{link.name}}</a></li>
               {% endfor %}
             </ul>
