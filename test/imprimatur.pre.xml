@@ -3707,7 +3707,9 @@ def virtual_bill(supply_source):
 		
 			<request
 				path="/chellow/reports/29/output/?site_id=7&amp;type=used&amp;months=1&amp;finish_year=2008&amp;finish_month=07">
+				
 				<response-code value="200" />
+				<regex pattern="CH017,used,2008-07-01,"/>
 			</request>
 		</test>
 		<test name="Look at list of supplier contracts.">
