@@ -9775,41 +9775,15 @@ def mpan_bit(query, kvarh_at_md_query, is_import, hh_count_query, num_hh, eras, 
     num_bad = str(num_hh - hh_count_query.setBoolean('isImport', is_import).uniqueResult() + num_na)
         
     return ','.join(str(val) for val in [llfc_code, mpan_core_str, sc_str, supplier_contract_name, sum_kwh, non_actual, gsp_kwh, kw_at_md, date_at_md, kva_at_md, num_bad])
-    
-start_year = inv.getInteger("start-year")
-start_month = inv.getInteger("start-month")
-start_day = inv.getInteger("start-day")
-start_hour = inv.getInteger("start-hour")
 
-finish_year = inv.getInteger("finish-year")
-finish_month = inv.getInteger("finish-month")
-finish_day = inv.getInteger("finish-day")
-finish_hour = inv.getInteger("finish-hour")
+start_date = inv.get_datetime('start')
+finish_date = inv.get_datetime('finish')
 
 if not inv.isValid():
     raise UserException()
 
-cal = GregorianCalendar(TimeZone.getTimeZone("GMT"), Locale.UK)
-
-cal.clear()
-cal.set(Calendar.YEAR, start_year)
-cal.set(Calendar.MONTH, start_month - 1)
-cal.set(Calendar.DAY_OF_MONTH, start_day)
-cal.set(Calendar.HOUR_OF_DAY, start_hour)
-cal.set(Calendar.MINUTE, 0)
-cal.set(Calendar.SECOND, 0)
-cal.set(Calendar.MILLISECOND, 0)
-start_date = HhStartDate(cal.getTime())
-
-cal.clear()
-cal.set(Calendar.YEAR, finish_year)
-cal.set(Calendar.MONTH, finish_month - 1)
-cal.set(Calendar.DAY_OF_MONTH, finish_day)
-cal.set(Calendar.HOUR_OF_DAY, finish_hour)
-cal.set(Calendar.MINUTE, 30)
-cal.set(Calendar.SECOND, 0)
-cal.set(Calendar.MILLISECOND, 0)
-finish_date = HhStartDate(cal.getTime())
+start_date = HhStartDate(start_date)
+finish_date = HhStartDate(finish_date)
 
 caches = {}
 
@@ -9821,8 +9795,8 @@ hh_count_query = Hiber.session().createQuery("select count(*) from HhDatum datum
 
 pw.println("Supply Id, Supply Name, Source, Generator Type, Site Ids, Site Names, From, To, PC, MTC, CoP, SSC, Normal Reads,Type,Import LLFC, Import MPAN Core, Import Supply Capacity,Import Supplier,Import Total MSP kWh, Import Non-actual MSP kWh, Import Total GSP kWh,Import MD / kW, Import MD Date, Import MD / kVA, Import Bad HHs,Export LLFC, Export MPAN Core, Export Supply Capacity,Export Supplier,Export Total MSP kWh, Export Non-actual MSP kWh,Export GSP kWh, Export MD / kW, Export MD Date, Export MD / kVA, Export Bad HHs")
 
-if inv.hasParameter('supply-id'):
-    supply_id = inv.getLong('supply-id')
+if inv.hasParameter('supply_id'):
+    supply_id = inv.getLong('supply_id')
     supplies_query = Hiber.session().createQuery("select distinct era.supply, era.supply.id from Era era where  era.supply = :supply and (era.finishDate.date is null or era.finishDate.date >= :startDate) and era.startDate.date <= :finishDate order by era.supply.id").setEntity('supply', Supply.getSupply(supply_id))
 else:
     supplies_query = Hiber.session().createQuery("select distinct era.supply, era.supply.id from Era era where (era.finishDate.date is null or era.finishDate.date >= :startDate) and era.startDate.date <= :finishDate order by era.supply.id")

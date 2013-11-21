@@ -1396,7 +1396,7 @@ def virtual_bill(supply_source):
 
 		<test name="Check no duplicate supplies in Supplies Duration report.">
 			<request
-				path="/chellow/reports/149/output/?start-year=2008&amp;start-month=07&amp;start-day=01&amp;start-hour=0&amp;finish-year=2008&amp;finish-month=07&amp;finish-day=31&amp;finish-hour=23">
+				path="/chellow/reports/149/output/?start_year=2008&amp;start_month=07&amp;start_day=01&amp;start_hour=0&amp;start_minute=0&amp;finish_year=2008&amp;finish_month=07&amp;finish_day=31&amp;finish_hour=23&amp;finish_minute=30">
 				<regex pattern='("1","1","net","","CH017",){1}' />
 				<response-code value="200" />
 			</request>
@@ -2084,7 +2084,7 @@ def triad_estimates():
 		</test>
 		<test name="CSV Supplies Duration">
 			<request
-				path="/chellow/reports/149/output/?start-year=2009&amp;start-month=03&amp;start-day=1&amp;start-hour=0&amp;finish-year=2009&amp;finish-month=03&amp;finish-day=31&amp;finish-hour=23">
+				path="/chellow/reports/149/output/?start_year=2009&amp;start_month=03&amp;start_day=1&amp;start_hour=0&amp;start_minute=0&amp;finish_year=2009&amp;finish_month=03&amp;finish_day=31&amp;finish_hour=23&amp;finish_minute=30">
 				<regex
 					pattern='"7","1","net","","CH023","Treglisson","2009-03-01T00:00Z","2009-03-31T23:30Z","00","845","5","","0","hh",540,22 4862 4512 332,230,Half-hourlies 2007,148925.71,0,158159.10402,399.72,2009-03-13T08:00Z,None,0,,,,,0,0,,0,None,None,1488' />
 			</request>
