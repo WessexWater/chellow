@@ -1437,7 +1437,7 @@ finally:
     <br />
     <form action="{{ context_path }}/reports/149/output/">
         <fieldset>
-            <input type="hidden" name="supply-id" value="{{ supply.id }}">
+            <input type="hidden" name="supply_id" value="{{supply.id}}">
             <legend>Duration</legend>
             <p>
             From {{ input_date('start', last_month_start) }}
