@@ -1384,14 +1384,14 @@ finally:
     <br />
     <form action="{{ context_path }}/reports/241/output/">
       <fieldset>
-        <input type="hidden" name="supply-id" value="{{ supply.id }}">
+        <input type="hidden" name="supply_id" value="{{supply.id}}">
         <legend>Daily Supplier Virtual Bills</legend>
-        <select name="supply-polarity">
-          <option value="import">Import</option>
-          <option value="export">Export</option>
+        <select name="is_import">
+          <option value="True">Import</option>
+          <option value="False">Export</option>
         </select>
-        from {{ input_date('start', last_month_start, 'day') }}
-        to {{ input_date('finish', last_month_finish, 'day') }} 
+        from {{input_date('start', last_month_start, 'day')}}
+        to {{input_date('finish', last_month_finish, 'day')}} 
         <input type="submit" value="Download">
       </fieldset>
     </form>
@@ -15210,9 +15210,10 @@ finally:
 		<value><![CDATA[true]]></value>
 		<value><![CDATA[CSV Daily Supplier Virtual Bill]]></value>
 		<value><![CDATA[from net.sf.chellow.monad import Hiber
+from net.sf.chellow.monad.types import MonadDate
 from java.util import GregorianCalendar, TimeZone, Locale, Calendar, Date
-from net.sf.chellow.physical import MpanCore, HhStartDate, Supply
-from net.sf.chellow.billing import SupplierContract, NonCoreContract, Dno
+from net.sf.chellow.physical import HhStartDate, Supply
+from net.sf.chellow.billing import Contract
 from java.text import DecimalFormat
 from java.lang import System
 
@@ -15220,42 +15221,45 @@ inv.getResponse().setContentType("text/csv")
 inv.getResponse().addHeader('Content-Disposition', 'attachment; filename="output.csv"')
 pw = inv.getResponse().getWriter()
 
-start = inv.getDate('start')
-finish = inv.getDate('finish')
+utc_cal = MonadDate.getCalendar()
 
-supply_polarity = inv.getString('supply-polarity')
+start_year = inv.getInteger("start_year")
+start_month = inv.getInteger("start_month")
+start_day = inv.getInteger("start_day")
 
-if not inv.isValid():
-    raise UserException()
+finish_year = inv.getInteger("finish_year")
+finish_month = inv.getInteger("finish_month")
+finish_day = inv.getInteger("finish_day")
+
+utc_cal.set(Calendar.YEAR, start_year)
+utc_cal.set(Calendar.MONTH, start_month - 1)
+utc_cal.set(Calendar.DAY_OF_MONTH, start_day)
+utc_cal.set(Calendar.HOUR_OF_DAY, 0)
+utc_cal.set(Calendar.MINUTE, 0)
+utc_cal.set(Calendar.SECOND, 0)
+utc_cal.set(Calendar.MILLISECOND, 0)
+start = utc_cal.getTime()
+
+utc_cal.set(Calendar.YEAR, finish_year)
+utc_cal.set(Calendar.MONTH, finish_month - 1)
+utc_cal.set(Calendar.DAY_OF_MONTH, finish_day)
+utc_cal.set(Calendar.HOUR_OF_DAY, 0)
+utc_cal.set(Calendar.MINUTE, 0)
+utc_cal.set(Calendar.SECOND, 0)
+utc_cal.set(Calendar.MILLISECOND, 0)
+finish = utc_cal.getTime()
+
+caches = {}
+
+is_import = inv.getBoolean('is_import')
 
 site_query = Hiber.session().createQuery("select supGen.site from SiteEra supGen where supGen.era = :era and supGen.isPhysical = true")
 
-if inv.hasParameter('contract-id'):
-    contract_id = inv.getLong('contract-id')
-    contract = SupplierContract.getSupplierContract(contract_id)
-    supply = None
-elif inv.hasParameter('supply-id'):
-    supply_id = inv.getLong('supply-id')
-    supply = Supply.getSupply(supply_id)
-    contract = None
-else:
-    raise UserException("There must be either a contract-id or supply-id parameter.")
+supply_id = inv.getLong('supply_id')
+supply = Supply.getSupply(supply_id)
 
-computer = NonCoreContract.getNonCoreContract('computer')
+computer = Contract.getNonCoreContract('computer')
 comterp = computer.callFunction('create_comterp', [])
-
-if supply is None:
-    pw.print('MPAN Core,Site Code,Site Name,Account,From,To')
-    pw.flush()
-    contract_function = comterp.get('contract_function')
-    #pw.println("contract func " + str(contract) + " " + supply_polarity)
-    titles_function = contract_function(contract, supply_polarity + '_virtual_bill_titles', pw)
-    #pw.println("titles func " + str(titles_function))
-    bill_titles = titles_function()
-    for title in bill_titles:
-        pw.print(',' + title)
-    pw.println('')
-    pw.flush()
 
 cal = GregorianCalendar(TimeZone.getTimeZone("GMT"), Locale.UK)
 
@@ -15279,23 +15283,32 @@ while not day_start.after(finish_date):
     cal.add(Calendar.MINUTE, -30)
     day_finish = HhStartDate(cal.getTime())
 
-    for data_source in comterp.get(supply_polarity + '_data_sources')(contract, supply, day_start, day_finish, forecast_date, comterp, pw):
-
-        if contract is None:
-            sup_con = data_source.mpan.getSupplierContract()
-            bill_titles = comterp.get('contract_function')(sup_con, supply_polarity + '_virtual_bill_titles', pw)()
-            if bill_titles != prev_bill_titles:
-                pw.println('MPAN Core,Site Code,Site Name,Account,From,To,' + ','.join(bill_titles))
-                pw.flush()
-                prev_bill_titles = bill_titles
+    for era in supply.getEras(day_start, day_finish):
+        if era.startDate.after(day_start):
+            chunk_start = era.startDate
         else:
-            sup_con = contract
+            chunk_start = day_start
 
-        site = site_query.setEntity('era', data_source.supply_era).uniqueResult()
-        pw.print(','.join('"' + str(value) + '"' for value in [data_source.mpan_core_str, site.getCode() , site.getName(), data_source.supplier_account, data_source.start_date, data_source.finish_date]))
+        if HhStartDate.isAfter(era.finishDate, day_finish):
+            chunk_finish = day_finish
+        else:
+            chunk_finish = era.finishDate
+
+        ss = comterp.get('SupplySource')(chunk_start, chunk_finish, forecast_date, era, is_import, comterp, pw, caches)
+ 
+
+        sup_con = ss.supplier_contract
+        bill_titles = comterp.get('contract_function')(sup_con, 'virtual_bill_titles', pw)()
+        if bill_titles != prev_bill_titles:
+            pw.println('MPAN Core,Site Code,Site Name,Account,From,To,' + ','.join(bill_titles))
+            pw.flush()
+            prev_bill_titles = bill_titles
+
+        site = site_query.setEntity('era', ss.era).uniqueResult()
+        pw.print(','.join('"' + str(value) + '"' for value in [ss.mpan_core, site.getCode() , site.getName(), ss.supplier_account, ss.start_date, ss.finish_date]))
         pw.flush()
 
-        bill = comterp.get('contract_function')(sup_con, supply_polarity + '_virtual_bill', pw)(data_source)
+        bill = comterp.get('contract_function')(sup_con, 'virtual_bill', pw)(ss)
         for title in bill_titles:
             pw.print(',"' + str(bill.get(title, '')) + '"')
             if title in bill:

@@ -3720,5 +3720,11 @@ def virtual_bill(supply_source):
 				<response-code value="200" />
 			</request>
 		</test>
+		<test name="Daily supplier virtual bills page.">
+			<request path="/chellow/reports/241/output/?supply_id=1&amp;supply_polarity=import&amp;start_year=2013&amp;start_month=10&amp;start_day=1&amp;finish_year=2013&amp;finish_month=10&amp;finish_day=31">
+				<response-code value="200" />
+				<regex pattern="MPAN Core,Site Code,Site Name"/>
+			</request>
+		</test>
 	</test-group>
 </imprimatur>
