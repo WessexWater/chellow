@@ -14908,7 +14908,7 @@ try:
             duration = snag_finish - snag_start
             age_of_snag = now - snag_finish
 
-        pw.println(','.join('"' + str(val) + '"' for val in [snag.id, era.imp_mpan_core, era.exp_mpan_core, site.code, site.name, snag.description, channel.is_import, channel.is_kwh, snag_start.strftime("%Y-%m-%d %H:%M"), snag_finish_str, age_of_snag.days, duration.days, snag.is_ignored]))
+        pw.println(','.join('"' + str(val) + '"' for val in [snag.id, era.imp_mpan_core, era.exp_mpan_core, site.code, site.name, snag.description, channel.is_import, channel.is_kwh, snag_start.strftime("%Y-%m-%d %H:%M"), snag_finish_str, age_of_snag.days + float(age_of_snag.seconds) / (3600 * 24), duration.days + float(duration.seconds) / (3600 * 24), snag.is_ignored]))
         pw.flush()
     pw.close()
 finally:
