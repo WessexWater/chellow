@@ -3729,5 +3729,11 @@ def virtual_bill(supply_source):
 				<regex pattern="MPAN Core,Site Code,Site Name"/>
 			</request>
 		</test>
+		<test name="Test register read report for a supply.">
+			<request path="/chellow/reports/219/output/?supply_id=10&amp;months=1&amp;end_year=2011&amp;end_month=1">
+				<response-code value="200" />
+				<regex pattern="Duration Start,Duration Finish,Supply Id,"/>
+			</request>
+		</test>
 	</test-group>
 </imprimatur>

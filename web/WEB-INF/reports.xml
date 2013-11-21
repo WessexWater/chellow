@@ -14144,22 +14144,22 @@ source.appendChild(MonadDate.getMonthsXml(doc))]]></value>
 from net.sf.chellow.monad.types import MonadDate
 from java.sql import Timestamp, ResultSet
 from java.util import GregorianCalendar, Calendar, TimeZone, Locale, Date
-from net.sf.chellow.physical import HhStartDate, MpanCore, Site, Supply
+from net.sf.chellow.physical import HhStartDate, Site, Supply
 from java.text import SimpleDateFormat, DecimalFormat
 from java.lang import Math, System
 from net.sf.chellow.billing import Contract, Contract
 from org.python.util import PythonInterpreter
 
-year = inv.getInteger("end-year")
-month = inv.getInteger("end-month")
+year = inv.getInteger("end_year")
+month = inv.getInteger("end_month")
 months = inv.getInteger("months")
 
 if not inv.isValid():
     raise UserException()
 
-if inv.hasParameter('supply-id'):
-    supply_id = inv.getLong('supply-id')
-    query = Hiber.session().createQuery("select read, read.bill, read.bill.supply from RegisterRead read where read.bill.supply = :supply and (read.presentDate.date >= :startDate and read.presentDate.date <= :finishDate) or (read.previousDate.date >= :startDate and read.previousDate.date <= :finishDate) order by read.bill.supply.id").setEntity('supply', Supply.getSupply(supply_id))
+if inv.hasParameter('supply_id'):
+    supply_id = inv.getLong('supply_id')
+    query = Hiber.session().createQuery("select read, read.bill, read.bill.supply, read.bill.batch from RegisterRead read where read.bill.supply = :supply and (read.presentDate.date >= :startDate and read.presentDate.date <= :finishDate) or (read.previousDate.date >= :startDate and read.previousDate.date <= :finishDate) order by read.bill.supply.id").setEntity('supply', Supply.getSupply(supply_id))
 else:
     query = Hiber.session().createQuery("select read, read.bill, read.bill.supply, read.bill.batch from RegisterRead read where (read.presentDate.date >= :startDate and read.presentDate.date <= :finishDate) or (read.previousDate.date >= :startDate and read.previousDate.date <= :finishDate) order by read.bill.supply.id")
 
@@ -14198,26 +14198,22 @@ while reads.next():
     supply = reads.get(2)
     batch = reads.get(3)
 
-    era = supply.getGeneration(bill.getStartDate())
+    era = supply.getEra(bill.getStartDate())
     if era is None:
-        first_era = supply.getGenerationFirst()
+        first_era = supply.getEraFirst()
         if bill.getStartDate().before(first_era.getStartDate()):
             era = first_era
         else:
-            era = supply.getGenerationLast()
+            era = supply.getEraLast()
 
-    import_mpan = era.getImportMpan()
-    if import_mpan is None:
+    imp_mpan_core = era.getImpMpanCore()
+    if imp_mpan_core is None:
         import_mpan_core = ''
-    else:
-        import_mpan_core = import_mpan.getCore()
-    export_mpan = era.getExportMpan()
-    if export_mpan is None:
-        export_mpan_core = ''
-    else:
-        export_mpan_core = export_mpan.getCore()
+    exp_mpan_core = era.getExpMpanCore()
+    if exp_mpan_core is None:
+        exp_mpan_core = ''
 
-    pw.println(','.join('"' + str(value) + '"' for value in [start_date, finish_date, supply.getId(), import_mpan_core, export_mpan_core, batch.getReference(),bill.getId(), bill.getReference(), issue_format.format(bill.getIssueDate()), bill.getType().getCode(), read.getId(), read.getTpr(), read.getCoefficient(), read.getPreviousDate(), read.getPreviousValue(), read.getPreviousType(), read.getPresentDate(), read.getPresentValue(), read.getPresentType()]))
+    pw.println(','.join('"' + str(value) + '"' for value in [start_date, finish_date, supply.getId(), imp_mpan_core, exp_mpan_core, batch.getReference(),bill.getId(), bill.getReference(), issue_format.format(bill.getIssueDate()), bill.getType().getCode(), read.getId(), read.getTpr(), read.getCoefficient(), read.getPreviousDate(), read.getPreviousValue(), read.getPreviousType(), read.getPresentDate(), read.getPresentValue(), read.getPresentType()]))
     pw.flush()
     Hiber.session().clear()
 
