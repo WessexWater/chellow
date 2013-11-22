@@ -2054,7 +2054,7 @@ def triad_estimates():
 		</test>
 		<test name="Try HHDC virtual bills.">
 			<request
-				path="/chellow/reports/81/output/?contract-id=50&amp;months=1&amp;end-year=2008&amp;end-month=7">
+				path="/chellow/reports/81/output/?hhdc_contract_id=50&amp;months=1&amp;end_year=2008&amp;end_month=7">
 				<response-code value="200" />
 				<regex
 					pattern='Import MPAN Core, Export MPAN Core, Start Date, Finish Date,net-gbp' />

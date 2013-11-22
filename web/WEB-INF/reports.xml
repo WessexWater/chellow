@@ -6038,12 +6038,12 @@ from net.sf.chellow.billing import Contract
 caches = {}
 
 inv.getResponse().setContentType("text/csv")
-inv.getResponse().setHeader('Content-Disposition', 'filename=output.csv;')
+inv.getResponse().setHeader('Content-Disposition', 'filename=hhdc_vbs.csv;')
 pw = inv.getResponse().getWriter()
-end_year = inv.getInteger("end-year")
-end_month = inv.getInteger("end-month")
+end_year = inv.getInteger("end_year")
+end_month = inv.getInteger("end_month")
 months = inv.getInteger("months")
-contract_id = inv.getLong('contract-id')
+contract_id = inv.getLong('hhdc_contract_id')
 if not inv.isValid():
     raise UserException()
 
@@ -6117,7 +6117,7 @@ pw.close()]]></value>
 		<value><![CDATA[report]]></value>
 		<value><![CDATA[83]]></value>
 		<value><![CDATA[true]]></value>
-		<value><![CDATA[HHDC Contract Virtual Bill Selector]]></value>
+		<value><![CDATA[Free 83]]></value>
 		<value><![CDATA[from java.util import GregorianCalendar, TimeZone, Locale, Calendar
 from net.sf.chellow.monad.types import MonadDate
 from net.sf.chellow.monad import Hiber
@@ -8233,6 +8233,9 @@ finally:
 		<value><![CDATA[HHDC Contract]]></value>
 		<value><![CDATA[from net.sf.chellow.monad import Monad
 from sqlalchemy.orm import joinedload_all
+import datetime
+import pytz
+from dateutil.relativedelta import relativedelta
 
 Monad.getUtils()['imprt'](globals(), {
         'db': ['Contract', 'Party', 'RateScript', 'set_read_write', 'session'], 
@@ -8246,7 +8249,9 @@ try:
     contract_id = inv.getLong('hhdc_contract_id')
     contract = Contract.get_hhdc_by_id(sess, contract_id)
     rate_scripts = sess.query(RateScript).from_statement("select * from rate_script where rate_script.contract_id = :contract_id order by start_date desc").params(contract_id=contract_id).all()
-    render(inv, template, {'contract': contract, 'rate_scripts': rate_scripts})
+    now = datetime.datetime.now(pytz.utc)
+    last_month_finish = datetime.datetime(now.year, now.month, 1) - relativedelta(minutes=30)
+    render(inv, template, {'contract': contract, 'rate_scripts': rate_scripts, 'last_month_finish': last_month_finish})
 except UserException, e:
     if str(e).startswith("There isn't a contract"):
         inv.sendNotFound(str(e))
@@ -8299,23 +8304,7 @@ finally:
         </tr>
       </tbody>
     </table>
-    <ul>
-      <li>
-        <a href="{{context_path}}/reports/93/output/?hhdc_contract_id={{ contract.id }}">Batches</a>
-      </li>
-      <li>
-        <a href="{{context_path}}/reports/37/output/?hhdc-contract-id={{contract.id}}&amp;hidden_days=5">Channel Snags</a>
-      </li>
-      <li>
-        <a href="{{context_path}}/reports/83/output/?hhdc-contract-id={{ contract.id }}">Virtual Bills</a>
-      </li>
-      <li>
-        <a href="{{context_path}}/reports/213/output/?hhdc_contract_id={{contract.id}}">Automatic HH Data Importer</a>
-      </li>
-      <li>
-        [<a href="{{context_path}}/reports/211/output/?hhdc_contract_id={{ contract.id }}">HH data imports</a>]
-      </li>
-    </ul>
+
     <br />
     <table>
       <caption>
@@ -8340,6 +8329,33 @@ finally:
         {% endfor %}
       </tbody>
     </table>
+
+    <ul>
+      <li>
+        <a href="{{context_path}}/reports/93/output/?hhdc_contract_id={{ contract.id }}">Batches</a>
+      </li>
+      <li>
+        <a href="{{context_path}}/reports/37/output/?hhdc-contract-id={{contract.id}}&amp;hidden_days=5">Channel Snags</a>
+      </li>
+      <li>
+        <a href="{{context_path}}/reports/213/output/?hhdc_contract_id={{contract.id}}">Automatic HH Data Importer</a>
+      </li>
+      <li>
+        [<a href="{{context_path}}/reports/211/output/?hhdc_contract_id={{ contract.id }}">HH data imports</a>]
+      </li>
+    </ul>
+    <br>
+    <form action="{{context_path}}/reports/81/output/">
+      <fieldset>
+        <legend>Download Virtual Bills</legend>
+        <input type="hidden" name="hhdc_contract_id" value="{{contract.id}}">
+        <br>
+        For <input name="months" value="1" maxlength="2" size="2">
+        month(s) until the end of
+        {{input_date('end', last_month_finish, 'month')}}
+        <input type="submit" value="Download">
+      </fieldset>
+    </form>
                
     <h2>Script</h2>
     
