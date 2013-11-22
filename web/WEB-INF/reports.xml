@@ -10481,9 +10481,6 @@ def process_site(site, month_start, month_finish, forecast_date, tmp_file, bill_
             if source_code not in sources:
                 sources.append(source_code)
 
-            if source_code in ['3rd-party', '3rd-party-reverse']:
-                has_3rd_party = True
-
             if supply.getGeneratorType() is not None:
                 gen_type = supply.getGeneratorType().getCode()
                 if gen_type not in generator_types:
@@ -10491,12 +10488,7 @@ def process_site(site, month_start, month_finish, forecast_date, tmp_file, bill_
 
             for era in Hiber.session().createQuery("from Era era where era.supply = :supply and era.startDate.date <= :finishDate and (era.finishDate is null or era.finishDate.date >= :startDate)").setEntity('supply', supply).setTimestamp('startDate', chunk_start.getDate()).setTimestamp('finishDate', chunk_finish.getDate()).list():
                 tmp_file.write(' ')
-                if has_3rd_party:
-                    if era.impMpanCore is None:
-                        contr = era.expSupplierContract
-                    else:
-                        contr = era.impSupplierContract
-                    third_party_contracts[contr.getName()] = contr
+
                 imp_mpan_core = era.impMpanCore
 
                 # GBP
@@ -10513,44 +10505,62 @@ def process_site(site, month_start, month_finish, forecast_date, tmp_file, bill_
                     bill_finish = era.finishDate
 
                 supplier_contract = era.impSupplierContract
-                if source_code in ['net', 'gen-net']:
+                if source_code in ('net', 'gen-net', '3rd-party', '3rd-party-reverse'):
                     #tmp_file.write("starting vbill, " + str(System.currentTimeMillis()))
                     supply_source = comterp.get('SupplySource')(bill_start, bill_finish, forecast_date, era, True, comterp, tmp_file, caches)
+                    kwh = sum(hh['msp-kwh'] for hh in supply_source.hh_data)
+                    if source_code in ('net', 'gen-net'):
+                        month_data['import-net-kwh'] += kwh
+                    elif source_code in ('3rd-party', '3rd-party-reverse'):
+                        month_data['import-3rd-party-kwh'] += kwh
 
-                    month_data['import-net-kwh'] += sum(hh['msp-kwh'] for hh in supply_source.hh_data)
 
                     #tmp_file.write("finished init from mpan, " + str(System.currentTimeMillis()))
                     import_vb_function = comterp.get('contract_function')(supplier_contract, 'virtual_bill', tmp_file)
                     if import_vb_function is None:
                         problem += "Can't find the virtual_bill function in the supplier contract. "
                     else:
-                        v_bill = import_vb_function(supply_source)
+                        import_vb_function(supply_source)
+                        v_bill = supply_source.supplier_bill
                         #tmp_file.write("finishing vbill, " + str(System.currentTimeMillis()))
                         
                         if 'problem' in v_bill and len(v_bill['problem']) > 0:
                             problem += 'Supplier Problem: ' + v_bill['problem']
 
                         try:
-                            month_data['import-net-gbp'] += v_bill['net-gbp']
+                            gbp = v_bill['net-gbp']
                         except KeyError:
                             problem += 'For the supply ' + import_mpan.toString() + ' the virtual bill ' + str(v_bill) + ' from the contract ' + supplier_contract.getName() + ' does not contain the net-gbp key.'
+                        if source_code in ('net', 'gen-net'):
+                            month_data['import-net-gbp'] += gbp
+                        elif source_code in ('3rd-party', '3rd-party-reverse'):
+                            month_data['import-3rd-party-gbp'] += gbp
+
                         problem += supply_source.problem
 
                     dc_contract = era.getHhdcContract()
                     if dc_contract is not None:
                         dc_bill = supply_source.contract_function(dc_contract, 'virtual_bill')(supply_source)
-                        month_data['import-net-gbp'] += dc_bill['net-gbp']
+                        gbp = dc_bill['net-gbp']
                         if 'problem' in dc_bill and len(dc_bill['problem']) > 0:
                             problem += 'DC Problem: ' + dc_bill['problem']
+                        if source_code in ('net', 'gen-net'):
+                            month_data['import-net-gbp'] += gbp
+                        elif source_code in ('3rd-party', '3rd-party-reverse'):
+                            month_data['import-3rd-party-gbp'] += gbp
 
                     mop_contract = era.mopContract
                     if mop_contract is not None:
                         mop_bill_function = supply_source.contract_function(mop_contract, 'virtual_bill')
                         if mop_bill_function is not None:
                             mop_bill = mop_bill_function(supply_source)
-                            month_data['import-net-gbp'] += mop_bill['net-gbp']
+                            gbp = mop_bill['net-gbp']
                             if 'problem' in mop_bill and len(mop_bill['problem']) > 0:
                                 problem += 'MOP Problem: ' + mop_bill['problem']
+                            if source_code in ('net', 'gen-net'):
+                                month_data['import-net-gbp'] += gbp
+                            elif source_code in ('3rd-party', '3rd-party-reverse'):
+                                month_data['import-3rd-party-gbp'] += gbp
 
             for bill in bill_query.setEntity('supply', supply).setTimestamp('startDate', chunk_start.getDate()).setTimestamp('finishDate', chunk_finish.getDate()).list():
                 bill_start = bill.getStartDate().getDate().getTime()
@@ -10570,17 +10580,13 @@ def process_site(site, month_start, month_finish, forecast_date, tmp_file, bill_
             month_data['msp-gbp'] += comterp.get('contract_function')(displaced_era.impSupplierContract, 'displaced_virtual_bill', tmp_file)(site_ds)['net-gbp']
 
             #tmp_file.println("finishing displaced, " + str(System.currentTimeMillis()))
-        elif has_3rd_party and site.getCode() == '12129':
-            keys = third_party_contracts.keys()
-            keys.sort()
-            third_gbp = comterp.get('contract_function')(third_party_contracts[keys[0]], 'third_party_bill', tmp_file)(site_ds)['net-gbp']
-            month_data['used-3rd-party-gbp'] += third_gbp
 
         #tmp_file.println("finishing site ds " + str(System.currentTimeMillis()))
-
+        month_data['used-3rd-party-kwh'] = month_data['import-3rd-party-kwh']
+        month_data['used-3rd-party-gbp'] = month_data['import-3rd-party-gbp']
         month_data['used-gbp'] += month_data['import-net-gbp'] + month_data['msp-gbp'] + month_data['used-3rd-party-gbp']
 
-        for stream_name in ['export-net', 'import-gen', 'export-gen', 'import-3rd-party', 'export-3rd-party', 'msp', 'used-3rd-party']:
+        for stream_name in ['export-net', 'import-gen', 'export-gen', 'msp']:
             name = stream_name + '-kwh'
             month_data[name] += sum(hh[name] for hh in site_ds.hh_data)
 
@@ -10591,6 +10597,8 @@ def process_site(site, month_start, month_finish, forecast_date, tmp_file, bill_
 
     result = [site.getCode(), site.getName(), ','.join(associates), ','.join(sources), '.'.join(generator_types), month_format.format(Date(month_finish.getDate().getTime() - 1)), month_data['import-net-kwh'], month_data['msp-kwh'], month_data['export-net-kwh'], month_data['used-kwh'], month_data['export-gen-kwh'], month_data['import-gen-kwh'], month_data['import-3rd-party-kwh'], month_data['export-3rd-party-kwh'], month_data['import-net-gbp'], month_data['msp-gbp'], 0, month_data['used-gbp'], month_data['used-3rd-party-gbp'], billed_kwh, billed_gbp, metering_type, problem]
     #tmp_file.println("Finished call method " + str(System.currentTimeMillis()))
+    #count = Hiber.session().createQuery("select count(*) from hh_datum").uniqueResult()
+    #tmp_file.println("Rows " + str(count))
     return result
 
 def long_process():
