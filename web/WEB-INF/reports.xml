@@ -1387,8 +1387,8 @@ finally:
         <input type="hidden" name="supply_id" value="{{supply.id}}">
         <legend>Daily Supplier Virtual Bills</legend>
         <select name="is_import">
-          <option value="True">Import</option>
-          <option value="False">Export</option>
+          <option value="true">Import</option>
+          <option value="false">Export</option>
         </select>
         from {{input_date('start', last_month_start, 'day')}}
         to {{input_date('finish', last_month_finish, 'day')}} 
