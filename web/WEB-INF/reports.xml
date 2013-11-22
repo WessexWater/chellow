@@ -6038,7 +6038,7 @@ from net.sf.chellow.billing import Contract
 caches = {}
 
 inv.getResponse().setContentType("text/csv")
-inv.getResponse().setHeader('Content-Disposition', 'filename=hhdc_vbs.csv;')
+inv.getResponse().setHeader('Content-Disposition', 'attachment;filename="hhdc_vbs.csv"')
 pw = inv.getResponse().getWriter()
 end_year = inv.getInteger("end_year")
 end_month = inv.getInteger("end_month")

@@ -2060,6 +2060,7 @@ def triad_estimates():
 					pattern='Import MPAN Core, Export MPAN Core, Start Date, Finish Date,net-gbp' />
 				<regex
 					pattern='22 9205 6799 106,22 0470 7514 535,2008-07-01T00:00Z,2008-07-31T23:30Z,"0",' />
+				<regex pattern='attachment;filename="hhdc_vbs.csv"' />
 			</request>
 		</test>
 		<test name="CSV Sites HH Data">
