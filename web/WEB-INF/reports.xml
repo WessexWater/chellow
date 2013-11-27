@@ -6117,98 +6117,130 @@ pw.close()]]></value>
 		<value><![CDATA[report]]></value>
 		<value><![CDATA[83]]></value>
 		<value><![CDATA[true]]></value>
-		<value><![CDATA[Free 83]]></value>
-		<value><![CDATA[from java.util import GregorianCalendar, TimeZone, Locale, Calendar
-from net.sf.chellow.monad.types import MonadDate
-from net.sf.chellow.monad import Hiber
-from net.sf.chellow.billing import HhdcContract
+		<value><![CDATA[MOP Rate Script Edit]]></value>
+		<value><![CDATA[from net.sf.chellow.monad import Monad
+from sqlalchemy.orm import joinedload_all
 
-contract_id = inv.getLong('hhdc-contract-id')
-if not inv.isValid():
-    raise UserException()
+Monad.getUtils()['imprt'](globals(), {
+        'db': ['Contract', 'Party', 'RateScript', 'set_read_write', 'session'], 
+        'utils': ['UserException', 'form_date'],
+        'templater': ['render']})
 
-contract = HhdcContract.getHhdcContract(contract_id)
-
-cal = GregorianCalendar(TimeZone.getTimeZone("GMT"), Locale.UK)
-cal.add(Calendar.MONTH, -1)
-source.appendChild(MonadDate(cal.getTime()).toXml(doc))
-source.appendChild(MonadDate.getMonthsXml(doc))
-source.appendChild(contract.toXml(doc))]]></value>
-		<value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
-<xsl:stylesheet version="1.0"
-    xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
-    <xsl:output method="xml" encoding="US-ASCII"
-        doctype-public="-//W3C//DTD XHTML 1.1//EN"
-        doctype-system="http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd"
-        indent="yes" />
-    <xsl:template match="/">
-        <html>
-<head>
-                <link rel="stylesheet" type="text/css"
-                    href="{/source/request/@context-path}/reports/19/output/" />
-
-                <title>
-                    Chellow &gt; HHDC Contracts &gt;
-                    <xsl:value-of select="/source/hhdc-contract/@name" /> &gt; Virtual Bills
-                </title>
-            </head>
-            <body>
-                <p>
-                    <a
-                        href="{/source/request/@context-path}/reports/1/output/">
-                        <xsl:value-of
-                            select="'Chellow'" />
-                    </a>
-                    &gt;
-                    <a
-                        href="{/source/request/@context-path}/reports/113/output/">
-                        <xsl:value-of select="'HHDC Contracts'" />
-                    </a>
-                    &gt;
-                    <a
-                        href="{/source/request/@context-path}/reports/115/output/?hhdc-contract-id={/source/hhdc-contract/@id}">
-                    <xsl:value-of
-                        select="/source/hhdc-contract/@name" />
-                    </a>
-                    &gt;
-                    Virtual Bills
-                </p>
-
-                  <xsl:if test="//message">
-                    <ul>
-                        <xsl:for-each select="//message">
-                            <li>
-                                <xsl:value-of select="@description" />
-                            </li>
-                        </xsl:for-each>
-                    </ul>
-                </xsl:if>
-                <form action="{/source/request/@context-path}/reports/81/output/">
-                    <fieldset>
-                        <legend>Download Virtual Bills</legend>
-                        <input type="hidden" name="contract-id" value="{/source/hhdc-contract/@id}"/>
-<br/>
-<xsl:value-of select="'For '"/>
-<input name="months" value="1" maxlength="2" size="2" />
-<xsl:value-of select="' month(s) until the end of '"/>
-                        <input name="end-year" value="{/source/date/@year}" maxlength="4" size="4" /><xsl:value-of select="' - '"/>
-                        <select name="end-month">
-                            <xsl:for-each select="/source/months/month">
-                                <option value="{@number}">
-                                    <xsl:if test="@number=/source/date/@month">
-                                        <xsl:attribute name="selected">selected</xsl:attribute>
-                                    </xsl:if>
-                                    <xsl:value-of select="@number"/>
-                                </option>
-                            </xsl:for-each>
-                        </select>
-                        <input type="submit" value="Download"/>
-                    </fieldset>
-                </form>
-            </body>
-        </html>
-    </xsl:template>
-</xsl:stylesheet>]]></value>
+sess = None
+try:
+    sess = session()
+    if inv.getRequest().getMethod() == 'GET':
+        rate_script_id = inv.getLong('mop_rate_script_id')
+        rate_script = RateScript.get_mop_by_id(sess, rate_script_id)
+        render(inv, template, {'rate_script': rate_script})
+    else:
+        set_read_write(sess)
+        rate_script_id = inv.getLong('mop_rate_script_id')
+        rate_script = RateScript.get_mop_by_id(sess, rate_script_id)
+        contract = rate_script.contract
+        if inv.hasParameter('delete'):
+            contract.delete_rate_script(sess, rate_script)
+            sess.commit()
+            inv.sendSeeOther('/reports/107/output/?mop_contract_id='
+                + str(contract.id))
+        else:
+            try:
+                script = inv.getString('script')
+                start_date = form_date(inv, 'start')
+                if inv.hasParameter('has_finished'):
+                    finish_date = form_date(inv, 'finish')
+                else:
+                    finish_date = None
+                contract.update_rate_script(sess, rate_script, start_date, finish_date, script)
+                sess.commit()
+                inv.sendSeeOther('/reports/205/output/?mop_rate_script_id='
+                        + str(rate_script.id))
+            except UserException, e:
+                render(inv, template, {'rate_script': rate_script, 'messages': [str(e)]}, 400)          
+finally:
+    sess.close()]]></value>
+		<value><![CDATA[<!doctype html>
+<html>
+  <head>
+    <link rel="stylesheet" type="text/css"
+      href="{{context_path}}/reports/19/output/">
+    <title>
+      Chellow &gt; MOP Contracts &gt;
+      {{ rate_script.contract.name }} &gt;
+      {{ rate_script.start_date|hh_format }} &gt; Edit
+    </title>
+  </head>
+  <body>
+    <p>
+      <a href="{{context_path}}/reports/1/output/">Chellow</a> &gt;
+      <a href="{{context_path}}/reports/185/output/">MOP Contracts</a> &gt;
+      <a href="{{context_path}}/reports/107/output/?mop_contract_id={{rate_script.contract.id}}">{{rate_script.contract.name }}</a> &gt;
+      <a href="{{context_path}}/reports/205/output/?mop_rate_script_id={{rate_script.id}}">{{rate_script.start_date|hh_format }}</a> &gt; Edit
+    </p>
+    <br />
+    {% if messages %}
+      <ul>
+        {% for message in messages %}
+          <li>{{ message }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+    {% if request.getMethod() == 'GET' and
+        request.getParameter('delete') %}
+      <form method="post" action=".">
+        <fieldset>
+          <legend>
+            Are you sure you want to delete this rate script?
+          </legend>
+          <input type="hidden" name="mop_rate_script_id"
+              value="{{rate_script.id}}">
+          <input type="submit" name="delete" value="Delete">
+        </fieldset>
+      </form>
+      <p>
+        <a href="{{context_path}}/reports/205/output/?mop_rate_script_id={{rate_script_id}}">Cancel</a>
+      </p>
+    {% else %}
+      <form action="." method="post">
+        <fieldset>
+          <legend>Update Rate Script</legend>
+          <input type="hidden" name="mop_rate_script_id"
+              value="{{rate_script.id}}">
+          <br>
+          <fieldset>
+            <legend>Start date</legend>
+            {{input_date('start', rate_script.start_date)}}
+          </fieldset>
+          <br />
+          <fieldset>
+            <legend>Finish date</legend>
+            <label>
+              Ended? {{input_checkbox('has_finished', rate_script.finish_date != None)}}
+            </label>
+            {{input_date('finish', rate_script.finish_date)}}
+          </fieldset>
+          <br>
+          <br>
+          Script
+          <br>
+          {{input_textarea('script', rate_script.script, 40, 80)}}
+          <br />
+          <br />
+          <input type="submit" value="Update">
+        </fieldset>
+      </form>
+      <br>
+      <form action=".">
+        <fieldset>
+          <legend>Delete this Rate Script</legend>
+          <input type="hidden" name="mop_rate_script_id"
+              value="{{rate_script.id}}">
+          <input type="submit" name="delete" value="Delete">
+        </fieldset>
+      </form>
+    {% endif %}
+  </body>
+</html>]]></value>
 	</line>
 	<line>
 		<value><![CDATA[insert]]></value>
@@ -7732,10 +7764,10 @@ finally:
         {% for rate_script in rate_scripts %}
           <tr>
             <td>
-              <a href="{{context_path}}/reports/205/output/?rate_script_id={{ rate_script.id }}">view</a>
+              <a href="{{context_path}}/reports/205/output/?mop_rate_script_id={{rate_script.id}}">view</a>
             </td>
-            <td>{{ rate_script.start_date|hh_format }}</td>
-            <td>{{ rate_script.finish_date|hh_format }}</td>
+            <td>{{rate_script.start_date|hh_format}}</td>
+            <td>{{rate_script.finish_date|hh_format}}</td>
           </tr>
         {% endfor %}
       </tbody>
@@ -13299,100 +13331,70 @@ finally:
 		<value><![CDATA[report]]></value>
 		<value><![CDATA[205]]></value>
 		<value><![CDATA[true]]></value>
-		<value><![CDATA[MOP Contract Rate Script]]></value>
-		<value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree
-from net.sf.chellow.billing import RateScript
+		<value><![CDATA[MOP Rate Script]]></value>
+		<value><![CDATA[from net.sf.chellow.monad import Monad
+from sqlalchemy.orm import joinedload_all
 
-script_id = inv.getLong('rate-script-id')
-script = RateScript.getRateScript(script_id)
-source.appendChild(script.toXml(doc, XmlTree('contract', XmlTree('party'))))]]></value>
-		<value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
-<xsl:stylesheet version="1.0"
-    xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
-    <xsl:output method="html" encoding="US-ASCII"
-        doctype-public="-//W3C//DTD HTML 4.01//EN"
-        doctype-system="http://www.w3.org/TR/html4/strict.dtd" indent="yes" />
-    <xsl:template match="/">
-        <html>
-            <head>
-                <link rel="stylesheet" type="text/css"
-                    href="{/source/request/@context-path}/reports/19/output/" />
-                <title>
-                    Chellow &gt; MOP Contracts &gt;
-                    <xsl:value-of
-                        select="/source/rate-script/mop-contract/@name" />
-                    &gt; Rate Script
-                    <xsl:value-of select="/source/rate-script/@id" />
-                </title>
-            </head>
-            <body>
-                <p>
-                    <a
-                        href="{/source/request/@context-path}/reports/1/output/">
-                        <xsl:value-of select="'Chellow'" />
-                    </a>
-                    &gt;
-                    <a
-                        href="{/source/request/@context-path}/reports/185/output/">
-                        <xsl:value-of select="'MOP Contracts'" />
-                    </a>
-                    &gt;
-                    <a
-                        href="{/source/request/@context-path}/reports/107/output/?mop-contract-id={/source/rate-script/mop-contract/@id}">
-                        <xsl:value-of
-                            select="/source/rate-script/mop-contract/@name" />
-                    </a>
-                    &gt; Rate Script
-                    <xsl:value-of
-                        select="concat(/source/rate-script/@id, ' [')" />
-                    <a
-                        href="{/source/request/@context-path}/mop-contracts/{/source/rate-script/mop-contract/@id}/rate-scripts/{/source/rate-script/@id}/">
-                        <xsl:value-of select="'edit'" />
-                    </a>
-                    <xsl:value-of select="']'" />
-                </p>
-                <br />
-                <xsl:if test="//message">
-                    <ul>
-                        <xsl:for-each select="//message">
-                            <li>
-                                <xsl:value-of select="@description" />
-                            </li>
-                        </xsl:for-each>
-                    </ul>
-                </xsl:if>
-                <table>
-                    <tr>
-                        <th>Start Date</th>
-                        <td>
-                            <xsl:value-of
-                                select="concat(/source/rate-script/hh-start-date[@label='start']/@year, '-', /source/rate-script/hh-start-date[@label='start']/@month, '-', /source/rate-script/hh-start-date[@label='start']/@day, ' ', /source/rate-script/hh-start-date[@label='start']/@hour, ':', /source/rate-script/hh-start-date[@label='start']/@minute)" />
-                        </td>
-                    </tr>
-                    <tr>
-                        <th>Finish Date</th>
-                        <td>
-                            <xsl:choose>
-                                <xsl:when
-                                    test="/source/rate-script/hh-start-date[@label='finish']">
-                                    <xsl:value-of
-                                        select="concat(/source/rate-script/hh-start-date[@label='finish']/@year, '-', /source/rate-script/hh-start-date[@label='finish']/@month, '-', /source/rate-script/hh-start-date[@label='finish']/@day, ' ', /source/rate-script/hh-start-date[@label='finish']/@hour, ':', /source/rate-script/hh-start-date[@label='finish']/@minute)" />
-                                </xsl:when>
-                                <xsl:otherwise>Ongoing</xsl:otherwise>
-                            </xsl:choose>
-                        </td>
-                    </tr>
-                </table>
+Monad.getUtils()['imprt'](globals(), {
+        'db': ['Contract', 'Party', 'RateScript', 'set_read_write', 'session'], 
+        'utils': ['UserException', 'NotFoundException'],
+        'templater': ['render']})
 
-                <h2>Script</h2>
+sess = None
+try:
+    sess = session()
+    rate_script_id = inv.getLong('mop_rate_script_id')
+    rate_script = RateScript.get_mop_by_id(sess, rate_script_id)
+    render(inv, template, {'rate_script': rate_script})
+except NotFoundException, e:
+    inv.sendNotFound(str(e))
+finally:
+    sess.close()]]></value>
+		<value><![CDATA[<!DOCTYPE html>
+<html>
+  <head>
+    <link rel="stylesheet" type="text/css"
+      href="{{context_path}}/reports/19/output/">
+    <title>
+      Chellow &gt; MOP Contracts &gt; {{rate_script.contract.name}} &gt;
+      Rate Script {{rate_script.start_date|hh_format}}
+    </title>
+  </head>
+  <body>
+    <p>
+      <a href="{{context_path}}/reports/1/output/">Chellow</a> &gt;
+      <a href="{{context_path}}/reports/185/output/">MOP Contracts</a> &gt;
+      <a href="{{context_path}}/reports/107/output/?mop_contract_id={{rate_script.contract.id}}">{{rate_script.contract.name}}</a> &gt;
+      {{rate_script.start_date|hh_format}}
+      [<a href="{{context_path}}/reports/83/output/?mop_rate_script_id={{rate_script.id}}">edit</a>]
+    </p>
+    
+    {% if messages %}
+      <ul>
+        {% for message in messages %}
+          <li>{{ message }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
 
-                <pre>
-                    <xsl:value-of select="/source/rate-script/@script" />
-                </pre>
-            </body>
-        </html>
-    </xsl:template>
-</xsl:stylesheet>]]></value>
+    <table>
+      <tr>
+        <th>Start Date</th>
+        <td>{{rate_script.start_date|hh_format}}</td>
+      </tr>
+      <tr>
+        <th>Finish Date</th>
+        <td>{{rate_script.finish_date|hh_format}}</td>
+      </tr>
+    </table>
+
+    <h2>Script</h2>
+
+    <pre>
+      {{rate_script.script}}
+    </pre>
+  </body>
+</html>]]></value>
 	</line>
 	<line>
 		<value><![CDATA[insert]]></value>
