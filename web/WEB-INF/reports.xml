@@ -1501,95 +1501,81 @@ finally:
 		<value><![CDATA[9]]></value>
 		<value><![CDATA[true]]></value>
 		<value><![CDATA[Site hh graph container]]></value>
-		<value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree
-from net.sf.chellow.monad.types import MonadDate
-from net.sf.chellow.physical import Site
-from java.util import Calendar
+		<value><![CDATA[from net.sf.chellow.monad import Monad
+from sqlalchemy.orm import joinedload_all
+import datetime
+import pytz
 
-site_id = inv.getLong("site_id")
-year = inv.getInteger("finish_year")
-month = inv.getInteger("finish_month")
-months = inv.getInteger("months")
+Monad.getUtils()['imprt'](globals(), {
+        'db': ['Site', 'Party', 'RateScript', 'set_read_write', 'session'], 
+        'utils': ['UserException'],
+        'templater': ['render']})
 
-if not inv.isValid():
-    raise UserException()
+def make_fields(site, e=None):
+    messages = None if e is None else [str(e)]
+    finish_date = datetime.datetime(year, month, 1, tzinfo=pytz.utc)
+        
+    return {'site': site, 'finish_date': finish_date, 'messages': messages}
 
-site = Site.getSite(site_id)
-source.appendChild(site.toXml(doc))
 
-source.appendChild(MonadDate.getMonthsXml(doc))]]></value>
-		<value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
-<xsl:stylesheet version="1.0"
-    xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
-    <xsl:output method="html" encoding="US-ASCII"
-        doctype-public="-//W3C//DTD HTML 4.01//EN"
-        doctype-system="http://www.w3.org/TR/html4/strict.dtd" indent="yes" />
-    <xsl:template match="/">
-        <html>
-            <head>
-                <link rel="stylesheet" type="text/css"
-                    href="{/source/request/@context-path}/reports/19/output" />
-                <title>
-                    Chellow &gt; Sites &gt;
-                    <xsl:value-of select="/source/site/@name" />
-                    HH graph of site use
-                </title>
-            </head>
-            <body>
-                <p>
-                    <a href="{/source/request/@context-path}/reports/1/output/">Chellow</a> &gt;
-                    <a href="{/source/request/@context-path}/reports/3/output/">
-                        <xsl:value-of select="'Sites'" />
-                    </a>
-                    &gt; <a
-                        href="{/source/request/@context-path}/reports/5/output/?site_id={/source/site/@id}">
-                        <xsl:value-of select="/source/site/@name" />
-                    </a>
-                    &gt; HH graph of site use
-                </p>
-                <xsl:if test="//message">
-                    <ul>
-                        <xsl:for-each select="//message">
-                            <li>
-                                <xsl:value-of select="@description" />
-                            </li>
-                        </xsl:for-each>
-                    </ul>
-                </xsl:if>
-                <p>
-                    <img
-                        src="{/source/request/@context-path}/reports/21/output/?site-id={/source/site/@id}&amp;finish-year={/source/request/parameter[@name='finish_year']/value}&amp;finish-month={/source/request/parameter[@name='finish_month']/value}&amp;months={/source/request/parameter[@name='months']/value}" />
-                </p>
-                <form action=".">
-                    <fieldset>
-                        <legend>Show graph</legend>
-                        <input type="hidden" name="site_id"
-                            value="{/source/request/parameter[@name='site_id']/value}" />
-                        <xsl:value-of select="'For '" />
-                        <input name="months" maxlength="2" size="2" value="{/source/request/parameter[@name='months']/value}"/>
-                        <xsl:value-of select="' months finishing in '" />
-                        <input size="4" length="4"
-                            name="finish_year" value="{/source/request/parameter[@name='finish_year']/value}" />
-                        <xsl:value-of select="' - '" />
-                        <select name="finish_month">
-                            <xsl:for-each select="/source/months/month">
-                                <option>
-                                    <xsl:if
-                                        test="/source/request/parameter[@name='finish-month']/value = @number">
-                                        <xsl:attribute name="selected">selected</xsl:attribute>
-                                    </xsl:if>
-                                    <xsl:value-of select="@number" />
-                                </option>
-                            </xsl:for-each>
-                        </select>
-                        <xsl:value-of select="' '" />
-                        <input type="submit" value="Show" />
-                    </fieldset>
-                </form>
-            </body>
-        </html>
-    </xsl:template>
-</xsl:stylesheet>]]></value>
+sess = None
+try:
+    sess = session()
+    if inv.getRequest().getMethod() == 'GET':
+        site_id = inv.getLong("site_id")
+        site = Site.get_by_id(sess, site_id)
+
+        year = inv.getInteger("finish_year")
+        month = inv.getInteger("finish_month")
+        months = inv.getInteger("months")
+        
+        render(inv, template, make_fields(site))
+    else:
+        raise UserException("POST not allowed.")
+
+except UserException, e:
+    render(inv, template, make_fields(site, e))
+finally:
+    sess.close()]]></value>
+		<value><![CDATA[<!doctype html>
+<html>
+  <head>
+    <link rel="stylesheet" type="text/css"
+      href="{{context_path}}/reports/19/output/">
+    <title>
+      Chellow &gt; Sites &gt; {{site.name}} &gt; HH graph of site use
+    </title>
+  </head>
+  <body>
+    <p>
+      <a href="{{context_path}}/reports/1/output/">Chellow</a> &gt;
+      <a href="{{context_path}}/reports/3/output/">Sites</a> &gt;
+      <a href="{{context_path}}/reports/5/output/?site_id={{site.id}}">{{site.name}}</a>
+      &gt; HH graph of site use
+    </p>
+    {% if messages %}
+      <ul>
+        {% for message in messages %}
+          <li>{{ message }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+
+    <p>
+      <img src="{{context_path}}/reports/21/output/?site-id={{site.id}}&amp;finish-year={{request.getParameter('finish_year')}}&amp;finish-month={{request.getParameter('finish_month')}}&amp;months={{request.getParameter('months')}}">
+    </p>
+    
+    <form action=".">
+      <fieldset>
+        <legend>Show graph</legend>
+        <input type="hidden" name="site_id" value="{{site.id}}">
+        For {{input_text('months', request.getParameter('months'), 2, 2)}}
+        months finishing in {{input_date('finish', finish_date, 'month')}}
+        <input type="submit" value="Show">
+      </fieldset>
+    </form>
+  </body>
+</html>]]></value>
 	</line>
 	<line>
 		<value><![CDATA[insert]]></value>
