@@ -9584,138 +9584,65 @@ finally:
 		<value><![CDATA[147]]></value>
 		<value><![CDATA[true]]></value>
 		<value><![CDATA[CSV Supplies Duration Selector]]></value>
-		<value><![CDATA[from java.util import GregorianCalendar, TimeZone, Locale, Calendar
-from net.sf.chellow.monad.types import MonadDate
-from net.sf.chellow.physical import HhStartDate
+		<value><![CDATA[from net.sf.chellow.monad import Monad
+from java.util import Properties
+from java.io import StringReader
+from net.sf.chellow.physical import Configuration
+from net.sf.chellow.ui import Report
+from sqlalchemy.orm import joinedload_all
+import datetime
+from dateutil.relativedelta import relativedelta
+import pytz
 
-cal = GregorianCalendar(TimeZone.getTimeZone("GMT"), Locale.UK)
-cal.set(Calendar.DAY_OF_MONTH, 1)
-cal.set(Calendar.HOUR_OF_DAY, 0)
-cal.set(Calendar.MINUTE, 0)
-cal.set(Calendar.SECOND, 0)
-cal.set(Calendar.MILLISECOND, 0)
-cal.add(Calendar.MINUTE, -30)
-finish_date = HhStartDate(cal.getTime())
-finish_date.setLabel('finish')
-source.appendChild(finish_date.toXml(doc))
+Monad.getUtils()['imprt'](globals(), {
+        'db': ['Contract', 'Party', 'RateScript', 'set_read_write', 'session'], 
+        'utils': ['UserException', 'HH'],
+        'templater': ['render']})
 
-cal.add(Calendar.MINUTE, 30)
-cal.add(Calendar.MONTH, -1)
-start_date = HhStartDate(cal.getTime())
-start_date.setLabel('start')
-source.appendChild(start_date.toXml(doc))
+sess = None
+try:
+    sess = session()
+    last_month = datetime.datetime.now(pytz.utc) - relativedelta(months=1)
+    last_month_start = datetime.datetime(last_month.year, last_month.month, 1, tzinfo=pytz.utc)
+    last_month_finish = last_month_start + relativedelta(months=1) - HH
+    render(inv, template, {'last_month_start': last_month_start, 'last_month_finish': last_month_finish})
+finally:
+    if sess is not None:
+        sess.close()]]></value>
+		<value><![CDATA[<!doctype html>
+<html>
+  <head>
+    <link rel="stylesheet" type="text/css"
+      href="{{context_path}}/reports/19/output/">
+    <title>Chellow &gt; CSV Supplies Duration</title>
+  </head>
+  <body>
+    <p>
+      <a href="{{context_path}}/reports/1/output/">Chellow</a> &gt;
+      CSV Supplies Duration
+      </p>
 
-source.appendChild(MonadDate.getMonthsXml(doc))
-source.appendChild(MonadDate.getDaysXml(doc))
-source.appendChild(MonadDate.getHoursXml(doc))]]></value>
-		<value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
-<xsl:stylesheet version="1.0"
-    xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
-    <xsl:output method="xml" encoding="US-ASCII"
-        doctype-public="-//W3C//DTD XHTML 1.1//EN"
-        doctype-system="http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd"
-        indent="yes" />
-    <xsl:template match="/">
-        <html>
-            <head>
-                <link rel="stylesheet" type="text/css"
-                    href="{/source/request/@context-path}/reports/19/output/" />
+    {% if messages %}
+      <ul>
+        {% for message in messages %}
+          <li>{{ message }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
 
-                <title>Chellow &gt; CSV Supplies Duration</title>
-            </head>
-            <body>
-                <p>
-                    <a
-                        href="{/source/request/@context-path}/reports/1/output/">
-                        <xsl:value-of select="'Chellow'" />
-                    </a>
-                    &gt;
-                    <xsl:value-of select="'CSV Supplies Duration'" />
-                </p>
-                  <xsl:if test="//message">
-                    <ul>
-                        <xsl:for-each select="//message">
-                            <li>
-                                <xsl:value-of select="@description" />
-                            </li>
-                        </xsl:for-each>
-                    </ul>
-                </xsl:if>
-                <form action="{/source/request/@context-path}/reports/149/output/">
-                    <fieldset>
-                        <legend>Download</legend>
-<br/>
-<p><xsl:value-of select="'From '"/>
-<input name="start-year" value="{/source/hh-start-date[@label='start']/@year}" maxlength="4" size="4"/><xsl:value-of select="'-'"/>
-                        <select name="start-month">
-                            <xsl:for-each select="/source/months/month">
-                                <option value="{@number}">
-                                    <xsl:if test="@number=/source/hh-start-date[@label='start']/@month">
-                                        <xsl:attribute name="selected">selected</xsl:attribute>
-                                    </xsl:if>
-                                    <xsl:value-of select="@number"/>
-                                </option>
-                            </xsl:for-each>
-                        </select><xsl:value-of select="'-'"/>
-                        <select name="start-day">
-                            <xsl:for-each select="/source/days/day">
-                                <option value="{@number}">
-                                    <xsl:if test="@number=/source/hh-start-date[@label='start']/@day">
-                                        <xsl:attribute name="selected">selected</xsl:attribute>
-                                    </xsl:if>
-                                    <xsl:value-of select="@number"/>
-                                </option>
-                            </xsl:for-each>
-                        </select><xsl:value-of select="' '"/>
-                        <select name="start-hour">
-                            <xsl:for-each select="/source/hours/hour">
-                                <option value="{@number}">
-                                    <xsl:if test="@number=/source/hh-start-date[@label='start']/@hour">
-                                        <xsl:attribute name="selected">selected</xsl:attribute>
-                                    </xsl:if>
-                                    <xsl:value-of select="@number"/>
-                                </option>
-                            </xsl:for-each>
-                        </select><xsl:value-of select="':00 to '"/>
-<input name="finish-year" value="{/source/hh-start-date[@label='finish']/@year}" maxlength="4" size="4"/><xsl:value-of select="'-'"/>
-                        <select name="finish-month">
-                            <xsl:for-each select="/source/months/month">
-                                <option value="{@number}">
-                                    <xsl:if test="@number=/source/hh-start-date[@label='finish']/@month">
-                                        <xsl:attribute name="selected">selected</xsl:attribute>
-                                    </xsl:if>
-                                    <xsl:value-of select="@number"/>
-                                </option>
-                            </xsl:for-each>
-                        </select><xsl:value-of select="'-'"/>
-                        <select name="finish-day">
-                            <xsl:for-each select="/source/days/day">
-                                <option value="{@number}">
-                                    <xsl:if test="@number=/source/hh-start-date[@label='finish']/@day">
-                                        <xsl:attribute name="selected">selected</xsl:attribute>
-                                    </xsl:if>
-                                    <xsl:value-of select="@number"/>
-                                </option>
-                            </xsl:for-each>
-                        </select><xsl:value-of select="' '"/>
-                        <select name="finish-hour">
-                            <xsl:for-each select="/source/hours/hour">
-                                <option value="{@number}">
-                                    <xsl:if test="@number=/source/hh-start-date[@label='finish']/@hour">
-                                        <xsl:attribute name="selected">selected</xsl:attribute>
-                                    </xsl:if>
-                                    <xsl:value-of select="@number"/>
-                                </option>
-                            </xsl:for-each>
-                        </select><xsl:value-of select="':30 '"/>
-                    <input type="submit" value="Download"/>
-</p>
-                    </fieldset>
-                </form>
-            </body>
-        </html>
-    </xsl:template>
-</xsl:stylesheet>]]></value>
+    <form action="{{context_path}}/reports/149/output/">
+      <fieldset>
+        <legend>Download</legend>
+        <br>
+        <p>
+          From {{input_date('start', last_month_start)}} to
+          {{input_date('finish', last_month_finish)}}
+          <input type="submit" value="Download">
+        </p>
+      </fieldset>
+    </form>
+  </body>
+</html>]]></value>
 	</line>
 	<line>
 		<value><![CDATA[insert]]></value>
