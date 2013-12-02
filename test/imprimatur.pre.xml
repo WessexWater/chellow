@@ -3750,5 +3750,11 @@ def virtual_bill(supply_source):
 				<regex pattern="start_year"/>
 			</request>
 		</test>
+		<test name="Look at a TPR.">
+			<request path="/chellow/reports/97/output/?tpr_id=1">
+				<response-code value="200" />
+				<regex pattern="&lt;tbody&gt;\s*&lt;tr&gt;\s*&lt;td&gt;1&lt;/td&gt;\s*&lt;td&gt;1&lt;/td&gt;"/>
+			</request>
+		</test>
 	</test-group>
 </imprimatur>

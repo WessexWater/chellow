@@ -6841,12 +6841,12 @@ finally:
     <table>
       <tr>
         <th>Code</th>
-        <td>{{ tpr.code }}</td>
+        <td>{{tpr.code}}</td>
       </tr>
       <tr>
         <th>Teleswitch or Clock</th>
         <td>
-          {% if tpr.isTeleswitch %}
+          {% if tpr.is_teleswitch %}
             Teleswitch
           {% else %}
             Clock
@@ -6856,7 +6856,7 @@ finally:
       <tr>
         <th>GMT or Clock Time</th>
         <td>
-          {% if tpr.isGmt %}
+          {% if tpr.is_gmt %}
             GMT
           {% else %}
             Clock Time
@@ -6869,28 +6869,30 @@ finally:
     <table>
       <caption>Clock Intervals</caption>
       <thead>
-        <th>Day Of Week</th>
-        <th>Start Day</th>
-        <th>Start Month</th>
-        <th>End Day</th>
-        <th>End Month</th>
-        <th>Start Hour</th>
-        <th>Start Minute</th>
-        <th>End Hour</th>
-        <th>End Minute</th>
+        <tr>
+          <th>Day Of Week</th>
+          <th>Start Day</th>
+          <th>Start Month</th>
+          <th>End Day</th>
+          <th>End Month</th>
+          <th>Start Hour</th>
+          <th>Start Minute</th>
+          <th>End Hour</th>
+          <th>End Minute</th>
+        </tr>
       </thead>
       <tbody>
-        {% for ci in tpr.clockIntervals %}
+        {% for ci in tpr.clock_intervals %}
           <tr>
-            <td>{{ ci.dayOfWeek }}</td>
-            <td>{{ ci.startDay}}</td>
-            <td>{{ ci.startMonth }}</td>
-            <td>{{ ci.endDay }}</td>
-            <td>{{ ci.endMonth }}</td>
-            <td>{{ ci.startHour }}</td>
-            <td>{{ ci.startMinute }}</td>
-            <td>{{ ci.endHour }}</td>
-            <td>{{ ci.endMinute }}</td>
+            <td>{{ ci.day_of_week }}</td>
+            <td>{{ ci.start_day}}</td>
+            <td>{{ ci.start_month }}</td>
+            <td>{{ ci.end_day }}</td>
+            <td>{{ ci.end_month }}</td>
+            <td>{{ ci.start_hour }}</td>
+            <td>{{ ci.start_minute }}</td>
+            <td>{{ ci.end_hour }}</td>
+            <td>{{ ci.end_minute }}</td>
           </tr>
         {% endfor %}
       </tbody>
