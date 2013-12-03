@@ -14770,8 +14770,6 @@ from sqlalchemy.sql.expression import text, select
 from sqlalchemy import and_
 import datetime
 from dateutil.relativedelta import relativedelta
-from java.util.zip import ZipOutputStream, ZipEntry
-from java.io import PrintWriter, OutputStreamWriter
 import pytz
 
 Monad.getUtils()['imprt'](globals(), {
@@ -14783,12 +14781,13 @@ sess = None
 try:
     sess = session()
     contract_id = inv.getLong('hhdc_contract_id')
+    days_hidden = inv.getInteger('days_hidden')
     
     file_name = "channel_snags.csv"
     inv.getResponse().setContentType('text/csv')
     inv.getResponse().addHeader('Content-Disposition', 'attachment; filename="' + file_name + '"')
     pw = inv.getResponse().getWriter()
-    pw.println("Chellow Id,Imp MPAN Core,Exp MPAN Core, Site Code,Site Name,Snag Description,Is Import?,Is kWh?,Start Date,Finish Date,Days Since Snag Finished,Duration Of Snag (Days),Is Ignored?")
+    pw.println("Hidden Days, Chellow Id,Imp MPAN Core,Exp MPAN Core, Site Code,Site Name,Snag Description,Is Import?,Is kWh?,Start Date,Finish Date,Days Since Snag Finished,Duration Of Snag (Days),Is Ignored?")
     pw.flush()
 
     contract = Contract.get_hhdc_by_id(sess, contract_id)
@@ -14796,8 +14795,9 @@ try:
     MILLIS_IN_DAY = 1000 * 60 * 60 * 24
 
     now = datetime.datetime.now(pytz.utc)
+    cutoff_date = now - relativedelta(days=days_hidden)
 
-    for snag, channel, era, site_era, site in sess.query(Snag, Channel, Era, SiteEra, Site).filter("snag.channel_id=channel.id", "channel.era_id=era.id", "site_era.era_id=era.id", "site_era.site_id=site.id", "site_era.is_physical is true", "era.hhdc_contract_id = :contract_id").order_by("snag.is_ignored", "snag.start_date", "snag.id").params(contract_id=contract.id):
+    for snag, channel, era, site_era, site in sess.query(Snag, Channel, Era, SiteEra, Site).filter("snag.channel_id=channel.id", "channel.era_id=era.id", "site_era.era_id=era.id", "site_era.site_id=site.id", "site_era.is_physical is true", "era.hhdc_contract_id = :contract_id", Snag.start_date < cutoff_date).order_by("snag.is_ignored", "snag.start_date", "snag.id").params(contract_id=contract.id):
         snag_start = snag.start_date
         snag_finish = snag.finish_date
         if snag_finish is None:
@@ -14809,7 +14809,7 @@ try:
             duration = snag_finish - snag_start
             age_of_snag = now - snag_finish
 
-        pw.println(','.join('"' + str(val) + '"' for val in [snag.id, era.imp_mpan_core, era.exp_mpan_core, site.code, site.name, snag.description, channel.is_import, channel.is_kwh, snag_start.strftime("%Y-%m-%d %H:%M"), snag_finish_str, age_of_snag.days + float(age_of_snag.seconds) / (3600 * 24), duration.days + float(duration.seconds) / (3600 * 24), snag.is_ignored]))
+        pw.println(','.join('"' + str(val) + '"' for val in [days_hidden, snag.id, era.imp_mpan_core, era.exp_mpan_core, site.code, site.name, snag.description, channel.is_import, channel.is_kwh, snag_start.strftime("%Y-%m-%d %H:%M"), snag_finish_str, age_of_snag.days + float(age_of_snag.seconds) / (3600 * 24), duration.days + float(duration.seconds) / (3600 * 24), snag.is_ignored]))
         pw.flush()
     pw.close()
 finally:
