@@ -668,8 +668,7 @@ try:
                 inner_tpr_map = dict((code, []) for code in inner_header_codes)
                 outer_tpr_map = collections.defaultdict(list)
 
-                for read in sess.query(RegisterRead).from_statement("select register_read.* from register_read, tpr where register_read.tpr_id = tpr.id and bill_id = :bill_id order by tpr.id, register_read.present_date").params(bill_id=bill.id):
-                    tpr = read.tpr
+                for read, tpr in sess.query(RegisterRead, Tpr).join(Tpr).filter(RegisterRead.bill_id==bill.id).order_by(Tpr.id, RegisterRead.present_date.desc()):
                     tpr_code = 'md' if tpr is None else tpr.code
                     try:
                         inner_tpr_map[tpr_code].append(read)
