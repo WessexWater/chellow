@@ -14002,7 +14002,7 @@ finally:
       <fieldset>
         <legend>Download</legend>
         <br>
-        For For {{input_text('months', 1, 2, 2)}}
+        For {{input_text('months', 1, 2, 2)}}
         month(s) finishing at the end of
         {{input_date('end', init, resolution='month')}}
         <input type="submit" value="Download">
