@@ -9646,7 +9646,8 @@ def mpan_bit(query, kvarh_at_md_query, is_import, hh_count_query, num_hh, eras, 
             sc = era.expSc
         llfc_code = llfc.code
         sc_str = str(sc)
-        if llfc.isImport and era.pc.code == '00':
+        supply = era.supply
+        if llfc.isImport and era.pc.code == '00' and supply.source.code not in ('gen') and supply.dnoContract.name != '99':
             if gsp_kwh == '':
                 gsp_kwh = 0
 
@@ -9757,17 +9758,17 @@ while supplies.next():
     for read in normal_previous_reads_query.setEntity('supply', supply).list():
         prime_bill = bill_query.setTimestamp('readDate', read.getPreviousDate().getNext().getDate()).uniqueResult()
         if prime_bill is not None and read.getBill().getId() == prime_bill.getId():
-            key = str(read.getPreviousDate()) + "_" + read.getMeterSerialNumber()
+            key = str(read.getPreviousDate()) + "_" + read.getMsn()
             if key not in prime_reads:
-                if Hiber.session().createQuery("select count(*) from RegisterRead read where read.bill = :bill and read.previousDate.date = :readDate and read.meterSerialNumber = :msn and read.previousType.code not in ('C', 'N', 'N3')").setEntity('bill', prime_bill).setTimestamp('readDate', read.getPreviousDate().getDate()).setString('msn', read.getMeterSerialNumber()).uniqueResult() is not None:
+                if Hiber.session().createQuery("select count(*) from RegisterRead read where read.bill = :bill and read.previousDate.date = :readDate and read.msn = :msn and read.previousType.code not in ('C', 'N', 'N3')").setEntity('bill', prime_bill).setTimestamp('readDate', read.getPreviousDate().getDate()).setString('msn', read.getMsn()).uniqueResult() is not None:
                     prime_reads[key] = read
                 
     for read in normal_present_reads_query.setEntity('supply', supply).list():
         prime_bill = bill_query.setTimestamp('readDate', read.getPresentDate().getDate()).uniqueResult()
         if prime_bill is not None and read.getBill().getId() == prime_bill.getId():
-            key = str(read.getPresentDate()) + "_" + read.getMeterSerialNumber()
+            key = str(read.getPresentDate()) + "_" + read.getMsn()
             if key not in prime_reads:
-                if Hiber.session().createQuery("select count(*) from RegisterRead read where read.bill = :bill and read.presentDate.date = :readDate and read.meterSerialNumber = :msn and read.presentType.code not in ('C', 'N', 'N3')").setEntity('bill', prime_bill).setTimestamp('readDate', read.getPresentDate().getDate()).setString('msn', read.getMeterSerialNumber()).uniqueResult() is not None:
+                if Hiber.session().createQuery("select count(*) from RegisterRead read where read.bill = :bill and read.presentDate.date = :readDate and read.msn = :msn and read.presentType.code not in ('C', 'N', 'N3')").setEntity('bill', prime_bill).setTimestamp('readDate', read.getPresentDate().getDate()).setString('msn', read.getMsn()).uniqueResult() is not None:
                     prime_reads[key] = read
 
     pc = era.pc

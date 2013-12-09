@@ -3774,5 +3774,12 @@ def virtual_bill(supply_source):
 				<regex pattern="end_year"/>
 			</request>
 		</test>
+		<test name="CSV Supplies Duration with register reads">
+			<request
+				path="/chellow/reports/149/output/?start_year=2010&amp;start_month=01&amp;start_day=1&amp;start_hour=0&amp;start_minute=0&amp;finish_year=2010&amp;finish_month=01&amp;finish_day=31&amp;finish_hour=23&amp;finish_minute=30">
+				<regex
+					pattern='"10","2",' />
+			</request>
+		</test>
 	</test-group>
 </imprimatur>
