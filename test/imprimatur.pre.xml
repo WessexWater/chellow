@@ -3763,5 +3763,11 @@ def virtual_bill(supply_source):
 				<regex pattern="&lt;tbody&gt;\s*&lt;tr&gt;\s*&lt;td&gt;1&lt;/td&gt;\s*&lt;td&gt;1&lt;/td&gt;"/>
 			</request>
 		</test>
+		<test name="CSV Bills.">
+			<request path="/chellow/reports/153/output/">
+				<response-code value="200" />
+				<regex pattern="end_year"/>
+			</request>
+		</test>
 	</test-group>
 </imprimatur>
