@@ -3958,7 +3958,7 @@ finally:
     <p>
       <a href="{{context_path}}/reports/1/output/">Chellow</a> &gt;
       <a href="{{context_path}}/reports/113/output/">HHDC Contracts</a> &gt;
-      <a href="{{context_path}}/reports/115/output/?hhdc_contract_id={{contract_id}}">{{contract.name}}</a>
+      <a href="{{context_path}}/reports/115/output/?hhdc_contract_id={{contract.id}}">{{contract.name}}</a>
       &gt; Channel Snags
     </p>
 
