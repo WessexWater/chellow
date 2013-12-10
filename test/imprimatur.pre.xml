@@ -2016,12 +2016,6 @@ def triad_estimates():
 				<response-code value="303" />
 			</request>
 		</test>
-		<test name="Try the site level monthly data HTML report.">
-			<request
-				path="/chellow/reports/13/output/?site_id=7&amp;finish_year=2006&amp;finish_month=08">
-				<response-code value="200" />
-			</request>
-		</test>
 		<test name="Try 'Supply MPAN Months' report.">
 			<request path="/chellow/reports/15/output/?supply_id=2&amp;is_import=true">
 				<regex pattern="&amp;gt;\s*Import\s*data by month" />
@@ -3780,6 +3774,13 @@ def virtual_bill(supply_source):
 				path="/chellow/reports/149/output/?start_year=2010&amp;start_month=01&amp;start_day=1&amp;start_hour=0&amp;start_minute=0&amp;finish_year=2010&amp;finish_month=01&amp;finish_day=31&amp;finish_hour=23&amp;finish_minute=30">
 				<regex
 					pattern='"10","2",' />
+			</request>
+		</test>
+		<test name="Try the site level monthly data HTML report.">
+			<request
+				path="/chellow/reports/13/output/?site_id=3&amp;finish_year=2005&amp;finish_month=11">
+				<regex pattern="For 12 months finishing at the end of" />
+				<response-code value="200" />
 			</request>
 		</test>
 	</test-group>

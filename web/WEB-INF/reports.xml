@@ -1740,14 +1740,14 @@ try:
 
                 disp_kwh = hh['imp_gen'] - hh['exp_gen'] - hh['exp_net']
                 if disp_kwh * 2 > month['displaced']['md']:
-                    month['disp_net']['md'] = disp_kwh * 2
-                    month['disp_net']['md_date'] = hh['start_date']
+                    month['displaced']['md'] = disp_kwh * 2
+                    month['displaced']['md_date'] = hh['start_date']
                 month['displaced']['kwh'] += disp_kwh
 
                 used_kwh = disp_kwh + hh['imp_net']
                 if used_kwh * 2 > month['used']['md']:
-                    month['used_net']['md'] = used_kwh * 2
-                    month['used_net']['md_date'] = hh['start_date']
+                    month['used']['md'] = used_kwh * 2
+                    month['used']['md_date'] = hh['start_date']
                 month['used']['kwh'] += used_kwh
 
                 if hh['imp_gen'] * 2 > month['imp_gen']['md']:
