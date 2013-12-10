@@ -3434,7 +3434,7 @@ def tariffs():
             'red-gbp-per-kwh': 0.22433,
             'amber-gbp-per-kwh': 0.00170,
             'green-gbp-per-kwh': 0.00115,
-            'gbp-per-kvarh': 0.00287},
+            'gbp-per-kvarh': 0.00318},
 '551': {                                        
 'description': 'LV Sub Generation Intermittent',    
 'gbp-per-mpan-per-day': 0,    
