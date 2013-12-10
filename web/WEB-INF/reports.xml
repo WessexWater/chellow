@@ -357,12 +357,14 @@ try:
     groups = sorted(groups, key=operator.itemgetter('is_ongoing'), reverse=True)
 
     now = datetime.utcnow()
-    month_start = datetime(now.year, now.month, 1) - relativedelta(months=1)
-    month_finish = datetime(now.year, now.month, 1) - HH
+    month_start = datetime(now.year, now.month, 1)
+    month_finish = month_start + relativedelta(months=1) - HH
+    last_month_start = month_start - relativedelta(months=1)
+    last_month_finish = month_start - HH
 
     properties = configuration_contract.make_properties()
     other_sites = site.groups(sess, now, now, False)[0].sites[1:]
-    render(inv, template, {'site': site, 'groups': groups, 'properties': properties, 'other_sites': other_sites, 'month_start': month_start, 'month_finish': month_finish})
+    render(inv, template, {'site': site, 'groups': groups, 'properties': properties, 'other_sites': other_sites, 'month_start': month_start, 'month_finish': month_finish, 'last_month_start': last_month_start, 'last_month_finish': last_month_finish})
 finally:
     sess.close()]]></value>
 		<value><![CDATA[<!doctype html>
@@ -517,7 +519,7 @@ finally:
         <a href="{{context_path}}/reports/11/output/?site_id={{site.id}}&amp;months=1&amp;finish_year={{month_finish.year}}&amp;finish_month={{month_finish.month}}">Generation Graphs</a>
       </li>
       <li>
-        <a href="{{context_path}}/reports/13/output/?site_id={{site.id}}&amp;finish_year={{month_finish.year}}&amp;finish_month={{month_finish.month}}">
+        <a href="{{context_path}}/reports/13/output/?site_id={{site.id}}&amp;finish_year={{last_month_finish.year}}&amp;finish_month={{last_month_finish.month}}">
 Table of site level monthly kWh, MD kWh etc.</a>
       </li>
       <li>
@@ -533,7 +535,7 @@ Table of site level monthly kWh, MD kWh etc.</a>
         <legend>Monthly Duration</legend>
         <br>
         For {{input_text('months', '1', 2, 2)}}
-        month(s) until the end of {{input_date('finish', month_finish, resolution='month')}}
+        month(s) until the end of {{input_date('finish', last_month_finish, resolution='month')}}
         <input type="submit" value="Download"/>
       </fieldset>
     </form>
@@ -544,7 +546,7 @@ Table of site level monthly kWh, MD kWh etc.</a>
         <legend>Download TRIAD CSV</legend>
         <br>
         For financial year ending March
-        {{input_date(None, month_finish, resolution='year')}}
+        {{input_date(None, last_month_finish, resolution='year')}}
         <input type="submit" value="Download">
       </fieldset>
     </form>
@@ -563,7 +565,7 @@ Table of site level monthly kWh, MD kWh etc.</a>
           <option value="parasitic">Parasitic</option>
         </select>
         for {{input_text('months', '1', 2, 2)}}
-        month(s) until the end of {{input_date('finish', month_finish, resolution='month')}}
+        month(s) until the end of {{input_date('finish', last_month_finish, resolution='month')}}
         <input type="submit" value="Download">
       </fieldset>
     </form>
@@ -574,7 +576,7 @@ Table of site level monthly kWh, MD kWh etc.</a>
         <legend>Displaced Virtual Bills</legend>
         <br>
         For {{input_text('months', '1', 2, 2)}}
-        month(s) until the end of {{input_date('finish', month_finish, resolution='month')}}
+        month(s) until the end of {{input_date('finish', last_month_finish, resolution='month')}}
         <input type="submit" value="Download">
       </fieldset>
     </form>
