@@ -14034,7 +14034,7 @@ file_date_format.setCalendar(cal)
 inv.getResponse().setContentType("text/csv")
 inv.getResponse().setHeader('Content-Disposition', 'attachment; filename="reads_' + file_date_format.format(now_date) + '.csv"')
 pw = inv.getResponse().getWriter()
-pw.println("Duration Start,Duration Finish,Supply Id,Import MPAN Core,Export MPAN Core,Batch Reference,Bill Id,Bill Reference,Bill Issue Date,Bill Type,Register Read Id,TPR,Coefficient,Previous Read Date,Previous Read Value,Prevous Read Type,Present Read Date,Present Read Value,Present Read Type")
+pw.println("Duration Start,Duration Finish,Supply Id,Import MPAN Core,Export MPAN Core,Batch Reference,Bill Id,Bill Reference,Bill Issue Date,Bill Type,Register Read Id,TPR,Coefficient,Previous Read Date,Previous Read Value,Previous Read Type,Present Read Date,Present Read Value,Present Read Type")
 pw.flush()
 
 issue_format = SimpleDateFormat("yyyy-MM-dd HH:mm")
@@ -14062,7 +14062,7 @@ while reads.next():
     if exp_mpan_core is None:
         exp_mpan_core = ''
 
-    pw.println(','.join('"' + str(value) + '"' for value in [start_date, finish_date, supply.getId(), imp_mpan_core, exp_mpan_core, batch.getReference(),bill.getId(), bill.getReference(), issue_format.format(bill.getIssueDate()), bill.getType().getCode(), read.getId(), read.getTpr(), read.getCoefficient(), read.getPreviousDate(), read.getPreviousValue(), read.getPreviousType(), read.getPresentDate(), read.getPresentValue(), read.getPresentType()]))
+    pw.println(','.join('"' + str(value) + '"' for value in [start_date, finish_date, supply.id, imp_mpan_core, exp_mpan_core, batch.reference,bill.id, bill.reference, issue_format.format(bill.issueDate), bill.type.code, read.id, read.tpr.code, read.coefficient, read.previousDate, read.previousValue, read.previousType.code, read.presentDate, read.presentValue, read.presentType.code]))
     pw.flush()
     Hiber.session().clear()
 
