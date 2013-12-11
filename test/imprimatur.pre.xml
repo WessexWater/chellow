@@ -3814,5 +3814,11 @@ def virtual_bill(supply_source):
 				<response-code value="303" />
 			</request>
 		</test>
+		<test name="Check user roles page.">
+			<request path="/chellow/reports/261/output/">				
+				<response-code value="200" />
+				<regex pattern="party-viewer"/>
+			</request>
+		</test>
 	</test-group>
 </imprimatur>

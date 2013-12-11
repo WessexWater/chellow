@@ -16594,22 +16594,15 @@ finally:
 		<value><![CDATA[from net.sf.chellow.monad import Monad
 from sqlalchemy.orm import joinedload_all
 
-db = Monad.getContext().getAttribute("net.sf.chellow.db")
-for cls in ['Contract', 'Party', 'UserRole', 'set_read_write', 'session']:
-   globals()[cls] = db.get(cls)
-
-utils = Monad.getContext().getAttribute("net.sf.chellow.utils")
-for cls in ['UserException']:
-   globals()[cls] = utils.get(cls)
-
-jinja = Monad.getContext().getAttribute("net.sf.chellow.jinja")
-for cls in ['render']:
-   globals()[cls] = jinja.get(cls)
+Monad.getUtils()['imprt'](globals(), {
+        'db': ['Contract', 'UserRole', 'set_read_write', 'session'], 
+        'utils': ['UserException'],
+        'templater': ['render']})
 
 sess = None
 try:
     sess = session()
-    user_roles = sess.query(UserRole).from_statement("select * from user_role order by user_role.code").all()
+    user_roles = sess.query(UserRole).order_by(UserRole.code)
     render(inv, template, {'user_roles': user_roles})
 finally:
     sess.close()]]></value>
@@ -16617,15 +16610,14 @@ finally:
 <html>
   <head>
     <link rel="stylesheet" type="text/css"
-      href="{{ context_path }}/reports/19/output/"
-    >
+      href="{{context_path}}/reports/19/output/">
     <title>Chellow &gt; User Roles</title>
   </head>
   <body>
     <p>
-      <a href="{{ context_path }}/reports/1/output/">Chellow</a> &gt; User Roles
+      <a href="{{context_path }}/reports/1/output/">Chellow</a> &gt; User Roles
     </p>
-    <br />
+    <br>
     {% if messages %}
       <ul>
         {% for message in messages %}
@@ -16641,7 +16633,7 @@ finally:
         {% for user_role in user_roles %}
           <tr>
             <td>
-              <a href="{{ context_path }}/reports/263/output/?user_role_id={{ user_role.id }}">{{ user_role.code }}</a>
+              <a href="{{context_path}}/reports/263/output/?user_role_id={{ user_role.id }}">{{user_role.code}}</a>
             </td>
           </tr>
         {% endfor %}
@@ -16659,17 +16651,10 @@ finally:
 		<value><![CDATA[from net.sf.chellow.monad import Monad
 from sqlalchemy.orm import joinedload_all
 
-db = Monad.getContext().getAttribute("net.sf.chellow.db")
-for cls in ['Contract', 'Party', 'UserRole', 'set_read_write', 'session']:
-   globals()[cls] = db.get(cls)
-
-utils = Monad.getContext().getAttribute("net.sf.chellow.utils")
-for cls in ['UserException']:
-   globals()[cls] = utils.get(cls)
-
-jinja = Monad.getContext().getAttribute("net.sf.chellow.jinja")
-for cls in ['render']:
-   globals()[cls] = jinja.get(cls)
+Monad.getUtils()['imprt'](globals(), {
+        'db': ['Contract', 'UserRole', 'set_read_write', 'session'], 
+        'utils': ['UserException'],
+        'templater': ['render']})
 
 sess = None
 try:
@@ -16683,17 +16668,16 @@ finally:
 <html>
   <head>
     <link rel="stylesheet" type="text/css"
-      href="{{ context_path }}/reports/19/output/"
-    >
-    <title>Chellow &gt; User Roles &gt; {{ user_role.code }}</title>
+      href="{{context_path}}/reports/19/output/">
+    <title>Chellow &gt; User Roles &gt; {{user_role.code}}</title>
   </head>
   <body>
     <p>
-      <a href="{{ context_path }}/reports/1/output/">Chellow</a> &gt;
-      <a href="{{ context_path }}/reports/261/output/">User Roles</a> &gt;
-      {{ user_role.code }}
+      <a href="{{context_path}}/reports/1/output/">Chellow</a> &gt;
+      <a href="{{context_path}}/reports/261/output/">User Roles</a> &gt;
+      {{user_role.code}}
     </p>
-    <br />
+    <br>
     {% if messages %}
       <ul>
         {% for message in messages %}
@@ -16704,7 +16688,7 @@ finally:
     <table>
       <tr>
         <th>Code</th>
-        <td>{{ user_role.code }}</td>
+        <td>{{user_role.code}}</td>
       </tr>
     </table>
   </body>
