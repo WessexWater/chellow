@@ -3797,5 +3797,20 @@ def virtual_bill(supply_source):
 				<response-code value="303" />
 			</request>
 		</test>
+		<test name="Try inserting an era where the existing era is attached to more than one site.">
+		
+			<!-- Insert era -->
+			<request path="/chellow/reports/305/output/" method="post">
+				<control name="supply_id" value="2" />
+				<control name="start_year" value="2005" />
+				<control name="start_month" value="05" />
+				<control name="start_day" value="04" />
+				<control name="start_hour" value="00" />
+				<control name="start_minute" value="00" />
+				<control name="insert_era" value="insert_era" />
+				
+				<response-code value="303" />
+			</request>
+		</test>
 	</test-group>
 </imprimatur>
