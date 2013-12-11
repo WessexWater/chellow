@@ -1502,6 +1502,7 @@ def virtual_bill(supply_source):
 				<credentials username="watkins@example.com" password="alan" />
 				<regex
 					pattern='&lt;a href="/chellow/reports/133/output/"&gt;Meter Payment Types&lt;/a&gt;' />
+				<regex pattern='&lt;a href="/chellow/reports/337/output/"&gt;\s*Sources\s*&lt;/a&gt;'/>
 				<response-code value="200" />
 			</request>
 		</test>

@@ -189,7 +189,7 @@ render(inv, template, {'local_reports_id': properties.get('local.reports')})]]><
                         </a>
                     </li>
                     <li>
-                        <a href="{{ context_path }}/sources/">
+                        <a href="{{context_path}}/reports/337/output/">
                             Sources
                         </a>
                     </li>
@@ -21558,6 +21558,127 @@ render(inv, template, {'clogs': clogs})]]>
         <li>{{clog}}</li>
       {% endfor %}
     </ul>
+  </body>
+</html>]]>
+		</value>
+	</line>
+    <line>
+		<value><![CDATA[insert]]></value>
+		<value><![CDATA[report]]></value>
+		<value><![CDATA[337]]></value>
+		<value><![CDATA[true]]></value>
+		<value><![CDATA[Sources]]></value>
+		<value><![CDATA[from net.sf.chellow.monad import Monad
+from sqlalchemy.orm import joinedload_all
+
+Monad.getUtils()['imprt'](globals(), {
+        'db': ['Contract', 'Source', 'MarketRole', 'set_read_write', 'session'], 
+        'utils': ['UserException'],
+        'templater': ['render']})
+
+sess = None
+try:
+    sess = session()
+    sources = sess.query(Source).order_by(Source.code).all()
+    render(inv, template, {'sources': sources})
+finally:
+    sess.close()]]>
+		</value>
+		<value><![CDATA[<!doctype html>
+<html>
+  <head>
+    <link rel="stylesheet" type="text/css"
+      href="{{context_path}}/reports/19/output/">
+    <title>Chellow &gt; Sources</title>
+  </head>
+  <body>
+    <p>
+      <a href="{{context_path}}/reports/1/output/">Chellow</a> &gt; Sources
+    </p>
+    <br />
+    {% if messages %}
+      <ul>
+        {% for message in messages %}
+          <li>{{ message }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+    <table>
+      <thead>
+        <tr>
+          <th>Code</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for source in sources %}
+          <tr>
+            <td>
+              <a href="{{context_path}}/reports/339/output/?source_id={{source.id}}">{{source.code}}</a>
+            </td>
+            <td>{{source.name}}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </body>
+</html>]]>
+		</value>
+	</line>
+    <line>
+		<value><![CDATA[insert]]></value>
+		<value><![CDATA[report]]></value>
+		<value><![CDATA[339]]></value>
+		<value><![CDATA[true]]></value>
+		<value><![CDATA[Source]]></value>
+		<value><![CDATA[from net.sf.chellow.monad import Monad
+from sqlalchemy.orm import joinedload_all
+
+Monad.getUtils()['imprt'](globals(), {
+        'db': ['Contract', 'Party', 'Source', 'set_read_write', 'session'], 
+        'utils': ['UserException'],
+        'templater': ['render']})
+
+sess = None
+try:
+    sess = session()
+    source_id = inv.getLong('source_id')
+    source = Source.get_by_id(sess, source_id)
+    render(inv, template, {'source': source})
+finally:
+    sess.close()]]>
+		</value>
+		<value><![CDATA[<!doctype html>
+<html>
+  <head>
+    <link rel="stylesheet" type="text/css"
+      href="{{context_path}}/reports/19/output/">
+    <title>Chellow &gt; Sources &gt; {{source.code}}</title>
+  </head>
+  <body>
+    <p>
+      <a href="{{context_path}}/reports/1/output/">Chellow</a> &gt;
+      <a href="{{context_path}}/reports/337/output/">Sources</a> &gt;
+      {{source.name}}
+    </p>
+    <br />
+    {% if messages %}
+      <ul>
+        {% for message in messages %}
+          <li>{{ message }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+    <table>
+      <tr>
+        <th>Code</th>
+        <td>{{source.code}}</td>
+      </tr>
+      <tr>
+        <th>Description</th>
+        <td>{{source.name}}</td>
+      </tr>
+    </table>
   </body>
 </html>]]>
 		</value>
