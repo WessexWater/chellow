@@ -462,6 +462,10 @@ def totalElement(account, startDate, finishDate):
 			<!-- Check that a supply with only an import MPAN is there -->
 			<request path="/chellow/reports/311/output/?site_id=4">
 				<regex pattern="22 6354 2983 570" />
+				
+				<!-- Check we the 'site_id' field is there -->
+				<regex pattern='&lt;fieldset&gt;\s*&lt;input type="hidden" name="site_id" value="4"&gt;\s*&lt;legend&gt;Update this site&lt;/legend&gt;' />
+
 				<response-code value="200" />
 			</request>
 
@@ -3781,6 +3785,15 @@ def virtual_bill(supply_source):
 				path="/chellow/reports/13/output/?site_id=3&amp;finish_year=2005&amp;finish_month=11">
 				<regex pattern="For 12 months finishing at the end of" />
 				<response-code value="200" />
+			</request>
+		</test>
+		<test name="Change the name of a site.">
+			<request path="/chellow/reports/311/output/" method="post">
+				<control name="site_id" value="8"/>
+				<control name="name" value="Ishmael"/>
+				<control name="code" value="MOBY"/>
+				<control name="update" value="Update"/>
+				<response-code value="303" />
 			</request>
 		</test>
 	</test-group>

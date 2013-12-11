@@ -19792,7 +19792,7 @@ try:
         elif inv.hasParameter("update"):
             code = inv.getString("code")
             name = inv.getString("name")
-            site.update(sess, code, name)
+            site.update(code, name)
             sess.commit()
             inv.sendSeeOther("/reports/5/output/?site_id=" + str(site.id))
         elif inv.hasParameter("insert"):
@@ -19923,6 +19923,7 @@ finally:
       <br>
       <form action="." method="post">
         <fieldset>
+          <input type="hidden" name="site_id" value="{{site.id}}">
           <legend>Update this site</legend>
           <label>Name</label>
           {{input_text('name', site.name, 40)}}
