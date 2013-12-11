@@ -360,9 +360,9 @@ GDF CSV                | gdf_csv
 
 CSV file with the following columns:
 
-# Bill Type                           | Account Reference | Mpans | Invoice Reference | Issue Date | Start Date | Finish Date | kWh | Net | VAT | Gross | Breakdown | R1 Meter Serial Number | R1 MPAN | R1 Coefficient | R1 Units              | R1 TPR             | R1 Previous Read Date | R1 Previous Read Value | R1 Previous Read Type | R1 Present Read Date | R1 Present Read Value | R1 Present Read Type
---------------------------------------|-------------------|-------|-------------------|------------|------------|-------------|-----|-----|-----|-------|-----------|------------------------|---------|----------------|-----------------------|--------------------|-----------------------|------------------------|-----------------------|----------------------|-----------------------|---------------------
-N - Normal, W - Withdrawn or F -Final |                   |       |                   |            |            |             |     |     |     |       |           |                        |         |                | kWh, kW, kVA or kVArh | Blank if kW or kVA |                       |                        |                       |                      |                       |                     
+# Bill Type                           | Account Reference | Mpans | Invoice Reference | Issue Date       | Start Date       | Finish Date      | kWh | Net | VAT | Gross | Breakdown | R1 Meter Serial Number | R1 MPAN | R1 Coefficient | R1 Units              | R1 TPR             | R1 Previous Read Date | R1 Previous Read Value | R1 Previous Read Type | R1 Present Read Date | R1 Present Read Value | R1 Present Read Type
+--------------------------------------|-------------------|-------|-------------------|------------------|------------------|------------------|-----|-----|-----|-------|-----------|------------------------|---------|----------------|-----------------------|--------------------|-----------------------|------------------------|-----------------------|----------------------|-----------------------|---------------------
+N - Normal, W - Withdrawn or F -Final |                   |       |                   | YYYY-mm-dd HH:MM | YYYY-mm-dd HH:MM | YYYY-mm-dd HH:MM |     |     |     |       |           |                        |         |                | kWh, kW, kVA or kVArh | Blank if kW or kVA |                       |                        |                       |                      |                       |                     
 
 
 #### Read Types
