@@ -3847,5 +3847,11 @@ def virtual_bill(supply_source):
 					pattern="All the bills have been successfully loaded and attached to the batch\." />
 			</request>
 		</test>
+		<test name="Look at an HHDC batch">
+		    <request path="/chellow/reports/203/output/?hhdc_batch_id=8">
+				<response-code value="200" />
+				<regex pattern="&lt;tbody&gt;\s*&lt;tr&gt;" />
+			</request>
+		</test>
 	</test-group>
 </imprimatur>

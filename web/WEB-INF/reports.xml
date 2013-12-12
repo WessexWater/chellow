@@ -13013,13 +13013,11 @@ try:
     if inv.getRequest().getMethod() == 'GET':
         batch_id = inv.getLong('hhdc_batch_id')
         batch = Batch.get_by_id(sess, batch_id)
-        bills = sess.query(Bill).from_statement("""select * from bill where
-                batch_id = :batch_id order by reference,
-                start_date""").params(batch_id=batch.id).all()
+        bills = sess.query(Bill).filter(Bill.batch_id==batch.id).order_by(Bill.reference).all()
 
         config_contract = Contract.get_non_core_by_name(sess, 'configuration')
         properties = config_contract.make_properties()
-        fields = {'batch': batch}
+        fields = {'batch': batch, 'bills': bills}
         if 'batch_reports' in properties:
             batch_reports = []
             for report_id in properties['batch_reports']:
