@@ -229,9 +229,6 @@ render(inv, template, {'local_reports_id': properties.get('local.reports')})]]><
           <li>
             <a href="{{ context_path }}/reports/195/output/">Comparison against ECOES</a>
           </li>
-          <li>
-            <a href="{{ context_path }}/reports/243/output/">MDD Updater</a>
-          </li>
         </ul>
       </div>
     </div>
