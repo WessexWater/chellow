@@ -15255,7 +15255,7 @@ source.appendChild(HhStartDate.getHhMinutesXml(doc))
 
 supplier_contracts_elem = doc.createElement('supplier-contracts')
 source.appendChild(supplier_contracts_elem)
-for contract in Hiber.session().createQuery("from SupplierContract contract order by contract.name").list():
+for contract in Hiber.session().createQuery("from Contract contract order by contract.name").list():
     supplier_contracts_elem.appendChild(contract.toXml(doc))
 
 cal = MonadDate.getCalendar()
