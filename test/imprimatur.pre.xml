@@ -3112,7 +3112,7 @@ def virtual_bill(supply_source):
 		<test name="Check that bill with two sets of register reads gets displayed correctly.">
 			<request path="/chellow/reports/7/output/?supply_id=10">
 			
-				<regex pattern='&lt;td rowspan="2"&gt;\s*&lt;a href="/chellow/reports/201/output/\?bill-type-id=2" title="Normal"&gt;N&lt;/a&gt;\s*&lt;/td&gt;\s*&lt;td style="border-right: none;"&gt;\s*&lt;a title="2011-02-04 23:30 I02D89150"&gt;34285&lt;/a&gt;\s*&lt;/td&gt;'/>
+				<regex pattern='&lt;td rowspan="2"&gt;\s*&lt;a href="/chellow/reports/201/output/\?bill_type_id=2" title="Normal"&gt;N&lt;/a&gt;\s*&lt;/td&gt;\s*&lt;td style="border-right: none;"&gt;\s*&lt;a title="2011-02-04 23:30 I02D89150"&gt;34285&lt;/a&gt;\s*&lt;/td&gt;'/>
   
 				<regex pattern='25927&lt;/a&gt;\s*&lt;/td&gt;\s*&lt;td style="border-left: none;"&gt;\s*E\s*&lt;/td&gt;\s*&lt;/tr&gt;'/>
 				
@@ -3822,6 +3822,11 @@ def virtual_bill(supply_source):
 		</test>
 		<test name="Scenario runner">
 			<request path="/chellow/reports/245/output/">				
+				<response-code value="200" />
+			</request>
+		</test>
+		<test name="Bill type">
+			<request path="/chellow/reports/201/output/?bill_type_id=1">				
 				<response-code value="200" />
 			</request>
 		</test>

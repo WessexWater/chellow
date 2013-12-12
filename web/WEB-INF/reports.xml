@@ -1082,7 +1082,7 @@ finally:
                 <td rowspan="{{ rows_high }}">{{ bill.net }}</td>
                 <td rowspan="{{ rows_high }}">{{ bill.vat }}</td>
                 <td rowspan="{{ rows_high }}">
-                  <a href="{{ context_path }}/reports/201/output/?bill-type-id={{ bill.bill_type.id }}" title="{{ bill.bill_type.description }}">{{ bill.bill_type.code }}</a>
+                  <a href="{{ context_path }}/reports/201/output/?bill_type_id={{bill.bill_type.id}}" title="{{bill.bill_type.description}}">{{bill.bill_type.code}}</a>
               </td>
               {% for read_row in read_rows %}
                 {% if not loop.first %}
@@ -1206,7 +1206,7 @@ finally:
               <td rowspan="{{ rows_high }}">{{ bill.net }}</td>
               <td rowspan="{{ rows_high }}">{{ bill.vat }}</td>
               <td rowspan="{{ rows_high }}">
-                <a href="{{ context_path }}/reports/201/output/?bill-type-id={{ bill.bill_type.id }}" title="{{ bill.bill_type.description }}">{{ bill.bill_type.code }}</a>
+                <a href="{{ context_path }}/reports/201/output/?bill_type_id={{bill.bill_type.id}}" title="{{bill.bill_type.description}}">{{bill.bill_type.code}}</a>
               </td>
 
               {% for read_row in read_rows %} 
@@ -1300,7 +1300,7 @@ finally:
               <td>{{ bill.vat }}</td>
               <td>{{ bill.gross }}</td>
               <td>
-                <a href="{{ context_path }}/reports/201/output/?bill-type-id={{ bill.bill_type.id }}" title="{{ bill.bill_type.description }}">{{ bill.bill_type.code }}</a>
+                <a href="{{ context_path }}/reports/201/output/?bill_type_id={{bill.bill_type.id}}" title="{{bill.bill_type.description}}">{{bill.bill_type.code}}</a>
               </td>
             </tr>
           {% endfor %}
@@ -1345,7 +1345,7 @@ finally:
                         <td>{{ bill.vat }}</td>
                         <td>{{ bill.gross }}</td>
                         <td>
-                            <a href="{{ context_path }}/reports/201/output/?bill-type-id={{ bill.bill_type.id }}" title="{{ bill.bill_type.description }}">{{ bill.bill_type.code }}</a>
+                            <a href="{{context_path}}/reports/201/output/?bill_type_id={{bill.bill_type.id}}" title="{{bill.bill_type.description}}">{{bill.bill_type.code}}</a>
                         </td>
                     </tr>
                 {% endfor %}
@@ -7523,7 +7523,7 @@ finally:
           <td>{{bill.vat}}</td>
           <td>{{bill.gross}}</td>
           <td>
-            <a href="{{context_path}}/reports/201/output/?bill-type-id={{bill.bill_type.id}}" title="{{bill.bill_type.description}}">{{bill.bill_type.code}}</a>
+            <a href="{{context_path}}/reports/201/output/?bill_type_id={{bill.bill_type.id}}" title="{{bill.bill_type.description}}">{{bill.bill_type.code}}</a>
           </td>
           <td>
             <a href="{{context_path}}/reports/111/output/?bill_id={{bill.id}}">Check</a>
@@ -12878,75 +12878,61 @@ source.appendChild(cop.toXml(doc))]]></value>
 		<value><![CDATA[199]]></value>
 		<value><![CDATA[true]]></value>
 		<value><![CDATA[Bill Types]]></value>
-		<value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree
+		<value><![CDATA[from net.sf.chellow.monad import Monad
+from sqlalchemy.orm import joinedload_all
 
-types_element = doc.createElement('bill-types')
-source.appendChild(types_element)
-for type in Hiber.session().createQuery("from BillType type order by type.code").list():
-    types_element.appendChild(type.toXml(doc))]]></value>
-		<value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
-<xsl:stylesheet version="1.0"
-    xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
-    <xsl:output method="html" encoding="US-ASCII"
-        doctype-public="-//W3C//DTD HTML 4.01//EN"
-        doctype-system="http://www.w3.org/TR/html4/strict.dtd" indent="yes" />
-    <xsl:template match="/">
-        <html>
-            <head>
-                <link rel="stylesheet" type="text/css"
-                    href="{/source/request/@context-path}/reports/19/output/" />
-                <title>
-                    Chellow &gt; Bill Types
-                </title>
-            </head>
-            <body>
-                <p>
-                    <a
-                        href="{/source/request/@context-path}/reports/1/output/">
-                        <xsl:value-of select="'Chellow'" />
-                    </a>
-                    &gt;
-                    <xsl:value-of select="'Bill Types'" />
-                </p>
-                <br />
-                <xsl:if test="//message">
-                    <ul>
-                        <xsl:for-each select="//message">
-                            <li>
-                                <xsl:value-of select="@description" />
-                            </li>
-                        </xsl:for-each>
-                    </ul>
-                </xsl:if>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Code</th>
-                            <th>Description</th>
-                        </tr>
-                    </thead>
-                    <tbody>
+Monad.getUtils()['imprt'](globals(), {
+        'db': ['Contract', 'BillType', 'set_read_write', 'session'], 
+        'utils': ['UserException'],
+        'templater': ['render']})
 
-                        <xsl:for-each
-                            select="/source/bill-types/bill-type">
-                            <tr>
-                                <td>
-                                    <a
-                                        href="{/source/request/@context-path}/reports/201/output/?bill-type-id={@id}">
-                                        <xsl:value-of select="@code" />
-                                    </a>
-                                </td>
-                                <td>
-                                    <xsl:value-of select="@description" />
-                                </td>
-                            </tr>
-                        </xsl:for-each>
-                    </tbody>
-                </table>
-            </body>
-        </html>
-    </xsl:template>
-</xsl:stylesheet>]]></value>
+sess = None
+try:
+    sess = session()
+    bill_types = sess.query(BillType).order_by(BillType.code)
+    render(inv, template, {'bill_types': bill_types})
+finally:
+    sess.close()]]></value>
+		<value><![CDATA[<!doctype html>
+<html>
+  <head>
+    <link rel="stylesheet" type="text/css"
+      href="{{context_path}}/reports/19/output/">
+    <title>Chellow &gt; Bill Types</title>
+  </head>
+  <body>
+    <p>
+      <a href="{{context_path}}/reports/1/output/">Chellow</a> &gt;
+      Bill Types
+    </p>
+    <br />
+    {% if messages %}
+      <ul>
+        {% for message in messages %}
+          <li>{{ message }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+    <table>
+      <thead>
+        <tr>
+          <th>Code</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for bill_type in bill_types %}
+          <tr>
+            <td>
+              <a href="{{context_path}}/reports/201/output/?bill_type_id={{bill_type.id}}">{{bill_type.code}}</a>
+            </td>
+            <td>{{bill_type.description}}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </body>
+</html>]]></value>
 	</line>
 	<line>
 		<value><![CDATA[insert]]></value>
@@ -12954,74 +12940,55 @@ for type in Hiber.session().createQuery("from BillType type order by type.code")
 		<value><![CDATA[201]]></value>
 		<value><![CDATA[true]]></value>
 		<value><![CDATA[Bill Type]]></value>
-		<value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree
-from net.sf.chellow.billing import BillType
+		<value><![CDATA[from net.sf.chellow.monad import Monad
+from sqlalchemy.orm import joinedload_all
 
-bill_type_id = inv.getLong('bill-type-id')
-bill_type = BillType.getBillType(bill_type_id)
-source.appendChild(bill_type.toXml(doc))]]></value>
-		<value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
-<xsl:stylesheet version="1.0"
-    xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
-    <xsl:output method="html" encoding="US-ASCII"
-        doctype-public="-//W3C//DTD HTML 4.01//EN"
-        doctype-system="http://www.w3.org/TR/html4/strict.dtd" indent="yes" />
-    <xsl:template match="/">
-        <html>
-            <head>
-                <link rel="stylesheet" type="text/css"
-                    href="{/source/request/@context-path}/reports/19/output/" />
-                <title>
-                    Chellow &gt; Bill Types &gt;
-                    <xsl:value-of
-                        select="/source/bill-type/@description" />
-                </title>
-            </head>
-            <body>
-                <p>
-                    <a
-                        href="{/source/request/@context-path}/reports/1/output/">
-                        <xsl:value-of select="'Chellow'" />
-                    </a>
-                    &gt;
-                    <a
-                        href="{/source/request/@context-path}/reports/199/output/">
-                        <xsl:value-of select="'Bill Types'" />
-                    </a>
-                    &gt;
-                    <xsl:value-of
-                        select="/source/bill-type/@description" />
-                </p>
-                <br />
-                <xsl:if test="//message">
-                    <ul>
-                        <xsl:for-each select="//message">
-                            <li>
-                                <xsl:value-of select="@description" />
-                            </li>
-                        </xsl:for-each>
-                    </ul>
-                </xsl:if>
-                <table>
-                    <tr>
-                        <th>Code</th>
-                        <td>
-                            <xsl:value-of
-                                select="/source/bill-type/@code" />
-                        </td>
-                    </tr>
-                    <tr>
-                        <th>Description</th>
-                        <td>
-                            <xsl:value-of
-                                select="/source/bill-type/@description" />
-                        </td>
-                    </tr>
-                </table>
-            </body>
-        </html>
-    </xsl:template>
-</xsl:stylesheet>]]></value>
+Monad.getUtils()['imprt'](globals(), {
+        'db': ['Contract', 'BillType', 'set_read_write', 'session'], 
+        'utils': ['UserException'],
+        'templater': ['render']})
+
+sess = None
+try:
+    sess = session()
+    bill_type_id = inv.getLong('bill_type_id')
+    bill_type = BillType.get_by_id(sess, bill_type_id)
+    render(inv, template, {'bill_type': bill_type})
+finally:
+    sess.close()]]></value>
+		<value><![CDATA[<!doctype html>
+<html>
+  <head>
+    <link rel="stylesheet" type="text/css"
+      href="{{context_path}}/reports/19/output/">
+    <title>Chellow &gt; Bill Types &gt; {{bill_type.code}}</title>
+  </head>
+  <body>
+    <p>
+      <a href="{{context_path}}/reports/1/output/">Chellow</a> &gt;
+      <a href="{{context_path}}/reports/199/output/">Bill Types</a> &gt;
+      {{bill_type.code}}
+    </p>
+    <br />
+    {% if messages %}
+      <ul>
+        {% for message in messages %}
+          <li>{{ message }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+    <table>
+      <tr>
+        <th>Code</th>
+        <td>{{bill_type.code}}</td>
+      </tr>
+      <tr>
+        <th>Description</th>
+        <td>{{bill_type.description}}</td>
+      </tr>
+    </table>
+  </body>
+</html>]]></value>
 	</line>
 	<line>
 		<value><![CDATA[insert]]></value>
