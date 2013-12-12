@@ -2207,7 +2207,7 @@ def triad_estimates():
 				<control name="imp_mpan_core" value="22 9974 3438 105" />
 				<control name="imp_sc" value="20" />
 				<control name="imp_supplier_contract_id" value="55" />
-				<control name="imp_supplier_account" value="341665" />
+				<control name="imp_supplier_account" value="SA341665" />
 				
 				<response-code value="303" />
 			</request>
@@ -2613,7 +2613,7 @@ def virtual_bill(supply_source):
 				<regex
 					pattern='"MPAN Core","Site Code","Site Name","Account","From","To","net-gbp","vat-gbp","gross-gbp","problem"' />
 				<regex
-					pattern='"22 9974 3438 105","CI005","Wheal Rodney","341665","2010-04-01T00:00Z","2010-04-13T23:30Z","0","0","0",""' />
+					pattern='"22 9974 3438 105","CI005","Wheal Rodney","SA341665","2010-04-01T00:00Z","2010-04-13T23:30Z","0","0","0",""' />
 			</request>
 		</test>
 		<test name="NHH CSV import">
@@ -3828,6 +3828,23 @@ def virtual_bill(supply_source):
 		<test name="Bill type">
 			<request path="/chellow/reports/201/output/?bill_type_id=1">				
 				<response-code value="200" />
+			</request>
+		</test>
+		<test name="Test sse edi bill with MD line">
+		<!-- Supplier contract 58. -->
+			<request path="/chellow/reports/321/output/" method="post">
+				<control name="supplier_batch_id" value="3"/>
+				<control type="file" name="import_file" value="bills2.sse_edi" />
+				<response-code value="303" />
+				<regex pattern="/reports/323/output/\?importer_id=0" />
+			</request>
+			
+			<!-- Supplier contract 58. -->
+			<request path="/chellow/reports/323/output/?importer_id=0">
+				<refresh />
+				<response-code value="200" />
+				<regex
+					pattern="All the bills have been successfully loaded and attached to the batch\." />
 			</request>
 		</test>
 	</test-group>
