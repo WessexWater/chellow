@@ -1828,33 +1828,33 @@ finally:
 
     <table>
       <caption>Months</caption>
-      <colgroup />
-      <colgroup class="gray" span="3" />
-      <colgroup span="3" />
-      <colgroup class="gray" span="3" />
-      <colgroup span="3" />
-      <colgroup class="gray" span="3" />
-      <colgroup span="3" />
+      <colgroup>
+      <colgroup class="gray" span="3">
+      <colgroup span="3">
+      <colgroup class="gray" span="3">
+      <colgroup span="3">
+      <colgroup class="gray" span="3">
+      <colgroup span="3">
       <tfoot>
         <tr>
           <th>For all months</th>
           <th>{{months[-1].imp_net.md}}</th>
-          <th>{{months[-1].imp_net.md_date}}</th>
+          <th>{{months[-1].imp_net.md_date|hh_format}}</th>
           <th>{{months[-1].imp_net.kwh}}</th>
           <th>{{months[-1].used.md}}</th>
-          <th>{{months[-1].used.md_date}}</th>
+          <th>{{months[-1].used.md_date|hh_format}}</th>
           <th>{{months[-1].used.kwh}}</th>
           <th>{{months[-1].displaced.md}}</th>
-          <th>{{months[-1].displaced.md_date}}</th>
+          <th>{{months[-1].displaced.md_date|hh_format}}</th>
           <th>{{months[-1].displaced.kwh}}</th>
           <th>{{months[-1].imp_gen.md}}</th>
-          <th>{{months[-1].imp_gen.md_date}}</th>
+          <th>{{months[-1].imp_gen.md_date|hh_format}}</th>
           <th>{{months[-1].imp_gen.kwh}}</th>
           <th>{{months[-1].exp_net.md}}</th>
-          <th>{{months[-1].exp_net.md_date}}</th>
+          <th>{{months[-1].exp_net.md_date|hh_format}}</th>
           <th>{{months[-1].exp_net.kwh}}</th>
           <th>{{months[-1].exp_gen.md}}</th>
-          <th>{{months[-1].exp_gen.md_date}}</th>
+          <th>{{months[-1].exp_gen.md_date|hh_format}}</th>
           <th>{{months[-1].exp_gen.kwh}}</th>
         </tr>
       </tfoot>
@@ -1901,7 +1901,7 @@ finally:
             <td>{{month.imp_net.md}}</td>
             <td>
               {% if month.imp_net.md_date %}
-                {{month.imp_net.md_date|format}}
+                {{month.imp_net.md_date|hh_format}}
               {% endif %}
             </td>
             <td>{{month.imp_net.kwh}}</td>
@@ -1909,7 +1909,7 @@ finally:
             <td>{{month.used.md}}</td>
             <td>
               {% if month.used.md_date %}
-                {{month.used.md_date|format}}
+                {{month.used.md_date|hh_format}}
               {% endif %}
             </td>
             <td>{{month.used.kwh}}</td>
@@ -1917,7 +1917,7 @@ finally:
             <td>{{month.displaced.md}}</td>
             <td>
               {% if month.displaced.md_date %}
-                {{month.displaced.md_date|format}}
+                {{month.displaced.md_date|hh_format}}
               {% endif %}
             </td>
             <td>{{month.displaced.kwh}}</td>
@@ -1925,7 +1925,7 @@ finally:
             <td>{{month.imp_gen.md}}</td>
             <td>
               {% if month.imp_gen.md_date %}
-                {{month.imp_gen.md_date|format}}
+                {{month.imp_gen.md_date|hh_format}}
               {% endif %}
             </td>
             <td>{{month.imp_gen.kwh}}</td>
@@ -1933,7 +1933,7 @@ finally:
             <td>{{month.exp_net.md}}</td>
             <td>
               {% if month.exp_net.md_date %}
-                {{month.exp_net.md_date|format}}
+                {{month.exp_net.md_date|hh_format}}
               {% endif %}
             </td>
             <td>{{month.exp_net.kwh}}</td>
@@ -1941,7 +1941,7 @@ finally:
             <td>{{month.exp_gen.md}}</td>
             <td>
               {% if month.exp_gen.md_date %}
-                {{month.exp_gen.md_date|format}}
+                {{month.exp_gen.md_date|hh_format}}
               {% endif %}
             </td>
             <td>{{month.exp_gen.kwh}}</td>
