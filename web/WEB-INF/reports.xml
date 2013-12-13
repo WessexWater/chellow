@@ -3492,7 +3492,7 @@ finally:
       <p><a href=".">Cancel</a></p>
     {% else %}
       <form action="." method="post">
-        <input type="hidden" name="read_id" value="{{read.id}}">
+        <input type="hidden" name="supplier_read_id" value="{{read.id}}">
         <fieldset>
           <legend>Update this read</legend>
           <br>
