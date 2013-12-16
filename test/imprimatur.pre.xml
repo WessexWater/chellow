@@ -360,21 +360,20 @@ def totalElement(account, startDate, finishDate):
 			</request>
 		</test>
 		<test name="Insert MOP contract">
-			<request path="/chellow/mop-contracts/" method="post">
-				<control name="participant-id" value="241" /> <!-- LENG -->
+			<request path="/chellow/reports/361/output/" method="post">
+				<control name="participant_id" value="241" /> <!-- LENG -->
 				<control name="name" value="MOP Contract" />
-				<control name="start-year" value="2000" />
-				<control name="start-month" value="01" />
-				<control name="start-day" value="03" />
-				<control name="start-hour" value="00" />
-				<control name="start-minute" value="00" />
-				<control name="has-finished" value="false" />
+				<control name="start_year" value="2000" />
+				<control name="start_month" value="01" />
+				<control name="start_day" value="03" />
+				<control name="start_hour" value="00" />
+				<control name="start_minute" value="00" />
 				<response-code value="303" />
 				<regex pattern="/reports/107/output/\?mop_contract_id=54" />
 			</request>
 
 			<!-- Check we can see the rate scripts -->
-			<request path="/chellow/mop-contracts/54/rate-scripts/">
+			<request path="/chellow/reports/107/output/?mop_contract_id=54">
 				<response-code value="200" />
 			</request>
 		</test>
@@ -2825,21 +2824,22 @@ def virtual_bill(supply_source):
 			</request>
 		</test>
 		<test name="Add batch to MOP contract">
-			<!-- Insert a new batch -->
-			<request path="/chellow/mop-contracts/54/batches/" method="post">
+			<!-- Insert a new batch. -->
+			<request path="/chellow/reports/353/output/" method="post">
+				<control name="mop_contract_id" value="54"/>
 				<control name="reference" value="99/992" />
 				<control name="description" value="mop batch" />
 				<response-code value="303" />
-				<regex pattern="/reports/193/output/\?batch-id=9" />
+				<regex pattern="/reports/193/output/\?mop_batch_id=9" />
 			</request>
 
-			<!-- Check that it's there in edit mode -->
-			<request path="/chellow/mop-contracts/54/batches/9/">
+			<!-- Check that it's there in edit mode. Contract 54 -->
+			<request path="/chellow/reports/355/output/?mop_batch_id=9">
 				<response-code value="200" />
 			</request>
 
-			<!-- Check we can see it in 'view' mode -->
-			<request path="/chellow/reports/193/output/?batch-id=9">
+			<!-- Check we can see it in 'view' mode. Contract 54 -->
+			<request path="/chellow/reports/193/output/?mop_batch_id=9">
 				<response-code value="200" />
 			</request>
 		</test>
@@ -3140,19 +3140,14 @@ def virtual_bill(supply_source):
 				<regex pattern='="description"' />
 			</request>
 		</test>
-		<test name="Viewing the batches of a MOP contract in edit mode.">
-			<request path="/chellow/mop-contracts/54/batches/">
-				<regex pattern='="description"' />
-			</request>
-		</test>
 		<test name="Viewing a batch in view mode, when it has a custom report.">
 			<request path="/chellow/configuration/" method="post">
 				<control name="properties"><![CDATA[batch.report.01=2]]></control>
 				<response-code value="200" />
 			</request>
 
-			<!-- Check that we can see it okay -->
-			<request path="/chellow/reports/193/output/?batch-id=9">
+			<!-- Check that we can see batch okay. Contract 54 -->
+			<request path="/chellow/reports/193/output/?mop_batch_id=9">
 				<response-code value="200" />
 			</request>
 		</test>
