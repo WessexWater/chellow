@@ -3191,13 +3191,13 @@ def virtual_bill(supply_source):
 		<test name="Check MOP and DC bills are displaying correctly">
 			<request path="/chellow/reports/7/output/?supply_id=5">
 				<regex
-					pattern='&lt;td&gt;\s*&lt;a href="/chellow/reports/203/output/\?batch-id=8"&gt;001-7t&lt;/a&gt;\s*&lt;/td&gt;\s*&lt;td&gt;00031&lt;/td&gt;\s*&lt;td&gt;22 0883 6932 301&lt;/td&gt;' />
+					pattern='&lt;td&gt;\s*&lt;a href="/chellow/reports/203/output/\?hhdc_batch_id=8"&gt;001-7t&lt;/a&gt;\s*&lt;/td&gt;\s*&lt;td&gt;00031&lt;/td&gt;\s*&lt;td&gt;22 0883 6932 301&lt;/td&gt;\s*&lt;td&gt;2007-09-01 00:00&lt;/td&gt;' />
 				<regex
-					pattern='&lt;td&gt;\s*&lt;a href="/chellow/reports/193/output/\?batch-id=9"&gt;99/992&lt;/a&gt;\s*&lt;/td&gt;\s*&lt;td&gt;06&lt;/td&gt;\s*&lt;td&gt;22 0883 6932 301&lt;/td&gt;' />
+					pattern='&lt;td&gt;\s*&lt;a href="/chellow/reports/193/output/\?mop_batch_id=9"&gt;99/992&lt;/a&gt;\s*&lt;/td&gt;\s*&lt;td&gt;06&lt;/td&gt;\s*&lt;td&gt;22 0883 6932 301&lt;/td&gt;' />
 
 				<!-- Check that MOP bill before supply start is displayed -->
 				<regex
-					pattern='&lt;td&gt;\s*&lt;a href="/chellow/reports/193/output/\?batch-id=9"&gt;99/992&lt;/a&gt;\s*&lt;/td&gt;\s*&lt;td&gt;08&lt;/td&gt;\s*&lt;td&gt;22 0883 6932 301&lt;/td&gt;' />
+					pattern='&lt;td&gt;\s*&lt;a href="/chellow/reports/193/output/\?mop_batch_id=9"&gt;99/992&lt;/a&gt;\s*&lt;/td&gt;\s*&lt;td&gt;08&lt;/td&gt;\s*&lt;td&gt;22 0883 6932 301&lt;/td&gt;' />
 
 				<!-- Check that channel type is displayed -->
 				<regex pattern='&lt;tr&gt;\s*&lt;td&gt;\s*&lt;a href="/chellow/reports/301/output/\?channel_id=17"&gt;kVArh&lt;/a&gt;\s*&lt;a href="/chellow/reports/301/output/\?channel_id=16"&gt;kWh&lt;/a&gt;\s*&lt;/td&gt;'/>

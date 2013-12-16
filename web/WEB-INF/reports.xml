@@ -1070,7 +1070,7 @@ finally:
                   <a title="{{ bill.finish_date|hh_format }}">{{ bill.finish_date|hh_format('date') }}</a>
                 </td>
                 <td rowspan="{{ rows_high }}">
-                  <a href="{{ context_path }}/reports/91/output/?batch-id={{ bill.batch.id }}">{{ bill.batch.reference }}</a>
+                  <a href="{{ context_path }}/reports/91/output/?supplier_batch_id={{bill.batch.id}}">{{ bill.batch.reference }}</a>
                 </td>
                 <td rowspan="{{ rows_high }}">{{ bill.reference }}</td>
                 <td rowspan="{{ rows_high }}">{{ bill.kwh }}</td>
@@ -1194,7 +1194,7 @@ finally:
                 <a title="{{ bill.finish_date|hh_format }}">{{ bill.finish_date|hh_format('date') }}</a>
               </td>
               <td rowspan="{{ rows_high }}">
-                <a href="{{ context_path }}/reports/91/output/?batch-id={{ bill.batch.id }}">{{ bill.batch.reference }}</a>
+                <a href="{{ context_path }}/reports/91/output/?supplier_batch_id={{bill.batch.id}}">{{bill.batch.reference}}</a>
               </td>
               <td rowspan="{{ rows_high }}">{{ bill.reference }}</td>
               <td rowspan="{{ rows_high }}">{{ bill.kwh }}</td>
@@ -1283,7 +1283,7 @@ finally:
                 [<a href="{{ context_path }}/hhdc-contracts/{{ era.hhdc_contract.id }}/batches/{{ bill.batch.id }}/bills/{{ bill.id }}/">edit</a>]
               </td>
               <td>
-                <a href="{{ context_path }}/reports/203/output/?batch-id={{ bill.batch.id }}">{{ bill.batch.reference }}</a>
+                <a href="{{ context_path }}/reports/203/output/?hhdc_batch_id={{bill.batch.id}}">{{bill.batch.reference}}</a>
               </td>
               <td>{{ bill.reference }}</td>
               <td>{{ bill.account }}</td>
@@ -1328,7 +1328,7 @@ finally:
                           [<a href="{{ context_path }}/mop-contracts/{{ era.mop_contract.id }}/batches/{{ bill.batch.id }}/bills/{{ bill.id }}">edit</a>]
                         </td>
                         <td>
-                            <a href="{{ context_path }}/reports/193/output/?batch-id={{ bill.batch.id }}">{{ bill.batch.reference }}</a>
+                            <a href="{{ context_path }}/reports/193/output/?mop_batch_id={{bill.batch.id}}">{{bill.batch.reference}}</a>
                         </td>
                         <td>{{ bill.reference }}</td>
                         <td>{{ bill.account }}</td>
