@@ -208,12 +208,7 @@ render(inv, template, {'local_reports_id': properties.get('local.reports')})]]><
             <a href="{{ context_path }}/reports/">Reports</a>
           </li>
           <li>
-            <a href="{{ context_path }}/reports/255/output/">Users</a>
-            <ul>
-              <li>
-                <a href="{{context_path}}/reports/103/output/">Me</a>
-              </li>
-            </ul>
+            <a href="{{context_path}}/reports/255/output/">Users</a>
           </li>
           <li>
             <a href="{{ context_path }}/reports/261/output/">User Roles</a>
@@ -7349,7 +7344,7 @@ source.setAttribute('debug', pw.toString())]]></value>
 		<value><![CDATA[report]]></value>
 		<value><![CDATA[103]]></value>
 		<value><![CDATA[true]]></value>
-		<value><![CDATA[User Current]]></value>
+		<value><![CDATA[Free]]></value>
 		<value><![CDATA[from net.sf.chellow.monad import Monad
 from sqlalchemy.orm import joinedload_all
 from sqlalchemy.sql.expression import text
@@ -16034,7 +16029,11 @@ def users_context(sess, message=None):
             "market_role, participant where party.market_role_id = market_role.id " +
             "and party.participant_id = participant.id order by " +
             "market_role.code, participant.code").all()
-    return {'users': users, 'parties': parties, 'messages': None if message is None else [message]}
+    fields = {'users': users, 'parties': parties, 'messages': None if message is None else [message]}
+    user = inv.getUser()
+    if user is not None:
+        fields['current_user'] = user
+    return fields
 
 sess = None
 try:
@@ -16078,7 +16077,7 @@ finally:
   </head>
   <body>
     <p>
-      <a href="{{ context_path }}/">Chellow</a> &gt; Users
+      <a href="{{context_path}}/">Chellow</a> &gt; Users
     </p>
 
     {% if messages %}
@@ -16088,6 +16087,14 @@ finally:
         {% endfor %}
       </ul>
     {% endif %}
+
+    <ul>
+      {% if current_user is defined %}
+        <li>
+          <a href="{{context_path}}/reports/257/output/?user_id={{current_user.id}}">Me</a>
+        </li>
+      {% endif %}
+    </ul>
 
     {% if users|length > 0 %}
       <table>
