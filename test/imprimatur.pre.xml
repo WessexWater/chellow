@@ -3851,5 +3851,11 @@ def virtual_bill(supply_source):
 				<regex pattern="&lt;tbody&gt;\s*&lt;tr&gt;" />
 			</request>
 		</test>
+		<test name="Edit register read with a TPR that's not 00001">
+			<!-- Supplier contract 58, batch 7, bill 10 -->
+			<request path="/chellow/reports/31/output/?supplier_read_id=1">
+				<regex pattern='&lt;option value="37" selected&gt;00040&lt;/option&gt;'/>
+			</request>
+		</test>
 	</test-group>
 </imprimatur>

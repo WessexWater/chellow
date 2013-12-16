@@ -3451,6 +3451,14 @@ finally:
   <head>
     <link rel="stylesheet" type="text/css"
       href="{{context_path}}/reports/19/output/">
+
+    <style>
+      label {
+        width: 11em;
+        float: left;
+      }
+    </style>
+
     <title>
       Chellow &gt; Supplier Contracts &gt;
       {{read.bill.batch.contract.name}} &gt; Batches &gt;
@@ -3491,27 +3499,23 @@ finally:
         <fieldset>
           <legend>Update this read</legend>
           <br>
-          <label>MPAN {{input_text('mpan', read.mpan_str)}}</label>
+          <label>MPAN</label> {{input_text('mpan', read.mpan_str)}}
           <br>
-          <label>Coefficient
+          <label>Coefficient</label>
             {{input_text('coefficient', read.coefficient)}}
-          </label>
           <br>
-          <label>Meter Serial Number
+          <label>Meter Serial Number</label>
             {{input_text('msn', read.msn)}}
-          </label>
           <br>
-          <label>Units
+          <label>Units</label>
             {{input_text('units', read.units_as_str())}}
-          </label>
           <br>
-          <label>TPR
+          <label>TPR</label>
             <select name="tpr_id">
               {% for tpr in tprs %}
-                {{input_option('tpr_id', tpr.id, tpr.code)}}
+                {{input_option('tpr_id', tpr.id, tpr.code, read.tpr.id)}}
               {% endfor %}
             </select>
-          </label>
           <br>
           <br>
           <fieldset>
@@ -3521,17 +3525,15 @@ finally:
               {{input_date('previous', read.previous_date)}}
             </fieldset>
             <br>
-            <label>Value
+            <label>Value</label>
               {{input_text('previous_value', read.previous_value)}}
-            </label>
             <br>
-            <label>Type
+            <label>Type</label>
               <select name="previous_type_id">
                 {% for read_type in read_types %}
                   {{input_option('previous_type_id', read_type.id, read_type.code + ' ' + read_type.description, read.previous_type.id)}}
                 {% endfor %}
               </select>
-            </label>
           </fieldset>
           <br>
           <br>
@@ -3542,17 +3544,15 @@ finally:
               {{input_date('present', read.present_date)}}
             </fieldset>
             <br>
-            <label>Value
+            <label>Value</label>
               {{input_text('present_value', read.present_value)}}
-            </label>
             <br>
-            <label>Type
-              <select name="present_type_id">
-                {% for read_type in read_types %}
-                  {{input_option('present_type_id', read_type.id, read_type.code + ' ' + read_type.description, read.present_type.id)}}
-                {% endfor %}
-              </select>
-            </label>
+            <label>Type</label>
+            <select name="present_type_id">
+              {% for read_type in read_types %}
+                {{input_option('present_type_id', read_type.id, read_type.code + ' ' + read_type.description, read.present_type.id)}}
+              {% endfor %}
+            </select>
           </fieldset>
           <br>
           <br>
@@ -3562,7 +3562,7 @@ finally:
       <br>
       <form action=".">
         <fieldset>
-          <input type="hidden" name="read_id" value="{{read.id}}>
+          <input type="hidden" name="read_id" value="{{read.id}}">
           <legend>Delete this read</legend>
           <input name="confirm_delete" type="submit" value="Delete">
         </fieldset>
