@@ -550,11 +550,11 @@ Table of site level monthly kWh, MD kWh etc.</a>
         <br>
         <select name="type">
           <option value="used">Used</option>
-          <option value="imported">Imported</option>
-          <option value="exported">Exported</option>
-          <option value="generated">Generate</option>
+          <option value="imp_net">Imported</option>
+          <option value="exp_net">Exported</option>
+          <option value="imp_gen">Generated</option>
           <option value="displaced">Displaced</option>
-          <option value="parasitic">Parasitic</option>
+          <option value="exp_gen">Parasitic</option>
         </select>
         for {{input_text('months', '1', 2, 2)}}
         month(s) until the end of {{input_date('finish', last_month_finish, resolution='month')}}

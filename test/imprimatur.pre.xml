@@ -1963,7 +1963,7 @@ def virtual_bill(supply_source):
 			</request>
 
 			<request path="/chellow/reports/295/output/?process_id=12">
-				<refresh max="28"/>
+				<refresh max="40"/>
 				<response-code value="200" />
 				<regex pattern="The file has been imported successfully\." />
 			</request>
@@ -2177,6 +2177,7 @@ def triad_estimates():
 				<regex
 					pattern='&lt;a href="/chellow/reports/7/output/\?supply_id=2"&gt;view&lt;/a&gt;' />
 				<regex pattern='&lt;a href="https://maps.google.com/maps\?q=CI005"&gt;Google Maps&lt;/a&gt;' />
+				<regex pattern='&lt;option value="imp_net"&gt;Imported&lt;/option&gt;' />
 			</request>
 
 			<!-- Check that it shows a dead supply properly. Supply 11 -->
