@@ -10381,12 +10381,12 @@ def process_site(site, month_start, month_finish, forecast_date, tmp_file, bill_
                 if source_code in ('net', 'gen-net', '3rd-party', '3rd-party-reverse'):
                     #tmp_file.write("starting vbill, " + str(System.currentTimeMillis()))
                     supply_source = comterp.get('SupplySource')(bill_start, bill_finish, forecast_date, era, True, comterp, tmp_file, caches)
-                    kwh = sum(hh['msp-kwh'] for hh in supply_source.hh_data)
-                    if source_code in ('net', 'gen-net'):
-                        month_data['import-net-kwh'] += kwh
-                    elif source_code in ('3rd-party', '3rd-party-reverse'):
-                        month_data['import-3rd-party-kwh'] += kwh
-
+                    if supply_source.measurement_type not in ['hh', 'amr']:
+                        kwh = sum(hh['msp-kwh'] for hh in supply_source.hh_data)
+                        if source_code in ('net', 'gen-net'):
+                            month_data['import-net-kwh'] += kwh
+                        elif source_code in ('3rd-party', '3rd-party-reverse'):
+                            month_data['import-3rd-party-kwh'] += kwh
 
                     #tmp_file.write("finished init from mpan, " + str(System.currentTimeMillis()))
                     import_vb_function = comterp.get('contract_function')(supplier_contract, 'virtual_bill', tmp_file)
@@ -10455,13 +10455,14 @@ def process_site(site, month_start, month_finish, forecast_date, tmp_file, bill_
             #tmp_file.println("finishing displaced, " + str(System.currentTimeMillis()))
 
         #tmp_file.println("finishing site ds " + str(System.currentTimeMillis()))
-        month_data['used-3rd-party-kwh'] = month_data['import-3rd-party-kwh']
-        month_data['used-3rd-party-gbp'] = month_data['import-3rd-party-gbp']
-        month_data['used-gbp'] += month_data['import-net-gbp'] + month_data['msp-gbp'] + month_data['used-3rd-party-gbp']
 
-        for stream_name in ['export-net', 'import-gen', 'export-gen', 'msp']:
+        for stream_name in ('import-3rd-party', 'export-3rd-party', 'import-net', 'export-net', 'import-gen', 'export-gen', 'msp'):
             name = stream_name + '-kwh'
             month_data[name] += sum(hh[name] for hh in site_ds.hh_data)
+
+        month_data['used-3rd-party-kwh'] = month_data['import-3rd-party-kwh'] - month_data['export-3rd-party-kwh']
+        month_data['used-3rd-party-gbp'] = month_data['import-3rd-party-gbp']
+        month_data['used-gbp'] += month_data['import-net-gbp'] + month_data['msp-gbp'] + month_data['used-3rd-party-gbp']
 
         month_data['used-kwh'] += month_data['msp-kwh'] + month_data['used-3rd-party-kwh'] + month_data['import-net-kwh']
 
@@ -14165,145 +14166,94 @@ finally:
 		<value><![CDATA[225]]></value>
 		<value><![CDATA[true]]></value>
 		<value><![CDATA[RCRC Importer]]></value>
-		<value><![CDATA[from java.lang import Thread, System
-from net.sf.chellow.billing import Contract
-from net.sf.chellow.monad import XmlTree, UserException, Monad, MonadMessage
-from net.sf.chellow.monad.types import MonadUri
+		<value><![CDATA[from net.sf.chellow.monad import Monad
+from java.lang import System
+from sqlalchemy.orm import joinedload_all
+import sys
 
-debug = ''
+Monad.getContext().getAttribute("net.sf.chellow.utils")['imprt'](globals(), {
+        'db': ['Contract', 'Party', 'RateScript', 'set_read_write', 'session'], 
+        'utils': ['UserException'],
+        'templater': ['render'],
+        'rcrc': ['get_rcrc_importer']})
 
-computer = Contract.getNonCoreContract('computer')
-comterp = computer.callFunction('create_comterp', [])
-contract_f = comterp.get('contract_function')
 
-REPORT_URI = MonadUri("/reports/225/output/")
-
-source = doc.getDocumentElement()
-
-rcrc_contract = Contract.getNonCoreContract('rcrc')
-source.appendChild(rcrc_contract.toXml(doc))
-
-ctx = inv.getMonad().getServletConfig().getServletContext()
-
-task = rcrc_contract.callFunction('get_rcrc_task', [ctx])
-
-if task is not None:
-    importer_element = doc.createElement("importer")
-    source.appendChild(importer_element);
-    importer_element.setAttribute('is-locked', str(task.is_locked()))
-
-    for message in task.messages:
-        log_item_element = doc.createElement('log-item')
-        importer_element.appendChild(log_item_element)
-        log_item_element.setAttribute('message', message)
-
+sess = None
+importer = None
 try:
-    if inv.hasParameter('remove'):
-        contract_f(rcrc_contract, 'remove_rcrc_task', System.err)(ctx)
-        inv.sendSeeOther(REPORT_URI)
-    elif inv.hasParameter('start'):
-        contract_f(rcrc_contract, 'start_rcrc_task', System.err)(ctx)
-        inv.sendSeeOther(REPORT_URI)
-    elif inv.hasParameter('now'):
-        Thread(task, "RCRC Import Now").start()
-        inv.sendSeeOther(REPORT_URI)
+    sess = session()
+    if inv.getRequest().getMethod() == "GET":
+        importer = get_rcrc_importer()
+        System.err.write("\ngot importer " + str(importer))
+        contract = Contract.get_non_core_by_name(sess, 'rcrc')
+        render(inv, template, {'importer': importer, 'contract': contract})
+    else:
+        importer = get_rcrc_importer()
+        contract = Contract.get_non_core_by_name(sess, 'rcrc')
+        importer.go()
+        inv.sendSeeOther("/reports/225/output/")
 except UserException, e:
-    source.appendChild(MonadMessage(e.getMessage()).toXml(doc))
+    sess.rollback()
+    render(inv, template, {'messages': [str(e)], 'importer': importer,
+        'contract': contract})
+finally:
+    sess.close()]]></value>
+		<value><![CDATA[<!DOCTYPE html>
+<html>
+  <head>
+    <link rel="stylesheet" type="text/css"
+      href="{{context_path }}/reports/19/output/">
+    <title>
+      Chellow &gt; Non-core Contracts &gt; RCRC &gt; Automatic Importer
+    </title>
+  </head>
+  <body>
+    <p>
+      <a href="{{context_path }}/reports/1/output/">Chellow</a> &gt;
+      <a href="{{context_path}}/reports/259/output/">Non-Core Contracts</a> &gt;
+      <a href="{{ context_path }}/reports/267/output/?non_core_contract_id={{ contract.id }}">{{ contract.name }}</a>
+      &gt; Automatic Importer
+    </p>
+    <br>
+    {% if messages %}
+      <ul>
+        {% for message in messages %}
+          <li>{{ message }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+    <p>
+      <a href=".">Refresh page</a>{{ debug }}
+    </p>
+    {% if importer %}
+      <table>
+        <tr>
+          <th>Is Locked?</th>
+          <td>{{importer.is_locked()}}</td>
+        </tr>
+      </table>
+      <br/>
+      {% if not importer.is_locked() %}
+        <form action="." method="post">
+          <fieldset>
+            <legend>Import Now</legend>
+            <input type="submit" value="Import" name="now">
+          </fieldset>
+        </form>
+      {% endif %}
 
-source.setAttribute('debug', debug)]]></value>
-		<value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
-<xsl:stylesheet version="1.0"
-    xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
-    <xsl:output method="html" encoding="US-ASCII"
-        doctype-public="-//W3C//DTD HTML 4.01//EN" doctype-system="http://www.w3.org/TR/html4/strict.dtd"
-        indent="yes" />
-
-    <xsl:template match="/">
-        <html>
-            <head>
-                <link rel="stylesheet" type="text/css"
-                    href="{/source/request/@context-path}/reports/19/output/" />
-
-                <title>
-                    Chellow &gt; Non-Core Contracts &gt; <xsl:value-of select="/source/non-core-contract/@name"/> &gt; Automatic Importer
-                </title>
-            </head>
-            <body>
-                <p>
-                    <a
-                        href="{/source/request/@context-path}/reports/1/output/">
-                        <xsl:value-of select="'Chellow'" />
-                    </a> &gt;
-                    <a
-                        href="{/source/request/@context-path}/reports/259/output/">
-
-                    <xsl:value-of select="'Non-Core Contracts'" /></a> &gt;
-
-                    <a
-                        href="{/source/request/@context-path}/reports/267/output/?non_core_contract_id={/source/non-core-contract/@id}">
-                    <xsl:value-of select="/source/non-core-contract/@name" /></a> &gt; Automatic Importer
-                </p>
-                <br />
-<xsl:if test="//message">
-                    <ul>
-                        <xsl:for-each select="//message">
-                            <li>
-                                <xsl:value-of select="@description" />
-                            </li>
-                        </xsl:for-each>
-                    </ul>
-                </xsl:if>
-
-<p><a href=".">Refresh page</a><xsl:value-of select="/source/@debug"/></p>
-
-                <xsl:choose>
-                <xsl:when test="/source/importer">
-<table>
-                    <tr>
-                        <th>Is Locked?</th>
-                        <td>
-                            <xsl:value-of select="/source/importer/@is-locked"/>
-                        </td>
-                    </tr>
-                </table>
-                <br/>
-                <xsl:if test="/source/importer/@is-locked='False'">
-                <form action=".">
-                            <fieldset>
-                                <legend>Remove Importer</legend>
-                                <input type="submit" value="Remove" name="remove" />
-                            </fieldset>
-                        </form>
-                        <br/>
-<form action=".">
-                            <fieldset>
-                                <legend>Import Now</legend>
-                                <input type="submit" value="Import" name="now" />
-                            </fieldset>
-                        </form>
-                 </xsl:if>
-<h3>Log</h3>
-                <ul>
-                    <xsl:for-each select="/source/importer/log-item">
-                        <li>
-                            <xsl:value-of select="@message" />
-                        </li>
-                    </xsl:for-each>
-                </ul>
-                </xsl:when>
-                <xsl:otherwise>
-                   <form action=".">
-                            <fieldset>
-                                <legend>Start Importer</legend>
-                                <input type="submit" value="Start" name="start" />
-                            </fieldset>
-                        </form>
-                </xsl:otherwise>
-                </xsl:choose>
-            </body>
-        </html>
-    </xsl:template>
-</xsl:stylesheet>]]></value>
+      <h3>Log</h3>
+        
+      <ul>
+        {% for message in importer.messages %}
+          <li>{{ message }}</li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p>Importer not present.</p>
+    {% endif %}
+  </body>
+</html>]]></value>
 	</line>
 	<line>
 		<value><![CDATA[insert]]></value>
