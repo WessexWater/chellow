@@ -20632,17 +20632,37 @@ finally:
         <caption>Failed Bills</caption>
         <thead>
           <tr>
-            {% for k, v in failed_bills[0]|dictsort %}
-              <th>{{k}}</th>
-            {% endfor %}
+            <th>Error</th>
+            <th>Account</th>
+            <th>Reference</th>
+            <th>Bill Type Code</th>
+            <th>Issue Date</th>
+            <th>Start Date</th>
+            <th>Finish Date</th>
+            <th>kWh</th>
+            <th>Net</th>
+            <th>VAT</th>
+            <th>Gross</th>
+            <th>Breakdown</th>
+            <th>Reads</th>
           </tr>
         </thead>
         <tbody>
           {% for bill in failed_bills %}
             <tr>
-              {% for k, v in bill|dictsort %}
-                <td>{{bill[k]}}</td>
-              {% endfor %}
+              <td>{{bill.error}}</td>
+              <td>{{bill.account}}</td>
+              <td>{{bill.reference}}</td>
+              <td>{{bill.bill_type_code}}</td>
+              <td>{{bill.issue_date|hh_format}}</td>
+              <td>{{bill.start_date|hh_format}}</td>
+              <td>{{bill.finish_date|hh_format}}</td>
+              <td>{{bill.kwh}}</td>
+              <td>{{bill.net}}</td>
+              <td>{{bill.vat}}</td>
+              <td>{{bill.gross}}</td>
+              <td>{{bill.breakdown}}</td>
+              <td>{{bill.reads}}</td>
             </tr>
           {% endfor %}
         </tbody>
