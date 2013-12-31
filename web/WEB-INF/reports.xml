@@ -14055,60 +14055,54 @@ finally:
 		<value><![CDATA[223]]></value>
 		<value><![CDATA[true]]></value>
 		<value><![CDATA[Transmission Loss Multiplier Importer]]></value>
-		<value><![CDATA[from java.lang import Thread, System
-from net.sf.chellow.monad import Monad
-
+		<value><![CDATA[from net.sf.chellow.monad import Monad
+from java.lang import System
+from sqlalchemy.orm import joinedload_all
+import sys
 
 Monad.getContext().getAttribute("net.sf.chellow.utils")['imprt'](globals(), {
         'db': ['Contract', 'Party', 'RateScript', 'set_read_write', 'session'], 
         'utils': ['UserException'],
         'templater': ['render'],
-        'tlms': []})
+        'tlms': ['get_tlm_importer']})
+
 
 sess = None
-task = None
+importer = None
 try:
     sess = session()
-    debug = ''
-    REPORT_URI = "/reports/223/output/"
-    contract = Contract.get_non_core_by_name(sess, 'tlms')
-    ctx = inv.getMonad().getServletConfig().getServletContext()
-    task = tlms['get_tlm_task'](ctx)
-
-    if inv.hasParameter('remove'):
-        tlms['remove_tlm_task'](ctx)
-        inv.sendSeeOther(REPORT_URI)
-    elif inv.hasParameter('start'):
-        tlms['start_tlm_task'](ctx)
-        inv.sendSeeOther(REPORT_URI)
-    elif inv.hasParameter('now'):
-        Thread(task, "TLM Import Now").start()
-        inv.sendSeeOther(REPORT_URI)
+    if inv.getRequest().getMethod() == "GET":
+        importer = get_tlm_importer()
+        contract = Contract.get_non_core_by_name(sess, 'tlms')
+        render(inv, template, {'importer': importer, 'contract': contract})
     else:
-        render(inv, template, {'task': task, 'contract': contract})
+        importer = get_tlm_importer()
+        contract = Contract.get_non_core_by_name(sess, 'tlms')
+        importer.go()
+        inv.sendSeeOther("/reports/223/output/")
 except UserException, e:
-    render(inv, template, {'messages': [str(e)], 'task': task,
-            'contract': contract})
+    sess.rollback()
+    render(inv, template, {'messages': [str(e)], 'importer': importer,
+        'contract': contract})
 finally:
     sess.close()]]></value>
 		<value><![CDATA[<!DOCTYPE html>
 <html>
   <head>
     <link rel="stylesheet" type="text/css"
-      href="{{ context_path }}/reports/19/output/" />
+      href="{{context_path }}/reports/19/output/">
     <title>
-      Chellow &gt; Non-core Contracts &gt; TLMs &gt; Automatic Importer
+      Chellow &gt; Non-core Contracts &gt; TLM &gt; Automatic Importer
     </title>
   </head>
   <body>
-<p>
-      <a href="{{ context_path }}/reports/1/output/">Chellow</a> &gt;
-      <a href="{{ context_path }}/reports/259/output/">Non-Core Contracts</a>
-      &gt;
-      <a href="{{ context_path }}/reports/267/output/?non_core_contract_id={{ contract.id }}">{{ contract.name }}</a>
+    <p>
+      <a href="{{context_path }}/reports/1/output/">Chellow</a> &gt;
+      <a href="{{context_path}}/reports/259/output/">Non-Core Contracts</a> &gt;
+      <a href="{{ context_path }}/reports/267/output/?non_core_contract_id={{contract.id}}">{{contract.name}}</a>
       &gt; Automatic Importer
     </p>
-    <br />
+    <br>
     {% if messages %}
       <ul>
         {% for message in messages %}
@@ -14116,25 +14110,19 @@ finally:
         {% endfor %}
       </ul>
     {% endif %}
-
-    <p><a href=".">Refresh page</a>{{ debug }}</p>
-    {% if task %}
+    <p>
+      <a href=".">Refresh page</a>{{ debug }}
+    </p>
+    {% if importer %}
       <table>
         <tr>
           <th>Is Locked?</th>
-          <td>{{ task.is_locked() }}</td>
+          <td>{{importer.is_locked()}}</td>
         </tr>
       </table>
       <br/>
-      {% if not task.is_locked() %}
-        <form action="{{ context_path }}/reports/223/output/">
-          <fieldset>
-            <legend>Remove Importer</legend>
-            <input type="submit" value="Remove" name="remove" />
-          </fieldset>
-        </form>
-        <br/>
-        <form action="{{ context_path }}/reports/223/output/">
+      {% if not importer.is_locked() %}
+        <form action="." method="post">
           <fieldset>
             <legend>Import Now</legend>
             <input type="submit" value="Import" name="now">
@@ -14145,17 +14133,12 @@ finally:
       <h3>Log</h3>
         
       <ul>
-        {% for message in task.messages %}
+        {% for message in importer.messages %}
           <li>{{ message }}</li>
         {% endfor %}
       </ul>
     {% else %}
-      <form action="{{ context_path }}/reports/223/output/">
-        <fieldset>
-          <legend>Start Importer</legend>
-          <input type="submit" value="Start" name="start" />
-        </fieldset>
-      </form>
+      <p>Importer not present.</p>
     {% endif %}
   </body>
 </html>]]></value>
