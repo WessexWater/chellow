@@ -12,17 +12,13 @@ from java.io import StringReader
 from java.lang import System
 from net.sf.chellow.monad import Monad
 
-Monad.getUtils()['imprt'](globals(), {
-        'db': ['Contract', 'Party', 'RateScript', 'set_read_write', 'session'], 
-        'utils': ['UserException'],
-        'templater': ['render'],
-        'bsuos': []})
+Monad.getUtils()['impt'](globals(), 'templater')
 
 config = Configuration.getConfiguration()
 properties = Properties()
 properties.load(StringReader(config.getProperties()))
 
-render(inv, template, {'local_reports_id': properties.get('local.reports')})]]></value>
+templater.render(inv, template, {'local_reports_id': properties.get('local.reports')})]]></value>
 		<value><![CDATA[<!DOCTYPE html>
 <html>
   <head>
