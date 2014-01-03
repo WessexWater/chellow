@@ -17605,9 +17605,10 @@ try:
             inv.sendSeeOther("/reports/203/output/?hhdc_batch_id=" +
                     str(batch.id))
         elif inv.hasParameter("delete"):
+            contract = batch.contract
             batch.delete(sess)
             sess.commit()
-            inv.sendSeeOther("/reports/93/output/?hhdc_contract_id=" + str(batch.contract.id))
+            inv.sendSeeOther("/reports/93/output/?hhdc_contract_id=" + str(contract.id))
 except UserException, e:
     render(inv, template, make_fields(sess, batch, e))
 finally:
