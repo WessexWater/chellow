@@ -625,6 +625,7 @@ def totalElement(account, startDate, finishDate):
 				<response-code value="200" />
 				<!-- Check the end date is right -->
 				<regex pattern='&lt;a title="2003-08-13 23:30"&gt;2003-08-13&lt;/a&gt;' />
+				<regex pattern='&lt;legend&gt;TRIAD&lt;/legend&gt;\s*&lt;input type="hidden" name="supply_id"'/>
 			</request>
 			<request path="/chellow/reports/301/output/?channel_id=18">
 				<response-code value="200" />
@@ -3634,7 +3635,7 @@ def virtual_bill(supply_source):
 		  <request path="/chellow/reports/41/output/?supply_id=6&amp;year=2007">
 			<response-code value="200" />
 			<regex
-			pattern='CI017,"Roselands","1",net,"","22 6354 2983 570","2007-01-23T17:00Z","0","E","1.074","0.0","2006-12-20T17:00Z","0","before start of supply","before start of supply","0","2007-02-08T17:30Z","0","E","1.074","0.0","0.0","5.94264","0.0","","","","","","","","","","","","","","","","","","",""' />
+			pattern='CI017,"Roselands","1",net,"","22 6354 2983 570","2007-01-23T17:00Z","0","E","1.074","0.0","2006-12-20T17:00Z","0","before start of supply","before start of supply","0","2007-02-08T17:30Z","0","E","1.074","0.0","0.0","5.94264","0.0","","","","","","","","","","","","","","","","","","",""$' />
 		  </request>
 		</test>
 		<test name="Try a pre 2010-04-01 DNO 14 bill.">
