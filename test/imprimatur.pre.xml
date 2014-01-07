@@ -3880,5 +3880,11 @@ def virtual_bill(supply_source):
 				<response-code value="303" />
 			</request>
 		</test>
+		<test name="Try CRC Special Events">
+			<request path="/chellow/reports/215/output/?year=2012">
+				<response-code value="200" />
+				<regex pattern='"22 0883 6932 301"' />
+			</request>
+		</test>
 	</test-group>
 </imprimatur>

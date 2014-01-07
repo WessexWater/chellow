@@ -13703,7 +13703,7 @@ from datetime import datetime
 import pytz
 
 Monad.getUtils()['imprt'](globals(), {
-        'db': ['Contract', 'Era', 'Supply', 'session'], 
+        'db': ['Contract', 'Era', 'Supply', 'session', 'Site', 'SiteEra'], 
         'utils': ['UserException', 'prev_hh', 'next_hh', 'hh_after', 'hh_before'],
         'templater': ['render'],
         'bsuos': []})
@@ -13785,18 +13785,18 @@ try:
                 if cur_sup is None and prev_sup is not None:
                     add_event(events, era.start_date, "End of supply", mpan_core)
                 elif cur_sup is not None and prev_sup is None:
-                    add_event(events, era.start_date, "Start of supply", mpan_core)
+                    add_event(events, era.start_date, "Start of supply", None, mpan_core)
                 elif cur_sup is not None and prev_sup is not None and cur_sup != prev_sup:
-                    add_event(events, era.start_date, "Change Of Supplier", mpan_core)
+                    add_event(events, era.start_date, "Change Of Supplier", None, mpan_core)
         
             prev_era = era
 
         if len(events) > 0:
-            site = sess.query(Site).from_statement("select site.* from site_era, site where site_era.site_id = site.id and site_era.is_physical is true and site_era.era_id = :era_id").params(era_id=last_era).one()
+            site = sess.query(Site).join(SiteEra).filter(SiteEra.is_physical==True, SiteEra.era_id==last_era.id).one()
 
             for event in events:
                 pw.println('')
-                pw.print(','.join('"' + str(val) + '"' for val in [event['mpan-core'], site.code, site.name, event['date'], event['code']]) + ',')
+                pw.print(','.join('"' + str(val) + '"' for val in [event['mpan-core'], site.code, site.name, event['date'].strftime("%Y-%m-%d %H:%M"), event['code']]) + ',')
         else:
             pw.print(' ')
         pw.flush()
