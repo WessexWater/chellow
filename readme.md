@@ -1,8 +1,10 @@
 ## Chellow Manual
 
+
 ###  Licence
 
 Chellow is released under the [GPL v3](http://www.gnu.org/licenses/gpl.html).
+
 
 ###  Introduction
 
@@ -10,15 +12,21 @@ Chellow is a web application for checking UK electricity bills. It's designed
 for organizations with high electricity consumption. The software is hosted at
  https://bitbucket.org/ww_tlocke/chellow)
 
-###  Installation
+### Installation
+
+####  Requirements
 
 1. [Download](https://bitbucket.org/ww_tlocke/chellow/downloads) the latest version of Chellow.
 2.  Make sure the following are installed: 
     * PostgreSQL 9.1 with the JDBC4 PostgreSQL Driver, Version 9.2-1002
     * OpenJDK 1.7.0_25 (in server mode)
     * Apache Tomcat 7.0.39
-3.  Create a PostgreSQL database called `chellow`. 
-4.  In your Tomcat, configure a JNDI JDBC data source called jdbc/chellow. 
+
+####  Brand New Installation 
+
+1.  Create a PostgreSQL database called `chellow`. If you're upgrading, the
+    database will already exist, so skip this step.
+2.  In your Tomcat, configure a JNDI JDBC data source called jdbc/chellow.
     1. Add the following snippet to the `context.xml` file in the Tomcat configuration directory: 
 
         <Resource name="jdbc/chellow" auth="Container"
@@ -32,7 +40,22 @@ for organizations with high electricity consumption. The software is hosted at
         <Parameter name="db.password" value="hello"/>
 
     2.  Put the [JDBC driver](http://jdbc.postgresql.org/download/postgresql-9.2-1002.jdbc4.jar) in the Tomcat `/lib/` directory.
-5.  Deploy the file chellow.war to Tomcat.
+3.  Deploy the file chellow.war to Tomcat.
+
+####  Upgrading From A Previous Installation
+
+1.  Deploy the file chellow.war to Tomcat.
+
+
+####  Regression Plan
+
+If the upgrade fails:
+
+1.   Shut down Tomcat.
+2.   Restore the database from the latest backup.
+3.   Install the previous chellow.war
+4.   Restart Tomcat.
+
 
 ###  Getting Started
 
@@ -43,6 +66,7 @@ This is a brief guide to setting things up after you've installed Chellow.
 Assuming you've installed Chellow correctly, you should be able to open your
 browser, type in the URL of the Chellow application, and see the Chellow home
 page.
+
 
 #### Users
 
