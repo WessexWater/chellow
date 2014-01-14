@@ -6,19 +6,18 @@
 		<value><![CDATA[1]]></value>
 		<value><![CDATA[true]]></value>
 		<value><![CDATA[Home]]></value>
-		<value><![CDATA[from net.sf.chellow.physical import Configuration
-from java.util import Properties
-from java.io import StringReader
-from java.lang import System
-from net.sf.chellow.monad import Monad
+		<value><![CDATA[from net.sf.chellow.monad import Monad
 
-Monad.getUtils()['impt'](globals(), 'templater')
+Monad.getUtils()['impt'](globals(), 'templater', 'db')
 
-config = Configuration.getConfiguration()
-properties = Properties()
-properties.load(StringReader(config.getProperties()))
-
-templater.render(inv, template, {'local_reports_id': properties.get('local.reports')})]]></value>
+sess = None
+try:
+    sess = db.session()
+    config = db.Contract.get_non_core_by_name(sess, 'configuration')
+    templater.render(inv, template, {'properties': config.make_properties()})
+finally:
+    if sess is not None:
+        sess.close()]]></value>
 		<value><![CDATA[<!DOCTYPE html>
 <html>
   <head>
@@ -71,9 +70,9 @@ templater.render(inv, template, {'local_reports_id': properties.get('local.repor
           <li>
             <a href="{{ context_path }}/reports/39/output/">Site Snags</a>
           </li>
-          {% if local_reports_id %}
+          {% if properties.local_reports_id %}
             <li>
-              <a href="{{ context_path }}/reports/{{ local_reports_id }}/output/">Local Reports</a>
+              <a href="{{context_path}}/reports/{{properties.local_reports_id }}/output/">Local Reports</a>
             </li>
           {% endif %}
         <li>
