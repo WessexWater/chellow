@@ -18136,7 +18136,7 @@ while not month_start.after(finish_date):
                 output_line.extend([k, bill[k]]) 
             pw.println(','.join('"' + str(v) + '"' for v in output_line))
             pw.flush()
-            Hiber.session().clear()
+    Hiber.session().clear()
 
     utc_cal.setTime(month_start.getDate())
     utc_cal.add(Calendar.MONTH, 1)
