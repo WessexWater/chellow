@@ -8030,7 +8030,7 @@ while bills.next():
     while enlarged:
         enlarged = False
         for covered_bill in covered_query.setTimestamp('finishDate', covered_finish.getDate()).setTimestamp('startDate', covered_start.getDate()).list():
-            if contract_market_role_code != covered_bill.getBatch().contract.role.code:
+            if contract_market_role_code != covered_bill.batch.contract.role.code:
                 continue
 
             if covered_primary_bill is None and covered_bill.getReads() is not None and len(covered_bill.getReads()) > 0:
@@ -8048,18 +8048,24 @@ while bills.next():
         if contract_market_role_code != covered_bill.batch.contract.role.code:
             continue
         covered_bill_ids.append(covered_bill.getId())
-        covered_bdown['net-gbp'] += covered_bill.getNet().doubleValue()
-        covered_bdown['vat-gbp'] += covered_bill.getVat().doubleValue()
-        covered_bdown['sum-msp-kwh'] += covered_bill.getKwh().doubleValue()
-        if len(covered_bill.getBreakdown()) > 0:
-            for k, v in eval(covered_bill.getBreakdown(), {}).iteritems():
-                if k != 'raw-lines':
+        covered_bdown['net-gbp'] += covered_bill.net.doubleValue()
+        covered_bdown['vat-gbp'] += covered_bill.vat.doubleValue()
+        covered_bdown['sum-msp-kwh'] += covered_bill.kwh.doubleValue()
+        if len(covered_bill.breakdown) > 0:
+            covered_rates = collections.defaultdict(set)
+            for k, v in eval(covered_bill.breakdown, {}).iteritems():
+
+                if k.endswith('rate'):
+                    covered_rates[k].add(v)
+                elif k != 'raw-lines':
                     try:
                         covered_bdown[k] += v
                     except KeyError:
                         covered_bdown[k] = v
                     except TypeError, detail:
                         raise UserException("For key " + str(k) + " the value " + str(v) + " can't be added to the existing value " + str(covered_bdown[k]) + ". " + str(detail))
+            for k, v in covered_rates.iteritems():
+                covered_bdown[k] = v.pop() if len(v) == 1 else None
 
     virtual_bill = {}
 
