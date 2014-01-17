@@ -1259,7 +1259,7 @@ def totalElement(account, startDate, finishDate):
 			<!-- Supplier contract 56 -->
 			<request path="/chellow/reports/321/output/" method="post">
 				<control name="supplier_batch_id" value="3"/>
-				<control type="file" name="import_file" value="bills.bgb_edi" />
+				<control type="file" name="import_file" value="bills.bgb.edi" />
 				
 				<response-code value="303" />
 				<regex pattern="/reports/323/output/\?importer_id=1" />
@@ -2518,7 +2518,7 @@ def virtual_bill(supply_source):
 				<response-code value="303" />
 			</request>
 		</test>
-		<test name="Test importing of sse_edi bills">
+		<test name="Test importing of sse.edi bills">
 			<!-- Create new supplier contract -->
 			<request path="/chellow/reports/315/output/" method="post">
 				<control name="participant_id" value="6" />
@@ -2602,7 +2602,7 @@ def virtual_bill(supply_source):
 			<!-- Supplier contract 60. -->
 			<request path="/chellow/reports/321/output/" method="post">
 				<control name="supplier_batch_id" value="5"/>
-				<control type="file" name="import_file" value="bills.sse_edi" />
+				<control type="file" name="import_file" value="bills.sse.edi" />
 				<response-code value="303" />
 				<regex pattern="/reports/323/output/\?importer_id=3" />
 			</request>
@@ -2727,7 +2727,7 @@ def virtual_bill(supply_source):
 				<control name="supplier_batch_id" value="6"/>
 				
 				<!-- File has a character outside 8 bits to check unicode handling -->
-				<control type="file" name="import_file" value="bills.gdf_csv" />
+				<control type="file" name="import_file" value="bills.gdf.csv" />
 				
 				<response-code value="303" />
 				<regex pattern="/reports/323/output/\?importer_id=4" />
@@ -3871,7 +3871,7 @@ def virtual_bill(supply_source):
 		<!-- Supplier contract 58. -->
 			<request path="/chellow/reports/321/output/" method="post">
 				<control name="supplier_batch_id" value="3"/>
-				<control type="file" name="import_file" value="bills2.sse_edi" />
+				<control type="file" name="import_file" value="bills2.sse.edi" />
 				<response-code value="303" />
 				<regex pattern="/reports/323/output/\?importer_id=0" />
 			</request>
