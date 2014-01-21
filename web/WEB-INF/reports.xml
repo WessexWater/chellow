@@ -683,7 +683,7 @@ try:
                     for tpr_code, read_list in outer_tpr_map.iteritems():
                         try:
                             row_dict['outer_reads'].append(read_list[i])
-                        except KeyError:
+                        except IndexError:
                             row_dict['outer_reads'].append(None)
 
                 num_outer_cols = max(num_outer_cols, len(outer_tpr_map))
@@ -1103,23 +1103,33 @@ finally:
                 {% endfor %}
                 {% for read in read_row['outer_reads'] %}
                   <td>
-                    {% if read.tpr %}
-                      <a href="{{ context_path }}/reports/97/output/?tpr-id={{ read.tpr.id }}">{{ read.tpr.code }}</a>
-                    {% else %}
-                      MD
+                    {% if read %}
+                      {% if read.tpr %}
+                        <a href="{{ context_path }}/reports/97/output/?tpr-id={{ read.tpr.id }}">{{ read.tpr.code }}</a>
+                      {% else %}
+                        MD
+                      {% endif %}
                     {% endif %}
                   </td>
                   <td style="border-right: none;">
-                    <a title="{{ read.previous_date|hh_format }} {{ read.msn }}">{{ read.previous_value }}</a>
+                    {% if read %}
+                      <a title="{{read.previous_date|hh_format}} {{read.msn}}">{{read.previous_value}}</a>
+                    {% endif %}
                   </td>
                   <td style="border-left: none;">
-                    {{ read.previous_type.code }}
+                    {% if read %}
+                      {{read.previous_type.code}}
+                    {% endif %}
                   </td>
                   <td style="border-right: none;">
-                    <a title="{{ read.present_date|hh_format }} {{ read.msn }}">{{ read.present_value }}</a>
+                    {% if read %}
+                      <a title="{{read.present_date|hh_format}} {{read.msn}}">{{read.present_value}}</a>
+                    {% endif %}
                   </td>
                   <td style="border-left: none;">
-                    {{ read.present_type.code }}
+                    {% if read %}
+                      {{read.present_type.code}}
+                    {% endif %}
                   </td>
                   {% if not loop.first %}
                     </tr>
