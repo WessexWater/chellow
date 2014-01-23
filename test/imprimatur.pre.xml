@@ -832,7 +832,36 @@ def totalElement(account, startDate, finishDate):
 				<regex pattern='&lt;option value="3" selected&gt;3 CoP 3&lt;/option&gt;' />
 				
 				<regex pattern="MPAN cores can&amp;#39;t change without an overlapping period" />
-			</request>			
+			</request>
+					
+			<!-- Check that we get a good error message if the LLFC is of the wrong polarity. Supply 2 -->
+			<request path="/chellow/reports/307/output/" method="post">
+				<control name="era_id" value="8" />
+				<control name="msn" value="" />
+				<control name="start_year" value="2006" />
+				<control name="start_month" value="07" />
+				<control name="start_day" value="20" />
+				<control name="start_hour" value="00" />
+				<control name="start_minute" value="00" />
+				<control name="is_ended" value="false" />
+				<control name="mop_contract_id" value="54" />
+				<control name="mop_account" value="mc-22 9813 2107 763"/>
+				<control name="hhdc_contract_id" value="50" />
+				<control name="hhdc_account" value="01" />
+				<control name="pc_id" value="9" />
+				<control name="mtc_code" value="845" />
+				<control name="cop_id" value="3" />
+				<control name="ssc_code" value="" />
+				<control name="imp_llfc_code" value="521" />
+				<control name="imp_mpan_core" value="22 9813 2107 763" />
+				<control name="imp_sc" value="430" />
+				<control name="imp_supplier_contract_id" value="52" />
+				<control name="imp_supplier_account" value="01" />
+				
+				<response-code value="400" />
+								
+				<regex pattern="The imp line loss factor 521 is actually an exp one\." />
+			</request>		
 		</test>
 
 		<test name="Import hh data">
