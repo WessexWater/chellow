@@ -11317,6 +11317,8 @@ rs.close()]]></value>
       <input type="submit" name="run_startup" value="Run" />
   </fieldset>
 </form>
+
+<p><a href="{/source/request/@context-path}/reports/103/output/">Libraries</a></p>
             </body>
         </html>
     </xsl:template>
