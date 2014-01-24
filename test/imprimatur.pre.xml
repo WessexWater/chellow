@@ -885,7 +885,7 @@ def totalElement(account, startDate, finishDate):
 			<request path="/chellow/reports/301/output/?channel_id=3">
 				<regex pattern='Channel Export\s*kWh' />
 				<regex
-					pattern='&lt;td&gt;\s*&lt;a href="/chellow/reports/117/output/\?snag_id=41"&gt;view&lt;/a&gt;\s*&lt;/td&gt;\s*&lt;td&gt;2005-12-15 07:00&lt;/td&gt;\s*&lt;td&gt;2005-12-15 08:00&lt;/td&gt;\s*&lt;td&gt;Estimated&lt;/td&gt;'/>
+					pattern='&lt;td&gt;\s*&lt;a href="/chellow/reports/117/output/\?snag_id=45"&gt;view&lt;/a&gt;\s*&lt;/td&gt;\s*&lt;td&gt;2005-12-15 07:00&lt;/td&gt;\s*&lt;td&gt;2005-12-15 08:00&lt;/td&gt;\s*&lt;td&gt;Estimated&lt;/td&gt;'/>
 								<regex
 					pattern='&lt;tr&gt;\s*&lt;td&gt;\s*&lt;a href="/chellow/reports/117/output/\?snag_id=3"&gt;view&lt;/a&gt;\s*&lt;/td&gt;\s*&lt;td&gt;2003-08-03 00:00&lt;/td&gt;\s*&lt;td&gt;2005-12-15 06:30&lt;/td&gt;\s*&lt;td&gt;Missing&lt;/td&gt;' />
 				<response-code value="200" />
@@ -905,7 +905,7 @@ def totalElement(account, startDate, finishDate):
 			<!-- supply 1, era 1 -->
 			<request path="/chellow/reports/301/output/?channel_id=3">
 				<regex pattern="Channel Export\s*kWh" />
-				<regex pattern='&lt;td&gt;\s*&lt;a href="/chellow/reports/117/output/\?snag_id=41"&gt;view&lt;/a&gt;\s*&lt;/td&gt;\s*&lt;td&gt;2005-12-15 07:00&lt;/td&gt;\s*&lt;td&gt;2005-12-15 09:30&lt;/td&gt;\s*&lt;td&gt;Estimated&lt;/td&gt;' />
+				<regex pattern='&lt;td&gt;\s*&lt;a href="/chellow/reports/117/output/\?snag_id=45"&gt;view&lt;/a&gt;\s*&lt;/td&gt;\s*&lt;td&gt;2005-12-15 07:00&lt;/td&gt;\s*&lt;td&gt;2005-12-15 09:30&lt;/td&gt;\s*&lt;td&gt;Estimated&lt;/td&gt;' />
 				<response-code value="200" />
 			</request>
 		</test>
@@ -1071,7 +1071,7 @@ def totalElement(account, startDate, finishDate):
 		</test>
 
 		<test name="View a snag">
-			<request path="/chellow/site-snags/39/">
+			<request path="/chellow/site-snags/43/">
 				<response-code value="200" />
 				<regex
 					pattern="&lt;th&gt;Finish Date&lt;/th&gt;&lt;td&gt;2005-10-30 01:00&lt;/td&gt;" />
@@ -2053,7 +2053,8 @@ def triad_estimates():
 		</test>
 		<test name="Try 'Site HH bulk figures' report.">
 			<request
-				path="/chellow/reports/29/output/?site_id=7&amp;type=used&amp;months=1&amp;finish_year=2008&amp;finish_month=07">
+				path="/chellow/reports/29/output/?site_id=5&amp;type=used&amp;months=1&amp;finish_year=2008&amp;finish_month=01">
+				<regex pattern="CH023,used,2008-01-01,3.77"/>
 				<response-code value="200" />
 			</request>
 		</test>
@@ -3686,7 +3687,7 @@ def virtual_bill(supply_source):
 			<request
 				path="/chellow/reports/233/output/?hhdc_contract_id=50&amp;days_hidden=1">
 				<response-code value="200" />
-				<regex pattern='"78","22 0883 6932 301","None","CI005","Wheal Rodney","Missing","True","True","2002-01-01 00:00","2003-08-02 23:30",' />
+				<regex pattern='"82","22 0883 6932 301","None","CI005","Wheal Rodney","Missing","True","True","2002-01-01 00:00","2003-08-02 23:30",' />
 			</request>
 		</test>
 		<test name="Site use graph">
