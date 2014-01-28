@@ -6298,11 +6298,13 @@ start_year = inv.getInteger('start_year')
 start_month = inv.getInteger('start_month')
 start_day = inv.getInteger('start_day')
 start_hour = inv.getInteger('start_hour')
+start_minute = inv.getInteger('start_minute')
 
 finish_year = inv.getInteger('finish_year')
 finish_month = inv.getInteger('finish_month')
 finish_day = inv.getInteger('finish_day')
 finish_hour = inv.getInteger('finish_hour')
+finish_minute = inv.getInteger('finish_minute')
 
 contract_id = inv.getLong('supplier_contract_id')
 contract = Contract.getSupplierContract(contract_id)
@@ -6325,7 +6327,7 @@ utc_cal.set(Calendar.YEAR, start_year)
 utc_cal.set(Calendar.MONTH, start_month - 1)
 utc_cal.set(Calendar.DAY_OF_MONTH, start_day)
 utc_cal.set(Calendar.HOUR_OF_DAY, start_hour)
-utc_cal.set(Calendar.MINUTE, 0)
+utc_cal.set(Calendar.MINUTE, start_minute)
 utc_cal.set(Calendar.SECOND, 0)
 utc_cal.set(Calendar.MILLISECOND, 0)
 start_date = HhStartDate(utc_cal.getTime())
@@ -6334,7 +6336,7 @@ utc_cal.set(Calendar.YEAR, finish_year)
 utc_cal.set(Calendar.MONTH, finish_month - 1)
 utc_cal.set(Calendar.DAY_OF_MONTH, finish_day)
 utc_cal.set(Calendar.HOUR_OF_DAY, finish_hour)
-utc_cal.set(Calendar.MINUTE, 30)
+utc_cal.set(Calendar.MINUTE, finish_minute)
 utc_cal.set(Calendar.SECOND, 0)
 utc_cal.set(Calendar.MILLISECOND, 0)
 finish_date = HhStartDate(utc_cal.getTime())
@@ -6373,15 +6375,16 @@ while not month_start.after(finish_date):
         era = eras.get(0)
 
         era_start = era.getStartDate()
-        if month_start.before(era_start):
+        if period_start.before(era_start):
             chunk_start = era_start
         else:
-            chunk_start = month_start
+            chunk_start = period_start
         era_finish = era.getFinishDate()
-        if month_finish.after(era_finish):
+        if period_finish.after(era_finish):
             chunk_finish = era_finish
         else:
-            chunk_finish = month_finish
+            chunk_finish = period_finish
+            
         polarities = []
         if era.impSupplierContract == contract:
             polarities.append(True)

@@ -3909,7 +3909,7 @@ def virtual_bill(supply_source):
 			<request path="/chellow/reports/87/output/?supplier_contract_id=52&amp;start_year=2013&amp;start_month=12&amp;start_day=01&amp;start_hour=00&amp;start_minute=00&amp;finish_year=2013&amp;finish_month=12&amp;finish_day=01&amp;finish_hour=23&amp;finish_minute=30">
 				<response-code value="200" />
 				<regex
-					pattern='22 0470 7514 535' />
+					pattern='"22 0470 7514 535","CH017","Parbola","010","2013-12-01T00:00Z","2013-12-01T23:30Z","93.89","1.0111633","0","0","0","5.89","150","1","0","0","0","0","0","0","0","0","0","0","0","0","0","88","0","0","0.0","0","0.0","0.0","0","0","0.0","0","0","0.0","0","0","0.0","0","0","0.0","0.0","0.00130416","0.0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","","duos-fixed-days","1","duos-fixed-gbp","0","duos-fixed-rate","0","duos-green-gbp","0.0","duos-green-kwh","0","duos-green-rate","-0.00649"' />
 			</request>
 		</test>
 	</test-group>
