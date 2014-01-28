@@ -22400,9 +22400,10 @@ try:
             sess.commit()
             inv.sendSeeOther("/reports/193/output/?mop_batch_id=" + str(batch.id))
         elif inv.hasParameter("delete"):
+            contract = batch.contract
             batch.delete(sess)
             sess.commit()
-            inv.sendSeeOther("/reports/191/output/?mop_contract_id=" + str(batch.contract.id))
+            inv.sendSeeOther("/reports/191/output/?mop_contract_id=" + str(contract.id))
 except UserException, e:
     render(inv, template, make_fields(sess, batch, e))
 finally:
@@ -22441,7 +22442,7 @@ finally:
       <form method="post" action=".">
         <fieldset>
           <legend>Delete</legend>
-          <input type="hidden" name="hhdc_batch_id" value="{{batch.id}}">
+          <input type="hidden" name="mop_batch_id" value="{{batch.id}}">
           <p>Are you sure you want to delete this batch and all its bills?</p>
           <input type="submit" name="delete" value="Delete">
         </fieldset>

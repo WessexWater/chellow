@@ -2842,7 +2842,17 @@ def virtual_bill(supply_source):
 			<!-- Check that it's there in edit mode. Contract 54 -->
 			<request path="/chellow/reports/355/output/?mop_batch_id=9">
 				<response-code value="200" />
+				
+				<regex pattern='&lt;input type="hidden" name="mop_batch_id" value="9"&gt;'/>
 			</request>
+			
+			<!-- Check confirm-delete page. Contract 54 -->
+			<request path="/chellow/reports/355/output/?mop_batch_id=9&amp;confirm_delete=Delete">
+				<response-code value="200" />
+				
+				<regex pattern='&lt;input type="hidden" name="mop_batch_id" value="9"&gt;'/>
+			</request>
+			
 
 			<!-- Check we can see it in 'view' mode. Contract 54 -->
 			<request path="/chellow/reports/193/output/?mop_batch_id=9">
