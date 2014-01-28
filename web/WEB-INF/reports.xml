@@ -6386,7 +6386,7 @@ while not month_start.after(finish_date):
         if era.impSupplierContract == contract:
             polarities.append(True)
         if era.expSupplierContract == contract:
-            polarities.append(Fale)
+            polarities.append(False)
         for polarity in polarities:
             data_source = comterp.get('SupplySource')(chunk_start, chunk_finish, forecast_date, era, polarity, comterp, pw, caches)
             
@@ -6406,7 +6406,7 @@ while not month_start.after(finish_date):
                 pw.print(',"' + k + '","' + str(bill[k]) + '"')
             pw.println('')
             pw.flush()
-            Hiber.session().clear()
+    Hiber.session().clear()
 
     utc_cal.setTime(month_start.getDate())
     utc_cal.add(Calendar.MONTH, 1)
