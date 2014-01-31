@@ -1700,11 +1700,13 @@ from sqlalchemy import or_
 import pytz
 import datetime
 from dateutil.relativedelta import relativedelta
+from java.lang import System
 
 Monad.getUtils()['imprt'](globals(), {
-        'db': ['Snag', 'Site', 'Contract', 'Party', 'RateScript', 'set_read_write', 'session'], 
+        'db': ['HhDatum', 'Channel', 'Snag', 'Era', 'Site', 'Contract', 'Party', 'RateScript', 'set_read_write', 'session'], 
         'utils': ['UserException', 'HH'],
         'templater': ['render']})
+
 
 sess = None
 try:
@@ -1714,6 +1716,7 @@ try:
     finish_year = inv.getInteger("finish_year")
     finish_month = inv.getInteger("finish_month")
     start_date = datetime.datetime(finish_year, finish_month, 1, tzinfo=pytz.utc)
+
     start_date -= relativedelta(months=11)
 
     site = Site.get_by_id(sess, site_id)
@@ -1730,37 +1733,11 @@ try:
 
         for group in site.groups(sess, month_start, month_finish, True):
             for hh in group.hh_data(sess):
-                if hh['imp_net'] * 2 > month['imp_net']['md']:
-                    month['imp_net']['md'] = hh['imp_net'] * 2
-                    month['imp_net']['md_date'] = hh['start_date']
-                month['imp_net']['kwh'] += hh['imp_net']
-
-                disp_kwh = hh['imp_gen'] - hh['exp_gen'] - hh['exp_net']
-                if disp_kwh * 2 > month['displaced']['md']:
-                    month['displaced']['md'] = disp_kwh * 2
-                    month['displaced']['md_date'] = hh['start_date']
-                month['displaced']['kwh'] += disp_kwh
-
-                used_kwh = disp_kwh + hh['imp_net']
-                if used_kwh * 2 > month['used']['md']:
-                    month['used']['md'] = used_kwh * 2
-                    month['used']['md_date'] = hh['start_date']
-                month['used']['kwh'] += used_kwh
-
-                if hh['imp_gen'] * 2 > month['imp_gen']['md']:
-                    month['imp_gen']['md'] = hh['imp_gen'] * 2
-                    month['imp_gen']['md_date'] = hh['start_date']
-                month['imp_gen']['kwh'] += hh['imp_gen']
-
-                if hh['exp_gen'] * 2 > month['exp_gen']['md']:
-                    month['exp_gen']['md'] = hh['exp_gen'] * 2
-                    month['exp_gen']['md_date'] = hh['start_date']
-                month['exp_gen']['kwh'] += hh['exp_gen']
-
-                if hh['exp_net'] * 2 > month['exp_net']['md']:
-                    month['exp_net']['md'] = hh['exp_net'] * 2
-                    month['exp_net']['md_date'] = hh['start_date']
-                month['exp_net']['kwh'] += hh['exp_net']
+                for tp in typs:
+                    if hh[tp] * 2 > month[tp]['md']:
+                        month[tp]['md'] = hh[tp] * 2
+                        month[tp]['md_date'] = hh['start_date']
+                    month[tp]['kwh'] += hh[tp]
 
         has_snags = sess.query(Snag).filter(Snag.site==site, Snag.start_date <= month_finish, or_(Snag.finish_date is None, Snag.finish_date > month_start)).count() > 0
         month['has_site_snags'] = has_snags
@@ -1838,24 +1815,24 @@ finally:
       <tfoot>
         <tr>
           <th>For all months</th>
-          <th>{{months[-1].imp_net.md}}</th>
+          <th>{{months[-1].imp_net.md|round(1)}}</th>
           <th>{{months[-1].imp_net.md_date|hh_format}}</th>
-          <th>{{months[-1].imp_net.kwh}}</th>
-          <th>{{months[-1].used.md}}</th>
+          <th>{{months[-1].imp_net.kwh|round(1)}}</th>
+          <th>{{months[-1].used.md|round(1)}}</th>
           <th>{{months[-1].used.md_date|hh_format}}</th>
-          <th>{{months[-1].used.kwh}}</th>
-          <th>{{months[-1].displaced.md}}</th>
+          <th>{{months[-1].used.kwh|round(1)}}</th>
+          <th>{{months[-1].displaced.md|round(1)}}</th>
           <th>{{months[-1].displaced.md_date|hh_format}}</th>
-          <th>{{months[-1].displaced.kwh}}</th>
-          <th>{{months[-1].imp_gen.md}}</th>
+          <th>{{months[-1].displaced.kwh|round(1)}}</th>
+          <th>{{months[-1].imp_gen.md|round(1)}}</th>
           <th>{{months[-1].imp_gen.md_date|hh_format}}</th>
-          <th>{{months[-1].imp_gen.kwh}}</th>
-          <th>{{months[-1].exp_net.md}}</th>
+          <th>{{months[-1].imp_gen.kwh|round(1)}}</th>
+          <th>{{months[-1].exp_net.md|round(1)}}</th>
           <th>{{months[-1].exp_net.md_date|hh_format}}</th>
-          <th>{{months[-1].exp_net.kwh}}</th>
-          <th>{{months[-1].exp_gen.md}}</th>
+          <th>{{months[-1].exp_net.kwh|round(1)}}</th>
+          <th>{{months[-1].exp_gen.md|round(1)}}</th>
           <th>{{months[-1].exp_gen.md_date|hh_format}}</th>
-          <th>{{months[-1].exp_gen.kwh}}</th>
+          <th>{{months[-1].exp_gen.kwh|round(1)}}</th>
         </tr>
       </tfoot>
       <thead>
@@ -1898,53 +1875,53 @@ finally:
             {%- endif -%}
           >
             <td>{{month.start_date|hh_format('date')}}</td>
-            <td>{{month.imp_net.md}}</td>
+            <td>{{month.imp_net.md|round(1)}}</td>
             <td>
               {% if month.imp_net.md_date %}
                 {{month.imp_net.md_date|hh_format}}
               {% endif %}
             </td>
-            <td>{{month.imp_net.kwh}}</td>
+            <td>{{month.imp_net.kwh|round(1)}}</td>
 
-            <td>{{month.used.md}}</td>
+            <td>{{month.used.md|round(1)}}</td>
             <td>
               {% if month.used.md_date %}
                 {{month.used.md_date|hh_format}}
               {% endif %}
             </td>
-            <td>{{month.used.kwh}}</td>
+            <td>{{month.used.kwh|round(1)}}</td>
 
-            <td>{{month.displaced.md}}</td>
+            <td>{{month.displaced.md|round(1)}}</td>
             <td>
               {% if month.displaced.md_date %}
                 {{month.displaced.md_date|hh_format}}
               {% endif %}
             </td>
-            <td>{{month.displaced.kwh}}</td>
+            <td>{{month.displaced.kwh|round(1)}}</td>
 
-            <td>{{month.imp_gen.md}}</td>
+            <td>{{month.imp_gen.md|round(1)}}</td>
             <td>
               {% if month.imp_gen.md_date %}
                 {{month.imp_gen.md_date|hh_format}}
               {% endif %}
             </td>
-            <td>{{month.imp_gen.kwh}}</td>
+            <td>{{month.imp_gen.kwh|round(1)}}</td>
 
-            <td>{{month.exp_net.md}}</td>
+            <td>{{month.exp_net.md|round(1)}}</td>
             <td>
               {% if month.exp_net.md_date %}
                 {{month.exp_net.md_date|hh_format}}
               {% endif %}
             </td>
-            <td>{{month.exp_net.kwh}}</td>
+            <td>{{month.exp_net.kwh|round(1)}}</td>
 
-            <td>{{month.exp_gen.md}}</td>
+            <td>{{month.exp_gen.md|round(1)}}</td>
             <td>
               {% if month.exp_gen.md_date %}
                 {{month.exp_gen.md_date|hh_format}}
               {% endif %}
             </td>
-            <td>{{month.exp_gen.kwh}}</td>
+            <td>{{month.exp_gen.kwh|round(1)}}</td>
 
             <td>
               {% if month.has_site_snags %}
