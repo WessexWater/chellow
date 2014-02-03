@@ -7326,38 +7326,115 @@ source.setAttribute('debug', pw.toString())]]></value>
 		<value><![CDATA[report]]></value>
 		<value><![CDATA[103]]></value>
 		<value><![CDATA[true]]></value>
-		<value><![CDATA[Free]]></value>
+		<value><![CDATA[Libraries]]></value>
 		<value><![CDATA[from net.sf.chellow.monad import Monad
-from sqlalchemy.orm import joinedload_all
-from sqlalchemy.sql.expression import text
-from datetime import datetime
+import datetime
 import pytz
+import os
+from java.lang import System
+import shutil
+import StringIO
+import tarfile
 
-Monad.getUtils()['imprt'](globals(), {
-        'db': ['Contract', 'Batch', 'Participant', 'set_read_write', 'session'], 
-        'utils': ['UserException', 'form_date'],
-        'templater': ['render']})
+Monad.getUtils()['impt'](globals(), 'utils', 'templater')
 
 
-def make_fields(sess, batch, message=None):
+def make_fields(lib_path, message=None):
     messages = [] if message is None else [str(message)]
-    return {'batch': batch, 'messages': messages}
+    files = []
+    for fl in sorted(os.listdir(lib_path)):
+        full_file = os.path.join(lib_path, fl)
+        statinfo = os.stat(full_file)
+        files.append({'name': fl, 'last_modified': datetime.datetime.utcfromtimestamp(statinfo.st_mtime), 'size': statinfo.st_size, 'creation_date': datetime.datetime.utcfromtimestamp(statinfo.st_ctime) })
+    return {'files': files, 'messages': messages}
 
-sess = None
 try:
-    sess = session()
+    lib_path = Monad.getContext().getRealPath("/WEB-INF/lib-python")
     if inv.getRequest().getMethod() == 'GET':
-        user = inv.getUser()
-        if user is None:
-            raise UserException("You're not logged in.")
-        inv.sendSeeOther("/reports/257/output/?user_id=" + str(user.id))
+        templater.render(inv, template, make_fields(lib_path))
     else:
-        raise UserException("Only GET HTTP method allowed.")
-except UserException, e:
-    render(inv, template, make_fields(sess, batch, e))
-finally:
-    sess.close()]]></value>
-		<value><![CDATA[]]></value>
+        if inv.hasParameter("delete"):
+            name = inv.getString("name")
+            shutil.rmtree(os.path.join(lib_path, name))
+            inv.sendSeeOther("/reports/103/output/")
+        else:
+            file_item = inv.getFileItem("import_file")
+            stream = file_item.getInputStream()
+            f = StringIO.StringIO()
+            bt = stream.read()
+            while bt != -1:
+                f.write(chr(bt))
+                bt = stream.read()
+            f.seek(0)
+            t = tarfile.open(name=None, mode='r:gz', fileobj=f)
+            t.extractall(lib_path)
+            t.close()
+            inv.sendSeeOther("/reports/103/output/")
+except utils.UserException, e:
+    render(inv, template, make_fields(lib_path, e))]]></value>
+		<value><![CDATA[<!DOCTYPE html>
+<html>
+  <head>
+    <link rel="stylesheet" type="text/css"
+      href="{{ context_path }}/reports/19/output/" />
+    <title>Chellow &gt; System &gt; Libraries</title>
+  </head>
+  <body>
+    <p>
+      <a href="{{context_path}}/reports/1/output/">Chellow</a> &gt;
+      <a href="{{context_path}}/reports/171/output/">System</a> &gt;
+      Libraries
+    </p>
+
+    {% if messages %}
+      <ul>
+        {% for message in messages %}
+          <li>{{ message }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+
+    <table><caption>Libraries</caption>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Size</th>
+          <th>Creation Date</th>
+          <th>Last Modified</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for file in files %}
+          <tr>
+            <td>{{file.name}}</td>
+            <td>{{file.size}} B</td>
+            <td>{{file.creation_date|hh_format}}</td>
+            <td>{{file.last_modified|hh_format}}</td>
+            <td>
+              <form method="post" action=".">
+                <fieldset style="border: none;">
+                  <input type="hidden" name="name" value="{{file.name}}">
+                  <input type="submit" name="delete" value="Delete">
+                </fieldset>
+              </form>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    <br>
+
+    <form enctype="multipart/form-data" method="post" action=".">
+      <fieldset>
+        <legend>Upload library</legend>
+        <input type="file" name="import_file" size="45"
+          value="{{request.getParameter('import_file')}}">
+        <input type="submit" value="Import">
+      </fieldset>
+    </form>
+  </body>
+</html>]]></value>
 	</line>
 	<line>
 		<value><![CDATA[insert]]></value>
