@@ -380,6 +380,61 @@ def totalElement(account, startDate, finishDate):
 				<response-code value="200" />
 			</request>
 		</test>
+		
+		<test name="Insert a modern supplier contract">
+			<!-- Create a new supplier contract for 2013 -->
+			<request path="/chellow/reports/315/output/" method="post">
+				<control name="participant_id" value="42" /> <!-- CGEN -->
+				<control name="name" value="Half-hourlies 2013" />
+				<control name="start_year" value="2013" />
+				<control name="start_month" value="01" />
+				<control name="start_day" value="01" />
+				<control name="start_hour" value="00" />
+				<control name="start_minute" value="00" />
+
+				<regex pattern="/chellow/reports/77/output/\?supplier_contract_id=55" />
+				<response-code value="303" />
+			</request>
+		
+			
+			<!-- Update the associated rate script. Supplier contract 55 -->
+			<request path="/chellow/reports/319/output/" method="post">
+				<control name="supplier_rate_script_id" value="296"/>
+				<control name="start_year" value="2000" />
+				<control name="start_month" value="01" />
+				<control name="start_day" value="03" />
+				<control name="start_hour" value="00" />
+				<control name="start_minute" value="00" />
+				<control name="has_finished" value="false" />
+				<control name="script"><![CDATA[def gsp_gbp_per_kwh():
+    return {
+        'winter-pk': 0.0193918,
+        'winter-low-pk': 0.0501474,
+        'winter-off-pk': 0.0062656,
+        'summer-pk': 0.0062656,
+        'night': 0.0062656,
+        'other': 0.0062656}]]>
+				</control>
+				<response-code value="303" />
+			</request>
+			
+			<!-- Create a new supplier contract -->
+			<request path="/chellow/reports/315/output/" method="post">
+				<control name="participant_id" value="222" /> <!-- HYDE -->
+				<control name="name" value="Non half-hourlies 2007" />
+				<control name="start_year" value="2000" />
+				<control name="start_month" value="01" />
+				<control name="start_day" value="03" />
+				<control name="start_hour" value="00" />
+				<control name="start_minute" value="00" />
+				<control name="has_finished" value="false" />
+				
+				<regex pattern="/reports/77/output/\?supplier_contract_id=56" />
+				<response-code value="303" />
+			</request>
+
+
+		</test>
 
 		<test name="supplies">
 			<!-- Give proper error if there are too few fields -->
@@ -1987,7 +2042,7 @@ def virtual_bill(supply_source):
 			
 			<!-- Edit the rate script -->
 			<request path="/chellow/reports/273/output/" method="post">
-				<control name="rate_script_id" value="300" />
+				<control name="rate_script_id" value="301" />
 				<control name="start_year" value="2000" />
 				<control name="start_month" value="01" />
 				<control name="start_day" value="03" />
@@ -2021,7 +2076,7 @@ def triad_estimates():
 		</test>
 		<test name="Check we can delete a rate script (when it's not the only one). Supplier contract 52.">
 			<request path="/chellow/reports/319/output/" method="post">
-			    <control name="supplier_rate_script_id" value="297"/> 
+			    <control name="supplier_rate_script_id" value="298"/> 
 				<control name="delete" value="Delete" />
 				<response-code value="303" />
 			</request>
@@ -2106,13 +2161,13 @@ def triad_estimates():
 				<control name="start_day" value="01" />
 				<control name="start_hour" value="00" />
 				<control name="start_minute" value="00" />
-				<regex pattern="/chellow/reports/69/output/\?dno_rate_script_id=301" />
+				<regex pattern="/chellow/reports/69/output/\?dno_rate_script_id=302" />
 				<response-code value="303" />
 			</request>
 			
 			<!-- Test bad syntax gives an error -->
 			<request path="/chellow/reports/285/output/" method="post">
-				<control name="dno_rate_script_id" value="301" />
+				<control name="dno_rate_script_id" value="302" />
 				<control name="start_year" value="2010" />
 				<control name="start_month" value="05" />
 				<control name="start_day" value="01" />
@@ -2125,7 +2180,7 @@ def triad_estimates():
 			
 			<!-- Delete rate script -->
 			<request path="/chellow/reports/285/output/" method="post">
-				<control name="dno_rate_script_id" value="301" />
+				<control name="dno_rate_script_id" value="302" />
 				<control name="delete" value="Delete" />
 				<response-code value="303" />
 			</request>
@@ -3037,20 +3092,20 @@ def virtual_bill(supply_source):
 				<control name="start_minute" value="00" />
 				<control name="insert" value="Insert" />
 
-				<regex pattern="/chellow/reports/271/output/\?rate_script_id=303" />
+				<regex pattern="/chellow/reports/271/output/\?rate_script_id=304" />
 				<response-code value="303" />
 			</request>
 			<request
-				path="/chellow/reports/273/output/?rate_script_id=303&amp;delete=Delete">
+				path="/chellow/reports/273/output/?rate_script_id=304&amp;delete=Delete">
 				<regex pattern="Are you sure you want to delete this rate script\?" />
 				<response-code value="200" />
 			</request>
 			<request path="/chellow/reports/273/output/" method="post">
-				<control name="rate_script_id" value="303" />
+				<control name="rate_script_id" value="304" />
 				<control name="delete" value="Delete" />
 				<response-code value="303" />
 			</request>
-			<request path="/chellow/reports/271/output/?rate_script_id=303">
+			<request path="/chellow/reports/271/output/?rate_script_id=304">
 				<response-code value="404" />
 			</request>
 		</test>
@@ -3064,11 +3119,11 @@ def virtual_bill(supply_source):
 				<control name="start_minute" value="00" />
 				<control name="insert" value="Insert" />
 
-				<regex pattern="/chellow/reports/271/output/\?rate_script_id=304" />
+				<regex pattern="/chellow/reports/271/output/\?rate_script_id=305" />
 				<response-code value="303" />
 			</request>
 			
-			<request path="/chellow/reports/273/output/?rate_script_id=304">
+			<request path="/chellow/reports/273/output/?rate_script_id=305">
 				<regex
 					pattern='&lt;input name="finish_year" maxlength="4" size="4" value="2010"&gt;' />
 
@@ -3079,7 +3134,7 @@ def virtual_bill(supply_source):
 			</request>
 			
 			<request path="/chellow/reports/273/output/" method="post">
-				<control name="rate_script_id" value="304" />
+				<control name="rate_script_id" value="305" />
 				<control name="delete" value="Delete" />
 				<response-code value="303" />
 			</request>
@@ -3415,177 +3470,7 @@ def virtual_bill(supply_source):
 			</request>
 		</test>
 		<test name="Test duos-fixed">
-			<!-- Create a new supplier contract for 2013 -->
-			<request path="/chellow/reports/315/output/" method="post">
-				<control name="participant_id" value="42" /> <!-- CGEN -->
-				<control name="name" value="Half-hourlies 2013" />
-				<control name="start_year" value="2013" />
-				<control name="start_month" value="01" />
-				<control name="start_day" value="01" />
-				<control name="start_hour" value="00" />
-				<control name="start_minute" value="00" />
-
-				<regex pattern="/chellow/reports/77/output/\?supplier_contract_id=60" />
-				<response-code value="303" />
-			</request>
-			
-			<!-- Update the supplier contract -->
-			<request path="/chellow/reports/317/output/" method="post">
-				<control name="supplier_contract_id" value="60"/>
-				<control name="party_id" value="25" /> <!-- BIZZ -->
-				<control name="name" value="Half-hourlies 2013" />
-				<control name="charge_script">
-				<![CDATA[
-from net.sf.chellow.monad import Hiber
-from java.util import GregorianCalendar, TimeZone, Locale, Calendar
-from net.sf.chellow.physical import HhStartDate, Supply, Site
-from net.sf.chellow.billing import Contract
-from net.sf.chellow.monad.types import MonadDate
-from java.lang import System
-
-computer_contract = Contract.getNonCoreContract('computer')
-triad_contract = Contract.getNonCoreContract('triad')
-ccl_contract = Contract.getNonCoreContract('ccl')
-bsuos_contract = Contract.getNonCoreContract('bsuos')
-tlms_contract = Contract.getNonCoreContract('tlms')
-duos_contract = Contract.getNonCoreContract('duos')
-
-def virtual_bill_titles():
-    return ['net-gbp', 'tlm', 'ccl-kwh', 'ccl-rate', 'ccl-gbp', 'data-collection-gbp', 'duos-availability-kva', 'duos-availability-days', 'duos-availability-rate', 'duos-availability-gbp', 'duos-excess-availability-kva', 'duos-excess-availability-days', 'duos-excess-availability-rate', 'duos-excess-availability-gbp','duos-green-kwh', 'duos-green-rate', 'duos-green-gbp', 'duos-green-kwh', 'duos-green-rate', 'duos-amber-gbp', 'duos-amber-kwh', 'duos-red-rate', 'duos-red-gbp', 'duos-reactive-rate', 'duos-reactive-gbp','duos-fixed-days', 'duos-fixed-rate', 'duos-fixed-gbp', 'settlement-gbp', 'night-msp-kwh', 'night-gsp-kwh', 'night-gbp', 'other-msp-kwh', 'other-gsp-kwh', 'other-gbp', 'summer-pk-msp-kwh', 'summer-pk-gsp-kwh', 'summer-pk-gbp', 'winter-low-pk-msp-kwh', 'winter-low-pk-gsp-kwh', 'winter-low-pk-gbp', 'winter-off-pk-msp-kwh', 'winter-off-pk-gsp-kwh', 'winter-off-pk-gbp', 'winter-pk-msp-kwh', 'winter-pk-gsp-kwh', 'winter-pk-gbp', 'bsuos-kwh', 'bsuos-rate', 'bsuos-gbp', 'triad-actual-1-date', 'triad-actual-1-msp-kw', 'triad-actual-1-status', 'triad-actual-1-laf', 'triad-actual-1-gsp-kw', 'triad-actual-2-date', 'triad-actual-2-msp-kw', 'triad-actual-2-status', 'triad-actual-2-laf', 'triad-actual-2-gsp-kw', 'triad-actual-3-date', 'triad-actual-3-msp-kw', 'triad-actual-3-status', 'triad-actual-3-laf', 'triad-actual-3-gsp-kw', 'triad-actual-gsp-kw', 'triad-actual-rate', 'triad-actual-gbp', 'triad-estimate-1-date', 'triad-estimate-1-msp-kw', 'triad-estimate-1-status', 'triad-estimate-1-laf', 'triad-estimate-1-gsp-kw', 'triad-estimate-2-date', 'triad-estimate-2-msp-kw', 'triad-estimate-2-status', 'triad-estimate-2-laf', 'triad-estimate-2-gsp-kw', 'triad-estimate-3-date', 'triad-estimate-3-msp-kw', 'triad-estimate-3-status', 'triad-estimate-3-laf', 'triad-estimate-3-gsp-kw', 'triad-estimate-gsp-kw', 'triad-estimate-rate', 'triad-estimate-months', 'triad-estimate-gbp', 'triad-all-estimates-months', 'triad-all-estimates-gbp', 'problem']
-
-def displaced_virtual_bill_titles():
-    return ['bsuos-kwh', 'bsuos-rate', 'bsuos-gbp', 'ccl-kwh', 'ccl-rate', 'ccl-gbp', 'duos-day-gbp', 'duos-day-kwh', 'duos-night-gbp', 'duos-night-kwh', 'duos-reactive-gbp', 'duos-reactive-working', 'net-gbp', 'duos-standing-gbp', 'night-gbp', 'night-gsp-kwh', 'night-msp-kwh', 'other-gbp', 'other-gsp-kwh', 'other-msp-kwh', 'summer-pk-gbp', 'summer-pk-gsp-kwh', 'summer-pk-msp-kwh', 'triad-gbp', 'triad-working', 'winter-low-pk-gbp', 'winter-low-pk-gsp-kwh', 'winter-low-pk-msp-kwh', 'winter-off-pk-gbp', 'winter-off-pk-gsp-kwh', 'winter-off-pk-msp-kwh', 'winter-pk-gbp', 'winter-pk-gsp-kwh', 'winter-pk-msp-kwh']
-
-slot_names = ['winter-pk', 'winter-low-pk', 'winter-off-pk', 'summer-pk', 'night', 'other']
-
-slots = {}
-for slot_name in slot_names:
-    slots[slot_name] = {'msp-kwh': slot_name + '-msp-kwh', 'gsp-kwh': slot_name + '-gsp-kwh', 'gbp': slot_name + '-gbp'}
-
-
-def displaced_virtual_bill(supply_source):
-    bill = supply_source.supplier_bill
-    
-    comterp = supply_source.comterp
-    contract_func = comterp.get('contract_function')
-
-    supply_source.is_green = False
-    contract_func(duos_contract, 'duos_vb', supply_source.pw)(supply_source)
-
-    for datum in supply_source.hh_data:
-        is_weekday = datum['utc-day-of-week'] != Calendar.SATURDAY and datum['utc-day-of-week'] != Calendar.SUNDAY
-        if is_weekday and (datum['utc-month'] == Calendar.JANUARY or datum['utc-month'] == Calendar.DECEMBER) and 16 < datum['utc-decimal-hour'] <= 19:
-            slot_key = 'winter-pk'
-        elif is_weekday and (datum['utc-month'] == Calendar.FEBRUARY or datum['utc-month'] == Calendar.NOVEMBER) and 16 < datum['utc-decimal-hour'] <= 19:
-            slot_key = 'winter-low-pk'
-        elif is_weekday and (datum['utc-month'] > Calendar.OCTOBER or datum['utc-month'] < Calendar.APRIL) and 8 < datum['utc-decimal-hour'] <= 20:
-            slot_key = 'winter-off-pk'
-        elif is_weekday and (datum['utc-month'] > Calendar.MARCH or datum['utc-month'] < Calendar.NOVEMBER) and 8 < datum['utc-decimal-hour'] <= 20:
-            slot_key = 'summer-pk'
-        elif 0 < datum['utc-decimal-hour'] <= 7:
-            slot_key = 'night'
-        else:
-            slot_key = 'other'
-        slot_keys = slots[slot_key]
-        bill[slot_keys['msp-kwh']] += datum['msp-kwh']
-        bill[slot_keys['gsp-kwh']] += datum['gsp-kwh']
-
-    contract_func(ccl_contract, 'ccl', supply_source.pw)(supply_source)
-
-    for suffix in ['kwh', 'rate', 'gbp']:
-        key = 'lec-' + suffix
-        if key in bill:
-            del bill[key]
-
-    contract_func(triad_contract, 'triad_bill', supply_source.pw)(supply_source)
-    contract_func(tlms_contract, 'hh', supply_source.pw)(supply_source)
-    contract_func(bsuos_contract, 'hh', supply_source.pw)(supply_source)
-
-    rates = supply_source.hh_rate(contract, supply_source.finish_date.getDate(), 'gsp_gbp_per_kwh')
-    for slot_name in slot_names:
-        slot_keys = slots[slot_name]
-        bill[slot_keys['gbp']] = bill[slot_keys['gsp-kwh']] * rates[slot_name]
-
-
-    for rate_name, rate_set in supply_source.rate_sets.iteritems():
-        if len(rate_set) == 1:
-            bill[rate_name] = rate_set.pop()
-
-    bill['net-gbp'] = sum(v for k, v in bill.iteritems() if k[-4:] == '-gbp')
-    return bill
-
-
-def virtual_bill(supply_source):
-    supply_source.contract_function(duos_contract, 'duos_vb')(supply_source)
-    supply_source.contract_function(ccl_contract, 'ccl')(supply_source)
-    supply_source.contract_function(triad_contract, 'triad_bill')(supply_source)
-    supply_source.contract_function(tlms_contract, 'hh')(supply_source)
-    supply_source.contract_function(bsuos_contract, 'hh')(supply_source)
-    
-    bill = supply_source.supplier_bill
-    supply_source.is_green = False
-
-    for datum in supply_source.hh_data:
-        is_weekday = datum['utc-day-of-week'] != Calendar.SATURDAY and datum['utc-day-of-week'] != Calendar.SUNDAY
-        if is_weekday and (datum['utc-month'] == Calendar.JANUARY or datum['utc-month'] == Calendar.DECEMBER) and 16 < datum['utc-decimal-hour'] <= 19:
-            slot_key = 'winter-pk'
-        elif is_weekday and (datum['utc-month'] == Calendar.FEBRUARY or datum['utc-month'] == Calendar.NOVEMBER) and 16 < datum['utc-decimal-hour'] <= 19:
-            slot_key = 'winter-low-pk'
-        elif is_weekday and (datum['utc-month'] > Calendar.OCTOBER or datum['utc-month'] < Calendar.APRIL) and 8 < datum['utc-decimal-hour'] <= 20:
-            slot_key = 'winter-off-pk'
-        elif is_weekday and (datum['utc-month'] > Calendar.MARCH or datum['utc-month'] < Calendar.NOVEMBER) and 8 < datum['utc-decimal-hour'] <= 20:
-            slot_key = 'summer-pk'
-        elif 0 < datum['utc-decimal-hour'] <= 7:
-            slot_key = 'night'
-        else:
-            slot_key = 'other'
-        slot_keys = slots[slot_key]
-        bill[slot_keys['msp-kwh']] += datum['msp-kwh']
-        bill[slot_keys['gsp-kwh']] += datum['gsp-kwh']
-        rates = supply_source.hh_rate(contract, datum['start-date'], 'gsp_gbp_per_kwh')
-        bill[slot_keys['gbp']] += datum['gsp-kwh'] * rates[slot_name]
-
-    for suffix in ['kwh', 'rate', 'gbp']:
-        key = 'lec-' + suffix
-        if key in bill:
-            del bill[key]
-
-    bill['data-collection-gbp'] += 5.89
-    bill['settlement-gbp'] += 88
-    
-    for rate_name, rate_set in supply_source.rate_sets.iteritems():
-        if len(rate_set) == 1:
-            bill[rate_name] = rate_set.pop()
-    
-    bill['net-gbp'] = sum(v for k, v in bill.iteritems() if k[-4:] == '-gbp')]]>
-				</control>
-				
-				<response-code value="303" />
-				<regex pattern="/reports/77/output/\?supplier_contract_id=60"/>
-			</request>
-			
-			<!-- Update the associated rate script. Supplier contract 60 -->
-			<request path="/chellow/reports/319/output/" method="post">
-				<control name="supplier_rate_script_id" value="305"/>
-				<control name="start_year" value="2000" />
-				<control name="start_month" value="01" />
-				<control name="start_day" value="03" />
-				<control name="start_hour" value="00" />
-				<control name="start_minute" value="00" />
-				<control name="has_finished" value="false" />
-				<control name="script"><![CDATA[def gsp_gbp_per_kwh():
-    return {
-        'winter-pk': 0.0193918,
-        'winter-low-pk': 0.0501474,
-        'winter-off-pk': 0.0062656,
-        'summer-pk': 0.0062656,
-        'night': 0.0062656,
-        'other': 0.0062656}]]>
-				</control>
-				<response-code value="303" />
-			</request>
-			
-            <!-- Add a new era with this contract -->
+			<!-- Add a new era with this contract -->
 			<request path="/chellow/reports/305/output/" method="post">
 				<control name="supply_id" value="5" />
 				<control name="start_year" value="2013" />
