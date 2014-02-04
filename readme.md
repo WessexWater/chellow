@@ -462,7 +462,7 @@ It's easiest to get started extending Chellow using reports. The core of
 Chellow is written in Java. I work with the Java code, using:
 
   * [Eclipse](http://www.eclipse.org/)
-  * Subversive
+  * Git
   * [Ant](http://ant.apache.org/), with a build.properties file containing 
     
     
@@ -477,3 +477,7 @@ Chellow is written in Java. I work with the Java code, using:
   * Testing is done with [Imprimatur](https://imprimatur.wikispaces.com/). 
   * Reports are written in [Python 2.5](http://www.python.org/). 
   * [HTML 5](http://www.w3.org/html/wg/drafts/html/master/Overview.html)
+
+### Design Decisions
+
+Why don't you use the +/- infinity values for timestamps? The problem is that it's not clear how this would translate into Python. So we currently use null for infinity, which naturally translates into None in Python. 
