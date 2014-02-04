@@ -5793,9 +5793,7 @@ try:
     if contract_id is None:
         contract_id = inv.getLong('supplier-contract-id')
     contract = Contract.get_supplier_by_id(sess, contract_id)
-    rate_scripts = sess.query(RateScript).from_statement("""select * from 
-            rate_script where contract_id = :contract_id order by
-            start_date""").params(contract_id=contract.id).all()
+    rate_scripts = sess.query(RateScript).filter(RateScript.contract_id==contract.id).order_by(RateScript.start_date).all()
 
     now = datetime.datetime.utcnow() - relativedelta(months=1)
     month_start = datetime.datetime(now.year, now.month, 1)
@@ -5877,7 +5875,7 @@ finally:
 
     <ul>
       <li>
-        <a href="{{ context_path }}/reports/89/output/?supplier_contract_id={{ contract.id }}">Batches</a>
+        <a href="{{context_path}}/reports/89/output/?supplier_contract_id={{ contract.id }}">Batches</a>
       </li>
     </ul>
 
@@ -5894,14 +5892,14 @@ finally:
       </fieldset>
     </form>
     <br/>
-    <form action="{{ context_path }}/reports/109/output/">
+    <form action="{{context_path}}/reports/109/output/">
       <fieldset>
-        <input type="hidden" name="contract-id" value="{{ contract.id }}">
+        <input type="hidden" name="supplier_contract_id" value="{{contract.id}}">
         <legend>Download Displaced Virtual Bills</legend>
         <br/>
         For <input name="months" value="1" maxlength="2" size="2">
         month(s) until the end of
-        {{ input_date('end', month_finish, 'month') }}
+        {{ input_date('finish', month_finish, 'month') }}
         <input type="submit" value="Download">
       </fieldset>
     </form>
@@ -7849,13 +7847,13 @@ if inv.hasParameter('site_id'):
     site_query = Hiber.session().createQuery("from Site site where site = :site").setEntity('site', Site.getSite(site_id))
     contract = None
     bill_titles = ['net-gbp']
-elif inv.hasParameter('contract-id'):
-    contract_id = inv.getLong('contract-id')
+elif inv.hasParameter('supplier_contract_id'):
+    contract_id = inv.getLong('supplier_contract_id')
     contract = Contract.getSupplierContract(contract_id)
-    site_query = Hiber.session().createQuery("select distinct ssgen.site from SiteEra ssgen where ((ssgen.era.finishDate is null or ssgen.era.finishDate.date >= :startDate) and ssgen.era.startDate <= :finishDate) and (ssgen.era.supply.source.code in ('gen', 'gen-net') or ssgen.era.exportMpan is not null)").setTimestamp('startDate', start_date.getDate()).setTimestamp('finishDate', finish_date.getDate())
+    site_query = Hiber.session().createQuery("select distinct ssgen.site from SiteEra ssgen where ((ssgen.era.finishDate is null or ssgen.era.finishDate.date >= :startDate) and ssgen.era.startDate <= :finishDate) and (ssgen.era.supply.source.code in ('gen', 'gen-net') or ssgen.era.expMpanCore is not null)").setTimestamp('startDate', start_date.getDate()).setTimestamp('finishDate', finish_date.getDate())
     bill_titles = cont_func(contract, 'displaced_virtual_bill_titles', pw)()
 else:
-    raise UserException("Need a site-id or contract-id.")
+    raise UserException("Need a site_id or contract_id.")
 
 for title in bill_titles:
     if title == 'total-msp-kwh':

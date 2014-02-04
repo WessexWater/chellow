@@ -296,6 +296,11 @@ def virtual_bill(data_source):
 				<regex pattern='&lt;option value="25" selected&gt;' />
 				<response-code value="200" />
 			</request>
+			
+			<request path="/chellow/reports/77/output/?supplier_contract_id=52">
+				<regex pattern='&lt;legend&gt;Download Displaced Virtual Bills&lt;/legend&gt;\s*&lt;br/&gt;\s*For &lt;input name="months" value="1" maxlength="2" size="2"&gt;\s*month\(s\) until the end of\s*&lt;input name="finish_year" maxlength="4" size="4" value="2014"&gt;' />
+				<response-code value="200" />
+			</request>
 
 			<!-- Update the associated rate script. Supplier contract 52 -->
 			<request path="/chellow/reports/319/output/" method="post">
@@ -3941,6 +3946,12 @@ def virtual_bill(supply_source):
 				<response-code value="200" />
 				<regex
 					pattern='"22 0470 7514 535","CH017","Parbola","010","2013-12-01T00:00Z","2013-12-01T23:30Z","93.89","1.0111633","0","0","0","5.89","150","1","0","0","0","0","0","0","0","0","0","0","0","0","0","88","0","0","0.0","0","0.0","0.0","0","0","0.0","0","0","0.0","0","0","0.0","0","0","0.0","0.0","0.00130416","0.0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","","duos-fixed-days","1","duos-fixed-gbp","0","duos-fixed-rate","0","duos-green-gbp","0.0","duos-green-kwh","0","duos-green-rate","-0.00649"' />
+			</request>
+		</test>
+		<test name="Contract displaced virtual bills">
+			<request path="/chellow/reports/109/output/?supplier_contract_id=52&amp;months=1&amp;finish_year=2013&amp;finish_month=01">
+				<response-code value="200" />
+				<regex pattern='"CI004",' />
 			</request>
 		</test>
 	</test-group>
