@@ -13294,7 +13294,7 @@ while supplies.next():
     pw.flush()
 
     for era in supply.getEras(year_start, year_finish):
-        if era.pc.code == 0:
+        if era.pc.code == '00':
             meter_type = 'hh'
         elif len(era.getChannels()) > 0:
             meter_type = 'amr'
@@ -13477,6 +13477,9 @@ while supplies.next():
                 kwh[meter_type] += kwh_res.doubleValue()
             normal_days[meter_type] += float(hh_count_query.setEntity('supply', supply).setTimestamp('startDate', period_start.getDate()).setTimestamp('finishDate', period_finish.getDate()).uniqueResult()) / 48
         elif meter_type == 'unmetered':
+            bills = Hiber.session().createQuery("from Bill bill where bill.supply = :supply and bill.finishDate.date >= :startDate and bill.startDate <= :finishDate").setTimestamp('finishDate', period_finish.getDate()).setTimestamp('startDate', period_start.getDate()).setEntity('supply', supply).setMaxResults(1)
+            for bill in bills.list():
+                kwh[meter_type] += bill.kwh.doubleValue()
             normal_days[meter_type] += (period_finish.getDate().getTime() + (1000 * 60 * 30) - period_start.getDate().getTime()) / (1000 * 60 * 60 * 24)
 
     # for full year 183
