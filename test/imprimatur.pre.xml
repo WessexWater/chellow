@@ -3370,7 +3370,7 @@ def virtual_bill(supply_source):
 			
 				<regex pattern='&lt;td rowspan="2"&gt;\s*&lt;a href="/chellow/reports/201/output/\?bill_type_id=2" title="Normal"&gt;N&lt;/a&gt;\s*&lt;/td&gt;\s*&lt;td style="border-right: none;"&gt;\s*&lt;a title="2011-02-04 23:30 I02D89150"&gt;34285&lt;/a&gt;\s*&lt;/td&gt;'/>
   
-				<regex pattern='25927&lt;/a&gt;\s*&lt;/td&gt;\s*&lt;td style="border-left: none;"&gt;\s*E\s*&lt;/td&gt;\s*&lt;td&gt;\s*&lt;/td&gt;\s*&lt;td style="border-right: none;"&gt;\s*&lt;/td&gt;\s*&lt;td style="border-left: none;"&gt;\s*&lt;/td&gt;\s*&lt;td style="border-right: none;"&gt;\s*&lt;/td&gt;\s*&lt;td style="border-left: none;"&gt;\s*&lt;/td&gt;\s*&lt;/tr&gt;'/>
+				<regex pattern='25927&lt;/a&gt;\s*&lt;/td&gt;\s*&lt;td style="border-left: none; text-align: right;"&gt;\s*E\s*&lt;/td&gt;\s*&lt;td&gt;\s*&lt;/td&gt;\s*&lt;td style="border-right: none;"&gt;\s*&lt;/td&gt;\s*&lt;td style="border-left: none; text-align: right;"&gt;\s*&lt;/td&gt;\s*&lt;td style="border-right: none;"&gt;\s*&lt;/td&gt;\s*&lt;td style="border-left: none; text-align: right;"&gt;\s*&lt;/td&gt;\s*&lt;/tr&gt;'/>
 				
 				<!-- Check form action for virtual bills is correct -->
 				<regex pattern='&lt;form action="/chellow/reports/291/output/"&gt;'/>
