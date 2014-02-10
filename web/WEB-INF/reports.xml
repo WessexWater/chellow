@@ -15487,7 +15487,7 @@ finally:
       <form action="." method="post">
         <fieldset>
           <legend>Update Rate Script</legend>
-          <input type="hidden" name="supplier_rate_script_id"
+          <input type="hidden" name="hhdc_rate_script_id"
               value="{{rate_script.id}}">
           <br>
           <fieldset>
