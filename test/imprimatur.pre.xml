@@ -160,9 +160,16 @@ def virtual_bill(supply_source):
 				<regex pattern="HH contract" />
 				<response-code value="200" />
 			</request>
+			
+			<!-- Check that we can see HHDC rate script okay. Contract 50. -->
+			<request path="/chellow/reports/173/output/?hhdc_rate_script_id=291">
+				<!-- Check that 'has_finished' field is there -->
+				<regex pattern="HH contract" />
+				<response-code value="200" />
+			</request>
 
 			<!-- Check that we can see the edit view of the HHDC rate script okay. Contract 50. -->
-			<request path="/chellow/reports/249/output/?rate_script_id=287">
+			<request path="/chellow/reports/249/output/?hhdc_rate_script_id=291">
 				<!-- Check that 'has_finished' field is there -->
 				<regex pattern="has_finished" />
 				<response-code value="200" />
@@ -170,12 +177,12 @@ def virtual_bill(supply_source):
 
 			<!-- Check that we can update an HHDC rate script okay -->
 			<request path="/chellow/reports/249/output/" method="post">
-				<control name="rate_script_id" value="287" />
-				<control name="start-year" value="2000" />
-				<control name="start-month" value="01" />
-				<control name="start-day" value="03" />
-				<control name="start-hour" value="00" />
-				<control name="start-minute" value="00" />
+				<control name="hhdc_rate_script_id" value="291" />
+				<control name="start_year" value="2000" />
+				<control name="start_month" value="01" />
+				<control name="start_day" value="03" />
+				<control name="start_hour" value="00" />
+				<control name="start_minute" value="00" />
 				<control name="script" value="{}" />
 				<response-code value="303" />
 			</request>

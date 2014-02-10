@@ -8358,7 +8358,7 @@ finally:
         {% for rate_script in rate_scripts %}
           <tr>
             <td>
-              <a href="{{context_path}}/reports/173/output/?rate_script_id={{rate_script.id}}">view</a>
+              <a href="{{context_path}}/reports/173/output/?hhdc_rate_script_id={{rate_script.id}}">view</a>
             </td>
             <td>{{rate_script.start_date|hh_format}}</td>
             <td>{{rate_script.finish_date|hh_format}}</td>
@@ -11410,99 +11410,68 @@ rs.close()]]></value>
 		<value><![CDATA[173]]></value>
 		<value><![CDATA[true]]></value>
 		<value><![CDATA[HHDC Rate Script]]></value>
-		<value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree
-from net.sf.chellow.billing import RateScript
+		<value><![CDATA[from net.sf.chellow.monad import Monad
+from sqlalchemy.orm import joinedload_all
 
-script_id = inv.getLong('rate_script_id')
-script = RateScript.getRateScript(script_id)
-source.appendChild(script.toXml(doc, XmlTree('contract', XmlTree('party'))))]]></value>
-		<value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
-<xsl:stylesheet version="1.0"
-    xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
-    <xsl:output method="html" encoding="US-ASCII"
-        doctype-public="-//W3C//DTD HTML 4.01//EN"
-        doctype-system="http://www.w3.org/TR/html4/strict.dtd" indent="yes" />
-    <xsl:template match="/">
-        <html>
-            <head>
-                <link rel="stylesheet" type="text/css"
-                    href="{/source/request/@context-path}/reports/19/output/" />
-                <title>
-                    Chellow &gt; HHDC Contracts &gt;
-                    <xsl:value-of
-                        select="/source/rate-script/contract/@name" />
-                    &gt; Rate Script
-                    <xsl:value-of select="/source/rate-script/@id" />
-                </title>
-            </head>
-            <body>
-                <p>
-                    <a
-                        href="{/source/request/@context-path}/reports/1/output/">
-                        <xsl:value-of select="'Chellow'" />
-                    </a>
-                    &gt;
-                    <a
-                        href="{/source/request/@context-path}/reports/113/output/">
-                        <xsl:value-of select="'HHDC Contracts'" />
-                    </a>
-                    &gt;
-                    <a
-                        href="{/source/request/@context-path}/reports/115/output/?hhdc_contract_id={/source/rate-script/contract/@id}">
-                        <xsl:value-of
-                            select="/source/rate-script/contract/@name" />
-                    </a>
-                    &gt; Rate Script
-                    <xsl:value-of
-                        select="concat(/source/rate-script/@id, ' [')" />
-                    <a
-                        href="{/source/request/@context-path}/reports/249/output/?rate_script_id={/source/rate-script/@id}">
-                        <xsl:value-of select="'edit'" />
-                    </a>
-                    <xsl:value-of select="']'" />
-                </p>
-                <br />
-                <xsl:if test="//message">
-                    <ul>
-                        <xsl:for-each select="//message">
-                            <li>
-                                <xsl:value-of select="@description" />
-                            </li>
-                        </xsl:for-each>
-                    </ul>
-                </xsl:if>
-                <table>
-                    <tr>
-                        <th>Start Date</th>
-                        <td>
-                            <xsl:value-of
-                                select="concat(/source/rate-script/hh-start-date[@label='start']/@year, '-', /source/rate-script/hh-start-date[@label='start']/@month, '-', /source/rate-script/hh-start-date[@label='start']/@day, ' ', /source/rate-script/hh-start-date[@label='start']/@hour, ':', /source/rate-script/hh-start-date[@label='start']/@minute)" />
-                        </td>
-                    </tr>
-                    <tr>
-                        <th>Finish Date</th>
-                        <td>
-                            <xsl:choose>
-                                <xsl:when
-                                    test="/source/rate-script/hh-start-date[@label='finish']">
-                                    <xsl:value-of
-                                        select="concat(/source/rate-script/hh-start-date[@label='finish']/@year, '-', /source/rate-script/hh-start-date[@label='finish']/@month, '-', /source/rate-script/hh-start-date[@label='finish']/@day, ' ', /source/rate-script/hh-start-date[@label='finish']/@hour, ':', /source/rate-script/hh-start-date[@label='finish']/@minute)" />
-                                </xsl:when>
-                                <xsl:otherwise>Ongoing</xsl:otherwise>
-                            </xsl:choose>
-                        </td>
-                    </tr>
-                </table>
+Monad.getUtils()['imprt'](globals(), {
+        'db': ['Contract', 'Party', 'RateScript', 'set_read_write', 'session'], 
+        'utils': ['UserException'],
+        'templater': ['render']})
 
-                <h2>Script</h2>
+sess = None
+try:
+    sess = session()
+    rate_script_id = inv.getLong('hhdc_rate_script_id')
+    rate_script = RateScript.get_hhdc_by_id(sess, rate_script_id)
+    render(inv, template, {'rate_script': rate_script})
+finally:
+    if sess is not None:
+        sess.close()]]></value>
+		<value><![CDATA[<!DOCTYPE html>
+<html>
+  <head>
+    <link rel="stylesheet" type="text/css"
+      href="{{context_path}}/reports/19/output/">
+    <title>
+      Chellow &gt; HHDC Contracts &gt; {{rate_script.contract.name}}
+      &gt; Rate Script {{rate_script.id}}
+    </title>
+  </head>
+  <body>
+    <p>
+      <a href="{{context_path}}/reports/1/output/">Chellow</a> &gt;
+      <a href="{{context_path}}/reports/113/output/">HHDC Contracts</a>
+      &gt;
+      <a href="{{context_path}}/reports/115/output/?hhdc_contract_id={{rate_script.contract.id}}">{{rate_script.contract.name}}</a> &gt;
+      {{rate_script.start_date|hh_format}}
+      [<a
+      href="{{context_path}}/reports/249/output/?hhdc_rate_script_id={{rate_script.id}}">edit</a>]
+    </p>
+    <br />
+    {% if messages %}
+      <ul>
+        {% for message in messages %}
+          <li>{{ message }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
 
-                <pre>
-                    <xsl:value-of select="/source/rate-script/@script" />
-                </pre>
-            </body>
-        </html>
-    </xsl:template>
-</xsl:stylesheet>]]></value>
+    <table>
+      <tr>
+        <th>Start Date</th>
+        <td>{{ rate_script.start_date|hh_format }}</td>
+      </tr>
+      <tr>
+        <th>Finish Date</th>
+        <td>{{ rate_script.finish_date|hh_format }}</td>
+      </tr>
+    </table>
+
+    <h2>Script</h2>
+
+    <pre>{{rate_script.script}}</pre>
+  </body>
+</html>]]></value>
 	</line>
 	<line>
 		<value><![CDATA[insert]]></value>
@@ -15434,467 +15403,128 @@ pw.close()]]></value>
 		<value><![CDATA[249]]></value>
 		<value><![CDATA[true]]></value>
 		<value><![CDATA[HHDC Rate Script Edit]]></value>
-		<value><![CDATA[from net.sf.chellow.monad import Hiber, Monad, XmlTree, UserException, HttpException, MonadMessage
-from net.sf.chellow.monad.types import MonadDate
-from net.sf.chellow.billing import RateScript
-from net.sf.chellow.physical import HhStartDate
+		<value><![CDATA[from net.sf.chellow.monad import Monad
+from sqlalchemy.orm import joinedload_all
 
-def set_document(rate_script, message=None):
-    source.appendChild(rate_script.toXml(doc, XmlTree("contract", XmlTree("party"))))
-    source.appendChild(MonadDate.getMonthsXml(doc))
-    source.appendChild(MonadDate.getDaysXml(doc))
-    source.appendChild(MonadDate.getHoursXml(doc))
-    source.appendChild(HhStartDate.getHhMinutesXml(doc))
-    source.appendChild(MonadDate().toXml(doc))
-    if message is not None:
-        messages_element = doc.createElement('messages')
-        source.appendChild(messages_element)
-        messages_element.appendChild(MonadMessage(message).toXml(doc))
-    return doc
+Monad.getUtils()['imprt'](globals(), {
+        'db': ['Contract', 'Party', 'RateScript', 'set_read_write', 'session'], 
+        'utils': ['UserException', 'NotFoundException', 'form_date'],
+        'templater': ['render']})
 
-request_method = inv.getRequest().getMethod()
-if request_method == "POST":
-    rate_script_id = inv.getLong('rate_script_id')
-    rate_script = RateScript.getRateScript(rate_script_id)
-    contract = rate_script.contract
-    Hiber.setReadWrite()
-    if inv.hasParameter("delete"):
-        try:
-            contract.delete(rate_script)
-            Hiber.commit()
-            inv.sendSeeOther("/reports/115/output/?hhdc-contract-id=" + str(contract.id))
-        except UserException, e:
-            Hiber.rollBack()
-            set_document(rate_script, e.getMessage())
 
+sess = None
+try:
+    sess = session()
+    if inv.getRequest().getMethod() == 'GET':
+        rate_script_id = inv.getLong('hhdc_rate_script_id')
+        rate_script = RateScript.get_hhdc_by_id(sess, rate_script_id)
+        render(inv, template, {'rate_script': rate_script})
     else:
-        script = inv.getString("script")
-        start_date = inv.getDateTime("start")
-        has_finished = inv.getBoolean("has_finished")
-        if not inv.isValid():
-            raise UserException(set_document(rate_script))
-
-        script = script.replace("\r", "").replace("\t", "    ")
-        if has_finished:
-            finish_date_raw = inv.getDateTime("finish")
-            if not inv.isValid():
-                raise UserException(set_document(rate_script))
-            finish_date = HhStartDate.roundDown(finish_date_raw)
+        set_read_write(sess)
+        rate_script_id = inv.getLong('hhdc_rate_script_id')
+        rate_script = RateScript.get_hhdc_by_id(sess, rate_script_id)
+        contract = rate_script.contract
+        if inv.hasParameter('delete'):
+            contract.delete_rate_script(sess, rate_script)
+            sess.commit()
+            inv.sendSeeOther('/reports/115/output/?hhdc_contract_id='
+                + str(contract.id))
         else:
-            finish_date = None
-
-        try:
-            rate_script.update(HhStartDate.roundDown(start_date), finish_date, script)
-            Hiber.commit()
-            inv.sendSeeOther("/reports/173/output/?rate-script-id=" + str(rate_script_id))
-        except HttpException, e:
-            e.setDocument(set_document(rate_script))
-            raise e
-
-elif request_method == "GET":
-    rate_script_id = inv.getLong('rate_script_id')
-    rate_script = RateScript.getRateScript(rate_script_id)
-    set_document(rate_script)
-
-else:
-    raise InternalException("HTTP Method not recognized.")]]></value>
-		<value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
-<xsl:stylesheet version="1.0"
-    xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
-    <xsl:output method="html" encoding="US-ASCII"
-        doctype-public="-//W3C//DTD HTML 4.01//EN" doctype-system="http://www.w3.org/TR/html4/strict.dtd"
-        indent="yes" />
-    <xsl:template match="/">
-        <html>
-            <head>
-                <link rel="stylesheet" type="text/css"
-                    href="{/source/request/@context-path}/reports/19/output/" />
-                <title>
-                    Chellow &gt; HHDC Contracts &gt;
-                    <xsl:value-of select="/source/rate-script/contract/@name" />
-                    &gt; Rate Scripts &gt;
-                    <xsl:value-of select="/source/rate-script/@id" />
-                </title>
-            </head>
-            <body>
-                <p>
-                    <a href="{/source/request/@context-path}/reports/1/output/">
-                        <xsl:value-of select="'Chellow'" />
-                    </a>
-                    &gt;
-                    <a href="{/source/request/@context-path}/reports/113/output/">
-                        <xsl:value-of select="'HHDC Contracts'" />
-                    </a>
-                    &gt;
-                    <a
-                        href="{/source/request/@context-path}/reports/115/output/?hhdc_contract_id={/source/rate-script/contract/@id}">
-                        <xsl:value-of select="/source/rate-script/contract/@name" />
-                    </a>
-                    &gt;
-                    <a
-                        href="{/source/request/@context-path}/reports/173/output/?rate-script-id={/source/rate-script/@id}">
-                        <xsl:value-of select="concat('Rate Script ', /source/rate-script/@id)" />
-                    </a>
-                    &gt; Edit
-                </p>
-                <xsl:if test="//message">
-                    <ul>
-                        <xsl:for-each select="//message">
-                            <li>
-                                <xsl:value-of select="@description" />
-                            </li>
-                        </xsl:for-each>
-                    </ul>
-                </xsl:if>
-                <br/>
-                <xsl:choose>
-                    <xsl:when
-                        test="/source/request/@method='get' and /source/request/parameter[@name='view']/value='confirm-delete'">
-                        <form method="post" action="{/source/request/@context-path}/reports/249/output/">
-                            <fieldset>
-                                <legend>
-                                    Are you sure you want to delete this
-                                    rate script?
-                                </legend>
-                                <input type="hidden" name="rate_script_id" value="{/source/rate-script/@id}"/>
-                                <input type="submit" name="delete" value="Delete" />
-                            </fieldset>
-                        </form>
-                        <p>
-                            <a href=".">Cancel</a>
-                        </p>
-                    </xsl:when>
-                    <xsl:otherwise>
-                        <form action="{/source/request/@context-path}/reports/249/output/" method="post">
-                            <fieldset>
-                                <legend>Update rate-script</legend>
-                                <br />
-                                <fieldset>
-                                    <legend>Start date</legend>
-                                    <input type="hidden" name="rate_script_id" value="{/source/rate-script/@id}"/>
-                                    <input name="start-year" size="4">
-                                        <xsl:choose>
-                                            <xsl:when test="/source/request/parameter[@name='start-year']">
-                                                <xsl:attribute name="value">
-                                                    <xsl:value-of
-                                                    select="/source/request/parameter[@name='start-year']/value/text()" />
-                                                </xsl:attribute>
-                                            </xsl:when>
-                                            <xsl:otherwise>
-                                                <xsl:attribute name="value">
-                                                    <xsl:value-of
-                                                    select="/source/rate-script/hh-start-date[@label='start']/@year" />
-                                                </xsl:attribute>
-                                            </xsl:otherwise>
-                                        </xsl:choose>
-                                    </input>
-                                    <xsl:value-of select="'-'" />
-                                    <select name="start-month">
-                                        <xsl:for-each select="/source/months/month">
-                                            <option value="{@number}">
-                                                <xsl:choose>
-                                                    <xsl:when test="/source/request/parameter[@name='start-month']">
-                                                        <xsl:if
-                                                            test="/source/request/parameter[@name='start-month']/value/text() = number(@number)">
-                                                            <xsl:attribute name="selected" />
-                                                        </xsl:if>
-                                                    </xsl:when>
-                                                    <xsl:otherwise>
-                                                        <xsl:if
-                                                            test="/source/rate-script/hh-start-date[@label='start']/@month = @number">
-                                                            <xsl:attribute name="selected" />
-                                                        </xsl:if>
-                                                    </xsl:otherwise>
-                                                </xsl:choose>
-                                                <xsl:value-of select="@number" />
-                                            </option>
-                                        </xsl:for-each>
-                                    </select>
-                                    <xsl:value-of select="'-'" />
-                                    <select name="start-day">
-                                        <xsl:for-each select="/source/days/day">
-                                            <option value="{@number}">
-                                                <xsl:choose>
-                                                    <xsl:when test="/source/request/parameter[@name='start-day']">
-                                                        <xsl:if
-                                                            test="/source/request/parameter[@name='start-day']/value/text() = @number">
-                                                            <xsl:attribute name="selected" />
-                                                        </xsl:if>
-                                                    </xsl:when>
-                                                    <xsl:otherwise>
-                                                        <xsl:if
-                                                            test="/source/rate-script/hh-start-date[@label='start']/@day = @number">
-                                                            <xsl:attribute name="selected" />
-                                                        </xsl:if>
-                                                    </xsl:otherwise>
-                                                </xsl:choose>
-                                                <xsl:value-of select="@number" />
-                                            </option>
-                                        </xsl:for-each>
-                                    </select>
-                                    <xsl:value-of select="' '" />
-                                    <select name="start-hour">
-                                        <xsl:for-each select="/source/hours/hour">
-                                            <option value="{@number}">
-                                                <xsl:choose>
-                                                    <xsl:when test="/source/request/parameter[@name='start-hour']">
-
-                                                        <xsl:if
-                                                            test="/source/request/parameter[@name='start-hour']/value/text() = @number">
-
-                                                            <xsl:attribute name="selected" />
-                                                        </xsl:if>
-                                                    </xsl:when>
-                                                    <xsl:when
-                                                        test="/source/rate-script/hh-start-date[@label='start']">
-                                                        <xsl:if
-                                                            test="/source/rate-script/hh-start-date[@label='start']/@hour = @number">
-                                                            <xsl:attribute name="selected" />
-                                                        </xsl:if>
-                                                    </xsl:when>
-                                                    <xsl:otherwise>
-                                                        <xsl:if test="/source/date/@hour = @number">
-                                                            <xsl:attribute name="selected" />
-                                                        </xsl:if>
-                                                    </xsl:otherwise>
-                                                </xsl:choose>
-                                                <xsl:value-of select="@number" />
-                                            </option>
-                                        </xsl:for-each>
-                                    </select>
-                                    <xsl:value-of select="':'" />
-                                    <select name="start-minute">
-                                        <xsl:for-each select="/source/hh-minutes/minute">
-                                            <option value="{@number}">
-                                                <xsl:choose>
-                                                    <xsl:when test="/source/request/parameter[@name='start-minute']">
-
-                                                        <xsl:if
-                                                            test="/source/request/parameter[@name='start-minute']/value/text() = @number">
-
-                                                            <xsl:attribute name="selected" />
-                                                        </xsl:if>
-                                                    </xsl:when>
-                                                    <xsl:when
-                                                        test="/source/rate-script/hh-start-date[@label='start']">
-                                                        <xsl:if
-                                                            test="/source/rate-script/hh-start-date[@label='start']/@minute = @number">
-                                                            <xsl:attribute name="selected" />
-                                                        </xsl:if>
-                                                    </xsl:when>
-                                                    <xsl:otherwise>
-                                                        <xsl:if test="/source/date/@minute = @number">
-                                                            <xsl:attribute name="selected" />
-                                                        </xsl:if>
-                                                    </xsl:otherwise>
-                                                </xsl:choose>
-                                                <xsl:value-of select="@number" />
-                                            </option>
-                                        </xsl:for-each>
-                                    </select>
-                                </fieldset>
-                                <br />
-                                <fieldset>
-                                    <legend>Finish date</legend>
-                                    <label>
-                                        Ended?
-                                        <input type="checkbox" name="has_finished" value="true">
-                                            <xsl:choose>
-                                                <xsl:when test="/source/request/@method='post'">
-                                                    <xsl:if test="/source/request/parameter[@name='has_finished']">
-                                                        <xsl:attribute name="checked">
-                                                            checked
-                                                        </xsl:attribute>
-                                                    </xsl:if>
-                                                </xsl:when>
-                                                <xsl:otherwise>
-                                                    <xsl:if
-                                                        test="/source/rate-script/hh-start-date[@label='finish']">
-                                                        <xsl:attribute name="checked">
-                                                            checked
-                                                        </xsl:attribute>
-                                                    </xsl:if>
-                                                </xsl:otherwise>
-                                            </xsl:choose>
-                                        </input>
-                                    </label>
-                                    <xsl:value-of select="' '" />
-                                    <input name="finish-year" size="4">
-                                        <xsl:attribute name="value">
-                                            <xsl:choose>
-                                                <xsl:when test="/source/request/parameter[@name='finish-year']">
-                                                    <xsl:value-of
-                                            select="/source/request/parameter[@name='finish-year']/value/text()" />
-                                                </xsl:when>
-                                                <xsl:when
-                                            test="/source/rate-script/hh-start-date[@label='finish']">
-                                                    <xsl:value-of
-                                            select="/source/rate-script/hh-start-date[@label='finish']/@year" />
-                                                </xsl:when>
-                                                <xsl:otherwise>
-                                                    <xsl:value-of select="/source/date/@year" />
-                                                </xsl:otherwise>
-                                            </xsl:choose>
-                                        </xsl:attribute>
-                                    </input>
-                                    <xsl:value-of select="'-'" />
-                                    <select name="finish-month">
-                                        <xsl:for-each select="/source/months/month">
-                                            <option value="{@number}">
-                                                <xsl:choose>
-                                                    <xsl:when test="/source/request/parameter[@name='finish-month']">
-
-                                                        <xsl:if
-                                                            test="/source/request/parameter[@name='finish-month']/value/text() = number(@number)">
-
-                                                            <xsl:attribute name="selected" />
-                                                        </xsl:if>
-                                                    </xsl:when>
-                                                    <xsl:when
-                                                        test="/source/rate-script/hh-start-date[@label='finish']">
-                                                        <xsl:if
-                                                            test="/source/rate-script/hh-start-date[@label='finish']/@month = @number">
-                                                            <xsl:attribute name="selected" />
-                                                        </xsl:if>
-                                                    </xsl:when>
-                                                    <xsl:otherwise>
-                                                        <xsl:if test="/source/date/@month = @number">
-                                                            <xsl:attribute name="selected" />
-                                                        </xsl:if>
-                                                    </xsl:otherwise>
-                                                </xsl:choose>
-                                                <xsl:value-of select="@number" />
-                                            </option>
-                                        </xsl:for-each>
-                                    </select>
-                                    <xsl:value-of select="'-'" />
-                                    <select name="finish-day">
-                                        <xsl:for-each select="/source/days/day">
-                                            <option value="{@number}">
-                                                <xsl:choose>
-                                                    <xsl:when test="/source/request/parameter[@name='finish-day']">
-
-                                                        <xsl:if
-                                                            test="/source/request/parameter[@name='finish-day']/value/text() = @number">
-
-                                                            <xsl:attribute name="selected" />
-                                                        </xsl:if>
-                                                    </xsl:when>
-                                                    <xsl:when
-                                                        test="/source/rate-script/hh-start-date[@label='finish']">
-                                                        <xsl:if
-                                                            test="/source/rate-script/hh-start-date[@label='finish']/@day = @number">
-                                                            <xsl:attribute name="selected" />
-                                                        </xsl:if>
-                                                    </xsl:when>
-                                                    <xsl:otherwise>
-                                                        <xsl:if test="/source/date/@day = @number">
-                                                            <xsl:attribute name="selected" />
-                                                        </xsl:if>
-                                                    </xsl:otherwise>
-                                                </xsl:choose>
-                                                <xsl:value-of select="@number" />
-                                            </option>
-                                        </xsl:for-each>
-                                    </select>
-                                    <xsl:value-of select="' '" />
-                                    <select name="finish-hour">
-                                        <xsl:for-each select="/source/hours/hour">
-                                            <option value="{@number}">
-                                                <xsl:choose>
-                                                    <xsl:when test="/source/request/parameter[@name='finish-hour']">
-
-                                                        <xsl:if
-                                                            test="/source/request/parameter[@name='finish-hour']/value/text() = @number">
-
-                                                            <xsl:attribute name="selected" />
-                                                        </xsl:if>
-                                                    </xsl:when>
-                                                    <xsl:when
-                                                        test="/source/rate-script/hh-start-date[@label='finish']">
-                                                        <xsl:if
-                                                            test="/source/rate-script/hh-start-date[@label='finish']/@hour = @number">
-                                                            <xsl:attribute name="selected" />
-                                                        </xsl:if>
-                                                    </xsl:when>
-                                                    <xsl:otherwise>
-                                                        <xsl:if test="/source/date/@hour = @number">
-                                                            <xsl:attribute name="selected" />
-                                                        </xsl:if>
-                                                    </xsl:otherwise>
-                                                </xsl:choose>
-                                                <xsl:value-of select="@number" />
-                                            </option>
-                                        </xsl:for-each>
-                                    </select>
-                                    <xsl:value-of select="':'" />
-                                    <select name="finish-minute">
-                                        <xsl:for-each select="/source/hh-minutes/minute">
-                                            <option value="{@number}">
-                                                <xsl:choose>
-                                                    <xsl:when
-                                                        test="/source/request/parameter[@name='finish-minute']">
-
-                                                        <xsl:if
-                                                            test="/source/request/parameter[@name='finish-minute']/value/text() = @number">
-
-                                                            <xsl:attribute name="selected" />
-                                                        </xsl:if>
-                                                    </xsl:when>
-                                                    <xsl:when
-                                                        test="/source/rate-script/hh-start-date[@label='finish']">
-                                                        <xsl:if
-                                                            test="/source/rate-script/hh-start-date[@label='finish']/@minute = @number">
-                                                            <xsl:attribute name="selected" />
-                                                        </xsl:if>
-                                                    </xsl:when>
-                                                    <xsl:otherwise>
-                                                        <xsl:if test="30 = @number">
-                                                            <xsl:attribute name="selected" />
-                                                        </xsl:if>
-                                                    </xsl:otherwise>
-                                                </xsl:choose>
-                                                <xsl:value-of select="@number" />
-                                            </option>
-                                        </xsl:for-each>
-                                    </select>
-                                </fieldset>
-                                <br />
-                                <br />
-                                Script
-                                <br />
-                                <textarea name="script" rows="40" cols="80">
-                                    <xsl:choose>
-                                        <xsl:when test="/source/request/parameter[@name='script']">
-                                            <xsl:value-of
-                                                select="translate(/source/request/parameter[@name='script']/value, '&#xD;','')" />
-                                        </xsl:when>
-                                        <xsl:otherwise>
-                                            <xsl:value-of select="/source/rate-script/@script" />
-                                        </xsl:otherwise>
-                                    </xsl:choose>
-                                </textarea>
-                                <br />
-                                <br />
-                                <input type="submit" value="Update" />
-                                <input type="reset" value="Reset" />
-                            </fieldset>
-                        </form>
-                        <br/>
-                        <form action="{/source/request/@context-path}/reports/249/output/">
-                            <fieldset>
-                                <legend>Delete this Rate Script</legend>
-                                <input type="hidden" name="rate_script_id" value="{/source/rate-script/@id}"/>
-                                <input type="hidden" name="view" value="confirm-delete" />
-                                <input type="submit" value="Delete" />
-                            </fieldset>
-                        </form>
-                    </xsl:otherwise>
-                </xsl:choose>
-            </body>
-        </html>
-    </xsl:template>
-</xsl:stylesheet>]]></value>
+            script = inv.getString('script')
+            start_date = form_date(inv, 'start')
+            has_finished = inv.getBoolean('has_finished')
+            finish_date = form_date(inv, 'finish') if has_finished else None
+            contract.update_rate_script(sess, rate_script, start_date, finish_date, script)
+            sess.commit()
+            inv.sendSeeOther('/reports/173/output/?hhdc_rate_script_id='
+                    + str(rate_script.id))
+except NotFoundException, e:
+    inv.sendNotFound(str(e))
+finally:
+    sess.close()]]></value>
+		<value><![CDATA[<!doctype html>
+<html>
+  <head>
+    <link rel="stylesheet" type="text/css"
+      href="{{context_path}}/reports/19/output/">
+    <title>
+      Chellow &gt; HHDC Contracts &gt;
+      {{rate_script.contract.name}} &gt; Rate Scripts &gt;
+      {{rate_script.start_date|hh_format}} &gt; Edit
+    </title>
+  </head>
+  <body>
+    <p>
+      <a href="{{context_path}}/reports/1/output/">Chellow</a> &gt;
+      <a href="{{context_path}}/reports/113/output/">HHDC Contracts</a> &gt;
+      <a href="{{context_path}}/reports/115/output/?hhdc_contract_id={{rate_script.contract.id}}">{{rate_script.contract.name}}</a> &gt;
+      <a href="{{context_path}}/reports/173/output/?hhdc_rate_script_id={{rate_script.id}}">{{rate_script.start_date|hh_format}}</a>
+      &gt; Edit
+    </p>
+    <br />
+    {% if messages %}
+      <ul>
+        {% for message in messages %}
+          <li>{{ message }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+    {% if request.getMethod() == 'GET' and
+        request.getParameter('delete') %}
+      <form method="post" action=".">
+        <fieldset>
+          <legend>
+            Are you sure you want to delete this rate script?
+          </legend>
+          <input type="hidden" name="hhdc_rate_script_id" value="{{rate_script.id}}">
+          <input type="submit" name="delete" value="Delete">
+        </fieldset>
+      </form>
+      <p>
+        <a href=".">Cancel</a>
+      </p>
+    {% else %}
+      <form action="." method="post">
+        <fieldset>
+          <legend>Update Rate Script</legend>
+          <input type="hidden" name="supplier_rate_script_id"
+              value="{{rate_script.id}}">
+          <br>
+          <fieldset>
+            <legend>Start date</legend>
+            {{ input_date('start', rate_script.start_date) }}
+          </fieldset>
+          <br />
+          <fieldset>
+            <legend>Finish date</legend>
+            <label>
+              Ended? {{ input_checkbox('has_finished', rate_script.finish_date != None) }}
+            </label>
+            {{ input_date('finish', rate_script.finish_date) }}
+          </fieldset>
+          <br>
+          <br>
+          Script
+          <br>
+          {{ input_textarea('script', rate_script.script, 40, 80) }}
+          <br />
+      <br />
+      <input type="submit" value="Update">
+          <input type="reset" value="Reset">
+        </fieldset>
+      </form>
+      <br />
+      <form action=".">
+        <fieldset>
+          <legend>Delete this Rate Script</legend>
+          <input type="hidden" name="hhdc_rate_script_id"
+              value="{{rate_script.id}}">
+          <input type="submit" name="delete" value="Delete">
+        </fieldset>
+      </form>
+    {% endif %}
+  </body>
+</html>]]></value>
 	</line>
 	<line>
 		<value><![CDATA[insert]]></value>
