@@ -6051,8 +6051,18 @@ while eras.next():
     else:
         exp_mpan_core_str = exp_mpan_core
 
-    pw.print(imp_mpan_core_str + ',' + exp_mpan_core_str + ',' + str(start_date) + ',' + str(finish_date) + ',')
-    supply_source = comterp.get('SupplySource')(start_date, finish_date, forecast_date, era, is_import, comterp, pw, caches)
+    if HhStartDate.isAfter(era.startDate, start_date):
+        chunk_start = era.startDate
+    else:
+        chunk_start = start_date
+
+    if HhStartDate.isBefore(era.finishDate, finish_date):
+        chunk_finish = era.finishDate
+    else:
+        chunk_finish = finish_date
+
+    pw.print(imp_mpan_core_str + ',' + exp_mpan_core_str + ',' + str(chunk_start) + ',' + str(chunk_finish) + ',')
+    supply_source = comterp.get('SupplySource')(chunk_start, chunk_finish, forecast_date, era, is_import, comterp, pw, caches)
     bill = supply_source.contract_function(contract, 'virtual_bill')(supply_source)
     for title in bill_titles:
         pw.print('"' + str(bill.get(title, '')) + '",')
