@@ -3884,6 +3884,7 @@ import datetime
 from dateutil.relativedelta import relativedelta
 import pytz
 from itertools import islice
+from java.lang import System
 
 Monad.getUtils()['imprt'](globals(), {
         'db': ['Contract', 'Party', 'RateScript', 'Snag', 'Channel', 'Era', 'SiteEra', 'Site', 'set_read_write', 'session'], 
@@ -3901,9 +3902,8 @@ try:
         contract = Contract.get_hhdc_by_id(sess, contract_id)
         hidden_days = inv.getLong('hidden_days')
 
-        snags = sess.query(Snag).join(Channel, Era).join(Era.site_eras).join(SiteEra.site).filter(Snag.is_ignored==False, Era.hhdc_contract_id==contract.id, Snag.start_date < datetime.datetime.now(pytz.utc) - relativedelta(days=hidden_days)).order_by(Site.code, Snag.start_date, Snag.channel_id)
-        total_snags = snags.count()
-
+        total_snags = sess.query(Snag).join(Channel).join(Era).filter(Snag.is_ignored==False, Era.hhdc_contract_id==contract.id, Snag.start_date < datetime.datetime.now(pytz.utc) - relativedelta(days=hidden_days)).count()
+        snags = sess.query(Snag).join(Channel).join(Era).join(Era.site_eras).join(SiteEra.site).filter(Snag.is_ignored==False, Era.hhdc_contract_id==contract.id, Snag.start_date < datetime.datetime.now(pytz.utc) - relativedelta(days=hidden_days)).order_by(Site.code, Era.id, Snag.start_date, Snag.finish_date, Snag.channel_id)
         snag_groups = []
         prev_snag = None
         for snag in islice(snags, 200):
@@ -14604,7 +14604,7 @@ try:
     now = datetime.datetime.now(pytz.utc)
     cutoff_date = now - relativedelta(days=days_hidden)
 
-    for snag, channel, era, site_era, site in sess.query(Snag, Channel, Era, SiteEra, Site).filter("snag.channel_id=channel.id", "channel.era_id=era.id", "site_era.era_id=era.id", "site_era.site_id=site.id", "site_era.is_physical is true", "era.hhdc_contract_id = :contract_id", Snag.start_date < cutoff_date).order_by("snag.is_ignored", "snag.start_date", "snag.id").params(contract_id=contract.id):
+    for snag, channel, era, supply, site_era, site in sess.query(Snag, Channel, Era, Supply, SiteEra, Site).join(Channel, Era, Supply, SiteEra, Site).filter(SiteEra.is_physical==True, Era.hhdc_contract_id==contract.id, Snag.start_date < cutoff_date).order_by(Site.code, Supply.id, Channel.is_import, Channel.is_kwh, Snag.description, "snag.start_date", "snag.id"):
         snag_start = snag.start_date
         snag_finish = snag.finish_date
         if snag_finish is None:

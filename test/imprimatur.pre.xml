@@ -1563,7 +1563,7 @@ def totalElement(account, startDate, finishDate):
 				<credentials username="mishka@localhost" password="fyodor" />
 				
 				<regex pattern="&lt;td&gt;\s*22 0470 7514 535\s*&lt;/td&gt;\s*&lt;td&gt;\s*&lt;ul&gt;\s*&lt;li&gt;\s*CH017 Parbola\s*&lt;/li&gt;"/>
-				<regex pattern="There are 51 snag\(s\) older than 5 days that aren't ignored\."/>
+				<regex pattern="There are 46 snag\(s\) older than 5 days that aren't ignored\."/>
 				<regex pattern='&lt;a href="/chellow/reports/115/output/\?hhdc_contract_id=50"&gt;HH contract&lt;/a&gt;'/>
 				<regex pattern='&lt;li&gt;\s*&lt;a href="/chellow/reports/117/output/\?snag_id=1"&gt;view&lt;/a&gt;  \[&lt;a href="/chellow/reports/365/output/\?snag_id=1"&gt;edit&lt;/a&gt;\]\s*&lt;/li&gt;'/>
 				
@@ -1972,7 +1972,7 @@ def virtual_bill(supply_source):
 				<control name="imp_supplier_account" value="01" />
 
 				<response-code value="400" />
-				<regex pattern='There are HH data before the start of the updated supply' />
+				<regex pattern='There are orphaned HH data between 2003-08-03 00:00 and 2010-08-02 23:30\.' />
 			</request>
 		</test>
 		<test name="Test deleting of supplier contracts">
@@ -3731,7 +3731,7 @@ def virtual_bill(supply_source):
 			<request
 				path="/chellow/reports/233/output/?hhdc_contract_id=50&amp;days_hidden=1">
 				<response-code value="200" />
-				<regex pattern='"82","22 0883 6932 301","None","CI005","Wheal Rodney","Missing","True","True","2002-01-01 00:00","2003-08-02 23:30",' />
+				<regex pattern='"84","22 0883 6932 301","None","CI005","Wheal Rodney","Missing","True","True","2002-01-01 00:00","2003-08-02 23:30",' />
 			</request>
 		</test>
 		<test name="Site use graph">
@@ -3962,6 +3962,71 @@ def virtual_bill(supply_source):
 			<request path="/chellow/reports/109/output/?supplier_contract_id=52&amp;months=1&amp;finish_year=2013&amp;finish_month=01">
 				<response-code value="200" />
 				<regex pattern='"CI004",' />
+			</request>
+		</test>
+		
+		<test name="Check that covering hh data by a different era doesn't result in missing data being reported.">
+			<!-- Move finish date of era -->
+		    <request path="/chellow/reports/307/output/" method="post">
+				<control name="era_id" value="1" />
+				<control name="start_year" value="2003" />
+				<control name="start_month" value="08" />
+				<control name="start_day" value="03" />
+				<control name="start_hour" value="00" />
+				<control name="start_minute" value="00" />
+				<control name="is_ended" value="true" />
+				<control name="finish_year" value="2004" />
+				<control name="finish_month" value="07" />
+				<control name="finish_day" value="06" />
+				<control name="finish_hour" value="23" />
+				<control name="finish_minute" value="30" />
+				<control name="mop_contract_id" value="54" />
+				<control name="mop_account" value="mc-22 9205 6799 106" />
+				<control name="hhdc_contract_id" value="50" />
+				<control name="hhdc_account" value="01" />
+				<control name="msn" value="" />
+				<control name="pc_id" value="9" />
+				<control name="mtc_code" value="845" />
+				<control name="cop_id" value="5" />
+				<control name="ssc_code" value="" />
+				<control name="imp_llfc_code" value="550" />
+				<control name="imp_mpan_core" value="22 9205 6799 106" />
+				<control name="imp_sc" value="450" />
+				<control name="imp_supplier_contract_id" value="52" />
+				<control name="imp_supplier_account" value="11640077" />
+				<control name="exp_llfc_code" value="581" />
+				<control name="exp_mpan_core" value="22 0470 7514 535" />
+				<control name="exp_sc" value="150" />
+				<control name="exp_supplier_contract_id" value="52" />
+				<control name="exp_supplier_account" value="" />
+				
+				<response-code value="303" />
+			</request>
+		
+			<request path="/chellow/reports/37/output/?hhdc-contract-id=50&amp;hidden_days=5">
+				<response-code value="200" />
+				<regex pattern='&lt;tr&gt;\s*&lt;td&gt;\s*&lt;ul&gt;\s*&lt;li&gt;\s*&lt;a href="/chellow/reports/117/output/\?snag_id=102"&gt;view&lt;/a&gt;  \[&lt;a href="/chellow/reports/365/output/\?snag_id=102"&gt;edit&lt;/a&gt;\]\s*&lt;/li&gt;\s*&lt;/ul&gt;\s*&lt;/td&gt;\s*&lt;td&gt;\s*&lt;/td&gt;\s*&lt;td&gt;\s*22 0470 7514 535\s*&lt;/td&gt;\s*&lt;td&gt;\s*&lt;ul&gt;\s*&lt;li&gt;CH017 Parbola&lt;/li&gt;\s*&lt;/ul&gt;\s*&lt;/td&gt;\s*&lt;td&gt;Missing&lt;/td&gt;\s*&lt;td&gt;\s*&lt;ul&gt;\s*&lt;li&gt;\s*Export\s*kWh\s*&lt;/li&gt;\s*&lt;/ul&gt;\s*&lt;/td&gt;\s*&lt;td&gt;\s*2004-07-07 00:00 to\s*2005-09-14 23:30\s*&lt;/td&gt;\s*&lt;/tr&gt;' />
+			</request>
+		</test>
+		
+		<test name="Inserting an era that covers an ongoing era that has data from start.">
+		
+			<!-- Insert era -->
+			<request path="/chellow/reports/305/output/" method="post">
+				<control name="supply_id" value="7" />
+				<control name="start_year" value="2008" />
+				<control name="start_month" value="11" />
+				<control name="start_day" value="02" />
+				<control name="start_hour" value="00" />
+				<control name="start_minute" value="00" />
+				<control name="insert_era" value="insert_era" />
+				
+				<response-code value="303" />
+			</request>
+			<request path="/chellow/reports/233/output/?hhdc_contract_id=50&amp;days_hidden=0">
+				<regex pattern='"0","106","22 4862 4512 332","None","CH023","Treglisson","Missing","True","True","2010-02-04 20:30",""' />
+				<regex pattern='"0","3","22 9205 6799 106","22 0470 7514 535","CH017","Parbola","Missing","False","True","2003-08-03 00:00","2004-07-06 23:30","[^"]*","[^"]*","True"\s*"0","102","None","22 0470 7514 535","CH017","Parbola","Missing","False","True","2004-07-07 00:00","2005-09-14 23:30","[^"]*","[^"]*","False"\s*"0","100","None","22 0470 7514 535","CH017","Parbola","Missing","False","True","2005-09-15 00:30","2005-12-15 06:30","[^"]*","[^"]*","False"\s*"0","101","None","22 0470 7514 535","CH017","Parbola","Missing","False","True","2005-12-15 10:00","2008-07-06 23:30","[^"]*","[^"]*","False"\s*"0","55","None","22 0470 7514 535","CH017","Parbola","Missing","False","True","2008-07-07 00:00","2008-08-06 23:30","[^"]*","[^"]*","True"\s*"0","79","None","22 0470 7514 535","CH017","Parbola","Missing","False","True","2008-08-07 00:00","2008-09-05 23:30","[^"]*","[^"]*","False"\s*"0","68","None","22 0470 7514 535","CH017","Parbola","Missing","False","True","2008-09-06 00:00","","[^"]*","[^"]*","False"\s*'/>
+				<response-code value="200" />
 			</request>
 		</test>
 	</test-group>
