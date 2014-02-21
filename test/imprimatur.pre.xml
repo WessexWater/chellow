@@ -4029,5 +4029,13 @@ def virtual_bill(supply_source):
 				<response-code value="200" />
 			</request>
 		</test>
+		<test name="Check that an era with imp_sc of 0 is displayed properly in edit mode. Supply 17">
+			<request path="/chellow/reports/307/output/?era_id=23">
+				<regex
+					pattern='&lt;input name="imp_sc" value="0" size="9" maxlength="9"&gt;' />
+
+				<response-code value="200" />
+			</request>
+		</test>
 	</test-group>
 </imprimatur>
