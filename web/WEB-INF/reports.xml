@@ -1458,7 +1458,7 @@ finally:
     </form>
     <br />
     <form action="{{ context_path }}/reports/33/output/">
-        <input type="hidden" name="supply-id" value="{{ supply.id }}">
+        <input type="hidden" name="supply_id" value="{{ supply.id }}">
         <fieldset>
             <legend>Snapshot</legend>
             <br />
@@ -3559,242 +3559,229 @@ finally:
 		<value><![CDATA[33]]></value>
 		<value><![CDATA[true]]></value>
 		<value><![CDATA[CSV Supplies Snapshot]]></value>
-		<value><![CDATA[from net.sf.chellow.monad import Hiber
-from net.sf.chellow.monad.types import MonadDate
-from net.sf.chellow.physical import ReadType, HhStartDate, Supply
-from java.util import Calendar
-from java.text import SimpleDateFormat
+		<value><![CDATA[from net.sf.chellow.monad import Monad
+from sqlalchemy.orm import joinedload_all
+import datetime
+from dateutil.relativedelta import relativedelta
+import pytz
+from sqlalchemy.sql import func
+from sqlalchemy import or_
 
-year = inv.getInteger('year')
-month = inv.getInteger('month')
-if not inv.isValid():
-    raise UserException()
+Monad.getUtils()['impt'](globals(), 'db', 'utils', 'templater')
 
-cal = MonadDate.getCalendar()
-cal.clear()
-cal.set(Calendar.YEAR, year)
-cal.set(Calendar.MONTH, month - 1)
-cal.set(Calendar.DAY_OF_MONTH, 1)
-cal.add(Calendar.MONTH, 1)
-date = HhStartDate(cal.getTime()).getPrevious().getDate()
+Era, Supply, Bill, Batch, Channel, HhDatum, RegisterRead, ReadType = db.Era, db.Supply, db.Bill, db.Batch, db.Channel, db.HhDatum, db.RegisterRead, db.ReadType
 
-formatter = SimpleDateFormat("yyyy-MM-dd HH:mm")
-formatter.setCalendar(cal)
+HH = utils.HH
 
-inv.getResponse().setContentType('text/csv')
-inv.getResponse().addHeader('Content-Disposition', 'attachment; filename="report.csv"')
-pw = inv.getResponse().getWriter()
+sess = None
+try:
+    sess = db.session()
 
-pw.println("Date,Physical Site Id, Physical Site Name, Other Site Ids, Other Site Names, Supply Id, Source, Generator Type, DNO Name, Voltage Level, Metering Type, Mandatory HH, PC, MTC, CoP, SSC, MOP Contract, Mop Account, HHDC Contract, HHDC Account, Meter Serial Number,Latest Normal Meter Read Date,Latest Normal Meter Read Type,Latest DC Bill Date, Latest MOP Bill Date,Has Import kWh?, Has Import kVArh?, Has Export kWh?, Has Export kVArh?,Import MPAN core, Import Agreed Supply Capacity (kVA), Import LLFC Code, Import LLFC Description, Import Supplier Contract, Import Supplier Account, Import Mandatory kWh,Latest Import Supplier Bill Date, Export MPAN core, Export Agreed Supply Capacity (kVA), Export LLFC Code, Export LLFC Description, Export Supplier Contract, Export Supplier Account, Export Mandatory kWh,Latest Export Supplier Bill Date")
-pw.flush()
+    year = inv.getInteger('year')
+    month = inv.getInteger('month')
+    date = datetime.datetime(year, month, 1) + relativedelta(months=1) - HH
 
-mand_query = Hiber.session().createQuery("select max(datum.value) from HhDatum datum where datum.channel.era.supply = :supply and datum.channel.isKwh is true and datum.channel.isImport = :isImport and datum.startDate.date >= :startDate and datum.startDate <= :finishDate")
+    inv.getResponse().setContentType('text/csv')
+    inv.getResponse().addHeader('Content-Disposition', 'attachment; filename="supplies_snapshot.csv"')
+    pw = inv.getResponse().getWriter()
 
-latest_previous_normal_read_query = Hiber.session().createQuery("from RegisterRead read where read.previousType.code in ('N', 'C', 'N3') and read.previousDate.date <= :startDate and read.bill.supply = :supply order by read.previousDate.date desc").setTimestamp('startDate', date).setMaxResults(1)
+    pw.println("Date,Physical Site Id, Physical Site Name, Other Site Ids, Other Site Names, Supply Id, Source, Generator Type, DNO Name, Voltage Level, Metering Type, Mandatory HH, PC, MTC, CoP, SSC, MOP Contract, Mop Account, HHDC Contract, HHDC Account, Meter Serial Number,Latest Normal Meter Read Date,Latest Normal Meter Read Type,Latest DC Bill Date, Latest MOP Bill Date,Has Import kWh?, Has Import kVArh?, Has Export kWh?, Has Export kVArh?,Import MPAN core, Import Agreed Supply Capacity (kVA), Import LLFC Code, Import LLFC Description, Import Supplier Contract, Import Supplier Account, Import Mandatory kWh,Latest Import Supplier Bill Date, Export MPAN core, Export Agreed Supply Capacity (kVA), Export LLFC Code, Export LLFC Description, Export Supplier Contract, Export Supplier Account, Export Mandatory kWh,Latest Export Supplier Bill Date")
+    pw.flush()
 
-latest_present_normal_read_query = Hiber.session().createQuery("from RegisterRead read where read.presentType.code in ('N', 'C', 'N3') and read.presentDate.date <= :startDate and read.bill.supply = :supply order by read.presentDate.date desc").setTimestamp('startDate', date).setMaxResults(1)
+    NORMAL_READ_TYPES = ('N', 'C', 'N3')
 
-latest_previous_read_query = Hiber.session().createQuery("from RegisterRead read where read.previousDate.date <= :startDate and read.bill.supply = :supply order by read.previousDate.date desc").setTimestamp('startDate', date).setMaxResults(1)
+    eras = sess.query(Era).filter(Era.start_date<date, or_(Era.finish_date==None, Era.finish_date>=date)).order_by(Era.supply_id)
 
-latest_present_read_query = Hiber.session().createQuery("from RegisterRead read where read.presentDate.date <= :startDate and read.bill.supply = :supply order by read.presentDate.date desc").setTimestamp('startDate', date).setMaxResults(1)
+    if inv.hasParameter('supply_id'):
+        supply_id = inv.getLong('supply_id')
+        supply = Supply.get_by_id(sess, supply_id)
 
-latest_bill_date_query = Hiber.session().createQuery("select bill.finishDate from Bill bill where bill.startDate.date <= :startDate and bill.supply = :supply and bill.batch.contract = :contract order by bill.finishDate.date desc").setTimestamp('startDate', date).setMaxResults(1)
+        eras = eras.filter(Era.supply_id==supply.id)
 
-if inv.hasParameter('supply-id'):
-    supply_id = inv.getLong('supply-id')
-    supply = Supply.getSupply(supply_id)
-
-    eras_query = Hiber.session().createQuery("from Era era where era.startDate.date <= :date and (era.finishDate.date is null or era.finishDate.date >= :date) and supply = :supply order by era.supply.id").setEntity('supply', supply)
-else:
-    eras_query = Hiber.session().createQuery("from Era era where era.startDate.date <= :date and (era.finishDate.date is null or era.finishDate.date >= :date) order by era.supply.id")
-
-eras = eras_query.setTimestamp('date', date).scroll()
-
-while eras.next():
-    era = eras.get(0)
-    site_codes = ''
-    site_names = ''
-    for site_era in era.getSiteEras():
-        if site_era.getIsPhysical():
-            physical_site = site_era.getSite()
-        else:
-            site = site_era.getSite();
-            site_codes = site_codes + site.getCode() + ', '
-            site_names = site_names + site.getName() + ', '
-    site_codes = site_codes[:-2]
-    site_names = site_names[:-2]
-    supply = era.getSupply()
-    if era.impMpanCore is None:
-        voltage_level_code = era.expLlfc.code
-    else:
-        voltage_level_code = era.impLlfc.code
-
-    generator_type = supply.getGeneratorType()
-    if generator_type is None:
-        generator_type = ''
-    else:
-        generator_type = generator_type.getCode()
-
-    if era.pc.code == '00':
-        metering_type = 'hh'
-    elif era.getChannels().size() > 0:
-        metering_type = 'amr'
-    elif era.mtc.meterType.code in ['UM', 'PH']:
-        metering_type = 'unmetered'
-    else:
-        metering_type = 'nhh'
-
-    if metering_type == 'nhh':
-        latest_previous_normal_read = latest_previous_normal_read_query.setEntity('supply', supply).uniqueResult()
-        latest_present_normal_read = latest_present_normal_read_query.setEntity('supply', supply).uniqueResult()
-
-        if latest_previous_normal_read is None and latest_present_normal_read is None:
-            latest_normal_read_date = None
-            latest_normal_read_type = None
-        elif latest_present_normal_read is not None and latest_previous_normal_read is None:
-            latest_normal_read_date = latest_present_normal_read.getPresentDate()
-            latest_normal_read_type = latest_present_normal_read.getPresentType()
-        elif latest_present_normal_read is None and latest_previous_normal_read is not None:
-            latest_normal_read_date = latest_previous_normal_read.getPreviousDate()
-            latest_normal_read_type = latest_previous_normal_read.getPreviousType()
-        elif latest_present_normal_read.getPresentDate().after(latest_previous_normal_read.getPreviousDate()):
-            latest_normal_read_date = latest_present_normal_read.getPresentDate()
-            latest_normal_read_type = latest_present_normal_read.getPresentType()
-        else:
-            latest_normal_read_date = latest_previous_normal_read.getPreviousDate()
-            latest_normal_read_type = latest_previous_normal_read.getPreviousType()
-        if latest_normal_read_date is not None:
-            latest_normal_read_date = formatter.format(latest_normal_read_date.getDate())
-
-    else:
-        latest_normal_read_date = metering_type
-        latest_normal_read_type = None
-        latest_read_date = metering_type
-
-    latest_bill_date_query.setEntity('supply', supply)
-    latest_previous_read_query.setEntity('supply', supply)
-    latest_present_read_query.setEntity('supply', supply)
-
-    mand_query.setEntity('supply', supply)
-    mop_contract = era.mopContract
-    if mop_contract is None:
-        mop_contract_name = ''
-        mop_account = ''
-        latest_mop_bill_date = 'No MOP'
-    else:
-        mop_contract_name = mop_contract.name
-        mop_account = era.mopAccount
-        latest_mop_bill_date = latest_bill_date_query.setEntity('contract', mop_contract).uniqueResult()
-        if latest_mop_bill_date is not None:
-            latest_mop_bill_date = formatter.format(latest_mop_bill_date.getDate())
-
-    hhdc_contract = era.hhdcContract
-    if hhdc_contract is None:
-        hhdc_contract_name = ''
-        hhdc_account = ''
-        latest_hhdc_bill_date = 'No HHDC'
-    else:
-        hhdc_contract_name = hhdc_contract.name
-        hhdc_account = era.hhdcAccount
-        latest_hhdc_bill_date = latest_bill_date_query.setEntity('contract', hhdc_contract).uniqueResult()
-        if latest_hhdc_bill_date is not None:
-            latest_hhdc_bill_date = formatter.format(latest_hhdc_bill_date.getDate())
-
-    channel_values = []
-    for is_import in [True, False]:
-        for is_kwh in [True, False]:
-            if era.getChannel(is_import, is_kwh) is None:
-                channel_values.append('false')
+    for era in eras:
+        site_codes = ''
+        site_names = ''
+        for site_era in era.site_eras:
+            if site_era.is_physical:
+                physical_site = site_era.site
             else:
-                channel_values.append('true')
+                site = site_era.site
+                site_codes = site_codes + site.code + ', '
+                site_names = site_names + site.name + ', '
+        site_codes = site_codes[:-2]
+        site_names = site_names[:-2]
+        supply = era.supply
+        if era.imp_mpan_core is None:
+            voltage_level_code = era.exp_llfc.code
+        else:
+            voltage_level_code = era.imp_llfc.code
 
-    imp_avg_months = None
-    exp_avg_months = None
-    for is_import in [True, False]:
-        if is_import and era.impMpanCore is None:
-            continue
-        if not is_import and era.expMpanCore is None:
-            continue
+        generator_type = supply.generator_type
+        generator_type = '' if generator_type is None else generator_type.code
+
+        metering_type = era.make_meter_category()
 
         if metering_type == 'nhh':
-            continue
+            latest_prev_normal_read = sess.query(RegisterRead).join(Bill).join(RegisterRead.previous_type).filter(ReadType.code.in_(NORMAL_READ_TYPES), RegisterRead.previous_date<=date, Bill.supply_id==supply.id).order_by(RegisterRead.previous_date.desc()).first()
 
-        month_mds = []
-        mand_query.setBoolean('isImport', is_import)
-        for i in range(12):
-            mand_query.setTimestamp('finishDate', cal.getTime())
-            cal.add(Calendar.MONTH, -1)
-            cal.add(Calendar.MINUTE, 30)
-            month_md = mand_query.setTimestamp('startDate', cal.getTime()).uniqueResult()
-            cal.add(Calendar.MINUTE, -30)
-            if month_md is not None:
-                month_mds.append(month_md.doubleValue() * 2)
-        month_mds.sort()
-        num_months = min(len(month_mds), 3)
-        avg_months = 0
-        for month_md in month_mds[-1 * num_months:]:
-            avg_months += month_md
-        if num_months > 0:
-            avg_months = avg_months / num_months
-            if is_import:
-                imp_avg_months = avg_months
+            latest_pres_normal_read = sess.query(RegisterRead).join(Bill).join(RegisterRead.present_type).filter(ReadType.code.in_(NORMAL_READ_TYPES), RegisterRead.present_date<=date, Bill.supply_id==supply.id).order_by(RegisterRead.present_date.desc()).first()
+
+            if latest_prev_normal_read is None and latest_pres_normal_read is None:
+                latest_normal_read_date = None
+                latest_normal_read_type = None
+            elif latest_pres_normal_read is not None and latest_prev_normal_read is None:
+                latest_normal_read_date = latest_pres_normal_read.present_date
+                latest_normal_read_type = latest_pres_normal_read.present_type.code
+            elif latest_pres_normal_read is None and latest_prev_normal_read is not None:
+                latest_normal_read_date = latest_prev_normal_read.previous_date
+                latest_normal_read_type = latest_prev_normal_read.previous_type.code
+            elif latest_pres_normal_read.present_date > latest_prev_normal_read.previous_date:
+                latest_normal_read_date = latest_pres_normal_read.present_date
+                latest_normal_read_type = latest_pres_normal_read.present_type.code
             else:
-                exp_avg_months = avg_months
+                latest_normal_read_date = latest_prev_normal_read.previous_date
+                latest_normal_read_type = latest_prev_normal_read.previous_type.code
+            if latest_normal_read_date is not None:
+                latest_normal_read_date = latest_normal_read_date.strftime("%Y-%m-%d %H:%M")
 
-    if imp_avg_months > 100 or exp_avg_months > 100:
-        mandatory_hh = 'yes'
-    else:
-        mandatory_hh = 'no'
-
-    imp_latest_supplier_bill_date = None
-    exp_latest_supplier_bill_date = None
-    for is_import in [True, False]:
-        if is_import:
-            if era.impMpanCore is None:
-                continue
-            else:
-                supplier_contract = era.impSupplierContract
-        if not is_import:
-            if era.expMpanCore is None:
-                continue
-            else:
-                supplier_contract = era.expSupplierContract
-
-        if metering_type == 'hh':
-            latest_supplier_bill_date = latest_bill_date_query.setEntity('contract', supplier_contract).uniqueResult()
         else:
-            latest_previous_read = latest_previous_read_query.setEntity('supply', supply).uniqueResult()
-            latest_present_read = latest_present_read_query.setEntity('supply', supply).uniqueResult()
+            latest_normal_read_date = metering_type
+            latest_normal_read_type = None
+            latest_read_date = metering_type
 
-            if latest_previous_read is None and latest_present_read is None:
-                latest_read = None
-            elif latest_present_read is not None and latest_previous_read is None:
-                latest_read = latest_present_read
-            elif latest_present_read is None and latest_previous_read is not None:
-                latest_read = latest_previous_read
-            elif latest_present_read.getPresentDate().after(latest_previous_read.getPreviousDate()):
-                latest_read = latest_present_read
-            else:
-                latest_read = latest_previous_read
+        mop_contract = era.mop_contract
+        if mop_contract is None:
+            mop_contract_name = ''
+            mop_account = ''
+            latest_mop_bill_date = 'No MOP'
+        else:
+            mop_contract_name = mop_contract.name
+            mop_account = era.mop_account
+            latest_mop_bill_date = sess.query(Bill.finish_date).join(Batch).filter(Bill.start_date<=date, Bill.supply_id==supply.id, Batch.contract_id==mop_contract.id).order_by(Bill.finish_date).first()
 
-            if latest_read is None:
-                latest_supplier_bill_date = None
-            else:
-                latest_supplier_bill_date = latest_read.getBill().getFinishDate()
+            if latest_mop_bill_date is not None:
+                latest_mop_bill_date = latest_mop_bill_date[0].strftime("%Y-%m-%d %H:%M")
 
-        if latest_supplier_bill_date is not None:
-            latest_supplier_bill_date = formatter.format(latest_supplier_bill_date.getDate())
+        hhdc_contract = era.hhdc_contract
+        if hhdc_contract is None:
+            hhdc_contract_name = ''
+            hhdc_account = ''
+            latest_hhdc_bill_date = 'No HHDC'
+        else:
+            hhdc_contract_name = hhdc_contract.name
+            hhdc_account = era.hhdc_account
+            latest_hhdc_bill_date = sess.query(Bill.finish_date).join(Batch).filter(Bill.start_date<=date, Bill.supply_id==supply.id, Batch.contract_id==hhdc_contract.id).order_by(Bill.finish_date).first()
 
+            if latest_hhdc_bill_date is not None:
+                latest_hhdc_bill_date = latest_hhdc_bill_date[0].strftime("%Y-%m-%d %H:%M")
+
+        channel_values = []
+        for is_import in [True, False]:
+            for is_kwh in [True, False]:
+                if era.find_channel(sess, is_import, is_kwh) is None:
+                    channel_values.append('false')
+                else:
+                    channel_values.append('true')
+
+        imp_avg_months = None
+        exp_avg_months = None
+        for is_import in [True, False]:
+            if is_import and era.imp_mpan_core is None:
+                continue
+            if not is_import and era.exp_mpan_core is None:
+                continue
+
+            if metering_type == 'nhh':
+                continue
+
+            month_mds = []
+
+            for i in range(12):
+                start_date = date + HH - relativedelta(months=i)
+                finish_date = start_date + relativedelta(months=1) - HH
+
+
+                month_md = None
+
+                for channel in sess.query(Channel).join(Era).filter(Era.supply_id==supply.id, Channel.is_kwh==True, Channel.is_import==is_import, Era.start_date<=finish_date, or_(Era.finish_date==None, Era.finish_date>=start_date)):
+                    md = sess.query(func.max(HhDatum.value)).filter(HhDatum.channel_id==channel.id, HhDatum.start_date >= start_date, HhDatum.start_date <= finish_date).one()[0]
+
+                    if md is not None:
+                        month_md = max(month_md, md)
+
+                if month_md is not None:
+                    month_mds.append(month_md)
+
+            month_mds.sort()
+            num_months = min(len(month_mds), 3)
+            avg_months = 0
+            for month_md in month_mds[-1 * num_months:]:
+                avg_months += month_md
+            if num_months > 0:
+                avg_months = avg_months / num_months
+                if is_import:
+                    imp_avg_months = avg_months
+                else:
+                    exp_avg_months = avg_months
+
+        if imp_avg_months > 100 or exp_avg_months > 100:
+            mandatory_hh = 'yes'
+        else:
+            mandatory_hh = 'no'
+
+        imp_latest_supplier_bill_date = None
+        exp_latest_supplier_bill_date = None
+        for is_import in [True, False]:
             if is_import:
-                imp_latest_supplier_bill_date = latest_supplier_bill_date
-            else:
-                exp_latest_supplier_bill_date = latest_supplier_bill_date
+                if era.imp_mpan_core is None:
+                    continue
+                else:
+                    supplier_contract = era.imp_supplier_contract
+            if not is_import:
+                if era.exp_mpan_core is None:
+                    continue
+                else:
+                    supplier_contract = era.exp_supplier_contract
 
-    pw.println(','.join(('"' + ('' if value is None else str(value)) + '"') for value in [HhStartDate(date), physical_site.code, physical_site.name, site_codes, site_names, supply.id, supply.source.code, generator_type, supply.dnoContract.name, voltage_level_code, metering_type, mandatory_hh, era.pc.code, era.mtc.code, era.cop.code, None if era.ssc is None else era.ssc.code, mop_contract_name, mop_account, hhdc_contract_name, hhdc_account, era.msn, latest_normal_read_date, latest_normal_read_type, latest_hhdc_bill_date, latest_mop_bill_date] + channel_values + [era.impMpanCore, era.impSc, None if era.impLlfc is None else era.impLlfc.code, None if era.impLlfc is None else era.impLlfc.description, None if era.impSupplierContract is None else era.impSupplierContract.name, era.impSupplierAccount, imp_avg_months, imp_latest_supplier_bill_date] + [era.expMpanCore, era.expSc, None if era.expLlfc is None else era.expLlfc.code, None if era.expLlfc is None else era.expLlfc.description, None if era.expSupplierContract is None else era.expSupplierContract.name, era.expSupplierAccount, exp_avg_months, exp_latest_supplier_bill_date]))
-    Hiber.session().clear()
-    pw.flush()
-eras.close()
-pw.close()]]></value>
+            if metering_type == 'hh':
+                latest_supplier_bill_date = sess.query(Bill.finish_date).join(Batch).filter(Bill.start_date<=date, Bill.supply_id==supply.id, Batch.contract_id==supplier_contract.id).order_by(Bill.finish_date).first()
+                if latest_supplier_bill_date is not None:
+                    latest_supplier_bill_date = latest_supplier_bill_date[0]
+            else:
+                latest_prev_read = sess.query(RegisterRead).join(Bill).filter(RegisterRead.previous_date<=date, Bill.supply_id==supply.id).order_by(RegisterRead.previous_date.desc()).first()
+
+                latest_pres_read = sess.query(RegisterRead).join(Bill).filter(RegisterRead.present_date<=date, Bill.supply_id==supply.id).order_by(RegisterRead.present_date.desc()).first()
+
+                if latest_prev_read is None and latest_pres_read is None:
+                    latest_read = None
+                elif latest_pres_read is not None and latest_prev_read is None:
+                    latest_read = latest_pres_read
+                elif latest_pres_read is None and latest_prev_read is not None:
+                    latest_read = latest_prev_read
+                elif latest_pres_read.present_date > latest_prev_read.previous_date:
+                    latest_read = latest_pres_read
+                else:
+                    latest_read = latest_prev_read
+
+                if latest_read is None:
+                    latest_supplier_bill_date = None
+                else:
+                    latest_supplier_bill_date = latest_read.bill.finish_date
+
+            if latest_supplier_bill_date is not None:
+                latest_supplier_bill_date = latest_supplier_bill_date.strftime("%Y-%m-%d %H:%M")
+
+                if is_import:
+                    imp_latest_supplier_bill_date = latest_supplier_bill_date
+                else:
+                    exp_latest_supplier_bill_date = latest_supplier_bill_date
+
+        pw.println(','.join(('"' + ('' if value is None else str(value)) + '"') for value in [date.strftime("%Y-%m-%d %H:%M"), physical_site.code, physical_site.name, site_codes, site_names, supply.id, supply.source.code, generator_type, supply.dno_contract.name, voltage_level_code, metering_type, mandatory_hh, era.pc.code, era.mtc.code, era.cop.code, None if era.ssc is None else era.ssc.code, mop_contract_name, mop_account, hhdc_contract_name, hhdc_account, era.msn, latest_normal_read_date, latest_normal_read_type, latest_hhdc_bill_date, latest_mop_bill_date] + channel_values + [era.imp_mpan_core, era.imp_sc, None if era.imp_llfc is None else era.imp_llfc.code, None if era.imp_llfc is None else era.imp_llfc.description, None if era.imp_supplier_contract is None else era.imp_supplier_contract.name, era.imp_supplier_account, imp_avg_months, imp_latest_supplier_bill_date] + [era.exp_mpan_core, era.exp_sc, None if era.exp_llfc is None else era.exp_llfc.code, None if era.exp_llfc is None else era.exp_llfc.description, None if era.exp_supplier_contract is None else era.exp_supplier_contract.name, era.exp_supplier_account, exp_avg_months, exp_latest_supplier_bill_date]))
+        pw.flush()
+    pw.close()
+finally:
+    if sess is not None:
+        sess.close()]]></value>
 		<value><![CDATA[]]></value>
 	</line>
 	<line>
