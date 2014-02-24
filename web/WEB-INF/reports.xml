@@ -17781,24 +17781,27 @@ computer = Contract.getNonCoreContract('computer')
 comterp = computer.callFunction('create_comterp', [])
 contract_func = comterp.get('contract_function')
 forecast_date = comterp.get('forecast_date')()
-ct_cal = GregorianCalendar(TimeZone.getTimeZone("Europe/London"), Locale.UK)
 
-utc_cal = GregorianCalendar(TimeZone.getTimeZone("GMT"), Locale.UK)
+cal = GregorianCalendar(TimeZone.getTimeZone("GMT"), Locale.UK)
+
 prev_imp_supplier_bill_titles = None
-month_start = start_date
-utc_cal.setTime(month_start.getDate())
-utc_cal.add(Calendar.MONTH, 1)
+
+cal.setTime(start_date.getDate())
+cal.set(Calendar.DAY_OF_MONTH, 1)
+cal.set(Calendar.HOUR_OF_DAY, 0)
+cal.set(Calendar.MINUTE, 0)
+
+month_start = HhStartDate(cal.getTime())
 
 output = {}
 while not month_start.after(finish_date):
-    utc_cal.setTime(month_start.getDate())
-    utc_cal.set(Calendar.DAY_OF_MONTH, 1)
-    utc_cal.set(Calendar.HOUR_OF_DAY, 0)
-    utc_cal.set(Calendar.MINUTE, 0)
-    utc_cal.add(Calendar.MONTH, 1)
-    utc_cal.add(Calendar.MINUTE, -30)
-    month_finish = HhStartDate(utc_cal.getTime())
-
+    cal.setTime(month_start.getDate())
+    cal.set(Calendar.DAY_OF_MONTH, 1)
+    cal.set(Calendar.HOUR_OF_DAY, 0)
+    cal.set(Calendar.MINUTE, 0)
+    cal.add(Calendar.MONTH, 1)
+    cal.add(Calendar.MINUTE, -30)
+    month_finish = HhStartDate(cal.getTime())
     if month_start.after(start_date):
         period_start = month_start
     else:
@@ -17845,9 +17848,9 @@ while not month_start.after(finish_date):
             pw.flush()
     Hiber.session().clear()
 
-    utc_cal.setTime(month_start.getDate())
-    utc_cal.add(Calendar.MONTH, 1)
-    month_start = HhStartDate(utc_cal.getTime())
+    cal.setTime(month_start.getDate())
+    cal.add(Calendar.MONTH, 1)
+    month_start = HhStartDate(cal.getTime())
 pw.close()]]>
 		</value>
 		<value><![CDATA[]]>

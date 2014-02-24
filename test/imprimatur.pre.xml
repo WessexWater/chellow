@@ -4035,6 +4035,21 @@ def virtual_bill(supply_source):
 					pattern='&lt;input name="imp_sc" value="0" size="9" maxlength="9"&gt;' />
 
 				<response-code value="200" />
+		    </request>
+		</test>
+		<test name="Try out the supplies snapshot report including a last normal read type.">
+		
+			<!-- Insert era -->
+			<request path="/chellow/reports/33/output/?supply_id=9&amp;year=2007&amp;month=09&amp;day=01&amp;hour=00&amp;minute=00">
+				<response-code value="200" />
+				<regex pattern='"2007-09-30T23:30Z","CI004","Lower Treave","","","9","net","","22","510","nhh","no","05","535","5","0127","MOP Contract","mc-22 0195 4836 192","Dynamat data","dc-22 0195 4836 192","P96C93722","2007-08-01 00:00","N","","","false","false","false","false","22 0195 4836 192","30","510","PC 5-8 &amp; HH HV","Non half-hourlies 2007","341664","","2007-08-01 00:00","","","","","","","",""'/>
+			</request>
+		</test>
+		<test name="Run supply virtual bill over 2 months">
+			<request path="/chellow/reports/291/output/?supply_id=7&amp;start_year=2013&amp;start_month=09&amp;start_day=29&amp;start_hour=00&amp;start_minute=00&amp;finish_year=2013&amp;finish_month=11&amp;finish_day=28&amp;finish_hour=23&amp;finish_minute=30">
+				<regex
+					pattern='"22 4862 4512 332","CH023","Treglisson","141 5532","2013-10-01T00:00Z","2013-10-31T23:30Z","0","0","0",""' />
+				<response-code value="200" />
 			</request>
 		</test>
 	</test-group>
