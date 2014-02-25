@@ -4044,122 +4044,75 @@ finally:
 		<value><![CDATA[39]]></value>
 		<value><![CDATA[true]]></value>
 		<value><![CDATA[Site Group Snags]]></value>
-		<value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree
-from net.sf.chellow.billing import Contract
+		<value><![CDATA[from net.sf.chellow.monad import Monad
+from java.lang import System
 
-snags = Hiber.session().createQuery("select snag, snag.site from Snag snag where snag.site is not null and snag.isIgnored = false order by snag.site.code, snag.startDate.date desc").list()
-snags_element = doc.createElement('site-snags')
-source.appendChild(snags_element)
-for snag_row in snags:
-    snag_element = snag_row[0].toXml(doc)
-    snags_element.appendChild(snag_element)
-    site_element = snag_row[1].toXml(doc)
-    snag_element.appendChild(site_element)
-sites = Hiber.session().createQuery("select count(distinct snag.site) from Snag snag where snag.site is not null and snag.isIgnored = false").uniqueResult()
-snags_element.setAttribute("snag-count", str(len(snags)))
-snags_element.setAttribute("site-count", str(sites))]]></value>
-		<value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
-<xsl:stylesheet version="1.0"
-    xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
-    <xsl:output method="xml" encoding="US-ASCII"
-        doctype-public="-//W3C//DTD XHTML 1.1//EN"
-        doctype-system="http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd"
-        indent="yes" />
+Monad.getUtils()['impt'](globals(), 'db', 'utils', 'templater')
 
-    <xsl:template match="/">
-        <html>
-            <head>
-                <link rel="stylesheet" type="text/css"
-                    href="{/source/request/@context-path}/reports/19/output/" />
-                <title>
-                    Chellow &gt; Site Snags
-                </title>
-            </head>
-            <body>
-                <p>
-                    <a
-                        href="{/source/request/@context-path}/reports/1/output/">
-                        <xsl:value-of
-                            select="'Chellow'" />
-                    </a>
-                    &gt;
-                    <xsl:value-of select="'Site Snags ['" />
-                    <a
-                        href="{/source/request/@context-path}/site-snags/">
-                        <xsl:value-of select="'edit'" />
-                    </a>
-                    <xsl:value-of select="']'" />
-                </p>
-                <p>
-                    <xsl:value-of
-                        select="source/site-snags/@snag-count" />
-                    Snag(s) (older then 5 days) Total over
-                    <xsl:value-of
-                        select="source/site-snags/@site-count" />
-                    Site(s)
-                    <br />
-                </p>
-                <table>
-                    <thead>
-                        <tr>
-                            <th></th>
-                            <th>Creation Date</th>
-                            <th>Site ID</th>
-                            <th>Site Name</th>
-                            <th>Snag Description</th>
-                            <th>Start Date</th>
-                            <th>Finish Date</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <xsl:for-each
-                            select="/source/site-snags/site-snag">
-                            <tr>
-                                <td>
-                                    <xsl:value-of select="' ['" />
-                                    <a
-                                        href="{/source/request/@context-path}/site-snags/{@id}/">
-                                        <xsl:value-of select="'edit'" />
-                                    </a>
-                                    <xsl:value-of select="']'" />
-                                </td>
-                                <td>
-                                    <xsl:value-of select="concat(date[@label='created']/@year, '-', date[@label='created']/@month, '-', date[@label='created']/@day, ' ', date[@label='created']/@hour, ':', date[@label='created']/@minute)"/>
-                                </td>
-                                <td>
-                                    <a
-                                        href="{/source/request/@context-path}/reports/5/output/?site-id={site/@id}">
-                                        <xsl:value-of
-                                            select="site/@code" />
-                                    </a>
-                                </td>
+Snag, Site = db.Snag, db.Site
 
-                                <td>
-                                    <xsl:value-of select="site/@name" />
-                                </td>
-                                <td>
-                                    <xsl:value-of select="@description" />
-                                </td>
+sess = None
 
-                                <td>
-                                    <xsl:apply-templates
-                                        select="hh-start-date[@label='start']" />
-                                </td>
-                                <td>
-                                    <xsl:apply-templates
-                                        select="hh-start-date[@label='finish']" />
-                                </td>
-                            </tr>
-                        </xsl:for-each>
-                    </tbody>
-                </table>
-            </body>
-        </html>
-    </xsl:template>
-    <xsl:template match="hh-start-date">
-        <xsl:value-of select="concat(@year, '-', @month, '-', @day, ' ', @hour, ':',@minute)" />
-    </xsl:template>
-</xsl:stylesheet>]]></value>
+try:
+    sess = db.session()
+    if inv.getRequest().getMethod() == 'GET':
+        snags = sess.query(Snag).filter(Snag.is_ignored==False, Snag.site_id!=None).order_by(Snag.start_date.desc(), Snag.id).all()
+        site_count = sess.query(Snag).join(Site).filter(Snag.is_ignored==False).distinct(Site.id).count()
+        templater.render(inv, template, {'snags': snags, 'site_count': site_count})
+except utils.UserException, e:
+        render(inv, template, {'messages': [str(e)]}, 400)
+finally:
+    if sess is not None:
+        sess.close()]]></value>
+		<value><![CDATA[<!doctype html>
+<html>
+  <head>
+    <link rel="stylesheet" type="text/css"
+      href="{{context_path}}/reports/19/output/">
+    <title>Chellow &gt; Site Snags</title>
+  </head>
+  <body>
+    <p>
+      <a href="{{context_path}}/reports/1/output/">Chellow</a> &gt;
+      Site Snags [<a href="{{context_path}}/reports/371/output/">edit</a>]
+    </p>
+    
+    <p>
+      There are {{snags|length}} snag(s), over {{site_count}} site(s)
+    </p>
+
+    <table>
+      <thead>
+        <tr>
+          <th></th>
+          <th>Creation Date</th>
+          <th>Site ID</th>
+          <th>Site Name</th>
+          <th>Snag Description</th>
+          <th>Start Date</th>
+          <th>Finish Date</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for snag in snags %}
+          <tr>
+            <td>
+              <a href="{{context_path}}/reports/119/output/?site_snag_id={{snag.id}}">view</a> [<a href="{{context_path}}/reports/373/output/?site_snag_id={{snag.id}}">edit</a>]
+            </td>
+            <td>{{snag.date_created|hh_format}}</td>
+            <td>
+              <a href="{{context_path}}/reports/5/output/?site_id={{snag.site.id}}">{{snag.site.code}}</a>
+            </td>
+            <td>{{snag.site.name}}</td>
+            <td>{{snag.description}}</td>
+            <td>{{snag.start_date|hh_format}}</td>
+            <td>{{snag.finish_date|hh_format}}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </body>
+</html>]]></value>
 	</line>
 	<line>
 		<value><![CDATA[insert]]></value>
@@ -8534,133 +8487,91 @@ finally:
 		<value><![CDATA[119]]></value>
 		<value><![CDATA[true]]></value>
 		<value><![CDATA[Site Group Snag]]></value>
-		<value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree, UserException
-from net.sf.chellow.physical import SiteSnag
+		<value><![CDATA[from net.sf.chellow.monad import Monad
+from sqlalchemy.orm import joinedload_all
+import datetime
+import pytz
+from dateutil.relativedelta import relativedelta
+from java.lang import System
 
-snag_id = inv.getLong('snag-id')
-snag = SiteSnag.getSiteSnag(snag_id)
-source.appendChild(snag.toXml(doc, XmlTree("site")))]]></value>
-		<value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
-<xsl:stylesheet version="1.0"
-    xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
-    <xsl:output method="html" encoding="US-ASCII"
-        doctype-public="-//W3C//DTD HTML 4.01//EN"
-        doctype-system="http://www.w3.org/TR/html4/strict.dtd" indent="yes" />
-    <xsl:template match="/">
-        <html>
-            <head>
-                <link rel="stylesheet" type="text/css"
-                    href="{/source/request/@context-path}/reports/10/output/" />
-                <title>
-                    Chellow &gt; Site Snags &gt;
-                    <xsl:value-of select="/source/site-snag/@id" />
-                </title>
-            </head>
-            <body>
-                <p>
-                    <a
-                        href="{/source/request/@context-path}/reports/1/output/">
-                        <xsl:value-of
-                            select="'Chellow'" />
-                    </a>
-                    &gt;
-                    <a
-                        href="{/source/request/@context-path}/reports/20/output/">
-                        <xsl:value-of select="'Site Snags'" />
-                    </a>
-                    &gt;
-                    <xsl:value-of
-                        select="concat(/source/site-snag/@id, ' [')" />
-                    <a
-                        href="{/source/request/@context-path}/site-snags/{/source/site-snag/@id}/">
-                        <xsl:value-of select="'edit'" />
-                    </a>
-                    <xsl:value-of select="']'" />
-                </p>
-                <br />
-                <xsl:if test="//message">
-                    <ul>
-                        <xsl:for-each select="//message">
-                            <li>
-                                <xsl:value-of select="@description" />
-                            </li>
-                        </xsl:for-each>
-                    </ul>
-                </xsl:if>
-                <table>
-                    <tbody>
-                        <tr>
-                            <th>Chellow Id</th>
-                            <td>
-                                <xsl:value-of
-                                    select="/source/site-snag/@id" />
-                            </td>
-                        </tr>
-                        <tr>
-                            <th>Date Created</th>
-                            <td>
-                                <xsl:value-of
-                                    select="concat(/source/site-snag/date[@label='created']/@year, '-', /source/site-snag/date[@label='created']/@month, '-', /source/site-snag/date[@label='created']/@day, 'T', /source/site-snag/date[@label='created']/@hour, ':', /source/site-snag/date[@label='created']/@minute, 'Z')" />
-                            </td>
-                        </tr>
-                        <tr>
-                            <th>Ignored?</th>
-                            <td>
-                                <xsl:choose>
-                                    <xsl:when
-                                        test="/source/site-snag/@is-ignored='true'">
-                                        Ignored
-                                    </xsl:when>
-                                    <xsl:otherwise>
-                                        Not ignored
-                                    </xsl:otherwise>
-                                </xsl:choose>
-                            </td>
-                        </tr>
-                        <tr>
-                            <th>Description</th>
-                            <td>
-                                <xsl:value-of
-                                    select="/source/site-snag/@description" />
-                            </td>
-                        </tr>
-                        <tr>
-                            <th>Progress</th>
-                            <td>
-                                <xsl:value-of
-                                    select="/source/site-snag/@progress" />
-                            </td>
-                        </tr>
-                        <tr>
-                            <th>Site</th>
-                            <td>
-                                <a
-                                    href="{/source/request/@context-path}/reports/3/output/?site-id={/source/site-snag/site/@id}">
-                                    <xsl:value-of
-                                        select="/source/site-snag/site/@id" />
-                                </a>
-                            </td>
-                        </tr>
-                        <tr>
-                            <th>Start Date</th>
-                            <td>
-                                <xsl:value-of
-                                    select="concat(/source/site-snag/hh-start-date[@label='start']/@year, '-', /source/site-snag/hh-start-date[@label='start']/@month, '-', /source/site-snag/hh-start-date[@label='start']/@day, 'T', /source/site-snag/hh-start-date[@label='start']/@hour, ':', /source/site-snag/hh-start-date[@label='start']/@minute, 'Z')" />
-                            </td>
-                        </tr>
-                        <tr>
-                            <th>Finish Date:</th>
-                            <td>
-                                <xsl:value-of
-                                    select="concat(/source/site-snag/hh-start-date[@label='finish']/@year, '-', /source/site-snag/hh-start-date[@label='finish']/@month, '-', /source/site-snag/hh-start-date[@label='finish']/@day, 'T', /source/site-snag/hh-start-date[@label='finish']/@hour, ':', /source/site-snag/hh-start-date[@label='finish']/@minute, 'Z')" />
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </body>
-        </html>
-    </xsl:template>
-</xsl:stylesheet>]]></value>
+Monad.getUtils()['impt'](globals(), 'db', 'utils', 'templater')
+
+def make_fields(sess, snag, message=None):
+    messages = [] if message is None else [str(message)]
+    return {'messages': messages, 'snag': snag}
+
+sess = None
+try:
+    sess = db.session()
+    if inv.getRequest().getMethod() == 'GET':
+        snag_id = inv.getLong('site_snag_id')
+        snag = db.Snag.get_by_id(sess, snag_id)
+        templater.render(inv, template, make_fields(sess, snag))
+except UserException, e:
+    templater.render(inv, template, make_fields(sess, snag, e), 400)
+finally:
+    if sess is not None:
+        sess.close()]]></value>
+		<value><![CDATA[<!doctype html>
+<html>
+  <head>
+    <link rel="stylesheet" type="text/css"
+      href="{{context_path}}/reports/19/output/">
+    <title>Chellow &gt; Site Snags &gt; {{snag.id}}</title>
+  </head>
+  <body>
+    <p>
+      <a href="{{context_path}}/reports/1/output/">Chellow</a> &gt;
+      <a href="{{context_path}}/reports/39/output/">Site Snags</a> &gt;
+      {{snag.id}}
+      [<a href="{{context_path}}/reports/373/output/?site_snag_id={{snag.id}}">edit</a>]
+    </p>
+    <br>
+    {% if messages %}
+      <ul>
+        {% for message in messages %}
+          <li>{{message}}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+    <table>
+      <tbody>
+        <tr>
+          <th>Date Created</th>
+          <td>{{snag.date_created|hh_format}}</td>
+        </tr>
+        <tr>
+          <th>Ignored?</th>
+          <td>
+            {% if snag.is_ignored %}
+              Ignored
+            {% else %}
+              Not ignored
+            {% endif %}
+          </td>
+        </tr>
+        <tr>
+          <th>Description</th>
+          <td>{{snag.description}}</td>
+        </tr>
+        <tr>
+          <th>Site</th>
+          <td>
+            <a href="{{context_path}}/reports/5/output/?site_id={{snag.site.id}}">{{snag.site.code}}</a>
+          </td>
+        </tr>
+        <tr>
+          <th>Start Date</th>
+          <td>{{snag.start_date|hh_format}}</td>
+        </tr>
+        <tr>
+          <th>Finish Date</th>
+          <td>{{snag.finish_date|hh_format}}</td>
+        </tr>
+      </tbody>
+    </table>
+  </body>
+</html>]]></value>
 	</line>
 	<line>
 		<value><![CDATA[insert]]></value>
@@ -22853,6 +22764,379 @@ finally:
               kVArh
             {% endif %}
             channel of <a href="{{context_path}}/reports/7/output/?supply_id={{snag.channel.era.supply.id}}">supply {{snag.channel.era.supply.name}}</a>
+          </td>
+        </tr>
+        <tr>
+          <th>Start Date</th>
+          <td>{{snag.start_date|hh_format}}</td>
+        </tr>
+        <tr>
+          <th>Finish Date</th>
+          <td>{{snag.finish_date|hh_format}}</td>
+        </tr>
+      </tbody>
+    </table>
+  </body>
+</html>]]></value>
+	</line>
+	<line>
+		<value><![CDATA[insert]]></value>
+		<value><![CDATA[report]]></value>
+		<value><![CDATA[367]]></value>
+		<value><![CDATA[true]]></value>
+		<value><![CDATA[Supply Notes Edit]]></value>
+		<value><![CDATA[from net.sf.chellow.monad import Monad
+from sqlalchemy.orm import joinedload_all
+from sqlalchemy.sql.expression import text
+from datetime import datetime
+import pytz
+
+Monad.getUtils()['imprt'](globals(), {
+        'db': ['Supply', 'Batch', 'Participant', 'set_read_write', 'session'], 
+        'utils': ['UserException', 'form_date'],
+        'templater': ['render']})
+
+
+def make_fields(sess, supply, index, message=None):
+    messages = [] if message is None else [str(message)]
+    supply_note = eval(supply.note)
+    note = supply_note['notes'][index]
+    note['index'] = index
+    return {'supply': supply, 'messages': messages, 'note': note}
+
+sess = None
+try:
+    sess = session()
+    if inv.getRequest().getMethod() == 'GET':
+        supply_id = inv.getLong('supply_id')
+        supply = Supply.get_by_id(sess, supply_id)
+        index = inv.getLong('note_index')
+        render(inv, template, make_fields(sess, supply, index))
+    else:
+        set_read_write(sess)
+        supply_id = inv.getLong('supply_id')
+        supply = Supply.get_by_id(sess, supply_id)
+        index = inv.getLong('note_index')
+        category = inv.getString('category')
+        is_important = inv.getBoolean('is_important')
+        body = inv.getString('body')
+        supply_note = eval(supply.note)
+        note = supply_note['notes'][index]
+        note['category'] = category
+        note['is_important'] = is_important
+        note['body'] = body
+        supply.note = str(supply_note)
+        sess.commit()
+        inv.sendSeeOther("/reports/369/output/?supply_id=" + str(supply_id))
+except UserException, e:
+    render(inv, template, make_fields(sess, supply, index, e))
+finally:
+    sess.close()]]></value>
+		<value><![CDATA[<!doctype html>
+<html>
+  <head>
+    <link rel="stylesheet" type="text/css"
+      href="{{context_path}}/reports/19/output/">
+    <title>
+      Chellow &gt; Supplies &gt; {{supply.id}} &gt; Notes &gt; {note.index} Edit
+    </title>
+  </head>
+  <body>
+    <p>
+      <a href="{{context_path}}/reports/1/output/">Chellow</a> &gt;
+      <a href="{{context_path}}/reports/99/output/">Supplies</a>  &gt;
+      <a href="{{context_path}}/reports/7/output/?supply_id={{supply.id}}">{{supply.id}}</a>  &gt;
+      <a href="{{context_path}}/reports/369/output/?supply_id={{supply.id}}">Notes</a>  &gt;
+      {{note.index}} Edit
+    </p>
+
+    {% if messages %}
+      <ul>
+        {% for message in messages %}
+          <li>{{ message }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+
+    <form action="." method="post">
+      <input type="hidden" name="supply_id" value="{{supply.id}}">
+      <input type="hidden" name="note_index" value="{{note.index}}">
+      Category {{input_text('category', note.category)}}
+      <br>
+      Important? {{input_checkbox('is_important', note.is_important)}}
+      <br>
+      {{input_textarea('body', note.body, 30, 80)}}
+    <br>
+    <input type="submit" value="Edit">
+    </form>
+  </body>
+</html>]]></value>
+	</line>
+	<line>
+		<value><![CDATA[insert]]></value>
+		<value><![CDATA[report]]></value>
+		<value><![CDATA[369]]></value>
+		<value><![CDATA[true]]></value>
+		<value><![CDATA[Supply Notes]]></value>
+		<value><![CDATA[from net.sf.chellow.monad import Monad
+from sqlalchemy.orm import joinedload_all
+from sqlalchemy.sql.expression import text
+from datetime import datetime
+import pytz
+
+Monad.getUtils()['imprt'](globals(), {
+        'db': ['Supply', 'Batch', 'Participant', 'set_read_write', 'session'], 
+        'utils': ['UserException', 'form_date'],
+        'templater': ['render']})
+
+
+def make_fields(sess, supply, message=None):
+    messages = [] if message is None else [str(message)]
+
+    if len(supply.note.strip()) > 0:
+        note_str = supply.note
+    else:
+        note_str = "{'notes': []}"
+    supply_note = eval(note_str)
+
+    return {'supply': supply, 'messages': messages, 'supply_note': supply_note}
+
+sess = None
+try:
+    sess = session()
+    supply_id = inv.getLong('supply_id')
+    supply = Supply.get_by_id(sess, supply_id)
+    render(inv, template, make_fields(sess, supply))
+except UserException, e:
+    render(inv, template, make_fields(sess, supply, e))
+finally:
+    sess.close()]]></value>
+		<value><![CDATA[<!doctype html>
+<html>
+  <head>
+    <link rel="stylesheet" type="text/css"
+      href="{{context_path}}/reports/19/output/">
+    <title>Chellow &gt; Supplies &gt; {{supply.id}} &gt; Notes</title>
+  </head>
+  <body>
+    <p>
+      <a href="{{context_path}}/reports/1/output/">Chellow</a> &gt;
+      <a href="{{context_path}}/reports/99/output/">Supplies</a>  &gt;
+      <a href="{{context_path}}/reports/7/output/?supply_id={{supply.id}}">{{supply.id}}</a>  &gt;
+      Notes
+      [<a href="{{context_path}}/reports/239/output/?supply_id={{supply.id}}">add</a>]
+    </p>
+
+    {% if messages %}
+      <ul>
+        {% for message in messages %}
+          <li>{{ message }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+
+    <table>
+      <thead>
+        <tr>
+          <th>Edit</th>
+          <th>Category</th>
+          <th>Importance</th>
+          <th>Body</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for note in supply_note.notes %}
+          <tr>
+            <td>
+              [<a href="{{context_path}}/reports/367/output/?supply_id={{supply.id}}&amp;note_index={{loop.index0}}">edit</a>]
+            </td>
+            <td>{{note.category}}</td>
+            <td>
+              {% if note.is_important %}
+                High
+              {% else %}
+                Low
+              {% endif %}
+            </td>
+            <td>{{note.body}}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </body>
+</html>]]></value>
+	</line>
+	<line>
+		<value><![CDATA[insert]]></value>
+		<value><![CDATA[report]]></value>
+		<value><![CDATA[371]]></value>
+		<value><![CDATA[true]]></value>
+		<value><![CDATA[Site Group Snags Edit]]></value>
+		<value><![CDATA[from net.sf.chellow.monad import Monad
+from java.lang import System
+
+Monad.getUtils()['impt'](globals(), 'db', 'utils', 'templater')
+
+Snag, Site = db.Snag, db.Site
+
+sess = None
+
+try:
+    sess = db.session()
+    if inv.getRequest().getMethod() == 'GET':
+        templater.render(inv, template, {})
+    else:
+        db.set_read_write(sess)
+        finish_date = utils.form_date(inv, 'ignore')
+        sess.execute("update snag set is_ignored = true where snag.site_id is not null and snag.finish_date < :finish_date", {'finish_date': finish_date})
+        sess.commit()
+        inv.sendSeeOther('/reports/39/output/')
+except utils.UserException, e:
+        render(inv, template, {'messages': [str(e)]}, 400)
+finally:
+    if sess is not None:
+        sess.close()]]></value>
+		<value><![CDATA[<!doctype html>
+<html>
+  <head>
+    <link rel="stylesheet" type="text/css"
+      href="{{context_path}}/reports/19/output/">
+    <title>Chellow &gt; Site Snags &gt; Edit</title>
+  </head>
+  <body>
+    <p>
+      <a href="{{context_path}}/reports/1/output/">Chellow</a> &gt;
+      <a href="{{context_path}}/reports/39/output/">Site Snags</a> &gt; Edit
+    </p>
+
+    {% if messages %}
+      <ul>
+        {% for message in messages %}
+          <li>{{message}}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+
+    <br>
+    <form method="post" action=".">
+      <fieldset>
+        <legend>Bulk ignore</legend>
+
+        <p>
+          Ignore all snags before {{input_date('ignore')}}
+          <input type="submit" name="ignore" value="Ignore">
+      </fieldset>
+    </form>
+  </body>
+</html>]]></value>
+	</line>
+	<line>
+		<value><![CDATA[insert]]></value>
+		<value><![CDATA[report]]></value>
+		<value><![CDATA[373]]></value>
+		<value><![CDATA[true]]></value>
+		<value><![CDATA[Site Group Snag Edit]]></value>
+		<value><![CDATA[from net.sf.chellow.monad import Monad
+from sqlalchemy.orm import joinedload_all
+import datetime
+import pytz
+from java.lang import System
+
+Monad.getUtils()['impt'](globals(), 'db', 'utils', 'templater')
+
+def make_fields(sess, snag, message=None):
+    messages = [] if message is None else [str(message)]
+    return {'snag': snag, 'messages': messages}
+
+sess = None
+try:
+    sess = db.session()
+    if inv.getRequest().getMethod() == 'GET':
+        snag_id = inv.getLong('site_snag_id')
+        snag = db.Snag.get_by_id(sess, snag_id)
+        templater.render(inv, template, make_fields(sess, snag))
+    else:
+        db.set_read_write(sess)
+        snag_id = inv.getLong('site_snag_id')
+        ignore = inv.getBoolean('ignore')
+
+        snag = db.Snag.get_by_id(sess, snag_id)
+        snag.is_ignored = ignore
+        sess.commit()
+        inv.sendSeeOther("/reports/119/output/?site_snag_id=" + str(snag.id))
+except utils.UserException, e:
+    sess.rollback()
+    templater.render(inv, template, make_fields(sess, snag, e), 400)
+finally:
+    sess.close()]]></value>
+		<value><![CDATA[<!doctype html>
+<html>
+  <head>
+    <link rel="stylesheet" type="text/css"
+      href="{{context_path}}/reports/19/output/">
+    <title>
+      Chellow &gt; Site Snags &gt; {{snag.id}} &gt; Edit
+    </title>
+  </head>
+  <body>
+    <p>
+      <a href="{{context_path}}/reports/1/output/">Chellow</a> &gt;
+      <a href="{{context_path}}/reports/39/output/">Site Snags</a> &gt;
+      <a href="{{context_path}}/reports/119/output/?site_snag_id={{snag.id}}">{{snag.id}}</a>
+      &gt; Edit
+    </p>
+    <br>
+    {% if messages %}
+      <ul>
+        {% for message in messages %}
+          <li>{{message}}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+
+    <table>
+      <tbody>
+        <tr>
+          <th>Date Created</th>
+          <td>{{snag.date_created|hh_format}}</td>
+        </tr>
+        <tr>
+          <th>Ignored?</th>
+          <td>
+            {% if snag.is_ignored %}
+              Ignored
+            {% else %}
+              Not ignored
+            {% endif %}
+            <form action="." method="post">
+              <fieldset style="border: none;">
+                <input type="hidden" name="site_snag_id" value="{{snag.id}}">
+                <input type="hidden" name="ignore" value="
+                  {%- if snag.is_ignored -%}
+                    false
+                  {%- else -%}
+                    true
+                  {%- endif -%}
+                ">
+                <input type="submit" value="
+                  {%- if snag.is_ignored -%}
+                    Un-ignore
+                  {%- else -%}
+                    Ignore
+                  {%- endif -%}
+                ">
+              </fieldset>
+            </form>
+          </td>
+        </tr>
+        <tr>
+          <th>Description</th>
+          <td>{{snag.description}}</td>
+        </tr>
+        <tr>
+          <th>Site</th>
+          <td>
+            <a href="{{context_path}}/reports/5/output/?site_id={{snag.site.id}}">{{snag.site.code}}</a>
           </td>
         </tr>
         <tr>

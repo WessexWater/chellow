@@ -1102,12 +1102,13 @@ def totalElement(account, startDate, finishDate):
 				<regex pattern='CI004' />
 				<!-- There's an hh where export to net is *less* than imported from generator, 
 					check this doesn't show up. -->
-				<regex
-					pattern='2005-10-30 01:00&lt;/td&gt;\s*&lt;/tr&gt;\s*&lt;/tbody&gt;' />
+				
+	            <regex pattern='&lt;td&gt;\s*&lt;a href="/chellow/reports/119/output/\?site_snag_id=43"&gt;view&lt;/a&gt; \[&lt;a href="/chellow/reports/373/output/\?site_snag_id=43"&gt;edit&lt;/a&gt;\]\s*&lt;/td&gt;\s*&lt;td&gt;[^&lt;]*&lt;/td&gt;\s*&lt;td&gt;\s*&lt;a href="/chellow/reports/5/output/\?site_id=1"&gt;CI004&lt;/a&gt;\s*&lt;/td&gt;\s*&lt;td&gt;Lower Treave&lt;/td&gt;\s*&lt;td&gt;Export to net &amp;gt; import from generators.&lt;/td&gt;\s*&lt;td&gt;2005-10-29 23:30&lt;/td&gt;\s*&lt;td&gt;\s*2005-10-30 01:00&lt;/td&gt;\s*&lt;/tr&gt;\s*&lt;/tbody&gt;' />
+				<response-code value="200"/>
 			</request>
-			<request path="/chellow/site-snags/">
+			<request path="/chellow/reports/371/output/">
 				<!-- Check that there's an 'ignore-year' parameter. -->
-				<regex pattern='name="ignore-year"' />
+				<regex pattern='name="ignore_year"' />
 				<response-code value="200" />
 			</request>
 		</test>
@@ -1170,20 +1171,22 @@ def totalElement(account, startDate, finishDate):
 		</test>
 
 		<test name="View a snag">
-			<request path="/chellow/site-snags/43/">
+			<request path="/chellow/reports/119/output/?site_snag_id=43">
 				<response-code value="200" />
 				<regex
-					pattern="&lt;th&gt;Finish Date&lt;/th&gt;&lt;td&gt;2005-10-30 01:00&lt;/td&gt;" />
+					pattern="&lt;th&gt;Finish Date&lt;/th&gt;\s*&lt;td&gt;2005-10-30 01:00&lt;/td&gt;" />
 			</request>
 		</test>
 		<test name="site snags stay ignored">
 			<!-- Assumes various site snags are present at this stage -->
-			<request path="/chellow/site-snags/" method="post">
-				<control name="ignore-year" value="2006" />
-				<control name="ignore-month" value="12" />
-				<control name="ignore-day" value="26" />
+			<request path="/chellow/reports/371/output/" method="post">
+				<control name="ignore_year" value="2006" />
+				<control name="ignore_month" value="12" />
+				<control name="ignore_day" value="26" />
+				<control name="ignore_hour" value="00" />
+				<control name="ignore_minute" value="00" />
 				<control name="ignore" value="Ignore" />
-				<response-code value="200" />
+				<response-code value="303" />
 			</request>
 			<request path="/chellow/reports/211/output/" method="post">
 				<control name="hhdc_contract_id" value="50" />
@@ -1198,7 +1201,7 @@ def totalElement(account, startDate, finishDate):
 				<response-code value="200" />
 			</request>
 			<request path="/chellow/reports/39/output/">
-				<regex pattern='&lt;tbody/&gt;' />
+				<regex pattern='&lt;tbody&gt;\s*&lt;/tbody&gt;' />
 				<response-code value="200" />
 			</request>
 			<request path="/chellow/reports/17/output/?supply_id=5&amp;months=1&amp;finish_year=2010&amp;finish_month=03">
@@ -4050,6 +4053,13 @@ def virtual_bill(supply_source):
 				<regex
 					pattern='"22 4862 4512 332","CH023","Treglisson","141 5532","2013-10-01T00:00Z","2013-10-31T23:30Z","0","0","0",""' />
 				<response-code value="200" />
+			</request>
+		</test>
+		<test name="Un-ignore a site snag">
+			<request path="/chellow/reports/373/output/" method="post">
+				<control name="site_snag_id" value="36"/>
+				<control name="ignore" value="false"/>
+				<response-code value="303" />
 			</request>
 		</test>
 	</test-group>
