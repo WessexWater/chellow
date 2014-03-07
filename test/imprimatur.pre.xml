@@ -162,25 +162,25 @@ def virtual_bill(supply_source):
 			</request>
 			
 			<!-- Check that we can see HHDC rate script okay. Contract 50. -->
-			<request path="/chellow/reports/173/output/?hhdc_rate_script_id=291">
+			<request path="/chellow/reports/173/output/?hhdc_rate_script_id=293">
 				<!-- Check that 'has_finished' field is there -->
 				<regex pattern="HH contract" />
 				<response-code value="200" />
 			</request>
 
 			<!-- Check that we can see the edit view of the HHDC rate script okay. Contract 50. -->
-			<request path="/chellow/reports/249/output/?hhdc_rate_script_id=291">
+			<request path="/chellow/reports/249/output/?hhdc_rate_script_id=293">
 				<!-- Check that 'has_finished' field is there -->
 				<regex pattern="has_finished" />
 				
 				<!-- Check the hhdc_rate_script_id for update is there -->
-				<regex pattern='&lt;legend&gt;Update Rate Script&lt;/legend&gt;\s*&lt;input type="hidden" name="hhdc_rate_script_id"\s*value="291"&gt;' />
+				<regex pattern='&lt;legend&gt;Update Rate Script&lt;/legend&gt;\s*&lt;input type="hidden" name="hhdc_rate_script_id"\s*value="293"&gt;' />
 				<response-code value="200" />
 			</request>
 
 			<!-- Check that we can update an HHDC rate script okay -->
 			<request path="/chellow/reports/249/output/" method="post">
-				<control name="hhdc_rate_script_id" value="291" />
+				<control name="hhdc_rate_script_id" value="293" />
 				<control name="start_year" value="2000" />
 				<control name="start_month" value="01" />
 				<control name="start_day" value="03" />
@@ -314,7 +314,7 @@ def virtual_bill(data_source):
 
 			<!-- Update the associated rate script. Supplier contract 52 -->
 			<request path="/chellow/reports/319/output/" method="post">
-				<control name="supplier_rate_script_id" value="293" />
+				<control name="supplier_rate_script_id" value="295" />
 				<control name="start_year" value="2000" />
 				<control name="start_month" value="01" />
 				<control name="start_day" value="03" />
@@ -414,7 +414,7 @@ def totalElement(account, startDate, finishDate):
 			
 			<!-- Update the associated rate script. Supplier contract 55 -->
 			<request path="/chellow/reports/319/output/" method="post">
-				<control name="supplier_rate_script_id" value="296"/>
+				<control name="supplier_rate_script_id" value="298"/>
 				<control name="start_year" value="2000" />
 				<control name="start_month" value="01" />
 				<control name="start_day" value="03" />
@@ -1587,7 +1587,7 @@ def totalElement(account, startDate, finishDate):
 		<test name="Test deleting the only rate script attached to a supplier contract.">
 			<!-- Supplier contract 52 -->
 			<request path="/chellow/reports/319/output/" method="post">
-				<control name="supplier_rate_script_id" value="293"/>
+				<control name="supplier_rate_script_id" value="295"/>
 				<control name="delete" value="Delete" />
 				<regex pattern="You can't delete the last rate script\." />
 				<response-code value="400" />
@@ -2060,7 +2060,7 @@ def virtual_bill(supply_source):
 			
 			<!-- Edit the rate script -->
 			<request path="/chellow/reports/273/output/" method="post">
-				<control name="rate_script_id" value="301" />
+				<control name="rate_script_id" value="303" />
 				<control name="start_year" value="2000" />
 				<control name="start_month" value="01" />
 				<control name="start_day" value="03" />
@@ -2094,7 +2094,7 @@ def triad_estimates():
 		</test>
 		<test name="Check we can delete a rate script (when it's not the only one). Supplier contract 52.">
 			<request path="/chellow/reports/319/output/" method="post">
-			    <control name="supplier_rate_script_id" value="298"/> 
+			    <control name="supplier_rate_script_id" value="300"/> 
 				<control name="delete" value="Delete" />
 				<response-code value="303" />
 			</request>
@@ -2179,13 +2179,13 @@ def triad_estimates():
 				<control name="start_day" value="01" />
 				<control name="start_hour" value="00" />
 				<control name="start_minute" value="00" />
-				<regex pattern="/chellow/reports/69/output/\?dno_rate_script_id=302" />
+				<regex pattern="/chellow/reports/69/output/\?dno_rate_script_id=304" />
 				<response-code value="303" />
 			</request>
 			
 			<!-- Test bad syntax gives an error -->
 			<request path="/chellow/reports/285/output/" method="post">
-				<control name="dno_rate_script_id" value="302" />
+				<control name="dno_rate_script_id" value="304" />
 				<control name="start_year" value="2010" />
 				<control name="start_month" value="05" />
 				<control name="start_day" value="01" />
@@ -2198,7 +2198,7 @@ def triad_estimates():
 			
 			<!-- Delete rate script -->
 			<request path="/chellow/reports/285/output/" method="post">
-				<control name="dno_rate_script_id" value="302" />
+				<control name="dno_rate_script_id" value="304" />
 				<control name="delete" value="Delete" />
 				<response-code value="303" />
 			</request>
@@ -3244,20 +3244,20 @@ def virtual_bill(supply_source):
 				<control name="start_minute" value="00" />
 				<control name="insert" value="Insert" />
 
-				<regex pattern="/chellow/reports/271/output/\?rate_script_id=304" />
+				<regex pattern="/chellow/reports/271/output/\?rate_script_id=306" />
 				<response-code value="303" />
 			</request>
 			<request
-				path="/chellow/reports/273/output/?rate_script_id=304&amp;delete=Delete">
+				path="/chellow/reports/273/output/?rate_script_id=306&amp;delete=Delete">
 				<regex pattern="Are you sure you want to delete this rate script\?" />
 				<response-code value="200" />
 			</request>
 			<request path="/chellow/reports/273/output/" method="post">
-				<control name="rate_script_id" value="304" />
+				<control name="rate_script_id" value="306" />
 				<control name="delete" value="Delete" />
 				<response-code value="303" />
 			</request>
-			<request path="/chellow/reports/271/output/?rate_script_id=304">
+			<request path="/chellow/reports/271/output/?rate_script_id=306">
 				<response-code value="404" />
 			</request>
 		</test>
@@ -3271,11 +3271,11 @@ def virtual_bill(supply_source):
 				<control name="start_minute" value="00" />
 				<control name="insert" value="Insert" />
 
-				<regex pattern="/chellow/reports/271/output/\?rate_script_id=305" />
+				<regex pattern="/chellow/reports/271/output/\?rate_script_id=307" />
 				<response-code value="303" />
 			</request>
 			
-			<request path="/chellow/reports/273/output/?rate_script_id=305">
+			<request path="/chellow/reports/273/output/?rate_script_id=307">
 				<regex
 					pattern='&lt;input name="finish_year" maxlength="4" size="4" value="2010"&gt;' />
 
@@ -3286,7 +3286,7 @@ def virtual_bill(supply_source):
 			</request>
 			
 			<request path="/chellow/reports/273/output/" method="post">
-				<control name="rate_script_id" value="305" />
+				<control name="rate_script_id" value="307" />
 				<control name="delete" value="Delete" />
 				<response-code value="303" />
 			</request>
@@ -3807,7 +3807,7 @@ def virtual_bill(supply_source):
 			</request>
 		</test>
 		<test name="View a MOP rate script. Contract 54.">
-			<request path="/chellow/reports/205/output/?mop_rate_script_id=295">
+			<request path="/chellow/reports/205/output/?mop_rate_script_id=297">
 				<response-code value="200" />
 			</request>
 		</test>
@@ -4008,7 +4008,7 @@ def virtual_bill(supply_source):
 		
 			<request path="/chellow/reports/37/output/?hhdc-contract-id=50&amp;hidden_days=5">
 				<response-code value="200" />
-				<regex pattern='&lt;tr&gt;\s*&lt;td&gt;\s*&lt;ul&gt;\s*&lt;li&gt;\s*&lt;a href="/chellow/reports/117/output/\?snag_id=102"&gt;view&lt;/a&gt;  \[&lt;a href="/chellow/reports/365/output/\?snag_id=102"&gt;edit&lt;/a&gt;\]\s*&lt;/li&gt;\s*&lt;/ul&gt;\s*&lt;/td&gt;\s*&lt;td&gt;\s*&lt;/td&gt;\s*&lt;td&gt;\s*22 0470 7514 535\s*&lt;/td&gt;\s*&lt;td&gt;\s*&lt;ul&gt;\s*&lt;li&gt;CH017 Parbola&lt;/li&gt;\s*&lt;/ul&gt;\s*&lt;/td&gt;\s*&lt;td&gt;Missing&lt;/td&gt;\s*&lt;td&gt;\s*&lt;ul&gt;\s*&lt;li&gt;\s*Export\s*kWh\s*&lt;/li&gt;\s*&lt;/ul&gt;\s*&lt;/td&gt;\s*&lt;td&gt;\s*2004-07-07 00:00 to\s*2005-09-14 23:30\s*&lt;/td&gt;\s*&lt;/tr&gt;' />
+				<regex pattern='&lt;tr&gt;\s*&lt;td&gt;\s*&lt;ul&gt;\s*&lt;li&gt;\s*&lt;a href="/chellow/reports/117/output/\?snag_id=99"&gt;view&lt;/a&gt;  \[&lt;a href="/chellow/reports/365/output/\?snag_id=99"&gt;edit&lt;/a&gt;\]\s*&lt;/li&gt;\s*&lt;/ul&gt;\s*&lt;/td&gt;\s*&lt;td&gt;\s*&lt;/td&gt;\s*&lt;td&gt;\s*22 0470 7514 535\s*&lt;/td&gt;\s*&lt;td&gt;\s*&lt;ul&gt;\s*&lt;li&gt;CH017 Parbola&lt;/li&gt;\s*&lt;/ul&gt;\s*&lt;/td&gt;\s*&lt;td&gt;Missing&lt;/td&gt;\s*&lt;td&gt;\s*&lt;ul&gt;\s*&lt;li&gt;\s*Export\s*kWh\s*&lt;/li&gt;\s*&lt;/ul&gt;\s*&lt;/td&gt;\s*&lt;td&gt;\s*2004-07-07 00:00 to\s*2005-09-14 23:30\s*&lt;/td&gt;\s*&lt;/tr&gt;' />
 			</request>
 		</test>
 		
@@ -4028,7 +4028,7 @@ def virtual_bill(supply_source):
 			</request>
 			<request path="/chellow/reports/233/output/?hhdc_contract_id=50&amp;days_hidden=0">
 				<regex pattern='"0","106","22 4862 4512 332","None","CH023","Treglisson","Missing","True","True","2010-02-04 20:30",""' />
-				<regex pattern='"0","3","22 9205 6799 106","22 0470 7514 535","CH017","Parbola","Missing","False","True","2003-08-03 00:00","2004-07-06 23:30","[^"]*","[^"]*","True"\s*"0","102","None","22 0470 7514 535","CH017","Parbola","Missing","False","True","2004-07-07 00:00","2005-09-14 23:30","[^"]*","[^"]*","False"\s*"0","100","None","22 0470 7514 535","CH017","Parbola","Missing","False","True","2005-09-15 00:30","2005-12-15 06:30","[^"]*","[^"]*","False"\s*"0","101","None","22 0470 7514 535","CH017","Parbola","Missing","False","True","2005-12-15 10:00","2008-07-06 23:30","[^"]*","[^"]*","False"\s*"0","55","None","22 0470 7514 535","CH017","Parbola","Missing","False","True","2008-07-07 00:00","2008-08-06 23:30","[^"]*","[^"]*","True"\s*"0","79","None","22 0470 7514 535","CH017","Parbola","Missing","False","True","2008-08-07 00:00","2008-09-05 23:30","[^"]*","[^"]*","False"\s*"0","68","None","22 0470 7514 535","CH017","Parbola","Missing","False","True","2008-09-06 00:00","","[^"]*","[^"]*","False"\s*'/>
+				<regex pattern='"0","3","22 9205 6799 106","22 0470 7514 535","CH017","Parbola","Missing","False","True","2003-08-03 00:00","2004-07-06 23:30","[^"]*","[^"]*","True"\s*"0","99","None","22 0470 7514 535","CH017","Parbola","Missing","False","True","2004-07-07 00:00","2005-09-14 23:30","[^"]*","[^"]*","False"\s*"0","102","None","22 0470 7514 535","CH017","Parbola","Missing","False","True","2005-09-15 00:30","2005-12-15 06:30","[^"]*","[^"]*","False"\s*"0","100","None","22 0470 7514 535","CH017","Parbola","Missing","False","True","2005-12-15 10:00","2008-07-06 23:30","[^"]*","[^"]*","False"\s*"0","55","None","22 0470 7514 535","CH017","Parbola","Missing","False","True","2008-07-07 00:00","2008-08-06 23:30","[^"]*","[^"]*","True"\s*"0","79","None","22 0470 7514 535","CH017","Parbola","Missing","False","True","2008-08-07 00:00","2008-09-05 23:30","[^"]*","[^"]*","False"\s*"0","68","None","22 0470 7514 535","CH017","Parbola","Missing","False","True","2008-09-06 00:00","","[^"]*","[^"]*","False"\s*'/>
 				<response-code value="200" />
 			</request>
 		</test>
@@ -4039,14 +4039,6 @@ def virtual_bill(supply_source):
 
 				<response-code value="200" />
 		    </request>
-		</test>
-		<test name="Try out the supplies snapshot report including a last normal read type.">
-		
-			<!-- Insert era -->
-			<request path="/chellow/reports/33/output/?supply_id=9&amp;year=2007&amp;month=09&amp;day=01&amp;hour=00&amp;minute=00">
-				<response-code value="200" />
-				<regex pattern='"2007-09-30T23:30Z","CI004","Lower Treave","","","9","net","","22","510","nhh","no","05","535","5","0127","MOP Contract","mc-22 0195 4836 192","Dynamat data","dc-22 0195 4836 192","P96C93722","2007-08-01 00:00","N","","","false","false","false","false","22 0195 4836 192","30","510","PC 5-8 &amp; HH HV","Non half-hourlies 2007","341664","","2007-08-01 00:00","","","","","","","",""'/>
-			</request>
 		</test>
 		<test name="Run supply virtual bill over 2 months">
 			<request path="/chellow/reports/291/output/?supply_id=7&amp;start_year=2013&amp;start_month=09&amp;start_day=29&amp;start_hour=00&amp;start_minute=00&amp;finish_year=2013&amp;finish_month=11&amp;finish_day=28&amp;finish_hour=23&amp;finish_minute=30">

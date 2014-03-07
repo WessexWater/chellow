@@ -14734,7 +14734,7 @@ pw.close()]]></value>
 		<value><![CDATA[report]]></value>
 		<value><![CDATA[239]]></value>
 		<value><![CDATA[true]]></value>
-		<value><![CDATA[Supply Notes]]></value>
+		<value><![CDATA[Supply Notes Add]]></value>
 		<value><![CDATA[from net.sf.chellow.monad import Monad
 from sqlalchemy.orm import joinedload_all
 from sqlalchemy.sql.expression import text
