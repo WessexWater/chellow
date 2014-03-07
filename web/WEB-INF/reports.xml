@@ -1104,7 +1104,7 @@ finally:
                   <td>
                     {% if read %}
                       {% if read.tpr %}
-                        <a href="{{ context_path }}/reports/97/output/?tpr-id={{ read.tpr.id }}">{{ read.tpr.code }}</a>
+                        <a href="{{ context_path }}/reports/97/output/?tpr_id={{ read.tpr.id }}">{{ read.tpr.code }}</a>
                       {% else %}
                         MD
                       {% endif %}
@@ -1160,7 +1160,7 @@ finally:
                 {% if tpr == None %}
                   MD
                 {% else %}
-                  <a href="{{ context_path }}/reports/97/output/?tpr-id={{ tpr.id }}">{{ tpr.code }}</a>
+                  <a href="{{ context_path }}/reports/97/output/?tpr_id={{ tpr.id }}">{{ tpr.code }}</a>
                 {% endif %}
               </th>
             {% endfor %}
@@ -1236,7 +1236,7 @@ finally:
                   {% for read in read_row['outer_reads'] %}
                     <td>
                       {% if read.tpr %}
-                        <a href="{{ context_path }}/reports/97/output/?tpr-id={{ read.tpr.id }}">{{ read.tpr.code }}</a>
+                        <a href="{{ context_path }}/reports/97/output/?tpr_id={{ read.tpr.id }}">{{ read.tpr.code }}</a>
                       {% else %}
                         MD
                       {% endif %}
