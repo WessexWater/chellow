@@ -1949,8 +1949,7 @@ def virtual_bill(supply_source):
 				<regex pattern='"2005-12-31 23:30","CI005","Wheal Rodney","","","11","net","","22","540","nhh","no","05","803","5","0154","MOP Contract","mc-22 9974 3438 105","Dynamat data","dc-22 9974 3438 105","K87D74429","","","","","false","false","false","false","22 9974 3438 105","20","540","PC 5-8 &amp; HH S/S","Non half-hourlies 2007","341665","","","","","","","","","",""' />
 			</request>
 		</test>
-		<test
-			name="Generate a 'There are HH data before the start of the updated supply.' message. Supply 5">
+		<test name="Generate an orphaned hh data message. Supply 5">
 			<request path="/chellow/reports/307/output/" method="post">
 				<control name="era_id" value="5" />
 				<control name="start_year" value="2010" />
@@ -1976,6 +1975,39 @@ def virtual_bill(supply_source):
 
 				<response-code value="400" />
 				<regex pattern='There are orphaned HH data between 2003-08-03 00:00 and 2010-08-02 23:30\.' />
+			</request>
+			
+			<!-- Generate similar one for ongoing orphaned data -->
+			<request path="/chellow/reports/307/output/" method="post">
+				<control name="era_id" value="5" />
+				<control name="start_year" value="2003" />
+				<control name="start_month" value="08" />
+				<control name="start_day" value="03" />
+				<control name="start_hour" value="00" />
+				<control name="start_minute" value="00" />
+				<control name="is_ended" value="true" />
+				<control name="finish_year" value="2003" />
+				<control name="finish_month" value="08" />
+				<control name="finish_day" value="03" />
+				<control name="finish_hour" value="00" />
+				<control name="finish_minute" value="00" />
+				<control name="msn" value="" />
+				<control name="pc_id" value="9" />
+				<control name="mtc_code" value="845" />
+				<control name="cop_id" value="5" />
+				<control name="ssc_code" value="" />
+				<control name="mop_contract_id" value="54" />
+				<control name="mop_account" value="mc-22 0883 6932 301" />
+				<control name="hhdc_contract_id" value="50" />
+				<control name="hhdc_account" value="22 0883 6932 301" />
+				<control name="imp_llfc_code" value="570" />
+				<control name="imp_mpan_core" value="22 0883 6932 301" />
+				<control name="imp_sc" value="350" />
+				<control name="imp_supplier_contract_id" value="52" />
+				<control name="imp_supplier_account" value="01" />
+
+				<response-code value="400" />
+				<regex pattern='There are orphaned HH data between 2003-08-03 00:30 and ongoing\.' />
 			</request>
 		</test>
 		<test name="Test deleting of supplier contracts">
