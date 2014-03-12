@@ -11321,6 +11321,28 @@ con.setAutoCommit(False)
         </xsl:for-each>
     </tbody>
 </table>
+
+<h4>PostgreSQL pg_stat_all_tables</h4>
+
+<table>
+    <thead>
+        <tr>
+            <xsl:for-each select="/source/pg-stat-all-tables/column">
+                <th><xsl:value-of select="@name"/></th>
+            </xsl:for-each>
+        </tr>
+    </thead>
+    <tbody>
+        <xsl:for-each select="/source/pg-stat-all-tables/row">
+            <tr>
+                <xsl:for-each select="cell">
+                    <td><xsl:value-of select="@value"/></td>
+                </xsl:for-each>
+            </tr>
+        </xsl:for-each>
+    </tbody>
+</table>
+
 <form method="post" action="{/source/request/@context-path}/reports/171/output/">
   <fieldset>
       <legend>Run shutdown script</legend>
@@ -11334,10 +11356,13 @@ con.setAutoCommit(False)
   </fieldset>
 </form>
 
-<p><a href="{/source/request/@context-path}/reports/103/output/">Libraries</a></p>
-            </body>
-        </html>
-    </xsl:template>
+<ul>
+<li><a href="{/source/request/@context-path}/reports/375/output/">Clogs</a></li>
+          <li><a href="{/source/request/@context-path}/reports/103/output/">Libraries</a></li>
+        </ul>      
+      </body>
+    </html>
+  </xsl:template>
 </xsl:stylesheet>]]></value>
 	</line>
 	<line>
@@ -23164,6 +23189,56 @@ finally:
         </tr>
       </tbody>
     </table>
+  </body>
+</html>]]></value>
+	</line>
+		<line>
+		<value><![CDATA[insert]]></value>
+		<value><![CDATA[report]]></value>
+		<value><![CDATA[375]]></value>
+		<value><![CDATA[true]]></value>
+		<value><![CDATA[Log]]></value>
+		<value><![CDATA[from net.sf.chellow.monad import Monad
+from sqlalchemy.orm import joinedload_all
+
+Monad.getUtils()['impt'](globals(), 'db', 'utils', 'templater')
+
+sess = None
+try:
+    sess = db.session()
+    utils.clog("hello")
+    templater.render(inv, template, {'clogs': utils.clogs})
+finally:
+    if sess is not None:
+        sess.close()
+]]></value>
+		<value><![CDATA[<!DOCTYPE html>
+<html>
+  <head>
+    <link rel="stylesheet" type="text/css"
+        href="{{context_path}}/reports/19/output/" />
+    <title>Chellow &gt; System &gt; Clogs</title>
+  </head>
+  <body>
+    <p>
+      <a href="{{context_path}}/reports/1/output/">Chellow</a> &gt;
+      <a href="{{context_path}}/reports/171/output/">System</a> &gt;
+      Clogs
+    </p>
+
+    {% if messages %}
+      <ul>
+        {% for message in messages %}
+          <li>{{ message }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+
+    <ul>
+      {% for clog in clogs %}
+        <li>{{clog}}</li>
+      {% endfor %}
+    </ul>
   </body>
 </html>]]></value>
 	</line>
