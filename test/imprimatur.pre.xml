@@ -4102,5 +4102,17 @@ def virtual_bill(supply_source):
 				<response-code value="303" />
 			</request>
 		</test>
+		<test name="Insert a batch with general import">
+			<request path="/chellow/reports/293/output/" method="post">
+				<control type="file" name="import_file" value="gi_batch.csv" />
+				<response-code value="303" />
+				<regex pattern="/reports/295/output/\?process_id=0" />
+			</request>
+			<request path="/chellow/reports/295/output/?process_id=0">
+				<refresh />
+				<response-code value="200" />
+				<regex pattern="The file has been imported successfully\." />
+			</request>
+		</test>
 	</test-group>
 </imprimatur>
