@@ -15,10 +15,11 @@
 <hibernate-mapping package="net.sf.chellow.physical">
 	<class name="Era" table="era">
 		<id name="id">
-			<generator class="identity"/>
+			<generator class="identity" />
 		</id>
-		<many-to-one name="supply" class="Supply" column="supply_id"
-			not-null="true" foreign-key="era_supply_id_fkey" />
+		<many-to-one name="supply" class="Supply" foreign-key="era_supply_id_fkey">
+			<column name="supply_id" not-null="true" index="era_supply_id" />
+		</many-to-one>
 
 		<set name="siteEras" inverse="true" cascade="all,delete-orphan"
 			order-by="site_id">
@@ -41,15 +42,13 @@
 			not-null="true" />
 
 		<component name="startDate" class="HhStartDate">
-			<property type="timestamp" name="date"
-				index="era_start_date_idx">
+			<property type="timestamp" name="date" index="era_start_date_idx">
 				<column name="start_date" sql-type="timestamp with time zone" />
 			</property>
 		</component>
 
 		<component name="finishDate" class="HhStartDate">
-			<property type="timestamp" name="date"
-				index="era_finish_date_idx">
+			<property type="timestamp" name="date" index="era_finish_date_idx">
 				<column name="finish_date" sql-type="timestamp with time zone" />
 			</property>
 		</component>

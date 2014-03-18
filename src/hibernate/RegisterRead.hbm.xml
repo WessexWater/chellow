@@ -15,10 +15,12 @@
 <hibernate-mapping package="net.sf.chellow.physical">
 	<class name="RegisterRead" table="register_read">
 		<id name="id">
-			<generator class="identity"/>
+			<generator class="identity" />
 		</id>
 		<many-to-one name="bill" class="net.sf.chellow.billing.Bill"
-			column="bill_id" not-null="true" foreign-key="register_read_bill_id_fkey" />
+			foreign-key="register_read_bill_id_fkey">
+			<column name="bill_id" not-null="true" index="register_read_bill_id" />
+		</many-to-one>
 		<property name="coefficient" type="big_decimal" not-null="true">
 			<column name="coefficient" sql-type="numeric" />
 		</property>

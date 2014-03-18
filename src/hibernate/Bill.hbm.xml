@@ -16,24 +16,30 @@
 <hibernate-mapping package="net.sf.chellow.billing">
 	<class name="Bill" table="bill" lazy="true">
 		<id name="id">
-			<generator class="identity"/>
+			<generator class="identity" />
 		</id>
 		<many-to-one name="batch" class="Batch" column="batch_id"
-			foreign-key="bill_batch_id_fkey" not-null="true"/>
+			foreign-key="bill_batch_id_fkey" not-null="true" />
+
 		<many-to-one name="supply" class="net.sf.chellow.physical.Supply"
-			column="supply_id" foreign-key="bill_supply_id_fkey" not-null="true"/>
+			foreign-key="bill_supply_id_fkey">
+			<column name="supply_id" not-null="true" index="bill_supply_id_idx" />
+		</many-to-one>
+
 		<property name="issueDate" type="timestamp" not-null="true"
 			index="bill_issue_date_idx">
 			<column name="issue_date" sql-type="timestamp with time zone" />
 		</property>
 		<component name="startDate" class="net.sf.chellow.physical.HhStartDate">
 			<property type="timestamp" name="date" index="bill_start_date_idx">
-				<column name="start_date" sql-type="timestamp with time zone" not-null="true"/>
+				<column name="start_date" sql-type="timestamp with time zone"
+					not-null="true" />
 			</property>
 		</component>
 		<component name="finishDate" class="net.sf.chellow.physical.HhStartDate">
 			<property type="timestamp" name="date" index="bill_finish_date_idx">
-				<column name="finish_date" sql-type="timestamp with time zone" not-null="true"/>
+				<column name="finish_date" sql-type="timestamp with time zone"
+					not-null="true" />
 			</property>
 		</component>
 		<property name="net" type="big_decimal">
