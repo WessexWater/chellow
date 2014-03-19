@@ -11225,14 +11225,41 @@ while rs.next():
         cell_el.setAttribute('value', rs.getString(i))
 
 rs.close()
+
+
+
+
+pstmt = con.prepareStatement("select t.relname as table_name, i.relname as index_name, array_to_string(array_agg(a.attname), ', ') as column_names from pg_class t, pg_class i, pg_index ix, pg_attribute a, pg_namespace where t.oid = ix.indrelid and i.oid = ix.indexrelid and a.attrelid = t.oid and a.attnum = ANY(ix.indkey) and t.relkind = 'r' and t.relnamespace = pg_namespace.oid and pg_namespace.nspname = 'public' group by t.relname, i.relname, pg_namespace.nspname order by t.relname, i.relname""")
+rs = pstmt.executeQuery()
+rs_meta = rs.getMetaData()
+table_el = doc.createElement('pg-indexes')
+source.appendChild(table_el)
+for i in range(1, rs_meta.getColumnCount() + 1):
+    column_el = doc.createElement('column')
+    table_el.appendChild(column_el)
+    column_el.setAttribute('name', rs_meta.getColumnName(i) + ' (' + rs_meta.getColumnTypeName(i) + ')')
+
+while rs.next():
+    row_el = doc.createElement('row')
+    table_el.appendChild(row_el)
+    for i in range(1, rs_meta.getColumnCount() + 1):
+        cell_el = doc.createElement('cell')
+        row_el.appendChild(cell_el)
+        cell_el.setAttribute('value', rs.getString(i))
+
+rs.close()
+
+
 '''
 con.rollback()
 con.setAutoCommit(True)
-pstmt = con.prepareStatement("vacuum analyze")
+#pstmt = con.prepareStatement("vacuum analyze")
+pstmt = con.prepareStatement("create index era_supply_id_idx on era (supply_id)")
 pstmt.execute()
 pstmt.close()
 con.setAutoCommit(False)
-''']]></value>
+'''
+]]></value>
 		<value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
 <xsl:stylesheet version="1.0"
     xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
@@ -11434,6 +11461,29 @@ con.setAutoCommit(False)
         </xsl:for-each>
     </tbody>
 </table>
+
+<h4>PostgreSQL indexes</h4>
+
+<table>
+    <thead>
+        <tr>
+            <xsl:for-each select="/source/pg-indexes/column">
+                <th><xsl:value-of select="@name"/></th>
+            </xsl:for-each>
+        </tr>
+    </thead>
+    <tbody>
+        <xsl:for-each select="/source/pg-indexes/row">
+            <tr>
+                <xsl:for-each select="cell">
+                    <td><xsl:value-of select="@value"/></td>
+                </xsl:for-each>
+            </tr>
+        </xsl:for-each>
+    </tbody>
+</table>
+
+<br/>
 
 <form method="post" action="{/source/request/@context-path}/reports/171/output/">
   <fieldset>
