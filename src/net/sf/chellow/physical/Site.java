@@ -22,7 +22,6 @@
 package net.sf.chellow.physical;
 
 import java.net.URI;
-import java.sql.BatchUpdateException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -34,9 +33,7 @@ import java.util.Set;
 import net.sf.chellow.billing.Contract;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
-import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Invocation;
-import net.sf.chellow.monad.MonadMessage;
 import net.sf.chellow.monad.MonadUtils;
 import net.sf.chellow.monad.NotFoundException;
 import net.sf.chellow.monad.Urlable;
@@ -49,7 +46,6 @@ import net.sf.chellow.monad.types.UriPathElement;
 import net.sf.chellow.ui.Chellow;
 import net.sf.chellow.ui.GeneralImport;
 
-import org.hibernate.HibernateException;
 import org.hibernate.exception.ConstraintViolationException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -410,63 +406,6 @@ public class Site extends PersistentEntity {
 		siteEras.remove(siteEra);
 	}
 
-	public Supply insertSupply(Source source, GeneratorType generatorType,
-			String supplyName, HhStartDate startDate, HhStartDate finishDate,
-			GspGroup gspGroup, String note, Contract mopContract,
-			String mopAccount, Contract hhdcContract, String hhdcAccount,
-			String msn, Pc pc, String mtcCode, Cop cop, Ssc ssc,
-			String importMpanStr, String importLlfcCode,
-			Contract importSupplierContract, String importSupplierAccount,
-			Integer impSc, String exportMpanStr, String exportLlfcCode,
-			Contract exportSupplierContract,
-			String exportSupplierAccountReference,
-			Integer exportAgreedSupplyCapacity) throws HttpException {
-		String mpanStr = null;
-		if (importMpanStr == null) {
-			mpanStr = exportMpanStr;
-		} else {
-			mpanStr = importMpanStr;
-		}
-		if (mpanStr == null) {
-			throw new UserException(
-					"Either the import or export MPAN core must be present.");
-		}
-		mpanStr = Era.normalizeMpanCore(mpanStr);
-		String dnoCode = mpanStr.substring(0, 2);
-		Contract dnoContract = Contract.getDnoContract(dnoCode);
-		Supply supply = new Supply(supplyName, source, generatorType,
-				dnoContract, gspGroup, note);
-		try {
-			Hiber.session().save(supply);
-			Hiber.flush();
-		} catch (HibernateException e) {
-			Hiber.rollBack();
-			if (HttpException
-					.isSQLException(e,
-							"ERROR: duplicate key violates unique constraint \"mpan_dno_id_key\"")) {
-				BatchUpdateException be = (BatchUpdateException) e.getCause();
-				String message = be.getMessage();
-				boolean isImport = message.charAt(message.lastIndexOf(',') - 1) == '0';
-				throw new UserException("An MPAN with this "
-						+ (isImport ? "import" : "export")
-						+ " MPAN core already exists.");
-			} else {
-				throw new InternalException(e);
-			}
-		}
-		Era era = supply.insertEra(this, new ArrayList<Site>(), startDate,
-				mopContract, mopAccount, hhdcContract, hhdcAccount, msn, pc,
-				mtcCode, cop, ssc, importMpanStr, importLlfcCode,
-				importSupplierContract, importSupplierAccount, impSc,
-				exportMpanStr, exportLlfcCode, exportSupplierContract,
-				exportSupplierAccountReference, exportAgreedSupplyCapacity,
-				false, false, false, false);
-
-		era.update(era.getStartDate(), finishDate);
-		Hiber.flush();
-		return supply;
-	}
-
 	public void httpGet(Invocation inv) throws HttpException {
 		inv.sendOk(document());
 	}
@@ -535,149 +474,5 @@ public class Site extends PersistentEntity {
 		docElem.appendChild(MonadDate.getDaysXml(doc));
 		docElem.appendChild(new MonadDate().toXml(doc));
 		return doc;
-	}
-
-	public void httpPost(Invocation inv) throws HttpException {
-		Hiber.setReadWrite();
-		if (inv.hasParameter("delete")) {
-			Document doc = document();
-			Element source = doc.getDocumentElement();
-
-			source.appendChild(toXml(doc));
-			try {
-				Site.deleteSite(this);
-			} catch (HttpException e) {
-				e.setDocument(doc);
-				throw e;
-			}
-			source.appendChild(new MonadMessage("Site deleted successfully.")
-					.toXml(doc));
-			Hiber.commit();
-			inv.sendOk(doc);
-		} else if (inv.hasParameter("update")) {
-			String code = inv.getString("code");
-			String name = inv.getString("name");
-			update(code, name);
-			Hiber.commit();
-			inv.sendOk(document());
-		} else if (inv.hasParameter("insert")) {
-			try {
-				String name = inv.getString("name");
-				Long sourceId = inv.getLong("source-id");
-				Long gspGroupId = inv.getLong("gsp-group-id");
-				Long mopContractId = inv.getLong("mop-contract-id");
-				String mopAccount = inv.getString("mop-account");
-				Long hhdcContractId = inv.getLong("hhdc-contract-id");
-				String hhdcAccount = inv.getString("hhdc-account");
-				String meterSerialNumber = inv.getString("msn");
-				Long pcId = inv.getLong("pc-id");
-				String mtcCode = inv.getString("mtc-code");
-				Long copId = inv.getLong("cop-id");
-				String sscCode = inv.getString("ssc-code");
-				String importMpanCore = inv.getString("import-mpan-core");
-				String exportMpanCore = inv.getString("export-mpan-core");
-				Date startDate = inv.getDate("start");
-				if (!inv.isValid()) {
-					throw new UserException();
-				}
-				Source source = Source.getSource(sourceId);
-				GeneratorType generatorType = null;
-				if (source.getCode().equals(Source.GENERATOR_CODE)
-						|| source.getCode().equals(
-								Source.GENERATOR_NETWORK_CODE)) {
-					Long generatorTypeId = inv.getLong("generator-type-id");
-					generatorType = GeneratorType
-							.getGeneratorType(generatorTypeId);
-				}
-				GspGroup gspGroup = GspGroup.getGspGroup(gspGroupId);
-				Contract mopContract = null;
-				if (mopContractId != null) {
-					mopContract = Contract.getMopContract(mopContractId);
-				}
-				Contract hhdcContract = null;
-				if (hhdcContractId != null) {
-					hhdcContract = Contract.getHhdcContract(hhdcContractId);
-				}
-				Pc pc = Pc.getPc(pcId);
-				Cop cop = Cop.getCop(copId);
-				Ssc ssc = null;
-				sscCode = sscCode.trim();
-				if (sscCode.length() > 0) {
-					ssc = Ssc.getSsc(sscCode);
-				}
-				Contract importSupplierContract = null;
-				String importSupplierAccount = null;
-				Integer importAgreedSupplyCapacity = null;
-				String importLlfcCode = null;
-				if (importMpanCore.trim().length() > 0) {
-					importLlfcCode = inv.getString("import-llfc-code");
-					Long importSupplierContractId = inv
-							.getLong("import-supplier-contract-id");
-					importSupplierAccount = inv
-							.getString("import-supplier-account");
-					String importAgreedSupplyCapacityStr = inv
-							.getString("import-agreed-supply-capacity");
-					if (!inv.isValid()) {
-						throw new UserException();
-					}
-					importSupplierContract = Contract
-							.getSupplierContract(importSupplierContractId);
-					try {
-						importAgreedSupplyCapacity = new Integer(
-								importAgreedSupplyCapacityStr);
-					} catch (NumberFormatException e) {
-						throw new UserException(
-								"The import supply capacity must be an integer."
-										+ e.getMessage());
-					}
-				} else {
-					importMpanCore = null;
-				}
-				Contract exportSupplierContract = null;
-				String exportLlfcCode = null;
-				Integer exportAgreedSupplyCapacity = null;
-				String exportSupplierAccount = null;
-				if (exportMpanCore.trim().length() > 0) {
-					exportLlfcCode = inv.getString("export-llfc-code");
-					Long exportSupplierContractId = inv
-							.getLong("export-supplier-contract-id");
-					exportSupplierAccount = inv
-							.getString("export-supplier-account");
-					String exportAgreedSupplyCapacityStr = inv
-							.getString("export-agreed-supply-capacity");
-					if (!inv.isValid()) {
-						throw new UserException();
-					}
-					exportSupplierContract = Contract
-							.getSupplierContract(exportSupplierContractId);
-					try {
-						exportAgreedSupplyCapacity = new Integer(
-								exportAgreedSupplyCapacityStr);
-					} catch (NumberFormatException e) {
-						throw new UserException(
-								"The export supply capacity must be an integer."
-										+ e.getMessage());
-					}
-				} else {
-					exportMpanCore = null;
-				}
-
-				Supply supply = insertSupply(source, generatorType, name,
-						new HhStartDate(startDate), null, gspGroup, "",
-						mopContract, mopAccount, hhdcContract, hhdcAccount,
-						meterSerialNumber, pc, mtcCode, cop, ssc,
-						importMpanCore, importLlfcCode, importSupplierContract,
-						importSupplierAccount, importAgreedSupplyCapacity,
-						exportMpanCore, exportLlfcCode, exportSupplierContract,
-						exportSupplierAccount, exportAgreedSupplyCapacity);
-				Hiber.commit();
-				inv.sendSeeOther(supply.getEditUri());
-			} catch (UserException e) {
-				Hiber.rollBack();
-				Hiber.close();
-				e.setDocument(document());
-				throw e;
-			}
-		}
 	}
 }

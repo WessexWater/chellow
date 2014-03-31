@@ -22,14 +22,12 @@
 package net.sf.chellow.physical;
 
 import java.net.URI;
-import java.util.Date;
 
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.Invocation;
 import net.sf.chellow.monad.MonadUtils;
 import net.sf.chellow.monad.NotFoundException;
-import net.sf.chellow.monad.UserException;
 import net.sf.chellow.monad.XmlTree;
 import net.sf.chellow.monad.types.MonadDate;
 import net.sf.chellow.monad.types.MonadUri;
@@ -69,25 +67,6 @@ public class Eras extends EntityList {
 
 	public UriPathElement getUriId() {
 		return URI_ID;
-	}
-
-	public void httpPost(Invocation inv) throws HttpException {
-		Hiber.setReadWrite();
-		Date startDate = inv.getDateTime("start");
-		Document doc = document();
-		if (!inv.isValid()) {
-			throw new UserException(doc);
-		}
-		Era era = null;
-		try {
-			era = supply.insertEra(HhStartDate.roundDown(startDate));
-			Hiber.commit();
-		} catch (UserException e) {
-			Hiber.rollBack();
-			e.setDocument(doc);
-			throw e;
-		}
-		inv.sendSeeOther(era.getEditUri());
 	}
 
 	public void httpGet(Invocation inv) throws HttpException {

@@ -1,1 +1,4 @@
-insert,supply,CH017,gen,chp,1,_L,2006-12-18 00:00,,MOP Contract,mc-22 9813 2107 763,HH contract,01,true,true,false,true,,00,845,5,,22 9813 2107 763,580,210,"Half-hourlies 2007",01,,,,,,,,,,,,,,,,,,
+insert,supply,CH017,gen,chp,1,_L,2006-12-18 00:00,,MOP Contract,mc-22 9813 2107 763,HH contract,01,,00,845,5,,22 9813 2107 763,580,210,"Half-hourlies 2007",01,,,,,,,,,,,,,,,,,,
+insert,channel,22 9813 2107 763,2006-12-18 00:00,true,active
+insert,channel,22 9813 2107 763,2006-12-18 00:00,true,reactive_import
+insert,channel,22 9813 2107 763,2006-12-18 00:00,true,reactive_export

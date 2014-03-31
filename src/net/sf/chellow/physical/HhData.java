@@ -20,19 +20,14 @@
  *******************************************************************************/
 package net.sf.chellow.physical;
 
-import java.math.BigDecimal;
 import java.net.URI;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
-import net.sf.chellow.hhimport.HhDatumRaw;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.Invocation;
-import net.sf.chellow.monad.MonadMessage;
 import net.sf.chellow.monad.MonadUtils;
 import net.sf.chellow.monad.NotFoundException;
 import net.sf.chellow.monad.UserException;
@@ -137,58 +132,6 @@ public class HhData extends EntityList {
 		return doc;
 	}
 
-	public void httpPost(Invocation inv) throws HttpException {
-		Hiber.setReadWrite();
-		if (inv.hasParameter("delete")) {
-			Date deleteFrom = inv.getDate("delete-from");
-			int days = inv.getInteger("days");
-			try {
-				Calendar cal = MonadDate.getCalendar();
-				cal.setTime(deleteFrom);
-				cal.add(Calendar.DAY_OF_MONTH, days);
-				channel.deleteData(new HhStartDate(deleteFrom),
-						new HhStartDate(cal.getTime()).getPrevious());
-				Hiber.commit();
-			} catch (HttpException e) {
-				e.setDocument(doc(inv));
-				throw e;
-			}
-			Document doc = doc(inv);
-			Element docElement = doc.getDocumentElement();
-			docElement.appendChild(new MonadMessage(
-					"HH data deleted successfully.").toXml(doc));
-			inv.sendOk(doc);
-		} else if (inv.hasParameter("insert")) {
-			Date startDate = inv.getDateTime("start");
-			BigDecimal value = inv.getBigDecimal("value");
-			Character status = inv.getCharacter("status");
-			if (!inv.isValid()) {
-				throw new UserException(doc(inv));
-			}
-			HhStartDate hhStartDate = new HhStartDate(startDate);
-			if (Hiber
-					.session()
-					.createQuery(
-							"from HhDatum datum where datum.channel = :channel and datum.startDate.date = :startDate")
-					.setEntity("channel", channel)
-					.setTimestamp("startDate", hhStartDate.getDate())
-					.uniqueResult() != null) {
-				throw new UserException(doc(inv),
-						"There's already an HH datum with this time.");
-			}
-			List<HhDatumRaw> data = new ArrayList<HhDatumRaw>();
-			String mpanCore = channel.getEra().getImpMpanCore();
-			if (mpanCore == null) {
-				mpanCore = channel.getEra().getExpMpanCore();
-			}
-			data.add(new HhDatumRaw(mpanCore, channel.getIsImport(), channel
-					.getIsKwh(), hhStartDate, value, status));
-			HhDatum.insert(data.iterator(),
-					Arrays.asList(new Boolean[] { Boolean.FALSE }));
-			Hiber.commit();
-			inv.sendOk(doc(inv));
-		}
-	}
 
 	public HhDatum getChild(UriPathElement uriId) throws HttpException {
 		HhDatum hhDatum = (HhDatum) Hiber

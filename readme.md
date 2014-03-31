@@ -251,14 +251,16 @@ Action | Type
 *insert* | *site* | Site Code  | Site Name
 *delete* | *site* | Site Code
 *update* | *site* | Current Site Code  | New Site Code  | Site Name
-*insert* | *supply* | Site Code  | Source Code  | Generator Type  | Supply Name | GSP Group (geographic location)  | Start date (yyyy-MM-dd)  | Finish Date  | MOP Contract  | MOP Account  | HHDC Contract  | HHDC Account  | Has import HH kWh? (true/false)  | Has import HH kVArh? (true/false)  | Has export HH kWh? (true/false)  | Has export HH kVArh? (true/false)  | Meter Serial Number  | Profile Class  | Meter Timeswitch Class  | CoP  | Standard Settlement Configuration (blank for HH supplies)  | Import MPAN Core  | Import LLFC  | Import Supply Capacity  | Import Supplier Contract  | Import Supplier Account  | Export MPAN Core  | Export LLFC  | Export Supply Capacity  | Export Supplier Contract  | Export Supplier Account
-*update* | *supply* | MPAN Core  | Source Code  | Generator Type  | Supply Name | GSP Group
-*insert* | *era* | Mpan Core  | Start date (yyyy-MM-dd)  | Site Code  | MOP Contract  | MOP Account  | HHDC Contract  | HHDC Account  | Has import kWh? (yes/no)  | Has import kVArh?  | Has export kWh?  | Has export kVArh?  | Meter Serial Number  | Profile Class  | MTC  | CoP  | SSC  | Import MPAN Core  | Import LLFC  | Import Supply Capacity  | Import Supplier Contract  | Import Supplier Account  | Export MPAN Core  | Export LLFC  | Export Supply Capacity  | Export Supplier Contract  | Export Supplier Account
-*update* | *era* | MPAN Core  | Date  | Start date  | Finish date  | MOP Contract  | MOP Account  | HHDC Contract  | HHDC Account  | Has import HH kWh?  | Has import HH kVArh?  | Has export HH kWh?  | Has export HH kVArh?  | Meter Serial Number  | Profile Class  | MTC  | CoP  | SSC  | Import MPAN Core  | Import LLFC  | Import Supply Capacity  | Import Supplier Contract  | Import Supplier Account  | Export MPAN Core  | Export LLFC  | Export Supply Capacity  | Export Supplier Contract  | Export Supplier Account
-*delete* | *era* | MPAN Core  | Date
-*insert* | *site_era* | Site Code  | Core MPAN  | Era Start Date  | Is Physical?
-*insert* | *hh_datum* | MPAN Core  | Date  | Is Import?  | Is kWh?  | (Value, Status)*
-*insert* | *user* | Email Address  | Password  | Password Digest  | User Role  | Participant Code  | Role Code
+*insert* | *supply* | Site Code | Source Code  | Generator Type  | Supply Name | GSP Group (geographic location)  | Start date (yyyy-MM-dd)  | Finish Date  | MOP Contract  | MOP Account  | HHDC Contract  | HHDC Account | Meter Serial Number  | Profile Class  | Meter Timeswitch Class  | CoP  | Standard Settlement Configuration (blank for HH supplies)  | Import MPAN Core  | Import LLFC  | Import Supply Capacity  | Import Supplier Contract  | Import Supplier Account  | Export MPAN Core  | Export LLFC  | Export Supply Capacity  | Export Supplier Contract  | Export Supplier Account
+*update* | *supply* | MPAN Core | Source Code  | Generator Type  | Supply Name | GSP Group
+*insert* | *era* | MPAN Core | Start date (yyyy-MM-dd)  | Site Code  | MOP Contract  | MOP Account  | HHDC Contract  | HHDC Account | Meter Serial Number  | Profile Class  | MTC  | CoP  | SSC  | Import MPAN Core  | Import LLFC  | Import Supply Capacity  | Import Supplier Contract  | Import Supplier Account  | Import ACTIVE? | Import REACTIVE_IMP? | Import REACTIVE_EXP? | Export MPAN Core  | Export LLFC  | Export Supply Capacity  | Export Supplier Contract  | Export Supplier Account | Export ACTIVE? | Export REACTIVE_IMP? | Export REACTIVE_EXP?
+*update* | *era* | MPAN Core | Date  | Start date  | Finish date  | MOP Contract  | MOP Account  | HHDC Contract  | HHDC Account | Meter Serial Number  | Profile Class  | MTC  | CoP  | SSC  | Import MPAN Core  | Import LLFC  | Import Supply Capacity  | Import Supplier Contract  | Import Supplier Account  | Export MPAN Core  | Export LLFC  | Export Supply Capacity  | Export Supplier Contract  | Export Supplier Account
+*delete* | *era* | MPAN Core | Date
+*insert* | *channel* | MPAN Core | Date (yyyy-MM-dd hh:mm)  | Import Related?  | Channel Type ('active', 'reactive import', 'reactive export'
+*delete* | *channel* | MPAN Core | Date  | Import Related?  | Channel Type ('active', 'reactive import', 'reactive export'
+*insert* | *site_era* | Site Code | Core MPAN  | Era Start Date  | Is Physical?
+*insert* | *hh_datum* | MPAN Core | Date  | Channel Type  | Value | Status
+*insert* | *user* | Email Address | Password  | Password Digest  | User Role  | Participant Code  | Role Code
 *update* | *user* | Current Email Address  | Email Address  | Password  | Password Digest  | User Role  | Participant Code  | Role Code
 *insert* | *channel_snag_ignore* | MPAN Core  | Is Import?  | Is kWh?  | Description  | From  | To
 *insert* | *site_snag_ignore* | Site Code  | Description  | From  | To

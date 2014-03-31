@@ -60,14 +60,11 @@ import net.sf.chellow.monad.XmlTree;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
 import net.sf.chellow.physical.Configuration;
-import net.sf.chellow.physical.Era;
-import net.sf.chellow.physical.HhDatum;
 import net.sf.chellow.physical.HhStartDate;
 import net.sf.chellow.physical.RegisterRead;
 import net.sf.chellow.physical.Site;
 import net.sf.chellow.physical.SiteEra;
 import net.sf.chellow.physical.Snag;
-import net.sf.chellow.physical.Supply;
 import net.sf.chellow.physical.User;
 
 import org.w3c.dom.Document;
@@ -201,7 +198,6 @@ public class GeneralImport extends Thread implements Urlable, XmlDescriber {
 								}
 								startDate = startDate.getNext();
 							}
-							HhDatum.insert(hhData.iterator(), halt);
 							hhData.clear();
 						}
 						totalHhTime = totalHhTime + System.currentTimeMillis()
@@ -232,10 +228,6 @@ public class GeneralImport extends Thread implements Urlable, XmlDescriber {
 						Site.generalImport(action, values, csvElement);
 					} else if (type.equals("site-supply-era")) {
 						SiteEra.generalImport(action, values, csvElement);
-					} else if (type.equals("supply")) {
-						Supply.generalImport(action, values, csvElement);
-					} else if (type.equals("era")) {
-						Era.generalImport(action, values, csvElement);
 					} else if (type.equals("report")) {
 						Report.generalImport(action, values, csvElement);
 					} else if (type.equals("non-core-contract")) {
@@ -270,10 +262,6 @@ public class GeneralImport extends Thread implements Urlable, XmlDescriber {
 				}
 				Hiber.commit();
 				allValues = digester.getLine();
-			}
-			if (!hhData.isEmpty()) {
-				HhDatum.insert(hhData.iterator(), halt);
-				Hiber.close();
 			}
 
 			if (shouldHalt()) {

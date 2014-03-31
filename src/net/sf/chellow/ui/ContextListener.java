@@ -284,7 +284,15 @@ public class ContextListener implements ServletContextListener {
 				} catch (SecurityException e) {
 					throw new InternalException(e);
 				}
+				Statement stmt = con.createStatement();
+				con.setAutoCommit(false);
+				stmt.executeUpdate("begin isolation level serializable read write");
+				stmt.executeUpdate("create type channel_type as enum ('ACTIVE', 'REACTIVE_IMP', 'REACTIVE_EXP')");
+				stmt.executeUpdate("alter table channel add column channel_type channel_type not null");
+				stmt.executeUpdate("alter table channel add constraint channel_era_id_imp_related_channel_type_key unique (era_id, imp_related, channel_type)");
+				con.commit();
 			}
+
 		});
 
 		Hiber.commit();

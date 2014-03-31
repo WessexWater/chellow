@@ -2,7 +2,7 @@
 <!DOCTYPE hibernate-mapping PUBLIC
       "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
           "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
-          
+
 <!-- Copyright (c) 2005 - 2013 Wessex Water Services Limited This file is 
 	part of Chellow. Chellow is free software: you can redistribute it and/or 
 	modify it under the terms of the GNU General Public License as published 
@@ -16,13 +16,11 @@
 <hibernate-mapping package="net.sf.chellow.physical">
 	<class name="Channel" table="channel" lazy="true">
 		<id name="id">
-			<generator class="identity"/>
+			<generator class="identity" />
 		</id>
 		<many-to-one name="era" class="Era" column="era_id"
-			unique-key="channel_unique" foreign-key="channel_era_id_fkey" />
-		<property name="isImport" column="is_import" type="boolean"
-			not-null="true" unique-key="channel_unique" />
-		<property name="isKwh" column="is_kwh" type="boolean"
-			not-null="true" unique-key="channel_unique" />
+			foreign-key="channel_era_id_fkey" />
+		<property name="impRelated" column="imp_related" type="boolean"
+			not-null="true" />
 	</class>
 </hibernate-mapping>

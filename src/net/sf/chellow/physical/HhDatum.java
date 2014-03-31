@@ -1,6 +1,6 @@
 /*******************************************************************************
  * 
- *  Copyright (c) 2005, 2011 Wessex Water Services Limited
+ *  Copyright (c) 2005, 2014 Wessex Water Services Limited
  *  
  *  This file is part of Chellow.
  * 
@@ -23,14 +23,9 @@ package net.sf.chellow.physical;
 
 import java.math.BigDecimal;
 import java.net.URI;
-import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Date;
-import java.util.Iterator;
-import java.util.List;
 
 import net.sf.chellow.hhimport.HhDatumRaw;
-import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Invocation;
@@ -40,7 +35,6 @@ import net.sf.chellow.monad.NotFoundException;
 import net.sf.chellow.monad.Urlable;
 import net.sf.chellow.monad.UserException;
 import net.sf.chellow.monad.XmlTree;
-import net.sf.chellow.monad.types.MonadDate;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
 
@@ -54,78 +48,6 @@ public class HhDatum extends PersistentEntity {
 
 	public static final char PADDING = 'C';
 
-	static public void insert(Iterator<HhDatumRaw> rawData, List<Boolean> halt)
-			throws HttpException {
-		if (!rawData.hasNext()) {
-			return;
-		}
-		Calendar cal = MonadDate.getCalendar();
-		HhDatumRaw datum = rawData.next();
-		String mpanCore = datum.getMpanCore();
-		Era era = Era.getEra(mpanCore, datum.getStartDate());
-		if (era == null) {
-			throw new UserException(
-					"This datum is either before or after the supply: "
-							+ datum.toString() + ".");
-		}
-		long previousDate = datum.getStartDate().getDate().getTime();
-		boolean isImport = datum.getIsImport();
-		boolean isKwh = datum.getIsKwh();
-		Channel channel = era.getChannel(isImport, isKwh);
-		if (channel == null) {
-			throw new UserException("There is no channel for the datum: "
-					+ datum.toString() + ".");
-		}
-		HhStartDate genFinishDate = era.getFinishDate();
-		List<HhDatumRaw> data = new ArrayList<HhDatumRaw>();
-		data.add(datum);
-		// HhDatumRaw firstDatum = datum;
-		if (!rawData.hasNext()) {
-			// batchSize = data.size();
-			channel.addHhData(data);
-		}
-		while (rawData.hasNext() && !halt.get(0)) {
-			datum = rawData.next();
-			Date startDate = datum.getStartDate().getDate();
-			if (data.size() > 1000
-					|| !(mpanCore.equals(datum.getMpanCore())
-							&& datum.getIsImport() == isImport
-							&& datum.getIsKwh() == isKwh && startDate.getTime() == HhStartDate
-							.getNext(cal, previousDate))
-					|| (genFinishDate != null && genFinishDate.getDate()
-							.before(startDate))) {
-				// batchSize = data.size();
-				channel.addHhData(data);
-				Hiber.commit();
-				Hiber.close();
-				Hiber.setReadWrite();
-				data.clear();
-				String mpanCoreStr = datum.getMpanCore();
-				era = Era.getEra(mpanCoreStr, datum.getStartDate());
-				if (era == null) {
-					throw new UserException(
-							"This datum is either before or after the supply: "
-									+ datum.toString() + ".");
-				}
-				isImport = datum.getIsImport();
-				isKwh = datum.getIsKwh();
-				channel = era.getChannel(isImport, isKwh);
-				if (channel == null) {
-					throw new UserException(
-							"There is no channel for the datum: "
-									+ datum.toString() + ".");
-				}
-				genFinishDate = era.getFinishDate();
-			}
-			data.add(datum);
-			previousDate = startDate.getTime();
-		}
-		if (!data.isEmpty()) {
-			channel.addHhData(data);
-		}
-		Hiber.commit();
-		Hiber.close();
-	}
 
 	private Channel channel;
 
@@ -239,40 +161,6 @@ public class HhDatum extends PersistentEntity {
 		return doc;
 	}
 
-	public void httpPost(Invocation inv) throws HttpException {
-		Hiber.setReadWrite();
-		if (inv.hasParameter("delete")) {
-			try {
-				channel.deleteData(startDate, startDate);
-				Hiber.commit();
-				inv.sendSeeOther(channel.getHhDataInstance().getEditUri());
-			} catch (HttpException e) {
-				e.setDocument(document(null));
-				throw e;
-			}
-		} else {
-			BigDecimal value = inv.getBigDecimal("value");
-			Character status = inv.getCharacter("status");
-			if (!inv.isValid()) {
-				throw new UserException();
-			}
-			try {
-				List<HhDatumRaw> dataRaw = new ArrayList<HhDatumRaw>();
-				String mpanCore = channel.getEra().getImpMpanCore();
-				if (mpanCore == null) {
-					mpanCore = channel.getEra().getExpMpanCore();
-				}
-				dataRaw.add(new HhDatumRaw(mpanCore, channel.getIsImport(),
-						channel.getIsKwh(), startDate, value, status));
-				channel.addHhData(dataRaw);
-				Hiber.commit();
-			} catch (HttpException e) {
-				e.setDocument(document(null));
-				throw e;
-			}
-			inv.sendOk(document("HH Datum updated successfully"));
-		}
-	}
 
 	@Override
 	public URI getViewUri() throws HttpException {
