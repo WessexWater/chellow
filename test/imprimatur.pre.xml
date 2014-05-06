@@ -3528,7 +3528,9 @@ def virtual_bill(supply_source):
 		<test name="Try editing a note.">
 			<request path="/chellow/reports/239/output/" method="post">
 				<control name="supply_id" value="2" />
-				<control name="note"><![CDATA[Some people, when confronted with a problem, think “I know,
+				<control name="is_important" value="True" />
+				<control name="category" value="general" />
+				<control name="body"><![CDATA[Some people, when confronted with a problem, think “I know,
 				I'll use regular expressions.” Now they have two problems.]]></control>
 				<response-code value="303" />
 			</request>

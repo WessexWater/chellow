@@ -584,7 +584,7 @@ from datetime import datetime
 
 Monad.getUtils()['imprt'](globals(), {
         'db': ['Contract', 'Supply', 'RateScript', 'set_read_write', 'session', 'Era', 'SiteEra', 'Channel', 'Tpr', 'Bill', 'RegisterRead', 'Site'], 
-        'utils': ['UserException'],
+        'utils': ['UserException', 'form_str', 'form_int'],
         'templater': ['render']})
 
 sess = None
@@ -14905,7 +14905,7 @@ import pytz
 
 Monad.getUtils()['imprt'](globals(), {
         'db': ['Supply', 'Batch', 'Participant', 'set_read_write', 'session'], 
-        'utils': ['UserException', 'form_date'],
+        'utils': ['UserException', 'form_date', 'form_str', 'form_int'],
         'templater': ['render']})
 
 
@@ -14922,10 +14922,10 @@ try:
         render(inv, template, make_fields(sess, supply))
     else:
         set_read_write(sess)
-        supply_id = inv.getLong('supply_id')
+        supply_id = form_int(inv, 'supply_id')
         supply = Supply.get_by_id(sess, supply_id)
-        body = inv.getString('body')
-        category = inv.getString('category')
+        body = form_str(inv, 'body')
+        category = form_str(inv, 'category')
         is_important = inv.getBoolean('is_important')
         if len(supply.note.strip()) == 0:
             supply.note = "{'notes': []}"
