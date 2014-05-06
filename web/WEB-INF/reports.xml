@@ -3836,7 +3836,7 @@ try:
                     supplier_contract = era.exp_supplier_contract
 
             if metering_type == 'hh':
-                latest_supplier_bill_date = sess.query(Bill.finish_date).join(Batch).filter(Bill.start_date<=date, Bill.supply_id==supply.id, Batch.contract_id==supplier_contract.id).order_by(Bill.finish_date).first()
+                latest_supplier_bill_date = sess.query(Bill.finish_date).join(Batch).filter(Bill.start_date<=date, Bill.supply_id==supply.id, Batch.contract_id==supplier_contract.id).order_by(Bill.finish_date.desc()).first()
                 if latest_supplier_bill_date is not None:
                     latest_supplier_bill_date = latest_supplier_bill_date[0]
             else:
