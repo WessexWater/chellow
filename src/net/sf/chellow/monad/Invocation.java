@@ -94,7 +94,6 @@ public class Invocation {
 		OPTIONS, GET, HEAD, POST, PUT, DELETE, TRACE
 	};
 
-	@SuppressWarnings("unchecked")
 	public Invocation(HttpServletRequest req, HttpServletResponse res,
 			Monad monad) throws InternalException {
 		this.monad = monad;

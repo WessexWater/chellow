@@ -9,7 +9,7 @@
 	<property name="dist.home" value="${basedir}/dist" />
 	<property name="docs.home" value="${basedir}/docs" />
 	<property name="manager.url" value="http://localhost:8080/manager/text" />
-	<property name="catalina.home" value="/usr/share/tomcat7" />
+	<property name="catalina.home" value="${user.home}/apache-tomcat-8.0.5" />
 	<property name="src.home" value="${basedir}/src" />
 	<property name="web.home" value="${basedir}/web" />
 	<property name="javalib.home" value="${user.home}/java" />
@@ -18,8 +18,8 @@
 
 	<property name="imprimatur.jar" value="${javalib.home}\imprimatur-022\imprimatur.jar" />
 	<property name="test.home" value="${basedir}/test" />
-
-	<taskdef uri="antlib:tomcat.apache.org" resource="org/apache/catalina/ant/catalina.tasks" classpath="${catalina.home}/lib/catalina-ant.jar:${catalina.home}/lib/jasper.jar:${catalina.home}/lib/servlet-api.jar:${catalina.home}/bin/tomcat-juli.jar:${catalina.home}/lib/tomcat-coyote.jar:${catalina.home}/lib/tomcat-util.jar" />
+	
+	<taskdef uri="antlib:tomcat.apache.org" resource="org/apache/catalina/ant/catalina.tasks" classpath="${catalina.home}/lib/catalina-ant.jar:${catalina.home}/lib/jasper.jar:${catalina.home}/lib/servlet-api.jar:${catalina.home}/lib/jsp-api.jar:${catalina.home}/bin/tomcat-juli.jar:${catalina.home}/lib/tomcat-util.jar" />
 
 	<property name="compile.debug" value="true" />
 	<property name="compile.deprecation" value="true" />
@@ -60,29 +60,29 @@
 			<fileset dir="${src.home}" excludes="**/*.java" />
 		</copy>
 		<copy todir="${build.home}/WEB-INF/lib-python/jinja2">
-			<fileset dir="${user.home}/venv/lib/python2.5/site-packages/jinja2" />
+			<fileset dir="${user.home}/venv/lib/python2.6/site-packages/jinja2" />
 		</copy>
 		<copy todir="${build.home}/WEB-INF/lib-python/dateutil">
-			<fileset dir="${user.home}/venv/lib/python2.5/site-packages/dateutil" />
+			<fileset dir="${user.home}/venv/lib/python2.6/site-packages/dateutil" />
 		</copy>
 		<copy todir="${build.home}/WEB-INF/lib-python/sqlalchemy">
-			<fileset dir="${user.home}/venv/lib/python2.5/site-packages/sqlalchemy" />
+			<fileset dir="${user.home}/venv/lib/python2.6/site-packages/sqlalchemy" />
 		</copy>
 		<copy todir="${build.home}/WEB-INF/lib-python/pg8000">
-			<fileset dir="${user.home}/venv/lib/python2.5/site-packages/pg8000" />
+			<fileset dir="${user.home}/venv/lib/python2.6/site-packages/pg8000" />
 		</copy>
 		<copy todir="${build.home}/WEB-INF/lib-python/pytz">
-			<fileset dir="${user.home}/venv/lib/python2.5/site-packages/pytz" />
+			<fileset dir="${user.home}/venv/lib/python2.6/site-packages/pytz" />
 		</copy>
-		<copy overwrite="true" todir="${build.home}/WEB-INF/lib-python/" file="${user.home}/venv/lib/python2.5/site-packages/six.py" />
+		<copy overwrite="true" todir="${build.home}/WEB-INF/lib-python/" file="${user.home}/venv/lib/python2.6/site-packages/six.py" />
 		<copy todir="${build.home}/WEB-INF/lib-python/ftputil">
-			<fileset dir="${user.home}/venv/lib/python2.5/site-packages/ftputil" />
+			<fileset dir="${user.home}/venv/lib/python2.6/site-packages/ftputil" />
 		</copy>
 		<copy todir="${build.home}/WEB-INF/lib-python/requests">
-			<fileset dir="${user.home}/venv/lib/python2.5/site-packages/requests" />
+			<fileset dir="${user.home}/venv/lib/python2.6/site-packages/requests" />
 		</copy>
 
-		<taskdef name="instrument" classname="org.hibernate.tool.instrument.javassist.InstrumentTask" classpath="${javalib.home}/hibernate-distribution-3.6.10.Final/hibernate3.jar:${javalib.home}/slf4j-1.7.2/slf4j-api-1.7.2.jar:${javalib.home}/slf4j-1.7.2/slf4j-nop-1.7.2.jar" />
+		<taskdef name="instrument" classname="org.hibernate.tool.instrument.javassist.InstrumentTask" classpath="${javalib.home}/hibernate-distribution-3.6.10.Final/hibernate3.jar:/usr/share/java/slf4j-api.jar:/usr/share/java/slf4j-nop.jar" />
 
 		<instrument verbose="true">
 			<fileset dir="${build.home}">
@@ -180,20 +180,17 @@
 				<file name="commons-logging.jar" />
 				<file name="httpclient.jar" />
 				<file name="httpcore.jar" />
+				<file name="slf4j-nop.jar" />
 			</filelist>
 			<filelist dir="${javalib.home}">
 				<file name="jython-standalone-2.5.3.jar" />
-				<file name="javasysmon-0.3.3.jar" />
+				<file name="javasysmon-0.3.4.jar" />
 			</filelist>
-			<filelist dir="${javalib.home}/javamail-1.4.5">
-				<file name="mail.jar" />
+			<filelist dir="${javalib.home}">
+				<file name="javax.mail.jar" />
 			</filelist>
 			<filelist dir="${javalib.home}/ostermillerutils-1.08.02">
 				<file name="ostermillerutils-1.08.02.jar" />
-			</filelist>
-			<filelist dir="${javalib.home}/slf4j-1.7.2">
-				<file name="slf4j-nop-1.7.2.jar" />
-				<file name="slf4j-api-1.7.2.jar" />
 			</filelist>
 			<filelist dir="${javalib.home}/jakarta-oro-2.0.8">
 				<file name="jakarta-oro-2.0.8.jar" />
