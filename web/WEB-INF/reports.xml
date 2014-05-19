@@ -3663,7 +3663,7 @@ Monad.getUtils()['impt'](globals(), 'db', 'utils', 'templater')
 
 Era, Supply, Bill, Batch, Channel, HhDatum, RegisterRead, ReadType = db.Era, db.Supply, db.Bill, db.Batch, db.Channel, db.HhDatum, db.RegisterRead, db.ReadType
 
-HH = utils.HH
+HH, hh_format = utils.HH, utils.hh_format
 
 sess = None
 try:
@@ -3677,7 +3677,7 @@ try:
     inv.getResponse().addHeader('Content-Disposition', 'attachment; filename="supplies_snapshot.csv"')
     pw = inv.getResponse().getWriter()
 
-    pw.println("Date,Physical Site Id, Physical Site Name, Other Site Ids, Other Site Names, Supply Id, Source, Generator Type, DNO Name, Voltage Level, Metering Type, Mandatory HH, PC, MTC, CoP, SSC, MOP Contract, Mop Account, HHDC Contract, HHDC Account, Meter Serial Number,Latest Normal Meter Read Date,Latest Normal Meter Read Type,Latest DC Bill Date, Latest MOP Bill Date,Has Import kWh?, Has Import kVArh?, Has Export kWh?, Has Export kVArh?,Import MPAN core, Import Agreed Supply Capacity (kVA), Import LLFC Code, Import LLFC Description, Import Supplier Contract, Import Supplier Account, Import Mandatory kWh,Latest Import Supplier Bill Date, Export MPAN core, Export Agreed Supply Capacity (kVA), Export LLFC Code, Export LLFC Description, Export Supplier Contract, Export Supplier Account, Export Mandatory kWh,Latest Export Supplier Bill Date")
+    pw.println("Date,Physical Site Id, Physical Site Name, Other Site Ids, Other Site Names, Supply Id, Source, Generator Type, DNO Name, Voltage Level, Metering Type, Mandatory HH, PC, MTC, CoP, SSC, MOP Contract, Mop Account, HHDC Contract, HHDC Account, Meter Serial Number, Meter Installation Date,Latest Normal Meter Read Date,Latest Normal Meter Read Type,Latest DC Bill Date, Latest MOP Bill Date,Has Import kWh?, Has Import kVArh?, Has Export kWh?, Has Export kVArh?,Import MPAN core, Import Agreed Supply Capacity (kVA), Import LLFC Code, Import LLFC Description, Import Supplier Contract, Import Supplier Account, Import Mandatory kWh,Latest Import Supplier Bill Date, Export MPAN core, Export Agreed Supply Capacity (kVA), Export LLFC Code, Export LLFC Description, Export Supplier Contract, Export Supplier Account, Export Mandatory kWh,Latest Export Supplier Bill Date")
     pw.flush()
 
     NORMAL_READ_TYPES = ('N', 'C', 'N3')
@@ -3734,7 +3734,7 @@ try:
                 latest_normal_read_date = latest_prev_normal_read.previous_date
                 latest_normal_read_type = latest_prev_normal_read.previous_type.code
             if latest_normal_read_date is not None:
-                latest_normal_read_date = latest_normal_read_date.strftime("%Y-%m-%d %H:%M")
+                latest_normal_read_date = hh_format(latest_normal_read_date)
 
         else:
             latest_normal_read_date = metering_type
@@ -3752,7 +3752,7 @@ try:
             latest_mop_bill_date = sess.query(Bill.finish_date).join(Batch).filter(Bill.start_date<=date, Bill.supply_id==supply.id, Batch.contract_id==mop_contract.id).order_by(Bill.finish_date).first()
 
             if latest_mop_bill_date is not None:
-                latest_mop_bill_date = latest_mop_bill_date[0].strftime("%Y-%m-%d %H:%M")
+                latest_mop_bill_date = hh_format(latest_mop_bill_date[0])
 
         hhdc_contract = era.hhdc_contract
         if hhdc_contract is None:
@@ -3765,7 +3765,7 @@ try:
             latest_hhdc_bill_date = sess.query(Bill.finish_date).join(Batch).filter(Bill.start_date<=date, Bill.supply_id==supply.id, Batch.contract_id==hhdc_contract.id).order_by(Bill.finish_date).first()
 
             if latest_hhdc_bill_date is not None:
-                latest_hhdc_bill_date = latest_hhdc_bill_date[0].strftime("%Y-%m-%d %H:%M")
+                latest_hhdc_bill_date = hh_format(latest_hhdc_bill_date[0])
 
         channel_values = []
         for is_import in [True, False]:
@@ -3861,14 +3861,16 @@ try:
                     latest_supplier_bill_date = latest_read.bill.finish_date
 
             if latest_supplier_bill_date is not None:
-                latest_supplier_bill_date = latest_supplier_bill_date.strftime("%Y-%m-%d %H:%M")
+                latest_supplier_bill_date = hh_format(latest_supplier_bill_date)
 
                 if is_import:
                     imp_latest_supplier_bill_date = latest_supplier_bill_date
                 else:
                     exp_latest_supplier_bill_date = latest_supplier_bill_date
 
-        pw.println(','.join(('"' + ('' if value is None else str(value)) + '"') for value in [date.strftime("%Y-%m-%d %H:%M"), physical_site.code, physical_site.name, site_codes, site_names, supply.id, supply.source.code, generator_type, supply.dno_contract.name, voltage_level_code, metering_type, mandatory_hh, era.pc.code, era.mtc.code, era.cop.code, None if era.ssc is None else era.ssc.code, mop_contract_name, mop_account, hhdc_contract_name, hhdc_account, era.msn, latest_normal_read_date, latest_normal_read_type, latest_hhdc_bill_date, latest_mop_bill_date] + channel_values + [era.imp_mpan_core, era.imp_sc, None if era.imp_llfc is None else era.imp_llfc.code, None if era.imp_llfc is None else era.imp_llfc.description, None if era.imp_supplier_contract is None else era.imp_supplier_contract.name, era.imp_supplier_account, imp_avg_months, imp_latest_supplier_bill_date] + [era.exp_mpan_core, era.exp_sc, None if era.exp_llfc is None else era.exp_llfc.code, None if era.exp_llfc is None else era.exp_llfc.description, None if era.exp_supplier_contract is None else era.exp_supplier_contract.name, era.exp_supplier_account, exp_avg_months, exp_latest_supplier_bill_date]))
+        meter_installation_date = sess.query(func.min(Era.start_date)).filter(Era.supply_id==era.supply_id, Era.msn==era.msn).one()[0]
+
+        pw.println(','.join(('"' + ('' if value is None else str(value)) + '"') for value in [hh_format(date), physical_site.code, physical_site.name, site_codes, site_names, supply.id, supply.source.code, generator_type, supply.dno_contract.name, voltage_level_code, metering_type, mandatory_hh, era.pc.code, era.mtc.code, era.cop.code, None if era.ssc is None else era.ssc.code, mop_contract_name, mop_account, hhdc_contract_name, hhdc_account, era.msn, hh_format(meter_installation_date), latest_normal_read_date, latest_normal_read_type, latest_hhdc_bill_date, latest_mop_bill_date] + channel_values + [era.imp_mpan_core, era.imp_sc, None if era.imp_llfc is None else era.imp_llfc.code, None if era.imp_llfc is None else era.imp_llfc.description, None if era.imp_supplier_contract is None else era.imp_supplier_contract.name, era.imp_supplier_account, imp_avg_months, imp_latest_supplier_bill_date] + [era.exp_mpan_core, era.exp_sc, None if era.exp_llfc is None else era.exp_llfc.code, None if era.exp_llfc is None else era.exp_llfc.description, None if era.exp_supplier_contract is None else era.exp_supplier_contract.name, era.exp_supplier_account, exp_avg_months, exp_latest_supplier_bill_date]))
         pw.flush()
     pw.close()
 finally:
