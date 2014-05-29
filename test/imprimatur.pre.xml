@@ -3915,7 +3915,15 @@ def virtual_bill(supply_source):
 				<regex
 					pattern="Duration Start,Duration Finish,Supply Id,Import MPAN Core,Export MPAN Core,Batch Reference,Bill Id,Bill Reference,Bill Issue Date,Bill Type,Register Read Id,TPR,Coefficient,Previous Read Date,Previous Read Value,Previous Read Type,Present Read Date,Present Read Value,Present Read Type" />
 				<regex
-					pattern='"2011-01-01T00:00Z","2011-01-31T23:30Z","10","22 1065 3921 534","","07-002","13","3423760005","2011-02-02 00:00","N","8","00001","1","2011-01-04T23:30Z","24286","E","2011-01-06T23:30Z","25927","E"' />
+					pattern='"2011-01-01 00:00","2011-01-31 23:30","10","22 1065 3921 534","","07-002","13","3423760005","2011-02-02 00:00","N","8","00001","1","2011-01-04 23:30","24286","E","2011-01-06 23:30","25927","E"' />
+			</request>
+			
+			<!-- Try for a period where there's a read with no TPR (an MD read) -->
+			<request
+				path="/chellow/reports/219/output/?supply_id=10&amp;months=1&amp;end_year=2007&amp;end_month=1">
+				<response-code value="200" />
+				<regex
+					pattern='"2007-01-01 00:00","2007-01-31 23:30","10","22 1065 3921 534","","06-002","14","SA342376","2007-01-01 00:00","N","12","md","1","2007-01-04 00:00","45","E","2007-01-17 00:00","76","E"' />
 			</request>
 		</test>
 		<test name="View a MOP rate script. Contract 54.">
@@ -4236,6 +4244,40 @@ def virtual_bill(supply_source):
 				<regex
 					pattern='&lt;tr&gt;\s*&lt;td&gt;\s*2014-03-30 00:30\s*&lt;/td&gt;\s*&lt;td&gt;0&lt;/td&gt;\s*&lt;td&gt;A&lt;/td&gt;' />
 				<response-code value="200" />
+			</request>
+		</test>
+		<test name="NHH bill outside supply period.">
+		<!-- Supplier contract 56 -->
+		
+			<!-- Create a new batch -->
+			<request path="/chellow/reports/287/output/" method="post">
+				<control name="supplier_contract_id" value="56" />
+				<control name="reference" value="06-078" />
+				<control name="description" value="Way out batch" />
+				<response-code value="303" />
+				<regex pattern="/reports/91/output/\?supplier_batch_id=12" />
+			</request>
+		
+			<request path="/chellow/reports/321/output/" method="post">
+				<control name="supplier_batch_id" value="12" />
+				<control type="file" name="import_file" value="nhh_bills2007.csv" />
+
+				<response-code value="303" />
+				<regex pattern="/reports/323/output/\?importer_id=1" />
+			</request>
+
+			<!-- Supplier contract 56, batch 12 -->
+			<request path="/chellow/reports/323/output/?importer_id=1">
+				<refresh />
+				<response-code value="200" />
+				<regex
+					pattern="All the bills have been successfully loaded and attached to the batch\." />
+			</request>
+			<request
+				path="/chellow/reports/219/output/?supply_id=7&amp;months=1&amp;end_year=2002&amp;end_month=1">
+				<response-code value="200" />
+				<regex
+					pattern='"2002-01-01 00:00","2002-01-31 23:30","7","22 4862 4512 332","","06-078","20","jg87593jfj","2002-02-02 00:00","N","15","00001","1","2002-01-04 23:30","2286","E","2002-01-06 23:30","2927","E"' />
 			</request>
 		</test>
 	</test-group>

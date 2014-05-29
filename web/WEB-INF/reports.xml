@@ -14021,85 +14021,63 @@ finally:
 		<value><![CDATA[219]]></value>
 		<value><![CDATA[true]]></value>
 		<value><![CDATA[CSV Register Reads]]></value>
-		<value><![CDATA[from net.sf.chellow.monad import Hiber, UserException
-from net.sf.chellow.monad.types import MonadDate
-from java.sql import Timestamp, ResultSet
-from java.util import GregorianCalendar, Calendar, TimeZone, Locale, Date
-from net.sf.chellow.physical import HhStartDate, Site, Supply
-from java.text import SimpleDateFormat, DecimalFormat
-from java.lang import Math, System
-from net.sf.chellow.billing import Contract, Contract
-from org.python.util import PythonInterpreter
+		<value><![CDATA[from net.sf.chellow.monad import Monad
+import datetime
+import pytz
+from dateutil.relativedelta import relativedelta
+from sqlalchemy import or_, and_
 
-year = inv.getInteger("end_year")
-month = inv.getInteger("end_month")
-months = inv.getInteger("months")
+Monad.getUtils()['impt'](globals(), 'utils', 'db')
 
-if not inv.isValid():
-    raise UserException()
+HH, hh_format = utils.HH, utils.hh_format
+RegisterRead, Bill, Supply, Era = db.RegisterRead, db.Bill, db.Supply, db.Era
 
-if inv.hasParameter('supply_id'):
-    supply_id = inv.getLong('supply_id')
-    query = Hiber.session().createQuery("select read, read.bill, read.bill.supply, read.bill.batch from RegisterRead read where read.bill.supply = :supply and (read.presentDate.date >= :startDate and read.presentDate.date <= :finishDate) or (read.previousDate.date >= :startDate and read.previousDate.date <= :finishDate) order by read.bill.supply.id").setEntity('supply', Supply.getSupply(supply_id))
-else:
-    query = Hiber.session().createQuery("select read, read.bill, read.bill.supply, read.bill.batch from RegisterRead read where (read.presentDate.date >= :startDate and read.presentDate.date <= :finishDate) or (read.previousDate.date >= :startDate and read.previousDate.date <= :finishDate) order by read.bill.supply.id")
+sess = None
+try:
+    sess = db.session()
 
-cal = MonadDate.getCalendar()
-cal.set(Calendar.YEAR, year)
-cal.set(Calendar.MONTH, month - 1)
-cal.set(Calendar.DAY_OF_MONTH, 1)
-cal.set(Calendar.HOUR_OF_DAY, 0)
-cal.set(Calendar.MINUTE, 0)
-cal.set(Calendar.SECOND, 0)
-cal.set(Calendar.MILLISECOND, 0)
-cal.add(Calendar.MONTH, 1)
-cal.add(Calendar.MINUTE, -30)
-finish_date = HhStartDate(cal.getTime())
-cal.add(Calendar.MINUTE, 30)
-cal.add(Calendar.MONTH, -1 * months)
-start_date = HhStartDate(cal.getTime())
+    year = inv.getInteger("end_year")
+    month = inv.getInteger("end_month")
+    months = inv.getInteger("months")
 
-now_date = Date()
-file_date_format = SimpleDateFormat("yyyyMMdd'T'HHmm")
-file_date_format.setCalendar(cal)
+    finish_date = datetime.datetime(year, month, 1, tzinfo=pytz.utc) + relativedelta(months=1) - HH
 
-inv.getResponse().setContentType("text/csv")
-inv.getResponse().setHeader('Content-Disposition', 'attachment; filename="reads_' + file_date_format.format(now_date) + '.csv"')
-pw = inv.getResponse().getWriter()
-pw.println("Duration Start,Duration Finish,Supply Id,Import MPAN Core,Export MPAN Core,Batch Reference,Bill Id,Bill Reference,Bill Issue Date,Bill Type,Register Read Id,TPR,Coefficient,Previous Read Date,Previous Read Value,Previous Read Type,Present Read Date,Present Read Value,Present Read Type")
-pw.flush()
+    start_date = datetime.datetime(year, month, 1, tzinfo=pytz.utc) - relativedelta(months=months-1)
 
-issue_format = SimpleDateFormat("yyyy-MM-dd HH:mm")
-issue_format.setCalendar(cal)
+    reads = sess.query(RegisterRead).filter(or_(and_(RegisterRead.present_date>=start_date, RegisterRead.present_date<=finish_date), and_(RegisterRead.previous_date>=start_date, RegisterRead.previous_date<=finish_date))).join(Bill).order_by(Bill.supply_id)
 
-reads = query.setTimestamp('startDate', start_date.getDate()).setTimestamp('finishDate', finish_date.getDate()).scroll()
-while reads.next():
-    read = reads.get(0)
-    bill = reads.get(1)
-    supply = reads.get(2)
-    batch = reads.get(3)
+    if inv.hasParameter('supply_id'):
+        supply_id = inv.getLong('supply_id')
+        supply = Supply.get_by_id(sess, supply_id)
+        reads = reads.filter(Bill.supply_id==supply.id)
 
-    era = supply.getEra(bill.getStartDate())
-    if era is None:
-        first_era = supply.getEraFirst()
-        if bill.getStartDate().before(first_era.getStartDate()):
-            era = first_era
-        else:
-            era = supply.getEraLast()
-
-    imp_mpan_core = era.getImpMpanCore()
-    if imp_mpan_core is None:
-        import_mpan_core = ''
-    exp_mpan_core = era.getExpMpanCore()
-    if exp_mpan_core is None:
-        exp_mpan_core = ''
-
-    pw.println(','.join('"' + str(value) + '"' for value in [start_date, finish_date, supply.id, imp_mpan_core, exp_mpan_core, batch.reference,bill.id, bill.reference, issue_format.format(bill.issueDate), bill.type.code, read.id, read.tpr.code, read.coefficient, read.previousDate, read.previousValue, read.previousType.code, read.presentDate, read.presentValue, read.presentType.code]))
+    inv.getResponse().setContentType("text/csv")
+    inv.getResponse().setHeader('Content-Disposition', 'attachment; filename="reads_' + datetime.datetime.now(pytz.utc).strftime("%Y%M%d%H%m") + '.csv"')
+    pw = inv.getResponse().getWriter()
+    pw.println("Duration Start,Duration Finish,Supply Id,Import MPAN Core,Export MPAN Core,Batch Reference,Bill Id,Bill Reference,Bill Issue Date,Bill Type,Register Read Id,TPR,Coefficient,Previous Read Date,Previous Read Value,Previous Read Type,Present Read Date,Present Read Value,Present Read Type")
     pw.flush()
-    Hiber.session().clear()
 
-reads.close()
-pw.close()]]></value>
+    for read in reads:
+        bill = read.bill
+        supply = bill.supply
+        batch = bill.batch
+
+        era = supply.find_era_at(sess, bill.start_date)
+        if era is None:
+            eras = sess.query(Era).filter(Era.supply_id==supply.id).order_by(Era.start_date).all()
+            if bill.start_date < eras[0].start_date:
+                era = eras[0]
+            else:
+                era = eras[-1]
+
+        pw.println(','.join('"' + ('' if value is None else str(value)) + '"' for value in [hh_format(start_date), hh_format(finish_date), supply.id, era.imp_mpan_core, era.exp_mpan_core, batch.reference,bill.id, bill.reference, hh_format(bill.issue_date), bill.bill_type.code, read.id, 'md' if read.tpr is None else read.tpr.code, read.coefficient, hh_format(read.previous_date), read.previous_value, read.previous_type.code, hh_format(read.present_date), read.present_value, read.present_type.code]))
+        pw.flush()
+
+    pw.close()
+
+finally:
+    if sess is not None:
+        sess.close()]]></value>
 		<value><![CDATA[]]></value>
 	</line>
 	<line>
