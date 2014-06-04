@@ -310,20 +310,21 @@ import operator
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
 from java.lang import System
+import pytz
 
-Monad.getUtils()['imprt'](globals(), {
-        'db': ['Contract', 'Era', 'Site', 'set_read_write', 'session'], 
-        'utils': ['UserException', 'HH'],
-        'templater': ['render']})
+Monad.getUtils()['impt'](globals(), 'db', 'utils', 'templater')
+
+Contract, Site, Era, SiteEra = db.Contract, db.Site, db.Era, db.SiteEra
+HH = utils.HH
 
 sess = None
 try:
-    sess = session()
+    sess = db.session()
     configuration_contract = Contract.get_non_core_by_name(sess, 'configuration')
     site_id = inv.getLong("site_id")
     site = Site.get_by_id(sess, site_id)
 
-    eras = sess.query(Era).from_statement("select era.* from site_era, era where site_era.era_id = era.id and site_era.site_id = :site_id order by era.supply_id, era.start_date desc").params(site_id=site.id).all()
+    eras = sess.query(Era).join(SiteEra).filter(SiteEra.site_id==site.id).order_by(Era.supply_id, Era.start_date.desc()).all()
 
     groups = []
     for idx, era in enumerate(eras):
@@ -336,24 +337,25 @@ try:
                 meter_cat = 'Unmetered'
             else:
                 meter_cat = 'NHH'
-            physical_site = sess.query(Site).from_statement("select site.* from site, site_era where site_era.site_id = site.id and site_era.is_physical is true and site_era.era_id = :era_id").params(era_id=era.id).one()
-            groups.append({'last_era': era, 'is_ongoing': era.finish_date is None, 'meter_category': meter_cat, 'physical_site': physical_site})
+
+            groups.append({'last_era': era, 'is_ongoing': era.finish_date is None, 'meter_category': meter_cat})
         if era == eras[-1] or era.supply_id != eras[idx + 1]:
             groups[-1]['first_era'] = era
 
     groups = sorted(groups, key=operator.itemgetter('is_ongoing'), reverse=True)
 
-    now = datetime.utcnow()
+    now = datetime.now(pytz.utc)
     month_start = datetime(now.year, now.month, 1)
     month_finish = month_start + relativedelta(months=1) - HH
     last_month_start = month_start - relativedelta(months=1)
     last_month_finish = month_start - HH
 
     properties = configuration_contract.make_properties()
-    other_sites = site.groups(sess, now, now, False)[0].sites[1:]
-    render(inv, template, {'site': site, 'groups': groups, 'properties': properties, 'other_sites': other_sites, 'month_start': month_start, 'month_finish': month_finish, 'last_month_start': last_month_start, 'last_month_finish': last_month_finish})
+    other_sites = [s for s in site.groups(sess, now, now, False)[0].sites if s != site]
+    templater.render(inv, template, {'site': site, 'groups': groups, 'properties': properties, 'other_sites': other_sites, 'month_start': month_start, 'month_finish': month_finish, 'last_month_start': last_month_start, 'last_month_finish': last_month_finish})
 finally:
-    sess.close()]]></value>
+    if sess is not None:
+        sess.close()]]></value>
 		<value><![CDATA[<!doctype html>
 <html>
   <head>
@@ -412,6 +414,7 @@ finally:
       {% endif %}
     </table>
     <br>
+
     {% if other_sites|length > 0 %}
       <table>
         <caption>Other sites in this group</caption>
@@ -481,15 +484,21 @@ finally:
               {% endif %}
             </td>
             <td>
-              {% if group.physical_site.id == site.id %}
-                this site
-              {% else %}
-                <a href="{{context_path}}/reports/5/output/?site_id={{group['physical_site'].id}}">{{group.physical_site.code}}</a>
-              {% endif %}
+              {% for site_era in last_era.site_eras %}
+                {% if site_era.is_physical %}
+                  {% if site_era.site.id == site.id %}
+                    this site
+                  {% else %}
+                    <a href="{{context_path}}/reports/5/output/?site_id={{site_era.site.id}}" title="{{site_era.site.name}}">{{site_era.site.code}}</a>
+                  {% endif %}
+                {% endif %}
+              {% endfor %}
             </td>
             <td>
-              {% for osite in group.other_sites %}
-                <a href="{{context_path}}/reports/5/output/?site_id={{osite.id}}">{{osite.code}}</a>
+              {% for site_era in last_era.site_eras %}
+                {% if site_era.site.id != site.id %}
+                  <a href="{{context_path}}/reports/5/output/?site_id={{site_era.site.id}}" title="{{site_era.site.name}}">{{site_era.site.code}}</a>
+                {% endif %}
               {% endfor %}
             </td>
             <td>{{group.meter_category}}</td>

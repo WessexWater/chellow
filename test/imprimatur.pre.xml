@@ -3919,7 +3919,7 @@ def virtual_bill(supply_source):
 				<regex
 					pattern='"2011-01-01 00:00","2011-01-31 23:30","10","22 1065 3921 534","","07-002","13","3423760005","2011-02-02 00:00","N","8","00001","1","2011-01-04 23:30","24286","E","2011-01-06 23:30","25927","E"' />
 			</request>
-			
+
 			<!-- Try for a period where there's a read with no TPR (an MD read) -->
 			<request
 				path="/chellow/reports/219/output/?supply_id=10&amp;months=1&amp;end_year=2007&amp;end_month=1">
@@ -4190,8 +4190,9 @@ def virtual_bill(supply_source):
 				<regex
 					pattern='"2011-05-31 23:30","CI004","Lower Treave","","","9","net","","22","980","amr","no","08","857","6c","0428","MOP Contract","mc-22 0195 4836 192","Dynamat data","dc-22 0195 4836 192","P96C93722","2005-08-06 00:00","amr","","","","true","true","true","true","22 0195 4836 192","304","980","NHH UMS Cat B : Dusk to Dawn","Non half-hourlies 2007","SA342376","","2007-08-01 00:00","","","","","","","",""\Z' />
 			</request>
-			
-			<!-- Try a supplies snapshot to check that latest import supplier bill is correct -->
+
+			<!-- Try a supplies snapshot to check that latest import supplier bill 
+				is correct -->
 			<request
 				path="/chellow/reports/33/output/?supply_id=6&amp;year=2012&amp;month=05&amp;day=01&amp;hour=00&amp;minute=00">
 				<response-code value="200" />
@@ -4249,8 +4250,8 @@ def virtual_bill(supply_source):
 			</request>
 		</test>
 		<test name="NHH bill outside supply period.">
-		<!-- Supplier contract 56 -->
-		
+			<!-- Supplier contract 56 -->
+
 			<!-- Create a new batch -->
 			<request path="/chellow/reports/287/output/" method="post">
 				<control name="supplier_contract_id" value="56" />
@@ -4259,7 +4260,7 @@ def virtual_bill(supply_source):
 				<response-code value="303" />
 				<regex pattern="/reports/91/output/\?supplier_batch_id=12" />
 			</request>
-		
+
 			<request path="/chellow/reports/321/output/" method="post">
 				<control name="supplier_batch_id" value="12" />
 				<control type="file" name="import_file" value="nhh_bills2007.csv" />
@@ -4280,6 +4281,20 @@ def virtual_bill(supply_source):
 				<response-code value="200" />
 				<regex
 					pattern='"2002-01-01 00:00","2002-01-31 23:30","7","22 4862 4512 332","","06-078","20","jg87593jfj","2002-02-02 00:00","N","15","00001","1","2002-01-04 23:30","2286","E","2002-01-06 23:30","2927","E"' />
+			</request>
+		</test>
+		<test name="Check the 'also supplies' field of a site.">
+			<!-- Attach another site to an era. Supply 2 -->
+			<request path="/chellow/reports/307/output/" method="post">
+				<control name="era_id" value="8" />
+				<control name="site_code" value="CI005" />
+				<control name="attach" value="Attach" />
+				<response-code value="303" />
+			</request>
+			<request path="/chellow/reports/5/output/?site_id=1">
+				<regex
+					pattern='3475 1614 211\s*&lt;/td&gt;\s*&lt;td&gt;\s*this site\s*&lt;/td&gt;\s*&lt;td&gt;\s*&lt;a href="/chellow/reports/5/output/\?site_id=3" title="Wheal Rodney"&gt;CI005&lt;/a&gt;\s*&lt;/td&gt;' />
+				<response-code value="200" />
 			</request>
 		</test>
 	</test-group>
