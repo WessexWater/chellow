@@ -2026,7 +2026,7 @@ finally:
 
             <td>
               {% if month.has_site_snags %}
-                See <a href="{{context_path}}/reports/11/output/?site-id={{site.id}}&amp;months=1&amp;finish-year={{month.start_date.year}}&amp;finish-month={{month.start_date.month}}">era graph</a> for errors.
+                See <a href="{{context_path}}/reports/11/output/?site_id={{site.id}}&amp;months=1&amp;finish_year={{month.start_date.year}}&amp;finish_month={{month.start_date.month}}">generation graph</a> for errors.
               {% endif %}
             </td>
           </tr>

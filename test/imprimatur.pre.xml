@@ -4306,5 +4306,29 @@ def virtual_bill(supply_source):
 					pattern='"2014-05-31 23:30","CI005","Wheal Rodney","","","5","gen","chp","22","LV","hh","no","00","845","5","","","MOP Contract","22 0883 6932 301","HH contract","22 0883 6932 301","","2002-01-01 00:00","hh","","2007-10-31 23:30","2007-10-31 23:30","true","true","false","true","22 0883 6932 301","350","570","PC 5-8 &amp; HH LV","Half-hourlies 2013","4341","0","","","","","","","","",""' />
 			</request>
 		</test>
+		<test name="Site summary page that has data quality errors.">
+			<request
+				path="/chellow/reports/13/output/?site_id=1&amp;finish_year=2005&amp;finish_month=11">
+				<regex
+					pattern='See &lt;a href="/chellow/reports/11/output/\?site_id=1&amp;amp;months=1&amp;amp;finish_year=2005&amp;amp;finish_month=10"&gt;generation graph&lt;/a&gt;' />
+				<response-code value="200" />
+			</request>
+		</test>
+		<test name="Site summary page that has data quality errors.">
+			<request
+				path="/chellow/reports/13/output/?site_id=1&amp;finish_year=2005&amp;finish_month=11">
+				<regex
+					pattern='See &lt;a href="/chellow/reports/11/output/\?site_id=1&amp;amp;months=1&amp;amp;finish_year=2005&amp;amp;finish_month=10"&gt;generation graph&lt;/a&gt;' />
+				<response-code value="200" />
+			</request>
+		</test>
+		<test name="Site summary page that has data quality errors.">
+			<request
+				path="/chellow/reports/13/output/?site_id=1&amp;finish_year=2005&amp;finish_month=11">
+				<regex
+					pattern='See &lt;a href="/chellow/reports/11/output/\?site_id=1&amp;amp;months=1&amp;amp;finish_year=2005&amp;amp;finish_month=10"&gt;generation graph&lt;/a&gt;' />
+				<response-code value="200" />
+			</request>
+		</test>
 	</test-group>
 </imprimatur>
