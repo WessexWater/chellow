@@ -4,7 +4,7 @@ SQLAlchemy==0.8.6
 certifi==1.0.1
 chardet==2.2.1
 ftputil==3.0
-pg8000==1.9.9
+pg8000==1.9.10
 python-dateutil==1.5
 pytz==2013.7
 requests==0.10.0
