@@ -11211,11 +11211,16 @@ while rs.next():
         row_el.appendChild(cell_el)
         cell_el.setAttribute('value', rs.getString(i))
 
-pstmt = con.prepareStatement("show max_pred_locks_per_transaction")
-rs = pstmt.executeQuery()
-while rs.next():
-    source.setAttribute('max_pred_locks_per_transaction', str(rs.getString('max_pred_locks_per_transaction')))
-
+settings_el = doc.createElement('pg-settings')
+source.appendChild(settings_el)
+for setting in ('autovacuum', 'autovacuum_naptime', 'autovacuum_max_workers', 'autovacuum_vacuum_threshold', 'autovacuum_analyze_threshold', 'autovacuum_vacuum_scale_factor', 'autovacuum_analyze_scale_factor', 'max_pred_locks_per_transaction', 'track_counts', 'track_activities'):
+    pstmt = con.prepareStatement("show " + setting)
+    rs = pstmt.executeQuery()
+    while rs.next():
+        setting_el = doc.createElement('setting')
+        settings_el.appendChild(setting_el)
+        setting_el.setAttribute('name', setting)
+        setting_el.setAttribute('value', str(rs.getString(setting)))
 
 pstmt = con.prepareStatement("select * from pg_stat_all_tables where schemaname = 'public'")
 rs = pstmt.executeQuery()
@@ -11236,9 +11241,6 @@ while rs.next():
         cell_el.setAttribute('value', rs.getString(i))
 
 rs.close()
-
-
-
 
 pstmt = con.prepareStatement("select t.relname as table_name, i.relname as index_name, array_to_string(array_agg(a.attname), ', ') as column_names from pg_class t, pg_class i, pg_index ix, pg_attribute a, pg_namespace where t.oid = ix.indrelid and i.oid = ix.indexrelid and a.attrelid = t.oid and a.attnum = ANY(ix.indkey) and t.relkind = 'r' and t.relnamespace = pg_namespace.oid and pg_namespace.nspname = 'public' group by t.relname, i.relname, pg_namespace.nspname order by t.relname, i.relname""")
 rs = pstmt.executeQuery()
@@ -11265,7 +11267,7 @@ rs.close()
 con.rollback()
 con.setAutoCommit(True)
 #pstmt = con.prepareStatement("vacuum analyze")
-pstmt = con.prepareStatement("create index era_supply_id_idx on era (supply_id)")
+pstmt = con.prepareStatement("create index register_read_bill_id_idx on register_read (bill_id)")
 pstmt.execute()
 pstmt.close()
 con.setAutoCommit(False)
@@ -11416,10 +11418,12 @@ con.setAutoCommit(False)
 <tr><th>Driver Name</th><td><xsl:value-of select="/source/@db-driver-name"/></td></tr>
 <tr><th>Driver Version</th><td><xsl:value-of select="/source/@db-driver-version"/></td></tr>
 <tr><th>Transaction Isolation (of current connection)</th><td><xsl:value-of select="/source/@transaction-isolation"/></td></tr>
-<tr>
-<th>Max pred locks per transaction</th>
-<td><xsl:value-of select="/source/@max_pred_locks_per_transaction"/></td>
-</tr>
+  <xsl:for-each select="/source/pg-settings/setting">
+    <tr>
+      <th><xsl:value-of select="@name"/></th>
+      <td><xsl:value-of select="@value"/></td>
+    </tr>
+  </xsl:for-each>
 </table>
 
 <h4>PostgreSQL Current Activity</h4>
@@ -11516,7 +11520,8 @@ con.setAutoCommit(False)
       </body>
     </html>
   </xsl:template>
-</xsl:stylesheet>]]></value>
+</xsl:stylesheet>
+]]></value>
 	</line>
 	<line>
 		<value><![CDATA[insert]]></value>
