@@ -3690,6 +3690,7 @@ try:
     pw.flush()
 
     NORMAL_READ_TYPES = ('N', 'C', 'N3')
+    year_start = date + HH - relativedelta(years=1)
 
     eras = sess.query(Era).filter(Era.start_date<date, or_(Era.finish_date==None, Era.finish_date>=date)).order_by(Era.supply_id)
 
@@ -3713,9 +3714,9 @@ try:
         site_names = site_names[:-2]
         supply = era.supply
         if era.imp_mpan_core is None:
-            voltage_level_code = era.exp_llfc.code
+            voltage_level_code = era.exp_llfc.voltage_level.code
         else:
-            voltage_level_code = era.imp_llfc.code
+            voltage_level_code = era.imp_llfc.voltage_level.code
 
         generator_type = supply.generator_type
         generator_type = '' if generator_type is None else generator_type.code
@@ -3795,31 +3796,23 @@ try:
             if metering_type == 'nhh':
                 continue
 
-            month_mds = []
+            month_mds = tuple(md[0] for md in sess.execute("""
 
-            for i in range(12):
-                start_date = date + HH - relativedelta(months=i)
-                finish_date = start_date + relativedelta(months=1) - HH
+select max(hh_datum.value) as md
+from hh_datum join channel on (hh_datum.channel_id = channel.id)
+    join era on (channel.era_id = era.id)
+where era.supply_id = :supply_id and hh_datum.start_date >= :year_start
+    and hh_datum.start_date <= :year_finish and channel.is_kwh is true
+    and channel.is_import = :is_import
+group by extract(month from (hh_datum.start_date at time zone 'utc'))
+order by md desc
+limit 3
 
+""", params={'supply_id': supply.id, 'year_start': year_start, 'year_finish': date, 'is_import': is_import}))
 
-                month_md = None
-
-                for channel in sess.query(Channel).join(Era).filter(Era.supply_id==supply.id, Channel.is_kwh==True, Channel.is_import==is_import, Era.start_date<=finish_date, or_(Era.finish_date==None, Era.finish_date>=start_date)):
-                    md = sess.query(func.max(HhDatum.value)).filter(HhDatum.channel_id==channel.id, HhDatum.start_date >= start_date, HhDatum.start_date <= finish_date).one()[0]
-
-                    if md is not None:
-                        month_md = max(month_md, md)
-
-                if month_md is not None:
-                    month_mds.append(month_md)
-
-            month_mds.sort()
-            num_months = min(len(month_mds), 3)
-            avg_months = 0
-            for month_md in month_mds[-1 * num_months:]:
-                avg_months += month_md
-            if num_months > 0:
-                avg_months = avg_months / num_months
+            avg_months = sum(month_mds)
+            if len(month_mds) > 0:
+                avg_months /= len(month_mds)
                 if is_import:
                     imp_avg_months = avg_months
                 else:
@@ -3884,7 +3877,8 @@ try:
     pw.close()
 finally:
     if sess is not None:
-        sess.close()]]></value>
+        sess.close()
+]]></value>
 		<value><![CDATA[]]></value>
 	</line>
 	<line>
@@ -10192,71 +10186,56 @@ finally:
 		<value><![CDATA[157]]></value>
 		<value><![CDATA[true]]></value>
 		<value><![CDATA[CSV Supplies Snapshot Selector]]></value>
-		<value><![CDATA[from java.util import GregorianCalendar, TimeZone, Locale, Calendar
-from net.sf.chellow.monad.types import MonadDate
+		<value><![CDATA[from net.sf.chellow.monad import Monad
+import datetime
+import pytz
+from dateutil.relativedelta import relativedelta
 
-cal = GregorianCalendar(TimeZone.getTimeZone("GMT"), Locale.UK)
-cal.add(Calendar.MONTH, -1)
-source.appendChild(MonadDate(cal.getTime()).toXml(doc))
-source.appendChild(MonadDate.getMonthsXml(doc))]]></value>
-		<value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
-<xsl:stylesheet version="1.0"
-    xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
-    <xsl:output method="xml" encoding="US-ASCII"
-        doctype-public="-//W3C//DTD XHTML 1.1//EN"
-        doctype-system="http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd"
-        indent="yes" />
-    <xsl:template match="/">
-        <html>
-            <head>
-                <link rel="stylesheet" type="text/css"
-                    href="{/source/request/@context-path}/reports/19/output/" />
+Monad.getUtils()['impt'](globals(), 'templater', 'db')
 
-                <title>Chellow &gt; CSV Supplies Snapshot</title>
-            </head>
-            <body>
-                <p>
-                    <a
-                        href="{/source/request/@context-path}/reports/1/output/">
-                        <xsl:value-of select="'Chellow'" />
-                    </a>
-                    &gt;
-                    <xsl:value-of select="'CSV Supplies Snapshot'" />
-                </p>
-                  <xsl:if test="//message">
-                    <ul>
-                        <xsl:for-each select="//message">
-                            <li>
-                                <xsl:value-of select="@description" />
-                            </li>
-                        </xsl:for-each>
-                    </ul>
-                </xsl:if>
-                <form action="{/source/request/@context-path}/reports/33/output/">
-                    <fieldset>
-                        <legend>Supply level information</legend>
-<br/>
-<fieldset><legend>For the end of</legend>
-                        <input name="year" value="{/source/date/@year}" maxlength="4" size="4"/><xsl:value-of select="' - '"/>
-                        <select name="month">
-                            <xsl:for-each select="/source/months/month">
-                                <option value="{@number}">
-                                    <xsl:if test="@number=/source/date/@month">
-                                        <xsl:attribute name="selected">selected</xsl:attribute>
-                                    </xsl:if>
-                                    <xsl:value-of select="@number"/>
-                                </option>
-                            </xsl:for-each>
-                        </select>
-</fieldset>
-<br/>
-                        <input type="submit" value="Download"/>
-                    </fieldset>
-                </form>
-            </body>
-        </html>
-    </xsl:template>
-</xsl:stylesheet>]]></value>
+sess = None
+try:
+    sess = db.session()
+    now = datetime.datetime.now(pytz.utc)
+    templater.render(inv, template, {'last_month': datetime.datetime(now.year, now.month, 1, tzinfo=pytz.utc) - relativedelta(months=1)})
+finally:
+    if sess is not None:
+        sess.close()]]></value>
+		<value><![CDATA[<!DOCTYPE html>
+<html>
+  <head>
+    <link rel="stylesheet" type="text/css"
+      href="{{context_path}}/reports/19/output/">
+    <title>Chellow &gt; CSV Supplies Snapshot</title>
+  </head>
+  <body>
+    <p>
+      <a href="{{context_path}}/reports/1/output/">Chellow</a> &gt;
+      CSV Supplies Snapshot
+    </p>
+
+    {% if messages %}
+      <ul>
+        {% for message in messages %}
+          <li>{{ message }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+
+    <form action="{{context_path}}/reports/33/output/">
+      <fieldset>
+        <legend>Supply level information</legend>
+        <br>
+        <fieldset>
+          <legend>For the end of</legend>
+          {{input_date(None, last_month, 'month')}}
+        </fieldset>
+        <br>
+        <input type="submit" value="Download">
+      </fieldset>
+    </form>
+  </body>
+</html>]]></value>
 	</line>
 	<line>
 		<value><![CDATA[insert]]></value>
