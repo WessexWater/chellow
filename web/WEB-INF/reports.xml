@@ -6682,7 +6682,7 @@ finally:
             <td>{{bill.kwh}}</td>
             <td>{{bill.net}}</td>
             <td>{{bill.vat}}</td>
-            <td>{{gross}}</td>
+            <td>{{bill.gross}}</td>
             <td>
               <a href="{{context_path}}/reports/201/output/?bill_type_id={{bill.bill_type.id}}" title="{{bill.bill_type.description}}">{{bill.bill_type.code}}</a>
             </td>
