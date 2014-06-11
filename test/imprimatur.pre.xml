@@ -4179,7 +4179,8 @@ def virtual_bill(supply_source):
 			<request
 				path="/chellow/reports/33/output/?supply_id=9&amp;year=2007&amp;month=09&amp;day=01&amp;hour=00&amp;minute=00">
 				<response-code value="200" />
-				<regex pattern='"2007-09-30 23:30","CI004","Lower Treave","","","9","net","","22","HV","nhh","no","05","535","5","0127","MOP Contract","mc-22 0195 4836 192","Dynamat data","dc-22 0195 4836 192","P96C93722","2005-08-06 00:00","2007-08-01 00:00","N","","","false","false","false","false","22 0195 4836 192","30","510","PC 5-8 &amp; HH HV","Non half-hourlies 2007","341664","","2007-08-01 00:00","","","","","","","",""' />
+				<regex
+					pattern='"2007-09-30 23:30","CI004","Lower Treave","","","9","net","","22","HV","nhh","no","05","535","5","0127","MOP Contract","mc-22 0195 4836 192","Dynamat data","dc-22 0195 4836 192","P96C93722","2005-08-06 00:00","2007-08-01 00:00","N","","","false","false","false","false","22 0195 4836 192","30","510","PC 5-8 &amp; HH HV","Non half-hourlies 2007","341664","","2007-08-01 00:00","","","","","","","",""' />
 			</request>
 
 			<!-- Try a supplies snapshot where previous era isn't AMR -->
@@ -4294,6 +4295,15 @@ def virtual_bill(supply_source):
 				<regex
 					pattern='3475 1614 211\s*&lt;/td&gt;\s*&lt;td&gt;\s*this site\s*&lt;/td&gt;\s*&lt;td&gt;\s*&lt;a href="/chellow/reports/5/output/\?site_id=3" title="Wheal Rodney"&gt;CI005&lt;/a&gt;\s*&lt;/td&gt;' />
 				<response-code value="200" />
+			</request>
+		</test>
+		<test
+			name="In supplies snapshot, test the last billed date of MOP and DC bills">
+			<request
+				path="/chellow/reports/33/output/?supply_id=5&amp;year=2014&amp;month=05&amp;day=31&amp;hour=23&amp;minute=30">
+				<response-code value="200" />
+				<regex
+					pattern='"2014-05-31 23:30","CI005","Wheal Rodney","","","5","gen","chp","22","LV","hh","no","00","845","5","","MOP Contract","22 0883 6932 301","HH contract","22 0883 6932 301","","2002-01-01 00:00","hh","","2007-10-31 23:30","2007-10-31 23:30","true","true","false","true","22 0883 6932 301","350","570","PC 5-8 &amp; HH LV","Half-hourlies 2013","4341","0","","","","","","","","",""' />
 			</request>
 		</test>
 	</test-group>

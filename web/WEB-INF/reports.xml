@@ -3759,7 +3759,7 @@ try:
         else:
             mop_contract_name = mop_contract.name
             mop_account = era.mop_account
-            latest_mop_bill_date = sess.query(Bill.finish_date).join(Batch).filter(Bill.start_date<=date, Bill.supply_id==supply.id, Batch.contract_id==mop_contract.id).order_by(Bill.finish_date).first()
+            latest_mop_bill_date = sess.query(Bill.finish_date).join(Batch).filter(Bill.start_date<=date, Bill.supply_id==supply.id, Batch.contract_id==mop_contract.id).order_by(Bill.finish_date.desc()).first()
 
             if latest_mop_bill_date is not None:
                 latest_mop_bill_date = hh_format(latest_mop_bill_date[0])
@@ -3772,7 +3772,7 @@ try:
         else:
             hhdc_contract_name = hhdc_contract.name
             hhdc_account = era.hhdc_account
-            latest_hhdc_bill_date = sess.query(Bill.finish_date).join(Batch).filter(Bill.start_date<=date, Bill.supply_id==supply.id, Batch.contract_id==hhdc_contract.id).order_by(Bill.finish_date).first()
+            latest_hhdc_bill_date = sess.query(Bill.finish_date).join(Batch).filter(Bill.start_date<=date, Bill.supply_id==supply.id, Batch.contract_id==hhdc_contract.id).order_by(Bill.finish_date.desc()).first()
 
             if latest_hhdc_bill_date is not None:
                 latest_hhdc_bill_date = hh_format(latest_hhdc_bill_date[0])
