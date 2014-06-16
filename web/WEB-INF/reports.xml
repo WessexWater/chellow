@@ -11192,7 +11192,7 @@ while rs.next():
 
 settings_el = doc.createElement('pg-settings')
 source.appendChild(settings_el)
-for setting in ('autovacuum', 'autovacuum_naptime', 'autovacuum_max_workers', 'autovacuum_vacuum_threshold', 'autovacuum_analyze_threshold', 'autovacuum_vacuum_scale_factor', 'autovacuum_analyze_scale_factor', 'max_pred_locks_per_transaction', 'track_counts', 'track_activities'):
+for setting in ('autovacuum', 'autovacuum_naptime', 'autovacuum_max_workers', 'autovacuum_vacuum_threshold', 'autovacuum_analyze_threshold', 'autovacuum_vacuum_scale_factor', 'autovacuum_analyze_scale_factor', 'max_pred_locks_per_transaction', 'track_counts', 'track_activities', 'port', 'listen_addresses'):
     pstmt = con.prepareStatement("show " + setting)
     rs = pstmt.executeQuery()
     while rs.next():
@@ -11241,6 +11241,14 @@ while rs.next():
 
 rs.close()
 
+
+import sqlalchemy
+py_libs_el = doc.createElement('py-libs')
+source.appendChild(py_libs_el)
+py_lib_el = doc.createElement('py-lib')
+py_libs_el.appendChild(py_lib_el)
+py_lib_el.setAttribute('name', 'SQLAlchemy')
+py_lib_el.setAttribute('version', sqlalchemy.__version__)
 
 '''
 con.rollback()
@@ -11475,6 +11483,20 @@ con.setAutoCommit(False)
             </tr>
         </xsl:for-each>
     </tbody>
+</table>
+
+<br/>
+
+<table>
+  <caption>Python Libraries</caption>
+  <thead>
+    <th>Library</th>
+    <th>Version</th>
+  </thead>
+  <tbody>
+    <td><xsl:value-of select="/source/py-libs/py-lib/@name"/></td>
+    <td><xsl:value-of select="/source/py-libs/py-lib/@version"/></td>
+  </tbody>
 </table>
 
 <br/>
