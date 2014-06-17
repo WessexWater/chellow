@@ -1446,8 +1446,8 @@ finally:
     <br />
     <ul>
         <li>kWh, kVA, MD etc. by month:
-            <a href="{{context_path}}/reports/15/output/?supply_id={{ supply.id }}&amp;is_import=true">Import</a>
-            <a href="{{context_path}}/reports/15/output/?supply_id={{ supply.id }}&amp;is_import=false">Export</a>
+            <a href="{{context_path}}/reports/15/output/?supply_id={{supply.id}}&amp;is_import=true&amp;year={{last_month_start.year}}&amp;years=1">Import</a>
+            <a href="{{context_path}}/reports/15/output/?supply_id={{supply.id}}&amp;is_import=false&amp;year={{last_month_start.year}}&amp;years=1">Export</a>
         </li>
         <li>
             <a href="{{context_path}}/reports/17/output/?supply_id={{ supply.id }}&amp;months=1&amp;finish_year={{ now.year }}&amp;finish_month={{ now.month }}">Raw HH data</a>
@@ -2069,6 +2069,7 @@ try:
             if mpan_core != None:
                 month_data['mpan_core'] = mpan_core
                 month_data['sc'] = era.imp_sc if is_import else era.exp_sc
+        
         kwh_at_md_datum = sess.query(HhDatum).join(Channel).join(Era).filter(Era.supply_id==supply.id, Channel.channel_type=='ACTIVE', Channel.imp_related==is_import, HhDatum.start_date>=month_start, HhDatum.start_date<=month_finish).order_by(HhDatum.value.desc(), HhDatum.start_date).first()
         if kwh_at_md_datum is not None:
             kwh_at_md = float(kwh_at_md_datum.value)
@@ -2082,10 +2083,12 @@ try:
                     pf = kwh_at_md / kvah_at_md
                     month_data['pf'] = pf
                 month_data['kva-at-md'] = kvah_at_md * 2
-        total_kwh = sess.query(func.sum(HhDatum.value)).join(Channel).join(Era).filter(Channel.channel_type=='ACTIVE', Channel.imp_related==is_import, HhDatum.start_date>=month_start, HhDatum.start_date<=month_finish).one()[0]
+
+        total_kwh = sess.query(func.sum(HhDatum.value)).join(Channel).join(Era).filter(Era.supply_id==supply.id, Channel.channel_type=='ACTIVE', Channel.imp_related==is_import, HhDatum.start_date>=month_start, HhDatum.start_date<=month_finish).one()[0]
 
         if total_kwh != None:
-            month_data['total-kwh'] = float(total_kwh)
+            month_data['total_kwh'] = float(total_kwh)
+
         month_data['start_date'] = month_start
         month_start = next_month_start
 
