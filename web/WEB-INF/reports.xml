@@ -17982,7 +17982,8 @@ while not month_start.after(finish_date):
             imp_supplier_bill_titles = contract_func(era.impSupplierContract, 'virtual_bill_titles', pw)()
             if imp_supplier_bill_titles != prev_imp_supplier_bill_titles:
                 prev_imp_supplier_bill_titles != imp_supplier_bill_titles
-                pw.println(','.join('"' + str(v) + '"' for v in ['MPAN Core', 'Site Code', 'Site Name', 'Account', 'From', 'To'] + imp_supplier_bill_titles)) 
+                pw.println(','.join('"' + str(v) + '"' for v in ['MPAN Core', 'Site Code', 'Site Name', 'Account', 'From', 'To'] + imp_supplier_bill_titles))
+                pw.flush()
             output_line = [ds.mpan_core, site.code , site.name, ds.supplier_account, ds.start_date, ds.finish_date]
 
             contract_func(era.impSupplierContract, 'virtual_bill', pw)(ds)
