@@ -3671,6 +3671,7 @@ from sqlalchemy import or_
 Monad.getUtils()['impt'](globals(), 'db', 'utils', 'templater')
 
 Era, Supply, Bill, Batch, Channel, HhDatum, RegisterRead, ReadType = db.Era, db.Supply, db.Bill, db.Batch, db.Channel, db.HhDatum, db.RegisterRead, db.ReadType
+MeasurementRequirement = db.MeasurementRequirement
 
 HH, hh_format = utils.HH, utils.hh_format
 
@@ -3686,7 +3687,7 @@ try:
     inv.getResponse().addHeader('Content-Disposition', 'attachment; filename="supplies_snapshot.csv"')
     pw = inv.getResponse().getWriter()
 
-    pw.println("Date,Physical Site Id, Physical Site Name, Other Site Ids, Other Site Names, Supply Id, Source, Generator Type, DNO Name, Voltage Level, Metering Type, Mandatory HH, PC, MTC, CoP, SSC, MOP Contract, Mop Account, HHDC Contract, HHDC Account, Meter Serial Number, Meter Installation Date,Latest Normal Meter Read Date,Latest Normal Meter Read Type,Latest DC Bill Date, Latest MOP Bill Date,Has Import kWh?, Has Import kVArh?, Has Export kWh?, Has Export kVArh?,Import MPAN core, Import Agreed Supply Capacity (kVA), Import LLFC Code, Import LLFC Description, Import Supplier Contract, Import Supplier Account, Import Mandatory kWh,Latest Import Supplier Bill Date, Export MPAN core, Export Agreed Supply Capacity (kVA), Export LLFC Code, Export LLFC Description, Export Supplier Contract, Export Supplier Account, Export Mandatory kWh,Latest Export Supplier Bill Date")
+    pw.println("Date,Physical Site Id, Physical Site Name, Other Site Ids, Other Site Names, Supply Id, Source, Generator Type, DNO Name, Voltage Level, Metering Type, Mandatory HH, PC, MTC, CoP, SSC, Number Of Registers, MOP Contract, Mop Account, HHDC Contract, HHDC Account, Meter Serial Number, Meter Installation Date,Latest Normal Meter Read Date,Latest Normal Meter Read Type,Latest DC Bill Date, Latest MOP Bill Date,Has Import kWh?, Has Import kVArh?, Has Export kWh?, Has Export kVArh?,Import MPAN core, Import Agreed Supply Capacity (kVA), Import LLFC Code, Import LLFC Description, Import Supplier Contract, Import Supplier Account, Import Mandatory kWh,Latest Import Supplier Bill Date, Export MPAN core, Export Agreed Supply Capacity (kVA), Export LLFC Code, Export LLFC Description, Export Supplier Contract, Export Supplier Account, Export Mandatory kWh,Latest Export Supplier Bill Date")
     pw.flush()
 
     NORMAL_READ_TYPES = ('N', 'C', 'N3')
@@ -3871,8 +3872,14 @@ limit 3
                     exp_latest_supplier_bill_date = latest_supplier_bill_date
 
         meter_installation_date = sess.query(func.min(Era.start_date)).filter(Era.supply_id==era.supply_id, Era.msn==era.msn).one()[0]
+        
+        if era.ssc is None:
+            ssc_code = num_registers = None
+        else:
+            ssc_code = era.ssc.code
+            num_registers = sess.query(MeasurementRequirement).filter(MeasurementRequirement.ssc_id==era.ssc.id).count()
 
-        pw.println(','.join(('"' + ('' if value is None else str(value)) + '"') for value in [hh_format(date), physical_site.code, physical_site.name, site_codes, site_names, supply.id, supply.source.code, generator_type, supply.dno_contract.name, voltage_level_code, metering_type, mandatory_hh, era.pc.code, era.mtc.code, era.cop.code, None if era.ssc is None else era.ssc.code, mop_contract_name, mop_account, hhdc_contract_name, hhdc_account, era.msn, hh_format(meter_installation_date), latest_normal_read_date, latest_normal_read_type, latest_hhdc_bill_date, latest_mop_bill_date] + channel_values + [era.imp_mpan_core, era.imp_sc, None if era.imp_llfc is None else era.imp_llfc.code, None if era.imp_llfc is None else era.imp_llfc.description, None if era.imp_supplier_contract is None else era.imp_supplier_contract.name, era.imp_supplier_account, imp_avg_months, imp_latest_supplier_bill_date] + [era.exp_mpan_core, era.exp_sc, None if era.exp_llfc is None else era.exp_llfc.code, None if era.exp_llfc is None else era.exp_llfc.description, None if era.exp_supplier_contract is None else era.exp_supplier_contract.name, era.exp_supplier_account, exp_avg_months, exp_latest_supplier_bill_date]))
+        pw.println(','.join(('"' + ('' if value is None else str(value)) + '"') for value in [hh_format(date), physical_site.code, physical_site.name, site_codes, site_names, supply.id, supply.source.code, generator_type, supply.dno_contract.name, voltage_level_code, metering_type, mandatory_hh, era.pc.code, era.mtc.code, era.cop.code, ssc_code, num_registers, mop_contract_name, mop_account, hhdc_contract_name, hhdc_account, era.msn, hh_format(meter_installation_date), latest_normal_read_date, latest_normal_read_type, latest_hhdc_bill_date, latest_mop_bill_date] + channel_values + [era.imp_mpan_core, era.imp_sc, None if era.imp_llfc is None else era.imp_llfc.code, None if era.imp_llfc is None else era.imp_llfc.description, None if era.imp_supplier_contract is None else era.imp_supplier_contract.name, era.imp_supplier_account, imp_avg_months, imp_latest_supplier_bill_date] + [era.exp_mpan_core, era.exp_sc, None if era.exp_llfc is None else era.exp_llfc.code, None if era.exp_llfc is None else era.exp_llfc.description, None if era.exp_supplier_contract is None else era.exp_supplier_contract.name, era.exp_supplier_account, exp_avg_months, exp_latest_supplier_bill_date]))
         pw.flush()
     pw.close()
 finally:
