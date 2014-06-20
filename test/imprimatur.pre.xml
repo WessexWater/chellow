@@ -4330,5 +4330,54 @@ def virtual_bill(supply_source):
 				<response-code value="200" />
 			</request>
 		</test>
+		<test name="Make sure rate scripts remain contiguous.">
+			<request path="/chellow/reports/273/output/" method="post">
+				<control name="rate_script_id" value="274" />
+				<control name="start_year" value="2005" />
+				<control name="start_month" value="04" />
+				<control name="start_day" value="01" />
+				<control name="start_hour" value="00" />
+				<control name="start_minute" value="00" />
+				<control name="has_finished" value="true" />
+				<control name="finish_year" value="2006" />
+				<control name="finish_month" value="03" />
+				<control name="finish_day" value="30" />
+				<control name="finish_hour" value="23" />
+				<control name="finish_minute" value="30" />
+				<control name="script"><![CDATA[from net.sf.chellow.physical import HhStartDate
+
+def triad_dates():
+    return [HhStartDate("2005-11-28T17:00Z"), HhStartDate("2006-01-05T17:00Z"), HhStartDate("2006-02-03T17:30Z")]]]>
+				</control>
+				<response-code value="303" />
+			</request>
+
+			<request path="/chellow/reports/271/output/?rate_script_id=275">
+				<regex pattern="2006-03-31 00:00" />
+				<response-code value="200" />
+			</request>
+
+			<!-- Put it back to how it was -->
+			<request path="/chellow/reports/273/output/" method="post">
+				<control name="rate_script_id" value="274" />
+				<control name="start_year" value="2005" />
+				<control name="start_month" value="04" />
+				<control name="start_day" value="01" />
+				<control name="start_hour" value="00" />
+				<control name="start_minute" value="00" />
+				<control name="has_finished" value="true" />
+				<control name="finish_year" value="2006" />
+				<control name="finish_month" value="03" />
+				<control name="finish_day" value="31" />
+				<control name="finish_hour" value="23" />
+				<control name="finish_minute" value="30" />
+				<control name="script"><![CDATA[from net.sf.chellow.physical import HhStartDate
+
+def triad_dates():
+    return [HhStartDate("2005-11-28T17:00Z"), HhStartDate("2006-01-05T17:00Z"), HhStartDate("2006-02-03T17:30Z")]]]>
+				</control>
+				<response-code value="303" />
+			</request>
+		</test>
 	</test-group>
 </imprimatur>
