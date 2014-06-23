@@ -139,12 +139,12 @@
 				<control name="start_minute" value="00" />
 				<control name="has_finished" value="false" />
 				<response-code value="303" />
-				<regex pattern="/reports/115/output/\?hhdc_contract_id=50" />
+				<regex pattern="/reports/115/output/\?hhdc_contract_id=52" />
 			</request>
 
 			<!-- Update Contract -->
 			<request path="/chellow/reports/279/output/" method="post">
-				<control name="hhdc_contract_id" value="50" />
+				<control name="hhdc_contract_id" value="52" />
 				<control name="party_id" value="30" /> <!-- DASL -->
 				<control name="name" value="HH contract" />
 				<control name="charge_script"><![CDATA[
@@ -156,33 +156,33 @@ def virtual_bill(supply_source):
 				<control name="properties" value="{'mpan_map': {'maptest': '2292056799106'}}" />
 				<response-code value="303" />
 			</request>
-			<request path="/chellow/reports/279/output/?hhdc_contract_id=50">
+			<request path="/chellow/reports/279/output/?hhdc_contract_id=52">
 				<regex pattern="HH contract" />
 				<response-code value="200" />
 			</request>
 
-			<!-- Check that we can see HHDC rate script okay. Contract 50. -->
-			<request path="/chellow/reports/173/output/?hhdc_rate_script_id=299">
+			<!-- Check that we can see HHDC rate script okay. Contract 52. -->
+			<request path="/chellow/reports/173/output/?hhdc_rate_script_id=301">
 				<!-- Check that 'has_finished' field is there -->
 				<regex pattern="HH contract" />
 				<response-code value="200" />
 			</request>
 
 			<!-- Check that we can see the edit view of the HHDC rate script okay. 
-				Contract 50. -->
-			<request path="/chellow/reports/249/output/?hhdc_rate_script_id=299">
+				Contract 52. -->
+			<request path="/chellow/reports/249/output/?hhdc_rate_script_id=301">
 				<!-- Check that 'has_finished' field is there -->
 				<regex pattern="has_finished" />
 
 				<!-- Check the hhdc_rate_script_id for update is there -->
 				<regex
-					pattern='&lt;legend&gt;Update Rate Script&lt;/legend&gt;\s*&lt;input type="hidden" name="hhdc_rate_script_id"\s*value="299"&gt;' />
+					pattern='&lt;legend&gt;Update Rate Script&lt;/legend&gt;\s*&lt;input type="hidden" name="hhdc_rate_script_id"\s*value="301"&gt;' />
 				<response-code value="200" />
 			</request>
 
 			<!-- Check that we can update an HHDC rate script okay -->
 			<request path="/chellow/reports/249/output/" method="post">
-				<control name="hhdc_rate_script_id" value="299" />
+				<control name="hhdc_rate_script_id" value="301" />
 				<control name="start_year" value="2000" />
 				<control name="start_month" value="01" />
 				<control name="start_day" value="03" />
@@ -202,12 +202,12 @@ def virtual_bill(supply_source):
 				<control name="start_hour" value="00" />
 				<control name="start_minute" value="00" />
 				<response-code value="303" />
-				<regex pattern="/reports/115/output/\?hhdc_contract_id=51" />
+				<regex pattern="/reports/115/output/\?hhdc_contract_id=53" />
 			</request>
 
 			<!-- Update the newly added HHDC -->
 			<request path="/chellow/reports/279/output/" method="post">
-				<control name="hhdc_contract_id" value="51" />
+				<control name="hhdc_contract_id" value="53" />
 				<control name="party_id" value="30" />
 				<control name="name" value="Dynamat data" />
 				<control name="charge_script"><![CDATA[
@@ -222,14 +222,14 @@ def virtual_bill(supply_source):
 
 			<!-- Update state of Dynamat HHDC -->
 			<request path="/chellow/reports/279/output/" method="post">
-				<control name="hhdc_contract_id" value="51" />
+				<control name="hhdc_contract_id" value="53" />
 				<control name="update_state" value="" />
 				<control name="state" value='{"stat": 2}' />
 				<response-code value="303" />
 			</request>
 
 			<!-- View Dynamat HHDC -->
-			<request path="/chellow/reports/279/output/?hhdc_contract_id=51">
+			<request path="/chellow/reports/279/output/?hhdc_contract_id=53">
 				<response-code value="200" />
 				<regex
 					pattern='&lt;textarea name="charge_script" rows="40" cols="80"&gt;\s*def virtual_bill_title' />
@@ -242,7 +242,7 @@ def virtual_bill(supply_source):
 
 		<test name="Check one can update the participant for an HHDC contract.">
 			<request path="/chellow/reports/279/output/" method="post">
-				<control name="hhdc_contract_id" value="51" />
+				<control name="hhdc_contract_id" value="53" />
 				<control name="party_id" value="651" /> <!-- UKDC -->
 				<control name="name" value="Dynamat data" />
 				<control name="start_year" value="2000" />
@@ -260,7 +260,7 @@ def virtual_bill(supply_source):
 			</request>
 
 			<!-- Check it's still there -->
-			<request path="/chellow/reports/279/output/?hhdc_contract_id=51">
+			<request path="/chellow/reports/279/output/?hhdc_contract_id=53">
 				<response-code value="200" />
 				<regex pattern='option value="651" selected' />
 			</request>
@@ -282,13 +282,13 @@ def virtual_bill(supply_source):
 				<control name="start_hour" value="00" />
 				<control name="start_minute" value="00" />
 
-				<regex pattern="/reports/77/output/\?supplier_contract_id=52" />
+				<regex pattern="/reports/77/output/\?supplier_contract_id=54" />
 				<response-code value="303" />
 			</request>
 
 			<!-- Update the supplier contract -->
 			<request path="/chellow/reports/317/output/" method="post">
-				<control name="supplier_contract_id" value="52" />
+				<control name="supplier_contract_id" value="54" />
 				<control name="party_id" value="25" /> <!-- BIZZ -->
 				<control name="name" value="Half-hourlies 2007" />
 				<control name="charge_script">
@@ -304,20 +304,20 @@ def virtual_bill(data_source):
 			</request>
 
 			<!-- Check that it's displayed properly -->
-			<request path="/chellow/reports/317/output/?supplier_contract_id=52">
+			<request path="/chellow/reports/317/output/?supplier_contract_id=54">
 				<regex pattern='&lt;option value="25" selected&gt;' />
 				<response-code value="200" />
 			</request>
 
-			<request path="/chellow/reports/77/output/?supplier_contract_id=52">
+			<request path="/chellow/reports/77/output/?supplier_contract_id=54">
 				<regex
 					pattern='&lt;legend&gt;Download Displaced Virtual Bills&lt;/legend&gt;\s*&lt;br/&gt;\s*For &lt;input name="months" value="1" maxlength="2" size="2"&gt;\s*month\(s\) until the end of\s*&lt;input name="finish_year" maxlength="4" size="4" value="2014"&gt;' />
 				<response-code value="200" />
 			</request>
 
-			<!-- Update the associated rate script. Supplier contract 52 -->
+			<!-- Update the associated rate script. Supplier contract 54 -->
 			<request path="/chellow/reports/319/output/" method="post">
-				<control name="supplier_rate_script_id" value="301" />
+				<control name="supplier_rate_script_id" value="303" />
 				<control name="start_year" value="2000" />
 				<control name="start_month" value="01" />
 				<control name="start_day" value="03" />
@@ -349,13 +349,13 @@ def virtual_bill(data_source):
 				<control name="start_day" value="03" />
 				<control name="start_hour" value="00" />
 				<control name="start_minute" value="00" />
-				<regex pattern="/chellow/reports/267/output/\?non_core_contract_id=53" />
+				<regex pattern="/chellow/reports/267/output/\?non_core_contract_id=55" />
 				<response-code value="303" />
 			</request>
 
 			<!-- Update the new non-core contract -->
 			<request path="/chellow/reports/269/output/" method="post">
-				<control name="non_core_contract_id" value="53" />
+				<control name="non_core_contract_id" value="55" />
 				<control name="name" value="VAT 2" />
 				<control name="start_year" value="2000" />
 				<control name="start_month" value="01" />
@@ -368,14 +368,14 @@ def totalElement(account, startDate, finishDate):
 				<control name="properties" value="{}" />
 				<response-code value="303" />
 			</request>
-			<request path="/chellow/reports/267/output/?non_core_contract_id=53">
+			<request path="/chellow/reports/267/output/?non_core_contract_id=55">
 				<regex pattern="import sys\s*def" />
 				<response-code value="200" />
 			</request>
 
 			<!-- Delete it -->
 			<request path="/chellow/reports/269/output/" method="post">
-				<control name="non_core_contract_id" value="53" />
+				<control name="non_core_contract_id" value="55" />
 				<control name="delete" />
 				<response-code value="303" />
 			</request>
@@ -390,11 +390,11 @@ def totalElement(account, startDate, finishDate):
 				<control name="start_hour" value="00" />
 				<control name="start_minute" value="00" />
 				<response-code value="303" />
-				<regex pattern="/reports/107/output/\?mop_contract_id=54" />
+				<regex pattern="/reports/107/output/\?mop_contract_id=56" />
 			</request>
 
 			<!-- Check we can see the rate scripts -->
-			<request path="/chellow/reports/107/output/?mop_contract_id=54">
+			<request path="/chellow/reports/107/output/?mop_contract_id=56">
 				<response-code value="200" />
 			</request>
 		</test>
@@ -410,14 +410,14 @@ def totalElement(account, startDate, finishDate):
 				<control name="start_hour" value="00" />
 				<control name="start_minute" value="00" />
 
-				<regex pattern="/chellow/reports/77/output/\?supplier_contract_id=55" />
+				<regex pattern="/chellow/reports/77/output/\?supplier_contract_id=57" />
 				<response-code value="303" />
 			</request>
 
 
-			<!-- Update the associated rate script. Supplier contract 55 -->
+			<!-- Update the associated rate script. Supplier contract 57 -->
 			<request path="/chellow/reports/319/output/" method="post">
-				<control name="supplier_rate_script_id" value="304" />
+				<control name="supplier_rate_script_id" value="306" />
 				<control name="start_year" value="2000" />
 				<control name="start_month" value="01" />
 				<control name="start_day" value="03" />
@@ -447,7 +447,7 @@ def totalElement(account, startDate, finishDate):
 				<control name="start_minute" value="00" />
 				<control name="has_finished" value="false" />
 
-				<regex pattern="/reports/77/output/\?supplier_contract_id=56" />
+				<regex pattern="/reports/77/output/\?supplier_contract_id=58" />
 				<response-code value="303" />
 			</request>
 
@@ -610,9 +610,9 @@ def totalElement(account, startDate, finishDate):
 				<!-- Check start date year is there -->
 				<regex pattern="start_year" />
 				<regex
-					pattern='&lt;option value="50" selected&gt;HH contract&lt;/option&gt;' />
+					pattern='&lt;option value="52" selected&gt;HH contract&lt;/option&gt;' />
 				<regex
-					pattern='"imp_supplier_contract_id"&gt;\s*&lt;option value="52" selected&gt;Half-hourlies 2007' />
+					pattern='"imp_supplier_contract_id"&gt;\s*&lt;option value="54" selected&gt;Half-hourlies 2007' />
 
 				<!-- Can we see the MOP account? -->
 				<regex pattern='"mc-22 9205 6799 106"' />
@@ -671,9 +671,9 @@ def totalElement(account, startDate, finishDate):
 				<control name="finish_hour" value="23" />
 				<control name="finish_minute" value="30" />
 				<control name="gsp_group_id" value="11" />
-				<control name="mop_contract_id" value="54" />
+				<control name="mop_contract_id" value="56" />
 				<control name="mop_account" value="22 0883 6932 301" />
-				<control name="hhdc_contract_id" value="50" />
+				<control name="hhdc_contract_id" value="52" />
 				<control name="hhdc_account" value="22 0883 6932 301" />
 				<control name="msn" value="" />
 				<control name="pc_id" value="9" />
@@ -683,7 +683,7 @@ def totalElement(account, startDate, finishDate):
 				<control name="imp_llfc_code" value="570" />
 				<control name="imp_mpan_core" value="22 0883 6932 301" />
 				<control name="imp_sc" value="350" />
-				<control name="imp_supplier_contract_id" value="52" />
+				<control name="imp_supplier_contract_id" value="54" />
 				<control name="imp_supplier_account" value="4341" />
 				<response-code value="303" />
 			</request>
@@ -736,9 +736,9 @@ def totalElement(account, startDate, finishDate):
 				<control name="finish_day" value="13" />
 				<control name="finish_hour" value="23" />
 				<control name="finish_minute" value="30" />
-				<control name="mop_contract_id" value="54" />
+				<control name="mop_contract_id" value="56" />
 				<control name="mop_account" value="22 0883 6932 301" />
-				<control name="hhdc_contract_id" value="50" />
+				<control name="hhdc_contract_id" value="52" />
 				<control name="hhdc_account" value="22 0883 6932 301" />
 				<control name="pc_id" value="9" />
 				<control name="mtc_code" value="845" />
@@ -748,7 +748,7 @@ def totalElement(account, startDate, finishDate):
 				<control name="imp_mpan_core" value="22 0883 6932 301" />
 				<control name="imp_gsp_group_id" value="11" />
 				<control name="imp_sc" value="430" />
-				<control name="imp_supplier_contract_id" value="52" />
+				<control name="imp_supplier_contract_id" value="54" />
 				<control name="imp_supplier_account" value="4341" />
 
 				<response-code value="303" />
@@ -778,9 +778,9 @@ def totalElement(account, startDate, finishDate):
 				<control name="start_hour" value="00" />
 				<control name="start_minute" value="00" />
 				<control name="is_ended" value="false" />
-				<control name="mop_contract_id" value="54" />
+				<control name="mop_contract_id" value="56" />
 				<control name="mop_account" value="22 0883 6932 301" />
-				<control name="hhdc_contract_id" value="50" />
+				<control name="hhdc_contract_id" value="52" />
 				<control name="hhdc_account" value="22 0883 6932 301" />
 				<control name="pc_id" value="9" />
 				<control name="mtc_code" value="845" />
@@ -789,7 +789,7 @@ def totalElement(account, startDate, finishDate):
 				<control name="imp_llfc_code" value="570" />
 				<control name="imp_mpan_core" value="22 0883 6932 301" />
 				<control name="imp_sc" value="350" />
-				<control name="imp_supplier_contract_id" value="52" />
+				<control name="imp_supplier_contract_id" value="54" />
 				<control name="imp_supplier_account" value="4341" />
 				<response-code value="303" />
 			</request>
@@ -838,9 +838,9 @@ def totalElement(account, startDate, finishDate):
 				<control name="start_hour" value="00" />
 				<control name="start_minute" value="00" />
 				<control name="is_ended" value="false" />
-				<control name="mop_contract_id" value="54" />
+				<control name="mop_contract_id" value="56" />
 				<control name="mop_account" value="mc-22 9813 2107 763" />
-				<control name="hhdc_contract_id" value="50" />
+				<control name="hhdc_contract_id" value="52" />
 				<control name="hhdc_account" value="01" />
 				<control name="pc_id" value="9" />
 				<control name="mtc_code" value="845" />
@@ -849,7 +849,7 @@ def totalElement(account, startDate, finishDate):
 				<control name="imp_llfc_code" value="580" />
 				<control name="imp_mpan_core" value="2276930477695" />
 				<control name="imp_sc" value="430" />
-				<control name="imp_supplier_contract_id" value="52" />
+				<control name="imp_supplier_contract_id" value="54" />
 				<control name="imp_supplier_account" value="01" />
 
 				<response-code value="400" />
@@ -873,9 +873,9 @@ def totalElement(account, startDate, finishDate):
 				<control name="start_hour" value="00" />
 				<control name="start_minute" value="00" />
 				<control name="is_ended" value="false" />
-				<control name="mop_contract_id" value="54" />
+				<control name="mop_contract_id" value="56" />
 				<control name="mop_account" value="mc-22 9813 2107 763" />
-				<control name="hhdc_contract_id" value="50" />
+				<control name="hhdc_contract_id" value="52" />
 				<control name="hhdc_account" value="01" />
 				<control name="pc_id" value="9" />
 				<control name="mtc_code" value="845" />
@@ -884,7 +884,7 @@ def totalElement(account, startDate, finishDate):
 				<control name="imp_llfc_code" value="521" />
 				<control name="imp_mpan_core" value="22 9813 2107 763" />
 				<control name="imp_sc" value="430" />
-				<control name="imp_supplier_contract_id" value="52" />
+				<control name="imp_supplier_contract_id" value="54" />
 				<control name="imp_supplier_account" value="01" />
 
 				<response-code value="400" />
@@ -898,15 +898,15 @@ def totalElement(account, startDate, finishDate):
 				with #F2 -->
 
 			<request path="/chellow/reports/211/output/" method="post">
-				<control name="hhdc_contract_id" value="50" />
+				<control name="hhdc_contract_id" value="52" />
 				<control type="file" name="import_file" value="no_hash.df2" />
 
-				<regex pattern="/reports/65/output/\?hhdc_contract_id=50&amp;process_id=0" />
+				<regex pattern="/reports/65/output/\?hhdc_contract_id=52&amp;process_id=0" />
 				<response-code value="303" />
 			</request>
 
 			<request
-				path="/chellow/reports/65/output/?hhdc_contract_id=50&amp;process_id=0"
+				path="/chellow/reports/65/output/?hhdc_contract_id=52&amp;process_id=0"
 				method="post">
 				<regex pattern="The first line must be &amp;#39;#F2&amp;#39;" />
 				<response-code value="200" />
@@ -914,20 +914,20 @@ def totalElement(account, startDate, finishDate):
 
 			<!-- Import some hh Stark DF2 data -->
 			<request path="/chellow/reports/211/output/" method="post">
-				<control name="hhdc_contract_id" value="50" />
+				<control name="hhdc_contract_id" value="52" />
 				<control type="file" name="import_file" value="hh_data.df2" />
 				<response-code value="303" />
-				<regex pattern="/reports/65/output/\?hhdc_contract_id=50&amp;process_id=1" />
+				<regex pattern="/reports/65/output/\?hhdc_contract_id=52&amp;process_id=1" />
 			</request>
 			<request
-				path="/chellow/reports/65/output/?hhdc_contract_id=50&amp;process_id=1">
+				path="/chellow/reports/65/output/?hhdc_contract_id=52&amp;process_id=1">
 				<refresh />
 				<!-- Check it's loaded ok and has ignored the blank line and the #F2 
 					line -->
 				<regex pattern="The import has completed.*successfully." />
 
 				<!-- Check link to hhdc is correct -->
-				<regex pattern="/chellow/reports/115/output/\?hhdc_contract_id=50" />
+				<regex pattern="/chellow/reports/115/output/\?hhdc_contract_id=52" />
 				<response-code value="200" />
 			</request>
 
@@ -940,7 +940,7 @@ def totalElement(account, startDate, finishDate):
 			</request>
 			<!-- Check if more hh data imports ok -->
 			<request path="/chellow/reports/211/output/" method="post">
-				<control name="hhdc_contract_id" value="50" />
+				<control name="hhdc_contract_id" value="52" />
 				<control type="file" name="import_file" value="hh_data2.df2" />
 				<response-code value="303" />
 			</request>
@@ -950,13 +950,13 @@ def totalElement(account, startDate, finishDate):
 				with a gap before it. -->
 
 			<request path="/chellow/reports/211/output/" method="post">
-				<control name="hhdc_contract_id" value="50" />
+				<control name="hhdc_contract_id" value="52" />
 				<control type="file" name="import_file" value="missing.df2" />
-				<regex pattern="/reports/65/output/\?hhdc_contract_id=50&amp;process_id=3" />
+				<regex pattern="/reports/65/output/\?hhdc_contract_id=52&amp;process_id=3" />
 				<response-code value="303" />
 			</request>
 			<request
-				path="/chellow/reports/65/output/?hhdc_contract_id=50&amp;process_id=3">
+				path="/chellow/reports/65/output/?hhdc_contract_id=52&amp;process_id=3">
 				<refresh />
 				<regex pattern="The import has completed.*successfully." />
 				<response-code value="200" />
@@ -966,14 +966,14 @@ def totalElement(account, startDate, finishDate):
 			<!-- This relies on the default timezone being BST -->
 
 			<request path="/chellow/reports/211/output/" method="post">
-				<control name="hhdc_contract_id" value="50" />
+				<control name="hhdc_contract_id" value="52" />
 				<control type="file" name="import_file" value="hh_data_timezone.df2" />
 				<regex
-					pattern="/chellow/reports/65/output/\?hhdc_contract_id=50&amp;process_id=4" />
+					pattern="/chellow/reports/65/output/\?hhdc_contract_id=52&amp;process_id=4" />
 				<response-code value="303" />
 			</request>
 			<request
-				path="/chellow/reports/65/output/?hhdc_contract_id=50&amp;process_id=4">
+				path="/chellow/reports/65/output/?hhdc_contract_id=52&amp;process_id=4">
 				<!-- Check it's loaded ok -->
 				<refresh />
 				<regex pattern="The import has completed.*successfully." />
@@ -984,14 +984,14 @@ def totalElement(account, startDate, finishDate):
 		<test name="Actual reads snags combined properly">
 			<!-- Test that 3 non-actual reads in a row generate a single snag -->
 			<request path="/chellow/reports/211/output/" method="post">
-				<control name="hhdc_contract_id" value="50" />
+				<control name="hhdc_contract_id" value="52" />
 				<control type="file" name="import_file" value="hh_data_not_actual.df2" />
 				<regex
-					pattern="/chellow/reports/65/output/\?hhdc_contract_id=50&amp;process_id=5" />
+					pattern="/chellow/reports/65/output/\?hhdc_contract_id=52&amp;process_id=5" />
 				<response-code value="303" />
 			</request>
 			<request
-				path="/chellow/reports/65/output/?hhdc_contract_id=50&amp;process_id=5">
+				path="/chellow/reports/65/output/?hhdc_contract_id=52&amp;process_id=5">
 				<refresh />
 				<regex pattern="The import has completed.*successfully." />
 				<response-code value="200" />
@@ -1007,12 +1007,12 @@ def totalElement(account, startDate, finishDate):
 				<response-code value="200" />
 			</request>
 			<request path="/chellow/reports/211/output/" method="post">
-				<control name="hhdc_contract_id" value="50" />
+				<control name="hhdc_contract_id" value="52" />
 				<control type="file" name="import_file" value="hh_data_not_actual2.df2" />
 				<response-code value="303" />
 			</request>
 			<request
-				path="/chellow/reports/65/output/?hhdc_contract_id=50&amp;process_id=5">
+				path="/chellow/reports/65/output/?hhdc_contract_id=52&amp;process_id=5">
 				<refresh />
 				<regex pattern="The import has completed.*successfully." />
 				<response-code value="200" />
@@ -1029,13 +1029,13 @@ def totalElement(account, startDate, finishDate):
 		<test name="Importing simple CSV data">
 			<!-- Test if a CSV HH file can be imported -->
 			<request path="/chellow/reports/211/output/" method="post">
-				<control name="hhdc_contract_id" value="50" />
+				<control name="hhdc_contract_id" value="52" />
 				<control type="file" name="import_file" value="hh_data.simple.csv" />
-				<regex pattern="/reports/65/output/\?hhdc_contract_id=50&amp;process_id=7" />
+				<regex pattern="/reports/65/output/\?hhdc_contract_id=52&amp;process_id=7" />
 				<response-code value="303" />
 			</request>
 			<request
-				path="/chellow/reports/65/output/?hhdc_contract_id=50&amp;process_id=7">
+				path="/chellow/reports/65/output/?hhdc_contract_id=52&amp;process_id=7">
 				<refresh />
 				<regex pattern="The import has completed.*successfully." />
 				<response-code value="200" />
@@ -1051,13 +1051,13 @@ def totalElement(account, startDate, finishDate):
 			<!-- Check it gives a sensible error message if the comma after the value 
 				is missing -->
 			<request path="/chellow/reports/211/output/" method="post">
-				<control name="hhdc_contract_id" value="50" />
+				<control name="hhdc_contract_id" value="52" />
 				<control type="file" name="import_file" value="hh_data_malformed.df2" />
-				<regex pattern="/reports/65/output/\?hhdc_contract_id=50&amp;process_id=8" />
+				<regex pattern="/reports/65/output/\?hhdc_contract_id=52&amp;process_id=8" />
 				<response-code value="303" />
 			</request>
 			<request
-				path="/chellow/reports/65/output/?hhdc_contract_id=50&amp;process_id=8">
+				path="/chellow/reports/65/output/?hhdc_contract_id=52&amp;process_id=8">
 				<refresh />
 				<regex pattern="Problem at line number: 4" />
 				<response-code value="200" />
@@ -1065,13 +1065,13 @@ def totalElement(account, startDate, finishDate):
 
 			<!-- Check it gives a sensible error message if the first mpan is malformed -->
 			<request path="/chellow/reports/211/output/" method="post">
-				<control name="hhdc_contract_id" value="50" />
+				<control name="hhdc_contract_id" value="52" />
 				<control type="file" name="import_file" value="hh_data_bad_beginning.df2" />
-				<regex pattern="/reports/65/output/\?hhdc_contract_id=50&amp;process_id=9" />
+				<regex pattern="/reports/65/output/\?hhdc_contract_id=52&amp;process_id=9" />
 				<response-code value="303" />
 			</request>
 			<request
-				path="/chellow/reports/65/output/?hhdc_contract_id=50&amp;process_id=9">
+				path="/chellow/reports/65/output/?hhdc_contract_id=52&amp;process_id=9">
 				<refresh />
 				<regex
 					pattern="The MPAN core &amp;#39;2204707514535,,,&amp;#39; must contain exactly 13 digits" />
@@ -1080,13 +1080,13 @@ def totalElement(account, startDate, finishDate):
 
 			<!-- Check sensible error message if header but no data -->
 			<request path="/chellow/reports/211/output/" method="post">
-				<control name="hhdc_contract_id" value="50" />
+				<control name="hhdc_contract_id" value="52" />
 				<control type="file" name="import_file" value="hh_data_header_but_no_data.df2" />
-				<regex pattern="/reports/65/output/\?hhdc_contract_id=50&amp;process_id=10" />
+				<regex pattern="/reports/65/output/\?hhdc_contract_id=52&amp;process_id=10" />
 				<response-code value="303" />
 			</request>
 			<request
-				path="/chellow/reports/65/output/?hhdc_contract_id=50&amp;process_id=10">
+				path="/chellow/reports/65/output/?hhdc_contract_id=52&amp;process_id=10">
 				<refresh />
 				<regex pattern="The import has completed.*successfully\." />
 				<response-code value="200" />
@@ -1209,13 +1209,13 @@ def totalElement(account, startDate, finishDate):
 				<response-code value="303" />
 			</request>
 			<request path="/chellow/reports/211/output/" method="post">
-				<control name="hhdc_contract_id" value="50" />
+				<control name="hhdc_contract_id" value="52" />
 				<control type="file" name="import_file" value="hh_data.df2" />
-				<regex pattern="/reports/65/output/\?hhdc_contract_id=50&amp;process_id=11" />
+				<regex pattern="/reports/65/output/\?hhdc_contract_id=52&amp;process_id=11" />
 				<response-code value="303" />
 			</request>
 			<request
-				path="/chellow/reports/65/output/?hhdc_contract_id=50&amp;process_id=11">
+				path="/chellow/reports/65/output/?hhdc_contract_id=52&amp;process_id=11">
 				<refresh />
 				<regex pattern="The import has completed.*successfully" />
 				<response-code value="200" />
@@ -1234,7 +1234,7 @@ def totalElement(account, startDate, finishDate):
 		<test name="Batches">
 			<!-- Create a new batch -->
 			<request path="/chellow/reports/287/output/" method="post">
-				<control name="supplier_contract_id" value="52" />
+				<control name="supplier_contract_id" value="54" />
 				<control name="reference" value="04-003" />
 				<control name="description" value="Contract 4, batch number 3" />
 				<response-code value="303" />
@@ -1242,7 +1242,7 @@ def totalElement(account, startDate, finishDate):
 
 			<!-- Check it gives a good error message for a duplicate name -->
 			<request path="/chellow/reports/287/output/" method="post">
-				<control name="supplier_contract_id" value="52" />
+				<control name="supplier_contract_id" value="54" />
 				<control name="reference" value="04-003" />
 				<control name="description" value="dup batch" />
 				<regex
@@ -1251,7 +1251,7 @@ def totalElement(account, startDate, finishDate):
 			</request>
 		</test>
 		<test name="Bill imports">
-			<!-- Create a new import. Supplier contract 52 -->
+			<!-- Create a new import. Supplier contract 54 -->
 			<request path="/chellow/reports/321/output/" method="post">
 				<control name="supplier_batch_id" value="1" />
 				<control type="file" name="import_file" value="bills.mm" />
@@ -1259,7 +1259,7 @@ def totalElement(account, startDate, finishDate):
 				<regex pattern="/reports/323/output/\?importer_id=0" />
 			</request>
 
-			<!-- Supplier contract 52, batch 1 -->
+			<!-- Supplier contract 54, batch 1 -->
 			<request path="/chellow/reports/323/output/?importer_id=0">
 				<refresh />
 				<response-code value="200" />
@@ -1291,13 +1291,13 @@ def totalElement(account, startDate, finishDate):
 
 			<!-- Create a new batch -->
 			<request path="/chellow/reports/287/output/" method="post">
-				<control name="supplier_contract_id" value="56" />
+				<control name="supplier_contract_id" value="58" />
 				<control name="reference" value="06-002" />
 				<control name="description" value="Bgb batch" />
 				<response-code value="303" />
 			</request>
 
-			<!-- Supplier contract 56 -->
+			<!-- Supplier contract 58 -->
 			<request path="/chellow/reports/321/output/" method="post">
 				<control name="supplier_batch_id" value="3" />
 				<control type="file" name="import_file" value="bills.bgb.edi" />
@@ -1306,7 +1306,7 @@ def totalElement(account, startDate, finishDate):
 				<regex pattern="/reports/323/output/\?importer_id=1" />
 			</request>
 
-			<!-- Supplier contract 56, batch 3 -->
+			<!-- Supplier contract 58, batch 3 -->
 			<request path="/chellow/reports/323/output/?importer_id=1">
 				<refresh />
 				<response-code value="200" />
@@ -1341,14 +1341,14 @@ def totalElement(account, startDate, finishDate):
 		</test>
 		<test name="Test of BGlobal HH data import">
 			<request path="/chellow/reports/211/output/" method="post">
-				<control name="hhdc_contract_id" value="50" />
+				<control name="hhdc_contract_id" value="52" />
 				<control type="file" name="import_file" value="hh_data.bg.csv" />
 				<response-code value="303" />
 				<regex
-					pattern="/chellow/reports/65/output/\?hhdc_contract_id=50&amp;process_id=12" />
+					pattern="/chellow/reports/65/output/\?hhdc_contract_id=52&amp;process_id=12" />
 			</request>
 			<request
-				path="/chellow/reports/65/output/?hhdc_contract_id=50&amp;process_id=12">
+				path="/chellow/reports/65/output/?hhdc_contract_id=52&amp;process_id=12">
 				<refresh />
 				<regex pattern="The import has completed.*successfully." />
 				<response-code value="200" />
@@ -1407,14 +1407,14 @@ def totalElement(account, startDate, finishDate):
 		<test name="CSV import">
 			<!-- Create new batch -->
 			<request path="/chellow/reports/287/output/" method="post">
-				<control name="supplier_contract_id" value="52" />
+				<control name="supplier_contract_id" value="54" />
 				<control name="reference" value="06-004" />
 				<control name="description" value="CSV batch" />
 
 				<response-code value="303" />
 			</request>
 
-			<!-- Insert bills. Supplier contract 52 -->
+			<!-- Insert bills. Supplier contract 54 -->
 			<request path="/chellow/reports/321/output/" method="post">
 				<control name="supplier_batch_id" value="4" />
 				<control type="file" name="import_file" value="bills.csv" />
@@ -1423,7 +1423,7 @@ def totalElement(account, startDate, finishDate):
 				<regex pattern="/reports/323/output/\?importer_id=2" />
 			</request>
 
-			<!-- Supplier contract 52, batch 4 -->
+			<!-- Supplier contract 54, batch 4 -->
 			<request path="/chellow/reports/323/output/?importer_id=2">
 				<refresh />
 				<response-code value="200" />
@@ -1552,7 +1552,7 @@ def totalElement(account, startDate, finishDate):
 				<control name="start_hour" value="00" />
 				<control name="start_minute" value="00" />
 				<control name="is_ended" value="false" />
-				<control name="mop_contract_id" value="54" />
+				<control name="mop_contract_id" value="56" />
 				<control name="mop_account" value="22 0883 6932 301" />
 				<control name="hhdc_contract_id" value="null" />
 				<control name="pc_id" value="9" />
@@ -1562,7 +1562,7 @@ def totalElement(account, startDate, finishDate):
 				<control name="imp_llfc_code" value="570" />
 				<control name="imp_mpan_core" value="22 0883 6932 301" />
 				<control name="imp_sc" value="350" />
-				<control name="imp_supplier_contract_id" value="52" />
+				<control name="imp_supplier_contract_id" value="54" />
 				<control name="imp_supplier_account" value="01" />
 
 				<response-code value="400" />
@@ -1589,7 +1589,7 @@ def totalElement(account, startDate, finishDate):
 		</test>
 		<test name="Check that the party viewer is able to view snags.">
 			<request
-				path="/chellow/reports/37/output/?hhdc-contract-id=50&amp;hidden_days=5">
+				path="/chellow/reports/37/output/?hhdc-contract-id=52&amp;hidden_days=5">
 				<credentials username="mishka@localhost" password="fyodor" />
 
 				<regex
@@ -1597,7 +1597,7 @@ def totalElement(account, startDate, finishDate):
 				<regex
 					pattern="There are 46 snag\(s\) older than 5 days that aren't ignored\." />
 				<regex
-					pattern='&lt;a href="/chellow/reports/115/output/\?hhdc_contract_id=50"&gt;HH contract&lt;/a&gt;' />
+					pattern='&lt;a href="/chellow/reports/115/output/\?hhdc_contract_id=52"&gt;HH contract&lt;/a&gt;' />
 				<regex
 					pattern='&lt;li&gt;\s*&lt;a href="/chellow/reports/117/output/\?snag_id=1"&gt;view&lt;/a&gt;  \[&lt;a href="/chellow/reports/365/output/\?snag_id=1"&gt;edit&lt;/a&gt;\]\s*&lt;/li&gt;' />
 
@@ -1619,9 +1619,9 @@ def totalElement(account, startDate, finishDate):
 		</test>
 		<test
 			name="Test deleting the only rate script attached to a supplier contract.">
-			<!-- Supplier contract 52 -->
+			<!-- Supplier contract 58 -->
 			<request path="/chellow/reports/319/output/" method="post">
-				<control name="supplier_rate_script_id" value="301" />
+				<control name="supplier_rate_script_id" value="307" />
 				<control name="delete" value="Delete" />
 				<regex pattern="You can't delete the last rate script\." />
 				<response-code value="400" />
@@ -1630,7 +1630,7 @@ def totalElement(account, startDate, finishDate):
 		<test
 			name="Try adding a second rate script (set to 'ongoing'), and see if the era can be updated.">
 			<request path="/chellow/reports/325/output/" method="post">
-				<control name="supplier_contract_id" value="52" />
+				<control name="supplier_contract_id" value="58" />
 				<control name="start_year" value="2009" />
 				<control name="start_month" value="08" />
 				<control name="start_day" value="16" />
@@ -1650,9 +1650,9 @@ def totalElement(account, startDate, finishDate):
 				<control name="start_hour" value="00" />
 				<control name="start_minute" value="00" />
 				<control name="is_ended" value="false" />
-				<control name="mop_contract_id" value="54" />
+				<control name="mop_contract_id" value="56" />
 				<control name="mop_account" value="mc-22 0470 7514 535" />
-				<control name="hhdc_contract_id" value="50" />
+				<control name="hhdc_contract_id" value="52" />
 				<control name="hhdc_account" value="01" />
 				<control name="msn" value="" />
 				<control name="pc_id" value="9" />
@@ -1662,7 +1662,7 @@ def totalElement(account, startDate, finishDate):
 				<control name="exp_llfc_code" value="581" />
 				<control name="exp_mpan_core" value="22 0470 7514 535" />
 				<control name="exp_sc" value="150" />
-				<control name="exp_supplier_contract_id" value="52" />
+				<control name="exp_supplier_contract_id" value="58" />
 				<control name="exp_supplier_account" value="010" />
 
 				<response-code value="303" />
@@ -1670,13 +1670,13 @@ def totalElement(account, startDate, finishDate):
 		</test>
 		<test name="Check updating of HHDC contract state.">
 			<request path="/chellow/reports/279/output/" method="post">
-				<control name="hhdc_contract_id" value="50" />
+				<control name="hhdc_contract_id" value="52" />
 				<control name="state"><![CDATA[{
 'last_import_keys': {'.': '1960-11-30 00:00_example.csv'}}]]></control>
 				<control name="update_state" value="Update State" />
 				<response-code value="303" />
 			</request>
-			<request path="/chellow/reports/115/output/?hhdc_contract_id=50">
+			<request path="/chellow/reports/115/output/?hhdc_contract_id=52">
 				<response-code value="200" />
 				<regex
 					pattern="\{\s*&amp;#39;last_import_keys&amp;#39;: \{&amp;#39;.&amp;#39;: &amp;#39;1960-11-30 00:00_example.csv&amp;#39;\}\}" />
@@ -1732,19 +1732,19 @@ def totalElement(account, startDate, finishDate):
 			</request>
 		</test>
 		<test name="Test 'view' link from supplier contract rate scripts.">
-			<request path="/chellow/reports/325/output/?supplier_contract_id=52">
-				<regex pattern="/chellow/reports/77/output/\?supplier_contract_id=52" />
+			<request path="/chellow/reports/325/output/?supplier_contract_id=58">
+				<regex pattern="/chellow/reports/77/output/\?supplier_contract_id=58" />
 			</request>
 		</test>
 		<test name="Check 'HH Contract' option is there. Supply 9.">
 			<request path="/chellow/reports/307/output/?era_id=9">
 				<regex
-					pattern='&lt;option value="50"&gt;HH contract&lt;/option&gt;\s*&lt;/select&gt;' />
+					pattern='&lt;option value="52"&gt;HH contract&lt;/option&gt;\s*&lt;/select&gt;' />
 			</request>
 		</test>
 		<test name="Try bulk delete of HHDC snags.">
 			<request path="/chellow/reports/279/output/" method="post">
-				<control name="hhdc_contract_id" value="51" />
+				<control name="hhdc_contract_id" value="53" />
 				<control name="ignore_year" value="2010" />
 				<control name="ignore_month" value="01" />
 				<control name="ignore_day" value="13" />
@@ -1756,7 +1756,7 @@ def totalElement(account, startDate, finishDate):
 		</test>
 		<test name="Check python compile error gives a reasonable message.">
 			<request path="/chellow/reports/317/output/" method="post">
-				<control name="supplier_contract_id" value="52" />
+				<control name="supplier_contract_id" value="54" />
 				<control name="party_id" value="25" /> <!-- BIZZ -->
 				<control name="name" value="Half-hourlies 2007" />
 				<control name="charge_script">
@@ -1769,7 +1769,7 @@ def virtual_bill(supply, startDate, finishDate, pw):
 			</request>
 			<!-- Put back to how it was before -->
 			<request path="/chellow/reports/317/output/" method="post">
-				<control name="supplier_contract_id" value="52" />
+				<control name="supplier_contract_id" value="54" />
 				<control name="party_id" value="25" />
 				<control name="name" value="Half-hourlies 2007" />
 				<control name="charge_script"><![CDATA[from net.sf.chellow.monad import Hiber
@@ -1953,9 +1953,9 @@ def virtual_bill(supply_source):
 				<control name="start_hour" value="00" />
 				<control name="start_minute" value="00" />
 				<control name="is_ended" value="false" />
-				<control name="mop_contract_id" value="54" />
+				<control name="mop_contract_id" value="56" />
 				<control name="mop_account" value="mc-22 0470 7514 535" />
-				<control name="hhdc_contract_id" value="50" />
+				<control name="hhdc_contract_id" value="52" />
 				<control name="hhdc_account" value="01" />
 				<control name="msn" value="" />
 				<control name="pc_id" value="9" />
@@ -1965,7 +1965,7 @@ def virtual_bill(supply_source):
 				<control name="exp_llfc_code" value="581" />
 				<control name="exp_mpan_core" value="22 0470 7514 535" />
 				<control name="exp_sc" value="150" />
-				<control name="exp_supplier_contract_id" value="52" />
+				<control name="exp_supplier_contract_id" value="54" />
 				<control name="exp_supplier_account" value="010" />
 
 				<response-code value="303" />
@@ -1998,14 +1998,14 @@ def virtual_bill(supply_source):
 				<control name="mtc_code" value="845" />
 				<control name="cop_id" value="5" />
 				<control name="ssc_code" value="" />
-				<control name="mop_contract_id" value="54" />
+				<control name="mop_contract_id" value="56" />
 				<control name="mop_account" value="mc-22 0883 6932 301" />
-				<control name="hhdc_contract_id" value="50" />
+				<control name="hhdc_contract_id" value="52" />
 				<control name="hhdc_account" value="22 0883 6932 301" />
 				<control name="imp_llfc_code" value="570" />
 				<control name="imp_mpan_core" value="22 0883 6932 301" />
 				<control name="imp_sc" value="350" />
-				<control name="imp_supplier_contract_id" value="52" />
+				<control name="imp_supplier_contract_id" value="54" />
 				<control name="imp_supplier_account" value="01" />
 
 				<response-code value="400" />
@@ -2032,14 +2032,14 @@ def virtual_bill(supply_source):
 				<control name="mtc_code" value="845" />
 				<control name="cop_id" value="5" />
 				<control name="ssc_code" value="" />
-				<control name="mop_contract_id" value="54" />
+				<control name="mop_contract_id" value="56" />
 				<control name="mop_account" value="mc-22 0883 6932 301" />
-				<control name="hhdc_contract_id" value="50" />
+				<control name="hhdc_contract_id" value="52" />
 				<control name="hhdc_account" value="22 0883 6932 301" />
 				<control name="imp_llfc_code" value="570" />
 				<control name="imp_mpan_core" value="22 0883 6932 301" />
 				<control name="imp_sc" value="350" />
-				<control name="imp_supplier_contract_id" value="52" />
+				<control name="imp_supplier_contract_id" value="54" />
 				<control name="imp_supplier_account" value="01" />
 
 				<response-code value="400" />
@@ -2058,19 +2058,19 @@ def virtual_bill(supply_source):
 				<control name="start_hour" value="00" />
 				<control name="start_minute" value="00" />
 
-				<regex pattern="/reports/77/output/\?supplier_contract_id=57" />
+				<regex pattern="/reports/77/output/\?supplier_contract_id=59" />
 				<response-code value="303" />
 			</request>
 
 			<!-- Now delete the contract -->
 			<request path="/chellow/reports/317/output/" method="post">
-				<control name="supplier_contract_id" value="57" />
+				<control name="supplier_contract_id" value="59" />
 				<control name="delete" value="Delete" />
 				<response-code value="303" />
 			</request>
 
 			<!-- Check that it's really gone -->
-			<request path="/chellow/reports/317/output/?supplier_contract_id=57">
+			<request path="/chellow/reports/317/output/?supplier_contract_id=59">
 				<response-code value="404" />
 			</request>
 		</test>
@@ -2085,18 +2085,18 @@ def virtual_bill(supply_source):
 				<control name="start_hour" value="00" />
 				<control name="start_minute" value="00" />
 				<response-code value="303" />
-				<regex pattern="/chellow/reports/115/output/\?hhdc_contract_id=58" />
+				<regex pattern="/chellow/reports/115/output/\?hhdc_contract_id=60" />
 			</request>
 
 			<!-- Now delete the contract -->
 			<request path="/chellow/reports/279/output/" method="post">
-				<control name="hhdc_contract_id" value="58" />
+				<control name="hhdc_contract_id" value="60" />
 				<control name="delete" value="Delete" />
 				<response-code value="303" />
 			</request>
 
 			<!-- Check that it's really gone -->
-			<request path="/chellow/reports/115/output/?hhdc_contract_id=58">
+			<request path="/chellow/reports/115/output/?hhdc_contract_id=60">
 				<response-code value="404" />
 			</request>
 		</test>
@@ -2123,13 +2123,13 @@ def virtual_bill(supply_source):
 				<control name="start_day" value="03" />
 				<control name="start_hour" value="00" />
 				<control name="start_minute" value="00" />
-				<regex pattern="/reports/267/output/\?non_core_contract_id=59" />
+				<regex pattern="/reports/267/output/\?non_core_contract_id=61" />
 				<response-code value="303" />
 			</request>
 
 			<!-- Edit the rate script -->
 			<request path="/chellow/reports/273/output/" method="post">
-				<control name="rate_script_id" value="309" />
+				<control name="rate_script_id" value="311" />
 				<control name="start_year" value="2000" />
 				<control name="start_month" value="01" />
 				<control name="start_day" value="03" />
@@ -2164,7 +2164,7 @@ def triad_estimates():
 		<test
 			name="Check we can delete a rate script (when it's not the only one). Supplier contract 52.">
 			<request path="/chellow/reports/319/output/" method="post">
-				<control name="supplier_rate_script_id" value="306" />
+				<control name="supplier_rate_script_id" value="308" />
 				<control name="delete" value="Delete" />
 				<response-code value="303" />
 			</request>
@@ -2203,7 +2203,7 @@ def triad_estimates():
 		</test>
 		<test name="Try HHDC virtual bills.">
 			<request
-				path="/chellow/reports/81/output/?hhdc_contract_id=50&amp;months=1&amp;end_year=2008&amp;end_month=7">
+				path="/chellow/reports/81/output/?hhdc_contract_id=52&amp;months=1&amp;end_year=2008&amp;end_month=7">
 				<response-code value="200" />
 				<regex
 					pattern='Import MPAN Core, Export MPAN Core, Start Date, Finish Date,net-gbp' />
@@ -2250,13 +2250,13 @@ def triad_estimates():
 				<control name="start_day" value="01" />
 				<control name="start_hour" value="00" />
 				<control name="start_minute" value="00" />
-				<regex pattern="/chellow/reports/69/output/\?dno_rate_script_id=310" />
+				<regex pattern="/chellow/reports/69/output/\?dno_rate_script_id=312" />
 				<response-code value="303" />
 			</request>
 
 			<!-- Test bad syntax gives an error -->
 			<request path="/chellow/reports/285/output/" method="post">
-				<control name="dno_rate_script_id" value="310" />
+				<control name="dno_rate_script_id" value="312" />
 				<control name="start_year" value="2010" />
 				<control name="start_month" value="05" />
 				<control name="start_day" value="01" />
@@ -2269,7 +2269,7 @@ def triad_estimates():
 
 			<!-- Delete rate script -->
 			<request path="/chellow/reports/285/output/" method="post">
-				<control name="dno_rate_script_id" value="310" />
+				<control name="dno_rate_script_id" value="312" />
 				<control name="delete" value="Delete" />
 				<response-code value="303" />
 			</request>
@@ -2308,7 +2308,7 @@ def triad_estimates():
 			</request>
 			<!-- Update the supplier contract -->
 			<request path="/chellow/reports/317/output/" method="post">
-				<control name="supplier_contract_id" value="55" />
+				<control name="supplier_contract_id" value="57" />
 				<control name="party_id" value="25" /> <!-- BIZZ -->
 				<control name="name" value="Half-hourlies 2013" />
 				<control name="charge_script">
@@ -2439,10 +2439,10 @@ def virtual_bill(supply_source):
 				</control>
 
 				<response-code value="303" />
-				<regex pattern="/reports/77/output/\?supplier_contract_id=55" />
+				<regex pattern="/reports/77/output/\?supplier_contract_id=57" />
 			</request>
 			<request path="/chellow/reports/317/output/" method="post">
-				<control name="supplier_contract_id" value="56" />
+				<control name="supplier_contract_id" value="58" />
 				<control name="name" value="Non half-hourlies 2007" />
 				<control name="party_id" value="351" />
 				<control name="charge_script">
@@ -2494,9 +2494,9 @@ def virtual_bill(supply_source):
 				<control name="finish_day" value="13" />
 				<control name="finish_hour" value="23" />
 				<control name="finish_minute" value="30" />
-				<control name="mop_contract_id" value="54" />
+				<control name="mop_contract_id" value="56" />
 				<control name="mop_account" value="mc-22 9974 3438 105" />
-				<control name="hhdc_contract_id" value="50" />
+				<control name="hhdc_contract_id" value="52" />
 				<control name="hhdc_account" value="dc-22 9974 3438 105" />
 				<control name="msn" value="K87D74429" />
 				<control name="pc_id" value="5" />
@@ -2506,7 +2506,7 @@ def virtual_bill(supply_source):
 				<control name="imp_llfc_code" value="540" />
 				<control name="imp_mpan_core" value="22 9974 3438 105" />
 				<control name="imp_sc" value="20" />
-				<control name="imp_supplier_contract_id" value="56" />
+				<control name="imp_supplier_contract_id" value="58" />
 				<control name="imp_supplier_account" value="SA341665" />
 
 				<response-code value="303" />
@@ -2535,14 +2535,14 @@ def virtual_bill(supply_source):
 				<control name="mtc_code" value="845" />
 				<control name="cop_id" value="5" />
 				<control name="ssc_code" value="" />
-				<control name="mop_contract_id" value="54" />
+				<control name="mop_contract_id" value="56" />
 				<control name="mop_account" value="mc-22 6354 2983 570" />
-				<control name="hhdc_contract_id" value="50" />
+				<control name="hhdc_contract_id" value="52" />
 				<control name="hhdc_account" value="01" />
 				<control name="imp_llfc_code" value="453" />
 				<control name="imp_mpan_core" value="20 6354 2983 571" />
 				<control name="imp_sc" value="2300" />
-				<control name="imp_supplier_contract_id" value="52" />
+				<control name="imp_supplier_contract_id" value="54" />
 				<control name="imp_supplier_account" value="141 5532" />
 				<control name="insert" value="insert" />
 
@@ -2561,13 +2561,13 @@ def virtual_bill(supply_source):
 
 			<!-- Try out simple.csv hh import format. -->
 			<request path="/chellow/reports/211/output/" method="post">
-				<control name="hhdc_contract_id" value="51" />
+				<control name="hhdc_contract_id" value="53" />
 				<control type="file" name="import_file" value="hh.simple.csv" />
 				<response-code value="303" />
-				<regex pattern="/reports/65/output/\?hhdc_contract_id=51&amp;process_id=0" />
+				<regex pattern="/reports/65/output/\?hhdc_contract_id=53&amp;process_id=0" />
 			</request>
 			<request
-				path="/chellow/reports/65/output/?hhdc_contract_id=51&amp;process_id=0">
+				path="/chellow/reports/65/output/?hhdc_contract_id=53&amp;process_id=0">
 				<refresh />
 				<regex pattern="The import has completed.*successfully." />
 				<response-code value="200" />
@@ -2621,12 +2621,12 @@ def virtual_bill(supply_source):
 				<control name="start_hour" value="00" />
 				<control name="start_minute" value="00" />
 
-				<regex pattern="/reports/77/output/\?supplier_contract_id=60" />
+				<regex pattern="/reports/77/output/\?supplier_contract_id=62" />
 			</request>
 
 			<!-- Update the supplier contract -->
 			<request path="/chellow/reports/317/output/" method="post">
-				<control name="supplier_contract_id" value="60" />
+				<control name="supplier_contract_id" value="62" />
 				<control name="party_id" value="7" />
 				<control name="name" value="Non half-hourlies 2010" />
 				<control name="charge_script">
@@ -2665,9 +2665,9 @@ def virtual_bill(supply_source):
 				<control name="start_hour" value="00" />
 				<control name="start_minute" value="00" />
 				<control name="is_ended" value="false" />
-				<control name="mop_contract_id" value="54" />
+				<control name="mop_contract_id" value="56" />
 				<control name="mop_account" value="mc-22 1065 3921 534" />
-				<control name="hhdc_contract_id" value="50" />
+				<control name="hhdc_contract_id" value="52" />
 				<control name="hhdc_account" value="dc-22 1065 3921 534" />
 				<control name="msn" value="I02D89150" />
 				<control name="pc_id" value="3" />
@@ -2677,7 +2677,7 @@ def virtual_bill(supply_source):
 				<control name="imp_llfc_code" value="110" />
 				<control name="imp_mpan_core" value="22 1065 3921 534" />
 				<control name="imp_sc" value="30" />
-				<control name="imp_supplier_contract_id" value="60" />
+				<control name="imp_supplier_contract_id" value="62" />
 				<control name="imp_supplier_account" value="SA342376000" />
 
 				<response-code value="303" />
@@ -2685,13 +2685,13 @@ def virtual_bill(supply_source):
 
 			<!-- Create a new batch -->
 			<request path="/chellow/reports/287/output/" method="post">
-				<control name="supplier_contract_id" value="60" />
+				<control name="supplier_contract_id" value="62" />
 				<control name="reference" value="07-008" />
 				<control name="description" value="SSE batch" />
 				<response-code value="303" />
 			</request>
 
-			<!-- Supplier contract 60. -->
+			<!-- Supplier contract 62. -->
 			<request path="/chellow/reports/321/output/" method="post">
 				<control name="supplier_batch_id" value="5" />
 				<control type="file" name="import_file" value="bills.sse.edi" />
@@ -2699,7 +2699,7 @@ def virtual_bill(supply_source):
 				<regex pattern="/reports/323/output/\?importer_id=3" />
 			</request>
 
-			<!-- Supplier contract 58. -->
+			<!-- Supplier contract 60. -->
 			<request path="/chellow/reports/323/output/?importer_id=3">
 				<refresh />
 				<regex
@@ -2774,9 +2774,9 @@ def virtual_bill(supply_source):
 				<control name="start_minute" value="26" />
 				<control name="msn" value="" />
 				<control name="gsp_group_id" value="3" />
-				<control name="mop_contract_id" value="54" />
+				<control name="mop_contract_id" value="56" />
 				<control name="mop_account" value="mc-22 9879 0084 358" />
-				<control name="hhdc_contract_id" value="50" />
+				<control name="hhdc_contract_id" value="52" />
 				<control name="hhdc_account" value="dc-22 9879 0084 358" />
 				<control name="pc_id" value="9" />
 				<control name="mtc_code" value="845" />
@@ -2785,7 +2785,7 @@ def virtual_bill(supply_source):
 				<control name="imp_mpan_core" value="22 9879 0084 358" />
 				<control name="imp_llfc_code" value="540" />
 				<control name="imp_sc" value="700" />
-				<control name="imp_supplier_contract_id" value="52" />
+				<control name="imp_supplier_contract_id" value="54" />
 				<control name="imp_supplier_account" value="d" />
 				<control name="insert" value="Insert" />
 
@@ -2809,13 +2809,13 @@ def virtual_bill(supply_source):
 		<test name="GDF CSV Bills">
 			<!-- Create a new batch. -->
 			<request path="/chellow/reports/287/output/" method="post">
-				<control name="supplier_contract_id" value="52" />
+				<control name="supplier_contract_id" value="54" />
 				<control name="reference" value="008" />
 				<control name="description" value="GDF CSV batch" />
 				<response-code value="303" />
 			</request>
 
-			<!-- Supplier contract 51 -->
+			<!-- Supplier contract 53 -->
 			<request path="/chellow/reports/321/output/" method="post">
 				<control name="supplier_batch_id" value="6" />
 
@@ -2826,7 +2826,7 @@ def virtual_bill(supply_source):
 				<regex pattern="/reports/323/output/\?importer_id=4" />
 			</request>
 
-			<!-- Supplier contract 52, batch 6 -->
+			<!-- Supplier contract 54, batch 6 -->
 			<request path="/chellow/reports/323/output/?importer_id=4">
 				<refresh />
 				<regex
@@ -2875,7 +2875,7 @@ def virtual_bill(supply_source):
 		</test>
 		<test name="Test bulk ignore.">
 			<request path="/chellow/reports/279/output/" method="post">
-				<control name="hhdc_contract_id" value="50" />
+				<control name="hhdc_contract_id" value="52" />
 				<control name="ignore_year" value="2008" />
 				<control name="ignore_month" value="09" />
 				<control name="ignore_day" value="01" />
@@ -2905,13 +2905,13 @@ def virtual_bill(supply_source):
 		</test>
 		<test name="NHH CSV import">
 			<request path="/chellow/reports/287/output/" method="post">
-				<control name="supplier_contract_id" value="60" />
+				<control name="supplier_contract_id" value="62" />
 				<control name="reference" value="07-002" />
 				<control name="description" value="nhh csv batch" />
 				<response-code value="303" />
 			</request>
 
-			<!-- Supplier contract 60 -->
+			<!-- Supplier contract 62 -->
 			<request path="/chellow/reports/321/output/" method="post">
 				<control name="supplier_batch_id" value="7" />
 				<control type="file" name="import_file" value="bills-nhh.csv" />
@@ -2920,7 +2920,7 @@ def virtual_bill(supply_source):
 				<regex pattern="/reports/323/output/\?importer_id=5" />
 			</request>
 
-			<!-- Supplier contract 58, batch 7 -->
+			<!-- Supplier contract 60, batch 7 -->
 			<request path="/chellow/reports/323/output/?importer_id=5">
 				<refresh />
 				<response-code value="200" />
@@ -2928,7 +2928,7 @@ def virtual_bill(supply_source):
 					pattern="All the bills have been successfully loaded and attached to the batch\." />
 			</request>
 
-			<!-- Supplier contract 58, batch 7, bill 10 -->
+			<!-- Supplier contract 60, batch 7, bill 10 -->
 			<request path="/chellow/reports/31/output/?supplier_read_id=7">
 				<regex
 					pattern='31&lt;/option&gt;\s*&lt;/select&gt;\s*&lt;select name="present_hour"&gt;\s*&lt;option value="0"&gt;00&lt;/option&gt;\s*&lt;option value="1"&gt;01&lt;/option&gt;\s*&lt;option value="2"&gt;02&lt;/option&gt;\s*&lt;option value="3"&gt;03&lt;/option&gt;\s*&lt;option value="4"&gt;04&lt;/option&gt;\s*&lt;option value="5"&gt;05&lt;/option&gt;\s*&lt;option value="6"&gt;06&lt;/option&gt;\s*&lt;option value="7"&gt;07&lt;/option&gt;\s*&lt;option value="8"&gt;08&lt;/option&gt;\s*&lt;option value="9"&gt;09&lt;/option&gt;\s*&lt;option value="10"&gt;10&lt;/option&gt;\s*&lt;option value="11"&gt;11&lt;/option&gt;\s*&lt;option value="12"&gt;12&lt;/option&gt;\s*&lt;option value="13"&gt;13&lt;/option&gt;\s*&lt;option value="14"&gt;14&lt;/option&gt;\s*&lt;option value="15"&gt;15&lt;/option&gt;\s*&lt;option value="16"&gt;16&lt;/option&gt;\s*&lt;option value="17"&gt;17&lt;/option&gt;\s*&lt;option value="18"&gt;18&lt;/option&gt;\s*&lt;option value="19"&gt;19&lt;/option&gt;\s*&lt;option value="20"&gt;20&lt;/option&gt;\s*&lt;option value="21"&gt;21&lt;/option&gt;\s*&lt;option value="22"&gt;22&lt;/option&gt;\s*&lt;option value="23" selected&gt;23&lt;/option&gt;\s*&lt;/select&gt;:&lt;select name="present_minute"&gt;\s*&lt;option value="0"&gt;00&lt;/option&gt;\s*&lt;option value="30" selected&gt;30&lt;/option&gt;\s*&lt;/select&gt;' />
@@ -2994,9 +2994,9 @@ def virtual_bill(supply_source):
 				<control name="finish_day" value="03" />
 				<control name="finish_hour" value="23" />
 				<control name="finish_minute" value="30" />
-				<control name="mop_contract_id" value="54" />
+				<control name="mop_contract_id" value="56" />
 				<control name="mop_account" value="mc-22 1065 3921 534" />
-				<control name="hhdc_contract_id" value="51" />
+				<control name="hhdc_contract_id" value="53" />
 				<control name="hhdc_account" value="dc-22 1065 3921 534" />
 				<control name="msn" value="I02D89150" />
 				<control name="pc_id" value="3" />
@@ -3006,7 +3006,7 @@ def virtual_bill(supply_source):
 				<control name="imp_llfc_code" value="110" />
 				<control name="imp_mpan_core" value="22 1065 3921 534" />
 				<control name="imp_sc" value="30" />
-				<control name="imp_supplier_contract_id" value="56" />
+				<control name="imp_supplier_contract_id" value="58" />
 				<control name="imp_supplier_account" value="SA342376" />
 
 				<response-code value="303" />
@@ -3087,20 +3087,20 @@ def virtual_bill(supply_source):
 		<test name="Add batch to HHDC contract">
 			<!-- Insert a new batch -->
 			<request path="/chellow/reports/281/output/" method="post">
-				<control name="hhdc_contract_id" value="50" />
+				<control name="hhdc_contract_id" value="52" />
 				<control name="reference" value="001-7t" />
 				<control name="description" value="hhdc batch" />
 				<response-code value="303" />
 				<regex pattern="/reports/203/output/\?hhdc_batch_id=8" />
 			</request>
 
-			<!-- Check that it's there to edit. HHDC contract 50 -->
+			<!-- Check that it's there to edit. HHDC contract 52 -->
 			<request path="/chellow/reports/283/output/?hhdc_batch_id=8">
 				<response-code value="200" />
 			</request>
 		</test>
 		<test name="Try adding bills to the HHDC batch">
-			<!-- Contract 50 -->
+			<!-- Contract 52 -->
 			<request path="/chellow/reports/327/output/?hhdc_batch_id=8"
 				method="post">
 				<control name="hhdc_batch_id" value="8" />
@@ -3109,7 +3109,7 @@ def virtual_bill(supply_source):
 				<regex pattern="/reports/329/output/\?importer_id=6" />
 			</request>
 
-			<!-- Contract 50 batch 8 -->
+			<!-- Contract 52 batch 8 -->
 			<request path="/chellow/reports/329/output/?importer_id=6">
 				<refresh />
 				<response-code value="200" />
@@ -3120,21 +3120,21 @@ def virtual_bill(supply_source):
 		<test name="Add batch to MOP contract">
 			<!-- Insert a new batch. -->
 			<request path="/chellow/reports/353/output/" method="post">
-				<control name="mop_contract_id" value="54" />
+				<control name="mop_contract_id" value="56" />
 				<control name="reference" value="99/992" />
 				<control name="description" value="mop batch" />
 				<response-code value="303" />
 				<regex pattern="/reports/193/output/\?mop_batch_id=9" />
 			</request>
 
-			<!-- Check that it's there in edit mode. Contract 54 -->
+			<!-- Check that it's there in edit mode. Contract 56 -->
 			<request path="/chellow/reports/355/output/?mop_batch_id=9">
 				<response-code value="200" />
 
 				<regex pattern='&lt;input type="hidden" name="mop_batch_id" value="9"&gt;' />
 			</request>
 
-			<!-- Check confirm-delete page. Contract 54 -->
+			<!-- Check confirm-delete page. Contract 56 -->
 			<request
 				path="/chellow/reports/355/output/?mop_batch_id=9&amp;confirm_delete=Delete">
 				<response-code value="200" />
@@ -3178,9 +3178,9 @@ def virtual_bill(supply_source):
 				<control name="start_minute" value="00" />
 				<control name="msn" value="" />
 				<control name="gsp_group_id" value="3" />
-				<control name="mop_contract_id" value="54" />
+				<control name="mop_contract_id" value="56" />
 				<control name="mop_account" value="mc-22 9879 0084 358" />
-				<control name="hhdc_contract_id" value="50" />
+				<control name="hhdc_contract_id" value="52" />
 				<control name="hhdc_account" value="dc-22 9879 0084 358" />
 				<control name="pc_id" value="9" />
 				<control name="mtc_code" value="845" />
@@ -3189,7 +3189,7 @@ def virtual_bill(supply_source):
 				<control name="imp_mpan_core" value="22 9879 0084 358" />
 				<control name="imp_llfc_code" value="" />
 				<control name="imp_sc" value="700" />
-				<control name="imp_supplier_contract_id" value="52" />
+				<control name="imp_supplier_contract_id" value="54" />
 				<control name="imp_supplier_account" value="d" />
 
 				<control name="insert" value="Insert" />
@@ -3212,9 +3212,9 @@ def virtual_bill(supply_source):
 				<control name="start_minute" value="00" />
 				<control name="msn" value="" />
 				<control name="gsp_group_id" value="3" />
-				<control name="mop_contract_id" value="54" />
+				<control name="mop_contract_id" value="56" />
 				<control name="mop_account" value="mc-22 9879 0084 358" />
-				<control name="hhdc_contract_id" value="50" />
+				<control name="hhdc_contract_id" value="52" />
 				<control name="hhdc_account" value="dc-22 9879 0084 358" />
 				<control name="pc_id" value="9" />
 				<control name="mtc_code" value="845" />
@@ -3223,7 +3223,7 @@ def virtual_bill(supply_source):
 				<control name="imp_mpan_core" value="22 9879 0084 358" />
 				<control name="imp_llfc_code" value="570" />
 				<control name="imp_sc" value="" />
-				<control name="imp_supplier_contract_id" value="52" />
+				<control name="imp_supplier_contract_id" value="54" />
 				<control name="imp_supplier_account" value="d" />
 
 				<control name="insert" value="Insert" />
@@ -3246,9 +3246,9 @@ def virtual_bill(supply_source):
 				<control name="start_minute" value="00" />
 				<control name="msn" value="" />
 				<control name="gsp_group_id" value="3" />
-				<control name="mop_contract_id" value="54" />
+				<control name="mop_contract_id" value="56" />
 				<control name="mop_account" value="mc-22 9879 0084 358" />
-				<control name="hhdc_contract_id" value="50" />
+				<control name="hhdc_contract_id" value="52" />
 				<control name="hhdc_account" value="dc-22 9879 0084 358" />
 				<control name="pc_id" value="9" />
 				<control name="mtc_code" value="" />
@@ -3257,7 +3257,7 @@ def virtual_bill(supply_source):
 				<control name="imp_mpan_core" value="22 9879 0084 358" />
 				<control name="imp_llfc_code" value="570" />
 				<control name="imp_sc" value="700" />
-				<control name="imp_supplier_contract_id" value="52" />
+				<control name="imp_supplier_contract_id" value="54" />
 				<control name="imp_supplier_account" value="d" />
 
 				<control name="insert" value="Insert" />
@@ -3284,9 +3284,9 @@ def virtual_bill(supply_source):
 				<control name="start_minute" value="00" />
 				<control name="msn" value="" />
 				<control name="gsp_group_id" value="3" />
-				<control name="mop_contract_id" value="54" />
+				<control name="mop_contract_id" value="56" />
 				<control name="mop_account" value="mc-22 9789 0534 938" />
-				<control name="hhdc_contract_id" value="50" />
+				<control name="hhdc_contract_id" value="52" />
 				<control name="hhdc_account" value="dc-22 9789 0534 938" />
 				<control name="pc_id" value="3" />
 				<control name="mtc_code" value="801" />
@@ -3295,7 +3295,7 @@ def virtual_bill(supply_source):
 				<control name="imp_mpan_core" value="22 9789 0534 938" />
 				<control name="imp_llfc_code" value="110" />
 				<control name="imp_sc" value="0" />
-				<control name="imp_supplier_contract_id" value="60" />
+				<control name="imp_supplier_contract_id" value="62" />
 				<control name="imp_supplier_account" value="taa2" />
 				<control name="insert" value="Insert" />
 
@@ -3329,20 +3329,20 @@ def virtual_bill(supply_source):
 				<control name="start_minute" value="00" />
 				<control name="insert" value="Insert" />
 
-				<regex pattern="/chellow/reports/271/output/\?rate_script_id=312" />
+				<regex pattern="/chellow/reports/271/output/\?rate_script_id=314" />
 				<response-code value="303" />
 			</request>
 			<request
-				path="/chellow/reports/273/output/?rate_script_id=312&amp;delete=Delete">
+				path="/chellow/reports/273/output/?rate_script_id=314&amp;delete=Delete">
 				<regex pattern="Are you sure you want to delete this rate script\?" />
 				<response-code value="200" />
 			</request>
 			<request path="/chellow/reports/273/output/" method="post">
-				<control name="rate_script_id" value="312" />
+				<control name="rate_script_id" value="314" />
 				<control name="delete" value="Delete" />
 				<response-code value="303" />
 			</request>
-			<request path="/chellow/reports/271/output/?rate_script_id=312">
+			<request path="/chellow/reports/271/output/?rate_script_id=314">
 				<response-code value="404" />
 			</request>
 		</test>
@@ -3356,11 +3356,11 @@ def virtual_bill(supply_source):
 				<control name="start_minute" value="00" />
 				<control name="insert" value="Insert" />
 
-				<regex pattern="/chellow/reports/271/output/\?rate_script_id=313" />
+				<regex pattern="/chellow/reports/271/output/\?rate_script_id=315" />
 				<response-code value="303" />
 			</request>
 
-			<request path="/chellow/reports/273/output/?rate_script_id=313">
+			<request path="/chellow/reports/273/output/?rate_script_id=315">
 				<regex
 					pattern='&lt;input name="finish_year" maxlength="4" size="4" value="2010"&gt;' />
 
@@ -3371,13 +3371,13 @@ def virtual_bill(supply_source):
 			</request>
 
 			<request path="/chellow/reports/273/output/" method="post">
-				<control name="rate_script_id" value="313" />
+				<control name="rate_script_id" value="315" />
 				<control name="delete" value="Delete" />
 				<response-code value="303" />
 			</request>
 		</test>
 		<test name="Adding a bill manually.">
-			<!-- Supplier contract 52 -->
+			<!-- Supplier contract 54 -->
 			<request path="/chellow/reports/313/output/" method="post">
 				<control name="supplier_batch_id" value="6" />
 				<control name="mpan_core" value="22 9813 2107 763" />
@@ -3409,7 +3409,7 @@ def virtual_bill(supply_source):
 				<response-code value="303" />
 			</request>
 
-			<!-- Supplier contract 51, batch 6 -->
+			<!-- Supplier contract 52, batch 6 -->
 			<request path="/chellow/reports/165/output/?supplier_bill_id=18">
 				<regex
 					pattern='&lt;select name="start_day"&gt;\s*&lt;option value="1"&gt;01&lt;/option&gt;\s*&lt;option value="2"&gt;02&lt;/option&gt;\s*&lt;option value="3"&gt;03&lt;/option&gt;\s*&lt;option value="4"&gt;04&lt;/option&gt;\s*&lt;option value="5"&gt;05&lt;/option&gt;\s*&lt;option value="6" selected&gt;06&lt;/option&gt;\s*&lt;option value="7"&gt;07&lt;/option&gt;\s*&lt;option value="8"&gt;08&lt;/option&gt;\s*&lt;option value="9"&gt;09&lt;/option&gt;\s*&lt;option value="10"&gt;10&lt;/option&gt;\s*&lt;option value="11"&gt;11&lt;/option&gt;\s*&lt;option value="12"&gt;12&lt;/option&gt;\s*&lt;option value="13"&gt;13&lt;/option&gt;\s*&lt;option value="14"&gt;14&lt;/option&gt;\s*&lt;option value="15"&gt;15&lt;/option&gt;\s*&lt;option value="16"&gt;16&lt;/option&gt;\s*&lt;option value="17"&gt;17&lt;/option&gt;\s*&lt;option value="18"&gt;18&lt;/option&gt;\s*&lt;option value="19"&gt;19&lt;/option&gt;\s*&lt;option value="20"&gt;20&lt;/option&gt;\s*&lt;option value="21"&gt;21&lt;/option&gt;\s*&lt;option value="22"&gt;22&lt;/option&gt;\s*&lt;option value="23"&gt;23&lt;/option&gt;\s*&lt;option value="24"&gt;24&lt;/option&gt;\s*&lt;option value="25"&gt;25&lt;/option&gt;\s*&lt;option value="26"&gt;26&lt;/option&gt;\s*&lt;option value="27"&gt;27&lt;/option&gt;\s*&lt;option value="28"&gt;28&lt;/option&gt;\s*&lt;option value="29"&gt;29&lt;/option&gt;\s*&lt;option value="30"&gt;30&lt;/option&gt;\s*&lt;option value="31"&gt;31&lt;/option&gt;\s*&lt;/select&gt;\s*&lt;select name="start_hour"&gt;\s*&lt;option value="0" selected&gt;00&lt;/option&gt;\s*&lt;option value="1"&gt;01&lt;/option&gt;\s*&lt;option value="2"&gt;02&lt;/option&gt;\s*&lt;option value="3"&gt;03&lt;/option&gt;\s*&lt;option value="4"&gt;04&lt;/option&gt;\s*&lt;option value="5"&gt;05&lt;/option&gt;\s*&lt;option value="6"&gt;06&lt;/option&gt;\s*&lt;option value="7"&gt;07&lt;/option&gt;\s*&lt;option value="8"&gt;08&lt;/option&gt;\s*&lt;option value="9"&gt;09&lt;/option&gt;\s*&lt;option value="10"&gt;10&lt;/option&gt;\s*&lt;option value="11"&gt;11&lt;/option&gt;\s*&lt;option value="12"&gt;12&lt;/option&gt;\s*&lt;option value="13"&gt;13&lt;/option&gt;\s*&lt;option value="14"&gt;14&lt;/option&gt;\s*&lt;option value="15"&gt;15&lt;/option&gt;\s*&lt;option value="16"&gt;16&lt;/option&gt;\s*&lt;option value="17"&gt;17&lt;/option&gt;\s*&lt;option value="18"&gt;18&lt;/option&gt;\s*&lt;option value="19"&gt;19&lt;/option&gt;\s*&lt;option value="20"&gt;20&lt;/option&gt;\s*&lt;option value="21"&gt;21&lt;/option&gt;\s*&lt;option value="22"&gt;22&lt;/option&gt;\s*&lt;option value="23"&gt;23&lt;/option&gt;\s*&lt;/select&gt;:&lt;select name="start_minute"&gt;\s*&lt;option value="0" selected&gt;00&lt;/option&gt;\s*&lt;option value="30"&gt;30&lt;/option&gt;\s*&lt;/select&gt;' />
@@ -3438,7 +3438,7 @@ def virtual_bill(supply_source):
 			</request>
 		</test>
 		<test name="Deleting a batch with bills with register reads.">
-			<!-- Supplier contract 59 -->
+			<!-- Supplier contract 61 -->
 			<request path="/chellow/reports/289/output/" method="post">
 				<control name="supplier_batch_id" value="5" />
 				<control name="delete" value="Delete" />
@@ -3446,12 +3446,12 @@ def virtual_bill(supply_source):
 			</request>
 		</test>
 		<test name="Check 'insert supplier batch' page.">
-			<request path="/chellow/reports/287/output/?supplier_contract_id=60">
+			<request path="/chellow/reports/287/output/?supplier_contract_id=62">
 				<regex pattern='="description"' />
 			</request>
 		</test>
 		<test name="Viewing the insert batch page of a DC contract.">
-			<request path="/chellow/reports/281/output/?hhdc_contract_id=50">
+			<request path="/chellow/reports/281/output/?hhdc_contract_id=52">
 				<regex pattern='="description"' />
 			</request>
 		</test>
@@ -3461,20 +3461,20 @@ def virtual_bill(supply_source):
 				<response-code value="200" />
 			</request>
 
-			<!-- Check that we can see batch okay. Contract 54 -->
+			<!-- Check that we can see batch okay. Contract 56 -->
 			<request path="/chellow/reports/193/output/?mop_batch_id=9">
 				<response-code value="200" />
 			</request>
 		</test>
 		<test name="Check 'no channel' error when importing hh data.">
 			<request path="/chellow/reports/211/output/" method="post">
-				<control name="hhdc_contract_id" value="50" />
+				<control name="hhdc_contract_id" value="52" />
 				<control type="file" name="import_file" value="hh-no-channel.simple.csv" />
 				<response-code value="303" />
-				<regex pattern="/reports/65/output/\?hhdc_contract_id=50&amp;process_id=13" />
+				<regex pattern="/reports/65/output/\?hhdc_contract_id=52&amp;process_id=13" />
 			</request>
 			<request
-				path="/chellow/reports/65/output/?hhdc_contract_id=50&amp;process_id=13">
+				path="/chellow/reports/65/output/?hhdc_contract_id=52&amp;process_id=13">
 				<refresh />
 				<regex
 					pattern="There is no channel for the datum: \{&amp;#39;is_kwh&amp;#39;: True, &amp;#39;status&amp;#39;: &amp;#39;A&amp;#39;, &amp;#39;is_import&amp;#39;: False, &amp;#39;start_date&amp;#39;: datetime.datetime\(2010, 2, 4, 20, 0, tzinfo=&amp;lt;UTC&amp;gt;\), &amp;#39;value&amp;#39;: Decimal\(&amp;#34;30.4339&amp;#34;\), &amp;#39;mpan_core&amp;#39;: &amp;#39;22 4862 4512 332&amp;#39;\}\." />
@@ -3482,9 +3482,9 @@ def virtual_bill(supply_source):
 			</request>
 		</test>
 		<test name="Check the bill import page.">
-			<request path="/chellow/reports/211/output/?hhdc_contract_id=50">
+			<request path="/chellow/reports/211/output/?hhdc_contract_id=52">
 				<response-code value="200" />
-				<regex pattern="/reports/115/output/\?hhdc_contract_id=50" />
+				<regex pattern="/reports/115/output/\?hhdc_contract_id=52" />
 			</request>
 		</test>
 		<test
@@ -3538,7 +3538,7 @@ def virtual_bill(supply_source):
 		<test name="Try importing HH data from FTP server.">
 			<!-- Update Contract -->
 			<request path="/chellow/reports/279/output/" method="post">
-				<control name="hhdc_contract_id" value="50" />
+				<control name="hhdc_contract_id" value="52" />
 				<control name="party_id" value="104" /> <!-- DASL -->
 				<control name="name" value="HH contract" />
 				<control name="charge_script"><![CDATA[
@@ -3564,17 +3564,17 @@ def virtual_bill(supply_source):
 			<request path="/chellow/reports/171/output/" method="post">
 				<control name="run_startup" value="Run" />
 			</request>
-			<request path="/chellow/reports/213/output/?hhdc_contract_id=50">
+			<request path="/chellow/reports/213/output/?hhdc_contract_id=52">
 				<refresh />
 				<regex pattern="File stream obtained successfully\." />
 			</request>
-			<request path="/chellow/reports/115/output/?hhdc_contract_id=50">
+			<request path="/chellow/reports/115/output/?hhdc_contract_id=52">
 				<regex pattern="hh_data\.df2" />
 			</request>
 
 			<!-- Try an 'import now' -->
 			<request path="/chellow/reports/213/output/" method="post">
-				<control name="hhdc_contract_id" value="50" />
+				<control name="hhdc_contract_id" value="52" />
 
 				<response-code value="303" />
 			</request>
@@ -3602,14 +3602,14 @@ def virtual_bill(supply_source):
 				<control name="mtc_code" value="845" />
 				<control name="cop_id" value="5" />
 				<control name="ssc_code" value="393" />
-				<control name="mop_contract_id" value="54" />
+				<control name="mop_contract_id" value="56" />
 				<control name="mop_account" value="mc-22 6354 2983 570" />
-				<control name="hhdc_contract_id" value="50" />
+				<control name="hhdc_contract_id" value="52" />
 				<control name="hhdc_account" value="01" />
 				<control name="imp_llfc_code" value="210" />
 				<control name="imp_mpan_core" value="22 4862 4512 332" />
 				<control name="imp_sc" value="230" />
-				<control name="imp_supplier_contract_id" value="56" />
+				<control name="imp_supplier_contract_id" value="58" />
 				<control name="imp_supplier_account" value="141 5532" />
 
 				<response-code value="303" />
@@ -3630,9 +3630,9 @@ def virtual_bill(supply_source):
 				<control name="start_hour" value="00" />
 				<control name="start_minute" value="00" />
 				<control name="is_ended" value="false" />
-				<control name="mop_contract_id" value="54" />
+				<control name="mop_contract_id" value="56" />
 				<control name="mop_account" value="mc-22 0195 4836 192" />
-				<control name="hhdc_contract_id" value="51" />
+				<control name="hhdc_contract_id" value="53" />
 				<control name="hhdc_account" value="dc-22 0195 4836 192" />
 				<control name="msn" value="P96C93722" />
 				<control name="pc_id" value="8" />
@@ -3642,7 +3642,7 @@ def virtual_bill(supply_source):
 				<control name="imp_llfc_code" value="980" />
 				<control name="imp_mpan_core" value="22 0195 4836 192" />
 				<control name="imp_sc" value="304" />
-				<control name="imp_supplier_contract_id" value="56" />
+				<control name="imp_supplier_contract_id" value="58" />
 				<control name="imp_supplier_account" value="SA342376" />
 
 				<response-code value="303" />
@@ -3751,9 +3751,9 @@ def virtual_bill(supply_source):
 				<control name="start_minute" value="00" />
 				<control name="is_ended" value="false" />
 				<control name="gsp_group_id" value="11" />
-				<control name="mop_contract_id" value="54" />
+				<control name="mop_contract_id" value="56" />
 				<control name="mop_account" value="22 0883 6932 301" />
-				<control name="hhdc_contract_id" value="50" />
+				<control name="hhdc_contract_id" value="52" />
 				<control name="hhdc_account" value="22 0883 6932 301" />
 				<control name="msn" value="" />
 				<control name="pc_id" value="9" />
@@ -3763,7 +3763,7 @@ def virtual_bill(supply_source):
 				<control name="imp_llfc_code" value="570" />
 				<control name="imp_mpan_core" value="22 0883 6932 301" />
 				<control name="imp_sc" value="350" />
-				<control name="imp_supplier_contract_id" value="55" />
+				<control name="imp_supplier_contract_id" value="57" />
 				<control name="imp_supplier_account" value="4341" />
 
 				<response-code value="303" />
@@ -3812,14 +3812,14 @@ def virtual_bill(supply_source):
 				<control name="mtc_code" value="845" />
 				<control name="cop_id" value="5" />
 				<control name="ssc_code" value="" />
-				<control name="mop_contract_id" value="54" />
+				<control name="mop_contract_id" value="56" />
 				<control name="mop_account" value="mc-14 7206 6139 971" />
-				<control name="hhdc_contract_id" value="50" />
+				<control name="hhdc_contract_id" value="52" />
 				<control name="hhdc_account" value="dc-14 7206 6139 971" />
 				<control name="imp_llfc_code" value="365" />
 				<control name="imp_mpan_core" value="14 7206 6139 971" />
 				<control name="imp_sc" value="2300" />
-				<control name="imp_supplier_contract_id" value="52" />
+				<control name="imp_supplier_contract_id" value="54" />
 				<control name="imp_supplier_account" value="sup-14 7206 6139 971" />
 				<control name="insert" value="insert" />
 
@@ -3838,7 +3838,7 @@ def virtual_bill(supply_source):
 		</test>
 		<test name="Report of HHDC snags">
 			<request
-				path="/chellow/reports/233/output/?hhdc_contract_id=50&amp;days_hidden=1">
+				path="/chellow/reports/233/output/?hhdc_contract_id=52&amp;days_hidden=1">
 				<response-code value="200" />
 				<regex
 					pattern='"84","22 0883 6932 301","None","CI005","Wheal Rodney","Missing","True","True","2002-01-01 00:00","2003-08-02 23:30",' />
@@ -3889,9 +3889,9 @@ def virtual_bill(supply_source):
 		<test name="Look at list of supplier contracts.">
 			<request path="/chellow/reports/75/output/">
 
-				<!-- Are the contract in alphabetical order? -->
+				<!-- Are the contracts in alphabetical order? -->
 				<regex
-					pattern='&lt;tbody&gt;\s*&lt;tr&gt;\s*&lt;td&gt;\s*&lt;a href="/chellow/reports/77/output/\?supplier_contract_id=52"&gt;Half-hourlies 2007&lt;/a&gt;' />
+					pattern='&lt;tbody&gt;\s*&lt;tr&gt;\s*&lt;td&gt;\s*&lt;a href="/chellow/reports/77/output/\?supplier_contract_id=54"&gt;Half-hourlies 2007&lt;/a&gt;' />
 				<response-code value="200" />
 			</request>
 		</test>
@@ -3928,8 +3928,8 @@ def virtual_bill(supply_source):
 					pattern='"2007-01-01 00:00","2007-01-31 23:30","10","22 1065 3921 534","","06-002","14","SA342376","2007-01-01 00:00","N","12","md","1","2007-01-04 00:00","45","E","2007-01-17 00:00","76","E"' />
 			</request>
 		</test>
-		<test name="View a MOP rate script. Contract 54.">
-			<request path="/chellow/reports/205/output/?mop_rate_script_id=303">
+		<test name="View a MOP rate script. Contract 56.">
+			<request path="/chellow/reports/205/output/?mop_rate_script_id=305">
 				<response-code value="200" />
 			</request>
 		</test>
@@ -4009,7 +4009,7 @@ def virtual_bill(supply_source):
 			</request>
 		</test>
 		<test name="Test sse edi bill with MD line">
-			<!-- Supplier contract 58. -->
+			<!-- Supplier contract 60. -->
 			<request path="/chellow/reports/321/output/" method="post">
 				<control name="supplier_batch_id" value="3" />
 				<control type="file" name="import_file" value="bills2.sse.edi" />
@@ -4017,7 +4017,7 @@ def virtual_bill(supply_source):
 				<regex pattern="/reports/323/output/\?importer_id=0" />
 			</request>
 
-			<!-- Supplier contract 58. -->
+			<!-- Supplier contract 60. -->
 			<request path="/chellow/reports/323/output/?importer_id=0">
 				<refresh />
 				<response-code value="200" />
@@ -4032,7 +4032,7 @@ def virtual_bill(supply_source):
 			</request>
 		</test>
 		<test name="Edit register read with a TPR that's not 00001">
-			<!-- Supplier contract 58, batch 7, bill 10 -->
+			<!-- Supplier contract 60, batch 7, bill 10 -->
 			<request path="/chellow/reports/31/output/?supplier_read_id=1">
 				<regex pattern='&lt;option value="37" selected&gt;00040&lt;/option&gt;' />
 			</request>
@@ -4040,14 +4040,14 @@ def virtual_bill(supply_source):
 		<test name="Add and delete an HHDC contract">
 			<!-- Insert a new batch -->
 			<request path="/chellow/reports/281/output/" method="post">
-				<control name="hhdc_contract_id" value="50" />
+				<control name="hhdc_contract_id" value="52" />
 				<control name="reference" value="to_delete" />
 				<control name="description" value="" />
 				<response-code value="303" />
 				<regex pattern="/reports/203/output/\?hhdc_batch_id=10" />
 			</request>
 
-			<!-- Delete it. HHDC contract 50 -->
+			<!-- Delete it. HHDC contract 52 -->
 			<request path="/chellow/reports/283/output/" method="post">
 				<control name="hhdc_batch_id" value="10" />
 				<control name="delete" value="Delete" />
@@ -4079,7 +4079,7 @@ def virtual_bill(supply_source):
 		</test>
 		<test name="Contract virtual bills">
 			<request
-				path="/chellow/reports/87/output/?supplier_contract_id=52&amp;start_year=2013&amp;start_month=12&amp;start_day=01&amp;start_hour=00&amp;start_minute=00&amp;finish_year=2013&amp;finish_month=12&amp;finish_day=01&amp;finish_hour=23&amp;finish_minute=30">
+				path="/chellow/reports/87/output/?supplier_contract_id=54&amp;start_year=2013&amp;start_month=12&amp;start_day=01&amp;start_hour=00&amp;start_minute=00&amp;finish_year=2013&amp;finish_month=12&amp;finish_day=01&amp;finish_hour=23&amp;finish_minute=30">
 				<response-code value="200" />
 				<regex
 					pattern='"22 0470 7514 535","CH017","Parbola","010","2013-12-01T00:00Z","2013-12-01T23:30Z","93.89","1.0111633","0","0","0","5.89","150","1","0","0","0","0","0","0","0","0","0","0","0","0","0","88","0","0","0.0","0","0.0","0.0","0","0","0.0","0","0","0.0","0","0","0.0","0","0","0.0","0.0","0.00130416","0.0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","","duos-fixed-days","1","duos-fixed-gbp","0","duos-fixed-rate","0","duos-green-gbp","0.0","duos-green-kwh","0","duos-green-rate","-0.00649"' />
@@ -4087,7 +4087,7 @@ def virtual_bill(supply_source):
 		</test>
 		<test name="Contract displaced virtual bills">
 			<request
-				path="/chellow/reports/109/output/?supplier_contract_id=52&amp;months=1&amp;finish_year=2013&amp;finish_month=01">
+				path="/chellow/reports/109/output/?supplier_contract_id=54&amp;months=1&amp;finish_year=2013&amp;finish_month=01">
 				<response-code value="200" />
 				<regex pattern='"CI004",' />
 			</request>
@@ -4109,9 +4109,9 @@ def virtual_bill(supply_source):
 				<control name="finish_day" value="06" />
 				<control name="finish_hour" value="23" />
 				<control name="finish_minute" value="30" />
-				<control name="mop_contract_id" value="54" />
+				<control name="mop_contract_id" value="56" />
 				<control name="mop_account" value="mc-22 9205 6799 106" />
-				<control name="hhdc_contract_id" value="50" />
+				<control name="hhdc_contract_id" value="52" />
 				<control name="hhdc_account" value="01" />
 				<control name="msn" value="" />
 				<control name="pc_id" value="9" />
@@ -4121,19 +4121,19 @@ def virtual_bill(supply_source):
 				<control name="imp_llfc_code" value="550" />
 				<control name="imp_mpan_core" value="22 9205 6799 106" />
 				<control name="imp_sc" value="450" />
-				<control name="imp_supplier_contract_id" value="52" />
+				<control name="imp_supplier_contract_id" value="54" />
 				<control name="imp_supplier_account" value="11640077" />
 				<control name="exp_llfc_code" value="581" />
 				<control name="exp_mpan_core" value="22 0470 7514 535" />
 				<control name="exp_sc" value="150" />
-				<control name="exp_supplier_contract_id" value="52" />
+				<control name="exp_supplier_contract_id" value="54" />
 				<control name="exp_supplier_account" value="" />
 
 				<response-code value="303" />
 			</request>
 
 			<request
-				path="/chellow/reports/37/output/?hhdc-contract-id=50&amp;hidden_days=5">
+				path="/chellow/reports/37/output/?hhdc-contract-id=52&amp;hidden_days=5">
 				<response-code value="200" />
 				<regex
 					pattern='&lt;tr&gt;\s*&lt;td&gt;\s*&lt;ul&gt;\s*&lt;li&gt;\s*&lt;a href="/chellow/reports/117/output/\?snag_id=99"&gt;view&lt;/a&gt;  \[&lt;a href="/chellow/reports/365/output/\?snag_id=99"&gt;edit&lt;/a&gt;\]\s*&lt;/li&gt;\s*&lt;/ul&gt;\s*&lt;/td&gt;\s*&lt;td&gt;\s*&lt;/td&gt;\s*&lt;td&gt;\s*22 0470 7514 535\s*&lt;/td&gt;\s*&lt;td&gt;\s*&lt;ul&gt;\s*&lt;li&gt;CH017 Parbola&lt;/li&gt;\s*&lt;/ul&gt;\s*&lt;/td&gt;\s*&lt;td&gt;Missing&lt;/td&gt;\s*&lt;td&gt;\s*&lt;ul&gt;\s*&lt;li&gt;\s*Export\s*kWh\s*&lt;/li&gt;\s*&lt;/ul&gt;\s*&lt;/td&gt;\s*&lt;td&gt;\s*2004-07-07 00:00 to\s*2005-09-14 23:30\s*&lt;/td&gt;\s*&lt;/tr&gt;' />
@@ -4156,7 +4156,7 @@ def virtual_bill(supply_source):
 				<response-code value="303" />
 			</request>
 			<request
-				path="/chellow/reports/233/output/?hhdc_contract_id=50&amp;days_hidden=0">
+				path="/chellow/reports/233/output/?hhdc_contract_id=52&amp;days_hidden=0">
 				<regex
 					pattern='"0","106","22 4862 4512 332","None","CH023","Treglisson","Missing","True","True","2010-02-04 20:30",""' />
 				<regex
@@ -4230,13 +4230,13 @@ def virtual_bill(supply_source):
 		<test name="Check df2 clock change">
 			<!-- Import some hh Stark DF2 data -->
 			<request path="/chellow/reports/211/output/" method="post">
-				<control name="hhdc_contract_id" value="50" />
+				<control name="hhdc_contract_id" value="52" />
 				<control type="file" name="import_file" value="hh_clock_change.df2" />
 				<response-code value="303" />
-				<regex pattern="/reports/65/output/\?hhdc_contract_id=50&amp;process_id=0" />
+				<regex pattern="/reports/65/output/\?hhdc_contract_id=52&amp;process_id=0" />
 			</request>
 			<request
-				path="/chellow/reports/65/output/?hhdc_contract_id=50&amp;process_id=0">
+				path="/chellow/reports/65/output/?hhdc_contract_id=52&amp;process_id=0">
 				<refresh />
 				<regex pattern="The import has completed.*successfully." />
 
@@ -4254,7 +4254,7 @@ def virtual_bill(supply_source):
 
 			<!-- Create a new batch -->
 			<request path="/chellow/reports/287/output/" method="post">
-				<control name="supplier_contract_id" value="56" />
+				<control name="supplier_contract_id" value="58" />
 				<control name="reference" value="06-078" />
 				<control name="description" value="Way out batch" />
 				<response-code value="303" />
@@ -4269,7 +4269,7 @@ def virtual_bill(supply_source):
 				<regex pattern="/reports/323/output/\?importer_id=1" />
 			</request>
 
-			<!-- Supplier contract 56, batch 12 -->
+			<!-- Supplier contract 58, batch 12 -->
 			<request path="/chellow/reports/323/output/?importer_id=1">
 				<refresh />
 				<response-code value="200" />
@@ -4304,22 +4304,6 @@ def virtual_bill(supply_source):
 				<response-code value="200" />
 				<regex
 					pattern='"2014-05-31 23:30","CI005","Wheal Rodney","","","5","gen","chp","22","LV","hh","no","00","845","5","","","MOP Contract","22 0883 6932 301","HH contract","22 0883 6932 301","","2002-01-01 00:00","hh","","2007-10-31 23:30","2007-10-31 23:30","true","true","false","true","22 0883 6932 301","350","570","PC 5-8 &amp; HH LV","Half-hourlies 2013","4341","0","","","","","","","","",""' />
-			</request>
-		</test>
-		<test name="Site summary page that has data quality errors.">
-			<request
-				path="/chellow/reports/13/output/?site_id=1&amp;finish_year=2005&amp;finish_month=11">
-				<regex
-					pattern='See &lt;a href="/chellow/reports/11/output/\?site_id=1&amp;amp;months=1&amp;amp;finish_year=2005&amp;amp;finish_month=10"&gt;generation graph&lt;/a&gt;' />
-				<response-code value="200" />
-			</request>
-		</test>
-		<test name="Site summary page that has data quality errors.">
-			<request
-				path="/chellow/reports/13/output/?site_id=1&amp;finish_year=2005&amp;finish_month=11">
-				<regex
-					pattern='See &lt;a href="/chellow/reports/11/output/\?site_id=1&amp;amp;months=1&amp;amp;finish_year=2005&amp;amp;finish_month=10"&gt;generation graph&lt;/a&gt;' />
-				<response-code value="200" />
 			</request>
 		</test>
 		<test name="Site summary page that has data quality errors.">

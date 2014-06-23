@@ -5339,7 +5339,7 @@ Monad.getUtils()['imprt'](globals(), {
         'db': ['Contract', 'Party', 'RateScript', 'set_read_write', 'session'], 
         'utils': ['UserException'],
         'templater': ['render'],
-        'hh-importer': ['get_hh_import_processes']})
+        'hh_importer': ['get_hh_import_processes']})
 
 sess = None
 try:
@@ -13701,7 +13701,7 @@ Monad.getUtils()['imprt'](globals(), {
         'utils': ['UserException', 'prev_hh', 'next_hh', 'hh_after', 'hh_before', 'HH'],
         'templater': ['render'],
         'general_import': ['start_general_process', 'get_general_process_ids', 'get_general_process'],
-        'hh-importer': ['start_hh_import_process', 'get_hh_import_processes']})
+        'hh_importer': ['start_hh_import_process', 'get_hh_import_processes']})
 
 
 def make_fields(sess, contract, message=None):
@@ -13711,7 +13711,7 @@ def make_fields(sess, contract, message=None):
 sess = None
 try:
     sess = session()
-    hh_importer_contract = Contract.get_non_core_by_name(sess, 'hh-importer')
+    hh_importer_contract = Contract.get_non_core_by_name(sess, 'hh_importer')
 
     if inv.getRequest().getMethod() == 'GET':
         hhdc_contract_id = inv.getLong('hhdc_contract_id')
@@ -13797,7 +13797,7 @@ Monad.getUtils()['imprt'](globals(), {
         'db': ['Contract', 'session', 'Batch', 'set_read_write'],
         'utils': ['UserException', 'prev_hh', 'next_hh', 'hh_after', 'hh_before', 'HH'],
         'templater': ['render'],
-        'hh-importer': ['get_hh_import_task']})
+        'hh_importer': ['get_hh_import_task']})
 
 def make_fields(contract, task, message=None):
     messages = None if message is None else [str(message)]
@@ -16524,9 +16524,13 @@ finally:
       <p>
         <a href="{{ context_path }}/reports/223/output/">Automatic Importer</a>
       </p>
-    {% elif contract.name == 'system-price' %}
+    {% elif contract.name == 'system_price_bmreports' %}
       <p>
         <a href="{{ context_path }}/reports/221/output/">Automatic Importer</a>
+      </p>
+    {% elif contract.name == 'system_price_elexon' %}
+      <p>
+        <a href="{{ context_path }}/reports/385/output/">Automatic Importer</a>
       </p>
     {% elif contract.name == 'rcrc' %}
       <p>
@@ -23490,5 +23494,126 @@ finally:
     if sess is not None:
         sess.close()]]></value>
 		<value><![CDATA[]]></value>
+	</line>
+	<line>
+		<value><![CDATA[insert]]></value>
+		<value><![CDATA[report]]></value>
+		<value><![CDATA[379]]></value>
+		<value><![CDATA[true]]></value>
+		<value><![CDATA[Free 379]]></value>
+		<value><![CDATA[]]></value>
+		<value><![CDATA[]]></value>
+	</line>
+	<line>
+		<value><![CDATA[insert]]></value>
+		<value><![CDATA[report]]></value>
+		<value><![CDATA[381]]></value>
+		<value><![CDATA[true]]></value>
+		<value><![CDATA[Free 381]]></value>
+		<value><![CDATA[]]></value>
+		<value><![CDATA[]]></value>
+	</line>
+	<line>
+		<value><![CDATA[insert]]></value>
+		<value><![CDATA[report]]></value>
+		<value><![CDATA[383]]></value>
+		<value><![CDATA[true]]></value>
+		<value><![CDATA[Free 383]]></value>
+		<value><![CDATA[]]></value>
+		<value><![CDATA[]]></value>
+	</line>
+	<line>
+		<value><![CDATA[insert]]></value>
+		<value><![CDATA[report]]></value>
+		<value><![CDATA[385]]></value>
+		<value><![CDATA[true]]></value>
+		<value><![CDATA[System Price Elexon Importer]]></value>
+		<value><![CDATA[from net.sf.chellow.monad import Monad
+from java.lang import Thread
+from sqlalchemy.orm import joinedload_all
+import sys
+
+Monad.getUtils()['impt'](globals(), 'utils', 'templater', 'db', 'system_price_elexon')
+
+Contract = db.Contract
+render = templater.render
+
+sess = None
+importer = None
+try:
+    sess = db.session()
+    if inv.getRequest().getMethod() == "GET":
+        importer = system_price_elexon.get_importer()
+        contract = Contract.get_non_core_by_name(sess, 'system_price_elexon')
+        render(inv, template, {'importer': importer, 'contract': contract})
+    else:
+        importer = system_price_elexon.get_importer()
+        contract = Contract.get_non_core_by_name(sess, 'system_price_elexon')
+        importer.go()
+        inv.sendSeeOther("/reports/385/output/")
+except utils.UserException, e:
+    sess.rollback()
+    render(inv, template, {'messages': [str(e)], 'importer': importer,
+        'contract': contract})
+finally:
+    if sess is not None:
+        sess.close()]]></value>
+		<value><![CDATA[<!DOCTYPE html>
+<html>
+  <head>
+    <link rel="stylesheet" type="text/css"
+      href="{{context_path }}/reports/19/output/">
+    <title>
+      Chellow &gt; Non-core Contracts &gt; System Price Elexon &gt;
+      Automatic Importer
+    </title>
+  </head>
+  <body>
+    <p>
+      <a href="{{context_path}}/reports/1/output/">Chellow</a> &gt;
+      <a href="{{context_path}}/reports/259/output/">Non-Core Contracts</a> &gt;
+      <a href="{{context_path}}/reports/267/output/?non_core_contract_id={{contract.id}}">{{contract.name }}</a>
+      &gt; Automatic Importer
+    </p>
+    <br>
+    {% if messages %}
+      <ul>
+        {% for message in messages %}
+          <li>{{ message }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+    <p>
+      <a href=".">Refresh page</a>{{ debug }}
+    </p>
+    {% if importer %}
+      <table>
+        <tr>
+          <th>Is Locked?</th>
+          <td>{{ importer.is_locked() }}</td>
+        </tr>
+      </table>
+      <br/>
+      {% if not importer.is_locked() %}
+        <form action="." method="post">
+          <fieldset>
+            <legend>Import Now</legend>
+            <input type="submit" value="Import">
+          </fieldset>
+        </form>
+      {% endif %}
+
+      <h3>Log</h3>
+        
+      <ul>
+        {% for message in importer.messages %}
+          <li>{{message}}</li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p>Importer not present.</p>
+    {% endif %}
+  </body>
+</html>]]></value>
 	</line>
 </csv>
