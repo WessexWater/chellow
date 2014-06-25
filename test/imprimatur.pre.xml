@@ -1776,7 +1776,7 @@ import datetime
 import pytz
 from dateutil.relativedelta import relativedelta
 
-Monad.getUtils()['impt'](globals(), 'db', 'utils', 'templater', 'triad', 'computer', 'ccl', 'bsuos', 'tlms', 'duos')
+Monad.getUtils()['impt'](globals(), 'db', 'utils', 'templater', 'triad', 'computer', 'ccl', 'bsuos', 'tlms', 'duos', 'system_price')
 
 HH = utils.HH
 
@@ -1795,7 +1795,6 @@ for slot_name in slot_names:
 
 def displaced_virtual_bill(supply_source):
     bill = supply_source.supplier_bill
-    bill.update({'net-gbp': 0})
 
     # just check that revolving works
     supply_source.revolve_to_3rd_party_used()
@@ -1810,24 +1809,26 @@ def displaced_virtual_bill(supply_source):
     supply_source.is_green = False
     duos.duos_vb(supply_source)
     
-    for datum in supply_source.hh_data:
-        is_weekday = datum['utc-day-of-week'] < 5
-        if is_weekday and datum['utc-month'] in (1, 12) and 16 < datum['utc-decimal-hour'] <= 19:
+    for hh in supply_source.hh_data:
+        is_weekday = hh['utc-day-of-week'] < 5
+        if is_weekday and hh['utc-month'] in (1, 12) and 16 < hh['utc-decimal-hour'] <= 19:
             slot_key = 'winter-pk'
-        elif is_weekday and datum['utc-month'] in (2, 11) and 16 < datum['utc-decimal-hour'] <= 19:
+        elif is_weekday and hh['utc-month'] in (2, 11) and 16 < hh['utc-decimal-hour'] <= 19:
             slot_key = 'winter-low-pk'
-        elif is_weekday and (datum['utc-month'] > 10 or datum['utc-month'] < 4) and 8 < datum['utc-decimal-hour'] <= 20:
+        elif is_weekday and (hh['utc-month'] > 10 or hh['utc-month'] < 4) and 8 < hh['utc-decimal-hour'] <= 20:
             slot_key = 'winter-off-pk'
-        elif is_weekday and (datum['utc-month'] > 3 or datum['utc-month'] < 11) and 8 < datum['utc-decimal-hour'] <= 20:
+        elif is_weekday and (hh['utc-month'] > 3 or hh['utc-month'] < 11) and 8 < hh['utc-decimal-hour'] <= 20:
             slot_key = 'summer-pk'
-        elif 0 < datum['utc-decimal-hour'] <= 7:
+        elif 0 < hh['utc-decimal-hour'] <= 7:
             slot_key = 'night'
         else:
             slot_key = 'other'
         slot_keys = slots[slot_key]
-        bill[slot_keys['msp-kwh']] += datum['msp-kwh']
-        bill[slot_keys['gsp-kwh']] += datum['gsp-kwh']
-
+        bill[slot_keys['msp-kwh']] += hh['msp-kwh']
+        bill[slot_keys['gsp-kwh']] += hh['gsp-kwh']
+        rates = supply_source.hh_rate(db_id, hh['start-date'], 'gsp_gbp_per_kwh')
+        bill[slot_keys['gbp']] += hh['gsp-kwh'] * rates[slot_name]
+        
     ccl.ccl(supply_source)
 
     for suffix in ['kwh', 'rate', 'gbp']:
@@ -1838,11 +1839,7 @@ def displaced_virtual_bill(supply_source):
     triad.triad_bill(supply_source)
     tlms.hh(supply_source)
     bsuos.hh(supply_source)
-
-    rates = supply_source.hh_rate(db_id, supply_source.finish_date, 'gsp_gbp_per_kwh')
-    for slot_name in slot_names:
-        slot_keys = slots[slot_name]
-        bill[slot_keys['gbp']] = bill[slot_keys['gsp-kwh']] * rates[slot_name]
+    system_price.hh(supply_source)
 
     for rate_name, rate_set in supply_source.supplier_rate_sets.iteritems():
         if len(rate_set) == 1:
@@ -2837,7 +2834,7 @@ def virtual_bill(supply_source):
 				<regex
 					pattern='Site Code,Site Name,Associated Site Ids,From,To,Gen Types,CHP kWh,LM kWh, Turbine kWh,net-gbp' />
 				<regex
-					pattern='"CI004","Lower Treave","","2010-06-01 00:00","2010-06-30 23:30","chp",,,,"0.0","bsuos-gbp","0.0","bsuos-kwh","0.0","bsuos-rate","0.00152641","ccl-rate","0.0047","duos-green-gbp","0.0","duos-green-kwh","0","duos-green-rate","0.0013","night-gbp","0.0","night-gsp-kwh","0","night-msp-kwh","0","other-gbp","0.0","other-gsp-kwh","0.0","other-msp-kwh","0","problem","","summer-pk-gbp","0.0","summer-pk-gsp-kwh","0","summer-pk-msp-kwh","0","tlm","1.008955","triad-estimate-1-date","2010-01-07 17:00","triad-estimate-1-gsp-kw","0.0","triad-estimate-1-laf","1.078","triad-estimate-1-msp-kw","0","triad-estimate-1-status","E","triad-estimate-2-date","2010-01-25 17:00","triad-estimate-2-gsp-kw","0.0","triad-estimate-2-laf","1.078","triad-estimate-2-msp-kw","0","triad-estimate-2-status","E","triad-estimate-3-date","2009-12-15 17:00","triad-estimate-3-gsp-kw","0.0","triad-estimate-3-laf","1.078","triad-estimate-3-msp-kw","0","triad-estimate-3-status","E","triad-estimate-gbp","0.0","triad-estimate-gsp-kw","0.0","triad-estimate-months","1","triad-estimate-rate","26.057832","winter-low-pk-gbp","0.0","winter-low-pk-gsp-kwh","0","winter-low-pk-msp-kwh","0","winter-off-pk-gbp","0.0","winter-off-pk-gsp-kwh","0","winter-off-pk-msp-kwh","0","winter-pk-gbp","0.0","winter-pk-gsp-kwh","0","winter-pk-msp-kwh","0"' />
+					pattern='"CI004","Lower Treave","","2010-06-01 00:00","2010-06-30 23:30","chp",,,,"0.0","bsuos-gbp","0.0","bsuos-kwh","0.0","bsuos-rate","0.00152641","ccl-rate","0.0047","duos-green-gbp","0.0","duos-green-kwh","0","duos-green-rate","0.0013","night-gsp-kwh","0","night-msp-kwh","0","other-gbp","0.0","other-gsp-kwh","0.0","other-msp-kwh","0","problem","","sbp-rate","0.02303696","ssp-rate","0.02303696","summer-pk-gsp-kwh","0","summer-pk-msp-kwh","0","tlm","1.008955","triad-estimate-1-date","2010-01-07 17:00","triad-estimate-1-gsp-kw","0.0","triad-estimate-1-laf","1.078","triad-estimate-1-msp-kw","0","triad-estimate-1-status","E","triad-estimate-2-date","2010-01-25 17:00","triad-estimate-2-gsp-kw","0.0","triad-estimate-2-laf","1.078","triad-estimate-2-msp-kw","0","triad-estimate-2-status","E","triad-estimate-3-date","2009-12-15 17:00","triad-estimate-3-gsp-kw","0.0","triad-estimate-3-laf","1.078","triad-estimate-3-msp-kw","0","triad-estimate-3-status","E","triad-estimate-gbp","0.0","triad-estimate-gsp-kw","0.0","triad-estimate-months","1","triad-estimate-rate","26.057832","winter-low-pk-gsp-kwh","0","winter-low-pk-msp-kwh","0","winter-off-pk-gsp-kwh","0","winter-off-pk-msp-kwh","0","winter-pk-gsp-kwh","0","winter-pk-msp-kwh","0"' />
 
 				<response-code value="200" />
 			</request>
