@@ -10100,7 +10100,7 @@ def process_site(sess, site, month_start, month_finish, forecast_date, tmp_file)
         site_ds = computer.SiteSource(sess, site, chunk_start, chunk_finish, forecast_date, tmp_file, caches, displaced_era)
         if displaced_era != None:
             #tmp_file.println("starting displaced, " + str(System.currentTimeMillis()))
-            month_data['msp-gbp'] += computer.contract_func(caches, displaced_era.impSupplierContract, 'displaced_virtual_bill', tmp_file)(site_ds)['net-gbp']
+            month_data['msp-gbp'] += computer.contract_func(caches, displaced_era.imp_supplier_contract, 'displaced_virtual_bill', tmp_file)(site_ds)['net-gbp']
 
             #tmp_file.println("finishing displaced, " + str(System.currentTimeMillis()))
 
