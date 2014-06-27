@@ -709,7 +709,8 @@ def totalElement(account, startDate, finishDate):
 				<regex pattern='&lt;a title="2003-08-13 23:30"&gt;2003-08-13&lt;/a&gt;' />
 				<regex
 					pattern='&lt;legend&gt;TRIAD&lt;/legend&gt;\s*&lt;input type="hidden" name="supply_id"' />
-				<regex pattern='&lt;a href="/chellow/reports/15/output/\?supply_id=5&amp;amp;is_import=true&amp;amp;year=\d{4}&amp;amp;years=1"&gt;Import&lt;/a&gt;'/>
+				<regex
+					pattern='&lt;a href="/chellow/reports/15/output/\?supply_id=5&amp;amp;is_import=true&amp;amp;year=\d{4}&amp;amp;years=1"&gt;Import&lt;/a&gt;' />
 			</request>
 			<!-- Supply 5, Era 5 -->
 			<request path="/chellow/reports/301/output/?channel_id=18">
@@ -4346,12 +4347,32 @@ def triad_dates():
 				path="/chellow/reports/161/output/?site_id=1&amp;months=1&amp;finish_year=2010&amp;finish_month=07">
 				<response-code value="303" />
 			</request>
-			<request
-				path="/chellow/reports/253/output/?name=FINISHED_site_monthly_duration_for_CI004_1_to_2010_7.csv">
+			<request path="/chellow/reports/251/output/">
 				<refresh />
 				<response-code value="200" />
-				<regex
-					pattern='"CI004",' />
+				<regex pattern='FINISHED_site_monthly_duration_for_CI004_1_to_2010_7\.csv' />
+			</request>
+			<request
+				path="/chellow/reports/253/output/?name=FINISHED_site_monthly_duration_for_CI004_1_to_2010_7.csv">
+
+				<response-code value="200" />
+				<regex pattern='"CI004",' />
+			</request>
+		</test>
+		<test name="Try sites monthly duration covering bills">
+			<request
+				path="/chellow/reports/161/output/?site_id=4&amp;months=1&amp;finish_year=2011&amp;finish_month=05">
+				<response-code value="303" />
+			</request>
+			<request path="/chellow/reports/251/output/">
+				<refresh max="40" />
+				<response-code value="200" />
+				<regex pattern='FINISHED_site_monthly_duration_for_CI017_1_to_2011_5\.csv' />
+			</request>
+			<request
+				path="/chellow/reports/253/output/?name=FINISHED_site_monthly_duration_for_CI017_1_to_2011_5.csv">
+				<response-code value="200" />
+				<regex pattern='"CI017",' />
 			</request>
 		</test>
 	</test-group>

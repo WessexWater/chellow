@@ -9935,6 +9935,7 @@ Monad.getUtils()['impt'](globals(), 'templater', 'db', 'utils', 'computer')
 
 Site, Era, Bill = db.Site, db.Era, db.Bill
 HH, hh_after, hh_format = utils.HH, utils.hh_after, utils.hh_format
+totalseconds = utils.totalseconds
 
 caches = {}
 
