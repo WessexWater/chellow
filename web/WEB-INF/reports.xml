@@ -17395,7 +17395,7 @@ try:
 
     forecast_date = computer.forecast_date()
 
-    prev_imp_supplier_bill_titles = None
+    prev_titles = None
 
     month_start = datetime.datetime(start_date.year, start_date.month, 1, tzinfo=pytz.utc)
 
@@ -17412,33 +17412,68 @@ try:
 
             site = sess.query(Site).join(SiteEra).filter(SiteEra.era_id==era.id, SiteEra.is_physical==True).one()
 
-            if era.imp_supplier_contract is not None:
-                ds = computer.SupplySource(sess, chunk_start, chunk_finish, forecast_date, era, True, pw, caches)
+            ds = computer.SupplySource(sess, chunk_start, chunk_finish, forecast_date, era, True, pw, caches)
 
-                imp_supplier_bill_titles = ds.contract_func(era.imp_supplier_contract, 'virtual_bill_titles')()
-                if imp_supplier_bill_titles != prev_imp_supplier_bill_titles:
-                    prev_imp_supplier_bill_titles != imp_supplier_bill_titles
-                    pw.println(','.join('"' + str(v) + '"' for v in ['MPAN Core', 'Site Code', 'Site Name', 'Account', 'From', 'To'] + imp_supplier_bill_titles)) 
-                output_line = [ds.mpan_core, site.code , site.name, ds.supplier_account, hh_format(ds.start_date), hh_format(ds.finish_date)]
+            titles = ['MPAN Core', 'Site Code', 'Site Name', 'Account', 'From', 'To', '']
+
+            output_line = [ds.mpan_core, site.code , site.name, ds.supplier_account, hh_format(ds.start_date), hh_format(ds.finish_date), '']
+            
+            mop_titles = ds.contract_func(era.mop_contract, 'virtual_bill_titles')()
+            titles.extend(['mop-' + t for t in mop_titles])
+
+            ds.contract_func(era.mop_contract, 'virtual_bill')(ds)
+            bill = ds.mop_bill
+            for title in mop_titles:
+                output_line.append(bill.get(title, ''))
+                if title in bill:
+                    del bill[title]
+            for k in sorted(bill.keys()):
+                output_line.extend([k, bill[k]]) 
+
+            output_line.append('')
+            dc_titles = ds.contract_func(era.hhdc_contract, 'virtual_bill_titles')()
+            titles.append('')
+            titles.extend(['dc-' + t for t in dc_titles])
+
+            ds.contract_func(era.hhdc_contract, 'virtual_bill')(ds)
+            bill = ds.dc_bill
+            for title in dc_titles:
+                output_line.append(bill.get(title, ''))
+                if title in bill:
+                    del bill[title]
+            for k in sorted(bill.keys()):
+                output_line.extend([k, bill[k]])
+
+            if era.imp_supplier_contract is not None:
+                output_line.append('')
+                imp_supplier_titles = ds.contract_func(era.imp_supplier_contract, 'virtual_bill_titles')()
+                titles.append('')
+                titles.extend(['imp-supplier-' + t for t in imp_supplier_titles])
 
                 ds.contract_func(era.imp_supplier_contract, 'virtual_bill')(ds)
                 bill = ds.supplier_bill
-                for title in imp_supplier_bill_titles:
+                for title in imp_supplier_titles:
                     output_line.append(bill.get(title, ''))
                     if title in bill:
                         del bill[title]
 
                 for k in sorted(bill.keys()):
                     output_line.extend([k, bill[k]]) 
-                pw.println(','.join('"' + str(v) + '"' for v in output_line))
-                pw.flush()
+
+            if titles != prev_titles:
+                prev_titles != titles
+                pw.println(','.join('"' + str(v) + '"' for v in titles)) 
+            pw.println(','.join('"' + str(v) + '"' for v in output_line))
+            pw.flush()
+
         month_start += relativedelta(months=1)
 
 finally:
     if sess is not None:
         sess.close()
 
-pw.close()]]>
+pw.close()
+]]>
 		</value>
 		<value><![CDATA[]]>
 		</value>

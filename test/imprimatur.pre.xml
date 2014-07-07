@@ -149,7 +149,7 @@
 				<control name="name" value="HH contract" />
 				<control name="charge_script"><![CDATA[
 def virtual_bill_titles():
-    return ['net-gbp']
+    return ['net-gbp', 'problem']
 
 def virtual_bill(supply_source):
     return {'net-gbp': 0}]]></control>
@@ -162,7 +162,7 @@ def virtual_bill(supply_source):
 			</request>
 
 			<!-- Check that we can see HHDC rate script okay. Contract 52. -->
-			<request path="/chellow/reports/173/output/?hhdc_rate_script_id=303">
+			<request path="/chellow/reports/173/output/?hhdc_rate_script_id=304">
 				<!-- Check that 'has_finished' field is there -->
 				<regex pattern="HH contract" />
 				<response-code value="200" />
@@ -170,19 +170,19 @@ def virtual_bill(supply_source):
 
 			<!-- Check that we can see the edit view of the HHDC rate script okay. 
 				Contract 52. -->
-			<request path="/chellow/reports/249/output/?hhdc_rate_script_id=303">
+			<request path="/chellow/reports/249/output/?hhdc_rate_script_id=304">
 				<!-- Check that 'has_finished' field is there -->
 				<regex pattern="has_finished" />
 
 				<!-- Check the hhdc_rate_script_id for update is there -->
 				<regex
-					pattern='&lt;legend&gt;Update Rate Script&lt;/legend&gt;\s*&lt;input type="hidden" name="hhdc_rate_script_id"\s*value="303"&gt;' />
+					pattern='&lt;legend&gt;Update Rate Script&lt;/legend&gt;\s*&lt;input type="hidden" name="hhdc_rate_script_id"\s*value="304"&gt;' />
 				<response-code value="200" />
 			</request>
 
 			<!-- Check that we can update an HHDC rate script okay -->
 			<request path="/chellow/reports/249/output/" method="post">
-				<control name="hhdc_rate_script_id" value="303" />
+				<control name="hhdc_rate_script_id" value="304" />
 				<control name="start_year" value="2000" />
 				<control name="start_month" value="01" />
 				<control name="start_day" value="03" />
@@ -212,7 +212,7 @@ def virtual_bill(supply_source):
 				<control name="name" value="Dynamat data" />
 				<control name="charge_script"><![CDATA[
 def virtual_bill_titles():
-    return ['net-gbp']
+    return ['net-gbp', 'problem']
 
 def virtual_bill(supply_source):
     return {'net-gbp': 0}]]></control>
@@ -251,7 +251,7 @@ def virtual_bill(supply_source):
 				<control name="has_finished" value="false" />
 				<control name="charge_script"><![CDATA[
 def virtual_bill_titles():
-    return ['net-gbp']
+    return ['net-gbp', 'problem']
 
 def virtual_bill(supply_source):
     return {'net-gbp': 0}]]></control>
@@ -316,7 +316,7 @@ def virtual_bill(data_source):
 
 			<!-- Update the associated rate script. Supplier contract 54 -->
 			<request path="/chellow/reports/319/output/" method="post">
-				<control name="supplier_rate_script_id" value="305" />
+				<control name="supplier_rate_script_id" value="306" />
 				<control name="start_year" value="2000" />
 				<control name="start_month" value="01" />
 				<control name="start_day" value="03" />
@@ -392,6 +392,28 @@ def totalElement(account, startDate, finishDate):
 				<regex pattern="/reports/107/output/\?mop_contract_id=56" />
 			</request>
 
+			<!-- Update with a charge script -->
+			<request path="/chellow/reports/151/output/" method="post">
+				<control name="mop_contract_id" value="56" />
+				<control name="party_id" value="377"/> <!-- LENG -->
+				<control name="name" value="MOP Contract" />
+				<control name="start_year" value="2000" />
+				<control name="start_month" value="01" />
+				<control name="start_day" value="03" />
+				<control name="start_hour" value="00" />
+				<control name="start_minute" value="00" />
+				<control name="charge_script"><![CDATA[def virtual_bill_titles():
+    return ['net-gbp', 'problem']
+
+def virtual_bill(ds):
+    bill = ds.mop_bill
+    bill['net-gbp'] = 0
+    return bill]]></control>
+                <control name="properties" value="{}"/>
+				<response-code value="303" />
+				<regex pattern="/reports/107/output/\?mop_contract_id=56" />
+			</request>
+
 			<!-- Check we can see the rate scripts -->
 			<request path="/chellow/reports/107/output/?mop_contract_id=56">
 				<response-code value="200" />
@@ -416,7 +438,7 @@ def totalElement(account, startDate, finishDate):
 
 			<!-- Update the associated rate script. Supplier contract 57 -->
 			<request path="/chellow/reports/319/output/" method="post">
-				<control name="supplier_rate_script_id" value="308" />
+				<control name="supplier_rate_script_id" value="309" />
 				<control name="start_year" value="2000" />
 				<control name="start_month" value="01" />
 				<control name="start_day" value="03" />
@@ -2105,7 +2127,7 @@ def virtual_bill(supply_source):
 
 			<!-- Edit the rate script -->
 			<request path="/chellow/reports/273/output/" method="post">
-				<control name="rate_script_id" value="313" />
+				<control name="rate_script_id" value="314" />
 				<control name="start_year" value="2000" />
 				<control name="start_month" value="01" />
 				<control name="start_day" value="03" />
@@ -2122,9 +2144,9 @@ def triad_estimates():
 				path="/chellow/reports/291/output/?supply_id=7&amp;start_year=2009&amp;start_month=03&amp;start_day=01&amp;start_hour=00&amp;start_minute=0&amp;finish_year=2009&amp;finish_month=03&amp;finish_day=31&amp;finish_hour=23&amp;finish_minute=30">
 				<response-code value="200" />
 				<regex
-					pattern='"MPAN Core","Site Code","Site Name","Account","From","To","net-gbp","tlm","ccl-kwh","ccl-rate","ccl-gbp","data-collection-gbp","duos-availability-kva","duos-availability-days","duos-availability-rate","duos-availability-gbp","duos-excess-availability-kva","duos-excess-availability-days","duos-excess-availability-rate","duos-excess-availability-gbp","duos-day-kwh","duos-day-gbp","duos-night-kwh","duos-night-gbp","duos-reactive-kvarh","duos-reactive-rate","duos-reactive-gbp","duos-standing-gbp","settlement-gbp","night-msp-kwh","night-gsp-kwh","night-gbp","other-msp-kwh","other-gsp-kwh","other-gbp","summer-pk-msp-kwh","summer-pk-gsp-kwh","summer-pk-gbp","winter-low-pk-msp-kwh","winter-low-pk-gsp-kwh","winter-low-pk-gbp","winter-off-pk-msp-kwh","winter-off-pk-gsp-kwh","winter-off-pk-gbp","winter-pk-msp-kwh","winter-pk-gsp-kwh","winter-pk-gbp","bsuos-kwh","bsuos-rate","bsuos-gbp","triad-actual-1-date","triad-actual-1-msp-kw","triad-actual-1-status","triad-actual-1-laf","triad-actual-1-gsp-kw","triad-actual-2-date","triad-actual-2-msp-kw","triad-actual-2-status","triad-actual-2-laf","triad-actual-2-gsp-kw","triad-actual-3-date","triad-actual-3-msp-kw","triad-actual-3-status","triad-actual-3-laf","triad-actual-3-gsp-kw","triad-actual-gsp-kw","triad-actual-rate","triad-actual-gbp","triad-estimate-1-date","triad-estimate-1-msp-kw","triad-estimate-1-status","triad-estimate-1-laf","triad-estimate-1-gsp-kw","triad-estimate-2-date","triad-estimate-2-msp-kw","triad-estimate-2-status","triad-estimate-2-laf","triad-estimate-2-gsp-kw","triad-estimate-3-date","triad-estimate-3-msp-kw","triad-estimate-3-status","triad-estimate-3-laf","triad-estimate-3-gsp-kw","triad-estimate-gsp-kw","triad-estimate-rate","triad-estimate-months","triad-estimate-gbp","triad-all-estimates-months","triad-all-estimates-gbp","problem"' />
+					pattern='"MPAN Core","Site Code","Site Name","Account","From","To","","mop-net-gbp","mop-problem","","dc-net-gbp","dc-problem","","imp-supplier-net-gbp","imp-supplier-tlm","imp-supplier-ccl-kwh","imp-supplier-ccl-rate","imp-supplier-ccl-gbp","imp-supplier-data-collection-gbp","imp-supplier-duos-availability-kva","imp-supplier-duos-availability-days","imp-supplier-duos-availability-rate","imp-supplier-duos-availability-gbp","imp-supplier-duos-excess-availability-kva","imp-supplier-duos-excess-availability-days","imp-supplier-duos-excess-availability-rate","imp-supplier-duos-excess-availability-gbp","imp-supplier-duos-day-kwh","imp-supplier-duos-day-gbp","imp-supplier-duos-night-kwh","imp-supplier-duos-night-gbp","imp-supplier-duos-reactive-kvarh","imp-supplier-duos-reactive-rate","imp-supplier-duos-reactive-gbp","imp-supplier-duos-standing-gbp","imp-supplier-settlement-gbp","imp-supplier-night-msp-kwh","imp-supplier-night-gsp-kwh","imp-supplier-night-gbp","imp-supplier-other-msp-kwh","imp-supplier-other-gsp-kwh","imp-supplier-other-gbp","imp-supplier-summer-pk-msp-kwh","imp-supplier-summer-pk-gsp-kwh","imp-supplier-summer-pk-gbp","imp-supplier-winter-low-pk-msp-kwh","imp-supplier-winter-low-pk-gsp-kwh","imp-supplier-winter-low-pk-gbp","imp-supplier-winter-off-pk-msp-kwh","imp-supplier-winter-off-pk-gsp-kwh","imp-supplier-winter-off-pk-gbp","imp-supplier-winter-pk-msp-kwh","imp-supplier-winter-pk-gsp-kwh","imp-supplier-winter-pk-gbp","imp-supplier-bsuos-kwh","imp-supplier-bsuos-rate","imp-supplier-bsuos-gbp","imp-supplier-triad-actual-1-date","imp-supplier-triad-actual-1-msp-kw","imp-supplier-triad-actual-1-status","imp-supplier-triad-actual-1-laf","imp-supplier-triad-actual-1-gsp-kw","imp-supplier-triad-actual-2-date","imp-supplier-triad-actual-2-msp-kw","imp-supplier-triad-actual-2-status","imp-supplier-triad-actual-2-laf","imp-supplier-triad-actual-2-gsp-kw","imp-supplier-triad-actual-3-date","imp-supplier-triad-actual-3-msp-kw","imp-supplier-triad-actual-3-status","imp-supplier-triad-actual-3-laf","imp-supplier-triad-actual-3-gsp-kw","imp-supplier-triad-actual-gsp-kw","imp-supplier-triad-actual-rate","imp-supplier-triad-actual-gbp","imp-supplier-triad-estimate-1-date","imp-supplier-triad-estimate-1-msp-kw","imp-supplier-triad-estimate-1-status","imp-supplier-triad-estimate-1-laf","imp-supplier-triad-estimate-1-gsp-kw","imp-supplier-triad-estimate-2-date","imp-supplier-triad-estimate-2-msp-kw","imp-supplier-triad-estimate-2-status","imp-supplier-triad-estimate-2-laf","imp-supplier-triad-estimate-2-gsp-kw","imp-supplier-triad-estimate-3-date","imp-supplier-triad-estimate-3-msp-kw","imp-supplier-triad-estimate-3-status","imp-supplier-triad-estimate-3-laf","imp-supplier-triad-estimate-3-gsp-kw","imp-supplier-triad-estimate-gsp-kw","imp-supplier-triad-estimate-rate","imp-supplier-triad-estimate-months","imp-supplier-triad-estimate-gbp","imp-supplier-triad-all-estimates-months","imp-supplier-triad-all-estimates-gbp","imp-supplier-problem"' />
 				<regex
-					pattern='"22 4862 4512 332","CH023","Treglisson","11640077","2009-03-01 00:00","2009-03-31 23:30","10614.4095537","0","148925.71","0.00456","679.1012376","5.89","230","31","0.0368","262.384","169.72","31","0.0368","193.616576","105487.44","770.058312","43438.27","112.939502","0","0.0033","0.0","0","88","43401.25","46092.1275","288.794834064","54364.73","57735.34326","361.74656673","0","0","0.0","0","0","0.0","51159.73","54331.63326","340.420281354","0","0","0.0","159627.381103","0","146.91999205","2009-01-06 17:00","288.82","A","1.07","309.0374","2008-12-01 17:00","384.44","A","1.07","411.3508","2008-12-15 17:00","185.36","A","1.07","198.3352","306.241133333","25.212997","7721.25677601","2007-12-17 17:00","0","E","1.07","0.0","2008-01-03 17:00","43.6","A","1.062","46.3032","2007-11-26 17:00","0","E","1.07","0.0","15.4344","25.212997","1","32.4289567414","12","-389.147480897",""' />
+					pattern='"22 4862 4512 332","CH023","Treglisson","11640077","2009-03-01 00:00","2009-03-31 23:30","","0","","","0","","","10614.4095537","0","148925.71","0.00456","679.1012376","5.89","230","31","0.0368","262.384","169.72","31","0.0368","193.616576","105487.44","770.058312","43438.27","112.939502","0","0.0033","0.0","0","88","43401.25","46092.1275","288.794834064","54364.73","57735.34326","361.74656673","0","0","0.0","0","0","0.0","51159.73","54331.63326","340.420281354","0","0","0.0","159627.381103","0","146.91999205","2009-01-06 17:00","288.82","A","1.07","309.0374","2008-12-01 17:00","384.44","A","1.07","411.3508","2008-12-15 17:00","185.36","A","1.07","198.3352","306.241133333","25.212997","7721.25677601","2007-12-17 17:00","0","E","1.07","0.0","2008-01-03 17:00","43.6","A","1.062","46.3032","2007-11-26 17:00","0","E","1.07","0.0","15.4344","25.212997","1","32.4289567414","12","-389.147480897",""' />
 
 				<regex pattern="text/csv" />
 				<regex pattern="supply_virtual_bills_7.csv" />
@@ -2140,7 +2162,7 @@ def triad_estimates():
 		<test
 			name="Check we can delete a rate script (when it's not the only one). Supplier contract 52.">
 			<request path="/chellow/reports/319/output/" method="post">
-				<control name="supplier_rate_script_id" value="310" />
+				<control name="supplier_rate_script_id" value="311" />
 				<control name="delete" value="Delete" />
 				<response-code value="303" />
 			</request>
@@ -2227,13 +2249,13 @@ def triad_estimates():
 				<control name="start_day" value="01" />
 				<control name="start_hour" value="00" />
 				<control name="start_minute" value="00" />
-				<regex pattern="/chellow/reports/69/output/\?dno_rate_script_id=314" />
+				<regex pattern="/chellow/reports/69/output/\?dno_rate_script_id=315" />
 				<response-code value="303" />
 			</request>
 
 			<!-- Test bad syntax gives an error -->
 			<request path="/chellow/reports/285/output/" method="post">
-				<control name="dno_rate_script_id" value="314" />
+				<control name="dno_rate_script_id" value="315" />
 				<control name="start_year" value="2010" />
 				<control name="start_month" value="05" />
 				<control name="start_day" value="01" />
@@ -2246,7 +2268,7 @@ def triad_estimates():
 
 			<!-- Delete rate script -->
 			<request path="/chellow/reports/285/output/" method="post">
-				<control name="dno_rate_script_id" value="314" />
+				<control name="dno_rate_script_id" value="315" />
 				<control name="delete" value="Delete" />
 				<response-code value="303" />
 			</request>
@@ -2555,9 +2577,9 @@ def virtual_bill(supply_source):
 				path="/chellow/reports/291/output/?supply_id=12&amp;start_year=2009&amp;start_month=3&amp;start_day=01&amp;start_hour=00&amp;start_minute=0&amp;finish_year=2009&amp;finish_month=03&amp;finish_day=31&amp;finish_hour=23&amp;finish_minute=30">
 				<response-code value="200" />
 				<regex
-					pattern='"MPAN Core","Site Code","Site Name","Account","From","To","net-gbp","tlm","ccl-kwh","ccl-rate","ccl-gbp","data-collection-gbp","duos-availability-kva","duos-availability-days","duos-availability-rate","duos-availability-gbp","duos-excess-availability-kva","duos-excess-availability-days","duos-excess-availability-rate","duos-excess-availability-gbp","duos-day-kwh","duos-day-gbp","duos-night-kwh","duos-night-gbp","duos-reactive-kvarh","duos-reactive-rate","duos-reactive-gbp","duos-standing-gbp","settlement-gbp","night-msp-kwh","night-gsp-kwh","night-gbp","other-msp-kwh","other-gsp-kwh","other-gbp","summer-pk-msp-kwh","summer-pk-gsp-kwh","summer-pk-gbp","winter-low-pk-msp-kwh","winter-low-pk-gsp-kwh","winter-low-pk-gbp","winter-off-pk-msp-kwh","winter-off-pk-gsp-kwh","winter-off-pk-gbp","winter-pk-msp-kwh","winter-pk-gsp-kwh","winter-pk-gbp","bsuos-kwh","bsuos-rate","bsuos-gbp","triad-actual-1-date","triad-actual-1-msp-kw","triad-actual-1-status","triad-actual-1-laf","triad-actual-1-gsp-kw","triad-actual-2-date","triad-actual-2-msp-kw","triad-actual-2-status","triad-actual-2-laf","triad-actual-2-gsp-kw","triad-actual-3-date","triad-actual-3-msp-kw","triad-actual-3-status","triad-actual-3-laf","triad-actual-3-gsp-kw","triad-actual-gsp-kw","triad-actual-rate","triad-actual-gbp","triad-estimate-1-date","triad-estimate-1-msp-kw","triad-estimate-1-status","triad-estimate-1-laf","triad-estimate-1-gsp-kw","triad-estimate-2-date","triad-estimate-2-msp-kw","triad-estimate-2-status","triad-estimate-2-laf","triad-estimate-2-gsp-kw","triad-estimate-3-date","triad-estimate-3-msp-kw","triad-estimate-3-status","triad-estimate-3-laf","triad-estimate-3-gsp-kw","triad-estimate-gsp-kw","triad-estimate-rate","triad-estimate-months","triad-estimate-gbp","triad-all-estimates-months","triad-all-estimates-gbp","problem"' />
+					pattern='"MPAN Core","Site Code","Site Name","Account","From","To","","mop-net-gbp","mop-problem","","dc-net-gbp","dc-problem","","imp-supplier-net-gbp","imp-supplier-tlm","imp-supplier-ccl-kwh","imp-supplier-ccl-rate","imp-supplier-ccl-gbp","imp-supplier-data-collection-gbp","imp-supplier-duos-availability-kva","imp-supplier-duos-availability-days","imp-supplier-duos-availability-rate","imp-supplier-duos-availability-gbp","imp-supplier-duos-excess-availability-kva","imp-supplier-duos-excess-availability-days","imp-supplier-duos-excess-availability-rate","imp-supplier-duos-excess-availability-gbp","imp-supplier-duos-day-kwh","imp-supplier-duos-day-gbp","imp-supplier-duos-night-kwh","imp-supplier-duos-night-gbp","imp-supplier-duos-reactive-kvarh","imp-supplier-duos-reactive-rate","imp-supplier-duos-reactive-gbp","imp-supplier-duos-standing-gbp","imp-supplier-settlement-gbp","imp-supplier-night-msp-kwh","imp-supplier-night-gsp-kwh","imp-supplier-night-gbp","imp-supplier-other-msp-kwh","imp-supplier-other-gsp-kwh","imp-supplier-other-gbp","imp-supplier-summer-pk-msp-kwh","imp-supplier-summer-pk-gsp-kwh","imp-supplier-summer-pk-gbp","imp-supplier-winter-low-pk-msp-kwh","imp-supplier-winter-low-pk-gsp-kwh","imp-supplier-winter-low-pk-gbp","imp-supplier-winter-off-pk-msp-kwh","imp-supplier-winter-off-pk-gsp-kwh","imp-supplier-winter-off-pk-gbp","imp-supplier-winter-pk-msp-kwh","imp-supplier-winter-pk-gsp-kwh","imp-supplier-winter-pk-gbp","imp-supplier-bsuos-kwh","imp-supplier-bsuos-rate","imp-supplier-bsuos-gbp","imp-supplier-triad-actual-1-date","imp-supplier-triad-actual-1-msp-kw","imp-supplier-triad-actual-1-status","imp-supplier-triad-actual-1-laf","imp-supplier-triad-actual-1-gsp-kw","imp-supplier-triad-actual-2-date","imp-supplier-triad-actual-2-msp-kw","imp-supplier-triad-actual-2-status","imp-supplier-triad-actual-2-laf","imp-supplier-triad-actual-2-gsp-kw","imp-supplier-triad-actual-3-date","imp-supplier-triad-actual-3-msp-kw","imp-supplier-triad-actual-3-status","imp-supplier-triad-actual-3-laf","imp-supplier-triad-actual-3-gsp-kw","imp-supplier-triad-actual-gsp-kw","imp-supplier-triad-actual-rate","imp-supplier-triad-actual-gbp","imp-supplier-triad-estimate-1-date","imp-supplier-triad-estimate-1-msp-kw","imp-supplier-triad-estimate-1-status","imp-supplier-triad-estimate-1-laf","imp-supplier-triad-estimate-1-gsp-kw","imp-supplier-triad-estimate-2-date","imp-supplier-triad-estimate-2-msp-kw","imp-supplier-triad-estimate-2-status","imp-supplier-triad-estimate-2-laf","imp-supplier-triad-estimate-2-gsp-kw","imp-supplier-triad-estimate-3-date","imp-supplier-triad-estimate-3-msp-kw","imp-supplier-triad-estimate-3-status","imp-supplier-triad-estimate-3-laf","imp-supplier-triad-estimate-3-gsp-kw","imp-supplier-triad-estimate-gsp-kw","imp-supplier-triad-estimate-rate","imp-supplier-triad-estimate-months","imp-supplier-triad-estimate-gbp","imp-supplier-triad-all-estimates-months","imp-supplier-triad-all-estimates-gbp","imp-supplier-problem"' />
 				<regex
-					pattern='"20 6354 2983 571","CI004","Lower Treave","141 5532","2009-03-01 00:00","2009-03-31 23:30","2274.51858148","1.0085469","0","0.00456","0","5.89","2300","0","0","2165.0","0","0","0","0","0","0","86.9732","0.102628376","0","0","0","14.91","88","86.9732","93.49619","0.585809728064","0","0","0.0","0","0","0.0","0","0","0.0","0","0","0.0","0","0","0.0","94.2952925863","0.00031967","0.0301433761811","2009-01-06 17:00","0","E","1.095","0.0","2008-12-01 17:00","0","E","1.095","0.0","2008-12-15 17:00","0","E","1.095","0.0","0.0","22.19481","0.0","2007-12-17 17:00","0","E","1.095","0.0","2008-01-03 17:00","0","E","1.079","0.0","2007-11-26 17:00","0","E","1.095","0.0","0.0","22.19481","1","0.0","12","-0.0",""' />
+					pattern='"20 6354 2983 571","CI004","Lower Treave","141 5532","2009-03-01 00:00","2009-03-31 23:30","","0","","","0","","","2274.51858148","1.0085469","0","0.00456","0","5.89","2300","0","0","2165.0","0","0","0","0","0","0","86.9732","0.102628376","0","0","0","14.91","88","86.9732","93.49619","0.585809728064","0","0","0.0","0","0","0.0","0","0","0.0","0","0","0.0","0","0","0.0","94.2952925863","0.00031967","0.0301433761811","2009-01-06 17:00","0","E","1.095","0.0","2008-12-01 17:00","0","E","1.095","0.0","2008-12-15 17:00","0","E","1.095","0.0","0.0","22.19481","0.0","2007-12-17 17:00","0","E","1.095","0.0","2008-01-03 17:00","0","E","1.079","0.0","2007-11-26 17:00","0","E","1.095","0.0","0.0","22.19481","1","0.0","12","-0.0",""' />
 			</request>
 
 			<!-- Check it works when the DNO rate script contains a double LLFC 453,470 -->
@@ -2870,9 +2892,9 @@ def virtual_bill(supply_source):
 				path="/chellow/reports/291/output/?supply_id=11&amp;start_year=2010&amp;start_month=04&amp;start_day=01&amp;start_hour=00&amp;start_minute=00&amp;finish_year=2010&amp;finish_month=04&amp;finish_day=30&amp;finish_hour=23&amp;finish_minute=30">
 				<response-code value="200" />
 				<regex
-					pattern='"MPAN Core","Site Code","Site Name","Account","From","To","net-gbp","vat-gbp","gross-gbp","problem"' />
+					pattern='"MPAN Core","Site Code","Site Name","Account","From","To","","mop-net-gbp","mop-problem","","dc-net-gbp","dc-problem","","imp-supplier-net-gbp","imp-supplier-vat-gbp","imp-supplier-gross-gbp","imp-supplier-problem"' />
 				<regex
-					pattern='"22 9974 3438 105","CI005","Wheal Rodney","SA341665","2010-04-01 00:00","2010-04-13 23:30","0","0","0",""' />
+					pattern='"22 9974 3438 105","CI005","Wheal Rodney","SA341665","2010-04-01 00:00","2010-04-13 23:30","","0","","","0","","","0","0","0",""' />
 			</request>
 		</test>
 		<test name="NHH CSV import">
@@ -3301,20 +3323,20 @@ def virtual_bill(supply_source):
 				<control name="start_minute" value="00" />
 				<control name="insert" value="Insert" />
 
-				<regex pattern="/chellow/reports/271/output/\?rate_script_id=316" />
+				<regex pattern="/chellow/reports/271/output/\?rate_script_id=317" />
 				<response-code value="303" />
 			</request>
 			<request
-				path="/chellow/reports/273/output/?rate_script_id=316&amp;delete=Delete">
+				path="/chellow/reports/273/output/?rate_script_id=317&amp;delete=Delete">
 				<regex pattern="Are you sure you want to delete this rate script\?" />
 				<response-code value="200" />
 			</request>
 			<request path="/chellow/reports/273/output/" method="post">
-				<control name="rate_script_id" value="316" />
+				<control name="rate_script_id" value="317" />
 				<control name="delete" value="Delete" />
 				<response-code value="303" />
 			</request>
-			<request path="/chellow/reports/271/output/?rate_script_id=316">
+			<request path="/chellow/reports/271/output/?rate_script_id=317">
 				<response-code value="404" />
 			</request>
 		</test>
@@ -3328,11 +3350,11 @@ def virtual_bill(supply_source):
 				<control name="start_minute" value="00" />
 				<control name="insert" value="Insert" />
 
-				<regex pattern="/chellow/reports/271/output/\?rate_script_id=317" />
+				<regex pattern="/chellow/reports/271/output/\?rate_script_id=318" />
 				<response-code value="303" />
 			</request>
 
-			<request path="/chellow/reports/273/output/?rate_script_id=317">
+			<request path="/chellow/reports/273/output/?rate_script_id=318">
 				<regex
 					pattern='&lt;input name="finish_year" maxlength="4" size="4" value="2010"&gt;' />
 
@@ -3343,7 +3365,7 @@ def virtual_bill(supply_source):
 			</request>
 
 			<request path="/chellow/reports/273/output/" method="post">
-				<control name="rate_script_id" value="317" />
+				<control name="rate_script_id" value="318" />
 				<control name="delete" value="Delete" />
 				<response-code value="303" />
 			</request>
@@ -3515,7 +3537,7 @@ def virtual_bill(supply_source):
 				<control name="name" value="HH contract" />
 				<control name="charge_script"><![CDATA[
 def virtual_bill_titles():
-    return ['net-gbp']
+    return ['net-gbp', 'problem']
 
 def virtual_bill(supply_source):
     return {'net-gbp': 0}]]></control>
@@ -3622,9 +3644,9 @@ def virtual_bill(supply_source):
 			<request
 				path="/chellow/reports/291/output/?supply_id=9&amp;start_year=2011&amp;start_month=05&amp;start_day=01&amp;start_hour=00&amp;start_minute=0&amp;finish_year=2011&amp;finish_month=05&amp;finish_day=31&amp;finish_hour=23&amp;finish_minute=30">
 				<regex
-					pattern='"MPAN Core","Site Code","Site Name","Account","From","To","net-gbp","vat-gbp","gross-gbp","problem"' />
+					pattern='"MPAN Core","Site Code","Site Name","Account","From","To","","mop-net-gbp","mop-problem","","dc-net-gbp","dc-problem","","imp-supplier-net-gbp","imp-supplier-vat-gbp","imp-supplier-gross-gbp","imp-supplier-problem"' />
 				<regex
-					pattern='"22 0195 4836 192","CI004","Lower Treave","SA342376","2011-05-01 00:00","2011-05-31 23:30","0","0","0",""' />
+					pattern='"22 0195 4836 192","CI004","Lower Treave","SA342376","2011-05-01 00:00","2011-05-31 23:30","","0","","","0","","","0","0","0",""' />
 				<response-code value="200" />
 			</request>
 		</test>
@@ -3656,7 +3678,7 @@ def virtual_bill(supply_source):
 				<regex
 					pattern="supply-id,supply-name,source-code,generator-type,month,pc-code,msn,site-code,site-name,metering-type,import-mpan-core,metered-import-kwh,metered-import-net-gbp,metered-import-estimated-kwh,billed-import-kwh,billed-import-net-gbp,export-mpan-core,metered-export-kwh,metered-export-estimated-kwh,billed-export-kwh,billed-export-net-gbp,problem,timestamp" />
 				<regex
-					pattern='10,"2","net","","2013-05-31 23:30","03","I02D89150","CI017","Roselands","nhh","22 1065 3921 534","0","0.0","0","0","0","None","0","0","0","0"," MOP virtual_bill function can&apos;t be found."' />
+					pattern='10,"2","net","","2013-05-31 23:30","03","I02D89150","CI017","Roselands","nhh","22 1065 3921 534","0","0.0","0","0","0","None","0","0","0","0",""' />
 				<response-code value="200" />
 			</request>
 		</test>
@@ -3666,7 +3688,7 @@ def virtual_bill(supply_source):
 				<regex
 					pattern="supply-id,supply-name,source-code,generator-type,month,pc-code,msn,site-code,site-name,metering-type,import-mpan-core,metered-import-kwh,metered-import-net-gbp,metered-import-estimated-kwh,billed-import-kwh,billed-import-net-gbp,export-mpan-core,metered-export-kwh,metered-export-estimated-kwh,billed-export-kwh,billed-export-net-gbp,problem,timestamp" />
 				<regex
-					pattern='4,"1","net","","2010-05-31 23:30","00","","CI005","Wheal Rodney","hh","22 6158 2968 220","0","179.2268","0","0","0","22 3479 7618 470","0","0","0","0"," MOP virtual_bill function can&apos;t be found."' />
+					pattern='4,"1","net","","2010-05-31 23:30","00","","CI005","Wheal Rodney","hh","22 6158 2968 220","0","179.2268","0","0","0","22 3479 7618 470","0","0","0","0",""' />
 				<response-code value="200" />
 			</request>
 		</test>
@@ -3744,9 +3766,9 @@ def virtual_bill(supply_source):
 				path="/chellow/reports/291/output/?supply_id=5&amp;start_year=2013&amp;start_month=04&amp;start_day=01&amp;start_hour=00&amp;start_minute=00&amp;finish_year=2013&amp;finish_month=04&amp;finish_day=30&amp;finish_hour=23&amp;finish_minute=30">
 				<response-code value="200" />
 				<regex
-					pattern='"MPAN Core","Site Code","Site Name","Account","From","To","net-gbp","tlm","ccl-kwh","ccl-rate","ccl-gbp","data-collection-gbp","duos-availability-kva","duos-availability-days","duos-availability-rate","duos-availability-gbp","duos-excess-availability-kva","duos-excess-availability-days","duos-excess-availability-rate","duos-excess-availability-gbp","duos-green-kwh","duos-green-rate","duos-green-gbp","duos-green-kwh","duos-green-rate","duos-amber-gbp","duos-amber-kwh","duos-red-rate","duos-red-gbp","duos-reactive-rate","duos-reactive-gbp","duos-fixed-days","duos-fixed-rate","duos-fixed-gbp","settlement-gbp","night-msp-kwh","night-gsp-kwh","night-gbp","other-msp-kwh","other-gsp-kwh","other-gbp","summer-pk-msp-kwh","summer-pk-gsp-kwh","summer-pk-gbp","winter-low-pk-msp-kwh","winter-low-pk-gsp-kwh","winter-low-pk-gbp","winter-off-pk-msp-kwh","winter-off-pk-gsp-kwh","winter-off-pk-gbp","winter-pk-msp-kwh","winter-pk-gsp-kwh","winter-pk-gbp","bsuos-kwh","bsuos-rate","bsuos-gbp","triad-actual-1-date","triad-actual-1-msp-kw","triad-actual-1-status","triad-actual-1-laf","triad-actual-1-gsp-kw","triad-actual-2-date","triad-actual-2-msp-kw","triad-actual-2-status","triad-actual-2-laf","triad-actual-2-gsp-kw","triad-actual-3-date","triad-actual-3-msp-kw","triad-actual-3-status","triad-actual-3-laf","triad-actual-3-gsp-kw","triad-actual-gsp-kw","triad-actual-rate","triad-actual-gbp","triad-estimate-1-date","triad-estimate-1-msp-kw","triad-estimate-1-status","triad-estimate-1-laf","triad-estimate-1-gsp-kw","triad-estimate-2-date","triad-estimate-2-msp-kw","triad-estimate-2-status","triad-estimate-2-laf","triad-estimate-2-gsp-kw","triad-estimate-3-date","triad-estimate-3-msp-kw","triad-estimate-3-status","triad-estimate-3-laf","triad-estimate-3-gsp-kw","triad-estimate-gsp-kw","triad-estimate-rate","triad-estimate-months","triad-estimate-gbp","triad-all-estimates-months","triad-all-estimates-gbp","problem"' />
+					pattern='"MPAN Core","Site Code","Site Name","Account","From","To","","mop-net-gbp","mop-problem","","dc-net-gbp","dc-problem","","imp-supplier-net-gbp","imp-supplier-tlm","imp-supplier-ccl-kwh","imp-supplier-ccl-rate","imp-supplier-ccl-gbp","imp-supplier-data-collection-gbp","imp-supplier-duos-availability-kva","imp-supplier-duos-availability-days","imp-supplier-duos-availability-rate","imp-supplier-duos-availability-gbp","imp-supplier-duos-excess-availability-kva","imp-supplier-duos-excess-availability-days","imp-supplier-duos-excess-availability-rate","imp-supplier-duos-excess-availability-gbp","imp-supplier-duos-green-kwh","imp-supplier-duos-green-rate","imp-supplier-duos-green-gbp","imp-supplier-duos-green-kwh","imp-supplier-duos-green-rate","imp-supplier-duos-amber-gbp","imp-supplier-duos-amber-kwh","imp-supplier-duos-red-rate","imp-supplier-duos-red-gbp","imp-supplier-duos-reactive-rate","imp-supplier-duos-reactive-gbp","imp-supplier-duos-fixed-days","imp-supplier-duos-fixed-rate","imp-supplier-duos-fixed-gbp","imp-supplier-settlement-gbp","imp-supplier-night-msp-kwh","imp-supplier-night-gsp-kwh","imp-supplier-night-gbp","imp-supplier-other-msp-kwh","imp-supplier-other-gsp-kwh","imp-supplier-other-gbp","imp-supplier-summer-pk-msp-kwh","imp-supplier-summer-pk-gsp-kwh","imp-supplier-summer-pk-gbp","imp-supplier-winter-low-pk-msp-kwh","imp-supplier-winter-low-pk-gsp-kwh","imp-supplier-winter-low-pk-gbp","imp-supplier-winter-off-pk-msp-kwh","imp-supplier-winter-off-pk-gsp-kwh","imp-supplier-winter-off-pk-gbp","imp-supplier-winter-pk-msp-kwh","imp-supplier-winter-pk-gsp-kwh","imp-supplier-winter-pk-gbp","imp-supplier-bsuos-kwh","imp-supplier-bsuos-rate","imp-supplier-bsuos-gbp","imp-supplier-triad-actual-1-date","imp-supplier-triad-actual-1-msp-kw","imp-supplier-triad-actual-1-status","imp-supplier-triad-actual-1-laf","imp-supplier-triad-actual-1-gsp-kw","imp-supplier-triad-actual-2-date","imp-supplier-triad-actual-2-msp-kw","imp-supplier-triad-actual-2-status","imp-supplier-triad-actual-2-laf","imp-supplier-triad-actual-2-gsp-kw","imp-supplier-triad-actual-3-date","imp-supplier-triad-actual-3-msp-kw","imp-supplier-triad-actual-3-status","imp-supplier-triad-actual-3-laf","imp-supplier-triad-actual-3-gsp-kw","imp-supplier-triad-actual-gsp-kw","imp-supplier-triad-actual-rate","imp-supplier-triad-actual-gbp","imp-supplier-triad-estimate-1-date","imp-supplier-triad-estimate-1-msp-kw","imp-supplier-triad-estimate-1-status","imp-supplier-triad-estimate-1-laf","imp-supplier-triad-estimate-1-gsp-kw","imp-supplier-triad-estimate-2-date","imp-supplier-triad-estimate-2-msp-kw","imp-supplier-triad-estimate-2-status","imp-supplier-triad-estimate-2-laf","imp-supplier-triad-estimate-2-gsp-kw","imp-supplier-triad-estimate-3-date","imp-supplier-triad-estimate-3-msp-kw","imp-supplier-triad-estimate-3-status","imp-supplier-triad-estimate-3-laf","imp-supplier-triad-estimate-3-gsp-kw","imp-supplier-triad-estimate-gsp-kw","imp-supplier-triad-estimate-rate","imp-supplier-triad-estimate-months","imp-supplier-triad-estimate-gbp","imp-supplier-triad-all-estimates-months","imp-supplier-triad-all-estimates-gbp","imp-supplier-problem"' />
 				<regex
-					pattern='"22 0883 6932 301","CI005","Wheal Rodney","4341","2013-04-01 00:00","2013-04-30 23:30","369.605","1.0137843","0","0.00525288","0","5.89","350","30","0.026","273.0","0","31","0.026","0.0","0","0.00161","0.0","0","0","0","0","0","0","0.00382","0.0","30","0.0905","2.715","88","0","0","0","0","0.0","0.0","0","0","0","0","0","0","0","0","0","0","0","0","0.0","0.00275744","0.0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","2012-11-29 17:00","0","E","1.087","0.0","2012-12-12 17:00","0","E","1.087","0.0","2013-01-16 17:00","0","E","1.087","0.0","0.0","33.551731","1","0.0","0","0",""' />
+					pattern='"22 0883 6932 301","CI005","Wheal Rodney","4341","2013-04-01 00:00","2013-04-30 23:30","","0","","","0","","","369.605","1.0137843","0","0.00525288","0","5.89","350","30","0.026","273.0","0","31","0.026","0.0","0","0.00161","0.0","0","0","0","0","0","0","0.00382","0.0","30","0.0905","2.715","88","0","0","0","0","0.0","0.0","0","0","0","0","0","0","0","0","0","0","0","0","0.0","0.00275744","0.0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","2012-11-29 17:00","0","E","1.087","0.0","2012-12-12 17:00","0","E","1.087","0.0","2013-01-16 17:00","0","E","1.087","0.0","0.0","33.551731","1","0.0","0","0",""' />
 			</request>
 			<request path="/chellow/reports/159/output/">
 				<regex pattern="finish_year" />
@@ -3803,9 +3825,9 @@ def virtual_bill(supply_source):
 				path="/chellow/reports/291/output/?supply_id=18&amp;start_year=2009&amp;start_month=06&amp;start_day=01&amp;start_hour=00&amp;start_minute=00&amp;finish_year=2009&amp;finish_month=06&amp;finish_day=30&amp;finish_hour=23&amp;finish_minute=30">
 				<response-code value="200" />
 				<regex
-					pattern='"MPAN Core","Site Code","Site Name","Account","From","To","net-gbp","tlm","ccl-kwh","ccl-rate","ccl-gbp","data-collection-gbp","duos-availability-kva","duos-availability-days","duos-availability-rate","duos-availability-gbp","duos-excess-availability-kva","duos-excess-availability-days","duos-excess-availability-rate","duos-excess-availability-gbp","duos-day-kwh","duos-day-gbp","duos-night-kwh","duos-night-gbp","duos-reactive-kvarh","duos-reactive-rate","duos-reactive-gbp","duos-standing-gbp","settlement-gbp","night-msp-kwh","night-gsp-kwh","night-gbp","other-msp-kwh","other-gsp-kwh","other-gbp","summer-pk-msp-kwh","summer-pk-gsp-kwh","summer-pk-gbp","winter-low-pk-msp-kwh","winter-low-pk-gsp-kwh","winter-low-pk-gbp","winter-off-pk-msp-kwh","winter-off-pk-gsp-kwh","winter-off-pk-gbp","winter-pk-msp-kwh","winter-pk-gsp-kwh","winter-pk-gbp","bsuos-kwh","bsuos-rate","bsuos-gbp","triad-actual-1-date","triad-actual-1-msp-kw","triad-actual-1-status","triad-actual-1-laf","triad-actual-1-gsp-kw","triad-actual-2-date","triad-actual-2-msp-kw","triad-actual-2-status","triad-actual-2-laf","triad-actual-2-gsp-kw","triad-actual-3-date","triad-actual-3-msp-kw","triad-actual-3-status","triad-actual-3-laf","triad-actual-3-gsp-kw","triad-actual-gsp-kw","triad-actual-rate","triad-actual-gbp","triad-estimate-1-date","triad-estimate-1-msp-kw","triad-estimate-1-status","triad-estimate-1-laf","triad-estimate-1-gsp-kw","triad-estimate-2-date","triad-estimate-2-msp-kw","triad-estimate-2-status","triad-estimate-2-laf","triad-estimate-2-gsp-kw","triad-estimate-3-date","triad-estimate-3-msp-kw","triad-estimate-3-status","triad-estimate-3-laf","triad-estimate-3-gsp-kw","triad-estimate-gsp-kw","triad-estimate-rate","triad-estimate-months","triad-estimate-gbp","triad-all-estimates-months","triad-all-estimates-gbp","problem"' />
+					pattern='"MPAN Core","Site Code","Site Name","Account","From","To","","mop-net-gbp","mop-problem","","dc-net-gbp","dc-problem","","imp-supplier-net-gbp","imp-supplier-tlm","imp-supplier-ccl-kwh","imp-supplier-ccl-rate","imp-supplier-ccl-gbp","imp-supplier-data-collection-gbp","imp-supplier-duos-availability-kva","imp-supplier-duos-availability-days","imp-supplier-duos-availability-rate","imp-supplier-duos-availability-gbp","imp-supplier-duos-excess-availability-kva","imp-supplier-duos-excess-availability-days","imp-supplier-duos-excess-availability-rate","imp-supplier-duos-excess-availability-gbp","imp-supplier-duos-day-kwh","imp-supplier-duos-day-gbp","imp-supplier-duos-night-kwh","imp-supplier-duos-night-gbp","imp-supplier-duos-reactive-kvarh","imp-supplier-duos-reactive-rate","imp-supplier-duos-reactive-gbp","imp-supplier-duos-standing-gbp","imp-supplier-settlement-gbp","imp-supplier-night-msp-kwh","imp-supplier-night-gsp-kwh","imp-supplier-night-gbp","imp-supplier-other-msp-kwh","imp-supplier-other-gsp-kwh","imp-supplier-other-gbp","imp-supplier-summer-pk-msp-kwh","imp-supplier-summer-pk-gsp-kwh","imp-supplier-summer-pk-gbp","imp-supplier-winter-low-pk-msp-kwh","imp-supplier-winter-low-pk-gsp-kwh","imp-supplier-winter-low-pk-gbp","imp-supplier-winter-off-pk-msp-kwh","imp-supplier-winter-off-pk-gsp-kwh","imp-supplier-winter-off-pk-gbp","imp-supplier-winter-pk-msp-kwh","imp-supplier-winter-pk-gsp-kwh","imp-supplier-winter-pk-gbp","imp-supplier-bsuos-kwh","imp-supplier-bsuos-rate","imp-supplier-bsuos-gbp","imp-supplier-triad-actual-1-date","imp-supplier-triad-actual-1-msp-kw","imp-supplier-triad-actual-1-status","imp-supplier-triad-actual-1-laf","imp-supplier-triad-actual-1-gsp-kw","imp-supplier-triad-actual-2-date","imp-supplier-triad-actual-2-msp-kw","imp-supplier-triad-actual-2-status","imp-supplier-triad-actual-2-laf","imp-supplier-triad-actual-2-gsp-kw","imp-supplier-triad-actual-3-date","imp-supplier-triad-actual-3-msp-kw","imp-supplier-triad-actual-3-status","imp-supplier-triad-actual-3-laf","imp-supplier-triad-actual-3-gsp-kw","imp-supplier-triad-actual-gsp-kw","imp-supplier-triad-actual-rate","imp-supplier-triad-actual-gbp","imp-supplier-triad-estimate-1-date","imp-supplier-triad-estimate-1-msp-kw","imp-supplier-triad-estimate-1-status","imp-supplier-triad-estimate-1-laf","imp-supplier-triad-estimate-1-gsp-kw","imp-supplier-triad-estimate-2-date","imp-supplier-triad-estimate-2-msp-kw","imp-supplier-triad-estimate-2-status","imp-supplier-triad-estimate-2-laf","imp-supplier-triad-estimate-2-gsp-kw","imp-supplier-triad-estimate-3-date","imp-supplier-triad-estimate-3-msp-kw","imp-supplier-triad-estimate-3-status","imp-supplier-triad-estimate-3-laf","imp-supplier-triad-estimate-3-gsp-kw","imp-supplier-triad-estimate-gsp-kw","imp-supplier-triad-estimate-rate","imp-supplier-triad-estimate-months","imp-supplier-triad-estimate-gbp","imp-supplier-triad-all-estimates-months","imp-supplier-triad-all-estimates-gbp","imp-supplier-problem"' />
 				<regex
-					pattern='"14 7206 6139 971","CH023","Treglisson","sup-14 7206 6139 971","2009-06-01 00:00","2009-06-30 23:30","334.3","1.0086111","0","0.0047","0","5.89","0","0","0.0457","105.11","0","0","0","0","0","0","0","0.0","0","0.0012","0.0","135.3","88","0","0","0.0","0","0.0","0.0","0","0","0.0","0","0","0.0","0","0","0.0","0","0","0.0","0.0","0.00046516","0.0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","2009-01-06 17:00","0","E","1.037","0.0","2008-12-01 17:00","0","E","1.037","0.0","2008-12-15 17:00","0","E","1.037","0.0","0.0","20.526611","1","0.0","0","0","","duos-availability-agreed-kva","2300","duos-availability-billed-kva","2300"' />
+					pattern='"14 7206 6139 971","CH023","Treglisson","sup-14 7206 6139 971","2009-06-01 00:00","2009-06-30 23:30","","0","","","0","","","334.3","1.0086111","0","0.0047","0","5.89","0","0","0.0457","105.11","0","0","0","0","0","0","0","0.0","0","0.0012","0.0","135.3","88","0","0","0.0","0","0.0","0.0","0","0","0.0","0","0","0.0","0","0","0.0","0","0","0.0","0.0","0.00046516","0.0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","2009-01-06 17:00","0","E","1.037","0.0","2008-12-01 17:00","0","E","1.037","0.0","2008-12-15 17:00","0","E","1.037","0.0","0.0","20.526611","1","0.0","0","0","","duos-availability-agreed-kva","2300","duos-availability-billed-kva","2300"' />
 			</request>
 		</test>
 		<test name="Report of HHDC snags">
@@ -3901,7 +3923,7 @@ def virtual_bill(supply_source):
 			</request>
 		</test>
 		<test name="View a MOP rate script. Contract 56.">
-			<request path="/chellow/reports/205/output/?mop_rate_script_id=307">
+			<request path="/chellow/reports/205/output/?mop_rate_script_id=308">
 				<response-code value="200" />
 			</request>
 		</test>
@@ -4037,9 +4059,9 @@ def virtual_bill(supply_source):
 				path="/chellow/reports/291/output/?supply_id=10&amp;start_year=2010&amp;start_month=01&amp;start_day=01&amp;start_hour=00&amp;start_minute=0&amp;finish_year=2010&amp;finish_month=01&amp;finish_day=31&amp;finish_hour=23&amp;finish_minute=30">
 				<response-code value="200" />
 				<regex
-					pattern='"MPAN Core","Site Code","Site Name","Account","From","To","net-gbp","vat-gbp","gross-gbp","problem"' />
+					pattern='"MPAN Core","Site Code","Site Name","Account","From","To","","mop-net-gbp","mop-problem","","dc-net-gbp","dc-problem","","imp-supplier-net-gbp","imp-supplier-vat-gbp","imp-supplier-gross-gbp","imp-supplier-problem"' />
 				<regex
-					pattern='"22 1065 3921 534","CI017","Roselands","SA342376","2010-01-01 00:00","2010-01-03 23:30","0","0","0",""' />
+					pattern='"22 1065 3921 534","CI017","Roselands","SA342376","2010-01-01 00:00","2010-01-03 23:30","","0","","","0","","","0","0","0",""' />
 			</request>
 		</test>
 		<test name="A bill check with multiple covered bills">
@@ -4176,7 +4198,7 @@ def virtual_bill(supply_source):
 			<request
 				path="/chellow/reports/291/output/?supply_id=7&amp;start_year=2013&amp;start_month=09&amp;start_day=29&amp;start_hour=00&amp;start_minute=00&amp;finish_year=2013&amp;finish_month=11&amp;finish_day=28&amp;finish_hour=23&amp;finish_minute=30">
 				<regex
-					pattern='"22 4862 4512 332","CH023","Treglisson","141 5532","2013-10-01 00:00","2013-10-31 23:30","0","0","0",""' />
+					pattern='"22 4862 4512 332","CH023","Treglisson","141 5532","2013-10-01 00:00","2013-10-31 23:30","","0","","","0","","","0","0","0",""' />
 				<response-code value="200" />
 			</request>
 		</test>
@@ -4293,7 +4315,7 @@ def virtual_bill(supply_source):
 		</test>
 		<test name="Make sure rate scripts remain contiguous.">
 			<request path="/chellow/reports/273/output/" method="post">
-				<control name="rate_script_id" value="275" />
+				<control name="rate_script_id" value="276" />
 				<control name="start_year" value="2005" />
 				<control name="start_month" value="04" />
 				<control name="start_day" value="01" />
@@ -4314,14 +4336,14 @@ def triad_dates():
 				<response-code value="303" />
 			</request>
 
-			<request path="/chellow/reports/271/output/?rate_script_id=276">
+			<request path="/chellow/reports/271/output/?rate_script_id=277">
 				<regex pattern="2006-03-31 00:00" />
 				<response-code value="200" />
 			</request>
 
 			<!-- Put it back to how it was -->
 			<request path="/chellow/reports/273/output/" method="post">
-				<control name="rate_script_id" value="275" />
+				<control name="rate_script_id" value="276" />
 				<control name="start_year" value="2005" />
 				<control name="start_month" value="04" />
 				<control name="start_day" value="01" />
