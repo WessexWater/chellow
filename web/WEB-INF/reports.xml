@@ -239,18 +239,19 @@ Monad.getUtils()['imprt'](globals(), {
         'utils': ['UserException'],
         'templater': ['render']})
 
+LIMIT = 50
 sess = None
 try:
     sess = session()
     if inv.hasParameter('pattern'):
         pattern = inv.getString("pattern")
-        pattern = pattern.strip()
-        sites = sess.query(Site).from_statement("select * from site where lower(code || ' ' || name) like '%' || lower(:pattern) || '%' order by code limit 20").params(pattern=pattern).all()
+        #pattern = pattern.strip()
+        sites = sess.query(Site).from_statement("select * from site where lower(code || ' ' || name) like '%' || lower(:pattern) || '%' order by code limit :lim").params(pattern=pattern, lim=LIMIT).all()
 
         if len(sites) == 1:
             inv.sendTemporaryRedirect("/reports/5/output/?site_id=" + str(sites[0].id))
         else:
-            render(inv, template, {'sites': sites})
+            render(inv, template, {'sites': sites, 'limit': LIMIT})
     else:
         render(inv, template, {})
 finally:
@@ -284,7 +285,7 @@ finally:
       </fieldset>
     </form>
     {% if sites %}
-      <p>Only the first 20 sites of the search results are shown.</p>
+      <p>Only the first {{limit}} sites of the search results are shown.</p>
       <ul>
         {% for site in sites %}
           <li>
