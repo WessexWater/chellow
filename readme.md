@@ -24,6 +24,16 @@ for organizations with high electricity consumption. The software is hosted at
 
 ####  Brand New Installation 
 
+Environment variables:
+
+PGUSER default `postgres`.
+PGPASSWORD default `postgres`
+PGPORT default `5432`
+PGDATABASE default `chellow`
+PGHOST default `localhost`
+
+
+
 1.  Create a PostgreSQL database called `chellow`. If you're upgrading, the
     database will already exist, so skip this step.
 2.  In your Tomcat, configure a JNDI JDBC data source called jdbc/chellow.

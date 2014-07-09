@@ -1,0 +1,5 @@
+. ${HOME}/workspace/chellow/venv/bin/activate
+gunicorn chellow:app -c ${HOME}/workspace/chellow/gunicorn/config.py
+watchmedo shell-command --patterns="*.py*;*.html*" --recursive --command='kill -HUP `cat ${HOME}/workspace/chellow/gunicorn/pid`' . &
+echo $! > ${HOME}/workspace/chellow/gunicorn/watchdog.pid
+

@@ -3,7 +3,10 @@ build
 dist
 *.swp
 *~
-test/imprimatur.xml
-/chellow
+*.pyc
 chellow.log
-/gunicorn
+gunicorn/errors
+gunicorn/watchdog.pid
+**/__pycache__
+test/imprimatur.xml
+gunicorn/pid
