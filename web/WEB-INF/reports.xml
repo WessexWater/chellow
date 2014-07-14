@@ -2663,7 +2663,7 @@ try:
 
     finish_date = datetime.datetime(finish_date_year, finish_date_month, 1, tzinfo=pytz.utc) + relativedelta(months=1) - HH
 
-    start_date = datetime.datetime(finish_date_year, finish_date_month, 1, tzinfo=pytz.utc) - relativedelta(months=months)
+    start_date = datetime.datetime(finish_date_year, finish_date_month, 1, tzinfo=pytz.utc) - relativedelta(months=months-1)
 
     generated_supplies = {}
     imported_supplies = {}
