@@ -9322,7 +9322,7 @@ finally:
 		<value><![CDATA[from net.sf.chellow.monad import Monad
 from java.lang import System
 import datetime
-from sqlalchemy import or_, func, not_
+from sqlalchemy import or_, func, not_, Float, cast
 import pytz
 
 Monad.getUtils()['impt'](globals(), 'db', 'utils', 'templater', 'computer', 'duos')
@@ -9388,13 +9388,13 @@ def mpan_bit(supply, is_import, num_hh, eras, chunk_start, chunk_finish):
     kvarh_at_md = None
     num_na = 0
 
-    for datum in sess.query(HhDatum).join(Channel).join(Era).filter(Supply.id==supply.id, Channel.imp_related==is_import, Channel.channel_type=='ACTIVE', HhDatum.start_date>=chunk_start, HhDatum.start_date<=chunk_finish):
+    for datum in sess.query(HhDatum).join(Channel).join(Era).filter(Era.supply_id==supply.id, Channel.imp_related==is_import, Channel.channel_type=='ACTIVE', HhDatum.start_date>=chunk_start, HhDatum.start_date<=chunk_finish):
         hh_value = float(datum.value)
         hh_status = datum.status
         if hh_value > md:
             md = hh_value
             date_at_md = datum.start_date
-            kvarh_at_md = sess.query(func.max(HhDatum.value)).join(Channel).join(Era).filter(Era.supply_id==supply.id, Channel.imp_related==is_import, Channel.channel_type!='ACTIVE', HhDatum.start_date==date_at_md).one()[0]
+            kvarh_at_md = sess.query(cast(func.max(HhDatum.value), Float)).join(Channel).join(Era).filter(Era.supply_id==supply.id, Channel.imp_related==is_import, Channel.channel_type!='ACTIVE', HhDatum.start_date==date_at_md).one()[0]
 
         sum_kwh += hh_value
         if hh_status != 'A':
@@ -9428,7 +9428,7 @@ try:
 
     if inv.hasParameter('supply_id'):
         supply_id = inv.getLong('supply_id')
-        supplies = supplies.filter(Supply.id==Supply.get_by_id(supply_id).id)
+        supplies = supplies.filter(Supply.id==Supply.get_by_id(sess, supply_id).id)
 
     for supply in supplies:
         site_codes = ''
