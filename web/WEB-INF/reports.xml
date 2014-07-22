@@ -11242,13 +11242,13 @@ source.setAttribute('year', str(cal.get(Calendar.YEAR)))]]></value>
 import datetime
 from dateutil.relativedelta import relativedelta
 import pytz
-from sqlalchemy import or_
+from sqlalchemy import or_, cast, Float, func
 from java.lang import System
 
 Monad.getUtils()['impt'](globals(), 'computer', 'db', 'utils')
 
 HH, hh_format, hh_after = utils.HH, utils.hh_format, utils.hh_after
-totalseconds = utils.totalseconds
+totalseconds, UserException = utils.totalseconds, utils.UserException
 Supply, Era, Site, SiteEra = db.Supply, db.Era, db.Site, db.SiteEra
 HhDatum, Channel, Bill = db.HhDatum, db.Channel, db.Bill
 
@@ -11301,7 +11301,7 @@ try:
             era = eras[-1]
             metering_type = era.make_meter_category()
 
-            site = sess.query(Site).join(SiteEra).filter(SiteEra.era_id==era.id, SiteEra.is_physical==True).one()
+            site = sess.query(Site).join(SiteEra).filter(SiteEra.era_id == era.id, SiteEra.is_physical == True).one()
             
             values = {'supply-name': supply.name, 'source-code': source_code, 'generator-type': generator_type, 'month': hh_format(month_finish), 'pc-code': era.pc.code, 'msn': era.msn, 'site-code': site.code, 'site-name': site.name, 'metering-type': metering_type, 'problem': ''}
 
@@ -11318,15 +11318,16 @@ try:
                 est_kwh = 0
 
                 if metering_type in ['hh', 'amr']:
-                    est_kwh = sess.query(HhDatum.value).join(Channel).join(Era).filter(HhDatum.status=='E', Era.supply_id==supply.id, Channel.channel_type=='ACTIVE', Channel.imp_related==is_import, HhDatum.start_date>=month_start, HhDatum.start_date<=month_finish).first()
+                    est_kwh = sess.query(HhDatum.value).join(Channel).join(Era).filter(HhDatum.status == 'E', Era.supply_id == supply.id, Channel.channel_type == 'ACTIVE', Channel.imp_related == is_import, HhDatum.start_date >= month_start, HhDatum.start_date <= month_finish).first()
                     if est_kwh is None:
                         est_kwh = 0
                     else:
                         est_kwh = est_kwh[0]
 
-                if not (is_import and source_code in ['net', 'gen-net']):
-                    for kwh in sess.query(HhDatum.value).join(Channel).join(Era).filter(Era.supply_id==supply.id, Channel.channel_type=='ACTIVE', Channel.imp_related==is_import, HhDatum.start_date>=month_start, HhDatum.start_date<=month_finish):
-                        kwh += float(kwh[0])
+                if not (is_import and source_code in ('net', 'gen-net')):
+                    kwh_sum = sess.query(cast(func.sum(HhDatum.value), Float)).join(Channel).join(Era).filter(Era.supply_id == supply.id, Channel.channel_type == 'ACTIVE', Channel.imp_related == is_import, HhDatum.start_date >= month_start, HhDatum.start_date <= month_finish).one()[0]
+                    if kwh_sum is not None:
+                        kwh += kwh_sum
 
                 values['metered-' + pol_name + '-estimated-kwh'] = est_kwh
                 values['metered-' + pol_name + '-kwh'] = kwh
@@ -11349,11 +11350,6 @@ try:
                 values['billed-import-net-gbp'] += overlap_proportion * float(bill.net)
                 values['billed-import-kwh'] += overlap_proportion * float(bill.kwh)
 
-            '''
-            for bill in raw_bill_query.setEntity('supply', supply).setTimestamp('startDate', month_start.getDate()).setTimestamp('finishDate', month_finish.getDate()).list():
-                values['billed-import-raw-net-gbp'] += bill.getNet().doubleValue()
-                values['billed-import-raw-kwh'] += bill.getKwh().doubleValue()
-            '''
             for era in eras:
                 if era.start_date > month_start:
                     chunk_start = era.start_date
@@ -11385,10 +11381,8 @@ try:
                         v_bill = import_vb_function(supply_source)
                         #p w.println("finishing vbill, " + str(System.currentTimeMillis()))
 
-                        if 'net-gbp' in v_bill:
-                            values['metered-import-net-gbp'] += v_bill['net-gbp']
-                        else:
-                            values['problem'] += 'For the supply ' + import_mpan_core + ' the virtual bill ' + str(v_bill) + ' from the contract ' + supplier_contract.getName() + ' does not contain the net-gbp key.'
+                        values['metered-import-net-gbp'] += v_bill['net-gbp']
+
                         values['problem'] += supply_source.problem
                     #p w.println("done virtual bill , " + str(System.currentTimeMillis()))
 
