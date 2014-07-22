@@ -11248,6 +11248,7 @@ from java.lang import System
 Monad.getUtils()['impt'](globals(), 'computer', 'db', 'utils')
 
 HH, hh_format, hh_after = utils.HH, utils.hh_format, utils.hh_after
+totalseconds = utils.totalseconds
 Supply, Era, Site, SiteEra = db.Supply, db.Era, db.Site, db.SiteEra
 HhDatum, Channel, Bill = db.HhDatum, db.Channel, db.Bill
 
@@ -11343,7 +11344,7 @@ try:
                 bill_start = bill.start_date
                 bill_finish = bill.finish_date
                 bill_duration = totalseconds(bill_finish - bill_start) + 30 * 60
-                overlap_duration = total_seconds(min(bill_finish, month_finish) - max(bill_start, month_start)) + 30 * 60
+                overlap_duration = totalseconds(min(bill_finish, month_finish) - max(bill_start, month_start)) + 30 * 60
                 overlap_proportion = float(overlap_duration) / float(bill_duration)
                 values['billed-import-net-gbp'] += overlap_proportion * float(bill.net)
                 values['billed-import-kwh'] += overlap_proportion * float(bill.kwh)

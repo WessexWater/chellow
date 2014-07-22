@@ -2301,7 +2301,7 @@ def triad_estimates():
 				<response-code value="303" />
 			</request>
 			<request path="/chellow/reports/251/output/">
-				<refresh />
+				<refresh max="20"/>
 				<regex pattern="FINISHED_site_monthly_duration_for_CI017_1_to_2009_4\.csv" />
 				<response-code value="200" />
 			</request>
@@ -3305,7 +3305,7 @@ def virtual_bill(supply_source):
 				<response-code value="303" />
 			</request>
 			<request path="/chellow/reports/251/output/">
-				<refresh />
+				<refresh max="20" />
 				<regex pattern="FINISHED_site_monthly_duration_for_CI017_1_to_2010_7.csv" />
 				<response-code value="200" />
 			</request>
@@ -3676,13 +3676,13 @@ def virtual_bill(supply_source):
 				<response-code value="200" />
 			</request>
 		</test>
-		<test name="Try monthly supply duration with a non-half-hourly.">
+		<test name="Try monthly supply duration with a non-half-hourly with bills.">
 			<request
-				path="/chellow/reports/177/output/?supply_id=10&amp;months=1&amp;end_year=2013&amp;end_month=05">
+				path="/chellow/reports/177/output/?supply_id=10&amp;months=1&amp;end_year=2011&amp;end_month=01">
 				<regex
 					pattern="supply-id,supply-name,source-code,generator-type,month,pc-code,msn,site-code,site-name,metering-type,import-mpan-core,metered-import-kwh,metered-import-net-gbp,metered-import-estimated-kwh,billed-import-kwh,billed-import-net-gbp,export-mpan-core,metered-export-kwh,metered-export-estimated-kwh,billed-export-kwh,billed-export-net-gbp,problem,timestamp" />
 				<regex
-					pattern='10,"2","net","","2013-05-31 23:30","03","I02D89150","CI017","Roselands","nhh","22 1065 3921 534","0","0.0","0","0","0","None","0","0","0","0",""' />
+					pattern='10,"2","net","","2011-01-31 23:30","03","I02D89150","CI017","Roselands","nhh","22 1065 3921 534","0","0.0","0","150.0","98.17","None","0","0","0","0",""' />
 				<response-code value="200" />
 			</request>
 		</test>
