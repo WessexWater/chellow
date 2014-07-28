@@ -7970,26 +7970,25 @@ import datetime
 import pytz
 from dateutil.relativedelta import relativedelta
 
-Monad.getUtils()['imprt'](globals(), {
-        'db': ['Contract', 'Party', 'RateScript', 'set_read_write', 'session'], 
-        'utils': ['UserException'],
-        'templater': ['render']})
+Monad.getUtils()['impt'](globals(), 'db', 'utils', 'templater')
+
+RateScript = db.RateScript
 
 sess = None
 rate_scripts = None
 try:
-    sess = session()
+    sess = db.session()
     contract_id = inv.getLong('hhdc_contract_id')
-    contract = Contract.get_hhdc_by_id(sess, contract_id)
-    rate_scripts = sess.query(RateScript).from_statement("select * from rate_script where rate_script.contract_id = :contract_id order by start_date desc").params(contract_id=contract_id).all()
+    contract = db.Contract.get_hhdc_by_id(sess, contract_id)
+    rate_scripts = sess.query(RateScript).filter(RateScript.contract_id == contract.id).order_by(RateScript.start_date.desc()).all()
     now = datetime.datetime.now(pytz.utc)
     last_month_finish = datetime.datetime(now.year, now.month, 1) - relativedelta(minutes=30)
-    render(inv, template, {'contract': contract, 'rate_scripts': rate_scripts, 'last_month_finish': last_month_finish})
-except UserException, e:
+    templater.render(inv, template, {'contract': contract, 'rate_scripts': rate_scripts, 'last_month_finish': last_month_finish})
+except utils.UserException, e:
     if str(e).startswith("There isn't a contract"):
         inv.sendNotFound(str(e))
     else:
-        render(inv, template, {'messages': [str(e)], 'contract': contract, 'rate_scripts': rate_scripts})
+        templater.render(inv, template, {'messages': [str(e)], 'contract': contract, 'rate_scripts': rate_scripts})
 finally:
     if sess is not None:
         sess.close()]]></value>
@@ -8041,7 +8040,8 @@ finally:
     <br />
     <table>
       <caption>
-        Rate Scripts [<a href="{/source/request/@context-path}/hhdc-contracts/{/source/hhdc-contract/id}/rate-scripts/">edit</a>]
+        Rate Scripts
+        [<a href="{{context_path}}/reports/383/output/?hhdc_contract_id={{contract.id}}">add</a>]
       </caption>
       <thead>
         <tr>
@@ -23044,8 +23044,88 @@ con.commit()]]></value>
 		<value><![CDATA[report]]></value>
 		<value><![CDATA[383]]></value>
 		<value><![CDATA[true]]></value>
-		<value><![CDATA[Free 383]]></value>
-		<value><![CDATA[]]></value>
+		<value><![CDATA[HHDC Rate Script Add]]></value>
+		<value><![CDATA[from net.sf.chellow.monad import Monad
+from sqlalchemy.orm import joinedload_all
+from datetime import datetime
+import pytz
+
+Monad.getUtils()['impt'](globals(), 'db', 'utils', 'templater')
+Contract = db.Contract
+render = templater.render
+UserException, form_date = utils.UserException, utils.form_date
+
+def page_fields(contract, message=None):
+    now = datetime.now(pytz.utc)
+    initial_date = datetime(now.year, now.month, 1, tzinfo=pytz.utc)
+    messages = None if message is None else [message]
+    return {'contract': contract, 'initial_date': initial_date,
+        'messages': messages}
+
+sess = None
+contract = None
+try:
+    sess = db.session()
+    if inv.getRequest().getMethod() == 'GET':
+        contract_id = inv.getLong('hhdc_contract_id')
+        contract = Contract.get_hhdc_by_id(sess, contract_id)
+        render(inv, template, page_fields(contract))
+    else:
+        db.set_read_write(sess)
+        contract_id = inv.getLong('hhdc_contract_id')
+        contract = Contract.get_hhdc_by_id(sess, contract_id)
+        start_date = form_date(inv, 'start')
+        rate_script = contract.insert_rate_script(sess, start_date, '')
+        sess.commit()
+        inv.sendSeeOther('/reports/173/output/?hhdc_rate_script_id='
+                + str(rate_script.id))
+except UserException, e:
+        render(inv, template, page_fields(contract, str(e)))
+finally:
+    sess.close()]]></value>
+		<value><![CDATA[<!doctype html>
+<html>
+  <head>
+    <link rel="stylesheet" type="text/css"
+      href="{{context_path}}/reports/19/output/"
+    >
+    <title>
+      Chellow &gt; HHDC Contracts &gt; {{contract.name}}
+      &gt; Add Rate Script
+    </title>
+  </head>
+  <body>
+    <p>
+      <a href="{{context_path}}/reports/1/output/">Chellow</a> &gt;
+      <a href="{{context_path}}/reports/113/output/">HHDC Contracts</a> &gt;
+      <a href="{{context_path}}/reports/115/output/?hhdc_contract_id={{contract.id}}">{{contract.name}}</a>
+      &gt; Add Rate Script
+    </p>
+    {% if messages %}
+      <ul>
+        {% for message in messages %}
+          <li>{{ message }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+    <br />
+    <form action="." method="post">
+      <fieldset>
+        <legend>Add a rate script</legend>
+        <input type="hidden" name="hhdc_contract_id"
+            value="{{contract.id}}"
+        >
+        <br>
+        <fieldset>
+          <legend>Start Date</legend>
+          {{ input_date('start', initial_date) }}
+        </fieldset>
+        <br>
+        <input type="submit" value="Add" />
+      </fieldset>
+    </form>
+  </body>
+</html>]]></value>
 	</line>
 	<line>
 		<value><![CDATA[insert]]></value>

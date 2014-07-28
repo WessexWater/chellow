@@ -1710,6 +1710,10 @@ def virtual_bill(ds):
 
 				<!-- Check link to channel snags -->
 				<regex pattern="hidden_days" />
+				
+				<!-- Check link to add a rate script -->
+				<regex pattern='Rate Scripts\s*\[&lt;a href="/chellow/reports/383/output/\?hhdc_contract_id=52"&gt;add&lt;/a&gt;\]' />
+				
 			</request>
 		</test>
 		<test name="Check adding of user report.">
