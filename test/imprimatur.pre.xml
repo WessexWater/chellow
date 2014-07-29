@@ -1710,10 +1710,11 @@ def virtual_bill(ds):
 
 				<!-- Check link to channel snags -->
 				<regex pattern="hidden_days" />
-				
+
 				<!-- Check link to add a rate script -->
-				<regex pattern='Rate Scripts\s*\[&lt;a href="/chellow/reports/383/output/\?hhdc_contract_id=52"&gt;add&lt;/a&gt;\]' />
-				
+				<regex
+					pattern='Rate Scripts\s*\[&lt;a href="/chellow/reports/383/output/\?hhdc_contract_id=52"&gt;add&lt;/a&gt;\]' />
+
 			</request>
 		</test>
 		<test name="Check adding of user report.">
@@ -2633,14 +2634,15 @@ def virtual_bill(supply_source):
 				<control name="party_id" value="7" />
 				<control name="name" value="Non half-hourlies 2010" />
 				<control name="charge_script">
-				<![CDATA[
+				<![CDATA[				
 def virtual_bill_titles():
-    return ['net-gbp']
-
+    return ['net-gbp', 'sum-msp-kwh', 'problem']
 
 def virtual_bill(supply_source):
     sum_msp_kwh = sum(h['msp-kwh'] for h in supply_source.hh_data)
-    return {'net-gbp': sum_msp_kwh * 0.1, 'sum-msp-kwh': sum_msp_kwh, 'problem': ''}]]>
+    bill = supply_source.supplier_bill
+    bill['net-gbp'] = sum_msp_kwh * 0.1
+    bill['sum-msp-kwh'] = sum_msp_kwh]]>
 				</control>
 				<response-code value="303" />
 			</request>
@@ -2721,7 +2723,7 @@ def virtual_bill(supply_source):
 				<regex
 					pattern='batch,bill-reference,bill-type,bill-kwh,bill-net-gbp,bill-vat-gbp, bill-start-date,bill-finish-date,bill-mpan-core,site-code,site-name,covered-from,covered-to,covered-bills,covered-net-gbp,virtual-net-gbp,difference-net-gbp' />
 				<regex
-					pattern='"07-008","3423760005","N","253","36.16","1.8","2010-01-19 00:00","2010-04-20 23:30","22 1065 3921 534","CI017","Roselands","2010-01-19 00:00","2010-04-20 23:30","10","36.16","25.3","10.86","virtual-problem","","","","virtual-sum-msp-kwh","253.0","covered-sum-msp-kwh","253.0"' />
+					pattern='"07-008","3423760005","N","253","36.16","1.8","2010-01-19 00:00","2010-04-20 23:30","22 1065 3921 534","CI017","Roselands","2010-01-19 00:00","2010-04-20 23:30","10","36.16","25.3","10.86","253.0","253.0","",""' />
 				<response-code value="200" />
 			</request>
 		</test>
@@ -3317,7 +3319,7 @@ def virtual_bill(supply_source):
 			<request
 				path="/chellow/reports/253/output/?name=FINISHED_site_monthly_duration_for_CI017_1_to_2010_7.csv">
 				<regex
-					pattern='"CI017","Roselands","","3rd-party,net","","2010-07-31 23:30","0","0","0","0","0","0","0","0","1593.3414","0","0","1593.3414","0","0","0","hh",""' />
+					pattern='"CI017","Roselands","","3rd-party,net","","2010-07-31 23:30","0","0","0","0","0","0","0","0","1593.3414","0","0","1593.3414","0.0","0","0","hh",""' />
 				<response-code value="200" />
 			</request>
 		</test>
@@ -4432,7 +4434,7 @@ def triad_dates():
 			<request path="/chellow/reports/111/output/?bill_id=21">
 				<response-code value="200" />
 				<regex
-					pattern='"07-002","3423760010","N","10","9.07","0.21","2012-01-05 00:00","2012-01-10 23:30","22 1065 3921 534","CI017","Roselands","2012-01-05 00:00","2012-01-10 23:30","21","9.07","1.0","8.07","virtual-problem","","","","virtual-sum-msp-kwh","10.0","covered-sum-msp-kwh","10.0"' />
+					pattern='"07-002","3423760010","N","10","9.07","0.21","2012-01-05 00:00","2012-01-10 23:30","22 1065 3921 534","CI017","Roselands","2012-01-05 00:00","2012-01-10 23:30","21","9.07","1.0","8.07","10.0","10.0","",' />
 			</request>
 		</test>
 		<test name="Monthly supplies duration with export hh data">

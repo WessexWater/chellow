@@ -6938,7 +6938,8 @@ try:
             mera = {'headings': headings, 'data': data}
 
             meras.append(mera)
-            bill = computer.contract_func(caches, contract, 'virtual_bill', System.err)(data_source)
+            computer.contract_func(caches, contract, 'virtual_bill', System.err)(data_source)
+            bill = data_source.supplier_bill
             net_gbp += bill['net-gbp']
 
             for title in computer.contract_func(caches, contract, 'virtual_bill_titles', System.err)():
@@ -7725,7 +7726,7 @@ try:
         batch = bill.batch
 
     contract = batch.contract
-    contract_market_role_code = contract.market_role.code
+    market_role_code = contract.market_role.code
 
     vbf = computer.contract_func(caches, contract, 'virtual_bill', pw)
     if vbf is None:
@@ -7787,7 +7788,7 @@ try:
         while enlarged:
             enlarged = False
             for covered_bill in sess.query(Bill).filter(Bill.supply_id==supply.id, Bill.start_date<=covered_finish, Bill.finish_date>=covered_start).order_by(Bill.issue_date.desc(), Bill.start_date):
-                if contract_market_role_code != covered_bill.batch.contract.market_role.code:
+                if market_role_code != covered_bill.batch.contract.market_role.code:
                     continue
 
                 if covered_primary_bill is None and len(covered_bill.reads) > 0:
@@ -7802,7 +7803,7 @@ try:
                     break
 
         for covered_bill in sess.query(Bill).filter(Bill.supply_id==supply.id, Bill.start_date<=covered_finish, Bill.finish_date>=covered_start).order_by(Bill.issue_date.desc(), Bill.start_date):
-            if contract_market_role_code != covered_bill.batch.contract.market_role.code:
+            if market_role_code != covered_bill.batch.contract.market_role.code:
                 continue
             covered_bill_ids.append(covered_bill.id)
             covered_bdown['net-gbp'] += float(covered_bill.net)
@@ -7840,8 +7841,18 @@ try:
                 chunk_finish = era.finish_date
 
             data_source = computer.SupplySource(sess, chunk_start, chunk_finish, forecast_date, era, True, pw, caches, covered_primary_bill)
+            vbf(data_source)
 
-            for k, v in vbf(data_source).iteritems():
+            if market_role_code == 'X':
+                vb = data_source.supplier_bill
+            elif market_role_code == 'C':
+                vb = data_source.dc_bill
+            elif market_role_code == 'M':
+                vb = data_source.mop_bill
+            else:
+                raise UserException("Odd market role.")
+
+            for k, v in vb.iteritems():
                 try:
                     virtual_bill[k] += v
                 except KeyError:
@@ -10061,8 +10072,6 @@ def process_site(sess, site, month_start, month_finish, forecast_date, tmp_file)
                         elif source_code in ('3rd-party', '3rd-party-reverse'):
                             month_data['import-3rd-party-gbp'] += gbp
 
-                        problem += supply_source.problem
-
                     dc_contract = era.hhdc_contract
                     if dc_contract is not None:
                         dc_bill = supply_source.contract_func(dc_contract, 'virtual_bill')(supply_source)
@@ -11378,33 +11387,23 @@ try:
                     if import_vb_function is None:
                         values['problem'] += "Can't find the virtual_bill function in the supplier contract. "
                     else:
-                        v_bill = import_vb_function(supply_source)
-                        #p w.println("finishing vbill, " + str(System.currentTimeMillis()))
+                        import_vb_function(supply_source)
+                        values['metered-import-net-gbp'] += supply_source.supplier_bill['net-gbp']
 
-                        values['metered-import-net-gbp'] += v_bill['net-gbp']
-
-                        values['problem'] += supply_source.problem
                     #p w.println("done virtual bill , " + str(System.currentTimeMillis()))
 
-                    hhdc_contract = era.hhdc_contract
-                    if hhdc_contract is not None:
-                        hhdc_bill = supply_source.contract_func(hhdc_contract, 'virtual_bill')(supply_source)
-                        values['metered-import-net-gbp'] += hhdc_bill['net-gbp']
+                    supply_source.contract_func(era.hhdc_contract, 'virtual_bill')(supply_source)
+                    values['metered-import-net-gbp'] += supply_source.dc_bill['net-gbp']
 
-                    mop_contract = era.mop_contract
-                    if mop_contract is not None:
-                        mop_func = supply_source.contract_func(mop_contract, 'virtual_bill')
-                        if mop_func is None:
-                            values['problem'] += " MOP virtual_bill function can't be found."
-                        else:
-                            mop_bill = mop_func(supply_source)
-                            values['metered-import-net-gbp'] += mop_bill['net-gbp']
-                            if 'problem' in mop_bill:
-                                if len(mop_bill['problem']) > 0:
-                                    values['problem'] += " MOP virtual bill problem: " + mop_bill['problem']
-                            else:
-                                values['problem'] += " 'problem' field can't be found in MOP virtual bill."
-
+                    mop_func = supply_source.contract_func(era.mop_contract, 'virtual_bill')
+                    if mop_func is None:
+                        values['problem'] += " MOP virtual_bill function can't be found."
+                    else:
+                        mop_func(supply_source)
+                        values['metered-import-net-gbp'] += supply_source.mop_bill['net-gbp']
+                        if len(supply_source.mop_bill['problem']) > 0:
+                            values['problem'] += " MOP virtual bill problem: " + mop_bill['problem']
+                            
             values['timestamp'] = System.currentTimeMillis()
             pw.println(','.join('"' + str(values[name]) + '"' for name in field_names))
             pw.flush()
