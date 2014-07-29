@@ -11758,7 +11758,7 @@ select hh_base.start_date, max(imp_active.value), max(imp_active.status),
     max(imp_reactive_imp.value), max(imp_reactive_imp.status),
     max(imp_reactive_exp.value), max(imp_reactive_exp.status),
     max(exp_active.value), max(exp_active.status),
-    max(exp_reactive_imp.value), max(imp_reactive_imp.status)
+    max(exp_reactive_imp.value), max(imp_reactive_imp.status),
     max(exp_reactive_imp.value), max(imp_reactive_exp.status)
 from hh_datum hh_base
     join channel on hh_base.channel_id = channel.id
@@ -11775,17 +11775,17 @@ from hh_datum hh_base
         on (exp_active.id = hh_base.id and channel.imp_related is false and
             channel.channel_type = 'ACTIVE')
     left join hh_datum exp_reactive_imp
-				on (exp_reactive_imp.id = hh_base.id and channel.imp_related is
-				false and channel.channel_type = 'REACTIVE_IMP')
+                on (exp_reactive_imp.id = hh_base.id and channel.imp_related is
+                false and channel.channel_type = 'REACTIVE_IMP')
     left join hh_datum exp_reactive_exp
-				on (exp_reactive_exp.id = hh_base.id and channel.imp_related is false
-				and channel.channel_type = 'REACTIVE_EXP')
+                on (exp_reactive_exp.id = hh_base.id and channel.imp_related is false
+                and channel.channel_type = 'REACTIVE_EXP')
 where era_id = :era_id
     and hh_base.start_date between :start_date and :finish_date
 group by hh_base.start_date
 order by hh_base.start_date
     """, params={'era_id': era.id, 'start_date': start_date, 'finish_date': finish_date}):
-                pw.println(','.join('"' + ('' if v is None else str(v)) + '"' for v in (site.code, imp_mpan_core_str, exp_mpan_core_str, hh_format(hh_start_date), imp_kwh, imp_kwh_status, imp_kvarh, imp_kvarh_status, exp_kwh, exp_kwh_status, exp_kvarh, exp_kvarh_status)))
+                pw.println(','.join('"' + ('' if v is None else str(v)) + '"' for v in (site.code, imp_mpan_core_str, exp_mpan_core_str, hh_format(hh_start_date), imp_active, imp_active_status, imp_reactive_imp, imp_reactive_imp_status, imp_reactive_exp, imp_reactive_exp_status, exp_active, exp_active_status, exp_reactive_imp, exp_reactive_imp_status, exp_reactive_exp, exp_reactive_exp_status)))
                 pw.flush()
     pw.close()
 finally:
