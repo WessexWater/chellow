@@ -19290,7 +19290,7 @@ try:
 
 except UserException, e:
     sess.rollback()
-    render(inv, template, make_fields(sess, contract, e), 400)
+    render(inv, template, make_fields(sess, batch, e), 400)
 finally:
     if sess is not None:
         sess.close()]]>

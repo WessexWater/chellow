@@ -4469,5 +4469,40 @@ def triad_dates():
 				<response-code value="200" />
 			</request>
 		</test>
+		<test name="Manually insert a bill with errors">
+			<request path="/chellow/reports/313/output/" method="post">
+				<control name="supplier_batch_id" value="4" />
+				<control name="mpan_core" value="" />
+				<control name="reference" value="" />
+				<control name="issue_year" value="2014" />
+				<control name="issue_month" value="7" />
+				<control name="issue_day" value="30" />
+				<control name="issue_hour" value="15" />
+				<control name="issue_minute" value="30" />
+				<control name="start_year" value="2014" />
+				<control name="start_month" value="07" />
+				<control name="start_day" value="30" />
+				<control name="start_hour" value="15" />
+				<control name="start_minute" value="30" />
+				<control name="finish_year" value="2014" />
+				<control name="finish_month" value="07" />
+				<control name="finish_day" value="30" />
+				<control name="finish_hour" value="15" />
+				<control name="finish_minute" value="30" />
+                <control name="kwh" value="0" />
+                <control name="net" value="0" />
+                <control name="vat" value="0" />
+                <control name="gross" value="0" />
+                <control name="account" value="0"/>
+                <control name="bill_type_id" value="1"/>        
+                <control name="breakdown" value="{}"/>
+				
+				<response-code value="400" />
+				
+				<!-- Check good error message -->
+				<regex pattern="The MPAN core &amp;#39;&amp;#39; must contain exactly 13 digits\." />
+
+			</request>
+		</test>
 	</test-group>
 </imprimatur>
