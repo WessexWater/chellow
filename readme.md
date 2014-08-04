@@ -307,31 +307,27 @@ File extension '.simple.csv'.
 
 A CSV file with the following columns
 
-Name       | Description
------------|-----------------------------------------------------------------------------------------------
-MPAN Core  |
-Is Import? | 'true' or 'false'
-Is kWh?    | 'true' or 'false'
-Time       | half-hour starting yyyy-MM-dd hh:mm ([ISO date format](http://www.w3.org/TR/NOTE-datetime))<a
-Value      | 
-Status     | 'A' - actual, 'E' - estimate, 'C' - padding.
+Name         | Description
+-------------|----------------------------------------------------------------
+MPAN Core    |
+Channel Type | 'ACTIVE', 'REACTIVE_IMP' or 'REACTIVE_EXP'
+Time         | Half-hour starting yyyy-MM-dd hh:mm
+Value        | 
+Status       | 'A' - actual, 'E' - estimate, 'C' - padding.
 	
 Here's an example:
 
-    
-    
-    		
     MPAN core, Is Import?, Is kWh?, Time, Value, Status
-    99 9999 9999 999, true, true, 2006-01-01T00:30Z, 218.4 , E
-    99 9999 9999 999, true, true, 2006-01-01T01:00Z, 220.4 , E
-    99 9999 9999 999, true, true, 2006-01-01T01:30Z, 221.8 , E
-    99 9999 9999 999, true, true, 2006-01-01T02:00Z, 223.4 , E
-    99 9999 9999 999, true, true, 2006-01-01T02:30Z, 224.6 , E
-    99 9999 9999 999, true, true, 2006-01-01T03:00Z, 226.8 , E
-    99 9999 9999 999, true, true, 2006-01-01T03:30Z, 203.8 , E
-    99 9999 9999 999, true, true, 2006-01-01T04:00Z, 155.2 , E
-    99 9999 9999 999, true, true, 2006-01-01T04:30Z, 169.0 , E
-    99 9999 9999 999, true, true, 2006-01-01T05:00Z, 171.0 , E
+    99 9999 9999 999, ACTIVE, 2006-01-01T00:30Z, 218.4 , E
+    99 9999 9999 999, ACTIVE, 2006-01-01T01:00Z, 220.4 , E
+    99 9999 9999 999, ACTIVE, 2006-01-01T01:30Z, 221.8 , E
+    99 9999 9999 999, ACTIVE, 2006-01-01T02:00Z, 223.4 , E
+    99 9999 9999 999, ACTIVE, 2006-01-01T02:30Z, 224.6 , E
+    99 9999 9999 999, ACTIVE, 2006-01-01T03:00Z, 226.8 , E
+    99 9999 9999 999, ACTIVE, 2006-01-01T03:30Z, 203.8 , E
+    99 9999 9999 999, ACTIVE, 2006-01-01T04:00Z, 155.2 , E
+    99 9999 9999 999, ACTIVE, 2006-01-01T04:30Z, 169.0 , E
+    99 9999 9999 999, ACTIVE, 2006-01-01T05:00Z, 171.0 , E
 
 
 #### bGlobal CSV
