@@ -13662,7 +13662,7 @@ try:
         contract = Contract.get_non_core_by_name(sess, 'system_price_bmreports')
         templater.render(inv, template, {'importer': importer, 'contract': contract})
     else:
-        importer = system_price.get_importer()
+        importer = system_price_bmreports.get_importer()
         contract = Contract.get_non_core_by_name(sess, 'system_price_bmreports')
         importer.go()
         inv.sendSeeOther("/reports/221/output/")
@@ -13679,7 +13679,8 @@ finally:
     <link rel="stylesheet" type="text/css"
       href="{{context_path }}/reports/19/output/">
     <title>
-      Chellow &gt; Non-core Contracts &gt; System Price &gt; Automatic Importer
+      Chellow &gt; Non-core Contracts &gt; {{ contract.name }} &gt;
+      Automatic Importer
     </title>
   </head>
   <body>
