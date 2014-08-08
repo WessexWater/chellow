@@ -68,6 +68,9 @@
 		<copy todir="${build.home}/WEB-INF/lib-python/sqlalchemy">
 			<fileset dir="${user.home}/venv/lib/python2.6/site-packages/sqlalchemy" />
 		</copy>
+		<copy todir="${build.home}/WEB-INF/lib-python/xlrd">
+			<fileset dir="${user.home}/venv/lib/python2.6/site-packages/xlrd" />
+		</copy>
 		<copy todir="${build.home}/WEB-INF/lib-python/pg8000">
 			<fileset dir="${user.home}/venv/lib/python2.6/site-packages/pg8000" />
 		</copy>

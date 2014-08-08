@@ -162,7 +162,7 @@ def virtual_bill(supply_source):
 			</request>
 
 			<!-- Check that we can see HHDC rate script okay. Contract 52. -->
-			<request path="/chellow/reports/173/output/?hhdc_rate_script_id=305">
+			<request path="/chellow/reports/173/output/?hhdc_rate_script_id=306">
 				<!-- Check that 'has_finished' field is there -->
 				<regex pattern="HH contract" />
 				<response-code value="200" />
@@ -170,19 +170,19 @@ def virtual_bill(supply_source):
 
 			<!-- Check that we can see the edit view of the HHDC rate script okay. 
 				Contract 52. -->
-			<request path="/chellow/reports/249/output/?hhdc_rate_script_id=305">
+			<request path="/chellow/reports/249/output/?hhdc_rate_script_id=306">
 				<!-- Check that 'has_finished' field is there -->
 				<regex pattern="has_finished" />
 
 				<!-- Check the hhdc_rate_script_id for update is there -->
 				<regex
-					pattern='&lt;legend&gt;Update Rate Script&lt;/legend&gt;\s*&lt;input type="hidden" name="hhdc_rate_script_id"\s*value="305"&gt;' />
+					pattern='&lt;legend&gt;Update Rate Script&lt;/legend&gt;\s*&lt;input type="hidden" name="hhdc_rate_script_id"\s*value="306"&gt;' />
 				<response-code value="200" />
 			</request>
 
 			<!-- Check that we can update an HHDC rate script okay -->
 			<request path="/chellow/reports/249/output/" method="post">
-				<control name="hhdc_rate_script_id" value="305" />
+				<control name="hhdc_rate_script_id" value="306" />
 				<control name="start_year" value="2000" />
 				<control name="start_month" value="01" />
 				<control name="start_day" value="03" />
@@ -316,7 +316,7 @@ def virtual_bill(data_source):
 
 			<!-- Update the associated rate script. Supplier contract 54 -->
 			<request path="/chellow/reports/319/output/" method="post">
-				<control name="supplier_rate_script_id" value="307" />
+				<control name="supplier_rate_script_id" value="308" />
 				<control name="start_year" value="2000" />
 				<control name="start_month" value="01" />
 				<control name="start_day" value="03" />
@@ -438,7 +438,7 @@ def virtual_bill(ds):
 
 			<!-- Update the associated rate script. Supplier contract 57 -->
 			<request path="/chellow/reports/319/output/" method="post">
-				<control name="supplier_rate_script_id" value="310" />
+				<control name="supplier_rate_script_id" value="311" />
 				<control name="start_year" value="2000" />
 				<control name="start_month" value="01" />
 				<control name="start_day" value="03" />
@@ -1648,7 +1648,7 @@ def virtual_bill(ds):
 			name="Test deleting the only rate script attached to a supplier contract.">
 			<!-- Supplier contract 58 -->
 			<request path="/chellow/reports/319/output/" method="post">
-				<control name="supplier_rate_script_id" value="310" />
+				<control name="supplier_rate_script_id" value="311" />
 				<control name="delete" value="Delete" />
 				<regex pattern="You can't delete the last rate script\." />
 				<response-code value="400" />
@@ -2137,7 +2137,7 @@ def virtual_bill(supply_source):
 
 			<!-- Edit the rate script -->
 			<request path="/chellow/reports/273/output/" method="post">
-				<control name="rate_script_id" value="315" />
+				<control name="rate_script_id" value="316" />
 				<control name="start_year" value="2000" />
 				<control name="start_month" value="01" />
 				<control name="start_day" value="03" />
@@ -2172,7 +2172,7 @@ def triad_estimates():
 		<test
 			name="Check we can delete a rate script (when it's not the only one). Supplier contract 52.">
 			<request path="/chellow/reports/319/output/" method="post">
-				<control name="supplier_rate_script_id" value="312" />
+				<control name="supplier_rate_script_id" value="313" />
 				<control name="delete" value="Delete" />
 				<response-code value="303" />
 			</request>
@@ -2259,13 +2259,13 @@ def triad_estimates():
 				<control name="start_day" value="01" />
 				<control name="start_hour" value="00" />
 				<control name="start_minute" value="00" />
-				<regex pattern="/chellow/reports/69/output/\?dno_rate_script_id=316" />
+				<regex pattern="/chellow/reports/69/output/\?dno_rate_script_id=317" />
 				<response-code value="303" />
 			</request>
 
 			<!-- Test bad syntax gives an error -->
 			<request path="/chellow/reports/285/output/" method="post">
-				<control name="dno_rate_script_id" value="316" />
+				<control name="dno_rate_script_id" value="317" />
 				<control name="start_year" value="2010" />
 				<control name="start_month" value="05" />
 				<control name="start_day" value="01" />
@@ -2278,7 +2278,7 @@ def triad_estimates():
 
 			<!-- Delete rate script -->
 			<request path="/chellow/reports/285/output/" method="post">
-				<control name="dno_rate_script_id" value="316" />
+				<control name="dno_rate_script_id" value="317" />
 				<control name="delete" value="Delete" />
 				<response-code value="303" />
 			</request>
@@ -3334,20 +3334,20 @@ def virtual_bill(supply_source):
 				<control name="start_minute" value="00" />
 				<control name="insert" value="Insert" />
 
-				<regex pattern="/chellow/reports/271/output/\?rate_script_id=318" />
+				<regex pattern="/chellow/reports/271/output/\?rate_script_id=319" />
 				<response-code value="303" />
 			</request>
 			<request
-				path="/chellow/reports/273/output/?rate_script_id=318&amp;delete=Delete">
+				path="/chellow/reports/273/output/?rate_script_id=319&amp;delete=Delete">
 				<regex pattern="Are you sure you want to delete this rate script\?" />
 				<response-code value="200" />
 			</request>
 			<request path="/chellow/reports/273/output/" method="post">
-				<control name="rate_script_id" value="318" />
+				<control name="rate_script_id" value="319" />
 				<control name="delete" value="Delete" />
 				<response-code value="303" />
 			</request>
-			<request path="/chellow/reports/271/output/?rate_script_id=318">
+			<request path="/chellow/reports/271/output/?rate_script_id=319">
 				<response-code value="404" />
 			</request>
 		</test>
@@ -3361,11 +3361,11 @@ def virtual_bill(supply_source):
 				<control name="start_minute" value="00" />
 				<control name="insert" value="Insert" />
 
-				<regex pattern="/chellow/reports/271/output/\?rate_script_id=319" />
+				<regex pattern="/chellow/reports/271/output/\?rate_script_id=320" />
 				<response-code value="303" />
 			</request>
 
-			<request path="/chellow/reports/273/output/?rate_script_id=319">
+			<request path="/chellow/reports/273/output/?rate_script_id=320">
 				<regex
 					pattern='&lt;input name="finish_year" maxlength="4" size="4" value="2010"&gt;' />
 
@@ -3376,7 +3376,7 @@ def virtual_bill(supply_source):
 			</request>
 
 			<request path="/chellow/reports/273/output/" method="post">
-				<control name="rate_script_id" value="319" />
+				<control name="rate_script_id" value="320" />
 				<control name="delete" value="Delete" />
 				<response-code value="303" />
 			</request>
@@ -3934,7 +3934,7 @@ def virtual_bill(supply_source):
 			</request>
 		</test>
 		<test name="View a MOP rate script. Contract 56.">
-			<request path="/chellow/reports/205/output/?mop_rate_script_id=309">
+			<request path="/chellow/reports/205/output/?mop_rate_script_id=310">
 				<response-code value="200" />
 			</request>
 		</test>
@@ -4326,7 +4326,7 @@ def virtual_bill(supply_source):
 		</test>
 		<test name="Make sure rate scripts remain contiguous.">
 			<request path="/chellow/reports/273/output/" method="post">
-				<control name="rate_script_id" value="277" />
+				<control name="rate_script_id" value="278" />
 				<control name="start_year" value="2005" />
 				<control name="start_month" value="04" />
 				<control name="start_day" value="01" />
@@ -4347,14 +4347,14 @@ def triad_dates():
 				<response-code value="303" />
 			</request>
 
-			<request path="/chellow/reports/271/output/?rate_script_id=278">
+			<request path="/chellow/reports/271/output/?rate_script_id=279">
 				<regex pattern="2006-03-31 00:00" />
 				<response-code value="200" />
 			</request>
 
 			<!-- Put it back to how it was -->
 			<request path="/chellow/reports/273/output/" method="post">
-				<control name="rate_script_id" value="277" />
+				<control name="rate_script_id" value="278" />
 				<control name="start_year" value="2005" />
 				<control name="start_month" value="04" />
 				<control name="start_day" value="01" />
