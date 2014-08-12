@@ -23280,7 +23280,7 @@ try:
 
     output = {}
     while not hh_start > finish_date:
-        era = sess.query(Era).filter(Era.supply_id==supply.id, Era.start_date <= hh_start, or_(Era.finish_date == None, Era.finish_date > hh_start)).one()
+        era = sess.query(Era).filter(Era.supply_id==supply.id, Era.start_date <= hh_start, or_(Era.finish_date == None, Era.finish_date >= hh_start)).one()
 
         site = sess.query(Site).join(SiteEra).filter(SiteEra.era_id == era.id, SiteEra.is_physical == True).one()
 
