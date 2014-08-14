@@ -12729,7 +12729,7 @@ try:
 
     meter_types = ['hh', 'amr', 'nhh', 'unmetered']
 
-    for supply in supplies:
+    for supply in supplies.all():
         normal_kwh = dict([(mtype, 0) for mtype in meter_types])
         total_kwh = dict([(mtype, 0) for mtype in meter_types])
         normal_days = dict([(mtype, 0) for mtype in meter_types])
@@ -12961,6 +12961,9 @@ try:
         vals = [mpan_core, site.code, site.name, hh_format(year_start), hh_format(year_finish), breakdown] + [normal_days[type] for type in meter_types] + [max_normal_days[type] for type in meter_types] + [total_normal_days, total_max_normal_days, "Actual" if is_normal else "Estimated"] + [total_kwh[type] for type in meter_types] + [sum(total_kwh.values())]
         pw.println(','.join('"' + str(val) + '"' for val in vals))
         pw.flush()
+
+        # avoid a long running transaction
+        sess.rollback()
 finally:
     if sess is not None:
         sess.close()
