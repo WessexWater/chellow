@@ -10845,24 +10845,29 @@ while rs.next():
 rs.close()
 
 
-import sqlalchemy
 py_libs_el = doc.createElement('py-libs')
 source.appendChild(py_libs_el)
+import sqlalchemy
 py_lib_el = doc.createElement('py-lib')
 py_libs_el.appendChild(py_lib_el)
 py_lib_el.setAttribute('name', 'SQLAlchemy')
 py_lib_el.setAttribute('version', sqlalchemy.__version__)
 
+import pg8000
+py_lib_el = doc.createElement('py-lib')
+py_libs_el.appendChild(py_lib_el)
+py_lib_el.setAttribute('name', 'pg8000')
+py_lib_el.setAttribute('version', pg8000.__version__)
+
 '''
 con.rollback()
 con.setAutoCommit(True)
 #pstmt = con.prepareStatement("vacuum analyze")
-pstmt = con.prepareStatement("create index register_read_bill_id_idx on register_read (bill_id)")
+pstmt = con.prepareStatement("create index hh_datum_channel_id_idx on hh_datum (channel_id)")
 pstmt.execute()
 pstmt.close()
 con.setAutoCommit(False)
-'''
-]]></value>
+''']]></value>
 		<value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
 <xsl:stylesheet version="1.0"
     xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
@@ -11097,8 +11102,12 @@ con.setAutoCommit(False)
     <th>Version</th>
   </thead>
   <tbody>
-    <td><xsl:value-of select="/source/py-libs/py-lib/@name"/></td>
-    <td><xsl:value-of select="/source/py-libs/py-lib/@version"/></td>
+    <xsl:for-each select="/source/py-libs/py-lib">
+      <tr>
+        <td><xsl:value-of select="@name"/></td>
+        <td><xsl:value-of select="@version"/></td>
+      </tr>
+    </xsl:for-each>
   </tbody>
 </table>
 
