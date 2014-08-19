@@ -7,7 +7,9 @@ app.config['SQLALCHEMY_DATABASE_URI'] = \
 db = SQLAlchemy(app)
 
 
-from sqlalchemy import Column, Integer, String, Boolean, DateTime, Text, Numeric, or_, not_, and_, Enum
+from sqlalchemy import (
+    Column, Integer, String, Boolean, DateTime, Text, Numeric, or_, not_, and_,
+    Enum, DateTime, create_engine, ForeignKey, Sequence)
 from sqlalchemy.orm import sessionmaker, relationship, backref, object_session
 from sqlalchemy.orm.util import has_identity
 from sqlalchemy import create_engine, ForeignKey, Sequence
@@ -22,9 +24,8 @@ import sys
 import hashlib
 import decimal
 
-from sqlalchemy import Column, Integer, DateTime, Boolean, String,
-    create_engine, ForeignKey, Sequence
-from sqlalchemy.orm import relationship, backref, sessionmaker, _mapper_registry
+from sqlalchemy.orm import (
+    relationship, backref, sessionmaker, _mapper_registry)
 from sqlalchemy.ext.declarative import declarative_base
 
 app.logger.error("importing db module")
@@ -33,9 +34,13 @@ res = db.session.execute(
         """where table_schema = 'public'""").fetchone()[0]
 app.logger.error("res is " + str(res))
 
-def set_read_write(sess):
-    sess.execute("rollback")
-    sess.execute("set transaction isolation level serializable read write")
+class UserException(Exception):
+    pass
+
+def set_read_write():
+    db.session.execute("rollback")
+    db.session.execute(
+        "set transaction isolation level serializable read write")
 
 class PersistentClass():
     id = Column(Integer, primary_key=True)
@@ -138,15 +143,69 @@ class Contract(db.Model, PersistentClass):
     party_id = Column(Integer, ForeignKey('party.id'))
 
     start_rate_script_id = Column(
-        Integer, ForeignKey('rate_script.id', use_alter=True))
+        Integer, ForeignKey(
+            'rate_script.id', use_alter=True,
+            name='contract_start_rate_script_id_fkey'))
     finish_rate_script_id = Column(
-        Integer, ForeignKey('rate_script.id', use_alter=True))
+        Integer, ForeignKey(
+            'rate_script.id', use_alter=True,
+            name='contract_finish_rate_script_id_fkey'))
 
     start_rate_script = relationship("RateScript",
             primaryjoin="RateScript.id==Contract.start_rate_script_id")
     finish_rate_script = relationship("RateScript",
             primaryjoin="RateScript.id==Contract.finish_rate_script_id")
 
+    @staticmethod
+    def get_non_core_by_name(name):
+        return Contract.get_by_role_code_name('Z', name)
+
+    @staticmethod
+    def get_dno_by_id(sess, oid):
+        return Contract.get_by_role_code_id(sess, 'R', oid)
+
+    @staticmethod
+    def get_dno_by_name(sess, name):
+        cont = Contract.find_by_role_code_name(sess, 'R', name)
+        if cont is None:
+            raise UserException(
+                "There isn't a DNO contract with the code '" + name + "'.")
+        return cont
+
+    @staticmethod
+    def get_by_role_code_name(role_code, name):
+        cont = Contract.find_by_role_code_name(role_code, name)
+        if cont is None:
+            raise UserException("There isn't a contract with the role code '" +
+                    role_code + "' and name '" + name + "'.")
+        return cont
+
+    @staticmethod
+    def find_by_role_code_name(role_code, name):
+        return Contract.query.join(MarketRole).filter(
+            MarketRole.code == role_code, Contract.name == name).first()
+
+    @staticmethod
+    def insert_non_core(
+            is_core, name, charge_script, properties, start_date, finish_date,
+            rate_script):
+        return Contract.insert(
+            is_core, name, Participant.get_by_code('CALB'), 'Z', charge_script,
+            properties, start_date, finish_date, rate_script)
+
+    @staticmethod
+    def insert(
+            is_core, name, participant, role_code, charge_script, properties,
+            start_date, finish_date, rate_script):
+        party = Party.get_by_participant_id_role_code(
+            participant.id, role_code)
+        contract = Contract(is_core, name, party, charge_script, properties)
+        db.session.add(contract)
+        db.session.flush()
+        rscript = contract.insert_rate_script(start_date, rate_script)
+        contract.update_rate_script(
+            rscript, start_date, finish_date, rate_script)
+        return contract
 
 class RateScript(db.Model, PersistentClass):
     __tablename__ = "rate_script"
@@ -471,3 +530,159 @@ if db.session.execute(
         """where table_schema = 'public'""").fetchone()[0] == 0:
     app.logger.error("about to create all")
     db.create_all()
+    app.logger.error("created all")
+
+    set_read_write()
+    for code, desc in (
+            ("LV", "Low voltage"),
+            ("HV", "High voltage"),
+            ("EHV", "Extra high voltage")):
+        db.session.add(VoltageLevel(code, desc))
+    db.session.commit()
+
+    set_read_write()
+    for code in ("editor", "viewer", "party-viewer"):
+        db.session.add(UserRole(code))
+    db.session.commit()
+
+    set_read_write()
+    for code, desc in (
+            ('net', "Public distribution system."),
+            ('sub', "Sub meter"),
+            ('gen-net', "Generator connected directly to network."),
+            ('gen', "Generator."), 
+            ('3rd-party', "Third party supply."),
+            (
+                '3rd-party-reverse',
+                "Third party supply with import going out of the site."),
+            ):
+        db.session.add(Source(code, desc))
+    db.session.commit()
+
+    set_read_write()
+    for code, desc in (
+            ("chp", "Combined heat and power."),
+            ("lm", "Load management."),
+            ("turb", "Water turbine.")):
+        db.session.add(GeneratorType(code, description))
+    db.session.commit()
+ 
+    set_read_write()
+    for code, desc in (
+            ("N", "Normal"),
+            ("N3", "Normal 3rd Party"),
+            ("C", "Customer"),
+            ("E", "Estimated"),
+            ("E3", "Estimated 3rd Party"),
+            ("EM", "Estimated Manual"),
+            ("W", "Withdrawn"),
+            ("X", "Exchange"),
+            ("CP", "Computer"),
+            ("IF", "Information"),
+        db.session.add(ReadType(code, desc))
+    db.session.commit()
+
+    set_read_write()
+    for code, desc in (
+            ('1', "CoP 1"),
+            ('2', "CoP 2"),
+            ('3', "CoP 3"),
+            ('4', "CoP 4"),
+            ('5', "CoP 5"),
+            ('6a', "CoP 6a 20 day memory"),
+            ('6b', "CoP 6b 100 day memory"),
+            ('6c', "CoP 6c 250 day memory"),
+            ('6d', "CoP 6d 450 day memory"),
+            ('7', "CoP 7"))
+        db.session.add(Cop(code, desc))
+    db.session.commit()
+
+    set_read_write()
+    for code, desc in (
+            ("F", "Final"),
+            ("N", "Normal"),
+            ("W", "Withdrawn")):
+        db.session.add(BillType(code, desc))
+    db.session.commit()
+
+    dbapi_conn = db.connection.connection
+    set_read_write()
+    for tname, fname in (
+            ("gsp_group", "GSP_Group"),
+            ("pc", "Profile_Class"),
+            ("market_role", "Market_Role"),
+            ("participant", "Market_Participant"),
+            ("party", "Market_Participant_Role"),
+            ("llfc", "Line_Loss_Factor_Class"),
+            ("meter_type", "MTC_Meter_Type"),
+            ("meter_payment_type", "MTC_Payment_Type"),
+            ("mtc", "Meter_Timeswitch_Class"),
+            ("tpr", "Time_Pattern_Regime"),
+            ("clock_interval", "Clock_Interval"),
+            ("ssc", "Standard_Settlement_Configuration"),
+            ("measurement_requirement", "Measurement_Requirement")):
+        dbapi_conn.execute(
+            "COPY " + tname + " FROM STDIN CSV HEADER",
+            open(os.environ(context.getResource( "/WEB-INF/mdd/" + impArray[1] + ".csv") .openStream()); }
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                } catch (SQLException e) {
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        throw new InternalException(e);
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        } catch (UnsupportedEncodingException e) {
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                throw new InternalException(e);
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                } catch (MalformedURLException e) {
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        throw new InternalException(e);
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        } catch (IOException e) {
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                throw new InternalException(e);
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                } catch (IllegalArgumentException e) {
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        throw new InternalException(e);
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        } catch (SecurityException e) {
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                throw new InternalException(e);
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                }
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        Statement stmt = con.createStatement();
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        con.setAutoCommit(false);
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        stmt.executeUpdate("begin isolation level serializable read write");
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        stmt.executeUpdate("create type channel_type as enum ('ACTIVE', 'REACTIVE_IMP', 'REACTIVE_EXP')");
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        stmt.executeUpdate("alter table channel add column channel_type channel_type not null");
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        stmt.executeUpdate("alter table channel add constraint channel_era_id_imp_related_channel_type_key unique (era_id, imp_related, channel_type)");
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        con.commit();
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    }
+
+                                                                                                                                                                                                                                                                                                                                                                                                                                                    });
+
+                                                                                                                                                                                                                                                                                                                                                                                                                                    Hiber.commit();
+                                                                                                                                                                                                                                                                                                                                                                                                                                            Hiber.setReadWrite();
+                                                                                                                                                                                                                                                                                                                                                                                                                                                    try {
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                        GeneralImport process = new GeneralImport(null, context
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                .getResource("/WEB-INF/dno-contracts.xml").openStream(),
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    "xml");
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    process.run();
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                List<MonadMessage> errors = process.getErrors();
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            if (!errors.isEmpty()) {
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                throw new InternalException(errors.get(0).getDescription());
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            }
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    } catch (UnsupportedEncodingException e) {
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        throw new InternalException(e);
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                } catch (IOException e) {
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    throw new InternalException(e);
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            }
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        Report.loadReports(context);
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                try {
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    GeneralImport process = new GeneralImport(null, context
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            .getResource("/WEB-INF/non-core-contracts.xml")
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                .openStream(), "xml");
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                process.run();
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            List<MonadMessage> errors = process.getErrors();
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        if (!errors.isEmpty()) {
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            throw new InternalException(errors.get(0).getDescription());
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        }
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                } catch (UnsupportedEncodingException e) {
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    throw new InternalException(e);
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            } catch (IOException e) {
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                throw new InternalException(e);
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        }
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    Hiber.commit();
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            Hiber.close();
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                }
+    Contract.insert_non_corename(
+            True, 'configuration', charge_script, properties, start_date, finish_date,
+            rate_script):
+    contract = Contract(
