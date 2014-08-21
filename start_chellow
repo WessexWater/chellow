@@ -1,6 +1,6 @@
-. ${HOME}/workspace/chellow/venv/bin/activate
-cd ${HOME}/workspace/chellow
-gunicorn chellow:app -c ${HOME}/workspace/chellow/gunicorn/config.py
-watchmedo shell-command --patterns="*.py*;*.html*" --recursive --command='kill -HUP `cat ${HOME}/workspace/chellow/gunicorn/pid`' . &
-echo $! > ${HOME}/workspace/chellow/gunicorn/watchdog.pid
+. ${CHELLOW_HOME}/venv/bin/activate
+cd ${CHELLOW_HOME}
+gunicorn chellow:app -c ${CHELLOW_HOME}/gunicorn/config.py
+watchmedo shell-command --patterns="*.py*;*.html*" --recursive --command='kill -HUP `cat ${CHELLOW_HOME}/gunicorn/pid`' . &
+echo $! > ${CHELLOW_HOME}/gunicorn/watchdog.pid
 

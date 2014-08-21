@@ -1,2 +1,2 @@
-kill `cat ${HOME}/workspace/chellow/gunicorn/pid`
-kill `cat ${HOME}/workspace/chellow/gunicorn/watchdog.pid`
+kill `cat ${CHELLOW_HOME}/gunicorn/pid`
+kill `cat ${CHELLOW_HOME}/gunicorn/watchdog.pid`

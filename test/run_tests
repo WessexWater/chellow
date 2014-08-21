@@ -1,5 +1,5 @@
-${HOME}/workspace/chellow/stop_chellow
+${CHELLOW_HOME}/stop_chellow
 dropdb chellow
 createdb chellow
-${HOME}/workspace/chellow/start_chellow
-java -jar ${HOME}/java/imprimatur-022/imprimatur.jar ${HOME}/workspace/chellow/test/imprimatur.pre.xml
+${CHELLOW_HOME}/start_chellow
+java -jar ${HOME}/java/imprimatur-022/imprimatur.jar ${CHELLOW_HOME}/test/imprimatur.pre.xml
