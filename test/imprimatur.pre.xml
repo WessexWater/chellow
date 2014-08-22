@@ -4533,5 +4533,35 @@ def triad_dates():
 				<regex pattern='&lt;tr&gt;\s*&lt;td&gt;2010-02-01 00:00&lt;/td&gt;\s*&lt;td&gt;22 4862 4512 332&lt;/td&gt;\s*&lt;td&gt;\s*2010-02-04 20:00\s*&lt;/td&gt;\s*&lt;td&gt;60.9&lt;/td&gt;\s*&lt;td&gt;91.4&lt;/td&gt;\s*&lt;td&gt;0.55&lt;/td&gt;\s*&lt;td&gt;109.8&lt;/td&gt;\s*&lt;td&gt;230&lt;/td&gt;\s*&lt;td&gt;\s*30\s*&lt;/td&gt;\s*&lt;/tr&gt;' />
 			</request>
 		</test>
+		<test name="Order of HHDC batches">
+			<!-- Add in second batch -->
+			<request path="/chellow/reports/281/output/" method="post">
+				<control name="hhdc_contract_id" value="52"/>
+				<control name="reference" value="7"/>
+				<control name="description" value="" />
+								
+				<response-code value="303" />
+			</request>
+			<request path="/chellow/reports/93/output/?hhdc_contract_id=52">
+								
+				<response-code value="200" />
+				<regex pattern='&lt;tr&gt;\s*&lt;td&gt;\s*&lt;a href="/chellow/reports/203/output/\?hhdc_batch_id=13"&gt;\s*7\s*&lt;/a&gt;\s*&lt;/td&gt;\s*&lt;td&gt;&lt;/td&gt;\s*&lt;/tr&gt;\s*&lt;tr&gt;\s*&lt;td&gt;\s*&lt;a href="/chellow/reports/203/output/\?hhdc_batch_id=8"&gt;\s*001-7t\s*&lt;/a&gt;\s*&lt;/td&gt;\s*&lt;td&gt;hhdc batch&lt;/td&gt;\s*&lt;/tr&gt;' />
+			</request>
+		</test>
+		<test name="Order of MOP batches">
+			<!-- Add in second batch -->
+			<request path="/chellow/reports/353/output/" method="post">
+				<control name="mop_contract_id" value="56"/>
+				<control name="reference" value="7a"/>
+				<control name="description" value="" />
+								
+				<response-code value="303" />
+			</request>
+			<request path="/chellow/reports/191/output/?mop_contract_id=56">
+								
+				<response-code value="200" />
+				<regex pattern='&lt;tr&gt;\s*&lt;td&gt;\s*&lt;a href="/chellow/reports/193/output/\?mop_batch_id=9"&gt;\s*99/992\s*&lt;/a&gt;\s*&lt;/td&gt;\s*&lt;td&gt;mop batch&lt;/td&gt;\s*&lt;/tr&gt;\s*&lt;tr&gt;\s*&lt;td&gt;\s*&lt;a href="/chellow/reports/193/output/\?mop_batch_id=14"&gt;\s*7a\s*&lt;/a&gt;\s*&lt;/td&gt;\s*&lt;td&gt;&lt;/td&gt;\s*&lt;/tr&gt;' />
+			</request>
+		</test>
 	</test-group>
 </imprimatur>
