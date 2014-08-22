@@ -2085,20 +2085,17 @@ try:
             if mpan_core != None:
                 month_data['mpan_core'] = mpan_core
                 month_data['sc'] = era.imp_sc if is_import else era.exp_sc
-        
-        kwh_at_md_datum = sess.query(HhDatum).join(Channel).join(Era).filter(Era.supply_id==supply.id, Channel.channel_type=='ACTIVE', Channel.imp_related==is_import, HhDatum.start_date>=month_start, HhDatum.start_date<=month_finish).order_by(HhDatum.value.desc(), HhDatum.start_date).first()
-        if kwh_at_md_datum is not None:
-            kwh_at_md = float(kwh_at_md_datum.value)
-            md_date = kwh_at_md_datum.start_date
-            month_data['md_date'] = md_date
-            kvarh_at_md_datum = sess.query(HhDatum).join(Channel).join(Era).filter(Era.supply_id==supply.id, Channel.channel_type.in_(('REACTIVE_IMP', 'REACTIVE_EXP')), Channel.imp_related==is_import, HhDatum.start_date==md_date).order_by(HhDatum.value.desc()).first()
-            if kvarh_at_md_datum != None:
-                kvarh_at_md = float(kvarh_at_md_datum.value)
-                kvah_at_md = (kwh_at_md ** 2 + kvarh_at_md ** 2) ** 0.5
-                if kvah_at_md > 0:
-                    pf = kwh_at_md / kvah_at_md
-                    month_data['pf'] = pf
-                month_data['kva-at-md'] = kvah_at_md * 2
+
+        md_kvah = 0
+        for kwh, kvarh, hh_date in sess.execute("select cast(max(hh_ac.value) as double precision), cast(max(hh_re.value) as double precision), hh_ac.start_date from hh_datum as hh_ac join channel as channel_ac on (hh_ac.channel_id = channel_ac.id) join era as era_ac on (channel_ac.era_id = era_ac.id) join hh_datum as hh_re on (hh_ac.start_date = hh_re.start_date) join channel as channel_re on (hh_re.channel_id = channel_re.id) join era as era_re on (channel_re.era_id = era_re.id) where era_ac.supply_id = :supply_id and era_re.supply_id = :supply_id and channel_ac.imp_related = :is_import and channel_re.imp_related = :is_import and channel_ac.channel_type = 'ACTIVE' and channel_re.channel_type in ('REACTIVE_IMP', 'REACTIVE_EXP') and hh_ac.start_date >= :month_start and hh_ac.start_date <= :month_finish and hh_re.start_date >= :month_start and hh_re.start_date <= :month_finish group by hh_ac.start_date", params={'month_start': month_start, 'month_finish': month_finish, 'is_import': is_import, 'supply_id': supply.id}):
+            kvah = (kwh ** 2 + kvarh ** 2) ** 0.5
+            if kvah > md_kvah:
+                md_kvah = kvah
+                month_data['md_kva'] = 2 * md_kvah
+                month_data['md_kvar'] = kvarh * 2
+                month_data['md_kw'] = kwh * 2
+                month_data['md_pf'] = float(kwh) / kvah
+                month_data['md_date'] = hh_date
 
         total_kwh = sess.query(func.sum(HhDatum.value)).join(Channel).join(Era).filter(Era.supply_id==supply.id, Channel.channel_type=='ACTIVE', Channel.imp_related==is_import, HhDatum.start_date>=month_start, HhDatum.start_date<=month_finish).one()[0]
 
@@ -2159,13 +2156,14 @@ finally:
         <tr>
           <th rowspan="2">Month Starting (UTC)</th>
           <th rowspan="2">MPAN Core</th>
-          <th colspan="4">At MD kW</th>
+          <th colspan="5">At MD kVA</th>
           <th rowspan="2">Agreed Supply Capacity (kVA)</th>
           <th rowspan="2">kWh</th>
         </tr>
         <tr>
           <th>Date (UTC)</th>
           <th>kW</th>
+          <th>kVAr</th>
           <th>Power Factor</th>
           <th>kVA</th>
         </tr>
@@ -2175,16 +2173,27 @@ finally:
           <tr>
             <td>{{month.start_date|hh_format}}</td>
             <td>{{month.mpan_core}}</td>
+
+            {% if month.md_date %}
+              <td>{{month.md_date|hh_format}}</td>
+              <td>{{month.md_kw|round(1)}}</td>
+              <td>{{month.md_kvar|round(1)}}</td>
+              <td>{{month.md_pf|round(2)}}</td>
+              <td>{{month.md_kva|round(1)}}</td>
+            {% else %}
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+            {% endif %}
+
+            <td>{{month.sc}}</td>
             <td>
-              {% if month.md_date %}
-                {{month.md_date|hh_format}}
+              {% if month.total_kwh %}
+                {{month.total_kwh|round|int}}
               {% endif %}
             </td>
-            <td>{{month.md_kw}}</td>
-            <td>{{month.pf}}</td>
-            <td>{{month.kva_at_md}}</td>
-            <td>{{month.sc}}</td>
-            <td>{{month.total_kwh}}</td>
           </tr>
         {% endfor %}
       </tbody>
@@ -18094,7 +18103,7 @@ try:
                 raise UserException("The start date is before the start of this era.")
             if hh_after(start_date, channel.era.finish_date):
                 raise UserException("The finish date is after the end of this era.")
-            hh_datum = sess.query(HhDatum).filter(HhDatum.channel_id == channel.id, HhDatum.start_date == start_date).one()
+            hh_datum = sess.query(HhDatum).filter(HhDatum.channel_id == channel.id, HhDatum.start_date == start_date).first()
             if hh_datum is not None:
                 raise UserException("There's already a datum in this channel at this time.")
             mpan_core = channel.era.imp_mpan_core

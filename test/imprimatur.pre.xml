@@ -4512,5 +4512,26 @@ def triad_dates():
 				<regex pattern='"22 0883 6932 301",' />
 			</request>
 		</test>
+		<test name="Look at monthly report with an MD in kVA">
+			<!-- Add in reactive HH -->
+			<request path="/chellow/reports/303/output/" method="post">
+				<control name="channel_id" value="55"/>
+				<control name="start_year" value="2010"/>
+				<control name="start_month" value="02" />
+				<control name="start_day" value="04" />
+				<control name="start_hour" value="20" />
+				<control name="start_minute" value="00" />
+				<control name="insert" value="Insert" />
+				<control name="value" value="45.7" />
+				<control name="status" value="A" />
+								
+				<response-code value="303" />
+			</request>
+			<request path="/chellow/reports/15/output/?is_import=true&amp;supply_id=7&amp;years=1&amp;year=2010">
+								
+				<response-code value="200" />
+				<regex pattern='&lt;tr&gt;\s*&lt;td&gt;2010-02-01 00:00&lt;/td&gt;\s*&lt;td&gt;22 4862 4512 332&lt;/td&gt;\s*&lt;td&gt;\s*2010-02-04 20:00\s*&lt;/td&gt;\s*&lt;td&gt;60.9&lt;/td&gt;\s*&lt;td&gt;91.4&lt;/td&gt;\s*&lt;td&gt;0.55&lt;/td&gt;\s*&lt;td&gt;109.8&lt;/td&gt;\s*&lt;td&gt;230&lt;/td&gt;\s*&lt;td&gt;\s*30\s*&lt;/td&gt;\s*&lt;/tr&gt;' />
+			</request>
+		</test>
 	</test-group>
 </imprimatur>
