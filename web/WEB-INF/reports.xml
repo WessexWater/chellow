@@ -17301,6 +17301,24 @@ try:
                 for k in sorted(bill.keys()):
                     output_line.extend([k, bill[k]]) 
 
+            if era.exp_supplier_contract is not None:
+                ds = computer.SupplySource(sess, chunk_start, chunk_finish, forecast_date, era, False, pw, caches)
+
+                output_line.append('')
+                exp_supplier_titles = ds.contract_func(era.exp_supplier_contract, 'virtual_bill_titles')()
+                titles.append('')
+                titles.extend(['exp-supplier-' + t for t in exp_supplier_titles])
+
+                ds.contract_func(era.exp_supplier_contract, 'virtual_bill')(ds)
+                bill = ds.supplier_bill
+                for title in exp_supplier_titles:
+                    output_line.append(bill.get(title, ''))
+                    if title in bill:
+                        del bill[title]
+
+                for k in sorted(bill.keys()):
+                    output_line.extend([k, bill[k]]) 
+
             if titles != prev_titles:
                 prev_titles != titles
                 pw.println(','.join('"' + str(v) + '"' for v in titles)) 
@@ -17313,8 +17331,7 @@ finally:
     if sess is not None:
         sess.close()
 
-pw.close()
-]]>
+pw.close()]]>
 		</value>
 		<value><![CDATA[]]>
 		</value>
@@ -23146,15 +23163,35 @@ try:
         for k in sorted(bill.keys()):
             output_line.extend([k, bill[k]])
 
-        if era.imp_supplier_contract is not None:
+        if era.imp_supplier_contract != None:
+            contract = era.imp_supplier_contract
             output_line.append('')
-            imp_supplier_titles = ds.contract_func(era.imp_supplier_contract, 'virtual_bill_titles')()
+            supplier_titles = ds.contract_func(contract, 'virtual_bill_titles')()
             titles.append('')
-            titles.extend(['imp-supplier-' + t for t in imp_supplier_titles])
+            titles.extend(['imp-supplier-' + t for t in supplier_titles])
 
-            ds.contract_func(era.imp_supplier_contract, 'virtual_bill')(ds)
+            ds.contract_func(contract, 'virtual_bill')(ds)
             bill = ds.supplier_bill
-            for title in imp_supplier_titles:
+            for title in supplier_titles:
+                output_line.append(bill.get(title, ''))
+                if title in bill:
+                    del bill[title]
+
+            for k in sorted(bill.keys()):
+                output_line.extend([k, bill[k]]) 
+
+
+        if era.exp_supplier_contract != None:
+            contract = era.exp_supplier_contract
+            ds = computer.SupplySource(sess, hh_start, hh_start, forecast_date, era, False, pw, caches)
+            output_line.append('')
+            supplier_titles = ds.contract_func(contract, 'virtual_bill_titles')()
+            titles.append('')
+            titles.extend(['exp-supplier-' + t for t in supplier_titles])
+
+            ds.contract_func(contract, 'virtual_bill')(ds)
+            bill = ds.supplier_bill
+            for title in supplier_titles:
                 output_line.append(bill.get(title, ''))
                 if title in bill:
                     del bill[title]
