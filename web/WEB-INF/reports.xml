@@ -12720,7 +12720,7 @@ try:
     year_start = datetime.datetime(year, 4, 1, tzinfo=pytz.utc)
     year_finish = year_start + relativedelta(years=1) - HH
 
-    supplies = sess.query(Supply).join(Era).join(Source).filter(Source.code.in_(('net', 'gen-net')), Era.imp_mpan_core!=None, Era.start_date<=year_finish, or_(Era.finish_date==None, Era.finish_date>=year_start)).distinct()
+    supplies = sess.query(Supply).join(Era).join(Source).filter(Source.code.in_(('net', 'gen-net')), Era.imp_mpan_core != None, Era.start_date <= year_finish, or_(Era.finish_date == None, Era.finish_date >= year_start)).distinct()
 
     if inv.hasParameter('supply-id'):
         supply_id = inv.getLong('supply-id')
@@ -12736,13 +12736,11 @@ try:
         max_normal_days = dict([(mtype, 0) for mtype in meter_types])
 
         breakdown = ''
-        chunk_start = year_finish
-        chunk_finish = year_start
 
         pw.print(str(supply.id) + ',')
         pw.flush()
 
-        for era in sess.query(Era).filter(Era.supply_id==supply.id, Era.start_date<=year_finish, or_(Era.finish_date==None, Era.finish_date>=year_start)):
+        for era in sess.query(Era).filter(Era.supply_id == supply.id, Era.start_date <= year_finish, or_(Era.finish_date == None, Era.finish_date >= year_start)):
 
             meter_type = era.make_meter_category()
 
@@ -12755,18 +12753,12 @@ try:
             else:
                 period_finish = era_finish
 
-            if period_start < chunk_start:
-                chunk_start = period_start
-
-            if period_finish > chunk_finish:
-                chunk_finish = period_finish
-
             #p w.println("Doing a era from " + str(period_start) + " to " + str(period_finish))
 
             max_normal_days[meter_type] += float(totalseconds(period_finish - period_start) + 60 * 30) / (60 * 60 * 24)
 
             mpan_core = era.imp_mpan_core
-            site = sess.query(Site).join(SiteEra).filter(SiteEra.is_physical==True, SiteEra.era_id==era.id).one()
+            site = sess.query(Site).join(SiteEra).filter(SiteEra.is_physical == True, SiteEra.era_id == era.id).one()
 
             if meter_type == 'nhh':
 
@@ -12774,10 +12766,10 @@ try:
                 read_keys = {}
                 pairs = []
                 
-                prior_pres_reads = iter(sess.query(RegisterRead).join(Bill).join(BillType).join(RegisterRead.present_type).filter(RegisterRead.units==0, ReadType.code.in_(ACTUAL_READ_TYPES), Bill.supply_id==supply.id, RegisterRead.present_date<chunk_start, BillType.code!='W').order_by(RegisterRead.present_date.desc()))
-                prior_prev_reads = iter(sess.query(RegisterRead).join(Bill).join(BillType).join(RegisterRead.previous_type).filter(RegisterRead.units==0, ReadType.code.in_(ACTUAL_READ_TYPES), Bill.supply_id==supply.id, RegisterRead.previous_date<chunk_start, BillType.code!='W').order_by(RegisterRead.previous_date.desc()))
-                next_pres_reads = iter(sess.query(RegisterRead).join(Bill).join(BillType).join(RegisterRead.present_type).filter(RegisterRead.units==0, ReadType.code.in_(ACTUAL_READ_TYPES), Bill.supply_id==supply.id, RegisterRead.present_date>=chunk_start, BillType.code!='W').order_by(RegisterRead.present_date))
-                next_prev_reads = iter(sess.query(RegisterRead).join(Bill).join(BillType).join(RegisterRead.previous_type).filter(RegisterRead.units==0, ReadType.code.in_(ACTUAL_READ_TYPES), Bill.supply_id==supply.id, RegisterRead.previous_date>=chunk_start, BillType.code!='W').order_by(RegisterRead.previous_date))
+                prior_pres_reads = iter(sess.query(RegisterRead).join(Bill).join(BillType).join(RegisterRead.present_type).filter(RegisterRead.units == 0, ReadType.code.in_(ACTUAL_READ_TYPES), Bill.supply_id == supply.id, RegisterRead.present_date < period_start, BillType.code != 'W').order_by(RegisterRead.present_date.desc()))
+                prior_prev_reads = iter(sess.query(RegisterRead).join(Bill).join(BillType).join(RegisterRead.previous_type).filter(RegisterRead.units == 0, ReadType.code.in_(ACTUAL_READ_TYPES), Bill.supply_id == supply.id, RegisterRead.previous_date < period_start, BillType.code != 'W').order_by(RegisterRead.previous_date.desc()))
+                next_pres_reads = iter(sess.query(RegisterRead).join(Bill).join(BillType).join(RegisterRead.present_type).filter(RegisterRead.units == 0, ReadType.code.in_(ACTUAL_READ_TYPES), Bill.supply_id == supply.id, RegisterRead.present_date >= period_start, BillType.code != 'W').order_by(RegisterRead.present_date))
+                next_prev_reads = iter(sess.query(RegisterRead).join(Bill).join(BillType).join(RegisterRead.previous_type).filter(RegisterRead.units == 0, ReadType.code.in_(ACTUAL_READ_TYPES), Bill.supply_id == supply.id, RegisterRead.previous_date >= period_start, BillType.code != 'W').order_by(RegisterRead.previous_date))
 
                 for is_forwards in [False, True]:
                     if is_forwards:
@@ -12806,12 +12798,12 @@ try:
                             if read_key in read_keys:
                                 continue
 
-                            pres_bill = sess.query(Bill).join(RegisterRead).join(BillType).filter(Bill.supply_id==supply.id, Bill.finish_date>=pres_read.present_date, Bill.start_date<=pres_read.present_date, BillType.code!='W').order_by(Bill.issue_date.desc(), BillType.code).first()
+                            pres_bill = sess.query(Bill).join(RegisterRead).join(BillType).filter(Bill.supply_id == supply.id, Bill.finish_date >= pres_read.present_date, Bill.start_date <= pres_read.present_date, BillType.code != 'W').order_by(Bill.issue_date.desc(), BillType.code).first()
 
                             if pres_bill != pres_read.bill:
                                 continue
                                                         
-                            reads = dict((read.tpr.code, float(read.present_value) * float(read.coefficient)) for read in sess.query(RegisterRead).filter(RegisterRead.units==0, RegisterRead.bill_id==pres_bill.id, RegisterRead.present_date==pres_date, RegisterRead.msn==pres_msn))
+                            reads = dict((read.tpr.code, float(read.present_value) * float(read.coefficient)) for read in sess.query(RegisterRead).filter(RegisterRead.units == 0, RegisterRead.bill_id == pres_bill.id, RegisterRead.present_date == pres_date, RegisterRead.msn == pres_msn))
 
                             prime_pres_read = {'date': pres_date, 'reads': reads, 'msn': pres_msn}
                             read_keys[read_key] = None
@@ -12828,11 +12820,11 @@ try:
                             if read_key in read_keys:
                                 continue
 
-                            prev_bill = sess.query(Bill).join(BillType).filter(Bill.supply_id==supply.id, Bill.finish_date>=prev_read.bill.start_date, Bill.start_date<=prev_read.bill.start_date, BillType.code!='W').order_by(Bill.issue_date.desc(), BillType.code).first()
+                            prev_bill = sess.query(Bill).join(BillType).filter(Bill.supply_id == supply.id, Bill.finish_date >= prev_read.bill.start_date, Bill.start_date <= prev_read.bill.start_date, BillType.code != 'W').order_by(Bill.issue_date.desc(), BillType.code).first()
                             if prev_bill != prev_read.bill:
                                 continue
 
-                            reads = dict((read.tpr.code, float(read.previous_value) * float(read.coefficient)) for read in sess.query(RegisterRead).filter(RegisterRead.units==0, RegisterRead.bill_id==prev_bill.id, RegisterRead.previous_date==prev_date, RegisterRead.msn==prev_msn))
+                            reads = dict((read.tpr.code, float(read.previous_value) * float(read.coefficient)) for read in sess.query(RegisterRead).filter(RegisterRead.units == 0, RegisterRead.bill_id == prev_bill.id, RegisterRead.previous_date == prev_date, RegisterRead.msn == prev_msn))
 
                             prime_prev_read = {'date': prev_date, 'reads': reads, 'msn': prev_msn}
                             read_keys[read_key] = None
@@ -12892,12 +12884,12 @@ try:
 
                                 pairs.append({'start-date': pair_start_date, 'finish-date': pair_finish_date, 'tprs': tprs})
                         
-                                if len(pairs) > 0 and (not is_forwards or (is_forwards and read_list[-1]['date'] > chunk_finish)):
+                                if len(pairs) > 0 and (not is_forwards or (is_forwards and read_list[-1]['date'] > period_finish)):
                                         break
 
                 breakdown += 'read list - \n' + str(read_list) + "\n"
                 if len(pairs) == 0:
-                    pairs.append({'start-date': chunk_start, 'finish-date': chunk_finish, 'tprs': {'00001': 0}})
+                    pairs.append({'start-date': period_start, 'finish-date': period_finish, 'tprs': {'00001': 0}})
                 else:
                     for pair in pairs:
                         pair_start = pair['start-date']
@@ -12911,21 +12903,21 @@ try:
                     pairs[i - 1]['finish-date'] = pairs[i]['start-date'] - HH
 
                 # stretch
-                if pairs[0]['start-date'] > chunk_start:
-                    pairs[0]['start-date'] = chunk_start
+                if pairs[0]['start-date'] > period_start:
+                    pairs[0]['start-date'] = period_start
 
-                if pairs[-1]['finish-date'] < chunk_finish:
-                    pairs[-1]['finish-date'] = chunk_finish
+                if pairs[-1]['finish-date'] < period_finish:
+                    pairs[-1]['finish-date'] = period_finish
 
                 # chop
-                pairs = [pair for pair in pairs if not pair['start-date'] > chunk_finish and not pair['finish-date'] < chunk_start]
+                pairs = [pair for pair in pairs if not pair['start-date'] > period_finish and not pair['finish-date'] < period_start]
 
                 # squash  
-                if pairs[0]['start-date'] < chunk_start:
-                    pairs[0]['start-date'] = chunk_start
+                if pairs[0]['start-date'] < period_start:
+                    pairs[0]['start-date'] = period_start
 
-                if pairs[-1]['finish-date'] > chunk_finish:
-                    pairs[-1]['finish-date'] = chunk_finish
+                if pairs[-1]['finish-date'] > period_finish:
+                    pairs[-1]['finish-date'] = period_finish
 
 
                 for pair in pairs:
