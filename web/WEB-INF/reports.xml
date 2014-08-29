@@ -4907,98 +4907,80 @@ pw.close()]]></value>
 		<value><![CDATA[61]]></value>
 		<value><![CDATA[true]]></value>
 		<value><![CDATA[MTCs]]></value>
-		<value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree
+		<value><![CDATA[from net.sf.chellow.monad import Monad
 
-mtcs_element = doc.createElement('mtcs')
-source.appendChild(mtcs_element)
-for mt in Hiber.session().createQuery("select mtc from Mtc mtc left outer join mtc.dno dno order by mtc.code, dno.dnoCode").list():
-    mtcs_element.appendChild(mt.toXml(doc, XmlTree('dno').put('meterType')))]]></value>
-		<value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
-<xsl:stylesheet version="1.0"
-    xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
-    <xsl:output method="html" encoding="US-ASCII"
-        doctype-public="-//W3C//DTD HTML 4.01//EN"
-        doctype-system="http://www.w3.org/TR/html4/strict.dtd" indent="yes" />
-    <xsl:template match="/">
-        <html>
-            <head>
-                <link rel="stylesheet" type="text/css"
-                    href="{/source/request/@context-path}/reports/19/output/" />
-                <title>Chellow &gt; MTCs</title>
-            </head>
-            <body>
-                <p>
-                    <a
-                        href="{/source/request/@context-path}/reports/1/output/">
-                        <xsl:value-of select="'Chellow'"/>
-                    </a>
-                    &gt; MTCs
-                </p>
-                <br />
-                <xsl:if test="//message">
-                    <ul>
-                        <xsl:for-each select="//message">
-                            <li>
-                                <xsl:value-of select="@description" />
-                            </li>
-                        </xsl:for-each>
-                    </ul>
-                </xsl:if>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Code</th>
-                            <th>Dno</th>
-                            <th>Description</th>
-                            <th>Meter Type</th>
-                            <th>TPR count</th>
-                        </tr>
-                    </thead>
-                    <tbody>
+Monad.getUtils()['impt'](globals(), 'templater', 'db')
+Mtc, Party, Contract = db.Mtc, db.Party, db.Contract
 
-                        <xsl:for-each
-                            select="/source/mtcs/mtc">
-                            <tr>
-                                <td>
-                                    <a
-                                        href="{/source/request/@context-path}/reports/63/output/?mtc-id={@id}">
-                                        <xsl:value-of select="@code" />
-                                    </a>
-                                </td>
-                                <td>
-                                    <xsl:choose>
-                                        <xsl:when test="dno">
-                                            <a
-                                                href="{/source/request/@context-path}/reports/139/output/?dno-id={dno/@id}">
-                                                <xsl:value-of
-                                                    select="dno/@code" />
-                                            </a>
-                                        </xsl:when>
-                                        <xsl:otherwise>
-                                            All
-                                        </xsl:otherwise>
-                                    </xsl:choose>
-                                </td>
-                                <td>
-                                    <xsl:value-of select="@description" />
-                                </td>
-                                <td>
-                                    <a href="{/source/request/@context-path}/reports/131/output/?type-id={meter-type/@id}">
-                                                <xsl:value-of
-                                                    select="meter-type/@code" />
-                                            </a>
-                                </td>
-                                <td>
-                                    <xsl:value-of select="@tpr-count" />
-                                </td>
-                            </tr>
-                        </xsl:for-each>
-                    </tbody>
-                </table>
-            </body>
-        </html>
-    </xsl:template>
-</xsl:stylesheet>]]></value>
+sess = None
+try:
+    sess = db.session()
+    mtcs = sess.query(Mtc, Contract).outerjoin(Mtc.dno).join(Contract).filter(Party.dno_code == Contract.name).order_by(Mtc.code, Party.dno_code).all()
+    templater.render(inv, template, {'mtcs': mtcs})
+finally:
+    if sess is not None:
+        sess.close()]]></value>
+		<value><![CDATA[<!DOCTYPE html>
+<html>
+  <head>
+    <link rel="stylesheet" type="text/css"
+      href="{{ context_path }}/reports/19/output/">
+    <title>Chellow &gt; MTCs</title>
+  </head>
+  <body>
+    <p>
+      <a href="{{context_path}}/reports/1/output/">Chellow</a> &gt; MTCs
+    </p>
+    <br>
+
+    {% if messages %}
+      <ul>
+        {% for message in messages %}
+          <li>{{ message }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+
+    <table>
+      <thead>
+        <tr>
+          <th>Code</th>
+          <th>Dno</th>
+          <th>Description</th>
+          <th>Meter Type</th>
+          <th>TPR count</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for mtc, contract in mtcs %}
+          <tr>
+            <td>
+              <a href="{{context_path}}/reports/63/output/?mtc_id={{mtc.id}}">
+                {{mtc.code}}
+              </a>
+            </td>
+            <td>
+              {% if mtc.dno %}
+                <a href="{{context_path}}/reports/67/output/?dno_contract_id={{contract.id}}">
+                  {{mtc.dno.dno_code}}
+                </a>
+              {% else %}
+                All
+              {% endif %}
+            </td>
+            <td>{{mtc.description}}</td>
+            <td>
+              <a href="{{context_path}}/reports/131/output/?meter_type_id={{mtc.meter_type.id}}">
+                {{mtc.meter_type.code}}
+              </a>
+            </td>
+            <td>{{mtc.tpr_count}}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </body>
+</html>]]></value>
 	</line>
 	<line>
 		<value><![CDATA[insert]]></value>
@@ -5006,190 +4988,126 @@ for mt in Hiber.session().createQuery("select mtc from Mtc mtc left outer join m
 		<value><![CDATA[63]]></value>
 		<value><![CDATA[true]]></value>
 		<value><![CDATA[MTC]]></value>
-		<value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree
-from net.sf.chellow.physical import Mtc
+		<value><![CDATA[from net.sf.chellow.monad import Monad
 
-mtc_id = inv.getLong('mtc-id')
-mtc = Mtc.getMtc(mtc_id)
-source.appendChild(mtc.toXml(doc, XmlTree('meterType').put('paymentType').put('dno')))]]></value>
-		<value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
-<xsl:stylesheet version="1.0"
-    xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
-    <xsl:output method="html" encoding="US-ASCII"
-        doctype-public="-//W3C//DTD HTML 4.01//EN"
-        doctype-system="http://www.w3.org/TR/html4/strict.dtd" indent="yes" />
-    <xsl:template match="/">
-        <html>
-            <head>
-                <link rel="stylesheet" type="text/css"
-                    href="{/source/request/@context-path}/reports/19/output/" />
-                <title>
-                    Chellow &gt; MTCs &gt;
-                    <xsl:value-of select="/source/mtc/@code" />
-                </title>
-            </head>
-            <body>
-                <p>
-                    <a
-                        href="{/source/request/@context-path}/reports/1/output/">
-                        <xsl:value-of select="'Chellow'" />
-                    </a>
-                    &gt;
-                    <a
-                        href="{/source/request/@context-path}/reports/61/output/">
-                        <xsl:value-of select="'MTCs'" />
-                    </a>
-                    &gt;
-                    <xsl:value-of select="/source/mtc/@code" />
-                </p>
-                <br />
-                <xsl:if test="//message">
-                    <ul>
-                        <xsl:for-each select="//message">
-                            <li>
-                                <xsl:value-of select="@description" />
-                            </li>
-                        </xsl:for-each>
-                    </ul>
-                </xsl:if>
-                <table>
-                    <tr>
-                        <th>Code</th>
-                        <td>
-                            <xsl:value-of select="/source/mtc/@code" />
-                        </td>
-                    </tr>
-                    <tr>
-                        <th>Dno</th>
-                        <td>
-                            <xsl:choose>
-                                <xsl:when test="/source/mtc/dno">
-                                    <a
-                                        href="{/source/request/@context-path}/reports/139/output/?dno-id={/source/mtc/dno/@id}">
-                                        <xsl:value-of
-                                            select="/source/mtc/dno/@code" />
-                                    </a>
-                                </xsl:when>
-                                <xsl:otherwise>All</xsl:otherwise>
-                            </xsl:choose>
-                        </td>
-                    </tr>
-                    <tr>
-                        <th>Description</th>
-                        <td>
-                            <xsl:value-of
-                                select="/source/mtc/@description" />
-                        </td>
-                    </tr>
-                    <tr>
-                        <th>Has Related Metering?</th>
-                        <td>
-                            <xsl:choose>
-                                <xsl:when
-                                    test="/source/mtc/@has-related-metering = 'true'">
-                                    Yes
-                                </xsl:when>
-                                <xsl:otherwise>No</xsl:otherwise>
-                            </xsl:choose>
-                        </td>
-                    </tr>
-                    <tr>
-                        <th>Has Comms?</th>
-                        <td>
-                            <xsl:choose>
-                                <xsl:when
-                                    test="/source/mtc/@has-comms">
-                                    <xsl:choose>
-                                        <xsl:when
-                                            test="/source/mtc/@has-comms='true'">
-                                            Yes
-                                        </xsl:when>
-                                        <xsl:otherwise>
-                                            No
-                                        </xsl:otherwise>
-                                    </xsl:choose>
-                                </xsl:when>
-                                <xsl:otherwise>Unknown</xsl:otherwise>
-                            </xsl:choose>
-                        </td>
-                    </tr>
-                    <tr>
-                        <th>Measurement Class</th>
-                        <td>
-                            <xsl:choose>
-                                <xsl:when test="/source/mtc/@is-hh">
-                                    <xsl:choose>
-                                        <xsl:when
-                                            test="/source/mtc/@is-hh='true'">
-                                            HH
-                                        </xsl:when>
-                                        <xsl:otherwise>
-                                            NHH
-                                        </xsl:otherwise>
-                                    </xsl:choose>
-                                </xsl:when>
-                                <xsl:otherwise>Unknown</xsl:otherwise>
-                            </xsl:choose>
-                        </td>
-                    </tr>
-                    <tr>
-                        <th>Meter Type</th>
-                        <td>
-                            <a
-                                href="{/source/request/@context-path}/reports/131/output/?type-id={/source/mtc/meter-type/@id}">
-                                <xsl:value-of
-                                    select="/source/mtc/meter-type/@description" />
-                            </a>
-                        </td>
-                    </tr>
-                    <tr>
-                        <th>Payment Type</th>
-                        <td>
-                            <a
-                                href="{/source/request/@context-path}/reports/135/output/?meter_payment_type_id={/source/mtc/meter-payment-type/@id}">
-                                <xsl:value-of
-                                    select="/source/mtc/meter-payment-type/@description" />
-                            </a>
-                        </td>
-                    </tr>
-                    <tr>
-                        <th>TPR Count</th>
-                        <td>
-                            <xsl:choose>
-                                <xsl:when
-                                    test="/source/mtc/@tpr-count">
-                                    <xsl:value-of
-                                        select="/source/mtc/@tpr-count" />
-                                </xsl:when>
-                                <xsl:otherwise>N/A</xsl:otherwise>
-                            </xsl:choose>
-                        </td>
-                    </tr>
-                    <tr>
-                        <th>Valid From</th>
-                        <td>
-                            <xsl:value-of
-                                select="concat(/source/mtc/date[@label='from']/@year, '-', /source/mtc/date[@label='from']/@month, '-', /source/mtc/date[@label='from']/@day, ' ', /source/mtc/date[@label='from']/@hour, ':', /source/mtc/date[@label='from']/@minute, ' Z')" />
-                        </td>
-                    </tr>
-                    <tr>
-                        <th>Valid To</th>
-                        <td>
-                            <xsl:choose>
-                                <xsl:when
-                                    test="/source/mtc/date[@label='to']">
-                                    <xsl:value-of
-                                        select="concat(/source/mtc/date[@label='to']/@year, '-', /source/mtc/date[@label='to']/@month, '-', /source/mtc/date[@label='to']/@day, ' ', /source/mtc/date[@label='to']/@hour, ':', /source/mtc/date[@label='to']/@minute, ' Z')" />
-                                </xsl:when>
-                                <xsl:otherwise>Ongoing</xsl:otherwise>
-                            </xsl:choose>
-                        </td>
-                    </tr>
-                </table>
-            </body>
-        </html>
-    </xsl:template>
-</xsl:stylesheet>]]></value>
+Monad.getUtils()['impt'](globals(), 'templater', 'db')
+Mtc, Contract = db.Mtc, db.Contract
+
+sess = None
+try:
+    sess = db.session()
+    mtc_id = inv.getLong('mtc_id')
+    mtc = Mtc.get_by_id(sess, mtc_id)
+    if mtc.dno is not None:
+        dno_contract = Contract.get_dno_by_name(sess, mtc.dno.dno_code)
+    templater.render(inv, template, {'mtc': mtc, 'dno_contract': dno_contract})
+finally:
+    if sess is not None:
+        sess.close()]]></value>
+		<value><![CDATA[<!DOCTYPE html>
+<html>
+  <head>
+    <link rel="stylesheet" type="text/css"
+      href="{{context_path}}/reports/19/output/">
+    <title>Chellow &gt; MTCs &gt; {{mtc.code}}</title>
+  </head>
+  <body>
+    <p>
+      <a href="{{context_path}}/reports/1/output/">Chellow</a> &gt;
+      <a href="{{context_path}}/reports/61/output/">MTCs</a> &gt; {{mtc.code}}
+    </p>
+    <br>
+
+    {% if messages %}
+      <ul>
+        {% for message in messages %}
+          <li>{{ message }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+
+    <table>
+      <tr>
+        <th>Code</th>
+        <td>{{mtc.code}}</td>
+      </tr>
+      <tr>
+        <th>DNO</th>
+        <td>
+          {% if dno_contract %}
+            <a href="{{context_path}}/reports/67/output/?dno_contract_id={{dno_contract.id}}">
+              {{dno_contract.name}}
+            </a>
+          {% else %}
+            All
+          {% endif %}
+        </td>
+      </tr>
+      <tr>
+        <th>Description</th>
+        <td>{{mtc.description}}</td>
+      </tr>
+      <tr>
+        <th>Has Related Metering?</th>
+        <td>
+          {% if mtc.has_related_metering == True %}
+            Yes
+          {% else %}
+            No
+          {% endif %}
+        </td>
+      </tr>
+      <tr>
+        <th>Has Comms?</th>
+        <td>
+          {% if mtc.has_comms == True %}
+            Yes
+          {% else %}
+            No
+          {% endif %}
+        </td>
+      </tr>
+      <tr>
+        <th>Measurement Class</th>
+        <td>
+          {% if mtc.is_hh == True %}
+            HH
+          {% else %}
+            NHH
+          {% endif %}
+        </td>
+      </tr>
+      <tr>
+        <th>Meter Type</th>
+        <td>
+          <a href="{{context_path}}/reports/131/output/?meter_type_id={{mtc.meter_type.id}}">
+            {{mtc.meter_type.description}}
+          </a>
+        </td>
+      </tr>
+      <tr>
+        <th>Payment Type</th>
+        <td>
+          <a href="{{context_path}}/reports/135/output/?meter_payment_type_id={{mtc.meter_payment_type.id}}">
+            {{mtc.meter_payment_type.description}}
+          </a>
+        </td>
+      </tr>
+      <tr>
+        <th>TPR Count</th>
+        <td>{{mtc.tpr_count}}</td>
+      </tr>
+      <tr>
+        <th>Valid From</th>
+        <td>{{mtc.valid_from}}</td>
+      </tr>
+      <tr>
+        <th>Valid To</th>
+        <td>{{mtc.valid_to}}</td>
+      </tr>
+    </table>
+  </body>
+</html>]]></value>
 	</line>
 	<line>
 		<value><![CDATA[insert]]></value>
@@ -8653,76 +8571,62 @@ finally:
 		<value><![CDATA[129]]></value>
 		<value><![CDATA[true]]></value>
 		<value><![CDATA[Meter Types]]></value>
-		<value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree
+		<value><![CDATA[from net.sf.chellow.monad import Monad
 
-types_element = doc.createElement('meter-types')
-source.appendChild(types_element)
-for type in Hiber.session().createQuery("from MeterType type order by type.code").list():
-    types_element.appendChild(type.toXml(doc))]]></value>
-		<value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
-<xsl:stylesheet version="1.0"
-    xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
-    <xsl:output method="html" encoding="US-ASCII"
-        doctype-public="-//W3C//DTD HTML 4.01//EN"
-        doctype-system="http://www.w3.org/TR/html4/strict.dtd" indent="yes" />
-    <xsl:template match="/">
-        <html>
-            <head>
-                <link rel="stylesheet" type="text/css"
-                    href="{/source/request/@context-path}/reports/19/output/" />
-                <title>
-                    <xsl:value-of select="'Chellow'" />
-                    &gt; Meter Types
-                </title>
-            </head>
-            <body>
-                <p>
-                    <a
-                        href="{/source/request/@context-path}/reports/1/output/">
-                        <xsl:value-of select="'Chellow'" />
-                    </a>
-                    &gt;
-                    <xsl:value-of select="'Meter Types'" />
-                </p>
-                <br />
-                <xsl:if test="//message">
-                    <ul>
-                        <xsl:for-each select="//message">
-                            <li>
-                                <xsl:value-of select="@description" />
-                            </li>
-                        </xsl:for-each>
-                    </ul>
-                </xsl:if>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Code</th>
-                            <th>Description</th>
-                        </tr>
-                    </thead>
-                    <tbody>
+Monad.getUtils()['impt'](globals(), 'templater', 'db')
+MeterType, Party = db.MeterType, db.Party
 
-                        <xsl:for-each
-                            select="/source/meter-types/meter-type">
-                            <tr>
-                                <td>
-                                    <a
-                                        href="{/source/request/@context-path}/reports/131/output/?type-id={@id}">
-                                         <xsl:value-of select="@code" />
-                                    </a>
-                                </td>
-                                <td>
-                                    <xsl:value-of select="@description" />
-                                </td>
-                            </tr>
-                        </xsl:for-each>
-                    </tbody>
-                </table>
-            </body>
-        </html>
-    </xsl:template>
-</xsl:stylesheet>]]></value>
+sess = None
+try:
+    sess = db.session()
+    meter_types = sess.query(MeterType).order_by(MeterType.code)
+    templater.render(inv, template, {'meter_types': meter_types})
+finally:
+    if sess is not None:
+        sess.close()]]></value>
+		<value><![CDATA[<!DOCTYPE html>
+<html>
+  <head>
+    <link rel="stylesheet" type="text/css"
+      href="{{context_path}}/reports/19/output/">
+    <title>Chellow &gt; Meter Types</title>
+  </head>
+  <body>
+    <p>
+      <a href="{{context_path}}/reports/1/output/">Chellow</a> &gt; Meter Types
+    </p>
+    <br>
+
+    {% if messages %}
+      <ul>
+        {% for message in messages %}
+          <li>{{ message }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+
+    <table>
+      <thead>
+        <tr>
+          <th>Code</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for meter_type in meter_types %}
+          <tr>
+            <td>
+              <a href="{{context_path}}/reports/131/output/?meter_type_id={{meter_type.id}}">
+                {{meter_type.code}}
+              </a>
+            </td>
+            <td>{{meter_type.description}}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </body>
+</html>]]></value>
 	</line>
 	<line>
 		<value><![CDATA[insert]]></value>
@@ -8730,74 +8634,55 @@ for type in Hiber.session().createQuery("from MeterType type order by type.code"
 		<value><![CDATA[131]]></value>
 		<value><![CDATA[true]]></value>
 		<value><![CDATA[Meter Type]]></value>
-		<value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree
-from net.sf.chellow.physical import MeterType
+		<value><![CDATA[from net.sf.chellow.monad import Monad
 
-type_id = inv.getLong('type-id')
-type = MeterType.getMeterType(type_id)
-source.appendChild(type.toXml(doc))]]></value>
-		<value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
-<xsl:stylesheet version="1.0"
-    xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
-    <xsl:output method="html" encoding="US-ASCII"
-        doctype-public="-//W3C//DTD HTML 4.01//EN"
-        doctype-system="http://www.w3.org/TR/html4/strict.dtd" indent="yes" />
-    <xsl:template match="/">
-        <html>
-            <head>
-                <link rel="stylesheet" type="text/css"
-                    href="{/source/request/@context-path}/reports/19/output/" />
-                <title>
-                    Chellow &gt; Meter Types &gt;
-                    <xsl:value-of
-                        select="/source/meter-type/@description" />
-                </title>
-            </head>
-            <body>
-                <p>
-                    <a
-                        href="{/source/request/@context-path}/reports/1/output/">
-                        <xsl:value-of select="'Chellow'" />
-                    </a>
-                    &gt;
-                    <a
-                        href="{/source/request/@context-path}/reports/129/output/">
-                        <xsl:value-of select="'Meter Types'" />
-                    </a>
-                    &gt;
-                    <xsl:value-of
-                        select="/source/meter-type/@description" />
-                </p>
-                <br />
-                <xsl:if test="//message">
-                    <ul>
-                        <xsl:for-each select="//message">
-                            <li>
-                                <xsl:value-of select="@description" />
-                            </li>
-                        </xsl:for-each>
-                    </ul>
-                </xsl:if>
-                <table>
-                    <tr>
-                        <th>Code</th>
-                        <td>
-                            <xsl:value-of
-                                select="/source/meter-type/@code" />
-                        </td>
-                    </tr>
-                    <tr>
-                        <th>Description</th>
-                        <td>
-                            <xsl:value-of
-                                select="/source/meter-type/@description" />
-                        </td>
-                    </tr>
-                </table>
-            </body>
-        </html>
-    </xsl:template>
-</xsl:stylesheet>]]></value>
+Monad.getUtils()['impt'](globals(), 'templater', 'db')
+MeterType, Party = db.MeterType, db.Party
+
+sess = None
+try:
+    sess = db.session()
+    meter_type_id = inv.getLong('meter_type_id')
+    meter_type = MeterType.get_by_id(sess, meter_type_id)
+    templater.render(inv, template, {'meter_type': meter_type})
+finally:
+    if sess is not None:
+        sess.close()]]></value>
+		<value><![CDATA[<!DOCTYPE html>
+<html>
+  <head>
+    <link rel="stylesheet" type="text/css"
+      href="{{context_path}}/reports/19/output/">
+    <title>Chellow &gt; Meter Types &gt; {{meter_type.description}}</title>
+  </head>
+  <body>
+    <p>
+      <a href="{{context_path}}/reports/1/output/">Chellow</a> &gt;
+      <a href="{{context_path}}/reports/129/output/">Meter Types</a> &gt;
+      {{meter_type.description}}
+    </p>
+    <br>
+
+    {% if messages %}
+      <ul>
+        {% for message in messages %}
+          <li>{{ message }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+
+    <table>
+      <tr>
+        <th>Code</th>
+        <td>{{meter_type.code}}</td>
+      </tr>
+      <tr>
+        <th>Description</th>
+        <td>{{meter_type.description}}</td>
+      </tr>
+    </table>
+  </body>
+</html>]]></value>
 	</line>
 	<line>
 		<value><![CDATA[insert]]></value>
