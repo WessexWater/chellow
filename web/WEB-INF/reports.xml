@@ -960,14 +960,14 @@ finally:
                 {% endif %}
               </td>
               <td rowspan="4">
-                <a href="{{ context_path }}/reports/55/output/?pc-id={{ era.pc.id }}" title="{{ era.pc.description }}">{{ era.pc.code }}</a>
+                <a href="{{ context_path }}/reports/55/output/?pc_id={{ era.pc.id }}" title="{{ era.pc.name }}">{{ era.pc.code }}</a>
               </td>
               <td rowspan="4">{{ era.msn }}</td>
               <td rowspan="4">
-                <a href="{{ context_path }}/reports/63/output/?mtc-id={{ era.mtc.id }}" title="{{ era.mtc.description }}">{{ era.mtc.code }}</a>
+                <a href="{{ context_path }}/reports/63/output/?mtc_id={{ era.mtc.id }}" title="{{ era.mtc.description }}">{{ era.mtc.code }}</a>
               </td>
               <td rowspan="4">
-                <a href="{{ context_path }}/reports/197/output/?cop-id={{ era.cop.id }}" title="{{ era.cop.description }}">{{ era.cop.code }}</a>
+                <a href="{{ context_path }}/reports/197/output/?cop_id={{ era.cop.id }}" title="{{ era.cop.description }}">{{ era.cop.code }}</a>
               </td>
               <td rowspan="4">
                 {% if era.ssc %}
@@ -4584,71 +4584,61 @@ finally:
 		<value><![CDATA[53]]></value>
 		<value><![CDATA[true]]></value>
 		<value><![CDATA[Profile Classes]]></value>
-		<value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree
+		<value><![CDATA[from net.sf.chellow.monad import Monad
 
-pcs_element = doc.createElement('pcs')
-source.appendChild(pcs_element)
-for pc in Hiber.session().createQuery("from Pc pc order by pc.code").list():
-    pcs_element.appendChild(pc.toXml(doc))]]></value>
-		<value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
-<xsl:stylesheet version="1.0"
-    xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
-    <xsl:output method="html" encoding="US-ASCII"
-        doctype-public="-//W3C//DTD HTML 4.01//EN"
-        doctype-system="http://www.w3.org/TR/html4/strict.dtd" indent="yes" />
-    <xsl:template match="/">
-        <html>
-            <head>
-                <link rel="stylesheet" type="text/css"
-                    href="{/source/request/@context-path}/reports/19/output/" />
-                <title>Chellow &gt; Profile Classes</title>
-            </head>
-            <body>
-                <p>
-                    <a
-                        href="{/source/request/@context-path}/reports/1/output/">
-                        <xsl:value-of select="'Chellow'" />
-                    </a>
-                    &gt; Profile Classes
-                </p>
-                <br />
-                <xsl:if test="//message">
-                    <ul>
-                        <xsl:for-each select="//message">
-                            <li>
-                                <xsl:value-of select="@description" />
-                            </li>
-                        </xsl:for-each>
-                    </ul>
-                </xsl:if>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Code</th>
-                            <th>Description</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <xsl:for-each
-                            select="/source/pcs/pc">
-                            <tr>
-                                <td>
-                                    <a
-                                        href="{/source/request/@context-path}/reports/55/output/?pc-id={@id}">
-                                        <xsl:value-of select="@code" />
-                                    </a>
-                                </td>
-                                <td>
-                                    <xsl:value-of select="@description" />
-                                </td>
-                            </tr>
-                        </xsl:for-each>
-                    </tbody>
-                </table>
-            </body>
-        </html>
-    </xsl:template>
-</xsl:stylesheet>]]></value>
+Monad.getUtils()['impt'](globals(), 'templater', 'db')
+Pc = db.Pc
+
+sess = None
+try:
+    sess = db.session()
+    pcs = sess.query(Pc).order_by(Pc.code)
+    templater.render(inv, template, {'pcs': pcs})
+finally:
+    if sess is not None:
+        sess.close()]]></value>
+		<value><![CDATA[<!DOCTYPE html>
+<html>
+  <head>
+    <link rel="stylesheet" type="text/css"
+      href="{{context_path}}/reports/19/output/">
+    <title>Chellow &gt; Profile Classes</title>
+  </head>
+  <body>
+    <p>
+      <a href="{{context_path}}/reports/1/output/">Chellow</a> &gt;
+      Profile Classes
+    </p>
+    <br>
+    {% if messages %}
+      <ul>
+        {% for message in messages %}
+          <li>{{ message }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+    <table>
+      <thead>
+        <tr>
+          <th>Code</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for pc in pcs %}
+          <tr>
+            <td>
+              <a href="{{context_path}}/reports/55/output/?pc_id={{pc.id}}">
+                {{pc.code}}
+              </a>
+            </td>
+            <td>{{pc.name}}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </body>
+</html>]]></value>
 	</line>
 	<line>
 		<value><![CDATA[insert]]></value>
@@ -4656,72 +4646,53 @@ for pc in Hiber.session().createQuery("from Pc pc order by pc.code").list():
 		<value><![CDATA[55]]></value>
 		<value><![CDATA[true]]></value>
 		<value><![CDATA[Profile Class]]></value>
-		<value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree
-from net.sf.chellow.physical import Pc
+		<value><![CDATA[from net.sf.chellow.monad import Monad
 
-pc_id = inv.getLong('pc-id')
-pc = Pc.getPc(pc_id)
-source.appendChild(pc.toXml(doc))]]></value>
-		<value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
-<xsl:stylesheet version="1.0"
-    xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
-    <xsl:output method="html" encoding="US-ASCII"
-        doctype-public="-//W3C//DTD HTML 4.01//EN"
-        doctype-system="http://www.w3.org/TR/html4/strict.dtd" indent="yes" />
-    <xsl:template match="/">
-        <html>
-            <head>
-                <link rel="stylesheet" type="text/css"
-                    href="{/source/request/@context-path}/reports/19/output/" />
+Monad.getUtils()['impt'](globals(), 'templater', 'db')
 
-                <title>
-                    Chellow &gt; Profile Classes &gt;
-                    <xsl:value-of select="/source/pc/@code" />
-                </title>
-            </head>
-            <body>
-                <p>
-                    <a
-                        href="{/source/request/@context-path}/reports/1/output/">
-                        <xsl:value-of select="'Chellow'" />
-                    </a>
-                    &gt;
-                    <a
-                        href="{/source/request/@context-path}/reports/53/output/">
-                        <xsl:value-of select="'Profile Classes'" />
-                    </a>
-                    &gt;
-                    <xsl:value-of select="/source/pc/@code" />
-                </p>
-                <br />
-                <xsl:if test="//message">
-                    <ul>
-                        <xsl:for-each select="//message">
-                            <li>
-                                <xsl:value-of select="@description" />
-                            </li>
-                        </xsl:for-each>
-                    </ul>
-                </xsl:if>
-                <table>
-                    <tr>
-                        <th>Code</th>
-                        <td>
-                            <xsl:value-of select="/source/pc/@code" />
-                        </td>
-                    </tr>
-                    <tr>
-                        <th>Description</th>
-                        <td>
-                            <xsl:value-of
-                                select="/source/pc/@description" />
-                        </td>
-                    </tr>
-                </table>
-            </body>
-        </html>
-    </xsl:template>
-</xsl:stylesheet>]]></value>
+sess = None
+try:
+    sess = db.session()
+    pc_id = inv.getLong('pc_id')
+    pc = db.Pc.get_by_id(sess, pc_id)
+    templater.render(inv, template, {'pc': pc})
+finally:
+    if sess is not None:
+        sess.close()]]></value>
+		<value><![CDATA[<!DOCTYPE html>
+<html>
+  <head>
+    <link rel="stylesheet" type="text/css"
+      href="{{ context_path }}/reports/19/output/">
+    <title>Chellow &gt; Profile Classes &gt; {{pc.code}}</title>
+  </head>
+  <body>
+    <p>
+      <a href="{{context_path}}/reports/1/output/">Chellow</a> &gt;
+      <a href="{{context_path}}/reports/53/output/">Profile Classes</a> &gt;
+      {{pc.code}}
+    </p>
+    <br>
+    {% if messages %}
+      <ul>
+        {% for message in messages %}
+          <li>{{ message }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+
+    <table>
+      <tr>
+        <th>Code</th>
+        <td>{{pc.code}}</td>
+      </tr>
+      <tr>
+        <th>Description</th>
+        <td>{{pc.name}}</td>
+      </tr>
+    </table>
+  </body>
+</html>]]></value>
 	</line>
 	<line>
 		<value><![CDATA[insert]]></value>
@@ -4915,7 +4886,7 @@ Mtc, Party, Contract = db.Mtc, db.Party, db.Contract
 sess = None
 try:
     sess = db.session()
-    mtcs = sess.query(Mtc, Contract).outerjoin(Mtc.dno).join(Contract).filter(Party.dno_code == Contract.name).order_by(Mtc.code, Party.dno_code).all()
+    mtcs = sess.query(Mtc, Contract).outerjoin(Mtc.dno).outerjoin(Contract).order_by(Mtc.code, Party.dno_code).all()
     templater.render(inv, template, {'mtcs': mtcs})
 finally:
     if sess is not None:
@@ -4997,9 +4968,7 @@ sess = None
 try:
     sess = db.session()
     mtc_id = inv.getLong('mtc_id')
-    mtc = Mtc.get_by_id(sess, mtc_id)
-    if mtc.dno is not None:
-        dno_contract = Contract.get_dno_by_name(sess, mtc.dno.dno_code)
+    mtc, dno_contract = sess.query(Mtc, Contract).outerjoin(Mtc.dno).outerjoin(Contract).filter(Mtc.id == mtc_id).one()
     templater.render(inv, template, {'mtc': mtc, 'dno_contract': dno_contract})
 finally:
     if sess is not None:
@@ -6030,75 +5999,60 @@ finally:
 		<value><![CDATA[85]]></value>
 		<value><![CDATA[true]]></value>
 		<value><![CDATA[CoPs]]></value>
-		<value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree
+		<value><![CDATA[from net.sf.chellow.monad import Monad
 
-cops_element = doc.createElement('cops')
-source.appendChild(cops_element)
-for cop in Hiber.session().createQuery("from Cop cop order by cop.code").list():
-    cops_element.appendChild(cop.toXml(doc))]]></value>
-		<value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
-<xsl:stylesheet version="1.0"
-    xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
-    <xsl:output method="html" encoding="US-ASCII"
-        doctype-public="-//W3C//DTD HTML 4.01//EN"
-        doctype-system="http://www.w3.org/TR/html4/strict.dtd" indent="yes" />
-    <xsl:template match="/">
-        <html>
-            <head>
-                <link rel="stylesheet" type="text/css"
-                    href="{/source/request/@context-path}/reports/19/output/" />
-                <title>
-                    Chellow &gt; CoPs
-                </title>
-            </head>
-            <body>
-                <p>
-                    <a
-                        href="{/source/request/@context-path}/reports/1/output/">
-                        <xsl:value-of select="'Chellow'" />
-                    </a>
-                    &gt;
-                    <xsl:value-of select="'CoPs'" />
-                </p>
-                <br />
-                <xsl:if test="//message">
-                    <ul>
-                        <xsl:for-each select="//message">
-                            <li>
-                                <xsl:value-of select="@description" />
-                            </li>
-                        </xsl:for-each>
-                    </ul>
-                </xsl:if>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Code</th>
-                            <th>Description</th>
-                        </tr>
-                    </thead>
-                    <tbody>
+Monad.getUtils()['impt'](globals(), 'templater', 'db')
+Cop = db.Cop
 
-                        <xsl:for-each
-                            select="/source/cops/cop">
-                            <tr>
-                                <td>
-                                    <a
-                                        href="{/source/request/@context-path}/reports/197/output/?cop-id={@id}">
-                                        <xsl:value-of select="@code" />
-                                    </a>
-                                </td>
-                                <td>
-                                    <xsl:value-of select="@description" />
-                                </td>
-                            </tr>
-                        </xsl:for-each>
-                    </tbody>
-                </table>
-            </body>
-        </html>
-    </xsl:template>
-</xsl:stylesheet>]]></value>
+sess = None
+try:
+    sess = db.session()
+    cops = sess.query(Cop).order_by(Cop.code)
+    templater.render(inv, template, {'cops': cops})
+finally:
+    if sess is not None:
+        sess.close()]]></value>
+		<value><![CDATA[<!DOCTYPE html>
+<html>
+  <head>
+    <link rel="stylesheet" type="text/css"
+      href="{{context_path}}/reports/19/output/">
+    <title>Chellow &gt; CoPs</title>
+  </head>
+  <body>
+    <p>
+      <a href="{{context_path}}/reports/1/output/">Chellow</a> &gt; CoPs
+    </p>
+    <br>
+    {% if messages %}
+      <ul>
+        {% for message in messages %}
+          <li>{{ message }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+    <table>
+      <thead>
+        <tr>
+          <th>Code</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for cop in cops %}
+          <tr>
+            <td>
+              <a href="{{context_path}}/reports/197/output/?cop_id={{cop.id}}">
+                {{cop.code}}
+              </a>
+            </td>
+            <td>{{cop.description}}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </body>
+</html>]]></value>
 	</line>
 	<line>
 		<value><![CDATA[insert]]></value>
@@ -12346,74 +12300,54 @@ finally:
 		<value><![CDATA[197]]></value>
 		<value><![CDATA[true]]></value>
 		<value><![CDATA[CoP]]></value>
-		<value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree
-from net.sf.chellow.physical import Cop
+		<value><![CDATA[from net.sf.chellow.monad import Monad
 
-cop_id = inv.getLong('cop-id')
-cop = Cop.getCop(cop_id)
-source.appendChild(cop.toXml(doc))]]></value>
-		<value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
-<xsl:stylesheet version="1.0"
-    xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
-    <xsl:output method="html" encoding="US-ASCII"
-        doctype-public="-//W3C//DTD HTML 4.01//EN"
-        doctype-system="http://www.w3.org/TR/html4/strict.dtd" indent="yes" />
-    <xsl:template match="/">
-        <html>
-            <head>
-                <link rel="stylesheet" type="text/css"
-                    href="{/source/request/@context-path}/reports/19/output/" />
-                <title>
-                    Chellow &gt; CoPs &gt;
-                    <xsl:value-of
-                        select="/source/cop/@description" />
-                </title>
-            </head>
-            <body>
-                <p>
-                    <a
-                        href="{/source/request/@context-path}/reports/1/output/">
-                        <xsl:value-of select="'Chellow'" />
-                    </a>
-                    &gt;
-                    <a
-                        href="{/source/request/@context-path}/reports/85/output/">
-                        <xsl:value-of select="'CoPs'" />
-                    </a>
-                    &gt;
-                    <xsl:value-of
-                        select="/source/cop/@description" />
-                </p>
-                <br />
-                <xsl:if test="//message">
-                    <ul>
-                        <xsl:for-each select="//message">
-                            <li>
-                                <xsl:value-of select="@description" />
-                            </li>
-                        </xsl:for-each>
-                    </ul>
-                </xsl:if>
-                <table>
-                    <tr>
-                        <th>Code</th>
-                        <td>
-                            <xsl:value-of
-                                select="/source/cop/@code" />
-                        </td>
-                    </tr>
-                    <tr>
-                        <th>Description</th>
-                        <td>
-                            <xsl:value-of
-                                select="/source/cop/@description" />
-                        </td>
-                    </tr>
-                </table>
-            </body>
-        </html>
-    </xsl:template>
-</xsl:stylesheet>]]></value>
+Monad.getUtils()['impt'](globals(), 'templater', 'db')
+
+sess = None
+try:
+    sess = db.session()
+    cop_id = inv.getLong('cop_id')
+    cop = db.Cop.get_by_id(sess, cop_id)
+    templater.render(inv, template, {'cop': cop})
+finally:
+    if sess is not None:
+        sess.close()]]></value>
+		<value><![CDATA[<!DOCTYPE html>
+<html>
+  <head>
+    <link rel="stylesheet" type="text/css"
+      href="{{context_path}}/reports/19/output/" />
+    <title>Chellow &gt; CoPs &gt; {{cop.description}}</title>
+  </head>
+  <body>
+    <p>
+      <a href="{{context_path}}/reports/1/output/">Chellow</a> &gt;
+      <a href="{{context_path}}/reports/85/output/">CoPs</a> &gt;
+      {{cop.description}}
+    </p>
+    <br>
+
+    {% if messages %}
+      <ul>
+        {% for message in messages %}
+          <li>{{ message }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+
+    <table>
+      <tr>
+        <th>Code</th>
+        <td>{{cop.code}}</td>
+      </tr>
+      <tr>
+        <th>Description</th>
+        <td>{{cop.description}}</td>
+      </tr>
+    </table>
+  </body>
+</html>]]></value>
 	</line>
 	<line>
 		<value><![CDATA[insert]]></value>
