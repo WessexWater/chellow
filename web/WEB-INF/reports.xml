@@ -10009,8 +10009,8 @@ def long_process():
         running_name = "RUNNING_" + base_name
         finished_name = "FINISHED_" + base_name
 
-        tmp_dir = Monad.getContext().getAttribute("net.sf.chellow.tmp_dir")
-        os.chdir(tmp_dir)
+        download_path = Monad.getContext().getRealPath("/downloads")
+        os.chdir(download_path)
         tmp_file = open(running_name, "w")
 
         forecast_date = computer.forecast_date()
@@ -14987,11 +14987,12 @@ Monad.getUtils()['imprt'](globals(), {
         'utils': ['UserException'],
         'templater': ['render']})
 
-tmp_dir = Monad.getContext().getAttribute("net.sf.chellow.tmp_dir")
+
+download_path = Monad.getContext().getRealPath("/downloads")
 
 files = []
 
-for fl in os.listdir(tmp_dir):
+for fl in os.listdir(download_path):
   statinfo = os.stat(fl)
   files.append({'name': fl, 'last_modified': datetime.datetime.utcfromtimestamp(statinfo.st_mtime), 'size': statinfo.st_size, 'creation_date': datetime.datetime.utcfromtimestamp(statinfo.st_ctime) })
 
@@ -15064,12 +15065,12 @@ import os
 name = inv.getString("name")
 head, name = os.path.split(os.path.normcase(os.path.normpath(name)))
 
-tmp_dir = Monad.getContext().getAttribute("net.sf.chellow.tmp_dir")
+download_path = Monad.getContext().getRealPath("/downloads")
 
 method = inv.getRequest().getMethod()
 
 if method == 'GET':
-    fl = open(os.path.join(tmp_dir, name))
+    fl = open(os.path.join(download_path, name))
 
     inv.getResponse().setContentType("text/csv")
     inv.getResponse().setHeader('Content-Disposition', 'attachment; filename="' + name + '"')
