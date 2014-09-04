@@ -17251,9 +17251,9 @@ try:
 
             ds = computer.SupplySource(sess, chunk_start, chunk_finish, forecast_date, era, True, pw, caches)
 
-            titles = ['MPAN Core', 'Site Code', 'Site Name', 'Account', 'From', 'To', '']
+            titles = ['Imp MPAN Core', 'Exp MPAN Core', 'Site Code', 'Site Name', 'Account', 'From', 'To', '']
 
-            output_line = [ds.mpan_core, site.code , site.name, ds.supplier_account, hh_format(ds.start_date), hh_format(ds.finish_date), '']
+            output_line = [era.imp_mpan_core, era.exp_mpan_core, site.code , site.name, ds.supplier_account, hh_format(ds.start_date), hh_format(ds.finish_date), '']
             
             mop_titles = ds.contract_func(era.mop_contract, 'virtual_bill_titles')()
             titles.extend(['mop-' + t for t in mop_titles])
@@ -17318,7 +17318,7 @@ try:
             if titles != prev_titles:
                 prev_titles != titles
                 pw.println(','.join('"' + str(v) + '"' for v in titles)) 
-            pw.println(','.join('"' + str(v) + '"' for v in output_line))
+            pw.println(','.join('"' + str('' if v is None else v) + '"' for v in output_line))
             pw.flush()
 
         month_start += relativedelta(months=1)
