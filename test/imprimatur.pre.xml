@@ -2452,11 +2452,12 @@ def virtual_bill(supply_source):
 				<control name="charge_script">
 				<![CDATA[
 def virtual_bill_titles():
-    return ['net-gbp', 'vat-gbp', 'gross-gbp', 'problem']
+    return ['net-gbp', 'vat-gbp', 'gross-gbp', 'sum-msp-kwh', 'problem']
 
 
 def virtual_bill(supply_source):
-    return {'net-gbp': 0.0, 'vat-gbp':0.0, 'gross-gbp': 0.0, 'problem': ''}]]>
+    sum_msp_kwh = sum(h['msp-kwh'] for h in supply_source.hh_data)
+    supply_source.supplier_bill.update({'net-gbp': 0.0, 'vat-gbp':0.0, 'gross-gbp': 0.0, 'sum-msp-kwh': sum_msp_kwh})]]>
 				</control>
 				<response-code value="303" />
 			</request>
@@ -2872,7 +2873,7 @@ def virtual_bill(supply_source):
 
 				<response-code value="200" />
 			</request>
-			
+
 			<!-- Try a 12 month run -->
 			<request
 				path="/chellow/reports/389/output/?site_id=1&amp;months=12&amp;finish_year=2011&amp;finish_month=06">
@@ -2904,9 +2905,9 @@ def virtual_bill(supply_source):
 				path="/chellow/reports/291/output/?supply_id=11&amp;start_year=2010&amp;start_month=04&amp;start_day=01&amp;start_hour=00&amp;start_minute=00&amp;finish_year=2010&amp;finish_month=04&amp;finish_day=30&amp;finish_hour=23&amp;finish_minute=30">
 				<response-code value="200" />
 				<regex
-					pattern='"Imp MPAN Core","Exp MPAN Core","Site Code","Site Name","Account","From","To","","mop-net-gbp","mop-problem","","dc-net-gbp","dc-problem","","imp-supplier-net-gbp","imp-supplier-vat-gbp","imp-supplier-gross-gbp","imp-supplier-problem"' />
+					pattern='"Imp MPAN Core","Exp MPAN Core","Site Code","Site Name","Account","From","To","","mop-net-gbp","mop-problem","","dc-net-gbp","dc-problem","","imp-supplier-net-gbp","imp-supplier-vat-gbp","imp-supplier-gross-gbp","imp-supplier-sum-msp-kwh","imp-supplier-problem"' />
 				<regex
-					pattern='"22 9974 3438 105","","CI005","Wheal Rodney","SA341665","2010-04-01 00:00","2010-04-13 23:30","","0","","","0","","","0","0","0",""' />
+					pattern='"22 9974 3438 105","","CI005","Wheal Rodney","SA341665","2010-04-01 00:00","2010-04-13 23:30","","0","","","0","","","0.0","0.0","0.0","0",""' />
 			</request>
 		</test>
 		<test name="NHH CSV import">
@@ -2980,10 +2981,10 @@ def virtual_bill(supply_source):
 				<!-- Check link to supply duration is correct -->
 				<regex
 					pattern='&lt;form action="/chellow/reports/149/output/"&gt;\s*&lt;fieldset&gt;\s*&lt;input type="hidden" name="supply_id"' />
-					
+
 				<regex
 					pattern='&lt;td rowspan="4"&gt;\s*&lt;a href="/chellow/reports/55/output/\?pc_id=9" title="Half-hourly"&gt;00&lt;/a&gt;\s*&lt;/td&gt;\s*&lt;td rowspan="4"&gt;&lt;/td&gt;\s*&lt;td rowspan="4"&gt;\s*&lt;a href="/chellow/reports/63/output/\?mtc_id=529" title="HH COP5 And Above With Comms"&gt;845&lt;/a&gt;\s*&lt;/td&gt;' />
-					
+
 				<response-code value="200" />
 
 			</request>
@@ -3660,9 +3661,9 @@ def virtual_bill(supply_source):
 			<request
 				path="/chellow/reports/291/output/?supply_id=9&amp;start_year=2011&amp;start_month=05&amp;start_day=01&amp;start_hour=00&amp;start_minute=0&amp;finish_year=2011&amp;finish_month=05&amp;finish_day=31&amp;finish_hour=23&amp;finish_minute=30">
 				<regex
-					pattern='"Imp MPAN Core","Exp MPAN Core","Site Code","Site Name","Account","From","To","","mop-net-gbp","mop-problem","","dc-net-gbp","dc-problem","","imp-supplier-net-gbp","imp-supplier-vat-gbp","imp-supplier-gross-gbp","imp-supplier-problem"' />
+					pattern='"Imp MPAN Core","Exp MPAN Core","Site Code","Site Name","Account","From","To","","mop-net-gbp","mop-problem","","dc-net-gbp","dc-problem","","imp-supplier-net-gbp","imp-supplier-vat-gbp","imp-supplier-gross-gbp","imp-supplier-sum-msp-kwh","imp-supplier-problem"' />
 				<regex
-					pattern='"22 0195 4836 192","","CI004","Lower Treave","SA342376","2011-05-01 00:00","2011-05-31 23:30","","0","","","0","","","0","0","0",""' />
+					pattern='"22 0195 4836 192","","CI004","Lower Treave","SA342376","2011-05-01 00:00","2011-05-31 23:30","","0","","","0","","","0.0","0.0","0.0","25.8191780822",""' />
 				<response-code value="200" />
 			</request>
 		</test>
@@ -4075,9 +4076,9 @@ def virtual_bill(supply_source):
 				path="/chellow/reports/291/output/?supply_id=10&amp;start_year=2010&amp;start_month=01&amp;start_day=01&amp;start_hour=00&amp;start_minute=0&amp;finish_year=2010&amp;finish_month=01&amp;finish_day=31&amp;finish_hour=23&amp;finish_minute=30">
 				<response-code value="200" />
 				<regex
-					pattern='"Imp MPAN Core","Exp MPAN Core","Site Code","Site Name","Account","From","To","","mop-net-gbp","mop-problem","","dc-net-gbp","dc-problem","","imp-supplier-net-gbp","imp-supplier-vat-gbp","imp-supplier-gross-gbp","imp-supplier-problem"' />
+					pattern='"Imp MPAN Core","Exp MPAN Core","Site Code","Site Name","Account","From","To","","mop-net-gbp","mop-problem","","dc-net-gbp","dc-problem","","imp-supplier-net-gbp","imp-supplier-vat-gbp","imp-supplier-gross-gbp","imp-supplier-sum-msp-kwh","imp-supplier-problem"' />
 				<regex
-					pattern='"22 1065 3921 534","","CI017","Roselands","SA342376","2010-01-01 00:00","2010-01-03 23:30","","0","","","0","","","0","0","0",""' />
+					pattern='"22 1065 3921 534","","CI017","Roselands","SA342376","2010-01-01 00:00","2010-01-03 23:30","","0","","","0","","","0.0","0.0","0.0","0",""' />
 			</request>
 		</test>
 		<test name="A bill check with multiple covered bills">
@@ -4214,7 +4215,7 @@ def virtual_bill(supply_source):
 			<request
 				path="/chellow/reports/291/output/?supply_id=7&amp;start_year=2013&amp;start_month=09&amp;start_day=29&amp;start_hour=00&amp;start_minute=00&amp;finish_year=2013&amp;finish_month=11&amp;finish_day=28&amp;finish_hour=23&amp;finish_minute=30">
 				<regex
-					pattern='"22 4862 4512 332","","CH023","Treglisson","141 5532","2013-10-01 00:00","2013-10-31 23:30","","0","","","0","","","0","0","0",""' />
+					pattern='"22 4862 4512 332","","CH023","Treglisson","141 5532","2013-10-01 00:00","2013-10-31 23:30","","0","","","0","","","0.0","0.0","0.0","0",""' />
 				<response-code value="200" />
 			</request>
 		</test>
@@ -4470,7 +4471,8 @@ def triad_dates():
 				<refresh />
 
 				<!-- Check good error message -->
-				<regex pattern="The bill start date 2007-01-05 00:00 can&amp;#39;t be after the finish date 2007-01-01 00:00." />
+				<regex
+					pattern="The bill start date 2007-01-05 00:00 can&amp;#39;t be after the finish date 2007-01-01 00:00." />
 				<response-code value="200" />
 			</request>
 		</test>
@@ -4494,34 +4496,36 @@ def triad_dates():
 				<control name="finish_day" value="30" />
 				<control name="finish_hour" value="15" />
 				<control name="finish_minute" value="30" />
-                <control name="kwh" value="0" />
-                <control name="net" value="0" />
-                <control name="vat" value="0" />
-                <control name="gross" value="0" />
-                <control name="account" value="0"/>
-                <control name="bill_type_id" value="1"/>        
-                <control name="breakdown" value="{}"/>
-				
+				<control name="kwh" value="0" />
+				<control name="net" value="0" />
+				<control name="vat" value="0" />
+				<control name="gross" value="0" />
+				<control name="account" value="0" />
+				<control name="bill_type_id" value="1" />
+				<control name="breakdown" value="{}" />
+
 				<response-code value="400" />
-				
+
 				<!-- Check good error message -->
-				<regex pattern="The MPAN core &amp;#39;&amp;#39; must contain exactly 13 digits\." />
+				<regex
+					pattern="The MPAN core &amp;#39;&amp;#39; must contain exactly 13 digits\." />
 
 			</request>
 		</test>
 		<test name="HH by HH virtual bill">
 			<!-- Must straddle two eras -->
-			<request path="/chellow/reports/387/output/?supply_id=5&amp;start_year=2012&amp;start_month=12&amp;start_day=31&amp;start_hour=23&amp;start_minute=30&amp;finish_year=2013&amp;finish_month=1&amp;finish_day=1&amp;finish_hour=23&amp;finish_minute=30">				
+			<request
+				path="/chellow/reports/387/output/?supply_id=5&amp;start_year=2012&amp;start_month=12&amp;start_day=31&amp;start_hour=23&amp;start_minute=30&amp;finish_year=2013&amp;finish_month=1&amp;finish_day=1&amp;finish_hour=23&amp;finish_minute=30">
 				<response-code value="200" />
-				
+
 				<regex pattern='"22 0883 6932 301",' />
 			</request>
 		</test>
 		<test name="Look at monthly report with an MD in kVA">
 			<!-- Add in reactive HH -->
 			<request path="/chellow/reports/303/output/" method="post">
-				<control name="channel_id" value="55"/>
-				<control name="start_year" value="2010"/>
+				<control name="channel_id" value="55" />
+				<control name="start_year" value="2010" />
 				<control name="start_month" value="02" />
 				<control name="start_day" value="04" />
 				<control name="start_hour" value="20" />
@@ -4529,60 +4533,133 @@ def triad_dates():
 				<control name="insert" value="Insert" />
 				<control name="value" value="45.7" />
 				<control name="status" value="A" />
-								
+
 				<response-code value="303" />
 			</request>
-			<request path="/chellow/reports/15/output/?is_import=true&amp;supply_id=7&amp;years=1&amp;year=2010">
-								
+			<request
+				path="/chellow/reports/15/output/?is_import=true&amp;supply_id=7&amp;years=1&amp;year=2010">
+
 				<response-code value="200" />
-				<regex pattern='&lt;tr&gt;\s*&lt;td&gt;2010-02-01 00:00&lt;/td&gt;\s*&lt;td&gt;22 4862 4512 332&lt;/td&gt;\s*&lt;td&gt;\s*2010-02-04 20:00\s*&lt;/td&gt;\s*&lt;td&gt;60.9&lt;/td&gt;\s*&lt;td&gt;91.4&lt;/td&gt;\s*&lt;td&gt;0.55&lt;/td&gt;\s*&lt;td&gt;109.8&lt;/td&gt;\s*&lt;td&gt;230&lt;/td&gt;\s*&lt;td&gt;\s*30\s*&lt;/td&gt;\s*&lt;/tr&gt;' />
+				<regex
+					pattern='&lt;tr&gt;\s*&lt;td&gt;2010-02-01 00:00&lt;/td&gt;\s*&lt;td&gt;22 4862 4512 332&lt;/td&gt;\s*&lt;td&gt;\s*2010-02-04 20:00\s*&lt;/td&gt;\s*&lt;td&gt;60.9&lt;/td&gt;\s*&lt;td&gt;91.4&lt;/td&gt;\s*&lt;td&gt;0.55&lt;/td&gt;\s*&lt;td&gt;109.8&lt;/td&gt;\s*&lt;td&gt;230&lt;/td&gt;\s*&lt;td&gt;\s*30\s*&lt;/td&gt;\s*&lt;/tr&gt;' />
 			</request>
 		</test>
 		<test name="Order of HHDC batches">
 			<!-- Add in second batch -->
 			<request path="/chellow/reports/281/output/" method="post">
-				<control name="hhdc_contract_id" value="52"/>
-				<control name="reference" value="7"/>
+				<control name="hhdc_contract_id" value="52" />
+				<control name="reference" value="7" />
 				<control name="description" value="" />
-								
+
 				<response-code value="303" />
 			</request>
 			<request path="/chellow/reports/93/output/?hhdc_contract_id=52">
-								
+
 				<response-code value="200" />
-				<regex pattern='&lt;tr&gt;\s*&lt;td&gt;\s*&lt;a href="/chellow/reports/203/output/\?hhdc_batch_id=13"&gt;\s*7\s*&lt;/a&gt;\s*&lt;/td&gt;\s*&lt;td&gt;&lt;/td&gt;\s*&lt;/tr&gt;\s*&lt;tr&gt;\s*&lt;td&gt;\s*&lt;a href="/chellow/reports/203/output/\?hhdc_batch_id=8"&gt;\s*001-7t\s*&lt;/a&gt;\s*&lt;/td&gt;\s*&lt;td&gt;hhdc batch&lt;/td&gt;\s*&lt;/tr&gt;' />
+				<regex
+					pattern='&lt;tr&gt;\s*&lt;td&gt;\s*&lt;a href="/chellow/reports/203/output/\?hhdc_batch_id=13"&gt;\s*7\s*&lt;/a&gt;\s*&lt;/td&gt;\s*&lt;td&gt;&lt;/td&gt;\s*&lt;/tr&gt;\s*&lt;tr&gt;\s*&lt;td&gt;\s*&lt;a href="/chellow/reports/203/output/\?hhdc_batch_id=8"&gt;\s*001-7t\s*&lt;/a&gt;\s*&lt;/td&gt;\s*&lt;td&gt;hhdc batch&lt;/td&gt;\s*&lt;/tr&gt;' />
 			</request>
 		</test>
 		<test name="Order of MOP batches">
 			<!-- Add in second batch -->
 			<request path="/chellow/reports/353/output/" method="post">
-				<control name="mop_contract_id" value="56"/>
-				<control name="reference" value="7a"/>
+				<control name="mop_contract_id" value="56" />
+				<control name="reference" value="7a" />
 				<control name="description" value="" />
-								
+
 				<response-code value="303" />
 			</request>
 			<request path="/chellow/reports/191/output/?mop_contract_id=56">
-								
+
 				<response-code value="200" />
-				<regex pattern='&lt;tr&gt;\s*&lt;td&gt;\s*&lt;a href="/chellow/reports/193/output/\?mop_batch_id=9"&gt;\s*99/992\s*&lt;/a&gt;\s*&lt;/td&gt;\s*&lt;td&gt;mop batch&lt;/td&gt;\s*&lt;/tr&gt;\s*&lt;tr&gt;\s*&lt;td&gt;\s*&lt;a href="/chellow/reports/193/output/\?mop_batch_id=14"&gt;\s*7a\s*&lt;/a&gt;\s*&lt;/td&gt;\s*&lt;td&gt;&lt;/td&gt;\s*&lt;/tr&gt;' />
+				<regex
+					pattern='&lt;tr&gt;\s*&lt;td&gt;\s*&lt;a href="/chellow/reports/193/output/\?mop_batch_id=9"&gt;\s*99/992\s*&lt;/a&gt;\s*&lt;/td&gt;\s*&lt;td&gt;mop batch&lt;/td&gt;\s*&lt;/tr&gt;\s*&lt;tr&gt;\s*&lt;td&gt;\s*&lt;a href="/chellow/reports/193/output/\?mop_batch_id=14"&gt;\s*7a\s*&lt;/a&gt;\s*&lt;/td&gt;\s*&lt;td&gt;&lt;/td&gt;\s*&lt;/tr&gt;' />
 			</request>
 		</test>
 		<test name="MTCs">
-			<request path="/chellow/reports/61/output/">				
+			<request path="/chellow/reports/61/output/">
 				<response-code value="200" />
-				<regex pattern='&lt;tr&gt;\s*&lt;td&gt;\s*&lt;a href="/chellow/reports/63/output/\?mtc_id=573"&gt;\s*001\s*&lt;/a&gt;\s*&lt;/td&gt;\s*&lt;td&gt;\s*&lt;a href="/chellow/reports/67/output/\?dno_contract_id=1"&gt;\s*10\s*&lt;/a&gt;\s*&lt;/td&gt;\s*&lt;td&gt;Budget Warmth&lt;/td&gt;\s*&lt;td&gt;\s*&lt;a href="/chellow/reports/131/output/\?meter_type_id=16"&gt;\s*UM\s*&lt;/a&gt;\s*&lt;/td&gt;\s*&lt;td&gt;0&lt;/td&gt;\s*&lt;/tr&gt;' />
+				<regex
+					pattern='&lt;tr&gt;\s*&lt;td&gt;\s*&lt;a href="/chellow/reports/63/output/\?mtc_id=573"&gt;\s*001\s*&lt;/a&gt;\s*&lt;/td&gt;\s*&lt;td&gt;\s*&lt;a href="/chellow/reports/67/output/\?dno_contract_id=1"&gt;\s*10\s*&lt;/a&gt;\s*&lt;/td&gt;\s*&lt;td&gt;Budget Warmth&lt;/td&gt;\s*&lt;td&gt;\s*&lt;a href="/chellow/reports/131/output/\?meter_type_id=16"&gt;\s*UM\s*&lt;/a&gt;\s*&lt;/td&gt;\s*&lt;td&gt;0&lt;/td&gt;\s*&lt;/tr&gt;' />
 			</request>
-			
+
 			<request path="/chellow/reports/63/output/?mtc_id=573">
 				<response-code value="200" />
-				<regex pattern='&lt;tr&gt;\s*&lt;th&gt;Code&lt;/th&gt;\s*&lt;td&gt;001&lt;/td&gt;\s*&lt;/tr&gt;\s*&lt;tr&gt;\s*&lt;th&gt;DNO&lt;/th&gt;\s*&lt;td&gt;\s*&lt;a href="/chellow/reports/67/output/\?dno_contract_id=1"&gt;\s*10\s*&lt;/a&gt;\s*&lt;/td&gt;\s*&lt;/tr&gt;' />
+				<regex
+					pattern='&lt;tr&gt;\s*&lt;th&gt;Code&lt;/th&gt;\s*&lt;td&gt;001&lt;/td&gt;\s*&lt;/tr&gt;\s*&lt;tr&gt;\s*&lt;th&gt;DNO&lt;/th&gt;\s*&lt;td&gt;\s*&lt;a href="/chellow/reports/67/output/\?dno_contract_id=1"&gt;\s*10\s*&lt;/a&gt;\s*&lt;/td&gt;\s*&lt;/tr&gt;' />
 			</request>
-			
+
 			<!-- Try an MTC common to all DNOs -->
 			<request path="/chellow/reports/63/output/?mtc_id=233">
 				<response-code value="200" />
-				<regex pattern='&lt;tr&gt;\s*&lt;th&gt;Code&lt;/th&gt;\s*&lt;td&gt;500&lt;/td&gt;\s*&lt;/tr&gt;\s*&lt;tr&gt;\s*&lt;th&gt;DNO&lt;/th&gt;\s*&lt;td&gt;\s*All\s*&lt;/td&gt;\s*&lt;/tr&gt;' />
+				<regex
+					pattern='&lt;tr&gt;\s*&lt;th&gt;Code&lt;/th&gt;\s*&lt;td&gt;500&lt;/td&gt;\s*&lt;/tr&gt;\s*&lt;tr&gt;\s*&lt;th&gt;DNO&lt;/th&gt;\s*&lt;td&gt;\s*All\s*&lt;/td&gt;\s*&lt;/tr&gt;' />
+			</request>
+		</test>
+
+		<test name="Move forward era with channels, when era with no channels precedes it">
+			<request path="/chellow/reports/299/output/" method="post">
+				<control name="era_id" value="17" />
+				<control name="imp_related" value="true" />
+				<control name="channel_type" value="ACTIVE" />
+				<response-code value="303" />
+			</request>
+
+			<request path="/chellow/reports/307/output/" method="post">
+				<control name="era_id" value="17" />
+				<control name="msn" value="I02D89150" />
+				<control name="start_year" value="2010" />
+				<control name="start_month" value="01" />
+				<control name="start_day" value="06" />
+				<control name="start_hour" value="00" />
+				<control name="start_minute" value="00" />
+				<control name="is_ended" value="false" />
+				<control name="mop_contract_id" value="56" />
+				<control name="mop_account" value="mc-22 1065 3921 534" />
+				<control name="hhdc_contract_id" value="52" />
+				<control name="hhdc_account" value="dc-22 1065 3921 534" />
+				<control name="pc_id" value="3" />
+				<control name="mtc_code" value="801" />
+				<control name="cop_id" value="6" />
+				<control name="ssc_code" value="366" />
+				<control name="imp_llfc_code" value="110" />
+				<control name="imp_mpan_core" value="22 1065 3921 534" />
+				<control name="imp_sc" value="30" />
+				<control name="imp_supplier_contract_id" value="62" />
+				<control name="imp_supplier_account" value="SA342376000" />
+
+				<response-code value="303" />
+			</request>
+		</test>
+		<test name="NHH dumb bill that straddles dumb and AMR eras">
+		
+			<!-- Add new era, so that bill straddles join -->
+			<request path="/chellow/reports/305/output/" method="post">
+				<control name="supply_id" value="11" />
+				<control name="start_year" value="2007" />
+				<control name="start_month" value="07" />
+				<control name="start_day" value="10" />
+				<control name="start_hour" value="00" />
+				<control name="start_minute" value="00" />
+				<control name="insert_era" value="Insert" />
+
+				<regex pattern="/chellow/reports/7/output/\?supply_id=11" />
+				<response-code value="303" />
+			</request>
+		
+		    <!-- Add a channel to the new era -->
+			<request path="/chellow/reports/299/output/" method="post">
+				<control name="era_id" value="28" />
+				<control name="imp_related" value="true" />
+				<control name="channel_type" value="ACTIVE" />
+				<response-code value="303" />
+			</request>
+
+			<request path="/chellow/reports/111/output/?bill_id=6">
+
+				<response-code value="200" />
+				<regex
+					pattern='"06-002","23618619","N","0","49119","8596","2007-06-30 00:00","2007-07-31 00:00","22 9974 3438 105","CI005","Wheal Rodney","2007-06-30 00:00","2007-07-31 00:00","6","49119.0","0.0","49119.0","8596.0","0.0","8596.0","","0.0","","0.0","1.07614247312","",""' />
 			</request>
 			
 		</test>
