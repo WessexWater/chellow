@@ -14973,15 +14973,13 @@ Monad.getUtils()['imprt'](globals(), {
         'utils': ['UserException'],
         'templater': ['render']})
 
+files = []
 
 download_path = Monad.getContext().getRealPath("/downloads")
 
-files = []
-
 for fl in os.listdir(download_path):
-  statinfo = os.stat(fl)
+  statinfo = os.stat(os.path.join(download_path, fl))
   files.append({'name': fl, 'last_modified': datetime.datetime.utcfromtimestamp(statinfo.st_mtime), 'size': statinfo.st_size, 'creation_date': datetime.datetime.utcfromtimestamp(statinfo.st_ctime) })
-
 render(inv, template, {'files': files})]]></value>
 		<value><![CDATA[<!DOCTYPE html>
 <html>
