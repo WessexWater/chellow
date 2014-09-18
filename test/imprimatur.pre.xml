@@ -2253,7 +2253,7 @@ def triad_estimates():
 		<test name="Manipulate dno contracts">
 			<!-- Insert rate script -->
 			<request path="/chellow/reports/243/output/" method="post">
-				<control name="dno_contract_id" value="1" />
+				<control name="dno_contract_id" value="36" /> <!-- DNO 10 -->
 				<control name="start_year" value="2010" />
 				<control name="start_month" value="05" />
 				<control name="start_day" value="01" />
@@ -2289,7 +2289,7 @@ def triad_estimates():
 				<response-code value="303" />
 			</request>
 			<request path="/chellow/reports/251/output/">
-				<refresh />
+				<refresh max="20" />
 				<regex pattern="FINISHED_site_monthly_duration_for_CH023_1_to_2009_3\.csv" />
 				<response-code value="200" />
 			</request>
@@ -2464,7 +2464,7 @@ def virtual_bill(supply_source):
 		</test>
 		<test name="Set configuration properties">
 			<request path="/chellow/reports/269/output/" method="post">
-				<control name="non_core_contract_id" value="46" />
+				<control name="non_core_contract_id" value="13" />
 				<control name="name" value="configuration" />
 				<control name="charge_script" value="" />
 				<control name="properties"><![CDATA[{
@@ -3332,7 +3332,7 @@ def virtual_bill(supply_source):
 		<test
 			name="Try creating and deleting a rate script for a non-core contract (templater).">
 			<request path="/chellow/reports/275/output/" method="post">
-				<control name="non_core_contract_id" value="39" />
+				<control name="non_core_contract_id" value="30" />
 				<control name="start_year" value="2010" />
 				<control name="start_month" value="04" />
 				<control name="start_day" value="01" />
@@ -3359,7 +3359,7 @@ def virtual_bill(supply_source):
 		</test>
 		<test name="Try adding a rate script before other rate scripts.">
 			<request path="/chellow/reports/275/output/" method="post">
-				<control name="non_core_contract_id" value="39" />
+				<control name="non_core_contract_id" value="30" /> <!-- Templater -->
 				<control name="start_year" value="1999" />
 				<control name="start_month" value="04" />
 				<control name="start_day" value="01" />
@@ -4332,7 +4332,7 @@ def virtual_bill(supply_source):
 		</test>
 		<test name="Make sure rate scripts remain contiguous.">
 			<request path="/chellow/reports/273/output/" method="post">
-				<control name="rate_script_id" value="280" />
+				<control name="rate_script_id" value="243" /> <!-- First rate script of non-core contract triad -->
 				<control name="start_year" value="2005" />
 				<control name="start_month" value="04" />
 				<control name="start_day" value="01" />
@@ -4353,14 +4353,14 @@ def triad_dates():
 				<response-code value="303" />
 			</request>
 
-			<request path="/chellow/reports/271/output/?rate_script_id=281">
+			<request path="/chellow/reports/271/output/?rate_script_id=244">
 				<regex pattern="2006-03-31 00:00" />
 				<response-code value="200" />
 			</request>
 
 			<!-- Put it back to how it was -->
 			<request path="/chellow/reports/273/output/" method="post">
-				<control name="rate_script_id" value="280" />
+				<control name="rate_script_id" value="243" />
 				<control name="start_year" value="2005" />
 				<control name="start_month" value="04" />
 				<control name="start_day" value="01" />
@@ -4580,13 +4580,13 @@ def triad_dates():
 			<request path="/chellow/reports/61/output/">
 				<response-code value="200" />
 				<regex
-					pattern='&lt;tr&gt;\s*&lt;td&gt;\s*&lt;a href="/chellow/reports/63/output/\?mtc_id=573"&gt;\s*001\s*&lt;/a&gt;\s*&lt;/td&gt;\s*&lt;td&gt;\s*&lt;a href="/chellow/reports/67/output/\?dno_contract_id=1"&gt;\s*10\s*&lt;/a&gt;\s*&lt;/td&gt;\s*&lt;td&gt;Budget Warmth&lt;/td&gt;\s*&lt;td&gt;\s*&lt;a href="/chellow/reports/131/output/\?meter_type_id=16"&gt;\s*UM\s*&lt;/a&gt;\s*&lt;/td&gt;\s*&lt;td&gt;0&lt;/td&gt;\s*&lt;/tr&gt;' />
+					pattern='&lt;tr&gt;\s*&lt;td&gt;\s*&lt;a href="/chellow/reports/63/output/\?mtc_id=573"&gt;\s*001\s*&lt;/a&gt;\s*&lt;/td&gt;\s*&lt;td&gt;\s*&lt;a href="/chellow/reports/67/output/\?dno_contract_id=36"&gt;\s*10\s*&lt;/a&gt;\s*&lt;/td&gt;\s*&lt;td&gt;Budget Warmth&lt;/td&gt;\s*&lt;td&gt;\s*&lt;a href="/chellow/reports/131/output/\?meter_type_id=16"&gt;\s*UM\s*&lt;/a&gt;\s*&lt;/td&gt;\s*&lt;td&gt;0&lt;/td&gt;\s*&lt;/tr&gt;' />
 			</request>
 
 			<request path="/chellow/reports/63/output/?mtc_id=573">
 				<response-code value="200" />
 				<regex
-					pattern='&lt;tr&gt;\s*&lt;th&gt;Code&lt;/th&gt;\s*&lt;td&gt;001&lt;/td&gt;\s*&lt;/tr&gt;\s*&lt;tr&gt;\s*&lt;th&gt;DNO&lt;/th&gt;\s*&lt;td&gt;\s*&lt;a href="/chellow/reports/67/output/\?dno_contract_id=1"&gt;\s*10\s*&lt;/a&gt;\s*&lt;/td&gt;\s*&lt;/tr&gt;' />
+					pattern='&lt;tr&gt;\s*&lt;th&gt;Code&lt;/th&gt;\s*&lt;td&gt;001&lt;/td&gt;\s*&lt;/tr&gt;\s*&lt;tr&gt;\s*&lt;th&gt;DNO&lt;/th&gt;\s*&lt;td&gt;\s*&lt;a href="/chellow/reports/67/output/\?dno_contract_id=36"&gt;\s*10\s*&lt;/a&gt;\s*&lt;/td&gt;\s*&lt;/tr&gt;' />
 			</request>
 
 			<!-- Try an MTC common to all DNOs -->

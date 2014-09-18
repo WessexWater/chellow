@@ -1,0 +1,94 @@
+<!doctype html>
+<html>
+  <head>
+    <link rel="stylesheet" type="text/css"
+      href="{{ context_path }}/reports/19/output/"
+    >
+    <title>Chellow &gt; MOP Contracts &gt; {{contract.name}}</title>
+  </head>
+  <body>
+    <p>
+      <a href="{{context_path}}/reports/1/output/">Chellow</a> &gt;
+      <a href="{{context_path}}/reports/185/output/">MOP Contracts</a> &gt;
+      {{contract.name}}
+      [<a href="{{context_path}}/reports/151/output/?mop_contract_id={{contract.id}}">edit</a>]
+    </p>
+    <br />
+    {% if messages %}
+      <ul>
+        {% for message in messages %}
+          <li>{{ message }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+    <table>
+      <tbody>
+        <tr>
+          <th>Party</th>
+          <td>
+            <a href="{{context_path}}/reports/47/output/?party_id={{contract.party.id}}">{{contract.party.name}}</a>
+          </td>
+        </tr>
+        <tr>
+          <th>Name</th>
+          <td>{{contract.name}}</td>
+        </tr>
+        <tr>
+          <th>Start Date</th>
+          <td>{{contract.start_rate_script.start_date|hh_format}}</td>
+        </tr>
+        <tr>
+          <th>Finish Date</th>
+          <td>{{contract.finish_rate_script.finish_date|hh_format}}</td>
+        </tr>
+      </tbody>
+    </table>
+    <br>
+    <table>
+      <caption>
+        Rate Scripts
+        [<a href="{{context_path}}/reports/351/output/?mop_contract_id={{contract.id}}">add</a>]
+      </caption>
+      <thead>
+        <tr>
+          <th></th>
+          <th>From</th>
+          <th>To</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for rate_script in rate_scripts %}
+          <tr>
+            <td>
+              <a href="{{context_path}}/reports/205/output/?mop_rate_script_id={{rate_script.id}}">view</a>
+            </td>
+            <td>{{rate_script.start_date|hh_format}}</td>
+            <td>{{rate_script.finish_date|hh_format}}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    <ul>
+      <li>
+        <a href="{{context_path}}/reports/191/output/?mop_contract_id={{contract.id}}">Batches</a>
+      </li>
+    </ul>
+
+    <form action="{{context_path}}/reports/231/output/">
+      <fieldset>
+        <legend>Download Virtual Bills</legend>
+        <input type="hidden" name="mop_contract_id" value="{{contract.id}}">
+
+        From {{input_date('start', last_month_start)}} to
+        {{input_date('finish', last_month_finish)}}
+        <input type="submit" value="Download"/>
+      </fieldset>
+    </form>
+
+
+    <h2>Script</h2>
+
+    <pre>{{contract.charge_script}}</pre>
+  </body>
+</html>

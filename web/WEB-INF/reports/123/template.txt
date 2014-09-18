@@ -1,0 +1,62 @@
+<!doctype html>
+<html>
+  <head>
+    <link rel="stylesheet" type="text/css"
+      href="{{ context_path }}/reports/19/output/"
+    >
+    <title>Chellow &gt; Market Roles &gt; {{ market_role.description }}</title>
+  </head>
+  <body>
+    <p>
+      <a href="{{ context_path }}/reports/1/output/">Chellow</a> &gt;
+      <a href="{{ context_path }}/reports/121/output/">Market Roles</a> &gt;
+      {{ market_role.description }}
+    </p>
+    <br />
+    {% if messages %}
+      <ul>
+        {% for message in messages %}
+          <li>{{ message }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+    <table>
+      <tr>
+        <th>Code</th>
+        <td>{{ market_role.code }}</td>
+      </tr>
+      <tr>
+        <th>Description</th>
+        <td>{{ market_role.description }}</td>
+      </tr>
+    </table>
+    <br />
+    <table>
+      <caption>Parties</caption>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Participant</th>
+          {% if market_role.code == 'R' %}
+            <th>DNO Code</th>
+          {% endif %}
+        </tr>
+      </thead>
+      <tbody>
+        {% for party in market_role.parties %}
+          <tr>
+            <td>
+              <a href="{{ context_path }}/reports/47/output/?party_id={{ party.id }}">{{ party.name }}</a>
+            </td>
+            <td>
+              <a href="{{ context_path }}/reports/73/output/?participant_id={{ party.participant.id }}">{{ party.participant.code }}</a>
+            </td>
+            {% if market_role.code == 'R' %}
+              <td>{{ party.dno_code }}</td>
+            {% endif %}
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </body>
+</html>

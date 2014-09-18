@@ -1,0 +1,52 @@
+<!doctype html>
+<html>
+  <head>
+    <link rel="stylesheet" type="text/css"
+      href="{{context_path}}/reports/19/output/">
+    <title>
+      Chellow &gt; Supplies &gt; {{supply.id}} &gt; Notes &gt; {note.index} Edit
+    </title>
+  </head>
+  <body>
+    <p>
+      <a href="{{context_path}}/reports/1/output/">Chellow</a> &gt;
+      <a href="{{context_path}}/reports/99/output/">Supplies</a>  &gt;
+      <a href="{{context_path}}/reports/7/output/?supply_id={{supply.id}}">{{supply.id}}</a>  &gt;
+      <a href="{{context_path}}/reports/369/output/?supply_id={{supply.id}}">Notes</a>  &gt;
+      {{note.index}} Edit
+    </p>
+
+    {% if messages %}
+      <ul>
+        {% for message in messages %}
+          <li>{{ message }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+
+    <form action="." method="post">
+      <fieldset>
+        <legend>Edit Note</legend>
+        <input type="hidden" name="supply_id" value="{{supply.id}}">
+        <input type="hidden" name="note_index" value="{{note.index}}">
+        Category {{input_text('category', note.category)}}
+        <br>
+        Important? {{input_checkbox('is_important', note.is_important)}}
+        <br>
+        {{input_textarea('body', note.body, 30, 80)}}
+        <br>
+        <input type="submit" name="update" value="Edit">
+      </fieldset>
+    </form>
+    <br>
+    <form action="." method="post">
+      <fieldset>
+        <legend>Delete Note</legend>
+        <input type="hidden" name="supply_id" value="{{supply.id}}">
+        <input type="hidden" name="note_index" value="{{note.index}}">
+        <br>
+        <input type="submit" name="delete" value="Delete">
+      </fieldset>
+    </form>
+  </body>
+</html>

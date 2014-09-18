@@ -1,0 +1,110 @@
+<!doctype html>
+<html>
+  <head>
+    <link rel="stylesheet" type="text/css"
+      href="{{context_path}}/reports/19/output/">
+    <title>
+      Chellow &gt; HHDC Contracts &gt; {{contract.name}} &gt; Channel Snags
+    </title>
+  </head>
+  <body>
+    <p>
+      <a href="{{context_path}}/reports/1/output/">Chellow</a> &gt;
+      <a href="{{context_path}}/reports/113/output/">HHDC Contracts</a> &gt;
+      <a href="{{context_path}}/reports/115/output/?hhdc_contract_id={{contract.id}}">{{contract.name}}</a>
+      &gt; Channel Snags
+    </p>
+
+    <form action="{{context_path}}/reports/233/output/">
+      <fieldset>
+        <legend>Download CSV</legend>
+        <input type="hidden" name="hhdc_contract_id" value="{{contract.id}}">
+        <label>
+          Snags less than <input size="3" maxlength="3" name="days_hidden" value="0"> GMT calendar day(s) old are hidden.
+        </label>
+        <input type="submit" value="Download">
+      </fieldset>
+    </form>
+    <br>
+    <form action=".">
+      <fieldset>
+        <legend>Show Channel Snags</legend>
+        <input type="hidden" name="hhdc_contract_id" value="{{contract.id}}">
+        <label>
+          Snags less than {{input_text('hidden_days', '0', 3, 3)}} days old are hidden.
+        </label>
+        <input type="submit" value="Show">
+      </fieldset>
+    </form>
+
+    <p>
+      There are {{total_snags}} snag(s) older than {{request.getParameter('hidden_days')}} days that aren't ignored.
+    </p>
+
+    <table>
+      <caption>Snags (truncated after 200)</caption>
+      <thead>
+        <tr>
+          <th>View</th>
+          <th>Import MPAN Core</th>
+          <th>Export MPAN Core</th>
+          <th>Sites</th>
+          <th>Snag Description</th>
+          <th>Channels</th>
+          <th>Duration</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for snag_group in snag_groups %}
+          <tr>
+            <td>
+              <ul>
+                {% for snag in snag_group.snags %}
+                  <li>
+                    <a href="{{context_path}}/reports/117/output/?snag_id={{snag.id}}">view</a>  [<a href="{{context_path}}/reports/365/output/?snag_id={{snag.id}}">edit</a>]
+                  </li>
+                {% endfor %}
+              </ul>
+            </td>
+            <td>
+              {% if snag_group.era.imp_mpan_core %}
+                {{snag_group.era.imp_mpan_core}}
+              {% endif %}
+            </td>
+            <td>
+              {% if snag_group.era.exp_mpan_core %}
+                {{snag_group.era.exp_mpan_core}}
+              {% endif %}
+            </td>
+            <td>
+              <ul>
+                {% for site in snag_group.sites %}
+                  <li>{{site.code}} {{site.name}}</li>
+                {% endfor %}
+              </ul>
+            </td>
+            <td>{{snag_group.description}}</td>
+            <td>
+              <ul>
+                {% for snag in snag_group.snags %}
+                  <li>
+                    {% if snag.channel.imp_related %}
+                      Import
+                    {% else %}
+                      Export
+                    {% endif %}
+                    {{snag.channel.channel_type}}
+                  </li>
+                {% endfor %}
+              </ul>
+            </td>
+            <td>
+              {{snag_group.start_date|hh_format}} to
+              {{snag_group.finish_date|hh_format}}
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </body>
+</html>

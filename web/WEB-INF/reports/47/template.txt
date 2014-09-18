@@ -1,0 +1,77 @@
+<!doctype html>
+<html>
+  <head>
+    <link rel="stylesheet" type="text/css"
+      href="{{ context_path }}/reports/19/output/"
+    >
+    <title>Chellow &gt; Parties &gt; {{ party.name }}</title>
+  </head>
+  <body>
+    <p>
+      <a href="{{ context_path }}/reports/1/output/">Chellow</a> &gt;
+      <a href="{{ context_path }}/reports/45/output/">Parties</a> &gt;
+      {{ party.name }}
+    </p>
+    <br />
+    {% if messages %}
+      <ul>
+        {% for message in messages %}
+          <li>{{ message }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+    <table>
+      <tr>
+        <th>Name</th>
+        <td>{{ party.name }}</td>
+      </tr>
+      <tr>
+        <th>Participant</th>
+        <td><a href="{{ context_path }}/reports/73/output/?participant_id={{ party.participant.id }}">{{ party.participant.name }}</a>
+        </td>
+      </tr>
+      <tr>
+        <th>Role</th>
+        <td>
+          <a href="{{ context_path }}/reports/123/output/?market_role_id={{ party.market_role.id }}">{{ party.market_role.description }}</a>
+        </td>
+      </tr>
+        {% if party.market_role.code == 'R' %}
+          <tr>
+            <th>DNO Code</th>
+            <td>{{ party.dno_code }}</td>
+          </tr>
+        {% endif %}
+    </table>
+    <br />
+    <table>
+      <caption>Contracts</caption>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Start Date</th>
+          <th>Finish Date</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for contract in party.contracts %}
+          <tr>
+            <td>
+              {% if contract.market_role.code == 'C' %}
+                <a href="{{ context_path }}/reports/113/output/?contract-id={{ contract.id }}">{{ contract.name }}</a>
+              {% elif contract.market_role.code == 'R' %}
+                <a href="{{ context_path }}/reports/113/output/?contract-id={{ contract.id }}">{{ contract.name }}</a>
+              {% elif contract.market_role.code == 'X' %}
+                <a href="{{ context_path }}/reports/77/output/?supplier-contract-id={{ contract.id }}">{{ contract.name }}</a>
+              {% elif contract.market_role.code == 'M' %}
+                <a href="{{ context_path }}/reports/107/output/?mop-contract-id={{ contract.id }}">{{ contract.name }}</a>
+              {% endif %}
+            </td>
+            <td>{{ contract.start_rate_script.start_date|hh_format }}</td>
+            <td>{{ contract.finish_rate_script.finish_date|hh_format }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </body>
+</html>

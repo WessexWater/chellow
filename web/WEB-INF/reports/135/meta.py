@@ -1,0 +1,1 @@
+{'name': u'MTC Payment Type'}

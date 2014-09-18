@@ -1,0 +1,67 @@
+<!doctype html>
+<html>
+  <head>
+    <link rel="stylesheet" type="text/css"
+      href="{{ context_path }}/reports/19/output/">
+    <title>
+      Chellow &gt; Supplier Contracts &gt; {{batch.contract.name}} &gt;
+      Batches &gt; {{batch.reference}}
+    </title>
+  </head>
+  <body>
+    <p>
+      <a href="{{context_path}}/reports/1/output/">Chellow</a> &gt;
+      <a href="{{context_path}}/reports/75/output/">Supplier Contracts</a> &gt;
+      <a href="{{context_path}}/reports/77/output/?supplier_contract_id={{batch.contract.id}}">{{batch.contract.name}}</a>
+      &gt;
+      <a href="{{context_path}}/reports/89/output/?supplier_contract_id={{batch.contract.id}}">Batches</a>
+      &gt;
+      <a href="{{context_path}}/reports/91/output/?supplier_batch_id={{batch.id}}">{{batch.reference}}</a> &gt; Edit
+    </p>
+    {% if messages %}
+      <ul>
+        {% for message in messages %}
+          <li>{{ message }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+    <br>
+    {% if request.getMethod() == 'GET' and request.getParameter('confirm_delete') %}
+      <form method="post" action=".">
+        <fieldset>
+          <legend>Delete</legend>
+          <input type="hidden" name="supplier_batch_id" value="{{batch.id}}">
+          <p>Are you sure you want to delete this batch and all its bills?</p>
+          <input type="submit" name="delete" value="Delete">
+        </fieldset>
+      </form>
+      <p><a href=".">Cancel</a></p>
+    {% else %}
+      <form action="." method="post">
+        <fieldset>
+          <legend>Update batch</legend>
+          <input type="hidden" name="supplier_batch_id" value="{{batch.id}}">
+          <br>
+          <label>
+            Reference {{input_text('reference', batch.reference)}}
+          </label>
+          <br>
+          <label>
+            Description {{input_text('description', batch.description)}}
+          </label>
+          <br>
+          <br>
+          <input type="submit" name="update" value="Update">
+        </fieldset>
+      </form>
+      <br>
+      <form action=".">
+        <fieldset>
+          <legend>Delete this batch</legend>
+          <input type="hidden" name="supplier_batch_id" value="{{batch.id}}">
+   <input type="submit" name="confirm_delete" value="Delete">
+        </fieldset>
+      </form>
+    {% endif %}
+  </body>
+</html>

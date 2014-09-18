@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="us-ascii"?>
+<xsl:stylesheet version="1.0"
+    xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+    <xsl:output method="xml" encoding="US-ASCII"
+        doctype-public="-//W3C//DTD XHTML 1.1//EN"
+        doctype-system="http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd"
+        indent="yes" />
+    <xsl:template match="/">
+        <html>
+<head>
+                <link rel="stylesheet" type="text/css"
+                    href="{/source/request/@context-path}/reports/19/output/" />
+
+                <title>
+                    Chellow &gt; MOP Contracts &gt;
+                    <xsl:value-of select="/source/mop-contract/@name" /> &gt; Virtual Bills
+                </title>
+            </head>
+            <body>
+                <p>
+                    <a
+                        href="{/source/request/@context-path}/reports/1/output/">
+                        <xsl:value-of
+                            select="'Chellow'" />
+                    </a>
+                    &gt;
+                    <a
+                        href="{/source/request/@context-path}/reports/185/output/">
+                        <xsl:value-of select="'MOP Contracts'" />
+                    </a>
+                    &gt;
+                    <a
+                        href="{/source/request/@context-path}/reports/107/output/?mop-contract-id={/source/mop-contract/@id}">
+                    <xsl:value-of
+                        select="/source/mop-contract/@name" />
+                    </a>
+                    &gt;
+                    Virtual Bills
+                </p>
+
+                  <xsl:if test="//message">
+                    <ul>
+                        <xsl:for-each select="//message">
+                            <li>
+                                <xsl:value-of select="@description" />
+                            </li>
+                        </xsl:for-each>
+                    </ul>
+                </xsl:if>
+                <form action="{/source/request/@context-path}/reports/231/output/">
+                    <fieldset>
+                        <legend>Download Virtual Bills</legend>
+                        <input type="hidden" name="contract-id" value="{/source/mop-contract/@id}"/>
+<br/>
+<xsl:value-of select="'For '"/>
+<input name="months" value="1" maxlength="2" size="2" />
+<xsl:value-of select="' month(s) until the end of '"/>
+                        <input name="end-year" value="{/source/date/@year}" maxlength="4" size="4" /><xsl:value-of select="' - '"/>
+                        <select name="end-month">
+                            <xsl:for-each select="/source/months/month">
+                                <option value="{@number}">
+                                    <xsl:if test="@number=/source/date/@month">
+                                        <xsl:attribute name="selected">selected</xsl:attribute>
+                                    </xsl:if>
+                                    <xsl:value-of select="@number"/>
+                                </option>
+                            </xsl:for-each>
+                        </select>
+                        <input type="submit" value="Download"/>
+                    </fieldset>
+                </form>
+            </body>
+        </html>
+    </xsl:template>
+</xsl:stylesheet>

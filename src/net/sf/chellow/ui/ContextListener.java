@@ -1,6 +1,6 @@
 /*******************************************************************************
  * 
- *  Copyright (c) 2005, 2013 Wessex Water Services Limited
+ *  Copyright (c) 2005, 2014 Wessex Water Services Limited
  *  
  *  This file is part of Chellow.
  * 
@@ -20,6 +20,7 @@
  *******************************************************************************/
 package net.sf.chellow.ui;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
@@ -30,15 +31,20 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 import java.util.logging.FileHandler;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
-import java.util.Date;
 
+import javax.management.MBeanServer;
+import javax.management.MBeanServerFactory;
+import javax.management.MalformedObjectNameException;
+import javax.management.ObjectName;
 import javax.naming.InitialContext;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
@@ -73,6 +79,8 @@ import org.hibernate.jdbc.Work;
 import org.hibernate.tool.hbm2ddl.SchemaUpdate;
 import org.postgresql.copy.CopyManager;
 import org.postgresql.core.BaseConnection;
+import org.python.core.PyString;
+import org.python.core.PySystemState;
 import org.python.util.PythonInterpreter;
 
 public class ContextListener implements ServletContextListener {
@@ -243,6 +251,7 @@ public class ContextListener implements ServletContextListener {
 		BillType.insertBillType("W", "Withdrawn");
 		Hiber.commit();
 
+		
 		s.doWork(new Work() {
 			public void execute(Connection con) throws SQLException {
 				try {
@@ -291,12 +300,87 @@ public class ContextListener implements ServletContextListener {
 				stmt.executeUpdate("alter table channel add column channel_type channel_type not null");
 				stmt.executeUpdate("alter table channel add constraint channel_era_id_imp_related_channel_type_key unique (era_id, imp_related, channel_type)");
 				con.commit();
-			}
+				
+				stmt = con.createStatement();
+				ResultSet rs = stmt.executeQuery("select current_database()");
+				String dbName = null;
+				while (rs.next()) {
+			     dbName = rs.getString("current_database");
+				}
+				con.rollback();
+				
+				// get db hostname
 
+				ArrayList<MBeanServer> server_list = MBeanServerFactory.findMBeanServer(null);
+				MBeanServer server = server_list.get(0);
+				Set<ObjectName> beans;
+				try {
+					beans = server.queryNames(new ObjectName("Catalina:type=DataSource,context=/chellow,class=javax.sql.DataSource,name=\"jdbc/chellow\",*"), null);
+				} catch (MalformedObjectNameException e1) {
+					throw new InternalException(e1);
+				}
+				ObjectName bean = beans.toArray(new ObjectName[]{})[0];
+
+				String hostName = null;
+				try {
+				    String url = (String) server.getAttribute(bean, "url");
+
+				    int i = url.indexOf("//");
+				    url = url.substring(i + 2);
+				    i = url.indexOf(":");
+				    hostName = url.substring(0, i);
+				} catch (Exception e) {
+				    for (String attr : bean.toString().split(",")) {
+				        if (attr.startsWith("host=")) {
+				            hostName = attr.substring(5);
+				        }
+				    }
+				}
+
+				PythonInterpreter interp = new PythonInterpreter();
+				PySystemState sysState = interp.getSystemState();
+
+				String libPath = context.getRealPath("/WEB-INF/lib-python");
+				if (libPath != null) {
+					File libDir = new File(libPath);
+					if (libDir.exists()) {
+						PyString pyLibPath = new PyString(libPath);
+						if (!sysState.path.contains(pyLibPath)) {
+							sysState.path.append(pyLibPath);
+						}
+					}
+				}
+				String username = context.getInitParameter("db.username");
+				String password = context.getInitParameter("db.password");
+
+				try {
+					interp.setOut(System.out);
+					interp.setErr(System.err);
+					interp.set("root_path", context.getRealPath("/"));
+					interp.set("user_name", username);
+					interp.set("password", password);
+					interp.set("host_name", hostName);
+					interp.set("password", password);
+					interp.set("db_name", dbName);
+					
+					interp.execfile(context
+							.getResourceAsStream("/WEB-INF/bootstrap.py"));
+					
+				} catch (Throwable e) {
+					throw new UserException(e.getMessage() + " "
+							+ HttpException.getStackTraceString(e));
+				} finally {
+					interp.cleanup();
+				}
+
+			}
 		});
 
+		/*
 		Hiber.commit();
 		Hiber.setReadWrite();
+
+		
 		try {
 			GeneralImport process = new GeneralImport(null, context
 					.getResource("/WEB-INF/dno-contracts.xml").openStream(),
@@ -326,8 +410,10 @@ public class ContextListener implements ServletContextListener {
 		} catch (IOException e) {
 			throw new InternalException(e);
 		}
+		
 		Hiber.commit();
 		Hiber.close();
+		*/
 	}
 
 	private void upgradeFrom666(Connection con) throws HttpException {
@@ -549,24 +635,41 @@ public class ContextListener implements ServletContextListener {
 			stmt.executeUpdate("alter table hh_datum add last_modified timestamp with time zone not null default 'epoch'");
 			stmt.executeUpdate("alter table hh_datum alter last_modified drop default");
 
-			for (String table : new String[]{"batch", "bill", "bill_type", "channel", "clock_interval", "contract", "cop", "era", "generator_type", "gsp_group", "hh_datum", "llfc", "market_role", "measurement_requirement", "meter_payment_type", "mtc", "participant", "party", "pc", "rate_script", "read_type", "register_read", "site", "site_era", "snag", "source", "ssc", "supply", "tpr", "user", "user_role", "voltage_level"}) {
-			    stmt.execute("alter sequence " + table + "_id_sequence rename to " + table + "_id_seq");				
+			for (String table : new String[] { "batch", "bill", "bill_type",
+					"channel", "clock_interval", "contract", "cop", "era",
+					"generator_type", "gsp_group", "hh_datum", "llfc",
+					"market_role", "measurement_requirement",
+					"meter_payment_type", "mtc", "participant", "party", "pc",
+					"rate_script", "read_type", "register_read", "site",
+					"site_era", "snag", "source", "ssc", "supply", "tpr",
+					"user", "user_role", "voltage_level" }) {
+				stmt.execute("alter sequence " + table
+						+ "_id_sequence rename to " + table + "_id_seq");
 			}
 
 			stmt.execute("alter sequence mtc_meter_type_id_sequence rename to meter_type_id_seq");
 
 			stmt.execute("alter table \"user\" alter column id set default nextval('user_id_seq');");
 
-			for (String table : new String[]{"batch", "bill", "bill_type", "channel", "clock_interval", "contract", "cop", "era", "generator_type", "gsp_group", "hh_datum", "llfc", "market_role", "measurement_requirement", "meter_payment_type", "meter_type", "mtc", "participant", "party", "pc", "rate_script", "read_type", "register_read", "site", "site_era", "snag", "source", "ssc", "supply", "tpr", "user_role", "voltage_level"}) {
-			    stmt.execute("alter table " + table + " alter column id set default nextval('" + table + "_id_seq');");
+			for (String table : new String[] { "batch", "bill", "bill_type",
+					"channel", "clock_interval", "contract", "cop", "era",
+					"generator_type", "gsp_group", "hh_datum", "llfc",
+					"market_role", "measurement_requirement",
+					"meter_payment_type", "meter_type", "mtc", "participant",
+					"party", "pc", "rate_script", "read_type", "register_read",
+					"site", "site_era", "snag", "source", "ssc", "supply",
+					"tpr", "user_role", "voltage_level" }) {
+				stmt.execute("alter table " + table
+						+ " alter column id set default nextval('" + table
+						+ "_id_seq');");
 			}
 
 			stmt.execute("alter table batch alter column contract_id set not null;");
 			stmt.execute("alter table bill alter column batch_id set not null;");
-			
+
 			stmt.execute("alter table bill alter column batch_id set not null;");
 			stmt.execute("alter table bill alter column batch_id set not null;");
-			
+
 			stmt.executeUpdate("create index hh_datum_last_modified_idx on hh_datum (last_modified);");
 			stmt.executeUpdate("create index hh_datum_start_date_idx on hh_datum (start_date);");
 			stmt.executeUpdate("commit");

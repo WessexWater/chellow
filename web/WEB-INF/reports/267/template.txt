@@ -1,0 +1,86 @@
+<!doctype html>
+<html>
+  <head>
+    <link rel="stylesheet" type="text/css"
+      href="{{ context_path }}/reports/19/output/"
+    >
+    <title>Chellow &gt; Non-Core Contracts &gt; {{ contract.name }}</title>
+  </head>
+  <body>
+    <p>
+      <a href="{{ context_path }}/reports/1/output/">Chellow</a> &gt;
+      <a href="{{ context_path }}/reports/259/output/">Non-Core Contracts</a>
+      &gt; {{ contract.name }} [<a href="{{ context_path }}/reports/269/output/?non_core_contract_id={{ contract.id }}">edit</a>]
+    </p>
+    {% if messages %}
+      <ul>
+        {% for message in messages %}
+          <li>{{ message }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+    <br />
+
+    <table>
+      <tr>
+        <th>Is Core?</th>
+        <td>{{ contract.is_core }}</td>
+      </tr>
+    </table>
+    {% if contract.name == 'bsuos' %}
+      <p>
+        <a href="{{ context_path }}/reports/227/output/">Automatic Importer</a>
+      </p>
+    {% elif contract.name == 'tlms' %}
+      <p>
+        <a href="{{ context_path }}/reports/223/output/">Automatic Importer</a>
+      </p>
+    {% elif contract.name == 'system_price_bmreports' %}
+      <p>
+        <a href="{{ context_path }}/reports/221/output/">Automatic Importer</a>
+      </p>
+    {% elif contract.name == 'system_price_elexon' %}
+      <p>
+        <a href="{{ context_path }}/reports/385/output/">Automatic Importer</a>
+      </p>
+    {% elif contract.name == 'rcrc' %}
+      <p>
+        <a href="{{ context_path }}/reports/225/output/">Automatic Importer</a>
+      </p>
+    {% endif %}
+    <br>
+    <table>
+      <caption>
+          Rate Scripts
+          [<a href="{{ context_path }}/reports/275/output/?non_core_contract_id={{ contract.id }}">add</a>]
+      </caption>
+      <thead>
+        <tr>
+          <th></th>
+          <th>Start Date</th>
+          <th>Finish Date</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for rate_script in rate_scripts %}
+          <tr>
+            <td>
+              <a href="{{ context_path }}/reports/271/output/?rate_script_id={{ rate_script.id }}">View</a>
+            </td>
+            <td>{{ rate_script.start_date|hh_format }}</td>
+            <td>{{ rate_script.finish_date|hh_format }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    <h3>Charge Script</h3>
+
+    <pre>{{ contract.charge_script }}</pre>
+
+    <h3>Properties</h3>
+
+    <pre>{{ contract.properties }}</pre>
+
+  </body>
+</html>

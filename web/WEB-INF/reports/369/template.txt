@@ -1,0 +1,54 @@
+<!doctype html>
+<html>
+  <head>
+    <link rel="stylesheet" type="text/css"
+      href="{{context_path}}/reports/19/output/">
+    <title>Chellow &gt; Supplies &gt; {{supply.id}} &gt; Notes</title>
+  </head>
+  <body>
+    <p>
+      <a href="{{context_path}}/reports/1/output/">Chellow</a> &gt;
+      <a href="{{context_path}}/reports/99/output/">Supplies</a>  &gt;
+      <a href="{{context_path}}/reports/7/output/?supply_id={{supply.id}}">{{supply.id}}</a>  &gt;
+      Notes
+      [<a href="{{context_path}}/reports/239/output/?supply_id={{supply.id}}">add</a>]
+    </p>
+
+    {% if messages %}
+      <ul>
+        {% for message in messages %}
+          <li>{{ message }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+
+    <table>
+      <thead>
+        <tr>
+          <th>Edit</th>
+          <th>Category</th>
+          <th>Importance</th>
+          <th>Body</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for note in supply_note.notes %}
+          <tr>
+            <td>
+              [<a href="{{context_path}}/reports/367/output/?supply_id={{supply.id}}&amp;note_index={{loop.index0}}">edit</a>]
+            </td>
+            <td>{{note.category}}</td>
+            <td>
+              {% if note.is_important %}
+                High
+              {% else %}
+                Low
+              {% endif %}
+            </td>
+            <td><pre style=" white-space: pre-wrap;">{{note.body}}</pre></td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </body>
+</html>

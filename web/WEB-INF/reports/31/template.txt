@@ -1,0 +1,124 @@
+<!doctype html>
+<html>
+  <head>
+    <link rel="stylesheet" type="text/css"
+      href="{{context_path}}/reports/19/output/">
+
+    <style>
+      label {
+        width: 11em;
+        float: left;
+      }
+    </style>
+
+    <title>
+      Chellow &gt; Supplier Contracts &gt;
+      {{read.bill.batch.contract.name}} &gt; Batches &gt;
+      {{read.bill.batch.reference}} &gt; Bills &gt;
+      {{read.bill.id}} &gt; Read {{read.id}} Edit
+    </title>
+  </head>
+  <body>
+    <p>
+      <a href="{{context_path}}/reports/1/output/">Chellow</a> &gt;
+      <a href="{{context_path}}/reports/75/output/">Supplier Contracts</a> &gt;
+      <a href="{{context_path}}/reports/77/output/?supplier_contract_id={{read.bill.batch.contract.id}}">{{read.bill.batch.contract.name}}</a> &gt;
+      <a href="{{context_path}}/reports/89/output/?supplier_contract_id={{read.bill.batch.contract.id}}">Batches</a> &gt;
+      <a href="{{context_path}}/reports/91/output/?supplier_batch_id={{read.bill.batch.id}}">{{read.bill.batch.reference}}</a> &gt;
+      <a href="{{context_path}}/reports/105/output/?supplier_bill_id={{read.bill.id}}">Bill {{read.bill.id}}</a> &gt; Read {{read.id}} Edit
+    </p>
+    {% if messages %}
+      <ul>
+        {% for message in messages %}
+          <li>{{ message }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+    <br>
+    {% if request.getParameter('confirm_delete') %}
+      <form method="post" action=".">
+        <fieldset>
+          <legend>
+            Are you sure you want to delete this register read?
+          </legend>
+          <input type="submit" name="delete" value="Delete">
+        </fieldset>
+      </form>
+      <p><a href=".">Cancel</a></p>
+    {% else %}
+      <form action="." method="post">
+        <input type="hidden" name="supplier_read_id" value="{{read.id}}">
+        <fieldset>
+          <legend>Update this read</legend>
+          <br>
+          <label>MPAN</label> {{input_text('mpan', read.mpan_str)}}
+          <br>
+          <label>Coefficient</label>
+            {{input_text('coefficient', read.coefficient)}}
+          <br>
+          <label>Meter Serial Number</label>
+            {{input_text('msn', read.msn)}}
+          <br>
+          <label>Units</label>
+            {{input_text('units', read.units_as_str())}}
+          <br>
+          <label>TPR</label>
+            <select name="tpr_id">
+              {% for tpr in tprs %}
+                {{input_option('tpr_id', tpr.id, tpr.code, read.tpr.id)}}
+              {% endfor %}
+            </select>
+          <br>
+          <br>
+          <fieldset>
+            <legend>Previous Read</legend>
+            <fieldset>
+              <legend>Date</legend>
+              {{input_date('previous', read.previous_date)}}
+            </fieldset>
+            <br>
+            <label>Value</label>
+              {{input_text('previous_value', read.previous_value)}}
+            <br>
+            <label>Type</label>
+              <select name="previous_type_id">
+                {% for read_type in read_types %}
+                  {{input_option('previous_type_id', read_type.id, read_type.code + ' ' + read_type.description, read.previous_type.id)}}
+                {% endfor %}
+              </select>
+          </fieldset>
+          <br>
+          <br>
+          <fieldset>
+            <legend>Present Read</legend>
+            <fieldset>
+              <legend>Date</legend>
+              {{input_date('present', read.present_date)}}
+            </fieldset>
+            <br>
+            <label>Value</label>
+              {{input_text('present_value', read.present_value)}}
+            <br>
+            <label>Type</label>
+            <select name="present_type_id">
+              {% for read_type in read_types %}
+                {{input_option('present_type_id', read_type.id, read_type.code + ' ' + read_type.description, read.present_type.id)}}
+              {% endfor %}
+            </select>
+          </fieldset>
+          <br>
+          <br>
+          <input type="submit" name="update" value="Update">
+        </fieldset>
+      </form>
+      <br>
+      <form action=".">
+        <fieldset>
+          <input type="hidden" name="read_id" value="{{read.id}}">
+          <legend>Delete this read</legend>
+          <input name="confirm_delete" type="submit" value="Delete">
+        </fieldset>
+      </form>
+    {% endif %}
+  </body>
+</html>

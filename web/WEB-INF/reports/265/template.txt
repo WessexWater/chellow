@@ -1,0 +1,58 @@
+<!doctype html>
+<html>
+  <head>
+    <link rel="stylesheet" type="text/css"
+      href="{{ context_path }}/reports/19/output/"
+    >
+    <title>Chellow &gt; Non-core Contracts</title>
+  </head>
+  <body>
+    <p>
+      <a href="{{ context_path }}/reports/1/output/">Chellow</a> &gt;
+      <a href="{{ context_path }}/reports/259/output/">Non-core Contracts</a>
+      &gt; Add
+    </p>
+    <br />
+    {% if messages %}
+      <ul>
+        {% for message in messages %}
+          <li>{{ message }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+    <form action="{{ context_path }}/reports/265/output/" method="post">
+      <fieldset>
+        <legend>Add a non-core contract</legend>
+        <br />
+    <label>
+          Is Core?
+          <input type="checkbox" name="is_core" value="true"
+            {% if request.getParameter('is_core') %}
+              checked
+            {% endif %}
+          >
+        </label>
+        <br />
+        <br />
+        <label>
+          Name
+          <input name="name" value="
+            {%- if request.getParameter('name') -%}
+              {{ request.getParameter('name') }}
+            {%- endif -%}
+          ">
+        </label>
+        <br />
+        <br />
+        <fieldset>
+          <legend>Start Date</legend>
+          {{ input_date('start', initial_date) }}
+        </fieldset>
+        <br />
+        <br />
+        <input type="submit" value="Add">
+        <input type="reset" value="Reset">
+      </fieldset>
+    </form>
+  </body>
+</html>

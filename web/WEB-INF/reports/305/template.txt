@@ -1,0 +1,124 @@
+<!doctype html>
+<html>
+  <head>
+    <link rel="stylesheet" type="text/css"
+      href="{{context_path}}/reports/19/output/">
+    <title>
+      Chellow &gt; Supplies &gt; {{supply.id}} &gt; Edit
+    </title>
+  </head>
+  <body>
+    <p>
+      <a href="{{context_path}}/reports/1/output/">Chellow</a> &gt;
+      <a href="{{context_path}}/reports/99/output/">Supplies</a> &gt;
+      <a href="{{context_path}}/reports/7/output/?supply_id={{supply.id}}">{{supply.id}}</a> &gt;
+      Edit
+    </p>
+
+    {% if messages %}
+      <ul>
+        {% for message in messages %}
+          <li>{{message}}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+
+    <br>
+    {% if request.getMethod() == 'GET' and request.getParameter('delete') %}
+      <form method="post" action=".">
+        <fieldset>
+          <legend>Delete</legend>
+          <input type="hidden" name="supply_id" value="{{supply.id}}">
+          <p>Are you sure you want to delete this supply?</p>
+          <input type="submit" name="delete" value="Delete">
+        </fieldset>
+      </form>
+
+      <p>
+        <a href="{{context_path}}/reports/7/output/?supply_id={{supply.id}}">Cancel</a>
+      </p>
+    {% else %}
+      <form method="post" action=".">
+        <fieldset>
+          <legend>Update this supply</legend>
+          <input type="hidden" name="supply_id" value="{{supply.id}}">
+          <br>
+          <label>Name</label> {{input_text('name', supply.name)}}
+          <br>
+          <br>
+          <label>Source</label>
+          <select name="source_id">
+            {% for source in sources %}
+              {{input_option('source_id', source.id, source.code, supply.source.id)}}
+            {% endfor %}
+          </select>
+          <label>Generator Type (if source is 'gen' or 'gen-net')</label>
+          <select name="generator_type_id">
+            {% for generator_type in generator_types %}
+              {{input_option('generator_type_id', generator_type.id, generator_type.code, supply.generator_type.id)}}
+            {% endfor %}
+          </select>
+          <br>
+          <br>
+          <label>GSP Group</label>
+          <select name="gsp_group_id">
+            {% for gsp_group in gsp_groups %}
+              {{input_option('gsp_group_id', gsp_group.id, gsp_group.code + ' '  + gsp_group.description, supply.gsp_group.id)}}
+            {% endfor %}
+          </select>
+          <br>
+          <br>
+          <input type="submit" value="Update">
+        </fieldset>
+      </form>
+      <br>
+      <form action=".">
+        <fieldset>
+          <legend>Delete this supply</legend>
+          <input type="hidden" name="supply_id" value="{{supply.id}}">
+          <input type="submit" name="delete" value="Delete">
+        </fieldset>
+      </form>
+      <br>
+      <form method="post" action=".">
+        <fieldset>
+          <legend>Insert a new era</legend>
+          <input type="hidden" name="supply_id" value="{{supply.id}}">
+          <br>
+          <label>Start date</label> {{input_date('start', None)}}
+          <input type="submit" name="insert_era" value="Insert">
+        </fieldset>
+      </form>
+      <br>
+      <table>
+        <caption>Existing Eras</caption>
+        <thead>
+          <tr>
+            <th>Start date</th>
+            <th>Finish date</th>
+            <th>Import Mpan Core</th>
+            <th>Export Mpan Core</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for era in eras %}
+            <tr>
+              <td>{{era.start_date|hh_format}}</td>
+              <td>{{era.finish_date|hh_format}}</td>
+              <td>
+                {% if era.imp_mpan_core %}
+                  {{era.imp_mpan_core}}
+                {% endif %}
+              </td>
+              <td>
+                {% if era.exp_mpan_core %}
+                  {{era.exp_mpan_core}}
+                {% endif %}
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% endif %}
+  </body>
+</html>

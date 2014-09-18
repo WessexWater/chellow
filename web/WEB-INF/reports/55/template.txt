@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <link rel="stylesheet" type="text/css"
+      href="{{ context_path }}/reports/19/output/">
+    <title>Chellow &gt; Profile Classes &gt; {{pc.code}}</title>
+  </head>
+  <body>
+    <p>
+      <a href="{{context_path}}/reports/1/output/">Chellow</a> &gt;
+      <a href="{{context_path}}/reports/53/output/">Profile Classes</a> &gt;
+      {{pc.code}}
+    </p>
+    <br>
+    {% if messages %}
+      <ul>
+        {% for message in messages %}
+          <li>{{ message }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+
+    <table>
+      <tr>
+        <th>Code</th>
+        <td>{{pc.code}}</td>
+      </tr>
+      <tr>
+        <th>Description</th>
+        <td>{{pc.name}}</td>
+      </tr>
+    </table>
+  </body>
+</html>

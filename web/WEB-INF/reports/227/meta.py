@@ -1,0 +1,1 @@
+{'name': u'Importer: BSUoS'}

@@ -1,0 +1,29 @@
+<!doctype html>
+<html>
+  <head>
+    <link rel="stylesheet" type="text/css"
+      href="{{context_path}}/reports/19/output/">
+    <title>Chellow &gt; User Roles &gt; {{user_role.code}}</title>
+  </head>
+  <body>
+    <p>
+      <a href="{{context_path}}/reports/1/output/">Chellow</a> &gt;
+      <a href="{{context_path}}/reports/261/output/">User Roles</a> &gt;
+      {{user_role.code}}
+    </p>
+    <br>
+    {% if messages %}
+      <ul>
+        {% for message in messages %}
+          <li>{{ message }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+    <table>
+      <tr>
+        <th>Code</th>
+        <td>{{user_role.code}}</td>
+      </tr>
+    </table>
+  </body>
+</html>

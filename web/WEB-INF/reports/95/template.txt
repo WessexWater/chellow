@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <link rel="stylesheet" type="text/css"
+        href="{{ context_path }}/reports/19/output/" />
+    <title>Chellow &gt; TPRs</title>
+  </head>
+  <body>
+    <p>
+      <a href="{{ context_path }}/reports/1/output/">Chellow</a> &gt; TPRs
+    </p>
+
+    {% if messages %}
+      <ul>
+        {% for message in messages %}
+          <li>{{ message }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+
+    <ul>
+      {% for tpr in tprs %}
+        <li>
+          <a href="{{ context_path }}/reports/97/output/?tpr_id={{ tpr.id }}">{{ tpr.code }}</a>
+        </li>
+      {% endfor %}
+    </ul>
+  </body>
+</html>

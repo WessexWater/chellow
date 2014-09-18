@@ -1,0 +1,44 @@
+<!doctype html>
+<html>
+  <head>
+    <link rel="stylesheet" type="text/css"
+      href="{{ context_path }}/reports/19/output/"
+    >
+    <title>Chellow &gt; Parties</title>
+  </head>
+  <body>
+    <p>
+      <a href="{{ context_path }}/reports/1/output/">Chellow</a> &gt; Parties
+    </p>
+    <br />
+    {% if messages %}
+      <ul>
+        {% for message in messages %}
+          <li>{{ message }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+    <table>
+      <thead>
+        <th>Name</th>
+        <th>Market Role</th>
+        <th>Participant</th>
+      </thead>
+      <tbody>
+        {% for party in parties %}
+          <tr>
+            <td>
+              <a href="{{ context_path }}/reports/47/output/?party_id={{ party.id }}">{{ party.name }}</a>
+            </td>
+            <td>
+              <a href="{{ context_path }}/reports/121/output/?market_role_id={{ party.market_role.id }}">{{ party.market_role.description }}</a>
+            </td>
+            <td>
+              <a href="{{ context_path }}/reports/73/output/?participant_id={{ party.participant.id }}">{{ party.participant.code }}</a>
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </body>
+</html>

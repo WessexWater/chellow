@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <link rel="stylesheet" type="text/css"
+      href="{{context_path}}/reports/19/output/">
+    <title>Chellow &gt; CSV Supplies Snapshot</title>
+  </head>
+  <body>
+    <p>
+      <a href="{{context_path}}/reports/1/output/">Chellow</a> &gt;
+      CSV Supplies Snapshot
+    </p>
+
+    {% if messages %}
+      <ul>
+        {% for message in messages %}
+          <li>{{ message }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+
+    <form action="{{context_path}}/reports/33/output/">
+      <fieldset>
+        <legend>Supply level information</legend>
+        <br>
+        <fieldset>
+          <legend>For the end of</legend>
+          {{input_date(None, last_month, 'month')}}
+        </fieldset>
+        <br>
+        <input type="submit" value="Download">
+      </fieldset>
+    </form>
+  </body>
+</html>
