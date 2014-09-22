@@ -4,9 +4,9 @@ import collections
 import datetime
 import pytz
 from dateutil.relativedelta import relativedelta
-from sqlalchemy import or_
+from sqlalchemy import or_, cast, Float
 from sqlalchemy.orm.exc import NoResultFound
-from sqlalchemy.orm import joinedload
+from sqlalchemy.orm import joinedload, aliased
 import math
 
 
@@ -866,19 +866,12 @@ order by hh_datum.start_date
                     if can_insert:
                         bills.append(cand_bill)
 
+                prev_type_alias = aliased(ReadType)
+                pres_type_alias = aliased(ReadType)
                 for bill in bills: 
-                    for read in sess.query(RegisterRead).join(Bill).options(joinedload(RegisterRead.tpr), joinedload(RegisterRead.previous_type), joinedload(RegisterRead.present_type)).filter(Bill.id == bill.id, RegisterRead.units == 0).order_by(RegisterRead.present_date):
-                        tpr_code = read.tpr.code 
+                    for coefficient, previous_date, previous_value, previous_type, present_date, present_value, present_type, tpr_code in sess.query(cast(RegisterRead.coefficient, Float), RegisterRead.previous_date, cast(RegisterRead.previous_value, Float), prev_type_alias.code, RegisterRead.present_date, cast(RegisterRead.present_value, Float), pres_type_alias.code, Tpr.code).join(Bill).join(Tpr).join(prev_type_alias, RegisterRead.previous_type_id == prev_type_alias.id).join(pres_type_alias, RegisterRead.present_type_id == pres_type_alias.id).filter(Bill.id == bill.id, RegisterRead.units == 0).order_by(RegisterRead.present_date):
                         if tpr_code not in tpr_codes:
                             self.problem += "The TPR " + str(tpr_code) + " from the register read does not match any of the TPRs associated with the MPAN."
-
-                        coefficient = float(read.coefficient)
-                        previous_date = read.previous_date
-                        previous_value = float(read.previous_value)
-                        previous_type = read.previous_type
-                        present_date = read.present_date
-                        present_value = float(read.present_value)
-                        present_type = read.present_type
                     
                         if previous_date < bill.start_date:
                             self.problem += "There's a read before the start of the bill!"
@@ -891,8 +884,6 @@ order by hh_datum.start_date
                             advance = 10 ** digits - previous_value + present_value
 
                         kwh = advance * coefficient
-                        rate = float(kwh) / (float(totalseconds(present_date - previous_date)) / (60 * 30))
-
                         tpr_dict = _tpr_dict(sess, self.caches, tpr_code, self.pw)
                         days_of_week = tpr_dict['days-of-week']
                         
@@ -916,7 +907,7 @@ order by hh_datum.start_date
                             pass_finish = present_date
 
                         year_delta = relativedelta(year=self.year_advance)
-
+                        hh_part = []
                         while not hh_date > pass_finish:
                             dt = tz.normalize(hh_date.astimezone(tz)) + year_delta
                             decimal_hour = dt.hour + float(dt.minute) / 60
@@ -928,9 +919,16 @@ order by hh_datum.start_date
                                     dt_utc = hh_date + year_delta
                                     dt_ct = ct_tz.normalize(dt_utc.astimezone(ct_tz))
 
-                                    self.hh_data.append({'imp-msp-kvarh': 0, 'imp-msp-kvar': 0, 'exp-msp-kvarh': 0, 'exp-msp-kvar': 0, 'hist-start-date': chunk_start, 'start-date': dt_utc, 'ct-day': dt_ct.day, 'utc-month': dt_utc.month, 'utc-day': dt_utc.day, 'utc-decimal-hour': dt_utc.hour + float(dt_utc.minute) / 60, 'utc-year': dt_utc.year, 'utc-hour': dt_utc.hour, 'utc-minute': dt_utc.minute, 'ct-year': dt_ct.year, 'ct-month': dt_ct.month, 'ct-decimal-hour': dt_ct.hour + float(dt_ct.minute) / 60, 'ct-day-of-week': dt_ct.weekday(), 'utc-day-of-week': dt_utc.weekday(), 'msp-kw': rate * 2, 'msp-kwh': rate, 'hist-kwh': rate, 'status': status})
+                                    hh_part.append({'imp-msp-kvarh': 0, 'imp-msp-kvar': 0, 'exp-msp-kvarh': 0, 'exp-msp-kvar': 0, 'hist-start-date': chunk_start, 'start-date': dt_utc, 'ct-day': dt_ct.day, 'utc-month': dt_utc.month, 'utc-day': dt_utc.day, 'utc-decimal-hour': dt_utc.hour + float(dt_utc.minute) / 60, 'utc-year': dt_utc.year, 'utc-hour': dt_utc.hour, 'utc-minute': dt_utc.minute, 'ct-year': dt_ct.year, 'ct-month': dt_ct.month, 'ct-decimal-hour': dt_ct.hour + float(dt_ct.minute) / 60, 'ct-day-of-week': dt_ct.weekday(), 'utc-day-of-week': dt_utc.weekday(),  'status': status})
                                     break
                             hh_date += HH
+
+                        rate = float(kwh) / len(hh_part)
+                        for h in hh_part:
+                            h['msp-kw'] = rate * 2
+                            h['msp-kwh'] = h['hist-kwh'] = rate
+                        self.hh_data += hh_part
+
             else:
                 raise UserException("gen type not recognized")
 
@@ -981,3 +979,4 @@ def data_sources_contract(contract, month_start, month_finish, forecast_date, co
             data_source = SupplySource(chunk_start, chunk_finish, forecast_date, era, True, comterp, pw, caches)
             yield data_source
     '''
+
