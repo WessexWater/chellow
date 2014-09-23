@@ -191,7 +191,7 @@ Table of site level monthly kWh, MD kWh etc.</a>
     <br>
     <form action="{{context_path}}/reports/29/output/">
       <fieldset>
-        <legend>Download HH data (kWh)</legend>
+        <legend>HH Data: 48 Column Format</legend>
         <input type="hidden" name="site_id" value="{{site.id}}">
         <br>
         <select name="type">
@@ -205,6 +205,18 @@ Table of site level monthly kWh, MD kWh etc.</a>
         for {{input_text('months', '1', 2, 2)}}
         month(s) until the end of {{input_date('finish', last_month_finish, resolution='month')}}
         <input type="submit" value="Download">
+      </fieldset>
+    </form>
+    <br>
+    <form action="{{context_path}}/reports/391/output/">
+      <fieldset>
+        <legend>HH Data: HH Per Row Format</legend>
+        <input type="hidden" name="site_id" value="{{site.id}}">
+        <p>
+          From {{input_date('start', last_month_start)}} to
+          {{input_date('finish', last_month_finish)}}
+          <input type="submit" value="Download">
+        </p>
       </fieldset>
     </form>
     <br>
