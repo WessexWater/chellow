@@ -868,8 +868,8 @@ order by hh_datum.start_date
 
                 prev_type_alias = aliased(ReadType)
                 pres_type_alias = aliased(ReadType)
-                for bill in bills: 
-                    for coefficient, previous_date, previous_value, previous_type, present_date, present_value, present_type, tpr_code in sess.query(cast(RegisterRead.coefficient, Float), RegisterRead.previous_date, cast(RegisterRead.previous_value, Float), prev_type_alias.code, RegisterRead.present_date, cast(RegisterRead.present_value, Float), pres_type_alias.code, Tpr.code).join(Bill).join(Tpr).join(prev_type_alias, RegisterRead.previous_type_id == prev_type_alias.id).join(pres_type_alias, RegisterRead.present_type_id == pres_type_alias.id).filter(Bill.id == bill.id, RegisterRead.units == 0).order_by(RegisterRead.present_date):
+                for bill in bills:
+                    for coefficient, previous_date, previous_value, previous_type, present_date, present_value, present_type, tpr_code in sess.query(cast(RegisterRead.coefficient, Float), RegisterRead.previous_date, cast(RegisterRead.previous_value, Float), prev_type_alias.code, RegisterRead.present_date, cast(RegisterRead.present_value, Float), pres_type_alias.code, Tpr.code).join(Bill).join(Tpr).join(prev_type_alias, RegisterRead.previous_type_id == prev_type_alias.id).join(pres_type_alias, RegisterRead.present_type_id == pres_type_alias.id).filter(Bill.id == bill.id, RegisterRead.units == 0, RegisterRead.previous_date <= chunk_finish, RegisterRead.present_date >= chunk_start).order_by(RegisterRead.present_date):
                         if tpr_code not in tpr_codes:
                             self.problem += "The TPR " + str(tpr_code) + " from the register read does not match any of the TPRs associated with the MPAN."
                     
@@ -908,6 +908,7 @@ order by hh_datum.start_date
 
                         year_delta = relativedelta(year=self.year_advance)
                         hh_part = []
+
                         while not hh_date > pass_finish:
                             dt = tz.normalize(hh_date.astimezone(tz)) + year_delta
                             decimal_hour = dt.hour + float(dt.minute) / 60
@@ -979,4 +980,5 @@ def data_sources_contract(contract, month_start, month_finish, forecast_date, co
             data_source = SupplySource(chunk_start, chunk_finish, forecast_date, era, True, comterp, pw, caches)
             yield data_source
     '''
+
 
