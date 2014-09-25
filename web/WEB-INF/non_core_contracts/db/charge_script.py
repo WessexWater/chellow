@@ -156,11 +156,11 @@ class RegisterRead(Base, PersistentClass):
         try:
           return RegisterRead.UNITS_STR[units_str]
         except KeyError:
-          raise UserException("The units '" + str(units_str) + " isn't recognized.")
+          raise UserException(
+                "The units '" + str(units_str) + " isn't recognized.")
 
     __tablename__ = 'register_read'
-    id = Column('id', Integer, Sequence('register_read_id_seq'),
-            primary_key=True)
+    id = Column('id', Integer, primary_key=True)
     bill_id = Column(Integer, ForeignKey('bill.id'), nullable=False)
     msn = Column(String, nullable=False)
     mpan_str = Column(String, nullable=False)
@@ -170,8 +170,8 @@ class RegisterRead(Base, PersistentClass):
     previous_date = Column(DateTime, nullable=False)
     previous_value = Column(Numeric, nullable=False)
     previous_type_id = Column(Integer, ForeignKey('read_type.id'))
-    previous_type = relationship("ReadType",
-                    primaryjoin="ReadType.id==RegisterRead.previous_type_id")
+    previous_type = relationship(
+        "ReadType", primaryjoin="ReadType.id==RegisterRead.previous_type_id")
     present_date = Column(DateTime, nullable=False)
     present_value = Column(Numeric, nullable=False)
     present_type_id = Column(Integer, ForeignKey('read_type.id'))
@@ -180,18 +180,25 @@ class RegisterRead(Base, PersistentClass):
 
 
 
-    def __init__(self, bill, tpr, coefficient, units, msn, mpan_str,
-            previous_date, previous_value, previous_type, present_date, present_value, present_type):
+    def __init__(
+            self, bill, tpr, coefficient, units, msn, mpan_str, previous_date,
+            previous_value, previous_type, present_date, present_value,
+            present_type):
 
         self.bill = bill
-        self.update(tpr, coefficient, units, msn, mpan_str, previous_date,
-                previous_value, previous_type, present_date, present_value, present_type)
+        self.update(
+            tpr, coefficient, units, msn, mpan_str, previous_date,
+            previous_value, previous_type, present_date, present_value,
+            present_type)
 
-    def update(self, tpr, coefficient, units, msn, mpan_str, previous_date,
-            previous_value, previous_type, present_date, present_value, present_type):
+
+    def update(
+            self, tpr, coefficient, units, msn, mpan_str, previous_date,
+            previous_value, previous_type, present_date, present_value,
+            present_type):
         if tpr is None and units == 'kWh':
-            raise UserException("If a register read is measuring kWh, " +
-                    "there must be a TPR.")
+            raise UserException(
+                "If a register read is measuring kWh, there must be a TPR.")
 
         self.tpr = tpr
         self.coefficient = coefficient

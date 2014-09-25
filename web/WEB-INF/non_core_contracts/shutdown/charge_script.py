@@ -1,5 +1,6 @@
 from java.lang import System
 from net.sf.chellow.monad import Monad
+import time
 
 Monad.getUtils()['impt'](globals(), 'utils', 'pre_db', 'hh_importer', 'bsuos', 'rcrc', 'tlms', 'db', 'system_price_bmreports', 'system_price_elexon')
 
@@ -14,7 +15,11 @@ def on_shut_down(ctx):
             try:
                 func()
             except UserException, e:
-                messages.append(str(e))
+                time.sleep(2)
+                try:
+                    func()
+                except UserException, e:
+                    messages.append(str(e))
         if len(messages) > 0:
             raise UserException(' '.join(messages))
     finally:

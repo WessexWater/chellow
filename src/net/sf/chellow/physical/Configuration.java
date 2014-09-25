@@ -1,6 +1,6 @@
 /*******************************************************************************
  * 
- *  Copyright (c) 2005-2013 Wessex Water Services Limited
+ *  Copyright (c) 2005-2014 Wessex Water Services Limited
  *  
  *  This file is part of Chellow.
  * 
@@ -83,25 +83,14 @@ public class Configuration extends PersistentEntity {
 
 	private long userReportId;
 
-	private long coreContractId;
-
-	private long userContractId;
-
-	private long coreRateScriptId;
-
-	private long userRateScriptId;
-
 	public Configuration() {
 	}
 
 	public Configuration(String properties) {
+		setId(0L);
 		setProperties(properties);
 		setCoreReportId(1);
 		setUserReportId(0);
-		setCoreContractId(-1);
-		setUserContractId(-2);
-		setCoreRateScriptId(-1);
-		setUserRateScriptId(-2);
 	}
 
 	public String getProperties() {
@@ -126,38 +115,6 @@ public class Configuration extends PersistentEntity {
 
 	public void setUserReportId(long id) {
 		userReportId = id;
-	}
-
-	public long getCoreContractId() {
-		return coreContractId;
-	}
-
-	public void setCoreContractId(long id) {
-		coreContractId = id;
-	}
-
-	public long getUserContractId() {
-		return userContractId;
-	}
-
-	public void setUserContractId(long id) {
-		userContractId = id;
-	}
-
-	public long getCoreRateScriptId() {
-		return coreRateScriptId;
-	}
-
-	public void setCoreRateScriptId(long id) {
-		coreRateScriptId = id;
-	}
-
-	public long getUserRateScriptId() {
-		return userRateScriptId;
-	}
-
-	public void setUserRateScriptId(long id) {
-		userRateScriptId = id;
 	}
 
 	public void update(String properties) throws HttpException {
@@ -190,25 +147,6 @@ public class Configuration extends PersistentEntity {
 		return userReportId;
 	}
 
-	public long nextCoreContractId() {
-		coreContractId += 2;
-		return coreContractId;
-	}
-
-	public long nextUserContractId() {
-		userContractId += 2;
-		return userContractId;
-	}
-
-	public long nextCoreRateScriptId() {
-		coreRateScriptId += 2;
-		return coreRateScriptId;
-	}
-
-	public long nextUserRateScriptId() {
-		userRateScriptId += 2;
-		return userRateScriptId;
-	}
 
 	public MonadUri getEditUri() {
 		return null;

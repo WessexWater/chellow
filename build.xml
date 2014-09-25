@@ -1,4 +1,6 @@
-<project name="Chellow" default="prepare" basedir="." xmlns:tc="antlib:tomcat.apache.org">
+<project
+		name="Chellow" default="prepare" basedir="."
+		xmlns:tc="antlib:tomcat.apache.org">
 
 	<property file="build.properties" />
 	<property file="${user.home}/build.properties" />
@@ -60,29 +62,31 @@
 			<fileset dir="${src.home}" excludes="**/*.java" />
 		</copy>
 		<copy todir="${build.home}/WEB-INF/lib-python/jinja2">
-			<fileset dir="${user.home}/venv/lib/python2.6/site-packages/jinja2" />
+			<fileset dir="${basedir}/venv/lib/python2.7/site-packages/jinja2" />
 		</copy>
 		<copy todir="${build.home}/WEB-INF/lib-python/dateutil">
-			<fileset dir="${user.home}/venv/lib/python2.6/site-packages/dateutil" />
+			<fileset dir="${basedir}/venv/lib/python2.7/site-packages/dateutil" />
 		</copy>
 		<copy todir="${build.home}/WEB-INF/lib-python/sqlalchemy">
-			<fileset dir="${user.home}/venv/lib/python2.6/site-packages/sqlalchemy" />
+			<fileset dir="${basedir}/venv/lib/python2.7/site-packages/sqlalchemy" />
 		</copy>
 		<copy todir="${build.home}/WEB-INF/lib-python/xlrd">
-			<fileset dir="${user.home}/venv/lib/python2.6/site-packages/xlrd" />
+			<fileset dir="${basedir}/venv/lib/python2.7/site-packages/xlrd" />
 		</copy>
 		<copy todir="${build.home}/WEB-INF/lib-python/pg8000">
-			<fileset dir="${user.home}/venv/lib/python2.6/site-packages/pg8000" />
+			<fileset dir="${basedir}/venv/lib/python2.7/site-packages/pg8000" />
 		</copy>
 		<copy todir="${build.home}/WEB-INF/lib-python/pytz">
-			<fileset dir="${user.home}/venv/lib/python2.6/site-packages/pytz" />
+			<fileset dir="${basedir}/venv/lib/python2.7/site-packages/pytz" />
 		</copy>
-		<copy overwrite="true" todir="${build.home}/WEB-INF/lib-python/" file="${user.home}/venv/lib/python2.6/site-packages/six.py" />
+		<copy
+			overwrite="true" todir="${build.home}/WEB-INF/lib-python/"
+			file="${basedir}/venv/lib/python2.7/site-packages/six.py" />
 		<copy todir="${build.home}/WEB-INF/lib-python/ftputil">
-			<fileset dir="${user.home}/venv/lib/python2.6/site-packages/ftputil" />
+		  <fileset dir="${basedir}/venv/lib/python2.7/site-packages/ftputil" />
 		</copy>
 		<copy todir="${build.home}/WEB-INF/lib-python/requests">
-			<fileset dir="${user.home}/venv/lib/python2.6/site-packages/requests" />
+			<fileset dir="${basedir}/venv/lib/python2.7/site-packages/requests" />
 		</copy>
 
 		<taskdef name="instrument" classname="org.hibernate.tool.instrument.javassist.InstrumentTask" classpath="${javalib.home}/hibernate-distribution-3.6.10.Final/hibernate3.jar:/usr/share/java/slf4j-api.jar:/usr/share/java/slf4j-nop.jar" />

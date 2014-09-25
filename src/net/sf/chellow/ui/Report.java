@@ -134,7 +134,7 @@ public class Report extends PersistentEntity implements Urlable {
 			Hiber.flush();
 		} catch (ConstraintViolationException e) {
 			Hiber.rollBack();
-			throw new UserException("There's already a report with that name.");
+			throw new UserException("There's already a report with that name." + UserException.getStackTraceString(e));
 		}
 		return report;
 	}
