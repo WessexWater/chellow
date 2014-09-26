@@ -4700,5 +4700,49 @@ def triad_dates():
 					pattern='"07-002","3423760005","N","150","98.17","15.01","2011-01-05 00:00","2011-01-10 23:30","22 1065 3921 534","CI017","Roselands","2011-01-05 00:00","2011-01-10 23:30","13","98.17","164.1","-65.93","150.0","1641.0","",""' />
 			</request>
 		</test>
+		<test name="Check bill with teleswitch TPR">
+			<!-- Update register read to make the TPR a teleswitch one -->
+			<request path="/chellow/reports/31/output/" method="post">
+				<control name="supplier_read_id" value="16" />
+				<control name="mpan" value="22 1065 3921 534" />
+				<control name="coefficient" value="1" />
+				<control name="msn" value="I02D89150" />
+				<control name="units" value="kWh" />
+				<control name="tpr_id" value="643" />
+				<control name="previous_year" value="2012" />
+				<control name="previous_month" value="01" />
+				<control name="previous_day" value="04" />
+				<control name="previous_hour" value="23" />
+				<control name="previous_minute" value="30" />
+				<control name="previous_value" value="473" />
+				<control name="previous_type_id" value="1" />
+				<control name="present_year" value="2012" />
+				<control name="present_month" value="01" />
+				<control name="present_day" value="06" />
+				<control name="present_hour" value="23" />
+				<control name="present_minute" value="30" />
+				<control name="present_value" value="725" />
+				<control name="present_type_id" value="1" />
+				<control name="update" value="Update" />
+
+				<response-code value="303" />
+			</request>
+
+			<!-- Delete the channel to make it a dumb NHH -->	
+			<request path="/chellow/reports/303/output/" method="post">
+				<control name="channel_id" value="56" />
+				<control name="delete" value="delete" />
+
+				<response-code value="303" />
+
+			</request>
+
+			<!-- Check the bill -->	
+			<request path="/chellow/reports/111/output/?bill_id=21">
+				<response-code value="200" />
+				<regex
+					pattern='"07-002","3423760010","N","10","9.07","0.21","2012-01-05 00:00","2012-01-10 23:30","22 1065 3921 534","CI017","Roselands","2012-01-05 00:00","2012-01-10 23:30","21","9.07","0.0","9.07","10.0","0","",""' />
+			</request>
+		</test>
 	</test-group>
 </imprimatur>

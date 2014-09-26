@@ -924,11 +924,13 @@ order by hh_datum.start_date
                                     break
                             hh_date += HH
 
-                        rate = float(kwh) / len(hh_part)
-                        for h in hh_part:
-                            h['msp-kw'] = rate * 2
-                            h['msp-kwh'] = h['hist-kwh'] = rate
-                        self.hh_data += hh_part
+                        num_hh = len(hh_part)
+                        if num_hh > 0:
+                            rate = float(kwh) / num_hh
+                            for h in hh_part:
+                                h['msp-kw'] = rate * 2
+                                h['msp-kwh'] = h['hist-kwh'] = rate
+                            self.hh_data += hh_part
 
             else:
                 raise UserException("gen type not recognized")
@@ -980,5 +982,6 @@ def data_sources_contract(contract, month_start, month_finish, forecast_date, co
             data_source = SupplySource(chunk_start, chunk_finish, forecast_date, era, True, comterp, pw, caches)
             yield data_source
     '''
+
 
 
