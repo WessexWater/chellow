@@ -1,12 +1,20 @@
-import sys
 import hashlib
-from flask import request, session
+from flask import request, Response
 from chellow import app
-from chellow.model import User, Report, Contract
-import logging
+from chellow.models import Contract, Report, User
+import ipaddress
 
 
-@app.before_first_request
+def GET_str(name):
+    return request.args[name]
+
+
+def GET_int(name):
+    val_str = GET_str(name)
+    return int(val_str)
+
+
+@app.before_request
 def check_permissions(*args, **kwargs):
     app.logger.error("checking permissions")
     method = request.method
@@ -14,20 +22,19 @@ def check_permissions(*args, **kwargs):
 
     if method == "GET" and path in ('/', '/static/style.css'):
         return None
-    
+
     user = None
-    is_default = False
     auth = request.authorization
     if auth is not None:
-        pword_digest = hashlib.md5(auth.password).hexdigest() 
-        user = User.query.filter(User.email_address==auth.username,
-            User.password_digest==pword_digest).first()
+        pword_digest = hashlib.md5(auth.password).hexdigest()
+        user = User.query.filter(
+            User.email_address == auth.username,
+            User.password_digest == pword_digest).first()
 
     if user is None:
         config_contract = Contract.get_non_core_by_name('configuration')
         email = config_contract.make_properties()['ips'][request.remote_addr]
-        user = User.query.filter(User.email_address==email).first()
-        is_default = True
+        user = User.query.filter(User.email_address == email).first()
 
     if user is None:
         user_count = User.query.count()
@@ -37,9 +44,10 @@ def check_permissions(*args, **kwargs):
     else:
         role = user.role
         role_code = role.code
+        path = request.path
         if role_code == "viewer":
-            if path_info.startswith("/reports/") and \
-                    path_info.endswith("/output/") and \
+            if path.startswith("/reports/") and \
+                    path.endswith("/output/") and \
                     request.method in ("GET", "HEAD"):
                 return
         elif role_code == "editor":
@@ -49,7 +57,7 @@ def check_permissions(*args, **kwargs):
                 party = user.party
                 market_role_code = party.market_role.code
                 if market_role_code == 'C':
-                    hhdc_contract_id = args_int(request, "hhdc_contract_id")
+                    hhdc_contract_id = GET_int(request, "hhdc_contract_id")
                     hhdc_contract = Contract.get_non_core_by_id(
                         hhdc_contract_id)
                     if hhdc_contract.party == party and (
@@ -59,7 +67,7 @@ def check_permissions(*args, **kwargs):
                                 + hhdc_contract.id):
                         return
                 elif market_role_code == 'X':
-                    if path_info.startswith(
+                    if path.startswith(
                             "/supplier_contracts/" + party.id):
                         return
 
@@ -75,13 +83,15 @@ def check_permissions(*args, **kwargs):
 @app.route('/')
 def index():
     app.logger.error("hello")
-    #n = 1 / 0
+    # n = 1 / 0
     return 'Hello World'
+
 
 @app.route('/chellow/reports/<int:report_id>/output/', methods=['GET', 'POST'])
 def show_report(report_id):
     report = Report.query.get(report_id)
     exec(report.script, {'request': request, 'template': report.template})
+
 
 @app.route('/add_user', methods=['POST'])
 def add_user_post():

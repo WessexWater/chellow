@@ -25,7 +25,6 @@ try:
     engine = create_engine(
         'postgresql+pg8000://' + user_name + ':' + password + '@' + host_name +
         ':5432/' + db_name, isolation_level="SERIALIZABLE")
-    webinf_path = os.path.join(root_path, 'WEB-INF')
 except NameError, e:
     # This means we're running it from the command line
     webinf_path = os.getcwd()

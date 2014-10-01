@@ -1,46 +1,27 @@
-from flask import Flask
+from chellow import app
 from flask.ext.sqlalchemy import SQLAlchemy
-
-app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = \
-    'postgresql+pg8000://postgres:postgres@localhost:5432/chellow'
-db = SQLAlchemy(app)
-
-
 from sqlalchemy import (
-    Column, Integer, String, Boolean, DateTime, Text, Numeric, or_, not_, and_,
-    Enum, DateTime, create_engine, ForeignKey, Sequence)
-from sqlalchemy.orm import sessionmaker, relationship, backref, object_session
-from sqlalchemy.orm.util import has_identity
-from sqlalchemy import create_engine, ForeignKey, Sequence
+    Column, Integer, String, Boolean, Text, Numeric, Enum, DateTime,
+    ForeignKey)
+from sqlalchemy.orm import relationship
 from sqlalchemy.schema import UniqueConstraint
-from sqlalchemy.exc import ProgrammingError, SQLAlchemyError
-from sqlalchemy.orm.exc import NoResultFound
-import ast
-import operator
 import datetime
 import pytz
-import sys
-import hashlib
-import decimal
 
-from sqlalchemy.orm import (
-    relationship, backref, sessionmaker, _mapper_registry)
-from sqlalchemy.ext.declarative import declarative_base
+db = SQLAlchemy(app)
 
 app.logger.error("importing db module")
-res = db.session.execute(
-        """select count(*) from information_schema.tables """
-        """where table_schema = 'public'""").fetchone()[0]
-app.logger.error("res is " + str(res))
+
 
 class UserException(Exception):
     pass
+
 
 def set_read_write():
     db.session.execute("rollback")
     db.session.execute(
         "set transaction isolation level serializable read write")
+
 
 class PersistentClass():
     id = Column(Integer, primary_key=True)
@@ -57,14 +38,14 @@ class VoltageLevel(db.Model, PersistentClass):
     def get_by_code(sess, code):
         vl = sess.query(VoltageLevel).filter_by(code=code).first()
         if vl is None:
-            raise UserException("There is no voltage level with the code '"
-                    + code + "'.")
+            raise UserException(
+                "There is no voltage level with the code '" + code + "'.")
         return vl
 
 
 class Site(db.Model, PersistentClass):
     __tablename__ = 'site'
-    id = Column('id', Integer, Sequence('site_id_seq'), primary_key=True)
+    id = Column('id', Integer, primary_key=True)
     code = Column(String, unique=True, nullable=False)
     name = Column(String, unique=True, nullable=False)
     site_eras = relationship('SiteEra', backref='site')
@@ -76,24 +57,24 @@ class Site(db.Model, PersistentClass):
 
 class MarketRole(db.Model, PersistentClass):
     __tablename__ = 'market_role'
-    id = Column(
-        'id', Integer, Sequence('market_role_id_seq'), primary_key=True)
+    id = Column('id', Integer, primary_key=True)
     code = Column(String(length=1), unique=True, nullable=False)
     description = Column(String, nullable=False, unique=True)
     contracts = relationship('Contract', backref='market_role')
     parties = relationship('Party', backref='market_role')
 
+
 class Participant(db.Model, PersistentClass):
     __tablename__ = 'participant'
-    id = Column(
-        'id', Integer, Sequence('participant_id_seq'), primary_key=True)
+    id = Column('id', Integer, primary_key=True)
     code = Column(String, unique=True, nullable=False)
     name = Column(String, nullable=False)
     parties = relationship('Party', backref='participant')
 
+
 class Party(db.Model, PersistentClass):
     __tablename__ = 'party'
-    id = Column('id', Integer, Sequence('party_id_seq'), primary_key=True)
+    id = Column('id', Integer, primary_key=True)
     market_role_id = Column(Integer, ForeignKey('market_role.id'))
     participant_id = Column(Integer, ForeignKey('participant.id'))
     name = Column(String, nullable=False)
@@ -105,29 +86,33 @@ class Party(db.Model, PersistentClass):
     mtcs = relationship('Mtc', backref='dno')
     llfcs = relationship('Llfc', backref='dno')
 
+
 class Source(db.Model, PersistentClass):
     __tablename__ = "source"
-    id = Column('id', Integer, Sequence('source_id_seq'), primary_key=True)
+    id = Column('id', Integer, primary_key=True)
     code = Column(String, unique=True, nullable=False)
     name = Column(String, unique=True, nullable=False)
     supplies = relationship('Supply', backref='source')
-    
+
+
 class GeneratorType(db.Model, PersistentClass):
     __tablename__ = 'generator_type'
     code = Column(String, unique=True, nullable=False)
     description = Column(String, unique=True, nullable=False)
     supplies = relationship('Supply', backref='generator_type')
 
+
 class GspGroup(db.Model, PersistentClass):
     __tablename__ = 'gsp_group'
-    id = Column('id', Integer, Sequence('gsp_group_id_seq'), primary_key=True)
+    id = Column('id', Integer, primary_key=True)
     code = Column(String, unique=True, nullable=False)
     description = Column(String, unique=True, nullable=False)
     supplies = relationship('Supply', backref='gsp_group')
 
+
 class Contract(db.Model, PersistentClass):
     __tablename__ = 'contract'
-    id = Column('id', Integer, Sequence('contract_id_seq'), primary_key=True)
+    id = Column('id', Integer, primary_key=True)
     is_core = Column(Boolean, nullable=False)
     name = Column(String, nullable=False)
     charge_script = Column(Text, nullable=False)
@@ -151,10 +136,12 @@ class Contract(db.Model, PersistentClass):
             'rate_script.id', use_alter=True,
             name='contract_finish_rate_script_id_fkey'))
 
-    start_rate_script = relationship("RateScript",
-            primaryjoin="RateScript.id==Contract.start_rate_script_id")
-    finish_rate_script = relationship("RateScript",
-            primaryjoin="RateScript.id==Contract.finish_rate_script_id")
+    start_rate_script = relationship(
+        "RateScript",
+        primaryjoin="RateScript.id==Contract.start_rate_script_id")
+    finish_rate_script = relationship(
+        "RateScript",
+        primaryjoin="RateScript.id==Contract.finish_rate_script_id")
 
     @staticmethod
     def get_non_core_by_name(name):
@@ -176,8 +163,9 @@ class Contract(db.Model, PersistentClass):
     def get_by_role_code_name(role_code, name):
         cont = Contract.find_by_role_code_name(role_code, name)
         if cont is None:
-            raise UserException("There isn't a contract with the role code '" +
-                    role_code + "' and name '" + name + "'.")
+            raise UserException(
+                "There isn't a contract with the role code '" + role_code +
+                "' and name '" + name + "'.")
         return cont
 
     @staticmethod
@@ -207,10 +195,10 @@ class Contract(db.Model, PersistentClass):
             rscript, start_date, finish_date, rate_script)
         return contract
 
+
 class RateScript(db.Model, PersistentClass):
     __tablename__ = "rate_script"
-    id = Column('id', Integer, Sequence('rate_script_id_seq'),
-            primary_key=True)
+    id = Column('id', Integer, primary_key=True)
     contract_id = Column(Integer, ForeignKey('contract.id'))
     contract = relationship(
         "Contract", back_populates="rate_scripts",
@@ -222,7 +210,7 @@ class RateScript(db.Model, PersistentClass):
 
 class Pc(db.Model, PersistentClass):
     __tablename__ = 'pc'
-    id = Column('id', Integer, Sequence('pc_id_seq'), primary_key=True)
+    id = Column('id', Integer, primary_key=True)
     code = Column(String, unique=True, nullable=False)
     name = Column(String, unique=True, nullable=False)
     eras = relationship('Era', backref='pc')
@@ -230,26 +218,27 @@ class Pc(db.Model, PersistentClass):
 
 class MeterType(db.Model, PersistentClass):
     __tablename__ = 'meter_type'
-    id = Column('id', Integer, Sequence('meter_type_id_seq'), primary_key=True)
+    id = Column('id', Integer, primary_key=True)
     code = Column(String, unique=True, nullable=False)
     description = Column(String, unique=True, nullable=False)
     valid_from = Column(DateTime, nullable=False)
     valid_to = Column(DateTime)
     mtcs = relationship('Mtc', backref='meter_type')
 
+
 class MeterPaymentType(db.Model, PersistentClass):
     __tablename__ = 'meter_payment_type'
-    id = Column(
-        'id', Integer, Sequence('meter_payment_type_id_seq'), primary_key=True)
+    id = Column('id', Integer, primary_key=True)
     code = Column(String, unique=True, nullable=False)
     description = Column(String, unique=True, nullable=False)
     valid_from = Column(DateTime)
     valid_to = Column(DateTime)
     mtcs = relationship('Mtc', backref='meter_payment_type')
 
+
 class Mtc(db.Model, PersistentClass):
     __tablename__ = 'mtc'
-    id = Column('id', Integer, Sequence('mtc_id_seq'), primary_key=True)
+    id = Column('id', Integer, primary_key=True)
     dno_id = Column(Integer, ForeignKey('party.id'))
     code = Column(String, nullable=False)
     description = Column(String, nullable=False)
@@ -257,23 +246,23 @@ class Mtc(db.Model, PersistentClass):
     has_comms = Column(Boolean, nullable=False)
     is_hh = Column(Boolean, nullable=False)
     meter_type_id = Column(Integer, ForeignKey('meter_type.id'))
-    meter_payment_type_id = Column(Integer,
-            ForeignKey('meter_payment_type.id'))
+    meter_payment_type_id = Column(
+        Integer, ForeignKey('meter_payment_type.id'))
     tpr_count = Column(Integer)
     valid_from = Column(DateTime, nullable=False)
     valid_to = Column(DateTime)
     eras = relationship('Era', backref='mtc')
     __table_args__ = (UniqueConstraint('dno_id', 'code'),)
 
+
 class Supply(db.Model, PersistentClass):
     __tablename__ = 'supply'
-    id = Column('id', Integer, Sequence('supply_id_seq'), primary_key=True)
+    id = Column('id', Integer, primary_key=True)
     name = Column(String, nullable=False)
     note = Column(Text, nullable=False)
     source_id = Column(Integer, ForeignKey('source.id'), nullable=False)
     generator_type_id = Column(Integer, ForeignKey('generator_type.id'))
-    gsp_group_id = Column(Integer, ForeignKey('gsp_group.id'),
-            nullable=False)
+    gsp_group_id = Column(Integer, ForeignKey('gsp_group.id'), nullable=False)
     dno_contract_id = Column(
         Integer, ForeignKey('contract.id'), nullable=False)
     eras = relationship('Era', backref='supply')
@@ -282,7 +271,7 @@ class Supply(db.Model, PersistentClass):
 
 class Cop(db.Model, PersistentClass):
     __tablename__ = 'cop'
-    id = Column('id', Integer, Sequence('cop_id_seq'), primary_key=True)
+    id = Column('id', Integer, primary_key=True)
     code = Column(String, unique=True, nullable=False)
     description = Column(String, unique=True, nullable=False)
     eras = relationship('Era', backref='cop')
@@ -290,7 +279,7 @@ class Cop(db.Model, PersistentClass):
 
 class Ssc(db.Model, PersistentClass):
     __tablename__ = 'ssc'
-    id = Column('id', Integer, Sequence('ssc_id_seq'), primary_key=True)
+    id = Column('id', Integer, primary_key=True)
     code = Column(String, nullable=False)
     description = Column(String)
     is_import = Column(Boolean)
@@ -303,7 +292,7 @@ class Ssc(db.Model, PersistentClass):
 
 class Llfc(db.Model, PersistentClass):
     __tablename__ = 'llfc'
-    id = Column('id', Integer, Sequence('llfc_id_seq'), primary_key=True)
+    id = Column('id', Integer, primary_key=True)
     dno_id = Column(Integer, ForeignKey('party.id'))
     code = Column(String, nullable=False)
     description = Column(String)
@@ -316,7 +305,7 @@ class Llfc(db.Model, PersistentClass):
 
 class Era(db.Model, PersistentClass):
     __tablename__ = "era"
-    id = Column('id', Integer, Sequence('era_id_seq'), primary_key=True)
+    id = Column('id', Integer, primary_key=True)
     supply_id = Column(Integer, ForeignKey('supply.id'), nullable=False)
     site_eras = relationship('SiteEra', backref='era')
     start_date = Column(DateTime, nullable=False)
@@ -339,25 +328,25 @@ class Era(db.Model, PersistentClass):
     imp_mpan_core = Column(String)
     imp_llfc_id = Column(Integer, ForeignKey('llfc.id'))
     imp_llfc = relationship("Llfc", primaryjoin="Llfc.id==Era.imp_llfc_id")
-    imp_supplier_contract_id = Column(Integer,
-            ForeignKey('contract.id'))
-    imp_supplier_contract = relationship("Contract",
-            primaryjoin="Contract.id==Era.imp_supplier_contract_id")
+    imp_supplier_contract_id = Column(Integer, ForeignKey('contract.id'))
+    imp_supplier_contract = relationship(
+        "Contract", primaryjoin="Contract.id==Era.imp_supplier_contract_id")
     imp_supplier_account = Column(String)
     imp_sc = Column(Integer)
     exp_mpan_core = Column(String)
     exp_llfc_id = Column(Integer, ForeignKey('llfc.id'))
     exp_llfc = relationship("Llfc", primaryjoin="Llfc.id==Era.exp_llfc_id")
     exp_supplier_contract_id = Column(Integer, ForeignKey('contract.id'))
-    exp_supplier_contract = relationship("Contract",
-            primaryjoin="Contract.id==Era.exp_supplier_contract_id")
+    exp_supplier_contract = relationship(
+        "Contract", primaryjoin="Contract.id==Era.exp_supplier_contract_id")
     exp_supplier_account = Column(String)
     exp_sc = Column(Integer)
     channels = relationship('Channel', backref='era')
 
+
 class Channel(db.Model, PersistentClass):
     __tablename__ = 'channel'
-    id = Column('id', Integer, Sequence('channel_id_seq'), primary_key=True)
+    id = Column('id', Integer, primary_key=True)
     era_id = Column(Integer, ForeignKey('era.id'))
     imp_related = Column(Boolean, nullable=False)
     channel_type = Column(
@@ -368,9 +357,10 @@ class Channel(db.Model, PersistentClass):
     __table_args__ = (
         UniqueConstraint('era_id', 'imp_related', 'channel_type'),)
 
+
 class Snag(db.Model, PersistentClass):
     __tablename__ = 'snag'
-    id = Column('id', Integer, Sequence('snag_id_seq'), primary_key=True)
+    id = Column('id', Integer, primary_key=True)
     site_id = Column(Integer, ForeignKey('site.id'))
     channel_id = Column(Integer, ForeignKey('channel.id'))
     date_created = Column(DateTime, nullable=False)
@@ -382,15 +372,14 @@ class Snag(db.Model, PersistentClass):
 
 class ReadType(db.Model, PersistentClass):
     __tablename__ = 'read_type'
-    id = Column('id', Integer, Sequence('read_type_id_seq'), primary_key=True)
+    id = Column('id', Integer, primary_key=True)
     code = Column(String, unique=True, nullable=False)
     description = Column(String, unique=True, nullable=False)
 
 
 class Batch(db.Model, PersistentClass):
     __tablename__ = 'batch'
-    id = Column('id', Integer, Sequence('batch_id_seq'),
-            primary_key=True)
+    id = Column('id', Integer, primary_key=True)
     contract_id = Column(Integer, ForeignKey('contract.id'), nullable=False)
     reference = Column(String, nullable=False, unique=True)
     description = Column(String, nullable=False, unique=True)
@@ -399,7 +388,7 @@ class Batch(db.Model, PersistentClass):
 
 class BillType(db.Model, PersistentClass):
     __tablename__ = 'bill_type'
-    id = Column('id', Integer, Sequence('bill_type_id_seq'), primary_key=True)
+    id = Column('id', Integer, primary_key=True)
     code = Column(String, unique=True, nullable=False)
     description = Column(String, unique=True, nullable=False)
     bills = relationship('Bill', backref='bill_type')
@@ -407,7 +396,7 @@ class BillType(db.Model, PersistentClass):
 
 class Bill(db.Model, PersistentClass):
     __tablename__ = 'bill'
-    id = Column('id', Integer, Sequence('bill_id_seq'), primary_key=True)
+    id = Column('id', Integer, primary_key=True)
     batch_id = Column(Integer, ForeignKey('batch.id'), nullable=False)
     supply_id = Column(Integer, ForeignKey('supply.id'), nullable=False)
     issue_date = Column(DateTime, nullable=False)
@@ -426,7 +415,7 @@ class Bill(db.Model, PersistentClass):
 
 class Tpr(db.Model, PersistentClass):
     __tablename__ = 'tpr'
-    id = Column('id', Integer, Sequence('tpr_id_seq'), primary_key=True)
+    id = Column('id', Integer, primary_key=True)
     code = Column(String, unique=True, nullable=False)
     is_teleswitch = Column(Boolean, nullable=False)
     is_gmt = Column(Boolean, nullable=False)
@@ -438,8 +427,7 @@ class Tpr(db.Model, PersistentClass):
 
 class RegisterRead(db.Model, PersistentClass):
     __tablename__ = 'register_read'
-    id = Column('id', Integer, Sequence('register_read_id_seq'),
-            primary_key=True)
+    id = Column('id', Integer, primary_key=True)
     bill_id = Column(Integer, ForeignKey('bill.id'), nullable=False)
     msn = Column(String, nullable=False)
     mpan_str = Column(String, nullable=False)
@@ -449,25 +437,25 @@ class RegisterRead(db.Model, PersistentClass):
     previous_date = Column(DateTime, nullable=False)
     previous_value = Column(Numeric, nullable=False)
     previous_type_id = Column(Integer, ForeignKey('read_type.id'))
-    previous_type = relationship("ReadType",
-                    primaryjoin="ReadType.id==RegisterRead.previous_type_id")
+    previous_type = relationship(
+        "ReadType", primaryjoin="ReadType.id==RegisterRead.previous_type_id")
     present_date = Column(DateTime, nullable=False)
     present_value = Column(Numeric, nullable=False)
     present_type_id = Column(Integer, ForeignKey('read_type.id'))
-    present_type = relationship("ReadType",
-                    primaryjoin="ReadType.id==RegisterRead.present_type_id")
+    present_type = relationship(
+        "ReadType", primaryjoin="ReadType.id==RegisterRead.present_type_id")
 
 
 class UserRole(db.Model, PersistentClass):
     __tablename__ = 'user_role'
-    id = Column('id', Integer, Sequence('user_role_id_seq'), primary_key=True)
+    id = Column('id', Integer, primary_key=True)
     code = Column(String, unique=True, nullable=False)
     users = relationship('User', backref='user_role')
 
 
 class User(db.Model, PersistentClass):
     __tablename__ = 'user'
-    id = Column(Integer, Sequence('user_id_seq'), primary_key=True)
+    id = Column(Integer, primary_key=True)
     email_address = Column(String, unique=True, nullable=False)
     password_digest = Column(String, nullable=False)
     user_role_id = Column(Integer, ForeignKey('user_role.id'))
@@ -476,8 +464,7 @@ class User(db.Model, PersistentClass):
 
 class ClockInterval(db.Model, PersistentClass):
     __tablename__ = 'clock_interval'
-    id = Column(
-        'id', Integer, Sequence('clock_interval_id_seq'), primary_key=True)
+    id = Column('id', Integer, primary_key=True)
     tpr_id = Column(Integer, ForeignKey('tpr.id'))
     day_of_week = Column(Integer, nullable=False)
     start_day = Column(Integer, nullable=False)
@@ -489,32 +476,32 @@ class ClockInterval(db.Model, PersistentClass):
     end_hour = Column(Integer, nullable=False)
     end_minute = Column(Integer, nullable=False)
 
+
 class MeasurementRequirement(db.Model, PersistentClass):
     __tablename__ = 'measurement_requirement'
-    id = Column(
-        'id', Integer, Sequence('measurement_requirement_id_seq'),
-        primary_key=True)
+    id = Column('id', Integer, primary_key=True)
     ssc_id = Column(Integer, ForeignKey('ssc.id'))
     tpr_id = Column(Integer, ForeignKey('tpr.id'))
 
+
 class SiteEra(db.Model, PersistentClass):
     __tablename__ = 'site_era'
-    id = Column('id', Integer, Sequence('site_era_id_seq'), primary_key=True)
+    id = Column('id', Integer, primary_key=True)
     site_id = Column(Integer, ForeignKey('site.id'))
-    era_id = Column(Integer,
-            ForeignKey('era.id'))
+    era_id = Column(Integer, ForeignKey('era.id'))
     is_physical = Column(Boolean, nullable=False)
+
 
 class HhDatum(db.Model, PersistentClass):
     __tablename__ = 'hh_datum'
-    id = Column('id', Integer, Sequence('hh_datum_id_seq'), 
-        primary_key=True)
+    id = Column('id', Integer, primary_key=True)
     channel_id = Column(Integer, ForeignKey('channel.id'))
     start_date = Column(DateTime, nullable=False)
     value = Column(Numeric, nullable=False)
     status = Column(String, nullable=False)
     last_modified = Column(DateTime, nullable=False)
     __table_args__ = (UniqueConstraint('channel_id', 'start_date'),)
+
 
 class Report(db.Model, PersistentClass):
     __tablename__ = 'report'
@@ -524,9 +511,6 @@ class Report(db.Model, PersistentClass):
     template = Column(Text, nullable=False)
 
 
-def session():
-    return Session()
-
 def parse_hh_date(date_str):
     date_str = date_str.strip()
     if len(date_str) == 0:
@@ -534,181 +518,3 @@ def parse_hh_date(date_str):
     else:
         return datetime.datetime.strptime(date_str, "%Y-%m-%d %H:%M"). \
             replace(tzinfo=pytz.utc)
-
-class ContractContentHandler(xml.sax.ContentHandler):
-    def __init__(self):
-        xml.sax.ContentHandler.__init__(self)
-        self.line = None
-        self.value = None
-               
-    def startElement(self, name, attrs):
-        if name == "line":
-            self.line = []
-        else:
-            self.value = ''
-
-    def endElement(self, name):
-        if name == "line":
-            action, entity = self.line[:2]
-            if entity == 'non-core-contract':
-                if action == 'insert':
-                    (
-                        is_core_str, participant_code, contract_name,
-                        charge_script, start_date_str, finish_date_str
-                        , rate_script) = self.line[2:]
-
-                    is_core = is_core_str == 'true'
-                    participant = Participant.query.filter(
-                        Participant.code == participant_code).one()
-                    datetime.datetime.strptime(date_str, "%Y-%m-%d %H:%M").replace(tzinfo=pytz.utc)
-                    start_date = parse_hh_date(start_date_str)
-                    finish_date = parse_hh_date(finish_date_str)
-                    Contract.insert_non_core(
-                        is_core, participant, name, start_date, finish_date,
-                        charge_script, rate_script)
-            self.line = None
-        elif name == 'value':
-            self.line.append(self.value)
-            self.value = None
-
-    def characters(self, content):
-        if self.value is not None:
-            self.value += content
-
-if db.session.execute(
-        """select count(*) from information_schema.tables """
-        """where table_schema = 'public'""").fetchone()[0] == 0:
-    app.logger.error("about to create all")
-    db.create_all()
-    app.logger.error("created all")
-
-    set_read_write()
-    for code, desc in (
-            ("LV", "Low voltage"),
-            ("HV", "High voltage"),
-            ("EHV", "Extra high voltage")):
-        db.session.add(VoltageLevel(code, desc))
-    db.session.commit()
-
-    set_read_write()
-    for code in ("editor", "viewer", "party-viewer"):
-        db.session.add(UserRole(code))
-    db.session.commit()
-
-    set_read_write()
-    for code, desc in (
-            ('net', "Public distribution system."),
-            ('sub', "Sub meter"),
-            ('gen-net', "Generator connected directly to network."),
-            ('gen', "Generator."), 
-            ('3rd-party', "Third party supply."),
-            (
-                '3rd-party-reverse',
-                "Third party supply with import going out of the site."),
-            ):
-        db.session.add(Source(code, desc))
-    db.session.commit()
-
-    set_read_write()
-    for code, desc in (
-            ("chp", "Combined heat and power."),
-            ("lm", "Load management."),
-            ("turb", "Water turbine.")):
-        db.session.add(GeneratorType(code, description))
-    db.session.commit()
- 
-    set_read_write()
-    for code, desc in (
-            ("N", "Normal"),
-            ("N3", "Normal 3rd Party"),
-            ("C", "Customer"),
-            ("E", "Estimated"),
-            ("E3", "Estimated 3rd Party"),
-            ("EM", "Estimated Manual"),
-            ("W", "Withdrawn"),
-            ("X", "Exchange"),
-            ("CP", "Computer"),
-            ("IF", "Information"),
-        db.session.add(ReadType(code, desc))
-    db.session.commit()
-
-    set_read_write()
-    for code, desc in (
-            ('1', "CoP 1"),
-            ('2', "CoP 2"),
-            ('3', "CoP 3"),
-            ('4', "CoP 4"),
-            ('5', "CoP 5"),
-            ('6a', "CoP 6a 20 day memory"),
-            ('6b', "CoP 6b 100 day memory"),
-            ('6c', "CoP 6c 250 day memory"),
-            ('6d', "CoP 6d 450 day memory"),
-            ('7', "CoP 7"))
-        db.session.add(Cop(code, desc))
-    db.session.commit()
-
-    set_read_write()
-    for code, desc in (
-            ("F", "Final"),
-            ("N", "Normal"),
-            ("W", "Withdrawn")):
-        db.session.add(BillType(code, desc))
-    db.session.commit()
-
-    dbapi_conn = db.connection.connection
-    set_read_write()
-    for tname, fname in (
-            ("gsp_group", "GSP_Group"),
-            ("pc", "Profile_Class"),
-            ("market_role", "Market_Role"),
-            ("participant", "Market_Participant"),
-            ("party", "Market_Participant_Role"),
-            ("llfc", "Line_Loss_Factor_Class"),
-            ("meter_type", "MTC_Meter_Type"),
-            ("meter_payment_type", "MTC_Payment_Type"),
-            ("mtc", "Meter_Timeswitch_Class"),
-            ("tpr", "Time_Pattern_Regime"),
-            ("clock_interval", "Clock_Interval"),
-            ("ssc", "Standard_Settlement_Configuration"),
-            ("measurement_requirement", "Measurement_Requirement")):
-        dbapi_conn.execute(
-            "COPY " + tname + " FROM STDIN CSV HEADER",
-            open(os.path.join(os.environ['CHELLOW_HOME'], fname + '.csv')))
-
-        set_read_write()
-        xml.sax.parse(
-            os.path.join(
-                os.environ['CHELLOW_HOME'],
-                "/WEB-INF/dno-contracts.xml", handler, error_handler=handler.ErrorHandler())
-       try {
-       GeneralImport process = new GeneralImport(null, context
-       .getResource("/WEB-INF/dno-contracts.xml").openStream(),
-       "xml");
-       process.run();
-       List<MonadMessage> errors = process.getErrors();
-       if (!errors.isEmpty()) {
-       throw new InternalException(errors.get(0).getDescription());
-       }
-       }
-       Report.loadReports(context);
-       try {
-       GeneralImport process = new GeneralImport(null, context
-       .getResource("/WEB-INF/non-core-contracts.xml")
-       .openStream(), "xml");
-       process.run();
-       List<MonadMessage> errors = process.getErrors();
-       if (!errors.isEmpty()) {
-       throw new InternalException(errors.get(0).getDescription());
-       }
-       } catch (UnsupportedEncodingException e) {
-       throw new InternalException(e);
-       } catch (IOException e) {
-       throw new InternalException(e);
-       }
-       Hiber.commit();
-       Hiber.close();
-       }
-    Contract.insert_non_corename(
-            True, 'configuration', charge_script, properties, start_date, finish_date,
-            rate_script):
-    contract = Contract(
