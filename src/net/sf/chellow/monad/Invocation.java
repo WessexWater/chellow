@@ -49,7 +49,6 @@ import javax.xml.transform.Source;
 import javax.xml.transform.stream.StreamResult;
 
 import net.sf.chellow.monad.types.EmailAddress;
-import net.sf.chellow.monad.types.GeoPoint;
 import net.sf.chellow.monad.types.MonadDate;
 import net.sf.chellow.monad.types.MonadDouble;
 import net.sf.chellow.monad.types.MonadFloat;
@@ -272,11 +271,6 @@ public class Invocation {
 		return getValidatable(MonadDate.class, new String[] {
 				baseName + "-year", baseName + "-month", baseName + "-day" },
 				baseName);
-	}
-
-	public GeoPoint getGeoPoint(String baseName) throws InternalException {
-		return getValidatable(GeoPoint.class, new String[] {
-				baseName + "-latitude", baseName + "-longitude" }, baseName);
 	}
 
 	public Integer getInteger(String parameterNameString)
@@ -803,50 +797,6 @@ public class Invocation {
 		}
 	}
 
-	/*
-	 * private void returnStandardPage(Document doc, String templatePath, String
-	 * templateName) throws DesignerException, ProgrammerException,
-	 * DeployerException, UserException { if (doc == null) { doc =
-	 * MonadUtilsUI.newSourceDocument(); } Result result; Element source =
-	 * doc.getDocumentElement();
-	 * 
-	 * if (source == null) { throw new ProgrammerException( "There is no child
-	 * element for " + " a document requiring the template 'template'. Request
-	 * URL: " + getRequest().getRequestURL().toString() + "?" +
-	 * getRequest().getQueryString()); } source.appendChild(requestXml(doc));
-	 * source.appendChild(responseXml(doc));
-	 * getResponse().setContentType("text/html;charset=us-ascii");
-	 * res.setDateHeader("Date", System.currentTimeMillis());
-	 * res.setHeader("Cache-Control", "no-cache"); try { result = new
-	 * StreamResult(getResponse().getWriter()); } catch (IOException e) { throw
-	 * new ProgrammerException(e); } Monad.returnStream(doc, templatePath,
-	 * templateName, result); }
-	 */
-	/*
-	 * private void returnSvgPage(Document doc, String templatePath, String
-	 * templateName) throws DesignerException, ProgrammerException,
-	 * DeployerException, UserException { if (doc == null) { doc =
-	 * MonadUtilsUI.newSourceDocument(); }
-	 * 
-	 * Element source = doc.getDocumentElement();
-	 * 
-	 * if (source == null) { throw new ProgrammerException( "There is no child
-	 * element for " + " a document requiring the template 'template'. Request
-	 * URL: " + getRequest().getRequestURL().toString() + "?" +
-	 * getRequest().getQueryString()); } // source.appendChild(requestXml(doc));
-	 * // source.appendChild(responseXml(doc)); //
-	 * getResponse().setContentType("text/html;charset=us-ascii");
-	 * res.setContentType("image/png"); res.setDateHeader("Date",
-	 * System.currentTimeMillis()); res.setHeader("Cache-Control", "no-cache");
-	 * StringWriter stringWriter = new StringWriter(); Monad.returnStream(doc,
-	 * templatePath, templateName, new StreamResult( stringWriter));
-	 * PNGTranscoder t = new PNGTranscoder(); TranscoderInput input = new
-	 * TranscoderInput(new StringReader( stringWriter.toString()));
-	 * TranscoderOutput output; try { output = new
-	 * TranscoderOutput(getResponse().getOutputStream()); t.transcode(input,
-	 * output); } catch (IOException e) { throw new ProgrammerException(e); }
-	 * catch (TranscoderException e) { throw new ProgrammerException(e); } }
-	 */
 	public boolean hasParameter(String parameterName) {
 		boolean found = req.getParameter(parameterName) != null;
 		if (!found && multipartItems != null) {

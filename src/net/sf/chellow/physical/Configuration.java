@@ -39,7 +39,6 @@ import net.sf.chellow.monad.MonadUtils;
 import net.sf.chellow.monad.UserException;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
-import net.sf.chellow.ui.GeneralImport;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -65,16 +64,6 @@ public class Configuration extends PersistentEntity {
 			Hiber.flush();
 		}
 		return config;
-	}
-
-	public static void generalImport(String action, String[] values,
-			Element csvElement) throws HttpException {
-		if (action.equals("insert")) {
-		} else if (action.equals("update")) {
-			String properties = GeneralImport.addField(csvElement,
-					"Properties", values, 0);
-			getConfiguration().update(properties);
-		}
 	}
 
 	private String properties;

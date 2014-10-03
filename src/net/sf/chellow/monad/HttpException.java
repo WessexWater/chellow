@@ -1,6 +1,6 @@
 /*******************************************************************************
  * 
- *  Copyright (c) 2005, 2011 Wessex Water Services Limited
+ *  Copyright (c) 2005, 2014 Wessex Water Services Limited
  *  
  *  This file is part of Chellow.
  * 
@@ -31,25 +31,14 @@ import org.hibernate.HibernateException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-public abstract class HttpException extends RuntimeException implements XmlDescriber {
-	/*
-	 * public static String getStackTraceString(Throwable e) { StringWriter
-	 * writer = new StringWriter(); PrintWriter printWriter = new
-	 * PrintWriter(writer); Throwable cause = e.getCause();
-	 * e.printStackTrace(printWriter); if (cause != null) {
-	 * printWriter.write("\n------------\nNested exception:\n");
-	 * cause.printStackTrace(printWriter); } return writer.toString(); }
-	 */
+public abstract class HttpException extends RuntimeException implements
+		XmlDescriber {
 	public static String getStackTraceString(Throwable e) {
 		StringWriter writer = new StringWriter();
 		PrintWriter printWriter = new PrintWriter(writer);
 		printWriter.write(e.getClass().getName() + " " + e.getMessage());
 		e.printStackTrace(printWriter);
-		/*
-		 * if (e instanceof JDBCException) { JDBCException je = (JDBCException)
-		 * e; SQLException se = je.getSQLException(); if (se != null) {
-		 * builder.append(" " + get(se)); } }
-		 */
+
 		if (e instanceof SQLException) {
 			SQLException se = (SQLException) e;
 			SQLException ne = se.getNextException();
@@ -67,11 +56,6 @@ public abstract class HttpException extends RuntimeException implements XmlDescr
 	public static String getUserMessage(Throwable e) {
 		StringBuilder builder = new StringBuilder(e.getClass().getName() + " "
 				+ e.getMessage());
-		/*
-		 * if (e instanceof JDBCException) { JDBCException je = (JDBCException)
-		 * e; SQLException se = je.getSQLException(); if (se != null) {
-		 * builder.append(" " + getUserMessage(se)); } }
-		 */
 		if (e instanceof SQLException) {
 			SQLException se = (SQLException) e;
 			SQLException ne = se.getNextException();

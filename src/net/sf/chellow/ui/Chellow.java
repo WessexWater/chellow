@@ -50,15 +50,9 @@ import net.sf.chellow.monad.Urlable;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
 import net.sf.chellow.physical.Configuration;
-import net.sf.chellow.physical.GeneratorTypes;
-import net.sf.chellow.physical.GspGroups;
 import net.sf.chellow.physical.MarketRole;
-import net.sf.chellow.physical.SiteSnags;
-import net.sf.chellow.physical.Sites;
-import net.sf.chellow.physical.Supplies;
 import net.sf.chellow.physical.User;
 import net.sf.chellow.physical.UserRole;
-import net.sf.chellow.ui.GeneralImports;
 
 public class Chellow extends Monad implements Urlable {
 	private static final long serialVersionUID = 1L;
@@ -68,18 +62,6 @@ public class Chellow extends Monad implements Urlable {
 	static public final Reports REPORTS_INSTANCE = new Reports();
 
 	static public final NonCoreContracts NON_CORE_CONTRACTS_INSTANCE = new NonCoreContracts();
-
-	static public final GeneralImports GENERAL_IMPORTS_INSTANCE = new GeneralImports();
-
-	static public final Supplies SUPPLIES_INSTANCE = new Supplies();
-
-	static public final SiteSnags SITE_SNAGS_INSTANCE = new SiteSnags();
-
-	static public final GeneratorTypes GENERATOR_TYPES_INSTANCE = new GeneratorTypes();
-
-	static public final GspGroups GSP_GROUPS_INSTANCE = new GspGroups();
-
-	static public final Sites SITES_INSTANCE = new Sites();
 
 	static public final SupplierContracts SUPPLIER_CONTRACTS_INSTANCE = new SupplierContracts();
 
@@ -218,20 +200,12 @@ public class Chellow extends Monad implements Urlable {
 			return REPORTS_INSTANCE;
 		} else if (NonCoreContracts.URI_ID.equals(uriId)) {
 			return NON_CORE_CONTRACTS_INSTANCE;
-		} else if (GeneralImports.URI_ID.equals(uriId)) {
-			return GENERAL_IMPORTS_INSTANCE;
-		} else if (Supplies.URI_ID.equals(uriId)) {
-			return SUPPLIES_INSTANCE;
-		} else if (Sites.URI_ID.equals(uriId)) {
-			return SITES_INSTANCE;
 		} else if (SupplierContracts.URI_ID.equals(uriId)) {
 			return SUPPLIER_CONTRACTS_INSTANCE;
 		} else if (MopContracts.URI_ID.equals(uriId)) {
 			return MOP_CONTRACTS_INSTANCE;
 		} else if (HhdcContracts.URI_ID.equals(uriId)) {
 			return HHDC_CONTRACTS_INSTANCE;
-		} else if (SiteSnags.URI_ID.equals(uriId)) {
-			return SITE_SNAGS_INSTANCE;
 		} else if (Configuration.URI_ID.equals(uriId)) {
 			return Configuration.getConfiguration();
 		} else {

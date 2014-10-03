@@ -1,6 +1,6 @@
 /*******************************************************************************
  * 
- *  Copyright (c) 2005-2013 Wessex Water Services Limited
+ *  Copyright (c) 2005-2014 Wessex Water Services Limited
  *  
  *  This file is part of Chellow.
  * 
@@ -49,12 +49,9 @@ import net.sf.chellow.physical.HhStartDate;
 import net.sf.chellow.physical.MarketRole;
 import net.sf.chellow.physical.Participant;
 import net.sf.chellow.physical.PersistentEntity;
-import net.sf.chellow.physical.Snag;
 import net.sf.chellow.ui.Chellow;
-import net.sf.chellow.ui.GeneralImport;
 
 import org.hibernate.Query;
-import org.hibernate.exception.ConstraintViolationException;
 import org.python.core.Py;
 import org.python.core.PyObject;
 import org.python.util.PythonInterpreter;
@@ -66,7 +63,8 @@ public class Contract extends PersistentEntity implements Comparable<Contract> {
 		return getContract("Z", name);
 	}
 
-	public static Contract findNonCoreContract(String name) throws HttpException {
+	public static Contract findNonCoreContract(String name)
+			throws HttpException {
 		return findContract("Z", name);
 	}
 
@@ -117,10 +115,10 @@ public class Contract extends PersistentEntity implements Comparable<Contract> {
 		}
 		return contract;
 	}
-	
+
 	public static Contract findContract(String marketRoleCode, String name)
 			throws HttpException {
-		
+
 		return (Contract) Hiber
 				.session()
 				.createQuery(
@@ -142,70 +140,6 @@ public class Contract extends PersistentEntity implements Comparable<Contract> {
 			}
 		}
 		return contract;
-	}
-
-	public static void generalImportNonCore(String action, String[] values,
-			Element csvElement) throws HttpException {
-		if (action.equals("insert")) {
-			String isCoreStr = GeneralImport.addField(csvElement, "Is Core?",
-					values, 0);
-			boolean isCore = new Boolean(isCoreStr);
-			String participantCode = GeneralImport.addField(csvElement,
-					"Participant Code", values, 1);
-			Participant participant = Participant
-					.getParticipant(participantCode);
-			String name = GeneralImport.addField(csvElement, "Name", values, 2);
-			String chargeScript = GeneralImport.addField(csvElement,
-					"Charge Script", values, 3);
-			String startDateStr = GeneralImport.addField(csvElement,
-					"Start Date", values, 4);
-			HhStartDate startDate = new HhStartDate(startDateStr);
-			String finishDateStr = GeneralImport.addField(csvElement,
-					"Finish Date", values, 5);
-			HhStartDate finishDate = finishDateStr.trim().length() == 0 ? null
-					: new HhStartDate(finishDateStr);
-			String rateScript = GeneralImport.addField(csvElement,
-					"Rate Script", values, 6);
-			Contract.insertNonCoreContract(isCore, participant, name,
-					startDate, finishDate, chargeScript, rateScript);
-		} else if (action.equals("update")) {
-			/*
-			 * String script = values[3];
-			 * csvElement.appendChild(getField("Script", script)); String
-			 * template = values[4]; csvElement.appendChild(getField("Template",
-			 * template)); Report report = Report.getReport(name);
-			 */
-		}
-	}
-
-	static public void generalImportDno(String action, String[] values,
-			Element csvElement) throws HttpException {
-		if (action.equals("insert")) {
-
-			String dnoCode = GeneralImport.addField(csvElement, "DNO Code",
-					values, 0);
-			Party dno = Party.getDno(dnoCode);
-			String isCoreStr = GeneralImport.addField(csvElement, "Is Core?",
-					values, 1);
-			boolean isCore = Boolean.parseBoolean(isCoreStr);
-
-			String startDateStr = GeneralImport.addField(csvElement,
-					"Start Date", values, 2);
-			HhStartDate startDate = new HhStartDate(startDateStr);
-			String finishDateStr = GeneralImport.addField(csvElement,
-					"Finish Date", values, 3);
-			HhStartDate finishDate = null;
-			if (finishDateStr.length() > 0) {
-				finishDate = new HhStartDate(finishDateStr);
-			}
-			String chargeScript = GeneralImport.addField(csvElement,
-					"Charge Script", values, 4);
-
-			String rateScript = GeneralImport.addField(csvElement,
-					"Rate Script", values, 5);
-			Contract.insertDnoContract(isCore, dno.getParticipant(), dnoCode,
-					startDate, finishDate, chargeScript, rateScript);
-		}
 	}
 
 	static public Contract insertNonCoreContract(boolean isCore,
@@ -454,20 +388,6 @@ public class Contract extends PersistentEntity implements Comparable<Contract> {
 		return 0;
 	}
 
-	public Snag getSnag(UriPathElement uriId) throws HttpException {
-		Snag snag = (Snag) Hiber
-				.session()
-				.createQuery(
-						"from Snag snag where snag.contract = :contract and snag.id = :snagId")
-				.setEntity("contract", this)
-				.setLong("snagId", Long.parseLong(uriId.getString()))
-				.uniqueResult();
-		if (snag == null) {
-			throw new NotFoundException();
-		}
-		return snag;
-	}
-
 	public void httpDelete(Invocation inv) throws HttpException {
 	}
 
@@ -579,33 +499,6 @@ public class Contract extends PersistentEntity implements Comparable<Contract> {
 		return contract;
 	}
 
-	public Batch getBatch(String reference) throws HttpException {
-		Batch batch = (Batch) Hiber
-				.session()
-				.createQuery(
-						"from Batch batch where batch.contract.id = :contractId and batch.reference = :reference")
-				.setLong("contractId", getId())
-				.setString("reference", reference).uniqueResult();
-		if (batch == null) {
-			throw new UserException("There isn't a batch attached to contract "
-					+ getId() + " with reference " + reference + ".");
-		}
-		return batch;
-	}
-
-	public Batch insertBatch(String reference, String description)
-			throws HttpException {
-		Batch batch = new Batch(this, reference, description);
-		try {
-			Hiber.session().save(batch);
-			Hiber.flush();
-		} catch (ConstraintViolationException e) {
-			throw new UserException(
-					"There's already a batch with that reference.");
-		}
-		return batch;
-	}
-
 	public boolean isCore() {
 		return getId() % 2 == 1;
 	}
@@ -674,10 +567,6 @@ public class Contract extends PersistentEntity implements Comparable<Contract> {
 			throw new InternalException("The market role " + marketRoleCode
 					+ " isn't recognized.");
 		}
-	}
-
-	public Batches batchesInstance() {
-		return new Batches(this);
 	}
 
 	@Override
@@ -781,9 +670,7 @@ public class Contract extends PersistentEntity implements Comparable<Contract> {
 	}
 
 	public Urlable getChild(UriPathElement uriId) throws HttpException {
-		if (Batches.URI_ID.equals(uriId)) {
-			return new Batches(this);
-		} else if (RateScripts.URI_ID.equals(uriId)) {
+		if (RateScripts.URI_ID.equals(uriId)) {
 			return new RateScripts(this);
 		} else {
 			throw new NotFoundException();

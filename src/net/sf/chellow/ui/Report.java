@@ -20,20 +20,15 @@
  *******************************************************************************/
 package net.sf.chellow.ui;
 
-import java.io.IOException;
 import java.io.StringWriter;
-import java.io.UnsupportedEncodingException;
 import java.net.URI;
-import java.util.List;
 import java.util.Map;
 
 import javax.servlet.ServletContext;
 
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
-import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Invocation;
-import net.sf.chellow.monad.MonadMessage;
 import net.sf.chellow.monad.MonadUtils;
 import net.sf.chellow.monad.NotFoundException;
 import net.sf.chellow.monad.Urlable;
@@ -50,44 +45,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 public class Report extends PersistentEntity implements Urlable {
-	public static void generalImport(String action, String[] values,
-			Element csvElement) throws HttpException {
-		if (action.equals("insert")) {
-			String idString = GeneralImport.addField(csvElement, "Id", values,
-					0);
-			Long id = null;
-			if (idString.length() > 0) {
-				id = new Long(idString);
-			}
-			String isCoreStr = GeneralImport.addField(csvElement, "Is Core?",
-					values, 1);
-			boolean isCore = Boolean.parseBoolean(isCoreStr);
-			String name = GeneralImport.addField(csvElement, "Name", values, 2);
-			String script = GeneralImport.addField(csvElement, "Script",
-					values, 3);
-			String template = null;
-			if (values.length > 4) {
-				template = GeneralImport.addField(csvElement, "Template",
-						values, 4);
-			}
-			Report.insertReport(id, isCore, name, script, template);
-		} else if (action.equals("update")) {
-			String idString = GeneralImport.addField(csvElement, "Id", values,
-					0);
-			Long id = new Long(idString);
-			String name = GeneralImport.addField(csvElement, "Name", values, 1);
-			String script = GeneralImport.addField(csvElement, "Script",
-					values, 2);
-			String template = null;
-			if (values.length > 3) {
-				template = GeneralImport.addField(csvElement, "Template",
-						values, 3);
-			}
-			Report report = Report.getReport(id);
-			report.update(name, script, template);
-		}
-	}
-	
+
 	public static Report findReport(Long id) throws HttpException {
 		return (Report) Hiber.session().get(Report.class, id);
 	}
@@ -110,22 +68,6 @@ public class Report extends PersistentEntity implements Urlable {
 		return report;
 	}
 
-	public static void loadReports(ServletContext context) throws HttpException {
-		try {
-			GeneralImport process = new GeneralImport(null, context
-					.getResource("/WEB-INF/reports.xml").openStream(), "xml");
-			process.run();
-			List<MonadMessage> errors = process.getErrors();
-			if (!errors.isEmpty()) {
-				throw new InternalException(errors.get(0).getDescription());
-			}
-		} catch (UnsupportedEncodingException e) {
-			throw new InternalException(e);
-		} catch (IOException e) {
-			throw new InternalException(e);
-		}
-	}
-
 	public static Report insertReport(Long id, boolean isCore, String name,
 			String script, String template) throws HttpException {
 		Report report = new Report(id, isCore, name, script, template);
@@ -134,7 +76,8 @@ public class Report extends PersistentEntity implements Urlable {
 			Hiber.flush();
 		} catch (ConstraintViolationException e) {
 			Hiber.rollBack();
-			throw new UserException("There's already a report with that name." + UserException.getStackTraceString(e));
+			throw new UserException("There's already a report with that name."
+					+ UserException.getStackTraceString(e));
 		}
 		return report;
 	}
@@ -260,7 +203,7 @@ public class Report extends PersistentEntity implements Urlable {
 									+ ' ' + new MonadDate() + ' '
 									+ inv.getRequest().getRemoteAddr())
 							.toString());
-            Hiber.close();
+			Hiber.close();
 			interp.exec(script);
 		} catch (Throwable e) {
 			throw new UserException(e.getMessage() + " "

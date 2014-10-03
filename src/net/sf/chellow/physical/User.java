@@ -1,6 +1,6 @@
 /*******************************************************************************
  * 
- *  Copyright (c) 2005-2013 Wessex Water Services Limited
+ *  Copyright (c) 2005-2014 Wessex Water Services Limited
  *  
  *  This file is part of Chellow.
  * 
@@ -35,11 +35,9 @@ import net.sf.chellow.monad.UserException;
 import net.sf.chellow.monad.types.EmailAddress;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
-import net.sf.chellow.ui.GeneralImport;
 
 import org.hibernate.exception.ConstraintViolationException;
 import org.w3c.dom.Document;
-import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
 import com.Ostermiller.util.Base64;
@@ -52,34 +50,6 @@ public class User extends PersistentEntity {
 			USERS_URI_ID = new UriPathElement("users");
 		} catch (HttpException e) {
 			throw new RuntimeException(e);
-		}
-	}
-
-	public static void generalImport(String action, String[] values,
-			Element csvElement) throws HttpException {
-		if (action.equals("insert")) {
-			String emailAddressStr = GeneralImport.addField(csvElement,
-					"Email Address", values, 0);
-			EmailAddress emailAddress = new EmailAddress(emailAddressStr);
-			String password = GeneralImport.addField(csvElement, "Password",
-					values, 1);
-			String passwordDigest = GeneralImport.addField(csvElement,
-					"Password Digest", values, 2);
-			String userRoleCode = GeneralImport.addField(csvElement,
-					"User Role Code", values, 3);
-			UserRole userRole = UserRole.getUserRole(userRoleCode);
-			String participantCode = GeneralImport.addField(csvElement,
-					"Participant Code", values, 4);
-			Party party = null;
-			if (participantCode.trim().length() != 0) {
-				String marketRoleCode = GeneralImport.addField(csvElement,
-						"Market Role Code", values, 5);
-				party = Party.getParty(participantCode, marketRoleCode);
-			}
-			User.insertUser(emailAddress, password.trim().length() == 0 ? null
-					: password, passwordDigest.trim().length() == 0 ? null
-					: passwordDigest, userRole, party);
-		} else if (action.equals("update")) {
 		}
 	}
 

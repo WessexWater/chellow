@@ -1,6 +1,6 @@
 /*******************************************************************************
  * 
- *  Copyright (c) 2005-2013 Wessex Water Services Limited
+ *  Copyright (c) 2005-2014 Wessex Water Services Limited
  *  
  *  This file is part of Chellow.
  * 
@@ -39,7 +39,6 @@ import net.sf.chellow.monad.types.MonadDate;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.physical.HhStartDate;
 import net.sf.chellow.physical.PersistentEntity;
-import net.sf.chellow.ui.GeneralImport;
 
 import org.python.util.PythonInterpreter;
 import org.w3c.dom.Document;
@@ -48,38 +47,6 @@ import org.w3c.dom.Element;
 public class RateScript extends PersistentEntity {
 	static public RateScript getRateScript(Long id) {
 		return (RateScript) Hiber.session().get(RateScript.class, id);
-	}
-
-	public static void generalImportNonCore(String action, String[] values,
-			Element csvElement) throws HttpException {
-		if (action.equals("insert")) {
-			String contractName = GeneralImport.addField(csvElement,
-					"Contract Name", values, 0);
-			Contract contract = Contract.getNonCoreContract(contractName);
-			String startDateStr = GeneralImport.addField(csvElement,
-					"Start Date", values, 1);
-			HhStartDate startDate = new HhStartDate(startDateStr);
-			String script = GeneralImport.addField(csvElement, "Script",
-					values, 2);
-			contract.insertRateScript(startDate, script);
-		} else if (action.equals("update")) {
-		}
-	}
-
-	public static void generalImportDno(String action, String[] values,
-			Element csvElement) throws HttpException {
-		if (action.equals("insert")) {
-			String dnoCode = GeneralImport.addField(csvElement, "Dno Code",
-					values, 0);
-			Contract contract = Contract.getDnoContract(dnoCode);
-			String startDateStr = GeneralImport.addField(csvElement,
-					"Start Date", values, 1);
-			HhStartDate startDate = new HhStartDate(startDateStr);
-			String script = GeneralImport.addField(csvElement, "Script",
-					values, 2);
-			contract.insertRateScript(startDate, script);
-		} else if (action.equals("update")) {
-		}
 	}
 
 	private Contract contract;
@@ -219,60 +186,60 @@ public class RateScript extends PersistentEntity {
 		element.setAttribute("script", script);
 		return element;
 	}
-	
-    public void httpGet(Invocation inv) throws HttpException {
-        inv.sendOk(document());
-}
 
-public void httpPost(Invocation inv) throws HttpException {
-        Hiber.setReadWrite();
-        if (inv.hasParameter("delete")) {
-                try {
-                        contract.delete(this);
-                        Hiber.commit();
-                } catch (UserException e) {
-                        Hiber.rollBack();
-                        e.setDocument(document());
-                        throw e;
-                }
-                inv.sendSeeOther(contract.rateScriptsInstance().getEditUri());
-        } else {
-                String script = inv.getString("script");
-                Date startDate = inv.getDateTime("start");
-                HhStartDate finishDate = null;
-                boolean hasFinished = inv.getBoolean("has-finished");
-                if (!inv.isValid()) {
-                        throw new UserException(document());
-                }
-                script = script.replace("\r", "").replace("\t", "    ");
-                if (hasFinished) {
-                        Date finishDateRaw = inv.getDateTime("finish");
-                        if (!inv.isValid()) {
-                                throw new UserException(document());
-                        }
-                        finishDate = HhStartDate.roundDown(finishDateRaw);
-                }
-                try {
-                        update(HhStartDate.roundDown(startDate), finishDate, script);
-                } catch (HttpException e) {
-                        e.setDocument(document());
-                        throw e;
-                }
-                Hiber.commit();
-                inv.sendOk(document());
-        }
-}
+	public void httpGet(Invocation inv) throws HttpException {
+		inv.sendOk(document());
+	}
 
-private Document document() throws HttpException {
-        Document doc = MonadUtils.newSourceDocument();
-        Element sourceElement = doc.getDocumentElement();
-        sourceElement.appendChild(toXml(doc, new XmlTree("contract",
-                        new XmlTree("party"))));
-        sourceElement.appendChild(MonadDate.getMonthsXml(doc));
-        sourceElement.appendChild(MonadDate.getDaysXml(doc));
-        sourceElement.appendChild(MonadDate.getHoursXml(doc));
-        sourceElement.appendChild(HhStartDate.getHhMinutesXml(doc));
-        sourceElement.appendChild(new MonadDate().toXml(doc));
-        return doc;
-}
+	public void httpPost(Invocation inv) throws HttpException {
+		Hiber.setReadWrite();
+		if (inv.hasParameter("delete")) {
+			try {
+				contract.delete(this);
+				Hiber.commit();
+			} catch (UserException e) {
+				Hiber.rollBack();
+				e.setDocument(document());
+				throw e;
+			}
+			inv.sendSeeOther(contract.rateScriptsInstance().getEditUri());
+		} else {
+			String script = inv.getString("script");
+			Date startDate = inv.getDateTime("start");
+			HhStartDate finishDate = null;
+			boolean hasFinished = inv.getBoolean("has-finished");
+			if (!inv.isValid()) {
+				throw new UserException(document());
+			}
+			script = script.replace("\r", "").replace("\t", "    ");
+			if (hasFinished) {
+				Date finishDateRaw = inv.getDateTime("finish");
+				if (!inv.isValid()) {
+					throw new UserException(document());
+				}
+				finishDate = HhStartDate.roundDown(finishDateRaw);
+			}
+			try {
+				update(HhStartDate.roundDown(startDate), finishDate, script);
+			} catch (HttpException e) {
+				e.setDocument(document());
+				throw e;
+			}
+			Hiber.commit();
+			inv.sendOk(document());
+		}
+	}
+
+	private Document document() throws HttpException {
+		Document doc = MonadUtils.newSourceDocument();
+		Element sourceElement = doc.getDocumentElement();
+		sourceElement.appendChild(toXml(doc, new XmlTree("contract",
+				new XmlTree("party"))));
+		sourceElement.appendChild(MonadDate.getMonthsXml(doc));
+		sourceElement.appendChild(MonadDate.getDaysXml(doc));
+		sourceElement.appendChild(MonadDate.getHoursXml(doc));
+		sourceElement.appendChild(HhStartDate.getHhMinutesXml(doc));
+		sourceElement.appendChild(new MonadDate().toXml(doc));
+		return doc;
+	}
 }

@@ -142,40 +142,45 @@ class SystemPriceImporter(threading.Thread):
                     next_month_start = latest_rate_script.start_date
                     this_month_start = next_month_start - relativedelta(months=1)
                     next_next_month_start = next_month_start + relativedelta(months=1)
-                    self.log("Is it after " + str(next_next_month_start) + "?")
 
                     now = datetime.datetime.now(pytz.utc)
 
-                    if now > next_next_month_start:
-                        n_stop_date = datetime.datetime(next_next_month_start.year, next_next_month_start.month, next_next_month_start.day) + relativedelta(days=1) 
+                    if contract.make_properties().get('enabled', False):
+                        self.log("Is it after " + str(next_next_month_start) + "?")
+                        if now > next_next_month_start:
+                            n_stop_date = datetime.datetime(next_next_month_start.year, next_next_month_start.month, next_next_month_start.day) + relativedelta(days=1) 
 
-                        self.log("Checking to see if data is available on " + str(n_stop_date) + " on bmreports.com.")
+                            self.log("Checking to see if data is available on " + str(n_stop_date) + " on bmreports.com.")
 
-                        prices = self.hhs(n_stop_date)
-                        if len(prices) == 0:
-                            self.log("Data isn't available on the bmreports.com yet.")
-                        else:
-                            self.log("Starting to download data from bmreports.com.")
-                            prices = {}
-                            n_day_start = datetime.datetime(next_month_start.year, next_month_start.month, next_month_start.day) - relativedelta(days=1)
-                            self.log("Next month start " + str(next_month_start) + " n day start " + str(n_day_start))
+                            prices = self.hhs(n_stop_date)
+                            if len(prices) == 0:
+                                self.log("Data isn't available on the bmreports.com yet.")
+                            else:
+                                self.log("Starting to download data from bmreports.com.")
+                                prices = {}
+                                n_day_start = datetime.datetime(next_month_start.year, next_month_start.month, next_month_start.day) - relativedelta(days=1)
+                                self.log("Next month start " + str(next_month_start) + " n day start " + str(n_day_start))
                             
 
-                            while n_day_start <= n_stop_date:
-                                prices.update(self.hhs(n_day_start, next_month_start.month))
-                                n_day_start += relativedelta(days=1)
+                                while n_day_start <= n_stop_date:
+                                    prices.update(self.hhs(n_day_start, next_month_start.month))
+                                    n_day_start += relativedelta(days=1)
 
-                            self.log("Finished downloading data from bmreports.com.")
-                            script = "def ssps():\n    return {\n" + ',\n'.join("'" + k + "': " + prices[k]['ssp'] for k in sorted(prices.keys())) + "}\n\n\ndef sbps():\n    return {\n" + ',\n'.join("'" + k + "': " + prices[k]['sbp'] for k in sorted(prices.keys())) + "}"
-                            db.set_read_write(sess)
-                            contract = Contract.get_non_core_by_name(sess, 'system_price_bmreports')
-                            contract.insert_rate_script(sess, next_next_month_start, latest_rate_script_text)
-                            prev_rscript = RateScript.get_by_id(sess, latest_rate_script_id)
-                            contract.update_rate_script(sess, prev_rscript, prev_rscript.start_date, prev_rscript.finish_date, script)
-                            sess.commit()
-                            self.log("Added new rate script.")
+                                self.log("Finished downloading data from bmreports.com.")
+                                script = "def ssps():\n    return {\n" + ',\n'.join("'" + k + "': " + prices[k]['ssp'] for k in sorted(prices.keys())) + "}\n\n\ndef sbps():\n    return {\n" + ',\n'.join("'" + k + "': " + prices[k]['sbp'] for k in sorted(prices.keys())) + "}"
+                                db.set_read_write(sess)
+                                contract = Contract.get_non_core_by_name(sess, 'system_price_bmreports')
+                                contract.insert_rate_script(sess, next_next_month_start, latest_rate_script_text)
+                                prev_rscript = RateScript.get_by_id(sess, latest_rate_script_id)
+                                contract.update_rate_script(sess, prev_rscript, prev_rscript.start_date, prev_rscript.finish_date, script)
+                                sess.commit()
+                                self.log("Added new rate script.")
+                        else:
+                            self.log("Hasn't reached the end of the month yet.")
+
                     else:
-                        self.log("Hasn't reached the end of the month yet.")
+                        self.log("The automatic importer is disabled. To enable it, edit the contract properties to set 'enabled' to True.")
+
                 except:
                     self.log("Outer problem " + traceback.format_exc())
                     sess.rollback()
