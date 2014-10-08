@@ -102,5 +102,8 @@
 
     <h3>Script</h3>
     <pre>{{ contract.charge_script }}</pre>
+
+    <h3>Properties</h3>
+    <pre>{{contract.properties}}</pre>
   </body>
 </html>
