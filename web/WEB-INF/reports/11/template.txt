@@ -30,7 +30,7 @@
     <form action=".">
       <fieldset>
         <legend>Show graph</legend>
-        <input type="hidden" name="site_id" value="{{site_id}}">
+        <input type="hidden" name="site_id" value="{{site.id}}">
 
         For <input name="months" maxlength="2" size="2" value="{{months}}">
         months finishing at the end of
@@ -40,3 +40,4 @@
     </form>
   </body>
 </html>
+
