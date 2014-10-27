@@ -42,37 +42,22 @@ def hh(data_source):
         cache = {}
         data_source.caches['rcrc'] = cache
 
-    rate_set = data_source.rate_sets['rcrc-rate']
+    rate_set = data_source.supplier_rate_sets['rcrc-rate']
 
     for hh in data_source.hh_data:
         try:
-            hh['rcrc-gbp-per-kwh'] = cache[hh['start-date']]
+            hh['rcrc-gbp-per-kwh'] = rcrc = cache[hh['start-date']]
         except KeyError:
-            cal = MonadDate.getCalendar()
-            date_format = SimpleDateFormat("dd HH:'00 Z'")
-            date_format.setCalendar(cal)
-            def identity_func(x):
-                return x
-            transform_func = identity_func
-            rates = data_source.hh_rate(contract, hh['start-date'], 'rates')
-            cal.setTime(hh['start-date'])
-            while isinstance(rates, types.FunctionType):
-                transform_func = rates
-                cal.add(Calendar.YEAR, -1)
-                rates = data_source.hh_rate(contract, cal.getTime(), 'rates')
+            h_start = hh['start-date']
+            rates = data_source.hh_rate(db_id, h_start, 'rates')
+            try:
+                hh['rcrc-gbp-per-kwh'] = rcrc = cache[h_start] = float(rates[h_start.strftime("%d %H:%M Z")]) / 1000
+            except KeyError:
+                raise UserException("For the RCRC rate script at " + hh_format(h_start) + " the rate cannot be found.")
 
-            if isinstance(rates, dict):
-                rates = transform_func(rates)
-                rcrc = float(rates[date_format.format(cal.getTime())]) / 1000
-            else:
-                raise UserException("Type returned by rates at " + str(HhStartDate(cal.getTime())) + " must be function or dictionary.")
-            cache[hh['start-date']] = rcrc
-            hh['rcrc-gbp-per-kwh'] = rcrc
-
-        rate_set.add(hh['rcrc-gbp-per-kwh'])
+        rate_set.add(rcrc)
         bill['rcrc-kwh'] += hh['nbp-kwh']
-        bill['rcrc-gbp'] += hh['nbp-kwh'] * hh['rcrc-gbp-per-kwh']
-
+        bill['rcrc-gbp'] += hh['nbp-kwh'] * rcrc
 
 
 rcrc_importer = None
