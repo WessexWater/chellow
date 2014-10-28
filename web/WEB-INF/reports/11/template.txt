@@ -9,10 +9,8 @@
     <p>
       <a href="{{context_path}}/reports/1/output/">Chellow</a> &gt;
       <a href="{{context_path}}/reports/3/output/">Sites</a> &gt;
-      <a href="{{context_path}}/reports/5/output/?site_id={{site.id}}">
-        {{site.name}}
-      </a>
-      &gt; HH graph of era
+      <a href="{{context_path}}/reports/5/output/?site_id={{site.id}}">{{site.name}}</a>
+      &gt; Generation Graph
     </p>
 
     {% if messages %}
@@ -40,4 +38,5 @@
     </form>
   </body>
 </html>
+
 
