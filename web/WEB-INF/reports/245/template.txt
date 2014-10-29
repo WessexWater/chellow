@@ -1,145 +1,115 @@
-<?xml version="1.0" encoding="us-ascii"?>
-<xsl:stylesheet version="1.0"
-    xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
-    <xsl:output method="xml" encoding="US-ASCII"
-        doctype-public="-//W3C//DTD XHTML 1.1//EN"
-        doctype-system="http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd"
-        indent="yes" />
-    <xsl:template match="/">
-        <html>
-            <head>
-                <link rel="stylesheet" type="text/css"
-      href="{/source/request/@context-path}/reports/19/output/" />
+<!DOCTYPE html>
+<html>
+  <head>
+    <link rel="stylesheet" type="text/css"
+      href="{{context_path}}/reports/19/output/">
+    <title>Chellow &gt; Scenario Runner</title>
+  </head>
+  <body>
+    <p>
+      <a href="{{context_path}}/reports/1/output/">Chellow</a> &gt;
+      Scenario Runner
+    </p>
 
-                <title>Chellow &gt; Scenario Runner</title>
-            </head>
-            <body>
-                <p>
-                    <a
-                        href="{/source/request/@context-path}/reports/1/output/">
-                        <xsl:value-of select="'Chellow'" />
-                    </a>
-                    &gt;
-                    <xsl:value-of select="'Scenario Runner'" />
-                </p>
-                  <xsl:if test="//message">
-                    <ul>
-                        <xsl:for-each select="//message">
-                            <li>
-                                <xsl:value-of select="@description" />
-                            </li>
-                        </xsl:for-each>
-                    </ul>
-                </xsl:if>
-                <form action="{/source/request/@context-path}/reports/247/output/">
-                    <fieldset>
-                        <legend>Run Scenario</legend>
-<br/>
-                        <xsl:value-of select="'Use '"/>
-                        <select name="contract-id">
-                            <xsl:for-each select="/source/supplier-contracts/supplier-contract">
-                                <option value="{@id}">
-                                    <xsl:value-of select="@name"/>
-                                </option>
-                            </xsl:for-each>
-                        </select>
-                        <xsl:value-of select="' instead of '"/>
-                        <select name="replaced-contract-id">
-                            <xsl:for-each select="/source/supplier-contracts/supplier-contract">
-                                <option value="{@id}">
-                                    <xsl:value-of select="@name"/>
-                                </option>
-                            </xsl:for-each>
-                        </select>
-                        <br/><br/><xsl:value-of select="' from '"/>
-                        <input name="from-year" value="{/source/hh-start-date[@label='from']/@year}" maxlength="4" size="4"/><xsl:value-of select="'-'"/>
-                        <select name="from-month">
-                            <xsl:for-each select="/source/months/month">
-                                <option value="{@number}">
-                                    <xsl:if test="@number=/source/hh-start-date[@label='from']/@month">
-                                        <xsl:attribute name="selected">selected</xsl:attribute>
-                                    </xsl:if>
-                                    <xsl:value-of select="@number"/>
-                                </option>
-                            </xsl:for-each>
-                        </select><xsl:value-of select="'-'"/>
-                        <select name="from-day">
-                            <xsl:for-each select="/source/days/day">
-                                <option value="{@number}">
-                                    <xsl:if test="@number=/source/hh-start-date[@label='from']/@day">
-                                        <xsl:attribute name="selected">selected</xsl:attribute>
-                                    </xsl:if>
-                                    <xsl:value-of select="@number"/>
-                                </option>
-                            </xsl:for-each>
-                        </select><xsl:value-of select="' '"/>
-                        <select name="from-hour">
-                            <xsl:for-each select="/source/hours/hour">
-                                <option value="{@number}">
-                                    <xsl:if test="@number=/source/hh-start-date[@label='from']/@hour">
-                                        <xsl:attribute name="selected">selected</xsl:attribute>
-                                    </xsl:if>
-                                    <xsl:value-of select="@number"/>
-                                </option>
-                            </xsl:for-each>
-                        </select><xsl:value-of select="':'"/>
-                        <select name="from-minute">
-                            <xsl:for-each select="/source/hh-minutes/minute">
-                                <option value="{@number}">
-                                    <xsl:if test="@number=/source/hh-start-date[@label='from']/@minute">
-                                        <xsl:attribute name="selected">selected</xsl:attribute>
-                                    </xsl:if>
-                                    <xsl:value-of select="@number"/>
-                                </option>
-                            </xsl:for-each>
-                        </select>
-                        <xsl:value-of select="' to '"/>
-<input name="to-year" value="{/source/hh-start-date[@label='to']/@year}" maxlength="4" size="4"/><xsl:value-of select="'-'"/>
-                        <select name="to-month">
-                            <xsl:for-each select="/source/months/month">
-                                <option value="{@number}">
-                                    <xsl:if test="@number=/source/hh-start-date[@label='to']/@month">
-                                        <xsl:attribute name="selected">selected</xsl:attribute>
-                                    </xsl:if>
-                                    <xsl:value-of select="@number"/>
-                                </option>
-                            </xsl:for-each>
-                        </select><xsl:value-of select="'-'"/>
-                        <select name="to-day">
-                            <xsl:for-each select="/source/days/day">
-                                <option value="{@number}">
-                                    <xsl:if test="@number=/source/hh-start-date[@label='to']/@day">
-                                        <xsl:attribute name="selected">selected</xsl:attribute>
-                                    </xsl:if>
-                                    <xsl:value-of select="@number"/>
-                                </option>
-                            </xsl:for-each>
-                        </select><xsl:value-of select="' '"/>
-                        <select name="to-hour">
-                            <xsl:for-each select="/source/hours/hour">
-                                <option value="{@number}">
-                                    <xsl:if test="@number=/source/hh-start-date[@label='to']/@hour">
-                                        <xsl:attribute name="selected">selected</xsl:attribute>
-                                    </xsl:if>
-                                    <xsl:value-of select="@number"/>
-                                </option>
-                            </xsl:for-each>
-                        </select><xsl:value-of select="':'"/>
-                        <select name="to-minute">
-                            <xsl:for-each select="/source/hh-minutes/minute">
-                                <option value="{@number}">
-                                    <xsl:if test="@number=/source/hh-start-date[@label='to']/@minute">
-                                        <xsl:attribute name="selected">selected</xsl:attribute>
-                                    </xsl:if>
-                                    <xsl:value-of select="@number"/>
-                                </option>
-                            </xsl:for-each>
-                        </select>
-                        <br/><br/>
-                        <input type="submit" value="Run"/>
-                    </fieldset>
-                </form>
-            </body>
-        </html>
-    </xsl:template>
-</xsl:stylesheet>
+    {% if messages %}
+      <ul>
+        {% for message in messages %}
+          <li>{{ message }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+
+    <table><caption>Scenarios</caption>
+      <thead>
+        <tr>
+          <th>Scenario</th>
+          <th>View</th>
+          <th>Edit</th>
+          <th>scenario_start</th>
+          <th>scenario_duration</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for scenario in scenarios %}
+          {% set props = scenario.make_properties() %}
+          <tr>
+            <td>{{scenario.name}}</td>
+            <td>
+              <a href="{{context_path}}/reports/77/output/?supplier_contract_id={{scenario.id}}#properties">
+                View
+              </a>
+            </td>
+            <td>
+              [<a href="{{context_path}}/reports/317/output/?supplier_contract_id={{scenario.id}}#properties">edit</a>]
+            </td>
+            <td>{{props.scenario_start}}</td>
+            <td>{{props.scenario_duration}}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    <br>
+    <form action="{{context_path}}/reports/247/output/">
+      <fieldset>
+        <legend>Run Scenario</legend>
+        <select name="scenario">
+          {% for scenario in scenarios %}
+            {{input_option('scenario', scenario.name, scenario.name)}}
+          {% endfor %}
+        </select>
+        <input type="submit" value="Run">
+      </fieldset>
+    </form>
+
+    <h4>Rates</h4>
+
+    <table><caption>Pass-through Contract Rates</caption>
+      <thead>
+        <tr>
+          <th rowspan="2">Contract</th>
+          <th colspan="2">Last Rate Script</th>
+        </tr>
+        <tr>
+          <th>Start Date</th>
+          <th>Finish Date</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for contract in contracts %}
+          <tr>
+            <td>
+              <a href="{{context_path}}/reports/267/output/?non_core_contract_id={{contract.id}}">
+                {{contract.name}}
+              </a>
+            </td>
+            <td>{{contract.finish_rate_script.start_date|hh_format}}</td>
+            <td>{{contract.finish_rate_script.finish_date|hh_format}}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    <p>
+      Consider a half-hour H, and a contract with rate scripts. The rate at H
+     is determined by:
+    </p>
+
+    <dl>
+      <dt>base_date</dt>
+      <dd>A date, None means end of last rate script</dd>
+      <dt>multiplier</dt>
+      <dd>A number</dd>
+      <dt>constant</dt>
+      <dd>A number</dd>
+    </dl>
+
+    <p>
+      If base_date is None, then it is set to the end date of the latest rate
+      script. If H <= base date, then the rate script at H is used without any
+      change. If H > base_date, then the rate script at base_date is used to
+      obtain the value of the rate at H by doing (rate_at_base_date *
+      multiplier + constant).
+    </p>
+  </body>
+</html>

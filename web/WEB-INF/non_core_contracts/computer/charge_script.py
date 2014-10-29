@@ -109,12 +109,14 @@ def contract_func(caches, contract, func_name, pw):
         try:
             ns = contr_func_cache[contract.id]
         except KeyError:
-            ns = {'db_id': contract.id}
+            ns = {'db_id': contract.id, 'properties': contract.make_properties()}
             exec(contract.charge_script, ns)
             contr_func_cache[contract.id] = ns
 
     return ns.get(func_name, None)
 
+def identity_func(x):
+    return x
 
 def hh_rate(sess, caches, contract_id, date, name, pw):
     try:
@@ -134,42 +136,66 @@ def hh_rate(sess, caches, contract_id, date, name, pw):
         
         script_cache = get_computer_cache(caches, 'rate_scripts')
 
-        try:
-            rate_script = sess.query(RateScript).filter(RateScript.contract_id==contract_id, RateScript.start_date<=date, or_(RateScript.finish_date==None, RateScript.finish_date>=date)).one()
-        except NoResultFound:
-            raise UserException("There isn't a rate script for contract " + str(contract_id) + " at " + utils.hh_format(date))
-
-        try:
-            script_dict = script_cache[rate_script.id]
-        except KeyError:
-            ns = {}
-            exec(rate_script.script, ns)
-            script_dict = {'ns': ns, 'rates': {}}
-            script_dict['rates']['_script_dict'] = script_dict
-            script_cache[rate_script.id] = script_dict
-
         month_after = date + relativedelta(months=1)
         month_before = date - relativedelta(months=1)
 
-        if month_before > rate_script.start_date:
-            chunk_start = month_before
-        else:
-            chunk_start = rate_script.start_date
+        try:
+            future_funcs = caches['future_funcs']
+        except KeyError:
+            future_funcs = {}
+            caches['future_funcs'] = future_funcs
 
-        if hh_before(month_after, rate_script.finish_date):
-            chunk_finish = month_after
+        try:
+            future_dict = future_funcs[contract_id]
+        except KeyError:
+            future_dict = {'func': identity_func, 'base_date': None}
+            future_funcs[contract_id] = future_dict
+
+        base_date = future_dict['base_date']
+        if base_date is None:
+            base_rs = sess.query(RateScript).filter(RateScript.contract_id == contract_id).order_by(RateScript.start_date.desc()).first()
+            base_date = base_rs.finish_date
         else:
-            chunk_finish = rate_script.finish_date
-        dt = chunk_start
+            base_rs = sess.query(RateScript).filter(RateScript.contract_id == contract_id, RateScript.start_date <= base_date, or_(RateScript.finish_date == None, RateScript.finish_date >= base_date)).one()
+
+        if hh_after(date, base_date):
+            rs = base_rs
+            if month_before > rs.start_date:
+                chunk_start = month_before
+            else:
+                chunk_start = rs.start_date
+
+            chunk_finish = month_after
+            tfunc = future_dict['func']
+        else:
+            try:
+                rs = sess.query(RateScript).filter(RateScript.contract_id == contract_id, RateScript.start_date <= date, or_(RateScript.finish_date == None, RateScript.finish_date >= date)).one()
+            except NoResultFound:
+                raise UserException("Can't find rate script for contract id " + str(contract_id) + " and date " + hh_format(date) + ".")
+            if month_before > rs.start_date:
+                chunk_start = month_before
+            else:
+                chunk_start = rs.start_date
+
+            if hh_before(month_after, rs.finish_date):
+                chunk_finish = month_after
+            else:
+                chunk_finish = rs.finish_date
+            tfunc = identity_func
+
+        ns = {}
+        exec(rs.script, ns)
+        script_dict = {'ns': ns, 'rates': {}}
+        script_dict = {'ns': tfunc(ns), 'rates': {}}
+        script_dict['rates']['_script_dict'] = script_dict
+
 
         d_cache = script_dict['rates']
-
+        dt = chunk_start
         while dt <= chunk_finish:
             if dt not in cont_cache:
                 cont_cache[dt] = d_cache
             dt += HH
-
-        d_cache = cont_cache[date]
 
     try:
         return d_cache[name]

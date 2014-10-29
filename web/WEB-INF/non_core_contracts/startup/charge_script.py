@@ -1,4 +1,3 @@
-import sys
 from net.sf.chellow.billing import Contract
 from net.sf.chellow.monad import Hiber, Monad
 import collections
@@ -56,23 +55,16 @@ def on_start_up(ctx):
                         line_reader.close()
 
     for contract_name in ['utils', 'pre_db', 'db', 'templater', 'bsuos',
-            'tlms', 'general_import', 'hh_importer', 'bill_import', 'edi_lib', 'system_price_bmreports', 'system_price_elexon', 'system_price', 'rcrc', 'tlms', 'computer', 'duos', 'triad_rates', 'triad', 'ccl', 'aahedc']:
-        try:
-            contract = Contract.getNonCoreContract(contract_name)
-            nspace = LibDict()
-            exec(contract.getChargeScript(), nspace)
-            for k, v in nspace.iteritems():
-                if not hasattr(nspace, k):
-                    setattr(nspace, k, v)
-            nspace['db_id'] = contract.id
-            setattr(nspace, 'db_id', contract.id)
-            ctx.setAttribute(
-                "net.sf.chellow." + contract_name, nspace)
-        except:
-            cont = "\n Problem with contract " + contract_name
-            sys.stderr.write(cont)
-            System.err.write(cont)
-            raise
+            'tlms', 'general_import', 'hh_importer', 'bill_import', 'edi_lib', 'system_price_bmreports', 'system_price_elexon', 'system_price', 'rcrc', 'tlms', 'computer', 'duos', 'triad_rates', 'triad', 'ccl', 'aahedc', 'scenario']:
+        contract = Contract.getNonCoreContract(contract_name)
+        nspace = LibDict()
+        exec(contract.getChargeScript(), nspace)
+        for k, v in nspace.iteritems():
+            if not hasattr(nspace, k):
+                setattr(nspace, k, v)
+        nspace['db_id'] = contract.id
+        setattr(nspace, 'db_id', contract.id)
+        ctx.setAttribute("net.sf.chellow." + contract_name, nspace)
         
     download_path = Monad.getContext().getRealPath("/downloads")
     if not os.path.exists(download_path):

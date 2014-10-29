@@ -592,7 +592,7 @@ class Contract(Base, PersistentClass):
         self.party = party
         try:
             ast.parse(charge_script)
-            eval(properties)
+            eval(properties, {'datetime': datetime.datetime})
         except SyntaxError, e:
             raise UserException(str(e))
         except NameError, e:
@@ -714,7 +714,7 @@ class Contract(Base, PersistentClass):
             prev_script.finish_date = rscript.finish_date
 
     def insert_rate_script(self, sess, start_date, script):
-        scripts = sess.query(RateScript).filter(RateScript.contract==self).order_by(RateScript.start_date).all()
+        scripts = sess.query(RateScript).filter(RateScript.contract_id == self.id).order_by(RateScript.start_date).all()
         if len(scripts) == 0:
             finish_date = None
         else:
@@ -735,6 +735,7 @@ class Contract(Base, PersistentClass):
 
                 finish_date = covered_script.finish_date
                 covered_script.finish_date = prev_hh(start_date)
+                sess.flush()
 
         new_script = RateScript(self, start_date, finish_date, script)
         sess.add(new_script)
@@ -755,7 +756,7 @@ class Contract(Base, PersistentClass):
         return batch
 
     def make_properties(self):
-        return eval(self.properties)
+        return eval(self.properties, {'datetime': datetime.datetime})
 
     def make_state(self):
         return eval(self.state)

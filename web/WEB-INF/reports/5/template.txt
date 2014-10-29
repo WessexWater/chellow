@@ -230,5 +230,18 @@ Table of site level monthly kWh, MD kWh etc.</a>
         <input type="submit" value="Download">
       </fieldset>
     </form>
+    <br>
+    <form action="{{context_path}}/reports/247/output/">
+      <fieldset>
+        <input type="hidden" name="site_id" value="{{site.id}}">
+        <legend>Run Scenario</legend>
+        <select name="scenario">
+          {% for scenario_name in scenario_names %}
+            {{input_option('scenario', scenario_name, scenario_name)}}
+          {% endfor %}
+        </select>
+        <input type="submit" value="Run">
+      </fieldset>
+    </form>
   </body>
 </html>
