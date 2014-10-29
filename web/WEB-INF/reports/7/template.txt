@@ -820,15 +820,17 @@
         <input type="submit" value="Download" />
       </fieldset>
     </form>
-    <br />
-    <form action="{{ context_path }}/reports/207/output/">
-      <input type="hidden" name="supply-id" value="{{ supply.id }}" />
+    <br>
+    <form action="{{context_path}}/reports/207/output/">
+      <input type="hidden" name="supply_id" value="{{supply.id}}">
       <fieldset>
         <legend>CRC</legend>
-        <br />
+        <br>
         For financial year starting April
-        <input name="year" value="{{ last_month_start.year }}" size="4" maxlength="4">
-        <input type="submit" value="Download" />
+        <input
+			 		name="year" value="{{ last_month_start.year }}" size="4"
+				 	maxlength="4">
+        <input type="submit" value="Download">
       </fieldset>
     </form>
   </body>

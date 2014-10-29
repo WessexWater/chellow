@@ -22,18 +22,18 @@ try:
     inv.getResponse().setContentType("text/csv")
     inv.getResponse().setHeader('Content-Disposition', 'attachment; filename="output.csv"')
     pw = inv.getResponse().getWriter()
-    pw.println("Chellow Supply Id, MPAN Core, Site Id, Site Name, From, To, NHH Breakdown, Actual HH Normal Days, Actual AMR Normal Days, Actual NHH Normal Days, Actual Unmetered Normal Days, Max HH Normal Days, Max AMR Normal Days, Max NHH Normal Days, Max Unmetered Normal Days, Total Actual Normal Days, Total Max Normal Days,Data Type, HH kWh, AMR kWh, NHH kWh, Unmetered kwh, Total kWh")
+    pw.print("Chellow Supply Id, MPAN Core, Site Id, Site Name, From, To, NHH Breakdown, Actual HH Normal Days, Actual AMR Normal Days, Actual NHH Normal Days, Actual Unmetered Normal Days, Max HH Normal Days, Max AMR Normal Days, Max NHH Normal Days, Max Unmetered Normal Days, Total Actual Normal Days, Total Max Normal Days,Data Type, HH kWh, AMR kWh, NHH kWh, Unmetered kwh, Total kWh, Note")
     pw.flush()
 
     year_start = datetime.datetime(year, 4, 1, tzinfo=pytz.utc)
     year_finish = year_start + relativedelta(years=1) - HH
 
-    supplies = sess.query(Supply).join(Era).join(Source).filter(Source.code.in_(('net', 'gen-net')), Era.imp_mpan_core != None, Era.start_date <= year_finish, or_(Era.finish_date == None, Era.finish_date >= year_start)).distinct()
+    supplies = sess.query(Supply).join(Era).join(Source).filter(Source.code.in_(('net', 'gen-net')), Era.imp_mpan_core != None, Era.start_date <= year_finish, or_(Era.finish_date == None, Era.finish_date >= year_start)).distinct().order_by(Supply.id)
 
-    if inv.hasParameter('supply-id'):
-        supply_id = inv.getLong('supply-id')
+    if inv.hasParameter('supply_id'):
+        supply_id = inv.getLong('supply_id')
         supply = Supply.get_by_id(sess, supply_id)
-        supplies = supplies.filter(Supply.id==supply.id)
+        supplies = supplies.filter(Supply.id == supply.id)
 
     meter_types = ['hh', 'amr', 'nhh', 'unmetered']
 
@@ -45,10 +45,9 @@ try:
 
         breakdown = ''
 
-        pw.print(str(supply.id) + ',')
-        pw.flush()
-
         for era in sess.query(Era).filter(Era.supply_id == supply.id, Era.start_date <= year_finish, or_(Era.finish_date == None, Era.finish_date >= year_start)):
+            pw.print(' ')
+            pw.flush()
 
             meter_type = era.make_meter_category()
 
@@ -203,7 +202,18 @@ try:
                         pair_start = pair['start-date']
                         pair_finish = pair['finish-date']
                         if pair_start >= year_start and pair_finish <= year_finish:
-                            normal_days[meter_type] += float(totalseconds(pair_finish - pair_start) + 60 * 30) / (60 * 60 * 24)
+                            if pair_start > period_start:
+                                block_start = pair_start
+                            else:
+                                block_start = period_start
+
+                            if pair_finish < period_finish:
+                                block_finish = pair_finish
+                            else:
+                                block_finish = period_finish
+
+                            if block_start <= block_finish:
+                                normal_days[meter_type] += float(totalseconds(block_finish - block_start) + 60 * 30) / (60 * 60 * 24)
 
 
                 # smooth
@@ -220,7 +230,7 @@ try:
                 # chop
                 pairs = [pair for pair in pairs if not pair['start-date'] > period_finish and not pair['finish-date'] < period_start]
 
-                # squash  
+                # squash
                 if pairs[0]['start-date'] < period_start:
                     pairs[0]['start-date'] = period_start
 
@@ -237,18 +247,21 @@ try:
                 breakdown += 'pairs - \n' + str(pairs)
 
             elif meter_type == 'hh':
-                kwh_res = sess.query(func.sum(HhDatum.value)).join(Channel).filter(Channel.imp_related==True, Channel.channel_type=='ACTIVE', Channel.era_id==era.id, HhDatum.start_date>=period_start, HhDatum.start_date<=period_finish).one()[0]
+                kwh_res = sess.query(func.sum(HhDatum.value)).join(Channel).filter(Channel.imp_related == True, Channel.channel_type == 'ACTIVE', Channel.era_id == era.id, HhDatum.start_date >= period_start, HhDatum.start_date <= period_finish).one()[0]
+                pw.print(' ')
+                pw.flush()
+
                 if kwh_res is not None:
                     total_kwh[meter_type] += float(kwh_res)
-                normal_days[meter_type] += float(sess.query(func.count(HhDatum.value)).join(Channel).filter(Channel.imp_related==True, Channel.channel_type=='ACTIVE', Channel.era_id==era.id, HhDatum.start_date>=period_start, HhDatum.start_date<=period_finish, HhDatum.status=='A').one()[0]) / 48
+                normal_days[meter_type] += float(sess.query(func.count(HhDatum.value)).join(Channel).filter(Channel.imp_related == True, Channel.channel_type == 'ACTIVE', Channel.era_id == era.id, HhDatum.start_date >= period_start, HhDatum.start_date <= period_finish, HhDatum.status == 'A').one()[0]) / 48
             elif meter_type == 'amr':
-                kwh_res = sess.query(func.sum(HhDatum.value)).join(Channel).filter(Channel.imp_related==True, Channel.channel_type=='ACTIVE', Channel.era_id==era.id, HhDatum.start_date>=period_start, HhDatum.start_date<=period_finish).one()[0]
+                kwh_res = sess.query(func.sum(HhDatum.value)).join(Channel).filter(Channel.imp_related == True, Channel.channel_type == 'ACTIVE', Channel.era_id == era.id, HhDatum.start_date >= period_start, HhDatum.start_date <= period_finish).one()[0]
                 if kwh_res is not None:
                     total_kwh[meter_type] += float(kwh_res)
-                normal_days[meter_type] += float(sess.query(func.count(HhDatum.value)).join(Channel).filter(Channel.imp_related==True, Channel.channel_type=='ACTIVE', Channel.era_id==era.id, HhDatum.start_date>=period_start, HhDatum.start_date<=period_finish, HhDatum.status=='A').one()[0]) / 48
+                normal_days[meter_type] += float(sess.query(func.count(HhDatum.value)).join(Channel).filter(Channel.imp_related == True, Channel.channel_type == 'ACTIVE', Channel.era_id == era.id, HhDatum.start_date >= period_start, HhDatum.start_date <= period_finish, HhDatum.status == 'A').one()[0]) / 48
 
             elif meter_type == 'unmetered':
-                bills = sess.query(Bill).filter(Bill.supply_id==supply.id, Bill.finish_date>=period_start, Bill.start_date<=period_finish)
+                bills = sess.query(Bill).filter(Bill.supply_id == supply.id, Bill.finish_date >= period_start, Bill.start_date <= period_finish)
                 for bill in bills:
                     total_kwh[meter_type] += float(bill.kwh)
                 normal_days[meter_type] += float(totalseconds(period_finish - period_start) + 60 * 30) / (60 * 60 * 24)
@@ -258,8 +271,8 @@ try:
         total_max_normal_days = sum(max_normal_days.values())
         is_normal = float(total_normal_days) / total_max_normal_days >= float(183) / 365
 
-        vals = [mpan_core, site.code, site.name, hh_format(year_start), hh_format(year_finish), breakdown] + [normal_days[type] for type in meter_types] + [max_normal_days[type] for type in meter_types] + [total_normal_days, total_max_normal_days, "Actual" if is_normal else "Estimated"] + [total_kwh[type] for type in meter_types] + [sum(total_kwh.values())]
-        pw.println(','.join('"' + str(val) + '"' for val in vals))
+        pw.println('')
+        pw.print(','.join('"' + str(val) + '"' for val in [supply.id, mpan_core, site.code, site.name, hh_format(year_start), hh_format(year_finish), breakdown] + [normal_days[type] for type in meter_types] + [max_normal_days[type] for type in meter_types] + [total_normal_days, total_max_normal_days, "Actual" if is_normal else "Estimated"] + [total_kwh[type] for type in meter_types] + [sum(total_kwh.values()), '']))
         pw.flush()
 
         # avoid a long running transaction

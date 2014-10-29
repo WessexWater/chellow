@@ -3642,7 +3642,7 @@ def virtual_bill(supply_source):
 			</request>
 			<!-- Run CRC report for month without data -->
 			<request path="/chellow/reports/207/output/?supply_id=7&amp;year=2012">
-				<regex pattern='7,"22 4862 4512 332"' />
+				<regex pattern='"7","22 4862 4512 332"' />
 				<response-code value="200" />
 			</request>
 		</test>
@@ -4762,6 +4762,39 @@ def triad_dates():
 				<response-code value="200" />
 				<regex
 					pattern='"07-002","3423760010","N","10","9.07","0.21","2012-01-05 00:00","2012-01-10 23:30","22 1065 3921 534","CI017","Roselands","2012-01-05 00:00","2012-01-10 23:30","21","9.07","0.0","9.07","10.0","0","",""' />
+			</request>
+		</test>
+		<test name="CRC with read pair straddling eras">
+			<!-- Update register read to make the TPR a teleswitch one -->
+			<request path="/chellow/reports/31/output/" method="post">
+				<control name="supplier_read_id" value="7" />
+				<control name="mpan" value="22 1065 3921 534" />
+				<control name="coefficient" value="1" />
+				<control name="msn" value="I02D89150" />
+				<control name="units" value="kWh" />
+				<control name="tpr_id" value="1" />
+				<control name="previous_year" value="2009" />
+				<control name="previous_month" value="04" />
+				<control name="previous_day" value="04" />
+				<control name="previous_hour" value="23" />
+				<control name="previous_minute" value="30" />
+				<control name="previous_value" value="14281" />
+				<control name="previous_type_id" value="1" />
+				<control name="present_year" value="2010" />
+				<control name="present_month" value="01" />
+				<control name="present_day" value="06" />
+				<control name="present_hour" value="23" />
+				<control name="present_minute" value="30" />
+				<control name="present_value" value="15924" />
+				<control name="present_type_id" value="1" />
+				<control name="update" value="Update" />
+
+				<response-code value="303" />
+			</request>
+			<request path="/chellow/reports/207/output/?supply_id=10&amp;year=2009">
+				<response-code value="200" />
+				<regex
+					pattern='"10","22 1065 3921 534","CI017","Roselands","2009-04-01 00:00","2010-03-31 23:30",".*?","0","0","277.0","0","0","0","365.0","0","277.0","365.0","Actual","0","0","1666.72563177","0","1666.72563177"' />
 			</request>
 		</test>
 	</test-group>
