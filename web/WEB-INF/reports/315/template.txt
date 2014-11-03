@@ -46,6 +46,19 @@
           {{input_date('start')}}
         </fieldset>
         <br><br>
+          Charge script
+          <br>
+          {{input_textarea('charge_script', '', 40, 80)}}
+          <br>
+          <br>
+          Properties
+          <br>
+          {{input_textarea('properties', '{}', 20, 80)}}
+          <br />
+          <br />
+          <input type="submit" value="Update">
+        </fieldset>
+
         <input type="submit" value="Add">
       </fieldset>
     </form>

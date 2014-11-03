@@ -68,10 +68,8 @@ class PersistentClass():
     id = Column(Integer, primary_key=True)
 
     def _eq_(self, other):
-        if type(other) is type(self):
-            return other.id == self.id
-        else:
-            return False
+        return type(other) is type(self) and other.id == self.id
+
 
 class VoltageLevel(Base, PersistentClass):
 

@@ -19,6 +19,7 @@ Monad.getUtils()['impt'](globals(), 'db', 'utils')
 
 RateScript, Contract = db.RateScript, db.Contract
 HH, hh_after, UserException = utils.HH, utils.hh_after, utils.UserException
+hh_format = utils.hh_format
 
 def bsuos_future(ns):
     new_ns = {}
@@ -64,6 +65,8 @@ def hh(data_source):
                 h['bsuos-gbp-per-kwh'] = bsuos_rate = bsuos_cache[h_start] = float(rates[h_start.strftime("%d %H:%M Z")]) / 1000
             except KeyError:
                 raise UserException("For the BSUoS rate script at " + hh_format(h_start) + " the rate cannot be found.")
+            except TypeError, e:
+                raise UserException("For the BSUoS rate script at " + hh_format(h_start) + " the rate 'rates_gbp_per_mwh' has the problem: " + str(e))
           
         bill['bsuos-kwh'] += h['nbp-kwh']
         h['bsuos-gbp'] = h['nbp-kwh'] * bsuos_rate
@@ -194,4 +197,5 @@ def shutdown():
         bsuos_importer.stop()
         if bsuos_importer.isAlive():
             raise UserException("Can't shut down BSUoS importer, it's still running.")
+
 

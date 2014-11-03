@@ -31,6 +31,19 @@ ELEXON_PORTAL_SCRIPTING_KEY_KEY = 'elexonportal_scripting_key'
 def key_format(dt):
     return dt.strftime("%d %H:%M Z")
 
+
+def tlms_future(ns):
+    new_ns = {}
+    old_result = ns['tlms']()
+    last_value = old_result[sorted(old_result.keys())[-1]]
+    
+    new_result = collections.defaultdict(lambda: last_value, old_result)
+    
+    def tlms():
+        return new_result
+    return {'tlms': tlms}
+
+
 def hh(data_source):
     rate_set = data_source.supplier_rate_sets['tlm']
 
@@ -40,44 +53,39 @@ def hh(data_source):
         cache = {}
         data_source.caches['tlms'] = cache
 
+        try:
+            future_funcs = data_source.caches['future_funcs']
+        except KeyError:
+            future_funcs = {}
+            data_source.caches['future_funcs'] = future_funcs
+
+        try:
+            future_func = future_funcs[db_id]
+        except KeyError:
+            future_funcs[db_id] = {'base_date': None, 'func': tlms_future}
+
+
     for h in data_source.hh_data:
         try:
             h['tlm'] = tlm = cache[h['start-date']]
         except KeyError:
-            for rscript in data_source.sess.query(RateScript).filter(RateScript.contract_id==db_id, RateScript.start_date<=data_source.finish_date, or_(RateScript.finish_date==None, RateScript.finish_date>=data_source.start_date)):
-                if rscript.start_date < data_source.start_date:
-                    chunk_start = data_source.start_date
-                else:
-                    chunk_start = rscript.start_date
-
-                if hh_after(rscript.finish_date, data_source.finish_date):
-                    chunk_finish = data_source.finish_date
-                else:
-                    chunk_finish = rscript.finish_date
-
-                ns = {}
-                exec(rscript.script, ns)
-                tlms = ns['tlms']()
-                dt = chunk_start
-                if isinstance(tlms, types.FunctionType):
-                    transform_func = tlms
-                    base_year = (rscript.start_date - HH).year
-                    while dt <= chunk_finish:
-                        cd = dt.replace(year=base_year)
-                        if cd >= rscript.start_date:
-                            cd = dt.replace(year=base_year - 1)
-                        tlms = data_source.hh_rate(db_id, cd, 'tlms')
-                        cache[dt] = transform_func(tlms[dt.strftime("%d %H:%M Z")])
-                        dt += HH
-                else:
-                    while dt <= chunk_finish:
-                        cache[dt] = tlms[dt.strftime("%d %H:%M Z")]
-                        dt += HH
-
-            h['tlm'] = tlm = cache[h['start-date']]
-
+            h_start = h['start-date']
+            rates = data_source.hh_rate(db_id, h_start, 'tlms')
+            try:
+                h['tlm'] = tlm = cache[h_start] = \
+                    rates[h_start.strftime("%d %H:%M Z")]
+            except KeyError:
+                raise UserException(
+                    "For the TLMs rate script at " +
+                    hh_format(h_start) + " the rate cannot be found.")
+            except TypeError, e:
+                raise UserException(
+                    "For the TLMs rate script at " + hh_format(h_start) +
+                    " the rate 'tlms' has the problem: " + str(e))
+          
         rate_set.add(tlm)
         h['nbp-kwh'] = h['gsp-kwh'] * tlm
+
 
 tlm_importer = None
 

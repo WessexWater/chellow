@@ -1,10 +1,10 @@
 from net.sf.chellow.monad import Monad
 
-Monad.getUtils()['imprt'](globals(), {
-        'db': ['Contract', 'session', 'Party', 'Participant', 'set_read_write', 'MarketRole'],
-        'utils': ['UserException', 'prev_hh', 'next_hh', 'hh_after', 'hh_before', 'HH', 'form_date', 'validate_hh_start'],
-        'templater': ['render']})
-
+Monad.getUtils()['impt'](globals(), 'db', 'utils', 'templater')
+Contract, MarketRole, Participant = db.Contract, db.MarketRole, db.Participant
+Party = db.Party
+UserException, form_date = utils.UserException, utils.form_date
+validate_hh_start = utils.validate_hh_start
 
 def make_fields(sess, message=None):
     contracts = sess.query(Contract).join(MarketRole).filter(MarketRole.code == 'X').order_by(Contract.name)
@@ -14,22 +14,25 @@ def make_fields(sess, message=None):
 
 sess = None
 try:
-    sess = session()
+    sess = db.session()
     if inv.getRequest().getMethod() == 'GET':
-        render(inv, template, make_fields(sess))
+        templater.render(inv, template, make_fields(sess))
     else:
-        set_read_write(sess)
+        db.set_read_write(sess)
         participant_id = inv.getLong("participant_id")
         participant = Participant.get_by_id(sess, participant_id)
         name = inv.getString("name")
         start_date = form_date(inv, "start")
         validate_hh_start(start_date)
-        contract = Contract.insert_supplier(sess, name, participant, '', '{}', start_date, None, '{}')
+        charge_script = inv.getString("charge_script")
+        properties = inv.getString("properties")
+
+        contract = Contract.insert_supplier(sess, name, participant, charge_script, properties, start_date, None, '{}')
         sess.commit()
         inv.sendSeeOther("/reports/77/output/?supplier_contract_id=" + str(contract.id))
 except UserException, e:
     sess.rollback()
-    render(inv, template, make_fields(sess, e), 400)
+    templater.render(inv, template, make_fields(sess, e), 400)
 finally:
     if sess is not None:
         sess.close()

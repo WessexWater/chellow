@@ -97,39 +97,73 @@ try:
         month_finish = month_start + relativedelta(months=1) - HH
         month_str = month_finish.strftime("%Y-%m-%d %H:%M")
         for site in sites:
-            group = site.groups(sess, month_start, month_start, True)[0]
-            for supply in group.supplies:
-                res = sess.query(Era, Source.code).join(Supply).join(Source).filter(Era.supply_id == supply.id, Era.start_date <= month_start, or_(Era.finish_date == None, Era.finish_date >= month_start), Source.code.in_(('net', 'gen-net', '3rd-party', '3rd-party-reverse'))).first()
-                if res is None:
-                    continue
+            for group in site.groups(sess, month_start, month_start, True):
+                for supply in group.supplies:
+                    res = sess.query(Era, Source.code).join(Supply).join(Source).filter(Era.supply_id == supply.id, Era.start_date <= month_start, or_(Era.finish_date == None, Era.finish_date >= month_start), Source.code.in_(('net', 'gen-net', '3rd-party', '3rd-party-reverse'))).first()
+                    if res is None:
+                        continue
 
-                era, source_code = res
+                    era, source_code = res
                 
-                month_data = {}
-                for name in ('import-net', 'export-net', 'import-gen', 'export-gen', 'import-3rd-party', 'export-3rd-party', 'displaced', 'used', 'used-3rd-party'):
-                    for sname in ('kwh', 'gbp'):
-                        month_data[name + '-' + sname] = 0
+                    month_data = {}
+                    for name in ('import-net', 'export-net', 'import-gen', 'export-gen', 'import-3rd-party', 'export-3rd-party', 'displaced', 'used', 'used-3rd-party'):
+                        for sname in ('kwh', 'gbp'):
+                            month_data[name + '-' + sname] = 0
 
-                supply_source = computer.SupplySource(sess, month_start, month_finish, forecast_date, era, True, pw, report_context)
+                    supply_source = computer.SupplySource(sess, month_start, month_finish, forecast_date, era, True, pw, report_context)
 
-                kwh = sum(hh['msp-kwh'] for hh in supply_source.hh_data)
-                if source_code in ('net', 'gen-net'):
-                    month_data['import-net-kwh'] += kwh
-                    month_data['used-kwh'] += kwh
-                elif source_code in ('3rd-party', '3rd-party-reverse'):
-                    month_data['import-3rd-party-kwh'] += kwh
-                    month_data['used-kwh'] += kwh
+                    kwh = sum(hh['msp-kwh'] for hh in supply_source.hh_data)
+                    if source_code in ('net', 'gen-net'):
+                        month_data['import-net-kwh'] += kwh
+                        month_data['used-kwh'] += kwh
+                    elif source_code in ('3rd-party', '3rd-party-reverse'):
+                        month_data['import-3rd-party-kwh'] += kwh
+                        month_data['used-kwh'] += kwh
 
-                imp_supplier_contract = era.imp_supplier_contract
-                if imp_supplier_contract is not None:
-                    import_vb_function = computer.contract_func(report_context, imp_supplier_contract, 'virtual_bill', pw)
-                    import_vb_function(supply_source)
-                    imp_supplier_bill = supply_source.supplier_bill
+                    imp_supplier_contract = era.imp_supplier_contract
+                    if imp_supplier_contract is not None:
+                        import_vb_function = computer.contract_func(report_context, imp_supplier_contract, 'virtual_bill', pw)
+                        import_vb_function(supply_source)
+                        imp_supplier_bill = supply_source.supplier_bill
 
-                    try:
-                        gbp = imp_supplier_bill['net-gbp']
-                    except KeyError:
-                        problem += 'For the supply ' + import_mpan.toString() + ' the virtual bill ' + str(imp_supplier_bill) + ' from the contract ' + supplier_contract.getName() + ' does not contain the net-gbp key.'
+                        try:
+                            gbp = imp_supplier_bill['net-gbp']
+                        except KeyError:
+                            problem += 'For the supply ' + import_mpan.toString() + ' the virtual bill ' + str(imp_supplier_bill) + ' from the contract ' + supplier_contract.getName() + ' does not contain the net-gbp key.'
+                        if source_code in ('net', 'gen-net'):
+                            month_data['import-net-gbp'] += gbp
+                            month_data['used-gbp'] += gbp
+                        elif source_code in ('3rd-party', '3rd-party-reverse'):
+                            month_data['import-3rd-party-gbp'] += gbp
+                            month_data['used-gbp'] += gbp
+
+                    exp_supplier_contract = era.exp_supplier_contract
+                    if exp_supplier_contract is not None:
+                        export_vb_function = computer.contract_func(report_context, exp_supplier_contract, 'virtual_bill', pw)
+                        export_vb_function(supply_source)
+
+                        exp_supplier_bill = supply_source.supplier_bill
+
+                        try:
+                            gbp = exp_supplier_bill['net-gbp']
+                        except KeyError:
+                            problem += 'For the supply ' + exp_mpan_core + ' the virtual bill ' + str(exp_supplier_bill) + ' from the contract ' + exp_supplier_contract.name + ' does not contain the net-gbp key.'
+                        kwh = sum(hh['msp-kwh'] for hh in supply_source.hh_data)
+
+                        if source_code in ('net', 'gen-net'):
+                            month_data['export-net-kwh'] += kwh
+                            month_data['export-net-gbp'] += gbp
+                        elif source_code in ('3rd-party', '3rd-party-reverse'):
+                            month_data['export-3rd-party-kwh'] += kwh
+                            month_data['export-3rd-party-gbp'] += gbp
+                            month_data['used-kwh'] -= kwh
+                            month_data['used-gbp'] -= gbp
+
+                    dc_contract = era.hhdc_contract
+                    dc_bill = supply_source.contract_func(dc_contract, 'virtual_bill')(supply_source)
+                    gbp = dc_bill['net-gbp']
+                    if 'problem' in dc_bill and len(dc_bill['problem']) > 0:
+                        problem += 'DC Problem: ' + dc_bill['problem']
                     if source_code in ('net', 'gen-net'):
                         month_data['import-net-gbp'] += gbp
                         month_data['used-gbp'] += gbp
@@ -137,76 +171,42 @@ try:
                         month_data['import-3rd-party-gbp'] += gbp
                         month_data['used-gbp'] += gbp
 
-                exp_supplier_contract = era.exp_supplier_contract
-                if exp_supplier_contract is not None:
-                    export_vb_function = computer.contract_func(report_context, exp_supplier_contract, 'virtual_bill', pw)
-                    export_vb_function(supply_source)
-
-                    exp_supplier_bill = supply_source.supplier_bill
-
-                    try:
-                        gbp = exp_supplier_bill['net-gbp']
-                    except KeyError:
-                        problem += 'For the supply ' + exp_mpan_core + ' the virtual bill ' + str(exp_supplier_bill) + ' from the contract ' + exp_supplier_contract.name + ' does not contain the net-gbp key.'
-                    kwh = sum(hh['msp-kwh'] for hh in supply_source.hh_data)
-
+                    mop_contract = era.mop_contract
+                    mop_bill_function = supply_source.contract_func(mop_contract, 'virtual_bill')
+                    mop_bill = mop_bill_function(supply_source)
+                    gbp = mop_bill['net-gbp']
                     if source_code in ('net', 'gen-net'):
-                        month_data['export-net-kwh'] += kwh
-                        month_data['export-net-gbp'] += gbp
+                        month_data['import-net-gbp'] += gbp
+                        month_data['used-gbp'] += gbp
+                        type = 'net'
                     elif source_code in ('3rd-party', '3rd-party-reverse'):
-                        month_data['export-3rd-party-kwh'] += kwh
-                        month_data['export-3rd-party-gbp'] += gbp
-                        month_data['used-kwh'] -= kwh
-                        month_data['used-gbp'] -= gbp
+                        month_data['import-3rd-party-gbp'] += gbp
+                        month_data['used-gbp'] += gbp
+                        type = '3rd-party'
 
-                dc_contract = era.hhdc_contract
-                dc_bill = supply_source.contract_func(dc_contract, 'virtual_bill')(supply_source)
-                gbp = dc_bill['net-gbp']
-                if 'problem' in dc_bill and len(dc_bill['problem']) > 0:
-                    problem += 'DC Problem: ' + dc_bill['problem']
-                if source_code in ('net', 'gen-net'):
-                    month_data['import-net-gbp'] += gbp
-                    month_data['used-gbp'] += gbp
-                elif source_code in ('3rd-party', '3rd-party-reverse'):
-                    month_data['import-3rd-party-gbp'] += gbp
-                    month_data['used-gbp'] += gbp
+                    out = [era.imp_mpan_core, era.exp_mpan_core, type, site.code, site.name, month_str] + [month_data[t] for t in summary_titles] + [''] + [(mop_bill[t] if t in mop_bill else '') for t in title_dict['mop']] + [''] + [(dc_bill[t] if t in dc_bill else '') for t in title_dict['dc']] + [''] + [(imp_supplier_bill[t] if t in imp_supplier_bill else '') for t in title_dict['imp-supplier']]
+                    if exp_supplier_contract is not None:
+                        out += [''] + [(exp_supplier_bill[t] if t in exp_supplier_bill else '') for t in title_dict['exp-supplier']]
 
-                mop_contract = era.mop_contract
-                mop_bill_function = supply_source.contract_func(mop_contract, 'virtual_bill')
-                mop_bill = mop_bill_function(supply_source)
-                gbp = mop_bill['net-gbp']
-                if source_code in ('net', 'gen-net'):
-                    month_data['import-net-gbp'] += gbp
-                    month_data['used-gbp'] += gbp
-                    type = 'net'
-                elif source_code in ('3rd-party', '3rd-party-reverse'):
-                    month_data['import-3rd-party-gbp'] += gbp
-                    month_data['used-gbp'] += gbp
-                    type = '3rd-party'
+                    pw.println(','.join('"' + str(v) + '"' for v in out))
+                    pw.flush()
 
-                out = [era.imp_mpan_core, era.exp_mpan_core, type, site.code, site.name, month_str] + [month_data[t] for t in summary_titles] + [''] + [(mop_bill[t] if t in mop_bill else '') for t in title_dict['mop']] + [''] + [(dc_bill[t] if t in dc_bill else '') for t in title_dict['dc']] + [''] + [(imp_supplier_bill[t] if t in imp_supplier_bill else '') for t in title_dict['imp-supplier']]
-                if exp_supplier_contract is not None:
-                    out += [''] + [(exp_supplier_bill[t] if t in exp_supplier_bill else '') for t in title_dict['exp-supplier']]
+                displaced_era = computer.displaced_era(sess, group, month_start, month_finish)
+                if displaced_era is not None:
+                    site_ds = computer.SiteSource(sess, site, month_start, month_finish, forecast_date, pw, report_context, displaced_era)
+                    month_data = {}
+                    for sname in ('import-net', 'export-net', 'import-gen', 'export-gen', 'import-3rd-party', 'export-3rd-party', 'msp', 'used', 'used-3rd-party'):
+                        for xname in ('kwh', 'gbp'):
+                            month_data[sname + '-' + xname] = 0
 
-                pw.println(','.join('"' + str(v) + '"' for v in out))
-                pw.flush()
-
-            displaced_era = computer.displaced_era(sess, group, month_start, month_finish)
-            if displaced_era is not None:
-                site_ds = computer.SiteSource(sess, site, month_start, month_finish, forecast_date, pw, report_context, displaced_era)
-                month_data = {}
-                for sname in ('import-net', 'export-net', 'import-gen', 'export-gen', 'import-3rd-party', 'export-3rd-party', 'msp', 'used', 'used-3rd-party'):
-                    for xname in ('kwh', 'gbp'):
-                        month_data[sname + '-' + xname] = 0
-
-                month_data['used-kwh'] = month_data['displaced-kwh'] = sum(hh['msp-kwh'] for hh in site_ds.hh_data)
+                    month_data['used-kwh'] = month_data['displaced-kwh'] = sum(hh['msp-kwh'] for hh in site_ds.hh_data)
                 
-                month_data['displaced-gbp'] = 0
+                    month_data['displaced-gbp'] = 0
 
-                out = ['', '', 'displaced', site.code, site.name, month_str] + [month_data[t] for t in summary_titles]
-                pw.println(','.join('"' + str('' if v is None else v) + '"' for v in out))
-                pw.flush()
-            sess.rollback()
+                    out = ['', '', 'displaced', site.code, site.name, month_str] + [month_data[t] for t in summary_titles]
+                    pw.println(','.join('"' + str('' if v is None else v) + '"' for v in out))
+                    pw.flush()
+                sess.rollback()
         month_start += relativedelta(months=1)
     pw.close()
 finally:
