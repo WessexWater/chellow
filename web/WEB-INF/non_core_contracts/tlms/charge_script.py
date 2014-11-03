@@ -25,6 +25,7 @@ Monad.getUtils()['impt'](globals(), 'db', 'utils')
 set_read_write, session = db.set_read_write, db.session
 Contract, RateScript = db.Contract, db.RateScript
 UserException, hh_after, HH = utils.UserException, utils.hh_after, utils.HH
+hh_format = utils.hh_format
 
 ELEXON_PORTAL_SCRIPTING_KEY_KEY = 'elexonportal_scripting_key'
 
@@ -212,3 +213,4 @@ def shutdown():
         tlm_importer.stop()
         if tlm_importer.isAlive():
             raise UserException("Can't shut down TLM importer, it's still running.")
+

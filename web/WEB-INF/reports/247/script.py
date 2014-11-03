@@ -137,28 +137,6 @@ try:
                             month_data['import-3rd-party-gbp'] += gbp
                             month_data['used-gbp'] += gbp
 
-                    exp_supplier_contract = era.exp_supplier_contract
-                    if exp_supplier_contract is not None:
-                        export_vb_function = computer.contract_func(report_context, exp_supplier_contract, 'virtual_bill', pw)
-                        export_vb_function(supply_source)
-
-                        exp_supplier_bill = supply_source.supplier_bill
-
-                        try:
-                            gbp = exp_supplier_bill['net-gbp']
-                        except KeyError:
-                            problem += 'For the supply ' + exp_mpan_core + ' the virtual bill ' + str(exp_supplier_bill) + ' from the contract ' + exp_supplier_contract.name + ' does not contain the net-gbp key.'
-                        kwh = sum(hh['msp-kwh'] for hh in supply_source.hh_data)
-
-                        if source_code in ('net', 'gen-net'):
-                            month_data['export-net-kwh'] += kwh
-                            month_data['export-net-gbp'] += gbp
-                        elif source_code in ('3rd-party', '3rd-party-reverse'):
-                            month_data['export-3rd-party-kwh'] += kwh
-                            month_data['export-3rd-party-gbp'] += gbp
-                            month_data['used-kwh'] -= kwh
-                            month_data['used-gbp'] -= gbp
-
                     dc_contract = era.hhdc_contract
                     dc_bill = supply_source.contract_func(dc_contract, 'virtual_bill')(supply_source)
                     gbp = dc_bill['net-gbp']
@@ -183,6 +161,30 @@ try:
                         month_data['import-3rd-party-gbp'] += gbp
                         month_data['used-gbp'] += gbp
                         type = '3rd-party'
+
+                    exp_supplier_contract = era.exp_supplier_contract
+                    if exp_supplier_contract is not None:
+                        supply_source = computer.SupplySource(sess, month_start, month_finish, forecast_date, era, False, pw, report_context)
+                        export_vb_function = computer.contract_func(report_context, exp_supplier_contract, 'virtual_bill', pw)
+                        export_vb_function(supply_source)
+
+                        exp_supplier_bill = supply_source.supplier_bill
+
+                        try:
+                            gbp = exp_supplier_bill['net-gbp']
+                        except KeyError:
+                            problem += 'For the supply ' + exp_mpan_core + ' the virtual bill ' + str(exp_supplier_bill) + ' from the contract ' + exp_supplier_contract.name + ' does not contain the net-gbp key.'
+                        kwh = sum(hh['msp-kwh'] for hh in supply_source.hh_data)
+
+                        if source_code in ('net', 'gen-net'):
+                            month_data['export-net-kwh'] += kwh
+                            month_data['export-net-gbp'] += gbp
+                        elif source_code in ('3rd-party', '3rd-party-reverse'):
+                            month_data['export-3rd-party-kwh'] += kwh
+                            month_data['export-3rd-party-gbp'] += gbp
+                            month_data['used-kwh'] -= kwh
+                            month_data['used-gbp'] -= gbp
+
 
                     out = [era.imp_mpan_core, era.exp_mpan_core, type, site.code, site.name, month_str] + [month_data[t] for t in summary_titles] + [''] + [(mop_bill[t] if t in mop_bill else '') for t in title_dict['mop']] + [''] + [(dc_bill[t] if t in dc_bill else '') for t in title_dict['dc']] + [''] + [(imp_supplier_bill[t] if t in imp_supplier_bill else '') for t in title_dict['imp-supplier']]
                     if exp_supplier_contract is not None:
@@ -212,3 +214,4 @@ try:
 finally:
     if sess is not None:
         sess.close()
+
