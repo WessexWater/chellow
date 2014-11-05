@@ -1,4 +1,3 @@
-from net.sf.chellow.physical import Configuration
 from net.sf.chellow.monad import Monad
 from java.io import StringReader
 from org.apache.http.protocol import HTTP

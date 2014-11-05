@@ -1,13 +1,13 @@
-from net.sf.chellow.monad import Hiber, Monad
-from net.sf.chellow.physical import User as JUser
+from net.sf.chellow.monad import Monad
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy import Column, Integer, String, Boolean, DateTime, Text, Numeric, or_, not_, and_, Enum
+from sqlalchemy import (
+    Column, Integer, String, Boolean, DateTime, Text, Numeric, or_, not_, and_,
+    Enum)
 from sqlalchemy.orm import sessionmaker, relationship, backref, object_session
 from sqlalchemy.orm.util import has_identity
 from sqlalchemy import create_engine, ForeignKey, Sequence
 from sqlalchemy.schema import UniqueConstraint
 from sqlalchemy.exc import ProgrammingError, SQLAlchemyError
-from java.lang import System
 from sqlalchemy.orm.exc import NoResultFound
 import ast
 import operator
@@ -18,9 +18,85 @@ import hashlib
 import decimal
 
 
-Monad.getUtils()['imprt'](globals(), {
-        'pre_db': ['PersistentClass', 'Base', 'VoltageLevel', 'GeneratorType', 'Session', 'Source', 'GspGroup', 'set_read_write'], 
-        'utils': ['UserException', 'NotFoundException', 'prev_hh', 'next_hh', 'hh_after', 'hh_before', 'HH', 'parse_mpan_core', 'hh_format', 'CHANNEL_TYPES']})
+Monad.getUtils()['impt'](globals(), 'utils')
+
+if sys.platform.startswith('java'):
+    _mapper_registry.clear()
+
+    from net.sf.chellow.monad import Hiber
+    from javax.management import MBeanServerFactory, ObjectName
+
+    # Get db name
+    con = Hiber.session().connection()
+    stmt = con.createStatement()
+    rs = stmt.executeQuery("select current_database()")
+    while rs.next():
+        db_name = str(rs.getString("current_database"))
+    Hiber.close()
+
+    ctx = Monad.getContext()
+    username = ctx.getInitParameter('db.username')
+    password = ctx.getInitParameter('db.password')
+
+    # get db hostname
+
+    server_list = MBeanServerFactory.findMBeanServer(None)
+    server = server_list[0]
+    beans = server.queryNames(
+        ObjectName(
+            'Catalina:type=DataSource,context=/chellow,class=javax.sql.DataSource,name="jdbc/chellow",*'),
+        None)
+    bean = beans.toArray()[0]
+
+    try:
+        attrs = server.getAttributes(bean, ['url'])
+
+
+        url = str(attrs[0])
+
+        i = url.find("//")
+        url = url[i + 2:]
+        i = url.find(":")
+        hostname = url[:i]
+    except IndexError:
+        for attr in str(bean).split(","):
+            if attr.startswith("host="):
+                hostname = attr[5:]
+else:
+    from chellow import app
+    username = app.config['PGUSER']
+    password = app.config['PGPASSWORD']
+    hostname = app.config['PGHOST']
+    db_name = app.config['PGDATABSE']
+
+con_str = "postgresql+pg8000://" + username + ":" + password + "@" + \
+    hostname + "/" + db_name
+
+engine = create_engine(con_str.encode('ascii'), isolation_level="SERIALIZABLE")
+
+Session = sessionmaker(bind=engine)
+
+Base = declarative_base()
+
+def set_read_write(sess):
+    sess.execute("rollback")
+    sess.execute("set transaction isolation level serializable read write")
+
+
+class PersistentClass():
+    @classmethod
+    def get_by_id(cls, session, oid):
+        obj = session.query(cls).get(oid)
+        if obj is None:
+            raise NotFoundException("There isn't a " + str(cls.__name__) +
+                    " with the id " + str(oid))
+        return obj
+
+    id = Column(Integer, primary_key=True)
+
+    def _eq_(self, other):
+        return type(other) is type(self) and other.id == self.id
+
 
 class Snag(Base, PersistentClass):
     NEGATIVE = "Negative values"
@@ -29,8 +105,9 @@ class Snag(Base, PersistentClass):
     DATA_IGNORED = "Data ignored"
 
     @staticmethod
-    def get_covered_snags(sess, site, channel, description, start_date, finish_date):
-        query = sess.query(Snag).filter(Snag.channel==channel, Snag.site==site, Snag.description==description, or_(Snag.finish_date==None, Snag.finish_date >= start_date)).order_by(Snag.start_date)
+    def get_covered_snags(
+            sess, site, channel, description, start_date, finish_date):
+        query = sess.query(Snag).filter(Snag.channel == channel, Snag.site==site, Snag.description==description, or_(Snag.finish_date==None, Snag.finish_date >= start_date)).order_by(Snag.start_date)
         if finish_date is not None:
             query = query.filter(Snag.start_date <= finish_date)
         return query.all()
@@ -111,6 +188,70 @@ class Snag(Base, PersistentClass):
         self.start_date = start_date
         self.finish_date = finish_date
 
+
+class GspGroup(Base, PersistentClass):
+    @staticmethod
+    def get_by_code(sess, code):
+        code = code.strip()
+        group = sess.query(GspGroup).filter_by(code=code).first()
+        if group is None:
+            raise UserException("The GSP group with code " + code +
+                        " can't be found.")
+        return group
+
+    __tablename__ = 'gsp_group'
+    id = Column('id', Integer, Sequence('gsp_group_id_seq'), primary_key=True)
+    code = Column(String, unique=True, nullable=False)
+    description = Column(String, unique=True, nullable=False)
+    supplies = relationship('Supply', backref='gsp_group')
+
+
+class VoltageLevel(Base, PersistentClass):
+
+    __tablename__ = "voltage_level"
+    code = Column(String, unique=True, nullable=False)
+    name = Column(String, unique=True, nullable=False)
+    llfcs = relationship('Llfc', backref='voltage_level')
+
+    @staticmethod
+    def get_by_code(sess, code):
+        vl = sess.query(VoltageLevel).filter_by(code=code).first()
+        if vl is None:
+            raise UserException("There is no voltage level with the code '"
+                    + code + "'.")
+        return vl
+
+
+class GeneratorType(Base, PersistentClass):
+    @staticmethod
+    def get_by_code(sess, code):
+        gen_type = sess.query(GeneratorType).filter_by(code=code).first()
+        if gen_type is None:
+            raise UserException("There's no generator type with the code '"
+                    + code + "'")
+        return gen_type
+
+    __tablename__ = 'generator_type'
+    code = Column(String, unique=True, nullable=False)
+    description = Column(String, unique=True, nullable=False)
+    supplies = relationship('Supply', backref='generator_type')
+
+
+class Source(Base, PersistentClass):
+    @staticmethod
+    def get_by_code(sess, code):
+        source = sess.query(Source).filter_by(code=code.strip()).first()
+        if source is None:
+            raise UserException("There's no source with the code '" +
+                    code + "'")
+        return source
+
+    __tablename__ = "source"
+    id = Column('id', Integer, Sequence('source_id_seq'), primary_key=True)
+    code = Column(String, unique=True, nullable=False)
+    name = Column(String, unique=True, nullable=False)
+    supplies = relationship('Supply', backref='source')
+    
 
 class ReadType(Base, PersistentClass):
 
@@ -987,8 +1128,10 @@ class User(Base, PersistentClass):
 
     @staticmethod
     def digest(password):
-        return JUser.digest(password)
-        #return hashlib.md5(password).hexdigest()
+        if sys.platform.startswith('java'):
+            from net.sf.chellow.physical import User as JUser
+            return JUser.digest(password)
+            #return hashlib.md5(password).hexdigest()
 
     __tablename__ = 'user'
     id = Column(Integer, Sequence('user_id_seq'), primary_key=True)

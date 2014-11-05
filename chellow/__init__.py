@@ -9,6 +9,7 @@ handler.setLevel(logging.WARNING)
 app.logger.addHandler(handler)
 app.config.from_object('chellow.settings')
 
+from chellow.models import Contract
 
 @app.before_first_request
 def on_startup(*args, **kwargs):
@@ -22,3 +23,9 @@ def on_startup(*args, **kwargs):
             'password': app.config['PGPASSWORD'],
             'host_name': app.config['PGHOST'],
             'db_name': app.config['PGDATABSE']})
+    startup_contract = Contract.get_non_core_by_name('startup')
+    ns = {}
+    exec(startup_contract.charge_script, ns)
+    ns['on_start_up'](None)
+
+import chellow.views

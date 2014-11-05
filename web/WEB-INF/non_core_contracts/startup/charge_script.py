@@ -1,17 +1,23 @@
-from net.sf.chellow.billing import Contract
-from net.sf.chellow.monad import Hiber, Monad
-import collections
-from java.lang import System
-from org.python.util import PythonInterpreter
-from java.io import LineNumberReader, File
-from org.python.core import PyString
-import tempfile
+import sys
 import os
+
+LIBS = (
+    'utils', 'pre_db', 'db', 'templater', 'bsuos', 'tlms', 'general_import',
+    'hh_importer', 'bill_import', 'edi_lib', 'system_price_bmreports',
+    'system_price_elexon', 'system_price', 'rcrc', 'tlms', 'computer', 'duos',
+    'triad_rates', 'triad', 'ccl', 'aahedc', 'scenario')
 
 class LibDict(dict):
     pass
 
-def on_start_up(ctx):
+def jython_start(ctx):
+    from net.sf.chellow.billing import Contract
+    from net.sf.chellow.monad import Hiber, Monad
+    from java.lang import System
+    from org.python.util import PythonInterpreter
+    from java.io import LineNumberReader, File
+    from org.python.core import PyString
+
     interp = PythonInterpreter()
 
     sys_state = interp.getSystemState()
@@ -28,7 +34,8 @@ def on_start_up(ctx):
                 if lib_content.endswith(".pth"):
                     line_reader = None
                     try:
-                        line_reader = LineNumberReader(FileReader(File(lib_path, lib_content)))
+                        line_reader = LineNumberReader(
+                            FileReader(File(lib_path, lib_content)))
 
                         line = line_reader.readLine()
 
@@ -42,7 +49,8 @@ def on_start_up(ctx):
                                 continue
 
                             if line.startswith("import"):
-                                interp.exec(line)
+                                efunc = getattr(interp, 'exec')
+                                efunc(line)
                                 continue
 
                             archive_file = File(lib_path, line)
@@ -54,8 +62,7 @@ def on_start_up(ctx):
                     finally:
                         line_reader.close()
 
-    for contract_name in ['utils', 'pre_db', 'db', 'templater', 'bsuos',
-            'tlms', 'general_import', 'hh_importer', 'bill_import', 'edi_lib', 'system_price_bmreports', 'system_price_elexon', 'system_price', 'rcrc', 'tlms', 'computer', 'duos', 'triad_rates', 'triad', 'ccl', 'aahedc', 'scenario']:
+    for contract_name in LIBS:
         contract = Contract.getNonCoreContract(contract_name)
         nspace = LibDict()
         exec(contract.getChargeScript(), nspace)
@@ -72,7 +79,40 @@ def on_start_up(ctx):
 
     Hiber.close()
 
-    Monad.getUtils()['impt'](globals(), 'hh_importer', 'bsuos', 'rcrc', 'tlms', 'system_price_bmreports', 'system_price_elexon')
+def cpython_start():
+    from chellow import app
+    from chellow.models import Contract
+
+    libs = {}
+    app.config['libs'] = libs
+    for contract_name in LIBS:
+        try:
+            contract = Contract.get_non_core_by_name(contract_name)
+            nspace = LibDict()
+            exec(contract.charge_script, nspace)
+            for k, v in nspace.iteritems():
+                if not hasattr(nspace, k):
+                    setattr(nspace, k, v)
+            nspace['db_id'] = contract.id
+            setattr(nspace, 'db_id', contract.id)
+            libs[contract_name] = nspace
+        except Exception, e:
+            app.logger.error("While importing " + contract_name + " " + str(e))
+            raise e
+        
+    download_path = os.path.join(os.environ['CHELLOW_HOME'], 'downloads')
+    if not os.path.exists(download_path):
+        os.makedirs(download_path)
+
+def on_start_up(ctx):
+    if sys.platform.startswith('java'):
+        jython_start(ctx)
+    else:
+        cpython_start()
+
+    Monad.getUtils()['impt'](
+        globals(), 'hh_importer', 'bsuos', 'rcrc', 'tlms',
+        'system_price_bmreports', 'system_price_elexon')
 
     hh_importer.startup()
     bsuos.startup()

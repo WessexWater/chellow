@@ -85,10 +85,13 @@ read / write access. Once users are added, you have to log in as one of those
 users. Users are added from the 'users' page.
 
 Default users can be automatically assigned to requests from certain IP
-addresses. To associate an IP address to a user, go to the Configuration page
-and add a line to the 'properties' field similar to the following:
+addresses. To associate an IP address to a user, go to the non-core contract
+`configuration` and add a line to the 'properties' field similar to the
+following:
 
-`ip127-0-0-1=implicit-user@localhost`
+  {
+    'ips': {'127.0.0.1': 'implicit-user@localhost'}
+  }
 
 Note that multiple IP addresses can be mapped to the same user.
 

@@ -1,6 +1,5 @@
 from net.sf.chellow.monad import Monad
 import sys
-from java.lang import System
 import xlrd
 import types
 from dateutil.relativedelta import relativedelta

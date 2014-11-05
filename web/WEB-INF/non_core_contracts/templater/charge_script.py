@@ -1,8 +1,6 @@
 from jinja2 import Template, Environment, PackageLoader
-from java.lang import System
+import time
 from datetime import datetime
-from net.sf.chellow.physical import HhStartDate
-from java.util import Date
 
 
 FORMATS = {'year': '%Y', 'month': '%m', 'day': '%d', 'hour': '%H',
@@ -131,15 +129,7 @@ prefix = '''
 '''
 
 def hh_format_filter(dt, modifier='full'):
-    if dt is None:
-        return "Ongoing"
-
-    if isinstance(dt, HhStartDate):
-        dt = datetime.utcfromtimestamp(dt.getDate().getTime() / 1000)
-    elif isinstance(dt, Date):
-        dt = datetime.utcfromtimestamp(dt.getTime() / 1000)
-
-    return dt.strftime(FORMATS[modifier])
+    return "Ongoing" if dt is None else dt.strftime(FORMATS[modifier])
 
 def now_if_none(dt):
     if dt is None:
@@ -170,7 +160,7 @@ def render(inv, template, vals, status_code=200, content_type='text/html'):
     vals['request'] = inv.getRequest()
     res = inv.getResponse()
     res.setContentType(content_type)
-    res.setDateHeader("Date", System.currentTimeMillis())
+    res.setDateHeader("Date", int(round(time.time() * 1000)))
     res.setHeader("Cache-Control", "no-cache")
     res.setStatus(status_code)
     writer = res.getWriter()

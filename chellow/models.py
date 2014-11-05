@@ -10,8 +10,6 @@ import pytz
 
 db = SQLAlchemy(app)
 
-app.logger.error("importing db module")
-
 
 class UserException(Exception):
     pass
@@ -194,6 +192,9 @@ class Contract(db.Model, PersistentClass):
         contract.update_rate_script(
             rscript, start_date, finish_date, rate_script)
         return contract
+
+    def make_properties(self):
+        return eval(self.properties, {'datetime': datetime.datetime})
 
 
 class RateScript(db.Model, PersistentClass):

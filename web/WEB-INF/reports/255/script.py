@@ -1,22 +1,19 @@
-from java.lang import System
-from net.sf.chellow.monad import Monad, Hiber
+from net.sf.chellow.monad import Monad
 from sqlalchemy.orm import joinedload_all
 import sys
 
-Monad.getUtils()['imprt'](globals(), {
-        'db': [
-                'Contract', 'Party', 'User', 'set_read_write', 'session', 
-                'UserRole'], 
-        'utils': ['UserException'],
-        'templater': ['render']})
+Monad.getUtils()['impt'](globals(), 'db', 'utils', 'templater')
+User, Party, MarketRole  = db.User, db.Party, db.MarketRole
+Participant = db.Participant
 
 def users_context(sess, message=None):
     users = sess.query(User).order_by(User.email_address).all()
-    parties = sess.query(Party).from_statement("select party.* from party, " +
-            "market_role, participant where party.market_role_id = market_role.id " +
-            "and party.participant_id = participant.id order by " +
-            "market_role.code, participant.code").all()
-    fields = {'users': users, 'parties': parties, 'messages': None if message is None else [message]}
+    parties = sess.query(Party).join(MarketRole).join(Participant). \
+        order_by(MarketRole.code, Participant.code).all()
+    fields = {
+        'users': users,
+        'parties': parties,
+        'messages': None if message is None else [message]}
     user = inv.getUser()
     if user is not None:
         fields['current_user'] = user

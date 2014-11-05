@@ -2,8 +2,6 @@ import hashlib
 from flask import request, Response
 from chellow import app
 from chellow.models import Contract, Report, User
-import ipaddress
-
 
 def GET_str(name):
     return request.args[name]
@@ -14,9 +12,10 @@ def GET_int(name):
     return int(val_str)
 
 
+
+
 @app.before_request
 def check_permissions(*args, **kwargs):
-    app.logger.error("checking permissions")
     method = request.method
     path = request.path
 
@@ -39,7 +38,7 @@ def check_permissions(*args, **kwargs):
     if user is None:
         user_count = User.query.count()
         if user_count is None or user_count == 0 and \
-                ipaddress.ip_address(request.remote_addr).is_loopback():
+                request.remote_addr == '127.0.0.1':
             return None
     else:
         role = user.role
@@ -80,9 +79,8 @@ def check_permissions(*args, **kwargs):
         return Response('Forbidden', 403)
 
 
-@app.route('/')
+@app.route('/*')
 def index():
-    app.logger.error("hello")
     # n = 1 / 0
     return 'Hello World'
 
