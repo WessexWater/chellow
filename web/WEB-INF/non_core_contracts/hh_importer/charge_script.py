@@ -1,5 +1,4 @@
 from net.sf.chellow.monad import Monad
-from java.lang import System
 import threading
 import traceback
 import csv
@@ -12,15 +11,13 @@ import dateutil.parser
 import pytz
 from sqlalchemy import or_
 import datetime
-from org.apache.commons.net.ftp import FTPClient, FTPFile, FTPReply
-import StringIO
-from java.io import InputStreamReader, BufferedReader
+import ftplib
+import os
 
 
-Monad.getUtils()['imprt'](globals(), {
-        'db': ['Contract', 'session', 'Batch', 'set_read_write', 'Site', 'Supply', 'Source', 'GeneratorType', 'GspGroup', 'Pc', 'Cop', 'Era', 'Mtc', 'Ssc', 'HhDatum', 'Snag', 'BillType', 'Tpr', 'ReadType', 'MarketRole'],
-        'utils': ['UserException', 'prev_hh', 'next_hh', 'hh_after', 'hh_before', 'HH', 'parse_hh_start', 'get_contract_func'],
-        'templater': ['render']})
+Monad.getUtils()['impt'](globals(), 'db', 'utils', 'templater')
+Contract, MarketRole = db.Contract, db.MarketRole
+UserException = utils.UserException
 
 processes = collections.defaultdict(list)
 tasks = {}
@@ -46,7 +43,7 @@ class HhDataImportProcess(threading.Thread):
     def run(self):
         sess = None
         try:
-            sess = session()
+            sess = db.session()
             contract = Contract.get_hhdc_by_id(sess, self.hhdc_contract_id)
             sess.rollback()
             properties = contract.make_properties()
@@ -58,7 +55,7 @@ class HhDataImportProcess(threading.Thread):
             create_parser = gb.get('create_parser')
             self.converter = create_parser(self.istream, mpan_map)
             sess.rollback()
-            HhDatum.insert(sess, self.converter)
+            db.HhDatum.insert(sess, self.converter)
             sess.commit()
         except UserException, e:
             self.messages.append(str(e))
@@ -128,7 +125,7 @@ class HhImportTask(threading.Thread):
                     ftp = None
 
                     try:
-                        sess = session()
+                        sess = db.session()
                         contract = Contract.get_hhdc_by_id(sess, self.contract_id)
                         properties = contract.make_properties()
                         
@@ -139,82 +136,66 @@ class HhImportTask(threading.Thread):
                         directories = properties['directories']
                         state = contract.make_state()
 
-                        if 'last_import_keys' not in state:
-                            state['last_import_keys'] = {}
+                        try:
+                            last_import_keys = state['last_import_keys']
+                        except KeyError:
+                            last_import_keys = {}
+                            state['last_import_keys'] = last_import_keys
 
-                        last_import_keys = state['last_import_keys']
                         sess.rollback()
-                        ftp = FTPClient()
-                        ftp.setDataTimeout(1000 * 60)
-                        ftp.connect(host_name)
                         self.log("Connecting to ftp server at " + host_name + ".")
-                        self.log("Server replied with '" + ftp.getReplyString() + "'.")
-                        reply = ftp.getReplyCode()
+                        ftp = ftplib.FTP(host_name, user_name, password)
+                        home_path = ftp.pwd()
 
-                        if not FTPReply.isPositiveCompletion(reply):
-                            raise UserException("FTP server refused connection.")
-
-                        self.log("Connected to server, now logging in.")
-                        ftp.login(user_name, password)
-                        self.log("Server replied with '" + ftp.getReplyString() + "'.")
-                        file_name = None
+                        file = None
 
                         for directory in directories:
-                            if directory not in last_import_keys:
-                                last_import_keys[directory] = unicode('')
-
-                            last_import_key = last_import_keys[directory] 
                             self.log("Checking the directory '" + directory + "'.")
+                            try:
+                                last_import_key = last_import_keys[directory]
+                            except KeyError:
+                                last_import_key = ''
+                                last_import_keys[directory] = last_import_key
 
-                            files = [(datetime.datetime.fromtimestamp(file.getTimestamp().getTime().getTime() / 1000, pytz.utc).strftime("%Y-%m-%d %H:%M:%S") + "_" + file.getName(), file) for file in ftp.listFiles(directory) if file.getType() == FTPFile.FILE_TYPE]
-                            files = [(key, file) for key, file in files if key > last_import_key]
+                            dir_path = home_path + "/" + directory
+                            ftp.cwd(dir_path)
+                            files = []
+                            for fname in ftp.nlst():
+                                fpath = dir_path + "/" + fname
+                                try:
+                                    ftp.cwd(fpath)
+                                    continue  # directory
+                                except ftplib.error_perm:
+                                    pass
 
-                            for key, file in sorted(files):
-                                fname = directory + "/" + file.getName()
+                                key = ftp.sendcmd("MDTM " + fpath).split()[1] + '_' + fname
+                                if key > last_import_key:
+                                    files.append((key, fpath))
 
-                                if file.getSize() == 0:
-                                    self.log("Ignoring '" + fname + "'because it has zero length")
-                                    continue
-
-                                file_name = fname
+                            if len(files) > 0:
+                                file = sorted(files)[0]
+                                last_import_keys[directory] = file[0]
                                 break
-
-                            if file_name is not None:
-                                break
-
-                        if file_name is None:
+                                    
+                        if file is None:
                             self.log("No new files found.")
-                            ftp.logout()
+                            ftp.quit()
                             self.log("Logged out.")
-                            ftp.disconnect()
-                            self.log("Disconnected.")
                         else:
-                            self.log("Attempting to download '" + file_name
-+ "'.")
-                            istr = ftp.retrieveFileStream(file_name)
-                            if istr is None:
-                                reply = ftp.getReplyCode()
-                                raise UserException("Can't download the file '" + file.getName() + "', server says: " + str(reply) + ".")
-                            self.log("File stream obtained successfully.")
-                            stream = BufferedReader(InputStreamReader(istr, 'utf-8'))
+                            key, fpath = file
+                            self.log("Attempting to download " + fpath
++ " with key " + key + ".")
                             f = tempfile.TemporaryFile()
-                            ln = stream.readLine()
-                            while ln != None:
-                                f.write(ln)
-                                f.write('\n')
-                                ln = stream.readLine()
-                            f.seek(0)
-
-                            if not ftp.completePendingCommand():
-                                raise UserException("Couldn't complete ftp transaction: " + ftp.getReplyString())
-                            ftp.logout()
+                            ftp.retrbinary("RETR " + fpath, f.write)
+                            self.log("File downloaded successfully.")
+                            ftp.quit()
                             self.log("Logged out.")
-                            ftp.disconnect()
-                            self.log("Disconnected.")
 
                             self.log("Treating files as type " + file_type)
-
-                            self.importer = HhDataImportProcess(self.contract_id, 0, f, file_name + file_type, file.getSize())
+                            f.seek(0, os.SEEK_END)
+                            fsize = f.tell()
+                            f.seek(0)
+                            self.importer = HhDataImportProcess(self.contract_id, 0, f, fpath + file_type, fsize)
 
                             self.importer.run()
                             messages = self.importer.messages
@@ -225,17 +206,16 @@ class HhImportTask(threading.Thread):
                             if len(messages) > 0:
                                 raise UserException("Problem loading file.")
 
-                            last_import_keys[directory] = key
-                            set_read_write(sess)
+                            db.set_read_write(sess)
                             contract = Contract.get_hhdc_by_id(sess, self.contract_id)
                             contract.update_state(state)
                             sess.commit()
-                            self.log("Finished loading '" + file.getName())
+                            self.log("Finished loading '" + fpath)
                             found_new = True
                     except UserException, e:
                         self.log("Problem " + str(e))
                         sess.rollback()
-                    except:
+                    except Exception:
                         self.log("Unknown Exception " + traceback.format_exc())
                         sess.rollback()
                     finally:
@@ -244,6 +224,8 @@ class HhImportTask(threading.Thread):
                                 sess.close()
                         except:
                             self.log("Unknown Exception II" + traceback.format_exc())
+            except Exception:
+                self.log("Outer Exception " + traceback.format_exc())
             finally:
                 self.lock.release()
 
@@ -262,7 +244,7 @@ def startup():
     sess = None
 
     try:
-        sess = session()
+        sess = db.session()
         for procs in processes.values():
             for proc in procs:
                 if proc.isAlive():

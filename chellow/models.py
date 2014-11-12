@@ -504,12 +504,66 @@ class HhDatum(db.Model, PersistentClass):
     __table_args__ = (UniqueConstraint('channel_id', 'start_date'),)
 
 
+class Configuration(db.Model, PersistentClass):
+    id = Column('id', Integer, primary_key=True)
+    properties = Column(Text, nullable=False)
+    core_report_id = Column('core_report_id', Integer)
+    user_report_id = Column('user_report_id', Integer)
+
+    def next_core_report_id():
+        core_report_id += 2
+        return core_report_id
+
+    def next_user_report_id():
+        user_report_id += 2
+        return user_report_id
+
+
 class Report(db.Model, PersistentClass):
     __tablename__ = 'report'
     id = Column('id', Integer, primary_key=True)
     name = Column(String, unique=True, nullable=False)
     script = Column(Text, nullable=False)
     template = Column(Text, nullable=False)
+
+    def __init__(self, id, is_core, name, script, template):
+        configuration = Configuration.query.first()
+
+        if id is None:
+            if is_core:
+                id = configuration.next_core_report_id()
+            else:
+                id = configuration.next_user_report_id()
+
+        else:
+            if is_core:
+                if id > configuration.core_report_id:
+                    configuration.core_report_id = id
+            else:
+                if id > configuration.user_report_id:
+                    configuration.user_report_id(id)
+
+        is_odd = id % 2 == 1
+        if is_odd != is_core:
+            raise UserException(
+                "The ids of core reports must be odd, those of user reports"
+                "must be even. Report id " + id + ", Is Odd? " + is_odd +
+                ", is core? " + is_core + ".")
+        self.id = id
+        self.update(name, script, template)
+
+    def update(self, name, script, template):
+        self.name = name
+        try:
+            ast.parse(script)
+            self.script = script
+        except SyntaxError, e:
+            raise UserException(e)
+
+        if template is not None and len(template.strip()) == 0:
+            template = None
+
+        self.template = template
 
 
 def parse_hh_date(date_str):

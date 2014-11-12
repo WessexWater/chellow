@@ -1,15 +1,4 @@
 from net.sf.chellow.monad import Monad
-from javax.xml.parsers import DocumentBuilderFactory
-from org.w3c.dom import Node
-from org.apache.http.protocol import HTTP
-from org.apache.http.client.entity import UrlEncodedFormEntity
-from org.apache.http.util import EntityUtils
-from org.apache.http import HttpHost
-from org.apache.http.conn.params import ConnRoutePNames
-from org.apache.http.impl.client import DefaultHttpClient
-from org.apache.http.message import BasicNameValuePair
-from org.apache.http.client.methods import HttpGet, HttpPost
-from com.Ostermiller.util import CSVParser
 import sys
 import types
 import collections

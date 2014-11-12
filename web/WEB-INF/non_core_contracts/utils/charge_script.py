@@ -1,3 +1,4 @@
+import sys
 from dateutil.relativedelta import relativedelta
 from net.sf.chellow.monad import Monad
 import pytz
@@ -134,3 +135,17 @@ def parse_channel_type(channel_type):
     if tp not in CHANNEL_TYPES:
         raise UserException("The given channel type is '" + str(channel_type) + "' but it should be one of " + str(CHANNEL_TYPES) + ".")
     return tp
+
+def send_response(inv, content, status=200, mimetype='text/csv', **headers):
+    if sys.platform.startswith('java'):
+        res = inv.getResponse()
+        res.setContentType(mimetype)
+        res.setStatus(status)
+        pw = res.getWriter()
+        for l in content:
+            pw.write(l) 
+        pw.close()
+    else:
+        from flask import Response
+        inv.response = Response(
+            content(), status=status, mimetype=mimetype, headers=headers)

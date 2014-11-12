@@ -1,5 +1,4 @@
 from net.sf.chellow.monad import Monad
-from java.lang import System
 import threading
 import traceback
 import csv
@@ -12,10 +11,7 @@ import dateutil.parser
 import pytz
 from sqlalchemy import or_
 
-Monad.getUtils()['imprt'](globals(), {
-        'db': ['Contract', 'session', 'Batch', 'set_read_write', 'Site', 'Supply', 'Source', 'GeneratorType', 'GspGroup', 'Pc', 'Cop', 'Era', 'Mtc', 'Ssc', 'HhDatum', 'Snag', 'BillType', 'Tpr', 'ReadType', 'Channel', 'MarketRole'],
-        'utils': ['UserException', 'prev_hh', 'next_hh', 'hh_after', 'hh_before', 'HH', 'parse_hh_start', 'parse_mpan_core', 'parse_bool', 'parse_channel_type'],
-        'templater': ['render']})
+Monad.getUtils()['impt'](globals(), 'db', 'utils', 'templater')
 
 process_id = 0
 process_lock = threading.Lock()

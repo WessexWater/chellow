@@ -1,15 +1,5 @@
 from net.sf.chellow.monad import Monad
-from javax.xml.parsers import DocumentBuilderFactory
-from org.w3c.dom import Node
-from org.apache.http.protocol import HTTP
-from org.apache.http.client.entity import UrlEncodedFormEntity
-from org.apache.http.util import EntityUtils
-from org.apache.http import HttpHost
-from org.apache.http.conn.params import ConnRoutePNames
-from org.apache.http.impl.client import DefaultHttpClient
-from org.apache.http.message import BasicNameValuePair
-from org.apache.http.client.methods import HttpGet, HttpPost
-from com.Ostermiller.util import CSVParser
+from xml.dom.minidom import Node, parse
 import sys
 import types
 import collections
@@ -18,6 +8,7 @@ import threading
 import datetime
 import traceback
 from dateutil.relativedelta import relativedelta
+import urllib2
 
 Monad.getUtils()['impt'](globals(), 'db', 'utils')
 
@@ -98,26 +89,19 @@ class SystemPriceImporter(threading.Thread):
 
         self.log("Downloading data from " + day_url)
         ct_tz = pytz.timezone('Europe/London')
+        
+        f = urllib2.urlopen(day_url)
+        dom = parse(f)
 
-        dbf = DocumentBuilderFactory.newInstance()
-        dbf.setNamespaceAware(True)
-        db = dbf.newDocumentBuilder()
-        doc = db.parse(day_url)
-        doc_element = doc.getDocumentElement()
-        elem_elements = doc_element.getElementsByTagName('ELEMENT')
         prices = {}
         ct_day_start = ct_tz.localize(n_day_start)
         hh_start = pytz.utc.normalize(ct_day_start.astimezone(pytz.utc))
 
-        for i in range(elem_elements.getLength()):
+        for elem in dom.getElementsByTagName('ELEMENT'):
             vals = {}
-            elem_element = elem_elements.item(i)
-            elem_children = elem_element.getChildNodes()
-            for j in range(elem_children.getLength()):
-                elem_child = elem_children.item(j)
-                if elem_child.getNodeType() == Node.ELEMENT_NODE:
-                    node_name = elem_child.getTagName()
-                    vals[elem_child.getTagName()] = elem_child.getTextContent()
+            for elem_child in elem.childNodes:
+                if elem_child.nodeType == Node.ELEMENT_NODE:
+                    vals[elem_child.tagName] = elem_child.nodeValue
 
             if utc_month is None or utc_month == hh_start.month:
                 prices[hh_start.strftime("%d %H:%M Z")] = {'ssp': vals['SSP'], 'sbp': vals['SBP']}
@@ -135,20 +119,18 @@ class SystemPriceImporter(threading.Thread):
                     sess = db.session()
                     contract = Contract.get_non_core_by_name(sess, 'system_price_bmreports')
 
-                    latest_rate_script = sess.query(RateScript).filter(RateScript.contract_id==contract.id).order_by(RateScript.start_date.desc()).first()
+                    latest_rate_script = sess.query(RateScript).filter(RateScript.contract_id == contract.id).order_by(RateScript.start_date.desc()).first()
                     latest_rate_script_id = latest_rate_script.id
-                    latest_rate_script_text = latest_rate_script.script
 
-                    next_month_start = latest_rate_script.start_date
-                    this_month_start = next_month_start - relativedelta(months=1)
-                    next_next_month_start = next_month_start + relativedelta(months=1)
+                    next_month_start = latest_rate_script.start_date + relativedelta(months=1)
+                    next_month_finish = next_month_start + relativedelta(months=1) - HH
 
                     now = datetime.datetime.now(pytz.utc)
 
                     if contract.make_properties().get('enabled', False):
-                        self.log("Is it after " + str(next_next_month_start) + "?")
-                        if now > next_next_month_start:
-                            n_stop_date = datetime.datetime(next_next_month_start.year, next_next_month_start.month, next_next_month_start.day) + relativedelta(days=1) 
+                        self.log("Is it after " + str(next_month_finish) + "?")
+                        if now > next_month_finish:
+                            n_stop_date = datetime.datetime(next_month_finish.year, next_month_finish.month, next_month_finish.day) + relativedelta(days=1) 
 
                             self.log("Checking to see if data is available on " + str(n_stop_date) + " on bmreports.com.")
 
@@ -208,3 +190,4 @@ def shutdown():
         system_price_importer.stop()
         if system_price_importer.isAlive():
             raise UserException("Can't shut down System Price importer, it's still running.")
+

@@ -1,5 +1,6 @@
 import sys
 import os
+from net.sf.chellow.monad import Monad
 
 LIBS = (
     'utils', 'pre_db', 'db', 'templater', 'bsuos', 'tlms', 'general_import',
@@ -12,7 +13,7 @@ class LibDict(dict):
 
 def jython_start(ctx):
     from net.sf.chellow.billing import Contract
-    from net.sf.chellow.monad import Hiber, Monad
+    from net.sf.chellow.monad import Hiber
     from java.lang import System
     from org.python.util import PythonInterpreter
     from java.io import LineNumberReader, File

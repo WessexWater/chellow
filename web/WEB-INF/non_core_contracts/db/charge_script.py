@@ -19,6 +19,7 @@ import decimal
 
 
 Monad.getUtils()['impt'](globals(), 'utils')
+UserException = utils.UserException
 
 if sys.platform.startswith('java'):
     _mapper_registry.clear()
@@ -1131,7 +1132,8 @@ class User(Base, PersistentClass):
         if sys.platform.startswith('java'):
             from net.sf.chellow.physical import User as JUser
             return JUser.digest(password)
-            #return hashlib.md5(password).hexdigest()
+        else:
+            return hashlib.md5(password).hexdigest()
 
     __tablename__ = 'user'
     id = Column(Integer, Sequence('user_id_seq'), primary_key=True)

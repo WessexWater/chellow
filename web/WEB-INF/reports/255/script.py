@@ -4,7 +4,9 @@ import sys
 
 Monad.getUtils()['impt'](globals(), 'db', 'utils', 'templater')
 User, Party, MarketRole  = db.User, db.Party, db.MarketRole
+UserException = utils.UserException
 Participant = db.Participant
+render = templater.render
 
 def users_context(sess, message=None):
     users = sess.query(User).order_by(User.email_address).all()
@@ -21,14 +23,14 @@ def users_context(sess, message=None):
 
 sess = None
 try:
-    sess = session()
+    from chellow import app
+    sess = db.session()
     if inv.getRequest().getMethod() == 'POST':
-        set_read_write(sess)
-        
+        db.set_read_write(sess)
         email_address = inv.getString('email_address')
         password = inv.getString('password')
         user_role_id = inv.getLong('user_role_id')
-        role = UserRole.get_by_id(sess, user_role_id)
+        role = db.UserRole.get_by_id(sess, user_role_id)
         try:
             party = None
             if role.code == 'party-viewer':
@@ -44,4 +46,5 @@ try:
     else:
         render(inv, template, users_context(sess))
 finally:
-    sess.close()
+    if sess is not None:
+        sess.close()

@@ -1,6 +1,12 @@
 from jinja2 import Template, Environment, PackageLoader
 import time
 from datetime import datetime
+import sys
+import traceback
+from net.sf.chellow.monad import Monad
+
+Monad.getUtils()['impt'](globals(), 'utils')
+UserException = utils.UserException
 
 
 FORMATS = {'year': '%Y', 'month': '%m', 'day': '%d', 'hour': '%H',
@@ -156,13 +162,32 @@ def render(inv, template, vals, status_code=200, content_type='text/html'):
         templ = env.from_string(templ_str)
         template_cache[templ_str] = templ
 
-    vals['context_path'] = inv.getRequest().getContextPath()
     vals['request'] = inv.getRequest()
-    res = inv.getResponse()
-    res.setContentType(content_type)
-    res.setDateHeader("Date", int(round(time.time() * 1000)))
-    res.setHeader("Cache-Control", "no-cache")
-    res.setStatus(status_code)
-    writer = res.getWriter()
-    writer.write(templ.render(vals))
-    writer.close()
+
+    if sys.platform.startswith('java'):
+        vals['context_path'] = inv.getRequest().getContextPath()
+        res = inv.getResponse()
+        res.setContentType(content_type)
+        res.setDateHeader("Date", int(round(time.time() * 1000)))
+        res.setHeader("Cache-Control", "no-cache")
+        res.setStatus(status_code)
+        writer = res.getWriter()
+        writer.write(templ.render(vals))
+        writer.close()
+    else:
+        from flask import Response
+
+        vals['context_path'] = 'chellow'
+       
+        headers = {
+            'mimetype': content_type,
+            'Date': int(round(time.time() * 1000)),
+            'Cache-Control': 'no-cache'}
+
+        try:
+            template_str = templ.render(vals)
+        except:
+            raise UserException(
+                "Problem rendering template: " + traceback.format_exc())
+
+        inv.response = Response(template_str, status_code, headers)

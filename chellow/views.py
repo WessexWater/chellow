@@ -1,7 +1,7 @@
 import hashlib
-from flask import request, Response
+from flask import request, Response, g, redirect, render_template
 from chellow import app
-from chellow.models import Contract, Report, User
+from chellow.models import Contract, Report, User, set_read_write, db
 
 def GET_str(name):
     return request.args[name]
@@ -11,6 +11,12 @@ def GET_int(name):
     val_str = GET_str(name)
     return int(val_str)
 
+def POST_str(name):
+    return request.form[name]
+
+def POST_bool(name):
+    fm = request.form
+    return name in fm and fm[name] == 'true'
 
 
 
@@ -18,6 +24,8 @@ def GET_int(name):
 def check_permissions(*args, **kwargs):
     method = request.method
     path = request.path
+
+    g.user = None
 
     if method == "GET" and path in ('/', '/static/style.css'):
         return None
@@ -41,7 +49,8 @@ def check_permissions(*args, **kwargs):
                 request.remote_addr == '127.0.0.1':
             return None
     else:
-        role = user.role
+        g.user = user
+        role = user.user_role
         role_code = role.code
         path = request.path
         if role_code == "viewer":
@@ -79,18 +88,79 @@ def check_permissions(*args, **kwargs):
         return Response('Forbidden', 403)
 
 
-@app.route('/*')
+@app.route('/chellow/')
 def index():
     # n = 1 / 0
     return 'Hello World'
+
+class ChellowRequest():
+    def __init__(self, request):
+        self.request = request
+
+    def getMethod(self):
+        return self.request.method
+
+    def getParameter(self, name):
+        vals = self.request.values
+        return vals[name] if name in vals else None
+
+class Invocation():
+    def __init__(self, request, user):
+        self.request = request
+        self.user = user
+        self.req = ChellowRequest(request)
+
+    def getUser(self):
+        return self.user
+
+    def hasParameter(self, name):
+        return name in self.request.values
+
+    def getString(self, name):
+        if name in self.request.values:
+            return self.request.values[name]
+        else:
+            raise Exception("The field '" + name + "' is required.")
+
+    def getLong(self, name):
+        return int(self.getString(name))
+
+    def getInteger(self, name):
+        return int(self.getString(name))
+
+    def getRequest(self):
+        return self.req
+
+    def getResponse(self):
+        return self.res
+
+    def sendSeeOther(self, location):
+        self.response = redirect(request.url_root + location, 303)
 
 
 @app.route('/chellow/reports/<int:report_id>/output/', methods=['GET', 'POST'])
 def show_report(report_id):
     report = Report.query.get(report_id)
-    exec(report.script, {'request': request, 'template': report.template})
+    inv = Invocation(request, g.user)
+    exec(report.script, {'inv': inv, 'template': report.template})
+    return inv.response
 
 
-@app.route('/add_user', methods=['POST'])
-def add_user_post():
+@app.route('/chellow/reports/', methods=['GET'])
+def show_reports():
     return 'Hello Worlds'
+
+@app.route('/chellow/reports/', methods=['POST'])
+def add_report():
+    set_read_write()
+    is_core = POST_bool('is-core')
+    name = POST_str("name")
+    report = Report(None, is_core, name, "", None)
+    db.session.add(report)
+    db.session.commit()
+    return redirect('/reports/' + str(report.id) + '/', 303)
+
+@app.route('/chellow/reports/<int:report_id>/', methods=['GET'])
+def show_edit_report(report_id):
+    report = Report.query.get(report_id)
+    render_template('report.html', {'report', report})

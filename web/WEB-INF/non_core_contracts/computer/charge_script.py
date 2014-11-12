@@ -1,5 +1,4 @@
 from net.sf.chellow.monad import Monad
-from java.lang import System
 import collections
 import datetime
 import pytz
@@ -779,7 +778,6 @@ class SupplySource(DataSource):
                             if datum is not None:
                                 hh_part.append(datum.copy())
                             hh_date += HH
-                            #s elf.pw.println(str(System.currentTimeMillis()) + " finished inner loop ")
 
                         kwh = pair_kwh * pair_hhs / len(hh_part) if len(hh_part) > 0 else 0
 
