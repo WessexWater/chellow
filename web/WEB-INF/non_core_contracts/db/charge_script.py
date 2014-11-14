@@ -17,9 +17,12 @@ import sys
 import hashlib
 import decimal
 
-
 Monad.getUtils()['impt'](globals(), 'utils')
-UserException = utils.UserException
+UserException, hh_after, HH = utils.UserException, utils.hh_after, utils.HH
+parse_mpan_core, hh_before = utils.parse_mpan_core, utils.hh_before
+next_hh, prev_hh = utils.next_hh, utils.prev_hh
+
+CHANNEL_TYPES = ('ACTIVE', 'REACTIVE_IMP', 'REACTIVE_EXP')
 
 if sys.platform.startswith('java'):
     _mapper_registry.clear()
@@ -108,7 +111,12 @@ class Snag(Base, PersistentClass):
     @staticmethod
     def get_covered_snags(
             sess, site, channel, description, start_date, finish_date):
-        query = sess.query(Snag).filter(Snag.channel == channel, Snag.site==site, Snag.description==description, or_(Snag.finish_date==None, Snag.finish_date >= start_date)).order_by(Snag.start_date)
+        query = sess.query(Snag).filter(
+            Snag.channel == channel, Snag.site == site,
+            Snag.description == description,
+            or_(
+                Snag.finish_date==None,
+                Snag.finish_date >= start_date)).order_by(Snag.start_date)
         if finish_date is not None:
             query = query.filter(Snag.start_date <= finish_date)
         return query.all()

@@ -10,7 +10,8 @@ import datetime
 clogs = collections.deque()
 
 def clog(msg):
-    clogs.appendleft(datetime.datetime.now(pytz.utc).strftime("%Y-%m-%d %H:%M:%S") + " - " + str(msg))
+    clogs.appendleft(datetime.datetime.now(pytz.utc).strftime(
+        "%Y-%m-%d %H:%M:%S") + " - " + str(msg))
     if len(clogs) > 1000:
         clogs.pop()
 
@@ -61,23 +62,14 @@ def hh_before(dt1, dt2):
     else:
         return True if dt2 is None else dt1 < dt2
 
-def imprt(gbls, libs):
-    for lib_name, imps in libs.iteritems():
-         key = "net.sf.chellow." + lib_name
-         lib = Monad.getContext().getAttribute(key)
-         if lib is None:
-             raise UserException("Can't find a context attribute with key " + str(key))
-         gbls[lib_name] = lib
-         for imp in imps:
-             gbls[imp] = lib[imp]
-
 def impt(gbls, *libs):
     for lib_name in libs:
-         key = "net.sf.chellow." + lib_name
-         lib = Monad.getContext().getAttribute(key)
-         if lib is None:
-             raise UserException("Can't find a context attribute with key " + str(key))
-         gbls[lib_name] = lib
+        key = "net.sf.chellow." + lib_name
+        lib = Monad.getContext().getAttribute(key)
+        if lib is None:
+            raise UserException(
+                "Can't find a context attribute with key " + str(key))
+        gbls[lib_name] = lib
              
 def get_contract_func(contract, func_name):
     gb = {}
@@ -86,7 +78,9 @@ def get_contract_func(contract, func_name):
 
 def validate_hh_start(dt):
     if dt.minute not in [0, 30] or dt.second != 0 or dt.microsecond != 0:
-        raise UserException("The half-hour must start exactly on the hour or half past the hour.")
+        raise UserException(
+            "The half-hour must start exactly on the hour or half past "
+            "the hour.")
     return dt
 
 def parse_hh_start(start_date_str):
@@ -96,9 +90,12 @@ def parse_hh_start(start_date_str):
         day = int(start_date_str[8:10])
         hour = int(start_date_str[11:13])
         minute = int(start_date_str[14:])        
-        return validate_hh_start(datetime.datetime(year, month, day, hour, minute, tzinfo=pytz.utc))
+        return validate_hh_start(
+            datetime.datetime(year, month, day, hour, minute, tzinfo=pytz.utc))
     except ValueError, e:
-        raise UserException("Can't parse the date: " + start_date_str + ". It needs to be of the form yyyy-mm-dd hh:MM. " + str(e))
+        raise UserException(
+            "Can't parse the date: " + start_date_str +
+            ". It needs to be of the form yyyy-mm-dd hh:MM. " + str(e))
 
 def parse_mpan_core(mcore):
     mcore = mcore.replace(' ', '')
@@ -136,10 +133,18 @@ def parse_channel_type(channel_type):
         raise UserException("The given channel type is '" + str(channel_type) + "' but it should be one of " + str(CHANNEL_TYPES) + ".")
     return tp
 
-def send_response(inv, content, status=200, mimetype='text/csv', **headers):
+def send_response(
+        inv, content, status=200, mimetype='text/csv', file_name=None):
+    if file_name is None:
+        content_disposition = None
+    else:
+        content_disposition = 'attachment; filename="' + file_name + '"'
+
     if sys.platform.startswith('java'):
         res = inv.getResponse()
         res.setContentType(mimetype)
+        if content_disposition is not None:
+            res.addHeader('Content-Disposition', content_disposition)
         res.setStatus(status)
         pw = res.getWriter()
         for l in content:
@@ -147,5 +152,9 @@ def send_response(inv, content, status=200, mimetype='text/csv', **headers):
         pw.close()
     else:
         from flask import Response
+        if content_disposition is not None:
+            headers = {'Content-Disposition': content_disposition}
+        else:
+            headers = {}
         inv.response = Response(
-            content(), status=status, mimetype=mimetype, headers=headers)
+                content(), status=status, mimetype=mimetype, headers=headers)

@@ -2,6 +2,8 @@ import hashlib
 from flask import request, Response, g, redirect, render_template
 from chellow import app
 from chellow.models import Contract, Report, User, set_read_write, db
+from sqlalchemy.exc import ProgrammingError
+import traceback
 
 def GET_str(name):
     return request.args[name]
@@ -93,6 +95,14 @@ def index():
     # n = 1 / 0
     return 'Hello World'
 
+class ChellowFileItem():
+    def __init__(self, f):
+        self.f = f
+
+    def getName(self):
+        return self.f.filename
+
+
 class ChellowRequest():
     def __init__(self, request):
         self.request = request
@@ -122,6 +132,10 @@ class Invocation():
         else:
             raise Exception("The field '" + name + "' is required.")
 
+    def getBoolean(self, name):
+        vals = self.request.values
+        return name in vals and vals[name] == 'true'
+
     def getLong(self, name):
         return int(self.getString(name))
 
@@ -135,15 +149,22 @@ class Invocation():
         return self.res
 
     def sendSeeOther(self, location):
-        self.response = redirect(request.url_root + location, 303)
+        self.response = redirect(
+            ''.join((request.url_root, 'chellow', location)), 303)
+
+    def getFileItem(self, name):
+        return ChellowFileItem(self.request.files[name])
 
 
 @app.route('/chellow/reports/<int:report_id>/output/', methods=['GET', 'POST'])
 def show_report(report_id):
     report = Report.query.get(report_id)
     inv = Invocation(request, g.user)
-    exec(report.script, {'inv': inv, 'template': report.template})
-    return inv.response
+    try:
+        exec(report.script, {'inv': inv, 'template': report.template})
+        return inv.response
+    except:
+        return Response(traceback.format_exc(), status=500)
 
 
 @app.route('/chellow/reports/', methods=['GET'])
@@ -157,7 +178,14 @@ def add_report():
     name = POST_str("name")
     report = Report(None, is_core, name, "", None)
     db.session.add(report)
-    db.session.commit()
+    try:
+        db.session.commit()
+    except ProgrammingError, e:
+        if 'duplicate key value violates unique constraint' in str(e):
+            return Response(
+                "There's already a report with that name.", status=400)
+        else:
+            raise
     return redirect('/reports/' + str(report.id) + '/', 303)
 
 @app.route('/chellow/reports/<int:report_id>/', methods=['GET'])

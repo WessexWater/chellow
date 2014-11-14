@@ -4,30 +4,32 @@ from sqlalchemy.sql.expression import text
 from datetime import datetime
 import pytz
 
-Monad.getUtils()['imprt'](globals(), {
-        'db': ['Contract', 'Party', 'Participant', 'set_read_write', 'session'], 
-        'utils': ['UserException', 'form_date'],
-        'templater': ['render']})
-
+Monad.getUtils()['impt'](globals(), 'db', 'utils', 'templater')
+Party, MarketRole, Participant = db.Party, db.MarketRole, db.Participant
+Contract = db.Contract
+render = templater.render
+UserException = utils.UserException
 
 def make_fields(sess, contract, message=None):
-    parties = sess.query(Party).from_statement("""select party.* from party, market_role, participant where party.market_role_id = market_role.id and party.participant_id = participant.id and market_role.code = 'C' order by participant.code""").all()
+    parties = sess.query(Party).join(MarketRole).join(Participant).filter(
+        MarketRole.code == 'C').order_by(Participant.code).all()
     initial_date = datetime.now(pytz.utc)
-    if message is None:
-        messages = []
-    else:
-        messages = [str(message)]
-    return {'contract': contract, 'parties': parties, 'initial_date': datetime(initial_date.year, initial_date.month, initial_date.day), 'messages': messages}
+    messages = [] if message is None else [str(message)]
+    return {
+        'contract': contract, 'parties': parties,
+        'initial_date': datetime(
+            initial_date.year, initial_date.month, initial_date.day),
+        'messages': messages}
 
 sess = None
 try:
-    sess = session()
+    sess = db.session()
     if inv.getRequest().getMethod() == 'GET':
         contract_id = inv.getLong('hhdc_contract_id')
         contract = Contract.get_hhdc_by_id(sess, contract_id)
         render(inv, template, make_fields(sess, contract))
     else:
-        set_read_write(sess)
+        db.set_read_write(sess)
         contract_id = inv.getLong('hhdc_contract_id')
         contract = Contract.get_hhdc_by_id(sess, contract_id)
         if inv.hasParameter("update_state"):
@@ -60,4 +62,5 @@ try:
 except UserException, e:
     render(inv, template, make_fields(sess, contract, e))
 finally:
-    sess.close()
+    if sess is not None:
+        sess.close()

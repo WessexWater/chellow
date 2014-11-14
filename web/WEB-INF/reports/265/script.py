@@ -1,12 +1,8 @@
 from net.sf.chellow.monad import Monad
-from sqlalchemy.orm import joinedload_all
 from datetime import datetime
 import pytz
 
-Monad.getUtils()['imprt'](globals(), {
-        'db': ['Contract', 'Party', 'Participant', 'set_read_write', 'session'], 
-        'utils': ['UserException', 'form_date'],
-        'templater': ['render']})
+Monad.getUtils()['impt'](globals(), 'db', 'utils', 'templater')
 
 def make_fields():
     initial_date = datetime.utcnow().replace(tzinfo=pytz.utc)
@@ -15,18 +11,19 @@ def make_fields():
 
 sess = None
 try:
-    sess = session()
+    sess = db.session()
     if inv.getRequest().getMethod() == 'GET':
-        render(inv, template, make_fields())
+        templater.render(inv, template, make_fields())
     else:
-        set_read_write(sess)
+        db.set_read_write(sess)
         name = inv.getString('name')
         is_core = inv.getBoolean('is_core')
-        start_date = form_date(inv, 'start')
-        contract = Contract.insert_non_core(sess, is_core, name, '{}', '{}',
-                start_date, None, '{}')
+        start_date = utils.form_date(inv, 'start')
+        contract = db.Contract.insert_non_core(
+            sess, is_core, name, '{}', '{}', start_date, None, '{}')
         sess.commit()
-        inv.sendSeeOther('/reports/267/output/?non_core_contract_id=' +
-            str(contract.id))
+        inv.sendSeeOther(
+            '/reports/267/output/?non_core_contract_id=' + str(contract.id))
 finally:
-    sess.close()
+    if sess is not None:
+        sess.close()

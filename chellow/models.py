@@ -7,6 +7,7 @@ from sqlalchemy.orm import relationship
 from sqlalchemy.schema import UniqueConstraint
 import datetime
 import pytz
+import ast
 
 db = SQLAlchemy(app)
 
@@ -510,13 +511,13 @@ class Configuration(db.Model, PersistentClass):
     core_report_id = Column('core_report_id', Integer)
     user_report_id = Column('user_report_id', Integer)
 
-    def next_core_report_id():
-        core_report_id += 2
-        return core_report_id
+    def next_core_report_id(self):
+        self.core_report_id += 2
+        return self.core_report_id
 
-    def next_user_report_id():
-        user_report_id += 2
-        return user_report_id
+    def next_user_report_id(self):
+        self.user_report_id += 2
+        return self.user_report_id
 
 
 class Report(db.Model, PersistentClass):

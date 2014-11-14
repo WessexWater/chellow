@@ -177,7 +177,7 @@ def render(inv, template, vals, status_code=200, content_type='text/html'):
     else:
         from flask import Response
 
-        vals['context_path'] = 'chellow'
+        vals['context_path'] = '/chellow'
        
         headers = {
             'mimetype': content_type,

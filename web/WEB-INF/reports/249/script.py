@@ -1,21 +1,18 @@
 from net.sf.chellow.monad import Monad
-from sqlalchemy.orm import joinedload_all
 
-Monad.getUtils()['imprt'](globals(), {
-        'db': ['Contract', 'Party', 'RateScript', 'set_read_write', 'session'], 
-        'utils': ['UserException', 'NotFoundException', 'form_date'],
-        'templater': ['render']})
-
-
+Monad.getUtils()['impt'](globals(), 'db', 'utils', 'templater')
+RateScript = db.RateScript
+form_date, UserException = utils.form_date, utils.UserException
+NotFoundException = utils.NotFoundException
 sess = None
 try:
-    sess = session()
+    sess = db.session()
     if inv.getRequest().getMethod() == 'GET':
         rate_script_id = inv.getLong('hhdc_rate_script_id')
         rate_script = RateScript.get_hhdc_by_id(sess, rate_script_id)
-        render(inv, template, {'rate_script': rate_script})
+        templater.render(inv, template, {'rate_script': rate_script})
     else:
-        set_read_write(sess)
+        db.set_read_write(sess)
         rate_script_id = inv.getLong('hhdc_rate_script_id')
         rate_script = RateScript.get_hhdc_by_id(sess, rate_script_id)
         contract = rate_script.contract
@@ -29,11 +26,14 @@ try:
             start_date = form_date(inv, 'start')
             has_finished = inv.getBoolean('has_finished')
             finish_date = form_date(inv, 'finish') if has_finished else None
-            contract.update_rate_script(sess, rate_script, start_date, finish_date, script)
+            contract.update_rate_script(
+                sess, rate_script, start_date, finish_date, script)
             sess.commit()
-            inv.sendSeeOther('/reports/173/output/?hhdc_rate_script_id='
-                    + str(rate_script.id))
+            inv.sendSeeOther(
+                '/reports/173/output/?hhdc_rate_script_id=' +
+                str(rate_script.id))
 except NotFoundException, e:
     inv.sendNotFound(str(e))
 finally:
-    sess.close()
+    if sess is not None:
+        sess.close()

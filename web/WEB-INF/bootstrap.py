@@ -46,12 +46,26 @@ class UserException(Exception):
 
 
 class Configuration(Base):
-
     __tablename__ = "configuration"
     id = Column('id', Integer, primary_key=True)
     properties = Column(Text, nullable=False)
     core_report_id = Column(Integer, nullable=False)
     user_report_id = Column(Integer, nullable=False)
+
+    def __init__(self, properties):
+        self.id = 0
+        self.properties = properties 
+        self.core_report_id = 1
+        self.user_report_id = 0
+
+    def next_core_report_id():
+        core_report_id += 2
+        return core_report_id
+
+    def next_user_report_id():
+        user_report_id += 2
+        return user_report_id
+
 
 class VoltageLevel(Base):
 
@@ -548,6 +562,42 @@ class Report(Base):
     script = Column(Text, nullable=False)
     template = Column(Text)
 
+    def __init__(self, id, is_core, name, script, template):
+        configuration = session.query(Configuration).first()
+
+        if id is None:
+            if is_core:
+                id = configuration.next_core_report_id()
+            else:
+                id = configuration.next_user_report_id()
+
+        else:
+            if is_core:
+                if id > configuration.core_report_id:
+                    configuration.core_report_id = id
+            else:
+                if id > configuration.user_report_id:
+                    configuration.user_report_id(id)
+
+        is_odd = id % 2 == 1
+        if is_odd != is_core:
+            raise UserException(
+                "The ids of core reports must be odd, those of user reports"
+                "must be even. Report id " + id + ", Is Odd? " + is_odd +
+                ", is core? " + is_core + ".")
+        self.id = id
+        self.update(name, script, template)
+
+    def update(self, name, script, template):
+        self.name = name
+        self.script = script
+        if template is not None and len(template.strip()) == 0:
+            template = None
+
+        self.template = template
+
+
+
 
 def parse_hh_date(date_str):
     date_str = date_str.strip()
@@ -670,10 +720,15 @@ if engine.execute(
         dbapi_conn.commit()
         f.close()
 
+    set_read_write(session)
+    configuration = Configuration('')
+    session.add(configuration)
+    session.commit()
+
     reports_path = os.path.join(webinf_path, 'reports')
     for report_id_str in os.listdir(reports_path):
         report_path = os.path.join(reports_path, report_id_str)
-        params = {'id': int(report_id_str)}
+        params = {'id': int(report_id_str), 'is_core': True}
         set_read_write(session)
         for fname, attr in (
                 ('script.py', 'script'),
