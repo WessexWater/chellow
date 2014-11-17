@@ -8,6 +8,7 @@ MarketRole, SiteEra, Era, Site = db.MarketRole, db.SiteEra, db.Era, db.Site
 render = templater.render
 UserException, parse_mpan_core = utils.UserException, utils.parse_mpan_core
 form_date, validate_hh_start = utils.form_date, utils.validate_hh_start
+form_int, form_bool, form_str = utils.form_int, utils.form_bool, utils.form_str
 
 def make_fields(sess, era, message=None):
     messages = [] if message is None else [str(message)]
@@ -32,12 +33,12 @@ sess = None
 try:
     sess = db.session()
     if inv.getRequest().getMethod() == 'GET':
-        era_id = inv.getLong('era_id')
+        era_id = form_int(inv, 'era_id')
         era = Era.get_by_id(sess, era_id)
         render(inv, template, make_fields(sess, era))
     else:
         db.set_read_write(sess)
-        era_id = inv.getLong('era_id')
+        era_id = form_int(inv, 'era_id')
         era = Era.get_by_id(sess, era_id)
 
         if inv.hasParameter("delete"):
@@ -46,21 +47,21 @@ try:
             sess.commit()
             inv.sendSeeOther("/reports/7/output/?supply_id=" + str(supply.id))
         elif inv.hasParameter("attach"):
-            site_code = inv.getString("site_code")
+            site_code = form_str(inv, "site_code")
             site = Site.get_by_code(sess, site_code)
             era.attach_site(sess, site)
             sess.commit()
             inv.sendSeeOther(
                 "/reports/7/output/?supply_id=" + str(era.supply.id))
         elif inv.hasParameter("detach"):
-            site_id = inv.getLong("site_id")
+            site_id = form_int(inv, "site_id")
             site = Site.get_by_id(sess, site_id)
             era.detach_site(sess, site)
             sess.commit()
             inv.sendSeeOther(
                 "/reports/7/output/?supply_id=" + str(era.supply.id))
         elif inv.hasParameter("locate"):
-            site_id = inv.getLong("site_id")
+            site_id = form_int(inv, "site_id")
             site = Site.get_by_id(sess, site_id)
             era.set_physical_location(sess, site)
             sess.commit()
@@ -68,27 +69,27 @@ try:
                 "/reports/7/output/?supply_id=" + str(era.supply.id))
         else:
             start_date = form_date(inv, 'start')
-            is_ended = inv.getBoolean("is_ended")
+            is_ended = form_bool(inv, "is_ended")
             if is_ended:
                 finish_date = form_date(inv, "finish")
                 validate_hh_start(finish_date)
             else:
                 finish_date = None
-            mop_contract_id = inv.getLong("mop_contract_id")
+            mop_contract_id = form_int(inv, "mop_contract_id")
             mop_contract = Contract.get_mop_by_id(sess, mop_contract_id)
-            mop_account = inv.getString("mop_account")
-            hhdc_contract_id = inv.getLong("hhdc_contract_id")
+            mop_account = form_str(inv, "mop_account")
+            hhdc_contract_id = form_int(inv, "hhdc_contract_id")
             hhdc_contract = Contract.get_hhdc_by_id(sess, hhdc_contract_id)
-            hhdc_account = inv.getString("hhdc_account")
-            msn = inv.getString("msn")
-            pc_id = inv.getLong("pc_id")
+            hhdc_account = form_str(inv, "hhdc_account")
+            msn = form_str(inv, "msn")
+            pc_id = form_int(inv, "pc_id")
             pc = Pc.get_by_id(sess, pc_id)
-            mtc_code = inv.getString("mtc_code")
+            mtc_code = form_str(inv, "mtc_code")
             mtc = db.Mtc.get_by_code(
                 sess, era.supply.dno_contract.party, mtc_code)
-            cop_id = inv.getLong("cop_id")
+            cop_id = form_int(inv, "cop_id")
             cop = Cop.get_by_id(sess, cop_id)
-            ssc_code = inv.getString("ssc_code")
+            ssc_code = form_str(inv, "ssc_code")
             ssc_code = ssc_code.strip()
             if len(ssc_code) == 0:
                 ssc = None
@@ -96,7 +97,7 @@ try:
                 ssc = Ssc.get_by_code(sess, ssc_code)
 
             if inv.hasParameter('imp_mpan_core'):
-                imp_mpan_core_raw = inv.getString('imp_mpan_core')
+                imp_mpan_core_raw = form_str(inv, 'imp_mpan_core')
             else:
                 imp_mpan_core_raw = None
 
@@ -109,16 +110,16 @@ try:
                 imp_llfc_code = None
             else:
                 imp_mpan_core = parse_mpan_core(imp_mpan_core_raw)
-                imp_llfc_code = inv.getString('imp_llfc_code')
-                imp_supplier_contract_id = inv.getLong(
+                imp_llfc_code = form_str(inv, 'imp_llfc_code')
+                imp_supplier_contract_id = form_int(inv,
                     "imp_supplier_contract_id")
                 imp_supplier_contract = Contract.get_supplier_by_id(
                     sess, imp_supplier_contract_id)
-                imp_supplier_account = inv.getString("imp_supplier_account")
-                imp_sc = inv.getInteger("imp_sc")
+                imp_supplier_account = form_str(inv, "imp_supplier_account")
+                imp_sc = form_int(inv, "imp_sc")
 
             if inv.hasParameter('exp_mpan_core'):
-                exp_mpan_core_raw = inv.getString('exp_mpan_core')
+                exp_mpan_core_raw = form_str(inv, 'exp_mpan_core')
             else:
                 exp_mpan_core_raw = None
 
@@ -133,11 +134,11 @@ try:
                 exp_mpan_core = parse_mpan_core(exp_mpan_core_raw)
                 exp_llfc_code = inv.getString("exp_llfc_code")
                 exp_sc = inv.getInteger("exp_sc")
-                exp_supplier_contract_id = inv.getLong(
-                    'exp_supplier_contract_id')
+                exp_supplier_contract_id = form_int(
+                    inv, 'exp_supplier_contract_id')
                 exp_supplier_contract = Contract.get_supplier_by_id(
                     sess, exp_supplier_contract_id)
-                exp_supplier_account = inv.getString('exp_supplier_account')
+                exp_supplier_account = form_str(inv, 'exp_supplier_account')
 
             era.supply.update_era(
                 sess, era, start_date, finish_date, mop_contract, mop_account,

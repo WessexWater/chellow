@@ -1,17 +1,12 @@
 from decimal import Decimal
 from net.sf.chellow.monad import Monad
-from java.lang import System
 import datetime
 import csv
 import pytz
 from dateutil.relativedelta import relativedelta
 
-Monad.getUtils()['imprt'](globals(), {
-        'db': ['Contract', 'session', 'Batch', 'BillType', 'Tpr', 'set_read_write', 'RegisterRead', 'ReadType'],
-        'utils': ['UserException', 'prev_hh', 'next_hh', 'hh_after', 'hh_before', 'HH', 'validate_hh_start'],
-        'templater': ['render'],
-        'bill_import': ['start_bill_importer', 'get_bill_importer_ids', 'get_bill_importer'],
-        'edi_lib': ['EdiParser']})
+Monad.getUtils()['impt'](globals(), 'db', 'utils', 'templater', 'bill_import',
+    'edi_lib')
 
 def parse_date(date_str, is_finish):
     date_str = date_str.strip()

@@ -1,21 +1,17 @@
 from decimal import Decimal
 from net.sf.chellow.monad import Monad
-from java.lang import System
 import datetime
 
-Monad.getUtils()['imprt'](globals(), {
-        'db': ['Contract', 'session', 'Batch', 'BillType', 'Tpr', 'set_read_write', 'RegisterRead', 'ReadType'],
-        'utils': ['UserException', 'prev_hh', 'next_hh', 'hh_after', 'hh_before', 'HH', 'validate_hh_start'],
-        'templater': ['render'],
-        'bill_import': ['start_bill_importer', 'get_bill_importer_ids', 'get_bill_importer'],
-        'edi_lib': ['EdiParser']})
+Monad.getUtils()['impt'](
+    globals(), 'db', 'utils', 'templater', 'bill_import', 'edi_lib')
 
 
-read_type_map = {'00': 'N', '01': 'E', '02': 'E', '04': 'C', '06': 'X', '07': 'N'}
+read_type_map = {
+    '00': 'N', '01': 'E', '02': 'E', '04': 'C', '06': 'X', '07': 'N'}
 
 class Parser():
     def __init__(self, f):
-        self.parser = EdiParser(f)
+        self.parser = edi_lib.EdiParser(f)
         self.line_number = None
 
     def make_raw_bills(self):
@@ -50,11 +46,14 @@ class Parser():
                 ccde = self.parser.elements[1]
                 consumption_charge_indicator = ccde[0]
                 charge_type = ccde[2]
-                if consumption_charge_indicator != "5" and charge_type in ["7", "8", "9"]:
-                    prev_read_date = self.parser.to_date(self.parser.elements[7][0])
+                if consumption_charge_indicator != "5" and \
+                        charge_type in ["7", "8", "9"]:
+                    prev_read_date = self.parser.to_date(
+                        self.parser.elements[7][0])
                 if hh_after(start_date, prev_read_date):
                     start_date = prev_read_date
-                register_finish_date = self.parser.to_date(self.parser.elements[6][0])
+                register_finish_date = self.parser.to_date(
+                    self.parser.elements[6][0])
                 if finish_date is None or finish_date < register_finish_date:
                     finish_date = register_finish_date
                 if charge_type == "7":
@@ -70,17 +69,36 @@ class Parser():
                     prev_read_value = Decimal(prrd[2]) / Decimal(1000)
                     msn = mtnr[0]
                     tpr_code = tmod[0].zfill(5)
-                    reads.append({'msn': msn, 'mpan': mloc[0], 'coefficient': coefficient, 'units': 'kWh', 'tpr_code': tpr_code, 'prev_date': prev_read_date, 'prev_value': prev_read_value, 'prev_type_code': prev_read_type, 'pres_date': register_finish_date, 'pres_value': pres_read_value, 'pres_type_code': pres_read_type})
+                    reads.append(
+                        {
+                            'msn': msn, 'mpan': mloc[0],
+                            'coefficient': coefficient, 'units': 'kWh',
+                            'tpr_code': tpr_code, 'prev_date': prev_read_date,
+                            'prev_value': prev_read_value,
+                            'prev_type_code': prev_read_type,
+                            'pres_date': register_finish_date,
+                            'pres_value': pres_read_value,
+                            'pres_type_code': pres_read_type})
             elif code == "MTR":
                 if message_type == "UTLBIL":
-                    raw_bills.append({'bill_type_code': bill_type_code, 'account': account, 'mpans': mpan_strings, 'reference': reference, 'issue_date': issue_date, 'start_date': start_date, 'finish_date': finish_date, 'kwh': Decimal(0), 'net': net, 'vat': vat, 'gross': Decimal(0), 'breakdown': {}, 'reads': reads})
+                    raw_bills.append(
+                        {
+                            'bill_type_code': bill_type_code,
+                            'account': account, 'mpans': mpan_strings,
+                            'reference': reference, 'issue_date': issue_date,
+                            'start_date': start_date,
+                            'finish_date': finish_date, 'kwh': Decimal(0),
+                            'net': net, 'vat': vat, 'gross': Decimal(0),
+                            'breakdown': {}, 'reads': reads})
             elif code == "MAN":
                 madn = self.parser.elements[2]
                 pc_code = "0" + madn[3]
                 mtc_code = madn[4]
                 llfc_code = madn[5]
 
-                mpan_strings.append(pc_code + " " + mtc_code + " " + llfc_code + " " + madn[0] + " " + madn[1] + madn[2])
+                mpan_strings.append(
+                    pc_code + " " + mtc_code + " " + llfc_code + " " +
+                    madn[0] + " " + madn[1] + madn[2])
             elif code == "VAT":
                 uvla = self.parser.elements[5]
                 net = self.parser.to_decimal(uvla)

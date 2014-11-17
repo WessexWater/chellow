@@ -12,7 +12,7 @@ import pytz
 from sqlalchemy import or_
 from sqlalchemy.sql import func
 
-Monad.getUtils()['impt'](globals(), 'db', 'utils', 'templater')
+Monad.getUtils()['impt'](globals(), 'db', 'utils', 'templater', 'computer')
 UserException = utils.UserException
 
 importer_id = 0
@@ -33,14 +33,24 @@ class BillImporter(threading.Thread):
         contract = None
         parts = file_name.split('.')[::-1]
         for i in range(len(parts)):
-             contr = db.Contract.find_by_role_code_name(sess, 'Z', 'bill-parser-' + '.'.join(parts[:i+1][::-1]).lower())
+             contr = db.Contract.find_by_role_code_name(
+                    sess, 'Z',
+                    'bill-parser-' + '.'.join(parts[:i+1][::-1]).lower())
              if contr is not None:
                  contract = contr
 
         if contract is None:
-            raise UserException("Can't find a parser for the file '" + file_name + "'. The file name needs to have an extension that's one of the following: " + ','.join(name[0][12:] for name in sess.query(Contract.name).join(MarketRole).filter(MarketRole.code=='Z', Contract.name.like("bill-parser-%"))) + ".")
+            raise UserException(
+                "Can't find a parser for the file '" + file_name +
+                "'. The file name needs to have an extension that's one of " +
+                "the following: " +
+                ','.join(
+                    name[0][12:] for name in sess.query(Contract.name).join(
+                        MarketRole).filter(
+                        MarketRole.code=='Z',
+                        Contract.name.like("bill-parser-%"))) + ".")
 
-        self.parser = get_contract_func(contract, 'Parser')(f)
+        self.parser = computer.contract_func({}, contract, 'Parser', None)(f)
         self.successful_bills = []
         self.failed_bills = []
         self.log = collections.deque()
@@ -50,16 +60,20 @@ class BillImporter(threading.Thread):
     def _log(self, msg):
         try:
             import_lock.acquire()
-            self.log.appendleft(datetime.datetime.now(pytz.utc).strftime("%Y-%m-%d %H:%M:%S") + ' - ' + msg)
+            self.log.appendleft(
+                datetime.datetime.now(pytz.utc).strftime("%Y-%m-%d %H:%M:%S") +
+                ' - ' + msg)
         finally:
             import_lock.release()
 
     def status(self):
         if self.isAlive():
             if self.bill_num is None:
-                return "Parsing file: I've reached line number " + str(self.parser.line_number) + "."
+                return "Parsing file: I've reached line number " + \
+                    str(self.parser.line_number) + "."
             else:
-                return "Inserting raw bills: I've reached bill number " + str(self.bill_num) + "."
+                return "Inserting raw bills: I've reached bill number " + \
+                    str(self.bill_num) + "."
         else:
             return ''
 
@@ -70,13 +84,20 @@ class BillImporter(threading.Thread):
             sess = session()
             batch = Batch.get_by_id(sess, self.batch_id)
             raw_bills = self.parser.make_raw_bills()
-            self._log("Successfully parsed the file, and now I'm starting to insert the raw bills.")
+            self._log(
+                "Successfully parsed the file, and now I'm starting to "
+                "insert the raw bills.")
             for self.bill_num, raw_bill in enumerate(raw_bills):
                 try:
                     set_read_write(sess)
-                    bill_type = BillType.get_by_code(sess, raw_bill['bill_type_code'])
-                    bill = batch.insert_bill(sess, raw_bill['account'], raw_bill['reference'], raw_bill['issue_date'], raw_bill['start_date'],
-raw_bill['finish_date'], raw_bill['kwh'], raw_bill['net'], raw_bill['vat'], raw_bill['gross'], bill_type, raw_bill['breakdown'])
+                    bill_type = BillType.get_by_code(
+                        sess, raw_bill['bill_type_code'])
+                    bill = batch.insert_bill(
+                        sess, raw_bill['account'], raw_bill['reference'],
+                        raw_bill['issue_date'], raw_bill['start_date'],
+                        raw_bill['finish_date'], raw_bill['kwh'],
+                        raw_bill['net'], raw_bill['vat'], raw_bill['gross'],
+                        bill_type, raw_bill['breakdown'])
                     sess.flush()
                     for raw_read in raw_bill['reads']:
                         tpr_code = raw_read['tpr_code']
@@ -85,9 +106,17 @@ raw_bill['finish_date'], raw_bill['kwh'], raw_bill['net'], raw_bill['vat'], raw_
                         else:
                             tpr = Tpr.get_by_code(sess, tpr_code)
 
-                        prev_type = ReadType.get_by_code(sess, raw_read['prev_type_code'])
-                        pres_type = ReadType.get_by_code(sess, raw_read['pres_type_code'])
-                        read = bill.insert_read(sess, tpr, raw_read['coefficient'], raw_read['units'], raw_read['msn'], raw_read['mpan'], raw_read['prev_date'], raw_read['prev_value'], prev_type, raw_read['pres_date'], raw_read['pres_value'], pres_type)
+                        prev_type = ReadType.get_by_code(
+                            sess, raw_read['prev_type_code'])
+                        pres_type = ReadType.get_by_code(
+                            sess, raw_read['pres_type_code'])
+                        read = bill.insert_read(
+                            sess, tpr, raw_read['coefficient'],
+                            raw_read['units'], raw_read['msn'],
+                            raw_read['mpan'], raw_read['prev_date'],
+                            raw_read['prev_value'], prev_type,
+                            raw_read['pres_date'], raw_read['pres_value'],
+                            pres_type)
                         sess.expunge(read)
                     sess.commit()
                     self.successful_bills.append(raw_bill)

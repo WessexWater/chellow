@@ -30,7 +30,8 @@ class HhParserCsvSimple():
         if len(self.values) > index:
             return self.values[index].strip()
         else:
-            raise UserException("Can't find field " + index + ", " + name + ".")
+            raise UserException(
+                "Can't find field " + index + ", " + name + ".")
 
     def __iter__(self):
         return self
@@ -39,24 +40,28 @@ class HhParserCsvSimple():
         try:
             self.line_number, self.values = self.shredder.next()
             mpan_core_str = self.get_field(0, "MPAN Core")
-            datum = {'mpan_core': parse_mpan_core(mpan_core_str)}
+            datum = {'mpan_core': utils.parse_mpan_core(mpan_core_str)}
             channel_type_str = self.get_field(1, "Channel Type")
-            datum['channel_type'] = parse_channel_type(channel_type_str)
+            datum['channel_type'] = utils.parse_channel_type(channel_type_str)
  
             start_date_str = self.get_field(2, "Start Date")
-            datum['start_date'] = validate_hh_start(datetime.datetime.strptime(start_date_str, "%Y-%m-%d %h:%M").replace(tzinfo=pytz.utc))
+            datum['start_date'] = utils.validate_hh_start(
+                datetime.datetime.strptime(
+                start_date_str, "%Y-%m-%d %H:%M").replace(tzinfo=pytz.utc))
 
             value_str = self.get_field(3, "Value")
             datum['value'] = decimal.Decimal(value_str)
 
             status = self.get_field(4, "Status")
             if len(status) != 1:
-                raise UserException("The status character must be one character in length.")
+                raise UserException(
+                    "The status character must be one character in length.")
             datum['status'] = status
             return datum
         except UserException, e:
-            raise UserException("Problem at line number: " + str(self.line_number) + ": "  + str(self.values) + ": " + str(e))
+            raise UserException(
+                "Problem at line number: " + str(self.line_number) + ": " +
+                str(self.values) + ": " + str(e))
             
-
     def close(self):
         self.shredder.close()

@@ -108,7 +108,8 @@ def contract_func(caches, contract, func_name, pw):
         try:
             ns = contr_func_cache[contract.id]
         except KeyError:
-            ns = {'db_id': contract.id, 'properties': contract.make_properties()}
+            ns = {
+                'db_id': contract.id, 'properties': contract.make_properties()}
             exec(contract.charge_script, ns)
             contr_func_cache[contract.id] = ns
 

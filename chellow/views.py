@@ -8,7 +8,6 @@ import traceback
 def GET_str(name):
     return request.args[name]
 
-
 def GET_int(name):
     val_str = GET_str(name)
     return int(val_str)
@@ -130,7 +129,7 @@ class Invocation():
         if name in self.request.values:
             return self.request.values[name]
         else:
-            raise Exception("The field '" + name + "' is required.")
+            return None
 
     def getBoolean(self, name):
         vals = self.request.values

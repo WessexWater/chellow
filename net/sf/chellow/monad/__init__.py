@@ -6,8 +6,7 @@ def impt(gbls, *lib_names):
         try:
             gbls[lib_name] = libs[lib_name]
         except KeyError:
-            raise UserException(
-                "Can't find a library called " + str(lib_name))
+            raise Exception("Can't find a library called " + str(lib_name))
 
 IMPT =  {'impt': impt}
 

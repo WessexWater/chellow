@@ -30,16 +30,16 @@ def form_date(inv, prefix):
         tzinfo=pytz.utc)
 
 def form_str(inv, name):
-    s = inv.getString(name)
+    s = inv.getRequest().getParameter(name)
     if s is None:
         raise UserException("The field " + name + " is required.")
     return s
 
+def form_bool(inv, name):
+    return inv.getRequest().getParameter(name) == 'true'
+
 def form_int(inv, name):
-    s = inv.getLong(name)
-    if s is None:
-        raise UserException("The field " + name + " is required.")
-    return s
+    return int(form_str(inv, name))
 
 def form_decimal(inv, name):
     return decimal.Decimal(inv.getString(name))
