@@ -1,14 +1,12 @@
 from net.sf.chellow.monad import Monad
 
-Monad.getUtils()['imprt'](globals(), {
-        'db': ['Contract', 'session', 'Batch'], 
-        'utils': ['UserException', 'prev_hh', 'next_hh', 'hh_after', 'hh_before', 'HH'],
-        'templater': ['render']})
-
+Monad.getUtils()['impt'](globals(), 'db', 'utils', 'templater')
+render = templater.render
+Batch, Contract = db.Batch, db.Contract
 
 sess = None
 try:
-    sess = session()
+    sess = db.session()
     if inv.getRequest().getMethod() == 'GET':
         contract_id = inv.getLong('supplier_contract_id')
         if contract_id is None:

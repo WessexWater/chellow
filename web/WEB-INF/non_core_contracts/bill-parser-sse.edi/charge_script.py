@@ -126,7 +126,6 @@ tmod_map = {
     '248A': '00248',
     '239A': '00239'}
 
-
 class Parser():
     def __init__(self, f):
         self.parser = edi_lib.EdiParser(f)
@@ -373,4 +372,3 @@ class Parser():
                 breakdown['raw-lines'].append(self.parser.line)
 
         return raw_bills
-

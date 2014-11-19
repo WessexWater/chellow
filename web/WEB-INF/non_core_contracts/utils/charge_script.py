@@ -23,12 +23,6 @@ class NotFoundException(Exception):
 
 HH = relativedelta(minutes=30)
 
-def form_date(inv, prefix):
-    return datetime.datetime(inv.getInteger(prefix + '_year'),
-        inv.getInteger(prefix + '_month'), inv.getInteger(prefix + '_day'),
-        inv.getInteger(prefix + '_hour'), inv.getInteger(prefix + '_minute'),
-        tzinfo=pytz.utc)
-
 def form_str(inv, name):
     s = inv.getRequest().getParameter(name)
     if s is None:
@@ -40,6 +34,12 @@ def form_bool(inv, name):
 
 def form_int(inv, name):
     return int(form_str(inv, name))
+
+def form_date(inv, prefix):
+    return datetime.datetime(form_int(inv, prefix + '_year'),
+        form_int(inv, prefix + '_month'), form_int(inv, prefix + '_day'),
+        form_int(inv, prefix + '_hour'), form_int(inv, prefix + '_minute'),
+        tzinfo=pytz.utc)
 
 def form_decimal(inv, name):
     return decimal.Decimal(inv.getString(name))

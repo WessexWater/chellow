@@ -1,17 +1,14 @@
 from net.sf.chellow.monad import Monad
-from sqlalchemy.orm import joinedload_all
 from datetime import datetime
 import pytz
 
-Monad.getUtils()['imprt'](globals(), {
-        'db': ['Contract', 'Batch', 'Participant', 'set_read_write', 'session', 'Bill', 'Report'], 
-        'utils': ['UserException', 'form_date'],
-        'templater': ['render']})
-
+Monad.getUtils()['impt'](globals(), 'db', 'utils', 'templater')
+Batch, Bill, Contract = db.Batch, db.Bill, db.Contract
+render = templater.render
 
 sess = None
 try:
-    sess = session()
+    sess = db.session()
     if inv.getRequest().getMethod() == 'GET':
         batch_id = inv.getLong('supplier_batch_id')
         if batch_id is None:
@@ -28,4 +25,5 @@ try:
             fields['batch_reports'] = batch_reports
         render(inv, template, fields)
 finally:
-    sess.close()
+    if sess is not None:
+        sess.close()

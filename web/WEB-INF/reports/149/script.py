@@ -1,5 +1,4 @@
 from net.sf.chellow.monad import Monad
-from java.lang import System
 import datetime
 from sqlalchemy import or_, func, not_, Float, cast
 import pytz
@@ -12,12 +11,21 @@ ReadType, HhDatum, Channel = db.ReadType, db.HhDatum, db.Channel
 BillType = db.BillType
 
 hh_before, HH, hh_format = utils.hh_before, utils.HH, utils.hh_format
-
+form_int = utils.form_int
 
 NORMAL_READ_TYPES = 'C', 'N', 'N3'
 forecast_date = datetime.datetime.max.replace(tzinfo=pytz.utc)
+start_date = utils.form_date(inv, 'start')
+finish_date = utils.form_date(inv, 'finish')
 
-def mpan_bit(supply, is_import, num_hh, eras, chunk_start, chunk_finish):
+if inv.hasParameter('supply_id'):
+    supply_id = inv.getLong('supply_id')
+else:
+    supply_id = None
+
+caches = {}
+
+def mpan_bit(sess, supply, is_import, num_hh, eras, chunk_start, chunk_finish):
     mpan_core_str = ''
     llfc_code = ''
     sc_str = ''
@@ -38,7 +46,9 @@ def mpan_bit(supply, is_import, num_hh, eras, chunk_start, chunk_finish):
             sc = era.exp_sc
         llfc_code = llfc.code
         sc_str = str(sc)
-        if llfc.is_import and era.pc.code == '00' and supply.source.code not in ('gen') and supply.dno_contract.name != '99':
+        if llfc.is_import and era.pc.code == '00' and \
+                supply.source.code not in ('gen') and \
+                supply.dno_contract.name != '99':
             if gsp_kwh == '':
                 gsp_kwh = 0
 
@@ -68,13 +78,23 @@ def mpan_bit(supply, is_import, num_hh, eras, chunk_start, chunk_finish):
     kvarh_at_md = None
     num_na = 0
 
-    for datum in sess.query(HhDatum).join(Channel).join(Era).filter(Era.supply_id==supply.id, Channel.imp_related==is_import, Channel.channel_type=='ACTIVE', HhDatum.start_date>=chunk_start, HhDatum.start_date<=chunk_finish):
+    for datum in sess.query(HhDatum).join(Channel).join(Era).filter(
+            Era.supply_id == supply.id, Channel.imp_related == is_import,
+            Channel.channel_type == 'ACTIVE',
+            HhDatum.start_date >= chunk_start,
+            HhDatum.start_date <= chunk_finish):
         hh_value = float(datum.value)
         hh_status = datum.status
         if hh_value > md:
             md = hh_value
             date_at_md = datum.start_date
-            kvarh_at_md = sess.query(cast(func.max(HhDatum.value), Float)).join(Channel).join(Era).filter(Era.supply_id==supply.id, Channel.imp_related==is_import, Channel.channel_type!='ACTIVE', HhDatum.start_date==date_at_md).one()[0]
+            kvarh_at_md = sess.query(
+                cast(func.max(HhDatum.value), Float)).join(
+                Channel).join(Era).filter(
+                    Era.supply_id == supply.id,
+                    Channel.imp_related == is_import,
+                    Channel.channel_type != 'ACTIVE',
+                    HhDatum.start_date == date_at_md).one()[0]
 
         sum_kwh += hh_value
         if hh_status != 'A':
@@ -87,28 +107,32 @@ def mpan_bit(supply, is_import, num_hh, eras, chunk_start, chunk_finish):
     else:
         kva_at_md = (kw_at_md ** 2 + (kvarh_at_md * 2) ** 2) ** 0.5
 
-    num_bad = str(num_hh - sess.query(HhDatum).join(Channel).join(Era).filter(Era.supply_id==supply.id, Channel.imp_related==is_import, Channel.channel_type=='ACTIVE', HhDatum.start_date>=chunk_start, HhDatum.start_date<=chunk_finish).count() + num_na)
+    num_bad = str(num_hh - sess.query(HhDatum).join(Channel).join(Era).filter(
+        Era.supply_id == supply.id, Channel.imp_related == is_import,
+        Channel.channel_type == 'ACTIVE', HhDatum.start_date >= chunk_start,
+        HhDatum.start_date<=chunk_finish).count() + num_na)
     
     date_at_md_str = '' if date_at_md is None else hh_format(date_at_md)
         
-    return ','.join(str(val) for val in [llfc_code, mpan_core_str, sc_str, supplier_contract_name, sum_kwh, non_actual, gsp_kwh, kw_at_md, date_at_md_str, kva_at_md, num_bad])
+    return ','.join(str(val) for val in [
+        llfc_code, mpan_core_str, sc_str, supplier_contract_name, sum_kwh,
+        non_actual, gsp_kwh, kw_at_md, date_at_md_str, kva_at_md, num_bad])
 
 def content():
     sess = None
     try:
         sess = db.session()
-        start_date = utils.form_date(inv, 'start')
-        finish_date = utils.form_date(inv, 'finish')
 
-        caches = {}
 
         yield "\nSupply Id, Supply Name, Source, Generator Type, Site Ids, Site Names, From, To, PC, MTC, CoP, SSC, Normal Reads,Type,Import LLFC, Import MPAN Core, Import Supply Capacity,Import Supplier,Import Total MSP kWh, Import Non-actual MSP kWh, Import Total GSP kWh,Import MD / kW, Import MD Date, Import MD / kVA, Import Bad HHs,Export LLFC, Export MPAN Core, Export Supply Capacity,Export Supplier,Export Total MSP kWh, Export Non-actual MSP kWh,Export GSP kWh, Export MD / kW, Export MD Date, Export MD / kVA, Export Bad HHs"
 
-        supplies = sess.query(Supply).join(Era).filter(or_(Era.finish_date==None, Era.finish_date>=start_date), Era.start_date<=finish_date).order_by(Supply.id).distinct()
+        supplies = sess.query(Supply).join(Era).filter(
+            or_(Era.finish_date == None, Era.finish_date >= start_date),
+            Era.start_date<=finish_date).order_by(Supply.id).distinct()
 
-        if inv.hasParameter('supply_id'):
-            supply_id = inv.getLong('supply_id')
-            supplies = supplies.filter(Supply.id==Supply.get_by_id(sess, supply_id).id)
+        if supply_id is not None:
+            supplies = supplies.filter(
+                Supply.id == Supply.get_by_id(sess, supply_id).id)
 
         for supply in supplies:
             site_codes = ''
@@ -123,16 +147,27 @@ def content():
             site_codes = site_codes[:-2]
             site_names = site_names[:-2]
 
-            generator_type = supply.generator_type
-            generator_type = '' if generator_type is None else generator_type.code
+            if supply.generator_type is None:
+                generator_type = ''
+            else:
+                generator_type = supply.generator_type.code
 
             ssc = era.ssc
             ssc_code = '' if ssc is None else ssc.code
 
             prime_reads = {}
-            for read in sess.query(RegisterRead).join(Bill).join(RegisterRead.previous_type).filter(Bill.supply_id==supply.id, RegisterRead.previous_date>=start_date, RegisterRead.previous_date<=finish_date, ReadType.code.in_(NORMAL_READ_TYPES)):
+            for read in sess.query(RegisterRead).join(Bill).join(
+                    RegisterRead.previous_type).filter(
+                        Bill.supply_id == supply.id,
+                        RegisterRead.previous_date >= start_date,
+                        RegisterRead.previous_date <= finish_date,
+                        ReadType.code.in_(NORMAL_READ_TYPES)):
 
-                prime_bill = sess.query(Bill).join(BillType).filter(Bill.supply_id==supply.id, Bill.start_date<=(read.previous_date - HH), Bill.finish_date>=(read.previous_date - HH)).order_by(Bill.issue_date.desc(), BillType.code).first()
+                prime_bill = sess.query(Bill).join(BillType).filter(
+                    Bill.supply_id == supply.id,
+                    Bill.start_date <= (read.previous_date - HH),
+                    Bill.finish_date >= (read.previous_date - HH)).order_by(
+                    Bill.issue_date.desc(), BillType.code).first()
 
                 if prime_bill is not None and read.bill.id == prime_bill.id:
                     key = str(read.previous_date) + "_" + read.msn
@@ -164,10 +199,11 @@ def content():
             yield ','.join(('"' + str(value) + '"') for value in [supply.id, supply.name, supply.source.code, generator_type, site_codes, site_names, hh_format(start_date), hh_format(finish_date), era.pc.code, era.mtc.code, era.cop.code, ssc_code, len(prime_reads), supply_type]) + ','
             yield '\n' + \
                 mpan_bit(
-                    supply, True, num_hh, eras, chunk_start, chunk_finish) + \
-                "," + \
+                    sess, supply, True, num_hh, eras, chunk_start,
+                    chunk_finish) + "," + \
                 mpan_bit(
-                    supply, False, num_hh, eras, chunk_start, chunk_finish)
+                    sess, supply, False, num_hh, eras, chunk_start,
+                    chunk_finish)
     finally:
         if sess is not None:
             sess.close()

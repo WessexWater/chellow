@@ -3,13 +3,13 @@ import csv
 from dateutil.relativedelta import relativedelta
 import itertools
 import decimal
-from java.lang import System
 import datetime
+from datetime import timedelta
 import pytz
 
-Monad.getUtils()['imprt'](globals(), {
-        'utils': ['UserException', 'prev_hh', 'next_hh', 'hh_after', 'hh_before', 'HH', 'parse_hh_start', 'parse_mpan_core', 'parse_bool'],
-        'templater': ['render']})
+Monad.getUtils()['impt'](globals(), 'utils', 'templater')
+parse_mpan_core, UserException = utils.parse_mpan_core, utils.UserException
+HH = utils.HH
 
 
 def create_parser(reader,mpan_map):
@@ -40,20 +40,30 @@ class HhParserBglobal():
                     try:
                         self.core = self.values[self.col_idx]
                     except KeyError:
-                        raise UserException("There doesn't seem to be an MPAN Core at the beginning of this line. ")
+                        raise UserException(
+                            "There doesn't seem to be an MPAN Core at the "
+                            "beginning of this line. ")
                     self.core = self.mpan_map.get(self.core, self.core)
                     self.core = parse_mpan_core(self.core)
                 elif self.col_idx == 2:
-                    day, month, year = map(int, self.values[self.col_idx].split('/'))
-                    self.date = datetime.datetime(year, month, day, tzinfo=pytz.utc)
+                    day, month, year = map(
+                        int, self.values[self.col_idx].split('/'))
+                    self.date = datetime.datetime(
+                        year, month, day, tzinfo=pytz.utc)
                 elif 2 < self.col_idx < len(self.values):
                     hh_value = self.values[self.col_idx].strip()
+                    mins = 30 * (self.col_idx - 3)
                     if len(hh_value) > 0:
-                        datum = {'mpan_core': self.core, 'channel_type': 'ACTIVE', 'start_date': self.date + HH * (self.col_idx - 3), 'value': decimal.Decimal(hh_value), 'status': 'A'}
+                        datum = {
+                            'mpan_core': self.core, 'channel_type': 'ACTIVE',
+                            'start_date': self.date + timedelta(minutes=mins),
+                            'value': decimal.Decimal(hh_value), 'status': 'A'}
 
                 self.col_idx += 1
         except UserException, e:
-            raise UserException("Problem at line number: " + str(self.line_number) + ": " + str(e))
+            raise UserException(
+                "Problem at line number: " + str(self.line_number) + ": " +
+                str(e))
         return datum
 
     def close(self):

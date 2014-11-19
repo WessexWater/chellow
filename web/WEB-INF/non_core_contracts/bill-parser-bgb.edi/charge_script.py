@@ -4,7 +4,7 @@ import datetime
 
 Monad.getUtils()['impt'](
     globals(), 'db', 'utils', 'templater', 'bill_import', 'edi_lib')
-
+hh_after = utils.hh_after
 
 read_type_map = {
     '00': 'N', '01': 'E', '02': 'E', '04': 'C', '06': 'X', '07': 'N'}

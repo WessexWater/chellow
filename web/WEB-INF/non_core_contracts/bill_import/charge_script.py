@@ -14,6 +14,7 @@ from sqlalchemy.sql import func
 
 Monad.getUtils()['impt'](globals(), 'db', 'utils', 'templater', 'computer')
 UserException = utils.UserException
+BillType, Batch, Tpr, ReadType = db.BillType, db.Batch, db.Tpr, db.ReadType
 
 importer_id = 0
 import_lock = threading.Lock()
@@ -50,11 +51,11 @@ class BillImporter(threading.Thread):
                         MarketRole.code=='Z',
                         Contract.name.like("bill-parser-%"))) + ".")
 
+        self.contract_name = contract.name
         self.parser = computer.contract_func({}, contract, 'Parser', None)(f)
         self.successful_bills = []
         self.failed_bills = []
         self.log = collections.deque()
-        self._log("Using the parser '" + contract.name + "'.")
         self.bill_num = None
 
     def _log(self, msg):
@@ -80,8 +81,9 @@ class BillImporter(threading.Thread):
     def run(self):
         sess = None
         try:
-            self._log("I'm starting to parse the file.")
-            sess = session()
+            self._log("Starting to parse the file with '" +
+                self.contract_name + "'.")
+            sess = db.session()
             batch = Batch.get_by_id(sess, self.batch_id)
             raw_bills = self.parser.make_raw_bills()
             self._log(
@@ -89,7 +91,7 @@ class BillImporter(threading.Thread):
                 "insert the raw bills.")
             for self.bill_num, raw_bill in enumerate(raw_bills):
                 try:
-                    set_read_write(sess)
+                    db.set_read_write(sess)
                     bill_type = BillType.get_by_code(
                         sess, raw_bill['bill_type_code'])
                     bill = batch.insert_bill(
@@ -128,9 +130,13 @@ class BillImporter(threading.Thread):
 
 
             if len(self.failed_bills) == 0:
-                self._log("All the bills have been successfully loaded and attached to the batch.")
+                self._log(
+                    "All the bills have been successfully loaded and attached "
+                    "to the batch.")
             else:
-		self._log("The import has finished, but " + str(len(self.failed_bills)) + " bills failed to load.")
+		self._log(
+                    "The import has finished, but " +
+                    str(len(self.failed_bills)) + " bills failed to load.")
 
         except:
             self._log("I've encountered a problem: " + traceback.format_exc())
@@ -141,7 +147,9 @@ class BillImporter(threading.Thread):
     def make_fields(self):
         try:
             import_lock.acquire()
-            fields = {'log': tuple(self.log), 'is_alive': self.isAlive(), 'importer_id': self.importer_id}
+            fields = {
+                'log': tuple(self.log), 'is_alive': self.isAlive(),
+                'importer_id': self.importer_id}
             if not self.isAlive():
                 fields['successful_bills'] = self.successful_bills
                 fields['failed_bills'] = self.failed_bills

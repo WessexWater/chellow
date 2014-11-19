@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <link rel="stylesheet" type="text/css"
+      href="/chellow/reports/19/output/" />
+		<title>Chellow &gt; Reports</title>
+  </head>
+  <body>
+		<p>
+		<a href="/chellow/reports/1/output/">Chellow</a> &gt; Reports
+		</p>
+
+    {% if messages %}
+      <ul>
+        {% for message in messages %}
+          <li>{{ message }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+
+		<table>
+			<thead>
+				<tr>
+					<th>Chellow Id</th>
+					<th>Is Core?</th>
+					<th>Name</th>
+				</tr>
+			</thead>
+			<tbody>
+				{% for report in reports %}
+					<tr>
+						<td>
+							<a href="/chellow/reports/{{report.id}}/">{{report.id}}</a>
+						</td>
+						<td>
+							{{report.is_core()}}
+						</td>
+						<td>
+							{{report.name}}
+						</td>
+					</tr>
+				{% endfor %}
+			</tbody>
+		</table>
+		<br />
+		<form action="." method="post">
+			<fieldset>
+				<legend>Add a report</legend>
+				<label>Name
+					<input name="name" value="{{request.values['name']}}">
+				</label>
+				<label>
+					Is core?
+					<input
+						type="checkbox" name="is_core" value="true"
+						{% if request.values['is_core'] %}
+							checked="true"
+						{% endif %}
+					>
+				</label>
+				<br>
+				<br>
+				<input type="submit" value="Add">
+			</fieldset>
+		</form>
+	</body>
+</html>

@@ -24,8 +24,9 @@ try:
         if inv.hasParameter('delete'):
             hh.channel.delete_data(sess, hh.start_date, hh.start_date)
             sess.commit()
-            inv.sendSeeOther('/reports/301/output/?channel_id=' + str(channel_id))
-        elif inv.hasParameter('update'):
+            inv.sendSeeOther(
+                '/reports/301/output/?channel_id=' + str(channel_id))
+        else:
             value = utils.form_decimal(inv, 'value')
             status = inv.getString('status')
             channel = hh.channel
@@ -33,9 +34,16 @@ try:
             imp_mpan_core = era.imp_mpan_core
             exp_mpan_core = era.exp_mpan_core
             mpan_core = imp_mpan_core if channel.imp_related else exp_mpan_core
-            db.HhDatum.insert(sess, [{'mpan_core': mpan_core, 'channel_type': channel.channel_type, 'start_date': hh.start_date, 'value': value, 'status': status}])
+            db.HhDatum.insert(
+                sess, [
+                    {
+                        'mpan_core': mpan_core,
+                        'channel_type': channel.channel_type,
+                        'start_date': hh.start_date, 'value': value,
+                        'status': status}])
             sess.commit()
-            inv.sendSeeOther('/reports/301/output/?channel_id=' + str(channel_id))
+            inv.sendSeeOther(
+                '/reports/301/output/?channel_id=' + str(channel_id))
 except utils.UserException, e:
     templater.render(inv, template, make_fields(channel, e), 400)
 finally:

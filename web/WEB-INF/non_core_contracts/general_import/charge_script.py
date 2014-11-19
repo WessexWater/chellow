@@ -17,7 +17,7 @@ parse_mpan_core, parse_bool = utils.parse_mpan_core, utils.parse_bool
 parse_channel_type = utils.parse_channel_type
 Site, Era, Supply, HhDatum = db.Site, db.Era, db.Supply, db.HhDatum
 Source, GeneratorType, GspGroup = db.Source, db.GeneratorType, db.GspGroup
-Contract, Pc, Cop = db.Contract, db.Pc, db.Cop
+Contract, Pc, Cop, Ssc = db.Contract, db.Pc, db.Cop, db.Ssc
 
 process_id = 0
 process_lock = threading.Lock()

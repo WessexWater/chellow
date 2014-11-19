@@ -12,7 +12,7 @@ import csv
 
 Monad.getUtils()['impt'](globals(), 'db', 'utils')
 Contract, RateScript = db.Contract, db.RateScript
-HH = utils.HH
+HH, UserException = utils.HH, utils.UserException
 
 
 ELEXON_PORTAL_SCRIPTING_KEY_KEY = 'elexonportal_scripting_key'

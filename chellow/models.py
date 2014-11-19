@@ -553,6 +553,9 @@ class Report(db.Model, PersistentClass):
         self.id = id
         self.update(name, script, template)
 
+    def is_core(self):
+        return self.id % 2 == 1
+
     def update(self, name, script, template):
         self.name = name
         try:

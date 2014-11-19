@@ -1,13 +1,9 @@
 from decimal import Decimal
 from net.sf.chellow.monad import Monad
-from java.lang import System
 import datetime
 
-Monad.getUtils()['imprt'](globals(), {
-        'db': ['Contract', 'session', 'Batch', 'BillType', 'set_read_write'],
-        'utils': ['UserException', 'prev_hh', 'next_hh', 'hh_after', 'hh_before', 'HH', 'validate_hh_start'],
-        'templater': ['render'],
-        'bill_import': ['start_bill_importer', 'get_bill_importer_ids', 'get_bill_importer']})
+Monad.getUtils()['impt'](globals(), 'db', 'utils', 'templater', 'bill_import')
+validate_hh_start = utils.validate_hh_start
 
 def parse_date(date_string):
     return validate_hh_start(datetime.datetime.strptime(date_string, "%Y%m%d"))
@@ -42,6 +38,13 @@ class Parser():
                 start_date = parse_date(line[66:74])
                 finish_date = parse_date(line[74:82])
             elif record_type == "1500":
-                raw_bills.append({'bill_type_code': 'N', 'account': account, 'mpan_strings': mpan_strings, 'reference': reference, 'issue_date': start_date, 'start_date': start_date, 'finish_date': finish_date, 'kwh': Decimal(0), 'net': net, 'vat': vat, 'gross': Decimal(0), 'breakdown': {}, 'reads': []})
+                raw_bills.append(
+                    {
+                        'bill_type_code': 'N', 'account': account,
+                        'mpan_strings': mpan_strings, 'reference': reference,
+                        'issue_date': start_date, 'start_date': start_date,
+                        'finish_date': finish_date, 'kwh': Decimal(0),
+                        'net': net, 'vat': vat, 'gross': Decimal(0),
+                        'breakdown': {}, 'reads': []})
 
         return raw_bills

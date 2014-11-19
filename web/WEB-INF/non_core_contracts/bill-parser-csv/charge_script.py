@@ -5,8 +5,9 @@ import csv
 import pytz
 from dateutil.relativedelta import relativedelta
 
-Monad.getUtils()['impt'](globals(), 'db', 'utils', 'templater', 'bill_import',
-    'edi_lib')
+Monad.getUtils()['impt'](
+    globals(), 'db', 'utils', 'templater', 'bill_import', 'edi_lib')
+validate_hh_start = utils.validate_hh_start
 
 def parse_date(date_str, is_finish):
     date_str = date_str.strip()
@@ -16,7 +17,8 @@ def parse_date(date_str, is_finish):
             dt = dt + relativedelta(days=1) - HH
         return dt
     else:
-        return datetime.datetime.strptime(date_str, "%Y-%m-%d %H:%M").replace(tzinfo=pytz.utc)
+        return datetime.datetime.strptime(
+            date_str, "%Y-%m-%d %H:%M").replace(tzinfo=pytz.utc)
 
 class Parser():
     def __init__(self, f):
@@ -61,9 +63,30 @@ class Parser():
             for i in range(12, len(self.vals), 11):
                 tpr_str = self.vals[i + 4].strip()
                 tpr_code = None if len(tpr_str) == 0 else tpr_str.zfill(5)
-                reads.append({'msn': self.vals[i], 'mpan': self.vals[i + 1], 'coefficient': self.big_decimal(i + 2, 'coefficient'), 'units': self.vals[i + 3], 'tpr_code': tpr_code, 'prev_date': validate_hh_start(datetime.datetime.strptime(self.vals[i + 5], "%Y-%m-%d %H:%M")), 'prev_value': Decimal(self.vals[i + 6]), 'prev_type_code': self.vals[i + 7], 'pres_date': validate_hh_start(datetime.datetime.strptime(self.vals[i + 8], "%Y-%m-%d %H:%M")), 'pres_value': Decimal(self.vals[i + 9]), 'pres_type_code': self.vals[i + 10]})
+                reads.append(
+                    {
+                        'msn': self.vals[i], 'mpan': self.vals[i + 1],
+                        'coefficient': self.big_decimal(i + 2, 'coefficient'),
+                        'units': self.vals[i + 3], 'tpr_code': tpr_code,
+                        'prev_date': validate_hh_start(
+                            datetime.datetime.strptime(
+                                self.vals[i + 5], "%Y-%m-%d %H:%M")),
+                        'prev_value': Decimal(self.vals[i + 6]),
+                        'prev_type_code': self.vals[i + 7],
+                        'pres_date': validate_hh_start(
+                            datetime.datetime.strptime(
+                                self.vals[i + 8], "%Y-%m-%d %H:%M")),
+                        'pres_value': Decimal(self.vals[i + 9]),
+                        'pres_type_code': self.vals[i + 10]})
             
-            raw_bills.append({'bill_type_code': bill_type_code, 'account': account, 'mpans': mpan_strings, 'reference': reference, 'issue_date': issue_date, 'start_date': start_date, 'finish_date': finish_date, 'kwh': kwh, 'net': net, 'vat': vat, 'gross': gross, 'breakdown': breakdown, 'reads': reads})
+            raw_bills.append(
+                {
+                    'bill_type_code': bill_type_code, 'account': account,
+                    'mpans': mpan_strings, 'reference': reference,
+                    'issue_date': issue_date, 'start_date': start_date,
+                    'finish_date': finish_date, 'kwh': kwh, 'net': net,
+                    'vat': vat, 'gross': gross, 'breakdown': breakdown,
+                    'reads': reads})
         return raw_bills
 
 
@@ -72,6 +95,13 @@ class Parser():
             bd_str = self.vals[bd_index]
             return Decimal(bd_str)
         except IndexError:
-            raise UserException("The field '" + bd_name + "' can't be found. It's expected at position " + str(bd_index) + " in the list of fields.")
+            raise UserException(
+                "The field '" + bd_name +
+                "' can't be found. It's expected at position " +
+                str(bd_index) + " in the list of fields.")
         except NumberFormatException:
-            raise UserException("The " + bd_name + " field '" + bd_str + "' cannot be parsed as a number. The " + bd_name + " field is the " + str(bd_index) + " field of " + str(self.vals) + ".")
+            raise UserException(
+                "The " + bd_name + " field '" + bd_str +
+                "' cannot be parsed as a number. The " + bd_name +
+                " field is the " + str(bd_index) + " field of " +
+                str(self.vals) + ".")

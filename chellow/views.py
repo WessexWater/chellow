@@ -168,7 +168,8 @@ def show_report(report_id):
 
 @app.route('/chellow/reports/', methods=['GET'])
 def show_reports():
-    return 'Hello Worlds'
+    reports = Report.query.order_by(Report.id % 2, Report.name).all()
+    return render_template('reports.html', reports=reports)
 
 @app.route('/chellow/reports/', methods=['POST'])
 def add_report():
@@ -185,9 +186,25 @@ def add_report():
                 "There's already a report with that name.", status=400)
         else:
             raise
-    return redirect('/reports/' + str(report.id) + '/', 303)
+    return redirect('/chellow/reports/' + str(report.id) + '/', 303)
 
 @app.route('/chellow/reports/<int:report_id>/', methods=['GET'])
 def show_edit_report(report_id):
     report = Report.query.get(report_id)
-    render_template('report.html', {'report', report})
+    return render_template('report.html', report=report)
+
+@app.route('/chellow/reports/<int:report_id>/', methods=['POST'])
+def edit_report(report_id):
+    try:
+        set_read_write()
+        name = POST_str("name")
+        script = POST_str("script")
+        template = POST_str("template")
+        report = Report.query.get(report_id)
+        report.update(name, script, template)
+        db.session.commit()
+        return redirect('/chellow/reports/' + str(report.id) + '/', 303)
+    except:
+        return render_template(
+            'report.html', report=report, message=traceback.format_exc())
+
