@@ -16,10 +16,9 @@ Monad.getUtils()['imprt'](globals(), {
 def parse_date(date_str, is_finish):
     date_str = date_str.strip()
     if len(date_str) == 10:
-        dt = datetime.datetime.strptime(date_str, "%Y-%m-%d")
-        dt.replace(tzinfo=pytz.utc)
+        dt = datetime.datetime.strptime(date_str, "%Y-%m-%d").replace(tzinfo=pytz.utc)
         if is_finish:
-            dt = dt + relativedelta(days=1) - HH
+            dt += relativedelta(days=1) - HH
         return dt
     else:
         return datetime.datetime.strptime(date_str, "%Y-%m-%d %H:%M").replace(tzinfo=pytz.utc)
