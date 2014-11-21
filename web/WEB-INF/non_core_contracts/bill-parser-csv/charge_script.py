@@ -18,7 +18,7 @@ def parse_date(date_str, is_finish):
     if len(date_str) == 10:
         dt = datetime.datetime.strptime(date_str, "%Y-%m-%d").replace(tzinfo=pytz.utc)
         if is_finish:
-            dt += relativedelta(days=1) - HH
+            dt = dt + relativedelta(days=1) - HH
         return dt
     else:
         return datetime.datetime.strptime(date_str, "%Y-%m-%d %H:%M").replace(tzinfo=pytz.utc)

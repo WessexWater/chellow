@@ -1,4 +1,4 @@
 #InvoiceType, Account Reference, Mpans, Invoice Reference, Issue Date, Start Date, Finish Date, kWh, Net, VAT, Gross, Breakdown, R1 MPAN, R1 Meter Serial Number, R1 TPR, R1 Coefficient, R1 Units, R1 Previous Read Date, R1 Previous Read Value, R1 Previous Read Type, R1 Present Read Date, R1 Present Read Value, R1 Present Read Type
-N,11640077,"00 845 550 22 9205 6799 106, 00 845 540 22 4862 4512 332", 00080, 2007-01-01 00:00, 2007-02-02 00:00, 2007-02-28 23:30, 0, 4463.08, 781.03, 0,
+N,11640077,"00 845 550 22 9205 6799 106, 00 845 540 22 4862 4512 332", 00080, 2007-01-01 00:00, 2007-02-02 00:00, 2007-02-28, 0, 4463.08, 781.03, 0,
 N,141 5532,"22 6354 2983 570", 00101, 2011-08-28 23:30, 2011-05-01, 2011-06-30 00:00, 244, 3810.08, 355.03, 0,"{'ccl-rate': 11.4}"
 N,141 5532,"22 6354 2983 570", 00102, 2011-09-05 23:30, 2011-05-01 00:00, 2011-06-30 00:00, 41, 891.08, 82.03, 0,"{'ccl-rate': 11.4}"
