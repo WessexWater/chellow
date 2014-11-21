@@ -6,6 +6,7 @@ Monad.getUtils()['impt'](globals(), 'db', 'utils', 'templater')
 render = templater.render
 Channel = db.Channel
 UserException, form_int = utils.UserException, utils.form_int
+form_date = utils.form_date
 
 def make_fields(channel, message=None):
     messages = [] if message is None else [str(message)]

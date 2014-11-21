@@ -73,9 +73,9 @@
         <br />
         <fieldset>
           <legend>Role</legend>
-          <input type="radio" name="user_role_id" value="1"
-            {% if request.getParameter('user_role_id') %}
-              {% if request.getParameter('user_role_id') == '1' %}
+          <input type="radio" name="user_role_code" value="editor"
+            {% if request.getParameter('user_role_code') %}
+              {% if request.getParameter('user_role_code') == 'editor' %}
                 checked
               {% endif %}
             {% else %}
@@ -84,15 +84,15 @@
           >
           Editor
           <br />
-          <input type="radio" name="user_role_id" value="3"
-            {% if request.getParameter('user_role_id') == '3' %}
+          <input type="radio" name="user_role_code" value="viewer"
+            {% if request.getParameter('user_role_code') == 'viewer' %}
               checked
             {% endif %}
           >
           Viewer
           <br />
-          <input type="radio" name="user_role_id" value="2"
-            {% if request.getParameter('user_role_id') == '2' %}
+          <input type="radio" name="user_role_code" value="party-viewer"
+            {% if request.getParameter('user_role_code') == 'party-viewer' %}
               checked
             {% endif %}
           >

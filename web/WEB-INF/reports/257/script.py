@@ -1,16 +1,15 @@
 from net.sf.chellow.monad import Monad
-from sqlalchemy.orm import joinedload_all
 
 Monad.getUtils()['impt'](globals(), 'db', 'utils', 'templater')
-UserException = utils.UserException
+UserException, form_int= utils.UserException, utils.form_int
+form_str = utils.form_str
 render = templater.render
-User, Party = db.User, db.Party
+User, Party, MarketRole = db.User, db.Party, db.MarketRole
+Participant = db.Participant
 
 def user_fields(sess, user, message=None):
-    parties = sess.query(Party).from_statement("""select party.* from party,
-        market_role, participant where party.market_role_id = market_role.id
-        and party.participant_id = participant.id order by market_role.code, 
-        participant.code""").all()
+    parties = sess.query(Party).join(MarketRole).join(Participant).order_by(
+        MarketRole.code, Participant.code).all()
     return {'user': user, 'parties': parties,
             'messages': None if message is None else [message]}
 
@@ -22,7 +21,6 @@ try:
     if inv.getRequest().getMethod() == 'GET':
         user_id = inv.getInteger('user_id')
         user = User.get_by_id(sess, user_id)
-        from chellow import app
         render(inv, template, user_fields(sess, user))
     else:
         db.set_read_write(sess)
@@ -48,13 +46,13 @@ try:
             inv.sendSeeOther('/reports/255/output/?user_id=' + str(user.id))
         else:
             email_address = inv.getString('email_address')
-            role_id = inv.getInteger('user_role_id')
-            role = db.UserRole.get_by_id(sess, role_id)
+            user_role_code = form_str(inv, 'user_role_code')
+            user_role = db.UserRole.get_by_code(sess, user_role_code)
             party = None
-            if role.code == 'party-viewer':
+            if user_role.code == 'party-viewer':
                 party_id = inv.getInteger('party_id')
                 party = Party.get_by_id(sess, party_id)
-            user.update(email_address, role, party)
+            user.update(email_address, user_role, party)
             sess.commit()
             inv.sendSeeOther('/reports/255/output/?user_id=' + str(user.id))
 except UserException, e:

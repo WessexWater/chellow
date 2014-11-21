@@ -49,11 +49,15 @@ def check_permissions(*args, **kwargs):
         if user_count is None or user_count == 0 and \
                 request.remote_addr == '127.0.0.1':
             return None
+        app.logger.error("user is none")
     else:
+        app.logger.error("got a user " + user.email_address)
         g.user = user
         role = user.user_role
         role_code = role.code
         path = request.path
+        app.logger.error("role code " + role_code)
+
         if role_code == "viewer":
             if path.startswith("/reports/") and \
                     path.endswith("/output/") and \
@@ -66,13 +70,14 @@ def check_permissions(*args, **kwargs):
                 party = user.party
                 market_role_code = party.market_role.code
                 if market_role_code == 'C':
+                    app.logger.error("market role code " + market_role_code)
                     hhdc_contract_id = GET_int(request, "hhdc_contract_id")
                     hhdc_contract = Contract.get_non_core_by_id(
                         hhdc_contract_id)
                     if hhdc_contract.party == party and (
                             request.path_info + "?" + request.query_string) \
                             .startswith(
-                                "/reports/37/output/?hhdc_contract_id="
+                                "/reports/37/output/?hhdc-contract-id="
                                 + hhdc_contract.id):
                         return
                 elif market_role_code == 'X':

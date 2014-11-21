@@ -33,7 +33,11 @@ def form_bool(inv, name):
     return inv.getRequest().getParameter(name) == 'true'
 
 def form_int(inv, name):
-    return int(form_str(inv, name))
+    try:
+        return int(form_str(inv, name))
+    except ValueError, e:
+        raise UserException(
+            "Problem parsing the field " + name + " as an integer: " + str(e))
 
 def form_date(inv, prefix):
     return datetime.datetime(form_int(inv, prefix + '_year'),

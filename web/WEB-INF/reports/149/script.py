@@ -196,8 +196,8 @@ def content():
 
             num_hh = utils.totalseconds(chunk_finish - (chunk_start - HH)) / (30 * 60)
 
-            yield ','.join(('"' + str(value) + '"') for value in [supply.id, supply.name, supply.source.code, generator_type, site_codes, site_names, hh_format(start_date), hh_format(finish_date), era.pc.code, era.mtc.code, era.cop.code, ssc_code, len(prime_reads), supply_type]) + ','
-            yield '\n' + \
+            yield '\n' + ','.join(('"' + str(value) + '"') for value in [supply.id, supply.name, supply.source.code, generator_type, site_codes, site_names, hh_format(start_date), hh_format(finish_date), era.pc.code, era.mtc.code, era.cop.code, ssc_code, len(prime_reads), supply_type]) + ','
+            yield \
                 mpan_bit(
                     sess, supply, True, num_hh, eras, chunk_start,
                     chunk_finish) + "," + \

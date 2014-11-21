@@ -50,13 +50,13 @@
           <fieldset>
             <legend>Role</legend>
             <label>
-              <input type="radio" name="user_role_id" value="1"
-                {%- if request.getParameter('user_role_id') -%}
-                  {%- if request.getParameter('user_role_id') == '1' %}
+              <input type="radio" name="user_role_code" value="editor"
+                {%- if request.getParameter('user_role_editor') -%}
+                  {%- if request.getParameter('user_role_editor') == 'editor' %}
                     checked
                   {%- endif -%}
                 {%- else -%}
-                  {%- if user.user_role.id == 1 %}
+                  {%- if user.user_role.code == 'editor' %}
                     checked
                   {%- endif -%}
                 {%- endif -%}
@@ -65,13 +65,13 @@
             </label>
             <br />
             <label>
-              <input type="radio" name="user_role_id" value="3"
-                {% if request.getParameter('user_role_id') %}
-                  {% if request.getParameter('user_role_id') == '3' %}
+              <input type="radio" name="user_role_code" value="viewer"
+                {% if request.getParameter('user_role_code') %}
+                  {% if request.getParameter('user_role_code') == 'viewer' %}
                     checked
                   {% endif %}
                 {% else %}
-                  {% if user.user_role.id == 3 %}
+									{% if user.user_role.code == 'viewer' %}
                     checked
                   {% endif %}
                 {% endif %}
@@ -80,13 +80,13 @@
             </label>
             <br />
             <label>
-              <input type="radio" name="user_role_id" value="2"
-                {%- if request.getParameter('user_role_id') -%}
-                  {%- if request.getParameter('user_role_id') == '2' -%}
+              <input type="radio" name="user_role_code" value="party-viewer"
+                {%- if request.getParameter('user_role_code') -%}
+                  {%- if request.getParameter('user_role_code') == 'party-viewer' -%}
                     checked
                   {%- endif -%}
                 {%- else -%}
-                  {%- if user.user_role.id == 2 -%}
+                  {%- if user.user_role.code == 'party-viewer' -%}
                     checked
                   {% endif %}
                 {% endif %}

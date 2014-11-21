@@ -1172,6 +1172,7 @@ class UserRole(Base, PersistentClass):
     code = Column(String, unique=True, nullable=False)
     users = relationship('User', backref='user_role')
 
+    @staticmethod
     def get_by_code(sess, code):
         role = sess.query(UserRole).filter_by(code=code.strip()).first()
         if role is None:

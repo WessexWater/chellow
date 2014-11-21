@@ -4,7 +4,7 @@ import sys
 
 Monad.getUtils()['impt'](globals(), 'db', 'utils', 'templater')
 User, Party, MarketRole  = db.User, db.Party, db.MarketRole
-UserException = utils.UserException
+UserException, form_str = utils.UserException, utils.form_str
 Participant = db.Participant
 render = templater.render
 
@@ -28,9 +28,9 @@ try:
     if inv.getRequest().getMethod() == 'POST':
         db.set_read_write(sess)
         email_address = inv.getString('email_address')
-        password = inv.getString('password')
-        user_role_id = inv.getLong('user_role_id')
-        role = db.UserRole.get_by_id(sess, user_role_id)
+        password = form_str(inv, 'password')
+        user_role_code = form_str(inv, 'user_role_code')
+        role = db.UserRole.get_by_code(sess, user_role_code)
         try:
             party = None
             if role.code == 'party-viewer':

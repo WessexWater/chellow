@@ -9,14 +9,14 @@
 			<request path="/chellow/reports/255/output/" method="post">
 				<credentials username="watkins@example.com" password="alan" />
 				<control name="email_address" value="watkins@example.com" />
-				<control name="user_role_id" value="1" />
+				<control name="user_role_code" value="editor" />
 				<control name="password" value="alan" />
 				<response-code value="303" />
 				<regex pattern="/reports/257/output/\?user_id=1" />
 			</request>
 			<request path="/chellow/reports/255/output/" method="post">
 				<control name="email_address" value="lydgate@localhost" />
-				<control name="user_role_id" value="1" />
+				<control name="user_role_code" value="editor" />
 				<control name="password" value="science" />
 				<response-code value="303" />
 				<regex pattern="/reports/257/output/\?user_id=2" />
@@ -29,7 +29,7 @@
 			<!-- Check that a duplicate email gives a proper error message -->
 			<request path="/chellow/reports/255/output/" method="post">
 				<control name="email_address" value="lydgate@localhost" />
-				<control name="user_role_id" value="1" />
+				<control name="user_role_code" value="editor" />
 				<control name="password" value="science" />
 				<regex pattern="already a user with this email address" />
 				<response-code value="400" />
@@ -46,14 +46,14 @@
 			<request path="/chellow/reports/257/output/" method="post">
 				<control name="user_id" value="2" />
 				<control name="email_address" value="mary-ann-evans@example.com" />
-				<control name="user_role_id" value="1" />
+				<control name="user_role_code" value="editor" />
 				<response-code value="303" />
 			</request>
 			<!-- ...and change it back -->
 			<request path="/chellow/reports/257/output/" method="post">
 				<control name="user_id" value="2" />
 				<control name="email_address" value="lydgate@localhost" />
-				<control name="user_role_id" value="1" />
+				<control name="user_role_code" value="editor" />
 				<response-code value="303" />
 			</request>
 		</test>
@@ -1594,8 +1594,7 @@ def virtual_bill(ds):
 				<control name="imp_supplier_account" value="01" />
 
 				<response-code value="400" />
-				<regex
-					pattern="There isn&amp;#39;t a contract with the role code &amp;#39;C&amp;#39; and id &amp;#39;None&amp;#39;." />
+				<regex pattern="Problem parsing the field hhdc_contract_id as an integer: invalid literal for int\(\) with base 10: &amp;#39;null&amp;#39;"/>
 			</request>
 		</test>
 		<test name="Test that profile 05 is displayed for an era. Supply 9">
@@ -1609,7 +1608,7 @@ def virtual_bill(ds):
 			<request path="/chellow/reports/255/output/" method="post">
 				<control name="email_address" value="mishka@localhost" />
 				<control name="password" value="fyodor" />
-				<control name="user_role_id" value="2" />
+				<control name="user_role_code" value="party-viewer" />
 				<control name="party_id" value="30" /> <!-- BMET HHDC -->
 				<response-code value="303" />
 				<regex pattern="/chellow/reports/257/output/\?user_id=4" />
