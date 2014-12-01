@@ -1,25 +1,36 @@
-from net.sf.chellow.monad import Hiber, UserException, Monad
 import os
+import traceback
+import sys
+from net.sf.chellow.monad import Monad
+
+Monad.getUtils()['impt'](globals(), 'computer', 'db', 'utils', 'triad', 'duos')
+UserException = utils.UserException
 
 name = inv.getString("name")
 head, name = os.path.split(os.path.normcase(os.path.normpath(name)))
 
-download_path = Monad.getContext().getRealPath("/downloads")
+if sys.platform.startswith('java'):
+    download_path = Monad.getContext().getRealPath("/downloads")
+else:
+    download_path = os.path.join(os.environ['CHELLOW_HOME'], 'downloads')
 
 method = inv.getRequest().getMethod()
 
 if method == 'GET':
-    fl = open(os.path.join(download_path, name))
+    def content():
+        fl = None
+        try:
+            fl = open(os.path.join(download_path, name))
 
-    inv.getResponse().setContentType("text/csv")
-    inv.getResponse().setHeader('Content-Disposition', 'attachment; filename="' + name + '"')
+            for line in fl:
+                yield line
 
-    pw = inv.getResponse().getWriter()
-    for line in fl:
-        pw.print(line)
+        except:
+            yield traceback.format_exc()
+        finally:
+            fl.close()
 
-    pw.close()
-    fl.close()
+    utils.send_response(inv, content, file_name=name)
 elif method == 'POST':
     os.remove(name)
     inv.sendSeeOther("/reports/251/output/")

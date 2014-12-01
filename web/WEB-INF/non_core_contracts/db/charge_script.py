@@ -20,7 +20,7 @@ import decimal
 Monad.getUtils()['impt'](globals(), 'utils')
 UserException, hh_after, HH = utils.UserException, utils.hh_after, utils.HH
 parse_mpan_core, hh_before = utils.parse_mpan_core, utils.hh_before
-next_hh, prev_hh = utils.next_hh, utils.prev_hh
+next_hh, prev_hh, hh_format = utils.next_hh, utils.prev_hh, utils.hh_format
 
 CHANNEL_TYPES = ('ACTIVE', 'REACTIVE_IMP', 'REACTIVE_EXP')
 
@@ -620,7 +620,8 @@ class Contract(Base, PersistentClass):
     def get_dno_by_name(sess, name):
         cont = Contract.find_by_role_code_name(sess, 'R', name)
         if cont is None:
-            raise UserException("There isn't a DNO contract with the code '" + name + "'.")
+            raise UserException(
+                "There isn't a DNO contract with the code '" + name + "'.")
         return cont
 
     @staticmethod
@@ -645,11 +646,8 @@ class Contract(Base, PersistentClass):
 
     @staticmethod
     def find_by_role_code_id(sess, role_code, oid):
-        return sess.query(Contract).from_statement("""select contract.* from
-                contract, market_role where contract.market_role_id = market_role.id
-                and market_role.code = :role_code and contract.id =
-                :contract_id""").params(contract_id=oid,
-                role_code=role_code).first()
+        return sess.query(Contract).join(MarketRole).filter(
+            MarketRole.code == role_code, Contract.id == oid).first() 
 
     @staticmethod
     def get_by_role_code_name(sess, role_code, name):
@@ -661,15 +659,17 @@ class Contract(Base, PersistentClass):
 
     @staticmethod
     def find_by_role_code_name(sess, role_code, name):
-        return sess.query(Contract).from_statement("""select contract.* from
-                contract, market_role where contract.market_role_id = market_role.id
-                and market_role.code = :role_code and contract.name =
-                :name""").params(role_code=role_code, name=name).first()
+        return sess.query(Contract).join(MarketRole).filter(
+            MarketRole.code == role_code, Contract.name == name).first()
 
 
     @staticmethod
-    def insert_mop(sess, name, participant, charge_script, properties, start_date, finish_date, rate_script):
-        return Contract.insert(sess, False, name, participant, 'M', charge_script, properties, start_date, finish_date, rate_script)
+    def insert_mop(
+            sess, name, participant, charge_script, properties, start_date,
+            finish_date, rate_script):
+        return Contract.insert(
+            sess, False, name, participant, 'M', charge_script, properties,
+            start_date, finish_date, rate_script)
 
     @staticmethod
     def insert_non_core(sess, is_core, name, charge_script, properties,
@@ -681,13 +681,16 @@ class Contract(Base, PersistentClass):
     @staticmethod
     def insert_hhdc(sess, name, participant, charge_script, properties,
             start_date, finish_date, rate_script):
-        return Contract.insert(sess, False, name, participant, 'C',
-                charge_script, properties, start_date, finish_date, rate_script)
+        return Contract.insert(
+            sess, False, name, participant, 'C', charge_script, properties,
+            start_date, finish_date, rate_script)
 
     @staticmethod
     def insert_supplier(sess, name, participant, charge_script, properties,
             start_date, finish_date, rate_script):
-        return Contract.insert(sess, False, name, participant, 'X', charge_script, properties, start_date, finish_date, rate_script)
+        return Contract.insert(
+            sess, False, name, participant, 'X', charge_script, properties,
+            start_date, finish_date, rate_script)
 
     @staticmethod
     def insert(sess, is_core, name, participant, role_code, charge_script,
@@ -699,7 +702,8 @@ class Contract(Base, PersistentClass):
         sess.add(contract)
         sess.flush()
         rscript = contract.insert_rate_script(sess, start_date, rate_script)
-        contract.update_rate_script(sess, rscript, start_date, finish_date, rate_script)
+        contract.update_rate_script(
+            sess, rscript, start_date, finish_date, rate_script)
         return contract
 
     __tablename__ = 'contract'
@@ -711,7 +715,9 @@ class Contract(Base, PersistentClass):
     state = Column(Text, nullable=False)
     market_role_id = Column(Integer, ForeignKey('market_role.id'))
     __table_args__ = (UniqueConstraint('name', 'market_role_id'),)
-    rate_scripts = relationship("RateScript", back_populates="contract", primaryjoin="Contract.id==RateScript.contract_id")
+    rate_scripts = relationship(
+        "RateScript", back_populates="contract",
+        primaryjoin="Contract.id==RateScript.contract_id")
     batches = relationship('Batch', backref='contract')
     supplies = relationship('Supply', backref='dno_contract')
     party_id = Column(Integer, ForeignKey('party.id'))

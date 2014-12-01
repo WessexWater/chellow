@@ -3,21 +3,26 @@ import datetime
 from dateutil.relativedelta import relativedelta
 from sqlalchemy import or_
 import pytz
+import traceback
 
 Monad.getUtils()['impt'](globals(), 'db', 'utils', 'computer', 'duos', 'triad')
 
 Era, Supply, Source, Pc, Site = db.Era, db.Supply, db.Source, db.Pc, db.Site
 SiteEra = db.SiteEra
-HH = utils.HH
+HH, form_int = utils.HH, utils.form_int
 
 caches = {}
+year = form_int(inv, 'year')
+if inv.hasParameter('supply_id'):
+    supply_id = form_int(inv, 'supply_id')
+else:
+    supply_id = None
 
 def content():
     sess = None
     try:
         sess = db.session()
 
-        year = inv.getInteger('year')
         year_finish = datetime.datetime(year, 4, 1, tzinfo=pytz.utc) - HH
         year_start = datetime.datetime(year, 4, 1, tzinfo=pytz.utc) - \
             relativedelta(years=1)
@@ -66,9 +71,8 @@ def content():
             Source.code.in_(('net', 'gen-net')),
             Pc.code == '00').order_by(Supply.id)
 
-        if inv.hasParameter('supply_id'):
-            supply_id = inv.getLong('supply_id')
-            eras = eras.filter(Supply.id==supply_id)
+        if supply_id is not None:
+            eras = eras.filter(Supply.id == supply_id)
 
         for era in eras:
             site = sess.query(Site).join(SiteEra).filter(
@@ -99,6 +103,8 @@ def content():
                     triad_csv(exp_supply_source):
                 yield ',"' + str(value) + '"'
             yield '\n'
+    except:
+        yield traceback.format_exc()
     finally:
         if sess is not None:
             sess.close()

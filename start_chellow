@@ -1,6 +1,12 @@
 . ${CHELLOW_HOME}/venv/bin/activate
 cd ${CHELLOW_HOME}
 gunicorn chellow:app -c ${CHELLOW_HOME}/gunicorn/config.py
+
+while [ ! -f ${CHELLOW_HOME}/gunicorn/pid ]
+do
+  sleep 1
+done
+
 watchmedo shell-command --patterns="*.py*;*.html*" --recursive --command='kill -HUP `cat ${CHELLOW_HOME}/gunicorn/pid`' . &
 echo $! > ${CHELLOW_HOME}/gunicorn/watchdog.pid
 

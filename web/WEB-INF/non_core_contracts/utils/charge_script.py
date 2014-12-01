@@ -6,6 +6,7 @@ import decimal
 import dateutil
 import collections
 import datetime
+import traceback
 
 clogs = collections.deque()
 
@@ -139,6 +140,7 @@ def parse_channel_type(channel_type):
 
 def send_response(
         inv, content, status=200, mimetype='text/csv', file_name=None):
+
     if file_name is None:
         content_disposition = None
     else:
@@ -151,9 +153,14 @@ def send_response(
             res.addHeader('Content-Disposition', content_disposition)
         res.setStatus(status)
         pw = res.getWriter()
-        for l in content:
-            pw.write(l) 
-        pw.close()
+        try:
+            for l in content():
+                pw.write(l)
+        except:
+            pw.write(traceback.format_exc())
+            raise
+        finally:
+            pw.close()
     else:
         from flask import Response
         if content_disposition is not None:

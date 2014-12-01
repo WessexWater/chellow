@@ -10,3 +10,4 @@ gunicorn/watchdog.pid
 **/__pycache__
 test/imprimatur.xml
 gunicorn/pid
+downloads

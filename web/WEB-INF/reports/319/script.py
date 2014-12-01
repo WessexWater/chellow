@@ -3,6 +3,8 @@ from net.sf.chellow.monad import Monad
 Monad.getUtils()['impt'](globals(), 'db', 'utils', 'templater')
 RateScript = db.RateScript
 form_date, NotFoundException = utils.form_date, utils.NotFoundException
+UserException = utils.UserException
+render = templater.render
 
 sess = None
 try:
@@ -34,6 +36,10 @@ try:
                 str(rate_script.id))
 except NotFoundException, e:
     inv.sendNotFound(str(e))
+except UserException, e:
+    sess.rollback()
+    render(
+        inv, template, {'rate_script': rate_script, 'messages': [str(e)]}, 400)
 finally:
     if sess is not None:
         sess.close()

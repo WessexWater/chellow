@@ -5,6 +5,7 @@ import pytz
 import datetime
 from dateutil.relativedelta import relativedelta
 from sqlalchemy import or_
+import traceback
 
 Monad.getUtils()['impt'](globals(), 'templater', 'db', 'computer', 'utils')
 
@@ -15,34 +16,56 @@ caches = {}
 
 forecast_date = datetime.datetime.max.replace(tzinfo=pytz.utc)
 
+if inv.hasParameter('batch_id'):
+    batch_id = inv.getLong("batch_id")
+    bill_id = None
+elif inv.hasParameter('bill_id'):
+    bill_id = inv.getLong("bill_id")
+    batch_id = None
+
 def content():
     sess = None
     try:
         sess = db.session()
 
-        if inv.hasParameter('batch_id'):
-            batch_id = inv.getLong("batch_id")
+        if batch_id is not None:
             batch = Batch.get_by_id(sess, batch_id)
-            bills = sess.query(Bill).filter(Bill.batch_id==batch.id).order_by(Bill.reference)
-        elif inv.hasParameter('bill_id'):
+            bills = sess.query(Bill).filter(
+                Bill.batch_id == batch.id).order_by(Bill.reference)
+        elif bill_id is not None:
             bill_id = inv.getLong("bill_id")
             bill = Bill.get_by_id(sess, bill_id)
-            bills = sess.query(Bill).filter(Bill.id==bill.id)
+            bills = sess.query(Bill).filter(Bill.id == bill.id)
             batch = bill.batch
+        else:
+            raise UserException("The bill check needs a batch_id or bill_id.")
 
         contract = batch.contract
         market_role_code = contract.market_role.code
 
         vbf = computer.contract_func(caches, contract, 'virtual_bill', None)
         if vbf is None:
-            raise UserException('The contract ' + contract.name + " doesn't have a function virtual_bill.")
+            raise UserException(
+                'The contract ' + contract.name +
+                " doesn't have a function virtual_bill.")
 
-        virtual_bill_titles_func = computer.contract_func(caches, contract, 'virtual_bill_titles', None)
+        virtual_bill_titles_func = computer.contract_func(
+            caches, contract, 'virtual_bill_titles', None)
         if virtual_bill_titles_func is None:
-            raise UserException('The contract ' + contract.name + " doesn't have a function virtual_bill_titles.")
+            raise UserException(
+                'The contract ' + contract.name +
+                " doesn't have a function virtual_bill_titles.")
         virtual_bill_titles = virtual_bill_titles_func()
 
-        yield "\nbatch,bill-reference,bill-type,bill-kwh,bill-net-gbp,bill-vat-gbp, bill-start-date,bill-finish-date,bill-mpan-core,site-code,site-name,covered-from,covered-to,covered-bills," + ','.join('covered-' + val + ',virtual-' + val + (',difference-' + val if val.endswith('-gbp') else '') for val in virtual_bill_titles)
+        yield "batch,bill-reference,bill-type,bill-kwh,bill-net-gbp," + \
+            "bill-vat-gbp, bill-start-date,bill-finish-date," + \
+            "bill-mpan-core,site-code,site-name,covered-from,covered-to," + \
+            "covered-bills," + \
+            ','.join(
+                    'covered-' + val + ',virtual-' + val + (
+                        ',difference-' +
+                        val if val.endswith('-gbp') else '')
+                    for val in virtual_bill_titles) + '\n'
 
         for bill in bills:
             problem = ''
@@ -60,13 +83,18 @@ def content():
                         break
 
                 if not msn_match:
-                    problem += "The MSN " + read_msn + " of the register read " + str(read.id) + " doesn't match the MSN of the era."
+                    problem += "The MSN " + read_msn + \
+                        " of the register read " + str(read.id) + \
+                        " doesn't match the MSN of the era."
 
-                for dt, type in [(read.present_date, read.present_type), (read.previous_date, read.previous_type)]:
+                for dt, type in [
+                        (read.present_date, read.present_type),
+                        (read.previous_date, read.previous_type)]:
                     key = str(dt) + "-" + read.msn
                     try:
                         if type != read_dict[key]:
-                            problem += " Reads taken on " + str(dt) + " have differing read types."
+                            problem += " Reads taken on " + str(dt) + \
+                                " have differing read types."
                     except KeyError:
                         read_dict[key] = type        
 
@@ -75,7 +103,8 @@ def content():
 
             era = supply.find_era_at(sess, bill.finish_date)
             if era is None:
-                yield "\n,,,,,,,,,,Extraordinary! There isn't a era for this bill!"
+                yield "\n,,,,,,,,,,Extraordinary! There isn't a era for " + \
+                    "this bill!"
                 continue
 
             yield ','.join('"' + str(val) + '"' for val in [batch.reference, bill.reference, bill.bill_type.code, bill.kwh, bill.net, bill.vat, hh_format(bill_start), hh_format(bill_finish), era.imp_mpan_core]) + ","
@@ -91,11 +120,17 @@ def content():
 
             while enlarged:
                 enlarged = False
-                for covered_bill in sess.query(Bill).filter(Bill.supply_id==supply.id, Bill.start_date<=covered_finish, Bill.finish_date>=covered_start).order_by(Bill.issue_date.desc(), Bill.start_date):
-                    if market_role_code != covered_bill.batch.contract.market_role.code:
+                for covered_bill in sess.query(Bill).filter(
+                        Bill.supply_id == supply.id,
+                        Bill.start_date <= covered_finish,
+                        Bill.finish_date>=covered_start).order_by(
+                        Bill.issue_date.desc(), Bill.start_date):
+                    if market_role_code != \
+                            covered_bill.batch.contract.market_role.code:
                         continue
 
-                    if covered_primary_bill is None and len(covered_bill.reads) > 0:
+                    if covered_primary_bill is None and \
+                            len(covered_bill.reads) > 0:
                         covered_primary_bill = covered_bill
                     if covered_bill.start_date < covered_start:
                         covered_start = covered_bill.start_date
@@ -106,8 +141,13 @@ def content():
                         enlarged = True
                         break
 
-            for covered_bill in sess.query(Bill).filter(Bill.supply_id==supply.id, Bill.start_date<=covered_finish, Bill.finish_date>=covered_start).order_by(Bill.issue_date.desc(), Bill.start_date):
-                if market_role_code != covered_bill.batch.contract.market_role.code:
+            for covered_bill in sess.query(Bill).filter(
+                    Bill.supply_id == supply.id,
+                    Bill.start_date <= covered_finish,
+                    Bill.finish_date >= covered_start).order_by(
+                    Bill.issue_date.desc(), Bill.start_date):
+                if market_role_code != \
+                        covered_bill.batch.contract.market_role.code:
                     continue
                 covered_bill_ids.append(covered_bill.id)
                 covered_bdown['net-gbp'] += float(covered_bill.net)
@@ -125,14 +165,25 @@ def content():
                             except KeyError:
                                 covered_bdown[k] = v
                             except TypeError, detail:
-                                raise UserException("For key " + str(k) + " the value " + str(v) + " can't be added to the existing value " + str(covered_bdown[k]) + ". " + str(detail))
+                                raise UserException(
+                                    "For key " + str(k) + " the value " +
+                                    str(v) +
+                                    " can't be added to the existing value " +
+                                    str(covered_bdown[k]) + ". " + str(detail))
                     for k, v in covered_rates.iteritems():
                         covered_bdown[k] = v.pop() if len(v) == 1 else None
 
             virtual_bill = {}
 
-            for era in sess.query(Era).filter(Era.supply_id==supply.id, Era.imp_mpan_core!=None, Era.start_date<=covered_finish, or_(Era.finish_date==None, Era.finish_date>=covered_start)).distinct():
-                site = sess.query(Site).join(SiteEra).filter(SiteEra.is_physical==True, SiteEra.era_id==era.id).one()
+            for era in sess.query(Era).filter(
+                    Era.supply_id == supply.id, Era.imp_mpan_core != None,
+                    Era.start_date <= covered_finish,
+                    or_(
+                        Era.finish_date == None,
+                        Era.finish_date>=covered_start)).distinct():
+                site = sess.query(Site).join(SiteEra).filter(
+                    SiteEra.is_physical == True,
+                    SiteEra.era_id == era.id).one()
 
                 if covered_start > era.start_date:
                     chunk_start = covered_start
@@ -144,7 +195,9 @@ def content():
                 else:
                     chunk_finish = era.finish_date
 
-                data_source = computer.SupplySource(sess, chunk_start, chunk_finish, forecast_date, era, True, None, caches, covered_primary_bill)
+                data_source = computer.SupplySource(
+                    sess, chunk_start, chunk_finish, forecast_date, era, True,
+                    None, caches, covered_primary_bill)
                 vbf(data_source)
 
                 if market_role_code == 'X':
@@ -162,9 +215,14 @@ def content():
                     except KeyError:
                         virtual_bill[k] = v
                     except TypeError, detail:
-                        raise UserException("For key " + str(k) + " and value " + str(v) + ". " + str(detail))
+                        raise UserException(
+                            "For key " + str(k) + " and value " + str(v) +
+                            ". " + str(detail))
 
-            values = [site.code, site.name, hh_format(covered_start), hh_format(covered_finish), ';'.join(str(id).replace(',', '') for id in covered_bill_ids)]
+            values = [
+                site.code, site.name, hh_format(covered_start),
+                hh_format(covered_finish),
+                ';'.join(str(id).replace(',', '') for id in covered_bill_ids)]
             for title in virtual_bill_titles:
                 try:
                     cov_val = covered_bdown[title]
@@ -183,7 +241,8 @@ def content():
                     values.append('')
 
                 if title.endswith('-gbp'):
-                    if all(isinstance(val, (int, float)) for val in [cov_val, virt_val]):
+                    if all(isinstance(val, (int, float)) for val in [
+                            cov_val, virt_val]):
                         values.append(cov_val - virt_val)
                     else:
                         values.append('')
@@ -195,7 +254,9 @@ def content():
                 else:
                     values += ['','']
 
-            yield '\n' + ','.join('"' + str(value) + '"' for value in values)
+            yield ','.join('"' + str(value) + '"' for value in values) + '\n' 
+    except:
+        yield traceback.format_exc()
     finally:
         if sess is not None:
             sess.close()

@@ -1,29 +1,27 @@
 from net.sf.chellow.monad import Monad
-from sqlalchemy.orm import joinedload_all
 from sqlalchemy import or_
 import pytz
 import datetime
 from dateutil.relativedelta import relativedelta
-from java.lang import System
 
-Monad.getUtils()['imprt'](globals(), {
-        'db': ['HhDatum', 'Channel', 'Snag', 'Era', 'Site', 'Contract', 'Party', 'RateScript', 'set_read_write', 'session'], 
-        'utils': ['UserException', 'HH'],
-        'templater': ['render']})
-
+Monad.getUtils()['impt'](globals(), 'db', 'utils', 'templater')
+HH = utils.HH
+Snag = db.Snag
+render = templater.render
 
 sess = None
 try:
-    sess = session()
+    sess = db.session()
 
     site_id = inv.getLong("site_id")
     finish_year = inv.getInteger("finish_year")
     finish_month = inv.getInteger("finish_month")
-    start_date = datetime.datetime(finish_year, finish_month, 1, tzinfo=pytz.utc)
+    start_date = datetime.datetime(
+        finish_year, finish_month, 1, tzinfo=pytz.utc)
 
     start_date -= relativedelta(months=11)
 
-    site = Site.get_by_id(sess, site_id)
+    site = db.Site.get_by_id(sess, site_id)
 
     typs = ('imp_net', 'exp_net', 'used', 'displaced', 'imp_gen', 'exp_gen')
 
@@ -31,7 +29,8 @@ try:
     month_start = start_date
     for i in range(12):
         month_finish = month_start + relativedelta(months=1) - HH
-        month = dict((typ, {'md': 0, 'md_date': None, 'kwh': 0}) for typ in typs)
+        month = dict(
+            (typ, {'md': 0, 'md_date': None, 'kwh': 0}) for typ in typs)
         month['start_date'] = month_start
         months.append(month)
 
@@ -43,7 +42,11 @@ try:
                         month[tp]['md_date'] = hh['start_date']
                     month[tp]['kwh'] += hh[tp]
 
-        has_snags = sess.query(Snag).filter(Snag.site==site, Snag.start_date <= month_finish, or_(Snag.finish_date is None, Snag.finish_date > month_start)).count() > 0
+        has_snags = sess.query(Snag).filter(
+            Snag.site == site, Snag.start_date <= month_finish,
+            or_(
+                Snag.finish_date is None,
+                Snag.finish_date > month_start)).count() > 0
         month['has_site_snags'] = has_snags
 
         month_start += relativedelta(months=1)
@@ -62,4 +65,5 @@ try:
 
     render(inv, template, {'site': site, 'months': months})
 finally:
-    sess.close()
+    if sess is not None:
+        sess.close()

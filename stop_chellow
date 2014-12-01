@@ -1,2 +1,13 @@
-kill `cat ${CHELLOW_HOME}/gunicorn/pid`
+GUNICORN_PID_FILE=${CHELLOW_HOME}/gunicorn/pid
+
+if [ -f ${GUNICORN_PID_FILE} ]; then
+  if kill `cat ${CHELLOW_HOME}/gunicorn/pid`; then
+    while [ -f ${GUNICORN_PID_FILE} ]
+      do
+        sleep 1
+      done
+  fi
+fi
+
+
 kill `cat ${CHELLOW_HOME}/gunicorn/watchdog.pid`

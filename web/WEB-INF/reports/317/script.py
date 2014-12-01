@@ -43,7 +43,8 @@ except UserException, e:
     sess.rollback()
     if str(e).startswith("There isn't a contract"):
         inv.sendNotFound(str(e))
-    render(inv, template, make_fields(sess, contract, e), 400)
+    else:
+        render(inv, template, make_fields(sess, contract, e), 400)
 finally:
     if sess is not None:
         sess.close()

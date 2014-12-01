@@ -25,10 +25,13 @@ if inv.hasParameter('site_id'):
 else:
     st_id = None
     
-finish_date = datetime.datetime(year, month, 1, tzinfo=pytz.utc) + relativedelta(months=1) - HH
-start_date = datetime.datetime(year, month, 1, tzinfo=pytz.utc) - relativedelta(months=months-1)
+finish_date = datetime.datetime(year, month, 1, tzinfo=pytz.utc) + \
+    relativedelta(months=1) - HH
+start_date = datetime.datetime(year, month, 1, tzinfo=pytz.utc) - \
+    relativedelta(months=months-1)
 
-def process_site(sess, site, month_start, month_finish, forecast_date, tmp_file):
+def process_site(
+        sess, site, month_start, month_finish, forecast_date, tmp_file):
     site_code = site.code
     associates = []
     sources = []
@@ -139,9 +142,12 @@ def process_site(sess, site, month_start, month_finish, forecast_date, tmp_file)
 
                     dc_contract = era.hhdc_contract
                     if dc_contract is not None:
-                        dc_bill = supply_source.contract_func(dc_contract, 'virtual_bill')(supply_source)
+                        supply_source.contract_func(
+                                dc_contract, 'virtual_bill')(supply_source)
+                        dc_bill = supply_source.dc_bill
                         gbp = dc_bill['net-gbp']
-                        if 'problem' in dc_bill and len(dc_bill['problem']) > 0:
+                        if 'problem' in dc_bill and \
+                                len(dc_bill['problem']) > 0:
                             problem += 'DC Problem: ' + dc_bill['problem']
                         if source_code in ('net', 'gen-net'):
                             month_data['import-net-gbp'] += gbp
@@ -150,73 +156,103 @@ def process_site(sess, site, month_start, month_finish, forecast_date, tmp_file)
 
                     mop_contract = era.mop_contract
                     if mop_contract is not None:
-                        mop_bill_function = supply_source.contract_func(mop_contract, 'virtual_bill')
+                        mop_bill_function = supply_source.contract_func(
+                            mop_contract, 'virtual_bill')
                         if mop_bill_function is not None:
-                            mop_bill = mop_bill_function(supply_source)
+                            mop_bill_function(supply_source)
+                            mop_bill = supply_source.mop_bill
                             gbp = mop_bill['net-gbp']
-                            if 'problem' in mop_bill and len(mop_bill['problem']) > 0:
-                                problem += 'MOP Problem: ' + mop_bill['problem']
+                            if 'problem' in mop_bill and \
+                                    len(mop_bill['problem']) > 0:
+                                problem += 'MOP Problem: ' + \
+                                    mop_bill['problem']
                             if source_code in ('net', 'gen-net'):
                                 month_data['import-net-gbp'] += gbp
-                            elif source_code in ('3rd-party', '3rd-party-reverse'):
+                            elif source_code in (
+                                    '3rd-party', '3rd-party-reverse'):
                                 month_data['import-3rd-party-gbp'] += gbp
 
-            for bill in sess.query(Bill).filter(Bill.supply_id==supply.id, Bill.start_date<=chunk_finish, Bill.finish_date>=chunk_start):
+            for bill in sess.query(Bill).filter(
+                    Bill.supply_id==supply.id, Bill.start_date<=chunk_finish,
+                    Bill.finish_date>=chunk_start):
                 bill_start = bill.start_date
                 bill_finish = bill.finish_date
-                bill_duration = totalseconds(bill_finish - bill_start) + (30 * 60)
-                overlap_duration = totalseconds(min(bill_finish, chunk_finish)  - max(bill_start, chunk_start)) + (30 * 60)
+                bill_duration = totalseconds(bill_finish - bill_start) + \
+                    (30 * 60)
+                overlap_duration = totalseconds(
+                    min(bill_finish, chunk_finish) - \
+                    max(bill_start, chunk_start)) + (30 * 60)
                 overlap_proportion = float(overlap_duration) / bill_duration
                 billed_gbp += overlap_proportion * float(bill.net)
                 billed_kwh += overlap_proportion * float(bill.kwh)
 
-        #tmp_file.println("getting site ds, " + str(System.currentTimeMillis()))
-
-        displaced_era = computer.displaced_era(sess, group, chunk_start, chunk_finish)
-        site_ds = computer.SiteSource(sess, site, chunk_start, chunk_finish, forecast_date, tmp_file, caches, displaced_era)
+        displaced_era = computer.displaced_era(
+            sess, group, chunk_start, chunk_finish)
+        site_ds = computer.SiteSource(
+            sess, site, chunk_start, chunk_finish, forecast_date, tmp_file,
+            caches, displaced_era)
         if displaced_era != None:
-            #tmp_file.println("starting displaced, " + str(System.currentTimeMillis()))
-            month_data['msp-gbp'] += computer.contract_func(caches, displaced_era.imp_supplier_contract, 'displaced_virtual_bill', tmp_file)(site_ds)['net-gbp']
+            month_data['msp-gbp'] += computer.contract_func(
+                caches, displaced_era.imp_supplier_contract,
+                'displaced_virtual_bill', tmp_file)(site_ds)['net-gbp']
 
-            #tmp_file.println("finishing displaced, " + str(System.currentTimeMillis()))
 
-        #tmp_file.println("finishing site ds " + str(System.currentTimeMillis()))
-
-        for stream_name in ('import-3rd-party', 'export-3rd-party', 'import-net', 'export-net', 'import-gen', 'export-gen', 'msp'):
+        for stream_name in (
+                'import-3rd-party', 'export-3rd-party', 'import-net',
+                'export-net', 'import-gen', 'export-gen', 'msp'):
             name = stream_name + '-kwh'
             month_data[name] += sum(hh[name] for hh in site_ds.hh_data)
 
-        month_data['used-3rd-party-kwh'] = month_data['import-3rd-party-kwh'] - month_data['export-3rd-party-kwh']
+        month_data['used-3rd-party-kwh'] = \
+            month_data['import-3rd-party-kwh'] - \
+            month_data['export-3rd-party-kwh']
         month_data['used-3rd-party-gbp'] = month_data['import-3rd-party-gbp']
-        month_data['used-gbp'] += month_data['import-net-gbp'] + month_data['msp-gbp'] + month_data['used-3rd-party-gbp']
+        month_data['used-gbp'] += \
+            month_data['import-net-gbp'] + month_data['msp-gbp'] + \
+            month_data['used-3rd-party-gbp']
 
-        month_data['used-kwh'] += month_data['msp-kwh'] + month_data['used-3rd-party-kwh'] + month_data['import-net-kwh']
+        month_data['used-kwh'] += month_data['msp-kwh'] + \
+            month_data['used-3rd-party-kwh'] + month_data['import-net-kwh']
 
     sources.sort()
     generator_types.sort()
 
-    result = [site.code, site.name, ','.join(associates), ','.join(sources), '.'.join(generator_types), hh_format(month_finish), month_data['import-net-kwh'], month_data['msp-kwh'], month_data['export-net-kwh'], month_data['used-kwh'], month_data['export-gen-kwh'], month_data['import-gen-kwh'], month_data['import-3rd-party-kwh'], month_data['export-3rd-party-kwh'], month_data['import-net-gbp'], month_data['msp-gbp'], 0, month_data['used-gbp'], month_data['used-3rd-party-gbp'], billed_kwh, billed_gbp, metering_type, problem]
-    #tmp_file.println("Finished call method " + str(System.currentTimeMillis()))
-    #count = Hiber.session().createQuery("select count(*) from hh_datum").uniqueResult()
-    #tmp_file.println("Rows " + str(count))
+    result = [
+        site.code, site.name, ','.join(associates), ','.join(sources),
+        '.'.join(generator_types), hh_format(month_finish),
+        month_data['import-net-kwh'], month_data['msp-kwh'],
+        month_data['export-net-kwh'], month_data['used-kwh'],
+        month_data['export-gen-kwh'], month_data['import-gen-kwh'], 
+        month_data['import-3rd-party-kwh'], month_data['export-3rd-party-kwh'],
+        month_data['import-net-gbp'], month_data['msp-gbp'], 0,
+        month_data['used-gbp'], month_data['used-3rd-party-gbp'], billed_kwh,
+        billed_gbp, metering_type, problem]
     return result
 
 def long_process():
     now = datetime.datetime.now(pytz.utc)
     
     sess = None
+    tmp_file = None
     try:
         sess = db.session()
         if st_id is None:
             st = None
-            base_name = "site_monthly_duration_for_all_site_for_" + str(months) + "_to_" + str(year) + "_" + str(month) + ".csv"
+            base_name = "site_monthly_duration_for_all_site_for_" + \
+                str(months) + "_to_" + str(year) + "_" + str(month) + ".csv"
         else:
             st = Site.get_by_id(sess, st_id)
-            base_name = "site_monthly_duration_for_" + st.code + "_" + str(months) + "_to_" + str(year) + "_" + str(month) + ".csv"
+            base_name = "site_monthly_duration_for_" + st.code + "_" + \
+                str(months) + "_to_" + str(year) + "_" + str(month) + ".csv"
         running_name = "RUNNING_" + base_name
         finished_name = "FINISHED_" + base_name
 
-        download_path = Monad.getContext().getRealPath("/downloads")
+        if sys.platform.startswith('java'):
+            download_path = Monad.getContext().getRealPath("/downloads")
+        else:
+            download_path = os.path.join(
+                os.environ['CHELLOW_HOME'], 'downloads')
+
         os.chdir(download_path)
         tmp_file = open(running_name, "w")
 

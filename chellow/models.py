@@ -147,16 +147,20 @@ class Contract(db.Model, PersistentClass):
         return Contract.get_by_role_code_name('Z', name)
 
     @staticmethod
-    def get_dno_by_id(sess, oid):
-        return Contract.get_by_role_code_id(sess, 'R', oid)
+    def get_dno_by_id(oid):
+        return Contract.get_by_role_code_id('R', oid)
 
     @staticmethod
-    def get_dno_by_name(sess, name):
-        cont = Contract.find_by_role_code_name(sess, 'R', name)
+    def get_dno_by_name(name):
+        cont = Contract.find_by_role_code_name('R', name)
         if cont is None:
             raise UserException(
                 "There isn't a DNO contract with the code '" + name + "'.")
         return cont
+
+    @staticmethod
+    def get_hhdc_by_id(oid):
+        return Contract.get_by_role_code_id('C', oid)
 
     @staticmethod
     def get_by_role_code_name(role_code, name):
@@ -171,6 +175,20 @@ class Contract(db.Model, PersistentClass):
     def find_by_role_code_name(role_code, name):
         return Contract.query.join(MarketRole).filter(
             MarketRole.code == role_code, Contract.name == name).first()
+
+    @staticmethod
+    def find_by_role_code_id(role_code, oid):
+        return Contract.query.join(MarketRole).filter(
+            MarketRole.code == role_code, Contract.id == oid).first()
+
+    @staticmethod
+    def get_by_role_code_id(role_code, oid):
+        cont = Contract.find_by_role_code_id(role_code, oid)
+        if cont is None:
+            raise UserException(
+                "There isn't a contract with the role code '" + role_code +
+                "' and id '" + str(oid) + "'.")
+        return cont
 
     @staticmethod
     def insert_non_core(

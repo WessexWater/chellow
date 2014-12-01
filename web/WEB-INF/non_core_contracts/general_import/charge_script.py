@@ -18,6 +18,7 @@ parse_channel_type = utils.parse_channel_type
 Site, Era, Supply, HhDatum = db.Site, db.Era, db.Supply, db.HhDatum
 Source, GeneratorType, GspGroup = db.Source, db.GeneratorType, db.GspGroup
 Contract, Pc, Cop, Ssc = db.Contract, db.Pc, db.Cop, db.Ssc
+Snag, Channel = db.Snag, db.Channel
 
 process_id = 0
 process_lock = threading.Lock()

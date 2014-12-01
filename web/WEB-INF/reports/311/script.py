@@ -7,7 +7,8 @@ Monad.getUtils()['impt'](globals(), 'db', 'utils', 'templater')
 Source, GeneratorType, GspGroup = db.Source, db.GeneratorType, db.GspGroup
 SiteEra, Contract, Pc, Cop = db.SiteEra, db.Contract, db.Pc, db.Cop
 Site, MarketRole, Era = db.Site, db.MarketRole, db.Era
-UserException = utils.UserException
+UserException, form_date = utils.UserException, utils.form_date
+parse_mpan_core = utils.parse_mpan_core
 render = templater.render
 
 def make_fields(sess, site, message=None):

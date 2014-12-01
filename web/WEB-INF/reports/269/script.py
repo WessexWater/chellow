@@ -32,7 +32,7 @@ try:
                 '/reports/267/output/?non_core_contract_id=' +
                 str(contract.id))
 except UserException, e:
-    render(inv, template, {'contract': contract, 'messages': [str(e)]})
+    render(inv, template, {'contract': contract, 'messages': [str(e)]}, 400)
 finally:
     if sess is not None:
         sess.close()

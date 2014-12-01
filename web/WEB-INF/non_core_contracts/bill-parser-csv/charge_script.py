@@ -7,12 +7,13 @@ from dateutil.relativedelta import relativedelta
 
 Monad.getUtils()['impt'](
     globals(), 'db', 'utils', 'templater', 'bill_import', 'edi_lib')
-validate_hh_start = utils.validate_hh_start
+validate_hh_start, HH = utils.validate_hh_start, utils.HH
 
 def parse_date(date_str, is_finish):
     date_str = date_str.strip()
     if len(date_str) == 10:
-        dt = datetime.datetime.strptime(date_str, "%Y-%m-%d").replace(tzinfo=pytz.utc)
+        dt = datetime.datetime.strptime(date_str, "%Y-%m-%d").replace(
+            tzinfo=pytz.utc)
         if is_finish:
             dt = dt + relativedelta(days=1) - HH
         return dt

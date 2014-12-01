@@ -1,4 +1,3 @@
-from java.lang import System
 from net.sf.chellow.monad import Monad
 import datetime
 import pytz

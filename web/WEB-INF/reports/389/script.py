@@ -3,6 +3,7 @@ import datetime
 from dateutil.relativedelta import relativedelta
 import pytz
 from sqlalchemy import or_
+import traceback
 
 Monad.getUtils()['impt'](globals(), 'utils', 'db', 'computer')
 
@@ -11,15 +12,16 @@ Site, Era, SiteEra, Supply = db.Site, db.Era, db.SiteEra, db.Supply
 Source, Contract = db.Source, db.Contract
 
 caches = {}
+end_year = inv.getInteger('finish_year')
+end_month = inv.getInteger('finish_month')
+months = inv.getInteger('months')
+site_id = inv.getLong('site_id')
 
 def content():
     sess = None
     try:
         sess = db.session()
 
-        end_year = inv.getInteger('finish_year')
-        end_month = inv.getInteger('finish_month')
-        months = inv.getInteger('months')
 
         finish_date = datetime.datetime(
             end_year, end_month, 1, tzinfo=pytz.utc) + \
@@ -31,7 +33,6 @@ def content():
 
         forecast_date = computer.forecast_date()
 
-        site_id = inv.getLong('site_id')
         site = Site.get_by_id(sess, site_id)
 
         month_start = start_date
@@ -48,24 +49,24 @@ def content():
                     chunk_finish = group.finish_date
 
                 displaced_era = computer.displaced_era(
-                    sess, site_group, chunk_start, chunk_finish)
+                    sess, group, chunk_start, chunk_finish)
                 if displaced_era is None:
                     continue
                 supplier_contract = displaced_era.imp_supplier_contract
             
                 linked_sites = ','.join(
-                    a_site.code for a_site in site_group.sites
+                    a_site.code for a_site in group.sites
                     if not a_site == site)
                 generator_types = ' '.join(
                     sorted(
                         [
                             supply.generator_type.code for
-                            supply in site_group.supplies
+                            supply in group.supplies
                             if supply.generator_type is not None]))
 
                 total_gen_breakdown = {}
 
-                results = iter(sess.execute("select supply.id, hh_datum.value, hh_datum.start_date, channel.imp_related, source.code, generator_type.code as gen_type_code from hh_datum, channel, source, era, supply left outer join generator_type on supply.generator_type_id = generator_type.id where hh_datum.channel_id = channel.id and channel.era_id = era.id and era.supply_id = supply.id and supply.source_id = source.id and channel.channel_type = 'ACTIVE' and not (source.code = 'net' and channel.imp_related is true) and hh_datum.start_date >= :chunk_start and hh_datum.start_date <= :chunk_finish and supply.id = any(:supply_ids) order by hh_datum.start_date, supply.id", params={'chunk_start': chunk_start, 'chunk_finish': chunk_finish, 'supply_ids': [s.id for s in site_group.supplies]}))
+                results = iter(sess.execute("select supply.id, hh_datum.value, hh_datum.start_date, channel.imp_related, source.code, generator_type.code as gen_type_code from hh_datum, channel, source, era, supply left outer join generator_type on supply.generator_type_id = generator_type.id where hh_datum.channel_id = channel.id and channel.era_id = era.id and era.supply_id = supply.id and supply.source_id = source.id and channel.channel_type = 'ACTIVE' and not (source.code = 'net' and channel.imp_related is true) and hh_datum.start_date >= :chunk_start and hh_datum.start_date <= :chunk_finish and supply.id = any(:supply_ids) order by hh_datum.start_date, supply.id", params={'chunk_start': chunk_start, 'chunk_finish': chunk_finish, 'supply_ids': [s.id for s in group.supplies]}))
                 try:
                     res = results.next()
                     hh_data = []
@@ -80,13 +81,21 @@ def content():
                         gen_breakdown = {}
                         exported = 0
                         while hhChannelStartDate == hh_date:
-                            if not imp_related and source_code in ('net', 'gen-net'):
+                            if not imp_related and source_code in (
+                                    'net', 'gen-net'):
                                 exported += hhChannelValue
-                            if (imp_related and source_code == 'gen') or (not imp_related and source_code == 'gen-net'):
-                                gen_breakdown[gen_type] = gen_breakdown.setdefault(gen_type, 0) + hhChannelValue
+                            if (imp_related and source_code == 'gen') or (
+                                    not imp_related and
+                                    source_code == 'gen-net'):
+                                gen_breakdown[gen_type] = \
+                                    gen_breakdown.setdefault(gen_type, 0) + \
+                                    hhChannelValue
 
-                            if (not imp_related and source_code == 'gen') or (imp_related and source_code == 'gen-net'):
-                                gen_breakdown[gen_type] = gen_breakdown.setdefault(gen_type, 0) - hhChannelValue
+                            if (not imp_related and source_code == 'gen') or \
+                                    (imp_related and source_code == 'gen-net'):
+                                gen_breakdown[gen_type] = \
+                                    gen_breakdown.setdefault(gen_type, 0) - \
+                                    hhChannelValue
 
                             try:
                                 res = results.next()
@@ -103,28 +112,41 @@ def content():
                         for key in sorted(gen_breakdown.iterkeys()):
                             kwh = gen_breakdown[key]
                             if kwh + added_so_far > displaced:
-                                total_gen_breakdown[key] = total_gen_breakdown.get(key, 0) + displaced - added_so_far
+                                total_gen_breakdown[key] = \
+                                    total_gen_breakdown.get(key, 0) + \
+                                    displaced - added_so_far
                                 break
                             else:
-                                total_gen_breakdown[key] = total_gen_breakdown.get(key, 0) + kwh
+                                total_gen_breakdown[key] = \
+                                    total_gen_breakdown.get(key, 0) + kwh
                                 added_so_far += kwh
                         
                         hh_date += HH
                 except StopIteration:
                     pass
 
-                site_ds = computer.SiteSource(sess, site, chunk_start, chunk_finish, forecast_date, None, caches, displaced_era)
-                disp_func = computer.contract_func(caches, supplier_contract, 'displaced_virtual_bill', None)
-                bill = disp_func(site_ds)
+                site_ds = computer.SiteSource(
+                    sess, site, chunk_start, chunk_finish, forecast_date, None,
+                    caches, displaced_era)
+                disp_func = computer.contract_func(
+                    caches, supplier_contract, 'displaced_virtual_bill', None)
+                disp_func(site_ds)
+                bill = site_ds.supplier_bill
 
-                bill_titles = computer.contract_func(caches, supplier_contract, 'displaced_virtual_bill_titles', None)()
-                yield '\n' + ','.join(
+                bill_titles = computer.contract_func(
+                    caches, supplier_contract, 'displaced_virtual_bill_titles',
+                    None)()
+                yield ','.join(
                     [
                         'Site Code', 'Site Name', 'Associated Site Ids',
                         'From', 'To', 'Gen Types', 'CHP kWh', 'LM kWh',
-                        'Turbine kWh'] + bill_titles)
+                        'Turbine kWh'] + bill_titles) + '\n'
 
-                yield ','.join('"' + str(value) + '"' for value in [site.code, site.name, linked_sites, hh_format(chunk_start), hh_format(chunk_finish), generator_types] + [total_gen_breakdown.get(t, '') for t in ['chp', 'lm', 'turb']])
+                yield ','.join('"' + str(value) + '"' for value in [
+                    site.code, site.name, linked_sites, hh_format(chunk_start),
+                    hh_format(chunk_finish), generator_types] + [
+                    total_gen_breakdown.get(t, '') for t in [
+                        'chp', 'lm', 'turb']])
 
                 for title in bill_titles:
                     yield ',"' + str(bill.get(title, '')) + '"'
@@ -138,9 +160,10 @@ def content():
             month_start += relativedelta(months=1)
             month_finish = month_start + relativedelta(months=1) - HH
 
+    except:
+        yield traceback.format_exc()
     finally:
         if sess is not None:
             sess.close()
 
-utils.send_response(
-    inv, content, status=200, mimetype='text/csv', file_name='displaced.csv')
+utils.send_response(inv, content, file_name='displaced.csv')

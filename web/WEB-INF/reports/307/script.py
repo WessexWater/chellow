@@ -5,6 +5,7 @@ import pytz
 Monad.getUtils()['impt'](globals(), 'db', 'utils', 'templater')
 Pc, Cop, GspGroup, Contract = db.Pc, db.Cop, db.GspGroup, db.Contract
 MarketRole, SiteEra, Era, Site = db.MarketRole, db.SiteEra, db.Era, db.Site
+Ssc = db.Ssc
 render = templater.render
 UserException, parse_mpan_core = utils.UserException, utils.parse_mpan_core
 form_date, validate_hh_start = utils.form_date, utils.validate_hh_start
