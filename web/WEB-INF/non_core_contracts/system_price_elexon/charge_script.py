@@ -89,7 +89,9 @@ class SystemPriceImporter(threading.Thread):
             return True
 
     def log(self, message):
-        self.messages.appendleft(datetime.datetime.now(pytz.utc).strftime("%Y-%m-%d %H:%M:%S") + " - " + message)
+        self.messages.appendleft(
+            datetime.datetime.now(pytz.utc).strftime("%Y-%m-%d %H:%M:%S") +
+            " - " + message)
         if len(self.messages) > 100:
             self.messages.pop()
 
@@ -101,24 +103,38 @@ class SystemPriceImporter(threading.Thread):
                     sess = db.session()
                     self.log("Starting to check System Prices.")
                     ct_tz = pytz.timezone('Europe/London')
-                    contract = Contract.get_non_core_by_name(sess, 'system_price_elexon')
-                    latest_rs = sess.query(RateScript).filter(RateScript.contract_id == contract.id).order_by(RateScript.start_date.desc()).first()
+                    contract = Contract.get_non_core_by_name(
+                        sess, 'system_price_elexon')
+                    latest_rs = sess.query(RateScript).filter(
+                        RateScript.contract_id == contract.id).order_by(
+                        RateScript.start_date.desc()).first()
                     latest_rs_id = latest_rs.id
 
                     latest_rs_start = latest_rs.start_date
                     month_start = latest_rs_start + relativedelta(months=1)
-                    month_finish = latest_rs_start + relativedelta(months=2) - HH
+                    month_finish = latest_rs_start + \
+                        relativedelta(months=2) - HH
                     now = datetime.datetime.now(pytz.utc)
                     if now > month_finish:
-                        self.log("Checking to see if data is available from " + str(month_start) + " to " + str(month_finish) + " on Elexon Portal.")
-                        config = Contract.get_non_core_by_name(sess, 'configuration')
+                        self.log(
+                            "Checking to see if data is available from " +
+                            str(month_start) + " to " + str(month_finish) +
+                            " on Elexon Portal.")
+                        config = Contract.get_non_core_by_name(
+                            sess, 'configuration')
                         props = config.make_properties()
 
-                        scripting_key = props.get(ELEXON_PORTAL_SCRIPTING_KEY_KEY)
+                        scripting_key = props.get(
+                            ELEXON_PORTAL_SCRIPTING_KEY_KEY)
                         if scripting_key is None:
-                            raise UserException("The property " + ELEXON_PORTAL_SCRIPTING_KEY_KEY + " cannot be found in the configuration properties.")
+                            raise UserException(
+                                "The property " +
+                                ELEXON_PORTAL_SCRIPTING_KEY_KEY +
+                                " cannot be found in the configuration "
+                                "properties.")
 
-                        data = urllib2.urlopen('https://downloads.elexonportal.co.uk/file/download/SSPSBPNIV_FILE?key=' + scripting_key)
+                        data = urllib2.urlopen(
+                            'https://downloads.elexonportal.co.uk/file/download/SSPSBPNIV_FILE?key=' + scripting_key)
                         parser = csv.reader(data, delimiter=',', quotechar='"')
                         piterator = iter(parser)
                         values = piterator.next()
@@ -140,13 +156,19 @@ class SystemPriceImporter(threading.Thread):
                             db.set_read_write(sess)
                             contract = Contract.get_non_core_by_name(sess, 'system_price_elexon')
                             rs = RateScript.get_by_id(sess, latest_rs_id)
-                            contract.update_rate_script(sess, rs, rs.start_date, month_finish, script)
-                            contract.insert_rate_script(sess, month_start, script)
+                            contract.update_rate_script(
+                                sess, rs, rs.start_date, month_finish,
+                                rs.script)
+                            contract.insert_rate_script(
+                                sess, month_start, script)
                             sess.commit()
                             self.log("Added new rate script.")
                         else:
                             if len(month_sps) > 0:
-                                self.log("There isn't a whole month there. The last date is " + sorted(month_sps.keys())[-1])
+                                self.log(
+                                    "There isn't a whole month there. The "
+                                    "last date is " +
+                                    sorted(month_sps.keys())[-1])
                             else:
                                 self.log("None of the month is there.")
 
@@ -178,4 +200,5 @@ def shutdown():
     if system_price_importer is not None:
         system_price_importer.stop()
         if system_price_importer.isAlive():
-            raise UserException("Can't shut down System Price importer, it's still running.")
+            raise UserException(
+                "Can't shut down System Price importer, it's still running.")

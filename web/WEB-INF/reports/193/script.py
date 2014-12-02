@@ -1,21 +1,20 @@
 from net.sf.chellow.monad import Monad
-from sqlalchemy.orm import joinedload_all
-from datetime import datetime
-import pytz
+import db
+import templater
 
-Monad.getUtils()['imprt'](globals(), {
-        'db': ['Contract', 'Batch', 'Participant', 'set_read_write', 'session', 'Bill', 'Report'], 
-        'utils': ['UserException', 'form_date'],
-        'templater': ['render']})
-
+Monad.getUtils()['impt'](globals(), 'db', 'utils', 'templater')
+Batch, Bill, Contract, Report = db.Batch, db.Bill, db.Contract, db.Report
+render = templater.render
+inv, template = globals()['inv'], globals()['template']
 
 sess = None
 try:
-    sess = session()
+    sess = db.session()
     if inv.getRequest().getMethod() == 'GET':
         batch_id = inv.getLong('mop_batch_id')
         batch = Batch.get_by_id(sess, batch_id)
-        bills = sess.query(Bill).filter(Bill.batch_id==batch.id).order_by(Bill.reference).all()
+        bills = sess.query(Bill).filter(Bill.batch_id == batch.id).order_by(
+            Bill.reference).all()
 
         config_contract = Contract.get_non_core_by_name(sess, 'configuration')
         properties = config_contract.make_properties()

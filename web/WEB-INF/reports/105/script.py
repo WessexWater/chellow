@@ -1,19 +1,18 @@
 from net.sf.chellow.monad import Monad
-from sqlalchemy.orm import joinedload_all
 import collections
-from java.lang import System
 
-Monad.getUtils()['imprt'](globals(), {
-        'db': ['Bill', 'RegisterRead', 'Era', 'set_read_write', 'session'], 
-        'utils': ['UserException'],
-        'templater': ['render']})
+Monad.getUtils()['impt'](globals(), 'db', 'utils', 'templater')
+RegisterRead, Bill = db.RegisterRead, db.Bill
+render = templater.render
 
 sess = None
 try:
-    sess = session()
+    sess = db.session()
     bill_id = inv.getLong('supplier_bill_id')
     bill = Bill.get_by_id(sess, bill_id)
-    register_reads = sess.query(RegisterRead).from_statement("select * from register_read where bill_id = :bill_id order by present_date desc").params(bill_id=bill.id)
+    register_reads = sess.query(RegisterRead).filter(
+        RegisterRead.bill_id == bill_id).order_by(
+        RegisterRead.present_date.desc())
     fields = {'bill': bill, 'register_reads': register_reads}
     try:
         breakdown_dict = eval(bill.breakdown, {})
@@ -65,7 +64,10 @@ try:
             column_list.append('gbp')
 
         row_list = sorted(list(rows))
-        fields.update({'raw_lines': raw_lines, 'row_list': row_list, 'column_list': column_list, 'grid': grid})
+        fields.update(
+            {
+                'raw_lines': raw_lines, 'row_list': row_list,
+                'column_list': column_list, 'grid': grid})
     except SyntaxError, e:
         pass
     render(inv, template, fields)

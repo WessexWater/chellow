@@ -253,8 +253,10 @@ network. It'll also put in some HH data for the beginning of October 2010.
 #### Key points when importing
 
   * Lines beginning with the '#' character are comment lines.
-  * You can import any number of lines, and mix actions and types in a single file.
-  * When updating a record, if the field contains {no change}, then that field won't be updated.
+  * You can import any number of lines, and mix actions and types in a single
+    file.
+  * When updating a record, if the field contains {no change}, then that field
+    won't be updated.
   * A blank date field means 'ongoing'.
 
 

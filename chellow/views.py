@@ -156,6 +156,10 @@ class Invocation():
         self.response = redirect(
             ''.join((request.url_root, 'chellow', location)), 303)
 
+    def sendTemporaryRedirect(self, location):
+        self.response = redirect(
+            ''.join((request.url_root, 'chellow', location)), 307)
+
     def sendNotFound(self, message):
         self.response = Response(message, status=404)
 

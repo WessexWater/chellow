@@ -3,13 +3,12 @@ import threading
 import traceback
 import csv
 import datetime
-import collections
 import decimal
-import tempfile
-import dateutil
-import dateutil.parser
-import pytz
-from sqlalchemy import or_
+from sqlalchemy import or_, null
+from sqlalchemy.sql.expression import false
+import utils
+import db
+
 
 Monad.getUtils()['impt'](globals(), 'db', 'utils', 'templater')
 UserException, parse_hh_start = utils.UserException, utils.parse_hh_start
@@ -18,7 +17,10 @@ parse_channel_type = utils.parse_channel_type
 Site, Era, Supply, HhDatum = db.Site, db.Era, db.Supply, db.HhDatum
 Source, GeneratorType, GspGroup = db.Source, db.GeneratorType, db.GspGroup
 Contract, Pc, Cop, Ssc = db.Contract, db.Pc, db.Cop, db.Ssc
-Snag, Channel = db.Snag, db.Channel
+Snag, Channel, Mtc, BillType = db.Snag, db.Channel, db.Mtc, db.BillType
+Tpr, ReadType, Participant = db.Tpr, db.ReadType, db.Participant
+Bill, RegisterRead, UserRole = db.Bill, db.RegisterRead, db.UserRole
+Party, User = db.Party, db.User
 
 process_id = 0
 process_lock = threading.Lock()
@@ -28,10 +30,11 @@ NO_CHANGE = "{no change}"
 
 CHANNEL_TYPES = ('ACTIVE', 'REACTIVE_IMP', 'REACTIVE_EXP')
 
+
 def add_arg(args, name, values, index):
     if index >= len(values):
-        raise UserException("Another field called " + name +
-                " needs to be added on the end.")
+        raise UserException(
+            "Another field called " + name + " needs to be added on the end.")
 
     value = values[index].strip()
     args.append((name, value))
@@ -39,31 +42,6 @@ def add_arg(args, name, values, index):
 
 
 ALLOWED_ACTIONS = ['insert', 'update', 'delete']
-
-
-def general_import_hhdc_contract(action, vals, args):
-    if action == "insert":
-        participant_code = add_arg(args, "Participant Code", vals, 0)
-        participant = Participant.get_by_code(sess, participant_code)
-        name = add_arg(args, "Name", vals, 1)
-
-        charge_script = add_arg(args, "Charge Script", vals, 2)
-        properties = add_arg(args, "Properties", vals, 3)
-
-        start_date_str = add_arg(args, "Start Date", vals, 4)
-        start_date = parse_hh_start(start_date_str)
-        finish_date_str = add_arg(args, "Finish Date", vals, 5)
-        finish_date = None
-
-        if len(finish_date_str) > 0:
-            finish_date = parse_hh_start(finish_date_str)
-        rate_script = add_arg(args, "Rate Script", vals, 6)
-        Contract.insert_hhdc(name, participant, charge_script, properties,
-                start_date, finish_date, rate_script)
-    elif action == "delete":
-        name = add_arg(args, "Name", vals, 0)
-        contract = Contract.get_by_name(name)
-        contract.delete()
 
 
 def general_import_era(sess, action, vals, args):
@@ -94,15 +72,15 @@ def general_import_era(sess, action, vals, args):
             mop_contract = era.mop_contract
         elif len(mop_contract_name) > 0:
             mop_contract = Contract.get_mop_contract(
-                    mop_contract_name)
+                mop_contract_name)
 
         mop_account = add_arg(args, "MOP Account", vals, 5)
         if mop_account == NO_CHANGE:
             mop_account = era.mop_account
 
         hhdc_contract = None
-        hhdc_contract_name = add_arg(args, "HHDC Contract",
-                vals, 6)
+        hhdc_contract_name = add_arg(
+            args, "HHDC Contract", vals, 6)
         if hhdc_contract_name == NO_CHANGE:
             hhdc_contract = era.hhdc_contract
         elif len(hhdc_contract_name) > 0:
@@ -152,27 +130,28 @@ def general_import_era(sess, action, vals, args):
             if imp_llfc_code == NO_CHANGE:
                 imp_llfc_code = era.imp_llfc.code
 
-            imp_sc_str = add_arg(args,
-                    "Import Agreed Supply Capacity", vals, 15)
+            imp_sc_str = add_arg(
+                args, "Import Agreed Supply Capacity", vals, 15)
             if imp_sc_str == NO_CHANGE:
                 imp_sc = era.imp_sc
             else:
                 try:
                     imp_sc = int(imp_sc_str)
                 except ValueError, e:
-                    raise UserException("The import agreed supply capacity " +
-                            "must be an integer. " + str(e))
+                    raise UserException(
+                        "The import agreed supply capacity " +
+                        "must be an integer. " + str(e))
 
-            imp_supplier_contract_name = add_arg(args,
-                    "Import Supplier Contract", vals, 16)
+            imp_supplier_contract_name = add_arg(
+                args, "Import Supplier Contract", vals, 16)
             if imp_supplier_contract_name == NO_CHANGE:
                 imp_supplier_contract = era.imp_supplier_contract
             else:
-                imp_supplier_contract = Contract. get_supplier_by_name(sess, 
-                        imp_supplier_contract_name)
+                imp_supplier_contract = Contract. get_supplier_by_name(
+                    sess, imp_supplier_contract_name)
 
-            imp_supplier_account = add_arg(args, "Import Supplier Account",
-                    vals, 17)
+            imp_supplier_account = add_arg(
+                args, "Import Supplier Account", vals, 17)
             if imp_supplier_account == NO_CHANGE:
                 imp_supplier_account = era.imp_supplier_account
 
@@ -193,35 +172,37 @@ def general_import_era(sess, action, vals, args):
                 if exp_llfc_code == NO_CHANGE:
                     exp_llfc_code = era.exp_llfc.code
 
-                exp_sc_str = add_arg(args, "Export Agreed Supply Capacity",
-                        vals, 20)
+                exp_sc_str = add_arg(
+                    args, "Export Agreed Supply Capacity", vals, 20)
                 if exp_sc_str == NO_CHANGE:
                     exp_sc = era.exp_sc
                 else:
                     try:
                         exp_sc = int(exp_sc_str)
                     except ValueError, e:
-                        raise UserException("The export supply capacity " +
-                                "must be an integer. " + str(e))
+                        raise UserException(
+                            "The export supply capacity " +
+                            "must be an integer. " + str(e))
 
-                exp_supplier_contract_name = add_arg(args,
-                        "Export Supplier Contract", vals, 21)
+                exp_supplier_contract_name = add_arg(
+                    args, "Export Supplier Contract", vals, 21)
                 if exp_supplier_contract_name == NO_CHANGE:
                     exp_supplier_contract = era.exp_supplier_contract
                 else:
                     exp_supplier_contract = Contract .get_supplier_by_name(
-                            sess, exp_supplier_contract_name)
+                        sess, exp_supplier_contract_name)
 
-                exp_supplier_account = add_arg(args,
-                        "Export Supplier Account", vals, 22)
+                exp_supplier_account = add_arg(
+                    args, "Export Supplier Account", vals, 22)
                 if exp_supplier_account == NO_CHANGE:
                     exp_supplier_account = era.exp_supplier_account
 
-        supply.update_era(sess, era, start_date, finish_date, mop_contract,
-                mop_account, hhdc_contract, hhdc_account, msn, pc, mtc,
-                cop, ssc, imp_mpan_core, imp_llfc_code, imp_supplier_contract,
-                imp_supplier_account, imp_sc, exp_mpan_core, exp_llfc_code,
-                exp_supplier_contract, exp_supplier_account, exp_sc)
+        supply.update_era(
+            sess, era, start_date, finish_date, mop_contract, mop_account,
+            hhdc_contract, hhdc_account, msn, pc, mtc, cop, ssc, imp_mpan_core,
+            imp_llfc_code, imp_supplier_contract, imp_supplier_account, imp_sc,
+            exp_mpan_core, exp_llfc_code, exp_supplier_contract,
+            exp_supplier_account, exp_sc)
     elif action == "delete":
         mpan_core = add_arg(args, "MPAN Core", vals, 0)
         supply = Supply.get_by_mpan_core(sess, mpan_core)
@@ -242,9 +223,9 @@ def general_import_era(sess, action, vals, args):
         else:
             start_date = parse_hh_start(start_date_str)
         existing_era = sess.query(Era).filter(
-            Era.supply==supply,
+            Era.supply == supply,
             or_(
-                Era.finish_date == None,
+                Era.finish_date == null(),
                 Era.finish_date > start_date)).order_by(Era.start_date).first()
         if existing_era is None:
             raise UserException("The start date is after end of the supply.")
@@ -324,14 +305,14 @@ def general_import_era(sess, action, vals, args):
         imp_supplier_contract_name = None
 
         if imp_mpan_core is not None:
-            imp_llfc_code = add_arg(args, "Import Line Loss Factor Class",
-                    vals, 13)
+            imp_llfc_code = add_arg(
+                args, "Import Line Loss Factor Class", vals, 13)
             if imp_llfc_code == NO_CHANGE and \
                     existing_era.imp_llfc is not None:
                 imp_llfc_code = existing_era.imp_llfc.code
 
-            imp_sc_str = add_arg(args, "Import Agreed Supply Capacity", vals,
-                    14)
+            imp_sc_str = add_arg(
+                args, "Import Agreed Supply Capacity", vals, 14)
             if imp_sc_str == NO_CHANGE:
                 imp_sc = existing_era.imp_sc
             else:
@@ -348,7 +329,7 @@ def general_import_era(sess, action, vals, args):
                 imp_supplier_contract = existing_era.imp_supplier_contract
             else:
                 imp_supplier_contract = Contract.get_supplier_by_name(
-                        sess, imp_supplier_contract_name)
+                    sess, imp_supplier_contract_name)
 
             imp_supplier_account = add_arg(
                 args, "Import Supplier Account " + "Reference", vals, 16)
@@ -374,7 +355,7 @@ def general_import_era(sess, action, vals, args):
             exp_mpan_core = add_arg(args, "Export MPAN", vals, 20)
             if exp_mpan_core == NO_CHANGE:
                 exp_mpan_core = existing_era.imp_mpan_core
-            elif len(exp_mpan_core) == None:
+            elif len(exp_mpan_core) == 0:
                 exp_mpan_core = None
 
             if exp_mpan_core is not None:
@@ -383,24 +364,25 @@ def general_import_era(sess, action, vals, args):
                         existing_era.exp_llfc is not None:
                     exp_llfc_code = existing_era.exp_llfc.code
 
-                exp_sc_str = add_arg(args, "Export Agreed Supply Capacity",
-                        vals, 22)
+                exp_sc_str = add_arg(
+                    args, "Export Agreed Supply Capacity", vals, 22)
                 if exp_sc_str == NO_CHANGE:
                     exp_sc = existing_era.exp_sc
                 else:
                     try:
                         exp_sc = int(exp_sc_str)
                     except ValueError, e:
-                        raise UserException("The export supply capacity " +
-                                "must be an integer. " + str(e))
+                        raise UserException(
+                            "The export supply capacity must be an integer. " +
+                            str(e))
 
-                exp_supplier_contract_name = add_arg(args, "Export Supplier " +
-                        "Contract", vals, 23)
+                exp_supplier_contract_name = add_arg(
+                    args, "Export Supplier Contract", vals, 23)
                 if exp_supplier_contract_name == NO_CHANGE:
                     exp_supplier_contract = existing_era.exp_supplier_contract
                 else:
-                    exp_supplier_contract = Contract.get_supplier(sess, 
-                            exp_supplier_contract_name)
+                    exp_supplier_contract = Contract.get_supplier(
+                        sess, exp_supplier_contract_name)
 
                 exp_supplier_account = add_arg(
                     args, "Export Supplier Account", vals, 24)
@@ -420,6 +402,7 @@ def general_import_era(sess, action, vals, args):
             imp_supplier_account, imp_sc, exp_mpan_core, exp_llfc_code,
             exp_supplier_contract, exp_supplier_account, exp_sc, channel_set)
 
+
 def general_import_bill(sess, action, vals, args):
     if action == "insert":
         role_name = add_arg(args, "Role Name", vals, 0).lower()
@@ -432,8 +415,8 @@ def general_import_bill(sess, action, vals, args):
         elif role_name == "mop":
             contract = Contract.get_mop_by_name(sess, contract_name)
         else:
-            raise UserException("The role name must be one of hhdc, " +
-                    "supplier or mop.")
+            raise UserException(
+                "The role name must be one of hhdc, supplier or mop.")
 
         batch_reference = add_arg(args, "Batch Reference", vals, 2)
 
@@ -561,11 +544,12 @@ def general_import_bill(sess, action, vals, args):
         if breakdown == NO_CHANGE:
             breakdown = bill.breakdown
 
-        bill.update(account, reference, issue_date, start_date, finish_date,
-                kwh, net, vat, gross, bill_type, breakdown)
+        bill.update(
+            account, reference, issue_date, start_date, finish_date, kwh, net,
+            vat, gross, bill_type, breakdown)
 
 
-def general_import_register_read(action, vals, args):
+def general_import_register_read(sess, action, vals, args):
     if action == "insert":
         pass
     elif action == "update":
@@ -630,8 +614,9 @@ def general_import_register_read(action, vals, args):
         else:
             pres_type = ReadType.get_by_code(sess, pres_type_code)
 
-        read.update(tpr, coefficient, units, msn, mpan_str, prev_date,
-                prev_value, prev_type, pres_date, pres_value, pres_type)
+        read.update(
+            tpr, coefficient, units, msn, mpan_str, prev_date, prev_value,
+            prev_type, pres_date, pres_value, pres_type)
 
 
 def general_import_supply(sess, action, vals, args):
@@ -690,20 +675,20 @@ def general_import_supply(sess, action, vals, args):
             imp_sc = None
         else:
             imp_llfc_code = add_arg(args, "Import LLFC", vals, 17)
-            imp_sc_str = add_arg(args, "Import Agreed Supply Capacity", vals,
-                18)
+            imp_sc_str = add_arg(
+                args, "Import Agreed Supply Capacity", vals, 18)
             try:
                 imp_sc = int(imp_sc_str)
             except ValueError, e:
-                raise UserException("The import supply capacity " +
-                        "must be an integer." + str(e))
+                raise UserException(
+                    "The import supply capacity must be an integer." + str(e))
 
-            imp_supplier_contract_name = add_arg(args,
-                    "Import Supplier Contract", vals, 19)
-            imp_supplier_account = add_arg(args,
-                    "Import Supplier Account", vals, 20)
+            imp_supplier_contract_name = add_arg(
+                args, "Import Supplier Contract", vals, 19)
+            imp_supplier_account = add_arg(
+                args, "Import Supplier Account", vals, 20)
             imp_supplier_contract = Contract.get_supplier_by_name(
-                    sess, imp_supplier_contract_name)
+                sess, imp_supplier_contract_name)
 
         exp_supplier_contract = None
         exp_sc = None
@@ -719,13 +704,14 @@ def general_import_supply(sess, action, vals, args):
 
             if exp_mpan_core is not None:
                 exp_llfc_code = add_arg(args, "Export LLFC", vals, 22)
-                exp_sc_str = add_arg(args,
-                        "Export Agreed Supply Capacity", vals, 23)
+                exp_sc_str = add_arg(
+                    args, "Export Agreed Supply Capacity", vals, 23)
                 try:
                     exp_sc = int(exp_sc_str)
                 except ValueError, e:
-                    raise UserException("The export agreed supply capacity " +
-                            "must be an integer." + str(e))
+                    raise UserException(
+                        "The export agreed supply capacity " +
+                        "must be an integer." + str(e))
 
                 exp_supplier_contract_name = add_arg(
                     args, "Export Supplier Contract", vals, 24)
@@ -742,8 +728,6 @@ def general_import_supply(sess, action, vals, args):
             imp_supplier_account, imp_sc, exp_mpan_core, exp_llfc_code,
             exp_supplier_contract, exp_supplier_account, exp_sc)
         sess.flush()
-        era = sess.query(Era).filter_by(supply=supply). \
-            order_by("start_date").first()
 
     elif action == "update":
         mpan_core = add_arg(args, "MPAN Core", vals, 0)
@@ -777,7 +761,7 @@ def general_import_supply(sess, action, vals, args):
         supply.delete()
 
 
-def general_import_site_era(action, vals, args):
+def general_import_site_era(sess, action, vals, args):
     site_code = add_arg(args, 'site_code', vals, 0)
     site = Site.get_by_code(sess, site_code)
     mpan_core = add_arg(args, 'mpan_core', vals, 1)
@@ -789,7 +773,8 @@ def general_import_site_era(action, vals, args):
         is_location = bool(is_location_str)
         era.attach_site(site, is_location)
         db.session.flush()
-     
+
+
 def general_import_channel(sess, action, vals, args):
     mpan_core_raw = add_arg(args, 'MPAN Core', vals, 0)
     mpan_core = parse_mpan_core(mpan_core_raw)
@@ -801,14 +786,14 @@ def general_import_channel(sess, action, vals, args):
     import_related = parse_bool(import_related_str)
     channel_type_raw = add_arg(args, 'Channel Type', vals, 3)
     channel_type = parse_channel_type(channel_type_raw)
-    
+
     if action == 'insert':
-        channel = era.insert_channel(sess, import_related, channel_type)
+        era.insert_channel(sess, import_related, channel_type)
     elif action == 'delete':
         era.delete_channel(sess, import_related, channel_type)
 
-        
-def general_import_user(action, vals, args):
+
+def general_import_user(sess, action, vals, args):
     if action == "insert":
         email_address = add_arg(args, "email_address", vals, 0)
         password = add_arg(args, "password", vals, 1)
@@ -819,15 +804,15 @@ def general_import_user(action, vals, args):
         party = None
         if len(participant_code.strip()) > 0:
             market_role_code = add_arg(args, "market_role_code", vals, 5)
-        party = Party.get_by_participant_role(participant_code,
-            market_role_code)
+        party = Party.get_by_participant_role(
+            participant_code, market_role_code)
         if len(password) == 0:
             if len(digest) == 0:
-                raise UserException("The password and digest " +
-                        "fields can't both be blank.")
+                raise UserException(
+                    "The password and digest fields can't both be blank.")
         elif len(digest) > 0:
-                raise UserException("The password and digest " +
-                        "fields can't both be filled.")
+                raise UserException(
+                    "The password and digest fields can't both be filled.")
         else:
             digest = User.digest(password)
 
@@ -865,8 +850,8 @@ def general_import_batch(sess, action, vals, args):
         elif role_name == "mop":
             contract = Contract.get_mop_by_name(sess, contract_name)
         else:
-            raise UserException("The role name must be one of hhdc, " +
-                    "supplier or mop.")
+            raise UserException(
+                "The role name must be one of hhdc, supplier or mop.")
 
         reference = add_arg(args, "Reference", vals, 2)
         description = add_arg(args, "Description", vals, 3)
@@ -882,8 +867,8 @@ def general_import_batch(sess, action, vals, args):
         elif role_name == "mop":
             contract = Contract.get_mop_by_name(sess, contract_name)
         else:
-            raise UserException("The role name must be one of hhdc, " +
-                    "supplier or mop.")
+            raise UserException(
+                "The role name must be one of hhdc, supplier or mop.")
 
         old_reference = add_arg(args, "Old Reference", vals, 2)
         batch = contract.get_batch(sess, sess, old_reference)
@@ -904,13 +889,14 @@ def general_import_site_snag_ignore(sess, action, vals, args):
 
         for snag in sess.query(Snag).filter(
                 Snag.site_id == site.id, Snag.description == description,
-                Snag.is_ignored == False, Snag.start_date <= finish_date,
-                or_(Snag.finish_date == None, Snag.finish_date >= start_date)):
+                Snag.is_ignored != false(), Snag.start_date <= finish_date,
+                or_(Snag.finish_date == null(),
+                    Snag.finish_date >= start_date)):
             snag.is_ignored(True)
 
     elif action == "update":
-        raise UserException("The 'update' action isn't supported for " +
-                "site snags.")
+        raise UserException(
+            "The 'update' action isn't supported for site snags.")
 
 
 def general_import_channel_snag_ignore(sess, action, vals, args):
@@ -934,9 +920,10 @@ def general_import_channel_snag_ignore(sess, action, vals, args):
         for era in supply.find_eras(sess, start_date, finish_date):
             channel_query = sess.query(Snag).join(Channel).filter(
                 Channel.era_id == era.id, Channel.imp_related == imp_related,
-                Channel.channel_type == channel_type, Snag.is_ignored == False,
-                Snag.description == description,
-                or_(Snag.finish_date==None, Snag.finish_date >= start_date))
+                Channel.channel_type == channel_type,
+                Snag.is_ignored == false(), Snag.description == description,
+                or_(Snag.finish_date == null(),
+                    Snag.finish_date >= start_date))
             if finish_date is not None:
                 channel_query.filter(Snag.start_date <= finish_date)
 
@@ -944,76 +931,16 @@ def general_import_channel_snag_ignore(sess, action, vals, args):
                 snag.is_ignored = True
 
     elif action == "update":
-        raise UserException("The action 'update' isn't supported for " +
-                "channel snags.")
-
-
-def general_import_hhdc_rate_script(action, vals, args):
-    if action == "insert":
-        contract_name = add_arg(args, "Contract Name", vals, 0)
-        contract = Contract.get_hhdc_by_name(sess, contract_name)
-        start_date_str = add_arg(args, "Start Date", vals, 2)
-        start_date = parse_hh_start(start_date_str)
-        script = add_arg(args, "Script", vals, 3)
-        contract.insert_rate_script(start_date, script)
-    elif action == "update":
-        pass
-
-
-def general_import_dno_rate_script(action, vals, args):
-    if action == "insert":
-        contract_name = add_arg(args, "Contract Name", vals, 1)
-        contract = Contract.get_dno_by_name(contract_name)
-        start_date_str = add_arg(args, "Start Date", vals, 3)
-        start_date = parse_hh_start(start_date_str)
-        script = add_arg(args, "Script", vals, 4)
-        contract.insert_rate_script(start_date, script)
-    elif action == "update":
-        pass
-
-
-def general_import_supplier_rate_script(action, vals, args):
-    if action == "insert":
-        contract_name = add_arg(args, "Contract Name", vals, 0)
-        contract = Contract.get_supplier_by_name(sess, contract_name)
-        start_date_str = add_arg(args, "Start Date", vals, 2)
-        start_date = parse_hh_start(start_date_str)
-        script = add_arg(args, "Script", vals, 3)
-        contract.insert_rate_script(start_date, script)
-    elif action == "update":
-        pass
-
-
-def general_import_mop_rate_script(action, vals, args):
-    if action == "insert":
-        contract_name = add_arg(args, "Contract Name", vals, 0)
-        contract = Contract.get_mop_by_name(sess, contract_name)
-        start_date_str = add_arg(args, "Start Date", vals, 2)
-        start_date = parse_hh_start(start_date_str)
-        script = add_arg(args, "Script", vals, 3)
-        contract.insert_rate_script(start_date, script)
-    elif action == "update":
-        pass
-
-
-def general_import_non_core_rate_script(action, vals, args):
-    if action == "insert":
-        contract_name = add_arg(args, "Contract Name", vals, 0)
-        contract = Contract.get_non_core_by_name(contract_name)
-        start_date_str = add_arg(args, "Start Date", vals, 2)
-        start_date = parse_hh_start(start_date_str)
-        script = add_arg(args, "Script", vals, 3)
-        contract.insert_rate_script(start_date, script)
-    elif action == "update":
-        pass
+        raise UserException(
+            "The action 'update' isn't supported for channel snags.")
 
 
 typs = [
     'era', 'supply', 'user', 'site', 'site_snag_ignore', 'channel_snag_ignore',
-    'site_snag_ignore', 'hhdc_contract', 'hhdc_rate_script', 'mop_rate_script',
-    'supplier_rate_script', 'non_core_rate_script', 'bill', 'batch', 'channel']
+    'site_snag_ignore', 'bill', 'batch', 'channel']
 
 typ_funcs = dict([(typ, globals()['general_import_' + typ]) for typ in typs])
+
 
 class GeneralImporter(threading.Thread):
     def __init__(self, f):
@@ -1033,7 +960,6 @@ class GeneralImporter(threading.Thread):
             fields['csv_line'] = self.args
         return fields
 
-
     def run(self):
         try:
             sess = db.session()
@@ -1047,17 +973,19 @@ class GeneralImporter(threading.Thread):
                     continue
 
                 if len(line) < 2:
-                    raise UserException("There must be an 'action' field " +
-                            "followed by a 'type' field.")
+                    raise UserException(
+                        "There must be an 'action' field " +
+                        "followed by a 'type' field.")
 
                 action = add_arg(self.args, 'action', line, 0).lower()
                 if action not in ALLOWED_ACTIONS:
-                    raise UserException("The 'action' field must be one of " +
-                            str(ALLOWED_ACTIONS))
+                    raise UserException(
+                        "The 'action' field must be one of " +
+                        str(ALLOWED_ACTIONS))
                 typ = add_arg(self.args, 'type', line, 1).lower()
                 vals = line[2:]
                 if typ == 'hh_datum':
-                    if action == "insert": 
+                    if action == "insert":
                         hh_data.append(
                             {
                                 'mpan_core': parse_mpan_core(
@@ -1089,7 +1017,7 @@ class GeneralImporter(threading.Thread):
             finally:
                 self.rd_lock.release()
         except:
-            try:    
+            try:
                 self.rd_lock.acquire()
                 self.error_message = traceback.format_exc()
             finally:
@@ -1113,12 +1041,14 @@ def start_general_process(f):
     process.start()
     return proc_id
 
+
 def get_general_process_ids():
     try:
         process_lock.acquire()
         return processes.keys()
     finally:
         process_lock.release()
+
 
 def get_general_process(id):
     try:

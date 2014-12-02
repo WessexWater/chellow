@@ -1,25 +1,30 @@
 from net.sf.chellow.monad import Monad
+import db
+import templater
+import utils
 
-Monad.getUtils()['imprt'](globals(), {
-        'db': ['Contract', 'session', 'Batch', 'set_read_write'],
-        'utils': ['UserException', 'prev_hh', 'next_hh', 'hh_after', 'hh_before', 'HH'],
-        'templater': ['render']})
+Monad.getUtils()['impt'](globals(), 'db', 'utils', 'templater')
+Batch, Contract = db.Batch, db.Contract
+UserException = utils.UserException
+render = templater.render
+inv, template = globals()['inv'], globals()['template']
 
 
 def make_fields(sess, contract, message=None):
-        batches = sess.query(Batch).filter(Batch.contract == contract).order_by(Batch.reference.desc())
+        batches = sess.query(Batch).filter(
+            Batch.contract == contract).order_by(Batch.reference.desc())
         messages = None if message is None else [str(e)]
         return {'contract': contract, 'batches': batches, 'messages': messages}
 
 sess = None
 try:
-    sess = session()
+    sess = db.session()
     if inv.getRequest().getMethod() == 'GET':
         contract_id = inv.getLong('mop_contract_id')
         contract = Contract.get_mop_by_id(sess, contract_id)
         render(inv, template, make_fields(sess, contract))
     else:
-        set_read_write(sess)
+        db.set_read_write(sess)
         contract_id = inv.getLong('mop_contract_id')
         contract = Contract.get_mop_by_id(sess, contract_id)
         reference = inv.getString("reference")
