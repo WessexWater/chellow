@@ -1,19 +1,23 @@
 from net.sf.chellow.monad import Monad
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
-
-Monad.getUtils()['imprt'](globals(), {
-        'db': ['Contract', 'Party', 'RateScript', 'set_read_write', 'session'], 
-        'utils': ['UserException', 'HH'],
-        'templater': ['render']})
+import db
+import utils
+import templater
+Monad.getUtils()['impt'](globals(), 'db', 'utils', 'templater')
+HH = utils.HH
+render = templater.render
+inv, template = globals()['inv'], globals()['template']
 
 sess = None
 try:
-    sess = session()
+    sess = db.session()
     now = datetime.utcnow()
     start_date = datetime(now.year, now.month, 1) - relativedelta(months=1)
     finish_date = datetime(now.year, now.month, 1) - HH
 
-    render(inv, template, {'start_date': start_date, 'finish_date': finish_date})
+    render(
+        inv, template, {'start_date': start_date, 'finish_date': finish_date})
 finally:
-    sess.close()
+    if sess is not None:
+        sess.close()

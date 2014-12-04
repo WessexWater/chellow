@@ -1,15 +1,18 @@
 from net.sf.chellow.monad import Monad
-from sqlalchemy.orm import joinedload_all
+import db
+import templater
 
-Monad.getUtils()['imprt'](globals(), {
-        'db': ['Contract', 'MeterPaymentType', 'set_read_write', 'session'], 
-        'utils': ['UserException'],
-        'templater': ['render']})
+Monad.getUtils()['impt'](globals(), 'db', 'utils', 'templater')
+MeterPaymentType = db.MeterPaymentType
+render = templater.render
+inv, template = globals()['inv'], globals()['template']
 
 sess = None
 try:
-    sess = session()
-    meter_payment_types = sess.query(MeterPaymentType).from_statement("""select * from meter_payment_type order by code""").all()
+    sess = db.session()
+    meter_payment_types = sess.query(MeterPaymentType).order_by(
+        MeterPaymentType.code).all()
     render(inv, template, {'meter_payment_types': meter_payment_types})
 finally:
-    sess.close()
+    if sess is not None:
+        sess.close()

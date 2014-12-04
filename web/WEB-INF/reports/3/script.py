@@ -1,22 +1,27 @@
 from net.sf.chellow.monad import Monad
-from sqlalchemy.orm import joinedload_all
+import db
+import templater
 
-Monad.getUtils()['imprt'](globals(), {
-        'db': ['Site', 'Party', 'Era', 'set_read_write', 'session'], 
-        'utils': ['UserException'],
-        'templater': ['render']})
+Monad.getUtils()['impt'](globals(), 'db', 'utils', 'templater')
+Site = db.Site
+render = templater.render
+inv, template = globals()['inv'], globals()['template']
 
 LIMIT = 50
 sess = None
 try:
-    sess = session()
+    sess = db.session()
     if inv.hasParameter('pattern'):
         pattern = inv.getString("pattern")
-        #pattern = pattern.strip()
-        sites = sess.query(Site).from_statement("select * from site where lower(code || ' ' || name) like '%' || lower(:pattern) || '%' order by code limit :lim").params(pattern=pattern, lim=LIMIT).all()
+        sites = sess.query(Site).from_statement(
+            "select * from site "
+            "where lower(code || ' ' || name) like '%' || lower(:pattern) "
+            "|| '%' order by code limit :lim").params(
+            pattern=pattern, lim=LIMIT).all()
 
         if len(sites) == 1:
-            inv.sendTemporaryRedirect("/reports/5/output/?site_id=" + str(sites[0].id))
+            inv.sendTemporaryRedirect(
+                "/reports/5/output/?site_id=" + str(sites[0].id))
         else:
             render(inv, template, {'sites': sites, 'limit': LIMIT})
     else:

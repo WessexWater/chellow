@@ -1,12 +1,17 @@
 from net.sf.chellow.monad import Monad
-from sqlalchemy.orm import joinedload_all
 from datetime import datetime
 import pytz
+import templater
+import utils
+import db
+import hh_importer
 
-Monad.getUtils()['impt'](globals(), 'db', 'utils', 'templater')
+Monad.getUtils()['impt'](globals(), 'db', 'utils', 'templater', 'hh_importer')
 render = templater.render
 UserException = utils.UserException
 MarketRole, Participant = db.MarketRole, db.Participant
+inv, template = globals()['inv'], globals()['template']
+
 
 def make_fields(sess, message=None):
     initial_date = datetime.utcnow().replace(tzinfo=pytz.utc)
@@ -31,8 +36,9 @@ try:
         contract = db.Contract.insert_hhdc(
             sess, name, participant, '{}', '{}', start_date, None, '{}')
         sess.commit()
-        inv.sendSeeOther('/reports/115/output/?hhdc_contract_id=' +
-            str(contract.id))
+        hh_importer.startup_contract(contract.id)
+        inv.sendSeeOther(
+            '/reports/115/output/?hhdc_contract_id=' + str(contract.id))
 except UserException, e:
     render(inv, template, make_fields(sess, e))
 finally:

@@ -1,9 +1,15 @@
 from net.sf.chellow.monad import Monad
+import utils
+import templater
+import db
 
 Monad.getUtils()['impt'](globals(), 'db', 'utils', 'templater')
 RateScript = db.RateScript
 NotFoundException, form_int = utils.NotFoundException, utils.form_int
 form_str, form_date, form_str = utils.form_str, utils.form_date, utils.form_str
+render = templater.render
+inv, template = globals()['inv'], globals()['template']
+
 
 sess = None
 try:
@@ -20,8 +26,9 @@ try:
         if inv.hasParameter('delete'):
             contract.delete_rate_script(sess, rate_script)
             sess.commit()
-            inv.sendSeeOther('/reports/267/output/?non_core_contract_id='
-                + str(contract.id))
+            inv.sendSeeOther(
+                '/reports/267/output/?non_core_contract_id=' +
+                str(contract.id))
         else:
             script = form_str(inv, 'script')
             start_date = form_date(inv, 'start')

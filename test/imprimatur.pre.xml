@@ -2335,7 +2335,6 @@ import datetime
 from dateutil.relativedelta import relativedelta
 import pytz
 from sqlalchemy import or_
-from java.lang import System
 
 Monad.getUtils()['impt'](globals(), 'computer', 'db', 'utils', 'computer', 'triad', 'ccl', 'bsuos', 'tlms', 'duos', 'rcrc')
 
@@ -3248,7 +3247,7 @@ def virtual_bill(supply_source):
 				<control name="insert" value="Insert" />
 
 				<regex
-					pattern="There&amp;#39;s an imp MPAN core, but no imp Supply Capacity\." />
+					pattern="Problem parsing the field imp_sc as an integer: invalid literal for int\(\) with base 10: &amp;#39;&amp;#39;" />
 				<response-code value="400" />
 			</request>
 		</test>
@@ -3318,7 +3317,7 @@ def virtual_bill(supply_source):
 				<control name="imp_supplier_account" value="taa2" />
 				<control name="insert" value="Insert" />
 
-				<regex pattern="/chellow/reports/7/output/\?supply_id=17" />
+				<regex pattern="/chellow/reports/7/output/\?supply_id=16" />
 				<response-code value="303" />
 			</request>
 			<request
@@ -3475,13 +3474,23 @@ def virtual_bill(supply_source):
 			</request>
 		</test>
 		<test name="Viewing a batch in view mode, when it has a custom report.">
-			<request path="/chellow/configuration/" method="post">
-				<control name="properties"><![CDATA[batch.report.01=2]]></control>
-				<response-code value="200" />
+			<request path="/chellow/reports/269/output/" method="post">
+				<control name="non_core_contract_id" value="13"/>
+				<control name="name" value="configuration"/>
+				<control name="charge_script" value=""/>
+				<control name="properties"><![CDATA[
+{
+    'ips': {'127.0.0.1': 'implicit-user@localhost'},
+    'site_links': [
+		    {'name': 'Google Maps', 'href': 'https://maps.google.com/maps?q='}],
+		'batch_reports': [2]}]]></control>
+
+				<response-code value="303" />
 			</request>
 
 			<!-- Check that we can see batch okay. Contract 56 -->
 			<request path="/chellow/reports/193/output/?mop_batch_id=9">
+				<regex pattern='/reports/2/output/' />
 				<response-code value="200" />
 			</request>
 		</test>
@@ -3496,7 +3505,8 @@ def virtual_bill(supply_source):
 				path="/chellow/reports/65/output/?hhdc_contract_id=53&amp;process_id=13">
 				<refresh />
 				<regex
-					pattern="There is no channel for the datum: \{&amp;#39;status&amp;#39;: &amp;#39;A&amp;#39;, &amp;#39;start_date&amp;#39;: datetime.datetime\(2010, 2, 4, 20, 0, tzinfo=&amp;lt;UTC&amp;gt;\), &amp;#39;channel_type&amp;#39;: &amp;#39;REACTIVE_EXP&amp;#39;, &amp;#39;value&amp;#39;: Decimal\(&amp;#34;30.4339&amp;#34;\), &amp;#39;mpan_core&amp;#39;: &amp;#39;22 4862 4512 332&amp;#39;\}\." />
+					pattern="There is no channel for the datum: \{&amp;#39;channel_type&amp;#39;: &amp;#39;REACTIVE_EXP&amp;#39;, &amp;#39;mpan_core&amp;#39;: &amp;#39;22 4862 4512 332&amp;#39;, &amp;#39;start_date&amp;#39;: datetime.datetime\(2010, 2, 4, 20, 0, tzinfo=&amp;lt;UTC&amp;gt;\), &amp;#39;status&amp;#39;: &amp;#39;A&amp;#39;, &amp;#39;value&amp;#39;: Decimal\(&amp;#39;30.4339&amp;#39;\)\}\." />
+
 				<response-code value="200" />
 			</request>
 		</test>
@@ -3575,6 +3585,27 @@ def virtual_bill(supply_source):
 'directories': ['.']}]]></control>
 				<response-code value="303" />
 			</request>
+
+			<!-- Do an 'import now' -->
+			<request path="/chellow/reports/213/output/" method="post">
+				<control name="hhdc_contract_id" value="53" />
+
+				<response-code value="303" />
+			</request>
+
+			<request path="/chellow/reports/213/output/?hhdc_contract_id=53">
+				<refresh />
+				<regex pattern="File downloaded successfully\." />
+				
+			</request>
+
+			<request path="/chellow/reports/115/output/?hhdc_contract_id=53">
+				<regex pattern="hh_data\.df2" />
+			</request>
+
+
+		</test>
+		<test name="Try startup and shutdown.">
 			<request path="/chellow/reports/171/output/" method="post">
 				<refresh />
 				<control name="run_shutdown" value="Shutdown" />
@@ -3583,21 +3614,6 @@ def virtual_bill(supply_source):
 			<request path="/chellow/reports/171/output/" method="post">
 				<control name="run_startup" value="Run" />
 			</request>
-			<request path="/chellow/reports/213/output/?hhdc_contract_id=53">
-				<refresh />
-				<regex pattern="File stream obtained successfully\." />
-			</request>
-			<request path="/chellow/reports/115/output/?hhdc_contract_id=53">
-				<regex pattern="hh_data\.df2" />
-			</request>
-
-			<!-- Try an 'import now' -->
-			<request path="/chellow/reports/213/output/" method="post">
-				<control name="hhdc_contract_id" value="53" />
-
-				<response-code value="303" />
-			</request>
-
 		</test>
 		<test name="Check that later bills are at the top.">
 			<request path="/chellow/reports/7/output/?supply_id=1">
@@ -3767,7 +3783,7 @@ def virtual_bill(supply_source):
 
 			<!-- Supply 5 -->
 			<request path="/chellow/reports/307/output/" method="post">
-				<control name="era_id" value="24" />
+				<control name="era_id" value="23" />
 				<control name="start_year" value="2013" />
 				<control name="start_month" value="01" />
 				<control name="start_day" value="01" />
@@ -3798,7 +3814,7 @@ def virtual_bill(supply_source):
 				<regex
 					pattern='"Imp MPAN Core","Exp MPAN Core","Site Code","Site Name","Account","From","To","","mop-net-gbp","mop-problem","","dc-net-gbp","dc-problem","","imp-supplier-net-gbp","imp-supplier-tlm","imp-supplier-ccl-kwh","imp-supplier-ccl-rate","imp-supplier-ccl-gbp","imp-supplier-data-collection-gbp","imp-supplier-duos-availability-kva","imp-supplier-duos-availability-days","imp-supplier-duos-availability-rate","imp-supplier-duos-availability-gbp","imp-supplier-duos-excess-availability-kva","imp-supplier-duos-excess-availability-days","imp-supplier-duos-excess-availability-rate","imp-supplier-duos-excess-availability-gbp","imp-supplier-duos-green-kwh","imp-supplier-duos-green-rate","imp-supplier-duos-green-gbp","imp-supplier-duos-green-kwh","imp-supplier-duos-green-rate","imp-supplier-duos-amber-gbp","imp-supplier-duos-amber-kwh","imp-supplier-duos-red-rate","imp-supplier-duos-red-gbp","imp-supplier-duos-reactive-rate","imp-supplier-duos-reactive-gbp","imp-supplier-duos-fixed-days","imp-supplier-duos-fixed-rate","imp-supplier-duos-fixed-gbp","imp-supplier-settlement-gbp","imp-supplier-night-msp-kwh","imp-supplier-night-gsp-kwh","imp-supplier-night-gbp","imp-supplier-other-msp-kwh","imp-supplier-other-gsp-kwh","imp-supplier-other-gbp","imp-supplier-summer-pk-msp-kwh","imp-supplier-summer-pk-gsp-kwh","imp-supplier-summer-pk-gbp","imp-supplier-winter-low-pk-msp-kwh","imp-supplier-winter-low-pk-gsp-kwh","imp-supplier-winter-low-pk-gbp","imp-supplier-winter-off-pk-msp-kwh","imp-supplier-winter-off-pk-gsp-kwh","imp-supplier-winter-off-pk-gbp","imp-supplier-winter-pk-msp-kwh","imp-supplier-winter-pk-gsp-kwh","imp-supplier-winter-pk-gbp","imp-supplier-bsuos-kwh","imp-supplier-bsuos-rate","imp-supplier-bsuos-gbp","imp-supplier-triad-actual-1-date","imp-supplier-triad-actual-1-msp-kw","imp-supplier-triad-actual-1-status","imp-supplier-triad-actual-1-laf","imp-supplier-triad-actual-1-gsp-kw","imp-supplier-triad-actual-2-date","imp-supplier-triad-actual-2-msp-kw","imp-supplier-triad-actual-2-status","imp-supplier-triad-actual-2-laf","imp-supplier-triad-actual-2-gsp-kw","imp-supplier-triad-actual-3-date","imp-supplier-triad-actual-3-msp-kw","imp-supplier-triad-actual-3-status","imp-supplier-triad-actual-3-laf","imp-supplier-triad-actual-3-gsp-kw","imp-supplier-triad-actual-gsp-kw","imp-supplier-triad-actual-rate","imp-supplier-triad-actual-gbp","imp-supplier-triad-estimate-1-date","imp-supplier-triad-estimate-1-msp-kw","imp-supplier-triad-estimate-1-status","imp-supplier-triad-estimate-1-laf","imp-supplier-triad-estimate-1-gsp-kw","imp-supplier-triad-estimate-2-date","imp-supplier-triad-estimate-2-msp-kw","imp-supplier-triad-estimate-2-status","imp-supplier-triad-estimate-2-laf","imp-supplier-triad-estimate-2-gsp-kw","imp-supplier-triad-estimate-3-date","imp-supplier-triad-estimate-3-msp-kw","imp-supplier-triad-estimate-3-status","imp-supplier-triad-estimate-3-laf","imp-supplier-triad-estimate-3-gsp-kw","imp-supplier-triad-estimate-gsp-kw","imp-supplier-triad-estimate-rate","imp-supplier-triad-estimate-months","imp-supplier-triad-estimate-gbp","imp-supplier-triad-all-estimates-months","imp-supplier-triad-all-estimates-gbp","imp-supplier-problem"' />
 				<regex
-					pattern='"22 0883 6932 301","","CI005","Wheal Rodney","4341","2013-04-01 00:00","2013-04-30 23:30","","0","","","0","","","369.605","1.011286","0","0.00525288","0","5.89","350","30","0.026","273.0","0","31","0.026","0.0","0","0.00161","0.0","0","0","0","0","0","0","0.00382","0.0","30","0.0905","2.715","88","0","0","0","0","0.0","0.0","0","0","0","0","0","0","0","0","0","0","0","0","0.0","0.00275744","0.0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","2012-11-29 17:00","0","E","1.087","0.0","2012-12-12 17:00","0","E","1.087","0.0","2013-01-16 17:00","0","E","1.087","0.0","0.0","33.551731","1","0.0","0","0",""' />
+					pattern='"22 0883 6932 301","","CI005","Wheal Rodney","4341","2013-04-01 00:00","2013-04-30 23:30","","0","","","0","","","369.605","1.011286","","0.00525288","","5.89","350","30","0.026","273.0","0","31","0.026","0.0","0","0.00161","0.0","","","","","","","0.00382","0.0","30","0.0905","2.715","88","","","","0","0.0","0.0","","","","","","","","","","","","","0.0","0.00275744","0.0","","","","","","","","","","","","","","","","","","","2012-11-29 17:00","0","E","1.087","0.0","2012-12-12 17:00","0","E","1.087","0.0","2013-01-16 17:00","0","E","1.087","0.0","0.0","33.551731","1","0.0","","",""' />
 			</request>
 			<request path="/chellow/reports/159/output/">
 				<regex pattern="finish_year" />
@@ -3847,17 +3863,17 @@ def virtual_bill(supply_source):
 				<control name="imp_supplier_account" value="sup-14 7206 6139 971" />
 				<control name="insert" value="insert" />
 
-				<regex pattern="/chellow/reports/7/output/\?supply_id=18" />
+				<regex pattern="/chellow/reports/7/output/\?supply_id=17" />
 				<response-code value="303" />
 			</request>
 			<!-- Try a pre 2010-04-01 DNO 14 bill. -->
 			<request
-				path="/chellow/reports/291/output/?supply_id=18&amp;start_year=2009&amp;start_month=06&amp;start_day=01&amp;start_hour=00&amp;start_minute=00&amp;finish_year=2009&amp;finish_month=06&amp;finish_day=30&amp;finish_hour=23&amp;finish_minute=30">
+				path="/chellow/reports/291/output/?supply_id=17&amp;start_year=2009&amp;start_month=06&amp;start_day=01&amp;start_hour=00&amp;start_minute=00&amp;finish_year=2009&amp;finish_month=06&amp;finish_day=30&amp;finish_hour=23&amp;finish_minute=30">
 				<response-code value="200" />
 				<regex
 					pattern='"Imp MPAN Core","Exp MPAN Core","Site Code","Site Name","Account","From","To","","mop-net-gbp","mop-problem","","dc-net-gbp","dc-problem","","imp-supplier-net-gbp","imp-supplier-tlm","imp-supplier-ccl-kwh","imp-supplier-ccl-rate","imp-supplier-ccl-gbp","imp-supplier-data-collection-gbp","imp-supplier-duos-availability-kva","imp-supplier-duos-availability-days","imp-supplier-duos-availability-rate","imp-supplier-duos-availability-gbp","imp-supplier-duos-excess-availability-kva","imp-supplier-duos-excess-availability-days","imp-supplier-duos-excess-availability-rate","imp-supplier-duos-excess-availability-gbp","imp-supplier-duos-day-kwh","imp-supplier-duos-day-gbp","imp-supplier-duos-night-kwh","imp-supplier-duos-night-gbp","imp-supplier-duos-reactive-rate","imp-supplier-duos-reactive-gbp","imp-supplier-duos-standing-gbp","imp-supplier-settlement-gbp","imp-supplier-night-msp-kwh","imp-supplier-night-gsp-kwh","imp-supplier-night-gbp","imp-supplier-other-msp-kwh","imp-supplier-other-gsp-kwh","imp-supplier-other-gbp","imp-supplier-summer-pk-msp-kwh","imp-supplier-summer-pk-gsp-kwh","imp-supplier-summer-pk-gbp","imp-supplier-winter-low-pk-msp-kwh","imp-supplier-winter-low-pk-gsp-kwh","imp-supplier-winter-low-pk-gbp","imp-supplier-winter-off-pk-msp-kwh","imp-supplier-winter-off-pk-gsp-kwh","imp-supplier-winter-off-pk-gbp","imp-supplier-winter-pk-msp-kwh","imp-supplier-winter-pk-gsp-kwh","imp-supplier-winter-pk-gbp","imp-supplier-bsuos-kwh","imp-supplier-bsuos-rate","imp-supplier-bsuos-gbp","imp-supplier-triad-actual-1-date","imp-supplier-triad-actual-1-msp-kw","imp-supplier-triad-actual-1-status","imp-supplier-triad-actual-1-laf","imp-supplier-triad-actual-1-gsp-kw","imp-supplier-triad-actual-2-date","imp-supplier-triad-actual-2-msp-kw","imp-supplier-triad-actual-2-status","imp-supplier-triad-actual-2-laf","imp-supplier-triad-actual-2-gsp-kw","imp-supplier-triad-actual-3-date","imp-supplier-triad-actual-3-msp-kw","imp-supplier-triad-actual-3-status","imp-supplier-triad-actual-3-laf","imp-supplier-triad-actual-3-gsp-kw","imp-supplier-triad-actual-gsp-kw","imp-supplier-triad-actual-rate","imp-supplier-triad-actual-gbp","imp-supplier-triad-estimate-1-date","imp-supplier-triad-estimate-1-msp-kw","imp-supplier-triad-estimate-1-status","imp-supplier-triad-estimate-1-laf","imp-supplier-triad-estimate-1-gsp-kw","imp-supplier-triad-estimate-2-date","imp-supplier-triad-estimate-2-msp-kw","imp-supplier-triad-estimate-2-status","imp-supplier-triad-estimate-2-laf","imp-supplier-triad-estimate-2-gsp-kw","imp-supplier-triad-estimate-3-date","imp-supplier-triad-estimate-3-msp-kw","imp-supplier-triad-estimate-3-status","imp-supplier-triad-estimate-3-laf","imp-supplier-triad-estimate-3-gsp-kw","imp-supplier-triad-estimate-gsp-kw","imp-supplier-triad-estimate-rate","imp-supplier-triad-estimate-months","imp-supplier-triad-estimate-gbp","imp-supplier-triad-all-estimates-months","imp-supplier-triad-all-estimates-gbp","imp-supplier-problem"' />
 				<regex
-					pattern='"14 7206 6139 971","","CH023","Treglisson","sup-14 7206 6139 971","2009-06-01 00:00","2009-06-30 23:30","","0","","","0","","","334.3","1.0086111","0","0.0047","0","5.89","0","0","0.0457","105.11","0","0","0","0","0","0","0","0.0","0","0.0012","0.0","135.3","88","0","0","0.0","0","0.0","0.0","0","0","0.0","0","0","0.0","0","0","0.0","0","0","0.0","0.0","0.00046516","0.0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","2009-01-06 17:00","0","E","1.037","0.0","2008-12-01 17:00","0","E","1.037","0.0","2008-12-15 17:00","0","E","1.037","0.0","0.0","20.526611","1","0.0","0","0","","duos-availability-agreed-kva","2300","duos-availability-billed-kva","2300"' />
+					pattern='"14 7206 6139 971","","CH023","Treglisson","sup-14 7206 6139 971","2009-06-01 00:00","2009-06-30 23:30","","0","","","0","","","334.3","1.0086111","","0.0047","","5.89","","","0.0457","105.11","","","","","","","0","0.0","0.0012","0.0","135.3","88","0","0","0.0","0","0.0","0.0","0","0","0.0","0","0","0.0","0","0","0.0","0","0","0.0","0.0","0.00046516","0.0","","","","","","","","","","","","","","","","","","","2009-01-06 17:00","0","E","1.037","0.0","2008-12-01 17:00","0","E","1.037","0.0","2008-12-15 17:00","0","E","1.037","0.0","0.0","20.526611","1","0.0","","","","duos-availability-agreed-kva","2300","duos-availability-billed-kva","2300"' />
 			</request>
 		</test>
 		<test name="Report of HHDC snags">

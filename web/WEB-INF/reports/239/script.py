@@ -1,13 +1,14 @@
 from net.sf.chellow.monad import Monad
-from sqlalchemy.orm import joinedload_all
-from sqlalchemy.sql.expression import text
-from datetime import datetime
-import pytz
+import templater
+import db
+import utils
 
-Monad.getUtils()['imprt'](globals(), {
-        'db': ['Supply', 'Batch', 'Participant', 'set_read_write', 'session'], 
-        'utils': ['UserException', 'form_date', 'form_str', 'form_int'],
-        'templater': ['render']})
+Monad.getUtils()['impt'](globals(), 'db', 'utils', 'templater')
+inv, template = globals()['inv'], globals()['template']
+render = templater.render
+Supply = db.Supply
+form_int, form_str = utils.form_int, utils.form_str
+UserException = utils.UserException
 
 
 def make_fields(sess, supply, message=None):
@@ -16,13 +17,13 @@ def make_fields(sess, supply, message=None):
 
 sess = None
 try:
-    sess = session()
+    sess = db.session()
     if inv.getRequest().getMethod() == 'GET':
         supply_id = inv.getLong('supply_id')
         supply = Supply.get_by_id(sess, supply_id)
         render(inv, template, make_fields(sess, supply))
     else:
-        set_read_write(sess)
+        db.set_read_write(sess)
         supply_id = form_int(inv, 'supply_id')
         supply = Supply.get_by_id(sess, supply_id)
         body = form_str(inv, 'body')
@@ -31,11 +32,15 @@ try:
         if len(supply.note.strip()) == 0:
             supply.note = "{'notes': []}"
         note_dict = eval(supply.note)
-        note_dict['notes'].append({'category': category, 'is_important': is_important, 'body': body})
+        note_dict['notes'].append(
+            {
+                'category': category, 'is_important': is_important,
+                'body': body})
         supply.note = str(note_dict)
         sess.commit()
         inv.sendSeeOther("/reports/369/output/?supply_id=" + str(supply_id))
 except UserException, e:
     render(inv, template, make_fields(sess, supply, e))
 finally:
-    sess.close()
+    if sess is not None:
+        sess.close()

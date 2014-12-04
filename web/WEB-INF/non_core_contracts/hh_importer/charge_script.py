@@ -1,19 +1,14 @@
 from net.sf.chellow.monad import Monad
 import threading
 import traceback
-import csv
 import datetime
 import collections
-import decimal
 import tempfile
-import dateutil
-import dateutil.parser
 import pytz
-from sqlalchemy import or_
-import datetime
 import ftplib
 import os
-
+import db
+import utils
 
 Monad.getUtils()['impt'](globals(), 'db', 'utils', 'templater')
 Contract, MarketRole = db.Contract, db.MarketRole
@@ -24,9 +19,11 @@ tasks = {}
 
 extensions = ['.df2', '.simple.csv', '.bg.csv']
 
+
 class HhDataImportProcess(threading.Thread):
 
-    def __init__(self, hhdc_contract_id, process_id, istream, file_name, file_size):
+    def __init__(
+            self, hhdc_contract_id, process_id, istream, file_name, file_size):
         super(HhDataImportProcess, self).__init__()
         self.messages = []
         self.istream = istream
@@ -35,10 +32,13 @@ class HhDataImportProcess(threading.Thread):
         if file_size == 0:
             raise UserException("File has zero length")
 
-        file_name = file_name.lower();
+        file_name = file_name.lower()
         self.conv_ext = [ext for ext in extensions if file_name.endswith(ext)]
         if len(self.conv_ext) == 0:
-            raise UserException("The extension of the filename '" + file_name + "' is not one of the recognized extensions; " + str(extensions))
+            raise UserException(
+                "The extension of the filename '" + file_name +
+                "' is not one of the recognized extensions; " +
+                str(extensions))
 
     def run(self):
         sess = None
@@ -48,7 +48,8 @@ class HhDataImportProcess(threading.Thread):
             sess.rollback()
             properties = contract.make_properties()
             mpan_map = properties.get('mpan_map', {})
-            parser_cont = Contract.get_non_core_by_name(sess, 'hh-parser-' + self.conv_ext[0][1:])
+            parser_cont = Contract.get_non_core_by_name(
+                sess, 'hh-parser-' + self.conv_ext[0][1:])
 
             gb = {}
             exec (parser_cont.charge_script, gb)
@@ -67,19 +68,22 @@ class HhDataImportProcess(threading.Thread):
                 sess.close()
 
     def get_status(self):
-        return "No converter." if self.converter is None else self.converter.get_status()
+        return "No converter." \
+            if self.converter is None else self.converter.get_status()
+
 
 def get_hh_import_processes(contract_id):
     return processes[contract_id]
 
+
 def start_hh_import_process(hhdc_contract_id, istream, file_name, file_size):
     contract_processes = get_hh_import_processes(hhdc_contract_id)
     id = len(contract_processes)
-    process = HhDataImportProcess(hhdc_contract_id, id, istream, file_name, file_size)
+    process = HhDataImportProcess(
+        hhdc_contract_id, id, istream, file_name, file_size)
     contract_processes.append(process)
     process.start()
     return process
-
 
 
 class HhImportTask(threading.Thread):
@@ -108,12 +112,14 @@ class HhImportTask(threading.Thread):
             return True
 
     def log(self, message):
-        self.messages.appendleft(datetime.datetime.utcnow().replace(tzinfo=pytz.utc).strftime("%Y-%m-%d %H:%M:%S") + " - " + message)
+        self.messages.appendleft(datetime.datetime.utcnow().replace(
+            tzinfo=pytz.utc).strftime("%Y-%m-%d %H:%M:%S") + " - " + message)
         if len(self.messages) > 100:
             self.messages.pop()
 
     def get_status(self):
-        return 'No importer.' if self.importer is None else str(self.importer.get_status())
+        return 'No importer.' \
+            if self.importer is None else str(self.importer.get_status())
 
     def import_now(self):
         if self.lock.acquire(False):
@@ -126,9 +132,10 @@ class HhImportTask(threading.Thread):
 
                     try:
                         sess = db.session()
-                        contract = Contract.get_hhdc_by_id(sess, self.contract_id)
+                        contract = Contract.get_hhdc_by_id(
+                            sess, self.contract_id)
                         properties = contract.make_properties()
-                        
+
                         host_name = properties["hostname"]
                         user_name = properties["username"]
                         password = properties["password"]
@@ -143,14 +150,16 @@ class HhImportTask(threading.Thread):
                             state['last_import_keys'] = last_import_keys
 
                         sess.rollback()
-                        self.log("Connecting to ftp server at " + host_name + ".")
+                        self.log(
+                            "Connecting to ftp server at " + host_name + ".")
                         ftp = ftplib.FTP(host_name, user_name, password)
                         home_path = ftp.pwd()
 
                         file = None
 
                         for directory in directories:
-                            self.log("Checking the directory '" + directory + "'.")
+                            self.log(
+                                "Checking the directory '" + directory + "'.")
                             try:
                                 last_import_key = last_import_keys[directory]
                             except KeyError:
@@ -168,7 +177,8 @@ class HhImportTask(threading.Thread):
                                 except ftplib.error_perm:
                                     pass
 
-                                key = ftp.sendcmd("MDTM " + fpath).split()[1] + '_' + fname
+                                key = ftp.sendcmd(
+                                    "MDTM " + fpath).split()[1] + '_' + fname
                                 if key > last_import_key:
                                     files.append((key, fpath))
 
@@ -176,15 +186,16 @@ class HhImportTask(threading.Thread):
                                 file = sorted(files)[0]
                                 last_import_keys[directory] = file[0]
                                 break
-                                    
+
                         if file is None:
                             self.log("No new files found.")
                             ftp.quit()
                             self.log("Logged out.")
                         else:
                             key, fpath = file
-                            self.log("Attempting to download " + fpath
-+ " with key " + key + ".")
+                            self.log(
+                                "Attempting to download " + fpath +
+                                " with key " + key + ".")
                             f = tempfile.TemporaryFile()
                             ftp.retrbinary("RETR " + fpath, f.write)
                             self.log("File downloaded successfully.")
@@ -195,7 +206,9 @@ class HhImportTask(threading.Thread):
                             f.seek(0, os.SEEK_END)
                             fsize = f.tell()
                             f.seek(0)
-                            self.importer = HhDataImportProcess(self.contract_id, 0, f, fpath + file_type, fsize)
+                            self.importer = HhDataImportProcess(
+                                self.contract_id, 0, f, fpath + file_type,
+                                fsize)
 
                             self.importer.run()
                             messages = self.importer.messages
@@ -207,7 +220,8 @@ class HhImportTask(threading.Thread):
                                 raise UserException("Problem loading file.")
 
                             db.set_read_write(sess)
-                            contract = Contract.get_hhdc_by_id(sess, self.contract_id)
+                            contract = Contract.get_hhdc_by_id(
+                                sess, self.contract_id)
                             contract.update_state(state)
                             sess.commit()
                             self.log("Finished loading '" + fpath)
@@ -223,13 +237,14 @@ class HhImportTask(threading.Thread):
                             if sess is not None:
                                 sess.close()
                         except:
-                            self.log("Unknown Exception II" + traceback.format_exc())
+                            self.log(
+                                "Unknown Exception II" +
+                                traceback.format_exc())
             except Exception:
                 self.log("Outer Exception " + traceback.format_exc())
             finally:
                 self.lock.release()
 
-                    
     def run(self):
         while not self.stopped.isSet():
             self.import_now()
@@ -240,6 +255,13 @@ class HhImportTask(threading.Thread):
 def get_hh_import_task(contract):
     return tasks.get(contract.id)
 
+
+def startup_contract(contract_id):
+    task = HhImportTask(contract_id)
+    tasks[contract_id] = task
+    task.start()
+
+
 def startup():
     sess = None
 
@@ -248,25 +270,31 @@ def startup():
         for procs in processes.values():
             for proc in procs:
                 if proc.isAlive():
-                    raise UserException("Can't shut start hh importer, there are still some hh imports running.")
+                    raise UserException(
+                        "Can't start hh importer, there are still some " +
+                        "hh imports running.")
 
-        for contract in sess.query(Contract).join(MarketRole).filter(MarketRole.code == 'C').order_by(Contract.id):
-            task = HhImportTask(contract.id)
-            tasks[contract.id] = task
-            task.start()
+        for contract in sess.query(Contract).join(MarketRole).filter(
+                MarketRole.code == 'C').order_by(Contract.id):
+            startup_contract(contract.id)
     finally:
         if sess is not None:
             sess.close()
+
 
 def shutdown():
     for procs in processes.values():
         for proc in procs:
             if proc.isAlive():
-                raise UserException("Can't shut down hh importer, there are still some hh imports running.")
+                raise UserException(
+                    "Can't shut down hh importer, there are still some hh "
+                    "imports running.")
 
     for task in tasks.values():
         task.stop()
 
     for id, task in tasks.iteritems():
         if task.isAlive():
-            raise UserException("Can't shut down hh importer, the task " + str(task) + " with id " + str(id) + " is still running.")
+            raise UserException(
+                "Can't shut down hh importer, the task " + str(task) +
+                " with id " + str(id) + " is still running.")

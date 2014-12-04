@@ -1,15 +1,17 @@
 from net.sf.chellow.monad import Monad
-from sqlalchemy.orm import joinedload_all
-import datetime
-import pytz
+import db
+import utils
+import templater
 
 Monad.getUtils()['impt'](globals(), 'db', 'utils', 'templater')
 Source, GeneratorType, GspGroup = db.Source, db.GeneratorType, db.GspGroup
 SiteEra, Contract, Pc, Cop = db.SiteEra, db.Contract, db.Pc, db.Cop
-Site, MarketRole, Era = db.Site, db.MarketRole, db.Era
+Site, MarketRole, Era, Ssc = db.Site, db.MarketRole, db.Era, db.Ssc
 UserException, form_date = utils.UserException, utils.form_date
-parse_mpan_core = utils.parse_mpan_core
+parse_mpan_core, form_int = utils.parse_mpan_core, utils.form_int
 render = templater.render
+inv, template = globals()['inv'], globals()['template']
+
 
 def make_fields(sess, site, message=None):
     messages = [] if message is None else [str(message)]
@@ -107,7 +109,7 @@ try:
                 imp_supplier_contract = Contract.get_supplier_by_id(
                     sess, imp_supplier_contract_id)
                 imp_supplier_account = inv.getString("imp_supplier_account")
-                imp_sc= inv.getInteger('imp_sc')
+                imp_sc = form_int(inv, 'imp_sc')
                 imp_llfc_code = inv.getString("imp_llfc_code")
 
             if inv.hasParameter('exp_mpan_core'):
@@ -130,7 +132,7 @@ try:
                 exp_supplier_contract = Contract.get_supplier_by_id(
                     sess, exp_supplier_contract_id)
                 exp_supplier_account = inv.getString("exp_supplier_account")
-                exp_sc= inv.getInteger('exp_sc')
+                exp_sc = inv.getInteger('exp_sc')
                 exp_llfc_code = inv.getString("exp_llfc_code")
 
             supply = site.insert_supply(

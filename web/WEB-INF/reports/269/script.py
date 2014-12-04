@@ -1,9 +1,13 @@
 from net.sf.chellow.monad import Monad
+import db
+import templater
+import utils
 
 Monad.getUtils()['impt'](globals(), 'db', 'utils', 'templater')
 Contract = db.Contract
 render = templater.render
-UserException = utils.UserException
+UserException, form_str = utils.UserException, utils.form_str
+inv, template = globals()['inv'], globals()['template']
 
 sess = None
 try:
@@ -21,7 +25,7 @@ try:
             sess.commit()
             inv.sendSeeOther('/reports/259/output/')
         else:
-            name = inv.getString('name')
+            name = form_str(inv, 'name')
             charge_script = inv.getString('charge_script')
             properties = inv.getString('properties')
             contract.update(
