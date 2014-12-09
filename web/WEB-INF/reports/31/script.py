@@ -1,12 +1,14 @@
 from net.sf.chellow.monad import Monad
-from sqlalchemy.sql.expression import text
-from datetime import datetime
-import pytz
-
+import db
+import templater
+import utils
 Monad.getUtils()['impt'](globals(), 'db', 'utils', 'templater')
 ReadType, Tpr, RegisterRead = db.ReadType, db.Tpr, db.RegisterRead
 render = templater.render
-UserException = utils.UserException
+UserException, form_decimal = utils.UserException, utils.form_decimal
+form_date = utils.form_date
+inv, template = globals()['inv'], globals()['template']
+
 
 def make_fields(sess, read, message=None):
     read_types = sess.query(ReadType).order_by(ReadType.code).all()
@@ -25,7 +27,7 @@ try:
         read = RegisterRead.get_by_id(sess, read_id)
         render(inv, template, make_fields(sess, read))
     else:
-        set_read_write(sess)
+        db.set_read_write(sess)
         read_id = inv.getLong('supplier_read_id')
         read = RegisterRead.get_by_id(sess, read_id)
         if inv.hasParameter('update'):

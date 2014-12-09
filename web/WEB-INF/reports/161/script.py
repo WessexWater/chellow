@@ -7,9 +7,12 @@ import threading
 import pytz
 from dateutil.relativedelta import relativedelta
 from sqlalchemy import or_
-
+from sqlalchemy.sql.expression import null
+import db
+import utils
+import computer
 Monad.getUtils()['impt'](globals(), 'templater', 'db', 'utils', 'computer')
-
+inv = globals()['inv']
 Site, Era, Bill = db.Site, db.Era, db.Bill
 HH, hh_after, hh_format = utils.HH, utils.hh_after, utils.hh_format
 totalseconds = utils.totalseconds
@@ -24,11 +27,12 @@ if inv.hasParameter('site_id'):
     st_id = inv.getLong('site_id')
 else:
     st_id = None
-    
+
 finish_date = datetime.datetime(year, month, 1, tzinfo=pytz.utc) + \
     relativedelta(months=1) - HH
 start_date = datetime.datetime(year, month, 1, tzinfo=pytz.utc) - \
     relativedelta(months=months-1)
+
 
 def process_site(
         sess, site, month_start, month_finish, forecast_date, tmp_file):
@@ -40,31 +44,35 @@ def process_site(
     problem = ''
     month_data = {}
 
-    for stream_name in ['import-net', 'export-net', 'import-gen', 'export-gen', 'import-3rd-party', 'export-3rd-party', 'msp', 'used', 'used-3rd-party']:
+    for stream_name in [
+            'import-net', 'export-net', 'import-gen', 'export-gen',
+            'import-3rd-party', 'export-3rd-party', 'msp', 'used',
+            'used-3rd-party']:
         month_data[stream_name + '-kwh'] = 0
         month_data[stream_name + '-gbp'] = 0
 
-    has_3rd_party = False
-    third_party_contracts = {}
-    
     billed_gbp = 0
     billed_kwh = 0
 
     for group in site.groups(sess, month_start, month_finish, False):
         for cand_site in group.sites:
             cand_site_code = cand_site.code
-            if cand_site_code != site_code and cand_site_code not in associates:
+            if cand_site_code != site_code and \
+                    cand_site_code not in associates:
                 associates.append(cand_site_code)
         for cand_supply in group.supplies:
-            for cand_era in cand_supply.find_eras(sess, month_start, month_finish):
-                if cand_era.imp_mpan_core is not None and metering_type != 'hh':
+            for cand_era in cand_supply.find_eras(
+                    sess, month_start, month_finish):
+                if cand_era.imp_mpan_core is not None \
+                        and metering_type != 'hh':
                     if cand_era.pc.code == '00':
                         metering_type = 'hh'
                     elif metering_type != 'amr':
                         if len(cand_era.channels) > 0:
                             metering_type = 'amr'
                         elif metering_type != 'nhh':
-                            if cand_era.mtc.meter_type.code not in ['UM', 'PH']:
+                            if cand_era.mtc.meter_type.code not in [
+                                    'UM', 'PH']:
                                 metering_type = 'nhh'
                             else:
                                 metering_type = 'unmetered'
@@ -90,7 +98,11 @@ def process_site(
                 if gen_type not in generator_types:
                     generator_types.append(gen_type)
 
-            for era in sess.query(Era).filter(Era.supply_id==supply.id, Era.start_date<=chunk_finish, or_(Era.finish_date==None, Era.finish_date>=chunk_start)):
+            for era in sess.query(Era).filter(
+                    Era.supply == supply, Era.start_date <= chunk_finish,
+                    or_(
+                        Era.finish_date == null(),
+                        Era.finish_date >= chunk_start)):
                 tmp_file.write(' ')
 
                 imp_mpan_core = era.imp_mpan_core
@@ -109,32 +121,40 @@ def process_site(
                     bill_finish = era.finish_date
 
                 supplier_contract = era.imp_supplier_contract
-                if source_code in ('net', 'gen-net', '3rd-party', '3rd-party-reverse'):
-                    #tmp_file.write("starting vbill, " + str(System.currentTimeMillis()))
-                    supply_source = computer.SupplySource(sess, bill_start, bill_finish, forecast_date, era, True, tmp_file, caches)
+                if source_code in (
+                        'net', 'gen-net', '3rd-party', '3rd-party-reverse'):
+                    supply_source = computer.SupplySource(
+                        sess, bill_start, bill_finish, forecast_date, era,
+                        True, tmp_file, caches)
                     if supply_source.measurement_type not in ['hh', 'amr']:
-                        kwh = sum(hh['msp-kwh'] for hh in supply_source.hh_data)
+                        kwh = sum(
+                            hh['msp-kwh'] for hh in supply_source.hh_data)
                         if source_code in ('net', 'gen-net'):
                             month_data['import-net-kwh'] += kwh
                         elif source_code in ('3rd-party', '3rd-party-reverse'):
                             month_data['import-3rd-party-kwh'] += kwh
 
-                    #tmp_file.write("finished init from mpan, " + str(System.currentTimeMillis()))
-                    import_vb_function = computer.contract_func(caches, supplier_contract, 'virtual_bill', tmp_file)
+                    import_vb_function = computer.contract_func(
+                        caches, supplier_contract, 'virtual_bill', tmp_file)
                     if import_vb_function is None:
-                        problem += "Can't find the virtual_bill function in the supplier contract. "
+                        problem += "Can't find the virtual_bill function in " \
+                            "the supplier contract. "
                     else:
                         import_vb_function(supply_source)
                         v_bill = supply_source.supplier_bill
-                        #tmp_file.write("finishing vbill, " + str(System.currentTimeMillis()))
-                        
+
                         if 'problem' in v_bill and len(v_bill['problem']) > 0:
                             problem += 'Supplier Problem: ' + v_bill['problem']
 
                         try:
                             gbp = v_bill['net-gbp']
                         except KeyError:
-                            problem += 'For the supply ' + import_mpan.toString() + ' the virtual bill ' + str(v_bill) + ' from the contract ' + supplier_contract.getName() + ' does not contain the net-gbp key.'
+                            problem += 'For the supply ' + \
+                                supply_source.mpan_core + \
+                                ' the virtual bill ' + str(v_bill) + \
+                                ' from the contract ' + \
+                                supplier_contract.getName() + \
+                                ' does not contain the net-gbp key.'
                         if source_code in ('net', 'gen-net'):
                             month_data['import-net-gbp'] += gbp
                         elif source_code in ('3rd-party', '3rd-party-reverse'):
@@ -143,7 +163,7 @@ def process_site(
                     dc_contract = era.hhdc_contract
                     if dc_contract is not None:
                         supply_source.contract_func(
-                                dc_contract, 'virtual_bill')(supply_source)
+                            dc_contract, 'virtual_bill')(supply_source)
                         dc_bill = supply_source.dc_bill
                         gbp = dc_bill['net-gbp']
                         if 'problem' in dc_bill and \
@@ -173,14 +193,14 @@ def process_site(
                                 month_data['import-3rd-party-gbp'] += gbp
 
             for bill in sess.query(Bill).filter(
-                    Bill.supply_id==supply.id, Bill.start_date<=chunk_finish,
-                    Bill.finish_date>=chunk_start):
+                    Bill.supply == supply, Bill.start_date <= chunk_finish,
+                    Bill.finish_date >= chunk_start):
                 bill_start = bill.start_date
                 bill_finish = bill.finish_date
                 bill_duration = totalseconds(bill_finish - bill_start) + \
                     (30 * 60)
                 overlap_duration = totalseconds(
-                    min(bill_finish, chunk_finish) - \
+                    min(bill_finish, chunk_finish) -
                     max(bill_start, chunk_start)) + (30 * 60)
                 overlap_proportion = float(overlap_duration) / bill_duration
                 billed_gbp += overlap_proportion * float(bill.net)
@@ -191,11 +211,11 @@ def process_site(
         site_ds = computer.SiteSource(
             sess, site, chunk_start, chunk_finish, forecast_date, tmp_file,
             caches, displaced_era)
-        if displaced_era != None:
-            month_data['msp-gbp'] += computer.contract_func(
+        if displaced_era is not None:
+            computer.contract_func(
                 caches, displaced_era.imp_supplier_contract,
-                'displaced_virtual_bill', tmp_file)(site_ds)['net-gbp']
-
+                'displaced_virtual_bill', tmp_file)(site_ds)
+            month_data['msp-gbp'] += site_ds.supplier_bill['net-gbp']
 
         for stream_name in (
                 'import-3rd-party', 'export-3rd-party', 'import-net',
@@ -222,16 +242,15 @@ def process_site(
         '.'.join(generator_types), hh_format(month_finish),
         month_data['import-net-kwh'], month_data['msp-kwh'],
         month_data['export-net-kwh'], month_data['used-kwh'],
-        month_data['export-gen-kwh'], month_data['import-gen-kwh'], 
+        month_data['export-gen-kwh'], month_data['import-gen-kwh'],
         month_data['import-3rd-party-kwh'], month_data['export-3rd-party-kwh'],
         month_data['import-net-gbp'], month_data['msp-gbp'], 0,
         month_data['used-gbp'], month_data['used-3rd-party-gbp'], billed_kwh,
         billed_gbp, metering_type, problem]
     return result
 
+
 def long_process():
-    now = datetime.datetime.now(pytz.utc)
-    
     sess = None
     tmp_file = None
     try:
@@ -258,22 +277,28 @@ def long_process():
 
         forecast_date = computer.forecast_date()
 
-        tmp_file.write("Site Id,Site Name,Associated Site Ids,Sources,Generator Types,Month,Metered Imported kWh,Metered Displaced kWh,Metered Exported kWh,Metered Used kWh,Metered Parasitic kWh,Metered Generated kWh,Metered 3rd Party Import kWh,Metered 3rd Party Export kWh,Metered Imported GBP,Metered Displaced GBP,Metered Exported GBP,Metered Used GBP,Metered 3rd Party Import GBP,Billed Imported kWh,Billed Imported GBP,Metering Type,Problem")
+        tmp_file.write(
+            "Site Id,Site Name,Associated Site Ids,Sources,"
+            "Generator Types,Month,Metered Imported kWh,"
+            "Metered Displaced kWh,Metered Exported kWh,Metered Used kWh,"
+            "Metered Parasitic kWh,Metered Generated kWh,"
+            "Metered 3rd Party Import kWh,Metered 3rd Party Export kWh,"
+            "Metered Imported GBP,Metered Displaced GBP,Metered Exported GBP,"
+            "Metered Used GBP,Metered 3rd Party Import GBP,"
+            "Billed Imported kWh,Billed Imported GBP,Metering Type,Problem")
 
         for i in range(months):
             sites = sess.query(Site).order_by(Site.code)
             if st is not None:
-                sites = sites.filter(Site.id==st.id)
+                sites = sites.filter(Site.id == st.id)
             for site in sites:
-                #tmp_file.write("starting site, " + str(System.currentTimeMillis()))
-                #tmp_file.write("starting site, " + str(System.currentTimeMillis()))
-
                 month_start = start_date + relativedelta(months=i)
                 month_finish = month_start + relativedelta(months=1) - HH
-                #tq = process_site(sess, site, month_start, month_finish, forecast_date,  tmp_file)
-                #tmp_file.write('printing, ' + str(System.currentTimeMillis()) + ',' + ','.join('"' + str(value) + '"' for value in tq))
-                tmp_file.write('\r\n' + ','.join('"' + str(value) + '"' for value in process_site(sess, site, month_start, month_finish, forecast_date, tmp_file)))
-                #tmp_file.write("finishing site, " + str(System.currentTimeMillis()))
+                tmp_file.write(
+                    '\r\n' + ','.join(
+                        '"' + str(value) + '"' for value in process_site(
+                            sess, site, month_start, month_finish,
+                            forecast_date, tmp_file)))
                 tmp_file.flush()
 
     except:
@@ -288,6 +313,5 @@ def long_process():
             tmp_file.close()
             os.rename(running_name, finished_name)
 
-        
 threading.Thread(target=long_process).start()
 inv.sendSeeOther("/reports/251/output/")

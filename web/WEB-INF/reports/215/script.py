@@ -1,11 +1,23 @@
-from java.lang import System
+from sqlalchemy import or_
+from sqlalchemy.sql.expression import null, true
 from net.sf.chellow.monad import Monad
 from datetime import datetime
 import pytz
+import utils
+import db
 
 Monad.getUtils()['impt'](globals(), 'db', 'utils', 'templater', 'bsuos')
+prev_hh, hh_after, hh_before = utils.prev_hh, utils.hh_after, utils.hh_before
+Supply, Source, Era, Site = db.Supply, db.Source, db.Era, db.Site
+SiteEra = db.SiteEra
+inv = globals()['inv']
 
 year = inv.getInteger('year')
+if inv.hasParameter('supply_id'):
+    supply_id = inv.getLong('supply_id')
+else:
+    supply_id = None
+
 
 def content():
     yield "MPAN Core,Site Id,Site Name,Date,Event,"
@@ -28,16 +40,22 @@ def content():
 
     sess = None
     try:
-        sess = session()
-        if inv.hasParameter('supply_id'):
-            supply_id = inv.getLong('supply_id')
-            supply = Supply.get_by_id(supply_id)
-            supplies = sess.query(Supply).from_statement("select * from Supply supply where id = :supply_id").params(supply_id=supply_id)
+        sess = db.session()
+        if supply_id is None:
+            supplies = sess.query(Supply).join(Source).join(Era).filter(
+                Source.code.in_(('net', 'gen-net', 'gen')),
+                Era.start_date <= year_finish, or_(
+                    Era.finish_date == null(),
+                    Era.finish_date >= year_start)).distinct()
         else:
-            supplies = sess.query(Supply).from_statement("select distinct supply.* from supply, era, source where era.supply_id = supply.id and supply.source_id = source.id and source.code in ('net', 'gen-net', 'gen') and era.start_date <= :finish_date and (era.finish_date is null or era.finish_date >= :start_date)").params(start_date=year_start, finish_date=year_finish)
+            supply = Supply.get_by_id(supply_id)
+            supplies = sess.query(Supply).filter(Supply.id == supply.id)
 
         for supply in supplies:
-            eras = sess.query(Era).from_statement("select * from era where era.supply_id = :supply_id and era.start_date <= :finish_date and (era.finish_date is null or era.finish_date >= :start_date) order by era.start_date").params(supply_id=supply.id, start_date= year_start, finish_date=year_finish).all()
+            eras = sess.query(Era).filter(
+                Era.supply == supply, Era.start_date <= year_finish,
+                or_(Era.finish_date == null(), Era.finish_date >= year_start)
+                ).order_by(Era.start_date).all()
             events = []
             first_era = eras[0]
             first_era_start = first_era.start_date
@@ -48,13 +66,14 @@ def content():
             last_era_finish = last_era.finish_date
             if hh_before(last_era_finish, year_finish):
                 add_event(events, last_era_finish, "Disconnection", last_era)
-        
+
             prev_era = first_era
             for era in eras[1:]:
                 if era.msn != prev_era.msn:
                     add_event(events, era.start_date, "Meter Change", era)
                 if era.pc.code != prev_era.pc.code:
-                   add_event(events, era.start_date, "Change Of Profile Class", era)
+                    add_event(
+                        events, era.start_date, "Change Of Profile Class", era)
 
                 if era.mop_contract_id != prev_era.mop_contract_id:
                     add_event(events, era.start_date, "Change Of MOP", era)
@@ -74,24 +93,32 @@ def content():
                     else:
                         cur_sup = era.exp_supplier_contract
                         prev_sup = prev_era.exp_supplier_contract
-                
+
                     if cur_sup is None and prev_sup is not None:
-                        add_event(events, era.start_date, "End of supply", mpan_core)
+                        add_event(
+                            events, era.start_date, "End of supply", mpan_core)
                     elif cur_sup is not None and prev_sup is None:
-                        add_event(events, era.start_date, "Start of supply", None, mpan_core)
-                    elif cur_sup is not None and prev_sup is not None and cur_sup != prev_sup:
-                        add_event(events, era.start_date, "Change Of Supplier", None, mpan_core)
-            
+                        add_event(
+                            events, era.start_date, "Start of supply", None,
+                            mpan_core)
+                    elif cur_sup is not None and \
+                            prev_sup is not None and cur_sup != prev_sup:
+                        add_event(
+                            events, era.start_date, "Change Of Supplier", None,
+                            mpan_core)
+
                 prev_era = era
 
             if len(events) > 0:
-                site = sess.query(Site).join(SiteEra).filter(SiteEra.is_physical==True, SiteEra.era_id==last_era.id).one()
+                site = sess.query(Site).join(SiteEra).filter(
+                    SiteEra.is_physical == true(),
+                    SiteEra.era == last_era).one()
 
-                vals = [
-                    event['mpan-core'], site.code, site.name,
-                    event['date'].strftime("%Y-%m-%d %H:%M"),
-                    event['code']]
                 for event in events:
+                    vals = [
+                        event['mpan-core'], site.code, site.name,
+                        event['date'].strftime("%Y-%m-%d %H:%M"),
+                        event['code']]
                     yield '\n,'.join(
                         '"' + str(val) + '"' for val in vals) + ','
             else:

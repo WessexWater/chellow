@@ -1597,7 +1597,7 @@ def virtual_bill(ds):
 				<control name="imp_supplier_account" value="01" />
 
 				<response-code value="400" />
-				<regex pattern="Problem parsing the field hhdc_contract_id as an integer: invalid literal for int\(\) with base 10: &amp;#39;null&amp;#39;"/>
+				<regex pattern="Problem parsing the field hhdc_contract_id as an integer: invalid literal for int\(\) with base 10: .*null"/>
 			</request>
 		</test>
 		<test name="Test that profile 05 is displayed for an era. Supply 9">
@@ -2719,7 +2719,7 @@ def virtual_bill(supply_source):
 				<regex
 					pattern='&lt;th&gt;Reference&lt;/th&gt;\s*&lt;th&gt;Account&lt;/th&gt;\s*&lt;th&gt;Bill Type&lt;/th&gt;\s*&lt;th&gt;MPANs&lt;/th&gt;\s*&lt;th&gt;Issue Date&lt;/th&gt;\s*&lt;th&gt;Start Date&lt;/th&gt;\s*&lt;th&gt;Finish Date&lt;/th&gt;\s*&lt;th&gt;kWh&lt;/th&gt;\s*&lt;th&gt;Net&lt;/th&gt;\s*&lt;th&gt;VAT&lt;/th&gt;\s*&lt;th&gt;Gross&lt;/th&gt;\s*&lt;th&gt;R1 MPAN&lt;/th&gt;\s*&lt;th&gt;R1 Meter Serial Number&lt;/th&gt;\s*&lt;th&gt;R1 Coefficient&lt;/th&gt;\s*&lt;th&gt;R1 Units&lt;/th&gt;\s*&lt;th&gt;R1 TPR&lt;/th&gt;\s*&lt;th&gt;R1 Previous Read Date&lt;/th&gt;\s*&lt;th&gt;R1 Previous Read Value&lt;/th&gt;\s*&lt;th&gt;R1 Previous Read Type&lt;/th&gt;\s*&lt;th&gt;R1 Present Read Date&lt;/th&gt;\s*&lt;th&gt;R1 Present Read Value&lt;/th&gt;\s*&lt;th&gt;R1 Present Read Type&lt;/th&gt;\s*&lt;th&gt;Breakdown&lt;/th&gt;' />
 				<regex
-					pattern='&lt;td&gt;3423760005&lt;/td&gt;\s*&lt;td&gt;SA342376000&lt;/td&gt;\s*&lt;td&gt;N&lt;/td&gt;\s*&lt;td&gt;\[&amp;#39;03 801 110 22 10653921534&amp;#39;\]&lt;/td&gt;\s*&lt;td&gt;2010-05-12 00:00&lt;/td&gt;\s*&lt;td&gt;2010-01-19 00:00&lt;/td&gt;\s*&lt;td&gt;2010-04-20 23:30&lt;/td&gt;\s*&lt;td&gt;253&lt;/td&gt;\s*&lt;td&gt;36.16&lt;/td&gt;\s*&lt;td&gt;1.8&lt;/td&gt;\s*&lt;td&gt;0&lt;/td&gt;\s*&lt;td&gt;03 801 110 22 1065 3921 534&lt;/td&gt;\s*&lt;td&gt;K87D74429&lt;/td&gt;\s*&lt;td&gt;1&lt;/td&gt;\s*&lt;td&gt;kWh&lt;/td&gt;\s*&lt;td&gt;00001&lt;/td&gt;\s*&lt;td&gt;2010-01-18 23:30&lt;/td&gt;\s*&lt;td&gt;16963&lt;/td&gt;\s*&lt;td&gt;E&lt;/td&gt;\s*&lt;td&gt;2010-04-20 23:30&lt;/td&gt;\s*&lt;td&gt;17216&lt;/td&gt;\s*&lt;td&gt;E&lt;/td&gt;' />
+					pattern='&lt;td&gt;3423760005&lt;/td&gt;\s*&lt;td&gt;SA342376000&lt;/td&gt;\s*&lt;td&gt;N&lt;/td&gt;\s*&lt;td&gt;\[u?&amp;#39;03 801 110 22 10653921534&amp;#39;\]&lt;/td&gt;\s*&lt;td&gt;2010-05-12 00:00&lt;/td&gt;\s*&lt;td&gt;2010-01-19 00:00&lt;/td&gt;\s*&lt;td&gt;2010-04-20 23:30&lt;/td&gt;\s*&lt;td&gt;253&lt;/td&gt;\s*&lt;td&gt;36.16&lt;/td&gt;\s*&lt;td&gt;1.8&lt;/td&gt;\s*&lt;td&gt;0&lt;/td&gt;\s*&lt;td&gt;03 801 110 22 1065 3921 534&lt;/td&gt;\s*&lt;td&gt;K87D74429&lt;/td&gt;\s*&lt;td&gt;1&lt;/td&gt;\s*&lt;td&gt;kWh&lt;/td&gt;\s*&lt;td&gt;00001&lt;/td&gt;\s*&lt;td&gt;2010-01-18 23:30&lt;/td&gt;\s*&lt;td&gt;16963&lt;/td&gt;\s*&lt;td&gt;E&lt;/td&gt;\s*&lt;td&gt;2010-04-20 23:30&lt;/td&gt;\s*&lt;td&gt;17216&lt;/td&gt;\s*&lt;td&gt;E&lt;/td&gt;' />
 				<response-code value="200" />
 				<regex
 					pattern="All the bills have been successfully loaded and attached to the batch\." />
@@ -3247,7 +3247,7 @@ def virtual_bill(supply_source):
 				<control name="insert" value="Insert" />
 
 				<regex
-					pattern="Problem parsing the field imp_sc as an integer: invalid literal for int\(\) with base 10: &amp;#39;&amp;#39;" />
+					pattern="Problem parsing the field imp_sc as an integer: invalid literal for int\(\) with base 10: " />
 				<response-code value="400" />
 			</request>
 		</test>
@@ -3505,7 +3505,7 @@ def virtual_bill(supply_source):
 				path="/chellow/reports/65/output/?hhdc_contract_id=53&amp;process_id=13">
 				<refresh />
 				<regex
-					pattern="There is no channel for the datum: \{&amp;#39;channel_type&amp;#39;: &amp;#39;REACTIVE_EXP&amp;#39;, &amp;#39;mpan_core&amp;#39;: &amp;#39;22 4862 4512 332&amp;#39;, &amp;#39;start_date&amp;#39;: datetime.datetime\(2010, 2, 4, 20, 0, tzinfo=&amp;lt;UTC&amp;gt;\), &amp;#39;status&amp;#39;: &amp;#39;A&amp;#39;, &amp;#39;value&amp;#39;: Decimal\(&amp;#39;30.4339&amp;#39;\)\}\." />
+					pattern="There is no channel for the datum: \{&amp;#39;channel_type&amp;#39;: &amp;#39;REACTIVE_EXP&amp;#39;, &amp;#39;mpan_core&amp;#39;: &amp;#39;22 4862 4512 332&amp;#39;, &amp;#39;start_date&amp;#39;: datetime.datetime\(2010, 2, 4, 20, 0, tzinfo=&amp;lt;UTC&amp;gt;\), &amp;#39;status&amp;#39;: &amp;#39;A&amp;#39;, &amp;#39;value&amp;#39;: Decimal\(&amp;#3\d;30.4339&amp;#3\d;\)\}\." />
 
 				<response-code value="200" />
 			</request>
@@ -3881,7 +3881,7 @@ def virtual_bill(supply_source):
 				path="/chellow/reports/233/output/?hhdc_contract_id=53&amp;days_hidden=1">
 				<response-code value="200" />
 				<regex
-					pattern='"82","22 0883 6932 301","None","CI005","Wheal Rodney","Missing","True","ACTIVE","2002-01-01 00:00","2003-08-02 23:30",' />
+					pattern='"83","22 0883 6932 301","None","CI005","Wheal Rodney","Missing","True","ACTIVE","2002-01-01 00:00","2003-08-02 23:30",' />
 			</request>
 		</test>
 		<test name="Site use graph">
@@ -4115,7 +4115,7 @@ def virtual_bill(supply_source):
 			<request path="/chellow/reports/111/output/?bill_id=8">
 				<response-code value="200" />
 				<regex
-					pattern='"06-004","00101","N","244","3810.08","355.03","2011-05-01 00:00","2011-06-30 00:00","22 6354 2983 570","CI017","Roselands","2011-05-01 00:00","2011-06-30 00:00","9;8","4701.16","3010.226","1690.934","","1.0077268","","","11.4","0.00485","","","","","5.89","","","2300","","60","","0.0211","","2911.8","","","0","","31","","0.0211","","0.0","","","","","","","","","","","","","0.0","","0.00353","","0.0","","","","","","88","","","0","","0","","0.0","","","0","","0.0","","0.0","","","0","","0","","0.0","","","0","","0","","0.0","","","0","","0","","0.0","","","0","","0","","0.0","","","0.0","","0.00102894","","0.0","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","2010-12-07 17:00","","0","","E","","1.087","","0.0","","2010-12-20 17:00","","0","","E","","1.087","","0.0","","2011-01-06 17:00","","0","","E","","1.087","","0.0","","0.0","","28.408897","","1","","0.0","","","","","","","","","virtual-duos-fixed-days","60","","","virtual-duos-fixed-gbp","4.536","","","virtual-duos-fixed-rate","0.0756","","","virtual-duos-green-gbp","0.0","","","virtual-duos-green-kwh","0","","","virtual-duos-green-rate","0.00138","",""' />
+					pattern='"06-004","00101","N","244","3810.08","355.03","2011-05-01 00:00","2011-06-30 00:00","22 6354 2983 570","CI017","Roselands","2011-05-01 00:00","2011-06-30 00:00","9;8","4701.16","3010.226","1690.934","","1.0077268","","","11.4","0.00485","","","","","5.89","","","2300","","60","","0.0211","","2911.8","","","0","","31","","0.0211","","0.0","","","","","","","","","","","","","0.00353","","0.0","","","","","","88","","","0","","0","","0.0","","","0","","0.0","","0.0","","","0","","0","","0.0","","","0","","0","","0.0","","","0","","0","","0.0","","","0","","0","","0.0","","","0.0","","0.00102894","","0.0","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","2010-12-07 17:00","","0","","E","","1.087","","0.0","","2010-12-20 17:00","","0","","E","","1.087","","0.0","","2011-01-06 17:00","","0","","E","","1.087","","0.0","","0.0","","28.408897","","1","","0.0","","","","","","","","","virtual-duos-fixed-days","60","","","virtual-duos-fixed-gbp","4.536","","","virtual-duos-fixed-rate","0.0756","","","virtual-duos-green-gbp","0.0","","","virtual-duos-green-kwh","0","","","virtual-duos-green-rate","0.00138","",""' />
 			</request>
 		</test>
 		<test name="Contract virtual bills">
@@ -4123,7 +4123,7 @@ def virtual_bill(supply_source):
 				path="/chellow/reports/87/output/?supplier_contract_id=55&amp;start_year=2013&amp;start_month=12&amp;start_day=01&amp;start_hour=00&amp;start_minute=00&amp;finish_year=2013&amp;finish_month=12&amp;finish_day=01&amp;finish_hour=23&amp;finish_minute=30">
 				<response-code value="200" />
 				<regex
-					pattern='"22 0470 7514 535","CH017","Parbola","010","2013-12-01 00:00","2013-12-01 23:30","93.89","1.0123821","0","0","0","5.89","150","1","0","0","0","0","0","0","0","0","0","0","0.0","0.00147","0.0","0","88","0","0","0.0","0","0.0","0.0","0","0","0.0","0","0","0.0","0","0","0.0","0","0","0.0","0.0","0.00114808","0.0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","","duos-fixed-days","1","duos-fixed-gbp","0","duos-fixed-rate","0","duos-green-gbp","0.0","duos-green-kwh","0","duos-green-rate","-0.00649"' />
+					pattern='"22 0470 7514 535","CH017","Parbola","010","2013-12-01 00:00","2013-12-01 23:30","93.89","1.0123821","","","","5.89","150","1","0","0","","","","","","","","","0.00147","0.0","","88","0","0","0.0","0","0.0","0.0","0","0","0.0","0","0","0.0","0","0","0.0","0","0","0.0","0.0","0.00114808","0.0","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","duos-fixed-days","1","duos-fixed-gbp","0","duos-fixed-rate","0","duos-green-gbp","0.0","duos-green-kwh","0","duos-green-rate","-0.00649"' />
 			</request>
 		</test>
 		<test name="Contract displaced virtual bills">
@@ -4177,7 +4177,7 @@ def virtual_bill(supply_source):
 				path="/chellow/reports/37/output/?hhdc-contract-id=53&amp;hidden_days=5">
 				<response-code value="200" />
 				<regex
-					pattern='&lt;tr&gt;\s*&lt;td&gt;\s*&lt;ul&gt;\s*&lt;li&gt;\s*&lt;a href="/chellow/reports/117/output/\?snag_id=99"&gt;view&lt;/a&gt;  \[&lt;a href="/chellow/reports/365/output/\?snag_id=99"&gt;edit&lt;/a&gt;\]\s*&lt;/li&gt;\s*&lt;/ul&gt;\s*&lt;/td&gt;\s*&lt;td&gt;\s*&lt;/td&gt;\s*&lt;td&gt;\s*22 0470 7514 535\s*&lt;/td&gt;\s*&lt;td&gt;\s*&lt;ul&gt;\s*&lt;li&gt;CH017 Parbola&lt;/li&gt;\s*&lt;/ul&gt;\s*&lt;/td&gt;\s*&lt;td&gt;Missing&lt;/td&gt;\s*&lt;td&gt;\s*&lt;ul&gt;\s*&lt;li&gt;\s*Export\s*ACTIVE\s*&lt;/li&gt;\s*&lt;/ul&gt;\s*&lt;/td&gt;\s*&lt;td&gt;\s*2004-07-07 00:00 to\s*2005-09-14 23:30\s*&lt;/td&gt;\s*&lt;/tr&gt;' />
+					pattern='&lt;tr&gt;\s*&lt;td&gt;\s*&lt;ul&gt;\s*&lt;li&gt;\s*&lt;a href="/chellow/reports/117/output/\?snag_id=100"&gt;view&lt;/a&gt;  \[&lt;a href="/chellow/reports/365/output/\?snag_id=100"&gt;edit&lt;/a&gt;\]\s*&lt;/li&gt;\s*&lt;/ul&gt;\s*&lt;/td&gt;\s*&lt;td&gt;\s*&lt;/td&gt;\s*&lt;td&gt;\s*22 0470 7514 535\s*&lt;/td&gt;\s*&lt;td&gt;\s*&lt;ul&gt;\s*&lt;li&gt;CH017 Parbola&lt;/li&gt;\s*&lt;/ul&gt;\s*&lt;/td&gt;\s*&lt;td&gt;Missing&lt;/td&gt;\s*&lt;td&gt;\s*&lt;ul&gt;\s*&lt;li&gt;\s*Export\s*ACTIVE\s*&lt;/li&gt;\s*&lt;/ul&gt;\s*&lt;/td&gt;\s*&lt;td&gt;\s*2004-07-07 00:00 to\s*2005-09-14 23:30\s*&lt;/td&gt;\s*&lt;/tr&gt;' />
 			</request>
 		</test>
 
@@ -4199,15 +4199,15 @@ def virtual_bill(supply_source):
 			<request
 				path="/chellow/reports/233/output/?hhdc_contract_id=53&amp;days_hidden=0">
 				<regex
-					pattern='"0","106","22 4862 4512 332","None","CH023","Treglisson","Missing","True","ACTIVE","2010-02-04 20:30",""' />
+					pattern='"0","107","22 4862 4512 332","None","CH023","Treglisson","Missing","True","ACTIVE","2010-02-04 20:30",""' />
 				<regex
-					pattern='"0","3","22 9205 6799 106","22 0470 7514 535","CH017","Parbola","Missing","False","ACTIVE","2003-08-03 00:00","2004-07-06 23:30","[^"]*","[^"]*","True"\s*"0","99","None","22 0470 7514 535","CH017","Parbola","Missing","False","ACTIVE","2004-07-07 00:00","2005-09-14 23:30","[^"]*","[^"]*","False"\s*"0","102","None","22 0470 7514 535","CH017","Parbola","Missing","False","ACTIVE","2005-09-15 00:30","2005-12-15 06:30","[^"]*","[^"]*","False"\s*"0","100","None","22 0470 7514 535","CH017","Parbola","Missing","False","ACTIVE","2005-12-15 10:00","2008-07-06 23:30","[^"]*","[^"]*","False"\s*"0","55","None","22 0470 7514 535","CH017","Parbola","Missing","False","ACTIVE","2008-07-07 00:00","2008-08-06 23:30","[^"]*","[^"]*","True"\s*"0","78","None","22 0470 7514 535","CH017","Parbola","Missing","False","ACTIVE","2008-08-07 00:00","2008-09-05 23:30","[^"]*","[^"]*","False"\s*"0","67","None","22 0470 7514 535","CH017","Parbola","Missing","False","ACTIVE","2008-09-06 00:00","","[^"]*","[^"]*","False"\s*' />
+					pattern='"0","3","22 9205 6799 106","22 0470 7514 535","CH017","Parbola","Missing","False","ACTIVE","2003-08-03 00:00","2004-07-06 23:30","[^"]*","[^"]*","True"\s*"0","100","None","22 0470 7514 535","CH017","Parbola","Missing","False","ACTIVE","2004-07-07 00:00","2005-09-14 23:30","[^"]*","[^"]*","False"\s*"0","102","None","22 0470 7514 535","CH017","Parbola","Missing","False","ACTIVE","2005-09-15 00:30","2005-12-15 06:30","[^"]*","[^"]*","False"\s*"0","101","None","22 0470 7514 535","CH017","Parbola","Missing","False","ACTIVE","2005-12-15 10:00","2008-07-06 23:30","[^"]*","[^"]*","False"\s*"0","56","None","22 0470 7514 535","CH017","Parbola","Missing","False","ACTIVE","2008-07-07 00:00","2008-08-06 23:30","[^"]*","[^"]*","True"\s*"0","79","None","22 0470 7514 535","CH017","Parbola","Missing","False","ACTIVE","2008-08-07 00:00","2008-09-05 23:30","[^"]*","[^"]*","False"\s*"0","68","None","22 0470 7514 535","CH017","Parbola","Missing","False","ACTIVE","2008-09-06 00:00","","[^"]*","[^"]*","False"\s*' />
 				<response-code value="200" />
 			</request>
 		</test>
 		<test
 			name="Check that an era with imp_sc of 0 is displayed properly in edit mode. Supply 17">
-			<request path="/chellow/reports/307/output/?era_id=23">
+			<request path="/chellow/reports/307/output/?era_id=22">
 				<regex
 					pattern='&lt;input name="imp_sc" value="0" size="9" maxlength="9"&gt;' />
 
@@ -4679,7 +4679,7 @@ def triad_dates():
 		
 			<!-- Add a channel to the new era -->
 			<request path="/chellow/reports/299/output/" method="post">
-				<control name="era_id" value="28" />
+				<control name="era_id" value="27" />
 				<control name="imp_related" value="true" />
 				<control name="channel_type" value="ACTIVE" />
 				<response-code value="303" />
@@ -4846,9 +4846,7 @@ def triad_dates():
     # MPAN Core, Date, kW
     '''
     ''',
-}]]>
-				</control>
-
+}]]></control>
 				<regex pattern="/reports/77/output/\?supplier_contract_id=64" />
 				<response-code value="303" />
 			</request>

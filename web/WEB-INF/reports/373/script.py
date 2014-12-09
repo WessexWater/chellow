@@ -1,10 +1,12 @@
 from net.sf.chellow.monad import Monad
-from sqlalchemy.orm import joinedload_all
-import datetime
-import pytz
-from java.lang import System
-
+import db
+import templater
+import utils
 Monad.getUtils()['impt'](globals(), 'db', 'utils', 'templater')
+UserException = utils.UserException
+render = templater.render
+inv, template = globals()['inv'], globals()['template']
+
 
 def make_fields(sess, snag, message=None):
     messages = [] if message is None else [str(message)]
@@ -26,7 +28,7 @@ try:
         snag.is_ignored = ignore
         sess.commit()
         inv.sendSeeOther("/reports/119/output/?site_snag_id=" + str(snag.id))
-except utils.UserException, e:
+except UserException, e:
     sess.rollback()
     templater.render(inv, template, make_fields(sess, snag, e), 400)
 finally:

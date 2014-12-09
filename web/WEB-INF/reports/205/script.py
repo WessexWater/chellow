@@ -1,14 +1,17 @@
 from net.sf.chellow.monad import Monad
-from sqlalchemy.orm import joinedload_all
+import utils
+import db
+import templater
+Monad.getUtils()['impt'](globals(), 'db', 'utils', 'templater')
+render = templater.render
+RateScript = db.RateScript
 
-Monad.getUtils()['imprt'](globals(), {
-        'db': ['Contract', 'Party', 'RateScript', 'set_read_write', 'session'], 
-        'utils': ['UserException', 'NotFoundException'],
-        'templater': ['render']})
+NotFoundException = utils.NotFoundException
+inv, template = globals()['inv'], globals()['template']
 
 sess = None
 try:
-    sess = session()
+    sess = db.session()
     rate_script_id = inv.getLong('mop_rate_script_id')
     rate_script = RateScript.get_mop_by_id(sess, rate_script_id)
     render(inv, template, {'rate_script': rate_script})

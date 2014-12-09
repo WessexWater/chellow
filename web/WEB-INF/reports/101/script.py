@@ -2,14 +2,19 @@ from net.sf.chellow.monad import Monad
 import pytz
 import datetime
 from sqlalchemy import or_
+from sqlalchemy.sql.expression import null
 from dateutil.relativedelta import relativedelta
-from java.lang import System
+import db
+import utils
+import computer
+import templater
 
 Monad.getUtils()['impt'](globals(), 'templater', 'db', 'computer', 'utils')
-
-Supply, Era = db.Supply, db.Era
-
 HH, hh_before = utils.HH, utils.hh_before
+Supply, Era = db.Supply, db.Era
+render = templater.render
+inv, template = globals()['inv'], globals()['template']
+
 
 sess = None
 try:
@@ -27,7 +32,8 @@ try:
     meras = []
     debug = ''
 
-    month_start = datetime.datetime(start_date.year, start_date.month, 1, tzinfo=pytz.utc)
+    month_start = datetime.datetime(
+        start_date.year, start_date.month, 1, tzinfo=pytz.utc)
 
     while not month_start > finish_date:
         month_finish = month_start + relativedelta(months=1) - HH
@@ -39,7 +45,11 @@ try:
         else:
             chunk_finish = month_finish
 
-        for era in sess.query(Era).filter(Era.supply_id==supply.id, Era.imp_mpan_core!=None, Era.start_date<=chunk_finish, or_(Era.finish_date==None, Era.finish_date>=chunk_start)):
+        for era in sess.query(Era).filter(
+                Era.supply == supply, Era.imp_mpan_core != null(),
+                Era.start_date <= chunk_finish, or_(
+                    Era.finish_date == null(),
+                    Era.finish_date >= chunk_start)):
             if era.start_date > chunk_start:
                 block_start = era.start_date
             else:
@@ -54,17 +64,25 @@ try:
 
             mpan_core = era.imp_mpan_core
             contract = era.imp_supplier_contract
-            data_source = computer.SupplySource(sess, block_start, block_finish, forecast_date, era, True, System.err, caches)
-            headings = ['id', 'supplier_contract', 'account', 'start date', 'finish date']
-            data = [data_source.id, contract.name, data_source.supplier_account, data_source.start_date, data_source.finish_date]
+            data_source = computer.SupplySource(
+                sess, block_start, block_finish, forecast_date, era, True,
+                None, caches)
+            headings = [
+                'id', 'supplier_contract', 'account', 'start date',
+                'finish date']
+            data = [
+                data_source.id, contract.name, data_source.supplier_account,
+                data_source.start_date, data_source.finish_date]
             mera = {'headings': headings, 'data': data}
 
             meras.append(mera)
-            computer.contract_func(caches, contract, 'virtual_bill', System.err)(data_source)
+            computer.contract_func(
+                caches, contract, 'virtual_bill', None)(data_source)
             bill = data_source.supplier_bill
             net_gbp += bill['net-gbp']
 
-            for title in computer.contract_func(caches, contract, 'virtual_bill_titles', System.err)():
+            for title in computer.contract_func(
+                    caches, contract, 'virtual_bill_titles', None)():
                 if title == 'consumption-info':
                     del bill[title]
                     continue
@@ -83,7 +101,11 @@ try:
 
         month_start += relativedelta(months=1)
 
-    templater.render(inv, template, {'supply': supply, 'start_date': start_date, 'finish_date': finish_date, 'meras': meras, 'net_gbp': net_gbp})
+    render(
+        inv, template, {
+            'supply': supply, 'start_date': start_date,
+            'finish_date': finish_date, 'meras': meras,
+            'net_gbp': net_gbp})
 finally:
     if sess is not None:
         sess.close()

@@ -2,14 +2,16 @@ from net.sf.chellow.monad import Monad
 import datetime
 from dateutil.relativedelta import relativedelta
 import pytz
-from sqlalchemy import or_
 import traceback
-
+import utils
+import db
+import computer
 Monad.getUtils()['impt'](globals(), 'utils', 'db', 'computer')
 
 HH, hh_format = utils.HH, utils.hh_format
 Site, Era, SiteEra, Supply = db.Site, db.Era, db.SiteEra, db.Supply
 Source, Contract = db.Source, db.Contract
+inv = globals()['inv']
 
 caches = {}
 end_year = inv.getInteger('finish_year')
@@ -17,11 +19,11 @@ end_month = inv.getInteger('finish_month')
 months = inv.getInteger('months')
 site_id = inv.getLong('site_id')
 
+
 def content():
     sess = None
     try:
         sess = db.session()
-
 
         finish_date = datetime.datetime(
             end_year, end_month, 1, tzinfo=pytz.utc) + \
@@ -53,7 +55,7 @@ def content():
                 if displaced_era is None:
                     continue
                 supplier_contract = displaced_era.imp_supplier_contract
-            
+
                 linked_sites = ','.join(
                     a_site.code for a_site in group.sites
                     if not a_site == site)
@@ -66,10 +68,29 @@ def content():
 
                 total_gen_breakdown = {}
 
-                results = iter(sess.execute("select supply.id, hh_datum.value, hh_datum.start_date, channel.imp_related, source.code, generator_type.code as gen_type_code from hh_datum, channel, source, era, supply left outer join generator_type on supply.generator_type_id = generator_type.id where hh_datum.channel_id = channel.id and channel.era_id = era.id and era.supply_id = supply.id and supply.source_id = source.id and channel.channel_type = 'ACTIVE' and not (source.code = 'net' and channel.imp_related is true) and hh_datum.start_date >= :chunk_start and hh_datum.start_date <= :chunk_finish and supply.id = any(:supply_ids) order by hh_datum.start_date, supply.id", params={'chunk_start': chunk_start, 'chunk_finish': chunk_finish, 'supply_ids': [s.id for s in group.supplies]}))
+                results = iter(
+                    sess.execute(
+                        "select supply.id, hh_datum.value, "
+                        "hh_datum.start_date, channel.imp_related, "
+                        "source.code, generator_type.code as gen_type_code "
+                        "from hh_datum, channel, source, era, supply left "
+                        "outer join generator_type on "
+                        "supply.generator_type_id = generator_type.id where "
+                        "hh_datum.channel_id = channel.id and "
+                        "channel.era_id = era.id and era.supply_id = "
+                        "supply.id and supply.source_id = source.id and "
+                        "channel.channel_type = 'ACTIVE' and not "
+                        "(source.code = 'net' and channel.imp_related is "
+                        "true) and hh_datum.start_date >= :chunk_start and "
+                        "hh_datum.start_date <= :chunk_finish and "
+                        "supply.id = any(:supply_ids) order by "
+                        "hh_datum.start_date, supply.id",
+                        params={
+                            'chunk_start': chunk_start,
+                            'chunk_finish': chunk_finish,
+                            'supply_ids': [s.id for s in group.supplies]}))
                 try:
                     res = results.next()
-                    hh_data = []
                     hhChannelValue = res.value
                     hhChannelStartDate = res.start_date
                     imp_related = res.imp_related
@@ -120,7 +141,7 @@ def content():
                                 total_gen_breakdown[key] = \
                                     total_gen_breakdown.get(key, 0) + kwh
                                 added_so_far += kwh
-                        
+
                         hh_date += HH
                 except StopIteration:
                     pass
@@ -149,9 +170,12 @@ def content():
                         'chp', 'lm', 'turb']])
 
                 for title in bill_titles:
-                    yield ',"' + str(bill.get(title, '')) + '"'
                     if title in bill:
+                        val = str(bill[title])
                         del bill[title]
+                    else:
+                        val = ''
+                    yield ',"' + val + '"'
 
                 for k in sorted(bill.keys()):
                     yield ',"' + k + '","' + str(bill[k]) + '"'

@@ -1,15 +1,20 @@
 from net.sf.chellow.monad import Monad
 import collections
-import operator
 import pytz
 import datetime
 from dateutil.relativedelta import relativedelta
 from sqlalchemy import or_
+from sqlalchemy.sql.expression import null, true
 import traceback
+import utils
+import db
+import computer
 
 Monad.getUtils()['impt'](globals(), 'templater', 'db', 'computer', 'utils')
+inv = globals()['inv']
 
 HH, hh_before, hh_format = utils.HH, utils.hh_before, utils.hh_format
+UserException = utils.UserException
 Batch, Bill, Era, Site = db.Batch, db.Bill, db.Era, db.Site
 SiteEra = db.SiteEra
 caches = {}
@@ -22,6 +27,9 @@ if inv.hasParameter('batch_id'):
 elif inv.hasParameter('bill_id'):
     bill_id = inv.getLong("bill_id")
     batch_id = None
+else:
+    raise UserException("The bill check needs a batch_id or bill_id.")
+
 
 def content():
     sess = None
@@ -33,12 +41,9 @@ def content():
             bills = sess.query(Bill).filter(
                 Bill.batch_id == batch.id).order_by(Bill.reference)
         elif bill_id is not None:
-            bill_id = inv.getLong("bill_id")
             bill = Bill.get_by_id(sess, bill_id)
             bills = sess.query(Bill).filter(Bill.id == bill.id)
             batch = bill.batch
-        else:
-            raise UserException("The bill check needs a batch_id or bill_id.")
 
         contract = batch.contract
         market_role_code = contract.market_role.code
@@ -62,10 +67,9 @@ def content():
             "bill-mpan-core,site-code,site-name,covered-from,covered-to," + \
             "covered-bills," + \
             ','.join(
-                    'covered-' + val + ',virtual-' + val + (
-                        ',difference-' +
-                        val if val.endswith('-gbp') else '')
-                    for val in virtual_bill_titles) + '\n'
+                'covered-' + val + ',virtual-' + val + (
+                    ',difference-' + val if val.endswith('-gbp') else '')
+                for val in virtual_bill_titles) + '\n'
 
         for bill in bills:
             problem = ''
@@ -96,7 +100,7 @@ def content():
                             problem += " Reads taken on " + str(dt) + \
                                 " have differing read types."
                     except KeyError:
-                        read_dict[key] = type        
+                        read_dict[key] = type
 
             bill_start = bill.start_date
             bill_finish = bill.finish_date
@@ -107,9 +111,10 @@ def content():
                     "this bill!"
                 continue
 
-            yield ','.join('"' + str(val) + '"' for val in [batch.reference, bill.reference, bill.bill_type.code, bill.kwh, bill.net, bill.vat, hh_format(bill_start), hh_format(bill_finish), era.imp_mpan_core]) + ","
-
-            msn = era.msn
+            yield ','.join('"' + str(val) + '"' for val in [
+                batch.reference, bill.reference, bill.bill_type.code, bill.kwh,
+                bill.net, bill.vat, hh_format(bill_start),
+                hh_format(bill_finish), era.imp_mpan_core]) + ","
 
             covered_start = bill_start
             covered_finish = bill_finish
@@ -123,7 +128,7 @@ def content():
                 for covered_bill in sess.query(Bill).filter(
                         Bill.supply_id == supply.id,
                         Bill.start_date <= covered_finish,
-                        Bill.finish_date>=covered_start).order_by(
+                        Bill.finish_date >= covered_start).order_by(
                         Bill.issue_date.desc(), Bill.start_date):
                     if market_role_code != \
                             covered_bill.batch.contract.market_role.code:
@@ -176,13 +181,13 @@ def content():
             virtual_bill = {}
 
             for era in sess.query(Era).filter(
-                    Era.supply_id == supply.id, Era.imp_mpan_core != None,
+                    Era.supply_id == supply.id, Era.imp_mpan_core != null(),
                     Era.start_date <= covered_finish,
                     or_(
-                        Era.finish_date == None,
-                        Era.finish_date>=covered_start)).distinct():
+                        Era.finish_date == null(),
+                        Era.finish_date >= covered_start)).distinct():
                 site = sess.query(Site).join(SiteEra).filter(
-                    SiteEra.is_physical == True,
+                    SiteEra.is_physical == true(),
                     SiteEra.era_id == era.id).one()
 
                 if covered_start > era.start_date:
@@ -252,9 +257,9 @@ def content():
                 if title in covered_bdown:
                     values += ['covered-' + title, covered_bdown[title]]
                 else:
-                    values += ['','']
+                    values += ['', '']
 
-            yield ','.join('"' + str(value) + '"' for value in values) + '\n' 
+            yield ','.join('"' + str(value) + '"' for value in values) + '\n'
     except:
         yield traceback.format_exc()
     finally:

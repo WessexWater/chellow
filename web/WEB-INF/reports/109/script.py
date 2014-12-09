@@ -3,24 +3,29 @@ import datetime
 from dateutil.relativedelta import relativedelta
 import pytz
 from sqlalchemy import or_
-
+from sqlalchemy.sql.expression import null
+import utils
+import db
+import computer
 Monad.getUtils()['impt'](globals(), 'utils', 'db', 'computer')
 
 HH, hh_format = utils.HH, utils.hh_format
 Site, Era, SiteEra, Supply = db.Site, db.Era, db.SiteEra, db.Supply
 Source, Contract = db.Source, db.Contract
+inv = globals()['inv']
+
+end_year = inv.getInteger('finish_year')
+end_month = inv.getInteger('finish_month')
+months = inv.getInteger('months')
+contract_id = inv.getLong('supplier_contract_id')
 
 caches = {}
+
 
 def content():
     sess = None
     try:
         sess = db.session()
-
-        end_year = inv.getInteger('finish_year')
-        end_month = inv.getInteger('finish_month')
-        months = inv.getInteger('months')
-
 
         yield ','.join(
             (
@@ -37,14 +42,14 @@ def content():
 
         forecast_date = computer.forecast_date()
 
-        contract_id = inv.getLong('supplier_contract_id')
         contract = Contract.get_supplier_by_id(sess, contract_id)
         sites = sess.query(Site).join(SiteEra).join(Era).join(Supply). \
             join(Source).filter(
-                or_(Era.finish_date == None, Era.finish_date >= start_date),
+                or_(Era.finish_date == null(), Era.finish_date >= start_date),
                 Era.start_date <= finish_date,
-                or_(Source.code.in_(('gen', 'gen-net')),
-                Era.exp_mpan_core != None)).distinct()
+                or_(
+                    Source.code.in_(('gen', 'gen-net')),
+                    Era.exp_mpan_core != null())).distinct()
         bill_titles = computer.contract_func(
             caches, contract, 'displaced_virtual_bill_titles', None)()
 
@@ -76,28 +81,50 @@ def content():
                     supplier_contract = displaced_era.imp_supplier_contract
                     if contract is not None and contract != supplier_contract:
                         continue
-            
+
                     linked_sites = ','.join(
                         a_site.code for a_site in site_group.sites
                         if not a_site == site)
                     generator_types = ' '.join(
                         sorted(
-                            [supply.generator_type.code for supply in
-                            site_group.supplies
-                            if supply.generator_type is not None]))
+                            [
+                                supply.generator_type.code for supply in
+                                site_group.supplies
+                                if supply.generator_type is not None]))
 
                     yield ','.join(
                         '"' + value + '"' for value in [
-                        site.code, site.name, linked_sites,
-                        hh_format(chunk_start), hh_format(chunk_finish),
-                        generator_types])
+                            site.code, site.name, linked_sites,
+                            hh_format(chunk_start), hh_format(chunk_finish),
+                            generator_types])
 
                     total_gen_breakdown = {}
 
-                    results = iter(sess.execute("select supply.id, hh_datum.value, hh_datum.start_date, channel.imp_related, source.code, generator_type.code as gen_type_code from hh_datum, channel, source, era, supply left outer join generator_type on supply.generator_type_id = generator_type.id where hh_datum.channel_id = channel.id and channel.era_id = era.id and era.supply_id = supply.id and supply.source_id = source.id and channel.channel_type = 'ACTIVE' and not (source.code = 'net' and channel.imp_related is true) and hh_datum.start_date >= :chunk_start and hh_datum.start_date <= :chunk_finish and supply.id = any(:supply_ids) order by hh_datum.start_date, supply.id", params={'chunk_start': chunk_start, 'chunk_finish': chunk_finish, 'supply_ids': [s.id for s in site_group.supplies]}))
+                    results = iter(
+                        sess.execute(
+                            "select supply.id, hh_datum.value, "
+                            "hh_datum.start_date, channel.imp_related, "
+                            "source.code, generator_type.code as "
+                            "gen_type_code from hh_datum, channel, source, "
+                            "era, supply left outer join generator_type on "
+                            "supply.generator_type_id = generator_type.id "
+                            "where hh_datum.channel_id = channel.id and "
+                            "channel.era_id = era.id and era.supply_id = "
+                            "supply.id and supply.source_id = source.id and "
+                            "channel.channel_type = 'ACTIVE' and not "
+                            "(source.code = 'net' and channel.imp_related "
+                            "is true) and hh_datum.start_date >= "
+                            ":chunk_start and hh_datum.start_date "
+                            "<= :chunk_finish and "
+                            "supply.id = any(:supply_ids) order "
+                            "by hh_datum.start_date, supply.id",
+                            params={
+                                'chunk_start': chunk_start,
+                                'chunk_finish': chunk_finish,
+                                'supply_ids': [
+                                    s.id for s in site_group.supplies]}))
                     try:
                         res = results.next()
-                        hh_data = []
                         hhChannelValue = res.value
                         hhChannelStartDate = res.start_date
                         imp_related = res.imp_related
@@ -109,13 +136,24 @@ def content():
                             gen_breakdown = {}
                             exported = 0
                             while hhChannelStartDate == hh_date:
-                                if not imp_related and source_code in ('net', 'gen-net'):
+                                if not imp_related and source_code in (
+                                        'net', 'gen-net'):
                                     exported += hhChannelValue
-                                if (imp_related and source_code == 'gen') or (not imp_related and source_code == 'gen-net'):
-                                    gen_breakdown[gen_type] = gen_breakdown.setdefault(gen_type, 0) + hhChannelValue
+                                if (imp_related and source_code == 'gen') or \
+                                        (not imp_related and
+                                            source_code == 'gen-net'):
+                                    gen_breakdown[gen_type] = \
+                                        gen_breakdown.setdefault(
+                                            gen_type, 0) + hhChannelValue
 
-                                if (not imp_related and source_code == 'gen') or (imp_related and source_code == 'gen-net'):
-                                    gen_breakdown[gen_type] = gen_breakdown.setdefault(gen_type, 0) - hhChannelValue
+                                if (
+                                        not imp_related and
+                                        source_code == 'gen') or (
+                                        imp_related and
+                                        source_code == 'gen-net'):
+                                    gen_breakdown[gen_type] = \
+                                        gen_breakdown.setdefault(
+                                            gen_type, 0) - hhChannelValue
 
                                 try:
                                     res = results.next()
@@ -141,7 +179,7 @@ def content():
                                     total_gen_breakdown[key] = \
                                         total_gen_breakdown.get(key, 0) + kwh
                                     added_so_far += kwh
-                        
+
                             hh_date += HH
                     except StopIteration:
                         pass

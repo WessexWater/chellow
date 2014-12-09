@@ -147,7 +147,7 @@ public class ContextListener implements ServletContextListener {
 					try {
 						interp.setOut(System.out);
 						interp.setErr(System.err);
-						interp.set("root_path", context.getRealPath("/"));
+						interp.set("webinf_path", context.getRealPath("/WEB-INF"));
 						interp.set("user_name", username);
 						interp.set("password", password);
 						interp.set("host_name", hostName);

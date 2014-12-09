@@ -88,6 +88,25 @@
 		<copy todir="${build.home}/WEB-INF/lib-python/requests">
 			<fileset dir="${basedir}/venv/lib/python2.7/site-packages/requests" />
 		</copy>
+		<copy todir="${build.home}/WEB-INF/lib-python/utils">
+			<fileset dir="${basedir}/utils" />
+		</copy>
+		<copy todir="${build.home}/WEB-INF/lib-python/db">
+			<fileset dir="${basedir}/db" />
+		</copy>
+		<copy todir="${build.home}/WEB-INF/lib-python/templater">
+			<fileset dir="${basedir}/templater" />
+		</copy>
+		<copy todir="${build.home}/WEB-INF/lib-python/hh_importer">
+			<fileset dir="${basedir}/hh_importer" />
+		</copy>
+		<copy todir="${build.home}/WEB-INF/lib-python/computer">
+			<fileset dir="${basedir}/computer" />
+		</copy>
+		<copy todir="${build.home}/WEB-INF/lib-python/bill_import">
+			<fileset dir="${basedir}/bill_import" />
+		</copy>
+
 
 		<taskdef name="instrument" classname="org.hibernate.tool.instrument.javassist.InstrumentTask" classpath="${javalib.home}/hibernate-distribution-3.6.10.Final/hibernate3.jar:/usr/share/java/slf4j-api.jar:/usr/share/java/slf4j-nop.jar" />
 

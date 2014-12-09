@@ -1,20 +1,13 @@
 from sqlalchemy import (
-    Column, Integer, String, Boolean, DateTime, Text, Numeric, or_, not_, and_,
-    Enum, DateTime, create_engine, ForeignKey, Sequence, UniqueConstraint)
-from sqlalchemy.orm import sessionmaker, relationship, backref, object_session
-from sqlalchemy.orm.util import has_identity
-from sqlalchemy.exc import ProgrammingError, SQLAlchemyError
-from sqlalchemy.orm.exc import NoResultFound
-import ast
-import operator
+    Column, Integer, String, Boolean, DateTime, Text, Numeric, Enum,
+    create_engine, ForeignKey, Sequence, UniqueConstraint)
+from sqlalchemy.orm import sessionmaker, relationship
 import datetime
 import pytz
 import sys
-import hashlib
-import decimal
 from sqlalchemy.ext.declarative import declarative_base
 import os
-import pytz
+
 
 def log_message(msg):
     sys.stdout.write(msg + "\n")
@@ -35,10 +28,9 @@ except NameError, e:
         'postgresql+pg8000://' + user + ':' + password + '@localhost:5432' +
         '/' + db_name, isolation_level="SERIALIZABLE")
 
+
 def set_read_write(sess):
     sess.execute("set transaction isolation level serializable read write")
-
-
 
 
 class UserException(Exception):
@@ -54,17 +46,17 @@ class Configuration(Base):
 
     def __init__(self, properties):
         self.id = 0
-        self.properties = properties 
+        self.properties = properties
         self.core_report_id = 1
         self.user_report_id = 0
 
-    def next_core_report_id():
-        core_report_id += 2
-        return core_report_id
+    def next_core_report_id(self):
+        self.core_report_id += 2
+        return self.core_report_id
 
-    def next_user_report_id():
-        user_report_id += 2
-        return user_report_id
+    def next_user_report_id(self):
+        self.user_report_id += 2
+        return self.user_report_id
 
 
 class VoltageLevel(Base):
@@ -100,6 +92,7 @@ class MarketRole(Base):
     contracts = relationship('Contract', backref='market_role')
     parties = relationship('Party', backref='market_role')
 
+
 class Participant(Base):
     __tablename__ = 'participant'
     id = Column('id', Integer, primary_key=True)
@@ -107,19 +100,21 @@ class Participant(Base):
     name = Column(String, nullable=False)
     parties = relationship('Party', backref='participant')
 
+
 class Party(Base):
     __tablename__ = 'party'
     id = Column('id', Integer, primary_key=True)
     market_role_id = Column(Integer, ForeignKey('market_role.id'))
     participant_id = Column(Integer, ForeignKey('participant.id'))
     name = Column(String, nullable=False)
-    valid_from = Column(DateTime(timezone=True),nullable=False)
+    valid_from = Column(DateTime(timezone=True), nullable=False)
     valid_to = Column(DateTime)
     users = relationship('User', backref='party')
     dno_code = Column(String)
     contracts = relationship('Contract', backref='party')
     mtcs = relationship('Mtc', backref='dno')
     llfcs = relationship('Llfc', backref='dno')
+
 
 class Source(Base):
     __tablename__ = "source"
@@ -131,7 +126,8 @@ class Source(Base):
     def __init__(self, code, name):
         self.code = code
         self.name = name
-    
+
+
 class GeneratorType(Base):
     __tablename__ = 'generator_type'
     id = Column(
@@ -151,6 +147,7 @@ class GspGroup(Base):
     code = Column(String, unique=True, nullable=False)
     description = Column(String, unique=True, nullable=False)
     supplies = relationship('Supply', backref='gsp_group')
+
 
 class Contract(Base):
     __tablename__ = 'contract'
@@ -178,10 +175,12 @@ class Contract(Base):
             'rate_script.id', use_alter=True,
             name='contract_finish_rate_script_id_fkey'))
 
-    start_rate_script = relationship("RateScript",
-            primaryjoin="RateScript.id==Contract.start_rate_script_id")
-    finish_rate_script = relationship("RateScript",
-            primaryjoin="RateScript.id==Contract.finish_rate_script_id")
+    start_rate_script = relationship(
+        "RateScript",
+        primaryjoin="RateScript.id==Contract.start_rate_script_id")
+    finish_rate_script = relationship(
+        "RateScript",
+        primaryjoin="RateScript.id==Contract.finish_rate_script_id")
 
     @staticmethod
     def get_non_core_by_name(name):
@@ -203,8 +202,9 @@ class Contract(Base):
     def get_by_role_code_name(role_code, name):
         cont = Contract.find_by_role_code_name(role_code, name)
         if cont is None:
-            raise UserException("There isn't a contract with the role code '" +
-                    role_code + "' and name '" + name + "'.")
+            raise UserException(
+                "There isn't a contract with the role code '" + role_code +
+                "' and name '" + name + "'.")
         return cont
 
     @staticmethod
@@ -227,12 +227,13 @@ class Contract(Base):
         party = Party.get_by_participant_id_role_code(
             participant.id, role_code)
         contract = Contract(is_core, name, party, charge_script, properties)
-        db.session.add(contract)
-        db.session.flush()
+        session.add(contract)
+        session.flush()
         rscript = contract.insert_rate_script(start_date, rate_script)
         contract.update_rate_script(
             rscript, start_date, finish_date, rate_script)
         return contract
+
 
 class RateScript(Base):
     __tablename__ = "rate_script"
@@ -259,9 +260,10 @@ class MeterType(Base):
     id = Column('id', Integer, primary_key=True)
     code = Column(String, unique=True, nullable=False)
     description = Column(String, unique=True, nullable=False)
-    valid_from = Column(DateTime(timezone=True),nullable=False)
+    valid_from = Column(DateTime(timezone=True), nullable=False)
     valid_to = Column(DateTime)
     mtcs = relationship('Mtc', backref='meter_type')
+
 
 class MeterPaymentType(Base):
     __tablename__ = 'meter_payment_type'
@@ -271,6 +273,7 @@ class MeterPaymentType(Base):
     valid_from = Column(DateTime)
     valid_to = Column(DateTime)
     mtcs = relationship('Mtc', backref='meter_payment_type')
+
 
 class Mtc(Base):
     __tablename__ = 'mtc'
@@ -282,13 +285,14 @@ class Mtc(Base):
     has_comms = Column(Boolean, nullable=False)
     is_hh = Column(Boolean, nullable=False)
     meter_type_id = Column(Integer, ForeignKey('meter_type.id'))
-    meter_payment_type_id = Column(Integer,
-            ForeignKey('meter_payment_type.id'))
+    meter_payment_type_id = Column(
+        Integer, ForeignKey('meter_payment_type.id'))
     tpr_count = Column(Integer)
-    valid_from = Column(DateTime(timezone=True),nullable=False)
+    valid_from = Column(DateTime(timezone=True), nullable=False)
     valid_to = Column(DateTime)
     eras = relationship('Era', backref='mtc')
     __table_args__ = (UniqueConstraint('dno_id', 'code'),)
+
 
 class Supply(Base):
     __tablename__ = 'supply'
@@ -297,8 +301,8 @@ class Supply(Base):
     note = Column(Text, nullable=False)
     source_id = Column(Integer, ForeignKey('source.id'), nullable=False)
     generator_type_id = Column(Integer, ForeignKey('generator_type.id'))
-    gsp_group_id = Column(Integer, ForeignKey('gsp_group.id'),
-            nullable=False)
+    gsp_group_id = Column(
+        Integer, ForeignKey('gsp_group.id'), nullable=False)
     dno_contract_id = Column(
         Integer, ForeignKey('contract.id'), nullable=False)
     eras = relationship('Era', backref='supply')
@@ -316,13 +320,14 @@ class Cop(Base):
         self.code = code
         self.description = description
 
+
 class Ssc(Base):
     __tablename__ = 'ssc'
     id = Column('id', Integer, primary_key=True)
     code = Column(String, nullable=False)
     description = Column(String)
     is_import = Column(Boolean)
-    valid_from = Column(DateTime(timezone=True),nullable=False)
+    valid_from = Column(DateTime(timezone=True), nullable=False)
     valid_to = Column(DateTime)
     measurement_requirements = relationship(
         'MeasurementRequirement', backref='ssc')
@@ -338,7 +343,7 @@ class Llfc(Base):
     voltage_level_id = Column(Integer, ForeignKey('voltage_level.id'))
     is_substation = Column(Boolean, nullable=False)
     is_import = Column(Boolean, nullable=False)
-    valid_from = Column(DateTime(timezone=True),nullable=False)
+    valid_from = Column(DateTime(timezone=True), nullable=False)
     valid_to = Column(DateTime)
 
 
@@ -367,21 +372,22 @@ class Era(Base):
     imp_mpan_core = Column(String)
     imp_llfc_id = Column(Integer, ForeignKey('llfc.id'))
     imp_llfc = relationship("Llfc", primaryjoin="Llfc.id==Era.imp_llfc_id")
-    imp_supplier_contract_id = Column(Integer,
-            ForeignKey('contract.id'))
-    imp_supplier_contract = relationship("Contract",
-            primaryjoin="Contract.id==Era.imp_supplier_contract_id")
+    imp_supplier_contract_id = Column(
+        Integer, ForeignKey('contract.id'))
+    imp_supplier_contract = relationship(
+        "Contract", primaryjoin="Contract.id==Era.imp_supplier_contract_id")
     imp_supplier_account = Column(String)
     imp_sc = Column(Integer)
     exp_mpan_core = Column(String)
     exp_llfc_id = Column(Integer, ForeignKey('llfc.id'))
     exp_llfc = relationship("Llfc", primaryjoin="Llfc.id==Era.exp_llfc_id")
     exp_supplier_contract_id = Column(Integer, ForeignKey('contract.id'))
-    exp_supplier_contract = relationship("Contract",
-            primaryjoin="Contract.id==Era.exp_supplier_contract_id")
+    exp_supplier_contract = relationship(
+        "Contract", primaryjoin="Contract.id==Era.exp_supplier_contract_id")
     exp_supplier_account = Column(String)
     exp_sc = Column(Integer)
     channels = relationship('Channel', backref='era')
+
 
 class Channel(Base):
     __tablename__ = 'channel'
@@ -396,12 +402,13 @@ class Channel(Base):
     __table_args__ = (
         UniqueConstraint('era_id', 'imp_related', 'channel_type'),)
 
+
 class Snag(Base):
     __tablename__ = 'snag'
     id = Column('id', Integer, primary_key=True)
     site_id = Column(Integer, ForeignKey('site.id'))
     channel_id = Column(Integer, ForeignKey('channel.id'))
-    date_created = Column(DateTime(timezone=True),nullable=False)
+    date_created = Column(DateTime(timezone=True), nullable=False)
     is_ignored = Column(Boolean, nullable=False)
     description = Column(String, nullable=False)
     start_date = Column(DateTime(timezone=True), nullable=False)
@@ -417,6 +424,7 @@ class ReadType(Base):
     def __init__(self, code, description):
         self.code = code
         self.description = description
+
 
 class Batch(Base):
     __tablename__ = 'batch'
@@ -445,9 +453,9 @@ class Bill(Base):
     id = Column('id', Integer, primary_key=True)
     batch_id = Column(Integer, ForeignKey('batch.id'), nullable=False)
     supply_id = Column(Integer, ForeignKey('supply.id'), nullable=False)
-    issue_date = Column(DateTime(timezone=True),nullable=False)
-    start_date = Column(DateTime(timezone=True),nullable=False)
-    finish_date = Column(DateTime(timezone=True),nullable=False)
+    issue_date = Column(DateTime(timezone=True), nullable=False)
+    start_date = Column(DateTime(timezone=True), nullable=False)
+    finish_date = Column(DateTime(timezone=True), nullable=False)
     net = Column(Numeric, nullable=False)
     vat = Column(Numeric, nullable=False)
     gross = Column(Numeric, nullable=False)
@@ -459,7 +467,6 @@ class Bill(Base):
     reads = relationship(
         'RegisterRead', backref='bill', cascade="all, delete-orphan",
         passive_deletes=True)
-
 
 
 class Tpr(Base):
@@ -484,16 +491,16 @@ class RegisterRead(Base):
     coefficient = Column(Numeric, nullable=False)
     units = Column(Integer, nullable=False)
     tpr_id = Column(Integer, ForeignKey('tpr.id'))
-    previous_date = Column(DateTime(timezone=True),nullable=False)
+    previous_date = Column(DateTime(timezone=True), nullable=False)
     previous_value = Column(Numeric, nullable=False)
     previous_type_id = Column(Integer, ForeignKey('read_type.id'))
-    previous_type = relationship("ReadType",
-                    primaryjoin="ReadType.id==RegisterRead.previous_type_id")
-    present_date = Column(DateTime(timezone=True),nullable=False)
+    previous_type = relationship(
+        "ReadType", primaryjoin="ReadType.id==RegisterRead.previous_type_id")
+    present_date = Column(DateTime(timezone=True), nullable=False)
     present_value = Column(Numeric, nullable=False)
     present_type_id = Column(Integer, ForeignKey('read_type.id'))
-    present_type = relationship("ReadType",
-                    primaryjoin="ReadType.id==RegisterRead.present_type_id")
+    present_type = relationship(
+        "ReadType", primaryjoin="ReadType.id==RegisterRead.present_type_id")
 
 
 class UserRole(Base):
@@ -530,6 +537,7 @@ class ClockInterval(Base):
     end_hour = Column(Integer, nullable=False)
     end_minute = Column(Integer, nullable=False)
 
+
 class MeasurementRequirement(Base):
     __tablename__ = 'measurement_requirement'
     id = Column(
@@ -537,13 +545,14 @@ class MeasurementRequirement(Base):
     ssc_id = Column(Integer, ForeignKey('ssc.id'))
     tpr_id = Column(Integer, ForeignKey('tpr.id'))
 
+
 class SiteEra(Base):
     __tablename__ = 'site_era'
     id = Column('id', Integer, primary_key=True)
     site_id = Column(Integer, ForeignKey('site.id'))
-    era_id = Column(Integer,
-            ForeignKey('era.id'))
+    era_id = Column(Integer, ForeignKey('era.id'))
     is_physical = Column(Boolean, nullable=False)
+
 
 class HhDatum(Base):
     __tablename__ = 'hh_datum'
@@ -554,6 +563,7 @@ class HhDatum(Base):
     status = Column(String, nullable=False)
     last_modified = Column(DateTime(timezone=True), nullable=False)
     __table_args__ = (UniqueConstraint('channel_id', 'start_date'),)
+
 
 class Report(Base):
     __tablename__ = 'report'
@@ -595,8 +605,6 @@ class Report(Base):
             template = None
 
         self.template = template
-
-
 
 
 def parse_hh_date(date_str):
@@ -641,7 +649,7 @@ if engine.execute(
             ('net', "Public distribution system."),
             ('sub', "Sub meter"),
             ('gen-net', "Generator connected directly to network."),
-            ('gen', "Generator."), 
+            ('gen', "Generator."),
             ('3rd-party', "Third party supply."),
             (
                 '3rd-party-reverse',
@@ -657,7 +665,7 @@ if engine.execute(
             ("turb", "Water turbine.")):
         session.add(GeneratorType(code, desc))
     session.commit()
- 
+
     set_read_write(session)
     for code, desc in (
             ("N", "Normal"),
@@ -744,7 +752,7 @@ if engine.execute(
             ('dno_contracts', 'R')):
         contracts_path = os.path.join(webinf_path, path_name)
         market_role = session.query(MarketRole). \
-                filter(MarketRole.code == role_code).one()
+            filter(MarketRole.code == role_code).one()
 
         for contract_name in sorted(os.listdir(contracts_path)):
             contract_path = os.path.join(contracts_path, contract_name)
@@ -801,7 +809,8 @@ if engine.execute(
     session.execute(
         "alter database " + db_name + " SET DateStyle TO 'ISO, YMD'")
     session.execute(
-        "alter database " + db_name + " set default_transaction_read_only = on")
+        "alter database " + db_name +
+        " set default_transaction_read_only = on")
     session.commit()
     # Check the transaction isolation level is serializable
     isolation_level = session.execute(
@@ -809,7 +818,7 @@ if engine.execute(
     if isolation_level != 'serializable':
         raise Exception(
             "The transaction isolation level for database " + db_name +
-            " should be 'serializable' but in fact " "it's " + isolation_level +
-            ".")
+            " should be 'serializable' but in fact " "it's " +
+            isolation_level + ".")
 
     session.close()

@@ -1,12 +1,18 @@
 from net.sf.chellow.monad import Monad
 import datetime
 import pytz
+import templater
+import db
+import utils
 
 Monad.getUtils()['impt'](globals(), 'db', 'utils', 'templater')
 render = templater.render
-Channel = db.Channel
+Channel, HhDatum = db.Channel, db.HhDatum
 UserException, form_int = utils.UserException, utils.form_int
-form_date = utils.form_date
+form_date, form_decimal = utils.form_date, utils.form_decimal
+form_str, hh_after = utils.form_str, utils.hh_after
+inv, template = globals()['inv'], globals()['template']
+
 
 def make_fields(channel, message=None):
     messages = [] if message is None else [str(message)]
@@ -41,7 +47,7 @@ try:
         elif inv.hasParameter('insert'):
             start_date = form_date(inv, 'start')
             value = form_decimal(inv, 'value')
-            status = form_string(inv, 'status')
+            status = form_str(inv, 'status')
             if start_date < channel.era.start_date:
                 raise UserException(
                     "The start date is before the start of this era.")

@@ -1,12 +1,14 @@
 from net.sf.chellow.monad import Monad
-from sqlalchemy.orm import joinedload_all
-import sys
-
+import db
+import utils
+import templater
 Monad.getUtils()['impt'](globals(), 'db', 'utils', 'templater')
-User, Party, MarketRole  = db.User, db.Party, db.MarketRole
+User, Party, MarketRole = db.User, db.Party, db.MarketRole
 UserException, form_str = utils.UserException, utils.form_str
 Participant = db.Participant
 render = templater.render
+inv, template = globals()['inv'], globals()['template']
+
 
 def users_context(sess, message=None):
     users = sess.query(User).order_by(User.email_address).all()
@@ -23,7 +25,6 @@ def users_context(sess, message=None):
 
 sess = None
 try:
-    from chellow import app
     sess = db.session()
     if inv.getRequest().getMethod() == 'POST':
         db.set_read_write(sess)
@@ -36,8 +37,8 @@ try:
             if role.code == 'party-viewer':
                 party_id = inv.getLong('party_id')
                 party = sess.query(Party).get(party_id)
-            user = User.insert(sess, email_address, User.digest(password), role,
-                    party)
+            user = User.insert(
+                sess, email_address, User.digest(password), role, party)
             sess.commit()
             inv.sendSeeOther('/reports/257/output/?user_id=' + str(user.id))
         except UserException, e:
