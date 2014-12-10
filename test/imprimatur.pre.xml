@@ -4865,5 +4865,13 @@ def triad_dates():
 				<regex pattern='CI005' />
 			</request>
 		</test>
+
+		<test name="Check BSUoS automatic import page">
+			<request path="/chellow/reports/227/output/">
+				<response-code value="200" />
+				<regex pattern="Is Locked\?" />
+			</request>
+		</test>
+
 	</test-group>
 </imprimatur>
