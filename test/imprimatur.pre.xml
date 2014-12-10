@@ -4873,5 +4873,12 @@ def triad_dates():
 			</request>
 		</test>
 
+		<test name="Check RCRC automatic import page">
+			<request path="/chellow/reports/225/output/">
+				<response-code value="200" />
+				<regex pattern="Is Locked\?" />
+			</request>
+		</test>
+
 	</test-group>
 </imprimatur>
