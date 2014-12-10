@@ -106,6 +106,21 @@
 		<copy todir="${build.home}/WEB-INF/lib-python/bill_import">
 			<fileset dir="${basedir}/bill_import" />
 		</copy>
+		<copy todir="${build.home}/WEB-INF/lib-python/bsuos">
+			<fileset dir="${basedir}/bsuos" />
+		</copy>
+		<copy todir="${build.home}/WEB-INF/lib-python/tlms">
+			<fileset dir="${basedir}/tlms" />
+		</copy>
+		<copy todir="${build.home}/WEB-INF/lib-python/system_price_elexon">
+			<fileset dir="${basedir}/system_price_elexon" />
+		</copy>
+		<copy todir="${build.home}/WEB-INF/lib-python/system_price_bmreports">
+			<fileset dir="${basedir}/system_price_bmreports" />
+		</copy>
+		<copy todir="${build.home}/WEB-INF/lib-python/rcrc">
+			<fileset dir="${basedir}/rcrc" />
+		</copy>
 
 
 		<taskdef name="instrument" classname="org.hibernate.tool.instrument.javassist.InstrumentTask" classpath="${javalib.home}/hibernate-distribution-3.6.10.Final/hibernate3.jar:/usr/share/java/slf4j-api.jar:/usr/share/java/slf4j-nop.jar" />

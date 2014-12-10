@@ -2,22 +2,29 @@ import sys
 import os
 from net.sf.chellow.monad import Monad
 import traceback
+import hh_importer
+import bsuos
+import tlms
+import system_price_elexon
+import system_price_bmreports
+import rcrc
 
 LIBS = (
-    'utils', 'pre_db', 'db', 'templater', 'computer', 'bsuos', 'tlms',
+    'utils', 'db', 'templater', 'computer', 'bsuos', 'tlms',
     'general_import', 'hh_importer', 'bill_import', 'edi_lib',
     'system_price_bmreports', 'system_price_elexon', 'system_price', 'rcrc',
     'tlms', 'duos', 'triad_rates', 'triad', 'ccl', 'aahedc', 'scenario')
 
+
 class LibDict(dict):
     pass
+
 
 def jython_start(ctx):
     from net.sf.chellow.billing import Contract
     from net.sf.chellow.monad import Hiber
-    from java.lang import System
     from org.python.util import PythonInterpreter
-    from java.io import LineNumberReader, File
+    from java.io import LineNumberReader, File, FileReader
     from org.python.core import PyString
 
     interp = PythonInterpreter()
@@ -57,7 +64,7 @@ def jython_start(ctx):
 
                             archive_file = File(lib_path, line)
 
-                            archive_real_path = archiveFile.getAbsolutePath()
+                            archive_real_path = archive_file.getAbsolutePath()
 
                             sys_state.path.append(PyString(archive_real_path))
                             line = line_reader.readLine()
@@ -74,12 +81,13 @@ def jython_start(ctx):
         nspace['db_id'] = contract.id
         setattr(nspace, 'db_id', contract.id)
         ctx.setAttribute("net.sf.chellow." + contract_name, nspace)
-        
+
     download_path = Monad.getContext().getRealPath("/downloads")
     if not os.path.exists(download_path):
         os.makedirs(download_path)
 
     Hiber.close()
+
 
 def cpython_start():
     from chellow import app
@@ -103,10 +111,11 @@ def cpython_start():
                 "While importing " + contract_name + " " +
                 traceback.format_exc())
             raise e
-        
+
     download_path = os.path.join(os.environ['CHELLOW_HOME'], 'downloads')
     if not os.path.exists(download_path):
         os.makedirs(download_path)
+
 
 def on_start_up(ctx):
     if sys.platform.startswith('java'):
