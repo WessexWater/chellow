@@ -1,31 +1,32 @@
 from net.sf.chellow.monad import Monad
-from java.lang import System
-from sqlalchemy.orm import joinedload_all
-import sys
-
-Monad.getContext().getAttribute("net.sf.chellow.utils")['imprt'](globals(), {
-        'db': ['Contract', 'Party', 'RateScript', 'set_read_write', 'session'], 
-        'utils': ['UserException'],
-        'templater': ['render'],
-        'tlms': ['get_tlm_importer']})
-
+import db
+import tlms
+import templater
+import utils
+Monad.getUtils()['impt'](globals(), 'db', 'utils', 'templater', 'tlms')
+Contract = db.Contract
+render = templater.render
+UserException = utils.UserException
+inv, template = globals()['inv'], globals()['template']
 
 sess = None
 importer = None
 try:
-    sess = session()
+    sess = db.session()
     if inv.getRequest().getMethod() == "GET":
-        importer = get_tlm_importer()
+        importer = tlms.get_tlm_importer()
         contract = Contract.get_non_core_by_name(sess, 'tlms')
         render(inv, template, {'importer': importer, 'contract': contract})
     else:
-        importer = get_tlm_importer()
+        importer = tlms.get_tlm_importer()
         contract = Contract.get_non_core_by_name(sess, 'tlms')
         importer.go()
         inv.sendSeeOther("/reports/223/output/")
 except UserException, e:
     sess.rollback()
-    render(inv, template, {'messages': [str(e)], 'importer': importer,
-        'contract': contract})
+    render(
+        inv, template, {
+            'messages': [str(e)], 'importer': importer, 'contract': contract})
 finally:
-    sess.close()
+    if sess is not None:
+        sess.close()

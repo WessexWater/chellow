@@ -4880,5 +4880,12 @@ def triad_dates():
 			</request>
 		</test>
 
+		<test name="Check TLM automatic import page">
+			<request path="/chellow/reports/223/output/">
+				<response-code value="200" />
+				<regex pattern="Is Locked\?" />
+			</request>
+		</test>
+
 	</test-group>
 </imprimatur>
