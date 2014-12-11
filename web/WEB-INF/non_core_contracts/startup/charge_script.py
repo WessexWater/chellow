@@ -74,12 +74,11 @@ def jython_start(ctx):
     for contract_name in LIBS:
         contract = Contract.getNonCoreContract(contract_name)
         nspace = LibDict()
+        nspace['db_id'] = contract.id
         exec(contract.getChargeScript(), nspace)
         for k, v in nspace.iteritems():
             if not hasattr(nspace, k):
                 setattr(nspace, k, v)
-        nspace['db_id'] = contract.id
-        setattr(nspace, 'db_id', contract.id)
         ctx.setAttribute("net.sf.chellow." + contract_name, nspace)
 
     download_path = Monad.getContext().getRealPath("/downloads")
@@ -99,12 +98,11 @@ def cpython_start():
         try:
             contract = Contract.get_non_core_by_name(contract_name)
             nspace = LibDict()
+            nspace['db_id'] = contract.id
             exec(contract.charge_script, nspace)
             for k, v in nspace.iteritems():
                 if not hasattr(nspace, k):
                     setattr(nspace, k, v)
-            nspace['db_id'] = contract.id
-            setattr(nspace, 'db_id', contract.id)
             libs[contract_name] = nspace
         except Exception, e:
             app.logger.error(
