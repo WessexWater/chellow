@@ -1,10 +1,10 @@
 from net.sf.chellow.monad import Monad
-from datetime import datetime
-import pytz
-
+import db
+import templater
 Monad.getUtils()['impt'](globals(), 'db', 'utils', 'templater')
-Batch, Bill, Contract = db.Batch, db.Bill, db.Contract
+Batch, Bill, Contract, Report = db.Batch, db.Bill, db.Contract, db.Report
 render = templater.render
+inv, template = globals()['inv'], globals()['template']
 
 sess = None
 try:
@@ -14,7 +14,8 @@ try:
         if batch_id is None:
             batch_id = inv.getLong('batch-id')
         batch = Batch.get_by_id(sess, batch_id)
-        bills = sess.query(Bill).filter(Bill.batch == batch).order_by(Bill.reference, Bill.start_date).all()
+        bills = sess.query(Bill).filter(Bill.batch == batch).order_by(
+            Bill.reference, Bill.start_date).all()
         config_contract = Contract.get_non_core_by_name(sess, 'configuration')
         properties = config_contract.make_properties()
         fields = {'batch': batch, 'bills': bills}

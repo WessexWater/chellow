@@ -3488,8 +3488,14 @@ def virtual_bill(supply_source):
 				<response-code value="303" />
 			</request>
 
-			<!-- Check that we can see batch okay. Contract 56 -->
+			<!-- Check that we can see a MOP batch okay. Contract 56 -->
 			<request path="/chellow/reports/193/output/?mop_batch_id=9">
+				<regex pattern='/reports/2/output/' />
+				<response-code value="200" />
+			</request>
+
+			<!-- Check that we can see a supplier batch okay. Contract 55 -->
+			<request path="/chellow/reports/91/output/?supplier_batch_id=4">
 				<regex pattern='/reports/2/output/' />
 				<response-code value="200" />
 			</request>
