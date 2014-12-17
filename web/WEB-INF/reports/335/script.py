@@ -1,9 +1,6 @@
 from net.sf.chellow.monad import Monad
-from sqlalchemy.orm import joinedload_all
+import templater
+Monad.getUtils()['impt'](globals(), 'db', 'utils', 'templater')
+inv, template = globals()['inv'], globals()['template']
 
-Monad.getUtils()['imprt'](globals(), {
-        'db': ['Contract', 'Party', 'RateScript', 'set_read_write', 'session'], 
-        'utils': ['UserException', 'clogs'],
-        'templater': ['render']})
-
-render(inv, template, {'clogs': clogs})
+templater.render(inv, template, {})

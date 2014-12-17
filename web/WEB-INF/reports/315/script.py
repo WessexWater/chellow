@@ -1,14 +1,20 @@
 from net.sf.chellow.monad import Monad
-
+import db
+import utils
+import templater
 Monad.getUtils()['impt'](globals(), 'db', 'utils', 'templater')
 Contract, MarketRole, Participant = db.Contract, db.MarketRole, db.Participant
 Party = db.Party
 UserException, form_date = utils.UserException, utils.form_date
 validate_hh_start = utils.validate_hh_start
+inv, template = globals()['inv'], globals()['template']
+
 
 def make_fields(sess, message=None):
-    contracts = sess.query(Contract).join(MarketRole).filter(MarketRole.code == 'X').order_by(Contract.name)
-    parties = sess.query(Party).join(MarketRole, Participant).filter(MarketRole.code == 'X').order_by(Participant.code)
+    contracts = sess.query(Contract).join(MarketRole).filter(
+        MarketRole.code == 'X').order_by(Contract.name)
+    parties = sess.query(Party).join(MarketRole, Participant).filter(
+        MarketRole.code == 'X').order_by(Participant.code)
     messages = [] if message is None else [str(e)]
     return {'contracts': contracts, 'messages': messages, 'parties': parties}
 
@@ -27,9 +33,12 @@ try:
         charge_script = inv.getString("charge_script")
         properties = inv.getString("properties")
 
-        contract = Contract.insert_supplier(sess, name, participant, charge_script, properties, start_date, None, '{}')
+        contract = Contract.insert_supplier(
+            sess, name, participant, charge_script, properties, start_date,
+            None, '{}')
         sess.commit()
-        inv.sendSeeOther("/reports/77/output/?supplier_contract_id=" + str(contract.id))
+        inv.sendSeeOther(
+            "/reports/77/output/?supplier_contract_id=" + str(contract.id))
 except UserException, e:
     sess.rollback()
     templater.render(inv, template, make_fields(sess, e), 400)

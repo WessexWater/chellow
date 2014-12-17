@@ -1,15 +1,19 @@
 from net.sf.chellow.monad import Monad
 import datetime
-from dateutil.relativedelta import relativedelta
 from sqlalchemy import or_
+from sqlalchemy.sql.expression import null, true
 import pytz
 import traceback
-
+import db
+import utils
+import duos
+import triad
+import computer
 Monad.getUtils()['impt'](globals(), 'db', 'utils', 'computer', 'duos', 'triad')
-
 Era, Supply, Source, Pc, Site = db.Era, db.Supply, db.Source, db.Pc, db.Site
 SiteEra = db.SiteEra
 HH, form_int = utils.HH, utils.form_int
+inv = globals()['inv']
 
 caches = {}
 year = form_int(inv, 'year')
@@ -18,14 +22,13 @@ if inv.hasParameter('supply_id'):
 else:
     supply_id = None
 
+
 def content():
     sess = None
     try:
         sess = db.session()
 
         year_finish = datetime.datetime(year, 4, 1, tzinfo=pytz.utc) - HH
-        year_start = datetime.datetime(year, 4, 1, tzinfo=pytz.utc) - \
-            relativedelta(years=1)
 
         def triad_csv(supply_source):
             if supply_source is None or \
@@ -43,13 +46,12 @@ def content():
                         '-date', '-msp-kw', '-status', '-laf', '-gsp-kw']:
                     values.append(bill[triad_prefix + suffix])
             #supply_source.pw.println("values so far" + str(values))
-        
+
             suffixes = ['gsp-kw', 'rate', 'gbp']
             values += [bill['triad-actual-' + suf] for suf in suffixes]
             return values
 
-
-        yield "\nSite Code, Site Name, Supply Name, Source, Generator Type, " \
+        yield "Site Code, Site Name, Supply Name, Source, Generator Type, " \
             "Import MPAN Core, Import T1 Date, Import T1 MSP kW, " \
             "Import T1 Status, Import T1 LAF, Import T1 GSP kW, " \
             "Import T2 Date, Import T2 MSP kW, Import T2 Status, " \
@@ -62,12 +64,13 @@ def content():
             "Export T2 Date, Export T2 MSP kW, Export T2 Status, " \
             "Export T2 LAF, Export T2 GSP kW, Export T3 Date, " \
             "Export T3 MSP kW, Export T3 Status, Export T3 LAF, " \
-            "Export T3 GSP kW, Export GSP kW, Export Rate GBP / kW, Export GBP"
+            "Export T3 GSP kW, Export GSP kW, Export Rate GBP / kW, " \
+            "Export GBP\n"
 
         forecast_date = computer.forecast_date()
         eras = sess.query(Era).join(Supply).join(Source).join(Pc).filter(
             Era.start_date <= year_finish,
-            or_(Era.finish_date == None, Era.finish_date >= year_finish),
+            or_(Era.finish_date == null(), Era.finish_date >= year_finish),
             Source.code.in_(('net', 'gen-net')),
             Pc.code == '00').order_by(Supply.id)
 
@@ -76,7 +79,7 @@ def content():
 
         for era in eras:
             site = sess.query(Site).join(SiteEra).filter(
-                SiteEra.is_physical == True, SiteEra.era_id == era.id).one()
+                SiteEra.is_physical == true(), SiteEra.era == era).one()
             supply = era.supply
             yield site.code + ',"' + site.name + '","' + supply.name + '",' + \
                 supply.source.code
@@ -96,7 +99,7 @@ def content():
                 exp_supply_source = computer.SupplySource(
                     sess, year_finish, year_finish, forecast_date, era, False,
                     None, caches)
-            
+
             gen_type = supply.generator_type
             gen_type = '' if gen_type is None else gen_type.code
             for value in [gen_type] + triad_csv(imp_supply_source) + \
@@ -109,6 +112,4 @@ def content():
         if sess is not None:
             sess.close()
 
-utils.send_response(
-    inv, content, status=200, mimetype='text/csv',
-    file_name='supplies_triad.csv')
+utils.send_response(inv, content, file_name='supplies_triad.csv')

@@ -2,11 +2,15 @@ import os
 import sys
 import StringIO
 from net.sf.chellow.monad import Monad
-
+import templater
+import db
+import utils
+import bill_import
 Monad.getUtils()['impt'](globals(), 'db', 'utils', 'templater', 'bill_import')
 render = templater.render
 Batch = db.Batch
 UserException = utils.UserException
+inv, template = globals()['inv'], globals()['template']
 
 
 def make_fields(sess, batch, message=None):
@@ -14,7 +18,7 @@ def make_fields(sess, batch, message=None):
     return {
         'messages': messages,
         'importer_ids': sorted(
-            bill_timpoerter.get_bill_importer_ids(batch.id), reverse=True),
+            bill_import.get_bill_importer_ids(batch.id), reverse=True),
         'batch': batch}
 
 sess = None

@@ -1,8 +1,12 @@
 from net.sf.chellow.monad import Monad
-
+import templater
+import utils
+import db
 Monad.getUtils()['impt'](globals(), 'db', 'utils', 'templater')
 render = templater.render
 UserException = utils.UserException
+inv, template = globals()['inv'], globals()['template']
+
 
 def make_fields(sess, message=None):
     messages = [] if message is None else [str(e)]

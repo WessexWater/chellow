@@ -4,7 +4,7 @@ import csv
 from dateutil.relativedelta import relativedelta
 import pytz
 from net.sf.chellow.monad import Monad
-
+import utils
 Monad.getUtils()['impt'](
     globals(), 'db', 'utils', 'templater', 'bill_import', 'edi_lib')
 validate_hh_start, HH = utils.validate_hh_start, utils.HH
@@ -76,7 +76,42 @@ col_map = {
     94: 'bsuos-gbp',
     97: 'fit-total'}
 
-TITLES = "Customer Name,Customer Address,Cust PC,Bill Ref No.,Invoice No.,Invoice Date,Bill Period Start,Bill Period End,Site Data,Gsp Data,Max kVA,Avg Pwr Factor,Max Pwr Factor,Min Power Factor,Max DMD Date,MX DMD,Mpan,AAHEDC Charge Price,AAHEDC Charge Units,AAHEDC Charge Charge,Actual FiT Charge Price,Actual FiT Charge Units,Actual FiT Charge Charge,Availability Charges Price,Availability Charges Units,Availability Charges Charge,BSUoS Actual Charge (Date) Units,BSUoS Actual Charge (Date) Charge,Energy Peak Price,Energy Peak Units,Energy Peak Charge,Energy Peak Shoulder Price,Energy Peak Shoulder Units,Energy Peak Shoulder Charge,Energy Summer Night Price,Energy Summer Night Units,Energy Summer Night Charge,Energy Summer Weekday Price,Energy Summer Weekday Units,Energy Summer Weekday Charge,Energy Summer Weekend Price,Energy Summer Weekend Units,Energy Summer Weekend Charge,Energy Winter Night Price,Energy Winter Night Units,Energy Winter Night Charge,Energy Winter Weekday Price,Energy Winter Weekday Units,Energy Winter Weekday Charge,Energy Winter Weekend Price,Energy Winter Weekend Units,Energy Winter Weekend Charge,Estimated FiT Charge Price,Estimated FiT Charge Units,Estimated FiT Charge Charge,Excess Availability Charges Price,Excess Availability Charges Units,Excess Availability Charges Charge,Fixed Charges Price,Fixed Charges Units,Fixed Charges Charge,Levy Exempt Energy Price,Levy Exempt Energy Units,Levy Exempt Energy Charge,Meter Reading Charges Price,Meter Reading Charges Units,Meter Reading Charges Charge,Network UoS Charges Price,Network UoS Charges Units,Network UoS Charges Charge,Rate 1 Price,Rate 1 Units,Rate 1 Charge,Rate 2 Price,Rate 2 Units,Rate 2 Charge,Rate 3 Price,Rate 3 Units,Rate 3 Charge,Reactive Power Charge Price,Reactive Power Charge Units,Reactive Power Charge Charge,VAT @ 0% Price,VAT @ 0% Units,VAT @ 0% Charge,VAT @ STD Price,VAT @ STD Units,VAT @ STD Charge,VAT @ 5% Price,VAT @ 5% Units,VAT @ 5% Charge,ADDTTL,AHC_NRG1,AHC_TTL,BSUOSTTL,DUOSTTL,DUOS_UNITTL,FiT_TTL,LEETTL,NET_AMT,NRGTTL,NRGTTL_HH,SUBTTL,TTLCHG,TUSTTL,VATTTL,GDF REG NO.,REG VAT NO"
+TITLES = "Customer Name,Customer Address,Cust PC,Bill Ref No.,Invoice No.," \
+    "Invoice Date,Bill Period Start,Bill Period End,Site Data,Gsp Data," \
+    "Max kVA,Avg Pwr Factor,Max Pwr Factor,Min Power Factor,Max DMD Date," \
+    "MX DMD,Mpan,AAHEDC Charge Price,AAHEDC Charge Units," \
+    "AAHEDC Charge Charge,Actual FiT Charge Price,Actual FiT Charge Units," \
+    "Actual FiT Charge Charge,Availability Charges Price," \
+    "Availability Charges Units,Availability Charges Charge," \
+    "BSUoS Actual Charge (Date) Units,BSUoS Actual Charge (Date) Charge," \
+    "Energy Peak Price,Energy Peak Units,Energy Peak Charge," \
+    "Energy Peak Shoulder Price,Energy Peak Shoulder Units," \
+    "Energy Peak Shoulder Charge,Energy Summer Night Price," \
+    "Energy Summer Night Units,Energy Summer Night Charge," \
+    "Energy Summer Weekday Price,Energy Summer Weekday Units," \
+    "Energy Summer Weekday Charge,Energy Summer Weekend Price," \
+    "Energy Summer Weekend Units,Energy Summer Weekend Charge," \
+    "Energy Winter Night Price,Energy Winter Night Units," \
+    "Energy Winter Night Charge,Energy Winter Weekday Price," \
+    "Energy Winter Weekday Units,Energy Winter Weekday Charge," \
+    "Energy Winter Weekend Price,Energy Winter Weekend Units," \
+    "Energy Winter Weekend Charge,Estimated FiT Charge Price," \
+    "Estimated FiT Charge Units,Estimated FiT Charge Charge," \
+    "Excess Availability Charges Price,Excess Availability Charges Units," \
+    "Excess Availability Charges Charge,Fixed Charges Price," \
+    "Fixed Charges Units,Fixed Charges Charge,Levy Exempt Energy Price," \
+    "Levy Exempt Energy Units,Levy Exempt Energy Charge," \
+    "Meter Reading Charges Price,Meter Reading Charges Units," \
+    "Meter Reading Charges Charge,Network UoS Charges Price," \
+    "Network UoS Charges Units,Network UoS Charges Charge,Rate 1 Price," \
+    "Rate 1 Units,Rate 1 Charge,Rate 2 Price,Rate 2 Units,Rate 2 Charge," \
+    "Rate 3 Price,Rate 3 Units,Rate 3 Charge,Reactive Power Charge Price," \
+    "Reactive Power Charge Units,Reactive Power Charge Charge," \
+    "VAT @ 0% Price,VAT @ 0% Units,VAT @ 0% Charge,VAT @ STD Price," \
+    "VAT @ STD Units,VAT @ STD Charge,VAT @ 5% Price,VAT @ 5% Units," \
+    "VAT @ 5% Charge,ADDTTL,AHC_NRG1,AHC_TTL,BSUOSTTL,DUOSTTL,DUOS_UNITTL," \
+    "FiT_TTL,LEETTL,NET_AMT,NRGTTL,NRGTTL_HH,SUBTTL,TTLCHG,TUSTTL,VATTTL," \
+    "GDF REG NO.,REG VAT NO"
 
 
 class Parser():
@@ -101,16 +136,15 @@ class Parser():
         for self._line_number, vals in enumerate(self.reader):
             if len(vals) == 0 or vals[0].startswith('#'):
                 continue
-            mpan_strings = [vals[16][1:]]
             issue_date = datetime.datetime.strptime(
                 vals[5], "%d/%m/%Y").replace(tzinfo=pytz.utc)
             bill_from = validate_hh_start(
                 datetime.datetime.strptime(vals[6], "%d/%m/%Y").replace(
-                tzinfo=pytz.utc))
+                    tzinfo=pytz.utc))
             bill_to = validate_hh_start(
                 datetime.datetime.strptime(
                     vals[7], "%d/%m/%Y").replace(
-                tzinfo=pytz.utc)) + relativedelta(days=1) - HH
+                    tzinfo=pytz.utc)) + relativedelta(days=1) - HH
             kwh = Decimal(vals[8])
             breakdown = dict(
                 [(v, float(vals[k])) for k, v in col_map.iteritems()])

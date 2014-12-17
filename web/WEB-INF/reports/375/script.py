@@ -1,7 +1,9 @@
 from net.sf.chellow.monad import Monad
-from sqlalchemy.orm import joinedload_all
-
+import db
+import utils
+import templater
 Monad.getUtils()['impt'](globals(), 'db', 'utils', 'templater')
+inv, template = globals()['inv'], globals()['template']
 
 sess = None
 try:

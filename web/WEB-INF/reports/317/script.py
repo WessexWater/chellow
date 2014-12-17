@@ -1,10 +1,14 @@
 from net.sf.chellow.monad import Monad
-
+import db
+import templater
+import utils
 Monad.getUtils()['impt'](globals(), 'db', 'utils', 'templater')
 Party, MarketRole, Participant = db.Party, db.MarketRole, db.Participant
 Contract = db.Contract
 render = templater.render
 UserException = utils.UserException
+inv, template = globals()['inv'], globals()['template']
+
 
 def make_fields(sess, contract, message=None):
     parties = sess.query(Party).join(MarketRole, Participant).filter(
@@ -37,8 +41,8 @@ try:
             contract.update(
                 sess, False, name, party, charge_script, properties)
             sess.commit()
-            inv.sendSeeOther('/reports/77/output/?supplier_contract_id='
-                + str(contract.id))
+            inv.sendSeeOther(
+                '/reports/77/output/?supplier_contract_id=' + str(contract.id))
 except UserException, e:
     sess.rollback()
     if str(e).startswith("There isn't a contract"):

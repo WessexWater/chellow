@@ -2,4 +2,6 @@ ${CHELLOW_HOME}/stop_chellow
 dropdb chellow
 createdb chellow
 ${CHELLOW_HOME}/start_chellow
-java -jar ${HOME}/java/imprimatur-022/imprimatur.jar ${CHELLOW_HOME}/test/imprimatur.pre.xml
+if flake8 --filename=*t.py ${CHELLOW_HOME}/web/WEB-INF ; then
+    java -jar ${HOME}/java/imprimatur-022/imprimatur.jar ${CHELLOW_HOME}/test/imprimatur.pre.xml
+fi

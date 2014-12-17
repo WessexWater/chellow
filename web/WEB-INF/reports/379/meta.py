@@ -1,1 +1,1 @@
-{'name': u'Upgrade 2014-05-06 I'}
+{'name': 'Free 379'}

@@ -1,11 +1,14 @@
 from net.sf.chellow.monad import Monad
 import datetime
 import pytz
-
+import utils
+import db
+import computer
 Monad.getUtils()['impt'](globals(), 'db', 'utils', 'computer')
-
 HH = utils.HH
 Contract = db.Contract
+db_id = globals()['db_id']
+
 
 def ccl(data_source):
     bill = data_source.supplier_bill
@@ -13,7 +16,8 @@ def ccl(data_source):
     prefix = 'lec' if data_source.is_green else 'ccl'
     rate_set = data_source.supplier_rate_sets[prefix + '-rate']
 
-    if data_source.supply.find_era_at(data_source.sess, data_source.finish_date + HH) == None:
+    if data_source.supply.find_era_at(
+            data_source.sess, data_source.finish_date + HH) is None:
         sup_end = data_source.finish_date
     else:
         sup_end = None
@@ -30,14 +34,17 @@ def ccl(data_source):
                 month_finish = hh_time['start-date']
                 kwh = 0
                 gbp = 0
-                month_start = datetime.datetime(month_finish.year, month_finish.month, 1, tzinfo=pytz.utc)
+                month_start = datetime.datetime(
+                    month_finish.year, month_finish.month, 1, tzinfo=pytz.utc)
 
-                for ds in computer.get_data_sources(data_source, month_start, month_finish):
+                for ds in computer.get_data_sources(
+                        data_source, month_start, month_finish):
                     for hh in ds.hh_data:
                         try:
                             rate = cache[hh['start-date']]
                         except KeyError:
-                            cache[hh['start-date']] = data_source.hh_rate(db_id, hh['start-date'], 'ccl_rate')
+                            cache[hh['start-date']] = data_source.hh_rate(
+                                db_id, hh['start-date'], 'ccl_rate')
                             rate = cache[hh['start-date']]
 
                         rate_set.add(rate)
@@ -57,12 +64,14 @@ def ccl(data_source):
             threshold = 999
         kwh = 0
         gbp = 0
-        for ds in computer.get_data_sources(data_source, data_source.bill_start, data_source.bill_finish):
+        for ds in computer.get_data_sources(
+                data_source, data_source.bill_start, data_source.bill_finish):
             for hh in ds.hh_data:
                 try:
                     rate = cache[hh['start-date']]
                 except KeyError:
-                    cache[hh['start-date']] = data_source.hh_rate(db_id, hh['start-date'], 'ccl_rate')
+                    cache[hh['start-date']] = data_source.hh_rate(
+                        db_id, hh['start-date'], 'ccl_rate')
                     rate = cache[hh['start-date']]
 
                 rate_set.add(rate)

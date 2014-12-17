@@ -1,12 +1,13 @@
-from sqlalchemy.sql.expression import text
-from datetime import datetime
-import pytz
 from net.sf.chellow.monad import Monad
-
+import db
+import utils
+import templater
 Monad.getUtils()['impt'](globals(), 'db', 'utils', 'templater')
 Batch = db.Batch
 UserException = utils.UserException
 render = templater.render
+inv, template = globals()['inv'], globals()['template']
+
 
 def make_fields(sess, batch, message=None):
     messages = [] if message is None else [str(message)]
@@ -28,8 +29,8 @@ try:
             description = inv.getString('description')
             batch.update(sess, reference, description)
             sess.commit()
-            inv.sendSeeOther("/reports/203/output/?hhdc_batch_id=" +
-                    str(batch.id))
+            inv.sendSeeOther(
+                "/reports/203/output/?hhdc_batch_id=" + str(batch.id))
         elif inv.hasParameter("delete"):
             contract = batch.contract
             batch.delete(sess)

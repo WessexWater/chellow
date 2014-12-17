@@ -1,15 +1,18 @@
 from net.sf.chellow.monad import Monad
-from sqlalchemy.orm import joinedload_all
-
-Monad.getUtils()['imprt'](globals(), {
-        'db': ['Contract', 'Party', 'RateScript', 'set_read_write', 'session'], 
-        'utils': ['UserException'],
-        'templater': ['render']})
+import db
+import templater
+Monad.getUtils()['impt'](globals(), 'db', 'utils', 'templater')
+Contract, MarketRole = db.Contract, db.MarketRole
+render = templater.render
+inv, template = globals()['inv'], globals()['template']
 
 sess = None
 try:
-    sess = session()
-    dno_contracts = sess.query(Contract).from_statement("select contract.* from contract, market_role where contract.market_role_id = market_role.id and market_role.code = 'R' order by contract.name").all()
+    sess = db.session()
+    dno_contracts = sess.query(Contract).join(MarketRole).filter(
+        MarketRole.code == 'R').order_by(Contract.name).all()
+
     render(inv, template, {'dno_contracts': dno_contracts})
 finally:
-    sess.close()
+    if sess is not None:
+        sess.close()

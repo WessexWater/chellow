@@ -1,12 +1,16 @@
 from net.sf.chellow.monad import Monad
 from datetime import datetime
 import pytz
-
+import utils
+import templater
+import db
 Monad.getUtils()['impt'](globals(), 'db', 'utils', 'templater')
 form_int, form_date = utils.form_int, utils.form_date
 UserException = utils.UserException
 render = templater.render
 Contract = db.Contract
+inv, template = globals()['inv'], globals()['template']
+
 
 def page_fields(contract, message=None):
     now = datetime.now(pytz.utc)
@@ -30,11 +34,11 @@ try:
         start_date = form_date(inv, 'start')
         rate_script = contract.insert_rate_script(sess, start_date, '')
         sess.commit()
-        inv.sendSeeOther('/reports/79/output/?supplier_rate_script_id='
-                + str(rate_script.id))
+        inv.sendSeeOther(
+            '/reports/79/output/?supplier_rate_script_id='
+            + str(rate_script.id))
 except UserException, e:
         render(inv, template, page_fields(contract, str(e)), 400)
 finally:
     if sess is not None:
         sess.close()
-

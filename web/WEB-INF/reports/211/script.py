@@ -2,12 +2,17 @@ from net.sf.chellow.monad import Monad
 import StringIO
 import sys
 import os
-
+import db
+import utils
+import templater
+import hh_importer
 Monad.getUtils()['impt'](
     globals(), 'db', 'utils', 'templater', 'general_import', 'hh_importer')
 Contract = db.Contract
 UserException = utils.UserException
 render = templater.render
+inv, template = globals()['inv'], globals()['template']
+
 
 def make_fields(sess, contract, message=None):
     messages = None if message is None else [str(message)]

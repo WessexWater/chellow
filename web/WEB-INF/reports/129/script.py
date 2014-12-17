@@ -1,7 +1,9 @@
 from net.sf.chellow.monad import Monad
-
+import db
+import templater
 Monad.getUtils()['impt'](globals(), 'templater', 'db')
 MeterType, Party = db.MeterType, db.Party
+inv, template = globals()['inv'], globals()['template']
 
 sess = None
 try:

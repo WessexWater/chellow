@@ -1,15 +1,16 @@
 from net.sf.chellow.monad import Monad
-from sqlalchemy.orm import joinedload_all
 import operator
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
 import pytz
-
+import db
+import utils
+import templater
 Monad.getUtils()['impt'](globals(), 'db', 'utils', 'templater')
-
 Contract, Site, Era, SiteEra = db.Contract, db.Site, db.Era, db.SiteEra
 MarketRole = db.MarketRole
 HH = utils.HH
+inv, template = globals()['inv'], globals()['template']
 
 sess = None
 try:

@@ -1,24 +1,21 @@
 from net.sf.chellow.monad import Monad
 import threading
 import traceback
-import csv
 import datetime
 import collections
-import decimal
-import tempfile
-import dateutil
-import dateutil.parser
 import pytz
-from sqlalchemy import or_
-from sqlalchemy.sql import func
-
+import utils
+import db
+import computer
 Monad.getUtils()['impt'](globals(), 'db', 'utils', 'templater', 'computer')
 UserException = utils.UserException
 BillType, Batch, Tpr, ReadType = db.BillType, db.Batch, db.Tpr, db.ReadType
+Contract, MarketRole = db.Contract, db.MarketRole
 
 importer_id = 0
 import_lock = threading.Lock()
 importers = {}
+
 
 class BillImporter(threading.Thread):
     def __init__(self, sess, batch_id, file_name, file_size, f):
@@ -29,16 +26,16 @@ class BillImporter(threading.Thread):
 
         self.batch_id = batch_id
         if file_size == 0:
-            raise UserException(null, "File has zero length")
+            raise UserException("File has zero length")
 
         contract = None
         parts = file_name.split('.')[::-1]
         for i in range(len(parts)):
-             contr = db.Contract.find_by_role_code_name(
-                    sess, 'Z',
-                    'bill-parser-' + '.'.join(parts[:i+1][::-1]).lower())
-             if contr is not None:
-                 contract = contr
+            contr = db.Contract.find_by_role_code_name(
+                sess, 'Z',
+                'bill-parser-' + '.'.join(parts[:i+1][::-1]).lower())
+            if contr is not None:
+                contract = contr
 
         if contract is None:
             raise UserException(
@@ -48,7 +45,7 @@ class BillImporter(threading.Thread):
                 ','.join(
                     name[0][12:] for name in sess.query(Contract.name).join(
                         MarketRole).filter(
-                        MarketRole.code=='Z',
+                        MarketRole.code == 'Z',
                         Contract.name.like("bill-parser-%"))) + ".")
 
         self.contract_name = contract.name
@@ -81,7 +78,8 @@ class BillImporter(threading.Thread):
     def run(self):
         sess = None
         try:
-            self._log("Starting to parse the file with '" +
+            self._log(
+                "Starting to parse the file with '" +
                 self.contract_name + "'.")
             sess = db.session()
             batch = Batch.get_by_id(sess, self.batch_id)
@@ -128,13 +126,12 @@ class BillImporter(threading.Thread):
                     raw_bill['error'] = str(e)
                     self.failed_bills.append(raw_bill)
 
-
             if len(self.failed_bills) == 0:
                 self._log(
                     "All the bills have been successfully loaded and attached "
                     "to the batch.")
             else:
-		self._log(
+                self._log(
                     "The import has finished, but " +
                     str(len(self.failed_bills)) + " bills failed to load.")
 
@@ -166,8 +163,9 @@ def start_bill_importer(sess, batch_id, file_name, file_size, f):
         bi.start()
     finally:
         import_lock.release()
-     
+
     return bi.importer_id
+
 
 def get_bill_importer_ids(batch_id):
     try:
@@ -175,6 +173,7 @@ def get_bill_importer_ids(batch_id):
         return [k for k, v in importers.iteritems() if v.batch_id == batch_id]
     finally:
         import_lock.release()
+
 
 def get_bill_importer(id):
     try:

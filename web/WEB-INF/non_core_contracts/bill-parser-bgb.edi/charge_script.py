@@ -1,13 +1,14 @@
 from decimal import Decimal
 from net.sf.chellow.monad import Monad
-import datetime
-
+import utils
+import edi_lib
 Monad.getUtils()['impt'](
     globals(), 'db', 'utils', 'templater', 'bill_import', 'edi_lib')
 hh_after = utils.hh_after
 
 read_type_map = {
     '00': 'N', '01': 'E', '02': 'E', '04': 'C', '06': 'X', '07': 'N'}
+
 
 class Parser():
     def __init__(self, f):
@@ -24,7 +25,7 @@ class Parser():
                 ivdt = self.parser.elements[0]
                 invn = self.parser.elements[2]
                 btcd = self.parser.elements[5]
-                    
+
                 reference = invn[0]
                 bill_type_code = btcd[0]
                 issue_date = self.parser.to_date(ivdt[0])
@@ -40,7 +41,6 @@ class Parser():
                     net = Decimal(0)
                     vat = Decimal(0)
                     reads = []
-                    bill_type = None
                     mpan_strings = []
             elif code == "CCD":
                 ccde = self.parser.elements[1]

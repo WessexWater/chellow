@@ -1,16 +1,17 @@
 from net.sf.chellow.monad import Monad
-from sqlalchemy.orm import joinedload_all
-
-Monad.getUtils()['imprt'](globals(), {
-        'db': ['Contract', 'Party', 'Ssc', 'set_read_write', 'session'], 
-        'utils': ['UserException'],
-        'templater': ['render']})
+import db
+import templater
+Monad.getUtils()['impt'](globals(), 'db', 'utils', 'templater')
+Ssc = db.Ssc
+render = templater.render
+inv, template = globals()['inv'], globals()['template']
 
 sess = None
 try:
-    sess = session()
+    sess = db.session()
     ssc_id = inv.getLong('ssc_id')
     ssc = Ssc.get_by_id(sess, ssc_id)
     render(inv, template, {'ssc': ssc})
 finally:
-    sess.close()
+    if sess is not None:
+        sess.close()

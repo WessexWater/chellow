@@ -2,13 +2,17 @@ from net.sf.chellow.monad import Monad
 import datetime
 from dateutil.relativedelta import relativedelta
 import pytz
+from sqlalchemy.sql.expression import false
 from itertools import islice
-
+import templater
+import utils
+import db
 Monad.getUtils()['impt'](globals(), 'db', 'utils', 'templater')
 render = templater.render
 UserException, form_int = utils.UserException, utils.form_int
 Contract, Snag, Channel, Era = db.Contract, db.Snag, db.Channel, db.Era
 Site, SiteEra = db.Site, db.SiteEra
+inv, template = globals()['inv'], globals()['template']
 
 sess = None
 rate_scripts = None
@@ -23,16 +27,16 @@ try:
         hidden_days = form_int(inv, 'hidden_days')
 
         total_snags = sess.query(Snag).join(Channel).join(Era).filter(
-            Snag.is_ignored == False, Era.hhdc_contract_id == contract.id,
+            Snag.is_ignored == false(), Era.hhdc_contract_id == contract.id,
             Snag.start_date < datetime.datetime.now(pytz.utc) -
             relativedelta(days=hidden_days)).count()
         snags = sess.query(Snag).join(Channel).join(Era).join(
             Era.site_eras).join(SiteEra.site).filter(
-            Snag.is_ignored == False, Era.hhdc_contract_id == contract.id,
+            Snag.is_ignored == false(), Era.hhdc_contract_id == contract.id,
             Snag.start_date < datetime.datetime.now(pytz.utc) -
             relativedelta(days=hidden_days)).order_by(
-                Site.code, Era.id, Snag.start_date, Snag.finish_date,
-                Snag.channel_id)
+            Site.code, Era.id, Snag.start_date, Snag.finish_date,
+            Snag.channel_id)
         snag_groups = []
         prev_snag = None
         for snag in islice(snags, 200):
@@ -45,7 +49,7 @@ try:
                 snag_group = {
                     'snags': [],
                     'sites': sess.query(Site).join(Site.site_eras).filter(
-                        SiteEra.era_id==era.id).order_by(Site.code),
+                        SiteEra.era == era).order_by(Site.code),
                     'era': era, 'description': snag.description,
                     'start_date': snag.start_date,
                     'finish_date': snag.finish_date}

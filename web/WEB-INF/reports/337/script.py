@@ -1,15 +1,16 @@
 from net.sf.chellow.monad import Monad
-from sqlalchemy.orm import joinedload_all
-
-Monad.getUtils()['imprt'](globals(), {
-        'db': ['Contract', 'Source', 'MarketRole', 'set_read_write', 'session'], 
-        'utils': ['UserException'],
-        'templater': ['render']})
+import db
+import templater
+Monad.getUtils()['impt'](globals(), 'db', 'utils', 'templater')
+render = templater.render
+Source = db.Source
+inv, template = globals()['inv'], globals()['template']
 
 sess = None
 try:
-    sess = session()
+    sess = db.session()
     sources = sess.query(Source).order_by(Source.code).all()
     render(inv, template, {'sources': sources})
 finally:
-    sess.close()
+    if sess is not None:
+        sess.close()

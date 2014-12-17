@@ -1,9 +1,14 @@
 from net.sf.chellow.monad import Monad
-
+import templater
+import db
+import utils
+import bill_import
 Monad.getUtils()['impt'](globals(), 'db', 'utils', 'templater', 'bill_import')
 render = templater.render
 UserException = utils.UserException
 Batch = db.Batch
+inv, template = globals()['inv'], globals()['template']
+
 
 def make_fields(sess, importer, message=None):
     messages = None if message is None else [str(message)]
@@ -14,8 +19,8 @@ def make_fields(sess, importer, message=None):
         if 'successful_bills' in imp_fields and \
                 len(imp_fields['successful_bills']) > 0:
             fields['successful_max_registers'] = \
-                max(len(bill['reads']) for bill in \
-                imp_fields['successful_bills'])
+                max(len(bill['reads']) for bill in
+                    imp_fields['successful_bills'])
         fields.update(imp_fields)
         fields['status'] = importer.status()
     return fields

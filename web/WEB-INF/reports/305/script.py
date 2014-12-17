@@ -1,12 +1,14 @@
 from net.sf.chellow.monad import Monad
-import datetime
-import pytz
-
+import db
+import utils
+import templater
 Monad.getUtils()['impt'](globals(), 'db', 'utils', 'templater')
 Source, GeneratorType, GspGroup = db.Source, db.GeneratorType, db.GspGroup
 Era, Supply = db.Era, db.Supply
 UserException, form_date = utils.UserException, utils.form_date
 render = templater.render
+inv, template = globals()['inv'], globals()['template']
+
 
 def make_fields(sess, supply, message=None):
     messages = [] if message is None else [str(message)]

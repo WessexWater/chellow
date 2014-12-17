@@ -1,14 +1,13 @@
 from net.sf.chellow.monad import Monad
-import sys
-import traceback
 import decimal
 import itertools
 import datetime
 import pytz
-
+import utils
 Monad.getUtils()['impt'](globals(), 'utils')
 UserException, parse_mpan_core = utils.UserException, utils.parse_mpan_core
 HH = utils.HH
+
 
 def create_parser(reader, mpan_map):
     return StarkDf2HhParser(reader, mpan_map)
@@ -58,7 +57,7 @@ class StarkDf2HhParser():
                     if len(time_fields) > 2 and time_fields[2] != 0:
                         raise UserException(
                             "The number of seconds (if present) must always "
-                            "be zero.") 
+                            "be zero.")
                     start_date = datetime.datetime(
                         d_year, d_month, d_day, time_fields[0], time_fields[1],
                         tzinfo=pytz.utc) - HH
@@ -67,7 +66,7 @@ class StarkDf2HhParser():
                         value = decimal.Decimal(fields[2])
                     except ValueError, e:
                         raise UserException(
-                            "Problem parsing the value: " + valueStr)
+                            "Problem parsing the value: " + fields[2])
                     status = fields[3][-1]
                     local_datum = {
                         'mpan_core': self.core,

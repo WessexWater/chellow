@@ -1,10 +1,12 @@
 from net.sf.chellow.monad import Monad
-
+import templater
+import db
+import utils
 Monad.getUtils()['impt'](globals(), 'db', 'utils', 'templater')
 render = templater.render
 RateScript = db.RateScript
 UserException, form_date = utils.UserException, utils.form_date
-
+inv, template = globals()['inv'], globals()['template']
 sess = None
 try:
     sess = db.session()
@@ -20,8 +22,8 @@ try:
         if inv.hasParameter('delete'):
             contract.delete_rate_script(sess, rate_script)
             sess.commit()
-            inv.sendSeeOther('/reports/67/output/?dno_contract_id='
-                + str(contract.id))
+            inv.sendSeeOther(
+                '/reports/67/output/?dno_contract_id=' + str(contract.id))
         else:
             script = inv.getString('script')
             start_date = form_date(inv, 'start')
@@ -41,4 +43,3 @@ except UserException, e:
 finally:
     if sess is not None:
         sess.close()
-

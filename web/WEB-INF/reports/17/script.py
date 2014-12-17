@@ -3,11 +3,15 @@ from datetime import datetime
 import pytz
 from dateutil.relativedelta import relativedelta
 from sqlalchemy import or_
-
+from sqlalchemy.sql.expression import null
+import utils
+import db
+import templater
 Monad.getUtils()['impt'](globals(), 'db', 'utils', 'templater')
 form_int, HH = utils.form_int, utils.HH
 Era, HhDatum, Channel = db.Era, db.HhDatum, db.Channel
 render = templater.render
+inv, template = globals()['inv'], globals()['template']
 
 sess = None
 try:
@@ -29,7 +33,7 @@ try:
         era = sess.query(Era).filter(
             Era.supply_id == supply.id, Era.start_date <= finish_date,
             or_(
-                Era.finish_date == None,
+                Era.finish_date == null(),
                 Era.finish_date >= start_date)).order_by(
             Era.start_date.desc()).first()
 

@@ -1,7 +1,7 @@
 from net.sf.chellow.monad import Monad
-import datetime
-import pytz
-
+import db
+import templater
+import utils
 Monad.getUtils()['impt'](globals(), 'db', 'utils', 'templater')
 Pc, Cop, GspGroup, Contract = db.Pc, db.Cop, db.GspGroup, db.Contract
 MarketRole, SiteEra, Era, Site = db.MarketRole, db.SiteEra, db.Era, db.Site
@@ -10,6 +10,8 @@ render = templater.render
 UserException, parse_mpan_core = utils.UserException, utils.parse_mpan_core
 form_date, validate_hh_start = utils.form_date, utils.validate_hh_start
 form_int, form_bool, form_str = utils.form_int, utils.form_bool, utils.form_str
+inv, template = globals()['inv'], globals()['template']
+
 
 def make_fields(sess, era, message=None):
     messages = [] if message is None else [str(message)]
@@ -112,8 +114,8 @@ try:
             else:
                 imp_mpan_core = parse_mpan_core(imp_mpan_core_raw)
                 imp_llfc_code = form_str(inv, 'imp_llfc_code')
-                imp_supplier_contract_id = form_int(inv,
-                    "imp_supplier_contract_id")
+                imp_supplier_contract_id = form_int(
+                    inv, "imp_supplier_contract_id")
                 imp_supplier_contract = Contract.get_supplier_by_id(
                     sess, imp_supplier_contract_id)
                 imp_supplier_account = form_str(inv, "imp_supplier_account")

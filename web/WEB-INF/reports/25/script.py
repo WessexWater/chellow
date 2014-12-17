@@ -2,12 +2,15 @@ from net.sf.chellow.monad import Monad
 import pytz
 import datetime
 from dateutil.relativedelta import relativedelta
-
+import utils
+import db
+import templater
 Monad.getUtils()['impt'](globals(), 'db', 'utils', 'templater')
 form_str, form_int, HH = utils.form_str, utils.form_int, utils.HH
 Supply, HhDatum, Channel, Era = db.Supply, db.HhDatum, db.Channel, db.Era
 Era, Source = db.Era, db.Source
 render = templater.render
+inv, template = globals()['inv'], globals()['template']
 
 sess = None
 try:
@@ -27,8 +30,9 @@ try:
             'supplies': [Supply.get_by_id(sess, id) for id in sup_ids]}
         groups.append(group_dict)
 
-        data = iter(sess.query(HhDatum).join(
-            Channel, Era, Supply, Source).filter(
+        data = iter(
+            sess.query(HhDatum).join(
+                Channel, Era, Supply, Source).filter(
                 Channel.channel_type == 'ACTIVE', Supply.id.in_(sup_ids),
                 HhDatum.start_date >= group.start_date,
                 HhDatum.start_date <= group.finish_date).order_by(
@@ -63,7 +67,7 @@ try:
                     prefix = 'import_' if imp_related else 'export_'
                     sup_hh[prefix + 'kwh'] = datum.value
                     sup_hh[prefix + 'status'] = datum.status
- 
+
                     if not imp_related and source_code in ('net', 'gen-net'):
                         hh_dict['export_kwh'] += hh_float_value
                     if imp_related and source_code in ('net', 'gen-net'):
@@ -75,11 +79,11 @@ try:
                             (imp_related and source_code == 'gen-net'):
                         hh_dict['parasitic_kwh'] += hh_float_value
                     if (imp_related and source_code == '3rd-party') or \
-                            (not imp_related and \
+                            (not imp_related and
                                 source_code == '3rd-party-reverse'):
                         hh_dict['third_party_import'] += hh_float_value
                     if (not imp_related and source_code == '3rd-party') or \
-                            (imp_related and \
+                            (imp_related and
                                 source_code == '3rd-party-reverse'):
                         hh_dict['third_party_export'] += hh_float_value
                     try:

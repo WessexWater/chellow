@@ -121,6 +121,24 @@
 		<copy todir="${build.home}/WEB-INF/lib-python/rcrc">
 			<fileset dir="${basedir}/rcrc" />
 		</copy>
+		<copy todir="${build.home}/WEB-INF/lib-python/triad_rates">
+			<fileset dir="${basedir}/triad_rates" />
+		</copy>
+		<copy todir="${build.home}/WEB-INF/lib-python/duos">
+			<fileset dir="${basedir}/duos" />
+		</copy>
+		<copy todir="${build.home}/WEB-INF/lib-python/general_import">
+			<fileset dir="${basedir}/general_import" />
+		</copy>
+		<copy todir="${build.home}/WEB-INF/lib-python/edi_lib">
+			<fileset dir="${basedir}/edi_lib" />
+		</copy>
+		<copy todir="${build.home}/WEB-INF/lib-python/triad">
+			<fileset dir="${basedir}/triad" />
+		</copy>
+		<copy todir="${build.home}/WEB-INF/lib-python/scenario">
+			<fileset dir="${basedir}/scenario" />
+		</copy>
 
 
 		<taskdef name="instrument" classname="org.hibernate.tool.instrument.javassist.InstrumentTask" classpath="${javalib.home}/hibernate-distribution-3.6.10.Final/hibernate3.jar:/usr/share/java/slf4j-api.jar:/usr/share/java/slf4j-nop.jar" />

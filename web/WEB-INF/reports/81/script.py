@@ -2,10 +2,14 @@ from net.sf.chellow.monad import Monad
 import datetime
 import pytz
 from sqlalchemy import or_
+from sqlalchemy.sql.expression import null
 from dateutil.relativedelta import relativedelta
 import traceback
-
+import utils
+import db
+import computer
 Monad.getUtils()['impt'](globals(), 'computer', 'db', 'utils')
+inv, template = globals()['inv'], globals()['template']
 
 hh_before, HH, hh_format = utils.hh_before, utils.HH, utils.hh_format
 form_int = utils.form_int
@@ -17,11 +21,11 @@ end_month = form_int(inv, "end_month")
 months = form_int(inv, "months")
 contract_id = form_int(inv, 'hhdc_contract_id')
 
+
 def content():
     sess = None
     try:
         sess = db.session()
-
 
         contract = Contract.get_hhdc_by_id(sess, contract_id)
 
@@ -43,7 +47,7 @@ def content():
         yield '\n'
 
         for era in sess.query(Era).distinct().join(Era.hhdc_contract).filter(
-                or_(Era.finish_date == None, Era.finish_date >= start_date),
+                or_(Era.finish_date == null(), Era.finish_date >= start_date),
                 Era.start_date <= finish_date,
                 Contract.id == contract.id).order_by(Era.supply_id):
             imp_mpan_core = era.imp_mpan_core

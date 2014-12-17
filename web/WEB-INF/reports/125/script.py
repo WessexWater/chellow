@@ -1,15 +1,18 @@
 from net.sf.chellow.monad import Monad
 from sqlalchemy.orm import joinedload_all
-
-Monad.getUtils()['imprt'](globals(), {
-        'db': ['Contract', 'Party', 'Ssc', 'set_read_write', 'session'], 
-        'utils': ['UserException'],
-        'templater': ['render']})
+import db
+import templater
+Monad.getUtils()['impt'](globals(), 'db', 'utils', 'templater')
+Ssc, MeasurementRequirements = db.Ssc, db.MeasurementRequirements
+render = templater.render
+inv, template = globals()['inv'], globals()['template']
 
 sess = None
 try:
-    sess = session()
-    sscs = sess.query(Ssc).options(joinedload_all('measurement_requirements.tpr')).order_by(Ssc.code).all()
+    sess = db.session()
+    sscs = sess.query(Ssc).options(
+        joinedload_all(MeasurementRequirements.tpr)).order_by(Ssc.code).all()
     render(inv, template, {'sscs': sscs})
 finally:
-    sess.close()
+    if sess is not None:
+        sess.close()

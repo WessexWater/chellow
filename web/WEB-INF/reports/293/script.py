@@ -1,12 +1,15 @@
 from net.sf.chellow.monad import Monad
-import tempfile
 import StringIO
 import sys
-
+import utils
+import templater
+import general_import
+import db
 Monad.getUtils()['impt'](
     globals(), 'db', 'utils', 'templater', 'general_import')
 UserException = utils.UserException
 render = templater.render
+inv, template = globals()['inv'], globals()['template']
 
 
 def make_fields(sess, message=None):

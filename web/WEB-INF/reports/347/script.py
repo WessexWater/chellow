@@ -1,13 +1,13 @@
 from net.sf.chellow.monad import Monad
-from sqlalchemy.orm import joinedload_all
-from sqlalchemy.sql.expression import text
-from datetime import datetime
-import pytz
-
-Monad.getUtils()['imprt'](globals(), {
-        'db': ['Bill', 'BillType', 'Batch', 'Participant', 'set_read_write', 'session'], 
-        'utils': ['UserException', 'form_date', 'form_decimal'],
-        'templater': ['render']})
+import db
+import templater
+import utils
+Monad.getUtils()['impt'](globals(), 'db', 'utils', 'templater')
+BillType, Bill = db.BillType, db.Bill
+render = templater.render
+form_date, form_decimal = utils.form_date, utils.form_decimal
+UserException = utils.UserException
+inv, template = globals()['inv'], globals()['template']
 
 
 def make_fields(sess, bill, message=None):
@@ -17,13 +17,13 @@ def make_fields(sess, bill, message=None):
 
 sess = None
 try:
-    sess = session()
+    sess = db.session()
     if inv.getRequest().getMethod() == 'GET':
         bill_id = inv.getLong('hhdc_bill_id')
         bill = Bill.get_by_id(sess, bill_id)
         render(inv, template, make_fields(sess, bill))
     else:
-        set_read_write(sess)
+        db.set_read_write(sess)
         bill_id = inv.getLong('hhdc_bill_id')
         bill = Bill.get_by_id(sess, bill_id)
         if inv.hasParameter('update'):
@@ -40,13 +40,17 @@ try:
             breakdown = inv.getString("breakdown")
             bill_type = BillType.get_by_id(sess, type_id)
 
-            bill.update(account, reference, issue_date, start_date, finish_date, kwh, net, vat, gross, bill_type, breakdown)
+            bill.update(
+                account, reference, issue_date, start_date, finish_date, kwh,
+                net, vat, gross, bill_type, breakdown)
             sess.commit()
-            inv.sendSeeOther("/reports/345/output/?hhdc_bill_id=" + str(bill.id))
+            inv.sendSeeOther(
+                "/reports/345/output/?hhdc_bill_id=" + str(bill.id))
         elif inv.hasParameter("delete"):
             bill.delete(sess)
             sess.commit()
-            inv.sendSeeOther("/reports/203/output/?hhdc_batch_id=" + str(bill.batch.id))
+            inv.sendSeeOther(
+                "/reports/203/output/?hhdc_batch_id=" + str(bill.batch.id))
 except UserException, e:
     render(inv, template, make_fields(sess, bill, e))
 finally:

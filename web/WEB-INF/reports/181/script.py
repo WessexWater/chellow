@@ -2,19 +2,25 @@ from net.sf.chellow.monad import Monad
 import pytz
 import datetime
 from sqlalchemy import or_
+from sqlalchemy.sql.expression import null
 import traceback
-
+import utils
+import db
+import computer
+import duos
+import triad
 Monad.getUtils()['impt'](globals(), 'computer', 'db', 'utils', 'triad', 'duos')
-
 HH = utils.HH
 Site, SiteEra, Era, Supply = db.Site, db.SiteEra, db.Era, db.Supply
 Source, Channel = db.Source, db.Channel
+inv = globals()['inv']
 
 caches = {}
 if inv.hasParameter('site_id'):
     site_id = inv.getLong('site_id')
 else:
     site_id = None
+
 
 def content():
     sess = None
@@ -42,7 +48,7 @@ def content():
                 Source.code.in_(('gen', 'gen-net')),
                 Era.start_date <= march_finish,
                 or_(
-                    Era.finish_date == None,
+                    Era.finish_date == null(),
                     Era.finish_date >= march_start)).distinct()
         else:
             sites = sess.query(Site).filter(

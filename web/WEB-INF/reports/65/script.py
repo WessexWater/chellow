@@ -1,7 +1,10 @@
 from net.sf.chellow.monad import Monad
-
+import templater
+import db
+import hh_importer
 Monad.getUtils()['impt'](globals(), 'db', 'utils', 'templater', 'hh_importer')
 render = templater.render
+inv, template = globals()['inv'], globals()['template']
 
 sess = None
 try:

@@ -4,10 +4,12 @@ import datetime
 import csv
 import pytz
 from dateutil.relativedelta import relativedelta
-
+import utils
 Monad.getUtils()['impt'](
     globals(), 'db', 'utils', 'templater', 'bill_import', 'edi_lib')
 validate_hh_start, HH = utils.validate_hh_start, utils.HH
+UserException = utils.UserException
+
 
 def parse_date(date_str, is_finish):
     date_str = date_str.strip()
@@ -20,6 +22,7 @@ def parse_date(date_str, is_finish):
     else:
         return datetime.datetime.strptime(
             date_str, "%Y-%m-%d %H:%M").replace(tzinfo=pytz.utc)
+
 
 class Parser():
     def __init__(self, f):
@@ -39,8 +42,8 @@ class Parser():
             issue_date = parse_date(self.vals[4], False)
             start_date = validate_hh_start(parse_date(self.vals[5], False))
             finish_date = validate_hh_start(parse_date(self.vals[6], True))
-            
-            kwh = self.big_decimal(7, 'kwh')            
+
+            kwh = self.big_decimal(7, 'kwh')
             net = self.big_decimal(8, 'net')
             vat = self.big_decimal(9, 'vat')
             gross = self.big_decimal(10, 'gross')
@@ -55,7 +58,9 @@ class Parser():
                     except SyntaxError, e:
                         raise UserException(str(e))
             else:
-                raise UserException("For the line, " + str(self.vals) + " there isn't a 'breakdown' field on the end.")
+                raise UserException(
+                    "For the line, " + str(self.vals) +
+                    " there isn't a 'breakdown' field on the end.")
 
             while self.vals[-1] == '' and len(self.vals) > 12:
                 del self.vals[-1]
@@ -79,7 +84,7 @@ class Parser():
                                 self.vals[i + 8], "%Y-%m-%d %H:%M")),
                         'pres_value': Decimal(self.vals[i + 9]),
                         'pres_type_code': self.vals[i + 10]})
-            
+
             raw_bills.append(
                 {
                     'bill_type_code': bill_type_code, 'account': account,
@@ -90,7 +95,6 @@ class Parser():
                     'reads': reads})
         return raw_bills
 
-
     def big_decimal(self, bd_index, bd_name):
         try:
             bd_str = self.vals[bd_index]
@@ -100,7 +104,7 @@ class Parser():
                 "The field '" + bd_name +
                 "' can't be found. It's expected at position " +
                 str(bd_index) + " in the list of fields.")
-        except NumberFormatException:
+        except ValueError:
             raise UserException(
                 "The " + bd_name + " field '" + bd_str +
                 "' cannot be parsed as a number. The " + bd_name +

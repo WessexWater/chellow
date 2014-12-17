@@ -1,3 +1,4 @@
+'''
 from net.sf.chellow.monad import Hiber, UserException
 from net.sf.chellow.monad.types import MonadDate
 from java.sql import Timestamp, ResultSet
@@ -17,9 +18,19 @@ if not inv.isValid():
 
 if inv.hasParameter('supply_id'):
     supply_id = inv.getLong('supply_id')
-    query = Hiber.session().createQuery("select bill, bill.batch, bill.batch.contract, bill.supply from Bill bill where bill.supply = :supply and bill.startDate.date >= :startDate and bill.startDate.date <= :finishDate order by bill.startDate.date").setEntity('supply', Supply.getSupply(supply_id))
+    query = Hiber.session().createQuery(
+        "select bill, bill.batch, bill.batch.contract, bill.supply from "
+        "Bill bill where bill.supply = :supply "
+        "and bill.startDate.date >= :startDate "
+        "and bill.startDate.date <= :finishDate "
+        "order by bill.startDate.date").setEntity(
+        'supply', Supply.getSupply(supply_id))
 else:
-    query = Hiber.session().createQuery("select bill, bill.batch, bill.batch.contract from Bill bill where bill.startDate.date >= :startDate and bill.startDate.date <= :finishDate")
+    query = Hiber.session().createQuery(
+        "select bill, bill.batch, bill.batch.contract "
+        "from Bill bill "
+        "where bill.startDate.date >= :startDate "
+        "and bill.startDate.date <= :finishDate")
 
 cal = MonadDate.getCalendar()
 cal.set(Calendar.YEAR, year)
@@ -41,15 +52,22 @@ file_date_format = SimpleDateFormat("yyyy-MM-dd'_'HHmm")
 file_date_format.setCalendar(cal)
 
 inv.getResponse().setContentType("text/csv")
-inv.getResponse().setHeader('Content-Disposition', 'attachment; filename="bills_' + file_date_format.format(now_date) + '.csv"')
+inv.getResponse().setHeader(
+    'Content-Disposition',
+    'attachment; filename="bills_' +
+    file_date_format.format(now_date) + '.csv"')
 pw = inv.getResponse().getWriter()
-pw.println("Report Start,Report Finish,Supply Id,Import MPAN Core,Export MPAN Core,Contract Name,Batch Reference,Bill Id,Bill From,Bill To,Bill Reference,Bill Issue Date,Bill Type, Bill kWh, Bill Net, Bill VAT, Bill Gross")
+pw.println(
+    "Report Start,Report Finish,Supply Id,Import MPAN Core,Export MPAN Core, "
+    "Contract Name,Batch Reference,Bill Id,Bill From,Bill To,Bill Reference, "
+    "Bill Issue Date,Bill Type, Bill kWh, Bill Net, Bill VAT, Bill Gross")
 pw.flush()
 
 issue_format = SimpleDateFormat("yyyy-MM-dd HH:mm")
 issue_format.setCalendar(cal)
 
-bills = query.setTimestamp('startDate', start_date.getDate()).setTimestamp('finishDate', finish_date.getDate()).scroll()
+bills = query.setTimestamp('startDate', start_date.getDate()).setTimestamp(
+    'finishDate', finish_date.getDate()).scroll()
 while bills.next():
     bill = bills.get(0)
     batch = bills.get(1)
@@ -68,9 +86,15 @@ while bills.next():
         if exp_mpan_core is None:
             exp_mpan_core = ''
 
-    pw.println(','.join('"' + str(value) + '"' for value in [start_date, finish_date, supply.getId(), imp_mpan_core, exp_mpan_core, contract.getName(), batch.getReference(), bill.getId(), bill.getStartDate(), bill.getFinishDate(), bill.getReference(), issue_format.format(bill.getIssueDate()), bill.getType().getCode(), bill.getKwh(), bill.getNet(), bill.getVat(), bill.getGross()]))
+    pw.println(','.join('"' + str(value) + '"' for value in [
+        start_date, finish_date, supply.getId(), imp_mpan_core, exp_mpan_core,
+        contract.getName(), batch.getReference(), bill.getId(),
+        bill.getStartDate(), bill.getFinishDate(), bill.getReference(),
+        issue_format.format(bill.getIssueDate()), bill.getType().getCode(),
+        bill.getKwh(), bill.getNet(), bill.getVat(), bill.getGross()]))
     pw.flush()
     Hiber.session().clear()
 
 bills.close()
 pw.close()
+'''

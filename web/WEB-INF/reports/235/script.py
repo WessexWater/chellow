@@ -1,8 +1,13 @@
-from java.util import GregorianCalendar, TimeZone, Locale, Calendar
-from net.sf.chellow.monad.types import MonadDate
+from net.sf.chellow.monad import Monad
+import db
+import templater
+Monad.getUtils()['impt'](globals(), 'templater', 'db')
+inv, template = globals()['inv'], globals()['template']
 
-cal = GregorianCalendar(TimeZone.getTimeZone("GMT"), Locale.UK)
-cal.add(Calendar.MONTH, -1)
-source.appendChild(MonadDate(cal.getTime()).toXml(doc))
-source.appendChild(MonadDate.getMonthsXml(doc))
-source.appendChild(MonadDate.getDaysXml(doc))
+sess = None
+try:
+    sess = db.session()
+    templater.render(inv, template, {})
+finally:
+    if sess is not None:
+        sess.close()

@@ -1,7 +1,8 @@
-import sys
 from net.sf.chellow.monad import Monad
-
+import utils
 Monad.getUtils()['impt'](globals(), 'utils')
+inv = globals()['inv']
+
 
 def content():
     yield '''

@@ -1,16 +1,17 @@
-from jinja2 import Template, Environment, PackageLoader
+from jinja2 import Environment
 import time
 from datetime import datetime
 import sys
 import traceback
 from net.sf.chellow.monad import Monad
-
+import utils
 Monad.getUtils()['impt'](globals(), 'utils')
 UserException = utils.UserException
 
 
-FORMATS = {'year': '%Y', 'month': '%m', 'day': '%d', 'hour': '%H',
-        'minute': '%M', 'full': '%Y-%m-%d %H:%M', 'date': '%Y-%m-%d'}
+FORMATS = {
+    'year': '%Y', 'month': '%m', 'day': '%d', 'hour': '%H',
+    'minute': '%M', 'full': '%Y-%m-%d %H:%M', 'date': '%Y-%m-%d'}
 
 prefix = '''
 {%- macro input_date(prefix, initial=None, resolution='minute') -%}
@@ -97,7 +98,8 @@ prefix = '''
 {%- macro input_option(name, item_id, desc, initial=None) -%}
     <option value="{{ item_id }}"
         {%- if request.getParameter(name) -%}
-            {%- if request.getParameter(name) == '' ~ item_id %} selected{% endif -%}
+            {%- if request.getParameter(name) == '' ~ item_id %} selected
+            {%- endif -%}
         {%- else -%}
             {%- if initial == item_id %} selected{% endif -%}
             {%- endif -%}>{{ desc }}</option>
@@ -121,21 +123,24 @@ prefix = '''
     {%- else -%}
       {{ initial }}
     {%- endif -%}
-  </textarea>      
+  </textarea>
 {%- endmacro -%}
 
 {%- macro input_checkbox(name, initial) %}
     <input type="checkbox" name="{{ name }}" value="true"
                 {%- if request.getParameter(name) -%}
-                    {%- if request.getParameter(name) == 'true' %} checked{% endif -%}
+                    {%- if request.getParameter(name) == 'true' %} checked
+                    {%- endif -%}
                 {%- else -%}
                     {%- if initial == True %} checked{% endif -%}
                     {%- endif -%}>
 {%- endmacro -%}
 '''
 
+
 def hh_format_filter(dt, modifier='full'):
     return "Ongoing" if dt is None else dt.strftime(FORMATS[modifier])
+
 
 def now_if_none(dt):
     if dt is None:
@@ -148,9 +153,8 @@ env = Environment(autoescape=True)
 env.filters['hh_format'] = hh_format_filter
 env.filters['now_if_none'] = now_if_none
 
-# to use: Monad.getContext().getAttribute('net.sf.chellow.jinja').get("render")(inv, template, vals)
-
 template_cache = {}
+
 
 def render(inv, template, vals, status_code=200, content_type='text/html'):
     if len(template_cache) > 10000:
@@ -178,7 +182,7 @@ def render(inv, template, vals, status_code=200, content_type='text/html'):
         from flask import Response
 
         vals['context_path'] = '/chellow'
-       
+
         headers = {
             'mimetype': content_type,
             'Date': int(round(time.time() * 1000)),

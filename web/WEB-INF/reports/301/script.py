@@ -2,11 +2,15 @@ from net.sf.chellow.monad import Monad
 import datetime
 import pytz
 from dateutil.relativedelta import relativedelta
-
+import templater
+import utils
+import db
 Monad.getUtils()['impt'](globals(), 'db', 'utils', 'templater')
 render = templater.render
 UserException, HH, hh_after = utils.UserException, utils.HH, utils.hh_after
 HhDatum, Snag = db.HhDatum, db.Snag
+inv, template = globals()['inv'], globals()['template']
+
 
 def make_fields(sess, channel, start_date, message=None):
     messages = [] if message is None else [str(message)]
@@ -50,7 +54,7 @@ try:
             else:
                 start_date = datetime.datetime(
                     era_finish.year, era_finish.month, 1, tzinfo=pytz.utc)
-        
+
         render(inv, template, make_fields(sess, channel, start_date))
 except UserException, e:
     render(inv, template, make_fields(sess, channel, start_date, e), 400)

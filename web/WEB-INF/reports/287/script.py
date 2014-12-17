@@ -1,9 +1,13 @@
 from net.sf.chellow.monad import Monad
-
+import templater
+import utils
+import db
 Monad.getUtils()['impt'](globals(), 'db', 'utils', 'templater')
 render = templater.render
 UserException = utils.UserException
 Batch, Contract = db.Batch, db.Contract
+inv, template = globals()['inv'], globals()['template']
+
 
 def make_fields(sess, contract, message=None):
     batches = sess.query(Batch).filter(

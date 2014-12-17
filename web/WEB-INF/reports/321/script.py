@@ -2,13 +2,21 @@ import sys
 import os
 from net.sf.chellow.monad import Monad
 import StringIO
-
+import bill_import
+import db
+import templater
+import utils
 Monad.getUtils()['impt'](globals(), 'db', 'utils', 'templater', 'bill_import')
+inv, template = globals()['inv'], globals()['template']
 
 
 def make_fields(sess, batch, message=None):
     messages = [] if message is None else [str(message)]
-    return {'messages': messages, 'importer_ids': sorted(bill_import.get_bill_importer_ids(batch.id), reverse=True), 'batch': batch}
+    return {
+        'messages': messages,
+        'importer_ids': sorted(
+            bill_import.get_bill_importer_ids(batch.id), reverse=True),
+        'batch': batch}
 
 sess = None
 try:
@@ -36,7 +44,8 @@ try:
             f.seek(0, os.SEEK_END)
             file_size = f.tell()
         f.seek(0)
-        id = bill_import.start_bill_importer(sess, batch.id, file_item.getName(), file_size, f)
+        id = bill_import.start_bill_importer(
+            sess, batch.id, file_item.getName(), file_size, f)
         inv.sendSeeOther("/reports/323/output/?importer_id=" + str(id))
 except utils.UserException, e:
     templater.render(inv, template, make_fields(sess, batch, e), 400)

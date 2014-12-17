@@ -1,18 +1,17 @@
 from net.sf.chellow.monad import Monad
 import csv
-from dateutil.relativedelta import relativedelta
 import itertools
 import decimal
 import datetime
 from datetime import timedelta
 import pytz
-
+import utils
 Monad.getUtils()['impt'](globals(), 'utils', 'templater')
 parse_mpan_core, UserException = utils.parse_mpan_core, utils.UserException
 HH = utils.HH
 
 
-def create_parser(reader,mpan_map):
+def create_parser(reader, mpan_map):
     return HhParserBglobal(reader, mpan_map)
 
 
@@ -29,7 +28,7 @@ class HhParserBglobal():
     def next(self):
         datum = None
         try:
-            while datum is None:   
+            while datum is None:
                 if self.col_idx > 50:
                     self.line_number, self.values = self.shredder.next()
                     if len(self.values) == 0:

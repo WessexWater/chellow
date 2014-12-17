@@ -1,22 +1,21 @@
 from net.sf.chellow.monad import Monad
-from sqlalchemy.orm import joinedload_all
 import collections
-from java.lang import System
-
-Monad.getUtils()['imprt'](globals(), {
-        'db': ['Bill', 'RegisterRead', 'Era', 'set_read_write', 'session'], 
-        'utils': ['UserException'],
-        'templater': ['render']})
+import db
+import templater
+Monad.getUtils()['impt'](globals(), 'db', 'utils', 'templater')
+Bill = db.Bill
+render = templater.render
+inv, template = globals()['inv'], globals()['template']
 
 sess = None
 try:
-    sess = session()
+    sess = db.session()
     bill_id = inv.getLong('hhdc_bill_id')
     bill = Bill.get_by_id(sess, bill_id)
     fields = {'bill': bill}
     try:
         breakdown_dict = eval(bill.breakdown, {})
-        
+
         raw_lines = []
         for key in ('raw_lines', 'raw-lines'):
             try:
@@ -46,7 +45,7 @@ try:
                     del breakdown_dict[k]
                     break
 
-        for k, v in breakdown_dict.items():    
+        for k, v in breakdown_dict.items():
             pair = k.split('-')
             row_name = '-'.join(pair[:-1])
             column_name = pair[-1]
@@ -64,7 +63,10 @@ try:
             column_list.append('gbp')
 
         row_list = sorted(list(rows))
-        fields.update({'raw_lines': raw_lines, 'row_list': row_list, 'column_list': column_list, 'grid': grid})
+        fields.update(
+            {
+                'raw_lines': raw_lines, 'row_list': row_list,
+                'column_list': column_list, 'grid': grid})
     except SyntaxError, e:
         pass
     render(inv, template, fields)

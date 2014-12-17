@@ -1,17 +1,20 @@
 from net.sf.chellow.monad import Monad
 from sqlalchemy import or_
-
+from sqlalchemy.sql.expression import null
+import db
+import utils
+import computer
 Monad.getUtils()['impt'](globals(), 'templater', 'db', 'utils', 'computer')
-
 Contract, Era = db.Contract, db.Era
 hh_format = utils.hh_format
-    
+inv = globals()['inv']
+
 
 start_date = utils.form_date(inv, 'start')
 finish_date = utils.form_date(inv, 'finish')
 contract_id = inv.getLong('mop_contract_id')
-
 caches = {}
+
 
 def content():
     sess = None
@@ -24,13 +27,13 @@ def content():
 
         yield 'Import MPAN Core, Export MPAN Core, Start Date, Finish Date'
         bill_titles = computer.contract_func(
-            caches, contract, 'virtual_bill_titles', pw)()
+            caches, contract, 'virtual_bill_titles', None)()
         for title in bill_titles:
             yield ',' + title
         yield '\n'
 
         for era in sess.query(Era).filter(
-                or_(Era.finish_date == None, Era.finish_date >= start_date),
+                or_(Era.finish_date == null(), Era.finish_date >= start_date),
                 Era.start_date <= finish_date,
                 Era.mop_contract_id == contract.id).order_by(Era.supply_id):
             import_mpan_core = era.imp_mpan_core

@@ -1,36 +1,40 @@
 from net.sf.chellow.monad import Monad
-from sqlalchemy.orm import joinedload_all
 from datetime import datetime
 import pytz
+import db
+import templater
+import utils
+Monad.getUtils()['impt'](globals(), 'db', 'utils', 'templater')
+Contract = db.Contract
+render = templater.render
+form_date, UserException = utils.form_date, utils.UserException
+inv, template = globals()['inv'], globals()['template']
 
-Monad.getUtils()['imprt'](globals(), {
-        'db': ['Contract', 'Party', 'RateScript', 'set_read_write', 'session'], 
-        'utils': ['UserException', 'form_date'],
-        'templater': ['render']})
 
 def page_fields(contract, message=None):
     now = datetime.now(pytz.utc)
     initial_date = datetime(now.year, now.month, 1, tzinfo=pytz.utc)
     messages = None if message is None else [message]
-    return {'contract': contract, 'initial_date': initial_date,
+    return {
+        'contract': contract, 'initial_date': initial_date,
         'messages': messages}
 
 sess = None
 try:
-    sess = session()
+    sess = db.session()
     if inv.getRequest().getMethod() == 'GET':
         contract_id = inv.getLong('mop_contract_id')
         contract = Contract.get_mop_by_id(sess, contract_id)
         render(inv, template, page_fields(contract))
     else:
-        set_read_write(sess)
+        db.set_read_write(sess)
         contract_id = inv.getLong('mop_contract_id')
         contract = Contract.get_mop_by_id(sess, contract_id)
         start_date = form_date(inv, 'start')
         rate_script = contract.insert_rate_script(sess, start_date, '')
         sess.commit()
-        inv.sendSeeOther('/reports/205/output/?mop_rate_script_id='
-                + str(rate_script.id))
+        inv.sendSeeOther(
+            '/reports/205/output/?mop_rate_script_id=' + str(rate_script.id))
 except UserException, e:
         render(inv, template, page_fields(contract, str(e)))
 finally:

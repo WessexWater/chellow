@@ -1,7 +1,9 @@
 import sys
 from net.sf.chellow.monad import Monad
-
+import utils
+import db
 Monad.getUtils()['impt'](globals(), 'utils', 'db')
+inv, template = globals()['inv'], globals()['template']
 
 if sys.platform.startswith('java'):
     from java.awt.image import BufferedImage
@@ -42,8 +44,10 @@ if sys.platform.startswith('java'):
             graphics.setColor(supply[0])
             graphics.fillRect(12, int(graph_top + 15 + (10 * i)), 8, 8)
             graphics.setColor(Color.BLACK)
-            graphics.drawString(supply[2] + ' ' + supply[1], 25, int(graph_top + 22 + (10 * i)))
-            i = i + 1        
+            graphics.drawString(
+                supply[2] + ' ' + supply[1], 25,
+                int(graph_top + 22 + (10 * i)))
+            i = i + 1
 
     def minimum_scale(min_scale, max_scale):
         if min_scale == 0 and max_scale == 0:
@@ -98,7 +102,25 @@ if sys.platform.startswith('java'):
         hhDate = start_date
         groups = site.groups(sess, start_date, finish_date, True)
         for group in groups:
-            rs = iter(sess.execute("select hh_datum.value, hh_datum.start_date, hh_datum.status, channel.imp_related, supply.name, source.code, supply.id as supply_id from hh_datum, channel, era, supply, source where hh_datum.channel_id = channel.id and channel.era_id = era.id and era.supply_id = supply.id and supply.source_id = source.id and channel.channel_type = 'ACTIVE' and hh_datum.start_date >= :start_date and hh_datum.start_date <= :finish_date and supply.id = any(:supply_ids) order by hh_datum.start_date, supply.id", params={'start_date': group.start_date, 'finish_date': group.finish_date, 'supply_ids': [s.id for s in group.supplies]}))
+            rs = iter(
+                sess.execute(
+                    "select hh_datum.value, hh_datum.start_date, "
+                    "hh_datum.status, channel.imp_related, supply.name, "
+                    "source.code, supply.id as supply_id "
+                    "from hh_datum, channel, era, supply, source "
+                    "where hh_datum.channel_id = channel.id "
+                    "and channel.era_id = era.id "
+                    "and era.supply_id = supply.id "
+                    "and supply.source_id = source.id "
+                    "and channel.channel_type = 'ACTIVE' "
+                    "and hh_datum.start_date >= :start_date "
+                    "and hh_datum.start_date <= :finish_date "
+                    "and supply.id = any(:supply_ids) "
+                    "order by hh_datum.start_date, supply.id",
+                    params={
+                        'start_date': group.start_date,
+                        'finish_date': group.finish_date,
+                        'supply_ids': [s.id for s in group.supplies]}))
 
             try:
                 row = rs.next()
@@ -120,22 +142,44 @@ if sys.platform.startswith('java'):
                     third_party_export = 0
                     supplyList = []
                     while hhChannelStartDate == hhDate:
-                        if not imp_related and source_code in ('net', 'gen-net'):
+                        if not imp_related and \
+                                source_code in ('net', 'gen-net'):
                             exportedValue += hhChannelValue
-                            add_colour(exported_supplies, supply_id, supply_name, source_code)
+                            add_colour(
+                                exported_supplies, supply_id, supply_name,
+                                source_code)
                         if imp_related and source_code in ('net', 'gen-net'):
                             importedValue += hhChannelValue
-                            add_colour(imported_supplies, supply_id, supply_name, source_code)
-                        if (imp_related and source_code == 'gen') or (not imp_related and source_code == 'gen-net'):
+                            add_colour(
+                                imported_supplies, supply_id, supply_name,
+                                source_code)
+                        if (imp_related and source_code == 'gen') or \
+                                (not imp_related and source_code == 'gen-net'):
                             generatedValue += hhChannelValue
-                            add_colour(generated_supplies, supply_id, supply_name, source_code)
-                        if (not imp_related and source_code == 'gen') or (imp_related and source_code == 'gen-net'):
+                            add_colour(
+                                generated_supplies, supply_id, supply_name,
+                                source_code)
+                        if (not imp_related and source_code == 'gen') or \
+                                (imp_related and source_code == 'gen-net'):
                             parasiticValue += hhChannelValue
-                            add_colour(generated_supplies, supply_id, supply_name, source_code)
-                        supplyList.append([supply_name, source_code, imp_related, hhChannelValue, supply_id])
-                        if (imp_related and source_code == '3rd-party') or (not imp_related and source_code == '3rd-party-reverse'):
+                            add_colour(
+                                generated_supplies, supply_id, supply_name,
+                                source_code)
+                        supplyList.append(
+                            [
+                                supply_name, source_code, imp_related,
+                                hhChannelValue, supply_id])
+                        if (imp_related and source_code == '3rd-party') or \
+                                (
+                                    not imp_related and
+                                    source_code == '3rd-party-reverse'):
                             third_party_import += hhChannelValue
-                        if (not imp_related and source_code == '3rd-party') or (imp_related and source_code == '3rd-party-reverse'):
+                        if (
+                                not imp_related and
+                                source_code == '3rd-party') or \
+                                (
+                                    imp_related and
+                                    source_code == '3rd-party-reverse'):
                             third_party_export += hhChannelValue
                         try:
                             row = rs.next()
@@ -155,19 +199,20 @@ if sys.platform.startswith('java'):
                     minImportedScale = min(minImportedScale, importedValue)
                     maxGeneratedScale = max(maxGeneratedScale, generatedValue)
                     maxParasiticScale = max(maxParasiticScale, parasiticValue)
-                    displacedValue = generatedValue - parasiticValue - exportedValue
+                    displacedValue = generatedValue - parasiticValue - \
+                        exportedValue
                     maxDisplacedScale = max(maxDisplacedScale, displacedValue)
                     minDisplacedScale = min(minDisplacedScale, displacedValue)
-                    usedValue = importedValue + displacedValue + third_party_import - third_party_export
+                    usedValue = importedValue + displacedValue + \
+                        third_party_import - third_party_export
                     maxUsedScale = max(maxUsedScale, usedValue)
                     minUsedScale = min(minUsedScale, usedValue)
-                    resultData.append([hhDate, supplyList, usedValue, displacedValue])
+                    resultData.append(
+                        [hhDate, supplyList, usedValue, displacedValue])
                     hhDate += HH
             except StopIteration:
                 pass
 
-            #raise net.sf.chellow.monad.ui.UserException.newInvalidParameter("ResultData: " + str(resultData)) 
-            #raise net.sf.chellow.monad.ui.UserException.newInvalidParameter("Overall: " + str(maxOverallScale) + " " + str(minOverallScale) + " Exported: " + str(maxExportedScale) + " " + str(minExportedScale) + " Imported: " + str(maxImportedScale) + " " + str(minImportedScale) + " Generated: " + str(maxGeneratedScale) + " Parasitic: " + str(maxParasiticScale) + " Displaced: " + str(maxDisplacedScale) + " " + str(minDisplacedScale) + " Used: " + str(maxUsedScale) + " " + str(minUsedScale))
             sort_colour(generated_supplies)
             sort_colour(imported_supplies)
             sort_colour(exported_supplies)
@@ -183,11 +228,16 @@ if sys.platform.startswith('java'):
             minimized_scale = minimum_scale(minUsedScale, maxUsedScale)
             minUsedScale = minimized_scale[0]
             maxUsedScale = minimized_scale[1]
-            minimized_scale = minimum_scale(minDisplacedScale, maxDisplacedScale)
+            minimized_scale = minimum_scale(
+                minDisplacedScale, maxDisplacedScale)
             minDisplacedScale = minimized_scale[0]
             maxDisplacedScale = minimized_scale[1]
-            maxOverallScale = max(maxExportedScale, maxImportedScale, maxGeneratedScale, maxDisplacedScale, maxUsedScale)
-            minOverallScale = min(minExportedScale, minImportedScale, minDisplacedScale, minUsedScale)
+            maxOverallScale = max(
+                maxExportedScale, maxImportedScale, maxGeneratedScale,
+                maxDisplacedScale, maxUsedScale)
+            minOverallScale = min(
+                minExportedScale, minImportedScale, minDisplacedScale,
+                minUsedScale)
             rawStepOverall = (maxOverallScale * 2) / (maxHeight / pxStep)
             factorOverall = 10**int(math.floor(math.log10(rawStepOverall)))
             endOverall = rawStepOverall / factorOverall
@@ -197,11 +247,9 @@ if sys.platform.startswith('java'):
             if endOverall >= 5:
                 newEndOverall = 5
             stepOverall = newEndOverall * factorOverall
-            #raise net.sf.chellow.monad.ui.UserException.newInvalidParameter("Overall Step: " + str(stepOverall))
         if len(resultData) > 0:
             graphLeft = 180
             scaleFactorOverall = float(maxHeight) / maxOverallScale
-            #raise net.sf.chellow.monad.ui.UserException.newInvalidParameter(str(scaleFactorExported) + " " + str(scaleFactorUsed) + " " + str(scaleFactorDisplaced) + " " + str(scaleFactorImported) + " " + str(scaleFactorGenerated))
             graphOrderExported = 5
             graphOrderImported = 4
             graphOrderGenerated = 3
@@ -216,26 +264,39 @@ if sys.platform.startswith('java'):
                 minDisplaced = min(minDisplaced, i)
             for i in range(0, int(maxParasiticScale), stepOverall):
                 minParasitic = max(minParasitic, i)
-            #raise net.sf.chellow.monad.ui.UserException.newInvalidParameter(str(int((abs(minParasitic)) * scaleFactorOverall)))
             minUsed = int(abs(minUsed) * scaleFactorOverall)
             minDisplaced = int(abs(minDisplaced) * scaleFactorOverall)
             minParasitic = int(abs(minParasitic) * scaleFactorOverall)
-            graphTopExported = ((graphOrderExported - 1) * (maxHeight + 22)) + 30 + minUsed + minDisplaced + minParasitic
-            graphTopImported = ((graphOrderImported - 1) * (maxHeight + 22)) + 30 + minUsed + minDisplaced + minParasitic
-            graphTopGenerated = ((graphOrderGenerated - 1) * (maxHeight + 22)) + 30 + minUsed + minDisplaced
+            graphTopExported = (
+                (graphOrderExported - 1) * (maxHeight + 22)) + 30 + minUsed + \
+                minDisplaced + minParasitic
+            graphTopImported = (
+                (graphOrderImported - 1) * (maxHeight + 22)) + 30 + minUsed + \
+                minDisplaced + minParasitic
+            graphTopGenerated = (
+                (graphOrderGenerated - 1) * (maxHeight + 22)) + 30 + \
+                minUsed + minDisplaced
             graphTopUsed = ((graphOrderUsed - 1) * (maxHeight + 22)) + 30
-            graphTopDisplaced = ((graphOrderDisplaced - 1) * (maxHeight + 22)) + 30 + minUsed
-            image = BufferedImage(graphLeft + len(resultData) + 100, ((maxHeight + 22) * 5) + 60 + minUsed + minDisplaced + minParasitic, BufferedImage.TYPE_4BYTE_ABGR)
+            graphTopDisplaced = (
+                (graphOrderDisplaced - 1) * (maxHeight + 22)) + 30 + minUsed
+            image = BufferedImage(
+                graphLeft + len(resultData) + 100,
+                ((maxHeight + 22) * 5) + 60 + minUsed + minDisplaced +
+                minParasitic, BufferedImage.TYPE_4BYTE_ABGR)
             graphics = image.createGraphics()
             defaultFont = graphics.getFont()
             smallFont = Font(defaultFont.getName(), defaultFont.getStyle(), 10)
             keyFont = Font(defaultFont.getName(), defaultFont.getStyle(), 9)
-            #raise net.sf.chellow.monad.ui.UserException.newInvalidParameter(str(graphTopExported) + " " + str(graphTopImported) + " " + str(graphTopUsed) + " " + str(graphTopDisplaced))
-            xAxisExported = int(graphTopExported + maxOverallScale * scaleFactorOverall)
-            xAxisImported = int(graphTopImported + maxOverallScale * scaleFactorOverall)
-            xAxisGenerated = int(graphTopGenerated + maxOverallScale * scaleFactorOverall)
-            xAxisUsed = int(graphTopUsed + maxOverallScale * scaleFactorOverall)
-            xAxisDisplaced = int(graphTopDisplaced + maxOverallScale * scaleFactorOverall)
+            xAxisExported = int(
+                graphTopExported + maxOverallScale * scaleFactorOverall)
+            xAxisImported = int(
+                graphTopImported + maxOverallScale * scaleFactorOverall)
+            xAxisGenerated = int(
+                graphTopGenerated + maxOverallScale * scaleFactorOverall)
+            xAxisUsed = int(
+                graphTopUsed + maxOverallScale * scaleFactorOverall)
+            xAxisDisplaced = int(
+                graphTopDisplaced + maxOverallScale * scaleFactorOverall)
             monthPoints = []
             for i, dataHh in enumerate(resultData):
                 date = dataHh[0]
@@ -248,14 +309,20 @@ if sys.platform.startswith('java'):
                 graphics.setColor(Color.BLUE)
                 usedHeight = int(round(usedValue * scaleFactorOverall))
                 if usedHeight < 0:
-                    graphics.fillRect(graphLeft + i, xAxisUsed, 1, abs(usedHeight))
+                    graphics.fillRect(
+                        graphLeft + i, xAxisUsed, 1, abs(usedHeight))
                 else:
-                    graphics.fillRect(graphLeft + i, xAxisUsed - usedHeight, 1, usedHeight)
-                displacedHeight = int(round(displacedValue * scaleFactorOverall))
+                    graphics.fillRect(
+                        graphLeft + i, xAxisUsed - usedHeight, 1, usedHeight)
+                displacedHeight = int(
+                    round(displacedValue * scaleFactorOverall))
                 if displacedHeight < 0:
-                    graphics.fillRect(graphLeft + i, xAxisDisplaced, 1, abs(displacedHeight))
+                    graphics.fillRect(
+                        graphLeft + i, xAxisDisplaced, 1, abs(displacedHeight))
                 else:
-                    graphics.fillRect(graphLeft + i, xAxisDisplaced - displacedHeight, 1, displacedHeight)
+                    graphics.fillRect(
+                        graphLeft + i, xAxisDisplaced - displacedHeight,
+                        1, displacedHeight)
                 generatedTotal = 0
                 parasiticTotal = 0
                 importedTotal = 0
@@ -270,19 +337,28 @@ if sys.platform.startswith('java'):
                     if source in ('net', 'gen-net') and not isImport:
                         set_colour(graphics, exported_supplies, id)
                         exportedTotal = exportedTotal + height
-                        graphics.fillRect(graphLeft + i, xAxisExported - exportedTotal, 1, height)
+                        graphics.fillRect(
+                            graphLeft + i, xAxisExported - exportedTotal, 1,
+                            height)
                     if source in ('net', 'gen-net') and isImport:
                         set_colour(graphics, imported_supplies, id)
                         importedTotal = importedTotal + height
-                        graphics.fillRect(graphLeft + i, xAxisImported - importedTotal, 1, height)
-                    if (isImport and source == 'gen') or (not isImport and source == 'gen-net'):
+                        graphics.fillRect(
+                            graphLeft + i, xAxisImported - importedTotal, 1,
+                            height)
+                    if (isImport and source == 'gen') or \
+                            (not isImport and source == 'gen-net'):
                         set_colour(graphics, generated_supplies, id)
                         generatedTotal = generatedTotal + height
-                        graphics.fillRect(graphLeft + i, xAxisGenerated - generatedTotal, 1, height)
-                    if (not isImport and source == 'gen') or (isImport and source == 'gen-net'):
+                        graphics.fillRect(
+                            graphLeft + i, xAxisGenerated - generatedTotal, 1,
+                            height)
+                    if (not isImport and source == 'gen') or \
+                            (isImport and source == 'gen-net'):
                         set_colour(graphics, generated_supplies, id)
                         parasiticTotal = parasiticTotal + height
-                        graphics.fillRect(graphLeft + i, xAxisGenerated, 1, height)
+                        graphics.fillRect(
+                            graphLeft + i, xAxisGenerated, 1, height)
                 if hour == 0 and minute == 0:
                     day = date.day
                     dayOfWeek = date.weekday()
@@ -290,44 +366,67 @@ if sys.platform.startswith('java'):
                         graphics.setColor(Color.RED)
                     else:
                         graphics.setColor(Color.BLACK)
-                    graphics.drawString(str(day), graphLeft + i + 16, ((maxHeight + 22) * 5) + 30 + minUsed + minDisplaced + minParasitic)
+                    graphics.drawString(
+                        str(day), graphLeft + i + 16,
+                        ((maxHeight + 22) * 5) + 30 + minUsed + minDisplaced +
+                        minParasitic)
                     graphics.setColor(Color.BLACK)
-                    graphics.fillRect(graphLeft + i, graphTopExported + maxHeight, 1, 5)
-                    graphics.fillRect(graphLeft + i, graphTopImported + maxHeight, 1, 5)
-                    graphics.fillRect(graphLeft + i, graphTopGenerated + maxHeight, 1, 5)
-                    graphics.fillRect(graphLeft + i, graphTopUsed + maxHeight, 1, 5)
-                    graphics.fillRect(graphLeft + i, graphTopDisplaced + maxHeight, 1, 5)
+                    graphics.fillRect(
+                        graphLeft + i, graphTopExported + maxHeight, 1, 5)
+                    graphics.fillRect(
+                        graphLeft + i, graphTopImported + maxHeight, 1, 5)
+                    graphics.fillRect(
+                        graphLeft + i, graphTopGenerated + maxHeight, 1, 5)
+                    graphics.fillRect(
+                        graphLeft + i, graphTopUsed + maxHeight, 1, 5)
+                    graphics.fillRect(
+                        graphLeft + i, graphTopDisplaced + maxHeight, 1, 5)
                     if day == 15:
-                        graphics.drawString(date.strftime("%B"), graphLeft + i + 16, ((maxHeight + 22) * 5) + 50 + minUsed + minDisplaced + minParasitic)
+                        graphics.drawString(
+                            date.strftime("%B"), graphLeft + i + 16,
+                            ((maxHeight + 22) * 5) + 50 + minUsed +
+                            minDisplaced + minParasitic)
                         monthPoints.append(i)
             graphics.setColor(Color.BLACK)
             graphics.fillRect(graphLeft, graphTopExported, 1, maxHeight)
             graphics.fillRect(graphLeft, graphTopImported, 1, maxHeight)
-            graphics.fillRect(graphLeft, graphTopGenerated, 1, maxHeight + minParasitic)
+            graphics.fillRect(
+                graphLeft, graphTopGenerated, 1, maxHeight + minParasitic)
             graphics.fillRect(graphLeft, graphTopUsed, 1, maxHeight + minUsed)
-            graphics.fillRect(graphLeft, graphTopDisplaced, 1, maxHeight + minDisplaced)
+            graphics.fillRect(
+                graphLeft, graphTopDisplaced, 1, maxHeight + minDisplaced)
             scalePointsExported = []
             for i in range(0, int(maxOverallScale), stepOverall):
                 scalePointsExported.append(i)
-            #for i in range(0, int(minExportedScale), stepOverall * -1):
-                #scalePointsExported.append(i)
             graphics.setColor(Color.BLACK)
             for point in scalePointsExported:
-                graphics.fillRect(graphLeft - 5, int(xAxisExported - point * scaleFactorOverall), len(resultData) + 5, 1)
-                graphics.drawString(str(point * 2), graphLeft - 40, int(xAxisExported - point * scaleFactorOverall + 5))
+                graphics.fillRect(
+                    graphLeft - 5,
+                    int(xAxisExported - point * scaleFactorOverall),
+                    len(resultData) + 5, 1)
+                graphics.drawString(
+                    str(point * 2), graphLeft - 40,
+                    int(xAxisExported - point * scaleFactorOverall + 5))
                 for monthPoint in monthPoints:
-                    graphics.drawString(str(point * 2), graphLeft + monthPoint + 16, int(xAxisExported - point * scaleFactorOverall - 2))
+                    graphics.drawString(
+                        str(point * 2), graphLeft + monthPoint + 16,
+                        int(xAxisExported - point * scaleFactorOverall - 2))
             scalePointsImported = []
             for i in range(0, int(maxOverallScale), stepOverall):
                 scalePointsImported.append(i)
-            #for i in range(0, int(minOverallScale), stepOverall * -1):
-                #scalePointsImported.append(i)
             graphics.setColor(Color.BLACK)
             for point in scalePointsImported:
-                graphics.fillRect(graphLeft - 5, int(xAxisImported - point * scaleFactorOverall), len(resultData) + 5, 1)
-                graphics.drawString(str(point * 2), graphLeft - 40, int(xAxisImported - point * scaleFactorOverall + 5))
+                graphics.fillRect(
+                    graphLeft - 5,
+                    int(xAxisImported - point * scaleFactorOverall),
+                    len(resultData) + 5, 1)
+                graphics.drawString(
+                    str(point * 2), graphLeft - 40,
+                    int(xAxisImported - point * scaleFactorOverall + 5))
                 for monthPoint in monthPoints:
-                    graphics.drawString(str(point * 2), graphLeft + monthPoint + 16, int(xAxisImported - point * scaleFactorOverall - 2))
+                    graphics.drawString(
+                        str(point * 2), graphLeft + monthPoint + 16,
+                        int(xAxisImported - point * scaleFactorOverall - 2))
             scalePointsGenerated = []
             for i in range(0, int(maxOverallScale), stepOverall):
                 scalePointsGenerated.append(i)
@@ -335,39 +434,61 @@ if sys.platform.startswith('java'):
                 scalePointsGenerated.append(i * -1)
             graphics.setColor(Color.BLACK)
             for point in scalePointsGenerated:
-                graphics.fillRect(graphLeft - 5, int(xAxisGenerated - point * scaleFactorOverall), len(resultData) + 5, 1)
-                graphics.drawString(str(point * 2), graphLeft - 40, int(xAxisGenerated - point * scaleFactorOverall + 5))
+                graphics.fillRect(
+                    graphLeft - 5,
+                    int(xAxisGenerated - point * scaleFactorOverall),
+                    len(resultData) + 5, 1)
+                graphics.drawString(
+                    str(point * 2), graphLeft - 40,
+                    int(xAxisGenerated - point * scaleFactorOverall + 5))
                 for monthPoint in monthPoints:
-                    graphics.drawString(str(point * 2), graphLeft + monthPoint + 16, int(xAxisGenerated - point * scaleFactorOverall - 2))
+                    graphics.drawString(
+                        str(point * 2), graphLeft + monthPoint + 16,
+                        int(xAxisGenerated - point * scaleFactorOverall - 2))
             scalePointsUsed = []
             for i in range(0, int(maxOverallScale), stepOverall):
                 scalePointsUsed.append(i)
             for i in range(0, int(minUsedScale), stepOverall * -1):
                 scalePointsUsed.append(i)
             for point in scalePointsUsed:
-                graphics.fillRect(graphLeft - 5, int(xAxisUsed - point * scaleFactorOverall), len(resultData) + 5, 1)
-                graphics.drawString(str(point * 2), graphLeft - 40, int(xAxisUsed - point * scaleFactorOverall + 5))
+                graphics.fillRect(
+                    graphLeft - 5, int(xAxisUsed - point * scaleFactorOverall),
+                    len(resultData) + 5, 1)
+                graphics.drawString(
+                    str(point * 2), graphLeft - 40,
+                    int(xAxisUsed - point * scaleFactorOverall + 5))
                 for monthPoint in monthPoints:
-                    graphics.drawString(str(point * 2), graphLeft + monthPoint + 16, int(xAxisUsed - point * scaleFactorOverall - 2))
+                    graphics.drawString(
+                        str(point * 2), graphLeft + monthPoint + 16,
+                        int(xAxisUsed - point * scaleFactorOverall - 2))
             scalePointsDisplaced = []
             for i in range(0, int(maxOverallScale), stepOverall):
                 scalePointsDisplaced.append(i)
             for i in range(0, int(minDisplacedScale), stepOverall * -1):
                 scalePointsDisplaced.append(i)
             for point in scalePointsDisplaced:
-                graphics.fillRect(graphLeft - 5, int(xAxisDisplaced - point * scaleFactorOverall), len(resultData) + 5, 1)
-                graphics.drawString(str(point * 2), graphLeft - 40, int(xAxisDisplaced - point * scaleFactorOverall + 5))
+                graphics.fillRect(
+                    graphLeft - 5,
+                    int(xAxisDisplaced - point * scaleFactorOverall),
+                    len(resultData) + 5, 1)
+                graphics.drawString(
+                    str(point * 2), graphLeft - 40,
+                    int(xAxisDisplaced - point * scaleFactorOverall + 5))
                 for monthPoint in monthPoints:
-                    graphics.drawString(str(point * 2), graphLeft + monthPoint + 16, int(xAxisDisplaced - point * scaleFactorOverall - 2))
+                    graphics.drawString(
+                        str(point * 2), graphLeft + monthPoint + 16,
+                        int(xAxisDisplaced - point * scaleFactorOverall - 2))
             graphics.drawString("kW", graphLeft - 90, graphTopExported + 10)
             graphics.drawString("kW", graphLeft - 90, graphTopImported + 10)
             graphics.drawString("kW", graphLeft - 90, graphTopGenerated + 10)
             graphics.drawString("kW", graphLeft - 90, graphTopUsed + 10)
             graphics.drawString("kW", graphLeft - 90, graphTopDisplaced + 10)
-            title = "Electricity at site " + site.code + " " + site.name + " for " + str(months) + " month"
+            title = "Electricity at site " + site.code + " " + site.name + \
+                " for " + str(months) + " month"
             if months > 1:
                 title = title + "s"
-            title = title + " up to and including " + (finish_date - HH).strftime("%B %Y")
+            title += " up to and including " + \
+                (finish_date - HH).strftime("%B %Y")
             graphics.drawString(title, 30, 20)
             graphics.drawString("Imported", 10, graphTopImported + 10)
             graphics.drawString("Exported", 10, graphTopExported + 10)
@@ -375,7 +496,11 @@ if sys.platform.startswith('java'):
             graphics.drawString("Used", 10, graphTopUsed + 10)
             graphics.drawString("Displaced", 10, graphTopDisplaced + 10)
             graphics.setFont(smallFont)
-            graphics.drawString("Poor data is denoted by a grey background and black foreground.", 30, ((maxHeight + 22) * 5) + 50 + minUsed + minDisplaced + minParasitic)
+            graphics.drawString(
+                "Poor data is denoted by a grey background and black "
+                "foreground.", 30,
+                ((maxHeight + 22) * 5) + 50 + minUsed + minDisplaced +
+                minParasitic)
             graphics.setFont(keyFont)
             paint_legend(exported_supplies, graphTopExported)
             paint_legend(imported_supplies, graphTopImported)
@@ -388,7 +513,6 @@ if sys.platform.startswith('java'):
 
         os = inv.getResponse().getOutputStream()
         graphics.setColor(Color.BLACK)
-        #graphics.drawString("report took..." +     str(java.lang.System.currentTimeMillis() - start) + "ms", 10, 390)
         ImageIO.write(image, "png", os)
         os.close()
     finally:

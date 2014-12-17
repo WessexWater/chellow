@@ -1,6 +1,15 @@
-from net.sf.chellow.monad import Hiber, XmlTree
+from net.sf.chellow.monad import Monad
+import db
+import templater
+Monad.getUtils()['impt'](globals(), 'templater', 'db')
+ReadType = db.ReadType
+inv, template = globals()['inv'], globals()['template']
 
-types_element = doc.createElement('read-types')
-source.appendChild(types_element)
-for type in Hiber.session().createQuery("from ReadType type order by type.code").list():
-    types_element.appendChild(type.toXml(doc))
+sess = None
+try:
+    sess = db.session()
+    read_types = sess.query(ReadType).order_by(ReadType.code).all()
+    templater.render(inv, template, {'read_types': read_types})
+finally:
+    if sess is not None:
+        sess.close()

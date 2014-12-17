@@ -1,23 +1,28 @@
 import sys
+inv = globals()['inv']
 
 if sys.platform.startswith('java'):
     from java.text import DecimalFormat
     from java.lang import Runtime, System, Thread
     from java.io import StringWriter, InputStreamReader
     from net.sf.chellow.monad import Hiber, Monad, MonadMessage
-    from java.lang.management import OperatingSystemMXBean, ManagementFactory
+    from java.lang.management import ManagementFactory
     from com.jezhumble.javasysmon import JavaSysMon
-    from net.sf.chellow.ui import ContextListener
     from net.sf.chellow.billing import Contract
+
+    source, doc = globals()['source'], globals()['doc']
 
     interrupt_id = None
     if inv.getRequest().getMethod() == "POST":
         if inv.hasParameter('interrupt'):
             interrupt_id = inv.getLong('thread-id')
-            Monad.getUtils()['imprt'](globals(), {
-            'db': ['HhDatum', 'Site', 'Supply', 'set_read_write', 'session'], 
-            'utils': ['UserException', 'HH', 'form_date'],
-            'templater': ['render', 'on_start_report', 'get_report']})
+            Monad.getUtils()['imprt'](
+                globals(), {
+                    'db': [
+                        'HhDatum', 'Site', 'Supply', 'set_read_write',
+                        'session'],
+                    'utils': ['UserException', 'HH', 'form_date'],
+                    'templater': ['render', 'on_start_report', 'get_report']})
 
         elif inv.hasParameter('run_shutdown'):
             shutdown_contract = Contract.getNonCoreContract('shutdown')
@@ -25,7 +30,7 @@ if sys.platform.startswith('java'):
                 'on_shut_down', [Monad.getContext()])
             source.appendChild(
                 MonadMessage("Shut down successfully.").toXml(doc))
-            
+
         elif inv.hasParameter('run_startup'):
             startup_contract = Contract.getNonCoreContract('startup')
             startup_contract.callFunction('on_start_up', [Monad.getContext()])
@@ -49,7 +54,7 @@ if sys.platform.startswith('java'):
 
     source.setAttribute(
         "system-load-average",
-        str(ManagementFactory.getOperatingSystemMXBean(). \
+        str(ManagementFactory.getOperatingSystemMXBean().
             getSystemLoadAverage()))
 
     mon = JavaSysMon()
@@ -71,17 +76,24 @@ if sys.platform.startswith('java'):
     System.getProperties().store(sw, None)
     props.setTextContent(sw.toString())
 
-    req_map = dict([[entry.getKey(), entry.getValue()] for entry in inv.getMonad().getServletConfig().getServletContext().getAttribute('net.sf.chellow.request_map').entrySet()])
+    req_map = dict(
+        [
+            [entry.getKey(), entry.getValue()]
+            for entry in
+            inv.getMonad().getServletConfig().getServletContext()
+            .getAttribute('net.sf.chellow.request_map').entrySet()])
 
     for entry in Thread.getAllStackTraces().entrySet():
         thread_element = doc.createElement('thread')
         source.appendChild(thread_element)
         thread = entry.getKey()
 
+        '''
         if interrupt_id is not None:
             request = get_report(thread.getId())
             if request is not None:
                 request.getResponse().getOutputStream().close()
+        '''
 
         if thread.getId() == interrupt_id:
             thread.interrupt()
@@ -141,7 +153,13 @@ if sys.platform.startswith('java'):
 
     settings_el = doc.createElement('pg-settings')
     source.appendChild(settings_el)
-    for setting in ('autovacuum', 'autovacuum_naptime', 'autovacuum_max_workers', 'autovacuum_vacuum_threshold', 'autovacuum_analyze_threshold', 'autovacuum_vacuum_scale_factor', 'autovacuum_analyze_scale_factor', 'max_pred_locks_per_transaction', 'track_counts', 'track_activities', 'port', 'listen_addresses'):
+    for setting in (
+            'autovacuum', 'autovacuum_naptime', 'autovacuum_max_workers',
+            'autovacuum_vacuum_threshold', 'autovacuum_analyze_threshold',
+            'autovacuum_vacuum_scale_factor',
+            'autovacuum_analyze_scale_factor',
+            'max_pred_locks_per_transaction', 'track_counts',
+            'track_activities', 'port', 'listen_addresses'):
         pstmt = con.prepareStatement("show " + setting)
         rs = pstmt.executeQuery()
         while rs.next():
@@ -174,7 +192,17 @@ if sys.platform.startswith('java'):
 
     rs.close()
 
-    pstmt = con.prepareStatement("select t.relname as table_name, i.relname as index_name, array_to_string(array_agg(a.attname), ', ') as column_names from pg_class t, pg_class i, pg_index ix, pg_attribute a, pg_namespace where t.oid = ix.indrelid and i.oid = ix.indexrelid and a.attrelid = t.oid and a.attnum = ANY(ix.indkey) and t.relkind = 'r' and t.relnamespace = pg_namespace.oid and pg_namespace.nspname = 'public' group by t.relname, i.relname, pg_namespace.nspname order by t.relname, i.relname""")
+    pstmt = con.prepareStatement(
+        "select t.relname as table_name, i.relname as index_name, "
+        "array_to_string(array_agg(a.attname), ', ') as column_names "
+        "from pg_class t, pg_class i, pg_index ix, pg_attribute a, "
+        "pg_namespace where t.oid = ix.indrelid "
+        "and i.oid = ix.indexrelid and a.attrelid = t.oid "
+        "and a.attnum = ANY(ix.indkey) and t.relkind = 'r' "
+        "and t.relnamespace = pg_namespace.oid "
+        "and pg_namespace.nspname = 'public' "
+        "group by t.relname, i.relname, pg_namespace.nspname "
+        "order by t.relname, i.relname")
     rs = pstmt.executeQuery()
     rs_meta = rs.getMetaData()
     table_el = doc.createElement('pg-indexes')
@@ -182,7 +210,10 @@ if sys.platform.startswith('java'):
     for i in range(1, rs_meta.getColumnCount() + 1):
         column_el = doc.createElement('column')
         table_el.appendChild(column_el)
-        column_el.setAttribute('name', rs_meta.getColumnName(i) + ' (' + rs_meta.getColumnTypeName(i) + ')')
+        column_el.setAttribute(
+            'name',
+            rs_meta.getColumnName(i) + ' (' + rs_meta.getColumnTypeName(i) +
+            ')')
 
     while rs.next():
         row_el = doc.createElement('row')
@@ -193,7 +224,6 @@ if sys.platform.startswith('java'):
             cell_el.setAttribute('value', rs.getString(i))
 
     rs.close()
-
 
     py_libs_el = doc.createElement('py-libs')
     source.appendChild(py_libs_el)
@@ -213,7 +243,8 @@ if sys.platform.startswith('java'):
     con.rollback()
     con.setAutoCommit(True)
     #pstmt = con.prepareStatement("vacuum analyze")
-    pstmt = con.prepareStatement("create index hh_datum_channel_id_idx on hh_datum (channel_id)")
+    pstmt = con.prepareStatement(
+        "create index hh_datum_channel_id_idx on hh_datum (channel_id)")
     pstmt.execute()
     pstmt.close()
     con.setAutoCommit(False)
@@ -250,6 +281,9 @@ else:
 </html>
 """
     from net.sf.chellow.monad import Monad
+    import db
+    import templater
+    import computer
     Monad.getUtils()['impt'](globals(), 'utils', 'templater', 'computer', 'db')
 
     Contract = db.Contract

@@ -1,15 +1,18 @@
 from net.sf.chellow.monad import Monad
-from sqlalchemy.orm import joinedload_all
-from datetime import datetime
-import pytz
-
+import db
+import templater
+import utils
 Monad.getUtils()['impt'](globals(), 'db', 'utils', 'templater')
-
 Channel = db.Channel
+inv, template = globals()['inv'], globals()['template']
+
 
 def make_fields(sess, era, message=None):
-    channels = sess.query(Channel).filter(Channel.era_id==era.id).order_by(Channel.imp_related, Channel.channel_type)
-    return {'era': era, 'channels': channels, 'messages': None if message is None else [str(message)]}
+    channels = sess.query(Channel).filter(
+        Channel.era == era).order_by(Channel.imp_related, Channel.channel_type)
+    return {
+        'era': era, 'channels': channels,
+        'messages': None if message is None else [str(message)]}
 
 sess = None
 try:
@@ -23,7 +26,7 @@ try:
         era_id = inv.getLong('era_id')
         imp_related = inv.getBoolean('imp_related')
         channel_type = inv.getString('channel_type')
-       
+
         era = db.Era.get_by_id(sess, era_id)
         channel = era.insert_channel(sess, imp_related, channel_type)
         sess.commit()

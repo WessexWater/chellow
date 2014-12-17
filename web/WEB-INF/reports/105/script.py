@@ -1,9 +1,11 @@
 from net.sf.chellow.monad import Monad
 import collections
-
+import db
+import templater
 Monad.getUtils()['impt'](globals(), 'db', 'utils', 'templater')
 RegisterRead, Bill = db.RegisterRead, db.Bill
 render = templater.render
+inv, template = globals()['inv'], globals()['template']
 
 sess = None
 try:
@@ -16,7 +18,7 @@ try:
     fields = {'bill': bill, 'register_reads': register_reads}
     try:
         breakdown_dict = eval(bill.breakdown, {})
-        
+
         raw_lines = []
         for key in ('raw_lines', 'raw-lines'):
             try:
@@ -46,7 +48,7 @@ try:
                     del breakdown_dict[k]
                     break
 
-        for k, v in breakdown_dict.items():    
+        for k, v in breakdown_dict.items():
             pair = k.split('-')
             row_name = '-'.join(pair[:-1])
             column_name = pair[-1]

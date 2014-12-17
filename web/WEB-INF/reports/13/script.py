@@ -3,11 +3,14 @@ from sqlalchemy import or_
 import pytz
 import datetime
 from dateutil.relativedelta import relativedelta
-
+import utils
+import db
+import templater
 Monad.getUtils()['impt'](globals(), 'db', 'utils', 'templater')
 HH = utils.HH
 Snag = db.Snag
 render = templater.render
+inv, template = globals()['inv'], globals()['template']
 
 sess = None
 try:
@@ -50,7 +53,6 @@ try:
         month['has_site_snags'] = has_snags
 
         month_start += relativedelta(months=1)
-
 
     totals = dict((typ, {'md': 0, 'md_date': None, 'kwh': 0}) for typ in typs)
 

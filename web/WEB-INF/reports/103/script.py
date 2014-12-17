@@ -1,13 +1,14 @@
 from net.sf.chellow.monad import Monad
 import datetime
-import pytz
 import os
-from java.lang import System
 import shutil
 import StringIO
 import tarfile
-
+import templater
+import utils
 Monad.getUtils()['impt'](globals(), 'utils', 'templater')
+render = templater.render
+inv, template = globals()['inv'], globals()['template']
 
 
 def make_fields(lib_path, message=None):
@@ -16,7 +17,14 @@ def make_fields(lib_path, message=None):
     for fl in sorted(os.listdir(lib_path)):
         full_file = os.path.join(lib_path, fl)
         statinfo = os.stat(full_file)
-        files.append({'name': fl, 'last_modified': datetime.datetime.utcfromtimestamp(statinfo.st_mtime), 'size': statinfo.st_size, 'creation_date': datetime.datetime.utcfromtimestamp(statinfo.st_ctime) })
+        files.append(
+            {
+                'name': fl,
+                'last_modified': datetime.datetime.utcfromtimestamp(
+                    statinfo.st_mtime),
+                'size': statinfo.st_size,
+                'creation_date': datetime.datetime.utcfromtimestamp(
+                    statinfo.st_ctime)})
     return {'files': files, 'messages': messages}
 
 try:

@@ -1,14 +1,16 @@
 from net.sf.chellow.monad import Monad
-from datetime import datetime
-from dateutil.relativedelta import relativedelta
-import pytz
 import StringIO
 import zipfile
 import traceback
-
+from sqlalchemy.sql.expression import true, null
+from sqlalchemy import or_
+import db
+import utils
 Monad.getUtils()['impt'](globals(), 'db', 'utils', 'templater')
-session, SiteEra, Era = db.session, db.SiteEra, db.Era
+session, SiteEra, Era, Site = db.session, db.SiteEra, db.Era, db.Site
 form_int, form_date = utils.form_int, utils.form_date
+hh_format = utils.hh_format
+inv = globals()['inv']
 
 start_date = form_date(inv, 'start')
 finish_date = form_date(inv, 'finish')
@@ -30,10 +32,10 @@ if site_id is None:
         sess = None
         try:
             sess = session()
-            
+
             sites = sess.query(Site).join(SiteEra).join(Era).filter(
-                SiteEra.is_physical == True, or_(
-                    Era.finish_date == None, Era.finish_date >= start_date),
+                SiteEra.is_physical == true(), or_(
+                    Era.finish_date == null(), Era.finish_date >= start_date),
                 Era.start_date <= finish_date)
             bffr = StringIO.StringIO()
             zf = zipfile.ZipFile(bffr)
@@ -90,7 +92,7 @@ else:
         sess = None
         try:
             sess = session()
-            
+
             site_id = inv.getLong('site_id')
             site = Site.get_by_id(sess, site_id)
             sites = sess.query(Site).filter(Site.id == site_id)

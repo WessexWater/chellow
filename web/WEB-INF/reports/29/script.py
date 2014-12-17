@@ -3,10 +3,12 @@ import datetime
 import pytz
 from dateutil.relativedelta import relativedelta
 import traceback
-
+import utils
+import db
 Monad.getUtils()['impt'](globals(), 'db', 'utils', 'templater')
 form_int, form_str, HH = utils.form_int, utils.form_str, utils.HH
 UserException = utils.UserException
+inv = globals()['inv']
 
 months = form_int(inv, 'months')
 finish_year = form_int(inv, 'finish_year')

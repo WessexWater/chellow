@@ -1,7 +1,13 @@
-from java.util import GregorianCalendar, TimeZone, Locale, Calendar
-from net.sf.chellow.monad.types import MonadDate
+from net.sf.chellow.monad import Monad
+import db
+import templater
+Monad.getUtils()['impt'](globals(), 'templater', 'db')
+inv, template = globals()['inv'], globals()['templater']
 
-cal = GregorianCalendar(TimeZone.getTimeZone("GMT"), Locale.UK)
-if cal.get(Calendar.MONTH) < Calendar.MARCH:
-    cal.add(Calendar.YEAR, -1)
-source.setAttribute('year', str(cal.get(Calendar.YEAR)))
+sess = None
+try:
+    sess = db.session()
+    templater.render(inv, template, {})
+finally:
+    if sess is not None:
+        sess.close()

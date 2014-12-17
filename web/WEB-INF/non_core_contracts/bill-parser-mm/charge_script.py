@@ -1,9 +1,10 @@
 from decimal import Decimal
 from net.sf.chellow.monad import Monad
 import datetime
-
+import utils
 Monad.getUtils()['impt'](globals(), 'db', 'utils', 'templater', 'bill_import')
 validate_hh_start = utils.validate_hh_start
+
 
 def parse_date(date_string):
     return validate_hh_start(datetime.datetime.strptime(date_string, "%Y%m%d"))

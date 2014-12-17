@@ -1,12 +1,13 @@
 from net.sf.chellow.monad import Monad
-from java.lang import Thread
-from sqlalchemy.orm import joinedload_all
-import sys
-
-Monad.getUtils()['impt'](globals(), 'utils', 'templater', 'db', 'system_price_elexon')
-
+import db
+import system_price_elexon
+import templater
+import utils
+Monad.getUtils()['impt'](
+    globals(), 'utils', 'templater', 'db', 'system_price_elexon')
 Contract = db.Contract
 render = templater.render
+inv, template = globals()['inv'], globals()['template']
 
 sess = None
 importer = None
@@ -23,8 +24,9 @@ try:
         inv.sendSeeOther("/reports/385/output/")
 except utils.UserException, e:
     sess.rollback()
-    render(inv, template, {'messages': [str(e)], 'importer': importer,
-        'contract': contract})
+    render(
+        inv, template, {
+            'messages': [str(e)], 'importer': importer, 'contract': contract})
 finally:
     if sess is not None:
         sess.close()

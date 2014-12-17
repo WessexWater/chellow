@@ -1,5 +1,4 @@
 from net.sf.chellow.monad import Monad
-import sys
 import types
 import collections
 import pytz
@@ -9,11 +8,12 @@ import traceback
 from dateutil.relativedelta import relativedelta
 import urllib2
 import csv
-
+import db
+import utils
 Monad.getUtils()['impt'](globals(), 'db', 'utils')
 Contract, RateScript = db.Contract, db.RateScript
-HH, UserException = utils.HH, utils.UserException
-
+HH, UserException, hh_format = utils.HH, utils.UserException, utils.hh_format
+db_id = globals()['db_id']
 
 ELEXON_PORTAL_SCRIPTING_KEY_KEY = 'elexonportal_scripting_key'
 
@@ -21,15 +21,16 @@ ELEXON_PORTAL_SCRIPTING_KEY_KEY = 'elexonportal_scripting_key'
 def identity_func(x):
     return x
 
-def hh(supply_source):
+
+def hh(ds):
     rate_sets = ds.supplier_rate_sets
-    
+
     try:
         cache = ds.caches['system_price_elexon']
     except KeyError:
         cache = {}
         ds.caches['system_price_elexon'] = cache
-        
+
     for hh in ds.hh_data:
         try:
             prices = cache[hh['start-date']]
@@ -47,13 +48,16 @@ def hh(supply_source):
 
                 if isinstance(rate, dict):
                     rate = transform_func(rate)
-                    prices[pref + '-gbp-per-kwh'] = float(rate[date_str]) / 1000 
+                    prices[pref + '-gbp-per-kwh'] = float(rate[date_str]) / \
+                        1000
                 else:
-                    raise UserException("Type returned by " + pref + "s at " + hh_format(dt) + " must be function or dictionary.")
+                    raise UserException(
+                        "Type returned by " + pref + "s at " + hh_format(dt) +
+                        " must be function or dictionary.")
             cache[hh['start-date']] = prices
 
         hh.update(prices)
-        hh['ssp-gbp'] = hh['nbp-kwh'] * hh['ssp-gbp-per-kwh'] 
+        hh['ssp-gbp'] = hh['nbp-kwh'] * hh['ssp-gbp-per-kwh']
         hh['sbp-gbp'] = hh['nbp-kwh'] * hh['sbp-gbp-per-kwh']
         rate_sets['ssp'].add(hh['ssp-gbp-per-kwh'])
         rate_sets['sbp'].add(hh['sbp-gbp-per-kwh'])
@@ -61,8 +65,10 @@ def hh(supply_source):
 
 system_price_importer = None
 
+
 def key_format(dt):
     return dt.strftime("%d %H:%M Z")
+
 
 class SystemPriceImporter(threading.Thread):
     def __init__(self):
@@ -134,7 +140,8 @@ class SystemPriceImporter(threading.Thread):
                                 "properties.")
 
                         data = urllib2.urlopen(
-                            'https://downloads.elexonportal.co.uk/file/download/SSPSBPNIV_FILE?key=' + scripting_key)
+                            'https://downloads.elexonportal.co.uk/file/'
+                            'download/SSPSBPNIV_FILE?key=' + scripting_key)
                         parser = csv.reader(data, delimiter=',', quotechar='"')
                         piterator = iter(parser)
                         values = piterator.next()
@@ -143,18 +150,29 @@ class SystemPriceImporter(threading.Thread):
                         month_sps = {}
                         for values in piterator:
                             day, month, year = map(int, values[0].split('/'))
-                            ct_start = ct_tz.localize(datetime.datetime(year, month, day))
-                            hh_date = pytz.utc.normalize(ct_start.astimezone(pytz.utc))
+                            ct_start = ct_tz.localize(
+                                datetime.datetime(year, month, day))
+                            hh_date = pytz.utc.normalize(
+                                ct_start.astimezone(pytz.utc))
                             hh_offset = int(values[1]) - 1
                             hh_date += relativedelta(minutes=30*hh_offset)
                             if month_start <= hh_date <= month_finish:
-                                month_sps[key_format(hh_date)] = {'ssp': values[2], 'sbp': values[3]}
+                                month_sps[key_format(hh_date)] = {
+                                    'ssp': values[2], 'sbp': values[3]}
 
                         if key_format(month_finish) in month_sps:
                             self.log("The whole month's data is there.")
-                            script = "def ssps():\n    return {\n" + ',\n'.join("'" + k + "': " + month_sps[k]['ssp'] for k in sorted(month_sps.keys())) + "}\n\ndef sbps():\n    return {\n" + ',\n'.join("'" + k + "': " + month_sps[k]['sbp'] for k in sorted(month_sps.keys())) + "}\n\n"
+                            script = "def ssps():\n    return {\n" + \
+                                ',\n'.join(
+                                    "'" + k + "': " + month_sps[k]['ssp'] for
+                                    k in sorted(month_sps.keys())) + \
+                                "}\n\ndef sbps():\n    return {\n" + \
+                                ',\n'.join(
+                                    "'" + k + "': " + month_sps[k]['sbp'] for
+                                    k in sorted(month_sps.keys())) + "}\n\n"
                             db.set_read_write(sess)
-                            contract = Contract.get_non_core_by_name(sess, 'system_price_elexon')
+                            contract = Contract.get_non_core_by_name(
+                                sess, 'system_price_elexon')
                             rs = RateScript.get_by_id(sess, latest_rs_id)
                             contract.update_rate_script(
                                 sess, rs, rs.start_date, month_finish,
@@ -191,10 +209,12 @@ class SystemPriceImporter(threading.Thread):
 def get_importer():
     return system_price_importer
 
+
 def startup():
     global system_price_importer
     system_price_importer = SystemPriceImporter()
     system_price_importer.start()
+
 
 def shutdown():
     if system_price_importer is not None:

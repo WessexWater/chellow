@@ -1,17 +1,17 @@
-from java.util import GregorianCalendar, TimeZone, Locale, Calendar
-from net.sf.chellow.monad.types import MonadDate
-from net.sf.chellow.monad import Hiber, UserException
-from net.sf.chellow.billing import Contract
+from net.sf.chellow.monad import Monad
+import db
+import templater
+Monad.getUtils()['impt'](globals(), 'templater', 'db')
+Contract = db.Contract
+inv, template = globals()['inv'], globals()['templater']
 
-contract_id = inv.getLong('mop_contract_id')
-if not inv.isValid():
-    raise UserException()
+sess = None
+try:
+    sess = db.session()
+    contract_id = inv.getLong('mop_contract_id')
 
-contract = Contract.getMopContract(contract_id)
-
-
-cal = GregorianCalendar(TimeZone.getTimeZone("GMT"), Locale.UK)
-cal.add(Calendar.MONTH, -1)
-source.appendChild(MonadDate(cal.getTime()).toXml(doc))
-source.appendChild(MonadDate.getMonthsXml(doc))
-source.appendChild(contract.toXml(doc))
+    contract = Contract.get_mop_by_id(contract_id)
+    templater.render(inv, template, {'contract': contract})
+finally:
+    if sess is not None:
+        sess.close()

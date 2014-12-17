@@ -1,8 +1,11 @@
 from net.sf.chellow.monad import Monad
-
+import db
+import templater
+import utils
 Monad.getUtils()['impt'](globals(), 'db', 'utils', 'templater')
 Snag, Site = db.Snag, db.Site
 render = templater.render
+inv, template = globals()['inv'], globals()['template']
 
 sess = None
 try:

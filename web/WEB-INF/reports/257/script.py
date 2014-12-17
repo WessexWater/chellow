@@ -1,11 +1,15 @@
 from net.sf.chellow.monad import Monad
-
+import utils
+import templater
+import db
 Monad.getUtils()['impt'](globals(), 'db', 'utils', 'templater')
-UserException, form_int= utils.UserException, utils.form_int
+UserException, form_int = utils.UserException, utils.form_int
 form_str = utils.form_str
 render = templater.render
 User, Party, MarketRole = db.User, db.Party, db.MarketRole
 Participant = db.Participant
+inv, template = globals()['inv'], globals()['template']
+
 
 def user_fields(sess, user, message=None):
     parties = sess.query(Party).join(MarketRole).join(Participant).order_by(
@@ -39,8 +43,8 @@ try:
             if new_password != confirm_new_password:
                 raise UserException("The new passwords aren't the same.")
             if len(new_password) < 6:
-                raise UserException("The password must be at least 6 " +
-                        "characters long.")
+                raise UserException(
+                    "The password must be at least 6 characters long.")
             user.password_digest = User.digest(new_password)
             sess.commit()
             inv.sendSeeOther('/reports/255/output/?user_id=' + str(user.id))

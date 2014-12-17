@@ -2,9 +2,10 @@ import os
 import traceback
 import sys
 from net.sf.chellow.monad import Monad
-
+import utils
 Monad.getUtils()['impt'](globals(), 'computer', 'db', 'utils', 'triad', 'duos')
 UserException = utils.UserException
+inv = globals()['inv']
 
 name = inv.getString("name")
 head, name = os.path.split(os.path.normcase(os.path.normpath(name)))

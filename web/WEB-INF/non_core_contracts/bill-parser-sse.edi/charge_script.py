@@ -2,7 +2,8 @@ from decimal import Decimal
 from net.sf.chellow.monad import Monad
 from dateutil.relativedelta import relativedelta
 from collections import defaultdict
-
+import utils
+import edi_lib
 Monad.getUtils()['impt'](
     globals(), 'db', 'utils', 'templater', 'bill_import', 'edi_lib')
 HH, UserException = utils.HH, utils.UserException
@@ -125,6 +126,7 @@ tmod_map = {
     '093A': '00093',
     '248A': '00248',
     '239A': '00239'}
+
 
 class Parser():
     def __init__(self, f):

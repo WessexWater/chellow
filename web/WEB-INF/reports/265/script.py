@@ -1,8 +1,12 @@
 from net.sf.chellow.monad import Monad
 from datetime import datetime
 import pytz
-
+import db
+import templater
+import utils
 Monad.getUtils()['impt'](globals(), 'db', 'utils', 'templater')
+inv, template = globals()['inv'], globals()['template']
+
 
 def make_fields():
     initial_date = datetime.utcnow().replace(tzinfo=pytz.utc)

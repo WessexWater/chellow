@@ -1,10 +1,13 @@
 from net.sf.chellow.monad import Monad
 import datetime
 from dateutil.relativedelta import relativedelta
-
+import utils
+import db
+import templater
 Monad.getUtils()['impt'](globals(), 'db', 'utils', 'templater')
 HH = utils.HH
 RateScript = db.RateScript
+inv, template = globals()['inv'], globals()['template']
 
 sess = None
 try:
@@ -29,4 +32,3 @@ try:
 finally:
     if sess is not None:
         sess.close()
-

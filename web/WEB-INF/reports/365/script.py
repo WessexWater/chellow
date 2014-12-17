@@ -1,10 +1,10 @@
 from net.sf.chellow.monad import Monad
-from sqlalchemy.orm import joinedload_all
-import datetime
-import pytz
-from java.lang import System
-
+import templater
+import utils
+import db
 Monad.getUtils()['impt'](globals(), 'db', 'utils', 'templater')
+inv, template = globals()['inv'], globals()['templater']
+
 
 def make_fields(sess, snag, message=None):
     messages = [] if message is None else [str(message)]

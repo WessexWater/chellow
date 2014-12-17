@@ -1,12 +1,14 @@
 from net.sf.chellow.monad import Monad
-from sqlalchemy.sql.expression import text
-from datetime import datetime
-import pytz
-
+import utils
+import templater
+import db
 Monad.getUtils()['impt'](globals(), 'db', 'utils', 'templater')
 UserException = utils.UserException
 render = templater.render
 Bill, BillType = db.Bill, db.BillType
+form_date, form_decimal = utils.form_date, utils.form_decimal
+inv, template = globals()['inv'], globals()['template']
+
 
 def make_fields(sess, bill, message=None):
     bill_types = sess.query(BillType).order_by(BillType.code).all()
@@ -42,8 +44,8 @@ try:
                 account, reference, issue_date, start_date, finish_date, kwh,
                 net, vat, gross, bill_type, breakdown)
             sess.commit()
-            inv.sendSeeOther("/reports/105/output/?supplier_bill_id=" +
-                    str(bill.id))
+            inv.sendSeeOther(
+                "/reports/105/output/?supplier_bill_id=" + str(bill.id))
         elif inv.hasParameter("delete"):
             bill.delete(sess)
             sess.commit()
