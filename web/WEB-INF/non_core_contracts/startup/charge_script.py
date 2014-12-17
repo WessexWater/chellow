@@ -2,12 +2,6 @@ import sys
 import os
 from net.sf.chellow.monad import Monad
 import traceback
-import hh_importer
-import bsuos
-import tlms
-import system_price_elexon
-import system_price_bmreports
-import rcrc
 
 LIBS = (
     'utils', 'db', 'templater', 'computer', 'bsuos', 'tlms',
@@ -121,13 +115,10 @@ def on_start_up(ctx):
     else:
         cpython_start()
 
-    Monad.getUtils()['impt'](
-        globals(), 'hh_importer', 'bsuos', 'rcrc', 'tlms',
-        'system_price_bmreports', 'system_price_elexon')
+    Monad.getUtils()['impt'](globals(), *LIBS)
 
-    hh_importer.startup()
-    bsuos.startup()
-    rcrc.startup()
-    tlms.startup()
-    system_price_elexon.startup()
-    system_price_bmreports.startup()
+    for lib_name in LIBS:
+        try:
+            globals()[lib_name].startup()
+        except AttributeError:
+            pass
