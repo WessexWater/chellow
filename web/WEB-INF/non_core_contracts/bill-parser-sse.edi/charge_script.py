@@ -1,19 +1,15 @@
 from decimal import Decimal
 from net.sf.chellow.monad import Monad
-from java.lang import System
-import datetime
 from dateutil.relativedelta import relativedelta
 from collections import defaultdict
 
-Monad.getUtils()['imprt'](globals(), {
-        'db': ['Contract', 'session', 'Batch', 'BillType', 'Tpr', 'set_read_write', 'RegisterRead', 'ReadType'],
-        'utils': ['UserException', 'prev_hh', 'next_hh', 'hh_after', 'hh_before', 'HH', 'validate_hh_start'],
-        'templater': ['render'],
-        'bill_import': ['start_bill_importer', 'get_bill_importer_ids', 'get_bill_importer'],
-        'edi_lib': ['EdiParser']})
+Monad.getUtils()['impt'](
+    globals(), 'db', 'utils', 'templater', 'bill_import', 'edi_lib')
+HH, UserException = utils.HH, utils.UserException
 
-
-read_type_map = {'00': 'N', '09': 'N3', '04': 'C', '02': 'E', '11': 'E3', '01': 'EM', '03': 'W', '06': 'X', '05': 'CP', '12': 'IF'}
+read_type_map = {
+    '00': 'N', '09': 'N3', '04': 'C', '02': 'E', '11': 'E3', '01': 'EM',
+    '03': 'W', '06': 'X', '05': 'CP', '12': 'IF'}
 
 tmod_map = {
     '0001': '00001',
@@ -73,17 +69,67 @@ tmod_map = {
     'MNC2': 'md',
     '148A': '00148',
     '221B': '00221',
-    '080A':'00080',
+    '080A': '00080',
     'P1M3': '00248',
     'P2M3': '00251',
     'W1M3': '00239',
-    'W2M3':'00073',
+    'W2M3': '00073',
     'OTM3': '00093',
-    'NIM3': '00208', 'MDM3': 'md', 'URQD': '00001', 'OPE3': '01088', 'OEC2': '00190', '184A': '00184', '210J': '00210', '187A': '00187', '0183': '00183', '0071': '00071', 'DAE7': '00043', 'NIE7': '00210', 'OPAC': '00010', 'MDM1': 'md', 'D179': '00039', 'N179': '00221', 'O212': '00212', '0151': '00151', 'SG1U': '00001', '0184': '00184', '0072': '00072', 'DM22': '00039', 'NM22': '00221', 'MM22': 'md', '0044':'00044' , '0208': '00208', 'URM1': '00001', '1043': '01043', '1042': '01042', 'U393': '00001', 'D244': '00040', 'N244': '00206', '24D4': '00040', '24N4': '00206', 'OFX2': '00001', 'D151': '00043', 'N151': '00210', 'N184': '00210','D184': '00043', 'OPF2': '00257', 'N154': '00221', 'O2EC': '00190', 'OFC2':'00159', 'CMACUF': 'md'}
+    'NIM3': '00208',
+    'MDM3': 'md',
+    'URQD': '00001',
+    'OPE3': '01088',
+    'OEC2': '00190',
+    '184A': '00184',
+    '210J': '00210',
+    '187A': '00187',
+    '0183': '00183',
+    '0071': '00071',
+    'DAE7': '00043',
+    'NIE7': '00210',
+    'OPAC': '00010',
+    'MDM1': 'md',
+    'D179': '00039',
+    'N179': '00221',
+    'O212': '00212',
+    '0151': '00151',
+    'SG1U': '00001',
+    '0184': '00184',
+    '0072': '00072',
+    'DM22': '00039',
+    'NM22': '00221',
+    'MM22': 'md',
+    '0044': '00044',
+    '0208': '00208',
+    'URM1': '00001',
+    '1043': '01043',
+    '1042': '01042',
+    'U393': '00001',
+    'D244': '00040',
+    'N244': '00206',
+    '24D4': '00040',
+    '24N4': '00206',
+    'OFX2': '00001',
+    'D151': '00043',
+    'N151': '00210',
+    'N184': '00210',
+    'D184': '00043',
+    'OPF2': '00257',
+    'N154': '00221',
+    'O2EC': '00190',
+    'OFC2': '00159',
+    'CMACUF': 'md',
+    '251A': '00251',
+    '208D': '00208',
+    '073A': '00073',
+    '093A': '00093',
+    '248A': '00248',
+    '239A': '00239'}
+
 
 class Parser():
     def __init__(self, f):
-        self.parser = EdiParser(f)
+        self.parser = edi_lib.EdiParser(f)
         self.line_number = None
 
     def make_raw_bills(self):
@@ -103,7 +149,8 @@ class Parser():
 
                 sumo = self.parser.elements[7]
                 start_date = self.parser.to_date(sumo[0])
-                finish_date = self.parser.to_date(sumo[1]) + relativedelta(days=1) - HH
+                finish_date = self.parser.to_date(sumo[1]) + relativedelta(
+                    days=1) - HH
 
             elif code == "MHD":
                 type = self.parser.elements[1]
@@ -130,16 +177,20 @@ class Parser():
                     prdt = self.parser.elements[6]
                     pvdt = self.parser.elements[7]
 
-                    pres_read_date = self.parser.to_date(prdt[0]) + relativedelta(days=1) - HH
+                    pres_read_date = self.parser.to_date(prdt[0]) + \
+                        relativedelta(days=1) - HH
 
-                    prev_read_date = self.parser.to_date(pvdt[0]) + relativedelta(days=1) - HH
-               
+                    prev_read_date = self.parser.to_date(pvdt[0]) + \
+                        relativedelta(days=1) - HH
+
                     tmod = self.parser.elements[3]
                     mtnr = self.parser.elements[4]
                     mloc = self.parser.elements[5]
 
                     mpan = mloc[0]
-                    mpan = mpan[13:15] + ' ' + mpan[15:18] + ' ' + mpan[18:] + ' ' + mpan[:2] + ' ' + mpan[2:6] + ' ' + mpan[6:10] + ' ' + mpan[10:13]
+                    mpan = mpan[13:15] + ' ' + mpan[15:18] + ' ' + \
+                        mpan[18:] + ' ' + mpan[:2] + ' ' + mpan[2:6] + ' ' + \
+                        mpan[6:10] + ' ' + mpan[10:13]
 
                     prrd = self.parser.elements[9]
                     pres_read_type = read_type_map[prrd[1]]
@@ -154,7 +205,10 @@ class Parser():
                     msn = mtnr[0]
                     tpr_native = tmod[0]
                     if tpr_native not in tmod_map:
-                        raise UserException("The TPR code " + tpr_native + " can't be found in the TPR list for mpan " + mpan + ".")
+                        raise UserException(
+                            "The TPR code " + tpr_native +
+                            " can't be found in the TPR list for mpan " +
+                            mpan + ".")
                     tpr_code = tmod_map[tpr_native]
                     if tpr_code == 'md':
                         units = 'kW'
@@ -163,22 +217,35 @@ class Parser():
                         units = 'kWh'
                         kwh += self.parser.to_decimal(cons) / Decimal('1000')
 
-                    reads.append({'msn': msn, 'mpan': mpan, 'coefficient': coefficient, 'units': units, 'tpr_code': tpr_code, 'prev_date': prev_read_date, 'prev_value': prev_reading_value, 'prev_type_code': prev_read_type, 'pres_date': pres_read_date, 'pres_value': pres_reading_value, 'pres_type_code': pres_read_type})
+                    reads.append(
+                        {
+                            'msn': msn, 'mpan': mpan,
+                            'coefficient': coefficient, 'units': units,
+                            'tpr_code': tpr_code, 'prev_date': prev_read_date,
+                            'prev_value': prev_reading_value,
+                            'prev_type_code': prev_read_type,
+                            'pres_date': pres_read_date,
+                            'pres_value': pres_reading_value,
+                            'pres_type_code': pres_read_type})
                 elif consumption_charge_indicator == "2":
-                    tcod = self.parser.elements[2]
+                    # tcod = self.parser.elements[2]
                     tmod = self.parser.elements[3]
                     mtnr = self.parser.elements[4]
                     mloc = self.parser.elements[5]
 
                     mpan = mloc[0]
-                    mpan = mpan[13:15] + ' ' + mpan[15:18] + ' ' + mpan[18:] + ' ' + mpan[:2] + ' ' + mpan[2:6] + ' ' + mpan[6:10] + ' ' + mpan[10:13]
+                    mpan = mpan[13:15] + ' ' + mpan[15:18] + ' ' + \
+                        mpan[18:] + ' ' + mpan[:2] + ' ' + mpan[2:6] + ' ' + \
+                        mpan[6:10] + ' ' + mpan[10:13]
 
                     prdt = self.parser.elements[6]
                     pvdt = self.parser.elements[7]
 
-                    pres_read_date = self.parser.to_date(prdt[0]) + relativedelta(days=1) - HH
-                    prev_read_date = self.parser.to_date(pvdt[0]) + relativedelta(days=1) - HH
-               
+                    pres_read_date = self.parser.to_date(prdt[0]) + \
+                        relativedelta(days=1) - HH
+                    prev_read_date = self.parser.to_date(pvdt[0]) + \
+                        relativedelta(days=1) - HH
+
                     ndrp = self.parser.elements[8]
                     prrd = self.parser.elements[9]
                     pres_read_type = read_type_map[prrd[1]]
@@ -193,7 +260,10 @@ class Parser():
                     msn = mtnr[0]
                     tpr_code = tmod[0]
                     if tpr_code not in tmod_map:
-                        raise UserException("The TPR code " + tpr_code + " can't be found in the TPR list for mpan " + mpan + ".")
+                        raise UserException(
+                            "The TPR code " + tpr_code +
+                            " can't be found in the TPR list for mpan " +
+                            mpan + ".")
                     tpr = tmod_map[tpr_code]
                     if tpr == 'md':
                         units = 'kW'
@@ -205,15 +275,27 @@ class Parser():
                         prefix = tpr + '-'
 
                     nuct = self.parser.elements[15]
-                    breakdown[prefix + 'kwh'] += float(self.parser.to_decimal(nuct)) / 1000
+                    breakdown[prefix + 'kwh'] += float(
+                        self.parser.to_decimal(nuct)) / 1000
                     cppu = self.parser.elements[18]
-                    breakdown[prefix + 'rate'] += float(self.parser.to_decimal(cppu)) / 100000
+                    breakdown[prefix + 'rate'] += float(
+                        self.parser.to_decimal(cppu)) / 100000
                     ctot = self.parser.elements[19]
-                    breakdown[prefix + 'gbp'] += float(self.parser.to_decimal(ctot)) / 100
+                    breakdown[prefix + 'gbp'] += float(
+                        self.parser.to_decimal(ctot)) / 100
 
-                    reads.append({'msn': msn, 'mpan': mpan, 'coefficient': coefficient, 'units': units, 'tpr_code': tpr, 'prev_date': prev_read_date, 'prev_value': prev_reading_value, 'prev_type_code': prev_read_type, 'pres_date': pres_read_date, 'pres_value': pres_reading_value, 'pres_type_code': pres_read_type})
+                    reads.append(
+                        {
+                            'msn': msn, 'mpan': mpan,
+                            'coefficient': coefficient, 'units': units,
+                            'tpr_code': tpr, 'prev_date': prev_read_date,
+                            'prev_value': prev_reading_value,
+                            'prev_type_code': prev_read_type,
+                            'pres_date': pres_read_date,
+                            'pres_value': pres_reading_value,
+                            'pres_type_code': pres_read_type})
                 elif consumption_charge_indicator == '3':
-                    tcod = self.parser.elements[2]
+                    # tcod = self.parser.elements[2]
                     tmod = self.parser.elements[3]
                     tmod0 = tmod[0]
                     if tmod0 == 'CCL':
@@ -225,36 +307,52 @@ class Parser():
                     else:
                         tpr_code = tmod0
                         if tpr_code not in tmod_map:
-                            raise UserException("The TPR code " + tpr_code + " can't be found in the TPR list for mpan " + mpan + ".")
+                            raise UserException(
+                                "The TPR code " + tpr_code +
+                                " can't be found in the TPR list for mpan " +
+                                mpan + ".")
                         prefix = tmod_map[tpr_code] + '-'
 
                     mtnr = self.parser.elements[4]
                     ndrp = self.parser.elements[8]
                     cona = self.parser.elements[13]
                     nuct = self.parser.elements[15]
-                    breakdown[prefix + 'kwh'] += float(self.parser.to_decimal(nuct)) / 1000
+                    breakdown[prefix + 'kwh'] += float(
+                        self.parser.to_decimal(nuct)) / 1000
                     cppu = self.parser.elements[18]
-                    breakdown[prefix + 'rate'] += float(self.parser.to_decimal(cppu)) / 100000
+                    breakdown[prefix + 'rate'] += float(
+                        self.parser.to_decimal(cppu)) / 100000
                     ctot = self.parser.elements[19]
-                    breakdown[prefix + 'gbp'] += float(self.parser.to_decimal(ctot)) / 100
+                    breakdown[prefix + 'gbp'] += float(
+                        self.parser.to_decimal(ctot)) / 100
                 elif consumption_charge_indicator == '4':
-                    tcod = self.parser.elements[2]
+                    # tcod = self.parser.elements[2]
                     tmod = self.parser.elements[3]
                     tmod0 = tmod[0]
 
                     mtnr = self.parser.elements[4]
                     ndrp = self.parser.elements[8]
                     if len(ndrp[0]) > 0:
-                        breakdown['standing-days'] += float(self.parser.to_decimal(ndrp))
+                        breakdown['standing-days'] += float(
+                            self.parser.to_decimal(ndrp))
                     cona = self.parser.elements[13]
                     nuct = self.parser.elements[15]
                     cppu = self.parser.elements[18]
                     ctot = self.parser.elements[19]
                     if len(ctot[0]) > 0:
-                        breakdown['standing-gbp'] += float(self.parser.to_decimal(ctot)) / 100
+                        breakdown['standing-gbp'] += float(
+                            self.parser.to_decimal(ctot)) / 100
             elif code == "MTR":
                 if message_type == "UTLBIL":
-                    raw_bills.append({'bill_type_code': bill_type_code, 'account': account, 'mpans': mpan_strings, 'reference': reference, 'issue_date': issue_date, 'start_date': start_date, 'finish_date': finish_date, 'kwh': kwh, 'net': net, 'vat': vat, 'gross': gross, 'breakdown': breakdown, 'reads': reads})
+                    raw_bills.append(
+                        {
+                            'bill_type_code': bill_type_code,
+                            'account': account,
+                            'mpans': mpan_strings, 'reference': reference,
+                            'issue_date': issue_date, 'start_date': start_date,
+                            'finish_date': finish_date, 'kwh': kwh, 'net': net,
+                            'vat': vat, 'gross': gross, 'breakdown': breakdown,
+                            'reads': reads})
                     breakdown = None
             elif code == "MAN":
                 madn = self.parser.elements[2]
@@ -262,7 +360,9 @@ class Parser():
                 mtc_code = madn[4]
                 llfc_code = madn[5]
 
-                mpan_strings.append(pc_code + " " + mtc_code + " " + llfc_code + " " + madn[0] + " " + madn[1] + madn[2])
+                mpan_strings.append(
+                    pc_code + " " + mtc_code + " " + llfc_code + " " +
+                    madn[0] + " " + madn[1] + madn[2])
             elif code == "VAT":
                 uvla = self.parser.elements[5]
                 net += self.parser.to_decimal(uvla) / Decimal('100')
@@ -273,3 +373,4 @@ class Parser():
                 breakdown['raw-lines'].append(self.parser.line)
 
         return raw_bills
+
