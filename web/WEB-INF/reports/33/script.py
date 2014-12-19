@@ -1,3 +1,4 @@
+import traceback
 from net.sf.chellow.monad import Monad
 import datetime
 from dateutil.relativedelta import relativedelta
@@ -329,6 +330,8 @@ def content():
                     era.exp_supplier_contract.name,
                     era.exp_supplier_account, exp_avg_months,
                     exp_latest_supplier_bill_date]) + '\n'
+    except:
+        yield traceback.format_exc()
     finally:
         if sess is not None:
             sess.close()

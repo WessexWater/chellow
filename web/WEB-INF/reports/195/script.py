@@ -1,4 +1,5 @@
 import sys
+import traceback
 if sys.platform.startswith('java'):
     from net.sf.chellow.monad import Monad
     from org.apache.http.protocol import HTTP
@@ -316,6 +317,8 @@ if sys.platform.startswith('java'):
                         supplier_contract.party.participant.code, '', dc, '',
                         mop, '', supply.gsp_group.code, '', msn, '',
                         meter_type, 'In Chellow, but not in ECOES.'])
+        except:
+            yield traceback.format_exc()
         finally:
             if sess is not None:
                 sess.close()

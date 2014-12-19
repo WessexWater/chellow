@@ -1,3 +1,4 @@
+import traceback
 import zipfile
 import StringIO
 from sqlalchemy import or_
@@ -76,6 +77,8 @@ if supply_id is None:
                     ''.join(outs))
                 yield bffr.getValue()
                 bffr.truncate()
+        except:
+            yield traceback.format_exc()
         finally:
             if sess is not None:
                 sess.close()
@@ -128,6 +131,8 @@ else:
                         except StopIteration:
                             datum = None
                     current_date += HH
+        except:
+            yield traceback.format_exc()
         finally:
             if sess is not None:
                 sess.close()

@@ -1,3 +1,4 @@
+import traceback
 from net.sf.chellow.monad import Monad
 from sqlalchemy import or_
 from sqlalchemy.sql.expression import null
@@ -66,6 +67,8 @@ def content():
             for k in sorted(bill.keys()):
                 yield ',"' + k + '","' + str(bill[k]) + '"'
             yield '\n'
+    except:
+        yield traceback.format_exc()
     finally:
         if sess is None:
             sess.close()

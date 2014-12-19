@@ -7,6 +7,7 @@ from sqlalchemy.sql.expression import null
 import utils
 import db
 import computer
+import traceback
 Monad.getUtils()['impt'](globals(), 'utils', 'db', 'computer')
 
 HH, hh_format = utils.HH, utils.hh_format
@@ -206,6 +207,8 @@ def content():
 
                 month_start += relativedelta(months=1)
                 month_finish = month_start + relativedelta(months=1) - HH
+    except:
+        yield traceback.format_exc()
     finally:
         if sess is not None:
             sess.close()

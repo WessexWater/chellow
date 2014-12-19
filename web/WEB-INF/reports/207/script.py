@@ -1,3 +1,4 @@
+import traceback
 from net.sf.chellow.monad import Monad
 import pytz
 import datetime
@@ -446,6 +447,8 @@ def content():
 
             # avoid a long running transaction
             sess.rollback()
+    except:
+        yield traceback.format_exc()
     finally:
         if sess is not None:
             sess.close()

@@ -1,3 +1,4 @@
+import traceback
 from sqlalchemy import or_
 from sqlalchemy.sql.expression import null, true
 from net.sf.chellow.monad import Monad
@@ -123,6 +124,8 @@ def content():
                         '"' + str(val) + '"' for val in vals) + ','
             else:
                 yield ' '
+    except:
+        yield traceback.format_exc()
     finally:
         sess.close()
 

@@ -1,3 +1,4 @@
+import traceback
 from net.sf.chellow.monad import Monad
 import datetime
 from sqlalchemy import or_, func, not_, Float, cast
@@ -249,6 +250,8 @@ def content():
                 mpan_bit(
                     sess, supply, False, num_hh, eras, chunk_start,
                     chunk_finish)
+    except:
+        yield traceback.format_exc()
     finally:
         if sess is not None:
             sess.close()

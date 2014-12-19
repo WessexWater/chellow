@@ -1,13 +1,15 @@
 GUNICORN_PID_FILE=${CHELLOW_HOME}/gunicorn/pid
-
 if [ -f ${GUNICORN_PID_FILE} ]; then
-  if kill `cat ${CHELLOW_HOME}/gunicorn/pid`; then
+  if kill `cat ${GUNICORN_PID_FILE}` ; then
     while [ -f ${GUNICORN_PID_FILE} ]
       do
         sleep 1
+        echo "Gunicorn pid file still there..."
       done
   fi
 fi
 
-
-kill `cat ${CHELLOW_HOME}/gunicorn/watchdog.pid`
+WATCHDOG_PID_FILE=${CHELLOW_HOME}/gunicorn/watchdog.pid
+if [ -f ${WATCHDOG_PID_FILE} ]; then
+  kill `cat ${WATCHDOG_PID_FILE}`
+fi

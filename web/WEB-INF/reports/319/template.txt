@@ -31,7 +31,8 @@
           <legend>
             Are you sure you want to delete this rate script?
           </legend>
-          <input type="hidden" name="supplier_rate_script_id" value="{{rate_script.id}}">
+          <input type="hidden" name="supplier_rate_script_id"
+				 		value="{{rate_script.id}}">
           <input type="submit" name="delete" value="Delete">
         </fieldset>
       </form>
@@ -72,7 +73,7 @@
       <form action=".">
         <fieldset>
           <legend>Delete this Rate Script</legend>
-          <input type="hidden" name="rate_script_id"
+          <input type="hidden" name="supplier_rate_script_id"
               value="{{ rate_script.id }}">
           <input type="submit" name="delete" value="Delete">
         </fieldset>

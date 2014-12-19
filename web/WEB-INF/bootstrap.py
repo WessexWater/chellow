@@ -10,7 +10,7 @@ import os
 
 
 def log_message(msg):
-    sys.stdout.write(msg + "\n")
+    sys.stderr.write(msg + "\n")
 
 Base = declarative_base()
 
@@ -628,6 +628,7 @@ def read_file(pth, fname, attr):
 if engine.execute(
         """select count(*) from information_schema.tables """
         """where table_schema = 'public'""").scalar() == 0:
+    log_message("Initializing database.")
     Base.metadata.create_all(engine)
     Session = sessionmaker(bind=engine)
     session = Session()
@@ -822,3 +823,5 @@ if engine.execute(
             isolation_level + ".")
 
     session.close()
+else:
+    sys.stderr.write("\nDatabase already initialized.")
