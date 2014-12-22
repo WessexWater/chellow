@@ -9,12 +9,14 @@ from collections import defaultdict
 import db
 import utils
 import computer
-
-Monad.getUtils()['impt'](globals(), 'templater', 'db', 'utils', 'computer')
+import bsuos
+Monad.getUtils()['impt'](
+    globals(), 'templater', 'db', 'utils', 'computer', 'bsuos', 'aahedc',
+    'ccl')
 Site, Era, Bill, SiteEra = db.Site, db.Era, db.Bill, db.SiteEra
 Contract, Supply, Source = db.Contract, db.Supply, db.Source
 HH, hh_after, hh_format = utils.HH, utils.hh_after, utils.hh_format
-totalseconds = utils.totalseconds
+totalseconds, UserException = utils.totalseconds, utils.UserException
 inv = globals()['inv']
 
 now = datetime.datetime.now(pytz.utc)
@@ -28,6 +30,21 @@ if inv.hasParameter('site_id'):
     site_id = inv.getLong('site_id')
 else:
     site_id = None
+
+
+def create_future_func(cname, fname, props):
+    def future_func(ns):
+        try:
+            val = ns[fname]() * props['multiplier'] + props['constant']
+        except KeyError:
+            raise UserException(
+                "Can't find " + fname + " in rate script " + str(ns) +
+                " for contract name " + cname + " .")
+
+        def rate_func():
+            return val
+        return {fname: rate_func}
+    return future_func
 
 
 def content():
@@ -53,28 +70,32 @@ def content():
                 return new_result
             return {'rates_gbp_per_mwh': rates_gbp_per_mwh}
 
-        future_funcs['bsuos'] = {
-            'base_date': bsuos_props['base_date'],
+        base_date = bsuos_props['base_date']
+        if base_date is not None:
+            base_date = base_date.replace(tzinfo=pytz.utc)
+
+        future_funcs[bsuos.db_id] = {
+            'base_date': base_date,
             'func': bsuos_future}
 
         for cname, fname in (
                 ('ccl', 'ccl_rate'), ('aahedc', 'aahedc_gbp_per_gsp_kwh')):
             props = scenario_props[cname]
 
-            def future_func(val):
-                new_result = val * props['multiplier'] + props['constant']
-
-                def val_func():
-                    return new_result
-                return {fname: val_func}
-            future_funcs[cname] = {
-                'base_date': props['base_date'],
-                'func': future_func}
+            base_date = props['base_date']
+            if base_date is not None:
+                base_date = base_date.replace(tzinfo=pytz.utc)
+            future_funcs[globals()[cname].db_id] = {
+                'base_date': base_date,
+                'func': create_future_func(cname, fname, props)}
 
         start_date = scenario_props['scenario_start']
-        start_date = datetime.datetime(
-            now.year, now.month, 1,
-            tzinfo=pytz.utc) if start_date is None else start_date
+        if start_date is None:
+            start_date = datetime.datetime(
+                now.year, now.month, 1, tzinfo=pytz.utc)
+        else:
+            start_date = start_date.replace(tzinfo=pytz.utc)
+
         months = scenario_props['scenario_duration']
         finish_date = start_date + relativedelta(months=months)
         sites = sess.query(Site).join(SiteEra).join(Era).filter(

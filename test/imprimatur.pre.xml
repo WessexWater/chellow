@@ -4813,7 +4813,7 @@ def triad_dates():
 					pattern='"10","22 1065 3921 534","CI017","Roselands","2009-04-01 00:00","2010-03-31 23:30",".*?","0","0","277.0","0","0","0","365.0","0","277.0","365.0","Actual","0","0","1666.72563177","0","1666.72563177"' />
 			</request>
 		</test>
-		<test name="Run a scenario">
+		<test name="Run a BAU scenario">
 			<!-- Add a scenario -->
 			<request path="/chellow/reports/315/output/" method="post">
 				<control name="participant_id" value="42" /> <!-- CGEN -->
@@ -4890,6 +4890,59 @@ def triad_dates():
 			<request path="/chellow/reports/223/output/">
 				<response-code value="200" />
 				<regex pattern="Is Locked\?" />
+			</request>
+		</test>
+
+		<test name="Run an increased BSUoS scenario">
+			<!-- Add a scenario -->
+			<request path="/chellow/reports/315/output/" method="post">
+				<control name="participant_id" value="42" /> <!-- CGEN -->
+				<control name="name" value="scenario_bsuos" />
+				<control name="start_year" value="2000" />
+				<control name="start_month" value="01" />
+				<control name="start_day" value="03" />
+				<control name="start_hour" value="00" />
+				<control name="start_minute" value="00" />
+				<control name="charge_script"><![CDATA[]]></control>
+				<control name="properties"><![CDATA[
+{
+    'bsuos' : {
+		    'base_date': datetime(2011, 1, 1),
+        'multiplier': 1,
+        'constant': 0.1,
+    },
+
+    'ccl': {
+        'base_date': datetime(2014, 10, 1),
+        'multiplier': 1,
+        'constant': 0,
+    },
+
+    'aahedc': {
+        'base_date': None,
+        'multiplier': 0,
+        'constant': 0.00091361,
+    },
+
+    'scenario_start': datetime(2011, 1, 1),  # Date or None for this month
+    'scenario_duration': 1,  # Number of months
+    'resolution': 'hh',  # 'hh' or 'month'
+															    
+    'kw_changes':
+
+    # MPAN Core, Date, kW
+    '''
+    ''',
+}]]></control>
+				<regex pattern="/reports/77/output/\?supplier_contract_id=65" />
+				<response-code value="303" />
+			</request>
+
+			<!-- Run scenario for a site -->
+			<request path="/chellow/reports/247/output/?site_id=3&amp;scenario=scenario_bsuos">
+
+				<response-code value="200" />
+				<regex pattern='"22 6158 2968 220",.*,"0.00031051"' />
 			</request>
 		</test>
 
