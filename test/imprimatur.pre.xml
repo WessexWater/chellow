@@ -4861,6 +4861,10 @@ def triad_dates():
 			<request path="/chellow/reports/247/output/?site_id=1&amp;scenario=scenario_bau">
 
 				<response-code value="200" />
+
+				<!-- Check file name is correct -->
+				<regex pattern='Content-Disposition: attachment; filename="scenario_\d{12}.csv"\s' />
+
 				<regex pattern='exp-supplier-problem\Z' />
 			</request>
 

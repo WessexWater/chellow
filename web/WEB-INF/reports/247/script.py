@@ -20,7 +20,7 @@ totalseconds, UserException = utils.totalseconds, utils.UserException
 inv = globals()['inv']
 
 now = datetime.datetime.now(pytz.utc)
-file_name = 'scenario_' + now.strftime("%Y%m%d%H%M") + '.csv"'
+file_name = 'scenario_' + now.strftime("%Y%m%d%H%M") + '.csv'
 
 report_context = {}
 future_funcs = {}
