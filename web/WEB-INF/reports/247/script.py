@@ -9,7 +9,8 @@ from collections import defaultdict
 import db
 import utils
 import computer
-import bsuos
+import csv
+import StringIO
 Monad.getUtils()['impt'](
     globals(), 'templater', 'db', 'utils', 'computer', 'bsuos', 'aahedc',
     'ccl')
@@ -47,6 +48,25 @@ def create_future_func(cname, fname, props):
     return future_func
 
 
+def create_monthly_func(cname, fnames, props):
+    def future_func(ns):
+        new_ns = {}
+        for fname in fnames:
+            old_result = ns[fname]()
+            last_value = old_result[sorted(old_result.keys())[-1]]
+            new_result = defaultdict(
+                lambda: last_value, [
+                    (k, v * props['multiplier'] + props['constant'])
+                    for k, v in old_result.iteritems()])
+
+            def rate_func():
+                return new_result
+
+            new_ns[fname] = rate_func
+        return new_ns
+    return future_func
+
+
 def content():
     sess = None
     try:
@@ -54,29 +74,19 @@ def content():
         scenario_contract = Contract.get_supplier_by_name(sess, scenario_name)
         scenario_props = scenario_contract.make_properties()
 
-        bsuos_props = scenario_props['bsuos']
-
-        def bsuos_future(ns):
-            old_result = ns['rates_gbp_per_mwh']()
-            last_value = old_result[sorted(old_result.keys())[-1]]
-            new_result = defaultdict(
-                lambda: last_value, [
-                    (
-                        k, v * bsuos_props['multiplier'] +
-                        bsuos_props['constant'])
-                    for k, v in old_result.iteritems()])
-
-            def rates_gbp_per_mwh():
-                return new_result
-            return {'rates_gbp_per_mwh': rates_gbp_per_mwh}
-
-        base_date = bsuos_props['base_date']
-        if base_date is not None:
-            base_date = base_date.replace(tzinfo=pytz.utc)
-
-        future_funcs[bsuos.db_id] = {
-            'base_date': base_date,
-            'func': bsuos_future}
+        for cname, fnames in (
+                ('bsuos', ['rates_gbp_per_mwh']),
+                ('system_price_bmreports', ['ssps', 'sbps']),
+                ('system_price_elexon', ['ssps', 'sbps'])):
+            if cname not in scenario_props:
+                continue
+            props = scenario_props[cname]
+            base_date = props['base_date']
+            if base_date is not None:
+                base_date = base_date.replace(tzinfo=pytz.utc)
+            future_funcs[globals()[cname].db_id] = {
+                'base_date': base_date,
+                'func': create_monthly_func(cname, fnames, props)}
 
         for cname, fname in (
                 ('ccl', 'ccl_rate'), ('aahedc', 'aahedc_gbp_per_gsp_kwh')):
@@ -105,6 +115,15 @@ def content():
                 Era.finish_date >= start_date)).distinct()
         if site_id is not None:
             sites = sites.filter(Site.id == site_id)
+
+        changes = defaultdict(dict, {})
+        for row in csv.reader(StringIO.StringIO(scenario_props['kw_changes'])):
+            if len(''.join(row).strip()) == 0:
+                continue
+            for site_code, typ, date_str, kw_str in row:
+                date = datetime.datetime.strptime("%Y%m%d%H%M", date_str)
+                changes[site_code.strip()][typ.strip()] = {
+                    'date': date, 'kw': float(kw_str)}
 
         forecast_date = computer.forecast_date()
 
@@ -156,6 +175,7 @@ def content():
             month_finish = month_start + relativedelta(months=1) - HH
             month_str = month_finish.strftime("%Y-%m-%d %H:%M")
             for site in sites:
+                #site_changes = changes[site.code]
                 for group in site.groups(sess, month_start, month_start, True):
                     for supply in group.supplies:
                         res = sess.query(Era, Source.code).join(Supply). \

@@ -1,11 +1,11 @@
+from sqlalchemy import or_
+from sqlalchemy.sql.expression import null
 from net.sf.chellow.monad import Monad
-import types
-from dateutil.relativedelta import relativedelta
 import db
 import utils
 Monad.getUtils()['impt'](globals(), 'db', 'utils')
 UserException, hh_format = utils.UserException, utils.hh_format
-Contract = db.Contract
+Contract, RateScript = db.Contract, db.RateScript
 
 
 def identity_func(x):
@@ -25,39 +25,34 @@ def hh(supply_source):
         try:
             prices = cache[hh['start-date']]
         except KeyError:
-            bmreports_contract = Contract.get_non_core_by_name(
-                supply_source.sess, 'system_price_bmreports')
             elexon_contract = Contract.get_non_core_by_name(
                 supply_source.sess, 'system_price_elexon')
-            prices = {}
-            date_str = hh['start-date'].strftime("%d %H:%M Z")
-            for pref in ['ssp', 'sbp']:
-                transform_func = identity_func
-                rate = supply_source.hh_rate(
-                    elexon_contract.id, hh['start-date'], pref + 's')
-                if isinstance(rate, dict):
-                    rate = transform_func(rate)
-                    prices[pref + '-gbp-per-kwh'] = float(rate[date_str]) / \
-                        1000
-                else:
-                    rate = supply_source.hh_rate(
-                        bmreports_contract.id, hh['start-date'], pref + 's')
-                    dt = hh['start-date']
-                    while isinstance(rate, types.FunctionType):
-                        transform_func = rate
-                        dt += relativedelta(years=1)
-                        rate = supply_source.hh_rate(
-                            bmreports_contract.id, dt, pref + 's')
 
-                    if isinstance(rate, dict):
-                        rate = transform_func(rate)
-                        prices[pref + '-gbp-per-kwh'] = \
-                            float(rate[date_str]) / 1000
-                    else:
-                        raise UserException(
-                            "Type returned by " + pref + "s at " +
-                            hh_format(dt) + " must be function or dictionary.")
-            cache[hh['start-date']] = prices
+            h_start = hh['start-date']
+
+            elexon_rs = supply_source.sess.query(RateScript).filter(
+                RateScript.contract == elexon_contract,
+                RateScript.start_date <= h_start, or_(
+                    RateScript.finish_date == null(),
+                    RateScript.finish_date >= h_start)).first()
+            if elexon_rs is None:
+                bmreports_contract = Contract.get_non_core_by_name(
+                    supply_source.sess, 'system_price_bmreports')
+                ssp = supply_source.hh_rate(
+                    bmreports_contract.id, h_start, 'ssps')
+                sbp = supply_source.hh_rate(
+                    bmreports_contract.id, h_start, 'sbps')
+            else:
+                ssp = supply_source.hh_rate(
+                    elexon_contract.id, h_start, 'ssps')
+                sbp = supply_source.hh_rate(
+                    elexon_contract.id, h_start, 'sbps')
+
+            date_str = h_start.strftime("%d %H:%M Z")
+            ssp_val = float(ssp[date_str]) / 1000
+            sbp_val = float(sbp[date_str]) / 1000
+            prices = {'ssp-gbp-per-kwh': ssp_val, 'sbp-gbp-per-kwh': sbp_val}
+            cache[h_start] = prices
 
         hh.update(prices)
         hh['ssp-gbp'] = hh['nbp-kwh'] * hh['ssp-gbp-per-kwh']
