@@ -13,7 +13,7 @@ import csv
 import StringIO
 Monad.getUtils()['impt'](
     globals(), 'templater', 'db', 'utils', 'computer', 'bsuos', 'aahedc',
-    'ccl')
+    'ccl', 'system_price_bmreports', 'system_price_elexon')
 Site, Era, Bill, SiteEra = db.Site, db.Era, db.Bill, db.SiteEra
 Contract, Supply, Source = db.Contract, db.Supply, db.Source
 HH, hh_after, hh_format = utils.HH, utils.hh_after, utils.hh_format
@@ -78,9 +78,12 @@ def content():
                 ('bsuos', ['rates_gbp_per_mwh']),
                 ('system_price_bmreports', ['ssps', 'sbps']),
                 ('system_price_elexon', ['ssps', 'sbps'])):
-            if cname not in scenario_props:
-                continue
-            props = scenario_props[cname]
+
+            try:
+                props = scenario_props[cname]
+            except KeyError:
+                props = {'base_date': None, 'multiplier': 1, 'constant': 0}
+
             base_date = props['base_date']
             if base_date is not None:
                 base_date = base_date.replace(tzinfo=pytz.utc)
