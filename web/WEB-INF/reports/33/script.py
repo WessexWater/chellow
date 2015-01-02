@@ -31,23 +31,24 @@ def content():
 
         date = datetime.datetime(year, month, 1) + relativedelta(months=1) - HH
 
-        yield """Date,Physical Site Id, Physical Site Name, Other Site Ids,
-            Other Site Names, Supply Id, Source, Generator Type, DNO Name,
-            Voltage Level, Metering Type, Mandatory HH, PC, MTC, CoP, SSC,
-            Number Of Registers, MOP Contract, Mop Account, HHDC Contract,
-            HHDC Account, Meter Serial Number, Meter Installation Date,
-            Latest Normal Meter Read Date,Latest Normal Meter Read Type,
-            Latest DC Bill Date, Latest MOP Bill Date,Import ACTIVE?,
-            Import REACTIVE_IMPORT?, Import REACTIVE_EXPORT?, Export ACTIVE?,
-            Export REACTIVE_IMPORT?, Export REACTIVE_EXPORT?, Import MPAN core,
-            Import Agreed Supply Capacity (kVA), Import LLFC Code,
-            Import LLFC Description, Import Supplier Contract,
-            Import Supplier Account, Import Mandatory kWh,
-            Latest Import Supplier Bill Date, Export MPAN core,
-            Export Agreed Supply Capacity (kVA), Export LLFC Code,
-            Export LLFC Description, Export Supplier Contract,
-            Export Supplier Account, Export Mandatory kWh,
-            Latest Export Supplier Bill Date\n"""
+        yield "Date,Physical Site Id, Physical Site Name, Other Site Ids, " \
+            "Other Site Names, Supply Id, Source, Generator Type, DNO Name, " \
+            "Voltage Level, Metering Type, Mandatory HH, PC, MTC, CoP, SSC, " \
+            "Number Of Registers, MOP Contract, Mop Account, HHDC Contract, " \
+            "HHDC Account, Meter Serial Number, Meter Installation Date, " \
+            "Latest Normal Meter Read Date,Latest Normal Meter Read Type, " \
+            "Latest DC Bill Date, Latest MOP Bill Date,Import ACTIVE?, " \
+            "Import REACTIVE_IMPORT?, Import REACTIVE_EXPORT?, " \
+            "Export ACTIVE?,  Export REACTIVE_IMPORT?, " \
+            "Export REACTIVE_EXPORT?, Import MPAN core, " \
+            "Import Agreed Supply Capacity (kVA), Import LLFC Code, " \
+            "Import LLFC Description, Import Supplier Contract, " \
+            "Import Supplier Account, Import Mandatory kWh, " \
+            "Latest Import Supplier Bill Date, Export MPAN core, " \
+            "Export Agreed Supply Capacity (kVA), Export LLFC Code, " \
+            "Export LLFC Description, Export Supplier Contract, " \
+            "Export Supplier Account, Export Mandatory kWh, " \
+            "Latest Export Supplier Bill Date\n"
 
         NORMAL_READ_TYPES = ('N', 'C', 'N3')
         year_start = date + HH - relativedelta(years=1)

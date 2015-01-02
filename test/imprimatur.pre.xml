@@ -4245,6 +4245,8 @@ def virtual_bill(supply_source):
 				path="/chellow/reports/33/output/?supply_id=6&amp;year=2012&amp;month=05&amp;day=01&amp;hour=00&amp;minute=00">
 				<response-code value="200" />
 				<regex
+					pattern='Other Site Ids, Other Site Names' />
+				<regex
 					pattern='"2012-05-31 23:30","CI017","Roselands","","","6","net","","22","LV","hh","no","00","845","5","","","MOP Contract","mc-22 6354 2983 570","HH contract","01","","2007-01-01 00:00","hh","","","","true","true","false","false","false","true","22 6354 2983 570","2300","570","PC 5-8 &amp; HH LV","Half-hourlies 2007","141 5532","","2011-06-30 00:00","","","","","","","",""\Z' />
 			</request>
 		</test>
