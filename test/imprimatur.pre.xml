@@ -2878,7 +2878,7 @@ def virtual_bill(supply_source):
 				<regex
 					pattern='Site Code,Site Name,Associated Site Ids,From,To,Gen Types,CHP kWh,LM kWh,Turbine kWh,net-gbp,bsuos-kwh,bsuos-rate,bsuos-gbp,ccl-kwh,ccl-rate,ccl-gbp,ssp-rate,tlm,duos-green-kwh,duos-green-rate,duos-green-gbp,duos-reactive-gbp,duos-reactive-working,duos-standing-gbp,night-gbp,night-gsp-kwh,night-msp-kwh,other-gbp,other-gsp-kwh,other-msp-kwh,summer-pk-gbp,summer-pk-gsp-kwh,summer-pk-msp-kwh,triad-gbp,triad-working,winter-low-pk-gbp,winter-low-pk-gsp-kwh,winter-low-pk-msp-kwh,winter-off-pk-gbp,winter-off-pk-gsp-kwh,winter-off-pk-msp-kwh,winter-pk-gbp,winter-pk-gsp-kwh,winter-pk-msp-kwh,triad-actual-1-date,triad-actual-1-msp-kw,triad-actual-1-status,triad-actual-1-laf,triad-actual-1-gsp-kw,triad-actual-2-date,triad-actual-2-msp-kw,triad-actual-2-status,triad-actual-2-laf,triad-actual-2-gsp-kw,triad-actual-3-date,triad-actual-3-msp-kw,triad-actual-3-status,triad-actual-3-laf,triad-actual-3-gsp-kw,triad-actual-gsp-kw,triad-actual-rate,triad-actual-gbp,triad-estimate-1-date,triad-estimate-1-msp-kw,triad-estimate-1-status,triad-estimate-1-laf,triad-estimate-1-gsp-kw,triad-estimate-2-date,triad-estimate-2-msp-kw,triad-estimate-2-status,triad-estimate-2-laf,triad-estimate-2-gsp-kw,triad-estimate-3-date,triad-estimate-3-msp-kw,triad-estimate-3-status,triad-estimate-3-laf,triad-estimate-3-gsp-kw,triad-estimate-gsp-kw,triad-estimate-rate,triad-estimate-months,triad-estimate-gbp,triad-all-estimates-months,triad-all-estimates-gbp,problem' />
 				<regex
-					pattern='"CI004","Lower Treave","","2010-06-01 00:00","2010-06-30 23:30","chp","","","","0.0","0.0","0.00152641","0.0","","0.0047","","0.02303696","1.008955","0","0.0013","0.0","","","","","0","0","0.0","0.0","0","","0","0","","","","0","0","","0","0","","0","0","","","","","","","","","","","","","","","","","","","2010-01-07 17:00","0","E","1.078","0.0","2010-01-25 17:00","0","E","1.078","0.0","2009-12-15 17:00","0","E","1.078","0.0","0.0","26.057832","1","0.0","","",""' />
+					pattern='"CI004","Lower Treave","","2010-06-01 00:00","2010-06-30 23:30","chp","","","","0.0","0.0","","0.0","","0.0047","","","","0","0.0013","0.0","","","","0.0","0.0","0","0.0","0.0","0","0.0","0.0","0","","","","0","0","","0","0","","0","0","","","","","","","","","","","","","","","","","","","2010-01-07 17:00","0","E","1.078","0.0","2010-01-25 17:00","0","E","1.078","0.0","2009-12-15 17:00","0","E","1.078","0.0","0.0","26.057832","1","0.0","","",""' />
 				<response-code value="200" />
 			</request>
 
@@ -4988,23 +4988,21 @@ def triad_dates():
 															    
     'kw_changes':
 		# CSV format with the following columns
-    # Site Code, Type ('used' or 'generated') , Date (yyyy-mm-dd), kW Change
-    '''
-		CI005,used,2011-01-01,23.4
-		CI005,generated,2011-01-01,78
-    ''',
+    # Site Code, Type ('used' or 'generated') , Date (yyyy-mm-dd), Multiplier
+    """
+		CI005, used, 2011-01-01, 0.5
+		CI005, generated, 2011-01-01, 2
+    """,
 }]]></control>
 				<regex pattern="/reports/77/output/\?supplier_contract_id=66" />
 				<response-code value="303" />
 			</request>
 
 			<!-- Run scenario for a site -->
-			<request path="/chellow/reports/247/output/?site_id=3&amp;scenario=scenario_bsuos">
+			<request path="/chellow/reports/247/output/?site_id=3&amp;scenario=scenario_used">
 
 				<response-code value="200" />
-				<!--
-				<regex pattern='"","","gen"' />
-				-->
+				<regex pattern='"22 0195 4836 192","None","net","CI005","Wheal Rodney","2011-01-31 23:30","12.9095890411","0","0","0","0","0","0","12.9095890411","0","0.0","0","0","0","0","0","0","0.0","0","","0","","","0","","","0.0","0.0","0.0","12.9095890411","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","",""' />
 			</request>
 		</test>
 

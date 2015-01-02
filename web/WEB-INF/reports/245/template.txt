@@ -111,5 +111,40 @@
       obtain the value of the rate at H by doing (rate_at_base_date *
       multiplier + constant).
     </p>
+
+		<h3>Template Scenario Properties</h3>
+
+		<pre>
+{
+    'bsuos' : {
+		    'base_date': datetime(2011, 1, 1),
+        'multiplier': 1,
+        'constant': 0,
+    },
+
+    'ccl': {
+        'base_date': datetime(2014, 10, 1),
+        'multiplier': 1,
+        'constant': 0,
+    },
+
+    'aahedc': {
+        'base_date': None,
+        'multiplier': 0,
+        'constant': 0.00091361,
+    },
+
+    'scenario_start': datetime(2011, 1, 1),  # Date or None for this month
+    'scenario_duration': 1,  # Number of months
+    'resolution': 'hh',  # 'hh' or 'month'
+															    
+    'kw_changes':
+		# CSV format with the following columns
+    # Site Code, Type ('used' or 'generated') , Date (yyyy-mm-dd), Multiplier
+    """
+		CI005, used, 2011-01-01, 0.5
+		CI005, generated, 2011-01-01, 2
+    """,
+}</pre>
   </body>
 </html>

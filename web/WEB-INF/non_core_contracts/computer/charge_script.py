@@ -4,7 +4,7 @@ import datetime
 import pytz
 from dateutil.relativedelta import relativedelta
 from sqlalchemy import or_, cast, Float
-from sqlalchemy.orm.exc import NoResultFound
+from sqlalchemy.orm.exc import NoResultFound, MultipleResultsFound
 from sqlalchemy.sql.expression import null, false
 from sqlalchemy.orm import aliased
 import math
@@ -189,6 +189,10 @@ def hh_rate(sess, caches, contract_id, date, name, pw):
             except NoResultFound:
                 raise UserException(
                     "Can't find rate script for contract id " +
+                    str(contract_id) + " and date " + hh_format(date) + ".")
+            except MultipleResultsFound:
+                raise UserException(
+                    "Found multiple rate scripts for contract id " +
                     str(contract_id) + " and date " + hh_format(date) + ".")
             if month_before > rs.start_date:
                 chunk_start = month_before
@@ -557,13 +561,12 @@ class SiteSource(DataSource):
                         'supply_ids': [sup.id for sup in supplies]}))
             try:
                 row = rs.next()
+                hh_value = float(row[0])
+                hh_start_date = row[1]
+                imp_related = row[3]
+                source_code = row[4]
             except StopIteration:
-                continue
-
-            hh_value = float(row[0])
-            hh_start_date = row[1]
-            imp_related = row[3]
-            source_code = row[4]
+                hh_start_date = None
 
             while not hh_date > group_finish:
                 export_net_kwh = 0
@@ -645,25 +648,6 @@ class SiteSource(DataSource):
 
                 self.hh_data.append(hh_values)
                 hh_date += HH
-
-        if len(self.hh_data) == 0:
-            datum = datum_generator(sess, self.history_start).copy()
-            datum.update(
-                {
-                    'status': 'E', 'status': 'E', 'hist-import-net-kwh': 0,
-                    'hist-import-net-kvarh': 0, 'hist-export-net-kwh': 0,
-                    'hist-export-net-kvarh': 0, 'hist-import-gen-kwh': 0,
-                    'hist-export-gen-kwh': 0, 'hist-import-3rd-party-kwh': 0,
-                    'hist-export-3rd-party-kwh': 0, 'hist-kwh': 0,
-                    'msp-kwh': 0, 'msp-kw': 0, 'anti-msp-kwh': 0,
-                    'anti-msp-kw': 0, 'export-net-kwh': 0, 'import-gen-kwh': 0,
-                    'export-gen-kwh': 0, 'hist-used-kwh': 0, 'hist-kvarh': 0,
-                    'imp-msp-kvarh': 0, 'imp-msp-kvar': 0, 'exp-msp-kvarh': 0,
-                    'exp-msp-kvar': 0, 'used-kwh': 0, 'import-net-kwh': 0,
-                    'import-3rd-party-kwh': 0, 'export-3rd-party-kwh': 0,
-                    'used-3rd-party-kwh': 0, 'used-gen-msp-kwh': 0,
-                    'hist-used-gen-msp-kwh': 0})
-            self.hh_data.append(datum)
 
     def revolve_to_3rd_party_used(self):
         for hh in self.hh_data:
