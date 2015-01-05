@@ -18,8 +18,8 @@ if 'RDS_HOSTNAME' in os.environ:
         app.config[conf_name] = os.environ[rds_name]
 
 app.config['SQLALCHEMY_DATABASE_URI'] = \
-    "postgresql+pg8000://" + app.config['PGPASSWORD'] + ":" + \
-    app.config['PGUSER'] + "@" + app.config['PGHOST'] + ":" + \
+    "postgresql+pg8000://" + app.config['PGUSER'] + ":" + \
+    app.config['PGPASSWORD'] + "@" + app.config['PGHOST'] + ":" + \
     app.config['PGPORT'] + "/" + app.config['PGDATABASE']
 
 from chellow.models import Contract
