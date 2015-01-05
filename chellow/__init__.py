@@ -33,7 +33,7 @@ exec(
         'user_name': app.config['PGUSER'],
         'password': app.config['PGPASSWORD'],
         'host_name': app.config['PGHOST'],
-        'db_name': app.config['PGDATABSE']})
+        'db_name': app.config['PGDATABASE']})
 startup_contract = Contract.get_non_core_by_name('startup')
 ns = {}
 exec(startup_contract.charge_script, ns)

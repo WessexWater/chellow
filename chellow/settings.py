@@ -1,5 +1,5 @@
 PGUSER = 'postgres'
 PGPASSWORD = 'postgres'
 PGHOST = 'localhost'
-PGDATABSE = 'chellow'
+PGDATABASE = 'chellow'
 PGPORT = '5432'
