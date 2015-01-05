@@ -2,6 +2,9 @@ import logging
 from logging.handlers import RotatingFileHandler
 from flask import Flask
 import os
+import pg8000
+
+pg8000.dbapi = pg8000
 
 
 app = Flask('chellow')

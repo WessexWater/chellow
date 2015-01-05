@@ -97,8 +97,10 @@ if sys.platform.startswith('java'):
 
         if thread.getId() == interrupt_id:
             thread.interrupt()
-        #if thread.getId() == 43:
-        #    thread.stop()
+        '''
+        if thread.getId() == 43:
+            thread.stop()
+        '''
 
         trace = ''.join([str(item) + "\r\n" for item in entry.getValue()])
         thread_element.setTextContent(trace + " " + str(dir(thread)))

@@ -74,7 +74,7 @@ else:
     username = app.config['PGUSER']
     password = app.config['PGPASSWORD']
     hostname = app.config['PGHOST']
-    db_name = app.config['PGDATABSE']
+    db_name = app.config['PGDATABASE']
 
 con_str = "postgresql+pg8000://" + username + ":" + password + "@" + \
     hostname + "/" + db_name

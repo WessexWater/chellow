@@ -26,7 +26,7 @@ if sys.platform.startswith('java'):
         graphics.setColor(supplies[id][0])
 
     def add_colour(supplies, id, name, source_code):
-        if not id in supplies:
+        if id not in supplies:
             supplies[id] = [len(supplies), name, source_code]
 
     def sort_colour(supplies):

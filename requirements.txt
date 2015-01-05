@@ -3,7 +3,7 @@ Flask-SQLAlchemy==1.0
 Jinja2==2.6
 MarkupSafe==0.23
 PyYAML==3.11
-SQLAlchemy==0.9.8
+SQLAlchemy==0.8.6
 Werkzeug==0.9.6
 argh==0.25.0
 argparse==1.2.1

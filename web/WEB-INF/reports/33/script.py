@@ -192,6 +192,10 @@ def content():
                 if metering_type == 'nhh':
                     continue
 
+                params = {
+                    'supply_id': supply.id, 'year_start': year_start,
+                    'year_finish': date,
+                    'is_import': is_import}
                 month_mds = tuple(
                     md[0] for md in sess.execute("""
 
@@ -206,10 +210,7 @@ def content():
     order by md desc
     limit 3
 
-    """, params={
-                    'supply_id': supply.id, 'year_start': year_start,
-                    'year_finish': date,
-                    'is_import': is_import}))
+    """, params=params))
 
                 avg_months = sum(month_mds)
                 if len(month_mds) > 0:

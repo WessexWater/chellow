@@ -45,7 +45,6 @@ def content():
                 for suffix in [
                         '-date', '-msp-kw', '-status', '-laf', '-gsp-kw']:
                     values.append(bill[triad_prefix + suffix])
-            #supply_source.pw.println("values so far" + str(values))
 
             suffixes = ['gsp-kw', 'rate', 'gbp']
             values += [bill['triad-actual-' + suf] for suf in suffixes]

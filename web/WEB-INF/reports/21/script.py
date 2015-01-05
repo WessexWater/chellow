@@ -96,9 +96,9 @@ if sys.platform.startswith('java'):
                 min_scale = min(min_scale, int(math.floor(hh_value)))
 
             step = 10**int(math.floor(math.log10(max_scale - min_scale)))
-            #raise Exception('step is ' + str(step))
 
             '''
+            raise Exception('step is ' + str(step))
             if step > (max_scale - minScale) / 2:
                 step = int(float(step) / 4)
             '''

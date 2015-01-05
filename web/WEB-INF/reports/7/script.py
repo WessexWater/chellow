@@ -165,8 +165,8 @@ try:
                             bill.start_date, bill.finish_date, bill.kwh,
                             bill.net) == (
                             next_bill.start_date, next_bill.finish_date,
-                            -1 * next_bill.kwh, -1 * next_bill.net) and not \
-                            'collapsible' in b_dict:
+                            -1 * next_bill.kwh, -1 * next_bill.net) and \
+                            'collapsible' not in b_dict:
                         b_dict['collapsible'] = True
                         next_b_dict['first_collapsible'] = True
                         next_b_dict['collapsible'] = True
