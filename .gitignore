@@ -11,3 +11,4 @@ gunicorn/watchdog.pid
 test/imprimatur.xml
 gunicorn/pid
 downloads
+.elasticbeanstalk/
