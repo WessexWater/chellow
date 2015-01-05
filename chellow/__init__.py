@@ -10,6 +10,18 @@ handler.setLevel(logging.WARNING)
 app.logger.addHandler(handler)
 app.config.from_object('chellow.settings')
 
+if 'RDS_HOSTNAME' in os.environ:
+    for conf_name, rds_name in (
+            ('PGDATABASE', 'RDS_DB_NAME'), ('PGUSER', 'RDS_USERNAME'),
+            ('PGPASSWORD', 'RDS_PASSWORD'), ('PGHOST', 'RDS_HOSTNAME'),
+            ('PGPORT', 'RDS_PORT')):
+        app.config[conf_name] = os.environ[rds_name]
+
+app.config['SQLALCHEMY_DATABASE_URI'] = \
+    "postgresql+pg8000://" + app.config['PGPASSWORD'] + ":" + \
+    app.config['PGUSER'] + "@" + app.config['PGHOST'] + ":" + \
+    app.config['PGPORT'] + "/" + app.config['PGDATABASE']
+
 from chellow.models import Contract
 
 webinf_path = os.path.join(os.environ['CHELLOW_HOME'], 'web', 'WEB-INF')
@@ -28,3 +40,4 @@ exec(startup_contract.charge_script, ns)
 ns['on_start_up'](None)
 
 import chellow.views
+__all__ = [chellow]
