@@ -1,12 +1,12 @@
 . ${CHELLOW_HOME}/venv/bin/activate
 cd ${CHELLOW_HOME}
-gunicorn chellow:app -c ${CHELLOW_HOME}/gunicorn/config.py
+python application.py &
+echo $! > ${CHELLOW_HOME}/flask.pid
 
-while [ ! -f ${CHELLOW_HOME}/gunicorn/pid ]
+until curl http://127.0.0.1:5000/ --max-time 30
 do
+  echo "Testing if server is up..."
   sleep 1
 done
 
-watchmedo shell-command --patterns="*.py*;*.html*" --recursive --command='kill -HUP `cat ${CHELLOW_HOME}/gunicorn/pid`' . &
-echo $! > ${CHELLOW_HOME}/gunicorn/watchdog.pid
 

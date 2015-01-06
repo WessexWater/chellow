@@ -4,9 +4,7 @@ dist
 *.swp
 *~
 *.pyc
-chellow.log
-gunicorn/errors
-gunicorn/watchdog.pid
+flask.pid
 **/__pycache__
 test/imprimatur.xml
 gunicorn/pid

@@ -20,6 +20,11 @@ if 'RDS_HOSTNAME' in os.environ:
             ('PGPORT', 'RDS_PORT')):
         app.config[conf_name] = os.environ[rds_name]
 
+if 'FIRST_EMAIL' in os.environ:
+    app.config['FIRST_EMAIL'] = os.environ['FIRST_EMAIL']
+    app.config['FIRST_PASSWORD'] = os.environ['FIRST_PASSWORD']
+
+
 app.config['SQLALCHEMY_DATABASE_URI'] = \
     "postgresql+pg8000://" + app.config['PGUSER'] + ":" + \
     app.config['PGPASSWORD'] + "@" + app.config['PGHOST'] + ":" + \
@@ -33,6 +38,8 @@ exec(
     f,
     {
         'webinf_path': webinf_path,
+        'first_email': app.config['FIRST_EMAIL'],
+        'first_password': app.config['FIRST_PASSWORD'],
         'user_name': app.config['PGUSER'],
         'password': app.config['PGPASSWORD'],
         'host_name': app.config['PGHOST'],

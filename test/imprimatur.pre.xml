@@ -2,28 +2,28 @@
 <!DOCTYPE imprimatur PUBLIC 
     "-//Imprimatur DTD 009//EN"
     "http://imprimatur.sourceforge.net/imprimatur-009.dtd">
-<imprimatur port="8080" hostname="localhost">
+<imprimatur port="5000" hostname="localhost">
 	<!-- Users -->
 	<test-group>
 		<test name="Manipulating users">
 			<request path="/chellow/reports/255/output/" method="post">
-				<credentials username="watkins@example.com" password="alan" />
+				<credentials username="admin@example.com" password="admin" />
 				<control name="email_address" value="watkins@example.com" />
 				<control name="user_role_code" value="editor" />
 				<control name="password" value="alan" />
 				<response-code value="303" />
-				<regex pattern="/reports/257/output/\?user_id=1" />
+				<regex pattern="/reports/257/output/\?user_id=2" />
 			</request>
 			<request path="/chellow/reports/255/output/" method="post">
 				<control name="email_address" value="lydgate@localhost" />
 				<control name="user_role_code" value="editor" />
 				<control name="password" value="science" />
 				<response-code value="303" />
-				<regex pattern="/reports/257/output/\?user_id=2" />
+				<regex pattern="/reports/257/output/\?user_id=3" />
 			</request>
-			<request path="/chellow/reports/257/output/?user_id=2">
+			<request path="/chellow/reports/257/output/?user_id=3">
 				<regex
-					pattern='&lt;input type="hidden" name="user_id" value="2"&gt;\s*&lt;legend&gt;Delete this user&lt;/legend&gt;' />
+					pattern='&lt;input type="hidden" name="user_id" value="3"&gt;\s*&lt;legend&gt;Delete this user&lt;/legend&gt;' />
 				<response-code value="200" />
 			</request>
 			<!-- Check that a duplicate email gives a proper error message -->
@@ -36,7 +36,7 @@
 			</request>
 			<!-- Test that we're able to change the password -->
 			<request path="/chellow/reports/257/output/" method="post">
-				<control name="user_id" value="2" />
+				<control name="user_id" value="3" />
 				<control name="current_password" value="science" />
 				<control name="new_password" value="rosamund" />
 				<control name="confirm_new_password" value="rosamund" />
@@ -44,14 +44,14 @@
 			</request>
 			<!-- Test that we can change the role -->
 			<request path="/chellow/reports/257/output/" method="post">
-				<control name="user_id" value="2" />
+				<control name="user_id" value="3" />
 				<control name="email_address" value="mary-ann-evans@example.com" />
 				<control name="user_role_code" value="editor" />
 				<response-code value="303" />
 			</request>
 			<!-- ...and change it back -->
 			<request path="/chellow/reports/257/output/" method="post">
-				<control name="user_id" value="2" />
+				<control name="user_id" value="3" />
 				<control name="email_address" value="lydgate@localhost" />
 				<control name="user_role_code" value="editor" />
 				<response-code value="303" />
@@ -1614,7 +1614,7 @@ def virtual_bill(ds):
 				<control name="user_role_code" value="party-viewer" />
 				<control name="party_id" value="30" /> <!-- BMET HHDC -->
 				<response-code value="303" />
-				<regex pattern="/chellow/reports/257/output/\?user_id=4" />
+				<regex pattern="/chellow/reports/257/output/\?user_id=5" />
 			</request>
 		</test>
 		<test name="Check that the party viewer is able to view snags.">

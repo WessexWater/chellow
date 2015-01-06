@@ -6,6 +6,7 @@ from chellow.models import Contract, Report, User, set_read_write, db
 from sqlalchemy.exc import ProgrammingError
 import traceback
 
+
 def GET_str(name):
     args = request.args
     if name in args:
@@ -13,29 +14,26 @@ def GET_str(name):
     else:
         raise BadRequest("The GET arg " + name + " is required.")
 
+
 def GET_int(name):
     val_str = GET_str(name)
     return int(val_str)
 
+
 def POST_str(name):
     return request.form[name]
+
 
 def POST_bool(name):
     fm = request.form
     return name in fm and fm[name] == 'true'
 
 
-
 @app.before_request
 def check_permissions(*args, **kwargs):
-    method = request.method
     path = request.path
 
     g.user = None
-
-    if method == "GET" and path in ('/', '/static/style.css'):
-        return None
-
     user = None
     auth = request.authorization
     if auth is not None:
@@ -46,15 +44,14 @@ def check_permissions(*args, **kwargs):
 
     if user is None:
         config_contract = Contract.get_non_core_by_name('configuration')
-        email = config_contract.make_properties()['ips'][request.remote_addr]
-        user = User.query.filter(User.email_address == email).first()
+        try:
+            email = config_contract.make_properties()['ips'][
+                request.remote_addr]
+            user = User.query.filter(User.email_address == email).first()
+        except KeyError:
+            pass
 
-    if user is None:
-        user_count = User.query.count()
-        if user_count is None or user_count == 0 and \
-                request.remote_addr == '127.0.0.1':
-            return None
-    else:
+    if user is not None:
         g.user = user
         role = user.user_role
         role_code = role.code
@@ -94,10 +91,10 @@ def check_permissions(*args, **kwargs):
         return Response('Forbidden', 403)
 
 
-@app.route('/chellow/')
-def index():
-    # n = 1 / 0
-    return 'Hello World'
+@app.route('/')
+def home():
+    return redirect("/chellow/reports/1/output/")
+
 
 class ChellowFileItem():
     def __init__(self, f):
@@ -117,6 +114,7 @@ class ChellowRequest():
     def getParameter(self, name):
         vals = self.request.values
         return vals[name] if name in vals else None
+
 
 class Invocation():
     def __init__(self, request, user):
@@ -183,6 +181,7 @@ def show_reports():
     reports = Report.query.order_by(Report.id % 2, Report.name).all()
     return render_template('reports.html', reports=reports)
 
+
 @app.route('/chellow/reports/', methods=['POST'])
 def add_report():
     set_read_write()
@@ -200,10 +199,12 @@ def add_report():
             raise
     return redirect('/chellow/reports/' + str(report.id) + '/', 303)
 
+
 @app.route('/chellow/reports/<int:report_id>/', methods=['GET'])
 def show_edit_report(report_id):
     report = Report.query.get(report_id)
     return render_template('report.html', report=report)
+
 
 @app.route('/chellow/reports/<int:report_id>/', methods=['POST'])
 def edit_report(report_id):
@@ -220,9 +221,11 @@ def edit_report(report_id):
         return render_template(
             'report.html', report=report, message=traceback.format_exc())
 
+
 @app.errorhandler(500)
 def error_500(error):
     return traceback.format_exc(), 500
+
 
 @app.errorhandler(RuntimeError)
 def error_runtime(error):

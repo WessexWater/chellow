@@ -7,6 +7,7 @@ import pytz
 import sys
 from sqlalchemy.ext.declarative import declarative_base
 import os
+import hashlib
 
 
 def log_message(msg):
@@ -24,6 +25,8 @@ except NameError, e:
     user = os.environ['PGUSER']
     password = os.environ['PGPASSWORD']
     db_name = os.environ['PGDATABASE']
+    first_email = os.environ['FIRST_EMAIL']
+    first_password = os.environ['FIRST_PASSWORD']
     engine = create_engine(
         'postgresql+pg8000://' + user + ':' + password + '@localhost:5432' +
         '/' + db_name, isolation_level="SERIALIZABLE")
@@ -514,12 +517,51 @@ class UserRole(Base):
 
 
 class User(Base):
+    @staticmethod
+    def insert(sess, email_address, password_digest, user_role, party):
+        try:
+            user = User(email_address, password_digest, user_role, party)
+            sess.add(user)
+            sess.flush()
+        except Exception, e:
+            if hasattr(e, 'orig') and \
+                    e.orig.args[2] == 'duplicate key value violates ' + \
+                    'unique constraint "user_email_address_key"':
+                raise UserException(
+                    "There's already a user with this email address.")
+            else:
+                raise e
+        return user
+
+    @staticmethod
+    def digest(password):
+        if sys.platform.startswith('java'):
+            from net.sf.chellow.physical import User as JUser
+            return JUser.digest(password)
+        else:
+            return hashlib.md5(password).hexdigest()
+
     __tablename__ = 'user'
     id = Column(Integer, primary_key=True)
     email_address = Column(String, unique=True, nullable=False)
     password_digest = Column(String, nullable=False)
     user_role_id = Column(Integer, ForeignKey('user_role.id'))
     party_id = Column(Integer, ForeignKey('party.id'))
+
+    def __init__(self, email_address, password_digest, user_role, party):
+        self.update(email_address, user_role, party)
+        self.password_digest = password_digest
+
+    def update(self, email_address, user_role, party):
+        self.email_address = email_address
+        self.user_role = user_role
+        if user_role.code == 'party-viewer':
+            if party is None:
+                raise UserException(
+                    "There must be a party if the role is party-viewer.")
+            self.party = party
+        else:
+            self.party = None
 
 
 class ClockInterval(Base):
@@ -822,6 +864,10 @@ if engine.execute(
             " should be 'serializable' but in fact " "it's " +
             isolation_level + ".")
 
+    user_role = session.query(UserRole).filter(UserRole.code == 'editor').one()
+    user = User.insert(
+        session, first_email, User.digest(first_password), user_role, None)
+    session.commit()
     session.close()
 else:
     sys.stderr.write("\nDatabase already initialized.")
