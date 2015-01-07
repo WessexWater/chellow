@@ -2295,7 +2295,7 @@ def triad_estimates():
 				<response-code value="303" />
 			</request>
 			<request path="/chellow/reports/251/output/">
-				<refresh max="20" />
+				<refresh wait="1000" max="40" />
 				<regex pattern="FINISHED_site_monthly_duration_for_CH023_1_to_2009_3\.csv" />
 				<response-code value="200" />
 			</request>

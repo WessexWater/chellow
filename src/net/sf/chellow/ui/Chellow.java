@@ -1,6 +1,6 @@
 /*******************************************************************************
  * 
- *  Copyright (c) 2005-2013 Wessex Water Services Limited
+ *  Copyright (c) 2005-2015 Wessex Water Services Limited
  *  
  *  This file is part of Chellow.
  * 
@@ -23,12 +23,6 @@ package net.sf.chellow.ui;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.util.Properties;
-import java.util.logging.Level;
-
-import javax.servlet.ServletConfig;
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
 
 import net.sf.chellow.billing.Contract;
 import net.sf.chellow.billing.HhdcContracts;
@@ -44,7 +38,6 @@ import net.sf.chellow.monad.Invocation;
 import net.sf.chellow.monad.Invocation.HttpMethod;
 import net.sf.chellow.monad.MethodNotAllowedException;
 import net.sf.chellow.monad.Monad;
-import net.sf.chellow.monad.MonadContextParameters;
 import net.sf.chellow.monad.UnauthorizedException;
 import net.sf.chellow.monad.Urlable;
 import net.sf.chellow.monad.types.MonadUri;
@@ -81,26 +74,6 @@ public class Chellow extends Monad implements Urlable {
 		super();
 		setTemplateDirName("");
 		setRealmName("Chellow");
-	}
-
-	public void init(ServletConfig conf) throws ServletException {
-		super.init(conf);
-		ServletContext context = getServletContext();
-		Properties mailProperties = new Properties();
-
-		// setHibernateUtil(Hiber.getUtil());
-		try {
-			MonadContextParameters monadParameters = (MonadContextParameters) context
-					.getAttribute("monadParameters");
-			String mailHost = monadParameters.getMailHost();
-			if (mailHost != null) {
-				mailProperties.setProperty("mail.host", mailHost);
-			}
-		} catch (Throwable e) {
-			logger.logp(Level.SEVERE, "net.sf.theelected.ui.Chellow", "init",
-					"Can't initialize servlet.", e);
-			throw new ServletException(e.getMessage());
-		}
 	}
 
 	/**

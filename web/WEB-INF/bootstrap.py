@@ -8,6 +8,9 @@ import sys
 from sqlalchemy.ext.declarative import declarative_base
 import os
 import hashlib
+import pg8000
+
+pg8000.dbapi = pg8000
 
 
 def log_message(msg):

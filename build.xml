@@ -10,7 +10,7 @@
 	<property name="build.home" value="${basedir}/build" />
 	<property name="dist.home" value="${basedir}/dist" />
 	<property name="docs.home" value="${basedir}/docs" />
-	<property name="manager.url" value="http://localhost:8080/manager/text" />
+	<property name="manager.url" value="http://localhost:5000/manager/text" />
 	<property name="catalina.home" value="${user.home}/apache-tomcat-8.0.5" />
 	<property name="src.home" value="${basedir}/src" />
 	<property name="web.home" value="${basedir}/web" />
@@ -79,9 +79,6 @@
 		<copy todir="${build.home}/WEB-INF/lib-python/pytz">
 			<fileset dir="${basedir}/venv/lib/python2.7/site-packages/pytz" />
 		</copy>
-		<copy
-			overwrite="true" todir="${build.home}/WEB-INF/lib-python/"
-			file="${basedir}/venv/lib/python2.7/site-packages/six.py" />
 		<copy todir="${build.home}/WEB-INF/lib-python/ftputil">
 		  <fileset dir="${basedir}/venv/lib/python2.7/site-packages/ftputil" />
 		</copy>

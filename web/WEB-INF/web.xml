@@ -4,12 +4,12 @@
 	xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee http://java.sun.com/xml/ns/j2ee/web-app_2_4.xsd">
 	<display-name>Chellow</display-name>
 	<context-param>
-		<param-name>monad.log.email.to</param-name>
-		<param-value>root@localhost.localdomain</param-value>
+		<param-name>first.email</param-name>
+		<param-value>admin@example.com</param-value>
 	</context-param>
 	<context-param>
-		<param-name>monad.log.email.from</param-name>
-		<param-value>root@localhost.localdomain</param-value>
+		<param-name>first.password</param-name>
+		<param-value>admin</param-value>
 	</context-param>
 	<context-param>
 		<param-name>chellow.configuration_directory</param-name>
@@ -17,11 +17,6 @@
 			WEB-INF/config
 		</param-value>
 	</context-param>
-	<context-param>
-		<param-name>monad.mail.host</param-name>
-		<param-value>localhost</param-value>
-	</context-param>
-
 	<listener>
 		<listener-class>net.sf.chellow.ui.ContextListener</listener-class>
 	</listener>
@@ -29,10 +24,6 @@
 	<servlet>
 		<servlet-name>chellow</servlet-name>
 		<servlet-class>net.sf.chellow.ui.Chellow</servlet-class>
-		<init-param>
-			<param-name>administrator.email.address</param-name>
-			<param-value>root@localhost.localdomain</param-value>
-		</init-param>
 	</servlet>
 	<servlet-mapping>
 		<servlet-name>chellow</servlet-name>

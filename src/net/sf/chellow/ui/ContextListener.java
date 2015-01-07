@@ -52,9 +52,7 @@ import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Monad;
-import net.sf.chellow.monad.MonadContextParameters;
 import net.sf.chellow.monad.MonadFormatter;
-import net.sf.chellow.monad.MonadHandler;
 import net.sf.chellow.monad.UserException;
 
 import org.hibernate.jdbc.Work;
@@ -66,8 +64,6 @@ public class ContextListener implements ServletContextListener {
 	public static final String CONTEXT_REQUEST_MAP = "net.sf.chellow.request_map";
 	private ServletContext context = null;
 
-	private MonadContextParameters monadParameters;
-
 	private Logger logger = Logger.getLogger("net.sf.chellow");
 
 	public void contextInitialized(ServletContextEvent event) {
@@ -78,9 +74,6 @@ public class ContextListener implements ServletContextListener {
 			FileHandler fh = new FileHandler("%t/chellow.log");
 			fh.setFormatter(new MonadFormatter());
 			logger.addHandler(fh);
-			monadParameters = new MonadContextParameters(context);
-			logger.addHandler(new MonadHandler(monadParameters));
-			context.setAttribute("monadParameters", monadParameters);
 			InitialContext cxt = new InitialContext();
 			DataSource ds = (DataSource) cxt
 					.lookup("java:/comp/env/jdbc/chellow");
@@ -143,6 +136,8 @@ public class ContextListener implements ServletContextListener {
 					}
 					String username = context.getInitParameter("db.username");
 					String password = context.getInitParameter("db.password");
+					String first_email = context.getInitParameter("first.email");
+					String first_password = context.getInitParameter("first.password");
 
 					try {
 						interp.setOut(System.out);
@@ -153,6 +148,8 @@ public class ContextListener implements ServletContextListener {
 						interp.set("host_name", hostName);
 						interp.set("password", password);
 						interp.set("db_name", dbName);
+						interp.set("first_email", first_email);
+						interp.set("first_password", first_password);
 						
 						interp.execfile(context
 								.getResourceAsStream("/WEB-INF/bootstrap.py"));
