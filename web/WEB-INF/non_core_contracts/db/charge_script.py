@@ -1618,21 +1618,17 @@ class Era(Base, PersistentClass):
             self.set_physical_location(sess, site)
 
     def detach_site(self, sess, site):
-        if len(self.site_eras) < 2:
-            raise UserException(
-                "A supply has to be attached to at least one site.")
-
         site_era = sess.query(SiteEra).filter(
             SiteEra.era == self, SiteEra.site == site).first()
         if site_era is None:
             raise UserException(
-                "Can't detach this site, as it wasn't attached in the first "
-                "place.")
+                "Can't detach this era from this site, as it isn't attached.")
+        if site_era.is_physical:
+            raise UserException(
+                "You can't detach an era from the site where it is "
+                "physically located.")
 
         sess.delete(site_era)
-        if site_era.is_physical:
-            self.site_eras[0].is_physical = True
-
         sess.flush()
 
     def find_channel(self, sess, imp_related, channel_type):

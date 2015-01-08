@@ -5009,5 +5009,16 @@ def triad_dates():
 			</request>
 		</test>
 
+		<test name="Detach an era">
+			<!-- Try to detach an era from its physical site -->
+			<request path="/chellow/reports/307/output/" method="post">
+				<control name="era_id" value="8" />
+				<control name="site_id" value="1" />
+				<control name="detach" value="Detach" />
+				<response-code value="400" />
+				<regex pattern="&lt;li&gt;You can&amp;#39;t detach an era from the site where it is physically located.&lt;/li&gt;"/>
+			</request>
+
+		</test>
 	</test-group>
 </imprimatur>
