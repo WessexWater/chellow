@@ -16,7 +16,7 @@ caches = {}
 supply_id = inv.getLong('supply_id')
 start_date = utils.form_date(inv, 'start')
 finish_date = utils.form_date(inv, 'finish')
-file_name = 'supply_virtual_bills_hh_' + str(supply_id)
+file_name = 'supply_virtual_bills_hh_' + str(supply_id) + '.csv'
 
 
 def content():
