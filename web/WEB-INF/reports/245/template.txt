@@ -23,6 +23,7 @@
       <thead>
         <tr>
           <th>Scenario</th>
+          <th>Run</th>
           <th>View</th>
           <th>Edit</th>
           <th>scenario_start</th>
@@ -34,6 +35,10 @@
           {% set props = scenario.make_properties() %}
           <tr>
             <td>{{scenario.name}}</td>
+            <td>
+              <a href="{{context_path}}/reports/247/output/?scenario_id={{scenario.id}}">
+                Run
+              </a>
             <td>
               <a href="{{context_path}}/reports/77/output/?supplier_contract_id={{scenario.id}}#properties">
                 View
@@ -48,19 +53,6 @@
         {% endfor %}
       </tbody>
     </table>
-
-    <br>
-    <form action="{{context_path}}/reports/247/output/">
-      <fieldset>
-        <legend>Run Scenario</legend>
-        <select name="scenario">
-          {% for scenario in scenarios %}
-            {{input_option('scenario', scenario.name, scenario.name)}}
-          {% endfor %}
-        </select>
-        <input type="submit" value="Run">
-      </fieldset>
-    </form>
 
     <h4>Rates</h4>
 
@@ -148,3 +140,4 @@
 }</pre>
   </body>
 </html>
+

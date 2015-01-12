@@ -18,7 +18,7 @@ Site, Era, Bill, SiteEra = db.Site, db.Era, db.Bill, db.SiteEra
 Contract, Supply, Source = db.Contract, db.Supply, db.Source
 HH, hh_after, hh_format = utils.HH, utils.hh_after, utils.hh_format
 totalseconds, UserException = utils.totalseconds, utils.UserException
-hh_before = utils.hh_before
+hh_before, form_int = utils.hh_before, utils.form_int
 SupplySource = computer.SupplySource
 inv = globals()['inv']
 
@@ -28,7 +28,7 @@ file_name = 'scenario_' + now.strftime("%Y%m%d%H%M") + '.csv'
 report_context = {}
 future_funcs = {}
 report_context['future_funcs'] = future_funcs
-scenario_name = inv.getString('scenario')
+scenario_id = form_int(inv, 'scenario_id')
 if inv.hasParameter('site_id'):
     site_id = inv.getLong('site_id')
 else:
@@ -76,7 +76,7 @@ def content():
     sess = None
     try:
         sess = db.session()
-        scenario_contract = Contract.get_supplier_by_name(sess, scenario_name)
+        scenario_contract = Contract.get_supplier_by_id(sess, scenario_id)
         scenario_props = scenario_contract.make_properties()
 
         for cname, fnames in (

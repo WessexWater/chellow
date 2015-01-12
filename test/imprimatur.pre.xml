@@ -2337,11 +2337,45 @@ from dateutil.relativedelta import relativedelta
 import pytz
 from sqlalchemy import or_
 
-Monad.getUtils()['impt'](globals(), 'computer', 'db', 'utils', 'computer', 'triad', 'ccl', 'bsuos', 'tlms', 'duos', 'rcrc')
+Monad.getUtils()['impt'](globals(), 'computer', 'db', 'utils', 'computer', 'triad', 'ccl', 'bsuos', 'tlms', 'duos', 'rcrc', 'aahedc')
 
 
 def virtual_bill_titles():
-    return ['net-gbp', 'tlm', 'ccl-kwh', 'ccl-rate', 'ccl-gbp', 'data-collection-gbp', 'duos-availability-kva', 'duos-availability-days', 'duos-availability-rate', 'duos-availability-gbp', 'duos-excess-availability-kva', 'duos-excess-availability-days', 'duos-excess-availability-rate', 'duos-excess-availability-gbp','duos-green-kwh', 'duos-green-rate', 'duos-green-gbp', 'duos-green-kwh', 'duos-green-rate', 'duos-amber-gbp', 'duos-amber-kwh', 'duos-red-rate', 'duos-red-gbp', 'duos-reactive-rate', 'duos-reactive-gbp','duos-fixed-days', 'duos-fixed-rate', 'duos-fixed-gbp', 'settlement-gbp', 'night-msp-kwh', 'night-gsp-kwh', 'night-gbp', 'other-msp-kwh', 'other-gsp-kwh', 'other-gbp', 'summer-pk-msp-kwh', 'summer-pk-gsp-kwh', 'summer-pk-gbp', 'winter-low-pk-msp-kwh', 'winter-low-pk-gsp-kwh', 'winter-low-pk-gbp', 'winter-off-pk-msp-kwh', 'winter-off-pk-gsp-kwh', 'winter-off-pk-gbp', 'winter-pk-msp-kwh', 'winter-pk-gsp-kwh', 'winter-pk-gbp', 'bsuos-kwh', 'bsuos-rate', 'bsuos-gbp', 'triad-actual-1-date', 'triad-actual-1-msp-kw', 'triad-actual-1-status', 'triad-actual-1-laf', 'triad-actual-1-gsp-kw', 'triad-actual-2-date', 'triad-actual-2-msp-kw', 'triad-actual-2-status', 'triad-actual-2-laf', 'triad-actual-2-gsp-kw', 'triad-actual-3-date', 'triad-actual-3-msp-kw', 'triad-actual-3-status', 'triad-actual-3-laf', 'triad-actual-3-gsp-kw', 'triad-actual-gsp-kw', 'triad-actual-rate', 'triad-actual-gbp', 'triad-estimate-1-date', 'triad-estimate-1-msp-kw', 'triad-estimate-1-status', 'triad-estimate-1-laf', 'triad-estimate-1-gsp-kw', 'triad-estimate-2-date', 'triad-estimate-2-msp-kw', 'triad-estimate-2-status', 'triad-estimate-2-laf', 'triad-estimate-2-gsp-kw', 'triad-estimate-3-date', 'triad-estimate-3-msp-kw', 'triad-estimate-3-status', 'triad-estimate-3-laf', 'triad-estimate-3-gsp-kw', 'triad-estimate-gsp-kw', 'triad-estimate-rate', 'triad-estimate-months', 'triad-estimate-gbp', 'triad-all-estimates-months', 'triad-all-estimates-gbp', 'problem']
+    return [
+				'net-gbp', 'tlm', 'ccl-kwh', 'ccl-rate', 'ccl-gbp',
+				'data-collection-gbp', 'duos-availability-kva',
+				'duos-availability-days', 'duos-availability-rate',
+				'duos-availability-gbp', 'duos-excess-availability-kva',
+				'duos-excess-availability-days', 'duos-excess-availability-rate',
+				'duos-excess-availability-gbp','duos-green-kwh', 'duos-green-rate',
+				'duos-green-gbp', 'duos-green-kwh', 'duos-green-rate',
+				'duos-amber-gbp', 'duos-amber-kwh', 'duos-red-rate', 'duos-red-gbp',
+				'duos-reactive-kvarh', 'duos-reactive-rate', 'duos-reactive-gbp',
+				'duos-fixed-days', 'duos-fixed-rate', 'duos-fixed-gbp',
+				'settlement-gbp', 'aahedc-msp-kwh', 'aahedc-gsp-kwh', 'aahedc-rate',
+				'aahedc-gbp', 'rcrc-kwh', 'rcrc-rate', 'rcrc-gbp', 'night-msp-kwh',
+				'night-gsp-kwh', 'night-gbp', 'other-msp-kwh', 'other-gsp-kwh',
+				'other-gbp', 'summer-pk-msp-kwh', 'summer-pk-gsp-kwh', 'summer-pk-gbp',
+				'winter-low-pk-msp-kwh', 'winter-low-pk-gsp-kwh', 'winter-low-pk-gbp',
+				'winter-off-pk-msp-kwh', 'winter-off-pk-gsp-kwh', 'winter-off-pk-gbp',
+				'winter-pk-msp-kwh', 'winter-pk-gsp-kwh', 'winter-pk-gbp', 'bsuos-kwh',
+				'bsuos-rate', 'bsuos-gbp', 'triad-actual-1-date',
+				'triad-actual-1-msp-kw', 'triad-actual-1-status', 'triad-actual-1-laf',
+				'triad-actual-1-gsp-kw', 'triad-actual-2-date',
+				'triad-actual-2-msp-kw', 'triad-actual-2-status', 'triad-actual-2-laf',
+				'triad-actual-2-gsp-kw', 'triad-actual-3-date',
+				'triad-actual-3-msp-kw', 'triad-actual-3-status', 'triad-actual-3-laf',
+				'triad-actual-3-gsp-kw', 'triad-actual-gsp-kw', 'triad-actual-rate',
+			 	'triad-actual-gbp', 'triad-estimate-1-date', 'triad-estimate-1-msp-kw',
+				'triad-estimate-1-status', 'triad-estimate-1-laf',
+				'triad-estimate-1-gsp-kw', 'triad-estimate-2-date',
+				'triad-estimate-2-msp-kw', 'triad-estimate-2-status',
+				'triad-estimate-2-laf', 'triad-estimate-2-gsp-kw',
+				'triad-estimate-3-date', 'triad-estimate-3-msp-kw',
+				'triad-estimate-3-status', 'triad-estimate-3-laf',
+				'triad-estimate-3-gsp-kw', 'triad-estimate-gsp-kw',
+				'triad-estimate-rate', 'triad-estimate-months', 'triad-estimate-gbp',
+			 	'triad-all-estimates-months', 'triad-all-estimates-gbp', 'problem']
 
 def displaced_virtual_bill_titles():
     return ['bsuos-kwh', 'bsuos-rate', 'bsuos-gbp', 'ccl-kwh', 'ccl-rate', 'ccl-gbp', 'duos-day-gbp', 'duos-day-kwh', 'duos-night-gbp', 'duos-night-kwh', 'duos-reactive-gbp', 'duos-reactive-working', 'net-gbp', 'duos-standing-gbp', 'night-gbp', 'night-gsp-kwh', 'night-msp-kwh', 'other-gbp', 'other-gsp-kwh', 'other-msp-kwh', 'summer-pk-gbp', 'summer-pk-gsp-kwh', 'summer-pk-msp-kwh', 'triad-gbp', 'triad-working', 'winter-low-pk-gbp', 'winter-low-pk-gsp-kwh', 'winter-low-pk-msp-kwh', 'winter-off-pk-gbp', 'winter-off-pk-gsp-kwh', 'winter-off-pk-msp-kwh', 'winter-pk-gbp', 'winter-pk-gsp-kwh', 'winter-pk-msp-kwh']
@@ -2387,6 +2421,7 @@ def displaced_virtual_bill(supply_source):
     triad.triad_bill(supply_source)
     tlms.hh(supply_source)
     bsuos.hh(supply_source)
+    aahedc.hh(supply_source)
 
     rates = supply_source.hh_rate(db_id, supply_source.finish_date, 'gsp_gbp_per_kwh')
     for slot_name in slot_names:
@@ -2407,6 +2442,7 @@ def virtual_bill(supply_source):
     tlms.hh(supply_source)
     rcrc.hh(supply_source)
     bsuos.hh(supply_source)
+    aahedc.hh(supply_source)
     
     bill = supply_source.supplier_bill
     supply_source.is_green = False
@@ -3819,9 +3855,9 @@ def virtual_bill(supply_source):
 				path="/chellow/reports/291/output/?supply_id=5&amp;start_year=2013&amp;start_month=04&amp;start_day=01&amp;start_hour=00&amp;start_minute=00&amp;finish_year=2013&amp;finish_month=04&amp;finish_day=30&amp;finish_hour=23&amp;finish_minute=30">
 				<response-code value="200" />
 				<regex
-					pattern='"Imp MPAN Core","Exp MPAN Core","Site Code","Site Name","Account","From","To","","mop-net-gbp","mop-problem","","dc-net-gbp","dc-problem","","imp-supplier-net-gbp","imp-supplier-tlm","imp-supplier-ccl-kwh","imp-supplier-ccl-rate","imp-supplier-ccl-gbp","imp-supplier-data-collection-gbp","imp-supplier-duos-availability-kva","imp-supplier-duos-availability-days","imp-supplier-duos-availability-rate","imp-supplier-duos-availability-gbp","imp-supplier-duos-excess-availability-kva","imp-supplier-duos-excess-availability-days","imp-supplier-duos-excess-availability-rate","imp-supplier-duos-excess-availability-gbp","imp-supplier-duos-green-kwh","imp-supplier-duos-green-rate","imp-supplier-duos-green-gbp","imp-supplier-duos-green-kwh","imp-supplier-duos-green-rate","imp-supplier-duos-amber-gbp","imp-supplier-duos-amber-kwh","imp-supplier-duos-red-rate","imp-supplier-duos-red-gbp","imp-supplier-duos-reactive-rate","imp-supplier-duos-reactive-gbp","imp-supplier-duos-fixed-days","imp-supplier-duos-fixed-rate","imp-supplier-duos-fixed-gbp","imp-supplier-settlement-gbp","imp-supplier-night-msp-kwh","imp-supplier-night-gsp-kwh","imp-supplier-night-gbp","imp-supplier-other-msp-kwh","imp-supplier-other-gsp-kwh","imp-supplier-other-gbp","imp-supplier-summer-pk-msp-kwh","imp-supplier-summer-pk-gsp-kwh","imp-supplier-summer-pk-gbp","imp-supplier-winter-low-pk-msp-kwh","imp-supplier-winter-low-pk-gsp-kwh","imp-supplier-winter-low-pk-gbp","imp-supplier-winter-off-pk-msp-kwh","imp-supplier-winter-off-pk-gsp-kwh","imp-supplier-winter-off-pk-gbp","imp-supplier-winter-pk-msp-kwh","imp-supplier-winter-pk-gsp-kwh","imp-supplier-winter-pk-gbp","imp-supplier-bsuos-kwh","imp-supplier-bsuos-rate","imp-supplier-bsuos-gbp","imp-supplier-triad-actual-1-date","imp-supplier-triad-actual-1-msp-kw","imp-supplier-triad-actual-1-status","imp-supplier-triad-actual-1-laf","imp-supplier-triad-actual-1-gsp-kw","imp-supplier-triad-actual-2-date","imp-supplier-triad-actual-2-msp-kw","imp-supplier-triad-actual-2-status","imp-supplier-triad-actual-2-laf","imp-supplier-triad-actual-2-gsp-kw","imp-supplier-triad-actual-3-date","imp-supplier-triad-actual-3-msp-kw","imp-supplier-triad-actual-3-status","imp-supplier-triad-actual-3-laf","imp-supplier-triad-actual-3-gsp-kw","imp-supplier-triad-actual-gsp-kw","imp-supplier-triad-actual-rate","imp-supplier-triad-actual-gbp","imp-supplier-triad-estimate-1-date","imp-supplier-triad-estimate-1-msp-kw","imp-supplier-triad-estimate-1-status","imp-supplier-triad-estimate-1-laf","imp-supplier-triad-estimate-1-gsp-kw","imp-supplier-triad-estimate-2-date","imp-supplier-triad-estimate-2-msp-kw","imp-supplier-triad-estimate-2-status","imp-supplier-triad-estimate-2-laf","imp-supplier-triad-estimate-2-gsp-kw","imp-supplier-triad-estimate-3-date","imp-supplier-triad-estimate-3-msp-kw","imp-supplier-triad-estimate-3-status","imp-supplier-triad-estimate-3-laf","imp-supplier-triad-estimate-3-gsp-kw","imp-supplier-triad-estimate-gsp-kw","imp-supplier-triad-estimate-rate","imp-supplier-triad-estimate-months","imp-supplier-triad-estimate-gbp","imp-supplier-triad-all-estimates-months","imp-supplier-triad-all-estimates-gbp","imp-supplier-problem"' />
+					pattern='"Imp MPAN Core","Exp MPAN Core","Site Code","Site Name","Account","From","To","","mop-net-gbp","mop-problem","","dc-net-gbp","dc-problem","","imp-supplier-net-gbp","imp-supplier-tlm","imp-supplier-ccl-kwh","imp-supplier-ccl-rate","imp-supplier-ccl-gbp","imp-supplier-data-collection-gbp","imp-supplier-duos-availability-kva","imp-supplier-duos-availability-days","imp-supplier-duos-availability-rate","imp-supplier-duos-availability-gbp","imp-supplier-duos-excess-availability-kva","imp-supplier-duos-excess-availability-days","imp-supplier-duos-excess-availability-rate","imp-supplier-duos-excess-availability-gbp","imp-supplier-duos-green-kwh","imp-supplier-duos-green-rate","imp-supplier-duos-green-gbp","imp-supplier-duos-green-kwh","imp-supplier-duos-green-rate","imp-supplier-duos-amber-gbp","imp-supplier-duos-amber-kwh","imp-supplier-duos-red-rate","imp-supplier-duos-red-gbp","imp-supplier-duos-reactive-kvarh","imp-supplier-duos-reactive-rate","imp-supplier-duos-reactive-gbp","imp-supplier-duos-fixed-days","imp-supplier-duos-fixed-rate","imp-supplier-duos-fixed-gbp","imp-supplier-settlement-gbp","imp-supplier-aahedc-msp-kwh","imp-supplier-aahedc-gsp-kwh","imp-supplier-aahedc-rate","imp-supplier-aahedc-gbp","imp-supplier-rcrc-kwh","imp-supplier-rcrc-rate","imp-supplier-rcrc-gbp","imp-supplier-night-msp-kwh","imp-supplier-night-gsp-kwh","imp-supplier-night-gbp","imp-supplier-other-msp-kwh","imp-supplier-other-gsp-kwh","imp-supplier-other-gbp","imp-supplier-summer-pk-msp-kwh","imp-supplier-summer-pk-gsp-kwh","imp-supplier-summer-pk-gbp","imp-supplier-winter-low-pk-msp-kwh","imp-supplier-winter-low-pk-gsp-kwh","imp-supplier-winter-low-pk-gbp","imp-supplier-winter-off-pk-msp-kwh","imp-supplier-winter-off-pk-gsp-kwh","imp-supplier-winter-off-pk-gbp","imp-supplier-winter-pk-msp-kwh","imp-supplier-winter-pk-gsp-kwh","imp-supplier-winter-pk-gbp","imp-supplier-bsuos-kwh","imp-supplier-bsuos-rate","imp-supplier-bsuos-gbp","imp-supplier-triad-actual-1-date","imp-supplier-triad-actual-1-msp-kw","imp-supplier-triad-actual-1-status","imp-supplier-triad-actual-1-laf","imp-supplier-triad-actual-1-gsp-kw","imp-supplier-triad-actual-2-date","imp-supplier-triad-actual-2-msp-kw","imp-supplier-triad-actual-2-status","imp-supplier-triad-actual-2-laf","imp-supplier-triad-actual-2-gsp-kw","imp-supplier-triad-actual-3-date","imp-supplier-triad-actual-3-msp-kw","imp-supplier-triad-actual-3-status","imp-supplier-triad-actual-3-laf","imp-supplier-triad-actual-3-gsp-kw","imp-supplier-triad-actual-gsp-kw","imp-supplier-triad-actual-rate","imp-supplier-triad-actual-gbp","imp-supplier-triad-estimate-1-date","imp-supplier-triad-estimate-1-msp-kw","imp-supplier-triad-estimate-1-status","imp-supplier-triad-estimate-1-laf","imp-supplier-triad-estimate-1-gsp-kw","imp-supplier-triad-estimate-2-date","imp-supplier-triad-estimate-2-msp-kw","imp-supplier-triad-estimate-2-status","imp-supplier-triad-estimate-2-laf","imp-supplier-triad-estimate-2-gsp-kw","imp-supplier-triad-estimate-3-date","imp-supplier-triad-estimate-3-msp-kw","imp-supplier-triad-estimate-3-status","imp-supplier-triad-estimate-3-laf","imp-supplier-triad-estimate-3-gsp-kw","imp-supplier-triad-estimate-gsp-kw","imp-supplier-triad-estimate-rate","imp-supplier-triad-estimate-months","imp-supplier-triad-estimate-gbp","imp-supplier-triad-all-estimates-months","imp-supplier-triad-all-estimates-gbp","imp-supplier-problem"' />
 				<regex
-					pattern='"22 0883 6932 301","","CI005","Wheal Rodney","4341","2013-04-01 00:00","2013-04-30 23:30","","0","","","0","","","369.605","1.011286","","0.00525288","","5.89","350","30","0.026","273.0","0","31","0.026","0.0","0","0.00161","0.0","","","","","","","0.00382","0.0","30","0.0905","2.715","88","","","","0","0.0","0.0","","","","","","","","","","","","","0.0","0.00275744","0.0","","","","","","","","","","","","","","","","","","","2012-11-29 17:00","0","E","1.087","0.0","2012-12-12 17:00","0","E","1.087","0.0","2013-01-16 17:00","0","E","1.087","0.0","0.0","33.551731","1","0.0","","",""' />
+					pattern='"22 0883 6932 301","","CI005","Wheal Rodney","4341","2013-04-01 00:00","2013-04-30 23:30","","0","","","0","","","369.605","1.011286","","0.00525288","","5.89","350","30","0.026","273.0","0","31","0.026","0.0","0","0.00161","0.0","","","","","","","0.0","0.00382","0.0","30","0.0905","2.715","88","0","0.0","0.00019737201","0.0","0.0","-0.000385617463979","0.0","","","","0","0.0","0.0","","","","","","","","","","","","","0.0","0.00275744","0.0","","","","","","","","","","","","","","","","","","","2012-11-29 17:00","0","E","1.087","0.0","2012-12-12 17:00","0","E","1.087","0.0","2013-01-16 17:00","0","E","1.087","0.0","0.0","33.551731","1","0.0","","",""' />
 			</request>
 			<request path="/chellow/reports/159/output/">
 				<regex pattern="finish_year" />
@@ -4862,7 +4898,7 @@ def triad_dates():
 			</request>
 
 			<!-- Run scenario for a site where there are no site groups -->
-			<request path="/chellow/reports/247/output/?site_id=1&amp;scenario=scenario_bau">
+			<request path="/chellow/reports/247/output/?site_id=1&amp;scenario_id=64">
 
 				<response-code value="200" />
 
@@ -4873,7 +4909,7 @@ def triad_dates():
 			</request>
 
 			<!-- Run scenario for a site where there are site groups -->
-			<request path="/chellow/reports/247/output/?site_id=3&amp;scenario=scenario_bau">
+			<request path="/chellow/reports/247/output/?site_id=3&amp;scenario_id=64">
 
 				<response-code value="200" />
 				<regex pattern='CI005' />
@@ -4927,9 +4963,9 @@ def triad_dates():
     },
 
     'aahedc': {
-        'base_date': None,
-        'multiplier': 0,
-        'constant': 0.00091361,
+		    'base_date': datetime(2011, 1, 1),
+        'multiplier': 1,
+        'constant': 0.1,
     },
 
     'scenario_start': datetime(2011, 1, 1),  # Date or None for this month
@@ -4947,10 +4983,10 @@ def triad_dates():
 			</request>
 
 			<!-- Run scenario for a site -->
-			<request path="/chellow/reports/247/output/?site_id=3&amp;scenario=scenario_bsuos">
+			<request path="/chellow/reports/247/output/?site_id=3&amp;scenario_id=65">
 
 				<response-code value="200" />
-				<regex pattern='"22 6158 2968 220",.*,"0.00031051"' />
+				<regex pattern='"22 6158 2968 220","22 3479 7618 470","net","CI005","Wheal Rodney","2011-01-31 23:30","0","0","0","0","0","0","0","0","0","179.2268","0","0","0","0","0","0","179.2268","0","","0","","","0","","","179.2268","1.0099403","","0.0047","","5.89","130","31","0.0163","65.689","0","31","0.0163","0.0","0","0.00052","0.0","","","","","0.0","0.00202","0.0","31","0.6338","19.6478","88","0","0.0","0.10016297","0.0","0.0","-0.000458155425885","0.0","","","","0","0.0","0.0","","","","","","","","","","","","","0.0","0.00031051","0.0","","","","","","","","","","","","","","","","","","","2010-01-07 17:00","0","E","1.058","0.0","2010-01-25 17:00","0","E","1.058","0.0","2009-12-15 17:00","0","E","1.058","0.0","0.0","24.031029","1","0.0","","","","","","","","","","","","","112.0808","1.0099403","","0.0047","","5.89","20","31","0.0163","10.106","0","31","0.0","0.0","","","","","0.00106","0.0","","88","0","0","0.0","0","0.0","0.0","0","0","0.0","0","0","0.0","0","0","0.0","0","0","0.0","0.0","0.00031051","0.0","","","","","","","","","","","","","","","","","","","2010-01-07 17:00","0","E","1.058","0.0","2010-01-25 17:00","0","E","1.058","0.0","2009-12-15 17:00","0","E","1.058","0.0","0.0","24.031029","1","0.0","","",""'/>
 			</request>
 		</test>
 
@@ -5002,10 +5038,10 @@ def triad_dates():
 			</request>
 
 			<!-- Run scenario for a site -->
-			<request path="/chellow/reports/247/output/?site_id=3&amp;scenario=scenario_used">
+			<request path="/chellow/reports/247/output/?site_id=3&amp;scenario_id=66">
 
 				<response-code value="200" />
-				<regex pattern='"22 0195 4836 192","None","net","CI005","Wheal Rodney","2011-01-31 23:30","12.9095890411","0","0","0","0","0","0","12.9095890411","0","0.0","0","0","0","0","0","0","0.0","0","","0","","","0","","","0.0","0.0","0.0","12.9095890411","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","",""' />
+				<regex pattern='"22 0195 4836 192","None","net","CI005","Wheal Rodney","2011-01-31 23:30","12.9095890411","0","0","0","0","0","0","12.9095890411","0","0.0","0","0","0","0","0","0","0.0","0","","0","","","0","","","0.0","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","0.0","0.0","12.9095890411"' />
 			</request>
 		</test>
 

@@ -56,17 +56,15 @@ try:
     properties = configuration_contract.make_properties()
     other_sites = [
         s for s in site.groups(sess, now, now, False)[0].sites if s != site]
-    scenario_names = [
-        r[0] for r in sess.query(Contract.name).join(MarketRole).filter(
-            MarketRole.code == 'X', Contract.name.like('scenario_%')).order_by(
-            Contract.name).all()]
+    scenarios = sess.query(Contract).join(MarketRole).filter(
+        MarketRole.code == 'X', Contract.name.like('scenario_%')).order_by(
+        Contract.name).all()
     templater.render(
         inv, template, {
             'site': site, 'groups': groups, 'properties': properties,
             'other_sites': other_sites, 'month_start': month_start,
             'month_finish': month_finish, 'last_month_start': last_month_start,
-            'last_month_finish': last_month_finish,
-            'scenario_names': scenario_names})
+            'last_month_finish': last_month_finish, 'scenarios': scenarios})
 finally:
     if sess is not None:
         sess.close()

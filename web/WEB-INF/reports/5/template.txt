@@ -235,9 +235,9 @@ Table of site level monthly kWh, MD kWh etc.</a>
       <fieldset>
         <input type="hidden" name="site_id" value="{{site.id}}">
         <legend>Run Scenario</legend>
-        <select name="scenario">
-          {% for scenario_name in scenario_names %}
-            {{input_option('scenario', scenario_name, scenario_name)}}
+        <select name="scenario_id">
+          {% for scenario in scenarios %}
+            {{input_option('scenario', scenario.id, scenario.name)}}
           {% endfor %}
         </select>
         <input type="submit" value="Run">
