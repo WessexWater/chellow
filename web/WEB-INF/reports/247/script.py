@@ -87,24 +87,29 @@ def content():
             try:
                 props = scenario_props[cname]
             except KeyError:
-                props = {'base_date': None, 'multiplier': 1, 'constant': 0}
+                props = {'start_date': None, 'multiplier': 1, 'constant': 0}
 
-            base_date = props['base_date']
-            if base_date is not None:
-                base_date = base_date.replace(tzinfo=pytz.utc)
+            try:
+                rate_start = props['start_date']
+            except KeyError:
+                raise UserException(
+                    "In " + scenario_contract.name + " for the rate " + cname +
+                    " the start_date is missing.")
+            if rate_start is not None:
+                rate_start = rate_start.replace(tzinfo=pytz.utc)
             future_funcs[globals()[cname].db_id] = {
-                'base_date': base_date,
+                'start_date': rate_start,
                 'func': create_monthly_func(cname, fnames, props)}
 
         for cname, fname in (
                 ('ccl', 'ccl_rate'), ('aahedc', 'aahedc_gbp_per_gsp_kwh')):
             props = scenario_props[cname]
 
-            base_date = props['base_date']
-            if base_date is not None:
-                base_date = base_date.replace(tzinfo=pytz.utc)
+            rate_start = props['start_date']
+            if rate_start is not None:
+                rate_start = rate_start.replace(tzinfo=pytz.utc)
             future_funcs[globals()[cname].db_id] = {
-                'base_date': base_date,
+                'start_date': rate_start,
                 'func': create_future_func(cname, fname, props)}
 
         start_date = scenario_props['scenario_start']

@@ -88,7 +88,7 @@
     </p>
 
     <dl>
-      <dt>base_date</dt>
+      <dt>start_date</dt>
       <dd>A date, None means end of last rate script</dd>
       <dt>multiplier</dt>
       <dd>A number</dd>
@@ -97,10 +97,10 @@
     </dl>
 
     <p>
-      If base_date is None, then it is set to the end date of the latest rate
-      script. If H <= base date, then the rate script at H is used without any
-      change. If H > base_date, then the rate script at base_date is used to
-      obtain the value of the rate at H by doing (rate_at_base_date *
+      If start_date is None, then it is set to the end date of the latest rate
+      script. If H &lt;= start_date, then the rate script at H is used without
+		 	any change. If H &gt; start_date, then the rate script at start_date is
+		 	used to obtain the value of the rate at H by doing (rate_at_start_date *
       multiplier + constant).
     </p>
 
@@ -109,19 +109,19 @@
 		<pre>
 {
     'bsuos' : {
-		    'base_date': datetime(2011, 1, 1),
+		    'start_date': datetime(2011, 1, 1),
         'multiplier': 1,
         'constant': 0,
     },
 
     'ccl': {
-        'base_date': datetime(2014, 10, 1),
+        'start_date': datetime(2014, 10, 1),
         'multiplier': 1,
         'constant': 0,
     },
 
     'aahedc': {
-        'base_date': None,
+        'start_date': None,
         'multiplier': 0,
         'constant': 0.00091361,
     },

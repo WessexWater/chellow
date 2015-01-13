@@ -4867,19 +4867,19 @@ def triad_dates():
 				<control name="properties"><![CDATA[
 {
     'bsuos' : {
-		    'base_date': None,  # Date or None for latest rate script
+		    'start_date': None,  # Date or None for latest rate script
         'multiplier': 1.5,
         'constant': 0,
     },
 
     'ccl': {
-        'base_date': datetime(2014, 10, 1),
+        'start_date': datetime(2014, 10, 1),
         'multiplier': 1,
         'constant': 0,
     },
 
     'aahedc': {
-        'base_date': None,
+        'start_date': None,
         'multiplier': 0,
         'constant': 0.00091361,
     },
@@ -4951,19 +4951,19 @@ def triad_dates():
 				<control name="properties"><![CDATA[
 {
     'bsuos' : {
-		    'base_date': datetime(2011, 1, 1),
+		    'start_date': datetime(2011, 1, 1),
         'multiplier': 1,
         'constant': 0.1,
     },
 
     'ccl': {
-        'base_date': datetime(2014, 10, 1),
+        'start_date': datetime(2014, 10, 1),
         'multiplier': 1,
         'constant': 0,
     },
 
     'aahedc': {
-		    'base_date': datetime(2011, 1, 1),
+		    'start_date': datetime(2011, 1, 1),
         'multiplier': 1,
         'constant': 0.1,
     },
@@ -5004,19 +5004,19 @@ def triad_dates():
 				<control name="properties"><![CDATA[
 {
     'bsuos' : {
-		    'base_date': datetime(2011, 1, 1),
+		    'start_date': datetime(2011, 1, 1),
         'multiplier': 1,
         'constant': 0,
     },
 
     'ccl': {
-        'base_date': datetime(2014, 10, 1),
+        'start_date': datetime(2014, 10, 1),
         'multiplier': 1,
         'constant': 0,
     },
 
     'aahedc': {
-        'base_date': None,
+        'start_date': None,
         'multiplier': 0,
         'constant': 0.00091361,
     },

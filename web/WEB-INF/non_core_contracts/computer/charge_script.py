@@ -152,24 +152,24 @@ def hh_rate(sess, caches, contract_id, date, name, pw):
         try:
             future_dict = future_funcs[contract_id]
         except KeyError:
-            future_dict = {'func': identity_func, 'base_date': None}
+            future_dict = {'func': identity_func, 'start_date': None}
             future_funcs[contract_id] = future_dict
 
-        base_date = future_dict['base_date']
-        if base_date is None:
+        start_date = future_dict['start_date']
+        if start_date is None:
             base_rs = sess.query(RateScript).filter(
                 RateScript.contract_id == contract_id).order_by(
                 RateScript.start_date.desc()).first()
-            base_date = base_rs.finish_date
+            start_date = base_rs.finish_date
         else:
             base_rs = sess.query(RateScript).filter(
                 RateScript.contract_id == contract_id,
-                RateScript.start_date <= base_date,
+                RateScript.start_date <= start_date,
                 or_(
                     RateScript.finish_date == null(),
-                    RateScript.finish_date >= base_date)).one()
+                    RateScript.finish_date >= start_date)).one()
 
-        if hh_after(date, base_date):
+        if hh_after(date, start_date):
             rs = base_rs
             if month_before > rs.start_date:
                 chunk_start = month_before
