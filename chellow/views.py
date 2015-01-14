@@ -32,6 +32,9 @@ def POST_bool(name):
 @app.before_request
 def check_permissions(*args, **kwargs):
     path = request.path
+    method = request.method
+    if method == 'GET' and path == '/health':
+        return 'healthy'
 
     g.user = None
     user = None
@@ -58,14 +61,13 @@ def check_permissions(*args, **kwargs):
         path = request.path
 
         if role_code == "viewer":
-            if path.startswith("/reports/") and \
-                    path.endswith("/output/") and \
-                    request.method in ("GET", "HEAD"):
+            if path.startswith("/reports/") and path.endswith("/output/") and \
+                    method in ("GET", "HEAD"):
                 return
         elif role_code == "editor":
             return
         elif role_code == "party-viewer":
-            if request.method in ("GET", "HEAD"):
+            if method in ("GET", "HEAD"):
                 party = user.party
                 market_role_code = party.market_role.code
                 if market_role_code == 'C':
@@ -94,6 +96,11 @@ def check_permissions(*args, **kwargs):
 @app.route('/')
 def home():
     return redirect("/chellow/reports/1/output/")
+
+
+@app.route('/health')
+def health():
+    pass
 
 
 class ChellowFileItem():
