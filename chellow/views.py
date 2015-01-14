@@ -29,8 +29,23 @@ def POST_bool(name):
     return name in fm and fm[name] == 'true'
 
 
+def chellow_redirect(path, code=None):
+    try:
+        proto = request.headers['X-Forwarded-Proto']
+        if proto == 'https':
+            path = 'https://' + request.host + path
+    except KeyError:
+        pass
+
+    if code is None:
+        return redirect(path)
+    else:
+        return redirect(path, code)
+
+
 @app.before_request
 def check_permissions(*args, **kwargs):
+    # sys.stderr.write("about to check permissions sys\n")
     path = request.path
     method = request.method
     if method == 'GET' and path == '/health':
@@ -95,7 +110,7 @@ def check_permissions(*args, **kwargs):
 
 @app.route('/')
 def home():
-    return redirect("/chellow/reports/1/output/")
+    return chellow_redirect("/chellow/reports/1/output/")
 
 
 @app.route('/health')
@@ -158,11 +173,11 @@ class Invocation():
         return self.res
 
     def sendSeeOther(self, location):
-        self.response = redirect(
+        self.response = chellow_redirect(
             ''.join((request.url_root, 'chellow', location)), 303)
 
     def sendTemporaryRedirect(self, location):
-        self.response = redirect(
+        self.response = chellow_redirect(
             ''.join((request.url_root, 'chellow', location)), 307)
 
     def sendNotFound(self, message):
@@ -204,7 +219,7 @@ def add_report():
                 "There's already a report with that name.", status=400)
         else:
             raise
-    return redirect('/chellow/reports/' + str(report.id) + '/', 303)
+    return chellow_redirect('/chellow/reports/' + str(report.id) + '/', 303)
 
 
 @app.route('/chellow/reports/<int:report_id>/', methods=['GET'])
@@ -223,7 +238,8 @@ def edit_report(report_id):
         report = Report.query.get(report_id)
         report.update(name, script, template)
         db.session.commit()
-        return redirect('/chellow/reports/' + str(report.id) + '/', 303)
+        return chellow_redirect(
+            '/chellow/reports/' + str(report.id) + '/', 303)
     except:
         return render_template(
             'report.html', report=report, message=traceback.format_exc())
