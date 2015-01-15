@@ -31,16 +31,15 @@ def POST_bool(name):
 
 def chellow_redirect(path, code=None):
     try:
-        proto = request.headers['X-Forwarded-Proto']
-        if proto == 'https':
-            path = 'https://' + request.host + path
+        scheme = request.headers['X-Forwarded-Proto']
     except KeyError:
-        pass
+        scheme = 'http'
 
+    location = scheme + '://' + request.host + path
     if code is None:
-        return redirect(path)
+        return redirect(location)
     else:
-        return redirect(path, code)
+        return redirect(location, code)
 
 
 @app.before_request
@@ -173,12 +172,10 @@ class Invocation():
         return self.res
 
     def sendSeeOther(self, location):
-        self.response = chellow_redirect(
-            ''.join((request.url_root, 'chellow', location)), 303)
+        self.response = chellow_redirect(''.join(('/chellow', location)), 303)
 
     def sendTemporaryRedirect(self, location):
-        self.response = chellow_redirect(
-            ''.join((request.url_root, 'chellow', location)), 307)
+        self.response = chellow_redirect(''.join(('/chellow', location)), 307)
 
     def sendNotFound(self, message):
         self.response = Response(message, status=404)
