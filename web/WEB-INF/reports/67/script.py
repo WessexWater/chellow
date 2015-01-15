@@ -1,8 +1,4 @@
 from net.sf.chellow.monad import Monad
-from java.util import Properties
-from java.io import StringReader
-from net.sf.chellow.physical import Configuration
-from net.sf.chellow.ui import Report
 import db
 import templater
 Monad.getUtils()['impt'](globals(), 'db', 'utils', 'templater')
@@ -18,16 +14,10 @@ try:
     rate_scripts = sess.query(RateScript).filter(
         RateScript.contract == contract).order_by(
         RateScript.start_date.desc()).all()
-    config = Configuration.getConfiguration()
-    properties = Properties()
-    properties.load(StringReader(config.getProperties()))
+
+    config = db.Contract.get_non_core_by_name(sess, 'configuration')
 
     reports = []
-    for key in properties.propertyNames():
-        if key.startswith('dno.report.'):
-            dno_report_id = properties.get(key)
-            if dno_report_id is not None:
-                reports.append(Report.getReport(int(dno_report_id)))
 
     render(
         inv, template, {

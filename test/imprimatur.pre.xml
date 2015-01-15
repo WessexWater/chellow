@@ -5020,5 +5020,12 @@ def triad_dates():
 			</request>
 
 		</test>
+
+		<test name="Look at a DNO">
+			<request path="/chellow/reports/67/output/?dno_contract_id=38">
+				<response-code value="200" />
+			</request>
+
+		</test>
 	</test-group>
 </imprimatur>
