@@ -780,7 +780,7 @@ def general_import_channel(sess, action, vals, args):
     mpan_core = parse_mpan_core(mpan_core_raw)
     supply = Supply.find_by_mpan_core(sess, mpan_core)
     dt_raw = add_arg(args, 'Date', vals, 1)
-    dt = parse_hh_start(dt_raw)
+    dt = None if len(dt_raw) == 0 else parse_hh_start(dt_raw)
     era = supply.find_era_at(sess, dt)
     import_related_str = add_arg(args, 'Import Related?', vals, 2)
     import_related = parse_bool(import_related_str)
