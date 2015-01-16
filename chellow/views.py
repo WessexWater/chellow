@@ -48,7 +48,7 @@ def check_permissions(*args, **kwargs):
     path = request.path
     method = request.method
     if method == 'GET' and path == '/health':
-        return 'healthy'
+        return 'healthy\n'
 
     g.user = None
     user = None

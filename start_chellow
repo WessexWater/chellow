@@ -3,7 +3,7 @@ cd ${CHELLOW_HOME}
 python application.py &
 echo $! > ${CHELLOW_HOME}/flask.pid
 
-until curl http://127.0.0.1:5000/ --max-time 30
+until curl http://127.0.0.1:5000/health --max-time 30
 do
   echo "Testing if server is up..."
   sleep 1
