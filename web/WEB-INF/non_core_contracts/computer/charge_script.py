@@ -4,12 +4,12 @@ import datetime
 import pytz
 from dateutil.relativedelta import relativedelta
 from sqlalchemy import or_, cast, Float
-from sqlalchemy.orm.exc import NoResultFound, MultipleResultsFound
 from sqlalchemy.sql.expression import null, false
 from sqlalchemy.orm import aliased
 import math
 import utils
 import db
+
 Monad.getUtils()['impt'](globals(), 'db', 'utils', 'templater')
 
 HH, hh_after, totalseconds = utils.HH, utils.hh_after, utils.totalseconds
@@ -124,6 +124,9 @@ def contract_func(caches, contract, func_name, pw):
 def identity_func(x):
     return x
 
+#def lgg(pw, msg):
+#    pw.append( msg + "," + str(System.currentTimeMillis()) + "\n")
+
 
 def hh_rate(sess, caches, contract_id, date, name, pw):
     try:
@@ -140,6 +143,7 @@ def hh_rate(sess, caches, contract_id, date, name, pw):
     try:
         d_cache = cont_cache[date]
     except KeyError:
+        #lgg(pw, "hh rate inner: missed dcache")
         month_after = date + relativedelta(months=1)
         month_before = date - relativedelta(months=1)
 
@@ -150,73 +154,80 @@ def hh_rate(sess, caches, contract_id, date, name, pw):
             caches['future_funcs'] = future_funcs
 
         try:
-            future_dict = future_funcs[contract_id]
+            future_func = future_funcs[contract_id]
         except KeyError:
-            future_dict = {'func': identity_func, 'start_date': None}
-            future_funcs[contract_id] = future_dict
+            future_func = {'start_date': None, 'func': identity_func}
+            future_funcs[contract_id] = future_func
 
-        start_date = future_dict['start_date']
+        start_date = future_func['start_date']
+        ffunc = future_func['func']
+
         if start_date is None:
-            base_rs = sess.query(RateScript).filter(
-                RateScript.contract_id == contract_id).order_by(
-                RateScript.start_date.desc()).first()
-            start_date = base_rs.finish_date
-        else:
-            base_rs = sess.query(RateScript).filter(
+            #lgg(pw, "hh rate inner: start date is none")
+            rs = sess.query(RateScript).filter(
                 RateScript.contract_id == contract_id,
-                RateScript.start_date <= start_date,
+                RateScript.start_date <= date,
                 or_(
                     RateScript.finish_date == null(),
-                    RateScript.finish_date >= start_date)).one()
+                    RateScript.finish_date >= date)).first()
+            #lgg(pw, "hh rate inner: got rs")
 
-        if hh_after(date, start_date):
-            rs = base_rs
-            if month_before > rs.start_date:
-                chunk_start = month_before
+            if rs is None:
+                rs = sess.query(RateScript).filter(
+                    RateScript.contract_id == contract_id). \
+                    order_by(RateScript.start_date.desc()).first()
+                func = ffunc
+                cstart = max(rs.finish_date + HH, month_before)
+                cfinish = month_after
             else:
-                chunk_start = rs.start_date
-
-            chunk_finish = month_after
-            tfunc = future_dict['func']
+                func = identity_func
+                cstart = max(rs.start_date, month_before)
+                if rs.finish_date is None:
+                    cfinish = month_after
+                else:
+                    cfinish = min(rs.finish_date, month_after)
+            #lgg(pw, "hh rate inner: finished start date is none")
         else:
-            try:
+            if date < start_date:
                 rs = sess.query(RateScript).filter(
                     RateScript.contract_id == contract_id,
                     RateScript.start_date <= date,
                     or_(
                         RateScript.finish_date == null(),
-                        RateScript.finish_date >= date)).one()
-            except NoResultFound:
-                raise UserException(
-                    "Can't find rate script for contract id " +
-                    str(contract_id) + " and date " + hh_format(date) + ".")
-            except MultipleResultsFound:
-                raise UserException(
-                    "Found multiple rate scripts for contract id " +
-                    str(contract_id) + " and date " + hh_format(date) + ".")
-            if month_before > rs.start_date:
-                chunk_start = month_before
-            else:
-                chunk_start = rs.start_date
+                        RateScript.finish_date >= date)).first()
 
-            if hh_before(month_after, rs.finish_date):
-                chunk_finish = month_after
+                if rs is None:
+                    rs = sess.query(RateScript).filter(
+                        RateScript.contract_id == contract_id). \
+                        order_by(RateScript.start_date.desc()).first()
+                func = identity_func
+                cstart = max(rs.start_date, month_before)
+                cfinish = min(month_after, start_date - HH)
             else:
-                chunk_finish = rs.finish_date
-            tfunc = identity_func
+                rs = sess.query(RateScript).filter(
+                    RateScript.contract_id == contract_id,
+                    RateScript.start_date <= start_date,
+                    or_(
+                        RateScript.finish_date == null(),
+                        RateScript.finish_date >= start_date)).first()
+                func = ffunc
+                cstart = max(start_date, month_before)
+                cfinish = month_after
 
         ns = {}
         exec(rs.script, ns)
-        script_dict = {'ns': ns, 'rates': {}}
-        script_dict = {'ns': tfunc(ns), 'rates': {}}
+        script_dict = {'ns': func(ns), 'rates': {}}
         script_dict['rates']['_script_dict'] = script_dict
 
         d_cache = script_dict['rates']
-        dt = chunk_start
-        while dt <= chunk_finish:
-            if dt not in cont_cache:
-                cont_cache[dt] = d_cache
+
+        dt = cstart
+        #lgg(pw, "hh rate inner: starting loop")
+        while dt < cfinish:
+            cont_cache[dt] = d_cache
             dt += HH
+
+        #lgg(pw, "hh rate inner: ended dcache")
 
     try:
         return d_cache[name]
@@ -224,7 +235,10 @@ def hh_rate(sess, caches, contract_id, date, name, pw):
         script_dict = d_cache['_script_dict']
 
         try:
-            val = script_dict['ns'][name]()
+            if contract_id == 61:
+                val = script_dict['ns'][name]
+            else:
+                val = script_dict['ns'][name]()
         except KeyError:
             raise UserException(
                 "Can't find the rate " + name + " in the rate script at " +
