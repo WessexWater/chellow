@@ -124,9 +124,6 @@ def contract_func(caches, contract, func_name, pw):
 def identity_func(x):
     return x
 
-#def lgg(pw, msg):
-#    pw.append( msg + "," + str(System.currentTimeMillis()) + "\n")
-
 
 def hh_rate(sess, caches, contract_id, date, name, pw):
     try:
@@ -143,9 +140,8 @@ def hh_rate(sess, caches, contract_id, date, name, pw):
     try:
         d_cache = cont_cache[date]
     except KeyError:
-        #lgg(pw, "hh rate inner: missed dcache")
-        month_after = date + relativedelta(months=1)
-        month_before = date - relativedelta(months=1)
+        month_after = date + relativedelta(months=1) + relativedelta(days=1)
+        month_before = date - relativedelta(months=1) - relativedelta(days=1)
 
         try:
             future_funcs = caches['future_funcs']
@@ -215,7 +211,10 @@ def hh_rate(sess, caches, contract_id, date, name, pw):
                 cfinish = month_after
 
         ns = {}
+        #lgg(pw, "hh rate inner: starting exec")
         exec(rs.script, ns)
+        #lgg(pw, "hh rate inner: finishing exec")
+
         script_dict = {'ns': func(ns), 'rates': {}}
         script_dict['rates']['_script_dict'] = script_dict
 
@@ -223,7 +222,7 @@ def hh_rate(sess, caches, contract_id, date, name, pw):
 
         dt = cstart
         #lgg(pw, "hh rate inner: starting loop")
-        while dt < cfinish:
+        while dt <= cfinish:
             cont_cache[dt] = d_cache
             dt += HH
 
@@ -235,10 +234,7 @@ def hh_rate(sess, caches, contract_id, date, name, pw):
         script_dict = d_cache['_script_dict']
 
         try:
-            if contract_id == 61:
-                val = script_dict['ns'][name]
-            else:
-                val = script_dict['ns'][name]()
+            val = script_dict['ns'][name]()
         except KeyError:
             raise UserException(
                 "Can't find the rate " + name + " in the rate script at " +
