@@ -180,6 +180,7 @@ def send_response(
         try:
             for l in content():
                 pw.write(l)
+                pw.flush()
         except:
             pw.write(traceback.format_exc())
             raise
