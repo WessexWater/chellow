@@ -6,7 +6,8 @@ Monad.getUtils()['impt'](globals(), 'db', 'utils', 'templater')
 Party, MarketRole, Participant = db.Party, db.MarketRole, db.Participant
 Contract = db.Contract
 render = templater.render
-UserException = utils.UserException
+UserException, form_int = utils.UserException, utils.form_int
+form_str = utils.form_str
 inv, template = globals()['inv'], globals()['template']
 
 
@@ -21,23 +22,23 @@ sess = None
 try:
     sess = db.session()
     if inv.getRequest().getMethod() == 'GET':
-        contract_id = inv.getLong('supplier_contract_id')
+        contract_id = form_int(inv, 'supplier_contract_id')
         contract = Contract.get_supplier_by_id(sess, contract_id)
         render(inv, template, make_fields(sess, contract))
     else:
         db.set_read_write(sess)
-        contract_id = inv.getLong('supplier_contract_id')
+        contract_id = form_int(inv, 'supplier_contract_id')
         contract = Contract.get_supplier_by_id(sess, contract_id)
         if inv.hasParameter('delete'):
             contract.delete(sess)
             sess.commit()
             inv.sendSeeOther('/reports/75/output/')
         else:
-            party_id = inv.getLong('party_id')
+            party_id = form_int(inv, 'party_id')
             party = Party.get_by_id(sess, party_id)
-            name = inv.getString('name')
-            charge_script = inv.getString('charge_script')
-            properties = inv.getString('properties')
+            name = form_str(inv, 'name')
+            charge_script = form_str(inv, 'charge_script')
+            properties = form_str(inv, 'properties')
             contract.update(
                 sess, False, name, party, charge_script, properties)
             sess.commit()

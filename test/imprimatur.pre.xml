@@ -5067,6 +5067,57 @@ def triad_dates():
 		<test name="Look at the SSCs">
 			<request path="/chellow/reports/125/output/">
 				<response-code value="200" />
+
+		<test name="Rate start after last rate scripts">
+			<request path="/chellow/reports/317/output/" method="post">
+				<control name="supplier_contract_id" value="65" />
+				<control name="party_id" value="48" /> <!-- CGEN -->
+				<control name="name" value="scenario_bsuos" />
+				<control name="start_year" value="2000" />
+				<control name="start_month" value="01" />
+				<control name="start_day" value="03" />
+				<control name="start_hour" value="00" />
+				<control name="start_minute" value="00" />
+				<control name="charge_script"><![CDATA[]]></control>
+				<control name="properties"><![CDATA[
+{
+    'bsuos' : {
+		    'start_date': datetime(5010, 1, 1),
+        'multiplier': 1,
+        'constant': 0.1,
+    },
+
+    'ccl': {
+        'start_date': datetime(2014, 10, 1),
+        'multiplier': 1,
+        'constant': 0,
+    },
+
+    'aahedc': {
+		    'start_date': datetime(2011, 1, 1),
+        'multiplier': 1,
+        'constant': 0.1,
+    },
+
+    'scenario_start': datetime(5011, 1, 1),  # Date or None for this month
+    'scenario_duration': 1,  # Number of months
+    'resolution': 'hh',  # 'hh' or 'month'
+															    
+    'kw_changes':
+
+    # MPAN Core, Date, kW
+    '''
+    ''',
+}]]></control>
+				<regex pattern="/reports/77/output/\?supplier_contract_id=65" />
+				<response-code value="303" />
+			</request>
+
+			<!-- Run scenario for a site -->
+			<request path="/chellow/reports/247/output/?site_id=3&amp;scenario_id=65">
+
+				<response-code value="200" />
+				<regex pattern='"22 6158 2968 220","22 3479 7618 470","net","CI005","Wheal Rodney","5011-01-31 23:30","0","0","0","0","0","0","0","0","0","205.9705","0","0","0","0","0","0","205.9705","0","","0","","","0","","","205.9705","1.011286","","0.00525288","","5.89","130","31","0.0222","89.466","0","31","0.0222","0.0","0","0.00071","0.0","","","","","0.0","0.0025","0.0","31","0.7295","22.6145","88","0","0.0","0.10016297","0.0","0.0","-3.93279812767e-06","0.0","","","","0","0.0","0.0","","","","","","","","","","","","","0.0","0.00116453","0.0","","","","","","","","","","","","","","","","","","","2014-11-25 17:00","0","E","1.065","0.0","2014-12-06 17:00","0","E","1.05","0.0","2015-01-30 17:00","0","E","1.065","0.0","0.0","37.42","1","0.0","","","","","","","","","","","","","103.6116","1.011286","","0.00525288","","5.89","20","31","0","0","0","31","0","0","","","","","0.00092","0.0","","88","0","0","0.0","0","0.0","0.0","0","0","0.0","0","0","0.0","0","0","0.0","0","0","0.0","0.0","0.00116453","0.0","","","","","","","","","","","","","","","","","","","2014-11-25 17:00","0","E","1.065","0.0","2014-12-06 17:00","0","E","1.05","0.0","2015-01-30 17:00","0","E","1.065","0.0","0.0","37.42","1","0.0","","",""' />
 			</request>
 		</test>
 	</test-group>

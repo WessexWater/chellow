@@ -206,6 +206,10 @@ def hh_rate(sess, caches, contract_id, date, name, pw):
                     or_(
                         RateScript.finish_date == null(),
                         RateScript.finish_date >= start_date)).first()
+                if rs is None:
+                    rs = sess.query(RateScript).filter(
+                        RateScript.contract_id == contract_id). \
+                        order_by(RateScript.start_date.desc()).first()
                 func = ffunc
                 cstart = max(start_date, month_before)
                 cfinish = month_after
