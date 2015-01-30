@@ -788,8 +788,8 @@ def general_import_llfc(sess, action, vals, args):
         date_str = add_arg(args, 'date', vals, 2)
         date = parse_hh_start(date_str)
 
-        llfc_query = sess.query(Llfc).join(Party).filter(
-            Llfc.code == llfc_code)
+        llfc_query = sess.query(Llfc).filter(
+            Llfc.code == llfc_code, Llfc.dno == dno)
         if date is None:
             llfc_query = llfc_query.filter(Llfc.valid_to == null())
         else:

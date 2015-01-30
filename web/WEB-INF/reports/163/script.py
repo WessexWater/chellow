@@ -105,11 +105,12 @@ elif method == 'POST':
 
                     yield ','.join(
                         (
-                            'insert', 'llfc', dno.dno_code, llfc_code,
-                            llfc_description, voltage_level_code,
-                            str(is_substation), str(is_import),
-                            to_iso(from_date_mpr),
-                            to_iso(to_date_settlement))) + "\n"
+                            '"' + str(v) + '"' for v in (
+                                'insert', 'llfc', dno.dno_code, llfc_code,
+                                llfc_description, voltage_level_code,
+                                is_substation, is_import,
+                                to_iso(from_date_mpr),
+                                to_iso(to_date_settlement)))) + "\n"
 
         finally:
             if sess is not None:
