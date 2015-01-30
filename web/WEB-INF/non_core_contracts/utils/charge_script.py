@@ -104,6 +104,9 @@ def validate_hh_start(dt):
 
 
 def parse_hh_start(start_date_str):
+    if len(start_date_str) == 0:
+        return None
+
     try:
         year = int(start_date_str[:4])
         month = int(start_date_str[5:7])

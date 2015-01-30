@@ -49,7 +49,7 @@ def general_import_era(sess, action, vals, args):
         mpan_core = add_arg(args, 'mpan_core', vals, 0)
         supply = Supply.get_by_mpan_core(sess, mpan_core)
         date_str = add_arg(args, 'date', vals, 1)
-        dt = None if len(date_str) == 0 else parse_hh_start(date_str)
+        dt = parse_hh_start(date_str)
         era = supply.find_era_at(sess, dt)
         if era is None:
             raise UserException("There isn't a era at this date.")
@@ -207,7 +207,7 @@ def general_import_era(sess, action, vals, args):
         mpan_core = add_arg(args, "MPAN Core", vals, 0)
         supply = Supply.get_by_mpan_core(sess, mpan_core)
         date_str = add_arg(args, "Date", vals, 1)
-        dt = None if len(date_str) == 0 else parse_hh_start(date_str)
+        dt = parse_hh_start(date_str)
         era = supply.find_era_at(sess, dt)
         if era is None:
             raise UserException("There isn't a era at this date.")
@@ -636,10 +636,7 @@ def general_import_supply(sess, action, vals, args):
         start_date_str = add_arg(args, "Start Date", vals, 5)
         start_date = parse_hh_start(start_date_str)
         finish_date_str = add_arg(args, "Finish Date", vals, 6)
-        if len(finish_date_str) > 0:
-            finish_date = parse_hh_start(finish_date_str)
-        else:
-            finish_date = None
+        finish_date = parse_hh_start(finish_date_str)
         mop_contract_name = add_arg(args, "MOP Contract", vals, 7)
         if len(mop_contract_name) > 0:
             mop_contract = Contract.get_mop_by_name(sess, mop_contract_name)
@@ -784,6 +781,26 @@ def general_import_llfc(sess, action, vals, args):
             is_import=is_import, valid_from=valid_from, valid_to=valid_to)
         sess.add(llfc)
         sess.flush()
+    elif action == 'delete':
+        dno_code = add_arg(args, 'dno_code', vals, 0)
+        dno = Party.get_by_dno_code(sess, dno_code)
+        llfc_code = add_arg(args, 'llfc', vals, 1)
+        date_str = add_arg(args, 'date', vals, 2)
+        date = parse_hh_start(date_str)
+
+        llfc_query = sess.query(Llfc).join(Party).filter(
+            Llfc.code == llfc_code)
+        if date is None:
+            llfc_query = llfc_query.filter(Llfc.valid_to == null())
+        else:
+            llfc_query = llfc_query.filter(
+                Llfc.valid_from <= date, or_(
+                    Llfc.valid_to == null(), Llfc.valid_to >= date))
+        llfc = llfc_query.first()
+        if llfc is None:
+            raise UserException("The LLFC to delete can't be found.")
+        sess.delete(llfc)
+        sess.flush()
     else:
         raise UserException("Action not recognized.")
 
@@ -807,7 +824,7 @@ def general_import_channel(sess, action, vals, args):
     mpan_core = parse_mpan_core(mpan_core_raw)
     supply = Supply.find_by_mpan_core(sess, mpan_core)
     dt_raw = add_arg(args, 'Date', vals, 1)
-    dt = None if len(dt_raw) == 0 else parse_hh_start(dt_raw)
+    dt = parse_hh_start(dt_raw)
     era = supply.find_era_at(sess, dt)
     import_related_str = add_arg(args, 'Import Related?', vals, 2)
     import_related = parse_bool(import_related_str)
@@ -939,10 +956,7 @@ def general_import_channel_snag_ignore(sess, action, vals, args):
         start_str = add_arg(args, "From", vals, 4)
         start_date = parse_hh_start(start_str)
         finish_str = add_arg(args, "To", vals, 5)
-        if len(finish_str) > 0:
-            finish_date = parse_hh_start(finish_str)
-        else:
-            finish_date = None
+        finish_date = parse_hh_start(finish_str)
 
         for era in supply.find_eras(sess, start_date, finish_date):
             channel_query = sess.query(Snag).join(Channel).filter(

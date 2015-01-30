@@ -343,7 +343,7 @@ class Ssc(Base):
 class Llfc(Base):
     __tablename__ = 'llfc'
     id = Column('id', Integer, primary_key=True)
-    dno_id = Column(Integer, ForeignKey('party.id'))
+    dno_id = Column(Integer, ForeignKey('party.id'), index=True)
     code = Column(String, nullable=False)
     description = Column(String)
     voltage_level_id = Column(Integer, ForeignKey('voltage_level.id'))
