@@ -21,12 +21,13 @@ if inv.hasParameter('site_id'):
 else:
     site_id = None
 
+year = inv.getInteger('year')
+
 
 def content():
     sess = None
     try:
         sess = db.session()
-        year = inv.getInteger('year')
 
         march_finish = datetime.datetime(year, 4, 1, tzinfo=pytz.utc) - HH
         march_start = datetime.datetime(year, 3, 1, tzinfo=pytz.utc)
@@ -51,8 +52,8 @@ def content():
                     Era.finish_date == null(),
                     Era.finish_date >= march_start)).distinct()
         else:
-            sites = sess.query(Site).filter(
-                Site.id == Site.get_by_id(site_id).id)
+            site = Site.get_by_id(sess, site_id)
+            sites = sess.query(Site).filter(Site.id == site.id)
 
         for site in sites:
             for site_group in site.groups(

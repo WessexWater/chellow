@@ -2773,6 +2773,7 @@ def triad_estimates():
     {
         'name': "CSV Sites TRIAD",
         'path': '/chellow/reports/181/output/?site_id=1&year=2010',
+        'regexes': ["Site Code,"],
         'status_code': 200, },
 
     # See if it handles the case where there isn't an import virtual bill
