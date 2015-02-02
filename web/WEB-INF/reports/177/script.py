@@ -1,3 +1,5 @@
+import os
+import sys
 import traceback
 from net.sf.chellow.monad import Monad
 import datetime
@@ -9,6 +11,7 @@ import time
 import utils
 import db
 import computer
+import threading
 Monad.getUtils()['impt'](globals(), 'computer', 'db', 'utils')
 
 HH, hh_format, hh_after = utils.HH, utils.hh_format, utils.hh_after
@@ -28,8 +31,31 @@ else:
 
 def content():
     sess = None
+    tmp_file = None
     try:
         sess = db.session()
+        supplies = sess.query(Supply).join(Era).distinct()
+
+        if supply_id is None:
+            base_name = "supplies_monthly_duration_for_all_supplies_for_" + \
+                str(months) + "_to_" + str(year) + "_" + str(month) + ".csv"
+        else:
+            supply = Supply.get_by_id(sess, supply_id)
+            supplies = supplies.filter(Supply.id == supply.id)
+            base_name = "supplies_monthly_duration_for_" + str(supply.id) + \
+                "_" + str(months) + "_to_" + str(year) + "_" + str(month) + \
+                ".csv"
+        running_name = "RUNNING_" + base_name
+        finished_name = "FINISHED_" + base_name
+
+        if sys.platform.startswith('java'):
+            download_path = Monad.getContext().getRealPath("/downloads")
+        else:
+            download_path = os.path.join(
+                os.environ['CHELLOW_HOME'], 'downloads')
+
+        os.chdir(download_path)
+        tmp_file = open(running_name, "w")
 
         caches = {}
 
@@ -45,13 +71,7 @@ def content():
             'metered-export-estimated-kwh', 'billed-export-kwh',
             'billed-export-net-gbp', 'problem', 'timestamp')
 
-        yield 'supply-id,' + ','.join(field_names) + '\n'
-
-        supplies = sess.query(Supply).join(Era).distinct()
-
-        if supply_id is not None:
-            supply = Supply.get_by_id(sess, supply_id)
-            supplies = supplies.filter(Supply.id == supply.id)
+        tmp_file.write('supply-id,' + ','.join(field_names) + '\n')
 
         forecast_date = computer.forecast_date()
 
@@ -87,7 +107,7 @@ def content():
                     'site-name': site.name, 'metering-type': metering_type,
                     'problem': ''}
 
-                yield str(supply.id) + ','
+                tmp_file.write(str(supply.id) + ',')
 
                 for is_import, pol_name in [
                         (True, 'import'), (False, 'export')]:
@@ -210,13 +230,17 @@ def content():
                                     mop_bill['problem']
 
                 values['timestamp'] = int(time.time() * 1000)
-                yield ','.join(
-                    '"' + str(values[name]) + '"' for name in field_names) + \
-                    '\n'
+                tmp_file.write(
+                    ','.join(
+                        '"' + str(values[name]) +
+                        '"' for name in field_names) + '\n')
     except:
-        yield traceback.format_exc()
+        tmp_file.write(traceback.format_exc())
     finally:
         if sess is not None:
             sess.close()
+        tmp_file.close()
+        os.rename(running_name, finished_name)
 
-utils.send_response(inv, content, file_name='supplies_monthly_duration.csv')
+threading.Thread(target=content).start()
+inv.sendSeeOther("/reports/251/output/")

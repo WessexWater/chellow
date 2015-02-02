@@ -9,4 +9,5 @@ flask.pid
 test/imprimatur.xml
 gunicorn/pid
 downloads
+mdd/download
 .elasticbeanstalk/
