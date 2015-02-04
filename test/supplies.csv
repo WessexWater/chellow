@@ -1,4 +1,4 @@
-"insert","supply","CH017","net","",1,_L,2003-08-03 00:00,,MOP Contract,mc-22 9205 6799 106,"HH contract",01,,"00","845","5",,"22 9205 6799 106","550",450,"Half-hourlies 2007","11640077","22 0470 7514 535","581",150,"Half-hourlies 2007","04"
+"insert","supply","CH017","net","",1,_L,2003-08-03 00:00,,MOP Contract,mc-22 9205 6799 106,"HH contract",01,,"00","845","5",,"22 9205 6799 106","570",450,"Half-hourlies 2007","11640077","22 0470 7514 535","581",150,"Half-hourlies 2007","04"
 insert,channel,22 9205 6799 106,,true,active
 insert,channel,22 9205 6799 106,,true,reactive_imp
 insert,channel,22 9205 6799 106,,false,active

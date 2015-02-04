@@ -16,191 +16,182 @@
       </ul>
     {% endif %}
 
-    <div id="container">
-      <div id="main">
-        <h3>Main</h3>
-        <ul>
-          <li>
-            <a href="{{ context_path }}/reports/3/output/">Sites</a>
-          </li>
-          <li>
-            <a href="{{ context_path }}/reports/99/output/">
-              Supplies
-            </a>
-          </li>
-          <li>Contracts
-            <ul>
-              <li>
-                <a href="{{ context_path }}/reports/113/output/">HHDC</a>
-              </li>
-              <li>
-                <a href="{{ context_path }}/reports/185/output/">MOP</a>
-              </li>
-              <li>
-                <a href="{{ context_path }}/reports/75/output/">Supplier</a>
-              </li>
-              <li>
-                <a href="{{ context_path }}/reports/137/output/">DNO</a>
-              </li>
-              <li>
-                <a href="{{ context_path }}/reports/259/output/">Non-Core</a>
-              </li>
-            </ul>
-          </li>
-          <li>
-            <a href="{{ context_path }}/reports/39/output/">Site Snags</a>
-          </li>
-          {% if properties.local_reports_id %}
-            <li>
-              <a href="{{context_path}}/reports/{{properties.local_reports_id }}/output/">Local Reports</a>
-            </li>
-          {% endif %}
-        <li>
-          <a href="{{context_path}}/reports/293/output/">General Import</a>
-        </li>
-        <li>
-          <a href="https://bitbucket.org/ww_tlocke/chellow" target="_blank">Docs</a>
-        </li>
-      </ul>
-      <table><caption>CSV <a href="{{ context_path }}/reports/251/output/">Downloads</a></caption>
-        <tr><th></th><th>Supplies</th><th>Sites</th></tr>
-        <tr><th>Snapshot</th><td><a href="{{ context_path }}/reports/157/output/">Download</a></td><td></td></tr>
-        <tr>
-          <th>Duration</th>
-          <td><a href="{{ context_path }}/reports/147/output/">Download</a></td>
-          <td><a href="{{ context_path }}/reports/57/output/">Download</a></td>
-        </tr>
-        <tr>
-          <th>Monthly Duration</th>
-          <td><a href="{{ context_path }}/reports/155/output/">Download</a></td>
-            <td><a href="{{ context_path }}/reports/159/output/">Download</a></td>
-        </tr>
-        <tr><th>HH Data</th><td><a href="{{ context_path }}/reports/167/output/">Download</a></td><td><a href="{{ context_path }}/reports/145/output/">Download</a></td>
-        </tr>
-        </tr>
-          <tr><th>TRIAD</th><td><a href="{{ context_path }}/reports/175/output/">Download</a></td><td><a href="{{ context_path }}/reports/179/output/">Download</a></td>
-          </tr>
-          <tr><th>CRC</th><td><a href="{{ context_path }}/reports/209/output/">Download</a></td><td></td>
-          </tr>
-          <tr><th>Register Reads</th><td><a href="{{ context_path }}/reports/217/output/">Download</a></td><td></td>
-          </tr>
-          <tr><th>Bills</th><td><a href="{{ context_path }}/reports/153/output/">Download</a></td><td></td>
-          </tr>
+		<h3>Main</h3>
+		<ul>
+			<li>
+				<a href="{{ context_path }}/reports/3/output/">Sites</a>
+			</li>
+			<li>
+				<a href="{{ context_path }}/reports/99/output/">
+					Supplies
+				</a>
+			</li>
+			<li>Contracts
+				<ul>
+					<li>
+						<a href="{{ context_path }}/reports/113/output/">HHDC</a>
+					</li>
+					<li>
+						<a href="{{ context_path }}/reports/185/output/">MOP</a>
+					</li>
+					<li>
+						<a href="{{ context_path }}/reports/75/output/">Supplier</a>
+					</li>
+					<li>
+						<a href="{{ context_path }}/reports/137/output/">DNO</a>
+					</li>
+					<li>
+						<a href="{{ context_path }}/reports/259/output/">Non-Core</a>
+					</li>
+				</ul>
+			</li>
+			<li>
+				<a href="{{ context_path }}/reports/39/output/">Site Snags</a>
+			</li>
+			{% if properties.local_reports_id %}
+				<li>
+					<a href="{{context_path}}/reports/{{properties.local_reports_id }}/output/">Local Reports</a>
+				</li>
+			{% endif %}
+			<li>
+				<a href="{{context_path}}/reports/293/output/">General Import</a>
+			</li>
+			<li>
+				<a
+				 	href="https://bitbucket.org/ww_tlocke/chellow"
+				 	target="_blank">Docs</a>
+			</li>
+		</ul>
+		<table>
+			<caption>
+				CSV <a href="{{ context_path }}/reports/251/output/">Downloads</a>
+			</caption>
+			<tr>
+				<th></th><th>Supplies</th><th>Sites</th>
+			</tr>
+			<tr>
+				<th>Snapshot</th>
+				<td><a href="{{ context_path }}/reports/157/output/">Download</a></td>
+				<td></td>
+			</tr>
+			<tr>
+				<th>Duration</th>
+				<td><a href="{{ context_path }}/reports/147/output/">Download</a></td>
+				<td><a href="{{ context_path }}/reports/57/output/">Download</a></td>
+			</tr>
+			<tr>
+				<th>Monthly Duration</th>
+				<td><a href="{{ context_path }}/reports/155/output/">Download</a></td>
+				<td><a href="{{ context_path }}/reports/159/output/">Download</a></td>
+			</tr>
+			<tr>
+				<th>HH Data</th>
+				<td><a href="{{ context_path }}/reports/167/output/">Download</a></td>
+				<td><a href="{{ context_path }}/reports/145/output/">Download</a></td>
+			</tr>
+			</tr>
+				<tr><th>TRIAD</th>
+				<td><a href="{{ context_path }}/reports/175/output/">Download</a></td>
+				<td><a href="{{ context_path }}/reports/179/output/">Download</a></td>
+			</tr>
+			<tr>
+				<th>CRC</th>
+				<td><a href="{{ context_path }}/reports/209/output/">Download</a></td>
+				<td></td>
+			</tr>
+			<tr>
+				<th>Register Reads</th>
+				<td><a href="{{ context_path }}/reports/217/output/">Download</a></td>
+				<td></td>
+			</tr>
+			<tr>
+				<th>Bills</th>
+				<td><a href="{{ context_path }}/reports/153/output/">Download</a></td>
+				<td></td>
+			</tr>
+		</table>
 
-        </table>
+		<ul>
+			<li>
+				<a href="{{ context_path }}/reports/235/output/">Overall Profile</a>
+			</li>
+			<li>
+				<a href="{{ context_path }}/reports/245/output/">Scenario Runner</a>
+			</li>
+		</ul>
 
-        <ul>
-            <li><a href="{{ context_path }}/reports/235/output/">Overall Profile</a></li>
-            <li><a href="{{ context_path }}/reports/245/output/">Scenario Runner</a></li>
+		<h3>Industry Info</h3>
+		<ul>
+			<li>
+				<a href="{{ context_path }}/reports/71/output/">Market Participants</a>
+			</li>
+			<li>
+				<a href="{{ context_path }}/reports/121/output/">Market Roles</a>
+			</li>
+			<li><a href="{{ context_path }}/reports/45/output/">Parties</a></li>
+			<li>
+				<a href="{{ context_path }}/reports/53/output/">Profile Classes</a>
+			</li>
+			<li>
+				<a
+				 	href="{{context_path}}/reports/61/output/">Meter Timeswitch Classes</a>
+			</li>
+			<li>
+				<a href="{{ context_path }}/reports/129/output/">Meter Types</a>
+			</li>
+			<li>
+				<a href="{{ context_path }}/reports/133/output/">Meter Payment Types</a>
+			</li>
+			<li>
+				<a href="{{ context_path }}/reports/95/output/">TPRs</a>
+			</li>
+			<li>
+				<a href="{{ context_path }}/reports/125/output/">SSCs</a>
+			</li>
+			<li>
+				<a href="{{ context_path }}/reports/43/output/">GSP Groups</a>
+			</li>
+			<li>
+				<a href="{{ context_path }}/reports/85/output/">CoPs</a>
+			</li>
+			<li>
+				<a href="{{ context_path }}/reports/199/output/">Bill Types</a>
+			</li>
+			<li>
+				<a href="{{ context_path }}/reports/141/output/">Read Types</a>
+			</li>
+			<li>
+				<a href="{{context_path}}/reports/337/output/">Sources</a>
+			</li>
+			<li>
+				<a href="{{context_path}}/reports/341/output/">Generator Types</a>
+			</li>
+			<li>
+				<a href="{{context_path}}/reports/163/output/">MDD Converter</a>
+			</li>
+		</ul>
 
-        </ul>
-        </div>
-        <div id="industry-info">
-        <h3>Industry Info</h3>
-        <ul>
-          <li>
-            <a href="{{ context_path }}/reports/71/output/">
-            Market Participants
-            </a>
-          </li>
-          <li>
-            <a href="{{ context_path }}/reports/121/output/">
-              Market Roles
-            </a>
-          </li>
-          <li><a href="{{ context_path }}/reports/45/output/">Parties</a></li>
-          <li><a href="{{ context_path }}/reports/53/output/">
-            Profile Classes
-            </a>
-          </li>
-          <li>
-          <a
-             href="{{ context_path }}/reports/61/output/">
-    Meter Timeswitch Classes
-            </a>
-                    </li>
-                    <li>
-                        <a
-    href="{{ context_path }}/reports/129/output/">
-                            Meter Types
-                        </a>
-                    </li>
-                    <li>
-                      <a href="{{ context_path }}/reports/133/output/">Meter Payment Types</a>
-                    </li>
-                    <li>
-                        <a
-    href="{{ context_path }}/reports/95/output/">
-                            TPRs
-                        </a>
-                    </li>
-                    <li>
-<a href="{{ context_path }}/reports/125/output/">
-                            SSCs
-                        </a>
-                    </li>
-                    <li>
-                        <a
-    href="{{ context_path }}/reports/43/output/">
-    GSP Groups
-                        </a>
-                    </li>
-                    <li>
-                        <a
-    href="{{ context_path }}/reports/85/output/">
-    CoPs
-                        </a>
-                    </li>
-                    <li>
-                        <a
-    href="{{ context_path }}/reports/199/output/">
-    Bill Types
-                        </a>
-                    </li>
-                    <li>
-                        <a
-    href="{{ context_path }}/reports/141/output/">
-    Read Types
-                        </a>
-                    </li>
-                    <li>
-                        <a href="{{context_path}}/reports/337/output/">
-                            Sources
-                        </a>
-                    </li>
-                    <li>
-                        <a href="{{context_path}}/reports/341/output/">
-                            Generator Types
-                        </a>
-                    </li>
-                </ul>
-      </div>
-      <div id="for-editors">
-        <h3>For Editors</h3>
+		<h3>For Editors</h3>
 
-        <ul>
-          <li>
-            <a href="{{ context_path }}/reports/">Reports</a>
-          </li>
-          <li>
-            <a href="{{context_path}}/reports/255/output/">Users</a>
-          </li>
-          <li>
-            <a href="{{ context_path }}/reports/261/output/">User Roles</a>
-          </li>
-          <li>
-            <a href="{{ context_path }}/configuration/">
-              Configuration
-            </a>
-          </li>
-          <li>
-            <a href="{{ context_path }}/reports/171/output/">System</a>
-          </li>
-          <li>
-            <a href="{{ context_path }}/reports/195/output/">Comparison against ECOES</a>
-          </li>
-        </ul>
-      </div>
-    </div>
+		<ul>
+			<li>
+				<a href="{{ context_path }}/reports/">Reports</a>
+			</li>
+			<li>
+				<a href="{{context_path}}/reports/255/output/">Users</a>
+			</li>
+			<li>
+				<a href="{{ context_path }}/reports/261/output/">User Roles</a>
+			</li>
+			<li>
+				<a href="{{ context_path }}/configuration/">Configuration</a>
+			</li>
+			<li>
+				<a href="{{ context_path }}/reports/171/output/">System</a>
+			</li>
+			<li>
+				<a href="{{ context_path }}/reports/195/output/">Comparison against ECOES</a>
+			</li>
+		</ul>
   </body>
 </html>

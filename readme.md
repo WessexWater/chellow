@@ -284,6 +284,7 @@ Action | Type
 *insert* | *bill* | Role Name(hhdc, supplier or mop)  | Contract Name  | Batch Reference  | Mpan Core  | Issue Date  | Start Date  | Finish Date  | Net  | Vat  | Gross  | Account Reference  | Reference  | Type  | Breakdown  | Kwh  | (Meter Serial Number  | Mpan  | Coefficient  | Units  | TPR  | Previous Date  | Previous Value  | Previous Type  | Present Date  | Present Value  | Present Type)*
 *update* | *bill* | Chellow Id  | Account  | Reference  | Issue Date  | Start Date  | Finish Date  | kwh  | Net  | Vat  | Type  | Paid?  | Breakdown
 *update* | *register_read* | Chellow Id  | TPR  | Coefficient  | Units  | Meter Serial Number  | MPAN  | Previous Date  | Previous Value  | Previous Type  | Present Date  | Present Value  | Present Type
+*insert* | *llfc* | DNO Code | LLFC Code | LLFC Description | Voltage Level Code | Is Substation? | Is Import? | Valid From | Valid To
 
 ###  HH Data Formats
 

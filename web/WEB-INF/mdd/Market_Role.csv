@@ -4,32 +4,33 @@ Chellow Id,Market Participant Role Code,Market Role Description
 3,2,Green Deal Remittance Processor
 4,3,Unmetered Supplies Operator (UMSO)
 5,4,Meter Administrator (MA)
-6,6,Non Half Hourly Data Retriever
-7,8,Meter Asset Provider (MAP)
-8,9,Communications Provider
-9,A,HH Data Aggregator
-10,B,Non-HH Data Aggregator
-11,C,HH Data Collector
-12,D,Non-HH Data Collector
-13,E,Energy Trading Centre
-14,F,Pool Funds Administrator
-15,G,ISR/IAR Agent
-16,H,GA Agent
-17,I,Teleswitch Agent
-18,J,Supply Fault Information Centre
-19,K,Profile Administrator
-20,L,Electricity Central Online ENQ Service
-21,M,Meter Operator
-22,N,BSP Meter User
-23,O,GRS Operator
-24,P,PRS Agent
-25,Q,System Data Provision Operator
-26,R,Distributor
-27,S,Settlement System Administrator
-28,T,Grid Control Company
-29,U,Market Domain Data Agent
-30,V,Prepayment Meter Infrastructure Provider
-31,W,Revenue Protection Service
-32,X,Supplier
-33,Y,Generator
-34,Z,Non-core Role
+6,5,Smart Metering System Operator
+7,6,Non Half Hourly Data Retriever
+8,8,Meter Asset Provider (MAP)
+9,9,Communications Provider
+10,A,HH Data Aggregator
+11,B,Non-HH Data Aggregator
+12,C,HH Data Collector
+13,D,Non-HH Data Collector
+14,E,Capacity Market (CM) Capacity Provider
+15,F,Pool Funds Administrator
+16,G,ISR/IAR Agent
+17,H,Contract for Difference (CFD) Generator
+18,I,Teleswitch Agent
+19,J,Supply Fault Information Centre
+20,K,Profile Administrator
+21,L,Electricity Central Online ENQ Service
+22,M,Meter Operator
+23,N,BSP Meter User
+24,O,GRS Operator
+25,P,PRS Agent
+26,Q,System Data Provision Operator
+27,R,Distributor
+28,S,Settlement System Administrator
+29,T,Grid Control Company
+30,U,Market Domain Data Agent
+31,V,Prepayment Meter Infrastructure Provider
+32,W,Revenue Protection Service
+33,X,Supplier
+34,Y,Generator
+35,Z,Non-core Role

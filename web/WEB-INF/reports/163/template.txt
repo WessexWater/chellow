@@ -1,105 +1,40 @@
-<?xml version="1.0" encoding="us-ascii"?>
-<xsl:stylesheet version="1.0"
-    xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
-    <xsl:output method="html" encoding="US-ASCII"
-        doctype-public="-//W3C//DTD HTML 4.01//EN"
-        doctype-system="http://www.w3.org/TR/html4/strict.dtd" indent="yes" />
+<!DOCTYPE html>
+<html>
+  <head>
+    <link rel="stylesheet" type="text/css"
+      href="{{context_path}}/reports/19/output/">
+    <title>Chellow &gt; MDD Converter</title>
+  </head>
+  <body>
+		<p>
+			<a href="{{context_path}}/reports/1/output/">Chellow</a> &gt;
+			MDD Converter
+		</p> 
 
-    <xsl:template match="/">
-        <html>
-            <head>
-                <link rel="stylesheet" type="text/css"
-                    href="{/source/request/@context-path}/reports/19/output/" />
-                <title>
-                    Chellow &gt; HHDC Contracts &gt;
-                    <xsl:value-of
-                        select="/source/bills/account/hhdc-contract/@name" />
-                    &gt; Accounts &gt;
-                    <xsl:value-of
-                        select="/source/bills/account/@reference" />
-                    &gt; Bills
-                </title>
-            </head>
-            <body>
-                <p>
-                    <a
-                        href="{/source/request/@context-path}/reports/1/output/">
-                        <xsl:value-of select="'Chellow'" />
-                    </a>
-                    &gt;
-                    <a
-                        href="{/source/request/@context-path}/reports/113/output/">
-                        <xsl:value-of select="'HHDC Contracts'" />
-                    </a>
-                    &gt;
-                    <a
-                        href="{/source/request/@context-path}/reports/115/output/?hhdc-contract-id={/source/bills/account/hhdc-contract/@id}">
-                        <xsl:value-of
-                            select="/source/bills/account/hhdc-contract/@name" />
-                    </a>
-                    &gt;
-                    <a
-                        href="{/source/request/@context-path}/reports/109/output/?hhdc-contract-id={/source/bills/account/hhdc-contract/@id}">
-                        <xsl:value-of select="'Accounts'" />
-                    </a>
-                    &gt;
-                    <a
-                        href="{/source/request/@context-path}/reports/111/output/?account-id={/source/bills/account/@id}">
-                        <xsl:value-of
-                            select="/source/bills/account/@reference" />
-                    </a>
-                    &gt;
-                    <xsl:value-of select="'Bills'" />
-                </p>
-                <br />
-                <xsl:if test="//message">
-                    <ul>
-                        <xsl:for-each select="//message">
-                            <li>
-                                <xsl:value-of select="@description" />
-                            </li>
-                        </xsl:for-each>
-                    </ul>
-                </xsl:if>
-                <table>
-                    <caption>Bills</caption>
-                    <thead>
-                        <tr>
-                            <th>Id</th>
-                            <th>From</th>
-                            <th>To</th>
-                            <th>Net</th>
-                            <th>VAT</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <xsl:for-each select="/source/bills/bill">
-                            <tr>
-                                <td>
-                                    <a
-                                        href="{/source/request/@context-path}/reports/87/output/?bill-id={@id}">
-                                        <xsl:value-of select="@id" />
-                                    </a>
-                                </td>
-                                <td>
-                                    <xsl:value-of
-                                        select="concat(day-start-date/@year, '-', day-start-date/@month, '-', day-start-date/@day)" />
-                                </td>
-                                <td>
-                                    <xsl:value-of
-                                        select="concat(day-finish-date/@year, '-', day-finish-date/@month, '-', day-finish-date/@day)" />
-                                </td>
-                                <td>
-                                    <xsl:value-of select="@net" />
-                                </td>
-                                <td>
-                                    <xsl:value-of select="@vat" />
-                                </td>
-                            </tr>
-                        </xsl:for-each>
-                    </tbody>
-                </table>
-            </body>
-        </html>
-    </xsl:template>
-</xsl:stylesheet>
+    {% if messages %}
+      <ul>
+        {% for message in messages %}
+          <li>{{ message }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+
+		<p>
+			The <a
+				href="https://www.elexon.co.uk/reference/technical-operations/market-domain-data/">Market Domain Data</a> (MDD) changes over time, and so needs to be
+			regularly updated. Unfortunately Elexon don't provide the MDD for
+			automated download, so you have to manually download it now and again
+			and manually import it into Chellow. The form below will take a MDD
+			CSV file and convert it into the General Import format so that it can be
+			<a href="{{context_path}}/reports/293/output/">imported</a> into Chellow.
+		</p>
+
+		<form action="." enctype="multipart/form-data" method="post">
+			<fieldset>
+				<legend>Convert an MDD CSV file</legend>
+					<input type="file" name="file">
+					<input type="submit" value="Convert">
+			</fieldset>
+		</form>
+  </body>
+</html>

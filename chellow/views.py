@@ -183,6 +183,9 @@ class Invocation():
     def getFileItem(self, name):
         return ChellowFileItem(self.request.files[name])
 
+    def getMethod(self):
+        return self.request.method
+
 
 @app.route('/chellow/reports/<int:report_id>/output/', methods=['GET', 'POST'])
 def show_report(report_id):

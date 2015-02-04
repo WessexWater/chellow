@@ -20,7 +20,7 @@ Contract, Pc, Cop, Ssc = db.Contract, db.Pc, db.Cop, db.Ssc
 Snag, Channel, Mtc, BillType = db.Snag, db.Channel, db.Mtc, db.BillType
 Tpr, ReadType, Participant = db.Tpr, db.ReadType, db.Participant
 Bill, RegisterRead, UserRole = db.Bill, db.RegisterRead, db.UserRole
-Party, User = db.Party, db.User
+Party, User, VoltageLevel, Llfc = db.Party, db.User, db.VoltageLevel, db.Llfc
 
 process_id = 0
 process_lock = threading.Lock()
@@ -761,6 +761,33 @@ def general_import_supply(sess, action, vals, args):
         supply.delete()
 
 
+def general_import_llfc(sess, action, vals, args):
+    if action == 'insert':
+        dno_code = add_arg(args, 'dno', vals, 0)
+        dno = Party.get_by_dno_code(sess, dno_code)
+        llfc_code = add_arg(args, 'llfc', vals, 1)
+        llfc_description = add_arg(args, 'llfc_description', vals, 2)
+        vl_code = add_arg(args, 'voltage_level', vals, 3)
+        vl = VoltageLevel.get_by_code(sess, vl_code.upper())
+        is_substation_str = add_arg(args, 'is_substation', vals, 4)
+        is_substation = parse_bool(is_substation_str)
+        is_import_str = add_arg(args, 'is_import', vals, 5)
+        is_import = parse_bool(is_import_str)
+        valid_from_str = add_arg(args, 'valid_from', vals, 6)
+        valid_from = parse_hh_start(valid_from_str)
+        valid_to_str = add_arg(args, 'valid_to', vals, 7)
+        valid_to = parse_hh_start(valid_to_str)
+
+        llfc = Llfc(
+            dno_id=dno.id, code=llfc_code, description=llfc_description,
+            voltage_level_id=vl.id, is_substation=is_substation,
+            is_import=is_import, valid_from=valid_from, valid_to=valid_to)
+        sess.add(llfc)
+        sess.flush()
+    else:
+        raise UserException("Action not recognized.")
+
+
 def general_import_site_era(sess, action, vals, args):
     site_code = add_arg(args, 'site_code', vals, 0)
     site = Site.get_by_code(sess, site_code)
@@ -937,7 +964,7 @@ def general_import_channel_snag_ignore(sess, action, vals, args):
 
 typs = [
     'era', 'supply', 'user', 'site', 'site_snag_ignore', 'channel_snag_ignore',
-    'site_snag_ignore', 'bill', 'batch', 'channel']
+    'site_snag_ignore', 'bill', 'batch', 'channel', 'llfc']
 
 typ_funcs = dict([(typ, globals()['general_import_' + typ]) for typ in typs])
 

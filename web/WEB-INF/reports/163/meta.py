@@ -1,1 +1,1 @@
-{'name': 'Free 163'}
+{'name': 'MDD Converter'}

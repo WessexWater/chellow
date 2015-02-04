@@ -171,7 +171,8 @@ def content():
                         or_(
                             Era.finish_date == null(),
                             Era.finish_date >= start_date),
-                        Source.code.in_(('net', '3rd-party'))).distinct():
+                        Source.code.in_(('net', '3rd-party'))
+                    ).distinct().order_by(Contract.id):
                 title_func = computer.contract_func(
                     report_context, cont, 'virtual_bill_titles', None)
                 if title_func is None:

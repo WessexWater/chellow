@@ -770,7 +770,15 @@ if engine.execute(
         f = open(os.path.join(mdd_path, fname + '.csv'))
         cursor.execute(
             "set transaction isolation level serializable read write")
-        cursor.execute("COPY " + tname + " FROM STDIN CSV HEADER", stream=f)
+        if tname == 'llfc':
+            cursor.execute(
+                "COPY " + tname +
+                " (dno_id, code, description, voltage_level_id, "
+                "is_substation, is_import, valid_from, valid_to) "
+                "FROM STDIN CSV HEADER", stream=f)
+        else:
+            cursor.execute(
+                "COPY " + tname + " FROM STDIN CSV HEADER", stream=f)
         dbapi_conn.commit()
         f.close()
 
