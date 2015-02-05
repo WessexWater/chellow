@@ -6535,4 +6535,10 @@ def virtual_bill(supply_source):
         'tries': {'max': 10, 'period': 1},
         'status_code': 200,
         'regexes': [r"The file has been imported successfully\."]},
+
+    # CRC Selector
+    {
+        'name': "CRC Selector",
+        'path': "/chellow/reports/209/output/",
+        'status_code': 200}
 ]
