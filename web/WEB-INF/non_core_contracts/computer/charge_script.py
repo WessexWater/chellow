@@ -791,7 +791,8 @@ class SupplySource(DataSource):
                                 {
                                     'msp-kw': kwh * 2, 'msp-kwh': kwh,
                                     'hist-kwh': kwh, 'imp-msp-kvarh': 0,
-                                    'exp-msp-kvarh': 0})
+                                    'imp-msp-kvar': 0, 'exp-msp-kvarh': 0,
+                                    'exp-msp-kvar': 0})
                             self.hh_data.append(new_datum)
                         hh_date += HH
             elif self.bill is None and hist_measurement_type == 'nhh':
@@ -1061,7 +1062,8 @@ class SupplySource(DataSource):
                             datum.update(
                                 {
                                     'msp-kw': kwh * 2, 'msp-kwh': kwh,
-                                    'hist-kwh': kwh, 'imp-msp-kvarh': 0,
+                                    'hist-kwh': kwh, 'imp-msp-kvar': 0,
+                                    'imp-msp-kvarh': 0, 'exp-msp-kvar': 0,
                                     'exp-msp-kvarh': 0})
                         self.hh_data += hh_part
             elif hist_measurement_type in ['hh', 'amr']:
