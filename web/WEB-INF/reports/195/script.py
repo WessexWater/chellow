@@ -272,7 +272,6 @@ if sys.platform.startswith('java'):
                 sess.expunge_all()
 
             EntityUtils.consume(entity)
-            yield '\n' + str(mpans)
             for mpan_core in mpans:
                 supply = Supply.get_by_mpan_core(sess, mpan_core)
                 era = supply.find_era_at(sess, None)
