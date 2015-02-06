@@ -120,7 +120,7 @@ def content():
                         event['mpan-core'], site.code, site.name,
                         event['date'].strftime("%Y-%m-%d %H:%M"),
                         event['code']]
-                    yield '\n,'.join(
+                    yield '\n' + ','.join(
                         '"' + str(val) + '"' for val in vals) + ','
             else:
                 yield ' '

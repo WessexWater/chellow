@@ -5297,12 +5297,15 @@ def virtual_bill(supply_source):
             'hhdc_batch_id': "10",
             'delete': "Delete", },
         'status_code': 303, },
+
+    # CRC Special Events
     {
-        'name': "Try CRC Special Events",
+        'name': "CRC Special Events",
         'path': '/chellow/reports/215/output/?year=2012',
         'status_code': 200,
         'regexes': [
-            r'"22 0883 6932 301"', ], },
+            r'"22 0883 6932 301","CI005",', ], },
+
     {
         'name': "A supply level virtual bill that crosses an era boundary",
         'path': '/chellow/reports/291/output/?supply_id=10&start_year=2010&'
@@ -6540,5 +6543,5 @@ def virtual_bill(supply_source):
     {
         'name': "CRC Selector",
         'path': "/chellow/reports/209/output/",
-        'status_code': 200}
+        'status_code': 200},
 ]
