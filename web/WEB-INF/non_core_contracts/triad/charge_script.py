@@ -20,7 +20,7 @@ def triad_calc(
     gsp_kw = 0
     for i, triad_hh in enumerate(triad_data):
         triad_prefix = prefix + '-' + str(i + 1)
-        bill[triad_prefix + '-date'] = hh_format(triad_hh['hist-start-date'])
+        bill[triad_prefix + '-date'] = hh_format(triad_hh['hist-start'])
         bill[triad_prefix + '-msp-kw'] = triad_hh['msp-kw']
         bill[triad_prefix + '-status'] = triad_hh['status']
         bill[triad_prefix + '-laf'] = triad_hh['laf']
@@ -149,12 +149,12 @@ def triad_bill(data_source, rate_period='monthly'):
                         thh = ds.hh_data[0]
                     else:
                         thh = {
-                            'hist-start-date': t_date,
-                            'msp-kw': 0, 'status': 'before contract',
+                            'hist-start': t_date, 'msp-kw': 0,
+                            'status': 'before contract',
                             'laf': 'before contract', 'gsp-kw': 0}
                 except StopIteration:
                     thh = {
-                        'hist-start-date': t_date, 'msp-kw': 0,
+                        'hist-start': t_date, 'msp-kw': 0,
                         'status': 'before start of supply',
                         'laf': 'before start of supply', 'gsp-kw': 0}
                 triad_kws.append(thh)

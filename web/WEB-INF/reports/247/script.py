@@ -103,7 +103,10 @@ def content():
 
         for cname, fname in (
                 ('ccl', 'ccl_rate'), ('aahedc', 'aahedc_gbp_per_gsp_kwh')):
-            props = scenario_props[cname]
+            try:
+                props = scenario_props[cname]
+            except KeyError:
+                continue
 
             rate_start = props['start_date']
             if rate_start is not None:
@@ -121,6 +124,17 @@ def content():
 
         months = scenario_props['scenario_duration']
         finish_date = start_date + relativedelta(months=months)
+
+        if 'kwh_start' in scenario_props:
+            kwh_start = scenario_props['kwh_start']
+        else:
+            kwh_start = None
+
+        if kwh_start is None:
+            kwh_start = computer.forecast_date()
+        else:
+            kwh_start = kwh_start.replace(tzinfo=pytz.utc)
+
         sites = sess.query(Site).join(SiteEra).join(Era).filter(
             Era.start_date <= start_date,
             or_(
@@ -144,8 +158,6 @@ def content():
                 {
                     'type': typ.strip(), 'date': date,
                     'multiplier': float(kw_str)})
-
-        forecast_date = computer.forecast_date()
 
         header_titles = [
             'imp-mpan-core', 'exp-mpan-core', 'type', 'site-id', 'site-name',
@@ -224,14 +236,14 @@ def content():
                                 ss_finish = group.finish_date
 
                             imp_ss = SupplySource(
-                                sess, ss_start, ss_finish, forecast_date,
-                                era, True, None, report_context)
+                                sess, ss_start, ss_finish, kwh_start, era,
+                                True, None, report_context)
                             if era.exp_mpan_core is None:
                                 exp_ss = None
                             else:
                                 exp_ss = SupplySource(
-                                    sess, ss_start, ss_finish, forecast_date,
-                                    era, False, None, report_context)
+                                    sess, ss_start, ss_finish, kwh_start, era,
+                                    False, None, report_context)
                             order = meter_order[imp_ss.measurement_type]
                             calcs.append(
                                 (
@@ -248,7 +260,7 @@ def content():
                         sess, group, group.start_date, group.finish_date)
                     site_ds = computer.SiteSource(
                         sess, site, group.start_date, group.finish_date,
-                        forecast_date, None, report_context, displaced_era)
+                        kwh_start, None, report_context, displaced_era)
 
                     for hh in site_ds.hh_data:
                         try:

@@ -65,23 +65,20 @@ def get_times(sess, caches, start_date, finish_date, forecast_date, pw):
             raise UserException('The start date is after the finish date.')
         times_dict = collections.defaultdict(int)
         dt = finish_date
-        year_adjustment = 0
+        years_back = 0
         while dt > forecast_date:
             dt -= relativedelta(years=1)
-            year_adjustment -= 1
+            years_back += 1
 
         times_dict['history-finish'] = dt
-        times_dict['history-start'] = start_date + \
-            relativedelta(years=year_adjustment)
+        times_dict['history-start'] = dt - (finish_date - start_date)
 
-        year_advance = -1 * year_adjustment
-        times_dict['year-advance'] = year_advance
+        times_dict['years-back'] = years_back
         times_dict['hhs'] = []
-        history_finish = times_dict['history-finish']
 
-        hh_date = times_dict['history-start']
-        dgenerator = _datum_generator(sess, year_advance, caches, pw)
-        while hh_date <= history_finish:
+        hh_date = start_date
+        dgenerator = _datum_generator(sess, years_back, caches, pw)
+        while hh_date <= finish_date:
             hh = dgenerator(sess, hh_date)
             times_dict['hhs'].append(hh)
             if hh['utc-decimal-hour'] == 0:
@@ -391,10 +388,10 @@ def _tpr_dict(sess, caches, tpr_code, pw):
         return tpr_dict
 
 
-def _tpr_datum_generator(sess, caches, tpr_code, year_advance, pw):
+def _tpr_datum_generator(sess, caches, tpr_code, years_back, pw):
     tpr_dict = _tpr_dict(sess, caches, tpr_code, pw)
     datum_cache = tpr_dict['datum-cache']
-    dgenerator = _datum_generator(sess, year_advance, caches, pw)
+    dgenerator = _datum_generator(sess, years_back, caches, pw)
 
     def _generator(sess2, hh_date):
         try:
@@ -430,8 +427,8 @@ def _tpr_datum_generator(sess, caches, tpr_code, year_advance, pw):
 _advance_datum_cache = collections.defaultdict(dict)
 
 
-def _datum_generator(sess, year_advance, caches, pw):
-    datum_cache = _advance_datum_cache[year_advance]
+def _datum_generator(sess, years_back, caches, pw):
+    datum_cache = _advance_datum_cache[years_back]
     bank_holidays_id = Contract.get_non_core_by_name(sess, 'bank-holidays').id
 
     def _generator(sess2, hh_date):
@@ -439,33 +436,33 @@ def _datum_generator(sess, year_advance, caches, pw):
             return datum_cache[hh_date]
         except KeyError:
             ct_tz = pytz.timezone('Europe/London')
-            utc_dt = hh_date + relativedelta(years=year_advance)
-            ct_dt = ct_tz.normalize(utc_dt.astimezone(ct_tz))
+            ct_dt = ct_tz.normalize(hh_date.astimezone(ct_tz))
 
-            utc_is_month_end = (utc_dt + HH).day == 1 and utc_dt.day != 1
+            utc_is_month_end = (hh_date + HH).day == 1 and hh_date.day != 1
             ct_is_month_end = (ct_dt + HH).day == 1 and ct_dt.day != 1
 
-            utc_decimal_hour = utc_dt.hour + float(utc_dt.minute) / 60
+            utc_decimal_hour = hh_date.hour + float(hh_date.minute) / 60
             ct_decimal_hour = ct_dt.hour + float(ct_dt.minute) / 60
 
             utc_bank_holidays = hh_rate(
-                sess2, caches, bank_holidays_id, utc_dt, 'days', pw)
+                sess2, caches, bank_holidays_id, hh_date, 'days', pw)
             if utc_bank_holidays is None:
-                msg = "\nCan't find bank holidays for " + str(utc_dt)
+                msg = "\nCan't find bank holidays for " + str(hh_date)
                 pw.println(msg)
                 raise UserException(msg)
-            utc_is_bank_holiday = utc_dt.day in utc_bank_holidays
+            utc_is_bank_holiday = hh_date.day in utc_bank_holidays
 
             hh = {
-                'status': 'E', 'hist-start-date': hh_date,
-                'start-date': utc_dt, 'ct-day': ct_dt.day,
-                'utc-month': utc_dt.month, 'utc-day': utc_dt.day,
-                'utc-decimal-hour': utc_decimal_hour, 'utc-year': utc_dt.year,
-                'utc-hour': utc_dt.hour, 'utc-minute': utc_dt.minute,
-                'ct-year': ct_dt.year, 'ct-month': ct_dt.month,
-                'ct-decimal-hour': ct_decimal_hour,
+                'status': 'E',
+                'hist-start': hh_date - relativedelta(years=years_back),
+                'start-date': hh_date, 'ct-day': ct_dt.day,
+                'utc-month': hh_date.month, 'utc-day': hh_date.day,
+                'utc-decimal-hour': utc_decimal_hour,
+                'utc-year': hh_date.year, 'utc-hour': hh_date.hour,
+                'utc-minute': hh_date.minute, 'ct-year': ct_dt.year,
+                'ct-month': ct_dt.month, 'ct-decimal-hour': ct_decimal_hour,
                 'ct-day-of-week': ct_dt.weekday(),
-                'utc-day-of-week': utc_dt.weekday(),
+                'utc-day-of-week': hh_date.weekday(),
                 'utc-is-bank-holiday': utc_is_bank_holiday,
                 'utc-is-month-end': utc_is_month_end,
                 'ct-is-month-end': ct_is_month_end}
@@ -487,7 +484,7 @@ class DataSource():
         times = get_times(
             sess, caches, start_date, finish_date, forecast_date, pw)
         self.hh_times = times['hhs']
-        self.year_advance = times['year-advance']
+        self.years_back = times['years-back']
         self.history_start = times['history-start']
         self.history_finish = times['history-finish']
         self.utc_days = times['utc-days']
@@ -546,14 +543,15 @@ class SiteSource(DataSource):
             self.supplier_contract = era.imp_supplier_contract
 
         datum_generator = _datum_generator(
-            sess, self.year_advance, self.caches, self.pw)
+            sess, self.years_back, self.caches, self.pw)
 
+        hh_date = start_date
         for group in site.groups(
                 sess, self.history_start, self.history_finish, True):
             supplies = group.supplies
             if len(supplies) == 0:
                 continue
-            hh_date = group.start_date
+            hist_date = group.start_date
             group_finish = group.finish_date
             rs = iter(
                 sess.execute(
@@ -582,14 +580,14 @@ class SiteSource(DataSource):
             except StopIteration:
                 hh_start_date = None
 
-            while not hh_date > group_finish:
+            while not hist_date > group_finish:
                 export_net_kwh = 0
                 import_net_kwh = 0
                 export_gen_kwh = 0
                 import_gen_kwh = 0
                 import_3rd_party_kwh = 0
                 export_3rd_party_kwh = 0
-                while hh_start_date == hh_date:
+                while hh_start_date == hist_date:
                     if not imp_related and source_code in ('net', 'gen-net'):
                         export_net_kwh += hh_value
                     if imp_related and source_code in ('net', 'gen-net'):
@@ -662,6 +660,7 @@ class SiteSource(DataSource):
 
                 self.hh_data.append(hh_values)
                 hh_date += HH
+                hist_date += HH
 
     def revolve_to_3rd_party_used(self):
         for hh in self.hh_data:
@@ -738,7 +737,7 @@ class SupplySource(DataSource):
 
         self.consumption_info = ''
 
-        if self.year_advance == 0:
+        if self.years_back == 0:
             hist_eras = [self.era]
         else:
             hist_eras = sess.query(Era).filter(
@@ -746,8 +745,16 @@ class SupplySource(DataSource):
                 Era.start_date <= self.history_finish,
                 or_(
                     Era.finish_date == null(),
-                    Era.finish_date >= self.history_start)).all()
-        for hist_era in hist_eras:
+                    Era.finish_date >= self.history_start)).order_by(
+                Era.start_date).all()
+            if len(hist_eras) == 0:
+                hist_eras = sess.query(Era).filter(
+                    Era.supply == self.supply).order_by(
+                    Era.start_date).limit(1).all()
+
+        dte = start_date
+
+        for i, hist_era in enumerate(hist_eras):
             if self.is_import:
                 hist_mpan_core = hist_era.imp_mpan_core
             else:
@@ -759,7 +766,10 @@ class SupplySource(DataSource):
             if self.history_start > hist_era.start_date:
                 chunk_start = self.history_start
             else:
-                chunk_start = hist_era.start_date
+                if i == 0:
+                    chunk_start = self.history_start
+                else:
+                    chunk_start = hist_era.start_date
 
             if hh_after(self.history_finish, hist_era.finish_date):
                 chunk_finish = hist_era.finish_date
@@ -777,14 +787,16 @@ class SupplySource(DataSource):
                                 chunk_start.year + 1, 1, 1) -
                             datetime.datetime(chunk_start.year, 1, 1)))
 
+                orig_start = dte
                 for tpr in sess.query(Tpr).join(MeasurementRequirement).filter(
                         MeasurementRequirement.ssc == hist_era.ssc):
                     datum_generator = _tpr_datum_generator(
-                        sess, self.caches, tpr.code, self.year_advance,
+                        sess, self.caches, tpr.code, self.years_back,
                         self.pw)
-                    hh_date = chunk_start
-                    while not hh_date > chunk_finish:
-                        datum = datum_generator(sess, hh_date)
+                    hist_date = chunk_start
+                    dte = orig_start
+                    while not hist_date > chunk_finish:
+                        datum = datum_generator(sess, dte)
                         if datum is not None:
                             new_datum = datum.copy()
                             new_datum.update(
@@ -794,7 +806,8 @@ class SupplySource(DataSource):
                                     'imp-msp-kvar': 0, 'exp-msp-kvarh': 0,
                                     'exp-msp-kvar': 0})
                             self.hh_data.append(new_datum)
-                        hh_date += HH
+                        hist_date += HH
+                        dte += HH
             elif self.bill is None and hist_measurement_type == 'nhh':
                 read_list = []
                 read_keys = {}
@@ -1041,19 +1054,21 @@ class SupplySource(DataSource):
                     pair_hhs = totalseconds(
                         pair['finish-date'] + HH - pair['start-date']) / \
                         (60 * 30)
+                    orig_dte = dte
                     for tpr_code, pair_kwh in pair['tprs'].iteritems():
                         hh_date = pair['start-date']
-
+                        dte = orig_dte
                         datum_generator = _tpr_datum_generator(
-                            sess, self.caches, tpr_code, self.year_advance,
+                            sess, self.caches, tpr_code, self.years_back,
                             self.pw)
                         hh_part = []
 
                         while not hh_date > pair['finish-date']:
-                            datum = datum_generator(sess, hh_date)
+                            datum = datum_generator(sess, dte)
                             if datum is not None:
                                 hh_part.append(datum.copy())
                             hh_date += HH
+                            dte += HH
 
                         kwh = pair_kwh * pair_hhs / len(hh_part) \
                             if len(hh_part) > 0 else 0
@@ -1066,8 +1081,7 @@ class SupplySource(DataSource):
                                     'imp-msp-kvarh': 0, 'exp-msp-kvar': 0,
                                     'exp-msp-kvarh': 0})
                         self.hh_data += hh_part
-            elif hist_measurement_type in ['hh', 'amr']:
-
+            elif hist_measurement_type in ('hh', 'amr'):
                 has_exp_active = False
                 has_imp_related_reactive = False
                 has_exp_related_reactive = False
@@ -1086,9 +1100,8 @@ class SupplySource(DataSource):
                         and has_imp_related_reactive:
                     #  old style
                     datum_generator = _datum_generator(
-                        sess, self.year_advance, self.caches, self.pw)
-                    for msp_kwh, anti_msp_kwh, status, imp_kvarh, exp_kvarh, \
-                            hh_start in sess.execute("""
+                        sess, self.years_back, self.caches, self.pw)
+                    data = iter(sess.execute("""
 select sum(cast(coalesce(kwh.value, 0) as double precision)),
     sum(cast(coalesce(anti_kwh.value, 0) as double precision)),
     max(kwh.status),
@@ -1117,32 +1130,56 @@ where era.supply_id = :supply_id and hh_datum.start_date >= :start_date
 group by hh_datum.start_date
 order by hh_datum.start_date
 """, params={
-                            'supply_id': self.supply.id,
-                            'start_date': chunk_start,
-                            'finish_date': chunk_finish,
-                            'is_import': self.is_import}):
+                        'supply_id': self.supply.id,
+                        'start_date': chunk_start,
+                        'finish_date': chunk_finish,
+                        'is_import': self.is_import}))
+                    try:
+                        msp_kwh, anti_msp_kwh, status, imp_kvarh, \
+                            exp_kvarh, hist_start = data.next()
+                    except StopIteration:
+                        hist_start = None
 
-                        if not (msp_kwh > 0 and anti_msp_kwh == 0):
-                            imp_kvarh = 0
-                            exp_kvarh = 0
+                    hh_date = chunk_start
+                    while hh_date <= chunk_finish:
+                        datum = datum_generator(sess, dte).copy()
 
-                        datum = datum_generator(sess, hh_start).copy()
-                        datum.update(
-                            {
-                                'status': status, 'imp-msp-kvarh': imp_kvarh,
-                                'imp-msp-kvar': imp_kvarh * 2,
-                                'exp-msp-kvarh': exp_kvarh,
-                                'exp-msp-kvar': exp_kvarh * 2,
-                                'msp-kw': msp_kwh * 2, 'msp-kwh': msp_kwh,
-                                'hist-kwh': msp_kwh})
+                        if hh_date == hist_start:
+                            if not (msp_kwh > 0 and anti_msp_kwh == 0):
+                                imp_kvarh = 0
+                                exp_kvarh = 0
+
+                            datum.update(
+                                {
+                                    'status': status,
+                                    'imp-msp-kvarh': imp_kvarh,
+                                    'imp-msp-kvar': imp_kvarh * 2,
+                                    'exp-msp-kvarh': exp_kvarh,
+                                    'exp-msp-kvar': exp_kvarh * 2,
+                                    'msp-kw': msp_kwh * 2, 'msp-kwh': msp_kwh,
+                                    'hist-kwh': msp_kwh})
+                            try:
+                                msp_kwh, anti_msp_kwh, status, imp_kvarh, \
+                                    exp_kvarh, hist_start = data.next()
+                            except StopIteration:
+                                hist_date = None
+                        else:
+                            datum.update(
+                                {
+                                    'status': 'X', 'imp-msp-kvarh': 0,
+                                    'imp-msp-kvar': 0, 'exp-msp-kvarh': 0,
+                                    'exp-msp-kvar': 0, 'msp-kw': 0,
+                                    'msp-kwh': 0, 'hist-kwh': 0})
+
                         self.hh_data.append(datum)
+                        hh_date += HH
+                        dte += HH
                 else:
                     # new style
                     datum_generator = _datum_generator(
-                        sess, self.year_advance, self.caches, self.pw)
-
-                    for msp_kwh, status, imp_kvarh, exp_kvarh, \
-                            hh_start in sess.execute("""
+                        sess, self.years_back, self.caches, self.pw)
+                    hh_date = chunk_start
+                    data = iter(sess.execute("""
 select sum(cast(coalesce(active.value, 0) as double precision)),
     max(active.status),
     sum(cast(coalesce(reactive_imp.value, 0) as double precision)),
@@ -1165,20 +1202,46 @@ where era.supply_id = :supply_id and channel.imp_related = :is_import
 group by hh_datum.start_date
 order by hh_datum.start_date
 """, params={
-                            'supply_id': self.supply.id,
-                            'start_date': chunk_start,
-                            'finish_date': chunk_finish,
-                            'is_import': self.is_import}):
-                        datum = datum_generator(sess, hh_start).copy()
-                        datum.update(
-                            {
-                                'status': status, 'imp-msp-kvarh': imp_kvarh,
-                                'imp-msp-kvar': imp_kvarh * 2,
-                                'exp-msp-kvarh': exp_kvarh,
-                                'exp-msp-kvar': exp_kvarh * 2,
-                                'msp-kw': msp_kwh * 2, 'msp-kwh': msp_kwh,
-                                'hist-kwh': msp_kwh})
+                        'supply_id': self.supply.id,
+                        'start_date': chunk_start,
+                        'finish_date': chunk_finish,
+                        'is_import': self.is_import}))
+
+                    try:
+                        msp_kwh, status, imp_kvarh, exp_kvarh, \
+                            hist_start = data.next()
+                    except StopIteration:
+                        hist_start = None
+                        msp_kwh = None
+
+                    while hh_date <= chunk_finish:
+                        datum = datum_generator(sess, dte).copy()
+                        if hh_date == hist_start:
+                            datum.update(
+                                {
+                                    'status': status,
+                                    'imp-msp-kvarh': imp_kvarh,
+                                    'imp-msp-kvar': imp_kvarh * 2,
+                                    'exp-msp-kvarh': exp_kvarh,
+                                    'exp-msp-kvar': exp_kvarh * 2,
+                                    'msp-kw': msp_kwh * 2, 'msp-kwh': msp_kwh,
+                                    'hist-kwh': msp_kwh})
+                            try:
+                                msp_kwh, status, imp_kvarh, exp_kvarh, \
+                                    hist_start = data.next()
+                            except StopIteration:
+                                hist_start = None
+                        else:
+                            datum.update(
+                                {
+                                    'status': 'X', 'imp-msp-kvarh': 0,
+                                    'imp-msp-kvar': 0, 'exp-msp-kvarh': 0,
+                                    'exp-msp-kvar': 0, 'msp-kw': 0,
+                                    'msp-kwh': 0, 'hist-kwh': 0})
+
                         self.hh_data.append(datum)
+                        hh_date += HH
+                        dte += HH
 
             elif self.bill is not None and hist_measurement_type == 'nhh':
                 tpr_codes = sess.query(Tpr.code). \
@@ -1270,7 +1333,7 @@ order by hh_datum.start_date
                         else:
                             pass_finish = present_date
 
-                        year_delta = relativedelta(year=self.year_advance)
+                        year_delta = relativedelta(year=self.years_back)
                         hh_part = []
 
                         while not hh_date > pass_finish:
@@ -1336,16 +1399,3 @@ order by hh_datum.start_date
 
             else:
                 raise UserException("gen type not recognized")
-
-        if len(self.hh_data) == 0:
-            datum = _datum_generator(
-                sess, self.year_advance, self.caches,
-                self.pw)(sess, self.history_finish).copy()
-            datum.update(
-                {
-                    'status': 'E', 'used-kwh': 0, 'hist-kwh': 0,
-                    'msp-kwh': 0, 'gsp-kwh': 0,
-                    'msp-kw': 0, 'anti-msp-kw': 0, 'anti-msp-kwh': 0,
-                    'imp-msp-kvarh': 0, 'imp-msp-kvar': 0, 'exp-msp-kvarh': 0,
-                    'exp-msp-kvar': 0})
-            self.hh_data.append(datum)
