@@ -161,13 +161,13 @@ def content():
                     [
                         'Site Code', 'Site Name', 'Associated Site Ids',
                         'From', 'To', 'Gen Types', 'CHP kWh', 'LM kWh',
-                        'Turbine kWh'] + bill_titles) + '\n'
+                        'Turbine kWh', 'PV kWh'] + bill_titles) + '\n'
 
                 yield ','.join('"' + str(value) + '"' for value in [
                     site.code, site.name, linked_sites, hh_format(chunk_start),
                     hh_format(chunk_finish), generator_types] + [
                     total_gen_breakdown.get(t, '') for t in [
-                        'chp', 'lm', 'turb']])
+                        'chp', 'lm', 'turb', 'pv']])
 
                 for title in bill_titles:
                     if title in bill:

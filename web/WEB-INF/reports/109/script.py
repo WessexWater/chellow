@@ -31,7 +31,7 @@ def content():
         yield ','.join(
             (
                 'Site Code', 'Site Name', 'Associated Site Ids', 'From', 'To',
-                'Gen Types', 'CHP kWh', 'LM kWh', 'Turbine kWh'))
+                'Gen Types', 'CHP kWh', 'LM kWh', 'Turbine kWh', 'PV kWh'))
 
         finish_date = datetime.datetime(
             end_year, end_month, 1, tzinfo=pytz.utc) + \
@@ -185,7 +185,7 @@ def content():
                     except StopIteration:
                         pass
 
-                    for title in ['chp', 'lm', 'turb']:
+                    for title in ['chp', 'lm', 'turb', 'pv']:
                         yield ',' + str(total_gen_breakdown.get(title, ''))
 
                     site_ds = computer.SiteSource(

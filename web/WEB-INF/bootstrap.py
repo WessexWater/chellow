@@ -708,7 +708,8 @@ if engine.execute(
     for code, desc in (
             ("chp", "Combined heat and power."),
             ("lm", "Load management."),
-            ("turb", "Water turbine.")):
+            ("turb", "Water turbine."),
+            ("pv", "Solar Photovoltaics.")):
         session.add(GeneratorType(code, desc))
     session.commit()
 

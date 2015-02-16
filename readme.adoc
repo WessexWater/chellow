@@ -1,84 +1,60 @@
-## Chellow Manual
+= Chellow Manual
 
 
-###  Licence
+== Licence
 
-Chellow is released under the [GPL v3](http://www.gnu.org/licenses/gpl.html).
+Chellow is released under the http://www.gnu.org/licenses/gpl.html[GPL v3].
 
 
-###  Introduction
+== Introduction
 
 Chellow is a web application for checking UK electricity bills. It's designed
 for organizations with high electricity consumption. The software is hosted at
- https://bitbucket.org/ww_tlocke/chellow)
-
-### Installation
-
-####  Requirements
-
-1. [Download](https://bitbucket.org/ww_tlocke/chellow/downloads) the latest version of Chellow.
-2.  Make sure the following are installed: 
-    * PostgreSQL 9.1 with the JDBC4 PostgreSQL Driver, Version 9.2-1002
-    * OpenJDK 1.7.0_25 (in server mode)
-    * Apache Tomcat 7.0.39
-
-####  Brand New Installation 
-
-Environment variables:
-
-PGUSER default `postgres`.
-PGPASSWORD default `postgres`
-PGPORT default `5432`
-PGDATABASE default `chellow`
-PGHOST default `localhost`
+https://bitbucket.org/ww_tlocke/chellow.
 
 
+== Installation
 
-1.  Create a PostgreSQL database called `chellow`. If you're upgrading, the
-    database will already exist, so skip this step.
-2.  In your Tomcat, configure a JNDI JDBC data source called jdbc/chellow.
-    1. Add the following snippet to the `context.xml` file in the Tomcat configuration directory: 
+=== Requirements
 
-        <Resource name="jdbc/chellow" auth="Container"
-            type="javax.sql.DataSource" username="postgres" password="hello"
-    	    driverClassName="org.postgresql.Driver"
-            url="jdbc:postgresql://localhost:5432/chellow" maxActive="8" maxIdle="4"
-            accessToUnderlyingConnectionAllowed="true" defaultTransactionIsolation="8"
-            readOnly="true" />
-            
-        <Parameter name="db.username" value="postgres"/>
-        <Parameter name="db.password" value="hello"/>
+Make sure the following are installed: 
 
-    2.  Put the [JDBC driver](http://jdbc.postgresql.org/download/postgresql-9.2-1002.jdbc4.jar) in the Tomcat `/lib/` directory.
-3.  Deploy the file chellow.war to Tomcat.
-
-####  Upgrading From A Previous Installation
-
-1.  Deploy the file chellow.war to Tomcat.
+* PostgreSQL 9.3
+* Python 2.7
 
 
-####  Regression Plan
+===  Brand New Installation 
 
-If the upgrade fails:
+. Clone the https://bitbucket.org/ww_tlocke/chellow[latest version] of
+   Chellow.
+. Install the required Python dependencies by doing
+  `pip install -r requirements.txt`.
+. Set up an environment variable pointing to the chellow directory, eg.
+  `export CHELLOW_HOME=/home/tlocke/chellow`.
+. Create a PostgreSQL database called `chellow`.
+. Chellow is a Python WSGI web application so it can be used with any compliant
+  application server. For non-production use its built-in server can be used,
+  eg. `python application.py`. For production use a server such as Gunicorn can
+  be used.
 
-1.   Shut down Tomcat.
-2.   Restore the database from the latest backup.
-3.   Install the previous chellow.war
-4.   Restart Tomcat.
+
+===  Upgrading From A Previous Installation
+
+Do steps 1 and 2 above.
 
 
-###  Getting Started
+==  Getting Started
 
 This is a brief guide to setting things up after you've installed Chellow.
 
-#### View the Chellow home page
+=== View the Chellow home page
 
 Assuming you've installed Chellow correctly, you should be able to open your
 browser, type in the URL of the Chellow application, and see the Chellow home
 page.
 
 
-#### Users
+=== Users
 
 Before any users are added, if you access Chellow from `localhost` you'll have
 read / write access. Once users are added, you have to log in as one of those
@@ -95,12 +71,12 @@ following:
 
 Note that multiple IP addresses can be mapped to the same user.
 
-#### Add Sites
+=== Add Sites
 
 Sites can be added by hand from the the 'sites' link on the home page. If
 you've got a lot to enter, then you can import them using a CSV file.
 
-#### Add Supplier Contracts
+=== Add Supplier Contracts
 
 Click on 'supplier contracts' link and then fill out the 'Add a contract'
 form. For the Charge Script field enter:
@@ -158,7 +134,7 @@ server every hour and download any new HH data files. Here's an example:
     directory0=.
     mpan.map=searchtext>replacetext
 
-####  Add Supplies
+===  Add Supplies
 
 Supplies are imported in a similar way to sites above.
 
