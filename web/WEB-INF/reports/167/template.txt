@@ -22,14 +22,13 @@
       <fieldset>
         <legend>48 Column Format</legend>
         <br/>
-        <select name="imp_related">
-          <option value="true">Import Related</option>
-          <option value="false">Export Related</option>
+        <select name="is_import">
+          <option value="true">Import</option>
+          <option value="false">Export</option>
         </select>
-        <select name="channel_type">
-          <option value="ACTIVE">ACTIVE</option>
-          <option value="REACTIVE_IMP">REACTIVE_IMP</option>
-          <option value="REACTIVE_EXP">REACTIVE_EXP</option>
+        <select name="is_kwh">
+          <option value="true">kWh</option>
+          <option value="false">kVArh</option>
         </select> from {{input_date('start', start_date)}} to
         {{input_date('finish', finish_date)}}
         <input type="submit" value="Download">
@@ -40,8 +39,12 @@
       <fieldset>
         <legend>HH Per Row Format</legend>
         <br/>
-        From {{input_date('start', start_date)}} to
-        {{input_date('finish', finish_date)}}
+        <label>From</label> {{input_date('start', start_date)}}
+        <label>to</label> {{input_date('finish', finish_date)}}
+        <label>Zipped?</label> {{input_checkbox('is_zipped', False)}} <br><br>
+        <label>MPAN Cores (one on each line, includes all supplies if left
+        blank)<br>
+        {{input_textarea('mpan_cores')}} <br><br>
         <input type="submit" value="Download">
       </fieldset>
     </form>

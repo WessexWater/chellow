@@ -39,6 +39,7 @@ class HhDataImportProcess(threading.Thread):
                 "The extension of the filename '" + file_name +
                 "' is not one of the recognized extensions; " +
                 str(extensions))
+        self.converter = None
 
     def run(self):
         sess = None

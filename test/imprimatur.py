@@ -5822,6 +5822,8 @@ def virtual_bill(supply_source):
             r'1,"Hello","sub","","2008-07-31 23:30","00","","CH017","Parbola",'
             '"hh","None","18.281","0","0","0","0","22 0470 7514 535","0","0",'
             '"0","0",""', ], },
+
+    # Supply level hh data CSV, hh per row
     {
         'name': "Supply level hh data CSV, hh per row",
         'path': '/chellow/reports/187/output/?supply_id=7&start_year=2008&'
@@ -5831,6 +5833,17 @@ def virtual_bill(supply_source):
         'regexes': [
             r'"CH023","22 4862 4512 332","","2008-01-01 00:00","3.77","A","",'
             '"","","","","","","","",""', ],
+        'status_code': 200, },
+    {
+        'name': "Supply level hh data CSV, hh per row. MPAN core filter.",
+        'path': '/chellow/reports/187/output/?start_year=2010&'
+        'start_month=01&start_day=01&start_hour=0&start_minute=0&'
+        'finish_year=2010&finish_month=12&finish_day=31&finish_hour=23&'
+        'finish_minute=30&mpan_cores=22 4862 4512 332',
+        'regexes': [
+            r'"Export REACTIVE_EXP Status"\s'
+            r'"CH023","22 4862 4512 332","","2010-02-04 20:00","30.4339","A",'
+            r'"","","","","","","","","",""'],
         'status_code': 200, },
     {
         'name': "General import of bill with start date after finish date",

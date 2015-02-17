@@ -26,7 +26,12 @@
     {% endif %}
 
     {% if process.isAlive() %}
-      <p>Reached line number {{process.converter.line_number}}.</p>
+      <p>
+				Running.
+				{% if process.converter %}	
+					Reached line number {{process.converter.line_number}}.
+				{% endif %}
+			</p>
     {% elif process.messages|length == 0 %}
       <p>The import has completed successfully.</p>
     {% else %}
