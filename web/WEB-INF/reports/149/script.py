@@ -130,7 +130,7 @@ def content():
     try:
         sess = db.session()
 
-        yield "\nSupply Id, Supply Name, Source, Generator Type, Site Ids, " \
+        yield "Supply Id, Supply Name, Source, Generator Type, Site Ids, " \
             "Site Names, From, To, PC, MTC, CoP, SSC, Normal Reads,Type, " \
             "Import LLFC, Import MPAN Core, Import Supply Capacity, " \
             "Import Supplier,Import Total MSP kWh, " \

@@ -1757,13 +1757,18 @@ def gsp_gbp_per_kwh():
         'start_day=01&start_hour=0&start_minute=0&finish_year=2008&'
         'finish_month=07&finish_day=31&finish_hour=23&finish_minute=30',
         'regexes': [
+            # Check starts with titles
+            r'\)\s\sSupply',
+
             r'("1","1","net","","CH017",){1}',
 
             # Check full line
             r'"2","1","net","","CI004","Lower Treave","2008-07-01 00:00",'
             '"2008-07-31 23:30","00","845","5","","0","hh",'
             '570,22 9813 2107 763,430,Half-hourlies 2007,0,0,0.0,0,,None,1488,'
-            '581,22 3475 1614 211,900,Half-hourlies 2007,0,0,,0,,None,1488', ],
+            '581,22 3475 1614 211,900,Half-hourlies 2007,0,0,,0,,None,1488',
+
+            ],
         'status_code': 200, },
 
     # Delete a day of data. Supply 1, era 13 },
