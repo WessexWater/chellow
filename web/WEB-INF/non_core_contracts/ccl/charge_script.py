@@ -11,10 +11,7 @@ db_id = globals()['db_id']
 
 
 def ccl(data_source):
-    bill = data_source.supplier_bill
-
-    prefix = 'lec' if data_source.is_green else 'ccl'
-    rate_set = data_source.supplier_rate_sets[prefix + '-rate']
+    rate_set = data_source.supplier_rate_sets['ccl-rate']
 
     if data_source.supply.find_era_at(
             data_source.sess, data_source.finish_date + HH) is None:
@@ -29,9 +26,9 @@ def ccl(data_source):
         cache = data_source.caches['ccl']
 
     if data_source.bill is None:
-        for hh_time in data_source.hh_times:
-            if hh_time['utc-is-month-end'] or hh_time['start-date'] == sup_end:
-                month_finish = hh_time['start-date']
+        for hh in data_source.hh_data:
+            if hh['utc-is-month-end'] or hh['start-date'] == sup_end:
+                month_finish = hh['start-date']
                 kwh = 0
                 gbp = 0
                 month_start = datetime.datetime(
@@ -39,23 +36,21 @@ def ccl(data_source):
 
                 for ds in computer.get_data_sources(
                         data_source, month_start, month_finish):
-                    for hh in ds.hh_data:
+                    for datum in ds.hh_data:
                         try:
-                            rate = cache[hh['start-date']]
+                            rate = cache[datum['start-date']]
                         except KeyError:
-                            cache[hh['start-date']] = data_source.hh_rate(
-                                db_id, hh['start-date'], 'ccl_rate')
-                            rate = cache[hh['start-date']]
+                            cache[datum['start-date']] = data_source.hh_rate(
+                                db_id, datum['start-date'], 'ccl_rate')
+                            rate = cache[datum['start-date']]
 
                         rate_set.add(rate)
-                        kwh += hh['msp-kwh']
-                        gbp += hh['msp-kwh'] * rate
+                        kwh += datum['msp-kwh']
+                        gbp += datum['msp-kwh'] * rate
 
                 if kwh > 999:
-                    bill[prefix + '-kwh'] += kwh
-                    bill[prefix + '-gbp'] += gbp
-        if len(rate_set) == 1:
-            bill[prefix + '-rate'] = rate_set.pop()
+                    hh['ccl-kwh'] = kwh
+                    hh['ccl-gbp'] = gbp
 
     elif data_source.is_last_bill_gen:
         if data_source.pc_code in ['03', '04']:
@@ -79,5 +74,5 @@ def ccl(data_source):
                 gbp += hh['msp-kwh'] * rate
 
         if kwh > threshold:
-            bill[prefix + '-kwh'] += kwh
-            bill[prefix + '-gbp'] += gbp
+            data_source.hh_data[-1]['ccl-kwh'] = kwh
+            data_source.hh_data[-1]['ccl-gbp'] = gbp

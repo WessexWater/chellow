@@ -2169,6 +2169,7 @@ def displaced_virtual_bill(supply_source):
 
     supply_source.is_green = False
     duos.duos_vb(supply_source)
+    ccl.ccl(supply_source)
 
     for hh in supply_source.hh_data:
         is_weekday = hh['utc-day-of-week'] < 5
@@ -2194,13 +2195,10 @@ def displaced_virtual_bill(supply_source):
         rates = supply_source.hh_rate(
             db_id, hh['start-date'], 'gsp_gbp_per_kwh')
         bill[slot_keys['gbp']] += hh['gsp-kwh'] * rates[slot_name]
+        if 'ccl-kwh' in hh:
+            bill['ccl-kwh'] += hh['ccl-kwh']
+            bill['ccl-gbp'] += hh['ccl-gbp']
 
-    ccl.ccl(supply_source)
-
-    for suffix in ['kwh', 'rate', 'gbp']:
-        key = 'lec-' + suffix
-        if key in bill:
-            del bill[key]
 
     triad.triad_bill(supply_source)
     tlms.hh(supply_source)
@@ -2220,6 +2218,7 @@ def displaced_virtual_bill(supply_source):
 
 def virtual_bill(supply_source):
     duos.duos_vb(supply_source)
+    ccl.ccl(supply_source)
     bill = supply_source.supplier_bill
     bill.update(
         {
@@ -2262,17 +2261,14 @@ def virtual_bill(supply_source):
         bill[slot_keys['msp-kwh']] += datum['msp-kwh']
         bill[slot_keys['gsp-kwh']] += datum['gsp-kwh']
 
+        if 'ccl-kwh' in datum:
+            bill['ccl-kwh'] += datum['ccl-kwh']
+            bill['ccl-gbp'] += datum['ccl-gbp']
+
     month_begin = datetime.datetime(
         supply_source.start_date.year, supply_source.start_date.month, 1,
         tzinfo=pytz.utc)
     month_end = month_begin + relativedelta(months=1) - HH
-
-    ccl.ccl(supply_source)
-
-    for suffix in ['kwh', 'rate', 'gbp']:
-        key = 'lec-' + suffix
-        if key in bill:
-            del bill[key]
 
     bill['data-collection-gbp'] += 5.89
     bill['settlement-gbp'] += 88
@@ -2934,6 +2930,7 @@ def displaced_virtual_bill(supply_source):
 
     supply_source.is_green = False
     duos.duos_vb(supply_source)
+    ccl.ccl(supply_source)
 
     for datum in supply_source.hh_data:
         is_weekday = datum['start-date'].weekday() < 5
@@ -2958,13 +2955,9 @@ def displaced_virtual_bill(supply_source):
         slot_keys = slots[slot_key]
         bill[slot_keys['msp-kwh']] += datum['msp-kwh']
         bill[slot_keys['gsp-kwh']] += datum['gsp-kwh']
-
-    ccl.ccl(supply_source)
-
-    for suffix in ['kwh', 'rate', 'gbp']:
-        key = 'lec-' + suffix
-        if key in bill:
-            del bill[key]
+        if 'ccl-kwh' in datum:
+            bill['ccl-kwh'] += datum['ccl-kwh']
+            bill['ccl-gbp'] += datum['ccl-gbp']
 
     triad.triad_bill(supply_source)
     tlms.hh(supply_source)
@@ -3023,10 +3016,9 @@ def virtual_bill(supply_source):
             db_id, datum['start-date'], 'gsp_gbp_per_kwh')
         bill[slot_keys['gbp']] += datum['gsp-kwh'] * rates[slot_name]
 
-    for suffix in ['kwh', 'rate', 'gbp']:
-        key = 'lec-' + suffix
-        if key in bill:
-            del bill[key]
+        if 'ccl-kwh' in datum:
+            bill['ccl-kwh'] += datum['ccl-kwh']
+            bill['ccl-gbp'] += datum['ccl-gbp']
 
     bill['data-collection-gbp'] += 5.89
     bill['settlement-gbp'] += 88
@@ -4585,11 +4577,13 @@ def virtual_bill(supply_source):
         'path': '/chellow/reports/213/output/',
         'method': 'post',
         'data': {
-            'hhdc_contract_id': "53", },
-        'status_code': 303, },
+            'hhdc_contract_id': "53"},
+        'regexes': [
+            '/reports/213/output/\?hhdc_contract_id=53'],
+        'status_code': 303},
     {
         'path': '/chellow/reports/213/output/?hhdc_contract_id=53',
-        'tries': {'max': 10, 'period': 1},
+        'tries': {},
         'regexes': [
             r"File downloaded successfully\.", ], },
     {
@@ -4600,7 +4594,7 @@ def virtual_bill(supply_source):
         'name': "Try startup and shutdown.",
         'path': '/chellow/reports/171/output/',
         'method': 'post',
-        'tries': {'max': 10, 'period': 1},
+        'tries': {},
         'data': {
             'run_shutdown': "Shutdown", },
         'regexes': [
