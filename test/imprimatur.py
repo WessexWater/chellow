@@ -2336,6 +2336,7 @@ def virtual_bill(supply_source):
         'path': '/chellow/reports/33/output/?year=2005&month=12',
         'status_code': 200,
         'regexes': [
+
             r'"2005-12-31 23:30","CI005","Wheal Rodney","","","11","net","",'
             '"22","LV","nhh","no","05","803","5","0154","2","MOP Contract",'
             '"mc-22 9974 3438 105","Dynamat data","dc-22 9974 3438 105",'
@@ -2343,6 +2344,41 @@ def virtual_bill(supply_source):
             '"false","false","false","false","22 9974 3438 105","20","540",'
             '"PC 5-8 & HH S/S","Non half-hourlies 2007","341665","","","","",'
             '"","","","","",""', ], },
+
+    {
+        'name': "Check supplies snapshot mandatory kw",
+        'path': '/chellow/reports/33/output/?supply_id=1&year=2008&month=9&'
+        'day=1&hour=00&minute=00',
+        'status_code': 200,
+        'regexes': [
+            r'Date,Physical Site Id,Physical Site Name,Other Site Ids,'
+            r'Other Site Names,Supply Id,Source,Generator Type,DNO Name,'
+            r'Voltage Level,Metering Type,Mandatory HH,PC,MTC,CoP,SSC,'
+            r'Number Of Registers,MOP Contract,Mop Account,HHDC Contract,'
+            r'HHDC Account,Meter Serial Number,Meter Installation Date,'
+            r'Latest Normal Meter Read Date,Latest Normal Meter Read Type,'
+            r'Latest DC Bill Date,Latest MOP Bill Date,Import ACTIVE\?,'
+            r'Import REACTIVE_IMPORT\?,Import REACTIVE_EXPORT\?,'
+            r'Export ACTIVE\?,'
+            r'Export REACTIVE_IMPORT\?,Export REACTIVE_EXPORT\?,'
+            r'Import MPAN core,Import Agreed Supply Capacity \(kVA\),'
+            r'Import LLFC Code,Import LLFC Description,'
+            r'Import Supplier Contract,Import Supplier Account,'
+            r'Import Mandatory kW,Latest Import Supplier Bill Date,'
+            r'Export MPAN core,Export Agreed Supply Capacity \(kVA\),'
+            r'Export LLFC Code,Export LLFC Description,'
+            r'Export Supplier Contract,Export Supplier Account,'
+            r'Export Mandatory kW,Latest Export Supplier Bill Date',
+
+            r'"2008-09-30 23:30","CH017","Parbola","","","1","net","","22",'
+            r'"LV","hh","no","00","845","5","","","MOP Contract",'
+            r'"mc-22 0470 7514 535","HH contract","01","","2003-08-03 00:00",'
+            r'"hh","","","","true","true","false","true","false","true","","",'
+            r'"","","","","1.866","","22 0470 7514 535","150","581",'
+            r'"Export \(LV\)","Half-hourlies 2007","010","",'
+            r'"2007-02-28 23:30"']
+        },
+
     {
         'name': "Generate an orphaned hh data message. Supply 5",
         'path': '/chellow/reports/307/output/',
@@ -5546,7 +5582,7 @@ def virtual_bill(supply_source):
         'day=01&hour=00&minute=00',
         'status_code': 200,
         'regexes': [
-            r"Other Site Ids, Other Site Names",
+            r"Other Site Ids,Other Site Names",
             r'"2012-05-31 23:30","CI017","Roselands","","","6","net","","22",'
             '"LV","hh","no","00","845","5","","","MOP Contract",'
             '"mc-22 6354 2983 570","HH contract","01","","2007-01-01 00:00",'
