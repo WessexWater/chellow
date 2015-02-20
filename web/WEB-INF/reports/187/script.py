@@ -4,8 +4,10 @@ from sqlalchemy import or_
 from sqlalchemy.sql.expression import null, true
 import db
 import utils
-import StringIO
 import zipfile
+import sys
+import threading
+import os
 
 Monad.getUtils()['impt'](globals(), 'db', 'utils', 'templater')
 HhDatum, Channel, Era, Supply = db.HhDatum, db.Channel, db.Era, db.Supply
@@ -43,13 +45,11 @@ is_zipped = form_bool(inv, 'is_zipped')
 if is_zipped:
     mimetype = 'application/zip'
     file_extension = ".zip"
-    bffr = StringIO.StringIO()
-    zf = zipfile.ZipFile(bffr, 'w')
 else:
     mimetype = 'text/csv'
     file_extension = ".csv"
 
-file_name = "hh_data_row_" + start_date.strftime("%Y%m%d%H%M") + file_extension
+base_name = "hh_data_row_" + start_date.strftime("%Y%m%d%H%M") + file_extension
 
 titles = ','.join('"' + v + '"' for v in (
     "Site Code", "Imp MPAN Core", "Exp Mpan Core", "Start Date",
@@ -59,6 +59,20 @@ titles = ','.join('"' + v + '"' for v in (
     "Export ACTIVE Status", "Export REACTIVE_IMP",
     "Export REACTIVE_IMP Status", "Export REACTIVE_EXP",
     "Export REACTIVE_EXP Status")) + "\n"
+
+running_name = "RUNNING_" + base_name
+finished_name = "FINISHED_" + base_name
+
+if sys.platform.startswith('java'):
+    download_path = Monad.getContext().getRealPath("/downloads")
+else:
+    download_path = os.path.join(os.environ['CHELLOW_HOME'], 'downloads')
+    os.chdir(download_path)
+
+if is_zipped:
+    zf = zipfile.ZipFile(running_name, 'w')
+else:
+    tmp_file = open(running_name, "w")
 
 
 def content():
@@ -83,11 +97,9 @@ def content():
                         Era.exp_mpan_core.in_(mpan_cores)))
 
             if not is_zipped:
-                yield titles
+                tmp_file.write(titles)
 
-            eras = eras.all()
-
-            for i, (site, era) in enumerate(eras):
+            for site, era in eras:
                 imp_mpan_core = era.imp_mpan_core
                 imp_mpan_core_str = '' if imp_mpan_core is None \
                     else imp_mpan_core
@@ -157,24 +169,31 @@ def content():
                             str(era.imp_mpan_core) + "_" +
                             str(era.exp_mpan_core)).replace(' ', '') + '.csv',
                         titles + ''.join(outs))
-
-                    if i == len(eras) - 1:
-                        zf.close()
-                    yield bffr.getvalue()
-                    bffr.truncate()
                 else:
-                    yield ''.join(outs)
+                    tmp_file.write(''.join(outs))
+
     except:
-        msg = traceback.format_exc()
+        msg = "Problem " + traceback.format_exc()
         if is_zipped:
             zf.writestr('error.txt', msg)
-            zf.close()
-            yield bffr.getValue()
-            bffr.truncate()
         else:
-            yield msg
+            tmp_file.write(msg)
     finally:
-        if sess is not None:
-            sess.close()
+        try:
+            if sess is not None:
+                sess.close()
+        except:
+            msg = "\nProblem closing session."
+            if is_zipped:
+                zf.writestr('error.txt', msg)
+            else:
+                tmp_file.write(msg)
+        finally:
+            if is_zipped:
+                zf.close()
+            else:
+                tmp_file.close()
+            os.rename(running_name, finished_name)
 
-utils.send_response(inv, content, file_name=file_name, mimetype=mimetype)
+threading.Thread(target=content).start()
+inv.sendSeeOther("/reports/251/output/")

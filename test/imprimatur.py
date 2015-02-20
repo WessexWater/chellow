@@ -5831,21 +5831,43 @@ def virtual_bill(supply_source):
         'start_month=01&start_day=01&start_hour=0&start_minute=0&'
         'finish_year=2008&finish_month=01&finish_day=31&finish_hour=23&'
         'finish_minute=30',
+        'status_code': 303, },
+    {
+        'path': '/chellow/reports/251/output/',
+        'tries': {'max': 10, 'period': 1},
+        'status_code': 200,
+        'regexes': [
+            r"FINISHED_hh_data_row_200801010000\.csv", ], },
+    {
+        'path': '/chellow/reports/253/output/?'
+        'name=FINISHED_hh_data_row_200801010000.csv',
+        'status_code': 200,
         'regexes': [
             r'"CH023","22 4862 4512 332","","2008-01-01 00:00","3.77","A","",'
-            '"","","","","","","","",""', ],
-        'status_code': 200, },
+            '"","","","","","","","",""']},
+
     {
         'name': "Supply level hh data CSV, hh per row. MPAN core filter.",
         'path': '/chellow/reports/187/output/?start_year=2010&'
         'start_month=01&start_day=01&start_hour=0&start_minute=0&'
         'finish_year=2010&finish_month=12&finish_day=31&finish_hour=23&'
         'finish_minute=30&mpan_cores=22 4862 4512 332',
+        'status_code': 303},
+    {
+        'path': '/chellow/reports/251/output/',
+        'tries': {'max': 10, 'period': 1},
+        'status_code': 200,
+        'regexes': [
+            r"FINISHED_hh_data_row_201001010000\.csv", ], },
+    {
+        'path': '/chellow/reports/253/output/?'
+        'name=FINISHED_hh_data_row_201001010000.csv',
+        'status_code': 200,
         'regexes': [
             r'"Export REACTIVE_EXP Status"\s'
             r'"CH023","22 4862 4512 332","","2010-02-04 20:00","30.4339","A",'
-            r'"","","","","","","","","",""'],
-        'status_code': 200, },
+            r'"","","","","","","","","",""']},
+
     {
         'name': "General import of bill with start date after finish date",
         'path': '/chellow/reports/293/output/',
