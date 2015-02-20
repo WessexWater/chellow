@@ -31,6 +31,10 @@
           <option value="false">kVArh</option>
         </select> from {{input_date('start', start_date)}} to
         {{input_date('finish', finish_date)}}
+        <label>Zipped?</label> {{input_checkbox('is_zipped', False)}} <br><br>
+        <label>MPAN Cores (one on each line, includes all supplies if left
+        blank)<br>
+        {{input_textarea('mpan_cores', '', 5, 40)}} <br><br>
         <input type="submit" value="Download">
       </fieldset>
     </form>
@@ -44,9 +48,10 @@
         <label>Zipped?</label> {{input_checkbox('is_zipped', False)}} <br><br>
         <label>MPAN Cores (one on each line, includes all supplies if left
         blank)<br>
-        {{input_textarea('mpan_cores')}} <br><br>
+        {{input_textarea('mpan_cores', '', 5, 40)}} <br><br>
         <input type="submit" value="Download">
       </fieldset>
     </form>
   </body>
 </html>
+

@@ -4770,11 +4770,21 @@ def virtual_bill(supply_source):
         'channel_type=ACTIVE&start_year=2008&start_month=7&start_day=1&'
         'start_hour=0&start_minute=0&finish_year=2008&finish_month=07&'
         'finish_day=31&finish_hour=23&finish_minute=30',
+        'status_code': 303, },
+    {
+        'path': '/chellow/reports/251/output/',
+        'tries': {'max': 20, 'period': 1},
+        'status_code': 200,
+        'regexes': [
+            r"FINISHED_supplies_hh_data_200807313023\.csv", ], },
+    {
+        'path': '/chellow/reports/253/output/?'
+        'name=FINISHED_supplies_hh_data_200807313023.csv',
+        'status_code': 200,
 
         # Check the HH data is there
         'regexes': [
-            r"NA,2008-07-06,0\.262", ],
-        'status_code': 200, },
+            r"NA,2008-07-06,0\.262", ]},
 
     # Add a new era with this contract },
     {
