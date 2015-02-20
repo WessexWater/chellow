@@ -112,9 +112,8 @@ def content():
                         datum = None
                 current_date += HH
             if is_zipped:
-                zf.writestr(
-                    mpan_core_str + '_' + str(supply.id) + '.csv',
-                    titles + ''.join(outs))
+                fname = mpan_core_str + '_' + str(supply.id) + '.csv'
+                zf.writestr(fname.encode('ascii'), titles + ''.join(outs))
             else:
                 tf.write(''.join(outs))
 

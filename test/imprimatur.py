@@ -5837,11 +5837,14 @@ def virtual_bill(supply_source):
     # Supply level hh data CSV, hh per row
     {
         'name': "Supply level hh data CSV, hh per row",
-        'path': '/chellow/reports/187/output/?supply_id=7&start_year=2008&'
-        'start_month=01&start_day=01&start_hour=0&start_minute=0&'
-        'finish_year=2008&finish_month=01&finish_day=31&finish_hour=23&'
-        'finish_minute=30',
-        'status_code': 303, },
+        'path': '/chellow/reports/187/output/',
+        'method': 'post',
+        'data': {
+            'supply_id': '7', 'start_year': '2008', 'start_month': '01',
+            'start_day': '01', 'start_hour': '0', 'start_minute': '0',
+            'finish_year': '2008', 'finish_month': '01', 'finish_day': '31',
+            'finish_hour': '23', 'finish_minute': '30'},
+        'status_code': 303},
     {
         'path': '/chellow/reports/251/output/',
         'tries': {'max': 10, 'period': 1},
@@ -5858,10 +5861,13 @@ def virtual_bill(supply_source):
 
     {
         'name': "Supply level hh data CSV, hh per row. MPAN core filter.",
-        'path': '/chellow/reports/187/output/?start_year=2010&'
-        'start_month=01&start_day=01&start_hour=0&start_minute=0&'
-        'finish_year=2010&finish_month=12&finish_day=31&finish_hour=23&'
-        'finish_minute=30&mpan_cores=22 4862 4512 332',
+        'path': '/chellow/reports/187/output/',
+        'method': 'post',
+        'data': {
+            'start_year': '2010', 'start_month': '01', 'start_day': '01',
+            'start_hour': '0', 'start_minute': '0', 'finish_year': '2010',
+            'finish_month': '12', 'finish_day': '31', 'finish_hour': '23',
+            'finish_minute': '30', 'mpan_cores': '22 4862 4512 332'},
         'status_code': 303},
     {
         'path': '/chellow/reports/251/output/',

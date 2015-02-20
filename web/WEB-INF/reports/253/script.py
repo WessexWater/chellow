@@ -15,13 +15,14 @@ if sys.platform.startswith('java'):
 else:
     download_path = os.path.join(os.environ['CHELLOW_HOME'], 'downloads')
 
+full_name = os.path.join(download_path, name)
 method = inv.getRequest().getMethod()
 
 if method == 'GET':
     def content():
         fl = None
         try:
-            fl = open(os.path.join(download_path, name))
+            fl = open(full_name)
 
             for line in fl:
                 yield line
@@ -33,7 +34,7 @@ if method == 'GET':
 
     utils.send_response(inv, content, file_name=name)
 elif method == 'POST':
-    os.remove(name)
+    os.remove(full_name)
     inv.sendSeeOther("/reports/251/output/")
 else:
     raise UserException("Don't recognize the method: " + method)

@@ -79,7 +79,7 @@ def content():
     sess = None
     try:
         sess = db.session()
-        if method == 'GET':
+        if method == 'POST':
             eras = sess.query(Site, Era).join(SiteEra).join(Era).filter(
                 Era.start_date <= finish_date,
                 or_(

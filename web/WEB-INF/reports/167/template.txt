@@ -18,7 +18,7 @@
       </ul>
     {% endif %}
     <br>
-    <form action="{{context_path}}/reports/169/output/">
+    <form action="{{context_path}}/reports/169/output/" method='post'>
       <fieldset>
         <legend>48 Column Format</legend>
         <br/>
@@ -39,7 +39,7 @@
       </fieldset>
     </form>
     <br><br>
-    <form action="{{context_path}}/reports/187/output/">
+    <form action="{{context_path}}/reports/187/output/" method='post'>
       <fieldset>
         <legend>HH Per Row Format</legend>
         <br/>
