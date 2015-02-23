@@ -1,3 +1,5 @@
+echo "print working directory"
+pwd
 ${CHELLOW_HOME}/stop_chellow
 dropdb chellow
 createdb chellow
