@@ -5,4 +5,4 @@ python:
 install:
   - "pip install -r requirements.txt"
  
-script: test/runtests
+script: test/run_tests
