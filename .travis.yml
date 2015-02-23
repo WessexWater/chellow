@@ -7,4 +7,4 @@ install:
  
 script: test/run_tests
 
-env: CHELLOW_HOME=$HOME
+env: CHELLOW_HOME=$HOME/WessexWater/chellow
