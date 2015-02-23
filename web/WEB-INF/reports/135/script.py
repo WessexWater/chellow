@@ -1,8 +1,8 @@
 from net.sf.chellow.monad import Monad
-
-Monad.getUtils()['impt'](globals(), 'db', 'utils', 'templater')
 import db
 import templater
+
+Monad.getUtils()['impt'](globals(), 'db', 'utils', 'templater')
 MeterPaymentType = db.MeterPaymentType
 render = templater.render
 inv, template = globals()['inv'], globals()['template']

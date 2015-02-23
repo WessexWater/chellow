@@ -83,8 +83,8 @@ def hh_time_beginning_22(ds, hh):
 
         if not ds.is_displaced:
             md_kva = max(
-                (datum['msp-kw'] ** 2 + datum['imp-msp-kvar'] ** 2)
-                ** 0.5 for datum in ds.hh_data)
+                (datum['msp-kw'] ** 2 + datum['imp-msp-kvar'] ** 2) **
+                0.5 for datum in ds.hh_data)
 
             bill['duos-availability-kva'] = ds.sc
             bill['duos-excess-availability-kva'] = max(md_kva - ds.sc, 0)
@@ -341,8 +341,8 @@ def hh_time_beginning_14(ds, hh):
             md_kva = max(
                 (
                     datum['msp-kw'] ** 2 + (
-                        datum['imp-msp-kvar'] + datum['exp-msp-kvar']) ** 2)
-                ** 0.5 for datum in ds.hh_data)
+                        datum['imp-msp-kvar'] + datum['exp-msp-kvar']) ** 2) **
+                0.5 for datum in ds.hh_data)
 
             billed_avail = max(availability, md_kva)
             bill['duos-availability-gbp'] += availability_rate * billed_avail
@@ -500,8 +500,8 @@ def hh_time_2010_04_01(ds, hh):
                 md_kva = max(
                     md_kva, (
                         datum['msp-kw'] ** 2 + max(
-                            datum['imp-msp-kvar'], datum['exp-msp-kvar'])
-                        ** 2) ** 0.5)
+                            datum['imp-msp-kvar'], datum['exp-msp-kvar']) **
+                        2) ** 0.5)
 
         excess_kva = max(md_kva - ds.sc, 0)
         days_in_month = 0

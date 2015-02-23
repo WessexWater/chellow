@@ -45,8 +45,8 @@ if site_id is None:
                     outs = []
                     outs.append(
                         "Site Code, Site Name, Associated Site Codes, "
-                        "Sources, Generator Types, From, To,Type,Date,"
-                        + ','.join(map(str, range(1, 49))))
+                        "Sources, Generator Types, From, To,Type,Date," +
+                        ','.join(map(str, range(1, 49))))
                     associates = ' '.join(
                         site.code for site in group.sites[1:])
                     source_codes = ' '.join(

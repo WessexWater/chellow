@@ -82,8 +82,8 @@ def content():
                     period_finish = era_finish
 
                 max_normal_days[meter_type] += float(
-                    totalseconds(period_finish - period_start)
-                    + 60 * 30) / (60 * 60 * 24)
+                    totalseconds(period_finish - period_start) + 60 * 30) / \
+                    (60 * 60 * 24)
 
                 mpan_core = era.imp_mpan_core
                 site = sess.query(Site).join(SiteEra).filter(

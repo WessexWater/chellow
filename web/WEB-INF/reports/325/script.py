@@ -35,8 +35,8 @@ try:
         rate_script = contract.insert_rate_script(sess, start_date, '')
         sess.commit()
         inv.sendSeeOther(
-            '/reports/79/output/?supplier_rate_script_id='
-            + str(rate_script.id))
+            '/reports/79/output/?supplier_rate_script_id=' +
+            str(rate_script.id))
 except UserException, e:
         render(inv, template, page_fields(contract, str(e)), 400)
 finally:

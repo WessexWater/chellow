@@ -156,14 +156,12 @@ def hh_rate(sess, caches, contract_id, date, name, pw):
         ffunc = future_func['func']
 
         if start_date is None:
-            #lgg(pw, "hh rate inner: start date is none")
             rs = sess.query(RateScript).filter(
                 RateScript.contract_id == contract_id,
                 RateScript.start_date <= date,
                 or_(
                     RateScript.finish_date == null(),
                     RateScript.finish_date >= date)).first()
-            #lgg(pw, "hh rate inner: got rs")
 
             if rs is None:
                 rs = sess.query(RateScript).filter(
@@ -179,7 +177,6 @@ def hh_rate(sess, caches, contract_id, date, name, pw):
                     cfinish = month_after
                 else:
                     cfinish = min(rs.finish_date, month_after)
-            #lgg(pw, "hh rate inner: finished start date is none")
         else:
             if date < start_date:
                 rs = sess.query(RateScript).filter(
@@ -212,9 +209,7 @@ def hh_rate(sess, caches, contract_id, date, name, pw):
                 cfinish = month_after
 
         ns = {}
-        #lgg(pw, "hh rate inner: starting exec")
         exec(rs.script, ns)
-        #lgg(pw, "hh rate inner: finishing exec")
 
         script_dict = {'ns': func(ns), 'rates': {}}
         script_dict['rates']['_script_dict'] = script_dict
@@ -222,12 +217,9 @@ def hh_rate(sess, caches, contract_id, date, name, pw):
         d_cache = script_dict['rates']
 
         dt = cstart
-        #lgg(pw, "hh rate inner: starting loop")
         while dt <= cfinish:
             cont_cache[dt] = d_cache
             dt += HH
-
-        #lgg(pw, "hh rate inner: ended dcache")
 
     try:
         return d_cache[name]
@@ -411,8 +403,8 @@ def _tpr_datum_generator(sess, caches, tpr_code, years_back, pw):
                 if (
                         (
                             ci['start-hour'] < ci['end-hour'] and
-                            ci['start-hour'] <= decimal_hour < ci['end-hour'])
-                        or (
+                            ci['start-hour'] <= decimal_hour < ci['end-hour']
+                        ) or (
                             ci['start-hour'] >= ci['end-hour'] and (
                                 ci['start-hour'] <= decimal_hour or
                                 decimal_hour < ci['end-hour']))) and \
@@ -1345,14 +1337,15 @@ order by hh_datum.start_date
 
                                 if (
                                         (
-                                            ci['start-hour'] < ci['end-hour']
-                                            and ci['start-hour'] <=
+                                            ci['start-hour'] <
+                                            ci['end-hour'] and
+                                            ci['start-hour'] <=
                                             decimal_hour < ci['end-hour']) or
                                         (
-                                            ci['start-hour'] >= ci['end-hour']
-                                            and (
-                                                ci['start-hour']
-                                                <= decimal_hour or
+                                            ci['start-hour'] >=
+                                            ci['end-hour'] and (
+                                                ci['start-hour'] <=
+                                                decimal_hour or
                                                 decimal_hour <
                                                 ci['end-hour']))) \
                                         and ci['start-month'] <= \

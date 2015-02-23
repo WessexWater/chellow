@@ -181,8 +181,8 @@ class BsuosImporter(threading.Thread):
                                 rs = RateScript.get_by_id(sess, latest_rs_id)
                                 contract.update_rate_script(
                                     sess, rs, rs.start_date,
-                                    rs.start_date + relativedelta(months=2)
-                                    - HH, rs.script)
+                                    rs.start_date + relativedelta(months=2) -
+                                    HH, rs.script)
                                 sess.flush()
                                 contract.insert_rate_script(
                                     sess,

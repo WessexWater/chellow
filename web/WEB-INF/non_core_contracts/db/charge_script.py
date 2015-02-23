@@ -1208,8 +1208,8 @@ class Site(Base, PersistentClass):
                 check_to = int(
                     math.floor(
                         float(
-                            totalseconds(check_to - check_from))
-                        / 2 / (60 * 30)))
+                            totalseconds(check_to - check_from)) / 2 /
+                        (60 * 30)))
         return groups
 
     # return true if the supply is continuously attached to the site for the
@@ -1764,8 +1764,8 @@ class Era(Base, PersistentClass):
                 cop.code.upper() != self.mtc.meter_type.code:
             raise UserException(
                 "The CoP of " + cop.code +
-                " is not compatible with the meter type code of "
-                + self.mtc.meter_type.code + ".")
+                " is not compatible with the meter type code of " +
+                self.mtc.meter_type.code + ".")
 
         if hhdc_contract.start_date() > start_date:
             raise UserException("The HHDC contract starts after the era.")
