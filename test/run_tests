@@ -5,5 +5,5 @@ rm ${CHELLOW_HOME}/downloads/*
 ${CHELLOW_HOME}/start_chellow
 if flake8 --filename=*t.py ${CHELLOW_HOME}/web/WEB-INF ; then
     . ${CHELLOW_HOME}/venv/bin/activate
-    imprimatur ${CHELLOW_HOME}/test/imprimatur.py
+    imprimatur ${CHELLOW_HOME}/test/imprimatur.py  || { exit 1; }
 fi
