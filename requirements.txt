@@ -10,3 +10,4 @@ ftputil==3.0
 requests==2.5.1
 imprimatur
 flake8
+pyftpdlib

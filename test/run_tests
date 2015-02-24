@@ -1,5 +1,3 @@
-echo "print working directory"
-pwd
 ${CHELLOW_HOME}/stop_chellow
 dropdb chellow
 createdb chellow
@@ -7,6 +5,7 @@ rm ${CHELLOW_HOME}/downloads/*
 ${CHELLOW_HOME}/start_chellow
 if flake8 --filename=*t.py ${CHELLOW_HOME}/web/WEB-INF ; then
     . ${CHELLOW_HOME}/venv/bin/activate
+    python ${CHELLOW_HOME}/test/ftp.py
     cd ${CHELLOW_HOME}/test
     imprimatur ${CHELLOW_HOME}/test/imprimatur.py  || { exit 1; }
 fi
