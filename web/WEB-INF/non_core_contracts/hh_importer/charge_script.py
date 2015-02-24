@@ -140,6 +140,10 @@ class HhImportTask(threading.Thread):
                         host_name = properties["hostname"]
                         user_name = properties["username"]
                         password = properties["password"]
+                        try:
+                            port = properties["port"]
+                        except KeyError:
+                            port = 21
                         file_type = properties["file_type"]
                         directories = properties['directories']
                         state = contract.make_state()
@@ -152,8 +156,11 @@ class HhImportTask(threading.Thread):
 
                         sess.rollback()
                         self.log(
-                            "Connecting to ftp server at " + host_name + ".")
-                        ftp = ftplib.FTP(host_name, user_name, password)
+                            "Connecting to ftp server at " + host_name +
+                            ":" + str(port) + ".")
+                        ftp = ftplib.FTP()
+                        ftp.connect(host_name, port)
+                        ftp.login(user_name, password)
                         home_path = ftp.pwd()
 
                         file = None

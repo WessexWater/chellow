@@ -1068,7 +1068,7 @@ def gsp_gbp_per_kwh():
         'method': 'post',
         'data': {
             'hhdc_contract_id': "53", },
-        'files': {'import_file': 'hh_data.df2'},
+        'files': {'import_file': 'ftp/hh_data.df2'},
         'status_code': 303,
         'regexes': [
             r"/reports/65/output/\?hhdc_contract_id=53&process_id=1", ], },
@@ -1421,7 +1421,7 @@ def gsp_gbp_per_kwh():
         'method': 'post',
         'data': {
             'hhdc_contract_id': "53", },
-        'files': {'import_file': 'hh_data.df2'},
+        'files': {'import_file': 'ftp/hh_data.df2'},
         'regexes': [
             r"/reports/65/output/\?hhdc_contract_id=53&process_id=11", ],
         'status_code': 303, },
@@ -4533,6 +4533,7 @@ def virtual_bill(supply_source):
 {'has_importer': True,
 'file_type': '.df2',
 'hostname': 'localhost',
+'port': 2121,
 'username': 'chellow',
 'password': 'HixaNfUBOf*u',
 'directories': ['.']}
