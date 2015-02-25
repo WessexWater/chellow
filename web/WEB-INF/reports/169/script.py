@@ -16,8 +16,8 @@ inv = globals()['inv']
 
 start_date = form_date(inv, 'start')
 finish_date = form_date(inv, 'finish')
-imp_related = inv.getBoolean('imp_related')
-channel_type = inv.getString('channel_type')
+imp_related = form_bool(inv, 'imp_related')
+channel_type = form_str(inv, 'channel_type')
 is_zipped = form_bool(inv, 'is_zipped')
 
 if inv.hasParameter('supply_id'):

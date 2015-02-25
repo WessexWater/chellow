@@ -4765,11 +4765,15 @@ def virtual_bill(supply_source):
             r"/reports/19/output/", ],
         'status_code': 200, },
     {
-        'name': "Check CSV Supplies HH Data.",
-        'path': '/chellow/reports/169/output/?supply_id=1&imp_related=true&'
-        'channel_type=ACTIVE&start_year=2008&start_month=7&start_day=1&'
-        'start_hour=0&start_minute=0&finish_year=2008&finish_month=07&'
-        'finish_day=31&finish_hour=23&finish_minute=30',
+        'name': "Check CSV Supplies HH Data. With supply_id",
+        'path': '/chellow/reports/169/output/',
+        'method': 'post',
+        'data': {
+            'supply_id': '1', 'imp_related': 'true', 'channel_type': 'ACTIVE',
+            'start_year': '2008', 'start_month': '7', 'start_day': '1',
+            'start_hour': '0', 'start_minute': '0', 'finish_year': '2008',
+            'finish_month': '07', 'finish_day': '31', 'finish_hour': '23',
+            'finish_minute': '30'},
         'status_code': 303, },
     {
         'path': '/chellow/reports/251/output/',
@@ -6713,4 +6717,31 @@ def virtual_bill(supply_source):
             '"","","","","","","","","","","","","","","","","","","","","",'
             '"","","","","","","","","","","","","","","","","","","","0.0",'
             '"0.0","23562.05"']},
+
+    {
+        'name': "Check CSV Supplies HH Data. With mpan_cores",
+        'path': '/chellow/reports/169/output/',
+        'method': 'post',
+        'data': {
+            'mpan_cores': '22 0470 7514 535', 'imp_related': 'true',
+            'channel_type': 'ACTIVE',
+            'start_year': '2008', 'start_month': '7', 'start_day': '1',
+            'start_hour': '0', 'start_minute': '0', 'finish_year': '2008',
+            'finish_month': '08', 'finish_day': '1', 'finish_hour': '23',
+            'finish_minute': '30'},
+        'status_code': 303, },
+    {
+        'path': '/chellow/reports/251/output/',
+        'tries': {'max': 20, 'period': 1},
+        'status_code': 200,
+        'regexes': [
+            r"FINISHED_supplies_hh_data_200808013023\.csv", ], },
+    {
+        'path': '/chellow/reports/253/output/?'
+        'name=FINISHED_supplies_hh_data_200808013023.csv',
+        'status_code': 200,
+
+        # Check the HH data is there
+        'regexes': [
+            r"NA,2008-07-06,0\.262", ]},
 ]
