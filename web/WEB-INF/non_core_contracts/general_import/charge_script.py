@@ -21,6 +21,7 @@ Snag, Channel, Mtc, BillType = db.Snag, db.Channel, db.Mtc, db.BillType
 Tpr, ReadType, Participant = db.Tpr, db.ReadType, db.Participant
 Bill, RegisterRead, UserRole = db.Bill, db.RegisterRead, db.UserRole
 Party, User, VoltageLevel, Llfc = db.Party, db.User, db.VoltageLevel, db.Llfc
+parse_pc_code = utils.parse_pc_code
 
 process_id = 0
 process_lock = threading.Lock()
@@ -94,8 +95,12 @@ def general_import_era(sess, action, vals, args):
         if msn == NO_CHANGE:
             msn = era.msn
 
-        pc_code = add_arg(args, "Profile Class", vals, 9)
-        pc = era.pc if pc_code == NO_CHANGE else Pc.get_by_code(sess, pc_code)
+        pc_code_raw = add_arg(args, "Profile Class", vals, 9)
+        if pc_code_raw == NO_CHANGE:
+            pc = era.pc
+        else:
+            pc_code = parse_pc_code(pc_code_raw)
+            pc = Pc.get_by_code(sess, pc_code)
 
         mtc_code = add_arg(args, "Meter Timeswitch Class", vals, 10)
         if mtc_code == NO_CHANGE:
@@ -266,10 +271,11 @@ def general_import_era(sess, action, vals, args):
         if msn == NO_CHANGE:
             msn = existing_era.msn
 
-        pc_code = add_arg(args, "Profile Class", vals, 8)
-        if pc_code == NO_CHANGE:
+        pc_code_raw = add_arg(args, "Profile Class", vals, 8)
+        if pc_code_raw == NO_CHANGE:
             pc = existing_era.pc
         else:
+            pc_code = parse_pc_code(pc_code_raw)
             pc = Pc.get_by_code(sess, pc_code)
 
         mtc_code = add_arg(args, "Meter Timeswitch Class", vals, 9)
@@ -653,7 +659,7 @@ def general_import_supply(sess, action, vals, args):
         hhdc_account = add_arg(args, "HHDC Account", vals, 10)
         msn = add_arg(args, "Meter Serial Number", vals, 11)
         pc_code = add_arg(args, "Profile Class", vals, 12)
-        pc = Pc.get_by_code(sess, pc_code)
+        pc = Pc.get_by_code(sess, parse_pc_code(pc_code))
         mtc_code = add_arg(args, "Meter Timeswitch Class", vals, 13)
         cop_code = add_arg(args, "CoP", vals, 14)
         cop = Cop.get_by_code(sess, cop_code)

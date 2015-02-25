@@ -165,6 +165,10 @@ def parse_channel_type(channel_type):
     return tp
 
 
+def parse_pc_code(code):
+    return str(int(code)).zfill(2)
+
+
 def send_response(
         inv, content, status=200, mimetype='text/csv', file_name=None):
 
