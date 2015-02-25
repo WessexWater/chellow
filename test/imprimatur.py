@@ -6794,4 +6794,22 @@ def virtual_bill(supply_source):
         # Check the HH data is there
         'regexes': [
             r"NA,2008-07-06,0\.262", ]},
+
+    # Insert era with {no change} on channel
+    {
+        'name': "Insert era with {no change} on channel",
+        'path': '/chellow/reports/293/output/',
+        'method': 'post',
+        'files': {'import_file': 'era-insert-2.csv'},
+        'status_code': 303,
+        'regexes': [
+            r"/reports/295/output/\?process_id=4", ], },
+    {
+        'path': '/chellow/reports/295/output/?process_id=4',
+        'tries': {'max': 10, 'period': 1},
+
+        # Check it's loaded ok
+        'regexes': [
+            r"The file has been imported successfully", ],
+        'status_code': 200},
 ]

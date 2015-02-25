@@ -348,7 +348,11 @@ def general_import_era(sess, action, vals, args):
             for i, ctype in enumerate(CHANNEL_TYPES):
                 field_name = "Import " + ctype + "?"
                 has_chan_str = add_arg(args, field_name, vals, i + 17)
-                if parse_bool(has_chan_str):
+                if has_chan_str == NO_CHANGE:
+                    if existing_era.find_channel(sess, True, ctype) is not \
+                            None:
+                        channel_set.add((True, ctype))
+                elif parse_bool(has_chan_str):
                     channel_set.add((True, ctype))
 
         exp_mpan_core = None
@@ -398,7 +402,11 @@ def general_import_era(sess, action, vals, args):
                 for i, ctype in enumerate(CHANNEL_TYPES):
                     field_name = "Export " + ctype + "?"
                     has_chan_str = add_arg(args, field_name, vals, i + 25)
-                    if parse_bool(has_chan_str):
+                    if has_chan_str == NO_CHANGE:
+                        if existing_era.find_channel(sess, False, ctype) is \
+                                not None:
+                            channel_set.add((False, ctype))
+                    elif parse_bool(has_chan_str):
                         channel_set.add((False, ctype))
 
         supply.insert_era(
