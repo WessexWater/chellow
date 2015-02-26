@@ -73,7 +73,7 @@ try:
             data = [
                 data_source.id, contract.name, data_source.supplier_account,
                 data_source.start_date, data_source.finish_date]
-            mera = {'headings': headings, 'data': data}
+            mera = {'headings': headings, 'data': data, 'skip': False}
 
             meras.append(mera)
             computer.contract_func(
@@ -95,9 +95,8 @@ try:
                 headings.append(k)
                 data.append(bill[k])
 
-            if len(meras) > 1:
-                if meras[-2]['headings'] == mera['headings']:
-                    del mera['headings']
+            if len(meras) > 1 and meras[-2]['headings'] == mera['headings']:
+                mera['skip'] = True
 
         month_start += relativedelta(months=1)
 

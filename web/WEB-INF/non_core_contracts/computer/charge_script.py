@@ -168,8 +168,12 @@ def hh_rate(sess, caches, contract_id, date, name, pw):
                     RateScript.contract_id == contract_id). \
                     order_by(RateScript.start_date.desc()).first()
                 func = ffunc
-                cstart = max(rs.finish_date + HH, month_before)
-                cfinish = month_after
+                if date < rs.start_date:
+                    cstart = month_before
+                    cfinish = min(month_after, rs.start_date - HH)
+                else:
+                    cstart = max(rs.finish_date + HH, month_before)
+                    cfinish = month_after
             else:
                 func = identity_func
                 cstart = max(rs.start_date, month_before)

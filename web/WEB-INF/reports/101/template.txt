@@ -53,7 +53,7 @@
 
     <table><caption>Import Supplier Virtual Bill</caption>
       {% for mera in meras %}
-        {% if mera.headings %}
+        {% if not mera.skip %}
           <thead>
             <tr>
               {% for heading in mera.headings %}

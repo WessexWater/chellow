@@ -5697,6 +5697,15 @@ def virtual_bill(supply_source):
         'finish_year=2014&finish_month=05&finish_day=31&finish_hour=23&'
         'finish_minute=30',
         'status_code': 200, },
+
+    {
+        'name': "HTML virtual bill that spans 3 eras",
+        'path': '/chellow/reports/101/output/?supply_id=2&start_year=2005&'
+        'start_month=05&start_day=1&start_hour=0&start_minute=0&'
+        'finish_year=2006&finish_month=07&finish_day=31&finish_hour=23&'
+        'finish_minute=30',
+        'status_code': 200},
+
     {
         'name': "Make sure rate scripts remain contiguous.",
         'path': '/chellow/reports/273/output/',
