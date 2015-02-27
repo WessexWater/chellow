@@ -5175,6 +5175,7 @@ def virtual_bill(supply_source):
         'end_year=2011&end_month=1',
         'status_code': 200,
         'regexes': [
+            r'\.csv".\)',
             r"Duration Start,Duration Finish,Supply Id,Import MPAN Core,"
             "Export MPAN Core,Batch Reference,Bill Id,Bill Reference,"
             "Bill Issue Date,Bill Type,Register Read Id,TPR,Coefficient,"

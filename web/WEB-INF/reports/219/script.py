@@ -85,5 +85,5 @@ def content():
             sess.close()
 
 file_name = 'reads_' + \
-    datetime.datetime.now(pytz.utc).strftime("%Y%M%d%H%m") + '.csv"'
+    datetime.datetime.now(pytz.utc).strftime("%Y%M%d%H%m") + '.csv'
 utils.send_response(inv, content, file_name=file_name)
