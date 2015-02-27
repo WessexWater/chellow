@@ -83,7 +83,7 @@ def content():
 
                 bill = site_ds.supplier_bill
                 values = []
-                for i in range(3):
+                for i in range(1, 4):
                     triad_prefix = 'triad-actual-' + str(i)
                     for suffix in ['-date', '-msp-kw', '-laf', '-gsp-kw']:
                         values.append(bill[triad_prefix + suffix])
