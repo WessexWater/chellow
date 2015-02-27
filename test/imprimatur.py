@@ -838,6 +838,7 @@ def gsp_gbp_per_kwh():
         # Check the end date is right
         'regexes': [
             r'<a title="2003-08-13 23:30">2003-08-13</a>',
+            r'<form action="/chellow/reports/187/output/" method="post">',
             r'<legend>TRIAD</legend>\s*<input type="hidden" name="supply_id"',
             r'<a href="/chellow/reports/15/output/\?supply_id=5&amp;'
             'is_import=true&amp;year=\d{4}&amp;years=1">Import</a>', ], },

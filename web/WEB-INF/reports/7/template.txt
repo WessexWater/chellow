@@ -753,7 +753,7 @@
       </fieldset>
     </form>
     <br />
-    <form action="{{context_path}}/reports/187/output/">
+    <form action="{{context_path}}/reports/187/output/" method="post">
       <fieldset>
         <legend>HH Data: HH Per Row</legend>
         <input type="hidden" name="supply_id" value="{{supply.id}}">

@@ -67,7 +67,8 @@ if sys.platform.startswith('java'):
     download_path = Monad.getContext().getRealPath("/downloads")
 else:
     download_path = os.path.join(os.environ['CHELLOW_HOME'], 'downloads')
-    os.chdir(download_path)
+
+os.chdir(download_path)
 
 if is_zipped:
     zf = zipfile.ZipFile(running_name, 'w')
