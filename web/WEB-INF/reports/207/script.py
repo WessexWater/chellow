@@ -31,14 +31,17 @@ def content():
         sess = db.session()
 
         ACTUAL_READ_TYPES = ['N', 'N3', 'C', 'X', 'CP']
-        yield "Chellow Supply Id, MPAN Core, Site Id, Site Name, From, " + \
-            "To, NHH Breakdown, Actual HH Normal Days, " + \
-            "Actual AMR Normal Days, Actual NHH Normal Days, " + \
-            "Actual Unmetered Normal Days, Max HH Normal Days, " + \
-            "Max AMR Normal Days, Max NHH Normal Days, " + \
-            "Max Unmetered Normal Days, Total Actual Normal Days, " + \
-            "Total Max Normal Days,Data Type, HH kWh, AMR kWh, NHH kWh, " + \
-            "Unmetered kwh, Total kWh, Note\n"
+        yield ','.join(
+            (
+                'Chellow Supply Id', 'MPAN Core', 'Site Id', 'Site Name',
+                'From', 'To', 'NHH Breakdown', 'Actual HH Normal Days',
+                'Actual AMR Normal Days', 'Actual NHH Normal Days',
+                'Actual Unmetered Normal Days', 'Max HH Normal Days',
+                'Max AMR Normal Days', 'Max NHH Normal Days',
+                'Max Unmetered Normal Days', 'Total Actual Normal Days',
+                'Total Max Normal Days', 'Data Type', 'HH kWh', 'AMR kWh',
+                'NHH kWh', 'Unmetered kwh', 'HH Filled kWh', 'AMR Filled kWh',
+                'Total kWh', 'Note')) + '\n'
 
         year_start = datetime.datetime(year, 4, 1, tzinfo=pytz.utc)
         year_finish = year_start + relativedelta(years=1) - HH
@@ -55,8 +58,8 @@ def content():
         meter_types = ['hh', 'amr', 'nhh', 'unmetered']
 
         for supply in supplies:
-            # normal_kwh = dict([(mtype, 0) for mtype in meter_types])
             total_kwh = dict([(mtype, 0) for mtype in meter_types])
+            filled_kwh = dict([(mtype, 0) for mtype in ('hh', 'amr')])
             normal_days = dict([(mtype, 0) for mtype in meter_types])
             max_normal_days = dict([(mtype, 0) for mtype in meter_types])
 
@@ -376,43 +379,52 @@ def content():
                     breakdown += 'pairs - \n' + str(pairs)
 
                 elif meter_type == 'hh':
-                    kwh_res = sess.query(
-                        func.sum(
-                            HhDatum.value)).join(Channel).filter(
+                    kwhs = sess.query(HhDatum.value).join(Channel).filter(
                         Channel.imp_related == true(),
-                        Channel.channel_type == 'ACTIVE',
-                        Channel.era_id == era.id,
+                        Channel.channel_type == 'ACTIVE', Channel.era == era,
                         HhDatum.start_date >= period_start,
-                        HhDatum.start_date <= period_finish).one()[0]
+                        HhDatum.start_date <= period_finish).all()
                     yield ' '
 
-                    if kwh_res is not None:
-                        total_kwh[meter_type] += float(kwh_res)
+                    sum_kwhs = sum(kwhs)
+                    len_kwhs = len(kwhs)
+                    total_kwh[meter_type] += sum_kwhs
+                    total_hhs = totalseconds(
+                        period_finish + HH - period_start) / (60 * 30)
+                    if len_kwhs > 0:
+                        filled_kwh[meter_type] += float(sum_kwhs) / \
+                            len_kwhs * (total_hhs - len_kwhs)
                     normal_days[meter_type] += float(
                         sess.query(func.count(HhDatum.value)).join(Channel).
                         filter(
                             Channel.imp_related == true(),
                             Channel.channel_type == 'ACTIVE',
-                            Channel.era_id == era.id,
+                            Channel.era == era,
                             HhDatum.start_date >= period_start,
                             HhDatum.start_date <= period_finish,
                             HhDatum.status == 'A').one()[0]) / 48
                 elif meter_type == 'amr':
-                    kwh_res = sess.query(
-                        func.sum(HhDatum.value)).join(Channel).filter(
+                    kwhs = sess.query(HhDatum.value).join(Channel).filter(
                         Channel.imp_related == true(),
-                        Channel.channel_type == 'ACTIVE',
-                        Channel.era_id == era.id,
+                        Channel.channel_type == 'ACTIVE', Channel.era == era,
                         HhDatum.start_date >= period_start,
-                        HhDatum.start_date <= period_finish).one()[0]
-                    if kwh_res is not None:
-                        total_kwh[meter_type] += float(kwh_res)
+                        HhDatum.start_date <= period_finish).all()
+
+                    sum_kwhs = sum(kwhs)
+                    len_kwhs = len(kwhs)
+                    total_kwh[meter_type] += sum_kwhs
+                    total_hhs = totalseconds(
+                        period_finish + HH - period_start) / (60 * 30)
+                    if sum_kwhs > 0:
+                        filled_kwh[meter_type] += float(sum_kwhs) / \
+                            len_kwhs * (total_hhs - len_kwhs)
+
                     normal_days[meter_type] += float(
                         sess.query(func.count(HhDatum.value)).join(Channel).
                         filter(
                             Channel.imp_related == true(),
                             Channel.channel_type == 'ACTIVE',
-                            Channel.era_id == era.id,
+                            Channel.era == era,
                             HhDatum.start_date >= period_start,
                             HhDatum.start_date <= period_finish,
                             HhDatum.status == 'A').one()[0]) / 48
@@ -435,7 +447,7 @@ def content():
             is_normal = float(
                 total_normal_days) / total_max_normal_days >= float(183) / 365
 
-            yield '\n' + ','.join('"' + str(val) + '"' for val in [
+            yield ','.join('"' + str(val) + '"' for val in [
                 supply.id, mpan_core, site.code, site.name,
                 hh_format(year_start), hh_format(year_finish),
                 breakdown] + [normal_days[type] for type in meter_types] + [
@@ -443,7 +455,9 @@ def content():
                 total_normal_days, total_max_normal_days,
                 "Actual" if is_normal else "Estimated"] +
                 [total_kwh[type] for type in meter_types] +
-                [sum(total_kwh.values()), ''])
+                [filled_kwh[type] for type in ('hh', 'amr')] +
+                [sum(total_kwh.values()) + sum(filled_kwh.values()), '']) + \
+                '\n'
 
             # avoid a long running transaction
             sess.rollback()

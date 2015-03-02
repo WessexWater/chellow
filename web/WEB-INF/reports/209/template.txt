@@ -25,73 +25,75 @@
         For financial year starting April
         {{input_text('year', start_date.year, 4, 4)}}
         <input type="submit" value="Download">
-      </fieldset>
 
-      <p>
-        The CRC report has a row for each supply. A supply is in one of the
-        the following categories at any one time:
-        <ul>
-          <li>HH</li>
-          <li>AMR</li>
-          <li>NHH</li>
-          <li>Unmetered</li>
-        </ul>
-        The report works out the number of days with actual data for each
-        category and totals them up to give the 'Total Actual Days'. It then
-        works out the maximum possible number of days with actual data for each
-        supply category (HH, AMR, NHH or Unmetered) and totals them up to give
-        the 'Total Max Actual Days'. If (actual / maximum) >= 183 / 365, the
-        supply is classed as 'Actual' for the CRC period, otherwise it is 
-        classed as 'Estimated'. The total (estimated + actual) kWh are given
-        for each category.
-      </p>
-      <p>
-        For a period of time (the span) when a supply is in the NHH category,
-        the kWh and number of normal days are worked out as follows.
-        <ul>
-          <li>
-            All reads that aren't 'actual' are discarded.
-          </li>
-          <li>
-            The remaining reads are ordered by time. The earliest and the
-            latest reads that lie within the span are retained. The latest read 
-            (no matter how late) before the beginning of the span is retained.
-            The earliest read (no matter how early) after the end of the span
-            is retained. All other reads are discarded.
-          </li>
-          <li>
-            With the reads still in order, all the span segments are
-            considered. A segment is just a read and the next read, so for
-            n reads there are n - 1 segments. The kWh for each segment is
-            calculated.
-          </li>
-          <li>
-            If the two reads of a segment lie within the span, the days of
-            the segment are added to the actual days. The kWh of the segment is
-            added to the total kWh.
-          </li>
-          <li>
-            If one or both the reads lie outside the span, no days are added
-            to the actual days. The kWh for the segment is multiplied by (days
-            of segment that are also in the period) / (total days in segment),
-            and then added to the total kWh.
-          </li>
-          <li>
-            If there's a meter change at some point along the line of reads,
-            there will be two reads for the same point in time. One of the
-            reads is the end of the preceding segment, and the other one is the
-            beginning of the succeeding segment, so it's always the case that
-            the two reads that make up a segment belong to the same meter.
-          </li>
-        </ul>
-      </p>
-      <p>
-        For AMR and HH categories, the kWh figure is found by summing the kWh
-        for all the half-hours that lie within the period. The number of actual
-        days is found by (number of actual half-hours / 48). The report
-        doesn't fill in any missing data.
-      </p>
+				<p>
+					The CRC report has a row for each supply. A supply is in one of the
+					the following categories at any one time:
+					<ul>
+						<li>HH</li>
+						<li>AMR</li>
+						<li>NHH</li>
+						<li>Unmetered</li>
+					</ul>
+					The report works out the number of days with actual data for each
+					category and totals them up to give the 'Total Actual Days'. It then
+					works out the maximum possible number of days with actual data for
+				 	each supply category (HH, AMR, NHH or Unmetered) and totals them up
+				 	to give the 'Total Max Actual Days'. If (actual / maximum) &gt;= 183
+				 	/ 365, the supply is classed as 'Actual' for the CRC period, otherwise
+				 	it is classed as 'Estimated'. The total (estimated + actual) kWh are
+				 	given for each category.
+				</p>
+				<p>
+					For a period of time (the span) when a supply is in the NHH category,
+					the kWh and number of normal days are worked out as follows.
+					<ul>
+						<li>
+							All reads that aren't 'actual' are discarded.
+						</li>
+						<li>
+							The remaining reads are ordered by time. The earliest and the
+							latest reads that lie within the span are retained. The latest
+						 	read (no matter how late) before the beginning of the span is
+						 	retained. The earliest read (no matter how early) after the end of
+						 	the span is retained. All other reads are discarded.
+						</li>
+						<li>
+							With the reads still in order, all the span segments are
+							considered. A segment is just a read and the next read, so for
+							n reads there are n - 1 segments. The kWh for each segment is
+							calculated.
+						</li>
+						<li>
+							If the two reads of a segment lie within the span, the days of the
+						 	segment are added to the actual days. The kWh of the segment is
+							added to the total kWh.
+						</li>
+						<li>
+							If one or both the reads lie outside the span, no days are added
+							to the actual days. The kWh for the segment is multiplied by (days
+							of segment that are also in the period) / (total days in segment),
+							and then added to the total kWh.
+						</li>
+						<li>
+							If there's a meter change at some point along the line of reads,
+							there will be two reads for the same point in time. One of the
+							reads is the end of the preceding segment, and the other one is
+						 	the beginning of the succeeding segment, so it's always the case
+						 	that the two reads that make up a segment belong to the same
+						 	meter.
+						</li>
+					</ul>
+				</p>
+				<p>
+					For AMR and HH categories, the kWh figure is found by summing the kWh
+					for all the half-hours that lie within the period. Each missing
+				 	half-hour is filled in using the average kW of present HHs over the
+				 	period. The number of actual days is found by (number of actual
+				 	half-hours / 48).
+				</p>
         
+			</fieldset> 
     </form>
 
     <br/>
