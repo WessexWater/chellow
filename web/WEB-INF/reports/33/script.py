@@ -196,9 +196,9 @@ def content():
                     'year_finish': date,
                     'is_import': is_import}
                 month_mds = tuple(
-                    md[0] for md in sess.execute("""
+                    md[0] * 2 for md in sess.execute("""
 
-    select max(hh_datum.value * 2) as md
+    select max(hh_datum.value) as md
     from hh_datum join channel on (hh_datum.channel_id = channel.id)
         join era on (channel.era_id = era.id)
     where era.supply_id = :supply_id and hh_datum.start_date >= :year_start

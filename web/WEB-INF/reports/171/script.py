@@ -279,6 +279,9 @@ else:
         <input type="submit" name="run_startup" value="Run">
       </fieldset>
     </form>
+    <p>
+      <a href="{{context_path}}/reports/379/output/">SQL Runner</a>
+    </p>
   </body>
 </html>
 """

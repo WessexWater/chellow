@@ -1,1 +1,1 @@
-{'name': 'Free 379'}
+{'name': 'SQL Runner'}

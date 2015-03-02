@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <link rel="stylesheet" type="text/css"
+      href="{{context_path}}/reports/19/output/" />
+    <title>Chellow &gt; SQL Runner</title>
+  </head>
+  <body>
+    <p>
+			<a href="{{context_path}}/">Chellow</a> &gt; SQL Runner
+		</p>
+
+    {% if messages %}
+      <ul>
+        {% for message in messages %}
+          <li>{{ message }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+
+		<form action=".">
+			<fieldset>
+				<legend>Execute Query</legend>
+				
+				{{input_text('query')}} <input type="submit" value="Execute">
+                        </fieldset>
+		</form>
+
+		{% if result.returns_rows %}
+			<table>
+				<caption>Results</caption>
+				{% for row in result %}
+					<tr>
+						{% for key in row.keys() %}
+						  <th>{{key}}</th>
+						{% endfor %}
+					</tr>
+					<tr>
+						{% for val in row %}
+						  <td>{{val}}</td>
+						{% endfor %}
+					</tr>
+				{% endfor %}
+			</table>
+		{% else %}
+		  <p>No results returned.</p>
+		{% endif %}
+  </body>
+</html>
+
