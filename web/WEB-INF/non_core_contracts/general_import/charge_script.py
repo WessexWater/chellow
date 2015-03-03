@@ -364,7 +364,7 @@ def general_import_era(sess, action, vals, args):
         if len(vals) > 20:
             exp_mpan_core = add_arg(args, "Export MPAN", vals, 20)
             if exp_mpan_core == NO_CHANGE:
-                exp_mpan_core = existing_era.imp_mpan_core
+                exp_mpan_core = existing_era.exp_mpan_core
             elif len(exp_mpan_core) == 0:
                 exp_mpan_core = None
 
@@ -397,7 +397,7 @@ def general_import_era(sess, action, vals, args):
                 exp_supplier_account = add_arg(
                     args, "Export Supplier Account", vals, 24)
                 if exp_supplier_account == NO_CHANGE:
-                    exp_supplier_account = existing_era.imp_supplier_account
+                    exp_supplier_account = existing_era.exp_supplier_account
 
                 for i, ctype in enumerate(CHANNEL_TYPES):
                     field_name = "Export " + ctype + "?"
