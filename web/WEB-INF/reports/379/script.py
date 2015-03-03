@@ -9,18 +9,18 @@ form_str = utils.form_str
 inv, template = globals()['inv'], globals()['template']
 
 sess = None
+messages = None
 try:
     sess = db.session()
     result = None
-    messages = None
-    if inv.hasParameter('query'):
+    if inv.hasParameter('query') and (inv.getRequest().getMethod() == 'POST'):
         query = form_str(inv, 'query')
         query = query.strip()
         if len(query) > 0:
             try:
                 result = sess.execute(query)
             except SQLAlchemyError, e:
-                messages = [str(e)]
+                messages.append(str(e))
 
     templater.render(inv, template, {'result': result, 'messages': messages})
 finally:
