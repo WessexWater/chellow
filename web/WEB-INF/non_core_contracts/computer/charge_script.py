@@ -1106,7 +1106,6 @@ select sum(cast(coalesce(kwh.value, 0) as double precision)),
     hh_datum.start_date
 from hh_datum
     join channel on (hh_datum.channel_id = channel.id)
-    join era on (channel.era_id = era.id)
     left join hh_datum as kwh
         on (hh_datum.id = kwh.id and channel.channel_type = 'ACTIVE'
             and channel.imp_related = :is_import)
@@ -1121,12 +1120,12 @@ from hh_datum
         on (hh_datum.id = reactive_exp.id
             and channel.channel_type = 'REACTIVE_EXP'
             and channel.imp_related is true)
-where era.supply_id = :supply_id and hh_datum.start_date >= :start_date
+where channel.era_id = :era_id and hh_datum.start_date >= :start_date
     and hh_datum.start_date <= :finish_date
 group by hh_datum.start_date
 order by hh_datum.start_date
 """, params={
-                        'supply_id': self.supply.id,
+                        'era_id': hist_era.id,
                         'start_date': chunk_start,
                         'finish_date': chunk_finish,
                         'is_import': self.is_import}))
@@ -1183,7 +1182,6 @@ select sum(cast(coalesce(active.value, 0) as double precision)),
     hh_datum.start_date
 from hh_datum
     join channel on (hh_datum.channel_id = channel.id)
-    join era on (channel.era_id = era.id)
     left join hh_datum as active
         on (hh_datum.id = active.id and channel.channel_type = 'ACTIVE')
     left join hh_datum as reactive_imp
@@ -1192,13 +1190,13 @@ from hh_datum
     left join hh_datum as reactive_exp
         on (hh_datum.id = reactive_exp.id
             and channel.channel_type = 'REACTIVE_EXP')
-where era.supply_id = :supply_id and channel.imp_related = :is_import
+where channel.era_id = :era_id and channel.imp_related = :is_import
     and hh_datum.start_date >= :start_date
     and hh_datum.start_date <= :finish_date
 group by hh_datum.start_date
 order by hh_datum.start_date
 """, params={
-                        'supply_id': self.supply.id,
+                        'era_id': hist_era.id,
                         'start_date': chunk_start,
                         'finish_date': chunk_finish,
                         'is_import': self.is_import}))
