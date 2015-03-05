@@ -879,6 +879,7 @@ if engine.execute(
     user_role = session.query(UserRole).filter(UserRole.code == 'editor').one()
     user = User.insert(
         session, first_email, User.digest(first_password), user_role, None)
+    session.execute("create extension tablefunc")
     session.commit()
     session.close()
 else:

@@ -1174,36 +1174,42 @@ order by hh_datum.start_date
                     datum_generator = _datum_generator(
                         sess, self.years_back, self.caches, self.pw)
                     hh_date = chunk_start
-                    data = iter(sess.execute("""
-select sum(cast(coalesce(active.value, 0) as double precision)),
-    max(active.status),
-    sum(cast(coalesce(reactive_imp.value, 0) as double precision)),
-    sum(cast(coalesce(reactive_exp.value, 0) as double precision)),
-    hh_datum.start_date
-from hh_datum
-    join channel on (hh_datum.channel_id = channel.id)
-    left join hh_datum as active
-        on (hh_datum.id = active.id and channel.channel_type = 'ACTIVE')
-    left join hh_datum as reactive_imp
-        on (hh_datum.id = reactive_imp.id
-            and channel.channel_type = 'REACTIVE_IMP')
-    left join hh_datum as reactive_exp
-        on (hh_datum.id = reactive_exp.id
-            and channel.channel_type = 'REACTIVE_EXP')
-where channel.era_id = :era_id and channel.imp_related = :is_import
-    and hh_datum.start_date >= :start_date
-    and hh_datum.start_date <= :finish_date
-group by hh_datum.start_date
-order by hh_datum.start_date
-""", params={
-                        'era_id': hist_era.id,
-                        'start_date': chunk_start,
-                        'finish_date': chunk_finish,
-                        'is_import': self.is_import}))
-
+                    data = iter(sess.execute(
+                        "select "
+                        "    start_date, "
+                        "    status, "
+                        "    active, "
+                        "    coalesce(reactive_imp, 0) as reactive_imp, "
+                        "    coalesce(reactive_exp, 0) as reactive_exp "
+                        "from crosstab("
+                        "    :sql, "
+                        "    'SELECT unnest(enum_range(NULL::channel_type))') "
+                        "as ct( "
+                        "    start_date timestamp with time zone, "
+                        "    status character varying, "
+                        "    active double precision, "
+                        "    reactive_imp double precision, "
+                        "    reactive_exp double precision); ",
+                        params={
+                            'sql':
+                            "select "
+                            "    hh_datum.start_date, "
+                            "    hh_datum.status, "
+                            "    channel.channel_type, "
+                            "    cast(hh_datum.value as double precision) "
+                            "from hh_datum join channel "
+                            "    on (hh_datum.channel_id = channel.id) "
+                            "where channel.era_id = " + str(hist_era.id) +
+                            "    and channel.imp_related = " +
+                            str(self.is_import) +
+                            "    and hh_datum.start_date >= '" +
+                            hh_format(chunk_start) + "+00'"
+                            "    and hh_datum.start_date <= '" +
+                            hh_format(chunk_finish) + "+00'"
+                            "    order by 1,3"}))
                     try:
-                        msp_kwh, status, imp_kvarh, exp_kvarh, \
-                            hist_start = data.next()
+                        hist_start, status, msp_kwh, imp_kvarh, exp_kvarh = \
+                            data.next()
                     except StopIteration:
                         hist_start = None
                         msp_kwh = None
@@ -1211,27 +1217,31 @@ order by hh_datum.start_date
                     while hh_date <= chunk_finish:
                         datum = datum_generator(sess, dte).copy()
                         if hh_date == hist_start:
-                            datum.update(
-                                {
-                                    'status': status,
-                                    'imp-msp-kvarh': imp_kvarh,
-                                    'imp-msp-kvar': imp_kvarh * 2,
-                                    'exp-msp-kvarh': exp_kvarh,
-                                    'exp-msp-kvar': exp_kvarh * 2,
-                                    'msp-kw': msp_kwh * 2, 'msp-kwh': msp_kwh,
-                                    'hist-kwh': msp_kwh})
+                            if msp_kwh is None:
+                                datum['status'] = 'X'
+                                datum['hist-kwh'] = datum['msp-kwh'] = 0
+                                datum['msp-kw'] = 0
+                            else:
+                                datum['status'] = status
+                                datum['hist-kwh'] = msp_kwh
+                                datum['msp-kwh'] = msp_kwh
+                                datum['msp-kw'] = msp_kwh * 2
+                            datum['imp-msp-kvarh'] = imp_kvarh
+                            datum['imp-msp-kvar'] = imp_kvarh * 2
+                            datum['exp-msp-kvarh'] = exp_kvarh
+                            datum['exp-msp-kvar'] = exp_kvarh * 2
+
                             try:
-                                msp_kwh, status, imp_kvarh, exp_kvarh, \
-                                    hist_start = data.next()
+                                hist_start, status, msp_kwh, imp_kvarh, \
+                                    exp_kvarh = data.next()
                             except StopIteration:
                                 hist_start = None
                         else:
-                            datum.update(
-                                {
-                                    'status': 'X', 'imp-msp-kvarh': 0,
-                                    'imp-msp-kvar': 0, 'exp-msp-kvarh': 0,
-                                    'exp-msp-kvar': 0, 'msp-kw': 0,
-                                    'msp-kwh': 0, 'hist-kwh': 0})
+                            datum['status'] = 'X'
+                            datum['imp-msp-kvarh'] = datum['imp-msp-kvar'] = 0
+                            datum['exp-msp-kvarh'] = datum['exp-msp-kvar'] = 0
+                            datum['msp-kw'] = datum['msp-kwh'] = 0
+                            datum['hist-kwh'] = 0
 
                         self.hh_data.append(datum)
                         hh_date += HH
