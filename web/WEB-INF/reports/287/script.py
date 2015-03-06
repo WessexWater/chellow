@@ -16,6 +16,7 @@ def make_fields(sess, contract, message=None):
     return {'contract': contract, 'batches': batches, 'messages': messages}
 
 sess = None
+contract = None
 try:
     sess = db.session()
     if inv.getRequest().getMethod() == 'GET':
@@ -36,7 +37,10 @@ try:
 
 except UserException, e:
     sess.rollback()
-    render(inv, template, make_fields(sess, contract, e), 400)
+    if contract is None:
+        raise e
+    else:
+        render(inv, template, make_fields(sess, contract, e), 400)
 finally:
     if sess is not None:
         sess.close()

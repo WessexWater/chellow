@@ -13,7 +13,7 @@ if sys.platform.startswith('java'):
 else:
     download_path = os.path.join(os.environ['CHELLOW_HOME'], 'downloads')
 
-for fl in os.listdir(download_path):
+for fl in sorted(os.listdir(download_path), reverse=True):
     statinfo = os.stat(os.path.join(download_path, fl))
     files.append(
         {

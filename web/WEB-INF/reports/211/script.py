@@ -22,6 +22,7 @@ def make_fields(sess, contract, message=None):
         'messages': messages}
 
 sess = None
+contract = None
 try:
     sess = db.session()
     hh_importer_contract = Contract.get_non_core_by_name(sess, 'hh_importer')
@@ -56,7 +57,10 @@ try:
             "/reports/65/output/?hhdc_contract_id=" + str(contract.id) +
             "&process_id=" + str(hh_import_process.id))
 except UserException, e:
-    render(inv, template, make_fields(sess, contract, e), 400)
+    if contract is not None:
+        render(inv, template, make_fields(sess, contract, e), 400)
+    else:
+        raise e
 finally:
     if sess is not None:
         sess.close()

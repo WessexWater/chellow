@@ -1,5 +1,4 @@
 import os
-import sys
 import traceback
 from net.sf.chellow.monad import Monad
 import datetime
@@ -12,7 +11,8 @@ import utils
 import db
 import computer
 import threading
-Monad.getUtils()['impt'](globals(), 'computer', 'db', 'utils')
+import dloads
+Monad.getUtils()['impt'](globals(), 'computer', 'db', 'utils', 'dloads')
 
 HH, hh_format, hh_after = utils.HH, utils.hh_format, utils.hh_after
 totalseconds, UserException = utils.totalseconds, utils.UserException
@@ -45,16 +45,8 @@ def content():
             base_name = "supplies_monthly_duration_for_" + str(supply.id) + \
                 "_" + str(months) + "_to_" + str(year) + "_" + str(month) + \
                 ".csv"
-        running_name = "RUNNING_" + base_name
-        finished_name = "FINISHED_" + base_name
+        running_name, finished_name = dloads.make_names(base_name)
 
-        if sys.platform.startswith('java'):
-            download_path = Monad.getContext().getRealPath("/downloads")
-        else:
-            download_path = os.path.join(
-                os.environ['CHELLOW_HOME'], 'downloads')
-
-        os.chdir(download_path)
         tmp_file = open(running_name, "w")
 
         caches = {}

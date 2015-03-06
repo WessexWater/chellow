@@ -17,6 +17,7 @@ def make_fields(sess, contract, message=None):
         return {'contract': contract, 'batches': batches, 'messages': messages}
 
 sess = None
+contract = None
 try:
     sess = db.session()
     if inv.getRequest().getMethod() == 'GET':
@@ -35,7 +36,10 @@ try:
         inv.sendSeeOther("/reports/203/output/?hhdc_batch_id=" + str(batch.id))
 
 except UserException, e:
-    render(inv, template, make_fields(sess, contract, e))
+    if contract is None:
+        raise e
+    else:
+        render(inv, template, make_fields(sess, contract, e))
 finally:
     if sess is not None:
         sess.close()

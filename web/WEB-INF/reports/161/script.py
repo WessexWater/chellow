@@ -1,7 +1,6 @@
 from net.sf.chellow.monad import Monad
 import datetime
 import os
-import sys
 import traceback
 import threading
 import pytz
@@ -11,7 +10,11 @@ from sqlalchemy.sql.expression import null
 import db
 import utils
 import computer
-Monad.getUtils()['impt'](globals(), 'templater', 'db', 'utils', 'computer')
+import dloads
+import sys
+
+Monad.getUtils()['impt'](
+    globals(), 'templater', 'db', 'utils', 'computer', 'dloads')
 inv = globals()['inv']
 Site, Era, Bill = db.Site, db.Era, db.Bill
 HH, hh_after, hh_format = utils.HH, utils.hh_after, utils.hh_format
@@ -263,16 +266,7 @@ def long_process():
             st = Site.get_by_id(sess, st_id)
             base_name = "site_monthly_duration_for_" + st.code + "_" + \
                 str(months) + "_to_" + str(year) + "_" + str(month) + ".csv"
-        running_name = "RUNNING_" + base_name
-        finished_name = "FINISHED_" + base_name
-
-        if sys.platform.startswith('java'):
-            download_path = Monad.getContext().getRealPath("/downloads")
-        else:
-            download_path = os.path.join(
-                os.environ['CHELLOW_HOME'], 'downloads')
-
-        os.chdir(download_path)
+        running_name, finished_name = dloads.make_names(base_name)
         tmp_file = open(running_name, "w")
 
         forecast_date = computer.forecast_date()
@@ -302,7 +296,9 @@ def long_process():
                 tmp_file.flush()
 
     except:
-        tmp_file.write("Problem " + traceback.format_exc())
+        msg = traceback.format_exc()
+        sys.stderr.write(msg + '\n')
+        tmp_file.write("Problem " + msg)
     finally:
         try:
             if sess is not None:

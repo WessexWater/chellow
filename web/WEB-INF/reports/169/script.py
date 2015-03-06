@@ -4,11 +4,12 @@ from sqlalchemy import or_
 from sqlalchemy.sql.expression import null
 from net.sf.chellow.monad import Monad
 import db
-import sys
 import os
 import utils
 import threading
-Monad.getUtils()['impt'](globals(), 'db', 'utils', 'templater')
+import dloads
+
+Monad.getUtils()['impt'](globals(), 'db', 'utils', 'templater', 'dloads')
 Channel, Supply, HhDatum, Era = db.Channel, db.Supply, db.HhDatum, db.Era
 form_date, HH, form_bool = utils.form_date, utils.HH, utils.form_bool
 form_str = utils.form_str
@@ -39,16 +40,8 @@ if inv.hasParameter('mpan_cores'):
 else:
     mpan_cores = None
 
-running_name = "RUNNING_" + base_name
-finished_name = "FINISHED_" + base_name
+running_name, finished_name = dloads.make_names(base_name)
 
-if sys.platform.startswith('java'):
-    download_path = Monad.getContext().getRealPath("/downloads")
-else:
-    download_path = os.path.join(
-        os.environ['CHELLOW_HOME'], 'downloads')
-
-os.chdir(download_path)
 if is_zipped:
     zf = zipfile.ZipFile(running_name, "w", zipfile.ZIP_DEFLATED)
 else:

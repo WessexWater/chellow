@@ -5,11 +5,11 @@ from sqlalchemy.sql.expression import null, true
 import db
 import utils
 import zipfile
-import sys
 import threading
 import os
+import dloads
 
-Monad.getUtils()['impt'](globals(), 'db', 'utils', 'templater')
+Monad.getUtils()['impt'](globals(), 'db', 'utils', 'templater', 'dloads')
 HhDatum, Channel, Era, Supply = db.HhDatum, db.Channel, db.Era, db.Supply
 Site, SiteEra = db.Site, db.SiteEra
 hh_format, UserException = utils.hh_format, utils.UserException
@@ -60,15 +60,7 @@ titles = ','.join('"' + v + '"' for v in (
     "Export REACTIVE_IMP Status", "Export REACTIVE_EXP",
     "Export REACTIVE_EXP Status")) + "\n"
 
-running_name = "RUNNING_" + base_name
-finished_name = "FINISHED_" + base_name
-
-if sys.platform.startswith('java'):
-    download_path = Monad.getContext().getRealPath("/downloads")
-else:
-    download_path = os.path.join(os.environ['CHELLOW_HOME'], 'downloads')
-
-os.chdir(download_path)
+running_name, finished_name = dloads.make_names(base_name)
 
 if is_zipped:
     zf = zipfile.ZipFile(running_name, 'w')

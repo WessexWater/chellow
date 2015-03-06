@@ -30,7 +30,8 @@ if method == 'GET':
         except:
             yield traceback.format_exc()
         finally:
-            fl.close()
+            if fl is not None:
+                fl.close()
 
     utils.send_response(inv, content, file_name=name)
 elif method == 'POST':
