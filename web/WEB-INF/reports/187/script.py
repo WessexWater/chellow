@@ -81,18 +81,17 @@ def content():
     try:
         sess = db.session()
         if method == 'POST':
-            eras = sess.query(Site, Era).join(SiteEra).join(Era).filter(
+            supplies = sess.query(Supply).join(Era).filter(
                 Era.start_date <= finish_date,
                 or_(
                     Era.finish_date == null(), Era.finish_date >= start_date),
-                SiteEra.is_physical == true()).order_by(
-                Era.supply_id, Era.start_date)
+                ).order_by(Era.supply_id, Era.start_date).distinct()
             if supply_id is not None:
                 sup = Supply.get_by_id(sess, supply_id)
-                eras = eras.filter(Era.supply == sup)
+                supplies = supplies.filter(Era.supply == sup)
 
             if mpan_cores is not None:
-                eras = eras.filter(
+                supplies = supplies.filter(
                     or_(
                         Era.imp_mpan_core.in_(mpan_cores),
                         Era.exp_mpan_core.in_(mpan_cores)))
@@ -100,13 +99,15 @@ def content():
             if not is_zipped:
                 tmp_file.write(titles)
 
-            for site, era in eras:
-                imp_mpan_core = era.imp_mpan_core
-                imp_mpan_core_str = '' if imp_mpan_core is None \
-                    else imp_mpan_core
-                exp_mpan_core = era.exp_mpan_core
-                exp_mpan_core_str = '' if exp_mpan_core is None \
-                    else exp_mpan_core
+            for supply in supplies:
+                site, era = sess.query(
+                    Site, Era).join(Era.site_eras).filter(
+                    Era.supply == supply, Era.start_date <= finish_date,
+                    SiteEra.site_id == Site.id,
+                    or_(
+                        Era.finish_date == null(),
+                        Era.finish_date >= start_date),
+                    SiteEra.is_physical == true()).order_by(Era.id).first()
 
                 outs = []
 
@@ -124,6 +125,7 @@ def content():
         max(exp_reactive_imp.value), max(imp_reactive_exp.status)
     from hh_datum hh_base
         join channel on hh_base.channel_id = channel.id
+        join era on channel.era_id = era.id
         left join hh_datum imp_active
             on (imp_active.id = hh_base.id and channel.imp_related is true and
                 channel.channel_type = 'ACTIVE')
@@ -146,16 +148,16 @@ def content():
                     on (exp_reactive_exp.id = hh_base.id
                     and channel.imp_related is false
                     and channel.channel_type = 'REACTIVE_EXP')
-    where era_id = :era_id
+    where supply_id = :supply_id
         and hh_base.start_date between :start_date and :finish_date
     group by hh_base.start_date
     order by hh_base.start_date
         """, params={
-                        'era_id': era.id, 'start_date': start_date,
+                        'supply_id': supply.id, 'start_date': start_date,
                         'finish_date': finish_date}):
                     outs.append(','.join(
                         '"' + ('' if v is None else str(v)) + '"' for v in (
-                            site.code, imp_mpan_core_str, exp_mpan_core_str,
+                            site.code, era.imp_mpan_core, era.exp_mpan_core,
                             hh_format(hh_start_date), imp_active,
                             imp_active_status, imp_reactive_imp,
                             imp_reactive_imp_status, imp_reactive_exp,
