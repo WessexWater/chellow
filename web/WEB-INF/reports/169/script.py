@@ -50,7 +50,7 @@ else:
 
 os.chdir(download_path)
 if is_zipped:
-    zf = zipfile.ZipFile(running_name, "w")
+    zf = zipfile.ZipFile(running_name, "w", zipfile.ZIP_DEFLATED)
 else:
     tf = open(running_name, "w")
 
