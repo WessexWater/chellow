@@ -490,6 +490,38 @@ def content():
                             typ = 'gen'
                             generation_type = supply.generator_type.code
 
+                        sss = exp_ss if imp_ss is None else imp_ss
+                        dc_contract = era.hhdc_contract
+                        sss.contract_func(
+                            dc_contract, 'virtual_bill')(sss)
+                        dc_bill = sss.dc_bill
+                        gbp = dc_bill['net-gbp']
+                        if source_code in ('net', 'gen-net'):
+                            month_data['import-net-gbp'] += gbp
+                            month_data['used-gbp'] += gbp
+                        elif source_code in (
+                                '3rd-party', '3rd-party-reverse'):
+                            month_data['import-3rd-party-gbp'] += gbp
+                            month_data['used-gbp'] += gbp
+
+                        mop_contract = era.mop_contract
+                        mop_bill_function = sss.contract_func(
+                            mop_contract, 'virtual_bill')
+                        mop_bill_function(sss)
+                        mop_bill = sss.mop_bill
+                        gbp = mop_bill['net-gbp']
+                        if source_code in ('net', 'gen-net'):
+                            month_data['import-net-gbp'] += gbp
+                            month_data['used-gbp'] += gbp
+                            typ = 'net'
+                        elif source_code in (
+                                '3rd-party', '3rd-party-reverse'):
+                            month_data['import-3rd-party-gbp'] += gbp
+                            month_data['used-gbp'] += gbp
+                            typ = '3rd-party'
+                        elif source_code == 'gen':
+                            typ = 'gen'
+
                         out = [
                             era.imp_mpan_core, era.exp_mpan_core, typ,
                             generation_type, supply.name, era.msn, era.pc.code,
