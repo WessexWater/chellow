@@ -30,22 +30,36 @@ file_name = 'scenario_' + now.strftime("%Y%m%d%H%M") + '.csv'
 report_context = {}
 future_funcs = {}
 report_context['future_funcs'] = future_funcs
-scenario_id = form_int(inv, 'scenario_id')
+
+if inv.hasParameter('scenario_id'):
+    scenario_id = form_int(inv, 'scenario_id')
+    scenario_props = None
+else:
+    year = form_int(inv, "finish_year")
+    month = form_int(inv, "finish_month")
+    months = form_int(inv, "months")
+    start_date = datetime.datetime(year, month, 1) - \
+        relativedelta(months=months - 1)
+    scenario_props = {
+        'scenario_start': start_date, 'scenario_duration': months}
+    scenario_id = None
+
 if inv.hasParameter('site_id'):
     site_id = inv.getLong('site_id')
 else:
     site_id = None
 
-
 meter_order = {'hh': 0, 'amr': 1, 'nhh': 2, 'unmetered': 3}
 
 
 def content():
+    global scenario_props
     sess = None
     try:
         sess = db.session()
-        scenario_contract = Contract.get_supplier_by_id(sess, scenario_id)
-        scenario_props = scenario_contract.make_properties()
+        if scenario_props is None:
+            scenario_contract = Contract.get_supplier_by_id(sess, scenario_id)
+            scenario_props = scenario_contract.make_properties()
 
         for contract in sess.query(Contract).join(MarketRole).filter(
                 MarketRole.code == 'Z'):
@@ -104,7 +118,13 @@ def content():
             sites = sites.filter(Site.id == site_id)
 
         changes = defaultdict(list, {})
-        for row in csv.reader(StringIO.StringIO(scenario_props['kw_changes'])):
+
+        try:
+            kw_changes = scenario_props['kw_changes']
+        except KeyError:
+            kw_changes = ''
+
+        for row in csv.reader(StringIO.StringIO(kw_changes)):
             if len(''.join(row).strip()) == 0:
                 continue
             if len(row) != 4:
@@ -176,14 +196,11 @@ def content():
                     for supply in group.supplies:
                         for era in sess.query(Era).join(Supply) \
                                 .join(Source).filter(
-                                Era.supply == supply,
-                                Era.start_date <= group.finish_date, or_(
-                                Era.finish_date == null(),
-                                Era.finish_date >= group.start_date),
-                                Source.code.in_(
-                                    (
-                                        'net', 'gen-net', '3rd-party',
-                                        '3rd-party-reverse'))):
+                                    Era.supply == supply,
+                                    Era.start_date <= group.finish_date, or_(
+                                        Era.finish_date == null(),
+                                        Era.finish_date >= group.start_date),
+                                    Source.code != 'sub'):
 
                             if era.start_date > group.start_date:
                                 ss_start = era.start_date
@@ -195,27 +212,36 @@ def content():
                             else:
                                 ss_finish = group.finish_date
 
-                            imp_ss = SupplySource(
-                                sess, ss_start, ss_finish, kwh_start, era,
-                                True, None, report_context)
+                            if era.imp_mpan_core is None:
+                                imp_ss = None
+                            else:
+                                imp_ss = SupplySource(
+                                    sess, ss_start, ss_finish, kwh_start, era,
+                                    True, None, report_context)
+
                             if era.exp_mpan_core is None:
                                 exp_ss = None
+                                measurement_type = imp_ss.measurement_type
                             else:
                                 exp_ss = SupplySource(
                                     sess, ss_start, ss_finish, kwh_start, era,
                                     False, None, report_context)
-                            order = meter_order[imp_ss.measurement_type]
+                                measurement_type = exp_ss.measurement_type
+
+                            order = meter_order[measurement_type]
                             calcs.append(
                                 (
                                     order, era.imp_mpan_core,
                                     era.exp_mpan_core, imp_ss, exp_ss))
 
-                            if len(era.channels) == 0:
+                            if imp_ss is not None and len(era.channels) == 0:
                                 for hh in imp_ss.hh_data:
                                     deltas[hh['start-date']] += hh['msp-kwh']
 
-                    imp_delts = defaultdict(int)
-                    exp_delts = defaultdict(int)
+                    imp_net_delts = defaultdict(int)
+                    exp_net_delts = defaultdict(int)
+                    imp_gen_delts = defaultdict(int)
+
                     displaced_era = computer.displaced_era(
                         sess, group, group.start_date, group.finish_date)
                     site_ds = computer.SiteSource(
@@ -239,13 +265,13 @@ def content():
                                     0, hh['import-gen-kwh'] -
                                     hh['export-gen-kwh'] -
                                     used)
-                                exp_delt = exp_net - hh['export-net-kwh']
-                                exp_delts[hh['start-date']] += exp_delt
+                                exp_net_delt = exp_net - hh['export-net-kwh']
+                                exp_net_delts[hh['start-date']] += exp_net_delt
                                 displaced = hh['import-gen-kwh'] - \
                                     hh['export-gen-kwh'] - exp_net
                                 imp_net = used - displaced
                                 imp_delt = imp_net - hh['import-net-kwh']
-                                imp_delts[hh['start-date']] += imp_delt
+                                imp_net_delts[hh['start-date']] += imp_delt
 
                                 hh['import-net-kwh'] = imp_net
                                 hh['used-kwh'] = used
@@ -255,16 +281,21 @@ def content():
                                     change['date'] <= hh['start-date']:
                                 imp_gen = change['multiplier'] * \
                                     hh['import-gen-kwh']
+                                imp_gen_delt = imp_gen - hh['import-gen-kwh']
                                 exp_net = max(
                                     0, imp_gen - hh['export-gen-kwh'] -
                                     hh['used-kwh'])
-                                exp_delt = exp_net - hh['export-net-kwh']
-                                exp_delts[hh['start-date']] += exp_delt
+                                exp_net_delt = exp_net - hh['export-net-kwh']
+                                exp_net_delts[hh['start-date']] += exp_net_delt
+
                                 displaced = imp_gen - hh['export-gen-kwh'] - \
                                     exp_net
+
                                 imp_net = hh['used-kwh'] - displaced
-                                imp_delt = imp_net - hh['import-net-kwh']
-                                imp_delts[hh['start-date']] += imp_delt
+                                imp_net_delt = imp_net - hh['import-net-kwh']
+                                imp_net_delts[hh['start-date']] += imp_net_delt
+
+                                imp_gen_delts[hh['start-date']] += imp_gen_delt
 
                                 hh['import-net-kwh'] = imp_net
                                 hh['export-net-kwh'] = exp_net
@@ -297,7 +328,10 @@ def content():
                     for i, (
                             order, imp_mpan_core, exp_mpan_core, imp_ss,
                             exp_ss) in enumerate(sorted(calcs)):
-                        era = imp_ss.era
+                        if imp_ss is None:
+                            era = exp_ss.era
+                        else:
+                            era = imp_ss.era
                         supply = era.supply
                         source = supply.source
                         source_code = source.code
@@ -311,36 +345,30 @@ def content():
                             for sname in ('kwh', 'gbp'):
                                 month_data[name + '-' + sname] = 0
 
-                        if len(imp_delts) > 0:
+                        if source_code == 'net':
+                            delts = imp_net_delts
+                        elif source_code == 'gen':
+                            delts = imp_gen_delts
+                        else:
+                            delts = []
+
+                        if len(delts) > 0 and imp_ss is not None:
                             for hh in imp_ss.hh_data:
-                                diff = hh['msp-kwh'] + \
-                                    imp_delts[hh['start-date']]
+                                diff = hh['msp-kwh'] + delts[hh['start-date']]
                                 if diff < 0:
                                     hh['msp-kwh'] = 0
                                     hh['msp-kw'] = 0
-                                    imp_delts[hh['start-date']] -= \
-                                        hh['msp-kwh']
+                                    delts[hh['start-date']] -= hh['msp-kwh']
                                 else:
-                                    hh['msp-kwh'] += \
-                                        imp_delts[hh['start-date']]
+                                    hh['msp-kwh'] += delts[hh['start-date']]
                                     hh['msp-kw'] += hh['msp-kwh'] / 2
-                                    del imp_delts[hh['start-date']]
+                                    del delts[hh['start-date']]
 
-                            left_kwh = sum(imp_delts.values())
+                            left_kwh = sum(delts.values())
                             if left_kwh > 0:
                                 first_hh = imp_ss.hh_data[0]
                                 first_hh['msp-kwh'] += left_kwh
                                 first_hh['msp-kw'] += left_kwh / 2
-
-                        kwh = sum(
-                            hh['msp-kwh'] for hh in imp_ss.hh_data)
-
-                        if source_code in ('net', 'gen-net'):
-                            month_data['import-net-kwh'] += kwh
-                            month_data['used-kwh'] += kwh
-                        elif source_code in ('3rd-party', '3rd-party-reverse'):
-                            month_data['import-3rd-party-kwh'] += kwh
-                            month_data['used-kwh'] += kwh
 
                         imp_supplier_contract = era.imp_supplier_contract
                         if imp_supplier_contract is not None:
@@ -369,32 +397,18 @@ def content():
                                 month_data['import-3rd-party-gbp'] += gbp
                                 month_data['used-gbp'] += gbp
 
-                        dc_contract = era.hhdc_contract
-                        imp_ss.contract_func(
-                            dc_contract, 'virtual_bill')(imp_ss)
-                        dc_bill = imp_ss.dc_bill
-                        gbp = dc_bill['net-gbp']
-                        if source_code in ('net', 'gen-net'):
-                            month_data['import-net-gbp'] += gbp
-                            month_data['used-gbp'] += gbp
-                        elif source_code in ('3rd-party', '3rd-party-reverse'):
-                            month_data['import-3rd-party-gbp'] += gbp
-                            month_data['used-gbp'] += gbp
+                            kwh = sum(
+                                hh['msp-kwh'] for hh in imp_ss.hh_data)
 
-                        mop_contract = era.mop_contract
-                        mop_bill_function = imp_ss.contract_func(
-                            mop_contract, 'virtual_bill')
-                        mop_bill_function(imp_ss)
-                        mop_bill = imp_ss.mop_bill
-                        gbp = mop_bill['net-gbp']
-                        if source_code in ('net', 'gen-net'):
-                            month_data['import-net-gbp'] += gbp
-                            month_data['used-gbp'] += gbp
-                            type = 'net'
-                        elif source_code in ('3rd-party', '3rd-party-reverse'):
-                            month_data['import-3rd-party-gbp'] += gbp
-                            month_data['used-gbp'] += gbp
-                            type = '3rd-party'
+                            if source_code in ('net', 'gen-net'):
+                                month_data['import-net-kwh'] += kwh
+                                month_data['used-kwh'] += kwh
+                            elif source_code in (
+                                    '3rd-party', '3rd-party-reverse'):
+                                month_data['import-3rd-party-kwh'] += kwh
+                                month_data['used-kwh'] += kwh
+                            elif source_code in ('gen', 'gen-net'):
+                                month_data['import-gen-kwh'] += kwh
 
                         exp_supplier_contract = era.exp_supplier_contract
                         if exp_supplier_contract is not None:
@@ -404,6 +418,17 @@ def content():
                             export_vb_function(exp_ss)
 
                             exp_supplier_bill = exp_ss.supplier_bill
+                            try:
+                                gbp = exp_supplier_bill['net-gbp']
+                            except KeyError:
+                                exp_supplier_bill['problem'] += \
+                                    'For the supply ' + \
+                                    imp_ss.mpan_core + \
+                                    ' the virtual bill ' + \
+                                    str(imp_supplier_bill) + \
+                                    ' from the contract ' + \
+                                    imp_supplier_contract.name + \
+                                    ' does not contain the net-gbp key.'
 
                             kwh = sum(
                                 hh['msp-kwh'] for hh in exp_ss.hh_data)
@@ -418,16 +443,53 @@ def content():
                                 month_data['used-kwh'] -= kwh
                                 month_data['used-gbp'] -= gbp
 
+                        sss = exp_ss if imp_ss is None else imp_ss
+                        dc_contract = era.hhdc_contract
+                        sss.contract_func(
+                            dc_contract, 'virtual_bill')(sss)
+                        dc_bill = sss.dc_bill
+                        gbp = dc_bill['net-gbp']
+                        if source_code in ('net', 'gen-net'):
+                            month_data['import-net-gbp'] += gbp
+                            month_data['used-gbp'] += gbp
+                        elif source_code in (
+                                '3rd-party', '3rd-party-reverse'):
+                            month_data['import-3rd-party-gbp'] += gbp
+                            month_data['used-gbp'] += gbp
+
+                        mop_contract = era.mop_contract
+                        mop_bill_function = sss.contract_func(
+                            mop_contract, 'virtual_bill')
+                        mop_bill_function(sss)
+                        mop_bill = sss.mop_bill
+                        gbp = mop_bill['net-gbp']
+                        if source_code in ('net', 'gen-net'):
+                            month_data['import-net-gbp'] += gbp
+                            month_data['used-gbp'] += gbp
+                            typ = 'net'
+                        elif source_code in (
+                                '3rd-party', '3rd-party-reverse'):
+                            month_data['import-3rd-party-gbp'] += gbp
+                            month_data['used-gbp'] += gbp
+                            typ = '3rd-party'
+                        elif source_code == 'gen':
+                            typ = 'gen'
+
                         out = [
-                            era.imp_mpan_core, era.exp_mpan_core, type,
+                            era.imp_mpan_core, era.exp_mpan_core, typ,
                             site.code, site.name, month_str] + [
                             month_data[t] for t in summary_titles] + [''] + [
                             (mop_bill[t] if t in mop_bill else '')
                             for t in title_dict['mop']] + [''] + \
                             [(dc_bill[t] if t in dc_bill else '')
-                                for t in title_dict['dc']] + [''] + \
-                            [(imp_supplier_bill[t]
-                                if t in imp_supplier_bill else '')
+                                for t in title_dict['dc']]
+                        if imp_supplier_contract is None:
+                            out += [''] * (len(title_dict['imp-supplier']) + 1)
+                        else:
+                            out += [''] + [
+                                (
+                                    imp_supplier_bill[t]
+                                    if t in imp_supplier_bill else '')
                                 for t in title_dict['imp-supplier']]
                         if exp_supplier_contract is not None:
                             out += [''] + [

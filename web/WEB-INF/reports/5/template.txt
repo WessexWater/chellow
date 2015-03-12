@@ -10,7 +10,9 @@
       <a href="{{context_path}}/reports/1/output/">Chellow</a> &gt;
       <a href="{{context_path}}/reports/3/output/">Sites</a> &gt;
       {{site.name}}
-      [<a href="{{context_path}}/reports/311/output/?site_id={{site.id}}">edit</a>]
+      [<a
+			 	href="{{context_path}}/reports/311/output/?site_id={{site.id}}"
+			>edit</a>]
     </p>
     {% if messages %}
       <ul>
@@ -175,6 +177,17 @@ Table of site level monthly kWh, MD kWh etc.</a>
         For {{input_text('months', '1', 2, 2)}}
         month(s) until the end of {{input_date('finish', last_month_finish, resolution='month')}}
         <input type="submit" value="Download"/>
+      </fieldset>
+    </form>
+		<br>
+    <form action="{{context_path}}/reports/247/output/">
+      <fieldset>
+        <input type="hidden" name="site_id" value="{{site.id}}">
+        <legend>Supplies Monthly Duration</legend>
+        <br>
+        For {{input_text('months', '1', 2, 2)}}
+        month(s) until the end of {{input_date('finish', last_month_finish, resolution='month')}}
+        <input type="submit" value="Download">
       </fieldset>
     </form>
     <br>
