@@ -125,7 +125,8 @@ tmod_map = {
     '073A': '00073',
     '093A': '00093',
     '248A': '00248',
-    '239A': '00239'}
+    '239A': '00239',
+    'EA1E': 'kVA'}
 
 
 class Parser():
@@ -213,6 +214,9 @@ class Parser():
                     tpr_code = tmod_map[tpr_native]
                     if tpr_code == 'md':
                         units = 'kW'
+                        tpr_code = None
+                    elif tpr_code == 'kVA':
+                        units = 'kVA'
                         tpr_code = None
                     else:
                         units = 'kWh'
