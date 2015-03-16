@@ -142,7 +142,7 @@ def content():
 
         header_titles = [
             'imp-mpan-core', 'exp-mpan-core', 'type', 'generation-type',
-            'site-id', 'site-name', 'month']
+            'supply-name', 'msn', 'pc', 'site-id', 'site-name', 'month']
         summary_titles = [
             'import-net-kwh', 'export-net-kwh', 'import-gen-kwh',
             'export-gen-kwh', 'import-3rd-party-kwh', 'export-3rd-party-kwh',
@@ -320,8 +320,8 @@ def content():
                         month_data['displaced-gbp'] = 0
 
                         out = [
-                            '', '', 'displaced', '', site.code, site.name,
-                            month_str] + \
+                            '', '', 'displaced', '', '', '', '', site.code,
+                            site.name, month_str] + \
                             [month_data[t] for t in summary_titles]
                         yield ','.join(
                             '"' + str('' if v is None else v) +
@@ -492,7 +492,7 @@ def content():
 
                         out = [
                             era.imp_mpan_core, era.exp_mpan_core, typ,
-                            generation_type,
+                            generation_type, supply.name, era.msn, era.pc.code,
                             site.code, site.name, month_str] + [
                             month_data[t] for t in summary_titles] + [''] + [
                             (mop_bill[t] if t in mop_bill else '')
