@@ -4,7 +4,8 @@ import traceback
 import pytz
 from dateutil.relativedelta import relativedelta
 from sqlalchemy import or_
-from sqlalchemy.sql.expression import null
+from sqlalchemy.sql.expression import null, false
+from sqlalchemy.sql import func
 from collections import defaultdict
 import db
 import utils
@@ -140,8 +141,8 @@ def content():
                     'multiplier': float(kw_str)})
 
         header_titles = [
-            'imp-mpan-core', 'exp-mpan-core', 'type', 'site-id', 'site-name',
-            'month']
+            'imp-mpan-core', 'exp-mpan-core', 'type', 'generation-type',
+            'site-id', 'site-name', 'month']
         summary_titles = [
             'import-net-kwh', 'export-net-kwh', 'import-gen-kwh',
             'export-gen-kwh', 'import-3rd-party-kwh', 'export-3rd-party-kwh',
@@ -319,7 +320,7 @@ def content():
                         month_data['displaced-gbp'] = 0
 
                         out = [
-                            '', '', 'displaced', site.code, site.name,
+                            '', '', 'displaced', '', site.code, site.name,
                             month_str] + \
                             [month_data[t] for t in summary_titles]
                         yield ','.join(
@@ -411,7 +412,16 @@ def content():
                                 month_data['import-gen-kwh'] += kwh
 
                         exp_supplier_contract = era.exp_supplier_contract
-                        if exp_supplier_contract is not None:
+                        if exp_supplier_contract is None:
+                            kwh = sess.query(
+                                func.coalesce(func.sum(HhDatum.value), 0)). \
+                                join(Channel).filter(
+                                    Channel.era == era,
+                                    Channel.channel_type == 'ACTIVE',
+                                    Channel.imp_related == false()).scalar()
+                            if source_code == 'gen':
+                                month_data['export-net-kwh'] += kwh
+                        else:
                             export_vb_function = computer.contract_func(
                                 report_context, exp_supplier_contract,
                                 'virtual_bill', None)
@@ -442,6 +452,8 @@ def content():
                                 month_data['export-3rd-party-gbp'] += gbp
                                 month_data['used-kwh'] -= kwh
                                 month_data['used-gbp'] -= gbp
+                            elif source_code == 'gen':
+                                month_data['export-gen-kwh'] += kwh
 
                         sss = exp_ss if imp_ss is None else imp_ss
                         dc_contract = era.hhdc_contract
@@ -467,16 +479,20 @@ def content():
                             month_data['import-net-gbp'] += gbp
                             month_data['used-gbp'] += gbp
                             typ = 'net'
+                            generation_type = ''
                         elif source_code in (
                                 '3rd-party', '3rd-party-reverse'):
                             month_data['import-3rd-party-gbp'] += gbp
                             month_data['used-gbp'] += gbp
                             typ = '3rd-party'
+                            generation_type = ''
                         elif source_code == 'gen':
                             typ = 'gen'
+                            generation_type = supply.generator_type.code
 
                         out = [
                             era.imp_mpan_core, era.exp_mpan_core, typ,
+                            generation_type,
                             site.code, site.name, month_str] + [
                             month_data[t] for t in summary_titles] + [''] + [
                             (mop_bill[t] if t in mop_bill else '')
