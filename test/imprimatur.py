@@ -3338,13 +3338,19 @@ def virtual_bill_titles():
     return ['net-gbp', 'sum-msp-kwh', 'problem']
 
 def virtual_bill(supply_source):
-    sum_msp_kwh = sum(h['msp-kwh'] for h in supply_source.hh_data)
     bill = supply_source.supplier_bill
+    bill['net-gbp'] = 0
+    bill['sum-msp-kwh'] = 0
+
     for rate_name, rate_set in supply_source.supplier_rate_sets.iteritems():
         if len(rate_set) == 1:
             bill[rate_name] = rate_set.pop()
-    bill['net-gbp'] = sum_msp_kwh * 0.1
-    bill['sum-msp-kwh'] = sum_msp_kwh
+    for h in supply_source.hh_data:
+        msp_kwh = h['msp-kwh']
+        bill['sum-msp-kwh'] += msp_kwh
+        bill['net-gbp'] += msp_kwh * 0.1
+        if h['utc-is-month-end']:
+            pass
 """,
             'properties': "{}", },
         'regexes': [
@@ -6258,7 +6264,7 @@ def virtual_bill(supply_source):
         'regexes': [
             r'"07-002","3423760010","N","10","9.07","0.21","2012-01-05 00:00",'
             '"2012-01-10 23:30","22 1065 3921 534","CI017","Roselands",'
-            '"2012-01-05 00:00","2012-01-10 23:30","21","9.07","0.0","9.07",'
+            '"2012-01-05 00:00","2012-01-10 23:30","21","9.07","0","9.07",'
             '"10.0","0","",""', ], },
 
     # Update register read to make the TPR a teleswitch one },

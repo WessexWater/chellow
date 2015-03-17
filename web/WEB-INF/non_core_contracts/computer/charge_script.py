@@ -1364,9 +1364,17 @@ order by hh_datum.start_date
                                         fractional_month <= ci['end-month']:
 
                                     dt_utc = hh_date + year_delta
+                                    next_dt_utc = dt_utc + HH
+                                    utc_is_month_end = \
+                                        next_dt_utc.day == 1 and \
+                                        next_dt_utc.hour == 0 and \
+                                        next_dt_utc.minute == 0
                                     dt_ct = ct_tz.normalize(
                                         dt_utc.astimezone(ct_tz))
-
+                                    next_dt_ct = dt_ct + HH
+                                    ct_is_month_end = next_dt_ct.day == 1 and \
+                                        next_dt_ct.hour == 0 and \
+                                        next_dt_ct.minute == 0
                                     hh_part.append(
                                         {
                                             'imp-msp-kvarh': 0,
@@ -1390,6 +1398,10 @@ order by hh_datum.start_date
                                             'ct-day-of-week': dt_ct.weekday(),
                                             'utc-day-of-week':
                                             dt_utc.weekday(),
+                                            'utc-is-month-end':
+                                            utc_is_month_end,
+                                            'ct-is-month-end':
+                                            ct_is_month_end,
                                             'status': status})
                                     break
                             hh_date += HH
