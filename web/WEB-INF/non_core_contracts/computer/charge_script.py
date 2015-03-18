@@ -471,7 +471,6 @@ class DataSource():
         self.years_back = times['years-back']
         self.history_start = times['history-start']
         self.history_finish = times['history-finish']
-        self.utc_days = times['utc-days']
 
         self.problem = ''
         self.is_green = False

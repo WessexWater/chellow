@@ -126,9 +126,13 @@ def triad_bill(data_source, rate_period='monthly'):
                 total_intervals += 1
                 dt += relativedelta(days=1)
 
-            est_intervals = sum(
-                ds.utc_days for ds in computer.get_data_sources(
-                    data_source, month_start, month_finish))
+            est_intervals = 0
+            for ds in computer.get_data_sources(
+                    data_source, month_start, month_finish):
+                for h in ds.hh_data:
+                    if h['utc-decimal-hour'] == 0:
+                        est_intervals += 1
+
             bill['triad-estimate-days'] = est_intervals
 
         bill['triad-estimate-gbp'] = est_triad_gbp / total_intervals * \
