@@ -65,7 +65,7 @@ def triad_calc(
 
 def triad_bill(data_source, rate_period='monthly'):
     bill = data_source.supplier_bill
-    for hh in (h for h in data_source.hh_times if h['utc-is-month-end']):
+    for hh in (h for h in data_source.hh_data if h['utc-is-month-end']):
         month_finish = hh['start-date']
         month_start = month_finish + HH - relativedelta(months=1)
         month_num = month_start.month

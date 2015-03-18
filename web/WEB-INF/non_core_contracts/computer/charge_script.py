@@ -74,17 +74,6 @@ def get_times(sess, caches, start_date, finish_date, forecast_date, pw):
         times_dict['history-start'] = dt - (finish_date - start_date)
 
         times_dict['years-back'] = years_back
-        times_dict['hhs'] = []
-
-        hh_date = start_date
-        dgenerator = _datum_generator(sess, years_back, caches, pw)
-        while hh_date <= finish_date:
-            hh = dgenerator(sess, hh_date)
-            times_dict['hhs'].append(hh)
-            if hh['utc-decimal-hour'] == 0:
-                times_dict['utc-days'] += 1
-
-            hh_date += HH
 
         f_cache[forecast_date] = times_dict
         return times_dict
@@ -479,7 +468,6 @@ class DataSource():
         self.pw = pw
         times = get_times(
             sess, caches, start_date, finish_date, forecast_date, pw)
-        self.hh_times = times['hhs']
         self.years_back = times['years-back']
         self.history_start = times['history-start']
         self.history_finish = times['history-finish']

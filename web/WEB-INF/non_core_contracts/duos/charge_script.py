@@ -493,21 +493,18 @@ def hh_time_2010_04_01(ds, hh):
         month_to = hh['start-date']
         month_from = month_to - relativedelta(months=1) + HH
         md_kva = 0
-        dss = [
-            dsc for dsc in computer.get_data_sources(ds, month_from, month_to)]
-        for dsc in dss:
+        days_in_month = 0
+        for dsc in computer.get_data_sources(ds, month_from, month_to):
             for datum in dsc.hh_data:
                 md_kva = max(
                     md_kva, (
                         datum['msp-kw'] ** 2 + max(
                             datum['imp-msp-kvar'], datum['exp-msp-kvar']) **
                         2) ** 0.5)
+                if datum['utc-decimal-hour'] == 0:
+                    days_in_month += 1
 
         excess_kva = max(md_kva - ds.sc, 0)
-        days_in_month = 0
-        for dsc in dss:
-            days_in_month += sum(
-                1 for hh in dsc.hh_times if hh['utc-decimal-hour'] == 0)
 
         if 'excess-gbp-per-kva-per-day' in tariff:
             rate = tariff['excess-gbp-per-kva-per-day']
@@ -541,7 +538,7 @@ def duos_vb(ds):
         dno_cache['time_funcs'] = {}
         time_func_cache = dno_cache['time_funcs']
 
-    for hh in ds.hh_times:
+    for hh in ds.hh_data:
         try:
             time_func_cache[hh['start-date']](ds, hh)
         except KeyError:
