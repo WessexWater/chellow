@@ -32,7 +32,13 @@ class Parser():
     def make_raw_bills(self):
         raw_bills = []
         iter(self.reader).next()  # skip title row
+        blank_set = set(('',))
         for self.line_number, self.vals in enumerate(self.reader):
+
+            # skip blank lines
+            if len(self.vals) == 0 or set(self.vals) == blank_set:
+                continue
+
             bill_type_code = self.vals[0]
             if bill_type_code.startswith('#'):
                 continue  # skip comment lines
