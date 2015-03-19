@@ -72,7 +72,8 @@ def key_format(dt):
 
 class SystemPriceImporter(threading.Thread):
     def __init__(self):
-        super(SystemPriceImporter, self).__init__()
+        super(SystemPriceImporter, self).__init__(
+            name="System Price Elexon Importer")
         self.lock = threading.RLock()
         self.messages = collections.deque()
         self.stopped = threading.Event()

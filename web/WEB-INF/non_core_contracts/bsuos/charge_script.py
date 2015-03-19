@@ -81,7 +81,7 @@ bsuos_importer = None
 
 class BsuosImporter(threading.Thread):
     def __init__(self):
-        super(BsuosImporter, self).__init__()
+        super(BsuosImporter, self).__init__(name="BSUoS Importer")
         self.lock = threading.RLock()
         self.messages = collections.deque()
         self.stopped = threading.Event()

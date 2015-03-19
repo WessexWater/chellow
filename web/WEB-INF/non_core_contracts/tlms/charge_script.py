@@ -82,7 +82,7 @@ tlm_importer = None
 
 class TlmImporter(threading.Thread):
     def __init__(self):
-        super(TlmImporter, self).__init__()
+        super(TlmImporter, self).__init__(name="TLM Importer")
         self.lock = threading.RLock()
         self.messages = collections.deque()
         self.stopped = threading.Event()
@@ -220,6 +220,8 @@ def get_tlm_importer():
 
 def startup():
     global tlm_importer
+    if tlm_importer is not None:
+        raise UserException("The TLM importer has already been started.")
     tlm_importer = TlmImporter()
     tlm_importer.start()
 

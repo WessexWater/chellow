@@ -24,7 +24,9 @@ class HhDataImportProcess(threading.Thread):
 
     def __init__(
             self, hhdc_contract_id, process_id, istream, file_name, file_size):
-        super(HhDataImportProcess, self).__init__()
+        super(HhDataImportProcess, self).__init__(
+            name="HH Manual Import: contract " + str(hhdc_contract_id))
+
         self.messages = []
         self.istream = istream
         self.hhdc_contract_id = hhdc_contract_id
@@ -90,7 +92,8 @@ def start_hh_import_process(hhdc_contract_id, istream, file_name, file_size):
 class HhImportTask(threading.Thread):
 
     def __init__(self, contract_id):
-        super(HhImportTask, self).__init__()
+        super(HhImportTask, self).__init__(
+            name="HH Automatic Import: contract " + str(contract_id))
         self.lock = threading.RLock()
         self.messages = collections.deque()
         self.contract_id = contract_id

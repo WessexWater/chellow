@@ -65,7 +65,8 @@ system_price_importer = None
 
 class SystemPriceImporter(threading.Thread):
     def __init__(self):
-        super(SystemPriceImporter, self).__init__()
+        super(SystemPriceImporter, self).__init__(
+            name="System Price BMReports Importer")
         self.lock = threading.RLock()
         self.messages = collections.deque()
         self.stopped = threading.Event()

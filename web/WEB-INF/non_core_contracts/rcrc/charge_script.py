@@ -56,7 +56,7 @@ def key_format(dt):
 
 class RcrcImporter(threading.Thread):
     def __init__(self):
-        super(RcrcImporter, self).__init__()
+        super(RcrcImporter, self).__init__(name="RCRC Importer")
         self.lock = threading.RLock()
         self.messages = collections.deque()
         self.stopped = threading.Event()

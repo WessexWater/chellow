@@ -267,6 +267,28 @@ else:
 
     <p>{{ message }}</p>
 
+
+    <table>
+      <caption>Threads</caption>
+      <thead>
+        <tr>
+          <th>Id</th>
+          <th>Name</th>
+          <th>Trace</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for thread_dict in thread_dicts %}
+          <tr>
+            <td>{{thread_dict['thread'].ident}}</td>
+            <td>{{thread_dict['thread'].name}}</td>
+            <td><pre>{{thread_dict['trace']}}</pre></td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    <br>
     <form method="post" action="/chellow/reports/171/output/">
       <fieldset>
         <legend>Run shutdown script</legend>
@@ -289,10 +311,29 @@ else:
     import db
     import templater
     import computer
+    import threading
+    import traceback
     Monad.getUtils()['impt'](globals(), 'utils', 'templater', 'computer', 'db')
 
     Contract = db.Contract
     render = templater.render
+
+    def make_vals(msg=None):
+        vals = {}
+        if msg is not None:
+            vals['message'] = msg
+
+        thread_dicts = []
+        current_threads = dict((t.ident, t) for t in threading.enumerate())
+
+        for thread_id, stack in sys._current_frames().items():
+            thread_dicts.append(
+                {
+                    'thread': current_threads[thread_id],
+                    'trace': ''.join(traceback.format_stack(stack))})
+
+        vals['thread_dicts'] = thread_dicts
+        return vals
 
     sess = None
     try:
@@ -305,15 +346,17 @@ else:
                     sess, 'shutdown')
                 computer.contract_func(
                     caches, shutdown_contract, 'on_shut_down', None)(None)
-                render(inv, template, {'message': 'Shut down successfully.'})
+                render(
+                    inv, template,
+                    make_vals("Shut down successfully."))
             elif inv.hasParameter('run_startup'):
                 shutdown_contract = Contract.get_non_core_by_name(
                     sess, 'startup')
                 computer.contract_func(
                     caches, shutdown_contract, 'on_start_up', None)(None)
-                render(inv, template, {'message': 'Started up successfully.'})
+                render(inv, template, make_vals("Started up successfully."))
         else:
-            render(inv, template, {})
+            render(inv, template, make_vals())
     finally:
         if sess is not None:
             sess.close()
