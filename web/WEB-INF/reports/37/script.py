@@ -10,6 +10,7 @@ import db
 Monad.getUtils()['impt'](globals(), 'db', 'utils', 'templater')
 render = templater.render
 UserException, form_int = utils.UserException, utils.form_int
+form_bool = utils.form_bool
 Contract, Snag, Channel, Era = db.Contract, db.Snag, db.Channel, db.Era
 Site, SiteEra = db.Site, db.SiteEra
 inv, template = globals()['inv'], globals()['template']
@@ -25,14 +26,15 @@ try:
             contract_id = form_int(inv, 'hhdc_contract_id')
         contract = Contract.get_hhdc_by_id(sess, contract_id)
         hidden_days = form_int(inv, 'hidden_days')
+        is_ignored = form_bool(inv, 'is_ignored')
 
         total_snags = sess.query(Snag).join(Channel).join(Era).filter(
-            Snag.is_ignored == false(), Era.hhdc_contract_id == contract.id,
+            Snag.is_ignored == false(), Era.hhdc_contract == contract,
             Snag.start_date < datetime.datetime.now(pytz.utc) -
             relativedelta(days=hidden_days)).count()
         snags = sess.query(Snag).join(Channel).join(Era).join(
             Era.site_eras).join(SiteEra.site).filter(
-            Snag.is_ignored == false(), Era.hhdc_contract_id == contract.id,
+            Snag.is_ignored == is_ignored, Era.hhdc_contract == contract,
             Snag.start_date < datetime.datetime.now(pytz.utc) -
             relativedelta(days=hidden_days)).order_by(
             Site.code, Era.id, Snag.start_date, Snag.finish_date,
@@ -60,7 +62,8 @@ try:
         render(
             inv, template, {
                 'contract': contract, 'snags': snags,
-                'total_snags': total_snags, 'snag_groups': snag_groups})
+                'total_snags': total_snags, 'snag_groups': snag_groups,
+                'is_ignored': is_ignored})
 except UserException, e:
     if str(e).startswith("There isn't a contract"):
         inv.sendNotFound(str(e))

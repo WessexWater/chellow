@@ -31,14 +31,22 @@
         <legend>Show Channel Snags</legend>
         <input type="hidden" name="hhdc_contract_id" value="{{contract.id}}">
         <label>
-          Snags less than {{input_text('hidden_days', '0', 3, 3)}} days old are hidden.
+          Snags less than {{input_text('hidden_days', '0', 3, 3)}} days old are
+          hidden.
+        </label>
+        <label>
+          Include ignored snags {{input_checkbox('is_ignored', False)}}
         </label>
         <input type="submit" value="Show">
       </fieldset>
     </form>
 
     <p>
-      There are {{total_snags}} snag(s) older than {{request.getParameter('hidden_days')}} days that aren't ignored.
+      There are {{total_snags}} snag(s) older than
+      {{request.getParameter('hidden_days')}} days
+      {%- if not is_ignored %}
+        that aren't ignored
+      {%- endif -%}.
     </p>
 
     <table>
@@ -62,6 +70,7 @@
                 {% for snag in snag_group.snags %}
                   <li>
                     <a href="{{context_path}}/reports/117/output/?snag_id={{snag.id}}">view</a>  [<a href="{{context_path}}/reports/365/output/?snag_id={{snag.id}}">edit</a>]
+                    {% if snag.is_ignored %} ignored{% endif %}
                   </li>
                 {% endfor %}
               </ul>
@@ -108,3 +117,4 @@
     </table>
   </body>
 </html>
+

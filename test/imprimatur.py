@@ -1874,7 +1874,8 @@ def gsp_gbp_per_kwh():
         'regexes': [
             r"<td>\s*22 0470 7514 535\s*</td>\s*<td>\s*<ul>\s*<li>\s*"
             "CH017 Parbola\s*</li>",
-            r"There are 46 snag\(s\) older than 5 days that aren't ignored\.",
+            r"There are 46 snag\(s\) older than\s*5 days\s* that aren't "
+            r"ignored\.",
             r'<a href="/chellow/reports/115/output/\?hhdc_contract_id=54">HH '
             'contract</a>',
             r'<li>\s*'
