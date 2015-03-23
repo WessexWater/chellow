@@ -763,7 +763,7 @@
       </fieldset>
     </form>
     <br />
-    <form action="{{ context_path }}/reports/41/output/?supply-id">
+    <form action="{{ context_path }}/reports/41/output/?supply_id">
       <fieldset>
         <legend>TRIAD</legend>
         <input type="hidden" name="supply_id" value="{{ supply.id }}">
@@ -809,15 +809,15 @@
     </form>
     <br>
     <form action="{{ context_path }}/reports/219/output/">
-      <input type="hidden" name="supply-id" value="{{ supply.id }}" />
+      <input type="hidden" name="supply_id" value="{{ supply.id }}">
       <fieldset>
         <legend>Register Reads</legend>
-        <br />
-        <br />
+        <br>
+        <br>
         For <input name="months" maxlength="2" size="2" value="1">
         month(s) finishing at the end of
         {{ input_date('end', last_month_finish, 'month') }}
-        <input type="submit" value="Download" />
+        <input type="submit" value="Download">
       </fieldset>
     </form>
     <br>
