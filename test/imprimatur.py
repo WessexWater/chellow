@@ -5805,7 +5805,7 @@ def virtual_bill(supply_source):
         'status_code': 303, },
     {
         'path': '/chellow/reports/251/output/',
-        'tries': {'max': 20, 'period': 1},
+        'tries': {'max': 30, 'period': 1},
         'status_code': 200,
         'regexes': [
             r"003_FINISHED_site_monthly_duration_for_CI004_1_to_2010_7\.csv"]},
