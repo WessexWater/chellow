@@ -50,6 +50,11 @@ if inv.hasParameter('site_id'):
 else:
     site_id = None
 
+if inv.hasParameter('supply_id'):
+    supply_id = inv.getLong('supply_id')
+else:
+    supply_id = None
+
 meter_order = {'hh': 0, 'amr': 1, 'nhh': 2, 'unmetered': 3}
 
 
@@ -117,6 +122,8 @@ def content():
                 Era.finish_date >= start_date)).distinct()
         if site_id is not None:
             sites = sites.filter(Site.id == site_id)
+        if supply_id is not None:
+            sites = sites.filter(Era.supply_id == supply_id)
 
         changes = defaultdict(list, {})
 
@@ -158,14 +165,17 @@ def content():
                 ('exp-supplier', Era.exp_supplier_contract)):
             titles = []
             title_dict[cont_type] = titles
-            for cont in sess.query(Contract).join(con_attr) \
-                    .join(Era.supply).join(Source).filter(
-                        Era.start_date <= start_date,
-                        or_(
-                            Era.finish_date == null(),
-                            Era.finish_date >= start_date),
-                        Source.code.in_(('net', '3rd-party'))
-                    ).distinct().order_by(Contract.id):
+            conts = sess.query(Contract).join(con_attr) \
+                .join(Era.supply).join(Source).filter(
+                    Era.start_date <= start_date,
+                    or_(
+                        Era.finish_date == null(),
+                        Era.finish_date >= start_date),
+                    Source.code.in_(('net', '3rd-party'))
+                ).distinct().order_by(Contract.id)
+            if supply_id is not None:
+                conts = conts.filter(Era.supply_id == supply_id)
+            for cont in conts:
                 title_func = computer.contract_func(
                     report_context, cont, 'virtual_bill_titles', None)
                 if title_func is None:
@@ -195,6 +205,8 @@ def content():
                     calcs = []
                     deltas = defaultdict(int)
                     for supply in group.supplies:
+                        if supply_id is not None and supply.id != supply_id:
+                            continue
                         for era in sess.query(Era).join(Supply) \
                                 .join(Source).filter(
                                     Era.supply == supply,
@@ -303,7 +315,7 @@ def content():
                                 hh['import-gen-kwh'] = imp_gen
                                 hh['msp-kwh'] = displaced
 
-                    if displaced_era is not None:
+                    if displaced_era is not None and supply_id is None:
                         month_data = {}
                         for sname in (
                                 'import-net', 'export-net', 'import-gen',

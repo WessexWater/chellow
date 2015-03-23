@@ -118,6 +118,18 @@
 			<li>
 				<a href="{{ context_path }}/reports/245/output/">Scenario Runner</a>
 			</li>
+			<li>
+				<form action="{{context_path}}/reports/247/output/">
+					<fieldset>
+						<legend>Download Unified Monthly Duration</legend>
+						<br>
+						For {{input_text('months', '1', 2, 2)}}
+						month(s) finishing at the end of
+						{{input_date('finish', month_finish, resolution='month')}}
+						<input type="submit" value="Download">
+					</fieldset>
+				</form>
+			</li>
 		</ul>
 
 		<h3>Industry Info</h3>

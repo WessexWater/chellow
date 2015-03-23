@@ -183,7 +183,7 @@ Table of site level monthly kWh, MD kWh etc.</a>
     <form action="{{context_path}}/reports/247/output/">
       <fieldset>
         <input type="hidden" name="site_id" value="{{site.id}}">
-        <legend>Supplies Monthly Duration</legend>
+        <legend>Unified Monthly Duration</legend>
         <br>
         For {{input_text('months', '1', 2, 2)}}
         month(s) until the end of {{input_date('finish', last_month_finish, resolution='month')}}
@@ -258,3 +258,4 @@ Table of site level monthly kWh, MD kWh etc.</a>
     </form>
   </body>
 </html>
+
