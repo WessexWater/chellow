@@ -4,7 +4,7 @@ import templater
 import datetime
 from dateutil.relativedelta import relativedelta
 Monad.getUtils()['impt'](globals(), 'templater', 'db')
-inv, template = globals()['inv'], globals()['templater']
+inv, template = globals()['inv'], globals()['template']
 
 sess = None
 try:

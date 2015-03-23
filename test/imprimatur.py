@@ -6809,4 +6809,20 @@ def virtual_bill(supply_source):
         'regexes': [
             r"The file has been imported successfully", ],
         'status_code': 200},
+
+    # Supplies TRIAD selector
+    {
+        'name': "Supplies TRIAD selector",
+        'path': '/chellow/reports/175/output/',
+        'status_code': 200,
+        'regexes': [
+            r"<!DOCTYPE html>"]},
+
+    # Sites TRIAD selector
+    {
+        'name': "Sites TRIAD selector",
+        'path': '/chellow/reports/179/output/',
+        'status_code': 200,
+        'regexes': [
+            r"<!DOCTYPE html>"]},
 ]
