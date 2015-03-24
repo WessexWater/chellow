@@ -6833,4 +6833,12 @@ def virtual_bill(supply_source):
         'status_code': 200,
         'regexes': [
             r"<!DOCTYPE html>"]},
+
+    # View a MOP bill
+    {
+        'name': "View a MOP bill",
+        'path': '/chellow/reports/359/output/?mop_bill_id=16',
+        'status_code': 200,
+        'regexes': [
+            r"<!DOCTYPE html>"]},
 ]
