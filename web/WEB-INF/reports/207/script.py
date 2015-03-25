@@ -3,7 +3,7 @@ from net.sf.chellow.monad import Monad
 import pytz
 import datetime
 from dateutil.relativedelta import relativedelta
-from sqlalchemy import or_, func
+from sqlalchemy import or_, func, Float, cast
 from sqlalchemy.sql.expression import null, true
 import math
 import utils
@@ -379,11 +379,14 @@ def content():
                     breakdown += 'pairs - \n' + str(pairs)
 
                 elif meter_type == 'hh':
-                    kwhs = sess.query(HhDatum.value).join(Channel).filter(
-                        Channel.imp_related == true(),
-                        Channel.channel_type == 'ACTIVE', Channel.era == era,
-                        HhDatum.start_date >= period_start,
-                        HhDatum.start_date <= period_finish).all()
+                    kwhs = list(
+                        v[0] for v in sess.query(cast(HhDatum.value, Float)).
+                        join(Channel).filter(
+                            Channel.imp_related == true(),
+                            Channel.channel_type == 'ACTIVE',
+                            Channel.era == era,
+                            HhDatum.start_date >= period_start,
+                            HhDatum.start_date <= period_finish))
                     yield ' '
 
                     sum_kwhs = sum(kwhs)
@@ -404,11 +407,14 @@ def content():
                             HhDatum.start_date <= period_finish,
                             HhDatum.status == 'A').one()[0]) / 48
                 elif meter_type == 'amr':
-                    kwhs = sess.query(HhDatum.value).join(Channel).filter(
-                        Channel.imp_related == true(),
-                        Channel.channel_type == 'ACTIVE', Channel.era == era,
-                        HhDatum.start_date >= period_start,
-                        HhDatum.start_date <= period_finish).all()
+                    kwhs = list(
+                        v[0] for v in sess.query(cast(HhDatum.value, Float)).
+                        join(Channel).filter(
+                            Channel.imp_related == true(),
+                            Channel.channel_type == 'ACTIVE',
+                            Channel.era == era,
+                            HhDatum.start_date >= period_start,
+                            HhDatum.start_date <= period_finish))
 
                     sum_kwhs = sum(kwhs)
                     len_kwhs = len(kwhs)

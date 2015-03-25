@@ -6851,4 +6851,11 @@ def virtual_bill(supply_source):
         'status_code': 200,
         'regexes': [
             r"<!DOCTYPE html>"]},
+
+    # CRC for HH supply with HH data
+    {
+        'path': '/chellow/reports/207/output/?supply_id=2&year=2005',
+        'status_code': 200,
+        'regexes': [
+            r'"2","22 9813 2107 763"']},
 ]
