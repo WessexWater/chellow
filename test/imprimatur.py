@@ -509,7 +509,10 @@ def virtual_bill(ds):
             'start_day': "01",
             'start_hour': "00",
             'start_minute': "00",
-            'charge_script': "",
+            'charge_script': """
+def virtual_bill_titles():
+    return []
+""",
             'properties': "{}", },
         'regexes': [
             r"/chellow/reports/77/output/\?supplier_contract_id=61"],
@@ -552,8 +555,11 @@ def gsp_gbp_per_kwh():
             'start_hour': "00",
             'start_minute': "00",
             'has_finished': "false",
-            'charge_script': "",
-            'properties': "{}"},
+            'charge_script': """
+def virtual_bill_titles():
+    return []
+""",
+            'properties': "{}", },
         'regexes': [
             r"/reports/77/output/\?supplier_contract_id=62"],
         'status_code': 303},
@@ -2858,6 +2864,18 @@ def triad_estimates():
             r"CH023_1_to_2009_3\.csv"],
         'status_code': 200},
     {
+        'name': "Unified Supplies Monthly Duration",
+        'path': '/chellow/reports/247/output/?site_id=5&months=1&'
+        'finish_year=2009&finish_month=03',
+        'status_code': 303},
+    {
+        'path': '/chellow/reports/251/output/',
+        'tries': {'max': 40, 'period': 1},
+        'regexes': [
+            r"005_FINISHED_watkinsexamplecom_unified_supplies_monthly_"
+            r"duration_site_CH023\.csv"],
+        'status_code': 200},
+    {
         'name': "CSV Sites TRIAD",
         'path': '/chellow/reports/181/output/?site_id=3&year=2010',
         'regexes': [
@@ -2876,12 +2894,12 @@ def triad_estimates():
         'path': '/chellow/reports/251/output/',
         'tries': {'max': 20, 'period': 1},
         'regexes': [
-            r"005_FINISHED_watkinsexamplecom_site_monthly_duration_for_"
+            r"006_FINISHED_watkinsexamplecom_site_monthly_duration_for_"
             r"CI017_1_to_2009_4\.csv"],
         'status_code': 200, },
     {
         'path': '/chellow/reports/253/output/?'
-        'name=005_FINISHED_watkinsexamplecom_site_monthly_duration_for_'
+        'name=006_FINISHED_watkinsexamplecom_site_monthly_duration_for_'
         'CI017_1_to_2009_4.csv',
         'tries': {},
         'status_code': 200,
@@ -2899,6 +2917,180 @@ def triad_estimates():
             '"'
             "Can't find the virtual_bill function in the supplier "
             'contract. "']},
+
+    # See if unified report handles the case where there isn't an import
+    # virtual bill function.
+    {
+        'name': "Unified Supplies Monthly Duration - no virtual bill function",
+        'path': '/chellow/reports/247/output/?site_id=4&months=1&'
+        'finish_year=2009&finish_month=04',
+        'status_code': 303, },
+    {
+        'path': '/chellow/reports/251/output/',
+        'tries': {'max': 20, 'period': 1},
+        'regexes': [
+            r"007_FINISHED_watkinsexamplecom_unified_supplies_monthly_"
+            r"duration_site_CI017\.csv"],
+        'status_code': 200, },
+    {
+        'path': '/chellow/reports/253/output/?'
+        'name=007_FINISHED_watkinsexamplecom_unified_supplies_monthly_'
+        'duration_site_CI017.csv',
+        'status_code': 200,
+        'regexes': [
+            r"imp-mpan-core,exp-mpan-core,metering-type,source,generator-type,"
+            r"supply-name,msn,pc,site-id,site-name,associated-site-ids,"
+            r"month,import-net-kwh,export-net-kwh,import-gen-kwh,"
+            r"export-gen-kwh,import-3rd-party-kwh,export-3rd-party-kwh,"
+            r"displaced-kwh,used-kwh,used-3rd-party-kwh,import-net-gbp,"
+            r"export-net-gbp,import-gen-gbp,export-gen-gbp,"
+            r"import-3rd-party-gbp,export-3rd-party-gbp,displaced-gbp,"
+            r"used-gbp,used-3rd-party-gbp,billed-import-net-kwh,"
+            r"billed-import-net-gbp,,mop-net-gbp,mop-problem,,"
+            r"dc-net-gbp,dc-problem,,imp-supplier-net-gbp,imp-supplier-tlm,"
+            r"imp-supplier-ccl-kwh,imp-supplier-ccl-rate,"
+            r"imp-supplier-ccl-gbp,imp-supplier-data-collection-gbp,"
+            r"imp-supplier-duos-availability-kva,"
+            r"imp-supplier-duos-availability-days,"
+            r"imp-supplier-duos-availability-rate,"
+            r"imp-supplier-duos-availability-gbp,"
+            r"imp-supplier-duos-excess-availability-kva,"
+            r"imp-supplier-duos-excess-availability-days,"
+            r"imp-supplier-duos-excess-availability-rate,"
+            r"imp-supplier-duos-excess-availability-gbp,"
+            r"imp-supplier-duos-day-kwh,imp-supplier-duos-day-gbp,"
+            r"imp-supplier-duos-night-kwh,imp-supplier-duos-night-gbp,"
+            r"imp-supplier-duos-reactive-rate,imp-supplier-duos-reactive-gbp,"
+            r"imp-supplier-duos-standing-gbp,imp-supplier-settlement-gbp,"
+            r"imp-supplier-night-msp-kwh,imp-supplier-night-gsp-kwh,"
+            r"imp-supplier-night-gbp,imp-supplier-other-msp-kwh,"
+            r"imp-supplier-other-gsp-kwh,imp-supplier-other-gbp,"
+            r"imp-supplier-summer-pk-msp-kwh,imp-supplier-summer-pk-gsp-kwh,"
+            r"imp-supplier-summer-pk-gbp,imp-supplier-winter-low-pk-msp-kwh,"
+            r"imp-supplier-winter-low-pk-gsp-kwh,"
+            r"imp-supplier-winter-low-pk-gbp,"
+            r"imp-supplier-winter-off-pk-msp-kwh,"
+            r"imp-supplier-winter-off-pk-gsp-kwh,"
+            r"imp-supplier-winter-off-pk-gbp,imp-supplier-winter-pk-msp-kwh,"
+            r"imp-supplier-winter-pk-gsp-kwh,imp-supplier-winter-pk-gbp,"
+            r"imp-supplier-bsuos-kwh,imp-supplier-bsuos-rate,"
+            r"imp-supplier-bsuos-gbp,imp-supplier-triad-actual-1-date,"
+            r"imp-supplier-triad-actual-1-msp-kw,"
+            r"imp-supplier-triad-actual-1-status,"
+            r"imp-supplier-triad-actual-1-laf,"
+            r"imp-supplier-triad-actual-1-gsp-kw,"
+            r"imp-supplier-triad-actual-2-date,"
+            r"imp-supplier-triad-actual-2-msp-kw,"
+            r"imp-supplier-triad-actual-2-status,"
+            r"imp-supplier-triad-actual-2-laf",
+            r"imp-supplier-triad-actual-2-gsp-kw,"
+            r"imp-supplier-triad-actual-3-date,"
+            r"imp-supplier-triad-actual-3-msp-kw,"
+            r"imp-supplier-triad-actual-3-status,"
+            r"imp-supplier-triad-actual-3-laf,"
+            r"imp-supplier-triad-actual-3-gsp-kw,"
+            r"imp-supplier-triad-actual-gsp-kw,imp-supplier-triad-actual-rate,"
+            r"imp-supplier-triad-actual-gbp,"
+            r"imp-supplier-triad-estimate-1-date,"
+            r"imp-supplier-triad-estimate-1-msp-kw,"
+            r"imp-supplier-triad-estimate-1-status,"
+            r"imp-supplier-triad-estimate-1-laf,"
+            r"imp-supplier-triad-estimate-1-gsp-kw,"
+            r"imp-supplier-triad-estimate-2-date,"
+            r"imp-supplier-triad-estimate-2-msp-kw,"
+            r"imp-supplier-triad-estimate-2-status,"
+            r"imp-supplier-triad-estimate-2-laf,"
+            r"imp-supplier-triad-estimate-2-gsp-kw,"
+            r"imp-supplier-triad-estimate-3-date,"
+            r"imp-supplier-triad-estimate-3-msp-kw,"
+            r"imp-supplier-triad-estimate-3-status,"
+            r"imp-supplier-triad-estimate-3-laf,"
+            r"imp-supplier-triad-estimate-3-gsp-kw,"
+            r"imp-supplier-triad-estimate-gsp-kw,"
+            r"imp-supplier-triad-estimate-rate,"
+            r"imp-supplier-triad-estimate-months,"
+            r"imp-supplier-triad-estimate-gbp,"
+            r"imp-supplier-triad-all-estimates-months,"
+            r"imp-supplier-triad-all-estimates-gbp,imp-supplier-problem,,"
+            r"exp-supplier-net-gbp,exp-supplier-tlm,exp-supplier-ccl-kwh,"
+            r"exp-supplier-ccl-rate,exp-supplier-ccl-gbp,"
+            r"exp-supplier-data-collection-gbp,"
+            r"exp-supplier-duos-availability-kva,"
+            r"exp-supplier-duos-availability-days,"
+            r"exp-supplier-duos-availability-rate,"
+            r"exp-supplier-duos-availability-gbp,"
+            r"exp-supplier-duos-excess-availability-kva,"
+            r"exp-supplier-duos-excess-availability-days,"
+            r"exp-supplier-duos-excess-availability-rate,"
+            r"exp-supplier-duos-excess-availability-gbp,"
+            r"exp-supplier-duos-day-kwh,exp-supplier-duos-day-gbp,"
+            r"exp-supplier-duos-night-kwh,exp-supplier-duos-night-gbp,"
+            r"exp-supplier-duos-reactive-rate,exp-supplier-duos-reactive-gbp,"
+            r"exp-supplier-duos-standing-gbp,exp-supplier-settlement-gbp,"
+            r"exp-supplier-night-msp-kwh,exp-supplier-night-gsp-kwh,"
+            r"exp-supplier-night-gbp,exp-supplier-other-msp-kwh,"
+            r"exp-supplier-other-gsp-kwh,exp-supplier-other-gbp,"
+            r"exp-supplier-summer-pk-msp-kwh,exp-supplier-summer-pk-gsp-kwh,"
+            r"exp-supplier-summer-pk-gbp,exp-supplier-winter-low-pk-msp-kwh,"
+            r"exp-supplier-winter-low-pk-gsp-kwh,"
+            r"exp-supplier-winter-low-pk-gbp,"
+            r"exp-supplier-winter-off-pk-msp-kwh,"
+            r"exp-supplier-winter-off-pk-gsp-kwh,"
+            r"exp-supplier-winter-off-pk-gbp,"
+            r"exp-supplier-winter-pk-msp-kwh,exp-supplier-winter-pk-gsp-kwh,"
+            r"exp-supplier-winter-pk-gbp,exp-supplier-bsuos-kwh,"
+            r"exp-supplier-bsuos-rate,exp-supplier-bsuos-gbp,"
+            r"exp-supplier-triad-actual-1-date,"
+            r"exp-supplier-triad-actual-1-msp-kw,"
+            r"exp-supplier-triad-actual-1-status,"
+            r"exp-supplier-triad-actual-1-laf,"
+            r"exp-supplier-triad-actual-1-gsp-kw,"
+            r"exp-supplier-triad-actual-2-date,"
+            r"exp-supplier-triad-actual-2-msp-kw,"
+            r"exp-supplier-triad-actual-2-status,"
+            r"exp-supplier-triad-actual-2-laf,"
+            r"exp-supplier-triad-actual-2-gsp-kw,"
+            r"exp-supplier-triad-actual-3-date,"
+            r"exp-supplier-triad-actual-3-msp-kw,"
+            r"exp-supplier-triad-actual-3-status,"
+            r"exp-supplier-triad-actual-3-laf,"
+            r"exp-supplier-triad-actual-3-gsp-kw,"
+            r"exp-supplier-triad-actual-gsp-kw,exp-supplier-triad-actual-rate,"
+            r"exp-supplier-triad-actual-gbp,"
+            r"exp-supplier-triad-estimate-1-date,"
+            r"exp-supplier-triad-estimate-1-msp-kw,"
+            r"exp-supplier-triad-estimate-1-status,"
+            r"exp-supplier-triad-estimate-1-laf,"
+            r"exp-supplier-triad-estimate-1-gsp-kw,"
+            r"exp-supplier-triad-estimate-2-date,"
+            r"exp-supplier-triad-estimate-2-msp-kw,"
+            r"exp-supplier-triad-estimate-2-status,"
+            r"exp-supplier-triad-estimate-2-laf,"
+            r"exp-supplier-triad-estimate-2-gsp-kw,"
+            r"exp-supplier-triad-estimate-3-date,"
+            r"exp-supplier-triad-estimate-3-msp-kw,"
+            r"exp-supplier-triad-estimate-3-status,"
+            r"exp-supplier-triad-estimate-3-laf,"
+            r"exp-supplier-triad-estimate-3-gsp-kw,"
+            r"exp-supplier-triad-estimate-gsp-kw,"
+            r"exp-supplier-triad-estimate-rate,"
+            r"exp-supplier-triad-estimate-months,"
+            r"exp-supplier-triad-estimate-gbp,"
+            r"exp-supplier-triad-all-estimates-months,"
+            r"exp-supplier-triad-all-estimates-gbp,exp-supplier-problem",
+            r'"22 6354 2983 570","None","hh","net","","1","","00","CI017",'
+            r'"Roselands","","2009-04-30 23:30","0","0","0","0","0","0","0",'
+            r'"0","0","2784.89","0","0","0","0","0","0","2784.89","0","0","0",'
+            r'"","0","","","0","","","2784.89","","","0.0047","","5.89",'
+            r'"2300","30","0.039","2691.0","0","","","","0","0.0","0","0.0",'
+            r'"0.0042","0.0","","88","0","0.0","0.0","0","0.0","0.0","0",'
+            r'"0.0","0.0","0","0","0.0","0","0","0.0","0","0","0.0","0.0","",'
+            r'"0.0","","","","","","","","","","","","","","","","","","",'
+            r'"2009-01-06 17:00","0","X","1.079","0.0","2008-12-01 17:00","0",'
+            r'"X","1.079","0.0","2008-12-15 17:00","0","X","1.079","0.0",'
+            r'"0.0","25.631634","1","0.0","","",""',
+            r"UserException: The supplier contract Non half-hourlies 2007 "
+            r"doesn't have the virtual_bill\(\) function."]},
 
     # Update the supplier contract
     {
@@ -3516,11 +3708,11 @@ def virtual_bill(supply_source):
         'path': '/chellow/reports/251/output/',
         'tries': {'max': 20, 'period': 1},
         'regexes': [
-            r"006_FINISHED_watkinsexamplecom_bill_check\.csv"],
+            r"008_FINISHED_watkinsexamplecom_bill_check\.csv"],
         'status_code': 200},
     {
         'path': '/chellow/reports/253/output/?'
-        'name=006_FINISHED_watkinsexamplecom_bill_check.csv',
+        'name=008_FINISHED_watkinsexamplecom_bill_check.csv',
         'regexes': [
             r"batch,bill-reference,bill-type,bill-kwh,bill-net-gbp,"
             "bill-vat-gbp,bill-start-date,bill-finish-date,bill-mpan-core,"
@@ -4232,18 +4424,67 @@ def virtual_bill(supply_source):
         'path': '/chellow/reports/251/output/',
         'tries': {'max': 20, 'period': 1},
         'regexes': [
-            r"007_FINISHED_watkinsexamplecom_site_monthly_duration_for_"
+            r"009_FINISHED_watkinsexamplecom_site_monthly_duration_for_"
             r"CI017_1_to_2010_7.csv"],
         'status_code': 200},
     {
         'path': '/chellow/reports/253/output/?'
-        'name=007_FINISHED_watkinsexamplecom_site_monthly_duration_for_'
+        'name=009_FINISHED_watkinsexamplecom_site_monthly_duration_for_'
         'CI017_1_to_2010_7.csv',
         'regexes': [
             r'"CI017","Roselands","","3rd-party,net","","2010-07-31 23:30",'
             '"0","0","0","0","0","0","0","0","1593.3414","0","0","1593.3414"'
             ',"0.0","0","0","hh",""'],
         'status_code': 200},
+
+    {
+        'path': '/chellow/reports/247/output/?site_id=4&months=1&'
+        'finish_year=2010&finish_month=07',
+        'status_code': 303},
+    {
+        'path': '/chellow/reports/251/output/',
+        'tries': {'max': 20, 'period': 1},
+        'regexes': [
+            r"010_FINISHED_watkinsexamplecom_unified_supplies_monthly_"
+            r"duration_site_CI017.csv"],
+        'status_code': 200},
+    {
+        'path': '/chellow/reports/253/output/?'
+        'name=010_FINISHED_watkinsexamplecom_unified_supplies_monthly_'
+        'duration_site_CI017.csv',
+        'regexes': [
+            r'"22 6354 2983 570","None","hh","net","","1","","00","CI017",'
+            r'"Roselands","","2010-07-31 23:30","0","0","0","0","0","0","0",'
+            r'"0","0","1593.3414","0","0","0","0","0","0","1593.3414","0","0",'
+            r'"0","","0","","","0","","","1593.3414","","","0.0047","","5.89",'
+            r'"2300","31","0.021","1497.3","0","31","0.021","0.0","","","","",'
+            r'"0.00326","0.0","","88","0","0.0","0.0","0","0.0","0.0","0",'
+            r'"0.0","0.0","0","0","0.0","0","0","0.0","0","0","0.0","0.0","",'
+            r'"0.0","","","","","","","","","","","","","","","","","","",'
+            r'"2010-01-07 17:00","0","X","1.078","0.0","2010-01-25 17:00","0",'
+            r'"X","1.078","0.0","2009-12-15 17:00","0","X","1.078","0.0",'
+            r'"0.0","26.057832","1","0.0","","","","0","0.0013","0.0","0.0",'
+            r'"0","0.16146","0.0","0.0","31","0.0694","2.1514","","","","","",'
+            r'"","","","",""',
+            r'"22 1065 3921 534","None","nhh","net","","2","I02D89150","03",'
+            r'"CI017","Roselands","","2010-07-31 23:30","0","0","0","0","0",'
+            r'"0","0","0","0","0.0","0","0","0","0","0","0","0.0","0","0","0",'
+            r'"","0","","","0","","","0.0","","","","","","","","","","","",'
+            r'"","","","","","","","","","","","","","","","","","","","","",'
+            r'"","","","","","","","","","","","","","","","","","","","","",'
+            r'"","","","","","","","","","","","","","","","","","","","","",'
+            r'"","","","","","","","","","","","","","","","","","","","","",'
+            r'"","","","","","","","0"',
+            r'"22 9789 0534 938","None","nhh","3rd-party","","3","","03",'
+            r'"CI017","Roselands","","2010-07-31 23:30","0","0","0","0","0",'
+            r'"0","0","0","0","0","0","0","0","0.0","0","0","0.0","0","0","0",'
+            r'"","0","","","0","","","0.0","","","","","","","","","","","",'
+            r'"","","","","","","","","","","","","","","","","","","","","",'
+            r'"","","","","","","","","","","","","","","","","","","","","",'
+            r'"","","","","","","","","","","","","","","","","","","","","",'
+            r'"","","","","","","","","","","","","","","","","","","","","",'
+            r'"","","","","","","","0"'],
+        'status_code': 200, },
     {
         'name': "Try creating and deleting a rate script for a non-core "
         "contract (templater).",
@@ -5310,12 +5551,11 @@ def shutdown():
         'path': '/chellow/reports/251/output/',
         'tries': {},
         'regexes': [
-            r"008_FINISHED_watkinsexamplecom_crc_2012_2013_supply_7\.csv"],
+            r"011_FINISHED_watkinsexamplecom_crc_2012_2013_supply_7\.csv"],
         'status_code': 200},
     {
         'path': '/chellow/reports/253/output/?'
-        'name=008_FINISHED_watkinsexamplecom_crc_2012_2013_supply_7.csv',
-        'tries': {},
+        'name=011_FINISHED_watkinsexamplecom_crc_2012_2013_supply_7.csv',
         'status_code': 200,
         'regexes': [
             r'^"7","22 4862 4512 332"']},
@@ -5398,12 +5638,12 @@ def shutdown():
         'tries': {},
         'status_code': 200,
         'regexes': [
-            r"009_FINISHED_watkinsexamplecom_supplies_monthly_duration_for_"
+            r"012_FINISHED_watkinsexamplecom_supplies_monthly_duration_for_"
             r"10_1_to_2011_1\.csv"]
         },
     {
         'path': '/chellow/reports/253/output/?'
-        'name=009_FINISHED_watkinsexamplecom_supplies_monthly_duration_for_'
+        'name=012_FINISHED_watkinsexamplecom_supplies_monthly_duration_for_'
         '10_1_to_2011_1.csv',
         'status_code': 200,
         'regexes': [
@@ -5427,11 +5667,11 @@ def shutdown():
         'tries': {},
         'status_code': 200,
         'regexes': [
-            r"010_FINISHED_watkinsexamplecom_supplies_monthly_duration_for_"
+            r"013_FINISHED_watkinsexamplecom_supplies_monthly_duration_for_"
             r"4_1_to_2010_5\.csv"]},
     {
         'path': '/chellow/reports/253/output/?'
-        'name=010_FINISHED_watkinsexamplecom_supplies_monthly_duration_for_'
+        'name=013_FINISHED_watkinsexamplecom_supplies_monthly_duration_for_'
         '4_1_to_2010_5.csv',
         'status_code': 200,
         'regexes': [
@@ -5491,11 +5731,11 @@ def shutdown():
         'tries': {'max': 20, 'period': 1},
         'status_code': 200,
         'regexes': [
-            r"011_FINISHED_watkinsexamplecom_supplies_hh_data_200807312330_"
+            r"014_FINISHED_watkinsexamplecom_supplies_hh_data_200807312330_"
             r"supply_22_9205_6799_106\.csv"]},
     {
         'path': '/chellow/reports/253/output/?'
-        'name=011_FINISHED_watkinsexamplecom_supplies_hh_data_200807312330_'
+        'name=014_FINISHED_watkinsexamplecom_supplies_hh_data_200807312330_'
         'supply_22_9205_6799_106.csv',
         'status_code': 200,
 
@@ -5950,11 +6190,11 @@ def shutdown():
         'path': '/chellow/reports/251/output/',
         'tries': {'max': 20, 'period': 1},
         'regexes': [
-            r"012_FINISHED_watkinsexamplecom_supplies_duration\.csv"],
+            r"015_FINISHED_watkinsexamplecom_supplies_duration\.csv"],
         'status_code': 200},
     {
         'path': '/chellow/reports/253/output/?'
-        'name=012_FINISHED_watkinsexamplecom_supplies_duration.csv',
+        'name=015_FINISHED_watkinsexamplecom_supplies_duration.csv',
         'regexes': [
             r'"10","2",'],
         'status_code': 200},
@@ -6095,11 +6335,11 @@ def shutdown():
         'path': '/chellow/reports/251/output/',
         'tries': {'max': 20, 'period': 1},
         'regexes': [
-            r"013_FINISHED_watkinsexamplecom_bill_check\.csv"],
+            r"016_FINISHED_watkinsexamplecom_bill_check\.csv"],
         'status_code': 200},
     {
         'path': '/chellow/reports/253/output/?'
-        'name=013_FINISHED_watkinsexamplecom_bill_check.csv',
+        'name=016_FINISHED_watkinsexamplecom_bill_check.csv',
         'regexes': [
             r'"06-004","00101","N","244","3810.08","355.03",'
             '"2011-05-01 00:00","2011-06-30 00:00","22 6354 2983 570","CI017",'
@@ -6273,12 +6513,11 @@ def shutdown():
         'path': '/chellow/reports/251/output/',
         'tries': {'max': 20, 'period': 1},
         'regexes': [
-            r"014_FINISHED_watkinsexamplecom_supplies_snapshot\.csv"],
+            r"017_FINISHED_watkinsexamplecom_supplies_snapshot\.csv"],
         'status_code': 200},
     {
         'path': '/chellow/reports/253/output/?'
-        'name=014_FINISHED_watkinsexamplecom_supplies_snapshot.csv',
-        'tries': {},
+        'name=017_FINISHED_watkinsexamplecom_supplies_snapshot.csv',
         'status_code': 200,
         'regexes': [
             r'"2007-09-30 23:30","CI004","Lower Treave","","","9","net","",'
@@ -6299,12 +6538,11 @@ def shutdown():
         'path': '/chellow/reports/251/output/',
         'tries': {'max': 20, 'period': 1},
         'regexes': [
-            r"015_FINISHED_watkinsexamplecom_supplies_snapshot\.csv"],
+            r"018_FINISHED_watkinsexamplecom_supplies_snapshot\.csv"],
         'status_code': 200},
     {
         'path': '/chellow/reports/253/output/?'
-        'name=015_FINISHED_watkinsexamplecom_supplies_snapshot.csv',
-        'tries': {},
+        'name=018_FINISHED_watkinsexamplecom_supplies_snapshot.csv',
         'status_code': 200,
         'regexes': [
             r'"2011-05-31 23:30","CI004","Lower Treave","","","9","net","",'
@@ -6326,12 +6564,11 @@ def shutdown():
         'path': '/chellow/reports/251/output/',
         'tries': {'max': 20, 'period': 1},
         'regexes': [
-            r"016_FINISHED_watkinsexamplecom_supplies_snapshot\.csv"],
+            r"019_FINISHED_watkinsexamplecom_supplies_snapshot\.csv"],
         'status_code': 200},
     {
         'path': '/chellow/reports/253/output/?'
-        'name=016_FINISHED_watkinsexamplecom_supplies_snapshot.csv',
-        'tries': {},
+        'name=019_FINISHED_watkinsexamplecom_supplies_snapshot.csv',
         'status_code': 200,
         'regexes': [
             r"Other Site Ids,Other Site Names",
@@ -6469,11 +6706,11 @@ def shutdown():
         'path': '/chellow/reports/251/output/',
         'tries': {'max': 20, 'period': 1},
         'regexes': [
-            r"017_FINISHED_watkinsexamplecom_supplies_snapshot\.csv"],
+            r"020_FINISHED_watkinsexamplecom_supplies_snapshot\.csv"],
         'status_code': 200},
     {
         'path': '/chellow/reports/253/output/?'
-        'name=017_FINISHED_watkinsexamplecom_supplies_snapshot.csv',
+        'name=020_FINISHED_watkinsexamplecom_supplies_snapshot.csv',
         'tries': {},
         'status_code': 200,
         'regexes': [
@@ -6564,11 +6801,11 @@ def shutdown():
         'tries': {'max': 30, 'period': 1},
         'status_code': 200,
         'regexes': [
-            r"018_FINISHED_watkinsexamplecom_site_monthly_duration_for_"
+            r"021_FINISHED_watkinsexamplecom_site_monthly_duration_for_"
             r"CI004_1_to_2010_7\.csv"]},
     {
         'path': '/chellow/reports/253/output/?'
-        'name=018_FINISHED_watkinsexamplecom_site_monthly_duration_for_'
+        'name=021_FINISHED_watkinsexamplecom_site_monthly_duration_for_'
         'CI004_1_to_2010_7.csv',
         'status_code': 200,
         'regexes': [
@@ -6583,11 +6820,11 @@ def shutdown():
         'tries': {'max': 20, 'period': 1},
         'status_code': 200,
         'regexes': [
-            r"019_FINISHED_watkinsexamplecom_site_monthly_duration_for_"
+            r"022_FINISHED_watkinsexamplecom_site_monthly_duration_for_"
             r"CI017_1_to_2011_5\.csv"]},
     {
         'path': '/chellow/reports/253/output/?'
-        'name=019_FINISHED_watkinsexamplecom_site_monthly_duration_for_'
+        'name=022_FINISHED_watkinsexamplecom_site_monthly_duration_for_'
         'CI017_1_to_2011_5.csv',
         'status_code': 200,
         'regexes': [
@@ -6609,11 +6846,11 @@ def shutdown():
         'tries': {'max': 20, 'period': 1},
         'status_code': 200,
         'regexes': [
-            r"020_FINISHED_watkinsexamplecom_site_monthly_duration_for_"
+            r"023_FINISHED_watkinsexamplecom_site_monthly_duration_for_"
             r"CI017_1_to_2012_2\.csv"]},
     {
         'path': '/chellow/reports/253/output/?'
-        'name=020_FINISHED_watkinsexamplecom_site_monthly_duration_for_'
+        'name=023_FINISHED_watkinsexamplecom_site_monthly_duration_for_'
         'CI017_1_to_2012_2.csv',
         'status_code': 200,
         'regexes': [
@@ -6628,10 +6865,10 @@ def shutdown():
         'tries': {'max': 20, 'period': 1},
         'status_code': 200,
         'regexes': [
-            r"021_FINISHED_watkinsexamplecom_bill_check\.csv"]},
+            r"024_FINISHED_watkinsexamplecom_bill_check\.csv"]},
     {
         'path': '/chellow/reports/253/output/?'
-        'name=021_FINISHED_watkinsexamplecom_bill_check.csv',
+        'name=024_FINISHED_watkinsexamplecom_bill_check.csv',
         'status_code': 200,
         'regexes': [
             r'"07-002","3423760010","N","10","9.07","0.21","2012-01-05 00:00",'
@@ -6648,11 +6885,11 @@ def shutdown():
         'tries': {},
         'status_code': 200,
         'regexes': [
-            r"022_FINISHED_watkinsexamplecom_supplies_monthly_duration_for_"
+            r"025_FINISHED_watkinsexamplecom_supplies_monthly_duration_for_"
             r"1_1_to_2008_7\.csv"]},
     {
         'path': '/chellow/reports/253/output/?'
-        'name=022_FINISHED_watkinsexamplecom_supplies_monthly_duration_for_'
+        'name=025_FINISHED_watkinsexamplecom_supplies_monthly_duration_for_'
         '1_1_to_2008_7.csv',
         'status_code': 200,
         'regexes': [
@@ -6683,10 +6920,10 @@ def shutdown():
         'tries': {},
         'status_code': 200,
         'regexes': [
-            r"023_FINISHED_watkinsexamplecom_hh_data_row_200801010000\.csv"]},
+            r"026_FINISHED_watkinsexamplecom_hh_data_row_200801010000\.csv"]},
     {
         'path': '/chellow/reports/253/output/?'
-        'name=023_FINISHED_watkinsexamplecom_hh_data_row_200801010000.csv',
+        'name=026_FINISHED_watkinsexamplecom_hh_data_row_200801010000.csv',
         'status_code': 200,
         'regexes': [
             r'"CH023","22 4862 4512 332","","2008-01-01 00:00","3.77","A","",'
@@ -6707,10 +6944,10 @@ def shutdown():
         'tries': {},
         'status_code': 200,
         'regexes': [
-            r"024_FINISHED_watkinsexamplecom_hh_data_row_201001010000\.csv"]},
+            r"027_FINISHED_watkinsexamplecom_hh_data_row_201001010000\.csv"]},
     {
         'path': '/chellow/reports/253/output/?'
-        'name=024_FINISHED_watkinsexamplecom_hh_data_row_201001010000.csv',
+        'name=027_FINISHED_watkinsexamplecom_hh_data_row_201001010000.csv',
         'status_code': 200,
         'regexes': [
             r'"Export REACTIVE_EXP Status"\s'
@@ -6948,12 +7185,11 @@ def shutdown():
         'path': '/chellow/reports/251/output/',
         'tries': {'max': 20, 'period': 1},
         'regexes': [
-            r"025_FINISHED_watkinsexamplecom_bill_check\.csv"],
+            r"028_FINISHED_watkinsexamplecom_bill_check\.csv"],
         'status_code': 200},
     {
         'path': '/chellow/reports/253/output/?'
-        'name=025_FINISHED_watkinsexamplecom_bill_check.csv',
-        'tries': {},
+        'name=028_FINISHED_watkinsexamplecom_bill_check.csv',
         'status_code': 200,
         'regexes': [
             r'"06-002","23618619","N","0","49119","8596","2007-06-30 00:00",'
@@ -7003,10 +7239,10 @@ def shutdown():
         'tries': {'max': 20, 'period': 1},
         'status_code': 200,
         'regexes': [
-            r"026_FINISHED_watkinsexamplecom_bill_check\.csv"]},
+            r"029_FINISHED_watkinsexamplecom_bill_check\.csv"]},
     {
         'path': '/chellow/reports/253/output/?'
-        'name=026_FINISHED_watkinsexamplecom_bill_check.csv',
+        'name=029_FINISHED_watkinsexamplecom_bill_check.csv',
         'status_code': 200,
         'regexes': [
             r'"07-002","3423760005","N","150","98.17","15.01",'
@@ -7061,10 +7297,10 @@ def shutdown():
         'tries': {'max': 20, 'period': 1},
         'status_code': 200,
         'regexes': [
-            r"027_FINISHED_watkinsexamplecom_bill_check\.csv"]},
+            r"030_FINISHED_watkinsexamplecom_bill_check\.csv"]},
     {
         'path': '/chellow/reports/253/output/?'
-        'name=027_FINISHED_watkinsexamplecom_bill_check.csv',
+        'name=030_FINISHED_watkinsexamplecom_bill_check.csv',
         'status_code': 200,
         'regexes': [
             r'"07-002","3423760010","N","10","9.07","0.21","2012-01-05 00:00",'
@@ -7108,10 +7344,10 @@ def shutdown():
         'tries': {'max': 20, 'period': 1},
         'status_code': 200,
         'regexes': [
-            r"028_FINISHED_watkinsexamplecom_crc_2009_2010_supply_10\.csv"]},
+            r"031_FINISHED_watkinsexamplecom_crc_2009_2010_supply_10\.csv"]},
     {
         'path': '/chellow/reports/253/output/?'
-        'name=028_FINISHED_watkinsexamplecom_crc_2009_2010_supply_10.csv',
+        'name=031_FINISHED_watkinsexamplecom_crc_2009_2010_supply_10.csv',
         'status_code': 200,
         'regexes': [
             r'"10","22 1065 3921 534","CI017","Roselands","2009-04-01 00:00",'
@@ -7170,21 +7406,39 @@ def shutdown():
     # Run scenario for a site where there are no site groups
     {
         'path': '/chellow/reports/247/output/?site_id=1&scenario_id=67',
+        'status_code': 303},
+    {
+        'path': '/chellow/reports/251/output/',
+        'tries': {},
+        'status_code': 200,
+        'regexes': [
+            r"032_FINISHED_watkinsexamplecom_scenario_bau_site_CI004\.csv"]},
+    {
+        'path': '/chellow/reports/253/output/?'
+        'name=032_FINISHED_watkinsexamplecom_scenario_bau_site_CI004.csv',
         'status_code': 200,
 
-        # Check file name is correct
         'regexes': [
-            r"'content-disposition', 'attachment; "
-            'filename="scenario_\d{12}.csv"'
-            "'",
             r"exp-supplier-problem$"]},
 
     # Run scenario for a site where there are site groups
     {
+        'name': "Run scenario for a site where there are site groups",
         'path': '/chellow/reports/247/output/?site_id=3&scenario_id=67',
+        'status_code': 303},
+    {
+        'path': '/chellow/reports/251/output/',
+        'tries': {'max': 20, 'period': 1},
+        'status_code': 200,
+        'regexes': [
+            r"033_FINISHED_watkinsexamplecom_scenario_bau_site_CI005\.csv"]},
+    {
+        'path': '/chellow/reports/253/output/?'
+        'name=033_FINISHED_watkinsexamplecom_scenario_bau_site_CI005.csv',
         'status_code': 200,
         'regexes': [
             r"CI005"]},
+
     {
         'name': "Check BSUoS automatic import page",
         'path': '/chellow/reports/227/output/',
@@ -7256,39 +7510,39 @@ def shutdown():
     # Run scenario for a site
     {
         'path': '/chellow/reports/247/output/?site_id=3&scenario_id=68',
+        'status_code': 303},
+    {
+        'path': '/chellow/reports/251/output/',
+        'tries': {'max': 20, 'period': 1},
         'status_code': 200,
         'regexes': [
-            r'"22 6158 2968 220","22 3479 7618 470","net","","1","","00",'
-            r'"CI005",'
-            '"Wheal Rodney","2011-01-31 23:30","0","0","0","0","0","0","0",'
-            '"0","0","179.2268","112.0808","0","0","0","0","0","179.2268","0",'
-            r'"","0",'
-            '"","","0","","","179.2268","","","0.0047","","5.89",'
-            '"130","31","0.0163","65.689","0","31","0.0163","0.0","","","","",'
-            '"0.00202","0.0","","88","0","0.0","0.0","0","0.0","0.0","","","",'
-            '"","",'
-            '"","0","0.0","0.0","0","0.0","0.0","0.0","","0.0","",'
-            '"","","","","",'
-            '"","","","","","","","","","","","","2010-01-07 17:00","0","X",'
-            '"1.058","0.0","2010-01-25 17:00","0","X","1.058","0.0",'
-            '"2009-12-15 17:00","0","X","1.058","0.0","0.0","24.031029","1",'
-            '"0.0","","","","0","0.00052","0.0","0.0","0","0.11678","0.0",'
-            '"0.0",'
-            '"31",'
-            '"0.6338","19.6478","0","0.0","0.10016297","0.0","0.0",'
-            '"","0.0","","","","","112.0808","","",'
-            '"0.0047","","5.89","20","31","0.0163","10.106","0","31","0.0",'
-            '"0.0","","","","","0.00106","0.0","","88","0","0.0","0.0","0",'
-            '"0.0","0.0","0","0","0.0","0","0","0.0","0","0.0","0.0","0",'
-            '"0.0",'
-            '"0.0","0.0","","0.0","","","","","","","","","","","",'
-            '"","","","","","","","2010-01-07 17:00","0","X","1.058","0.0",'
-            '"2010-01-25 17:00","0","X","1.058","0.0","2009-12-15 17:00","0",'
-            '"X","1.058","0.0","0.0","24.031029","1","0.0","","",""',
-            r'"","","displaced","","","","","CI005","Wheal Rodney",'
-            r'"2011-01-31 23:30",'
-            r'"0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0",'
-            r'"0","0"']},
+            r"034_FINISHED_watkinsexamplecom_scenario_bsuos_site_CI005\.csv"]},
+    {
+        'path': '/chellow/reports/253/output/?'
+        'name=034_FINISHED_watkinsexamplecom_scenario_bsuos_site_CI005.csv',
+        'status_code': 200,
+        'regexes': [
+            r'"22 6158 2968 220","22 3479 7618 470","hh","net","","1","","00",'
+            r'"CI005","Wheal Rodney","CI004","2011-01-31 23:30","0","0","0",'
+            r'"0","0","0","0","0","0","179.2268","112.0808","0","0","0","0",'
+            r'"0","179.2268","0","0","0","","0","","","0","","","179.2268","",'
+            r'"","0.0047","","5.89","130","31","0.0163","65.689","0","31",'
+            r'"0.0163","0.0","","","","","0.00202","0.0","","88","0","0.0",'
+            r'"0.0","0","0.0","0.0","","","","","","","0","0.0","0.0","0",'
+            r'"0.0","0.0","0.0","","0.0","","","","","","","","","","","","",'
+            r'"","","","","","","2010-01-07 17:00","0","X","1.058","0.0",'
+            r'"2010-01-25 17:00","0","X","1.058","0.0","2009-12-15 17:00","0",'
+            r'"X","1.058","0.0","0.0","24.031029","1","0.0","","","","0",'
+            r'"0.00052","0.0","0.0","0","0.11678","0.0","0.0","31","0.6338",'
+            r'"19.6478","0","0.0","0.10016297","0.0","0.0","","0.0","","","",'
+            r'"","112.0808","","","0.0047","","5.89","20","31","0.0163",'
+            r'"10.106","0","31","0.0","0.0","","","","","0.00106","0.0","",'
+            r'"88","0","0.0","0.0","0","0.0","0.0","0","0","0.0","0","0",'
+            r'"0.0","0","0.0","0.0","0","0.0","0.0","0.0","","0.0","","","",'
+            r'"","","","","","","","","","","","","","","","2010-01-07 17:00",'
+            r'"0","X","1.058","0.0","2010-01-25 17:00","0","X","1.058","0.0",'
+            r'"2009-12-15 17:00","0","X","1.058","0.0","0.0","24.031029","1",'
+            r'"0.0","","",""']},
 
     # Add a scenario
     {
@@ -7340,18 +7594,28 @@ def shutdown():
     # Run scenario for a site
     {
         'path': '/chellow/reports/247/output/?site_id=3&scenario_id=69',
+        'status_code': 303},
+    {
+        'path': '/chellow/reports/251/output/',
+        'tries': {'max': 20, 'period': 1},
         'status_code': 200,
         'regexes': [
-            r'"22 0195 4836 192","None","net","","2","P96C93722","08","CI005",'
-            r'"Wheal Rodney",'
-            '"2011-01-31 23:30","12.9095890411","0","0","0","0","0","0",'
-            '"12.9095890411","0","0.0","0","0","0","0","0","0","0.0","0","",'
-            '"0","","","0","","","0.0","","","","","","","","","","","","","",'
-            '"","","","","","","","","","","","","","","","","","","","","",'
-            '"","","","","","","","","","","","","","","","","","","","","",'
-            '"","","","","","","","","","","","","","","","","","","","","",'
-            '"","","","","","","","","","","","","","","","","","","","","",'
-            '"","","","0.0","0.0","12.9095890411"']},
+            r"035_FINISHED_watkinsexamplecom_scenario_used_site_CI005\.csv"]},
+    {
+        'path': '/chellow/reports/253/output/?'
+        'name=035_FINISHED_watkinsexamplecom_scenario_used_site_CI005.csv',
+        'status_code': 200,
+        'regexes': [
+            r'"22 0195 4836 192","None","unmetered","net","","2","P96C93722",'
+            r'"08","CI005","Wheal Rodney","CI004","2011-01-31 23:30",'
+            r'"12.9095890411","0","0","0","0","0","0","12.9095890411","0",'
+            r'"0.0","0","0","0","0","0","0","0.0","0","0","0","","0","","",'
+            r'"0","","","0.0","","","","","","","","","","","","","","","","",'
+            r'"","","","","","","","","","","","","","","","","","","","","",'
+            r'"","","","","","","","","","","","","","","","","","","","","",'
+            r'"","","","","","","","","","","","","","","","","","","","","",'
+            r'"","","","","","","","","","","","","","","","","","","","","",'
+            r'"0.0","0.0","12.9095890411"']},
 
     # Try to detach an era from its physical site
     {
@@ -7426,14 +7690,25 @@ def shutdown():
     # Run scenario for a site
     {
         'path': '/chellow/reports/247/output/?site_id=3&scenario_id=68',
+        'status_code': 303},
+    {
+        'path': '/chellow/reports/251/output/',
+        'tries': {'max': 20, 'period': 1},
         'status_code': 200,
         'regexes': [
-            r'"22 6158 2968 220","22 3479 7618 470","net","","1","","00",'
+            r"036_FINISHED_watkinsexamplecom_scenario_bsuos_site_CI005\.csv"]},
+    {
+        'path': '/chellow/reports/253/output/?'
+        'name=036_FINISHED_watkinsexamplecom_scenario_bsuos_site_CI005.csv',
+        'status_code': 200,
+        'regexes': [
+            r'"22 6158 2968 220","22 3479 7618 470","hh","net","","1","","00",'
             r'"CI005",'
-            '"Wheal Rodney","5011-01-31 23:30","0","0","0","0","0","0","0",'
+            r'"Wheal Rodney","CI004","5011-01-31 23:30","0","0","0","0","0",'
+            r'"0","0",'
             '"0","0","206.5347","103.8937","0","0","0","0","0","206.5347","0",'
-            '"","0",'
-            '"","","0","","","206.5347","","","0.00525288","","5.89",'
+            '"0","0",'
+            '"","0","","","0","","","206.5347","","","0.00525288","","5.89",'
             '"130","31","0.0229","92.287","0","31","0.0229","0.0","","","","",'
             '"0.0026","0.0","","88","0","0.0","0.0","0","0.0","0.0","","","",'
             '"","",'
@@ -7586,18 +7861,28 @@ def virtual_bill(supply_source):
     {
         'name': "Leap day forecast. Run scenario for a site",
         'path': '/chellow/reports/247/output/?site_id=5&scenario_id=70',
+        'status_code': 303},
+    {
+        'path': '/chellow/reports/251/output/',
+        'tries': {'max': 20, 'period': 1},
         'status_code': 200,
         'regexes': [
-            r'"22 4862 4512 332","None","net","","1","","04","CH023",'
-            r'"Treglisson",'
-            '"2016-02-29 23:30","23562.05","0","0","0","0","0","0","23562.05",'
-            '"0","0.0","0","0","0","0","0","0","0.0","0","","0","","","0","",'
-            '"","0.0","","","","","","","","","","","","","","","","","","",'
-            '"","","","","","","","","","","","","","","","","","","","","",'
-            '"","","","","","","","","","","","","","","","","","","","","",'
-            '"","","","","","","","","","","","","","","","","","","","","",'
-            '"","","","","","","","","","","","","","","","","","","","0.0",'
-            '"0.0","23562.05"']},
+            r"037_FINISHED_watkinsexamplecom_scenario_leap_day_site_"
+            r"CH023\.csv"]},
+    {
+        'path': '/chellow/reports/253/output/?'
+        'name=037_FINISHED_watkinsexamplecom_scenario_leap_day_site_CH023.csv',
+        'status_code': 200,
+        'regexes': [
+            r'"22 4862 4512 332","None","amr","net","","1","","04","CH023",'
+            r'"Treglisson","","2016-02-29 23:30","23562.05","0","0","0","0",'
+            r'"0","0","23562.05","0","0.0","0","0","0","0","0","0","0.0","0",'
+            r'"0","0","","0","","","0","","","0.0","","","","","","","","","",'
+            r'"","","","","","","","","","","","","","","","","","","","","",'
+            r'"","","","","","","","","","","","","","","","","","","","","",'
+            r'"","","","","","","","","","","","","","","","","","","","","",'
+            r'"","","","","","","","","","","","","","","","","","","","","",'
+            r'"","","","","","","","0.0","0.0","23562.05"']},
 
     {
         'name': "Check CSV Supplies HH Data. With mpan_cores",
@@ -7617,11 +7902,11 @@ def virtual_bill(supply_source):
         'tries': {'max': 20, 'period': 1},
         'status_code': 200,
         'regexes': [
-            r"029_FINISHED_watkinsexamplecom_supplies_hh_data_200808012330_"
+            r"038_FINISHED_watkinsexamplecom_supplies_hh_data_200808012330_"
             r"filter\.csv"]},
     {
         'path': '/chellow/reports/253/output/?'
-        'name=029_FINISHED_watkinsexamplecom_supplies_hh_data_200808012330_'
+        'name=038_FINISHED_watkinsexamplecom_supplies_hh_data_200808012330_'
         'filter.csv',
         'status_code': 200,
 
@@ -7630,7 +7915,7 @@ def virtual_bill(supply_source):
             r'NA,2008-07-06,0\.262',
             r"\A\('connection', 'close'\)\s*"
             r"\('content-disposition', 'attachment; "
-            r'filename="029_FINISHED_watkinsexamplecom_supplies_hh_data_'
+            r'filename="038_FINISHED_watkinsexamplecom_supplies_hh_data_'
             r'200808012330_filter.csv"'
             r"'\)\s*"
             r"\('content-type', 'text/csv; charset=utf-8'\)\s*"
@@ -7730,10 +8015,10 @@ def virtual_bill(supply_source):
         'tries': {'max': 20, 'period': 1},
         'status_code': 200,
         'regexes': [
-            r"030_FINISHED_watkinsexamplecom_crc_2005_2006_supply_2\.csv"]},
+            r"039_FINISHED_watkinsexamplecom_crc_2005_2006_supply_2\.csv"]},
     {
         'path': '/chellow/reports/253/output/?'
-        'name=030_FINISHED_watkinsexamplecom_crc_2005_2006_supply_2.csv',
+        'name=039_FINISHED_watkinsexamplecom_crc_2005_2006_supply_2.csv',
         'status_code': 200,
         'regexes': [
             r'"2","22 9813 2107 763"']},
@@ -7748,10 +8033,10 @@ def virtual_bill(supply_source):
         'tries': {'max': 20, 'period': 1},
         'status_code': 200,
         'regexes': [
-            r"031_FINISHED_watkinsexamplecom_crc_2008_2009_supply_7\.csv"]},
+            r"040_FINISHED_watkinsexamplecom_crc_2008_2009_supply_7\.csv"]},
     {
         'path': '/chellow/reports/253/output/?'
-        'name=031_FINISHED_watkinsexamplecom_crc_2008_2009_supply_7.csv',
+        'name=040_FINISHED_watkinsexamplecom_crc_2008_2009_supply_7.csv',
         'status_code': 200,
         'regexes': [
             r'"7","22 4862 4512 332","CH023","Treglisson","2008-04-01 00:00",'
@@ -7873,12 +8158,12 @@ def days():
         'path': '/chellow/reports/251/output/',
         'tries': {},
         'regexes': [
-            r"032_FINISHED_watkinsexamplecom_crc_2011_2012_supply_10\.csv"],
+            r"041_FINISHED_watkinsexamplecom_crc_2011_2012_supply_10\.csv"],
         'status_code': 200},
     {
         'name': "CRC report for mismatched TPRs",
         'path': '/chellow/reports/253/output/?'
-        'name=032_FINISHED_watkinsexamplecom_crc_2011_2012_supply_10.csv',
+        'name=041_FINISHED_watkinsexamplecom_crc_2011_2012_supply_10.csv',
         'tries': {},
         'status_code': 200,
         'regexes': [
@@ -8004,13 +8289,12 @@ def days():
         'path': '/chellow/reports/251/output/',
         'tries': {},
         'regexes': [
-            r"033_FINISHED_watkinsexamplecom_crc_2010_2011_supply_10\.csv"],
+            r"042_FINISHED_watkinsexamplecom_crc_2010_2011_supply_10\.csv"],
         'status_code': 200},
     {
         'name': "CRC meter change reads",
         'path': '/chellow/reports/253/output/?'
-        'name=033_FINISHED_watkinsexamplecom_crc_2010_2011_supply_10.csv',
-        'tries': {},
+        'name=042_FINISHED_watkinsexamplecom_crc_2010_2011_supply_10.csv',
         'status_code': 200,
         'regexes': [
             r'73142.3933549']},
@@ -8065,11 +8349,11 @@ def days():
         'path': '/chellow/reports/251/output/',
         'tries': {},
         'regexes': [
-            r"034_FINISHED_watkinsexamplecom_supplies_duration\.csv"],
+            r"043_FINISHED_watkinsexamplecom_supplies_duration\.csv"],
         'status_code': 200},
     {
         'path': '/chellow/reports/253/output/?'
-        'name=034_FINISHED_watkinsexamplecom_supplies_duration.csv',
+        'name=043_FINISHED_watkinsexamplecom_supplies_duration.csv',
         'regexes': [
             r'"10","2","net","","CI017","Roselands","2012-01-05 00:00",'
             r'"2012-01-10 23:30","03","801","6a","0366","1","nhh",110,'
@@ -8084,11 +8368,11 @@ def days():
         'path': '/chellow/reports/251/output/',
         'tries': {},
         'regexes': [
-            r"035_FINISHED_watkinsexamplecom_bill_check\.csv"],
+            r"044_FINISHED_watkinsexamplecom_bill_check\.csv"],
         'status_code': 200},
     {
         'path': '/chellow/reports/253/output/?'
-        'name=035_FINISHED_watkinsexamplecom_bill_check.csv',
+        'name=044_FINISHED_watkinsexamplecom_bill_check.csv',
         'regexes': [
             r'"07-002","3423760010","N","10","9.07","0.21","2012-01-05 00:00",'
             r'"2012-01-10 23:30","22 1065 3921 534","CI017","Roselands",'
@@ -8107,11 +8391,11 @@ def days():
         'path': '/chellow/reports/251/output/',
         'tries': {},
         'regexes': [
-            r"036_FINISHED_watkinsexamplecom_supplies_duration\.csv"],
+            r"045_FINISHED_watkinsexamplecom_supplies_duration\.csv"],
         'status_code': 200},
     {
         'path': '/chellow/reports/253/output/?'
-        'name=036_FINISHED_watkinsexamplecom_supplies_duration.csv',
+        'name=045_FINISHED_watkinsexamplecom_supplies_duration.csv',
         'regexes': [
             r'"10","2","net","","CI017","Roselands","2007-02-01 00:00",'
             r'"2007-02-28 23:30","03","801","5","0393","0","nhh",'
@@ -8158,12 +8442,12 @@ def days():
         'path': '/chellow/reports/251/output/',
         'tries': {},
         'regexes': [
-            r"037_FINISHED_watkinsexamplecom_supplies_duration\.csv"],
+            r"046_FINISHED_watkinsexamplecom_supplies_duration\.csv"],
         'status_code': 200},
     {
         'name': "Supplies duration normal reads with prev, pres the same.",
         'path': '/chellow/reports/253/output/?'
-        'name=037_FINISHED_watkinsexamplecom_supplies_duration.csv',
+        'name=046_FINISHED_watkinsexamplecom_supplies_duration.csv',
         'regexes': [
             r'"10","2","net","","CI017","Roselands","2009-04-01 00:00",'
             r'"2009-04-10 23:30","03","801","5","0393","1","nhh",'
@@ -8201,6 +8485,19 @@ def days():
         'name': "Scenario runner with default scenario",
         'path': '/chellow/reports/247/output/?site_id=5&months=1&'
         'finish_year=2015&finish_month=2',
+        'status_code': 303},
+    {
+        'path': '/chellow/reports/251/output/',
+        'tries': {'max': 20, 'period': 1},
+        'status_code': 200,
+        'regexes': [
+            r"047_FINISHED_watkinsexamplecom_unified_supplies_monthly_"
+            r"duration_site_CH023\.csv"]
+        },
+    {
+        'path': '/chellow/reports/253/output/?'
+        'name=047_FINISHED_watkinsexamplecom_unified_supplies_monthly_'
+        'duration_site_CH023.csv',
         'status_code': 200,
         'regexes': [
             r"22 4862 4512 332"]},
