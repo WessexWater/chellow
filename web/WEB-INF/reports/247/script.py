@@ -351,7 +351,35 @@ def content():
                             month_data['displaced-kwh'] = \
                             sum(hh['msp-kwh'] for hh in site_ds.hh_data)
 
-                        month_data['displaced-gbp'] = 0
+                        disp_supplier_contract = \
+                            displaced_era.imp_supplier_contract
+                        disp_vb_function = computer.contract_func(
+                            report_context, disp_supplier_contract,
+                            'displaced_virtual_bill', None)
+                        if disp_vb_function is None:
+                            raise UserException(
+                                "The supplier contract " +
+                                disp_supplier_contract.name +
+                                " doesn't have the displaced_virtual_bill() "
+                                "function.")
+                        disp_vb_function(site_ds)
+                        disp_supplier_bill = site_ds.supplier_bill
+
+                        try:
+                            gbp = disp_supplier_bill['net-gbp']
+                        except KeyError:
+                            disp_supplier_bill['problem'] += \
+                                'For the supply ' + \
+                                site_ds.mpan_core + \
+                                ' the virtual bill ' + \
+                                str(disp_supplier_bill) + \
+                                ' from the contract ' + \
+                                disp_supplier_contract.name + \
+                                ' does not contain the net-gbp key.'
+
+                        month_data['used-gbp'] = \
+                            month_data['displaced-gbp'] = \
+                            site_ds.supplier_bill['net-gbp']
 
                         out = [
                             '', '', displaced_era.make_meter_category(),
@@ -528,6 +556,9 @@ def content():
                                 '3rd-party', '3rd-party-reverse'):
                             month_data['import-3rd-party-gbp'] += gbp
                             month_data['used-gbp'] += gbp
+                        elif source_code == 'gen':
+                            month_data['displaced-gbp'] += gbp
+                            month_data['used-gbp'] += gbp
 
                         mop_contract = era.mop_contract
                         mop_bill_function = sss.contract_func(
@@ -535,7 +566,7 @@ def content():
                         mop_bill_function(sss)
                         mop_bill = sss.mop_bill
                         gbp = mop_bill['net-gbp']
-                        if source_code in ('net', 'gen-net'):
+                        if source_code in ('net', 'gen-net', 'sub'):
                             month_data['import-net-gbp'] += gbp
                             month_data['used-gbp'] += gbp
                             generator_type = ''
@@ -546,33 +577,7 @@ def content():
                             generator_type = ''
                         elif source_code == 'gen':
                             generator_type = supply.generator_type.code
-
-                        sss = exp_ss if imp_ss is None else imp_ss
-                        dc_contract = era.hhdc_contract
-                        sss.contract_func(
-                            dc_contract, 'virtual_bill')(sss)
-                        dc_bill = sss.dc_bill
-                        gbp = dc_bill['net-gbp']
-                        if source_code in ('net', 'gen-net'):
-                            month_data['import-net-gbp'] += gbp
-                            month_data['used-gbp'] += gbp
-                        elif source_code in (
-                                '3rd-party', '3rd-party-reverse'):
-                            month_data['import-3rd-party-gbp'] += gbp
-                            month_data['used-gbp'] += gbp
-
-                        mop_contract = era.mop_contract
-                        mop_bill_function = sss.contract_func(
-                            mop_contract, 'virtual_bill')
-                        mop_bill_function(sss)
-                        mop_bill = sss.mop_bill
-                        gbp = mop_bill['net-gbp']
-                        if source_code in ('net', 'gen-net'):
-                            month_data['import-net-gbp'] += gbp
-                            month_data['used-gbp'] += gbp
-                        elif source_code in (
-                                '3rd-party', '3rd-party-reverse'):
-                            month_data['import-3rd-party-gbp'] += gbp
+                            month_data['displaced-gbp'] += gbp
                             month_data['used-gbp'] += gbp
 
                         out = [
