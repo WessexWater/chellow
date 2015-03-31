@@ -378,8 +378,8 @@ def content():
 
                     breakdown += 'pairs - \n' + str(pairs)
 
-                elif meter_type == 'hh':
-                    kwhs = list(
+                elif meter_type in ('hh', 'amr'):
+                    period_kwhs = list(
                         v[0] for v in sess.query(cast(HhDatum.value, Float)).
                         join(Channel).filter(
                             Channel.imp_related == true(),
@@ -387,16 +387,26 @@ def content():
                             Channel.era == era,
                             HhDatum.start_date >= period_start,
                             HhDatum.start_date <= period_finish))
+                    year_kwhs = list(
+                        v[0] for v in sess.query(cast(HhDatum.value, Float)).
+                        join(Channel).filter(
+                            Channel.imp_related == true(),
+                            Channel.channel_type == 'ACTIVE',
+                            Channel.era == era,
+                            HhDatum.start_date >= year_start,
+                            HhDatum.start_date <= year_finish))
                     yield ' '
 
-                    sum_kwhs = sum(kwhs)
-                    len_kwhs = len(kwhs)
-                    total_kwh[meter_type] += sum_kwhs
-                    total_hhs = totalseconds(
+                    period_sum_kwhs = sum(period_kwhs)
+                    year_sum_kwhs = sum(year_kwhs)
+                    period_len_kwhs = len(period_kwhs)
+                    year_len_kwhs = len(year_kwhs)
+                    total_kwh[meter_type] += period_sum_kwhs
+                    period_hhs = totalseconds(
                         period_finish + HH - period_start) / (60 * 30)
-                    if len_kwhs > 0:
-                        filled_kwh[meter_type] += float(sum_kwhs) / \
-                            len_kwhs * (total_hhs - len_kwhs)
+                    if year_len_kwhs > 0:
+                        filled_kwh[meter_type] += float(year_sum_kwhs) / \
+                            year_len_kwhs * (period_hhs - period_len_kwhs)
                     normal_days[meter_type] += float(
                         sess.query(func.count(HhDatum.value)).join(Channel).
                         filter(
@@ -406,35 +416,6 @@ def content():
                             HhDatum.start_date >= period_start,
                             HhDatum.start_date <= period_finish,
                             HhDatum.status == 'A').one()[0]) / 48
-                elif meter_type == 'amr':
-                    kwhs = list(
-                        v[0] for v in sess.query(cast(HhDatum.value, Float)).
-                        join(Channel).filter(
-                            Channel.imp_related == true(),
-                            Channel.channel_type == 'ACTIVE',
-                            Channel.era == era,
-                            HhDatum.start_date >= period_start,
-                            HhDatum.start_date <= period_finish))
-
-                    sum_kwhs = sum(kwhs)
-                    len_kwhs = len(kwhs)
-                    total_kwh[meter_type] += sum_kwhs
-                    total_hhs = totalseconds(
-                        period_finish + HH - period_start) / (60 * 30)
-                    if sum_kwhs > 0:
-                        filled_kwh[meter_type] += float(sum_kwhs) / \
-                            len_kwhs * (total_hhs - len_kwhs)
-
-                    normal_days[meter_type] += float(
-                        sess.query(func.count(HhDatum.value)).join(Channel).
-                        filter(
-                            Channel.imp_related == true(),
-                            Channel.channel_type == 'ACTIVE',
-                            Channel.era == era,
-                            HhDatum.start_date >= period_start,
-                            HhDatum.start_date <= period_finish,
-                            HhDatum.status == 'A').one()[0]) / 48
-
                 elif meter_type == 'unmetered':
                     bills = sess.query(Bill).filter(
                         Bill.supply_id == supply.id,
