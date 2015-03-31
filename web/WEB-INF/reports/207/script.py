@@ -8,8 +8,12 @@ from sqlalchemy.sql.expression import null, true
 import math
 import utils
 import db
+import dloads
+import sys
+import os
+import threading
 
-Monad.getUtils()['impt'](globals(), 'utils', 'db')
+Monad.getUtils()['impt'](globals(), 'utils', 'db', 'dloads')
 HH, totalseconds, hh_after = utils.HH, utils.totalseconds, utils.hh_after
 hh_format = utils.hh_format
 Supply, RegisterRead, Bill = db.Supply, db.RegisterRead, db.Bill
@@ -27,21 +31,26 @@ else:
 
 def content():
     sess = None
+    f = None
     try:
+        running_name, finished_name = dloads.make_names('crc.csv')
+        f = open(running_name, "w")
+
         sess = db.session()
 
         ACTUAL_READ_TYPES = ['N', 'N3', 'C', 'X', 'CP']
-        yield ','.join(
-            (
-                'Chellow Supply Id', 'MPAN Core', 'Site Id', 'Site Name',
-                'From', 'To', 'NHH Breakdown', 'Actual HH Normal Days',
-                'Actual AMR Normal Days', 'Actual NHH Normal Days',
-                'Actual Unmetered Normal Days', 'Max HH Normal Days',
-                'Max AMR Normal Days', 'Max NHH Normal Days',
-                'Max Unmetered Normal Days', 'Total Actual Normal Days',
-                'Total Max Normal Days', 'Data Type', 'HH kWh', 'AMR kWh',
-                'NHH kWh', 'Unmetered kwh', 'HH Filled kWh', 'AMR Filled kWh',
-                'Total kWh', 'Note')) + '\n'
+        f.write(
+            ','.join(
+                (
+                    'Chellow Supply Id', 'MPAN Core', 'Site Id', 'Site Name',
+                    'From', 'To', 'NHH Breakdown', 'Actual HH Normal Days',
+                    'Actual AMR Normal Days', 'Actual NHH Normal Days',
+                    'Actual Unmetered Normal Days', 'Max HH Normal Days',
+                    'Max AMR Normal Days', 'Max NHH Normal Days',
+                    'Max Unmetered Normal Days', 'Total Actual Normal Days',
+                    'Total Max Normal Days', 'Data Type', 'HH kWh', 'AMR kWh',
+                    'NHH kWh', 'Unmetered kwh', 'HH Filled kWh',
+                    'AMR Filled kWh', 'Total kWh', 'Note')) + '\n')
 
         year_start = datetime.datetime(year, 4, 1, tzinfo=pytz.utc)
         year_finish = year_start + relativedelta(years=1) - HH
@@ -55,7 +64,7 @@ def content():
             supply = Supply.get_by_id(sess, supply_id)
             supplies = supplies.filter(Supply.id == supply.id)
 
-        meter_types = ['hh', 'amr', 'nhh', 'unmetered']
+        meter_types = ('hh', 'amr', 'nhh', 'unmetered')
 
         for supply in supplies:
             total_kwh = dict([(mtype, 0) for mtype in meter_types])
@@ -70,7 +79,6 @@ def content():
                     or_(
                         Era.finish_date == null(),
                         Era.finish_date >= year_start)):
-                yield ' '
 
                 meter_type = era.make_meter_category()
 
@@ -395,7 +403,6 @@ def content():
                             Channel.era == era,
                             HhDatum.start_date >= year_start,
                             HhDatum.start_date <= year_finish))
-                    yield ' '
 
                     period_sum_kwhs = sum(period_kwhs)
                     year_sum_kwhs = sum(year_kwhs)
@@ -434,24 +441,37 @@ def content():
             is_normal = float(
                 total_normal_days) / total_max_normal_days >= float(183) / 365
 
-            yield ','.join('"' + str(val) + '"' for val in [
-                supply.id, mpan_core, site.code, site.name,
-                hh_format(year_start), hh_format(year_finish),
-                breakdown] + [normal_days[type] for type in meter_types] + [
-                max_normal_days[type] for type in meter_types] + [
-                total_normal_days, total_max_normal_days,
-                "Actual" if is_normal else "Estimated"] +
-                [total_kwh[type] for type in meter_types] +
-                [filled_kwh[type] for type in ('hh', 'amr')] +
-                [sum(total_kwh.values()) + sum(filled_kwh.values()), '']) + \
-                '\n'
+            f.write(
+                ','.join(
+                    '"' + str(val) + '"' for val in
+                    [
+                        supply.id, mpan_core, site.code, site.name,
+                        hh_format(year_start), hh_format(year_finish),
+                        breakdown] +
+                    [
+                        normal_days[type] for type in meter_types] +
+                    [
+                        max_normal_days[type] for type in meter_types] +
+                    [
+                        total_normal_days, total_max_normal_days,
+                        "Actual" if is_normal else "Estimated"] +
+                    [total_kwh[type] for type in meter_types] +
+                    [filled_kwh[type] for type in ('hh', 'amr')] +
+                    [sum(total_kwh.values()) + sum(filled_kwh.values()), '']) +
+                '\n')
 
             # avoid a long running transaction
             sess.rollback()
     except:
-        yield traceback.format_exc()
+        msg = traceback.format_exc()
+        sys.stderr.write(msg + '\n')
+        f.write("Problem " + msg)
     finally:
+        if f is not None:
+            f.close()
+            os.rename(running_name, finished_name)
         if sess is not None:
             sess.close()
 
-utils.send_response(inv, content, file_name='input.csv')
+threading.Thread(target=content).start()
+inv.sendSeeOther("/reports/251/output/")
