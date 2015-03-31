@@ -234,8 +234,7 @@ def content():
                                     Era.supply == supply,
                                     Era.start_date <= group.finish_date, or_(
                                         Era.finish_date == null(),
-                                        Era.finish_date >= group.start_date),
-                                    Source.code != 'sub'):
+                                        Era.finish_date >= group.start_date)):
 
                             if era.start_date > group.start_date:
                                 ss_start = era.start_date
