@@ -194,7 +194,8 @@ def content():
                     disp_func = computer.contract_func(
                         caches, supplier_contract, 'displaced_virtual_bill',
                         None)
-                    bill = disp_func(site_ds)
+                    disp_func(site_ds)
+                    bill = site_ds.supplier_bill
                     for title in bill_titles:
                         yield ',"' + str(bill.get(title, '')) + '"'
                         if title in bill:

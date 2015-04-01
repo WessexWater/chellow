@@ -5443,13 +5443,23 @@ def virtual_bill(supply_source):
             '"duos-fixed-days","1",'
             '"duos-fixed-gbp","0","duos-fixed-rate","0","duos-green-gbp",'
             '"0.0","duos-green-kwh","0","duos-green-rate","-0.00649"', ], },
+
     {
         'name': "Contract displaced virtual bills",
         'path': '/chellow/reports/109/output/?supplier_contract_id=56&'
         'months=1&finish_year=2013&finish_month=01',
         'status_code': 200,
         'regexes': [
-            r'"CI004",', ], },
+            r'"CI004","Lower Treave","","2013-01-01 00:00",'
+            r'"2013-01-31 23:30","chp",,,,,"0.0","0.0","","0.0","","0.00509",'
+            r'"","","","0","0.00161","0.0","","","","0.0","0.0","0","0.0",'
+            r'"0.0","0","","0","0","","","","0","0","0.0","0.0","0","0.0",'
+            r'"0.0","0","","","","","","","","","","","","","","","","","","",'
+            r'"2011-12-05 17:00","0","E","1.087","0.0","2012-01-16 17:00","0",'
+            r'"E","1.087","0.0","2012-02-02 17:30","0","E","1.075","0.0",'
+            r'"0.0","31.062748","1","0.0","","","","duos-amber-gbp","0.0",'
+            r'"duos-amber-kwh","0","duos-amber-rate","0.00251","duos-red-gbp",'
+            r'"0.0","duos-red-kwh","0","duos-red-rate","0.20727"']},
 
     # Move finish date of era
     {
