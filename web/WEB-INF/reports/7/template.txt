@@ -803,7 +803,7 @@
         <fieldset>
             <legend>Snapshot</legend>
             <br />
-            For {{ input_date(None, last_month_finish) }}
+            For {{ input_date('date', last_month_finish) }}
             <input type="submit" value="Download">
         </fieldset>
     </form>

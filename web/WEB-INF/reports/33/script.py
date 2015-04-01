@@ -1,27 +1,45 @@
 import traceback
 from net.sf.chellow.monad import Monad
-import datetime
 from dateutil.relativedelta import relativedelta
 from sqlalchemy.sql import func
 from sqlalchemy import or_
 from sqlalchemy.sql.expression import null
 import db
 import utils
-Monad.getUtils()['impt'](globals(), 'db', 'utils', 'templater')
+import dloads
+import sys
+import os
+import threading
+
+Monad.getUtils()['impt'](globals(), 'db', 'utils', 'templater', 'dloads')
 
 Era, Supply, Bill, Batch = db.Era, db.Supply, db.Bill, db.Batch
 Channel, HhDatum, RegisterRead = db.Channel, db.HhDatum, db.RegisterRead
 ReadType = db.ReadType
 MeasurementRequirement = db.MeasurementRequirement
 HH, hh_format, form_int = utils.HH, utils.hh_format, utils.form_int
+form_str, form_date = utils.form_str, utils.form_date
+
 inv = globals()['inv']
 
-year = form_int(inv, 'year')
-month = form_int(inv, 'month')
+date = form_date(inv, 'date')
 if inv.hasParameter('supply_id'):
     supply_id = form_int(inv, 'supply_id')
 else:
     supply_id = None
+
+if inv.hasParameter('mpan_cores'):
+    mpan_cores_str = form_str(inv, 'mpan_cores')
+    mpan_cores = mpan_cores_str.splitlines()
+    if len(mpan_cores) == 0:
+        mpan_cores = None
+    else:
+        for i in range(len(mpan_cores)):
+            mpan_cores[i] = utils.parse_mpan_core(mpan_cores[i])
+else:
+    mpan_cores = None
+
+running_name, finished_name = dloads.make_names('supplies_snapshot.csv')
 
 
 def content():
@@ -29,30 +47,30 @@ def content():
     try:
         sess = db.session()
 
-        date = datetime.datetime(year, month, 1) + relativedelta(months=1) - HH
-
-        yield ','.join(
-            (
-                'Date', 'Physical Site Id', 'Physical Site Name',
-                'Other Site Ids', 'Other Site Names', 'Supply Id', 'Source',
-                'Generator Type', 'DNO Name', 'Voltage Level', 'Metering Type',
-                'Mandatory HH', 'PC', 'MTC', 'CoP', 'SSC',
-                'Number Of Registers', 'MOP Contract', 'Mop Account',
-                'HHDC Contract', 'HHDC Account', 'Meter Serial Number',
-                'Meter Installation Date', 'Latest Normal Meter Read Date',
-                'Latest Normal Meter Read Type', 'Latest DC Bill Date',
-                'Latest MOP Bill Date', 'Import ACTIVE?',
-                'Import REACTIVE_IMPORT?', 'Import REACTIVE_EXPORT?',
-                'Export ACTIVE?', 'Export REACTIVE_IMPORT?',
-                'Export REACTIVE_EXPORT?', 'Import MPAN core',
-                'Import Agreed Supply Capacity (kVA)', 'Import LLFC Code',
-                'Import LLFC Description', 'Import Supplier Contract',
-                'Import Supplier Account', 'Import Mandatory kW',
-                'Latest Import Supplier Bill Date', 'Export MPAN core',
-                'Export Agreed Supply Capacity (kVA)', 'Export LLFC Code',
-                'Export LLFC Description', 'Export Supplier Contract',
-                'Export Supplier Account', 'Export Mandatory kW',
-                'Latest Export Supplier Bill Date')) + '\n'
+        f = open(running_name, "w")
+        f.write(
+            ','.join(
+                (
+                    'Date', 'Physical Site Id', 'Physical Site Name',
+                    'Other Site Ids', 'Other Site Names', 'Supply Id',
+                    'Source', 'Generator Type', 'DNO Name', 'Voltage Level',
+                    'Metering Type', 'Mandatory HH', 'PC', 'MTC', 'CoP', 'SSC',
+                    'Number Of Registers', 'MOP Contract', 'Mop Account',
+                    'HHDC Contract', 'HHDC Account', 'Meter Serial Number',
+                    'Meter Installation Date', 'Latest Normal Meter Read Date',
+                    'Latest Normal Meter Read Type', 'Latest DC Bill Date',
+                    'Latest MOP Bill Date', 'Import ACTIVE?',
+                    'Import REACTIVE_IMPORT?', 'Import REACTIVE_EXPORT?',
+                    'Export ACTIVE?', 'Export REACTIVE_IMPORT?',
+                    'Export REACTIVE_EXPORT?', 'Import MPAN core',
+                    'Import Agreed Supply Capacity (kVA)', 'Import LLFC Code',
+                    'Import LLFC Description', 'Import Supplier Contract',
+                    'Import Supplier Account', 'Import Mandatory kW',
+                    'Latest Import Supplier Bill Date', 'Export MPAN core',
+                    'Export Agreed Supply Capacity (kVA)', 'Export LLFC Code',
+                    'Export LLFC Description', 'Export Supplier Contract',
+                    'Export Supplier Account', 'Export Mandatory kW',
+                    'Latest Export Supplier Bill Date')) + '\n')
 
         NORMAL_READ_TYPES = ('N', 'C', 'N3')
         year_start = date + HH - relativedelta(years=1)
@@ -66,6 +84,12 @@ def content():
             supply = Supply.get_by_id(sess, supply_id)
 
             eras = eras.filter(Era.supply_id == supply.id)
+
+        if mpan_cores is not None:
+            eras = eras.filter(
+                or_(
+                    Era.imp_mpan_core.in_(mpan_cores),
+                    Era.exp_mpan_core.in_(mpan_cores)))
 
         for era in eras:
             site_codes = ''
@@ -303,38 +327,49 @@ def content():
                 num_registers = sess.query(MeasurementRequirement).filter(
                     MeasurementRequirement.ssc == era.ssc).count()
 
-            yield ','.join(
-                ('"' + ('' if value is None else str(value)) + '"')
-                for value in [
-                    hh_format(date), physical_site.code, physical_site.name,
-                    site_codes, site_names, supply.id, supply.source.code,
-                    generator_type, supply.dno_contract.name,
-                    voltage_level_code, metering_type, mandatory_hh,
-                    era.pc.code, era.mtc.code, era.cop.code, ssc_code,
-                    num_registers, mop_contract_name, mop_account,
-                    hhdc_contract_name, hhdc_account, era.msn,
-                    hh_format(meter_installation_date),
-                    latest_normal_read_date, latest_normal_read_type,
-                    latest_hhdc_bill_date,
-                    latest_mop_bill_date] + channel_values + [
-                    era.imp_mpan_core, era.imp_sc,
-                    None if era.imp_llfc is None else era.imp_llfc.code,
-                    None if era.imp_llfc is None else era.imp_llfc.description,
-                    None if era.imp_supplier_contract is None else
-                    era.imp_supplier_contract.name,
-                    era.imp_supplier_account, imp_avg_months,
-                    imp_latest_supplier_bill_date] + [
-                    era.exp_mpan_core, era.exp_sc,
-                    None if era.exp_llfc is None else era.exp_llfc.code,
-                    None if era.exp_llfc is None else era.exp_llfc.description,
-                    None if era.exp_supplier_contract is None else
-                    era.exp_supplier_contract.name,
-                    era.exp_supplier_account, exp_avg_months,
-                    exp_latest_supplier_bill_date]) + '\n'
+            f.write(
+                ','.join(
+                    (
+                        '"' + ('' if value is None else str(value)) + '"')
+                    for value in [
+                        hh_format(date), physical_site.code,
+                        physical_site.name, site_codes, site_names, supply.id,
+                        supply.source.code, generator_type,
+                        supply.dno_contract.name, voltage_level_code,
+                        metering_type, mandatory_hh, era.pc.code, era.mtc.code,
+                        era.cop.code, ssc_code, num_registers,
+                        mop_contract_name, mop_account, hhdc_contract_name,
+                        hhdc_account, era.msn,
+                        hh_format(meter_installation_date),
+                        latest_normal_read_date, latest_normal_read_type,
+                        latest_hhdc_bill_date, latest_mop_bill_date] +
+                    channel_values + [
+                        era.imp_mpan_core, era.imp_sc,
+                        None if era.imp_llfc is None else era.imp_llfc.code,
+                        None if era.imp_llfc is None else
+                        era.imp_llfc.description,
+                        None if era.imp_supplier_contract is None else
+                        era.imp_supplier_contract.name,
+                        era.imp_supplier_account, imp_avg_months,
+                        imp_latest_supplier_bill_date] + [
+                        era.exp_mpan_core, era.exp_sc,
+                        None if era.exp_llfc is None else era.exp_llfc.code,
+                        None if era.exp_llfc is None else
+                        era.exp_llfc.description,
+                        None if era.exp_supplier_contract is None else
+                        era.exp_supplier_contract.name,
+                        era.exp_supplier_account, exp_avg_months,
+                        exp_latest_supplier_bill_date]) + '\n')
     except:
-        yield traceback.format_exc()
+        msg = traceback.format_exc()
+        sys.stderr.write(msg)
+        f.write(msg)
     finally:
+        if f is not None:
+            f.close()
+            os.rename(running_name, finished_name)
         if sess is not None:
             sess.close()
 
-utils.send_response(inv, content, file_name="supplies_snapshot.csv")
+threading.Thread(target=content).start()
+inv.sendSeeOther("/reports/251/output/")
