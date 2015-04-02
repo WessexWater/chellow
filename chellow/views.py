@@ -5,6 +5,8 @@ from chellow import app
 from chellow.models import Contract, Report, User, set_read_write, db
 from sqlalchemy.exc import ProgrammingError
 import traceback
+import datetime
+import os
 
 
 def GET_str(name):
@@ -47,8 +49,8 @@ def check_permissions(*args, **kwargs):
     # sys.stderr.write("about to check permissions sys\n")
     path = request.path
     method = request.method
-    if method == 'GET' and path == '/health':
-        return 'healthy\n'
+    if method == 'GET' and path in ('/health', '/bmreports'):
+        return
 
     g.user = None
     user = None
@@ -90,8 +92,8 @@ def check_permissions(*args, **kwargs):
                     if hhdc_contract.party == party and (
                             request.path + "?" + request.query_string) \
                             .startswith(
-                                "/chellow/reports/37/output/?hhdc-contract-id="
-                                + str(hhdc_contract.id)):
+                                "/chellow/reports/37/output/?"
+                                "hhdc-contract-id=" + str(hhdc_contract.id)):
                         return
                 elif market_role_code == 'X':
                     if path.startswith(
@@ -112,9 +114,27 @@ def home():
     return chellow_redirect("/chellow/reports/1/output/")
 
 
+el_dir = {
+    'SYSPRICE': 'sysprice'
+}
+
+
+@app.route('/bmreports')
+def bmreports():
+    element = GET_str('element')
+    date_str = GET_str('dT')
+    fname = datetime.datetime.strptime(date_str, '%Y-%M-%d'). \
+        strftime('%Y_%M_%d') + '.xml'
+    f = open(
+        os.path.join(
+            os.path.dirname(__file__), 'bmreports', el_dir[element], fname))
+
+    return Response(f, status=200, mimetype='text/xml')
+
+
 @app.route('/health')
 def health():
-    pass
+    return 'healthy\n'
 
 
 class ChellowFileItem():
@@ -252,5 +272,4 @@ def error_500(error):
 
 @app.errorhandler(RuntimeError)
 def error_runtime(error):
-    #return traceback.format_exc(), 500
     return "called rtime handler " + str(error), 500

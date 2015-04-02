@@ -93,9 +93,8 @@ class SystemPriceImporter(threading.Thread):
         if len(self.messages) > 1000:
             self.messages.pop()
 
-    def hhs(self, n_day_start, utc_month=None):
-        day_url = "http://www.bmreports.com/bsp/additional/" + \
-            "soapfunctions.php?element=SYSPRICE&dT=" + \
+    def hhs(self, props, n_day_start, utc_month=None):
+        day_url = props['url'] + "?element=SYSPRICE&dT=" + \
             n_day_start.strftime("%Y-%m-%d")
 
         self.log("Downloading data from " + day_url)
@@ -141,8 +140,8 @@ class SystemPriceImporter(threading.Thread):
                         relativedelta(months=1) - HH
 
                     now = datetime.datetime.now(pytz.utc)
-
-                    if contract.make_properties().get('enabled', False):
+                    props = contract.make_properties()
+                    if props.get('enabled', False):
                         self.log("Is it after " + str(next_month_finish) + "?")
                         if now > next_month_finish:
                             n_stop_date = datetime.datetime(
@@ -154,7 +153,7 @@ class SystemPriceImporter(threading.Thread):
                                 "Checking to see if data is available on " +
                                 str(n_stop_date) + " on bmreports.com.")
 
-                            prices = self.hhs(n_stop_date)
+                            prices = self.hhs(props, n_stop_date)
                             if len(prices) == 0:
                                 self.log(
                                     "Data isn't available on the "
@@ -177,7 +176,7 @@ class SystemPriceImporter(threading.Thread):
                                 while n_day_start <= n_stop_date:
                                     prices.update(
                                         self.hhs(
-                                            n_day_start,
+                                            props, n_day_start,
                                             next_month_start.month))
                                     n_day_start += relativedelta(days=1)
 
