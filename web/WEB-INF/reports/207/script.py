@@ -397,10 +397,10 @@ def content():
                             HhDatum.start_date <= period_finish))
                     year_kwhs = list(
                         v[0] for v in sess.query(cast(HhDatum.value, Float)).
-                        join(Channel).filter(
+                        join(Channel).join(Era).filter(
                             Channel.imp_related == true(),
                             Channel.channel_type == 'ACTIVE',
-                            Channel.era == era,
+                            Era.supply == supply,
                             HhDatum.start_date >= year_start,
                             HhDatum.start_date <= year_finish))
 

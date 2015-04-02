@@ -6890,4 +6890,25 @@ def virtual_bill(supply_source):
         'status_code': 200,
         'regexes': [
             r'"2","22 9813 2107 763"']},
+
+    # CRC for HH supply that straddles eras with missing data
+    {
+        'name': "CRC for HH supply that straddles eras with missing data",
+        'path': '/chellow/reports/207/output/?supply_id=7&year=2008',
+        'status_code': 303},
+    {
+        'path': '/chellow/reports/251/output/',
+        'tries': {'max': 20, 'period': 1},
+        'status_code': 200,
+        'regexes': [
+            r"013_FINISHED_crc\.csv"]},
+    {
+        'path': '/chellow/reports/253/output/?'
+        'name=013_FINISHED_crc.csv',
+        'status_code': 200,
+        'regexes': [
+            r'"7","22 4862 4512 332","CH023","Treglisson","2008-04-01 00:00",'
+            r'"2009-03-31 23:30","","0","127.0","0","0","0","365.0","0","0",'
+            r'"127.0","365.0","Estimated","0","612952.94","0","0","0",'
+            r'"1148683.46236","1761636.40236",""']},
 ]
