@@ -33,7 +33,8 @@ def content():
     sess = None
     f = None
     try:
-        running_name, finished_name = dloads.make_names('crc.csv')
+        running_name, finished_name = dloads.make_names(
+            'crc_' + str(year) + '.csv')
         f = open(running_name, "w")
 
         sess = db.session()
