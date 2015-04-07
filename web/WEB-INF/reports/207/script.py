@@ -33,8 +33,13 @@ def content():
     sess = None
     f = None
     try:
+        fname = ['crc', str(year), str(year + 1)]
+        if supply_id is None:
+            fname.append('all_supplies')
+        else:
+            fname.append('supply_' + str(supply_id))
         running_name, finished_name = dloads.make_names(
-            'crc_' + str(year) + '.csv')
+            '_'.join(fname) + '.csv')
         f = open(running_name, "w")
 
         sess = db.session()

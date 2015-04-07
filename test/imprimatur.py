@@ -4659,11 +4659,11 @@ def virtual_bill(supply_source):
         'path': '/chellow/reports/251/output/',
         'tries': {},
         'regexes': [
-            r"000_FINISHED_crc_2012\.csv"],
+            r"000_FINISHED_crc_2012_2013_supply_7\.csv"],
         'status_code': 200},
     {
         'path': '/chellow/reports/253/output/?'
-        'name=000_FINISHED_crc_2012.csv',
+        'name=000_FINISHED_crc_2012_2013_supply_7.csv',
         'tries': {},
         'status_code': 200,
         'regexes': [
@@ -6324,10 +6324,10 @@ def virtual_bill(supply_source):
         'tries': {'max': 20, 'period': 1},
         'status_code': 200,
         'regexes': [
-            r"010_FINISHED_crc_2009\.csv"]},
+            r"010_FINISHED_crc_2009_2010_supply_10\.csv"]},
     {
         'path': '/chellow/reports/253/output/?'
-        'name=010_FINISHED_crc_2009.csv',
+        'name=010_FINISHED_crc_2009_2010_supply_10.csv',
         'status_code': 200,
         'regexes': [
             r'"10","22 1065 3921 534","CI017","Roselands","2009-04-01 00:00",'
@@ -6883,10 +6883,10 @@ def virtual_bill(supply_source):
         'tries': {'max': 20, 'period': 1},
         'status_code': 200,
         'regexes': [
-            r"012_FINISHED_crc_2005\.csv"]},
+            r"012_FINISHED_crc_2005_2006_supply_2\.csv"]},
     {
         'path': '/chellow/reports/253/output/?'
-        'name=012_FINISHED_crc_2005.csv',
+        'name=012_FINISHED_crc_2005_2006_supply_2.csv',
         'status_code': 200,
         'regexes': [
             r'"2","22 9813 2107 763"']},
@@ -6901,10 +6901,10 @@ def virtual_bill(supply_source):
         'tries': {'max': 20, 'period': 1},
         'status_code': 200,
         'regexes': [
-            r"013_FINISHED_crc_2008\.csv"]},
+            r"013_FINISHED_crc_2008_2009_supply_7\.csv"]},
     {
         'path': '/chellow/reports/253/output/?'
-        'name=013_FINISHED_crc_2008.csv',
+        'name=013_FINISHED_crc_2008_2009_supply_7.csv',
         'status_code': 200,
         'regexes': [
             r'"7","22 4862 4512 332","CH023","Treglisson","2008-04-01 00:00",'
