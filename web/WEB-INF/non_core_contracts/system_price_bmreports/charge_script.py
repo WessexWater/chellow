@@ -154,9 +154,9 @@ class SystemPriceImporter(threading.Thread):
                                 str(n_stop_date) + " on bmreports.com.")
 
                             prices = self.hhs(props, n_stop_date)
-                            if len(prices) == 0:
+                            if len(prices) < 2:
                                 self.log(
-                                    "Data isn't available on the "
+                                    "Data isn't available on "
                                     "bmreports.com yet.")
                             else:
                                 self.log(

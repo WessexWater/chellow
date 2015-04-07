@@ -196,17 +196,17 @@ def virtual_bill(supply_source):
 
     # Check that we can see HHDC rate script okay. Contract 54.
     {
-        'path': '/chellow/reports/173/output/?hhdc_rate_script_id=306',
+        'path': '/chellow/reports/173/output/?hhdc_rate_script_id=312',
 
         # Check that 'has_finished' field is there
         'regexes': [
-            r"HH contract", ],
-        'status_code': 200, },
+            r"HH contract"],
+        'status_code': 200},
 
     # Check that we can see the edit view of the HHDC rate script okay.
     # Contract 54.
     {
-        'path': '/chellow/reports/249/output/?hhdc_rate_script_id=306',
+        'path': '/chellow/reports/249/output/?hhdc_rate_script_id=312',
 
         # Check that 'has_finished' field is there
         'regexes': [
@@ -215,22 +215,22 @@ def virtual_bill(supply_source):
             # Check the hhdc_rate_script_id for update is there
             r'<legend>Update Rate Script</legend>\s*'
             '<input type="hidden" name="hhdc_rate_script_id"\s*'
-            'value="306">', ],
-        'status_code': 200, },
+            'value="312">'],
+        'status_code': 200},
 
     # Check that we can update an HHDC rate script okay
     {
         'path': '/chellow/reports/249/output/',
         'method': 'post',
         'data': {
-            'hhdc_rate_script_id': "306",
+            'hhdc_rate_script_id': "312",
             'start_year': "2000",
             'start_month': "01",
             'start_day': "03",
             'start_hour': "00",
             'start_minute': "00",
-            'script': "{}", },
-        'status_code': 303, },
+            'script': "{}"},
+        'status_code': 303},
 
     # Add another HHDC contract
     {
@@ -243,10 +243,10 @@ def virtual_bill(supply_source):
             'start_month': "01",
             'start_day': "03",
             'start_hour': "00",
-            'start_minute': "00", },
+            'start_minute': "00"},
         'status_code': 303,
         'regexes': [
-            r"/reports/115/output/\?hhdc_contract_id=55", ], },
+            r"/reports/115/output/\?hhdc_contract_id=55"]},
 
     # Update the newly added HHDC
     {
@@ -263,8 +263,8 @@ def virtual_bill_titles():
 def virtual_bill(supply_source):
     supply_source.dc_bill['net-gbp'] = 0
 """,
-            'properties': '{"props": 1}', },
-        'status_code': 303, },
+            'properties': '{"props": 1}'},
+        'status_code': 303},
 
     # Update state of Dynamat HHDC
     {
@@ -273,8 +273,8 @@ def virtual_bill(supply_source):
         'data': {
             'hhdc_contract_id': "55",
             'update_state': "",
-            'state': '{"stat": 2}', },
-        'status_code': 303, },
+            'state': '{"stat": 2}'},
+        'status_code': 303},
 
     # View Dynamat HHDC
     {
@@ -286,7 +286,7 @@ def virtual_bill(supply_source):
             r'<textarea name="properties" rows="40" '
             'cols="80">\{&#34;props&#34;: 1\}</textarea>',
             r'<textarea name="state" rows="40" cols="80">'
-            '\{&#34;stat&#34;: 2\}</textarea>', ], },
+            '\{&#34;stat&#34;: 2\}</textarea>']},
     {
         'name': "Check one can update the participant for an HHDC contract.",
         'path': '/chellow/reports/279/output/',
@@ -308,23 +308,23 @@ def virtual_bill_titles():
 def virtual_bill(supply_source):
     supply_source.dc_bill['net-gbp'] = 0
 """,
-            'properties': "{}", },
-        'status_code': 303, },
+            'properties': "{}"},
+        'status_code': 303},
 
     # Check it's still there
     {
         'path': '/chellow/reports/279/output/?hhdc_contract_id=55',
         'status_code': 200,
         'regexes': [
-            r'option value="651" selected', ], },
+            r'option value="651" selected']},
 
     # Check correct fields present for adding a supplier contract },
     {
         'name': "Manipulate supplier contracts",
         'path': '/chellow/reports/315/output/',
         'regexes': [
-            r'name="start_year"', ],
-        'status_code': 200, },
+            r'name="start_year"'],
+        'status_code': 200},
 
     # Create a new supplier contract
     {
@@ -339,9 +339,9 @@ def virtual_bill(supply_source):
             'start_hour': "00",
             'start_minute': "00",
             'charge_script': "",
-            'properties': "{'hydrogen': 'sonata'}", },
+            'properties': "{'hydrogen': 'sonata'}"},
         'regexes': [
-            r"/reports/77/output/\?supplier_contract_id=56", ], },
+            r"/reports/77/output/\?supplier_contract_id=56"]},
 
     # Check that it's displayed properly
     {
@@ -349,8 +349,8 @@ def virtual_bill(supply_source):
         'regexes': [
             r'<option value="22" selected>',
             r'<textarea name="properties" rows="20" '
-            'cols="80">\{&#39;hydrogen&#39;: &#39;sonata&#39;\}</textarea>', ],
-        'status_code': 200, },
+            'cols="80">\{&#39;hydrogen&#39;: &#39;sonata&#39;\}</textarea>'],
+        'status_code': 200},
     {
         'path': '/chellow/reports/77/output/?supplier_contract_id=56',
         'regexes': [
@@ -358,15 +358,15 @@ def virtual_bill(supply_source):
             'For <input name="months" value="1" maxlength="2" size="2">\s*'
             'month\(s\) until the end of\s*'
             '<input name="finish_year" maxlength="4" size="4" '
-            'value="201\d">', ],
-        'status_code': 200, },
+            'value="201\d">'],
+        'status_code': 200},
 
     # Update the associated rate script. Supplier contract 56
     {
         'path': '/chellow/reports/319/output/',
         'method': 'post',
         'data': {
-            'supplier_rate_script_id': "308",
+            'supplier_rate_script_id': "314",
             'start_year': "2000",
             'start_month': "01",
             'start_day': "03",
@@ -420,13 +420,13 @@ def gsp_gbp_per_kwh():
 def totalElement(account, startDate, finishDate):
     return ["total", 22.3, "VAT cost"]
 """,
-            'properties': "{}", },
-        'status_code': 303, },
+            'properties': "{}"},
+        'status_code': 303},
     {
         'path': '/chellow/reports/267/output/?non_core_contract_id=57',
         'regexes': [
-            r"import sys\s*def", ],
-        'status_code': 200, },
+            r"import sys\s*def"],
+        'status_code': 200},
 
     # Delete it
     {
@@ -434,8 +434,8 @@ def totalElement(account, startDate, finishDate):
         'method': 'post',
         'data': {
             'non_core_contract_id': "57",
-            'delete': "", },
-        'status_code': 303, },
+            'delete': ""},
+        'status_code': 303},
     {
         'name': "Insert MOP contract",
         'path': '/chellow/reports/361/output/',
@@ -447,10 +447,10 @@ def totalElement(account, startDate, finishDate):
             'start_month': "01",
             'start_day': "03",
             'start_hour': "00",
-            'start_minute': "00", },
+            'start_minute': "00"},
         'status_code': 303,
         'regexes': [
-            r"/reports/107/output/\?mop_contract_id=58", ], },
+            r"/reports/107/output/\?mop_contract_id=58"]},
 
     # Update with a charge script
     {
@@ -473,15 +473,15 @@ def virtual_bill(ds):
     bill = ds.mop_bill
     bill['net-gbp'] = 0
 """,
-            'properties': "{}", },
+            'properties': "{}"},
         'status_code': 303,
         'regexes': [
-            r"/reports/107/output/\?mop_contract_id=58", ], },
+            r"/reports/107/output/\?mop_contract_id=58"]},
 
     # Check we can see the rate scripts
     {
         'path': '/chellow/reports/107/output/?mop_contract_id=58',
-        'status_code': 200, },
+        'status_code': 200},
 
     # Insert a modern supplier contract
     {
@@ -500,15 +500,15 @@ def virtual_bill(ds):
             'charge_script': "",
             'properties': "{}", },
         'regexes': [
-            r"/chellow/reports/77/output/\?supplier_contract_id=59", ],
-        'status_code': 303, },
+            r"/chellow/reports/77/output/\?supplier_contract_id=59"],
+        'status_code': 303},
 
-    # Update the associated rate script. Supplier contract 58
+    # Update the associated rate script. Supplier contract 59
     {
         'path': '/chellow/reports/319/output/',
         'method': 'post',
         'data': {
-            'supplier_rate_script_id': "311",
+            'supplier_rate_script_id': "317",
             'start_year': "2000",
             'start_month': "01",
             'start_day': "03",
@@ -524,8 +524,8 @@ def gsp_gbp_per_kwh():
         'summer-pk': 0.0062656,
         'night': 0.0062656,
         'other': 0.0062656}
-""", },
-        'status_code': 303, },
+"""},
+        'status_code': 303},
 
     # Create a new supplier contract
     {
@@ -541,10 +541,10 @@ def gsp_gbp_per_kwh():
             'start_minute': "00",
             'has_finished': "false",
             'charge_script': "",
-            'properties': "{}", },
+            'properties': "{}"},
         'regexes': [
-            r"/reports/77/output/\?supplier_contract_id=60", ],
-        'status_code': 303, },
+            r"/reports/77/output/\?supplier_contract_id=60"],
+        'status_code': 303},
 
     # Give proper error if there are too few fields },
     {
@@ -1896,18 +1896,18 @@ def gsp_gbp_per_kwh():
             '</a>', ],
         'status_code': 200, },
 
-    # Supplier contract 59 },
+    # Supplier contract 56 },
     {
         'name': "Test deleting the only rate script attached to a supplier "
         "contract.",
         'path': '/chellow/reports/319/output/',
         'method': 'post',
         'data': {
-            'supplier_rate_script_id': "308",
-            'delete': "Delete", },
+            'supplier_rate_script_id': "314",
+            'delete': "Delete"},
         'regexes': [
-            r"You can&#39;t delete the last rate script\.", ],
-        'status_code': 400, },
+            r"You can&#39;t delete the last rate script\."],
+        'status_code': 400},
     {
         'name': "Try adding a second rate script (set to 'ongoing'), and see "
         "if the era can be updated.",
@@ -1920,8 +1920,8 @@ def gsp_gbp_per_kwh():
             'start_day': "16",
             'start_hour': "00",
             'start_minute': "00",
-            'script': "", },
-        'status_code': 303, },
+            'script': ""},
+        'status_code': 303},
 
     # Supply 1
     {
@@ -1948,8 +1948,8 @@ def gsp_gbp_per_kwh():
             'exp_mpan_core': "22 0470 7514 535",
             'exp_sc': "150",
             'exp_supplier_contract_id': "60",
-            'exp_supplier_account': "010", },
-        'status_code': 303, },
+            'exp_supplier_account': "010"},
+        'status_code': 303},
     {
         'name': "Check updating of HHDC contract state.",
         'path': '/chellow/reports/279/output/',
@@ -1959,8 +1959,8 @@ def gsp_gbp_per_kwh():
             'state': """{
 'last_import_keys': {'.': '1960-11-30 00:00_example.csv'}}
 """,
-            'update_state': "Update State", },
-        'status_code': 303, },
+            'update_state': "Update State"},
+        'status_code': 303},
     {
         'path': '/chellow/reports/115/output/?hhdc_contract_id=54',
         'status_code': 200,
@@ -1974,7 +1974,7 @@ def gsp_gbp_per_kwh():
             # Check link to add a rate script
             r'Rate Scripts\s*'
             '\[<a href="/chellow/reports/383/output/\?hhdc_contract_id=54">'
-            'add</a>\]', ], },
+            'add</a>\]']},
 
     # Requires that no other user reports have been created. },
     {
@@ -1983,15 +1983,15 @@ def gsp_gbp_per_kwh():
         'method': 'post',
         'data': {
             'is_core': "false",
-            'name': "Minority Report", },
+            'name': "Minority Report"},
         'status_code': 303,
         'regexes': [
-            r"/reports/2/", ], },
+            r"/reports/2/"]},
     {
         'path': '/chellow/reports/2/',
         'status_code': 200,
         'regexes': [
-            r"Minority Report", ], },
+            r"Minority Report"]},
 
     # Insert era },
     {
@@ -2518,13 +2518,13 @@ def virtual_bill(supply_source):
         'files': {'import_file': 'hh_data_long.csv'},
         'status_code': 303,
         'regexes': [
-            r"/reports/295/output/\?process_id=12", ], },
+            r"/reports/295/output/\?process_id=12"]},
     {
         'path': '/chellow/reports/295/output/?process_id=12',
-        'tries': {'max': 10, 'period': 1},
+        'tries': {},
         'status_code': 200,
         'regexes': [
-            r"The file has been imported successfully\.", ], },
+            r"The file has been imported successfully\."]},
 
     # Create the virtual bill
     {
@@ -2539,15 +2539,15 @@ def virtual_bill(supply_source):
             'start_hour': "00",
             'start_minute': "00", },
         'regexes': [
-            r"/reports/267/output/\?non_core_contract_id=63", ],
-        'status_code': 303, },
+            r"/reports/267/output/\?non_core_contract_id=63"],
+        'status_code': 303},
 
     # Edit the rate script
     {
         'path': '/chellow/reports/273/output/',
         'method': 'post',
         'data': {
-            'rate_script_id': "316",
+            'rate_script_id': "322",
             'start_year': "2000",
             'start_month': "01",
             'start_day': "03",
@@ -2557,7 +2557,7 @@ def virtual_bill(supply_source):
 def triad_estimates():
     return {}
 """},
-        'status_code': 303, },
+        'status_code': 303},
     {
         'path': '/chellow/reports/291/output/?supply_id=7&start_year=2009&'
         'start_month=03&start_day=01&start_hour=00&start_minute=0&'
@@ -2654,7 +2654,7 @@ def triad_estimates():
             '"46.3032","2007-11-26 17:00","0","X","1.07","0.0","15.4344",'
             '"25.212997","1","32.4289567414","12","-389.147480897",""',
             r"text/csv",
-            r"supply_virtual_bills_7.csv", ], },
+            r"supply_virtual_bills_7.csv"]},
 
     # Try looking at it using the TRIAD report
     {
@@ -2667,47 +2667,47 @@ def triad_estimates():
             '"25.631634","0.0","22 3479 7618 470","2010-01-07 17:00","0","X",'
             '"1.058","0.0","2010-01-25 17:00","0","X","1.058","0.0",'
             '"2009-12-15 17:00","0","X","1.058","0.0","0.0","25.631634",'
-            '"0.0"', ], },
+            '"0.0"']},
     {
         'name': "Check we can delete a rate script (when it's not the only "
         "one). Supplier contract 60.",
         'path': '/chellow/reports/319/output/',
         'method': 'post',
         'data': {
-            'supplier_rate_script_id': "312",
-            'delete': "Delete", },
-        'status_code': 303, },
+            'supplier_rate_script_id': "318",
+            'delete': "Delete"},
+        'status_code': 303},
     {
         'name': "Try 'Supply MPAN Months' report.",
         'path': '/chellow/reports/15/output/?supply_id=2&is_import=true&'
         'year=2014&years=1',
         'regexes': [
-            r"&gt;\s*Import\s*data by month", ],
-        'status_code': 200, },
+            r"&gt;\s*Import\s*data by month"],
+        'status_code': 200},
     {
         'name': "Try 'Supply Raw HH Data' report.",
         'path': '/chellow/reports/17/output/?supply_id=1&months=1&'
         'finish_year=2008&finish_month=07',
         'regexes': [
-            r'<option value="07" selected>07</option>', ],
-        'status_code': 200, },
+            r'<option value="07" selected>07</option>'],
+        'status_code': 200},
     {
         'name': "Try site graph report.",
         'path': '/chellow/reports/21/output/?site_id=7&finish_year=2008&'
         'finish_month=7&months=1',
-        'status_code': 200, },
+        'status_code': 200},
     {
         'name': "Try era graph report.",
         'path': '/chellow/reports/23/output/?site_id=7&finish_year=2008&'
         'finish_month=7&months=1',
-        'status_code': 200, },
+        'status_code': 200},
     {
         'name': "Try 'Site HH bulk figures' report.",
         'path': '/chellow/reports/29/output/?site_id=5&type=used&months=1&'
         'finish_year=2008&finish_month=01',
         'regexes': [
             r"CH023,used,2008-01-01,3.77", ],
-        'status_code': 200, },
+        'status_code': 200},
     {
         'name': "Try HHDC virtual bills.",
         'path': '/chellow/reports/81/output/?hhdc_contract_id=54&months=1&'
@@ -2718,7 +2718,7 @@ def triad_estimates():
             "net-gbp",
             r'22 9205 6799 106,22 0470 7514 535,2008-07-01 00:00,'
             '2008-07-06 23:30,"0",',
-            r'attachment; filename="hhdc_vbs.csv"', ], },
+            r'attachment; filename="hhdc_vbs.csv"']},
 
     # Can we make a supply have source sub and view site level hh data okay?
     {
@@ -2734,15 +2734,15 @@ def triad_estimates():
             'name': "Hello",
             'source_id': "2",
             'generator_type_id': "1",
-            'gsp_group_id': "11", },
+            'gsp_group_id': "11"},
         'regexes': [
-            r"/reports/7/output/\?supply_id=1", ],
-        'status_code': 303, },
+            r"/reports/7/output/\?supply_id=1"],
+        'status_code': 303},
     {
         'path': '/chellow/reports/183/output/?start_year=2008&start_month=07&'
         'start_day=1&start_hour=0&start_minute=0&finish_year=2008&'
         'finish_month=07&finish_day=31&finish_hour=23&finish_minute=30',
-        'status_code': 200, },
+        'status_code': 200},
     {
         'name': "CSV Supplies Duration",
         'path': '/chellow/reports/149/output/?start_year=2009&start_month=03&'
@@ -2752,9 +2752,9 @@ def triad_estimates():
             r'"7","1","net","","CH023","Treglisson","2009-03-01 00:00",'
             '"2009-03-31 23:30","00","845","5","","0","hh",540,'
             '22 4862 4512 332,230,Half-hourlies 2007,148925.71,0,158159.10402,'
-            '399.72,2009-03-13 08:00,None,0,,,,,0,0,,0,,None,1488', ], },
+            '399.72,2009-03-13 08:00,None,0,,,,,0,0,,0,,None,1488']},
 
-    # Insert rate script },
+    # Insert rate script
     {
         'name': "Manipulate dno contracts",
         'path': '/chellow/reports/243/output/',
@@ -2767,45 +2767,45 @@ def triad_estimates():
             'start_month': "05",
             'start_day': "01",
             'start_hour': "00",
-            'start_minute': "00", },
+            'start_minute': "00"},
         'regexes': [
-            r"/chellow/reports/69/output/\?dno_rate_script_id=317", ],
-        'status_code': 303, },
+            r"/chellow/reports/69/output/\?dno_rate_script_id=323"],
+        'status_code': 303},
 
     # Test bad syntax gives an error
     {
         'path': '/chellow/reports/285/output/',
         'method': 'post',
         'data': {
-            'dno_rate_script_id': "317",
+            'dno_rate_script_id': "323",
             'start_year': "2010",
             'start_month': "05",
             'start_day': "01",
             'start_hour': "00",
             'start_minute': "00",
             'script': "{{/0erk",
-            'update': "Update", },
-        'status_code': 400, },
+            'update': "Update"},
+        'status_code': 400},
 
     # Delete rate script
     {
         'path': '/chellow/reports/285/output/',
         'method': 'post',
         'data': {
-            'dno_rate_script_id': "317",
-            'delete': "Delete", },
-        'status_code': 303, },
+            'dno_rate_script_id': "323",
+            'delete': "Delete"},
+        'status_code': 303},
     {
         'name': "CSV Sites Monthly Duration",
         'path': '/chellow/reports/161/output/?site_id=5&months=1&'
         'finish_year=2009&finish_month=03',
-        'status_code': 303, },
+        'status_code': 303},
     {
         'path': '/chellow/reports/251/output/',
         'tries': {'max': 40, 'period': 1},
         'regexes': [
             r"000_FINISHED_site_monthly_duration_for_CH023_1_to_2009_3\.csv"],
-        'status_code': 200, },
+        'status_code': 200},
     {
         'name': "CSV Sites TRIAD",
         'path': '/chellow/reports/181/output/?site_id=3&year=2010',
@@ -2820,13 +2820,13 @@ def triad_estimates():
         'name': "CSV Sites Monthly Duration",
         'path': '/chellow/reports/161/output/?site_id=4&months=1&'
         'finish_year=2009&finish_month=04',
-        'status_code': 303, },
+        'status_code': 303},
     {
         'path': '/chellow/reports/251/output/',
         'tries': {'max': 20, 'period': 1},
         'regexes': [
             r"001_FINISHED_site_monthly_duration_for_CI017_1_to_2009_4\.csv"],
-        'status_code': 200, },
+        'status_code': 200},
     {
         'path': '/chellow/reports/253/output/?'
         'name=001_FINISHED_site_monthly_duration_for_CI017_1_to_2009_4.csv',
@@ -2845,7 +2845,7 @@ def triad_estimates():
             '"0","0","0","0","0","2784.89","0","0","2784.89","0","0","0","hh",'
             '"'
             "Can't find the virtual_bill function in the supplier "
-            'contract. "', ], },
+            'contract. "']},
 
     # Update the supplier contract
     {
@@ -3032,10 +3032,10 @@ def virtual_bill(supply_source):
 
     bill['net-gbp'] = sum(v for k, v in bill.iteritems() if k[-4:] == '-gbp')
 """,
-            'properties': "{}", },
+            'properties': "{}"},
         'status_code': 303,
         'regexes': [
-            r"/reports/77/output/\?supplier_contract_id=59", ], },
+            r"/reports/77/output/\?supplier_contract_id=59"]},
     {
         'path': '/chellow/reports/317/output/',
         'method': 'post',
@@ -3061,8 +3061,8 @@ def virtual_bill(supply_source):
             'net-gbp': 0.0, 'vat-gbp':0.0, 'gross-gbp': 0.0,
             'sum-msp-kwh': sum_msp_kwh})
 """,
-            'properties': "{}", },
-        'status_code': 303, },
+            'properties': "{}"},
+        'status_code': 303},
     {
         'name': "Set configuration properties",
         'path': '/chellow/reports/269/output/',
@@ -3077,7 +3077,7 @@ def virtual_bill(supply_source):
     'site_links': [
         {'name': 'Google Maps', 'href': 'https://maps.google.com/maps?q='}]}
 """, },
-        'status_code': 303, },
+        'status_code': 303},
     {
         'name': "Site In View World",
         'path': '/chellow/reports/5/output/?site_id=3',
@@ -3085,7 +3085,7 @@ def virtual_bill(supply_source):
         'regexes': [
             r'<a href="/chellow/reports/7/output/\?supply_id=2">view</a>',
             r'<a href="https://maps.google.com/maps\?q=CI005">Google Maps</a>',
-            r'<option value="imp_net">Imported</option>', ], },
+            r'<option value="imp_net">Imported</option>']},
 
     # Show a dead supply. Supply 11
     {
@@ -3118,8 +3118,8 @@ def virtual_bill(supply_source):
             'imp_mpan_core': "22 9974 3438 105",
             'imp_sc': "20",
             'imp_supplier_contract_id': "60",
-            'imp_supplier_account': "SA341665", },
-        'status_code': 303, },
+            'imp_supplier_account': "SA341665"},
+        'status_code': 303},
     {
         'path': '/chellow/reports/5/output/?site_id=3',
         'status_code': 200,
@@ -3127,7 +3127,7 @@ def virtual_bill(supply_source):
             r'<td>\s*'
             '<a href="/chellow/reports/7/output/\?supply_id=11">view</a>\s*'
             '</td>\s*<td>3</td>\s*<td>2005-10-03 00:00</td>\s*<td>\s*'
-            '2010-04-13 23:30\s*</td>', ], },
+            '2010-04-13 23:30\s*</td>']},
 
     # Insert a 20 supply },
     {
@@ -3158,10 +3158,10 @@ def virtual_bill(supply_source):
             'imp_sc': "2300",
             'imp_supplier_contract_id': "56",
             'imp_supplier_account': "141 5532",
-            'insert': "insert", },
+            'insert': "insert"},
         'regexes': [
-            r"/reports/7/output/\?supply_id=12", ],
-        'status_code': 303, },
+            r"/reports/7/output/\?supply_id=12"],
+        'status_code': 303},
 
     # Add import related ACTIVE channel. Supply 12
     {
@@ -3170,35 +3170,35 @@ def virtual_bill(supply_source):
         'data': {
             'era_id': "16",
             'imp_related': "true",
-            'channel_type': "ACTIVE", },
+            'channel_type': "ACTIVE"},
         'regexes': [
-            r"/chellow/reports/301/output/\?channel_id=42", ],
-        'status_code': 303, },
+            r"/chellow/reports/301/output/\?channel_id=42"],
+        'status_code': 303},
 
     # Try out simple.csv hh import format.
     {
         'path': '/chellow/reports/211/output/',
         'method': 'post',
         'data': {
-            'hhdc_contract_id': "55", },
+            'hhdc_contract_id': "55"},
         'files': {'import_file': 'hh.simple.csv'},
         'status_code': 303,
         'regexes': [
-            r"/reports/65/output/\?hhdc_contract_id=55&process_id=0", ], },
+            r"/reports/65/output/\?hhdc_contract_id=55&process_id=0"]},
     {
         'path': '/chellow/reports/65/output/?hhdc_contract_id=55&process_id=0',
         'tries': {},
         'regexes': [
-            r"The import has completed.*successfully.", ],
-        'status_code': 200, },
+            r"The import has completed.*successfully."],
+        'status_code': 200},
 
     # Check that the first datum has been correctly loaded in
     {
         'path': '/chellow/reports/17/output/?supply_id=7&months=1&'
         'finish_year=2010&finish_month=02',
         'regexes': [
-            r"<td>\s*2010-02-04 20:00\s*</td>\s*<td>30.4339</td>", ],
-        'status_code': 200, },
+            r"<td>\s*2010-02-04 20:00\s*</td>\s*<td>30.4339</td>"],
+        'status_code': 200},
     {
         'path': '/chellow/reports/291/output/?supply_id=12&start_year=2009&'
         'start_month=3&start_day=01&start_hour=00&start_minute=0&'
@@ -3291,7 +3291,7 @@ def virtual_bill(supply_source):
             '"X","1.095","0.0","2008-12-15 17:00","0","X","1.095","0.0",'
             '"0.0","22.19481","0.0","2007-12-17 17:00","0","X","1.095","0.0",'
             '"2008-01-03 17:00","0","X","1.079","0.0","2007-11-26 17:00","0",'
-            '"X","1.095","0.0","0.0","22.19481","1","0.0","12","-0.0",""'], },
+            '"X","1.095","0.0","0.0","22.19481","1","0.0","12","-0.0",""']},
 
     # Check it works when the DNO rate script contains a double LLFC 453,470
     {
@@ -4179,15 +4179,15 @@ def virtual_bill(supply_source):
         'tries': {'max': 20, 'period': 1},
         'regexes': [
             r"002_FINISHED_site_monthly_duration_for_CI017_1_to_2010_7.csv"],
-        'status_code': 200, },
+        'status_code': 200},
     {
         'path': '/chellow/reports/253/output/?'
         'name=002_FINISHED_site_monthly_duration_for_CI017_1_to_2010_7.csv',
         'regexes': [
             r'"CI017","Roselands","","3rd-party,net","","2010-07-31 23:30",'
             '"0","0","0","0","0","0","0","0","1593.3414","0","0","1593.3414"'
-            ',"0.0","0","0","hh",""', ],
-        'status_code': 200, },
+            ',"0.0","0","0","hh",""'],
+        'status_code': 200},
     {
         'name': "Try creating and deleting a rate script for a non-core "
         "contract (templater).",
@@ -4200,26 +4200,26 @@ def virtual_bill(supply_source):
             'start_day': "01",
             'start_hour': "00",
             'start_minute': "00",
-            'insert': "Insert", },
+            'insert': "Insert"},
         'regexes': [
-            r"/chellow/reports/271/output/\?rate_script_id=319", ],
-        'status_code': 303, },
+            r"/chellow/reports/271/output/\?rate_script_id=325"],
+        'status_code': 303},
     {
-        'path': '/chellow/reports/273/output/?rate_script_id=319&'
+        'path': '/chellow/reports/273/output/?rate_script_id=325&'
         'delete=Delete',
         'regexes': [
-            r"Are you sure you want to delete this rate script\?", ],
-        'status_code': 200, },
+            r"Are you sure you want to delete this rate script\?"],
+        'status_code': 200},
     {
         'path': '/chellow/reports/273/output/',
         'method': 'post',
         'data': {
-            'rate_script_id': "319",
-            'delete': "Delete", },
-        'status_code': 303, },
+            'rate_script_id': "325",
+            'delete': "Delete"},
+        'status_code': 303},
     {
-        'path': '/chellow/reports/271/output/?rate_script_id=319',
-        'status_code': 404, },
+        'path': '/chellow/reports/271/output/?rate_script_id=325',
+        'status_code': 404},
     {
         'name': "Try adding a rate script before other rate scripts.",
         'path': '/chellow/reports/275/output/',
@@ -4233,28 +4233,28 @@ def virtual_bill(supply_source):
             'start_day': "01",
             'start_hour': "00",
             'start_minute': "00",
-            'insert': "Insert", },
+            'insert': "Insert"},
         'regexes': [
-            r"/chellow/reports/271/output/\?rate_script_id=320", ],
-        'status_code': 303, },
+            r"/chellow/reports/271/output/\?rate_script_id=326"],
+        'status_code': 303},
     {
-        'path': '/chellow/reports/273/output/?rate_script_id=320',
+        'path': '/chellow/reports/273/output/?rate_script_id=326',
         'regexes': [
             r'<input name="finish_year" maxlength="4" size="4" value="2010">',
 
             # Check that the start hour of a non-core rate script is correct."
             r'<select name="start_hour">\s*'
-            '<option value="0" selected>00</option>', ],
-        'status_code': 200, },
+            '<option value="0" selected>00</option>'],
+        'status_code': 200},
     {
         'path': '/chellow/reports/273/output/',
         'method': 'post',
         'data': {
-            'rate_script_id': "320",
-            'delete': "Delete", },
-        'status_code': 303, },
+            'rate_script_id': "326",
+            'delete': "Delete"},
+        'status_code': 303},
 
-    # Supplier contract 55 },
+    # Supplier contract 55
     {
         'name': "Adding a bill manually.",
         'path': '/chellow/reports/313/output/',
@@ -4284,10 +4284,10 @@ def virtual_bill(supply_source):
             'gross': "0",
             'account': "02",
             'bill_type_id': "1",
-            'breakdown': "{}", },
+            'breakdown': "{}"},
         'regexes': [
-            r"/chellow/reports/105/output/\?supplier_bill_id=18", ],
-        'status_code': 303, },
+            r"/chellow/reports/105/output/\?supplier_bill_id=18"],
+        'status_code': 303},
 
     # Supplier contract 52, batch 6
     {
@@ -4392,8 +4392,8 @@ def virtual_bill(supply_source):
             '<option value="23">23</option>\s*'
             '</select>:<select name="finish_minute">\s*'
             '<option value="0" selected>00</option>\s*'
-            '<option value="30">30</option>\s*</select>', ],
-        'status_code': 200, },
+            '<option value="30">30</option>\s*</select>'],
+        'status_code': 200},
     {
         'name': "Check that bill with two sets of register reads gets "
         "displayed correctly.",
@@ -5250,8 +5250,8 @@ def virtual_bill(supply_source):
             '"2007-01-04 00:00","45","E","2007-01-17 00:00","76","E"', ], },
     {
         'name': "View a MOP rate script. Contract 58.",
-        'path': '/chellow/reports/205/output/?mop_rate_script_id=310',
-        'status_code': 200, },
+        'path': '/chellow/reports/205/output/?mop_rate_script_id=316',
+        'status_code': 200},
     {
         'name': "View supplies duration selector.",
         'path': '/chellow/reports/147/output/',
@@ -5269,7 +5269,7 @@ def virtual_bill(supply_source):
         'path': '/chellow/reports/153/output/',
         'status_code': 200,
         'regexes': [
-            r"end_year", ], },
+            r"end_year"]},
     {
         'name': "CSV Supplies Duration with register reads",
         'path': '/chellow/reports/149/output/?start_year=2010&start_month=01&'
@@ -5778,7 +5778,7 @@ def virtual_bill(supply_source):
         'path': '/chellow/reports/273/output/',
         'method': 'post',
         'data': {
-            'rate_script_id': "240",
+            'rate_script_id': "246",
 
             # First rate script of non-core contract triad
             'start_year': "2005",
@@ -5792,20 +5792,20 @@ def virtual_bill(supply_source):
             'finish_day': "30",
             'finish_hour': "23",
             'finish_minute': "30",
-            'script': "", },
-        'status_code': 303, },
+            'script': ""},
+        'status_code': 303},
     {
-        'path': '/chellow/reports/271/output/?rate_script_id=241',
+        'path': '/chellow/reports/271/output/?rate_script_id=247',
         'regexes': [
             r"2006-03-31 00:00"],
-        'status_code': 200, },
+        'status_code': 200},
 
     # Put it back to how it was
     {
         'path': '/chellow/reports/273/output/',
         'method': 'post',
         'data': {
-            'rate_script_id': "240",
+            'rate_script_id': "246",
             'start_year': "2005",
             'start_month': "04",
             'start_day': "01",
@@ -5817,8 +5817,8 @@ def virtual_bill(supply_source):
             'finish_day': "31",
             'finish_hour': "23",
             'finish_minute': "30",
-            'script': "", },
-        'status_code': 303, },
+            'script': ""},
+        'status_code': 303},
     {
         'name': "Try sites monthly duration with displaced bill",
         'path': '/chellow/reports/161/output/?site_id=1&months=1&'
@@ -6911,4 +6911,282 @@ def virtual_bill(supply_source):
             r'"2009-03-31 23:30","","0","127.0","0","0","0","365.0","0","0",'
             r'"127.0","365.0","Estimated","0","612952.94","0","0","0",'
             r'"1148683.46236","1761636.40236",""']},
+
+    # System price BM reports
+    # Here we have only the first half-hour on the first of April.
+    {
+        'name': "System price BM reports",
+        'path': '/chellow/reports/269/output/',
+        'method': 'post',
+        'data': {
+            'non_core_contract_id': '30',
+            'name': 'system_price_bmreports',
+            'charge_script': r"""
+from net.sf.chellow.monad import Monad
+from xml.dom.minidom import Node, parse
+import types
+import collections
+import pytz
+import threading
+import datetime
+import traceback
+from dateutil.relativedelta import relativedelta
+import urllib2
+import db
+import utils
+Monad.getUtils()['impt'](globals(), 'db', 'utils')
+RateScript, Contract = db.RateScript, db.Contract
+UserException, HH, hh_format = utils.UserException, utils.HH, utils.hh_format
+db_id = globals()['db_id']
+
+
+def identity_func(x):
+    return x
+
+
+def hh(ds):
+    rate_sets = ds.supplier_rate_sets
+    try:
+        system_price_cache = ds.caches['system_price']
+    except KeyError:
+        ds.caches['system_price'] = {}
+        system_price_cache = ds.caches['system_price']
+
+    for hh in ds.hh_data:
+        try:
+            prices = system_price_cache[hh['start-date']]
+        except KeyError:
+            prices = {}
+            date_str = hh['start-date'].strftime("%d %H:%M Z")
+            for pref in ['ssp', 'sbp']:
+                transform_func = identity_func
+                rate = ds.hh_rate(db_id, hh['start-date'], pref + 's')
+                dt = hh['start-date']
+                while isinstance(rate, types.FunctionType):
+                    transform_func = rate
+                    dt -= relativedelta(years=1)
+                    rate = ds.hh_rate(db_id, dt, pref + 's')
+
+                if isinstance(rate, dict):
+                    rate = transform_func(rate)
+                    prices[pref + '-gbp-per-kwh'] = float(rate[date_str]) / \
+                        1000
+                else:
+                    raise UserException(
+                        "Type returned by " + pref + "s at " + hh_format(dt) +
+                        " must be function or dictionary.")
+            system_price_cache[hh['start-date']] = prices
+
+        hh.update(prices)
+        hh['ssp-gbp'] = hh['nbp-kwh'] * hh['ssp-gbp-per-kwh']
+        hh['sbp-gbp'] = hh['nbp-kwh'] * hh['sbp-gbp-per-kwh']
+        rate_sets['ssp'].add(hh['ssp-gbp-per-kwh'])
+        rate_sets['sbp'].add(hh['sbp-gbp-per-kwh'])
+
+
+system_price_importer = None
+
+
+class SystemPriceImporter(threading.Thread):
+    def __init__(self):
+        super(SystemPriceImporter, self).__init__(
+            name="System Price BMReports Importer")
+        self.lock = threading.RLock()
+        self.messages = collections.deque()
+        self.stopped = threading.Event()
+        self.going = threading.Event()
+
+    def stop(self):
+        self.stopped.set()
+        self.going.set()
+
+    def go(self):
+        self.going.set()
+
+    def is_locked(self):
+        if self.lock.acquire(False):
+            self.lock.release()
+            return False
+        else:
+            return True
+
+    def log(self, message):
+        self.messages.appendleft(
+            datetime.datetime.utcnow().replace(tzinfo=pytz.utc).strftime(
+                "%Y-%m-%d %H:%M:%S") + " - " + message)
+        if len(self.messages) > 1000:
+            self.messages.pop()
+
+    def hhs(self, props, n_day_start, utc_month=None):
+        day_url = props['url'] + "?element=SYSPRICE&dT=" + \
+            n_day_start.strftime("%Y-%m-%d")
+
+        self.log("Downloading data from " + day_url)
+        ct_tz = pytz.timezone('Europe/London')
+
+        f = urllib2.urlopen(day_url)
+        dom = parse(f)
+
+        prices = {}
+        ct_day_start = ct_tz.localize(n_day_start)
+        hh_start = pytz.utc.normalize(ct_day_start.astimezone(pytz.utc))
+
+        for elem in dom.getElementsByTagName('ELEMENT'):
+            vals = {}
+            for elem_child in elem.childNodes:
+                if elem_child.nodeType == Node.ELEMENT_NODE:
+                    vals[elem_child.tagName] = elem_child.firstChild.nodeValue
+
+            if utc_month is None or utc_month == hh_start.month:
+                prices[hh_start.strftime("%d %H:%M Z")] = {
+                    'ssp': vals['SSP'], 'sbp': vals['SBP']}
+            hh_start += HH
+        return prices
+
+    def run(self):
+        while not self.stopped.isSet():
+            if self.lock.acquire(False):
+                sess = None
+                try:
+                    self.log("Starting to check system prices.")
+                    sess = db.session()
+                    contract = Contract.get_non_core_by_name(
+                        sess, 'system_price_bmreports')
+
+                    latest_rs = sess.query(RateScript).filter(
+                        RateScript.contract == contract).order_by(
+                        RateScript.start_date.desc()).first()
+                    latest_rs_id = latest_rs.id
+
+                    next_month_start = latest_rs.start_date + \
+                        relativedelta(months=1)
+                    next_month_finish = next_month_start + \
+                        relativedelta(months=1) - HH
+
+                    now = datetime.datetime.now(pytz.utc)
+                    props = contract.make_properties()
+                    if props.get('enabled', False):
+                        self.log("Is it after " + str(next_month_finish) + "?")
+                        if now > next_month_finish:
+                            n_stop_date = datetime.datetime(
+                                next_month_finish.year,
+                                next_month_finish.month,
+                                next_month_finish.day) + relativedelta(days=1)
+
+                            self.log(
+                                "Checking to see if data is available on " +
+                                str(n_stop_date) + " on bmreports.com.")
+
+                            prices = self.hhs(props, n_stop_date)
+                            if len(prices) < 2:
+                                self.log(
+                                    "Data isn't available on "
+                                    "bmreports.com yet.")
+                            else:
+                                self.log(
+                                    "Starting to download data from "
+                                    "bmreports.com.")
+                                prices = {}
+                                n_day_start = datetime.datetime(
+                                    next_month_start.year,
+                                    next_month_start.month,
+                                    next_month_start.day) - relativedelta(
+                                    days=1)
+                                self.log(
+                                    "Next month start " +
+                                    str(next_month_start) + " n day start " +
+                                    str(n_day_start))
+
+                                while n_day_start <= n_stop_date:
+                                    prices.update(
+                                        self.hhs(
+                                            props, n_day_start,
+                                            next_month_start.month))
+                                    n_day_start += relativedelta(days=1)
+
+                                self.log(
+                                    "Finished downloading data from "
+                                    "bmreports.com.")
+                                script = "def ssps():\n    return {\n" + \
+                                    ',\n'.join(
+                                        "'" + k + "': " +
+                                        prices[k]['ssp'] for k in sorted(
+                                            prices.keys())) + \
+                                    "}\n\n\ndef sbps():\n    return {\n" + \
+                                    ',\n'.join(
+                                        "'" + k + "': " +
+                                        prices[k]['sbp'] for k in sorted(
+                                            prices.keys())) + "}"
+                                db.set_read_write(sess)
+                                contract = Contract.get_non_core_by_name(
+                                    sess, 'system_price_bmreports')
+                                latest_rs = RateScript.get_by_id(
+                                    sess, latest_rs_id)
+                                contract.update_rate_script(
+                                    sess, latest_rs, latest_rs.start_date,
+                                    next_month_finish, latest_rs.script)
+                                contract.insert_rate_script(
+                                    sess, next_month_start, script)
+                                sess.commit()
+                                self.log("Added new rate script.")
+                        else:
+                            self.log(
+                                "Hasn't reached the end of the month yet.")
+
+                    else:
+                        self.log(
+                            "The automatic importer is disabled. To enable "
+                            "it, edit the contract properties to set "
+                            "'enabled' to True.")
+
+                except:
+                    self.log("Outer problem " + traceback.format_exc())
+                    sess.rollback()
+                finally:
+                    try:
+                        if sess is not None:
+                            sess.close()
+                    finally:
+                        self.lock.release()
+                        self.log("Finished checking system prices.")
+
+            self.going.wait(30 * 60)
+            self.going.clear()
+
+
+def get_importer():
+    return system_price_importer
+
+
+def startup():
+    global system_price_importer
+    system_price_importer = SystemPriceImporter()
+    system_price_importer.start()
+
+
+def shutdown():
+    if system_price_importer is not None:
+        system_price_importer.stop()
+        if system_price_importer.isAlive():
+            raise UserException(
+                "Can't shut down System Price importer, it's still running.")
+
+""",
+            'properties': """
+{
+    'enabled': True,
+    'url': 'http://127.0.0.1:5000/bmreports'}
+"""},
+        'status_code': 303},
+    {
+        'name': 'Import now',
+        'path': '/chellow/reports/221/output/',
+        'method': 'post',
+        'status_code': 303},
+    {
+        'path': '/chellow/reports/221/output/',
+        'tries': {},
+        'regexes': [
+            r"Data isn&#39;t available on bmreports\.com yet"],
+        'status_code': 200},
 ]
