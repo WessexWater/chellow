@@ -829,7 +829,15 @@ if engine.execute(
 
             rscripts_path = os.path.join(contract_path, 'rate_scripts')
             for rscript_fname in sorted(os.listdir(rscripts_path)):
-                start_str, finish_str = rscript_fname.split('.')[0].split('_')
+                try:
+                    start_str, finish_str = \
+                        rscript_fname.split('.')[0].split('_')
+                except ValueError:
+                    raise Exception(
+                        "The rate script " + rscript_fname +
+                        " in the directory " + rscripts_path +
+                        " should consist of two dates separated by an " +
+                        "underscore.")
                 start_date = datetime.datetime.strptime(
                     start_str, "%Y%m%d%H%M").replace(tzinfo=pytz.utc)
                 if finish_str == 'ongoing':

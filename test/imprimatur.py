@@ -196,7 +196,7 @@ def virtual_bill(supply_source):
 
     # Check that we can see HHDC rate script okay. Contract 54.
     {
-        'path': '/chellow/reports/173/output/?hhdc_rate_script_id=312',
+        'path': '/chellow/reports/173/output/?hhdc_rate_script_id=315',
 
         # Check that 'has_finished' field is there
         'regexes': [
@@ -206,7 +206,7 @@ def virtual_bill(supply_source):
     # Check that we can see the edit view of the HHDC rate script okay.
     # Contract 54.
     {
-        'path': '/chellow/reports/249/output/?hhdc_rate_script_id=312',
+        'path': '/chellow/reports/249/output/?hhdc_rate_script_id=315',
 
         # Check that 'has_finished' field is there
         'regexes': [
@@ -215,7 +215,7 @@ def virtual_bill(supply_source):
             # Check the hhdc_rate_script_id for update is there
             r'<legend>Update Rate Script</legend>\s*'
             '<input type="hidden" name="hhdc_rate_script_id"\s*'
-            'value="312">'],
+            'value="315">'],
         'status_code': 200},
 
     # Check that we can update an HHDC rate script okay
@@ -223,7 +223,7 @@ def virtual_bill(supply_source):
         'path': '/chellow/reports/249/output/',
         'method': 'post',
         'data': {
-            'hhdc_rate_script_id': "312",
+            'hhdc_rate_script_id': "315",
             'start_year': "2000",
             'start_month': "01",
             'start_day': "03",
@@ -366,7 +366,7 @@ def virtual_bill(supply_source):
         'path': '/chellow/reports/319/output/',
         'method': 'post',
         'data': {
-            'supplier_rate_script_id': "314",
+            'supplier_rate_script_id': "317",
             'start_year': "2000",
             'start_month': "01",
             'start_day': "03",
@@ -508,7 +508,7 @@ def virtual_bill(ds):
         'path': '/chellow/reports/319/output/',
         'method': 'post',
         'data': {
-            'supplier_rate_script_id': "317",
+            'supplier_rate_script_id': "320",
             'start_year': "2000",
             'start_month': "01",
             'start_day': "03",
@@ -1903,7 +1903,7 @@ def gsp_gbp_per_kwh():
         'path': '/chellow/reports/319/output/',
         'method': 'post',
         'data': {
-            'supplier_rate_script_id': "314",
+            'supplier_rate_script_id': "317",
             'delete': "Delete"},
         'regexes': [
             r"You can&#39;t delete the last rate script\."],
@@ -2547,7 +2547,7 @@ def virtual_bill(supply_source):
         'path': '/chellow/reports/273/output/',
         'method': 'post',
         'data': {
-            'rate_script_id': "322",
+            'rate_script_id': "325",
             'start_year': "2000",
             'start_month': "01",
             'start_day': "03",
@@ -2674,7 +2674,7 @@ def triad_estimates():
         'path': '/chellow/reports/319/output/',
         'method': 'post',
         'data': {
-            'supplier_rate_script_id': "318",
+            'supplier_rate_script_id': "321",
             'delete': "Delete"},
         'status_code': 303},
     {
@@ -2706,7 +2706,7 @@ def triad_estimates():
         'path': '/chellow/reports/29/output/?site_id=5&type=used&months=1&'
         'finish_year=2008&finish_month=01',
         'regexes': [
-            r"CH023,used,2008-01-01,3.77", ],
+            r"CH023,used,2008-01-01,3.77"],
         'status_code': 200},
     {
         'name': "Try HHDC virtual bills.",
@@ -2769,7 +2769,7 @@ def triad_estimates():
             'start_hour': "00",
             'start_minute': "00"},
         'regexes': [
-            r"/chellow/reports/69/output/\?dno_rate_script_id=323"],
+            r"/chellow/reports/69/output/\?dno_rate_script_id=326"],
         'status_code': 303},
 
     # Test bad syntax gives an error
@@ -2777,7 +2777,7 @@ def triad_estimates():
         'path': '/chellow/reports/285/output/',
         'method': 'post',
         'data': {
-            'dno_rate_script_id': "323",
+            'dno_rate_script_id': "326",
             'start_year': "2010",
             'start_month': "05",
             'start_day': "01",
@@ -2792,7 +2792,7 @@ def triad_estimates():
         'path': '/chellow/reports/285/output/',
         'method': 'post',
         'data': {
-            'dno_rate_script_id': "323",
+            'dno_rate_script_id': "326",
             'delete': "Delete"},
         'status_code': 303},
     {
@@ -2830,7 +2830,7 @@ def triad_estimates():
     {
         'path': '/chellow/reports/253/output/?'
         'name=001_FINISHED_site_monthly_duration_for_CI017_1_to_2009_4.csv',
-        'tries': {'max': 10, 'period': 1},
+        'tries': {},
         'status_code': 200,
         'regexes': [
             r"Site Id,Site Name,Associated Site Ids,Sources,Generator Types,"
@@ -4202,10 +4202,10 @@ def virtual_bill(supply_source):
             'start_minute': "00",
             'insert': "Insert"},
         'regexes': [
-            r"/chellow/reports/271/output/\?rate_script_id=325"],
+            r"/chellow/reports/271/output/\?rate_script_id=328"],
         'status_code': 303},
     {
-        'path': '/chellow/reports/273/output/?rate_script_id=325&'
+        'path': '/chellow/reports/273/output/?rate_script_id=328&'
         'delete=Delete',
         'regexes': [
             r"Are you sure you want to delete this rate script\?"],
@@ -4214,11 +4214,11 @@ def virtual_bill(supply_source):
         'path': '/chellow/reports/273/output/',
         'method': 'post',
         'data': {
-            'rate_script_id': "325",
+            'rate_script_id': "328",
             'delete': "Delete"},
         'status_code': 303},
     {
-        'path': '/chellow/reports/271/output/?rate_script_id=325',
+        'path': '/chellow/reports/271/output/?rate_script_id=328',
         'status_code': 404},
     {
         'name': "Try adding a rate script before other rate scripts.",
@@ -4235,10 +4235,10 @@ def virtual_bill(supply_source):
             'start_minute': "00",
             'insert': "Insert"},
         'regexes': [
-            r"/chellow/reports/271/output/\?rate_script_id=326"],
+            r"/chellow/reports/271/output/\?rate_script_id=329"],
         'status_code': 303},
     {
-        'path': '/chellow/reports/273/output/?rate_script_id=326',
+        'path': '/chellow/reports/273/output/?rate_script_id=329',
         'regexes': [
             r'<input name="finish_year" maxlength="4" size="4" value="2010">',
 
@@ -4250,7 +4250,7 @@ def virtual_bill(supply_source):
         'path': '/chellow/reports/273/output/',
         'method': 'post',
         'data': {
-            'rate_script_id': "326",
+            'rate_script_id': "329",
             'delete': "Delete"},
         'status_code': 303},
 
@@ -4418,28 +4418,28 @@ def virtual_bill(supply_source):
             # Check link to TPR from outer read
             r'<td>\s*'
             '<a href="/chellow/reports/97/output/\?tpr_id=2">00003</a>\s*'
-            '</td>', ],
-        'status_code': 200, },
+            '</td>'],
+        'status_code': 200},
 
-    # Supplier contract 61 },
+    # Supplier contract 61
     {
         'name': "Deleting a batch with bills with register reads.",
         'path': '/chellow/reports/289/output/',
         'method': 'post',
         'data': {
             'supplier_batch_id': "5",
-            'delete': "Delete", },
-        'status_code': 303, },
+            'delete': "Delete"},
+        'status_code': 303},
     {
         'name': "Check 'insert supplier batch' page.",
         'path': '/chellow/reports/287/output/?supplier_contract_id=64',
         'regexes': [
-            r'="description"', ], },
+            r'="description"']},
     {
         'name': "Viewing the insert batch page of a DC contract.",
         'path': '/chellow/reports/281/output/?hhdc_contract_id=54',
         'regexes': [
-            r'="description"', ], },
+            r'="description"']},
     {
         'name': "Viewing a batch in view mode, when it has a custom report.",
         'path': '/chellow/reports/269/output/',
@@ -4461,15 +4461,15 @@ def virtual_bill(supply_source):
     {
         'path': '/chellow/reports/193/output/?mop_batch_id=9',
         'regexes': [
-            r"/reports/2/output/", ],
-        'status_code': 200, },
+            r"/reports/2/output/"],
+        'status_code': 200},
 
     # Check that we can see a supplier batch okay. Contract 56
     {
         'path': '/chellow/reports/91/output/?supplier_batch_id=4',
         'regexes': [
-            r"/reports/2/output/", ],
-        'status_code': 200, },
+            r"/reports/2/output/"],
+        'status_code': 200},
     {
         'name': "Check 'no channel' error when importing hh data.",
         'path': '/chellow/reports/211/output/',
@@ -4985,7 +4985,7 @@ def virtual_bill(supply_source):
             '"0.026","273.0","0","31","0.026","0.0","0","0.00161","0.0","","",'
             '"0.0","0","0.2441","0.0","0.0","0.00382","0.0","30","0.0905",'
             '"2.715","88","0",'
-            '"0.0","0.00019737201","0.0","0.0","","0.0","0",'
+            '"0.0","0.0001897","0.0","0.0","","0.0","0",'
             '"0.0","0.0","0","0.0","0.0","0","0.0","0.0","","","","","","","",'
             '"","","0.0",'
             '"","0.0","","","","","","","","","","","","","","","",'
@@ -5250,7 +5250,7 @@ def virtual_bill(supply_source):
             '"2007-01-04 00:00","45","E","2007-01-17 00:00","76","E"', ], },
     {
         'name': "View a MOP rate script. Contract 58.",
-        'path': '/chellow/reports/205/output/?mop_rate_script_id=316',
+        'path': '/chellow/reports/205/output/?mop_rate_script_id=319',
         'status_code': 200},
     {
         'name': "View supplies duration selector.",
@@ -5778,7 +5778,7 @@ def virtual_bill(supply_source):
         'path': '/chellow/reports/273/output/',
         'method': 'post',
         'data': {
-            'rate_script_id': "246",
+            'rate_script_id': "247",
 
             # First rate script of non-core contract triad
             'start_year': "2005",
@@ -5795,7 +5795,7 @@ def virtual_bill(supply_source):
             'script': ""},
         'status_code': 303},
     {
-        'path': '/chellow/reports/271/output/?rate_script_id=247',
+        'path': '/chellow/reports/271/output/?rate_script_id=248',
         'regexes': [
             r"2006-03-31 00:00"],
         'status_code': 200},
@@ -5805,7 +5805,7 @@ def virtual_bill(supply_source):
         'path': '/chellow/reports/273/output/',
         'method': 'post',
         'data': {
-            'rate_script_id': "246",
+            'rate_script_id': "247",
             'start_year': "2005",
             'start_month': "04",
             'start_day': "01",
@@ -5823,7 +5823,7 @@ def virtual_bill(supply_source):
         'name': "Try sites monthly duration with displaced bill",
         'path': '/chellow/reports/161/output/?site_id=1&months=1&'
         'finish_year=2010&finish_month=07',
-        'status_code': 303, },
+        'status_code': 303},
     {
         'path': '/chellow/reports/251/output/',
         'tries': {'max': 30, 'period': 1},
@@ -6648,7 +6648,8 @@ def virtual_bill(supply_source):
             '"","",'
             '"","","","","","","","","","","","","2014-11-25 17:00","0","X",'
             '"1.065","0.0","2014-12-06 17:00","0","X","1.05","0.0",'
-            '"2015-01-30 17:00","0","X","1.065","0.0","0.0","37.42","1","0.0",'
+            '"2015-01-30 17:00","0","X","1.065","0.0","0.0","38.699518","1",'
+            r'"0.0",'
             '"","","","0","0.00066","0.0","0.0","0","0.19574","0.0","0.0",'
             '"31","0.6567",'
             '"20.3577","0","0.0","0.10016297","0.0","0.0",'
@@ -6660,7 +6661,7 @@ def virtual_bill(supply_source):
             '"","0.0","","","","","","","","","","","","","","","",'
             '"","","","2014-11-25 17:00","0","X","1.065","0.0",'
             '"2014-12-06 17:00","0","X","1.05","0.0","2015-01-30 17:00","0",'
-            '"X","1.065","0.0","0.0","37.42","1","0.0","","",""']},
+            '"X","1.065","0.0","0.0","38.699518","1","0.0","","",""']},
     {
         'name': "Show edit channel snag",
         'path': '/chellow/reports/365/output/?snag_id=100',
