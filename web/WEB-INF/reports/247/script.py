@@ -548,23 +548,14 @@ def content():
                             dc_contract, 'virtual_bill')(sss)
                         dc_bill = sss.dc_bill
                         gbp = dc_bill['net-gbp']
-                        if source_code in ('net', 'gen-net'):
-                            month_data['import-net-gbp'] += gbp
-                            month_data['used-gbp'] += gbp
-                        elif source_code in (
-                                '3rd-party', '3rd-party-reverse'):
-                            month_data['import-3rd-party-gbp'] += gbp
-                            month_data['used-gbp'] += gbp
-                        elif source_code == 'gen':
-                            month_data['displaced-gbp'] += gbp
-                            month_data['used-gbp'] += gbp
 
                         mop_contract = era.mop_contract
                         mop_bill_function = sss.contract_func(
                             mop_contract, 'virtual_bill')
                         mop_bill_function(sss)
                         mop_bill = sss.mop_bill
-                        gbp = mop_bill['net-gbp']
+                        gbp += mop_bill['net-gbp']
+
                         if source_code in ('net', 'gen-net', 'sub'):
                             month_data['import-net-gbp'] += gbp
                             month_data['used-gbp'] += gbp
