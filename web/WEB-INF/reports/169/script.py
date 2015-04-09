@@ -21,13 +21,12 @@ imp_related = form_bool(inv, 'imp_related')
 channel_type = form_str(inv, 'channel_type')
 is_zipped = form_bool(inv, 'is_zipped')
 
+base_name = ["supplies_hh_data", finish_date.strftime('%Y%m%d%H%M')]
+
 if inv.hasParameter('supply_id'):
     supply_id = inv.getLong('supply_id')
 else:
     supply_id = None
-
-base_name = "supplies_hh_data_" + finish_date.strftime('%Y%m%d%M%H') + \
-    ('.zip' if is_zipped else '.csv')
 
 if inv.hasParameter('mpan_cores'):
     mpan_cores_str = form_str(inv, 'mpan_cores')
@@ -40,12 +39,8 @@ if inv.hasParameter('mpan_cores'):
 else:
     mpan_cores = None
 
-running_name, finished_name = dloads.make_names(base_name)
-
-if is_zipped:
-    zf = zipfile.ZipFile(running_name, "w", zipfile.ZIP_DEFLATED)
-else:
-    tf = open(running_name, "w")
+zf = None
+tf = None
 
 
 def content():
@@ -59,16 +54,35 @@ def content():
         if supply_id is not None:
             supply = Supply.get_by_id(sess, supply_id)
             supplies = supplies.filter(Supply.id == supply.id)
+            first_era = sess.query(Era).filter(
+                Era.supply == supply,
+                or_(
+                    Era.finish_date == null(), Era.finish_date >= start_date),
+                Era.start_date <= finish_date).order_by(Era.start_date).first()
+            if first_era.imp_mpan_core is None:
+                name_core = first_era.exp_mpan_core
+            else:
+                name_core = first_era.imp_mpan_core
+            base_name.append("supply_" + name_core.replace(' ', '_'))
+
         if mpan_cores is not None:
             supplies = supplies.filter(
                 or_(
                     Era.imp_mpan_core.in_(mpan_cores),
                     Era.exp_mpan_core.in_(mpan_cores)))
+            base_name.append('filter')
 
         outs = []
         titles = "MPAN Core,Date," + ','.join(map(str, range(48)))
-        if not is_zipped:
+
+        running_name, finished_name = dloads.make_names(
+            '_'.join(base_name) + ('.zip' if is_zipped else '.csv'))
+        if is_zipped:
+            zf = zipfile.ZipFile(running_name, "w", zipfile.ZIP_DEFLATED)
             outs.append(titles)
+        else:
+            tf = open(running_name, "w")
+
         for supply in supplies:
             era = supply.find_era_at(sess, finish_date)
             if era is None or era.imp_mpan_core is None:

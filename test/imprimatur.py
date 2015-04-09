@@ -5108,17 +5108,19 @@ def shutdown():
         'tries': {'max': 20, 'period': 1},
         'status_code': 200,
         'regexes': [
-            r"003_FINISHED_supplies_hh_data_200807313023\.csv", ], },
+            r"003_FINISHED_supplies_hh_data_200807312330_supply_"
+            r"22_9205_6799_106\.csv"]},
     {
         'path': '/chellow/reports/253/output/?'
-        'name=003_FINISHED_supplies_hh_data_200807313023.csv',
+        'name=003_FINISHED_supplies_hh_data_200807312330_supply_'
+        '22_9205_6799_106.csv',
         'status_code': 200,
 
         # Check the HH data is there
         'regexes': [
-            r"NA,2008-07-06,0\.262", ]},
+            r"NA,2008-07-06,0\.262"]},
 
-    # Add a new era with this contract },
+    # Add a new era with this contract
     {
         'name': "Test duos-fixed",
         'path': '/chellow/reports/305/output/',
@@ -5130,10 +5132,10 @@ def shutdown():
             'start_day': "01",
             'start_hour': "00",
             'start_minute': "00",
-            'insert_era': "Insert", },
+            'insert_era': "Insert"},
         'regexes': [
-            r"/reports/7/output/\?supply_id=5", ],
-        'status_code': 303, },
+            r"/reports/7/output/\?supply_id=5"],
+        'status_code': 303},
 
     # Supply 5
     {
@@ -7094,10 +7096,10 @@ def virtual_bill(supply_source):
         'tries': {'max': 20, 'period': 1},
         'status_code': 200,
         'regexes': [
-            r"011_FINISHED_supplies_hh_data_200808013023\.csv", ], },
+            r"011_FINISHED_supplies_hh_data_200808012330_filter\.csv", ], },
     {
         'path': '/chellow/reports/253/output/?'
-        'name=011_FINISHED_supplies_hh_data_200808013023.csv',
+        'name=011_FINISHED_supplies_hh_data_200808012330_filter.csv',
         'status_code': 200,
 
         # Check the HH data is there
