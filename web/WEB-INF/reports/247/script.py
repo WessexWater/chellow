@@ -556,19 +556,17 @@ def content():
                         mop_bill = sss.mop_bill
                         gbp += mop_bill['net-gbp']
 
-                        if source_code in ('net', 'gen-net', 'sub'):
+                        if source_code in ('net', 'gen', 'gen-net', 'sub'):
                             month_data['import-net-gbp'] += gbp
                             month_data['used-gbp'] += gbp
-                            generator_type = ''
-                        elif source_code in (
-                                '3rd-party', '3rd-party-reverse'):
+                        elif source_code in ('3rd-party', '3rd-party-reverse'):
                             month_data['import-3rd-party-gbp'] += gbp
                             month_data['used-gbp'] += gbp
-                            generator_type = ''
-                        elif source_code == 'gen':
+
+                        if source_code == 'gen':
                             generator_type = supply.generator_type.code
-                            month_data['displaced-gbp'] += gbp
-                            month_data['used-gbp'] += gbp
+                        else:
+                            generator_type = ''
 
                         out = [
                             era.imp_mpan_core, era.exp_mpan_core,
