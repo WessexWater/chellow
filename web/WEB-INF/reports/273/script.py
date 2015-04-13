@@ -11,13 +11,19 @@ render = templater.render
 inv, template = globals()['inv'], globals()['template']
 
 
+def make_vals(rate_script, msg=None):
+    messages = None if msg is None else [str(msg)]
+    return {
+        'rate_script': rate_script,
+        'messages': messages}
+
 sess = None
 try:
     sess = db.session()
     if inv.getRequest().getMethod() == 'GET':
         rate_script_id = form_int(inv, 'rate_script_id')
         rate_script = RateScript.get_non_core_by_id(sess, rate_script_id)
-        render(inv, template, {'rate_script': rate_script})
+        render(inv, template, make_vals(rate_script))
     else:
         db.set_read_write(sess)
         rate_script_id = form_int(inv, 'rate_script_id')
@@ -41,6 +47,9 @@ try:
             sess.commit()
             inv.sendSeeOther(
                 '/reports/271/output/?rate_script_id=' + str(rate_script.id))
+except utils.UserException, e:
+    sess.rollback()
+    render(inv, template, make_vals(rate_script, e))
 except NotFoundException, e:
     inv.sendNotFound(str(e))
 finally:

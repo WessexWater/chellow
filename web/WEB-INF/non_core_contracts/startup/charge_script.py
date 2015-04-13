@@ -1,13 +1,13 @@
 import sys
-import os
 from net.sf.chellow.monad import Monad
 import traceback
 
 LIBS = (
-    'utils', 'db', 'templater', 'computer', 'bsuos', 'tlms',
+    'utils', 'db', 'templater', 'computer', 'scenario', 'bsuos', 'tlms',
     'general_import', 'hh_importer', 'bill_import', 'edi_lib',
     'system_price_bmreports', 'system_price_elexon', 'system_price', 'rcrc',
-    'duos', 'triad_rates', 'triad', 'ccl', 'aahedc', 'scenario', 'dloads')
+    'duos', 'triad_rates', 'triad', 'ccl', 'aahedc', 'dloads',
+    'system_price_unified')
 
 
 class LibDict(dict):
@@ -94,15 +94,10 @@ def cpython_start():
                 if not hasattr(nspace, k):
                     setattr(nspace, k, v)
             libs[contract_name] = nspace
-        except Exception, e:
-            app.logger.error(
+        except Exception:
+            raise Exception(
                 "While importing " + contract_name + " " +
                 traceback.format_exc())
-            raise e
-
-    download_path = os.path.join(os.environ['CHELLOW_HOME'], 'downloads')
-    if not os.path.exists(download_path):
-        os.makedirs(download_path)
 
 
 def on_start_up(ctx):

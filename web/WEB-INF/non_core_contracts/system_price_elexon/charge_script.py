@@ -1,5 +1,4 @@
 from net.sf.chellow.monad import Monad
-import types
 import collections
 import pytz
 import threading
@@ -10,16 +9,16 @@ import urllib2
 import csv
 import db
 import utils
-Monad.getUtils()['impt'](globals(), 'db', 'utils')
+import scenario
+Monad.getUtils()['impt'](globals(), 'db', 'utils', 'scenario')
 Contract, RateScript = db.Contract, db.RateScript
 HH, UserException, hh_format = utils.HH, utils.UserException, utils.hh_format
 db_id = globals()['db_id']
 
 ELEXON_PORTAL_SCRIPTING_KEY_KEY = 'elexonportal_scripting_key'
 
-
-def identity_func(x):
-    return x
+create_future_func = scenario.make_create_future_func_monthly(
+    'system_price_elexon', ['ssps', 'sbps'])
 
 
 def hh(ds):
@@ -31,6 +30,18 @@ def hh(ds):
         cache = {}
         ds.caches['system_price_elexon'] = cache
 
+        try:
+            future_funcs = ds.caches['future_funcs']
+        except KeyError:
+            future_funcs = {}
+            ds.caches['future_funcs'] = future_funcs
+
+        try:
+            future_funcs[db_id]
+        except KeyError:
+            future_funcs[db_id] = {
+                'start_date': None, 'func': create_future_func(1, 0)}
+
     for hh in ds.hh_data:
         try:
             prices = cache[hh['start-date']]
@@ -38,22 +49,8 @@ def hh(ds):
             prices = {}
             date_str = hh['start-date'].strftime("%d %H:%M Z")
             for pref in ['ssp', 'sbp']:
-                transform_func = identity_func
                 rate = ds.hh_rate(db_id, hh['start-date'], pref + 's')
-                dt = hh['start-date']
-                while isinstance(rate, types.FunctionType):
-                    transform_func = rate
-                    dt -= relativedelta(years=1)
-                    rate = ds.hh_rate(db_id, dt, pref + 's')
-
-                if isinstance(rate, dict):
-                    rate = transform_func(rate)
-                    prices[pref + '-gbp-per-kwh'] = float(rate[date_str]) / \
-                        1000
-                else:
-                    raise UserException(
-                        "Type returned by " + pref + "s at " + hh_format(dt) +
-                        " must be function or dictionary.")
+                prices[pref + '-gbp-per-kwh'] = float(rate[date_str]) / 1000
             cache[hh['start-date']] = prices
 
         hh.update(prices)

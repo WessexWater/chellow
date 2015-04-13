@@ -79,13 +79,15 @@ def hh_before(dt1, dt2):
         return True if dt2 is None else dt1 < dt2
 
 
+def get_lib(lib_name):
+    return Monad.getContext().getAttribute("net.sf.chellow." + lib_name)
+
+
 def impt(gbls, *libs):
     for lib_name in libs:
-        key = "net.sf.chellow." + lib_name
-        lib = Monad.getContext().getAttribute(key)
+        lib = get_lib(lib_name)
         if lib is None:
-            raise UserException(
-                "Can't find a context attribute with key " + str(key))
+            raise UserException("Can't find a library with name " + lib_name)
         gbls[lib_name] = lib
 
 

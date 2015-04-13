@@ -10,10 +10,14 @@ from dateutil.relativedelta import relativedelta
 import urllib2
 import db
 import utils
-Monad.getUtils()['impt'](globals(), 'db', 'utils')
+import scenario
+Monad.getUtils()['impt'](globals(), 'db', 'utils', 'scenario')
 RateScript, Contract = db.RateScript, db.Contract
 UserException, HH, hh_format = utils.UserException, utils.HH, utils.hh_format
 db_id = globals()['db_id']
+
+create_future_func = scenario.make_create_future_func_monthly(
+    'system_price_bmreports', ['ssps', 'sbps'])
 
 
 def identity_func(x):

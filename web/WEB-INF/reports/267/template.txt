@@ -43,6 +43,10 @@
       <p>
         <a href="{{ context_path }}/reports/385/output/">Automatic Importer</a>
       </p>
+    {% elif contract.name == 'system_price_unified' %}
+      <p>
+        <a href="{{context_path}}/reports/381/output/">Automatic Importer</a>
+      </p>
     {% elif contract.name == 'rcrc' %}
       <p>
         <a href="{{ context_path }}/reports/225/output/">Automatic Importer</a>

@@ -9,22 +9,15 @@ import collections
 import httplib
 import db
 import utils
-Monad.getUtils()['impt'](globals(), 'db', 'utils')
+import scenario
+Monad.getUtils()['impt'](globals(), 'db', 'utils', 'scenario')
 RateScript, Contract = db.RateScript, db.Contract
 HH, hh_after, UserException = utils.HH, utils.hh_after, utils.UserException
 hh_format = utils.hh_format
 db_id = globals()['db_id']
 
-
-def bsuos_future(ns):
-    old_result = ns['rates_gbp_per_mwh']()
-    last_value = old_result[sorted(old_result.keys())[-1]]
-
-    new_result = collections.defaultdict(lambda: last_value, old_result)
-
-    def rates_gbp_per_mwh():
-        return new_result
-    return {'rates_gbp_per_mwh': rates_gbp_per_mwh}
+create_future_func = scenario.make_create_future_func_monthly(
+    'bsuos', ['rates_gbp_per_mwh'])
 
 
 def hh(data_source):
@@ -46,7 +39,8 @@ def hh(data_source):
         try:
             future_funcs[db_id]
         except KeyError:
-            future_funcs[db_id] = {'start_date': None, 'func': bsuos_future}
+            future_funcs[db_id] = {
+                'start_date': None, 'func': create_future_func(1, 0)}
 
     for h in data_source.hh_data:
         try:

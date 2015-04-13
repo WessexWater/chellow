@@ -4,10 +4,14 @@ import pytz
 import utils
 import db
 import computer
-Monad.getUtils()['impt'](globals(), 'db', 'utils', 'computer')
+import scenario
+Monad.getUtils()['impt'](globals(), 'db', 'utils', 'computer', 'scenario')
 HH = utils.HH
 Contract = db.Contract
 db_id = globals()['db_id']
+
+create_future_func = scenario.make_create_future_func_simple(
+    'ccl', ['ccl_rate'])
 
 
 def ccl(data_source):
@@ -24,6 +28,18 @@ def ccl(data_source):
     except:
         data_source.caches['ccl'] = {}
         cache = data_source.caches['ccl']
+
+        try:
+            future_funcs = data_source.caches['future_funcs']
+        except KeyError:
+            future_funcs = {}
+            data_source.caches['future_funcs'] = future_funcs
+
+        try:
+            future_funcs[db_id]
+        except KeyError:
+            future_funcs[db_id] = {
+                'start_date': None, 'func': create_future_func(1, 0)}
 
     if data_source.bill is None:
         for hh in data_source.hh_data:

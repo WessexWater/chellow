@@ -16,6 +16,8 @@ Monad.getUtils()['impt'](
     'ccl', 'system_price_bmreports', 'system_price_elexon')
 Site, Era, Bill, SiteEra = db.Site, db.Era, db.Bill, db.SiteEra
 Contract, Supply, Source = db.Contract, db.Supply, db.Source
+HhDatum, Channel = db.HhDatum, db.Channel
+MarketRole = db.MarketRole
 HH, hh_after, hh_format = utils.HH, utils.hh_after, utils.hh_format
 totalseconds, UserException = utils.totalseconds, utils.UserException
 hh_before, form_int = utils.hh_before, utils.form_int
@@ -38,40 +40,6 @@ else:
 meter_order = {'hh': 0, 'amr': 1, 'nhh': 2, 'unmetered': 3}
 
 
-def create_future_func(cname, fname, props):
-    def future_func(ns):
-        try:
-            val = ns[fname]() * props['multiplier'] + props['constant']
-        except KeyError:
-            raise UserException(
-                "Can't find " + fname + " in rate script " + str(ns) +
-                " for contract name " + cname + " .")
-
-        def rate_func():
-            return val
-        return {fname: rate_func}
-    return future_func
-
-
-def create_monthly_func(cname, fnames, props):
-    def future_func(ns):
-        new_ns = {}
-        for fname in fnames:
-            old_result = ns[fname]()
-            last_value = old_result[sorted(old_result.keys())[-1]]
-            new_result = defaultdict(
-                lambda: last_value, [
-                    (k, v * props['multiplier'] + props['constant'])
-                    for k, v in old_result.iteritems()])
-
-            def rate_func():
-                return new_result
-
-            new_ns[fname] = rate_func
-        return new_ns
-    return future_func
-
-
 def content():
     sess = None
     try:
@@ -79,41 +47,33 @@ def content():
         scenario_contract = Contract.get_supplier_by_id(sess, scenario_id)
         scenario_props = scenario_contract.make_properties()
 
-        for cname, fnames in (
-                ('bsuos', ['rates_gbp_per_mwh']),
-                ('system_price_bmreports', ['ssps', 'sbps']),
-                ('system_price_elexon', ['ssps', 'sbps'])):
-
+        for contract in sess.query(Contract).join(MarketRole).filter(
+                MarketRole.code == 'Z'):
             try:
-                props = scenario_props[cname]
+                props = scenario_props[contract.name]
             except KeyError:
-                props = {'start_date': None, 'multiplier': 1, 'constant': 0}
+                continue
 
             try:
                 rate_start = props['start_date']
             except KeyError:
                 raise UserException(
-                    "In " + scenario_contract.name + " for the rate " + cname +
-                    " the start_date is missing.")
+                    "In " + scenario_contract.name + " for the rate " +
+                    contract.name + " the start_date is missing.")
+
             if rate_start is not None:
                 rate_start = rate_start.replace(tzinfo=pytz.utc)
-            future_funcs[globals()[cname].db_id] = {
-                'start_date': rate_start,
-                'func': create_monthly_func(cname, fnames, props)}
 
-        for cname, fname in (
-                ('ccl', 'ccl_rate'), ('aahedc', 'aahedc_gbp_per_gsp_kwh')):
             try:
-                props = scenario_props[cname]
+                lib = globals()[contract.name]
             except KeyError:
                 continue
 
-            rate_start = props['start_date']
-            if rate_start is not None:
-                rate_start = rate_start.replace(tzinfo=pytz.utc)
-            future_funcs[globals()[cname].db_id] = {
-                'start_date': rate_start,
-                'func': create_future_func(cname, fname, props)}
+            if hasattr(lib, 'create_future_func'):
+                future_funcs[contract.id] = {
+                    'start_date': rate_start,
+                    'func': lib.create_future_func(
+                        props['multiplier'], props['constant'])}
 
         start_date = scenario_props['scenario_start']
         if start_date is None:

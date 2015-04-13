@@ -1,5 +1,5 @@
 import hashlib
-from flask import request, Response, g, redirect, render_template
+from flask import request, Response, g, redirect, render_template, send_file
 from werkzeug.exceptions import BadRequest
 from chellow import app
 from chellow.models import Contract, Report, User, set_read_write, db
@@ -49,7 +49,9 @@ def check_permissions(*args, **kwargs):
     # sys.stderr.write("about to check permissions sys\n")
     path = request.path
     method = request.method
-    if method == 'GET' and path in ('/health', '/bmreports'):
+    if method == 'GET' and path in (
+            '/health', '/bmreports',
+            '/elexonportal/file/download/SSPSBPNIV_FILE'):
         return
 
     g.user = None
@@ -130,6 +132,18 @@ def bmreports():
             os.path.dirname(__file__), 'bmreports', el_dir[element], fname))
 
     return Response(f, status=200, mimetype='text/xml')
+
+
+@app.route('/elexonportal/file/download/SSPSBPNIV_FILE')
+def elexonportal():
+    key = GET_str('key')
+    if key != 'xxx':
+        raise Exception("The key should be 'xxx'")
+    fname = os.path.join(
+        os.path.dirname(__file__), 'elexonportal', 'prices.xls')
+    return send_file(
+        fname, mimetype='application/binary', as_attachment=True,
+        attachment_filename='prices.xls')
 
 
 @app.route('/health')
