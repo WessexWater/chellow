@@ -5,14 +5,18 @@ import os
 
 Monad.getUtils()['impt'](globals(), 'db', 'utils', 'templater')
 
-download_id = 0
-
-lock = threading.Lock()
-
 if sys.platform.startswith('java'):
     download_path = Monad.getContext().getRealPath("/downloads")
 else:
     download_path = os.path.join(os.environ['CHELLOW_HOME'], 'downloads')
+
+download_id = 0
+
+lock = threading.Lock()
+
+files = sorted(os.listdir(download_path), reverse=True)
+if len(files) > 0:
+    download_id = int(files[0][:3]) + 1
 
 
 def make_names(base):
