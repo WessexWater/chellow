@@ -77,8 +77,8 @@ def check_permissions(*args, **kwargs):
         path = request.path
 
         if role_code == "viewer":
-            if path.startswith("/reports/") and path.endswith("/output/") and \
-                    method in ("GET", "HEAD"):
+            if path.startswith("/chellow/reports/") and \
+                    path.endswith("/output/") and method in ("GET", "HEAD"):
                 return
         elif role_code == "editor":
             return
