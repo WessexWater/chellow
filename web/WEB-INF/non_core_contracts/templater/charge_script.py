@@ -167,7 +167,6 @@ def render(inv, template, vals, status_code=200, content_type='text/html'):
         template_cache[templ_str] = templ
 
     vals['request'] = inv.getRequest()
-    vals['current_user'] = inv.getUser()
 
     if sys.platform.startswith('java'):
         vals['context_path'] = inv.getRequest().getContextPath()

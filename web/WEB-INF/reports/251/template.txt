@@ -30,9 +30,7 @@
           <th>Size</th>
           <th>Creation Date</th>
           <th>Last Modified</th>
-					{% if current_user and current_user.user_role.code == 'editor' %}
-						<th></th>
-					{% endif %}
+					<th></th>
         </tr>
       </thead>
       <tbody>
@@ -44,17 +42,15 @@
             <td>{{file.size}} B</td>
             <td>{{file.creation_date|hh_format}}</td>
             <td>{{file.last_modified|hh_format}}</td>
-						{% if current_user and current_user.user_role.code == 'editor' %}
-							<td>
-								<form
-								 		method="post" action="{{context_path}}/reports/253/output/">
-									<fieldset style="border: none;">
-										<input type="hidden" name="name" value="{{ file.name }}">
-										<input type="submit" name="delete" value="Delete">
-									</fieldset>
-								</form>
-							</td>
-						{% endif %}
+						<td>
+							<form
+									method="post" action="{{context_path}}/reports/253/output/">
+								<fieldset style="border: none;">
+									<input type="hidden" name="name" value="{{ file.name }}">
+									<input type="submit" name="delete" value="Delete">
+								</fieldset>
+							</form>
+						</td>
           </tr>
         {% endfor %}
       </tbody>
