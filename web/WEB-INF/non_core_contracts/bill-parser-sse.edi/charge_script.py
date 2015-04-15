@@ -25,7 +25,7 @@ tmod_map = {
     'DQ22': '00043',
     'D7P2': '00043',
     'N7P2': '00210',
-    'MDC1': 'md',
+    'MDC1': 'kW',
     'URC1': '00001',
     '0206': '00206',
     '0040': '00040',
@@ -62,12 +62,12 @@ tmod_map = {
     '0244': '00244',
     '0092': '00092',
     '210A': '00210',
-    'MAC2': 'md',
+    'MAC2': 'kW',
     'DAC2': '00040',
     'NAC2': '00206',
     'NDC2': '00040',
     'NNC2': '00206',
-    'MNC2': 'md',
+    'MNC2': 'kW',
     '148A': '00148',
     '221B': '00221',
     '080A': '00080',
@@ -77,7 +77,7 @@ tmod_map = {
     'W2M3': '00073',
     'OTM3': '00093',
     'NIM3': '00208',
-    'MDM3': 'md',
+    'MDM3': 'kW',
     'URQD': '00001',
     'OPE3': '01088',
     'OEC2': '00190',
@@ -89,7 +89,7 @@ tmod_map = {
     'DAE7': '00043',
     'NIE7': '00210',
     'OPAC': '00010',
-    'MDM1': 'md',
+    'MDM1': 'kW',
     'D179': '00039',
     'N179': '00221',
     'O212': '00212',
@@ -99,7 +99,7 @@ tmod_map = {
     '0072': '00072',
     'DM22': '00039',
     'NM22': '00221',
-    'MM22': 'md',
+    'MM22': 'kW',
     '0044': '00044',
     '0208': '00208',
     'URM1': '00001',
@@ -119,14 +119,15 @@ tmod_map = {
     'N154': '00221',
     'O2EC': '00190',
     'OFC2': '00159',
-    'CMACUF': 'md',
+    'CMACUF': 'kW',
     '251A': '00251',
     '208D': '00208',
     '073A': '00073',
     '093A': '00093',
     '248A': '00248',
     '239A': '00239',
-    'EA1E': 'kVA'}
+    'EA1E': 'kVA',
+    'MDM2': 'kVA'}
 
 
 class Parser():
@@ -212,7 +213,7 @@ class Parser():
                             " can't be found in the TPR list for mpan " +
                             mpan + ".")
                     tpr_code = tmod_map[tpr_native]
-                    if tpr_code == 'md':
+                    if tpr_code == 'kW':
                         units = 'kW'
                         tpr_code = None
                     elif tpr_code == 'kVA':
@@ -270,8 +271,12 @@ class Parser():
                             " can't be found in the TPR list for mpan " +
                             mpan + ".")
                     tpr = tmod_map[tpr_code]
-                    if tpr == 'md':
+                    if tpr == 'kW':
                         units = 'kW'
+                        tpr = None
+                        prefix = 'md-'
+                    elif tpr == 'kVA':
+                        units = 'kVA'
                         tpr = None
                         prefix = 'md-'
                     else:
