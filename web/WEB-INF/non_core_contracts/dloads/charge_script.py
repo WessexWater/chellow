@@ -10,6 +10,10 @@ if sys.platform.startswith('java'):
 else:
     download_path = os.path.join(os.environ['CHELLOW_HOME'], 'downloads')
 
+if not os.path.exists(download_path):
+    os.makedirs(download_path)
+
+
 download_id = 0
 
 lock = threading.Lock()

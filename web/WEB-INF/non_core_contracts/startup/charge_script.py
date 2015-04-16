@@ -75,10 +75,6 @@ def jython_start(ctx):
                 setattr(nspace, k, v)
         ctx.setAttribute("net.sf.chellow." + contract_name, nspace)
 
-    download_path = Monad.getContext().getRealPath("/downloads")
-    if not os.path.exists(download_path):
-        os.makedirs(download_path)
-
     Hiber.close()
 
 
