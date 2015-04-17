@@ -1,7 +1,7 @@
 import traceback
 from net.sf.chellow.monad import Monad
 import datetime
-from sqlalchemy import or_, func, not_, Float, cast
+from sqlalchemy import or_, func, Float, cast
 from sqlalchemy.sql.expression import null
 import pytz
 import db
@@ -170,57 +170,32 @@ def content():
             ssc = era.ssc
             ssc_code = '' if ssc is None else ssc.code
 
-            prime_reads = {}
-            for read in sess.query(RegisterRead).join(Bill).join(
+            prime_reads = set()
+            for query in (sess.query(RegisterRead).join(Bill).join(
                     RegisterRead.previous_type).filter(
                     Bill.supply == supply,
                     RegisterRead.previous_date >= start_date,
                     RegisterRead.previous_date <= finish_date,
-                    ReadType.code.in_(NORMAL_READ_TYPES)):
+                    ReadType.code.in_(NORMAL_READ_TYPES)),
 
-                prime_bill = sess.query(Bill).join(BillType).filter(
-                    Bill.supply_id == supply.id,
-                    Bill.start_date <= (read.previous_date - HH),
-                    Bill.finish_date >= (read.previous_date - HH)).order_by(
-                    Bill.issue_date.desc(), BillType.code).first()
-
-                if prime_bill is not None and read.bill.id == prime_bill.id:
-                    key = str(read.previous_date) + "_" + read.msn
-                    if key not in prime_reads:
-                        if sess.query(RegisterRead).join(Bill).join(
-                                RegisterRead.previous_type).filter(
-                                Bill == prime_bill,
-                                RegisterRead.previous_date ==
-                                read.previous_date,
-                                RegisterRead.msn == read.msn,
-                                not_(
-                                    ReadType.code.in_(NORMAL_READ_TYPES))) \
-                                .count() is not None:
-                            prime_reads[key] = read
-
-            for read in sess.query(RegisterRead).join(Bill).join(
+                    sess.query(RegisterRead).join(Bill).join(
                     RegisterRead.present_type).filter(
                     Bill.supply == supply,
                     RegisterRead.present_date >= start_date,
                     RegisterRead.present_date <= finish_date,
-                    ReadType.code.in_(NORMAL_READ_TYPES)):
-                prime_bill = sess.query(Bill).join(BillType).filter(
-                    Bill.supply == supply,
-                    Bill.start_date <= read.present_date,
-                    Bill.finish_date >= read.present_date).order_by(
-                    Bill.issue_date.desc(), BillType.code).first()
-                if prime_bill is not None and read.bill.id == prime_bill.id:
-                    key = str(read.present_date) + "_" + read.msn
-                    if key not in prime_reads:
-                        if sess.query(RegisterRead).join(
-                                RegisterRead.present_type).filter(
-                                RegisterRead.bill == prime_bill,
-                                RegisterRead.present_date == read.present_date,
-                                RegisterRead.msn == read.msn,
-                                not_(
-                                    ReadType.code.in_(NORMAL_READ_TYPES))) \
-                                .count() is not None:
-                            prime_reads[key] = read
+                    ReadType.code.in_(NORMAL_READ_TYPES))):
+
+                for read in query:
+                    prime_bill = sess.query(Bill).join(BillType).filter(
+                        Bill.supply == supply,
+                        Bill.start_date <= read.bill.finish_date,
+                        Bill.finish_date >= read.bill.start_date,
+                        Bill.reads.any()).order_by(
+                        Bill.issue_date.desc(), BillType.code).first()
+                    if prime_bill.id == read.bill_id:
+                        prime_reads.add(
+                            str(read.previous_date) + "_" + read.msn)
+
             supply_type = era.make_meter_category()
 
             if eras[0].start_date > start_date:

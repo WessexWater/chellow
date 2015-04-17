@@ -7931,4 +7931,51 @@ def days():
         'name': "View edit hh datum",
         'path': '/chellow/reports/309/output/?hh_datum_id=3',
         'status_code': 200},
+
+    # Duration report; bill with reads covered by bill without.
+    {
+        'name': "Bill with reads covered by bill without. Add covered bill.",
+        'path': '/chellow/reports/313/output/',
+        'method': 'post',
+        'data': {
+            'supplier_batch_id': '7',
+            'mpan_core': '22 1065 3921 534',
+            'reference': "3423760011",
+            'issue_year': "2012",
+            'issue_month': "03",
+            'issue_day': "02",
+            'issue_hour': "00",
+            'issue_minute': "00",
+            'start_year': "2012",
+            'start_month': "01",
+            'start_day': "05",
+            'start_hour': "00",
+            'start_minute': "00",
+            'finish_year': "2012",
+            'finish_month': "01",
+            'finish_day': "10",
+            'finish_hour': "23",
+            'finish_minute': "30",
+            'kwh': "0",
+            'net': "45.7",
+            'vat': "4.90",
+            'gross': "50.60",
+            'account': "SA342376000",
+            'bill_type_id': "2",
+            'breakdown': "{}"},
+        'regexes': [
+            r"/chellow/reports/105/output/\?supplier_bill_id=22"],
+        'status_code': 303},
+    {
+        'name': "Reads covered by bill without. Run supplies duration.",
+        'path': '/chellow/reports/149/output/?supply_id=10&start_year=2012&'
+        'start_month=01&start_day=05&start_hour=00&start_minute=00&'
+        'finish_year=2012&finish_month=01&finish_day=10&finish_hour=23&'
+        'finish_minute=30',
+        'regexes': [
+            r'"10","2","net","","CI017","Roselands","2012-01-05 00:00",'
+            r'"2012-01-10 23:30","03","801","6a","0366","1","nhh",110,'
+            r'22 1065 3921 534,30,Non half-hourlies 2010,0,0,,0,,None,288,,,,,'
+            r'0,0,,0,,None,288'],
+        'status_code': 200},
 ]
