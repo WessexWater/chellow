@@ -9,24 +9,19 @@ import httplib
 import db
 import utils
 import xlrd
-import scenario
-Monad.getUtils()['impt'](globals(), 'db', 'utils', 'scenario')
+Monad.getUtils()['impt'](globals(), 'db', 'utils')
 Contract, RateScript = db.Contract, db.RateScript
 HH, UserException, hh_format = utils.HH, utils.UserException, utils.hh_format
 db_id = globals()['db_id']
 
 ELEXON_PORTAL_SCRIPTING_KEY_KEY = 'elexonportal_scripting_key'
 
-create_future_func = scenario.make_create_future_func_monthly(
-    'system_price_unified', ['rates_gbp_per_mwh'])
-
 
 def create_future_func(multiplier, constant):
     def transform(val):
-        res = {'run': val['run']}
-        for nm in ('sbp', 'ssp'):
-            res[nm] = val[nm] * multiplier + constant
-        return res
+        return (
+            val[0], val[1] * multiplier + constant,
+            val[2] * multiplier + constant)
 
     def future_func(ns):
         new_ns = {}
@@ -73,9 +68,9 @@ def hh(data_source):
             h_start = h['start-date']
             rates = data_source.hh_rate(db_id, h_start, 'gbp_per_nbp_mwh')
             try:
-                sp = rates[h_start.strftime("%d %H:%M")]
-                sbp = float(sp['sbp']) / 1000
-                ssp = float(sp['ssp']) / 1000
+                run_code, sbp, ssp = rates[h_start.strftime("%d %H:%M")]
+                sbp = float(sbp) / 1000
+                ssp = float(ssp) / 1000
                 system_price_cache[h_start] = (sbp, ssp)
             except KeyError:
                 raise UserException(
@@ -159,7 +154,7 @@ class SystemPriceImporter(threading.Thread):
                                 break
                             elif rates[
                                     key_format(
-                                        rscript.finish_date)]['run'] == 'DF':
+                                        rscript.finish_date)][0] == 'DF':
                                 fill_start = rscript.finish_date + HH
                                 break
 
@@ -260,12 +255,17 @@ class SystemPriceImporter(threading.Thread):
                                 rs = contract.insert_rate_script(
                                     sess, month_start, '')
 
-                            script = "def gbp_per_nbp_mwh():\n    " \
-                                "return {\n" + ',\n'.join(
-                                    "'" + key_format(k) + "': " +
-                                    str(sp_month[k])
-                                    for k in sorted(
-                                        sp_month.keys())) + "}"
+                            script = "def gbp_per_nbp_mwh():\n    " + \
+                                "return {\n\n#  (run, sbp, ssp)\n\n" + \
+                                ',\n'.join(
+                                    "'" + key_format(k) + "': (" +
+                                    ', '.join(
+                                        (
+                                            "'" + str(sp_month[k]['run']) +
+                                            "'",
+                                            str(sp_month[k]['sbp']),
+                                            str(sp_month[k]['ssp']))) + ')'
+                                    for k in sorted(sp_month.keys())) + "}"
                             self.log(
                                 "Updating rate script starting at " +
                                 hh_format(month_start) + ".")
