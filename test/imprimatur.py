@@ -4810,7 +4810,7 @@ class SystemPriceImporter(threading.Thread):
                                 " cannot be found in the configuration "
                                 "properties.")
                         url_str = contract_props['url'] + \
-                            'file/download/SSPSBPNIV_FILE?key=' + \
+                            'file/download/BESTVIEWPRICES_FILE?key=' + \
                             scripting_key
 
                         self.log(

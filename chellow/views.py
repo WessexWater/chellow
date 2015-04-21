@@ -51,7 +51,7 @@ def check_permissions(*args, **kwargs):
     method = request.method
     if method == 'GET' and path in (
             '/health', '/bmreports',
-            '/elexonportal/file/download/SSPSBPNIV_FILE'):
+            '/elexonportal/file/download/BESTVIEWPRICES_FILE'):
         return
 
     g.user = None
@@ -134,7 +134,7 @@ def bmreports():
     return Response(f, status=200, mimetype='text/xml')
 
 
-@app.route('/elexonportal/file/download/SSPSBPNIV_FILE')
+@app.route('/elexonportal/file/download/BESTVIEWPRICES_FILE')
 def elexonportal():
     key = GET_str('key')
     if key != 'xxx':
