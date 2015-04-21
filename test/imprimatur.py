@@ -4819,14 +4819,17 @@ class SystemPriceImporter(threading.Thread):
                             hh_format(fill_start))
 
                         url = urlparse.urlparse(url_str)
-                        conn = httplib.HTTPConnection(
-                            url.hostname, url.port)
+                        if url.scheme == 'https':
+                            conn = httplib.HTTPSConnection(
+                                url.hostname, url.port)
+                        else:
+                            conn = httplib.HTTPConnection(
+                                url.hostname, url.port)
                         conn.request("GET", url.path + '?' + url.query)
 
                         res = conn.getresponse()
                         self.log(
-                            "Received " + str(res.status) + " " +
-                            res.reason)
+                            "Received " + str(res.status) + " " + res.reason)
                         data = res.read()
                         book = xlrd.open_workbook(file_contents=data)
                         sbp_sheet = book.sheet_by_index(1)
