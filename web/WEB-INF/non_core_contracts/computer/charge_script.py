@@ -201,10 +201,14 @@ def hh_rate(sess, caches, contract_id, date, name, pw):
                 cstart = max(start_date, month_before)
                 cfinish = month_after
 
-        ns = {}
-        exec(rs.script, ns)
+        is_eval = rs.script[0] == '{'
+        if is_eval:
+            ns = eval(rs.script, {'datetime': datetime.datetime})
+        else:
+            ns = {}
+            exec(rs.script, ns)
 
-        script_dict = {'ns': func(ns), 'rates': {}}
+        script_dict = {'is_eval': is_eval, 'ns': func(ns), 'rates': {}}
         script_dict['rates']['_script_dict'] = script_dict
 
         d_cache = script_dict['rates']
@@ -220,11 +224,13 @@ def hh_rate(sess, caches, contract_id, date, name, pw):
         script_dict = d_cache['_script_dict']
 
         try:
-            val = script_dict['ns'][name]()
+            val = script_dict['ns'][name]
         except KeyError:
             raise UserException(
                 "Can't find the rate " + name + " in the rate script at " +
                 hh_format(date) + " of the contract " + str(contract_id) + ".")
+        if not script_dict['is_eval']:
+            val = val()
         script_dict['rates'][name] = val
         return val
 

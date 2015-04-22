@@ -4651,24 +4651,23 @@ db_id = globals()['db_id']
 ELEXON_PORTAL_SCRIPTING_KEY_KEY = 'elexonportal_scripting_key'
 
 
+def key_format(dt):
+    return dt.strftime("%d %H:%M")
+
+
 def create_future_func(multiplier, constant):
     def transform(val):
-        return (
-            val[0], val[1] * multiplier + constant,
-            val[2] * multiplier + constant)
+        return {
+            'run': val['run'], 'sbp': val['sbp'] * multiplier + constant,
+            'ssp': val['ssp'] * multiplier + constant}
 
     def future_func(ns):
         new_ns = {}
-        old_result = ns['gbp_per_nbp_mwh']()
+        old_result = ns['gbp_per_nbp_mwh']
         last_value = old_result[sorted(old_result.keys())[-1]]
-        new_result = collections.defaultdict(
+        new_ns['gbp_per_nbp_mwh'] = collections.defaultdict(
             lambda: transform(last_value), [
                 (k, transform(v)) for k, v in old_result.iteritems()])
-
-        def rate_func():
-            return new_result
-
-        new_ns['gbp_per_nbp_mwh'] = rate_func
         return new_ns
     return future_func
 
@@ -4702,19 +4701,20 @@ def hh(data_source):
             h_start = h['start-date']
             rates = data_source.hh_rate(db_id, h_start, 'gbp_per_nbp_mwh')
             try:
-                run_code, sbp, ssp = rates[h_start.strftime("%d %H:%M")]
-                sbp = float(sbp) / 1000
-                ssp = float(ssp) / 1000
+                rdict = rates[key_format(h_start)]
+                sbp = float(rdict['sbp']) / 1000
+                ssp = float(rdict['ssp']) / 1000
                 system_price_cache[h_start] = (sbp, ssp)
             except KeyError:
                 raise UserException(
                     "For the System Price Unified rate script at " +
                     hh_format(h_start) + " the rate cannot be found.")
-            except TypeError, e:
+            except TypeError:
                 raise UserException(
                     "For the System Price Unified rate script at " +
                     hh_format(h_start) +
-                    " the rate 'rates_gbp_per_mwh' has the problem: " + str(e))
+                    " the rate 'rates_gbp_per_mwh' has the problem: " +
+                    traceback.format_exc())
 
         h['sbp'] = sbp
         h['sbp-gbp'] = h['nbp-kwh'] * sbp
@@ -4726,10 +4726,6 @@ def hh(data_source):
 
 
 system_price_importer = None
-
-
-def key_format(dt):
-    return dt.strftime("%d %H:%M")
 
 
 class SystemPriceImporter(threading.Thread):
@@ -4780,15 +4776,14 @@ class SystemPriceImporter(threading.Thread):
                         for rscript in sess.query(RateScript).filter(
                                 RateScript.contract == contract).order_by(
                                 RateScript.start_date.desc()):
-                            ns = {}
-                            exec rscript.script in ns, ns
-                            rates = ns['gbp_per_nbp_mwh']()
+                            ns = eval(rscript.script)
+                            rates = ns['gbp_per_nbp_mwh']
                             if len(rates) == 0:
                                 fill_start = rscript.start_date
                                 break
                             elif rates[
                                     key_format(
-                                        rscript.finish_date)][0] == 'DF':
+                                        rscript.finish_date)]['run'] == 'DF':
                                 fill_start = rscript.finish_date + HH
                                 break
 
@@ -4864,7 +4859,7 @@ class SystemPriceImporter(threading.Thread):
                         if last_date.month == (last_date + HH).month:
                             del sp_months[-1]
                         if 'limit' in contract_props:
-                            sp_months = [sp_months[-1]]
+                            sp_months = [sp_months[0]]
                         for sp_month in sp_months:
                             sorted_keys = sorted(sp_month.keys())
                             month_start = sorted_keys[0]
@@ -4889,17 +4884,13 @@ class SystemPriceImporter(threading.Thread):
                                 rs = contract.insert_rate_script(
                                     sess, month_start, '')
 
-                            script = "def gbp_per_nbp_mwh():\n    " + \
-                                "return {\n\n#  (run, sbp, ssp)\n\n" + \
+                            script = "{\n    'gbp_per_nbp_mwh': {\n" + \
                                 ',\n'.join(
-                                    "'" + key_format(k) + "': (" +
-                                    ', '.join(
-                                        (
-                                            "'" + str(sp_month[k]['run']) +
-                                            "'",
-                                            str(sp_month[k]['sbp']),
-                                            str(sp_month[k]['ssp']))) + ')'
-                                    for k in sorted(sp_month.keys())) + "}"
+                                    "        '" + key_format(k) +
+                                    "': {'run': '" + str(sp_month[k]['run']) +
+                                    "', 'sbp': " + str(sp_month[k]['sbp']) +
+                                    ", 'ssp': " + str(sp_month[k]['ssp']) + '}'
+                                    for k in sorted(sp_month.keys())) + "}}"
                             self.log(
                                 "Updating rate script starting at " +
                                 hh_format(month_start) + ".")
@@ -7598,6 +7589,6 @@ def virtual_bill(supply_source):
         'path': '/chellow/reports/381/output/',
         'tries': {},
         'regexes': [
-            r"Updating rate script starting at 2015-03-01 00:00\."],
+            r"Updating rate script starting at 2005-01-01 00:00\."],
         'status_code': 200},
 ]

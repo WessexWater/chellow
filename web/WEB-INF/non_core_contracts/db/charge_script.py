@@ -816,12 +816,19 @@ class Contract(Base, PersistentClass):
         if hh_after(start_date, finish_date):
             raise UserException("""The start date can't be after the finish
                     date.""")
-        try:
-            ast.parse(script)
-        except SyntaxError, e:
-            raise UserException(str(e))
-        except NameError, e:
-            raise UserException(str(e))
+
+        if len(script) > 0 and script[0] == '{':
+            try:
+                eval(script, {'datetime': datetime.datetime})
+            except SyntaxError, e:
+                raise UserException(str(e))
+        else:
+            try:
+                ast.parse(script)
+            except SyntaxError, e:
+                raise UserException(str(e))
+            except NameError, e:
+                raise UserException(str(e))
         rscript.script = script
 
         prev_rscript = self.find_rate_script_at(sess, rscript.start_date - HH)
