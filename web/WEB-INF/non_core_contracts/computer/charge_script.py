@@ -9,6 +9,7 @@ from sqlalchemy.orm import aliased
 import math
 import utils
 import db
+import simplejson as json
 
 Monad.getUtils()['impt'](globals(), 'db', 'utils', 'templater')
 
@@ -201,14 +202,14 @@ def hh_rate(sess, caches, contract_id, date, name, pw):
                 cstart = max(start_date, month_before)
                 cfinish = month_after
 
-        is_eval = rs.script[0] == '{'
-        if is_eval:
-            ns = eval(rs.script, {'datetime': datetime.datetime})
+        is_json = rs.script[0] == '{'
+        if is_json:
+            ns = json.loads(rs.script)
         else:
             ns = {}
             exec(rs.script, ns)
 
-        script_dict = {'is_eval': is_eval, 'ns': func(ns), 'rates': {}}
+        script_dict = {'is_json': is_json, 'ns': func(ns), 'rates': {}}
         script_dict['rates']['_script_dict'] = script_dict
 
         d_cache = script_dict['rates']
@@ -229,7 +230,7 @@ def hh_rate(sess, caches, contract_id, date, name, pw):
             raise UserException(
                 "Can't find the rate " + name + " in the rate script at " +
                 hh_format(date) + " of the contract " + str(contract_id) + ".")
-        if not script_dict['is_eval']:
+        if not script_dict['is_json']:
             val = val()
         script_dict['rates'][name] = val
         return val

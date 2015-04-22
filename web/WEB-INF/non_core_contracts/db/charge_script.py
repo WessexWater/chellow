@@ -17,6 +17,7 @@ import pytz
 import sys
 import hashlib
 import utils
+import simplejson as json
 
 Monad.getUtils()['impt'](globals(), 'utils')
 UserException, hh_after, HH = utils.UserException, utils.hh_after, utils.HH
@@ -819,7 +820,7 @@ class Contract(Base, PersistentClass):
 
         if len(script) > 0 and script[0] == '{':
             try:
-                eval(script, {'datetime': datetime.datetime})
+                json.loads(script)
             except SyntaxError, e:
                 raise UserException(str(e))
         else:

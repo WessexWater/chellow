@@ -9,6 +9,7 @@ import httplib
 import db
 import utils
 import xlrd
+import simplejson as json
 Monad.getUtils()['impt'](globals(), 'db', 'utils')
 Contract, RateScript = db.Contract, db.RateScript
 HH, UserException, hh_format = utils.HH, utils.UserException, utils.hh_format
@@ -142,7 +143,7 @@ class SystemPriceImporter(threading.Thread):
                         for rscript in sess.query(RateScript).filter(
                                 RateScript.contract == contract).order_by(
                                 RateScript.start_date.desc()):
-                            ns = eval(rscript.script)
+                            ns = json.loads(rscript.script)
                             rates = ns['gbp_per_nbp_mwh']
                             if len(rates) == 0:
                                 fill_start = rscript.start_date
@@ -158,7 +159,7 @@ class SystemPriceImporter(threading.Thread):
                         config_props = config.make_properties()
 
                         scripting_key = config_props.get(
-                                ELEXON_PORTAL_SCRIPTING_KEY_KEY)
+                            ELEXON_PORTAL_SCRIPTING_KEY_KEY)
                         if scripting_key is None:
                             raise UserException(
                                 "The property " +
@@ -250,19 +251,17 @@ class SystemPriceImporter(threading.Thread):
                                 rs = contract.insert_rate_script(
                                     sess, month_start, '')
 
-                            script = "{\n    'gbp_per_nbp_mwh': {\n" + \
-                                ',\n'.join(
-                                    "        '" + key_format(k) +
-                                    "': {'run': '" + str(sp_month[k]['run']) +
-                                    "', 'sbp': " + str(sp_month[k]['sbp']) +
-                                    ", 'ssp': " + str(sp_month[k]['ssp']) + '}'
-                                    for k in sorted(sp_month.keys())) + "}}"
+                            script = {
+                                'gbp_per_nbp_mwh': dict(
+                                    (key_format(k), v)
+                                    for k, v in sp_month.iteritems())}
                             self.log(
                                 "Updating rate script starting at " +
                                 hh_format(month_start) + ".")
                             contract.update_rate_script(
                                 sess, rs, rs.start_date, rs.finish_date,
-                                script)
+                                json.dumps(
+                                    script, indent='    ', sort_keys=True))
                             sess.commit()
                     else:
                         self.log(

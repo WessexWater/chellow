@@ -11,3 +11,4 @@ requests==2.5.1
 imprimatur
 flake8
 pyftpdlib
+simplejson==3.6.5
