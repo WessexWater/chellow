@@ -8502,4 +8502,39 @@ def days():
         'status_code': 200,
         'regexes': [
             r"22 4862 4512 332"]},
+
+    # See if unified report shows billed amounts correctly
+    {
+        'name': "Unified Supplies Monthly Duration - billed amounts",
+        'path': '/chellow/reports/247/output/?supply_id=10&months=1&'
+        'finish_year=2010&finish_month=01',
+        'status_code': 303},
+    {
+        'path': '/chellow/reports/251/output/',
+        'tries': {'max': 20, 'period': 1},
+        'regexes': [
+            r"033_FINISHED_unified_supplies_monthly_duration_supply_10\.csv"],
+        'status_code': 200},
+    {
+        'path': '/chellow/reports/253/output/?'
+        'name=033_FINISHED_unified_supplies_monthly_duration_supply_10.csv',
+        'tries': {},
+        'status_code': 200,
+        'regexes': [
+            r'imp-mpan-core,exp-mpan-core,metering-type,source,generator-type,'
+            r'supply-name,msn,pc,site-id,site-name,associated-site-ids,month,'
+            r'import-net-kwh,export-net-kwh,import-gen-kwh,export-gen-kwh,'
+            r'import-3rd-party-kwh,export-3rd-party-kwh,displaced-kwh,'
+            r'used-kwh,used-3rd-party-kwh,import-net-gbp,export-net-gbp,'
+            r'import-gen-gbp,export-gen-gbp,import-3rd-party-gbp,'
+            r'export-3rd-party-gbp,displaced-gbp,used-gbp,used-3rd-party-gbp,'
+            r'billed-import-net-kwh,billed-import-net-gbp,,mop-net-gbp,'
+            r'mop-problem,,dc-net-gbp,dc-problem,,imp-supplier-net-gbp,'
+            r'imp-supplier-sum-msp-kwh,imp-supplier-problem,',
+
+            r'"22 1065 3921 534","None","nhh","net","","2","I02D89150","03",'
+            r'"CI017","Roselands","","2010-01-31 23:30","35.4648766546","0",'
+            r'"0","0","0","0","0","35.4648766546","0","10","0","0","0","0",'
+            r'"0","0","10","0","150.0","98.17","","10","","","0","","","0","",'
+            r'""']},
 ]

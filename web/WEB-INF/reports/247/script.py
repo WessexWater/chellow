@@ -136,7 +136,7 @@ def content():
         if supply_id is not None:
             supply = Supply.get_by_id(sess, supply_id)
             base_name.append('supply')
-            base_name.append(supply.code)
+            base_name.append(str(supply.id))
             sites = sites.filter(Era.supply == supply)
 
         running_name, finished_name = dloads.make_names(
@@ -398,8 +398,6 @@ def content():
                         supply = era.supply
                         source = supply.source
                         source_code = source.code
-                        billed_gbp = 0
-                        billed_kwh = 0
                         month_data = {}
                         for name in (
                                 'import-net', 'export-net', 'import-gen',
@@ -494,10 +492,10 @@ def content():
                                     (30 * 60)
                                 overlap_proportion = \
                                     float(overlap_duration) / bill_duration
-                                billed_gbp += overlap_proportion * \
-                                    float(bill.net)
-                                billed_kwh += overlap_proportion * \
-                                    float(bill.kwh)
+                                month_data['billed-import-net-kwh'] += \
+                                    overlap_proportion * float(bill.kwh)
+                                month_data['billed-import-net-gbp'] += \
+                                    overlap_proportion * float(bill.net)
 
                         exp_supplier_contract = era.exp_supplier_contract
                         if exp_supplier_contract is None:
