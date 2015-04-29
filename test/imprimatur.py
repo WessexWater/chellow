@@ -2084,7 +2084,10 @@ def virtual_bill(supply, startDate, finishDate, pw):
 """,
             'properties': "{}"},
         'regexes': [
-            r"<li>invalid syntax \(&lt;unknown&gt;, line 3\)</li>"],
+            #  Different errors for CPython and Jython
+            r"<li>invalid syntax \(&lt;unknown&gt;, line 3\)</li>|"
+            r"<li>mismatched input &#39;error&#39; expecting NEWLINE "
+            r"\(&lt;unknown&gt;, line 3\)</li>"],
         'status_code': 400},
 
     # Put back to how it was before
@@ -2565,7 +2568,7 @@ def virtual_bill(supply_source):
             r"/reports/295/output/\?process_id=12"]},
     {
         'path': '/chellow/reports/295/output/?process_id=12',
-        'tries': {},
+        'tries': {'max': 20, 'period': 1},
         'status_code': 200,
         'regexes': [
             r"The file has been imported successfully\."]},
@@ -2873,7 +2876,7 @@ def triad_estimates():
         'tries': {'max': 40, 'period': 1},
         'regexes': [
             r"005_FINISHED_watkinsexamplecom_unified_supplies_monthly_"
-            r"duration_site_CH023\.csv"],
+            r"duration_site_CH023\.ods"],
         'status_code': 200},
     {
         'name': "CSV Sites TRIAD",
@@ -2892,7 +2895,7 @@ def triad_estimates():
         'status_code': 303},
     {
         'path': '/chellow/reports/251/output/',
-        'tries': {'max': 20, 'period': 1},
+        'tries': {'max': 30, 'period': 1},
         'regexes': [
             r"006_FINISHED_watkinsexamplecom_site_monthly_duration_for_"
             r"CI017_1_to_2009_4\.csv"],
@@ -2927,7 +2930,7 @@ def triad_estimates():
         'status_code': 303, },
     {
         'path': '/chellow/reports/251/output/',
-        'tries': {'max': 20, 'period': 1},
+        'tries': {'max': 30, 'period': 1},
         'regexes': [
             r"007_FINISHED_watkinsexamplecom_unified_supplies_monthly_"
             r"duration_site_CI017\.csv"],
@@ -4422,7 +4425,7 @@ def virtual_bill(supply_source):
         'status_code': 303},
     {
         'path': '/chellow/reports/251/output/',
-        'tries': {'max': 20, 'period': 1},
+        'tries': {'max': 30, 'period': 1},
         'regexes': [
             r"009_FINISHED_watkinsexamplecom_site_monthly_duration_for_"
             r"CI017_1_to_2010_7.csv"],
@@ -4443,7 +4446,7 @@ def virtual_bill(supply_source):
         'status_code': 303},
     {
         'path': '/chellow/reports/251/output/',
-        'tries': {'max': 20, 'period': 1},
+        'tries': {'max': 30, 'period': 1},
         'regexes': [
             r"010_FINISHED_watkinsexamplecom_unified_supplies_monthly_"
             r"duration_site_CI017.csv"],
@@ -6820,7 +6823,7 @@ def shutdown():
         'status_code': 303},
     {
         'path': '/chellow/reports/251/output/',
-        'tries': {'max': 20, 'period': 1},
+        'tries': {'max': 30, 'period': 1},
         'status_code': 200,
         'regexes': [
             r"022_FINISHED_watkinsexamplecom_site_monthly_duration_for_"
@@ -6846,7 +6849,7 @@ def shutdown():
         'status_code': 303},
     {
         'path': '/chellow/reports/251/output/',
-        'tries': {'max': 20, 'period': 1},
+        'tries': {'max': 30, 'period': 1},
         'status_code': 200,
         'regexes': [
             r"023_FINISHED_watkinsexamplecom_site_monthly_duration_for_"
@@ -7431,7 +7434,7 @@ def shutdown():
         'status_code': 303},
     {
         'path': '/chellow/reports/251/output/',
-        'tries': {'max': 20, 'period': 1},
+        'tries': {'max': 30, 'period': 1},
         'status_code': 200,
         'regexes': [
             r"033_FINISHED_watkinsexamplecom_scenario_bau_site_CI005\.csv"]},
@@ -7516,7 +7519,7 @@ def shutdown():
         'status_code': 303},
     {
         'path': '/chellow/reports/251/output/',
-        'tries': {'max': 20, 'period': 1},
+        'tries': {'max': 30, 'period': 1},
         'status_code': 200,
         'regexes': [
             r"034_FINISHED_watkinsexamplecom_scenario_bsuos_site_CI005\.csv"]},
@@ -7601,7 +7604,7 @@ def shutdown():
         'status_code': 303},
     {
         'path': '/chellow/reports/251/output/',
-        'tries': {'max': 20, 'period': 1},
+        'tries': {'max': 30, 'period': 1},
         'status_code': 200,
         'regexes': [
             r"035_FINISHED_watkinsexamplecom_scenario_used_site_CI005\.csv"]},
@@ -7697,7 +7700,7 @@ def shutdown():
         'status_code': 303},
     {
         'path': '/chellow/reports/251/output/',
-        'tries': {'max': 20, 'period': 1},
+        'tries': {'max': 30, 'period': 1},
         'status_code': 200,
         'regexes': [
             r"036_FINISHED_watkinsexamplecom_scenario_bsuos_site_CI005\.csv"]},
@@ -7745,7 +7748,7 @@ def shutdown():
     {
         'name': "Check import has succeeded",
         'path': "/chellow/reports/295/output/?process_id=2",
-        'tries': {'max': 10, 'period': 1},
+        'tries': {},
         'status_code': 200,
         'regexes': [r"The file has been imported successfully\."]},
 
@@ -7863,7 +7866,7 @@ def virtual_bill(supply_source):
         'status_code': 303},
     {
         'path': '/chellow/reports/251/output/',
-        'tries': {'max': 20, 'period': 1},
+        'tries': {'max': 30, 'period': 1},
         'status_code': 200,
         'regexes': [
             r"037_FINISHED_watkinsexamplecom_scenario_leap_day_site_"

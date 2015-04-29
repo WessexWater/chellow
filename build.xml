@@ -1,3 +1,5 @@
+<?xml version = '1.0'?>
+<!DOCTYPE project>
 <project
 		name="Chellow" default="prepare" basedir="."
 		xmlns:tc="antlib:tomcat.apache.org">
@@ -73,6 +75,9 @@
 		<copy todir="${build.home}/WEB-INF/lib-python/xlrd">
 			<fileset dir="${basedir}/venv/lib/python2.7/site-packages/xlrd" />
 		</copy>
+		<copy todir="${build.home}/WEB-INF/lib-python/odswriter">
+			<fileset dir="${basedir}/venv/lib/python2.7/site-packages/odswriter" />
+		</copy>
 		<copy todir="${build.home}/WEB-INF/lib-python/pg8000">
 			<fileset dir="${basedir}/venv/lib/python2.7/site-packages/pg8000" />
 		</copy>
@@ -84,6 +89,9 @@
 		</copy>
 		<copy todir="${build.home}/WEB-INF/lib-python/requests">
 			<fileset dir="${basedir}/venv/lib/python2.7/site-packages/requests" />
+		</copy>
+		<copy todir="${build.home}/WEB-INF/lib-python/simplejson">
+			<fileset dir="${basedir}/venv/lib/python2.7/site-packages/simplejson" />
 		</copy>
 		<copy todir="${build.home}/WEB-INF/lib-python/utils">
 			<fileset dir="${basedir}/utils" />
@@ -121,6 +129,9 @@
 		<copy todir="${build.home}/WEB-INF/lib-python/triad_rates">
 			<fileset dir="${basedir}/triad_rates" />
 		</copy>
+		<copy todir="${build.home}/WEB-INF/lib-python/dloads">
+			<fileset dir="${basedir}/dloads" />
+		</copy>
 		<copy todir="${build.home}/WEB-INF/lib-python/duos">
 			<fileset dir="${basedir}/duos" />
 		</copy>
@@ -154,7 +165,7 @@
 
 		<jar jarfile="${dist.home}/${app.name}.war" basedir="${build.home}" excludes="net/sf/chellow/monad/**/*" />
 
-		<copy todir="${dist.home}" file="${basedir}/readme.md" />
+		<copy todir="${dist.home}" file="${basedir}/readme.adoc" />
 	</target>
 
 	<target name="install" depends="dist" description="Install application to servlet container">
@@ -186,21 +197,10 @@
 
 	</target>
 
-
-	<target name="test" description="Test" depends="reset-db, install">
-		<copy file="${test.home}/imprimatur.pre.xml" tofile="${test.home}/imprimatur.xml" />
-		<replace file="${test.home}/imprimatur.xml" token="@@test.port@@" value="${test.port}" />
-		<java jar="${imprimatur.jar}" fork="true" failonerror="true">
-			<arg value="${test.home}/imprimatur.xml" />
-		</java>
-	</target>
+	<target name="test" description="Test" depends="reset-db, install, imprimatur"/>
 
 	<target name="imprimatur" description="Imprimatur">
-		<copy file="${test.home}/imprimatur.pre.xml" tofile="${test.home}/imprimatur.xml" />
-		<replace file="${test.home}/imprimatur.xml" token="@@test.port@@" value="${test.port}" />
-		<java jar="${imprimatur.jar}" fork="true" failonerror="true">
-			<arg value="${test.home}/imprimatur.xml" />
-		</java>
+		<exec osfamily="unix" executable="${test.home}/run_tests_java" failonerror="true"/>
 	</target>
 
 	<target name="prepare">

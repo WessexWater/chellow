@@ -197,9 +197,12 @@ def content():
                     disp_func(site_ds)
                     bill = site_ds.supplier_bill
                     for title in bill_titles:
-                        yield ',"' + str(bill.get(title, '')) + '"'
                         if title in bill:
+                            yield ',"' + str(bill[title]) + '"'
                             del bill[title]
+                        else:
+                            yield ',""'
+
                     keys = bill.keys()
                     keys.sort()
                     for k in keys:

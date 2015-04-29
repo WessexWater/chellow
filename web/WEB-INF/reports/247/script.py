@@ -1,4 +1,3 @@
-import sys
 import os
 from net.sf.chellow.monad import Monad
 import datetime
@@ -16,6 +15,8 @@ import csv
 import dloads
 import StringIO
 import threading
+import odswriter
+
 Monad.getUtils()['impt'](
     globals(), 'templater', 'db', 'utils', 'computer', 'bsuos', 'aahedc',
     'ccl', 'system_price_bmreports', 'system_price_elexon', 'dloads')
@@ -140,9 +141,9 @@ def content():
             sites = sites.filter(Era.supply == supply)
 
         running_name, finished_name = dloads.make_names(
-            '_'.join(base_name) + '.csv', user)
-        f = open(running_name, "w")
-
+            '_'.join(base_name) + '.ods', user)
+        f = odswriter.writer(open(running_name, "wb"))
+        breakdown = f.new_sheet("Breakdown")
         changes = defaultdict(list, {})
 
         try:
@@ -207,12 +208,12 @@ def content():
                     if title not in titles:
                         titles.append(title)
 
-        f.write(','.join(
+        breakdown.writerow(
             header_titles + summary_titles + [''] +
             ['mop-' + t for t in title_dict['mop']] +
             [''] + ['dc-' + t for t in title_dict['dc']] + [''] +
             ['imp-supplier-' + t for t in title_dict['imp-supplier']] + [''] +
-            ['exp-supplier-' + t for t in title_dict['exp-supplier']]) + '\n')
+            ['exp-supplier-' + t for t in title_dict['exp-supplier']])
         sites = sites.all()
         month_start = start_date
         while month_start < finish_date:
@@ -385,9 +386,9 @@ def content():
                             'displaced', '', '', '', '', site.code, site.name,
                             associated_site_codes, month_str] + \
                             [month_data[t] for t in summary_titles]
-                        f.write(','.join(
-                            '"' + str('' if v is None else v) +
-                            '"' for v in out) + '\n')
+
+                        breakdown.writerow(
+                            str('' if v is None else v) for v in out)
                     for i, (
                             order, imp_mpan_core, exp_mpan_core, imp_ss,
                             exp_ss) in enumerate(sorted(calcs)):
@@ -592,15 +593,13 @@ def content():
                                     if t in exp_supplier_bill else '')
                                 for t in title_dict['exp-supplier']]
 
-                        f.write(
-                            ','.join('"' + str(v) + '"' for v in out) + '\n')
+                        breakdown.writerow(out)
 
                     sess.rollback()
             month_start += relativedelta(months=1)
     except:
         msg = traceback.format_exc()
-        sys.stderr.write(msg + '\n')
-        f.write("Problem " + msg)
+        breakdown.writerow(("Problem " + msg))
     finally:
         f.close()
         os.rename(running_name, finished_name)
