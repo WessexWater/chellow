@@ -10,7 +10,7 @@ import computer
 import duos
 import triad
 Monad.getUtils()['impt'](globals(), 'computer', 'db', 'utils', 'triad', 'duos')
-HH = utils.HH
+HH, hh_format = utils.HH, utils.hh_format
 Site, SiteEra, Era, Supply = db.Site, db.SiteEra, db.Era, db.Supply
 Source, Channel = db.Source, db.Channel
 inv = globals()['inv']
@@ -32,14 +32,16 @@ def content():
         march_finish = datetime.datetime(year, 4, 1, tzinfo=pytz.utc) - HH
         march_start = datetime.datetime(year, 3, 1, tzinfo=pytz.utc)
 
-        yield "Site Code, Site Name, Displaced TRIAD 1 Date, " + \
-            "Displaced TRIAD 1 MSP kW, Displaced TRIAD LAF, " + \
-            "Displaced TRIAD 1 GSP kW, Displaced TRIAD 2 Date, " + \
-            "Displaced TRIAD 2 MSP kW, Displaced TRIAD 2 LAF, " + \
-            "Displaced TRIAD 2 GSP kW, Displaced TRIAD 3 Date, " + \
-            "Displaced TRIAD 3 MSP kW, Displaced TRIAD 3 LAF, " + \
-            "Displaced TRIAD 3 GSP kW, Displaced GSP kW, " + \
-            "Displaced Rate GBP / kW, GBP\n"
+        yield ', '.join(
+            (
+                "Site Code", "Site Name", "Displaced TRIAD 1 Date",
+                "Displaced TRIAD 1 MSP kW", "Displaced TRIAD LAF",
+                "Displaced TRIAD 1 GSP kW", "Displaced TRIAD 2 Date",
+                "Displaced TRIAD 2 MSP kW", "Displaced TRIAD 2 LAF",
+                "Displaced TRIAD 2 GSP kW", "Displaced TRIAD 3 Date",
+                "Displaced TRIAD 3 MSP kW", "Displaced TRIAD 3 LAF",
+                "Displaced TRIAD 3 GSP kW", "Displaced GSP kW",
+                "Displaced Rate GBP / kW", "GBP")) + '\n'
 
         forecast_date = computer.forecast_date()
 
@@ -93,7 +95,10 @@ def content():
                         'gsp-kw', 'rate', 'gbp']]
 
                 for value in values:
-                    yield "," + str(value)
+                    if isinstance(value, datetime.datetime):
+                        yield "," + hh_format(value)
+                    else:
+                        yield "," + str(value)
                 yield '\n'
     except:
         yield traceback.format_exc()

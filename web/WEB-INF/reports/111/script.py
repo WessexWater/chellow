@@ -256,6 +256,8 @@ def content():
 
                 try:
                     virt_val = virtual_bill[title]
+                    if isinstance(virt_val, datetime.datetime):
+                        virt_val = hh_format(virt_val)
                     values.append(virt_val)
                     del virtual_bill[title]
                 except KeyError:
@@ -270,7 +272,10 @@ def content():
                         values.append('')
 
             for title in sorted(virtual_bill.keys()):
-                values += ['virtual-' + title, virtual_bill[title]]
+                val = virtual_bill[title]
+                if isinstance(val, datetime.datetime):
+                    val = hh_format(val)
+                values += ['virtual-' + title, val]
                 if title in covered_bdown:
                     values += ['covered-' + title, covered_bdown[title]]
                 else:

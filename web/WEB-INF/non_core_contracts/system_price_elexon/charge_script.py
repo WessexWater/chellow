@@ -210,8 +210,13 @@ def get_importer():
 
 def startup():
     global system_price_importer
-    system_price_importer = SystemPriceImporter()
-    system_price_importer.start()
+    if system_price_importer is None:
+        system_price_importer = SystemPriceImporter()
+        system_price_importer.start()
+    else:
+        raise Exception(
+            "System Price Elexon Importer has already been started, and you "
+            "can't have more than one running at a time.")
 
 
 def shutdown():

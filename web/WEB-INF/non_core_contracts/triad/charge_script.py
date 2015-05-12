@@ -9,7 +9,7 @@ import computer
 import duos
 Monad.getUtils()['impt'](
     globals(), 'db', 'utils', 'templater', 'computer', 'duos', 'triad_rates')
-HH, hh_after, hh_format = utils.HH, utils.hh_after, utils.hh_format
+HH, hh_after = utils.HH, utils.hh_after
 Contract, RateScript = db.Contract, db.RateScript
 db_id = globals()['db_id']
 
@@ -20,7 +20,7 @@ def triad_calc(
     gsp_kw = 0
     for i, triad_hh in enumerate(triad_data):
         triad_prefix = prefix + '-' + str(i + 1)
-        bill[triad_prefix + '-date'] = hh_format(triad_hh['hist-start'])
+        bill[triad_prefix + '-date'] = triad_hh['hist-start']
         bill[triad_prefix + '-msp-kw'] = triad_hh['msp-kw']
         bill[triad_prefix + '-status'] = triad_hh['status']
         bill[triad_prefix + '-laf'] = triad_hh['laf']

@@ -17,6 +17,10 @@ import StringIO
 import threading
 import odswriter
 
+CATEGORY_ORDER = {
+    '': 0, 'unmetered': 1, 'nhh': 2, 'amr': 3, 'hh': 4}
+
+
 Monad.getUtils()['impt'](
     globals(), 'templater', 'db', 'utils', 'computer', 'bsuos', 'aahedc',
     'ccl', 'system_price_bmreports', 'system_price_elexon', 'dloads')
@@ -142,8 +146,11 @@ def content():
 
         running_name, finished_name = dloads.make_names(
             '_'.join(base_name) + '.ods', user)
-        f = odswriter.writer(open(running_name, "wb"))
-        breakdown = f.new_sheet("Breakdown")
+
+        rf = open(running_name, "wb")
+        f = odswriter.writer(rf, '1.1')
+        group_tab = f.new_sheet("Site Level")
+        sup_tab = f.new_sheet("Supply Level")
         changes = defaultdict(list, {})
 
         try:
@@ -166,10 +173,13 @@ def content():
                     'type': typ.strip(), 'date': date,
                     'multiplier': float(kw_str)})
 
-        header_titles = [
+        sup_header_titles = [
             'imp-mpan-core', 'exp-mpan-core', 'metering-type', 'source',
             'generator-type', 'supply-name', 'msn', 'pc', 'site-id',
             'site-name', 'associated-site-ids', 'month']
+        site_header_titles = [
+            'site-id', 'site-name', 'associated-site-ids', 'month',
+            'metering-type', 'sources', 'generator-types']
         summary_titles = [
             'import-net-kwh', 'export-net-kwh', 'import-gen-kwh',
             'export-gen-kwh', 'import-3rd-party-kwh', 'export-3rd-party-kwh',
@@ -208,17 +218,18 @@ def content():
                     if title not in titles:
                         titles.append(title)
 
-        breakdown.writerow(
-            header_titles + summary_titles + [''] +
+        sup_tab.writerow(
+            sup_header_titles + summary_titles + [''] +
             ['mop-' + t for t in title_dict['mop']] +
             [''] + ['dc-' + t for t in title_dict['dc']] + [''] +
             ['imp-supplier-' + t for t in title_dict['imp-supplier']] + [''] +
             ['exp-supplier-' + t for t in title_dict['exp-supplier']])
+        group_tab.writerow(site_header_titles + summary_titles)
+
         sites = sites.all()
         month_start = start_date
         while month_start < finish_date:
             month_finish = month_start + relativedelta(months=1) - HH
-            month_str = month_finish.strftime("%Y-%m-%d %H:%M")
             for site in sites:
                 site_changes = changes[site.code]
                 for group in site.groups(
@@ -227,6 +238,10 @@ def content():
                     deltas = defaultdict(int)
                     associated_site_codes = ','.join(
                         s.code for s in group.sites[1:])
+                    group_category = ''
+                    group_sources = set()
+                    group_gen_types = set()
+                    group_month_data = defaultdict(int)
                     for supply in group.supplies:
                         if supply_id is not None and supply.id != supply_id:
                             continue
@@ -384,10 +399,10 @@ def content():
                         out = [
                             '', '', displaced_era.make_meter_category(),
                             'displaced', '', '', '', '', site.code, site.name,
-                            associated_site_codes, month_str] + \
+                            associated_site_codes, month_finish] + \
                             [month_data[t] for t in summary_titles]
 
-                        breakdown.writerow(
+                        sup_tab.writerow(
                             str('' if v is None else v) for v in out)
                     for i, (
                             order, imp_mpan_core, exp_mpan_core, imp_ss,
@@ -399,6 +414,7 @@ def content():
                         supply = era.supply
                         source = supply.source
                         source_code = source.code
+                        group_sources.add(source_code)
                         month_data = {}
                         for name in (
                                 'import-net', 'export-net', 'import-gen',
@@ -564,15 +580,21 @@ def content():
 
                         if source_code == 'gen':
                             generator_type = supply.generator_type.code
+                            group_gen_types.add(generator_type)
                         else:
                             generator_type = ''
 
+                        sup_category = era.make_meter_category()
+                        if CATEGORY_ORDER[group_category] < \
+                                CATEGORY_ORDER[sup_category]:
+                            group_category = sup_category
+
                         out = [
                             era.imp_mpan_core, era.exp_mpan_core,
-                            era.make_meter_category(), source_code,
+                            sup_category, source_code,
                             generator_type, supply.name, era.msn, era.pc.code,
                             site.code, site.name, associated_site_codes,
-                            month_str] + [
+                            month_finish] + [
                             month_data[t] for t in summary_titles] + [''] + [
                             (mop_bill[t] if t in mop_bill else '')
                             for t in title_dict['mop']] + [''] + \
@@ -593,15 +615,27 @@ def content():
                                     if t in exp_supplier_bill else '')
                                 for t in title_dict['exp-supplier']]
 
-                        breakdown.writerow(out)
+                        for k, v in month_data.iteritems():
+                            group_month_data[k] += v
+                        sup_tab.writerow(out)
 
                     sess.rollback()
+
+                    group_tab.writerow(
+                        [
+                            site.code, site.name, associated_site_codes,
+                            month_finish, group_category,
+                            ', '.join(sorted(list(group_sources))),
+                            ', '.join(sorted(list(group_gen_types)))] +
+                        [group_month_data[k] for k in summary_titles])
+
             month_start += relativedelta(months=1)
     except:
         msg = traceback.format_exc()
-        breakdown.writerow(("Problem " + msg))
+        group_tab.writerow(["Problem " + msg])
     finally:
         f.close()
+        rf.close()
         os.rename(running_name, finished_name)
         if sess is not None:
             sess.close()

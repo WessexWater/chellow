@@ -171,7 +171,12 @@ def content():
 
                 for title in bill_titles:
                     if title in bill:
-                        val = str(bill[title])
+                        v = bill[title]
+                        if isinstance(v, datetime.datetime):
+                            val = hh_format(v)
+                        else:
+                            val = str(v)
+
                         del bill[title]
                     else:
                         val = ''

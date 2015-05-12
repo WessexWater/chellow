@@ -198,7 +198,12 @@ def content():
                     bill = site_ds.supplier_bill
                     for title in bill_titles:
                         if title in bill:
-                            yield ',"' + str(bill[title]) + '"'
+                            val = bill[title]
+                            if isinstance(val, datetime.datetime):
+                                val = hh_format(val)
+                            else:
+                                val = str(val)
+                            yield ',"' + val + '"'
                             del bill[title]
                         else:
                             yield ',""'

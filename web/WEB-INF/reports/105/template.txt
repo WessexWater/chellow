@@ -13,8 +13,8 @@
       <a href="{{context_path}}/reports/1/output/">Chellow</a> &gt;
       <a href="{{context_path}}/reports/75/output/">Supplier Contracts</a> &gt;
       <a href="{{context_path}}/reports/77/output/?supplier_contract_id={{bill.batch.contract.id}}">{{bill.batch.contract.name}}</a> &gt;
-      <a href="{{context_path}}/reports/89/output/?supplier-contract-id={{bill.batch.contract.id}}">Batches</a> &gt;
-      <a href="{{context_path}}/reports/91/output/?batch-id={{bill.batch.id}}">
+      <a href="{{context_path}}/reports/89/output/?supplier_contract_id={{bill.batch.contract.id}}">Batches</a> &gt;
+      <a href="{{context_path}}/reports/91/output/?supplier_batch_id={{bill.batch.id}}">
       {{bill.batch.reference}}</a> &gt;
       Bill {{bill.id}}
       [<a href="{{context_path}}/reports/165/output/?supplier_bill_id={{bill.id}}">edit</a>]

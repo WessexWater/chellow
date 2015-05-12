@@ -157,6 +157,13 @@ def content():
                 if titles != prev_titles:
                     prev_titles != titles
                     yield ','.join('"' + str(v) + '"' for v in titles) + '\n'
+                for i, val in enumerate(output_line):
+                    if isinstance(val, datetime.datetime):
+                        output_line[i] = hh_format(val)
+                    elif val is None:
+                        output_line[i] = ''
+                    else:
+                        output_line[i] = str(val)
                 yield ','.join(
                     '"' + str('' if v is None else v) +
                     '"' for v in output_line) + '\n'
