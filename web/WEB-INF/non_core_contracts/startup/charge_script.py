@@ -7,7 +7,7 @@ LIBS = (
     'general_import', 'hh_importer', 'bill_import', 'edi_lib',
     'system_price_bmreports', 'system_price_elexon', 'system_price', 'rcrc',
     'duos', 'triad_rates', 'triad', 'ccl', 'aahedc', 'dloads',
-    'system_price_unified')
+    'system_price_unified', 'ro')
 
 
 class LibDict(dict):
