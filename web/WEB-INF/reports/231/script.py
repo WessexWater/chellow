@@ -58,12 +58,15 @@ def content():
             supply_source = computer.SupplySource(
                 sess, start_date, finish_date, forecast_date, era, is_import,
                 None, caches)
-            bill = computer.contract_func(
+            computer.contract_func(
                 caches, contract, 'virtual_bill', None)(supply_source)
+            bill = supply_source.mop_bill
             for title in bill_titles:
-                yield '"' + str(bill.get(title, '')) + '",'
                 if title in bill:
+                    yield '"' + str(bill[title]) + '",'
                     del bill[title]
+                else:
+                    yield ','
             for k in sorted(bill.keys()):
                 yield ',"' + k + '","' + str(bill[k]) + '"'
             yield '\n'

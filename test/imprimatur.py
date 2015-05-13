@@ -7588,4 +7588,18 @@ def virtual_bill(supply_source):
         'regexes': [
             r"Updating rate script starting at 2005-01-01 00:00\."],
         'status_code': 200},
+
+    {
+        'name': "Contract level MOP virtual bills",
+        'path': '/chellow/reports/231/output/?mop_contract_id=60&'
+        'start_year=2015&start_month=04&start_day=01&start_hour=00&'
+        'start_minute=00&finish_year=2015&finish_month=04&finish_day=01&'
+        'finish_hour=23&finish_minute=30',
+        'tries': {},
+        'regexes': [
+            r'Import MPAN Core, Export MPAN Core, Start Date, Finish Date,'
+            r'net-gbp,problem',
+
+            r',22 0470 7514 535,2015-04-01 00:00,2015-04-01 23:30,"0","",'],
+        'status_code': 200},
 ]
