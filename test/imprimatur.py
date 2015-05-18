@@ -5215,11 +5215,13 @@ def shutdown():
         'name': "Try startup and shutdown.",
         'path': '/chellow/reports/171/output/',
         'method': 'post',
-        'tries': {},
         'data': {
             'run_shutdown': "Shutdown"},
         'regexes': [
-            r"Shut down successfully."]},
+            r"Shut down successfully.",
+            # Make sure only one process running
+            r"<tbody>\s*<tr>(\s*<td>\s*(<pre>)*[^<]*(</pre>)*\s*</td>\s*){3}"
+            r"</tr>\s*</tbody>"]},
     {
         'path': '/chellow/reports/171/output/',
         'method': 'post',
