@@ -2882,7 +2882,7 @@ from sqlalchemy import or_
 
 Monad.getUtils()['impt'](
     globals(), 'computer', 'db', 'utils', 'computer', 'triad', 'ccl', 'bsuos',
-    'tlms', 'duos', 'rcrc', 'aahedc')
+    'tlms', 'duos', 'rcrc', 'aahedc', 'bank_holidays')
 
 
 def virtual_bill_titles():
@@ -3010,36 +3010,37 @@ def virtual_bill(supply_source):
     bill = supply_source.supplier_bill
     supply_source.is_green = False
 
-    for datum in supply_source.hh_data:
-        is_weekday = datum['utc-day-of-week'] < 5
-        if is_weekday and datum['utc-month'] in (1, 12) and \
-                16 < datum['utc-decimal-hour'] <= 19:
+    for hh in supply_source.hh_data:
+        is_weekday = hh['utc-day-of-week'] < 5 and \
+                not hh['utc-is-bank-holiday']
+        if is_weekday and hh['utc-month'] in (1, 12) and \
+                16 < hh['utc-decimal-hour'] <= 19:
             slot_key = 'winter-pk'
-        elif is_weekday and datum['utc-month'] in (2, 11) and \
-                16 < datum['utc-decimal-hour'] <= 19:
+        elif is_weekday and hh['utc-month'] in (2, 11) and \
+                16 < hh['utc-decimal-hour'] <= 19:
             slot_key = 'winter-low-pk'
         elif is_weekday and \
-                (datum['utc-month'] > 10 or datum['utc-month'] < 4) and \
-                8 < datum['utc-decimal-hour'] <= 20:
+                (hh['utc-month'] > 10 or hh['utc-month'] < 4) and \
+                8 < hh['utc-decimal-hour'] <= 20:
             slot_key = 'winter-off-pk'
         elif is_weekday and \
-                (datum['utc-month'] > 3 or datum['utc-month'] < 11) and \
-                8 < datum['utc-decimal-hour'] <= 20:
+                (hh['utc-month'] > 3 or hh['utc-month'] < 11) and \
+                8 < hh['utc-decimal-hour'] <= 20:
             slot_key = 'summer-pk'
-        elif 0 < datum['utc-decimal-hour'] <= 7:
+        elif 0 < hh['utc-decimal-hour'] <= 7:
             slot_key = 'night'
         else:
             slot_key = 'other'
         slot_keys = slots[slot_key]
-        bill[slot_keys['msp-kwh']] += datum['msp-kwh']
-        bill[slot_keys['gsp-kwh']] += datum['gsp-kwh']
+        bill[slot_keys['msp-kwh']] += hh['msp-kwh']
+        bill[slot_keys['gsp-kwh']] += hh['gsp-kwh']
         rates = supply_source.hh_rate(
-            db_id, datum['start-date'], 'gsp_gbp_per_kwh')
-        bill[slot_keys['gbp']] += datum['gsp-kwh'] * rates[slot_name]
+            db_id, hh['start-date'], 'gsp_gbp_per_kwh')
+        bill[slot_keys['gbp']] += hh['gsp-kwh'] * rates[slot_name]
 
-        if 'ccl-kwh' in datum:
-            bill['ccl-kwh'] += datum['ccl-kwh']
-            bill['ccl-gbp'] += datum['ccl-gbp']
+        if 'ccl-kwh' in hh:
+            bill['ccl-kwh'] += hh['ccl-kwh']
+            bill['ccl-gbp'] += hh['ccl-gbp']
 
     bill['data-collection-gbp'] += 5.89
     bill['settlement-gbp'] += 88
@@ -7604,4 +7605,77 @@ def virtual_bill(supply_source):
 
             r',22 0470 7514 535,2015-04-01 00:00,2015-04-01 23:30,"0","",'],
         'status_code': 200},
+
+    {
+        'name': "Bank holiday day change without restart. Add HH.",
+        'path': '/chellow/reports/303/output/',
+        'method': 'post',
+        'data': {
+            'channel_id': "58",
+            'start_year': "2014",
+            'start_month': "06",
+            'start_day': "04",
+            'start_hour': "16",
+            'start_minute': "00",
+            'insert': "Insert",
+            'value': "48.9",
+            'status': "A", },
+        'status_code': 303},
+    {
+        'name': "Bank holiday day change without restart. Before change.",
+        'path': '/chellow/reports/291/output/?supply_id=5&start_year=2014&'
+        'start_month=6&start_day=04&start_hour=00&start_minute=0&'
+        'finish_year=2014&finish_month=06&finish_day=4&finish_hour=23&'
+        'finish_minute=30',
+        'status_code': 200,
+        'regexes': [
+            r'"22 0883 6932 301","","CI005","Wheal Rodney","4341",'
+            r'"2014-06-04 00:00","2014-06-04 23:30","","0","","","0","","",'
+            r'"116.174010696","","","","","5.89","350","1","0.0269","9.415",'
+            r'"","","","","0","0.00147","0.0","","","0.0","0","0.25405",'
+            r'"12.423045","0.0","0.00399","0.0","1","0.0878","0.0878","88",'
+            r'"48.9","52.5186","0.00021361","0.011218498146","52.9779381793",'
+            r'"","-0.0234806352643","0","0.0","0.0","0","0.0","0.0","48.9",'
+            r'"52.5186","0.32906054016","","","","","","","","","",'
+            r'"52.9779381793","","0.0413672932479","","","","","","","","","",'
+            r'"","","","","","","","","","","","","","","","","","","","","",'
+            r'"","","","","","","","","","","duos-amber-rate","0.00344",'
+            r'"duos-red-kwh","48.9"']},
+    {
+        'name': "Bank holiday day change without restart. Edit the rate "
+        "script",
+        'path': '/chellow/reports/273/output/',
+        'method': 'post',
+        'data': {
+            'rate_script_id': "39",
+            'start_year': "2013",
+            'start_month': "12",
+            'start_day': "01",
+            'start_hour': "00",
+            'start_minute': "00",
+            'script': """
+def days():
+    return [4, 25,26]
+"""}},
+    {
+        'name': "Bank holiday day change without restart. Check it's "
+        "registered the bank holiday",
+        'path': '/chellow/reports/291/output/?supply_id=5&start_year=2014&'
+        'start_month=6&start_day=04&start_hour=00&start_minute=0&'
+        'finish_year=2014&finish_month=06&finish_day=4&finish_hour=23&'
+        'finish_minute=30',
+        'status_code': 200,
+        'regexes': [
+            r'"22 0883 6932 301","","CI005","Wheal Rodney","4341",'
+            r'"2014-06-04 00:00","2014-06-04 23:30","","0","","","0","","",'
+            r'"116.174010696","","","","","5.89","350","1","0.0269","9.415",'
+            r'"","","","","0","0.00147","0.0","","","0.0","0","0.25405",'
+            r'"12.423045","0.0","0.00399","0.0","1","0.0878","0.0878","88",'
+            r'"48.9","52.5186","0.00021361","0.011218498146","52.9779381793",'
+            r'"","-0.0234806352643","0","0.0","0.0","48.9","52.5186",'
+            r'"0.32906054016","","","","","","","","","","","","",'
+            r'"52.9779381793","","0.0413672932479","","","","","","","","","",'
+            r'"","","","","","","","","","","","","","","","","","","","","",'
+            r'"","","","","","","","","","","duos-amber-rate","0.00344",'
+            r'"duos-red-kwh","48.9"']},
 ]

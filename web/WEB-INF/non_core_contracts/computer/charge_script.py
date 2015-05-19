@@ -10,8 +10,10 @@ import math
 import utils
 import db
 import simplejson as json
+import bank_holidays
 
-Monad.getUtils()['impt'](globals(), 'db', 'utils', 'templater')
+Monad.getUtils()['impt'](
+    globals(), 'db', 'utils', 'templater', 'bank_holidays')
 
 HH, hh_after, totalseconds = utils.HH, utils.hh_after, utils.totalseconds
 hh_before, hh_format = utils.hh_before, utils.hh_format
@@ -416,12 +418,28 @@ def _tpr_datum_generator(sess, caches, tpr_code, years_back, pw):
             return result
     return _generator
 
-_advance_datum_cache = collections.defaultdict(dict)
-
 
 def _datum_generator(sess, years_back, caches, pw):
-    datum_cache = _advance_datum_cache[years_back]
-    bank_holidays_id = Contract.get_non_core_by_name(sess, 'bank-holidays').id
+    try:
+        datum_cache = caches['computer']['datum'][years_back]
+    except KeyError:
+        try:
+            computer_cache = caches['computer']
+        except KeyError:
+            caches['computer'] = {}
+            computer_cache = caches['computer']
+
+        try:
+            d_cache = computer_cache['datum']
+        except KeyError:
+            computer_cache['datum'] = {}
+            d_cache = computer_cache['datum']
+
+        try:
+            datum_cache = d_cache[years_back]
+        except KeyError:
+            d_cache[years_back] = {}
+            datum_cache = d_cache[years_back]
 
     def _generator(sess2, hh_date):
         try:
@@ -437,7 +455,7 @@ def _datum_generator(sess, years_back, caches, pw):
             ct_decimal_hour = ct_dt.hour + float(ct_dt.minute) / 60
 
             utc_bank_holidays = hh_rate(
-                sess2, caches, bank_holidays_id, hh_date, 'days', pw)
+                sess2, caches, bank_holidays.db_id, hh_date, 'days', pw)
             if utc_bank_holidays is None:
                 msg = "\nCan't find bank holidays for " + str(hh_date)
                 pw.println(msg)

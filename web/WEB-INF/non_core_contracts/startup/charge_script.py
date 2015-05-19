@@ -3,8 +3,8 @@ from net.sf.chellow.monad import Monad
 import traceback
 
 LIBS = (
-    'utils', 'db', 'templater', 'computer', 'scenario', 'bsuos', 'tlms',
-    'general_import', 'hh_importer', 'bill_import', 'edi_lib',
+    'utils', 'db', 'templater', 'bank_holidays', 'computer', 'scenario',
+    'bsuos', 'tlms', 'general_import', 'hh_importer', 'bill_import', 'edi_lib',
     'system_price_bmreports', 'system_price_elexon', 'system_price', 'rcrc',
     'duos', 'triad_rates', 'triad', 'ccl', 'aahedc', 'dloads',
     'system_price_unified', 'ro')
