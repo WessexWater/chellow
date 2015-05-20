@@ -64,7 +64,7 @@
         </tr>
       </thead>
       <tbody>
-        {% for ci in tpr.clock_intervals %}
+        {% for ci in clock_intervals %}
           <tr>
             <td>{{ ci.day_of_week }}</td>
             <td>{{ ci.start_day}}</td>

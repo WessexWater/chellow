@@ -110,8 +110,8 @@ class Participant(Base):
 class Party(Base):
     __tablename__ = 'party'
     id = Column('id', Integer, primary_key=True)
-    market_role_id = Column(Integer, ForeignKey('market_role.id'))
-    participant_id = Column(Integer, ForeignKey('participant.id'))
+    market_role_id = Column(Integer, ForeignKey('market_role.id'), index=True)
+    participant_id = Column(Integer, ForeignKey('participant.id'), index=True)
     name = Column(String, nullable=False)
     valid_from = Column(DateTime(timezone=True), nullable=False)
     valid_to = Column(DateTime)
@@ -163,14 +163,14 @@ class Contract(Base):
     charge_script = Column(Text, nullable=False)
     properties = Column(Text, nullable=False)
     state = Column(Text, nullable=False)
-    market_role_id = Column(Integer, ForeignKey('market_role.id'))
+    market_role_id = Column(Integer, ForeignKey('market_role.id'), index=True)
     __table_args__ = (UniqueConstraint('name', 'market_role_id'),)
     rate_scripts = relationship(
         "RateScript", back_populates="contract",
         primaryjoin="Contract.id==RateScript.contract_id")
     batches = relationship('Batch', backref='contract')
     supplies = relationship('Supply', backref='dno_contract')
-    party_id = Column(Integer, ForeignKey('party.id'))
+    party_id = Column(Integer, ForeignKey('party.id'), index=True)
 
     start_rate_script_id = Column(
         Integer, ForeignKey(
@@ -244,13 +244,14 @@ class Contract(Base):
 class RateScript(Base):
     __tablename__ = "rate_script"
     id = Column('id', Integer, primary_key=True)
-    contract_id = Column(Integer, ForeignKey('contract.id'))
+    contract_id = Column(Integer, ForeignKey('contract.id'), index=True)
     contract = relationship(
         "Contract", back_populates="rate_scripts",
         primaryjoin="Contract.id==RateScript.contract_id")
-    start_date = Column(DateTime(timezone=True), nullable=False)
-    finish_date = Column(DateTime(timezone=True), nullable=True)
+    start_date = Column(DateTime(timezone=True), nullable=False, index=True)
+    finish_date = Column(DateTime(timezone=True), nullable=True, index=True)
     script = Column(Text, nullable=False)
+    __table_args__ = (UniqueConstraint('contract_id', 'start_date'),)
 
 
 class Pc(Base):
@@ -330,9 +331,9 @@ class Cop(Base):
 class Ssc(Base):
     __tablename__ = 'ssc'
     id = Column('id', Integer, primary_key=True)
-    code = Column(String, nullable=False)
+    code = Column(String, nullable=False, index=True)
     description = Column(String)
-    is_import = Column(Boolean)
+    is_import = Column(Boolean, index=True)
     valid_from = Column(DateTime(timezone=True), nullable=False)
     valid_to = Column(DateTime)
     measurement_requirements = relationship(
@@ -356,22 +357,23 @@ class Llfc(Base):
 class Era(Base):
     __tablename__ = "era"
     id = Column('id', Integer, primary_key=True)
-    supply_id = Column(Integer, ForeignKey('supply.id'), nullable=False)
+    supply_id = Column(
+        Integer, ForeignKey('supply.id'), nullable=False, index=True)
     site_eras = relationship('SiteEra', backref='era')
-    start_date = Column(DateTime(timezone=True), nullable=False)
-    finish_date = Column(DateTime(timezone=True))
+    start_date = Column(DateTime(timezone=True), nullable=False, index=True)
+    finish_date = Column(DateTime(timezone=True), index=True)
     mop_contract_id = Column(
-        Integer, ForeignKey('contract.id'), nullable=False)
+        Integer, ForeignKey('contract.id'), nullable=False, index=True)
     mop_contract = relationship(
         "Contract", primaryjoin="Contract.id==Era.mop_contract_id")
     mop_account = Column(String, nullable=False)
     hhdc_contract_id = Column(
-        Integer, ForeignKey('contract.id'), nullable=False)
+        Integer, ForeignKey('contract.id'), nullable=False, index=True)
     hhdc_contract = relationship(
         "Contract", primaryjoin="Contract.id==Era.hhdc_contract_id")
     hhdc_account = Column(String)
     msn = Column(String)
-    pc_id = Column(Integer, ForeignKey('pc.id'), nullable=False)
+    pc_id = Column(Integer, ForeignKey('pc.id'), nullable=False, index=True)
     mtc_id = Column(Integer, ForeignKey('mtc.id'), nullable=False)
     cop_id = Column(Integer, ForeignKey('cop.id'), nullable=False)
     ssc_id = Column(Integer, ForeignKey('ssc.id'))
@@ -379,7 +381,7 @@ class Era(Base):
     imp_llfc_id = Column(Integer, ForeignKey('llfc.id'))
     imp_llfc = relationship("Llfc", primaryjoin="Llfc.id==Era.imp_llfc_id")
     imp_supplier_contract_id = Column(
-        Integer, ForeignKey('contract.id'))
+        Integer, ForeignKey('contract.id'), index=True)
     imp_supplier_contract = relationship(
         "Contract", primaryjoin="Contract.id==Era.imp_supplier_contract_id")
     imp_supplier_account = Column(String)
@@ -398,11 +400,11 @@ class Era(Base):
 class Channel(Base):
     __tablename__ = 'channel'
     id = Column('id', Integer, primary_key=True)
-    era_id = Column(Integer, ForeignKey('era.id'))
-    imp_related = Column(Boolean, nullable=False)
+    era_id = Column(Integer, ForeignKey('era.id'), index=True)
+    imp_related = Column(Boolean, nullable=False, index=True)
     channel_type = Column(
         Enum('ACTIVE', 'REACTIVE_IMP', 'REACTIVE_EXP', name='channel_type'),
-        nullable=False)
+        nullable=False, index=True)
     hh_data = relationship('HhDatum', backref='channel')
     snag = relationship('Snag', backref='channel')
     __table_args__ = (
@@ -412,13 +414,13 @@ class Channel(Base):
 class Snag(Base):
     __tablename__ = 'snag'
     id = Column('id', Integer, primary_key=True)
-    site_id = Column(Integer, ForeignKey('site.id'))
-    channel_id = Column(Integer, ForeignKey('channel.id'))
-    date_created = Column(DateTime(timezone=True), nullable=False)
-    is_ignored = Column(Boolean, nullable=False)
-    description = Column(String, nullable=False)
-    start_date = Column(DateTime(timezone=True), nullable=False)
-    finish_date = Column(DateTime(timezone=True))
+    site_id = Column(Integer, ForeignKey('site.id'), index=True)
+    channel_id = Column(Integer, ForeignKey('channel.id'), index=True)
+    date_created = Column(DateTime(timezone=True), nullable=False, index=True)
+    is_ignored = Column(Boolean, nullable=False, index=True)
+    description = Column(String, nullable=False, index=True)
+    start_date = Column(DateTime(timezone=True), nullable=False, index=True)
+    finish_date = Column(DateTime(timezone=True), index=True)
 
 
 class ReadType(Base):
@@ -435,7 +437,8 @@ class ReadType(Base):
 class Batch(Base):
     __tablename__ = 'batch'
     id = Column('id', Integer, primary_key=True)
-    contract_id = Column(Integer, ForeignKey('contract.id'), nullable=False)
+    contract_id = Column(
+        Integer, ForeignKey('contract.id'), nullable=False, index=True)
     reference = Column(String, nullable=False)
     description = Column(String, nullable=False)
     bills = relationship('Bill', backref='batch')
@@ -457,17 +460,19 @@ class BillType(Base):
 class Bill(Base):
     __tablename__ = 'bill'
     id = Column('id', Integer, primary_key=True)
-    batch_id = Column(Integer, ForeignKey('batch.id'), nullable=False)
-    supply_id = Column(Integer, ForeignKey('supply.id'), nullable=False)
-    issue_date = Column(DateTime(timezone=True), nullable=False)
-    start_date = Column(DateTime(timezone=True), nullable=False)
-    finish_date = Column(DateTime(timezone=True), nullable=False)
+    batch_id = Column(
+        Integer, ForeignKey('batch.id'), nullable=False, index=True)
+    supply_id = Column(
+        Integer, ForeignKey('supply.id'), nullable=False, index=True)
+    issue_date = Column(DateTime(timezone=True), nullable=False, index=True)
+    start_date = Column(DateTime(timezone=True), nullable=False, index=True)
+    finish_date = Column(DateTime(timezone=True), nullable=False, index=True)
     net = Column(Numeric, nullable=False)
     vat = Column(Numeric, nullable=False)
     gross = Column(Numeric, nullable=False)
     account = Column(String, nullable=False)
     reference = Column(String, nullable=False)
-    bill_type_id = Column(Integer, ForeignKey('bill_type.id'))
+    bill_type_id = Column(Integer, ForeignKey('bill_type.id'), index=True)
     breakdown = Column(String, nullable=False)
     kwh = Column(Numeric, nullable=False)
     reads = relationship(
@@ -491,20 +496,21 @@ class RegisterRead(Base):
     __tablename__ = 'register_read'
     id = Column('id', Integer, primary_key=True)
     bill_id = Column(
-        Integer, ForeignKey('bill.id', ondelete='CASCADE'), nullable=False)
-    msn = Column(String, nullable=False)
+        Integer, ForeignKey('bill.id', ondelete='CASCADE'), nullable=False,
+        index=True)
+    msn = Column(String, nullable=False, index=True)
     mpan_str = Column(String, nullable=False)
     coefficient = Column(Numeric, nullable=False)
-    units = Column(Integer, nullable=False)
-    tpr_id = Column(Integer, ForeignKey('tpr.id'))
-    previous_date = Column(DateTime(timezone=True), nullable=False)
+    units = Column(Integer, nullable=False, index=True)
+    tpr_id = Column(Integer, ForeignKey('tpr.id'), index=True)
+    previous_date = Column(DateTime(timezone=True), nullable=False, index=True)
     previous_value = Column(Numeric, nullable=False)
-    previous_type_id = Column(Integer, ForeignKey('read_type.id'))
+    previous_type_id = Column(Integer, ForeignKey('read_type.id'), index=True)
     previous_type = relationship(
         "ReadType", primaryjoin="ReadType.id==RegisterRead.previous_type_id")
-    present_date = Column(DateTime(timezone=True), nullable=False)
+    present_date = Column(DateTime(timezone=True), nullable=False, index=True)
     present_value = Column(Numeric, nullable=False)
-    present_type_id = Column(Integer, ForeignKey('read_type.id'))
+    present_type_id = Column(Integer, ForeignKey('read_type.id'), index=True)
     present_type = relationship(
         "ReadType", primaryjoin="ReadType.id==RegisterRead.present_type_id")
 
@@ -548,7 +554,7 @@ class User(Base):
     id = Column(Integer, primary_key=True)
     email_address = Column(String, unique=True, nullable=False)
     password_digest = Column(String, nullable=False)
-    user_role_id = Column(Integer, ForeignKey('user_role.id'))
+    user_role_id = Column(Integer, ForeignKey('user_role.id'), index=True)
     party_id = Column(Integer, ForeignKey('party.id'))
 
     def __init__(self, email_address, password_digest, user_role, party):
@@ -571,7 +577,7 @@ class ClockInterval(Base):
     __tablename__ = 'clock_interval'
     id = Column(
         'id', Integer, primary_key=True)
-    tpr_id = Column(Integer, ForeignKey('tpr.id'))
+    tpr_id = Column(Integer, ForeignKey('tpr.id'), index=True)
     day_of_week = Column(Integer, nullable=False)
     start_day = Column(Integer, nullable=False)
     start_month = Column(Integer, nullable=False)
@@ -587,26 +593,26 @@ class MeasurementRequirement(Base):
     __tablename__ = 'measurement_requirement'
     id = Column(
         'id', Integer, primary_key=True)
-    ssc_id = Column(Integer, ForeignKey('ssc.id'))
-    tpr_id = Column(Integer, ForeignKey('tpr.id'))
+    ssc_id = Column(Integer, ForeignKey('ssc.id'), index=True)
+    tpr_id = Column(Integer, ForeignKey('tpr.id'), index=True)
 
 
 class SiteEra(Base):
     __tablename__ = 'site_era'
     id = Column('id', Integer, primary_key=True)
-    site_id = Column(Integer, ForeignKey('site.id'))
-    era_id = Column(Integer, ForeignKey('era.id'))
-    is_physical = Column(Boolean, nullable=False)
+    site_id = Column(Integer, ForeignKey('site.id'), index=True)
+    era_id = Column(Integer, ForeignKey('era.id'), index=True)
+    is_physical = Column(Boolean, nullable=False, index=True)
 
 
 class HhDatum(Base):
     __tablename__ = 'hh_datum'
     id = Column('id', Integer, primary_key=True)
-    channel_id = Column(Integer, ForeignKey('channel.id'))
-    start_date = Column(DateTime(timezone=True), nullable=False)
+    channel_id = Column(Integer, ForeignKey('channel.id'), index=True)
+    start_date = Column(DateTime(timezone=True), nullable=False, index=True)
     value = Column(Numeric, nullable=False)
     status = Column(String, nullable=False)
-    last_modified = Column(DateTime(timezone=True), nullable=False)
+    last_modified = Column(DateTime(timezone=True), nullable=False, index=True)
     __table_args__ = (UniqueConstraint('channel_id', 'start_date'),)
 
 

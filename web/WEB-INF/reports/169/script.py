@@ -50,7 +50,7 @@ def content():
 
         supplies = sess.query(Supply).join(Era).filter(
             or_(Era.finish_date == null(), Era.finish_date >= start_date),
-            Era.start_date <= finish_date).distinct()
+            Era.start_date <= finish_date).order_by(Supply.id).distinct()
         if supply_id is not None:
             supply = Supply.get_by_id(sess, supply_id)
             supplies = supplies.filter(Supply.id == supply.id)
