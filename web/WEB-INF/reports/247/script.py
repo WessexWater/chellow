@@ -4,8 +4,8 @@ import datetime
 import traceback
 import pytz
 from dateutil.relativedelta import relativedelta
-from sqlalchemy import or_
-from sqlalchemy.sql.expression import null, false
+from sqlalchemy import or_, Float
+from sqlalchemy.sql.expression import null, false, cast
 from sqlalchemy.sql import func
 from collections import defaultdict
 import db
@@ -403,7 +403,7 @@ def content():
                             [month_data[t] for t in summary_titles]
 
                         sup_tab.writerow(
-                            str('' if v is None else v) for v in out)
+                            ('' if v is None else v) for v in out)
                     for i, (
                             order, imp_mpan_core, exp_mpan_core, imp_ss,
                             exp_ss) in enumerate(sorted(calcs)):
@@ -517,7 +517,9 @@ def content():
                         exp_supplier_contract = era.exp_supplier_contract
                         if exp_supplier_contract is None:
                             kwh = sess.query(
-                                func.coalesce(func.sum(HhDatum.value), 0)). \
+                                func.coalesce(
+                                    func.sum(
+                                        cast(HhDatum.value, Float)), 0)). \
                                 join(Channel).filter(
                                     Channel.era == era,
                                     Channel.channel_type == 'ACTIVE',
