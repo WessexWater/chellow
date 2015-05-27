@@ -18,7 +18,7 @@ import threading
 import odswriter
 
 CATEGORY_ORDER = {
-    '': 0, 'unmetered': 1, 'nhh': 2, 'amr': 3, 'hh': 4}
+    None: 0, 'unmetered': 1, 'nhh': 2, 'amr': 3, 'hh': 4}
 
 
 Monad.getUtils()['impt'](
@@ -219,11 +219,11 @@ def content():
                         titles.append(title)
 
         sup_tab.writerow(
-            sup_header_titles + summary_titles + [''] +
+            sup_header_titles + summary_titles + [None] +
             ['mop-' + t for t in title_dict['mop']] +
-            [''] + ['dc-' + t for t in title_dict['dc']] + [''] +
-            ['imp-supplier-' + t for t in title_dict['imp-supplier']] + [''] +
-            ['exp-supplier-' + t for t in title_dict['exp-supplier']])
+            [None] + ['dc-' + t for t in title_dict['dc']] + [None] +
+            ['imp-supplier-' + t for t in title_dict['imp-supplier']] +
+            [None] + ['exp-supplier-' + t for t in title_dict['exp-supplier']])
         group_tab.writerow(site_header_titles + summary_titles)
 
         sites = sites.all()
@@ -238,7 +238,7 @@ def content():
                     deltas = defaultdict(int)
                     associated_site_codes = ','.join(
                         s.code for s in group.sites[1:])
-                    group_category = ''
+                    group_category = None
                     group_sources = set()
                     group_gen_types = set()
                     group_month_data = defaultdict(int)
@@ -397,13 +397,12 @@ def content():
                             site_ds.supplier_bill['net-gbp']
 
                         out = [
-                            '', '', displaced_era.make_meter_category(),
-                            'displaced', '', '', '', '', site.code, site.name,
-                            associated_site_codes, month_finish] + \
+                            None, None, displaced_era.make_meter_category(),
+                            'displaced', None, None, None, None, site.code,
+                            site.name, associated_site_codes, month_finish] + \
                             [month_data[t] for t in summary_titles]
 
-                        sup_tab.writerow(
-                            ('' if v is None else v) for v in out)
+                        sup_tab.writerow(out)
                     for i, (
                             order, imp_mpan_core, exp_mpan_core, imp_ss,
                             exp_ss) in enumerate(sorted(calcs)):
@@ -477,10 +476,12 @@ def content():
                             if source_code in ('net', 'gen-net'):
                                 month_data['import-net-gbp'] += gbp
                                 month_data['used-gbp'] += gbp
-                            elif source_code in (
-                                    '3rd-party', '3rd-party-reverse'):
+                            elif source_code == '3rd-party':
                                 month_data['import-3rd-party-gbp'] += gbp
                                 month_data['used-gbp'] += gbp
+                            elif source_code == '3rd-party-reverse':
+                                month_data['export-3rd-party-gbp'] += gbp
+                                month_data['used-gbp'] -= gbp
 
                             kwh = sum(
                                 hh['msp-kwh'] for hh in imp_ss.hh_data)
@@ -488,10 +489,12 @@ def content():
                             if source_code in ('net', 'gen-net'):
                                 month_data['import-net-kwh'] += kwh
                                 month_data['used-kwh'] += kwh
-                            elif source_code in (
-                                    '3rd-party', '3rd-party-reverse'):
+                            elif source_code == '3rd-party':
                                 month_data['import-3rd-party-kwh'] += kwh
                                 month_data['used-kwh'] += kwh
+                            elif source_code == '3rd-party-reverse':
+                                month_data['export-3rd-party-kwh'] += kwh
+                                month_data['used-kwh'] -= kwh
                             elif source_code in ('gen', 'gen-net'):
                                 month_data['import-gen-kwh'] += kwh
 
@@ -584,7 +587,7 @@ def content():
                             generator_type = supply.generator_type.code
                             group_gen_types.add(generator_type)
                         else:
-                            generator_type = ''
+                            generator_type = None
 
                         sup_category = era.make_meter_category()
                         if CATEGORY_ORDER[group_category] < \
@@ -597,24 +600,25 @@ def content():
                             generator_type, supply.name, era.msn, era.pc.code,
                             site.code, site.name, associated_site_codes,
                             month_finish] + [
-                            month_data[t] for t in summary_titles] + [''] + [
-                            (mop_bill[t] if t in mop_bill else '')
-                            for t in title_dict['mop']] + [''] + \
-                            [(dc_bill[t] if t in dc_bill else '')
+                            month_data[t] for t in summary_titles] + [None] + [
+                            (mop_bill[t] if t in mop_bill else None)
+                            for t in title_dict['mop']] + [None] + \
+                            [(dc_bill[t] if t in dc_bill else None)
                                 for t in title_dict['dc']]
                         if imp_supplier_contract is None:
-                            out += [''] * (len(title_dict['imp-supplier']) + 1)
+                            out += [None] * \
+                                (len(title_dict['imp-supplier']) + 1)
                         else:
-                            out += [''] + [
+                            out += [None] + [
                                 (
                                     imp_supplier_bill[t]
-                                    if t in imp_supplier_bill else '')
+                                    if t in imp_supplier_bill else None)
                                 for t in title_dict['imp-supplier']]
                         if exp_supplier_contract is not None:
-                            out += [''] + [
+                            out += [None] + [
                                 (
                                     exp_supplier_bill[t]
-                                    if t in exp_supplier_bill else '')
+                                    if t in exp_supplier_bill else None)
                                 for t in title_dict['exp-supplier']]
 
                         for k, v in month_data.iteritems():
