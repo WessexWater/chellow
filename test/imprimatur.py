@@ -7829,4 +7829,9 @@ def days():
         'status_code': 200,
         'regexes': [
             r'73142.3933549']},
+
+    {
+        'name': "View edit hh datum",
+        'path': '/chellow/reports/309/output/?hh_datum_id=3',
+        'status_code': 200},
 ]

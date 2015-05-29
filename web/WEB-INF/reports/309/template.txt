@@ -16,7 +16,15 @@
       <a href="{{context_path}}/reports/1/output/">Chellow</a> &gt;
       <a href="{{context_path}}/reports/99/output/">Supplies</a> &gt;
       <a href="{{context_path}}/reports/7/output/?supply_id={{hh.channel.era.supply.id}}">Supply {{hh.channel.era.supply.name}} Era {{hh.channel.era.start_date|hh_format}}</a> &gt;
-      <a href="{{context_path}}/reports/301/output/?channel_id={{hh.channel.id}}">Channel {% if hh.channel.imp_related %}Import{% else %}Export{% endif %} {{channel.channel_type}}</a> &gt;
+      <a
+			 	href="{{context_path}}/reports/301/output/?channel_id={{hh.channel.id}}"
+				>Channel
+			 	{%- if hh.channel.imp_related -%}
+					Import
+				{%- else -%}
+					Export
+				{%- endif -%}
+			 	{{hh.channel.channel_type}}</a> &gt;
       HH {{hh.start_date|hh_format}} Edit
     </p>
     <br>
