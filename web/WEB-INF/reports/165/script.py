@@ -2,6 +2,8 @@ from net.sf.chellow.monad import Monad
 import utils
 import templater
 import db
+import ast
+
 Monad.getUtils()['impt'](globals(), 'db', 'utils', 'templater')
 UserException = utils.UserException
 render = templater.render
@@ -26,7 +28,12 @@ try:
         db.set_read_write(sess)
         bill_id = inv.getLong('supplier_bill_id')
         bill = Bill.get_by_id(sess, bill_id)
-        if inv.hasParameter('update'):
+        if inv.hasParameter("delete"):
+            bill.delete(sess)
+            sess.commit()
+            inv.sendSeeOther(
+                "/reports/91/output/?supplier_batch_id=" + str(bill.batch.id))
+        else:
             account = inv.getString("account")
             reference = inv.getString("reference")
             issue_date = form_date(inv, "issue")
@@ -37,7 +44,8 @@ try:
             vat = form_decimal(inv, "vat")
             gross = form_decimal(inv, "gross")
             type_id = inv.getLong("bill_type_id")
-            breakdown = inv.getString("breakdown")
+            breakdown_str = inv.getString("breakdown")
+            breakdown = ast.literal_eval(breakdown_str)
             bill_type = BillType.get_by_id(sess, type_id)
 
             bill.update(
@@ -46,11 +54,7 @@ try:
             sess.commit()
             inv.sendSeeOther(
                 "/reports/105/output/?supplier_bill_id=" + str(bill.id))
-        elif inv.hasParameter("delete"):
-            bill.delete(sess)
-            sess.commit()
-            inv.sendSeeOther(
-                "/reports/91/output/?supplier_batch_id=" + str(bill.batch.id))
+
 except UserException, e:
     render(inv, template, make_fields(sess, bill, e))
 finally:
