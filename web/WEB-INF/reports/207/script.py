@@ -287,7 +287,9 @@ def content():
                                     aft_read = read_list[-1]
                                     fore_read = read_list[-2]
 
-                                if aft_read['msn'] == fore_read['msn']:
+                                if aft_read['msn'] == fore_read['msn'] and \
+                                        set(aft_read['reads'].keys()) == \
+                                        set(fore_read['reads'].keys()):
                                     pair_start_date = aft_read['date'] + HH
                                     pair_finish_date = fore_read['date']
 
@@ -299,11 +301,7 @@ def content():
                                     tprs = {}
                                     for tpr_code, initial_val in \
                                             aft_read['reads'].iteritems():
-                                        if tpr_code in fore_read['reads']:
-                                            end_val = fore_read['reads'][
-                                                tpr_code]
-                                        else:
-                                            continue
+                                        end_val = fore_read['reads'][tpr_code]
 
                                         kwh = end_val - initial_val
 

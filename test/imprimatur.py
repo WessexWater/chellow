@@ -6993,8 +6993,8 @@ def shutdown():
         'regexes': [
             r'"10","22 1065 3921 534","CI017","Roselands","2009-04-01 00:00",'
             '"2010-03-31 23:30",".*?","0","0","277.0","0","0","0","365.0","0",'
-            '"277.0","365.0","Actual","0","0","1666.72563177","0","0","0",'
-            '"1666.72563177"']},
+            '"277.0","365.0","Actual","0","0","2164.96389892","0","0","0",'
+            '"2164.96389892"']},
 
     # Add a scenario
     {
@@ -7678,4 +7678,24 @@ def days():
             r'"","","","","","","","","","","","","","","","","","","","","",'
             r'"","","","","","","","","","","duos-amber-rate","0.00344",'
             r'"duos-red-kwh","48.9"']},
+
+    {
+        'name': "CRC report for mismatched TPRs",
+        'path': '/chellow/reports/207/output/?supply_id=10&year=2011',
+        'status_code': 303},
+    {
+        'name': "CRC report for mismatched TPRs",
+        'path': '/chellow/reports/251/output/',
+        'tries': {},
+        'regexes': [
+            r"023_FINISHED_crc_2011_2012_supply_10\.csv"],
+        'status_code': 200},
+    {
+        'name': "CRC report for mismatched TPRs",
+        'path': '/chellow/reports/253/output/?'
+        'name=023_FINISHED_crc_2011_2012_supply_10.csv',
+        'tries': {},
+        'status_code': 200,
+        'regexes': [
+            r'12616.8628159']},
 ]
