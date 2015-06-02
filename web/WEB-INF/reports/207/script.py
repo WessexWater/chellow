@@ -174,17 +174,17 @@ def content():
                                 if read_key in read_keys:
                                     continue
 
-                                pres_bill = sess.query(Bill). \
-                                    join(RegisterRead).join(BillType).filter(
+                                pres_bill = sess.query(Bill).join(BillType). \
+                                    filter(
+                                        Bill.reads.any(),
                                         Bill.supply_id == supply.id,
                                         Bill.finish_date >=
-                                        pres_read.present_date,
+                                        pres_read.bill.start_date,
                                         Bill.start_date <=
-                                        pres_read.present_date,
+                                        pres_read.bill.finish_date,
                                         BillType.code != 'W').order_by(
                                         Bill.issue_date.desc(),
                                         BillType.code).first()
-
                                 if pres_bill != pres_read.bill:
                                     continue
 
@@ -204,7 +204,6 @@ def content():
                                     'date': pres_date, 'reads': reads,
                                     'msn': pres_msn}
                                 read_keys[read_key] = None
-
                             while prime_prev_read is None:
                                 try:
                                     prev_read = prev_reads.next()
@@ -216,9 +215,9 @@ def content():
                                 read_key = '_'.join([str(prev_date), prev_msn])
                                 if read_key in read_keys:
                                     continue
-
                                 prev_bill = sess.query(Bill).join(BillType). \
                                     filter(
+                                        Bill.reads.any(),
                                         Bill.supply_id == supply.id,
                                         Bill.finish_date >=
                                         prev_read.bill.start_date,
@@ -259,9 +258,7 @@ def content():
                                 prime_pres_read = None
                             else:
                                 if is_forwards:
-                                    if prime_prev_read['date'] == \
-                                            prime_pres_read['date'] or \
-                                            prime_pres_read['date'] < \
+                                    if prime_pres_read['date'] <= \
                                             prime_prev_read['date']:
                                         read_list.append(prime_pres_read)
                                         prime_pres_read = None
@@ -269,9 +266,7 @@ def content():
                                         read_list.append(prime_prev_read)
                                         prime_prev_read = None
                                 else:
-                                    if prime_prev_read['date'] == \
-                                            prime_pres_read['date'] or \
-                                            prime_prev_read['date'] > \
+                                    if prime_prev_read['date'] >= \
                                             prime_pres_read['date']:
                                         read_list.append(prime_prev_read)
                                         prime_prev_read = None
