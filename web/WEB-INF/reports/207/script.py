@@ -224,7 +224,7 @@ def content():
                                         Bill.finish_date >=
                                         prev_read.bill.start_date,
                                         Bill.start_date <=
-                                        prev_read.bill.start_date,
+                                        prev_read.bill.finish_date,
                                         BillType.code != 'W').order_by(
                                         Bill.issue_date.desc(),
                                         BillType.code).first()
