@@ -79,9 +79,9 @@ def content():
             '_'.join(base_name) + ('.zip' if is_zipped else '.csv'))
         if is_zipped:
             zf = zipfile.ZipFile(running_name, "w", zipfile.ZIP_DEFLATED)
-            outs.append(titles)
         else:
             tf = open(running_name, "w")
+            outs.append(titles)
 
         for supply in supplies:
             era = supply.find_era_at(sess, finish_date)
@@ -123,7 +123,7 @@ def content():
                 zf.writestr(fname.encode('ascii'), titles + ''.join(outs))
             else:
                 tf.write(''.join(outs))
-
+            outs = []
         if is_zipped:
             zf.close()
         else:
