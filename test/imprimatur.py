@@ -7978,4 +7978,17 @@ def days():
             r'22 1065 3921 534,30,Non half-hourlies 2010,0,0,,0,,None,288,,,,,'
             r'0,0,,0,,None,288'],
         'status_code': 200},
+
+    {
+        'name': "Reads attached to withdrawn bill.",
+        'path': '/chellow/reports/149/output/?supply_id=10&start_year=2007&'
+        'start_month=02&start_day=01&start_hour=00&start_minute=00&'
+        'finish_year=2007&finish_month=02&finish_day=28&finish_hour=23&'
+        'finish_minute=30',
+        'regexes': [
+            r'"10","2","net","","CI017","Roselands","2007-02-01 00:00",'
+            r'"2007-02-28 23:30","03","801","5","0393","0","nhh",'
+            r'110,22 1065 3921 534,30,Non half-hourlies 2010,0,0,,0,,None,'
+            r'1344,,,,,0,0,,0,,None,1344'],
+        'status_code': 200},
 ]

@@ -172,15 +172,17 @@ def content():
 
             prime_reads = set()
             for query in (sess.query(RegisterRead).join(Bill).join(
-                    RegisterRead.previous_type).filter(
+                    RegisterRead.previous_type).join(BillType).filter(
                     Bill.supply == supply,
+                    BillType.code != 'W',
                     RegisterRead.previous_date >= start_date,
                     RegisterRead.previous_date <= finish_date,
                     ReadType.code.in_(NORMAL_READ_TYPES)),
 
                     sess.query(RegisterRead).join(Bill).join(
-                    RegisterRead.present_type).filter(
+                    RegisterRead.present_type).join(BillType).filter(
                     Bill.supply == supply,
+                    BillType.code != 'W',
                     RegisterRead.present_date >= start_date,
                     RegisterRead.present_date <= finish_date,
                     ReadType.code.in_(NORMAL_READ_TYPES))):
