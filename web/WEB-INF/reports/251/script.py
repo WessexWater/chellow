@@ -13,6 +13,10 @@ if sys.platform.startswith('java'):
 else:
     download_path = os.path.join(os.environ['CHELLOW_HOME'], 'downloads')
 
+if inv.getRequest().getMethod() == 'POST':
+    for fl in os.listdir(download_path):
+        os.remove(os.path.join(download_path, fl))
+
 for fl in sorted(os.listdir(download_path), reverse=True):
     statinfo = os.stat(os.path.join(download_path, fl))
     files.append(

@@ -55,5 +55,13 @@
         {% endfor %}
       </tbody>
     </table>
+    <br>
+    <form method="post" action=".">
+			<fieldset>
+				<legend>Delete All Files</legend>
+				<input type="submit" name="delete" value="Delete">
+			</fieldset>
+		</form>
   </body>
 </html>
+
