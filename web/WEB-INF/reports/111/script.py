@@ -9,8 +9,13 @@ import traceback
 import utils
 import db
 import computer
+import dloads
+import sys
+import os
+import threading
 
-Monad.getUtils()['impt'](globals(), 'templater', 'db', 'computer', 'utils')
+Monad.getUtils()['impt'](
+    globals(), 'templater', 'db', 'computer', 'utils', 'dloads')
 inv = globals()['inv']
 
 HH, hh_before, hh_format = utils.HH, utils.hh_before, utils.hh_format
@@ -32,10 +37,12 @@ else:
 
 
 def content():
-    sess = None
+    sess = tmp_file = None
     try:
         sess = db.session()
 
+        running_name, finished_name = dloads.make_names('bill_check.csv')
+        tmp_file = open(running_name, "w")
         if batch_id is not None:
             batch = Batch.get_by_id(sess, batch_id)
             bills = sess.query(Bill).filter(
@@ -62,14 +69,18 @@ def content():
                 " doesn't have a function virtual_bill_titles.")
         virtual_bill_titles = virtual_bill_titles_func()
 
-        yield "batch,bill-reference,bill-type,bill-kwh,bill-net-gbp," + \
-            "bill-vat-gbp, bill-start-date,bill-finish-date," + \
-            "bill-mpan-core,site-code,site-name,covered-from,covered-to," + \
-            "covered-bills," + \
+        tmp_file.write(
             ','.join(
-                'covered-' + val + ',virtual-' + val + (
-                    ',difference-' + val if val.endswith('-gbp') else '')
-                for val in virtual_bill_titles) + '\n'
+                [
+                    'batch', 'bill-reference', 'bill-type', 'bill-kwh',
+                    'bill-net-gbp', 'bill-vat-gbp', 'bill-start-date',
+                    'bill-finish-date', 'bill-mpan-core', 'site-code',
+                    'site-name', 'covered-from', 'covered-to',
+                    'covered-bills'] +
+                [
+                    'covered-' + val + ',virtual-' + val + (
+                        ',difference-' + val if val.endswith('-gbp') else '')
+                    for val in virtual_bill_titles]) + '\n')
 
         for bill in bills:
             problem = ''
@@ -107,14 +118,18 @@ def content():
 
             era = supply.find_era_at(sess, bill.finish_date)
             if era is None:
-                yield "\n,,,,,,,,,,Extraordinary! There isn't a era for " + \
-                    "this bill!"
+                tmp_file.write(
+                    "\n,,,,,,,,,,Extraordinary! There isn't a era for "
+                    "this bill!")
                 continue
 
-            yield ','.join('"' + str(val) + '"' for val in [
-                batch.reference, bill.reference, bill.bill_type.code, bill.kwh,
-                bill.net, bill.vat, hh_format(bill_start),
-                hh_format(bill_finish), era.imp_mpan_core]) + ","
+            tmp_file.write(
+                ','.join(
+                    '"' + str(val) + '"' for val in [
+                        batch.reference, bill.reference, bill.bill_type.code,
+                        bill.kwh,
+                        bill.net, bill.vat, hh_format(bill_start),
+                        hh_format(bill_finish), era.imp_mpan_core]) + ",")
 
             covered_start = bill_start
             covered_finish = bill_finish
@@ -259,11 +274,21 @@ def content():
                 else:
                     values += ['', '']
 
-            yield ','.join('"' + str(value) + '"' for value in values) + '\n'
+            tmp_file.write(
+                ','.join('"' + str(value) + '"' for value in values) + '\n')
     except:
-        yield traceback.format_exc()
+        msg = traceback.format_exc()
+        sys.stderr.write(msg + '\n')
+        tmp_file.write("Problem " + msg)
     finally:
-        if sess is not None:
-            sess.close()
+        try:
+            if sess is not None:
+                sess.close()
+        except:
+            tmp_file.write("\nProblem closing session.")
+        finally:
+            tmp_file.close()
+            os.rename(running_name, finished_name)
 
-utils.send_response(inv, content, file_name='bill_check.csv')
+threading.Thread(target=content).start()
+inv.sendSeeOther("/reports/251/output/")
