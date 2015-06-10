@@ -8,110 +8,86 @@ import utils
 Monad.getUtils()['impt'](
     globals(), 'db', 'utils', 'templater', 'bill_import', 'edi_lib')
 validate_hh_start, HH = utils.validate_hh_start, utils.HH
+UserException = utils.UserException
 
 col_map = {
-    9: 'sum-gsp-kwh',
-    17: 'aahedc-rate',
-    18: 'aahedc-gsp-kwh',
-    19: 'aahedc-gbp',
-    20: 'fit-previous-actual-rate',
-    21: 'fit-previous-actual-msp-kwh',
-    22: 'fit-previous-actual-gbp',
-    23: 'duos-availability-rate',
-    24: 'duos-availability-kva',
-    25: 'duos-availability-gbp',
-    26: 'bsuos-actual-gsp-kwh',
-    27: 'bsuos-actual-gbp-info',
-    28: 'peak-rate',
-    29: 'peak-gsp-kwh',
-    30: 'peak-gbp',
-    31: 'peak-shoulder-rate',
-    32: 'peak-shoulder-gsp-kwh',
-    33: 'peak-shoulder-gbp',
-    34: 'summer-night-rate',
-    35: 'summer-night-gsp-kwh',
-    36: 'summer-night-gbp',
-    37: 'summer-weekday-rate',
-    38: 'summer-weekday-gsp-kwh',
-    39: 'summer-weekday-gbp',
-    40: 'summer-weekend-rate',
-    41: 'summer-weekend-gsp-kwh',
-    42: 'summer-weekend-gbp',
-    43: 'winter-night-rate',
-    44: 'winter-night-gsp-kwh',
-    45: 'winter-night-gbp',
-    46: 'winter-weekday-rate',
-    47: 'winter-weekday-gsp-kwh',
-    48: 'winter-weekday-gbp',
-    49: 'winter-weekend-rate',
-    50: 'winter-weekend-gsp-kwh',
-    51: 'winter-weekend-gbp',
-    52: 'fit-estimate-rate',
-    53: 'fit-estimate-msp-kwh',
-    54: 'fit-estimate-gbp',
-    55: 'duos-excess-availability-rate',
-    56: 'duos-excess-availability-kva',
-    57: 'duos-excess-availability-gbp',
-    60: 'duos-fixed-gbp',
-    61: 'lec-rate',
-    62: 'lec-kwh',
-    63: 'lec-gbp',
-    67: 'triad-estimate-gsp-kw',
-    68: 'triad-estimate-rate',
-    69: 'triad-estimate-gbp',
-    70: 'duos-red-rate',
-    71: 'duos-red-kwh',
-    72: 'duos-red-gbp',
-    73: 'duos-amber-rate',
-    74: 'duos-amber-kwh',
-    75: 'duos-amber-gbp',
-    76: 'duos-green-rate',
-    77: 'duos-green-kwh',
-    78: 'duos-green-gbp',
-    79: 'duos-reactive-rate',
-    80: 'duos-reactive-kvarh',
-    81: 'duos-reactive-gbp',
-    92: 'reconciliation-gbp',
-    93: 'reconciliation-gbp',
-    94: 'bsuos-gbp',
-    97: 'fit-total'}
-
-TITLES = "Customer Name,Customer Address,Cust PC,Bill Ref No.,Invoice No.," \
-    "Invoice Date,Bill Period Start,Bill Period End,Site Data,Gsp Data," \
-    "Max kVA,Avg Pwr Factor,Max Pwr Factor,Min Power Factor,Max DMD Date," \
-    "MX DMD,Mpan,AAHEDC Charge Price,AAHEDC Charge Units," \
-    "AAHEDC Charge Charge,Actual FiT Charge Price,Actual FiT Charge Units," \
-    "Actual FiT Charge Charge,Availability Charges Price," \
-    "Availability Charges Units,Availability Charges Charge," \
-    "BSUoS Actual Charge (Date) Units,BSUoS Actual Charge (Date) Charge," \
-    "Energy Peak Price,Energy Peak Units,Energy Peak Charge," \
-    "Energy Peak Shoulder Price,Energy Peak Shoulder Units," \
-    "Energy Peak Shoulder Charge,Energy Summer Night Price," \
-    "Energy Summer Night Units,Energy Summer Night Charge," \
-    "Energy Summer Weekday Price,Energy Summer Weekday Units," \
-    "Energy Summer Weekday Charge,Energy Summer Weekend Price," \
-    "Energy Summer Weekend Units,Energy Summer Weekend Charge," \
-    "Energy Winter Night Price,Energy Winter Night Units," \
-    "Energy Winter Night Charge,Energy Winter Weekday Price," \
-    "Energy Winter Weekday Units,Energy Winter Weekday Charge," \
-    "Energy Winter Weekend Price,Energy Winter Weekend Units," \
-    "Energy Winter Weekend Charge,Estimated FiT Charge Price," \
-    "Estimated FiT Charge Units,Estimated FiT Charge Charge," \
-    "Excess Availability Charges Price,Excess Availability Charges Units," \
-    "Excess Availability Charges Charge,Fixed Charges Price," \
-    "Fixed Charges Units,Fixed Charges Charge,Levy Exempt Energy Price," \
-    "Levy Exempt Energy Units,Levy Exempt Energy Charge," \
-    "Meter Reading Charges Price,Meter Reading Charges Units," \
-    "Meter Reading Charges Charge,Network UoS Charges Price," \
-    "Network UoS Charges Units,Network UoS Charges Charge,Rate 1 Price," \
-    "Rate 1 Units,Rate 1 Charge,Rate 2 Price,Rate 2 Units,Rate 2 Charge," \
-    "Rate 3 Price,Rate 3 Units,Rate 3 Charge,Reactive Power Charge Price," \
-    "Reactive Power Charge Units,Reactive Power Charge Charge," \
-    "VAT @ 0% Price,VAT @ 0% Units,VAT @ 0% Charge,VAT @ STD Price," \
-    "VAT @ STD Units,VAT @ STD Charge,VAT @ 5% Price,VAT @ 5% Units," \
-    "VAT @ 5% Charge,ADDTTL,AHC_NRG1,AHC_TTL,BSUOSTTL,DUOSTTL,DUOS_UNITTL," \
-    "FiT_TTL,LEETTL,NET_AMT,NRGTTL,NRGTTL_HH,SUBTTL,TTLCHG,TUSTTL,VATTTL," \
-    "GDF REG NO.,REG VAT NO"
+    'NET_AMT': 'net-gbp',
+    'Site Data':  'sum-msp-kwh',
+    'Gsp Data':  'sum-gsp-kwh',
+    'Levy Exempt Energy Units':  'lec-kwh',
+    'Levy Exempt Energy Price':  'lec-rate',
+    'Levy Exempt Energy Charge':  'lec-gbp',
+    'Meter Reading Charges Charge':  'meter-reading-gbp',
+    'Availability Charges Units':  'duos-availability-kva',
+    'Availability Charges Price':  'duos-availability-rate',
+    'Availability Charges Charge':  'duos-availability-gbp',
+    'Excess Availability Charges Units':  'duos-excess-availability-kva',
+    'Excess Availability Charges Price':  'duos-excess-availability-rate',
+    'Excess Availability Charges Charge':  'duos-excess-availability-gbp',
+    'Fixed Charges Units':  'duos-fixed-days',
+    'Fixed Charges Price':  'duos-fixed-rate',
+    'Fixed Charges Charge':  'duos-fixed-gbp',
+    'Rate 1 Units':  'duos-red-kwh',
+    'Rate 1 Price':  'duos-red-rate',
+    'Rate 1 Charge':  'duos-red-gbp',
+    'Rate 2 Units':  'duos-amber-kwh',
+    'Rate 2 Price':  'duos-amber-rate',
+    'Rate 2 Charge':  'duos-amber-gbp',
+    'Rate 3 Units':  'duos-green-kwh',
+    'Rate 3 Price':  'duos-green-rate',
+    'Rate 3 Charge':  'duos-green-gbp',
+    'Reactive Power Charge Units':  'duos-reactive-kvarh',
+    'Reactive Power Charge Price':  'duos-reactive-rate',
+    'Reactive Power Charge Charge':  'duos-reactive-gbp',
+    'BSUoS Actual Charge (Date) Charge':  'bsuos-actual-gbp-info',
+    'BSUOSTTL':  'bsuos-gbp',
+    'AAHEDC Charge Units':  'aahedc-gsp-kwh',
+    'AAHEDC Charge Price':  'aahedc-rate',
+    'AAHEDC Charge Charge':  'aahedc-gbp',
+    'RO Adjustment Units':  'ro-msp-kwh',
+    'RO Adjustment Price':  'ro-rate',
+    'RO Adjustment Charge':  'ro-gbp',
+    'Estimated FiT Charge Units':  'fit-estimate-msp-kwh',
+    'Estimated FiT Charge Price':  'fit-estimate-rate',
+    'Estimated FiT Charge Charge':  'fit-estimate-gbp',
+    'Actual FiT Charge Price':  'fit-previous-actual-rate',
+    'Actual FiT Charge Charge':  'fit-previous-actual-gbp',
+    'Estimated CfD Charge Units':  'cfd-fit-estimate-nbp-kwh',
+    'Estimated CfD Charge Price':  'cfd-fit-estimate-rate',
+    'Estimated CfD Charge Charge':  'cfd-fit-estimate-gbp',
+    'Actual CfD Charge Units': 'cfd-fit-previous-actual-nbp-kwh',
+    'Actual CfD Charge Price':  'cfd-fit-previous-actual-rate',
+    'Actual CfD Charge Charge':  'cfd-fit-previous-actual-gbp',
+    'CFD_Total':  'cfd-fit-total',
+    'AHC_NRG1':  'reconciliation-gbp',
+    'Energy Peak Units':  'peak-gsp-kwh',
+    'Energy Peak Price':  'peak-rate',
+    'Energy Peak Charge':  'peak-gbp',
+    'Energy Peak Shoulder Units':  'peak-shoulder-gsp-kwh',
+    'Energy Peak Shoulder Price':  'peak-shoulder-rate',
+    'Energy Peak Shoulder Charge':  'peak-shoulder-gbp',
+    'Energy Summer Night Units':  'summer-night-gsp-kwh',
+    'Energy Summer Night Price':  'summer-night-rate',
+    'Energy Summer Night Charge':  'summer-night-gbp',
+    'Energy Summer Weekday Units':  'summer-weekday-gsp-kwh',
+    'Energy Summer Weekday Price':  'summer-weekday-rate',
+    'Energy Summer Weekday Charge':  'summer-weekday-gbp',
+    'Energy Summer Weekend Units':  'summer-weekend-gsp-kwh',
+    'Energy Summer Weekend Price':  'summer-weekend-rate',
+    'Energy Summer Weekend Charge':  'summer-weekend-gbp',
+    'Energy Winter Night Units':  'winter-night-gsp-kwh',
+    'Energy Winter Night Price':  'winter-night-rate',
+    'Energy Winter Night Charge':  'winter-night-gbp',
+    'Energy Winter Weekday Units':  'winter-weekday-gsp-kwh',
+    'Energy Winter Weekday Price':  'winter-weekday-rate',
+    'Energy Winter Weekday Charge':  'winter-weekday-gbp',
+    'Energy Winter Weekend Units':  'winter-weekend-gsp-kwh',
+    'Energy Winter Weekend Price':  'winter-weekend-rate',
+    'Energy Winter Weekend Charge':  'winter-weekend-gbp',
+    'Network UoS Charges Price':  'triad-estimate-gsp-kw',
+    'Network UoS Charges Units':  'triad-estimate-rate',
+    'Network UoS Charges Charge':  'triad-estimate-gbp',
+    'CAP_M_TTL': 'capacity-market-gbp'}
 
 
 class Parser():
@@ -130,32 +106,50 @@ class Parser():
         return line
 
     def make_raw_bills(self):
-        iter(self.reader).next()  # skip title row
+        titles = iter(self.reader).next()
+        title_idx = dict((title, i) for i, title in enumerate(titles))
+
         raw_bills = []
 
         for self._line_number, vals in enumerate(self.reader):
             if len(vals) == 0 or vals[0].startswith('#'):
                 continue
-            issue_date = datetime.datetime.strptime(
-                vals[5], "%d/%m/%Y").replace(tzinfo=pytz.utc)
-            bill_from = validate_hh_start(
-                datetime.datetime.strptime(vals[6], "%d/%m/%Y").replace(
-                    tzinfo=pytz.utc))
-            bill_to = validate_hh_start(
-                datetime.datetime.strptime(
-                    vals[7], "%d/%m/%Y").replace(
-                    tzinfo=pytz.utc)) + relativedelta(days=1) - HH
-            kwh = Decimal(vals[8])
+
+            def val(title):
+                idx = title_idx[title]
+                try:
+                    return vals[idx]
+                except KeyError:
+                    raise UserException(
+                        "For title " + title + " and index " + str(idx))
+
+            def date_val(title):
+                try:
+                    return datetime.datetime.strptime(
+                        val(title), "%d/%m/%Y").replace(tzinfo=pytz.utc)
+                except ValueError, e:
+                    raise UserException(
+                        "While trying to find the value of " + title +
+                        " the date couldn't be parsed. " + str(e))
+
+            issue_date = date_val('Invoice Date')
+            bill_from = validate_hh_start(date_val('Bill Period Start'))
+            bill_to = validate_hh_start(date_val('Bill Period End')) + \
+                relativedelta(days=1) - HH
+            kwh = Decimal(val('Site Data'))
             breakdown = dict(
-                [(v, float(vals[k])) for k, v in col_map.iteritems()])
-            breakdown['raw-lines'] = [TITLES, self.last_line]
-            net = Decimal(vals[99])
-            vat = Decimal(vals[105])
-            gross = Decimal(vals[103])
+                [
+                    (v, float(val(k))) for k, v in col_map.iteritems()
+                    if k in titles])
+            breakdown['raw-lines'] = [titles, self.last_line]
+            net = Decimal(val('NET_AMT'))
+            vat = Decimal(val('VATTTL'))
+            gross = Decimal(val('TTLCHG'))
             raw_bills.append(
                 {
-                    'bill_type_code': 'N', 'account': vals[3], 'mpans': [],
-                    'reference': vals[4], 'issue_date': issue_date,
+                    'bill_type_code': 'N', 'account': val('Bill Ref No.'),
+                    'mpans': [],
+                    'reference': val('Invoice No.'), 'issue_date': issue_date,
                     'start_date': bill_from, 'finish_date': bill_to,
                     'kwh': kwh, 'net': net, 'vat': vat,
                     'gross': gross, 'breakdown': breakdown, 'reads': []})

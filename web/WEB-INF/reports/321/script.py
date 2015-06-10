@@ -9,14 +9,19 @@ import utils
 Monad.getUtils()['impt'](globals(), 'db', 'utils', 'templater', 'bill_import')
 inv, template = globals()['inv'], globals()['template']
 
+Contract = db.Contract
+
 
 def make_fields(sess, batch, message=None):
     messages = [] if message is None else [str(message)]
+    parser_names = ', '.join(
+        '.' + row[0][12:] for row in sess.query(Contract.name).filter(
+            Contract.name.like("bill-parser-%")))
     return {
         'messages': messages,
         'importer_ids': sorted(
             bill_import.get_bill_importer_ids(batch.id), reverse=True),
-        'batch': batch}
+        'batch': batch, 'parser_names': parser_names}
 
 sess = None
 try:

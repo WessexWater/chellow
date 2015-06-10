@@ -32,6 +32,8 @@
         <input type="file" name="import_file" size="45"
           value="{{request.getParameter('import_file')}}">
         <input type="submit" value="Import">
+        <br>
+        <p>Valid file name extensions are {{parser_names}}.</p>
       </fieldset>
     </form>
     {% if importer_ids %}
