@@ -1,17 +1,14 @@
-import sys
 from net.sf.chellow.monad import Monad
 import os
 import datetime
 import templater
-Monad.getUtils()['impt'](globals(), 'db', 'utils', 'templater')
+import dloads
+Monad.getUtils()['impt'](globals(), 'db', 'utils', 'templater', 'dloads')
 inv, template = globals()['inv'], globals()['template']
 
 files = []
 
-if sys.platform.startswith('java'):
-    download_path = Monad.getContext().getRealPath("/downloads")
-else:
-    download_path = os.path.join(os.environ['CHELLOW_HOME'], 'downloads')
+download_path = dloads.download_path
 
 if inv.getRequest().getMethod() == 'POST':
     for fl in os.listdir(download_path):

@@ -27,6 +27,8 @@ def make_names(base):
     global download_id
     try:
         lock.acquire()
+        if len(os.listdir(download_path)) == 0:
+            download_id = 0
         serial = str(download_id).zfill(3)
         download_id += 1
     finally:
