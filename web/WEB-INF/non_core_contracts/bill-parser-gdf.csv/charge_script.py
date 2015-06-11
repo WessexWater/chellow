@@ -112,7 +112,8 @@ class Parser():
         raw_bills = []
 
         for self._line_number, vals in enumerate(self.reader):
-            if len(vals) == 0 or vals[0].startswith('#'):
+            if len(vals) == 0 or vals[0].startswith('#') or \
+                    ''.join(vals) == '':
                 continue
 
             def val(title):
@@ -129,8 +130,10 @@ class Parser():
                         val(title), "%d/%m/%Y").replace(tzinfo=pytz.utc)
                 except ValueError, e:
                     raise UserException(
-                        "While trying to find the value of " + title +
-                        " the date couldn't be parsed. " + str(e))
+                        "At line number " + str(self._line_number) +
+                        ", while trying to find the value of " + title +
+                        " the date couldn't be parsed. " + str(e) +
+                        " The full line is " + self.last_line)
 
             issue_date = date_val('Invoice Date')
             bill_from = validate_hh_start(date_val('Bill Period Start'))
