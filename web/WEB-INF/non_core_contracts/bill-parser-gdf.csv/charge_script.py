@@ -11,8 +11,6 @@ validate_hh_start, HH = utils.validate_hh_start, utils.HH
 UserException = utils.UserException
 
 col_map = {
-    'NET_AMT': 'net-gbp',
-    'Site Data':  'sum-msp-kwh',
     'Gsp Data':  'sum-gsp-kwh',
     'Levy Exempt Energy Units':  'lec-kwh',
     'Levy Exempt Energy Price':  'lec-rate',

@@ -3628,22 +3628,8 @@ def virtual_bill(supply_source):
             r"<td>KUH773</td>\s*<td>02</td>\s*<td>N</td>\s*<td>\[\]</td>\s*"
             "<td>2010-06-09 00:00</td>\s*<td>2010-05-01 00:00</td>\s*"
             "<td>2010-05-31 23:30</td>\s*<td>32124.5</td>\s*"
-            "<td>2219.41</td>\s*<td>388.4</td>\s*<td>2607.81</td>",
-            r"All the bills have been successfully loaded and attached to "
-            "the batch\."],
-        'status_code': 200},
-    {
-        'path': '/chellow/reports/323/output/?importer_id=4',
-        'tries': {},
-        'regexes': [
-            r"<th>Reference</th>\s*<th>Account</th>\s*<th>Bill Type</th>\s*"
-            "<th>MPANs</th>\s*<th>Issue Date</th>\s*<th>Start Date</th>\s*"
-            "<th>Finish Date</th>\s*<th>kWh</th>\s*<th>Net</th>\s*"
-            "<th>VAT</th>\s*<th>Gross</th>\s*<th>Breakdown</th>",
-            r"<td>KUH773</td>\s*<td>02</td>\s*<td>N</td>\s*<td>\[\]</td>\s*"
-            "<td>2010-06-09 00:00</td>\s*<td>2010-05-01 00:00</td>\s*"
-            "<td>2010-05-31 23:30</td>\s*<td>32124.5</td>\s*"
-            "<td>2219.41</td>\s*<td>388.4</td>\s*<td>2607.81</td>",
+            r'<td>2219.41</td>\s*<td>388.4</td>\s*<td>2607.81</td>\s*'
+            r'<td>\{&#39;fit-previous-actual-gbp&#39;: 0.0,',
             r"All the bills have been successfully loaded and attached to "
             "the batch\."],
         'status_code': 200},
