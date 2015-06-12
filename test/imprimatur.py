@@ -5076,11 +5076,11 @@ def virtual_bill(supply_source):
         'path': '/chellow/reports/251/output/',
         'tries': {'max': 30, 'period': 1},
         'regexes': [
-            r"007_FINISHED_unified_supplies_monthly_duration_site_CI017.ods"],
+            r"008_FINISHED_unified_supplies_monthly_duration_site_CI017.ods"],
         'status_code': 200},
     {
         'path': '/chellow/reports/253/output/?'
-        'name=007_FINISHED_unified_supplies_monthly_duration_site_CI017.ods',
+        'name=008_FINISHED_unified_supplies_monthly_duration_site_CI017.ods',
         'regexes': [
             r'<table:table-row>\s*'
             r'<table:table-cell office:string-value="22 6354 2983 570" '
@@ -8731,10 +8731,10 @@ def shutdown():
         'tries': {'max': 30, 'period': 1},
         'status_code': 200,
         'regexes': [
-            r"025_FINISHED_scenario_bsuos_site_CI005\.ods"]},
+            r"031_FINISHED_scenario_bsuos_site_CI005\.ods"]},
     {
         'path': '/chellow/reports/253/output/?'
-        'name=025_FINISHED_scenario_bsuos_site_CI005.ods',
+        'name=031_FINISHED_scenario_bsuos_site_CI005.ods',
         'status_code': 200,
         'regexes': [
             r'<table:table-row>\s*'
@@ -9184,10 +9184,10 @@ def shutdown():
         'tries': {'max': 30, 'period': 1},
         'status_code': 200,
         'regexes': [
-            r"026_FINISHED_scenario_used_site_CI005\.ods"]},
+            r"032_FINISHED_scenario_used_site_CI005\.ods"]},
     {
         'path': '/chellow/reports/253/output/?'
-        'name=026_FINISHED_scenario_used_site_CI005.ods',
+        'name=032_FINISHED_scenario_used_site_CI005.ods',
         'status_code': 200,
         'regexes': [
             r'<table:table-row>\s*'
@@ -9455,10 +9455,10 @@ def shutdown():
         'tries': {'max': 30, 'period': 1},
         'status_code': 200,
         'regexes': [
-            r"027_FINISHED_scenario_bsuos_site_CI005\.ods"]},
+            r"033_FINISHED_scenario_bsuos_site_CI005\.ods"]},
     {
         'path': '/chellow/reports/253/output/?'
-        'name=027_FINISHED_scenario_bsuos_site_CI005.ods',
+        'name=033_FINISHED_scenario_bsuos_site_CI005.ods',
         'status_code': 200,
         'regexes': [
             r'<table:table-row>\s*'
@@ -9905,49 +9905,6 @@ def shutdown():
         'path': "/chellow/reports/209/output/",
         'status_code': 200},
 
-    # Dumb NHH supply with DUoS pass-through
-    {
-        'name': "Dumb NHH supply with DUoS pass-through: "
-        "Update Non half-hourlies 2010",
-        'path': "/chellow/reports/317/output/",
-        'method': 'post',
-        'data': {
-            'supplier_contract_id': '66',
-            'party_id': '90',
-            'name': 'Non half-hourlies 2010',
-            'charge_script': """from net.sf.chellow.monad import Monad
-import datetime
-import pytz
-from dateutil.relativedelta import relativedelta
-
-Monad.getUtils()['impt'](globals(), 'db', 'utils', 'templater', 'duos')
-
-def virtual_bill_titles():
-        return ['net-gbp', 'sum-msp-kwh', 'problem']
-
-def virtual_bill(supply_source):
-    sum_msp_kwh = sum(h['msp-kwh'] for h in supply_source.hh_data)
-    bill = supply_source.supplier_bill
-    duos.duos_vb(supply_source)
-    for rate_name, rate_set in supply_source.supplier_rate_sets.iteritems():
-        if len(rate_set) == 1:
-            bill[rate_name] = rate_set.pop()
-            bill['net-gbp'] = sum_msp_kwh * 0.1
-            bill['sum-msp-kwh'] = sum_msp_kwh
-""",
-            'properties': '{}'},
-        'status_code': 303},
-    {
-        'name': "Dumb NHH supply with DUoS pass-through: "
-        "Run virtual bill",
-        'path': '/chellow/reports/291/output/?supply_id=16&start_year=2015&'
-        'start_month=03&start_day=01&start_hour=00&start_minute=0&'
-        'finish_year=2015&finish_month=03&finish_day=31&finish_hour=23&'
-        'finish_minute=30',
-        'regexes': [
-            r'"Imp MPAN Core","Exp MPAN Core","Site Code","Site Name",'],
-        'status_code': 200},
-
     # Forecast that includes a leap day
     {
         'name': "Leap day forecast. Create scenario",
@@ -9989,10 +9946,10 @@ def virtual_bill(supply_source):
         'tries': {'max': 30, 'period': 1},
         'status_code': 200,
         'regexes': [
-            r"028_FINISHED_scenario_leap_day_site_CH023\.ods"]},
+            r"034_FINISHED_scenario_leap_day_site_CH023\.ods"]},
     {
         'path': '/chellow/reports/253/output/?'
-        'name=028_FINISHED_scenario_leap_day_site_CH023.ods',
+        'name=034_FINISHED_scenario_leap_day_site_CH023.ods',
         'status_code': 200,
         'regexes': [
 
@@ -10809,11 +10766,11 @@ def days():
         'path': '/chellow/reports/251/output/',
         'tries': {'max': 20, 'period': 1},
         'regexes': [
-            r"033_FINISHED_unified_supplies_monthly_duration_supply_10\.ods"],
+            r"040_FINISHED_unified_supplies_monthly_duration_supply_10\.ods"],
         'status_code': 200},
     {
         'path': '/chellow/reports/253/output/?'
-        'name=033_FINISHED_unified_supplies_monthly_duration_supply_10.ods',
+        'name=040_FINISHED_unified_supplies_monthly_duration_supply_10.ods',
         'tries': {},
         'status_code': 200,
         'regexes': [
@@ -10931,7 +10888,7 @@ def days():
             r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="0" '
             r'office:value-type="float"/>\s*'
-            r'<table:table-cell office:value="0" '
+            r'<table:table-cell office:value="3.54648766546" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="0" '
             r'office:value-type="float"/>\s*'
@@ -10945,7 +10902,7 @@ def days():
             r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="0" '
             r'office:value-type="float"/>\s*'
-            r'<table:table-cell office:value="0" '
+            r'<table:table-cell office:value="3.54648766546" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="0" '
             r'office:value-type="float"/>\s*'
@@ -10978,9 +10935,10 @@ def days():
             r'<table:table-cell office:string-value="" '
             r'office:value-type="string"/>\s*'
             r'<table:table-cell/>\s*'
-            r'<table:table-cell office:value="0" '
+            r'<table:table-cell office:value="3.54648766546" '
             r'office:value-type="float"/>\s*'
-            r'<table:table-cell/>\s*'
+            r'<table:table-cell office:value="35.4648766546" '
+            r'office:value-type="float"/>\s*'
             r'<table:table-cell office:string-value="" '
             r'office:value-type="string"/>\s*'
             r'</table:table-row>']},
@@ -11074,11 +11032,11 @@ def days():
         'path': '/chellow/reports/251/output/',
         'tries': {'max': 20, 'period': 1},
         'regexes': [
-            r"034_FINISHED_unified_supplies_monthly_duration_supply_16\.ods"],
+            r"041_FINISHED_unified_supplies_monthly_duration_supply_16\.ods"],
         'status_code': 200},
     {
         'path': '/chellow/reports/253/output/?'
-        'name=034_FINISHED_unified_supplies_monthly_duration_supply_16.ods',
+        'name=041_FINISHED_unified_supplies_monthly_duration_supply_16.ods',
         'status_code': 200,
         'regexes': [
             r'<table:table table:name="Supply Level">\s*'
@@ -11208,7 +11166,7 @@ def days():
             r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="0" '
             r'office:value-type="float"/>\s*'
-            r'<table:table-cell office:value="-0.0067249495629" '
+            r'<table:table-cell office:value="-0.00672494956288" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="0" '
             r'office:value-type="float"/>\s*'
@@ -11221,4 +11179,180 @@ def days():
             r'<table:table-cell/>\s*'
             r'</table:table-row>\s*'
             r'</table:table>']},
+
+    # Dumb NHH supply with DUoS pass-through
+    {
+        'name': "Dumb NHH supply with DUoS pass-through: "
+        "Update Non half-hourlies 2010",
+        'path': "/chellow/reports/317/output/",
+        'method': 'post',
+        'data': {
+            'supplier_contract_id': '66',
+            'party_id': '90',
+            'name': 'Non half-hourlies 2010',
+            'charge_script': """from net.sf.chellow.monad import Monad
+import datetime
+import pytz
+from dateutil.relativedelta import relativedelta
+
+Monad.getUtils()['impt'](globals(), 'db', 'utils', 'templater', 'duos')
+
+def virtual_bill_titles():
+        return ['net-gbp', 'sum-msp-kwh', 'problem']
+
+def virtual_bill(supply_source):
+    sum_msp_kwh = sum(h['msp-kwh'] for h in supply_source.hh_data)
+    bill = supply_source.supplier_bill
+    duos.duos_vb(supply_source)
+    for rate_name, rate_set in supply_source.supplier_rate_sets.iteritems():
+        if len(rate_set) == 1:
+            bill[rate_name] = rate_set.pop()
+            bill['net-gbp'] = sum_msp_kwh * 0.1
+            bill['sum-msp-kwh'] = sum_msp_kwh
+""",
+            'properties': '{}'},
+        'status_code': 303},
+    {
+        'name': "Dumb NHH supply with DUoS pass-through: "
+        "Run virtual bill",
+        'path': '/chellow/reports/291/output/?supply_id=16&start_year=2015&'
+        'start_month=03&start_day=01&start_hour=00&start_minute=0&'
+        'finish_year=2015&finish_month=03&finish_day=31&finish_hour=23&'
+        'finish_minute=30',
+        'regexes': [
+            r'"Imp MPAN Core","Exp MPAN Core","Site Code","Site Name",'],
+        'status_code': 200},
+
+    {
+        'name': "Update a bill",
+        'path': '/chellow/reports/165/output/',
+        'method': 'post',
+        'data': {
+            'supplier_bill_id': '21',
+            'reference': '3423760010',
+            'account': 'SA342376000',
+            'issue_year': '2012',
+            'issue_month': '02',
+            'issue_day': '02',
+            'issue_hour': '00',
+            'issue_minute': '00',
+            'start_year': '2012',
+            'start_month': '01',
+            'start_day': '05',
+            'start_hour': '00',
+            'start_minute': '00',
+            'finish_year': '2012',
+            'finish_month': '01',
+            'finish_day': '10',
+            'finish_hour': '23',
+            'finish_minute': '30',
+            'kwh': '10',
+            'net': '9.07',
+            'vat': '0.21',
+            'gross': '0',
+            'bill_type_id': '2',
+            'breakdown': '{}'},
+        'status_code': 303},
+
+    {
+        'name': "CRC meter change reads",
+        'path': '/chellow/reports/31/output/',
+        'method': 'post',
+        'data': {
+            'supplier_read_id': "9",
+            'mpan': "22 1065 3921 534",
+            'coefficient': "1",
+            'msn': "brand new meter",
+            'units': "kWh",
+            'tpr_id': "1",
+            'previous_year': "2011",
+            'previous_month': "02",
+            'previous_day': "06",
+            'previous_hour': "23",
+            'previous_minute': "30",
+            'previous_value': "0",
+            'previous_type_id': "1",
+            'present_year': "2011",
+            'present_month': "02",
+            'present_day': "08",
+            'present_hour': "23",
+            'present_minute': "30",
+            'present_value': "97",
+            'present_type_id': "1",
+            'update': "Update"},
+        'status_code': 303},
+    {
+        'name': "CRC meter change reads",
+        'path': '/chellow/reports/31/output/',
+        'method': 'post',
+        'data': {
+            'supplier_read_id': "10",
+            'mpan': "22 1065 3921 534",
+            'coefficient': "1",
+            'msn': "I02D89150",
+            'units': "kWh",
+            'tpr_id': "1",
+            'previous_year': "2011",
+            'previous_month': "02",
+            'previous_day': "04",
+            'previous_hour': "23",
+            'previous_minute': "30",
+            'previous_value': "8053",
+            'previous_type_id': "1",
+            'present_year': "2011",
+            'present_month': "02",
+            'present_day': "06",
+            'present_hour': "23",
+            'present_minute': "30",
+            'present_value': "8553",
+            'present_type_id': "1",
+            'update': "Update"},
+        'status_code': 303},
+    {
+        'name': "CRC meter change reads",
+        'path': '/chellow/reports/31/output/',
+        'method': 'post',
+        'data': {
+            'supplier_read_id': "16",
+            'mpan': "22 1065 3921 534",
+            'coefficient': "1",
+            'msn': "brand new meter",
+            'units': "kWh",
+            'tpr_id': "1",
+            'previous_year': "2012",
+            'previous_month': "01",
+            'previous_day': "04",
+            'previous_hour': "23",
+            'previous_minute': "30",
+            'previous_value': "473",
+            'previous_type_id': "1",
+            'present_year': "2012",
+            'present_month': "01",
+            'present_day': "06",
+            'present_hour': "23",
+            'present_minute': "30",
+            'present_value': "725",
+            'present_type_id': "1",
+            'update': "Update"},
+        'status_code': 303},
+
+    {
+        'name': "CRC meter change reads",
+        'path': '/chellow/reports/207/output/?supply_id=10&year=2010',
+        'status_code': 303},
+    {
+        'name': "CRC meter change reads",
+        'path': '/chellow/reports/251/output/',
+        'tries': {},
+        'regexes': [
+            r"042_FINISHED_crc_2010_2011_supply_10\.csv"],
+        'status_code': 200},
+    {
+        'name': "CRC meter change reads",
+        'path': '/chellow/reports/253/output/?'
+        'name=042_FINISHED_crc_2010_2011_supply_10.csv',
+        'tries': {},
+        'status_code': 200,
+        'regexes': [
+            r'73142.3933549']},
 ]
