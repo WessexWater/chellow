@@ -2878,8 +2878,8 @@ def triad_estimates():
         'path': '/chellow/reports/251/output/',
         'tries': {'max': 40, 'period': 1},
         'regexes': [
-            r"005_FINISHED_watkinsexamplecom_unified_supplies_monthly_"
-            r"duration_site_CH023\.ods"],
+            r'005_FINISHED_watkinsexamplecom_unified_supplies_monthly_'
+            r'duration_20090301_0000_for_1_months_site_CH023\.ods'],
         'status_code': 200},
     {
         'name': "CSV Sites TRIAD",
@@ -2930,17 +2930,18 @@ def triad_estimates():
         'name': "Unified Supplies Monthly Duration - no virtual bill function",
         'path': '/chellow/reports/247/output/?site_id=4&months=1&'
         'finish_year=2009&finish_month=04',
-        'status_code': 303, },
+        'status_code': 303},
     {
         'path': '/chellow/reports/251/output/',
         'tries': {'max': 30, 'period': 1},
         'regexes': [
-            r"007_FINISHED_watkinsexamplecom_unified_supplies_monthly_"
-            r"duration_site_CI017\.ods"],
-        'status_code': 200, },
+            r'007_FINISHED_watkinsexamplecom_unified_supplies_monthly_'
+            r'duration_20090401_0000_for_1_months_site_CI017\.ods'],
+        'status_code': 200},
     {
         'path': '/chellow/reports/253/output/?'
-        'name=007_FINISHED_unified_supplies_monthly_duration_site_CI017.ods',
+        'name=007_FINISHED_watkinsexamplecom_unified_supplies_monthly_'
+        'duration_20090401_0000_for_1_months_site_CI017.ods',
         'status_code': 200,
         'regexes': [
             r'<table:table table:name="Supply Level">\s*'
@@ -5076,11 +5077,13 @@ def virtual_bill(supply_source):
         'path': '/chellow/reports/251/output/',
         'tries': {'max': 30, 'period': 1},
         'regexes': [
-            r"008_FINISHED_unified_supplies_monthly_duration_site_CI017.ods"],
+            r'010_FINISHED_unified_supplies_monthly_duration_20100701_0000_for'
+            r'_1_months_site_CI017\.ods'],
         'status_code': 200},
     {
         'path': '/chellow/reports/253/output/?'
-        'name=008_FINISHED_unified_supplies_monthly_duration_site_CI017.ods',
+        'name=010_FINISHED_unified_supplies_monthly_duration_20100701_0000_for'
+        '_1_months_site_CI017.ods',
         'regexes': [
             r'<table:table-row>\s*'
             r'<table:table-cell office:string-value="22 6354 2983 570" '
@@ -8602,7 +8605,7 @@ def shutdown():
         'constant': 0.00091361,
     },
 
-    'scenario_start': None,  # Date or None for this month
+    'scenario_start': datetime(2015, 6, 1),  # Date or None for this month
     'scenario_duration': 1,  # Number of months
 
     'kw_changes':
@@ -8625,10 +8628,12 @@ def shutdown():
         'tries': {},
         'status_code': 200,
         'regexes': [
-            r"032_FINISHED_watkinsexamplecom_scenario_bau_site_CI004\.csv"]},
+            r"032_FINISHED_watkinsexamplecom_scenario_bau_20150601_0000_for_"
+            r"1_months_site_CI004\.ods"]},
     {
         'path': '/chellow/reports/253/output/?'
-        'name=032_FINISHED_watkinsexamplecom_scenario_bau_site_CI004.csv',
+        'name=032_FINISHED_watkinsexamplecom_scenario_bau_20150601_0000_for_'
+        '1_months_site_CI004.ods',
         'status_code': 200,
 
         'regexes': [
@@ -8646,10 +8651,12 @@ def shutdown():
         'tries': {'max': 30, 'period': 1},
         'status_code': 200,
         'regexes': [
-            r"033_FINISHED_watkinsexamplecom_scenario_bau_site_CI005\.csv"]},
+            r"033_FINISHED_watkinsexamplecom_scenario_bau_20150601_0000_for_"
+            r"1_months_site_CI005\.ods"]},
     {
         'path': '/chellow/reports/253/output/?'
-        'name=033_FINISHED_watkinsexamplecom_scenario_bau_site_CI005.csv',
+        'name=033_FINISHED_watkinsexamplecom_scenario_bau_20150601_0000_for_'
+        '1_months_site_CI005.ods',
         'status_code': 200,
         'regexes': [
             r"CI005"]},
@@ -8731,10 +8738,12 @@ def shutdown():
         'tries': {'max': 30, 'period': 1},
         'status_code': 200,
         'regexes': [
-            r"031_FINISHED_scenario_bsuos_site_CI005\.ods"]},
+            r"034_FINISHED_scenario_bsuos_20110101_0000_for_1_months_site_"
+            r"CI005\.ods"]},
     {
         'path': '/chellow/reports/253/output/?'
-        'name=031_FINISHED_scenario_bsuos_site_CI005.ods',
+        'name=034_FINISHED_scenario_bsuos_20110101_0000_for_1_months_site_'
+        'CI005.ods',
         'status_code': 200,
         'regexes': [
             r'<table:table-row>\s*'
@@ -9184,10 +9193,12 @@ def shutdown():
         'tries': {'max': 30, 'period': 1},
         'status_code': 200,
         'regexes': [
-            r"032_FINISHED_scenario_used_site_CI005\.ods"]},
+            r'035_FINISHED_scenario_used_20110101_0000_for_1_months_site_'
+            r'CI005\.ods']},
     {
         'path': '/chellow/reports/253/output/?'
-        'name=032_FINISHED_scenario_used_site_CI005.ods',
+        'name=035_FINISHED_scenario_used_20110101_0000_for_1_months_site_'
+        'CI005.ods',
         'status_code': 200,
         'regexes': [
             r'<table:table-row>\s*'
@@ -9455,10 +9466,12 @@ def shutdown():
         'tries': {'max': 30, 'period': 1},
         'status_code': 200,
         'regexes': [
-            r"033_FINISHED_scenario_bsuos_site_CI005\.ods"]},
+            r"036_FINISHED_scenario_bsuos_50110101_0000_for_1_months_site_"
+            r"CI005\.ods"]},
     {
         'path': '/chellow/reports/253/output/?'
-        'name=033_FINISHED_scenario_bsuos_site_CI005.ods',
+        'name=036_FINISHED_scenario_bsuos_50110101_0000_for_1_months_site_'
+        'CI005.ods',
         'status_code': 200,
         'regexes': [
             r'<table:table-row>\s*'
@@ -9946,10 +9959,12 @@ def shutdown():
         'tries': {'max': 30, 'period': 1},
         'status_code': 200,
         'regexes': [
-            r"034_FINISHED_scenario_leap_day_site_CH023\.ods"]},
+            r"037_FINISHED_scenario_leap_day_20160201_0000_for_1_months_site_"
+            r"CH023\.ods"]},
     {
         'path': '/chellow/reports/253/output/?'
-        'name=034_FINISHED_scenario_leap_day_site_CH023.ods',
+        'name=037_FINISHED_scenario_leap_day_20160201_0000_for_1_months_site_'
+        'CH023.ods',
         'status_code': 200,
         'regexes': [
 
@@ -10746,12 +10761,13 @@ def days():
         'status_code': 200,
         'regexes': [
             r"047_FINISHED_watkinsexamplecom_unified_supplies_monthly_"
-            r"duration_site_CH023\.csv"]
+            r"duration_20150201_0000_for_1_months_site_CH023\.ods"]
         },
+
     {
         'path': '/chellow/reports/253/output/?'
         'name=047_FINISHED_watkinsexamplecom_unified_supplies_monthly_'
-        'duration_site_CH023.csv',
+        'duration_20150201_0000_for_1_months_site_CH023.ods',
         'status_code': 200,
         'regexes': [
             r"22 4862 4512 332"]},
@@ -10766,11 +10782,13 @@ def days():
         'path': '/chellow/reports/251/output/',
         'tries': {'max': 20, 'period': 1},
         'regexes': [
-            r"040_FINISHED_unified_supplies_monthly_duration_supply_10\.ods"],
+            r"048_FINISHED_unified_supplies_monthly_duration_20100101_0000_for"
+            r"_1_months_supply_10\.ods"],
         'status_code': 200},
     {
         'path': '/chellow/reports/253/output/?'
-        'name=040_FINISHED_unified_supplies_monthly_duration_supply_10.ods',
+        'name=048_FINISHED_unified_supplies_monthly_duration_20100101_0000_for'
+        '_1_months_supply_10.ods',
         'tries': {},
         'status_code': 200,
         'regexes': [
@@ -11032,11 +11050,13 @@ def days():
         'path': '/chellow/reports/251/output/',
         'tries': {'max': 20, 'period': 1},
         'regexes': [
-            r"041_FINISHED_unified_supplies_monthly_duration_supply_16\.ods"],
+            r'049_FINISHED_unified_supplies_monthly_duration_20141201_0000_for'
+            r'_1_months_supply_16\.ods'],
         'status_code': 200},
     {
         'path': '/chellow/reports/253/output/?'
-        'name=041_FINISHED_unified_supplies_monthly_duration_supply_16.ods',
+        'name=049_FINISHED_unified_supplies_monthly_duration_20141201_0000_for'
+        '_1_months_supply_16.ods',
         'status_code': 200,
         'regexes': [
             r'<table:table table:name="Supply Level">\s*'
@@ -11345,12 +11365,12 @@ def virtual_bill(supply_source):
         'path': '/chellow/reports/251/output/',
         'tries': {},
         'regexes': [
-            r"042_FINISHED_crc_2010_2011_supply_10\.csv"],
+            r"050_FINISHED_crc_2010_2011_supply_10\.csv"],
         'status_code': 200},
     {
         'name': "CRC meter change reads",
         'path': '/chellow/reports/253/output/?'
-        'name=042_FINISHED_crc_2010_2011_supply_10.csv',
+        'name=050_FINISHED_crc_2010_2011_supply_10.csv',
         'tries': {},
         'status_code': 200,
         'regexes': [

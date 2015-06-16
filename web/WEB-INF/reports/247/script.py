@@ -115,7 +115,13 @@ def content():
         else:
             start_date = start_date.replace(tzinfo=pytz.utc)
 
+        base_name.append(
+            hh_format(start_date).replace(' ', '_').replace(':', '').
+            replace('-', ''))
         months = scenario_props['scenario_duration']
+        base_name.append('for')
+        base_name.append(str(months))
+        base_name.append('months')
         finish_date = start_date + relativedelta(months=months)
 
         if 'kwh_start' in scenario_props:
