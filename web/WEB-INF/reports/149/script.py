@@ -8,8 +8,11 @@ import db
 import utils
 import computer
 import duos
+import dloads
+import os
+import threading
 Monad.getUtils()['impt'](
-    globals(), 'db', 'utils', 'templater', 'computer', 'duos')
+    globals(), 'db', 'utils', 'templater', 'computer', 'duos', 'dloads')
 inv = globals()['inv']
 Supply, Era, RegisterRead, Bill = db.Supply, db.Era, db.RegisterRead, db.Bill
 ReadType, HhDatum, Channel = db.ReadType, db.HhDatum, db.Channel
@@ -127,19 +130,27 @@ def mpan_bit(sess, supply, is_import, num_hh, eras, chunk_start, chunk_finish):
 
 def content():
     sess = None
+    f = None
     try:
         sess = db.session()
 
-        yield "Supply Id, Supply Name, Source, Generator Type, Site Ids, " \
-            "Site Names, From, To, PC, MTC, CoP, SSC, Normal Reads,Type, " \
-            "Import LLFC, Import MPAN Core, Import Supply Capacity, " \
-            "Import Supplier,Import Total MSP kWh, " \
-            "Import Non-actual MSP kWh, Import Total GSP kWh, " \
-            "Import MD / kW, Import MD Date, Import MD / kVA, " \
-            "Import Bad HHs,Export LLFC, Export MPAN Core, " \
-            "Export Supply Capacity,Export Supplier,Export Total MSP kWh, " \
-            "Export Non-actual MSP kWh,Export GSP kWh, Export MD / kW, " \
-            "Export MD Date, Export MD / kVA, Export Bad HHs"
+        running_name, finished_name = dloads.make_names('output.csv')
+        f = open(running_name, "w")
+        f.write(
+            ','.join(
+                (
+                    "Supply Id", "Supply Name", "Source", "Generator Type",
+                    "Site Ids", "Site Names", "From", "To", "PC", "MTC", "CoP",
+                    "SSC", "Normal Reads", "Type", "Import LLFC",
+                    "Import MPAN Core", "Import Supply Capacity",
+                    "Import Supplier", "Import Total MSP kWh",
+                    "Import Non-actual MSP kWh", "Import Total GSP kWh",
+                    "Import MD / kW", "Import MD Date", "Import MD / kVA",
+                    "Import Bad HHs", "Export LLFC", "Export MPAN Core",
+                    "Export Supply Capacity", "Export Supplier",
+                    "Export Total MSP kWh", "Export Non-actual MSP kWh",
+                    "Export GSP kWh", "Export MD / kW", "Export MD Date",
+                    "Export MD / kVA", "Export Bad HHs")))
 
         supplies = sess.query(Supply).join(Era).filter(
             or_(Era.finish_date == null(), Era.finish_date >= start_date),
@@ -213,24 +224,28 @@ def content():
             num_hh = utils.totalseconds(chunk_finish - (chunk_start - HH)) / \
                 (30 * 60)
 
-            yield '\n' + ','.join(
-                ('"' + str(value) + '"') for value in [
-                    supply.id, supply.name, supply.source.code, generator_type,
-                    site_codes, site_names, hh_format(start_date),
-                    hh_format(finish_date), era.pc.code, era.mtc.code,
-                    era.cop.code, ssc_code, len(prime_reads),
-                    supply_type]) + ','
-            yield \
+            f.write(
+                '\n' + ','.join(
+                    ('"' + str(value) + '"') for value in [
+                        supply.id, supply.name, supply.source.code,
+                        generator_type, site_codes, site_names,
+                        hh_format(start_date), hh_format(finish_date),
+                        era.pc.code, era.mtc.code, era.cop.code, ssc_code,
+                        len(prime_reads), supply_type]) + ',')
+            f.write(
                 mpan_bit(
                     sess, supply, True, num_hh, eras, chunk_start,
-                    chunk_finish) + "," + \
+                    chunk_finish) + "," +
                 mpan_bit(
                     sess, supply, False, num_hh, eras, chunk_start,
-                    chunk_finish)
+                    chunk_finish))
     except:
-        yield traceback.format_exc()
+        f.write(traceback.format_exc())
     finally:
         if sess is not None:
             sess.close()
+        f.close()
+        os.rename(running_name, finished_name)
 
-utils.send_response(inv, content, file_name='output.csv')
+threading.Thread(target=content).start()
+inv.sendSeeOther("/reports/251/output/")

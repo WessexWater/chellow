@@ -1756,6 +1756,16 @@ def gsp_gbp_per_kwh():
         'path': '/chellow/reports/149/output/?start_year=2008&start_month=07&'
         'start_day=01&start_hour=0&start_minute=0&finish_year=2008&'
         'finish_month=07&finish_day=31&finish_hour=23&finish_minute=30',
+        'status_code': 303},
+    {
+        'path': '/chellow/reports/251/output/',
+        'tries': {},
+        'regexes': [
+            r"000_FINISHED_output\.csv"],
+        'status_code': 200},
+    {
+        'path': '/chellow/reports/253/output/?'
+        'name=000_FINISHED_output.csv',
         'regexes': [
             # Check starts with titles
             r'\)\s\sSupply',
@@ -1766,10 +1776,8 @@ def gsp_gbp_per_kwh():
             r'"2","1","net","","CI004","Lower Treave","2008-07-01 00:00",'
             '"2008-07-31 23:30","00","845","5","","0","hh",'
             '570,22 9813 2107 763,430,Half-hourlies 2007,0,0,0.0,0,,None,1488,'
-            '581,22 3475 1614 211,900,Half-hourlies 2007,0,0,,0,,None,1488',
-
-            ],
-        'status_code': 200, },
+            '581,22 3475 1614 211,900,Half-hourlies 2007,0,0,,0,,None,1488'],
+        'status_code': 200},
 
     # Delete a day of data. Supply 1, era 13 },
     {
@@ -2337,11 +2345,11 @@ def virtual_bill(supply_source):
         'path': '/chellow/reports/251/output/',
         'tries': {'max': 20, 'period': 1},
         'regexes': [
-            r"000_FINISHED_supplies_snapshot\.csv"],
+            r"001_FINISHED_supplies_snapshot\.csv"],
         'status_code': 200},
     {
         'path': '/chellow/reports/253/output/?'
-        'name=000_FINISHED_supplies_snapshot.csv',
+        'name=001_FINISHED_supplies_snapshot.csv',
         'tries': {'max': 10, 'period': 1},
         'status_code': 200,
         'regexes': [
@@ -2362,11 +2370,11 @@ def virtual_bill(supply_source):
         'path': '/chellow/reports/251/output/',
         'tries': {'max': 20, 'period': 1},
         'regexes': [
-            r"001_FINISHED_supplies_snapshot\.csv"],
+            r"002_FINISHED_supplies_snapshot\.csv"],
         'status_code': 200, },
     {
         'path': '/chellow/reports/253/output/?'
-        'name=001_FINISHED_supplies_snapshot.csv',
+        'name=002_FINISHED_supplies_snapshot.csv',
         'tries': {},
         'status_code': 200,
         'regexes': [
@@ -2766,6 +2774,18 @@ def triad_estimates():
         'path': '/chellow/reports/149/output/?start_year=2009&start_month=03&'
         'start_day=1&start_hour=0&start_minute=0&finish_year=2009&'
         'finish_month=03&finish_day=31&finish_hour=23&finish_minute=30',
+        'status_code': 303},
+    {
+        'path': '/chellow/reports/251/output/',
+        'tries': {'max': 20, 'period': 1},
+        'regexes': [
+            r"003_FINISHED_output\.csv"],
+        'status_code': 200, },
+    {
+        'path': '/chellow/reports/253/output/?'
+        'name=003_FINISHED_output.csv',
+        'tries': {},
+        'status_code': 200,
         'regexes': [
             r'"7","1","net","","CH023","Treglisson","2009-03-01 00:00",'
             '"2009-03-31 23:30","00","845","5","","0","hh",540,'
@@ -2822,7 +2842,7 @@ def triad_estimates():
         'path': '/chellow/reports/251/output/',
         'tries': {'max': 40, 'period': 1},
         'regexes': [
-            r"002_FINISHED_site_monthly_duration_for_CH023_1_to_2009_3\.csv"],
+            r"004_FINISHED_site_monthly_duration_for_CH023_1_to_2009_3\.csv"],
         'status_code': 200},
     {
         'name': "CSV Sites TRIAD",
@@ -2843,11 +2863,11 @@ def triad_estimates():
         'path': '/chellow/reports/251/output/',
         'tries': {'max': 20, 'period': 1},
         'regexes': [
-            r"003_FINISHED_site_monthly_duration_for_CI017_1_to_2009_4\.csv"],
+            r"005_FINISHED_site_monthly_duration_for_CI017_1_to_2009_4\.csv"],
         'status_code': 200, },
     {
         'path': '/chellow/reports/253/output/?'
-        'name=003_FINISHED_site_monthly_duration_for_CI017_1_to_2009_4.csv',
+        'name=005_FINISHED_site_monthly_duration_for_CI017_1_to_2009_4.csv',
         'tries': {},
         'status_code': 200,
         'regexes': [
@@ -3481,11 +3501,11 @@ def virtual_bill(supply_source):
         'path': '/chellow/reports/251/output/',
         'tries': {'max': 20, 'period': 1},
         'regexes': [
-            r"004_FINISHED_bill_check\.csv"],
+            r"006_FINISHED_bill_check\.csv"],
         'status_code': 200},
     {
         'path': '/chellow/reports/253/output/?'
-        'name=004_FINISHED_bill_check.csv',
+        'name=006_FINISHED_bill_check.csv',
         'regexes': [
             r"batch,bill-reference,bill-type,bill-kwh,bill-net-gbp,"
             "bill-vat-gbp,bill-start-date,bill-finish-date,bill-mpan-core,"
@@ -4195,11 +4215,11 @@ def virtual_bill(supply_source):
         'path': '/chellow/reports/251/output/',
         'tries': {'max': 20, 'period': 1},
         'regexes': [
-            r"005_FINISHED_site_monthly_duration_for_CI017_1_to_2010_7.csv"],
+            r"007_FINISHED_site_monthly_duration_for_CI017_1_to_2010_7.csv"],
         'status_code': 200},
     {
         'path': '/chellow/reports/253/output/?'
-        'name=005_FINISHED_site_monthly_duration_for_CI017_1_to_2010_7.csv',
+        'name=007_FINISHED_site_monthly_duration_for_CI017_1_to_2010_7.csv',
         'regexes': [
             r'"CI017","Roselands","","3rd-party,net","","2010-07-31 23:30",'
             '"0","0","0","0","0","0","0","0","1593.3414","0","0","1593.3414"'
@@ -5271,11 +5291,11 @@ def shutdown():
         'path': '/chellow/reports/251/output/',
         'tries': {},
         'regexes': [
-            r"006_FINISHED_crc_2012_2013_supply_7\.csv"],
+            r"008_FINISHED_crc_2012_2013_supply_7\.csv"],
         'status_code': 200},
     {
         'path': '/chellow/reports/253/output/?'
-        'name=006_FINISHED_crc_2012_2013_supply_7.csv',
+        'name=008_FINISHED_crc_2012_2013_supply_7.csv',
         'tries': {},
         'status_code': 200,
         'regexes': [
@@ -5359,11 +5379,11 @@ def shutdown():
         'tries': {},
         'status_code': 200,
         'regexes': [
-            r"007_FINISHED_supplies_monthly_duration_for_10_1_to_2011_1\.csv"]
+            r"009_FINISHED_supplies_monthly_duration_for_10_1_to_2011_1\.csv"]
         },
     {
         'path': '/chellow/reports/253/output/?'
-        'name=007_FINISHED_supplies_monthly_duration_for_10_1_to_2011_1.csv',
+        'name=009_FINISHED_supplies_monthly_duration_for_10_1_to_2011_1.csv',
         'status_code': 200,
         'regexes': [
             r"supply-id,supply-name,source-code,generator-type,month,pc-code,"
@@ -5386,10 +5406,10 @@ def shutdown():
         'tries': {},
         'status_code': 200,
         'regexes': [
-            r"008_FINISHED_supplies_monthly_duration_for_4_1_to_2010_5\.csv"]},
+            r"010_FINISHED_supplies_monthly_duration_for_4_1_to_2010_5\.csv"]},
     {
         'path': '/chellow/reports/253/output/?'
-        'name=008_FINISHED_supplies_monthly_duration_for_4_1_to_2010_5.csv',
+        'name=010_FINISHED_supplies_monthly_duration_for_4_1_to_2010_5.csv',
         'status_code': 200,
         'regexes': [
             r"supply-id,supply-name,source-code,generator-type,month,pc-code,"
@@ -5448,11 +5468,11 @@ def shutdown():
         'tries': {'max': 20, 'period': 1},
         'status_code': 200,
         'regexes': [
-            r"009_FINISHED_supplies_hh_data_200807312330_supply_"
+            r"011_FINISHED_supplies_hh_data_200807312330_supply_"
             r"22_9205_6799_106\.csv"]},
     {
         'path': '/chellow/reports/253/output/?'
-        'name=009_FINISHED_supplies_hh_data_200807312330_supply_'
+        'name=011_FINISHED_supplies_hh_data_200807312330_supply_'
         '22_9205_6799_106.csv',
         'status_code': 200,
 
@@ -5889,8 +5909,19 @@ def shutdown():
         'path': '/chellow/reports/149/output/?start_year=2010&start_month=01&'
         'start_day=1&start_hour=0&start_minute=0&finish_year=2010&'
         'finish_month=01&finish_day=31&finish_hour=23&finish_minute=30',
+        'status_code': 303},
+    {
+        'path': '/chellow/reports/251/output/',
+        'tries': {'max': 20, 'period': 1},
         'regexes': [
-            r'"10","2",']},
+            r"012_FINISHED_output\.csv"],
+        'status_code': 200},
+    {
+        'path': '/chellow/reports/253/output/?'
+        'name=012_FINISHED_output.csv',
+        'regexes': [
+            r'"10","2",'],
+        'status_code': 200},
     {
         'name': "Try the site level monthly data HTML report.",
         'path': '/chellow/reports/13/output/?site_id=3&finish_year=2005&'
@@ -6028,11 +6059,11 @@ def shutdown():
         'path': '/chellow/reports/251/output/',
         'tries': {'max': 20, 'period': 1},
         'regexes': [
-            r"010_FINISHED_bill_check\.csv"],
+            r"013_FINISHED_bill_check\.csv"],
         'status_code': 200},
     {
         'path': '/chellow/reports/253/output/?'
-        'name=010_FINISHED_bill_check.csv',
+        'name=013_FINISHED_bill_check.csv',
         'regexes': [
             r'"06-004","00101","N","244","3810.08","355.03",'
             '"2011-05-01 00:00","2011-06-30 00:00","22 6354 2983 570","CI017",'
@@ -6206,11 +6237,11 @@ def shutdown():
         'path': '/chellow/reports/251/output/',
         'tries': {'max': 20, 'period': 1},
         'regexes': [
-            r"011_FINISHED_supplies_snapshot\.csv"],
+            r"014_FINISHED_supplies_snapshot\.csv"],
         'status_code': 200},
     {
         'path': '/chellow/reports/253/output/?'
-        'name=011_FINISHED_supplies_snapshot.csv',
+        'name=014_FINISHED_supplies_snapshot.csv',
         'tries': {},
         'status_code': 200,
         'regexes': [
@@ -6232,11 +6263,11 @@ def shutdown():
         'path': '/chellow/reports/251/output/',
         'tries': {'max': 20, 'period': 1},
         'regexes': [
-            r"012_FINISHED_supplies_snapshot\.csv"],
+            r"015_FINISHED_supplies_snapshot\.csv"],
         'status_code': 200},
     {
         'path': '/chellow/reports/253/output/?'
-        'name=012_FINISHED_supplies_snapshot.csv',
+        'name=015_FINISHED_supplies_snapshot.csv',
         'tries': {},
         'status_code': 200,
         'regexes': [
@@ -6259,11 +6290,11 @@ def shutdown():
         'path': '/chellow/reports/251/output/',
         'tries': {'max': 20, 'period': 1},
         'regexes': [
-            r"013_FINISHED_supplies_snapshot\.csv"],
+            r"016_FINISHED_supplies_snapshot\.csv"],
         'status_code': 200},
     {
         'path': '/chellow/reports/253/output/?'
-        'name=013_FINISHED_supplies_snapshot.csv',
+        'name=016_FINISHED_supplies_snapshot.csv',
         'tries': {},
         'status_code': 200,
         'regexes': [
@@ -6402,11 +6433,11 @@ def shutdown():
         'path': '/chellow/reports/251/output/',
         'tries': {'max': 20, 'period': 1},
         'regexes': [
-            r"014_FINISHED_supplies_snapshot\.csv"],
+            r"017_FINISHED_supplies_snapshot\.csv"],
         'status_code': 200},
     {
         'path': '/chellow/reports/253/output/?'
-        'name=014_FINISHED_supplies_snapshot.csv',
+        'name=017_FINISHED_supplies_snapshot.csv',
         'tries': {},
         'status_code': 200,
         'regexes': [
@@ -6497,10 +6528,10 @@ def shutdown():
         'tries': {'max': 30, 'period': 1},
         'status_code': 200,
         'regexes': [
-            r"015_FINISHED_site_monthly_duration_for_CI004_1_to_2010_7\.csv"]},
+            r"018_FINISHED_site_monthly_duration_for_CI004_1_to_2010_7\.csv"]},
     {
         'path': '/chellow/reports/253/output/?'
-        'name=015_FINISHED_site_monthly_duration_for_CI004_1_to_2010_7.csv',
+        'name=018_FINISHED_site_monthly_duration_for_CI004_1_to_2010_7.csv',
         'status_code': 200,
         'regexes': [
             r'"CI004",']},
@@ -6514,10 +6545,10 @@ def shutdown():
         'tries': {'max': 20, 'period': 1},
         'status_code': 200,
         'regexes': [
-            r"016_FINISHED_site_monthly_duration_for_CI017_1_to_2011_5\.csv"]},
+            r"019_FINISHED_site_monthly_duration_for_CI017_1_to_2011_5\.csv"]},
     {
         'path': '/chellow/reports/253/output/?'
-        'name=016_FINISHED_site_monthly_duration_for_CI017_1_to_2011_5.csv',
+        'name=019_FINISHED_site_monthly_duration_for_CI017_1_to_2011_5.csv',
         'status_code': 200,
         'regexes': [
             r'"CI017",']},
@@ -6538,10 +6569,10 @@ def shutdown():
         'tries': {'max': 20, 'period': 1},
         'status_code': 200,
         'regexes': [
-            r"017_FINISHED_site_monthly_duration_for_CI017_1_to_2012_2\.csv"]},
+            r"020_FINISHED_site_monthly_duration_for_CI017_1_to_2012_2\.csv"]},
     {
         'path': '/chellow/reports/253/output/?'
-        'name=017_FINISHED_site_monthly_duration_for_CI017_1_to_2012_2.csv',
+        'name=020_FINISHED_site_monthly_duration_for_CI017_1_to_2012_2.csv',
         'status_code': 200,
         'regexes': [
             r'"CI017",']},
@@ -6555,10 +6586,10 @@ def shutdown():
         'tries': {'max': 20, 'period': 1},
         'status_code': 200,
         'regexes': [
-            r"018_FINISHED_bill_check\.csv"]},
+            r"021_FINISHED_bill_check\.csv"]},
     {
         'path': '/chellow/reports/253/output/?'
-        'name=018_FINISHED_bill_check.csv',
+        'name=021_FINISHED_bill_check.csv',
         'status_code': 200,
         'regexes': [
             r'"07-002","3423760010","N","10","9.07","0.21","2012-01-05 00:00",'
@@ -6575,10 +6606,10 @@ def shutdown():
         'tries': {},
         'status_code': 200,
         'regexes': [
-            r"019_FINISHED_supplies_monthly_duration_for_1_1_to_2008_7\.csv"]},
+            r"022_FINISHED_supplies_monthly_duration_for_1_1_to_2008_7\.csv"]},
     {
         'path': '/chellow/reports/253/output/?'
-        'name=019_FINISHED_supplies_monthly_duration_for_1_1_to_2008_7.csv',
+        'name=022_FINISHED_supplies_monthly_duration_for_1_1_to_2008_7.csv',
         'status_code': 200,
         'regexes': [
             r"supply-id,supply-name,source-code,generator-type,month,pc-code,"
@@ -6608,10 +6639,10 @@ def shutdown():
         'tries': {},
         'status_code': 200,
         'regexes': [
-            r"020_FINISHED_hh_data_row_200801010000\.csv", ], },
+            r"023_FINISHED_hh_data_row_200801010000\.csv", ], },
     {
         'path': '/chellow/reports/253/output/?'
-        'name=020_FINISHED_hh_data_row_200801010000.csv',
+        'name=023_FINISHED_hh_data_row_200801010000.csv',
         'status_code': 200,
         'regexes': [
             r'"CH023","22 4862 4512 332","","2008-01-01 00:00","3.77","A","",'
@@ -6632,10 +6663,10 @@ def shutdown():
         'tries': {},
         'status_code': 200,
         'regexes': [
-            r"021_FINISHED_hh_data_row_201001010000\.csv", ], },
+            r"024_FINISHED_hh_data_row_201001010000\.csv", ], },
     {
         'path': '/chellow/reports/253/output/?'
-        'name=021_FINISHED_hh_data_row_201001010000.csv',
+        'name=024_FINISHED_hh_data_row_201001010000.csv',
         'status_code': 200,
         'regexes': [
             r'"Export REACTIVE_EXP Status"\s'
@@ -6873,11 +6904,11 @@ def shutdown():
         'path': '/chellow/reports/251/output/',
         'tries': {'max': 20, 'period': 1},
         'regexes': [
-            r"022_FINISHED_bill_check\.csv"],
+            r"025_FINISHED_bill_check\.csv"],
         'status_code': 200},
     {
         'path': '/chellow/reports/253/output/?'
-        'name=022_FINISHED_bill_check.csv',
+        'name=025_FINISHED_bill_check.csv',
         'tries': {},
         'status_code': 200,
         'regexes': [
@@ -6928,10 +6959,10 @@ def shutdown():
         'tries': {'max': 20, 'period': 1},
         'status_code': 200,
         'regexes': [
-            r"023_FINISHED_bill_check\.csv"]},
+            r"026_FINISHED_bill_check\.csv"]},
     {
         'path': '/chellow/reports/253/output/?'
-        'name=023_FINISHED_bill_check.csv',
+        'name=026_FINISHED_bill_check.csv',
         'status_code': 200,
         'regexes': [
             r'"07-002","3423760005","N","150","98.17","15.01",'
@@ -6986,10 +7017,10 @@ def shutdown():
         'tries': {'max': 20, 'period': 1},
         'status_code': 200,
         'regexes': [
-            r"024_FINISHED_bill_check\.csv"]},
+            r"027_FINISHED_bill_check\.csv"]},
     {
         'path': '/chellow/reports/253/output/?'
-        'name=024_FINISHED_bill_check.csv',
+        'name=027_FINISHED_bill_check.csv',
         'status_code': 200,
         'regexes': [
             r'"07-002","3423760010","N","10","9.07","0.21","2012-01-05 00:00",'
@@ -7033,10 +7064,10 @@ def shutdown():
         'tries': {'max': 20, 'period': 1},
         'status_code': 200,
         'regexes': [
-            r"025_FINISHED_crc_2009_2010_supply_10\.csv"]},
+            r"028_FINISHED_crc_2009_2010_supply_10\.csv"]},
     {
         'path': '/chellow/reports/253/output/?'
-        'name=025_FINISHED_crc_2009_2010_supply_10.csv',
+        'name=028_FINISHED_crc_2009_2010_supply_10.csv',
         'status_code': 200,
         'regexes': [
             r'"10","22 1065 3921 534","CI017","Roselands","2009-04-01 00:00",'
@@ -7532,10 +7563,10 @@ def virtual_bill(supply_source):
         'tries': {'max': 20, 'period': 1},
         'status_code': 200,
         'regexes': [
-            r"026_FINISHED_supplies_hh_data_200808012330_filter\.csv"]},
+            r"029_FINISHED_supplies_hh_data_200808012330_filter\.csv"]},
     {
         'path': '/chellow/reports/253/output/?'
-        'name=026_FINISHED_supplies_hh_data_200808012330_filter.csv',
+        'name=029_FINISHED_supplies_hh_data_200808012330_filter.csv',
         'status_code': 200,
 
         # Check the HH data is there
@@ -7543,7 +7574,7 @@ def virtual_bill(supply_source):
             r'NA,2008-07-06,0\.262',
             r"\A\('connection', 'close'\)\s*"
             r"\('content-disposition', 'attachment; "
-            r'filename="026_FINISHED_supplies_hh_data_200808012330_filter.csv"'
+            r'filename="029_FINISHED_supplies_hh_data_200808012330_filter.csv"'
             r"'\)\s*"
             r"\('content-type', 'text/csv; charset=utf-8'\)\s*"
             r"\('date', '[^']*'\)\s*"
@@ -7642,10 +7673,10 @@ def virtual_bill(supply_source):
         'tries': {'max': 20, 'period': 1},
         'status_code': 200,
         'regexes': [
-            r"027_FINISHED_crc_2005_2006_supply_2\.csv"]},
+            r"030_FINISHED_crc_2005_2006_supply_2\.csv"]},
     {
         'path': '/chellow/reports/253/output/?'
-        'name=027_FINISHED_crc_2005_2006_supply_2.csv',
+        'name=030_FINISHED_crc_2005_2006_supply_2.csv',
         'status_code': 200,
         'regexes': [
             r'"2","22 9813 2107 763"']},
@@ -7660,10 +7691,10 @@ def virtual_bill(supply_source):
         'tries': {'max': 20, 'period': 1},
         'status_code': 200,
         'regexes': [
-            r"028_FINISHED_crc_2008_2009_supply_7\.csv"]},
+            r"031_FINISHED_crc_2008_2009_supply_7\.csv"]},
     {
         'path': '/chellow/reports/253/output/?'
-        'name=028_FINISHED_crc_2008_2009_supply_7.csv',
+        'name=031_FINISHED_crc_2008_2009_supply_7.csv',
         'status_code': 200,
         'regexes': [
             r'"7","22 4862 4512 332","CH023","Treglisson","2008-04-01 00:00",'
@@ -7785,12 +7816,12 @@ def days():
         'path': '/chellow/reports/251/output/',
         'tries': {},
         'regexes': [
-            r"029_FINISHED_crc_2011_2012_supply_10\.csv"],
+            r"032_FINISHED_crc_2011_2012_supply_10\.csv"],
         'status_code': 200},
     {
         'name': "CRC report for mismatched TPRs",
         'path': '/chellow/reports/253/output/?'
-        'name=029_FINISHED_crc_2011_2012_supply_10.csv',
+        'name=032_FINISHED_crc_2011_2012_supply_10.csv',
         'tries': {},
         'status_code': 200,
         'regexes': [
@@ -7916,12 +7947,12 @@ def days():
         'path': '/chellow/reports/251/output/',
         'tries': {},
         'regexes': [
-            r"030_FINISHED_crc_2010_2011_supply_10\.csv"],
+            r"033_FINISHED_crc_2010_2011_supply_10\.csv"],
         'status_code': 200},
     {
         'name': "CRC meter change reads",
         'path': '/chellow/reports/253/output/?'
-        'name=030_FINISHED_crc_2010_2011_supply_10.csv',
+        'name=033_FINISHED_crc_2010_2011_supply_10.csv',
         'tries': {},
         'status_code': 200,
         'regexes': [
@@ -7972,6 +8003,16 @@ def days():
         'start_month=01&start_day=05&start_hour=00&start_minute=00&'
         'finish_year=2012&finish_month=01&finish_day=10&finish_hour=23&'
         'finish_minute=30',
+        'status_code': 303},
+    {
+        'path': '/chellow/reports/251/output/',
+        'tries': {},
+        'regexes': [
+            r"034_FINISHED_output\.csv"],
+        'status_code': 200},
+    {
+        'path': '/chellow/reports/253/output/?'
+        'name=034_FINISHED_output.csv',
         'regexes': [
             r'"10","2","net","","CI017","Roselands","2012-01-05 00:00",'
             r'"2012-01-10 23:30","03","801","6a","0366","1","nhh",110,'
@@ -7985,6 +8026,16 @@ def days():
         'start_month=02&start_day=01&start_hour=00&start_minute=00&'
         'finish_year=2007&finish_month=02&finish_day=28&finish_hour=23&'
         'finish_minute=30',
+        'status_code': 303},
+    {
+        'path': '/chellow/reports/251/output/',
+        'tries': {},
+        'regexes': [
+            r"035_FINISHED_output\.csv"],
+        'status_code': 200},
+    {
+        'path': '/chellow/reports/253/output/?'
+        'name=035_FINISHED_output.csv',
         'regexes': [
             r'"10","2","net","","CI017","Roselands","2007-02-01 00:00",'
             r'"2007-02-28 23:30","03","801","5","0393","0","nhh",'
