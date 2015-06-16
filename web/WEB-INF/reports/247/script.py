@@ -589,7 +589,7 @@ def content():
                             month_data['import-3rd-party-gbp'] += gbp
                             month_data['used-gbp'] += gbp
 
-                        if source_code == 'gen':
+                        if source_code in ('gen', 'gen-net'):
                             generator_type = supply.generator_type.code
                             group_gen_types.add(generator_type)
                         else:

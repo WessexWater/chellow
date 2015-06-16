@@ -11375,4 +11375,37 @@ def virtual_bill(supply_source):
         'status_code': 200,
         'regexes': [
             r'73142.3933549']},
+
+    {
+        'name': "Unified report for a gen-net supply",
+        'path': '/chellow/reports/305/output/',
+        'method': 'post',
+        'data': {
+            'supply_id': "5",
+            'name': "Hello",
+            'source_id': "3",
+            'generator_type_id': "1",
+            'gsp_group_id': "11"},
+        'status_code': 303},
+    {
+        'name': "Unified report for a gen-net supply",
+        'path': '/chellow/reports/247/output/?supply_id=5&months=1&'
+        'finish_year=2015&finish_month=05',
+        'status_code': 303},
+    {
+        'name': "Unified report for a gen-net supply",
+        'path': '/chellow/reports/251/output/',
+        'tries': {},
+        'regexes': [
+            r'043_FINISHED_unified_supplies_monthly_duration_20150501_0000_for'
+            r'_1_months_supply_5\.ods'],
+        'status_code': 200},
+    {
+        'name': "Unified report for a gen-net supply",
+        'path': '/chellow/reports/253/output/?'
+        'name=043_FINISHED_unified_supplies_monthly_duration_20150501_0000_for'
+        '_1_months_supply_5.ods',
+        'status_code': 200,
+        'regexes': [
+            r'chp']},
 ]
