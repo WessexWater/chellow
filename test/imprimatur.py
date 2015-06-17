@@ -8042,4 +8042,56 @@ def days():
             r'110,22 1065 3921 534,30,Non half-hourlies 2010,0,0,,0,,None,'
             r'1344,,,,,0,0,,0,,None,1344'],
         'status_code': 200},
+
+    {
+        'name': "Supplies duration normal reads with prev, pres the same.",
+        'path': '/chellow/reports/31/output/',
+        'method': 'post',
+        'data': {
+            'supplier_read_id': "11",
+            'mpan': "2210653921534",
+            'coefficient': "1",
+            'msn': "I02D89150",
+            'units': "kWh",
+            'tpr_id': "1",
+            'previous_year': "2007",
+            'previous_month': "01",
+            'previous_day': "04",
+            'previous_hour': "00",
+            'previous_minute': "00",
+            'previous_value': "38992",
+            'previous_type_id': "4",
+            'present_year': "2009",
+            'present_month': "04",
+            'present_day': "04",
+            'present_hour': "23",
+            'present_minute': "30",
+            'present_value': "14281",
+            'present_type_id': "1",
+            'update': "Update"},
+        'status_code': 303},
+    {
+        'name': "Supplies duration normal reads with prev, pres the same.",
+        'path': '/chellow/reports/149/output/?supply_id=10&start_year=2009&'
+        'start_month=04&start_day=01&start_hour=00&start_minute=00&'
+        'finish_year=2009&finish_month=04&finish_day=10&finish_hour=23&'
+        'finish_minute=30',
+        'status_code': 303},
+    {
+        'name': "Supplies duration normal reads with prev, pres the same.",
+        'path': '/chellow/reports/251/output/',
+        'tries': {},
+        'regexes': [
+            r"036_FINISHED_supplies_duration\.csv"],
+        'status_code': 200},
+    {
+        'name': "Supplies duration normal reads with prev, pres the same.",
+        'path': '/chellow/reports/253/output/?'
+        'name=036_FINISHED_supplies_duration.csv',
+        'regexes': [
+            r'"10","2","net","","CI017","Roselands","2009-04-01 00:00",'
+            r'"2009-04-10 23:30","03","801","5","0393","1","nhh",'
+            r'110,22 1065 3921 534,30,Non half-hourlies 2010,0,0,,0,,None,480,'
+            r',,,,0,0,,0,,None,480'],
+        'status_code': 200},
 ]

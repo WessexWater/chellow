@@ -11,6 +11,7 @@ import duos
 import dloads
 import os
 import threading
+from itertools import chain
 Monad.getUtils()['impt'](
     globals(), 'db', 'utils', 'templater', 'computer', 'duos', 'dloads')
 inv = globals()['inv']
@@ -183,32 +184,33 @@ def content():
             ssc_code = '' if ssc is None else ssc.code
 
             prime_reads = set()
-            for query in (sess.query(RegisterRead).join(Bill).join(
-                    RegisterRead.previous_type).join(BillType).filter(
-                    Bill.supply == supply,
-                    BillType.code != 'W',
+            for read, rdate in chain(
+                    sess.query(
+                        RegisterRead, RegisterRead.previous_date).join(
+                        RegisterRead.previous_type).join(Bill).join(
+                        BillType).filter(
+                    Bill.supply == supply, BillType.code != 'W',
                     RegisterRead.previous_date >= start_date,
                     RegisterRead.previous_date <= finish_date,
                     ReadType.code.in_(NORMAL_READ_TYPES)),
 
-                    sess.query(RegisterRead).join(Bill).join(
-                    RegisterRead.present_type).join(BillType).filter(
-                    Bill.supply == supply,
-                    BillType.code != 'W',
+                    sess.query(
+                        RegisterRead, RegisterRead.present_date).join(
+                        RegisterRead.present_type).join(Bill).join(
+                        BillType).filter(
+                    Bill.supply == supply, BillType.code != 'W',
                     RegisterRead.present_date >= start_date,
                     RegisterRead.present_date <= finish_date,
                     ReadType.code.in_(NORMAL_READ_TYPES))):
-
-                for read in query:
-                    prime_bill = sess.query(Bill).join(BillType).filter(
-                        Bill.supply == supply,
-                        Bill.start_date <= read.bill.finish_date,
-                        Bill.finish_date >= read.bill.start_date,
-                        Bill.reads.any()).order_by(
-                        Bill.issue_date.desc(), BillType.code).first()
-                    if prime_bill.id == read.bill_id:
-                        prime_reads.add(
-                            str(read.previous_date) + "_" + read.msn)
+                prime_bill = sess.query(Bill).join(BillType).filter(
+                    Bill.supply == supply,
+                    Bill.start_date <= read.bill.finish_date,
+                    Bill.finish_date >= read.bill.start_date,
+                    Bill.reads.any()).order_by(
+                    Bill.issue_date.desc(), BillType.code).first()
+                if prime_bill.id == read.bill.id:
+                    prime_reads.add(
+                        str(rdate) + "_" + read.msn)
 
             supply_type = era.make_meter_category()
 
