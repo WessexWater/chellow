@@ -134,7 +134,8 @@ def content():
     try:
         sess = db.session()
 
-        running_name, finished_name = dloads.make_names('output.csv')
+        running_name, finished_name = dloads.make_names(
+            'supplies_duration.csv')
         f = open(running_name, "w")
         f.write(
             ','.join(

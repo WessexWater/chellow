@@ -1761,11 +1761,11 @@ def gsp_gbp_per_kwh():
         'path': '/chellow/reports/251/output/',
         'tries': {},
         'regexes': [
-            r"000_FINISHED_output\.csv"],
+            r"000_FINISHED_supplies_duration\.csv"],
         'status_code': 200},
     {
         'path': '/chellow/reports/253/output/?'
-        'name=000_FINISHED_output.csv',
+        'name=000_FINISHED_supplies_duration.csv',
         'regexes': [
             # Check starts with titles
             r'\)\s\sSupply',
@@ -2779,11 +2779,11 @@ def triad_estimates():
         'path': '/chellow/reports/251/output/',
         'tries': {'max': 20, 'period': 1},
         'regexes': [
-            r"003_FINISHED_output\.csv"],
+            r"003_FINISHED_supplies_duration\.csv"],
         'status_code': 200, },
     {
         'path': '/chellow/reports/253/output/?'
-        'name=003_FINISHED_output.csv',
+        'name=003_FINISHED_supplies_duration.csv',
         'tries': {},
         'status_code': 200,
         'regexes': [
@@ -5914,11 +5914,11 @@ def shutdown():
         'path': '/chellow/reports/251/output/',
         'tries': {'max': 20, 'period': 1},
         'regexes': [
-            r"012_FINISHED_output\.csv"],
+            r"012_FINISHED_supplies_duration\.csv"],
         'status_code': 200},
     {
         'path': '/chellow/reports/253/output/?'
-        'name=012_FINISHED_output.csv',
+        'name=012_FINISHED_supplies_duration.csv',
         'regexes': [
             r'"10","2",'],
         'status_code': 200},
@@ -8008,11 +8008,11 @@ def days():
         'path': '/chellow/reports/251/output/',
         'tries': {},
         'regexes': [
-            r"034_FINISHED_output\.csv"],
+            r"034_FINISHED_supplies_duration\.csv"],
         'status_code': 200},
     {
         'path': '/chellow/reports/253/output/?'
-        'name=034_FINISHED_output.csv',
+        'name=034_FINISHED_supplies_duration.csv',
         'regexes': [
             r'"10","2","net","","CI017","Roselands","2012-01-05 00:00",'
             r'"2012-01-10 23:30","03","801","6a","0366","1","nhh",110,'
@@ -8031,11 +8031,11 @@ def days():
         'path': '/chellow/reports/251/output/',
         'tries': {},
         'regexes': [
-            r"035_FINISHED_output\.csv"],
+            r"035_FINISHED_supplies_duration\.csv"],
         'status_code': 200},
     {
         'path': '/chellow/reports/253/output/?'
-        'name=035_FINISHED_output.csv',
+        'name=035_FINISHED_supplies_duration.csv',
         'regexes': [
             r'"10","2","net","","CI017","Roselands","2007-02-01 00:00",'
             r'"2007-02-28 23:30","03","801","5","0393","0","nhh",'
