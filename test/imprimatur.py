@@ -11462,4 +11462,41 @@ def virtual_bill(supply_source):
             r'110,22 1065 3921 534,30,Non half-hourlies 2010,0,0,,0,,None,480,'
             r',,,,0,0,,0,,None,480'],
         'status_code': 200},
+
+    {
+        'name': "Unified Supplies Monthly Duration - displaced kWh",
+        'path': '/chellow/reports/303/output/',
+        'method': 'post',
+        'data': {
+            'channel_id': "10",
+            'start_year': "2015",
+            'start_month': "05",
+            'start_day': "04",
+            'start_hour': "20",
+            'start_minute': "00",
+            'insert': "Insert",
+            'value': "45",
+            'status': "A", },
+        'status_code': 303},
+    {
+        'name': "Unified Supplies Monthly Duration - displaced kWh",
+        'path': '/chellow/reports/247/output/?site_id=3&months=1&'
+        'finish_year=2015&finish_month=05',
+        'status_code': 303},
+    {
+        'name': "Unified Supplies Monthly Duration - displaced kWh",
+        'path': '/chellow/reports/251/output/',
+        'tries': {'max': 30, 'period': 1},
+        'regexes': [
+            r'051_FINISHED_unified_supplies_monthly_duration_20150501_0000_for'
+            r'_1_months_site_CI005\.ods'],
+        'status_code': 200},
+    {
+        'name': "Unified Supplies Monthly Duration - displaced kWh",
+        'path': '/chellow/reports/253/output/?'
+        'name=051_FINISHED_unified_supplies_monthly_duration_20150501_0000_for'
+        r'_1_months_site_CI005.ods',
+        'status_code': 200,
+        'regexes': [
+            r'-45']},
 ]

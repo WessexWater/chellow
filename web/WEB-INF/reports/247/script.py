@@ -409,6 +409,8 @@ def content():
                             [month_data[t] for t in summary_titles]
 
                         sup_tab.writerow(out)
+                        for k, v in month_data.iteritems():
+                            group_month_data[k] += v
                     for i, (
                             order, imp_mpan_core, exp_mpan_core, imp_ss,
                             exp_ss) in enumerate(sorted(calcs)):
