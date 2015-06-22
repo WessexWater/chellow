@@ -47,7 +47,7 @@
           <input type="hidden" name="site_id" value="{{site.id}}">
           <legend>Update this site</legend>
           <label>Name</label>
-          {{input_text('name', site.name, 40)}}
+          {{input_text('site_name', site.name, 40)}}
           <br>
           <label>Code</label>
           {{input_text('code', site.code)}}

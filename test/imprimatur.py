@@ -659,7 +659,7 @@ def gsp_gbp_per_kwh():
             # Check we the 'site_id' field is there
             r'<fieldset>\s*<input type="hidden" name="site_id" value="4">\s*'
             '<legend>Update this site</legend>'],
-        'status_code': 200, },
+        'status_code': 200},
 
     # Can we see a site ok?
     {
@@ -675,7 +675,7 @@ def gsp_gbp_per_kwh():
             r"22 9813 2107 763"],
         'status_code': 200},
 
-    # Can we see a supply ok? },
+    # Can we see a supply ok?
 
     # View a supply in edit mode
     {
@@ -688,7 +688,7 @@ def gsp_gbp_per_kwh():
 
             # Check reference to ongoing era
             r"<td>2003-08-03 00:00</td>\s*<td>\s*Ongoing", ],
-        'status_code': 200, },
+        'status_code': 200},
     {
         'path': '/chellow/reports/305/output/',
         'method': 'post',
@@ -701,7 +701,7 @@ def gsp_gbp_per_kwh():
             'name': "Hello",
             'source_id': "4",
             'generator_type_id': "1",
-            'gsp_group_id': "11", },
+            'gsp_group_id': "11"},
         'regexes': [
             r"/reports/7/output/\?supply_id=1"],
         'status_code': 303},
@@ -4071,13 +4071,14 @@ def virtual_bill(supply_source):
             "the batch\."]},
     {
         'name': "If a new supply has a blank LLFC field, check it gives a "
-        "good error message.",
+        "good error message. Also make sure that site name doesn't change "
+        "if supply name changes.",
         'path': '/chellow/reports/311/output/',
         'method': 'post',
         'data': {
             'site_id': "7",
             'source_id': "1",
-            'name': "Supply 54",
+            'name': "John Nash",
             'start_year': "2010",
             'start_month': "05",
             'start_day': "26",
@@ -4101,7 +4102,8 @@ def virtual_bill(supply_source):
             'insert': "Insert"},
         'regexes': [
             r"There is no LLFC with the code &#39;&#39; associated with the "
-            "DNO 22\."],
+            "DNO 22\.",
+            r'<input name="site_name" value="Parbola"'],
         'status_code': 400},
     {
         'name': "If a new supply has a blank import sc field, check it gives "
@@ -5936,7 +5938,7 @@ def shutdown():
         'method': 'post',
         'data': {
             'site_id': "8",
-            'name': "Ishmael",
+            'site_name': "Ishmael",
             'code': "MOBY",
             'update': "Update"},
         'status_code': 303},

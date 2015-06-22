@@ -53,7 +53,7 @@ try:
             inv.sendSeeOther("/reports/3/output/")
         elif inv.hasParameter("update"):
             code = inv.getString("code")
-            name = inv.getString("name")
+            name = inv.getString("site_name")
             site.update(code, name)
             sess.commit()
             inv.sendSeeOther("/reports/5/output/?site_id=" + str(site.id))
