@@ -10,26 +10,26 @@
         'data': {
             'email_address': "watkins@example.com",
             'user_role_code': "editor",
-            'password': "alan", },
+            'password': "alan"},
         'status_code': 303,
         'regexes': [
-            r"/reports/257/output/\?user_id=2", ], },
+            r"/reports/257/output/\?user_id=2"]},
     {
         'path': '/chellow/reports/255/output/',
         'method': 'post',
         'data': {
             'email_address': "lydgate@localhost",
             'user_role_code': "editor",
-            'password': "science", },
+            'password': "science"},
         'status_code': 303,
         'regexes': [
-            r"/reports/257/output/\?user_id=3", ], },
+            r"/reports/257/output/\?user_id=3"]},
     {
         'path': '/chellow/reports/257/output/?user_id=3',
         'regexes': [
             r'<input type="hidden" name="user_id" value="3">\s*'
-            '<legend>Delete this user</legend>', ],
-        'status_code': 200, },
+            '<legend>Delete this user</legend>'],
+        'status_code': 200},
 
     # Check that a duplicate email gives a proper error message
     {
@@ -38,10 +38,10 @@
         'data': {
             'email_address': "lydgate@localhost",
             'user_role_code': "editor",
-            'password': "science", },
+            'password': "science"},
         'regexes': [
-            r"already a user with this email address", ],
-        'status_code': 400, },
+            r"already a user with this email address"],
+        'status_code': 400},
 
     # Test that we're able to change the password
     {
@@ -51,8 +51,8 @@
             'user_id': "3",
             'current_password': "science",
             'new_password': "rosamund",
-            'confirm_new_password': "rosamund", },
-        'status_code': 303, },
+            'confirm_new_password': "rosamund"},
+        'status_code': 303},
 
     # Test that we can change the role
     {
@@ -61,8 +61,8 @@
         'data': {
             'user_id': "3",
             'email_address': "mary-ann-evans@example.com",
-            'user_role_code': "editor", },
-        'status_code': 303, },
+            'user_role_code': "editor"},
+        'status_code': 303},
 
     # ...and change it back
     {
@@ -71,8 +71,8 @@
         'data': {
             'user_id': "3",
             'email_address': "lydgate@localhost",
-            'user_role_code': "editor", },
-        'status_code': 303, },
+            'user_role_code': "editor"},
+        'status_code': 303},
     {
         'name': "Check that invalid email address gives unauthorized.",
         'path': '/chellow/reports/315/output/',
@@ -88,8 +88,8 @@
             'start_day': "03",
             'start_hour': "00",
             'start_minute': "00",
-            'has_finished': "false", },
-        'status_code': 401, },
+            'has_finished': "false"},
+        'status_code': 401},
 
     {
         'name': "Check duplicate report name gives good error message",
@@ -121,13 +121,13 @@
         'files': {'import_file': 'sites.csv'},
         'status_code': 303,
         'regexes': [
-            r"/reports/295/output/\?process_id=0", ], },
+            r"/reports/295/output/\?process_id=0"]},
     {
         'path': '/chellow/reports/295/output/?process_id=0',
         'tries': {'max': 10, 'period': 1},
         'status_code': 200,
         'regexes': [
-            r"The file has been imported successfully\.", ], },
+            r"The file has been imported successfully\."]},
 
     # duplicates
     {
@@ -136,13 +136,13 @@
         'files': {'import_file': 'sites.csv'},
         'status_code': 303,
         'regexes': [
-            r"/reports/295/output/\?process_id=1", ], },
+            r"/reports/295/output/\?process_id=1"]},
     {
         'path': '/chellow/reports/295/output/?process_id=1',
         'tries': {'max': 10, 'period': 1},
         'regexes': [
-            r"There&#39;s already a site with this code\.", ],
-        'status_code': 200, },
+            r"There&#39;s already a site with this code\."],
+        'status_code': 200},
 
     # Delete a site
     {
@@ -150,22 +150,22 @@
         'method': 'post',
         'data': {
             'site_id': "2",
-            'delete': "Delete", },
-        'status_code': 303, },
+            'delete': "Delete"},
+        'status_code': 303},
 
     # Show and and add a site
     {
         'path': '/chellow/reports/297/output/',
         'regexes': [
-            r"Add a site", ],
-        'status_code': 200, },
+            r"Add a site"],
+        'status_code': 200},
     {
         'path': '/chellow/reports/297/output/',
         'method': 'post',
         'data': {
             'code': "CH017",
-            'name': "Parbola", },
-        'status_code': 303, },
+            'name': "Parbola"},
+        'status_code': 303},
     {
         'name': "HHDC contracts",
         'path': '/chellow/reports/277/output/',
@@ -178,10 +178,10 @@
             'start_day': "03",
             'start_hour': "00",
             'start_minute': "00",
-            'has_finished': "false", },
+            'has_finished': "false"},
         'status_code': 303,
         'regexes': [
-            r"/reports/115/output/\?hhdc_contract_id=56", ], },
+            r"/reports/115/output/\?hhdc_contract_id=56"]},
 
     # Update Contract
     {
@@ -8159,5 +8159,30 @@ def days():
             r'"2009-04-10 23:30","03","801","5","0393","1","nhh",'
             r'110,22 1065 3921 534,30,Non half-hourlies 2010,0,0,,0,,None,480,'
             r',,,,0,0,,0,,None,480'],
+        'status_code': 200},
+
+    {
+        'name': "Group starting after report period.",
+        'path': '/chellow/reports/389/output/?site_id=3&months=1&'
+        'finish_year=2003&finish_month=08',
+        'regexes': [
+            r'"CI005","Wheal Rodney","CI004","2003-08-03 00:00",'
+            r'"2003-08-31 23:30","chp chp","","","","","0.0","","0.0","",'
+            r'"0.00525288","","0.0","0","0.0","0","0.0","","0.0","","0.0",'
+            r'"0.0","0","0.0","0.0","0","0.0","0.0","0","","","0.0","0","",'
+            r'"0.0","0","","0.0","0","","aahedc-gbp","0.0","aahedc-gsp-kwh",'
+            r'"0.0","aahedc-msp-kwh","0","aahedc-rate","0.00016456",'
+            r'"duos-reactive-rate","0.0023","problem","",'
+            r'"triad-estimate-1-date","2002-11-25 17:00",'
+            r'"triad-estimate-1-gsp-kw","0.0","triad-estimate-1-laf","1.087",'
+            r'"triad-estimate-1-msp-kw","0","triad-estimate-1-status","E",'
+            r'"triad-estimate-2-date","2002-12-06 17:00",'
+            r'"triad-estimate-2-gsp-kw","0.0","triad-estimate-2-laf","1.074",'
+            r'"triad-estimate-2-msp-kw","0","triad-estimate-2-status","E",'
+            r'"triad-estimate-3-date","2003-01-30 17:00",'
+            r'"triad-estimate-3-gsp-kw","0.0","triad-estimate-3-laf","1.087",'
+            r'"triad-estimate-3-msp-kw","0","triad-estimate-3-status","E",'
+            r'"triad-estimate-gbp","0.0","triad-estimate-gsp-kw","0.0",'
+            r'"triad-estimate-months","1","triad-estimate-rate","23.77056"'],
         'status_code': 200},
 ]

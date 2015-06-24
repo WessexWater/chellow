@@ -18,6 +18,7 @@ import sys
 import hashlib
 import utils
 import simplejson as json
+from dateutil.relativedelta import relativedelta
 
 Monad.getUtils()['impt'](globals(), 'utils')
 UserException, hh_after, HH = utils.UserException, utils.hh_after, utils.HH
@@ -1213,11 +1214,12 @@ class Site(Base, PersistentClass):
                 check_from = next_hh(check_to)
                 check_to = finish
             else:
-                check_to = int(
+                mins = int(
                     math.floor(
                         float(
-                            totalseconds(check_to - check_from)) / 2 /
-                        (60 * 30)))
+                            totalseconds(check_to - check_from))
+                        / 2 / (60 * 30))) * 30
+                check_to = check_from + relativedelta(minutes=mins)
         return groups
 
     # return true if the supply is continuously attached to the site for the
@@ -1227,34 +1229,50 @@ class Site(Base, PersistentClass):
         new_site._num_phys_sups = sess.query(SiteEra).filter(
             SiteEra.site_id == new_site.id,
             SiteEra.is_physical == true()).count()
-        for supply in sess.query(Supply).from_statement(
-                "select supply.* from supply, "
-                "era left join "
-                "(select site_era.era_id from site_era where "
-                "site_era.site_id = :site_id) as sera "
-                "on (era.id = sera.era_id) "
-                "where era.supply_id = supply.id and "
-                "era.start_date <= :finish_date and "
-                "(era.finish_date is null or era.finish_date >= :start_date) "
-                "group by supply.id, supply.name, supply.source_id, "
-                "supply.generator_type_id, supply.gsp_group_id, supply.note, "
-                "supply.dno_contract_id having "
-                "bool_and(sera.era_id is not null)").params(
-                site_id=new_site.id, start_date=start, finish_date=finish):
-            if supply not in group_supplies:
-                group_supplies.append(supply)
-                for site in sess.query(Site).join(SiteEra, Era).filter(
-                        Era.supply_id == supply.id, Era.start_date <= finish,
-                        or_(
-                            Era.finish_date == null(),
-                            Era.finish_date >= start),
-                        not_(
-                            Site.id.in_([s.id for s in group_sites]))
-                        ).distinct():
-                    group_sites.append(site)
-                    if not self.walk_group(
-                            sess, group_sites, group_supplies, start, finish):
-                        return False
+        sups = sess.query(Supply).join(Era).join(SiteEra).filter(
+            SiteEra.site == new_site, Era.start_date <= finish,
+            or_(
+                Era.finish_date == null(),
+                Era.finish_date >= start)).distinct().all()
+        num_fit = len(sess.execute(
+            "select supply.id from supply, "
+            "era left join "
+            "(select site_era.era_id from site_era where "
+            "site_era.site_id = :site_id) as sera "
+            "on (era.id = sera.era_id) "
+            "where era.supply_id = supply.id and "
+            "era.start_date <= :finish_date and "
+            "(era.finish_date is null or era.finish_date >= :start_date) "
+            "group by supply.id having "
+            "bool_and(sera.era_id is not null) and "
+            "bool_or(era.start_date <= :start_date) and "
+            "bool_or(era.finish_date is null or "
+            "era.finish_date >= :finish_date)",
+            {
+                'site_id': new_site.id,
+                'start_date': start,
+                'finish_date': finish}).fetchall())
+
+        if len(sups) == num_fit:
+            for supply in sups:
+                if supply not in group_supplies:
+                    group_supplies.append(supply)
+                    for site in sess.query(Site).join(SiteEra, Era).filter(
+                            Era.supply_id == supply.id,
+                            Era.start_date <= finish,
+                            or_(
+                                Era.finish_date == null(),
+                                Era.finish_date >= start),
+                            not_(
+                                Site.id.in_([s.id for s in group_sites]))
+                            ).distinct():
+                        group_sites.append(site)
+                        if not self.walk_group(
+                                sess, group_sites, group_supplies, start,
+                                finish):
+                            return False
+        else:
+            return False
         return True
 
 
