@@ -10837,8 +10837,6 @@ def days():
             r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="0" '
             r'office:value-type="float"/>\s*'
-            r'<table:table-cell office:value="0" '
-            r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="150.0" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="98.17" '
