@@ -178,10 +178,10 @@ def process_site(
                 if 'problem' in mop_bill and len(mop_bill['problem']) > 0:
                     problem += 'MOP Problem: ' + mop_bill['problem']
 
-                if source_code in ('net', 'gen', 'sub', 'gen-net'):
-                    month_data['import-net-gbp'] += dc_gbp + mop_gbp
-                elif source_code in ('3rd-party', '3rd-party-reverse'):
+                if source_code in ('3rd-party', '3rd-party-reverse'):
                     month_data['import-3rd-party-gbp'] += dc_gbp + mop_gbp
+                else:
+                    month_data['import-net-gbp'] += dc_gbp + mop_gbp
 
             for bill in sess.query(Bill).filter(
                     Bill.supply == supply, Bill.start_date <= chunk_finish,

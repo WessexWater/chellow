@@ -584,12 +584,11 @@ def content():
                         mop_bill = sss.mop_bill
                         gbp += mop_bill['net-gbp']
 
-                        if source_code in ('net', 'gen', 'gen-net', 'sub'):
-                            month_data['import-net-gbp'] += gbp
-                            month_data['used-gbp'] += gbp
-                        elif source_code in ('3rd-party', '3rd-party-reverse'):
+                        if source_code in ('3rd-party', '3rd-party-reverse'):
                             month_data['import-3rd-party-gbp'] += gbp
-                            month_data['used-gbp'] += gbp
+                        else:
+                            month_data['import-net-gbp'] += gbp
+                        month_data['used-gbp'] += gbp
 
                         if source_code in ('gen', 'gen-net'):
                             generator_type = supply.generator_type.code
