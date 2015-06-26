@@ -1306,6 +1306,7 @@ order by hh_datum.start_date
                             RegisterRead.previous_date <= chunk_finish,
                             RegisterRead.present_date >= chunk_start) \
                             .order_by(RegisterRead.present_date):
+
                         if tpr_code not in tpr_codes:
                             self.problem += "The TPR " + str(tpr_code) + \
                                 " from the register read does not match any " \
@@ -1325,6 +1326,8 @@ order by hh_datum.start_date
                                 present_value
 
                         kwh = advance * coefficient
+                        self.consumption_info += "dumb nhh kwh for " + \
+                            tpr_code + " is " + str(kwh) + "\n"
                         tpr_dict = _tpr_dict(
                             sess, self.caches, tpr_code, self.pw)
                         days_of_week = tpr_dict['days-of-week']
