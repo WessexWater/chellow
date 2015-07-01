@@ -8022,48 +8022,23 @@ def days():
             r'0,0,,0,,None,288'],
         'status_code': 200},
     {
-        'name': "Reads covered by bill without. Run supplies duration.",
-        'path': '/chellow/reports/149/output/?supply_id=10&start_year=2012&'
-        'start_month=01&start_day=05&start_hour=00&start_minute=00&'
-        'finish_year=2012&finish_month=01&finish_day=10&finish_hour=23&'
-        'finish_minute=30',
-        'status_code': 303},
-    {
-        'path': '/chellow/reports/251/output/',
-        'tries': {},
-        'regexes': [
-            r"034_FINISHED_supplies_duration\.csv"],
-        'status_code': 200},
-    {
-        'path': '/chellow/reports/253/output/?'
-        'name=034_FINISHED_supplies_duration.csv',
-        'regexes': [
-            r'"10","2","net","","CI017","Roselands","2012-01-05 00:00",'
-            r'"2012-01-10 23:30","03","801","6a","0366","1","nhh",110,'
-            r'22 1065 3921 534,30,Non half-hourlies 2010,0,0,,0,,None,288,,,,,'
-            r'0,0,,0,,None,288'],
-        'status_code': 200},
-    {
         'name': "Reads covered by bill without. Run bill check.",
-        'path': '/chellow/reports/149/output/?supply_id=10&start_year=2012&'
-        'start_month=01&start_day=05&start_hour=00&start_minute=00&'
-        'finish_year=2012&finish_month=01&finish_day=10&finish_hour=23&'
-        'finish_minute=30',
+        'path': '/chellow/reports/111/output/?bill_id=21',
         'status_code': 303},
     {
         'path': '/chellow/reports/251/output/',
         'tries': {},
         'regexes': [
-            r"035_FINISHED_supplies_duration\.csv"],
+            r"035_FINISHED_bill_check\.csv"],
         'status_code': 200},
     {
         'path': '/chellow/reports/253/output/?'
-        'name=035_FINISHED_supplies_duration.csv',
+        'name=035_FINISHED_bill_check.csv',
         'regexes': [
-            r'"10","2","net","","CI017","Roselands","2012-01-05 00:00",'
-            r'"2012-01-10 23:30","03","801","6a","0366","1","nhh",110,'
-            r'22 1065 3921 534,30,Non half-hourlies 2010,0,0,,0,,None,288,,,,,'
-            r'0,0,,0,,None,288'],
+            r'"07-002","3423760010","N","10","9.07","0.21","2012-01-05 00:00",'
+            r'"2012-01-10 23:30","22 1065 3921 534","CI017","Roselands",'
+            r'"2012-01-05 00:00","2012-01-10 23:30","22;21","54.77","25.2",'
+            r'"29.57","10.0","252.0","",""'],
         'status_code': 200},
 
     {
@@ -8077,11 +8052,11 @@ def days():
         'path': '/chellow/reports/251/output/',
         'tries': {},
         'regexes': [
-            r"035_FINISHED_supplies_duration\.csv"],
+            r"036_FINISHED_supplies_duration\.csv"],
         'status_code': 200},
     {
         'path': '/chellow/reports/253/output/?'
-        'name=035_FINISHED_supplies_duration.csv',
+        'name=036_FINISHED_supplies_duration.csv',
         'regexes': [
             r'"10","2","net","","CI017","Roselands","2007-02-01 00:00",'
             r'"2007-02-28 23:30","03","801","5","0393","0","nhh",'
@@ -8128,12 +8103,12 @@ def days():
         'path': '/chellow/reports/251/output/',
         'tries': {},
         'regexes': [
-            r"036_FINISHED_supplies_duration\.csv"],
+            r"037_FINISHED_supplies_duration\.csv"],
         'status_code': 200},
     {
         'name': "Supplies duration normal reads with prev, pres the same.",
         'path': '/chellow/reports/253/output/?'
-        'name=036_FINISHED_supplies_duration.csv',
+        'name=037_FINISHED_supplies_duration.csv',
         'regexes': [
             r'"10","2","net","","CI017","Roselands","2009-04-01 00:00",'
             r'"2009-04-10 23:30","03","801","5","0393","1","nhh",'

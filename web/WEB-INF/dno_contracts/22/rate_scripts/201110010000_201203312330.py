@@ -21,8 +21,18 @@ def lafs():
             'night': 1.031,
             'other': 1.034}}
 
+
 def tariffs():
     return {
+        '110': {
+            'description': 'Small Non-Domestic Unrestricted',
+            'gbp-per-mpan-per-day': 0.0550,
+            'gbp-per-kva-per-day': 0,
+            'excess-gbp-per-kva-per-day': 0,
+            'red-gbp-per-kwh': 0.02402,
+            'amber-gbp-per-kwh': 0.02402,
+            'green-gbp-per-kwh': 0.02402,
+            'gbp-per-kvarh': 0},
         '510': {
             'description': 'High Voltage HH Metered',
             'gbp-per-mpan-per-day': 0.6488,
@@ -81,7 +91,7 @@ def tariffs():
             'description': 'LV Sub Generation Non-Intermittent',
             'gbp-per-mpan-per-day': 0.00,
             'gbp-per-kva-per-day': 0.00,
-            'excess-gbp-per-kva-per-day': 0.00, 
+            'excess-gbp-per-kva-per-day': 0.00,
             'red-gbp-per-kwh': -0.06205,
             'amber-gbp-per-kwh': -0.00181,
             'green-gbp-per-kwh': -0.00117,

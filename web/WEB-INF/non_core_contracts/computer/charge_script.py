@@ -1265,9 +1265,10 @@ order by hh_datum.start_date
                         MeasurementRequirement.ssc_id == self.ssc.id).all()
                 bills = []
                 for cand_bill in sess.query(Bill).join(Batch) \
-                        .join(Contract).join(BillType).filter(
+                        .join(BillType).filter(
                             Bill.supply == self.supply,
-                            Contract.id == self.supplier_contract.id,
+                            Bill.reads.any(),
+                            Batch.contract == self.supplier_contract,
                             Bill.start_date <= chunk_finish,
                             Bill.finish_date >= chunk_start,
                             BillType.code != 'W').order_by(
