@@ -5,14 +5,13 @@ import utils
 import db
 import hh_importer
 import bsuos
-import system_price_bmreports
-import system_price_elexon
-import system_price_unified
+import system_price
+import bank_holidays
 import rcrc
 import tlms
 Monad.getUtils()['impt'](
     globals(), 'utils', 'hh_importer', 'bsuos', 'rcrc', 'tlms', 'db',
-    'system_price_bmreports', 'system_price_elexon', 'system_price_unified')
+    'system_price', 'bank_holidays')
 
 UserException = utils.UserException
 
@@ -23,8 +22,7 @@ def on_shut_down(ctx):
     try:
         sess = db.session()
         for md in (
-                hh_importer, bsuos, system_price_bmreports,
-                system_price_elexon, rcrc, tlms, system_price_unified):
+                hh_importer, bsuos, system_price, rcrc, tlms, bank_holidays):
             try:
                 md.shutdown()
             except UserException, e:

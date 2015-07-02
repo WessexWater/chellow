@@ -1,1 +1,1 @@
-{'name': 'System Price Unified Importer'}
+{'name': 'System Price Importer'}

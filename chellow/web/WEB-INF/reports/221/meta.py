@@ -1,1 +1,1 @@
-{'name': u'System Price Importer'}
+{'name': 'Bank Holiday Importer'}

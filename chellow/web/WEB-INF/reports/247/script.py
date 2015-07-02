@@ -23,7 +23,7 @@ CATEGORY_ORDER = {
 
 Monad.getUtils()['impt'](
     globals(), 'templater', 'db', 'utils', 'computer', 'bsuos', 'aahedc',
-    'ccl', 'system_price_bmreports', 'system_price_elexon', 'dloads')
+    'dloads', 'ccl', 'system_price')
 Site, Era, Bill, SiteEra = db.Site, db.Era, db.Bill, db.SiteEra
 Contract, Supply, Source = db.Contract, db.Supply, db.Source
 HhDatum, Channel = db.HhDatum, db.Channel
@@ -97,10 +97,7 @@ def content():
             if rate_start is not None:
                 rate_start = rate_start.replace(tzinfo=pytz.utc)
 
-            try:
-                lib = globals()[contract.name]
-            except KeyError:
-                continue
+            lib = globals()[contract.name]
 
             if hasattr(lib, 'create_future_func'):
                 future_funcs[contract.id] = {

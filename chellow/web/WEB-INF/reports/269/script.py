@@ -26,7 +26,10 @@ try:
             inv.sendSeeOther('/reports/259/output/')
         else:
             name = form_str(inv, 'name')
-            charge_script = inv.getString('charge_script')
+            if inv.hasParameter('charge_script'):
+                charge_script = inv.getString('charge_script')
+            else:
+                charge_script = contract.charge_script
             properties = inv.getString('properties')
             contract.update(
                 sess, contract.is_core, name, contract.party, charge_script,

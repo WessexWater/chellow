@@ -16,11 +16,13 @@ def lafs():
             'night': 1.067,
             'other': 1.069}}
 
+
 def tariffs():
     return {
         '110': {
             'day-gbp-per-kwh': 0.019400,
-            'night-gbp-per-kwh': 0.019400},
+            'night-gbp-per-kwh': 0.019400,
+            'reactive-gbp-per-kvarh': 0.002300},
         '210': {
             'day-gbp-per-kwh': 0.026700,
             'night-gbp-per-kwh': 0.004800},

@@ -204,7 +204,7 @@ def hh_rate(sess, caches, contract_id, date, name, pw):
                 cstart = max(start_date, month_before)
                 cfinish = month_after
 
-        is_json = rs.script[0] == '{'
+        is_json = rs.script.lstrip()[0] == '{'
         if is_json:
             ns = json.loads(rs.script)
         else:
@@ -456,12 +456,17 @@ def _datum_generator(sess, years_back, caches, pw):
             ct_decimal_hour = ct_dt.hour + float(ct_dt.minute) / 60
 
             utc_bank_holidays = hh_rate(
-                sess2, caches, bank_holidays.db_id, hh_date, 'days', pw)
+                sess2, caches, bank_holidays.db_id, hh_date, 'bank_holidays',
+                pw)
             if utc_bank_holidays is None:
                 msg = "\nCan't find bank holidays for " + str(hh_date)
                 pw.println(msg)
                 raise UserException(msg)
-            utc_is_bank_holiday = hh_date.day in utc_bank_holidays
+            utc_bank_holidays = utc_bank_holidays[:]
+            for i in range(len(utc_bank_holidays)):
+                utc_bank_holidays[i] = utc_bank_holidays[i][5:]
+            utc_is_bank_holiday = hh_date.strftime("%m-%d") in \
+                utc_bank_holidays
 
             hh = {
                 'status': 'E',

@@ -27,7 +27,11 @@
         <td>{{ contract.is_core }}</td>
       </tr>
     </table>
-    {% if contract.name == 'bsuos' %}
+    {% if contract.name == 'bank_holidays' %}
+      <p>
+        <a href="{{ context_path }}/reports/221/output/">Automatic Importer</a>
+      </p>
+    {% elif contract.name == 'bsuos' %}
       <p>
         <a href="{{ context_path }}/reports/227/output/">Automatic Importer</a>
       </p>
@@ -35,15 +39,7 @@
       <p>
         <a href="{{ context_path }}/reports/223/output/">Automatic Importer</a>
       </p>
-    {% elif contract.name == 'system_price_bmreports' %}
-      <p>
-        <a href="{{ context_path }}/reports/221/output/">Automatic Importer</a>
-      </p>
-    {% elif contract.name == 'system_price_elexon' %}
-      <p>
-        <a href="{{ context_path }}/reports/385/output/">Automatic Importer</a>
-      </p>
-    {% elif contract.name == 'system_price_unified' %}
+    {% elif contract.name == 'system_price' %}
       <p>
         <a href="{{context_path}}/reports/381/output/">Automatic Importer</a>
       </p>

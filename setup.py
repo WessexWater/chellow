@@ -13,8 +13,7 @@ setup(
         'chellow', 'net', 'net.sf', 'net.sf.chellow', 'net.sf.chellow.monad',
         'utils', 'db', 'bank_holidays', 'scenario', 'computer', 'triad_rates',
         'duos', 'templater', 'general_import', 'hh_importer', 'bill_import',
-        'edi_lib', 'dloads', 'triad', 'bsuos', 'system_price_bmreports',
-        'system_price_elexon', 'system_price_unified', 'rcrc', 'tlms',
+        'edi_lib', 'dloads', 'triad', 'bsuos', 'system_price', 'rcrc', 'tlms',
         'odswriter', 'odswriter.v1_1', 'odswriter.v1_2'],
     package_data={'chellow': [
         'web/WEB-INF/bootstrap.py',
