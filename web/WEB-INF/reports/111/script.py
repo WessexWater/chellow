@@ -35,13 +35,15 @@ elif inv.hasParameter('bill_id'):
 else:
     raise UserException("The bill check needs a batch_id or bill_id.")
 
+user = inv.getUser()
+
 
 def content():
     sess = tmp_file = None
     try:
         sess = db.session()
 
-        running_name, finished_name = dloads.make_names('bill_check.csv')
+        running_name, finished_name = dloads.make_names('bill_check.csv', user)
         tmp_file = open(running_name, "w")
         if batch_id is not None:
             batch = Batch.get_by_id(sess, batch_id)

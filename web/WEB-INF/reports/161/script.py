@@ -252,6 +252,8 @@ def process_site(
         billed_gbp, metering_type, problem]
     return result
 
+user = inv.getUser()
+
 
 def long_process():
     sess = None
@@ -266,7 +268,7 @@ def long_process():
             st = Site.get_by_id(sess, st_id)
             base_name = "site_monthly_duration_for_" + st.code + "_" + \
                 str(months) + "_to_" + str(year) + "_" + str(month) + ".csv"
-        running_name, finished_name = dloads.make_names(base_name)
+        running_name, finished_name = dloads.make_names(base_name, user)
         tmp_file = open(running_name, "w")
 
         forecast_date = computer.forecast_date()

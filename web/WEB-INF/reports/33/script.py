@@ -21,6 +21,7 @@ HH, hh_format, form_int = utils.HH, utils.hh_format, utils.form_int
 form_str, form_date = utils.form_str, utils.form_date
 
 inv = globals()['inv']
+user = inv.getUser()
 
 date = form_date(inv, 'date')
 if inv.hasParameter('supply_id'):
@@ -39,7 +40,7 @@ if inv.hasParameter('mpan_cores'):
 else:
     mpan_cores = None
 
-running_name, finished_name = dloads.make_names('supplies_snapshot.csv')
+running_name, finished_name = dloads.make_names('supplies_snapshot.csv', user)
 
 
 def content():

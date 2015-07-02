@@ -128,6 +128,8 @@ def mpan_bit(sess, supply, is_import, num_hh, eras, chunk_start, chunk_finish):
         llfc_code, mpan_core_str, sc_str, supplier_contract_name, sum_kwh,
         non_actual, gsp_kwh, kw_at_md, date_at_md_str, kva_at_md, num_bad])
 
+user = inv.getUser()
+
 
 def content():
     sess = None
@@ -136,7 +138,7 @@ def content():
         sess = db.session()
 
         running_name, finished_name = dloads.make_names(
-            'supplies_duration.csv')
+            'supplies_duration.csv', user)
         f = open(running_name, "w")
         f.write(
             ','.join(

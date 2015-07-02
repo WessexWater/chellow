@@ -39,6 +39,7 @@ if inv.hasParameter('mpan_cores'):
 else:
     mpan_cores = None
 
+user = inv.getUser()
 zf = None
 tf = None
 
@@ -76,7 +77,7 @@ def content():
         titles = "MPAN Core,Date," + ','.join(map(str, range(48)))
 
         running_name, finished_name = dloads.make_names(
-            '_'.join(base_name) + ('.zip' if is_zipped else '.csv'))
+            '_'.join(base_name) + ('.zip' if is_zipped else '.csv'), user)
         if is_zipped:
             zf = zipfile.ZipFile(running_name, "w", zipfile.ZIP_DEFLATED)
         else:

@@ -28,6 +28,8 @@ if inv.hasParameter('supply_id'):
 else:
     supply_id = None
 
+user = inv.getUser()
+
 
 def content():
     sess = None
@@ -39,7 +41,7 @@ def content():
         else:
             fname.append('supply_' + str(supply_id))
         running_name, finished_name = dloads.make_names(
-            '_'.join(fname) + '.csv')
+            '_'.join(fname) + '.csv', user)
         f = open(running_name, "w")
 
         sess = db.session()

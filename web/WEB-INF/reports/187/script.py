@@ -60,7 +60,8 @@ titles = ','.join('"' + v + '"' for v in (
     "Export REACTIVE_IMP Status", "Export REACTIVE_EXP",
     "Export REACTIVE_EXP Status")) + "\n"
 
-running_name, finished_name = dloads.make_names(base_name)
+user = inv.getUser()
+running_name, finished_name = dloads.make_names(base_name, user)
 
 if is_zipped:
     zf = zipfile.ZipFile(running_name, 'w')

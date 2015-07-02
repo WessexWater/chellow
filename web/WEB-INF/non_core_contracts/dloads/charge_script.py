@@ -23,7 +23,7 @@ if len(files) > 0:
     download_id = int(files[0][:3]) + 1
 
 
-def make_names(base):
+def make_names(base, user):
     global download_id
     try:
         lock.acquire()
@@ -34,5 +34,15 @@ def make_names(base):
     finally:
         lock.release()
 
-    names = tuple('_'.join((serial, v, base)) for v in ('RUNNING', 'FINISHED'))
+    if user is None:
+        uname = ''
+    else:
+        if sys.platform.startswith('java'):
+            addr = str(user.getEmailAddress())
+        else:
+            addr = user.email_address
+        uname = addr.replace('@', '').replace('.', '')
+
+    names = tuple(
+        '_'.join((serial, v, uname, base)) for v in ('RUNNING', 'FINISHED'))
     return tuple(os.path.join(download_path, name) for name in names)

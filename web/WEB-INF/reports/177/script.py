@@ -28,6 +28,8 @@ if inv.hasParameter('supply_id'):
 else:
     supply_id = None
 
+user = inv.getUser()
+
 
 def content():
     sess = None
@@ -45,7 +47,7 @@ def content():
             base_name = "supplies_monthly_duration_for_" + str(supply.id) + \
                 "_" + str(months) + "_to_" + str(year) + "_" + str(month) + \
                 ".csv"
-        running_name, finished_name = dloads.make_names(base_name)
+        running_name, finished_name = dloads.make_names(base_name, user)
 
         tmp_file = open(running_name, "w")
 
