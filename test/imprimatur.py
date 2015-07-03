@@ -10473,6 +10473,108 @@ def days():
         'path': '/chellow/reports/309/output/?hh_datum_id=3',
         'status_code': 200},
 
+    {
+        'name': "CRC meter change reads",
+        'path': '/chellow/reports/31/output/',
+        'method': 'post',
+        'data': {
+            'supplier_read_id': "9",
+            'mpan': "22 1065 3921 534",
+            'coefficient': "1",
+            'msn': "brand new meter",
+            'units': "kWh",
+            'tpr_id': "1",
+            'previous_year': "2011",
+            'previous_month': "02",
+            'previous_day': "06",
+            'previous_hour': "23",
+            'previous_minute': "30",
+            'previous_value': "0",
+            'previous_type_id': "1",
+            'present_year': "2011",
+            'present_month': "02",
+            'present_day': "08",
+            'present_hour': "23",
+            'present_minute': "30",
+            'present_value': "97",
+            'present_type_id': "1",
+            'update': "Update"},
+        'status_code': 303},
+    {
+        'name': "CRC meter change reads",
+        'path': '/chellow/reports/31/output/',
+        'method': 'post',
+        'data': {
+            'supplier_read_id': "10",
+            'mpan': "22 1065 3921 534",
+            'coefficient': "1",
+            'msn': "I02D89150",
+            'units': "kWh",
+            'tpr_id': "1",
+            'previous_year': "2011",
+            'previous_month': "02",
+            'previous_day': "04",
+            'previous_hour': "23",
+            'previous_minute': "30",
+            'previous_value': "8053",
+            'previous_type_id': "1",
+            'present_year': "2011",
+            'present_month': "02",
+            'present_day': "06",
+            'present_hour': "23",
+            'present_minute': "30",
+            'present_value': "8553",
+            'present_type_id': "1",
+            'update': "Update"},
+        'status_code': 303},
+    {
+        'name': "CRC meter change reads",
+        'path': '/chellow/reports/31/output/',
+        'method': 'post',
+        'data': {
+            'supplier_read_id': "16",
+            'mpan': "22 1065 3921 534",
+            'coefficient': "1",
+            'msn': "brand new meter",
+            'units': "kWh",
+            'tpr_id': "1",
+            'previous_year': "2012",
+            'previous_month': "01",
+            'previous_day': "04",
+            'previous_hour': "23",
+            'previous_minute': "30",
+            'previous_value': "473",
+            'previous_type_id': "1",
+            'present_year': "2012",
+            'present_month': "01",
+            'present_day': "06",
+            'present_hour': "23",
+            'present_minute': "30",
+            'present_value': "725",
+            'present_type_id': "1",
+            'update': "Update"},
+        'status_code': 303},
+
+    {
+        'name': "CRC meter change reads",
+        'path': '/chellow/reports/207/output/?supply_id=10&year=2010',
+        'status_code': 303},
+    {
+        'name': "CRC meter change reads",
+        'path': '/chellow/reports/251/output/',
+        'tries': {},
+        'regexes': [
+            r"042_FINISHED_crc_2010_2011_supply_10\.csv"],
+        'status_code': 200},
+    {
+        'name': "CRC meter change reads",
+        'path': '/chellow/reports/253/output/?'
+        'name=042_FINISHED_crc_2010_2011_supply_10.csv',
+        'tries': {},
+        'status_code': 200,
+        'regexes': [
+            r'73142.3933549']},
+
     # Duration report; bill with reads covered by bill without.
     {
         'name': "Bill with reads covered by bill without. Add covered bill.",
@@ -10672,6 +10774,106 @@ def days():
         'regexes': [
             r"22 4862 4512 332"]},
 
+    {
+        'name': "CRC meter change reads",
+        'path': '/chellow/reports/31/output/',
+        'method': 'post',
+        'data': {
+            'supplier_read_id': "9",
+            'mpan': "22 1065 3921 534",
+            'coefficient': "1",
+            'msn': "brand new meter",
+            'units': "kWh",
+            'tpr_id': "1",
+            'previous_year': "2011",
+            'previous_month': "02",
+            'previous_day': "06",
+            'previous_hour': "23",
+            'previous_minute': "30",
+            'previous_value': "0",
+            'previous_type_id': "1",
+            'present_year': "2011",
+            'present_month': "02",
+            'present_day': "08",
+            'present_hour': "23",
+            'present_minute': "30",
+            'present_value': "97",
+            'present_type_id': "1",
+            'update': "Update"},
+        'status_code': 303},
+    {
+        'name': "CRC meter change reads",
+        'path': '/chellow/reports/31/output/',
+        'method': 'post',
+        'data': {
+            'supplier_read_id': "10",
+            'mpan': "22 1065 3921 534",
+            'coefficient': "1",
+            'msn': "I02D89150",
+            'units': "kWh",
+            'tpr_id': "1",
+            'previous_year': "2011",
+            'previous_month': "02",
+            'previous_day': "04",
+            'previous_hour': "23",
+            'previous_minute': "30",
+            'previous_value': "8053",
+            'previous_type_id': "1",
+            'present_year': "2011",
+            'present_month': "02",
+            'present_day': "06",
+            'present_hour': "23",
+            'present_minute': "30",
+            'present_value': "8553",
+            'present_type_id': "1",
+            'update': "Update"},
+        'status_code': 303},
+    {
+        'name': "CRC meter change reads",
+        'path': '/chellow/reports/31/output/',
+        'method': 'post',
+        'data': {
+            'supplier_read_id': "16",
+            'mpan': "22 1065 3921 534",
+            'coefficient': "1",
+            'msn': "brand new meter",
+            'units': "kWh",
+            'tpr_id': "1",
+            'previous_year': "2012",
+            'previous_month': "01",
+            'previous_day': "04",
+            'previous_hour': "23",
+            'previous_minute': "30",
+            'previous_value': "473",
+            'previous_type_id': "1",
+            'present_year': "2012",
+            'present_month': "01",
+            'present_day': "06",
+            'present_hour': "23",
+            'present_minute': "30",
+            'present_value': "725",
+            'present_type_id': "1",
+            'update': "Update"},
+        'status_code': 303},
+    {
+        'name': "CRC meter change reads",
+        'path': '/chellow/reports/207/output/?supply_id=10&year=2010',
+        'status_code': 303},
+    {
+        'name': "CRC meter change reads",
+        'path': '/chellow/reports/251/output/',
+        'tries': {},
+        'regexes': [
+            r"048_FINISHED_crc_2010_2011_supply_10\.csv"],
+        'status_code': 200},
+    {
+        'name': "CRC meter change reads",
+        'path': '/chellow/reports/253/output/?'
+        'name=048_FINISHED_crc_2010_2011_supply_10.csv',
+        'status_code': 200,
+        'regexes': [
+            r'73142.3933549']},
+
     # See if unified report shows billed amounts correctly
     {
         'name': "Unified Supplies Monthly Duration - billed amounts",
@@ -10682,12 +10884,12 @@ def days():
         'path': '/chellow/reports/251/output/',
         'tries': {'max': 20, 'period': 1},
         'regexes': [
-            r"048_FINISHED_unified_supplies_monthly_duration_20100101_0000_for"
+            r"049_FINISHED_unified_supplies_monthly_duration_20100101_0000_for"
             r"_1_months_supply_10\.ods"],
         'status_code': 200},
     {
         'path': '/chellow/reports/253/output/?'
-        'name=048_FINISHED_unified_supplies_monthly_duration_20100101_0000_for'
+        'name=049_FINISHED_unified_supplies_monthly_duration_20100101_0000_for'
         '_1_months_supply_10.ods',
         'status_code': 200,
         'regexes': [
@@ -10801,11 +11003,7 @@ def days():
             r'<table:table-cell '
             r'office:date-value="2010-01-31T23:30:00" '
             r'office:value-type="date" table:style-name="cDateISO"/>\s*'
-            r'<table:table-cell office:value="35.4648766546" '
-            r'office:value-type="float"/>\s*'
-            r'<table:table-cell office:value="0" '
-            r'office:value-type="float"/>\s*'
-            r'<table:table-cell office:value="3.54648766546" '
+            r'<table:table-cell office:value="5886.08506489" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="0" '
             r'office:value-type="float"/>\s*'
@@ -10815,19 +11013,23 @@ def days():
             r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="0" '
             r'office:value-type="float"/>\s*'
-            r'<table:table-cell office:value="35.4648766546" '
-            r'office:value-type="float"/>\s*'
-            r'<table:table-cell office:value="0" '
-            r'office:value-type="float"/>\s*'
-            r'<table:table-cell office:value="3.54648766546" '
-            r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="0" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="0" '
             r'office:value-type="float"/>\s*'
+            r'<table:table-cell office:value="5886.08506489" '
+            r'office:value-type="float"/>\s*'
+            r'<table:table-cell office:value="0" '
+            r'office:value-type="float"/>\s*'
+            r'<table:table-cell office:value="598.608506489" '
+            r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="0" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="0" '
+            r'office:value-type="float"/>\s*'
+            r'<table:table-cell office:value="0" '
+            r'office:value-type="float"/>\s*'
+            r'<table:table-cell office:value="598.608506489" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="0" '
             r'office:value-type="float"/>\s*'
@@ -10842,7 +11044,7 @@ def days():
             r'<table:table-cell office:value="98.17" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell/>\s*'
-            r'<table:table-cell office:value="0" '
+            r'<table:table-cell office:value="10" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell office:string-value="" '
             r'office:value-type="string"/>\s*'
@@ -10852,9 +11054,9 @@ def days():
             r'<table:table-cell office:string-value="" '
             r'office:value-type="string"/>\s*'
             r'<table:table-cell/>\s*'
-            r'<table:table-cell office:value="3.54648766546" '
+            r'<table:table-cell office:value="588.608506489" '
             r'office:value-type="float"/>\s*'
-            r'<table:table-cell office:value="35.4648766546" '
+            r'<table:table-cell office:value="5886.08506489" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell office:string-value="" '
             r'office:value-type="string"/>\s*'
@@ -10949,12 +11151,12 @@ def days():
         'path': '/chellow/reports/251/output/',
         'tries': {'max': 20, 'period': 1},
         'regexes': [
-            r'049_FINISHED_unified_supplies_monthly_duration_20141201_0000_for'
+            r'050_FINISHED_unified_supplies_monthly_duration_20141201_0000_for'
             r'_1_months_supply_16\.ods'],
         'status_code': 200},
     {
         'path': '/chellow/reports/253/output/?'
-        'name=049_FINISHED_unified_supplies_monthly_duration_20141201_0000_for'
+        'name=050_FINISHED_unified_supplies_monthly_duration_20141201_0000_for'
         '_1_months_supply_16.ods',
         'status_code': 200,
         'regexes': [
@@ -11173,107 +11375,6 @@ def virtual_bill(supply_source):
             'breakdown': '{}'},
         'status_code': 303},
 
-    {
-        'name': "CRC meter change reads",
-        'path': '/chellow/reports/31/output/',
-        'method': 'post',
-        'data': {
-            'supplier_read_id': "9",
-            'mpan': "22 1065 3921 534",
-            'coefficient': "1",
-            'msn': "brand new meter",
-            'units': "kWh",
-            'tpr_id': "1",
-            'previous_year': "2011",
-            'previous_month': "02",
-            'previous_day': "06",
-            'previous_hour': "23",
-            'previous_minute': "30",
-            'previous_value': "0",
-            'previous_type_id': "1",
-            'present_year': "2011",
-            'present_month': "02",
-            'present_day': "08",
-            'present_hour': "23",
-            'present_minute': "30",
-            'present_value': "97",
-            'present_type_id': "1",
-            'update': "Update"},
-        'status_code': 303},
-    {
-        'name': "CRC meter change reads",
-        'path': '/chellow/reports/31/output/',
-        'method': 'post',
-        'data': {
-            'supplier_read_id': "10",
-            'mpan': "22 1065 3921 534",
-            'coefficient': "1",
-            'msn': "I02D89150",
-            'units': "kWh",
-            'tpr_id': "1",
-            'previous_year': "2011",
-            'previous_month': "02",
-            'previous_day': "04",
-            'previous_hour': "23",
-            'previous_minute': "30",
-            'previous_value': "8053",
-            'previous_type_id': "1",
-            'present_year': "2011",
-            'present_month': "02",
-            'present_day': "06",
-            'present_hour': "23",
-            'present_minute': "30",
-            'present_value': "8553",
-            'present_type_id': "1",
-            'update': "Update"},
-        'status_code': 303},
-    {
-        'name': "CRC meter change reads",
-        'path': '/chellow/reports/31/output/',
-        'method': 'post',
-        'data': {
-            'supplier_read_id': "16",
-            'mpan': "22 1065 3921 534",
-            'coefficient': "1",
-            'msn': "brand new meter",
-            'units': "kWh",
-            'tpr_id': "1",
-            'previous_year': "2012",
-            'previous_month': "01",
-            'previous_day': "04",
-            'previous_hour': "23",
-            'previous_minute': "30",
-            'previous_value': "473",
-            'previous_type_id': "1",
-            'present_year': "2012",
-            'present_month': "01",
-            'present_day': "06",
-            'present_hour': "23",
-            'present_minute': "30",
-            'present_value': "725",
-            'present_type_id': "1",
-            'update': "Update"},
-        'status_code': 303},
-
-    {
-        'name': "CRC meter change reads",
-        'path': '/chellow/reports/207/output/?supply_id=10&year=2010',
-        'status_code': 303},
-    {
-        'name': "CRC meter change reads",
-        'path': '/chellow/reports/251/output/',
-        'tries': {},
-        'regexes': [
-            r"050_FINISHED_crc_2010_2011_supply_10\.csv"],
-        'status_code': 200},
-    {
-        'name': "CRC meter change reads",
-        'path': '/chellow/reports/253/output/?'
-        'name=050_FINISHED_crc_2010_2011_supply_10.csv',
-        'tries': {},
-        'status_code': 200,
-        'regexes': [
-            r'73142.3933549']},
 
     {
         'name': "Unified report for a gen-net supply",
@@ -11296,118 +11397,17 @@ def virtual_bill(supply_source):
         'path': '/chellow/reports/251/output/',
         'tries': {},
         'regexes': [
-            r'048_FINISHED_unified_supplies_monthly_duration_20150501_0000_for'
+            r'051_FINISHED_unified_supplies_monthly_duration_20150501_0000_for'
             r'_1_months_supply_5\.ods'],
         'status_code': 200},
     {
         'name': "Unified report for a gen-net supply",
         'path': '/chellow/reports/253/output/?'
-        'name=048_FINISHED_unified_supplies_monthly_duration_20150501_0000_for'
+        'name=051_FINISHED_unified_supplies_monthly_duration_20150501_0000_for'
         '_1_months_supply_5.ods',
         'status_code': 200,
         'regexes': [
             r'chp']},
-
-    {
-        'name': "CRC meter change reads",
-        'path': '/chellow/reports/31/output/',
-        'method': 'post',
-        'data': {
-            'supplier_read_id': "9",
-            'mpan': "22 1065 3921 534",
-            'coefficient': "1",
-            'msn': "brand new meter",
-            'units': "kWh",
-            'tpr_id': "1",
-            'previous_year': "2011",
-            'previous_month': "02",
-            'previous_day': "06",
-            'previous_hour': "23",
-            'previous_minute': "30",
-            'previous_value': "0",
-            'previous_type_id': "1",
-            'present_year': "2011",
-            'present_month': "02",
-            'present_day': "08",
-            'present_hour': "23",
-            'present_minute': "30",
-            'present_value': "97",
-            'present_type_id': "1",
-            'update': "Update"},
-        'status_code': 303},
-
-    {
-        'name': "CRC meter change reads",
-        'path': '/chellow/reports/31/output/',
-        'method': 'post',
-        'data': {
-            'supplier_read_id': "10",
-            'mpan': "22 1065 3921 534",
-            'coefficient': "1",
-            'msn': "I02D89150",
-            'units': "kWh",
-            'tpr_id': "1",
-            'previous_year': "2011",
-            'previous_month': "02",
-            'previous_day': "04",
-            'previous_hour': "23",
-            'previous_minute': "30",
-            'previous_value': "8053",
-            'previous_type_id': "1",
-            'present_year': "2011",
-            'present_month': "02",
-            'present_day': "06",
-            'present_hour': "23",
-            'present_minute': "30",
-            'present_value': "8553",
-            'present_type_id': "1",
-            'update': "Update"},
-        'status_code': 303},
-    {
-        'name': "CRC meter change reads",
-        'path': '/chellow/reports/31/output/',
-        'method': 'post',
-        'data': {
-            'supplier_read_id': "16",
-            'mpan': "22 1065 3921 534",
-            'coefficient': "1",
-            'msn': "brand new meter",
-            'units': "kWh",
-            'tpr_id': "1",
-            'previous_year': "2012",
-            'previous_month': "01",
-            'previous_day': "04",
-            'previous_hour': "23",
-            'previous_minute': "30",
-            'previous_value': "473",
-            'previous_type_id': "1",
-            'present_year': "2012",
-            'present_month': "01",
-            'present_day': "06",
-            'present_hour': "23",
-            'present_minute': "30",
-            'present_value': "725",
-            'present_type_id': "1",
-            'update': "Update"},
-        'status_code': 303},
-    {
-        'name': "CRC meter change reads",
-        'path': '/chellow/reports/207/output/?supply_id=10&year=2010',
-        'status_code': 303},
-    {
-        'name': "CRC meter change reads",
-        'path': '/chellow/reports/251/output/',
-        'tries': {},
-        'regexes': [
-            r"049_FINISHED_crc_2010_2011_supply_10\.csv"],
-        'status_code': 200},
-    {
-        'name': "CRC meter change reads",
-        'path': '/chellow/reports/253/output/?'
-        'name=049_FINISHED_crc_2010_2011_supply_10.csv',
-        'status_code': 200,
-        'regexes': [
-            r'73142.3933549']},
 
     {
         'name': "Supplies duration normal reads with prev, pres the same.",
@@ -11448,12 +11448,12 @@ def virtual_bill(supply_source):
         'path': '/chellow/reports/251/output/',
         'tries': {},
         'regexes': [
-            r"050_FINISHED_supplies_duration\.csv"],
+            r"052_FINISHED_supplies_duration\.csv"],
         'status_code': 200},
     {
         'name': "Supplies duration normal reads with prev, pres the same.",
         'path': '/chellow/reports/253/output/?'
-        'name=050_FINISHED_supplies_duration.csv',
+        'name=052_FINISHED_supplies_duration.csv',
         'regexes': [
             r'"10","2","net","","CI017","Roselands","2009-04-01 00:00",'
             r'"2009-04-10 23:30","03","801","5","0393","1","nhh",'
@@ -11486,13 +11486,13 @@ def virtual_bill(supply_source):
         'path': '/chellow/reports/251/output/',
         'tries': {'max': 30, 'period': 1},
         'regexes': [
-            r'051_FINISHED_unified_supplies_monthly_duration_20150501_0000_for'
+            r'053_FINISHED_unified_supplies_monthly_duration_20150501_0000_for'
             r'_1_months_site_CI005\.ods'],
         'status_code': 200},
     {
         'name': "Unified Supplies Monthly Duration - displaced kWh",
         'path': '/chellow/reports/253/output/?'
-        'name=051_FINISHED_unified_supplies_monthly_duration_20150501_0000_for'
+        'name=053_FINISHED_unified_supplies_monthly_duration_20150501_0000_for'
         r'_1_months_site_CI005.ods',
         'status_code': 200,
         'regexes': [
