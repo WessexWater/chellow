@@ -34,7 +34,7 @@ def content():
             start_year, start_month, start_day, tzinfo=pytz.utc)
         finish_date = datetime.datetime(
             finish_year, finish_month, finish_day, tzinfo=pytz.utc) + \
-            relativedelta(months=1) - HH
+            relativedelta(days=1) - HH
 
         caches = {}
         supply = Supply.get_by_id(sess, supply_id)
