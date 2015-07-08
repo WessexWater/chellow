@@ -9,7 +9,7 @@ import utils
 import computer
 
 Monad.getUtils()['impt'](globals(), 'utils', 'db', 'computer')
-HH, hh_after = utils.HH, utils.hh_after
+HH, hh_after, hh_format = utils.HH, utils.hh_after, utils.hh_format
 Supply, Site, SiteEra = db.Supply, db.Site, db.SiteEra
 inv = globals()['inv']
 
@@ -64,22 +64,33 @@ def content():
                 bill_titles = computer.contract_func(
                     caches, sup_con, 'virtual_bill_titles', None)()
                 if bill_titles != prev_bill_titles:
-                    yield 'MPAN Core,Site Code,Site Name,Account,From,To,' + \
-                        ','.join(bill_titles) + '\n'
+                    yield ','.join(
+                        [
+                            'MPAN Core', 'Site Code', 'Site Name', 'Account',
+                            'From', 'To'] + bill_titles) + '\n'
                     prev_bill_titles = bill_titles
 
                 site = sess.query(Site).join(SiteEra).filter(
                     SiteEra.era == era, SiteEra.is_physical == true()).one()
                 yield ','.join('"' + str(value) + '"' for value in [
                     ss.mpan_core, site.code, site.name, ss.supplier_account,
-                    ss.start_date, ss.finish_date])
+                    hh_format(ss.start_date), hh_format(ss.finish_date)])
 
-                bill = computer.contract_func(
+                computer.contract_func(
                     caches, sup_con, 'virtual_bill', None)(ss)
+                bill = ss.supplier_bill
                 for title in bill_titles:
-                    yield ',"' + str(bill.get(title, '')) + '"'
                     if title in bill:
+                        val_raw = bill[title]
+                        if isinstance(val_raw, datetime.datetime):
+                            val = hh_format(val_raw)
+                        else:
+                            val = str(val_raw)
+
+                        yield ',"' + val + '"'
                         del bill[title]
+                    else:
+                        yield ',""'
 
                 for k in sorted(bill.keys()):
                     yield ',"' + k + '","' + str(bill[k]) + '"'
