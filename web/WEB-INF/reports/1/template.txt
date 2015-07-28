@@ -109,28 +109,28 @@
 				<td><a href="{{ context_path }}/reports/153/output/">Download</a></td>
 				<td></td>
 			</tr>
+			<tr>
+				<th>
+					<a href="{{context_path}}/reports/393/output/">Unified Report</a>
+				</th>
+				<td></td>
+				<td></td>
+			</tr>
+			<tr>
+				<th>
+					<a href="{{ context_path }}/reports/235/output/">Overall Profile</a>
+				</th>
+				<td></td>
+				<td></td>
+			</tr>
+			<tr>
+				<th>
+					<a href="{{ context_path }}/reports/245/output/">Scenario Runner</a>
+        </th>
+        <td></td>
+        <td></td>
+			</tr>
 		</table>
-
-		<ul>
-			<li>
-				<a href="{{ context_path }}/reports/235/output/">Overall Profile</a>
-			</li>
-			<li>
-				<a href="{{ context_path }}/reports/245/output/">Scenario Runner</a>
-			</li>
-			<li>
-				<form action="{{context_path}}/reports/247/output/">
-					<fieldset>
-						<legend>Download Unified Monthly Duration</legend>
-						<br>
-						For {{input_text('months', '1', 2, 2)}}
-						month(s) finishing at the end of
-						{{input_date('finish', month_finish, resolution='month')}}
-						<input type="submit" value="Download">
-					</fieldset>
-				</form>
-			</li>
-		</ul>
 
 		<h3>Industry Info</h3>
 		<ul>
