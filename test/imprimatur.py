@@ -90,18 +90,30 @@
             'start_minute': "00",
             'has_finished': "false", },
         'status_code': 401, },
+
     {
         'name': "Check duplicate report name gives good error message",
         'path': '/chellow/reports/',
         'method': 'post',
         'auth': ('watkins@example.com', 'alan'),
         'data': {
-            'name': "Home", },
+            'name': "Home"},
         'status_code': 400,
         'regexes': [
-            r"There's already a report with that name\.", ], },
+            r"There's already a report with that name\."]},
 
-    # Valid },
+    {
+        'name': "Insert core report",
+        'path': '/chellow/reports/',
+        'method': 'post',
+        'data': {
+            'name': "New Report",
+            'is_core': 'true'},
+        'status_code': 303,
+        'regexes': [
+            r"/reports/393/"]},
+
+    # Valid general import of sites
     {
         'name': "site",
         'path': '/chellow/reports/293/output/',

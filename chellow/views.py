@@ -241,7 +241,7 @@ def show_reports():
 @app.route('/chellow/reports/', methods=['POST'])
 def add_report():
     set_read_write()
-    is_core = POST_bool('is-core')
+    is_core = POST_bool('is_core')
     name = POST_str("name")
     report = Report(None, is_core, name, "", None)
     db.session.add(report)
