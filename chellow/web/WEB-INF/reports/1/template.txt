@@ -58,7 +58,7 @@
 			</li>
 			<li>
 				<a
-				 	href="https://bitbucket.org/ww_tlocke/chellow"
+				 	href="https://github.com/WessexWater/chellow"
 				 	target="_blank">Docs</a>
 			</li>
 		</ul>
