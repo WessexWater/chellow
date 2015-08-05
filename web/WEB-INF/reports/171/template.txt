@@ -243,9 +243,6 @@
 
 <br/>
 
-
-<br/>
-
 <form method="post" action="{/source/request/@context-path}/reports/171/output/">
   <fieldset>
       <legend>Run shutdown script</legend>
@@ -259,17 +256,12 @@
   </fieldset>
 </form>
 
-          <ul>
-						<li>
-							<a href="{/source/request/@context-path}/reports/375/output/">Clogs</a>
-						</li>
-          <li>
-						<a href="{/source/request/@context-path}/reports/103/output/">Libraries</a>
+<ul>
+<li><a href="{/source/request/@context-path}/reports/375/output/">Clogs</a></li>
+          <li><a href="{/source/request/@context-path}/reports/103/output/">Libraries</a></li>
+					<li>
+            <a href="{/source/request/@context-path}/reports/379/output/">SQL Runner</a>
 					</li>
-          <li>
-            <a href="{/source/request/@context-path}/reports/379/output/">SQL
-            Runner</a>
-          </li>
         </ul>      
       </body>
     </html>

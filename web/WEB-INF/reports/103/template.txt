@@ -49,6 +49,8 @@
       </tbody>
     </table>
 
+    <p>{{mem_items}}</p>
+
     <br>
 
     <form enctype="multipart/form-data" method="post" action=".">
@@ -59,5 +61,22 @@
         <input type="submit" value="Import">
       </fieldset>
     </form>
+
+    <table>
+      <caption>Dload Mem Items</caption>
+      <thead>
+        <th>Key</th>
+        <th>Value</th>
+      </thead>
+      <tbody>
+        {% for k in mem_keys %}
+          <tr>
+            <td>{{k}}</td>
+            <td>{{mem_items[k]}}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
   </body>
 </html>

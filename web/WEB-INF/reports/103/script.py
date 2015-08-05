@@ -5,8 +5,10 @@ import shutil
 import StringIO
 import tarfile
 import templater
+import dloads
 import utils
-Monad.getUtils()['impt'](globals(), 'utils', 'templater')
+
+Monad.getUtils()['impt'](globals(), 'utils', 'templater', 'dloads')
 render = templater.render
 inv, template = globals()['inv'], globals()['template']
 
@@ -25,7 +27,11 @@ def make_fields(lib_path, message=None):
                 'size': statinfo.st_size,
                 'creation_date': datetime.datetime.utcfromtimestamp(
                     statinfo.st_ctime)})
-    return {'files': files, 'messages': messages}
+    mem_items = dloads.get_mem_items()
+    mem_keys = sorted(mem_items.keys())
+    return {
+        'files': files, 'messages': messages, 'mem_items': mem_items,
+        'mem_keys': mem_keys}
 
 try:
     lib_path = Monad.getContext().getRealPath("/WEB-INF/lib-python")
