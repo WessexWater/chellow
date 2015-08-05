@@ -46,3 +46,58 @@ def make_names(base, user):
     names = tuple(
         '_'.join((serial, v, uname, base)) for v in ('RUNNING', 'FINISHED'))
     return tuple(os.path.join(download_path, name) for name in names)
+
+
+mem_id = 0
+mem_lock = threading.Lock()
+mem_vals = {}
+
+
+def get_mem_id():
+    global mem_id
+    try:
+        mem_lock.acquire()
+        mid = mem_id
+        mem_id += 1
+        mem_vals[mid] = None
+    finally:
+        mem_lock.release()
+    return mid
+
+
+def put_mem_val(mem_id, val):
+    try:
+        mem_lock.acquire()
+        mem_vals[mem_id] = val
+    finally:
+        mem_lock.release()
+
+
+def get_mem_val(mem_id):
+    try:
+        mem_lock.acquire()
+        if mem_id in mem_vals:
+            val = mem_vals[mem_id]
+            # del mem_vals[mem_id]
+        else:
+            val = None
+    finally:
+        mem_lock.release()
+    return val
+
+
+def get_mem_items():
+    try:
+        mem_lock.acquire()
+        return mem_vals.copy()
+    finally:
+        mem_lock.release()
+
+
+def remove_item(mem_id):
+    try:
+        mem_lock.acquire()
+        if mem_id in mem_vals:
+            del mem_vals[mem_id]
+    finally:
+        mem_lock.release()

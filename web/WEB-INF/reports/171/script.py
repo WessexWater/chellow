@@ -245,9 +245,18 @@ if sys.platform.startswith('java'):
     con.rollback()
     con.setAutoCommit(True)
     #pstmt = con.prepareStatement("vacuum analyze")
+    # pstmt = con.prepareStatement(
+    #    "create extension tablefunc;")
+
+    # for tname, colname in (('user_role', 'code'),):
+    #    pstmt = con.prepareStatement(
+    #        "create index " + tname + "_" + colname + "_idx on " + tname +
+    #         " (" + colname + ")")
+    #    pstmt.execute()
     pstmt = con.prepareStatement(
-        "create index hh_datum_channel_id_idx on hh_datum (channel_id)")
+            'create index user_user_role_id_idx on "user" (user_role_id)')
     pstmt.execute()
+
     pstmt.close()
     con.setAutoCommit(False)
     '''
@@ -289,27 +298,6 @@ else:
     </table>
 
     <br>
-    <table>
-      <caption>PostgreSQL Indexes</caption>
-      <thead>
-        <tr>
-          {% for title in indexes.keys() %}
-            <th>{{title}}</th>
-          {% endfor %}
-        </tr>
-      </thead>
-      <tbody>
-        {% for row in indexes %}
-          <tr>
-            {% for cell in row %}
-              <td>{{cell}}</td>
-            {% endfor %}
-          </tr>
-        {% endfor %}
-      </tbody>
-    </table>
-
-    <br>
     <form method="post" action="/chellow/reports/171/output/">
       <fieldset>
         <legend>Run shutdown script</legend>
@@ -339,7 +327,7 @@ else:
     Contract = db.Contract
     render = templater.render
 
-    def make_vals(sess, msg=None):
+    def make_vals(msg=None):
         vals = {}
         if msg is not None:
             vals['message'] = msg
@@ -354,18 +342,6 @@ else:
                     'trace': ''.join(traceback.format_stack(stack))})
 
         vals['thread_dicts'] = thread_dicts
-
-        vals['indexes'] = sess.execute(
-            "select t.relname as table_name, i.relname as index_name, "
-            "array_to_string(array_agg(a.attname), ', ') as column_names "
-            "from pg_class t, pg_class i, pg_index ix, pg_attribute a, "
-            "pg_namespace where t.oid = ix.indrelid "
-            "and i.oid = ix.indexrelid and a.attrelid = t.oid "
-            "and a.attnum = ANY(ix.indkey) and t.relkind = 'r' "
-            "and t.relnamespace = pg_namespace.oid "
-            "and pg_namespace.nspname = 'public' "
-            "group by t.relname, i.relname, pg_namespace.nspname "
-            "order by t.relname, i.relname")
         return vals
 
     sess = None
@@ -381,16 +357,15 @@ else:
                     caches, shutdown_contract, 'on_shut_down', None)(None)
                 render(
                     inv, template,
-                    make_vals(sess, "Shut down successfully."))
+                    make_vals("Shut down successfully."))
             elif inv.hasParameter('run_startup'):
                 shutdown_contract = Contract.get_non_core_by_name(
                     sess, 'startup')
                 computer.contract_func(
                     caches, shutdown_contract, 'on_start_up', None)(None)
-                render(
-                    inv, template, make_vals(sess, "Started up successfully."))
+                render(inv, template, make_vals("Started up successfully."))
         else:
-            render(inv, template, make_vals(sess))
+            render(inv, template, make_vals())
     finally:
         if sess is not None:
             sess.close()
