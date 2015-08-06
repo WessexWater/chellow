@@ -124,7 +124,7 @@ def parse_hh_start(start_date_str):
 
 
 def parse_mpan_core(mcore):
-    mcore = mcore.replace(' ', '')
+    mcore = mcore.strip().replace(' ', '')
     if len(mcore) != 13:
         raise UserException(
             "The MPAN core '" + mcore + "' must contain exactly 13 digits.")

@@ -2283,6 +2283,18 @@ class Supply(Base, PersistentClass):
         if era.supply != self:
             raise Exception("The era doesn't belong to this supply.")
 
+        for mc in (imp_mpan_core, exp_mpan_core):
+            if mc is not None:
+                sup = sess.query(Era).filter(
+                    Era.supply != self,
+                    or_(
+                        Era.imp_mpan_core == mc,
+                        Era.exp_mpan_core == mc)).first()
+                if sup is not None:
+                    raise UserException(
+                        "The MPAN core " + mc +
+                        " is already attached to another supply.")
+
         old_stripes = []
         new_stripes = []
         prev_era = self.find_era_at(sess, prev_hh(era.start_date))
@@ -2455,9 +2467,14 @@ class Supply(Base, PersistentClass):
                         "There's already an era with that start date.")
 
                 finish_date = covered_era.finish_date
-        else:
-            for mc in [imp_mpan_core, exp_mpan_core]:
-                sup = Supply.find_by_mpan_core(sess, mc)
+
+        for mc in (imp_mpan_core, exp_mpan_core):
+            if mc is not None:
+                sup = sess.query(Era).filter(
+                    Era.supply != self,
+                    or_(
+                        Era.imp_mpan_core == mc,
+                        Era.exp_mpan_core == mc)).first()
                 if sup is not None:
                     raise UserException(
                         "The MPAN core " + mc +
