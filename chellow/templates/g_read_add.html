@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+
+{% block title %}
+	Gas Contracts &gt; {{g_bill.g_batch.g_contract.name}} &gt; Batches &gt;
+ 	{{g_bill.g_batch.reference}} &gt; Bills &gt; {{g_bill.id}} &gt; Add Read
+{% endblock %}
+
+{% block nav %}
+	<a href="{{context_path}}/g_contracts">Gas Contracts</a> &gt;
+	<a
+	 		href="{{context_path}}/g_contracts/{{g_bill.g_batch.g_contract.id}}"
+			>{{g_bill.g_batch.g_contract.name}}</a> &gt;
+	<a
+	 		href="{{context_path}}/g_batches?g_contract_id={{g_bill.g_batch.g_contract.id}}"
+			>Batches</a> &gt;
+	<a
+	 		href="{{context_path}}/g_batches/{{g_bill.g_batch.id}}"
+			>{{g_bill.g_batch.reference}}</a> &gt;
+	<a href="{{context_path}}/g_bills/{{g_bill.id}}">Bill {{g_bill.id}}</a>
+ 	&gt; Add Read
+{% endblock %}
+
+{% block content %}
+	<form action="." method="post">
+		<fieldset>
+			<legend>Add New Register Read</legend>
+			<br>
+			<label>MPAN {{input_text('mpan', '')}}</label>
+			<br>
+			<label>Coefficient {{input_text('coefficient', '1')}}</label>
+			<br>
+			<label>Meter Serial Number {{input_text('msn', '1')}}</label>
+			<br>
+			<label>Units {{input_text('units', 'kWh')}}</label>
+			<br>
+			<label>TPR
+				<select name="tpr_id">
+					{% for tpr in tprs %}
+						{{input_option('tpr_id', tpr.id, tpr.code)}}
+					{% endfor %}
+				</select>
+			</label>
+			<br>
+			<br>
+			<fieldset>
+				<legend>Previous Read</legend>
+				<fieldset>
+					<legend>Date</legend>
+					{{input_date('previous', None)}}
+				</fieldset>
+				<br>
+				<label>Value {{input_text('previous_value', 0)}}</label>
+				<br>
+				<label>Type
+					<select name="previous_type_id">
+						{% for read_type in read_types %}
+							{{
+								input_option(
+									'previous_type_id', read_type.id,
+								 	read_type.code + ' ' + read_type.description)}}
+						{% endfor %}
+					</select>
+				</label>
+			</fieldset>
+			<br>
+			<br>
+			<fieldset>
+				<legend>Present Read</legend>
+				<fieldset>
+					<legend>Date</legend>
+					{{input_date('present', None)}}
+				</fieldset>
+				<br>
+				<label>Value {{input_text('present_value', 0)}}</label>
+				<br>
+				<label>Type
+					<select name="present_type_id">
+						{% for read_type in read_types %}
+							{{
+								input_option(
+									'present_type_id', read_type.id,
+								 	read_type.code + ' ' + read_type.description)}}
+						{% endfor %}
+					</select>
+				</label>
+			</fieldset>
+			<br>
+			<br>
+			<input type="submit" value="Add">
+		</fieldset>
+	</form>
+{% endblock %}

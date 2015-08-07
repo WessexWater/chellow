@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+
+{% block title %}
+	Gas Contracts &gt; {{g_contract.name}} &gt; Batches
+{% endblock %}
+
+{% block nav %}
+	<a href="{{context_path}}/g_contracts">Gas Contracts</a> &gt;
+	<a
+	 		href="{{context_path}}/g_contracts/{{g_contract.id}}"
+			>{{g_contract.name}}</a> &gt; Batches
+	[<a href="{{context_path}}/g_contracts/{{g_contract.id}}/add_batch">add</a>]
+{% endblock %}
+
+{% block content %}
+	<table>
+		<caption>Batches</caption>
+		<thead>
+			<tr>
+				<th>Reference</th>
+				<th>Description</th>
+			</tr>
+		</thead>
+		<tbody>
+			{% for g_batch in g_batches %}
+				<tr>
+					<td>
+						<a
+								href="{{context_path}}/g_batches/{{g_batch.id}}"
+								>{{batch.reference}}</a>
+					</td>
+					<td>{{batch.description}}</td>
+				</tr>
+			{% endfor %}
+		</tbody>
+	</table>
+{% endblock %}

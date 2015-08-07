@@ -144,7 +144,7 @@
             r"There's already a report with that name\."]},
 
     {
-        'name': "General import of sites",
+        'name': "Valid general import of sites",
         'path': '/general_imports',
         'method': 'post',
         'files': {'import_file': 'test/sites.csv'},
@@ -1458,7 +1458,7 @@ def virtual_bill_titles():
             'imp_mpan_core': "22 9205 6799 106",
             'imp_ssc_code': "",
             'imp_sc': "450",
-            'imp_supplier_contract_id': "6",
+            'imp_supplier_contract_id': "8",
             'imp_supplier_account': "11640077",
             'exp_mtc_code': "845",
             'exp_llfc_code': "581",
@@ -1730,7 +1730,7 @@ def virtual_bill_titles():
         'regexes': [
             r"/supplier_bill_imports/2"]},
 
-    # Supplier contract 57, batch 4
+    # Supplier contract 58, batch 4
     {
         'path': '/supplier_bill_imports/2',
         'tries': {},
@@ -1871,7 +1871,7 @@ def virtual_bill_titles():
             r'<td>A</td>'],
         'status_code': 200},
 
-    # supply 1, era 1, channel 1 },
+    # supply 1, era 1, channel 1
     {
         'name': "Check one is redirected to hh data when a datum is deleted.",
         'path': '/hh_data/23/edit',
@@ -1882,7 +1882,7 @@ def virtual_bill_titles():
         'regexes': [
             r"/channels/1"]},
 
-    # Supply 5 },
+    # Supply 5
     {
         'name': "Test that it gives an error if the hhdc_contract_id is null.",
         'path': '/eras/5/edit',
@@ -1905,7 +1905,7 @@ def virtual_bill_titles():
             'imp_llfc_code': "570",
             'imp_mpan_core': "22 0883 6932 301",
             'imp_sc': "350",
-            'imp_supplier_contract_id': "57",
+            'imp_supplier_contract_id': "61",
             'imp_supplier_account': "01"},
         'status_code': 400,
         'regexes': [
@@ -4005,7 +4005,7 @@ def virtual_bill(supply_source):
             'imp_sc': "2300",
             'imp_supplier_contract_id': "36",
             'imp_supplier_account': "141 5532",
-            'insert': "insert"},
+            'insert_electricity': "insert_electricity"},
         'regexes': [
             r"/supplies/12"],
         'status_code': 303},
@@ -4412,7 +4412,7 @@ def virtual_bill(supply_source):
             'imp_sc': "700",
             'imp_supplier_contract_id': "36",
             'imp_supplier_account': "d",
-            'insert': "Insert"},
+            'insert_electricity': "Insert"},
         'regexes': [
             r"/supplies/13"],
         'status_code': 303},
@@ -5624,7 +5624,7 @@ def virtual_bill(supply_source):
         'path': '/mop_batches/9',
         'status_code': 200},
 
-    # Mop contract 58
+    # Mop contract 59
     {
         'name': "Try adding bills to the MOP batch",
         'path': '/mop_bill_imports',
@@ -5636,7 +5636,7 @@ def virtual_bill(supply_source):
         'regexes': [
             r"/mop_bill_imports/7"]},
 
-    # Mop contract 57, batch 9
+    # Mop contract 58, batch 9
     {
         'path': '/mop_bill_imports/7',
         'tries': {},
@@ -5673,7 +5673,7 @@ def virtual_bill(supply_source):
             'imp_sc': "700",
             'imp_supplier_contract_id': "36",
             'imp_supplier_account': "d",
-            'insert': "Insert"},
+            'insert_electricity': "Insert"},
         'regexes': [
             r"There is no LLFC with the code &#39;&#39; associated with the "
             "DNO 22\.",
@@ -5707,7 +5707,7 @@ def virtual_bill(supply_source):
             'imp_sc': "",
             'imp_supplier_contract_id': "36",
             'imp_supplier_account': "d",
-            'insert': "Insert"},
+            'insert_electricity': "Insert"},
         'regexes': [
             r"Problem parsing the field imp_sc as an integer: invalid literal "
             "for int\(\) with base 10: "],
@@ -5740,7 +5740,7 @@ def virtual_bill(supply_source):
             'imp_sc': "700",
             'imp_supplier_contract_id': "36",
             'imp_supplier_account': "d",
-            'insert': "Insert"},
+            'insert_electricity': "Insert"},
         'regexes': [
             r"The MTC code must be a whole number\.", ],
         'status_code': 400},
@@ -5780,7 +5780,7 @@ def virtual_bill(supply_source):
             'imp_sc': "0",
             'imp_supplier_contract_id': "42",
             'imp_supplier_account': "taa2",
-            'insert': "Insert"},
+            'insert_electricity': "Insert"},
         'regexes': [
             r"/supplies/16"],
         'status_code': 303},
@@ -6504,6 +6504,12 @@ def virtual_bill(supply_source):
 """},
         'status_code': 303},
 
+    {
+        'name': "Check that the update worked",
+        'path': '/chellow/reports/279/output/?hhdc_contract_id=56',
+        'status_code': 200,
+        'regexes': [r'&#39;hostname&#39;: &#39;localhost&#39;,']},
+
     # Do an 'import now'
     {
         'name': "Do an 'import now'",
@@ -7060,7 +7066,7 @@ def virtual_bill(supply_source):
             'imp_sc': "2300",
             'imp_supplier_contract_id': "36",
             'imp_supplier_account': "sup-14 7206 6139 971",
-            'insert': "insert"},
+            'insert_electricity': "insert"},
         'regexes': [
             r"/supplies/17"],
         'status_code': 303},
@@ -14626,33 +14632,336 @@ finally:
             r'/supplier_batches/17']},
 
     {
-        'name': "Bill check straddling two eras",
-        'path': '/supplier_bills/20/edit',
+        'name': "Insert gas contract",
+        'path': '/chellow/reports/401/output/',
         'method': 'post',
         'data': {
-            'reference': 'jg87593jfj',
-            'account': '141 5532',
-            'issue_year': '2002',
-            'issue_month': '02',
-            'issue_day': '02',
-            'issue_hour': '00',
-            'issue_minute': '00',
-            'start_year': '2008',
-            'start_month': '10',
+            'name': "Total",
+            'start_year': '2015',
+            'start_month': '07',
+            'start_day': '03',
+            'start_hour': '00',
+            'start_minute': '00',
+            'properties': '{}',
+            'charge_script': """
+"""},
+        'status_code': 303,
+        'regexes': [
+            r'/reports/399/output/\?g_contract_id=1']},
+
+    {
+        'name': "View gas contracts",
+        'path': '/chellow/reports/395/output/',
+        'status_code': 200,
+        'regexes': [
+            r'Total']},
+
+    {
+        'name': "View gas contract",
+        'path': '/chellow/reports/399/output/?g_contract_id=1',
+        'status_code': 200,
+        'regexes': [
+            r'<td>Total</td>',
+            r'<h3 id="properties">Properties</h3>\s*'
+            r'<pre>\{\}</pre>']},
+
+    {
+        'name': "View gas contract rate script",
+        'path': '/chellow/reports/411/output/?g_rate_script_id=1',
+        'status_code': 200},
+
+    {
+        'name': "View edit gas contract",
+        'path': '/chellow/reports/403/output/?g_contract_id=1',
+        'status_code': 200,
+        'regexes': [
+            r'Total']},
+
+    {
+        'name': "Edit gas contract",
+        'path': '/chellow/reports/403/output/',
+        'method': 'post',
+        'data': {
+            'g_contract_id': '1',
+            'name': "Total",
+            'start_year': '2015',
+            'start_month': '07',
+            'start_day': '03',
+            'start_hour': '00',
+            'start_minute': '00',
+            'properties': '{}',
+            'charge_script': """
+def virtual_bill_titles():
+    return [
+        'units_consumed', 'correction_factor', 'units', 'kwh', 'gas_rate',
+        'gas_gbp', 'standing_rate', 'standing_gbp', 'net_gbp', 'vat_gbp',
+        'gross_gbp']
+
+
+def virtual_bill(ds):
+    bill = ds.bill
+    for hh in ds.hh_data:
+        units_consumed = hh['units_consumed']
+        bill['units_consumed'] += units_consumed
+        correction_factor = hh['correction_factor']
+        ds.rate_sets['correction_factor'].add(correction_factor)
+        units = hh['units']
+        ds.rate_sets['units'].add(units)
+        calorific_value = hh['calorific_value']
+        ds.rate_sets['calorific_value'].add(calorific_value)
+        kwh = units_consumed * correction_factor * calorific_value
+        bill['kwh'] += kwh
+        gas_rate = ds.rate(db_id, hh['start_date'], 'gas_rate')
+        ds.rate_sets['gas_rate'].add(gas_rate)
+        bill['gas_gbp'] += gas_rate * kwh
+        if hh['utc_is_month_end']:
+            standing_rate = ds.rate(db_id, hh['start_date'], 'standing_rate')
+            ds.rate_sets['standing_rate'].add(standing_rate)
+            bill['standing_gbp'] += standing_rate
+
+    for k, rset in ds.rate_sets.iteritems():
+        if len(rset) == 1:
+            bill[k] = rset.pop()
+
+    bill['net_gbp'] = sum(v for k, v in bill.items() if k.endswith('gbp'))
+    bill['vat_gbp'] = 0
+    bill['gross_gbp'] = bill['net_gbp'] + bill['vat_gbp']
+"""},
+        'status_code': 303,
+        'regexes': [
+            r'/reports/399/output/\?g_contract_id=1']},
+    {
+        'name': "Edit gas contract: check correct",
+        'path': '/chellow/reports/399/output/?g_contract_id=1',
+        'status_code': 200,
+        'regexes': [
+            r'<h3 id="properties">Properties</h3>\s*'
+            r'<pre>\{\}</pre>']},
+
+    {
+        'name': "Add rate script to gas contract",
+        'path': '/chellow/reports/407/output/',
+        'method': 'post',
+        'data': {
+            'g_contract_id': "1",
+            'start_year': '2015',
+            'start_month': '09',
+            'start_day': '01',
+            'start_hour': '00',
+            'start_minute': '00'},
+        'status_code': 303,
+        'regexes': [
+            r'/reports/411/output/\?g_rate_script_id=2']},
+    {
+        'name': "Edit the added rate script",
+        'path': '/chellow/reports/409/output/',
+        'method': 'post',
+        'data': {
+            'g_rate_script_id': "2",
+            'start_year': '2015',
+            'start_month': '09',
             'start_day': '01',
             'start_hour': '00',
             'start_minute': '00',
-            'finish_year': '2008',
-            'finish_month': '11',
-            'finish_day': '02',
+            'script': '{"gas_rate": 0.019548, "standing_rate": 67.80}'},
+        'status_code': 303,
+        'regexes': [
+            r'/reports/411/output/\?g_rate_script_id=2']},
+
+    {
+        'name': "Add a batch to a gas contract",
+        'path': '/chellow/reports/415/output/',
+        'method': 'post',
+        'data': {
+            'g_contract_id': "1",
+            'reference': 'TB1',
+            'description': 'Total Batch 1'},
+        'status_code': 303,
+        'regexes': [
+            r'/reports/417/output/\?g_batch_id=1']},
+
+    {
+        'name': "Insert a gas supply",
+        'path': '/chellow/reports/311/output/',
+        'method': 'post',
+        'data': {
+            'site_id': '7',
+            'name': 'Main Gas',
+            'start_year': '2015',
+            'start_month': '09',
+            'start_day': '01',
+            'start_hour': '00',
+            'start_minute': '00',
+            'msn': 'hwo8tt',
+            'mprn': '7502786737',
+            'g_contract_id': '1',
+            'account': 'ghoIIl',
+            'insert_gas': 'Insert Gas'},
+        'status_code': 303,
+        'regexes': [
+            r'/reports/5/output/\?site_id=7']},
+
+    {
+        'name': "View a gas supply",
+        'path': '/chellow/reports/423/output/?g_supply_id=1',
+        'status_code': 200,
+        'regexes': [
+            r'Main Gas']},
+
+    {
+        'name': "Edit view of a gas supply",
+        'path': '/chellow/reports/385/output/?g_supply_id=1',
+        'status_code': 200,
+        'regexes': [
+            r'Main Gas']},
+    {
+        'name': "Edit gas supply",
+        'path': '/chellow/reports/385/output/?g_supply_id=1',
+        'method': 'post',
+        'data': {
+            'mprn': '750278673',
+            'name': 'Main Gas Supply',
+            'update': 'Update'},
+        'status_code': 303,
+        'regexes': [
+            r'/reports/423/output/\?g_supply_id=1']},
+
+    {
+        'name': "Check supply has been updated properly",
+        'path': '/chellow/reports/423/output/?g_supply_id=1',
+        'status_code': 200,
+        'regexes': [
+            r'Main Gas Supply']},
+
+    {
+        'name': "Edit view of gas era",
+        'path': '/chellow/reports/441/output/?g_era_id=1',
+        'status_code': 200,
+        'regexes': [
+            r'hwo8tt']},
+
+    {
+        'name': "Edit gas era",
+        'path': '/chellow/reports/441/output/',
+        'method': 'post',
+        'data': {
+            'g_era_id': '1',
+            'start_year': '2015',
+            'start_month': '09',
+            'start_day': '01',
+            'start_hour': '00',
+            'start_minute': '00',
+            'msn': 'hwo8th',
+            'g_contract_id': 1,
+            'account': 'ghoIIl'},
+        'status_code': 303,
+        'regexes': [
+            r'/reports/423/output/\?g_supply_id=1']},
+
+    {
+        'name': "Check era has been updated properly",
+        'path': '/chellow/reports/423/output/?g_supply_id=1',
+        'status_code': 200,
+        'regexes': [
+            r'hwo8th']},
+
+    {
+        'name': "Show import bills",
+        'path': '/chellow/reports/431/output/?g_batch_id=1',
+        'status_code': 200,
+        'regexes': [
+            r'Total']},
+
+    {
+        'name': "Test Total bill import",
+        'path': '/chellow/reports/431/output/',
+        'method': 'post',
+        'data': {
+            'g_batch_id': "1", },
+        'files': {'import_file': 'test/bills.total.xlsx'},
+        'status_code': 303,
+        'regexes': [
+            r"/reports/433/output/\?importer_id=0"]},
+
+    {
+        'name': "View bill import",
+        'path': '/chellow/reports/433/output/?importer_id=0',
+        'tries': {},
+        'status_code': 200,
+        'regexes': [
+            r"successfully",
+            r'39\.300811</td>\s*</tr>\s*<tr>']},
+
+    {
+        'name': "Bill shown correctly in batch",
+        'path': '/chellow/reports/417/output/?g_batch_id=1',
+        'status_code': 200,
+        'regexes': [
+            r"2015-09-01 00:00"]},
+
+    {
+        'name': "View gas bill",
+        'path': '/chellow/reports/427/output/?g_bill_id=1',
+        'status_code': 200},
+
+    {
+        'name': "View edit gas bill",
+        'path': '/chellow/reports/443/output/?g_bill_id=1',
+        'status_code': 200},
+
+    {
+        'name': "Edit gas bill",
+        'path': '/chellow/reports/443/output/',
+        'method': 'post',
+        'data': {
+            'g_bill_id': '1',
+            'bill_type_id': '2',
+            'reference': '88999000127',
+            'account': 'ghoIIl',
+            'issue_year': '2015',
+            'issue_month': '10',
+            'issue_day': '04',
+            'issue_hour': '23',
+            'issue_minute': '00',
+            'start_year': '2015',
+            'start_month': '09',
+            'start_day': '01',
+            'start_hour': '00',
+            'start_minute': '00',
+            'finish_year': '2015',
+            'finish_month': '09',
+            'finish_day': '30',
             'finish_hour': '23',
             'finish_minute': '30',
-            'kwh': '150',
-            'net': '6.88',
-            'vat': '1.07',
-            'gross': '0',
-            'bill_type_id': '2',
-            'breakdown': '{}'},
+            'kwh': '4500901',
+            'net_gbp': '75.78',
+            'vat_gbp': '45',
+            'gross_gbp': '120.78',
+            'raw_lines': 'Despard-Smith,College Rooms,None,Riley Hall,OX4 J99,'
+                'ghoIIl,2015-10-05 00:00:00,None,8899900012,None,750278673,'
+                'None,None,None,None,None,None,2015-09-01 00:00:00,'
+                '2015-09-30 00:00:00,None,None,None,None,None,None,None,None,'
+                'None,0,0,0,45,45,78.9,120.78\nPaying Customer Name,'
+                'Account Name,Cust Ref,Address Lines All,Post Code,'
+                'Account Code,Print Date,Cancel Date,Bill Number,Meter Ser No,'
+                'MPR,Previous Billed Reading,Previous Read Date,'
+                'Prev Read Type,Billed Reading,Read Date,Read Type,'
+                'Charge Start Date,Charge End Date,Units Consumed (Accm),'
+                'Correctn Factor,Calorific Value,Consumption Kwh,Price Pkwh,'
+                'Units Consumed,Unit of Measure,Gas Charge,CCL Charge,'
+                'VAT at 5%,VAT at 15.0%,Vat at 17.50%,VAT at 20%,Total VAT,'
+                'Standing Charge,Total Charges',
+            'breakdown': '{"vat_20pc": 45, "gas_gbp": 8936.13,'
+                ' "vat_17_5pc": 0, "gas_rate": 0.019448, "vat_15pc": 0, '
+                '"vat_5pc": 0, "standing_gbp": 78.9, "ccl_gbp": 275.32}'},
+        'status_code': 303},
+    {
+        'name': "Delete gas bill",
+        'path': '/chellow/reports/443/output/',
+        'method': 'post',
+        'data': {
+            'g_bill_id': '1',
+            'delete': 'delete'},
         'status_code': 303},
 
     {
@@ -14682,4 +14991,75 @@ finally:
         'regexes': [
             r'/supplier_bills/20'],
         'status_code': 303},
+
+    {
+        'name': "Delete gas batch",
+        'path': '/chellow/reports/421/output/',
+        'method': 'post',
+        'data': {
+            'g_batch_id': '1',
+            'delete': 'delete'},
+        'status_code': 303},
+
+    {
+        'name': "Add a new batch to a gas contract",
+        'path': '/chellow/reports/415/output/',
+        'method': 'post',
+        'data': {
+            'g_contract_id': "1",
+            'reference': 'TB2',
+            'description': 'Total Batch 2'},
+        'status_code': 303,
+        'regexes': [
+            r'/reports/417/output/\?g_batch_id=2']},
+    {
+        'name': "Import bills again",
+        'path': '/chellow/reports/431/output/',
+        'method': 'post',
+        'data': {
+            'g_batch_id': "2"},
+        'files': {'import_file': 'test/bills.total.xlsx'},
+        'status_code': 303,
+        'regexes': [
+            r"/reports/433/output/\?importer_id=1"]},
+
+    {
+        'name': "View bill import",
+        'path': '/chellow/reports/433/output/?importer_id=1',
+        'tries': {},
+        'status_code': 200,
+        'regexes': [r'successfully']},
+    {
+        'name': "Gas bill check",
+        'path': '/chellow/reports/429/output/?g_bill_id=3',
+        'status_code': 303},
+    {
+        'name': "Gas bill check",
+        'path': '/chellow/reports/251/output/',
+        'tries': {'max': 20, 'period': 1},
+        'regexes': [
+            r"059_FINISHED_watkinsexamplecom_g_bill_check\.csv"],
+        'status_code': 200},
+    {
+        'name': "Gas bill check",
+        'path': '/chellow/reports/253/output/?'
+        'name=059_FINISHED_watkinsexamplecom_g_bill_check.csv',
+        'status_code': 200,
+        'regexes': [
+            r'batch,bill_reference,bill_type,bill_start_date,'
+            r'bill_finish_date,mprn,site_code,site_name,covered_start,'
+            r'covered_finish,covered_bill_ids,covered_units_consumed,'
+            r'virtual_units_consumed,covered_correction_factor,'
+            r'virtual_correction_factor,covered_units,virtual_units,'
+            r'covered_kwh,virtual_kwh,covered_gas_rate,virtual_gas_rate,'
+            r'covered_gas_gbp,virtual_gas_gbp,covered_standing_rate,'
+            r'virtual_standing_rate,covered_standing_gbp,virtual_standing_gbp,'
+            r'covered_net_gbp,virtual_net_gbp,covered_vat_gbp,virtual_vat_gbp,'
+            r'covered_gross_gbp,virtual_gross_gbp',
+            r'TB2,8899900012,N,2015-09-01 00:00,2015-09-30 23:30,750278673,'
+            r'CH017,Parbola,2015-09-01 00:00,2015-09-30 23:30,"4,3",25964,'
+            r'7830.0,1.00941,1.00941,HCUF,HCUF,9001802,310621.0456747202,'
+            r'0.038896,0.019548,17872.26,6072.0202008495735,0,67.8,157.8,'
+            r'67.8,24025.32,6139.820200849574,3146.67,0,14186.22,'
+            r'6139.820200849574']}
 ]

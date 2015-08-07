@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+{% block title %}
+	Gas Read Types &gt; {{g_read_type.code}}
+{% endblock %}
+
+{% block nav %}
+	<a href="{{context_path}}/g_read_types">Gas Read Types</a> &gt;
+ {{g_read_type.code}}
+{% endblock %}
+
+{% block content %}
+	<table>
+		<tr>
+			<th>Code</th>
+			<td>{{g_read_type.code}}</td>
+		</tr>
+		<tr>
+			<th>Description</th>
+			<td>{{g_read_type.description}}</td>
+		</tr>
+	</table>
+{% endblock %}

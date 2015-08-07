@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block title %}
+	Gas Contracts &gt; {{g_contract.name}} &gt; Add Rate Script
+{% endblock %}
+
+{% block nav %}
+	<a href="{{context_path}}/g_contracts">Gas Contracts</a> &gt;
+	<a
+			href="{{context_path}}/g_contracts/{{g_contract.id}}"
+			>{{g_contract.name}}</a> &gt; Add Rate Script
+{% endblock %}
+
+{% block content %}
+	<form action="." method="post">
+		<fieldset>
+			<legend>Add a rate script</legend>
+			<br>
+			<fieldset>
+				<legend>Start Date</legend>
+				{{input_date('start', initial_date)}}
+			</fieldset>
+			<br>
+			<br>
+			<input type="submit" value="Add">
+		</fieldset>
+	</form>
+{% endblock %}

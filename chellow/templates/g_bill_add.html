@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+
+{% block title %}
+	Gas Contracts &gt; {{g_batch.g_contract.name}} &gt; Batches &gt;
+ 	{{g_batch.reference}} &gt; Add Bill
+{% endblock %}
+
+{% block inside_head %}
+	<style>
+		label {
+			width: 6em;
+			float: left;
+		}
+	</style>
+{% endblock %}
+
+{% block nav %}
+	<a href="{{context_path}}/g_contracts">Gas Contracts</a> &gt;
+	<a
+			href="{{context_path}}/g_contracts/{{g_batch.g_contract.id}}"
+			>{{g_batch.g_contract.name}}</a> &gt;
+	<a
+	 		href="{{context_path}}/g_batches?g_contract_id={{g_batch.g_contract.id}}"
+			>Batches</a> &gt;
+	<a href="{{context_path}}/g_batches/{{g_batch.id}}">{{g_batch.reference}}</a>
+ 	&gt; Add Bill
+{% endblock %}
+
+{% block content %}
+	<form action="." method="post">
+		<fieldset>
+			<legend>Add a bill</legend>
+			<br>
+			<label>MPRN</label>
+			{{input_text('mprn')}}
+			<br>
+			<label>Reference</label>
+			{{input_text('reference')}}
+			<br>
+			<label>Account</label>
+			{{input_text('account', '')}}
+			<br>
+			<br>
+			<fieldset>
+				<legend>Issue Date</legend>
+				{{input_date('issue')}}
+			</fieldset>
+			<br>
+			<fieldset>
+				<legend>Start Date</legend>
+				{{input_date('start')}}
+			</fieldset>
+			<br>
+			<fieldset>
+				<legend>Finish Date</legend>
+				{{input_date('finish')}}
+			</fieldset>
+			<br>
+			<label>kWh</label>
+			{{input_text('kwh', '0')}}
+			<br>
+			<label>Net</label>
+			{{input_text('net', '0')}}
+			<br>
+			<label>VAT</label>
+			{{input_text('vat', '0')}}
+			<br>
+			<label>Gross</label>
+			{{input_text('gross', '0')}}
+			<br>
+			<label>Breakdown</label>
+			{{input_text('breakdown', '{}')}}
+			<br>
+			<br>
+			<input type="submit" value="Add">
+		</fieldset>
+	</form>
+{% endblock %}

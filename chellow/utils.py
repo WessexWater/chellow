@@ -8,6 +8,7 @@ from flask import request, Response
 from jinja2 import Environment
 import time
 import traceback
+from json import loads
 
 
 clogs = deque()
@@ -44,6 +45,10 @@ def req_int(name):
     except ValueError as e:
         raise BadRequest(
             "Problem parsing the field " + name + " as an integer: " + str(e))
+
+
+def req_json(name):
+    return loads(req_str(name))
 
 
 def req_date(prefix, resolution='minute'):

@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+{% block title %}
+	Gas Contracts &gt; Add
+{% endblock %}
+
+{% block nav %}
+	<a href="{{context_path}}/g_contracts">Gas Contracts</a> &gt; Add
+{% endblock %}
+
+{% block content %}
+	<form action="." method="post">
+		<fieldset>
+			<legend>Add a contract</legend>
+			<br>
+			<label>Name</label>
+			{{input_text('name')}}
+			<br><br>
+			<fieldset>
+				<legend>Start Date</legend>
+				{{input_date('start')}}
+			</fieldset>
+			<br><br>
+				Charge script
+				<br>
+				{{input_textarea('charge_script', '', 40, 80)}}
+				<br>
+				<br>
+				Properties
+				<br>
+				{{input_textarea('properties', '{}', 20, 80)}}
+				<br>
+			<input type="submit" value="Add">
+		</fieldset>
+	</form>
+{% endblock %}

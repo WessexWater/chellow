@@ -134,13 +134,12 @@
 	</div>
 	<div class="layer-section">
 		<div class="section-header">
-			<h2>Insert a supply</h2>
+			<h2>Insert an electricity supply</h2>
 		</div>
 		<div class="section-content">
 			<form action="" method="post">
 				<fieldset>
 					<div class="section-data">
-						<input type="hidden" name="site_id" value="1263">
 						<div class="standardForm">
 							<div class="row">
 								<div class="col-sm-4">
@@ -323,11 +322,44 @@
             			<input name="insert" type="submit" value="Insert">
             		</div>
 				</fieldset>
-			</form>					
+				<br>
+				<input name="insert" type="submit" value="Insert">
+			</fieldset>
+		</form>
+		<br>
+		<form action="." method="post">
+			<fieldset>
+				<legend>Insert a gas supply</legend>
+				<label>Name</label>
+				{{input_text('name')}}
+				<br>
+				<br>
+				<fieldset>
+					<legend>Start Date</legend>
+					{{input_date('start')}}
+				</fieldset>
+				<br>
+				<label>Meter Serial Number</label>
+				{{input_text('msn')}}
+				<br>
+				<label>MPRN</label>
+					{{input_text('mprn', '')}}
+					<br>
+					<label>Contract</label>
+					<select name="g_contract_id">
+						{% for contract in g_contracts %}
+							{{input_option('g_contract_id', contract.id, contract.name)}}
+						{% endfor %}
+					</select>
+					<br>
+					<label>Account</label>
+					{{input_text('account')}}
+				<br>
+				<input name="insert_gas" type="submit" value="Insert">
+			</fieldset>
+		</form>
 		</div>
 		
 	</div>
-
-		
 	{% endif %}
 {% endblock %}

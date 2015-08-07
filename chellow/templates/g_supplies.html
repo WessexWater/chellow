@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+
+{% block title %}
+	Gas Supplies
+{% endblock %}
+
+{% block nav %}
+	Gas Supplies
+{% endblock %}
+
+{% block content %}
+	<form action=".">
+		<fieldset>
+			<legend>
+				Search for gas supply eras by MPRN, account number or meter serial
+				number
+			</legend>
+			{{input_text('search_pattern', '')}}
+			<input type="submit" value="Search">
+		</fieldset>
+	</form>
+	{% if eras %}
+		<p>
+			Only the first {{max_results}} supply eras of the search results are
+			shown.
+		</p>
+		<table>
+			<caption>Gas Supplies</caption>
+			<thead>
+				<tr>
+					<th rowspan="2">Supply</th>
+					<th rowspan="2">MPRN</th>
+					<th rowspan="2">Meter Serial Number</th>
+					<th colspan="2">Contract</th>
+				</tr>
+				<tr>
+					<th rowspan="2">Contract</th>
+					<th rowspan="2">Account</th>
+				</tr>
+			</thead>
+			<tbody>
+				{% for g_era in g_eras %}
+					<tr>
+						<td>
+							<a href="{{context_path}}/reports/423/output/?g_supply_id={{g_era.g_supply_id}}">supply</a>
+						</td>
+						<td>{{g_era.msn}}</td>
+						<td>
+							<a href="{{context_path}}/reports/399/output/?g_contract_id={{g_era.g_contract.id}}">{{g_era.g_contract.name}}</a>
+						</td>
+						<td>
+							{{g_era.account}}
+						</td>
+					</tr>
+				{% endfor %}
+			</tbody>
+		</table>
+	{% elif request.getParameter('search_pattern') %}
+		<p>No supplies matched your search</p>
+	{% endif %}
+{% endblock %}

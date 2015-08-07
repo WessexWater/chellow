@@ -105,6 +105,34 @@ class PersistentClass():
         return type(other) is type(self) and other.id == self.id
 
 
+class GReadType(Base, PersistentClass):
+    __tablename__ = 'g_read_type'
+    id = Column('id', Integer, primary_key=True)
+    code = Column(String, unique=True, nullable=False)
+    description = Column(String, unique=True, nullable=False)
+
+    def __init__(self, code, description):
+        self.code = code
+        self.description = description
+
+    @staticmethod
+    def get_by_code(sess, code):
+        code = code.strip()
+        typ = sess.query(GReadType).filter_by(code=code).first()
+        if typ is None:
+            raise BadRequest(
+                "The Read Type with code " + code + " can't be found.")
+        return typ
+
+
+class GUnits(Base, PersistentClass):
+    __tablename__ = 'g_units'
+    id = Column('id', Integer, primary_key=True)
+    code = Column(String, nullable=False, index=True, unique=True)
+    description = Column(String, nullable=False)
+    factor = Column(Numeric, nullable=False)
+
+
 class Snag(Base, PersistentClass):
     NEGATIVE = "Negative values"
     ESTIMATED = "Estimated"
@@ -428,6 +456,7 @@ class Bill(Base, PersistentClass):
     account = Column(String, nullable=False)
     reference = Column(String, nullable=False)
     bill_type_id = Column(Integer, ForeignKey('bill_type.id'))
+    bill_type = relationship('BillType')
     breakdown = Column(String, nullable=False)
     kwh = Column(Numeric, nullable=False)
     reads = relationship(
@@ -506,7 +535,6 @@ class BillType(Base, PersistentClass):
     id = Column(Integer, primary_key=True)
     code = Column(String, unique=True, nullable=False)
     description = Column(String, unique=True, nullable=False)
-    bills = relationship('Bill', backref='bill_type')
 
     def __init__(self, code, description):
         self.code = code
@@ -1036,6 +1064,7 @@ class Site(Base, PersistentClass):
     code = Column(String, unique=True, nullable=False)
     name = Column(String, unique=True, nullable=False)
     site_eras = relationship('SiteEra', backref='site')
+    site_g_eras = relationship('SiteGEra', backref='site')
     snags = relationship('Snag', backref='site')
 
     def update(self, code, name):
@@ -1145,7 +1174,7 @@ class Site(Base, PersistentClass):
                     Era.finish_date >= start_date)).distinct(). \
             order_by(Site.code).all()
 
-    def insert_supply(
+    def insert_electricity_supply(
             self, sess, source, generator_type, supply_name, start_date,
             finish_date, gsp_group, mop_contract, mop_account, hhdc_contract,
             hhdc_account, msn, pc, mtc_code, cop, ssc, imp_mpan_core,
@@ -1183,6 +1212,23 @@ class Site(Base, PersistentClass):
             exp_supplier_account, exp_sc, set())
         sess.flush()
         return supply
+
+    def insert_gas_supply(
+            self, sess, supply_name, start_date, finish_date, msn, mprn,
+            g_contract, account):
+        g_supply = GSupply(mprn, supply_name, '')
+
+        try:
+            sess.add(g_supply)
+            sess.flush()
+        except SQLAlchemyError as e:
+            sess.rollback()
+            raise e
+
+        g_supply.insert_g_era(
+            sess, self, [], start_date, finish_date, msn, g_contract, account)
+        sess.flush()
+        return g_supply
 
     def hh_check(self, sess, start, finish):
         for group in self.groups(sess, start, finish, False):
@@ -3184,3 +3230,683 @@ def find_db_version(sess):
         Contract.name == 'configuration', MarketRole.code == 'Z').one()
     conf_state = conf.make_state()
     return conf_state.get('db_version', 0)
+
+
+class GRegisterRead(Base, PersistentClass):
+    __tablename__ = 'g_register_read'
+    id = Column('id', Integer, primary_key=True)
+    g_bill_id = Column(
+        Integer, ForeignKey('g_bill.id', ondelete='CASCADE'), nullable=False,
+        index=True)
+    msn = Column(String, nullable=False, index=True)
+    prev_date = Column(DateTime(timezone=True), nullable=False, index=True)
+    prev_value = Column(Numeric, nullable=False)
+    prev_type_id = Column(Integer, ForeignKey('g_read_type.id'), index=True)
+    prev_type = relationship(
+        "GReadType",
+        primaryjoin="GReadType.id==GRegisterRead.prev_type_id")
+    pres_date = Column(DateTime(timezone=True), nullable=False, index=True)
+    pres_value = Column(Numeric, nullable=False)
+    pres_type_id = Column(Integer, ForeignKey('g_read_type.id'), index=True)
+    pres_type = relationship(
+        "GReadType",
+        primaryjoin="GReadType.id==GRegisterRead.pres_type_id")
+    units = Column(String, nullable=False)
+    correction_factor = Column(Numeric, nullable=False)
+    calorific_value = Column(Numeric, nullable=False)
+
+    def __init__(
+            self, g_bill, msn, prev_value, prev_date, prev_type, pres_value,
+            pres_date, pres_type, units, correction_factor, calorific_value):
+        self.g_bill = g_bill
+        self.update(
+            msn, prev_value, prev_date, prev_type, pres_value, pres_date,
+            pres_type, units, correction_factor, calorific_value)
+
+    def update(
+            self, msn, prev_value, prev_date, prev_type, pres_value, pres_date,
+            pres_type, units, correction_factor, calorific_value):
+        self.msn = msn
+        self.prev_value = prev_value
+        self.prev_date = prev_date
+        self.prev_type = prev_type
+        self.pres_value = pres_value
+        self.pres_date = pres_date
+        self.pres_type = pres_type
+        self.units = units
+        self.correction_factor = correction_factor
+        self.calorific_value = calorific_value
+
+
+class SiteGEra(Base, PersistentClass):
+    __tablename__ = 'site_g_era'
+    id = Column(Integer, primary_key=True)
+    site_id = Column(Integer, ForeignKey('site.id'))
+    g_era_id = Column(Integer, ForeignKey('g_era.id'))
+    is_physical = Column(Boolean, nullable=False)
+
+    def __init__(self, site, g_era, is_physical):
+        self.site = site
+        self.g_era = g_era
+        self.is_physical = is_physical
+
+
+class GEra(Base, PersistentClass):
+    __tablename__ = 'g_era'
+    id = Column('id', Integer, primary_key=True)
+    g_supply_id = Column(
+        Integer, ForeignKey('g_supply.id'), nullable=False, index=True)
+    site_g_eras = relationship('SiteGEra', backref='g_era')
+    start_date = Column(DateTime(timezone=True), nullable=False, index=True)
+    finish_date = Column(DateTime(timezone=True), index=True)
+    msn = Column(String)
+    g_contract_id = Column(
+        Integer, ForeignKey('g_contract.id'), index=True)
+    g_contract = relationship(
+        "GContract", primaryjoin="GContract.id==GEra.g_contract_id")
+    account = Column(String, nullable=False)
+
+    def __init__(
+            self, sess, g_supply, start_date, finish_date, msn, contract,
+            account):
+        self.g_supply = g_supply
+        self.update(sess, start_date, finish_date, msn, contract, account)
+
+    def attach_site(self, sess, site, is_location=False):
+        if site in sess.query(Site).join(SiteGEra).filter(
+                SiteGEra.g_era == self).all():
+            raise BadRequest(
+                "The site is already attached to this supply.")
+
+        site_era = SiteGEra(site, self, False)
+        sess.add(site_era)
+        sess.flush()
+        if is_location:
+            self.set_physical_location(sess, site)
+
+    def detach_site(self, sess, site):
+        site_era = sess.query(SiteGEra).filter(
+            SiteGEra.era == self, SiteGEra.site == site).first()
+        if site_era is None:
+            raise BadRequest(
+                "Can't detach this era from this site, as it isn't attached.")
+        if site_era.is_physical:
+            raise BadRequest(
+                "You can't detach an era from the site where it is "
+                "physically located.")
+
+        sess.delete(site_era)
+        sess.flush()
+
+    def update_dates(self, sess, start_date, finish_date):
+        self.update(
+            sess, start_date, finish_date, self.msn, self.contract,
+            self.account)
+
+    def update(self, sess, start_date, finish_date, msn, g_contract, account):
+        if hh_after(start_date, finish_date):
+            raise BadRequest(
+                "The era start date can't be after the finish date.")
+
+        self.msn = msn
+        self.start_date = start_date
+        self.finish_date = finish_date
+        self.g_contract = g_contract
+        self.account = account
+
+        if g_contract.start_g_rate_script.start_date > start_date:
+            raise BadRequest(
+                "The contract starts after the era.")
+
+        if hh_before(g_contract.finish_g_rate_script.finish_date, finish_date):
+            raise BadRequest("The contract finishes before the era.")
+
+        try:
+            sess.flush()
+        except ProgrammingError as e:
+            if e.orig.args[2] == 'null value in column "start_date" ' + \
+                    'violates not-null constraint':
+                raise BadRequest("The start date cannot be blank.")
+            else:
+                raise e
+
+        sess.flush()
+
+    def set_physical_location(self, sess, site):
+        target_ssgen = sess.query(SiteGEra).filter(
+            SiteGEra.g_era == self, SiteGEra.site == site).first()
+        if target_ssgen is None:
+            raise BadRequest("The site isn't attached to this supply.")
+
+        for ssgen in self.site_g_eras:
+            ssgen.is_physical = ssgen == target_ssgen
+        sess.flush()
+
+
+class GSupply(Base, PersistentClass):
+    __tablename__ = 'g_supply'
+    id = Column('id', Integer, primary_key=True)
+    mprn = Column(String, nullable=False, unique=True)
+    name = Column(String, nullable=False)
+    note = Column(Text, nullable=False)
+    g_eras = relationship('GEra', backref='g_supply')
+    g_bills = relationship('GBill', backref='g_supply')
+
+    def __init__(self, mprn, name, note):
+        self.update(mprn, name)
+        self.note = note
+
+    def update(self, mprn, name):
+        name = name.strip()
+        if len(name) == 0:
+            raise BadRequest("The supply name can't be blank.")
+
+        self.name = name
+        mprn = mprn.strip()
+        if len(mprn) == 0:
+            raise BadRequest("The MPRN can't be blank.")
+        self.mprn = mprn
+
+    @staticmethod
+    def find_by_mprn(sess, mprn):
+        return sess.query(GSupply).filter(GSupply.mprn == mprn).first()
+
+    @staticmethod
+    def get_by_mprn(sess, mprn):
+        supply = GSupply.find_by_mprn(sess, mprn)
+        if supply is None:
+            raise BadRequest(
+                "The MPRN " + mprn + " is not set up in Chellow.")
+        return supply
+
+    def insert_g_era(
+            self, sess, physical_site, logical_sites, start_date, finish_date,
+            msn, g_contract, account):
+        covered_era = None
+
+        if len(self.g_eras) > 0:
+            if hh_after(start_date, self.find_last_era(sess).finish_date):
+                raise BadRequest(
+                    "One can't add a era that starts after "
+                    "the supply has finished.")
+
+            first_era = self.find_first_g_era(sess)
+
+            if hh_before(start_date, first_era.start_date):
+                finish_date = prev_hh(first_era.start_date)
+            else:
+                covered_era = self.find_g_era_at(sess, start_date)
+                if start_date == covered_era.start_date:
+                    raise BadRequest(
+                        "There's already an era with that start date.")
+
+                finish_date = covered_era.finish_date
+
+        sess.flush()
+        era = GEra(
+            sess, self, start_date, finish_date, msn, g_contract, account)
+        sess.add(era)
+        sess.flush()
+
+        sess.flush()
+        era.attach_site(sess, physical_site, True)
+        for site in logical_sites:
+            era.attach_site(sess, site, False)
+
+        sess.flush()
+        if covered_era is not None:
+            covered_era.update_dates(
+                sess, covered_era.start_date, start_date - HH)
+        return era
+
+    def attach_site(self, sess, site, is_location=False):
+        if site in sess.query(Site).join(SiteGEra).filter(
+                SiteGEra.g_era == self).all():
+            raise BadRequest(
+                "The site is already attached to this supply.")
+
+        site_era = SiteGEra(site, self, False)
+        sess.add(site_era)
+        sess.flush()
+        if is_location:
+            self.set_physical_location(sess, site)
+
+    def detach_site(self, sess, site):
+        site_era = sess.query(SiteGEra).filter(
+            SiteGEra.era == self, SiteEra.site == site).first()
+        if site_era is None:
+            raise BadRequest(
+                "Can't detach this era from this site, as it isn't attached.")
+        if site_era.is_physical:
+            raise BadRequest(
+                "You can't detach an era from the site where it is "
+                "physically located.")
+
+        sess.delete(site_era)
+        sess.flush()
+
+    def update_g_era(
+            self, sess, g_era, start_date, finish_date, msn, g_contract,
+            account):
+        if g_era.g_supply != self:
+            raise Exception("The era doesn't belong to this supply.")
+
+        prev_g_era = self.find_g_era_at(sess, prev_hh(g_era.start_date))
+        if g_era.finish_date is None:
+            next_g_era = None
+        else:
+            next_g_era = self.find_g_era_at(sess, next_hh(g_era.finish_date))
+
+        g_era.update(sess, start_date, finish_date, msn, g_contract, account)
+
+        if prev_g_era is not None:
+            prev_g_era.update_dates(
+                sess, prev_g_era.start_date, prev_hh(start_date))
+
+        if next_g_era is not None:
+            next_g_era.update_dates(
+                sess, next_hh(finish_date), next_g_era.finish_date)
+
+    def find_g_era_at(self, sess, dt):
+        if dt is None:
+            return sess.query(GEra).filter(
+                GEra.g_supply == self, GEra.finish_date == null()).first()
+        else:
+            return sess.query(GEra).filter(
+                GEra.g_supply == self, GEra.start_date <= dt, or_(
+                    GEra.finish_date == null(),
+                    GEra.finish_date >= dt)).first()
+
+    def find_g_eras(self, sess, start, finish):
+        g_eras = sess.query(GEra).filter(
+            GEra.g_supply == self, or_(
+                GEra.finish_date == null(),
+                GEra.finish_date >= start)).order_by(
+            GEra.start_date)
+        if finish is not None:
+            g_eras = g_eras.filter(GEra.start_date <= finish)
+        return g_eras.all()
+
+
+class GBill(Base, PersistentClass):
+    __tablename__ = 'g_bill'
+    id = Column('id', Integer, primary_key=True)
+    g_batch_id = Column(
+        Integer, ForeignKey('g_batch.id'), nullable=False, index=True)
+    g_supply_id = Column(
+        Integer, ForeignKey('g_supply.id'), nullable=False, index=True)
+    bill_type_id = Column(Integer, ForeignKey('bill_type.id'), index=True)
+    bill_type = relationship(
+        "BillType", primaryjoin="BillType.id==GBill.bill_type_id")
+    reference = Column(String, nullable=False)
+    account = Column(String, nullable=False)
+    issue_date = Column(DateTime(timezone=True), nullable=False, index=True)
+    start_date = Column(DateTime(timezone=True), nullable=False, index=True)
+    finish_date = Column(DateTime(timezone=True), nullable=False, index=True)
+    kwh = Column(Numeric, nullable=False)
+    net_gbp = Column(Numeric, nullable=False)
+    vat_gbp = Column(Numeric, nullable=False)
+    gross_gbp = Column(Numeric, nullable=False)
+    raw_lines = Column(Text, nullable=False)
+    breakdown = Column(Text, nullable=False)
+    g_reads = relationship(
+        'GRegisterRead', backref='g_bill', cascade="all, delete-orphan",
+        passive_deletes=True)
+
+    def __init__(
+            self, g_batch, g_supply, bill_type, reference, account, issue_date,
+            start_date, finish_date, kwh, net_gbp, vat_gbp, gross_gbp,
+            raw_lines, breakdown):
+        self.g_batch = g_batch
+        self.g_supply = g_supply
+        self.update(
+            bill_type, reference, account, issue_date, start_date, finish_date,
+            kwh, net_gbp, vat_gbp, gross_gbp, raw_lines, breakdown)
+
+    def update(
+            self, bill_type, reference, account, issue_date,
+            start_date, finish_date, kwh, net_gbp, vat_gbp, gross_gbp,
+            raw_lines, breakdown):
+        self.bill_type = bill_type
+        self.reference = reference
+        self.account = account
+        self.issue_date = issue_date
+        self.start_date = start_date
+        self.finish_date = finish_date
+        self.kwh = kwh
+        self.net_gbp = net_gbp
+        self.vat_gbp = vat_gbp
+        self.gross_gbp = gross_gbp
+        self.raw_lines = raw_lines
+        self.breakdown = json.dumps(breakdown)
+
+    def insert_g_read(
+            self, sess, msn, prev_value, prev_date, prev_type, pres_value,
+            pres_date, pres_type, units, correction_factor, calorific_value):
+
+        read = GRegisterRead(
+            self, msn, prev_value, prev_date, prev_type, pres_value, pres_date,
+            pres_type, units, correction_factor, calorific_value)
+        sess.add(read)
+        sess.flush()
+        return read
+
+    def delete(self, sess):
+        sess.delete(self)
+        sess.flush()
+
+
+class GBatch(Base, PersistentClass):
+    __tablename__ = 'g_batch'
+    id = Column('id', Integer, primary_key=True)
+    g_contract_id = Column(
+        Integer, ForeignKey('g_contract.id'), nullable=False, index=True)
+    reference = Column(String, nullable=False)
+    description = Column(String, nullable=False)
+    bills = relationship('GBill', backref='g_batch')
+    __table_args__ = (UniqueConstraint('g_contract_id', 'reference'), )
+
+    def __init__(self, sess, g_contract, reference, description):
+        self.g_contract = g_contract
+        self.update(sess, reference, description)
+
+    def update(self, sess, reference, description):
+        reference = reference.strip()
+        if len(reference) == 0:
+            raise BadRequest("The batch reference can't be blank.")
+
+        self.reference = reference
+        self.description = description.strip()
+        try:
+            sess.flush()
+        except SQLAlchemyError:
+            sess.rollback()
+            raise BadRequest(
+                "There's already a batch attached to the contract " +
+                self.g_contract.name + " with the reference " +
+                reference + ".")
+
+    def delete(self, sess):
+        sess.execute(
+            "delete from g_bill where g_batch_id = :g_batch_id",
+            {'g_batch_id': self.id})
+        sess.delete(self)
+
+    def insert_g_bill(
+            self, sess, bill_type, mprn, reference, account, issue_date,
+            start_date, finish_date, kwh, net_gbp, vat_gbp, gross_gbp,
+            raw_lines, breakdown):
+
+        g_supply = sess.query(GSupply).filter(GSupply.mprn == mprn).first()
+
+        if g_supply is None:
+            raise BadRequest(
+                "Can't find a supply with MPRN '" + mprn + "'.")
+
+        g_bill = GBill(
+            self, g_supply, bill_type, reference, account, issue_date,
+            start_date, finish_date, kwh, net_gbp, vat_gbp, gross_gbp,
+            raw_lines, breakdown)
+
+        sess.add(g_bill)
+        sess.flush()
+        return g_bill
+
+
+class GContract(Base, PersistentClass):
+    __tablename__ = 'g_contract'
+    id = Column('id', Integer, primary_key=True)
+    name = Column(String, nullable=False)
+    charge_script = Column(Text, nullable=False)
+    properties = Column(Text, nullable=False)
+    state = Column(Text, nullable=False)
+    g_rate_scripts = relationship(
+        "GRateScript", back_populates="g_contract",
+        primaryjoin="GContract.id==GRateScript.g_contract_id")
+    g_batches = relationship('GBatch', backref='g_contract')
+
+    start_g_rate_script_id = Column(
+        Integer, ForeignKey(
+            'g_rate_script.id', use_alter=True,
+            name='g_contract_start_g_rate_script_id_fkey'))
+    finish_g_rate_script_id = Column(
+        Integer, ForeignKey(
+            'g_rate_script.id', use_alter=True,
+            name='g_contract_finish_g_rate_script_id_fkey'))
+
+    start_g_rate_script = relationship(
+        "GRateScript",
+        primaryjoin="GRateScript.id==GContract.start_g_rate_script_id")
+    finish_g_rate_script = relationship(
+        "GRateScript",
+        primaryjoin="GRateScript.id==GContract.finish_g_rate_script_id")
+
+    def __init__(self, sess, name, charge_script, properties):
+        self.update(sess, name, charge_script, properties)
+        self.update_state({})
+
+    def update(self, sess, name, charge_script, properties):
+        name = name.strip()
+        if len(name) == 0:
+            raise BadRequest("The gas contract name can't be blank.")
+        self.name = name
+
+        try:
+            ast.parse(charge_script)
+        except SyntaxError as e:
+            raise BadRequest(str(e))
+        except NameError as e:
+            raise BadRequest(str(e))
+        self.charge_script = charge_script
+        if not isinstance(properties, dict):
+            raise BadRequest(
+                "The 'properties' argument must be a dictionary.")
+        self.properties = json.dumps(properties)
+
+    def update_state(self, state):
+        self.state = json.dumps(state)
+
+    def update_g_rate_script(
+            self, sess, rscript, start_date, finish_date, script):
+        if rscript.g_contract != self:
+            raise Exception(
+                "This gas rate script doesn't belong to this contract.")
+
+        if start_date is None:
+            raise BadRequest("The start date can't be None.")
+
+        if hh_after(start_date, finish_date):
+            raise BadRequest(
+                "The start date can't be after the finish date.")
+
+        rscript.script = json.dumps(script)
+
+        prev_rscript = self.find_g_rate_script_at(
+            sess, rscript.start_date - HH)
+        if rscript.finish_date is None:
+            next_rscript = None
+        else:
+            next_rscript = self.find_g_rate_script_at(
+                sess, rscript.finish_date + HH)
+
+        rscript.start_date = start_date
+        rscript.finish_date = finish_date
+
+        if prev_rscript is not None:
+            if not hh_before(prev_rscript.start_date, start_date):
+                raise BadRequest(
+                    "The start date must be after the start date of the "
+                    "previous rate script.")
+            prev_rscript.finish_date = prev_hh(start_date)
+
+        if next_rscript is not None:
+            if finish_date is None:
+                raise BadRequest(
+                    "The finish date must be before the finish date of the "
+                    "next rate script.")
+
+            if not hh_before(finish_date, next_rscript.finish_date):
+                raise BadRequest(
+                    "The finish date must be before the finish date of the "
+                    "next rate script.")
+
+            next_rscript.start_date = next_hh(finish_date)
+
+        sess.flush()
+        rscripts = sess.query(GRateScript).filter(
+            GRateScript.g_contract == self).order_by(
+            GRateScript.start_date).all()
+        self.start_g_rate_script = rscripts[0]
+        self.finish_g_rate_script = rscripts[-1]
+
+        eras_before = sess.query(GEra).filter(
+            GEra.start_date < self.start_g_rate_script.start_date,
+            GEra.g_contract == self).all()
+        if len(eras_before) > 0:
+            raise BadRequest(
+                "The era with MPRN " + eras_before[0].g_supply.mprn +
+                " exists before the start of this contract, and is " +
+                "attached to this contract.")
+
+        if self.finish_g_rate_script.finish_date is not None:
+            eras_after = sess.query(GEra).filter(
+                GEra.finish_date > self.finish_g_rate_script.finish_date,
+                GEra.g_contract == self).all()
+            if len(eras_after) > 0:
+                raise BadRequest(
+                    "The era with MPRN " + eras_after[0].g_supply.mprn +
+                    " exists after the start of this contract, and is " +
+                    "attached to this contract.")
+
+    def delete(self, sess):
+        self.g_rate_scripts[:] = []
+        sess.delete(self)
+
+    def delete_g_rate_script(self, sess, rscript):
+        rscripts = sess.query(GRateScript).filter(
+            GRateScript.g_contract == self).order_by(
+                GRateScript.start_date).all()
+
+        if len(rscripts) < 2:
+            raise BadRequest("You can't delete the last rate script.")
+        if rscripts[0] == rscript:
+            self.g_start_rate_script = rscripts[1]
+        elif rscripts[-1] == rscript:
+            self.g_finish_rate_script = rscripts[-2]
+
+        sess.flush()
+        sess.delete(rscript)
+        sess.flush()
+
+        if rscripts[0] == rscript:
+            rscripts[1].start_date = rscript.start_date
+        elif rscripts[-1] == rscript:
+            rscripts[-2].finish_date = rscript.finish_date
+        else:
+            prev_script = self.find_g_rate_script_at(
+                sess, rscript.start_date - HH)
+            prev_script.finish_date = rscript.finish_date
+
+    def find_g_rate_script_at(self, sess, date):
+        return sess.query(GRateScript).filter(
+            GRateScript.g_contract == self,
+            GRateScript.start_date <= date, or_(
+                GRateScript.finish_date == null(),
+                GRateScript.finish_date >= date)).first()
+
+    def insert_g_rate_script(self, sess, start_date, script):
+        scripts = sess.query(GRateScript).filter(
+            GRateScript.g_contract == self).order_by(
+            GRateScript.start_date).all()
+        if len(scripts) == 0:
+            finish_date = None
+        else:
+            if hh_after(start_date, scripts[-1].finish_date):
+                raise BadRequest(
+                    "For the gas contract " + str(self.id) + " called " +
+                    str(self.name) + ", the start date " + str(start_date) +
+                    " is after the last rate script.")
+
+            covered_script = self.find_g_rate_script_at(sess, start_date)
+            if covered_script is None:
+                finish_date = scripts[0].start_date - HH
+            else:
+                if covered_script.start_date == covered_script.finish_date:
+                    raise BadRequest(
+                        "The start date falls on a rate script which is only "
+                        "half an hour in length, and so cannot be divided.")
+                if start_date == covered_script.start_date:
+                    raise BadRequest(
+                        "The start date is the same as the start date of an "
+                        "existing rate script.")
+
+                finish_date = covered_script.finish_date
+                covered_script.finish_date = prev_hh(start_date)
+                sess.flush()
+
+        new_script = GRateScript(self, start_date, finish_date, script)
+        sess.add(new_script)
+        sess.flush()
+        rscripts = sess.query(GRateScript).filter(
+            GRateScript.g_contract == self).order_by(
+            GRateScript.start_date).all()
+        self.g_start_rate_script = rscripts[0]
+        self.g_finish_rate_script = rscripts[-1]
+        sess.flush()
+        return new_script
+
+    def insert_g_batch(self, sess, reference, description):
+        batch = GBatch(sess, self, reference, description)
+        try:
+            sess.add(batch)
+        except ProgrammingError:
+            raise BadRequest(
+                "There's already a batch with that reference.")
+        return batch
+
+    def make_properties(self):
+        return json.loads(self.properties)
+
+    @staticmethod
+    def insert(
+            sess, name, charge_script, properties, start_date,
+            finish_date, rate_script):
+        contract = GContract(sess, name, charge_script, properties)
+        sess.add(contract)
+        sess.flush()
+        rscript = contract.insert_g_rate_script(sess, start_date, rate_script)
+        contract.update_g_rate_script(
+            sess, rscript, start_date, finish_date, rate_script)
+        return contract
+
+    @staticmethod
+    def get_by_id(sess, cid):
+        cont = GContract.find_by_id(sess, cid)
+        if cont is None:
+            raise BadRequest(
+                "There isn't a gas supplier contract with the id '" +
+                str(cid) + "'.")
+        return cont
+
+    @staticmethod
+    def find_by_id(sess, cid):
+        return sess.query(GContract).filter(GContract.id == cid).first()
+
+
+class GRateScript(Base, PersistentClass):
+    __tablename__ = "g_rate_script"
+    id = Column('id', Integer, primary_key=True)
+    g_contract_id = Column(Integer, ForeignKey('g_contract.id'), index=True)
+    g_contract = relationship(
+        "GContract", back_populates="g_rate_scripts",
+        primaryjoin="GContract.id==GRateScript.g_contract_id")
+    start_date = Column(DateTime(timezone=True), nullable=False, index=True)
+    finish_date = Column(DateTime(timezone=True), nullable=True, index=True)
+    script = Column(Text, nullable=False)
+    __table_args__ = (UniqueConstraint('g_contract_id', 'start_date'),)
+
+    def __init__(self, g_contract, start_date, finish_date, script):
+        self.g_contract = g_contract
+        self.start_date = start_date
+        self.finish_date = finish_date
+        self.script = json.dumps(script)

@@ -71,6 +71,7 @@
 					</td>
 					<td>{{osite.name}}</td>
 				</tr>
+<<<<<<< 3b0492ad3b60d11b8a1936ec4d9e7262640dab49
 				{% endfor %}
 			</table>
 		</div>
@@ -103,6 +104,75 @@
 							<tr
 								{% if not group['is_ongoing'] %}
 									style="color: silver;"
+=======
+			{% endfor %}
+		</table>
+	{% endif %}
+	<br>
+	<table>
+		<caption>Electricity supplies that power this site</caption>
+		<thead>
+			<tr>
+				<th>View</th>
+				<th>Name</th>
+				<th>From</th>
+				<th>To</th>
+				<th>Source</th>
+				<th>Generator Type</th>
+				<th>Import MPAN core</th>
+				<th>Export MPAN core</th>
+				<th>Physical Location</th>
+				<th>Also Supplies</th>
+				<th>Meter Category</th>
+				<th>Meter Serial Number</th>
+			</tr>
+		</thead>
+		<tbody>
+			{% for group in groups %}
+				{% set last_era = group['last_era'] %}
+				<tr
+					{% if not group['is_ongoing'] %}
+						style="color: silver;"
+					{% endif %}
+				>
+					<td>
+						<a href="{{context_path}}/supplies/{{last_era.supply_id}}">view</a>
+					</td>
+					<td>{{last_era.supply.name}}</td>
+					<td>{{group['first_era'].start_date|hh_format}}</td>
+					<td>{{last_era.finish_date|hh_format}}</td>
+					<td>{{last_era.supply.source.code}}</td>
+					<td>
+						{% if last_era.supply.generator_type %}
+							{{last_era.supply.generator_type.code}}
+						{% endif %}
+					</td>
+					<td>
+						{% if last_era.imp_mpan_core %}
+							<a
+									href="{{context_path}}/dno_contracts/{{last_era.supply.dno_contract.id}}"
+									>{{last_era.supply.dno_contract.name}}</a>
+							{{last_era.imp_mpan_core[2:]}}
+						{% endif %}
+					</td>
+					<td>
+						{% if last_era.exp_mpan_core %}
+							<a
+									href="{{context_path}}/dno_contracts/{{last_era.supply.dno_contract.id}}"
+									>{{last_era.supply.dno_contract.name}}</a>
+							{{last_era.exp_mpan_core[2:]}}
+						{% endif %}
+					</td>
+					<td>
+						{% for site_era in last_era.site_eras %}
+							{% if site_era.is_physical %}
+								{% if site_era.site.id == site.id %}
+									this site
+								{% else %}
+									<a
+									 		href="{{context_path}}/sites/{{site_era.site.id}}"
+										 	title="{{site_era.site.name}}">{{site_era.site.code}}</a>
+>>>>>>> Support gas in Chellow
 								{% endif %}
 							>
 								<td>
@@ -252,4 +322,59 @@
 		</div>
     </div>
 </div>
+	<br>
+	<table>
+		<caption>Gas supplies that power this site</caption>
+		<thead>
+			<tr>
+				<th>View</th>
+				<th>Name</th>
+				<th>From</th>
+				<th>To</th>
+				<th>MPRN</th>
+				<th>Physical Location</th>
+				<th>Also Supplies</th>
+				<th>Meter Serial Number</th>
+			</tr>
+		</thead>
+		<tbody>
+			{% for g_group in g_groups %}
+				{% set last_g_era = g_group['last_g_era'] %}
+
+				<tr
+					{% if not g_group['is_ongoing'] %}
+						style="color: silver;"
+					{% endif %}
+				>
+
+					<td>
+						<a href="{{context_path}}/reports/423/output/?g_supply_id={{last_g_era.g_supply_id}}">view</a>
+					</td>
+					<td>{{last_g_era.g_supply.name}}</td>
+					<td>{{g_group['first_g_era'].start_date|hh_format}}</td>
+					<td>{{last_g_era.finish_date|hh_format}}</td>
+					<td>{{last_g_era.g_supply.mprn}}</td>
+					<td>
+						{% for site_era in last_g_era.site_g_eras %}
+							{% if site_era.is_physical %}
+								{% if site_era.site.id == site.id %}
+									this site
+								{% else %}
+									<a href="{{context_path}}/reports/5/output/?site_id={{site_era.site.id}}" title="{{site_era.site.name}}">{{site_era.site.code}}</a>
+								{% endif %}
+							{% endif %}
+						{% endfor %}
+					</td>
+					<td>
+						{% for site_g_era in last_g_era.site_g_eras %}
+							{% if site_g_era.site.id != site.id %}
+								<a href="{{context_path}}/reports/5/output/?site_id={{site_g_era.site.id}}" title="{{site_g_era.site.name}}">{{site_g_era.site.code}}</a>
+							{% endif %}
+						{% endfor %}
+					</td>
+					<td>{{last_g_era.msn}}</td>
+				</tr>
+			{% endfor %}
+		</tbody>
+	</table>
 {% endblock %}

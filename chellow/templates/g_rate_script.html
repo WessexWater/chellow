@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+
+{% block title %}
+	Gas Contracts &gt; {{g_rate_script.g_contract.name}} &gt;
+ 	Rate Script {{g_rate_script.id}}
+{% endblock %}
+
+{% block nav %}
+	<a href="{{context_path}}/g_contracts">Gas Contracts</a> &gt;
+	<a
+			href="{{context_path}}/g_contracts/{{g_rate_script.g_contract.id}}"
+			>{{g_rate_script.g_contract.name}}</a> &gt;
+	 	Rate Script {{g_rate_script.start_date|hh_format}}
+	[<a
+			href="{{context_path}}/g_rate_scripts/{{g_rate_script.id}}/edit"
+			>edit</a>]
+{% endblock %}
+
+{% block content %}
+	<table>
+		<tr>
+			<th>Start Date</th>
+			<td>{{ g_rate_script.start_date|hh_format }}</td>
+		</tr>
+		<tr>
+			<th>Finish Date</th>
+			<td>{{ g_rate_script.finish_date|hh_format }}</td>
+		</tr>
+	</table>
+
+	<h2>Script</h2>
+
+	<pre>{{g_rate_script.script}}</pre>
+{% endblock %}
