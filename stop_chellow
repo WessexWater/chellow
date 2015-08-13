@@ -1,6 +1,0 @@
-FLASK_PID_FILE=${CHELLOW_HOME}/flask.pid
-if [ -f ${FLASK_PID_FILE} ]; then
-  if kill `cat ${FLASK_PID_FILE}` ; then
-    rm ${FLASK_PID_FILE}
-  fi
-fi

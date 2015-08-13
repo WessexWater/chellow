@@ -1,14 +1,1 @@
-Jinja2==2.6
-Flask==0.10.1
-Flask-SQLAlchemy==2.0
-SQLAlchemy==0.8.6
-pg8000==1.10.2
-python-dateutil==1.5
-pytz==2014.4
-xlrd==0.7.9
-ftputil==3.0
-requests==2.5.1
-imprimatur
-flake8
-pyftpdlib
-simplejson==3.6.5
+-e .

@@ -5,15 +5,13 @@ import os
 
 
 def main():
-    CHELLOW_HOME = os.environ['CHELLOW_HOME']
-
     # Instantiate a dummy authorizer for managing 'virtual' users
     authorizer = DummyAuthorizer()
 
     # Define a new user having full r/w permissions and a read-only
     # anonymous user
     authorizer.add_user(
-        'chellow', 'HixaNfUBOf*u', os.path.join(CHELLOW_HOME, 'test', 'ftp'))
+        'chellow', 'HixaNfUBOf*u', os.path.join('test', 'ftp'))
 
     # Instantiate FTP handler class
     handler = FTPHandler

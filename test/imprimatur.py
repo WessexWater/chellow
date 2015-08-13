@@ -111,14 +111,14 @@
             'is_core': 'true'},
         'status_code': 303,
         'regexes': [
-            r"/reports/395/"]},
+            r"/reports/393/"]},
 
     # Valid general import of sites
     {
         'name': "site",
         'path': '/chellow/reports/293/output/',
         'method': 'post',
-        'files': {'import_file': 'sites.csv'},
+        'files': {'import_file': 'test/sites.csv'},
         'status_code': 303,
         'regexes': [
             r"/reports/295/output/\?process_id=0"]},
@@ -133,7 +133,7 @@
     {
         'path': '/chellow/reports/293/output/',
         'method': 'post',
-        'files': {'import_file': 'sites.csv'},
+        'files': {'import_file': 'test/sites.csv'},
         'status_code': 303,
         'regexes': [
             r"/reports/295/output/\?process_id=1"]},
@@ -581,7 +581,7 @@ def virtual_bill_titles():
         'name': "supplies",
         'path': '/chellow/reports/293/output/',
         'method': 'post',
-        'files': {'import_file': 'supplies-too-few-fields.csv'},
+        'files': {'import_file': 'test/supplies-too-few-fields.csv'},
         'regexes': [
             r"/reports/295/output/\?process_id=2"],
         'status_code': 303},
@@ -596,7 +596,7 @@ def virtual_bill_titles():
     {
         'path': '/chellow/reports/293/output/',
         'method': 'post',
-        'files': {'import_file': 'supplies_source.csv'},
+        'files': {'import_file': 'test/supplies_source.csv'},
         'regexes': [
             r"/reports/295/output/\?process_id=3"],
         'status_code': 303},
@@ -614,7 +614,7 @@ def virtual_bill_titles():
     {
         'path': '/chellow/reports/293/output/',
         'method': 'post',
-        'files': {'import_file': 'supplies_dno.csv'},
+        'files': {'import_file': 'test/supplies_dno.csv'},
         'regexes': [
             r"/reports/295/output/\?process_id=4"],
         'status_code': 303},
@@ -631,7 +631,7 @@ def virtual_bill_titles():
     {
         'path': '/chellow/reports/293/output/',
         'method': 'post',
-        'files': {'import_file': 'supplies_date.csv'},
+        'files': {'import_file': 'test/supplies_date.csv'},
         'regexes': [
             r"/chellow/reports/295/output/\?process_id=5"],
         'status_code': 303},
@@ -650,7 +650,7 @@ def virtual_bill_titles():
     {
         'path': '/chellow/reports/293/output/',
         'method': 'post',
-        'files': {'import_file': 'supplies_no_site.csv'},
+        'files': {'import_file': 'test/supplies_no_site.csv'},
         'regexes': [
             r"/chellow/reports/295/output/\?process_id=6", ],
         'status_code': 303, },
@@ -667,7 +667,7 @@ def virtual_bill_titles():
     {
         'path': '/chellow/reports/293/output/',
         'method': 'post',
-        'files': {'import_file': 'supplies.csv'},
+        'files': {'import_file': 'test/supplies.csv'},
         'status_code': 303,
         'regexes': [
             r"/reports/295/output/\?process_id=7"]},
@@ -969,7 +969,7 @@ def virtual_bill_titles():
     {
         'path': '/chellow/reports/293/output/',
         'method': 'post',
-        'files': {'import_file': 'era-update.csv'},
+        'files': {'import_file': 'test/era-update.csv'},
         'status_code': 303,
         'regexes': [
             r"/chellow/reports/295/output/\?process_id=8"]},
@@ -984,7 +984,7 @@ def virtual_bill_titles():
     {
         'path': '/chellow/reports/293/output/',
         'method': 'post',
-        'files': {'import_file': 'supplies-bad-mpan.csv'},
+        'files': {'import_file': 'test/supplies-bad-mpan.csv'},
         'status_code': 303,
         'regexes': [
             r"/reports/295/output/\?process_id=9"]},
@@ -1082,7 +1082,7 @@ def virtual_bill_titles():
         'method': 'post',
         'data': {
             'hhdc_contract_id': "56"},
-        'files': {'import_file': 'no_hash.df2'},
+        'files': {'import_file': 'test/no_hash.df2'},
         'regexes': [
             r"/reports/65/output/\?hhdc_contract_id=56&process_id=0"],
         'status_code': 303},
@@ -1100,7 +1100,7 @@ def virtual_bill_titles():
         'method': 'post',
         'data': {
             'hhdc_contract_id': "56"},
-        'files': {'import_file': 'ftp/hh_data.df2'},
+        'files': {'import_file': 'test/ftp/hh_data.df2'},
         'status_code': 303,
         'regexes': [
             r"/reports/65/output/\?hhdc_contract_id=56&process_id=1", ], },
@@ -1133,7 +1133,7 @@ def virtual_bill_titles():
         'method': 'post',
         'data': {
             'hhdc_contract_id': "56"},
-        'files': {'import_file': 'hh_data2.df2'},
+        'files': {'import_file': 'test/hh_data2.df2'},
         'status_code': 303},
 
     # This relies on the datum 15/11/2005,00:30,1.0,A being already loaded,
@@ -1145,7 +1145,7 @@ def virtual_bill_titles():
         'method': 'post',
         'data': {
             'hhdc_contract_id': "56", },
-        'files': {'import_file': 'missing.df2'},
+        'files': {'import_file': 'test/missing.df2'},
         'regexes': [
             r"/reports/65/output/\?hhdc_contract_id=56&process_id=3"],
         'status_code': 303},
@@ -1163,7 +1163,7 @@ def virtual_bill_titles():
         'method': 'post',
         'data': {
             'hhdc_contract_id': "56"},
-        'files': {'import_file': 'hh_data_timezone.df2'},
+        'files': {'import_file': 'test/hh_data_timezone.df2'},
         'regexes': [
             r"/chellow/reports/65/output/\?hhdc_contract_id=56&process_id=4"],
         'status_code': 303},
@@ -1183,7 +1183,7 @@ def virtual_bill_titles():
         'method': 'post',
         'data': {
             'hhdc_contract_id': "56"},
-        'files': {'import_file': 'hh_data_not_actual.df2'},
+        'files': {'import_file': 'test/hh_data_not_actual.df2'},
         'regexes': [
             r"/chellow/reports/65/output/\?hhdc_contract_id=56&process_id=5"],
         'status_code': 303},
@@ -1213,7 +1213,7 @@ def virtual_bill_titles():
         'method': 'post',
         'data': {
             'hhdc_contract_id': "56"},
-        'files': {'import_file': 'hh_data_not_actual2.df2'},
+        'files': {'import_file': 'test/hh_data_not_actual2.df2'},
         'regexes': [
             r'/reports/65/output/\?hhdc_contract_id=56&process_id=6'],
         'status_code': 303},
@@ -1242,7 +1242,7 @@ def virtual_bill_titles():
         'method': 'post',
         'data': {
             'hhdc_contract_id': "56"},
-        'files': {'import_file': 'hh_data.simple.csv'},
+        'files': {'import_file': 'test/hh_data.simple.csv'},
         'regexes': [
             r"/reports/65/output/\?hhdc_contract_id=56&process_id=7"],
         'status_code': 303},
@@ -1268,7 +1268,7 @@ def virtual_bill_titles():
         'method': 'post',
         'data': {
             'hhdc_contract_id': "56"},
-        'files': {'import_file': 'hh_data_malformed.df2'},
+        'files': {'import_file': 'test/hh_data_malformed.df2'},
         'regexes': [
             r"/reports/65/output/\?hhdc_contract_id=56&process_id=8"],
         'status_code': 303},
@@ -1285,7 +1285,7 @@ def virtual_bill_titles():
         'method': 'post',
         'data': {
             'hhdc_contract_id': "56"},
-        'files': {'import_file': 'hh_data_bad_beginning.df2'},
+        'files': {'import_file': 'test/hh_data_bad_beginning.df2'},
         'regexes': [
             r"/reports/65/output/\?hhdc_contract_id=56&process_id=9"],
         'status_code': 303},
@@ -1303,7 +1303,7 @@ def virtual_bill_titles():
         'method': 'post',
         'data': {
             'hhdc_contract_id': "56"},
-        'files': {'import_file': 'hh_data_header_but_no_data.df2'},
+        'files': {'import_file': 'test/hh_data_header_but_no_data.df2'},
         'regexes': [
             r"/reports/65/output/\?hhdc_contract_id=56&process_id=10"],
         'status_code': 303},
@@ -1451,7 +1451,7 @@ def virtual_bill_titles():
         'method': 'post',
         'data': {
             'hhdc_contract_id': "56"},
-        'files': {'import_file': 'ftp/hh_data.df2'},
+        'files': {'import_file': 'test/ftp/hh_data.df2'},
         'regexes': [
             r"/reports/65/output/\?hhdc_contract_id=56&process_id=11"],
         'status_code': 303},
@@ -1506,7 +1506,7 @@ def virtual_bill_titles():
         'method': 'post',
         'data': {
             'supplier_batch_id': "1"},
-        'files': {'import_file': 'bills.mm'},
+        'files': {'import_file': 'test/bills.mm'},
         'status_code': 303,
         'regexes': [
             r"/reports/323/output/\?importer_id=0"]},
@@ -1526,7 +1526,7 @@ def virtual_bill_titles():
         'name': "Set up NHH",
         'path': '/chellow/reports/293/output/',
         'method': 'post',
-        'files': {'import_file': 'nhh-supplies.csv'},
+        'files': {'import_file': 'test/nhh-supplies.csv'},
         'status_code': 303,
         'regexes': [
             r"/reports/295/output/\?process_id=10"]},
@@ -1562,7 +1562,7 @@ def virtual_bill_titles():
         'method': 'post',
         'data': {
             'supplier_batch_id': "3"},
-        'files': {'import_file': 'bills.bgb.edi'},
+        'files': {'import_file': 'test/bills.bgb.edi'},
         'status_code': 303,
         'regexes': [
             r"/reports/323/output/\?importer_id=1"]},
@@ -1611,7 +1611,7 @@ def virtual_bill_titles():
         'method': 'post',
         'data': {
             'hhdc_contract_id': "56"},
-        'files': {'import_file': 'hh_data.bg.csv'},
+        'files': {'import_file': 'test/hh_data.bg.csv'},
         'status_code': 303,
         'regexes': [
             r"/chellow/reports/65/output/\?hhdc_contract_id=56&process_id=12"]
@@ -1666,7 +1666,7 @@ def virtual_bill_titles():
         'name': "HH data general import",
         'path': '/chellow/reports/293/output/',
         'method': 'post',
-        'files': {'import_file': 'hh_data.csv'},
+        'files': {'import_file': 'test/hh_data.csv'},
         'status_code': 303,
         'regexes': [
             r"/chellow/reports/295/output/\?process_id=11", ], },
@@ -1694,7 +1694,7 @@ def virtual_bill_titles():
         'method': 'post',
         'data': {
             'supplier_batch_id': "4"},
-        'files': {'import_file': 'bills.csv'},
+        'files': {'import_file': 'test/bills.csv'},
         'status_code': 303,
         'regexes': [
             r"/reports/323/output/\?importer_id=2"]},
@@ -2574,7 +2574,7 @@ def virtual_bill(supply_source):
         'name': "Check TRIAD calculation for March",
         'path': '/chellow/reports/293/output/',
         'method': 'post',
-        'files': {'import_file': 'hh_data_long.csv'},
+        'files': {'import_file': 'test/hh_data_long.csv'},
         'status_code': 303,
         'regexes': [
             r"/reports/295/output/\?process_id=12"]},
@@ -3956,7 +3956,7 @@ def virtual_bill(supply_source):
         'path': '/chellow/reports/269/output/',
         'method': 'post',
         'data': {
-            'non_core_contract_id': "13",
+            'non_core_contract_id': "12",
             'name': "configuration",
             'charge_script': "",
             'properties': """
@@ -4070,7 +4070,7 @@ def virtual_bill(supply_source):
         'method': 'post',
         'data': {
             'hhdc_contract_id': "57"},
-        'files': {'import_file': 'hh.simple.csv'},
+        'files': {'import_file': 'test/hh.simple.csv'},
         'status_code': 303,
         'regexes': [
             r"/reports/65/output/\?hhdc_contract_id=57&process_id=0"]},
@@ -4306,7 +4306,7 @@ def virtual_bill(supply_source):
         'method': 'post',
         'data': {
             'supplier_batch_id': "5"},
-        'files': {'import_file': 'bills.sse.edi'},
+        'files': {'import_file': 'test/bills.sse.edi'},
         'status_code': 303,
         'regexes': [
             r"/reports/323/output/\?importer_id=3"]},
@@ -4383,7 +4383,7 @@ def virtual_bill(supply_source):
         'name': "Check can import channel snag ignores okay.",
         'path': '/chellow/reports/293/output/',
         'method': 'post',
-        'files': {'import_file': 'channel-snag-ignores.csv'},
+        'files': {'import_file': 'test/channel-snag-ignores.csv'},
         'status_code': 303,
         'regexes': [
             r"/chellow/reports/295/output/\?process_id=13"]},
@@ -4399,7 +4399,7 @@ def virtual_bill(supply_source):
         'name': "Check can import site snag ignores okay.",
         'path': '/chellow/reports/293/output/',
         'method': 'post',
-        'files': {'import_file': 'site-snag-ignores.csv'},
+        'files': {'import_file': 'test/site-snag-ignores.csv'},
         'status_code': 303,
         'regexes': [
             r"/reports/295/output/\?process_id=14"]},
@@ -4480,7 +4480,7 @@ def virtual_bill(supply_source):
             'supplier_batch_id': "6"},
 
         # File has a character outside 8 bits to check unicode handling
-        'files': {'import_file': 'bills.gdf.csv'},
+        'files': {'import_file': 'test/bills.gdf.csv'},
         'status_code': 303,
         'regexes': [
             r"/reports/323/output/\?importer_id=4"]},
@@ -4498,7 +4498,7 @@ def virtual_bill(supply_source):
             "<td>2010-06-09 00:00</td>\s*<td>2010-05-01 00:00</td>\s*"
             "<td>2010-05-31 23:30</td>\s*<td>32124.5</td>\s*"
             r'<td>2219.41</td>\s*<td>388.4</td>\s*<td>2607.81</td>\s*'
-            r'<td>\{&#39;fit-previous-actual-gbp&#39;: 0.0,',
+            r'<td>\[\(&#39;bsuos-actual-gbp-info&#39;, 136.0\),',
             r"All the bills have been successfully loaded and attached to "
             "the batch\."],
         'status_code': 200},
@@ -4611,7 +4611,7 @@ def virtual_bill(supply_source):
         'method': 'post',
         'data': {
             'supplier_batch_id': "7"},
-        'files': {'import_file': 'bills-nhh.csv'},
+        'files': {'import_file': 'test/bills-nhh.csv'},
         'status_code': 303,
         'regexes': [
             r"/reports/323/output/\?importer_id=5"]},
@@ -4743,7 +4743,7 @@ def virtual_bill(supply_source):
         "before the beginning of a supply ",
         'path': '/chellow/reports/293/output/',
         'method': 'post',
-        'files': {'import_file': 'era-insert.csv'},
+        'files': {'import_file': 'test/era-insert.csv'},
         'status_code': 303,
         'regexes': [
             r"/reports/295/output/\?process_id=15"]},
@@ -4768,7 +4768,7 @@ def virtual_bill(supply_source):
         'name': "Check that the general import of register reads works.",
         'path': '/chellow/reports/293/output/',
         'method': 'post',
-        'files': {'import_file': 'bills-general.csv'},
+        'files': {'import_file': 'test/bills-general.csv'},
         'status_code': 303,
         'regexes': [
             r"/reports/295/output/\?process_id=16"]},
@@ -4812,7 +4812,7 @@ def virtual_bill(supply_source):
         'name': "Test supply era update for a supply with 2 mpans.",
         'path': '/chellow/reports/293/output/',
         'method': 'post',
-        'files': {'import_file': 'era-update-2-mpans.csv'},
+        'files': {'import_file': 'test/era-update-2-mpans.csv'},
         'status_code': 303,
         'regexes': [
             r"/reports/295/output/\?process_id=17"]},
@@ -4850,7 +4850,7 @@ def virtual_bill(supply_source):
         'method': 'post',
         'data': {
             'hhdc_batch_id': "8"},
-        'files': {'import_file': 'hhdc-bill.csv'},
+        'files': {'import_file': 'test/hhdc-bill.csv'},
         'status_code': 303,
         'regexes': [
             r"/reports/329/output/\?importer_id=6"]},
@@ -4904,7 +4904,7 @@ def virtual_bill(supply_source):
         'method': 'post',
         'data': {
             'mop_batch_id': "9"},
-        'files': {'import_file': 'mop-bill.csv'},
+        'files': {'import_file': 'test/mop-bill.csv'},
         'status_code': 303,
         'regexes': [
             r"/reports/333/output/\?importer_id=7"]},
@@ -5967,7 +5967,7 @@ def virtual_bill(supply_source):
         'path': '/chellow/reports/269/output/',
         'method': 'post',
         'data': {
-            'non_core_contract_id': "13",
+            'non_core_contract_id': "12",
             'name': "configuration",
             'charge_script': "",
             'properties': """
@@ -5999,7 +5999,7 @@ def virtual_bill(supply_source):
         'method': 'post',
         'data': {
             'hhdc_contract_id': "56"},
-        'files': {'import_file': 'hh-no-channel.simple.csv'},
+        'files': {'import_file': 'test/hh-no-channel.simple.csv'},
         'status_code': 303,
         'regexes': [
             r"/reports/65/output/\?hhdc_contract_id=56&process_id=13"]},
@@ -7479,7 +7479,7 @@ def shutdown():
         'method': 'post',
         'data': {
             'supplier_batch_id': "3", },
-        'files': {'import_file': 'bills2.sse.edi'},
+        'files': {'import_file': 'test/bills2.sse.edi'},
         'status_code': 303,
         'regexes': [
             r"/reports/323/output/\?importer_id=0"]},
@@ -7828,7 +7828,7 @@ def shutdown():
         'name': "Insert a batch with general import",
         'path': '/chellow/reports/293/output/',
         'method': 'post',
-        'files': {'import_file': 'gi_batch.csv'},
+        'files': {'import_file': 'test/gi_batch.csv'},
         'status_code': 303,
         'regexes': [
             r"/reports/295/output/\?process_id=0"]},
@@ -7846,7 +7846,7 @@ def shutdown():
         'method': 'post',
         'data': {
             'hhdc_contract_id': "56"},
-        'files': {'import_file': 'hh_clock_change.df2'},
+        'files': {'import_file': 'test/hh_clock_change.df2'},
         'status_code': 303,
         'regexes': [
             r"/reports/65/output/\?hhdc_contract_id=56&process_id=0"]},
@@ -7881,7 +7881,7 @@ def shutdown():
         'method': 'post',
         'data': {
             'supplier_batch_id': "12"},
-        'files': {'import_file': 'nhh_bills2007.csv'},
+        'files': {'import_file': 'test/nhh_bills2007.csv'},
         'status_code': 303,
         'regexes': [
             r"/reports/323/output/\?importer_id=1"]},
@@ -8060,7 +8060,7 @@ def shutdown():
         'method': 'post',
         'data': {
             'supplier_batch_id': "7"},
-        'files': {'import_file': 'bills-nhh-clocked.csv'},
+        'files': {'import_file': 'test/bills-nhh-clocked.csv'},
         'status_code': 303},
     {
         'path': '/chellow/reports/161/output/?site_id=4&months=1&'
@@ -8183,7 +8183,7 @@ def shutdown():
         'name': "General import of bill with start date after finish date",
         'path': '/chellow/reports/293/output/',
         'method': 'post',
-        'files': {'import_file': 'general-bills-error.csv'},
+        'files': {'import_file': 'test/general-bills-error.csv'},
         'status_code': 303,
         'regexes': [
             r"/reports/295/output/\?process_id=1"]},
@@ -9885,7 +9885,7 @@ def shutdown():
         'name': "GI Delete LLFC",
         'path': "/chellow/reports/293/output/",
         'method': "post",
-        'files': {"import_file": "gi_delete_llfc.csv"},
+        'files': {"import_file": "test/gi_delete_llfc.csv"},
         'status_code': 303,
         'regexes': [r"/reports/295/output/\?process_id=2"]},
     {
@@ -9900,7 +9900,7 @@ def shutdown():
         'name': "MDD Converter",
         'path': "/chellow/reports/163/output/",
         'method': "post",
-        'files': {"file": "Line_Loss_Factor_Class_225.csv"},
+        'files': {"file": "test/Line_Loss_Factor_Class_225.csv"},
         'status_code': 200,
         'regexes':  [
             '"insert","llfc","19","889","PROLOGIS, BEDDINGTON - IMPORT","LV",'
@@ -9911,7 +9911,7 @@ def shutdown():
         'name': "GI Insert LLFC",
         'path': "/chellow/reports/293/output/",
         'method': "post",
-        'files': {'import_file': "gi_insert_llfc.csv"},
+        'files': {'import_file': "test/gi_insert_llfc.csv"},
         'status_code': 303,
         'regexes': [
             "/reports/295/output/\?process_id=3"]},
@@ -10193,8 +10193,7 @@ def shutdown():
         # Check the HH data is there
         'regexes': [
             r'NA,2008-07-06,0\.262',
-            r"\A\('connection', 'close'\)\s*"
-            r"\('content-disposition', 'attachment; "
+            r"\A\('content-disposition', 'attachment; "
             r'filename="038_FINISHED_watkinsexamplecom_supplies_hh_data_'
             r'200808012330_filter.csv"'
             r"'\)\s*"
@@ -10248,7 +10247,7 @@ def shutdown():
         'name': "Insert era with {no change} on channel",
         'path': '/chellow/reports/293/output/',
         'method': 'post',
-        'files': {'import_file': 'era-insert-2.csv'},
+        'files': {'import_file': 'test/era-insert-2.csv'},
         'status_code': 303,
         'regexes': [
             r"/reports/295/output/\?process_id=4"]},
@@ -10396,7 +10395,7 @@ def shutdown():
         'path': '/chellow/reports/273/output/',
         'method': 'post',
         'data': {
-            'rate_script_id': "39",
+            'rate_script_id': "38",
             'start_year': "2013",
             'start_month': "12",
             'start_day': "01",
