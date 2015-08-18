@@ -21,6 +21,7 @@ Snag, Channel, Mtc, BillType = db.Snag, db.Channel, db.Mtc, db.BillType
 Tpr, ReadType, Participant = db.Tpr, db.ReadType, db.Participant
 Bill, RegisterRead, UserRole = db.Bill, db.RegisterRead, db.UserRole
 Party, User, VoltageLevel, Llfc = db.Party, db.User, db.VoltageLevel, db.Llfc
+MarketRole = db.MarketRole
 parse_pc_code = utils.parse_pc_code
 
 process_id = 0
@@ -415,6 +416,56 @@ def general_import_era(sess, action, vals, args):
             imp_mpan_core, imp_llfc_code, imp_supplier_contract,
             imp_supplier_account, imp_sc, exp_mpan_core, exp_llfc_code,
             exp_supplier_contract, exp_supplier_account, exp_sc, channel_set)
+
+
+def general_import_party(sess, action, vals, args):
+    if action == "insert":
+        market_role_code = add_arg(args, "Market Role Code", vals, 0)
+        market_role = MarketRole.get_by_code(sess, market_role_code)
+        participant_code = add_arg(args, "Participant Code", vals, 1)
+        participant = Participant.get_by_code(sess, participant_code)
+        name = add_arg(args, "Name", vals, 2)
+        valid_from_str = add_arg(args, "Valid From", vals, 3)
+        valid_from = parse_hh_start(valid_from_str)
+        valid_to_str = add_arg(args, "Valid To", vals, 4)
+        valid_to = parse_hh_start(valid_to_str)
+        dno_code = add_arg(args, "DNO Code", vals, 5)
+        party = Party(
+            market_role=market_role, participant=participant, name=name,
+            valid_from=valid_from, valid_to=valid_to)
+        sess.add(party)
+        sess.flush()
+
+    elif action == "update":
+        market_role_code = add_arg(args, "Market Role Code", vals, 0)
+        participant_code = add_arg(args, "Participant Code", vals, 1)
+        party = Party.get_by_participant_code_role_code(
+            participant_code, market_role_code)
+        name = add_arg(args, "Name", vals, 2)
+        party.name = name
+        valid_from_str = add_arg(args, "Valid From", vals, 3)
+        party.valid_from = parse_hh_start(valid_from_str)
+        valid_to_str = add_arg(args, "Valid To", vals, 4)
+        party.valid_to = parse_hh_start(valid_to_str)
+        dno_code = add_arg(args, "DNO Code", vals, 5)
+        party.dno_code = dno_code
+        sess.flush()
+
+
+def general_import_participant(sess, action, vals, args):
+    if action == "insert":
+        participant_code = add_arg(args, "Participant Code", vals, 0)
+        participant_name = add_arg(args, "Participant Name", vals, 1)
+        participant = Participant(code=participant_code, name=participant_name)
+        sess.add(participant)
+        sess.flush()
+
+    elif action == "update":
+        participant_code = add_arg(args, "Participant Code", vals, 0)
+        participant = Participant.get_by_code(sess, participant_code)
+        participant_name = add_arg(args, "Participant Name", vals, 1)
+        participant.name = participant_name
+        sess.flush()
 
 
 def general_import_bill(sess, action, vals, args):
@@ -990,11 +1041,10 @@ def general_import_channel_snag_ignore(sess, action, vals, args):
             "The action 'update' isn't supported for channel snags.")
 
 
-typs = [
-    'era', 'supply', 'user', 'site', 'site_snag_ignore', 'channel_snag_ignore',
-    'site_snag_ignore', 'bill', 'batch', 'channel', 'llfc']
-
-typ_funcs = dict([(typ, globals()['general_import_' + typ]) for typ in typs])
+PREFIX = 'general_import_'
+typ_funcs = dict(
+    (k[len(PREFIX):], globals()[k])
+    for k in globals().keys() if k.startswith(PREFIX))
 
 
 class GeneralImporter(threading.Thread):

@@ -553,6 +553,15 @@ network. It'll also put in some HH data for the beginning of October 2010.
 | DNO Code
 | LLFC Code
 | Date |||||||||||||||||||||||||
+
+| _insert_
+| _party_
+| Market Role Code
+| Participant Code
+| Name
+| Valid From (YYYY-MM-dd hh:mm)
+| Valid To (YYYY-MM-dd hh:mm)
+| DNO Code
 |===
 
 

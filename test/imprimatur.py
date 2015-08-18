@@ -9393,6 +9393,55 @@ def virtual_bill(supply_source):
         'status_code': 200,
         'regexes': [r"The file has been imported successfully\."]},
 
+    {
+        'name': "MDD Converter. Market participant",
+        'path': "/chellow/reports/163/output/",
+        'method': "post",
+        'files': {"file": "Market_Participant_233.csv"},
+        'status_code': 200,
+        'regexes':  [
+            r'"insert","participant","BETH","Bethnal Energy Limited"']},
+
+    {
+        'name': "MDD Converter. Market participant",
+        'path': "/chellow/reports/293/output/",
+        'method': "post",
+        'files': {'import_file': "gi_insert_participant.csv"},
+        'status_code': 303,
+        'regexes': [
+            "/reports/295/output/\?process_id=4"]},
+    {
+        'name': "MDD Converter. Market participant",
+        'path': "/chellow/reports/295/output/?process_id=4",
+        'tries': {'max': 10, 'period': 1},
+        'status_code': 200,
+        'regexes': [r"The file has been imported successfully\."]},
+
+    {
+        'name': "MDD Converter. Party",
+        'path': "/chellow/reports/163/output/",
+        'method': "post",
+        'files': {"file": "Market_Participant_Role_232.csv"},
+        'status_code': 200,
+        'regexes':  [
+            r'"insert","party","X","BETH","BETHNAL ENERGY LIMITED",'
+            r'"2015-08-19 00:00","",""']},
+
+    {
+        'name': "MDD Converter. Party",
+        'path': "/chellow/reports/293/output/",
+        'method': "post",
+        'files': {'import_file': "gi_insert_party.csv"},
+        'status_code': 303,
+        'regexes': [
+            "/reports/295/output/\?process_id=5"]},
+    {
+        'name': "MDD Converter. Party",
+        'path': "/chellow/reports/295/output/?process_id=5",
+        'tries': {'max': 10, 'period': 1},
+        'status_code': 200,
+        'regexes': [r"The file has been imported successfully\."]},
+
     # CRC Selector
     {
         'name': "CRC Selector",
@@ -9764,9 +9813,9 @@ def virtual_bill(supply_source):
         'files': {'import_file': 'test/era-insert-2.csv'},
         'status_code': 303,
         'regexes': [
-            r"/reports/295/output/\?process_id=4"]},
+            r"/reports/295/output/\?process_id=6"]},
     {
-        'path': '/chellow/reports/295/output/?process_id=4',
+        'path': '/chellow/reports/295/output/?process_id=6',
         'tries': {},
 
         # Check it's loaded ok

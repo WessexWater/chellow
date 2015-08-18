@@ -72,7 +72,6 @@ for table in [
                                 to_iso(line[1]), to_iso(line[2])])
                     elif table == 'Market_Participant':
                         converted.writerow(
-                            [id] +
                             [line[table_field] for table_field in range(2)])
                     elif table == 'Time_Pattern_Regime':
                         if line[1] == "C":
@@ -92,7 +91,7 @@ for table in [
 
                         converted.writerow(
                             [
-                                id, table_ids['Market_Role'][line[1]],
+                                table_ids['Market_Role'][line[1]],
                                 table_ids['Market_Participant'][line[0]],
                                 line[4], to_iso(line[2]), to_iso(line[3]),
                                 dno_code])
@@ -109,12 +108,10 @@ for table in [
                                 line[1], line[2]])
                     elif table == 'Market_Participant':
                         converted.writerow(
-                            ["Chellow Id"] +
                             [line[table_field] for table_field in range(2)])
                     elif table == 'Market_Participant_Role':
                         converted.writerow(
                             [
-                                "Chellow Id",
                                 "Market Participant Role Code Id",
                                 "Market Participant Chellow Id",
                                 "Address Line 1", "Effective From Date {MPR}",

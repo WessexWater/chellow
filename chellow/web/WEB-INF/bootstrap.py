@@ -780,6 +780,15 @@ if engine.execute(
                 " (dno_id, code, description, voltage_level_id, "
                 "is_substation, is_import, valid_from, valid_to) "
                 "FROM STDIN CSV HEADER", stream=f)
+        elif tname == 'participant':
+            cursor.execute(
+                "COPY participant (code, name) "
+                "FROM STDIN CSV HEADER", stream=f)
+        elif tname == 'party':
+            cursor.execute(
+                "COPY party (market_role_id, participant_id, name, "
+                "valid_from, valid_to, dno_code) "
+                "FROM STDIN CSV HEADER", stream=f)
         else:
             cursor.execute(
                 "COPY " + tname + " FROM STDIN CSV HEADER", stream=f)
