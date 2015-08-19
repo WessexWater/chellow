@@ -248,9 +248,9 @@ def displaced_era(sess, site_group, start_date, finish_date):
     eras = {}
     for supply in site_group.supplies:
         source_code = supply.source.code
-        if source_code in ['gen', 'gen-net']:
+        if source_code in ('gen', 'gen-net'):
             has_displaced = True
-        if source_code in ['net', 'gen-net']:
+        if source_code in ('net', 'gen-net'):
             export_channels = sess.query(Channel).join(Era).filter(
                 Era.supply == supply, Channel.imp_related == false(),
                 Channel.channel_type == 'ACTIVE',
@@ -262,13 +262,14 @@ def displaced_era(sess, site_group, start_date, finish_date):
                 has_displaced = True
 
             for era in sess.query(Era).join(Pc).filter(
-                    Era.imp_mpan_core != null(), Pc.code == '00',
+                    Era.imp_mpan_core != null(),
                     Era.supply == supply, Era.start_date <= finish_date,
                     or_(
                         Era.finish_date == null(),
-                        Era.finish_date >= start_date)).order_by(
-                    Era.start_date).all():
-                eras[era.imp_mpan_core] = era
+                        Era.finish_date >= start_date)):
+                eras[
+                    era.pc.code + hh_format(era.start_date)
+                    + era.imp_mpan_core] = era
     keys = eras.keys()
     if has_displaced and len(keys) > 0:
         keys.sort()

@@ -11,3 +11,7 @@ gunicorn/pid
 downloads
 mdd/download
 .elasticbeanstalk/
+.tox/
+Chellow.egg-info/
+MANIFEST
+readme.html
