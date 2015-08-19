@@ -238,16 +238,18 @@ def content():
             month_finish = month_start + relativedelta(months=1) - HH
             for site in sites:
                 site_changes = changes[site.code]
+                associated_site_codes = set()
+                site_category = None
+                site_sources = set()
+                site_gen_types = set()
+                site_month_data = defaultdict(int)
                 for group in site.groups(
                         sess, month_start, month_finish, True):
                     calcs = []
                     deltas = defaultdict(int)
-                    associated_site_codes = ','.join(
+                    group_associated_site_codes = set(
                         s.code for s in group.sites[1:])
-                    group_category = None
-                    group_sources = set()
-                    group_gen_types = set()
-                    group_month_data = defaultdict(int)
+                    associated_site_codes.update(group_associated_site_codes)
                     for supply in group.supplies:
                         if supply_id is not None and supply.id != supply_id:
                             continue
@@ -405,12 +407,15 @@ def content():
                         out = [
                             None, None, displaced_era.make_meter_category(),
                             'displaced', None, None, None, None, site.code,
-                            site.name, associated_site_codes, month_finish] + \
+                            site.name,
+                            ','.join(
+                                sorted(list(group_associated_site_codes))),
+                            month_finish] + \
                             [month_data[t] for t in summary_titles]
 
                         sup_tab.writerow(out)
                         for k, v in month_data.iteritems():
-                            group_month_data[k] += v
+                            site_month_data[k] += v
                     for i, (
                             order, imp_mpan_core, exp_mpan_core, imp_ss,
                             exp_ss) in enumerate(sorted(calcs)):
@@ -421,7 +426,7 @@ def content():
                         supply = era.supply
                         source = supply.source
                         source_code = source.code
-                        group_sources.add(source_code)
+                        site_sources.add(source_code)
                         month_data = {}
                         for name in (
                                 'import-net', 'export-net', 'import-gen',
@@ -592,20 +597,22 @@ def content():
 
                         if source_code in ('gen', 'gen-net'):
                             generator_type = supply.generator_type.code
-                            group_gen_types.add(generator_type)
+                            site_gen_types.add(generator_type)
                         else:
                             generator_type = None
 
                         sup_category = era.make_meter_category()
-                        if CATEGORY_ORDER[group_category] < \
+                        if CATEGORY_ORDER[site_category] < \
                                 CATEGORY_ORDER[sup_category]:
-                            group_category = sup_category
+                            site_category = sup_category
 
                         out = [
                             era.imp_mpan_core, era.exp_mpan_core,
                             sup_category, source_code,
                             generator_type, supply.name, era.msn, era.pc.code,
-                            site.code, site.name, associated_site_codes,
+                            site.code, site.name,
+                            ','.join(
+                                sorted(list(group_associated_site_codes))),
                             month_finish] + [
                             month_data[t] for t in summary_titles] + [None] + [
                             (mop_bill[t] if t in mop_bill else None)
@@ -629,18 +636,19 @@ def content():
                                 for t in title_dict['exp-supplier']]
 
                         for k, v in month_data.iteritems():
-                            group_month_data[k] += v
+                            site_month_data[k] += v
                         sup_tab.writerow(out)
 
                     sess.rollback()
 
-                    group_tab.writerow(
-                        [
-                            site.code, site.name, associated_site_codes,
-                            month_finish, group_category,
-                            ', '.join(sorted(list(group_sources))),
-                            ', '.join(sorted(list(group_gen_types)))] +
-                        [group_month_data[k] for k in summary_titles])
+                group_tab.writerow(
+                    [
+                        site.code, site.name,
+                        ''.join(sorted(list(associated_site_codes))),
+                        month_finish, site_category,
+                        ', '.join(sorted(list(site_sources))),
+                        ', '.join(sorted(list(site_gen_types)))] +
+                    [site_month_data[k] for k in summary_titles])
 
             month_start += relativedelta(months=1)
     except:
