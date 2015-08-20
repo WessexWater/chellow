@@ -135,7 +135,7 @@ def content():
             kwh_start = kwh_start.replace(tzinfo=pytz.utc)
 
         sites = sess.query(Site).join(SiteEra).join(Era).filter(
-            Era.start_date <= start_date,
+            Era.start_date <= finish_date,
             or_(
                 Era.finish_date == null(),
                 Era.finish_date >= start_date)).distinct()

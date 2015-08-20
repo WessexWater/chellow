@@ -19,6 +19,12 @@ def lafs():
 
 def tariffs():
     return {
+        '110': {
+            'description': 'Small Non Domestic Unrestricted',
+            'gbp-per-kva-per-day': 0.0372,
+            'day-gbp-per-kwh': 0.0047,
+            'night-gbp-per-kwh': 0.0014,
+            'reactive-gbp-per-kvarh': 0.0023},
         '510': {
             'gbp-per-kva-per-day': 0.0372,
             'day-gbp-per-kwh': 0.0047,

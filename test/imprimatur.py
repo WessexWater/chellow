@@ -11496,4 +11496,26 @@ def virtual_bill(supply_source):
         'status_code': 200,
         'regexes': [
             r'-45']},
+
+    {
+        'name': "Unified supply starts after period",
+        'path': '/chellow/reports/247/output/?supply_id=7&months=1&'
+        'finish_year=2003&finish_month=08',
+        'status_code': 303},
+    {
+        'name': "Unified supply starts after period",
+        'path': '/chellow/reports/251/output/',
+        'tries': {'max': 30, 'period': 1},
+        'regexes': [
+            r'054_FINISHED_watkinsexamplecom_unified_supplies_monthly_'
+            r'duration_20030801_0000_for_1_months_supply_7\.ods'],
+        'status_code': 200},
+    {
+        'name': "Unified supply starts after period",
+        'path': '/chellow/reports/253/output/?'
+        'name=054_FINISHED_watkinsexamplecom_unified_supplies_monthly_'
+        'duration_20030801_0000_for_1_months_supply_7.ods',
+        'status_code': 200,
+        'regexes': [
+            r'22 4862 4512 332']},
 ]
