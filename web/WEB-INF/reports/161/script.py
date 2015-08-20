@@ -41,8 +41,8 @@ def process_site(
         sess, site, month_start, month_finish, forecast_date, tmp_file):
     site_code = site.code
     associates = []
-    sources = []
-    generator_types = []
+    sources = set()
+    generator_types = set()
     metering_type = 'no-supply'
     problem = ''
     month_data = {}
@@ -93,13 +93,11 @@ def process_site(
 
         for supply in group.supplies:
             source_code = supply.source.code
-            if source_code not in sources:
-                sources.append(source_code)
+            sources.add(source_code)
 
             if supply.generator_type is not None:
                 gen_type = supply.generator_type.code
-                if gen_type not in generator_types:
-                    generator_types.append(gen_type)
+                generator_types.add(gen_type)
 
             for era in sess.query(Era).filter(
                     Era.supply == supply, Era.start_date <= chunk_finish,
@@ -214,30 +212,29 @@ def process_site(
             name = stream_name + '-kwh'
             month_data[name] += sum(hh[name] for hh in site_ds.hh_data)
 
-        month_data['used-3rd-party-kwh'] = \
-            month_data['import-3rd-party-kwh'] - \
-            month_data['export-3rd-party-kwh']
-        month_data['used-3rd-party-gbp'] = month_data['import-3rd-party-gbp']
-        month_data['used-gbp'] += \
-            month_data['import-net-gbp'] + month_data['msp-gbp'] + \
-            month_data['used-3rd-party-gbp']
+    month_data['used-3rd-party-kwh'] = \
+        month_data['import-3rd-party-kwh'] - \
+        month_data['export-3rd-party-kwh']
+    month_data['used-3rd-party-gbp'] = month_data['import-3rd-party-gbp']
+    month_data['used-gbp'] += \
+        month_data['import-net-gbp'] + month_data['msp-gbp'] + \
+        month_data['used-3rd-party-gbp']
 
-        month_data['used-kwh'] += month_data['msp-kwh'] + \
-            month_data['used-3rd-party-kwh'] + month_data['import-net-kwh']
-
-    sources.sort()
-    generator_types.sort()
+    month_data['used-kwh'] += month_data['msp-kwh'] + \
+        month_data['used-3rd-party-kwh'] + month_data['import-net-kwh']
 
     result = [
-        site.code, site.name, ','.join(associates), ','.join(sources),
-        '.'.join(generator_types), hh_format(month_finish),
-        month_data['import-net-kwh'], month_data['msp-kwh'],
-        month_data['export-net-kwh'], month_data['used-kwh'],
-        month_data['export-gen-kwh'], month_data['import-gen-kwh'],
-        month_data['import-3rd-party-kwh'], month_data['export-3rd-party-kwh'],
-        month_data['import-net-gbp'], month_data['msp-gbp'], 0,
-        month_data['used-gbp'], month_data['used-3rd-party-gbp'], billed_kwh,
-        billed_gbp, metering_type, problem]
+        site.code, site.name, ','.join(associates),
+        ','.join(sorted(list(sources))),
+        '.'.join(sorted(list(generator_types))),
+        hh_format(month_finish), month_data['import-net-kwh'],
+        month_data['msp-kwh'], month_data['export-net-kwh'],
+        month_data['used-kwh'], month_data['export-gen-kwh'],
+        month_data['import-gen-kwh'], month_data['import-3rd-party-kwh'],
+        month_data['export-3rd-party-kwh'], month_data['import-net-gbp'],
+        month_data['msp-gbp'], 0, month_data['used-gbp'],
+        month_data['used-3rd-party-gbp'], billed_kwh, billed_gbp,
+        metering_type, problem]
     return result
 
 user = inv.getUser()

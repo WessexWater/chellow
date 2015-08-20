@@ -11518,4 +11518,28 @@ def virtual_bill(supply_source):
         'status_code': 200,
         'regexes': [
             r'22 4862 4512 332']},
+
+    {
+        'name': "Monthly sites duration: multiple site groups",
+        'path': '/chellow/reports/161/output/?site_id=3&months=1&'
+        'finish_year=2010&finish_month=04',
+        'status_code': 303},
+    {
+        'name': "Monthly sites duration: multiple site groups",
+        'path': '/chellow/reports/251/output/',
+        'tries': {'max': 30, 'period': 1},
+        'regexes': [
+            r'055_FINISHED_watkinsexamplecom_site_monthly_duration_for_CI005_'
+            r'1_to_2010_4\.csv'],
+        'status_code': 200},
+    {
+        'name': "Monthly sites duration: multiple site groups",
+        'path': '/chellow/reports/253/output/?'
+        'name=055_FINISHED_watkinsexamplecom_site_monthly_duration_for_CI005_'
+        '1_to_2010_4.csv',
+        'status_code': 200,
+        'regexes': [
+            r'"CI005","Wheal Rodney","CI004","gen,gen-net,net","chp",'
+            r'"2010-04-30 23:30","10.87975","0","0","10.87975","0","0","0",'
+            r'"0","2589.838","0.0","0","2589.838","0","0","0","hh",""']},
 ]
