@@ -183,7 +183,12 @@ def content():
                     yield ',"' + val + '"'
 
                 for k in sorted(bill.keys()):
-                    yield ',"' + k + '","' + str(bill[k]) + '"'
+                    v = bill[k]
+                    if isinstance(v, datetime.datetime):
+                        val = hh_format(v)
+                    else:
+                        val = str(v)
+                    yield ',"' + k + '","' + val + '"'
                 yield '\n'
 
             month_start += relativedelta(months=1)
