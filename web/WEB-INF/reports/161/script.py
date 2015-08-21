@@ -106,11 +106,7 @@ def process_site(
                         Era.finish_date >= chunk_start)):
                 tmp_file.write(' ')
 
-                imp_mpan_core = era.imp_mpan_core
-
                 # GBP
-                if imp_mpan_core is None:
-                    continue
 
                 if era.start_date > chunk_start:
                     bill_start = era.start_date
@@ -122,42 +118,43 @@ def process_site(
                     bill_finish = era.finish_date
 
                 supplier_contract = era.imp_supplier_contract
-                supply_source = computer.SupplySource(
-                    sess, bill_start, bill_finish, forecast_date, era, True,
-                    tmp_file, caches)
-                if supply_source.measurement_type not in ['hh', 'amr']:
-                    kwh = sum(
-                        hh['msp-kwh'] for hh in supply_source.hh_data)
-                    if source_code in ('net', 'gen-net'):
-                        month_data['import-net-kwh'] += kwh
-                    elif source_code in ('3rd-party', '3rd-party-reverse'):
-                        month_data['import-3rd-party-kwh'] += kwh
+                if supplier_contract is not None:
+                    supply_source = computer.SupplySource(
+                        sess, bill_start, bill_finish, forecast_date, era,
+                        True, tmp_file, caches)
+                    if supply_source.measurement_type not in ['hh', 'amr']:
+                        kwh = sum(
+                            hh['msp-kwh'] for hh in supply_source.hh_data)
+                        if source_code in ('net', 'gen-net'):
+                            month_data['import-net-kwh'] += kwh
+                        elif source_code in ('3rd-party', '3rd-party-reverse'):
+                            month_data['import-3rd-party-kwh'] += kwh
 
-                import_vb_function = computer.contract_func(
-                    caches, supplier_contract, 'virtual_bill', tmp_file)
-                if import_vb_function is None:
-                    problem += "Can't find the virtual_bill function in " \
-                        "the supplier contract. "
-                else:
-                    import_vb_function(supply_source)
-                    v_bill = supply_source.supplier_bill
+                    import_vb_function = computer.contract_func(
+                        caches, supplier_contract, 'virtual_bill', tmp_file)
+                    if import_vb_function is None:
+                        problem += "Can't find the virtual_bill function in " \
+                            "the supplier contract. "
+                    else:
+                        import_vb_function(supply_source)
+                        v_bill = supply_source.supplier_bill
 
-                    if 'problem' in v_bill and len(v_bill['problem']) > 0:
-                        problem += 'Supplier Problem: ' + v_bill['problem']
+                        if 'problem' in v_bill and len(v_bill['problem']) > 0:
+                            problem += 'Supplier Problem: ' + v_bill['problem']
 
-                    try:
-                        gbp = v_bill['net-gbp']
-                    except KeyError:
-                        problem += 'For the supply ' + \
-                            supply_source.mpan_core + \
-                            ' the virtual bill ' + str(v_bill) + \
-                            ' from the contract ' + \
-                            supplier_contract.getName() + \
-                            ' does not contain the net-gbp key.'
-                    if source_code in ('net', 'gen-net'):
-                        month_data['import-net-gbp'] += gbp
-                    elif source_code in ('3rd-party', '3rd-party-reverse'):
-                        month_data['import-3rd-party-gbp'] += gbp
+                        try:
+                            gbp = v_bill['net-gbp']
+                        except KeyError:
+                            problem += 'For the supply ' + \
+                                supply_source.mpan_core + \
+                                ' the virtual bill ' + str(v_bill) + \
+                                ' from the contract ' + \
+                                supplier_contract.getName() + \
+                                ' does not contain the net-gbp key.'
+                        if source_code in ('net', 'gen-net'):
+                            month_data['import-net-gbp'] += gbp
+                        elif source_code in ('3rd-party', '3rd-party-reverse'):
+                            month_data['import-3rd-party-gbp'] += gbp
 
                 dc_contract = era.hhdc_contract
                 supply_source.contract_func(
