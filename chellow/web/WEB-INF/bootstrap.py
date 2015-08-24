@@ -789,6 +789,12 @@ if engine.execute(
                 "COPY party (market_role_id, participant_id, name, "
                 "valid_from, valid_to, dno_code) "
                 "FROM STDIN CSV HEADER", stream=f)
+        elif tname == 'mtc':
+            cursor.execute(
+                "COPY mtc (dno_id, code, description, has_related_metering, "
+                "has_comms, is_hh, meter_type_id, meter_payment_type_id, "
+                "tpr_count, valid_from, valid_to) "
+                "FROM STDIN CSV HEADER", stream=f)
         else:
             cursor.execute(
                 "COPY " + tname + " FROM STDIN CSV HEADER", stream=f)

@@ -21,7 +21,8 @@ Snag, Channel, Mtc, BillType = db.Snag, db.Channel, db.Mtc, db.BillType
 Tpr, ReadType, Participant = db.Tpr, db.ReadType, db.Participant
 Bill, RegisterRead, UserRole = db.Bill, db.RegisterRead, db.UserRole
 Party, User, VoltageLevel, Llfc = db.Party, db.User, db.VoltageLevel, db.Llfc
-MarketRole = db.MarketRole
+MarketRole, MeterType = db.MarketRole, db.MeterType
+MeterPaymentType = db.MeterPaymentType
 parse_pc_code = utils.parse_pc_code
 
 process_id = 0
@@ -449,6 +450,85 @@ def general_import_party(sess, action, vals, args):
         party.valid_to = parse_hh_start(valid_to_str)
         dno_code = add_arg(args, "DNO Code", vals, 5)
         party.dno_code = dno_code
+        sess.flush()
+
+
+def general_import_mtc(sess, action, vals, args):
+    if action == "insert":
+        dno_code = add_arg(args, "DNO Code", vals, 0)
+        if dno_code == '':
+            dno = None
+        else:
+            dno = Party.get_by_dno_code(sess, dno_code)
+        code = add_arg(args, "Code", vals, 1)
+        description = add_arg(args, "Description", vals, 2)
+        has_related_metering_str = add_arg(
+            args, "Has Related Metering?", vals, 3)
+        has_related_metering = parse_bool(has_related_metering_str)
+        has_comms_str = add_arg(args, "Has Comms?", vals, 4)
+        has_comms = parse_bool(has_comms_str)
+        is_hh_str = add_arg(args, "Is HH?", vals, 5)
+        is_hh = parse_bool(is_hh_str)
+        meter_type_code = add_arg(args, "Meter Type Code", vals, 6)
+        meter_type = MeterType.get_by_code(sess, meter_type_code)
+        meter_payment_type_code = add_arg(
+            args, "Meter Payment Type Code", vals, 7)
+        meter_payment_type = MeterPaymentType.get_by_code(
+            sess, meter_payment_type_code)
+        tpr_count_str = add_arg(args, "TPR Count", vals, 8)
+        tpr_count = int(tpr_count_str)
+        valid_from_str = add_arg(args, "Valid From", vals, 9)
+        valid_from = parse_hh_start(valid_from_str)
+        valid_to_str = add_arg(args, "Valid To", vals, 10)
+        valid_to = parse_hh_start(valid_to_str)
+        mtc = Mtc(
+            dno=dno, code=code, description=description,
+            has_related_metering=has_related_metering, has_comms=has_comms,
+            is_hh=is_hh, meter_type=meter_type,
+            meter_payment_type=meter_payment_type, tpr_count=tpr_count,
+            valid_from=valid_from, valid_to=valid_to)
+        sess.add(mtc)
+        sess.flush()
+
+    elif action == "update":
+        dno_code = add_arg(args, "DNO Code", vals, 0)
+        if dno_code == '':
+            dno = None
+        else:
+            dno = Contract.get_dno_by_code(sess, dno_code)
+        code = add_arg(args, "Code", vals, 1)
+        mtc = Mtc.get_by_dno_code(sess, dno, code)
+
+        description = add_arg(args, "Description", vals, 2)
+        mtc.description = description
+        has_related_metering_str = add_arg(
+            args, "Has Related Metering?", vals, 3)
+        has_related_metering = parse_bool(has_related_metering_str)
+        mtc.has_related_metering = has_related_metering
+        has_comms_str = add_arg(args, "Has Comms?", vals, 4)
+        has_comms = parse_bool(has_comms)
+        mtc.has_comms = has_comms
+        is_hh_str = add_arg(args, "Is HH?", vals, 5)
+        is_hh = parse_bool(is_hh_str)
+        mtc.is_hh = is_hh
+        meter_type_code = add_arg(args, "Meter Type Code", vals, 6)
+        meter_type = MeterType.get_by_code(sess, meter_type_code)
+        mtc.meter_type = meter_type
+        meter_payment_type_code = add_arg(
+            args, "Meter Payment Type Code", vals, 7)
+        meter_payment_type = MeterPaymentType.get_by_code(
+            sess, meter_payment_type_code)
+        mtc.meter_payment_type = meter_payment_type
+        tpr_count_str = add_arg(
+            args, "TPR Count", vals, 8)
+        tpr_count = int(tpr_count_str)
+        mtc.tpr_count = tpr_count
+        valid_from_str = add_arg(args, "Valid From", vals, 9)
+        valid_from = parse_hh_start(valid_from_str)
+        mtc.valid_from = valid_from
+        valid_to_str = add_arg(args, "Valid To", vals, 10)
+        valid_to = parse_hh_start(valid_to_str)
+        mtc.valid_to = valid_to
         sess.flush()
 
 

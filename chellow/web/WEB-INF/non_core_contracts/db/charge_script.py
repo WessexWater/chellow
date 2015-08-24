@@ -647,6 +647,14 @@ class Contract(Base, PersistentClass):
         return Contract.get_by_role_code_id(sess, 'R', oid)
 
     @staticmethod
+    def get_dno_by_name(sess, name):
+        cont = Contract.find_by_role_code_name(sess, 'R', name)
+        if cont is None:
+            raise UserException(
+                "There isn't a DNO contract with the code '" + name + "'.")
+        return cont
+
+    @staticmethod
     def get_hhdc_by_name(sess, name):
         return Contract.get_by_role_code_name(sess, 'C', name)
 
@@ -657,14 +665,6 @@ class Contract(Base, PersistentClass):
     @staticmethod
     def get_mop_by_name(sess, name):
         return Contract.get_by_role_code_name(sess, 'M', name)
-
-    @staticmethod
-    def get_dno_by_name(sess, name):
-        cont = Contract.find_by_role_code_name(sess, 'R', name)
-        if cont is None:
-            raise UserException(
-                "There isn't a DNO contract with the code '" + name + "'.")
-        return cont
 
     @staticmethod
     def get_supplier_by_id(sess, oid):
@@ -1441,6 +1441,16 @@ class Llfc(Base, PersistentClass):
 
 
 class MeterType(Base, PersistentClass):
+
+    @staticmethod
+    def get_by_code(sess, code):
+        meter_type = sess.query(MeterType).filter(
+            MeterType.code == code).first()
+        if meter_type is None:
+            raise Exception(
+                "Can't find the meter type with code " + code + ".")
+        return meter_type
+
     __tablename__ = 'meter_type'
     id = Column('id', Integer, Sequence('meter_type_id_seq'), primary_key=True)
     code = Column(String, unique=True, nullable=False)
@@ -1451,6 +1461,15 @@ class MeterType(Base, PersistentClass):
 
 
 class MeterPaymentType(Base, PersistentClass):
+    @staticmethod
+    def get_by_code(sess, code):
+        meter_payment_type = sess.query(MeterPaymentType).filter(
+            MeterPaymentType.code == code).first()
+        if meter_payment_type is None:
+            raise Exception(
+                "Can't find the meter payment type with code " + code + ".")
+        return meter_payment_type
+
     __tablename__ = 'meter_payment_type'
     id = Column(
         'id', Integer, Sequence('meter_payment_type_id_seq'), primary_key=True)
@@ -1491,7 +1510,7 @@ class Mtc(Base, PersistentClass):
     meter_type_id = Column(Integer, ForeignKey('meter_type.id'))
     meter_payment_type_id = Column(
         Integer, ForeignKey('meter_payment_type.id'))
-    tpr_count = Column(Integer)
+    tpr_count = Column(Integer, nullable=False)
     valid_from = Column(DateTime, nullable=False)
     valid_to = Column(DateTime)
     eras = relationship('Era', backref='mtc')

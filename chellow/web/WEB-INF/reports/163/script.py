@@ -7,10 +7,12 @@ import StringIO
 import csv
 import os.path
 import datetime
+import pytz
 Monad.getUtils()['impt'](globals(), 'db', 'utils', 'templater')
 Ssc, MeasurementRequirement = db.Ssc, db.MeasurementRequirement
 Party, Llfc, VoltageLevel = db.Party, db.Llfc, db.VoltageLevel
 Participant, MarketRole = db.Participant, db.MarketRole
+Mtc, Contract = db.Mtc, db.Contract
 render = templater.render
 UserException = utils.UserException
 hh_format = utils.hh_format
@@ -23,7 +25,9 @@ def to_iso(dmy):
     else:
         return '-'.join([dmy[6:], dmy[3:5], dmy[:2]]) + ' 00:00'
 
-TABLE_NAMES = ('Line_Loss_Factor_Class', 'Market_Participant')
+
+def is_common_mtc(code):
+    return 499 < code < 510 or 799 < code < 1000
 
 method = inv.getRequest().getMethod()
 if method == 'GET':
@@ -181,10 +185,133 @@ elif method == 'POST':
                                     hh_format(valid_from),
                                     '' if valid_to is None else
                                     hh_format(valid_to), dno_code))) + "\n"
+            elif table == 'Meter_Timeswitch_Class':
+                for i, values in enumerate(reader):
+                    code_str = values[0]
+                    code_int = int(code_str)
+                    if is_common_mtc(code_int):
+                        code = code_str.zfill(3)
+                        valid_from_str = values[1]
+                        valid_from = datetime.datetime.strptime(
+                            valid_from_str, "%d/%m/%Y").replace(
+                            tzinfo=pytz.utc)
+                        valid_from_out = hh_format(valid_from)
+                        valid_to_str = values[2]
+                        if valid_to_str == '':
+                            valid_to = None
+                            valid_to_out = ''
+                        else:
+                            valid_to = datetime.datetime.strptime(
+                                valid_to_str, "%d/%m/%Y").replace(
+                                tzinfo=pytz.utc)
+                            valid_to_out = hh_format(valid_to)
+                        description = values[3]
+                        # common_code_indicator = values[4]
+                        has_related_metering_str = values[5]
+                        has_related_metering = has_related_metering_str == 'T'
+                        meter_type_code = values[6]
+                        meter_payment_type_code = values[7]
+                        has_comms_str = values[8]
+                        has_comms = has_comms_str == 'T'
+                        is_hh_str = values[9]
+                        is_hh = is_hh_str == 'H'
+                        tpr_count_str = values[10]
+                        if tpr_count_str == '':
+                            tpr_count = 0
+                        else:
+                            tpr_count = int(tpr_count_str)
+
+                        mtc = Mtc.find_by_code(sess, None, code)
+                        if mtc is None:
+                            yield ','.join(
+                                (
+                                    '"' + str(v) + '"' for v in (
+                                        'insert', 'mtc', '', code,
+                                        description, has_related_metering,
+                                        has_comms, is_hh, meter_type_code,
+                                        meter_payment_type_code, tpr_count,
+                                        valid_from_out, valid_to_out))) + "\n"
+                        elif (
+                                description, has_related_metering, has_comms,
+                                is_hh, meter_type_code,
+                                meter_payment_type_code, tpr_count, valid_from,
+                                valid_to) != (
+                                mtc.description, mtc.has_related_metering,
+                                mtc.has_comms, mtc.is_hh, mtc.meter_type.code,
+                                mtc.meter_payment_type.code, mtc.tpr_count,
+                                mtc.valid_from, mtc.valid_to):
+                            yield ','.join(
+                                (
+                                    '"' + str(v) + '"' for v in (
+                                        'update', 'mtc', '', code,
+                                        description, has_related_metering,
+                                        has_comms, is_hh, meter_type_code,
+                                        meter_payment_type_code, tpr_count,
+                                        valid_from_out, valid_to_out))) + "\n"
+            elif table == 'MTC_in_PES_Area':
+                for i, values in enumerate(reader):
+                    code_str = values[0]
+                    code_int = int(code_str)
+                    if not is_common_mtc(code_int):
+                        code = code_str.zfill(3)
+                        participant_code = values[2]
+                        dno = Party.get_by_participant_code_role_code(
+                            sess, participant_code, 'R')
+                        valid_from_str = values[3]
+                        valid_from = datetime.datetime.strptime(
+                            valid_from_str, "%d/%m/%Y").replace(
+                            tzinfo=pytz.utc)
+                        valid_from_out = hh_format(valid_from)
+                        valid_to_str = values[4]
+                        if valid_to_str == '':
+                            valid_to = None
+                            valid_to_out = ''
+                        else:
+                            valid_to = datetime.datetime.strptime(
+                                valid_to_str, "%d/%m/%Y").replace(
+                                tzinfo=pytz.utc)
+                            valid_to_out = hh_format(valid_to)
+                        description = values[5]
+                        meter_type_code = values[6]
+                        meter_payment_type_code = values[7]
+                        has_related_metering = code_int > 500
+                        has_comms = values[8] == 'Y'
+                        is_hh = values[9] == 'H'
+                        tpr_count_str = values[10]
+                        if tpr_count_str == '':
+                            tpr_count = 0
+                        else:
+                            tpr_count = int(tpr_count_str)
+
+                        mtc = Mtc.find_by_code(sess, dno, code)
+                        if mtc is None:
+                            yield ','.join(
+                                (
+                                    '"' + str(v) + '"' for v in (
+                                        'insert', 'mtc', dno.dno_code, code,
+                                        description, has_related_metering,
+                                        has_comms, is_hh, meter_type_code,
+                                        meter_payment_type_code, tpr_count,
+                                        valid_from_out, valid_to_out))) + "\n"
+                        elif (
+                                description, has_related_metering, has_comms,
+                                is_hh, meter_type_code,
+                                meter_payment_type_code, tpr_count, valid_from,
+                                valid_to) != (
+                                mtc.description, mtc.has_related_metering,
+                                mtc.has_comms, mtc.is_hh, mtc.meter_type.code,
+                                mtc.meter_payment_type.code, mtc.tpr_count,
+                                mtc.valid_from, mtc.valid_to):
+                            yield ','.join(
+                                (
+                                    '"' + str(v) + '"' for v in (
+                                        'update', 'mtc', dno.dno_code, code,
+                                        description, has_related_metering,
+                                        has_comms, is_hh, meter_type_code,
+                                        meter_payment_type_code, tpr_count,
+                                        valid_from_out, valid_to_out))) + "\n"
             else:
-                raise Exception(
-                    "The table " + table + " must be one of " +
-                    str(TABLE_NAMES))
+                raise Exception("The table " + table + " is not recognized.")
 
         finally:
             if sess is not None:

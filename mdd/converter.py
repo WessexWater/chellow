@@ -246,7 +246,7 @@ with open("converted/Meter_Timeswitch_Class.csv", "w") as conv:
     id = 0
     converted.writerow(
         [
-            "Chellow Id", "Chellow DNO Id", "Meter Timeswitch Class Id",
+            "Chellow DNO Id", "Meter Timeswitch Class Id",
             "Meter Timeswitch Class Description", "Has Related Meter?",
             "Has Comms?", "Is HH?", "Meter Type Chellow Id",
             "Meter Payment Type Chellow Id", "MTC TPR Count",
@@ -274,7 +274,7 @@ with open("converted/Meter_Timeswitch_Class.csv", "w") as conv:
                     payment_type_id = table_ids['MTC_Payment_Type'][fields[7]]
                     converted.writerow(
                         [
-                            id, "", fields[0].zfill(3), fields[3],
+                            "", fields[0].zfill(3), fields[3],
                             has_related_meter, has_comms, is_hh, meter_type_id,
                             payment_type_id, fields[10], to_iso(fields[1]),
                             to_iso(fields[2])])
@@ -308,7 +308,7 @@ with open("converted/Meter_Timeswitch_Class.csv", "w") as conv:
                     payment_type_id = table_ids['MTC_Payment_Type'][fields[7]]
                     converted.writerow(
                         [
-                            id, dno_id, fields[0].zfill(3), fields[5],
+                            dno_id, fields[0].zfill(3), fields[5],
                             has_related_meter, has_comms, is_hh, meter_type_id,
                             payment_type_id, fields[10], to_iso(fields[1]),
                             to_iso(fields[4])])

@@ -93,11 +93,11 @@
       </tr>
       <tr>
         <th>Valid From</th>
-        <td>{{mtc.valid_from}}</td>
+        <td>{{mtc.valid_from|hh_format}}</td>
       </tr>
       <tr>
         <th>Valid To</th>
-        <td>{{mtc.valid_to}}</td>
+        <td>{{mtc.valid_to|hh_format}}</td>
       </tr>
     </table>
   </body>

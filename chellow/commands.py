@@ -844,11 +844,27 @@ def start_chellow_process():
             f = open(os.path.join(mdd_path, fname + '.csv'))
             cursor.execute(
                 "set transaction isolation level serializable read write")
+            print("doing ", tname)
             if tname == 'llfc':
                 cursor.execute(
                     "COPY " + tname +
                     " (dno_id, code, description, voltage_level_id, "
                     "is_substation, is_import, valid_from, valid_to) "
+                    "FROM STDIN CSV HEADER", stream=f)
+            elif tname == 'participant':
+                cursor.execute(
+                    "COPY " + tname + " (code, name) "
+                    "FROM STDIN CSV HEADER", stream=f)
+            elif tname == 'party':
+                cursor.execute(
+                    "COPY " + tname + " (market_role_id, participant_id, "
+                    "name, valid_from, valid_to, dno_code) "
+                    "FROM STDIN CSV HEADER", stream=f)
+            elif tname == 'mtc':
+                cursor.execute(
+                    "COPY " + tname + " (dno_id, code, description, "
+                    "has_related_metering, has_comms, is_hh, meter_type_id, "
+                    "meter_payment_type_id, tpr_count, valid_from, valid_to) "
                     "FROM STDIN CSV HEADER", stream=f)
             else:
                 cursor.execute(

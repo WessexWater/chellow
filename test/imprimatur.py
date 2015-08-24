@@ -4697,7 +4697,7 @@ def virtual_bill(supply_source):
             '<a href="/chellow/reports/55/output/\?pc_id=9" title="Half-'
             'hourly">00</a>\s*</td>\s*<td rowspan="4"></td>\s*'
             '<td rowspan="4">\s*'
-            '<a href="/chellow/reports/63/output/\?mtc_id=529" title="HH '
+            '<a href="/chellow/reports/63/output/\?mtc_id=52" title="HH '
             'COP5 And Above With Comms">845</a>\s*</td>'],
         'status_code': 200},
 
@@ -7789,7 +7789,7 @@ def virtual_bill(supply_source):
         'status_code': 200,
         'regexes': [
             r'<tr>\s*<td>\s*'
-            '<a href="/chellow/reports/63/output/\?mtc_id=574">\s*001\s*'
+            '<a href="/chellow/reports/63/output/\?mtc_id=96">\s*001\s*'
             '</a>\s*</td>\s*<td>\s*'
             '<a href="/chellow/reports/67/output/\?dno_contract_id=39">\s*'
             '12\s*</a>\s*</td>\s*<td>Economy 7, 23.30 - 06.30</td>\s*<td>\s*'
@@ -7797,7 +7797,7 @@ def virtual_bill(supply_source):
             '</a>\s*</td>\s*<td>2</td>\s*</tr>']},
 
     {
-        'path': '/chellow/reports/63/output/?mtc_id=574',
+        'path': '/chellow/reports/63/output/?mtc_id=96',
         'status_code': 200,
         'regexes': [
             r'<tr>\s*<th>Code</th>\s*<td>001</td>\s*</tr>\s*<tr>\s*'
@@ -7806,12 +7806,12 @@ def virtual_bill(supply_source):
             '12\s*</a>\s*</td>\s*</tr>']},
 
     {
-        'name': "Try an MTC common to all DNOs",
-        'path': '/chellow/reports/63/output/?mtc_id=233',
+        'path': '/chellow/reports/63/output/?mtc_id=1',
         'status_code': 200,
         'regexes': [
             r"<tr>\s*<th>Code</th>\s*<td>500</td>\s*</tr>\s*<tr>\s*"
             "<th>DNO</th>\s*<td>\s*All\s*</td>\s*</tr>"]},
+
     {
         'name': "Move forward era with channels, when era with no channels "
         "precedes it",
@@ -9397,7 +9397,7 @@ def virtual_bill(supply_source):
         'name': "MDD Converter. Market participant",
         'path': "/chellow/reports/163/output/",
         'method': "post",
-        'files': {"file": "Market_Participant_233.csv"},
+        'files': {"file": "test/Market_Participant_233.csv"},
         'status_code': 200,
         'regexes':  [
             r'"insert","participant","BETH","Bethnal Energy Limited"']},
@@ -9406,7 +9406,7 @@ def virtual_bill(supply_source):
         'name': "MDD Converter. Market participant",
         'path': "/chellow/reports/293/output/",
         'method': "post",
-        'files': {'import_file': "gi_insert_participant.csv"},
+        'files': {'import_file': "test/gi_insert_participant.csv"},
         'status_code': 303,
         'regexes': [
             "/reports/295/output/\?process_id=4"]},
@@ -9421,7 +9421,7 @@ def virtual_bill(supply_source):
         'name': "MDD Converter. Party",
         'path': "/chellow/reports/163/output/",
         'method': "post",
-        'files': {"file": "Market_Participant_Role_232.csv"},
+        'files': {"file": "test/Market_Participant_Role_232.csv"},
         'status_code': 200,
         'regexes':  [
             r'"insert","party","X","BETH","BETHNAL ENERGY LIMITED",'
@@ -9431,13 +9431,61 @@ def virtual_bill(supply_source):
         'name': "MDD Converter. Party",
         'path': "/chellow/reports/293/output/",
         'method': "post",
-        'files': {'import_file': "gi_insert_party.csv"},
+        'files': {'import_file': "test/gi_insert_party.csv"},
         'status_code': 303,
         'regexes': [
             "/reports/295/output/\?process_id=5"]},
     {
         'name': "MDD Converter. Party",
         'path': "/chellow/reports/295/output/?process_id=5",
+        'tries': {'max': 10, 'period': 1},
+        'status_code': 200,
+        'regexes': [r"The file has been imported successfully\."]},
+
+    {
+        'name': "MDD Converter. Meter Timeswitch Class",
+        'path': "/chellow/reports/163/output/",
+        'method': "post",
+        'files': {"file": "test/Meter_Timeswitch_Class_233.csv"},
+        'status_code': 200,
+        'regexes':  [
+            r'"insert","mtc","","997","ENO - Private Network","False",'
+            r'"False","True","XX","CR","0","2012-08-15 00:00",""']},
+    {
+        'name': "MDD Converter. Meter Timeswitch Class",
+        'path': "/chellow/reports/293/output/",
+        'method': "post",
+        'files': {'import_file': "test/gi_insert_meter_timeswitch_class.csv"},
+        'status_code': 303,
+        'regexes': [
+            "/reports/295/output/\?process_id=6"]},
+    {
+        'name': "MDD Converter. Meter Timeswitch Class",
+        'path': "/chellow/reports/295/output/?process_id=6",
+        'tries': {'max': 10, 'period': 1},
+        'status_code': 200,
+        'regexes': [r"The file has been imported successfully\."]},
+
+    {
+        'name': "MDD Converter. MTC in PES area",
+        'path': "/chellow/reports/163/output/",
+        'method': "post",
+        'files': {"file": "test/MTC_in_PES_Area_233.csv"},
+        'status_code': 200,
+        'regexes':  [
+            r'"insert","mtc","26","045","4 rate SToD","False","False","False",'
+            r'"TN","CR","4","2015-03-18 00:00",""']},
+    {
+        'name': "MDD Converter. MTC in PES Area",
+        'path': "/chellow/reports/293/output/",
+        'method': "post",
+        'files': {'import_file': "test/gi_insert_mtc_in_pes_area.csv"},
+        'status_code': 303,
+        'regexes': [
+            "/reports/295/output/\?process_id=7"]},
+    {
+        'name': "MDD Converter. Meter Timeswitch Class",
+        'path': "/chellow/reports/295/output/?process_id=7",
         'tries': {'max': 10, 'period': 1},
         'status_code': 200,
         'regexes': [r"The file has been imported successfully\."]},
@@ -9813,9 +9861,9 @@ def virtual_bill(supply_source):
         'files': {'import_file': 'test/era-insert-2.csv'},
         'status_code': 303,
         'regexes': [
-            r"/reports/295/output/\?process_id=6"]},
+            r"/reports/295/output/\?process_id=8"]},
     {
-        'path': '/chellow/reports/295/output/?process_id=6',
+        'path': '/chellow/reports/295/output/?process_id=8',
         'tries': {},
 
         # Check it's loaded ok
