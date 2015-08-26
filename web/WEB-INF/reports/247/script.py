@@ -238,18 +238,42 @@ def content():
             month_finish = month_start + relativedelta(months=1) - HH
             for site in sites:
                 site_changes = changes[site.code]
-                associated_site_codes = set()
+                site_associates = set()
                 site_category = None
                 site_sources = set()
                 site_gen_types = set()
                 site_month_data = defaultdict(int)
                 for group in site.groups(
+                        sess, month_start, month_finish, False):
+                    site_associates.update(
+                        set(
+                            s.code for s in group.sites
+                            if s.code != site.code))
+                    for cand_supply in group.supplies:
+                        site_sources.add(cand_supply.source.code)
+                        if cand_supply.generator_type is not None:
+                            site_gen_types.add(cand_supply.generator_type.code)
+                        for cand_era in cand_supply.find_eras(
+                                sess, group.start_date, group.finish_date):
+                            if site_category != 'hh':
+                                if cand_era.pc.code == '00':
+                                    site_category = 'hh'
+                                elif site_category != 'amr':
+                                    if len(cand_era.channels) > 0:
+                                        site_category = 'amr'
+                                    elif site_category != 'nhh':
+                                        if cand_era.mtc.meter_type.code \
+                                                not in ['UM', 'PH']:
+                                            site_category = 'nhh'
+                                        else:
+                                            site_category = 'unmetered'
+
+                for group in site.groups(
                         sess, month_start, month_finish, True):
                     calcs = []
                     deltas = defaultdict(int)
-                    group_associated_site_codes = set(
-                        s.code for s in group.sites[1:])
-                    associated_site_codes.update(group_associated_site_codes)
+                    group_associates = set(
+                        s.code for s in group.sites if s.code != site.code)
                     for supply in group.supplies:
                         if supply_id is not None and supply.id != supply_id:
                             continue
@@ -408,8 +432,7 @@ def content():
                             None, None, displaced_era.make_meter_category(),
                             'displaced', None, None, None, None, site.code,
                             site.name,
-                            ','.join(
-                                sorted(list(group_associated_site_codes))),
+                            ','.join(sorted(list(group_associates))),
                             month_finish] + \
                             [month_data[t] for t in summary_titles]
 
@@ -611,8 +634,7 @@ def content():
                             sup_category, source_code,
                             generator_type, supply.name, era.msn, era.pc.code,
                             site.code, site.name,
-                            ','.join(
-                                sorted(list(group_associated_site_codes))),
+                            ','.join(sorted(list(site_associates))),
                             month_finish] + [
                             month_data[t] for t in summary_titles] + [None] + [
                             (mop_bill[t] if t in mop_bill else None)
@@ -644,7 +666,7 @@ def content():
                 group_tab.writerow(
                     [
                         site.code, site.name,
-                        ''.join(sorted(list(associated_site_codes))),
+                        ''.join(sorted(list(site_associates))),
                         month_finish, site_category,
                         ', '.join(sorted(list(site_sources))),
                         ', '.join(sorted(list(site_gen_types)))] +

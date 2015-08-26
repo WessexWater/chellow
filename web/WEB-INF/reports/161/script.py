@@ -65,9 +65,8 @@ def process_site(
                 associates.append(cand_site_code)
         for cand_supply in group.supplies:
             for cand_era in cand_supply.find_eras(
-                    sess, month_start, month_finish):
-                if cand_era.imp_mpan_core is not None \
-                        and metering_type != 'hh':
+                    sess, group.start_date, group.finish_date):
+                if metering_type != 'hh':
                     if cand_era.pc.code == '00':
                         metering_type = 'hh'
                     elif metering_type != 'amr':

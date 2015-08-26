@@ -8637,6 +8637,7 @@ def shutdown():
         'status_code': 200,
 
         'regexes': [
+            r'CI005',
             r'<table:table-cell office:string-value="exp-supplier-problem" '
             r'office:value-type="string"/>\s*'
             r'</table:table-row>']},
