@@ -11543,4 +11543,28 @@ def virtual_bill(supply_source):
             r'"CI005","Wheal Rodney","CI004","gen,gen-net,net","chp",'
             r'"2010-04-30 23:30","10.87975","0","0","10.87975","0","0","0",'
             r'"0","2599.838","0.0","0","2599.838","0","0","0","hh",""']},
+
+    {
+        'name': "Monthly sites duration: non-primary site",
+        'path': '/chellow/reports/161/output/?site_id=1&months=1&'
+        'finish_year=2015&finish_month=07',
+        'status_code': 303},
+    {
+        'name': "Monthly sites duration: non-primary site",
+        'path': '/chellow/reports/251/output/',
+        'tries': {'max': 30, 'period': 1},
+        'regexes': [
+            r'056_FINISHED_watkinsexamplecom_site_monthly_duration_for_CI004_'
+            r'1_to_2015_7\.csv'],
+        'status_code': 200},
+    {
+        'name': "Monthly sites duration: multiple site groups",
+        'path': '/chellow/reports/253/output/?'
+        'name=056_FINISHED_watkinsexamplecom_site_monthly_duration_for_CI004_'
+        '1_to_2015_7.csv',
+        'status_code': 200,
+        'regexes': [
+            r'"CI004","Lower Treave","CI005","gen,gen-net,net","chp",'
+            r'"2015-07-31 23:30","0","0","0","0","0","0","0","0","0","0","0",'
+            r'"0","0","0","0","hh",""']},
 ]

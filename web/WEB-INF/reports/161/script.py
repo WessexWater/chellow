@@ -64,6 +64,9 @@ def process_site(
                     cand_site_code not in associates:
                 associates.append(cand_site_code)
         for cand_supply in group.supplies:
+            sources.add(cand_supply.source.code)
+            if cand_supply.generator_type is not None:
+                generator_types.add(cand_supply.generator_type.code)
             for cand_era in cand_supply.find_eras(
                     sess, group.start_date, group.finish_date):
                 if metering_type != 'hh':
@@ -92,11 +95,6 @@ def process_site(
 
         for supply in group.supplies:
             source_code = supply.source.code
-            sources.add(source_code)
-
-            if supply.generator_type is not None:
-                gen_type = supply.generator_type.code
-                generator_types.add(gen_type)
 
             for era in sess.query(Era).filter(
                     Era.supply == supply, Era.start_date <= chunk_finish,
