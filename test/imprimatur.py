@@ -195,8 +195,11 @@
 def virtual_bill_titles():
     return ['net-gbp', 'problem']
 
-def virtual_bill(supply_source):
-    supply_source.dc_bill['net-gbp'] = 0
+def virtual_bill(ds):
+    bill = ds.dc_bill
+    for hh in ds.hh_data:
+        if hh['utc-is-month-end']:
+            bill['net-gbp'] += 10
 """,
             'properties': "{'mpan_map': {'maptest': '2292056799106'}}", },
         'status_code': 303, },
@@ -272,8 +275,11 @@ def virtual_bill(supply_source):
 def virtual_bill_titles():
     return ['net-gbp', 'problem']
 
-def virtual_bill(supply_source):
-    supply_source.dc_bill['net-gbp'] = 0
+def virtual_bill(ds):
+    bill = ds.dc_bill
+    for hh in ds.hh_data:
+        if hh['utc-is-month-end']:
+            bill['net-gbp'] += 7
 """,
             'properties': '{"props": 1}'},
         'status_code': 303},
@@ -317,8 +323,11 @@ def virtual_bill(supply_source):
 def virtual_bill_titles():
     return ['net-gbp', 'problem']
 
-def virtual_bill(supply_source):
-    supply_source.dc_bill['net-gbp'] = 0
+def virtual_bill(ds):
+    bill = ds.dc_bill
+    for hh in ds.hh_data:
+        if hh['utc-is-month-end']:
+            bill['net-gbp'] += 7
 """,
             'properties': "{}"},
         'status_code': 303},
@@ -2689,7 +2698,7 @@ def triad_estimates():
             '"imp-supplier-triad-all-estimates-gbp"'
             ',"imp-supplier-problem"',
             r'"22 4862 4512 332","","CH023","Treglisson","11640077",'
-            '"2009-03-01 00:00","2009-03-31 23:30","","10","","","0","","",'
+            '"2009-03-01 00:00","2009-03-31 23:30","","10","","","10","","",'
             '"10614.4095537","","148925.71","0.00456","679.1012376","5.89",'
             '"230","31","0.0368","262.384","169.72","31","0.0368",'
             '"193.616576","105487.44","770.058312","43438.27","112.939502",'
@@ -2767,7 +2776,7 @@ def triad_estimates():
             r"Import MPAN Core, Export MPAN Core, Start Date, Finish Date,"
             "net-gbp",
             r'22 9205 6799 106,22 0470 7514 535,2008-07-01 00:00,'
-            '2008-07-06 23:30,"0",',
+            '2008-07-06 23:30,"",',
             r'attachment; filename="hhdc_vbs.csv"']},
 
     # Can we make a supply have source sub and view site level hh data okay?
@@ -2919,7 +2928,7 @@ def triad_estimates():
             "Metered 3rd Party Import GBP,Billed Imported kWh,"
             "Billed Imported GBP,Metering Type,Problem",
             r'"CI017","Roselands","","net","","2009-04-30 23:30","0","0","0",'
-            '"0","0","0","0","0","2804.89","0","0","2804.89","0","0","0","hh",'
+            '"0","0","0","0","0","2821.89","0","0","2821.89","0","0","0","hh",'
             '"'
             "Can't find the virtual_bill function in the supplier "
             'contract. "']},
@@ -3544,7 +3553,7 @@ def triad_estimates():
             r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="0" '
             r'office:value-type="float"/>\s*'
-            r'<table:table-cell office:value="2794.89" '
+            r'<table:table-cell office:value="2804.89" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="0" '
             r'office:value-type="float"/>\s*'
@@ -3558,7 +3567,7 @@ def triad_estimates():
             r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="0" '
             r'office:value-type="float"/>\s*'
-            r'<table:table-cell office:value="2794.89" '
+            r'<table:table-cell office:value="2804.89" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="0" '
             r'office:value-type="float"/>\s*'
@@ -3572,7 +3581,7 @@ def triad_estimates():
             r'<table:table-cell office:string-value="" '
             r'office:value-type="string"/>\s*'
             r'<table:table-cell/>\s*'
-            r'<table:table-cell office:value="0" '
+            r'<table:table-cell office:value="10" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell office:string-value="" '
             r'office:value-type="string"/>\s*'
@@ -4160,7 +4169,7 @@ def virtual_bill(supply_source):
             '"imp-supplier-triad-all-estimates-gbp",'
             '"imp-supplier-problem"',
             r'"20 6354 2983 571","","CI004","Lower Treave","141 5532",'
-            '"2009-03-01 00:00","2009-03-31 23:30","","10","","","0","","",'
+            '"2009-03-01 00:00","2009-03-31 23:30","","10","","","7","","",'
             '"2274.51858148","","","0.00456","","5.89","2300","","",'
             '"2165.0","0","","","","0","0.0","86.9732","0.102628376","","",'
             '"14.91","88","86.9732","93.49619","0.585809728064","0","0.0",'
@@ -4584,7 +4593,7 @@ def virtual_bill(supply_source):
             '"imp-supplier-vat-gbp","imp-supplier-gross-gbp",'
             '"imp-supplier-sum-msp-kwh","imp-supplier-problem"',
             r'"22 9974 3438 105","","CI005","Wheal Rodney","SA341665",'
-            '"2010-04-01 00:00","2010-04-13 23:30","","0","","","0","","",'
+            '"2010-04-01 00:00","2010-04-13 23:30","","0","","","","","",'
             '"0.0","0.0","0.0","0",""']},
     {
         'name': "NHH CSV import",
@@ -5065,8 +5074,8 @@ def virtual_bill(supply_source):
         'CI017_1_to_2010_7.csv',
         'regexes': [
             r'"CI017","Roselands","","3rd-party,net","","2010-07-31 23:30",'
-            '"0","0","0","0","0","0","0","0","1613.3414","0","0","1623.3414"'
-            ',"10.0","0","0","hh",""'],
+            '"0","0","0","0","0","0","0","0","1633.3414","0","0","1653.3414"'
+            ',"20.0","0","0","hh",""'],
         'status_code': 200},
 
     {
@@ -5127,7 +5136,7 @@ def virtual_bill(supply_source):
             r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="0" '
             r'office:value-type="float"/>\s*'
-            r'<table:table-cell office:value="1603.3414" '
+            r'<table:table-cell office:value="1613.3414" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="0" '
             r'office:value-type="float"/>\s*'
@@ -5141,7 +5150,7 @@ def virtual_bill(supply_source):
             r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="0" '
             r'office:value-type="float"/>\s*'
-            r'<table:table-cell office:value="1603.3414" '
+            r'<table:table-cell office:value="1613.3414" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="0" '
             r'office:value-type="float"/>\s*'
@@ -5155,7 +5164,7 @@ def virtual_bill(supply_source):
             r'<table:table-cell office:string-value="" '
             r'office:value-type="string"/>\s*'
             r'<table:table-cell/>\s*'
-            r'<table:table-cell office:value="0" '
+            r'<table:table-cell office:value="10" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell office:string-value="" '
             r'office:value-type="string"/>\s*'
@@ -5375,7 +5384,7 @@ def virtual_bill(supply_source):
             r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="0" '
             r'office:value-type="float"/>\s*'
-            r'<table:table-cell office:value="10.0" '
+            r'<table:table-cell office:value="20.0" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="0" '
             r'office:value-type="float"/>\s*'
@@ -5389,7 +5398,7 @@ def virtual_bill(supply_source):
             r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="0" '
             r'office:value-type="float"/>\s*'
-            r'<table:table-cell office:value="10.0" '
+            r'<table:table-cell office:value="20.0" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="0" '
             r'office:value-type="float"/>\s*'
@@ -5403,7 +5412,7 @@ def virtual_bill(supply_source):
             r'<table:table-cell office:string-value="" '
             r'office:value-type="string"/>\s*'
             r'<table:table-cell/>\s*'
-            r'<table:table-cell office:value="0" '
+            r'<table:table-cell office:value="10" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell office:string-value="" '
             r'office:value-type="string"/>\s*'
@@ -5566,13 +5575,13 @@ def virtual_bill(supply_source):
             r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="0" '
             r'office:value-type="float"/>\s*'
-            r'<table:table-cell office:value="10.0" '
+            r'<table:table-cell office:value="20.0" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="0" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="0" '
             r'office:value-type="float"/>\s*'
-            r'<table:table-cell office:value="10.0" '
+            r'<table:table-cell office:value="20.0" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="0" '
             r'office:value-type="float"/>\s*'
@@ -5586,7 +5595,7 @@ def virtual_bill(supply_source):
             r'<table:table-cell office:string-value="" '
             r'office:value-type="string"/>\s*'
             r'<table:table-cell/>\s*'
-            r'<table:table-cell office:value="0" '
+            r'<table:table-cell office:value="10" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell office:string-value="" '
             r'office:value-type="string"/>\s*'
@@ -6816,7 +6825,7 @@ def shutdown():
             '"imp-supplier-vat-gbp","imp-supplier-gross-gbp",'
             '"imp-supplier-sum-msp-kwh","imp-supplier-problem"',
             r'"22 0195 4836 192","","CI004","Lower Treave","SA342376",'
-            '"2011-05-01 00:00","2011-05-31 23:30","","10","","","0","","",'
+            '"2011-05-01 00:00","2011-05-31 23:30","","10","","","7","","",'
             '"0.0","0.0","0.0","25.8191780822",""'],
         'status_code': 200},
 
@@ -7541,7 +7550,7 @@ def shutdown():
             '"imp-supplier-vat-gbp","imp-supplier-gross-gbp",'
             '"imp-supplier-sum-msp-kwh","imp-supplier-problem"',
             r'"22 1065 3921 534","","CI017","Roselands","SA342376",'
-            '"2010-01-01 00:00","2010-01-03 23:30","","0","","","0","","",'
+            '"2010-01-01 00:00","2010-01-03 23:30","","0","","","","","",'
             '"0.0","0.0","0.0","0",""', ], },
     {
         'name': "A bill check with multiple covered bills",
@@ -9244,7 +9253,7 @@ def shutdown():
             r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="0" '
             r'office:value-type="float"/>\s*'
-            r'<table:table-cell office:value="10.0" '
+            r'<table:table-cell office:value="17.0" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="0" '
             r'office:value-type="float"/>\s*'
@@ -9258,7 +9267,7 @@ def shutdown():
             r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="0" '
             r'office:value-type="float"/>\s*'
-            r'<table:table-cell office:value="10.0" '
+            r'<table:table-cell office:value="17.0" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="0" '
             r'office:value-type="float"/>\s*'
@@ -9272,7 +9281,7 @@ def shutdown():
             r'<table:table-cell office:string-value="" '
             r'office:value-type="string"/>\s*'
             r'<table:table-cell/>\s*'
-            r'<table:table-cell office:value="0" '
+            r'<table:table-cell office:value="7" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell office:string-value="" '
             r'office:value-type="string"/>\s*'
@@ -11021,7 +11030,7 @@ def days():
             r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="0" '
             r'office:value-type="float"/>\s*'
-            r'<table:table-cell office:value="598.608506489" '
+            r'<table:table-cell office:value="605.608506489" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="0" '
             r'office:value-type="float"/>\s*'
@@ -11035,7 +11044,7 @@ def days():
             r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="0" '
             r'office:value-type="float"/>\s*'
-            r'<table:table-cell office:value="598.608506489" '
+            r'<table:table-cell office:value="605.608506489" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="0" '
             r'office:value-type="float"/>\s*'
@@ -11049,7 +11058,7 @@ def days():
             r'<table:table-cell office:string-value="" '
             r'office:value-type="string"/>\s*'
             r'<table:table-cell/>\s*'
-            r'<table:table-cell office:value="0" '
+            r'<table:table-cell office:value="7" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell office:string-value="" '
             r'office:value-type="string"/>\s*'
@@ -11542,7 +11551,7 @@ def virtual_bill(supply_source):
         'regexes': [
             r'"CI005","Wheal Rodney","CI004","gen,gen-net,net","chp",'
             r'"2010-04-30 23:30","10.87975","0","0","10.87975","0","0","0",'
-            r'"0","2599.838","0.0","0","2599.838","0","0","0","hh",""']},
+            r'"0","2606.838","0.0","0","2606.838","0","0","0","hh",""']},
 
     {
         'name': "Monthly sites duration: non-primary site",
@@ -11567,4 +11576,56 @@ def virtual_bill(supply_source):
             r'"CI004","Lower Treave","CI005","gen,gen-net,net","chp",'
             r'"2015-07-31 23:30","0","0","0","0","0","0","0","0","0","0","0",'
             r'"0","0","0","0","hh",""']},
+
+    {
+        'name': "Metered report: correct MOP / DC costs",
+        'path': '/chellow/reports/307/output/',
+        'method': 'post',
+        'data': {
+            'era_id': "3",
+            'start_year': "2003",
+            'start_month': "08",
+            'start_day': "03",
+            'start_hour': "00",
+            'start_minute': "00",
+            'is_ended': "false",
+            'mop_contract_id': "60",
+            'mop_account': "mc-22 7907 4116 080",
+            'hhdc_contract_id': "57",
+            'hhdc_account': "01",
+            'msn': "",
+            'pc_id': "9",
+            'mtc_code': "845",
+            'cop_id': "5",
+            'ssc_code': "",
+            'exp_llfc_code': "581",
+            'exp_mpan_core': "22 7907 4116 080",
+            'exp_sc': "600",
+            'exp_supplier_contract_id': "58",
+            'exp_supplier_account': ""},
+        'status_code': 303},
+    {
+        'name': "Metered report: correct MOP / DC costs",
+        'path': '/chellow/reports/161/output/?site_id=3&months=1&'
+        'finish_year=2015&finish_month=07',
+        'status_code': 303},
+    {
+        'name': "Metered report: correct MOP / DC costs",
+        'path': '/chellow/reports/251/output/',
+        'tries': {'max': 30, 'period': 1},
+        'regexes': [
+            r'057_FINISHED_watkinsexamplecom_site_monthly_duration_for_CI005_'
+            r'1_to_2015_7\.csv'],
+        'status_code': 200},
+    {
+        'name': "Monthly sites duration: multiple site groups",
+        'path': '/chellow/reports/253/output/?'
+        'name=057_FINISHED_watkinsexamplecom_site_monthly_duration_for_CI005_'
+        '1_to_2015_7.csv',
+        'status_code': 200,
+        'regexes': [
+            r'"CI005","Wheal Rodney","CI004","gen,gen-net,net","chp",'
+            r'"2015-07-31 23:30","25.8191780822","0","0","25.8191780822","0",'
+            r'"0","0","0","1114.2003","0.0","0","1114.2003","0","0","0","hh",'
+            r'""']},
 ]

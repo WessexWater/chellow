@@ -114,6 +114,7 @@ def process_site(
                 else:
                     bill_finish = era.finish_date
 
+                supply_source = None
                 supplier_contract = era.imp_supplier_contract
                 if supplier_contract is not None:
                     supply_source = computer.SupplySource(
@@ -153,6 +154,10 @@ def process_site(
                         elif source_code in ('3rd-party', '3rd-party-reverse'):
                             month_data['import-3rd-party-gbp'] += gbp
 
+                if supply_source is None:
+                    supply_source = computer.SupplySource(
+                        sess, bill_start, bill_finish, forecast_date, era,
+                        False, tmp_file, caches)
                 dc_contract = era.hhdc_contract
                 supply_source.contract_func(
                     dc_contract, 'virtual_bill')(supply_source)
