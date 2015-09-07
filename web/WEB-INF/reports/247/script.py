@@ -534,25 +534,6 @@ def content():
                             elif source_code in ('gen', 'gen-net'):
                                 month_data['import-gen-kwh'] += kwh
 
-                            for bill in sess.query(Bill).filter(
-                                    Bill.supply == supply,
-                                    Bill.start_date <= imp_ss.finish_date,
-                                    Bill.finish_date >= imp_ss.start_date):
-                                bill_start = bill.start_date
-                                bill_finish = bill.finish_date
-                                bill_duration = totalseconds(
-                                    bill_finish - bill_start) + (30 * 60)
-                                overlap_duration = totalseconds(
-                                    min(bill_finish, imp_ss.finish_date) -
-                                    max(bill_start, imp_ss.start_date)) + \
-                                    (30 * 60)
-                                overlap_proportion = \
-                                    float(overlap_duration) / bill_duration
-                                month_data['billed-import-net-kwh'] += \
-                                    overlap_proportion * float(bill.kwh)
-                                month_data['billed-import-net-gbp'] += \
-                                    overlap_proportion * float(bill.net)
-
                         exp_supplier_contract = era.exp_supplier_contract
                         if exp_supplier_contract is None:
                             kwh = sess.query(
@@ -628,6 +609,24 @@ def content():
                         if CATEGORY_ORDER[site_category] < \
                                 CATEGORY_ORDER[sup_category]:
                             site_category = sup_category
+
+                        for bill in sess.query(Bill).filter(
+                                Bill.supply == supply,
+                                Bill.start_date <= sss.finish_date,
+                                Bill.finish_date >= sss.start_date):
+                            bill_start = bill.start_date
+                            bill_finish = bill.finish_date
+                            bill_duration = totalseconds(
+                                bill_finish - bill_start) + (30 * 60)
+                            overlap_duration = totalseconds(
+                                min(bill_finish, sss.finish_date) -
+                                max(bill_start, sss.start_date)) + (30 * 60)
+                            overlap_proportion = \
+                                float(overlap_duration) / bill_duration
+                            month_data['billed-import-net-kwh'] += \
+                                overlap_proportion * float(bill.kwh)
+                            month_data['billed-import-net-gbp'] += \
+                                overlap_proportion * float(bill.net)
 
                         out = [
                             era.imp_mpan_core, era.exp_mpan_core,

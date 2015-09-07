@@ -11628,4 +11628,321 @@ def virtual_bill(supply_source):
             r'"2015-07-31 23:30","25.8191780822","0","0","25.8191780822","0",'
             r'"0","0","0","1114.2003","0.0","0","1114.2003","0","0","0","hh",'
             r'""']},
+
+    {
+        'name': "Unified report, billed: add batch to Dynamat contract",
+        'path': '/chellow/reports/281/output/',
+        'method': 'post',
+        'data': {
+            'hhdc_contract_id': "57",
+            'reference': "Zathustra",
+            'description': "Thus spoke."},
+        'status_code': 303,
+        'regexes': [
+            r"/reports/203/output/\?hhdc_batch_id=15"]},
+    {
+        'name': "Unified report, billed: add bill to batch",
+        'path': '/chellow/reports/349/output/',
+        'method': 'post',
+        'data': {
+            'hhdc_batch_id': "15",
+            'mpan_core': '22 7907 4116 080',
+            'reference': '001',
+            'issue_year': '2015',
+            'issue_month': '09',
+            'issue_day': '02',
+            'issue_hour': '10',
+            'issue_minute': '00',
+            'start_year': '2015',
+            'start_month': '08',
+            'start_day': '01',
+            'start_hour': '00',
+            'start_minute': '00',
+            'finish_year': '2015',
+            'finish_month': '08',
+            'finish_day': '31',
+            'finish_hour': '23',
+            'finish_minute': '30',
+            'kwh': '0',
+            'net': '11.20',
+            'vat': '3.05',
+            'gross': '14.25',
+            'account': '22 7907 4116 080',
+            'bill_type_id': '2',
+            'breakdown': '{}'},
+        'status_code': 303,
+        'regexes': [
+            r"/reports/345/output/\?hhdc_bill_id=24"]},
+    {
+        'name': "Unified report, billed",
+        'path': '/chellow/reports/247/output/?site_id=3&months=1&'
+        'finish_year=2015&finish_month=08',
+        'status_code': 303},
+    {
+        'name': "Unified report, billed",
+        'path': '/chellow/reports/251/output/',
+        'tries': {'max': 30, 'period': 1},
+        'regexes': [
+            r'058_FINISHED_watkinsexamplecom_unified_supplies_monthly_'
+            r'duration_20150801_0000_for_1_months_site_CI005\.ods'],
+        'status_code': 200},
+    {
+        'name': "Unified report, billed",
+        'path': '/chellow/reports/253/output/?'
+        'name=058_FINISHED_watkinsexamplecom_unified_supplies_monthly_'
+        'duration_20150801_0000_for_1_months_site_CI005.ods',
+        'status_code': 200,
+        'regexes': [
+            r'<table:table-row>'
+            r'<table:table-cell/>'
+            r'<table:table-cell office:string-value="22 7907 4116 080" '
+            r'office:value-type="string"/>'
+            r'<table:table-cell office:string-value="hh" '
+            r'office:value-type="string"/>'
+            r'<table:table-cell office:string-value="gen" '
+            r'office:value-type="string"/>'
+            r'<table:table-cell office:string-value="chp" '
+            r'office:value-type="string"/>'
+            r'<table:table-cell office:string-value="2" '
+            r'office:value-type="string"/>'
+            r'<table:table-cell office:string-value="" '
+            r'office:value-type="string"/>'
+            r'<table:table-cell office:string-value="00" '
+            r'office:value-type="string"/>'
+            r'<table:table-cell office:string-value="CI005" '
+            r'office:value-type="string"/>'
+            r'<table:table-cell office:string-value="Wheal Rodney" '
+            r'office:value-type="string"/>'
+            r'<table:table-cell office:string-value="CI004" '
+            r'office:value-type="string"/>'
+            r'<table:table-cell office:date-value="2015-08-31T23:30:00" '
+            r'office:value-type="date" table:style-name="cDateISO"/>'
+            r'<table:table-cell office:value="0" office:value-type="float"/>'
+            r'<table:table-cell office:value="0" office:value-type="float"/>'
+            r'<table:table-cell office:value="0" office:value-type="float"/>'
+            r'<table:table-cell office:value="0" office:value-type="float"/>'
+            r'<table:table-cell office:value="0" office:value-type="float"/>'
+            r'<table:table-cell office:value="0" office:value-type="float"/>'
+            r'<table:table-cell office:value="0" office:value-type="float"/>'
+            r'<table:table-cell office:value="0" office:value-type="float"/>'
+            r'<table:table-cell office:value="0" office:value-type="float"/>'
+            r'<table:table-cell office:value="17" office:value-type="float"/>'
+            r'<table:table-cell office:value="0" office:value-type="float"/>'
+            r'<table:table-cell office:value="0" office:value-type="float"/>'
+            r'<table:table-cell office:value="0" office:value-type="float"/>'
+            r'<table:table-cell office:value="0" office:value-type="float"/>'
+            r'<table:table-cell office:value="0" office:value-type="float"/>'
+            r'<table:table-cell office:value="0" office:value-type="float"/>'
+            r'<table:table-cell office:value="17" office:value-type="float"/>'
+            r'<table:table-cell office:value="0" office:value-type="float"/>'
+            r'<table:table-cell office:value="0.0" office:value-type="float"/>'
+            r'<table:table-cell office:value="11.2" '
+            r'office:value-type="float"/>'
+            r'<table:table-cell/>'
+            r'<table:table-cell office:value="10" office:value-type="float"/>'
+            r'<table:table-cell office:string-value="" '
+            r'office:value-type="string"/>'
+            r'<table:table-cell/>'
+            r'<table:table-cell office:value="7" office:value-type="float"/>'
+            r'<table:table-cell office:string-value="" '
+            r'office:value-type="string"/>'
+            r'<table:table-cell/>'
+            r'<table:table-cell/>'
+            r'<table:table-cell/>'
+            r'<table:table-cell/>'
+            r'<table:table-cell/>'
+            r'<table:table-cell/>'
+            r'<table:table-cell/>'
+            r'<table:table-cell/>'
+            r'<table:table-cell/>'
+            r'<table:table-cell/>'
+            r'<table:table-cell/>'
+            r'<table:table-cell/>'
+            r'<table:table-cell/>'
+            r'<table:table-cell/>'
+            r'<table:table-cell/>'
+            r'<table:table-cell/>'
+            r'<table:table-cell/>'
+            r'<table:table-cell/>'
+            r'<table:table-cell/>'
+            r'<table:table-cell/>'
+            r'<table:table-cell/>'
+            r'<table:table-cell/>'
+            r'<table:table-cell/>'
+            r'<table:table-cell/>'
+            r'<table:table-cell/>'
+            r'<table:table-cell/>'
+            r'<table:table-cell/>'
+            r'<table:table-cell/>'
+            r'<table:table-cell/>'
+            r'<table:table-cell/>'
+            r'<table:table-cell/>'
+            r'<table:table-cell/>'
+            r'<table:table-cell/>'
+            r'<table:table-cell/>'
+            r'<table:table-cell/>'
+            r'<table:table-cell/>'
+            r'<table:table-cell/>'
+            r'<table:table-cell/>'
+            r'<table:table-cell/>'
+            r'<table:table-cell/>'
+            r'<table:table-cell/>'
+            r'<table:table-cell/>'
+            r'<table:table-cell/>'
+            r'<table:table-cell/>'
+            r'<table:table-cell/>'
+            r'<table:table-cell/>'
+            r'<table:table-cell/>'
+            r'<table:table-cell/>'
+            r'<table:table-cell/>'
+            r'<table:table-cell/>'
+            r'<table:table-cell/>'
+            r'<table:table-cell/>'
+            r'<table:table-cell/>'
+            r'<table:table-cell/>'
+            r'<table:table-cell/>'
+            r'<table:table-cell/>'
+            r'<table:table-cell/>'
+            r'<table:table-cell/>'
+            r'<table:table-cell/>'
+            r'<table:table-cell/>'
+            r'<table:table-cell/>'
+            r'<table:table-cell/>'
+            r'<table:table-cell/>'
+            r'<table:table-cell/>'
+            r'<table:table-cell/>'
+            r'<table:table-cell/>'
+            r'<table:table-cell/>'
+            r'<table:table-cell/>'
+            r'<table:table-cell/>'
+            r'<table:table-cell/>'
+            r'<table:table-cell/>'
+            r'<table:table-cell/>'
+            r'<table:table-cell/>'
+            r'<table:table-cell/>'
+            r'<table:table-cell/>'
+            r'<table:table-cell/>'
+            r'<table:table-cell/>'
+            r'<table:table-cell/>'
+            r'<table:table-cell/>'
+            r'<table:table-cell/>'
+            r'<table:table-cell/>'
+            r'<table:table-cell/>'
+            r'<table:table-cell/>'
+            r'<table:table-cell/>'
+            r'<table:table-cell/>'
+            r'<table:table-cell/>'
+            r'<table:table-cell/>'
+            r'<table:table-cell/>'
+            r'<table:table-cell/>'
+            r'<table:table-cell/>'
+            r'<table:table-cell/>'
+            r'<table:table-cell/>'
+            r'<table:table-cell/>'
+            r'<table:table-cell/>'
+            r'<table:table-cell/>'
+            r'<table:table-cell/>'
+            r'<table:table-cell/>'
+            r'<table:table-cell/>'
+            r'<table:table-cell/>'
+            r'<table:table-cell/>'
+            r'<table:table-cell/>'
+            r'<table:table-cell/>'
+            r'<table:table-cell/>'
+            r'<table:table-cell/>'
+            r'<table:table-cell/>'
+            r'<table:table-cell/>'
+            r'<table:table-cell office:value="93.89" '
+            r'office:value-type="float"/>'
+            r'<table:table-cell/>'
+            r'<table:table-cell/>'
+            r'<table:table-cell office:value="0.00525288" '
+            r'office:value-type="float"/>'
+            r'<table:table-cell/>'
+            r'<table:table-cell office:value="5.89" '
+            r'office:value-type="float"/>'
+            r'<table:table-cell office:value="600" office:value-type="float"/>'
+            r'<table:table-cell office:value="31" office:value-type="float"/>'
+            r'<table:table-cell office:value="0" office:value-type="float"/>'
+            r'<table:table-cell office:value="0" office:value-type="float"/>'
+            r'<table:table-cell office:value="0" office:value-type="float"/>'
+            r'<table:table-cell office:value="31" office:value-type="float"/>'
+            r'<table:table-cell office:value="0" office:value-type="float"/>'
+            r'<table:table-cell office:value="0" office:value-type="float"/>'
+            r'<table:table-cell/>'
+            r'<table:table-cell/>'
+            r'<table:table-cell/>'
+            r'<table:table-cell/>'
+            r'<table:table-cell office:value="0.00151" '
+            r'office:value-type="float"/>'
+            r'<table:table-cell office:value="0.0" '
+            r'office:value-type="float"/>'
+            r'<table:table-cell/>'
+            r'<table:table-cell office:value="88" office:value-type="float"/>'
+            r'<table:table-cell office:value="0" office:value-type="float"/>'
+            r'<table:table-cell office:value="0.0" office:value-type="float"/>'
+            r'<table:table-cell office:value="0.0" office:value-type="float"/>'
+            r'<table:table-cell office:value="0" office:value-type="float"/>'
+            r'<table:table-cell office:value="0.0" office:value-type="float"/>'
+            r'<table:table-cell office:value="0.0" office:value-type="float"/>'
+            r'<table:table-cell office:value="0" office:value-type="float"/>'
+            r'<table:table-cell office:value="0.0" office:value-type="float"/>'
+            r'<table:table-cell office:value="0.0" office:value-type="float"/>'
+            r'<table:table-cell office:value="0" office:value-type="float"/>'
+            r'<table:table-cell office:value="0" office:value-type="float"/>'
+            r'<table:table-cell office:value="0.0" office:value-type="float"/>'
+            r'<table:table-cell office:value="0" office:value-type="float"/>'
+            r'<table:table-cell office:value="0" office:value-type="float"/>'
+            r'<table:table-cell office:value="0.0" office:value-type="float"/>'
+            r'<table:table-cell office:value="0" office:value-type="float"/>'
+            r'<table:table-cell office:value="0" office:value-type="float"/>'
+            r'<table:table-cell office:value="0.0" office:value-type="float"/>'
+            r'<table:table-cell office:value="0.0" office:value-type="float"/>'
+            r'<table:table-cell/>'
+            r'<table:table-cell office:value="0.0" office:value-type="float"/>'
+            r'<table:table-cell/>'
+            r'<table:table-cell/>'
+            r'<table:table-cell/>'
+            r'<table:table-cell/>'
+            r'<table:table-cell/>'
+            r'<table:table-cell/>'
+            r'<table:table-cell/>'
+            r'<table:table-cell/>'
+            r'<table:table-cell/>'
+            r'<table:table-cell/>'
+            r'<table:table-cell/>'
+            r'<table:table-cell/>'
+            r'<table:table-cell/>'
+            r'<table:table-cell/>'
+            r'<table:table-cell/>'
+            r'<table:table-cell/>'
+            r'<table:table-cell/>'
+            r'<table:table-cell/>'
+            r'<table:table-cell office:date-value="2014-11-25T17:00:00" '
+            r'office:value-type="date" table:style-name="cDateISO"/>'
+            r'<table:table-cell office:value="0" office:value-type="float"/>'
+            r'<table:table-cell office:string-value="X" '
+            r'office:value-type="string"/>'
+            r'<table:table-cell office:value="1.087" '
+            r'office:value-type="float"/>'
+            r'<table:table-cell office:value="0.0" '
+            r'office:value-type="float"/>'
+            r'<table:table-cell office:date-value="2014-12-06T17:00:00" '
+            r'office:value-type="date" table:style-name="cDateISO"/>'
+            r'<table:table-cell office:value="0" office:value-type="float"/>'
+            r'<table:table-cell office:string-value="X" '
+            r'office:value-type="string"/>'
+            r'<table:table-cell office:value="1.074" '
+            r'office:value-type="float"/>'
+            r'<table:table-cell office:value="0.0" office:value-type="float"/>'
+            r'<table:table-cell office:date-value="2015-01-30T17:00:00" '
+            r'office:value-type="date" table:style-name="cDateISO"/>'
+            r'<table:table-cell office:value="0" office:value-type="float"/>'
+            r'<table:table-cell office:string-value="X" '
+            r'office:value-type="string"/>'
+            r'<table:table-cell office:value="1.087" '
+            r'office:value-type="float"/>'
+            r'<table:table-cell office:value="0.0" office:value-type="float"/>'
+            r'<table:table-cell office:value="0.0" '
+            r'office:value-type="float"/>']}
 ]
