@@ -257,55 +257,21 @@ def content():
                         continue
                     else:
                         supplier_contract = era.imp_supplier_contract
-                if not is_import:
+                else:
                     if era.exp_mpan_core is None:
                         continue
                     else:
                         supplier_contract = era.exp_supplier_contract
 
-                if metering_type == 'hh':
-                    latest_supplier_bill_date = sess.query(Bill.finish_date) \
-                        .join(Batch).filter(
-                            Bill.start_date <= date, Bill.supply == supply,
-                            Batch.contract == supplier_contract).order_by(
-                            Bill.finish_date.desc()).first()
-                    if latest_supplier_bill_date is not None:
-                        latest_supplier_bill_date = \
-                            latest_supplier_bill_date[0]
-                else:
-                    latest_prev_read = sess.query(RegisterRead) \
-                        .join(Bill).filter(
-                            RegisterRead.previous_date <= date,
-                            Bill.supply == supply).order_by(
-                            RegisterRead.previous_date.desc()).first()
-
-                    latest_pres_read = sess.query(RegisterRead).join(Bill) \
-                        .filter(
-                            RegisterRead.present_date <= date,
-                            Bill.supply == supply).order_by(
-                            RegisterRead.present_date.desc()).first()
-
-                    if latest_prev_read is None and latest_pres_read is None:
-                        latest_read = None
-                    elif latest_pres_read is not None and \
-                            latest_prev_read is None:
-                        latest_read = latest_pres_read
-                    elif latest_pres_read is None and \
-                            latest_prev_read is not None:
-                        latest_read = latest_prev_read
-                    elif latest_pres_read.present_date > \
-                            latest_prev_read.previous_date:
-                        latest_read = latest_pres_read
-                    else:
-                        latest_read = latest_prev_read
-
-                    if latest_read is None:
-                        latest_supplier_bill_date = None
-                    else:
-                        latest_supplier_bill_date = \
-                            latest_read.bill.finish_date
+                latest_supplier_bill_date = sess.query(Bill.finish_date) \
+                    .join(Batch).filter(
+                        Bill.start_date <= date, Bill.supply == supply,
+                        Batch.contract == supplier_contract).order_by(
+                        Bill.finish_date.desc()).first()
 
                 if latest_supplier_bill_date is not None:
+                    latest_supplier_bill_date = \
+                        latest_supplier_bill_date[0]
                     latest_supplier_bill_date = hh_format(
                         latest_supplier_bill_date)
 
