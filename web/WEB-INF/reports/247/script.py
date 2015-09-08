@@ -676,11 +676,18 @@ def content():
         msg = traceback.format_exc()
         group_tab.writerow(["Problem " + msg])
     finally:
-        f.close()
-        rf.close()
-        os.rename(running_name, finished_name)
-        if sess is not None:
-            sess.close()
+        try:
+            f.close()
+            rf.close()
+            os.rename(running_name, finished_name)
+            if sess is not None:
+                sess.close()
+        except:
+            msg = traceback.format_exc()
+            r_name, f_name = dloads.make_names('error.txt', user)
+            ef = open(r_name, "wb")
+            ef.write(msg + '\n')
+            ef.close()
 
 threading.Thread(target=content).start()
 inv.sendSeeOther("/reports/251/output/")
