@@ -20,7 +20,8 @@ image:https://travis-ci.org/WessexWater/chellow.svg?branch=master["Build Status"
 
 . Install PostgreSQL 9.4
 . Install Python 2.7
-. Create a PostgreSQL database called `chellow`.
+. Create a PostgreSQL database called `chellow` with the character encoding
+  `UTF8`.
 . At the command line run:
 +
  pip install git+https://github.com/WessexWater/chellow#egg=chellow

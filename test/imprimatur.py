@@ -11455,5 +11455,10 @@ def virtual_bill(supply_source):
             r'office:value-type="float"/>'
             r'<table:table-cell office:value="0.0" office:value-type="float"/>'
             r'<table:table-cell office:value="0.0" '
-            r'office:value-type="float"/>']}
+            r'office:value-type="float"/>']},
+
+    {
+        'name': "Displaying bill raw lines",
+        'path': '/chellow/reports/105/output/?supplier_bill_id=11',
+        'status_code': 200},
 ]

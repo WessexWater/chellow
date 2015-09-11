@@ -443,7 +443,8 @@ class Bill(Base, PersistentClass):
         if not isinstance(breakdown, dict):
             raise UserException(
                 "The 'breakdown' parameter must be a mapping type.")
-        self.breakdown = repr(dict(breakdown.iteritems()))
+        self.breakdown = repr(
+            dict((k, repr(v)) for k, v in breakdown.iteritems()))
 
     def insert_read(
             self, sess, tpr, coefficient, units, msn, mpan_str, prev_date,
