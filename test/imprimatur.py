@@ -111,7 +111,7 @@
             'is_core': 'true'},
         'status_code': 303,
         'regexes': [
-            r"/reports/393/"]},
+            r"/reports/395/"]},
 
     # Valid general import of sites
     {
