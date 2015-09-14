@@ -7,3 +7,6 @@ install:
  
 script:
   - tox
+
+env:
+  - CHELLOW_PORT=5000
