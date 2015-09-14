@@ -3,8 +3,7 @@ python:
   - "2.7"
  
 install:
-  - "pip install -r requirements.txt"
+  - "pip install tox"
  
-script: test/run_tests
-
-env: CHELLOW_HOME=$HOME/build/WessexWater/chellow
+script:
+  - tox
