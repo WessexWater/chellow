@@ -1,9 +1,18 @@
 from net.sf.chellow.monad import Monad
+import traceback
+import collections
+import pytz
 import threading
 import sys
 import os
+import os.path
+import time
+import datetime
+import utils
 
 Monad.getUtils()['impt'](globals(), 'db', 'utils', 'templater')
+
+UserException = utils.UserException
 
 if sys.platform.startswith('java'):
     download_path = Monad.getContext().getRealPath("/downloads")
@@ -102,3 +111,73 @@ def remove_item(mem_id):
             del mem_vals[mem_id]
     finally:
         mem_lock.release()
+
+
+file_deleter = None
+MAX_AGE = 60 * 60 * 24 * 7
+
+
+class FileDeleter(threading.Thread):
+    def __init__(self):
+        super(FileDeleter, self).__init__(name="File Deleter")
+        self.lock = threading.RLock()
+        self.messages = collections.deque()
+        self.stopped = threading.Event()
+        self.going = threading.Event()
+
+    def stop(self):
+        self.stopped.set()
+        self.going.set()
+
+    def go(self):
+        self.going.set()
+
+    def is_locked(self):
+        if self.lock.acquire(False):
+            self.lock.release()
+            return False
+        else:
+            return True
+
+    def log(self, message):
+        self.messages.appendleft(
+            datetime.datetime.now(pytz.utc).strftime("%Y-%m-%d %H:%M:%S") +
+            " - " + message)
+        if len(self.messages) > 100:
+            self.messages.pop()
+
+    def run(self):
+        while not self.stopped.isSet():
+            if self.lock.acquire(False):
+                try:
+                    cur_time = time.time()
+                    for file_name in sorted(os.listdir(download_path)):
+                        file_path = os.path.join(download_path, file_name)
+                        if cur_time - os.path.getmtime(file_path) > MAX_AGE:
+                            os.remove(file_path)
+                except:
+                    self.log("Outer problem " + traceback.format_exc())
+                finally:
+                    self.lock.release()
+                    self.log("Finished deleting files.")
+
+            self.going.wait(24 * 60 * 60)
+            self.going.clear()
+
+
+def get_file_deleter():
+    return file_deleter
+
+
+def startup():
+    global file_deleter
+    file_deleter = FileDeleter()
+    file_deleter.start()
+
+
+def shutdown():
+    if file_deleter is not None:
+        file_deleter.stop()
+        if file_deleter.isAlive():
+            raise UserException(
+                "Can't shut down file deleter, it's still running.")
