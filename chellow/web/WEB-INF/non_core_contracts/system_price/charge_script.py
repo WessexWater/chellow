@@ -205,9 +205,9 @@ class SystemPriceImporter(threading.Thread):
                             hh_date_ct = ct_tz.localize(raw_date)
                             hh_date = pytz.utc.normalize(
                                 hh_date_ct.astimezone(pytz.utc))
-                            if hh_date >= fill_start:
-                                run_code = sbp_row[1].value
-                                for col_idx in range(2, 52):
+                            run_code = sbp_row[1].value
+                            for col_idx in range(2, 52):
+                                if hh_date >= fill_start:
                                     sbp_val = sbp_row[col_idx].value
                                     if sbp_val != '':
                                         if hh_date.day == 1 and \
@@ -219,14 +219,13 @@ class SystemPriceImporter(threading.Thread):
                                         sp_month[hh_date] = {
                                             'run': run_code,
                                             'sbp': sbp_val, 'ssp': ssp_val}
-                                    hh_date += HH
+                                hh_date += HH
                         self.log("Successfully extracted data.")
-                        sp_months[-1]
                         last_date = sorted(sp_months[-1].keys())[-1]
                         if last_date.month == (last_date + HH).month:
                             del sp_months[-1]
                         if 'limit' in contract_props:
-                            sp_months = [sp_months[0]]
+                            sp_months = sp_months[0:1]
                         for sp_month in sp_months:
                             sorted_keys = sorted(sp_month.keys())
                             month_start = sorted_keys[0]
@@ -250,7 +249,7 @@ class SystemPriceImporter(threading.Thread):
                                     month_finish, latest_rs.script)
                                 rs = contract.insert_rate_script(
                                     sess, month_start, '')
-
+                                sess.flush()
                             script = {
                                 'gbp_per_nbp_mwh': dict(
                                     (key_format(k), v)

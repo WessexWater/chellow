@@ -6153,6 +6153,57 @@ def virtual_bill(supply_source):
             'run_startup': "Run"}},
 
     {
+        'name': 'System Price',
+        'path': '/chellow/reports/381/output/',
+        'tries': {},
+        'regexes': [
+            r"Updating rate script starting at 2005-01-01 00:00\."],
+        'status_code': 200},
+
+    {
+        'name': 'System Price Feb',
+        'path': '/chellow/reports/381/output/',
+        'method': 'post',
+        'data': {
+            'name': 'now'},
+        'status_code': 303},
+    {
+        'name': 'System Price',
+        'path': '/chellow/reports/381/output/',
+        'tries': {},
+        'regexes': [
+            r"Updating rate script starting at 2005-02-01 00:00\."],
+        'status_code': 200},
+    {
+        'name': 'System Price March',
+        'path': '/chellow/reports/381/output/',
+        'method': 'post',
+        'data': {
+            'name': 'now'},
+        'status_code': 303},
+    {
+        'name': 'System Price',
+        'path': '/chellow/reports/381/output/',
+        'tries': {},
+        'regexes': [
+            r"Updating rate script starting at 2005-03-01 00:00\."],
+        'status_code': 200},
+    {
+        'name': 'System Price April',
+        'path': '/chellow/reports/381/output/',
+        'method': 'post',
+        'data': {
+            'name': 'now'},
+        'status_code': 303},
+    {
+        'name': 'System Price',
+        'path': '/chellow/reports/381/output/',
+        'tries': {},
+        'regexes': [
+            r"Updating rate script starting at 2005-04-01 00:00\."],
+        'status_code': 200},
+
+    {
         'name': "Check that later bills are at the top.",
         'path': '/chellow/reports/7/output/?supply_id=1',
         'regexes': [
@@ -6769,7 +6820,8 @@ def virtual_bill(supply_source):
             r'"duos-fixed-gbp","0.0905","duos-fixed-rate","0.0905",'
             r'"duos-green-gbp","0.0","duos-green-kwh","0","duos-green-rate",'
             r'"0.00161","duos-reactive-kvarh","0.0","duos-red-gbp","0.0",'
-            r'"duos-red-kwh","0","duos-red-rate","0.2441"\s*\Z']},
+            r'"duos-red-kwh","0","duos-red-rate","0.2441","sbp-rate",'
+            r'"0.02436","ssp-rate","0.01844324"\s*\Z']},
 
     # See if selector is working
     {
@@ -9784,15 +9836,6 @@ def virtual_bill(supply_source):
             r'"2009-03-31 23:30","","0","127.0","0","0","0","365.0","0","0",'
             r'"127.0","365.0","Estimated","0","612952.94","0","0","0",'
             r'"1148683.46236","1761636.40236",""']},
-
-
-    {
-        'name': 'System Price',
-        'path': '/chellow/reports/381/output/',
-        'tries': {},
-        'regexes': [
-            r"Updating rate script starting at 2005-01-01 00:00\."],
-        'status_code': 200},
 
     {
         'name': "Contract level MOP virtual bills",
