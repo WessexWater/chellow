@@ -844,7 +844,6 @@ def start_chellow_process():
             f = open(os.path.join(mdd_path, fname + '.csv'))
             cursor.execute(
                 "set transaction isolation level serializable read write")
-            print("doing ", tname)
             if tname == 'llfc':
                 cursor.execute(
                     "COPY " + tname +

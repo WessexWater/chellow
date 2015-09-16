@@ -41,7 +41,9 @@ elif method == 'POST':
         raise UserException(
             "The file name should have the extension .csv, but in fact it "
             "has the extension '" + file_ext + "'.")
-    table = file_title[:file_title.rfind('_')]
+    idx = file_title.rfind('_')
+    table = file_title[:idx]
+    version = file_title[idx+1:]
     f = StringIO.StringIO()
     if sys.platform.startswith('java'):
         from java.io import InputStreamReader
@@ -317,6 +319,6 @@ elif method == 'POST':
             if sess is not None:
                 sess.close()
 
-    utils.send_response(inv, content, file_name='mdd.csv')
+    utils.send_response(inv, content, file_name=table + '_' + version + '.csv')
 else:
     raise UserException("HTTP method not recognized.")
