@@ -70,7 +70,7 @@ for table in [
                             [
                                 id, line[0], line[3], is_import,
                                 to_iso(line[1]), to_iso(line[2])])
-                    elif table == 'Market_Participant':
+                    elif table in ('Market_Participant', 'Market_Role'):
                         converted.writerow(
                             [line[table_field] for table_field in range(2)])
                     elif table == 'Time_Pattern_Regime':
@@ -106,7 +106,7 @@ for table in [
                             [
                                 "Chellow Id", line[0], line[3], line[4],
                                 line[1], line[2]])
-                    elif table == 'Market_Participant':
+                    elif table in ('Market_Participant', 'Market_Role'):
                         converted.writerow(
                             [line[table_field] for table_field in range(2)])
                     elif table == 'Market_Participant_Role':

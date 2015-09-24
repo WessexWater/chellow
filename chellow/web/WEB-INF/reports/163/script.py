@@ -149,6 +149,26 @@ elif method == 'POST':
                                 '"' + str(v) + '"' for v in (
                                     'update', 'participant', participant_code,
                                     participant_name))) + "\n"
+            elif table == 'Market_Role':
+                for i, values in enumerate(reader):
+                    role_code = values[0]
+                    role_description = values[1]
+
+                    role = sess.query(MarketRole).filter(
+                        MarketRole.code == role_code).first()
+
+                    if role is None:
+                        yield ','.join(
+                            (
+                                '"' + str(v) + '"' for v in (
+                                    'insert', 'market_role', role_code,
+                                    role_description))) + "\n"
+                    elif role_description != role.description:
+                        yield ','.join(
+                            (
+                                '"' + str(v) + '"' for v in (
+                                    'update', 'market_role', participant_code,
+                                    participant_name))) + "\n"
             elif table == 'Market_Participant_Role':
                 for i, values in enumerate(reader):
                     participant_code = values[0]

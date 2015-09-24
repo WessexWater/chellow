@@ -854,6 +854,10 @@ def start_chellow_process():
                 cursor.execute(
                     "COPY " + tname + " (code, name) "
                     "FROM STDIN CSV HEADER", stream=f)
+            elif tname == 'market_role':
+                cursor.execute(
+                    "COPY " + tname + " (code, description) "
+                    "FROM STDIN CSV HEADER", stream=f)
             elif tname == 'party':
                 cursor.execute(
                     "COPY " + tname + " (market_role_id, participant_id, "

@@ -1,36 +1,36 @@
-Chellow Id,Market Participant Role Code,Market Role Description
-1,0,Green Deal Licensee
-2,1,Green Deal Provider
-3,2,Green Deal Remittance Processor
-4,3,Unmetered Supplies Operator (UMSO)
-5,4,Meter Administrator (MA)
-6,5,Smart Metering System Operator
-7,6,Non Half Hourly Data Retriever
-8,8,Meter Asset Provider (MAP)
-9,9,Communications Provider
-10,A,HH Data Aggregator
-11,B,Non-HH Data Aggregator
-12,C,HH Data Collector
-13,D,Non-HH Data Collector
-14,E,Capacity Market (CM) Capacity Provider
-15,F,Pool Funds Administrator
-16,G,ISR/IAR Agent
-17,H,Contract for Difference (CFD) Generator
-18,I,Teleswitch Agent
-19,J,Supply Fault Information Centre
-20,K,Profile Administrator
-21,L,Electricity Central Online ENQ Service
-22,M,Meter Operator
-23,N,BSP Meter User
-24,O,GRS Operator
-25,P,PRS Agent
-26,Q,System Data Provision Operator
-27,R,Distributor
-28,S,Settlement System Administrator
-29,T,Grid Control Company
-30,U,Market Domain Data Agent
-31,V,Prepayment Meter Infrastructure Provider
-32,W,Revenue Protection Service
-33,X,Supplier
-34,Y,Generator
-35,Z,Non-core Role
+Market Participant Role Code,Market Role Description
+0,Green Deal Licensee
+1,Green Deal Provider
+2,Green Deal Remittance Processor
+3,Unmetered Supplies Operator (UMSO)
+4,Meter Administrator (MA)
+5,Smart Metering System Operator
+6,Non Half Hourly Data Retriever
+8,Meter Asset Provider (MAP)
+9,Communications Provider
+A,HH Data Aggregator
+B,Non-HH Data Aggregator
+C,HH Data Collector
+D,Non-HH Data Collector
+E,Capacity Market (CM) Capacity Provider
+F,Pool Funds Administrator
+G,ISR/IAR Agent
+H,Contract for Difference (CFD) Generator
+I,Teleswitch Agent
+J,Supply Fault Information Centre
+K,Profile Administrator
+L,Electricity Central Online ENQ Service
+M,Meter Operator
+N,BSP Meter User
+O,GRS Operator
+P,PRS Agent
+Q,System Data Provision Operator
+R,Distributor
+S,Settlement System Administrator
+T,Grid Control Company
+U,Market Domain Data Agent
+V,Prepayment Meter Infrastructure Provider
+W,Revenue Protection Service
+X,Supplier
+Y,Generator
+Z,Non-core Role

@@ -548,6 +548,22 @@ def general_import_participant(sess, action, vals, args):
         sess.flush()
 
 
+def general_import_market_role(sess, action, vals, args):
+    if action == "insert":
+        role_code = add_arg(args, "Market Role Code", vals, 0)
+        role_description = add_arg(args, "Market Role Description", vals, 1)
+        role = MarketRole(code=role_code, description=role_description)
+        sess.add(role)
+        sess.flush()
+
+    elif action == "update":
+        role_code = add_arg(args, "Market Role Code", vals, 0)
+        role = MarketRole.get_by_code(sess, role_code)
+        role_description = add_arg(args, "Market Role Description", vals, 1)
+        role.description = role_description
+        sess.flush()
+
+
 def general_import_bill(sess, action, vals, args):
     if action == "insert":
         role_name = add_arg(args, "Role Name", vals, 0).lower()
