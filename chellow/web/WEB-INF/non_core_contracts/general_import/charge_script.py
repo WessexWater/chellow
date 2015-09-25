@@ -441,7 +441,7 @@ def general_import_party(sess, action, vals, args):
         market_role_code = add_arg(args, "Market Role Code", vals, 0)
         participant_code = add_arg(args, "Participant Code", vals, 1)
         party = Party.get_by_participant_code_role_code(
-            participant_code, market_role_code)
+            sess, participant_code, market_role_code)
         name = add_arg(args, "Name", vals, 2)
         party.name = name
         valid_from_str = add_arg(args, "Valid From", vals, 3)

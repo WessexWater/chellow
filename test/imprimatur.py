@@ -9456,7 +9456,7 @@ def virtual_bill(supply_source):
         'name': "MDD Converter. Party",
         'path': "/chellow/reports/293/output/",
         'method': "post",
-        'files': {'import_file': "test/gi_insert_party.csv"},
+        'files': {'import_file': "test/gi_party.csv"},
         'status_code': 303,
         'regexes': [
             "/reports/295/output/\?process_id=6"]},
