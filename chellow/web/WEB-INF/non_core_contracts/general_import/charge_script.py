@@ -219,7 +219,7 @@ def general_import_era(sess, action, vals, args):
         if era is None:
             raise UserException("There isn't a era at this date.")
 
-        supply.delete_era(era)
+        supply.delete_era(sess, era)
     elif action == "insert":
         channel_set = set()
         mpan_core = add_arg(args, "MPAN Core", vals, 0)

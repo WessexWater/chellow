@@ -11636,4 +11636,18 @@ def virtual_bill(supply_source):
             'exp_supplier_contract_id': "58",
             'exp_supplier_account': "5bb8"},
         'status_code': 400},
+    {
+        'name': "General Importer: Deleting an era",
+        'path': '/chellow/reports/293/output/',
+        'method': 'post',
+        'files': {'import_file': 'test/gi_delete_era.csv'},
+        'status_code': 303,
+        'regexes': [
+            r"/reports/295/output/\?process_id=5"]},
+    {
+        'path': '/chellow/reports/295/output/?process_id=5',
+        'tries': {'max': 10, 'period': 1},
+        'status_code': 200,
+        'regexes': [
+            r"The file has been imported successfully\."]},
 ]
