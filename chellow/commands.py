@@ -127,7 +127,7 @@ class Party(Base):
         Integer, ForeignKey('participant.id'), index=True)
     name = Column(String, nullable=False)
     valid_from = Column(DateTime(timezone=True), nullable=False)
-    valid_to = Column(DateTime)
+    valid_to = Column(DateTime(timezone=True))
     users = relationship('User', backref='party')
     dno_code = Column(String)
     contracts = relationship('Contract', backref='party')
