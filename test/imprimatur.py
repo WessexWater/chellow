@@ -9424,7 +9424,8 @@ def virtual_bill(supply_source):
         'files': {"file": "test/Market_Role_234.csv"},
         'status_code': 200,
         'regexes':  [
-            r'"insert","market_role","7","Fusion Balancer"']},
+            r'"insert","market_role","7","Fusion Balancer"',
+            r'"update","market_role","S","Settlement System Controller"']},
 
     {
         'name': "MDD Converter. Market role",

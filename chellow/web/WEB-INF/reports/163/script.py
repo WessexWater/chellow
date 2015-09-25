@@ -167,8 +167,8 @@ elif method == 'POST':
                         yield ','.join(
                             (
                                 '"' + str(v) + '"' for v in (
-                                    'update', 'market_role', participant_code,
-                                    participant_name))) + "\n"
+                                    'update', 'market_role', role_code,
+                                    role_description))) + "\n"
             elif table == 'Market_Participant_Role':
                 for i, values in enumerate(reader):
                     participant_code = values[0]
