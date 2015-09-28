@@ -91,16 +91,20 @@ col_map = {
 class Parser():
     def __init__(self, f):
         self.last_line = None
-        lines = (self._set_last_line(l) for l in f)
+        lines = (self._set_last_line(i, l) for i, l in enumerate(f))
         self.reader = csv.reader(lines, skipinitialspace=True)
         self._line_number = None
+        self._title_line = None
 
     @property
     def line_number(self):
-        return None if self._line_number is None else self._line_number + 2
+        return None if self._line_number is None else self._line_number + 1
 
-    def _set_last_line(self, line):
-        self.last_line = line
+    def _set_last_line(self, i, line):
+        self._line_numer = i
+        self.last_line = unicode(line, 'utf-8')
+        if i == 0:
+            self._title_line = unicode(line, 'utf-8')
         return line
 
     def make_raw_bills(self):
@@ -109,7 +113,8 @@ class Parser():
 
         raw_bills = []
 
-        for self._line_number, vals in enumerate(self.reader):
+        for vals in self.reader:
+            vals = tuple(unicode(val, 'utf-8') for val in vals)
             if len(vals) == 0 or vals[0].startswith('#') or \
                     ''.join(vals) == '':
                 continue
@@ -142,7 +147,7 @@ class Parser():
                 [
                     (v, float(val(k))) for k, v in col_map.iteritems()
                     if k in titles])
-            breakdown['raw-lines'] = [titles, self.last_line]
+            breakdown['raw_lines'] = [self._title_line, self.last_line]
             net = Decimal(val('NET_AMT'))
             vat = Decimal(val('VATTTL'))
             gross = Decimal(val('TTLCHG'))

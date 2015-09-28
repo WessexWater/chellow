@@ -11606,5 +11606,7 @@ def virtual_bill(supply_source):
     {
         'name': "Displaying bill raw lines",
         'path': '/chellow/reports/105/output/?supplier_bill_id=11',
+        'regexes': [
+            r"Customer Name,"],
         'status_code': 200},
 ]

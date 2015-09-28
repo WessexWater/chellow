@@ -440,11 +440,11 @@ class Bill(Base, PersistentClass):
             raise Exception("Type can't be null.")
 
         self.bill_type = bill_type
-        if not isinstance(breakdown, dict):
+        if isinstance(breakdown, dict):
+            self.breakdown = repr(dict(breakdown))
+        else:
             raise UserException(
                 "The 'breakdown' parameter must be a mapping type.")
-        self.breakdown = repr(
-            dict((k, repr(v)) for k, v in breakdown.iteritems()))
 
     def insert_read(
             self, sess, tpr, coefficient, units, msn, mpan_str, prev_date,
