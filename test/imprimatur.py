@@ -9480,7 +9480,7 @@ def virtual_bill(supply_source):
         'name': "MDD Converter. Meter Timeswitch Class",
         'path': "/chellow/reports/293/output/",
         'method': "post",
-        'files': {'import_file': "test/gi_insert_meter_timeswitch_class.csv"},
+        'files': {'import_file': "test/gi_meter_timeswitch_class.csv"},
         'status_code': 303,
         'regexes': [
             "/reports/295/output/\?process_id=7"]},

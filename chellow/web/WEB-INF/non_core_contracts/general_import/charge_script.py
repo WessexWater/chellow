@@ -497,7 +497,7 @@ def general_import_mtc(sess, action, vals, args):
         else:
             dno = Contract.get_dno_by_code(sess, dno_code)
         code = add_arg(args, "Code", vals, 1)
-        mtc = Mtc.get_by_dno_code(sess, dno, code)
+        mtc = Mtc.get_by_code(sess, dno, code)
 
         description = add_arg(args, "Description", vals, 2)
         mtc.description = description
@@ -506,7 +506,7 @@ def general_import_mtc(sess, action, vals, args):
         has_related_metering = parse_bool(has_related_metering_str)
         mtc.has_related_metering = has_related_metering
         has_comms_str = add_arg(args, "Has Comms?", vals, 4)
-        has_comms = parse_bool(has_comms)
+        has_comms = parse_bool(has_comms_str)
         mtc.has_comms = has_comms
         is_hh_str = add_arg(args, "Is HH?", vals, 5)
         is_hh = parse_bool(is_hh_str)

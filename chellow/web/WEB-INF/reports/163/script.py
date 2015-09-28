@@ -339,6 +339,7 @@ elif method == 'POST':
             if sess is not None:
                 sess.close()
 
-    utils.send_response(inv, content, file_name=table + '_' + version + '.csv')
+    utils.send_response(
+        inv, content, file_name=table + '_' + version + '_general_import.csv')
 else:
     raise UserException("HTTP method not recognized.")
