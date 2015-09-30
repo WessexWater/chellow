@@ -51,7 +51,7 @@ for table in [
                     if table == 'MTC_Meter_Type':
                         converted.writerow(
                             [
-                                id, line[0], line[1], to_iso(line[2]),
+                                line[0], line[1], to_iso(line[2]),
                                 to_iso(line[3])])
                     elif table == 'MTC_Payment_Type':
                         converted.writerow(
@@ -71,8 +71,7 @@ for table in [
                                 id, line[0], line[3], is_import,
                                 to_iso(line[1]), to_iso(line[2])])
                     elif table in ('Market_Participant', 'Market_Role'):
-                        converted.writerow(
-                            [line[table_field] for table_field in range(2)])
+                        converted.writerow(line[:2])
                     elif table == 'Time_Pattern_Regime':
                         if line[1] == "C":
                             is_teleswitch = '0'
@@ -109,6 +108,8 @@ for table in [
                     elif table in ('Market_Participant', 'Market_Role'):
                         converted.writerow(
                             [line[table_field] for table_field in range(2)])
+                    elif table in ('MTC_Meter_Type',):
+                        converted.writerow(line)
                     elif table == 'Market_Participant_Role':
                         converted.writerow(
                             [

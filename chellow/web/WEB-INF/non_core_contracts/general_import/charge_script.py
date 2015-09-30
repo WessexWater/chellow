@@ -453,6 +453,34 @@ def general_import_party(sess, action, vals, args):
         sess.flush()
 
 
+def general_import_meter_type(sess, action, vals, args):
+    if action == "insert":
+        code = add_arg(args, "Code", vals, 0)
+        description = add_arg(args, "Description", vals, 1)
+        valid_from_str = add_arg(args, "Valid From", vals, 2)
+        valid_from = parse_hh_start(valid_from_str)
+        valid_to_str = add_arg(args, "Valid To", vals, 3)
+        valid_to = parse_hh_start(valid_to_str)
+        mtc = MeterType(
+            code=code, description=description, valid_from=valid_from,
+            valid_to=valid_to)
+        sess.add(mtc)
+        sess.flush()
+
+    elif action == "update":
+        code = add_arg(args, "Code", vals, 0)
+        mt = sess.query(MeterType).filter(MeterType.code == code).first()
+        description = add_arg(args, "Description", vals, 1)
+        mt.description = description
+        valid_from_str = add_arg(args, "Valid From", vals, 2)
+        valid_from = parse_hh_start(valid_from_str)
+        mt.valid_from = valid_from
+        valid_to_str = add_arg(args, "Valid To", vals, 3)
+        valid_to = parse_hh_start(valid_to_str)
+        mt.valid_to = valid_to
+        sess.flush()
+
+
 def general_import_mtc(sess, action, vals, args):
     if action == "insert":
         dno_code = add_arg(args, "DNO Code", vals, 0)

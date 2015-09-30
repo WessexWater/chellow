@@ -1455,8 +1455,8 @@ class MeterType(Base, PersistentClass):
     id = Column('id', Integer, Sequence('meter_type_id_seq'), primary_key=True)
     code = Column(String, unique=True, nullable=False)
     description = Column(String, unique=True, nullable=False)
-    valid_from = Column(DateTime, nullable=False)
-    valid_to = Column(DateTime)
+    valid_from = Column(DateTime(timezone=True), nullable=False)
+    valid_to = Column(DateTime(timezone=True))
     mtcs = relationship('Mtc', backref='meter_type')
 
 
@@ -1475,8 +1475,8 @@ class MeterPaymentType(Base, PersistentClass):
         'id', Integer, Sequence('meter_payment_type_id_seq'), primary_key=True)
     code = Column(String, unique=True, nullable=False)
     description = Column(String, unique=True, nullable=False)
-    valid_from = Column(DateTime)
-    valid_to = Column(DateTime)
+    valid_from = Column(DateTime(timezone=True))
+    valid_to = Column(DateTime(timezone=True))
     mtcs = relationship('Mtc', backref='meter_payment_type')
 
 

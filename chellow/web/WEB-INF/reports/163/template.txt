@@ -36,6 +36,7 @@
 				<li>Market_Role</li>
 				<li>Market_Participant_Role</li>
 				<li>Line_Loss_Factor_Class</li>
+				<li>MTC_Meter_Type</li>
 				<li>Meter_Timeswitch_Class</li>
 			</ul>
 		</p>

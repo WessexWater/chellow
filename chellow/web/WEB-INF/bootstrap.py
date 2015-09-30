@@ -265,7 +265,7 @@ class MeterType(Base):
     code = Column(String, unique=True, nullable=False)
     description = Column(String, unique=True, nullable=False)
     valid_from = Column(DateTime(timezone=True), nullable=False)
-    valid_to = Column(DateTime)
+    valid_to = Column(DateTime(timezone=True)),
     mtcs = relationship('Mtc', backref='meter_type')
 
 
@@ -788,6 +788,10 @@ if engine.execute(
             cursor.execute(
                 "COPY party (market_role_id, participant_id, name, "
                 "valid_from, valid_to, dno_code) "
+                "FROM STDIN CSV HEADER", stream=f)
+        elif tname == 'meter_type':
+            cursor.execute(
+                "COPY meter_type (code, description, valid_from, valid_to) "
                 "FROM STDIN CSV HEADER", stream=f)
         elif tname == 'mtc':
             cursor.execute(

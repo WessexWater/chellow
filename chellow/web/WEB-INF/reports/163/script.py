@@ -12,7 +12,7 @@ Monad.getUtils()['impt'](globals(), 'db', 'utils', 'templater')
 Ssc, MeasurementRequirement = db.Ssc, db.MeasurementRequirement
 Party, Llfc, VoltageLevel = db.Party, db.Llfc, db.VoltageLevel
 Participant, MarketRole = db.Participant, db.MarketRole
-Mtc, Contract = db.Mtc, db.Contract
+Mtc, Contract, MeterType = db.Mtc, db.Contract, db.MeterType
 render = templater.render
 UserException = utils.UserException
 hh_format = utils.hh_format
@@ -332,6 +332,39 @@ elif method == 'POST':
                                         has_comms, is_hh, meter_type_code,
                                         meter_payment_type_code, tpr_count,
                                         valid_from_out, valid_to_out))) + "\n"
+            elif table == 'MTC_Meter_Type':
+                for i, values in enumerate(reader):
+                    code = values[0]
+                    description = values[1]
+                    valid_from_str = values[2]
+                    valid_from = datetime.datetime.strptime(
+                        valid_from_str, "%d/%m/%Y").replace(tzinfo=pytz.utc)
+                    valid_from_out = hh_format(valid_from)
+                    valid_to_str = values[3]
+                    if valid_to_str == '':
+                        valid_to = None
+                        valid_to_out = ''
+                    else:
+                        valid_to = datetime.datetime.strptime(
+                            valid_to_str, "%d/%m/%Y").replace(
+                            tzinfo=pytz.utc)
+                        valid_to_out = hh_format(valid_to)
+                    pt = sess.query(MeterType).filter(
+                        MeterType.code == code).first()
+                    if pt is None:
+                        yield ','.join(
+                            (
+                                '"' + str(v) + '"' for v in (
+                                    'insert', 'meter_type', code, description,
+                                    valid_from_out, valid_to_out))) + "\n"
+
+                    elif (description, valid_from, valid_to) != (
+                            pt.description, pt.valid_from, pt.valid_to):
+                        yield ','.join(
+                            (
+                                '"' + str(v) + '"' for v in (
+                                    'update', 'meter_type', code, description,
+                                    valid_from_out, valid_to_out))) + "\n"
             else:
                 raise Exception("The table " + table + " is not recognized.")
 

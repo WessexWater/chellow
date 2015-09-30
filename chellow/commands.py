@@ -286,7 +286,7 @@ class MeterType(Base):
     code = Column(String, unique=True, nullable=False)
     description = Column(String, unique=True, nullable=False)
     valid_from = Column(DateTime(timezone=True), nullable=False)
-    valid_to = Column(DateTime)
+    valid_to = Column(DateTime(timezone=True))
     mtcs = relationship('Mtc', backref='meter_type')
 
 
@@ -863,6 +863,10 @@ def start_chellow_process():
                     "COPY " + tname + " (market_role_id, participant_id, "
                     "name, valid_from, valid_to, dno_code) "
                     "FROM STDIN CSV HEADER", stream=f)
+            elif tname == 'meter_type':
+                cursor.execute(
+                    "COPY " + tname + " (code, description, valid_from, "
+                    "valid_to) FROM STDIN CSV HEADER", stream=f)
             elif tname == 'mtc':
                 cursor.execute(
                     "COPY " + tname + " (dno_id, code, description, "

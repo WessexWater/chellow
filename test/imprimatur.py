@@ -9468,6 +9468,30 @@ def virtual_bill(supply_source):
         'regexes': [r"The file has been imported successfully\."]},
 
     {
+        'name': "MDD Converter. MTC Meter Type",
+        'path': "/chellow/reports/163/output/",
+        'method': "post",
+        'files': {"file": "test/MTC_Meter_Type_234.csv"},
+        'status_code': 200,
+        'regexes':  [
+            r'"update","meter_type","6A","COP6\(a\)  20 days memory",'
+            r'"1996-04-01 00:00",""']},
+    {
+        'name': "MDD Converter. Meter Timeswitch Class",
+        'path': "/chellow/reports/293/output/",
+        'method': "post",
+        'files': {'import_file': "test/gi_mtc_meter_type.csv"},
+        'status_code': 303,
+        'regexes': [
+            "/reports/295/output/\?process_id=7"]},
+    {
+        'name': "MDD Converter. Meter Timeswitch Class",
+        'path': "/chellow/reports/295/output/?process_id=7",
+        'tries': {'max': 10, 'period': 1},
+        'status_code': 200,
+        'regexes': [r"The file has been imported successfully\."]},
+
+    {
         'name': "MDD Converter. Meter Timeswitch Class",
         'path': "/chellow/reports/163/output/",
         'method': "post",
@@ -9483,10 +9507,10 @@ def virtual_bill(supply_source):
         'files': {'import_file': "test/gi_meter_timeswitch_class.csv"},
         'status_code': 303,
         'regexes': [
-            "/reports/295/output/\?process_id=7"]},
+            "/reports/295/output/\?process_id=8"]},
     {
         'name': "MDD Converter. Meter Timeswitch Class",
-        'path': "/chellow/reports/295/output/?process_id=7",
+        'path': "/chellow/reports/295/output/?process_id=8",
         'tries': {'max': 10, 'period': 1},
         'status_code': 200,
         'regexes': [r"The file has been imported successfully\."]},
@@ -9507,10 +9531,10 @@ def virtual_bill(supply_source):
         'files': {'import_file': "test/gi_insert_mtc_in_pes_area.csv"},
         'status_code': 303,
         'regexes': [
-            "/reports/295/output/\?process_id=8"]},
+            "/reports/295/output/\?process_id=9"]},
     {
         'name': "MDD Converter. Meter Timeswitch Class",
-        'path': "/chellow/reports/295/output/?process_id=8",
+        'path': "/chellow/reports/295/output/?process_id=9",
         'tries': {'max': 10, 'period': 1},
         'status_code': 200,
         'regexes': [r"The file has been imported successfully\."]},
@@ -9886,9 +9910,9 @@ def virtual_bill(supply_source):
         'files': {'import_file': 'test/era-insert-2.csv'},
         'status_code': 303,
         'regexes': [
-            r"/reports/295/output/\?process_id=9"]},
+            r"/reports/295/output/\?process_id=10"]},
     {
-        'path': '/chellow/reports/295/output/?process_id=9',
+        'path': '/chellow/reports/295/output/?process_id=10',
         'tries': {},
 
         # Check it's loaded ok

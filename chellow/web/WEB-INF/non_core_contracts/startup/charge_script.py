@@ -78,7 +78,6 @@ def jython_start(ctx):
 
 
 def cpython_start():
-    sys.stderr.write("doing cpythin start\n")
     from chellow import app
     from chellow.models import Contract
 
