@@ -16,6 +16,7 @@ import dloads
 import StringIO
 import threading
 import odswriter
+import sys
 
 CATEGORY_ORDER = {
     None: 0, 'unmetered': 1, 'nhh': 2, 'amr': 3, 'hh': 4}
@@ -671,6 +672,7 @@ def content():
             month_start += relativedelta(months=1)
     except:
         msg = traceback.format_exc()
+        sys.stderr.write(msg + '\n')
         group_tab.writerow(["Problem " + msg])
     finally:
         try:

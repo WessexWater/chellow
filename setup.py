@@ -39,7 +39,8 @@ setup(
         'xlrd==0.7.9',
         'ftputil==3.0',
         'requests==2.5.1',
-        'simplejson==3.6.5'],
+        'simplejson==3.6.5',
+        'pympler'],
     entry_points={
         'console_scripts': [
             'start_chellow = chellow.commands:start_chellow',

@@ -1,33 +1,35 @@
 from zipfile import ZipFile
 import decimal
 import datetime
-from xml.dom.minidom import parseString
-
 import odswriter.v1_1.ods_components
 from odswriter.v1_1.formula import Formula
+import StringIO
+import xml.sax.saxutils
 
-'''
-from xml.etree import ElementTree
+CONTENT_ATTRS = {
+    'xmlns:office': 'urn:oasis:names:tc:opendocument:xmlns:office:1.0',
+    'xmlns:style': "urn:oasis:names:tc:opendocument:xmlns:style:1.0",
+    'xmlns:text': "urn:oasis:names:tc:opendocument:xmlns:text:1.0",
+    'xmlns:table': "urn:oasis:names:tc:opendocument:xmlns:table:1.0",
+    'xmlns:draw': "urn:oasis:names:tc:opendocument:xmlns:drawing:1.0",
+    'xmlns:fo': 'urn:oasis:names:tc:opendocument:xmlns:xsl-fo-compatible:1.0',
+    'xmlns:xlink': "http://www.w3.org/1999/xlink",
+    'xmlns:dc': "http://purl.org/dc/elements/1.1/",
+    'xmlns:meta': "urn:oasis:names:tc:opendocument:xmlns:meta:1.0",
+    'xmlns:number': "urn:oasis:names:tc:opendocument:xmlns:datastyle:1.0",
+    'xmlns:presentation':
+        "urn:oasis:names:tc:opendocument:xmlns:presentation:1.0",
+    'xmlns:svg': "urn:oasis:names:tc:opendocument:xmlns:svg-compatible:1.0",
+    'xmlns:chart': "urn:oasis:names:tc:opendocument:xmlns:chart:1.0",
+    'xmlns:dr3d': "urn:oasis:names:tc:opendocument:xmlns:dr3d:1.0",
+    'xmlns:math': "http://www.w3.org/1998/Math/MathML",
+    'xmlns:form': "urn:oasis:names:tc:opendocument:xmlns:form:1.0",
+    'xmlns:script': "urn:oasis:names:tc:opendocument:xmlns:script:1.0",
+    'xmlns:dom': "http://www.w3.org/2001/xml-events",
+    'xmlns:xforms': "http://www.w3.org/2002/xforms",
+    'xmlns:of': "urn:oasis:names:tc:opendocument:xmlns:of:1.2",
+    'office:version': "1.1"}
 
-def indent(elem, level=0):
-    i = "\n" + level*"  "
-    if len(elem):
-        if not elem.text or not elem.text.strip():
-            elem.text = i + "  "
-        if not elem.tail or not elem.tail.strip():
-            elem.tail = i
-        for elem in elem:
-            indent(elem, level+1)
-        if not elem.tail or not elem.tail.strip():
-            elem.tail = i
-    else:
-        if level and (not elem.tail or not elem.tail.strip()):
-            elem.tail = i
-
-root = ElementTree.parse('/tmp/xmlfile').getroot()
-indent(root)
-ElementTree.dump(root)
-'''
 
 # Basic compatibility setup for Python 2 and Python 3.
 
@@ -44,6 +46,28 @@ except NameError:
 # End compatibility setup.
 
 
+def att_str(atts):
+    return ''.join(
+        ' ' + k + '=' + xml.sax.saxutils.quoteattr(v)
+        for k, v in sorted(atts.iteritems()))
+
+
+def begin_elem(f, tag, atts=None):
+    if atts is None:
+        atts = {}
+    f.write('<' + tag + att_str(atts) + '>')
+
+
+def end_elem(f, tag):
+    f.write('</' + tag + '>')
+
+
+def empty_elem(f, tag, atts=None):
+    if atts is None:
+        atts = {}
+    f.write('<' + tag + att_str(atts) + '/>')
+
+
 class ODSWriter(object):
     """
     Utility for writing OpenDocument Spreadsheets. Can be used in simple 1
@@ -54,37 +78,6 @@ class ODSWriter(object):
     def __init__(self, odsfile):
         self.zipf = ZipFile(odsfile, "w")
         # Make the skeleton of an ODS.
-        dom = parseString(odswriter.v1_1.ods_components.content_xml)
-        self.dom = dom
-        styles_elem = dom.documentElement.insertBefore(
-            dom.createElement("office:automatic-styles"),
-            dom.documentElement.firstChild)
-        date_style_elem = styles_elem.appendChild(
-            dom.createElement("number:date-style"))
-        date_style_elem.setAttribute("style:name", "DateISO")
-        elem = date_style_elem.appendChild(dom.createElement("number:year"))
-        elem.setAttribute('number:style', 'long')
-        elem = date_style_elem.appendChild(dom.createElement("number:text"))
-        elem.appendChild(dom.createTextNode('-'))
-        elem = date_style_elem.appendChild(dom.createElement("number:month"))
-        elem.setAttribute('number:style', 'long')
-        elem = date_style_elem.appendChild(dom.createElement("number:text"))
-        elem.appendChild(dom.createTextNode('-'))
-        elem = date_style_elem.appendChild(dom.createElement("number:day"))
-        elem.setAttribute('number:style', 'long')
-        elem = date_style_elem.appendChild(dom.createElement("number:text"))
-        elem.appendChild(dom.createTextNode(' '))
-        elem = date_style_elem.appendChild(dom.createElement("number:hours"))
-        elem.setAttribute('number:style', 'long')
-        elem = date_style_elem.appendChild(dom.createElement("number:text"))
-        elem.appendChild(dom.createTextNode(':'))
-        elem = date_style_elem.appendChild(dom.createElement("number:minutes"))
-        elem.setAttribute('number:style', 'long')
-
-        style_elem = styles_elem.appendChild(dom.createElement('style:style'))
-        style_elem.setAttribute('style:name', 'cDateISO')
-        style_elem.setAttribute('style:family', 'table-cell')
-        style_elem.setAttribute('style:data-style-name', 'DateISO')
 
         self.zipf.writestr(
             "mimetype",
@@ -101,7 +94,7 @@ class ODSWriter(object):
         self.zipf.writestr(
             "META-INF/manifest.xml",
             odswriter.v1_1.ods_components.manifest_xml.encode("utf-8"))
-        self.default_sheet = None
+        self.sheets = []
 
     def __enter__(self):
         return self
@@ -116,107 +109,99 @@ class ODSWriter(object):
         manually, it is not triggered automatically like on a file object.
         :return: Nothing.
         """
-        self.zipf.writestr(
-            "content.xml", self.dom.toxml(encoding="utf-8"))
-        # "content.xml", self.dom.toprettyxml(indent='  ', encoding="utf-8"))
+
+        f = StringIO.StringIO()
+        f.write('<?xml version="1.0" encoding="UTF-8"?>')
+        begin_elem(f, 'office:document-content', CONTENT_ATTRS)
+        begin_elem(f, "office:automatic-styles")
+        empty_elem(f, "number:date-style", {"style:name": "DateISO"})
+        empty_elem(f, "number:year", {'number:style': 'long'})
+        begin_elem(f, "number:text", {})
+        f.write('-')
+        end_elem(f, "number:text")
+        empty_elem(f, "number:month", {'number:style': 'long'})
+        begin_elem(f, "number:text", {})
+        f.write('-')
+        end_elem(f, "number:text")
+        empty_elem(f, "number:day", {'number:style': 'long'})
+        begin_elem(f, "number:text", {})
+        f.write(' ')
+        end_elem(f, "number:text")
+        empty_elem(f, "number:hours", {'number:style': 'long'})
+        begin_elem(f, "number:text", {})
+        f.write(':')
+        end_elem(f, "number:text")
+        empty_elem(f, "number:minutes", {'number:style': 'long'})
+        empty_elem(f, 'style:style', {
+            'style:name': 'cDateISO',
+            'style:family': 'table-cell',
+            'style:data-style-name': 'DateISO'})
+        end_elem(f, "office:automatic-styles")
+        begin_elem(f, 'office:body')
+        begin_elem(f, 'office:spreadsheet')
+        for sheet in self.sheets:
+            begin_elem(f, "table:table", {"table:name": sheet.name})
+            empty_elem(f, "table:table-column")
+
+            for row in sheet.rows:
+                begin_elem(f, "table:table-row")
+                for cell in row:
+                    atts = {}
+
+                    if isinstance(cell, (datetime.date, datetime.datetime)):
+                        atts["office:value-type"] = "date"
+                        atts["office:date-value"] = \
+                            cell.strftime("%Y-%m-%dT%H:%M:%S")
+                        atts["table:style-name"] = "cDateISO"
+
+                    elif isinstance(cell, datetime.time):
+                        atts["office:value-type"] = "time"
+                        atts["office:time-value"] = \
+                            cell.strftime("PT%HH%MM%SS")
+
+                    elif isinstance(cell, bool):
+                        # Bool condition must be checked before numeric
+                        # because:
+                        # isinstance(True, int): True
+                        # isinstance(True, bool): True
+                        atts["office:value-type"] = "boolean"
+                        atts["office:boolean-value"] = \
+                            "true" if cell else "false"
+
+                    elif isinstance(cell, (float, int, decimal.Decimal, long)):
+                        atts["office:value-type"] = "float"
+                        atts["office:value"] = unicode(cell)
+
+                    elif isinstance(cell, Formula):
+                        atts["table:formula"] = str(cell)
+
+                    elif cell is None:
+                        pass  # Empty element
+
+                    else:
+                        # String and unknown types become string cells
+                        atts["office:value-type"] = "string"
+                        atts["office:string-value"] = unicode(cell)
+                    empty_elem(f, "table:table-cell", atts)
+                end_elem(f, "table:table-row")
+            end_elem(f, "table:table")
+        end_elem(f, 'office:spreadsheet')
+        end_elem(f, 'office:body')
+        end_elem(f, 'office:document-content')
+
+        self.zipf.writestr("content.xml", f.getvalue())
         self.zipf.close()
 
-    def writerow(self, cells):
-        """
-        Write a row of cells into the default sheet of the spreadsheet.
-        :param cells: A list of cells (most basic Python types supported).
-        :return: Nothing.
-        """
-        if self.default_sheet is None:
-            self.default_sheet = self.new_sheet()
-        self.default_sheet.writerow(cells)
-
-    def writerows(self, rows):
-        """
-        Write rows into the default sheet of the spreadsheet.
-        :param rows: A list of rows, rows are lists of cells - see writerow.
-        :return: Nothing.
-        """
-        for row in rows:
-            self.writerow(row)
-
-    def new_sheet(self, name=None):
-        """
-        Create a new sheet in the spreadsheet and return it so content can be
-        added.
-        :param name: Optional name for the sheet.
-        :return: Sheet object
-        """
-        return Sheet(self.dom, name)
+    def new_sheet(self, name):
+        sheet = Sheet(name)
+        self.sheets.append(sheet)
+        return sheet
 
 
 class Sheet(object):
-    def __init__(self, dom, name=None):
-        self.dom = dom
-        spreadsheet = self.dom.getElementsByTagName("office:spreadsheet")[0]
-        self.table = self.dom.createElement("table:table")
-        spreadsheet.appendChild(self.table)
-        if name:
-            self.table.setAttribute("table:name", name)
-        column = self.dom.createElement("table:table-column")
-        self.table.appendChild(column)
+    def __init__(self, name):
+        self.name = name
+        self.rows = []
 
-    def writerow(self, cells):
-        row = self.dom.createElement("table:table-row")
-        for cell_data in cells:
-            cell = self.dom.createElement("table:table-cell")
-            # text = None
-
-            if isinstance(cell_data, (datetime.date, datetime.datetime)):
-                cell.setAttribute("office:value-type", "date")
-                cell.setAttribute(
-                    "office:date-value",
-                    cell_data.strftime("%Y-%m-%dT%H:%M:%S"))
-                cell.setAttribute("table:style-name", "cDateISO")
-                # text = date_str
-
-            elif isinstance(cell_data, datetime.time):
-                cell.setAttribute("office:value-type", "time")
-                cell.setAttribute("office:time-value",
-                                  cell_data.strftime("PT%HH%MM%SS"))
-                # text = cell_data.strftime("%H:%M:%S")
-
-            elif isinstance(cell_data, bool):
-                # Bool condition must be checked before numeric because:
-                # isinstance(True, int): True
-                # isinstance(True, bool): True
-                cell.setAttribute("office:value-type", "boolean")
-                cell.setAttribute("office:boolean-value",
-                                  "true" if cell_data else "false")
-                # text = "TRUE" if cell_data else "FALSE"
-
-            elif isinstance(cell_data, (float, int, decimal.Decimal, long)):
-                cell.setAttribute("office:value-type", "float")
-                float_str = unicode(cell_data)
-                cell.setAttribute("office:value", float_str)
-                # text = float_str
-
-            elif isinstance(cell_data, Formula):
-                cell.setAttribute("table:formula", str(cell_data))
-
-            elif cell_data is None:
-                pass  # Empty element
-
-            else:
-                # String and unknown types become string cells
-                cell.setAttribute("office:value-type", "string")
-                cell.setAttribute("office:string-value", unicode(cell_data))
-                # text = unicode(cell_data)
-            '''
-            if text:
-                p = self.dom.createElement("text:p")
-                p.appendChild(self.dom.createTextNode(text))
-                cell.appendChild(p)
-            '''
-            row.appendChild(cell)
-
-        self.table.appendChild(row)
-
-    def writerows(self, rows):
-        for row in rows:
-            self.writerow(row)
+    def writerow(self, row):
+        self.rows.append(row)
