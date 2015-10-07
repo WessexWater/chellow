@@ -3,8 +3,10 @@ import decimal
 import datetime
 import odswriter.v1_1.ods_components
 from odswriter.v1_1.formula import Formula
-import StringIO
 import xml.sax.saxutils
+import tempfile
+import os.path
+import shutil
 
 CONTENT_ATTRS = {
     'xmlns:office': 'urn:oasis:names:tc:opendocument:xmlns:office:1.0',
@@ -110,7 +112,9 @@ class ODSWriter(object):
         :return: Nothing.
         """
 
-        f = StringIO.StringIO()
+        f_dir = tempfile.mkdtemp()
+        f_path = os.path.join(f_dir, "content.xml")
+        f = open(f_path, "wb")
         f.write('<?xml version="1.0" encoding="UTF-8"?>')
         begin_elem(f, 'office:document-content', CONTENT_ATTRS)
         begin_elem(f, "office:automatic-styles")
@@ -188,9 +192,11 @@ class ODSWriter(object):
         end_elem(f, 'office:spreadsheet')
         end_elem(f, 'office:body')
         end_elem(f, 'office:document-content')
+        f.close()
 
-        self.zipf.writestr("content.xml", f.getvalue())
+        self.zipf.write(f_path, "content.xml")
         self.zipf.close()
+        shutil.rmtree(f_dir)
 
     def new_sheet(self, name):
         sheet = Sheet(name)
