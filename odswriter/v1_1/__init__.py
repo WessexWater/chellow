@@ -149,19 +149,20 @@ class ODSWriter(object):
 
             for row in sheet.rows:
                 begin_elem(f, "table:table-row")
+                row_list = []
                 for cell in row:
                     atts = {}
 
                     if isinstance(cell, (datetime.date, datetime.datetime)):
                         atts["office:value-type"] = "date"
-                        atts["office:date-value"] = \
-                            cell.strftime("%Y-%m-%dT%H:%M:%S")
+                        atts["office:date-value"] = cell.strftime(
+                            "%Y-%m-%dT%H:%M:%S")
                         atts["table:style-name"] = "cDateISO"
 
                     elif isinstance(cell, datetime.time):
                         atts["office:value-type"] = "time"
-                        atts["office:time-value"] = \
-                            cell.strftime("PT%HH%MM%SS")
+                        atts["office:time-value"] = cell.strftime(
+                            "PT%HH%MM%SS")
 
                     elif isinstance(cell, bool):
                         # Bool condition must be checked before numeric
@@ -186,6 +187,16 @@ class ODSWriter(object):
                         # String and unknown types become string cells
                         atts["office:value-type"] = "string"
                         atts["office:string-value"] = unicode(cell)
+                    if len(row_list) > 0 and row_list[-1]['atts'] == atts:
+                        row_list[-1]['count'] += 1
+                    else:
+                        row_list.append({'count': 1, 'atts': atts})
+
+                for cell_dict in row_list:
+                    ct = cell_dict['count']
+                    atts = cell_dict['atts']
+                    if ct > 1:
+                        atts['table:number-columns-repeated'] = unicode(ct)
                     empty_elem(f, "table:table-cell", atts)
                 end_elem(f, "table:table-row")
             end_elem(f, "table:table")
