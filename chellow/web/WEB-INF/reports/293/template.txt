@@ -170,7 +170,7 @@
 					<td>Import Supplier Contract</td>
 					<td>Import Supplier Account</td>
 					<td>Export MPAN Core</td>
-					<td>Export LLFC<td>
+					<td>Export LLFC</td>
 					<td>Export Supply Capacity</td>
 					<td>Export Supplier Contract</td>
 					<td>Export Supplier Account</td>
