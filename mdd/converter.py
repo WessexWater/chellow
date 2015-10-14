@@ -21,7 +21,10 @@ else:
 
 
 def to_iso(dmy):
-    return dmy if len(dmy) == 0 else '-'.join([dmy[6:], dmy[3:5], dmy[:2]])
+    if len(dmy) == 0:
+        return ''
+    else:
+        return '-'.join([dmy[6:], dmy[3:5], dmy[:2]]) + ' 00:00:00+00'
 
 
 def copy_file(table_name):

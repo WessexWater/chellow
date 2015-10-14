@@ -9475,7 +9475,7 @@ def virtual_bill(supply_source):
         'status_code': 200,
         'regexes':  [
             r'"update","meter_type","6A","COP6\(a\)  20 days memory",'
-            r'"1996-04-01 00:00",""']},
+            r'"1996-04-02 00:00",""']},
     {
         'name': "MDD Converter. Meter Timeswitch Class",
         'path': "/chellow/reports/293/output/",
