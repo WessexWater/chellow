@@ -11250,6 +11250,11 @@ def virtual_bill(supply_source):
             'mop_account': "mc-22 7907 4116 080",
             'hhdc_contract_id': "54",
             'hhdc_account': "01",
+            'msn': "",
+            'pc_id': "9",
+            'mtc_code': "845",
+            'cop_id': "5",
+            'ssc_code': "",
             'exp_llfc_code': "581",
             'exp_mpan_core': "22 7907 4116 080",
             'exp_sc': "600",
@@ -11643,9 +11648,9 @@ def virtual_bill(supply_source):
         'files': {'import_file': 'test/gi_delete_era.csv'},
         'status_code': 303,
         'regexes': [
-            r"/reports/295/output/\?process_id=5"]},
+            r"/reports/295/output/\?process_id=11"]},
     {
-        'path': '/chellow/reports/295/output/?process_id=5',
+        'path': '/chellow/reports/295/output/?process_id=11',
         'tries': {'max': 10, 'period': 1},
         'status_code': 200,
         'regexes': [
