@@ -125,7 +125,7 @@ def content():
                                 'supply_ids': [
                                     s.id for s in site_group.supplies]}))
                     try:
-                        res = results.next()
+                        res = next(results)
                         hhChannelValue = res.value
                         hhChannelStartDate = res.start_date
                         imp_related = res.imp_related
@@ -157,7 +157,7 @@ def content():
                                             gen_type, 0) - hhChannelValue
 
                                 try:
-                                    res = results.next()
+                                    res = next(results)
                                     source_code = res.code
                                     hhChannelValue = res.value
                                     hhChannelStartDate = res.start_date
@@ -208,9 +208,7 @@ def content():
                         else:
                             yield ',""'
 
-                    keys = bill.keys()
-                    keys.sort()
-                    for k in keys:
+                    for k in sorted(bill.keys()):
                         yield ',"' + k + '","' + str(bill[k]) + '"'
                     yield '\n'
 

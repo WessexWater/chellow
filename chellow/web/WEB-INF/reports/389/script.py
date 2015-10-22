@@ -90,7 +90,7 @@ def content():
                             'chunk_finish': chunk_finish,
                             'supply_ids': [s.id for s in group.supplies]}))
                 try:
-                    res = results.next()
+                    res = next(results)
                     hhChannelValue = res.value
                     hhChannelStartDate = res.start_date
                     imp_related = res.imp_related
@@ -119,7 +119,7 @@ def content():
                                     hhChannelValue
 
                             try:
-                                res = results.next()
+                                res = next(results)
                                 source_code = res.code
                                 hhChannelValue = res.value
                                 hhChannelStartDate = res.start_date

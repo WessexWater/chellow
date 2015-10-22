@@ -99,11 +99,7 @@ def content():
                     Channel.imp_related == imp_related,
                     Channel.channel_type == channel_type
                 ).order_by(HhDatum.start_date))
-
-            try:
-                datum = hh_data.next()
-            except StopIteration:
-                datum = None
+            datum = next(hh_data, None)
 
             while not current_date > finish_date:
                 if current_date.hour == 0 and current_date.minute == 0:
@@ -114,10 +110,7 @@ def content():
 
                 if datum is not None and datum.start_date == current_date:
                     outs.append(str(datum.value))
-                    try:
-                        datum = hh_data.next()
-                    except StopIteration:
-                        datum = None
+                    datum = next(hh_data, None)
                 current_date += HH
             if is_zipped:
                 fname = mpan_core_str + '_' + str(supply.id) + '.csv'

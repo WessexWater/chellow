@@ -9,7 +9,7 @@ from sqlalchemy.orm import aliased
 import math
 import utils
 import db
-import simplejson as json
+import json
 import bank_holidays
 
 Monad.getUtils()['impt'](
@@ -270,10 +270,9 @@ def displaced_era(sess, site_group, start_date, finish_date):
                 eras[
                     era.pc.code + hh_format(era.start_date) +
                     era.imp_mpan_core] = era
-    keys = eras.keys()
-    if has_displaced and len(keys) > 0:
-        keys.sort()
-        return eras[keys[0]]
+
+    if has_displaced and len(eras) > 0:
+        return eras[sorted(eras.keys())[0]]
     else:
         return None
 
@@ -585,7 +584,7 @@ class SiteSource(DataSource):
                         'group_finish': group.finish_date,
                         'supply_ids': [sup.id for sup in supplies]}))
             try:
-                row = rs.next()
+                row = next(rs)
                 hh_value = float(row[0])
                 hh_start_date = row[1]
                 imp_related = row[3]
@@ -620,7 +619,7 @@ class SiteSource(DataSource):
                             source_code == '3rd-party-reverse'):
                         export_3rd_party_kwh += hh_value
                     try:
-                        row = rs.next()
+                        row = next(rs)
                         hh_value = float(row[0])
                         hh_start_date = row[1]
                         imp_related = row[3]
@@ -888,7 +887,7 @@ class SupplySource(DataSource):
 
                         while prime_pres_read is None:
                             try:
-                                pres_read = pres_reads.next()
+                                pres_read = next(pres_reads)
                             except StopIteration:
                                 break
 
@@ -928,7 +927,7 @@ class SupplySource(DataSource):
                         while prime_prev_read is None:
 
                             try:
-                                prev_read = prev_reads.next()
+                                prev_read = next(prev_reads)
                             except StopIteration:
                                 break
 
@@ -1009,7 +1008,7 @@ class SupplySource(DataSource):
 
                                 tprs = {}
                                 for tpr_code, initial_val in \
-                                        aft_read['reads'].iteritems():
+                                        aft_read['reads'].items():
                                     if tpr_code in fore_read['reads']:
                                         end_val = fore_read['reads'][tpr_code]
                                     else:
@@ -1077,7 +1076,7 @@ class SupplySource(DataSource):
                         pair['finish-date'] + HH - pair['start-date']) / \
                         (60 * 30)
                     orig_dte = dte
-                    for tpr_code, pair_kwh in pair['tprs'].iteritems():
+                    for tpr_code, pair_kwh in pair['tprs'].items():
                         hh_date = pair['start-date']
                         dte = orig_dte
                         datum_generator = _tpr_datum_generator(
@@ -1157,7 +1156,7 @@ order by hh_datum.start_date
                         'is_import': self.is_import}))
                     try:
                         msp_kwh, anti_msp_kwh, status, imp_kvarh, \
-                            exp_kvarh, hist_start = data.next()
+                            exp_kvarh, hist_start = next(data)
                     except StopIteration:
                         hist_start = None
 
@@ -1181,7 +1180,7 @@ order by hh_datum.start_date
                                     'hist-kwh': msp_kwh})
                             try:
                                 msp_kwh, anti_msp_kwh, status, imp_kvarh, \
-                                    exp_kvarh, hist_start = data.next()
+                                    exp_kvarh, hist_start = next(data)
                             except StopIteration:
                                 hist_date = None
                         else:
@@ -1236,7 +1235,7 @@ order by hh_datum.start_date
                             "    order by 1,3"}))
                     try:
                         hist_start, status, msp_kwh, imp_kvarh, exp_kvarh = \
-                            data.next()
+                            next(data)
                     except StopIteration:
                         hist_start = None
                         msp_kwh = None
@@ -1260,7 +1259,7 @@ order by hh_datum.start_date
 
                             try:
                                 hist_start, status, msp_kwh, imp_kvarh, \
-                                    exp_kvarh = data.next()
+                                    exp_kvarh = next(data)
                             except StopIteration:
                                 hist_start = None
                         else:

@@ -6,7 +6,7 @@ import pytz
 import traceback
 import threading
 import collections
-import httplib
+import http.client
 import db
 import utils
 import scenario
@@ -55,7 +55,7 @@ def hh(data_source):
                 raise UserException(
                     "For the BSUoS rate script at " + hh_format(h_start) +
                     " the rate cannot be found.")
-            except TypeError, e:
+            except TypeError as e:
                 raise UserException(
                     "For the BSUoS rate script at " + hh_format(h_start) +
                     " the rate 'rates_gbp_per_mwh' has the problem: " + str(e))
@@ -130,7 +130,7 @@ class BsuosImporter(threading.Thread):
                                 str(this_month_start) + " to " +
                                 str(next_month_start - HH) +
                                 " on Elexon Portal.")
-                            conn = httplib.HTTPConnection(
+                            conn = http.client.HTTPConnection(
                                 "www2.nationalgrid.com")
                             conn.request(
                                 "GET", "/WorkArea/DownloadAsset.aspx?id=32719")

@@ -579,7 +579,7 @@ class Report(db.Model, PersistentClass):
         try:
             ast.parse(script)
             self.script = script
-        except SyntaxError, e:
+        except SyntaxError as e:
             raise UserException(e)
 
         if template is not None and len(template.strip()) == 0:

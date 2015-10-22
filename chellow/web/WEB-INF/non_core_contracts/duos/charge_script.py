@@ -115,7 +115,7 @@ def datum_beginning_20(ds, hh):
 
     tariff = None
     for k, tf in ds.hh_rate(
-            ds.dno_contract.id, hh['start-date'], 'tariffs').iteritems():
+            ds.dno_contract.id, hh['start-date'], 'tariffs').items():
         if ds.llfc_code in [cd.strip() for cd in k.split(',')]:
             tariff = tf
 
@@ -166,7 +166,7 @@ def hh_time_beginning_20(ds, hh):
     if hh['utc-is-month-end']:
         tariff = None
         for k, tf in ds.hh_rate(
-                ds.dno_contract.id, hh['start-date'], 'tariffs').iteritems():
+                ds.dno_contract.id, hh['start-date'], 'tariffs').items():
             if ds.llfc_code in map(str.strip, k.split(',')):
                 tariff = tf
                 break
@@ -440,7 +440,7 @@ def hh_time_2010_04_01(ds, hh):
     except KeyError:
         tariff = None
         for llfcs, tf in ds.hh_rate(
-                ds.dno_contract.id, hh['start-date'], 'tariffs').iteritems():
+                ds.dno_contract.id, hh['start-date'], 'tariffs').items():
             if ds.llfc_code in [cd.strip() for cd in llfcs.split(',')]:
                 tariff = tf
                 break

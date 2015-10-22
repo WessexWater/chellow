@@ -16,9 +16,9 @@ def create_parser(reader, mpan_map):
 class StarkDf2HhParser():
     def __init__(self, reader, mpan_map):
         self.line = self.line_number = None
-        self.reader = itertools.izip(itertools.count(1), reader)
+        self.reader = zip(itertools.count(1), reader)
 
-        self.line_number, self.line = self.reader.next()
+        self.line_number, self.line = next(self.reader)
         if self.line.strip().upper() != "#F2":
             raise UserException("The first line must be '#F2'.")
         self.sensor_map = {
@@ -27,11 +27,11 @@ class StarkDf2HhParser():
     def __iter__(self):
         return self
 
-    def next(self):
+    def __next__(self):
         local_datum = None
         try:
             while local_datum is None:
-                self.line_number, self.line = self.reader.next()
+                self.line_number, self.line = next(self.reader)
                 lline = self.line.strip().upper()
                 if lline.startswith("#O"):
                     self.core = parse_mpan_core(lline[2:])
@@ -53,7 +53,7 @@ class StarkDf2HhParser():
                             "found " + str(len(fields)) + ".")
 
                     d_day, d_month, d_year = map(int, fields[0].split('/'))
-                    time_fields = map(int, fields[1].split(':'))
+                    time_fields = tuple(map(int, fields[1].split(':')))
                     if len(time_fields) > 2 and time_fields[2] != 0:
                         raise UserException(
                             "The number of seconds (if present) must always "
@@ -64,7 +64,7 @@ class StarkDf2HhParser():
 
                     try:
                         value = decimal.Decimal(fields[2])
-                    except ValueError, e:
+                    except ValueError as e:
                         raise UserException(
                             "Problem parsing the value: " + fields[2])
                     status = fields[3][-1]
@@ -74,7 +74,7 @@ class StarkDf2HhParser():
                         'start_date': start_date, 'value': value,
                         'status': status}
             return local_datum
-        except UserException, e:
+        except UserException as e:
             raise UserException(
                 "Problem at line number: " + str(self.line_number) + ": " +
                 self.line + ": " + str(e))

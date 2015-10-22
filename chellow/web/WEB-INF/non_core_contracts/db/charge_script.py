@@ -17,7 +17,7 @@ import pytz
 import sys
 import hashlib
 import utils
-import simplejson as json
+import json
 from dateutil.relativedelta import relativedelta
 
 Monad.getUtils()['impt'](globals(), 'utils')
@@ -40,7 +40,7 @@ if sys.platform.startswith('java'):
     con = Hiber.session().connection()
     stmt = con.createStatement()
     rs = stmt.executeQuery("select current_database()")
-    while rs.next():
+    while next(rs):
         db_name = str(rs.getString("current_database"))
     Hiber.close()
 
@@ -78,10 +78,9 @@ else:
     hostname = app.config['PGHOST']
     db_name = app.config['PGDATABASE']
 
-con_str = "postgresql+pg8000://" + username + ":" + password + "@" + \
-    hostname + "/" + db_name
-
-engine = create_engine(con_str.encode('ascii'), isolation_level="SERIALIZABLE")
+engine = create_engine(
+    "postgresql+pg8000://" + username + ":" + password + "@" + hostname + "/" +
+    db_name, isolation_level="SERIALIZABLE")
 
 Session = sessionmaker(bind=engine)
 
@@ -798,9 +797,9 @@ class Contract(Base, PersistentClass):
         try:
             ast.parse(charge_script)
             eval(properties, {'datetime': datetime.datetime})
-        except SyntaxError, e:
+        except SyntaxError as e:
             raise UserException(str(e))
-        except NameError, e:
+        except NameError as e:
             raise UserException(str(e))
         self.charge_script = charge_script
         self.properties = properties
@@ -823,14 +822,14 @@ class Contract(Base, PersistentClass):
         if len(script) > 0 and script[0] == '{':
             try:
                 json.loads(script)
-            except SyntaxError, e:
+            except SyntaxError as e:
                 raise UserException(str(e))
         else:
             try:
                 ast.parse(script)
-            except SyntaxError, e:
+            except SyntaxError as e:
                 raise UserException(str(e))
-            except NameError, e:
+            except NameError as e:
                 raise UserException(str(e))
         rscript.script = script
 
@@ -1041,7 +1040,7 @@ class Site(Base, PersistentClass):
         try:
             sess.add(site)
             sess.flush()
-        except ProgrammingError, e:
+        except ProgrammingError as e:
             if e.orig.args[2] == 'duplicate key value violates unique ' + \
                     'constraint "site_code_key"':
                 raise UserException("There's already a site with this code.")
@@ -1080,13 +1079,13 @@ class Site(Base, PersistentClass):
         try:
             sess.add(supply)
             sess.flush()
-        except SQLAlchemyError, e:
+        except SQLAlchemyError as e:
             sess.rollback()
             raise e
 
         try:
             int(mtc_code)
-        except ValueError, e:
+        except ValueError as e:
             raise UserException(
                 "The MTC code must be a whole number. " + str(e))
 
@@ -1284,7 +1283,7 @@ class User(Base, PersistentClass):
             user = User(email_address, password_digest, user_role, party)
             sess.add(user)
             sess.flush()
-        except ProgrammingError, e:
+        except ProgrammingError as e:
             if e.orig.args[2] == 'duplicate key value violates unique ' + \
                     'constraint "user_email_address_key"':
                 raise UserException(
@@ -1295,11 +1294,7 @@ class User(Base, PersistentClass):
 
     @staticmethod
     def digest(password):
-        if sys.platform.startswith('java'):
-            from net.sf.chellow.physical import User as JUser
-            return JUser.digest(password)
-        else:
-            return hashlib.md5(password).hexdigest()
+        return hashlib.md5(password.encode()).hexdigest()
 
     __tablename__ = 'user'
     id = Column(Integer, Sequence('user_id_seq'), primary_key=True)
@@ -1840,7 +1835,7 @@ class Era(Base, PersistentClass):
 
         try:
             sess.flush()
-        except ProgrammingError, e:
+        except ProgrammingError as e:
             if e.orig.args[2] == 'null value in column "start_date" ' + \
                     'violates not-null constraint':
                 raise UserException("The start date cannot be blank.")
@@ -1889,7 +1884,7 @@ class Era(Base, PersistentClass):
         try:
             sess.add(channel)
             sess.flush()
-        except SQLAlchemyError, e:
+        except SQLAlchemyError as e:
             sess.rollback()
             raise UserException(
                 "There's already a channel with import related: " +
@@ -2005,7 +2000,7 @@ class Channel(Base, PersistentClass):
             HhDatum.start_date))
 
         try:
-            datum = data.next()
+            datum = next(data)
             datum_date = datum.start_date
         except StopIteration:
             datum_date = None
@@ -2033,7 +2028,7 @@ class Channel(Base, PersistentClass):
                     upsert_block.append(datum_raw)
                     upsert_date = datum_raw['start_date'] + HH
                 try:
-                    datum = data.next()
+                    datum = next(data)
                     sess.expunge(datum)
                     datum_date = datum.start_date
                 except StopIteration:
@@ -2677,11 +2672,17 @@ class SiteGroup():
             '3rd-party': {True: ['imp_3p'], False: ['exp_3p']},
             '3rd-party-reverse': {True: ['exp_3p'], False: ['imp_3p']}}
         data = []
-        channels = sess.query(Channel).join(Era, Supply, Source).filter(
-            Era.supply_id.in_([sup.id for sup in self.supplies]),
-            Era.start_date <= self.finish_date, or_(
-                Era.finish_date == null(), Era.finish_date >= self.start_date),
-            Source.code != 'sub', Channel.channel_type == 'ACTIVE').all()
+
+        if len(self.supplies) == 0:
+            channels = []
+        else:
+            channels = sess.query(Channel).join(Era, Supply, Source).filter(
+                Era.supply_id.in_([sup.id for sup in self.supplies]),
+                Era.start_date <= self.finish_date, or_(
+                    Era.finish_date == null(),
+                    Era.finish_date >= self.start_date),
+                Source.code != 'sub', Channel.channel_type == 'ACTIVE').all()
+
         channel_keys = dict(
             (
                 c.id, keys[c.era.supply.source.code][c.imp_related])
@@ -2702,10 +2703,7 @@ class SiteGroup():
                         'start_date': self.start_date,
                         'finish_date': self.finish_date}))
 
-            try:
-                hh = db_data.next()
-            except StopIteration:
-                hh = None
+            hh = next(db_data, None)
 
         while hh_start <= self.finish_date:
             dd = {
@@ -2715,10 +2713,7 @@ class SiteGroup():
             while hh is not None and hh.start_date == hh_start:
                 for key in channel_keys[hh.channel_id]:
                     dd[key] += hh.value
-                try:
-                    hh = db_data.next()
-                except StopIteration:
-                    hh = None
+                hh = next(db_data, None)
 
             dd['displaced'] = dd['imp_gen'] - dd['exp_gen'] - dd['exp_net']
             dd['used'] = dd['displaced'] + dd['imp_net'] + dd['imp_3p'] - \

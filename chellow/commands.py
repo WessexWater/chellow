@@ -565,7 +565,7 @@ class User(Base):
             user = User(email_address, password_digest, user_role, party)
             sess.add(user)
             sess.flush()
-        except Exception, e:
+        except Exception as e:
             if hasattr(e, 'orig') and \
                     e.orig.args[2] == 'duplicate key value violates ' + \
                     'unique constraint "user_email_address_key"':
@@ -577,11 +577,7 @@ class User(Base):
 
     @staticmethod
     def digest(password):
-        if sys.platform.startswith('java'):
-            from net.sf.chellow.physical import User as JUser
-            return JUser.digest(password)
-        else:
-            return hashlib.md5(password).hexdigest()
+        return hashlib.md5(password.encode()).hexdigest()
 
     __tablename__ = 'user'
     id = Column(Integer, primary_key=True)
@@ -867,7 +863,7 @@ def start_chellow_process():
                 ("clock_interval", "Clock_Interval"),
                 ("ssc", "Standard_Settlement_Configuration"),
                 ("measurement_requirement", "Measurement_Requirement")):
-            f = open(os.path.join(mdd_path, fname + '.csv'))
+            f = open(os.path.join(mdd_path, fname + '.csv'), 'rb')
             cursor.execute(
                 "set transaction isolation level serializable read write")
             if tname == 'llfc':
@@ -1039,7 +1035,7 @@ def start_chellow_process():
     ns['on_start_up'](None)
     chellow_port = chellow.app.config['CHELLOW_PORT']
     httpd = make_server('', chellow_port, chellow.app)
-    print "Serving HTTP on port " + str(chellow_port) + "..."
+    print("Serving HTTP on port " + str(chellow_port) + "...")
 
     instance_path = chellow.app.instance_path
     if not os.path.exists(instance_path):

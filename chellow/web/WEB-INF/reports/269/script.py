@@ -38,7 +38,7 @@ try:
             inv.sendSeeOther(
                 '/reports/267/output/?non_core_contract_id=' +
                 str(contract.id))
-except UserException, e:
+except UserException as e:
     render(inv, template, {'contract': contract, 'messages': [str(e)]}, 400)
 finally:
     if sess is not None:

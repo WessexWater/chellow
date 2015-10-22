@@ -31,7 +31,7 @@ try:
         channel = era.insert_channel(sess, imp_related, channel_type)
         sess.commit()
         inv.sendSeeOther('/reports/301/output/?channel_id=' + str(channel.id))
-except utils.UserException, e:
+except utils.UserException as e:
     templater.render(inv, template, make_fields(sess, era, e))
 finally:
     if sess is not None:

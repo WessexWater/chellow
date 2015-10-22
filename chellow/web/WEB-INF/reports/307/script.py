@@ -152,7 +152,7 @@ try:
             sess.commit()
             inv.sendSeeOther(
                 "/reports/7/output/?supply_id=" + str(era.supply.id))
-except UserException, e:
+except UserException as e:
     render(inv, template, make_fields(sess, era, e), 400)
 finally:
     if sess is not None:

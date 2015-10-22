@@ -17,20 +17,20 @@ def create_parser(reader, mpan_map):
 
 class HhParserBglobal():
     def __init__(self, reader, mpan_map):
-        self.shredder = itertools.izip(itertools.count(1), csv.reader(reader))
-        self.line_number, self.values = self.shredder.next()
+        self.shredder = zip(itertools.count(1), csv.reader(reader))
+        self.line_number, self.values = next(self.shredder)
         self.mpan_map = mpan_map
         self.col_idx = 0
 
     def __iter__(self):
         return self
 
-    def next(self):
+    def __next__(self):
         datum = None
         try:
             while datum is None:
                 if self.col_idx > 50:
-                    self.line_number, self.values = self.shredder.next()
+                    self.line_number, self.values = next(self.shredder)
                     if len(self.values) == 0:
                         continue
                     self.col_idx = 0
@@ -59,7 +59,7 @@ class HhParserBglobal():
                             'value': decimal.Decimal(hh_value), 'status': 'A'}
 
                 self.col_idx += 1
-        except UserException, e:
+        except UserException as e:
             raise UserException(
                 "Problem at line number: " + str(self.line_number) + ": " +
                 str(e))

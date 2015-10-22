@@ -1,6 +1,5 @@
 import os
-import sys
-import StringIO
+import io
 from net.sf.chellow.monad import Monad
 import templater
 import db
@@ -33,16 +32,7 @@ try:
         batch = Batch.get_by_id(sess, batch_id)
         file_item = inv.getFileItem("import_file")
 
-        f = StringIO.StringIO()
-        if sys.platform.startswith('java'):
-            from java.io import InputStreamReader
-            stream = InputStreamReader(file_item.getInputStream(), 'utf-8')
-            bt = stream.read()
-            while bt != -1:
-                f.write(chr(bt))
-                bt = stream.read()
-        else:
-            f.writelines(file_item.f.stream)
+        f = io.StringIO(str(file_item.f.stream.read(), 'utf8'))
         f.seek(0, os.SEEK_END)
         file_size = f.tell()
 
@@ -50,7 +40,7 @@ try:
         id = bill_import.start_bill_importer(
             sess, batch.id, file_item.getName(), file_size, f)
         inv.sendSeeOther("/reports/329/output/?importer_id=" + str(id))
-except UserException, e:
+except UserException as e:
     render(inv, template, make_fields(sess, batch, e), 400)
 finally:
     if sess is not None:

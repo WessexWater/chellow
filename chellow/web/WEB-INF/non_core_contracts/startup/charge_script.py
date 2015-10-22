@@ -69,7 +69,7 @@ def jython_start(ctx):
         nspace = LibDict()
         nspace['db_id'] = contract.id
         exec(contract.getChargeScript(), nspace)
-        for k, v in nspace.iteritems():
+        for k, v in nspace.items():
             if not hasattr(nspace, k):
                 setattr(nspace, k, v)
         ctx.setAttribute("net.sf.chellow." + contract_name, nspace)
@@ -89,7 +89,7 @@ def cpython_start():
             nspace = LibDict()
             nspace['db_id'] = contract.id
             exec(contract.charge_script, nspace)
-            for k, v in nspace.iteritems():
+            for k, v in nspace.items():
                 if not hasattr(nspace, k):
                     setattr(nspace, k, v)
             libs[contract_name] = nspace

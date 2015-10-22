@@ -62,7 +62,7 @@ def check_permissions(*args, **kwargs):
     user = None
     auth = request.authorization
     if auth is not None:
-        pword_digest = hashlib.md5(auth.password).hexdigest()
+        pword_digest = hashlib.md5(auth.password.encode()).hexdigest()
         user = User.query.filter(
             User.email_address == auth.username,
             User.password_digest == pword_digest).first()
@@ -96,8 +96,7 @@ def check_permissions(*args, **kwargs):
                     hhdc_contract_id = GET_int("hhdc-contract-id")
                     hhdc_contract = Contract.get_hhdc_by_id(hhdc_contract_id)
                     if hhdc_contract.party == party and (
-                            request.path + "?" + request.query_string) \
-                            .startswith(
+                            request.full_path).startswith(
                                 "/chellow/reports/37/output/?"
                                 "hhdc-contract-id=" + str(hhdc_contract.id)):
                         return
@@ -251,7 +250,7 @@ def add_report():
     db.session.add(report)
     try:
         db.session.commit()
-    except ProgrammingError, e:
+    except ProgrammingError as e:
         if 'duplicate key value violates unique constraint' in str(e):
             return Response(
                 "There's already a report with that name.", status=400)

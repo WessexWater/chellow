@@ -1,6 +1,5 @@
 from net.sf.chellow.monad import Monad
-import StringIO
-import sys
+import io
 import utils
 import templater
 import general_import
@@ -30,21 +29,11 @@ try:
         if not file_name.endswith('.csv'):
             raise UserException(
                 "The file name should have the extension .csv.")
-        f = StringIO.StringIO()
-        if sys.platform.startswith('java'):
-            from java.io import InputStreamReader
-            stream = InputStreamReader(file_item.getInputStream(), 'utf-8')
-            bt = stream.read()
-            while bt != -1:
-                f.write(chr(bt))
-                bt = stream.read()
-        else:
-            f.writelines(file_item.f.stream)
-
+        f = io.StringIO(str(file_item.f.stream.read(), 'utf-8'))
         f.seek(0)
         id = general_import.start_general_process(f)
         inv.sendSeeOther("/reports/295/output/?process_id=" + str(id))
-except UserException, e:
+except UserException as e:
     render(inv, template, make_fields(sess, e))
 finally:
     if sess is not None:

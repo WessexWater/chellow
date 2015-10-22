@@ -59,7 +59,7 @@ try:
             user.update(email_address, user_role, party)
             sess.commit()
             inv.sendSeeOther('/reports/255/output/?user_id=' + str(user.id))
-except UserException, e:
+except UserException as e:
     render(inv, template, user_fields(sess, user, str(e)))
 finally:
     if sess is not None:

@@ -51,7 +51,7 @@ try:
             sess.commit()
             inv.sendSeeOther(
                 "/reports/203/output/?hhdc_batch_id=" + str(bill.batch.id))
-except UserException, e:
+except UserException as e:
     render(inv, template, make_fields(sess, bill, e))
 finally:
     sess.close()

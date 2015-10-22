@@ -39,7 +39,7 @@ def make_create_future_func_monthly(contract_name, fnames):
                 new_result = defaultdict(
                     lambda: last_value, [
                         (k, v * multiplier + constant)
-                        for k, v in old_result.iteritems()])
+                        for k, v in old_result.items()])
 
                 def rate_func():
                     return new_result

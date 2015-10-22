@@ -35,7 +35,7 @@ try:
         sess.commit()
         inv.sendSeeOther("/reports/203/output/?hhdc_batch_id=" + str(batch.id))
 
-except UserException, e:
+except UserException as e:
     if contract is None:
         raise e
     else:

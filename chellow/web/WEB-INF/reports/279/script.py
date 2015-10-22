@@ -70,7 +70,7 @@ try:
             sess.commit()
             inv.sendSeeOther(
                 "/reports/115/output/?hhdc_contract_id=" + str(contract.id))
-except UserException, e:
+except UserException as e:
     if contract is None:
         raise e
     else:

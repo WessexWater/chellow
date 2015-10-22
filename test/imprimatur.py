@@ -2243,15 +2243,15 @@ def displaced_virtual_bill(supply_source):
     bsuos.hh(supply_source)
     system_price.hh(supply_source)
 
-    for rate_name, rate_set in supply_source.supplier_rate_sets.iteritems():
+    for rate_name, rate_set in supply_source.supplier_rate_sets.items():
         if len(rate_set) == 1:
             bill[rate_name] = rate_set.pop()
 
-    for k in bill.keys():
+    for k in list(bill.keys()):
         if k.startswith('duos-reactive-'):
             del bill[k]
 
-    bill['net-gbp'] = sum(v for k, v in bill.iteritems() if k[-4:] == '-gbp')
+    bill['net-gbp'] = sum(v for k, v in bill.items() if k[-4:] == '-gbp')
 
 
 def virtual_bill(supply_source):
@@ -2321,11 +2321,11 @@ def virtual_bill(supply_source):
         slot_keys = slots[slot_name]
         bill[slot_keys['gbp']] = bill[slot_keys['gsp-kwh']] * rates[slot_name]
 
-    for rate_name, rate_set in supply_source.supplier_rate_sets.iteritems():
+    for rate_name, rate_set in supply_source.supplier_rate_sets.items():
         if len(rate_set) == 1:
             bill[rate_name] = rate_set.pop()
 
-    bill['net-gbp'] = sum(v for k, v in bill.iteritems() if k[-4:] == '-gbp')
+    bill['net-gbp'] = sum(v for k, v in bill.items() if k[-4:] == '-gbp')
 """,
             'properties': "{}"},
         'status_code': 303},
@@ -2695,20 +2695,24 @@ def triad_estimates():
             '"imp-supplier-triad-all-estimates-gbp"'
             ',"imp-supplier-problem"',
             r'"22 4862 4512 332","","CH023","Treglisson","11640077",'
-            '"2009-03-01 00:00","2009-03-31 23:30","","10","","","10","","",'
-            '"10614.4095537","","148925.71","0.00456","679.1012376","5.89",'
-            '"230","31","0.0368","262.384","169.72","31","0.0368",'
-            '"193.616576","105487.44","770.058312","43438.27","112.939502",'
-            '"0.0033","0.0","","88","43401.25","46092.1275","288.794834064",'
-            '"54364.73","57735.34326","361.74656673","0","0","0.0","0","0",'
-            '"0.0","51159.73","54331.63326","340.420281354","0","0","0.0",'
-            '"159627.381103","","146.91999205","2009-01-06 17:00","288.82",'
-            '"A","1.07","309.0374","2008-12-01 17:00","384.44","A","1.07",'
-            '"411.3508","2008-12-15 17:00","185.36","A","1.07","198.3352",'
-            '"306.241133333","25.212997","7721.25677601","2007-12-17 17:00",'
-            '"0","X","1.07","0.0","2008-01-03 17:00","43.6","A","1.062",'
-            '"46.3032","2007-11-26 17:00","0","X","1.07","0.0","15.4344",'
-            '"25.212997","1","32.4289567414","12","-389.147480897",""',
+            r'"2009-03-01 00:00","2009-03-31 23:30","","10","","","10","","",'
+            r'"10614.409553652014","","148925.71000000002","0.00456",'
+            r'"679.1012375999993","5.89","230","31","0.0368","262.384",'
+            r'"169.72000000000003","31","0.0368","193.616576",'
+            r'"105487.43999999983","770.0583120000015","43438.26999999999",'
+            r'"112.93950200000005","0.0033","0.0","","88","43401.25000000001",'
+            r'"46092.12750000003","288.79483406400016","54364.72999999998",'
+            r'"57735.34326","361.746566729856","0","0","0.0","0","0","0.0",'
+            r'"51159.730000000054","54331.63325999999","340.4202813538559",'
+            r'"0","0","0.0","159627.38110258686","","146.91999204976776",'
+            r'"2009-01-06 17:00","288.82","A","1.07","309.0374",'
+            r'"2008-12-01 17:00","384.44","A","1.07","411.35080000000005",'
+            r'"2008-12-15 17:00","185.36","A","1.07","198.33520000000001",'
+            r'"306.2411333333334","25.212997","7721.256776009935",'
+            r'"2007-12-17 17:00","0","X","1.07","0.0","2008-01-03 17:00",'
+            r'"43.6","A","1.062","46.303200000000004","2007-11-26 17:00","0",'
+            r'"X","1.07","0.0","15.434400000000002","25.212997","1",'
+            r'"32.42895674140001","12","-389.14748089680006",""',
             r"text/csv",
             r"supply_virtual_bills_7.csv"]},
 
@@ -2718,12 +2722,12 @@ def triad_estimates():
         'status_code': 200,
         'regexes': [
             r'CI005,"Wheal Rodney","1",net,"","22 6158 2968 220",'
-            '"2010-01-07 17:00","0","X","1.058","0.0","2010-01-25 17:00","0",'
-            '"X","1.058","0.0","2009-12-15 17:00","0","X","1.058","0.0","0.0",'
-            '"25.631634","0.0","22 3479 7618 470","2010-01-07 17:00","0","X",'
-            '"1.058","0.0","2010-01-25 17:00","0","X","1.058","0.0",'
-            '"2009-12-15 17:00","0","X","1.058","0.0","0.0","25.631634",'
-            '"0.0"']},
+            r'"2010-01-07 17:00","0","X","1.058","0.0","2010-01-25 17:00","0",'
+            r'"X","1.058","0.0","2009-12-15 17:00","0","X","1.058","0.0",'
+            r'"0.0","25.631634000000002","0.0","22 3479 7618 470",'
+            r'"2010-01-07 17:00","0","X","1.058","0.0","2010-01-25 17:00","0",'
+            r'"X","1.058","0.0","2009-12-15 17:00","0","X","1.058","0.0",'
+            r'"0.0","25.631634000000002","0.0"']},
     {
         'name': "Check we can delete a rate script (when it's not the only "
         "one). Supplier contract 59.",
@@ -2818,9 +2822,10 @@ def triad_estimates():
         'status_code': 200,
         'regexes': [
             r'"7","1","net","","CH023","Treglisson","2009-03-01 00:00",'
-            '"2009-03-31 23:30","00","845","5","","0","hh",540,'
-            '22 4862 4512 332,230,Half-hourlies 2007,148925.71,0,158159.10402,'
-            '399.72,2009-03-13 08:00,None,0,,,,,0,0,,0,,None,1488']},
+            r'"2009-03-31 23:30","00","845","5","","0","hh",540,'
+            r'22 4862 4512 332,230,Half-hourlies 2007,148925.71000000002,0,'
+            r'158159.10402,399.72,2009-03-13 08:00,None,0,,,,,0,0,,0,,None,'
+            r'1488']},
 
     # Insert rate script
     {
@@ -2924,9 +2929,9 @@ def triad_estimates():
             "Metered Displaced GBP,Metered Exported GBP,Metered Used GBP,"
             "Metered 3rd Party Import GBP,Billed Imported kWh,"
             "Billed Imported GBP,Metering Type,Problem",
-            r'"CI017","Roselands","","net","","2009-04-30 23:30","0","0","0",'
-            '"0","0","0","0","0","2821.89","0","0","2821.89","0","0","0","hh",'
-            '"'
+            r'"CI017","Roselands","","net","","2009-04-30 23:30","0.0","0",'
+            r'"0","0.0","0","0","0","0","2821.89","0","0","2821.89","0","0",'
+            r'"0","hh","'
             "Can't find the virtual_bill function in the supplier "
             'contract. "']},
 
@@ -3790,11 +3795,11 @@ def displaced_virtual_bill(supply_source):
         slot_keys = slots[slot_name]
         bill[slot_keys['gbp']] = bill[slot_keys['gsp-kwh']] * rates[slot_name]
 
-    for rate_name, rate_set in supply_source.supplier_rate_sets.iteritems():
+    for rate_name, rate_set in supply_source.supplier_rate_sets.items():
         if len(rate_set) == 1:
             bill[rate_name] = rate_set.pop()
 
-    bill['net-gbp'] = sum(v for k, v in bill.iteritems() if k[-4:] == '-gbp')
+    bill['net-gbp'] = sum(v for k, v in bill.items() if k[-4:] == '-gbp')
 
 
 def virtual_bill(supply_source):
@@ -3844,11 +3849,11 @@ def virtual_bill(supply_source):
     bill['data-collection-gbp'] += 5.89
     bill['settlement-gbp'] += 88
 
-    for rate_name, rate_set in supply_source.supplier_rate_sets.iteritems():
+    for rate_name, rate_set in supply_source.supplier_rate_sets.items():
         if len(rate_set) == 1:
             bill[rate_name] = rate_set.pop()
 
-    bill['net-gbp'] = sum(v for k, v in bill.iteritems() if k[-4:] == '-gbp')
+    bill['net-gbp'] = sum(v for k, v in bill.items() if k[-4:] == '-gbp')
 """,
             'properties': "{}"},
         'status_code': 303,
@@ -3870,7 +3875,7 @@ def virtual_bill(supply_source):
     bill = supply_source.supplier_bill
     sum_msp_kwh = sum(h['msp-kwh'] for h in supply_source.hh_data)
 
-    for rate_name, rate_set in supply_source.supplier_rate_sets.iteritems():
+    for rate_name, rate_set in supply_source.supplier_rate_sets.items():
         if len(rate_set) == 1:
             bill[rate_name] = rate_set.pop()
 
@@ -4099,18 +4104,17 @@ def virtual_bill(supply_source):
             '"imp-supplier-triad-all-estimates-gbp",'
             '"imp-supplier-problem"',
             r'"20 6354 2983 571","","CI004","Lower Treave","141 5532",'
-            '"2009-03-01 00:00","2009-03-31 23:30","","10","","","7","","",'
-            '"2274.51858148","","","0.00456","","5.89","2300","","",'
-            '"2165.0","0","","","","0","0.0","86.9732","0.102628376","","",'
-            '"14.91","88","86.9732","93.49619","0.585809728064","0","0.0",'
-            '"0.0",'
-            '"0","0","0.0","0","0","0.0","0","0.0","0.0","0","0","0.0",'
-            '"94.2952925863","","0.0301433761811",'
-            '"2009-01-06 17:00","0","X","1.095","0.0","2008-12-01 17:00","0",'
-            '"X","1.095","0.0","2008-12-15 17:00","0","X","1.095","0.0",'
-            '"0.0","22.19481","0.0","2007-12-17 17:00","0","X","1.095","0.0",'
-            '"2008-01-03 17:00","0","X","1.079","0.0","2007-11-26 17:00","0",'
-            '"X","1.095","0.0","0.0","22.19481","1","0.0","12","-0.0",""']},
+            r'"2009-03-01 00:00","2009-03-31 23:30","","10","","","7","","",'
+            r'"2274.5185814802453","","","0.00456","","5.89","2300","","",'
+            r'"2165.0","0","","","","0","0.0","86.9732","0.10262837600000001",'
+            r'"","","14.91","88","86.9732","93.49619","0.585809728064","0",'
+            r'"0.0","0.0","0","0","0.0","0","0","0.0","0","0.0","0.0","0","0",'
+            r'"0.0","94.295292586311","","0.030143376181066044",'
+            r'"2009-01-06 17:00","0","X","1.095","0.0","2008-12-01 17:00","0",'
+            r'"X","1.095","0.0","2008-12-15 17:00","0","X","1.095","0.0",'
+            r'"0.0","22.19481","0.0","2007-12-17 17:00","0","X","1.095","0.0",'
+            r'"2008-01-03 17:00","0","X","1.079","0.0","2007-11-26 17:00","0",'
+            r'"X","1.095","0.0","0.0","22.19481","1","0.0","12","-0.0",""']},
 
     # Check it works when the DNO rate script contains a double LLFC 453,470
     {
@@ -4162,7 +4166,7 @@ def virtual_bill(supply_source):
     bill['net-gbp'] =  0
     bill['sum-msp-kwh'] = 0
 
-    for rate_name, rate_set in supply_source.supplier_rate_sets.iteritems():
+    for rate_name, rate_set in supply_source.supplier_rate_sets.items():
         if len(rate_set) == 1:
             bill[rate_name] = rate_set.pop()
     for h in supply_source.hh_data:
@@ -4292,9 +4296,10 @@ def virtual_bill(supply_source):
             "site-code,site-name,covered-from,covered-to,covered-bills,"
             "covered-net-gbp,virtual-net-gbp,difference-net-gbp",
             r'"07-008","3423760005","N","253","36.16","1.8",'
-            '"2010-01-19 00:00","2010-04-20 23:30","22 1065 3921 534","CI017",'
-            '"Roselands","2010-01-19 00:00","2010-04-20 23:30","10","36.16",'
-            '"25.3","10.86","253.0","253.0","",""'],
+            r'"2010-01-19 00:00","2010-04-20 23:30","22 1065 3921 534",'
+            r'"CI017","Roselands","2010-01-19 00:00","2010-04-20 23:30","10",'
+            r'"36.16","25.29999999999758","10.860000000002415","253.0",'
+            r'"252.99999999998357","",""'],
         'status_code': 200},
 
     # Create a new site
@@ -4525,7 +4530,7 @@ def virtual_bill(supply_source):
             '"imp-supplier-sum-msp-kwh","imp-supplier-problem"',
             r'"22 9974 3438 105","","CI005","Wheal Rodney","SA341665",'
             '"2010-04-01 00:00","2010-04-13 23:30","","0","","","","","",'
-            '"0.0","0.0","0.0","0",""']},
+            '"0.0","0.0","0.0","0.0",""']},
     {
         'name': "NHH CSV import",
         'path': '/chellow/reports/287/output/',
@@ -5003,8 +5008,8 @@ def virtual_bill(supply_source):
         'CI017_1_to_2010_7.csv',
         'regexes': [
             r'"CI017","Roselands","","3rd-party,net","","2010-07-31 23:30",'
-            '"0","0","0","0","0","0","0","0","1633.3414","0","0","1653.3414"'
-            ',"20.0","0","0","hh",""'],
+            r'"0.0","0","0","0.0","0","0","0.0","0","1633.3413999999993","0",'
+            r'"0","1653.3413999999993","20.0","0","0","hh",""'],
         'status_code': 200},
 
     {
@@ -5049,11 +5054,11 @@ def virtual_bill(supply_source):
             r'office:value-type="date" table:style-name="cDateISO"/>\s*'
             r'<table:table-cell office:value="0" '
             r'office:value-type="float" table:number-columns-repeated="9"/>\s*'
-            r'<table:table-cell office:value="1613.3414" '
+            r'<table:table-cell office:value="1613.3413999999993" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="0" '
             r'office:value-type="float" table:number-columns-repeated="6"/>\s*'
-            r'<table:table-cell office:value="1613.3414" '
+            r'<table:table-cell office:value="1613.3413999999993" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="0" '
             r'office:value-type="float" table:number-columns-repeated="3"/>\s*'
@@ -5068,7 +5073,7 @@ def virtual_bill(supply_source):
             r'<table:table-cell office:string-value="" '
             r'office:value-type="string"/>\s*'
             r'<table:table-cell/>\s*'
-            r'<table:table-cell office:value="1593.3414" '
+            r'<table:table-cell office:value="1593.3413999999993" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell table:number-columns-repeated="2"/>\s*'
             r'<table:table-cell office:value="0.0047" '
@@ -5082,7 +5087,7 @@ def virtual_bill(supply_source):
             r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="0.021" '
             r'office:value-type="float"/>\s*'
-            r'<table:table-cell office:value="1497.3" '
+            r'<table:table-cell office:value="1497.2999999999993" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="0" '
             r'office:value-type="float"/>\s*'
@@ -5186,7 +5191,7 @@ def virtual_bill(supply_source):
             r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="0.0694" '
             r'office:value-type="float"/>\s*'
-            r'<table:table-cell office:value="2.1514" '
+            r'<table:table-cell office:value="2.151399999999999" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell table:number-columns-repeated="10"/>\s*'
             r'</table:table-row>\s*'
@@ -5214,8 +5219,14 @@ def virtual_bill(supply_source):
             r'<table:table-cell '
             r'office:date-value="2010-07-31T23:30:00" '
             r'office:value-type="date" table:style-name="cDateISO"/>\s*'
+            r'<table:table-cell office:value="0.0" '
+            r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="0" '
-            r'office:value-type="float" table:number-columns-repeated="9"/>\s*'
+            r'office:value-type="float" table:number-columns-repeated="6"/>\s*'
+            r'<table:table-cell office:value="0.0" '
+            r'office:value-type="float"/>\s*'
+            r'<table:table-cell office:value="0" '
+            r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="20.0" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="0" '
@@ -5241,7 +5252,7 @@ def virtual_bill(supply_source):
             r'<table:table-cell office:string-value="" '
             r'office:value-type="string"/>\s*'
             r'<table:table-cell table:number-columns-repeated="20"/>\s*'
-            r'<table:table-cell office:value="0" '
+            r'<table:table-cell office:value="0.0" '
             r'office:value-type="float"/>\s*'
             r'</table:table-row>\s*'
             r'<table:table-row>\s*'
@@ -5270,7 +5281,14 @@ def virtual_bill(supply_source):
             r'office:value-type="date" table:style-name="cDateISO"/>\s*'
             r'<table:table-cell office:value="0" '
             r'office:value-type="float" '
-            r'table:number-columns-repeated="13"/>\s*'
+            r'table:number-columns-repeated="4"/>\s*'
+            r'<table:table-cell office:value="0.0" '
+            r'office:value-type="float"/>'
+            r'<table:table-cell office:value="0" office:value-type="float" '
+            r'table:number-columns-repeated="2"/>'
+            r'<table:table-cell office:value="0.0" office:value-type="float"/>'
+            r'<table:table-cell office:value="0" office:value-type="float" '
+            r'table:number-columns-repeated="5"/>'
             r'<table:table-cell office:value="20.0" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="0" '
@@ -5296,7 +5314,7 @@ def virtual_bill(supply_source):
             r'<table:table-cell office:string-value="" '
             r'office:value-type="string"/>\s*'
             r'<table:table-cell table:number-columns-repeated="20"/>\s*'
-            r'<table:table-cell office:value="0" '
+            r'<table:table-cell office:value="0.0" '
             r'office:value-type="float"/>\s*'
             r'</table:table-row>\s*'
             r'</table:table>'],
@@ -5751,7 +5769,7 @@ def virtual_bill(supply_source):
     {
         'name': 'System Price',
         'path': '/chellow/reports/381/output/',
-        'tries': {'max': 20, 'period': 1},
+        'tries': {'max': 40, 'period': 1},
         'regexes': [
             r"Updating rate script starting at 2005-01-01 00:00\."],
         'status_code': 200},
@@ -5766,7 +5784,7 @@ def virtual_bill(supply_source):
     {
         'name': 'System Price',
         'path': '/chellow/reports/381/output/',
-        'tries': {'max': 20, 'period': 1},
+        'tries': {'max': 40, 'period': 1},
         'regexes': [
             r"Updating rate script starting at 2005-02-01 00:00\."],
         'status_code': 200},
@@ -5780,7 +5798,7 @@ def virtual_bill(supply_source):
     {
         'name': 'System Price',
         'path': '/chellow/reports/381/output/',
-        'tries': {'max': 20, 'period': 1},
+        'tries': {'max': 40, 'period': 1},
         'regexes': [
             r"Updating rate script starting at 2005-03-01 00:00\."],
         'status_code': 200},
@@ -5794,7 +5812,7 @@ def virtual_bill(supply_source):
     {
         'name': 'System Price',
         'path': '/chellow/reports/381/output/',
-        'tries': {'max': 20, 'period': 1},
+        'tries': {'max': 40, 'period': 1},
         'regexes': [
             r"Updating rate script starting at 2005-04-01 00:00\."],
         'status_code': 200},
@@ -5894,7 +5912,7 @@ def virtual_bill(supply_source):
             '"imp-supplier-sum-msp-kwh","imp-supplier-problem"',
             r'"22 0195 4836 192","","CI004","Lower Treave","SA342376",'
             '"2011-05-01 00:00","2011-05-31 23:30","","10","","","7","","",'
-            '"0.0","0.0","0.0","25.8191780822",""'],
+            '"0.0","0.0","0.0","25.819178082191478",""'],
         'status_code': 200},
 
     # Parties
@@ -5948,7 +5966,7 @@ def virtual_bill(supply_source):
             "metered-export-estimated-kwh,billed-export-kwh,"
             "billed-export-net-gbp,problem,timestamp",
             r'10,"2","net","","2011-01-31 23:30","03","I02D89150","CI017",'
-            '"Roselands","nhh","22 1065 3921 534","0","10.0","0","150.0",'
+            '"Roselands","nhh","22 1065 3921 534","0.0","10.0","0","150.0",'
             '"98.17","None","0","0","0","0",""']},
     {
         'name': "Try monthly supply duration with a half-hourly.",
@@ -5976,8 +5994,8 @@ def virtual_bill(supply_source):
             "metered-export-estimated-kwh,billed-export-kwh,"
             "billed-export-net-gbp,problem,timestamp",
             r'4,"1","net","","2010-05-31 23:30","00","","CI005",'
-            '"Wheal Rodney","hh","22 6158 2968 220","0","189.2268","0","0",'
-            '"0","22 3479 7618 470","0","0","0","0",""']},
+            r'"Wheal Rodney","hh","22 6158 2968 220","0","189.22680000000003",'
+            r'"0","0","0","22 3479 7618 470","0","0","0","0",""']},
     {
         'name': "Check supplies monthly duration page.",
         'path': '/chellow/reports/155/output/',
@@ -6170,12 +6188,12 @@ def virtual_bill(supply_source):
             '"imp-supplier-triad-all-estimates-gbp",'
             '"imp-supplier-problem"',
             r'"22 0883 6932 301","","CI005","Wheal Rodney","4341",'
-            '"2013-04-01 00:00","2013-04-30 23:30","","10","","","0","","",'
-            '"369.605","","","0.00525288","","5.89","350","30",'
-            '"0.026","273.0","0","31","0.026","0.0","0","0.00161","0.0","","",'
-            '"0.0","0","0.2441","0.0","0.0","0.00382","0.0","30","0.0905",'
-            '"2.715","88","0",'
-            '"0.0","0.0001897","0.0","0.0","","0.0","0",'
+            r'"2013-04-01 00:00","2013-04-30 23:30","","10","","","0","","",'
+            r'"369.60499999999996","","","0.00525288","","5.89","350","30",'
+            r'"0.026","272.99999999999994","0","31","0.026","0.0","0",'
+            r'"0.00161","0.0","","","0.0","0","0.2441","0.0","0.0","0.00382",'
+            r'"0.0","30","0.0905","2.7150000000000003","88","0",'
+            r'"0.0","0.0001897","0.0","0.0","","0.0","0",'
             '"0.0","0.0","0","0.0","0.0","0","0.0","0.0","","","","","","","",'
             '"","","0.0",'
             '"","0.0","","","","","","","","","","","","","","","",'
@@ -6324,9 +6342,9 @@ def virtual_bill(supply_source):
             '"10","","","0","","","334.3","","","0.0047","","5.89","",'
             '"","0.0457","105.11","","","","","0","0.0","0","0.0","0.0012",'
             '"0.0",'
-            '"135.3","88","0","0.0","0.0","0","0.0","0.0","0","0.0","0.0","0",'
-            '"0",'
-            '"0.0","0","0","0.0","0","0","0.0","0.0","","0.0","","",'
+            r'"135.30000000000004","88","0","0.0","0.0","0","0.0","0.0","0",'
+            r'"0.0","0.0","0","0",'
+            r'"0.0","0","0","0.0","0","0","0.0","0.0","","0.0","","",'
             '"","","","","","","","","","","","","","","","",'
             '"2009-01-06 17:00","0","X","1.037","0.0","2008-12-01 17:00","0",'
             '"X","1.037","0.0","2008-12-15 17:00","0","X","1.037","0.0","0.0",'
@@ -6403,13 +6421,13 @@ def virtual_bill(supply_source):
         'status_code': 200,
         'regexes': [
             r'"22 6354 2983 570","CI017","Roselands","141 5532",'
-            r'"2013-10-31 00:00","2013-10-31 23:30","153.7805","1.011286","",'
-            r'"0.00525288","","5.89","2300","1","0.026","59.8","0","31",'
-            r'"0.026","0.0","","","","","0.00382","0.0","","88","0","0.0",'
-            r'"0.0","0","0.0","0.0","0","0.0","0.0","0","0","0.0","0","0",'
-            r'"0.0","0","0","0.0","0.0","","0.0","","","","","","","","","",'
-            r'"","","","","","","","","","2012-11-29 17:00","0","X","1.087",'
-            r'"0.0","2012-12-12 17:00","0","X","1.087","0.0",'
+            r'"2013-10-31 00:00","2013-10-31 23:30","153.78050000000002",'
+            r'"1.011286","","0.00525288","","5.89","2300","1","0.026","59.8",'
+            r'"0","31","0.026","0.0","","","","","0.00382","0.0","","88","0",'
+            r'"0.0","0.0","0","0.0","0.0","0","0.0","0.0","0","0","0.0","0",'
+            r'"0","0.0","0","0","0.0","0.0","","0.0","","","","","","","","",'
+            r'"","","","","","","","","","","2012-11-29 17:00","0","X",'
+            r'"1.087","0.0","2012-12-12 17:00","0","X","1.087","0.0",'
             r'"2013-01-16 17:00","0","X","1.087","0.0","0.0","33.551731","1",'
             r'"0.0","","","","duos-amber-gbp","0.0","duos-amber-kwh","0",'
             r'"duos-amber-rate","0.00287","duos-fixed-days","1",'
@@ -6620,7 +6638,7 @@ def virtual_bill(supply_source):
             '"imp-supplier-sum-msp-kwh","imp-supplier-problem"',
             r'"22 1065 3921 534","","CI017","Roselands","SA342376",'
             '"2010-01-01 00:00","2010-01-03 23:30","","0","","","","","",'
-            '"0.0","0.0","0.0","0",""', ], },
+            '"0.0","0.0","0.0","0.0",""', ], },
     {
         'name': "A bill check with multiple covered bills",
         'path': '/chellow/reports/111/output/?bill_id=8',
@@ -6638,26 +6656,26 @@ def virtual_bill(supply_source):
             r'"06-004","00101","N","244","3810.08","355.03",'
             '"2011-05-01 00:00","2011-06-30 00:00","22 6354 2983 570","CI017",'
             '"Roselands","2011-05-01 00:00","2011-06-30 00:00","9;8",'
-            '"4701.16","3010.226","1690.934","","","","","11.4",'
-            '"0.00485","","","","","5.89","","","2300","","60","","0.0211",'
-            '"","2911.8","","","0","","31","","0.0211","","0.0","","","","",'
-            '"","","","","","","","","0.00353","","0.0","","","","","","88",'
-            '"","","0","","0.0","","0.0","","","0","","0.0","","0.0","","",'
-            '"0",'
-            '"","0.0","","0.0","","","0","","0","","0.0","","","0","","0","",'
-            '"0.0","","","0","","0","","0.0","","","0.0","","","",'
-            '"0.0","","","","","","","","","","","","","","","","","","","",'
-            '"","","","","","","","","","","","","","","","","","","","",'
-            '"2010-12-07 17:00","","0","","X","","1.087","","0.0","",'
-            '"2010-12-20 17:00","","0","","X","","1.087","","0.0","",'
-            '"2011-01-06 17:00","","0","","X","","1.087","","0.0","","0.0","",'
-            '"28.408897","","1","","0.0","","","","","","","","",'
+            r'"4701.16","3010.2260000000024","1690.9339999999975","","","","",'
+            r'"11.4","0.00485","","","","","5.89","","","2300","","60","",'
+            r'"0.0211","","2911.8000000000025","","","0","","31","","0.0211",'
+            r'"","0.0","","","","","","","","","","","","","0.00353","","0.0",'
+            r'"","","","","","88","","","0","","0.0","","0.0","","","0","",'
+            r'"0.0","","0.0","","","0","","0.0","","0.0","","","0","","0","",'
+            r'"0.0","","","0","","0","","0.0","","","0","","0","","0.0","","",'
+            r'"0.0","","","","0.0","","","","","","","","","","","","","","",'
+            r'"","","","","","","","","","","","","","","","","","","","","",'
+            r'"","","","","2010-12-07 17:00","","0","","X","","1.087","",'
+            r'"0.0","","2010-12-20 17:00","","0","","X","","1.087","","0.0",'
+            r'"","2011-01-06 17:00","","0","","X","","1.087","","0.0","",'
+            r'"0.0","","28.408897","","1","","0.0","","","","","","","","",'
             '"virtual-duos-amber-gbp","0.0","","","virtual-duos-amber-kwh",'
-            '"0","","","virtual-duos-amber-rate","0.00205","","",',
+            '"0","","","virtual-duos-amber-rate","0.00205","","",'
             '"virtual-duos-fixed-days","60","","","virtual-duos-fixed-gbp",'
-            '"4.536","","","virtual-duos-fixed-rate","0.0756","","",'
-            '"virtual-duos-green-gbp","0.0","","","virtual-duos-green-kwh",'
-            '"0","","","virtual-duos-green-rate","0.00138","",""'],
+            r'"4.536000000000001","","","virtual-duos-fixed-rate","0.0756","",'
+            r'"","virtual-duos-green-gbp","0.0","","",'
+            r'"virtual-duos-green-kwh","0","","","virtual-duos-green-rate",'
+            r'"0.00138","",""'],
         'status_code': 200},
     {
         'name': "Contract virtual bills",
@@ -7166,8 +7184,9 @@ def virtual_bill(supply_source):
         'regexes': [
             r'"07-002","3423760010","N","10","9.07","0.21","2012-01-05 00:00",'
             '"2012-01-10 23:30","22 1065 3921 534","CI017","Roselands",'
-            '"2012-01-05 00:00","2012-01-10 23:30","21","9.07","1.0","8.07",'
-            '"10.0","10.0","",']},
+            r'"2012-01-05 00:00","2012-01-10 23:30","21","9.07",'
+            r'"0.9999999999999986","8.070000000000002","10.0",'
+            r'"9.999999999999998","",']},
     {
         'name': "Monthly supplies duration with export hh data",
         'path': '/chellow/reports/177/output/?supply_id=1&months=1&'
@@ -7488,8 +7507,8 @@ def virtual_bill(supply_source):
             r'"06-002","23618619","N","0","49119","8596","2007-06-30 00:00",'
             '"2007-07-31 00:00","22 9974 3438 105","CI005","Wheal Rodney",'
             '"2007-06-30 00:00","2007-07-31 00:00","6","49119.0","0.0",'
-            '"49119.0","8596.0","0.0","8596.0","","0.0","","0.0","4.765","",'
-            '""']},
+            '"49119.0","8596.0","0.0","8596.0","","0.0","","0.0",'
+            r'"4.765000000000077","",""']},
     {
         'name': "NHH dumb bill with prev and pres dates in different eras",
         'path': '/chellow/reports/307/output/',
@@ -7539,9 +7558,10 @@ def virtual_bill(supply_source):
         'status_code': 200,
         'regexes': [
             r'"07-002","3423760005","N","150","98.17","15.01",'
-            '"2011-01-05 00:00","2011-01-10 23:30","22 1065 3921 534",'
-            '"CI017","Roselands","2011-01-05 00:00","2011-01-10 23:30","13",'
-            '"98.17","164.1","-65.93","150.0","1641.0","",""']},
+            r'"2011-01-05 00:00","2011-01-10 23:30","22 1065 3921 534",'
+            r'"CI017","Roselands","2011-01-05 00:00","2011-01-10 23:30","13",'
+            r'"98.17","164.0999999999997","-65.92999999999971","150.0",'
+            r'"1641.0","",""']},
 
     # Update register read to make the TPR a teleswitch one
     {
@@ -7644,9 +7664,9 @@ def virtual_bill(supply_source):
         'status_code': 200,
         'regexes': [
             r'"10","22 1065 3921 534","CI017","Roselands","2009-04-01 00:00",'
-            '"2010-03-31 23:30",".*?","0","0","277.0","0","0","0","365.0","0",'
-            '"277.0","365.0","Actual","0","0","2164.96389892","0","0","0",'
-            '"2164.96389892"']},
+            r'"2010-03-31 23:30",".*?","0","0","277.0","0","0","0","365.0",'
+            r'"0","277.0","365.0","Actual","0","0","2164.9638989169675","0",'
+            r'"0","0","2164.9638989169675"']},
 
     # Add a scenario
     {
@@ -7850,13 +7870,13 @@ def virtual_bill(supply_source):
             r'office:value-type="date" table:style-name="cDateISO"/>\s*'
             r'<table:table-cell office:value="0" '
             r'office:value-type="float" table:number-columns-repeated="9"/>\s*'
-            r'<table:table-cell office:value="189.2268" '
+            r'<table:table-cell office:value="189.22680000000003" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="112.0808" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="0" '
             r'office:value-type="float" table:number-columns-repeated="5"/>\s*'
-            r'<table:table-cell office:value="189.2268" '
+            r'<table:table-cell office:value="189.22680000000003" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="0" '
             r'office:value-type="float" table:number-columns-repeated="3"/>\s*'
@@ -7871,7 +7891,7 @@ def virtual_bill(supply_source):
             r'<table:table-cell office:string-value="" '
             r'office:value-type="string"/>\s*'
             r'<table:table-cell/>\s*'
-            r'<table:table-cell office:value="179.2268" '
+            r'<table:table-cell office:value="179.22680000000003" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell table:number-columns-repeated="2"/>\s*'
             r'<table:table-cell office:value="0.0047" '
@@ -7982,7 +8002,7 @@ def virtual_bill(supply_source):
             r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="0.6338" '
             r'office:value-type="float"/>\s*'
-            r'<table:table-cell office:value="19.6478" '
+            r'<table:table-cell office:value="19.647800000000014" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="0" '
             r'office:value-type="float"/>\s*'
@@ -8186,11 +8206,11 @@ def virtual_bill(supply_source):
             r'<table:table-cell '
             r'office:date-value="2011-01-31T23:30:00" '
             r'office:value-type="date" table:style-name="cDateISO"/>\s*'
-            r'<table:table-cell office:value="12.9095890411" '
+            r'<table:table-cell office:value="12.909589041095739" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="0" '
             r'office:value-type="float" table:number-columns-repeated="6"/>\s*'
-            r'<table:table-cell office:value="12.9095890411" '
+            r'<table:table-cell office:value="12.909589041095739" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="0" '
             r'office:value-type="float"/>\s*'
@@ -8221,7 +8241,7 @@ def virtual_bill(supply_source):
             r'<table:table-cell table:number-columns-repeated="18"/>\s*'
             r'<table:table-cell office:value="0.0" '
             r'office:value-type="float" table:number-columns-repeated="2"/>\s*'
-            r'<table:table-cell office:value="12.9095890411" '
+            r'<table:table-cell office:value="12.909589041095739" '
             r'office:value-type="float"/>\s*'
             r'</table:table-row>']},
 
@@ -8340,12 +8360,12 @@ def virtual_bill(supply_source):
             r'<table:table-cell office:value="0" '
             r'office:value-type="float" table:number-columns-repeated="9"/>\s*'
             r'<table:table-cell '
-            r'office:value="216.5347" office:value-type="float"/>\s*'
+            r'office:value="216.53470000000002" office:value-type="float"/>\s*'
             r'<table:table-cell office:value="103.8937" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="0" '
             r'office:value-type="float" table:number-columns-repeated="5"/>\s*'
-            r'<table:table-cell office:value="216.5347" '
+            r'<table:table-cell office:value="216.53470000000002" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="0" '
             r'office:value-type="float" table:number-columns-repeated="3"/>\s*'
@@ -8360,7 +8380,7 @@ def virtual_bill(supply_source):
             r'<table:table-cell office:string-value="" '
             r'office:value-type="string"/>\s*'
             r'<table:table-cell/>\s*'
-            r'<table:table-cell office:value="206.5347" '
+            r'<table:table-cell office:value="206.53470000000002" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell table:number-columns-repeated="2"/>\s*'
             r'<table:table-cell office:value="0.00525288" '
@@ -8471,7 +8491,7 @@ def virtual_bill(supply_source):
             r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="0.6567" '
             r'office:value-type="float"/>\s*'
-            r'<table:table-cell office:value="20.3577" '
+            r'<table:table-cell office:value="20.357700000000012" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="0" '
             r'office:value-type="float"/>\s*'
@@ -8821,7 +8841,7 @@ def virtual_bill(supply_source):
     bill = supply_source.supplier_bill
     bill['consumption_info'] = supply_source.consumption_info
     duos.duos_vb(supply_source)
-    for rate_name, rate_set in supply_source.supplier_rate_sets.iteritems():
+    for rate_name, rate_set in supply_source.supplier_rate_sets.items():
         if len(rate_set) == 1:
             bill[rate_name] = rate_set.pop()
     bill['net-gbp'] = sum_msp_kwh * 0.1
@@ -8914,11 +8934,11 @@ def virtual_bill(supply_source):
             r'<table:table-cell '
             r'office:date-value="2016-02-29T23:30:00" '
             r'office:value-type="date" table:style-name="cDateISO"/>\s*'
-            r'<table:table-cell office:value="23562.05" '
+            r'<table:table-cell office:value="23562.049999999996" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="0" '
             r'office:value-type="float" table:number-columns-repeated="6"/>\s*'
-            r'<table:table-cell office:value="23562.05" '
+            r'<table:table-cell office:value="23562.049999999996" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="0" '
             r'office:value-type="float"/>\s*'
@@ -8949,7 +8969,7 @@ def virtual_bill(supply_source):
             r'<table:table-cell table:number-columns-repeated="18"/>\s*'
             r'<table:table-cell office:value="0.0" '
             r'office:value-type="float" table:number-columns-repeated="2"/>\s*'
-            r'<table:table-cell office:value="23562.05" '
+            r'<table:table-cell office:value="23562.049999999996" '
             r'office:value-type="float"/>\s*'
             r'</table:table-row>']},
 
@@ -8982,13 +9002,13 @@ def virtual_bill(supply_source):
         # Check the HH data is there
         'regexes': [
             r'NA,2008-07-06,0\.262',
-            r"\A\('content-disposition', 'attachment; "
+            r"\A\('Content-Disposition', 'attachment; "
             r'filename="038_FINISHED_watkinsexamplecom_supplies_hh_data_'
             r'200808012330_filter.csv"'
             r"'\)\s*"
-            r"\('content-type', 'text/csv; charset=utf-8'\)\s*"
-            r"\('date', '[^']*'\)\s*"
-            r"\('server', '[^']*'\)\s*"
+            r"\('Content-Type', 'text/csv; charset=utf-8'\)\s*"
+            r"\('Date', '[^']*'\)\s*"
+            r"\('Server', '[^']*'\)\s*"
             r'MPAN Core,Date,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,'
             r'19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,'
             r'40,41,42,43,44,45,46,47\s*'
@@ -9109,8 +9129,8 @@ def virtual_bill(supply_source):
         'regexes': [
             r'"7","22 4862 4512 332","CH023","Treglisson","2008-04-01 00:00",'
             r'"2009-03-31 23:30","","0","127.0","0","0","0","365.0","0","0",'
-            r'"127.0","365.0","Estimated","0","612952.94","0","0","0",'
-            r'"1148683.46236","1761636.40236",""']},
+            r'"127.0","365.0","Estimated","0","612952.9400000019","0","0","0",'
+            r'"1148683.4623622093","1761636.4023622111",""']},
 
     {
         'name': "Contract level MOP virtual bills",
@@ -9150,16 +9170,16 @@ def virtual_bill(supply_source):
         'regexes': [
             r'"22 0883 6932 301","","CI005","Wheal Rodney","4341",'
             r'"2014-06-04 00:00","2014-06-04 23:30","","0","","","0","","",'
-            r'"116.174010696","","","","","5.89","350","1","0.0269","9.415",'
-            r'"","","","","0","0.00147","0.0","","","0.0","0","0.25405",'
-            r'"12.423045","0.0","0.00399","0.0","1","0.0878","0.0878","88",'
-            r'"48.9","52.5186","0.00021361","0.011218498146","52.9779381793",'
-            r'"","-0.0234806352643","0","0.0","0.0","0","0.0","0.0","48.9",'
-            r'"52.5186","0.32906054016","","","","","","","","","",'
-            r'"52.9779381793","","0.0413672932479","","","","","","","","","",'
+            r'"116.17401069628968","","","","","5.89","350","1","0.0269",'
+            r'"9.415000000000001","","","","","0","0.00147","0.0","","","0.0",'
+            r'"0","0.25405","12.423045","0.0","0.00399","0.0","1","0.0878",'
+            r'"0.0878","88","48.9","52.5186","0.00021361","0.011218498146",'
+            r'"52.97793817932","","-0.023480635264263427","0","0.0","0.0","0",'
+            r'"0.0","0.0","48.9","52.5186","0.32906054015999997","","","","",'
+            r'"","","","","","52.97793817932","","0.04136729324794023","","",'
             r'"","","","","","","","","","","","","","","","","","","","","",'
-            r'"","","","","","","","","","","duos-amber-rate","0.00344",'
-            r'"duos-red-kwh","48.9"']},
+            r'"","","","","","","","","","","","","","","","","",'
+            r'"duos-amber-rate","0.00344","duos-red-kwh","48.9"']},
     {
         'name': "Bank holiday day change without restart. Edit the rate "
         "script",
@@ -9203,16 +9223,16 @@ def virtual_bill(supply_source):
         'regexes': [
             r'"22 0883 6932 301","","CI005","Wheal Rodney","4341",'
             r'"2014-06-04 00:00","2014-06-04 23:30","","0","","","0","","",'
-            r'"116.174010696","","","","","5.89","350","1","0.0269","9.415",'
-            r'"","","","","0","0.00147","0.0","","","0.0","0","0.25405",'
-            r'"12.423045","0.0","0.00399","0.0","1","0.0878","0.0878","88",'
-            r'"48.9","52.5186","0.00021361","0.011218498146","52.9779381793",'
-            r'"","-0.0234806352643","0","0.0","0.0","48.9","52.5186",'
-            r'"0.32906054016","","","","","","","","","","","","",'
-            r'"52.9779381793","","0.0413672932479","","","","","","","","","",'
+            r'"116.17401069628968","","","","","5.89","350","1","0.0269",'
+            r'"9.415000000000001","","","","","0","0.00147","0.0","","","0.0",'
+            r'"0","0.25405","12.423045","0.0","0.00399","0.0","1","0.0878",'
+            r'"0.0878","88","48.9","52.5186","0.00021361","0.011218498146",'
+            r'"52.97793817932","","-0.023480635264263427","0","0.0","0.0",'
+            r'"48.9","52.5186","0.32906054015999997","","","","","","","","",'
+            r'"","","","","52.97793817932","","0.04136729324794023","","","",'
             r'"","","","","","","","","","","","","","","","","","","","","",'
-            r'"","","","","","","","","","","duos-amber-rate","0.00344",'
-            r'"duos-red-kwh","48.9"']},
+            r'"","","","","","","","","","","","","","","","",'
+            r'"duos-amber-rate","0.00344","duos-red-kwh","48.9"']},
 
     {
         'name': "CRC report for mismatched TPRs",
@@ -9232,7 +9252,7 @@ def virtual_bill(supply_source):
         'tries': {},
         'status_code': 200,
         'regexes': [
-            r'12616.8628159']},
+            r'12616.862815884477']},
     {
         'name': "Update a bill",
         'path': '/chellow/reports/165/output/',
@@ -9368,7 +9388,7 @@ def virtual_bill(supply_source):
         'name=042_FINISHED_watkinsexamplecom_crc_2010_2011_supply_10.csv',
         'status_code': 200,
         'regexes': [
-            r'73142.3933549']},
+            r'73142.39335486847']},
 
     # Duration report; bill with reads covered by bill without.
     {
@@ -9442,8 +9462,8 @@ def virtual_bill(supply_source):
         'regexes': [
             r'"07-002","3423760010","N","10","9.07","0.21","2012-01-05 00:00",'
             r'"2012-01-10 23:30","22 1065 3921 534","CI017","Roselands",'
-            r'"2012-01-05 00:00","2012-01-10 23:30","22;21","54.77","25.2",'
-            r'"29.57","10.0","252.0","",""'],
+            r'"2012-01-05 00:00","2012-01-10 23:30","22;21","54.77",'
+            r'"25.200000000000003","29.57","10.0","252.0","",""'],
         'status_code': 200},
 
     {
@@ -9667,7 +9687,7 @@ def virtual_bill(supply_source):
         'name=048_FINISHED_watkinsexamplecom_crc_2010_2011_supply_10.csv',
         'status_code': 200,
         'regexes': [
-            r'73142.3933549']},
+            r'73142.39335486847']},
 
     # See if unified report shows billed amounts correctly
     {
@@ -9798,19 +9818,19 @@ def virtual_bill(supply_source):
             r'<table:table-cell '
             r'office:date-value="2010-01-31T23:30:00" '
             r'office:value-type="date" table:style-name="cDateISO"/>\s*'
-            r'<table:table-cell office:value="5886.08506489" '
+            r'<table:table-cell office:value="5886.085064894785" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="0" '
             r'office:value-type="float" table:number-columns-repeated="6"/>\s*'
-            r'<table:table-cell office:value="5886.08506489" '
+            r'<table:table-cell office:value="5886.085064894785" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="0" '
             r'office:value-type="float"/>\s*'
-            r'<table:table-cell office:value="605.608506489" '
+            r'<table:table-cell office:value="605.6085064894786" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="0" '
             r'office:value-type="float" table:number-columns-repeated="6"/>\s*'
-            r'<table:table-cell office:value="605.608506489" '
+            r'<table:table-cell office:value="605.6085064894786" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="0" '
             r'office:value-type="float"/>\s*'
@@ -9829,9 +9849,9 @@ def virtual_bill(supply_source):
             r'<table:table-cell office:string-value="" '
             r'office:value-type="string"/>\s*'
             r'<table:table-cell/>\s*'
-            r'<table:table-cell office:value="588.608506489" '
+            r'<table:table-cell office:value="588.6085064894786" '
             r'office:value-type="float"/>\s*'
-            r'<table:table-cell office:value="5886.08506489" '
+            r'<table:table-cell office:value="5886.085064894785" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell office:string-value="" '
             r'office:value-type="string"/>\s*'
@@ -10029,21 +10049,21 @@ def virtual_bill(supply_source):
             r'office:value-type="date" table:style-name="cDateISO"/>\s*'
             r'<table:table-cell office:value="0" '
             r'office:value-type="float" table:number-columns-repeated="5"/>\s*'
-            r'<table:table-cell office:value="100.067249496" '
+            r'<table:table-cell office:value="100.06724949562901" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="0" '
             r'office:value-type="float"/>\s*'
-            r'<table:table-cell office:value="-100.067249496" '
+            r'<table:table-cell office:value="-100.06724949562901" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="0" '
             r'office:value-type="float" table:number-columns-repeated="5"/>\s*'
             r'<table:table-cell office:value="10" '
             r'office:value-type="float"/>\s*'
-            r'<table:table-cell office:value="10.0067249496" '
+            r'<table:table-cell office:value="10.006724949562901" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="0" '
             r'office:value-type="float"/>\s*'
-            r'<table:table-cell office:value="-0.0067249495629" '
+            r'<table:table-cell office:value="-0.006724949562901372" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="0" '
             r'office:value-type="float"/>\s*'
@@ -10079,7 +10099,7 @@ def virtual_bill(supply_source):
     sum_msp_kwh = sum(h['msp-kwh'] for h in supply_source.hh_data)
     bill = supply_source.supplier_bill
     duos.duos_vb(supply_source)
-    for rate_name, rate_set in supply_source.supplier_rate_sets.iteritems():
+    for rate_name, rate_set in supply_source.supplier_rate_sets.items():
         if len(rate_set) == 1:
             bill[rate_name] = rate_set.pop()
     bill['net-gbp'] += sum_msp_kwh * 0.1
@@ -10295,8 +10315,9 @@ def virtual_bill(supply_source):
         'status_code': 200,
         'regexes': [
             r'"CI005","Wheal Rodney","CI004","gen,gen-net,net","chp",'
-            r'"2010-04-30 23:30","10.87975","0","0","10.87975","0","0","0",'
-            r'"0","2606.838","0.0","0","2606.838","0","0","0","hh",""']},
+            r'"2010-04-30 23:30","10.879750000000058","0","0",'
+            r'"10.879750000000058","0","0","0","0","2606.838000000001","0.0",'
+            r'"0","2606.838000000001","0","0","0","hh",""']},
 
     {
         'name': "Monthly sites duration: non-primary site",
@@ -10370,9 +10391,9 @@ def virtual_bill(supply_source):
         'status_code': 200,
         'regexes': [
             r'"CI005","Wheal Rodney","CI004","gen,gen-net,net","chp",'
-            r'"2015-07-31 23:30","25.8191780822","0","0","25.8191780822","0",'
-            r'"0","0","0","1114.2003","0.0","0","1114.2003","0","0","0","hh",'
-            r'""']},
+            r'"2015-07-31 23:30","25.819178082191478","0","0",'
+            r'"25.819178082191478","0","0","0","0","1114.2003000000002","0.0",'
+            r'"0","1114.2003000000002","0","0","0","hh",""']},
 
     {
         'name': "Unified report, billed: add batch to Dynamat contract",

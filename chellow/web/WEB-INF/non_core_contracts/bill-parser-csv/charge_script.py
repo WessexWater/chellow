@@ -31,7 +31,7 @@ class Parser():
 
     def make_raw_bills(self):
         raw_bills = []
-        iter(self.reader).next()  # skip title row
+        next(iter(self.reader))  # skip title row
         blank_set = set(('',))
         for self.line_number, self.vals in enumerate(self.reader):
 
@@ -61,7 +61,7 @@ class Parser():
                 else:
                     try:
                         breakdown = eval(breakdown)
-                    except SyntaxError, e:
+                    except SyntaxError as e:
                         raise UserException(str(e))
             else:
                 raise UserException(

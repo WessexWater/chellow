@@ -27,11 +27,11 @@ def on_shut_down(ctx):
                 dloads):
             try:
                 md.shutdown()
-            except UserException, e:
+            except UserException as e:
                 time.sleep(2)
                 try:
                     md.shutdown()
-                except UserException, e:
+                except UserException as e:
                     messages.append(str(e))
             except:
                 messages.append(

@@ -6,6 +6,7 @@ from datetime import datetime
 import utils
 import db
 import templater
+from itertools import chain
 Monad.getUtils()['impt'](globals(), 'db', 'utils', 'templater')
 
 
@@ -122,10 +123,12 @@ try:
                         outer_tpr_map[tpr_code].append(read)
 
                 rows_high = max(
-                    [
-                        len(val) for val in (
-                            inner_tpr_map.values() + outer_tpr_map.values())] +
-                    [rows_high])
+                    chain(
+                        map(
+                            len, chain(
+                                inner_tpr_map.values(),
+                                outer_tpr_map.values())),
+                        [rows_high]))
 
                 read_rows = []
                 bill_dict['read_rows'] = read_rows
@@ -140,7 +143,7 @@ try:
                         except IndexError:
                             row_dict['inner_reads'].append(None)
 
-                    for tpr_code, read_list in outer_tpr_map.iteritems():
+                    for tpr_code, read_list in outer_tpr_map.items():
                         try:
                             row_dict['outer_reads'].append(read_list[i])
                         except IndexError:
@@ -218,7 +221,7 @@ try:
             'this_month_start': this_month_start,
             'batch_reports': batch_reports, 'debug': debug})
 
-except UserException, e:
+except UserException as e:
     sess.rollback()
     render(inv, template, {'messages': [str(e)]})
 finally:

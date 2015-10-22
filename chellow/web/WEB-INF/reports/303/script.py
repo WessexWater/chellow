@@ -75,7 +75,7 @@ try:
                 '/reports/301/output/?channel_id=' + str(channel_id) +
                 "&start_year=" + str(now.year) + "&start_month=" +
                 str(now.month))
-except UserException, e:
+except UserException as e:
     render(inv, template, make_fields(channel, e))
 finally:
     if sess is not None:

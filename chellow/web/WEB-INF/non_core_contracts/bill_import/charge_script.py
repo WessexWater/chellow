@@ -121,7 +121,7 @@ class BillImporter(threading.Thread):
                     sess.commit()
                     self.successful_bills.append(raw_bill)
                     sess.expunge(bill)
-                except UserException, e:
+                except UserException as e:
                     sess.rollback()
                     raw_bill['error'] = str(e)
                     self.failed_bills.append(raw_bill)
@@ -170,7 +170,7 @@ def start_bill_importer(sess, batch_id, file_name, file_size, f):
 def get_bill_importer_ids(batch_id):
     try:
         import_lock.acquire()
-        return [k for k, v in importers.iteritems() if v.batch_id == batch_id]
+        return [k for k, v in importers.items() if v.batch_id == batch_id]
     finally:
         import_lock.release()
 

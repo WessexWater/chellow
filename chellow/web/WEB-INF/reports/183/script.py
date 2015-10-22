@@ -1,5 +1,5 @@
 from net.sf.chellow.monad import Monad
-import StringIO
+import io
 import zipfile
 import traceback
 from sqlalchemy.sql.expression import true, null
@@ -37,7 +37,7 @@ if site_id is None:
                 SiteEra.is_physical == true(), or_(
                     Era.finish_date == null(), Era.finish_date >= start_date),
                 Era.start_date <= finish_date)
-            bffr = StringIO.StringIO()
+            bffr = io.StringIO()
             zf = zipfile.ZipFile(bffr)
 
             for site in sites:

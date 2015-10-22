@@ -64,7 +64,7 @@ try:
                 'contract': contract, 'snags': snags,
                 'total_snags': total_snags, 'snag_groups': snag_groups,
                 'is_ignored': is_ignored})
-except UserException, e:
+except UserException as e:
     if str(e).startswith("There isn't a contract"):
         inv.sendNotFound(str(e))
     else:

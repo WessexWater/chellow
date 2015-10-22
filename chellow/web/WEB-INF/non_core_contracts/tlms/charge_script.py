@@ -1,5 +1,5 @@
 from net.sf.chellow.monad import Monad
-import urllib2
+import urllib.request
 import csv
 import threading
 import collections
@@ -68,7 +68,7 @@ def hh(data_source):
                 raise UserException(
                     "For the TLMs rate script at " +
                     hh_format(h_start) + " the rate cannot be found.")
-            except TypeError, e:
+            except TypeError as e:
                 raise UserException(
                     "For the TLMs rate script at " + hh_format(h_start) +
                     " the rate 'tlms' has the problem: " + str(e))
@@ -147,7 +147,7 @@ class TlmImporter(threading.Thread):
                                 " cannot be found in the configuration "
                                 "properties.")
 
-                        data = urllib2.urlopen(
+                        data = urllib.request.urlopen(
                             'https://downloads.elexonportal.co.uk/file/'
                             'download/TLM_FILE?key=' + scripting_key)
                         self.log("Opened URL.")

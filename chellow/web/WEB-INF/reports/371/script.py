@@ -21,7 +21,7 @@ try:
             "snag.finish_date < :finish_date", {'finish_date': finish_date})
         sess.commit()
         inv.sendSeeOther('/reports/39/output/')
-except utils.UserException, e:
+except utils.UserException as e:
         render(inv, template, {'messages': [str(e)]}, 400)
 finally:
     if sess is not None:

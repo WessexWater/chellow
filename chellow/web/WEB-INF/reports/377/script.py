@@ -21,7 +21,6 @@ def content():
                 vals = [
                     supply.id, i, note['category'], note['is_important'],
                     note['body']]
-                vals = map(unicode, vals)
                 for i, val in enumerate(vals):
                     vals[i] = val.replace('"', '""')
                 yield ','.join('"' + v + '"' for v in vals) + '\n'

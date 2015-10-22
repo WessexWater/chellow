@@ -28,7 +28,7 @@ try:
         snag.is_ignored = ignore
         sess.commit()
         inv.sendSeeOther("/reports/119/output/?site_snag_id=" + str(snag.id))
-except UserException, e:
+except UserException as e:
     sess.rollback()
     templater.render(inv, template, make_fields(sess, snag, e), 400)
 finally:

@@ -30,7 +30,7 @@ try:
         task.go()
         inv.sendSeeOther(
             "/reports/213/output/?hhdc_contract_id=" + str(contract.id))
-except UserException, e:
+except UserException as e:
     render(inv, template, make_fields(contract, task, e), 400)
 finally:
     if sess is not None:

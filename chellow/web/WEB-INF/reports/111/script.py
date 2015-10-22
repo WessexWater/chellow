@@ -177,7 +177,7 @@ def content():
                 covered_bdown['sum-msp-kwh'] += float(covered_bill.kwh)
                 if len(covered_bill.breakdown) > 0:
                     covered_rates = collections.defaultdict(set)
-                    for k, v in eval(covered_bill.breakdown, {}).iteritems():
+                    for k, v in eval(covered_bill.breakdown, {}).items():
 
                         if k.endswith('rate'):
                             covered_rates[k].add(v)
@@ -186,13 +186,13 @@ def content():
                                 covered_bdown[k] += v
                             except KeyError:
                                 covered_bdown[k] = v
-                            except TypeError, detail:
+                            except TypeError as detail:
                                 raise UserException(
                                     "For key " + str(k) + " the value " +
                                     str(v) +
                                     " can't be added to the existing value " +
                                     str(covered_bdown[k]) + ". " + str(detail))
-                    for k, v in covered_rates.iteritems():
+                    for k, v in covered_rates.items():
                         covered_bdown[k] = v.pop() if len(v) == 1 else None
 
             virtual_bill = {}

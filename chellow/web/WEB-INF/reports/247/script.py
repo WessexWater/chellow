@@ -13,7 +13,7 @@ import utils
 import computer
 import csv
 import dloads
-import StringIO
+import io
 import threading
 import odswriter
 import sys
@@ -162,7 +162,7 @@ def content():
         except KeyError:
             kw_changes = ''
 
-        for row in csv.reader(StringIO.StringIO(kw_changes)):
+        for row in csv.reader(io.StringIO(kw_changes)):
             if len(''.join(row).strip()) == 0:
                 continue
             if len(row) != 4:
@@ -435,11 +435,11 @@ def content():
                             [month_data[t] for t in summary_titles]
 
                         sup_tab.writerow(out)
-                        for k, v in month_data.iteritems():
+                        for k, v in month_data.items():
                             site_month_data[k] += v
                     for i, (
                             order, imp_mpan_core, exp_mpan_core, imp_ss,
-                            exp_ss) in enumerate(sorted(calcs)):
+                            exp_ss) in enumerate(sorted(calcs, key=str)):
                         if imp_ss is None:
                             era = exp_ss.era
                         else:
@@ -654,7 +654,7 @@ def content():
                                     if t in exp_supplier_bill else None)
                                 for t in title_dict['exp-supplier']]
 
-                        for k, v in month_data.iteritems():
+                        for k, v in month_data.items():
                             site_month_data[k] += v
                         sup_tab.writerow(out)
 

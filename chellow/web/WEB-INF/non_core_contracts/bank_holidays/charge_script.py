@@ -4,11 +4,11 @@ import pytz
 import threading
 import datetime
 import traceback
-import urlparse
-import httplib
+import urllib.parse
+import http.client
 import db
 import utils
-import simplejson as json
+import json
 from dateutil.relativedelta import relativedelta
 Monad.getUtils()['impt'](globals(), 'db', 'utils')
 Contract, RateScript = db.Contract, db.RateScript
@@ -67,12 +67,12 @@ class BankHolidayImporter(threading.Thread):
 
                         self.log("Downloading from " + url_str + ".")
 
-                        url = urlparse.urlparse(url_str)
+                        url = urllib.parse.urlparse(url_str)
                         if url.scheme == 'https':
-                            conn = httplib.HTTPSConnection(
+                            conn = http.client.HTTPSConnection(
                                 url.hostname, url.port)
                         else:
-                            conn = httplib.HTTPConnection(
+                            conn = http.client.HTTPConnection(
                                 url.hostname, url.port)
                         conn.request("GET", url.path)
 

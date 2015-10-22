@@ -25,7 +25,7 @@ try:
         inv, template, {
             'contract': contract, 'rate_scripts': rate_scripts,
             'last_month_finish': last_month_finish})
-except utils.UserException, e:
+except utils.UserException as e:
     if str(e).startswith("There isn't a contract"):
         inv.sendNotFound(str(e))
     else:

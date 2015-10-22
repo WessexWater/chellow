@@ -144,7 +144,7 @@ try:
                 exp_supplier_account, exp_sc)
             sess.commit()
             inv.sendSeeOther("/reports/7/output/?supply_id=" + str(supply.id))
-except UserException, e:
+except UserException as e:
     sess.rollback()
     render(inv, template, make_fields(sess, site, e), 400)
 finally:

@@ -19,7 +19,7 @@ try:
         if len(query) > 0:
             try:
                 result = sess.execute(query)
-            except SQLAlchemyError, e:
+            except SQLAlchemyError as e:
                 messages.append(str(e))
 
     templater.render(inv, template, {'result': result, 'messages': messages})

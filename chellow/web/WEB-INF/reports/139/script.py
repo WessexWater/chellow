@@ -26,7 +26,7 @@ try:
         sess.commit()
         inv.sendSeeOther(
             '/reports/67/output/?dno_contract_id=' + str(contract.id))
-except UserException, e:
+except UserException as e:
     render(inv, template, {'contract': contract, 'messages': [str(e)]})
 finally:
     sess.close()

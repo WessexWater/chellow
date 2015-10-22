@@ -26,7 +26,7 @@ try:
     supply_id = inv.getLong('supply_id')
     supply = Supply.get_by_id(sess, supply_id)
     render(inv, template, make_fields(sess, supply))
-except UserException, e:
+except UserException as e:
     render(inv, template, make_fields(sess, supply, e))
 finally:
     sess.close()

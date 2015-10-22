@@ -18,7 +18,7 @@ try:
         snag_id = utils.form_int(inv, 'site_snag_id')
         snag = db.Snag.get_by_id(sess, snag_id)
         templater.render(inv, template, make_fields(sess, snag))
-except UserException, e:
+except UserException as e:
     templater.render(inv, template, make_fields(sess, snag, e), 400)
 finally:
     if sess is not None:

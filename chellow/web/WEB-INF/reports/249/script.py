@@ -36,7 +36,7 @@ try:
             inv.sendSeeOther(
                 '/reports/173/output/?hhdc_rate_script_id=' +
                 str(rate_script.id))
-except NotFoundException, e:
+except NotFoundException as e:
     inv.sendNotFound(str(e))
 finally:
     if sess is not None:

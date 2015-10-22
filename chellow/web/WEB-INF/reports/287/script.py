@@ -35,7 +35,7 @@ try:
         inv.sendSeeOther(
             "/reports/91/output/?supplier_batch_id=" + str(batch.id))
 
-except UserException, e:
+except UserException as e:
     sess.rollback()
     if contract is None:
         raise e

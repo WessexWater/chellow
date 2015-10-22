@@ -22,7 +22,7 @@ try:
         contract = Contract.get_non_core_by_name(sess, 'rcrc')
         importer.go()
         inv.sendSeeOther("/reports/225/output/")
-except UserException, e:
+except UserException as e:
     sess.rollback()
     render(
         inv, template, {

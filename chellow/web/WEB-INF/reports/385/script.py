@@ -22,7 +22,7 @@ try:
         contract = Contract.get_non_core_by_name(sess, 'system_price_elexon')
         importer.go()
         inv.sendSeeOther("/reports/385/output/")
-except utils.UserException, e:
+except utils.UserException as e:
     sess.rollback()
     render(
         inv, template, {

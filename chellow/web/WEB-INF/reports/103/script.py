@@ -2,7 +2,7 @@ from net.sf.chellow.monad import Monad
 import datetime
 import os
 import shutil
-import StringIO
+import io
 import tarfile
 import templater
 import dloads
@@ -45,7 +45,7 @@ try:
         else:
             file_item = inv.getFileItem("import_file")
             stream = file_item.getInputStream()
-            f = StringIO.StringIO()
+            f = io.StringIO()
             bt = stream.read()
             while bt != -1:
                 f.write(chr(bt))
@@ -55,5 +55,5 @@ try:
             t.extractall(lib_path)
             t.close()
             inv.sendSeeOther("/reports/103/output/")
-except utils.UserException, e:
+except utils.UserException as e:
     render(inv, template, make_fields(lib_path, e))

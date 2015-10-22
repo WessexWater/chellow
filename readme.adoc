@@ -169,7 +169,7 @@ can write:
                 bill['day-kwh'] += hh['msp-kwh']
                 bill['day-gbp'] += hh['msp-kwh'] * 0.1
     
-        bill['net-gbp'] = sum(v for k, v in bill.iteritems() if k[-4:] == '-gbp')
+        bill['net-gbp'] = sum(v for k, v in bill.items() if k[-4:] == '-gbp')
 
 For documentation on the languages that Chellow uses, see the Extending
 Chellow section.

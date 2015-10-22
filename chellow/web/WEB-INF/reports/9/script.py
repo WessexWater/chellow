@@ -35,7 +35,7 @@ try:
     else:
         raise UserException("POST not allowed.")
 
-except UserException, e:
+except UserException as e:
     render(inv, template, make_fields(site, e))
 finally:
     sess.close()

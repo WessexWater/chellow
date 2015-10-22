@@ -4,12 +4,12 @@ import pytz
 import threading
 import datetime
 import traceback
-import urlparse
-import httplib
+import urllib.parse
+import http.client
 import db
 import utils
 import xlrd
-import simplejson as json
+import json
 Monad.getUtils()['impt'](globals(), 'db', 'utils')
 Contract, RateScript = db.Contract, db.RateScript
 HH, UserException, hh_format = utils.HH, utils.UserException, utils.hh_format
@@ -34,7 +34,7 @@ def create_future_func(multiplier, constant):
         last_value = old_result[sorted(old_result.keys())[-1]]
         new_ns['gbp_per_nbp_mwh'] = collections.defaultdict(
             lambda: transform(last_value), [
-                (k, transform(v)) for k, v in old_result.iteritems()])
+                (k, transform(v)) for k, v in old_result.items()])
         return new_ns
     return future_func
 
@@ -175,12 +175,12 @@ class SystemPriceImporter(threading.Thread):
                             " and extracting data from " +
                             hh_format(fill_start))
 
-                        url = urlparse.urlparse(url_str)
+                        url = urllib.parse.urlparse(url_str)
                         if url.scheme == 'https':
-                            conn = httplib.HTTPSConnection(
+                            conn = http.client.HTTPSConnection(
                                 url.hostname, url.port)
                         else:
-                            conn = httplib.HTTPConnection(
+                            conn = http.client.HTTPConnection(
                                 url.hostname, url.port)
                         conn.request("GET", url.path + '?' + url.query)
 
@@ -253,7 +253,7 @@ class SystemPriceImporter(threading.Thread):
                             script = {
                                 'gbp_per_nbp_mwh': dict(
                                     (key_format(k), v)
-                                    for k, v in sp_month.iteritems())}
+                                    for k, v in sp_month.items())}
                             self.log(
                                 "Updating rate script starting at " +
                                 hh_format(month_start) + ".")

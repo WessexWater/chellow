@@ -57,7 +57,7 @@ try:
         sess.commit()
         inv.sendSeeOther("/reports/345/output/?hhdc_bill_id=" + str(bill.id))
 
-except UserException, e:
+except UserException as e:
     sess.rollback()
     render(inv, template, make_fields(sess, batch, e), 400)
 finally:

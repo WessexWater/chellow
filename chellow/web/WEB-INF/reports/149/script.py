@@ -108,8 +108,8 @@ def mpan_bit(sess, supply, is_import, num_hh, eras, chunk_start, chunk_finish):
 
         sum_kwh += hh_value
         if hh_status != 'A':
-            non_actual = non_actual + hh_value
-            num_na = num_na + 1
+            non_actual += hh_value
+            num_na += 1
 
     kw_at_md = md * 2
     if kvarh_at_md is None:
@@ -117,10 +117,10 @@ def mpan_bit(sess, supply, is_import, num_hh, eras, chunk_start, chunk_finish):
     else:
         kva_at_md = (kw_at_md ** 2 + (kvarh_at_md * 2) ** 2) ** 0.5
 
-    num_bad = str(num_hh - sess.query(HhDatum).join(Channel).join(Era).filter(
-        Era.supply_id == supply.id, Channel.imp_related == is_import,
+    num_bad = num_hh - sess.query(HhDatum).join(Channel).join(Era).filter(
+        Era.supply == supply, Channel.imp_related == is_import,
         Channel.channel_type == 'ACTIVE', HhDatum.start_date >= chunk_start,
-        HhDatum.start_date <= chunk_finish).count() + num_na)
+        HhDatum.start_date <= chunk_finish).count() + num_na
 
     date_at_md_str = '' if date_at_md is None else hh_format(date_at_md)
 
@@ -226,8 +226,9 @@ def content():
             else:
                 chunk_finish = era.finish_date
 
-            num_hh = utils.totalseconds(chunk_finish - (chunk_start - HH)) / \
-                (30 * 60)
+            num_hh = int(
+                utils.totalseconds(chunk_finish - (chunk_start - HH)) /
+                (30 * 60))
 
             f.write(
                 '\n' + ','.join(

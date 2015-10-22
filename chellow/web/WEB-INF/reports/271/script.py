@@ -15,7 +15,7 @@ try:
     rate_script_id = inv.getLong('rate_script_id')
     rate_script = RateScript.get_non_core_by_id(sess, rate_script_id)
     render(inv, template, {'rate_script': rate_script})
-except NotFoundException, e:
+except NotFoundException as e:
     inv.sendNotFound(str(e))
 finally:
     if sess is not None:

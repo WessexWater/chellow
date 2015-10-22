@@ -58,7 +58,7 @@ try:
             sess.commit()
             inv.sendSeeOther(
                 "/reports/105/output/?supplier_bill_id=" + str(read.bill.id))
-except UserException, e:
+except UserException as e:
     render(inv, template, make_fields(sess, read, e))
 finally:
     sess.close()

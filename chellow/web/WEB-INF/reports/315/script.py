@@ -39,7 +39,7 @@ try:
         sess.commit()
         inv.sendSeeOther(
             "/reports/77/output/?supplier_contract_id=" + str(contract.id))
-except UserException, e:
+except UserException as e:
     sess.rollback()
     templater.render(inv, template, make_fields(sess, e), 400)
 finally:

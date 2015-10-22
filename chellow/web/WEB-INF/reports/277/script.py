@@ -39,7 +39,7 @@ try:
         hh_importer.startup_contract(contract.id)
         inv.sendSeeOther(
             '/reports/115/output/?hhdc_contract_id=' + str(contract.id))
-except UserException, e:
+except UserException as e:
     render(inv, template, make_fields(sess, e))
 finally:
     if sess is not None:

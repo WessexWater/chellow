@@ -41,7 +41,7 @@ def form_bool(inv, name):
 def form_int(inv, name):
     try:
         return int(form_str(inv, name))
-    except ValueError, e:
+    except ValueError as e:
         raise UserException(
             "Problem parsing the field " + name + " as an integer: " + str(e))
 
@@ -93,7 +93,7 @@ def impt(gbls, *libs):
 
 def get_contract_func(contract, func_name):
     gb = {}
-    exec (contract.charge_script, gb)
+    exec(contract.charge_script, gb)
     return gb.get(func_name)
 
 
@@ -117,7 +117,7 @@ def parse_hh_start(start_date_str):
         minute = int(start_date_str[14:])
         return validate_hh_start(
             datetime.datetime(year, month, day, hour, minute, tzinfo=pytz.utc))
-    except ValueError, e:
+    except ValueError as e:
         raise UserException(
             "Can't parse the date: " + start_date_str +
             ". It needs to be of the form yyyy-mm-dd hh:MM. " + str(e))

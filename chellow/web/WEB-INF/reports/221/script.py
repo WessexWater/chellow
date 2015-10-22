@@ -23,7 +23,7 @@ try:
         contract = Contract.get_non_core_by_name(sess, 'bank_holidays')
         importer.go()
         inv.sendSeeOther("/reports/221/output/")
-except UserException, e:
+except UserException as e:
     sess.rollback()
     render(
         inv, template, {

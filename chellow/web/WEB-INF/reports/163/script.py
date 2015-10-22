@@ -2,8 +2,7 @@ from net.sf.chellow.monad import Monad
 import db
 import templater
 import utils
-import sys
-import StringIO
+import io
 import csv
 import os.path
 import datetime
@@ -44,17 +43,7 @@ elif method == 'POST':
     idx = file_title.rfind('_')
     table = file_title[:idx]
     version = file_title[idx+1:]
-    f = StringIO.StringIO()
-    if sys.platform.startswith('java'):
-        from java.io import InputStreamReader
-        stream = InputStreamReader(file_item.getInputStream(), 'utf-8')
-        bt = stream.read()
-        while bt != -1:
-            f.write(chr(bt))
-            bt = stream.read()
-    else:
-        f.writelines(file_item.f.stream)
-
+    f = io.StringIO(str(file_item.f.read(), 'utf8'))
     f.seek(0)
 
     def content():
@@ -62,7 +51,7 @@ elif method == 'POST':
         try:
             sess = db.session()
             reader = iter(csv.reader(f))
-            reader.next()
+            next(reader)
             if table == 'Line_Loss_Factor_Class':
                 VOLTAGE_LEVEL_CODES = set(
                     [v.code for v in sess.query(VoltageLevel)])
@@ -107,18 +96,12 @@ elif method == 'POST':
                                 voltage_level_code = vl_code
                                 break
 
-                        is_substation = False
-                        for pattern in [
-                                '_SS', ' SS', ' S/S',  '(S/S)', 'sub', 'Sub']:
-                            if pattern in llfc_description:
-                                is_substation = True
-                                break
+                        is_substation = any(
+                            p in llfc_description for p in [
+                                '_SS', ' SS', ' S/S',  '(S/S)', 'sub', 'Sub'])
 
-                        is_import = True
-                        for pattern in ['C', 'D']:
-                            if pattern in class_indicator:
-                                is_import = False
-                                break
+                        is_import = not any(
+                            p in class_indicator for p in ['C', 'D'])
 
                         yield ','.join(
                             (

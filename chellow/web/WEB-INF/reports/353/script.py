@@ -34,7 +34,7 @@ try:
         sess.commit()
         inv.sendSeeOther("/reports/193/output/?mop_batch_id=" + str(batch.id))
 
-except UserException, e:
+except UserException as e:
     render(inv, template, make_fields(sess, contract, e))
 finally:
     if sess is not None:

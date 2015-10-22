@@ -37,9 +37,9 @@ try:
             inv.sendSeeOther(
                 '/reports/79/output/?supplier_rate_script_id=' +
                 str(rate_script.id))
-except NotFoundException, e:
+except NotFoundException as e:
     inv.sendNotFound(str(e))
-except UserException, e:
+except UserException as e:
     sess.rollback()
     render(
         inv, template, {'rate_script': rate_script, 'messages': [str(e)]}, 400)

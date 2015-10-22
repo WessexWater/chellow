@@ -47,10 +47,10 @@ try:
             sess.commit()
             inv.sendSeeOther(
                 '/reports/271/output/?rate_script_id=' + str(rate_script.id))
-except utils.UserException, e:
+except utils.UserException as e:
     sess.rollback()
     render(inv, template, make_vals(rate_script, e))
-except NotFoundException, e:
+except NotFoundException as e:
     inv.sendNotFound(str(e))
 finally:
     if sess is not None:

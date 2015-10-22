@@ -59,7 +59,7 @@ try:
                 name, source, generator_type, gsp_group, supply.dno_contract)
             sess.commit()
             inv.sendSeeOther("/reports/7/output/?supply_id=" + str(supply.id))
-except UserException, e:
+except UserException as e:
     render(inv, template, make_fields(sess, supply, e), 400)
 finally:
     if sess is not None:

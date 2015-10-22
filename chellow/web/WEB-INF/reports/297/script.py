@@ -24,7 +24,7 @@ try:
         site = db.Site.insert(sess, code, name)
         sess.commit()
         inv.sendSeeOther("/reports/5/output/?site_id=" + str(site.id))
-except UserException, e:
+except UserException as e:
     render(inv, template, make_fields(sess, e))
 finally:
     if sess is not None:

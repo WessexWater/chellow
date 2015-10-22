@@ -15,8 +15,8 @@ def create_parser(reader, mpan_map):
 
 class HhParserCsvSimple():
     def __init__(self, reader, mpan_map):
-        self.shredder = itertools.izip(itertools.count(1), csv.reader(reader))
-        self.shredder.next()  # skip the title line
+        self.shredder = zip(itertools.count(1), csv.reader(reader))
+        next(self.shredder)  # skip the title line
         self.values = None
 
     def get_field(self, index, name):
@@ -29,9 +29,9 @@ class HhParserCsvSimple():
     def __iter__(self):
         return self
 
-    def next(self):
+    def __next__(self):
         try:
-            self.line_number, self.values = self.shredder.next()
+            self.line_number, self.values = next(self.shredder)
             mpan_core_str = self.get_field(0, "MPAN Core")
             datum = {'mpan_core': utils.parse_mpan_core(mpan_core_str)}
             channel_type_str = self.get_field(1, "Channel Type")
@@ -51,7 +51,7 @@ class HhParserCsvSimple():
                     "The status character must be one character in length.")
             datum['status'] = status
             return datum
-        except UserException, e:
+        except UserException as e:
             raise UserException(
                 "Problem at line number: " + str(self.line_number) + ": " +
                 str(self.values) + ": " + str(e))

@@ -18,7 +18,7 @@ try:
     fields['is_alive'] = proc.isAlive()
     fields['process_id'] = proc_id
     render(inv, template, fields)
-except UserException, e:
+except UserException as e:
     render(inv, template, {'messages': [str(e)], 'process_id': proc_id})
 finally:
     if sess is not None:

@@ -39,7 +39,7 @@ try:
         supply.note = str(note_dict)
         sess.commit()
         inv.sendSeeOther("/reports/369/output/?supply_id=" + str(supply_id))
-except UserException, e:
+except UserException as e:
     render(inv, template, make_fields(sess, supply, e))
 finally:
     if sess is not None:

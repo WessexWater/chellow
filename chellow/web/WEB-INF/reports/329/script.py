@@ -33,7 +33,7 @@ try:
     imp_id = inv.getLong('importer_id')
     importer = bill_import.get_bill_importer(imp_id)
     render(inv, template, make_fields(sess, importer))
-except UserException, e:
+except UserException as e:
     render(inv, template, make_fields(sess, e), 400)
 finally:
     if sess is not None:

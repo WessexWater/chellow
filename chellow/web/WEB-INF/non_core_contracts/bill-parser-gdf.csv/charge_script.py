@@ -102,19 +102,18 @@ class Parser():
 
     def _set_last_line(self, i, line):
         self._line_numer = i
-        self.last_line = unicode(line, 'utf-8')
+        self.last_line = line
         if i == 0:
-            self._title_line = unicode(line, 'utf-8')
+            self._title_line = line
         return line
 
     def make_raw_bills(self):
-        titles = [t.strip() for t in iter(self.reader).next()]
+        titles = [t.strip() for t in next(iter(self.reader))]
         title_idx = dict((title, i) for i, title in enumerate(titles))
 
         raw_bills = []
 
         for vals in self.reader:
-            vals = tuple(unicode(val, 'utf-8') for val in vals)
             if len(vals) == 0 or vals[0].startswith('#') or \
                     ''.join(vals) == '':
                 continue
@@ -131,7 +130,7 @@ class Parser():
                 try:
                     return datetime.datetime.strptime(
                         val(title), "%d/%m/%Y").replace(tzinfo=pytz.utc)
-                except ValueError, e:
+                except ValueError as e:
                     raise UserException(
                         "At line number " + str(self._line_number) +
                         ", while trying to find the value of " + title +
@@ -145,7 +144,7 @@ class Parser():
             kwh = Decimal(val('Site Data'))
             breakdown = dict(
                 [
-                    (v, float(val(k))) for k, v in col_map.iteritems()
+                    (v, float(val(k))) for k, v in col_map.items()
                     if k in titles])
             breakdown['raw_lines'] = [self._title_line, self.last_line]
             net = Decimal(val('NET_AMT'))

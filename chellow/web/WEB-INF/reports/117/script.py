@@ -19,7 +19,7 @@ try:
         snag_id = inv.getLong('snag_id')
         snag = db.Snag.get_by_id(sess, snag_id)
         render(inv, template, make_fields(sess, snag))
-except UserException, e:
+except UserException as e:
     render(inv, template, make_fields(sess, snag, e), 400)
 finally:
     if sess is not None:

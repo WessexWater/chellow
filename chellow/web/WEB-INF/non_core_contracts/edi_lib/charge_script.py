@@ -14,8 +14,8 @@ class EdiParser():
     def __iter__(self):
         return self
 
-    def next(self):
-        self.line = self.f_iterator.next().strip()
+    def __next__(self):
+        self.line = next(self.f_iterator).strip()
         if self.line[-1] != "'":
             raise UserException("This parser expects one segment per line.")
         self.elements = [

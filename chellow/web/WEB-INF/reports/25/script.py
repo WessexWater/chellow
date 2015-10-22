@@ -37,10 +37,7 @@ try:
                 HhDatum.start_date >= group.start_date,
                 HhDatum.start_date <= group.finish_date).order_by(
                 HhDatum.start_date, Supply.id))
-        try:
-            datum = data.next()
-        except StopIteration:
-            datum = None
+        datum = next(data, None)
 
         hh_date = group.start_date
 
@@ -86,10 +83,7 @@ try:
                             (imp_related and
                                 source_code == '3rd-party-reverse'):
                         hh_dict['third_party_export'] += hh_float_value
-                    try:
-                        datum = data.next()
-                    except StopIteration:
-                        datum = None
+                    datum = next(data, None)
 
             hh_dict['displaced_kwh'] = hh_dict['generated_kwh'] - \
                 hh_dict['export_kwh'] - hh_dict['parasitic_kwh']

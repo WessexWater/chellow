@@ -244,7 +244,8 @@ def content():
                     else:
                         exp_avg_months = avg_months
 
-            if imp_avg_months > 100 or exp_avg_months > 100:
+            if (imp_avg_months is not None and imp_avg_months > 100) or \
+                    (exp_avg_months is not None and exp_avg_months > 100):
                 mandatory_hh = 'yes'
             else:
                 mandatory_hh = 'no'
@@ -283,9 +284,7 @@ def content():
                             latest_supplier_bill_date
 
             meter_installation_date = sess.query(func.min(Era.start_date)) \
-                .filter(
-                    Era.supply_id == era.supply_id,
-                    Era.msn == era.msn).one()[0]
+                .filter(Era.supply == era.supply, Era.msn == era.msn).one()[0]
 
             if era.ssc is None:
                 ssc_code = num_registers = None

@@ -60,7 +60,7 @@ try:
         inv.sendSeeOther(
             "/reports/105/output/?supplier_bill_id=" + str(bill.id))
 
-except UserException, e:
+except UserException as e:
     sess.rollback()
     render(inv, template, make_fields(sess, batch, e), 400)
 finally:

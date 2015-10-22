@@ -10,6 +10,7 @@ import os
 import db
 import utils
 import socket
+from io import TextIOWrapper
 
 Monad.getUtils()['impt'](globals(), 'db', 'utils', 'templater')
 Contract, MarketRole = db.Contract, db.MarketRole
@@ -57,13 +58,13 @@ class HhDataImportProcess(threading.Thread):
                 sess, 'hh-parser-' + self.conv_ext[0][1:])
 
             gb = {}
-            exec (parser_cont.charge_script, gb)
+            exec(parser_cont.charge_script, gb)
             create_parser = gb.get('create_parser')
             self.converter = create_parser(self.istream, mpan_map)
             sess.rollback()
             db.HhDatum.insert(sess, self.converter)
             sess.commit()
-        except UserException, e:
+        except UserException as e:
             self.messages.append(str(e))
         except:
             self.messages.append("Outer problem " + traceback.format_exc())
@@ -220,8 +221,8 @@ class HhImportTask(threading.Thread):
                             fsize = f.tell()
                             f.seek(0)
                             self.importer = HhDataImportProcess(
-                                self.contract_id, 0, f, fpath + file_type,
-                                fsize)
+                                self.contract_id, 0, TextIOWrapper(f, 'utf8'),
+                                fpath + file_type, fsize)
 
                             self.importer.run()
                             messages = self.importer.messages
@@ -239,7 +240,7 @@ class HhImportTask(threading.Thread):
                             sess.commit()
                             self.log("Finished loading '" + fpath)
                             found_new = True
-                    except UserException, e:
+                    except UserException as e:
                         self.log("Problem " + str(e))
                         sess.rollback()
                     except Exception:
@@ -306,7 +307,7 @@ def shutdown():
     for task in tasks.values():
         task.stop()
 
-    for id, task in tasks.iteritems():
+    for id, task in tasks.items():
         if task.isAlive():
             raise UserException(
                 "Can't shut down hh importer, the task " + str(task) +

@@ -54,7 +54,7 @@ try:
             inv.sendSeeOther(
                 "/reports/369/output/?supply_id=" + str(supply_id))
 
-except UserException, e:
+except UserException as e:
     render(inv, template, make_fields(sess, supply, index, e))
 finally:
     sess.close()

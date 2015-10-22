@@ -3,7 +3,7 @@ from net.sf.chellow.monad import Monad
 import pytz
 import datetime
 from dateutil.relativedelta import relativedelta
-from sqlalchemy import or_, func, Float, cast
+from sqlalchemy import or_, func
 from sqlalchemy.sql.expression import null, true
 import math
 import utils
@@ -100,7 +100,7 @@ def content():
                 else:
                     period_finish = era_finish
 
-                max_normal_days[meter_type] += float(
+                max_normal_days[meter_type] += (
                     totalseconds(period_finish - period_start) + 60 * 30) / \
                     (60 * 60 * 24)
 
@@ -120,7 +120,7 @@ def content():
                         .join(RegisterRead.present_type).filter(
                             RegisterRead.units == 0,
                             ReadType.code.in_(ACTUAL_READ_TYPES),
-                            Bill.supply_id == supply.id,
+                            Bill.supply == supply,
                             RegisterRead.present_date < period_start,
                             BillType.code != 'W').order_by(
                             RegisterRead.present_date.desc()))
@@ -129,7 +129,7 @@ def content():
                         .join(RegisterRead.previous_type).filter(
                             RegisterRead.units == 0,
                             ReadType.code.in_(ACTUAL_READ_TYPES),
-                            Bill.supply_id == supply.id,
+                            Bill.supply == supply,
                             RegisterRead.previous_date < period_start,
                             BillType.code != 'W').order_by(
                             RegisterRead.previous_date.desc()))
@@ -138,7 +138,7 @@ def content():
                         .join(RegisterRead.present_type).filter(
                             RegisterRead.units == 0,
                             ReadType.code.in_(ACTUAL_READ_TYPES),
-                            Bill.supply_id == supply.id,
+                            Bill.supply == supply,
                             RegisterRead.present_date >= period_start,
                             BillType.code != 'W').order_by(
                             RegisterRead.present_date))
@@ -147,7 +147,7 @@ def content():
                         join(RegisterRead.previous_type).filter(
                             RegisterRead.units == 0,
                             ReadType.code.in_(ACTUAL_READ_TYPES),
-                            Bill.supply_id == supply.id,
+                            Bill.supply == supply,
                             RegisterRead.previous_date >= period_start,
                             BillType.code != 'W').order_by(
                             RegisterRead.previous_date))
@@ -166,7 +166,7 @@ def content():
                         while True:
                             while prime_pres_read is None:
                                 try:
-                                    pres_read = pres_reads.next()
+                                    pres_read = next(pres_reads)
                                 except StopIteration:
                                     break
 
@@ -179,7 +179,7 @@ def content():
                                 pres_bill = sess.query(Bill).join(BillType). \
                                     filter(
                                         Bill.reads.any(),
-                                        Bill.supply_id == supply.id,
+                                        Bill.supply == supply,
                                         Bill.finish_date >=
                                         pres_read.bill.start_date,
                                         Bill.start_date <=
@@ -198,7 +198,7 @@ def content():
                                     for read in sess.query(RegisterRead).
                                     filter(
                                         RegisterRead.units == 0,
-                                        RegisterRead.bill_id == pres_bill.id,
+                                        RegisterRead.bill == pres_bill,
                                         RegisterRead.present_date == pres_date,
                                         RegisterRead.msn == pres_msn))
 
@@ -208,7 +208,7 @@ def content():
                                 read_keys[read_key] = None
                             while prime_prev_read is None:
                                 try:
-                                    prev_read = prev_reads.next()
+                                    prev_read = next(prev_reads)
                                 except StopIteration:
                                     break
 
@@ -290,14 +290,14 @@ def content():
                                     pair_start_date = aft_read['date'] + HH
                                     pair_finish_date = fore_read['date']
 
-                                    num_hh = float(
+                                    num_hh = (
                                         totalseconds(
                                             pair_finish_date + HH -
                                             pair_start_date)) / (30 * 60)
 
                                     tprs = {}
                                     for tpr_code, initial_val in \
-                                            aft_read['reads'].iteritems():
+                                            aft_read['reads'].items():
                                         end_val = fore_read['reads'][tpr_code]
 
                                         kwh = end_val - initial_val
@@ -307,7 +307,7 @@ def content():
                                                 math.log10(initial_val)) + 1
                                             kwh = 10 ** digits + kwh
 
-                                        tprs[tpr_code] = float(kwh) / num_hh
+                                        tprs[tpr_code] = kwh / num_hh
 
                                     pairs.append(
                                         {
@@ -346,7 +346,7 @@ def content():
                                     block_finish = period_finish
 
                                 if block_start <= block_finish:
-                                    normal_days[meter_type] += float(
+                                    normal_days[meter_type] += (
                                         totalseconds(
                                             block_finish - block_start) +
                                         60 * 30) / (60 * 60 * 24)
@@ -377,33 +377,35 @@ def content():
                         pairs[-1]['finish-date'] = period_finish
 
                     for pair in pairs:
-                        pair_hhs = float(
+                        pair_hhs = (
                             totalseconds(
                                 pair['finish-date'] - pair['start-date']) +
                             30 * 60) / (60 * 30)
                         pair['pair_hhs'] = pair_hhs
-                        for tpr_code, pair_kwh in pair['tprs'].iteritems():
+                        for tpr_code, pair_kwh in pair['tprs'].items():
                             total_kwh[meter_type] += pair_kwh * pair_hhs
 
                     breakdown += 'pairs - \n' + str(pairs)
 
                 elif meter_type in ('hh', 'amr'):
                     period_kwhs = list(
-                        v[0] for v in sess.query(cast(HhDatum.value, Float)).
+                        float(v[0]) for v in sess.query(HhDatum.value).
                         join(Channel).filter(
                             Channel.imp_related == true(),
                             Channel.channel_type == 'ACTIVE',
                             Channel.era == era,
                             HhDatum.start_date >= period_start,
-                            HhDatum.start_date <= period_finish))
+                            HhDatum.start_date <= period_finish).order_by(
+                                HhDatum.id))
                     year_kwhs = list(
-                        v[0] for v in sess.query(cast(HhDatum.value, Float)).
+                        float(v[0]) for v in sess.query(HhDatum.value).
                         join(Channel).join(Era).filter(
                             Channel.imp_related == true(),
                             Channel.channel_type == 'ACTIVE',
                             Era.supply == supply,
                             HhDatum.start_date >= year_start,
-                            HhDatum.start_date <= year_finish))
+                            HhDatum.start_date <= year_finish).order_by(
+                                HhDatum.id))
 
                     period_sum_kwhs = sum(period_kwhs)
                     year_sum_kwhs = sum(year_kwhs)
@@ -413,25 +415,25 @@ def content():
                     period_hhs = totalseconds(
                         period_finish + HH - period_start) / (60 * 30)
                     if year_len_kwhs > 0:
-                        filled_kwh[meter_type] += float(year_sum_kwhs) / \
+                        filled_kwh[meter_type] += year_sum_kwhs / \
                             year_len_kwhs * (period_hhs - period_len_kwhs)
-                    normal_days[meter_type] += float(
-                        sess.query(func.count(HhDatum.value)).join(Channel).
+                    normal_days[meter_type] += sess.query(
+                        func.count(HhDatum.value)).join(Channel). \
                         filter(
                             Channel.imp_related == true(),
                             Channel.channel_type == 'ACTIVE',
                             Channel.era == era,
                             HhDatum.start_date >= period_start,
                             HhDatum.start_date <= period_finish,
-                            HhDatum.status == 'A').one()[0]) / 48
+                            HhDatum.status == 'A').one()[0] / 48
                 elif meter_type == 'unmetered':
                     bills = sess.query(Bill).filter(
-                        Bill.supply_id == supply.id,
+                        Bill.supply == supply,
                         Bill.finish_date >= period_start,
                         Bill.start_date <= period_finish)
                     for bill in bills:
-                        total_kwh[meter_type] += float(bill.kwh)
-                    normal_days[meter_type] += float(
+                        total_kwh[meter_type] += kwh
+                    normal_days[meter_type] += (
                         totalseconds(
                             period_finish - period_start) +
                         60 * 30) / (60 * 60 * 24)
@@ -439,8 +441,7 @@ def content():
             # for full year 183
             total_normal_days = sum(normal_days.values())
             total_max_normal_days = sum(max_normal_days.values())
-            is_normal = float(
-                total_normal_days) / total_max_normal_days >= float(183) / 365
+            is_normal = total_normal_days / total_max_normal_days >= 183 / 365
 
             f.write(
                 ','.join(

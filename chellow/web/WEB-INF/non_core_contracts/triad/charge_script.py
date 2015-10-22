@@ -143,9 +143,10 @@ def triad_bill(data_source, rate_period='monthly'):
             for t_date in data_source.hh_rate(
                     db_id, month_start, 'triad_dates'):
                 try:
-                    ds = iter(
-                        computer.get_data_sources(
-                            data_source, t_date, t_date)).next()
+                    ds = next(
+                        iter(
+                            computer.get_data_sources(
+                                data_source, t_date, t_date)))
                     if data_source.supplier_contract is None or \
                             ds.supplier_contract == \
                             data_source.supplier_contract:

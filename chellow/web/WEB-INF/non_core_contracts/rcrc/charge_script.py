@@ -5,7 +5,7 @@ import collections
 import datetime
 import pytz
 import traceback
-import urllib2
+import urllib.request
 from dateutil.relativedelta import relativedelta
 import db
 import utils
@@ -119,7 +119,7 @@ class RcrcImporter(threading.Thread):
                                 " cannot be found in the configuration "
                                 "properties.")
 
-                        data = urllib2.urlopen(
+                        data = urllib.request.urlopen(
                             'https://downloads.elexonportal.co.uk/file/'
                             'download/RCRC_FILE?key=' + scripting_key)
                         parser = csv.reader(data, delimiter=',', quotechar='"')

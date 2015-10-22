@@ -19,7 +19,7 @@ try:
         site_count = sess.query(Snag).join(Site).filter(
             Snag.is_ignored == false()).distinct(Site.id).count()
         render(inv, template, {'snags': snags, 'site_count': site_count})
-except utils.UserException, e:
+except utils.UserException as e:
         render(inv, template, {'messages': [str(e)]}, 400)
 finally:
     if sess is not None:

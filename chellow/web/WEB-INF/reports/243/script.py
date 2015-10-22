@@ -35,7 +35,7 @@ try:
         sess.commit()
         inv.sendSeeOther(
             '/reports/69/output/?dno_rate_script_id=' + str(rate_script.id))
-except UserException, e:
+except UserException as e:
     render(inv, template, page_fields(contract, str(e)))
 finally:
     sess.close()

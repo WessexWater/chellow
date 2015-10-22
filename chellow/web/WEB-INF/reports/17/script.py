@@ -47,17 +47,14 @@ try:
                 'REACTIVE_IMP': 'export_reactive_imp',
                 'REACTIVE_EXP': 'export_reactive_exp'}}
 
-        hh_data = sess.query(HhDatum).join(Channel).join(Era).filter(
-            Era.supply_id == supply.id, HhDatum.start_date >= start_date,
+        hh_data = iter(sess.query(HhDatum).join(Channel).join(Era).filter(
+            Era.supply == supply, HhDatum.start_date >= start_date,
             HhDatum.start_date <= finish_date).order_by(
-            HhDatum.start_date).__iter__()
+            HhDatum.start_date))
         hh_lines = []
 
         hh_date = start_date
-        try:
-            hh_datum = hh_data.next()
-        except StopIteration:
-            hh_datum = None
+        hh_datum = next(hh_data, None)
         while hh_date <= finish_date:
             hh_line = {'timestamp': hh_date}
             hh_lines.append(hh_line)
@@ -65,10 +62,7 @@ try:
                 channel = hh_datum.channel
                 hh_line[keys[channel.imp_related][channel.channel_type]] = \
                     hh_datum
-                try:
-                    hh_datum = hh_data.next()
-                except StopIteration:
-                    hh_datum = None
+                hh_datum = next(hh_data, None)
 
             hh_date += HH
         render(

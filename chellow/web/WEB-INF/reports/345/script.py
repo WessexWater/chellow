@@ -67,7 +67,7 @@ try:
             {
                 'raw_lines': raw_lines, 'row_list': row_list,
                 'column_list': column_list, 'grid': grid})
-    except SyntaxError, e:
+    except SyntaxError as e:
         pass
     render(inv, template, fields)
 finally:

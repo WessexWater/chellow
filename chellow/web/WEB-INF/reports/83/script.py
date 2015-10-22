@@ -39,7 +39,7 @@ try:
                 inv.sendSeeOther(
                     '/reports/205/output/?mop_rate_script_id=' +
                     str(rate_script.id))
-            except UserException, e:
+            except UserException as e:
                 render(
                     inv, template, {
                         'rate_script': rate_script, 'messages': [str(e)]}, 400)

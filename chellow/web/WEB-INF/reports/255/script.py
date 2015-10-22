@@ -41,7 +41,7 @@ try:
                 sess, email_address, User.digest(password), role, party)
             sess.commit()
             inv.sendSeeOther('/reports/257/output/?user_id=' + str(user.id))
-        except UserException, e:
+        except UserException as e:
             sess.rollback()
             render(inv, template, users_context(sess, message=str(e)), 400)
     else:

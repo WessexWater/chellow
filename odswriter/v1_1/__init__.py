@@ -51,7 +51,7 @@ except NameError:
 def att_str(atts):
     return ''.join(
         ' ' + k + '=' + xml.sax.saxutils.quoteattr(v)
-        for k, v in sorted(atts.iteritems()))
+        for k, v in sorted(atts.items()))
 
 
 def begin_elem(f, tag, atts=None):
@@ -114,96 +114,96 @@ class ODSWriter(object):
 
         f_dir = tempfile.mkdtemp()
         f_path = os.path.join(f_dir, "content.xml")
-        f = open(f_path, "wb")
-        f.write('<?xml version="1.0" encoding="UTF-8"?>')
-        begin_elem(f, 'office:document-content', CONTENT_ATTRS)
-        begin_elem(f, "office:automatic-styles")
-        empty_elem(f, "number:date-style", {"style:name": "DateISO"})
-        empty_elem(f, "number:year", {'number:style': 'long'})
-        begin_elem(f, "number:text", {})
-        f.write('-')
-        end_elem(f, "number:text")
-        empty_elem(f, "number:month", {'number:style': 'long'})
-        begin_elem(f, "number:text", {})
-        f.write('-')
-        end_elem(f, "number:text")
-        empty_elem(f, "number:day", {'number:style': 'long'})
-        begin_elem(f, "number:text", {})
-        f.write(' ')
-        end_elem(f, "number:text")
-        empty_elem(f, "number:hours", {'number:style': 'long'})
-        begin_elem(f, "number:text", {})
-        f.write(':')
-        end_elem(f, "number:text")
-        empty_elem(f, "number:minutes", {'number:style': 'long'})
-        empty_elem(f, 'style:style', {
-            'style:name': 'cDateISO',
-            'style:family': 'table-cell',
-            'style:data-style-name': 'DateISO'})
-        end_elem(f, "office:automatic-styles")
-        begin_elem(f, 'office:body')
-        begin_elem(f, 'office:spreadsheet')
-        for sheet in self.sheets:
-            begin_elem(f, "table:table", {"table:name": sheet.name})
-            empty_elem(f, "table:table-column")
+        with open(f_path, "w") as f:
+            f.write('<?xml version="1.0" encoding="UTF-8"?>')
+            begin_elem(f, 'office:document-content', CONTENT_ATTRS)
+            begin_elem(f, "office:automatic-styles")
+            empty_elem(f, "number:date-style", {"style:name": "DateISO"})
+            empty_elem(f, "number:year", {'number:style': 'long'})
+            begin_elem(f, "number:text", {})
+            f.write('-')
+            end_elem(f, "number:text")
+            empty_elem(f, "number:month", {'number:style': 'long'})
+            begin_elem(f, "number:text", {})
+            f.write('-')
+            end_elem(f, "number:text")
+            empty_elem(f, "number:day", {'number:style': 'long'})
+            begin_elem(f, "number:text", {})
+            f.write(' ')
+            end_elem(f, "number:text")
+            empty_elem(f, "number:hours", {'number:style': 'long'})
+            begin_elem(f, "number:text", {})
+            f.write(':')
+            end_elem(f, "number:text")
+            empty_elem(f, "number:minutes", {'number:style': 'long'})
+            empty_elem(f, 'style:style', {
+                'style:name': 'cDateISO',
+                'style:family': 'table-cell',
+                'style:data-style-name': 'DateISO'})
+            end_elem(f, "office:automatic-styles")
+            begin_elem(f, 'office:body')
+            begin_elem(f, 'office:spreadsheet')
+            for sheet in self.sheets:
+                begin_elem(f, "table:table", {"table:name": sheet.name})
+                empty_elem(f, "table:table-column")
 
-            for row in sheet.rows:
-                begin_elem(f, "table:table-row")
-                row_list = []
-                for cell in row:
-                    atts = {}
+                for row in sheet.rows:
+                    begin_elem(f, "table:table-row")
+                    row_list = []
+                    for cell in row:
+                        atts = {}
 
-                    if isinstance(cell, (datetime.date, datetime.datetime)):
-                        atts["office:value-type"] = "date"
-                        atts["office:date-value"] = cell.strftime(
-                            "%Y-%m-%dT%H:%M:%S")
-                        atts["table:style-name"] = "cDateISO"
+                        if isinstance(
+                                cell, (datetime.date, datetime.datetime)):
+                            atts["office:value-type"] = "date"
+                            atts["office:date-value"] = cell.strftime(
+                                "%Y-%m-%dT%H:%M:%S")
+                            atts["table:style-name"] = "cDateISO"
 
-                    elif isinstance(cell, datetime.time):
-                        atts["office:value-type"] = "time"
-                        atts["office:time-value"] = cell.strftime(
-                            "PT%HH%MM%SS")
+                        elif isinstance(cell, datetime.time):
+                            atts["office:value-type"] = "time"
+                            atts["office:time-value"] = cell.strftime(
+                                "PT%HH%MM%SS")
 
-                    elif isinstance(cell, bool):
-                        # Bool condition must be checked before numeric
-                        # because:
-                        # isinstance(True, int): True
-                        # isinstance(True, bool): True
-                        atts["office:value-type"] = "boolean"
-                        atts["office:boolean-value"] = \
-                            "true" if cell else "false"
+                        elif isinstance(cell, bool):
+                            # Bool condition must be checked before numeric
+                            # because:
+                            # isinstance(True, int): True
+                            # isinstance(True, bool): True
+                            atts["office:value-type"] = "boolean"
+                            atts["office:boolean-value"] = \
+                                "true" if cell else "false"
 
-                    elif isinstance(cell, (float, int, decimal.Decimal, long)):
-                        atts["office:value-type"] = "float"
-                        atts["office:value"] = unicode(cell)
+                        elif isinstance(cell, (float, int, decimal.Decimal)):
+                            atts["office:value-type"] = "float"
+                            atts["office:value"] = str(cell)
 
-                    elif isinstance(cell, Formula):
-                        atts["table:formula"] = str(cell)
+                        elif isinstance(cell, Formula):
+                            atts["table:formula"] = str(cell)
 
-                    elif cell is None:
-                        pass  # Empty element
+                        elif cell is None:
+                            pass  # Empty element
 
-                    else:
-                        # String and unknown types become string cells
-                        atts["office:value-type"] = "string"
-                        atts["office:string-value"] = unicode(cell)
-                    if len(row_list) > 0 and row_list[-1]['atts'] == atts:
-                        row_list[-1]['count'] += 1
-                    else:
-                        row_list.append({'count': 1, 'atts': atts})
+                        else:
+                            # String and unknown types become string cells
+                            atts["office:value-type"] = "string"
+                            atts["office:string-value"] = str(cell)
+                        if len(row_list) > 0 and row_list[-1]['atts'] == atts:
+                            row_list[-1]['count'] += 1
+                        else:
+                            row_list.append({'count': 1, 'atts': atts})
 
-                for cell_dict in row_list:
-                    ct = cell_dict['count']
-                    atts = cell_dict['atts']
-                    if ct > 1:
-                        atts['table:number-columns-repeated'] = unicode(ct)
-                    empty_elem(f, "table:table-cell", atts)
-                end_elem(f, "table:table-row")
-            end_elem(f, "table:table")
-        end_elem(f, 'office:spreadsheet')
-        end_elem(f, 'office:body')
-        end_elem(f, 'office:document-content')
-        f.close()
+                    for cell_dict in row_list:
+                        ct = cell_dict['count']
+                        atts = cell_dict['atts']
+                        if ct > 1:
+                            atts['table:number-columns-repeated'] = str(ct)
+                        empty_elem(f, "table:table-cell", atts)
+                    end_elem(f, "table:table-row")
+                end_elem(f, "table:table")
+            end_elem(f, 'office:spreadsheet')
+            end_elem(f, 'office:body')
+            end_elem(f, 'office:document-content')
 
         self.zipf.write(f_path, "content.xml")
         self.zipf.close()

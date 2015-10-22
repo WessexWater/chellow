@@ -44,7 +44,7 @@ try:
             sess.commit()
             inv.sendSeeOther(
                 '/reports/77/output/?supplier_contract_id=' + str(contract.id))
-except UserException, e:
+except UserException as e:
     sess.rollback()
     if str(e).startswith("There isn't a contract"):
         inv.sendNotFound(str(e))

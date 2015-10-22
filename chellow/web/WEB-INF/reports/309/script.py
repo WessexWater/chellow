@@ -45,7 +45,7 @@ try:
             sess.commit()
             inv.sendSeeOther(
                 '/reports/301/output/?channel_id=' + str(channel_id))
-except utils.UserException, e:
+except utils.UserException as e:
     templater.render(inv, template, make_fields(hh, e), 400)
 finally:
     if sess is not None:

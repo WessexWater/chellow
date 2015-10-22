@@ -144,7 +144,7 @@ def general_import_era(sess, action, vals, args):
             else:
                 try:
                     imp_sc = int(imp_sc_str)
-                except ValueError, e:
+                except ValueError as e:
                     raise UserException(
                         "The import agreed supply capacity " +
                         "must be an integer. " + str(e))
@@ -186,7 +186,7 @@ def general_import_era(sess, action, vals, args):
                 else:
                     try:
                         exp_sc = int(exp_sc_str)
-                    except ValueError, e:
+                    except ValueError as e:
                         raise UserException(
                             "The export supply capacity " +
                             "must be an integer. " + str(e))
@@ -326,7 +326,7 @@ def general_import_era(sess, action, vals, args):
             else:
                 try:
                     imp_sc = int(imp_sc_str)
-                except ValueError, e:
+                except ValueError as e:
                     raise UserException(
                         "The import agreed supply capacity "
                         "must be an integer. " + str(e))
@@ -383,7 +383,7 @@ def general_import_era(sess, action, vals, args):
                 else:
                     try:
                         exp_sc = int(exp_sc_str)
-                    except ValueError, e:
+                    except ValueError as e:
                         raise UserException(
                             "The export supply capacity must be an integer. " +
                             str(e))
@@ -636,7 +636,7 @@ def general_import_bill(sess, action, vals, args):
         else:
             try:
                 breakdown = eval(breakdown_str)
-            except SyntaxError, e:
+            except SyntaxError as e:
                 raise UserException(str(e))
 
         kwh_str = add_arg(args, "kWh", vals, 14)
@@ -867,7 +867,7 @@ def general_import_supply(sess, action, vals, args):
                 args, "Import Agreed Supply Capacity", vals, 18)
             try:
                 imp_sc = int(imp_sc_str)
-            except ValueError, e:
+            except ValueError as e:
                 raise UserException(
                     "The import supply capacity must be an integer." + str(e))
 
@@ -896,7 +896,7 @@ def general_import_supply(sess, action, vals, args):
                     args, "Export Agreed Supply Capacity", vals, 23)
                 try:
                     exp_sc = int(exp_sc_str)
-                except ValueError, e:
+                except ValueError as e:
                     raise UserException(
                         "The export agreed supply capacity " +
                         "must be an integer." + str(e))
@@ -1170,7 +1170,7 @@ def general_import_channel_snag_ignore(sess, action, vals, args):
 PREFIX = 'general_import_'
 typ_funcs = dict(
     (k[len(PREFIX):], globals()[k])
-    for k in globals().keys() if k.startswith(PREFIX))
+    for k in tuple(globals().keys()) if k.startswith(PREFIX))
 
 
 class GeneralImporter(threading.Thread):
@@ -1241,7 +1241,7 @@ class GeneralImporter(threading.Thread):
                             "The type " + typ + " is not recognized.")
 
             HhDatum.insert(sess, hh_data)
-        except UserException, e:
+        except UserException as e:
             try:
                 self.rd_lock.acquire()
                 self.error_message = str(e)

@@ -43,7 +43,7 @@ try:
             try:
                 start_date = datetime.datetime(
                     start_year, start_month, 1, tzinfo=pytz.utc)
-            except ValueError, e:
+            except ValueError as e:
                 start_date = None
                 raise UserException("Invalid date: " + str(e))
         else:
@@ -56,7 +56,7 @@ try:
                     era_finish.year, era_finish.month, 1, tzinfo=pytz.utc)
 
         render(inv, template, make_fields(sess, channel, start_date))
-except UserException, e:
+except UserException as e:
     render(inv, template, make_fields(sess, channel, start_date, e), 400)
 finally:
     if sess is not None:
