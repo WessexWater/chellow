@@ -433,7 +433,7 @@ def general_import_party(sess, action, vals, args):
         dno_code = add_arg(args, "DNO Code", vals, 5)
         party = Party(
             market_role=market_role, participant=participant, name=name,
-            valid_from=valid_from, valid_to=valid_to)
+            valid_from=valid_from, valid_to=valid_to, dno_code=dno_code)
         sess.add(party)
         sess.flush()
 

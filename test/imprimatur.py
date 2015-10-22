@@ -8602,33 +8602,6 @@ def virtual_bill(supply_source):
         'status_code': 200,
         'regexes': [r"The file has been imported successfully\."]},
 
-    # MDD Converter
-    {
-        'name': "MDD Converter",
-        'path': "/chellow/reports/163/output/",
-        'method': "post",
-        'files': {"file": "test/Line_Loss_Factor_Class_225.csv"},
-        'status_code': 200,
-        'regexes':  [
-            '"insert","llfc","19","889","PROLOGIS, BEDDINGTON - IMPORT","LV",'
-            '"False","True","1996-04-01 00:00",""']},
-
-    # GI Insert LLFC
-    {
-        'name': "GI Insert LLFC",
-        'path': "/chellow/reports/293/output/",
-        'method': "post",
-        'files': {'import_file': "test/gi_insert_llfc.csv"},
-        'status_code': 303,
-        'regexes': [
-            "/reports/295/output/\?process_id=3"]},
-    {
-        'name': "GI Insert LLFC. Check it worked.",
-        'path': "/chellow/reports/295/output/?process_id=3",
-        'tries': {'max': 10, 'period': 1},
-        'status_code': 200,
-        'regexes': [r"The file has been imported successfully\."]},
-
     {
         'name': "MDD Converter. Market participant",
         'path': "/chellow/reports/163/output/",
@@ -8636,7 +8609,8 @@ def virtual_bill(supply_source):
         'files': {"file": "test/Market_Participant_233.csv"},
         'status_code': 200,
         'regexes':  [
-            r'"insert","participant","BETH","Bethnal Energy Limited"']},
+            r'"insert","participant","BETH","Bethnal Energy Limited"',
+            r'"insert","participant","PENL","Peel Electricity Networks Ltd"']},
 
     {
         'name': "MDD Converter. Market participant",
@@ -8645,10 +8619,10 @@ def virtual_bill(supply_source):
         'files': {'import_file': "test/gi_insert_participant.csv"},
         'status_code': 303,
         'regexes': [
-            "/reports/295/output/\?process_id=4"]},
+            "/reports/295/output/\?process_id=3"]},
     {
         'name': "MDD Converter. Market participant",
-        'path': "/chellow/reports/295/output/?process_id=4",
+        'path': "/chellow/reports/295/output/?process_id=3",
         'tries': {'max': 10, 'period': 1},
         'status_code': 200,
         'regexes': [r"The file has been imported successfully\."]},
@@ -8670,10 +8644,10 @@ def virtual_bill(supply_source):
         'files': {'import_file': "test/gi_insert_market_role.csv"},
         'status_code': 303,
         'regexes': [
-            "/reports/295/output/\?process_id=5"]},
+            "/reports/295/output/\?process_id=4"]},
     {
         'name': "MDD Converter. Market role",
-        'path': "/chellow/reports/295/output/?process_id=5",
+        'path': "/chellow/reports/295/output/?process_id=4",
         'tries': {'max': 10, 'period': 1},
         'status_code': 200,
         'regexes': [r"The file has been imported successfully\."]},
@@ -8686,7 +8660,9 @@ def virtual_bill(supply_source):
         'status_code': 200,
         'regexes':  [
             r'"insert","party","X","BETH","BETHNAL ENERGY LIMITED",'
-            r'"2015-08-19 00:00","",""']},
+            r'"2015-08-19 00:00","",""',
+            r'"insert","party","R","PENL","Peel Electricity Networks Ltd",'
+            r'"2015-06-17 00:00","","30"']},
 
     {
         'name': "MDD Converter. Party",
@@ -8695,9 +8671,45 @@ def virtual_bill(supply_source):
         'files': {'import_file': "test/gi_party.csv"},
         'status_code': 303,
         'regexes': [
-            "/reports/295/output/\?process_id=6"]},
+            "/reports/295/output/\?process_id=5"]},
     {
         'name': "MDD Converter. Party",
+        'path': "/chellow/reports/295/output/?process_id=5",
+        'tries': {'max': 10, 'period': 1},
+        'status_code': 200,
+        'regexes': [r"The file has been imported successfully\."]},
+
+    {
+        'name': "MDD Converter. Check imported party looks okay",
+        'path': "/chellow/reports/73/output/?participant_id=604",
+        'status_code': 200,
+        'regexes': [
+            r'<tr>\s*<td>\s*'
+            r'<a href="/chellow/reports/47/output/\?party_id=1011">Peel '
+            r'Electricity Networks Ltd</a>\s*</td>\s*<td>\s*'
+            r'<a href="/chellow/reports/123/output/\?market_role_id=27">'
+            r'Distributor</a>\s*</td>\s*<td>\s*30\s*</td>\s*</tr>']},
+
+    {
+        'name': "MDD Converter. Convert LLFC.",
+        'path': "/chellow/reports/163/output/",
+        'method': "post",
+        'files': {"file": "test/Line_Loss_Factor_Class_225.csv"},
+        'status_code': 200,
+        'regexes':  [
+            '"insert","llfc","19","889","PROLOGIS, BEDDINGTON - IMPORT","LV",'
+            '"False","True","1996-04-01 00:00",""']},
+
+    {
+        'name': "GI Insert LLFC",
+        'path': "/chellow/reports/293/output/",
+        'method': "post",
+        'files': {'import_file': "test/gi_insert_llfc.csv"},
+        'status_code': 303,
+        'regexes': [
+            "/reports/295/output/\?process_id=6"]},
+    {
+        'name': "GI Insert LLFC. Check it worked.",
         'path': "/chellow/reports/295/output/?process_id=6",
         'tries': {'max': 10, 'period': 1},
         'status_code': 200,
