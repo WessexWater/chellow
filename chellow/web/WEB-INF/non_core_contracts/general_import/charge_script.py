@@ -430,7 +430,8 @@ def general_import_party(sess, action, vals, args):
         valid_from = parse_hh_start(valid_from_str)
         valid_to_str = add_arg(args, "Valid To", vals, 4)
         valid_to = parse_hh_start(valid_to_str)
-        dno_code = add_arg(args, "DNO Code", vals, 5)
+        dno_code_str = add_arg(args, "DNO Code", vals, 5)
+        dno_code = None if len(dno_code_str) == 0 else dno_code_str
         party = Party(
             market_role=market_role, participant=participant, name=name,
             valid_from=valid_from, valid_to=valid_to, dno_code=dno_code)
@@ -448,7 +449,8 @@ def general_import_party(sess, action, vals, args):
         party.valid_from = parse_hh_start(valid_from_str)
         valid_to_str = add_arg(args, "Valid To", vals, 4)
         party.valid_to = parse_hh_start(valid_to_str)
-        dno_code = add_arg(args, "DNO Code", vals, 5)
+        dno_code_str = add_arg(args, "DNO Code", vals, 5)
+        dno_code = None if len(dno_code_str) == 0 else dno_code_str
         party.dno_code = dno_code
         sess.flush()
 

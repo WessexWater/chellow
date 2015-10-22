@@ -8659,6 +8659,8 @@ def virtual_bill(supply_source):
         'files': {"file": "test/Market_Participant_Role_232.csv"},
         'status_code': 200,
         'regexes':  [
+            r'\s\s"insert","party","M","AMSL",'
+            r'"Accrington Metering Services Ltd","2015-08-19 00:00","",""',
             r'"insert","party","X","BETH","BETHNAL ENERGY LIMITED",'
             r'"2015-08-19 00:00","",""',
             r'"insert","party","R","PENL","Peel Electricity Networks Ltd",'

@@ -187,7 +187,11 @@ elif method == 'POST':
                         valid_to = datetime.datetime.strptime(
                             valid_to_str, "%d/%m/%Y")
                     name = values[4]
-                    dno_code = values[14]
+                    dno_code_str = values[14]
+                    if len(dno_code_str) == 0:
+                        dno_code = None
+                    else:
+                        dno_code = dno_code_str
 
                     if party is None:
                         yield ','.join(
@@ -197,7 +201,7 @@ elif method == 'POST':
                                     participant_code, name,
                                     hh_format(valid_from),
                                     '' if valid_to is None else
-                                    hh_format(valid_to), dno_code))) + "\n"
+                                    hh_format(valid_to), dno_code_str))) + "\n"
                     elif name != party.name or dno_code != party.dno_code:
                         yield ','.join(
                             (
@@ -206,7 +210,7 @@ elif method == 'POST':
                                     participant_code, name,
                                     hh_format(valid_from),
                                     '' if valid_to is None else
-                                    hh_format(valid_to), dno_code))) + "\n"
+                                    hh_format(valid_to), dno_code_str))) + "\n"
             elif table == 'Meter_Timeswitch_Class':
                 for i, values in enumerate(reader):
                     code_str = values[0]
