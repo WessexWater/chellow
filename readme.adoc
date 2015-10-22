@@ -18,8 +18,11 @@ image:https://travis-ci.org/WessexWater/chellow.svg?branch=master["Build Status"
 
 == Installation
 
-. Install PostgreSQL 9.4
-. Install Python 2.7
+Chellow is a Python web application (with a built-in webserver) that uses the
+PostgreSQL database. To install Chellow, follow these steps:
+
+. Install http://www.postgresql.org/[PostgreSQL] 9.4
+. Install Python 2.7 (tested on the http://pypy.org/[PyPy] interpreter)
 . Create a PostgreSQL database called `chellow` with the character encoding
   `UTF8`.
 . At the command line run:
