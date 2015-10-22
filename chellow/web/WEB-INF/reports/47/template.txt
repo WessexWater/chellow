@@ -27,7 +27,8 @@
       </tr>
       <tr>
         <th>Participant</th>
-        <td><a href="{{ context_path }}/reports/73/output/?participant_id={{ party.participant.id }}">{{ party.participant.name }}</a>
+        <td>
+					<a href="{{context_path}}/reports/73/output/?participant_id={{party.participant.id}}">{{party.participant.name}}</a>
         </td>
       </tr>
       <tr>
@@ -42,6 +43,15 @@
             <td>{{ party.dno_code }}</td>
           </tr>
         {% endif %}
+      <tr>
+        <th>Valid From</th>
+        <td>{{party.valid_from|hh_format}}</a>
+        </td>
+      </tr>
+      <tr>
+        <th>Valid To</th>
+        <td>{{party.valid_to|hh_format}}</a>
+      </tr>
     </table>
     <br />
     <table>
