@@ -1,14 +1,17 @@
 #!/usr/bin/env python
 
 from setuptools import setup
+import versioneer
+
 
 setup(
-    name='Chellow',
-    version='1.0',
+    name='chellow',
+    version=versioneer.get_versions()['full-revisionid'],
     description='Web Application for checking UK utility bills.',
     author='Tony Locke',
     author_email='tlocke@tlocke.org.uk',
     url='https://github.com/WessexWater/chellow',
+    cmdclass=versioneer.get_cmdclass(),
     packages=[
         'chellow', 'net', 'net.sf', 'net.sf.chellow', 'net.sf.chellow.monad',
         'utils', 'db', 'bank_holidays', 'scenario', 'computer', 'triad_rates',

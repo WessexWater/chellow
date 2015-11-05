@@ -32,3 +32,7 @@ config['SQLALCHEMY_DATABASE_URI'] = ''.join(
 
 import chellow.views
 __all__ = [chellow]
+
+from ._version import get_versions
+__version__ = get_versions()['version']
+del get_versions
