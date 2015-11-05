@@ -6,7 +6,7 @@ import versioneer
 
 setup(
     name='chellow',
-    version=versioneer.get_versions()['full-revisionid'],
+    version=versioneer.get_version(),
     description='Web Application for checking UK utility bills.',
     author='Tony Locke',
     author_email='tlocke@tlocke.org.uk',
