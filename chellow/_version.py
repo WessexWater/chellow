@@ -417,6 +417,20 @@ def render(pieces, style):
 
 
 def get_versions():
+    vers = _get_versions()
+    ver = vers['version']
+    try:
+        ver = ver[ver.index('.') + 1:]
+        ver = ver[:ver.index('.')]
+    except IndexError:
+        pass
+
+    ver = ver.replace('-', '.').replace('+', '.')
+    vers['version'] = ver
+    return vers
+
+
+def _get_versions():
     # I am in _version.py, which lives at ROOT/VERSIONFILE_SOURCE. If we have
     # __file__, we can work backwards from there to the root. Some
     # py2exe/bbfreeze/non-CPython implementations don't do __file__, in which
