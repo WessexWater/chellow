@@ -7,8 +7,8 @@ import versioneer
 def get_version():
     ver = versioneer.get_version()
     try:
-        idx = ver.index('.')
-        ver = ver[:idx]
+        ver = ver[ver.index('.') + 1:]
+        ver = ver[:ver.index('.')]
     except IndexError:
         pass
 
