@@ -81,19 +81,19 @@ in Windows an environment variable can be set by doing:
   email and password, and then the Chellow home page should appear.
 
 
-=== Using A Different Webserver
-
-Chellow uses its own webserver by default, but the app also exists as a Python
-WSGI web application so Chellow can be used with any WSGI compliant application
-server, eg Gunicorn. The WSGI app that should be specified is `chellow.app`.
-
-
 === Upgrading
 
 To upgrade to the latest version of Chellow, enter the following at the command
 line:
 
- pip install --upgrade git+https://github.com/WessexWater/chellow#egg=chellow
+ pip install --upgrade chellow
+
+
+=== Using A Different Webserver
+
+Chellow uses its own webserver by default, but the app also exists as a Python
+WSGI web application so Chellow can be used with any WSGI compliant application
+server, eg Gunicorn. The WSGI app that should be specified is `chellow.app`.
 
 
 ==  Getting Started
