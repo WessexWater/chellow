@@ -27,7 +27,7 @@ PostgreSQL database. To install Chellow, follow these steps:
   `UTF8`.
 . At the command line run:
 +
- pip install git+https://github.com/WessexWater/chellow#egg=chellow
+ pip install chellow
 +
 . Set up the following environment variables to configure Chellow: +
 +
