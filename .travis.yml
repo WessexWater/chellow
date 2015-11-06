@@ -13,4 +13,4 @@ deploy:
   user: "tlocke"
   password:
     secure: Vh4ZDtm/IMFMiC6CocMcv5dHmEJ3DAME2MruMpMUDKSmNiKKgLOVxN3dR+QHrhtXJ2ohYJdiIIYQTG/5EXCN4jtpppT/hvR4ZViCgOI9fU8X/+9uGkLKEJuNmmMCkCZOGMlPdpFV+TjDEgV8dd4a3JgAP7hUV/0yi4JVT+p9glc=
-  distributions: "sdist bdist_wheel"
+  distributions: "bdist_wheel"
