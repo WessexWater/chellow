@@ -4,9 +4,20 @@ from setuptools import setup
 import versioneer
 
 
+def get_version():
+    ver = versioneer.get_version()
+    try:
+        idx = ver.index('.')
+        ver = ver[:idx]
+    except IndexError:
+        pass
+
+    return ver.replace('-', '.').replace('+', '.')
+
+
 setup(
     name='chellow',
-    version=versioneer.get_version(),
+    version=get_version(),
     description='Web Application for checking UK utility bills.',
     author='Tony Locke',
     author_email='tlocke@tlocke.org.uk',
