@@ -7,6 +7,7 @@ from sqlalchemy.exc import ProgrammingError
 import traceback
 import datetime
 import os
+import subprocess
 
 
 def GET_str(name):
@@ -27,8 +28,11 @@ def POST_str(name):
 
 
 def POST_bool(name):
-    fm = request.form
-    return name in fm and fm[name] == 'true'
+    return POST_has_param(name) and request.form[name] == 'true'
+
+
+def POST_has_param(name):
+    return name in request.form
 
 
 def chellow_redirect(path, code=None):
@@ -277,6 +281,23 @@ def edit_report(report_id):
     except:
         return render_template(
             'report.html', report=report, message=traceback.format_exc())
+
+
+@app.route('/chellow/system/', methods=['GET'])
+def system_get():
+    return render_template('system.html')
+
+
+@app.route('/chellow/system/', methods=['POST'])
+def system_post():
+    if POST_has_param('upgrade'):
+        out = subprocess.check_output(
+            ["pip", "install", "--upgrade", "chellow"],
+            stderr=subprocess.STDOUT)
+    elif POST_has_param('restart'):
+        out = subprocess.check_output(
+            ["chellow_restart"], stderr=subprocess.STDOUT)
+    return render_template('system.html', subprocess=out)
 
 
 @app.errorhandler(500)

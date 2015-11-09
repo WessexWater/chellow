@@ -702,7 +702,7 @@ def chellow_test_setup():
     subprocess.Popen(["python", "test/ftp.py"])
 
 
-def start_chellow():
+def chellow_start():
     p = subprocess.Popen(["start_chellow_process"])
 
     instance_path = chellow.app.instance_path
@@ -1019,7 +1019,7 @@ def start_chellow_process():
     httpd.serve_forever()
 
 
-def stop_chellow():
+def chellow_stop():
     pid_path = os.path.join(chellow.app.instance_path, 'pid')
     if os.path.exists(pid_path):
         with open(pid_path, 'r') as pid_file:
@@ -1031,3 +1031,8 @@ def stop_chellow():
             print(e)
 
         os.remove(pid_path)
+
+
+def chellow_restart():
+    chellow_stop()
+    chellow_start()

@@ -57,7 +57,8 @@ setup(
         'pympler'],
     entry_points={
         'console_scripts': [
-            'start_chellow = chellow.commands:start_chellow',
+            'chellow_start = chellow.commands:chellow_start',
             'start_chellow_process = chellow.commands:start_chellow_process',
             'chellow_test_setup = chellow.commands:chellow_test_setup',
-            'stop_chellow = chellow.commands:stop_chellow']})
+            'chellow_restart = chellow.commands:chellow_restart',
+            'chellow_stop = chellow.commands:chellow_stop']})
