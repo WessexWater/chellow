@@ -283,21 +283,26 @@ def edit_report(report_id):
             'report.html', report=report, message=traceback.format_exc())
 
 
-@app.route('/chellow/system/', methods=['GET'])
+@app.route('/system/', methods=['GET'])
 def system_get():
     return render_template('system.html')
 
 
-@app.route('/chellow/system/', methods=['POST'])
+@app.route('/system/', methods=['POST'])
 def system_post():
     if POST_has_param('upgrade'):
         out = subprocess.check_output(
             ["pip", "install", "--upgrade", "chellow"],
             stderr=subprocess.STDOUT)
+        return render_template('system.html', subprocess=out)
     elif POST_has_param('restart'):
-        out = subprocess.check_output(
-            ["chellow_restart"], stderr=subprocess.STDOUT)
-    return render_template('system.html', subprocess=out)
+        restart_path = os.path.join(app.instance_path, 'restart')
+        with open(restart_path, 'a'):
+            os.utime(restart_path, None)
+        flag_path = os.path.join(app.instance_path, 'keep_running')
+        if os.path.exists(flag_path):
+            os.remove(flag_path)
+        return render_template('system.html', messages=["Restart requested."])
 
 
 @app.errorhandler(500)

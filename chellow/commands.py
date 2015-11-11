@@ -6,7 +6,6 @@ import chellow
 from wsgiref.simple_server import make_server
 import os.path
 import requests
-import signal
 from sqlalchemy import (
     Column, Integer, String, Boolean, DateTime, Text, Numeric, Enum,
     create_engine, ForeignKey, Sequence, UniqueConstraint)
@@ -703,14 +702,7 @@ def chellow_test_setup():
 
 
 def chellow_start():
-    p = subprocess.Popen(["start_chellow_process"])
-
-    instance_path = chellow.app.instance_path
-    if not os.path.exists(instance_path):
-        os.makedirs(instance_path)
-    with open(os.path.join(instance_path, 'pid'), "w") as pid_file:
-        pid_file.write(str(p.pid))
-
+    subprocess.Popen(["chellow_watchdog_start"])
     print "Testing if server is up..."
     status_code = None
     health_url = ''.join(
@@ -726,6 +718,40 @@ def chellow_start():
         except requests.exceptions.ConnectionError as e:
             print(e)
         time.sleep(1)
+
+
+def chellow_watchdog_start():
+    print("About to start chellow process")
+    subprocess.Popen(["start_chellow_process"])
+    instance_path = chellow.app.instance_path
+    restart_path = os.path.join(instance_path, 'restart')
+    flag_path = os.path.join(instance_path, 'keep_running')
+    stopped_path = os.path.join(instance_path, 'stopped')
+    health_url = ''.join(
+        [
+            'http://localhost:', str(chellow.app.config['CHELLOW_PORT']),
+            '/health'])
+    while not os.path.exists(flag_path):
+        time.sleep(1)
+    while True:
+        if not os.path.exists(flag_path):
+            if os.path.exists(stopped_path):
+                if os.path.exists(restart_path):
+                    print("Attempting restart")
+                    subprocess.Popen(["start_chellow_process"])
+                    while not os.path.exists(flag_path):
+                        time.sleep(1)
+                else:
+                    break
+            else:
+                try:
+                    print("Trying health URL " + health_url)
+                    requests.get(health_url)
+                except Exception as e:
+                    print(str(e))
+
+        time.sleep(1)
+    print "Exiting watchdog."
 
 
 def start_chellow_process():
@@ -1015,24 +1041,52 @@ def start_chellow_process():
     httpd = make_server('', chellow_port, chellow.app)
     print "Serving HTTP on port " + str(chellow_port) + "..."
 
-    # Respond to requests until process is killed
-    httpd.serve_forever()
+    instance_path = chellow.app.instance_path
+    if not os.path.exists(instance_path):
+        os.makedirs(instance_path)
+    flag_path = os.path.join(instance_path, 'keep_running')
+    with open(flag_path, 'a'):
+        os.utime(flag_path, None)
+
+    restart_path = os.path.join(instance_path, 'restart')
+    if os.path.exists(restart_path):
+        os.remove(restart_path)
+
+    stopped_path = os.path.join(instance_path, 'stopped')
+    if os.path.exists(stopped_path):
+        os.remove(stopped_path)
+
+    while os.path.exists(flag_path):
+        httpd.handle_request()
+
+    engine = create_engine(
+        ''.join(
+            [
+                'postgresql+pg8000://',  config['PGUSER'], ':',
+                config['PGPASSWORD'], '@', config['PGHOST'], ':',
+                config['PGPORT'], '/', db_name]),
+        isolation_level="SERIALIZABLE")
+
+    Session = sessionmaker(bind=engine)
+    session = Session()
+    shutdown_contract = Contract.get_non_core_by_name(session, 'shutdown')
+    session.close()
+    ns = {}
+    exec(shutdown_contract.charge_script, ns)
+    ns['on_shut_down'](None)
+    with open(stopped_path, 'a'):
+        os.utime(stopped_path, None)
 
 
 def chellow_stop():
-    pid_path = os.path.join(chellow.app.instance_path, 'pid')
-    if os.path.exists(pid_path):
-        with open(pid_path, 'r') as pid_file:
-            pid = int(pid_file.read().strip())
+    flag_path = os.path.join(chellow.app.instance_path, 'keep_running')
+    if os.path.exists(flag_path):
+        os.remove(flag_path)
+    stopped_path = os.path.join(chellow.app.instance_path, 'stopped')
+    for i in range(15):
+        print "Checking if stopped."
+        if not os.path.exists(stopped_path):
+            print "Has stopped."
+            break
 
-        try:
-            os.kill(pid, signal.SIGTERM)
-        except OSError as e:
-            print(e)
-
-        os.remove(pid_path)
-
-
-def chellow_restart():
-    chellow_stop()
-    chellow_start()
+        time.sleep(1)

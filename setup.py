@@ -60,5 +60,5 @@ setup(
             'chellow_start = chellow.commands:chellow_start',
             'start_chellow_process = chellow.commands:start_chellow_process',
             'chellow_test_setup = chellow.commands:chellow_test_setup',
-            'chellow_restart = chellow.commands:chellow_restart',
+            'chellow_watchdog_start = chellow.commands:chellow_watchdog_start',
             'chellow_stop = chellow.commands:chellow_stop']})
