@@ -699,7 +699,7 @@ def chellow_test_setup():
 
 def chellow_start():
     subprocess.Popen(["chellow_watchdog_start"])
-    print "Testing if server is up..."
+    print("Testing if server is up...")
     status_code = None
     health_url = ''.join(
         [
@@ -747,7 +747,7 @@ def chellow_watchdog_start():
                     print(str(e))
 
         time.sleep(1)
-    print "Exiting watchdog."
+    print("Exiting watchdog.")
 
 
 def start_chellow_process():
@@ -1080,9 +1080,9 @@ def chellow_stop():
         os.remove(flag_path)
     stopped_path = os.path.join(chellow.app.instance_path, 'stopped')
     for i in range(15):
-        print "Checking if stopped."
+        print("Checking if stopped.")
         if not os.path.exists(stopped_path):
-            print "Has stopped."
+            print("Has stopped.")
             break
 
         time.sleep(1)
