@@ -4,6 +4,7 @@ import utils
 import db
 Monad.getUtils()['impt'](globals(), 'utils', 'db')
 inv, template = globals()['inv'], globals()['template']
+hh_format = utils.hh_format
 
 if sys.platform.startswith('java'):
     from java.awt.image import BufferedImage
@@ -99,7 +100,6 @@ if sys.platform.startswith('java'):
         actualStatus = 'A'
 
         site = Site.get_by_id(sess, site_id)
-        hhDate = start_date
         groups = site.groups(sess, start_date, finish_date, True)
         for group in groups:
             rs = iter(
@@ -121,7 +121,7 @@ if sys.platform.startswith('java'):
                         'start_date': group.start_date,
                         'finish_date': group.finish_date,
                         'supply_ids': [s.id for s in group.supplies]}))
-
+            hh_date = group.start_date
             try:
                 row = rs.next()
                 hhChannelValue = float(row.value)
@@ -132,7 +132,7 @@ if sys.platform.startswith('java'):
                 supply_name = row.name
                 supply_id = row.supply_id
 
-                while hhDate <= finish_date:
+                while hh_date <= group.finish_date:
                     complete = "blank"
                     exportedValue = 0
                     importedValue = 0
@@ -141,7 +141,7 @@ if sys.platform.startswith('java'):
                     third_party_import = 0
                     third_party_export = 0
                     supplyList = []
-                    while hhChannelStartDate == hhDate:
+                    while hhChannelStartDate == hh_date:
                         if not imp_related and \
                                 source_code in ('net', 'gen-net'):
                             exportedValue += hhChannelValue
@@ -208,8 +208,8 @@ if sys.platform.startswith('java'):
                     maxUsedScale = max(maxUsedScale, usedValue)
                     minUsedScale = min(minUsedScale, usedValue)
                     resultData.append(
-                        [hhDate, supplyList, usedValue, displacedValue])
-                    hhDate += HH
+                        [hh_date, supplyList, usedValue, displacedValue])
+                    hh_date += HH
             except StopIteration:
                 pass
 
