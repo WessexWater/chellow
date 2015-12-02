@@ -279,7 +279,6 @@ def displaced_era(sess, site_group, start_date, finish_date):
 
 
 def get_data_sources(data_source, start_date, finish_date, forecast_date=None):
-
     if forecast_date is None:
         forecast_date = data_source.forecast_date
 
@@ -703,6 +702,7 @@ class SupplySource(DataSource):
             pw, caches, bill=None):
         DataSource.__init__(
             self, sess, start_date, finish_date, forecast_date, pw, caches)
+
         self.is_displaced = False
         self.bill = bill
         if self.bill is not None:
@@ -760,11 +760,20 @@ class SupplySource(DataSource):
                 or_(
                     Era.finish_date == null(),
                     Era.finish_date >= self.history_start)).order_by(
-                Era.start_date).all()
+                Era.start_date)
+            if self.is_import:
+                hist_eras = hist_eras.filter(Era.imp_mpan_core != null())
+            else:
+                hist_eras = hist_eras.filter(Era.exp_mpan_core != null())
+            hist_eras = hist_eras.all()
             if len(hist_eras) == 0:
                 hist_eras = sess.query(Era).filter(
-                    Era.supply == self.supply).order_by(
-                    Era.start_date).limit(1).all()
+                    Era.supply == self.supply).order_by(Era.start_date)
+                if self.is_import:
+                    hist_eras = hist_eras.filter(Era.imp_mpan_core != null())
+                else:
+                    hist_eras = hist_eras.filter(Era.exp_mpan_core != null())
+                hist_eras = hist_eras.limit(1).all()
 
         dte = start_date
 
@@ -1192,6 +1201,7 @@ order by hh_datum.start_date
                     datum_generator = _datum_generator(
                         sess, self.years_back, self.caches, self.pw)
                     hh_date = chunk_start
+
                     data = iter(sess.execute(
                         "select "
                         "    start_date, "

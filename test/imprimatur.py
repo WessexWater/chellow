@@ -10602,4 +10602,45 @@ def virtual_bill(supply_source):
         'status_code': 200,
         'regexes': [
             r"The file has been imported successfully\."]},
+
+    {
+        'name': "TRIAD, no historical data, but eras exist",
+        'path': '/chellow/reports/307/output/',
+        'method': 'post',
+        'data': {
+            'era_id': "28",
+            'start_year': "2014",
+            'start_month': "01",
+            'start_day': "01",
+            'start_hour': "00",
+            'start_minute': "00",
+            'is_ended': "false",
+            'mop_contract_id': "57",
+            'mop_account': "22 0883 6932 301",
+            'hhdc_contract_id': "53",
+            'hhdc_account': "22 0883 6932 301",
+            'msn': "",
+            'pc_id': "9",
+            'mtc_code': "845",
+            'cop_id': "5",
+            'ssc_code': "",
+            'imp_llfc_code': "570",
+            'imp_mpan_core': "22 0883 6932 301",
+            'imp_sc': "350",
+            'imp_supplier_contract_id': "58",
+            'imp_supplier_account': "413",
+            'exp_llfc_code': "581",
+            'exp_mpan_core': "22 7824 9120 097",
+            'exp_sc': "150",
+            'exp_supplier_contract_id': "58",
+            'exp_supplier_account': "669"},
+        'status_code': 303},
+    {
+        'name': "TRIAD, no historical data, but eras exist",
+        'path': '/chellow/reports/291/output/?supply_id=5&start_year=2014&'
+        'start_month=01&start_day=01&start_hour=00&start_minute=0&'
+        'finish_year=2014&finish_month=01&finish_day=31&finish_hour=23&'
+        'finish_minute=30',
+        'status_code': 200,
+        'regexes': [r'22 7824 9120 097']},
 ]
