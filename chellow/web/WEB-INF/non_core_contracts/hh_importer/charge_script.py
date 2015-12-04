@@ -9,10 +9,12 @@ import ftplib
 import os
 import db
 import utils
+import socket
 
 Monad.getUtils()['impt'](globals(), 'db', 'utils', 'templater')
 Contract, MarketRole = db.Contract, db.MarketRole
 UserException = utils.UserException
+socket.setdefaulttimeout(120)
 
 processes = collections.defaultdict(list)
 tasks = {}
