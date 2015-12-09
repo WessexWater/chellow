@@ -5793,7 +5793,7 @@ def virtual_bill(supply_source):
     {
         'name': 'System Price',
         'path': '/chellow/reports/381/output/',
-        'tries': {},
+        'tries': {'max': 20, 'period': 1},
         'regexes': [
             r"Updating rate script starting at 2005-04-01 00:00\."],
         'status_code': 200},
