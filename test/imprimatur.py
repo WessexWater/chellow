@@ -14632,6 +14632,11 @@ finally:
             r'/supplier_batches/17']},
 
     {
+        'name': "Show insert gas contract",
+        'path': '/chellow/reports/401/output/',
+        'status_code': 200},
+
+    {
         'name': "Insert gas contract",
         'path': '/chellow/reports/401/output/',
         'method': 'post',
