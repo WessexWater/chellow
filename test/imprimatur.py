@@ -14774,6 +14774,22 @@ def virtual_bill(ds):
             r'/reports/411/output/\?g_rate_script_id=2']},
 
     {
+        'name': "Edit gas rate script: error in JSON",
+        'path': '/chellow/reports/409/output/',
+        'method': 'post',
+        'data': {
+            'g_rate_script_id': "2",
+            'start_year': '2015',
+            'start_month': '09',
+            'start_day': '01',
+            'start_hour': '00',
+            'start_minute': '00',
+            'script': '{"gas_rate": 0.019548, "standing_rate: 67.80}'},
+        'status_code': 400,
+        'regexes': [
+            r'Update Rate Script']},
+
+    {
         'name': "Add a batch to a gas contract",
         'path': '/chellow/reports/415/output/',
         'method': 'post',
