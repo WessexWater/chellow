@@ -15066,5 +15066,34 @@ def virtual_bill(ds):
             r'7830.0,1.00941,1.00941,HCUF,HCUF,9001802,310621.0456747202,'
             r'0.038896,0.019548,17872.26,6072.0202008495735,0,67.8,157.8,'
             r'67.8,24025.32,6139.820200849574,3146.67,0,14186.22,'
-            r'6139.820200849574']}
+            r'6139.820200849574']},
+
+    {
+        'name': "Delete gas supply. Insert the gas supply",
+        'path': '/chellow/reports/311/output/',
+        'method': 'post',
+        'data': {
+            'site_id': '7',
+            'name': 'Another Gas',
+            'start_year': '2015',
+            'start_month': '09',
+            'start_day': '01',
+            'start_hour': '00',
+            'start_minute': '00',
+            'msn': '7ghwsklh',
+            'mprn': '98472777',
+            'g_contract_id': '1',
+            'account': 'ghuel',
+            'insert_gas': 'Insert Gas'},
+        'status_code': 303,
+        'regexes': [
+            r'/reports/5/output/\?site_id=7']},
+    {
+        'name': "Delete gas supply.",
+        'path': '/chellow/reports/385/output/',
+        'method': 'post',
+        'data': {
+            'g_supply_id': '2',
+            'delete': 'Delete'},
+        'status_code': 303},
 ]

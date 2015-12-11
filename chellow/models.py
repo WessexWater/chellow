@@ -3527,6 +3527,22 @@ class GSupply(Base, PersistentClass):
             g_eras = g_eras.filter(GEra.start_date <= finish)
         return g_eras.all()
 
+    def delete(self, sess):
+        if len(self.g_bills) > 0:
+            raise UserException(
+                "One can't delete a supply if there are still "
+                "bills attached to it.")
+
+        for g_era in self.g_eras:
+            for site_g_era in g_era.site_g_eras:
+                sess.delete(site_g_era)
+            sess.flush()
+            sess.delete(g_era)
+            sess.flush()
+
+        sess.delete(self)
+        sess.flush()
+
 
 class GBill(Base, PersistentClass):
     __tablename__ = 'g_bill'
