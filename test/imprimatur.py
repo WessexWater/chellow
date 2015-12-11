@@ -15088,6 +15088,14 @@ def virtual_bill(ds):
         'status_code': 303,
         'regexes': [
             r'/reports/5/output/\?site_id=7']},
+
+    {
+        'name': "Delete gas supply. Check the search contains it.",
+        'path': '/chellow/reports/437/output/?search_pattern=',
+        'regexes': [
+            r"Another Gas"],
+        'status_code': 200},
+
     {
         'name': "Delete gas supply.",
         'path': '/chellow/reports/385/output/',
