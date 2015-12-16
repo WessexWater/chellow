@@ -1458,7 +1458,7 @@ def virtual_bill_titles():
             'imp_mpan_core': "22 9205 6799 106",
             'imp_ssc_code': "",
             'imp_sc': "450",
-            'imp_supplier_contract_id': "8",
+            'imp_supplier_contract_id': "9",
             'imp_supplier_account': "11640077",
             'exp_mtc_code': "845",
             'exp_llfc_code': "581",
@@ -1905,7 +1905,7 @@ def virtual_bill_titles():
             'imp_llfc_code': "570",
             'imp_mpan_core': "22 0883 6932 301",
             'imp_sc': "350",
-            'imp_supplier_contract_id': "61",
+            'imp_supplier_contract_id': "62",
             'imp_supplier_account': "01"},
         'status_code': 400,
         'regexes': [
@@ -5624,7 +5624,7 @@ def virtual_bill(supply_source):
         'path': '/mop_batches/9',
         'status_code': 200},
 
-    # Mop contract 59
+    # Mop contract 60
     {
         'name': "Try adding bills to the MOP batch",
         'path': '/mop_bill_imports',
@@ -5636,7 +5636,7 @@ def virtual_bill(supply_source):
         'regexes': [
             r"/mop_bill_imports/7"]},
 
-    # Mop contract 58, batch 9
+    # Mop contract 59, batch 9
     {
         'path': '/mop_bill_imports/7',
         'tries': {},
@@ -6337,7 +6337,7 @@ def virtual_bill(supply_source):
             '</td>'],
         'status_code': 200},
 
-    # Supplier contract 62
+    # Supplier contract 63
     {
         'name': "Deleting a batch with bills with register reads.",
         'path': '/supplier_batches/5/edit',
@@ -6381,7 +6381,7 @@ def virtual_bill(supply_source):
             r'<a href="/mop_bill_imports\?mop_batch_id=9">Bill Imports</a>'],
         'status_code': 200},
 
-    # Check that we can see a supplier batch okay. Contract 56
+    # Check that we can see a supplier batch okay. Contract 57
     {
         'path': '/supplier_batches/4',
         'regexes': [
@@ -6409,7 +6409,7 @@ def virtual_bill(supply_source):
         'regexes': [
             r"/hhdc_contracts/34"]},
 
-    # Can we add a new era ok? },
+    # Can we add a new era ok?
     {
         'name': "Check good error message if new era has same start date as "
         "existing era.",
@@ -6506,7 +6506,7 @@ def virtual_bill(supply_source):
 
     {
         'name': "Check that the update worked",
-        'path': '/chellow/reports/279/output/?hhdc_contract_id=56',
+        'path': '/chellow/reports/279/output/?hhdc_contract_id=57',
         'status_code': 200,
         'regexes': [r'&#39;hostname&#39;: &#39;localhost&#39;,']},
 
@@ -7429,7 +7429,7 @@ def virtual_bill(supply_source):
         'path': '/bill_types/1',
         'status_code': 200},
 
-    # Supplier contract 62. },
+    # Supplier contract 63. },
     {
         'name': "Test sse edi bill with MD line",
         'path': '/supplier_bill_imports',
@@ -7441,7 +7441,7 @@ def virtual_bill(supply_source):
         'regexes': [
             r"/supplier_bill_imports/8"]},
 
-    # Supplier contract 62.
+    # Supplier contract 63.
     {
         'path': '/supplier_bill_imports/8',
         'tries': {},
@@ -7457,7 +7457,7 @@ def virtual_bill(supply_source):
             r'<a href="/local_reports/1/output\?batch_id=8">',
             r"<tbody>\s*<tr>"]},
 
-    # Supplier contract 61, batch 7, bill 10
+    # Supplier contract 62, batch 7, bill 10
     {
         'name': "Edit register read with a TPR that's not 00001",
         'path': '/reads/1/edit',
@@ -14894,7 +14894,7 @@ def virtual_bill(ds):
             r'Total']},
 
     {
-        'name': "Test Total bill import",
+        'name': "Test Total XLSX bill import",
         'path': '/chellow/reports/431/output/',
         'method': 'post',
         'data': {
@@ -15034,12 +15034,12 @@ def virtual_bill(ds):
         'regexes': [
             r'/reports/417/output/\?g_batch_id=2']},
     {
-        'name': "Import bills again",
+        'name': "Import CSV bills",
         'path': '/chellow/reports/431/output/',
         'method': 'post',
         'data': {
             'g_batch_id': "2"},
-        'files': {'import_file': 'test/bills.total.xlsx'},
+        'files': {'import_file': 'test/bills.total.csv'},
         'status_code': 303,
         'regexes': [
             r"/reports/433/output/\?importer_id=1"]},
