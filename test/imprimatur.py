@@ -4428,7 +4428,7 @@ def virtual_bill(supply_source):
             "<td>2010-06-09 00:00</td>\s*<td>2010-05-01 00:00</td>\s*"
             "<td>2010-05-31 23:30</td>\s*<td>32124.5</td>\s*"
             r'<td>2219.41</td>\s*<td>388.4</td>\s*<td>2607.81</td>\s*'
-            r'<td>\[\(&#39;bsuos-actual-gbp-info&#39;, 136.0\),',
+            r'<td>\[\(&#39;aahedc-gbp&#39;, 5.29\),',
             r"All the bills have been successfully loaded and attached to "
             "the batch\."],
         'status_code': 200},
@@ -10554,7 +10554,8 @@ def virtual_bill(supply_source):
         'name': "Displaying bill raw lines",
         'path': '/chellow/reports/105/output/?supplier_bill_id=11',
         'regexes': [
-            r"Customer Name,"],
+            r"Customer Name,",
+            r'triad-estimate'],
         'status_code': 200},
 
     {
