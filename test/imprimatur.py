@@ -4158,7 +4158,8 @@ def virtual_bill_titles():
 
 def virtual_bill(supply_source):
     bill = supply_source.supplier_bill
-    bill['net-gbp'] = 0
+    bill['consumption_info'] = supply_source.consumption_info
+    bill['net-gbp'] =  0
     bill['sum-msp-kwh'] = 0
 
     for rate_name, rate_set in supply_source.supplier_rate_sets.iteritems():
@@ -8818,6 +8819,7 @@ def virtual_bill_titles():
 def virtual_bill(supply_source):
     sum_msp_kwh = sum(h['msp-kwh'] for h in supply_source.hh_data)
     bill = supply_source.supplier_bill
+    bill['consumption_info'] = supply_source.consumption_info
     duos.duos_vb(supply_source)
     for rate_name, rate_set in supply_source.supplier_rate_sets.iteritems():
         if len(rate_set) == 1:
@@ -10644,4 +10646,15 @@ def virtual_bill(supply_source):
         'finish_minute=30',
         'status_code': 200,
         'regexes': [r'22 7824 9120 097']},
+
+    {
+        'name': "Supply level virtual bill, with readfull bill covered "
+        "by readless bill",
+        'path': '/chellow/reports/291/output/?supply_id=10&start_year=2012&'
+        'start_month=01&start_day=01&start_hour=00&start_minute=0&'
+        'finish_year=2012&finish_month=01&finish_day=31&finish_hour=23&'
+        'finish_minute=30',
+        'status_code': 200,
+        'regexes': [
+            r'3409.15883838']},
 ]

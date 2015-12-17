@@ -898,14 +898,13 @@ class SupplySource(DataSource):
                             if read_key in read_keys:
                                 continue
 
-                            pres_bill = sess.query(Bill).join(RegisterRead) \
-                                .join(BillType).filter(
-                                    Bill.supply == self.supply,
-                                    Bill.finish_date >= pres_read.present_date,
-                                    Bill.start_date <= pres_read.present_date,
-                                    BillType.code != 'W').order_by(
-                                    Bill.issue_date.desc(),
-                                    BillType.code).first()
+                            pres_bill = sess.query(Bill).join(BillType).filter(
+                                Bill.supply == self.supply, Bill.reads.any(),
+                                Bill.finish_date >= pres_read.bill.start_date,
+                                Bill.start_date <= pres_read.bill.finish_date,
+                                BillType.code != 'W').order_by(
+                                Bill.issue_date.desc(),
+                                BillType.code).first()
 
                             if pres_bill != pres_read.bill:
                                 continue
@@ -940,9 +939,9 @@ class SupplySource(DataSource):
                                 continue
 
                             prev_bill = sess.query(Bill).join(BillType).filter(
-                                Bill.supply == self.supply,
+                                Bill.supply == self.supply, Bill.reads.any(),
                                 Bill.finish_date >= prev_read.bill.start_date,
-                                Bill.start_date <= prev_read.bill.start_date,
+                                Bill.start_date <= prev_read.bill.finish_date,
                                 BillType.code != 'W').order_by(
                                 Bill.issue_date.desc(), BillType.code).first()
                             if prev_bill != prev_read.bill:
@@ -1278,7 +1277,7 @@ order by hh_datum.start_date
             elif self.bill is not None and hist_measurement_type == 'nhh':
                 tpr_codes = sess.query(Tpr.code). \
                     join(MeasurementRequirement).filter(
-                        MeasurementRequirement.ssc_id == self.ssc.id).all()
+                        MeasurementRequirement.ssc == self.ssc).all()
                 bills = []
                 for cand_bill in sess.query(Bill).join(Batch) \
                         .join(BillType).filter(
