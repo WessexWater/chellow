@@ -25,7 +25,7 @@ def parse_decimal(dec_str):
 class Parser():
     def __init__(self, f):
         self.csv_reader = iter(csv.reader(f))
-        self.titles = ''.join(self.csv_reader.next())
+        self.titles = unicode(''.join(self.csv_reader.next()), 'utf-8')
         self._line_number = None
 
     @property
@@ -41,6 +41,7 @@ class Parser():
         last_bill_reference = None
         raw_bill = None
         for self._line_number, row in enumerate(self.csv_reader):
+            row = tuple(unicode(val, 'utf-8') for val in row)
             if row[0] == '':
                 continue
             bill_reference = row[8]
@@ -72,7 +73,7 @@ class Parser():
                 raw_bill['vat_gbp'] += parse_decimal(row[32])
                 raw_bill['breakdown']['standing_gbp'] = parse_decimal(row[33])
                 raw_bill['gross_gbp'] += parse_decimal(row[34])
-                raw_bill['raw_lines'] += ','.join(row) + '\n'
+                raw_bill['raw_lines'] += u','.join(row) + u'\n'
                 raw_bill['net_gbp'] += raw_bill['gross_gbp'] - \
                     raw_bill['vat_gbp']
             else:
