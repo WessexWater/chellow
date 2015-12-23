@@ -19,13 +19,18 @@ def parse_date(date_str):
 
 
 def parse_decimal(dec_str):
-    return decimal.Decimal(''.join(c for c in dec_str if c in '-0123456789.,'))
+    return decimal.Decimal(''.join(c for c in dec_str if c in '-0123456789.'))
+
+
+def unicode_reader(reader):
+    for vals in reader:
+        yield tuple(unicode(val, 'utf-8', 'ignore') for val in vals)
 
 
 class Parser():
     def __init__(self, f):
-        self.csv_reader = iter(csv.reader(f))
-        self.titles = unicode(''.join(self.csv_reader.next()), 'utf-8')
+        self.csv_reader = iter(unicode_reader(csv.reader(f)))
+        self.titles = ','.join(self.csv_reader.next())
         self._line_number = None
 
     @property
@@ -41,7 +46,6 @@ class Parser():
         last_bill_reference = None
         raw_bill = None
         for self._line_number, row in enumerate(self.csv_reader):
-            row = tuple(unicode(val, 'utf-8') for val in row)
             if row[0] == '':
                 continue
             bill_reference = row[8]
