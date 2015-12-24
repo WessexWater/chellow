@@ -15033,6 +15033,24 @@ def virtual_bill(ds):
         'status_code': 303,
         'regexes': [
             r'/reports/417/output/\?g_batch_id=2']},
+
+    {
+        'name': "Import CSV bills that will fail",
+        'path': '/chellow/reports/431/output/',
+        'method': 'post',
+        'data': {
+            'g_batch_id': "2"},
+        'files': {'import_file': 'test/bills-fail.total.csv'},
+        'status_code': 303,
+        'regexes': [
+            r"/reports/433/output/\?importer_id=1"]},
+    {
+        'name': "View failed bill import",
+        'path': '/chellow/reports/433/output/?importer_id=1',
+        'tries': {},
+        'status_code': 200,
+        'regexes': [r'Net GBP']},
+
     {
         'name': "Import CSV bills",
         'path': '/chellow/reports/431/output/',
@@ -15042,17 +15060,17 @@ def virtual_bill(ds):
         'files': {'import_file': 'test/bills.total.csv'},
         'status_code': 303,
         'regexes': [
-            r"/reports/433/output/\?importer_id=1"]},
+            r"/reports/433/output/\?importer_id=2"]},
 
     {
         'name': "View bill import",
-        'path': '/chellow/reports/433/output/?importer_id=1',
+        'path': '/chellow/reports/433/output/?importer_id=2',
         'tries': {},
         'status_code': 200,
         'regexes': [r'successfully']},
     {
         'name': "Gas bill check",
-        'path': '/chellow/reports/429/output/?g_bill_id=3',
+        'path': '/chellow/reports/429/output/?g_bill_id=4',
         'status_code': 303},
     {
         'name': "Gas bill check",
@@ -15078,7 +15096,7 @@ def virtual_bill(ds):
             r'covered_net_gbp,virtual_net_gbp,covered_vat_gbp,virtual_vat_gbp,'
             r'covered_gross_gbp,virtual_gross_gbp',
             r'TB2,8899900012,N,2015-09-01 00:00,2015-09-30 23:30,750278673,'
-            r'CH017,Parbola,2015-09-01 00:00,2015-09-30 23:30,"4,3",25964,'
+            r'CH017,Parbola,2015-09-01 00:00,2015-09-30 23:30,"5,4",25964,'
             r'7830.0,1.00941,1.00941,HCUF,HCUF,9001802,310621.0456747202,'
             r'0.038896,0.019548,17872.26,6072.0202008495735,0,67.8,157.8,'
             r'67.8,24025.32,6139.820200849574,3146.67,0,14186.22,'
