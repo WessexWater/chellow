@@ -86,10 +86,10 @@ class Parser():
                     'mprn': row[10],
                     'prev_value': parse_decimal(row[11]),
                     'prev_date': parse_date(row[12]),
-                    'prev_type_code': row[13][-1],
+                    'prev_type_code': row[13].strip(),
                     'pres_value': parse_decimal(row[14]),
                     'pres_date': parse_date(row[15]),
-                    'pres_type_code': row[16][-1],
+                    'pres_type_code': row[16].strip(),
                     'correction_factor': parse_decimal(row[20]),
                     'calorific_value': parse_decimal(row[21]),
                     'units': row[25]}
