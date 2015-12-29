@@ -14918,6 +14918,11 @@ def virtual_bill(ds):
         'path': '/chellow/reports/417/output/?g_batch_id=1',
         'status_code': 200,
         'regexes': [
+            r"<th>0 Pres Type</th>\s*"
+            r"<th>0 Units</th>\s*"
+            r"<th>0 Correction Factor</th>\s*"
+            r"<th>0 Calorific Value</th>\s*"
+            r"</tr>",
             r"2015-09-01 00:00"]},
 
     {
