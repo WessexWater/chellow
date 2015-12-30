@@ -630,12 +630,11 @@ def gsp_gbp_per_kwh():
 def virtual_bill_titles():
     return []
 """,
-            'properties': "{}", },
+            'properties': "{}"},
         'regexes': [
             r"/supplier_contracts/39"],
         'status_code': 303},
 
-    # Give proper error if there are too few fields },
     {
         'name': "supplies",
         'path': '/general_imports',
@@ -1730,7 +1729,7 @@ def virtual_bill_titles():
         'regexes': [
             r"/supplier_bill_imports/2"]},
 
-    # Supplier contract 58, batch 4
+    # Supplier contract 59, batch 4
     {
         'path': '/supplier_bill_imports/2',
         'tries': {},
@@ -1755,7 +1754,6 @@ def virtual_bill_titles():
             r"/supplies/9"],
         'status_code': 303},
 
-    # Delete era. Supply 9
     {
         'path': '/eras/12/edit',
         'method': 'post',
@@ -1905,7 +1903,7 @@ def virtual_bill_titles():
             'imp_llfc_code': "570",
             'imp_mpan_core': "22 0883 6932 301",
             'imp_sc': "350",
-            'imp_supplier_contract_id': "62",
+            'imp_supplier_contract_id': "63",
             'imp_supplier_account': "01"},
         'status_code': 400,
         'regexes': [
@@ -4233,7 +4231,6 @@ def virtual_bill(supply_source):
             r"/supplies/10"],
         'status_code': 303},
 
-    # Change to new supplier contract. Supply 10
     {
         'path': '/eras/17/edit',
         'method': 'post',
@@ -5624,7 +5621,7 @@ def virtual_bill(supply_source):
         'path': '/mop_batches/9',
         'status_code': 200},
 
-    # Mop contract 60
+    # Mop contract 61
     {
         'name': "Try adding bills to the MOP batch",
         'path': '/mop_bill_imports',
@@ -5636,7 +5633,7 @@ def virtual_bill(supply_source):
         'regexes': [
             r"/mop_bill_imports/7"]},
 
-    # Mop contract 59, batch 9
+    # Mop contract 60, batch 9
     {
         'path': '/mop_bill_imports/7',
         'tries': {},
@@ -6381,7 +6378,7 @@ def virtual_bill(supply_source):
             r'<a href="/mop_bill_imports\?mop_batch_id=9">Bill Imports</a>'],
         'status_code': 200},
 
-    # Check that we can see a supplier batch okay. Contract 57
+    # Check that we can see a supplier batch okay. Contract 58
     {
         'path': '/supplier_batches/4',
         'regexes': [
@@ -6506,7 +6503,7 @@ def virtual_bill(supply_source):
 
     {
         'name': "Check that the update worked",
-        'path': '/chellow/reports/279/output/?hhdc_contract_id=57',
+        'path': '/chellow/reports/279/output/?hhdc_contract_id=58',
         'status_code': 200,
         'regexes': [r'&#39;hostname&#39;: &#39;localhost&#39;,']},
 
@@ -7429,7 +7426,7 @@ def virtual_bill(supply_source):
         'path': '/bill_types/1',
         'status_code': 200},
 
-    # Supplier contract 63. },
+    # Supplier contract 64.
     {
         'name': "Test sse edi bill with MD line",
         'path': '/supplier_bill_imports',
@@ -7441,7 +7438,7 @@ def virtual_bill(supply_source):
         'regexes': [
             r"/supplier_bill_imports/8"]},
 
-    # Supplier contract 63.
+    # Supplier contract 64.
     {
         'path': '/supplier_bill_imports/8',
         'tries': {},
@@ -7457,7 +7454,7 @@ def virtual_bill(supply_source):
             r'<a href="/local_reports/1/output\?batch_id=8">',
             r"<tbody>\s*<tr>"]},
 
-    # Supplier contract 62, batch 7, bill 10
+    # Supplier contract 63, batch 7, bill 10
     {
         'name': "Edit register read with a TPR that's not 00001",
         'path': '/reads/1/edit',
@@ -14696,31 +14693,32 @@ finally:
             'start_minute': '00',
             'properties': '{}',
             'charge_script': """
+from net.sf.chellow.monad import Monad
+Monad.getUtils()['impt'](globals(), 'g_ccl')
+
 def virtual_bill_titles():
     return [
-        'units_consumed', 'correction_factor', 'units', 'kwh', 'gas_rate',
-        'gas_gbp', 'standing_rate', 'standing_gbp', 'net_gbp', 'vat_gbp',
-        'gross_gbp']
+        'units_consumed', 'correction_factor', 'units_code', 'units_factor',
+        'kwh', 'gas_rate', 'gas_gbp', 'standing_rate', 'standing_gbp',
+        'net_gbp', 'vat_gbp', 'gross_gbp']
 
 
 def virtual_bill(ds):
     bill = ds.bill
+    g_ccl.vb(ds)
     for hh in ds.hh_data:
-        units_consumed = hh['units_consumed']
-        bill['units_consumed'] += units_consumed
-        correction_factor = hh['correction_factor']
-        ds.rate_sets['correction_factor'].add(correction_factor)
-        units = hh['units']
-        ds.rate_sets['units'].add(units)
-        calorific_value = hh['calorific_value']
-        ds.rate_sets['calorific_value'].add(calorific_value)
-        kwh = units_consumed * correction_factor * calorific_value
+        bill['units_consumed'] += hh['units_consumed']
+        ds.rate_sets['correction_factor'].add(hh['correction_factor'])
+        ds.rate_sets['units_code'].add(hh['units_code'])
+        ds.rate_sets['units_factor'].add(hh['units_factor'])
+        ds.rate_sets['calorific_value'].add(hh['calorific_value'])
+        kwh = hh['kwh']
         bill['kwh'] += kwh
-        gas_rate = ds.rate(db_id, hh['start_date'], 'gas_rate')
+        gas_rate = ds.g_rate(db_id, hh['start_date'], 'gas_rate')
         ds.rate_sets['gas_rate'].add(gas_rate)
         bill['gas_gbp'] += gas_rate * kwh
         if hh['utc_is_month_end']:
-            standing_rate = ds.rate(db_id, hh['start_date'], 'standing_rate')
+            standing_rate = ds.g_rate(db_id, hh['start_date'], 'standing_rate')
             ds.rate_sets['standing_rate'].add(standing_rate)
             bill['standing_gbp'] += standing_rate
 
@@ -14914,7 +14912,7 @@ def virtual_bill(ds):
             r'39\.300811</td>\s*</tr>\s*<tr>']},
 
     {
-        'name': "Bill shown correctly in batch",
+        'name': "Gas bill shown correctly in batch",
         'path': '/chellow/reports/417/output/?g_batch_id=1',
         'status_code': 200,
         'regexes': [
@@ -15040,7 +15038,7 @@ def virtual_bill(ds):
             r'/reports/417/output/\?g_batch_id=2']},
 
     {
-        'name': "Import CSV bills that will fail",
+        'name': "Import CSV gas bills that will fail",
         'path': '/chellow/reports/431/output/',
         'method': 'post',
         'data': {
@@ -15050,14 +15048,14 @@ def virtual_bill(ds):
         'regexes': [
             r"/reports/433/output/\?importer_id=1"]},
     {
-        'name': "View failed bill import",
+        'name': "View failed gas bill import",
         'path': '/chellow/reports/433/output/?importer_id=1',
         'tries': {},
         'status_code': 200,
         'regexes': [r'Net GBP']},
 
     {
-        'name': "Import CSV bills",
+        'name': "Gas: Import CSV bills",
         'path': '/chellow/reports/431/output/',
         'method': 'post',
         'data': {
@@ -15068,7 +15066,7 @@ def virtual_bill(ds):
             r"/reports/433/output/\?importer_id=2"]},
 
     {
-        'name': "View bill import",
+        'name': "Gas: View bill import",
         'path': '/chellow/reports/433/output/?importer_id=2',
         'tries': {},
         'status_code': 200,
@@ -15094,18 +15092,21 @@ def virtual_bill(ds):
             r'bill_finish_date,mprn,site_code,site_name,covered_start,'
             r'covered_finish,covered_bill_ids,covered_units_consumed,'
             r'virtual_units_consumed,covered_correction_factor,'
-            r'virtual_correction_factor,covered_units,virtual_units,'
-            r'covered_kwh,virtual_kwh,covered_gas_rate,virtual_gas_rate,'
+            r'virtual_correction_factor,covered_units_code,virtual_units_code,'
+            r'covered_units_factor,'
+            r'virtual_units_factor,covered_kwh,virtual_kwh,covered_gas_rate,'
+            r'virtual_gas_rate,'
             r'covered_gas_gbp,virtual_gas_gbp,covered_standing_rate,'
             r'virtual_standing_rate,covered_standing_gbp,virtual_standing_gbp,'
             r'covered_net_gbp,virtual_net_gbp,covered_vat_gbp,virtual_vat_gbp,'
             r'covered_gross_gbp,virtual_gross_gbp',
             r'TB2,8899900012,N,2015-09-01 00:00,2015-09-30 23:30,750278673,'
             r'CH017,Parbola,2015-09-01 00:00,2015-09-30 23:30,"5,4",25964,'
-            r'7830.0,1.00941,1.00941,HCUF,HCUF,9001802,310621.0456747202,'
-            r'0.038896,0.019548,17872.26,6072.0202008495735,0,67.8,157.8,'
-            r'67.8,24025.32,6139.820200849574,3146.67,0,14186.22,'
-            r'6139.820200849574']},
+            r'7830.0,1.00941,1.00941,HCUF,HCUF,2.8317,2.8317,9001802,'
+            r'879585.61503713,'
+            r'0.038896,0.019548,17872.26,17194.13960274537,0,67.8,157.8,'
+            r'67.8,24025.32,17261.93960274537,3146.67,0,14186.22,'
+            r'17261.93960274537']},
 
     {
         'name': "Delete gas supply. Insert the gas supply",

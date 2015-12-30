@@ -10,7 +10,7 @@ import computer
 Monad.getUtils()['impt'](globals(), 'db', 'utils', 'templater', 'computer')
 UserException = utils.UserException
 BillType, GBatch, GReadType = db.BillType, db.GBatch, db.GReadType
-Contract, MarketRole = db.Contract, db.MarketRole
+Contract, MarketRole, GUnits = db.Contract, db.MarketRole, db.GUnits
 
 importer_id = 0
 import_lock = threading.Lock()
@@ -106,12 +106,12 @@ class GBillImporter(threading.Thread):
                             sess, raw_read['prev_type_code'])
                         pres_type = GReadType.get_by_code(
                             sess, raw_read['pres_type_code'])
+                        g_units = GUnits.get_by_code(sess, raw_read['units'])
                         g_read = g_bill.insert_g_read(
                             sess, raw_read['msn'], raw_read['prev_value'],
                             raw_read['prev_date'], prev_type,
                             raw_read['pres_value'], raw_read['pres_date'],
-                            pres_type, raw_read['units'],
-                            raw_read['correction_factor'],
+                            pres_type, g_units, raw_read['correction_factor'],
                             raw_read['calorific_value'])
 
                         sess.expunge(g_read)

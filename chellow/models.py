@@ -24,6 +24,8 @@ import os.path
 import sys
 from hashlib import pbkdf2_hmac
 from binascii import hexlify, unhexlify
+from decimal import Decimal
+
 
 config = {
     'PGUSER': 'postgres',
@@ -123,14 +125,6 @@ class GReadType(Base, PersistentClass):
             raise BadRequest(
                 "The Read Type with code " + code + " can't be found.")
         return typ
-
-
-class GUnits(Base, PersistentClass):
-    __tablename__ = 'g_units'
-    id = Column('id', Integer, primary_key=True)
-    code = Column(String, nullable=False, index=True, unique=True)
-    description = Column(String, nullable=False)
-    factor = Column(Numeric, nullable=False)
 
 
 class Snag(Base, PersistentClass):
@@ -3071,6 +3065,27 @@ def db_init(sess, root_path):
     sess.commit()
 
     set_read_write(sess)
+    for code, desc in (
+            ("A", "Actual"),
+            ("C", "Customer"),
+            ("E", "Estimated"),
+            ("S", "Deemed read")):
+        sess.add(GReadType(code, desc))
+    sess.commit()
+
+    set_read_write(sess)
+    for code, desc, factor_str in (
+            ("MCUF", "Thousands of cubic feet", '28.317'),
+            ("HCUF", "Hundreds of cubic feet", '2.8317'),
+            ("TCUF", "Tens of cubic feet", '0.28317'),
+            ("OCUF", "One cubic foot", '0.028317'),
+            ("HM3", "Hundreds of cubic metres", '100'),
+            ("TM3", "Tens of cubic metres", '10'),
+            ("NM3", "Tenths of cubic metres", '0.1')):
+        sess.add(GUnits(code, desc, Decimal(factor_str)))
+    sess.commit()
+
+    set_read_write(sess)
     sess.execute(
         "alter database " + db_name +
         " set default_transaction_isolation = 'serializable'")
@@ -3251,21 +3266,22 @@ class GRegisterRead(Base, PersistentClass):
     pres_type = relationship(
         "GReadType",
         primaryjoin="GReadType.id==GRegisterRead.pres_type_id")
-    units = Column(String, nullable=False)
+    g_units_id = Column(
+        Integer, ForeignKey('g_units.id'), nullable=False, index=True)
     correction_factor = Column(Numeric, nullable=False)
     calorific_value = Column(Numeric, nullable=False)
 
     def __init__(
             self, g_bill, msn, prev_value, prev_date, prev_type, pres_value,
-            pres_date, pres_type, units, correction_factor, calorific_value):
+            pres_date, pres_type, g_units, correction_factor, calorific_value):
         self.g_bill = g_bill
         self.update(
             msn, prev_value, prev_date, prev_type, pres_value, pres_date,
-            pres_type, units, correction_factor, calorific_value)
+            pres_type, g_units, correction_factor, calorific_value)
 
     def update(
             self, msn, prev_value, prev_date, prev_type, pres_value, pres_date,
-            pres_type, units, correction_factor, calorific_value):
+            pres_type, g_units, correction_factor, calorific_value):
         self.msn = msn
         self.prev_value = prev_value
         self.prev_date = prev_date
@@ -3273,7 +3289,7 @@ class GRegisterRead(Base, PersistentClass):
         self.pres_value = pres_value
         self.pres_date = pres_date
         self.pres_type = pres_type
-        self.units = units
+        self.g_units = g_units
         self.correction_factor = correction_factor
         self.calorific_value = calorific_value
 
@@ -3529,7 +3545,7 @@ class GSupply(Base, PersistentClass):
 
     def delete(self, sess):
         if len(self.g_bills) > 0:
-            raise UserException(
+            raise BadRequest(
                 "One can't delete a supply if there are still "
                 "bills attached to it.")
 
@@ -3926,3 +3942,21 @@ class GRateScript(Base, PersistentClass):
         self.start_date = start_date
         self.finish_date = finish_date
         self.script = json.dumps(script)
+
+
+class GUnits(Base):
+    __tablename__ = 'g_units'
+    id = Column('id', Integer, primary_key=True)
+    code = Column(String, nullable=False, index=True, unique=True)
+    description = Column(String, nullable=False)
+    factor = Column(Numeric, nullable=False)
+    g_register_reads = relationship('GRegisterRead', backref='g_units')
+
+    @staticmethod
+    def get_by_code(sess, code):
+        code = code.strip()
+        typ = sess.query(GUnits).filter_by(code=code).first()
+        if typ is None:
+            raise BadRequest(
+                "The gas units with code " + code + " can't be found.")
+        return typ

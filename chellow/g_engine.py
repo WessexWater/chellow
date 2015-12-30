@@ -11,9 +11,10 @@ import utils
 import db
 import simplejson as json
 import bank_holidays
+import computer
 
 Monad.getUtils()['impt'](
-    globals(), 'db', 'utils', 'templater', 'bank_holidays')
+    globals(), 'db', 'utils', 'templater', 'bank_holidays', 'computer')
 
 HH, hh_after, totalseconds = utils.HH, utils.hh_after, utils.totalseconds
 hh_before, hh_format = utils.hh_before, utils.hh_format
@@ -21,7 +22,7 @@ hh_before, hh_format = utils.hh_before, utils.hh_format
 Contract, GEra, GRateScript = db.Contract, db.GEra, db.GRateScript
 GRegisterRead = db.GRegisterRead
 BillType, GBill, GReadType = db.BillType, db.GBill, db.GReadType
-GBatch = db.GBatch
+GBatch, GUnits = db.GBatch, db.GUnits
 
 UserException = utils.UserException
 
@@ -109,7 +110,7 @@ def identity_func(x):
     return x
 
 
-def hh_rate(sess, caches, g_contract_id, date, name, pw):
+def g_rate(sess, caches, g_contract_id, date, name, pw):
     try:
         rate_cache = caches['g_engine']['rates']
     except KeyError:
@@ -301,7 +302,7 @@ def _datum_generator(sess, years_back, caches, pw):
             utc_decimal_hour = hh_date.hour + float(hh_date.minute) / 60
             ct_decimal_hour = ct_dt.hour + float(ct_dt.minute) / 60
 
-            utc_bank_holidays = hh_rate(
+            utc_bank_holidays = computer.hh_rate(
                 sess2, caches, bank_holidays.db_id, hh_date, 'bank_holidays',
                 pw)
             if utc_bank_holidays is None:
@@ -692,7 +693,8 @@ class DataSource():
                 for g_bill in g_bills:
                     for prev_date, prev_value, prev_type, pres_date, \
                             pres_value, pres_type, correction_factor, \
-                            units, calorific_value in sess.query(
+                            g_units_code, g_units_factor, calorific_value \
+                            in sess.query(
                             GRegisterRead.prev_date,
                             cast(GRegisterRead.prev_value, Float),
                             prev_type_alias.code,
@@ -700,8 +702,10 @@ class DataSource():
                             cast(GRegisterRead.pres_value, Float),
                             pres_type_alias.code,
                             cast(GRegisterRead.correction_factor, Float),
-                            GRegisterRead.units,
+                            GUnits.code,
+                            cast(GUnits.factor, Float),
                             cast(GRegisterRead.calorific_value, Float)) \
+                            .join(GUnits) \
                             .join(
                                 prev_type_alias,
                                 GRegisterRead.prev_type_id ==
@@ -731,6 +735,8 @@ class DataSource():
                             float(
                                 totalseconds(pres_date - prev_date) /
                                 (60 * 30))
+                        hh_kwh = hh_units_consumed * g_units_factor * \
+                            correction_factor * calorific_value
 
                         ct_tz = pytz.timezone('Europe/London')
 
@@ -785,23 +791,29 @@ class DataSource():
                                     'ct_is_month_end':
                                     ct_is_month_end,
                                     'status': status,
-                                    'units': units,
+                                    'units_code': g_units_code,
+                                    'units_factor': g_units_factor,
                                     'calorific_value': calorific_value,
                                     'correction_factor': correction_factor,
-                                    'units_consumed': hh_units_consumed})
+                                    'units_consumed': hh_units_consumed,
+                                    'kwh': hh_kwh})
                             hh_date += HH
 
     def g_contract_func(self, g_contract, func_name):
         return g_contract_func(self.caches, g_contract, func_name, self.pw)
 
-    def rate(self, g_contract_id, date, name):
+    def g_rate(self, g_contract_id, date, name):
         try:
             return self.rate_cache[g_contract_id][date][name]
         except KeyError:
-            return hh_rate(
+            return g_rate(
                 self.sess, self.caches, g_contract_id, date, name, self.pw)
         except AttributeError:
-            val = hh_rate(
+            val = g_rate(
                 self.sess, self.caches, g_contract_id, date, name, self.pw)
             self.rate_cache = self.caches['g_engine']['rates']
             return val
+
+    def rate(self, contract_id, date, name):
+        return computer.hh_rate(
+            self.sess, self.caches, contract_id, date, name, self.pw)
