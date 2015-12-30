@@ -12,6 +12,13 @@ Monad.getUtils()['impt'](
 validate_hh_start, HH = utils.validate_hh_start, utils.HH
 UserException = utils.UserException
 
+READ_TYPE_MAP = {'PA': 'A'}
+
+
+def parse_read_type(rt):
+    rt = rt.strip()
+    return READ_TYPE_MAP.get(rt, rt)
+
 
 def parse_date(date_str):
     return datetime.datetime.strptime(
@@ -86,10 +93,10 @@ class Parser():
                     'mprn': row[10],
                     'prev_value': parse_decimal(row[11]),
                     'prev_date': parse_date(row[12]),
-                    'prev_type_code': row[13].strip(),
+                    'prev_type_code': parse_read_type(row[13]),
                     'pres_value': parse_decimal(row[14]),
                     'pres_date': parse_date(row[15]),
-                    'pres_type_code': row[16].strip(),
+                    'pres_type_code': parse_read_type(row[16]),
                     'correction_factor': parse_decimal(row[20]),
                     'calorific_value': parse_decimal(row[21]),
                     'units': row[25]}
