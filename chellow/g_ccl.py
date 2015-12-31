@@ -79,7 +79,7 @@ def vb(data_source):
                     rate = cache[hh['start_date']]
                 except KeyError:
                     cache[hh['start_date']] = data_source.rate(
-                        db_id, hh['start_date'], 'ccl_rate')
+                        db_id, hh['start_date'], 'ccl_gbp_per_kwh')
                     rate = cache[hh['start_date']]
 
                 rate_set.add(rate)
