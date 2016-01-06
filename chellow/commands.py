@@ -21,7 +21,7 @@ pg8000.dbapi = pg8000
 
 
 def log_message(msg):
-    sys.stderr.write(msg + "\n")
+    sys.stderr.write(str(msg) + "\n")
 
 
 def parse_hh_date(date_str):
@@ -34,9 +34,8 @@ def parse_hh_date(date_str):
 
 
 def read_file(pth, fname, attr):
-    f = open(os.path.join(pth, fname), 'r')
-    contents = f.read()
-    f.close()
+    with open(os.path.join(pth, fname), 'r') as f:
+        contents = f.read()
     if attr is None:
         return eval(contents)
     else:
@@ -254,6 +253,15 @@ class Contract(Base):
         contract.update_rate_script(
             rscript, start_date, finish_date, rate_script)
         return contract
+
+    def make_state(self):
+        if self.state.strip() == '':
+            return {}
+        else:
+            return eval(self.state)
+
+    def update_state(self, state):
+        self.state = str(state)
 
 
 class RateScript(Base):
@@ -690,86 +698,15 @@ class Report(Base):
         self.template = template
 
 
-def chellow_test_setup():
-    downloads_path = os.path.join(chellow.app.instance_path, 'downloads')
-    if os.path.exists(downloads_path):
-        shutil.rmtree(downloads_path)
-    subprocess.Popen(["python", "test/ftp.py"])
-
-
-def chellow_start():
-    subprocess.Popen(["chellow_watchdog_start"])
-    print("Testing if server is up...")
-    status_code = None
-    health_url = ''.join(
-        [
-            'http://localhost:', str(chellow.app.config['CHELLOW_PORT']),
-            '/health'])
-    while status_code != 200:
-        try:
-
-            print("Trying health URL " + health_url)
-            r = requests.get(health_url)
-            status_code = r.status_code
-        except requests.exceptions.ConnectionError as e:
-            print(e)
-        time.sleep(1)
-
-
-def chellow_watchdog_start():
-    print("About to start chellow process")
-    subprocess.Popen(["start_chellow_process"])
-    instance_path = chellow.app.instance_path
-    restart_path = os.path.join(instance_path, 'restart')
-    flag_path = os.path.join(instance_path, 'keep_running')
-    stopped_path = os.path.join(instance_path, 'stopped')
-    health_url = ''.join(
-        [
-            'http://localhost:', str(chellow.app.config['CHELLOW_PORT']),
-            '/health'])
-    while not os.path.exists(flag_path):
-        time.sleep(1)
-    while True:
-        if not os.path.exists(flag_path):
-            if os.path.exists(stopped_path):
-                if os.path.exists(restart_path):
-                    print("Attempting restart")
-                    subprocess.Popen(["start_chellow_process"])
-                    while not os.path.exists(flag_path):
-                        time.sleep(1)
-                else:
-                    break
-            else:
-                try:
-                    print("Trying health URL " + health_url)
-                    requests.get(health_url)
-                except Exception as e:
-                    print(str(e))
-
-        time.sleep(1)
-    print("Exiting watchdog.")
-
-
-def start_chellow_process():
+def chellow_db_init():
+    session = make_session()
+    engine = session.get_bind()
     webinf_path = os.path.join(chellow.app.root_path, 'web', 'WEB-INF')
-
     config = app.config
     db_name = config['PGDATABASE']
     first_email = config['CHELLOW_FIRST_EMAIL']
     first_password = config['CHELLOW_FIRST_PASSWORD']
-    engine = create_engine(
-        ''.join(
-            [
-                'postgresql+pg8000://',  config['PGUSER'], ':',
-                config['PGPASSWORD'], '@', config['PGHOST'], ':',
-                config['PGPORT'], '/', db_name]),
-        isolation_level="SERIALIZABLE")
-
-    Session = sessionmaker(bind=engine)
-    session = Session()
-    if engine.execute(
-            """select count(*) from information_schema.tables """
-            """where table_schema = 'public'""").scalar() == 0:
+    if find_db_version(session) is None:
         log_message("Initializing database.")
         Base.metadata.create_all(engine)
         set_read_write(session)
@@ -1012,22 +949,201 @@ def start_chellow_process():
         User.insert(
             session, first_email, User.digest(first_password), user_role, None)
         session.execute("create extension tablefunc")
+        conf = session.query(Contract).join(MarketRole).filter(
+            Contract.name == 'configuration', MarketRole.code == 'Z').one()
+        state = conf.make_state()
+        state['db_version'] = len(upgrade_funcs)
+        conf.update_state(state)
         session.commit()
     else:
-        sys.stderr.write("\nDatabase already initialized.")
-    '''
-    f = open(os.path.join(webinf_path, 'bootstrap.py'), 'rb')
-    exec(f)
-    ,
-        {
-            'webinf_path': webinf_path,
-            'first_email': chellow.app.config['CHELLOW_FIRST_EMAIL'],
-            'first_password': chellow.app.config['CHELLOW_FIRST_PASSWORD'],
-            'user_name': chellow.app.config['PGUSER'],
-            'password': chellow.app.config['PGPASSWORD'],
-            'host_name': chellow.app.config['PGHOST'],
-            'db_name': chellow.app.config['PGDATABASE']})
-    '''
+        log_message("It seems that the database is already initialized.")
+
+
+def chellow_test_setup():
+    downloads_path = os.path.join(chellow.app.instance_path, 'downloads')
+    if os.path.exists(downloads_path):
+        shutil.rmtree(downloads_path)
+    subprocess.Popen(["python", "test/ftp.py"])
+
+
+def db_upgrade_0_to_1(session):
+    webinf_path = os.path.join(chellow.app.root_path, 'web', 'WEB-INF')
+    reports_path = os.path.join(webinf_path, 'reports')
+    for report_id_str in os.listdir(reports_path):
+        report_path = os.path.join(reports_path, report_id_str)
+        report_id = str(report_id_str)
+        report = session.query(Report).filter(Report.id == report_id).first()
+        if report is None:
+            continue
+        report.script = read_file(report_path, 'script.py', 'script')['script']
+        session.commit()
+
+    set_read_write(session)
+    for path_name, role_code in (
+            ('non_core_contracts', 'Z'),
+            ('dno_contracts', 'R')):
+        contracts_path = os.path.join(webinf_path, path_name)
+        market_role = session.query(MarketRole). \
+            filter(MarketRole.code == role_code).one()
+
+        for contract_name in sorted(os.listdir(contracts_path)):
+            contract_path = os.path.join(contracts_path, contract_name)
+            charge_script = read_file(
+                contract_path, 'charge_script.py',
+                'charge_script')['charge_script']
+            contract = session.query(Contract).filter(
+                Contract.name == contract_name,
+                Contract.market_role == market_role).first()
+            if contract is None:
+                print("missing", contract_name)
+                continue
+            contract.charge_script = charge_script
+            session.add(contract)
+
+upgrade_funcs = [db_upgrade_0_to_1]
+
+
+def chellow_db_upgrade():
+    session = make_session()
+    set_read_write(session)
+    db_version = find_db_version(session)
+    curr_version = len(upgrade_funcs)
+    if db_version is None:
+        log_message(
+            "It looks like the chellow database hasn't been initialized. "
+            "To initialize the database run the 'chellow_db_init' command.")
+        exit(1)
+    elif db_version == curr_version:
+        log_message(
+            "The database version is " + str(db_version) +
+            " and the latest version is " + str(curr_version) +
+            " so it doesn't look like you need to run an upgrade.")
+        exit(1)
+    elif db_version > curr_version:
+        log_message(
+            "The database version is " + str(db_version) +
+            " and the latest database version is " + str(curr_version) +
+            " so it looks like you're using an old version of Chellow.")
+        exit(1)
+
+    log_message(
+        "Upgrading from database version " + str(db_version) +
+        " to database version " + str(db_version + 1) + ".")
+    upgrade_funcs[db_version](session)
+    conf = session.query(Contract).join(MarketRole).filter(
+        Contract.name == 'configuration', MarketRole.code == 'Z').one()
+    state = conf.make_state()
+    state['db_version'] = db_version + 1
+    conf.update_state(state)
+    session.commit()
+    session.close()
+    log_message(
+        "Successfully upgraded from database version " + str(db_version) +
+        " to database version " + str(db_version + 1) + ".")
+
+
+def find_db_version(session):
+    engine = session.get_bind()
+    if engine.execute(
+            """select count(*) from information_schema.tables """
+            """where table_schema = 'public'""").scalar() == 0:
+        return None
+    conf = session.query(Contract).join(MarketRole).filter(
+        Contract.name == 'configuration', MarketRole.code == 'Z').one()
+    conf_state = conf.make_state()
+    return conf_state.get('db_version', 0)
+
+
+def is_db_version_correct(session):
+    db_version = find_db_version(session)
+    curr_version = len(upgrade_funcs)
+    if db_version is None:
+        log_message(
+            "It looks like the chellow database hasn't been initialized. "
+            "To initialize the database run the 'chellow_db_init' command.")
+    elif db_version < curr_version:
+        log_message(
+            "It looks like the version of the Chellow database is " +
+            str(db_version) + " but this version of Chellow needs version " +
+            str(curr_version) + ". To upgrade the database run the " +
+            "'chellow_db_upgrade' command.")
+    else:
+        return True
+    return False
+
+
+def make_session():
+    config = app.config
+    db_name = config['PGDATABASE']
+    engine = create_engine(
+        ''.join(
+            [
+                'postgresql+pg8000://',  config['PGUSER'], ':',
+                config['PGPASSWORD'], '@', config['PGHOST'], ':',
+                config['PGPORT'], '/', db_name]),
+        isolation_level="SERIALIZABLE")
+    Session = sessionmaker(bind=engine)
+    return Session()
+
+
+def chellow_start():
+    session = make_session()
+    if not is_db_version_correct(session):
+        sys.exit(1)
+    subprocess.Popen(["chellow_watchdog_start"])
+    log_message("Testing if server is up...")
+    status_code = None
+    health_url = ''.join(
+        [
+            'http://localhost:', str(chellow.app.config['CHELLOW_PORT']),
+            '/health'])
+    while status_code != 200:
+        try:
+
+            log_message("Trying health URL " + health_url)
+            r = requests.get(health_url)
+            status_code = r.status_code
+        except requests.exceptions.ConnectionError as e:
+            log_message(e)
+        time.sleep(1)
+
+
+def chellow_watchdog_start():
+    log_message("About to start chellow process")
+    subprocess.Popen(["start_chellow_process"])
+    instance_path = chellow.app.instance_path
+    restart_path = os.path.join(instance_path, 'restart')
+    flag_path = os.path.join(instance_path, 'keep_running')
+    stopped_path = os.path.join(instance_path, 'stopped')
+    health_url = ''.join(
+        [
+            'http://localhost:', str(chellow.app.config['CHELLOW_PORT']),
+            '/health'])
+    while not os.path.exists(flag_path):
+        time.sleep(1)
+    while True:
+        if not os.path.exists(flag_path):
+            if os.path.exists(stopped_path):
+                if os.path.exists(restart_path):
+                    print("Attempting restart")
+                    subprocess.Popen(["start_chellow_process"])
+                    while not os.path.exists(flag_path):
+                        time.sleep(1)
+                else:
+                    break
+            else:
+                try:
+                    print("Trying health URL " + health_url)
+                    requests.get(health_url)
+                except Exception as e:
+                    print(str(e))
+
+        time.sleep(1)
+    print("Exiting watchdog.")
+
+
+def start_chellow_process():
+    session = make_session()
     startup_contract = Contract.get_non_core_by_name(session, 'startup')
     session.close()
     ns = {}
@@ -1035,7 +1151,7 @@ def start_chellow_process():
     ns['on_start_up'](None)
     chellow_port = chellow.app.config['CHELLOW_PORT']
     httpd = make_server('', chellow_port, chellow.app)
-    print("Serving HTTP on port " + str(chellow_port) + "...")
+    log_message("Serving HTTP on port " + str(chellow_port) + "...")
 
     instance_path = chellow.app.instance_path
     if not os.path.exists(instance_path):
@@ -1055,16 +1171,7 @@ def start_chellow_process():
     while os.path.exists(flag_path):
         httpd.handle_request()
 
-    engine = create_engine(
-        ''.join(
-            [
-                'postgresql+pg8000://',  config['PGUSER'], ':',
-                config['PGPASSWORD'], '@', config['PGHOST'], ':',
-                config['PGPORT'], '/', db_name]),
-        isolation_level="SERIALIZABLE")
-
-    Session = sessionmaker(bind=engine)
-    session = Session()
+    session = make_session()
     shutdown_contract = Contract.get_non_core_by_name(session, 'shutdown')
     session.close()
     ns = {}
@@ -1080,9 +1187,9 @@ def chellow_stop():
         os.remove(flag_path)
     stopped_path = os.path.join(chellow.app.instance_path, 'stopped')
     for i in range(15):
-        print("Checking if stopped.")
+        log_message("Checking if stopped.")
         if not os.path.exists(stopped_path):
-            print("Has stopped.")
+            log_message("Has stopped.")
             break
 
         time.sleep(1)

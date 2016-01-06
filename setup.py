@@ -57,6 +57,8 @@ setup(
     entry_points={
         'console_scripts': [
             'chellow_start = chellow.commands:chellow_start',
+            'chellow_db_init = chellow.commands:chellow_db_init',
+            'chellow_db_upgrade = chellow.commands:chellow_db_upgrade',
             'start_chellow_process = chellow.commands:start_chellow_process',
             'chellow_test_setup = chellow.commands:chellow_test_setup',
             'chellow_watchdog_start = chellow.commands:chellow_watchdog_start',
