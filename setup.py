@@ -2,17 +2,28 @@
 
 from setuptools import setup
 import versioneer
+import time
+import sys
+
+is_test = False
+
+if "--test" in sys.argv:
+    is_test = True
+    sys.argv.remove("--test")
 
 
 def get_version():
-    ver = versioneer.get_version()
-    try:
-        ver = ver[ver.index('.') + 1:]
-        ver = ver[:ver.index('.')]
-    except IndexError:
-        pass
+    if is_test:
+        return str(int(time.time()))
+    else:
+        ver = versioneer.get_version()
+        try:
+            ver = ver[ver.index('.') + 1:]
+            ver = ver[:ver.index('.')]
+        except IndexError:
+            pass
 
-    return ver.replace('-', '.').replace('+', '.')
+        return ver.replace('-', '.').replace('+', '.')
 
 
 setup(
