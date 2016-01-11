@@ -255,7 +255,7 @@ class Contract(Base):
         return contract
 
     def make_state(self):
-        if self.state.strip() == '':
+        if self.state is None or self.state.strip() == '':
             return {}
         else:
             return eval(self.state)

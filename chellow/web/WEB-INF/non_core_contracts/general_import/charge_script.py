@@ -9,6 +9,8 @@ from sqlalchemy.sql.expression import false
 import utils
 import db
 
+len('hello')
+print("globals at beginning", globals())
 
 Monad.getUtils()['impt'](globals(), 'db', 'utils', 'templater')
 UserException, parse_hh_start = utils.UserException, utils.parse_hh_start
@@ -24,6 +26,8 @@ Party, User, VoltageLevel, Llfc = db.Party, db.User, db.VoltageLevel, db.Llfc
 MarketRole, MeterType = db.MarketRole, db.MeterType
 MeterPaymentType = db.MeterPaymentType
 parse_pc_code = utils.parse_pc_code
+
+len('hello')
 
 process_id = 0
 process_lock = threading.Lock()
@@ -1167,10 +1171,20 @@ def general_import_channel_snag_ignore(sess, action, vals, args):
             "The action 'update' isn't supported for channel snags.")
 
 
+print("globals before len", globals())
+
+len('hello')
+
 PREFIX = 'general_import_'
+'''
 typ_funcs = dict(
     (k[len(PREFIX):], globals()[k])
     for k in tuple(globals().keys()) if k.startswith(PREFIX))
+'''
+typ_funcs = {}
+for k in tuple(globals().keys()):
+    if k.startswith(PREFIX):
+        typ_funcs[k[len(PREFIX):]] = globals()[k]
 
 
 class GeneralImporter(threading.Thread):
