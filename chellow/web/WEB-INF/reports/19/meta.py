@@ -1,1 +1,0 @@
-{'name': u'Style Sheet'}

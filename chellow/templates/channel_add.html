@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+
+{% block title %}
+	Supplies &gt; Supply {{era.supply.id}} Era {{era.start_date|hh_format}} &gt;
+ 	Add Channel
+{% endblock %}
+
+{% block nav %}
+	<a href="{{context_path}}/supplies">Supplies</a> &gt;
+	<a href="{{context_path}}/supplies/{{era.supply.id}}">Supply {{era.supply.id}} Era {{era.start_date|hh_format}}</a> &gt;
+	Add Channel
+{% endblock %}
+
+{% block content %}
+	<table><caption>Existing Channels</caption>
+		<thead>
+			<tr>
+				<th>Import / Export Related?</th>
+				<th>Type</th>
+			</tr>
+		</thead>
+		<tbody>
+			{% for channel in channels %}
+				<tr>
+					<td>
+						{% if channel.imp_related %}
+							Import
+						{% else %}
+							Export
+						{% endif %}
+					</td>
+					<td>
+						{{channel.channel_type}}
+					</td>
+				</tr>
+			{% endfor %}
+		<tbody>
+	</table>
+	<br>
+	<form action="" method="post">
+		<fieldset>
+			<input type="hidden" name="era_id" value="{{era.id}}">
+			<legend>Add a channel</legend>
+			<br />
+			<label>
+				<select name="imp_related">
+					{% for lb, vl in (('Import Related', 'true'), ('Export Related', 'false')) %}
+						{{input_option('is_import', vl, lb)}}
+					{% endfor %}
+				</select>
+			</label>
+			<label>
+				<select name="channel_type">
+					{{input_option('channel_type', 'ACTIVE', 'ACTIVE')}}
+					{{input_option('channel_type', 'REACTIVE_IMP', 'REACTIVE_IMP')}}
+					{{input_option('channel_type', 'REACTIVE_EXP', 'REACTIVE_EXP')}}
+				</select>
+			</label>
+			<input type="submit" value="Add">
+		</fieldset>
+	</form>
+{% endblock %}

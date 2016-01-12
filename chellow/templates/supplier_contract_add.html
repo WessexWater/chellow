@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block title %}
+	Supplier Contracts &gt; Add
+{% endblock %}
+
+{% block nav %}
+	<a href="{{context_path}}/supplier_contracts">Supplier Contracts</a> &gt;
+	Add
+{% endblock %}
+
+{% block content %}
+	<form action="" method="post">
+		<fieldset>
+			<legend>Add a contract</legend>
+			<label>Supplier</label>
+			<select name="participant_id">
+				{% for party in parties %}
+					{{input_option('participant_id', party.participant.id, party.participant.code + ' ' + party.name)}}
+				{% endfor %}
+			</select>
+			<br>
+			<br>
+			<label>Name</label>
+			{{input_text('name')}}
+			<br><br>
+			<fieldset>
+				<legend>Start Date</legend>
+				{{input_date('start')}}
+			</fieldset>
+			<br><br>
+				Charge script
+				<br>
+				{{input_textarea('charge_script', '', 40, 80)}}
+				<br>
+				<br>
+				Properties
+				<br>
+				{{input_textarea('properties', '{}', 20, 80)}}
+				<br />
+				<br />
+				<input type="submit" value="Update">
+			</fieldset>
+
+			<input type="submit" value="Add">
+		</fieldset>
+	</form>
+{% endblock %}

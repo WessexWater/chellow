@@ -6,6 +6,7 @@ pg8000.dbapi = pg8000
 
 
 app = Flask('chellow', instance_relative_config=True)
+app.secret_key = os.urandom(24)
 config = app.config
 config.from_object('chellow.settings')
 
@@ -16,14 +17,17 @@ if 'RDS_HOSTNAME' in os.environ:
             ('PGPORT', 'RDS_PORT')):
         config[conf_name] = os.environ[rds_name]
 
+if 'CHELLOW_URL_PREFIX' in os.environ:
+    config['APPLICATION_ROOT'] = os.environ['CHELLOW_URL_PREFIX']
+
 for var_name in (
         'PGUSER', 'PGPASSWORD', 'PGHOST', 'PGPORT', 'PGDATABASE',
         'CHELLOW_FIRST_EMAIL', 'CHELLOW_FIRST_PASSWORD', 'CHELLOW_PORT'):
     if var_name in os.environ:
         config[var_name] = os.environ[var_name]
-    print(var_name, config[var_name])
 
 config['CHELLOW_PORT'] = int(config['CHELLOW_PORT'])
+config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 config['SQLALCHEMY_DATABASE_URI'] = ''.join(
     [
         "postgresql+pg8000://", config['PGUSER'], ":", config['PGPASSWORD'],

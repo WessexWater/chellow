@@ -4,7 +4,7 @@
         'name': "Manipulating users",
         'port': '5000',
         'host': 'localhost',
-        'path': '/chellow/reports/255/output/',
+        'path': '/users',
         'method': 'post',
         'auth': ('admin@example.com', 'admin'),
         'data': {
@@ -13,9 +13,9 @@
             'password': "alan"},
         'status_code': 303,
         'regexes': [
-            r"/reports/257/output/\?user_id=2"]},
+            r"/users/2"]},
     {
-        'path': '/chellow/reports/255/output/',
+        'path': '/users',
         'method': 'post',
         'data': {
             'email_address': "lydgate@localhost",
@@ -23,9 +23,10 @@
             'password': "science"},
         'status_code': 303,
         'regexes': [
-            r"/reports/257/output/\?user_id=3"]},
+            r"/users/3"]},
+
     {
-        'path': '/chellow/reports/257/output/?user_id=3',
+        'path': '/users/3',
         'regexes': [
             r'<input type="hidden" name="user_id" value="3">\s*'
             '<legend>Delete this user</legend>'],
@@ -33,7 +34,7 @@
 
     # Check that a duplicate email gives a proper error message
     {
-        'path': '/chellow/reports/255/output/',
+        'path': '/users',
         'method': 'post',
         'data': {
             'email_address': "lydgate@localhost",
@@ -45,31 +46,28 @@
 
     # Test that we're able to change the password
     {
-        'path': '/chellow/reports/257/output/',
+        'path': '/users/3',
         'method': 'post',
         'data': {
-            'user_id': "3",
             'current_password': "science",
             'new_password': "rosamund",
             'confirm_new_password': "rosamund"},
         'status_code': 303},
 
-    # Test that we can change the role
     {
-        'path': '/chellow/reports/257/output/',
+        'name': "Test that we can change the role",
+        'path': '/users/3',
         'method': 'post',
         'data': {
-            'user_id': "3",
             'email_address': "mary-ann-evans@example.com",
             'user_role_code': "editor"},
         'status_code': 303},
 
-    # ...and change it back
     {
-        'path': '/chellow/reports/257/output/',
+        'name': " ...and change it back",
+        'path': '/users/3',
         'method': 'post',
         'data': {
-            'user_id': "3",
             'email_address': "lydgate@localhost",
             'user_role_code': "editor"},
         'status_code': 303},
@@ -92,75 +90,73 @@
         'status_code': 401},
 
     {
-        'name': "Check duplicate report name gives good error message",
-        'path': '/chellow/reports/',
-        'method': 'post',
+        'name': "Insert local report",
         'auth': ('watkins@example.com', 'alan'),
+        'path': '/local_reports',
+        'method': 'post',
         'data': {
-            'name': "Home"},
+            'name': "New Report"},
+        'status_code': 303,
+        'regexes': [
+            r"/local_reports/1"]},
+
+    {
+        'name': "Check duplicate report name gives good error message",
+        'path': '/local_reports',
+        'method': 'post',
+        'data': {
+            'name': "New Report"},
         'status_code': 400,
         'regexes': [
             r"There's already a report with that name\."]},
 
     {
-        'name': "Insert core report",
-        'path': '/chellow/reports/',
-        'method': 'post',
-        'data': {
-            'name': "New Report",
-            'is_core': 'true'},
-        'status_code': 303,
-        'regexes': [
-            r"/reports/395/"]},
-
-    # Valid general import of sites
-    {
-        'name': "site",
-        'path': '/chellow/reports/293/output/',
+        'name': "General import of sites",
+        'path': '/general_imports',
         'method': 'post',
         'files': {'import_file': 'test/sites.csv'},
         'status_code': 303,
         'regexes': [
-            r"/reports/295/output/\?process_id=0"]},
+            r"/general_imports/0"]},
+
     {
-        'path': '/chellow/reports/295/output/?process_id=0',
+        'path': '/general_imports/0',
         'tries': {'max': 10, 'period': 1},
         'status_code': 200,
         'regexes': [
             r"The file has been imported successfully\."]},
 
-    # duplicates
     {
-        'path': '/chellow/reports/293/output/',
+        'name': "Duplicates",
+        'path': '/general_imports',
         'method': 'post',
         'files': {'import_file': 'test/sites.csv'},
         'status_code': 303,
         'regexes': [
-            r"/reports/295/output/\?process_id=1"]},
+            r"/general_imports/1"]},
     {
-        'path': '/chellow/reports/295/output/?process_id=1',
+        'path': '/general_imports/1',
         'tries': {'max': 10, 'period': 1},
         'regexes': [
             r"There&#39;s already a site with this code\."],
         'status_code': 200},
 
-    # Delete a site
     {
-        'path': '/chellow/reports/311/output/',
+        'name': "Delete a site",
+        'path': '/sites/2/edit',
         'method': 'post',
         'data': {
-            'site_id': "2",
             'delete': "Delete"},
         'status_code': 303},
 
-    # Show and and add a site
     {
-        'path': '/chellow/reports/297/output/',
+        'name': "Show and add a site",
+        'path': '/sites/add',
         'regexes': [
             r"Add a site"],
         'status_code': 200},
     {
-        'path': '/chellow/reports/297/output/',
+        'path': '/sites/add',
         'method': 'post',
         'data': {
             'code': "CH017",
@@ -168,7 +164,7 @@
         'status_code': 303},
     {
         'name': "HHDC contracts",
-        'path': '/chellow/reports/277/output/',
+        'path': '/hhdc_contracts/add',
         'method': 'post',
         'data': {
             'participant_id': "61",  # DASL
@@ -181,14 +177,13 @@
             'has_finished': "false"},
         'status_code': 303,
         'regexes': [
-            r"/reports/115/output/\?hhdc_contract_id=53"]},
+            r"/hhdc_contracts/42"]},
 
-    # Update Contract
     {
-        'path': '/chellow/reports/279/output/',
+        'name': "Update Contract",
+        'path': '/hhdc_contracts/42/edit',
         'method': 'post',
         'data': {
-            'hhdc_contract_id': "53",
             'party_id': "97",  # DASL HHDC
             'name': "HH contract",
             'charge_script': """
@@ -201,27 +196,28 @@ def virtual_bill(ds):
         if hh['utc-is-month-end']:
             bill['net-gbp'] += 10
 """,
-            'properties': "{'mpan_map': {'maptest': '2292056799106'}}", },
-        'status_code': 303, },
+            'properties': "{'mpan_map': {'maptest': '2292056799106'}}"},
+        'status_code': 303},
+
     {
-        'path': '/chellow/reports/279/output/?hhdc_contract_id=53',
+        'path': '/hhdc_contracts/42',
         'regexes': [
             r"HH contract"],
         'status_code': 200},
 
-    # Check that we can see HHDC rate script okay. Contract 53.
     {
-        'path': '/chellow/reports/173/output/?hhdc_rate_script_id=228',
+        'name': "Check that we can see HHDC rate script okay. Contract 42.",
+        'path': '/hhdc_rate_scripts/217',
 
         # Check that 'has_finished' field is there
         'regexes': [
             r"HH contract"],
         'status_code': 200},
 
-    # Check that we can see the edit view of the HHDC rate script okay.
-    # Contract 53.
     {
-        'path': '/chellow/reports/249/output/?hhdc_rate_script_id=228',
+        'name': "Check that we can see the edit view of the HHDC rate "
+        "script okay. Contract 42.",
+        'path': '/hhdc_rate_scripts/217/edit',
 
         # Check that 'has_finished' field is there
         'regexes': [
@@ -230,15 +226,14 @@ def virtual_bill(ds):
             # Check the hhdc_rate_script_id for update is there
             r'<legend>Update Rate Script</legend>\s*'
             '<input type="hidden" name="hhdc_rate_script_id"\s*'
-            'value="228">'],
+            'value="217">'],
         'status_code': 200},
 
-    # Check that we can update an HHDC rate script okay
     {
-        'path': '/chellow/reports/249/output/',
+        'name': "Check that we can update an HHDC rate script okay",
+        'path': '/hhdc_rate_scripts/217/edit',
         'method': 'post',
         'data': {
-            'hhdc_rate_script_id': "228",
             'start_year': "2000",
             'start_month': "01",
             'start_day': "03",
@@ -247,9 +242,9 @@ def virtual_bill(ds):
             'script': "{}"},
         'status_code': 303},
 
-    # Add another HHDC contract
     {
-        'path': '/chellow/reports/277/output/',
+        'name': "Add another HHDC contract",
+        'path': '/hhdc_contracts/add',
         'method': 'post',
         'data': {
             'participant_id': "61",  # DASL
@@ -261,14 +256,13 @@ def virtual_bill(ds):
             'start_minute': "00"},
         'status_code': 303,
         'regexes': [
-            r"/reports/115/output/\?hhdc_contract_id=54"]},
+            r"/hhdc_contracts/43"]},
 
-    # Update the newly added HHDC
     {
-        'path': '/chellow/reports/279/output/',
+        'name': "Update the newly added HHDC",
+        'path': '/hhdc_contracts/43/edit',
         'method': 'post',
         'data': {
-            'hhdc_contract_id': "54",
             'party_id': "97",  # DASL HHDC
             'name': "Dynamat data",
             'charge_script': """
@@ -284,19 +278,18 @@ def virtual_bill(ds):
             'properties': '{"props": 1}'},
         'status_code': 303},
 
-    # Update state of Dynamat HHDC
     {
-        'path': '/chellow/reports/279/output/',
+        'name': "Update state of Dynamat HHDC",
+        'path': '/hhdc_contracts/43/edit',
         'method': 'post',
         'data': {
-            'hhdc_contract_id': "54",
             'update_state': "",
             'state': '{"stat": 2}'},
         'status_code': 303},
 
-    # View Dynamat HHDC
     {
-        'path': '/chellow/reports/279/output/?hhdc_contract_id=54',
+        'name': "View edit Dynamat HHDC",
+        'path': '/hhdc_contracts/43/edit',
         'status_code': 200,
         'regexes': [
             r'<textarea name="charge_script" rows="40" cols="80">\s*'
@@ -307,10 +300,9 @@ def virtual_bill(ds):
             '\{&#34;stat&#34;: 2\}</textarea>']},
     {
         'name': "Check one can update the participant for an HHDC contract.",
-        'path': '/chellow/reports/279/output/',
+        'path': '/hhdc_contracts/43/edit',
         'method': 'post',
         'data': {
-            'hhdc_contract_id': "54",
             'party_id': "651",
 
             # UKDC
@@ -332,9 +324,9 @@ def virtual_bill(ds):
             'properties': "{}"},
         'status_code': 303},
 
-    # Check it's still there
     {
-        'path': '/chellow/reports/279/output/?hhdc_contract_id=54',
+        'name': "Check it's still there",
+        'path': '/hhdc_contracts/43/edit',
         'status_code': 200,
         'regexes': [
             r'option value="651" selected']},
@@ -342,14 +334,14 @@ def virtual_bill(ds):
     # Check correct fields present for adding a supplier contract },
     {
         'name': "Manipulate supplier contracts",
-        'path': '/chellow/reports/315/output/',
+        'path': '/supplier_contracts/add',
         'regexes': [
             r'name="start_year"'],
         'status_code': 200},
 
-    # Create a new supplier contract
     {
-        'path': '/chellow/reports/315/output/',
+        'name': "Create a new supplier contract",
+        'path': '/supplier_contracts/add',
         'method': 'post',
         'data': {
             'participant_id': "28",  # BIZZ
@@ -362,18 +354,18 @@ def virtual_bill(ds):
             'charge_script': "",
             'properties': "{'hydrogen': 'sonata'}"},
         'regexes': [
-            r"/reports/77/output/\?supplier_contract_id=55"]},
+            r"/supplier_contracts/44"]},
 
-    # Check that it's displayed properly
     {
-        'path': '/chellow/reports/317/output/?supplier_contract_id=55',
+        'name': "Check that it's displayed properly",
+        'path': '/supplier_contracts/44/edit',
         'regexes': [
             r'<option value="22" selected>',
             r'<textarea name="properties" rows="20" '
             'cols="80">\{&#39;hydrogen&#39;: &#39;sonata&#39;\}</textarea>'],
         'status_code': 200},
     {
-        'path': '/chellow/reports/77/output/?supplier_contract_id=55',
+        'path': '/supplier_contracts/44',
         'regexes': [
             r'<legend>Download Displaced Virtual Bills</legend>\s*<br/>\s*'
             'For <input name="months" value="1" maxlength="2" size="2">\s*'
@@ -382,12 +374,11 @@ def virtual_bill(ds):
             'value="201\d">'],
         'status_code': 200},
 
-    # Update the associated rate script. Supplier contract 55
     {
-        'path': '/chellow/reports/319/output/',
+        'name': "Update the associated rate script. Supplier contract 44",
+        'path': '/supplier_rate_scripts/219/edit',
         'method': 'post',
         'data': {
-            'supplier_rate_script_id': "230",
             'start_year': "2000",
             'start_month': "01",
             'start_day': "03",
@@ -406,60 +397,9 @@ def gsp_gbp_per_kwh():
 """},
         'status_code': 303},
 
-    # Create a new non-core contract
-    {
-        'name': "Manipulate non-core contracts",
-        'path': '/chellow/reports/265/output/',
-        'method': 'post',
-        'data': {
-            'participant_id': "31",
-
-            # CALB
-            'is_core': "false",
-            'name': "VAT",
-            'start_year': "2000",
-            'start_month': "01",
-            'start_day': "03",
-            'start_hour': "00",
-            'start_minute': "00", },
-        'regexes': [
-            r"/chellow/reports/267/output/\?non_core_contract_id=56"],
-        'status_code': 303, },
-
-    # Update the new non-core contract
-    {
-        'path': '/chellow/reports/269/output/',
-        'method': 'post',
-        'data': {
-            'non_core_contract_id': "56",
-            'name': "VAT 2",
-            'start_year': "2000",
-            'start_month': "01",
-            'start_day': "03",
-            'charge_script': """import sys
-
-def totalElement(account, startDate, finishDate):
-    return ["total", 22.3, "VAT cost"]
-""",
-            'properties': "{}"},
-        'status_code': 303},
-    {
-        'path': '/chellow/reports/267/output/?non_core_contract_id=56',
-        'regexes': [
-            r"import sys\s*def"],
-        'status_code': 200},
-
-    # Delete it
-    {
-        'path': '/chellow/reports/269/output/',
-        'method': 'post',
-        'data': {
-            'non_core_contract_id': "56",
-            'delete': ""},
-        'status_code': 303},
     {
         'name': "Insert MOP contract",
-        'path': '/chellow/reports/361/output/',
+        'path': '/mop_contracts/add',
         'method': 'post',
         'data': {
             'participant_id': "409",  # LENG
@@ -471,14 +411,13 @@ def totalElement(account, startDate, finishDate):
             'start_minute': "00"},
         'status_code': 303,
         'regexes': [
-            r"/reports/107/output/\?mop_contract_id=57"]},
+            r"/mop_contracts/45"]},
 
-    # Update with a charge script
     {
-        'path': '/chellow/reports/151/output/',
+        'name': "Update with a charge script",
+        'path': '/mop_contracts/45/edit',
         'method': 'post',
         'data': {
-            'mop_contract_id': "57",
             'party_id': "690",  # LENG
             'name': "MOP Contract",
             'start_year': "2000",
@@ -500,17 +439,17 @@ def virtual_bill(ds):
             'properties': "{}"},
         'status_code': 303,
         'regexes': [
-            r"/reports/107/output/\?mop_contract_id=57"]},
+            r"/mop_contracts/45"]},
 
-    # Check we can see the rate scripts
     {
-        'path': '/chellow/reports/107/output/?mop_contract_id=57',
+        'name': "Check we can see the rate scripts",
+        'path': '/mop_contracts/45',
         'status_code': 200},
 
     {
         'name': "Insert a modern supplier contract. Create a new supplier "
         "contract for 2013",
-        'path': '/chellow/reports/315/output/',
+        'path': '/supplier_contracts/add',
         'method': 'post',
         'data': {
             'participant_id': "54",  # COOP
@@ -526,14 +465,13 @@ def virtual_bill_titles():
 """,
             'properties': "{}", },
         'regexes': [
-            r"/chellow/reports/77/output/\?supplier_contract_id=58"],
+            r"/supplier_contracts/46"],
         'status_code': 303},
     {
-        'name': "Update the associated rate script. Supplier contract 58",
-        'path': '/chellow/reports/319/output/',
+        'name': "Update the associated rate script. Supplier contract 46",
+        'path': '/supplier_rate_scripts/221/edit',
         'method': 'post',
         'data': {
-            'supplier_rate_script_id': "233",
             'start_year': "2000",
             'start_month': "01",
             'start_day': "03",
@@ -554,7 +492,7 @@ def gsp_gbp_per_kwh():
 
     {
         'name': "Create a new supplier contract",
-        'path': '/chellow/reports/315/output/',
+        'path': '/supplier_contracts/add',
         'method': 'post',
         'data': {
             'participant_id': "386",  # HYDE
@@ -571,53 +509,53 @@ def virtual_bill_titles():
 """,
             'properties': "{}", },
         'regexes': [
-            r"/reports/77/output/\?supplier_contract_id=59"],
+            r"/supplier_contracts/47"],
         'status_code': 303},
 
     # Give proper error if there are too few fields },
     {
         'name': "supplies",
-        'path': '/chellow/reports/293/output/',
+        'path': '/general_imports',
         'method': 'post',
         'files': {'import_file': 'test/supplies-too-few-fields.csv'},
         'regexes': [
-            r"/reports/295/output/\?process_id=2"],
+            r"/general_imports/2"],
         'status_code': 303},
     {
-        'path': '/chellow/reports/295/output/?process_id=2',
+        'path': '/general_imports/2',
         'tries': {},
         'regexes': [
             r"Another field called Supply Name needs to be added on the end"],
         'status_code': 200},
 
-    # non-existent source code
     {
-        'path': '/chellow/reports/293/output/',
+        'name': "non-existent source code",
+        'path': '/general_imports',
         'method': 'post',
         'files': {'import_file': 'test/supplies_source.csv'},
         'regexes': [
-            r"/reports/295/output/\?process_id=3"],
+            r"/general_imports/3"],
         'status_code': 303},
     {
-        'path': '/chellow/reports/295/output/?process_id=3',
+        'path': '/general_imports/3',
         'tries': {},
 
         # check that it knows that the first line has a source code that is too
         # long
         'regexes': [
             r"There&#39;s no source with the code &#39;netlong&#39;", ],
-        'status_code': 200, },
+        'status_code': 200},
 
     # Line 2 has a DNO that doesn't exist
     {
-        'path': '/chellow/reports/293/output/',
+        'path': '/general_imports',
         'method': 'post',
         'files': {'import_file': 'test/supplies_dno.csv'},
         'regexes': [
-            r"/reports/295/output/\?process_id=4"],
+            r"/general_imports/4"],
         'status_code': 303},
     {
-        'path': '/chellow/reports/295/output/?process_id=4',
+        'path': '/general_imports/4',
         'tries': {},
 
         # check that it knows that line 2 has a DNO that doesn't exist
@@ -627,14 +565,14 @@ def virtual_bill_titles():
 
     # Check that it gives a sensible error message if a data is malformed
     {
-        'path': '/chellow/reports/293/output/',
+        'path': '/general_imports',
         'method': 'post',
         'files': {'import_file': 'test/supplies_date.csv'},
         'regexes': [
-            r"/chellow/reports/295/output/\?process_id=5"],
+            r"/general_imports/5"],
         'status_code': 303},
     {
-        'path': '/chellow/reports/295/output/?process_id=5',
+        'path': '/general_imports/5',
         'tries': {},
 
         # check that it knows that line 1 has a malformed date
@@ -646,14 +584,14 @@ def virtual_bill_titles():
 
     # Check for a sensible error message if the site doesn't exist
     {
-        'path': '/chellow/reports/293/output/',
+        'path': '/general_imports',
         'method': 'post',
         'files': {'import_file': 'test/supplies_no_site.csv'},
         'regexes': [
-            r"/chellow/reports/295/output/\?process_id=6", ],
+            r"/general_imports/6", ],
         'status_code': 303, },
     {
-        'path': '/chellow/reports/295/output/?process_id=6',
+        'path': '/general_imports/6',
         'tries': {},
 
         # check that it knows that line 1 has a malformed date
@@ -663,14 +601,14 @@ def virtual_bill_titles():
 
     # Valid import of supplies
     {
-        'path': '/chellow/reports/293/output/',
+        'path': '/general_imports',
         'method': 'post',
         'files': {'import_file': 'test/supplies.csv'},
         'status_code': 303,
         'regexes': [
-            r"/reports/295/output/\?process_id=7"]},
+            r"/general_imports/7"]},
     {
-        'path': '/chellow/reports/295/output/?process_id=7',
+        'path': '/general_imports/7',
         'tries': {},
 
         # Check it's loaded ok
@@ -680,7 +618,7 @@ def virtual_bill_titles():
 
     # Check that a supply with only an import MPAN is there
     {
-        'path': '/chellow/reports/311/output/?site_id=4',
+        'path': '/sites/4/edit',
         'regexes': [
             r"22 6354 2983 570",
 
@@ -691,7 +629,7 @@ def virtual_bill_titles():
 
     # Can we see a site ok?
     {
-        'path': '/chellow/reports/311/output/?site_id=1',
+        'path': '/sites/1/edit',
 
         # Is the era displayed?
         'regexes': [
@@ -708,7 +646,7 @@ def virtual_bill_titles():
     # View a supply in edit mode
     {
         'name': "view a supply",
-        'path': '/chellow/reports/305/output/?supply_id=2',
+        'path': '/supplies/2/edit',
 
         # Check table of existing eras is there
         'regexes': [
@@ -718,34 +656,32 @@ def virtual_bill_titles():
             r"<td>2003-08-03 00:00</td>\s*<td>\s*Ongoing", ],
         'status_code': 200},
     {
-        'path': '/chellow/reports/305/output/',
+        'path': '/supplies/1/edit',
         'method': 'post',
 
         # Can we update a supply name?
 
         # Can we update a supply source?
         'data': {
-            'supply_id': "1",
             'name': "Hello",
             'source_id': "4",
             'generator_type_id': "1",
             'gsp_group_id': "11"},
         'regexes': [
-            r"/reports/7/output/\?supply_id=1"],
+            r"/supplies/1"],
         'status_code': 303},
     {
-        'path': '/chellow/reports/305/output/?supply_id=1',
+        'path': '/supplies/1/edit',
         'regexes': [
             r'value="Hello">',
             r'option value="1" selected>chp</option>'],
         'status_code': 200},
     {
-        'path': '/chellow/reports/305/output/',
+        'path': '/supplies/1/edit',
         'method': 'post',
 
         # Change it back.
         'data': {
-            'supply_id': "1",
             'name': "1",
             'source_id': "1",
             'generator_type_id': "1",
@@ -754,14 +690,14 @@ def virtual_bill_titles():
 
     {
         'name': "View era in edit mode. Supply 1",
-        'path': '/chellow/reports/307/output/?era_id=1',
+        'path': '/eras/1/edit',
 
         # Check start date year is there
         'regexes': [
             r"start_year",
-            r'<option value="53" selected>HH contract</option>',
+            r'<option value="42" selected>HH contract</option>',
             r'"imp_supplier_contract_id">\s*'
-            '<option value="55" selected>Half-hourlies 2007',
+            '<option value="44" selected>Half-hourlies 2007',
 
             # Can we see the MOP account?
             r'"mc-22 9205 6799 106"'],
@@ -769,7 +705,7 @@ def virtual_bill_titles():
 
     # Supply 2
     {
-        'path': '/chellow/reports/307/output/?era_id=2',
+        'path': '/eras/2/edit',
 
         # Check site code is correct
         'regexes': [
@@ -779,10 +715,9 @@ def virtual_bill_titles():
     # Can we add a new era ok? },
     {
         'name': "Manipulating eras",
-        'path': '/chellow/reports/305/output/',
+        'path': '/supplies/2/edit',
         'method': 'post',
         'data': {
-            'supply_id': "2",
             'start_year': "2006",
             'start_month': "07",
             'start_day': "20",
@@ -790,12 +725,12 @@ def virtual_bill_titles():
             'start_minute': "00",
             'insert_era': "Insert", },
         'regexes': [
-            r"/chellow/reports/7/output/\?supply_id=2"],
+            r"/supplies/2"],
         'status_code': 303},
 
     # Let's check it's carried forward the import mpan. Supply 2
     {
-        'path': '/chellow/reports/307/output/?era_id=8',
+        'path': '/eras/8/edit',
         'regexes': [
             r"22 9813 2107 763",
             r'name="mtc_code" value="845" size="3" maxlength="3"'],
@@ -803,17 +738,16 @@ def virtual_bill_titles():
 
     # Can we delete the era ok? Supply 2
     {
-        'path': '/chellow/reports/307/output/?era_id=8&delete=Delete',
+        'path': '/eras/8/edit?delete=Delete',
         'regexes': [
             r"Are you sure you want to delete this"],
         'status_code': 200},
 
     # When a supply era is ended, check that the snags are updated. Supply 5
     {
-        'path': '/chellow/reports/307/output/',
+        'path': '/eras/5/edit',
         'method': 'post',
         'data': {
-            'era_id': "5",
             'start_year': "2003",
             'start_month': "08",
             'start_day': "03",
@@ -826,9 +760,9 @@ def virtual_bill_titles():
             'finish_hour': "23",
             'finish_minute': "30",
             'gsp_group_id': "11",
-            'mop_contract_id': "57",
+            'mop_contract_id': "45",
             'mop_account': "22 0883 6932 301",
-            'hhdc_contract_id': "54",
+            'hhdc_contract_id': "43",
             'hhdc_account': "22 0883 6932 301",
             'msn': "",
             'pc_id': "9",
@@ -838,13 +772,13 @@ def virtual_bill_titles():
             'imp_llfc_code': "570",
             'imp_mpan_core': "22 0883 6932 301",
             'imp_sc': "350",
-            'imp_supplier_contract_id': "55",
+            'imp_supplier_contract_id': "44",
             'imp_supplier_account': "4341"},
         'status_code': 303},
 
-    # Check it's correct in edit view
     {
-        'path': '/chellow/reports/307/output/?era_id=5',
+        'name': "Check it's correct in edit view",
+        'path': '/eras/5/edit',
 
         # Check start day is correct
         'regexes': [
@@ -856,24 +790,24 @@ def virtual_bill_titles():
             r'option value="23" selected>23</option>'],
         'status_code': 200},
 
-    # Check it's correct in supply view
     {
-        'path': '/chellow/reports/7/output/?supply_id=5',
+        'name': "Check it's correct in supply view",
+        'path': '/supplies/5',
         'status_code': 200,
 
         # Check the end date is right
         'regexes': [
-            r'<form action="/chellow/reports/219/output/">\s*'
+            r'<form action="/reports/219/output/">\s*'
                 r'<input type="hidden" name="supply_id" value="5">',
             r'<a title="2003-08-13 23:30">2003-08-13</a>',
-            r'<form action="/chellow/reports/187/output/" method="post">',
+            r'<form action="/reports/187/output/" method="post">',
             r'<legend>TRIAD</legend>\s*<input type="hidden" name="supply_id"',
-            r'<a href="/chellow/reports/15/output/\?supply_id=5&amp;'
+            r'<a href="/reports/15/output/\?supply_id=5&amp;'
             'is_import=true&amp;year=\d{4}&amp;years=1">Import</a>']},
 
     # Supply 5, Era 5
     {
-        'path': '/chellow/reports/301/output/?channel_id=18',
+        'path': '/channels/18',
         'status_code': 200,
 
         # Check the end date is right
@@ -885,12 +819,12 @@ def virtual_bill_titles():
     # Check that if the hhdc contract is changed, the hhdc contract of the
     # snags change
 
-    # Check the export supply capacity can be updated as well. Supply 5
     {
-        'path': '/chellow/reports/307/output/',
+        'name': "Check the export supply capacity can be updated as well. "
+        "Supply 5",
+        'path': '/eras/5/edit',
         'method': 'post',
         'data': {
-            'era_id': "5",
             'msn': "",
             'start_year': "2003",
             'start_month': "08",
@@ -903,9 +837,9 @@ def virtual_bill_titles():
             'finish_day': "13",
             'finish_hour': "23",
             'finish_minute': "30",
-            'mop_contract_id': "57",
+            'mop_contract_id': "45",
             'mop_account': "22 0883 6932 301",
-            'hhdc_contract_id': "53",
+            'hhdc_contract_id': "42",
             'hhdc_account': "22 0883 6932 301",
             'pc_id': "9",
             'mtc_code': "845",
@@ -915,17 +849,17 @@ def virtual_bill_titles():
             'imp_mpan_core': "22 0883 6932 301",
             'imp_gsp_group_id': "11",
             'imp_sc': "430",
-            'imp_supplier_contract_id': "55",
+            'imp_supplier_contract_id': "44",
             'imp_supplier_account': "4341"},
         'status_code': 303},
 
-    # Check the change is there in edit view
     {
-        'path': '/chellow/reports/307/output/?era_id=5',
+        'name': "Check the change is there in edit view",
+        'path': '/eras/5/edit',
         'regexes': [
             r'<input name="imp_sc" value="430" size="9" maxlength="9">']},
     {
-        'path': '/chellow/reports/301/output/?channel_id=18',
+        'path': '/channels/18',
         'status_code': 200,
         'regexes': [
             r"Channel Export\s*REACTIVE_EXP",
@@ -934,12 +868,11 @@ def virtual_bill_titles():
             r"<td>2003-08-03 00:00</td>\s*<td>2003-08-13 23:30</td>\s*"
             "<td>Missing</td>"]},
 
-    # Put it back to how it was. Supply 5
     {
-        'path': '/chellow/reports/307/output/',
+        'name': "Put it back to how it was. Supply 5",
+        'path': '/eras/5/edit',
         'method': 'post',
         'data': {
-            'era_id': "5",
             'msn': "",
             'start_year': "2003",
             'start_month': "08",
@@ -947,9 +880,9 @@ def virtual_bill_titles():
             'start_hour': "00",
             'start_minute': "00",
             'is_ended': "false",
-            'mop_contract_id': "57",
+            'mop_contract_id': "45",
             'mop_account': "22 0883 6932 301",
-            'hhdc_contract_id': "53",
+            'hhdc_contract_id': "42",
             'hhdc_account': "22 0883 6932 301",
             'pc_id': "9",
             'mtc_code': "845",
@@ -958,20 +891,20 @@ def virtual_bill_titles():
             'imp_llfc_code': "570",
             'imp_mpan_core': "22 0883 6932 301",
             'imp_sc': "350",
-            'imp_supplier_contract_id': "55",
+            'imp_supplier_contract_id': "44",
             'imp_supplier_account': "4341"},
         'status_code': 303},
 
-    # Valid bulk update of supply eras
     {
-        'path': '/chellow/reports/293/output/',
+        'name': "Valid bulk update of supply eras",
+        'path': '/general_imports',
         'method': 'post',
         'files': {'import_file': 'test/era-update.csv'},
         'status_code': 303,
         'regexes': [
-            r"/chellow/reports/295/output/\?process_id=8"]},
+            r"/general_imports/8"]},
     {
-        'path': '/chellow/reports/295/output/?process_id=8',
+        'path': '/general_imports/8',
         'tries': {},
 
         # Check it's loaded ok
@@ -979,14 +912,14 @@ def virtual_bill_titles():
             r"The file has been imported successfully"],
         'status_code': 200},
     {
-        'path': '/chellow/reports/293/output/',
+        'path': '/general_imports',
         'method': 'post',
         'files': {'import_file': 'test/supplies-bad-mpan.csv'},
         'status_code': 303,
         'regexes': [
-            r"/reports/295/output/\?process_id=9"]},
+            r"/general_imports/9"]},
     {
-        'path': '/chellow/reports/295/output/?process_id=9',
+        'path': '/general_imports/9',
         'tries': {},
 
         # Check it's loaded ok
@@ -995,12 +928,11 @@ def virtual_bill_titles():
             "supply\."],
         'status_code': 200},
 
-    # Attach another site to an era. Supply 2
     {
-        'path': '/chellow/reports/307/output/',
+        'name': "Attach another site to an era. Supply 2",
+        'path': '/eras/2/edit',
         'method': 'post',
         'data': {
-            'era_id': "2",
             'site_code': "CI005",
             'attach': "Attach"},
         'status_code': 303},
@@ -1008,10 +940,9 @@ def virtual_bill_titles():
     # Check that we prevent mpan cores from changing without an overlapping
     # period. Supply 2
     {
-        'path': '/chellow/reports/307/output/',
+        'path': '/eras/8/edit',
         'method': 'post',
         'data': {
-            'era_id': "8",
             'msn': "",
             'start_year': "2006",
             'start_month': "07",
@@ -1019,9 +950,9 @@ def virtual_bill_titles():
             'start_hour': "00",
             'start_minute': "00",
             'is_ended': "false",
-            'mop_contract_id': "57",
+            'mop_contract_id': "45",
             'mop_account': "mc-22 9813 2107 763",
-            'hhdc_contract_id': "53",
+            'hhdc_contract_id': "42",
             'hhdc_account': "01",
             'pc_id': "9",
             'mtc_code': "845",
@@ -1030,7 +961,7 @@ def virtual_bill_titles():
             'imp_llfc_code': "570",
             'imp_mpan_core': "2276930477695",
             'imp_sc': "430",
-            'imp_supplier_contract_id': "55",
+            'imp_supplier_contract_id': "44",
             'imp_supplier_account': "01"},
         'status_code': 400,
 
@@ -1043,10 +974,9 @@ def virtual_bill_titles():
     # Check that we get a good error message if the LLFC is of the wrong
     # polarity. Supply 2
     {
-        'path': '/chellow/reports/307/output/',
+        'path': '/eras/8/edit',
         'method': 'post',
         'data': {
-            'era_id': "8",
             'msn': "",
             'start_year': "2006",
             'start_month': "07",
@@ -1054,9 +984,9 @@ def virtual_bill_titles():
             'start_hour': "00",
             'start_minute': "00",
             'is_ended': "false",
-            'mop_contract_id': "57",
+            'mop_contract_id': "45",
             'mop_account': "mc-22 9813 2107 763",
-            'hhdc_contract_id': "53",
+            'hhdc_contract_id': "42",
             'hhdc_account': "01",
             'pc_id': "9",
             'mtc_code': "845",
@@ -1065,7 +995,7 @@ def virtual_bill_titles():
             'imp_llfc_code': "521",
             'imp_mpan_core': "22 9813 2107 763",
             'imp_sc': "430",
-            'imp_supplier_contract_id': "55",
+            'imp_supplier_contract_id': "44",
             'imp_supplier_account': "01"},
         'status_code': 400,
         'regexes': [
@@ -1075,34 +1005,29 @@ def virtual_bill_titles():
     # with #F2
     {
         'name': "Import hh data",
-        'path': '/chellow/reports/211/output/',
+        'path': '/hhdc_contracts/42/hh_imports',
         'method': 'post',
-        'data': {
-            'hhdc_contract_id': "53"},
         'files': {'import_file': 'test/no_hash.df2'},
         'regexes': [
-            r"/reports/65/output/\?hhdc_contract_id=53&process_id=0"],
+            r"/hhdc_contracts/42/hh_imports/0"],
         'status_code': 303},
     {
-        'path': '/chellow/reports/65/output/?hhdc_contract_id=53&process_id=0',
-        'method': 'post',
+        'path': '/hhdc_contracts/42/hh_imports/0',
         'tries': {},
         'regexes': [
             r"The first line must be &#39;#F2&#39;"],
         'status_code': 200},
 
-    # Import some hh Stark DF2 data
     {
-        'path': '/chellow/reports/211/output/',
+        'name': "Import some hh Stark DF2 data",
+        'path': '/hhdc_contracts/42/hh_imports',
         'method': 'post',
-        'data': {
-            'hhdc_contract_id': "53"},
         'files': {'import_file': 'test/ftp/hh_data.df2'},
         'status_code': 303,
         'regexes': [
-            r"/reports/65/output/\?hhdc_contract_id=53&process_id=1", ], },
+            r"/hhdc_contracts/42/hh_imports/1"]},
     {
-        'path': '/chellow/reports/65/output/?hhdc_contract_id=53&process_id=1',
+        'path': '/hhdc_contracts/42/hh_imports/1',
         'tries': {},
 
         # Check it's loaded ok and has ignored the blank line and the #F2 line
@@ -1110,26 +1035,24 @@ def virtual_bill_titles():
             r"The import has completed.*successfully.",
 
             # Check link to hhdc is correct
-            r"/chellow/reports/115/output/\?hhdc_contract_id=53"],
+            r"/hhdc_contracts/42"],
         'status_code': 200},
 
-    # Supply 1, era 1
     {
-        'path': '/chellow/reports/301/output/?channel_id=4',
+        'name': 'Supply 1, era 1',
+        'path': '/channels/4',
         'regexes': [
             r"Channel Export\s*REACTIVE_EXP",
             r'<tr>\s*<td>\s*'
-            '<a href="/chellow/reports/117/output/\?snag_id=4">view</a>\s*'
+            '<a href="/channel_snags/4">view</a>\s*'
             '</td>\s*<td>2003-08-03 00:00</td>\s*<td>Ongoing</td>\s*'
             '<td>Missing</td>'],
         'status_code': 200},
 
-    # Check if more hh data imports ok
     {
-        'path': '/chellow/reports/211/output/',
+        'name': "Check if more hh data imports ok",
+        'path': '/hhdc_contracts/42/hh_imports',
         'method': 'post',
-        'data': {
-            'hhdc_contract_id': "53"},
         'files': {'import_file': 'test/hh_data2.df2'},
         'status_code': 303},
 
@@ -1138,16 +1061,14 @@ def virtual_bill_titles():
     {
         'name': "Detect if hh import still works if first hh datum is "
         "missing.",
-        'path': '/chellow/reports/211/output/',
+        'path': '/hhdc_contracts/42/hh_imports',
         'method': 'post',
-        'data': {
-            'hhdc_contract_id': "53", },
         'files': {'import_file': 'test/missing.df2'},
         'regexes': [
-            r"/reports/65/output/\?hhdc_contract_id=53&process_id=3"],
+            r"/hhdc_contracts/42/hh_imports/3"],
         'status_code': 303},
     {
-        'path': '/chellow/reports/65/output/?hhdc_contract_id=53&process_id=3',
+        'path': '/hhdc_contracts/42/hh_imports/3',
         'tries': {},
         'regexes': [
             r"The import has completed.*successfully."],
@@ -1156,16 +1077,14 @@ def virtual_bill_titles():
     # This relies on the default timezone being BST },
     {
         'name': "Do we handle BST ok?",
-        'path': '/chellow/reports/211/output/',
+        'path': '/hhdc_contracts/42/hh_imports',
         'method': 'post',
-        'data': {
-            'hhdc_contract_id': "53"},
         'files': {'import_file': 'test/hh_data_timezone.df2'},
         'regexes': [
-            r"/chellow/reports/65/output/\?hhdc_contract_id=53&process_id=4"],
+            r"/hhdc_contracts/42/hh_imports/4"],
         'status_code': 303},
     {
-        'path': '/chellow/reports/65/output/?hhdc_contract_id=53&process_id=4',
+        'path': '/hhdc_contracts/42/hh_imports/4',
 
         # Check it's loaded ok
         'tries': {},
@@ -1176,58 +1095,54 @@ def virtual_bill_titles():
     # Test that 3 non-actual reads in a row generate a single snag
     {
         'name': "Actual reads snags combined properly",
-        'path': '/chellow/reports/211/output/',
+        'path': '/hhdc_contracts/42/hh_imports',
         'method': 'post',
-        'data': {
-            'hhdc_contract_id': "53"},
         'files': {'import_file': 'test/hh_data_not_actual.df2'},
         'regexes': [
-            r"/chellow/reports/65/output/\?hhdc_contract_id=53&process_id=5"],
+            r"/hhdc_contracts/42/hh_imports/5"],
         'status_code': 303},
     {
-        'path': '/chellow/reports/65/output/?hhdc_contract_id=53&process_id=5',
+        'path': '/hhdc_contracts/42/hh_imports/5',
         'tries': {},
         'regexes': [
             r"The import has completed.*successfully."],
         'status_code': 200},
 
-    # supply 1, era 1
     {
-        'path': '/chellow/reports/301/output/?channel_id=3',
+        'name': "supply 1, era 1",
+        'path': '/channels/3',
         'regexes': [
             r"Channel Export\s*ACTIVE",
             r'<td>\s*'
-            '<a href="/chellow/reports/117/output/\?snag_id=45">view</a>\s*'
+            '<a href="/channel_snags/45">view</a>\s*'
             '</td>\s*<td>2005-12-15 07:00</td>\s*<td>2005-12-15 08:00</td>\s*'
             '<td>Estimated</td>',
             r'<tr>\s*<td>\s*'
-            '<a href="/chellow/reports/117/output/\?snag_id=3">view</a>\s*'
+            '<a href="/channel_snags/3">view</a>\s*'
             '</td>\s*<td>2003-08-03 00:00</td>\s*<td>2005-12-15 06:30</td>\s*'
             '<td>Missing</td>'],
         'status_code': 200},
     {
-        'path': '/chellow/reports/211/output/',
+        'path': '/hhdc_contracts/42/hh_imports',
         'method': 'post',
-        'data': {
-            'hhdc_contract_id': "53"},
         'files': {'import_file': 'test/hh_data_not_actual2.df2'},
         'regexes': [
-            r'/reports/65/output/\?hhdc_contract_id=53&process_id=6'],
+            r'/hhdc_contracts/42/hh_imports/6'],
         'status_code': 303},
     {
-        'path': '/chellow/reports/65/output/?hhdc_contract_id=53&process_id=6',
+        'path': '/hhdc_contracts/42/hh_imports/6',
         'tries': {},
         'regexes': [
             r"The import has completed.*successfully."],
         'status_code': 200},
 
-    # supply 1, era 1
     {
-        'path': '/chellow/reports/301/output/?channel_id=3',
+        'name': "supply 1, era 1",
+        'path': '/channels/3',
         'regexes': [
             r"Channel Export\s*ACTIVE",
             r'<td>\s*'
-            '<a href="/chellow/reports/117/output/\?snag_id=45">view</a>\s*'
+            '<a href="/channel_snags/45">view</a>\s*'
             '</td>\s*<td>2005-12-15 07:00</td>\s*<td>2005-12-15 09:30</td>\s*'
             '<td>Estimated</td>'],
         'status_code': 200},
@@ -1235,25 +1150,23 @@ def virtual_bill_titles():
     # Test if a CSV HH file can be imported },
     {
         'name': "Importing simple CSV data",
-        'path': '/chellow/reports/211/output/',
+        'path': '/hhdc_contracts/42/hh_imports',
         'method': 'post',
-        'data': {
-            'hhdc_contract_id': "53"},
         'files': {'import_file': 'test/hh_data.simple.csv'},
         'regexes': [
-            r"/reports/65/output/\?hhdc_contract_id=53&process_id=7"],
+            r"/hhdc_contracts/42/hh_imports/7"],
         'status_code': 303},
     {
-        'path': '/chellow/reports/65/output/?hhdc_contract_id=53&process_id=7',
+        'path': '/hhdc_contracts/42/hh_imports/7',
         'tries': {},
         'regexes': [
             r"The import has completed.*successfully."],
         'status_code': 200},
 
-    # Check that the imported HH datum is correct for supply 1, era 1
     {
-        'path': '/chellow/reports/301/output/?channel_id=3&start_year=2005&'
-        'start_month=09',
+        'name': "Check that the imported HH datum is correct for supply 1, "
+        "era 1",
+        'path': '/channels/3?start_year=2005&start_month=09',
         'regexes': [
             r"<td>2005-09-15 00:00</td>\s*<td>1.0</td>\s*<td>A</td>"]},
 
@@ -1261,16 +1174,14 @@ def virtual_bill_titles():
     # missing
     {
         'name': "Various DF2 tests.",
-        'path': '/chellow/reports/211/output/',
+        'path': '/hhdc_contracts/42/hh_imports',
         'method': 'post',
-        'data': {
-            'hhdc_contract_id': "53"},
         'files': {'import_file': 'test/hh_data_malformed.df2'},
         'regexes': [
-            r"/reports/65/output/\?hhdc_contract_id=53&process_id=8"],
+            r"/hhdc_contracts/42/hh_imports/8"],
         'status_code': 303},
     {
-        'path': '/chellow/reports/65/output/?hhdc_contract_id=53&process_id=8',
+        'path': '/hhdc_contracts/42/hh_imports/8',
         'tries': {},
         'regexes': [
             r"Problem at line number: 4"],
@@ -1278,35 +1189,30 @@ def virtual_bill_titles():
 
     # Check it gives a sensible error message if the first mpan is malformed
     {
-        'path': '/chellow/reports/211/output/',
+        'path': '/hhdc_contracts/42/hh_imports',
         'method': 'post',
-        'data': {
-            'hhdc_contract_id': "53"},
         'files': {'import_file': 'test/hh_data_bad_beginning.df2'},
         'regexes': [
-            r"/reports/65/output/\?hhdc_contract_id=53&process_id=9"],
+            r"/hhdc_contracts/42/hh_imports/9"],
         'status_code': 303},
     {
-        'path': '/chellow/reports/65/output/?hhdc_contract_id=53&process_id=9',
+        'path': '/hhdc_contracts/42/hh_imports/9',
         'tries': {},
         'regexes': [
             r"The MPAN core &#39;2204707514535,,,&#39; must contain exactly "
             "13 digits"],
         'status_code': 200},
 
-    # Check sensible error message if header but no data
     {
-        'path': '/chellow/reports/211/output/',
+        'name': "Check sensible error message if header but no data",
+        'path': '/hhdc_contracts/42/hh_imports',
         'method': 'post',
-        'data': {
-            'hhdc_contract_id': "53"},
         'files': {'import_file': 'test/hh_data_header_but_no_data.df2'},
         'regexes': [
-            r"/reports/65/output/\?hhdc_contract_id=53&process_id=10"],
+            r"/hhdc_contracts/42/hh_imports/10"],
         'status_code': 303},
     {
-        'path': '/chellow/reports/65/output/?hhdc_contract_id=53&'
-        'process_id=10',
+        'path': '/hhdc_contracts/42/hh_imports/10',
         'tries': {},
         'regexes': [
             r"The import has completed.*successfully\."],
@@ -1315,7 +1221,7 @@ def virtual_bill_titles():
     # Make sure 'show HH data' button works, supply 6, era 6
     {
         'name': "Manipulate channels",
-        'path': '/chellow/reports/301/output/?channel_id=19',
+        'path': '/channels/19',
         'regexes': [
             r"Import\s*ACTIVE"],
         'status_code': 200},
@@ -1323,80 +1229,76 @@ def virtual_bill_titles():
     # Manipulate Hh data"
     {
         'name': "Make sure 'show HH data' button works, supply 6, era 6",
-        'path': '/chellow/reports/301/output/?channel_id=21',
+        'path': '/channels/21',
         'regexes': [
             r"Export\s*REACTIVE_EXP",
-            r'action="\.">'],
+            r'action="">'],
         'status_code': 200},
     {
         'name': "Give good error for invalid date.",
-        'path': '/chellow/reports/301/output/?channel_id=21&start_year=2006&'
-        'start_month=13',
+        'path': '/channels/21?start_year=2006&start_month=13',
         'regexes': [
             r"Invalid date"],
         'status_code': 400},
     {
         'name': "Check site level snag",
-        'path': '/chellow/reports/39/output/',
+        'path': '/site_snags',
         'regexes': [
             r"CI004",
 
             # There's an hh where export to net is *less* than imported from
             # generator, check this doesn't show up.
             r'<td>\s*'
-            '<a href="/chellow/reports/119/output/\?site_snag_id=43">view</a> '
-            '\[<a href="/chellow/reports/373/'
-            'output/\?site_snag_id=43">edit</a>\]\s*</td>\s*<td>[^<]*</td>\s*'
+            '<a href="/site_snags/43">view</a>\s*'
+            '\[<a href="/site_snags/43/edit">edit</a>\]\s*'
+            r'</td>\s*<td>[^<]*</td>\s*'
             '<td>\s*'
-            '<a href="/chellow/reports/5/output/\?site_id=1">CI004</a>\s*'
+            '<a href="/sites/1">CI004</a>\s*'
             '</td>\s*<td>Lower Treave</td>\s*'
             '<td>Export to net &gt; import from generators.</td>\s*'
             '<td>2005-10-29 23:30</td>\s*<td>\s*2005-10-30 01:00</td>\s*'
             '</tr>\s*</tbody>'],
         'status_code': 200},
     {
-        'path': '/chellow/reports/371/output/',
+        'path': '/site_snags/edit',
 
         # Check that there's an 'ignore-year' parameter.
         'regexes': [
-            r'name="ignore_year"', ],
-        'status_code': 200, },
+            r'name="ignore_year"'],
+        'status_code': 200},
 
     # Supply 1, era 1 },
     {
         'name': "Check view of channel level snag",
-        'path': '/chellow/reports/117/output/?snag_id=1',
-        'status_code': 200, },
+        'path': '/channel_snags/1',
+        'status_code': 200},
 
     # Check that for a supply with multiple eras, a channel without any data
     # can be deleted. This test needs some hh data loaded somewhere. Supply 2,
     # era 8, exp active
     {
         'name': "Delete channel without data",
-        'path': '/chellow/reports/303/output/',
+        'path': '/channels/25/edit',
         'method': 'post',
         'data': {
-            'channel_id': "25",
-            'delete': "Delete", },
-        'status_code': 303, },
+            'delete': "Delete"},
+        'status_code': 303},
 
-    # Put it back to how it was before. Supply 2
     {
-        'path': '/chellow/reports/299/output/',
+        'name': "Put it back to how it was before. Supply 2",
+        'path': '/eras/8/add_channel',
         'method': 'post',
         'data': {
-            'era_id': "8",
             'imp_related': "false",
-            'channel_type': "ACTIVE", },
-        'status_code': 303, },
+            'channel_type': "ACTIVE"},
+        'status_code': 303},
 
     # Check it gives an error if the hhdc contract is removed from a supply era
     # that has data. Supply 1
     {
-        'path': '/chellow/reports/307/output/',
+        'path': '/eras/1/edit',
         'method': 'post',
         'data': {
-            'era_id': "1",
             'start_year': "2003",
             'start_month': "08",
             'start_day': "03",
@@ -1421,11 +1323,11 @@ def virtual_bill_titles():
             'exp_ssc_code': "",
             'exp_sc': "150",
             'exp_supplier_contract_id': "6",
-            'exp_supplier_account': "01", },
-        'status_code': 400, },
+            'exp_supplier_account': "01"},
+        'status_code': 400},
     {
         'name': "View a snag",
-        'path': '/chellow/reports/119/output/?site_snag_id=43',
+        'path': '/site_snags/43',
         'status_code': 200,
         'regexes': [
             r"<th>Finish Date</th>\s*<td>2005-10-30 01:00</td>", ], },
@@ -1433,7 +1335,7 @@ def virtual_bill_titles():
     # Assumes various site snags are present at this stage },
     {
         'name': "site snags stay ignored",
-        'path': '/chellow/reports/371/output/',
+        'path': '/site_snags/edit',
         'method': 'post',
         'data': {
             'ignore_year': "2006",
@@ -1441,31 +1343,28 @@ def virtual_bill_titles():
             'ignore_day': "26",
             'ignore_hour': "00",
             'ignore_minute': "00",
-            'ignore': "Ignore", },
+            'ignore': "Ignore"},
         'status_code': 303},
     {
-        'path': '/chellow/reports/211/output/',
+        'path': '/hhdc_contracts/42/hh_imports',
         'method': 'post',
-        'data': {
-            'hhdc_contract_id': "53"},
         'files': {'import_file': 'test/ftp/hh_data.df2'},
         'regexes': [
-            r"/reports/65/output/\?hhdc_contract_id=53&process_id=11"],
+            r"/hhdc_contracts/42/hh_imports/11"],
         'status_code': 303},
     {
-        'path': '/chellow/reports/65/output/?hhdc_contract_id=53&'
-        'process_id=11',
+        'path': '/hhdc_contracts/42/hh_imports/11',
         'tries': {},
         'regexes': [
             r"The import has completed.*successfully"],
         'status_code': 200},
     {
-        'path': '/chellow/reports/39/output/',
+        'path': '/site_snags',
         'regexes': [
             r"<tbody>\s*</tbody>"],
         'status_code': 200},
     {
-        'path': '/chellow/reports/17/output/?supply_id=5&months=1&'
+        'path': '/reports/17?supply_id=5&months=1&'
         'finish_year=2010&finish_month=03',
         'regexes': [
             r"<tr>\s*<td>\s*2010-03-15 12:00\s*</td>\s*<td>0</td>\s*"
@@ -1475,20 +1374,18 @@ def virtual_bill_titles():
     # Create a new batch
     {
         'name': "Batches",
-        'path': '/chellow/reports/287/output/',
+        'path': '/supplier_contracts/44/add_batch',
         'method': 'post',
         'data': {
-            'supplier_contract_id': "55",
             'reference': "04-003",
             'description': "Contract 4, batch number 3"},
         'status_code': 303},
 
     # Check it gives a good error message for a duplicate name
     {
-        'path': '/chellow/reports/287/output/',
+        'path': '/supplier_contracts/44/add_batch',
         'method': 'post',
         'data': {
-            'supplier_contract_id': "55",
             'reference': "04-003",
             'description': "dup batch"},
         'regexes': [
@@ -1496,21 +1393,21 @@ def virtual_bill_titles():
             "Half-hourlies 2007 with the reference 04-003\."],
         'status_code': 400},
 
-    # Create a new import. Supplier contract 58
+    # Create a new import. Supplier contract 56
     {
         'name': "Bill imports",
-        'path': '/chellow/reports/321/output/',
+        'path': '/supplier_bill_imports',
         'method': 'post',
         'data': {
-            'supplier_batch_id': "1"},
+            'supplier_batch_id': '1'},
         'files': {'import_file': 'test/bills.mm'},
         'status_code': 303,
         'regexes': [
-            r"/reports/323/output/\?importer_id=0"]},
+            r"/supplier_bill_imports/0"]},
 
-    # Supplier contract 58, batch 1
     {
-        'path': '/chellow/reports/323/output/?importer_id=0',
+        'name': "Supplier contract 58, batch 1",
+        'path': '/supplier_bill_imports/0',
         'tries': {},
         'status_code': 200,
         'regexes': [
@@ -1521,14 +1418,14 @@ def virtual_bill_titles():
     # Valid import of supplies
     {
         'name': "Set up NHH",
-        'path': '/chellow/reports/293/output/',
+        'path': '/general_imports',
         'method': 'post',
         'files': {'import_file': 'test/nhh-supplies.csv'},
         'status_code': 303,
         'regexes': [
-            r"/reports/295/output/\?process_id=10"]},
+            r"/general_imports/10"]},
     {
-        'path': '/chellow/reports/295/output/?process_id=10',
+        'path': '/general_imports/10',
         'tries': {},
 
         # Check it's loaded ok
@@ -1538,35 +1435,34 @@ def virtual_bill_titles():
 
     # Check values have been imported correctly. Supply 11
     {
-        'path': '/chellow/reports/307/output/?era_id=11',
+        'path': '/eras/11/edit',
         'regexes': [
             r"K87D74429"],
         'status_code': 200},
 
     # Create a new batch
     {
-        'path': '/chellow/reports/287/output/',
+        'path': '/supplier_contracts/47/add_batch',
         'method': 'post',
         'data': {
-            'supplier_contract_id': "59",
             'reference': "06-002",
             'description': "Bgb batch"},
         'status_code': 303},
 
-    # Supplier contract 61
     {
-        'path': '/chellow/reports/321/output/',
+        'name': "Supplier contract 61",
+        'path': '/supplier_bill_imports',
         'method': 'post',
         'data': {
-            'supplier_batch_id': "3"},
+            'supplier_batch_id': '3'},
         'files': {'import_file': 'test/bills.bgb.edi'},
         'status_code': 303,
         'regexes': [
-            r"/reports/323/output/\?importer_id=1"]},
+            r"/supplier_bill_imports/1"]},
 
     # Supplier contract 59, batch 3
     {
-        'path': '/chellow/reports/323/output/?importer_id=1',
+        'path': '/supplier_bill_imports/1',
         'tries': {},
         'status_code': 200,
         'regexes': [
@@ -1576,18 +1472,17 @@ def virtual_bill_titles():
     # Set a previously estimated HH to actual, supply 1, era 1, channel 3
     {
         'name': "Check that resolved HH estimates have their snags cleared.",
-        'path': '/chellow/reports/309/output/',
+        'path': '/hh_data/12/edit',
         'method': 'post',
         'data': {
             'update': "Update",
-            'hh_datum_id': "12",
             'value': "0.5",
             'status': "A"},
         'status_code': 303},
 
     # Check that the snag has been cleared. Supply 1, era 1
     {
-        'path': '/chellow/reports/301/output/?channel_id=3',
+        'path': '/channels/3',
         'regexes': [
             r"Channel Export\s*ACTIVE",
             r"<td>2005-12-15 07:30</td>\s*<td>2005-12-15 09:30</td>\s*"
@@ -1595,27 +1490,23 @@ def virtual_bill_titles():
 
     # Change it back. supply 1, era 1.
     {
-        'path': '/chellow/reports/309/output/',
+        'path': '/hh_data/12/edit',
         'method': 'post',
         'data': {
-            'hh_datum_id': "12",
             'value': "0.5",
             'status': "E"},
         'status_code': 303},
     {
         'name': "Test of BGlobal HH data import",
-        'path': '/chellow/reports/211/output/',
+        'path': '/hhdc_contracts/42/hh_imports',
         'method': 'post',
-        'data': {
-            'hhdc_contract_id': "53"},
         'files': {'import_file': 'test/hh_data.bg.csv'},
         'status_code': 303,
         'regexes': [
-            r"/chellow/reports/65/output/\?hhdc_contract_id=53&process_id=12"]
+            r"/hhdc_contracts/42/hh_imports/12"]
         },
     {
-        'path': '/chellow/reports/65/output/?hhdc_contract_id=53'
-        '&process_id=12',
+        'path': '/hhdc_contracts/42/hh_imports/12',
         'tries': {},
         'regexes': [
             r"The import has completed.*successfully."],
@@ -1625,17 +1516,15 @@ def virtual_bill_titles():
     {
         'name': "Check the BGlobal data is imported to the right number of "
         "sig figs",
-        'path': '/chellow/reports/301/output/?channel_id=1&start_year=2008&'
-        'start_month=07',
+        'path': '/channels/1?start_year=2008&start_month=07',
         'regexes': [
             r"0\.262"]},
     {
         'name': "Check okay if supply era update is interupted by an error. "
         "Supply 9",
-        'path': '/chellow/reports/307/output/',
+        'path': '/eras/9/edit',
         'method': 'post',
         'data': {
-            'era_id': "9",
             'msn': "P96C93722",
             'start_year': "2005",
             'start_month': "08",
@@ -1661,44 +1550,43 @@ def virtual_bill_titles():
         'status_code': 400, },
     {
         'name': "HH data general import",
-        'path': '/chellow/reports/293/output/',
+        'path': '/general_imports',
         'method': 'post',
         'files': {'import_file': 'test/hh_data.csv'},
         'status_code': 303,
         'regexes': [
-            r"/chellow/reports/295/output/\?process_id=11", ], },
+            r"/general_imports/11"]},
     {
-        'path': '/chellow/reports/295/output/?process_id=11',
+        'path': '/general_imports/11',
         'tries': {},
         'regexes': [
-            r"The file has been imported successfully\.", ],
-        'status_code': 200, },
+            r"The file has been imported successfully\."],
+        'status_code': 200},
 
     # Create new batch },
     {
         'name': "CSV import",
-        'path': '/chellow/reports/287/output/',
+        'path': '/supplier_contracts/44/add_batch',
         'method': 'post',
         'data': {
-            'supplier_contract_id': "55",
             'reference': "06-004",
             'description': "CSV batch"},
         'status_code': 303},
 
-    # Insert bills. Supplier contract
     {
-        'path': '/chellow/reports/321/output/',
+        'name': "Insert bills. Supplier contract",
+        'path': '/supplier_bill_imports',
         'method': 'post',
         'data': {
-            'supplier_batch_id': "4"},
+            'supplier_batch_id': '4'},
         'files': {'import_file': 'test/bills.csv'},
         'status_code': 303,
         'regexes': [
-            r"/reports/323/output/\?importer_id=2"]},
+            r"/supplier_bill_imports/2"]},
 
     # Supplier contract 57, batch 4
     {
-        'path': '/chellow/reports/323/output/?importer_id=2',
+        'path': '/supplier_bill_imports/2',
         'tries': {},
         'status_code': 200,
         'regexes': [
@@ -1708,10 +1596,9 @@ def virtual_bill_titles():
     # First create the era
     {
         'name': "Check one is able to delete an era ok",
-        'path': '/chellow/reports/305/output/',
+        'path': '/supplies/9/add_era',
         'method': 'post',
         'data': {
-            'supply_id': "9",
             'start_year': "2009",
             'start_month': "01",
             'start_day': "20",
@@ -1719,73 +1606,69 @@ def virtual_bill_titles():
             'start_minute': "00",
             'insert_era': "Insert"},
         'regexes': [
-            r"/chellow/reports/7/output/\?supply_id=9"],
+            r"/supplies/9"],
         'status_code': 303},
 
     # Delete era. Supply 9
     {
-        'path': '/chellow/reports/307/output/',
+        'path': '/eras/12/edit',
         'method': 'post',
         'data': {
-            'era_id': "12",
-            'delete': "Delete", },
-        'status_code': 303, },
+            'delete': "Delete"},
+        'status_code': 303},
     {
         'name': "Check 'view' link is correct on a site in the edit world.",
-        'path': '/chellow/reports/311/output/?site_id=7',
+        'path': '/sites/7/edit',
         'regexes': [
-            r"/chellow/reports/5/output/\?site_id=7", ],
-        'status_code': 200, },
+            r"/sites/7"],
+        'status_code': 200},
     {
         'name': "Check that if era dates change, hh data move with them.",
-        'path': '/chellow/reports/305/output/',
+        'path': '/supplies/1/add_era',
         'method': 'post',
         'data': {
-            'supply_id': "1",
             'start_year': "2008",
             'start_month': "7",
             'start_day': "7",
             'start_hour': "00",
             'start_minute': "00",
-            'insert_era': "Insert", },
+            'insert_era': "Insert"},
         'regexes': [
-            r"/chellow/reports/7/output/\?supply_id=1", ],
-        'status_code': 303, },
+            r"/supplies/1"],
+        'status_code': 303},
 
     # supply 1, era 13
     {
-        'path': '/chellow/reports/301/output/?channel_id=32&start_year=2008&'
-        'start_month=07',
+        'path': '/channels/32?start_year=2008&start_month=07',
         'regexes': [
             r'<td>\s*'
-            '\[<a href="/chellow/reports/309/output/\?hh_datum_id=66">'
+            '\[<a href="/hh_data/66">'
             'edit</a>\]\s*</td>\s*<td>2008-07-07 00:00</td>\s*'
-            '<td>0.247</td>\s*<td>A</td>', ],
-        'status_code': 200, },
+            '<td>0.247</td>\s*<td>A</td>'],
+        'status_code': 200},
     {
         'name': "Check 'view' link is correct on a supply in the edit world.",
-        'path': '/chellow/reports/305/output/?supply_id=10',
+        'path': '/supplies/10/edit',
         'regexes': [
-            r"/chellow/reports/7/output/\?supply_id=10", ],
-        'status_code': 200, },
+            r"/supplies/10"],
+        'status_code': 200},
     {
         'name': "Check site nav link is correct on site HH data page.",
-        'path': '/chellow/reports/25/output/?site_code=CI004&year=2005&'
-        'month=11',
+        'path': '/sites/1/hh_data?year=2005&month=11',
         'regexes': [
-            r"/chellow/reports/5/output/\?site_id=1",
+            r"/site/1",
 
             # Check that columns are in the right order
-            r'kWh</th>\s*<th colspan="4">\s*1 net\s*</th>', ],
-        'status_code': 200, },
+            r'kWh</th>\s*<th colspan="4">\s*1 net\s*</th>'],
+        'status_code': 200},
     {
         'name': "Check no duplicate supplies in Supplies Duration report.",
-        'path': '/chellow/reports/149/output/?start_year=2008&start_month=07&'
-        'start_day=01&start_hour=0&start_minute=0&finish_year=2008&'
-        'finish_month=07&finish_day=31&finish_hour=23&finish_minute=30',
+        'path': '/reports/149?start_year=2008&start_month=07&start_day=01&'
+        'start_hour=0&start_minute=0&finish_year=2008&finish_month=07&'
+        'finish_day=31&finish_hour=23&finish_minute=30',
         'status_code': 303},
     {
-        'path': '/chellow/reports/251/output/',
+        'path': '/downloads',
         'tries': {},
         'regexes': [
             r"000_FINISHED_watkinsexamplecom_supplies_duration\.csv"],

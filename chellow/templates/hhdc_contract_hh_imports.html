@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+
+{% block title %}
+	HHDC Contracts &gt; {{contract.name}} &gt; HH Data Imports
+{% endblock %}
+
+{% block nav %}
+	<a href="{{context_path}}/hhdc_contracts">HHDC Contracts</a> &gt;
+	<a href="{{context_path}}/hhdc_contracts/{{contract.id}}">{{contract.name}}</a>
+	&gt; HH Data Imports
+{% endblock %}
+
+{% block content %}
+	<form enctype="multipart/form-data" method="post" action="">
+		<fieldset>
+			<input type="hidden" name="hhdc_contract_id" value="{{contract.id}}">
+			<legend>Import HH data</legend>
+			<br>
+			<input type="file" name="import_file" size="45"
+													value="{{request.values.import_file}}">
+			<input type="submit" value="Import">
+		</fieldset>
+	</form>
+
+	{% if processes|length > 0 %}
+		<ul>
+			{% for proc in processes %}
+				<li>
+					<a href="{{context_path}}/hhdc_contracts/{{contract.id}}/hh_imports/{{proc.id}}">{{proc.id}}</a>
+				</li>
+			{% endfor %}
+		</ul>
+	{% endif %}
+{% endblock %}

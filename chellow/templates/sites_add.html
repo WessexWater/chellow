@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block title %}Sites &gt; Add{% endblock %}
+
+{% block nav %}
+	<a href="{{context_path}}/reports/3/output/">Sites</a> &gt; Add
+{% endblock %}
+
+{% block content %}
+	<form action="." method="post">
+		<fieldset>
+			<legend>Add a site</legend>
+			<br>
+			<label>
+				Code {{ input_text('code', '') }}
+			</label>
+			<br>
+			<label>
+				Name {{ input_text('name', '') }}
+			</label>
+			<br>
+			<br>
+			<input type="submit" value="Add">
+		</fieldset>
+	</form>
+{% endblock %}

@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block title %}
+	HHDC Contracts &gt; {{hhdc_rate_script.contract.name}} &gt;
+ 	Rate Script {{hhdc_rate_script.id}}
+{% endblock %}
+
+{% block nav %}
+	<a href="{{context_path}}/hhdc_contracts">HHDC Contracts</a> &gt;
+	<a href="{{context_path}}/hhdc_contracts/{{hhdc_rate_script.contract.id}}">{{hhdc_rate_script.contract.name}}</a> &gt;
+ 	{{hhdc_rate_script.start_date|hh_format}}
+	[<a href="{{context_path}}/hhdc_rate_scripts/{{hhdc_rate_script.id}}/edit">edit</a>]
+{% endblock %}
+
+{% block content %}
+	<table>
+		<tr>
+			<th>Start Date</th>
+			<td>{{hhdc_rate_script.start_date|hh_format }}</td>
+		</tr>
+		<tr>
+			<th>Finish Date</th>
+			<td>{{hhdc_rate_script.finish_date|hh_format }}</td>
+		</tr>
+	</table>
+
+	<h2>Script</h2>
+
+	<pre>{{hhdc_rate_script.script}}</pre>
+{% endblock %}

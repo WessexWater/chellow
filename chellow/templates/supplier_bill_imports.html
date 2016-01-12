@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+
+{% block title %}
+	Supplier Contracts &gt; {{batch.contract.name}} &gt; Batches &gt;
+ 	{{batch.reference}} &gt; Bill Imports
+{% endblock %}
+
+{% block nav %}
+	<a href="{{context_path}}/supplier_contracts">Supplier Contracts</a> &gt;
+	<a href="{{context_path}}/supplier_contracts/{{batch.contract.id}}">{{batch.contract.name}}</a> &gt;
+	<a href="{{context_path}}/supplier_batches?supplier_contract_id={{batch.contract.id}}">Batches</a> &gt;
+	<a href="{{context_path}}/supplier_batches/{{batch.id}}">{{batch.reference}}</a> &gt;
+ 	Bill Imports
+{% endblock %}
+
+{% block content %}
+	<form enctype="multipart/form-data" method="post" action="">
+		<fieldset>
+			<input type="hidden" name="supplier_batch_id" value="{{batch.id}}">
+			<legend>Import Bill File</legend>
+			<input type="file" name="import_file" size="45"
+				value="{{request.values.import_file}}">
+			<input type="submit" value="Import">
+			<br>
+			<p>Valid file name extensions are {{parser_names}}.</p>
+		</fieldset>
+	</form>
+	{% if importer_ids %}
+		<ul>
+			{% for id in importer_ids %}
+				<li>
+					<a href="{{context_path}}/supplier_bill_imports/{{id}}">{{id}}</a>
+				</li>
+			{% endfor %}
+		</ul>
+	{% endif %}
+{% endblock %}
