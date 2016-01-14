@@ -15092,20 +15092,23 @@ def virtual_bill(ds):
             r'bill_finish_date,mprn,site_code,site_name,covered_start,'
             r'covered_finish,covered_bill_ids,covered_units_consumed,'
             r'virtual_units_consumed,covered_correction_factor,'
-            r'virtual_correction_factor,covered_units_code,virtual_units_code,'
-            r'covered_units_factor,'
-            r'virtual_units_factor,covered_kwh,virtual_kwh,covered_gas_rate,'
-            r'virtual_gas_rate,'
-            r'covered_gas_gbp,virtual_gas_gbp,covered_standing_rate,'
-            r'virtual_standing_rate,covered_standing_gbp,virtual_standing_gbp,'
-            r'covered_net_gbp,virtual_net_gbp,covered_vat_gbp,virtual_vat_gbp,'
-            r'covered_gross_gbp,virtual_gross_gbp',
+            r'virtual_correction_factor,covered_units_code,'
+            r'virtual_units_code,covered_units_factor,virtual_units_factor,'
+            r'covered_kwh,virtual_kwh,covered_gas_rate,virtual_gas_rate,'
+            r'covered_gas_gbp,virtual_gas_gbp,difference_gas_gbp,'
+            r'covered_standing_rate,virtual_standing_rate,'
+            r'covered_standing_gbp,virtual_standing_gbp,'
+            r'difference_standing_gbp,covered_net_gbp,virtual_net_gbp,'
+            r'difference_net_gbp,covered_vat_gbp,virtual_vat_gbp,'
+            r'difference_vat_gbp,covered_gross_gbp,virtual_gross_gbp,'
+            r'difference_gross_gbp',
             r'TB2,8899900012,N,2015-09-01 00:00,2015-09-30 23:30,750278673,'
             r'CH017,Parbola,2015-09-01 00:00,2015-09-30 23:30,"5,4",25964,'
             r'7830.0,1.00941,1.00941,,M3,,1.0,9001802,310621.0456747202,'
-            r'0.038896,0.019548,17872.26,6072.0202008495735,0,67.8,157.8,67.8,'
-            r'24025.32,6139.820200849574,3146.67,0,14186.22,'
-            r'6139.820200849574']},
+            r'0.019448,0.019548,17872.26,6072.0202008495735,'
+            r'11800.239799150426,0,67.8,157.8,67.8,90.00000000000001,24025.32,'
+            r'6139.820200849574,17885.499799150428,3146.67,0,3146.67,14186.22,'
+            r'6139.820200849574,8046.399799150426']},
 
     {
         'name': "Delete gas supply. Insert the gas supply",
