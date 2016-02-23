@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block title %}
+	Profile Classes
+{% endblock %}
+
+{% block nav %}
+	Profile Classes
+{% endblock %}
+
+{% block content %}
+	<table>
+		<thead>
+			<tr>
+				<th>Code</th>
+				<th>Description</th>
+			</tr>
+		</thead>
+		<tbody>
+			{% for pc in pcs %}
+				<tr>
+					<td>
+						<a href="{{context_path}}/pcs/{{pc.id}}">{{pc.code}}</a>
+					</td>
+					<td>{{pc.name}}</td>
+				</tr>
+			{% endfor %}
+		</tbody>
+	</table>
+{% endblock %}

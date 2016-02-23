@@ -10,7 +10,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     httpd = make_server('', args.port, application)
-    print "Serving HTTP on port " + str(args.port) + "..."
+    print("Serving HTTP on port " + str(args.port) + "...")
 
     # Respond to requests until process is killed
     httpd.serve_forever()

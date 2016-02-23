@@ -38,7 +38,7 @@
 	<table>
 		<caption>
 			Rate Scripts
-			[<a href="{{context_path}}/hhdc_rate_scripts/add">add</a>]
+			[<a href="{{context_path}}/hhdc_contracts/{{hhdc_contract.id}}/add_rate_script">add</a>]
 		</caption>
 		<thead>
 			<tr>
@@ -65,7 +65,7 @@
 			<a href="{{context_path}}/hhdc_batches?hhdc_contract_id={{hhdc_contract.id}}">Batches</a>
 		</li>
 		<li>
-			<a href="{{context_path}}/hhdc_contracts/{{hhdc_contract.id}}/channel_snags?hidden_days=5">Channel Snags</a>
+			<a href="{{context_path}}/channel_snags?hhdc_contract_id={{hhdc_contract.id}}&days_hidden=5">Channel Snags</a>
 		</li>
 		<li>
 			<a href="{{context_path}}/hhdc_contracts/{{hhdc_contract.id}}/auto_importer">Automatic HH Data Importer</a>

@@ -209,7 +209,7 @@ class BsuosImporter(threading.Thread):
             self.going.clear()
 
 
-def get_bsuos_importer():
+def get_importer():
     return bsuos_importer
 
 

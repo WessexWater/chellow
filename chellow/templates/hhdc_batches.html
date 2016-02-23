@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+{% block title %}
+	gt; HHDC Contracts &gt; {{ contract.name }} &gt; Batches
+{% endblock %}
+
+{% block nav %}
+	<a href="{{context_path}}/hhdc_contracts">HHDC Contracts</a> &gt;
+	<a href="{{context_path}}/hhdc_contract/{{contract.id}}">{{contract.name}}</a>
+ 	&gt; Batches
+	[<a href="{{context_path}}/hhdc_contracts/{{contract.id}}/add_batch">add</a>]
+{% endblock %}
+
+{% block content %}
+	<table>
+		<caption>Batches</caption>
+		<thead>
+			<tr>
+				<th>Reference</th>
+				<th>Description</th>
+			</tr>
+		</thead>
+		<tbody>
+			{% for batch in batches %}
+				<tr>
+					<td>
+						<a href="{{context_path}}/hhdc_batches/{{batch.id}}">
+							{{batch.reference}}
+						</a>
+					</td>
+					<td>{{ batch.description }}</td>
+				</tr>
+			{% endfor %}
+		</tbody>
+	</table>
+{% endblock %}

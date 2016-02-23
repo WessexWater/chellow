@@ -1,12 +1,11 @@
-import sys
 from dateutil.relativedelta import relativedelta
 from werkzeug.exceptions import BadRequest
 import pytz
 from decimal import Decimal
 import collections
 from datetime import datetime as Datetime
-import traceback
-from flask import request
+from flask import request, Response
+
 
 clogs = collections.deque()
 
@@ -161,34 +160,14 @@ def parse_pc_code(code):
 
 
 def send_response(
-        inv, content, status=200, mimetype='text/csv', file_name=None):
+        content, args=None, status=200, mimetype='text/csv', file_name=None):
+    headers = {}
+    if args is None:
+        args = ()
 
-    if file_name is None:
-        content_disposition = None
-    else:
-        content_disposition = 'attachment; filename="' + file_name + '"'
+    if file_name is not None:
+        headers['Content-Disposition'] = 'attachment; filename="' + \
+            file_name + '"'
 
-    if sys.platform.startswith('java'):
-        res = inv.getResponse()
-        res.setContentType(mimetype)
-        if content_disposition is not None:
-            res.addHeader('Content-Disposition', content_disposition)
-        res.setStatus(status)
-        pw = res.getWriter()
-        try:
-            for l in content():
-                pw.write(l)
-                pw.flush()
-        except:
-            pw.write(traceback.format_exc())
-            raise
-        finally:
-            pw.close()
-    else:
-        from flask import Response
-        if content_disposition is not None:
-            headers = {'Content-Disposition': content_disposition}
-        else:
-            headers = {}
-        inv.response = Response(
-            content(), status=status, mimetype=mimetype, headers=headers)
+    return Response(
+        content(*args), status=status, mimetype=mimetype, headers=headers)

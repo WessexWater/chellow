@@ -137,7 +137,6 @@ class HhImportTask(threading.Thread):
                         contract = Contract.get_hhdc_by_id(
                             sess, self.contract_id)
                         properties = contract.make_properties()
-
                         host_name = properties["hostname"]
                         user_name = properties["username"]
                         password = properties["password"]

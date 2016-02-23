@@ -211,7 +211,7 @@ class TlmImporter(threading.Thread):
             self.going.clear()
 
 
-def get_tlm_importer():
+def get_importer():
     return tlm_importer
 
 

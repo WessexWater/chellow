@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block title %}
+	Supplies &gt; {{supply.id}} &gt; Notes
+{% endblock %}
+
+{% block nav %}
+	<a href="{{context_path}}/supplies">Supplies</a>  &gt;
+	<a href="{{context_path}}/supplies/{{supply.id}}">{{supply.id}}</a>  &gt;
+	Notes
+	[<a href="{{context_path}}/supplies/{{supply.id}}/add_note">add</a>]
+{% endblock %}
+
+{% block content %}
+	<table>
+		<thead>
+			<tr>
+				<th>Edit</th>
+				<th>Category</th>
+				<th>Importance</th>
+				<th>Body</th>
+			</tr>
+		</thead>
+		<tbody>
+			{% for note in supply_note.notes %}
+				<tr>
+					<td>
+						[<a href="{{context_path}}/supplies/{{supply.id}}/notes/{{loop.index0}}/edit">edit</a>]
+					</td>
+					<td>{{note.category}}</td>
+					<td>
+						{% if note.is_important %}
+							High
+						{% else %}
+							Low
+						{% endif %}
+					</td>
+					<td><pre style=" white-space: pre-wrap;">{{note.body}}</pre></td>
+				</tr>
+			{% endfor %}
+		</tbody>
+	</table>
+{% endblock %}

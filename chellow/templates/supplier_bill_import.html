@@ -8,7 +8,7 @@
 {% block nav %}
 	<a href="{{context_path}}/supplier_contracts">Supplier Contracts</a> &gt;
 	<a href="{{context_path}}/supplier_contracts/{{batch.contract.id}}">{{batch.contract.name}}</a> &gt;
-	<a href="{{context_path}}/supplier_batches/?supplier_contract_id={{batch.contract.id}}">Batches</a> &gt;
+	<a href="{{context_path}}/supplier_batches?supplier_contract_id={{batch.contract.id}}">Batches</a> &gt;
 	<a href="{{context_path}}/supplier_batches/{{batch.id}}">{{batch.reference}}</a> &gt; <a href="{{context_path}}/supplier_bill_imports?supplier_batch_id={{batch.id}}">Bill Imports</a> &gt;
  	{{importer_id}}
 {% endblock %}

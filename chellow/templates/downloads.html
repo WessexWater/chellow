@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block title %}
+	Report Downloads
+{% endblock %}
+
+{% block nav %}
+	Report Downloads
+{% endblock %}
+
+{% block content %}
+	<p><a href="">Refresh</a> the page.</p>
+
+	<table><caption>Report Files</caption>
+		<thead>
+			<tr>
+				<th>Name</th>
+				<th>Size</th>
+				<th>Creation Date</th>
+				<th>Last Modified</th>
+				<th></th>
+			</tr>
+		</thead>
+		<tbody>
+			{% for file in files %}
+				<tr>
+					<td>
+						<a href="{{context_path}}/downloads/{{file.name}}">{{file.name}}</a>
+					</td>
+					<td>{{file.size}} B</td>
+					<td>{{file.creation_date|hh_format}}</td>
+					<td>{{file.last_modified|hh_format}}</td>
+					<td>
+						<form
+							method="post" action="{{context_path}}/downloads/{{file.name}}">
+							<fieldset style="border: none;">
+								<input type="submit" name="delete" value="Delete">
+							</fieldset>
+						</form>
+					</td>
+				</tr>
+			{% endfor %}
+		</tbody>
+	</table>
+	<br>
+	<form method="post" action="">
+		<fieldset>
+			<legend>Delete All Files</legend>
+			<input type="submit" name="delete" value="Delete">
+		</fieldset>
+	</form>
+{% endblock %}

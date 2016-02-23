@@ -19,7 +19,7 @@ from chellow.utils import (
 import json
 from dateutil.relativedelta import relativedelta
 from functools import lru_cache
-from werkzeug.exceptions import BadRequest
+from werkzeug.exceptions import BadRequest, NotFound
 
 db = SQLAlchemy(app)
 
@@ -48,7 +48,7 @@ class PersistentClass():
     def get_by_id(cls, session, oid):
         obj = session.query(cls).get(oid)
         if obj is None:
-            raise BadRequest(
+            raise NotFound(
                 "There isn't a " + str(cls.__name__) + " with the id " +
                 str(oid))
         return obj
@@ -299,11 +299,13 @@ class RegisterRead(db.Model, PersistentClass):
 
     __tablename__ = 'register_read'
     id = Column(Integer, primary_key=True)
-    bill_id = Column(Integer, ForeignKey('bill.id'), nullable=False)
+    bill_id = Column(
+        Integer, ForeignKey('bill.id', ondelete='CASCADE'), nullable=False,
+        index=True)
     msn = Column(String, nullable=False)
     mpan_str = Column(String, nullable=False)
     coefficient = Column(Numeric, nullable=False)
-    units = Column(String, nullable=False)
+    units = Column(Integer, nullable=False, index=True)
     tpr_id = Column(Integer, ForeignKey('tpr.id'))
     previous_date = Column(DateTime(timezone=True), nullable=False)
     previous_value = Column(Numeric, nullable=False)
@@ -371,7 +373,9 @@ class Bill(db.Model, PersistentClass):
     bill_type_id = Column(Integer, ForeignKey('bill_type.id'))
     breakdown = Column(String, nullable=False)
     kwh = Column(Numeric, nullable=False)
-    reads = relationship('RegisterRead', backref='bill')
+    reads = relationship(
+        'RegisterRead', backref='bill', cascade="all, delete-orphan",
+        passive_deletes=True)
 
     def __init__(
             self, batch, supply, account, reference, issue_date, start_date,
@@ -474,7 +478,7 @@ class Batch(db.Model, PersistentClass):
     id = Column(Integer, primary_key=True)
     contract_id = Column(Integer, ForeignKey('contract.id'), nullable=False)
     reference = Column(String, nullable=False, unique=True)
-    description = Column(String, nullable=False, unique=True)
+    description = Column(String, nullable=False)
     bills = relationship('Bill', backref='batch')
 
     def __init__(self, sess, contract, reference, description):
@@ -655,7 +659,7 @@ class Contract(db.Model, PersistentClass):
     def get_by_role_code_id(sess, role_code, oid):
         cont = Contract.find_by_role_code_id(sess, role_code, oid)
         if cont is None:
-            raise BadRequest(
+            raise NotFound(
                 "There isn't a contract with the role code '" + role_code +
                 "' and id '" + str(oid) + "'.")
         return cont
@@ -768,18 +772,26 @@ class Contract(db.Model, PersistentClass):
             raise BadRequest("""The market role of the party doesn't match
                     the market role of the contract.""")
         self.party = party
+        self.update_properties(properties)
         try:
             ast.parse(charge_script)
-            eval(properties, {'datetime': datetime.datetime})
         except SyntaxError as e:
             raise BadRequest(str(e))
         except NameError as e:
             raise BadRequest(str(e))
         self.charge_script = charge_script
-        self.properties = properties
 
     def update_state(self, state):
         self.state = str(state)
+
+    def update_properties(self, properties):
+        try:
+            eval(properties, {'datetime': datetime.datetime})
+        except SyntaxError as e:
+            raise BadRequest(str(e))
+        except NameError as e:
+            raise BadRequest(str(e))
+        self.properties = properties
 
     def update_rate_script(
             self, sess, rscript, start_date, finish_date, script):
@@ -1190,8 +1202,8 @@ class Site(db.Model, PersistentClass):
             else:
                 mins = int(
                     math.floor(
-                        (check_to - check_from).total_seconds /
-                        2 / (60 * 30))) * 30
+                        (check_to - check_from).total_seconds() / 2 /
+                        (60 * 30))) * 30
                 check_to = check_from + relativedelta(minutes=mins)
         return groups
 
@@ -1353,7 +1365,7 @@ class RateScript(db.Model, PersistentClass):
                 RateScript.id == oid,
                 MarketRole.code == market_role_code).one()
         except NoResultFound:
-            raise BadRequest(
+            raise NotFound(
                 "There isn't a rate script with the id " + str(oid) +
                 " attached to a contract with market role code " +
                 market_role_code + ".")
@@ -2619,6 +2631,14 @@ class Report(db.Model, PersistentClass):
     def __init__(self, name, script, template):
         self.name = name
         self.script = script
+        self.template = template
+
+    def update(self, name, script, template):
+        self.name = name
+        self.script = script
+        if template is not None and len(template.strip()) == 0:
+            template = None
+
         self.template = template
 
 

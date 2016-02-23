@@ -9,6 +9,7 @@ import importlib
 from pkgutil import iter_modules
 from chellow.models import db, set_read_write
 import chellow
+import chellow.bill_parser_sse_edi
 
 import_id = 0
 import_lock = threading.Lock()

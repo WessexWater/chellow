@@ -171,7 +171,7 @@ class RcrcImporter(threading.Thread):
             self.going.clear()
 
 
-def get_rcrc_importer():
+def get_importer():
     return rcrc_importer
 
 

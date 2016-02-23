@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+
+{% block title %}
+	CSV CRC
+{% endblock %}
+
+{% block nav %}
+	CSV CRC
+{% endblock %}
+
+{% block content %}
+	<form action="{{context_path}}/reports/207">
+		<fieldset>
+			<legend>Download CRC CSV</legend>
+			<br/>
+			For financial year starting April
+			{{input_text('year', start_date.year, 4, 4)}}
+			<input type="submit" value="Download">
+			<p>
+				The CRC report has a row for each supply. A supply is in one of the
+				the following categories at any one time:
+				<dl>
+					<dt>HH</dt>
+					<dd>
+						Measurement classes C (Half Hourly Metered in 100kW premises)
+						and E (Half Hourly Metered not 100kW).
+					<dt>AMR</dt>
+					<dd>
+						Measurement class A (Non Half Hourly Metered) but HH
+						non-settlement data used rather than settlement register reads.
+					</dd>
+					<dt>NHH</dt>
+					<dd>
+						Measurement class A (Non Half Hourly Metered) but with register
+						reads only.
+					</dd>
+					<dt>Unmetered</dt>
+					<dd>
+						Measurement class B (Non Half Hourly Unmetered)
+					</dd>
+				</dl>
+				The report works out the number of days with actual data for each
+				category and totals them up to give the 'Total Actual Days'. It then
+				works out the maximum possible number of days with actual data for
+				each supply category (HH, AMR, NHH or Unmetered) and totals them up
+				to give the 'Total Max Actual Days'. If (actual / maximum) &gt;= 183
+				/ 365, the supply is classed as 'Actual' for the CRC period, otherwise
+				it is classed as 'Estimated'. The total (estimated + actual) kWh are
+				given for each category.
+			</p>
+			<p>
+				For a period of time (the span) when a supply is in the NHH category,
+				the kWh and number of normal days are worked out as follows.
+				<ul>
+					<li>
+							All reads that aren't 'actual' are discarded.
+					</li>
+					<li>
+						The remaining reads are ordered by time. The earliest and the
+						latest reads that lie within the span are retained. The latest
+						 read (no matter how late) before the beginning of the span is
+						 retained. The earliest read (no matter how early) after the end
+						 of the span is retained. All other reads are discarded.
+					</li>
+					<li>
+						With the reads still in order, all the span segments are
+						considered. A segment is just a read and the next read, so for
+						n reads there are n - 1 segments. The kWh for each segment is
+						calculated.
+					</li>
+					<li>
+						If the two reads of a segment lie within the span, the days of the
+						segment are added to the actual days. The kWh of the segment is
+						added to the total kWh.
+					</li>
+					<li>
+						If one or both the reads lie outside the span, no days are added
+						to the actual days. The kWh for the segment is multiplied by
+						(days of segment that are also in the period) / (total days in
+						segment), and then added to the total kWh.
+					</li>
+					<li>
+						If there's a meter change at some point along the line of reads,
+						there will be two reads for the same point in time. One of the
+						reads is the end of the preceding segment, and the other one is
+						the beginning of the succeeding segment, so it's always the case
+						that the two reads that make up a segment belong to the same
+						meter.
+					</li>
+				</ul>
+			</p>
+			<p>
+				For AMR and HH categories, the kWh figure is found by summing:
+				<ul>
+					<li>
+						The sum of the kWh of all the half-hours that lie within the
+						period.
+					</li>
+					<li>
+						The average kWh of present HHs over the period, multiplied by the
+						number of missing half-hours.
+					</li>
+				</ul>
+
+				The number of actual days is found by (number of actual half-hours /
+				48).
+			</p>
+		</fieldset> 
+	</form>
+
+	<br/>
+
+	<form action="{{context_path}}/reports/215">
+		<fieldset>
+			<legend>Download CRC Special Events CSV</legend>
+			<br/>
+			For financial year starting April
+			{{input_text('year', start_date.year, 4, 4)}}
+			<input type="submit" value="Download">
+		</fieldset>
+	</form>
+{% endblock %}

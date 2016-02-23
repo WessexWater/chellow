@@ -47,7 +47,7 @@
 {% endblock %}
 
 {% block title %}
-    <title>Chellow &gt; Supplies &gt; {{supply.id}}</title>
+    Supplies &gt; {{supply.id}}
 {% endblock %}
 
 {% block nav %}
@@ -676,20 +676,20 @@
 	<br />
 	<ul>
 			<li>kWh, kVA, MD etc. by month:
-					<a href="{{context_path}}/reports/15/output/?supply_id={{supply.id}}&amp;is_import=true&amp;year={{last_month_start.year}}&amp;years=1">Import</a>
-					<a href="{{context_path}}/reports/15/output/?supply_id={{supply.id}}&amp;is_import=false&amp;year={{last_month_start.year}}&amp;years=1">Export</a>
+					<a href="{{context_path}}/supplies/{{supply.id}}/months?is_import=true&amp;year={{last_month_start.year}}&amp;years=1">Import</a>
+					<a href="{{context_path}}/supplies/{{supply.id}}/months?is_import=false&amp;year={{last_month_start.year}}&amp;years=1">Export</a>
 			</li>
 			<li>
-					<a href="{{context_path}}/reports/17/output/?supply_id={{ supply.id }}&amp;months=1&amp;finish_year={{ now.year }}&amp;finish_month={{ now.month }}">Raw HH data</a>
+					<a href="{{context_path}}/supplies/{{ supply.id }}/hh_data?months=1&amp;finish_year={{ now.year }}&amp;finish_month={{ now.month }}">Raw HH data</a>
 			</li>
 			<li>
-					<a href="{{context_path}}/reports/101/output/?supply_id={{supply.id}}&amp;start_year={{last_month_start.year}}&amp;start_month={{last_month_start.month}}&amp;start_day={{last_month_start.day}}&amp;start_hour={{last_month_start.hour}}&amp;start_minute={{last_month_start.minute}}&amp;finish_year={{last_month_finish.year}}&amp;finish_month={{last_month_finish.month}}&amp;finish_day={{last_month_finish.day}}&amp;finish_hour={{last_month_finish.hour}}&amp;finish_minute={{last_month_finish.minute}}">Supplier Virtual Bill</a>
+					<a href="{{context_path}}/reports/101?supply_id={{supply.id}}&amp;start_year={{last_month_start.year}}&amp;start_month={{last_month_start.month}}&amp;start_day={{last_month_start.day}}&amp;start_hour={{last_month_start.hour}}&amp;start_minute={{last_month_start.minute}}&amp;finish_year={{last_month_finish.year}}&amp;finish_month={{last_month_finish.month}}&amp;finish_day={{last_month_finish.day}}&amp;finish_hour={{last_month_finish.hour}}&amp;finish_minute={{last_month_finish.minute}}">Supplier Virtual Bill</a>
 			</li>
 	</ul>
 
 	<h3>CSV Downloads</h3>
 
-	<form action="{{ context_path }}/reports/291/output/">
+	<form action="{{ context_path }}/reports/291">
 		<fieldset>
 			<input type="hidden" name="supply_id" value="{{supply.id}}">
 			<legend>Virtual Bills</legend>
@@ -699,7 +699,7 @@
 		</fieldset>
 	</form>
 	<br />
-	<form action="{{ context_path }}/reports/241/output/">
+	<form action="{{ context_path }}/reports/241">
 		<fieldset>
 			<input type="hidden" name="supply_id" value="{{supply.id}}">
 			<legend>Daily Supplier Virtual Bills</legend>
@@ -713,7 +713,7 @@
 		</fieldset>
 	</form>
 	<br />
-	<form action="{{context_path}}/reports/387/output/">
+	<form action="{{context_path}}/reports/387">
 		<fieldset>
 			<input type="hidden" name="supply_id" value="{{supply.id}}">
 			<legend>Virtual Bills By Half-Hour</legend>
@@ -724,7 +724,7 @@
 	</form>
 	<br />
 
-	<form action="{{ context_path }}/reports/169/output/">
+	<form action="{{ context_path }}/reports/169">
 		<fieldset>
 			<legend>HH Data: 48 Column Format</legend>
 			<input type="hidden" name="supply_id" value="{{supply.id}}">
@@ -743,7 +743,7 @@
 		</fieldset>
 	</form>
 	<br />
-	<form action="{{context_path}}/reports/187/output/" method="post">
+	<form action="{{context_path}}/reports/187" method="post">
 		<fieldset>
 			<legend>HH Data: HH Per Row</legend>
 			<input type="hidden" name="supply_id" value="{{supply.id}}">
@@ -753,7 +753,7 @@
 		</fieldset>
 	</form>
 	<br />
-	<form action="{{ context_path }}/reports/41/output/?supply_id">
+	<form action="{{ context_path }}/reports/41?supply_id">
 		<fieldset>
 			<legend>TRIAD</legend>
 			<input type="hidden" name="supply_id" value="{{ supply.id }}">
@@ -764,7 +764,7 @@
 		</fieldset>
 	</form>
 	<br />
-	<form action="{{ context_path }}/reports/149/output/">
+	<form action="{{ context_path }}/reports/149">
 			<fieldset>
 					<input type="hidden" name="supply_id" value="{{supply.id}}">
 					<legend>Duration</legend>
@@ -776,7 +776,7 @@
 			</fieldset>
 	</form>
 	<br />
-	<form action="{{ context_path }}/reports/177/output/">
+	<form action="{{ context_path }}/reports/177">
 			<fieldset>
 					<input type="hidden" name="supply_id" value="{{ supply.id }}" />
 					<legend>Monthly Duration</legend>
@@ -788,7 +788,7 @@
 			</fieldset>
 	</form>
 	<br />
-	<form action="{{ context_path }}/reports/247/output/">
+	<form action="{{ context_path }}/reports/247">
 			<fieldset>
 					<input type="hidden" name="supply_id" value="{{ supply.id }}" />
 					<legend>Unified Monthly Duration</legend>
@@ -800,7 +800,7 @@
 			</fieldset>
 	</form>
 	<br />
-	<form action="{{ context_path }}/reports/33/output/">
+	<form action="{{ context_path }}/reports/33">
 			<input type="hidden" name="supply_id" value="{{ supply.id }}">
 			<fieldset>
 					<legend>Snapshot</legend>
@@ -810,7 +810,7 @@
 			</fieldset>
 	</form>
 	<br>
-	<form action="{{ context_path }}/reports/219/output/">
+	<form action="{{ context_path }}/reports/219">
 		<input type="hidden" name="supply_id" value="{{ supply.id }}">
 		<fieldset>
 			<legend>Register Reads</legend>
@@ -823,7 +823,7 @@
 		</fieldset>
 	</form>
 	<br>
-	<form action="{{context_path}}/reports/207/output/">
+	<form action="{{context_path}}/reports/207">
 		<input type="hidden" name="supply_id" value="{{supply.id}}">
 		<fieldset>
 			<legend>CRC</legend>
