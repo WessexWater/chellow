@@ -1218,8 +1218,8 @@ class Site(Base, PersistentClass):
                 mins = int(
                     math.floor(
                         float(
-                            totalseconds(check_to - check_from))
-                        / 2 / (60 * 30))) * 30
+                            totalseconds(check_to - check_from)) / 2 /
+                        (60 * 30))) * 30
                 check_to = check_from + relativedelta(minutes=mins)
         return groups
 

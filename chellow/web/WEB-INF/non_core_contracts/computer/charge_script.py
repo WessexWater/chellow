@@ -268,8 +268,8 @@ def displaced_era(sess, site_group, start_date, finish_date):
                         Era.finish_date == null(),
                         Era.finish_date >= start_date)):
                 eras[
-                    era.pc.code + hh_format(era.start_date)
-                    + era.imp_mpan_core] = era
+                    era.pc.code + hh_format(era.start_date) +
+                    era.imp_mpan_core] = era
     keys = eras.keys()
     if has_displaced and len(keys) > 0:
         keys.sort()

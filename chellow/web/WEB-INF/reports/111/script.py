@@ -232,14 +232,19 @@ def content():
                     raise UserException("Odd market role.")
 
                 for k, v in vb.iteritems():
-                    try:
-                        virtual_bill[k] += v
-                    except KeyError:
-                        virtual_bill[k] = v
-                    except TypeError, detail:
-                        raise UserException(
-                            "For key " + str(k) + " and value " + str(v) +
-                            ". " + str(detail))
+                    if k.endswith('-rate'):
+                        if k not in virtual_bill:
+                            virtual_bill[k] = set()
+                        virtual_bill[k].add(v)
+                    else:
+                        try:
+                            virtual_bill[k] += v
+                        except KeyError:
+                            virtual_bill[k] = v
+                        except TypeError, detail:
+                            raise UserException(
+                                "For key " + str(k) + " and value " + str(v) +
+                                ". " + str(detail))
 
             values = [
                 site.code, site.name, hh_format(covered_start),
@@ -256,7 +261,9 @@ def content():
 
                 try:
                     virt_val = virtual_bill[title]
-                    if isinstance(virt_val, datetime.datetime):
+                    if isinstance(virt_val, set):
+                        virt_val = ', '.join(str(v) for v in virt_val)
+                    elif isinstance(virt_val, datetime.datetime):
                         virt_val = hh_format(virt_val)
                     values.append(virt_val)
                     del virtual_bill[title]
@@ -272,10 +279,10 @@ def content():
                         values.append('')
 
             for title in sorted(virtual_bill.keys()):
-                val = virtual_bill[title]
-                if isinstance(val, datetime.datetime):
-                    val = hh_format(val)
-                values += ['virtual-' + title, val]
+                virt_val = virtual_bill[title]
+                if isinstance(virt_val, set):
+                    virt_val = ', '.join(str(v) for v in virt_val)
+                values += ['virtual-' + title, virt_val]
                 if title in covered_bdown:
                     values += ['covered-' + title, covered_bdown[title]]
                 else:
