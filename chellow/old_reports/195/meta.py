@@ -1,1 +1,0 @@
-{'name': u'ECOES Comparison'}

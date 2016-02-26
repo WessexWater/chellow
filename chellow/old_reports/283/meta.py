@@ -1,1 +1,0 @@
-{'name': u'HHDC Batch Edit'}

@@ -1,1 +1,0 @@
-{'name': u'DNO Contract Rate Script Add'}

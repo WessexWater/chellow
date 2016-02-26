@@ -1,1 +1,0 @@
-{'name': u'Site HH bulk figures'}

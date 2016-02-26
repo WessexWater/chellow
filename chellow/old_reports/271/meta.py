@@ -1,1 +1,0 @@
-{'name': u'Non-core Contract Rate Script'}

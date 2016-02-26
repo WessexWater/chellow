@@ -1,1 +1,0 @@
-{'name': u'CSV Sites TRIAD Selector'}

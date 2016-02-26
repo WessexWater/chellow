@@ -1,6 +1,6 @@
 import collections
 import pytz
-import datetime
+from datetime import datetime as Datetime
 from dateutil.relativedelta import relativedelta
 from sqlalchemy import or_
 from sqlalchemy.sql.expression import null, true
@@ -19,7 +19,7 @@ from flask import request, g, redirect
 def content(batch_id, bill_id, user):
     caches = {}
     sess = tmp_file = None
-    forecast_date = datetime.datetime.max.replace(tzinfo=pytz.utc)
+    forecast_date = Datetime.max.replace(tzinfo=pytz.utc)
     try:
         sess = Session()
 
@@ -214,14 +214,19 @@ def content(batch_id, bill_id, user):
                     raise BadRequest("Odd market role.")
 
                 for k, v in vb.items():
-                    try:
-                        virtual_bill[k] += v
-                    except KeyError:
-                        virtual_bill[k] = v
-                    except TypeError as detail:
-                        raise BadRequest(
-                            "For key " + str(k) + " and value " + str(v) +
-                            ". " + str(detail))
+                    if k.endswith('-rate'):
+                        if k not in virtual_bill:
+                            virtual_bill[k] = set()
+                        virtual_bill[k].add(v)
+                    else:
+                        try:
+                            virtual_bill[k] += v
+                        except KeyError:
+                            virtual_bill[k] = v
+                        except TypeError as detail:
+                            raise BadRequest(
+                                "For key " + str(k) + " and value " + str(v) +
+                                ". " + str(detail))
 
             values = [
                 site.code, site.name, hh_format(covered_start),
@@ -238,7 +243,9 @@ def content(batch_id, bill_id, user):
 
                 try:
                     virt_val = virtual_bill[title]
-                    if isinstance(virt_val, datetime.datetime):
+                    if isinstance(virt_val, set):
+                        virt_val = ', '.join(str(v) for v in virt_val)
+                    elif isinstance(virt_val, Datetime):
                         virt_val = hh_format(virt_val)
                     values.append(virt_val)
                     del virtual_bill[title]
@@ -254,10 +261,12 @@ def content(batch_id, bill_id, user):
                         values.append('')
 
             for title in sorted(virtual_bill.keys()):
-                val = virtual_bill[title]
-                if isinstance(val, datetime.datetime):
-                    val = hh_format(val)
-                values += ['virtual-' + title, val]
+                virt_val = virtual_bill[title]
+                if isinstance(virt_val, set):
+                    virt_val = ', '.join(str(v) for v in virt_val)
+                elif isinstance(virt_val, Datetime):
+                    virt_val = hh_format(virt_val)
+                values += ['virtual-' + title, virt_val]
                 if title in covered_bdown:
                     values += ['covered-' + title, covered_bdown[title]]
                 else:

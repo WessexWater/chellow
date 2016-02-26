@@ -2140,7 +2140,7 @@ def virtual_bill(supply_source):
     supply_capacity = supply_source.sc
     supply_source.is_green = False
 
-    for datum in supply_source.hh_data:
+    for datum in sorted(supply_source.hh_data, key=itemgetter('start-date')):
         is_weekday = datum['utc-day-of-week'] < 5
         if is_weekday and datum['utc-month'] in (1, 12) and \
                 16 < datum['utc-decimal-hour'] <= 19:
@@ -3578,7 +3578,7 @@ def displaced_virtual_bill(supply_source):
     chellow.duos.duos_vb(supply_source)
     chellow.ccl.ccl(supply_source)
 
-    for datum in supply_source.hh_data:
+    for datum in sorted(supply_source.hh_data, key=itemgetter('start-date')):
         is_weekday = datum['start-date'].weekday() < 5
         if is_weekday and datum['utc-month'] in (1, 12) and \
                 16 < datum['utc-decimal-hour'] <= 19:
@@ -9963,8 +9963,8 @@ def virtual_bill(supply_source):
         'status_code': 200,
         'regexes': [
             r'"CI005","Wheal Rodney","CI004","gen,gen-net,net","chp",'
-            r'"2010-04-30 23:30","10.879749999999966","0","0",'
-            r'"10.879749999999966","0","0","0","0","2606.838000000001","0.0",'
+            r'"2010-04-30 23:30","10.879750000000058","0","0",'
+            r'"10.879750000000058","0","0","0","0","2606.838000000001","0.0",'
             r'"0","2606.838000000001","0","0","0","hh",""']},
 
     {

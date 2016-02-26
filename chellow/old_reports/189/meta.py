@@ -1,1 +1,0 @@
-{'name': u'Supplier Read Add'}
