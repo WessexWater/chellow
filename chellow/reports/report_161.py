@@ -12,7 +12,6 @@ import sys
 from chellow.models import Era, Bill, Session, Site
 from chellow.utils import hh_after, hh_format, HH, req_int
 from flask import redirect, request, g
-from operator import itemgetter
 
 
 def process_site(
@@ -188,9 +187,7 @@ def process_site(
                 'import-3rd-party', 'export-3rd-party', 'import-net',
                 'export-net', 'import-gen', 'export-gen', 'msp'):
             name = stream_name + '-kwh'
-            month_data[name] += sum(
-                hh[name] for hh in sorted(
-                    site_ds.hh_data, key=itemgetter('start-date')))
+            month_data[name] += sum(hh[name] for hh in site_ds.hh_data)
 
     month_data['used-3rd-party-kwh'] = \
         month_data['import-3rd-party-kwh'] - \
