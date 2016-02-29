@@ -9,7 +9,6 @@ import requests
 import datetime
 import pytz
 import os
-import pg8000
 from chellow import app
 import chellow.rcrc
 import chellow.bsuos
@@ -24,8 +23,6 @@ from chellow.models import (
     RateScript, User)
 import traceback
 from werkzeug.exceptions import BadRequest
-
-pg8000.dbapi = pg8000
 
 
 def log_message(msg):
