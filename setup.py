@@ -52,12 +52,13 @@ setup(
         'Flask==0.10.1',
         'Flask-SQLAlchemy==2.1',
         'SQLAlchemy==1.0.11',
-        'pg8000==1.10.3',
+        'pg8000==1.10.4',
         'python-dateutil==2.4.2',
         'pytz==2015.6',
         'xlrd==0.9.4',
         'ftputil==3.2',
         'requests==2.8.1',
+        'waitress==0.8.10',
         'pympler'],
     entry_points={
         'console_scripts': [
