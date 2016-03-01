@@ -12,6 +12,7 @@
             'user_role_code': "editor",
             'password': "alan"},
         'status_code': 303,
+        'tries': {},
         'regexes': [
             r"/users/2"]},
     {

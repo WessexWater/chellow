@@ -10,6 +10,20 @@ from chellow.utils import HH, hh_format
 import json
 from dateutil.relativedelta import relativedelta
 import atexit
+import functools
+
+
+@functools.lru_cache()
+def get_db_id():
+    sess = None
+    try:
+        sess = Session()
+        contract = Contract.get_non_core_by_name(sess, 'bank_holidays')
+        return contract.id
+    finally:
+        if sess is not None:
+            sess.close()
+
 
 ELEXON_PORTAL_SCRIPTING_KEY_KEY = 'elexonportal_scripting_key'
 

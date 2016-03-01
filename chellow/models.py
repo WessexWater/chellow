@@ -589,8 +589,8 @@ class Party(db.Model, PersistentClass):
 
     __tablename__ = 'party'
     id = Column(Integer, primary_key=True)
-    market_role_id = Column(Integer, ForeignKey('market_role.id'))
-    participant_id = Column(Integer, ForeignKey('participant.id'))
+    market_role_id = Column(Integer, ForeignKey('market_role.id'), index=True)
+    participant_id = Column(Integer, ForeignKey('participant.id'), index=True)
     name = Column(String, nullable=False)
     valid_from = Column(DateTime(timezone=True), nullable=False)
     valid_to = Column(DateTime(timezone=True))

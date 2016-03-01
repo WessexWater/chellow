@@ -395,7 +395,8 @@ class ChellowD():
         self.stdin_path = '/dev/null'
         self.stdout_path = '/dev/tty'
         self.stderr_path = '/dev/tty'
-        self.pidfile_path = '/home/tlocke/chellow.pid'
+        self.pidfile_path = os.path.join(
+            chellow.app.instance_path, 'chellow.pid')
         self.pidfile_timeout = 5
 
     def run(self):

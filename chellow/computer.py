@@ -10,8 +10,9 @@ import json
 from werkzeug.exceptions import BadRequest
 from chellow.models import (
     RateScript, Channel, Era, Pc, Tpr, MeasurementRequirement, RegisterRead,
-    Bill, BillType, ReadType, Batch, Contract)
+    Bill, BillType, ReadType, Batch)
 from chellow.utils import HH, hh_format, hh_after
+import chellow.bank_holidays
 
 
 class imdict(dict):
@@ -441,11 +442,9 @@ def _datum_generator(sess, years_back, caches, pw):
             utc_decimal_hour = hh_date.hour + float(hh_date.minute) / 60
             ct_decimal_hour = ct_dt.hour + float(ct_dt.minute) / 60
 
-            bank_holidays_cont = Contract.get_non_core_by_name(
-                sess2, 'bank_holidays')
             utc_bank_holidays = hh_rate(
-                sess2, caches, bank_holidays_cont.id, hh_date, 'bank_holidays',
-                pw)
+                sess2, caches, chellow.bank_holidays.get_db_id(), hh_date,
+                'bank_holidays', pw)
             if utc_bank_holidays is None:
                 msg = "\nCan't find bank holidays for " + str(hh_date)
                 pw.println(msg)

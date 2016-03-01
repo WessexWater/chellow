@@ -9,6 +9,7 @@ from chellow.models import (
 from chellow.utils import hh_format, send_response
 import pytz
 from werkzeug.exceptions import BadRequest
+from sqlalchemy.orm import joinedload
 
 
 def to_iso(dmy):
@@ -234,14 +235,16 @@ def content(table, version, f):
                                     meter_payment_type_code, tpr_count,
                                     valid_from_out, valid_to_out))) + "\n"
         elif table == 'MTC_in_PES_Area':
+            market_role_r = MarketRole.get_by_code(sess, 'R')
             for i, values in enumerate(reader):
                 code_str = values[0]
                 code_int = int(code_str)
                 if not is_common_mtc(code_int):
                     code = code_str.zfill(3)
                     participant_code = values[2]
-                    dno = Party.get_by_participant_code_role_code(
-                        sess, participant_code, 'R')
+                    dno = sess.query(Party).join(Participant).filter(
+                        Participant.code == participant_code,
+                        Party.market_role == market_role_r).first()
                     valid_from_str = values[3]
                     valid_from = Datetime.strptime(
                         valid_from_str, "%d/%m/%Y").replace(tzinfo=pytz.utc)
@@ -266,7 +269,11 @@ def content(table, version, f):
                     else:
                         tpr_count = int(tpr_count_str)
 
-                    mtc = Mtc.find_by_code(sess, dno, code)
+                    mtc_dno = dno if Mtc.has_dno(code) else None
+                    mtc = sess.query(Mtc).options(
+                        joinedload(Mtc.meter_payment_type),
+                        joinedload(Mtc.meter_type)) \
+                        .filter_by(dno=mtc_dno, code=code).first()
                     if mtc is None:
                         yield ','.join(
                             (
