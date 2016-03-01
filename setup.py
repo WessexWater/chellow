@@ -36,7 +36,7 @@ setup(
     cmdclass=versioneer.get_cmdclass(),
     packages=[
         'chellow', 'chellow.reports', 'odswriter', 'odswriter.v1_1',
-        'odswriter.v1_2'],
+        'odswriter.v1_2', 'daemon'],
     package_data={'chellow': [
         'non_core_contracts/*/*.py',
         'non_core_contracts/*/rate_scripts/*.py',
@@ -59,13 +59,11 @@ setup(
         'ftputil==3.2',
         'requests==2.8.1',
         'waitress==0.8.10',
+        'lockfile>=0.10',
         'pympler'],
     entry_points={
         'console_scripts': [
-            'chellow_start = chellow.commands:chellow_start',
+            'chellow = chellow.commands:chellow_command',
             'chellow_db_init = chellow.commands:chellow_db_init',
             'chellow_db_upgrade = chellow.commands:chellow_db_upgrade',
-            'start_chellow_process = chellow.commands:start_chellow_process',
-            'chellow_test_setup = chellow.commands:chellow_test_setup',
-            'chellow_watchdog_start = chellow.commands:chellow_watchdog_start',
-            'chellow_stop = chellow.commands:chellow_stop']})
+            'chellow_test_setup = chellow.commands:chellow_test_setup']})

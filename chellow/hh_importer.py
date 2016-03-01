@@ -8,12 +8,10 @@ import ftplib
 import os
 from chellow.models import (
     Contract, MarketRole, Session, HhDatum, set_read_write)
-import socket
 from io import TextIOWrapper
 from werkzeug.exceptions import BadRequest
 import importlib
-
-socket.setdefaulttimeout(120)
+import atexit
 
 processes = collections.defaultdict(list)
 tasks = {}
@@ -159,7 +157,7 @@ class HhImportTask(threading.Thread):
                             "Connecting to ftp server at " + host_name +
                             ":" + str(port) + ".")
                         ftp = ftplib.FTP()
-                        ftp.connect(host_name, port)
+                        ftp.connect(host_name, port, 120)
                         ftp.login(user_name, password)
                         home_path = ftp.pwd()
 
@@ -290,19 +288,14 @@ def startup():
             sess.close()
 
 
+@atexit.register
 def shutdown():
-    for procs in processes.values():
-        for proc in procs:
-            if proc.isAlive():
-                raise BadRequest(
-                    "Can't shut down hh importer, there are still some hh "
-                    "imports running.")
-
     for task in tasks.values():
         task.stop()
 
-    for id, task in tasks.items():
-        if task.isAlive():
-            raise BadRequest(
-                "Can't shut down hh importer, the task " + str(task) +
-                " with id " + str(id) + " is still running.")
+    for task in tasks.values():
+        task.join()
+
+    for procs in processes.values():
+        for proc in procs:
+            proc.join()

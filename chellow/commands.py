@@ -1,11 +1,8 @@
 import shutil
 import subprocess
-import time
 import sys
 import chellow
-from wsgiref.simple_server import make_server
 import os.path
-import requests
 import datetime
 import pytz
 import os
@@ -21,8 +18,8 @@ from chellow.models import (
     db, set_read_write, VoltageLevel, UserRole, Source, GeneratorType,
     ReadType, Cop, BillType, Report, MarketRole, Party, Participant, Contract,
     RateScript, User)
-import traceback
-from werkzeug.exceptions import BadRequest
+from daemon import runner
+import waitress
 
 
 def log_message(msg):
@@ -393,124 +390,20 @@ def is_db_version_correct(session):
     return False
 
 
-def chellow_start():
-    session = chellow.models.Session()
-    if not is_db_version_correct(session):
-        sys.exit(1)
-    subprocess.Popen(["chellow_watchdog_start"])
-    log_message("Testing if server is up...")
-    status_code = None
-    health_url = ''.join(
-        [
-            'http://localhost:', str(chellow.app.config['CHELLOW_PORT']),
-            '/health'])
-    while status_code != 200:
-        try:
+class ChellowD():
+    def __init__(self):
+        self.stdin_path = '/dev/null'
+        self.stdout_path = '/dev/tty'
+        self.stderr_path = '/dev/tty'
+        self.pidfile_path = '/home/tlocke/chellow.pid'
+        self.pidfile_timeout = 5
 
-            log_message("Trying health URL " + health_url)
-            r = requests.get(health_url)
-            status_code = r.status_code
-        except requests.exceptions.ConnectionError as e:
-            log_message(e)
-        time.sleep(1)
+    def run(self):
+        chellow_port = chellow.app.config['CHELLOW_PORT']
+        waitress.serve(chellow.app, host='0.0.0.0', port=chellow_port)
 
 
-def chellow_watchdog_start():
-    log_message("About to start chellow process")
-    subprocess.Popen(["start_chellow_process"])
-    instance_path = chellow.app.instance_path
-    restart_path = os.path.join(instance_path, 'restart')
-    flag_path = os.path.join(instance_path, 'keep_running')
-    stopped_path = os.path.join(instance_path, 'stopped')
-    health_url = ''.join(
-        [
-            'http://localhost:', str(chellow.app.config['CHELLOW_PORT']),
-            '/health'])
-    while not os.path.exists(flag_path):
-        time.sleep(1)
-    while True:
-        if not os.path.exists(flag_path):
-            if os.path.exists(stopped_path):
-                if os.path.exists(restart_path):
-                    print("Attempting restart")
-                    subprocess.Popen(["start_chellow_process"])
-                    while not os.path.exists(flag_path):
-                        time.sleep(1)
-                else:
-                    break
-            else:
-                try:
-                    print("Trying health URL " + health_url)
-                    requests.get(health_url)
-                except Exception as e:
-                    print(str(e))
-
-        time.sleep(1)
-    print("Exiting watchdog.")
-
-
-def start_chellow_process():
-    chellow.rcrc.startup()
-    chellow.bsuos.startup()
-    chellow.system_price.startup()
-    chellow.hh_importer.startup()
-    chellow.tlms.startup()
-    chellow.bank_holidays.startup()
-    chellow.dloads.startup()
-    chellow_port = chellow.app.config['CHELLOW_PORT']
-    httpd = make_server('', chellow_port, chellow.app)
-    log_message("Serving HTTP on port " + str(chellow_port) + "...")
-
-    instance_path = chellow.app.instance_path
-    if not os.path.exists(instance_path):
-        os.makedirs(instance_path)
-    flag_path = os.path.join(instance_path, 'keep_running')
-    with open(flag_path, 'a'):
-        os.utime(flag_path, None)
-
-    restart_path = os.path.join(instance_path, 'restart')
-    if os.path.exists(restart_path):
-        os.remove(restart_path)
-
-    stopped_path = os.path.join(instance_path, 'stopped')
-    if os.path.exists(stopped_path):
-        os.remove(stopped_path)
-
-    while os.path.exists(flag_path):
-        httpd.handle_request()
-
-    messages = []
-    for md in (
-            chellow.hh_importer, chellow.bsuos, chellow.system_price,
-            chellow.rcrc, chellow.tlms, chellow.bank_holidays,
-            chellow.dloads):
-        try:
-            md.shutdown()
-        except BadRequest as e:
-            time.sleep(2)
-            try:
-                md.shutdown()
-            except BadRequest as e:
-                messages.append(str(e))
-        except:
-            messages.append(
-                "Problem with module " + str(md.db_id) +
-                traceback.format_exc())
-    if len(messages) > 0:
-        raise BadRequest(' '.join(messages))
-    with open(stopped_path, 'a'):
-        os.utime(stopped_path, None)
-
-
-def chellow_stop():
-    flag_path = os.path.join(chellow.app.instance_path, 'keep_running')
-    if os.path.exists(flag_path):
-        os.remove(flag_path)
-    stopped_path = os.path.join(chellow.app.instance_path, 'stopped')
-    for i in range(15):
-        log_message("Checking if stopped.")
-        if not os.path.exists(stopped_path):
-            log_message("Has stopped.")
-            break
-
-        time.sleep(1)
+def chellow_command():
+    chellowd = ChellowD()
+    daemon_runner = runner.DaemonRunner(chellowd)
+    daemon_runner.do_action()

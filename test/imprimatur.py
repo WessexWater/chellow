@@ -8682,13 +8682,15 @@ def virtual_bill(supply_source):
         # Check the HH data is there
         'regexes': [
             r'NA,2008-07-06,0\.262',
-            r"\A\('Content-Disposition', 'attachment; "
+            r"\A\('Connection', 'close'\)\s*"
+            r"\('Content-Disposition', 'attachment; "
             r'filename="038_FINISHED_watkinsexamplecom_supplies_hh_data_'
             r'200808012330_filter.csv"'
             r"'\)\s*"
             r"\('Content-Type', 'text/csv; charset=utf-8'\)\s*"
             r"\('Date', '[^']*'\)\s*"
             r"\('Server', '[^']*'\)\s*"
+            r"\('Transfer-Encoding', 'chunked'\)\s*"
             r'MPAN Core,Date,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,'
             r'19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,'
             r'40,41,42,43,44,45,46,47\s*'

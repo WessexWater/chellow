@@ -8,7 +8,7 @@ import os.path
 import time
 import datetime
 import chellow
-from werkzeug.exceptions import BadRequest
+import atexit
 
 download_path = os.path.join(chellow.app.instance_path, 'downloads')
 
@@ -120,6 +120,7 @@ class FileDeleter(threading.Thread):
     def stop(self):
         self.stopped.set()
         self.going.set()
+        self.join()
 
     def go(self):
         self.going.set()
@@ -167,9 +168,7 @@ def startup():
     file_deleter.start()
 
 
+@atexit.register
 def shutdown():
     if file_deleter is not None:
         file_deleter.stop()
-        if file_deleter.isAlive():
-            raise BadRequest(
-                "Can't shut down file deleter, it's still running.")

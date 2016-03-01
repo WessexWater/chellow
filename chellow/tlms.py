@@ -10,6 +10,7 @@ from chellow.models import (
     set_read_write, Session, Contract, RateScript, get_non_core_contract_id)
 from chellow.utils import HH, hh_format
 from werkzeug.exceptions import BadRequest
+import atexit
 
 
 ELEXON_PORTAL_SCRIPTING_KEY_KEY = 'elexonportal_scripting_key'
@@ -90,6 +91,7 @@ class TlmImporter(threading.Thread):
     def stop(self):
         self.stopped.set()
         self.going.set()
+        self.join()
 
     def go(self):
         self.going.set()
@@ -223,9 +225,7 @@ def startup():
     tlm_importer.start()
 
 
+@atexit.register
 def shutdown():
     if tlm_importer is not None:
         tlm_importer.stop()
-        if tlm_importer.isAlive():
-            raise BadRequest(
-                "Can't shut down TLM importer, it's still running.")

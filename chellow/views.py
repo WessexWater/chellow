@@ -13,7 +13,6 @@ from sqlalchemy.exc import ProgrammingError
 import traceback
 from datetime import datetime as Datetime
 import os
-import subprocess
 import pytz
 from dateutil.relativedelta import relativedelta
 from chellow.utils import (
@@ -34,10 +33,22 @@ import math
 import operator
 import ast
 from importlib import import_module
+import sys
 
 
 APPLICATION_ROOT = app.config['APPLICATION_ROOT']
 CONTEXT_PATH = '' if APPLICATION_ROOT is None else APPLICATION_ROOT
+
+
+@app.before_first_request
+def before_first_request():
+    chellow.rcrc.startup()
+    chellow.bsuos.startup()
+    chellow.system_price.startup()
+    chellow.hh_importer.startup()
+    chellow.tlms.startup()
+    chellow.bank_holidays.startup()
+    chellow.dloads.startup()
 
 
 @app.context_processor
@@ -251,24 +262,16 @@ def local_report_post(report_id):
 
 @app.route('/system')
 def system_get():
-    return render_template('system.html')
+    traces = []
+    for thread_id, stack in sys._current_frames().items():
+        traces.append("\n# ThreadID: %s" % thread_id)
+        for filename, lineno, name, line in traceback.extract_stack(stack):
+            traces.append(
+                'File: "%s", line %d, in %s' % (filename, lineno, name))
+            if line:
+                traces.append("  %s" % (line.strip()))
 
-
-@app.route('/system', methods=['POST'])
-def system_post():
-    if 'upgrade' in request.values:
-        out = subprocess.check_output(
-            ["pip", "install", "--upgrade", "chellow"],
-            stderr=subprocess.STDOUT)
-        return render_template('system.html', subprocess=out)
-    elif 'restart' in request.values:
-        restart_path = os.path.join(app.instance_path, 'restart')
-        with open(restart_path, 'a'):
-            os.utime(restart_path, None)
-        flag_path = os.path.join(app.instance_path, 'keep_running')
-        if os.path.exists(flag_path):
-            os.remove(flag_path)
-        return render_template('system.html', messages=["Restart requested."])
+    return render_template('system.html', traces='\n'.join(traces))
 
 
 @app.route('/')

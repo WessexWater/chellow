@@ -9,7 +9,7 @@ from chellow.models import Contract, RateScript, Session, set_read_write
 from chellow.utils import HH, hh_format
 import json
 from dateutil.relativedelta import relativedelta
-from werkzeug.exceptions import BadRequest
+import atexit
 
 ELEXON_PORTAL_SCRIPTING_KEY_KEY = 'elexonportal_scripting_key'
 
@@ -30,6 +30,7 @@ class BankHolidayImporter(threading.Thread):
     def stop(self):
         self.stopped.set()
         self.going.set()
+        self.join()
 
     def go(self):
         self.going.set()
@@ -155,9 +156,7 @@ def startup():
     bh_importer.start()
 
 
+@atexit.register
 def shutdown():
     if bh_importer is not None:
         bh_importer.stop()
-        if bh_importer.isAlive():
-            raise BadRequest(
-                "Can't shut down Bank Holiday Importer, it's still running.")

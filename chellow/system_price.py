@@ -11,6 +11,7 @@ from chellow.utils import HH, hh_format
 import xlrd
 import json
 from werkzeug.exceptions import BadRequest
+import atexit
 
 
 ELEXON_PORTAL_SCRIPTING_KEY_KEY = 'elexonportal_scripting_key'
@@ -109,6 +110,7 @@ class SystemPriceImporter(threading.Thread):
     def stop(self):
         self.stopped.set()
         self.going.set()
+        self.join()
 
     def go(self):
         self.going.set()
@@ -294,9 +296,7 @@ def startup():
     system_price_importer.start()
 
 
+@atexit.register
 def shutdown():
     if system_price_importer is not None:
         system_price_importer.stop()
-        if system_price_importer.isAlive():
-            raise BadRequest(
-                "Can't shut down System Price importer, it's still running.")

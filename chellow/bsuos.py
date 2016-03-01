@@ -11,6 +11,7 @@ from chellow.models import (
 from chellow.utils import HH, hh_format
 import chellow.scenario
 from werkzeug.exceptions import BadRequest
+import atexit
 
 
 create_future_func = chellow.scenario.make_create_future_func_monthly(
@@ -85,6 +86,7 @@ class BsuosImporter(threading.Thread):
     def stop(self):
         self.stopped.set()
         self.going.set()
+        self.join()
 
     def go(self):
         self.going.set()
@@ -219,9 +221,7 @@ def startup():
     bsuos_importer.start()
 
 
+@atexit.register
 def shutdown():
     if bsuos_importer is not None:
         bsuos_importer.stop()
-        if bsuos_importer.isAlive():
-            raise BadRequest(
-                "Can't shut down BSUoS importer, it's still running.")

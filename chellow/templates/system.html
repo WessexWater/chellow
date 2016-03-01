@@ -1,41 +1,13 @@
-<!DOCTYPE html>
-<html>
-  <head>
-    <link rel="stylesheet" type="text/css"
-      href="/chellow/reports/19/output/" />
-		<title>Chellow &gt; Reports</title>
-  </head>
-  <body>
-		<p>
-		<a href="/chellow/reports/1/output/">Chellow</a> &gt; System
-		</p>
+{% extends "base.html" %}
 
-    {% if messages %}
-      <ul>
-        {% for message in messages %}
-          <li>{{ message }}</li>
-        {% endfor %}
-      </ul>
-    {% endif %}
+{% block title %}
+	System
+{% endblock %}
 
-		{% if subprocess %}
-			<p><pre>{{subprocess}}</pre></p>
-		{% endif %}
+{% block nav %}
+	System
+{% endblock %}
 
-		<form action="." method="post">
-			<fieldset>
-				<legend>Upgrade Chellow</legend>
-				<p>Run <code>pip install --upgrade chellow</code></p>
-				<input type="submit" name="upgrade" value="Upgrade">
-			</fieldset>
-		</form>
-		<br>
-		<form action="." method="post">
-			<fieldset>
-				<legend>Upgrade Chellow</legend>
-				<p>Run <code>stop_chellow; start_chellow</code></p>
-				<input type="submit" name="restart" value="Restart">
-			</fieldset>
-		</form>
-	</body>
-</html>
+{% block content %}
+	<pre>{{traces}}</pre>
+{% endblock %}

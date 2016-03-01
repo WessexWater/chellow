@@ -10,6 +10,7 @@ from chellow.models import (
     Contract, RateScript, get_non_core_contract_id, Session, set_read_write)
 from chellow.utils import HH, hh_format
 from werkzeug.exceptions import BadRequest
+import atexit
 
 
 ELEXON_PORTAL_SCRIPTING_KEY_KEY = 'elexonportal_scripting_key'
@@ -64,6 +65,7 @@ class RcrcImporter(threading.Thread):
     def stop(self):
         self.stopped.set()
         self.going.set()
+        self.join()
 
     def go(self):
         self.going.set()
@@ -181,9 +183,7 @@ def startup():
     rcrc_importer.start()
 
 
+@atexit.register
 def shutdown():
     if rcrc_importer is not None:
         rcrc_importer.stop()
-        if rcrc_importer.isAlive():
-            raise BadRequest(
-                "Can't shut down RCRC importer, it's still running.")
