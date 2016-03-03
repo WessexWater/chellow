@@ -212,7 +212,7 @@ def local_report_output_post(report_id):
 @app.route('/local_reports', methods=['GET'])
 def local_reports_get():
     reports = Report.query.order_by(Report.id, Report.name).all()
-    return render_template('reports.html', reports=reports)
+    return render_template('local_reports.html', reports=reports)
 
 
 @app.route('/local_reports', methods=['POST'])
@@ -237,7 +237,7 @@ def local_reports_post():
 def local_report_get(report_id):
     sess = db.session()
     report = Report.get_by_id(sess, report_id)
-    return render_template('report.html', report=report)
+    return render_template('local_report.html', report=report)
 
 
 @app.route('/local_reports/<int:report_id>', methods=['POST'])
@@ -591,7 +591,7 @@ def site_edit_post(site_id):
 
 
 @app.route('/sites/add', methods=['POST'])
-def sites_add_post():
+def site_add_post():
     try:
         sess = db.session()
         set_read_write(sess)
@@ -602,12 +602,12 @@ def sites_add_post():
         return redirect("/sites/" + str(site.id), 303)
     except BadRequest as e:
         flash(e.description)
-        return render_template('sites_add.html')
+        return render_template('site_add.html')
 
 
 @app.route('/sites/add')
-def sites_add_get():
-    return render_template('sites_add.html')
+def site_add_get():
+    return render_template('site_add.html')
 
 
 @app.route('/sites')
@@ -3211,6 +3211,14 @@ def meter_payment_types_get():
         MeterPaymentType.code).all()
     return render_template(
         'meter_payment_types.html', meter_payment_types=meter_payment_types)
+
+
+@app.route('/meter_payment_types/<int:type_id>')
+def meter_payment_type_get(type_id):
+    sess = db.session()
+    meter_payment_type = MeterPaymentType.get_by_id(sess, type_id)
+    return render_template(
+        'meter_payment_type.html', meter_payment_type=meter_payment_type)
 
 
 @app.route('/non_core_contracts/<int:contract_id>/add_rate_script')

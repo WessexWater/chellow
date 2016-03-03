@@ -1812,7 +1812,8 @@ def virtual_bill_titles():
             r'<a href="/meter_payment_types">Meter Payment Types</a>',
             r'<a href="/sources">\s*Sources\s*</a>',
             r'<a href="/generator_types">\s*Generator Types\s*'
-            '</a>'],
+            '</a>',
+            r'<a href="/ods_scenario_runner">\s*Scenario Runner\s*</a>'],
         'status_code': 200},
 
     # Supplier contract 47
@@ -4745,6 +4746,10 @@ def virtual_bill(supply_source):
     {
         'name': "Try view page of meter payment types.",
         'path': '/meter_payment_types',
+        'status_code': 200},
+    {
+        'name': "View a meter payment type",
+        'path': '/meter_payment_types/1',
         'status_code': 200},
     {
         'name': "Try a monthly sites duration for a site with a 3rd party "

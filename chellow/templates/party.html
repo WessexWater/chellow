@@ -5,7 +5,7 @@
 {% endblock %}
 
 {% block nav %}
-	<a href="{{ context_path }}/parties">Parties</a> &gt; {{ party.name }}
+	<a href="{{context_path}}/parties">Parties</a> &gt; {{ party.name }}
 {% endblock %}
 
 {% block content %}
@@ -57,17 +57,17 @@
 				<tr>
 					<td>
 						{% if contract.market_role.code == 'C' %}
-							<a href="{{context_path}}/eports/113/output/?contract-id={{ contract.id }}">{{ contract.name }}</a>
+							<a href="{{context_path}}/hhdc_contracts/{{contract.id}}">{{contract.name}}</a>
 						{% elif contract.market_role.code == 'R' %}
-							<a href="{{ context_path }}/reports/113/output/?contract-id={{ contract.id }}">{{ contract.name }}</a>
+							<a href="{{context_path}}/dno_contracts/{{contract.id}}">{{contract.name}}</a>
 						{% elif contract.market_role.code == 'X' %}
-							<a href="{{ context_path }}/reports/77/output/?supplier-contract-id={{ contract.id }}">{{ contract.name }}</a>
+							<a href="{{ context_path }}/supplier_contracts/{{contract.id}}">{{contract.name}}</a>
 						{% elif contract.market_role.code == 'M' %}
-							<a href="{{ context_path }}/reports/107/output/?mop-contract-id={{ contract.id }}">{{ contract.name }}</a>
+							<a href="{{context_path}}/mop_contracts/{{contract.id}}">{{contract.name}}</a>
 						{% endif %}
 					</td>
-					<td>{{ contract.start_rate_script.start_date|hh_format }}</td>
-					<td>{{ contract.finish_rate_script.finish_date|hh_format }}</td>
+					<td>{{contract.start_rate_script.start_date|hh_format}}</td>
+					<td>{{contract.finish_rate_script.finish_date|hh_format}}</td>
 				</tr>
 			{% endfor %}
 		</tbody>

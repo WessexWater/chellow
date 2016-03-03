@@ -6,9 +6,9 @@
 {% endblock %}
 
 {% block nav %}
-	<a href="{{context_path}}/reports/113/output/">HHDC Contracts</a> &gt;
-	<a href="{{context_path}}/reports/115/output/?hhdc_contract_id={{hhdc_rate_script.contract.id}}">{{hhdc_rate_script.contract.name}}</a> &gt;
-	<a href="{{context_path}}/reports/173/output/?hhdc_rate_script_id={{hhdc_rate_script.id}}">{{hhdc_rate_script.start_date|hh_format}}</a>
+	<a href="{{context_path}}/hhdc_contracts">HHDC Contracts</a> &gt;
+	<a href="{{context_path}}/hhdc_contracts/{{hhdc_rate_script.contract.id}}">{{hhdc_rate_script.contract.name}}</a> &gt;
+	<a href="{{context_path}}/hhdc_rate_scripts/{{hhdc_rate_script.id}}">{{hhdc_rate_script.start_date|hh_format}}</a>
 	&gt; Edit
 {% endblock %}
 
