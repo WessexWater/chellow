@@ -6,7 +6,7 @@
 {% endblock %}
 
 {% block nav %}
-	<a href="{{context_path}}/non_core_rate_scripts">Non-core Contracts</a> &gt;
+	<a href="{{context_path}}/non_core_contracts">Non-core Contracts</a> &gt;
 	<a href="{{context_path}}/non_core_contracts/{{rate_script.contract.id}}">{{rate_script.contract.name}}</a> &gt; {{ rate_script.start_date|hh_format }} [<a
 	href="{{context_path}}/non_core_rate_scripts/{{rate_script.id}}/edit">edit</a>]
 {% endblock %}
