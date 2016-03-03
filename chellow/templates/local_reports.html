@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+
+{% block title %}
+	Local Reports
+{% endblock %}
+
+{% block nav %}
+	Reports
+{% endblock %}
+
+{% block content %}
+	<table>
+		<thead>
+			<tr>
+				<th>View</th>
+				<th>Name</th>
+			</tr>
+		</thead>
+		<tbody>
+			{% for report in reports %}
+				<tr>
+					<td>
+						<a href="/chellow/local_reports/{{report.id}}">View</a>
+					</td>
+					<td>
+						{{report.name}}
+					</td>
+				</tr>
+			{% endfor %}
+		</tbody>
+	</table>
+	<br />
+	<form action="" method="post">
+		<fieldset>
+			<legend>Add a report</legend>
+			<label>Name
+				<input name="name" value="{{request.values['name']}}">
+			</label>
+			<br>
+			<br>
+			<input type="submit" value="Add">
+		</fieldset>
+	</form>
+{% endblock %}

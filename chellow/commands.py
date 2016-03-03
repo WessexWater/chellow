@@ -40,8 +40,8 @@ def chellow_db_init():
     webinf_path = chellow.app.root_path
     config = app.config
     db_name = config['PGDATABASE']
-    first_email = config['CHELLOW_FIRST_EMAIL']
-    first_password = config['CHELLOW_FIRST_PASSWORD']
+    admin_email = 'admin@example.com'
+    admin_password = config['CHELLOW_ADMIN_PASSWORD']
     if find_db_version(session) is None:
         log_message("Initializing database.")
         db.create_all()
@@ -265,7 +265,7 @@ def chellow_db_init():
         user_role = session.query(UserRole).filter(
             UserRole.code == 'editor').one()
         User.insert(
-            session, first_email, User.digest(first_password), user_role, None)
+            session, admin_email, User.digest(admin_password), user_role, None)
         session.execute("create extension tablefunc")
         conf = session.query(Contract).join(MarketRole).filter(
             Contract.name == 'configuration', MarketRole.code == 'Z').one()
