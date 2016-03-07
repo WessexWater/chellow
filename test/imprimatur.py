@@ -222,7 +222,7 @@ def virtual_bill(ds):
     {
         'path': '/hhdc_contracts/28',
         'regexes': [
-            r"HH contract",
+            r'HH contract\s*\[<a href="/hhdc_contracts/28/edit">edit</a>\]',
             r'<form action="/reports/81">'],
         'status_code': 200},
 
@@ -232,7 +232,7 @@ def virtual_bill(ds):
 
         # Check that 'has_finished' field is there
         'regexes': [
-            r"HH contract"],
+            r'HH contract'],
         'status_code': 200},
 
     {
