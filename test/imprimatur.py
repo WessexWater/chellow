@@ -823,7 +823,8 @@ def virtual_bill_titles():
             r'<form action="/reports/187" method="post">',
             r'<legend>TRIAD</legend>\s*<input type="hidden" name="supply_id"',
             r'<a href="/supplies/5/months\?'
-            'is_import=true&amp;year=\d{4}&amp;years=1">Import</a>']},
+            'is_import=true&amp;year=\d{4}&amp;years=1">Import</a>',
+            r'<a href="/supplies/5/virtual_bill']},
 
     # Supply 5, Era 5
     {
