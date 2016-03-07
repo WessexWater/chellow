@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+
+{% block title %}
+	TPRs
+{% endblock %}
+
+{% block nav %}
+	TPRs
+{% endblock %}
+
+{% block content %}
+	<ul>
+		{% for tpr in tprs %}
+			<li>
+				<a href="{{context_path}}/tprs/{{tpr.id}}">{{tpr.code}}</a>
+			</li>
+		{% endfor %}
+	</ul>
+{% endblock %}

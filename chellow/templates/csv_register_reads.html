@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% block title %}
+	CSV Register Reads
+{% endblock %}
+
+{% block nav %}
+	CSV Register Reads
+{% endblock %}
+
+{% block content %}
+	<form action="{{context_path}}/reports/219">
+		<fieldset>
+			<legend>Download</legend>
+			<br>
+			For {{input_text('months', 1, 2, 2)}} month(s) finishing at the end of
+			{{input_date('end', init, resolution='month')}}
+			<input type="submit" value="Download">
+		</fieldset>
+	</form>
+{% endblock %}

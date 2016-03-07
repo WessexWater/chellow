@@ -1,1 +1,0 @@
-{'name': u'Supplier Import Virtual Bills'}

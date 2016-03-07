@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+
+{% block title %}
+	Site Snags &gt; {{snag.id}} &gt; Edit
+{% endblock %}
+
+{% block nav %}
+	<a href="{{context_path}}/site_snags">Site Snags</a> &gt;
+	<a href="{{context_path}}/site_snags/{{snag.id}}">{{snag.id}}</a> &gt; Edit
+{% endblock %}
+
+{% block content %}
+	<table>
+		<tbody>
+			<tr>
+				<th>Date Created</th>
+				<td>{{snag.date_created|hh_format}}</td>
+			</tr>
+			<tr>
+				<th>Ignored?</th>
+				<td>
+					{% if snag.is_ignored %}
+						Ignored
+					{% else %}
+						Not ignored
+					{% endif %}
+					<form action="." method="post">
+						<fieldset style="border: none;">
+							<input type="hidden" name="site_snag_id" value="{{snag.id}}">
+							<input type="hidden" name="ignore" value="
+								{%- if snag.is_ignored -%}
+									false
+								{%- else -%}
+									true
+								{%- endif -%}
+							">
+							<input type="submit" value="
+								{%- if snag.is_ignored -%}
+									Un-ignore
+								{%- else -%}
+									Ignore
+								{%- endif -%}
+							">
+						</fieldset>
+					</form>
+				</td>
+			</tr>
+			<tr>
+				<th>Description</th>
+				<td>{{snag.description}}</td>
+			</tr>
+			<tr>
+				<th>Site</th>
+				<td>
+					<a href="{{context_path}}/sites/{{snag.site.id}}">{{snag.site.code}}</a>
+				</td>
+			</tr>
+			<tr>
+				<th>Start Date</th>
+				<td>{{snag.start_date|hh_format}}</td>
+			</tr>
+			<tr>
+				<th>Finish Date</th>
+				<td>{{snag.finish_date|hh_format}}</td>
+			</tr>
+		</tbody>
+	</table>
+{% endblock %}

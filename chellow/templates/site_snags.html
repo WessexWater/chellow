@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block title %}
+	Site Snags
+{% endblock %}
+
+{% block nav %}
+	Site Snags [<a href="{{context_path}}/site_snags/edit">edit</a>]
+{% endblock %}
+
+{% block content %}
+	<p>
+		There are {{snags|length}} snag(s), over {{site_count}} site(s)
+	</p>
+
+	<table>
+		<thead>
+			<tr>
+				<th></th>
+				<th>Creation Date</th>
+				<th>Site ID</th>
+				<th>Site Name</th>
+				<th>Snag Description</th>
+				<th>Start Date</th>
+				<th>Finish Date</th>
+			</tr>
+		</thead>
+		<tbody>
+			{% for snag in snags %}
+				<tr>
+					<td>
+						<a href="{{context_path}}/site_snags/{{snag.id}}">view</a>
+					 	[<a href="{{context_path}}/site_snags/{{snag.id}}/edit">edit</a>]
+					</td>
+					<td>{{snag.date_created|hh_format}}</td>
+					<td>
+						<a href="{{context_path}}/sites/{{snag.site.id}}">{{snag.site.code}}</a>
+					</td>
+					<td>{{snag.site.name}}</td>
+					<td>{{snag.description}}</td>
+					<td>{{snag.start_date|hh_format}}</td>
+					<td>{{snag.finish_date|hh_format}}</td>
+				</tr>
+			{% endfor %}
+		</tbody>
+	</table>
+{% endblock %}

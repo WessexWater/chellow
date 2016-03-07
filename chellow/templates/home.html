@@ -1,0 +1,212 @@
+{% extends "base.html" %}
+
+{% block head %}
+	<link rel="stylesheet" type="text/css" href="/static/style.css" />
+	<title>Chellow</title>
+{% endblock %}
+
+{% block body %}
+	<p>Chellow</p>
+
+	{% with messages = get_flashed_messages() %}
+		{% if messages %}
+			<ul>
+				{% for message in messages %}
+					<li>{{ message }}</li>
+				{% endfor %}
+			</ul>
+		{% endif %}
+	{% endwith %}
+
+	<h3>Main</h3>
+	<ul>
+		<li>
+			<a href="{{context_path}}/sites">Sites</a>
+		</li>
+		<li>
+			<a href="{{context_path}}/supplies">Supplies</a>
+		</li>
+		<li>Contracts
+			<ul>
+				<li>
+					<a href="{{context_path}}/hhdc_contracts">HHDC</a>
+				</li>
+				<li>
+					<a href="{{context_path}}/mop_contracts">MOP</a>
+				</li>
+				<li>
+					<a href="{{context_path}}/supplier_contracts">Supplier</a>
+				</li>
+				<li>
+					<a href="{{context_path}}/dno_contracts">DNO</a>
+				</li>
+				<li>
+					<a href="{{context_path}}/non_core_contracts">Non-Core</a>
+				</li>
+			</ul>
+		</li>
+		<li>
+			<a href="{{context_path}}/site_snags">Site Snags</a>
+		</li>
+		{% if properties.local_reports_id %}
+			<li>
+				<a href="{{context_path}}/local_reports/{{properties.local_reports_id }}/output/">Local Reports</a>
+			</li>
+		{% endif %}
+		<li>
+			<a href="{{context_path}}/general_imports">General Import</a>
+		</li>
+		<li>
+			<a href="https://github.com/WessexWater/chellow" target="_blank">Docs</a>
+		</li>
+	</ul>
+	<table>
+		<caption>
+			CSV <a href="{{context_path}}/downloads">Downloads</a>
+		</caption>
+		<tr>
+			<th></th><th>Supplies</th><th>Sites</th>
+		</tr>
+		<tr>
+			<th>Snapshot</th>
+			<td>
+				<a href="{{context_path}}/csv_supplies_snapshot">Download</a>
+			</td>
+			<td></td>
+		</tr>
+		<tr>
+			<th>Duration</th>
+			<td>
+				<a href="{{context_path}}/csv_supplies_duration">Download</a>
+			</td>
+			<td>
+				<a href="{{context_path}}/csv_sites_duration">Download</a>
+			</td>
+		</tr>
+		<tr>
+			<th>Monthly Duration</th>
+			<td>
+				<a href="{{context_path}}/csv_supplies_monthly_duration">Download</a>
+			</td>
+			<td>
+				<a href="{{context_path}}/csv_sites_monthly_duration">Download</a>
+			</td>
+		</tr>
+		<tr>
+			<th>HH Data</th>
+			<td>
+				<a href="{{context_path}}/csv_supplies_hh_data">Download</a>
+			</td>
+			<td>
+				<a href="{{context_path}}/csv_sites_hh_data">Download</a>
+			</td>
+		</tr>
+		<tr>
+			<th>TRIAD</th>
+			<td><a href="{{context_path}}/csv_supplies_triad">Download</a></td>
+			<td><a href="{{context_path}}/csv_sites_triad">Download</a></td>
+		</tr>
+		<tr>
+			<th>CRC</th>
+			<td><a href="{{context_path}}/csv_crc">Download</a></td>
+			<td></td>
+		</tr>
+		<tr>
+			<th>Register Reads</th>
+			<td><a href="{{context_path}}/csv_register_reads">Download</a></td>
+			<td></td>
+		</tr>
+		<tr>
+			<th>Bills</th>
+			<td><a href="{{context_path}}/csv_bills">Download</a></td>
+			<td></td>
+		</tr>
+		<tr>
+			<th>
+				<a href="{{context_path}}/ods_unified_report">Unified Report</a>
+			</th>
+			<td></td>
+			<td></td>
+		</tr>
+		<tr>
+			<th>
+				<a href="{{context_path}}/ods_scenario_runner">Scenario Runner</a>
+			</th>
+			<td></td>
+			<td></td>
+		</tr>
+	</table>
+
+	<h3>Industry Info</h3>
+	<ul>
+		<li>
+			<a href="{{context_path}}/market_participants">Market Participants</a>
+		</li>
+		<li>
+			<a href="{{context_path}}/market_roles">Market Roles</a>
+		</li>
+		<li><a href="{{context_path}}/parties">Parties</a></li>
+		<li>
+			<a href="{{context_path}}/pcs">Profile Classes</a>
+		</li>
+		<li>
+			<a
+				href="{{context_path}}/mtcs">Meter Timeswitch Classes</a>
+		</li>
+		<li>
+			<a href="{{context_path}}/meter_types">Meter Types</a>
+		</li>
+		<li>
+			<a href="{{context_path}}/meter_payment_types">Meter Payment Types</a>
+		</li>
+		<li>
+			<a href="{{context_path}}/tprs">TPRs</a>
+		</li>
+		<li>
+			<a href="{{context_path}}/sscs">SSCs</a>
+		</li>
+		<li>
+			<a href="{{context_path}}/gsp_groups">GSP Groups</a>
+		</li>
+		<li>
+			<a href="{{context_path}}/cops">CoPs</a>
+		</li>
+		<li>
+			<a href="{{context_path}}/bill_types">Bill Types</a>
+		</li>
+		<li>
+			<a href="{{context_path}}/read_types">Read Types</a>
+		</li>
+		<li>
+			<a href="{{context_path}}/sources">Sources</a>
+		</li>
+		<li>
+			<a href="{{context_path}}/generator_types">Generator Types</a>
+		</li>
+		<li>
+			<a href="{{context_path}}/reports/163">MDD Converter</a>
+		</li>
+	</ul>
+
+	<h3>For Editors</h3>
+
+	<ul>
+		<li>
+			<a href="{{context_path}}/local_reports">Local Reports</a>
+		</li>
+		<li>
+			<a href="{{context_path}}/users">Users</a>
+		</li>
+		<li>
+			<a href="{{context_path}}/user_roles">User Roles</a>
+		</li>
+		<li>
+			<a href="{{context_path}}/system">System</a>
+		</li>
+		<li>
+			<a href="{{context_path}}/reports/ecoes_comparison">
+				Comparison against ECOES
+			</a>
+		</li>
+	</ul>
+{% endblock %}

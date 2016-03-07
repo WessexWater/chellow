@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block title %}
+	Market Participants
+{% endblock %}
+
+{% block nav %}
+	Market Participants
+{% endblock %}
+
+{% block content %}
+	<table>
+		<thead>
+			<tr>
+				<th>Code</th>
+				<th>Name</th>
+			</tr>
+		</thead>
+		<tbody>
+			{% for participant in participants %}
+				<tr>
+					<td>
+						<a href="{{context_path}}/participants/{{participant.id}}">{{participant.code}}</a>
+					</td>
+					<td>{{participant.name}}</td>
+				</tr>
+			{% endfor %}
+		</tbody>
+	</table>
+{% endblock %}

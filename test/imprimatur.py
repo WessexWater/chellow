@@ -4,7 +4,7 @@
         'name': "Manipulating users",
         'port': '5000',
         'host': 'localhost',
-        'path': '/chellow/reports/255/output/',
+        'path': '/users',
         'method': 'post',
         'auth': ('admin@example.com', 'admin'),
         'data': {
@@ -12,10 +12,11 @@
             'user_role_code': "editor",
             'password': "alan"},
         'status_code': 303,
+        'tries': {},
         'regexes': [
-            r"/reports/257/output/\?user_id=2"]},
+            r"http://localhost:5000/users/2"]},
     {
-        'path': '/chellow/reports/255/output/',
+        'path': '/users',
         'method': 'post',
         'data': {
             'email_address': "lydgate@localhost",
@@ -23,17 +24,23 @@
             'password': "science"},
         'status_code': 303,
         'regexes': [
-            r"/reports/257/output/\?user_id=3"]},
+            r"/users/3"]},
+
     {
-        'path': '/chellow/reports/257/output/?user_id=3',
+        'path': '/users/3',
         'regexes': [
+            r'<form method="post" action="">\s*'
+            r'<fieldset>\s*'
             r'<input type="hidden" name="user_id" value="3">\s*'
-            '<legend>Delete this user</legend>'],
+            r'<legend>Change password</legend>',
+            r'<form action="">\s*'
+            r'<fieldset>\s*'
+            r'<legend>Delete this user</legend>'],
         'status_code': 200},
 
-    # Check that a duplicate email gives a proper error message
     {
-        'path': '/chellow/reports/255/output/',
+        'name': "Check that a duplicate email gives a proper error message",
+        'path': '/users',
         'method': 'post',
         'data': {
             'email_address': "lydgate@localhost",
@@ -45,31 +52,30 @@
 
     # Test that we're able to change the password
     {
-        'path': '/chellow/reports/257/output/',
+        'path': '/users/3',
         'method': 'post',
         'data': {
-            'user_id': "3",
             'current_password': "science",
             'new_password': "rosamund",
             'confirm_new_password': "rosamund"},
+        'regexes': [
+            r'/users/3'],
         'status_code': 303},
 
-    # Test that we can change the role
     {
-        'path': '/chellow/reports/257/output/',
+        'name': "Test that we can change the role",
+        'path': '/users/3',
         'method': 'post',
         'data': {
-            'user_id': "3",
             'email_address': "mary-ann-evans@example.com",
             'user_role_code': "editor"},
         'status_code': 303},
 
-    # ...and change it back
     {
-        'path': '/chellow/reports/257/output/',
+        'name': " ...and change it back",
+        'path': '/users/3',
         'method': 'post',
         'data': {
-            'user_id': "3",
             'email_address': "lydgate@localhost",
             'user_role_code': "editor"},
         'status_code': 303},
@@ -92,75 +98,85 @@
         'status_code': 401},
 
     {
-        'name': "Check duplicate report name gives good error message",
-        'path': '/chellow/reports/',
-        'method': 'post',
+        'name': "Insert local report",
         'auth': ('watkins@example.com', 'alan'),
+        'path': '/local_reports',
+        'method': 'post',
         'data': {
-            'name': "Home"},
+            'name': "Minority Report"},
+        'status_code': 303,
+        'regexes': [
+            r"/local_reports/1"]},
+
+    {
+        'name': "Delete a user",
+        'path': '/users/3',
+        'method': 'delete',
+        'status_code': 303,
+        'regexes': [
+            r'/users"']},
+    {
+        'path': '/local_reports/1',
+        'status_code': 200,
+        'regexes': [
+            r"Minority Report"]},
+    {
+        'name': "Check duplicate report name gives good error message",
+        'path': '/local_reports',
+        'method': 'post',
+        'data': {
+            'name': "Minority Report"},
         'status_code': 400,
         'regexes': [
             r"There's already a report with that name\."]},
 
     {
-        'name': "Insert core report",
-        'path': '/chellow/reports/',
-        'method': 'post',
-        'data': {
-            'name': "New Report",
-            'is_core': 'true'},
-        'status_code': 303,
-        'regexes': [
-            r"/reports/395/"]},
-
-    # Valid general import of sites
-    {
-        'name': "site",
-        'path': '/chellow/reports/293/output/',
+        'name': "General import of sites",
+        'path': '/general_imports',
         'method': 'post',
         'files': {'import_file': 'test/sites.csv'},
         'status_code': 303,
         'regexes': [
-            r"/reports/295/output/\?process_id=0"]},
+            r"/general_imports/0"]},
+
     {
-        'path': '/chellow/reports/295/output/?process_id=0',
+        'path': '/general_imports/0',
         'tries': {'max': 10, 'period': 1},
         'status_code': 200,
         'regexes': [
             r"The file has been imported successfully\."]},
 
-    # duplicates
     {
-        'path': '/chellow/reports/293/output/',
+        'name': "Duplicates",
+        'path': '/general_imports',
         'method': 'post',
         'files': {'import_file': 'test/sites.csv'},
         'status_code': 303,
         'regexes': [
-            r"/reports/295/output/\?process_id=1"]},
+            r"/general_imports/1"]},
     {
-        'path': '/chellow/reports/295/output/?process_id=1',
+        'path': '/general_imports/1',
         'tries': {'max': 10, 'period': 1},
         'regexes': [
             r"There&#39;s already a site with this code\."],
         'status_code': 200},
 
-    # Delete a site
     {
-        'path': '/chellow/reports/311/output/',
+        'name': "Delete a site",
+        'path': '/sites/2/edit',
         'method': 'post',
         'data': {
-            'site_id': "2",
             'delete': "Delete"},
         'status_code': 303},
 
-    # Show and and add a site
     {
-        'path': '/chellow/reports/297/output/',
+        'name': "Show and add a site",
+        'path': '/sites/add',
         'regexes': [
             r"Add a site"],
         'status_code': 200},
     {
-        'path': '/chellow/reports/297/output/',
+        'path': '/sites/add',
         'method': 'post',
         'data': {
             'code': "CH017",
@@ -168,7 +184,7 @@
         'status_code': 303},
     {
         'name': "HHDC contracts",
-        'path': '/chellow/reports/277/output/',
+        'path': '/hhdc_contracts/add',
         'method': 'post',
         'data': {
             'participant_id': "61",  # DASL
@@ -181,14 +197,13 @@
             'has_finished': "false"},
         'status_code': 303,
         'regexes': [
-            r"/reports/115/output/\?hhdc_contract_id=53"]},
+            r"/hhdc_contracts/28"]},
 
-    # Update Contract
     {
-        'path': '/chellow/reports/279/output/',
+        'name': "Update Contract",
+        'path': '/hhdc_contracts/28/edit',
         'method': 'post',
         'data': {
-            'hhdc_contract_id': "53",
             'party_id': "97",  # DASL HHDC
             'name': "HH contract",
             'charge_script': """
@@ -201,27 +216,29 @@ def virtual_bill(ds):
         if hh['utc-is-month-end']:
             bill['net-gbp'] += 10
 """,
-            'properties': "{'mpan_map': {'maptest': '2292056799106'}}", },
-        'status_code': 303, },
+            'properties': "{'mpan_map': {'maptest': '2292056799106'}}"},
+        'status_code': 303},
+
     {
-        'path': '/chellow/reports/279/output/?hhdc_contract_id=53',
+        'path': '/hhdc_contracts/28',
         'regexes': [
-            r"HH contract"],
+            r"HH contract",
+            r'<form action="/reports/81">'],
         'status_code': 200},
 
-    # Check that we can see HHDC rate script okay. Contract 53.
     {
-        'path': '/chellow/reports/173/output/?hhdc_rate_script_id=228',
+        'name': "Check that we can see HHDC rate script okay. Contract 28.",
+        'path': '/hhdc_rate_scripts/203',
 
         # Check that 'has_finished' field is there
         'regexes': [
             r"HH contract"],
         'status_code': 200},
 
-    # Check that we can see the edit view of the HHDC rate script okay.
-    # Contract 53.
     {
-        'path': '/chellow/reports/249/output/?hhdc_rate_script_id=228',
+        'name': "Check that we can see the edit view of the HHDC rate "
+        "script okay. Contract 28.",
+        'path': '/hhdc_rate_scripts/203/edit',
 
         # Check that 'has_finished' field is there
         'regexes': [
@@ -230,15 +247,14 @@ def virtual_bill(ds):
             # Check the hhdc_rate_script_id for update is there
             r'<legend>Update Rate Script</legend>\s*'
             '<input type="hidden" name="hhdc_rate_script_id"\s*'
-            'value="228">'],
+            'value="203">'],
         'status_code': 200},
 
-    # Check that we can update an HHDC rate script okay
     {
-        'path': '/chellow/reports/249/output/',
+        'name': "Check that we can update an HHDC rate script okay",
+        'path': '/hhdc_rate_scripts/203/edit',
         'method': 'post',
         'data': {
-            'hhdc_rate_script_id': "228",
             'start_year': "2000",
             'start_month': "01",
             'start_day': "03",
@@ -247,9 +263,9 @@ def virtual_bill(ds):
             'script': "{}"},
         'status_code': 303},
 
-    # Add another HHDC contract
     {
-        'path': '/chellow/reports/277/output/',
+        'name': "Add another HHDC contract",
+        'path': '/hhdc_contracts/add',
         'method': 'post',
         'data': {
             'participant_id': "61",  # DASL
@@ -261,14 +277,13 @@ def virtual_bill(ds):
             'start_minute': "00"},
         'status_code': 303,
         'regexes': [
-            r"/reports/115/output/\?hhdc_contract_id=54"]},
+            r"/hhdc_contracts/29"]},
 
-    # Update the newly added HHDC
     {
-        'path': '/chellow/reports/279/output/',
+        'name': "Update the newly added HHDC",
+        'path': '/hhdc_contracts/29/edit',
         'method': 'post',
         'data': {
-            'hhdc_contract_id': "54",
             'party_id': "97",  # DASL HHDC
             'name': "Dynamat data",
             'charge_script': """
@@ -284,19 +299,18 @@ def virtual_bill(ds):
             'properties': '{"props": 1}'},
         'status_code': 303},
 
-    # Update state of Dynamat HHDC
     {
-        'path': '/chellow/reports/279/output/',
+        'name': "Update state of Dynamat HHDC",
+        'path': '/hhdc_contracts/29/edit',
         'method': 'post',
         'data': {
-            'hhdc_contract_id': "54",
             'update_state': "",
             'state': '{"stat": 2}'},
         'status_code': 303},
 
-    # View Dynamat HHDC
     {
-        'path': '/chellow/reports/279/output/?hhdc_contract_id=54',
+        'name': "View edit Dynamat HHDC",
+        'path': '/hhdc_contracts/29/edit',
         'status_code': 200,
         'regexes': [
             r'<textarea name="charge_script" rows="40" cols="80">\s*'
@@ -307,10 +321,9 @@ def virtual_bill(ds):
             '\{&#34;stat&#34;: 2\}</textarea>']},
     {
         'name': "Check one can update the participant for an HHDC contract.",
-        'path': '/chellow/reports/279/output/',
+        'path': '/hhdc_contracts/29/edit',
         'method': 'post',
         'data': {
-            'hhdc_contract_id': "54",
             'party_id': "651",
 
             # UKDC
@@ -332,9 +345,9 @@ def virtual_bill(ds):
             'properties': "{}"},
         'status_code': 303},
 
-    # Check it's still there
     {
-        'path': '/chellow/reports/279/output/?hhdc_contract_id=54',
+        'name': "Check it's still there",
+        'path': '/hhdc_contracts/29/edit',
         'status_code': 200,
         'regexes': [
             r'option value="651" selected']},
@@ -342,14 +355,14 @@ def virtual_bill(ds):
     # Check correct fields present for adding a supplier contract },
     {
         'name': "Manipulate supplier contracts",
-        'path': '/chellow/reports/315/output/',
+        'path': '/supplier_contracts/add',
         'regexes': [
             r'name="start_year"'],
         'status_code': 200},
 
-    # Create a new supplier contract
     {
-        'path': '/chellow/reports/315/output/',
+        'name': "Create a new supplier contract",
+        'path': '/supplier_contracts/add',
         'method': 'post',
         'data': {
             'participant_id': "28",  # BIZZ
@@ -362,18 +375,18 @@ def virtual_bill(ds):
             'charge_script': "",
             'properties': "{'hydrogen': 'sonata'}"},
         'regexes': [
-            r"/reports/77/output/\?supplier_contract_id=55"]},
+            r"/supplier_contracts/30"]},
 
-    # Check that it's displayed properly
     {
-        'path': '/chellow/reports/317/output/?supplier_contract_id=55',
+        'name': "Check that it's displayed properly",
+        'path': '/supplier_contracts/30/edit',
         'regexes': [
             r'<option value="22" selected>',
             r'<textarea name="properties" rows="20" '
             'cols="80">\{&#39;hydrogen&#39;: &#39;sonata&#39;\}</textarea>'],
         'status_code': 200},
     {
-        'path': '/chellow/reports/77/output/?supplier_contract_id=55',
+        'path': '/supplier_contracts/30',
         'regexes': [
             r'<legend>Download Displaced Virtual Bills</legend>\s*<br/>\s*'
             'For <input name="months" value="1" maxlength="2" size="2">\s*'
@@ -382,12 +395,11 @@ def virtual_bill(ds):
             'value="201\d">'],
         'status_code': 200},
 
-    # Update the associated rate script. Supplier contract 55
     {
-        'path': '/chellow/reports/319/output/',
+        'name': "Update the associated rate script. Supplier contract 30",
+        'path': '/supplier_rate_scripts/205/edit',
         'method': 'post',
         'data': {
-            'supplier_rate_script_id': "230",
             'start_year': "2000",
             'start_month': "01",
             'start_day': "03",
@@ -406,60 +418,9 @@ def gsp_gbp_per_kwh():
 """},
         'status_code': 303},
 
-    # Create a new non-core contract
-    {
-        'name': "Manipulate non-core contracts",
-        'path': '/chellow/reports/265/output/',
-        'method': 'post',
-        'data': {
-            'participant_id': "31",
-
-            # CALB
-            'is_core': "false",
-            'name': "VAT",
-            'start_year': "2000",
-            'start_month': "01",
-            'start_day': "03",
-            'start_hour': "00",
-            'start_minute': "00", },
-        'regexes': [
-            r"/chellow/reports/267/output/\?non_core_contract_id=56"],
-        'status_code': 303, },
-
-    # Update the new non-core contract
-    {
-        'path': '/chellow/reports/269/output/',
-        'method': 'post',
-        'data': {
-            'non_core_contract_id': "56",
-            'name': "VAT 2",
-            'start_year': "2000",
-            'start_month': "01",
-            'start_day': "03",
-            'charge_script': """import sys
-
-def totalElement(account, startDate, finishDate):
-    return ["total", 22.3, "VAT cost"]
-""",
-            'properties': "{}"},
-        'status_code': 303},
-    {
-        'path': '/chellow/reports/267/output/?non_core_contract_id=56',
-        'regexes': [
-            r"import sys\s*def"],
-        'status_code': 200},
-
-    # Delete it
-    {
-        'path': '/chellow/reports/269/output/',
-        'method': 'post',
-        'data': {
-            'non_core_contract_id': "56",
-            'delete': ""},
-        'status_code': 303},
     {
         'name': "Insert MOP contract",
-        'path': '/chellow/reports/361/output/',
+        'path': '/mop_contracts/add',
         'method': 'post',
         'data': {
             'participant_id': "409",  # LENG
@@ -471,14 +432,13 @@ def totalElement(account, startDate, finishDate):
             'start_minute': "00"},
         'status_code': 303,
         'regexes': [
-            r"/reports/107/output/\?mop_contract_id=57"]},
+            r"/mop_contracts/31"]},
 
-    # Update with a charge script
     {
-        'path': '/chellow/reports/151/output/',
+        'name': "Update with a charge script",
+        'path': '/mop_contracts/31/edit',
         'method': 'post',
         'data': {
-            'mop_contract_id': "57",
             'party_id': "690",  # LENG
             'name': "MOP Contract",
             'start_year': "2000",
@@ -500,17 +460,17 @@ def virtual_bill(ds):
             'properties': "{}"},
         'status_code': 303,
         'regexes': [
-            r"/reports/107/output/\?mop_contract_id=57"]},
+            r"/mop_contracts/31"]},
 
-    # Check we can see the rate scripts
     {
-        'path': '/chellow/reports/107/output/?mop_contract_id=57',
+        'name': "Check we can see the rate scripts",
+        'path': '/mop_contracts/31',
         'status_code': 200},
 
     {
         'name': "Insert a modern supplier contract. Create a new supplier "
         "contract for 2013",
-        'path': '/chellow/reports/315/output/',
+        'path': '/supplier_contracts/add',
         'method': 'post',
         'data': {
             'participant_id': "54",  # COOP
@@ -526,14 +486,13 @@ def virtual_bill_titles():
 """,
             'properties': "{}", },
         'regexes': [
-            r"/chellow/reports/77/output/\?supplier_contract_id=58"],
+            r"/supplier_contracts/32"],
         'status_code': 303},
     {
-        'name': "Update the associated rate script. Supplier contract 58",
-        'path': '/chellow/reports/319/output/',
+        'name': "Update the associated rate script. Supplier contract 32",
+        'path': '/supplier_rate_scripts/207/edit',
         'method': 'post',
         'data': {
-            'supplier_rate_script_id': "233",
             'start_year': "2000",
             'start_month': "01",
             'start_day': "03",
@@ -554,7 +513,7 @@ def gsp_gbp_per_kwh():
 
     {
         'name': "Create a new supplier contract",
-        'path': '/chellow/reports/315/output/',
+        'path': '/supplier_contracts/add',
         'method': 'post',
         'data': {
             'participant_id': "386",  # HYDE
@@ -571,53 +530,53 @@ def virtual_bill_titles():
 """,
             'properties': "{}", },
         'regexes': [
-            r"/reports/77/output/\?supplier_contract_id=59"],
+            r"/supplier_contracts/33"],
         'status_code': 303},
 
     # Give proper error if there are too few fields },
     {
         'name': "supplies",
-        'path': '/chellow/reports/293/output/',
+        'path': '/general_imports',
         'method': 'post',
         'files': {'import_file': 'test/supplies-too-few-fields.csv'},
         'regexes': [
-            r"/reports/295/output/\?process_id=2"],
+            r"/general_imports/2"],
         'status_code': 303},
     {
-        'path': '/chellow/reports/295/output/?process_id=2',
+        'path': '/general_imports/2',
         'tries': {},
         'regexes': [
             r"Another field called Supply Name needs to be added on the end"],
         'status_code': 200},
 
-    # non-existent source code
     {
-        'path': '/chellow/reports/293/output/',
+        'name': "non-existent source code",
+        'path': '/general_imports',
         'method': 'post',
         'files': {'import_file': 'test/supplies_source.csv'},
         'regexes': [
-            r"/reports/295/output/\?process_id=3"],
+            r"/general_imports/3"],
         'status_code': 303},
     {
-        'path': '/chellow/reports/295/output/?process_id=3',
+        'path': '/general_imports/3',
         'tries': {},
 
         # check that it knows that the first line has a source code that is too
         # long
         'regexes': [
             r"There&#39;s no source with the code &#39;netlong&#39;", ],
-        'status_code': 200, },
+        'status_code': 200},
 
     # Line 2 has a DNO that doesn't exist
     {
-        'path': '/chellow/reports/293/output/',
+        'path': '/general_imports',
         'method': 'post',
         'files': {'import_file': 'test/supplies_dno.csv'},
         'regexes': [
-            r"/reports/295/output/\?process_id=4"],
+            r"/general_imports/4"],
         'status_code': 303},
     {
-        'path': '/chellow/reports/295/output/?process_id=4',
+        'path': '/general_imports/4',
         'tries': {},
 
         # check that it knows that line 2 has a DNO that doesn't exist
@@ -627,14 +586,14 @@ def virtual_bill_titles():
 
     # Check that it gives a sensible error message if a data is malformed
     {
-        'path': '/chellow/reports/293/output/',
+        'path': '/general_imports',
         'method': 'post',
         'files': {'import_file': 'test/supplies_date.csv'},
         'regexes': [
-            r"/chellow/reports/295/output/\?process_id=5"],
+            r"/general_imports/5"],
         'status_code': 303},
     {
-        'path': '/chellow/reports/295/output/?process_id=5',
+        'path': '/general_imports/5',
         'tries': {},
 
         # check that it knows that line 1 has a malformed date
@@ -646,14 +605,14 @@ def virtual_bill_titles():
 
     # Check for a sensible error message if the site doesn't exist
     {
-        'path': '/chellow/reports/293/output/',
+        'path': '/general_imports',
         'method': 'post',
         'files': {'import_file': 'test/supplies_no_site.csv'},
         'regexes': [
-            r"/chellow/reports/295/output/\?process_id=6", ],
+            r"/general_imports/6", ],
         'status_code': 303, },
     {
-        'path': '/chellow/reports/295/output/?process_id=6',
+        'path': '/general_imports/6',
         'tries': {},
 
         # check that it knows that line 1 has a malformed date
@@ -663,14 +622,14 @@ def virtual_bill_titles():
 
     # Valid import of supplies
     {
-        'path': '/chellow/reports/293/output/',
+        'path': '/general_imports',
         'method': 'post',
         'files': {'import_file': 'test/supplies.csv'},
         'status_code': 303,
         'regexes': [
-            r"/reports/295/output/\?process_id=7"]},
+            r"/general_imports/7"]},
     {
-        'path': '/chellow/reports/295/output/?process_id=7',
+        'path': '/general_imports/7',
         'tries': {},
 
         # Check it's loaded ok
@@ -680,7 +639,7 @@ def virtual_bill_titles():
 
     # Check that a supply with only an import MPAN is there
     {
-        'path': '/chellow/reports/311/output/?site_id=4',
+        'path': '/sites/4/edit',
         'regexes': [
             r"22 6354 2983 570",
 
@@ -691,7 +650,7 @@ def virtual_bill_titles():
 
     # Can we see a site ok?
     {
-        'path': '/chellow/reports/311/output/?site_id=1',
+        'path': '/sites/1/edit',
 
         # Is the era displayed?
         'regexes': [
@@ -708,7 +667,7 @@ def virtual_bill_titles():
     # View a supply in edit mode
     {
         'name': "view a supply",
-        'path': '/chellow/reports/305/output/?supply_id=2',
+        'path': '/supplies/2/edit',
 
         # Check table of existing eras is there
         'regexes': [
@@ -718,34 +677,32 @@ def virtual_bill_titles():
             r"<td>2003-08-03 00:00</td>\s*<td>\s*Ongoing", ],
         'status_code': 200},
     {
-        'path': '/chellow/reports/305/output/',
+        'path': '/supplies/1/edit',
         'method': 'post',
 
         # Can we update a supply name?
 
         # Can we update a supply source?
         'data': {
-            'supply_id': "1",
             'name': "Hello",
             'source_id': "4",
             'generator_type_id': "1",
             'gsp_group_id': "11"},
         'regexes': [
-            r"/reports/7/output/\?supply_id=1"],
+            r"/supplies/1"],
         'status_code': 303},
     {
-        'path': '/chellow/reports/305/output/?supply_id=1',
+        'path': '/supplies/1/edit',
         'regexes': [
             r'value="Hello">',
             r'option value="1" selected>chp</option>'],
         'status_code': 200},
     {
-        'path': '/chellow/reports/305/output/',
+        'path': '/supplies/1/edit',
         'method': 'post',
 
         # Change it back.
         'data': {
-            'supply_id': "1",
             'name': "1",
             'source_id': "1",
             'generator_type_id': "1",
@@ -754,14 +711,14 @@ def virtual_bill_titles():
 
     {
         'name': "View era in edit mode. Supply 1",
-        'path': '/chellow/reports/307/output/?era_id=1',
+        'path': '/eras/1/edit',
 
         # Check start date year is there
         'regexes': [
             r"start_year",
-            r'<option value="53" selected>HH contract</option>',
+            r'<option value="28" selected>HH contract</option>',
             r'"imp_supplier_contract_id">\s*'
-            '<option value="55" selected>Half-hourlies 2007',
+            '<option value="30" selected>Half-hourlies 2007',
 
             # Can we see the MOP account?
             r'"mc-22 9205 6799 106"'],
@@ -769,7 +726,7 @@ def virtual_bill_titles():
 
     # Supply 2
     {
-        'path': '/chellow/reports/307/output/?era_id=2',
+        'path': '/eras/2/edit',
 
         # Check site code is correct
         'regexes': [
@@ -779,10 +736,9 @@ def virtual_bill_titles():
     # Can we add a new era ok? },
     {
         'name': "Manipulating eras",
-        'path': '/chellow/reports/305/output/',
+        'path': '/supplies/2/edit',
         'method': 'post',
         'data': {
-            'supply_id': "2",
             'start_year': "2006",
             'start_month': "07",
             'start_day': "20",
@@ -790,12 +746,12 @@ def virtual_bill_titles():
             'start_minute': "00",
             'insert_era': "Insert", },
         'regexes': [
-            r"/chellow/reports/7/output/\?supply_id=2"],
+            r"/supplies/2"],
         'status_code': 303},
 
     # Let's check it's carried forward the import mpan. Supply 2
     {
-        'path': '/chellow/reports/307/output/?era_id=8',
+        'path': '/eras/8/edit',
         'regexes': [
             r"22 9813 2107 763",
             r'name="mtc_code" value="845" size="3" maxlength="3"'],
@@ -803,17 +759,16 @@ def virtual_bill_titles():
 
     # Can we delete the era ok? Supply 2
     {
-        'path': '/chellow/reports/307/output/?era_id=8&delete=Delete',
+        'path': '/eras/8/edit?delete=Delete',
         'regexes': [
             r"Are you sure you want to delete this"],
         'status_code': 200},
 
     # When a supply era is ended, check that the snags are updated. Supply 5
     {
-        'path': '/chellow/reports/307/output/',
+        'path': '/eras/5/edit',
         'method': 'post',
         'data': {
-            'era_id': "5",
             'start_year': "2003",
             'start_month': "08",
             'start_day': "03",
@@ -826,9 +781,9 @@ def virtual_bill_titles():
             'finish_hour': "23",
             'finish_minute': "30",
             'gsp_group_id': "11",
-            'mop_contract_id': "57",
+            'mop_contract_id': "31",
             'mop_account': "22 0883 6932 301",
-            'hhdc_contract_id': "54",
+            'hhdc_contract_id': "29",
             'hhdc_account': "22 0883 6932 301",
             'msn': "",
             'pc_id': "9",
@@ -838,13 +793,13 @@ def virtual_bill_titles():
             'imp_llfc_code': "570",
             'imp_mpan_core': "22 0883 6932 301",
             'imp_sc': "350",
-            'imp_supplier_contract_id': "55",
+            'imp_supplier_contract_id': "30",
             'imp_supplier_account': "4341"},
         'status_code': 303},
 
-    # Check it's correct in edit view
     {
-        'path': '/chellow/reports/307/output/?era_id=5',
+        'name': "Check it's correct in edit view",
+        'path': '/eras/5/edit',
 
         # Check start day is correct
         'regexes': [
@@ -856,24 +811,25 @@ def virtual_bill_titles():
             r'option value="23" selected>23</option>'],
         'status_code': 200},
 
-    # Check it's correct in supply view
     {
-        'path': '/chellow/reports/7/output/?supply_id=5',
+        'name': "Check it's correct in supply view",
+        'path': '/supplies/5',
         'status_code': 200,
 
         # Check the end date is right
         'regexes': [
-            r'<form action="/chellow/reports/219/output/">\s*'
+            r'<form action="/reports/219">\s*'
                 r'<input type="hidden" name="supply_id" value="5">',
             r'<a title="2003-08-13 23:30">2003-08-13</a>',
-            r'<form action="/chellow/reports/187/output/" method="post">',
+            r'<form action="/reports/187" method="post">',
             r'<legend>TRIAD</legend>\s*<input type="hidden" name="supply_id"',
-            r'<a href="/chellow/reports/15/output/\?supply_id=5&amp;'
-            'is_import=true&amp;year=\d{4}&amp;years=1">Import</a>']},
+            r'<a href="/supplies/5/months\?'
+            'is_import=true&amp;year=\d{4}&amp;years=1">Import</a>',
+            r'<a href="/supplies/5/virtual_bill']},
 
     # Supply 5, Era 5
     {
-        'path': '/chellow/reports/301/output/?channel_id=18',
+        'path': '/channels/18',
         'status_code': 200,
 
         # Check the end date is right
@@ -885,12 +841,12 @@ def virtual_bill_titles():
     # Check that if the hhdc contract is changed, the hhdc contract of the
     # snags change
 
-    # Check the export supply capacity can be updated as well. Supply 5
     {
-        'path': '/chellow/reports/307/output/',
+        'name': "Check the export supply capacity can be updated as well. "
+        "Supply 5",
+        'path': '/eras/5/edit',
         'method': 'post',
         'data': {
-            'era_id': "5",
             'msn': "",
             'start_year': "2003",
             'start_month': "08",
@@ -903,9 +859,9 @@ def virtual_bill_titles():
             'finish_day': "13",
             'finish_hour': "23",
             'finish_minute': "30",
-            'mop_contract_id': "57",
+            'mop_contract_id': "31",
             'mop_account': "22 0883 6932 301",
-            'hhdc_contract_id': "53",
+            'hhdc_contract_id': "28",
             'hhdc_account': "22 0883 6932 301",
             'pc_id': "9",
             'mtc_code': "845",
@@ -915,17 +871,17 @@ def virtual_bill_titles():
             'imp_mpan_core': "22 0883 6932 301",
             'imp_gsp_group_id': "11",
             'imp_sc': "430",
-            'imp_supplier_contract_id': "55",
+            'imp_supplier_contract_id': "30",
             'imp_supplier_account': "4341"},
         'status_code': 303},
 
-    # Check the change is there in edit view
     {
-        'path': '/chellow/reports/307/output/?era_id=5',
+        'name': "Check the change is there in edit view",
+        'path': '/eras/5/edit',
         'regexes': [
             r'<input name="imp_sc" value="430" size="9" maxlength="9">']},
     {
-        'path': '/chellow/reports/301/output/?channel_id=18',
+        'path': '/channels/18',
         'status_code': 200,
         'regexes': [
             r"Channel Export\s*REACTIVE_EXP",
@@ -934,12 +890,11 @@ def virtual_bill_titles():
             r"<td>2003-08-03 00:00</td>\s*<td>2003-08-13 23:30</td>\s*"
             "<td>Missing</td>"]},
 
-    # Put it back to how it was. Supply 5
     {
-        'path': '/chellow/reports/307/output/',
+        'name': "Put it back to how it was. Supply 5",
+        'path': '/eras/5/edit',
         'method': 'post',
         'data': {
-            'era_id': "5",
             'msn': "",
             'start_year': "2003",
             'start_month': "08",
@@ -947,9 +902,9 @@ def virtual_bill_titles():
             'start_hour': "00",
             'start_minute': "00",
             'is_ended': "false",
-            'mop_contract_id': "57",
+            'mop_contract_id': "31",
             'mop_account': "22 0883 6932 301",
-            'hhdc_contract_id': "53",
+            'hhdc_contract_id': "28",
             'hhdc_account': "22 0883 6932 301",
             'pc_id': "9",
             'mtc_code': "845",
@@ -958,20 +913,20 @@ def virtual_bill_titles():
             'imp_llfc_code': "570",
             'imp_mpan_core': "22 0883 6932 301",
             'imp_sc': "350",
-            'imp_supplier_contract_id': "55",
+            'imp_supplier_contract_id': "30",
             'imp_supplier_account': "4341"},
         'status_code': 303},
 
-    # Valid bulk update of supply eras
     {
-        'path': '/chellow/reports/293/output/',
+        'name': "Valid bulk update of supply eras",
+        'path': '/general_imports',
         'method': 'post',
         'files': {'import_file': 'test/era-update.csv'},
         'status_code': 303,
         'regexes': [
-            r"/chellow/reports/295/output/\?process_id=8"]},
+            r"/general_imports/8"]},
     {
-        'path': '/chellow/reports/295/output/?process_id=8',
+        'path': '/general_imports/8',
         'tries': {},
 
         # Check it's loaded ok
@@ -979,14 +934,14 @@ def virtual_bill_titles():
             r"The file has been imported successfully"],
         'status_code': 200},
     {
-        'path': '/chellow/reports/293/output/',
+        'path': '/general_imports',
         'method': 'post',
         'files': {'import_file': 'test/supplies-bad-mpan.csv'},
         'status_code': 303,
         'regexes': [
-            r"/reports/295/output/\?process_id=9"]},
+            r"/general_imports/9"]},
     {
-        'path': '/chellow/reports/295/output/?process_id=9',
+        'path': '/general_imports/9',
         'tries': {},
 
         # Check it's loaded ok
@@ -995,12 +950,11 @@ def virtual_bill_titles():
             "supply\."],
         'status_code': 200},
 
-    # Attach another site to an era. Supply 2
     {
-        'path': '/chellow/reports/307/output/',
+        'name': "Attach another site to an era. Supply 2",
+        'path': '/eras/2/edit',
         'method': 'post',
         'data': {
-            'era_id': "2",
             'site_code': "CI005",
             'attach': "Attach"},
         'status_code': 303},
@@ -1008,10 +962,9 @@ def virtual_bill_titles():
     # Check that we prevent mpan cores from changing without an overlapping
     # period. Supply 2
     {
-        'path': '/chellow/reports/307/output/',
+        'path': '/eras/8/edit',
         'method': 'post',
         'data': {
-            'era_id': "8",
             'msn': "",
             'start_year': "2006",
             'start_month': "07",
@@ -1019,9 +972,9 @@ def virtual_bill_titles():
             'start_hour': "00",
             'start_minute': "00",
             'is_ended': "false",
-            'mop_contract_id': "57",
+            'mop_contract_id': "31",
             'mop_account': "mc-22 9813 2107 763",
-            'hhdc_contract_id': "53",
+            'hhdc_contract_id': "28",
             'hhdc_account': "01",
             'pc_id': "9",
             'mtc_code': "845",
@@ -1030,7 +983,7 @@ def virtual_bill_titles():
             'imp_llfc_code': "570",
             'imp_mpan_core': "2276930477695",
             'imp_sc': "430",
-            'imp_supplier_contract_id': "55",
+            'imp_supplier_contract_id': "30",
             'imp_supplier_account': "01"},
         'status_code': 400,
 
@@ -1043,10 +996,9 @@ def virtual_bill_titles():
     # Check that we get a good error message if the LLFC is of the wrong
     # polarity. Supply 2
     {
-        'path': '/chellow/reports/307/output/',
+        'path': '/eras/8/edit',
         'method': 'post',
         'data': {
-            'era_id': "8",
             'msn': "",
             'start_year': "2006",
             'start_month': "07",
@@ -1054,9 +1006,9 @@ def virtual_bill_titles():
             'start_hour': "00",
             'start_minute': "00",
             'is_ended': "false",
-            'mop_contract_id': "57",
+            'mop_contract_id': "31",
             'mop_account': "mc-22 9813 2107 763",
-            'hhdc_contract_id': "53",
+            'hhdc_contract_id': "28",
             'hhdc_account': "01",
             'pc_id': "9",
             'mtc_code': "845",
@@ -1065,7 +1017,7 @@ def virtual_bill_titles():
             'imp_llfc_code': "521",
             'imp_mpan_core': "22 9813 2107 763",
             'imp_sc': "430",
-            'imp_supplier_contract_id': "55",
+            'imp_supplier_contract_id': "30",
             'imp_supplier_account': "01"},
         'status_code': 400,
         'regexes': [
@@ -1075,34 +1027,29 @@ def virtual_bill_titles():
     # with #F2
     {
         'name': "Import hh data",
-        'path': '/chellow/reports/211/output/',
+        'path': '/hhdc_contracts/28/hh_imports',
         'method': 'post',
-        'data': {
-            'hhdc_contract_id': "53"},
         'files': {'import_file': 'test/no_hash.df2'},
         'regexes': [
-            r"/reports/65/output/\?hhdc_contract_id=53&process_id=0"],
+            r"/hhdc_contracts/28/hh_imports/0"],
         'status_code': 303},
     {
-        'path': '/chellow/reports/65/output/?hhdc_contract_id=53&process_id=0',
-        'method': 'post',
+        'path': '/hhdc_contracts/28/hh_imports/0',
         'tries': {},
         'regexes': [
             r"The first line must be &#39;#F2&#39;"],
         'status_code': 200},
 
-    # Import some hh Stark DF2 data
     {
-        'path': '/chellow/reports/211/output/',
+        'name': "Import some hh Stark DF2 data",
+        'path': '/hhdc_contracts/28/hh_imports',
         'method': 'post',
-        'data': {
-            'hhdc_contract_id': "53"},
         'files': {'import_file': 'test/ftp/hh_data.df2'},
         'status_code': 303,
         'regexes': [
-            r"/reports/65/output/\?hhdc_contract_id=53&process_id=1", ], },
+            r"/hhdc_contracts/28/hh_imports/1"]},
     {
-        'path': '/chellow/reports/65/output/?hhdc_contract_id=53&process_id=1',
+        'path': '/hhdc_contracts/28/hh_imports/1',
         'tries': {},
 
         # Check it's loaded ok and has ignored the blank line and the #F2 line
@@ -1110,26 +1057,24 @@ def virtual_bill_titles():
             r"The import has completed.*successfully.",
 
             # Check link to hhdc is correct
-            r"/chellow/reports/115/output/\?hhdc_contract_id=53"],
+            r"/hhdc_contracts/28"],
         'status_code': 200},
 
-    # Supply 1, era 1
     {
-        'path': '/chellow/reports/301/output/?channel_id=4',
+        'name': 'Supply 1, era 1',
+        'path': '/channels/4',
         'regexes': [
             r"Channel Export\s*REACTIVE_EXP",
             r'<tr>\s*<td>\s*'
-            '<a href="/chellow/reports/117/output/\?snag_id=4">view</a>\s*'
+            '<a href="/channel_snags/4">view</a>\s*'
             '</td>\s*<td>2003-08-03 00:00</td>\s*<td>Ongoing</td>\s*'
             '<td>Missing</td>'],
         'status_code': 200},
 
-    # Check if more hh data imports ok
     {
-        'path': '/chellow/reports/211/output/',
+        'name': "Check if more hh data imports ok",
+        'path': '/hhdc_contracts/28/hh_imports',
         'method': 'post',
-        'data': {
-            'hhdc_contract_id': "53"},
         'files': {'import_file': 'test/hh_data2.df2'},
         'status_code': 303},
 
@@ -1138,16 +1083,14 @@ def virtual_bill_titles():
     {
         'name': "Detect if hh import still works if first hh datum is "
         "missing.",
-        'path': '/chellow/reports/211/output/',
+        'path': '/hhdc_contracts/28/hh_imports',
         'method': 'post',
-        'data': {
-            'hhdc_contract_id': "53", },
         'files': {'import_file': 'test/missing.df2'},
         'regexes': [
-            r"/reports/65/output/\?hhdc_contract_id=53&process_id=3"],
+            r"/hhdc_contracts/28/hh_imports/3"],
         'status_code': 303},
     {
-        'path': '/chellow/reports/65/output/?hhdc_contract_id=53&process_id=3',
+        'path': '/hhdc_contracts/28/hh_imports/3',
         'tries': {},
         'regexes': [
             r"The import has completed.*successfully."],
@@ -1156,16 +1099,14 @@ def virtual_bill_titles():
     # This relies on the default timezone being BST },
     {
         'name': "Do we handle BST ok?",
-        'path': '/chellow/reports/211/output/',
+        'path': '/hhdc_contracts/28/hh_imports',
         'method': 'post',
-        'data': {
-            'hhdc_contract_id': "53"},
         'files': {'import_file': 'test/hh_data_timezone.df2'},
         'regexes': [
-            r"/chellow/reports/65/output/\?hhdc_contract_id=53&process_id=4"],
+            r"/hhdc_contracts/28/hh_imports/4"],
         'status_code': 303},
     {
-        'path': '/chellow/reports/65/output/?hhdc_contract_id=53&process_id=4',
+        'path': '/hhdc_contracts/28/hh_imports/4',
 
         # Check it's loaded ok
         'tries': {},
@@ -1176,58 +1117,54 @@ def virtual_bill_titles():
     # Test that 3 non-actual reads in a row generate a single snag
     {
         'name': "Actual reads snags combined properly",
-        'path': '/chellow/reports/211/output/',
+        'path': '/hhdc_contracts/28/hh_imports',
         'method': 'post',
-        'data': {
-            'hhdc_contract_id': "53"},
         'files': {'import_file': 'test/hh_data_not_actual.df2'},
         'regexes': [
-            r"/chellow/reports/65/output/\?hhdc_contract_id=53&process_id=5"],
+            r"/hhdc_contracts/28/hh_imports/5"],
         'status_code': 303},
     {
-        'path': '/chellow/reports/65/output/?hhdc_contract_id=53&process_id=5',
+        'path': '/hhdc_contracts/28/hh_imports/5',
         'tries': {},
         'regexes': [
             r"The import has completed.*successfully."],
         'status_code': 200},
 
-    # supply 1, era 1
     {
-        'path': '/chellow/reports/301/output/?channel_id=3',
+        'name': "supply 1, era 1",
+        'path': '/channels/3',
         'regexes': [
             r"Channel Export\s*ACTIVE",
             r'<td>\s*'
-            '<a href="/chellow/reports/117/output/\?snag_id=45">view</a>\s*'
+            '<a href="/channel_snags/45">view</a>\s*'
             '</td>\s*<td>2005-12-15 07:00</td>\s*<td>2005-12-15 08:00</td>\s*'
             '<td>Estimated</td>',
             r'<tr>\s*<td>\s*'
-            '<a href="/chellow/reports/117/output/\?snag_id=3">view</a>\s*'
+            '<a href="/channel_snags/3">view</a>\s*'
             '</td>\s*<td>2003-08-03 00:00</td>\s*<td>2005-12-15 06:30</td>\s*'
             '<td>Missing</td>'],
         'status_code': 200},
     {
-        'path': '/chellow/reports/211/output/',
+        'path': '/hhdc_contracts/28/hh_imports',
         'method': 'post',
-        'data': {
-            'hhdc_contract_id': "53"},
         'files': {'import_file': 'test/hh_data_not_actual2.df2'},
         'regexes': [
-            r'/reports/65/output/\?hhdc_contract_id=53&process_id=6'],
+            r'/hhdc_contracts/28/hh_imports/6'],
         'status_code': 303},
     {
-        'path': '/chellow/reports/65/output/?hhdc_contract_id=53&process_id=6',
+        'path': '/hhdc_contracts/28/hh_imports/6',
         'tries': {},
         'regexes': [
             r"The import has completed.*successfully."],
         'status_code': 200},
 
-    # supply 1, era 1
     {
-        'path': '/chellow/reports/301/output/?channel_id=3',
+        'name': "supply 1, era 1",
+        'path': '/channels/3',
         'regexes': [
             r"Channel Export\s*ACTIVE",
             r'<td>\s*'
-            '<a href="/chellow/reports/117/output/\?snag_id=45">view</a>\s*'
+            '<a href="/channel_snags/45">view</a>\s*'
             '</td>\s*<td>2005-12-15 07:00</td>\s*<td>2005-12-15 09:30</td>\s*'
             '<td>Estimated</td>'],
         'status_code': 200},
@@ -1235,25 +1172,23 @@ def virtual_bill_titles():
     # Test if a CSV HH file can be imported },
     {
         'name': "Importing simple CSV data",
-        'path': '/chellow/reports/211/output/',
+        'path': '/hhdc_contracts/28/hh_imports',
         'method': 'post',
-        'data': {
-            'hhdc_contract_id': "53"},
         'files': {'import_file': 'test/hh_data.simple.csv'},
         'regexes': [
-            r"/reports/65/output/\?hhdc_contract_id=53&process_id=7"],
+            r"/hhdc_contracts/28/hh_imports/7"],
         'status_code': 303},
     {
-        'path': '/chellow/reports/65/output/?hhdc_contract_id=53&process_id=7',
+        'path': '/hhdc_contracts/28/hh_imports/7',
         'tries': {},
         'regexes': [
             r"The import has completed.*successfully."],
         'status_code': 200},
 
-    # Check that the imported HH datum is correct for supply 1, era 1
     {
-        'path': '/chellow/reports/301/output/?channel_id=3&start_year=2005&'
-        'start_month=09',
+        'name': "Check that the imported HH datum is correct for supply 1, "
+        "era 1",
+        'path': '/channels/3?start_year=2005&start_month=09',
         'regexes': [
             r"<td>2005-09-15 00:00</td>\s*<td>1.0</td>\s*<td>A</td>"]},
 
@@ -1261,16 +1196,14 @@ def virtual_bill_titles():
     # missing
     {
         'name': "Various DF2 tests.",
-        'path': '/chellow/reports/211/output/',
+        'path': '/hhdc_contracts/28/hh_imports',
         'method': 'post',
-        'data': {
-            'hhdc_contract_id': "53"},
         'files': {'import_file': 'test/hh_data_malformed.df2'},
         'regexes': [
-            r"/reports/65/output/\?hhdc_contract_id=53&process_id=8"],
+            r"/hhdc_contracts/28/hh_imports/8"],
         'status_code': 303},
     {
-        'path': '/chellow/reports/65/output/?hhdc_contract_id=53&process_id=8',
+        'path': '/hhdc_contracts/28/hh_imports/8',
         'tries': {},
         'regexes': [
             r"Problem at line number: 4"],
@@ -1278,35 +1211,30 @@ def virtual_bill_titles():
 
     # Check it gives a sensible error message if the first mpan is malformed
     {
-        'path': '/chellow/reports/211/output/',
+        'path': '/hhdc_contracts/28/hh_imports',
         'method': 'post',
-        'data': {
-            'hhdc_contract_id': "53"},
         'files': {'import_file': 'test/hh_data_bad_beginning.df2'},
         'regexes': [
-            r"/reports/65/output/\?hhdc_contract_id=53&process_id=9"],
+            r"/hhdc_contracts/28/hh_imports/9"],
         'status_code': 303},
     {
-        'path': '/chellow/reports/65/output/?hhdc_contract_id=53&process_id=9',
+        'path': '/hhdc_contracts/28/hh_imports/9',
         'tries': {},
         'regexes': [
             r"The MPAN core &#39;2204707514535,,,&#39; must contain exactly "
             "13 digits"],
         'status_code': 200},
 
-    # Check sensible error message if header but no data
     {
-        'path': '/chellow/reports/211/output/',
+        'name': "Check sensible error message if header but no data",
+        'path': '/hhdc_contracts/28/hh_imports',
         'method': 'post',
-        'data': {
-            'hhdc_contract_id': "53"},
         'files': {'import_file': 'test/hh_data_header_but_no_data.df2'},
         'regexes': [
-            r"/reports/65/output/\?hhdc_contract_id=53&process_id=10"],
+            r"/hhdc_contracts/28/hh_imports/10"],
         'status_code': 303},
     {
-        'path': '/chellow/reports/65/output/?hhdc_contract_id=53&'
-        'process_id=10',
+        'path': '/hhdc_contracts/28/hh_imports/10',
         'tries': {},
         'regexes': [
             r"The import has completed.*successfully\."],
@@ -1315,7 +1243,7 @@ def virtual_bill_titles():
     # Make sure 'show HH data' button works, supply 6, era 6
     {
         'name': "Manipulate channels",
-        'path': '/chellow/reports/301/output/?channel_id=19',
+        'path': '/channels/19',
         'regexes': [
             r"Import\s*ACTIVE"],
         'status_code': 200},
@@ -1323,80 +1251,76 @@ def virtual_bill_titles():
     # Manipulate Hh data"
     {
         'name': "Make sure 'show HH data' button works, supply 6, era 6",
-        'path': '/chellow/reports/301/output/?channel_id=21',
+        'path': '/channels/21',
         'regexes': [
             r"Export\s*REACTIVE_EXP",
-            r'action="\.">'],
+            r'action="">'],
         'status_code': 200},
     {
         'name': "Give good error for invalid date.",
-        'path': '/chellow/reports/301/output/?channel_id=21&start_year=2006&'
-        'start_month=13',
+        'path': '/channels/21?start_year=2006&start_month=13',
         'regexes': [
             r"Invalid date"],
         'status_code': 400},
     {
         'name': "Check site level snag",
-        'path': '/chellow/reports/39/output/',
+        'path': '/site_snags',
         'regexes': [
             r"CI004",
 
             # There's an hh where export to net is *less* than imported from
             # generator, check this doesn't show up.
             r'<td>\s*'
-            '<a href="/chellow/reports/119/output/\?site_snag_id=43">view</a> '
-            '\[<a href="/chellow/reports/373/'
-            'output/\?site_snag_id=43">edit</a>\]\s*</td>\s*<td>[^<]*</td>\s*'
+            '<a href="/site_snags/43">view</a>\s*'
+            '\[<a href="/site_snags/43/edit">edit</a>\]\s*'
+            r'</td>\s*<td>[^<]*</td>\s*'
             '<td>\s*'
-            '<a href="/chellow/reports/5/output/\?site_id=1">CI004</a>\s*'
+            '<a href="/sites/1">CI004</a>\s*'
             '</td>\s*<td>Lower Treave</td>\s*'
             '<td>Export to net &gt; import from generators.</td>\s*'
             '<td>2005-10-29 23:30</td>\s*<td>\s*2005-10-30 01:00</td>\s*'
             '</tr>\s*</tbody>'],
         'status_code': 200},
     {
-        'path': '/chellow/reports/371/output/',
+        'path': '/site_snags/edit',
 
         # Check that there's an 'ignore-year' parameter.
         'regexes': [
-            r'name="ignore_year"', ],
-        'status_code': 200, },
+            r'name="ignore_year"'],
+        'status_code': 200},
 
     # Supply 1, era 1 },
     {
         'name': "Check view of channel level snag",
-        'path': '/chellow/reports/117/output/?snag_id=1',
-        'status_code': 200, },
+        'path': '/channel_snags/1',
+        'status_code': 200},
 
     # Check that for a supply with multiple eras, a channel without any data
     # can be deleted. This test needs some hh data loaded somewhere. Supply 2,
     # era 8, exp active
     {
         'name': "Delete channel without data",
-        'path': '/chellow/reports/303/output/',
+        'path': '/channels/25/edit',
         'method': 'post',
         'data': {
-            'channel_id': "25",
-            'delete': "Delete", },
-        'status_code': 303, },
+            'delete': "Delete"},
+        'status_code': 303},
 
-    # Put it back to how it was before. Supply 2
     {
-        'path': '/chellow/reports/299/output/',
+        'name': "Put it back to how it was before. Supply 2",
+        'path': '/eras/8/add_channel',
         'method': 'post',
         'data': {
-            'era_id': "8",
             'imp_related': "false",
-            'channel_type': "ACTIVE", },
-        'status_code': 303, },
+            'channel_type': "ACTIVE"},
+        'status_code': 303},
 
     # Check it gives an error if the hhdc contract is removed from a supply era
     # that has data. Supply 1
     {
-        'path': '/chellow/reports/307/output/',
+        'path': '/eras/1/edit',
         'method': 'post',
         'data': {
-            'era_id': "1",
             'start_year': "2003",
             'start_month': "08",
             'start_day': "03",
@@ -1421,11 +1345,11 @@ def virtual_bill_titles():
             'exp_ssc_code': "",
             'exp_sc': "150",
             'exp_supplier_contract_id': "6",
-            'exp_supplier_account': "01", },
-        'status_code': 400, },
+            'exp_supplier_account': "01"},
+        'status_code': 400},
     {
         'name': "View a snag",
-        'path': '/chellow/reports/119/output/?site_snag_id=43',
+        'path': '/site_snags/43',
         'status_code': 200,
         'regexes': [
             r"<th>Finish Date</th>\s*<td>2005-10-30 01:00</td>", ], },
@@ -1433,7 +1357,7 @@ def virtual_bill_titles():
     # Assumes various site snags are present at this stage },
     {
         'name': "site snags stay ignored",
-        'path': '/chellow/reports/371/output/',
+        'path': '/site_snags/edit',
         'method': 'post',
         'data': {
             'ignore_year': "2006",
@@ -1441,31 +1365,28 @@ def virtual_bill_titles():
             'ignore_day': "26",
             'ignore_hour': "00",
             'ignore_minute': "00",
-            'ignore': "Ignore", },
+            'ignore': "Ignore"},
         'status_code': 303},
     {
-        'path': '/chellow/reports/211/output/',
+        'path': '/hhdc_contracts/28/hh_imports',
         'method': 'post',
-        'data': {
-            'hhdc_contract_id': "53"},
         'files': {'import_file': 'test/ftp/hh_data.df2'},
         'regexes': [
-            r"/reports/65/output/\?hhdc_contract_id=53&process_id=11"],
+            r"/hhdc_contracts/28/hh_imports/11"],
         'status_code': 303},
     {
-        'path': '/chellow/reports/65/output/?hhdc_contract_id=53&'
-        'process_id=11',
+        'path': '/hhdc_contracts/28/hh_imports/11',
         'tries': {},
         'regexes': [
             r"The import has completed.*successfully"],
         'status_code': 200},
     {
-        'path': '/chellow/reports/39/output/',
+        'path': '/site_snags',
         'regexes': [
             r"<tbody>\s*</tbody>"],
         'status_code': 200},
     {
-        'path': '/chellow/reports/17/output/?supply_id=5&months=1&'
+        'path': '/reports/17?supply_id=5&months=1&'
         'finish_year=2010&finish_month=03',
         'regexes': [
             r"<tr>\s*<td>\s*2010-03-15 12:00\s*</td>\s*<td>0</td>\s*"
@@ -1475,20 +1396,18 @@ def virtual_bill_titles():
     # Create a new batch
     {
         'name': "Batches",
-        'path': '/chellow/reports/287/output/',
+        'path': '/supplier_contracts/30/add_batch',
         'method': 'post',
         'data': {
-            'supplier_contract_id': "55",
             'reference': "04-003",
             'description': "Contract 4, batch number 3"},
         'status_code': 303},
 
     # Check it gives a good error message for a duplicate name
     {
-        'path': '/chellow/reports/287/output/',
+        'path': '/supplier_contracts/30/add_batch',
         'method': 'post',
         'data': {
-            'supplier_contract_id': "55",
             'reference': "04-003",
             'description': "dup batch"},
         'regexes': [
@@ -1496,21 +1415,21 @@ def virtual_bill_titles():
             "Half-hourlies 2007 with the reference 04-003\."],
         'status_code': 400},
 
-    # Create a new import. Supplier contract 58
+    # Create a new import. Supplier contract 30
     {
         'name': "Bill imports",
-        'path': '/chellow/reports/321/output/',
+        'path': '/supplier_bill_imports',
         'method': 'post',
         'data': {
-            'supplier_batch_id': "1"},
+            'supplier_batch_id': '1'},
         'files': {'import_file': 'test/bills.mm'},
         'status_code': 303,
         'regexes': [
-            r"/reports/323/output/\?importer_id=0"]},
+            r"/supplier_bill_imports/0"]},
 
-    # Supplier contract 58, batch 1
     {
-        'path': '/chellow/reports/323/output/?importer_id=0',
+        'name': "Supplier contract 30, batch 1",
+        'path': '/supplier_bill_imports/0',
         'tries': {},
         'status_code': 200,
         'regexes': [
@@ -1521,14 +1440,14 @@ def virtual_bill_titles():
     # Valid import of supplies
     {
         'name': "Set up NHH",
-        'path': '/chellow/reports/293/output/',
+        'path': '/general_imports',
         'method': 'post',
         'files': {'import_file': 'test/nhh-supplies.csv'},
         'status_code': 303,
         'regexes': [
-            r"/reports/295/output/\?process_id=10"]},
+            r"/general_imports/10"]},
     {
-        'path': '/chellow/reports/295/output/?process_id=10',
+        'path': '/general_imports/10',
         'tries': {},
 
         # Check it's loaded ok
@@ -1538,35 +1457,34 @@ def virtual_bill_titles():
 
     # Check values have been imported correctly. Supply 11
     {
-        'path': '/chellow/reports/307/output/?era_id=11',
+        'path': '/eras/11/edit',
         'regexes': [
             r"K87D74429"],
         'status_code': 200},
 
     # Create a new batch
     {
-        'path': '/chellow/reports/287/output/',
+        'path': '/supplier_contracts/33/add_batch',
         'method': 'post',
         'data': {
-            'supplier_contract_id': "59",
             'reference': "06-002",
             'description': "Bgb batch"},
         'status_code': 303},
 
-    # Supplier contract 61
     {
-        'path': '/chellow/reports/321/output/',
+        'name': "Supplier contract 33",
+        'path': '/supplier_bill_imports',
         'method': 'post',
         'data': {
-            'supplier_batch_id': "3"},
+            'supplier_batch_id': '3'},
         'files': {'import_file': 'test/bills.bgb.edi'},
         'status_code': 303,
         'regexes': [
-            r"/reports/323/output/\?importer_id=1"]},
+            r"/supplier_bill_imports/1"]},
 
-    # Supplier contract 59, batch 3
+    # Supplier contract 33, batch 3
     {
-        'path': '/chellow/reports/323/output/?importer_id=1',
+        'path': '/supplier_bill_imports/1',
         'tries': {},
         'status_code': 200,
         'regexes': [
@@ -1576,18 +1494,17 @@ def virtual_bill_titles():
     # Set a previously estimated HH to actual, supply 1, era 1, channel 3
     {
         'name': "Check that resolved HH estimates have their snags cleared.",
-        'path': '/chellow/reports/309/output/',
+        'path': '/hh_data/12/edit',
         'method': 'post',
         'data': {
             'update': "Update",
-            'hh_datum_id': "12",
             'value': "0.5",
             'status': "A"},
         'status_code': 303},
 
     # Check that the snag has been cleared. Supply 1, era 1
     {
-        'path': '/chellow/reports/301/output/?channel_id=3',
+        'path': '/channels/3',
         'regexes': [
             r"Channel Export\s*ACTIVE",
             r"<td>2005-12-15 07:30</td>\s*<td>2005-12-15 09:30</td>\s*"
@@ -1595,27 +1512,23 @@ def virtual_bill_titles():
 
     # Change it back. supply 1, era 1.
     {
-        'path': '/chellow/reports/309/output/',
+        'path': '/hh_data/12/edit',
         'method': 'post',
         'data': {
-            'hh_datum_id': "12",
             'value': "0.5",
             'status': "E"},
         'status_code': 303},
     {
         'name': "Test of BGlobal HH data import",
-        'path': '/chellow/reports/211/output/',
+        'path': '/hhdc_contracts/28/hh_imports',
         'method': 'post',
-        'data': {
-            'hhdc_contract_id': "53"},
         'files': {'import_file': 'test/hh_data.bg.csv'},
         'status_code': 303,
         'regexes': [
-            r"/chellow/reports/65/output/\?hhdc_contract_id=53&process_id=12"]
+            r"/hhdc_contracts/28/hh_imports/12"]
         },
     {
-        'path': '/chellow/reports/65/output/?hhdc_contract_id=53'
-        '&process_id=12',
+        'path': '/hhdc_contracts/28/hh_imports/12',
         'tries': {},
         'regexes': [
             r"The import has completed.*successfully."],
@@ -1625,17 +1538,15 @@ def virtual_bill_titles():
     {
         'name': "Check the BGlobal data is imported to the right number of "
         "sig figs",
-        'path': '/chellow/reports/301/output/?channel_id=1&start_year=2008&'
-        'start_month=07',
+        'path': '/channels/1?start_year=2008&start_month=07',
         'regexes': [
             r"0\.262"]},
     {
         'name': "Check okay if supply era update is interupted by an error. "
         "Supply 9",
-        'path': '/chellow/reports/307/output/',
+        'path': '/eras/9/edit',
         'method': 'post',
         'data': {
-            'era_id': "9",
             'msn': "P96C93722",
             'start_year': "2005",
             'start_month': "08",
@@ -1661,44 +1572,43 @@ def virtual_bill_titles():
         'status_code': 400, },
     {
         'name': "HH data general import",
-        'path': '/chellow/reports/293/output/',
+        'path': '/general_imports',
         'method': 'post',
         'files': {'import_file': 'test/hh_data.csv'},
         'status_code': 303,
         'regexes': [
-            r"/chellow/reports/295/output/\?process_id=11", ], },
+            r"/general_imports/11"]},
     {
-        'path': '/chellow/reports/295/output/?process_id=11',
+        'path': '/general_imports/11',
         'tries': {},
         'regexes': [
-            r"The file has been imported successfully\.", ],
-        'status_code': 200, },
+            r"The file has been imported successfully\."],
+        'status_code': 200},
 
     # Create new batch },
     {
         'name': "CSV import",
-        'path': '/chellow/reports/287/output/',
+        'path': '/supplier_contracts/30/add_batch',
         'method': 'post',
         'data': {
-            'supplier_contract_id': "55",
             'reference': "06-004",
             'description': "CSV batch"},
         'status_code': 303},
 
-    # Insert bills. Supplier contract
     {
-        'path': '/chellow/reports/321/output/',
+        'name': "Insert bills. Supplier contract",
+        'path': '/supplier_bill_imports',
         'method': 'post',
         'data': {
-            'supplier_batch_id': "4"},
+            'supplier_batch_id': '4'},
         'files': {'import_file': 'test/bills.csv'},
         'status_code': 303,
         'regexes': [
-            r"/reports/323/output/\?importer_id=2"]},
+            r"/supplier_bill_imports/2"]},
 
     # Supplier contract 57, batch 4
     {
-        'path': '/chellow/reports/323/output/?importer_id=2',
+        'path': '/supplier_bill_imports/2',
         'tries': {},
         'status_code': 200,
         'regexes': [
@@ -1708,10 +1618,9 @@ def virtual_bill_titles():
     # First create the era
     {
         'name': "Check one is able to delete an era ok",
-        'path': '/chellow/reports/305/output/',
+        'path': '/supplies/9/edit',
         'method': 'post',
         'data': {
-            'supply_id': "9",
             'start_year': "2009",
             'start_month': "01",
             'start_day': "20",
@@ -1719,80 +1628,76 @@ def virtual_bill_titles():
             'start_minute': "00",
             'insert_era': "Insert"},
         'regexes': [
-            r"/chellow/reports/7/output/\?supply_id=9"],
+            r"/supplies/9"],
         'status_code': 303},
 
     # Delete era. Supply 9
     {
-        'path': '/chellow/reports/307/output/',
+        'path': '/eras/12/edit',
         'method': 'post',
         'data': {
-            'era_id': "12",
-            'delete': "Delete", },
-        'status_code': 303, },
+            'delete': "Delete"},
+        'status_code': 303},
     {
         'name': "Check 'view' link is correct on a site in the edit world.",
-        'path': '/chellow/reports/311/output/?site_id=7',
+        'path': '/sites/7/edit',
         'regexes': [
-            r"/chellow/reports/5/output/\?site_id=7", ],
-        'status_code': 200, },
+            r"/sites/7"],
+        'status_code': 200},
     {
         'name': "Check that if era dates change, hh data move with them.",
-        'path': '/chellow/reports/305/output/',
+        'path': '/supplies/1/edit',
         'method': 'post',
         'data': {
-            'supply_id': "1",
             'start_year': "2008",
             'start_month': "7",
             'start_day': "7",
             'start_hour': "00",
             'start_minute': "00",
-            'insert_era': "Insert", },
+            'insert_era': "Insert"},
         'regexes': [
-            r"/chellow/reports/7/output/\?supply_id=1", ],
-        'status_code': 303, },
+            r"/supplies/1"],
+        'status_code': 303},
 
-    # supply 1, era 13
     {
-        'path': '/chellow/reports/301/output/?channel_id=32&start_year=2008&'
-        'start_month=07',
+        'name': "supply 1, era 13",
+        'path': '/channels/32?start_year=2008&start_month=07',
         'regexes': [
             r'<td>\s*'
-            '\[<a href="/chellow/reports/309/output/\?hh_datum_id=66">'
+            '\[<a href="/hh_data/66">'
             'edit</a>\]\s*</td>\s*<td>2008-07-07 00:00</td>\s*'
-            '<td>0.247</td>\s*<td>A</td>', ],
-        'status_code': 200, },
+            '<td>0.247</td>\s*<td>A</td>'],
+        'status_code': 200},
     {
         'name': "Check 'view' link is correct on a supply in the edit world.",
-        'path': '/chellow/reports/305/output/?supply_id=10',
+        'path': '/supplies/10/edit',
         'regexes': [
-            r"/chellow/reports/7/output/\?supply_id=10", ],
-        'status_code': 200, },
+            r"/supplies/10"],
+        'status_code': 200},
     {
         'name': "Check site nav link is correct on site HH data page.",
-        'path': '/chellow/reports/25/output/?site_code=CI004&year=2005&'
-        'month=11',
+        'path': '/sites/1/hh_data?year=2005&month=11',
         'regexes': [
-            r"/chellow/reports/5/output/\?site_id=1",
+            r"/sites/1",
 
             # Check that columns are in the right order
-            r'kWh</th>\s*<th colspan="4">\s*1 net\s*</th>', ],
-        'status_code': 200, },
+            r'kWh</th>\s*<th colspan="4">\s*1 net\s*</th>'],
+        'status_code': 200},
     {
         'name': "Check no duplicate supplies in Supplies Duration report.",
-        'path': '/chellow/reports/149/output/?start_year=2008&start_month=07&'
-        'start_day=01&start_hour=0&start_minute=0&finish_year=2008&'
-        'finish_month=07&finish_day=31&finish_hour=23&finish_minute=30',
+        'path': '/reports/149?start_year=2008&start_month=07&start_day=01&'
+        'start_hour=0&start_minute=0&finish_year=2008&finish_month=07&'
+        'finish_day=31&finish_hour=23&finish_minute=30',
         'status_code': 303},
     {
-        'path': '/chellow/reports/251/output/',
+        'path': '/downloads',
         'tries': {},
         'regexes': [
             r"000_FINISHED_watkinsexamplecom_supplies_duration\.csv"],
         'status_code': 200},
     {
-        'path': '/chellow/reports/253/output/?'
-        'name=000_FINISHED_watkinsexamplecom_supplies_duration.csv',
+        'path': '/downloads/'
+        '000_FINISHED_watkinsexamplecom_supplies_duration.csv',
         'regexes': [
             # Check starts with titles
             r'\)\s\sSupply',
@@ -1809,10 +1714,9 @@ def virtual_bill_titles():
     # Delete a day of data. Supply 1, era 13 },
     {
         'name': "Check last HH is deleted when a day of HH data is deleted.",
-        'path': '/chellow/reports/303/output/',
+        'path': '/channels/32/edit',
         'method': 'post',
         'data': {
-            'channel_id': "32",
             'start_year': "2008",
             'start_month': "07",
             'start_day': "07",
@@ -1823,40 +1727,42 @@ def virtual_bill_titles():
             'finish_day': "07",
             'finish_hour': "23",
             'finish_minute': "30",
-            'delete_data': "Delete", },
+            'delete_data': "Delete"},
+        'status_code': 303},
+    {
+        'name': "Check last HH is deleted when a day of HH data is deleted.",
+        'path': '/channels/32',
         'regexes': [
             r"Data successfully deleted\."],
         'status_code': 200},
 
     # Check the last HH of the day is deleted. Supply 1, era 13
     {
-        'path': '/chellow/reports/301/output/?channel_id=32&start_year=2008&'
-        'start_month=07',
+        'path': '/channels/32?start_year=2008&start_month=07',
         'regexes': [
             r'<tbody>\s*<tr>\s*<td>\s*'
-            '\[<a href="/chellow/reports/309/output/\?hh_datum_id=114">'
+            '\[<a href="/hh_data/114">'
             'edit</a>\]\s*</td>\s*<td>2008-07-08 00:00</td>\s*'
-            '<td>0.299</td>\s*<td>A</td>', ],
-        'status_code': 200, },
+            '<td>0.299</td>\s*<td>A</td>'],
+        'status_code': 200},
 
     # supply 1, era 1, channel 1 },
     {
         'name': "Check one is redirected to hh data when a datum is deleted.",
-        'path': '/chellow/reports/309/output/?hh_datum_id=23',
+        'path': '/hh_data/23/edit',
         'method': 'post',
         'data': {
             'delete': "Delete"},
         'status_code': 303,
         'regexes': [
-            r"/chellow/reports/301/output/\?channel_id=1"]},
+            r"/channels/1"]},
 
     # Supply 5 },
     {
         'name': "Test that it gives an error if the hhdc_contract_id is null.",
-        'path': '/chellow/reports/307/output/',
+        'path': '/eras/5/edit',
         'method': 'post',
         'data': {
-            'era_id': "5",
             'msn': "",
             'start_year': "2003",
             'start_month': "08",
@@ -1864,7 +1770,7 @@ def virtual_bill_titles():
             'start_hour': "00",
             'start_minute': "00",
             'is_ended': "false",
-            'mop_contract_id': "57",
+            'mop_contract_id': "31",
             'mop_account': "22 0883 6932 301",
             'hhdc_contract_id': "null",
             'pc_id': "9",
@@ -1882,14 +1788,14 @@ def virtual_bill_titles():
             "invalid literal for int\(\) with base 10: .*null"]},
     {
         'name': "Test that profile 05 is displayed for an era. Supply 9",
-        'path': '/chellow/reports/307/output/?era_id=9',
+        'path': '/eras/9/edit',
         'regexes': [
             r'<option value="5" selected>05 - Non-domestic, MD, load factor '
             '0-20%</option>'],
         'status_code': 200},
     {
         'name': "Try adding a party viewer.",
-        'path': '/chellow/reports/255/output/',
+        'path': '/users',
         'method': 'post',
         'data': {
             'email_address': "mishka@localhost",
@@ -1899,43 +1805,42 @@ def virtual_bill_titles():
 
         'status_code': 303,
         'regexes': [
-            r"/chellow/reports/257/output/\?user_id=5"]},
+            r"/users/5"]},
     {
         'name': "Check that the party viewer is able to view snags.",
-        'path': '/chellow/reports/37/output/?'
-        'hhdc-contract-id=53&hidden_days=5',
+        'path': '/channel_snags?hhdc_contract_id=28&days_hidden=5',
         'auth': ('mishka@localhost', 'fyodor'),
         'regexes': [
             r"<td>\s*22 0470 7514 535\s*</td>\s*<td>\s*<ul>\s*<li>\s*"
             "CH017 Parbola\s*</li>",
-            r"There are 46 snag\(s\) older than\s*5 days\s* that aren't "
-            r"ignored\.",
-            r'<a href="/chellow/reports/115/output/\?hhdc_contract_id=53">HH '
-            'contract</a>',
+            r"There are 46 snag\(s\) older than\s*5 days\s*"
+            r"that aren't ignored\.",
+            r'<a href="/hhdc_contracts/28">HH contract</a>',
             r'<li>\s*'
-            '<a href="/chellow/reports/117/output/\?snag_id=1">view</a>  '
-            '\[<a href="/chellow/reports/365/output/\?snag_id=1">edit</a>\]\s*'
+            '<a href="/channel_snags/1">view</a>\s*'
+            '\[<a href="/channel_snags/1/edit">edit</a>\]\s*'
             '</li>'],
         'status_code': 200},
     {
         'name': "Make sure everything's there on the home page.",
-        'path': '/chellow/reports/1/output/',
+        'path': '/',
         'auth': ('watkins@example.com', 'alan'),
         'regexes': [
-            r'<a href="/chellow/reports/133/output/">Meter Payment Types</a>',
-            r'<a href="/chellow/reports/337/output/">\s*Sources\s*</a>',
-            r'<a href="/chellow/reports/341/output/">\s*Generator Types\s*'
-            '</a>'],
+            r'<a href="/meter_payment_types">Meter Payment Types</a>',
+            r'<a href="/sources">\s*Sources\s*</a>',
+            r'<a href="/generator_types">\s*Generator Types\s*'
+            '</a>',
+            r'<a href="/csv_sites_monthly_duration">Download</a>',
+            r'<a href="/ods_scenario_runner">\s*Scenario Runner\s*</a>'],
         'status_code': 200},
 
-    # Supplier contract 59
+    # Supplier contract 47
     {
         'name': "Test deleting the only rate script attached to a supplier "
         "contract.",
-        'path': '/chellow/reports/319/output/',
+        'path': '/supplier_rate_scripts/208/edit',
         'method': 'post',
         'data': {
-            'supplier_rate_script_id': "234",
             'delete': "Delete"},
         'regexes': [
             r"You can&#39;t delete the last rate script\."],
@@ -1943,10 +1848,9 @@ def virtual_bill_titles():
     {
         'name': "Try adding a second rate script (set to 'ongoing'), and see "
         "if the era can be updated.",
-        'path': '/chellow/reports/325/output/',
+        'path': '/supplier_contracts/33/add_rate_script',
         'method': 'post',
         'data': {
-            'supplier_contract_id': "59",
             'start_year': "2009",
             'start_month': "08",
             'start_day': "16",
@@ -1957,19 +1861,18 @@ def virtual_bill_titles():
 
     # Supply 1
     {
-        'path': '/chellow/reports/307/output/',
+        'path': '/eras/13/edit',
         'method': 'post',
         'data': {
-            'era_id': "13",
             'start_year': "2008",
             'start_month': "07",
             'start_day': "07",
             'start_hour': "00",
             'start_minute': "00",
             'is_ended': "false",
-            'mop_contract_id': "57",
+            'mop_contract_id': "31",
             'mop_account': "mc-22 0470 7514 535",
-            'hhdc_contract_id': "53",
+            'hhdc_contract_id': "28",
             'hhdc_account': "01",
             'msn': "",
             'pc_id': "9",
@@ -1979,59 +1882,40 @@ def virtual_bill_titles():
             'exp_llfc_code': "581",
             'exp_mpan_core': "22 0470 7514 535",
             'exp_sc': "150",
-            'exp_supplier_contract_id': "59",
+            'exp_supplier_contract_id': "33",
             'exp_supplier_account': "010"},
         'status_code': 303},
     {
         'name': "Check updating of HHDC contract state.",
-        'path': '/chellow/reports/279/output/',
+        'path': '/hhdc_contracts/28/edit',
         'method': 'post',
         'data': {
-            'hhdc_contract_id': "53",
             'state': """{
 'last_import_keys': {'.': '1960-11-30 00:00_example.csv'}}
 """,
             'update_state': "Update State"},
         'status_code': 303},
     {
-        'path': '/chellow/reports/115/output/?hhdc_contract_id=53',
+        'path': '/hhdc_contracts/28',
         'status_code': 200,
         'regexes': [
             r"\{\s*&#39;last_import_keys&#39;: \{&#39;.&#39;: "
             "&#39;1960-11-30 00:00_example.csv&#39;\}\}",
 
             # Check link to channel snags
-            r"hidden_days",
+            r"days_hidden",
 
             # Check link to add a rate script
             r'Rate Scripts\s*'
-            '\[<a href="/chellow/reports/383/output/\?hhdc_contract_id=53">'
+            '\[<a href="/hhdc_contracts/28/add_rate_script">'
             'add</a>\]']},
-
-    # Requires that no other user reports have been created. },
-    {
-        'name': "Check adding of user report.",
-        'path': '/chellow/reports/',
-        'method': 'post',
-        'data': {
-            'is_core': "false",
-            'name': "Minority Report"},
-        'status_code': 303,
-        'regexes': [
-            r"/reports/2/"]},
-    {
-        'path': '/chellow/reports/2/',
-        'status_code': 200,
-        'regexes': [
-            r"Minority Report"]},
 
     # Insert era
     {
         'name': "Check dates are correct for four eras.",
-        'path': '/chellow/reports/305/output/',
+        'path': '/supplies/1/edit',
         'method': 'post',
         'data': {
-            'supply_id': "1",
             'start_year': "2008",
             'start_month': "08",
             'start_day': "07",
@@ -2040,10 +1924,9 @@ def virtual_bill_titles():
             'insert_era': "insert_era"},
         'status_code': 303},
     {
-        'path': '/chellow/reports/305/output/',
+        'path': '/supplies/1/edit',
         'method': 'post',
         'data': {
-            'supply_id': "1",
             'start_year': "2008",
             'start_month': "09",
             'start_day': "07",
@@ -2052,26 +1935,25 @@ def virtual_bill_titles():
             'insert_era': "insert_era"},
         'status_code': 303},
     {
-        'path': '/chellow/reports/305/output/?supply_id=1',
+        'path': '/supplies/1/edit',
         'regexes': [
             r"<tr>\s*<td>2003-08-03 00:00</td>\s*<td>2008-07-06 23:30"],
         'status_code': 200},
     {
-        'name': "Test 'view' link from supplier contract rate scripts.",
-        'path': '/chellow/reports/325/output/?supplier_contract_id=59',
+        'name': "Test 'view' link from supplier rate script add.",
+        'path': '/supplier_contracts/33/add_rate_script',
         'regexes': [
-            r"/chellow/reports/77/output/\?supplier_contract_id=59"]},
+            r"/supplier_contracts/33"]},
     {
         'name': "Check 'HH Contract' option is there. Supply 9.",
-        'path': '/chellow/reports/307/output/?era_id=9',
+        'path': '/eras/9/edit',
         'regexes': [
-            r'<option value="53">HH contract</option>\s*</select>']},
+            r'<option value="28">HH contract</option>\s*</select>']},
     {
         'name': "Try bulk delete of HHDC snags.",
-        'path': '/chellow/reports/279/output/',
+        'path': '/hhdc_contracts/28/edit',
         'method': 'post',
         'data': {
-            'hhdc_contract_id': "53",
             'ignore_year': "2010",
             'ignore_month': "01",
             'ignore_day': "13",
@@ -2081,10 +1963,9 @@ def virtual_bill_titles():
         'status_code': 303},
     {
         'name': "Check python compile error gives a reasonable message.",
-        'path': '/chellow/reports/317/output/',
+        'path': '/supplier_contracts/30/edit',
         'method': 'post',
         'data': {
-            'supplier_contract_id': "55",
             'party_id': "22",  # BIZZ
             'name': "Half-hourlies 2007",
             'charge_script': """
@@ -2095,28 +1976,31 @@ def virtual_bill(supply, startDate, finishDate, pw):
         'regexes': [
             #  Different errors for CPython and Jython
             r"<li>invalid syntax \(&lt;unknown&gt;, line 3\)</li>|"
-            r"<li>mismatched input &#39;error&#39; expecting NEWLINE "
             r"\(&lt;unknown&gt;, line 3\)</li>"],
         'status_code': 400},
 
     # Put back to how it was before
     {
-        'path': '/chellow/reports/317/output/',
+        'path': '/supplier_contracts/30/edit',
         'method': 'post',
         'data': {
-            'supplier_contract_id': "55",
             'party_id': "22",
             'name': "Half-hourlies 2007",
-            'charge_script': """from net.sf.chellow.monad import Monad
-import datetime
+            'charge_script': """
+from operator import itemgetter
+from datetime import datetime as Datetime
 import pytz
 from dateutil.relativedelta import relativedelta
+from chellow.models import db
+from chellow.utils import HH
+import chellow.triad
+import chellow.computer
+import chellow.ccl
+import chellow.bsuos
+import chellow.tlms
+import chellow.duos
+import chellow.system_price
 
-Monad.getUtils()['impt'](
-    globals(), 'db', 'utils', 'templater', 'triad', 'computer', 'ccl', 'bsuos',
-    'tlms', 'duos', 'system_price')
-
-HH = utils.HH
 
 def virtual_bill_titles():
     return [
@@ -2206,10 +2090,10 @@ def displaced_virtual_bill(supply_source):
 
 
     supply_source.is_green = False
-    duos.duos_vb(supply_source)
-    ccl.ccl(supply_source)
+    chellow.duos.duos_vb(supply_source)
+    chellow.ccl.ccl(supply_source)
 
-    for hh in supply_source.hh_data:
+    for hh in sorted(supply_source.hh_data, key=itemgetter('start-date')):
         is_weekday = hh['utc-day-of-week'] < 5
         if is_weekday and hh['utc-month'] in (1, 12) and \
                 16 < hh['utc-decimal-hour'] <= 19:
@@ -2238,25 +2122,26 @@ def displaced_virtual_bill(supply_source):
             bill['ccl-gbp'] += hh['ccl-gbp']
 
 
-    triad.triad_bill(supply_source)
-    tlms.hh(supply_source)
-    bsuos.hh(supply_source)
-    system_price.hh(supply_source)
+    chellow.triad.triad_bill(supply_source)
+    chellow.tlms.hh(supply_source)
+    chellow.bsuos.hh(supply_source)
+    chellow.system_price.hh(supply_source)
 
-    for rate_name, rate_set in supply_source.supplier_rate_sets.iteritems():
+    for rate_name, rate_set in supply_source.supplier_rate_sets.items():
         if len(rate_set) == 1:
             bill[rate_name] = rate_set.pop()
 
-    for k in bill.keys():
+    for k in list(bill.keys()):
         if k.startswith('duos-reactive-'):
             del bill[k]
 
-    bill['net-gbp'] = sum(v for k, v in bill.iteritems() if k[-4:] == '-gbp')
+    bill['net-gbp'] = sum(
+        v for k, v in sorted(bill.items()) if k[-4:] == '-gbp')
 
 
 def virtual_bill(supply_source):
-    duos.duos_vb(supply_source)
-    ccl.ccl(supply_source)
+    chellow.duos.duos_vb(supply_source)
+    chellow.ccl.ccl(supply_source)
     bill = supply_source.supplier_bill
     bill.update(
         {
@@ -2275,7 +2160,7 @@ def virtual_bill(supply_source):
     supply_capacity = supply_source.sc
     supply_source.is_green = False
 
-    for datum in supply_source.hh_data:
+    for datum in sorted(supply_source.hh_data, key=itemgetter('start-date')):
         is_weekday = datum['utc-day-of-week'] < 5
         if is_weekday and datum['utc-month'] in (1, 12) and \
                 16 < datum['utc-decimal-hour'] <= 19:
@@ -2283,12 +2168,12 @@ def virtual_bill(supply_source):
         elif is_weekday and datum['utc-month'] in (2, 11) and \
                 16 < datum['utc-decimal-hour'] <= 19:
             slot_key = 'winter-low-pk'
-        elif is_weekday and \
-                (datum['utc-month'] > 10 or datum['utc-month'] < 4) and \
+        elif is_weekday and (datum['utc-month'] > 10 or \
+                datum['utc-month'] < 4) and \
                 8 < datum['utc-decimal-hour'] <= 20:
             slot_key = 'winter-off-pk'
-        elif is_weekday and \
-                (datum['utc-month'] > 3 or datum['utc-month'] < 11) and \
+        elif is_weekday and (datum['utc-month'] > 3 or \
+                datum['utc-month'] < 11) and \
                 8 < datum['utc-decimal-hour'] <= 20:
             slot_key = 'summer-pk'
         elif 0 < datum['utc-decimal-hour'] <= 7:
@@ -2303,7 +2188,7 @@ def virtual_bill(supply_source):
             bill['ccl-kwh'] += datum['ccl-kwh']
             bill['ccl-gbp'] += datum['ccl-gbp']
 
-    month_begin = datetime.datetime(
+    month_begin = Datetime(
         supply_source.start_date.year, supply_source.start_date.month, 1,
         tzinfo=pytz.utc)
     month_end = month_begin + relativedelta(months=1) - HH
@@ -2311,40 +2196,40 @@ def virtual_bill(supply_source):
     bill['data-collection-gbp'] += 5.89
     bill['settlement-gbp'] += 88
 
-    triad.triad_bill(supply_source)
-    tlms.hh(supply_source)
-    bsuos.hh(supply_source)
-    system_price.hh(supply_source)
+    chellow.triad.triad_bill(supply_source)
+    chellow.tlms.hh(supply_source)
+    chellow.bsuos.hh(supply_source)
+    chellow.system_price.hh(supply_source)
     rates = supply_source.hh_rate(
         db_id, supply_source.finish_date, 'gsp_gbp_per_kwh')
     for slot_name in slot_names:
         slot_keys = slots[slot_name]
         bill[slot_keys['gbp']] = bill[slot_keys['gsp-kwh']] * rates[slot_name]
 
-    for rate_name, rate_set in supply_source.supplier_rate_sets.iteritems():
+    for rate_name, rate_set in supply_source.supplier_rate_sets.items():
         if len(rate_set) == 1:
             bill[rate_name] = rate_set.pop()
 
-    bill['net-gbp'] = sum(v for k, v in bill.iteritems() if k[-4:] == '-gbp')
+    bill['net-gbp'] = sum(
+        v for k, v in sorted(bill.items()) if k.endswith('-gbp'))
 """,
             'properties': "{}"},
         'status_code': 303},
     {
         'name': "Check that when there are gt 2 eras, the previous era is "
         "updated. Supply 1",
-        'path': '/chellow/reports/307/output/',
+        'path': '/eras/15/edit',
         'method': 'post',
         'data': {
-            'era_id': "15",
             'start_year': "2008",
             'start_month': "09",
             'start_day': "06",
             'start_hour': "00",
             'start_minute': "00",
             'is_ended': "false",
-            'mop_contract_id': "57",
+            'mop_contract_id': "31",
             'mop_account': "mc-22 0470 7514 535",
-            'hhdc_contract_id': "53",
+            'hhdc_contract_id': "28",
             'hhdc_account': "01",
             'msn': "",
             'pc_id': "9",
@@ -2354,13 +2239,13 @@ def virtual_bill(supply_source):
             'exp_llfc_code': "581",
             'exp_mpan_core': "22 0470 7514 535",
             'exp_sc': "150",
-            'exp_supplier_contract_id': "55",
+            'exp_supplier_contract_id': "30",
             'exp_supplier_account': "010"},
         'status_code': 303},
 
     # Supply 1
     {
-        'path': '/chellow/reports/307/output/?era_id=14',
+        'path': '/eras/14/edit',
         'regexes': [
             r'<select name="finish_day">\s*<option value="1">01</option>\s*'
             '<option value="2">02</option>\s*<option value="3">03</option>\s*'
@@ -2368,18 +2253,18 @@ def virtual_bill(supply_source):
             '<option value="5" selected>05</option>']},
     {
         'name': "Check supplies snapshot",
-        'path': '/chellow/reports/33/output/?date_year=2005&date_month=12&'
-        'date_day=31&date_hour=23&date_minute=30',
+        'path': '/reports/33?date_year=2005&date_month=12&date_day=31&'
+        'date_hour=23&date_minute=30',
         'status_code': 303},
     {
-        'path': '/chellow/reports/251/output/',
+        'path': '/downloads',
         'tries': {'max': 20, 'period': 1},
         'regexes': [
             r"001_FINISHED_watkinsexamplecom_supplies_snapshot\.csv"],
         'status_code': 200},
     {
-        'path': '/chellow/reports/253/output/?'
-        'name=001_FINISHED_watkinsexamplecom_supplies_snapshot.csv',
+        'path': '/downloads/'
+        '001_FINISHED_watkinsexamplecom_supplies_snapshot.csv',
         'tries': {'max': 10, 'period': 1},
         'status_code': 200,
         'regexes': [
@@ -2393,18 +2278,18 @@ def virtual_bill(supply_source):
 
     {
         'name': "Check supplies snapshot mandatory kw",
-        'path': '/chellow/reports/33/output/?supply_id=1&date_year=2008&'
-        'date_month=9&date_day=30&date_hour=23&date_minute=30',
+        'path': '/reports/33?supply_id=1&date_year=2008&date_month=9&'
+        'date_day=30&date_hour=23&date_minute=30',
         'status_code': 303},
     {
-        'path': '/chellow/reports/251/output/',
+        'path': '/downloads',
         'tries': {'max': 20, 'period': 1},
         'regexes': [
             r"002_FINISHED_watkinsexamplecom_supplies_snapshot\.csv"],
         'status_code': 200, },
     {
-        'path': '/chellow/reports/253/output/?'
-        'name=002_FINISHED_watkinsexamplecom_supplies_snapshot.csv',
+        'path': '/downloads/'
+        '002_FINISHED_watkinsexamplecom_supplies_snapshot.csv',
         'tries': {},
         'status_code': 200,
         'regexes': [
@@ -2437,10 +2322,9 @@ def virtual_bill(supply_source):
 
     {
         'name': "Generate an orphaned hh data message. Supply 5",
-        'path': '/chellow/reports/307/output/',
+        'path': '/eras/5/edit',
         'method': 'post',
         'data': {
-            'era_id': "5",
             'start_year': "2010",
             'start_month': "08",
             'start_day': "03",
@@ -2452,14 +2336,14 @@ def virtual_bill(supply_source):
             'mtc_code': "845",
             'cop_id': "5",
             'ssc_code': "",
-            'mop_contract_id': "57",
+            'mop_contract_id': "31",
             'mop_account': "mc-22 0883 6932 301",
-            'hhdc_contract_id': "53",
+            'hhdc_contract_id': "28",
             'hhdc_account': "22 0883 6932 301",
             'imp_llfc_code': "570",
             'imp_mpan_core': "22 0883 6932 301",
             'imp_sc': "350",
-            'imp_supplier_contract_id': "55",
+            'imp_supplier_contract_id': "30",
             'imp_supplier_account': "01"},
         'status_code': 400,
         'regexes': [
@@ -2468,10 +2352,9 @@ def virtual_bill(supply_source):
 
     # Generate similar one for ongoing orphaned data
     {
-        'path': '/chellow/reports/307/output/',
+        'path': '/eras/5/edit',
         'method': 'post',
         'data': {
-            'era_id': "5",
             'start_year': "2003",
             'start_month': "08",
             'start_day': "03",
@@ -2488,14 +2371,14 @@ def virtual_bill(supply_source):
             'mtc_code': "845",
             'cop_id': "5",
             'ssc_code': "",
-            'mop_contract_id': "57",
+            'mop_contract_id': "31",
             'mop_account': "mc-22 0883 6932 301",
-            'hhdc_contract_id': "53",
+            'hhdc_contract_id': "28",
             'hhdc_account': "22 0883 6932 301",
             'imp_llfc_code': "570",
             'imp_mpan_core': "22 0883 6932 301",
             'imp_sc': "350",
-            'imp_supplier_contract_id': "55",
+            'imp_supplier_contract_id': "30",
             'imp_supplier_account': "01"},
         'status_code': 400,
         'regexes': [
@@ -2505,7 +2388,7 @@ def virtual_bill(supply_source):
     # Test deleting of supplier contracts
     {
         'name': "Create a new supplier contract",
-        'path': '/chellow/reports/315/output/',
+        'path': '/supplier_contracts/add',
         'method': 'post',
         'data': {
             'participant_id': "485",  # RWED
@@ -2518,27 +2401,26 @@ def virtual_bill(supply_source):
             'charge_script': "",
             'properties': "{}", },
         'regexes': [
-            r"/reports/77/output/\?supplier_contract_id=60"],
+            r"/supplier_contracts/34"],
         'status_code': 303},
 
     {
         'name': "Now delete the contract",
-        'path': '/chellow/reports/317/output/',
+        'path': '/supplier_contracts/34/edit',
         'method': 'post',
         'data': {
-            'supplier_contract_id': "60",
             'delete': "Delete"},
         'status_code': 303},
 
     {
         'name': "Check that it's really gone",
-        'path': '/chellow/reports/317/output/?supplier_contract_id=60',
+        'path': '/supplier_contracts/48',
         'status_code': 404},
 
     # Create an HHDC contract
     {
         'name': "Test deleting of HHDC contracts",
-        'path': '/chellow/reports/277/output/',
+        'path': '/hhdc_contracts/add',
         'method': 'post',
         'data': {
             'participant_id': "527",  # UKDC
@@ -2550,75 +2432,41 @@ def virtual_bill(supply_source):
             'start_minute': "00"},
         'status_code': 303,
         'regexes': [
-            r"/chellow/reports/115/output/\?hhdc_contract_id=61"]},
+            r"/hhdc_contracts/35"]},
 
-    # Now delete the contract
     {
-        'path': '/chellow/reports/279/output/',
+        'name': "Now delete the contract",
+        'path': '/hhdc_contracts/35/edit',
         'method': 'post',
         'data': {
-            'hhdc_contract_id': "61",
             'delete': "Delete"},
         'status_code': 303},
 
     # Check that it's really gone
     {
-        'path': '/chellow/reports/115/output/?hhdc_contract_id=61',
+        'path': '/hhdc_contracts/35',
         'status_code': 404},
 
     # Load in march's HH data
     {
         'name': "Check TRIAD calculation for March",
-        'path': '/chellow/reports/293/output/',
+        'path': '/general_imports',
         'method': 'post',
         'files': {'import_file': 'test/hh_data_long.csv'},
         'status_code': 303,
         'regexes': [
-            r"/reports/295/output/\?process_id=12"]},
+            r"/general_imports/12"]},
     {
-        'path': '/chellow/reports/295/output/?process_id=12',
+        'path': '/general_imports/12',
         'tries': {'max': 20, 'period': 1},
         'status_code': 200,
         'regexes': [
             r"The file has been imported successfully\."]},
 
     {
-        'name': "Create the virtual bill",
-        'path': '/chellow/reports/265/output/',
-        'method': 'post',
-        'data': {
-            'is_core': "false",
-            'name': "TRIAD Estimates",
-            'start_year': "2000",
-            'start_month': "01",
-            'start_day': "03",
-            'start_hour': "00",
-            'start_minute': "00"},
-        'regexes': [
-            r"/reports/267/output/\?non_core_contract_id=62"],
-        'status_code': 303},
-
-    {
-        'name': "Edit the rate script",
-        'path': '/chellow/reports/273/output/',
-        'method': 'post',
-        'data': {
-            'rate_script_id': "238",
-            'start_year': "2000",
-            'start_month': "01",
-            'start_day': "03",
-            'start_hour': "00",
-            'start_minute': "00",
-            'script': """
-def triad_estimates():
-    return {}
-"""},
-        'status_code': 303},
-    {
-        'path': '/chellow/reports/291/output/?supply_id=7&start_year=2009&'
-        'start_month=03&start_day=01&start_hour=00&start_minute=0&'
-        'finish_year=2009&finish_month=03&finish_day=31&finish_hour=23&'
-        'finish_minute=30',
+        'path': '/reports/291?supply_id=7&start_year=2009&start_month=03&'
+        'start_day=01&start_hour=00&start_minute=0&finish_year=2009&'
+        'finish_month=03&finish_day=31&finish_hour=23&finish_minute=30',
         'status_code': 200,
         'regexes': [
             r'"Imp MPAN Core","Exp MPAN Core","Site Code","Site Name",'
@@ -2695,79 +2543,79 @@ def triad_estimates():
             '"imp-supplier-triad-all-estimates-gbp"'
             ',"imp-supplier-problem"',
             r'"22 4862 4512 332","","CH023","Treglisson","11640077",'
-            '"2009-03-01 00:00","2009-03-31 23:30","","10","","","10","","",'
-            '"10614.4095537","","148925.71","0.00456","679.1012376","5.89",'
-            '"230","31","0.0368","262.384","169.72","31","0.0368",'
-            '"193.616576","105487.44","770.058312","43438.27","112.939502",'
-            '"0.0033","0.0","","88","43401.25","46092.1275","288.794834064",'
-            '"54364.73","57735.34326","361.74656673","0","0","0.0","0","0",'
-            '"0.0","51159.73","54331.63326","340.420281354","0","0","0.0",'
-            '"159627.381103","","146.91999205","2009-01-06 17:00","288.82",'
-            '"A","1.07","309.0374","2008-12-01 17:00","384.44","A","1.07",'
-            '"411.3508","2008-12-15 17:00","185.36","A","1.07","198.3352",'
-            '"306.241133333","25.212997","7721.25677601","2007-12-17 17:00",'
-            '"0","X","1.07","0.0","2008-01-03 17:00","43.6","A","1.062",'
-            '"46.3032","2007-11-26 17:00","0","X","1.07","0.0","15.4344",'
-            '"25.212997","1","32.4289567414","12","-389.147480897",""',
+            r'"2009-03-01 00:00","2009-03-31 23:30","","10","","","10","","",'
+            r'"10614.409553652016","","148925.71000000002","0.00456",'
+            r'"679.1012375999993","5.89","230","31","0.0368","262.384",'
+            r'"169.72000000000003","31","0.0368","193.616576",'
+            r'"105487.43999999983","770.0583120000015","43438.26999999999",'
+            r'"112.93950200000005","0.0033","0.0","","88","43401.25000000001",'
+            r'"46092.12750000003","288.79483406400016","54364.72999999998",'
+            r'"57735.34326","361.746566729856","0","0","0.0","0","0","0.0",'
+            r'"51159.730000000054","54331.63325999999","340.4202813538559",'
+            r'"0","0","0.0","159627.38110258686","","146.91999204976776",'
+            r'"2009-01-06 17:00","288.82","A","1.07","309.0374",'
+            r'"2008-12-01 17:00","384.44","A","1.07","411.35080000000005",'
+            r'"2008-12-15 17:00","185.36","A","1.07","198.33520000000001",'
+            r'"306.2411333333334","25.212997","7721.256776009935",'
+            r'"2007-12-17 17:00","0","X","1.07","0.0","2008-01-03 17:00",'
+            r'"43.6","A","1.062","46.303200000000004","2007-11-26 17:00","0",'
+            r'"X","1.07","0.0","15.434400000000002","25.212997","1",'
+            r'"32.42895674140001","12","-389.14748089680006",""',
             r"text/csv",
             r"supply_virtual_bills_7.csv"]},
 
     # Try looking at it using the TRIAD report
     {
-        'path': '/chellow/reports/41/output/?supply_id=4&year=2010',
+        'path': '/reports/41?supply_id=4&year=2010',
         'status_code': 200,
         'regexes': [
             r'CI005,"Wheal Rodney","1",net,"","22 6158 2968 220",'
-            '"2010-01-07 17:00","0","X","1.058","0.0","2010-01-25 17:00","0",'
-            '"X","1.058","0.0","2009-12-15 17:00","0","X","1.058","0.0","0.0",'
-            '"25.631634","0.0","22 3479 7618 470","2010-01-07 17:00","0","X",'
-            '"1.058","0.0","2010-01-25 17:00","0","X","1.058","0.0",'
-            '"2009-12-15 17:00","0","X","1.058","0.0","0.0","25.631634",'
-            '"0.0"']},
+            r'"2010-01-07 17:00","0","X","1.058","0.0","2010-01-25 17:00","0",'
+            r'"X","1.058","0.0","2009-12-15 17:00","0","X","1.058","0.0",'
+            r'"0.0","25.631634000000002","0.0","22 3479 7618 470",'
+            r'"2010-01-07 17:00","0","X","1.058","0.0","2010-01-25 17:00","0",'
+            r'"X","1.058","0.0","2009-12-15 17:00","0","X","1.058","0.0",'
+            r'"0.0","25.631634000000002","0.0"']},
     {
         'name': "Check we can delete a rate script (when it's not the only "
-        "one). Supplier contract 59.",
-        'path': '/chellow/reports/319/output/',
+        "one). Supplier contract 33.",
+        'path': '/supplier_rate_scripts/208/edit',
         'method': 'post',
         'data': {
-            'supplier_rate_script_id': "234",
             'delete': "Delete"},
         'status_code': 303},
     {
         'name': "Try 'Supply MPAN Months' report.",
-        'path': '/chellow/reports/15/output/?supply_id=2&is_import=true&'
-        'year=2014&years=1',
+        'path': '/supplies/2/months?is_import=true&year=2014&years=1',
         'regexes': [
             r"&gt;\s*Import\s*data by month"],
         'status_code': 200},
     {
         'name': "Try 'Supply Raw HH Data' report.",
-        'path': '/chellow/reports/17/output/?supply_id=1&months=1&'
-        'finish_year=2008&finish_month=07',
+        'path': '/supplies/1/hh_data?months=1&finish_year=2008&'
+        'finish_month=07',
         'regexes': [
             r'<option value="07" selected>07</option>'],
         'status_code': 200},
     {
         'name': "Try site graph report.",
-        'path': '/chellow/reports/21/output/?site_id=7&finish_year=2008&'
-        'finish_month=7&months=1',
+        'path': '/sites/7/used_graph?finish_year=2008&finish_month=7&months=1',
         'status_code': 200},
     {
-        'name': "Try era graph report.",
-        'path': '/chellow/reports/23/output/?site_id=7&finish_year=2008&'
-        'finish_month=7&months=1',
+        'name': "Try generation graph report.",
+        'path': '/sites/7/gen_graph?finish_year=2008&finish_month=7&months=1',
         'status_code': 200},
     {
         'name': "Try 'Site HH bulk figures' report.",
-        'path': '/chellow/reports/29/output/?site_id=5&type=used&months=1&'
-        'finish_year=2008&finish_month=01',
+        'path': '/reports/29?site_id=5&type=used&months=1&finish_year=2008&'
+        'finish_month=01',
         'regexes': [
             r"CH023,used,2008-01-01,3.77"],
         'status_code': 200},
     {
         'name': "Try HHDC virtual bills.",
-        'path': '/chellow/reports/81/output/?hhdc_contract_id=53&months=1&'
-        'end_year=2008&end_month=7',
+        'path': '/reports/81?hhdc_contract_id=28&months=1&end_year=2008&'
+        'end_month=7',
         'status_code': 200,
         'regexes': [
             r"Import MPAN Core, Export MPAN Core, Start Date, Finish Date,"
@@ -2779,57 +2627,55 @@ def triad_estimates():
     # Can we make a supply have source sub and view site level hh data okay?
     {
         'name': "CSV Sites HH Data",
-        'path': '/chellow/reports/305/output/',
+        'path': '/supplies/1/edit',
         'method': 'post',
 
         # Can we update a supply name?
 
         # Can we update a supply source?
         'data': {
-            'supply_id': "1",
             'name': "Hello",
             'source_id': "2",
             'generator_type_id': "1",
             'gsp_group_id': "11"},
         'regexes': [
-            r"/reports/7/output/\?supply_id=1"],
+            r"/supplies/1"],
         'status_code': 303},
     {
-        'path': '/chellow/reports/183/output/?start_year=2008&start_month=07&'
-        'start_day=1&start_hour=0&start_minute=0&finish_year=2008&'
-        'finish_month=07&finish_day=31&finish_hour=23&finish_minute=30',
+        'path': '/reports/183?start_year=2008&start_month=07&start_day=1&'
+        'start_hour=0&start_minute=0&finish_year=2008&finish_month=07&'
+        'finish_day=31&finish_hour=23&finish_minute=30',
         'status_code': 200},
     {
         'name': "CSV Supplies Duration",
-        'path': '/chellow/reports/149/output/?start_year=2009&start_month=03&'
-        'start_day=1&start_hour=0&start_minute=0&finish_year=2009&'
-        'finish_month=03&finish_day=31&finish_hour=23&finish_minute=30',
+        'path': '/reports/149?start_year=2009&start_month=03&start_day=1&'
+        'start_hour=0&start_minute=0&finish_year=2009&finish_month=03&'
+        'finish_day=31&finish_hour=23&finish_minute=30',
         'status_code': 303},
     {
-        'path': '/chellow/reports/251/output/',
+        'path': '/downloads',
         'tries': {'max': 20, 'period': 1},
         'regexes': [
             r"003_FINISHED_watkinsexamplecom_supplies_duration\.csv"],
-        'status_code': 200, },
+        'status_code': 200},
     {
-        'path': '/chellow/reports/253/output/?'
-        'name=003_FINISHED_watkinsexamplecom_supplies_duration.csv',
+        'path': '/downloads/'
+        '003_FINISHED_watkinsexamplecom_supplies_duration.csv',
         'tries': {},
         'status_code': 200,
         'regexes': [
             r'"7","1","net","","CH023","Treglisson","2009-03-01 00:00",'
-            '"2009-03-31 23:30","00","845","5","","0","hh",540,'
-            '22 4862 4512 332,230,Half-hourlies 2007,148925.71,0,158159.10402,'
-            '399.72,2009-03-13 08:00,None,0,,,,,0,0,,0,,None,1488']},
+            r'"2009-03-31 23:30","00","845","5","","0","hh",540,'
+            r'22 4862 4512 332,230,Half-hourlies 2007,148925.71000000002,0,'
+            r'158159.10402,399.72,2009-03-13 08:00,None,0,,,,,0,0,,0,,None,'
+            r'1488']},
 
     # Insert rate script
     {
         'name': "Manipulate dno contracts",
-        'path': '/chellow/reports/243/output/',
+        'path': '/dno_contracts/12/add_rate_script',
         'method': 'post',
         'data': {
-            'dno_contract_id': "37",
-
             # DNO 10
             'start_year': "2010",
             'start_month': "05",
@@ -2837,15 +2683,14 @@ def triad_estimates():
             'start_hour': "00",
             'start_minute': "00"},
         'regexes': [
-            r"/chellow/reports/69/output/\?dno_rate_script_id=239"],
+            r"/dno_rate_scripts/212"],
         'status_code': 303},
 
     # Test bad syntax gives an error
     {
-        'path': '/chellow/reports/285/output/',
+        'path': '/dno_rate_scripts/212/edit',
         'method': 'post',
         'data': {
-            'dno_rate_script_id': "239",
             'start_year': "2010",
             'start_month': "05",
             'start_day': "01",
@@ -2857,19 +2702,18 @@ def triad_estimates():
 
     # Delete rate script
     {
-        'path': '/chellow/reports/285/output/',
+        'path': '/dno_rate_scripts/212/edit',
         'method': 'post',
         'data': {
-            'dno_rate_script_id': "239",
             'delete': "Delete"},
         'status_code': 303},
     {
         'name': "CSV Sites Monthly Duration",
-        'path': '/chellow/reports/161/output/?site_id=5&months=1&'
-        'finish_year=2009&finish_month=03',
+        'path': '/reports/161?site_id=5&months=1&finish_year=2009&'
+        'finish_month=03',
         'status_code': 303},
     {
-        'path': '/chellow/reports/251/output/',
+        'path': '/downloads',
         'tries': {'max': 40, 'period': 1},
         'regexes': [
             r"004_FINISHED_watkinsexamplecom_site_monthly_duration_for_"
@@ -2877,11 +2721,11 @@ def triad_estimates():
         'status_code': 200},
     {
         'name': "Unified Supplies Monthly Duration",
-        'path': '/chellow/reports/247/output/?site_id=5&months=1&'
-        'finish_year=2009&finish_month=03',
+        'path': '/reports/247?site_id=5&months=1&finish_year=2009&'
+        'finish_month=03',
         'status_code': 303},
     {
-        'path': '/chellow/reports/251/output/',
+        'path': '/downloads',
         'tries': {'max': 40, 'period': 1},
         'regexes': [
             r'005_FINISHED_watkinsexamplecom_unified_supplies_monthly_'
@@ -2889,7 +2733,7 @@ def triad_estimates():
         'status_code': 200},
     {
         'name': "CSV Sites TRIAD",
-        'path': '/chellow/reports/181/output/?site_id=3&year=2010',
+        'path': '/reports/181?site_id=3&year=2010',
         'regexes': [
             "Site Code,",
             '"CI005","Wheal Rodney",2010-01-07 17:00,'],
@@ -2899,19 +2743,19 @@ def triad_estimates():
     # function.
     {
         'name': "CSV Sites Monthly Duration",
-        'path': '/chellow/reports/161/output/?site_id=4&months=1&'
-        'finish_year=2009&finish_month=04',
+        'path': '/reports/161?site_id=4&months=1&finish_year=2009&'
+        'finish_month=04',
         'status_code': 303},
     {
-        'path': '/chellow/reports/251/output/',
+        'path': '/downloads',
         'tries': {'max': 30, 'period': 1},
         'regexes': [
             r"006_FINISHED_watkinsexamplecom_site_monthly_duration_for_"
             r"CI017_1_to_2009_4\.csv"],
         'status_code': 200},
     {
-        'path': '/chellow/reports/253/output/?'
-        'name=006_FINISHED_watkinsexamplecom_site_monthly_duration_for_'
+        'path': '/downloads/'
+        '006_FINISHED_watkinsexamplecom_site_monthly_duration_for_'
         'CI017_1_to_2009_4.csv',
         'tries': {},
         'status_code': 200,
@@ -2924,9 +2768,9 @@ def triad_estimates():
             "Metered Displaced GBP,Metered Exported GBP,Metered Used GBP,"
             "Metered 3rd Party Import GBP,Billed Imported kWh,"
             "Billed Imported GBP,Metering Type,Problem",
-            r'"CI017","Roselands","","net","","2009-04-30 23:30","0","0","0",'
-            '"0","0","0","0","0","2821.89","0","0","2821.89","0","0","0","hh",'
-            '"'
+            r'"CI017","Roselands","","net","","2009-04-30 23:30","0.0","0",'
+            r'"0","0.0","0","0","0","0","2821.89","0","0","2821.89","0","0",'
+            r'"0","hh","'
             "Can't find the virtual_bill function in the supplier "
             'contract. "']},
 
@@ -2934,19 +2778,19 @@ def triad_estimates():
     # virtual bill function.
     {
         'name': "Unified Supplies Monthly Duration - no virtual bill function",
-        'path': '/chellow/reports/247/output/?site_id=4&months=1&'
-        'finish_year=2009&finish_month=04',
+        'path': '/reports/247?site_id=4&months=1&finish_year=2009&'
+        'finish_month=04',
         'status_code': 303},
     {
-        'path': '/chellow/reports/251/output/',
+        'path': '/downloads',
         'tries': {'max': 30, 'period': 1},
         'regexes': [
             r'007_FINISHED_watkinsexamplecom_unified_supplies_monthly_'
             r'duration_20090401_0000_for_1_months_site_CI017\.ods'],
         'status_code': 200},
     {
-        'path': '/chellow/reports/253/output/?'
-        'name=007_FINISHED_watkinsexamplecom_unified_supplies_monthly_'
+        'path': '/downloads/'
+        '007_FINISHED_watkinsexamplecom_unified_supplies_monthly_'
         'duration_20090401_0000_for_1_months_site_CI017.ods',
         'status_code': 200,
         'regexes': [
@@ -3661,27 +3505,29 @@ def triad_estimates():
             r'</table:table>\s*'
             r'</office:spreadsheet>',
 
-            r"UserException: The supplier contract Non half-hourlies 2007 "
+            r"The supplier contract Non half-hourlies 2007 "
             r"doesn't have the virtual_bill\(\) function."]},
 
-    # Update the supplier contract
     {
-        'path': '/chellow/reports/317/output/',
+        'name': "Update the supplier contract",
+        'path': '/supplier_contracts/32/edit',
         'method': 'post',
         'data': {
-            'supplier_contract_id': "58",
             'party_id': "22",  # BIZZ
             'name': "Half-hourlies 2013",
             'charge_script': """
-from net.sf.chellow.monad import Monad
+from operator import itemgetter
 import datetime
 from dateutil.relativedelta import relativedelta
 import pytz
 from sqlalchemy import or_
-
-Monad.getUtils()['impt'](
-    globals(), 'computer', 'db', 'utils', 'computer', 'triad', 'ccl', 'bsuos',
-    'tlms', 'duos', 'rcrc', 'aahedc', 'bank_holidays')
+import chellow.duos
+import chellow.ccl
+import chellow.triad
+import chellow.tlms
+import chellow.rcrc
+import chellow.bsuos
+import chellow.aahedc
 
 
 def virtual_bill_titles():
@@ -3749,10 +3595,10 @@ def displaced_virtual_bill(supply_source):
     bill = supply_source.supplier_bill
 
     supply_source.is_green = False
-    duos.duos_vb(supply_source)
-    ccl.ccl(supply_source)
+    chellow.duos.duos_vb(supply_source)
+    chellow.ccl.ccl(supply_source)
 
-    for datum in supply_source.hh_data:
+    for datum in sorted(supply_source.hh_data, key=itemgetter('start-date')):
         is_weekday = datum['start-date'].weekday() < 5
         if is_weekday and datum['utc-month'] in (1, 12) and \
                 16 < datum['utc-decimal-hour'] <= 19:
@@ -3779,10 +3625,10 @@ def displaced_virtual_bill(supply_source):
             bill['ccl-kwh'] += datum['ccl-kwh']
             bill['ccl-gbp'] += datum['ccl-gbp']
 
-    triad.triad_bill(supply_source)
-    tlms.hh(supply_source)
-    bsuos.hh(supply_source)
-    aahedc.hh(supply_source)
+    chellow.triad.triad_bill(supply_source)
+    chellow.tlms.hh(supply_source)
+    chellow.bsuos.hh(supply_source)
+    chellow.aahedc.hh(supply_source)
 
     rates = supply_source.hh_rate(
         db_id, supply_source.finish_date, 'gsp_gbp_per_kwh')
@@ -3790,28 +3636,29 @@ def displaced_virtual_bill(supply_source):
         slot_keys = slots[slot_name]
         bill[slot_keys['gbp']] = bill[slot_keys['gsp-kwh']] * rates[slot_name]
 
-    for rate_name, rate_set in supply_source.supplier_rate_sets.iteritems():
+    for rate_name, rate_set in supply_source.supplier_rate_sets.items():
         if len(rate_set) == 1:
             bill[rate_name] = rate_set.pop()
 
-    bill['net-gbp'] = sum(v for k, v in bill.iteritems() if k[-4:] == '-gbp')
+    bill['net-gbp'] = sum(
+        v for k, v in sorted(bill.items()) if k[-4:] == '-gbp')
 
 
 def virtual_bill(supply_source):
-    duos.duos_vb(supply_source)
-    ccl.ccl(supply_source)
-    triad.triad_bill(supply_source)
-    tlms.hh(supply_source)
-    rcrc.hh(supply_source)
-    bsuos.hh(supply_source)
-    aahedc.hh(supply_source)
+    chellow.duos.duos_vb(supply_source)
+    chellow.ccl.ccl(supply_source)
+    chellow.triad.triad_bill(supply_source)
+    chellow.tlms.hh(supply_source)
+    chellow.rcrc.hh(supply_source)
+    chellow.bsuos.hh(supply_source)
+    chellow.aahedc.hh(supply_source)
 
     bill = supply_source.supplier_bill
     supply_source.is_green = False
 
-    for hh in supply_source.hh_data:
+    for hh in sorted(supply_source.hh_data, key=itemgetter('start-date')):
         is_weekday = hh['utc-day-of-week'] < 5 and \
-                not hh['utc-is-bank-holiday']
+            not hh['utc-is-bank-holiday']
         if is_weekday and hh['utc-month'] in (1, 12) and \
                 16 < hh['utc-decimal-hour'] <= 19:
             slot_key = 'winter-pk'
@@ -3844,36 +3691,34 @@ def virtual_bill(supply_source):
     bill['data-collection-gbp'] += 5.89
     bill['settlement-gbp'] += 88
 
-    for rate_name, rate_set in supply_source.supplier_rate_sets.iteritems():
+    for rate_name, rate_set in supply_source.supplier_rate_sets.items():
         if len(rate_set) == 1:
             bill[rate_name] = rate_set.pop()
 
-    bill['net-gbp'] = sum(v for k, v in bill.iteritems() if k[-4:] == '-gbp')
+    bill['net-gbp'] = sum(
+        v for k, v in sorted(bill.items()) if k[-4:] == '-gbp')
+
 """,
             'properties': "{}"},
         'status_code': 303,
         'regexes': [
-            r"/reports/77/output/\?supplier_contract_id=58"]},
+            r'/supplier_contracts/32']},
     {
-        'path': '/chellow/reports/317/output/',
+        'path': '/supplier_contracts/33/edit',
         'method': 'post',
         'data': {
-            'supplier_contract_id': "59",
             'name': "Non half-hourlies 2007",
             'party_id': "664",  # HYDE
             'charge_script': """
 def virtual_bill_titles():
     return ['net-gbp', 'vat-gbp', 'gross-gbp', 'sum-msp-kwh', 'problem']
 
-
 def virtual_bill(supply_source):
     bill = supply_source.supplier_bill
     sum_msp_kwh = sum(h['msp-kwh'] for h in supply_source.hh_data)
-
-    for rate_name, rate_set in supply_source.supplier_rate_sets.iteritems():
+    for rate_name, rate_set in supply_source.supplier_rate_sets.items():
         if len(rate_set) == 1:
             bill[rate_name] = rate_set.pop()
-
     bill.update(
         {
             'net-gbp': 0.0, 'vat-gbp':0.0, 'gross-gbp': 0.0,
@@ -3883,12 +3728,9 @@ def virtual_bill(supply_source):
         'status_code': 303},
     {
         'name': "Set configuration properties",
-        'path': '/chellow/reports/269/output/',
+        'path': '/non_core_contracts/5/edit',
         'method': 'post',
         'data': {
-            'non_core_contract_id': "12",
-            'name': "configuration",
-            'charge_script': "",
             'properties': """
 {
     'ips': {'127.0.0.1': 'implicit-user@localhost'},
@@ -3899,20 +3741,19 @@ def virtual_bill(supply_source):
         'status_code': 303},
     {
         'name': "Site In View World",
-        'path': '/chellow/reports/5/output/?site_id=3',
+        'path': '/sites/3',
         'status_code': 200,
         'regexes': [
-            r'<a href="/chellow/reports/7/output/\?supply_id=2">view</a>',
+            r'<a href="/supplies/2">view</a>',
             r'<a href="https://maps.google.com/maps\?q=CI005">Google Maps</a>',
             r'<option value="imp_net">Imported</option>']},
 
     # Show a dead supply. Supply 11
     {
         'name': "Show a dead supply. Supply 11. Mark as dead.",
-        'path': '/chellow/reports/307/output/',
+        'path': '/eras/11/edit',
         'method': 'post',
         'data': {
-            'era_id': "11",
             'start_year': "2005",
             'start_month': "10",
             'start_day': "03",
@@ -3924,9 +3765,9 @@ def virtual_bill(supply_source):
             'finish_day': "13",
             'finish_hour': "23",
             'finish_minute': "30",
-            'mop_contract_id': "57",
+            'mop_contract_id': "31",
             'mop_account': "mc-22 9974 3438 105",
-            'hhdc_contract_id': "53",
+            'hhdc_contract_id': "28",
             'hhdc_account': "dc-22 9974 3438 105",
             'msn': "K87D74429",
             'pc_id': "5",
@@ -3936,25 +3777,24 @@ def virtual_bill(supply_source):
             'imp_llfc_code': "540",
             'imp_mpan_core': "22 9974 3438 105",
             'imp_sc': "20",
-            'imp_supplier_contract_id': "59",
+            'imp_supplier_contract_id': "33",
             'imp_supplier_account': "SA341665"},
         'status_code': 303},
     {
-        'path': '/chellow/reports/5/output/?site_id=3',
+        'path': '/sites/3',
         'status_code': 200,
         'regexes': [
             r'<td>\s*'
-            '<a href="/chellow/reports/7/output/\?supply_id=11">view</a>\s*'
+            '<a href="/supplies/11">view</a>\s*'
             '</td>\s*<td>3</td>\s*<td>2005-10-03 00:00</td>\s*<td>\s*'
             '2010-04-13 23:30\s*</td>']},
 
     # Insert a 20 supply
     {
         'name': "Try a pre 2010-04-01 DNO 20 bill.",
-        'path': '/chellow/reports/311/output/',
+        'path': '/sites/1/edit',
         'method': 'post',
         'data': {
-            'site_id': "1",
             'source_id': "1",
             'name': "Reserve Supply",
             'start_year': "2003",
@@ -3968,44 +3808,41 @@ def virtual_bill(supply_source):
             'mtc_code': "845",
             'cop_id': "5",
             'ssc_code': "",
-            'mop_contract_id': "57",
+            'mop_contract_id': "31",
             'mop_account': "mc-22 6354 2983 570",
-            'hhdc_contract_id': "54",
+            'hhdc_contract_id': "29",
             'hhdc_account': "01",
             'imp_llfc_code': "453",
             'imp_mpan_core': "20 6354 2983 571",
             'imp_sc': "2300",
-            'imp_supplier_contract_id': "55",
+            'imp_supplier_contract_id': "30",
             'imp_supplier_account': "141 5532",
             'insert': "insert"},
         'regexes': [
-            r"/reports/7/output/\?supply_id=12"],
+            r"/supplies/12"],
         'status_code': 303},
 
     # Add import related ACTIVE channel. Supply 12
     {
-        'path': '/chellow/reports/299/output/',
+        'path': '/eras/16/add_channel',
         'method': 'post',
         'data': {
-            'era_id': "16",
             'imp_related': "true",
             'channel_type': "ACTIVE"},
         'regexes': [
-            r"/chellow/reports/301/output/\?channel_id=42"],
+            r"/channels/42"],
         'status_code': 303},
 
     # Try out simple.csv hh import format.
     {
-        'path': '/chellow/reports/211/output/',
+        'path': '/hhdc_contracts/29/hh_imports',
         'method': 'post',
-        'data': {
-            'hhdc_contract_id': "54"},
         'files': {'import_file': 'test/hh.simple.csv'},
         'status_code': 303,
         'regexes': [
-            r"/reports/65/output/\?hhdc_contract_id=54&process_id=0"]},
+            r"/hhdc_contracts/29/hh_imports/0"]},
     {
-        'path': '/chellow/reports/65/output/?hhdc_contract_id=54&process_id=0',
+        'path': '/hhdc_contracts/29/hh_imports/0',
         'tries': {},
         'regexes': [
             r"The import has completed.*successfully."],
@@ -4013,16 +3850,15 @@ def virtual_bill(supply_source):
 
     # Check that the first datum has been correctly loaded in
     {
-        'path': '/chellow/reports/17/output/?supply_id=7&months=1&'
-        'finish_year=2010&finish_month=02',
+        'path': '/supplies/7/hh_data?months=1&finish_year=2010&'
+        'finish_month=02',
         'regexes': [
             r"<td>\s*2010-02-04 20:00\s*</td>\s*<td>30.4339</td>"],
         'status_code': 200},
     {
-        'path': '/chellow/reports/291/output/?supply_id=12&start_year=2009&'
-        'start_month=3&start_day=01&start_hour=00&start_minute=0&'
-        'finish_year=2009&finish_month=03&finish_day=31&finish_hour=23&'
-        'finish_minute=30',
+        'path': '/reports/291?supply_id=12&start_year=2009&start_month=3&'
+        'start_day=01&start_hour=00&start_minute=0&finish_year=2009&'
+        'finish_month=03&finish_day=31&finish_hour=23&finish_minute=30',
         'status_code': 200,
         'regexes': [
             r'"Imp MPAN Core","Exp MPAN Core","Site Code","Site Name",'
@@ -4099,25 +3935,23 @@ def virtual_bill(supply_source):
             '"imp-supplier-triad-all-estimates-gbp",'
             '"imp-supplier-problem"',
             r'"20 6354 2983 571","","CI004","Lower Treave","141 5532",'
-            '"2009-03-01 00:00","2009-03-31 23:30","","10","","","7","","",'
-            '"2274.51858148","","","0.00456","","5.89","2300","","",'
-            '"2165.0","0","","","","0","0.0","86.9732","0.102628376","","",'
-            '"14.91","88","86.9732","93.49619","0.585809728064","0","0.0",'
-            '"0.0",'
-            '"0","0","0.0","0","0","0.0","0","0.0","0.0","0","0","0.0",'
-            '"94.2952925863","","0.0301433761811",'
-            '"2009-01-06 17:00","0","X","1.095","0.0","2008-12-01 17:00","0",'
-            '"X","1.095","0.0","2008-12-15 17:00","0","X","1.095","0.0",'
-            '"0.0","22.19481","0.0","2007-12-17 17:00","0","X","1.095","0.0",'
-            '"2008-01-03 17:00","0","X","1.079","0.0","2007-11-26 17:00","0",'
-            '"X","1.095","0.0","0.0","22.19481","1","0.0","12","-0.0",""']},
+            r'"2009-03-01 00:00","2009-03-31 23:30","","10","","","7","","",'
+            r'"2274.518581480245","","","0.00456","","5.89","2300","","",'
+            r'"2165.0","0","","","","0","0.0","86.9732","0.10262837600000001",'
+            r'"","","14.91","88","86.9732","93.49619","0.585809728064","0",'
+            r'"0.0","0.0","0","0","0.0","0","0","0.0","0","0.0","0.0","0","0",'
+            r'"0.0","94.295292586311","","0.030143376181066044",'
+            r'"2009-01-06 17:00","0","X","1.095","0.0","2008-12-01 17:00","0",'
+            r'"X","1.095","0.0","2008-12-15 17:00","0","X","1.095","0.0",'
+            r'"0.0","22.19481","0.0","2007-12-17 17:00","0","X","1.095","0.0",'
+            r'"2008-01-03 17:00","0","X","1.079","0.0","2007-11-26 17:00","0",'
+            r'"X","1.095","0.0","0.0","22.19481","1","0.0","12","-0.0",""']},
 
     # Check it works when the DNO rate script contains a double LLFC 453,470
     {
-        'path': '/chellow/reports/291/output/?supply_id=12&start_year=2009&'
-        'start_month=6&start_day=01&start_hour=00&start_minute=0&'
-        'finish_year=2009&finish_month=06&finish_day=30&finish_hour=23&'
-        'finish_minute=30',
+        'path': '/reports/291?supply_id=12&start_year=2009&start_month=6&'
+        'start_day=01&start_hour=00&start_minute=0&finish_year=2009&'
+        'finish_month=06&finish_day=30&finish_hour=23&finish_minute=30',
         'regexes': [
             r'"20 6354 2983 571","","CI004","Lower Treave","141 5532",'
             '"2009-06-01 00:00","2009-06-30 23:30",'],
@@ -4125,24 +3959,23 @@ def virtual_bill(supply_source):
 
     # supply 12, era 16, channel 42
     {
-        'path': '/chellow/reports/309/output/?hh_datum_id=6773',
+        'path': '/hh_data/6773/edit',
         'method': 'post',
         'data': {
             'delete': "Delete"},
         'status_code': 303},
     {
         'name': "Delete a supply.",
-        'path': '/chellow/reports/305/output/',
+        'path': '/supplies/12/edit',
         'method': 'post',
         'data': {
-            'supply_id': "12",
             'delete': "Delete"},
         'status_code': 303},
 
     # Create new supplier contract
     {
         'name': "Test importing of sse.edi bills",
-        'path': '/chellow/reports/315/output/',
+        'path': '/supplier_contracts/add',
         'method': 'post',
         'data': {
             'participant_id': "54",  # COOP
@@ -4162,7 +3995,7 @@ def virtual_bill(supply_source):
     bill['net-gbp'] =  0
     bill['sum-msp-kwh'] = 0
 
-    for rate_name, rate_set in supply_source.supplier_rate_sets.iteritems():
+    for rate_name, rate_set in supply_source.supplier_rate_sets.items():
         if len(rate_set) == 1:
             bill[rate_name] = rate_set.pop()
     for h in supply_source.hh_data:
@@ -4172,17 +4005,16 @@ def virtual_bill(supply_source):
         if h['utc-is-month-end']:
             pass
 """,
-            'properties': "{}", },
+            'properties': "{}"},
         'regexes': [
-            r"/reports/77/output/\?supplier_contract_id=63"],
+            r"/supplier_contracts/36"],
         'status_code': 303},
 
     # Add new era
     {
-        'path': '/chellow/reports/305/output/',
+        'path': '/supplies/10/edit',
         'method': 'post',
         'data': {
-            'supply_id': "10",
             'start_year': "2010",
             'start_month': "01",
             'start_day': "01",
@@ -4190,24 +4022,23 @@ def virtual_bill(supply_source):
             'start_minute': "00",
             'insert_era': "Insert"},
         'regexes': [
-            r"/reports/7/output/\?supply_id=10"],
+            r"/supplies/10"],
         'status_code': 303},
 
     # Change to new supplier contract. Supply 10
     {
-        'path': '/chellow/reports/307/output/',
+        'path': '/eras/17/edit',
         'method': 'post',
         'data': {
-            'era_id': "17",
             'start_year': "2010",
             'start_month': "01",
             'start_day': "03",
             'start_hour': "00",
             'start_minute': "00",
             'is_ended': "false",
-            'mop_contract_id': "57",
+            'mop_contract_id': "31",
             'mop_account': "mc-22 1065 3921 534",
-            'hhdc_contract_id': "53",
+            'hhdc_contract_id': "28",
             'hhdc_account': "dc-22 1065 3921 534",
             'msn': "I02D89150",
             'pc_id': "3",
@@ -4217,34 +4048,33 @@ def virtual_bill(supply_source):
             'imp_llfc_code': "110",
             'imp_mpan_core': "22 1065 3921 534",
             'imp_sc': "30",
-            'imp_supplier_contract_id': "63",
+            'imp_supplier_contract_id': "36",
             'imp_supplier_account': "SA342376000"},
         'status_code': 303},
 
     # Create a new batch
     {
-        'path': '/chellow/reports/287/output/',
+        'path': '/supplier_contracts/36/add_batch',
         'method': 'post',
         'data': {
-            'supplier_contract_id': "63",
             'reference': "07-008",
             'description': "SSE batch"},
         'status_code': 303},
 
-    # Supplier contract 64.
+    # Supplier contract 50.
     {
-        'path': '/chellow/reports/321/output/',
+        'path': '/supplier_bill_imports',
         'method': 'post',
         'data': {
             'supplier_batch_id': "5"},
         'files': {'import_file': 'test/bills.sse.edi'},
         'status_code': 303,
         'regexes': [
-            r"/reports/323/output/\?importer_id=3"]},
+            r"/supplier_bill_imports/3"]},
 
-    # Supplier contract 59.
+    # Supplier contract 36.
     {
-        'path': '/chellow/reports/323/output/?importer_id=3',
+        'path': '/supplier_bill_imports/3',
         'tries': {},
         'regexes': [
             r"<th>Reference</th>\s*<th>Account</th>\s*<th>Bill Type</th>\s*"
@@ -4275,51 +4105,50 @@ def virtual_bill(supply_source):
     {
 
         'name': "Test the supplier batch checking",
-        'path': '/chellow/reports/111/output/?batch_id=5',
+        'path': '/reports/111?batch_id=5',
         'status_code': 303},
     {
-        'path': '/chellow/reports/251/output/',
+        'path': '/downloads',
         'tries': {'max': 20, 'period': 1},
         'regexes': [
             r"008_FINISHED_watkinsexamplecom_bill_check\.csv"],
         'status_code': 200},
     {
-        'path': '/chellow/reports/253/output/?'
-        'name=008_FINISHED_watkinsexamplecom_bill_check.csv',
+        'path': '/downloads/008_FINISHED_watkinsexamplecom_bill_check.csv',
         'regexes': [
             r"batch,bill-reference,bill-type,bill-kwh,bill-net-gbp,"
             "bill-vat-gbp,bill-start-date,bill-finish-date,bill-mpan-core,"
             "site-code,site-name,covered-from,covered-to,covered-bills,"
             "covered-net-gbp,virtual-net-gbp,difference-net-gbp",
             r'"07-008","3423760005","N","253","36.16","1.8",'
-            '"2010-01-19 00:00","2010-04-20 23:30","22 1065 3921 534","CI017",'
-            '"Roselands","2010-01-19 00:00","2010-04-20 23:30","10","36.16",'
-            '"25.3","10.86","253.0","253.0","",""'],
+            r'"2010-01-19 00:00","2010-04-20 23:30","22 1065 3921 534",'
+            r'"CI017","Roselands","2010-01-19 00:00","2010-04-20 23:30","10",'
+            r'"36.16","25.29999999999758","10.860000000002415","253.0",'
+            r'"252.99999999998357","",""'],
         'status_code': 200},
 
     # Create a new site
     {
         'name': "Test reports for a supply-less site",
-        'path': '/chellow/reports/297/output/',
+        'path': '/sites/add',
         'method': 'post',
         'data': {
             'code': "B00LG",
             'name': "Bieling"},
         'status_code': 303},
     {
-        'path': '/chellow/reports/13/output/?site_id=8&finish_year=2008&'
-        'finish_month=07',
-        'status_code': 200, },
+        'path': '/sites/8/months?finish_year=2008&finish_month=07',
+        'status_code': 200},
     {
         'name': "Check can import channel snag ignores okay.",
-        'path': '/chellow/reports/293/output/',
+        'path': '/general_imports',
         'method': 'post',
         'files': {'import_file': 'test/channel-snag-ignores.csv'},
         'status_code': 303,
         'regexes': [
-            r"/chellow/reports/295/output/\?process_id=13"]},
+            r"/general_imports/13"]},
     {
-        'path': '/chellow/reports/295/output/?process_id=13',
+        'path': '/general_imports/13',
         'tries': {},
 
         # Check it's loaded ok
@@ -4328,14 +4157,14 @@ def virtual_bill(supply_source):
         'status_code': 200},
     {
         'name': "Check can import site snag ignores okay.",
-        'path': '/chellow/reports/293/output/',
+        'path': '/general_imports',
         'method': 'post',
         'files': {'import_file': 'test/site-snag-ignores.csv'},
         'status_code': 303,
         'regexes': [
-            r"/reports/295/output/\?process_id=14"]},
+            r"/general_imports/14"]},
     {
-        'path': '/chellow/reports/295/output/?process_id=14',
+        'path': '/general_imports/14',
         'tries': {},
 
         # Check it's loaded ok
@@ -4346,10 +4175,9 @@ def virtual_bill(supply_source):
     # Test that generator is set to None if source is 'net'. },
     {
         'name': "Create a supply, and then delete it.",
-        'path': '/chellow/reports/311/output/',
+        'path': '/sites/7/edit',
         'method': 'post',
         'data': {
-            'site_id': "7",
             'source_id': "1",
             'generator_type_id': "1",
             'name': "Supply H8",
@@ -4360,9 +4188,9 @@ def virtual_bill(supply_source):
             'start_minute': "26",
             'msn': "",
             'gsp_group_id': "3",
-            'mop_contract_id': "57",
+            'mop_contract_id': "31",
             'mop_account': "mc-22 9879 0084 358",
-            'hhdc_contract_id': "53",
+            'hhdc_contract_id': "28",
             'hhdc_account': "dc-22 9879 0084 358",
             'pc_id': "9",
             'mtc_code': "845",
@@ -4371,41 +4199,39 @@ def virtual_bill(supply_source):
             'imp_mpan_core': "22 9879 0084 358",
             'imp_llfc_code': "540",
             'imp_sc': "700",
-            'imp_supplier_contract_id': "55",
+            'imp_supplier_contract_id': "30",
             'imp_supplier_account': "d",
             'insert': "Insert"},
         'regexes': [
-            r"/reports/7/output/\?supply_id=13"],
+            r"/supplies/13"],
         'status_code': 303},
 
     # Check that the generator type 'chp' has been ignored.
     {
-        'path': '/chellow/reports/5/output/?site_id=7',
+        'path': '/sites/7',
         'regexes': [
             r"<td>net</td>\s*<td>\s*</td>"],
         'status_code': 200},
     {
-        'path': '/chellow/reports/305/output/',
+        'path': '/supplies/13/edit',
         'method': 'post',
         'data': {
-            'supply_id': "13",
             'delete': "Delete"},
         'status_code': 303},
 
     # Create a new batch.
     {
         'name': "GDF CSV Bills",
-        'path': '/chellow/reports/287/output/',
+        'path': '/supplier_contracts/30/add_batch',
         'method': 'post',
         'data': {
-            'supplier_contract_id': "55",
             'reference': "008",
             'description': "GDF CSV batch"},
         'status_code': 303},
 
     {
-        'name': "Supplier contract 55",
-        'path': '/chellow/reports/321/output/',
+        'name': "Supplier contract 30",
+        'path': '/supplier_bill_imports',
         'method': 'post',
         'data': {
             'supplier_batch_id': "6"},
@@ -4414,11 +4240,11 @@ def virtual_bill(supply_source):
         'files': {'import_file': 'test/bills.gdf.csv'},
         'status_code': 303,
         'regexes': [
-            r"/reports/323/output/\?importer_id=4"]},
+            r"/supplier_bill_imports/4"]},
 
-    # Supplier contract 55, batch 6
     {
-        'path': '/chellow/reports/323/output/?importer_id=4',
+        'name': "Supplier contract 30, batch 6",
+        'path': '/supplier_bill_imports/4',
         'tries': {},
         'regexes': [
             r"<th>Reference</th>\s*<th>Account</th>\s*<th>Bill Type</th>\s*"
@@ -4436,7 +4262,7 @@ def virtual_bill(supply_source):
 
     # Check the bill appears correctly in batch view
     {
-        'path': '/chellow/reports/91/output/?supplier_batch_id=6',
+        'path': '/supplier_batches/6',
         'regexes': [
             r"<td>2010-06-09 00:00</td>\s*<td>2010-05-01 00:00</td>\s*"
             "<td>2010-05-31 23:30</td>\s*<td>32124.5</td>\s*"
@@ -4444,8 +4270,8 @@ def virtual_bill(supply_source):
         'status_code': 200},
     {
         'name': "Test displaced virtual bill.",
-        'path': '/chellow/reports/389/output/?site_id=1&months=1&'
-        'finish_year=2010&finish_month=06',
+        'path': '/reports/389?site_id=1&months=1&finish_year=2010&'
+        'finish_month=06',
         'regexes': [
             r"Site Code,Site Name,Associated Site Ids,From,To,Gen Types,"
             "CHP kWh,LM kWh,Turbine kWh,PV kWh,net-gbp,bsuos-kwh,bsuos-rate,"
@@ -4485,15 +4311,14 @@ def virtual_bill(supply_source):
 
     # Try a 12 month run
     {
-        'path': '/chellow/reports/389/output/?site_id=1&months=12&'
-        'finish_year=2011&finish_month=06',
+        'path': '/reports/389?site_id=1&months=12&finish_year=2011&'
+        'finish_month=06',
         'status_code': 200},
     {
         'name': "Test bulk ignore.",
-        'path': '/chellow/reports/279/output/',
+        'path': '/hhdc_contracts/28/edit',
         'method': 'post',
         'data': {
-            'hhdc_contract_id': "53",
             'ignore_year': "2008",
             'ignore_month': "09",
             'ignore_day': "01",
@@ -4503,19 +4328,17 @@ def virtual_bill(supply_source):
         'status_code': 303},
     {
         'name': "Check that a era can be deleted. Supply 1",
-        'path': '/chellow/reports/307/output/',
+        'path': '/eras/14/edit',
         'method': 'post',
         'data': {
-            'era_id': "14",
             'delete': "Delete"},
         'status_code': 303},
     {
         'name': "Check a contract virtual bill that crosses a era boundary "
         "comes out correctly.",
-        'path': '/chellow/reports/291/output/?supply_id=11&start_year=2010&'
-        'start_month=04&start_day=01&start_hour=00&start_minute=00&'
-        'finish_year=2010&finish_month=04&finish_day=30&finish_hour=23&'
-        'finish_minute=30',
+        'path': '/reports/291?supply_id=11&start_year=2010&start_month=04&'
+        'start_day=01&start_hour=00&start_minute=00&finish_year=2010&'
+        'finish_month=04&finish_day=30&finish_hour=23&finish_minute=30',
         'status_code': 200,
         'regexes': [
             r'"Imp MPAN Core","Exp MPAN Core","Site Code","Site Name",'
@@ -4525,40 +4348,39 @@ def virtual_bill(supply_source):
             '"imp-supplier-sum-msp-kwh","imp-supplier-problem"',
             r'"22 9974 3438 105","","CI005","Wheal Rodney","SA341665",'
             '"2010-04-01 00:00","2010-04-13 23:30","","0","","","","","",'
-            '"0.0","0.0","0.0","0",""']},
+            '"0.0","0.0","0.0","0.0",""']},
     {
         'name': "NHH CSV import",
-        'path': '/chellow/reports/287/output/',
+        'path': '/supplier_contracts/36/add_batch',
         'method': 'post',
         'data': {
-            'supplier_contract_id': "63",
             'reference': "07-002",
             'description': "nhh csv batch"},
         'status_code': 303},
 
     {
-        'name': "Supplier contract 63",
-        'path': '/chellow/reports/321/output/',
+        'name': "Supplier contract 36",
+        'path': '/supplier_bill_imports',
         'method': 'post',
         'data': {
             'supplier_batch_id': "7"},
         'files': {'import_file': 'test/bills-nhh.csv'},
         'status_code': 303,
         'regexes': [
-            r"/reports/323/output/\?importer_id=5"]},
+            r"/supplier_bill_imports/5"]},
 
     {
-        'name': "Supplier contract 63, batch 7",
-        'path': '/chellow/reports/323/output/?importer_id=5',
+        'name': "Supplier contract 36, batch 7",
+        'path': '/supplier_bill_imports/5',
         'tries': {},
         'status_code': 200,
         'regexes': [
             r"All the bills have been successfully loaded and attached to "
             "the batch\."]},
 
-    # Supplier contract 63, batch 7, bill 10
+    # Supplier contract 36, batch 7, bill 10
     {
-        'path': '/chellow/reports/31/output/?supplier_read_id=7',
+        'path': '/reads/7/edit',
         'regexes': [
             r'31</option>\s*</select>\s*<select name="present_hour">\s*'
             '<option value="0">00</option>\s*<option value="1">01</option>\s*'
@@ -4586,10 +4408,10 @@ def virtual_bill(supply_source):
             r'<input type="hidden" name="supplier_read_id" value="7">']},
     {
         'name': "Test viewers' search",
-        'path': '/chellow/reports/99/output/?search_pattern=',
+        'path': '/supplies?search_pattern=',
         'regexes': [
             r'<td>\s*'
-            '<a href="/chellow/reports/7/output/\?supply_id=9">supply</a>\s*'
+            '<a href="/supplies/9">supply</a>\s*'
             '</td>\s*<td>P96C93722</td>',
             r"<td>\s*</td>\s*<td>\s*</td>\s*<td>\s*</td>\s*<td>\s*"
             "00 845 581\s*22 0470 7514 535\s*</td>"],
@@ -4597,41 +4419,39 @@ def virtual_bill(supply_source):
 
     {
         'name': "Check that searching for an account with a space works",
-        'path': '/chellow/reports/99/output/?search_pattern=141%205532',
+        'path': '/supplies?search_pattern=141%205532',
         'regexes': [
-            r"/chellow/reports/7/output/\?supply_id=6"],
+            r"/supplies/6"],
         'status_code': 307},
 
     {
         'name': "Check that searching on an MSN works",
-        'path': '/chellow/reports/99/output/?search_pattern=P96C93722',
+        'path': '/supplies?search_pattern=P96C93722',
         'regexes': [
-            r"/chellow/reports/7/output/\?supply_id=9"],
+            r"/supplies/9"],
         'status_code': 307},
     {
         'name': "Check can view a supply.",
-        'path': '/chellow/reports/7/output/?supply_id=2',
+        'path': '/supplies/2',
 
         # Check there's a link to raw HH data
         'regexes': [
-            r"/reports/17/output/\?",
+            r"/supplies/2/hh_data?",
 
             # Check we can see the site
-            r'<a href="/chellow/reports/5/output/\?site_id=1" title="Lower '
-            'Treave">CI004</a>',
+            r'<a href="/sites/1" title="Lower Treave">CI004</a>',
 
             # Check a link to supplier bill is correct
-            r'<a href="/chellow/reports/105/output/\?supplier_bill_id=11">'
-            'View</a>',
+            r'<a href="/supplier_bills/11">View</a>',
 
             # Check link to supply duration is correct
-            r'<form action="/chellow/reports/149/output/">\s*<fieldset>\s*'
+            r'<form action="/reports/149">\s*<fieldset>\s*'
             '<input type="hidden" name="supply_id"',
             r'<td rowspan="4">\s*'
-            '<a href="/chellow/reports/55/output/\?pc_id=9" title="Half-'
+            '<a href="/pcs/9" title="Half-'
             'hourly">00</a>\s*</td>\s*<td rowspan="4"></td>\s*'
             '<td rowspan="4">\s*'
-            '<a href="/chellow/reports/63/output/\?mtc_id=52" title="HH '
+            '<a href="/mtcs/52" title="HH '
             'COP5 And Above With Comms">845</a>\s*</td>'],
         'status_code': 200},
 
@@ -4639,10 +4459,9 @@ def virtual_bill(supply_source):
     {
         'name': "Check that if the end date of an era is altered, it can tell "
         "if there's a succeeding era.",
-        'path': '/chellow/reports/307/output/',
+        'path': '/eras/10/edit',
         'method': 'post',
         'data': {
-            'era_id': "10",
             'start_year': "2005",
             'start_month': "09",
             'start_day': "06",
@@ -4654,9 +4473,9 @@ def virtual_bill(supply_source):
             'finish_day': "03",
             'finish_hour': "23",
             'finish_minute': "30",
-            'mop_contract_id': "57",
+            'mop_contract_id': "31",
             'mop_account': "mc-22 1065 3921 534",
-            'hhdc_contract_id': "54",
+            'hhdc_contract_id': "29",
             'hhdc_account': "dc-22 1065 3921 534",
             'msn': "I02D89150",
             'pc_id': "3",
@@ -4666,20 +4485,20 @@ def virtual_bill(supply_source):
             'imp_llfc_code': "110",
             'imp_mpan_core': "22 1065 3921 534",
             'imp_sc': "30",
-            'imp_supplier_contract_id': "59",
+            'imp_supplier_contract_id': "33",
             'imp_supplier_account': "SA342376"},
         'status_code': 303},
     {
         'name': "Check that it works if a supply era is inserted by CSV "
         "before the beginning of a supply ",
-        'path': '/chellow/reports/293/output/',
+        'path': '/general_imports',
         'method': 'post',
         'files': {'import_file': 'test/era-insert.csv'},
         'status_code': 303,
         'regexes': [
-            r"/reports/295/output/\?process_id=15"]},
+            r"/general_imports/15"]},
     {
-        'path': '/chellow/reports/295/output/?process_id=15',
+        'path': '/general_imports/15',
         'tries': {},
 
         # Check it's loaded ok
@@ -4689,7 +4508,7 @@ def virtual_bill(supply_source):
 
     # Supply 9
     {
-        'path': '/chellow/reports/307/output/?era_id=20',
+        'path': '/eras/20/edit',
 
         # Check the import supplier account is there
         'regexes': [
@@ -4697,37 +4516,36 @@ def virtual_bill(supply_source):
         'status_code': 200},
     {
         'name': "Check that the general import of register reads works.",
-        'path': '/chellow/reports/293/output/',
+        'path': '/general_imports',
         'method': 'post',
         'files': {'import_file': 'test/bills-general.csv'},
         'status_code': 303,
         'regexes': [
-            r"/reports/295/output/\?process_id=16"]},
+            r"/general_imports/16"]},
     {
-        'path': '/chellow/reports/295/output/?process_id=16',
+        'path': '/general_imports/16',
         'tries': {},
 
         # Check it's loaded ok
         'regexes': [
-            r"The file has been imported successfully", ],
-        'status_code': 200, },
+            r"The file has been imported successfully"],
+        'status_code': 200},
     {
-        'path': '/chellow/reports/105/output/?supplier_bill_id=14',
+        'path': '/supplier_bills/14',
         'tries': {},
 
         # Check it's loaded ok
         'regexes': [
-            r'<td>\s*<a href="/chellow/reports/111/output/\?bill_id=14">Check'
-            '</a>\s*</td>',
+            r'<td>\s*<a href="/reports/111\?bill_id=14">Check</a>\s*</td>',
             r'<td>38992</td>\s*<td>\s*<a title="Estimated"\s*'
-            'href="/chellow/reports/143/output/\?type-id=4">E</a>\s*</td>\s*'
+            'href="/read_types/4">E</a>\s*</td>\s*'
             '<td>2007-01-17 00:00</td>\s*<td>39000\s*</td>\s*<td>\s*'
             '<a title="Estimated"\s*'
-            'href="/chellow/reports/143/output/\?type-id=4">E</a>\s*</td>'],
+            'href="/read_types/4">E</a>\s*</td>'],
         'status_code': 200},
     {
         'name': "Check the 'update bill' page.",
-        'path': '/chellow/reports/165/output/?supplier_bill_id=10',
+        'path': '/supplier_bills/10/edit',
         'status_code': 200,
         'regexes': [
             r"type_id",
@@ -4735,20 +4553,20 @@ def virtual_bill(supply_source):
             r'name="account" value="SA342376000"']},
     {
         'name': "Check the batch page.",
-        'path': '/chellow/reports/91/output/?supplier_batch_id=5',
+        'path': '/supplier_batches/5',
         'status_code': 200,
         'regexes': [
             r"<td>2010-01-19 00:00</td>\s*<td>2010-04-20 23:30</td>"]},
     {
         'name': "Test supply era update for a supply with 2 mpans.",
-        'path': '/chellow/reports/293/output/',
+        'path': '/general_imports',
         'method': 'post',
         'files': {'import_file': 'test/era-update-2-mpans.csv'},
         'status_code': 303,
         'regexes': [
-            r"/reports/295/output/\?process_id=17"]},
+            r"/general_imports/17"]},
     {
-        'path': '/chellow/reports/295/output/?process_id=17',
+        'path': '/general_imports/17',
         'tries': {},
 
         # Check it's loaded ok
@@ -4759,35 +4577,34 @@ def virtual_bill(supply_source):
     # Insert a new batch
     {
         'name': "Add batch to HHDC contract",
-        'path': '/chellow/reports/281/output/',
+        'path': '/hhdc_contracts/28/add_batch',
         'method': 'post',
         'data': {
-            'hhdc_contract_id': "53",
             'reference': "001-7t",
             'description': "hhdc batch"},
         'status_code': 303,
         'regexes': [
-            r"/reports/203/output/\?hhdc_batch_id=8"]},
+            r"/hhdc_batches/8"]},
 
     {
-        'name': "Check that it's there to edit. HHDC contract 53",
-        'path': '/chellow/reports/283/output/?hhdc_batch_id=8',
+        'name': "Check that it's there to edit. HHDC contract 28",
+        'path': '/hhdc_batches/8/edit',
         'status_code': 200},
 
     {
-        'name': "Try adding bills to the HHDC batch. Contract 53",
-        'path': '/chellow/reports/327/output/?hhdc_batch_id=8',
+        'name': "Try adding bills to the HHDC batch. Contract 28",
+        'path': '/hhdc_bill_imports',
         'method': 'post',
         'data': {
             'hhdc_batch_id': "8"},
         'files': {'import_file': 'test/hhdc-bill.csv'},
         'status_code': 303,
         'regexes': [
-            r"/reports/329/output/\?importer_id=6"]},
+            r"/hhdc_bill_imports/6"]},
 
     {
-        'name': "Contract 53 batch 8",
-        'path': '/chellow/reports/329/output/?importer_id=6',
+        'name': "Contract 28 batch 8",
+        'path': '/hhdc_bill_imports/6',
         'tries': {},
         'status_code': 200,
         'regexes': [
@@ -4796,51 +4613,49 @@ def virtual_bill(supply_source):
 
     {
         'name': "Add batch to MOP contract",
-        'path': '/chellow/reports/353/output/',
+        'path': '/mop_contracts/31/add_batch',
         'method': 'post',
         'data': {
-            'mop_contract_id': "57",
             'reference': "99/992",
             'description': "mop batch"},
         'status_code': 303,
         'regexes': [
-            r"/reports/193/output/\?mop_batch_id=9"]},
+            r"/mop_batches/9"]},
 
     {
-        'name': "Check that it's there in edit mode. Contract 57",
-        'path': '/chellow/reports/355/output/?mop_batch_id=9',
+        'name': "Check that it's there in edit mode. Contract 31",
+        'path': '/mop_batches/9/edit',
         'status_code': 200,
         'regexes': [
             r'<input type="hidden" name="mop_batch_id" value="9">']},
 
     {
-        'name': "Check confirm-delete page. Contract 57",
-        'path': '/chellow/reports/355/output/?mop_batch_id=9&'
-        'confirm_delete=Delete',
+        'name': "Check confirm-delete page. Contract 31",
+        'path': '/mop_batches/9/edit?confirm_delete=Delete',
         'status_code': 200,
         'regexes': [
             r'<input type="hidden" name="mop_batch_id" value="9">']},
 
-    # Check we can see it in 'view' mode. Contract 58
     {
-        'path': '/chellow/reports/193/output/?mop_batch_id=9',
+        'name': "Check we can see it in 'view' mode. Contract 31",
+        'path': '/mop_batches/9',
         'status_code': 200},
 
     # Mop contract 58
     {
         'name': "Try adding bills to the MOP batch",
-        'path': '/chellow/reports/331/output/',
+        'path': '/mop_bill_imports',
         'method': 'post',
         'data': {
             'mop_batch_id': "9"},
         'files': {'import_file': 'test/mop-bill.csv'},
         'status_code': 303,
         'regexes': [
-            r"/reports/333/output/\?importer_id=7"]},
+            r"/mop_bill_imports/7"]},
 
     # Mop contract 57, batch 9
     {
-        'path': '/chellow/reports/333/output/?importer_id=7',
+        'path': '/mop_bill_imports/7',
         'tries': {},
         'status_code': 200,
         'regexes': [
@@ -4850,10 +4665,9 @@ def virtual_bill(supply_source):
         'name': "If a new supply has a blank LLFC field, check it gives a "
         "good error message. Also make sure that site name doesn't change "
         "if supply name changes.",
-        'path': '/chellow/reports/311/output/',
+        'path': '/sites/7/edit',
         'method': 'post',
         'data': {
-            'site_id': "7",
             'source_id': "1",
             'name': "John Nash",
             'start_year': "2010",
@@ -4863,9 +4677,9 @@ def virtual_bill(supply_source):
             'start_minute': "00",
             'msn': "",
             'gsp_group_id': "3",
-            'mop_contract_id': "57",
+            'mop_contract_id': "31",
             'mop_account': "mc-22 9879 0084 358",
-            'hhdc_contract_id': "53",
+            'hhdc_contract_id': "28",
             'hhdc_account': "dc-22 9879 0084 358",
             'pc_id': "9",
             'mtc_code': "845",
@@ -4874,7 +4688,7 @@ def virtual_bill(supply_source):
             'imp_mpan_core': "22 9879 0084 358",
             'imp_llfc_code': "",
             'imp_sc': "700",
-            'imp_supplier_contract_id': "55",
+            'imp_supplier_contract_id': "30",
             'imp_supplier_account': "d",
             'insert': "Insert"},
         'regexes': [
@@ -4885,10 +4699,9 @@ def virtual_bill(supply_source):
     {
         'name': "If a new supply has a blank import sc field, check it gives "
         "a good error message.",
-        'path': '/chellow/reports/311/output/',
+        'path': '/sites/7/edit',
         'method': 'post',
         'data': {
-            'site_id': "7",
             'source_id': "1",
             'name': "Supply 54",
             'start_year': "2010",
@@ -4898,9 +4711,9 @@ def virtual_bill(supply_source):
             'start_minute': "00",
             'msn': "",
             'gsp_group_id': "3",
-            'mop_contract_id': "57",
+            'mop_contract_id': "31",
             'mop_account': "mc-22 9879 0084 358",
-            'hhdc_contract_id': "53",
+            'hhdc_contract_id': "28",
             'hhdc_account': "dc-22 9879 0084 358",
             'pc_id': "9",
             'mtc_code': "845",
@@ -4909,7 +4722,7 @@ def virtual_bill(supply_source):
             'imp_mpan_core': "22 9879 0084 358",
             'imp_llfc_code': "570",
             'imp_sc': "",
-            'imp_supplier_contract_id': "55",
+            'imp_supplier_contract_id': "30",
             'imp_supplier_account': "d",
             'insert': "Insert"},
         'regexes': [
@@ -4919,10 +4732,9 @@ def virtual_bill(supply_source):
     {
         'name': "If a new supply has a blank MTC code field, check it gives "
         "a good error message.",
-        'path': '/chellow/reports/311/output/',
+        'path': '/sites/7/edit',
         'method': 'post',
         'data': {
-            'site_id': "7",
             'source_id': "1",
             'name': "Supply 54",
             'start_year': "2010",
@@ -4932,9 +4744,9 @@ def virtual_bill(supply_source):
             'start_minute': "00",
             'msn': "",
             'gsp_group_id': "3",
-            'mop_contract_id': "57",
+            'mop_contract_id': "31",
             'mop_account': "mc-22 9879 0084 358",
-            'hhdc_contract_id': "53",
+            'hhdc_contract_id': "28",
             'hhdc_account': "dc-22 9879 0084 358",
             'pc_id': "9",
             'mtc_code': "",
@@ -4943,7 +4755,7 @@ def virtual_bill(supply_source):
             'imp_mpan_core': "22 9879 0084 358",
             'imp_llfc_code': "570",
             'imp_sc': "700",
-            'imp_supplier_contract_id': "55",
+            'imp_supplier_contract_id': "30",
             'imp_supplier_account': "d",
             'insert': "Insert"},
         'regexes': [
@@ -4951,15 +4763,18 @@ def virtual_bill(supply_source):
         'status_code': 400},
     {
         'name': "Try view page of meter payment types.",
-        'path': '/chellow/reports/133/output/',
+        'path': '/meter_payment_types',
+        'status_code': 200},
+    {
+        'name': "View a meter payment type",
+        'path': '/meter_payment_types/1',
         'status_code': 200},
     {
         'name': "Try a monthly sites duration for a site with a 3rd party "
         "supply.",
-        'path': '/chellow/reports/311/output/',
+        'path': '/sites/4/edit',
         'method': 'post',
         'data': {
-            'site_id': "4",
             'source_id': "5",
             'name': "3",
             'start_year': "2010",
@@ -4969,9 +4784,9 @@ def virtual_bill(supply_source):
             'start_minute': "00",
             'msn': "",
             'gsp_group_id': "3",
-            'mop_contract_id': "57",
+            'mop_contract_id': "31",
             'mop_account': "mc-22 9789 0534 938",
-            'hhdc_contract_id': "53",
+            'hhdc_contract_id': "28",
             'hhdc_account': "dc-22 9789 0534 938",
             'pc_id': "3",
             'mtc_code': "801",
@@ -4980,47 +4795,47 @@ def virtual_bill(supply_source):
             'imp_mpan_core': "22 9789 0534 938",
             'imp_llfc_code': "110",
             'imp_sc': "0",
-            'imp_supplier_contract_id': "63",
+            'imp_supplier_contract_id': "36",
             'imp_supplier_account': "taa2",
             'insert': "Insert"},
         'regexes': [
-            r"/chellow/reports/7/output/\?supply_id=16"],
+            r"/supplies/16"],
         'status_code': 303},
     {
-        'path': '/chellow/reports/161/output/?site_id=4&months=1&'
-        'finish_year=2010&finish_month=07',
+        'path': '/reports/161?site_id=4&months=1&finish_year=2010&'
+        'finish_month=07',
         'status_code': 303},
     {
-        'path': '/chellow/reports/251/output/',
+        'path': '/downloads',
         'tries': {'max': 30, 'period': 1},
         'regexes': [
             r"009_FINISHED_watkinsexamplecom_site_monthly_duration_for_"
             r"CI017_1_to_2010_7.csv"],
         'status_code': 200},
     {
-        'path': '/chellow/reports/253/output/?'
-        'name=009_FINISHED_watkinsexamplecom_site_monthly_duration_for_'
+        'path': '/downloads/'
+        '009_FINISHED_watkinsexamplecom_site_monthly_duration_for_'
         'CI017_1_to_2010_7.csv',
         'regexes': [
             r'"CI017","Roselands","","3rd-party,net","","2010-07-31 23:30",'
-            '"0","0","0","0","0","0","0","0","1633.3414","0","0","1653.3414"'
-            ',"20.0","0","0","hh",""'],
+            r'"0.0","0","0","0.0","0","0","0.0","0","1633.3413999999993","0",'
+            r'"0","1653.3413999999993","20.0","0","0","hh",""'],
         'status_code': 200},
 
     {
-        'path': '/chellow/reports/247/output/?site_id=4&months=1&'
-        'finish_year=2010&finish_month=07',
+        'path': '/reports/247?site_id=4&months=1&finish_year=2010&'
+        'finish_month=07',
         'status_code': 303},
     {
-        'path': '/chellow/reports/251/output/',
+        'path': '/downloads',
         'tries': {'max': 30, 'period': 1},
         'regexes': [
             r'010_FINISHED_watkinsexamplecom_unified_supplies_monthly_'
             r'duration_20100701_0000_for_1_months_site_CI017\.ods'],
         'status_code': 200},
     {
-        'path': '/chellow/reports/253/output/?'
-        'name=010_FINISHED_watkinsexamplecom_unified_supplies_monthly_'
+        'path': '/downloads/'
+        '010_FINISHED_watkinsexamplecom_unified_supplies_monthly_'
         'duration_20100701_0000_for_1_months_site_CI017.ods',
         'regexes': [
             r'<table:table-row>\s*'
@@ -5049,11 +4864,11 @@ def virtual_bill(supply_source):
             r'office:value-type="date" table:style-name="cDateISO"/>\s*'
             r'<table:table-cell office:value="0" '
             r'office:value-type="float" table:number-columns-repeated="9"/>\s*'
-            r'<table:table-cell office:value="1613.3414" '
+            r'<table:table-cell office:value="1613.3413999999993" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="0" '
             r'office:value-type="float" table:number-columns-repeated="6"/>\s*'
-            r'<table:table-cell office:value="1613.3414" '
+            r'<table:table-cell office:value="1613.3413999999993" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="0" '
             r'office:value-type="float" table:number-columns-repeated="3"/>\s*'
@@ -5068,7 +4883,7 @@ def virtual_bill(supply_source):
             r'<table:table-cell office:string-value="" '
             r'office:value-type="string"/>\s*'
             r'<table:table-cell/>\s*'
-            r'<table:table-cell office:value="1593.3414" '
+            r'<table:table-cell office:value="1593.3413999999993" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell table:number-columns-repeated="2"/>\s*'
             r'<table:table-cell office:value="0.0047" '
@@ -5082,7 +4897,7 @@ def virtual_bill(supply_source):
             r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="0.021" '
             r'office:value-type="float"/>\s*'
-            r'<table:table-cell office:value="1497.3" '
+            r'<table:table-cell office:value="1497.2999999999993" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="0" '
             r'office:value-type="float"/>\s*'
@@ -5186,7 +5001,7 @@ def virtual_bill(supply_source):
             r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="0.0694" '
             r'office:value-type="float"/>\s*'
-            r'<table:table-cell office:value="2.1514" '
+            r'<table:table-cell office:value="2.151399999999999" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell table:number-columns-repeated="10"/>\s*'
             r'</table:table-row>\s*'
@@ -5214,8 +5029,14 @@ def virtual_bill(supply_source):
             r'<table:table-cell '
             r'office:date-value="2010-07-31T23:30:00" '
             r'office:value-type="date" table:style-name="cDateISO"/>\s*'
+            r'<table:table-cell office:value="0.0" '
+            r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="0" '
-            r'office:value-type="float" table:number-columns-repeated="9"/>\s*'
+            r'office:value-type="float" table:number-columns-repeated="6"/>\s*'
+            r'<table:table-cell office:value="0.0" '
+            r'office:value-type="float"/>\s*'
+            r'<table:table-cell office:value="0" '
+            r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="20.0" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="0" '
@@ -5241,7 +5062,7 @@ def virtual_bill(supply_source):
             r'<table:table-cell office:string-value="" '
             r'office:value-type="string"/>\s*'
             r'<table:table-cell table:number-columns-repeated="20"/>\s*'
-            r'<table:table-cell office:value="0" '
+            r'<table:table-cell office:value="0.0" '
             r'office:value-type="float"/>\s*'
             r'</table:table-row>\s*'
             r'<table:table-row>\s*'
@@ -5270,7 +5091,14 @@ def virtual_bill(supply_source):
             r'office:value-type="date" table:style-name="cDateISO"/>\s*'
             r'<table:table-cell office:value="0" '
             r'office:value-type="float" '
-            r'table:number-columns-repeated="13"/>\s*'
+            r'table:number-columns-repeated="4"/>\s*'
+            r'<table:table-cell office:value="0.0" '
+            r'office:value-type="float"/>'
+            r'<table:table-cell office:value="0" office:value-type="float" '
+            r'table:number-columns-repeated="2"/>'
+            r'<table:table-cell office:value="0.0" office:value-type="float"/>'
+            r'<table:table-cell office:value="0" office:value-type="float" '
+            r'table:number-columns-repeated="5"/>'
             r'<table:table-cell office:value="20.0" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="0" '
@@ -5296,7 +5124,7 @@ def virtual_bill(supply_source):
             r'<table:table-cell office:string-value="" '
             r'office:value-type="string"/>\s*'
             r'<table:table-cell table:number-columns-repeated="20"/>\s*'
-            r'<table:table-cell office:value="0" '
+            r'<table:table-cell office:value="0.0" '
             r'office:value-type="float"/>\s*'
             r'</table:table-row>\s*'
             r'</table:table>'],
@@ -5304,43 +5132,37 @@ def virtual_bill(supply_source):
     {
         'name': "Try creating and deleting a rate script for a non-core "
         "contract (templater).",
-        'path': '/chellow/reports/275/output/',
+        'path': '/non_core_contracts/1/add_rate_script',
         'method': 'post',
         'data': {
-            'non_core_contract_id': "31",
             'start_year': "2010",
-            'start_month': "04",
+            'start_month': "05",
             'start_day': "01",
             'start_hour': "00",
             'start_minute': "00",
             'insert': "Insert"},
         'regexes': [
-            r"/chellow/reports/271/output/\?rate_script_id=241"],
+            r"/non_core_rate_scripts/214"],
         'status_code': 303},
     {
-        'path': '/chellow/reports/273/output/?rate_script_id=241&'
-        'delete=Delete',
+        'path': '/non_core_rate_scripts/214/edit?delete=Delete',
         'regexes': [
             r"Are you sure you want to delete this rate script\?"],
         'status_code': 200},
     {
-        'path': '/chellow/reports/273/output/',
+        'path': '/non_core_rate_scripts/214/edit',
         'method': 'post',
         'data': {
-            'rate_script_id': "241",
             'delete': "Delete"},
         'status_code': 303},
     {
-        'path': '/chellow/reports/271/output/?rate_script_id=241',
+        'path': '/non_core_rate_scripts/214',
         'status_code': 404},
     {
         'name': "Try adding a rate script before other rate scripts.",
-        'path': '/chellow/reports/275/output/',
+        'path': '/non_core_contracts/1/add_rate_script',
         'method': 'post',
         'data': {
-            'non_core_contract_id': "31",
-
-            # Templater
             'start_year': "1999",
             'start_month': "04",
             'start_day': "01",
@@ -5348,31 +5170,29 @@ def virtual_bill(supply_source):
             'start_minute': "00",
             'insert': "Insert"},
         'regexes': [
-            r"/chellow/reports/271/output/\?rate_script_id=242"],
+            r"/non_core_rate_scripts/215"],
         'status_code': 303},
     {
-        'path': '/chellow/reports/273/output/?rate_script_id=242',
+        'path': '/non_core_rate_scripts/215/edit',
         'regexes': [
-            r'<input name="finish_year" maxlength="4" size="4" value="2010">',
+            r'<input name="finish_year" maxlength="4" size="4" value="2000">',
 
             # Check that the start hour of a non-core rate script is correct."
             r'<select name="start_hour">\s*'
             '<option value="0" selected>00</option>'],
         'status_code': 200},
     {
-        'path': '/chellow/reports/273/output/',
+        'path': '/non_core_rate_scripts/215/edit',
         'method': 'post',
         'data': {
-            'rate_script_id': "242",
             'delete': "Delete"},
         'status_code': 303},
 
     {
-        'name': "Adding a bill manually. Supplier contract 55",
-        'path': '/chellow/reports/313/output/',
+        'name': "Adding a bill manually. Supplier contract 44",
+        'path': '/supplier_batches/6/add_bill',
         'method': 'post',
         'data': {
-            'supplier_batch_id': "6",
             'mpan_core': "22 9813 2107 763",
             'reference': "KUH774",
             'issue_year': "2010",
@@ -5398,12 +5218,12 @@ def virtual_bill(supply_source):
             'bill_type_id': "1",
             'breakdown': "{}"},
         'regexes': [
-            r"/chellow/reports/105/output/\?supplier_bill_id=18"],
+            r"/supplier_bills/18"],
         'status_code': 303},
 
     {
-        'name': "Supplier contract 55, batch 6",
-        'path': '/chellow/reports/165/output/?supplier_bill_id=18',
+        'name': "Supplier contract 30, batch 6",
+        'path': '/supplier_bills/18/edit',
         'regexes': [
             r'<select name="start_day">\s*<option value="1">01</option>\s*'
             '<option value="2">02</option>\s*<option value="3">03</option>\s*'
@@ -5509,11 +5329,10 @@ def virtual_bill(supply_source):
     {
         'name': "Check that bill with two sets of register reads gets "
         "displayed correctly.",
-        'path': '/chellow/reports/7/output/?supply_id=10',
+        'path': '/supplies/10',
         'regexes': [
             r'<td rowspan="2">\s*'
-            '<a href="/chellow/reports/201/output/\?bill_type_id=2" '
-            'title="Normal">N</a>\s*</td>\s*'
+            '<a href="/bill_types/2" title="Normal">N</a>\s*</td>\s*'
             '<td style="border-right: none;">\s*'
             '<a title="2011-02-04 23:30 I02D89150">34285</a>\s*</td>',
             r'25927</a>\s*</td>\s*'
@@ -5525,77 +5344,71 @@ def virtual_bill(supply_source):
             '</tr>',
 
             # Check form action for virtual bills is correct
-            r'<form action="/chellow/reports/291/output/">',
+            r'<form action="/reports/291">',
 
             # Check link to TPR from outer read
             r'<td>\s*'
-            '<a href="/chellow/reports/97/output/\?tpr_id=2">00003</a>\s*'
+            '<a href="/tprs/2">00003</a>\s*'
             '</td>'],
         'status_code': 200},
 
     # Supplier contract 62
     {
         'name': "Deleting a batch with bills with register reads.",
-        'path': '/chellow/reports/289/output/',
+        'path': '/supplier_batches/5/edit',
         'method': 'post',
         'data': {
-            'supplier_batch_id': "5",
             'delete': "Delete"},
         'status_code': 303},
     {
         'name': "Check 'insert supplier batch' page.",
-        'path': '/chellow/reports/287/output/?supplier_contract_id=63',
+        'path': '/supplier_contracts/36/add_batch',
         'regexes': [
             r'="description"']},
     {
         'name': "Viewing the insert batch page of a DC contract.",
-        'path': '/chellow/reports/281/output/?hhdc_contract_id=54',
+        'path': '/hhdc_contracts/29/add_batch',
         'regexes': [
             r'="description"']},
     {
         'name': "Viewing a batch in view mode, when it has a custom report.",
-        'path': '/chellow/reports/269/output/',
+        'path': '/non_core_contracts/5/edit',
         'method': 'post',
         'data': {
-            'non_core_contract_id': "12",
             'name': "configuration",
-            'charge_script': "",
             'properties': """
 {
     'ips': {'127.0.0.1': 'implicit-user@localhost'},
     'site_links': [
         {'name': 'Google Maps', 'href': 'https://maps.google.com/maps?q='}],
-    'batch_reports': [2],
+    'batch_reports': [1],
     'elexonportal_scripting_key': 'xxx'}
 """, },
         'status_code': 303},
 
-    # Check that we can see a MOP batch okay. Contract 59
+    # Check that we can see a MOP batch okay. Contract 47
     {
-        'path': '/chellow/reports/193/output/?mop_batch_id=9',
+        'path': '/mop_batches/9',
         'regexes': [
-            r"/reports/2/output/"],
+            r"/local_reports/1/output"],
         'status_code': 200},
 
     # Check that we can see a supplier batch okay. Contract 56
     {
-        'path': '/chellow/reports/91/output/?supplier_batch_id=4',
+        'path': '/supplier_batches/4',
         'regexes': [
-            r"/reports/2/output/"],
+            r"/local_reports/1/output"],
         'status_code': 200},
     {
         'name': "Check 'no channel' error when importing hh data.",
-        'path': '/chellow/reports/211/output/',
+        'path': '/hhdc_contracts/28/hh_imports',
         'method': 'post',
-        'data': {
-            'hhdc_contract_id': "53"},
         'files': {'import_file': 'test/hh-no-channel.simple.csv'},
         'status_code': 303,
         'regexes': [
-            r"/reports/65/output/\?hhdc_contract_id=53&process_id=13"]},
+            r"/hhdc_contracts/28/hh_imports/13"]},
     {
-        'path': '/chellow/reports/65/output/?hhdc_contract_id=53&'
-        'process_id=13',
+        'path': '/hhdc_contracts/28/hh_imports/13',
         'tries': {},
         'regexes': [
             r"There is no channel for the datum: \{&#39;channel_type&#39;: "
@@ -5607,19 +5420,18 @@ def virtual_bill(supply_source):
         'status_code': 200},
     {
         'name': "Check the bill import page.",
-        'path': '/chellow/reports/211/output/?hhdc_contract_id=53',
+        'path': '/hhdc_contracts/28/hh_imports',
         'status_code': 200,
         'regexes': [
-            r"/reports/115/output/\?hhdc_contract_id=53"]},
+            r"/hhdc_contracts/28"]},
 
     # Can we add a new era ok? },
     {
         'name': "Check good error message if new era has same start date as "
         "existing era.",
-        'path': '/chellow/reports/305/output/',
+        'path': '/supplies/10/edit',
         'method': 'post',
         'data': {
-            'supply_id': "10",
             'start_year': "2005",
             'start_month': "09",
             'start_day': "06",
@@ -5631,38 +5443,35 @@ def virtual_bill(supply_source):
         'status_code': 400},
     {
         'name': "Check MOP and DC bills are displaying correctly",
-        'path': '/chellow/reports/7/output/?supply_id=5',
+        'path': '/supplies/5',
         'regexes': [
             r'<td>\s*'
-            '<a href="/chellow/reports/203/output/\?hhdc_batch_id=8">001-7t'
+            '<a href="/hhdc_batches/8">001-7t'
             '</a>\s*</td>\s*<td>00031</td>\s*<td>22 0883 6932 301</td>\s*'
             '<td>2007-09-01 00:00</td>',
             r'<td>\s*'
-            '<a href="/chellow/reports/193/output/\?mop_batch_id=9">99/992'
+            '<a href="/mop_batches/9">99/992'
             '</a>\s*</td>\s*<td>06</td>\s*<td>22 0883 6932 301</td>',
 
             # Check that MOP bill before supply start is displayed
             r'<td>\s*'
-            '<a href="/chellow/reports/193/output/\?mop_batch_id=9">99/992'
+            '<a href="/mop_batches/9">99/992'
             '</a>\s*</td>\s*<td>08</td>\s*<td>22 0883 6932 301</td>',
 
             # Check that channel type is displayed
             r'<tr>\s*<td>\s*'
-            '<a href="/chellow/reports/301/output/\?channel_id=16">'
-            'ACTIVE</a>\s*'
-            '<a href="/chellow/reports/301/output/\?channel_id=17">'
-            'REACTIVE_IMP</a>\s*</td>'],
+            '<a href="/channels/16">ACTIVE</a>\s*'
+            '<a href="/channels/17">REACTIVE_IMP</a>\s*</td>'],
         'status_code': 200},
     {
         'name': "View the note editing page.",
-        'path': '/chellow/reports/239/output/?supply_id=2',
+        'path': '/supplies/2/notes',
         'status_code': 200},
     {
-        'name': "Try editing a note.",
-        'path': '/chellow/reports/239/output/',
+        'name': "Try adding a note.",
+        'path': '/supplies/2/notes/add',
         'method': 'post',
         'data': {
-            'supply_id': "2",
             'is_important': "True",
             'category': "general",
             'body': ""},
@@ -5671,10 +5480,9 @@ def virtual_bill(supply_source):
     # Try importing HH data from FTP server.
     {
         'name': "Update Contract",
-        'path': '/chellow/reports/279/output/',
+        'path': '/hhdc_contracts/28/edit',
         'method': 'post',
         'data': {
-            'hhdc_contract_id': "53",
             'party_id': "97",  # DASL
             'name': "HH contract",
             'charge_script': """
@@ -5698,30 +5506,27 @@ def virtual_bill(supply_source):
     # Do an 'import now'
     {
         'name': "Do an 'import now'",
-        'path': '/chellow/reports/213/output/',
+        'path': '/hhdc_contracts/28/auto_importer',
         'method': 'post',
-        'data': {
-            'hhdc_contract_id': "53"},
         'regexes': [
-            '/reports/213/output/\?hhdc_contract_id=53'],
+            '/hhdc_contracts/28/auto_importer'],
         'status_code': 303},
-    # Check that file fr om FTP server has imported properly
     {
-        'path': '/chellow/reports/213/output/?hhdc_contract_id=53',
+        'name': "Check that file from FTP server has imported properly",
+        'path': '/hhdc_contracts/28/auto_importer',
         'tries': {},
         'regexes': [
             r"Finished loading"]},
     {
-        'path': '/chellow/reports/115/output/?hhdc_contract_id=53',
+        'path': '/hhdc_contracts/28',
         'regexes': [
             r"hh_data\.df2"]},
 
     {
         'name': "System price",
-        'path': '/chellow/reports/269/output/',
+        'path': '/non_core_contracts/7/edit',
         'method': 'post',
         'data': {
-            'non_core_contract_id': '30',
             'name': 'system_price',
             'properties': """
 {
@@ -5732,88 +5537,78 @@ def virtual_bill(supply_source):
         'status_code': 303},
 
     {
-        'name': "Try startup and shutdown.",
-        'path': '/chellow/reports/171/output/',
+        'name': "Do an 'import now'",
+        'path': '/non_core_contracts/7/auto_importer',
         'method': 'post',
-        'data': {
-            'run_shutdown': "Shutdown"},
         'regexes': [
-            r"Shut down successfully.",
-            # Make sure only one process running
-            r"<tbody>\s*<tr>(\s*<td>\s*(<pre>)*[^<]*(</pre>)*\s*</td>\s*){3}"
-            r"</tr>\s*</tbody>"]},
-    {
-        'path': '/chellow/reports/171/output/',
-        'method': 'post',
-        'data': {
-            'run_startup': "Run"}},
+            '/non_core_contracts/7/auto_importer'],
+        'status_code': 303},
 
     {
         'name': 'System Price',
-        'path': '/chellow/reports/381/output/',
-        'tries': {'max': 20, 'period': 1},
+        'path': '/non_core_contracts/7/auto_importer',
+        'tries': {'max': 40, 'period': 1},
         'regexes': [
             r"Updating rate script starting at 2005-01-01 00:00\."],
         'status_code': 200},
 
     {
         'name': 'System Price Feb',
-        'path': '/chellow/reports/381/output/',
+        'path': '/non_core_contracts/7/auto_importer',
         'method': 'post',
         'data': {
             'name': 'now'},
         'status_code': 303},
     {
         'name': 'System Price',
-        'path': '/chellow/reports/381/output/',
-        'tries': {'max': 20, 'period': 1},
+        'path': '/non_core_contracts/7/auto_importer',
+        'tries': {'max': 40, 'period': 1},
         'regexes': [
             r"Updating rate script starting at 2005-02-01 00:00\."],
         'status_code': 200},
     {
         'name': 'System Price March',
-        'path': '/chellow/reports/381/output/',
+        'path': '/non_core_contracts/7/auto_importer',
         'method': 'post',
         'data': {
             'name': 'now'},
         'status_code': 303},
     {
         'name': 'System Price',
-        'path': '/chellow/reports/381/output/',
-        'tries': {'max': 20, 'period': 1},
+        'path': '/non_core_contracts/7/auto_importer',
+        'tries': {'max': 40, 'period': 1},
         'regexes': [
             r"Updating rate script starting at 2005-03-01 00:00\."],
         'status_code': 200},
     {
         'name': 'System Price April',
-        'path': '/chellow/reports/381/output/',
+        'path': '/non_core_contracts/7/auto_importer',
         'method': 'post',
         'data': {
             'name': 'now'},
         'status_code': 303},
     {
         'name': 'System Price',
-        'path': '/chellow/reports/381/output/',
-        'tries': {'max': 20, 'period': 1},
+        'path': '/non_core_contracts/7/auto_importer',
+        'tries': {'max': 40, 'period': 1},
         'regexes': [
             r"Updating rate script starting at 2005-04-01 00:00\."],
         'status_code': 200},
 
     {
         'name': "Check that later bills are at the top.",
-        'path': '/chellow/reports/7/output/?supply_id=1',
+        'path': '/supplies/1',
         'regexes': [
-            r"supplier_bill_id=7.*supplier_bill_id=1",
+            r"supplier_bills/7.*supplier_bills/1",
             r"2007-02-28 23:30"],
         'status_code': 200},
 
     # Change generation to NHH. Supply 7 },
     {
         'name': "Check that CRC report works for an AMR with no data.",
-        'path': '/chellow/reports/307/output/',
+        'path': '/eras/7/edit',
         'method': 'post',
         'data': {
-            'era_id': "7",
             'msn': "",
             'start_year': "2003",
             'start_month': "08",
@@ -5825,30 +5620,30 @@ def virtual_bill(supply_source):
             'mtc_code': "845",
             'cop_id': "5",
             'ssc_code': "393",
-            'mop_contract_id': "57",
+            'mop_contract_id': "31",
             'mop_account': "mc-22 6354 2983 570",
-            'hhdc_contract_id': "53",
+            'hhdc_contract_id': "28",
             'hhdc_account': "01",
             'imp_llfc_code': "210",
             'imp_mpan_core': "22 4862 4512 332",
             'imp_sc': "230",
-            'imp_supplier_contract_id': "59",
+            'imp_supplier_contract_id': "33",
             'imp_supplier_account': "141 5532"},
         'status_code': 303},
 
-    # Run CRC report for month without data
     {
-        'path': '/chellow/reports/207/output/?supply_id=7&year=2012',
+        'name': "Run CRC report for month without data",
+        'path': '/reports/207?supply_id=7&year=2012',
         'status_code': 303},
     {
-        'path': '/chellow/reports/251/output/',
+        'path': '/downloads',
         'tries': {},
         'regexes': [
             r"011_FINISHED_watkinsexamplecom_crc_2012_2013_supply_7\.csv"],
         'status_code': 200},
     {
-        'path': '/chellow/reports/253/output/?'
-        'name=011_FINISHED_watkinsexamplecom_crc_2012_2013_supply_7.csv',
+        'path': '/downloads/'
+        '011_FINISHED_watkinsexamplecom_crc_2012_2013_supply_7.csv',
         'status_code': 200,
         'regexes': [
             r'^"7","22 4862 4512 332"']},
@@ -5856,19 +5651,18 @@ def virtual_bill(supply_source):
     # Supply 9
     {
         'name': "Test monthly supplies duration for an unmetered supply.",
-        'path': '/chellow/reports/307/output/',
+        'path': '/eras/20/edit',
         'method': 'post',
         'data': {
-            'era_id': "20",
             'start_year': "2010",
             'start_month': "10",
             'start_day': "11",
             'start_hour': "00",
             'start_minute': "00",
             'is_ended': "false",
-            'mop_contract_id': "57",
+            'mop_contract_id': "31",
             'mop_account': "mc-22 0195 4836 192",
-            'hhdc_contract_id': "54",
+            'hhdc_contract_id': "29",
             'hhdc_account': "dc-22 0195 4836 192",
             'msn': "P96C93722",
             'pc_id': "8",
@@ -5878,14 +5672,13 @@ def virtual_bill(supply_source):
             'imp_llfc_code': "980",
             'imp_mpan_core': "22 0195 4836 192",
             'imp_sc': "304",
-            'imp_supplier_contract_id': "59",
+            'imp_supplier_contract_id': "33",
             'imp_supplier_account': "SA342376"},
         'status_code': 303},
     {
-        'path': '/chellow/reports/291/output/?supply_id=9&start_year=2011&'
-        'start_month=05&start_day=01&start_hour=00&start_minute=0&'
-        'finish_year=2011&finish_month=05&finish_day=31&finish_hour=23&'
-        'finish_minute=30',
+        'path': '/reports/291?supply_id=9&start_year=2011&start_month=05&'
+        'start_day=01&start_hour=00&start_minute=0&finish_year=2011&'
+        'finish_month=05&finish_day=31&finish_hour=23&finish_minute=30',
         'regexes': [
             r'"Imp MPAN Core","Exp MPAN Core","Site Code","Site Name",'
             '"Account","From","To","","mop-net-gbp","mop-problem","",'
@@ -5894,21 +5687,20 @@ def virtual_bill(supply_source):
             '"imp-supplier-sum-msp-kwh","imp-supplier-problem"',
             r'"22 0195 4836 192","","CI004","Lower Treave","SA342376",'
             '"2011-05-01 00:00","2011-05-31 23:30","","10","","","7","","",'
-            '"0.0","0.0","0.0","25.8191780822",""'],
+            '"0.0","0.0","0.0","25.819178082191478",""'],
         'status_code': 200},
 
     # Parties
     {
         'name': "Parties",
-        'path': '/chellow/reports/45/output/',
+        'path': '/parties',
         'regexes': [
-            r'<a href="/chellow/reports/73/output/\?participant_id=513">'
-            'SWEB</a>'],
+            r'<a href="/participants/513">SWEB</a>'],
         'status_code': 200},
 
     {
         'name': "Check rounding in bills is correct.",
-        'path': '/chellow/reports/7/output/?supply_id=5',
+        'path': '/supplies/5',
 
         # Check bill net and vat are shown correctly
         'regexes': [
@@ -5916,18 +5708,18 @@ def virtual_bill(supply_source):
         'status_code': 200},
     {
         'name': "Test the right number of rows returned for a search on '22'.",
-        'path': '/chellow/reports/99/output/?search_pattern=22&max_results=12',
+        'path': '/supplies?search_pattern=22&max_results=12',
         'regexes': [
             r"<tbody>\s*(<tr>.*?){11}\s*</tbody>"],
         'status_code': 200},
     {
         'name': "Try monthly supply duration with a non-half-hourly with "
         "bills.",
-        'path': '/chellow/reports/177/output/?supply_id=10&months=1&'
-        'end_year=2011&end_month=01',
+        'path': '/reports/177?supply_id=10&months=1&end_year=2011&'
+        'end_month=01',
         'status_code': 303},
     {
-        'path': '/chellow/reports/251/output/',
+        'path': '/downloads',
         'tries': {},
         'status_code': 200,
         'regexes': [
@@ -5935,8 +5727,8 @@ def virtual_bill(supply_source):
             r"10_1_to_2011_1\.csv"]
         },
     {
-        'path': '/chellow/reports/253/output/?'
-        'name=012_FINISHED_watkinsexamplecom_supplies_monthly_duration_for_'
+        'path': '/downloads/'
+        '012_FINISHED_watkinsexamplecom_supplies_monthly_duration_for_'
         '10_1_to_2011_1.csv',
         'status_code': 200,
         'regexes': [
@@ -5948,23 +5740,22 @@ def virtual_bill(supply_source):
             "metered-export-estimated-kwh,billed-export-kwh,"
             "billed-export-net-gbp,problem,timestamp",
             r'10,"2","net","","2011-01-31 23:30","03","I02D89150","CI017",'
-            '"Roselands","nhh","22 1065 3921 534","0","10.0","0","150.0",'
+            '"Roselands","nhh","22 1065 3921 534","0.0","10.0","0","150.0",'
             '"98.17","None","0","0","0","0",""']},
     {
         'name': "Try monthly supply duration with a half-hourly.",
-        'path': '/chellow/reports/177/output/?supply_id=4&months=1&'
-        'end_year=2010&end_month=05',
+        'path': '/reports/177?supply_id=4&months=1&end_year=2010&end_month=05',
         'status_code': 303},
     {
-        'path': '/chellow/reports/251/output/',
+        'path': '/downloads',
         'tries': {},
         'status_code': 200,
         'regexes': [
             r"013_FINISHED_watkinsexamplecom_supplies_monthly_duration_for_"
             r"4_1_to_2010_5\.csv"]},
     {
-        'path': '/chellow/reports/253/output/?'
-        'name=013_FINISHED_watkinsexamplecom_supplies_monthly_duration_for_'
+        'path': '/downloads/'
+        '013_FINISHED_watkinsexamplecom_supplies_monthly_duration_for_'
         '4_1_to_2010_5.csv',
         'status_code': 200,
         'regexes': [
@@ -5976,41 +5767,41 @@ def virtual_bill(supply_source):
             "metered-export-estimated-kwh,billed-export-kwh,"
             "billed-export-net-gbp,problem,timestamp",
             r'4,"1","net","","2010-05-31 23:30","00","","CI005",'
-            '"Wheal Rodney","hh","22 6158 2968 220","0","189.2268","0","0",'
-            '"0","22 3479 7618 470","0","0","0","0",""']},
+            r'"Wheal Rodney","hh","22 6158 2968 220","0","189.22680000000003",'
+            r'"0","0","0","22 3479 7618 470","0","0","0","0",""']},
     {
         'name': "Check supplies monthly duration page.",
-        'path': '/chellow/reports/155/output/',
+        'path': '/reports/155',
         'regexes': [
             r"end_month"],
         'status_code': 200},
     {
         'name': "Check CSV Sites Duration",
-        'path': '/chellow/reports/57/output/',
+        'path': '/reports/57',
 
         # Should have link to CSS
         'regexes': [
-            r"/reports/19/output/"],
+            r"/static/style\.css"],
         'status_code': 200},
     {
-        'path': '/chellow/reports/59/output/?start_year=2013&start_month=04&'
-        'start_day=01&start_hour=00&start_minute=00&finish_year=2013&'
-        'finish_month=04&finish_day=1&finish_hour=23&finish_minute=30',
+        'path': '/reports/59?start_year=2013&start_month=04&start_day=01&'
+        'start_hour=00&start_minute=00&finish_year=2013&finish_month=04&'
+        'finish_day=1&finish_hour=23&finish_minute=30',
         'regexes': [
             r'"CH017","Parbola","","sub","","2013-04-01 00:00",'
             '"2013-04-01 23:30","0","0","0","0","0","0","hh"'],
         'status_code': 200},
     {
         'name': "Check CSV Sites HH Data Selector.",
-        'path': '/chellow/reports/145/output/',
+        'path': '/csv_sites_hh_data',
 
         # Should have link to CSS
         'regexes': [
-            r"/reports/19/output/"],
+            r"/static/style\.css"],
         'status_code': 200},
     {
         'name': "Check CSV Supplies HH Data. With supply_id",
-        'path': '/chellow/reports/169/output/',
+        'path': '/reports/169',
         'method': 'post',
         'data': {
             'supply_id': '1', 'imp_related': 'true', 'channel_type': 'ACTIVE',
@@ -6020,15 +5811,15 @@ def virtual_bill(supply_source):
             'finish_minute': '30'},
         'status_code': 303},
     {
-        'path': '/chellow/reports/251/output/',
+        'path': '/downloads',
         'tries': {'max': 20, 'period': 1},
         'status_code': 200,
         'regexes': [
             r"014_FINISHED_watkinsexamplecom_supplies_hh_data_200807312330_"
             r"supply_22_9205_6799_106\.csv"]},
     {
-        'path': '/chellow/reports/253/output/?'
-        'name=014_FINISHED_watkinsexamplecom_supplies_hh_data_200807312330_'
+        'path': '/downloads/'
+        '014_FINISHED_watkinsexamplecom_supplies_hh_data_200807312330_'
         'supply_22_9205_6799_106.csv',
         'status_code': 200,
 
@@ -6039,10 +5830,9 @@ def virtual_bill(supply_source):
     # Add a new era with this contract
     {
         'name': "Test duos-fixed",
-        'path': '/chellow/reports/305/output/',
+        'path': '/supplies/5/edit',
         'method': 'post',
         'data': {
-            'supply_id': "5",
             'start_year': "2013",
             'start_month': "01",
             'start_day': "01",
@@ -6050,15 +5840,14 @@ def virtual_bill(supply_source):
             'start_minute': "00",
             'insert_era': "Insert"},
         'regexes': [
-            r"/reports/7/output/\?supply_id=5"],
+            r"/supplies/5"],
         'status_code': 303},
 
     # Supply 5
     {
-        'path': '/chellow/reports/307/output/',
+        'path': '/eras/23/edit',
         'method': 'post',
         'data': {
-            'era_id': "23",
             'start_year': "2013",
             'start_month': "01",
             'start_day': "01",
@@ -6066,9 +5855,9 @@ def virtual_bill(supply_source):
             'start_minute': "00",
             'is_ended': "false",
             'gsp_group_id': "11",
-            'mop_contract_id': "57",
+            'mop_contract_id': "31",
             'mop_account': "22 0883 6932 301",
-            'hhdc_contract_id': "53",
+            'hhdc_contract_id': "28",
             'hhdc_account': "22 0883 6932 301",
             'msn': "",
             'pc_id': "9",
@@ -6078,14 +5867,13 @@ def virtual_bill(supply_source):
             'imp_llfc_code': "570",
             'imp_mpan_core': "22 0883 6932 301",
             'imp_sc': "350",
-            'imp_supplier_contract_id': "58",
+            'imp_supplier_contract_id': "32",
             'imp_supplier_account': "4341"},
         'status_code': 303},
     {
-        'path': '/chellow/reports/291/output/?supply_id=5&start_year=2013&'
-        'start_month=04&start_day=01&start_hour=00&start_minute=00&'
-        'finish_year=2013&finish_month=04&finish_day=30&finish_hour=23&'
-        'finish_minute=30',
+        'path': '/reports/291?supply_id=5&start_year=2013&start_month=04&'
+        'start_day=01&start_hour=00&start_minute=00&finish_year=2013&'
+        'finish_month=04&finish_day=30&finish_hour=23&finish_minute=30',
         'status_code': 200,
         'regexes': [
             r'"Imp MPAN Core","Exp MPAN Core","Site Code","Site Name",'
@@ -6170,12 +5958,12 @@ def virtual_bill(supply_source):
             '"imp-supplier-triad-all-estimates-gbp",'
             '"imp-supplier-problem"',
             r'"22 0883 6932 301","","CI005","Wheal Rodney","4341",'
-            '"2013-04-01 00:00","2013-04-30 23:30","","10","","","0","","",'
-            '"369.605","","","0.00525288","","5.89","350","30",'
-            '"0.026","273.0","0","31","0.026","0.0","0","0.00161","0.0","","",'
-            '"0.0","0","0.2441","0.0","0.0","0.00382","0.0","30","0.0905",'
-            '"2.715","88","0",'
-            '"0.0","0.0001897","0.0","0.0","","0.0","0",'
+            r'"2013-04-01 00:00","2013-04-30 23:30","","10","","","0","","",'
+            r'"369.6049999999999","","","0.00525288","","5.89","350","30",'
+            r'"0.026","272.99999999999994","0","31","0.026","0.0","0",'
+            r'"0.00161","0.0","","","0.0","0","0.2441","0.0","0.0","0.00382",'
+            r'"0.0","30","0.0905","2.7150000000000003","88","0",'
+            r'"0.0","0.0001897","0.0","0.0","","0.0","0",'
             '"0.0","0.0","0","0.0","0.0","0","0.0","0.0","","","","","","","",'
             '"","","0.0",'
             '"","0.0","","","","","","","","","","","","","","","",'
@@ -6183,20 +5971,20 @@ def virtual_bill(supply_source):
             '"2012-12-12 17:00","0","X","1.087","0.0","2013-01-16 17:00","0",'
             '"X","1.087","0.0","0.0","33.551731","1","0.0","","",""']},
     {
-        'path': '/chellow/reports/159/output/',
+        'path': '/csv_sites_monthly_duration',
         'regexes': [
             r"finish_year"],
         'status_code': 200},
     {
         'name': "Try site search",
-        'path': '/chellow/reports/3/output/?pattern=',
+        'path': '/sites?pattern=',
         'regexes': [
-            r'<a href="/chellow/reports/5/output/\?site_id=8">'
+            r'<a href="/sites/8">'
             'B00LG Bieling</a>'],
         'status_code': 200},
     {
         'name': "Try TRIAD report when supply starts after first triad",
-        'path': '/chellow/reports/41/output/?supply_id=6&year=2007',
+        'path': '/reports/41?supply_id=6&year=2007',
         'status_code': 200,
         'regexes': [
             r'CI017,"Roselands","1",net,"","22 6354 2983 570",'
@@ -6208,10 +5996,9 @@ def virtual_bill(supply_source):
     # Insert a 14 supply
     {
         'name': "Try a pre 2010-04-01 DNO 14 bill.",
-        'path': '/chellow/reports/311/output/',
+        'path': '/sites/5/edit',
         'method': 'post',
         'data': {
-            'site_id': "5",
             'source_id': "1",
             'name': "Bernard",
             'start_year': "2003",
@@ -6225,26 +6012,25 @@ def virtual_bill(supply_source):
             'mtc_code': "845",
             'cop_id': "5",
             'ssc_code': "",
-            'mop_contract_id': "57",
+            'mop_contract_id': "31",
             'mop_account': "mc-14 7206 6139 971",
-            'hhdc_contract_id': "53",
+            'hhdc_contract_id': "28",
             'hhdc_account': "dc-14 7206 6139 971",
             'imp_llfc_code': "365",
             'imp_mpan_core': "14 7206 6139 971",
             'imp_sc': "2300",
-            'imp_supplier_contract_id': "55",
+            'imp_supplier_contract_id': "30",
             'imp_supplier_account': "sup-14 7206 6139 971",
             'insert': "insert"},
         'regexes': [
-            r"/chellow/reports/7/output/\?supply_id=17"],
+            r"/supplies/17"],
         'status_code': 303},
 
     # Try a pre 2010-04-01 DNO 14 bill.
     {
-        'path': '/chellow/reports/291/output/?supply_id=17&start_year=2009&'
-        'start_month=06&start_day=01&start_hour=00&start_minute=00&'
-        'finish_year=2009&finish_month=06&finish_day=30&finish_hour=23&'
-        'finish_minute=30',
+        'path': '/reports/291?supply_id=17&start_year=2009&start_month=06&'
+        'start_day=01&start_hour=00&start_minute=00&finish_year=2009&'
+        'finish_month=06&finish_day=30&finish_hour=23&finish_minute=30',
         'status_code': 200,
         'regexes': [
             r'"Imp MPAN Core","Exp MPAN Core","Site Code","Site Name",'
@@ -6321,36 +6107,32 @@ def virtual_bill(supply_source):
             '"imp-supplier-triad-all-estimates-gbp","imp-supplier-problem"',
             r'"14 7206 6139 971","","CH023","Treglisson",'
             '"sup-14 7206 6139 971","2009-06-01 00:00","2009-06-30 23:30","",'
-            '"10","","","0","","","334.3","","","0.0047","","5.89","",'
-            '"","0.0457","105.11","","","","","0","0.0","0","0.0","0.0012",'
-            '"0.0",'
-            '"135.3","88","0","0.0","0.0","0","0.0","0.0","0","0.0","0.0","0",'
-            '"0",'
-            '"0.0","0","0","0.0","0","0","0.0","0.0","","0.0","","",'
-            '"","","","","","","","","","","","","","","","",'
+            '"10","","","0","","","334.30000000000007","","","0.0047","",'
+            r'"5.89","","","0.0457","105.11","","","","","0","0.0","0","0.0",'
+            r'"0.0012","0.0","135.30000000000004","88","0","0.0","0.0","0",'
+            r'"0.0","0.0","0","0.0","0.0","0","0","0.0","0","0","0.0","0","0",'
+            r'"0.0","0.0","","0.0","","","","","","","","","","","","","","",'
+            r'"","","","",'
             '"2009-01-06 17:00","0","X","1.037","0.0","2008-12-01 17:00","0",'
             '"X","1.037","0.0","2008-12-15 17:00","0","X","1.037","0.0","0.0",'
             '"20.526611","1","0.0","","","","duos-availability-agreed-kva",'
             '"2300","duos-availability-billed-kva","2300"']},
     {
         'name': "Report of HHDC snags",
-        'path': '/chellow/reports/233/output/?hhdc_contract_id=53&'
-        'days_hidden=1',
+        'path': '/reports/233?hhdc_contract_id=28&days_hidden=1',
         'status_code': 200,
         'regexes': [
             r'"83","22 0883 6932 301","None","CI005","Wheal Rodney","Missing",'
             '"True","ACTIVE","2002-01-01 00:00","2003-08-02 23:30",']},
     {
         'name': "Site use graph",
-        'path': '/chellow/reports/9/output/?site_id=5&months=1&'
-        'finish_year=2013&finish_month=6',
+        'path': '/sites/5/used_graph?months=1&finish_year=2013&finish_month=6',
         'status_code': 200,
         'regexes': [
             r'<option value="06" selected>06</option>']},
     {
         'name': "Site generation graph",
-        'path': '/chellow/reports/11/output/?site_id=7&months=1&'
-        'finish_year=2013&finish_month=7',
+        'path': '/sites/7/gen_graph?months=1&finish_year=2013&finish_month=7',
         'regexes': [
             r'<input type="hidden" name="site_id" value="7">'],
         'status_code': 200},
@@ -6358,58 +6140,56 @@ def virtual_bill(supply_source):
     # Can we make a supply have source sub and view site level hh data okay?
     {
         'name': "CSV Sites HH Data",
-        'path': '/chellow/reports/305/output/',
+        'path': '/supplies/1/edit',
         'method': 'post',
 
         # Can we update a supply name?
 
         # Can we update a supply source?
         'data': {
-            'supply_id': "1",
             'name': "Hello",
             'source_id': "2",
             'generator_type_id': "1",
             'gsp_group_id': "11"},
         'regexes': [
-            r"/reports/7/output/\?supply_id=1"],
+            r"/supplies/1"],
         'status_code': 303},
     {
-        'path': '/chellow/reports/29/output/?site_id=7&type=used&months=1&'
-        'finish_year=2008&finish_month=07',
+        'path': '/reports/29?site_id=7&type=used&months=1&finish_year=2008&'
+        'finish_month=07',
         'status_code': 200,
         'regexes': [
             r"CH017,used,2008-07-01,", ]},
     {
-        'path': '/chellow/reports/29/output/?site_id=7&type=displaced&'
-        'months=1&finish_year=2008&finish_month=07',
+        'path': '/reports/29?site_id=7&type=displaced&months=1&'
+        'finish_year=2008&finish_month=07',
         'status_code': 200,
         'regexes': [
             r"CH017,displaced,2008-07-01,"]},
     {
         'name': "Look at list of supplier contracts.",
-        'path': '/chellow/reports/75/output/',
+        'path': '/supplier_contracts',
 
         # Are the contracts in alphabetical order?
         'regexes': [
             r'<tbody>\s*<tr>\s*<td>\s*'
-            '<a href="/chellow/reports/77/output/\?supplier_contract_id=55">'
-            'Half-hourlies 2007</a>'],
+            '<a href="/supplier_contracts/30">Half-hourlies 2007</a>'],
         'status_code': 200},
     {
         'name': "Daily supplier virtual bills page.",
-        'path': '/chellow/reports/241/output/?supply_id=6&is_import=true&'
-        'start_year=2013&start_month=10&start_day=1&finish_year=2013&'
-        'finish_month=10&finish_day=31',
+        'path': '/reports/241?supply_id=6&is_import=true&start_year=2013&'
+        'start_month=10&start_day=1&finish_year=2013&finish_month=10&'
+        'finish_day=31',
         'status_code': 200,
         'regexes': [
             r'"22 6354 2983 570","CI017","Roselands","141 5532",'
-            r'"2013-10-31 00:00","2013-10-31 23:30","153.7805","1.011286","",'
-            r'"0.00525288","","5.89","2300","1","0.026","59.8","0","31",'
-            r'"0.026","0.0","","","","","0.00382","0.0","","88","0","0.0",'
-            r'"0.0","0","0.0","0.0","0","0.0","0.0","0","0","0.0","0","0",'
-            r'"0.0","0","0","0.0","0.0","","0.0","","","","","","","","","",'
-            r'"","","","","","","","","","2012-11-29 17:00","0","X","1.087",'
-            r'"0.0","2012-12-12 17:00","0","X","1.087","0.0",'
+            r'"2013-10-31 00:00","2013-10-31 23:30","153.78050000000002",'
+            r'"1.011286","","0.00525288","","5.89","2300","1","0.026","59.8",'
+            r'"0","31","0.026","0.0","","","","","0.00382","0.0","","88","0",'
+            r'"0.0","0.0","0","0.0","0.0","0","0.0","0.0","0","0","0.0","0",'
+            r'"0","0.0","0","0","0.0","0.0","","0.0","","","","","","","","",'
+            r'"","","","","","","","","","","2012-11-29 17:00","0","X",'
+            r'"1.087","0.0","2012-12-12 17:00","0","X","1.087","0.0",'
             r'"2013-01-16 17:00","0","X","1.087","0.0","0.0","33.551731","1",'
             r'"0.0","","","","duos-amber-gbp","0.0","duos-amber-kwh","0",'
             r'"duos-amber-rate","0.00287","duos-fixed-days","1",'
@@ -6422,14 +6202,13 @@ def virtual_bill(supply_source):
     # See if selector is working
     {
         'name': "Test register read report.",
-        'path': '/chellow/reports/217/output/',
+        'path': '/csv_register_reads',
         'status_code': 200,
         'regexes': [
             r"end_year"]},
     {
         'name': "Test register read report for a supply.",
-        'path': '/chellow/reports/219/output/?supply_id=10&months=1&'
-        'end_year=2011&end_month=1',
+        'path': '/reports/219?supply_id=10&months=1&end_year=2011&end_month=1',
         'status_code': 200,
         'regexes': [
             r'\.csv".\)',
@@ -6445,67 +6224,64 @@ def virtual_bill(supply_source):
 
     # Try for a period where there's a read with no TPR (an MD read)
     {
-        'path': '/chellow/reports/219/output/?supply_id=10&months=1&'
-        'end_year=2007&end_month=1',
+        'path': '/reports/219?supply_id=10&months=1&end_year=2007&end_month=1',
         'status_code': 200,
         'regexes': [
             r'"2007-01-01 00:00","2007-01-31 23:30","10","22 1065 3921 534",'
             '"","06-002","14","SA342376","2007-01-01 00:00","N","12","md","1",'
             '"2007-01-04 00:00","45","E","2007-01-17 00:00","76","E"']},
     {
-        'name': "View a MOP rate script. Contract 57.",
-        'path': '/chellow/reports/205/output/?mop_rate_script_id=232',
+        'name': "View a MOP rate script. Contract 31.",
+        'path': '/mop_rate_scripts/206',
         'status_code': 200},
     {
         'name': "View supplies duration selector.",
-        'path': '/chellow/reports/147/output/',
+        'path': '/csv_supplies_duration',
         'status_code': 200,
         'regexes': [
             r"start_year"]},
     {
         'name': "Look at a TPR.",
-        'path': '/chellow/reports/97/output/?tpr_id=1',
+        'path': '/tprs/1',
         'status_code': 200,
         'regexes': [
             r"<tbody>\s*<tr>\s*<td>1</td>\s*<td>1</td>"]},
     {
         'name': "CSV Bills.",
-        'path': '/chellow/reports/153/output/',
+        'path': '/csv_bills',
         'status_code': 200,
         'regexes': [
             r"end_year"]},
     {
         'name': "CSV Supplies Duration with register reads",
-        'path': '/chellow/reports/149/output/?start_year=2010&start_month=01&'
-        'start_day=1&start_hour=0&start_minute=0&finish_year=2010&'
-        'finish_month=01&finish_day=31&finish_hour=23&finish_minute=30',
+        'path': '/reports/149?start_year=2010&start_month=01&start_day=1&'
+        'start_hour=0&start_minute=0&finish_year=2010&finish_month=01&'
+        'finish_day=31&finish_hour=23&finish_minute=30',
         'status_code': 303},
     {
-        'path': '/chellow/reports/251/output/',
+        'path': '/downloads',
         'tries': {'max': 20, 'period': 1},
         'regexes': [
             r"015_FINISHED_watkinsexamplecom_supplies_duration\.csv"],
         'status_code': 200},
     {
-        'path': '/chellow/reports/253/output/?'
-        'name=015_FINISHED_watkinsexamplecom_supplies_duration.csv',
+        'path': '/downloads/'
+        '015_FINISHED_watkinsexamplecom_supplies_duration.csv',
         'regexes': [
             r'"10","2",'],
         'status_code': 200},
     {
         'name': "Try the site level monthly data HTML report.",
-        'path': '/chellow/reports/13/output/?site_id=3&finish_year=2005&'
-        'finish_month=11',
+        'path': '/sites/3/months?finish_year=2005&finish_month=11',
         'regexes': [
             r"For 12 months finishing at the end of",
             r"<th>2005-09-15 00:00</th>"],
         'status_code': 200},
     {
         'name': "Change the name of a site.",
-        'path': '/chellow/reports/311/output/',
+        'path': '/sites/8/edit',
         'method': 'post',
         'data': {
-            'site_id': "8",
             'site_name': "Ishmael",
             'code': "MOBY",
             'update': "Update"},
@@ -6515,10 +6291,9 @@ def virtual_bill(supply_source):
     {
         'name': "Try inserting an era where the existing era is attached to "
         "more than one site.",
-        'path': '/chellow/reports/305/output/',
+        'path': '/supplies/2/edit',
         'method': 'post',
         'data': {
-            'supply_id': "2",
             'start_year': "2005",
             'start_month': "05",
             'start_day': "04",
@@ -6528,34 +6303,34 @@ def virtual_bill(supply_source):
         'status_code': 303},
     {
         'name': "Check user roles page.",
-        'path': '/chellow/reports/261/output/',
+        'path': '/user_roles',
         'status_code': 200,
         'regexes': [
             r"party-viewer"]},
     {
         'name': "Scenario runner",
-        'path': '/chellow/reports/245/output/',
+        'path': '/ods_scenario_runner',
         'status_code': 200},
     {
         'name': "Bill type",
-        'path': '/chellow/reports/201/output/?bill_type_id=1',
+        'path': '/bill_types/1',
         'status_code': 200},
 
     # Supplier contract 62. },
     {
         'name': "Test sse edi bill with MD line",
-        'path': '/chellow/reports/321/output/',
+        'path': '/supplier_bill_imports',
         'method': 'post',
         'data': {
             'supplier_batch_id': "3", },
         'files': {'import_file': 'test/bills2.sse.edi'},
         'status_code': 303,
         'regexes': [
-            r"/reports/323/output/\?importer_id=0"]},
+            r"/supplier_bill_imports/8"]},
 
     # Supplier contract 62.
     {
-        'path': '/chellow/reports/323/output/?importer_id=0',
+        'path': '/supplier_bill_imports/8',
         'tries': {},
         'status_code': 200,
         'regexes': [
@@ -6563,7 +6338,7 @@ def virtual_bill(supply_source):
             "the batch\."]},
     {
         'name': "Look at an HHDC batch",
-        'path': '/chellow/reports/203/output/?hhdc_batch_id=8',
+        'path': '/hhdc_batches/8',
         'status_code': 200,
         'regexes': [
             r"<tbody>\s*<tr>"]},
@@ -6571,46 +6346,41 @@ def virtual_bill(supply_source):
     # Supplier contract 61, batch 7, bill 10
     {
         'name': "Edit register read with a TPR that's not 00001",
-        'path': '/chellow/reports/31/output/?supplier_read_id=1',
+        'path': '/reads/1/edit',
         'regexes': [
             r'<option value="37" selected>00040</option>']},
 
     # Insert a new batch
     {
         'name': "Add and delete an HHDC contract",
-        'path': '/chellow/reports/281/output/',
+        'path': '/hhdc_contracts/28/add_batch',
         'method': 'post',
         'data': {
-            'hhdc_contract_id': "53",
             'reference': "to_delete",
             'description': ""},
         'status_code': 303,
         'regexes': [
-            r"/reports/203/output/\?hhdc_batch_id=10"]},
+            r"/hhdc_batches/10"]},
 
-    # Delete it. HHDC contract 53
     {
-        'path': '/chellow/reports/283/output/',
-        'method': 'post',
-        'data': {
-            'hhdc_batch_id': "10",
-            'delete': "Delete"},
+        'name': "Delete it. HHDC contract 28",
+        'path': '/hhdc_batches/10/edit',
+        'method': 'delete',
         'status_code': 303},
 
     # CRC Special Events
     {
         'name': "CRC Special Events",
-        'path': '/chellow/reports/215/output/?year=2012',
+        'path': '/reports/215?year=2012',
         'status_code': 200,
         'regexes': [
             r'"22 0883 6932 301","CI005",']},
 
     {
         'name': "A supply level virtual bill that crosses an era boundary",
-        'path': '/chellow/reports/291/output/?supply_id=10&start_year=2010&'
-        'start_month=01&start_day=01&start_hour=00&start_minute=0&'
-        'finish_year=2010&finish_month=01&finish_day=31&finish_hour=23&'
-        'finish_minute=30',
+        'path': '/reports/291?supply_id=10&start_year=2010&start_month=01&'
+        'start_day=01&start_hour=00&start_minute=0&finish_year=2010&'
+        'finish_month=01&finish_day=31&finish_hour=23&finish_minute=30',
         'status_code': 200,
         'regexes': [
             r'"Imp MPAN Core","Exp MPAN Core","Site Code","Site Name",'
@@ -6620,51 +6390,51 @@ def virtual_bill(supply_source):
             '"imp-supplier-sum-msp-kwh","imp-supplier-problem"',
             r'"22 1065 3921 534","","CI017","Roselands","SA342376",'
             '"2010-01-01 00:00","2010-01-03 23:30","","0","","","","","",'
-            '"0.0","0.0","0.0","0",""', ], },
+            '"0.0","0.0","0.0","0.0",""', ], },
     {
         'name': "A bill check with multiple covered bills",
-        'path': '/chellow/reports/111/output/?bill_id=8',
+        'path': '/reports/111?bill_id=8',
         'status_code': 303},
     {
-        'path': '/chellow/reports/251/output/',
+        'path': '/downloads',
         'tries': {'max': 20, 'period': 1},
         'regexes': [
             r"016_FINISHED_watkinsexamplecom_bill_check\.csv"],
         'status_code': 200},
     {
-        'path': '/chellow/reports/253/output/?'
-        'name=016_FINISHED_watkinsexamplecom_bill_check.csv',
+        'path': '/downloads/'
+        '016_FINISHED_watkinsexamplecom_bill_check.csv',
         'regexes': [
             r'"06-004","00101","N","244","3810.08","355.03",'
             '"2011-05-01 00:00","2011-06-30 00:00","22 6354 2983 570","CI017",'
             '"Roselands","2011-05-01 00:00","2011-06-30 00:00","9;8",'
-            '"4701.16","3010.226","1690.934","","","","","11.4",'
-            '"0.00485","","","","","5.89","","","2300","","60","","0.0211",'
-            '"","2911.8","","","0","","31","","0.0211","","0.0","","","","",'
-            '"","","","","","","","","0.00353","","0.0","","","","","","88",'
-            '"","","0","","0.0","","0.0","","","0","","0.0","","0.0","","",'
-            '"0",'
-            '"","0.0","","0.0","","","0","","0","","0.0","","","0","","0","",'
-            '"0.0","","","0","","0","","0.0","","","0.0","","","",'
-            '"0.0","","","","","","","","","","","","","","","","","","","",'
-            '"","","","","","","","","","","","","","","","","","","","",'
-            '"2010-12-07 17:00","","0","","X","","1.087","","0.0","",'
-            '"2010-12-20 17:00","","0","","X","","1.087","","0.0","",'
-            '"2011-01-06 17:00","","0","","X","","1.087","","0.0","","0.0","",'
-            '"28.408897","","1","","0.0","","","","","","","","",'
+            r'"4701.16","3010.2260000000024","1690.9339999999975","","","","",'
+            r'"11.4","0.00485","","","","","5.89","","","2300","","60","",'
+            r'"0.0211","","2911.8000000000025","","","0","","31","","0.0211",'
+            r'"","0.0","","","","","","","","","","","","","0.00353","","0.0",'
+            r'"","","","","","88","","","0","","0.0","","0.0","","","0","",'
+            r'"0.0","","0.0","","","0","","0.0","","0.0","","","0","","0","",'
+            r'"0.0","","","0","","0","","0.0","","","0","","0","","0.0","","",'
+            r'"0.0","","","","0.0","","","","","","","","","","","","","","",'
+            r'"","","","","","","","","","","","","","","","","","","","","",'
+            r'"","","","","2010-12-07 17:00","","0","","X","","1.087","",'
+            r'"0.0","","2010-12-20 17:00","","0","","X","","1.087","","0.0",'
+            r'"","2011-01-06 17:00","","0","","X","","1.087","","0.0","",'
+            r'"0.0","","28.408897","","1","","0.0","","","","","","","","",'
             '"virtual-duos-amber-gbp","0.0","","","virtual-duos-amber-kwh",'
-            '"0","","","virtual-duos-amber-rate","0.00205","","",',
+            '"0","","","virtual-duos-amber-rate","0.00205","","",'
             '"virtual-duos-fixed-days","60","","","virtual-duos-fixed-gbp",'
-            '"4.536","","","virtual-duos-fixed-rate","0.0756","","",'
-            '"virtual-duos-green-gbp","0.0","","","virtual-duos-green-kwh",'
-            '"0","","","virtual-duos-green-rate","0.00138","",""'],
+            r'"4.536000000000001","","","virtual-duos-fixed-rate","0.0756","",'
+            r'"","virtual-duos-green-gbp","0.0","","",'
+            r'"virtual-duos-green-kwh","0","","","virtual-duos-green-rate",'
+            r'"0.00138","",""'],
         'status_code': 200},
     {
         'name': "Contract virtual bills",
-        'path': '/chellow/reports/87/output/?supplier_contract_id=55&'
-        'start_year=2013&start_month=12&start_day=01&start_hour=00&'
-        'start_minute=00&finish_year=2013&finish_month=12&finish_day=01&'
-        'finish_hour=23&finish_minute=30',
+        'path': '/reports/87?supplier_contract_id=30&start_year=2013&'
+        'start_month=12&start_day=01&start_hour=00&start_minute=00&'
+        'finish_year=2013&finish_month=12&finish_day=01&finish_hour=23&'
+        'finish_minute=30',
         'status_code': 200,
         'regexes': [
             r'"22 0470 7514 535","CH017","Parbola","010","2013-12-01 00:00",'
@@ -6682,8 +6452,8 @@ def virtual_bill(supply_source):
 
     {
         'name': "Contract displaced virtual bills",
-        'path': '/chellow/reports/109/output/?supplier_contract_id=55&'
-        'months=1&finish_year=2013&finish_month=01',
+        'path': '/reports/109?supplier_contract_id=30&months=1&'
+        'finish_year=2013&finish_month=01',
         'status_code': 200,
         'regexes': [
             r'"CI004","Lower Treave","","2013-01-01 00:00",'
@@ -6701,10 +6471,9 @@ def virtual_bill(supply_source):
     {
         'name': "Check that covering hh data by a different era doesn't "
         "result in missing data being reported.",
-        'path': '/chellow/reports/307/output/',
+        'path': '/eras/1/edit',
         'method': 'post',
         'data': {
-            'era_id': "1",
             'start_year': "2003",
             'start_month': "08",
             'start_day': "03",
@@ -6716,9 +6485,9 @@ def virtual_bill(supply_source):
             'finish_day': "06",
             'finish_hour': "23",
             'finish_minute': "30",
-            'mop_contract_id': "57",
+            'mop_contract_id': "31",
             'mop_account': "mc-22 9205 6799 106",
-            'hhdc_contract_id': "53",
+            'hhdc_contract_id': "28",
             'hhdc_account': "01",
             'msn': "",
             'pc_id': "9",
@@ -6728,23 +6497,22 @@ def virtual_bill(supply_source):
             'imp_llfc_code': "540",
             'imp_mpan_core': "22 9205 6799 106",
             'imp_sc': "450",
-            'imp_supplier_contract_id': "55",
+            'imp_supplier_contract_id': "30",
             'imp_supplier_account': "11640077",
             'exp_llfc_code': "581",
             'exp_mpan_core': "22 0470 7514 535",
             'exp_sc': "150",
-            'exp_supplier_contract_id': "55",
+            'exp_supplier_contract_id': "30",
             'exp_supplier_account': ""},
         'status_code': 303},
     {
-        'path': '/chellow/reports/37/output/?hhdc-contract-id=53&'
-        'hidden_days=5',
+        'path': '/channel_snags?hhdc_contract_id=28&days_hidden=5',
         'status_code': 200,
         'regexes': [
             r'<tr>\s*<td>\s*<ul>\s*<li>\s*'
-            '<a href="/chellow/reports/117/output/\?snag_id=100">'
-            'view</a>  \[<a href="/chellow/reports/365/output/\?snag_id=100">'
-            'edit</a>\]\s*</li>\s*</ul>\s*</td>\s*<td>\s*</td>\s*<td>\s*'
+            r'<a href="/channel_snags/100">view</a>\s*'
+            r'\[<a href="/channel_snags/100/edit">edit</a>\]\s*'
+            r'</li>\s*</ul>\s*</td>\s*<td>\s*</td>\s*<td>\s*'
             '22 0470 7514 535\s*</td>\s*<td>\s*<ul>\s*'
             '<li>CH017 Parbola</li>\s*</ul>\s*</td>\s*<td>Missing</td>\s*'
             '<td>\s*<ul>\s*<li>\s*Export\s*ACTIVE\s*</li>\s*</ul>\s*</td>\s*'
@@ -6754,10 +6522,9 @@ def virtual_bill(supply_source):
     {
         'name': "Inserting an era that covers an ongoing era that has data "
         "from start.",
-        'path': '/chellow/reports/305/output/',
+        'path': '/supplies/7/edit',
         'method': 'post',
         'data': {
-            'supply_id': "7",
             'start_year': "2008",
             'start_month': "11",
             'start_day': "02",
@@ -6766,8 +6533,7 @@ def virtual_bill(supply_source):
             'insert_era': "insert_era"},
         'status_code': 303},
     {
-        'path': '/chellow/reports/233/output/?hhdc_contract_id=53&'
-        'days_hidden=0',
+        'path': '/reports/233?hhdc_contract_id=28&days_hidden=0',
         'regexes': [
             r'"0","107","22 4862 4512 332","None","CH023","Treglisson",'
             '"Missing","True","ACTIVE","2010-02-04 20:30",""',
@@ -6792,7 +6558,7 @@ def virtual_bill(supply_source):
     {
         'name': "Check that an era with imp_sc of 0 is displayed properly in "
         "edit mode. Supply 17",
-        'path': '/chellow/reports/307/output/?era_id=22',
+        'path': '/eras/22/edit',
         'regexes': [
             r'<input name="imp_sc" value="0" size="9" maxlength="9">'],
         'status_code': 200},
@@ -6800,18 +6566,18 @@ def virtual_bill(supply_source):
     {
         'name': "Try out the supplies snapshot report including a last normal "
         "read type.",
-        'path': '/chellow/reports/33/output/?supply_id=9&date_year=2007&'
-        'date_month=09&date_day=30&date_hour=23&date_minute=30',
+        'path': '/reports/33?supply_id=9&date_year=2007&date_month=09&'
+        'date_day=30&date_hour=23&date_minute=30',
         'status_code': 303},
     {
-        'path': '/chellow/reports/251/output/',
+        'path': '/downloads',
         'tries': {'max': 20, 'period': 1},
         'regexes': [
             r"017_FINISHED_watkinsexamplecom_supplies_snapshot\.csv"],
         'status_code': 200},
     {
-        'path': '/chellow/reports/253/output/?'
-        'name=017_FINISHED_watkinsexamplecom_supplies_snapshot.csv',
+        'path': '/downloads/'
+        '017_FINISHED_watkinsexamplecom_supplies_snapshot.csv',
         'status_code': 200,
         'regexes': [
             r'"2007-09-30 23:30","CI004","Lower Treave","","","9","net","",'
@@ -6825,18 +6591,18 @@ def virtual_bill(supply_source):
 
     # Try a supplies snapshot where previous era isn't AMR
     {
-        'path': '/chellow/reports/33/output/?supply_id=9&date_year=2011&'
-        'date_month=05&date_day=31&date_hour=23&date_minute=30',
+        'path': '/reports/33?supply_id=9&date_year=2011&date_month=05&'
+        'date_day=31&date_hour=23&date_minute=30',
         'status_code': 303},
     {
-        'path': '/chellow/reports/251/output/',
+        'path': '/downloads',
         'tries': {'max': 20, 'period': 1},
         'regexes': [
             r"018_FINISHED_watkinsexamplecom_supplies_snapshot\.csv"],
         'status_code': 200},
     {
-        'path': '/chellow/reports/253/output/?'
-        'name=018_FINISHED_watkinsexamplecom_supplies_snapshot.csv',
+        'path': '/downloads/'
+        '018_FINISHED_watkinsexamplecom_supplies_snapshot.csv',
         'status_code': 200,
         'regexes': [
             r'"2011-05-31 23:30","CI004","Lower Treave","","","9","net","",'
@@ -6851,18 +6617,18 @@ def virtual_bill(supply_source):
     # Try a supplies snapshot to check that latest import supplier bill is
     # correct
     {
-        'path': '/chellow/reports/33/output/?supply_id=6&date_year=2012&'
-        'date_month=05&date_day=31&date_hour=23&date_minute=30',
+        'path': '/reports/33?supply_id=6&date_year=2012&date_month=05&'
+        'date_day=31&date_hour=23&date_minute=30',
         'status_code': 303},
     {
-        'path': '/chellow/reports/251/output/',
+        'path': '/downloads',
         'tries': {'max': 20, 'period': 1},
         'regexes': [
             r"019_FINISHED_watkinsexamplecom_supplies_snapshot\.csv"],
         'status_code': 200},
     {
-        'path': '/chellow/reports/253/output/?'
-        'name=019_FINISHED_watkinsexamplecom_supplies_snapshot.csv',
+        'path': '/downloads/'
+        '019_FINISHED_watkinsexamplecom_supplies_snapshot.csv',
         'status_code': 200,
         'regexes': [
             r"Other Site Ids,Other Site Names",
@@ -6876,10 +6642,9 @@ def virtual_bill(supply_source):
 
     {
         'name': "Run supply virtual bill over 2 months",
-        'path': '/chellow/reports/291/output/?supply_id=7&start_year=2013&'
-        'start_month=09&start_day=29&start_hour=00&start_minute=00&'
-        'finish_year=2013&finish_month=11&finish_day=28&finish_hour=23&'
-        'finish_minute=30',
+        'path': '/reports/291?supply_id=7&start_year=2013&start_month=09&'
+        'start_day=29&start_hour=00&start_minute=00&finish_year=2013&'
+        'finish_month=11&finish_day=28&finish_hour=23&finish_minute=30',
         'regexes': [
             r'"22 4862 4512 332","","CH023","Treglisson","141 5532",'
             '"2013-10-01 00:00","2013-10-31 23:30","","10","","","0","","",'
@@ -6887,22 +6652,21 @@ def virtual_bill(supply_source):
         'status_code': 200},
     {
         'name': "Un-ignore a site snag",
-        'path': '/chellow/reports/373/output/',
+        'path': '/site_snags/36/edit',
         'method': 'post',
         'data': {
-            'site_snag_id': "36",
             'ignore': "false"},
         'status_code': 303},
     {
         'name': "Insert a batch with general import",
-        'path': '/chellow/reports/293/output/',
+        'path': '/general_imports',
         'method': 'post',
         'files': {'import_file': 'test/gi_batch.csv'},
         'status_code': 303,
         'regexes': [
-            r"/reports/295/output/\?process_id=0"]},
+            r"/general_imports/18"]},
     {
-        'path': '/chellow/reports/295/output/?process_id=0',
+        'path': '/general_imports/18',
         'tries': {},
         'status_code': 200,
         'regexes': [
@@ -6911,23 +6675,21 @@ def virtual_bill(supply_source):
     # Import some hh Stark DF2 data
     {
         'name': "Check df2 clock change",
-        'path': '/chellow/reports/211/output/',
+        'path': '/hhdc_contracts/28/hh_imports',
         'method': 'post',
-        'data': {
-            'hhdc_contract_id': "53"},
         'files': {'import_file': 'test/hh_clock_change.df2'},
         'status_code': 303,
         'regexes': [
-            r"/reports/65/output/\?hhdc_contract_id=53&process_id=0"]},
+            r"/hhdc_contracts/28/hh_imports/14"]},
     {
-        'path': '/chellow/reports/65/output/?hhdc_contract_id=53&process_id=0',
+        'path': '/hhdc_contracts/28/hh_imports/14',
         'tries': {},
         'regexes': [
             r"The import has completed.*successfully."],
         'status_code': 200},
     {
-        'path': '/chellow/reports/17/output/?supply_id=5&months=1&'
-        'finish_year=2014&finish_month=03',
+        'path': '/supplies/5/hh_data?months=1&finish_year=2014&'
+        'finish_month=03',
         'regexes': [
             r"<tr>\s*<td>\s*2014-03-30 00:30\s*</td>\s*<td>0</td>\s*"
             "<td>A</td>"],
@@ -6936,36 +6698,34 @@ def virtual_bill(supply_source):
     # Create a new batch
     {
         'name': "NHH bill outside supply period.",
-        'path': '/chellow/reports/287/output/',
+        'path': '/supplier_contracts/33/add_batch',
         'method': 'post',
         'data': {
-            'supplier_contract_id': "59",
             'reference': "06-078",
             'description': "Way out batch"},
         'status_code': 303,
         'regexes': [
-            r"/reports/91/output/\?supplier_batch_id=12"]},
+            r"/supplier_batches/12"]},
     {
-        'path': '/chellow/reports/321/output/',
+        'path': '/supplier_bill_imports',
         'method': 'post',
         'data': {
             'supplier_batch_id': "12"},
         'files': {'import_file': 'test/nhh_bills2007.csv'},
         'status_code': 303,
         'regexes': [
-            r"/reports/323/output/\?importer_id=1"]},
+            r"/supplier_bill_imports/9"]},
 
     {
-        'name': 'Supplier contract 59, batch 12',
-        'path': '/chellow/reports/323/output/?importer_id=1',
+        'name': 'Supplier contract 33, batch 12',
+        'path': '/supplier_bill_imports/9',
         'tries': {},
         'status_code': 200,
         'regexes': [
             r"All the bills have been successfully loaded and attached to "
             "the batch\."]},
     {
-        'path': '/chellow/reports/219/output/?supply_id=7&months=1&'
-        'end_year=2002&end_month=1',
+        'path': '/reports/219?supply_id=7&months=1&end_year=2002&end_month=1',
         'status_code': 200,
         'regexes': [
             r'"2002-01-01 00:00","2002-01-31 23:30","7","22 4862 4512 332","",'
@@ -6976,35 +6736,33 @@ def virtual_bill(supply_source):
     # Attach another site to an era. Supply 2
     {
         'name': "Check the 'also supplies' field of a site.",
-        'path': '/chellow/reports/307/output/',
+        'path': '/eras/8/edit',
         'method': 'post',
         'data': {
-            'era_id': "8",
             'site_code': "CI005",
             'attach': "Attach"},
         'status_code': 303},
     {
-        'path': '/chellow/reports/5/output/?site_id=1',
+        'path': '/sites/1',
         'regexes': [
             r'3475 1614 211\s*</td>\s*<td>\s*this site\s*</td>\s*<td>\s*'
-            '<a href="/chellow/reports/5/output/\?site_id=3" title="Wheal '
-            'Rodney">CI005</a>\s*</td>'],
+            '<a href="/sites/3" title="Wheal Rodney">CI005</a>\s*</td>'],
         'status_code': 200},
     {
         'name': "In supplies snapshot, test the last billed date of MOP and "
         "DC bills",
-        'path': '/chellow/reports/33/output/?supply_id=5&date_year=2014&'
-        'date_month=05&date_day=31&date_hour=23&date_minute=30',
+        'path': '/reports/33?supply_id=5&date_year=2014&date_month=05&'
+        'date_day=31&date_hour=23&date_minute=30',
         'status_code': 303},
     {
-        'path': '/chellow/reports/251/output/',
+        'path': '/downloads',
         'tries': {'max': 20, 'period': 1},
         'regexes': [
             r"020_FINISHED_watkinsexamplecom_supplies_snapshot\.csv"],
         'status_code': 200},
     {
-        'path': '/chellow/reports/253/output/?'
-        'name=020_FINISHED_watkinsexamplecom_supplies_snapshot.csv',
+        'path': '/downloads/'
+        '020_FINISHED_watkinsexamplecom_supplies_snapshot.csv',
         'tries': {},
         'status_code': 200,
         'regexes': [
@@ -7017,35 +6775,29 @@ def virtual_bill(supply_source):
             '"","","","","","","",""']},
     {
         'name': "Site summary page that has data quality errors.",
-        'path': '/chellow/reports/13/output/?site_id=1&finish_year=2005&'
-        'finish_month=11',
+        'path': '/sites/1/months?finish_year=2005&finish_month=11',
         'regexes': [
-            r'See <a href="/chellow/reports/11/output/\?site_id=1&amp;'
-            'months=1&amp;finish_year=2005&amp;finish_month=10">generation '
-            'graph</a>']},
+            r'See <a href="/sites/1/gen_graph\?months=1&amp;'
+            'finish_year=2005&amp;finish_month=10">generation graph</a>']},
     {
         'name': "HTML virtual bill",
-        'path': '/chellow/reports/101/output/?supply_id=10&start_year=2014&'
-        'start_month=05&start_day=1&start_hour=0&start_minute=0&'
-        'finish_year=2014&finish_month=05&finish_day=31&finish_hour=23&'
-        'finish_minute=30',
+        'path': '/supplies/10/virtual_bill?start_year=2014&start_month=05&'
+        'start_day=1&start_hour=0&start_minute=0&finish_year=2014&'
+        'finish_month=05&finish_day=31&finish_hour=23&finish_minute=30',
         'status_code': 200},
 
     {
         'name': "HTML virtual bill that spans 3 eras",
-        'path': '/chellow/reports/101/output/?supply_id=2&start_year=2005&'
-        'start_month=05&start_day=1&start_hour=0&start_minute=0&'
-        'finish_year=2006&finish_month=07&finish_day=31&finish_hour=23&'
-        'finish_minute=30',
+        'path': '/supplies/2/virtual_bill?start_year=2005&start_month=05&'
+        'start_day=1&start_hour=0&start_minute=0&finish_year=2006&'
+        'finish_month=07&finish_day=31&finish_hour=23&finish_minute=30',
         'status_code': 200},
 
     {
         'name': "Make sure rate scripts remain contiguous.",
-        'path': '/chellow/reports/273/output/',
+        'path': '/non_core_rate_scripts/136/edit',
         'method': 'post',
         'data': {
-            'rate_script_id': "160",
-
             # First rate script of non-core contract triad
             'start_year': "2005",
             'start_month': "04",
@@ -7061,16 +6813,15 @@ def virtual_bill(supply_source):
             'script': ""},
         'status_code': 303},
     {
-        'path': '/chellow/reports/271/output/?rate_script_id=161',
+        'path': '/non_core_rate_scripts/137',
         'regexes': [
             r"2006-03-31 00:00"],
         'status_code': 200},
     {
         'name': "Put it back to how it was",
-        'path': '/chellow/reports/273/output/',
+        'path': '/non_core_rate_scripts/136/edit',
         'method': 'post',
         'data': {
-            'rate_script_id': "160",
             'start_year': "2005",
             'start_month': "04",
             'start_day': "01",
@@ -7086,64 +6837,64 @@ def virtual_bill(supply_source):
         'status_code': 303},
     {
         'name': "Try sites monthly duration with displaced bill",
-        'path': '/chellow/reports/161/output/?site_id=1&months=1&'
-        'finish_year=2010&finish_month=07',
+        'path': '/reports/161?site_id=1&months=1&finish_year=2010&'
+        'finish_month=07',
         'status_code': 303},
     {
-        'path': '/chellow/reports/251/output/',
+        'path': '/downloads',
         'tries': {'max': 30, 'period': 1},
         'status_code': 200,
         'regexes': [
             r"021_FINISHED_watkinsexamplecom_site_monthly_duration_for_"
             r"CI004_1_to_2010_7\.csv"]},
     {
-        'path': '/chellow/reports/253/output/?'
-        'name=021_FINISHED_watkinsexamplecom_site_monthly_duration_for_'
+        'path': '/downloads/'
+        '021_FINISHED_watkinsexamplecom_site_monthly_duration_for_'
         'CI004_1_to_2010_7.csv',
         'status_code': 200,
         'regexes': [
             r'"CI004",']},
     {
         'name': "Try sites monthly duration covering bills",
-        'path': '/chellow/reports/161/output/?site_id=4&months=1&'
-        'finish_year=2011&finish_month=05',
+        'path': '/reports/161?site_id=4&months=1&finish_year=2011&'
+        'finish_month=05',
         'status_code': 303},
     {
-        'path': '/chellow/reports/251/output/',
+        'path': '/downloads',
         'tries': {'max': 30, 'period': 1},
         'status_code': 200,
         'regexes': [
             r"022_FINISHED_watkinsexamplecom_site_monthly_duration_for_"
             r"CI017_1_to_2011_5\.csv"]},
     {
-        'path': '/chellow/reports/253/output/?'
-        'name=022_FINISHED_watkinsexamplecom_site_monthly_duration_for_'
+        'path': '/downloads/'
+        '022_FINISHED_watkinsexamplecom_site_monthly_duration_for_'
         'CI017_1_to_2011_5.csv',
         'status_code': 200,
         'regexes': [
             r'"CI017",']},
     {
         'name': "Try sites monthly duration with a clocked bill",
-        'path': '/chellow/reports/321/output/',
+        'path': '/supplier_bill_imports',
         'method': 'post',
         'data': {
             'supplier_batch_id': "7"},
         'files': {'import_file': 'test/bills-nhh-clocked.csv'},
         'status_code': 303},
     {
-        'path': '/chellow/reports/161/output/?site_id=4&months=1&'
-        'finish_year=2012&finish_month=02',
+        'path': '/reports/161?site_id=4&months=1&finish_year=2012&'
+        'finish_month=02',
         'status_code': 303},
     {
-        'path': '/chellow/reports/251/output/',
+        'path': '/downloads',
         'tries': {'max': 30, 'period': 1},
         'status_code': 200,
         'regexes': [
             r"023_FINISHED_watkinsexamplecom_site_monthly_duration_for_"
             r"CI017_1_to_2012_2\.csv"]},
     {
-        'path': '/chellow/reports/253/output/?'
-        'name=023_FINISHED_watkinsexamplecom_site_monthly_duration_for_'
+        'path': '/downloads/'
+        '023_FINISHED_watkinsexamplecom_site_monthly_duration_for_'
         'CI017_1_to_2012_2.csv',
         'status_code': 200,
         'regexes': [
@@ -7151,38 +6902,37 @@ def virtual_bill(supply_source):
 
     # Bill check on a clocked bill
     {
-        'path': '/chellow/reports/111/output/?bill_id=21',
+        'path': '/reports/111?bill_id=21',
         'status_code': 303},
     {
-        'path': '/chellow/reports/251/output/',
+        'path': '/downloads',
         'tries': {'max': 20, 'period': 1},
         'status_code': 200,
         'regexes': [
             r"024_FINISHED_watkinsexamplecom_bill_check\.csv"]},
     {
-        'path': '/chellow/reports/253/output/?'
-        'name=024_FINISHED_watkinsexamplecom_bill_check.csv',
+        'path': '/downloads/024_FINISHED_watkinsexamplecom_bill_check.csv',
         'status_code': 200,
         'regexes': [
             r'"07-002","3423760010","N","10","9.07","0.21","2012-01-05 00:00",'
             '"2012-01-10 23:30","22 1065 3921 534","CI017","Roselands",'
-            '"2012-01-05 00:00","2012-01-10 23:30","21","9.07","1.0","8.07",'
-            '"10.0","10.0","",']},
+            r'"2012-01-05 00:00","2012-01-10 23:30","21","9.07",'
+            r'"0.9999999999999986","8.070000000000002","10.0",'
+            r'"9.999999999999998","",']},
     {
         'name': "Monthly supplies duration with export hh data",
-        'path': '/chellow/reports/177/output/?supply_id=1&months=1&'
-        'end_year=2008&end_month=07',
+        'path': '/reports/177?supply_id=1&months=1&end_year=2008&end_month=07',
         'status_code': 303},
     {
-        'path': '/chellow/reports/251/output/',
+        'path': '/downloads',
         'tries': {},
         'status_code': 200,
         'regexes': [
             r"025_FINISHED_watkinsexamplecom_supplies_monthly_duration_for_"
             r"1_1_to_2008_7\.csv"]},
     {
-        'path': '/chellow/reports/253/output/?'
-        'name=025_FINISHED_watkinsexamplecom_supplies_monthly_duration_for_'
+        'path': '/downloads/'
+        '025_FINISHED_watkinsexamplecom_supplies_monthly_duration_for_'
         '1_1_to_2008_7.csv',
         'status_code': 200,
         'regexes': [
@@ -7200,7 +6950,7 @@ def virtual_bill(supply_source):
     # Supply level hh data CSV, hh per row
     {
         'name': "Supply level hh data CSV, hh per row",
-        'path': '/chellow/reports/187/output/',
+        'path': '/reports/187',
         'method': 'post',
         'data': {
             'supply_id': '7', 'start_year': '2008', 'start_month': '01',
@@ -7209,14 +6959,14 @@ def virtual_bill(supply_source):
             'finish_hour': '23', 'finish_minute': '30'},
         'status_code': 303},
     {
-        'path': '/chellow/reports/251/output/',
+        'path': '/downloads',
         'tries': {},
         'status_code': 200,
         'regexes': [
             r"026_FINISHED_watkinsexamplecom_hh_data_row_200801010000\.csv"]},
     {
-        'path': '/chellow/reports/253/output/?'
-        'name=026_FINISHED_watkinsexamplecom_hh_data_row_200801010000.csv',
+        'path': '/downloads/'
+        '026_FINISHED_watkinsexamplecom_hh_data_row_200801010000.csv',
         'status_code': 200,
         'regexes': [
             r'"CH023","22 4862 4512 332","","2008-01-01 00:00","3.77","A","",'
@@ -7224,7 +6974,7 @@ def virtual_bill(supply_source):
 
     {
         'name': "Supply level hh data CSV, hh per row. MPAN core filter.",
-        'path': '/chellow/reports/187/output/',
+        'path': '/reports/187',
         'method': 'post',
         'data': {
             'start_year': '2010', 'start_month': '01', 'start_day': '01',
@@ -7233,14 +6983,14 @@ def virtual_bill(supply_source):
             'finish_minute': '30', 'mpan_cores': '22 4862 4512 332'},
         'status_code': 303},
     {
-        'path': '/chellow/reports/251/output/',
+        'path': '/downloads',
         'tries': {},
         'status_code': 200,
         'regexes': [
             r"027_FINISHED_watkinsexamplecom_hh_data_row_201001010000\.csv"]},
     {
-        'path': '/chellow/reports/253/output/?'
-        'name=027_FINISHED_watkinsexamplecom_hh_data_row_201001010000.csv',
+        'path': '/downloads/'
+        '027_FINISHED_watkinsexamplecom_hh_data_row_201001010000.csv',
         'status_code': 200,
         'regexes': [
             r'"Export REACTIVE_EXP Status"\s'
@@ -7249,14 +6999,14 @@ def virtual_bill(supply_source):
 
     {
         'name': "General import of bill with start date after finish date",
-        'path': '/chellow/reports/293/output/',
+        'path': '/general_imports',
         'method': 'post',
         'files': {'import_file': 'test/general-bills-error.csv'},
         'status_code': 303,
         'regexes': [
-            r"/reports/295/output/\?process_id=1"]},
+            r"/general_imports/19"]},
     {
-        'path': '/chellow/reports/295/output/?process_id=1',
+        'path': '/general_imports/19',
         'tries': {},
 
         # Check good error message
@@ -7266,10 +7016,9 @@ def virtual_bill(supply_source):
         'status_code': 200},
     {
         'name': "Manually insert a bill with errors",
-        'path': '/chellow/reports/313/output/',
+        'path': '/supplier_batches/4/add_bill',
         'method': 'post',
         'data': {
-            'supplier_batch_id': "4",
             'mpan_core': "",
             'reference': "",
             'issue_year': "2014",
@@ -7303,10 +7052,9 @@ def virtual_bill(supply_source):
     # Must straddle two eras
     {
         'name': "HH by HH virtual bill",
-        'path': '/chellow/reports/387/output/?supply_id=5&start_year=2012&'
-        'start_month=12&start_day=31&start_hour=23&start_minute=30&'
-        'finish_year=2013&finish_month=1&finish_day=1&finish_hour=23&'
-        'finish_minute=30',
+        'path': '/reports/387?supply_id=5&start_year=2012&start_month=12&'
+        'start_day=31&start_hour=23&start_minute=30&finish_year=2013&'
+        'finish_month=1&finish_day=1&finish_hour=23&finish_minute=30',
         'status_code': 200,
         'regexes': [
             r"supply_virtual_bills_hh_5.csv",
@@ -7315,10 +7063,9 @@ def virtual_bill(supply_source):
     # Add in reactive HH
     {
         'name': "Look at monthly report with an MD in kVA",
-        'path': '/chellow/reports/303/output/',
+        'path': '/channels/55/edit',
         'method': 'post',
         'data': {
-            'channel_id': "55",
             'start_year': "2010",
             'start_month': "02",
             'start_day': "04",
@@ -7329,8 +7076,7 @@ def virtual_bill(supply_source):
             'status': "A", },
         'status_code': 303},
     {
-        'path': '/chellow/reports/15/output/?is_import=true&supply_id=7&'
-        'years=1&year=2010',
+        'path': '/supplies/7/months?is_import=true&years=1&year=2010',
         'status_code': 200,
         'regexes': [
             r"<tr>\s*<td>2010-02-01 00:00</td>\s*<td>22 4862 4512 332</td>\s*"
@@ -7341,68 +7087,66 @@ def virtual_bill(supply_source):
     # Add in second batch
     {
         'name': "Order of HHDC batches",
-        'path': '/chellow/reports/281/output/',
+        'path': '/hhdc_contracts/28/add_batch',
         'method': 'post',
         'data': {
-            'hhdc_contract_id': "53",
             'reference': "7",
             'description': ""},
         'status_code': 303},
     {
-        'path': '/chellow/reports/93/output/?hhdc_contract_id=53',
+        'path': '/hhdc_batches?hhdc_contract_id=28',
         'status_code': 200,
         'regexes': [
             r'<tr>\s*<td>\s*'
-            '<a href="/chellow/reports/203/output/\?hhdc_batch_id=13">\s*7\s*'
+            '<a href="/hhdc_batches/13">\s*7\s*'
             '</a>\s*</td>\s*<td></td>\s*</tr>\s*<tr>\s*<td>\s*'
-            '<a href="/chellow/reports/203/output/\?hhdc_batch_id=8">\s*'
+            '<a href="/hhdc_batches/8">\s*'
             '001-7t\s*</a>\s*</td>\s*<td>hhdc batch</td>\s*</tr>']},
 
     # Add in second batch
     {
         'name': "Order of MOP batches",
-        'path': '/chellow/reports/353/output/',
+        'path': '/mop_contracts/31/add_batch',
         'method': 'post',
         'data': {
-            'mop_contract_id': "57",
             'reference': "7a",
             'description': ""},
         'status_code': 303},
     {
-        'path': '/chellow/reports/191/output/?mop_contract_id=57',
+        'path': '/mop_batches?mop_contract_id=31',
         'status_code': 200,
         'regexes': [
             r'<tr>\s*<td>\s*'
-            '<a href="/chellow/reports/193/output/\?mop_batch_id=9">\s*'
+            '<a href="/mop_batches/9">\s*'
             '99/992\s*</a>\s*</td>\s*<td>mop batch</td>\s*</tr>\s*<tr>\s*'
             '<td>\s*'
-            '<a href="/chellow/reports/193/output/\?mop_batch_id=14">\s*7a\s*'
+            '<a href="/mop_batches/14">\s*7a\s*'
             '</a>\s*</td>\s*<td></td>\s*</tr>']},
 
     {
         'name': "MTCs",
-        'path': '/chellow/reports/61/output/',
+        'path': '/mtcs',
         'status_code': 200,
         'regexes': [
             r'<tr>\s*<td>\s*'
-            '<a href="/chellow/reports/63/output/\?mtc_id=96">\s*001\s*'
+            '<a href="/mtcs/96">\s*001\s*'
             '</a>\s*</td>\s*<td>\s*'
-            '<a href="/chellow/reports/67/output/\?dno_contract_id=39">\s*'
+            '<a href="/dno_contracts/14">\s*'
             '12\s*</a>\s*</td>\s*<td>Economy 7, 23.30 - 06.30</td>\s*<td>\s*'
-            '<a href="/chellow/reports/131/output/\?meter_type_id=15">\s*TP\s*'
+            '<a href="/meter_types/15">\s*TP\s*'
             '</a>\s*</td>\s*<td>2</td>\s*</tr>']},
 
     {
-        'path': '/chellow/reports/63/output/?mtc_id=96',
+        'path': '/mtcs/96',
         'status_code': 200,
         'regexes': [
             r'<tr>\s*<th>Code</th>\s*<td>001</td>\s*</tr>\s*<tr>\s*'
             '<th>DNO</th>\s*<td>\s*'
-            '<a href="/chellow/reports/67/output/\?dno_contract_id=39">\s*'
+            '<a href="/dno_contracts/14">\s*'
             '12\s*</a>\s*</td>\s*</tr>']},
 
     {
-        'path': '/chellow/reports/63/output/?mtc_id=1',
+        'path': '/mtcs/1',
         'status_code': 200,
         'regexes': [
             r"<tr>\s*<th>Code</th>\s*<td>500</td>\s*</tr>\s*<tr>\s*"
@@ -7411,18 +7155,16 @@ def virtual_bill(supply_source):
     {
         'name': "Move forward era with channels, when era with no channels "
         "precedes it",
-        'path': '/chellow/reports/299/output/',
+        'path': '/eras/17/add_channel',
         'method': 'post',
         'data': {
-            'era_id': "17",
             'imp_related': "true",
             'channel_type': "ACTIVE"},
         'status_code': 303},
     {
-        'path': '/chellow/reports/307/output/',
+        'path': '/eras/17/edit',
         'method': 'post',
         'data': {
-            'era_id': "17",
             'msn': "I02D89150",
             'start_year': "2010",
             'start_month': "01",
@@ -7430,9 +7172,9 @@ def virtual_bill(supply_source):
             'start_hour': "00",
             'start_minute': "00",
             'is_ended': "false",
-            'mop_contract_id': "57",
+            'mop_contract_id': "31",
             'mop_account': "mc-22 1065 3921 534",
-            'hhdc_contract_id': "53",
+            'hhdc_contract_id': "28",
             'hhdc_account': "dc-22 1065 3921 534",
             'pc_id': "3",
             'mtc_code': "801",
@@ -7441,17 +7183,16 @@ def virtual_bill(supply_source):
             'imp_llfc_code': "110",
             'imp_mpan_core': "22 1065 3921 534",
             'imp_sc': "30",
-            'imp_supplier_contract_id': "63",
+            'imp_supplier_contract_id': "36",
             'imp_supplier_account': "SA342376000"},
         'status_code': 303},
 
     # Add new era, so that bill straddles join
     {
         'name': "NHH dumb bill that straddles dumb and AMR eras",
-        'path': '/chellow/reports/305/output/',
+        'path': '/supplies/11/edit',
         'method': 'post',
         'data': {
-            'supply_id': "11",
             'start_year': "2007",
             'start_month': "07",
             'start_day': "10",
@@ -7459,43 +7200,41 @@ def virtual_bill(supply_source):
             'start_minute': "00",
             'insert_era': "Insert"},
         'regexes': [
-            r"/chellow/reports/7/output/\?supply_id=11"],
+            r"/supplies/11"],
         'status_code': 303},
 
     # Add a channel to the new era
     {
-        'path': '/chellow/reports/299/output/',
+        'path': '/eras/27/add_channel',
         'method': 'post',
         'data': {
-            'era_id': "27",
             'imp_related': "true",
             'channel_type': "ACTIVE"},
         'status_code': 303},
     {
-        'path': '/chellow/reports/111/output/?bill_id=6',
+        'path': '/reports/111?bill_id=6',
         'status_code': 303},
     {
-        'path': '/chellow/reports/251/output/',
+        'path': '/downloads',
         'tries': {'max': 20, 'period': 1},
         'regexes': [
             r"028_FINISHED_watkinsexamplecom_bill_check\.csv"],
         'status_code': 200},
     {
-        'path': '/chellow/reports/253/output/?'
-        'name=028_FINISHED_watkinsexamplecom_bill_check.csv',
+        'path': '/downloads/'
+        '028_FINISHED_watkinsexamplecom_bill_check.csv',
         'status_code': 200,
         'regexes': [
             r'"06-002","23618619","N","0","49119","8596","2007-06-30 00:00",'
             '"2007-07-31 00:00","22 9974 3438 105","CI005","Wheal Rodney",'
             '"2007-06-30 00:00","2007-07-31 00:00","6","49119.0","0.0",'
-            '"49119.0","8596.0","0.0","8596.0","","0.0","","0.0","4.765","",'
-            '""']},
+            '"49119.0","8596.0","0.0","8596.0","","0.0","","0.0",'
+            r'"4.765000000000077","",""']},
     {
         'name': "NHH dumb bill with prev and pres dates in different eras",
-        'path': '/chellow/reports/307/output/',
+        'path': '/eras/10/edit',
         'method': 'post',
         'data': {
-            'era_id': "10",
             'start_year': "2005",
             'start_month': "09",
             'start_day': "06",
@@ -7507,9 +7246,9 @@ def virtual_bill(supply_source):
             'finish_day': "19",
             'finish_hour': "23",
             'finish_minute': "30",
-            'mop_contract_id': "57",
+            'mop_contract_id': "31",
             'mop_account': "mc-22 1065 3921 534",
-            'hhdc_contract_id': "54",
+            'hhdc_contract_id': "29",
             'hhdc_account': "dc-22 1065 3921 534",
             'msn': "I02D89150",
             'pc_id': "3",
@@ -7519,37 +7258,36 @@ def virtual_bill(supply_source):
             'imp_llfc_code': "110",
             'imp_mpan_core': "22 1065 3921 534",
             'imp_sc': "30",
-            'imp_supplier_contract_id': "63",
+            'imp_supplier_contract_id': "36",
             'imp_supplier_account': "SA342376"},
         'status_code': 303},
 
     # Check the bill
     {
-        'path': '/chellow/reports/111/output/?bill_id=13',
+        'path': '/reports/111?bill_id=13',
         'status_code': 303},
     {
-        'path': '/chellow/reports/251/output/',
+        'path': '/downloads',
         'tries': {'max': 20, 'period': 1},
         'status_code': 200,
         'regexes': [
             r"029_FINISHED_watkinsexamplecom_bill_check\.csv"]},
     {
-        'path': '/chellow/reports/253/output/?'
-        'name=029_FINISHED_watkinsexamplecom_bill_check.csv',
+        'path': '/downloads/029_FINISHED_watkinsexamplecom_bill_check.csv',
         'status_code': 200,
         'regexes': [
             r'"07-002","3423760005","N","150","98.17","15.01",'
-            '"2011-01-05 00:00","2011-01-10 23:30","22 1065 3921 534",'
-            '"CI017","Roselands","2011-01-05 00:00","2011-01-10 23:30","13",'
-            '"98.17","164.1","-65.93","150.0","1641.0","",""']},
+            r'"2011-01-05 00:00","2011-01-10 23:30","22 1065 3921 534",'
+            r'"CI017","Roselands","2011-01-05 00:00","2011-01-10 23:30","13",'
+            r'"98.17","164.0999999999997","-65.92999999999971","150.0",'
+            r'"1641.0","",""']},
 
     # Update register read to make the TPR a teleswitch one
     {
         'name': "Check bill with teleswitch TPR",
-        'path': '/chellow/reports/31/output/',
+        'path': '/reads/16/edit',
         'method': 'post',
         'data': {
-            'supplier_read_id': "16",
             'mpan': "22 1065 3921 534",
             'coefficient': "1",
             'msn': "I02D89150",
@@ -7572,28 +7310,24 @@ def virtual_bill(supply_source):
             'update': "Update"},
         'status_code': 303},
 
-    # Delete the channel to make it a dumb NHH
     {
-        'path': '/chellow/reports/303/output/',
-        'method': 'post',
-        'data': {
-            'channel_id': "56",
-            'delete': "delete"},
+        'name': "Delete the channel to make it a dumb NHH",
+        'path': '/channels/56/edit',
+        'method': 'delete',
         'status_code': 303},
 
-    # Check the bill
     {
-        'path': '/chellow/reports/111/output/?bill_id=21',
+        'name': "Check the bill",
+        'path': '/reports/111?bill_id=21',
         'status_code': 303},
     {
-        'path': '/chellow/reports/251/output/',
+        'path': '/downloads',
         'tries': {'max': 20, 'period': 1},
         'status_code': 200,
         'regexes': [
             r"030_FINISHED_watkinsexamplecom_bill_check\.csv"]},
     {
-        'path': '/chellow/reports/253/output/?'
-        'name=030_FINISHED_watkinsexamplecom_bill_check.csv',
+        'path': '/downloads/030_FINISHED_watkinsexamplecom_bill_check.csv',
         'status_code': 200,
         'regexes': [
             r'"07-002","3423760010","N","10","9.07","0.21","2012-01-05 00:00",'
@@ -7604,10 +7338,9 @@ def virtual_bill(supply_source):
     # Update register read to make the TPR a teleswitch one },
     {
         'name': "CRC with read pair straddling eras",
-        'path': '/chellow/reports/31/output/',
+        'path': '/reads/7/edit',
         'method': 'post',
         'data': {
-            'supplier_read_id': "7",
             'mpan': "22 1065 3921 534",
             'coefficient': "1",
             'msn': "I02D89150",
@@ -7630,28 +7363,28 @@ def virtual_bill(supply_source):
             'update': "Update"},
         'status_code': 303},
     {
-        'path': '/chellow/reports/207/output/?supply_id=10&year=2009',
+        'path': '/reports/207?supply_id=10&year=2009',
         'status_code': 303},
     {
-        'path': '/chellow/reports/251/output/',
+        'path': '/downloads',
         'tries': {'max': 20, 'period': 1},
         'status_code': 200,
         'regexes': [
             r"031_FINISHED_watkinsexamplecom_crc_2009_2010_supply_10\.csv"]},
     {
-        'path': '/chellow/reports/253/output/?'
-        'name=031_FINISHED_watkinsexamplecom_crc_2009_2010_supply_10.csv',
+        'path': '/downloads/'
+        '031_FINISHED_watkinsexamplecom_crc_2009_2010_supply_10.csv',
         'status_code': 200,
         'regexes': [
             r'"10","22 1065 3921 534","CI017","Roselands","2009-04-01 00:00",'
-            '"2010-03-31 23:30",".*?","0","0","277.0","0","0","0","365.0","0",'
-            '"277.0","365.0","Actual","0","0","2164.96389892","0","0","0",'
-            '"2164.96389892"']},
+            r'"2010-03-31 23:30",".*?","0","0","277.0","0","0","0","365.0",'
+            r'"0","277.0","365.0","Actual","0","0","2164.9638989169675","0",'
+            r'"0","0","2164.9638989169675"']},
 
     # Add a scenario
     {
         'name': "Run a BAU scenario",
-        'path': '/chellow/reports/315/output/',
+        'path': '/supplier_contracts/add',
         'method': 'post',
         'data': {
             'participant_id': "54",  # COOP
@@ -7693,23 +7426,23 @@ def virtual_bill(supply_source):
 }
 """, },
         'regexes': [
-            r"/reports/77/output/\?supplier_contract_id=64"],
+            r"/supplier_contracts/37"],
         'status_code': 303},
 
     {
         'name': "Run scenario for a site where there are no site groups",
-        'path': '/chellow/reports/247/output/?site_id=1&scenario_id=64',
+        'path': '/reports/247?site_id=1&scenario_id=37',
         'status_code': 303},
     {
-        'path': '/chellow/reports/251/output/',
+        'path': '/downloads',
         'tries': {},
         'status_code': 200,
         'regexes': [
             r"032_FINISHED_watkinsexamplecom_scenario_bau_20150601_0000_for_"
             r"1_months_site_CI004\.ods"]},
     {
-        'path': '/chellow/reports/253/output/?'
-        'name=032_FINISHED_watkinsexamplecom_scenario_bau_20150601_0000_for_'
+        'path': '/downloads/'
+        '032_FINISHED_watkinsexamplecom_scenario_bau_20150601_0000_for_'
         '1_months_site_CI004.ods',
         'status_code': 200,
 
@@ -7721,18 +7454,18 @@ def virtual_bill(supply_source):
 
     {
         'name': "Run scenario for a site where there are site groups",
-        'path': '/chellow/reports/247/output/?site_id=3&scenario_id=64',
+        'path': '/reports/247?site_id=3&scenario_id=37',
         'status_code': 303},
     {
-        'path': '/chellow/reports/251/output/',
+        'path': '/downloads',
         'tries': {'max': 30, 'period': 1},
         'status_code': 200,
         'regexes': [
             r"033_FINISHED_watkinsexamplecom_scenario_bau_20150601_0000_for_"
             r"1_months_site_CI005\.ods"]},
     {
-        'path': '/chellow/reports/253/output/?'
-        'name=033_FINISHED_watkinsexamplecom_scenario_bau_20150601_0000_for_'
+        'path': '/downloads/'
+        '033_FINISHED_watkinsexamplecom_scenario_bau_20150601_0000_for_'
         '1_months_site_CI005.ods',
         'status_code': 200,
         'regexes': [
@@ -7740,19 +7473,19 @@ def virtual_bill(supply_source):
 
     {
         'name': "Check BSUoS automatic import page",
-        'path': '/chellow/reports/227/output/',
+        'path': '/non_core_contracts/3/auto_importer',
         'status_code': 200,
         'regexes': [
             r"Is Locked\?"]},
     {
         'name': "Check RCRC automatic import page",
-        'path': '/chellow/reports/225/output/',
+        'path': '/non_core_contracts/6/auto_importer',
         'status_code': 200,
         'regexes': [
             r"Is Locked\?"]},
     {
         'name': "Check TLM automatic import page",
-        'path': '/chellow/reports/223/output/',
+        'path': '/non_core_contracts/8/auto_importer',
         'status_code': 200,
         'regexes': [
             r"Is Locked\?"]},
@@ -7760,7 +7493,7 @@ def virtual_bill(supply_source):
     # Add a scenario
     {
         'name': "Run an increased BSUoS scenario",
-        'path': '/chellow/reports/315/output/',
+        'path': '/supplier_contracts/add',
         'method': 'post',
         'data': {
             'participant_id': "54",  # COOP
@@ -7803,23 +7536,23 @@ def virtual_bill(supply_source):
 }
 """},
         'regexes': [
-            r"/reports/77/output/\?supplier_contract_id=65"],
+            r"/supplier_contracts/38"],
         'status_code': 303},
 
     # Run scenario for a site
     {
-        'path': '/chellow/reports/247/output/?site_id=3&scenario_id=65',
+        'path': '/reports/247?site_id=3&scenario_id=38',
         'status_code': 303},
     {
-        'path': '/chellow/reports/251/output/',
+        'path': '/downloads',
         'tries': {'max': 30, 'period': 1},
         'status_code': 200,
         'regexes': [
             r"034_FINISHED_watkinsexamplecom_scenario_bsuos_20110101_0000_"
             r"for_1_months_site_CI005\.ods"]},
     {
-        'path': '/chellow/reports/253/output/?'
-        'name=034_FINISHED_watkinsexamplecom_scenario_bsuos_20110101_0000_for_'
+        'path': '/downloads/'
+        '034_FINISHED_watkinsexamplecom_scenario_bsuos_20110101_0000_for_'
         '1_months_site_CI005.ods',
         'status_code': 200,
         'regexes': [
@@ -7850,13 +7583,13 @@ def virtual_bill(supply_source):
             r'office:value-type="date" table:style-name="cDateISO"/>\s*'
             r'<table:table-cell office:value="0" '
             r'office:value-type="float" table:number-columns-repeated="9"/>\s*'
-            r'<table:table-cell office:value="189.2268" '
+            r'<table:table-cell office:value="189.22680000000003" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="112.0808" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="0" '
             r'office:value-type="float" table:number-columns-repeated="5"/>\s*'
-            r'<table:table-cell office:value="189.2268" '
+            r'<table:table-cell office:value="189.22680000000003" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="0" '
             r'office:value-type="float" table:number-columns-repeated="3"/>\s*'
@@ -7871,7 +7604,7 @@ def virtual_bill(supply_source):
             r'<table:table-cell office:string-value="" '
             r'office:value-type="string"/>\s*'
             r'<table:table-cell/>\s*'
-            r'<table:table-cell office:value="179.2268" '
+            r'<table:table-cell office:value="179.22680000000003" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell table:number-columns-repeated="2"/>\s*'
             r'<table:table-cell office:value="0.0047" '
@@ -7982,7 +7715,7 @@ def virtual_bill(supply_source):
             r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="0.6338" '
             r'office:value-type="float"/>\s*'
-            r'<table:table-cell office:value="19.6478" '
+            r'<table:table-cell office:value="19.647800000000014" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="0" '
             r'office:value-type="float"/>\s*'
@@ -8101,7 +7834,7 @@ def virtual_bill(supply_source):
     # Add a scenario
     {
         'name': "Run a used and generated scenario",
-        'path': '/chellow/reports/315/output/',
+        'path': '/supplier_contracts/add',
         'method': 'post',
         'data': {
             'participant_id': "54",  # COOP
@@ -8142,23 +7875,23 @@ def virtual_bill(supply_source):
     "CI005, used, 2011-01-01, 0.5\nCI005, generated, 2011-01-01, 2"}
 """, },
         'regexes': [
-            r"/reports/77/output/\?supplier_contract_id=66"],
+            r"/supplier_contracts/39"],
         'status_code': 303},
 
     # Run scenario for a site
     {
-        'path': '/chellow/reports/247/output/?site_id=3&scenario_id=66',
+        'path': '/reports/247?site_id=3&scenario_id=39',
         'status_code': 303},
     {
-        'path': '/chellow/reports/251/output/',
+        'path': '/downloads',
         'tries': {'max': 30, 'period': 1},
         'status_code': 200,
         'regexes': [
             r'035_FINISHED_watkinsexamplecom_scenario_used_20110101_0000_for_'
             r'1_months_site_CI005\.ods']},
     {
-        'path': '/chellow/reports/253/output/?'
-        'name=035_FINISHED_watkinsexamplecom_scenario_used_20110101_0000_for_'
+        'path': '/downloads/'
+        '035_FINISHED_watkinsexamplecom_scenario_used_20110101_0000_for_'
         '1_months_site_CI005.ods',
         'status_code': 200,
         'regexes': [
@@ -8186,11 +7919,11 @@ def virtual_bill(supply_source):
             r'<table:table-cell '
             r'office:date-value="2011-01-31T23:30:00" '
             r'office:value-type="date" table:style-name="cDateISO"/>\s*'
-            r'<table:table-cell office:value="12.9095890411" '
+            r'<table:table-cell office:value="12.909589041095739" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="0" '
             r'office:value-type="float" table:number-columns-repeated="6"/>\s*'
-            r'<table:table-cell office:value="12.9095890411" '
+            r'<table:table-cell office:value="12.909589041095739" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="0" '
             r'office:value-type="float"/>\s*'
@@ -8221,17 +7954,16 @@ def virtual_bill(supply_source):
             r'<table:table-cell table:number-columns-repeated="18"/>\s*'
             r'<table:table-cell office:value="0.0" '
             r'office:value-type="float" table:number-columns-repeated="2"/>\s*'
-            r'<table:table-cell office:value="12.9095890411" '
+            r'<table:table-cell office:value="12.909589041095739" '
             r'office:value-type="float"/>\s*'
             r'</table:table-row>']},
 
     # Try to detach an era from its physical site
     {
         'name': "Detach an era",
-        'path': '/chellow/reports/307/output/',
+        'path': '/eras/8/edit',
         'method': 'post',
         'data': {
-            'era_id': "8",
             'site_id': "1",
             'detach': "Detach"},
         'status_code': 400,
@@ -8240,18 +7972,17 @@ def virtual_bill(supply_source):
             "physically located.</li>"]},
     {
         'name': "Look at a DNO",
-        'path': '/chellow/reports/67/output/?dno_contract_id=37',
+        'path': '/dno_contracts/12',
         'status_code': 200},
     {
         'name': "Look at the SSCs",
-        'path': '/chellow/reports/125/output/',
+        'path': '/sscs',
         'status_code': 200},
     {
         'name': "Rate start after last rate scripts",
-        'path': '/chellow/reports/317/output/',
+        'path': '/supplier_contracts/38/edit',
         'method': 'post',
         'data': {
-            'supplier_contract_id': "65",
             'party_id': "90",  # COOP
             'name': "scenario_bsuos",
             'start_year': "2000",
@@ -8292,23 +8023,23 @@ def virtual_bill(supply_source):
 }
 """},
         'regexes': [
-            r"/reports/77/output/\?supplier_contract_id=65"],
+            r"/supplier_contracts/38"],
         'status_code': 303},
 
     # Run scenario for a site
     {
-        'path': '/chellow/reports/247/output/?site_id=3&scenario_id=65',
+        'path': '/reports/247?site_id=3&scenario_id=38',
         'status_code': 303},
     {
-        'path': '/chellow/reports/251/output/',
+        'path': '/downloads',
         'tries': {'max': 30, 'period': 1},
         'status_code': 200,
         'regexes': [
             r"036_FINISHED_watkinsexamplecom_scenario_bsuos_50110101_0000_"
             r"for_1_months_site_CI005\.ods"]},
     {
-        'path': '/chellow/reports/253/output/?'
-        'name=036_FINISHED_watkinsexamplecom_scenario_bsuos_50110101_0000_'
+        'path': '/downloads/'
+        '036_FINISHED_watkinsexamplecom_scenario_bsuos_50110101_0000_'
         'for_1_months_site_CI005.ods',
         'status_code': 200,
         'regexes': [
@@ -8340,12 +8071,12 @@ def virtual_bill(supply_source):
             r'<table:table-cell office:value="0" '
             r'office:value-type="float" table:number-columns-repeated="9"/>\s*'
             r'<table:table-cell '
-            r'office:value="216.5347" office:value-type="float"/>\s*'
+            r'office:value="216.53470000000002" office:value-type="float"/>\s*'
             r'<table:table-cell office:value="103.8937" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="0" '
             r'office:value-type="float" table:number-columns-repeated="5"/>\s*'
-            r'<table:table-cell office:value="216.5347" '
+            r'<table:table-cell office:value="216.53470000000002" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="0" '
             r'office:value-type="float" table:number-columns-repeated="3"/>\s*'
@@ -8360,7 +8091,7 @@ def virtual_bill(supply_source):
             r'<table:table-cell office:string-value="" '
             r'office:value-type="string"/>\s*'
             r'<table:table-cell/>\s*'
-            r'<table:table-cell office:value="206.5347" '
+            r'<table:table-cell office:value="206.53470000000002" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell table:number-columns-repeated="2"/>\s*'
             r'<table:table-cell office:value="0.00525288" '
@@ -8471,7 +8202,7 @@ def virtual_bill(supply_source):
             r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="0.6567" '
             r'office:value-type="float"/>\s*'
-            r'<table:table-cell office:value="20.3577" '
+            r'<table:table-cell office:value="20.357700000000012" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="0" '
             r'office:value-type="float"/>\s*'
@@ -8585,27 +8316,27 @@ def virtual_bill(supply_source):
 
     {
         'name': "Show edit channel snag",
-        'path': '/chellow/reports/365/output/?snag_id=100',
+        'path': '/channel_snags/100',
         'status_code': 200},
 
     # GI Delete LLFC
     {
         'name': "GI Delete LLFC",
-        'path': "/chellow/reports/293/output/",
+        'path': "/general_imports",
         'method': "post",
         'files': {"import_file": "test/gi_delete_llfc.csv"},
         'status_code': 303,
-        'regexes': [r"/reports/295/output/\?process_id=2"]},
+        'regexes': [r"/general_imports/20"]},
     {
         'name': "Check import has succeeded",
-        'path': "/chellow/reports/295/output/?process_id=2",
+        'path': "/general_imports/20",
         'tries': {},
         'status_code': 200,
         'regexes': [r"The file has been imported successfully\."]},
 
     {
         'name': "MDD Converter. Market participant",
-        'path': "/chellow/reports/163/output/",
+        'path': "/reports/163",
         'method': "post",
         'files': {"file": "test/Market_Participant_233.csv"},
         'status_code': 200,
@@ -8615,22 +8346,22 @@ def virtual_bill(supply_source):
 
     {
         'name': "MDD Converter. Market participant",
-        'path': "/chellow/reports/293/output/",
+        'path': "/general_imports",
         'method': "post",
         'files': {'import_file': "test/gi_insert_participant.csv"},
         'status_code': 303,
         'regexes': [
-            "/reports/295/output/\?process_id=3"]},
+            r'/general_imports/21']},
     {
         'name': "MDD Converter. Market participant",
-        'path': "/chellow/reports/295/output/?process_id=3",
+        'path': "/general_imports/21",
         'tries': {'max': 10, 'period': 1},
         'status_code': 200,
         'regexes': [r"The file has been imported successfully\."]},
 
     {
         'name': "MDD Converter. Market role",
-        'path': "/chellow/reports/163/output/",
+        'path': "/reports/163",
         'method': "post",
         'files': {"file": "test/Market_Role_234.csv"},
         'status_code': 200,
@@ -8640,22 +8371,22 @@ def virtual_bill(supply_source):
 
     {
         'name': "MDD Converter. Market role",
-        'path': "/chellow/reports/293/output/",
+        'path': "/general_imports",
         'method': "post",
         'files': {'import_file': "test/gi_insert_market_role.csv"},
         'status_code': 303,
         'regexes': [
-            "/reports/295/output/\?process_id=4"]},
+            "/general_imports/22"]},
     {
         'name': "MDD Converter. Market role",
-        'path': "/chellow/reports/295/output/?process_id=4",
+        'path': "/general_imports/22",
         'tries': {'max': 10, 'period': 1},
         'status_code': 200,
         'regexes': [r"The file has been imported successfully\."]},
 
     {
         'name': "MDD Converter. Party",
-        'path': "/chellow/reports/163/output/",
+        'path': "/reports/163",
         'method': "post",
         'files': {"file": "test/Market_Participant_Role_232.csv"},
         'status_code': 200,
@@ -8669,33 +8400,33 @@ def virtual_bill(supply_source):
 
     {
         'name': "MDD Converter. Party",
-        'path': "/chellow/reports/293/output/",
+        'path': "/general_imports",
         'method': "post",
         'files': {'import_file': "test/gi_party.csv"},
         'status_code': 303,
         'regexes': [
-            "/reports/295/output/\?process_id=5"]},
+            "/general_imports/23"]},
     {
         'name': "MDD Converter. Party",
-        'path': "/chellow/reports/295/output/?process_id=5",
+        'path': "/general_imports/23",
         'tries': {'max': 10, 'period': 1},
         'status_code': 200,
         'regexes': [r"The file has been imported successfully\."]},
 
     {
         'name': "MDD Converter. Check imported party looks okay",
-        'path': "/chellow/reports/73/output/?participant_id=604",
+        'path': "/participants/604",
         'status_code': 200,
         'regexes': [
             r'<tr>\s*<td>\s*'
-            r'<a href="/chellow/reports/47/output/\?party_id=1011">Peel '
-            r'Electricity Networks Ltd</a>\s*</td>\s*<td>\s*'
-            r'<a href="/chellow/reports/123/output/\?market_role_id=27">'
-            r'Distributor</a>\s*</td>\s*<td>\s*30\s*</td>\s*</tr>']},
+            r'<a href="/parties/1011">Peel Electricity Networks Ltd</a>\s*'
+            r'</td>\s*<td>\s*'
+            r'<a href="/market_roles/27">Distributor</a>\s*'
+            r'</td>\s*<td>\s*30\s*</td>\s*</tr>']},
 
     {
         'name': "MDD Converter. Convert LLFC.",
-        'path': "/chellow/reports/163/output/",
+        'path': "/reports/163",
         'method': "post",
         'files': {"file": "test/Line_Loss_Factor_Class_225.csv"},
         'status_code': 200,
@@ -8705,22 +8436,22 @@ def virtual_bill(supply_source):
 
     {
         'name': "GI Insert LLFC",
-        'path': "/chellow/reports/293/output/",
+        'path': "/general_imports",
         'method': "post",
         'files': {'import_file': "test/gi_insert_llfc.csv"},
         'status_code': 303,
         'regexes': [
-            "/reports/295/output/\?process_id=6"]},
+            "/general_imports/24"]},
     {
         'name': "GI Insert LLFC. Check it worked.",
-        'path': "/chellow/reports/295/output/?process_id=6",
+        'path': "/general_imports/24",
         'tries': {'max': 10, 'period': 1},
         'status_code': 200,
         'regexes': [r"The file has been imported successfully\."]},
 
     {
         'name': "MDD Converter. MTC Meter Type",
-        'path': "/chellow/reports/163/output/",
+        'path': "/reports/163",
         'method': "post",
         'files': {"file": "test/MTC_Meter_Type_234.csv"},
         'status_code': 200,
@@ -8729,22 +8460,22 @@ def virtual_bill(supply_source):
             r'"1996-04-02 00:00",""']},
     {
         'name': "MDD Converter. Meter Timeswitch Class",
-        'path': "/chellow/reports/293/output/",
+        'path': "/general_imports",
         'method': "post",
         'files': {'import_file': "test/gi_mtc_meter_type.csv"},
         'status_code': 303,
         'regexes': [
-            "/reports/295/output/\?process_id=7"]},
+            "/general_imports/25"]},
     {
         'name': "MDD Converter. Meter Timeswitch Class",
-        'path': "/chellow/reports/295/output/?process_id=7",
+        'path': "/general_imports/25",
         'tries': {'max': 10, 'period': 1},
         'status_code': 200,
         'regexes': [r"The file has been imported successfully\."]},
 
     {
         'name': "MDD Converter. Meter Timeswitch Class",
-        'path': "/chellow/reports/163/output/",
+        'path': "/reports/163",
         'method': "post",
         'files': {"file": "test/Meter_Timeswitch_Class_233.csv"},
         'status_code': 200,
@@ -8753,22 +8484,22 @@ def virtual_bill(supply_source):
             r'"False","True","XX","CR","0","2012-08-15 00:00",""']},
     {
         'name': "MDD Converter. Meter Timeswitch Class",
-        'path': "/chellow/reports/293/output/",
+        'path': "/general_imports",
         'method': "post",
         'files': {'import_file': "test/gi_meter_timeswitch_class.csv"},
         'status_code': 303,
         'regexes': [
-            "/reports/295/output/\?process_id=8"]},
+            "/general_imports/26"]},
     {
         'name': "MDD Converter. Meter Timeswitch Class",
-        'path': "/chellow/reports/295/output/?process_id=8",
+        'path': "/general_imports/26",
         'tries': {'max': 10, 'period': 1},
         'status_code': 200,
         'regexes': [r"The file has been imported successfully\."]},
 
     {
         'name': "MDD Converter. MTC in PES area",
-        'path': "/chellow/reports/163/output/",
+        'path': "/reports/163",
         'method': "post",
         'files': {"file": "test/MTC_in_PES_Area_233.csv"},
         'status_code': 200,
@@ -8777,15 +8508,15 @@ def virtual_bill(supply_source):
             r'"TN","CR","4","2015-03-18 00:00",""']},
     {
         'name': "MDD Converter. MTC in PES Area",
-        'path': "/chellow/reports/293/output/",
+        'path': "/general_imports",
         'method': "post",
         'files': {'import_file': "test/gi_insert_mtc_in_pes_area.csv"},
         'status_code': 303,
         'regexes': [
-            "/reports/295/output/\?process_id=9"]},
+            "/general_imports/27"]},
     {
         'name': "MDD Converter. Meter Timeswitch Class",
-        'path': "/chellow/reports/295/output/?process_id=9",
+        'path': "/general_imports/27",
         'tries': {'max': 10, 'period': 1},
         'status_code': 200,
         'regexes': [r"The file has been imported successfully\."]},
@@ -8793,25 +8524,19 @@ def virtual_bill(supply_source):
     # CRC Selector
     {
         'name': "CRC Selector",
-        'path': "/chellow/reports/209/output/",
+        'path': "/csv_crc",
         'status_code': 200},
 
     # Dumb NHH supply with DUoS pass-through
     {
         'name': "Dumb NHH supply with DUoS pass-through: "
         "Update Non half-hourlies 2010",
-        'path': "/chellow/reports/317/output/",
+        'path': "/supplier_contracts/36/edit",
         'method': 'post',
         'data': {
-            'supplier_contract_id': '63',
             'party_id': '90',
             'name': 'Non half-hourlies 2010',
-            'charge_script': """from net.sf.chellow.monad import Monad
-import datetime
-import pytz
-from dateutil.relativedelta import relativedelta
-
-Monad.getUtils()['impt'](globals(), 'db', 'utils', 'templater', 'duos')
+            'charge_script': """import chellow.duos
 
 def virtual_bill_titles():
         return ['net-gbp', 'sum-msp-kwh', 'problem']
@@ -8820,8 +8545,8 @@ def virtual_bill(supply_source):
     sum_msp_kwh = sum(h['msp-kwh'] for h in supply_source.hh_data)
     bill = supply_source.supplier_bill
     bill['consumption_info'] = supply_source.consumption_info
-    duos.duos_vb(supply_source)
-    for rate_name, rate_set in supply_source.supplier_rate_sets.iteritems():
+    chellow.duos.duos_vb(supply_source)
+    for rate_name, rate_set in supply_source.supplier_rate_sets.items():
         if len(rate_set) == 1:
             bill[rate_name] = rate_set.pop()
     bill['net-gbp'] = sum_msp_kwh * 0.1
@@ -8832,10 +8557,9 @@ def virtual_bill(supply_source):
     {
         'name': "Dumb NHH supply with DUoS pass-through: "
         "Run virtual bill",
-        'path': '/chellow/reports/291/output/?supply_id=16&start_year=2015&'
-        'start_month=03&start_day=01&start_hour=00&start_minute=0&'
-        'finish_year=2015&finish_month=03&finish_day=31&finish_hour=23&'
-        'finish_minute=30',
+        'path': '/reports/291?supply_id=16&start_year=2015&start_month=03&'
+        'start_day=01&start_hour=00&start_minute=0&finish_year=2015&'
+        'finish_month=03&finish_day=31&finish_hour=23&finish_minute=30',
         'regexes': [
             r'"Imp MPAN Core","Exp MPAN Core","Site Code","Site Name",'],
         'status_code': 200},
@@ -8843,7 +8567,7 @@ def virtual_bill(supply_source):
     # Forecast that includes a leap day
     {
         'name': "Leap day forecast. Create scenario",
-        'path': '/chellow/reports/315/output/',
+        'path': '/supplier_contracts/add',
         'method': 'post',
         'data': {
             'participant_id': "54",  # COOP
@@ -8869,23 +8593,23 @@ def virtual_bill(supply_source):
 }
 """, },
         'regexes': [
-            r"/reports/77/output/\?supplier_contract_id=67"],
+            r"/supplier_contracts/40"],
         'status_code': 303},
 
     {
         'name': "Leap day forecast. Run scenario for a site",
-        'path': '/chellow/reports/247/output/?site_id=5&scenario_id=67',
+        'path': '/reports/247?site_id=5&scenario_id=40',
         'status_code': 303},
     {
-        'path': '/chellow/reports/251/output/',
+        'path': '/downloads',
         'tries': {'max': 30, 'period': 1},
         'status_code': 200,
         'regexes': [
             r"037_FINISHED_watkinsexamplecom_scenario_leap_day_20160201_0000_"
             r"for_1_months_site_CH023\.ods"]},
     {
-        'path': '/chellow/reports/253/output/?'
-        'name=037_FINISHED_watkinsexamplecom_scenario_leap_day_20160201_0000_'
+        'path': '/downloads/'
+        '037_FINISHED_watkinsexamplecom_scenario_leap_day_20160201_0000_'
         'for_1_months_site_CH023.ods',
         'status_code': 200,
         'regexes': [
@@ -8914,11 +8638,11 @@ def virtual_bill(supply_source):
             r'<table:table-cell '
             r'office:date-value="2016-02-29T23:30:00" '
             r'office:value-type="date" table:style-name="cDateISO"/>\s*'
-            r'<table:table-cell office:value="23562.05" '
+            r'<table:table-cell office:value="23562.049999999996" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="0" '
             r'office:value-type="float" table:number-columns-repeated="6"/>\s*'
-            r'<table:table-cell office:value="23562.05" '
+            r'<table:table-cell office:value="23562.049999999996" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="0" '
             r'office:value-type="float"/>\s*'
@@ -8949,13 +8673,13 @@ def virtual_bill(supply_source):
             r'<table:table-cell table:number-columns-repeated="18"/>\s*'
             r'<table:table-cell office:value="0.0" '
             r'office:value-type="float" table:number-columns-repeated="2"/>\s*'
-            r'<table:table-cell office:value="23562.05" '
+            r'<table:table-cell office:value="23562.049999999996" '
             r'office:value-type="float"/>\s*'
             r'</table:table-row>']},
 
     {
         'name': "Check CSV Supplies HH Data. With mpan_cores",
-        'path': '/chellow/reports/169/output/',
+        'path': '/reports/169',
         'method': 'post',
         'data': {
             'mpan_cores': '22 0470 7514 535\n22 1065 3921 534 ',
@@ -8967,28 +8691,30 @@ def virtual_bill(supply_source):
             'finish_minute': '30'},
         'status_code': 303},
     {
-        'path': '/chellow/reports/251/output/',
+        'path': '/downloads',
         'tries': {'max': 20, 'period': 1},
         'status_code': 200,
         'regexes': [
             r"038_FINISHED_watkinsexamplecom_supplies_hh_data_200808012330_"
             r"filter\.csv"]},
     {
-        'path': '/chellow/reports/253/output/?'
-        'name=038_FINISHED_watkinsexamplecom_supplies_hh_data_200808012330_'
+        'path': '/downloads/'
+        '038_FINISHED_watkinsexamplecom_supplies_hh_data_200808012330_'
         'filter.csv',
         'status_code': 200,
 
         # Check the HH data is there
         'regexes': [
             r'NA,2008-07-06,0\.262',
-            r"\A\('content-disposition', 'attachment; "
+            r"\A\('Connection', 'close'\)\s*"
+            r"\('Content-Disposition', 'attachment; "
             r'filename="038_FINISHED_watkinsexamplecom_supplies_hh_data_'
             r'200808012330_filter.csv"'
             r"'\)\s*"
-            r"\('content-type', 'text/csv; charset=utf-8'\)\s*"
-            r"\('date', '[^']*'\)\s*"
-            r"\('server', '[^']*'\)\s*"
+            r"\('Content-Type', 'text/csv; charset=utf-8'\)\s*"
+            r"\('Date', '[^']*'\)\s*"
+            r"\('Server', '[^']*'\)\s*"
+            r"\('Transfer-Encoding', 'chunked'\)\s*"
             r'MPAN Core,Date,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,'
             r'19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,'
             r'40,41,42,43,44,45,46,47\s*'
@@ -9034,14 +8760,14 @@ def virtual_bill(supply_source):
     # Insert era with {no change} on channel
     {
         'name': "Insert era with {no change} on channel",
-        'path': '/chellow/reports/293/output/',
+        'path': '/general_imports',
         'method': 'post',
         'files': {'import_file': 'test/era-insert-2.csv'},
         'status_code': 303,
         'regexes': [
-            r"/reports/295/output/\?process_id=10"]},
+            r"/general_imports/28"]},
     {
-        'path': '/chellow/reports/295/output/?process_id=10',
+        'path': '/general_imports/28',
         'tries': {},
 
         # Check it's loaded ok
@@ -9052,7 +8778,7 @@ def virtual_bill(supply_source):
     # Supplies TRIAD selector
     {
         'name': "Supplies TRIAD selector",
-        'path': '/chellow/reports/175/output/',
+        'path': '/csv_supplies_triad',
         'status_code': 200,
         'regexes': [
             r"<!DOCTYPE html>"]},
@@ -9060,7 +8786,7 @@ def virtual_bill(supply_source):
     # Sites TRIAD selector
     {
         'name': "Sites TRIAD selector",
-        'path': '/chellow/reports/179/output/',
+        'path': '/csv_sites_triad',
         'status_code': 200,
         'regexes': [
             r"<!DOCTYPE html>"]},
@@ -9068,7 +8794,7 @@ def virtual_bill(supply_source):
     # View a MOP bill
     {
         'name': "View a MOP bill",
-        'path': '/chellow/reports/359/output/?mop_bill_id=16',
+        'path': '/mop_bills/16',
         'status_code': 200,
         'regexes': [
             r"<!DOCTYPE html>"]},
@@ -9076,17 +8802,17 @@ def virtual_bill(supply_source):
     # CRC for HH supply with HH data
     {
         'name': "CRC for HH supply with HH data",
-        'path': '/chellow/reports/207/output/?supply_id=2&year=2005',
+        'path': '/reports/207?supply_id=2&year=2005',
         'status_code': 303},
     {
-        'path': '/chellow/reports/251/output/',
+        'path': '/downloads',
         'tries': {'max': 20, 'period': 1},
         'status_code': 200,
         'regexes': [
             r"039_FINISHED_watkinsexamplecom_crc_2005_2006_supply_2\.csv"]},
     {
-        'path': '/chellow/reports/253/output/?'
-        'name=039_FINISHED_watkinsexamplecom_crc_2005_2006_supply_2.csv',
+        'path': '/downloads/'
+        '039_FINISHED_watkinsexamplecom_crc_2005_2006_supply_2.csv',
         'status_code': 200,
         'regexes': [
             r'"2","22 9813 2107 763"']},
@@ -9094,32 +8820,32 @@ def virtual_bill(supply_source):
     # CRC for HH supply that straddles eras with missing data
     {
         'name': "CRC for HH supply that straddles eras with missing data",
-        'path': '/chellow/reports/207/output/?supply_id=7&year=2008',
+        'path': '/reports/207?supply_id=7&year=2008',
         'status_code': 303},
     {
-        'path': '/chellow/reports/251/output/',
+        'path': '/downloads',
         'tries': {'max': 20, 'period': 1},
         'status_code': 200,
         'regexes': [
             r"040_FINISHED_watkinsexamplecom_crc_2008_2009_supply_7\.csv"]},
     {
-        'path': '/chellow/reports/253/output/?'
-        'name=040_FINISHED_watkinsexamplecom_crc_2008_2009_supply_7.csv',
+        'path': '/downloads/'
+        '040_FINISHED_watkinsexamplecom_crc_2008_2009_supply_7.csv',
         'status_code': 200,
         'regexes': [
             r'"7","22 4862 4512 332","CH023","Treglisson","2008-04-01 00:00",'
             r'"2009-03-31 23:30","","0","127.0","0","0","0","365.0","0","0",'
-            r'"127.0","365.0","Estimated","0","612952.94","0","0","0",'
-            r'"1148683.46236","1761636.40236",""']},
+            r'"127.0","365.0","Estimated","0","612952.9400000019","0","0","0",'
+            r'"1148683.4623622093","1761636.4023622111",""']},
 
     {
         'name': "Contract level MOP virtual bills",
-        'path': '/chellow/reports/231/output/?mop_contract_id=57&'
-        'start_year=2015&start_month=04&start_day=01&start_hour=00&'
-        'start_minute=00&finish_year=2015&finish_month=04&finish_day=01&'
-        'finish_hour=23&finish_minute=30',
+        'path': '/reports/231?mop_contract_id=31&start_year=2015&'
+        'start_month=04&start_day=01&start_hour=00&start_minute=00&'
+        'finish_year=2015&finish_month=04&finish_day=01&finish_hour=23&'
+        'finish_minute=30',
         'regexes': [
-            r'Import MPAN Core, Export MPAN Core, Start Date, Finish Date,'
+            r'Import MPAN Core,Export MPAN Core,Start Date,Finish Date,'
             r'net-gbp,problem',
 
             r',22 0470 7514 535,2015-04-01 00:00,2015-04-01 23:30,"0","",'],
@@ -9127,10 +8853,9 @@ def virtual_bill(supply_source):
 
     {
         'name': "Bank holiday day change without restart. Add HH.",
-        'path': '/chellow/reports/303/output/',
+        'path': '/channels/58/edit',
         'method': 'post',
         'data': {
-            'channel_id': "58",
             'start_year': "2014",
             'start_month': "06",
             'start_day': "04",
@@ -9138,35 +8863,33 @@ def virtual_bill(supply_source):
             'start_minute': "00",
             'insert': "Insert",
             'value': "48.9",
-            'status': "A", },
+            'status': "A"},
         'status_code': 303},
     {
         'name': "Bank holiday day change without restart. Before change.",
-        'path': '/chellow/reports/291/output/?supply_id=5&start_year=2014&'
-        'start_month=6&start_day=04&start_hour=00&start_minute=0&'
-        'finish_year=2014&finish_month=06&finish_day=4&finish_hour=23&'
-        'finish_minute=30',
+        'path': '/reports/291?supply_id=5&start_year=2014&start_month=6&'
+        'start_day=04&start_hour=00&start_minute=0&finish_year=2014&'
+        'finish_month=06&finish_day=4&finish_hour=23&finish_minute=30',
         'status_code': 200,
         'regexes': [
             r'"22 0883 6932 301","","CI005","Wheal Rodney","4341",'
             r'"2014-06-04 00:00","2014-06-04 23:30","","0","","","0","","",'
-            r'"116.174010696","","","","","5.89","350","1","0.0269","9.415",'
-            r'"","","","","0","0.00147","0.0","","","0.0","0","0.25405",'
-            r'"12.423045","0.0","0.00399","0.0","1","0.0878","0.0878","88",'
-            r'"48.9","52.5186","0.00021361","0.011218498146","52.9779381793",'
-            r'"","-0.0234806352643","0","0.0","0.0","0","0.0","0.0","48.9",'
-            r'"52.5186","0.32906054016","","","","","","","","","",'
-            r'"52.9779381793","","0.0413672932479","","","","","","","","","",'
+            r'"116.17401069628967","","","","","5.89","350","1","0.0269",'
+            r'"9.415000000000001","","","","","0","0.00147","0.0","","","0.0",'
+            r'"0","0.25405","12.423045","0.0","0.00399","0.0","1","0.0878",'
+            r'"0.0878","88","48.9","52.5186","0.00021361","0.011218498146",'
+            r'"52.97793817932","","-0.023480635264263427","0","0.0","0.0","0",'
+            r'"0.0","0.0","48.9","52.5186","0.32906054015999997","","","","",'
+            r'"","","","","","52.97793817932","","0.04136729324794023","","",'
             r'"","","","","","","","","","","","","","","","","","","","","",'
-            r'"","","","","","","","","","","duos-amber-rate","0.00344",'
-            r'"duos-red-kwh","48.9"']},
+            r'"","","","","","","","","","","","","","","","","",'
+            r'"duos-amber-rate","0.00344","duos-red-kwh","48.9"']},
     {
         'name': "Bank holiday day change without restart. Edit the rate "
         "script",
-        'path': '/chellow/reports/273/output/',
+        'path': '/non_core_rate_scripts/10/edit',
         'method': 'post',
         'data': {
-            'rate_script_id': "10",
             'start_year': "2013",
             'start_month': "01",
             'start_day': "01",
@@ -9195,50 +8918,48 @@ def virtual_bill(supply_source):
     {
         'name': "Bank holiday day change without restart. Check it's "
         "registered the bank holiday",
-        'path': '/chellow/reports/291/output/?supply_id=5&start_year=2014&'
-        'start_month=6&start_day=04&start_hour=00&start_minute=0&'
-        'finish_year=2014&finish_month=06&finish_day=4&finish_hour=23&'
-        'finish_minute=30',
+        'path': '/reports/291?supply_id=5&start_year=2014&start_month=6&'
+        'start_day=04&start_hour=00&start_minute=0&finish_year=2014&'
+        'finish_month=06&finish_day=4&finish_hour=23&finish_minute=30',
         'status_code': 200,
         'regexes': [
             r'"22 0883 6932 301","","CI005","Wheal Rodney","4341",'
             r'"2014-06-04 00:00","2014-06-04 23:30","","0","","","0","","",'
-            r'"116.174010696","","","","","5.89","350","1","0.0269","9.415",'
-            r'"","","","","0","0.00147","0.0","","","0.0","0","0.25405",'
-            r'"12.423045","0.0","0.00399","0.0","1","0.0878","0.0878","88",'
-            r'"48.9","52.5186","0.00021361","0.011218498146","52.9779381793",'
-            r'"","-0.0234806352643","0","0.0","0.0","48.9","52.5186",'
-            r'"0.32906054016","","","","","","","","","","","","",'
-            r'"52.9779381793","","0.0413672932479","","","","","","","","","",'
+            r'"116.17401069628968","","","","","5.89","350","1","0.0269",'
+            r'"9.415000000000001","","","","","0","0.00147","0.0","","","0.0",'
+            r'"0","0.25405","12.423045","0.0","0.00399","0.0","1","0.0878",'
+            r'"0.0878","88","48.9","52.5186","0.00021361","0.011218498146",'
+            r'"52.97793817932","","-0.023480635264263427","0","0.0","0.0",'
+            r'"48.9","52.5186","0.32906054015999997","","","","","","","","",'
+            r'"","","","","52.97793817932","","0.04136729324794023","","","",'
             r'"","","","","","","","","","","","","","","","","","","","","",'
-            r'"","","","","","","","","","","duos-amber-rate","0.00344",'
-            r'"duos-red-kwh","48.9"']},
+            r'"","","","","","","","","","","","","","","","",'
+            r'"duos-amber-rate","0.00344","duos-red-kwh","48.9"']},
 
     {
         'name': "CRC report for mismatched TPRs",
-        'path': '/chellow/reports/207/output/?supply_id=10&year=2011',
+        'path': '/reports/207?supply_id=10&year=2011',
         'status_code': 303},
     {
         'name': "CRC report for mismatched TPRs",
-        'path': '/chellow/reports/251/output/',
+        'path': '/downloads',
         'tries': {},
         'regexes': [
             r"041_FINISHED_watkinsexamplecom_crc_2011_2012_supply_10\.csv"],
         'status_code': 200},
     {
         'name': "CRC report for mismatched TPRs",
-        'path': '/chellow/reports/253/output/?'
-        'name=041_FINISHED_watkinsexamplecom_crc_2011_2012_supply_10.csv',
+        'path': '/downloads/'
+        '041_FINISHED_watkinsexamplecom_crc_2011_2012_supply_10.csv',
         'tries': {},
         'status_code': 200,
         'regexes': [
-            r'12616.8628159']},
+            r'12616.862815884477']},
     {
         'name': "Update a bill",
-        'path': '/chellow/reports/165/output/',
+        'path': '/supplier_bills/21/edit',
         'method': 'post',
         'data': {
-            'supplier_bill_id': '21',
             'reference': '3423760010',
             'account': 'SA342376000',
             'issue_year': '2012',
@@ -9266,15 +8987,14 @@ def virtual_bill(supply_source):
 
     {
         'name': "View edit hh datum",
-        'path': '/chellow/reports/309/output/?hh_datum_id=3',
+        'path': '/hh_data/3/edit',
         'status_code': 200},
 
     {
         'name': "CRC meter change reads",
-        'path': '/chellow/reports/31/output/',
+        'path': '/reads/9/edit',
         'method': 'post',
         'data': {
-            'supplier_read_id': "9",
             'mpan': "22 1065 3921 534",
             'coefficient': "1",
             'msn': "brand new meter",
@@ -9298,10 +9018,9 @@ def virtual_bill(supply_source):
         'status_code': 303},
     {
         'name': "CRC meter change reads",
-        'path': '/chellow/reports/31/output/',
+        'path': '/reads/10/edit',
         'method': 'post',
         'data': {
-            'supplier_read_id': "10",
             'mpan': "22 1065 3921 534",
             'coefficient': "1",
             'msn': "I02D89150",
@@ -9325,10 +9044,9 @@ def virtual_bill(supply_source):
         'status_code': 303},
     {
         'name': "CRC meter change reads",
-        'path': '/chellow/reports/31/output/',
+        'path': '/reads/16/edit',
         'method': 'post',
         'data': {
-            'supplier_read_id': "16",
             'mpan': "22 1065 3921 534",
             'coefficient': "1",
             'msn': "brand new meter",
@@ -9353,30 +9071,29 @@ def virtual_bill(supply_source):
 
     {
         'name': "CRC meter change reads",
-        'path': '/chellow/reports/207/output/?supply_id=10&year=2010',
+        'path': '/reports/207?supply_id=10&year=2010',
         'status_code': 303},
     {
         'name': "CRC meter change reads",
-        'path': '/chellow/reports/251/output/',
+        'path': '/downloads',
         'tries': {},
         'regexes': [
             r"042_FINISHED_watkinsexamplecom_crc_2010_2011_supply_10\.csv"],
         'status_code': 200},
     {
         'name': "CRC meter change reads",
-        'path': '/chellow/reports/253/output/?'
-        'name=042_FINISHED_watkinsexamplecom_crc_2010_2011_supply_10.csv',
+        'path': '/downloads/'
+        '042_FINISHED_watkinsexamplecom_crc_2010_2011_supply_10.csv',
         'status_code': 200,
         'regexes': [
-            r'73142.3933549']},
+            r'73142.39335486847']},
 
     # Duration report; bill with reads covered by bill without.
     {
         'name': "Bill with reads covered by bill without. Add covered bill.",
-        'path': '/chellow/reports/313/output/',
+        'path': '/supplier_batches/7/add_bill',
         'method': 'post',
         'data': {
-            'supplier_batch_id': '7',
             'mpan_core': '22 1065 3921 534',
             'reference': "3423760011",
             'issue_year': "2012",
@@ -9402,24 +9119,23 @@ def virtual_bill(supply_source):
             'bill_type_id': "2",
             'breakdown': "{}"},
         'regexes': [
-            r"/chellow/reports/105/output/\?supplier_bill_id=22"],
+            r"/supplier_bills/22"],
         'status_code': 303},
     {
         'name': "Reads covered by bill without. Run supplies duration.",
-        'path': '/chellow/reports/149/output/?supply_id=10&start_year=2012&'
-        'start_month=01&start_day=05&start_hour=00&start_minute=00&'
-        'finish_year=2012&finish_month=01&finish_day=10&finish_hour=23&'
-        'finish_minute=30',
+        'path': '/reports/149?supply_id=10&start_year=2012&start_month=01&'
+        'start_day=05&start_hour=00&start_minute=00&finish_year=2012&'
+        'finish_month=01&finish_day=10&finish_hour=23&finish_minute=30',
         'status_code': 303},
     {
-        'path': '/chellow/reports/251/output/',
+        'path': '/downloads',
         'tries': {},
         'regexes': [
             r"043_FINISHED_watkinsexamplecom_supplies_duration\.csv"],
         'status_code': 200},
     {
-        'path': '/chellow/reports/253/output/?'
-        'name=043_FINISHED_watkinsexamplecom_supplies_duration.csv',
+        'path': '/downloads/'
+        '043_FINISHED_watkinsexamplecom_supplies_duration.csv',
         'regexes': [
             r'"10","2","net","","CI017","Roselands","2012-01-05 00:00",'
             r'"2012-01-10 23:30","03","801","6a","0366","1","nhh",110,'
@@ -9428,40 +9144,39 @@ def virtual_bill(supply_source):
         'status_code': 200},
     {
         'name': "Reads covered by bill without. Run bill check.",
-        'path': '/chellow/reports/111/output/?bill_id=21',
+        'path': '/reports/111?bill_id=21',
         'status_code': 303},
     {
-        'path': '/chellow/reports/251/output/',
+        'path': '/downloads',
         'tries': {},
         'regexes': [
             r"044_FINISHED_watkinsexamplecom_bill_check\.csv"],
         'status_code': 200},
     {
-        'path': '/chellow/reports/253/output/?'
-        'name=044_FINISHED_watkinsexamplecom_bill_check.csv',
+        'path': '/downloads/'
+        '044_FINISHED_watkinsexamplecom_bill_check.csv',
         'regexes': [
             r'"07-002","3423760010","N","10","9.07","0.21","2012-01-05 00:00",'
             r'"2012-01-10 23:30","22 1065 3921 534","CI017","Roselands",'
-            r'"2012-01-05 00:00","2012-01-10 23:30","22;21","54.77","25.2",'
-            r'"29.57","10.0","252.0","",""'],
+            r'"2012-01-05 00:00","2012-01-10 23:30","22;21","54.77",'
+            r'"25.200000000000003","29.57","10.0","252.0","",""'],
         'status_code': 200},
 
     {
         'name': "Reads attached to withdrawn bill.",
-        'path': '/chellow/reports/149/output/?supply_id=10&start_year=2007&'
-        'start_month=02&start_day=01&start_hour=00&start_minute=00&'
-        'finish_year=2007&finish_month=02&finish_day=28&finish_hour=23&'
-        'finish_minute=30',
+        'path': '/reports/149?supply_id=10&start_year=2007&start_month=02&'
+        'start_day=01&start_hour=00&start_minute=00&finish_year=2007&'
+        'finish_month=02&finish_day=28&finish_hour=23&finish_minute=30',
         'status_code': 303},
     {
-        'path': '/chellow/reports/251/output/',
+        'path': '/downloads',
         'tries': {},
         'regexes': [
             r"045_FINISHED_watkinsexamplecom_supplies_duration\.csv"],
         'status_code': 200},
     {
-        'path': '/chellow/reports/253/output/?'
-        'name=045_FINISHED_watkinsexamplecom_supplies_duration.csv',
+        'path': '/downloads/'
+        '045_FINISHED_watkinsexamplecom_supplies_duration.csv',
         'regexes': [
             r'"10","2","net","","CI017","Roselands","2007-02-01 00:00",'
             r'"2007-02-28 23:30","03","801","5","0393","0","nhh",'
@@ -9471,10 +9186,9 @@ def virtual_bill(supply_source):
 
     {
         'name': "Supplies duration normal reads with prev, pres the same.",
-        'path': '/chellow/reports/31/output/',
+        'path': '/reads/11/edit',
         'method': 'post',
         'data': {
-            'supplier_read_id': "11",
             'mpan': "2210653921534",
             'coefficient': "1",
             'msn': "I02D89150",
@@ -9498,22 +9212,21 @@ def virtual_bill(supply_source):
         'status_code': 303},
     {
         'name': "Supplies duration normal reads with prev, pres the same.",
-        'path': '/chellow/reports/149/output/?supply_id=10&start_year=2009&'
-        'start_month=04&start_day=01&start_hour=00&start_minute=00&'
-        'finish_year=2009&finish_month=04&finish_day=10&finish_hour=23&'
-        'finish_minute=30',
+        'path': '/reports/149?supply_id=10&start_year=2009&start_month=04&'
+        'start_day=01&start_hour=00&start_minute=00&finish_year=2009&'
+        'finish_month=04&finish_day=10&finish_hour=23&finish_minute=30',
         'status_code': 303},
     {
         'name': "Supplies duration normal reads with prev, pres the same.",
-        'path': '/chellow/reports/251/output/',
+        'path': '/downloads',
         'tries': {},
         'regexes': [
             r"046_FINISHED_watkinsexamplecom_supplies_duration\.csv"],
         'status_code': 200},
     {
         'name': "Supplies duration normal reads with prev, pres the same.",
-        'path': '/chellow/reports/253/output/?'
-        'name=046_FINISHED_watkinsexamplecom_supplies_duration.csv',
+        'path': '/downloads/'
+        '046_FINISHED_watkinsexamplecom_supplies_duration.csv',
         'regexes': [
             r'"10","2","net","","CI017","Roselands","2009-04-01 00:00",'
             r'"2009-04-10 23:30","03","801","5","0393","1","nhh",'
@@ -9523,8 +9236,8 @@ def virtual_bill(supply_source):
 
     {
         'name': "Group starting after report period.",
-        'path': '/chellow/reports/389/output/?site_id=3&months=1&'
-        'finish_year=2003&finish_month=08',
+        'path': '/reports/389?site_id=3&months=1&finish_year=2003&'
+        'finish_month=08',
         'regexes': [
             r'"CI005","Wheal Rodney","CI004","2003-08-03 00:00",'
             r'"2003-08-31 23:30","chp chp","","","","","0.0","","0.0","",'
@@ -9549,11 +9262,11 @@ def virtual_bill(supply_source):
     # Scenario runner with default scenario
     {
         'name': "Scenario runner with default scenario",
-        'path': '/chellow/reports/247/output/?site_id=5&months=1&'
-        'finish_year=2015&finish_month=2',
+        'path': '/reports/247?site_id=5&months=1&finish_year=2015&'
+        'finish_month=2',
         'status_code': 303},
     {
-        'path': '/chellow/reports/251/output/',
+        'path': '/downloads',
         'tries': {'max': 20, 'period': 1},
         'status_code': 200,
         'regexes': [
@@ -9562,8 +9275,8 @@ def virtual_bill(supply_source):
         },
 
     {
-        'path': '/chellow/reports/253/output/?'
-        'name=047_FINISHED_watkinsexamplecom_unified_supplies_monthly_'
+        'path': '/downloads/'
+        '047_FINISHED_watkinsexamplecom_unified_supplies_monthly_'
         'duration_20150201_0000_for_1_months_site_CH023.ods',
         'status_code': 200,
         'regexes': [
@@ -9571,10 +9284,9 @@ def virtual_bill(supply_source):
 
     {
         'name': "CRC meter change reads",
-        'path': '/chellow/reports/31/output/',
+        'path': '/reads/9/edit',
         'method': 'post',
         'data': {
-            'supplier_read_id': "9",
             'mpan': "22 1065 3921 534",
             'coefficient': "1",
             'msn': "brand new meter",
@@ -9598,10 +9310,9 @@ def virtual_bill(supply_source):
         'status_code': 303},
     {
         'name': "CRC meter change reads",
-        'path': '/chellow/reports/31/output/',
+        'path': '/reads/10/edit',
         'method': 'post',
         'data': {
-            'supplier_read_id': "10",
             'mpan': "22 1065 3921 534",
             'coefficient': "1",
             'msn': "I02D89150",
@@ -9625,10 +9336,9 @@ def virtual_bill(supply_source):
         'status_code': 303},
     {
         'name': "CRC meter change reads",
-        'path': '/chellow/reports/31/output/',
+        'path': '/reads/16/edit',
         'method': 'post',
         'data': {
-            'supplier_read_id': "16",
             'mpan': "22 1065 3921 534",
             'coefficient': "1",
             'msn': "brand new meter",
@@ -9652,39 +9362,39 @@ def virtual_bill(supply_source):
         'status_code': 303},
     {
         'name': "CRC meter change reads",
-        'path': '/chellow/reports/207/output/?supply_id=10&year=2010',
+        'path': '/reports/207?supply_id=10&year=2010',
         'status_code': 303},
     {
         'name': "CRC meter change reads",
-        'path': '/chellow/reports/251/output/',
+        'path': '/downloads',
         'tries': {},
         'regexes': [
             r"048_FINISHED_watkinsexamplecom_crc_2010_2011_supply_10\.csv"],
         'status_code': 200},
     {
         'name': "CRC meter change reads",
-        'path': '/chellow/reports/253/output/?'
-        'name=048_FINISHED_watkinsexamplecom_crc_2010_2011_supply_10.csv',
+        'path': '/downloads/'
+        '048_FINISHED_watkinsexamplecom_crc_2010_2011_supply_10.csv',
         'status_code': 200,
         'regexes': [
-            r'73142.3933549']},
+            r'73142.39335486847']},
 
     # See if unified report shows billed amounts correctly
     {
         'name': "Unified Supplies Monthly Duration - billed amounts",
-        'path': '/chellow/reports/247/output/?supply_id=10&months=1&'
-        'finish_year=2010&finish_month=01',
+        'path': '/reports/247?supply_id=10&months=1&finish_year=2010&'
+        'finish_month=01',
         'status_code': 303},
     {
-        'path': '/chellow/reports/251/output/',
+        'path': '/downloads',
         'tries': {'max': 20, 'period': 1},
         'regexes': [
             r"049_FINISHED_watkinsexamplecom_unified_supplies_monthly_"
             r"duration_20100101_0000_for_1_months_supply_10\.ods"],
         'status_code': 200},
     {
-        'path': '/chellow/reports/253/output/?'
-        'name=049_FINISHED_watkinsexamplecom_unified_supplies_monthly_'
+        'path': '/downloads/'
+        '049_FINISHED_watkinsexamplecom_unified_supplies_monthly_'
         'duration_20100101_0000_for_1_months_supply_10.ods',
         'status_code': 200,
         'regexes': [
@@ -9798,19 +9508,19 @@ def virtual_bill(supply_source):
             r'<table:table-cell '
             r'office:date-value="2010-01-31T23:30:00" '
             r'office:value-type="date" table:style-name="cDateISO"/>\s*'
-            r'<table:table-cell office:value="5886.08506489" '
+            r'<table:table-cell office:value="5886.085064894785" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="0" '
             r'office:value-type="float" table:number-columns-repeated="6"/>\s*'
-            r'<table:table-cell office:value="5886.08506489" '
+            r'<table:table-cell office:value="5886.085064894785" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="0" '
             r'office:value-type="float"/>\s*'
-            r'<table:table-cell office:value="605.608506489" '
+            r'<table:table-cell office:value="605.6085064894786" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="0" '
             r'office:value-type="float" table:number-columns-repeated="6"/>\s*'
-            r'<table:table-cell office:value="605.608506489" '
+            r'<table:table-cell office:value="605.6085064894786" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="0" '
             r'office:value-type="float"/>\s*'
@@ -9829,9 +9539,9 @@ def virtual_bill(supply_source):
             r'<table:table-cell office:string-value="" '
             r'office:value-type="string"/>\s*'
             r'<table:table-cell/>\s*'
-            r'<table:table-cell office:value="588.608506489" '
+            r'<table:table-cell office:value="588.6085064894786" '
             r'office:value-type="float"/>\s*'
-            r'<table:table-cell office:value="5886.08506489" '
+            r'<table:table-cell office:value="5886.085064894785" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell office:string-value="" '
             r'office:value-type="string"/>\s*'
@@ -9840,10 +9550,9 @@ def virtual_bill(supply_source):
     # Supplier contract 66
     {
         'name': "3rd party in unified report. Make 3rd-party-reverse.",
-        'path': '/chellow/reports/305/output/',
+        'path': '/supplies/16/edit',
         'method': 'post',
         'data': {
-            'supply_id': "16",
             'name': "3",
             'source_id': "6",
             'generator_type_id': "1",
@@ -9851,10 +9560,9 @@ def virtual_bill(supply_source):
         'status_code': 303},
     {
         'name': "3rd party in unified report.",
-        'path': '/chellow/reports/313/output/',
+        'path': '/supplier_batches/7/add_bill',
         'method': 'post',
         'data': {
-            'supplier_batch_id': "7",
             'mpan_core': "22 9789 0534 938",
             'reference': "3Pb",
             'issue_year': "2014",
@@ -9880,14 +9588,13 @@ def virtual_bill(supply_source):
             'bill_type_id': "1",
             'breakdown': "{}"},
         'regexes': [
-            r"/chellow/reports/105/output/\?supplier_bill_id=23"],
+            r"/supplier_bills/23"],
         'status_code': 303},
     {
         'name': "3rd party in unified report.",
-        'path': '/chellow/reports/189/output/',
+        'path': '/supplier_bills/23/add_read',
         'method': 'post',
         'data': {
-            'supplier_bill_id': "23",
             'mpan': "03 801 111 22 9789 0534 938",
             'coefficient': "1",
             'msn': "",
@@ -9906,32 +9613,31 @@ def virtual_bill(supply_source):
             'present_hour': "23",
             'present_minute': "30",
             'present_value': "100",
-            'present_type_id': "1",
-            },
+            'present_type_id': "1"},
         'regexes': [
-            r"/chellow/reports/105/output/\?supplier_bill_id=23"],
+            r"/supplier_bills/23"],
         'status_code': 303},
     {
         'name': "3rd party in unified report.",
-        'path': '/chellow/reports/105/output/?supplier_bill_id=23',
+        'path': '/supplier_bills/23',
         'regexes': [
-            r"/chellow/reports/31/output/\?supplier_read_id=17"],
+            r"/reads/17"],
         'status_code': 200},
     {
         'name': "3rd party in unified report.",
-        'path': '/chellow/reports/247/output/?supply_id=16&months=1&'
-        'finish_year=2014&finish_month=12',
+        'path': '/reports/247?supply_id=16&months=1&finish_year=2014&'
+        'finish_month=12',
         'status_code': 303},
     {
-        'path': '/chellow/reports/251/output/',
+        'path': '/downloads',
         'tries': {'max': 20, 'period': 1},
         'regexes': [
             r'050_FINISHED_watkinsexamplecom_unified_supplies_monthly_'
             r'duration_20141201_0000_for_1_months_supply_16\.ods'],
         'status_code': 200},
     {
-        'path': '/chellow/reports/253/output/?'
-        'name=050_FINISHED_watkinsexamplecom_unified_supplies_monthly_'
+        'path': '/downloads/'
+        '050_FINISHED_watkinsexamplecom_unified_supplies_monthly_'
         'duration_20141201_0000_for_1_months_supply_16.ods',
         'status_code': 200,
         'regexes': [
@@ -10029,21 +9735,21 @@ def virtual_bill(supply_source):
             r'office:value-type="date" table:style-name="cDateISO"/>\s*'
             r'<table:table-cell office:value="0" '
             r'office:value-type="float" table:number-columns-repeated="5"/>\s*'
-            r'<table:table-cell office:value="100.067249496" '
+            r'<table:table-cell office:value="100.06724949562901" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="0" '
             r'office:value-type="float"/>\s*'
-            r'<table:table-cell office:value="-100.067249496" '
+            r'<table:table-cell office:value="-100.06724949562901" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="0" '
             r'office:value-type="float" table:number-columns-repeated="5"/>\s*'
             r'<table:table-cell office:value="10" '
             r'office:value-type="float"/>\s*'
-            r'<table:table-cell office:value="10.0067249496" '
+            r'<table:table-cell office:value="10.006724949562901" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="0" '
             r'office:value-type="float"/>\s*'
-            r'<table:table-cell office:value="-0.0067249495629" '
+            r'<table:table-cell office:value="-0.006724949562901372" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="0" '
             r'office:value-type="float"/>\s*'
@@ -10059,27 +9765,21 @@ def virtual_bill(supply_source):
     {
         'name': "Dumb NHH supply with DUoS pass-through: "
         "Update Non half-hourlies 2010",
-        'path': "/chellow/reports/317/output/",
+        'path': "/supplier_contracts/36/edit",
         'method': 'post',
         'data': {
-            'supplier_contract_id': '63',
             'party_id': '90',
             'name': 'Non half-hourlies 2010',
-            'charge_script': """from net.sf.chellow.monad import Monad
-import datetime
-import pytz
-from dateutil.relativedelta import relativedelta
-
-Monad.getUtils()['impt'](globals(), 'db', 'utils', 'templater', 'duos')
+            'charge_script': """import chellow.duos
 
 def virtual_bill_titles():
-        return ['net-gbp', 'sum-msp-kwh', 'problem']
+    return ['net-gbp', 'sum-msp-kwh', 'problem']
 
 def virtual_bill(supply_source):
     sum_msp_kwh = sum(h['msp-kwh'] for h in supply_source.hh_data)
     bill = supply_source.supplier_bill
-    duos.duos_vb(supply_source)
-    for rate_name, rate_set in supply_source.supplier_rate_sets.iteritems():
+    chellow.duos.duos_vb(supply_source)
+    for rate_name, rate_set in supply_source.supplier_rate_sets.items():
         if len(rate_set) == 1:
             bill[rate_name] = rate_set.pop()
     bill['net-gbp'] += sum_msp_kwh * 0.1
@@ -10090,20 +9790,18 @@ def virtual_bill(supply_source):
     {
         'name': "Dumb NHH supply with DUoS pass-through: "
         "Run virtual bill",
-        'path': '/chellow/reports/291/output/?supply_id=16&start_year=2015&'
-        'start_month=03&start_day=01&start_hour=00&start_minute=0&'
-        'finish_year=2015&finish_month=03&finish_day=31&finish_hour=23&'
-        'finish_minute=30',
+        'path': '/reports/291?supply_id=16&start_year=2015&start_month=03&'
+        'start_day=01&start_hour=00&start_minute=0&finish_year=2015&'
+        'finish_month=03&finish_day=31&finish_hour=23&finish_minute=30',
         'regexes': [
             r'"Imp MPAN Core","Exp MPAN Core","Site Code","Site Name",'],
         'status_code': 200},
 
     {
         'name': "Update a bill",
-        'path': '/chellow/reports/165/output/',
+        'path': '/supplier_bills/21/edit',
         'method': 'post',
         'data': {
-            'supplier_bill_id': '21',
             'reference': '3423760010',
             'account': 'SA342376000',
             'issue_year': '2012',
@@ -10132,10 +9830,9 @@ def virtual_bill(supply_source):
 
     {
         'name': "Unified report for a gen-net supply",
-        'path': '/chellow/reports/305/output/',
+        'path': '/supplies/5/edit',
         'method': 'post',
         'data': {
-            'supply_id': "5",
             'name': "Hello",
             'source_id': "3",
             'generator_type_id': "1",
@@ -10143,12 +9840,12 @@ def virtual_bill(supply_source):
         'status_code': 303},
     {
         'name': "Unified report for a gen-net supply",
-        'path': '/chellow/reports/247/output/?supply_id=5&months=1&'
-        'finish_year=2015&finish_month=05',
+        'path': '/reports/247?supply_id=5&months=1&finish_year=2015&'
+        'finish_month=05',
         'status_code': 303},
     {
         'name': "Unified report for a gen-net supply",
-        'path': '/chellow/reports/251/output/',
+        'path': '/downloads',
         'tries': {},
         'regexes': [
             r'051_FINISHED_watkinsexamplecom_unified_supplies_monthly_'
@@ -10156,8 +9853,8 @@ def virtual_bill(supply_source):
         'status_code': 200},
     {
         'name': "Unified report for a gen-net supply",
-        'path': '/chellow/reports/253/output/?'
-        'name=051_FINISHED_watkinsexamplecom_unified_supplies_monthly_'
+        'path': '/downloads/'
+        '051_FINISHED_watkinsexamplecom_unified_supplies_monthly_'
         'duration_20150501_0000_for_1_months_supply_5.ods',
         'status_code': 200,
         'regexes': [
@@ -10165,10 +9862,9 @@ def virtual_bill(supply_source):
 
     {
         'name': "Supplies duration normal reads with prev, pres the same.",
-        'path': '/chellow/reports/31/output/',
+        'path': '/reads/11/edit',
         'method': 'post',
         'data': {
-            'supplier_read_id': "11",
             'mpan': "2210653921534",
             'coefficient': "1",
             'msn': "I02D89150",
@@ -10192,22 +9888,21 @@ def virtual_bill(supply_source):
         'status_code': 303},
     {
         'name': "Supplies duration normal reads with prev, pres the same.",
-        'path': '/chellow/reports/149/output/?supply_id=10&start_year=2009&'
-        'start_month=04&start_day=01&start_hour=00&start_minute=00&'
-        'finish_year=2009&finish_month=04&finish_day=10&finish_hour=23&'
-        'finish_minute=30',
+        'path': '/reports/149?supply_id=10&start_year=2009&start_month=04&'
+        'start_day=01&start_hour=00&start_minute=00&finish_year=2009&'
+        'finish_month=04&finish_day=10&finish_hour=23&finish_minute=30',
         'status_code': 303},
     {
         'name': "Supplies duration normal reads with prev, pres the same.",
-        'path': '/chellow/reports/251/output/',
+        'path': '/downloads',
         'tries': {},
         'regexes': [
             r"052_FINISHED_watkinsexamplecom_supplies_duration\.csv"],
         'status_code': 200},
     {
         'name': "Supplies duration normal reads with prev, pres the same.",
-        'path': '/chellow/reports/253/output/?'
-        'name=052_FINISHED_watkinsexamplecom_supplies_duration.csv',
+        'path': '/downloads/'
+        '052_FINISHED_watkinsexamplecom_supplies_duration.csv',
         'regexes': [
             r'"10","2","net","","CI017","Roselands","2009-04-01 00:00",'
             r'"2009-04-10 23:30","03","801","5","0393","1","nhh",'
@@ -10217,10 +9912,9 @@ def virtual_bill(supply_source):
 
     {
         'name': "Unified Supplies Monthly Duration - displaced kWh",
-        'path': '/chellow/reports/303/output/',
+        'path': '/channels/10/edit',
         'method': 'post',
         'data': {
-            'channel_id': "10",
             'start_year': "2015",
             'start_month': "05",
             'start_day': "04",
@@ -10232,12 +9926,12 @@ def virtual_bill(supply_source):
         'status_code': 303},
     {
         'name': "Unified Supplies Monthly Duration - displaced kWh",
-        'path': '/chellow/reports/247/output/?site_id=3&months=1&'
-        'finish_year=2015&finish_month=05',
+        'path': '/reports/247?site_id=3&months=1&finish_year=2015&'
+        'finish_month=05',
         'status_code': 303},
     {
         'name': "Unified Supplies Monthly Duration - displaced kWh",
-        'path': '/chellow/reports/251/output/',
+        'path': '/downloads',
         'tries': {'max': 30, 'period': 1},
         'regexes': [
             r'053_FINISHED_watkinsexamplecom_unified_supplies_monthly_'
@@ -10245,8 +9939,8 @@ def virtual_bill(supply_source):
         'status_code': 200},
     {
         'name': "Unified Supplies Monthly Duration - displaced kWh",
-        'path': '/chellow/reports/253/output/?'
-        'name=053_FINISHED_watkinsexamplecom_unified_supplies_monthly_'
+        'path': '/downloads/'
+        '053_FINISHED_watkinsexamplecom_unified_supplies_monthly_'
         'duration_20150501_0000_for_1_months_site_CI005.ods',
         'status_code': 200,
         'regexes': [
@@ -10254,12 +9948,12 @@ def virtual_bill(supply_source):
 
     {
         'name': "Unified supply starts after period",
-        'path': '/chellow/reports/247/output/?supply_id=7&months=1&'
-        'finish_year=2003&finish_month=08',
+        'path': '/reports/247?supply_id=7&months=1&finish_year=2003&'
+        'finish_month=08',
         'status_code': 303},
     {
         'name': "Unified supply starts after period",
-        'path': '/chellow/reports/251/output/',
+        'path': '/downloads',
         'tries': {'max': 30, 'period': 1},
         'regexes': [
             r'054_FINISHED_watkinsexamplecom_unified_supplies_monthly_'
@@ -10267,8 +9961,8 @@ def virtual_bill(supply_source):
         'status_code': 200},
     {
         'name': "Unified supply starts after period",
-        'path': '/chellow/reports/253/output/?'
-        'name=054_FINISHED_watkinsexamplecom_unified_supplies_monthly_'
+        'path': '/downloads/'
+        '054_FINISHED_watkinsexamplecom_unified_supplies_monthly_'
         'duration_20030801_0000_for_1_months_supply_7.ods',
         'status_code': 200,
         'regexes': [
@@ -10276,12 +9970,12 @@ def virtual_bill(supply_source):
 
     {
         'name': "Monthly sites duration: multiple site groups",
-        'path': '/chellow/reports/161/output/?site_id=3&months=1&'
-        'finish_year=2010&finish_month=04',
+        'path': '/reports/161?site_id=3&months=1&finish_year=2010&'
+        'finish_month=04',
         'status_code': 303},
     {
         'name': "Monthly sites duration: multiple site groups",
-        'path': '/chellow/reports/251/output/',
+        'path': '/downloads',
         'tries': {'max': 30, 'period': 1},
         'regexes': [
             r'055_FINISHED_watkinsexamplecom_site_monthly_duration_for_CI005_'
@@ -10289,23 +9983,24 @@ def virtual_bill(supply_source):
         'status_code': 200},
     {
         'name': "Monthly sites duration: multiple site groups",
-        'path': '/chellow/reports/253/output/?'
-        'name=055_FINISHED_watkinsexamplecom_site_monthly_duration_for_CI005_'
+        'path': '/downloads/'
+        '055_FINISHED_watkinsexamplecom_site_monthly_duration_for_CI005_'
         '1_to_2010_4.csv',
         'status_code': 200,
         'regexes': [
             r'"CI005","Wheal Rodney","CI004","gen,gen-net,net","chp",'
-            r'"2010-04-30 23:30","10.87975","0","0","10.87975","0","0","0",'
-            r'"0","2606.838","0.0","0","2606.838","0","0","0","hh",""']},
+            r'"2010-04-30 23:30","10.8797\d*","0","0","10.8797\d*","0","0",'
+            r'"0","0","2606.8380000\d*","0.0","0","2606.838000\d*","0",'
+            r'"0","0","hh",""']},
 
     {
         'name': "Monthly sites duration: non-primary site",
-        'path': '/chellow/reports/161/output/?site_id=1&months=1&'
-        'finish_year=2015&finish_month=07',
+        'path': '/reports/161?site_id=1&months=1&finish_year=2015&'
+        'finish_month=07',
         'status_code': 303},
     {
         'name': "Monthly sites duration: non-primary site",
-        'path': '/chellow/reports/251/output/',
+        'path': '/downloads',
         'tries': {'max': 30, 'period': 1},
         'regexes': [
             r'056_FINISHED_watkinsexamplecom_site_monthly_duration_for_CI004_'
@@ -10313,8 +10008,8 @@ def virtual_bill(supply_source):
         'status_code': 200},
     {
         'name': "Monthly sites duration: multiple site groups",
-        'path': '/chellow/reports/253/output/?'
-        'name=056_FINISHED_watkinsexamplecom_site_monthly_duration_for_CI004_'
+        'path': '/downloads/'
+        '056_FINISHED_watkinsexamplecom_site_monthly_duration_for_CI004_'
         '1_to_2015_7.csv',
         'status_code': 200,
         'regexes': [
@@ -10324,19 +10019,18 @@ def virtual_bill(supply_source):
 
     {
         'name': "Metered report: correct MOP / DC costs",
-        'path': '/chellow/reports/307/output/',
+        'path': '/eras/3/edit',
         'method': 'post',
         'data': {
-            'era_id': "3",
             'start_year': "2003",
             'start_month': "08",
             'start_day': "03",
             'start_hour': "00",
             'start_minute': "00",
             'is_ended': "false",
-            'mop_contract_id': "57",
+            'mop_contract_id': "31",
             'mop_account': "mc-22 7907 4116 080",
-            'hhdc_contract_id': "54",
+            'hhdc_contract_id': "29",
             'hhdc_account': "01",
             'msn': "",
             'pc_id': "9",
@@ -10346,17 +10040,17 @@ def virtual_bill(supply_source):
             'exp_llfc_code': "581",
             'exp_mpan_core': "22 7907 4116 080",
             'exp_sc': "600",
-            'exp_supplier_contract_id': "55",
+            'exp_supplier_contract_id': "30",
             'exp_supplier_account': ""},
         'status_code': 303},
     {
         'name': "Metered report: correct MOP / DC costs",
-        'path': '/chellow/reports/161/output/?site_id=3&months=1&'
-        'finish_year=2015&finish_month=07',
+        'path': '/reports/161?site_id=3&months=1&finish_year=2015&'
+        'finish_month=07',
         'status_code': 303},
     {
         'name': "Metered report: correct MOP / DC costs",
-        'path': '/chellow/reports/251/output/',
+        'path': '/downloads',
         'tries': {'max': 30, 'period': 1},
         'regexes': [
             r'057_FINISHED_watkinsexamplecom_site_monthly_duration_for_CI005_'
@@ -10364,33 +10058,31 @@ def virtual_bill(supply_source):
         'status_code': 200},
     {
         'name': "Monthly sites duration: multiple site groups",
-        'path': '/chellow/reports/253/output/?'
-        'name=057_FINISHED_watkinsexamplecom_site_monthly_duration_for_CI005_'
+        'path': '/downloads/'
+        '057_FINISHED_watkinsexamplecom_site_monthly_duration_for_CI005_'
         '1_to_2015_7.csv',
         'status_code': 200,
         'regexes': [
             r'"CI005","Wheal Rodney","CI004","gen,gen-net,net","chp",'
-            r'"2015-07-31 23:30","25.8191780822","0","0","25.8191780822","0",'
-            r'"0","0","0","1114.2003","0.0","0","1114.2003","0","0","0","hh",'
-            r'""']},
+            r'"2015-07-31 23:30","25.819178082191478","0","0",'
+            r'"25.819178082191478","0","0","0","0","1114.2003000000002","0.0",'
+            r'"0","1114.2003000000002","0","0","0","hh",""']},
 
     {
         'name': "Unified report, billed: add batch to Dynamat contract",
-        'path': '/chellow/reports/281/output/',
+        'path': '/hhdc_contracts/29/add_batch',
         'method': 'post',
         'data': {
-            'hhdc_contract_id': "54",
             'reference': "Zathustra",
             'description': "Thus spoke."},
         'status_code': 303,
         'regexes': [
-            r"/reports/203/output/\?hhdc_batch_id=15"]},
+            r"/hhdc_batches/15"]},
     {
         'name': "Unified report, billed: add bill to batch",
-        'path': '/chellow/reports/349/output/',
+        'path': '/hhdc_batches/15/add_bill',
         'method': 'post',
         'data': {
-            'hhdc_batch_id': "15",
             'mpan_core': '22 7907 4116 080',
             'reference': '001',
             'issue_year': '2015',
@@ -10417,15 +10109,15 @@ def virtual_bill(supply_source):
             'breakdown': '{}'},
         'status_code': 303,
         'regexes': [
-            r"/reports/345/output/\?hhdc_bill_id=24"]},
+            r"/hhdc_bills/24"]},
     {
         'name': "Unified report, billed",
-        'path': '/chellow/reports/247/output/?site_id=3&months=1&'
-        'finish_year=2015&finish_month=08',
+        'path': '/reports/247?site_id=3&months=1&finish_year=2015&'
+        'finish_month=08',
         'status_code': 303},
     {
         'name': "Unified report, billed",
-        'path': '/chellow/reports/251/output/',
+        'path': '/downloads',
         'tries': {'max': 30, 'period': 1},
         'regexes': [
             r'058_FINISHED_watkinsexamplecom_unified_supplies_monthly_'
@@ -10433,8 +10125,8 @@ def virtual_bill(supply_source):
         'status_code': 200},
     {
         'name': "Unified report, billed",
-        'path': '/chellow/reports/253/output/?'
-        'name=058_FINISHED_watkinsexamplecom_unified_supplies_monthly_'
+        'path': '/downloads/'
+        '058_FINISHED_watkinsexamplecom_unified_supplies_monthly_'
         'duration_20150801_0000_for_1_months_site_CI005.ods',
         'status_code': 200,
         'regexes': [
@@ -10554,7 +10246,7 @@ def virtual_bill(supply_source):
 
     {
         'name': "Displaying bill raw lines",
-        'path': '/chellow/reports/105/output/?supplier_bill_id=11',
+        'path': '/supplier_bills/11',
         'regexes': [
             r"Customer Name,",
             r'triad-estimate'],
@@ -10562,18 +10254,17 @@ def virtual_bill(supply_source):
 
     {
         'name': "Error when adding pre-existing MPAN core, to era",
-        'path': '/chellow/reports/307/output/?',
+        'path': '/eras/28/edit',
         'method': 'post',
         'data': {
-            'era_id': "28",
             'start_year': "2014",
             'start_month': "01",
             'start_day': "01",
             'start_hour': "00",
             'start_minute': "00",
-            'mop_contract_id': "60",
+            'mop_contract_id': "31",
             'mop_account': "22 0883 6932 301",
-            'hhdc_contract_id': "56",
+            'hhdc_contract_id': "29",
             'hhdc_account': "22 0883 6932 301",
             'msn': "",
             'pc_id': "9",
@@ -10583,24 +10274,24 @@ def virtual_bill(supply_source):
             'imp_llfc_code': "510",
             'imp_mpan_core': "22 0883 6932 301",
             'imp_sc': "350",
-            'imp_supplier_contract_id': "61",
+            'imp_supplier_contract_id': "36",
             'imp_supplier_account': "4341",
             'exp_llfc_code': "521",
             'exp_mpan_core': "22 6158 2968 220",
             'exp_sc': "20",
-            'exp_supplier_contract_id': "58",
+            'exp_supplier_contract_id': "36",
             'exp_supplier_account': "5bb8"},
         'status_code': 400},
     {
         'name': "General Importer: Deleting an era",
-        'path': '/chellow/reports/293/output/',
+        'path': '/general_imports',
         'method': 'post',
         'files': {'import_file': 'test/gi_delete_era.csv'},
         'status_code': 303,
         'regexes': [
-            r"/reports/295/output/\?process_id=11"]},
+            r"/general_imports/29"]},
     {
-        'path': '/chellow/reports/295/output/?process_id=11',
+        'path': '/general_imports/29',
         'tries': {'max': 10, 'period': 1},
         'status_code': 200,
         'regexes': [
@@ -10608,19 +10299,18 @@ def virtual_bill(supply_source):
 
     {
         'name': "TRIAD, no historical data, but eras exist",
-        'path': '/chellow/reports/307/output/',
+        'path': '/eras/28/edit',
         'method': 'post',
         'data': {
-            'era_id': "28",
             'start_year': "2014",
             'start_month': "01",
             'start_day': "01",
             'start_hour': "00",
             'start_minute': "00",
             'is_ended': "false",
-            'mop_contract_id': "57",
+            'mop_contract_id': "31",
             'mop_account': "22 0883 6932 301",
-            'hhdc_contract_id': "53",
+            'hhdc_contract_id': "28",
             'hhdc_account': "22 0883 6932 301",
             'msn': "",
             'pc_id': "9",
@@ -10630,30 +10320,28 @@ def virtual_bill(supply_source):
             'imp_llfc_code': "570",
             'imp_mpan_core': "22 0883 6932 301",
             'imp_sc': "350",
-            'imp_supplier_contract_id': "58",
+            'imp_supplier_contract_id': "32",
             'imp_supplier_account': "413",
             'exp_llfc_code': "581",
             'exp_mpan_core': "22 7824 9120 097",
             'exp_sc': "150",
-            'exp_supplier_contract_id': "58",
+            'exp_supplier_contract_id': "32",
             'exp_supplier_account': "669"},
         'status_code': 303},
     {
         'name': "TRIAD, no historical data, but eras exist",
-        'path': '/chellow/reports/291/output/?supply_id=5&start_year=2014&'
-        'start_month=01&start_day=01&start_hour=00&start_minute=0&'
-        'finish_year=2014&finish_month=01&finish_day=31&finish_hour=23&'
-        'finish_minute=30',
+        'path': '/reports/291?supply_id=5&start_year=2014&start_month=01&'
+        'start_day=01&start_hour=00&start_minute=0&finish_year=2014&'
+        'finish_month=01&finish_day=31&finish_hour=23&finish_minute=30',
         'status_code': 200,
         'regexes': [r'22 7824 9120 097']},
 
     {
         'name': "Supply level virtual bill, with readfull bill covered "
         "by readless bill",
-        'path': '/chellow/reports/291/output/?supply_id=10&start_year=2012&'
-        'start_month=01&start_day=01&start_hour=00&start_minute=0&'
-        'finish_year=2012&finish_month=01&finish_day=31&finish_hour=23&'
-        'finish_minute=30',
+        'path': '/reports/291?supply_id=10&start_year=2012&start_month=01&'
+        'start_day=01&start_hour=00&start_minute=0&finish_year=2012&'
+        'finish_month=01&finish_day=31&finish_hour=23&finish_minute=30',
         'status_code': 200,
         'regexes': [
             r'3409.15883838']},

@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block title %}
+	Sites &gt; {{site.name}}
+{% endblock %}
+
+{% block nav %}
+	<a href="{{context_path}}/sites">Sites</a> &gt;
+	<a href="{{context_path}}/sites/{{site.id}}">{{site.name}}</a> &gt;
+ 	Generation Graph
+{% endblock %}
+
+{% block content %}
+	<p>
+		<img src="{{context_path}}/reports/23?site_id={{site.id}}&amp;finish_year={{year}}&amp;finish_month={{month}}&amp;months={{months}}" >
+	</p>
+	
+	<form action="">
+		<fieldset>
+			<legend>Show graph</legend>
+			<input type="hidden" name="site_id" value="{{site.id}}">
+
+			For <input name="months" maxlength="2" size="2" value="{{months}}">
+			months finishing at the end of
+			{{input_date('finish', finish_date, 'month')}}
+			<input type="submit" value="Show">
+		</fieldset>
+	</form>
+{% endblock %}

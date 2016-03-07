@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+{% block title %}
+	Meter Payment Types &gt; {{meter_payment_type.code}}
+{% endblock %}
+
+{% block nav %}
+	<a href="{{context_path}}/reports/133/output/">Meter Payment Types</a>
+	&gt; {{meter_payment_type.description}}
+{% endblock %}
+
+{% block content %}
+	<table>
+		<tr>
+			<th>Code</th>
+			<td>{{meter_payment_type.code}}</td>
+		</tr>
+		<tr>
+			<th>Description</th>
+			<td>{{meter_payment_type.description}}</td>
+		</tr>
+	</table>
+{% endblock %}

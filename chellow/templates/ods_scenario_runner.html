@@ -1,0 +1,130 @@
+{% extends "base.html" %}
+
+{% block title %}
+	Scenario Runner
+{% endblock %}
+
+{% block nav %}
+	Scenario Runner
+{% endblock %}
+
+{% block content %}
+	<table><caption>Scenarios</caption>
+		<thead>
+			<tr>
+				<th>Scenario</th>
+				<th>Run</th>
+				<th>View</th>
+				<th>Edit</th>
+				<th>scenario_start</th>
+				<th>scenario_duration</th>
+			</tr>
+		</thead>
+		<tbody>
+			{% for scenario in scenarios %}
+				{% set props = scenario.make_properties() %}
+				<tr>
+					<td>{{scenario.name}}</td>
+					<td>
+						<a href="{{context_path}}/247?scenario_id={{scenario.id}}">
+							Run
+						</a>
+					<td>
+						<a href="{{context_path}}/supplier_contracts/{{scenario.id}}#properties">
+							View
+						</a>
+					</td>
+					<td>
+						[<a href="{{context_path}}/supplier_contracts/{{scenario.id}}/edit#properties">edit</a>]
+					</td>
+					<td>{{props.scenario_start}}</td>
+					<td>{{props.scenario_duration}}</td>
+				</tr>
+			{% endfor %}
+		</tbody>
+	</table>
+
+	<h4>Rates</h4>
+
+	<table><caption>Pass-through Contract Rates</caption>
+		<thead>
+			<tr>
+				<th rowspan="2">Contract</th>
+				<th colspan="2">Last Rate Script</th>
+			</tr>
+			<tr>
+				<th>Start Date</th>
+				<th>Finish Date</th>
+			</tr>
+		</thead>
+		<tbody>
+			{% for contract in contracts %}
+				<tr>
+					<td>
+						<a href="{{context_path}}/non_core_contracts/{{contract.id}}">
+							{{contract.name}}
+						</a>
+					</td>
+					<td>{{contract.finish_rate_script.start_date|hh_format}}</td>
+					<td>{{contract.finish_rate_script.finish_date|hh_format}}</td>
+				</tr>
+			{% endfor %}
+		</tbody>
+	</table>
+
+	<p>
+		Consider a half-hour H, and a contract with rate scripts. The rate at H
+	 is determined by:
+	</p>
+
+	<dl>
+		<dt>start_date</dt>
+		<dd>A date</dd>
+		<dt>multiplier</dt>
+		<dd>A number</dd>
+		<dt>constant</dt>
+		<dd>A number</dd>
+	</dl>
+
+	<p>
+		If H &lt;= start_date, then the rate script at H is used without any
+		change. If H &gt; start_date, then the rate script at start_date is used
+		to obtain the value of the rate at H by doing (rate_at_start_date *
+		multiplier + constant).
+	</p>
+
+	<h3>Template Scenario Properties</h3>
+
+	<pre>
+{
+	'bsuos' : {
+			'start_date': datetime(2011, 1, 1),
+			'multiplier': 1,
+			'constant': 0,
+	},
+
+	'ccl': {
+			'start_date': datetime(2014, 10, 1),
+			'multiplier': 1,
+			'constant': 0,
+	},
+
+	'aahedc': {
+			'start_date': datetime(2012, 4, 1),
+			'multiplier': 0,
+			'constant': 0.00091361,
+	},
+
+	'scenario_start': datetime(2011, 1, 1),  # Date or None for this month
+	'scenario_duration': 1,  # Number of months
+	'resolution': 'hh',  # 'hh' or 'month'
+																
+	'kw_changes':
+	# CSV format with the following columns
+	# Site Code, Type ('used' or 'generated') , Date (yyyy-mm-dd), Multiplier
+	"""
+	CI005, used, 2011-01-01, 0.5
+	CI005, generated, 2011-01-01, 2
+	""",
+}</pre>
+{% endblock %}

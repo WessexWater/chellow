@@ -1,1 +1,0 @@
-{'name': u'Mop Contract Edit'}

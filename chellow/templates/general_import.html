@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{% block title %}
+	General Imports &gt; {{process_id}}
+{% endblock %}
+
+{% block nav %}
+	<a href="{{context_path}}/general_imports">General Import</a> &gt;
+	{{process_id}}
+{% endblock %}
+
+{% block content %}
+	{% if line_number %}
+		<p>Line number {{line_number}}.</p>
+	{% endif %}
+
+	{% if is_alive %}
+			<p>Still running. Refresh the page to see latest progress.</p>
+	{% else %}
+			{% if error_message %}
+					<p>The import has failed with the message:</p>
+					<pre>{{error_message}}</pre>
+			{% else %}
+					<p>The file has been imported successfully.</p>
+			{% endif %}
+	{% endif %}
+
+	{% if csv_line %}
+		<table>
+			<caption>Failed Line</caption>
+			<tbody>
+				<tr>
+					{% for title, value in csv_line %}
+						<th>{{title}}</th>
+					{% endfor %}
+				</tr>
+				<tr>
+					{% for title, value in csv_line %}
+						<td>{{value}}</td>
+					{% endfor %}
+				</tr>
+			</tbody>
+		</table>
+	{% endif %}
+{% endblock %}

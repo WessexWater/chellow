@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block title %}
+	HHDC Contracts &gt; {{contract.name}} &gt; HH Data Imports &gt; {{process.id}}
+{% endblock %}
+
+{% block nav %}
+	<a href="{{context_path}}/hhdc_contracts">HHDC Contracts</a> &gt;
+	<a href="{{context_path}}/hhdc_contracts/{{contract.id}}">{{contract.name}}</a> &gt;
+	<a href="{{context_path}}/hhdc_contracts/{{contract.id}}/hh_imports">HH Data Imports</a> &gt;
+	{{process.id}}
+{% endblock %}
+
+{% block content %}
+	{% if process.isAlive() %}
+		<p>
+			Running.
+			{% if process.converter %}	
+				Reached line number {{process.converter.line_number}}.
+			{% endif %}
+		</p>
+	{% elif process.messages|length == 0 %}
+		<p>The import has completed successfully.</p>
+	{% else %}
+		<p>The import failed:</p>
+		<ul>
+			{% for message in process.messages %}
+				<li>{{message}}</li>
+			{% endfor %}
+		</ul>
+	{% endif %}
+{% endblock %}

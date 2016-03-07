@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+
+{% block title %}
+	Parties
+{% endblock %}
+
+{% block nav %}
+	Parties
+{% endblock %}
+
+{% block content %}
+	<table>
+		<thead>
+			<th>Name</th>
+			<th>Market Role</th>
+			<th>Participant</th>
+		</thead>
+		<tbody>
+			{% for party in parties %}
+				<tr>
+					<td>
+						<a href="{{context_path}}/parties/{{party.id}}">{{party.name}}</a>
+					</td>
+					<td>
+						<a href="{{context_path}}/market_roles/{{party.market_role.id}}">{{party.market_role.description}}</a>
+					</td>
+					<td>
+						<a href="{{context_path}}/participants/{{party.participant.id}}">{{party.participant.code}}</a>
+					</td>
+				</tr>
+			{% endfor %}
+		</tbody>
+	</table>
+{% endblock %}

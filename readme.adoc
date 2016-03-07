@@ -21,8 +21,9 @@ image:https://travis-ci.org/WessexWater/chellow.svg?branch=master["Build Status"
 Chellow is a Python web application (with a built-in webserver) that uses the
 PostgreSQL database. To install Chellow, follow these steps:
 
-. Install http://www.postgresql.org/[PostgreSQL] 9.4
-. Install Python 2.7 (tested on the http://pypy.org/[PyPy] interpreter)
+. Install http://www.postgresql.org/[PostgreSQL] 9.5
+. Install Python 3.5 (tested on the http://www.python.org/[CPython 3.5.1]
+  interpreter)
 . Create a PostgreSQL database called `chellow` with the character encoding
   `UTF8`.
 . At the command line run:
@@ -54,14 +55,6 @@ PostgreSQL database. To install Chellow, follow these steps:
 | `chellow`
 | Postgres database name
 
-| `CHELLOW_FIRST_EMAIL`
-| `admin@example.com`
-| Email address of first Chellow user
-
-| `CHELLOW_FIRST_PASSWORD`
-| `admin`
-| Password of first Chellow user
-
 | `CHELLOW_PORT`
 | `80`
 | Port that the Chellow webserver will listen on
@@ -74,28 +67,33 @@ in Windows an environment variable can be set by doing:
 
  set CHELLOW_PORT=8080
 +
-. Start Chellow by running `chellow_start` and stop it by running
-  `chellow_stop`.
+. Initialize Chellow by running `chellow_db_init`.
+. Start Chellow by running `chellow start` and stop it by running
+  `chellow stop`.
 . You should now be able to visit `http://localhost/` in a browser. You should
-  be prompted to enter a username and password. Enter the Chellow first user
-  email and password, and then the Chellow home page should appear.
+  be prompted to enter a username and password. Enter the admin user name
+  '`admin@example.com`' and the password '`admin`', and then the
+  home page should appear. Change the admin password from the '`users`' page.
 
 
 === Upgrading
 
-To upgrade to the latest version of Chellow, enter the following at the command
+To upgrade to the latest version of Chellow enter the following at the command
 line:
 
+ chellow stop
  pip install --upgrade chellow
-
-then restart Chellow with the command `chellow_restart`.
+ chellow_db_upgrade
+ chellow start
 
 
 === Using A Different Webserver
 
-Chellow uses its own webserver by default, but the app also exists as a Python
-WSGI web application so Chellow can be used with any WSGI compliant application
-server, eg Gunicorn. The WSGI app that should be specified is `chellow.app`.
+Chellow comes bundled with the
+http://docs.pylonsproject.org/projects/waitress/en/latest/[Waitress] webserver,
+but the is also a Python WSGI web application so Chellow can be used with any
+WSGI compliant application server, eg Gunicorn. The WSGI app that should be
+specified is `chellow.app`.
 
 
 ==  Getting Started
@@ -169,7 +167,7 @@ can write:
                 bill['day-kwh'] += hh['msp-kwh']
                 bill['day-gbp'] += hh['msp-kwh'] * 0.1
     
-        bill['net-gbp'] = sum(v for k, v in bill.iteritems() if k[-4:] == '-gbp')
+        bill['net-gbp'] = sum(v for k, v in bill.items() if k[-4:] == '-gbp')
 
 For documentation on the languages that Chellow uses, see the Extending
 Chellow section.

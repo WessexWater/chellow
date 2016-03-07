@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block title %}
+	User Roles
+{% endblock %}
+
+{% block nav %}
+	User Roles
+{% endblock %}
+
+{% block content %}
+	<table>
+		<thead>
+			<th>Code</th>
+		</thead>
+		<tbody>
+			{% for user_role in user_roles %}
+				<tr>
+					<td>
+						<a href="{{context_path}}/user_roles/{{user_role.id}}">{{user_role.code}}</a>
+					</td>
+				</tr>
+			{% endfor %}
+		</tbody>
+	</table>
+{% endblock %}

@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+
+{% block title %}
+	MOP Contracts &gt; {{contract.name}} &gt; Batches &gt; Add
+{% endblock %}
+
+{% block inside_head %}
+	<style>
+		label {
+			width: 6em;
+			float: left;
+		}
+	</style>
+{% endblock %}
+
+{% block nav %}
+	<a href="{{context_path}}/mop_contracts">MOP Contracts</a> &gt;
+	<a href="{{context_path}}/mop_contracts/{{contract.id}}">{{contract.name}}</a> &gt;
+	<a href="{{context_path}}/mop_batches?mop_contract_id={{contract.id}}">Batches</a>
+	&gt; Add
+{% endblock %}
+
+{% block content %}
+	<form action="" method="post">
+		<fieldset>
+			<legend>Add a batch</legend>
+			<input type="hidden" name="mop_contract_id" value="{{contract.id}}">
+			<br>
+			<label>Reference</label> {{input_text('reference', '')}}
+			<br>
+			<label>Description</label> {{input_text('description', '')}}
+			<br>
+			<br>
+			<input type="submit" value="Add">
+		</fieldset>
+	</form>
+
+	<table>
+		<caption>Existing Batches</caption>
+		<thead>
+			<tr>
+				<th>Reference</th>
+				<th>Description</th>
+			</tr>
+		</thead>
+		<tbody>
+			{% for batch in batches %}
+				<tr>
+					<td>{{batch.reference}}</td>
+					<td>{{batch.description}}</td>
+				</tr>
+			{% endfor %}
+		</tbody>
+	</table>
+{% endblock %}

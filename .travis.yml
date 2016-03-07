@@ -1,19 +1,9 @@
 language: python
 python:
-- '2.7'
+- '3.5'
 install:
 - pip install tox
 script:
 - tox
 env:
 - CHELLOW_PORT=5000
-
-deploy:
-  provider: pypi
-  user: "tlocke"
-  password:
-    secure: Vh4ZDtm/IMFMiC6CocMcv5dHmEJ3DAME2MruMpMUDKSmNiKKgLOVxN3dR+QHrhtXJ2ohYJdiIIYQTG/5EXCN4jtpppT/hvR4ZViCgOI9fU8X/+9uGkLKEJuNmmMCkCZOGMlPdpFV+TjDEgV8dd4a3JgAP7hUV/0yi4JVT+p9glc=
-  distributions: "bdist_wheel"
-
-git:
-  depth: 1000000

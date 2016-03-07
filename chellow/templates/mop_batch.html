@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+
+{% block title %}
+	MOP Contracts &gt; {{batch.contract.name}} &gt; Batches &gt;
+ 	{{batch.reference}}
+{% endblock %}
+
+{% block nav %}
+	<a href="{{context_path}}/mop_contracts">MOP Contracts</a> &gt;
+	<a href="{{context_path}}/mop_contracts/{{batch.contract.id}}">{{batch.contract.name}}</a>
+	&gt;
+	<a href="{{context_path}}/mop_batches?mop_contract_id={{batch.contract.id}}">Batches</a>
+	&gt; {{batch.reference}}
+	[<a href="{{context_path}}/mop_batches/{{batch.id}}/edit">edit</a>]
+{% endblock %}
+
+{% block content %}
+	<table>
+		<tr>
+			<th>Reference</th>
+			<td>{{ batch.reference }}</td>
+		</tr>
+		<tr>
+			<th>Description</th>
+			<td>{{ batch.description }}</td>
+		</tr>
+		<tr>
+			<th>Number Of Bills</th>
+			<td>{{ bills|length }}</td>
+		</tr>
+		{% if batch_reports %}
+			<tr>
+				<th>Custom Reports</th>
+				<td>
+					<ul>
+						{% for report in batch_reports %}
+							<li>
+								<a href="{{context_path}}/local_reports/{{report.id}}/output?batch_id={{batch.id}}">{{report.name}}</a>
+							</li>
+						{% endfor %}
+					</ul>
+				</td>
+			</tr>
+		{% endif %}
+	</table>
+	<br>
+	<ul>
+		<li>
+			<a href="{{context_path}}/reports/111?batch_id={{batch.id}}">Check Bills</a>
+		</li>
+		<li>
+			[<a href="{{context_path}}/reports/331?mop_batch_id={{batch.id}}">Bill Imports</a>]
+		</li>
+	</ul>
+	<table>
+		<caption>Bills [<a href="{{context_path}}/mop_batches/{{batch.id}}/add_bill">add</a>]</caption>
+		<thead>
+			<tr>
+				<th>View</th>
+				<th>Reference</th>
+				<th>Supply</th>
+				<th>Account</th>
+				<th>Issue Date</th>
+				<th>From</th>
+				<th>To</th>
+				<th>kWh</th>
+				<th>Net</th>
+				<th>VAT</th>
+				<th>Gross</th>
+				<th>Type</th>
+			</tr>
+		</thead>
+		<tbody>
+			{% for bill in bills %}
+				<tr>
+					<td>
+						<a href="{{context_path}}/mop_bills/{{bill.id}}">View</a>
+					</td>
+					<td>{{bill.reference}}</td>
+					<td>
+						<a href="{{context_path}}/supplies/{{bill.supply.id}}">supply</a>
+					</td>
+					<td>{{ bill.account }}</td>
+					<td>{{ bill.issue_date|hh_format }}</td>
+					<td>{{ bill.start_date|hh_format }}</td>
+					<td>{{ bill.finish_date|hh_format }}</td>
+					<td>{{ bill.kwh }}</td>
+					<td>{{ bill.net }}</td>
+					<td>{{ bill.vat }}</td>
+					<td>{{ bill.gross }}</td>
+					<td>
+						<a href="{{context_path}}/bill_types/{{bill.bill_type.id}}" title="{{bill.bill_type.description}}">{{bill.bill_type.code}}</a>
+					</td>
+				</tr>
+			{% endfor %}
+		</tbody>
+	</table>
+{% endblock %}

@@ -1,1 +1,0 @@
-{'name': u'MOP Batch Edit'}

@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% block title %}
+	CSV Sites TRIAD
+{% endblock %}
+
+{% block nav %}
+	CSV Sites TRIAD
+{% endblock %}
+
+{% block content %}
+	<form action="{{context_path}}/reports/181">
+		<fieldset>
+			<legend>Download Sites TRIAD CSV</legend>
+			<br>
+			For financial year ending March {{input_text('year', year, 4, 4)}}
+			<input type="submit" value="Download">
+		</fieldset>
+	</form>
+{% endblock %}

@@ -1,0 +1,146 @@
+{% extends "base.html" %}
+
+{% block title %}
+	Users &gt; {{user.email_address}}
+{% endblock %}
+
+{% block nav %}
+	<a href="{{ context_path }}/users">Users</a> &gt; {{ user.email_address }}
+{% endblock %}
+
+{% block content %}
+	{% if request.values.delete %}
+		<form method="delete" action="">
+			<fieldset>
+				<legend>
+					Do you really want to delete the user '{{ user.email_address }}'?
+				</legend>
+				<input type="submit" name="delete" value="Delete">
+				<p><a href="">Cancel</a></p>
+			</fieldset>
+		</form>
+	{% else %}
+		<form method="post" action="">
+			<fieldset>
+				<input type="hidden" name="user_id" value="{{ user.id }}">
+				<legend>Update details</legend>
+				<br />
+				<label>
+					Email Address
+					<input name="email_address" size="100" value="
+						{%- if request.values.email_address -%}
+							{{ request.values.email_address }}
+						{%- else -%}
+							{{ user.email_address }}
+						{%- endif -%}
+					">
+				</label>
+				<br />
+				<br />
+				<fieldset>
+					<legend>Role</legend>
+					<label>
+						<input type="radio" name="user_role_code" value="editor"
+							{%- if request.values.user_role_editor -%}
+								{%- if request.values.user_role_editor == 'editor' %}
+									checked
+								{%- endif -%}
+							{%- else -%}
+								{%- if user.user_role.code == 'editor' %}
+									checked
+								{%- endif -%}
+							{%- endif -%}
+						>
+						Editor
+					</label>
+					<br />
+					<label>
+						<input type="radio" name="user_role_code" value="viewer"
+							{% if request.values.user_role_code %}
+								{% if request.values.user_role_code == 'viewer' %}
+									checked
+								{% endif %}
+							{% else %}
+								{% if user.user_role.code == 'viewer' %}
+									checked
+								{% endif %}
+							{% endif %}
+						>
+						Viewer
+					</label>
+					<br />
+					<label>
+						<input type="radio" name="user_role_code" value="party-viewer"
+							{%- if request.values.user_role_code -%}
+								{%- if request.values.user_role_code == 'party-viewer' -%}
+									checked
+								{%- endif -%}
+							{%- else -%}
+								{%- if user.user_role.code == 'party-viewer' -%}
+									checked
+								{% endif %}
+							{% endif %}
+						>
+						Party Viewer
+					</label>
+					<select name="party_id">
+						{% for party in parties %}
+							<option value="{{ party.id }}"
+								{%- if request.values.party_id -%}
+									{%- if request.values.party_id == party.id %}
+										selected
+									{%- endif -%}
+								{%- else -%}
+									{%- if user.party.id == party.id %}
+										selected
+									{%- endif -%}
+								{%- endif -%}
+							>
+								{{ party.name }} {{ party.participant.code }}
+								{{ party.market_role.description }}
+							</option>
+						{% endfor %}
+					</select>
+				</fieldset>
+				<br>
+				<br>
+				<input type="submit" value="Update">
+			</fieldset>
+		</form>
+		<br />
+		<br />
+		<form method="post" action="">
+			<fieldset>
+				<input type="hidden" name="user_id" value="{{user.id}}">
+				<legend>Change password</legend>
+				<br />
+				<label>
+					Current password
+					<input type="password" name="current_password">
+				</label>
+				<br />
+				<br />
+				<label>
+					New password
+					<input type="password" name="new_password">
+				</label>
+				<br />
+				<label>
+					Confirm new Password
+					<input type="password" name="confirm_new_password">
+				</label>
+				<br />
+				<br />
+				<input type="submit" value="Change">
+				<input type="reset" value="Reset">
+			</fieldset>
+		</form>
+		<br />
+		<form action="">
+			<fieldset>
+				<legend>Delete this user</legend>
+				<input type="submit" name="delete" value="Delete">
+			</fieldset>
+		</form>
+	{% endif %}
+{% endblock %}

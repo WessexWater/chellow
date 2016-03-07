@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block title %}
+	HHDC Contracts &gt; {{contract.name}} &gt; Automatic HH Data Downloader
+{% endblock %}
+
+{% block nav %}
+	<a href="{{context_path}}/hhdc_contracts">HHDC Contracts</a> &gt;
+	<a href="{{context_path}}/hhdc_contracts/{{contract.id}}">{{contract.name}}</a> &gt;
+	Automatic HH Data Downloader
+{% endblock %}
+
+{% block content %}
+	<p><a href="">Refresh page</a></p>
+
+	{% if task %}
+
+		<table>
+			<tr>
+				<th>Is Locked?</th>
+				<th>Is stopping?</th>
+			</tr>
+			<tr>
+				<td>{{task.is_locked()}}</td>
+				<td>{{task.stopped.isSet()}}</td>
+			</tr>
+		</table>
+		<br>
+
+		{% if not task.is_locked() %}
+			<form action="" method="post">
+				<fieldset>
+					<legend>Import Now</legend>
+					<input type="hidden" name="hhdc_contract_id" value="{{contract.id}}">
+					<input type="submit" value="Import" name="now">
+				</fieldset>
+			</form>
+		{% endif %}
+
+		<h3>Log</h3>
+
+		<p>{{task.get_status()}}</p>
+
+		<ul>
+			{% for message in task.messages %}
+				<li>{{message}}</li>
+			{% endfor %}
+		</ul>
+	{% else %}
+		<p>The importer task has not been started.</p>
+	{% endif %}
+{% endblock %}

@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block title %}
+	Site Snags &gt; {{snag.id}}
+{% endblock %}
+
+{% block nav %}
+	<a href="{{context_path}}/site_snags">Site Snags</a> &gt; {{snag.id}}
+	[<a href="{{context_path}}/site_snags/{{snag.id}}/edit">edit</a>]
+{% endblock %}
+
+{% block content %}
+	<table>
+		<tbody>
+			<tr>
+				<th>Date Created</th>
+				<td>{{snag.date_created|hh_format}}</td>
+			</tr>
+			<tr>
+				<th>Ignored?</th>
+				<td>
+					{% if snag.is_ignored %}
+						Ignored
+					{% else %}
+						Not ignored
+					{% endif %}
+				</td>
+			</tr>
+			<tr>
+				<th>Description</th>
+				<td>{{snag.description}}</td>
+			</tr>
+			<tr>
+				<th>Site</th>
+				<td>
+					<a href="{{context_path}}/sites/{{snag.site.id}}">{{snag.site.code}}</a>
+				</td>
+			</tr>
+			<tr>
+				<th>Start Date</th>
+				<td>{{snag.start_date|hh_format}}</td>
+			</tr>
+			<tr>
+				<th>Finish Date</th>
+				<td>{{snag.finish_date|hh_format}}</td>
+			</tr>
+		</tbody>
+	</table>
+{% endblock %}

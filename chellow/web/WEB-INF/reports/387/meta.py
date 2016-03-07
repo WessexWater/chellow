@@ -1,1 +1,0 @@
-{'name': u'Supplier Virtual Bill CSV Half-hourly'}

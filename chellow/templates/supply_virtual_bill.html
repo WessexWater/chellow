@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+
+{% block title %}
+	Supplies &gt; {{supply.id}} &gt; Virtual Bill
+{% endblock %}
+
+{% block nav %}
+	<a href="{{context_path}}/supplies">Supplies</a> &gt;
+	<a href="{{context_path}}/supplies/{{supply.id}}">{{supply.id}}</a> &gt;
+ 	Virtual Bill
+{% endblock %}
+
+{% block content %}
+	<form action="">
+		<fieldset>
+			<input type="hidden" name="supply_id" value="{{supply.id}}">
+			<legend>Show Virtual Bills</legend>
+			<br>
+			From {{input_date('start', start_date)}} to
+			{{input_date('finish', finish_date)}} <input type="submit" value="Show">
+		</fieldset>
+	</form>
+
+	<br>
+
+	<table><caption>Summary</caption>
+		<tr>
+			<th>From</th>
+			<td>{{start_date|hh_format}}</td>
+		</tr>
+		<tr>
+			<th>To</th>
+			<td>{{finish_date|hh_format}}</td>
+		</tr>
+		<tr>
+			<th>Net GBP</th>
+			<td>{{net_gbp}}</td>
+		</tr>
+	</table>
+
+	<br>
+
+	<table><caption>Import Supplier Virtual Bill</caption>
+		{% for mera in meras %}
+			{% if not mera.skip %}
+				<thead>
+					<tr>
+						{% for heading in mera.headings %}
+							<th>{{heading}}</th>
+						{% endfor %}
+					</tr>
+				</thead>
+			{% endif %}
+			<tbody>
+				<tr>
+					{% for datum in mera.data %}
+							<td>{{datum}}</td>
+					{% endfor %}
+				</tr>
+			</tbody>
+		{% endfor %}
+	</table>
+{% endblock %}

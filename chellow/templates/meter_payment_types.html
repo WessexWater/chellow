@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block title %}
+	Meter Payment Types
+{% endblock %}
+
+{% block nav %}
+	Meter Payment Types
+{% endblock %}
+
+{% block content %}
+	<table>
+		<thead>
+			<tr>
+				<th>Code</th>
+				<th>Description</th>
+			</tr>
+		</thead>
+		<tbody>
+			{% for meter_payment_type in meter_payment_types %}
+				<tr>
+					<td>
+						<a href="{{context_path}}/meter_payment_types/{{meter_payment_type.id}}">{{meter_payment_type.code}}</a>
+					</td>
+					<td>{{ meter_payment_type.description }}</td>
+				</tr>
+			{% endfor %}
+		</tbody>
+	</table>
+{% endblock %}

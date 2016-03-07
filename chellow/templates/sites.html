@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block title %}
+	Sites
+{% endblock %}
+
+{% block nav %}
+	Sites [<a href="{{context_path}}/sites/add">add</a>]
+{% endblock %}
+
+{% block content %}
+	<form action="">
+		<fieldset>
+			{{input_text('pattern', '')}}
+			<input type="submit" value="Search">
+		</fieldset>
+	</form>
+	{% if sites %}
+		<p>Only the first {{limit}} sites of the search results are shown.</p>
+		<ul>
+			{% for site in sites %}
+				<li>
+					<a href="{{context_path}}/sites/{{site.id}}">{{site.code}} {{site.name}}</a>
+				</li>
+			{% endfor %}
+		</ul>
+	{% elif request.values.pattern %}
+		<p>No sites matched your search</p>
+	{% endif %}
+{% endblock %}
