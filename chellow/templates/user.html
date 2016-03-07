@@ -23,7 +23,7 @@
 	{% else %}
 		<form method="post" action="">
 			<fieldset>
-				<input type="hidden" name="user_id" value="{{ user.id }}"/>
+				<input type="hidden" name="user_id" value="{{ user.id }}">
 				<legend>Update details</legend>
 				<br />
 				<label>
@@ -103,38 +103,37 @@
 						{% endfor %}
 					</select>
 				</fieldset>
-				<br />
-				<br />
-				<input type="submit" value="Update" />
-				<input type="reset" value="Reset" />
+				<br>
+				<br>
+				<input type="submit" value="Update">
 			</fieldset>
 		</form>
 		<br />
 		<br />
-		<form method="post" action=".">
+		<form method="post" action="">
 			<fieldset>
-				<input type="hidden" name="user_id" value="{{ user.id }}"/>
+				<input type="hidden" name="user_id" value="{{user.id}}">
 				<legend>Change password</legend>
 				<br />
 				<label>
 					Current password
-					<input type="password" name="current_password" />
+					<input type="password" name="current_password">
 				</label>
 				<br />
 				<br />
 				<label>
 					New password
-					<input type="password" name="new_password" />
+					<input type="password" name="new_password">
 				</label>
 				<br />
 				<label>
 					Confirm new Password
-					<input type="password" name="confirm_new_password" />
+					<input type="password" name="confirm_new_password">
 				</label>
 				<br />
 				<br />
-				<input type="submit" value="Change" />
-				<input type="reset" value="Reset" />
+				<input type="submit" value="Change">
+				<input type="reset" value="Reset">
 			</fieldset>
 		</form>
 		<br />

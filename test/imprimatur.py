@@ -14,7 +14,7 @@
         'status_code': 303,
         'tries': {},
         'regexes': [
-            r"/users/2"]},
+            r"http://localhost:5000/users/2"]},
     {
         'path': '/users',
         'method': 'post',
@@ -30,11 +30,15 @@
         'path': '/users/3',
         'regexes': [
             r'<input type="hidden" name="user_id" value="3">\s*'
-            '<legend>Delete this user</legend>'],
+            '<legend>Delete this user</legend>',
+            r'<form method="post" action="">\s*'
+            r'<fieldset>\s*'
+            r'<input type="hidden" name="user_id" value="3">\s*'
+            r'<legend>Change password</legend>'],
         'status_code': 200},
 
-    # Check that a duplicate email gives a proper error message
     {
+        'name': "Check that a duplicate email gives a proper error message",
         'path': '/users',
         'method': 'post',
         'data': {
@@ -53,6 +57,8 @@
             'current_password': "science",
             'new_password': "rosamund",
             'confirm_new_password': "rosamund"},
+        'regexes': [
+            r'/users/3'],
         'status_code': 303},
 
     {

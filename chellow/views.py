@@ -125,7 +125,7 @@ def check_permissions(*args, **kwargs):
             path = request.path
 
             if role_code == "viewer":
-                if path.startswith("/chellow/reports/") and \
+                if path.startswith("/reports/") and \
                         path.endswith("/output/") and \
                         method in ("GET", "HEAD"):
                     return
@@ -334,7 +334,7 @@ def users_post():
         user = User.insert(
             sess, email_address, User.digest(password), role, party)
         sess.commit()
-        return redirect('/chellow/users/' + str(user.id), 303)
+        return redirect('/users/' + str(user.id), 303)
     except BadRequest as e:
         sess.rollback()
         flash(e.description)
