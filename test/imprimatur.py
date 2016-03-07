@@ -222,7 +222,8 @@ def virtual_bill(ds):
     {
         'path': '/hhdc_contracts/28',
         'regexes': [
-            r"HH contract"],
+            r"HH contract",
+            r'<form action="/reports/81">'],
         'status_code': 200},
 
     {

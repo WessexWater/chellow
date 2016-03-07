@@ -16,7 +16,9 @@
 			<tr>
 				<th>Party</th>
 				<td>
-					<a href="{{context_path}}/parties/{{hhdc_contract.party.id}}">{{hhdc_contract.party.name}}</a>
+					<a href="{{context_path}}/parties/{{hhdc_contract.party.id}}">
+						{{hhdc_contract.party.name}}
+					</a>
 				</td>
 			</tr>
 			<tr>
@@ -51,7 +53,9 @@
 			{% for rate_script in rate_scripts %}
 				<tr>
 					<td>
-						<a href="{{context_path}}/hhdc_rate_scripts/{{rate_script.id}}">view</a>
+						<a href="{{context_path}}/hhdc_rate_scripts/{{rate_script.id}}">
+							view
+						</a>
 					</td>
 					<td>{{rate_script.start_date|hh_format}}</td>
 					<td>{{rate_script.finish_date|hh_format}}</td>
@@ -75,7 +79,7 @@
 		</li>
 	</ul>
 	<br>
-	<form action="{{context_path}}/reports/hhdc_virtual_bills">
+	<form action="{{context_path}}/reports/81">
 		<fieldset>
 			<legend>Download Virtual Bills</legend>
 			<input type="hidden" name="hhdc_contract_id" value="{{hhdc_contract.id}}">
