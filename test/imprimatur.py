@@ -29,12 +29,13 @@
     {
         'path': '/users/3',
         'regexes': [
-            r'<input type="hidden" name="user_id" value="3">\s*'
-            '<legend>Delete this user</legend>',
             r'<form method="post" action="">\s*'
             r'<fieldset>\s*'
             r'<input type="hidden" name="user_id" value="3">\s*'
-            r'<legend>Change password</legend>'],
+            r'<legend>Change password</legend>',
+            r'<form action="">\s*'
+            r'<fieldset>\s*'
+            r'<legend>Delete this user</legend>'],
         'status_code': 200},
 
     {
