@@ -55,10 +55,6 @@ PostgreSQL database. To install Chellow, follow these steps:
 | `chellow`
 | Postgres database name
 
-| `CHELLOW_ADMIN_PASSWORD`
-| 
-| Password for the Chellow admin user '`admin@example.com`'.
-
 | `CHELLOW_PORT`
 | `80`
 | Port that the Chellow webserver will listen on
@@ -76,8 +72,8 @@ in Windows an environment variable can be set by doing:
   `chellow stop`.
 . You should now be able to visit `http://localhost/` in a browser. You should
   be prompted to enter a username and password. Enter the admin user name
-  '`admin@example.com`' and the '`CHELLOW_ADMIN_PASSWORD`', and then the
-  home page should appear.
+  '`admin@example.com`' and the password '`admin`', and then the
+  home page should appear. Change the admin password from the '`users`' page.
 
 
 === Upgrading

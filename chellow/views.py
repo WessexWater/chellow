@@ -149,10 +149,22 @@ def check_permissions(*args, **kwargs):
                             return
 
         if user is None:
-            return Response(
-                'Could not verify your access level for that URL.\n'
-                'You have to login with proper credentials', 401,
-                {'WWW-Authenticate': 'Basic realm="Chellow"'})
+            if User.query.count() == 0:
+                sess.rollback()
+                set_read_write(sess)
+                user_role = sess.query(UserRole).filter(
+                    UserRole.code == 'editor').one()
+                User.insert(
+                    sess, 'admin@example.com', User.digest('admin'), user_role,
+                    None)
+                sess.commit()
+                g.user = user
+                return
+            else:
+                return Response(
+                    'Could not verify your access level for that URL.\n'
+                    'You have to login with proper credentials', 401,
+                    {'WWW-Authenticate': 'Basic realm="Chellow"'})
         else:
             return Response('Forbidden', 403)
     except BadRequest:

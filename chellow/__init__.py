@@ -23,12 +23,6 @@ for var_name in (
     if var_name in os.environ:
         config[var_name] = os.environ[var_name]
 
-try:
-    config['CHELLOW_ADMIN_PASSWORD'] = os.environ['CHELLOW_ADMIN_PASSWORD']
-except KeyError:
-    raise Exception(
-        "The 'CHELLOW_ADMIN_PASSWORD' environment variable must be set.")
-
 config['CHELLOW_PORT'] = int(config['CHELLOW_PORT'])
 config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 config['SQLALCHEMY_DATABASE_URI'] = ''.join(

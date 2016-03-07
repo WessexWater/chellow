@@ -17,7 +17,7 @@ import chellow.dloads
 from chellow.models import (
     db, set_read_write, VoltageLevel, UserRole, Source, GeneratorType,
     ReadType, Cop, BillType, Report, MarketRole, Party, Participant, Contract,
-    RateScript, User)
+    RateScript)
 from daemon import runner
 import waitress
 
@@ -40,8 +40,6 @@ def chellow_db_init():
     webinf_path = chellow.app.root_path
     config = app.config
     db_name = config['PGDATABASE']
-    admin_email = 'admin@example.com'
-    admin_password = config['CHELLOW_ADMIN_PASSWORD']
     if find_db_version(session) is None:
         log_message("Initializing database.")
         db.create_all()
@@ -262,10 +260,6 @@ def chellow_db_init():
                 isolation_level + ".")
 
         set_read_write(session)
-        user_role = session.query(UserRole).filter(
-            UserRole.code == 'editor').one()
-        User.insert(
-            session, admin_email, User.digest(admin_password), user_role, None)
         session.execute("create extension tablefunc")
         conf = session.query(Contract).join(MarketRole).filter(
             Contract.name == 'configuration', MarketRole.code == 'Z').one()
