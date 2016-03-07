@@ -107,6 +107,14 @@
         'status_code': 303,
         'regexes': [
             r"/local_reports/1"]},
+
+    {
+        'name': "Delete a user",
+        'path': '/users/3',
+        'method': 'delete',
+        'status_code': 303,
+        'regexes': [
+            r'/users"']},
     {
         'path': '/local_reports/1',
         'status_code': 200,

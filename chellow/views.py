@@ -345,17 +345,30 @@ def users_post():
             render_template('users.html', users=users, parties=parties), 400)
 
 
+@app.route('/users/<int:user_id>', methods=['DELETE'])
+def user_delete(user_id):
+    try:
+        sess = db.session
+        set_read_write(sess)
+        user = User.get_by_id(sess, user_id)
+        sess.delete(user)
+        sess.commit()
+        return redirect('/users', 303)
+    except BadRequest as e:
+        flash(e.description)
+        parties = Party.query.join(MarketRole).join(Participant).order_by(
+            MarketRole.code, Participant.code)
+        return make_response(
+            render_template('user.html',  parties=parties, user=user), 400)
+
+
 @app.route('/users/<int:user_id>', methods=['POST'])
 def user_post(user_id):
     try:
         sess = db.session
         set_read_write(sess)
         user = User.get_by_id(sess, user_id)
-        if 'delete' in request.values:
-            sess.delete(user)
-            sess.commit()
-            return redirect('/users/', 303)
-        elif 'current_password' in request.values:
+        if 'current_password' in request.values:
             current_password = req_str('current_password')
             new_password = req_str('new_password')
             confirm_new_password = req_str('confirm_new_password')

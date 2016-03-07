@@ -10,9 +10,8 @@
 
 {% block content %}
 	{% if request.values.delete %}
-		<form method="post" action="">
+		<form method="delete" action="">
 			<fieldset>
-				<input type="hidden" name="user_id" value="{{user.id}}">
 				<legend>
 					Do you really want to delete the user '{{ user.email_address }}'?
 				</legend>
