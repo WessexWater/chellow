@@ -52,7 +52,7 @@ setup(
         'Flask==0.10.1',
         'Flask-SQLAlchemy==2.1',
         'SQLAlchemy==1.0.11',
-        'pg8000==1.10.4',
+        'pg8000==1.10.5',
         'python-dateutil==2.4.2',
         'pytz==2015.6',
         'xlrd==0.9.4',
