@@ -114,9 +114,9 @@ def content(end_year, end_month, months, site_id):
                             except StopIteration:
                                 hhChannelStartDate = None
 
-                        displaced = sum(gen_breakdown.itervalues()) - exported
+                        displaced = sum(gen_breakdown.values()) - exported
                         added_so_far = 0
-                        for key in sorted(gen_breakdown.iterkeys()):
+                        for key in sorted(gen_breakdown.keys()):
                             kwh = gen_breakdown[key]
                             if kwh + added_so_far > displaced:
                                 total_gen_breakdown[key] = \

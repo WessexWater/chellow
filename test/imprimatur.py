@@ -10346,4 +10346,11 @@ def virtual_bill(supply_source):
         'status_code': 200,
         'regexes': [
             r'3409.15883838']},
+
+    {
+        'name': "Test displaced virtual bill with generation",
+        'path': '/reports/389?site_id=3&months=1&finish_year=2005&'
+        'finish_month=11',
+        'regexes': [
+            r'"CI005"']},
 ]
