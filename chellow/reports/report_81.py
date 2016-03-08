@@ -68,9 +68,8 @@ def content(contract_id, end_year, end_month, months):
                 yield '"' + str(bill.get(title, '')) + '",'
                 if title in bill:
                     del bill[title]
-            keys = bill.keys()
-            keys.sort()
-            for k in keys:
+
+            for k in sorted(bill.keys()):
                 yield ',"' + k + '","' + str(bill[k]) + '"'
             yield '\n'
 

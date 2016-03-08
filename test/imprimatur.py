@@ -2621,7 +2621,7 @@ def virtual_bill(supply_source):
             r"Import MPAN Core, Export MPAN Core, Start Date, Finish Date,"
             "net-gbp",
             r'22 9205 6799 106,22 0470 7514 535,2008-07-01 00:00,'
-            '2008-07-06 23:30,"",',
+            '2008-07-06 23:30,"","",$',
             r'attachment; filename="hhdc_vbs.csv"']},
 
     # Can we make a supply have source sub and view site level hh data okay?
