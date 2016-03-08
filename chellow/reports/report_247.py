@@ -650,7 +650,7 @@ def content(scenario_props, scenario_id, base_name, site_id, supply_id, user):
         except:
             msg = traceback.format_exc()
             r_name, f_name = chellow.dloads.make_names('error.txt', user)
-            ef = open(r_name, "wb")
+            ef = open(r_name, "w")
             ef.write(msg + '\n')
             ef.close()
 
