@@ -10354,4 +10354,9 @@ def virtual_bill(supply_source):
         'finish_month=11',
         'regexes': [
             r'"CI005"']},
+
+    {
+        'name': "GSP Groups",
+        'path': '/gsp_groups',
+        'status_code': 200},
 ]
