@@ -1826,6 +1826,7 @@ def virtual_bill_titles():
         'path': '/',
         'auth': ('watkins@example.com', 'alan'),
         'regexes': [
+            r'<a href="/participants">Market Participants</a>',
             r'<a href="/meter_payment_types">Meter Payment Types</a>',
             r'<a href="/sources">\s*Sources\s*</a>',
             r'<a href="/generator_types">\s*Generator Types\s*'
@@ -10353,4 +10354,9 @@ def virtual_bill(supply_source):
         'finish_month=11',
         'regexes': [
             r'"CI005"']},
+
+    {
+        'name': "GSP Groups",
+        'path': '/gsp_groups',
+        'status_code': 200},
 ]

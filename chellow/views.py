@@ -3956,6 +3956,19 @@ def pc_get(pc_id):
     return render_template('pc.html', pc=pc)
 
 
+@app.route('/gsp_groups')
+def gsp_groups_get():
+    return render_template(
+        'gsp_groups.html', groups=GspGroup.query.order_by(GspGroup.code).all())
+
+
+@app.route('/gsp_groups/<int:group_id>')
+def gsp_group_get(group_id):
+    sess = db.session()
+    group = GspGroup.get_by_id(sess, group_id)
+    return render_template('gsp_group.html', gsp_group=group)
+
+
 @app.route('/sites/<int:site_id>/gen_graph')
 def site_gen_graph_get(site_id):
     sess = db.session()
