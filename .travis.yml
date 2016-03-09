@@ -1,9 +1,14 @@
 language: python
+
 python:
-- '3.5'
+  - '3.5'
 install:
-- pip install tox
+  - pip install tox
 script:
-- tox
-env:
-- CHELLOW_PORT=5000
+  - tox
+
+addons:
+  postgresql: "9.4"
+
+services:
+  - postgresql
