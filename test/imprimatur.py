@@ -1826,6 +1826,7 @@ def virtual_bill_titles():
         'path': '/',
         'auth': ('watkins@example.com', 'alan'),
         'regexes': [
+            r'<a href="/participants">Market Participants</a>',
             r'<a href="/meter_payment_types">Meter Payment Types</a>',
             r'<a href="/sources">\s*Sources\s*</a>',
             r'<a href="/generator_types">\s*Generator Types\s*'
