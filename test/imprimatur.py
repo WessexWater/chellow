@@ -2,7 +2,7 @@
     # Users
     {
         'name': "Manipulating users",
-        'port': '5000',
+        'port': '8080',
         'host': 'localhost',
         'path': '/users',
         'method': 'post',
@@ -14,7 +14,7 @@
         'status_code': 303,
         'tries': {},
         'regexes': [
-            r"http://localhost:5000/users/2"]},
+            r"http://localhost:8080/users/2"]},
     {
         'path': '/users',
         'method': 'post',
@@ -5532,7 +5532,7 @@ def virtual_bill(supply_source):
             'properties': """
 {
     'enabled': True,
-    'url': 'http://127.0.0.1:5000/elexonportal/',
+    'url': 'http://127.0.0.1:8080/elexonportal/',
     'limit': True}
 """},
         'status_code': 303},
