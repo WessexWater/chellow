@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block title %}
+	GSP Groups
+{% endblock %}
+
+{% block nav %}
+	GSP Groups
+{% endblock %}
+
+{% block content %}
+	<table>
+		<thead>
+			<tr>
+				<th>Code</th>
+				<th>Description</th>
+			</tr>
+		</thead>
+		<tbody>
+			{% for group in groups %}
+				<tr>
+					<td>
+						<a href="{{context_path}}/gsp_groups/{{group.id}}">
+							{{group.code}}
+						</a>
+					</td>
+					<td>{{group.description}}</td>
+				</tr>
+			{% endfor %}
+		</tbody>
+	</table>
+{% endblock %}
