@@ -6,6 +6,7 @@ import pytz
 from dateutil.relativedelta import relativedelta
 from sqlalchemy import or_
 from sqlalchemy.sql.expression import null
+from sqlalchemy.orm import joinedload
 import chellow.computer
 import chellow.dloads
 import sys
@@ -78,7 +79,11 @@ def process_site(
                     Era.supply == supply, Era.start_date <= chunk_finish,
                     or_(
                         Era.finish_date == null(),
-                        Era.finish_date >= chunk_start)):
+                        Era.finish_date >= chunk_start)).options(
+                            joinedload(Era.mop_contract),
+                            joinedload(Era.hhdc_contract),
+                            joinedload(Era.imp_supplier_contract),
+                            joinedload(Era.exp_supplier_contract)):
                 tmp_file.write(' ')
 
                 # GBP

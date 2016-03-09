@@ -4,7 +4,7 @@ import pytz
 from dateutil.relativedelta import relativedelta
 from sqlalchemy import or_, cast, Float
 from sqlalchemy.sql.expression import null, false
-from sqlalchemy.orm import aliased
+from sqlalchemy.orm import aliased, joinedload
 import math
 import json
 from werkzeug.exceptions import BadRequest
@@ -891,7 +891,7 @@ class SupplySource(DataSource):
                                 Bill.issue_date.desc(),
                                 BillType.code).first()
 
-                            if pres_bill != pres_read.bill:
+                            if pres_bill.id != pres_read.bill_id:
                                 continue
 
                             reads = dict(
@@ -903,7 +903,8 @@ class SupplySource(DataSource):
                                     RegisterRead.units == 0,
                                     RegisterRead.bill == pres_bill,
                                     RegisterRead.present_date == pres_date,
-                                    RegisterRead.msn == pres_msn))
+                                    RegisterRead.msn == pres_msn).options(
+                                    joinedload('tpr')))
 
                             prime_pres_read = {
                                 'date': pres_date, 'reads': reads,
@@ -929,7 +930,7 @@ class SupplySource(DataSource):
                                 Bill.start_date <= prev_read.bill.finish_date,
                                 BillType.code != 'W').order_by(
                                 Bill.issue_date.desc(), BillType.code).first()
-                            if prev_bill != prev_read.bill:
+                            if prev_bill.id != prev_read.bill_id:
                                 continue
 
                             reads = dict(
@@ -941,7 +942,8 @@ class SupplySource(DataSource):
                                     RegisterRead.units == 0,
                                     RegisterRead.bill == prev_bill,
                                     RegisterRead.previous_date == prev_date,
-                                    RegisterRead.msn == prev_msn))
+                                    RegisterRead.msn == prev_msn).options(
+                                    joinedload('tpr')))
 
                             prime_prev_read = {
                                 'date': prev_date, 'reads': reads,
