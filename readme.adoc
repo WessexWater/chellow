@@ -67,13 +67,12 @@ in Windows an environment variable can be set by doing:
 
  set CHELLOW_PORT=8080
 +
-. Initialize Chellow by running `chellow_db_init`.
-. Start Chellow by running `chellow start` and stop it by running
-  `chellow stop`.
+. Start Chellow by running `chellow start`.
 . You should now be able to visit `http://localhost/` in a browser. You should
   be prompted to enter a username and password. Enter the admin user name
   '`admin@example.com`' and the password '`admin`', and then the
   home page should appear. Change the admin password from the '`users`' page.
+. Chellow can be stopped by running `chellow stop`.
 
 
 === Upgrading
@@ -83,7 +82,6 @@ line:
 
  chellow stop
  pip install --upgrade chellow
- chellow_db_upgrade
  chellow start
 
 
@@ -99,6 +97,7 @@ specified is `chellow.app`.
 ==  Getting Started
 
 This is a brief guide to setting things up after you've installed Chellow.
+
 
 === View the Chellow home page
 

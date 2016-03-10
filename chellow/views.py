@@ -8,7 +8,7 @@ from chellow.models import (
     UserRole, Site, Source, GeneratorType, GspGroup, Era, SiteEra, Pc, Cop,
     Ssc, RateScript, Supply, Mtc, Channel, Tpr, MeasurementRequirement, Bill,
     RegisterRead, HhDatum, Snag, Batch, ReadType, BillType, MeterPaymentType,
-    ClockInterval)
+    ClockInterval, db_upgrade)
 from sqlalchemy.exc import ProgrammingError
 import traceback
 from datetime import datetime as Datetime
@@ -34,6 +34,11 @@ import operator
 import ast
 from importlib import import_module
 import sys
+import chellow.rcrc
+import chellow.bsuos
+import chellow.tlms
+import chellow.bank_holidays
+import chellow.dloads
 
 
 APPLICATION_ROOT = app.config['APPLICATION_ROOT']
@@ -42,6 +47,7 @@ CONTEXT_PATH = '' if APPLICATION_ROOT is None else APPLICATION_ROOT
 
 @app.before_first_request
 def before_first_request():
+    db_upgrade()
     chellow.rcrc.startup()
     chellow.bsuos.startup()
     chellow.system_price.startup()
