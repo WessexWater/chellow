@@ -2967,38 +2967,7 @@ def db_init(session):
 
 
 def db_upgrade_0_to_1(session):
-    webinf_path = app.root_path
-    reports_path = os.path.join(webinf_path, 'reports')
-    for report_id_str in os.listdir(reports_path):
-        report_path = os.path.join(reports_path, report_id_str)
-        report_id = str(report_id_str)
-        report = session.query(Report).filter(Report.id == report_id).first()
-        if report is None:
-            continue
-        report.script = read_file(report_path, 'script.py', 'script')['script']
-        session.commit()
-
-    set_read_write(session)
-    for path_name, role_code in (
-            ('non_core_contracts', 'Z'),
-            ('dno_contracts', 'R')):
-        contracts_path = os.path.join(webinf_path, path_name)
-        market_role = session.query(MarketRole). \
-            filter(MarketRole.code == role_code).one()
-
-        for contract_name in sorted(os.listdir(contracts_path)):
-            contract_path = os.path.join(contracts_path, contract_name)
-            charge_script = read_file(
-                contract_path, 'charge_script.py',
-                'charge_script')['charge_script']
-            contract = session.query(Contract).filter(
-                Contract.name == contract_name,
-                Contract.market_role == market_role).first()
-            if contract is None:
-                print("missing", contract_name)
-                continue
-            contract.charge_script = charge_script
-            session.add(contract)
+    pass
 
 upgrade_funcs = [db_upgrade_0_to_1]
 
