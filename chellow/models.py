@@ -3004,39 +3004,45 @@ upgrade_funcs = [db_upgrade_0_to_1]
 
 
 def db_upgrade():
-    session = Session()
-    set_read_write(session)
-    db_version = find_db_version(session)
-    curr_version = len(upgrade_funcs)
-    if db_version is None:
-        log_message(
-            "It looks like the chellow database hasn't been initialized.")
-        db_init(session)
-    elif db_version == curr_version:
-        log_message(
-            "The database version is " + str(db_version) +
-            " and the latest version is " + str(curr_version) +
-            " so it doesn't look like you need to run an upgrade.")
-    elif db_version > curr_version:
-        log_message(
-            "The database version is " + str(db_version) +
-            " and the latest database version is " + str(curr_version) +
-            " so it looks like you're using an old version of Chellow.")
-    else:
-        log_message(
-            "Upgrading from database version " + str(db_version) +
-            " to database version " + str(db_version + 1) + ".")
-        upgrade_funcs[db_version](session)
-        conf = session.query(Contract).join(MarketRole).filter(
-            Contract.name == 'configuration', MarketRole.code == 'Z').one()
-        state = conf.make_state()
-        state['db_version'] = db_version + 1
-        conf.update_state(state)
-        session.commit()
-        session.close()
-        log_message(
-            "Successfully upgraded from database version " + str(db_version) +
-            " to database version " + str(db_version + 1) + ".")
+    session = None
+    try:
+        session = Session()
+        set_read_write(session)
+        db_version = find_db_version(session)
+        curr_version = len(upgrade_funcs)
+        if db_version is None:
+            log_message(
+                "It looks like the chellow database hasn't been initialized.")
+            db_init(session)
+        elif db_version == curr_version:
+            log_message(
+                "The database version is " + str(db_version) +
+                " and the latest version is " + str(curr_version) +
+                " so it doesn't look like you need to run an upgrade.")
+        elif db_version > curr_version:
+            log_message(
+                "The database version is " + str(db_version) +
+                " and the latest database version is " + str(curr_version) +
+                " so it looks like you're using an old version of Chellow.")
+        else:
+            log_message(
+                "Upgrading from database version " + str(db_version) +
+                " to database version " + str(db_version + 1) + ".")
+            upgrade_funcs[db_version](session)
+            conf = session.query(Contract).join(MarketRole).filter(
+                Contract.name == 'configuration', MarketRole.code == 'Z').one()
+            state = conf.make_state()
+            state['db_version'] = db_version + 1
+            conf.update_state(state)
+            session.commit()
+            session.close()
+            log_message(
+                "Successfully upgraded from database version " +
+                str(db_version) + " to database version " +
+                str(db_version + 1) + ".")
+    finally:
+        if session is not None:
+            session.close()
 
 
 def find_db_version(session):

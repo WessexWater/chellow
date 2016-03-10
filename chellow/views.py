@@ -118,8 +118,15 @@ def check_permissions(*args, **kwargs):
             config_contract = Contract.get_non_core_by_name(
                 db.session, 'configuration')
             try:
-                email = config_contract.make_properties()['ips'][
-                    request.remote_addr]
+                ips = config_contract.make_properties()['ips']
+                if request.remote_addr in ips:
+                    key = request.remote_addr
+                elif '*.*.*.*' in ips:
+                    key = '*.*.*.*'
+                else:
+                    key = None
+
+                email = ips[key]
                 user = User.query.filter(User.email_address == email).first()
             except KeyError:
                 pass
@@ -2717,6 +2724,11 @@ def non_core_contract_edit_post(contract_id):
             contract.delete(sess)
             sess.commit()
             return redirect('/non_core_contracts', 303)
+        if 'update_state' in request.values:
+            state = req_str("state")
+            contract.state = state
+            sess.commit()
+            return redirect('/non_core_contracts/' + str(contract.id), 303)
         else:
             properties = req_str('properties')
             contract.update_properties(properties)

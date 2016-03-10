@@ -30,9 +30,6 @@
 		<form action="" method="post">
 			<fieldset>
 				<legend>Update Contract</legend>
-				<input type="hidden" name="non_core_contract_id"
-					value="{{contract.id}}"
-				>
 				<br>
 				<label>
 					{{contract.name}}
@@ -47,12 +44,22 @@
 				<input type="submit" value="Update">
 			</fieldset>
 		</form>
-		<br />
+		<br>
+		<br>
+		<form action="" method="post">
+			<fieldset>
+				<legend>Update State</legend>
+				<label>State</label>
+				<br>
+				{{ input_textarea('state', contract.state, 40, 80) }}
+				<br>
+				<input type="submit" name="update_state" value="Update">
+			</fieldset>
+		</form>
+		<br>
 		<form action="">
 			<fieldset>
 				<legend>Delete this contract</legend>
-				<input type="hidden" name="non_core_contract_id"
-						value="{{contract.id}}">
 				<input type="hidden" name="view" value="confirm_delete">
 				<input type="submit" value="Delete">
 			</fieldset>
