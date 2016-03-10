@@ -3004,7 +3004,6 @@ def db_upgrade():
             state['db_version'] = db_version + 1
             conf.update_state(state)
             session.commit()
-            session.close()
             log_message(
                 "Successfully upgraded from database version " +
                 str(db_version) + " to database version " +

@@ -10359,4 +10359,33 @@ def virtual_bill(supply_source):
         'name': "GSP Groups",
         'path': '/gsp_groups',
         'status_code': 200},
+
+    {
+        'name': 'Wildcard user. Add config.',
+        'path': '/non_core_contracts/5/edit',
+        'method': 'post',
+        'data': {
+            'name': "configuration",
+            'properties': """
+{
+    'ips': {'*.*.*.*': 'watkins@example.com'},
+    'site_links': [
+        {'name': 'Google Maps', 'href': 'https://maps.google.com/maps?q='}],
+    'batch_reports': [1],
+    'elexonportal_scripting_key': 'xxx'}
+""", },
+        'status_code': 303},
+    {
+        'name': "Test that we can change the role",
+        'path': '/users/2',
+        'method': 'post',
+        'data': {
+            'email_address': "watkins@example.com",
+            'user_role_code': "viewer"},
+        'status_code': 303},
+    {
+        'name': 'Wildcard user. Try viewing a page as unknown person',
+        'path': '/gsp_groups',
+        'auth': ('Emma', 'Knightley'),
+        'status_code': 200},
 ]
