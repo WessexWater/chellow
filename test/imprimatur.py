@@ -10386,6 +10386,15 @@ def virtual_bill(supply_source):
     {
         'name': 'Wildcard user. Try viewing a page as unknown person',
         'path': '/gsp_groups',
-        'auth': ('Emma', 'Knightley'),
+        'auth': None,
         'status_code': 200},
+    {
+        'name': "Wildcard user. Check 401 still occurs.",
+        'path': '/sites/8/edit',
+        'method': 'post',
+        'data': {
+            'site_name': "Ishmael",
+            'code': "MOBY",
+            'update': "Update"},
+        'status_code': 401},
 ]
