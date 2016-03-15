@@ -75,7 +75,7 @@ in Windows an environment variable can be set by doing:
 . Chellow can be stopped by running `chellow stop`.
 
 
-=== Upgrading
+=== Manual Upgrading
 
 To upgrade to the latest version of Chellow enter the following at the command
 line:
@@ -83,6 +83,18 @@ line:
  chellow stop
  pip install --upgrade chellow
  chellow start
+
+
+=== Automatic Upgrading
+
+Chellow comes with an upgrade script that checks PyPI and if there's a new
+version, downloads and installs it. On Unix, set up a cron job by doing:
+
+ crontab -e
+
+and entering the line:
+
+ * * * * * source /home/me/venv/bin/activate;chellow_updater.py
 
 
 === Using A Different Webserver
