@@ -116,6 +116,13 @@
         'regexes': [
             r'/users"']},
     {
+        'name': "View local reports",
+        'path': '/local_reports',
+        'status_code': 200,
+        'regexes': [
+            r"Minority Report",
+            r'<a href="/local_reports/1">View</a>']},
+    {
         'path': '/local_reports/1',
         'status_code': 200,
         'regexes': [

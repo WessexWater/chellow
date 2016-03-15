@@ -208,7 +208,7 @@ def health():
     return 'healthy\n'
 
 
-@app.route('/local_reports/<int:report_id>/output/', methods=['POST'])
+@app.route('/local_reports/<int:report_id>/output', methods=['GET', 'POST'])
 def local_report_output_post(report_id):
     response = None
     report = Report.query.get(report_id)
