@@ -213,7 +213,7 @@ def elexonportal():
 
 @app.route('/health')
 def health():
-    return 'healthy\n'
+    return Response('healthy\n', mimetype='text/plain')
 
 
 @app.route('/local_reports/<int:report_id>/output/', methods=['POST'])
