@@ -95,91 +95,83 @@ def chellow_redirect(path, code=None):
 
 @app.before_request
 def check_permissions(*args, **kwargs):
+    g.user = None
     sess = db.session()
-    try:
-        # sys.stderr.write("about to check permissions sys\n")
-        path = request.path
-        method = request.method
-        if method == 'GET' and path in (
-                '/health', '/bmreports',
-                '/elexonportal/file/download/BESTVIEWPRICES_FILE'):
-            return
+    auth = request.authorization
 
-        g.user = None
-        user = None
-        auth = request.authorization
-        if auth is not None:
-            pword_digest = hashlib.md5(auth.password.encode()).hexdigest()
-            user = User.query.filter(
-                User.email_address == auth.username,
-                User.password_digest == pword_digest).first()
-
-        if user is None:
-            config_contract = Contract.get_non_core_by_name(
-                db.session, 'configuration')
-            try:
-                ips = config_contract.make_properties()['ips']
-                if request.remote_addr in ips:
-                    key = request.remote_addr
-                elif '*.*.*.*' in ips:
-                    key = '*.*.*.*'
-                else:
-                    key = None
-
-                email = ips[key]
-                user = User.query.filter(User.email_address == email).first()
-            except KeyError:
-                pass
-
-        if user is not None:
-            g.user = user
-            role = user.user_role
-            role_code = role.code
-            path = request.path
-
-            if role_code == "viewer" and method in ("GET", "HEAD"):
-                return
-            elif role_code == "editor":
-                return
-            elif role_code == "party-viewer":
-                if method in ("GET", "HEAD"):
-                    party = user.party
-                    market_role_code = party.market_role.code
-                    if market_role_code == 'C':
-                        hhdc_contract_id = request.args["hhdc_contract_id"]
-                        hhdc_contract = Contract.get_hhdc_by_id(
-                            sess, hhdc_contract_id)
-                        if hhdc_contract.party == party and \
-                                request.full_path.startswith(
-                                    "/channel_snags?"):
-                            return
-                    elif market_role_code == 'X':
-                        if path.startswith(
-                                "/supplier_contracts/" + party.id):
-                            return
-
-        if user is None:
-            if User.query.count() == 0:
-                sess.rollback()
-                set_read_write(sess)
-                user_role = sess.query(UserRole).filter(
-                    UserRole.code == 'editor').one()
-                User.insert(
-                    sess, 'admin@example.com', User.digest('admin'), user_role,
-                    None)
-                sess.commit()
-                g.user = user
-                return
+    if auth is None:
+        config_contract = Contract.get_non_core_by_name(sess, 'configuration')
+        try:
+            ips = config_contract.make_properties()['ips']
+            if request.remote_addr in ips:
+                key = request.remote_addr
+            elif '*.*.*.*' in ips:
+                key = '*.*.*.*'
             else:
-                return Response(
-                    'Could not verify your access level for that URL.\n'
-                    'You have to login with proper credentials', 401,
-                    {'WWW-Authenticate': 'Basic realm="Chellow"'})
-        else:
-            return Response('Forbidden', 403)
-    except BadRequest:
-        print("Perm br " + traceback.format_exc())
-        raise
+                key = None
+
+            email = ips[key]
+            g.user = User.query.filter(User.email_address == email).first()
+        except KeyError:
+            pass
+    else:
+        pword_digest = hashlib.md5(auth.password.encode()).hexdigest()
+        g.user = User.query.filter(
+            User.email_address == auth.username,
+            User.password_digest == pword_digest).first()
+
+    # Got our user
+    path = request.path
+    method = request.method
+    if method == 'GET' and path in (
+            '/health', '/bmreports',
+            '/elexonportal/file/download/BESTVIEWPRICES_FILE'):
+        return
+
+    if g.user is not None:
+        role = g.user.user_role
+        role_code = role.code
+
+        if role_code == "viewer" and method in ("GET", "HEAD"):
+            return
+        elif role_code == "editor":
+            return
+        elif role_code == "party-viewer":
+            if method in ("GET", "HEAD"):
+                party = g.user.party
+                market_role_code = party.market_role.code
+                if market_role_code == 'C':
+                    hhdc_contract_id = request.args["hhdc_contract_id"]
+                    hhdc_contract = Contract.get_hhdc_by_id(
+                        sess, hhdc_contract_id)
+                    if hhdc_contract.party == party and \
+                            request.full_path.startswith(
+                                "/channel_snags?"):
+                        return
+                elif market_role_code == 'X':
+                    if path.startswith(
+                            "/supplier_contracts/" + party.id):
+                        return
+
+    if g.user is None and User.query.count() == 0:
+        sess.rollback()
+        set_read_write(sess)
+        user_role = sess.query(UserRole).filter(
+            UserRole.code == 'editor').one()
+        User.insert(
+            sess, 'admin@example.com', User.digest('admin'), user_role,
+            None)
+        sess.commit()
+        return
+
+    if g.user is None or auth is None:
+        return Response(
+            'Could not verify your access level for that URL.\n'
+            'You have to login with proper credentials', 401,
+            {'WWW-Authenticate': 'Basic realm="Chellow"'})
+
+    return Response('Forbidden', 403)
+
 
 el_dir = {
     'SYSPRICE': 'sysprice'
@@ -216,7 +208,7 @@ def health():
     return Response('healthy\n', mimetype='text/plain')
 
 
-@app.route('/local_reports/<int:report_id>/output/', methods=['POST'])
+@app.route('/local_reports/<int:report_id>/output', methods=['GET', 'POST'])
 def local_report_output_post(report_id):
     response = None
     report = Report.query.get(report_id)

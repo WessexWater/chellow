@@ -7,6 +7,7 @@ from pep3143daemon import DaemonContext, PidFile
 import waitress
 import argparse
 import signal
+import time
 
 
 def chellow_test_setup():
@@ -26,6 +27,8 @@ def chellow_stop(pidfile_path):
     with open(pidfile_path) as pidfile:
         pid = int(pidfile.read())
         os.kill(pid, signal.SIGTERM)
+    while os.path.exists(pidfile_path):
+        time.sleep(1)
 
 
 def chellow_command():

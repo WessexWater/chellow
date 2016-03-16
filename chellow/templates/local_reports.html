@@ -5,7 +5,7 @@
 {% endblock %}
 
 {% block nav %}
-	Reports
+	Local Reports
 {% endblock %}
 
 {% block content %}
@@ -20,7 +20,7 @@
 			{% for report in reports %}
 				<tr>
 					<td>
-						<a href="/chellow/local_reports/{{report.id}}">View</a>
+						<a href="/local_reports/{{report.id}}">View</a>
 					</td>
 					<td>
 						{{report.name}}

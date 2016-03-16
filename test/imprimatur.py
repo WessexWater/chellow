@@ -116,6 +116,13 @@
         'regexes': [
             r'/users"']},
     {
+        'name': "View local reports",
+        'path': '/local_reports',
+        'status_code': 200,
+        'regexes': [
+            r"Minority Report",
+            r'<a href="/local_reports/1">View</a>']},
+    {
         'path': '/local_reports/1',
         'status_code': 200,
         'regexes': [
@@ -10386,6 +10393,15 @@ def virtual_bill(supply_source):
     {
         'name': 'Wildcard user. Try viewing a page as unknown person',
         'path': '/gsp_groups',
-        'auth': ('Emma', 'Knightley'),
+        'auth': None,
         'status_code': 200},
+    {
+        'name': "Wildcard user. Check 401 still occurs.",
+        'path': '/sites/8/edit',
+        'method': 'post',
+        'data': {
+            'site_name': "Ishmael",
+            'code': "MOBY",
+            'update': "Update"},
+        'status_code': 401},
 ]
