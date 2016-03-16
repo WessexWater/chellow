@@ -1,14 +1,33 @@
 language: python
 
 python:
-  - '3.5'
+- '3.5'
+
 install:
-  - pip install tox
+- pip install tox
+
 script:
-  - tox
+- tox
 
 addons:
-  postgresql: "9.4"
+  postgresql: '9.4'
 
 services:
-  - postgresql
+- postgresql
+
+deploy:
+  provider: pypi
+  user: tlocke
+  password:
+    secure: Rs+X7sDLaxKvNiVgjaGNKCbXWOMFzPtpQFvhHEnoRMmr1xVTPpa2tuRNqdEguZSQ4+Valj0TJkwVKNjo/6+GQCfp/6Hhbyzaf6WOs7LAPP8UtS9u2DDE8pvLhlENsiOWOm9pihyWwp0FD84VoVe7FOqB+NUBkBEjwjz73PRgD5I=
+  on:
+    branch: master
+
+deploy:
+  provider: pypi
+  user: tlocke
+  password:
+    secure: Rs+X7sDLaxKvNiVgjaGNKCbXWOMFzPtpQFvhHEnoRMmr1xVTPpa2tuRNqdEguZSQ4+Valj0TJkwVKNjo/6+GQCfp/6Hhbyzaf6WOs7LAPP8UtS9u2DDE8pvLhlENsiOWOm9pihyWwp0FD84VoVe7FOqB+NUBkBEjwjz73PRgD5I=
+  server: https://testpypi.python.org/pypi
+  on:
+    branch: test
