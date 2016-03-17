@@ -37,8 +37,12 @@ def chellow_command():
     args = parser.parse_args()
 
     stdin = open('/dev/null', 'r')
-    stdout = open('/dev/tty', 'w')
-    stderr = open('/dev/tty', 'w')
+    try:
+        stdout = open('/dev/tty', 'w')
+        stderr = open('/dev/tty', 'w')
+    except OSError:
+        stdout = stderr = open('/dev/null', 'w')
+
     try:
         os.makedirs(chellow.app.instance_path)
     except:

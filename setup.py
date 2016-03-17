@@ -51,4 +51,4 @@ setup(
         'console_scripts': [
             'chellow = chellow.commands:chellow_command',
             'chellow_test_setup = chellow.commands:chellow_test_setup']},
-    scripts=['bin/chellow_updater.py'])
+    scripts=['bin/chellow_updater.sh'])

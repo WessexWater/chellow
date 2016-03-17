@@ -80,7 +80,7 @@ in Windows an environment variable can be set by doing:
 To upgrade to the latest version of Chellow enter the following at the command
 line:
 
- chellow_updater.py
+ chellow_updater.sh
 
 
 === Automatic Upgrading
@@ -91,7 +91,7 @@ On Unix, set up a cron job to regularly call the updater script by doing:
 
 and entering the line:
 
- \* * * * * source /home/me/venv/bin/activate;chellow_updater.py
+ \* * * * * source /home/me/venv/bin/activate;chellow_updater.sh
 
 
 === Using A Different Webserver
