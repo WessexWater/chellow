@@ -10404,4 +10404,21 @@ def virtual_bill(supply_source):
             'code': "MOBY",
             'update': "Update"},
         'status_code': 401},
+
+    {
+        'name': "Update a local report",
+        'path': '/local_reports/1',
+        'auth': ('admin@example.com', 'admin'),
+        'method': 'post',
+        'data': {
+            'name': 'Minority Report',
+            'script': "response = 'Henriki'",
+            'template': ''},
+        'status_code': 303},
+    {
+        'name': "Run a local report",
+        'path': '/local_reports/1/output',
+        'status_code': 200,
+        'regexes': [
+            r'Henriki']},
 ]

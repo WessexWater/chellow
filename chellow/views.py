@@ -210,15 +210,13 @@ def health():
 
 @app.route('/local_reports/<int:report_id>/output', methods=['GET', 'POST'])
 def local_report_output_post(report_id):
-    response = None
     report = Report.query.get(report_id)
     try:
-        exec(
-            report.script, {
-                'report_id': report_id,
-                'response': response,
-                'template': report.template})
-        return response
+        ns = {
+            'report_id': report_id,
+            'template': report.template}
+        exec(report.script, ns)
+        return ns['response']
     except:
         return Response(traceback.format_exc(), status=500)
 
