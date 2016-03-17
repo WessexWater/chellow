@@ -80,21 +80,18 @@ in Windows an environment variable can be set by doing:
 To upgrade to the latest version of Chellow enter the following at the command
 line:
 
- chellow stop
- pip install --upgrade chellow
- chellow start
+ chellow_updater.py
 
 
 === Automatic Upgrading
 
-Chellow comes with an upgrade script that checks PyPI and if there's a new
-version, downloads and installs it. On Unix, set up a cron job by doing:
+On Unix, set up a cron job to regularly call the updater script by doing:
 
  crontab -e
 
 and entering the line:
 
- * * * * * source /home/me/venv/bin/activate;chellow_updater.py
+ \* * * * * source /home/me/venv/bin/activate;chellow_updater.py
 
 
 === Using A Different Webserver

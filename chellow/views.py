@@ -284,8 +284,10 @@ def system_get():
                 'File: "%s", line %d, in %s' % (filename, lineno, name))
             if line:
                 traces.append("  %s" % (line.strip()))
-
-    return render_template('system.html', traces='\n'.join(traces))
+    return render_template(
+        'system.html', traces='\n'.join(traces),
+        version_number=chellow.versions['version'],
+        version_hash=chellow.versions['full-revisionid'])
 
 
 @app.route('/')

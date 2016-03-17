@@ -352,6 +352,9 @@ import subprocess
 import sys
 
 
+tstamp = None
+
+
 class VersioneerConfig:
     pass
 
@@ -1328,7 +1331,7 @@ class VersioneerBadRootError(Exception):
     pass
 
 
-def get_versions(verbose=False):
+def _get_versions(verbose=False):
     # returns dict with two keys: 'version' and 'full'
 
     if "versioneer" in sys.modules:
@@ -1401,8 +1404,26 @@ def get_versions(verbose=False):
             "dirty": None, "error": "unable to compute version"}
 
 
+def get_versions():
+    vers = _get_versions()
+    if tstamp is None:
+        ver = vers['version']
+        try:
+            ver = ver[ver.index('.') + 1:]
+            ver = ver[:ver.index('.')]
+        except IndexError:
+            pass
+        except ValueError:
+            pass
+
+        vers['version'] = ver.replace('-', '.').replace('+', '.')
+    else:
+        vers['version'] = tstamp
+    return vers
+
+
 def get_version():
-    return get_versions()["version"]
+    return get_versions()['version']
 
 
 def get_cmdclass():

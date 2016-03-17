@@ -9,5 +9,21 @@
 {% endblock %}
 
 {% block content %}
+	<table>
+		<tr>
+			<th>Version Number</th>
+			<td>{{version_number}}</td>
+		</tr>
+		<tr>
+			<th>Version Hash</th>
+			<td>
+				<a
+				 	href="https://github.com/WessexWater/chellow/commit/{{version_hash}}"
+					>
+					{{version_hash}}
+			</td>
+		</tr>
+	</table>
+
 	<pre>{{traces}}</pre>
 {% endblock %}

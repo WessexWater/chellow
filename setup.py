@@ -5,30 +5,15 @@ import versioneer
 import time
 import sys
 
-is_test = False
 
 if "--test" in sys.argv:
-    is_test = True
+    versioneer.tstamp = str(int(time.time()))
     sys.argv.remove("--test")
-
-
-def get_version():
-    if is_test:
-        return str(int(time.time()))
-    else:
-        ver = versioneer.get_version()
-        try:
-            ver = ver[ver.index('.') + 1:]
-            ver = ver[:ver.index('.')]
-        except IndexError:
-            pass
-
-        return ver.replace('-', '.').replace('+', '.')
 
 
 setup(
     name='chellow',
-    version=get_version(),
+    version=versioneer.get_version(),
     description='Web Application for checking UK utility bills.',
     author='Tony Locke',
     author_email='tlocke@tlocke.org.uk',
