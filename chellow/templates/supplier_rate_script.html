@@ -7,9 +7,12 @@
 
 {% block nav %}
 	<a href="{{context_path}}/supplier_contracts">Supplier Contracts</a> &gt;
-	<a href="{{context_path}}/supplier_contracts/{{rate_script.contract.id}}">{{rate_script.contract.name}}</a> &gt;
- 	Rate Script {{rate_script.start_date|hh_format}}
-	[<a href="{{context_path}}/supplier_rate_script/{{rate_script.id}}/edit">edit</a>]
+	<a href="{{context_path}}/supplier_contracts/{{rate_script.contract.id}}">
+		{{rate_script.contract.name}}
+	</a> &gt; Rate Script {{rate_script.start_date|hh_format}}
+	[<a href="{{context_path}}/supplier_rate_scripts/{{rate_script.id}}/edit">
+		edit
+	</a>]
 {% endblock %}
 
 {% block content %}
