@@ -430,6 +430,13 @@ def gsp_gbp_per_kwh():
         'regexes': [
             r'"/supplier_rate_scripts/206/edit"'],
         'status_code': 200},
+    {
+        'name': "Edit view of supplier rate script",
+        'path': '/supplier_rate_scripts/206/edit',
+        'regexes': [
+            r'"/supplier_rate_scripts/206"'],
+        'status_code': 200},
+
 
     {
         'name': "Insert MOP contract",
