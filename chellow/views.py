@@ -941,27 +941,41 @@ def supplier_rate_script_edit_post(rate_script_id):
         set_read_write(sess)
         rate_script = RateScript.get_supplier_by_id(sess, rate_script_id)
         contract = rate_script.contract
-        if 'delete' in request.form:
-            contract.delete_rate_script(sess, rate_script)
-            sess.commit()
-            return redirect('/supplier_contracts/' + str(contract.id), 303)
-        else:
-            script = req_str('script')
-            start_date = req_date('start')
-            has_finished = req_bool('has_finished')
-            finish_date = req_date('finish') if has_finished else None
-            contract.update_rate_script(
-                sess, rate_script, start_date, finish_date, script)
-            sess.commit()
-            return redirect(
-                '/supplier_rate_script/' + str(rate_script.id), 303)
+        script = req_str('script')
+        start_date = req_date('start')
+        has_finished = req_bool('has_finished')
+        finish_date = req_date('finish') if has_finished else None
+        contract.update_rate_script(
+            sess, rate_script, start_date, finish_date, script)
+        sess.commit()
+        return redirect('/supplier_rate_scripts/' + str(rate_script.id), 303)
     except BadRequest as e:
         sess.rollback()
         flash(e.description)
+        return make_response(
+            render_template(
+                'supplier_rate_script_edit.html',
+                supplier_rate_script=rate_script), 400)
+
+
+@app.route(
+    '/supplier_rate_scripts/<int:rate_script_id>/edit', methods=['DELETE'])
+def supplier_rate_script_edit_delete(rate_script_id):
+    try:
+        sess = db.session()
+        set_read_write(sess)
         rate_script = RateScript.get_supplier_by_id(sess, rate_script_id)
-        return make_response(render_template(
-            'supplier_rate_script_edit.html',
-            supplier_rate_script=rate_script), 400)
+        contract = rate_script.contract
+        contract.delete_rate_script(sess, rate_script)
+        sess.commit()
+        return redirect('/supplier_contracts/' + str(contract.id), 303)
+    except BadRequest as e:
+        sess.rollback()
+        flash(e.description)
+        return make_response(
+            render_template(
+                'supplier_rate_script_edit.html',
+                supplier_rate_script=rate_script), 400)
 
 
 @app.route('/supplier_contracts')

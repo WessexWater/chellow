@@ -529,7 +529,9 @@ def gsp_gbp_per_kwh():
         'night': 0.0062656,
         'other': 0.0062656}
 """},
-        'status_code': 303},
+        'status_code': 303,
+        'regexes': [
+            r'/supplier_rate_scripts/208']},
 
     {
         'name': "Create a new supplier contract",
@@ -1860,9 +1862,7 @@ def virtual_bill_titles():
         'name': "Test deleting the only rate script attached to a supplier "
         "contract.",
         'path': '/supplier_rate_scripts/209/edit',
-        'method': 'post',
-        'data': {
-            'delete': "Delete"},
+        'method': 'delete',
         'regexes': [
             r"You can&#39;t delete the last rate script\."],
         'status_code': 400},
@@ -2601,9 +2601,7 @@ def virtual_bill(supply_source):
         'name': "Check we can delete a rate script (when it's not the only "
         "one). Supplier contract 33.",
         'path': '/supplier_rate_scripts/209/edit',
-        'method': 'post',
-        'data': {
-            'delete': "Delete"},
+        'method': 'delete',
         'status_code': 303},
     {
         'name': "Try 'Supply MPAN Months' report.",

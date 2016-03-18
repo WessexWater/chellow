@@ -1486,8 +1486,8 @@ class Mtc(db.Model, PersistentClass):
 
     __tablename__ = 'mtc'
     id = Column(Integer, primary_key=True)
-    dno_id = Column(Integer, ForeignKey('party.id'))
-    code = Column(String, nullable=False)
+    dno_id = Column(Integer, ForeignKey('party.id'), index=True)
+    code = Column(String, nullable=False, index=True)
     description = Column(String, nullable=False)
     has_related_metering = Column(Boolean, nullable=False)
     has_comms = Column(Boolean, nullable=False)
