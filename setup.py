@@ -45,7 +45,7 @@ setup(
         'requests==2.8.1',
         'waitress==0.8.10',
         'pep3143daemon==0.0.6',
-        'pip==8.1.0',
+        'pip>=8.1.1',
         'pympler'],
     entry_points={
         'console_scripts': [

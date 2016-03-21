@@ -2362,6 +2362,16 @@ def downloads_get():
     return render_template('downloads.html', files=files)
 
 
+@app.route('/downloads', methods=['POST'])
+def downloads_post():
+    download_path = chellow.dloads.download_path
+
+    for fl in sorted(os.listdir(download_path)):
+        os.remove(os.path.join(download_path, fl))
+
+    return redirect("/downloads", 303)
+
+
 @app.route('/downloads/<fname>')
 def download_get(fname):
     head, name = os.path.split(os.path.normcase(os.path.normpath(fname)))

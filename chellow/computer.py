@@ -1,5 +1,5 @@
-import collections
-import datetime
+from collections import defaultdict, OrderedDict
+from datetime import datetime as Datetime
 import pytz
 from dateutil.relativedelta import relativedelta
 from sqlalchemy import or_, cast, Float
@@ -55,7 +55,7 @@ def get_times(sess, caches, start_date, finish_date, forecast_date, pw):
     except KeyError:
         if start_date > finish_date:
             raise BadRequest('The start date is after the finish date.')
-        times_dict = collections.defaultdict(int)
+        times_dict = defaultdict(int)
         dt = finish_date
         years_back = 0
         while dt > forecast_date:
@@ -75,7 +75,7 @@ def get_computer_cache(caches, name):
     try:
         return caches['computer'][name]
     except KeyError:
-        caches['computer'] = collections.defaultdict(dict)
+        caches['computer'] = defaultdict(dict)
         return caches['computer'][name]
 
 
@@ -228,8 +228,8 @@ def hh_rate(sess, caches, contract_id, date, name, pw):
 
 
 def forecast_date():
-    now = datetime.datetime.now(pytz.utc)
-    return datetime.datetime(now.year, now.month, 1, tzinfo=pytz.utc)
+    now = Datetime.now(pytz.utc)
+    return Datetime(now.year, now.month, 1, tzinfo=pytz.utc)
 
 
 def displaced_era(sess, site_group, start_date, finish_date):
@@ -492,13 +492,13 @@ class DataSource():
 
         self.problem = ''
         self.is_green = False
-        self.supplier_bill = collections.defaultdict(int, {'problem': ''})
-        self.mop_bill = collections.defaultdict(int, {'problem': ''})
-        self.dc_bill = collections.defaultdict(int, {'problem': ''})
+        self.supplier_bill = defaultdict(int, {'problem': ''})
+        self.mop_bill = defaultdict(int, {'problem': ''})
+        self.dc_bill = defaultdict(int, {'problem': ''})
         self.hh_data = []
-        self.supplier_rate_sets = collections.defaultdict(set)
-        self.mop_rate_sets = collections.defaultdict(set, {'problem': ''})
-        self.dc_rate_sets = collections.defaultdict(set, {'problem': ''})
+        self.supplier_rate_sets = defaultdict(set)
+        self.mop_rate_sets = defaultdict(set, {'problem': ''})
+        self.dc_rate_sets = defaultdict(set, {'problem': ''})
 
     def contract_func(self, contract, func_name):
         return contract_func(self.caches, contract, func_name, self.pw)
@@ -792,8 +792,8 @@ class SupplySource(DataSource):
             if hist_measurement_type == 'unmetered':
 
                 kwh = hist_era.imp_sc * 60 * 30 / (
-                    datetime.datetime(chunk_start.year + 1, 1, 1) -
-                    datetime.datetime(chunk_start.year, 1, 1)).total_seconds()
+                    Datetime(chunk_start.year + 1, 1, 1) -
+                    Datetime(chunk_start.year, 1, 1)).total_seconds()
 
                 orig_start = dte
                 for tpr in sess.query(Tpr).join(MeasurementRequirement).filter(
@@ -1056,7 +1056,8 @@ class SupplySource(DataSource):
                 if pairs[-1]['finish-date'] > chunk_finish:
                     pairs[-1]['finish-date'] = chunk_finish
 
-                self.consumption_info += 'pairs - \n' + str(pairs)
+                self.consumption_info += 'pairs - \n' + \
+                    str(list(OrderedDict(sorted(p.items())) for p in pairs))
 
                 for pair in pairs:
                     pair_hhs = (

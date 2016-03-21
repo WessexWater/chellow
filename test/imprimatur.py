@@ -10432,4 +10432,9 @@ def virtual_bill(supply_source):
         'status_code': 200,
         'regexes': [
             r'Henriki']},
+    {
+        'name': "Delete downloaded reports",
+        'path': '/downloads',
+        'method': 'post',
+        'status_code': 303},
 ]
