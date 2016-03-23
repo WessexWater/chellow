@@ -1,4 +1,4 @@
-from collections import defaultdict, OrderedDict
+from collections import defaultdict
 from datetime import datetime as Datetime
 import pytz
 from dateutil.relativedelta import relativedelta
@@ -1023,7 +1023,8 @@ class SupplySource(DataSource):
                                             chunk_finish)):
                                         break
 
-                self.consumption_info += 'read list - \n' + str(read_list) \
+                self.consumption_info += 'read list - \n' + \
+                    str(list(list(sorted(r.items())) for r in read_list)) \
                     + "\n"
                 if len(pairs) == 0:
                     pairs.append(
@@ -1057,7 +1058,7 @@ class SupplySource(DataSource):
                     pairs[-1]['finish-date'] = chunk_finish
 
                 self.consumption_info += 'pairs - \n' + \
-                    str(list(OrderedDict(sorted(p.items())) for p in pairs))
+                    str(list(list(sorted(p.items())) for p in pairs))
 
                 for pair in pairs:
                     pair_hhs = (
