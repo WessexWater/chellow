@@ -10437,4 +10437,31 @@ def virtual_bill(supply_source):
         'path': '/downloads',
         'method': 'post',
         'status_code': 303},
+
+    {
+        'name': "Enable bank_holidays downloader",
+        'path': '/non_core_contracts/2/edit',
+        'method': 'post',
+        'data': {
+            'properties': """
+{
+            'enabled': True,
+                'url':
+                    'https://www.gov.uk/bank-holidays/england-and-wales.ics'}
+"""},
+        'status_code': 303},
+    {
+        'name': "Do an 'import now'.",
+        'path': '/non_core_contracts/2/auto_importer',
+        'method': 'post',
+        'data': {
+            'now': 'Now'},
+        'status_code': 303},
+    {
+        'name': "Check that an import has happened.",
+        'path': '/non_core_contracts/2/auto_importer',
+        'tries': {},
+        'regexes': [
+            r'Updating rate script starting at'],
+        'status_code': 200},
 ]

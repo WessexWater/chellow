@@ -3,14 +3,13 @@ import pytz
 import threading
 import datetime
 import traceback
-import urllib.parse
-import http.client
 from chellow.models import Contract, RateScript, Session, set_read_write
 from chellow.utils import HH, hh_format
 import json
 from dateutil.relativedelta import relativedelta
 import atexit
 import functools
+import requests
 
 
 @functools.lru_cache()
@@ -78,22 +77,15 @@ class BankHolidayImporter(threading.Thread):
                         url_str = contract_props['url']
 
                         self.log("Downloading from " + url_str + ".")
-
-                        url = urllib.parse.urlparse(url_str)
-                        if url.scheme == 'https':
-                            conn = http.client.HTTPSConnection(
-                                url.hostname, url.port)
-                        else:
-                            conn = http.client.HTTPConnection(
-                                url.hostname, url.port)
-                        conn.request("GET", url.path)
-
-                        res = conn.getresponse()
+                        res = requests.get(url_str)
                         self.log(
-                            "Received " + str(res.status) + " " + res.reason)
+                            ' '.join(
+                                (
+                                    "Received", str(res.status_code),
+                                    res.reason)))
                         PREFIX = 'DTSTART;VALUE=DATE:'
                         hols = collections.defaultdict(list)
-                        for line in res.read().splitlines():
+                        for line in res.text.splitlines():
                             if line.startswith(PREFIX):
                                 dt = datetime.datetime.strptime(
                                     line[-8:], "%Y%m%d"). \
