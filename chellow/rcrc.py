@@ -1,10 +1,10 @@
 import threading
 import csv
 import collections
-import datetime
+from datetime import datetime as Datetime
 import pytz
 import traceback
-import urllib.request
+import requests
 from dateutil.relativedelta import relativedelta
 from chellow.models import (
     Contract, RateScript, get_non_core_contract_id, Session, set_read_write)
@@ -36,7 +36,7 @@ def hh(data_source):
             rates = data_source.hh_rate(db_id, h_start, 'rates')
             try:
                 hh['rcrc-gbp-per-kwh'] = rcrc = cache[h_start] = \
-                    float(rates[h_start.strftime("%d %H:%M Z")]) / 1000
+                    rates[h_start.strftime("%d %H:%M Z")] / 1000
             except KeyError:
                 raise BadRequest(
                     "For the RCRC rate script at " + hh_format(h_start) +
@@ -79,7 +79,7 @@ class RcrcImporter(threading.Thread):
 
     def log(self, message):
         self.messages.appendleft(
-            datetime.datetime.utcnow().replace(
+            Datetime.utcnow().replace(
                 tzinfo=pytz.utc).strftime("%Y-%m-%d %H:%M:%S") +
             " - " + message)
         if len(self.messages) > 100:
@@ -101,7 +101,7 @@ class RcrcImporter(threading.Thread):
 
                     month_start = latest_rs_start + relativedelta(months=1)
                     month_finish = month_start + relativedelta(months=1) - HH
-                    now = datetime.datetime.now(pytz.utc)
+                    now = Datetime.now(pytz.utc)
                     if now > month_finish:
                         self.log(
                             "Checking to see if data is available from " +
@@ -120,16 +120,23 @@ class RcrcImporter(threading.Thread):
                                 " cannot be found in the configuration "
                                 "properties.")
 
-                        data = urllib.request.urlopen(
-                            'https://downloads.elexonportal.co.uk/file/'
-                            'download/RCRC_FILE?key=' + scripting_key)
-                        parser = csv.reader(data, delimiter=',', quotechar='"')
+                        contract_props = contract.make_properties()
+                        url_str = ''.join(
+                            (
+                                contract_props['url'],
+                                'file/download/RCRC_FILE?key=',
+                                scripting_key))
+
+                        r = requests.get(url_str)
+                        parser = csv.reader(
+                            r.iter_lines(decode_unicode=True), delimiter=',',
+                            quotechar='"')
                         piterator = iter(parser)
-                        values = piterator.next()
-                        values = piterator.next()
+                        values = next(piterator)
+                        values = next(piterator)
                         month_rcrcs = {}
                         for values in piterator:
-                            hh_date = datetime.datetime.strptime(
+                            hh_date = Datetime.strptime(
                                 values[0], "%d/%m/%Y").replace(tzinfo=pytz.utc)
                             hh_date += relativedelta(minutes=30*int(values[2]))
                             if month_start <= hh_date <= month_finish:
@@ -153,10 +160,11 @@ class RcrcImporter(threading.Thread):
                             sess.commit()
                             self.log("Added new rate script.")
                         else:
-                            self.log(
-                                "There isn't a whole month there yet. The "
-                                "last date is " +
-                                sorted(month_rcrcs.keys())[-1])
+                            msg = "There isn't a whole month there yet."
+                            if len(month_rcrcs) > 0:
+                                msg += " The last date is " + \
+                                    sorted(month_rcrcs.keys())[-1]
+                            self.log(msg)
                 except:
                     self.log("Outer problem " + traceback.format_exc())
                     if sess is not None:

@@ -191,16 +191,22 @@ def bmreports():
     return Response(f, status=200, mimetype='text/xml')
 
 
-@app.route('/elexonportal/file/download/BESTVIEWPRICES_FILE')
-def elexonportal():
+ELEXON_LOOKUP = {
+    'BESTVIEWPRICES_FILE': ('application/binary', 'prices.xls'),
+    'RCRC_FILE': ('text/csv', 'rcrc.csv')}
+
+
+@app.route('/elexonportal/file/download/<path:fname>')
+def elexonportal(fname):
     key = request.args['key']
     if key != 'xxx':
         raise Exception("The key should be 'xxx'")
-    fname = os.path.join(
-        os.path.dirname(__file__), 'elexonportal', 'prices.xls')
+    mimetype, filename = ELEXON_LOOKUP[fname]
+
+    fname = os.path.join(os.path.dirname(__file__), 'elexonportal', filename)
     return send_file(
-        fname, mimetype='application/binary', as_attachment=True,
-        attachment_filename='prices.xls')
+        fname, mimetype=mimetype, as_attachment=True,
+        attachment_filename=filename)
 
 
 @app.route('/health')

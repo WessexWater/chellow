@@ -32,7 +32,7 @@ setup(
         'static/*.css',
         'static/fonts/*.ttf',
         'bmreports/sysprice/*.xml',
-        'elexonportal/prices.xls']},
+        'elexonportal/*']},
     install_requires=[
         'Flask==0.10.1',
         'Flask-SQLAlchemy==2.1',
