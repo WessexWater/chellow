@@ -4613,7 +4613,9 @@ def virtual_bill(supply_source):
     {
         'name': "View HHDC bill imports. Contract 28",
         'path': '/hhdc_bill_imports?hhdc_batch_id=8',
-        'status_code': 200},
+        'status_code': 200,
+        'regexes': [
+            r'<a href="/hhdc_batches/8">001-7t</a>']},
     {
         'name': "Try adding bills to the HHDC batch. Contract 28",
         'path': '/hhdc_bill_imports',
