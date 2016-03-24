@@ -3014,7 +3014,8 @@ def hhdc_batch_edit_post(batch_id):
             contract = batch.contract
             batch.delete(sess)
             sess.commit()
-            return redirect("/hhdc_contracts/" + str(contract.id), 303)
+            return redirect(
+                "/hhdc_batches?hhdc_contract_id=" + str(contract.id), 303)
         else:
             reference = req_str('reference')
             description = req_str('description')

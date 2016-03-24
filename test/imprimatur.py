@@ -6406,7 +6406,9 @@ def virtual_bill(supply_source):
         'method': 'post',
         'data': {
             'delete': 'Delete'},
-        'status_code': 303},
+        'status_code': 303,
+        'regexes': [
+            '/hhdc_batches\?hhdc_contract_id=29']},
     {
         'name': "Check it's really gone. HHDC contract 29",
         'path': '/hhdc_batches/10',
