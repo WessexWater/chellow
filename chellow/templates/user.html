@@ -10,7 +10,7 @@
 
 {% block content %}
 	{% if request.values.delete %}
-		<form method="delete" action="">
+		<form method="post" action="">
 			<fieldset>
 				<legend>
 					Do you really want to delete the user '{{ user.email_address }}'?
@@ -22,7 +22,6 @@
 	{% else %}
 		<form method="post" action="">
 			<fieldset>
-				<input type="hidden" name="user_id" value="{{ user.id }}">
 				<legend>Update details</legend>
 				<br />
 				<label>
@@ -111,7 +110,6 @@
 		<br />
 		<form method="post" action="">
 			<fieldset>
-				<input type="hidden" name="user_id" value="{{user.id}}">
 				<legend>Change password</legend>
 				<br />
 				<label>

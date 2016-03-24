@@ -21,7 +21,6 @@
 				<legend>
 					Are you sure you want to delete this channel?
 				</legend>
-				<input type="hidden" name="channel_id" value="{{channel.id}}">
 				<input type="submit" name="delete" value="Delete">
 			</fieldset>
 		</form>
@@ -32,7 +31,6 @@
 		<form action="" method="post">
 			<fieldset>
 				<legend>Delete HH Data</legend>
-				<input type="hidden" name="channel_id" value="{{channel.id}}">
 				From {{input_date('start', None, 'minute')}} to
 				{{input_date('finish', None, 'minute')}}
 				<input type="submit" name="delete_data" value="Delete">
@@ -42,7 +40,6 @@
 		<form action="" method="post">
 			<fieldset>
 				<legend>Insert HH datum</legend>
-				<input type="hidden" name="channel_id" value="{{channel.id}}">
 				<label>
 					Start Date {{input_date('start', None, 'minute')}}
 				</label>

@@ -31,7 +31,6 @@
         'regexes': [
             r'<form method="post" action="">\s*'
             r'<fieldset>\s*'
-            r'<input type="hidden" name="user_id" value="3">\s*'
             r'<legend>Change password</legend>',
             r'<form action="">\s*'
             r'<fieldset>\s*'
@@ -111,7 +110,9 @@
     {
         'name': "Delete a user",
         'path': '/users/3',
-        'method': 'delete',
+        'method': 'post',
+        'data': {
+            'delete': 'Delete'},
         'status_code': 303,
         'regexes': [
             r'/users"']},
@@ -1862,7 +1863,9 @@ def virtual_bill_titles():
         'name': "Test deleting the only rate script attached to a supplier "
         "contract.",
         'path': '/supplier_rate_scripts/209/edit',
-        'method': 'delete',
+        'method': 'post',
+        'data': {
+            'delete': "Delete"},
         'regexes': [
             r"You can&#39;t delete the last rate script\."],
         'status_code': 400},
@@ -2601,7 +2604,9 @@ def virtual_bill(supply_source):
         'name': "Check we can delete a rate script (when it's not the only "
         "one). Supplier contract 33.",
         'path': '/supplier_rate_scripts/209/edit',
-        'method': 'delete',
+        'method': 'post',
+        'data': {
+            'delete': "Delete"},
         'status_code': 303},
     {
         'name': "Try 'Supply MPAN Months' report.",
@@ -6388,10 +6393,25 @@ def virtual_bill(supply_source):
             r"/hhdc_batches/10"]},
 
     {
+        'name': "HHDC batch confirm delete page. HHDC contract 29",
+        'path': '/hhdc_batches/10/edit?confirm_delete=Delete',
+        'status_code': 200,
+        'regexes': [
+            r'<form method="post" action="">\s*'
+            r'<fieldset>\s*'
+            r'<legend>Delete</legend>']},
+    {
         'name': "Delete it. HHDC contract 29",
         'path': '/hhdc_batches/10/edit',
-        'method': 'delete',
+        'method': 'post',
+        'data': {
+            'delete': 'Delete'},
         'status_code': 303},
+    {
+        'name': "Check it's really gone. HHDC contract 29",
+        'path': '/hhdc_batches/10',
+        'status_code': 404},
+
 
     # CRC Special Events
     {
@@ -7338,7 +7358,9 @@ def virtual_bill(supply_source):
     {
         'name': "Delete the channel to make it a dumb NHH",
         'path': '/channels/56/edit',
-        'method': 'delete',
+        'method': 'post',
+        'data': {
+            'delete': 'Delete'},
         'status_code': 303},
 
     {

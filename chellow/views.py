@@ -354,23 +354,6 @@ def users_post():
             render_template('users.html', users=users, parties=parties), 400)
 
 
-@app.route('/users/<int:user_id>', methods=['DELETE'])
-def user_delete(user_id):
-    try:
-        sess = db.session
-        set_read_write(sess)
-        user = User.get_by_id(sess, user_id)
-        sess.delete(user)
-        sess.commit()
-        return redirect('/users', 303)
-    except BadRequest as e:
-        flash(e.description)
-        parties = Party.query.join(MarketRole).join(Participant).order_by(
-            MarketRole.code, Participant.code)
-        return make_response(
-            render_template('user.html',  parties=parties, user=user), 400)
-
-
 @app.route('/users/<int:user_id>', methods=['POST'])
 def user_post(user_id):
     try:
@@ -391,6 +374,10 @@ def user_post(user_id):
             user.password_digest = User.digest(new_password)
             sess.commit()
             return redirect('/users/' + str(user.id), 303)
+        elif 'delete' in request.values:
+            sess.delete(user)
+            sess.commit()
+            return redirect('/users', 303)
         else:
             email_address = req_str('email_address')
             user_role_code = req_str('user_role_code')
@@ -948,34 +935,20 @@ def supplier_rate_script_edit_post(rate_script_id):
         set_read_write(sess)
         rate_script = RateScript.get_supplier_by_id(sess, rate_script_id)
         contract = rate_script.contract
-        script = req_str('script')
-        start_date = req_date('start')
-        has_finished = req_bool('has_finished')
-        finish_date = req_date('finish') if has_finished else None
-        contract.update_rate_script(
-            sess, rate_script, start_date, finish_date, script)
-        sess.commit()
-        return redirect('/supplier_rate_scripts/' + str(rate_script.id), 303)
-    except BadRequest as e:
-        sess.rollback()
-        flash(e.description)
-        return make_response(
-            render_template(
-                'supplier_rate_script_edit.html',
-                supplier_rate_script=rate_script), 400)
-
-
-@app.route(
-    '/supplier_rate_scripts/<int:rate_script_id>/edit', methods=['DELETE'])
-def supplier_rate_script_edit_delete(rate_script_id):
-    try:
-        sess = db.session()
-        set_read_write(sess)
-        rate_script = RateScript.get_supplier_by_id(sess, rate_script_id)
-        contract = rate_script.contract
-        contract.delete_rate_script(sess, rate_script)
-        sess.commit()
-        return redirect('/supplier_contracts/' + str(contract.id), 303)
+        if 'delete' in request.values:
+            contract.delete_rate_script(sess, rate_script)
+            sess.commit()
+            return redirect('/supplier_contracts/' + str(contract.id), 303)
+        else:
+            script = req_str('script')
+            start_date = req_date('start')
+            has_finished = req_bool('has_finished')
+            finish_date = req_date('finish') if has_finished else None
+            contract.update_rate_script(
+                sess, rate_script, start_date, finish_date, script)
+            sess.commit()
+            return redirect(
+                '/supplier_rate_scripts/' + str(rate_script.id), 303)
     except BadRequest as e:
         sess.rollback()
         flash(e.description)
@@ -1939,23 +1912,6 @@ def channel_edit_get(channel_id):
     channel = Channel.get_by_id(sess, channel_id)
     now = Datetime.utcnow().replace(tzinfo=pytz.utc)
     return render_template('channel_edit.html', channel=channel, now=now)
-
-
-@app.route('/channels/<int:channel_id>/edit', methods=['DELETE'])
-def channel_edit_delete(channel_id):
-    try:
-        sess = db.session()
-        set_read_write(sess)
-        channel = Channel.get_by_id(sess, channel_id)
-        supply_id = channel.era.supply.id
-        channel.era.delete_channel(
-            sess, channel.imp_related, channel.channel_type)
-        sess.commit()
-        return redirect('/supplies/' + str(supply_id), 303)
-    except BadRequest as e:
-        flash(e.description)
-        now = Datetime.utcnow().replace(tzinfo=pytz.utc)
-        return render_template('channel_edit.html', channel=channel, now=now)
 
 
 @app.route('/channels/<int:channel_id>/edit', methods=['POST'])
@@ -3054,27 +3010,17 @@ def hhdc_batch_edit_post(batch_id):
         sess = db.session()
         set_read_write(sess)
         batch = Batch.get_by_id(sess, batch_id)
-        reference = req_str('reference')
-        description = req_str('description')
-        batch.update(sess, reference, description)
-        sess.commit()
-        return redirect("/hhdc_batches/" + str(batch.id), 303)
-    except BadRequest as e:
-        flash(e.description)
-        return make_response(
-            render_template('hhdc_batch_edit.html', batch=batch), 400)
-
-
-@app.route('/hhdc_batches/<int:batch_id>/edit', methods=['DELETE'])
-def hhdc_batch_edit_delete(batch_id):
-    try:
-        sess = db.session()
-        set_read_write(sess)
-        batch = Batch.get_by_id(sess, batch_id)
-        contract = batch.contract
-        batch.delete(sess)
-        sess.commit()
-        return redirect("/hhdc_contracts/" + str(contract.id), 303)
+        if 'delete' in request.values:
+            contract = batch.contract
+            batch.delete(sess)
+            sess.commit()
+            return redirect("/hhdc_contracts/" + str(contract.id), 303)
+        else:
+            reference = req_str('reference')
+            description = req_str('description')
+            batch.update(sess, reference, description)
+            sess.commit()
+            return redirect("/hhdc_batches/" + str(batch.id), 303)
     except BadRequest as e:
         flash(e.description)
         return make_response(
@@ -3089,7 +3035,8 @@ def hhdc_bill_imports_get():
     return render_template(
         'hhdc_bill_imports.html', importer_ids=sorted(
             chellow.bill_importer.get_bill_import_ids(batch.id),
-            reverse=True), batch=batch)
+            reverse=True), batch=batch,
+        parser_names=chellow.bill_importer.find_parser_names())
 
 
 @app.route('/hhdc_bill_imports', methods=['POST'])

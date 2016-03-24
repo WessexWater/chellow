@@ -17,10 +17,9 @@
 
 {% block content %}
 	{% if request.method == 'GET' and request.values.confirm_delete %}
-		<form method="delete" action="">
+		<form method="post" action="">
 			<fieldset>
 				<legend>Delete</legend>
-				<input type="hidden" name="hhdc_batch_id" value="{{batch.id}}">
 				<p>Are you sure you want to delete this batch and all its bills?</p>
 				<input type="submit" name="delete" value="Delete">
 			</fieldset>
@@ -30,7 +29,6 @@
 		<form action="" method="post">
 			<fieldset>
 				<legend>Update batch</legend>
-				<input type="hidden" name="hhdc_batch_id" value="{{batch.id}}">
 				<br>
 				<label>
 					Reference {{input_text('reference', batch.reference)}}
@@ -48,8 +46,7 @@
 		<form action="">
 			<fieldset>
 				<legend>Delete this batch</legend>
-				<input type="hidden" name="hhdc_batch_id" value="{{batch.id}}">
- <input type="submit" name="confirm_delete" value="Delete">
+			 	<input type="submit" name="confirm_delete" value="Delete">
 			</fieldset>
 		</form>
 	{% endif %}
