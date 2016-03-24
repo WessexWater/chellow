@@ -1,4 +1,3 @@
-import urllib.request
 import csv
 import threading
 import collections
@@ -6,6 +5,7 @@ import traceback
 import datetime
 import pytz
 from dateutil.relativedelta import relativedelta
+import requests
 from chellow.models import (
     set_read_write, Session, Contract, RateScript, get_non_core_contract_id)
 from chellow.utils import HH, hh_format
@@ -146,17 +146,23 @@ class TlmImporter(threading.Thread):
                                 " cannot be found in the configuration "
                                 "properties.")
 
-                        data = urllib.request.urlopen(
-                            'https://downloads.elexonportal.co.uk/file/'
-                            'download/TLM_FILE?key=' + scripting_key)
+                        contract_props = contract.make_properties()
+                        url_str = ''.join(
+                            (
+                                contract_props['url'],
+                                'file/download/TLM_FILE?key=',
+                                scripting_key))
+
+                        r = requests.get(url_str)
+                        parser = csv.reader(
+                            (l.decode() for l in r.iter_lines()),
+                            delimiter=',', quotechar='"')
                         self.log("Opened URL.")
 
                         ct_tz = pytz.timezone('Europe/London')
-
-                        parser = csv.reader(data, delimiter=',', quotechar='"')
                         piterator = iter(parser)
-                        values = piterator.next()
-                        values = piterator.next()
+                        values = next(piterator)
+                        values = next(piterator)
                         month_tlms = {}
                         for values in piterator:
                             hh_date_ct = ct_tz.localize(
@@ -193,10 +199,11 @@ class TlmImporter(threading.Thread):
                             sess.commit()
                             self.log("Added new rate script.")
                         else:
-                            self.log(
-                                "There isn't a whole month there yet. The "
-                                "last date is " +
-                                sorted(month_tlms.keys())[-1])
+                            msg = "There isn't a whole month there yet."
+                            if len(month_tlms) > 0:
+                                msg += "The last date is " + \
+                                    sorted(month_tlms.keys())[-1]
+                            self.log(msg)
                 except:
                     self.log("Outer problem " + traceback.format_exc())
                     if sess is not None:

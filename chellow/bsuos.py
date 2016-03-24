@@ -5,13 +5,13 @@ import pytz
 import traceback
 import threading
 import collections
-import http.client
 from chellow.models import (
     RateScript, Contract, Session, set_read_write, get_non_core_contract_id)
 from chellow.utils import HH, hh_format
 import chellow.scenario
 from werkzeug.exceptions import BadRequest
 import atexit
+import requests
 
 
 create_future_func = chellow.scenario.make_create_future_func_monthly(
@@ -130,18 +130,14 @@ class BsuosImporter(threading.Thread):
                                 "Checking to see if data is available from " +
                                 str(this_month_start) + " to " +
                                 str(next_month_start - HH) +
-                                " on Elexon Portal.")
-                            conn = http.client.HTTPConnection(
-                                "www2.nationalgrid.com")
-                            conn.request(
-                                "GET", "/WorkArea/DownloadAsset.aspx?id=32719")
-
-                            res = conn.getresponse()
+                                " on the National Grid website.")
+                            res = requests.get(
+                                'http://www2.nationalgrid.com/'
+                                'WorkArea/DownloadAsset.aspx?id=32719')
                             self.log(
-                                "Received " + str(res.status) + " " +
+                                "Received " + str(res.status_code) + " " +
                                 res.reason)
-                            data = res.read()
-                            book = xlrd.open_workbook(file_contents=data)
+                            book = xlrd.open_workbook(file_contents=res.txt)
                             sheet = book.sheet_by_index(0)
 
                             ct_tz = pytz.timezone('Europe/London')

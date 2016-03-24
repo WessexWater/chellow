@@ -193,7 +193,8 @@ def bmreports():
 
 ELEXON_LOOKUP = {
     'BESTVIEWPRICES_FILE': ('application/binary', 'prices.xls'),
-    'RCRC_FILE': ('text/csv', 'rcrc.csv')}
+    'RCRC_FILE': ('text/csv', 'rcrc.csv'),
+    'TLM_FILE': ('text/csv', 'tlm.csv')}
 
 
 @app.route('/elexonportal/file/download/<path:fname>')

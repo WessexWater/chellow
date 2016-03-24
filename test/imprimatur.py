@@ -10490,4 +10490,30 @@ def virtual_bill(supply_source):
         'regexes': [
             r"There isn&#39;t a whole month there yet\."],
         'status_code': 200},
+    {
+        'name': "Set up TLM downloader",
+        'path': '/non_core_contracts/9/edit',
+        'method': 'post',
+        'data': {
+            'properties': """
+{
+            'enabled': True,
+            'url': 'http://127.0.0.1:8080/elexonportal/',
+            'limit': True}
+"""},
+        'status_code': 303},
+    {
+        'name': "Do an 'import now' on TLM.",
+        'path': '/non_core_contracts/9/auto_importer',
+        'method': 'post',
+        'data': {
+            'now': 'Now'},
+        'status_code': 303},
+    {
+        'name': "Check that an TLM import has happened.",
+        'path': '/non_core_contracts/9/auto_importer',
+        'tries': {},
+        'regexes': [
+            r"There isn&#39;t a whole month there yet\."],
+        'status_code': 200},
 ]
