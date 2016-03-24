@@ -19,7 +19,7 @@
 			<input type="hidden" name="hhdc_batch_id" value="{{batch.id}}">
 			<legend>Import Bill File</legend>
 			<input type="file" name="import_file" size="45"
-				value="{{request.getParameter('import_file')}}">
+				value="{{request.values.import_file}}">
 			<input type="submit" value="Import">
 		</fieldset>
 	</form>

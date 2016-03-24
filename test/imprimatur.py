@@ -4610,7 +4610,10 @@ def virtual_bill(supply_source):
         'name': "Check that it's there to edit. HHDC contract 28",
         'path': '/hhdc_batches/8/edit',
         'status_code': 200},
-
+    {
+        'name': "View HHDC bill imports. Contract 28",
+        'path': '/hhdc_bill_imports?hhdc_batch_id=8',
+        'status_code': 200},
     {
         'name': "Try adding bills to the HHDC batch. Contract 28",
         'path': '/hhdc_bill_imports',
