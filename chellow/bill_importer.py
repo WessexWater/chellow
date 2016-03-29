@@ -122,7 +122,7 @@ class BillImport(threading.Thread):
                     sess.expunge(bill)
                 except BadRequest as e:
                     sess.rollback()
-                    raw_bill['error'] = str(e)
+                    raw_bill['error'] = str(e.description)
                     self.failed_bills.append(raw_bill)
 
             if len(self.failed_bills) == 0:

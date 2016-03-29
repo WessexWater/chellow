@@ -10545,4 +10545,23 @@ def virtual_bill(supply_source):
         'regexes': [
             r"There isn&#39;t a whole month there yet\."],
         'status_code': 200},
+
+    {
+        'name': "Bill import error. Supplier contract",
+        'path': '/supplier_bill_imports',
+        'method': 'post',
+        'data': {
+            'supplier_batch_id': '4'},
+        'files': {'import_file': 'test/bills_fail.csv'},
+        'status_code': 303,
+        'regexes': [
+            r"/supplier_bill_imports/11"]},
+    {
+        'name': "Supplier contract 31, batch 4",
+        'path': '/supplier_bill_imports/11',
+        'tries': {},
+        'status_code': 200,
+        'regexes': [
+            r"Can&#39;t find an era with contract &#39;Half-hourlies 2007&#39;"
+            r" and account &#39;Landau&#39;\."]},
 ]
