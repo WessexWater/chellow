@@ -67,9 +67,6 @@ def datum_beginning_22(ds, hh):
     hh['gsp-kwh'] = hh['laf'] * hh['msp-kwh']
     hh['gsp-kw'] = hh['gsp-kwh'] * 2
 
-
-def hh_time_beginning_22(ds, hh):
-    bill = ds.supplier_bill
     if hh['utc-is-month-end']:
         tariff = ds.hh_rate(
             ds.dno_contract.id, hh['start-date'], 'tariffs')[ds.llfc_code]
@@ -157,9 +154,6 @@ def datum_beginning_20(ds, hh):
     hh['gsp-kwh'] = hh['laf'] * hh['msp-kwh']
     hh['gsp-kw'] = hh['gsp-kwh'] * 2
 
-
-def hh_time_beginning_20(ds, hh):
-    bill = ds.supplier_bill
     if hh['utc-is-month-end']:
         tariff = None
         for k, tf in ds.hh_rate(
@@ -315,9 +309,6 @@ def datum_beginning_14(ds, hh):
     hh['gsp-kwh'] = hh['msp-kwh'] * hh['laf']
     hh['gsp-kw'] = hh['gsp-kwh'] * 2
 
-
-def hh_time_beginning_14(ds, hh):
-    bill = ds.supplier_bill
     if hh['utc-decimal-hour'] == 0:
         tariff = ds.hh_rate(
             ds.dno_contract.id, hh['start-date'], 'tariffs')[ds.llfc_code]
@@ -351,75 +342,6 @@ def datum_2010_04_01(ds, hh):
     bill = ds.supplier_bill
     dno_cache = ds.caches['dno'][ds.dno_code]
 
-    try:
-        laf_cache = dno_cache['lafs']
-    except KeyError:
-        dno_cache['lafs'] = {}
-        laf_cache = dno_cache['lafs']
-
-    try:
-        laf_cache_v = laf_cache[ds.voltage_level_code]
-    except KeyError:
-        laf_cache[ds.voltage_level_code] = {}
-        laf_cache_v = laf_cache[ds.voltage_level_code]
-
-    try:
-        lafs = laf_cache_v[ds.is_substation]
-    except KeyError:
-        laf_cache_v[ds.is_substation] = {}
-        lafs = laf_cache_v[ds.is_substation]
-
-    try:
-        laf = lafs[hh['start-date']]
-    except KeyError:
-        vl_key = ds.voltage_level_code.lower() + \
-            ('-sub' if ds.is_substation else '-net')
-        slot_name = 'other'
-        if ds.dno_code == '20':
-            if 0 < hh['ct-decimal-hour'] <= 7:
-                slot_name = 'night'
-            elif hh['ct-day-of-week'] < 5 and hh['ct-month'] in [11, 12, 1, 2]:
-                if 16 <= hh['ct-decimal-hour'] < 19:
-                    slot_name = 'peak'
-                elif 7 < hh['ct-decimal-hour'] < 20:
-                    slot_name = 'winter-weekday'
-        elif ds.dno_code in ['14', '22']:
-            if 23 < hh['ct-decimal-hour'] or hh['ct-decimal-hour'] <= 6:
-                slot_name = 'night'
-            elif hh['ct-day-of-week'] < 5 and hh['ct-month'] in [11, 12, 1, 2]:
-                if 16 <= hh['ct-decimal-hour'] < 19:
-                    slot_name = 'winter-weekday-peak'
-                elif hh['ct-decimal-hour'] < 16:
-                    slot_name = 'winter-weekday-day'
-        else:
-            raise BadRequest("Not recognized")
-
-        laf = ds.hh_rate(
-            ds.dno_contract.id, hh['start-date'], 'lafs')[vl_key][slot_name]
-        lafs[hh['start-date']] = laf
-
-    hh['laf'] = laf
-    hh['gsp-kwh'] = laf * hh['msp-kwh']
-    hh['gsp-kw'] = hh['gsp-kwh'] * 2
-
-    tariff, band = dno_cache['tariff_bands'][ds.llfc_code][hh['start-date']]
-
-    kvarh = max(max(hh['imp-msp-kvarh'], hh['exp-msp-kvarh']) -
-                (0.95 ** -2 - 1) ** 0.5 * hh['msp-kwh'], 0)
-    bill['duos-reactive-kvarh'] += kvarh
-    rate = tariff['gbp-per-kvarh']
-    ds.supplier_rate_sets['duos-reactive-rate'].add(rate)
-    bill['duos-reactive-gbp'] += kvarh * rate
-
-    rate = tariff[KEYS[band]['tariff-rate']]
-    ds.supplier_rate_sets[KEYS[band]['bill-rate']].add(rate)
-    bill[KEYS[band]['kwh']] += hh['msp-kwh']
-    bill[KEYS[band]['gbp']] += rate * hh['msp-kwh']
-
-
-def hh_time_2010_04_01(ds, hh):
-    bill = ds.supplier_bill
-    dno_cache = ds.caches['dno'][ds.dno_contract.name]
     try:
         tariff_bands_cache = dno_cache['tariff_bands']
     except KeyError:
@@ -472,6 +394,69 @@ def hh_time_2010_04_01(ds, hh):
         else:
             raise BadRequest("DNO code not recognized.")
         tariff_bands[hh['start-date']] = (tariff, band)
+
+    try:
+        laf_cache = dno_cache['lafs']
+    except KeyError:
+        dno_cache['lafs'] = {}
+        laf_cache = dno_cache['lafs']
+
+    try:
+        laf_cache_v = laf_cache[ds.voltage_level_code]
+    except KeyError:
+        laf_cache[ds.voltage_level_code] = {}
+        laf_cache_v = laf_cache[ds.voltage_level_code]
+
+    try:
+        lafs = laf_cache_v[ds.is_substation]
+    except KeyError:
+        laf_cache_v[ds.is_substation] = {}
+        lafs = laf_cache_v[ds.is_substation]
+
+    try:
+        laf = lafs[hh['start-date']]
+    except KeyError:
+        vl_key = ds.voltage_level_code.lower() + \
+            ('-sub' if ds.is_substation else '-net')
+        slot_name = 'other'
+        if ds.dno_code == '20':
+            if 0 < hh['ct-decimal-hour'] <= 7:
+                slot_name = 'night'
+            elif hh['ct-day-of-week'] < 5 and hh['ct-month'] in [11, 12, 1, 2]:
+                if 16 <= hh['ct-decimal-hour'] < 19:
+                    slot_name = 'peak'
+                elif 7 < hh['ct-decimal-hour'] < 20:
+                    slot_name = 'winter-weekday'
+        elif ds.dno_code in ['14', '22']:
+            if 23 < hh['ct-decimal-hour'] or hh['ct-decimal-hour'] <= 6:
+                slot_name = 'night'
+            elif hh['ct-day-of-week'] < 5 and hh['ct-month'] in [11, 12, 1, 2]:
+                if 16 <= hh['ct-decimal-hour'] < 19:
+                    slot_name = 'winter-weekday-peak'
+                elif hh['ct-decimal-hour'] < 16:
+                    slot_name = 'winter-weekday-day'
+        else:
+            raise BadRequest("Not recognized")
+
+        laf = ds.hh_rate(
+            ds.dno_contract.id, hh['start-date'], 'lafs')[vl_key][slot_name]
+        lafs[hh['start-date']] = laf
+
+    hh['laf'] = laf
+    hh['gsp-kwh'] = laf * hh['msp-kwh']
+    hh['gsp-kw'] = hh['gsp-kwh'] * 2
+
+    kvarh = max(max(hh['imp-msp-kvarh'], hh['exp-msp-kvarh']) -
+                (0.95 ** -2 - 1) ** 0.5 * hh['msp-kwh'], 0)
+    bill['duos-reactive-kvarh'] += kvarh
+    rate = tariff['gbp-per-kvarh']
+    ds.supplier_rate_sets['duos-reactive-rate'].add(rate)
+    bill['duos-reactive-gbp'] += kvarh * rate
+
+    rate = tariff[KEYS[band]['tariff-rate']]
+    ds.supplier_rate_sets[KEYS[band]['bill-rate']].add(rate)
+    bill[KEYS[band]['kwh']] += hh['msp-kwh']
+    bill[KEYS[band]['gbp']] += rate * hh['msp-kwh']
 
     if hh['ct-decimal-hour'] == 23.5 and not ds.is_displaced:
         bill['duos-fixed-days'] += 1
@@ -528,31 +513,6 @@ def duos_vb(ds):
     except KeyError:
         dno_caches[ds.dno_contract.name] = {}
         dno_cache = dno_caches[ds.dno_contract.name]
-
-    try:
-        time_func_cache = dno_cache['time_funcs']
-    except KeyError:
-        dno_cache['time_funcs'] = {}
-        time_func_cache = dno_cache['time_funcs']
-
-    for hh in ds.hh_data:
-        try:
-            time_func_cache[hh['start-date']](ds, hh)
-        except KeyError:
-            if hh['start-date'] < CUTOFF_DATE:
-                if ds.dno_code == '14':
-                    time_func = hh_time_beginning_14
-                elif ds.dno_code == '20':
-                    time_func = hh_time_beginning_20
-                elif ds.dno_code == '22':
-                    time_func = hh_time_beginning_22
-                else:
-                    raise BadRequest('Not recognized')
-
-            else:
-                time_func = hh_time_2010_04_01
-            time_func_cache[hh['start-date']] = time_func
-            time_func(ds, hh)
 
     try:
         data_func_cache = dno_cache['data_funcs']
