@@ -289,6 +289,7 @@ def system_get():
                 'File: "%s", line %d, in %s' % (filename, lineno, name))
             if line:
                 traces.append("  %s" % (line.strip()))
+
     return render_template(
         'system.html', traces='\n'.join(traces),
         version_number=chellow.versions['version'],
@@ -3595,6 +3596,16 @@ def csv_sites_monthly_duration_get():
     month_finish = Datetime(now.year, now.month, 1) - HH
     return render_template(
         'csv_sites_monthly_duration.html', month_start=month_start,
+        month_finish=month_finish)
+
+
+@app.route('/csv_sites_duration')
+def csv_sites_duration_get():
+    now = Datetime.now(pytz.utc)
+    month_start = Datetime(now.year, now.month, 1) - relativedelta(months=1)
+    month_finish = month_start + relativedelta(months=1) - HH
+    return render_template(
+        'csv_sites_duration.html', month_start=month_start,
         month_finish=month_finish)
 
 

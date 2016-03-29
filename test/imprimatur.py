@@ -10564,4 +10564,9 @@ def virtual_bill(supply_source):
         'regexes': [
             r"Can&#39;t find an era with contract &#39;Half-hourlies 2007&#39;"
             r" and account &#39;Landau&#39;\."]},
+
+    {
+        'name': "CSV Sites Duration",
+        'path': '/csv_sites_duration',
+        'status_code': 200},
 ]
