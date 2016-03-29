@@ -5427,7 +5427,7 @@ def virtual_bill(supply_source):
     {
         'path': '/supplier_batches/4',
         'regexes': [
-            r"/local_reports/1/output"],
+            r'/local_reports/1/output\?batch_id=4'],
         'status_code': 200},
     {
         'name': "Check 'no channel' error when importing hh data.",

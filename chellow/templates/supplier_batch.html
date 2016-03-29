@@ -34,7 +34,7 @@
 					<ul>
 						{% for report in batch_reports %}
 							<li>
-								<a href="{{context_path}}/local_reports/{{report.id}}/output/?batch_id={{batch.id}}">{{report.name}}</a>
+								<a href="{{context_path}}/local_reports/{{report.id}}/output?batch_id={{batch.id}}">{{report.name}}</a>
 							</li>
 						{% endfor %}
 					</ul>
