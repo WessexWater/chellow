@@ -289,11 +289,12 @@ def system_get():
                 'File: "%s", line %d, in %s' % (filename, lineno, name))
             if line:
                 traces.append("  %s" % (line.strip()))
-
+    sess = db.session()
+    pg_stats = sess.execute("select * from pg_stat_activity").fetchall()
     return render_template(
         'system.html', traces='\n'.join(traces),
         version_number=chellow.versions['version'],
-        version_hash=chellow.versions['full-revisionid'])
+        version_hash=chellow.versions['full-revisionid'], pg_stats=pg_stats)
 
 
 @app.route('/')

@@ -21,9 +21,29 @@
 				 	href="https://github.com/WessexWater/chellow/commit/{{version_hash}}"
 					>
 					{{version_hash}}
+				</a>
 			</td>
 		</tr>
 	</table>
 
 	<pre>{{traces}}</pre>
+
+	<table><caption>pg_stat</caption>
+		<thead>
+			<tr>
+				{% for title in pg_stats[0].keys() %}
+					<th>{{title}}</th>
+				{% endfor %}
+			</tr>
+		</thead>
+		<tbody>
+			{% for row in pg_stats %}
+				<tr>
+					{% for cell in row %}
+						<td>{{cell}}</td>
+					{% endfor %}
+				</tr>
+			{% endfor %}
+		</tbody>
+	</table>
 {% endblock %}
