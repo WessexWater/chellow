@@ -5546,7 +5546,8 @@ def virtual_bill(supply_source):
         'path': '/hhdc_contracts/29/auto_importer',
         'tries': {},
         'regexes': [
-            r"Finished loading"]},
+            r"Finished loading",
+            r'<a href="/hhdc_contracts/29/auto_importer">Refresh page</a>']},
     {
         'path': '/hhdc_contracts/29',
         'regexes': [
