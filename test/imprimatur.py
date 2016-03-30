@@ -10493,7 +10493,8 @@ def virtual_bill(supply_source):
         'regexes': [
             r'<ul>\s*<li>\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2} - '
             r'Finished checking bank holidays.</li>',
-            r'Updating rate script starting at'],
+            r'Updating rate script starting at',
+            r'<a href="/non_core_contracts/2/auto_importer">Refresh page</a>'],
         'status_code': 200},
     {
         'name': "Set up RCRC downloader",

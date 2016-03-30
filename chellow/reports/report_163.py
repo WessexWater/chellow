@@ -242,9 +242,10 @@ def content(table, version, f):
                 if not is_common_mtc(code_int):
                     code = code_str.zfill(3)
                     participant_code = values[2]
-                    dno = sess.query(Party).join(Participant).filter(
-                        Participant.code == participant_code,
-                        Party.market_role == market_role_r).first()
+                    dno_id, dno_code = sess.query(
+                        Party.id, Party.dno_code).join(Participant).filter(
+                            Participant.code == participant_code,
+                            Party.market_role == market_role_r).first()
                     valid_from_str = values[3]
                     valid_from = Datetime.strptime(
                         valid_from_str, "%d/%m/%Y").replace(tzinfo=pytz.utc)
@@ -269,16 +270,17 @@ def content(table, version, f):
                     else:
                         tpr_count = int(tpr_count_str)
 
-                    mtc_dno = dno if Mtc.has_dno(code) else None
+                    mtc_dno_id = dno_id if Mtc.has_dno(code) else None
                     mtc = sess.query(Mtc).options(
                         joinedload(Mtc.meter_payment_type),
                         joinedload(Mtc.meter_type)) \
-                        .filter_by(dno=mtc_dno, code=code).first()
+                        .filter(
+                            Mtc.dno_id == mtc_dno_id, Mtc.code == code).first()
                     if mtc is None:
                         yield ','.join(
                             (
                                 '"' + str(v) + '"' for v in (
-                                    'insert', 'mtc', dno.dno_code, code,
+                                    'insert', 'mtc', dno_code, code,
                                     description, has_related_metering,
                                     has_comms, is_hh, meter_type_code,
                                     meter_payment_type_code, tpr_count,
@@ -295,7 +297,7 @@ def content(table, version, f):
                         yield ','.join(
                             (
                                 '"' + str(v) + '"' for v in (
-                                    'update', 'mtc', dno.dno_code, code,
+                                    'update', 'mtc', dno_code, code,
                                     description, has_related_metering,
                                     has_comms, is_hh, meter_type_code,
                                     meter_payment_type_code, tpr_count,

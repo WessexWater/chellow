@@ -9,10 +9,8 @@
 {% endblock %}
 
 {% block content %}
-	<p><a href="#">Refresh</a> the page.</p>
-{#
-<p>{{ get_cacheburster() }}</p>
-	#}
+	<p><a href="{{context_path}}/downloads">Refresh</a> the page.</p>
+
 	<table><caption>Report Files</caption>
 		<thead>
 			<tr>
@@ -30,10 +28,11 @@
 						<a href="{{context_path}}/downloads/{{file.name}}">{{file.name}}</a>
 					</td>
 					<td>{{file.size}} B</td>
-                    <td>{#  Hide this - there is no currently available way to determine this under Unix 		
-					#}{% if file.creation_date != file.last_modified -%}
+					<td>
+					  {% if file.creation_date != file.last_modified -%}
 					   {{file.creation_date|hh_format}} 
-				   {%- endif %}</td> 
+				    {%- endif %}
+					</td> 
 					<td>{{file.last_modified|hh_format}}</td>
 					<td>
 						<form
