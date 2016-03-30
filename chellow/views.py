@@ -1,4 +1,3 @@
-import hashlib
 from flask import (
     request, Response, g, redirect, render_template, send_file, flash,
     make_response)
@@ -115,10 +114,9 @@ def check_permissions(*args, **kwargs):
         except KeyError:
             pass
     else:
-        pword_digest = hashlib.md5(auth.password.encode()).hexdigest()
-        g.user = User.query.filter(
-            User.email_address == auth.username,
-            User.password_digest == pword_digest).first()
+        user = User.query.filter(User.email_address == auth.username).first()
+        if user is not None and user.password_matches(auth.password):
+            g.user = user
 
     # Got our user
     path = request.path
@@ -158,9 +156,7 @@ def check_permissions(*args, **kwargs):
         set_read_write(sess)
         user_role = sess.query(UserRole).filter(
             UserRole.code == 'editor').one()
-        User.insert(
-            sess, 'admin@example.com', User.digest('admin'), user_role,
-            None)
+        User.insert(sess, 'admin@example.com', 'admin', user_role, None)
         sess.commit()
         return
 
@@ -342,8 +338,7 @@ def users_post():
         if role.code == 'party-viewer':
             party_id = req_int('party_id')
             party = sess.query(Party).get(party_id)
-        user = User.insert(
-            sess, email_address, User.digest(password), role, party)
+        user = User.insert(sess, email_address, password, role, party)
         sess.commit()
         return redirect('/users/' + str(user.id), 303)
     except BadRequest as e:
@@ -366,14 +361,14 @@ def user_post(user_id):
             current_password = req_str('current_password')
             new_password = req_str('new_password')
             confirm_new_password = req_str('confirm_new_password')
-            if user.password_digest != User.digest(current_password):
+            if not user.password_matches(current_password):
                 raise BadRequest("The current password is incorrect.")
             if new_password != confirm_new_password:
                 raise BadRequest("The new passwords aren't the same.")
             if len(new_password) < 6:
                 raise BadRequest(
                     "The password must be at least 6 characters long.")
-            user.password_digest = User.digest(new_password)
+            user.set_password(new_password)
             sess.commit()
             return redirect('/users/' + str(user.id), 303)
         elif 'delete' in request.values:

@@ -13,7 +13,6 @@ from sqlalchemy.sql.expression import true
 from sqlalchemy.exc import ProgrammingError, SQLAlchemyError
 from sqlalchemy.orm.exc import NoResultFound
 import operator
-import hashlib
 from chellow.utils import (
     hh_after, HH, parse_mpan_core, hh_before, next_hh, prev_hh, hh_format)
 import json
@@ -22,6 +21,8 @@ from functools import lru_cache
 from werkzeug.exceptions import BadRequest, NotFound
 import os.path
 import sys
+from hashlib import pbkdf2_hmac
+from binascii import hexlify, unhexlify
 
 db = SQLAlchemy(app)
 
@@ -1266,12 +1267,14 @@ class Site(db.Model, PersistentClass):
             return False
         return True
 
+SALT_LENGTH = 16
+
 
 class User(db.Model, PersistentClass):
     @staticmethod
-    def insert(sess, email_address, password_digest, user_role, party):
+    def insert(sess, email_address, password, user_role, party):
         try:
-            user = User(email_address, password_digest, user_role, party)
+            user = User(email_address, password, user_role, party)
             sess.add(user)
             sess.flush()
         except ProgrammingError as e:
@@ -1283,10 +1286,6 @@ class User(db.Model, PersistentClass):
                 raise e
         return user
 
-    @staticmethod
-    def digest(password):
-        return hashlib.md5(password.encode()).hexdigest()
-
     __tablename__ = 'user'
     id = Column(Integer, primary_key=True)
     email_address = Column(String, unique=True, nullable=False)
@@ -1294,9 +1293,9 @@ class User(db.Model, PersistentClass):
     user_role_id = Column(Integer, ForeignKey('user_role.id'))
     party_id = Column(Integer, ForeignKey('party.id'))
 
-    def __init__(self, email_address, password_digest, user_role, party):
+    def __init__(self, email_address, password, user_role, party):
         self.update(email_address, user_role, party)
-        self.password_digest = password_digest
+        self.set_password(password)
 
     def update(self, email_address, user_role, party):
         self.email_address = email_address
@@ -1308,6 +1307,19 @@ class User(db.Model, PersistentClass):
             self.party = party
         else:
             self.party = None
+
+    def password_matches(self, password):
+        digest = unhexlify(self.password_digest.encode('ascii'))
+        salt = digest[:SALT_LENGTH]
+        dk = digest[SALT_LENGTH:]
+
+        return pbkdf2_hmac(
+            'sha256', password.encode('utf8'), salt, 100000) == dk
+
+    def set_password(self, password):
+        salt = os.urandom(SALT_LENGTH)
+        dk = pbkdf2_hmac('sha256', password.encode('utf8'), salt, 100000)
+        self.password_digest = hexlify(salt + dk).decode('ascii')
 
 
 class UserRole(db.Model, PersistentClass):

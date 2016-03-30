@@ -10491,6 +10491,8 @@ def virtual_bill(supply_source):
         'path': '/non_core_contracts/2/auto_importer',
         'tries': {},
         'regexes': [
+            r'<ul>\s*<li>\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2} - '
+            r'Finished checking bank holidays.</li>',
             r'Updating rate script starting at'],
         'status_code': 200},
     {
