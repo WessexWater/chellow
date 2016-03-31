@@ -1409,8 +1409,8 @@ def virtual_bill_titles():
             r"<tbody>\s*</tbody>"],
         'status_code': 200},
     {
-        'path': '/reports/17?supply_id=5&months=1&'
-        'finish_year=2010&finish_month=03',
+        'path': '/supplies/5/hh_data?months=1&finish_year=2010&'
+        'finish_month=03',
         'regexes': [
             r"<tr>\s*<td>\s*2010-03-15 12:00\s*</td>\s*<td>0</td>\s*"
             "<td>A</td>"],
@@ -5806,10 +5806,11 @@ def virtual_bill(supply_source):
             r'"0","0","0","22 3479 7618 470","0","0","0","0",""']},
     {
         'name': "Check supplies monthly duration page.",
-        'path': '/reports/155',
+        'path': '/csv_supplies_monthly_duration',
         'regexes': [
             r"end_month"],
         'status_code': 200},
+
     {
         'name': "CSV Sites Duration Selector",
         'path': '/csv_sites_duration',
@@ -6269,6 +6270,7 @@ def virtual_bill(supply_source):
         'name': "View a MOP rate script. Contract 31.",
         'path': '/mop_rate_scripts/207',
         'status_code': 200},
+
     {
         'name': "View supplies duration selector.",
         'path': '/csv_supplies_duration',
@@ -6277,8 +6279,8 @@ def virtual_bill(supply_source):
             r"start_year"]},
 
     {
-        'name': "Supplies monthly duration selector.",
-        'path': '/csv_supplies_monthly_duration',
+        'name': "View supplies hh data selector.",
+        'path': '/csv_supplies_hh_data',
         'status_code': 200},
 
     {
