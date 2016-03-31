@@ -5811,8 +5811,8 @@ def virtual_bill(supply_source):
             r"end_month"],
         'status_code': 200},
     {
-        'name': "Check CSV Sites Duration",
-        'path': '/reports/57',
+        'name': "CSV Sites Duration Selector",
+        'path': '/csv_sites_duration',
 
         # Should have link to CSS
         'regexes': [
@@ -6275,6 +6275,12 @@ def virtual_bill(supply_source):
         'status_code': 200,
         'regexes': [
             r"start_year"]},
+
+    {
+        'name': "Supplies monthly duration selector.",
+        'path': '/csv_supplies_monthly_duration',
+        'status_code': 200},
+
     {
         'name': "Look at a TPR.",
         'path': '/tprs/1',

@@ -3631,6 +3631,13 @@ def csv_supplies_duration_get():
         last_month_finish=last_month_finish)
 
 
+@app.route('/csv_supplies_monthly_duration')
+def csv_supplies_monthly_duration_get():
+    init = Datetime.utcnow()
+    init = Datetime(init.year, init.month, 1) - relativedelta(months=1)
+    return render_template('csv_supplies_monthly_duration.html', init=init)
+
+
 @app.route('/csv_bills')
 def csv_bills_get():
     init = Datetime.utcnow()
