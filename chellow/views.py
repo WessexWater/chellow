@@ -3612,6 +3612,14 @@ def csv_register_reads_get():
     return render_template('csv_register_reads.html', init=init)
 
 
+@app.route('/csv_supplies_snapshot')
+def csv_supplies_snapshot():
+    now = Datetime.now(pytz.utc)
+    return render_template(
+        'csv_supplies_snapshot.html', last_month=Datetime(
+            now.year, now.month, 1, tzinfo=pytz.utc) - relativedelta(months=1))
+
+
 @app.route('/csv_supplies_duration')
 def csv_supplies_duration_get():
     last_month = Datetime.now(pytz.utc) - relativedelta(months=1)

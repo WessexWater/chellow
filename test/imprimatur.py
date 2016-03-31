@@ -2276,6 +2276,10 @@ def virtual_bill(supply_source):
             '<option value="4">04</option>\s*'
             '<option value="5" selected>05</option>']},
     {
+        'name': "Supplies snapshot selector",
+        'path': '/csv_supplies_snapshot',
+        'status_code': 200},
+    {
         'name': "Check supplies snapshot",
         'path': '/reports/33?date_year=2005&date_month=12&date_day=31&'
         'date_hour=23&date_minute=30',
