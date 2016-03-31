@@ -6350,10 +6350,17 @@ def virtual_bill(supply_source):
         'status_code': 200,
         'regexes': [
             r"party-viewer"]},
+
     {
         'name': "Scenario runner",
         'path': '/ods_scenario_runner',
         'status_code': 200},
+
+    {
+        'name': "Unified report",
+        'path': '/ods_unified_report',
+        'status_code': 200},
+
     {
         'name': "Bill type",
         'path': '/bill_types/1',

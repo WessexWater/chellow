@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+
+{% block title %}
+	Unified Monthly Duration
+{% endblock %}
+
+{% block nav %}
+	Unified Monthly Duration
+{% endblock %}
+
+{% block content %}
+	<form action="{{context_path}}/reports/247">
+		<fieldset>
+			<legend>Download</legend>
+			<br>
+			For {{input_text('months', '1', 2, 2)}}
+			month(s) finishing at the end of
+			{{input_date('finish', month_finish, resolution='month')}}
+			<input type="submit" value="Download">
+		</fieldset>
+	</form>
+{% endblock %}
