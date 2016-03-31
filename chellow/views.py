@@ -23,7 +23,7 @@ import io
 import chellow.hh_importer
 import chellow.bill_importer
 import chellow.system_price
-from sqlalchemy import text, true, false, null, func, not_, or_
+from sqlalchemy import text, true, false, null, func, not_, or_, cast, Float
 from sqlalchemy.orm import joinedload
 from collections import defaultdict
 from itertools import chain, islice
@@ -2442,19 +2442,13 @@ def site_used_graph_get(site_id):
         SiteEra.site == site, not_(Source.code.in_(('sub', 'gen-net')))). \
         distinct().all()
 
-    result = iter(
-        sess.execute(
-            "select hh_datum.value, hh_datum.start_date, hh_datum.status, "
-            "channel.imp_related, source.code from hh_datum, channel, era, "
-            "supply, source where hh_datum.channel_id = channel.id and "
-            "channel.era_id = era.id and era.supply_id = supply.id and "
-            "supply.source_id = source.id and "
-            "channel.channel_type = 'ACTIVE' and "
-            "hh_datum.start_date >= :start_date and "
-            "hh_datum.start_date <= :finish_date and supply.id in "
-            "(" + ','.join(str(sup.id) for sup in supplies) +
-            ") order by hh_datum.start_date",
-            params={'start_date': start_date, 'finish_date': finish_date}))
+    results = iter(sess.query(
+        cast(HhDatum.value, Float), HhDatum.start_date, HhDatum.status,
+        Channel.imp_related, Source.code).join(Channel).join(Era).join(Supply).
+        join(Source).filter(
+            Channel.channel_type == 'ACTIVE', HhDatum.start_date >= start_date,
+            HhDatum.start_date <= finish_date,
+            Supply.id.in_(s.id for s in supplies)))
 
     hh_date = start_date
     max_scale = 2
@@ -2464,59 +2458,52 @@ def site_used_graph_get(site_id):
     month_list = []
     step = 1
 
-    try:
-        row = next(result)
-        hh_channel_value = float(row.value)
-        hh_channel_start_date = row.start_date
-        is_import = row.imp_related
-        source_code = row.code
+    (
+        hh_channel_value, hh_channel_start_date, hh_channel_status,
+        is_import, source_code) = next(
+        results, (None, None, None, None, None))
 
-        while hh_date <= finish_date:
-            complete = None
-            hh_value = 0
+    while hh_date <= finish_date:
+        complete = None
+        hh_value = 0
 
-            while hh_channel_start_date == hh_date:
-                if (is_import and source_code != '3rd-party-reverse') or \
-                        (not is_import and source_code == '3rd-party-reverse'):
-                    hh_value += hh_channel_value
-                else:
-                    hh_value -= hh_channel_value
-                if row.status == 'A':
-                    if complete is None:
-                        complete = True
-                else:
-                    complete = False
-                try:
-                    row = next(result)
-                    hh_channel_value = float(row.value)
-                    hh_channel_start_date = row.start_date
-                    is_import = row.imp_related
-                except StopIteration:
-                    hh_channel_start_date = None
+        while hh_channel_start_date == hh_date:
+            if (is_import and source_code != '3rd-party-reverse') or \
+                    (not is_import and source_code == '3rd-party-reverse'):
+                hh_value += hh_channel_value
+            else:
+                hh_value -= hh_channel_value
+            if hh_channel_status == 'A':
+                if complete is None:
+                    complete = True
+            else:
+                complete = False
+            (
+                hh_channel_value, hh_channel_start_date, hh_channel_status,
+                is_import, source_code) = next(
+                results, (None, None, None, None, None))
 
-            result_data.append(
-                {
-                    'value': hh_value, 'start_date': hh_date,
-                    'is_complete': complete is True})
-            max_scale = max(max_scale, int(math.ceil(hh_value)))
-            min_scale = min(min_scale, int(math.floor(hh_value)))
-            hh_date += HH
+        result_data.append(
+            {
+                'value': hh_value, 'start_date': hh_date,
+                'is_complete': complete is True})
+        max_scale = max(max_scale, int(math.ceil(hh_value)))
+        min_scale = min(min_scale, int(math.floor(hh_value)))
+        hh_date += HH
 
-        # System.err.println('ooostep is max scale' + str(maxScale) +
-        # ' min scale ' + str(minScale))
+    # System.err.println('ooostep is max scale' + str(maxScale) +
+    # ' min scale ' + str(minScale))
 
-        # raise Exception('pppstep is max scale' + str(maxScale) +
-        # ' min scale ' + str(minScale))
-        step = 10**int(math.floor(math.log10(max_scale - min_scale)))
-        # raise Exception('step is ' + str(step))
+    # raise Exception('pppstep is max scale' + str(maxScale) +
+    # ' min scale ' + str(minScale))
+    step = 10**int(math.floor(math.log10(max_scale - min_scale)))
+    # raise Exception('step is ' + str(step))
 
-        # System.err.println('kkstep is ' + str(step) + ' max scale' +
-        # str(maxScale) + ' min scale ' + str(minScale))
+    # System.err.println('kkstep is ' + str(step) + ' max scale' +
+    # str(maxScale) + ' min scale ' + str(minScale))
 
-        # if step > (maxScale - minScale) / 2:
-        #    step = int(float(step) / 4)
-    except StopIteration:
-        pass
+    # if step > (maxScale - minScale) / 2:
+    #    step = int(float(step) / 4)
 
     max_height = 300
     scale_factor = float(max_height) / (max_scale - min_scale)
