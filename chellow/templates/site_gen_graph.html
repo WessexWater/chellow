@@ -11,10 +11,82 @@
 {% endblock %}
 
 {% block content %}
-	<p>
-		<img src="{{context_path}}/reports/23?site_id={{site.id}}&amp;finish_year={{year}}&amp;finish_month={{month}}&amp;months={{months}}" >
-	</p>
-	
+	<svg
+			width="{{graphs.used.pos_hhs|length + 100}}px"
+			height="{{height}}px" xmlns="http://www.w3.org/2000/svg" version="1.1"
+		 	font-family="Overclock, sans-serif" font-size="12" fill="black">
+		<text x="{{title.x}}" y="{{title.y}}">
+				{{title.text}}
+		</text>
+
+		{% for graph_name in graph_names %}
+			{% set graph = graphs[graph_name] %}
+			<g transform="translate(0, {{graph.y}})">
+				<text x="0px" y="0">{{graph.title}}</text>
+
+				{% for supply in graph.supplies.values() %}
+					<rect
+					x="0px" y="{{15 * loop.index0 + 10}}px" width="10px" height="10px"
+							fill="{{supply.colour}}"/>
+					<text x="20px" y="{{15 * loop.index0 + 20}}px">
+						{{supply.text}}
+					</text>
+					
+				{% endfor %}
+
+				<g transform="translate(200, 0)">
+					<text x="-80" y="0">kW</text>
+
+					{% for scale_line in graph.scale_lines %}
+						<rect
+								x="0px" y="{{scale_line.y}}px"
+								width="{{scale_line.width}}px" height="1px"/>
+						<text x="-25px" y="{{scale_line.y_val}}px">
+							{{scale_line.text}}
+						</text>
+					{% endfor %}
+
+					{% for scale_value in graph.monthly_scale_values %}
+						<text x="{{scale_value.x}}" y="{{scale_value.y}}px">
+							{{scale_value.text}}
+						</text>
+					{% endfor %}
+
+					{% for tick in graph.ticks %}
+						<rect x="{{tick.x}}px" y="{{tick.y}}px" width="1px" height="4px"/>
+					{% endfor %}
+
+					{% for hh in graph.pos_hhs %}
+						<rect
+								x="{{hh.x}}px" y="{{hh.y}}px" width="1px"
+								height="{{hh.height}}px" fill="{{hh.colour}}" />
+					{%- endfor %}
+
+					{% for hh in graph.neg_hhs %}
+						<rect
+								x="{{hh.x}}px" y="{{hh.y}}px" width="1px"
+								height="{{hh.height}}px" fill="{{hh.colour}}" />
+					{%- endfor %}
+
+					{% if loop.last %}
+						{% for day in days %}
+							<text x="{{day.x}}px" y="{{day.y}}px" fill="{{day.colour}}">
+								{{day.text}}
+							</text>
+						{%- endfor %}
+
+						{% for month_point in month_points %}
+							<text x="{{month_point.x}}px" y="{{month_point.y}}px">
+								{{month_point.text}}
+							</text>
+						{%- endfor %}
+					{% endif %}
+				</g>
+			</g>
+		{%- endfor %}
+
+	</svg>
+
 	<form action="">
 		<fieldset>
 			<legend>Show graph</legend>

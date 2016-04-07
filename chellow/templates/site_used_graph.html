@@ -90,56 +90,6 @@
 				No data available for this period.
 			</text>
 		{% endif %}
-
-
-
-	<!--
-					if hour == 0 and minute == 0:
-							day = cal.get(Calendar.DAY_OF_MONTH)
-							dayOfWeek = cal.get(Calendar.DAY_OF_WEEK)
-							if dayOfWeek == 7 or dayOfWeek == 1:
-									graphics.setColor(Color.RED)
-							else:
-									graphics.setColor(Color.BLACK)
-							graphics.drawString(str(day), graphLeft + i + 16, graphTop + maxHeight + 20)
-							graphics.setColor(Color.BLACK)
-							graphics.fillRect(graphLeft + i, graphTop + maxHeight, 1, 5)
-							if day == 15:
-									graphics.drawString(monthDateFormat.format(cal.getTime()), graphLeft + i + 16, graphTop + maxHeight + 45)
-									monthPoints.append(i)
-			graphics.setColor(Color.BLACK)
-			graphics.fillRect(graphLeft, graphTop, 1, maxHeight)
-
-			graphics.setColor(Color.BLACK)
-
-			for point in range(0, maxScale, step) + range(0, minScale, step * -1):
-					graphics.fillRect(graphLeft - 5, int(xAxis - point * scaleFactor), len(resultData) + 5, 1)
-					graphics.drawString(str(point * 2), graphLeft - 40, int(xAxis - point * scaleFactor + 5))
-					for monthPoint in monthPoints:
-							graphics.drawString(str(point * 2), graphLeft + monthPoint + 16, int(xAxis - point * scaleFactor - 2))
-
-			graphics.drawString("kW", graphLeft - 90, 100)
-			title = "Electricity use at site " + site.getCode() + " " + site.getName() + " for " + str(months) + " month"
-			if months > 1:
-					title += "s"
-			title += " ending " + monthDateFormat.format(Date(finishDate.getTime() - 1)) + " " + yearDateFormat.format(Date(finishDate.getTime() - 1))
-			graphics.drawString(title, 30, 30)
-			graphics.setFont(smallFont)
-			graphics.drawString("Poor data is denoted by a grey background and black foreground.", 30, 395)
-	else:
-			image = BufferedImage(400, 400, BufferedImage.TYPE_4BYTE_ABGR)
-			graphics = image.createGraphics()
-			graphics.setColor(Color.BLACK)
-			graphics.drawString("No data available for this period.", 30, 10)
-
-	os = inv.getResponse().getOutputStream()
-	graphics.setColor(Color.BLACK)
-	#graphics.drawString("report took..." + str(java.lang.System.currentTimeMillis() - start) + "ms", 10, 390)
-	ImageIO.write(image, "png", os)
-	os.close()
-	'''
-
-	-->
 	</svg>
 
 	<br>	
