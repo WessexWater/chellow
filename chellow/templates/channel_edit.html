@@ -10,7 +10,7 @@
 {% block nav %}
 	<a href="{{context_path}}/supplies">Supplies</a> &gt;
 	<a href="{{context_path}}/supplies/{{channel.era.supply.id }}">Supply {{channel.era.supply.name}} Era {{channel.era.start_date|hh_format}}</a> &gt;
-	<a href="{{context_path}}/channels/{{channel.id}}">Channel {% if channel.is_import %}Import{% else %}Export{% endif %}
+	<a href="{{context_path}}/channels/{{channel.id}}">Channel {% if channel.imp_related %}Import{% else %}Export{% endif %}
 	{{channel.channel_type}}</a> &gt; Edit
 {% endblock %}
 

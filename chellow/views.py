@@ -1946,20 +1946,19 @@ def channel_edit_post(channel_id):
             if hh_datum is not None:
                 raise BadRequest(
                     "There's already a datum in this channel at this time.")
-            mpan_core = channel.era.imp_mpan_core
-            if mpan_core is None:
+            if channel.imp_related:
+                mpan_core = channel.era.imp_mpan_core
+            else:
                 mpan_core = channel.era.exp_mpan_core
             HhDatum.insert(
                 sess, [
                     {
                         'start_date': start_date, 'value': value,
-                        'status': status, 'mpan_core': mpan_core,
+                        'status': status,
+                        'mpan_core': mpan_core,
                         'channel_type': channel.channel_type}])
             sess.commit()
-            now = Datetime.utcnow().replace(tzinfo=pytz.utc)
-            return redirect(
-                '/channels/' + str(channel_id) + "/start_year=" +
-                str(now.year) + "&start_month=" + str(now.month), 303)
+            return redirect('/channels/' + str(channel_id), 303)
     except BadRequest as e:
         flash(e.description)
         now = Datetime.utcnow().replace(tzinfo=pytz.utc)

@@ -7140,8 +7140,10 @@ def virtual_bill(supply_source):
             'start_minute': "00",
             'insert': "Insert",
             'value': "45.7",
-            'status': "A", },
-        'status_code': 303},
+            'status': "A"},
+        'status_code': 303,
+        'regexes': [
+            r"/channels/55'"]},
     {
         'path': '/supplies/7/months?is_import=true&years=1&year=2010',
         'status_code': 200,
@@ -10592,4 +10594,11 @@ def virtual_bill(supply_source):
         'name': "CSV Sites Duration",
         'path': '/csv_sites_duration',
         'status_code': 200},
+
+    {
+        'name': "View channel edit",
+        'path': '/channels/40/edit',
+        'status_code': 200,
+        'regexes': [
+            r'Channel Import\s*ACTIVE']},
 ]
