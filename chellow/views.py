@@ -2598,8 +2598,15 @@ def supply_hh_data_get(supply_id):
         start_date=start_date, finish_date=finish_date)
 
 
+@app.route('/dno_rate_scripts/<int:rate_script_id>')
+def dno_rate_script_get(rate_script_id):
+    sess = db.session()
+    rate_script = RateScript.get_dno_by_id(sess, rate_script_id)
+    return render_template('dno_rate_script.html', rate_script=rate_script)
+
+
 @app.route('/dno_contracts/<int:contract_id>/add_rate_script')
-def add_rate_script_get(contract_id):
+def dno_rate_script_add_get(contract_id):
     now = Datetime.now(pytz.utc)
     initial_date = Datetime(now.year, now.month, 1, tzinfo=pytz.utc)
     sess = db.session()
@@ -2611,7 +2618,7 @@ def add_rate_script_get(contract_id):
 
 @app.route(
     '/dno_contracts/<int:contract_id>/add_rate_script', methods=['POST'])
-def add_rate_script_post(contract_id):
+def dno_rate_script_add_post(contract_id):
     try:
         sess = db.session()
         set_read_write(sess)
@@ -2631,14 +2638,14 @@ def add_rate_script_post(contract_id):
 
 
 @app.route('/dno_rate_scripts/<int:rs_id>/edit')
-def rate_script_edit_get(rs_id):
+def dno_rate_script_edit_get(rs_id):
     sess = db.session()
     rs = RateScript.get_dno_by_id(sess, rs_id)
     return render_template('dno_rate_script_edit.html', rate_script=rs)
 
 
 @app.route('/dno_rate_scripts/<int:rs_id>/edit', methods=['POST'])
-def rate_script_edit_post(rs_id):
+def dno_rate_script_edit_post(rs_id):
     try:
         sess = db.session()
         set_read_write(sess)

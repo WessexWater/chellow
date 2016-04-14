@@ -2714,6 +2714,10 @@ def virtual_bill(supply_source):
             r"/dno_rate_scripts/213"],
         'status_code': 303},
 
+    {
+        'path': '/dno_rate_scripts/213',
+        'status_code': 200},
+
     # Test bad syntax gives an error
     {
         'path': '/dno_rate_scripts/213/edit',
