@@ -7,7 +7,7 @@ from chellow.models import (
     UserRole, Site, Source, GeneratorType, GspGroup, Era, SiteEra, Pc, Cop,
     Ssc, RateScript, Supply, Mtc, Channel, Tpr, MeasurementRequirement, Bill,
     RegisterRead, HhDatum, Snag, Batch, ReadType, BillType, MeterPaymentType,
-    ClockInterval, db_upgrade)
+    ClockInterval, db_upgrade, Llfc)
 from sqlalchemy.exc import ProgrammingError
 import traceback
 from datetime import datetime as Datetime
@@ -3844,6 +3844,24 @@ def dno_contract_get(contract_id):
     return render_template(
         'dno_contract.html', contract=contract, rate_scripts=rate_scripts,
         reports=reports)
+
+
+@app.route('/llfcs')
+def llfcs_get():
+    dno_contract_id = req_int('dno_contract_id')
+    sess = db.session()
+    contract = Contract.get_dno_by_id(sess, dno_contract_id)
+    llfcs = sess.query(Llfc).filter(Llfc.dno_id == contract.party.id).order_by(
+        Llfc.code).all()
+    return render_template('llfcs.html', llfcs=llfcs, contract=contract)
+
+
+@app.route('/llfcs/<int:llfc_id>')
+def llfc_get(llfc_id):
+    sess = db.session()
+    llfc = Llfc.get_by_id(sess, llfc_id)
+    dno_contract = Contract.get_dno_by_name(sess, llfc.dno.dno_code)
+    return render_template('llfc.html', llfc=llfc, dno_contract=dno_contract)
 
 
 @app.route('/sscs')

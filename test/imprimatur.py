@@ -10601,4 +10601,9 @@ def virtual_bill(supply_source):
         'status_code': 200,
         'regexes': [
             r'Channel Import\s*ACTIVE']},
+
+    {
+        'name': "Look at a LLFC",
+        'path': '/llfcs/6128',
+        'status_code': 200},
 ]
