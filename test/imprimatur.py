@@ -10606,4 +10606,11 @@ def virtual_bill(supply_source):
         'name': "Look at a LLFC",
         'path': '/llfcs/6128',
         'status_code': 200},
+
+    {
+        'name': "A DNO's LLFCs",
+        'path': '/llfcs?dno_contract_id=25',
+        'status_code': 200,
+        'regexes': [
+            r'<a href="/dno_contracts">DNO Contracts</a>']},
 ]
