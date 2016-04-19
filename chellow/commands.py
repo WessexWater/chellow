@@ -1,6 +1,6 @@
 import shutil
 import subprocess
-import chellow
+import sys
 import os.path
 import os
 from pep3143daemon import DaemonContext, PidFile
@@ -8,6 +8,7 @@ import waitress
 import argparse
 import signal
 import time
+import chellow
 
 
 def chellow_test_setup():
@@ -36,13 +37,6 @@ def chellow_command():
     parser.add_argument('action', choices=['start', 'stop', 'restart'])
     args = parser.parse_args()
 
-    stdin = open('/dev/null', 'r')
-    try:
-        stdout = open('/dev/tty', 'w')
-        stderr = open('/dev/tty', 'w')
-    except OSError:
-        stdout = stderr = open('/dev/null', 'w')
-
     try:
         os.makedirs(chellow.app.instance_path)
     except:
@@ -50,7 +44,7 @@ def chellow_command():
     pidfile_path = os.path.join(chellow.app.instance_path, 'chellow.pid')
     pidfile = PidFile(pidfile_path)
     daemon = DaemonContext(
-        pidfile=pidfile, stdin=stdin, stderr=stderr, stdout=stdout)
+        pidfile=pidfile, stdin=sys.stdin, stderr=sys.stderr, stdout=sys.stdout)
 
     if args.action == 'start':
         chellow_start(daemon)
