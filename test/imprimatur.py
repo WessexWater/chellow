@@ -10445,7 +10445,11 @@ def virtual_bill(supply_source):
     'site_links': [
         {'name': 'Google Maps', 'href': 'https://maps.google.com/maps?q='}],
     'batch_reports': [1],
-    'elexonportal_scripting_key': 'xxx'}
+    'elexonportal_scripting_key': 'xxx',
+    'ecoes': {
+        'user_name': 'a',
+        'password': 'a',
+        'prefix': 'http://localhost:8080/ecoes/'}}
 """, },
         'status_code': 303},
     {
@@ -10617,4 +10621,9 @@ def virtual_bill(supply_source):
         'status_code': 200,
         'regexes': [
             r'<a href="/dno_contracts">DNO Contracts</a>']},
+
+    {
+        'name': "Comparison against ECOES",
+        'path': '/reports/ecoes_comparison',
+        'status_code': 200},
 ]

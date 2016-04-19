@@ -121,9 +121,10 @@ def check_permissions(*args, **kwargs):
     # Got our user
     path = request.path
     method = request.method
-    if method == 'GET' and path in (
+    if path in (
             '/health', '/bmreports',
-            '/elexonportal/file/download/BESTVIEWPRICES_FILE'):
+            '/elexonportal/file/download/BESTVIEWPRICES_FILE', '/ecoes',
+            '/ecoes/login.asp', '/ecoes/saveportfolioMpans.asp'):
         return
 
     if g.user is not None:
@@ -204,6 +205,36 @@ def elexonportal(fname):
     return send_file(
         fname, mimetype=mimetype, as_attachment=True,
         attachment_filename=filename)
+
+
+@app.route('/ecoes')
+def ecoes_get():
+    return 'ecoes'
+
+
+@app.route('/ecoes/login.asp', methods=['POST'])
+def ecoes_login_post():
+    return redirect('/ecoes/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa')
+
+
+@app.route('/ecoes/saveportfolioMpans.asp', methods=['GET'])
+def ecoes_mpans_get():
+    return Response(
+        ','.join(
+            (
+                'MPAN', 'AddressLine1', 'AddressLine2', 'AddressLine3',
+                'AddressLine4', 'AddressLine5', 'AddressLine6', 'AddressLine7',
+                'AddressLine8', 'AddressLine9', 'PostCode', 'Current Supplier',
+                'Registration Effective From Date', 'Meter Timeswitch Class',
+                'Meter Timeswitch Class Effective From Date',
+                'Line Loss Factor', 'Line Loss Factor Effective From Date',
+                'Profile Class', 'Standard Settlement Configuration',
+                'Measurement Class', 'Energisation Status', 'Data Aggregator',
+                'Data Collector', 'Meter Operator',
+                'Meter Operator Effective From Date', 'GSP Group',
+                'GSP Group Effective From Date', 'Distributor',
+                'Meter Serial Number', 'Meter Installation Date', 'Meter Type',
+                'Meter Asset Provider')), mimetype='text/csv')
 
 
 @app.route('/health')
@@ -2000,17 +2031,17 @@ def site_snag_post(snag_id):
     return render_template('site_snag.html', snag=snag)
 
 
-@app.route('/reports/<int:report_id>')
+@app.route('/reports/<report_id>')
 def report_get(report_id):
     report_module = importlib.import_module(
-        "chellow.reports.report_" + str(report_id))
+        "chellow.reports.report_" + report_id)
     return report_module.do_get(db.session())
 
 
-@app.route('/reports/<int:report_id>', methods=['POST'])
+@app.route('/reports/<report_id>', methods=['POST'])
 def report_post(report_id):
     report_module = importlib.import_module(
-        "chellow.reports.report_" + str(report_id))
+        "chellow.reports.report_" + report_id)
     return report_module.do_post(db.session())
 
 
@@ -2490,19 +2521,7 @@ def site_used_graph_get(site_id):
         min_scale = min(min_scale, int(math.floor(hh_value)))
         hh_date += HH
 
-    # System.err.println('ooostep is max scale' + str(maxScale) +
-    # ' min scale ' + str(minScale))
-
-    # raise Exception('pppstep is max scale' + str(maxScale) +
-    # ' min scale ' + str(minScale))
     step = 10**int(math.floor(math.log10(max_scale - min_scale)))
-    # raise Exception('step is ' + str(step))
-
-    # System.err.println('kkstep is ' + str(step) + ' max scale' +
-    # str(maxScale) + ' min scale ' + str(minScale))
-
-    # if step > (maxScale - minScale) / 2:
-    #    step = int(float(step) / 4)
 
     max_height = 300
     scale_factor = float(max_height) / (max_scale - min_scale)
