@@ -3769,7 +3769,8 @@ def virtual_bill(supply_source):
     'ips': {'127.0.0.1': 'implicit-user@localhost'},
     'site_links': [
         {'name': 'Google Maps', 'href': 'https://maps.google.com/maps?q='}],
-    'elexonportal_scripting_key': 'xxx'}
+    'elexonportal_scripting_key': 'xxx',
+    'background_colour': 'olive'}
 """},
         'status_code': 303},
     {
@@ -4299,7 +4300,8 @@ def virtual_bill(supply_source):
         'regexes': [
             r"<td>2010-06-09 00:00</td>\s*<td>2010-05-01 00:00</td>\s*"
             "<td>2010-05-31 23:30</td>\s*<td>32124.5</td>\s*"
-            "<td>2219.41</td>\s*<td>388.4</td>\s*<td>2607.81</td>"],
+            "<td>2219.41</td>\s*<td>388.4</td>\s*<td>2607.81</td>",
+            r'<a\s*href="/reports/111\?batch_id=6"\s*>Check Bills</a>'],
         'status_code': 200},
     {
         'name': "Test displaced virtual bill.",
@@ -10450,7 +10452,8 @@ def virtual_bill(supply_source):
     'ecoes': {
         'user_name': 'a',
         'password': 'a',
-        'prefix': 'http://localhost:8080/ecoes/'}}
+        'prefix': 'http://localhost:8080/ecoes/'},
+    'background_colour': 'olive'}
 """, },
         'status_code': 303},
     {
