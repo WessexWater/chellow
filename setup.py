@@ -29,7 +29,7 @@ setup(
         'dno_contracts/*/rate_scripts/*.py',
         'mdd/*.csv',
         'templates/*.html',
-        'static/*.css',
+        'templates/*.css',
         'static/fonts/*.ttf',
         'bmreports/sysprice/*.xml',
         'elexonportal/*']},
