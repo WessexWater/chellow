@@ -2,25 +2,32 @@
   font-family: 'Ubuntu Mono';
   font-style: normal;
   font-weight: 400;
-  src: local('Ubuntu Mono'), local('UbuntuMono-Regular'), url(/static/fonts/UbuntuMono-Regular.ttf) format('ttf');
+  src: local('Ubuntu Mono'), local('UbuntuMono-Regular'),
+    url(/static/fonts/UbuntuMono-Regular.ttf) format('ttf');
 }
+
 @font-face {
   font-family: 'Ubuntu Mono';
   font-style: normal;
   font-weight: 700;
-  src: local('Ubuntu Mono Bold'), local('UbuntuMono-Bold'), url(/static/fonts/UbuntuMono-Bold.ttf) format('ttf');
+  src: local('Ubuntu Mono Bold'), local('UbuntuMono-Bold'),
+    url(/static/fonts/UbuntuMono-Bold.ttf) format('ttf');
+
 }
 @font-face {
   font-family: 'Ubuntu Mono';
   font-style: italic;
   font-weight: 400;
-  src: local('Ubuntu Mono Italic'), local('UbuntuMono-Italic'), url(/static/fonts/UbuntuMono-Italic.ttf) format('ttf');
+  src: local('Ubuntu Mono Italic'), local('UbuntuMono-Italic'),
+    url(/static/fonts/UbuntuMono-Italic.ttf) format('ttf');
 }
+
 @font-face {
   font-family: 'Ubuntu Mono';
   font-style: italic;
   font-weight: 700;
-  src: local('Ubuntu Mono Bold Italic'), local('UbuntuMono-BoldItalic'), url(/static/fonts/UbuntuMono-BoldItalic.ttf)) format('ttf');
+  src: local('Ubuntu Mono Bold Italic'), local('UbuntuMono-BoldItalic'),
+    url(/static/fonts/UbuntuMono-BoldItalic.ttf)) format('ttf');
 }
 
 table {
@@ -48,5 +55,5 @@ body {
     line-height: 1.2;
     font-size: 0.9em;
     font-family: 'Ubuntu Mono';
-    background-color: rgb(255, 236, 139);
+    background-color: {{background_colour}};
 }

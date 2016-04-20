@@ -229,6 +229,18 @@ def ecoes_login_post():
     return redirect('/ecoes/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa')
 
 
+@app.route('/style', methods=['GET'])
+def style_get():
+    sess = db.session()
+    props = Contract.get_non_core_by_name(sess, 'configuration'). \
+        make_properties()
+    response = make_response(
+        render_template(
+            'style.css', background_colour=props['background_colour']))
+    response.headers['Content-type'] = 'text/css'
+    return response
+
+
 @app.route('/ecoes/saveportfolioMpans.asp', methods=['GET'])
 def ecoes_mpans_get():
     return Response(

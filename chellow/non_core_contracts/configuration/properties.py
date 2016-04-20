@@ -4,4 +4,5 @@
     'ecoes': {
         'user_name': 'clinton',
         'password': 'trump',
-        'prefix': 'https://www.ecoes.co.uk/'}}
+        'prefix': 'https://www.ecoes.co.uk/'},
+    'background_colour': 'rgb(255, 236, 139)'}

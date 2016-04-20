@@ -123,7 +123,9 @@
 <html>
   <head>
 		{% block head %}
-			<link rel="stylesheet" type="text/css" href="/static/style.css" />
+		<link
+	   	rel="stylesheet" type="text/css"
+		 	href="{{context_path}}/style">
 			<title>Chellow &gt; {% block title %}{% endblock %}</title>
 			{% block inside_head %}{% endblock %}
 		{% endblock %}

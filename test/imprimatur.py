@@ -5822,7 +5822,7 @@ def virtual_bill(supply_source):
 
         # Should have link to CSS
         'regexes': [
-            r"/static/style\.css"],
+            r"/style"],
         'status_code': 200},
     {
         'path': '/reports/59?start_year=2013&start_month=04&start_day=01&'
@@ -5838,7 +5838,7 @@ def virtual_bill(supply_source):
 
         # Should have link to CSS
         'regexes': [
-            r"/static/style\.css"],
+            r"/style"],
         'status_code': 200},
     {
         'name': "Check CSV Supplies HH Data. With supply_id",
