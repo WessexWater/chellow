@@ -5508,7 +5508,9 @@ def virtual_bill(supply_source):
     {
         'name': "View the note editing page.",
         'path': '/supplies/2/notes',
-        'status_code': 200},
+        'status_code': 200,
+        'regexes': [
+            r'Notes\s*\[<a href="/supplies/2/notes/add">add</a>\]']},
     {
         'name': "Try adding a note.",
         'path': '/supplies/2/notes/add',
