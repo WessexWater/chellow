@@ -400,7 +400,9 @@ def virtual_bill(ds):
             'For <input name="months" value="1" maxlength="2" size="2">\s*'
             'month\(s\) until the end of\s*'
             '<input name="finish_year" maxlength="4" size="4" '
-            'value="201\d">'],
+            'value="201\d">',
+            r'Rate Scripts\s*[<a '
+            r'href="/supplier_contracts/31/add_rate_script">add</a>]'],
         'status_code': 200},
 
     {
@@ -3770,7 +3772,7 @@ def virtual_bill(supply_source):
     'site_links': [
         {'name': 'Google Maps', 'href': 'https://maps.google.com/maps?q='}],
     'elexonportal_scripting_key': 'xxx',
-    'background_colour': 'olive'}
+    'background_colour': 'aquamarine'}
 """},
         'status_code': 303},
     {
@@ -10453,7 +10455,7 @@ def virtual_bill(supply_source):
         'user_name': 'a',
         'password': 'a',
         'prefix': 'http://localhost:8080/ecoes/'},
-    'background_colour': 'olive'}
+    'background_colour': 'aquamarine'}
 """, },
         'status_code': 303},
     {
