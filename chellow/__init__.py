@@ -1,7 +1,6 @@
 from flask import Flask
 import os
 
-
 app = Flask('chellow', instance_relative_config=True)
 app.secret_key = os.urandom(24)
 config = app.config

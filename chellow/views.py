@@ -93,6 +93,18 @@ def chellow_redirect(path, code=None):
 
 
 @app.before_request
+def log_request():
+    print(
+        ' '.join(
+            '-' if v is None else v for v in (
+                request.remote_addr, str(request.user_agent),
+                request.remote_user,
+                '[' + Datetime.now().strftime('%d/%b/%Y:%H:%M:%S') + ']',
+                '"' + request.method + ' ' + request.path + ' ' +
+                request.environ.get('SERVER_PROTOCOL') + '"', None, None)))
+
+
+@app.before_request
 def check_permissions(*args, **kwargs):
     g.user = None
     sess = db.session()
