@@ -5812,7 +5812,8 @@ def virtual_bill(supply_source):
         'name': "Check supplies monthly duration page.",
         'path': '/csv_supplies_monthly_duration',
         'regexes': [
-            r"end_month"],
+            r"end_month",
+            r'/reports/177'],
         'status_code': 200},
 
     {
