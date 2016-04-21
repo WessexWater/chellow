@@ -442,6 +442,11 @@ def gsp_gbp_per_kwh():
 
 
     {
+        'name': "View add MOP contract",
+        'path': '/mop_contracts/add',
+        'status_code': 200},
+
+    {
         'name': "Insert MOP contract",
         'path': '/mop_contracts/add',
         'method': 'post',

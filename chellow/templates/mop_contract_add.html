@@ -25,23 +25,17 @@
 			<br />
 			<br />
 			<label>
-				Name
-				<input name="name" value="
-					{%- if request.getParameter('name') -%}
-						{{ request.getParameter('name') }}
-					{%- endif -%}
-				">
+				Name {{input_text('name')}}
 			</label>
 			<br />
 			<br />
 			<fieldset>
 				<legend>Start Date</legend>
-				{{ input_date('start', initial_date) }}
+				{{ input_date('start') }}
 			</fieldset>
-			<br />
-			<br />
+			<br>
+			<br>
 			<input type="submit" value="Add">
-			<input type="reset" value="Reset">
 		</fieldset>
 	</form>
 {% endblock %}
