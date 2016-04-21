@@ -10634,4 +10634,9 @@ def virtual_bill(supply_source):
         'name': "Comparison against ECOES",
         'path': '/reports/ecoes_comparison',
         'status_code': 200},
+
+    {
+        'name': "View a CoP",
+        'path': '/cops/5',
+        'status_code': 200},
 ]

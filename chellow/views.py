@@ -372,6 +372,19 @@ def error_runtime(error):
     return "called rtime handler " + str(error), 500
 
 
+@app.route('/cops')
+def cops_get():
+    cops = Cop.query.order_by(Cop.code)
+    return render_template('cops.html', cops=cops)
+
+
+@app.route('/cops/<int:cop_id>')
+def cop_get(cop_id):
+    sess = db.session()
+    cop = Cop.get_by_id(sess, cop_id)
+    return render_template('cop.html', cop=cop)
+
+
 @app.route('/users', methods=['GET'])
 def users_get():
     users = User.query.order_by(User.email_address).all()

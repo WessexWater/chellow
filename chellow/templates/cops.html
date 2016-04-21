@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block title %}
+	CoPs
+{% endblock %}
+
+{% block nav %}
+	CoPs
+{% endblock %}
+
+{% block content %}
+	<table>
+		<thead>
+			<tr>
+				<th>Code</th>
+				<th>Description</th>
+			</tr>
+		</thead>
+		<tbody>
+			{% for cop in cops %}
+				<tr>
+					<td>
+						<a href="{{context_path}}/cops/{{cop.id}}">{{cop.code}}</a>
+					</td>
+					<td>{{cop.description}}</td>
+				</tr>
+			{% endfor %}
+		</tbody>
+	</table>
+{% endblock %}
