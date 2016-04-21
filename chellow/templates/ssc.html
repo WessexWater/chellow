@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+
+{% block title %}
+	SSCs &gt; {{ssc.code}}
+{% endblock %}
+
+{% block nav %}
+	<a href="{{context_path}}/sscs">SSCs</a> &gt; {{ssc.code}}
+{% endblock %}
+
+{% block content %}
+	<table>
+		<tr>
+			<th>Code</th>
+			<td>{{ ssc.code }}</td>
+		</tr>
+		<tr>
+			<th>Description</th>
+			<td>{{ ssc.description }}</td>
+		</tr>
+		<tr>
+			<th>Is Import?</th>
+			<td>
+				{% if ssc.is_import %}
+					Import
+				{% else %}
+					Export
+				{% endif %}
+			</td>
+		</tr>
+		<tr>
+			<th>From</th>
+			<td>{{ ssc.valid_from|hh_format }}</td>
+		<tr>
+		</tr>
+			<th>To</th>
+			<td>{{ ssc.valid_to|hh_format }}</td>
+		</tr>
+	</table>
+
+	<h4>TPRs</h4>
+
+	<ul>
+		{% for mr in ssc.measurement_requirements %}
+			<li>
+				<a href="{{context_path}}/tprs/{{mr.tpr.id}}">{{mr.tpr.code}}</a>
+			</li>
+		{% endfor %}
+	</ul>
+{% endblock %}

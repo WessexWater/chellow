@@ -8056,10 +8056,17 @@ def virtual_bill(supply_source):
         'name': "Look at a DNO",
         'path': '/dno_contracts/13',
         'status_code': 200},
+
     {
         'name': "Look at the SSCs",
         'path': '/sscs',
         'status_code': 200},
+
+    {
+        'name': "Look at an SSC",
+        'path': '/sscs/1',
+        'status_code': 200},
+
     {
         'name': "Rate start after last rate scripts",
         'path': '/supplier_contracts/39/edit',

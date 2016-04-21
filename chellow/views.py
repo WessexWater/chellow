@@ -3930,9 +3930,16 @@ def llfc_get(llfc_id):
 @app.route('/sscs')
 def sscs_get():
     sscs = Ssc.query.options(
-        joinedload(Ssc.measurement_requirements, MeasurementRequirement.tpr)
-        ).order_by(Ssc.code)
+        joinedload(Ssc.measurement_requirements).
+        joinedload(MeasurementRequirement.tpr)).order_by(Ssc.code)
     return render_template('sscs.html', sscs=sscs)
+
+
+@app.route('/sscs/<int:ssc_id>')
+def ssc_get(ssc_id):
+    sess = db.session()
+    ssc = Ssc.get_by_id(sess, ssc_id)
+    return render_template('ssc.html', ssc=ssc)
 
 
 @app.route('/csv_supplies_triad')
