@@ -3130,6 +3130,115 @@ def hhdc_bill_import_get(import_id):
     return render_template('hhdc_bill_import.html', **fields)
 
 
+@app.route('/hhdc_bills/<int:bill_id>')
+def hhdc_bill_get(bill_id):
+    sess = db.session()
+    bill = Bill.get_by_id(sess, bill_id)
+    fields = {'bill': bill}
+    try:
+        breakdown_dict = eval(bill.breakdown, {})
+
+        raw_lines = []
+        for key in ('raw_lines', 'raw-lines'):
+            try:
+                raw_lines += breakdown_dict[key]
+                del breakdown_dict[key]
+            except KeyError:
+                pass
+
+        rows = set()
+        columns = set()
+        grid = defaultdict(dict)
+
+        for k, v in breakdown_dict.items():
+            if k.endswith('-gbp'):
+                columns.add('gbp')
+                row_name = k[:-4]
+                rows.add(row_name)
+                grid[row_name]['gbp'] = v
+                del breakdown_dict[k]
+
+        for k, v in breakdown_dict.items():
+            for row_name in sorted(list(rows), key=len, reverse=True):
+                if k.startswith(row_name + '-'):
+                    col_name = k[len(row_name) + 1:]
+                    columns.add(col_name)
+                    grid[row_name][col_name] = v
+                    del breakdown_dict[k]
+                    break
+
+        for k, v in breakdown_dict.items():
+            pair = k.split('-')
+            row_name = '-'.join(pair[:-1])
+            column_name = pair[-1]
+            rows.add(row_name)
+            columns.add(column_name)
+            grid[row_name][column_name] = v
+
+        column_list = sorted(list(columns))
+        for rate_name in [col for col in column_list if col.endswith('rate')]:
+            column_list.remove(rate_name)
+            column_list.append(rate_name)
+
+        if 'gbp' in column_list:
+            column_list.remove('gbp')
+            column_list.append('gbp')
+
+        row_list = sorted(list(rows))
+        fields.update(
+            {
+                'raw_lines': raw_lines, 'row_list': row_list,
+                'column_list': column_list, 'grid': grid})
+    except SyntaxError:
+        pass
+    return render_template('hhdc_bill.html', **fields)
+
+
+@app.route('/hhdc_bills/<int:bill_id>/edit')
+def hhdc_bill_edit_get(bill_id):
+    sess = db.session()
+    bill = Bill.get_by_id(sess, bill_id)
+    bill_types = BillType.query.order_by(BillType.code)
+    return render_template(
+        'hhdc_bill_edit.html', bill=bill, bill_types=bill_types)
+
+
+@app.route('/hhdc_bills/<int:bill_id>/edit', methods=["POST"])
+def hhdc_bill_edit_post(bill_id):
+    try:
+        sess = db.session()
+        set_read_write(sess)
+        bill = Bill.get_by_id(sess, bill_id)
+        if 'update' in request.values:
+            account = req_str('account')
+            reference = req_str('reference')
+            issue_date = req_date('issue')
+            start_date = req_date('start')
+            finish_date = req_date('finish')
+            kwh = req_decimal('kwh')
+            net = req_decimal('net')
+            vat = req_decimal('vat')
+            gross = req_decimal('gross')
+            type_id = req_int('bill_type_id')
+            breakdown = req_str('breakdown')
+            bill_type = BillType.get_by_id(sess, type_id)
+
+            bill.update(
+                account, reference, issue_date, start_date, finish_date, kwh,
+                net, vat, gross, bill_type, breakdown)
+            sess.commit()
+            return redirect("/hhdc_bills/" + str(bill.id), 303)
+        elif 'delete' in request.values:
+            bill.delete(sess)
+            sess.commit()
+            return redirect("/hhdc_batches/" + str(bill.batch.id), 303)
+    except BadRequest as e:
+        flash(e.description)
+        bill_types = BillType.query.order_by(BillType.code).all()
+        return render_template(
+            'hhdc_bill_edit.html', bill=bill, bill_types=bill_types)
+
+
 @app.route('/mop_contracts/<int:contract_id>/add_batch')
 def mop_batch_add_get(contract_id):
     sess = db.session()

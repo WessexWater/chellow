@@ -10646,4 +10646,14 @@ def virtual_bill(supply_source):
         'name': "View a CoP",
         'path': '/cops/5',
         'status_code': 200},
+
+    {
+        'name': "View an HHDC bill",
+        'path': '/hhdc_bills/15',
+        'status_code': 200},
+
+    {
+        'name': "Edit view of an HHDC bill",
+        'path': '/hhdc_bills/15/edit',
+        'status_code': 200},
 ]
