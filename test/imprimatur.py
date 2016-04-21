@@ -10661,4 +10661,11 @@ def virtual_bill(supply_source):
         'name': "Edit view of an HHDC bill",
         'path': '/hhdc_bills/15/edit',
         'status_code': 200},
+
+    {
+        'name': "Non-core contracts",
+        'path': '/non_core_contracts',
+        'status_code': 200,
+        'regexes': [
+            r'Non-Core Contracts\s*</p>']},
 ]
