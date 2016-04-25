@@ -948,6 +948,13 @@ def virtual_bill_titles():
         'status_code': 303},
 
     {
+        'name': "View general imports",
+        'path': '/general_imports',
+        'status_code': 200,
+        'regexes': [
+            r'"/style"']},
+
+    {
         'name': "Valid bulk update of supply eras",
         'path': '/general_imports',
         'method': 'post',
