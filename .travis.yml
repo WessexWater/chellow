@@ -1,33 +1,36 @@
 language: python
-
 python:
-- '3.5'
+  - '3.5'
 
 install:
-- pip install tox
+  - pip install tox
 
 script:
-- tox
+  - tox
 
 addons:
   postgresql: '9.4'
 
+git:
+  depth: 1000000
+
 services:
-- postgresql
+  - postgresql
 
 deploy:
-  provider: pypi
-  user: tlocke
-  password:
-    secure: Rs+X7sDLaxKvNiVgjaGNKCbXWOMFzPtpQFvhHEnoRMmr1xVTPpa2tuRNqdEguZSQ4+Valj0TJkwVKNjo/6+GQCfp/6Hhbyzaf6WOs7LAPP8UtS9u2DDE8pvLhlENsiOWOm9pihyWwp0FD84VoVe7FOqB+NUBkBEjwjz73PRgD5I=
-  on:
-    branch: master
-
-deploy:
-  provider: pypi
-  user: tlocke
-  password:
-    secure: Rs+X7sDLaxKvNiVgjaGNKCbXWOMFzPtpQFvhHEnoRMmr1xVTPpa2tuRNqdEguZSQ4+Valj0TJkwVKNjo/6+GQCfp/6Hhbyzaf6WOs7LAPP8UtS9u2DDE8pvLhlENsiOWOm9pihyWwp0FD84VoVe7FOqB+NUBkBEjwjz73PRgD5I=
-  server: https://testpypi.python.org/pypi
-  on:
-    branch: test
+  - provider: pypi
+    user: tlocke
+    password:
+      secure: lRk8A7PKy4rnS4RLhp6iuHElCjsNBy2/QGal51QDbQfz1q3QqU4DOIxS35wtuBWTOskfv4mqty/tNsybII0dsxSsEh99cgUdu3EnPDjwIErAVWRqDcm2nX1hZv/rWuDNPf7YNSQ4Ttbk7utfGu0UQCmYC4pJrBcz4rDAA8N7LTo=
+    server: https://testpypi.python.org/pypi
+    on:
+      branch: test
+    distributions: "bdist_wheel --test"
+  - provider: pypi
+    user: tlocke
+    password:
+      secure: lRk8A7PKy4rnS4RLhp6iuHElCjsNBy2/QGal51QDbQfz1q3QqU4DOIxS35wtuBWTOskfv4mqty/tNsybII0dsxSsEh99cgUdu3EnPDjwIErAVWRqDcm2nX1hZv/rWuDNPf7YNSQ4Ttbk7utfGu0UQCmYC4pJrBcz4rDAA8N7LTo=
+    server: https://pypi.python.org/pypi
+    on:
+      branch: master
+    distributions: "bdist_wheel"
