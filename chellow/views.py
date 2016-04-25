@@ -398,6 +398,12 @@ def meter_type_get(meter_type_id):
     return render_template('meter_type.html', meter_type=meter_type)
 
 
+@app.route('/bill_types')
+def bill_types_get():
+    bill_types = BillType.query.order_by(BillType.code)
+    return render_template('bill_types.html', bill_types=bill_types)
+
+
 @app.route('/users', methods=['GET'])
 def users_get():
     users = User.query.order_by(User.email_address).all()

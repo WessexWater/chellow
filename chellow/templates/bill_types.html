@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block title %}
+	Bill Types
+{% endblock %}
+
+{% block nav %}
+	Bill Types
+{% endblock %}
+
+{% block content %}
+	<table>
+		<thead>
+			<tr>
+				<th>Code</th>
+				<th>Description</th>
+			</tr>
+		</thead>
+		<tbody>
+			{% for bill_type in bill_types %}
+				<tr>
+					<td>
+						<a
+								href="{{context_path}}/bill_types/{{bill_type.id}}"
+								>{{bill_type.code}}</a>
+					</td>
+					<td>{{bill_type.description}}</td>
+				</tr>
+			{% endfor %}
+		</tbody>
+	</table>
+{% endblock %}
