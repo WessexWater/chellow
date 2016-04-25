@@ -7,7 +7,7 @@ from chellow.models import (
     UserRole, Site, Source, GeneratorType, GspGroup, Era, SiteEra, Pc, Cop,
     Ssc, RateScript, Supply, Mtc, Channel, Tpr, MeasurementRequirement, Bill,
     RegisterRead, HhDatum, Snag, Batch, ReadType, BillType, MeterPaymentType,
-    ClockInterval, db_upgrade, Llfc)
+    ClockInterval, db_upgrade, Llfc, MeterType)
 from sqlalchemy.exc import ProgrammingError
 import traceback
 from datetime import datetime as Datetime
@@ -383,6 +383,19 @@ def cop_get(cop_id):
     sess = db.session()
     cop = Cop.get_by_id(sess, cop_id)
     return render_template('cop.html', cop=cop)
+
+
+@app.route('/meter_types')
+def meter_types_get():
+    meter_types = MeterType.query.order_by(MeterType.code)
+    return render_template('meter_types.html', meter_types=meter_types)
+
+
+@app.route('/meter_types/<int:meter_type_id>')
+def meter_type_get(meter_type_id):
+    sess = db.session()
+    meter_type = MeterType.get_by_id(sess, meter_type_id)
+    return render_template('meter_type.html', meter_type=meter_type)
 
 
 @app.route('/users', methods=['GET'])

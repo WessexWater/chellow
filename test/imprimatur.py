@@ -10680,4 +10680,9 @@ def virtual_bill(supply_source):
         'status_code': 200,
         'regexes': [
             r'Non-Core Contracts\s*</p>']},
+
+    {
+        'name': "View meter types",
+        'path': '/meter_types',
+        'status_code': 200},
 ]

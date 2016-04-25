@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+{% block title %}
+	Meter Types &gt; {{meter_type.description}}
+{% endblock %}
+
+{% block nav %}
+	<a href="{{context_path}}/meter_types">Meter Types</a> &gt;
+	{{meter_type.description}}
+{% endblock %}
+
+{% block content %}
+	<table>
+		<tr>
+			<th>Code</th>
+			<td>{{meter_type.code}}</td>
+		</tr>
+		<tr>
+			<th>Description</th>
+			<td>{{meter_type.description}}</td>
+		</tr>
+	</table>
+{% endblock %}
