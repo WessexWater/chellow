@@ -1,12 +1,17 @@
 [
-    # Users
     {
-        'name': "Manipulating users",
+        'name': "View users' page",
         'port': '8080',
         'host': 'localhost',
         'path': '/users',
-        'method': 'post',
         'auth': ('admin@example.com', 'admin'),
+        'status_code': 200,
+        'regexes': [
+            r'"/style"']},
+    {
+        'name': "Manipulating users",
+        'path': '/users',
+        'method': 'post',
         'data': {
             'email_address': "watkins@example.com",
             'user_role_code': "editor",

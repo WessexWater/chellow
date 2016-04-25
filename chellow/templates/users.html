@@ -1,117 +1,106 @@
-<!doctype html>
-<html>
-  <head>
-    <link
-	 		rel="stylesheet" type="text/css" href="{{context_path}}/static/style.css"
-    >
-    <title>Chellow &gt; Users</title>
-    <style type="text/css">
-      label {
-        width: 10em;
-        float: left;
-      }
-    </style>
-  </head>
-  <body>
-    <p>
-      <a href="{{context_path}}/">Chellow</a> &gt; Users
-    </p>
+{% extends "base.html" %}
 
-		{% with messages = get_flashed_messages() %}
-			{% if messages %}
-				<ul>
-					{% for message in messages %}
-						<li>{{ message }}</li>
+{% block title %}
+	Users
+{% endblock %}
+
+{% block inside_head %}
+	<style type="text/css">
+		label {
+			width: 10em;
+			float: left;
+		}
+	</style>
+{% endblock %}
+
+{% block nav %}
+	Users
+{% endblock %}
+
+{% block content %}
+	<ul>
+		{% if current_user is defined %}
+			<li>
+				<a href="{{context_path}}/users/{{current_user.id}}">Me</a>
+			</li>
+		{% endif %}
+	</ul>
+
+	{% if users|length > 0 %}
+		<table>
+			<thead>
+				<tr>
+					<th></th>
+					<th>Email Address</th>
+					<th>Role</th>
+					<th>Party</th>
+				</tr>
+			</thead>
+			<tbody>
+				{% for user in users %}
+					<tr>
+						<td><a href="{{context_path}}/users/{{user.id}}">view</a></td>
+						<td>{{ user.email_address }}</td>
+						<td>{{ user.user_role.code }}</td>
+						<td>{{ user.party.name }}</td>
+					</tr>
+				{% endfor %}
+			</tbody>
+		</table>
+	{% endif %}
+	<br>
+	<form method="post" action="">
+		<fieldset>
+			<legend>Add new user</legend>
+			<br>
+			<label>Email Address</label>
+			<input name="email_address" value="{{request.values.email_address}}">
+			<br>
+			<label>Password</label>
+			<input type="password" name="password">
+			<br>
+			<br>
+			<fieldset>
+				<legend>Role</legend>
+				<input type="radio" name="user_role_code" value="editor"
+					{% if request.values.user_role_code %}
+						{% if request.values.user_role_code == 'editor' %}
+							checked
+						{% endif %}
+					{% else %}
+						checked
+					{% endif %}
+				>
+				Editor
+				<br>
+				<input type="radio" name="user_role_code" value="viewer"
+					{% if request.values.user_role_code == 'viewer' %}
+						checked
+					{% endif %}
+				>
+				Viewer
+				<br>
+				<input type="radio" name="user_role_code" value="party-viewer"
+					{% if request.values.user_role_code == 'party-viewer' %}
+						checked
+					{% endif %}
+				>
+				Party Viewer
+				<select name="party_id">
+					{% for party in parties %}
+						<option value="{{ party.id }}"
+							{%- if request.values.user_role_id == party.id -%}
+								selected
+							{% endif %}
+						>{{ party.name }} {{ party.participant.code }}
+							{{ party.market_role.description }}
+						</option>
 					{% endfor %}
-				</ul>
-			{% endif %}
-		{% endwith %}
-
-    <ul>
-      {% if current_user is defined %}
-        <li>
-          <a href="{{context_path}}/users/{{current_user.id}}">Me</a>
-        </li>
-      {% endif %}
-    </ul>
-
-    {% if users|length > 0 %}
-      <table>
-        <thead>
-          <tr>
-            <th></th>
-            <th>Email Address</th>
-            <th>Role</th>
-            <th>Party</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for user in users %}
-            <tr>
-              <td><a href="{{context_path}}/users/{{user.id}}">view</a></td>
-              <td>{{ user.email_address }}</td>
-              <td>{{ user.user_role.code }}</td>
-              <td>{{ user.party.name }}</td>
-            </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-    {% endif %}
-    <br />
-    <form method="post" action="">
-      <fieldset>
-        <legend>Add new user</legend>
-        <br />
-        <label>Email Address</label>
-        <input name="email_address" value="{{request.values.email_address}}">
-        <br />
-        <label>Password</label>
-        <input type="password" name="password">
-        <br />
-        <br />
-        <fieldset>
-          <legend>Role</legend>
-          <input type="radio" name="user_role_code" value="editor"
-            {% if request.values.user_role_code %}
-              {% if request.values.user_role_code == 'editor' %}
-                checked
-              {% endif %}
-            {% else %}
-              checked
-            {% endif %}
-          >
-          Editor
-          <br />
-          <input type="radio" name="user_role_code" value="viewer"
-            {% if request.values.user_role_code == 'viewer' %}
-              checked
-            {% endif %}
-          >
-          Viewer
-          <br />
-          <input type="radio" name="user_role_code" value="party-viewer"
-            {% if request.values.user_role_code == 'party-viewer' %}
-              checked
-            {% endif %}
-          >
-          Party Viewer
-          <select name="party_id">
-            {% for party in parties %}
-              <option value="{{ party.id }}"
-                {%- if request.values.user_role_id == party.id -%}
-                  selected
-                {% endif %}
-              >{{ party.name }} {{ party.participant.code }}
-                {{ party.market_role.description }}
-              </option>
-            {% endfor %}
-          </select>
-        </fieldset>
-        <br />
-        <br />
-        <input type="submit" value="Add" />
-        <input type="reset" value="Reset" />
-      </fieldset>
-    </form>
-  </body>
-</html>
+				</select>
+			</fieldset>
+			<br>
+			<br>
+			<input type="submit" value="Add">
+		</fieldset>
+	</form>
+{% endblock %}
