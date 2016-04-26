@@ -10690,4 +10690,9 @@ def virtual_bill(supply_source):
         'name': "View bill types",
         'path': '/bill_types',
         'status_code': 200},
+
+    {
+        'name': "View read types",
+        'path': '/read_types',
+        'status_code': 200},
 ]

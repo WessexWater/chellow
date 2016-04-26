@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block title %}
+	Read Types
+{% endblock %}
+
+{% block nav %}
+	Read Types
+{% endblock %}
+
+{% block content %}
+	<table>
+		<thead>
+			<tr>
+				<th>Code</th>
+				<th>Description</th>
+			</tr>
+		</thead>
+		<tbody>
+			{% for read_type in read_types %}
+				<tr>
+					<td>
+						<a
+								href="{{context_path}}/read_types/{{read_type.id}}"
+								>{{read_type.code}}</a>
+					</td>
+					<td>{{read_type.description}}</td>
+				</tr>
+			{% endfor %}
+		</tbody>
+	</table>
+{% endblock %}

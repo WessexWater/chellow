@@ -385,6 +385,19 @@ def cop_get(cop_id):
     return render_template('cop.html', cop=cop)
 
 
+@app.route('/read_types')
+def read_types_get():
+    read_types = ReadType.query.order_by(ReadType.code)
+    return render_template('read_types.html', read_types=read_types)
+
+
+@app.route('/read_types/<int:read_type_id>')
+def read_type_get(read_type_id):
+    sess = db.session()
+    read_type = ReadType.get_by_id(sess, read_type_id)
+    return render_template('read_type.html', read_type=read_type)
+
+
 @app.route('/meter_types')
 def meter_types_get():
     meter_types = MeterType.query.order_by(MeterType.code)
