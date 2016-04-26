@@ -398,6 +398,19 @@ def read_type_get(read_type_id):
     return render_template('read_type.html', read_type=read_type)
 
 
+@app.route('/sources')
+def sources_get():
+    sources = Source.query.order_by(Source.code)
+    return render_template('sources.html', sources=sources)
+
+
+@app.route('/sources/<int:source_id>')
+def source_get(source_id):
+    sess = db.session()
+    source = Source.get_by_id(sess, source_id)
+    return render_template('source.html', source=source)
+
+
 @app.route('/meter_types')
 def meter_types_get():
     meter_types = MeterType.query.order_by(MeterType.code)

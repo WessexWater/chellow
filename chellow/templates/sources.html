@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block title %}
+	Sources
+{% endblock %}
+
+{% block nav %}
+	Sources
+{% endblock %}
+
+{% block content %}
+	<table>
+		<thead>
+			<tr>
+				<th>Code</th>
+				<th>Description</th>
+			</tr>
+		</thead>
+		<tbody>
+			{% for source in sources %}
+				<tr>
+					<td>
+						<a href="{{context_path}}/sources/{{source.id}}">{{source.code}}</a>
+					</td>
+					<td>{{source.name}}</td>
+				</tr>
+			{% endfor %}
+		</tbody>
+	</table>
+{% endblock %}
