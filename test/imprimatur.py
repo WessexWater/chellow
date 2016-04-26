@@ -1866,7 +1866,8 @@ def virtual_bill_titles():
             r'<li>\s*'
             '<a href="/channel_snags/1">view</a>\s*'
             '\[<a href="/channel_snags/1/edit">edit</a>\]\s*'
-            '</li>'],
+            '</li>',
+            r'<form action="/reports/233">'],
         'status_code': 200},
     {
         'name': "Make sure everything's there on the home page.",
