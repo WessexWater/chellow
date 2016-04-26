@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+{% block title %}
+	Generator Types &gt; {{generator_type.code}}
+{% endblock %}
+
+{% block nav %}
+	<a href="{{context_path}}/generator_types">Generator Types</a> &gt;
+	{{generator_type.code}}
+{% endblock %}
+
+{% block content %}
+	<table>
+		<tr>
+			<th>Code</th>
+			<td>{{generator_type.code}}</td>
+		</tr>
+		<tr>
+			<th>Description</th>
+			<td>{{generator_type.description}}</td>
+		</tr>
+	</table>
+{% endblock %}

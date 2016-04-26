@@ -1337,6 +1337,11 @@ def virtual_bill_titles():
         'path': '/channel_snags/1',
         'status_code': 200},
 
+    {
+        'name': "Check edit view of channel level snag",
+        'path': '/channel_snags/1/edit',
+        'status_code': 200},
+
     # Check that for a supply with multiple eras, a channel without any data
     # can be deleted. This test needs some hh data loaded somewhere. Supply 2,
     # era 8, exp active
@@ -10699,5 +10704,10 @@ def virtual_bill(supply_source):
     {
         'name': "View sources",
         'path': '/sources',
+        'status_code': 200},
+
+    {
+        'name': "View generator types",
+        'path': '/generator_types',
         'status_code': 200},
 ]

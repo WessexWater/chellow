@@ -424,6 +424,21 @@ def meter_type_get(meter_type_id):
     return render_template('meter_type.html', meter_type=meter_type)
 
 
+@app.route('/generator_types')
+def generator_types_get():
+    generator_types = GeneratorType.query.order_by(GeneratorType.code)
+    return render_template(
+        'generator_types.html', generator_types=generator_types)
+
+
+@app.route('/generator_types/<int:generator_type_id>')
+def generator_type_get(generator_type_id):
+    sess = db.session()
+    generator_type = GeneratorType.get_by_id(sess, generator_type_id)
+    return render_template(
+        'generator_type.html', generator_type=generator_type)
+
+
 @app.route('/bill_types')
 def bill_types_get():
     bill_types = BillType.query.order_by(BillType.code)
@@ -2014,6 +2029,30 @@ def channel_snag_get(snag_id):
     sess = db.session()
     snag = Snag.get_by_id(sess, snag_id)
     return render_template('channel_snag.html', snag=snag)
+
+
+@app.route('/channel_snags/<int:snag_id>/edit')
+def channel_snag_edit_get(snag_id):
+    sess = db.session()
+    snag = Snag.get_by_id(sess, snag_id)
+    return render_template('channel_snag_edit.html', snag=snag)
+
+
+@app.route('/channel_snags/<int:snag_id>/edit', methods=['POST'])
+def channel_snag_edit_post(snag_id):
+    try:
+        sess = db.session()
+        set_read_write(sess)
+        ignore = req_bool('ignore')
+        snag = db.Snag.get_by_id(sess, snag_id)
+        snag.is_ignored = ignore
+        sess.commit()
+        return redirect("/channel_snags/" + str(snag.id), 303)
+    except BadRequest as e:
+        sess.rollback()
+        flash(e.description)
+        return make_response(
+            render_template('channel_snag_edit.html', snag=snag), 400)
 
 
 @app.route('/channels/<int:channel_id>/edit')
