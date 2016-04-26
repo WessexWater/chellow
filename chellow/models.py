@@ -2979,7 +2979,13 @@ def db_init(session):
 
 
 def db_upgrade_0_to_1(session):
-    pass
+    max_id = session.execute("select max(id) from report;").scalar()
+    session.execute("create sequence report_id_seq start " + str(max_id + 1))
+    session.execute(
+        "alter table report alter column id "
+        "set default nextval('report_id_seq');")
+    session.execute("alter sequence report_id_seq owned by report.id;")
+
 
 upgrade_funcs = [db_upgrade_0_to_1]
 
