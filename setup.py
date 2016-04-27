@@ -52,4 +52,4 @@ setup(
         'console_scripts': [
             'chellow = chellow.commands:chellow_command',
             'chellow_test_setup = chellow.commands:chellow_test_setup']},
-    scripts=['bin/chellow_updater.sh', 'bin/chellow_start.sh'])
+    scripts=['bin/chellow_service_monitor.sh', 'bin/chellow_start.sh'])

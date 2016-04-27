@@ -406,8 +406,8 @@ def virtual_bill(ds):
             'month\(s\) until the end of\s*'
             '<input name="finish_year" maxlength="4" size="4" '
             'value="201\d">',
-            r'Rate Scripts\s*[<a '
-            r'href="/supplier_contracts/31/add_rate_script">add</a>]'],
+            r'Rate Scripts\s*\[<a\s*'
+            r'href="/supplier_contracts/31/add_rate_script"\s*>add</a>\]'],
         'status_code': 200},
 
     {
