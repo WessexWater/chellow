@@ -49,14 +49,14 @@ def content(running_name, finished_name, date, supply_id, mpan_cores):
         year_start = date + HH - relativedelta(years=1)
 
         eras = sess.query(Era).filter(
-            Era.start_date < date,
+            Era.start_date <= date,
             or_(Era.finish_date == null(), Era.finish_date >= date)).order_by(
             Era.supply_id)
 
         if supply_id is not None:
             supply = Supply.get_by_id(sess, supply_id)
 
-            eras = eras.filter(Era.supply_id == supply.id)
+            eras = eras.filter(Era.supply == supply)
 
         if mpan_cores is not None:
             eras = eras.filter(
@@ -65,17 +65,15 @@ def content(running_name, finished_name, date, supply_id, mpan_cores):
                     Era.exp_mpan_core.in_(mpan_cores)))
 
         for era in eras:
-            site_codes = ''
-            site_names = ''
+            site_codes = []
+            site_names = []
             for site_era in era.site_eras:
                 if site_era.is_physical:
                     physical_site = site_era.site
                 else:
                     site = site_era.site
-                    site_codes = site_codes + site.code + ', '
-                    site_names = site_names + site.name + ', '
-            site_codes = site_codes[:-2]
-            site_names = site_names[:-2]
+                    site_codes.append(site.code)
+                    site_names.append(site.name)
             supply = era.supply
             if era.imp_mpan_core is None:
                 voltage_level_code = era.exp_llfc.voltage_level.code
@@ -271,13 +269,13 @@ def content(running_name, finished_name, date, supply_id, mpan_cores):
                         '"' + ('' if value is None else str(value)) + '"')
                     for value in [
                         hh_format(date), physical_site.code,
-                        physical_site.name, site_codes, site_names, supply.id,
-                        supply.source.code, generator_type,
-                        supply.dno_contract.name, voltage_level_code,
-                        metering_type, mandatory_hh, era.pc.code, era.mtc.code,
-                        era.cop.code, ssc_code, num_registers,
-                        mop_contract_name, mop_account, hhdc_contract_name,
-                        hhdc_account, era.msn,
+                        physical_site.name, ', '.join(site_codes),
+                        ', '.join(site_names), supply.id, supply.source.code,
+                        generator_type, supply.dno_contract.name,
+                        voltage_level_code, metering_type, mandatory_hh,
+                        era.pc.code, era.mtc.code, era.cop.code, ssc_code,
+                        num_registers, mop_contract_name, mop_account,
+                        hhdc_contract_name, hhdc_account, era.msn,
                         hh_format(meter_installation_date),
                         latest_normal_read_date, latest_normal_read_type,
                         latest_hhdc_bill_date, latest_mop_bill_date] +

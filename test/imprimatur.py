@@ -10711,4 +10711,24 @@ def virtual_bill(supply_source):
         'name': "View generator types",
         'path': '/generator_types',
         'status_code': 200},
+
+    {
+        'name': "Check supplies snapshot at beginning of supply",
+        'path': '/reports/33?supply_id=4&date_year=2003&date_month=08&'
+        'date_day=03&date_hour=00&date_minute=00',
+        'status_code': 303},
+    {
+        'name': "Check supplies snapshot at beginning of supply",
+        'path': '/downloads',
+        'tries': {},
+        'regexes': [
+            r"000_FINISHED_adminexamplecom_supplies_snapshot\.csv"],
+        'status_code': 200},
+    {
+        'name': "Check supplies snapshot at beginning of supply",
+        'path': '/downloads/'
+        '000_FINISHED_adminexamplecom_supplies_snapshot.csv',
+        'regexes': [
+            r'CI005'],
+        'status_code': 200},
 ]
