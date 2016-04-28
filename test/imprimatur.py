@@ -7200,6 +7200,7 @@ def virtual_bill(supply_source):
         'path': '/hhdc_batches?hhdc_contract_id=29',
         'status_code': 200,
         'regexes': [
+            r'<a\s*href="/hhdc_contracts/29"\s*>HH contract</a>',
             r'<tr>\s*<td>\s*'
             '<a href="/hhdc_batches/13">\s*7\s*'
             '</a>\s*</td>\s*<td></td>\s*</tr>\s*<tr>\s*<td>\s*'

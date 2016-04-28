@@ -6,7 +6,9 @@
 
 {% block nav %}
 	<a href="{{context_path}}/hhdc_contracts">HHDC Contracts</a> &gt;
-	<a href="{{context_path}}/hhdc_contract/{{contract.id}}">{{contract.name}}</a>
+	<a
+			href="{{context_path}}/hhdc_contracts/{{contract.id}}"
+			>{{contract.name}}</a>
  	&gt; Batches
 	[<a href="{{context_path}}/hhdc_contracts/{{contract.id}}/add_batch">add</a>]
 {% endblock %}
