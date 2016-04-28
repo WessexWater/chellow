@@ -608,7 +608,10 @@ Values Of The Sensor Number `S`
 | 4      | Export kVArh
 |===
 
-and the status character on the end is optional.
+and the status character on the end is optional. For the newer six-channel
+meters, the reactive power is import related if it's an import MPAN and vice
+versa for export.
+
 
 === CSV Simple
 

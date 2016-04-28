@@ -1949,7 +1949,8 @@ def hhdc_contracts_hh_imports_get(contract_id):
     processes = chellow.hh_importer.get_hh_import_processes(contract.id)
     return render_template(
         'hhdc_contract_hh_imports.html', contract=contract,
-        processes=processes)
+        processes=processes,
+        parser_names=', '.join(chellow.hh_importer.extensions))
 
 
 @app.route('/hhdc_contracts/<int:contract_id>/hh_imports', methods=['POST'])
