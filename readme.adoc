@@ -609,8 +609,32 @@ Values Of The Sensor Number `S`
 |===
 
 and the status character on the end is optional. For the newer six-channel
-meters, the reactive power is import related if it's an import MPAN and vice
-versa for export.
+meters the channels are mapped to the DF2 format as follows:
+
+[cols="3*"]
+|===
+|
+| Import Related
+| Export Related
+
+| Active kWh
+| #O mpan_core +
+  #S 1
+| #O mpan_core +
+  #S 2
+
+| Reactive Import kVArh
+| #O import_mpan_core +
+  #S 3
+| #O export_mpan_core +
+  #S 3
+
+| Reactive Export kVArh
+| #O import_mpan_core +
+  #S 4
+| #O export_mpan_core +
+  #S 4
+|===
 
 
 === CSV Simple

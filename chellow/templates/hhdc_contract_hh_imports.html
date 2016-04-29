@@ -30,55 +30,6 @@
 				as zip files.
 			</p>
 
-
-			<h4>Stark DF2</h4>
-
-			<p>File extension <code>.df2</code>. The data file is of the form:</p>
-
-			<pre>    
-#F2
-#O 99 9999 9999 999
-#S 2
-27/07/05,00:30,95.4,A
-27/07/05,01:00,93.8,A
-27/07/05,01:30,91.9,A
-			</pre>
-						
-			<table>
-				<caption>Values Of The Sensor Number <code>S</code></caption>
-				<thead>
-					<tr>
-						<th>Number</th>
-						<th>Meaning</th>
-					</tr>
-				</thead>
-				<tbody>
-					<tr>
-						<td>1</td>
-						<td>Import kWh</td>
-					</tr>
-					<tr>
-						<td>2</td>
-						<td>Export kWh</td>
-					</tr>
-					<tr>
-						<td>3</td>
-						<td>Import kVArh</td>
-					</tr>
-					<tr>
-						<td>4</td>
-						<td>Export kVArh</td>
-					</tr>
-				</tbody>
-			</table>
-
-			<p>
-				and the status character on the end is optional. For the newer
-			 	six-channel meters the reactive power is import related if it's an
-				import MPAN and vice versa for export meters.
-			</p>
-
-
 			<h4>CSV Simple</h4>
 
 			<p>
@@ -132,6 +83,102 @@ MPAN core, Channel Type, Time, Value, Status
 99 9999 9999 999, ACTIVE, 2006-01-01 04:30, 169.0 , E
 99 9999 9999 999, ACTIVE, 2006-01-01 05:00, 171.0 , E
 			</pre>
+
+
+
+
+			<h4>Stark DF2</h4>
+
+			<p>File extension <code>.df2</code>. The data file is of the form:</p>
+
+			<pre>    
+#F2
+#O 99 9999 9999 999
+#S 2
+27/07/05,00:30,95.4,A
+27/07/05,01:00,93.8,A
+27/07/05,01:30,91.9,A
+			</pre>
+						
+			<table>
+				<caption>Values Of The Sensor Number <code>S</code></caption>
+				<thead>
+					<tr>
+						<th>Number</th>
+						<th>Meaning</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr>
+						<td>1</td>
+						<td>Import kWh</td>
+					</tr>
+					<tr>
+						<td>2</td>
+						<td>Export kWh</td>
+					</tr>
+					<tr>
+						<td>3</td>
+						<td>Import kVArh</td>
+					</tr>
+					<tr>
+						<td>4</td>
+						<td>Export kVArh</td>
+					</tr>
+				</tbody>
+			</table>
+
+			<p>
+				and the status character on the end is optional. For the newer
+			 	six-channel meters the channels are mapped to the DF2 format as
+				follows:
+			</p>
+
+			<table>
+				<caption>Six channel meters in DF2 format</caption>
+				<thead>
+					<tr>
+						<th></th>
+						<th>Import Related</th>
+						<th>Export Related</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr>
+						<th>Active kWh</th>
+						<td>
+							#O mpan_core<br>
+							#S 1
+						</td>
+						<td>
+							#O mpan_core<br>
+							#S 2
+						</td>
+					</tr>
+					<tr>
+						<th>Reactive Import kVArh</th>
+						<td>
+							#O import_mpan_core<br>
+							#S 3
+						</td>
+						<td>
+							#O export_mpan_core<br>
+							#S 3
+						</td>
+					</tr>
+					<tr>
+						<th>Reactive Export kVArh</th>
+						<td>
+							#O import_mpan_core<br>
+							#S 4
+						</td>
+						<td>
+							#O export_mpan_core<br>
+							#S 4
+						</td>
+					</tr>
+				</tbody>
+			</table>
 
 
 			<h4>bGlobal CSV</h4>
