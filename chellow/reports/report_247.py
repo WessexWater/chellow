@@ -7,10 +7,11 @@ from dateutil.relativedelta import relativedelta
 from sqlalchemy import or_, Float
 from sqlalchemy.sql.expression import null, false, cast
 from sqlalchemy.sql import func
+from sqlalchemy.orm import joinedload
 from collections import defaultdict
 from chellow.models import (
     Session, Contract, MarketRole, Site, Era, SiteEra, Supply, Source, HhDatum,
-    Channel, Bill)
+    Channel, Bill, Mtc)
 from chellow.computer import SupplySource, contract_func
 import chellow.computer
 import csv
@@ -211,8 +212,15 @@ def content(scenario_props, scenario_id, base_name, site_id, supply_id, user):
                         site_sources.add(cand_supply.source.code)
                         if cand_supply.generator_type is not None:
                             site_gen_types.add(cand_supply.generator_type.code)
-                        for cand_era in cand_supply.find_eras(
-                                sess, group.start_date, group.finish_date):
+                        for cand_era in sess.query(Era).filter(
+                                Era.supply == cand_supply,
+                                Era.start_date <= group.finish_date, or_(
+                                    Era.finish_date == null(),
+                                    Era.finish_date >= group.start_date)). \
+                                options(
+                                    joinedload(Era.channels),
+                                    joinedload(Era.pc),
+                                    joinedload(Era.mtc, Mtc.meter_type)):
                             if site_category != 'hh':
                                 if cand_era.pc.code == '00':
                                     site_category = 'hh'
@@ -240,7 +248,10 @@ def content(scenario_props, scenario_id, base_name, site_id, supply_id, user):
                                     Era.supply == supply,
                                     Era.start_date <= group.finish_date, or_(
                                         Era.finish_date == null(),
-                                        Era.finish_date >= group.start_date)):
+                                        Era.finish_date >= group.start_date)) \
+                                .options(
+                                    joinedload(Era.ssc),
+                                    joinedload(Era.hhdc_contract)):
 
                             if era.start_date > group.start_date:
                                 ss_start = era.start_date

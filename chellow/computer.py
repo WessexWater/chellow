@@ -829,7 +829,8 @@ class SupplySource(DataSource):
                         Bill.supply == self.supply,
                         RegisterRead.present_date < chunk_start,
                         BillType.code != 'W').order_by(
-                        RegisterRead.present_date.desc()))
+                        RegisterRead.present_date.desc()).options(
+                            joinedload(RegisterRead.bill)))
                 prior_prev_reads = iter(
                     sess.query(RegisterRead).join(Bill).join(BillType)
                     .join(RegisterRead.previous_type).filter(
@@ -838,7 +839,8 @@ class SupplySource(DataSource):
                         Bill.supply == self.supply,
                         RegisterRead.previous_date < chunk_start,
                         BillType.code != 'W').order_by(
-                        RegisterRead.previous_date.desc()))
+                        RegisterRead.previous_date.desc()).options(
+                            joinedload(RegisterRead.bill)))
                 next_pres_reads = iter(
                     sess.query(RegisterRead).join(Bill).join(BillType)
                     .join(RegisterRead.present_type).filter(
@@ -847,7 +849,8 @@ class SupplySource(DataSource):
                         Bill.supply == self.supply,
                         RegisterRead.present_date >= chunk_start,
                         BillType.code != 'W').order_by(
-                        RegisterRead.present_date))
+                        RegisterRead.present_date).options(
+                            joinedload(RegisterRead.bill)))
                 next_prev_reads = iter(
                     sess.query(RegisterRead).join(Bill).join(BillType)
                     .join(RegisterRead.previous_type).filter(
@@ -856,7 +859,8 @@ class SupplySource(DataSource):
                         Bill.supply == self.supply,
                         RegisterRead.previous_date >= chunk_start,
                         BillType.code != 'W').order_by(
-                        RegisterRead.previous_date))
+                        RegisterRead.previous_date).options(
+                            joinedload(RegisterRead.bill)))
 
                 for is_forwards in [False, True]:
                     if is_forwards:
