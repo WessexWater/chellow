@@ -220,7 +220,8 @@ def content(scenario_props, scenario_id, base_name, site_id, supply_id, user):
                                 options(
                                     joinedload(Era.channels),
                                     joinedload(Era.pc),
-                                    joinedload(Era.mtc, Mtc.meter_type)):
+                                    joinedload(Era.mtc).joinedload(
+                                        Mtc.meter_type)):
                             if site_category != 'hh':
                                 if cand_era.pc.code == '00':
                                     site_category = 'hh'
@@ -251,7 +252,13 @@ def content(scenario_props, scenario_id, base_name, site_id, supply_id, user):
                                         Era.finish_date >= group.start_date)) \
                                 .options(
                                     joinedload(Era.ssc),
-                                    joinedload(Era.hhdc_contract)):
+                                    joinedload(Era.hhdc_contract),
+                                    joinedload(Era.mop_contract),
+                                    joinedload(Era.imp_supplier_contract),
+                                    joinedload(Era.exp_supplier_contract),
+                                    joinedload(Era.channels),
+                                    joinedload(Era.mtc).joinedload(
+                                        Mtc.meter_type)):
 
                             if era.start_date > group.start_date:
                                 ss_start = era.start_date
@@ -631,8 +638,6 @@ def content(scenario_props, scenario_id, base_name, site_id, supply_id, user):
                             site_month_data[k] += v
                         sup_tab.writerow(out)
 
-                    sess.rollback()
-
                 group_tab.writerow(
                     [
                         site.code, site.name,
@@ -641,6 +646,7 @@ def content(scenario_props, scenario_id, base_name, site_id, supply_id, user):
                         ', '.join(sorted(list(site_sources))),
                         ', '.join(sorted(list(site_gen_types)))] +
                     [site_month_data[k] for k in summary_titles])
+                sess.rollback()
 
             month_start += relativedelta(months=1)
     except BadRequest as e:
