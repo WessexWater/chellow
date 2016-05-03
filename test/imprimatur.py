@@ -1436,8 +1436,10 @@ def virtual_bill_titles():
         'path': '/supplies/5/hh_data?months=1&finish_year=2010&'
         'finish_month=03',
         'regexes': [
+            r'<form action="/supplies/5/hh_data">',
             r"<tr>\s*<td>\s*2010-03-15 12:00\s*</td>\s*<td>0</td>\s*"
-            "<td>A</td>"],
+            "<td>A</td>",
+            ],
         'status_code': 200},
 
     # Create a new batch

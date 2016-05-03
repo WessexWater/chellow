@@ -31,11 +31,10 @@
 		</tr>
 	</table>
 	<br/>
-	<form action=".">
+	<form action="{{context_path}}/supplies/{{supply.id}}/hh_data">
 		<fieldset>
 			<legend>Show HH Data</legend>
-				<input type="hidden" name="supply_id" value="{{supply.id}}">
-				<br/>
+				<br>
 				For {{ input_text('months', months, 2, 2) }} month(s)
 				finishing at the end of
 				{{input_date('finish', finish_date, 'month')}}
