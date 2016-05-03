@@ -11,7 +11,7 @@ from sqlalchemy.orm import joinedload
 from collections import defaultdict
 from chellow.models import (
     Session, Contract, MarketRole, Site, Era, SiteEra, Supply, Source, HhDatum,
-    Channel, Bill, Mtc)
+    Channel, Bill, Mtc, Llfc)
 from chellow.computer import SupplySource, contract_func
 import chellow.computer
 import csv
@@ -257,6 +257,13 @@ def content(scenario_props, scenario_id, base_name, site_id, supply_id, user):
                                     joinedload(Era.imp_supplier_contract),
                                     joinedload(Era.exp_supplier_contract),
                                     joinedload(Era.channels),
+                                    joinedload(Era.imp_llfc).joinedload(
+                                        Llfc.voltage_level),
+                                    joinedload(Era.exp_llfc).joinedload(
+                                        Llfc.voltage_level),
+                                    joinedload(Era.cop),
+                                    joinedload(Era.supply).joinedload(
+                                        Supply.dno_contract),
                                     joinedload(Era.mtc).joinedload(
                                         Mtc.meter_type)):
 
