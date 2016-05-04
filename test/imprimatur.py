@@ -10734,4 +10734,19 @@ def virtual_bill(supply_source):
         'regexes': [
             r'CI005'],
         'status_code': 200},
+
+    {
+        'name': "Site level HH data with 3rd party supply",
+        'path': '/supplies/1/edit',
+        'method': 'post',
+        'data': {
+            'name': "Hello",
+            'source_id': "5",
+            'generator_type_id': "1",
+            'gsp_group_id': "11"},
+        'status_code': 303},
+    {
+        'name': "Site level HH data with 3rd party supply",
+        'path': '/sites/7/hh_data?year=2008&month=07',
+        'status_code': 200},
 ]

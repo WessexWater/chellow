@@ -2389,11 +2389,11 @@ def site_hh_data_get(site_id):
                     if (imp_related and source_code == '3rd-party') or \
                             (not imp_related and
                                 source_code == '3rd-party-reverse'):
-                        hh_dict['third_party_import'] += hh_float_value
+                        hh_dict['third_party_import_kwh'] += hh_float_value
                     if (not imp_related and source_code == '3rd-party') or \
                             (imp_related and
                                 source_code == '3rd-party-reverse'):
-                        hh_dict['third_party_export'] += hh_float_value
+                        hh_dict['third_party_export_kwh'] += hh_float_value
                     datum = next(data, None)
 
             hh_dict['displaced_kwh'] = hh_dict['generated_kwh'] - \
