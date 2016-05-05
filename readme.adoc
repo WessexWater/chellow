@@ -102,6 +102,100 @@ but the is also a Python WSGI web application so Chellow can be used with any
 WSGI compliant application server, eg Gunicorn. The WSGI app that should be
 specified is `chellow.app`.
 
+=== Detailed Instructions For Installing On CentOS 6.7 64 bit For Development
+
+Install PostgreSQL 9.5.2
+
+Add the PostgreSQL repository:
+
+ sudo rpm -ivh https://download.postgresql.org/pub/repos/yum/9.5/redhat/rhel-6-x86_64/pgdg-centos95-9.5-2.noarch.rpm
+
+Install the PostgreSQL packages:
+
+ sudo yum install postgresql95 postgresql95-server postgresql95-contrib
+
+Initialize the database:
+
+ sudo service postgresql-9.5 initdb
+
+Make PostgreSQL start on boot:
+
+ sudo chkconfig postgresql-9.5 on
+
+Edit PostgreSQL config file to accept all local connections:
+
+ sudo vi /var/lib/pgsql/9.5/data/pg_hba.conf
+
+Find the lines:
+
+ local   all    all                    peer
+ host    all    all    127.0.0.1/32    peer
+
+and change them to:
+
+ local   all    all                    trust
+ host    all    all    127.0.0.1/32    trust
+
+start PostgreSQL:
+
+ sudo service postgresql-9.5 start
+
+Install Python 3.5.1. Unfortunately there isn't an rpm for this so we have to compile it:
+
+ sudo yum groupinstall "Development tools"
+ sudo yum install zlib-devel bzip2-devel openssl-devel ncurses-devel sqlite-devel readline-devel tk-devel gdbm-devel db4-devel libpcap-devel xz-devel wget
+ wget http://python.org/ftp/python/3.5.1/Python-3.5.1.tar.xz
+ tar xf Python-3.5.1.tar.xz
+ cd Python-3.5.1
+ ./configure --prefix=/usr/local --enable-shared LDFLAGS="Wl,-rpath /usr/local/lib"
+ make
+ sudo make altinstall
+
+We need to tell Chellow which port to listen on, so:
+
+ vi ~/.bashrc
+
+and add the line:
+
+ export CHELLOW_PORT=8080
+
+Clone the Chellow source from GitHub:
+
+ git clone https://github.com/WessexWater/chellow.git
+
+Change directory to the 'chellow' directory:
+
+ cd chellow
+
+Create a local 'test' branch to track the remote 'origin/test' branch:
+
+ git branch --track test origin/test
+
+Check out the 'test' branch into the working directory:
+
+ git checkout test
+
+Create a Python virtual environment:
+
+ pyvenv-3.5 venv
+
+Activate the environment:
+
+ source venv/bin/activate
+
+Make sure you're running a recent version of pip:
+
+ pip install --upgrade pip
+
+Install tox:
+
+ pip install tox
+
+
+Run tests:
+
+ tox
+ 
 
 ==  Getting Started
 
