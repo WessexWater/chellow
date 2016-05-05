@@ -2399,7 +2399,8 @@ def site_hh_data_get(site_id):
             hh_dict['displaced_kwh'] = hh_dict['generated_kwh'] - \
                 hh_dict['export_kwh'] - hh_dict['parasitic_kwh']
             hh_dict['used_kwh'] = hh_dict['import_kwh'] + \
-                hh_dict['displaced_kwh']
+                hh_dict['displaced_kwh'] + hh_dict['third_party_import_kwh'] - \
+                hh_dict['third_party_export_kwh']
             hh_date = hh_date + HH
 
     return render_template('site_hh_data.html', site=site, groups=groups)

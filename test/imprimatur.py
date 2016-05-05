@@ -10748,5 +10748,19 @@ def virtual_bill(supply_source):
     {
         'name': "Site level HH data with 3rd party supply",
         'path': '/sites/7/hh_data?year=2008&month=07',
-        'status_code': 200},
+        'status_code': 200,
+        'regexes': [
+            r'<tr>\s*'
+            r'<td>2008-07-06 03:30</td>\s*'
+            r'<td>0</td>\s*'
+            r'<td>0.249</td>\s*'
+            r'<td>0</td>\s*'
+            r'<td>0</td>\s*'
+            r'<td>0</td>\s*'
+            r'<td>0</td>\s*'
+            r'<td>0.249</td>\s*'
+            r'<td>A</td>\s*'
+            r'<td></td>\s*'
+            r'<td></td>\s*'
+            r'</tr>']},
 ]

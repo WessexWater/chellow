@@ -96,7 +96,6 @@
 	<form action="">
 		<fieldset>
 			<legend>Show graph</legend>
-			<input type="hidden" name="site_id" value="{{site.id}}">
 			For {{input_text('months', request.values.months, 2, 2)}}
 			months finishing in {{input_date('finish', finish_date, 'month')}}
 			<input type="submit" value="Show">
