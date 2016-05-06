@@ -2601,7 +2601,8 @@ def site_used_graph_get(site_id):
         join(Source).filter(
             Channel.channel_type == 'ACTIVE', HhDatum.start_date >= start_date,
             HhDatum.start_date <= finish_date,
-            Supply.id.in_(s.id for s in supplies)))
+            Supply.id.in_(s.id for s in supplies)).order_by(
+                HhDatum.start_date))
 
     hh_date = start_date
     max_scale = 2
