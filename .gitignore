@@ -16,3 +16,4 @@ MANIFEST
 readme.html
 chellow.egg-info/
 instance/
+.cache/

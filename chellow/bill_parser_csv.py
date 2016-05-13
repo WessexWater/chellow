@@ -7,16 +7,15 @@ from chellow.utils import HH, validate_hh_start
 from werkzeug.exceptions import BadRequest
 
 
-def parse_date(date_str, is_finish):
+def parse_date(date_str, is_finish=False):
     date_str = date_str.strip()
     if len(date_str) == 10:
-        dt = Datetime.strptime(date_str, "%Y-%m-%d").replace(tzinfo=pytz.utc)
+        dt = Datetime.strptime(date_str, "%Y-%m-%d")
         if is_finish:
             dt = dt + relativedelta(days=1) - HH
-        return dt
     else:
-        return Datetime.strptime(
-            date_str, "%Y-%m-%d %H:%M").replace(tzinfo=pytz.utc)
+        dt = Datetime.strptime(date_str, "%Y-%m-%d %H:%M")
+    return validate_hh_start(dt.replace(tzinfo=pytz.utc))
 
 
 class Parser():
@@ -40,9 +39,9 @@ class Parser():
             account = self.vals[1]
             mpan_strings = self.vals[2].split(",")
             reference = self.vals[3]
-            issue_date = parse_date(self.vals[4], False)
-            start_date = validate_hh_start(parse_date(self.vals[5], False))
-            finish_date = validate_hh_start(parse_date(self.vals[6], True))
+            issue_date = parse_date(self.vals[4])
+            start_date = parse_date(self.vals[5])
+            finish_date = parse_date(self.vals[6], True)
 
             kwh = self.big_decimal(7, 'kwh')
             net = self.big_decimal(8, 'net')
@@ -75,14 +74,10 @@ class Parser():
                         'msn': self.vals[i], 'mpan': self.vals[i + 1],
                         'coefficient': self.big_decimal(i + 2, 'coefficient'),
                         'units': self.vals[i + 3], 'tpr_code': tpr_code,
-                        'prev_date': validate_hh_start(
-                            Datetime.strptime(
-                                self.vals[i + 5], "%Y-%m-%d %H:%M")),
+                        'prev_date': parse_date(self.vals[i + 5]),
                         'prev_value': Decimal(self.vals[i + 6]),
                         'prev_type_code': self.vals[i + 7],
-                        'pres_date': validate_hh_start(
-                            Datetime.strptime(
-                                self.vals[i + 8], "%Y-%m-%d %H:%M")),
+                        'pres_date': parse_date(self.vals[i + 8]),
                         'pres_value': Decimal(self.vals[i + 9]),
                         'pres_type_code': self.vals[i + 10]})
 
