@@ -6205,8 +6205,6 @@ def virtual_bill(supply_source):
     {
         'name': "Site generation graph",
         'path': '/sites/7/gen_graph?months=1&finish_year=2013&finish_month=7',
-        'regexes': [
-            r'<input type="hidden" name="site_id" value="7">'],
         'status_code': 200},
 
     # Can we make a supply have source sub and view site level hh data okay?
@@ -10763,4 +10761,13 @@ def virtual_bill(supply_source):
             r'<td></td>\s*'
             r'<td></td>\s*'
             r'</tr>']},
+
+    {
+        'name': "Graph with export",
+        'path': '/sites/3/gen_graph?months=1&finish_year=2005&finish_month=09',
+        'status_code': 200,
+        'regexes': [
+            r'<rect\s*'
+            r'x="672px" y="64.0px" width="1px"\s*'
+            r'height="16.0px" fill="blue" />']},
 ]

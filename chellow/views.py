@@ -4335,7 +4335,7 @@ def site_gen_graph_get(site_id):
                 if imp_related and source_code in ('net', 'gen-net'):
                     to_adds.append(('imp', 'pos'))
                 if not imp_related and source_code in ('net', 'gen-net'):
-                    to_adds.append(('exp', 'neg'))
+                    to_adds.append(('exp', 'pos'))
                 if (imp_related and source_code == 'gen') or \
                         (not imp_related and source_code == 'gen-net'):
                     to_adds.append(('gen', 'pos'))
