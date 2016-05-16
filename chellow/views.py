@@ -1915,27 +1915,20 @@ def channel_get(channel_id):
         except ValueError as e:
             raise BadRequest("Invalid date: " + str(e))
     else:
-        era_finish = channel.era.finish_date
-        if era_finish is None:
-            start_date = Datetime.utcnow().replace(tzinfo=pytz.utc)
-        else:
-            start_date = Datetime(
-                era_finish.year, era_finish.month, 1, tzinfo=pytz.utc)
+        now = Datetime.utcnow()
+        start_date = Datetime(now.year, now.month, 1, tzinfo=pytz.utc)
 
-    if start_date is not None:
-        finish_date = start_date + relativedelta(months=1) - HH
-        era = channel.era
-        if hh_after(finish_date, era.finish_date):
-            flash("The finish date is after the end of the era.")
-        if start_date < era.start_date:
-            flash("The start date is before the start of the era.")
-        hh_data = HhDatum.query.filter(
-            HhDatum.channel == channel, HhDatum.start_date >= start_date,
-            HhDatum.start_date <= finish_date).order_by(HhDatum.start_date)
-        snags = Snag.query.filter(Snag.channel == channel).order_by(
-            Snag.start_date)
-    else:
-        hh_data = snags = None
+    finish_date = start_date + relativedelta(months=1) - HH
+    era = channel.era
+    if hh_after(finish_date, era.finish_date):
+        flash("The finish date is after the end of the era.")
+    if start_date < era.start_date:
+        flash("The start date is before the start of the era.")
+    hh_data = HhDatum.query.filter(
+        HhDatum.channel == channel, HhDatum.start_date >= start_date,
+        HhDatum.start_date <= finish_date).order_by(HhDatum.start_date)
+    snags = Snag.query.filter(Snag.channel == channel).order_by(
+        Snag.start_date)
 
     return render_template(
         'channel.html', channel=channel, start_date=start_date,
