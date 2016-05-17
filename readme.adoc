@@ -158,7 +158,7 @@ We need to tell Chellow which port to listen on, so:
 and add the line:
 
  export CHELLOW_PORT=8080
-
+ export PGUSER=postgres
 Clone the Chellow source from GitHub:
 
  git clone https://github.com/WessexWater/chellow.git
