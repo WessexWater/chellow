@@ -986,7 +986,11 @@ class Contract(db.Model, PersistentClass):
         return eval(self.properties, {'datetime': datetime.datetime})
 
     def make_state(self):
-        return eval(self.state)
+        s = self.state.strip()
+        if len(s) == 0:
+            return {}
+        else:
+            return eval(self.state)
 
     def get_batch(self, sess, reference):
         batch = sess.query(Batch).filter(
