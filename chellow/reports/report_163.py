@@ -9,6 +9,7 @@ from chellow.models import (
 from chellow.utils import hh_format, send_response
 import pytz
 from werkzeug.exceptions import BadRequest
+from sqlalchemy.orm import joinedload
 
 
 def to_iso(dmy):
@@ -234,17 +235,18 @@ def content(table, version, f):
                                     meter_payment_type_code, tpr_count,
                                     valid_from_out, valid_to_out))) + "\n"
         elif table == 'MTC_in_PES_Area':
-            market_role_r = MarketRole.get_by_code(sess, 'R')
+            dnos = dict(
+                (p.participant.code, (p.id, p.dno_code)) for p in sess.query(
+                    Party).join(Participant).join(MarketRole).filter(
+                    MarketRole.code == 'R').options(
+                    joinedload(Party.participant)))
             for i, values in enumerate(reader):
                 code_str = values[0]
                 code_int = int(code_str)
                 if not is_common_mtc(code_int):
                     code = code_str.zfill(3)
                     participant_code = values[2]
-                    dno_id, dno_code = sess.query(
-                        Party.id, Party.dno_code).join(Participant).filter(
-                            Participant.code == participant_code,
-                            Party.market_role == market_role_r).first()
+                    dno_id, dno_code = dnos[participant_code]
                     valid_from_str = values[3]
                     valid_from = Datetime.strptime(
                         valid_from_str, "%d/%m/%Y").replace(tzinfo=pytz.utc)
