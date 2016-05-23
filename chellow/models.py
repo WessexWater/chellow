@@ -990,7 +990,7 @@ class Contract(db.Model, PersistentClass):
         if len(s) == 0:
             return {}
         else:
-            return eval(self.state)
+            return eval(s)
 
     def get_batch(self, sess, reference):
         batch = sess.query(Batch).filter(
