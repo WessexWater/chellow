@@ -5562,13 +5562,13 @@ def virtual_bill(supply_source):
     supply_source.dc_bill['net-gbp'] = 0
 """,
             'properties': """
-{'has_importer': True,
-'file_type': '.df2',
-'hostname': 'localhost',
-'port': 2121,
-'username': 'chellow',
-'password': 'HixaNfUBOf*u',
-'directories': ['.']}
+{
+    'file_type': '.df2',
+    'hostname': 'localhost',
+    'port': 2121,
+    'username': 'chellow',
+    'password': 'HixaNfUBOf*u',
+    'directories': ['.']}
 """},
         'status_code': 303},
 
