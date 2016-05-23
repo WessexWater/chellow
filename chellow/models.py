@@ -986,7 +986,7 @@ class Contract(db.Model, PersistentClass):
         return eval(self.properties, {'datetime': datetime.datetime})
 
     def make_state(self):
-        s = self.state.strip()
+        s = "{}" if self.state is None else self.state.strip()
         if len(s) == 0:
             return {}
         else:
