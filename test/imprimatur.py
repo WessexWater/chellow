@@ -757,6 +757,7 @@ def virtual_bill_titles():
 
             # Can we see the MOP account?
             r'"mc-22 9205 6799 106"'],
+
         'status_code': 200},
 
     # Supply 2
@@ -789,7 +790,12 @@ def virtual_bill_titles():
         'path': '/eras/8/edit',
         'regexes': [
             r"22 9813 2107 763",
-            r'name="mtc_code" value="845" size="3" maxlength="3"'],
+            r'name="mtc_code" value="845" size="3" maxlength="3"',
+
+            # Form for deleting the era
+            r'<form action="/eras/8/edit">\s*'
+            r'<fieldset>\s*'
+            r'<legend>Delete this era</legend>'],
         'status_code': 200},
 
     # Can we delete the era ok? Supply 2
