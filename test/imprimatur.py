@@ -3813,7 +3813,10 @@ def virtual_bill(supply_source):
         'regexes': [
             r'<a href="/supplies/2">view</a>',
             r'<a href="https://maps.google.com/maps\?q=CI005">Google Maps</a>',
-            r'<option value="imp_net">Imported</option>']},
+            r'<option value="imp_net">Imported</option>',
+            r'<form action="/reports/csv_site_hh_data">\s*'
+            r'<fieldset>\s*'
+            r'<legend>HH Data: HH Per Row Format</legend>']},
 
     # Show a dead supply. Supply 11
     {
