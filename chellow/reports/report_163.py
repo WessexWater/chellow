@@ -240,6 +240,11 @@ def content(table, version, f):
                     Party).join(Participant).join(MarketRole).filter(
                     MarketRole.code == 'R').options(
                     joinedload(Party.participant)))
+            mtcs = dict((mtc.dno_id, mtc.code), (sess.query(
+                Mtc, MeterPaymentType.code, MeterType.code). \
+                join(MeterPaymentType). \
+                join(MeterType).filter(
+                    Mtc.dno_id == mtc_dno_id, Mtc.code == code).first()
             for i, values in enumerate(reader):
                 code_str = values[0]
                 code_int = int(code_str)
