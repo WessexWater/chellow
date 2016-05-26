@@ -4277,6 +4277,7 @@ def site_gen_graph_get(site_id):
 
     days = []
     month_points = []
+    x = 0
     for group in site.groups(sess, start_date, finish_date, True):
         rs = iter(
             sess.query(
@@ -4295,7 +4296,6 @@ def site_gen_graph_get(site_id):
             source_code, sup_id) = next(
                 rs, (None, None, None, None, None, None, None))
 
-        x = 0
         while hh_date <= group.finish_date:
             rvals = dict((n, {'pos': 0, 'neg': 0}) for n in graph_names)
 

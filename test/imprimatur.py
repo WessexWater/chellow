@@ -10808,4 +10808,16 @@ def virtual_bill(supply_source):
         'regexes': [
             r"Added new rate script\."],
         'status_code': 200},
+
+    {
+        'name': "Site generation graph stradling groups",
+        'path': '/sites/3/gen_graph?months=2&finish_year=2005&finish_month=10',
+        'status_code': 200,
+        'regexes': [
+            r'<text x="672px" y="78.54368932038835px">\s*',
+            r'September\s*'
+            r'</text>\s*'
+            r'<text x="2112px" y="78.54368932038835px">\s*'
+            r'October\s*'
+            r'</text>']}
 ]
