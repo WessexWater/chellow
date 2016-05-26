@@ -10779,4 +10779,33 @@ def virtual_bill(supply_source):
             r'<rect\s*'
             r'x="672px" y="64.0px" width="1px"\s*'
             r'height="16.0px" fill="blue" />']},
+
+    {
+        'name': "BSUoS",
+        'path': '/non_core_contracts/3/edit',
+        'method': 'post',
+        'data': {
+            'name': 'system_price',
+            'properties': """
+{
+    'enabled': True,
+    'url': 'http://127.0.0.1:8080/nationalgrid/sf_bsuos.xls'}
+"""},
+        'status_code': 303},
+
+    {
+        'name': "Do an 'import now'",
+        'path': '/non_core_contracts/3/auto_importer',
+        'method': 'post',
+        'regexes': [
+            '/non_core_contracts/3/auto_importer'],
+        'status_code': 303},
+
+    {
+        'name': 'BSUoS',
+        'path': '/non_core_contracts/3/auto_importer',
+        'tries': {'max': 40, 'period': 1},
+        'regexes': [
+            r"Added new rate script\."],
+        'status_code': 200},
 ]

@@ -134,7 +134,7 @@ def check_permissions(*args, **kwargs):
     path = request.path
     method = request.method
     if path in (
-            '/health', '/bmreports',
+            '/health', '/nationalgrid/sf_bsuos.xls',
             '/elexonportal/file/download/BESTVIEWPRICES_FILE', '/ecoes',
             '/ecoes/login.asp', '/ecoes/saveportfolioMpans.asp'):
         return
@@ -182,22 +182,12 @@ def check_permissions(*args, **kwargs):
     return Response('Forbidden', 403)
 
 
-el_dir = {
-    'SYSPRICE': 'sysprice'
-}
-
-
-@app.route('/bmreports')
-def bmreports():
-    element = request.args['element']
-    date_str = request.args['dT']
-    fname = Datetime.strptime(date_str, '%Y-%M-%d'). \
-        strftime('%Y_%M_%d') + '.xml'
-    f = open(
-        os.path.join(
-            os.path.dirname(__file__), 'bmreports', el_dir[element], fname))
-
-    return Response(f, status=200, mimetype='text/xml')
+@app.route('/nationalgrid/<fname>')
+def nationalgrid(fname):
+    filename = os.path.join(os.path.dirname(__file__), 'nationalgrid', fname)
+    return send_file(
+        filename, mimetype='application/binary', as_attachment=True,
+        attachment_filename=fname)
 
 
 ELEXON_LOOKUP = {
