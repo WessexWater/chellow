@@ -42,8 +42,12 @@
 				<br>
 				{% if contract.name == 'bsuos' %}
 					<pre>{
-  'enabled': True,
-  'url': 'http://www2.nationalgrid.com/Current-SF-BSUoS-Data/'}</pre>
+    'enabled': True,
+    'url': 'http://www2.nationalgrid.com/Current-SF-BSUoS-Data/'}</pre>
+				{% elif contract.name == 'tlms' %}
+					<pre>{
+    'enabled': True,
+    'url': 'https://downloads.elexonportal.co.uk/'}</pre>
 				{% endif %}
 				<br>
 				<input type="submit" value="Update">
