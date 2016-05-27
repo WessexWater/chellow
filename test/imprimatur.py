@@ -5540,7 +5540,7 @@ def virtual_bill(supply_source):
             '<a href="/channels/17">REACTIVE_IMP</a>\s*</td>'],
         'status_code': 200},
     {
-        'name': "View the note editing page.",
+        'name': "View the notes page.",
         'path': '/supplies/2/notes',
         'status_code': 200,
         'regexes': [
@@ -5554,6 +5554,10 @@ def virtual_bill(supply_source):
             'category': "general",
             'body': ""},
         'status_code': 303},
+    {
+        'name': "View the note editing page.",
+        'path': '/supplies/2/notes/0/edit',
+        'status_code': 200},
 
     # Try importing HH data from FTP server.
     {

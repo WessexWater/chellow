@@ -3676,6 +3676,48 @@ def supply_note_add_post(supply_id):
             render_template('supply_note_add.html', supply=supply), 400)
 
 
+@app.route('/supplies/<int:supply_id>/notes/<int:index>/edit')
+def supply_note_edit_get(supply_id, index):
+    sess = db.session()
+    supply = Supply.get_by_id(sess, supply_id)
+    supply_note = eval(supply.note)
+    note = supply_note['notes'][index]
+    note['index'] = index
+    return render_template('supply_note_edit.html', supply=supply, note=note)
+
+
+@app.route('/supplies/<int:supply_id>/notes/<int:index>/edit')
+def supply_note_edit_post(supply_id, index):
+    try:
+        sess = db.session()
+        db.set_read_write(sess)
+        supply = Supply.get_by_id(sess, supply_id)
+        supply_note = eval(supply.note)
+        if 'update' in request.values:
+            category = req_str('category')
+            is_important = req_bool('is_important')
+            body = req_str('body')
+            note = supply_note['notes'][index]
+            note['category'] = category
+            note['is_important'] = is_important
+            note['body'] = body
+            supply.note = str(supply_note)
+            sess.commit()
+            return redirect('/supplies/' + str(supply_id) + '/notes', 303)
+        elif 'delete' in request.values:
+            del supply_note['notes'][index]
+            supply.note = str(supply_note)
+            sess.commit()
+            return redirect("/supplies/" + str(supply_id) + '/notes', 303)
+    except BadRequest as e:
+        flash(e.description)
+        supply_note = eval(supply.note)
+        note = supply_note['notes'][index]
+        note['index'] = index
+        return render_template(
+            'supply_note_edit.html', supply=supply, note=note)
+
+
 @app.route('/hhdc_contracts/<int:contract_id>/auto_importer')
 def hhdc_auto_importer_get(contract_id):
     sess = db.session()
