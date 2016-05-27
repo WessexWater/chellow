@@ -1,3 +1,5 @@
+from io import StringIO
+import csv
 from flask import (
     request, Response, g, redirect, render_template, send_file, flash,
     make_response)
@@ -16,7 +18,7 @@ import pytz
 from dateutil.relativedelta import relativedelta
 from chellow.utils import (
     HH, req_str, req_int, req_date, parse_mpan_core, req_bool, req_hh_date,
-    hh_after, req_decimal, send_response, hh_before)
+    hh_after, req_decimal, send_response, hh_before, hh_format)
 from werkzeug.exceptions import BadRequest
 import chellow.general_import
 import io
@@ -2266,6 +2268,34 @@ def supplier_batch_get(batch_id):
             batch_reports.append(Report.get_by_id(sess, report_id))
         fields['batch_reports'] = batch_reports
     return render_template('supplier_batch.html', **fields)
+
+
+@app.route('/supplier_batches/<int:batch_id>/csv')
+def supplier_batch_csv_get(batch_id):
+    sess = db.session()
+    batch = Batch.get_by_id(sess, batch_id)
+    si = StringIO()
+    cw = csv.writer(si)
+    cw.writerow(
+        [
+            "Supplier Contract", "Batch Reference", "Bill Reference",
+            "Account", "Issued", "From", "To", "kWh", "Net", "VAT", "Gross",
+            "Type"])
+    for bill in Bill.query.filter(Bill.batch == batch).order_by(
+            Bill.reference, Bill.start_date).options(
+                joinedload(Bill.bill_type)):
+        cw.writerow(
+            [
+                batch.contract.name, batch.reference, bill.reference,
+                bill.account, hh_format(bill.issue_date),
+                hh_format(bill.start_date), hh_format(bill.finish_date),
+                str(bill.kwh), str(bill.net), str(bill.vat), str(bill.gross),
+                bill.bill_type.code])
+
+    output = make_response(si.getvalue())
+    output.headers["Content-Disposition"] = 'attachment; filename="batch.csv"'
+    output.headers["Content-type"] = "text/csv"
+    return output
 
 
 @app.route('/hh_data/<int:datum_id>/edit')
