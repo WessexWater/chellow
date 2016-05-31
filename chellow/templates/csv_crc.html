@@ -53,20 +53,25 @@
 				the kWh and number of normal days are worked out as follows.
 				<ul>
 					<li>
-							All reads that aren't 'actual' are discarded.
+						All reads that aren't 'actual' are discarded.
 					</li>
 					<li>
-						The remaining reads are ordered by time. The earliest and the
-						latest reads that lie within the span are retained. The latest
-						 read (no matter how late) before the beginning of the span is
-						 retained. The earliest read (no matter how early) after the end
-						 of the span is retained. All other reads are discarded.
+						If there are &lt; 2 reads, then the billed kWh is found, and two
+						reads are added after the span that reflect the billed kWh rate.
 					</li>
 					<li>
-						With the reads still in order, all the span segments are
-						considered. A segment is just a read and the next read, so for
-						n reads there are n - 1 segments. The kWh for each segment is
-						calculated.
+						The remaining reads are ordered by time. Working backwards in time
+						from the start of the span, the first two reads are kept and earlier
+						ones are discarded. Working forwards in time from the start of the
+					 	span to the end of the span, the earliest and latest reads are kept
+					 	and any others are discarded. Working forwards in time from the end
+					 	of the span, the first two reads are kept, and the later ones are
+					 	discarded.
+					</li>
+					<li>
+						With the reads still in order, all the segments are considered. A
+					 	segment is just a read and the next read, so for n reads there are
+					 	n - 1 segments. The kWh for each segment is calculated.
 					</li>
 					<li>
 						If the two reads of a segment lie within the span, the days of the
@@ -74,10 +79,15 @@
 						added to the total kWh.
 					</li>
 					<li>
-						If one or both the reads lie outside the span, no days are added
-						to the actual days. The kWh for the segment is multiplied by
-						(days of segment that are also in the period) / (total days in
-						segment), and then added to the total kWh.
+						If a read lies outside the span, no days are added to the actual
+					 	days. The kWh for the segment is multiplied by (days of segment
+					 	that are also in the period) / (total days in segment), and then
+					 	added to the total kWh.
+					</li>
+					<li>
+						If there are parts of the span not covered by a segment, the
+						gap is filled with a pro-rata of the segment before the gap, or if
+						there is not segment before the gap, the segment after the gap.
 					</li>
 					<li>
 						If there's a meter change at some point along the line of reads,
