@@ -6068,6 +6068,10 @@ def virtual_bill(supply_source):
             'B00LG Bieling</a>'],
         'status_code': 200},
     {
+        'name': "Site search with trailing whitespace",
+        'path': '/sites?pattern= B00LG',
+        'status_code': 302},
+    {
         'name': "Try TRIAD report when supply starts after first triad",
         'path': '/reports/41?supply_id=6&year=2007',
         'status_code': 200,

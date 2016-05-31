@@ -758,7 +758,7 @@ def sites_get():
                 "select * from site "
                 "where lower(code || ' ' || name) like '%' || lower(:pattern) "
                 "|| '%' order by code limit :lim")).params(
-            pattern=pattern, lim=LIMIT).all()
+            pattern=pattern.strip(), lim=LIMIT).all()
 
         if len(sites) == 1:
             return redirect("/sites/" + str(sites[0].id))
