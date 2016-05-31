@@ -5,7 +5,7 @@ import io
 from flask import render_template, request
 from chellow.models import (
     Session, VoltageLevel, Participant, Party, MarketRole, Llfc, Mtc,
-    MeterType, MeterPaymentType)
+    MeterType)
 from chellow.utils import hh_format, send_response
 import pytz
 from werkzeug.exceptions import BadRequest
@@ -240,11 +240,10 @@ def content(table, version, f):
                     Party).join(Participant).join(MarketRole).filter(
                     MarketRole.code == 'R').options(
                     joinedload(Party.participant)))
-            mtcs = dict((mtc.dno_id, mtc.code), (sess.query(
-                Mtc, MeterPaymentType.code, MeterType.code). \
-                join(MeterPaymentType). \
-                join(MeterType).filter(
-                    Mtc.dno_id == mtc_dno_id, Mtc.code == code).first()
+            mtcs = dict(
+                ((m.dno_id, m.code), m) for m in Mtc.query.options(
+                    joinedload(Mtc.meter_type),
+                    joinedload(Mtc.meter_payment_type)).all())
             for i, values in enumerate(reader):
                 code_str = values[0]
                 code_int = int(code_str)
@@ -277,13 +276,9 @@ def content(table, version, f):
                         tpr_count = int(tpr_count_str)
 
                     mtc_dno_id = dno_id if Mtc.has_dno(code) else None
-                    mtc_result = sess.query(
-                        Mtc, MeterPaymentType.code, MeterType.code). \
-                        join(MeterPaymentType). \
-                        join(MeterType).filter(
-                            Mtc.dno_id == mtc_dno_id, Mtc.code == code).first()
+                    mtc = mtcs.get((mtc_dno_id, code))
 
-                    if mtc_result is None:
+                    if mtc is None:
                         yield ','.join(
                             (
                                 '"' + str(v) + '"' for v in (
@@ -292,26 +287,22 @@ def content(table, version, f):
                                     has_comms, is_hh, meter_type_code,
                                     meter_payment_type_code, tpr_count,
                                     valid_from_out, valid_to_out))) + "\n"
-                    else:
-                        mtc, mtc_meter_payment_type_code, \
-                            mtc_meter_type_code = mtc_result
-                        if (
-                                description, has_related_metering, has_comms,
-                                is_hh, meter_type_code,
-                                meter_payment_type_code, tpr_count, valid_from,
-                                valid_to) != (
-                                mtc.description, mtc.has_related_metering,
-                                mtc.has_comms, mtc.is_hh, mtc_meter_type_code,
-                                mtc_meter_payment_type_code, mtc.tpr_count,
-                                mtc.valid_from, mtc.valid_to):
-                            yield ','.join(
-                                (
-                                    '"' + str(v) + '"' for v in (
-                                        'update', 'mtc', dno_code, code,
-                                        description, has_related_metering,
-                                        has_comms, is_hh, meter_type_code,
-                                        meter_payment_type_code, tpr_count,
-                                        valid_from_out, valid_to_out))) + "\n"
+                    elif (
+                            description, has_related_metering, has_comms,
+                            is_hh, meter_type_code, meter_payment_type_code,
+                            tpr_count, valid_from, valid_to) != (
+                            mtc.description, mtc.has_related_metering,
+                            mtc.has_comms, mtc.is_hh, mtc.meter_type.code,
+                            mtc.meter_payment_type.code, mtc.tpr_count,
+                            mtc.valid_from, mtc.valid_to):
+                        yield ','.join(
+                            (
+                                '"' + str(v) + '"' for v in (
+                                    'update', 'mtc', dno_code, code,
+                                    description, has_related_metering,
+                                    has_comms, is_hh, meter_type_code,
+                                    meter_payment_type_code, tpr_count,
+                                    valid_from_out, valid_to_out))) + "\n"
         elif table == 'MTC_Meter_Type':
             for i, values in enumerate(reader):
                 code = values[0]
