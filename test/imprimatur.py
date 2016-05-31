@@ -1594,6 +1594,7 @@ def virtual_bill_titles():
         'name': "Check the BGlobal data is imported to the right number of "
         "sig figs",
         'path': '/channels/1?start_year=2008&start_month=07',
+        'status_code': 200,
         'regexes': [
             r"0\.262"]},
     {
@@ -1719,7 +1720,7 @@ def virtual_bill_titles():
         'path': '/channels/32?start_year=2008&start_month=07',
         'regexes': [
             r'<td>\s*'
-            '\[<a href="/hh_data/66">'
+            '\[<a href="/hh_data/66/edit">'
             'edit</a>\]\s*</td>\s*<td>2008-07-07 00:00</td>\s*'
             '<td>0.247</td>\s*<td>A</td>'],
         'status_code': 200},
@@ -1796,9 +1797,10 @@ def virtual_bill_titles():
         'path': '/channels/32?start_year=2008&start_month=07',
         'regexes': [
             r'<tbody>\s*<tr>\s*<td>\s*'
-            '\[<a href="/hh_data/114">'
-            'edit</a>\]\s*</td>\s*<td>2008-07-08 00:00</td>\s*'
-            '<td>0.299</td>\s*<td>A</td>'],
+            r'\[<a href="/hh_data/114/edit">edit</a>\]\s*'
+            r'</td>\s*<td>2008-07-08 00:00</td>\s*'
+            r'<td>0.299</td>\s*'
+            r'<td>A</td>'],
         'status_code': 200},
 
     # supply 1, era 1, channel 1 },
