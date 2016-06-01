@@ -3080,9 +3080,10 @@ def supplier_bill_edit_post(bill_id):
         set_read_write(sess)
         bill = Bill.get_by_id(sess, bill_id)
         if 'delete' in request.values:
+            batch = bill.batch
             bill.delete(sess)
             sess.commit()
-            return redirect("/supplier_batches/" + str(bill.batch.id), 303)
+            return redirect("/supplier_batches/" + str(batch.id), 303)
         else:
             account = req_str("account")
             reference = req_str("reference")

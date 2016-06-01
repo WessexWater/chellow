@@ -10848,4 +10848,12 @@ def virtual_bill(supply_source):
             r'<form method="post" action="">\s*',
             r'<fieldset>\s*',
             r'<legend>Are you sure you want to delete this bill\?</legend>']},
+
+    {
+        'name': "Delete supplier bill",
+        'path': '/supplier_bills/11/edit',
+        'method': 'post',
+        'data': {
+            'delete': 'Delete'},
+        'status_code': 303},
 ]
