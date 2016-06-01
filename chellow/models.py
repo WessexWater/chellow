@@ -437,7 +437,7 @@ class Bill(db.Model, PersistentClass):
         sess.flush()
         return read
 
-    def delete(sess, self):
+    def delete(self, sess):
         sess.delete(self)
         sess.flush()
 

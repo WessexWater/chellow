@@ -10829,5 +10829,13 @@ def virtual_bill(supply_source):
             r'</text>\s*'
             r'<text x="2112px" y="78.54368932038835px">\s*'
             r'October\s*'
-            r'</text>']}
+            r'</text>']},
+    {
+        'name': "Confirm delete supplier bill",
+        'path': '/supplier_bills/11/edit?confirm_delete=Delete',
+        'status_code': 200,
+        'regexes': [
+            r'<form method="post" action="">\s*',
+            r'<fieldset>\s*',
+            r'<legend>Are you sure you want to delete this bill\?</legend>']},
 ]
