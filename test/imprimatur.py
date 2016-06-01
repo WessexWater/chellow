@@ -9391,6 +9391,15 @@ def virtual_bill(supply_source):
             r'"triad-estimate-months","1","triad-estimate-rate","23.77056"'],
         'status_code': 200},
 
+    {
+        'name': "Displaced bills for a contract",
+        'path': '/reports/109?supplier_contract_id=33&months=1&'
+        'finish_year=2005&finish_month=11',
+        'status_code': 200,
+        'regexes': [
+            r'"CI005","Wheal Rodney","CI004","2005-11-01 00:00",'
+            r'"2005-11-30 23:30",']},
+
     # Scenario runner with default scenario
     {
         'name': "Scenario runner with default scenario",
@@ -10830,6 +10839,7 @@ def virtual_bill(supply_source):
             r'<text x="2112px" y="78.54368932038835px">\s*'
             r'October\s*'
             r'</text>']},
+
     {
         'name': "Confirm delete supplier bill",
         'path': '/supplier_bills/11/edit?confirm_delete=Delete',

@@ -1,4 +1,4 @@
-import datetime
+from datetime import datetime as Datetime
 from dateutil.relativedelta import relativedelta
 import pytz
 from sqlalchemy import or_
@@ -21,12 +21,10 @@ def content(contract_id, end_year, end_month, months):
                 'Site Code', 'Site Name', 'Associated Site Ids', 'From', 'To',
                 'Gen Types', 'CHP kWh', 'LM kWh', 'Turbine kWh', 'PV kWh'))
 
-        finish_date = datetime.datetime(
-            end_year, end_month, 1, tzinfo=pytz.utc) + \
+        finish_date = Datetime(end_year, end_month, 1, tzinfo=pytz.utc) + \
             relativedelta(months=1) - HH
 
-        start_date = datetime.datetime(
-            end_year, end_month, 1, tzinfo=pytz.utc) - \
+        start_date = Datetime(end_year, end_month, 1, tzinfo=pytz.utc) - \
             relativedelta(months=months-1)
 
         forecast_date = chellow.computer.forecast_date()
@@ -112,66 +110,57 @@ def content(contract_id, end_year, end_month, months):
                                 'chunk_finish': chunk_finish,
                                 'supply_ids': [
                                     s.id for s in site_group.supplies]}))
-                    try:
-                        res = next(results)
-                        hhChannelValue = res.value
-                        hhChannelStartDate = res.start_date
-                        imp_related = res.imp_related
-                        source_code = res.code
-                        gen_type = res.gen_type_code
-                        hh_date = chunk_start
 
-                        while hh_date <= finish_date:
-                            gen_breakdown = {}
-                            exported = 0
-                            while hhChannelStartDate == hh_date:
-                                if not imp_related and source_code in (
-                                        'net', 'gen-net'):
-                                    exported += hhChannelValue
-                                if (imp_related and source_code == 'gen') or \
-                                        (not imp_related and
-                                            source_code == 'gen-net'):
-                                    gen_breakdown[gen_type] = \
-                                        gen_breakdown.setdefault(
-                                            gen_type, 0) + hhChannelValue
+                    (
+                        sup_id, hh_val, hh_start, imp_related, source_code,
+                        gen_type_code) = next(
+                        results, (None, None, None, None, None, None))
 
-                                if (
-                                        not imp_related and
-                                        source_code == 'gen') or (
-                                        imp_related and
+                    hh_date = chunk_start
+
+                    while hh_date <= finish_date:
+                        gen_breakdown = {}
+                        exported = 0
+                        while hh_start == hh_date:
+                            if not imp_related and source_code in (
+                                    'net', 'gen-net'):
+                                exported += hh_val
+                            if (imp_related and source_code == 'gen') or \
+                                    (not imp_related and
                                         source_code == 'gen-net'):
-                                    gen_breakdown[gen_type] = \
-                                        gen_breakdown.setdefault(
-                                            gen_type, 0) - hhChannelValue
+                                gen_breakdown[gen_type_code] = \
+                                    gen_breakdown.setdefault(
+                                        gen_type_code, 0) + hh_val
 
-                                try:
-                                    res = next(results)
-                                    source_code = res.code
-                                    hhChannelValue = res.value
-                                    hhChannelStartDate = res.start_date
-                                    imp_related = res.imp_related
-                                    gen_type = res.gen_type_code
-                                except StopIteration:
-                                    hhChannelStartDate = None
+                            if (
+                                    not imp_related and
+                                    source_code == 'gen') or (
+                                    imp_related and
+                                    source_code == 'gen-net'):
+                                gen_breakdown[gen_type_code] = \
+                                    gen_breakdown.setdefault(
+                                        gen_type_code, 0) - hh_val
 
-                            displaced = sum(gen_breakdown.itervalues()) - \
-                                exported
-                            added_so_far = 0
-                            for key in sorted(gen_breakdown.iterkeys()):
-                                kwh = gen_breakdown[key]
-                                if kwh + added_so_far > displaced:
-                                    total_gen_breakdown[key] = \
-                                        total_gen_breakdown.get(key, 0) + \
-                                        displaced - added_so_far
-                                    break
-                                else:
-                                    total_gen_breakdown[key] = \
-                                        total_gen_breakdown.get(key, 0) + kwh
-                                    added_so_far += kwh
+                            (
+                                sup_id, hh_val, hh_start, imp_related,
+                                source_code, gen_type_code) = next(
+                                results, (None, None, None, None, None, None))
 
-                            hh_date += HH
-                    except StopIteration:
-                        pass
+                        displaced = sum(gen_breakdown.values()) - exported
+                        added_so_far = 0
+                        for key in sorted(gen_breakdown.keys()):
+                            kwh = gen_breakdown[key]
+                            if kwh + added_so_far > displaced:
+                                total_gen_breakdown[key] = \
+                                    total_gen_breakdown.get(key, 0) + \
+                                    displaced - added_so_far
+                                break
+                            else:
+                                total_gen_breakdown[key] = \
+                                    total_gen_breakdown.get(key, 0) + kwh
+                                added_so_far += kwh
+
+                        hh_date += HH
 
                     for title in ['chp', 'lm', 'turb', 'pv']:
                         yield ',' + str(total_gen_breakdown.get(title, ''))
@@ -187,7 +176,7 @@ def content(contract_id, end_year, end_month, months):
                     for title in bill_titles:
                         if title in bill:
                             val = bill[title]
-                            if isinstance(val, datetime.datetime):
+                            if isinstance(val, Datetime):
                                 val = hh_format(val)
                             else:
                                 val = str(val)
