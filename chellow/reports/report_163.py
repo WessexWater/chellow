@@ -34,12 +34,16 @@ def content(table, version, f):
         reader = iter(csv.reader(f))
         next(reader)
         if table == 'Line_Loss_Factor_Class':
+            LLFC_MAP = dict(
+                ((llfc.dno.participant.code, llfc.code), llfc) for
+                llfc in Llfc.query.join(Party).options(
+                    joinedload(Llfc.dno).joinedload('participant')))
             VOLTAGE_LEVEL_CODES = set(
                 [v.code for v in sess.query(VoltageLevel)])
-            DNO_ID_MAP = dict(
-                (code, dno_id) for code, dno_id in sess.query(
-                    Participant.code, Party.id).join(Party).join(
-                    MarketRole).filter(MarketRole.code == 'R'))
+            DNO_MAP = dict(
+                (dno.participant.code, dno) for dno in Party.query.
+                join(MarketRole).filter(MarketRole.code == 'R').options(
+                    joinedload(Party.participant)))
             for i, values in enumerate(reader):
                 participant_code = values[0]
                 # market_role_code = values[1]
@@ -51,24 +55,16 @@ def content(table, version, f):
                 to_date_settlement = values[7]
 
                 llfc_code = llfc_code_raw.zfill(3)
-                try:
-                    llfc_id = sess.query(Llfc.id).filter(
-                        Llfc.dno_id == DNO_ID_MAP[participant_code],
-                        Llfc.code == llfc_code).first()
-                except KeyError:
-                    llfc_id = None
+                llfc = LLFC_MAP.get((participant_code, llfc_code))
 
-                if llfc_id is None:
-                    participant = sess.query(Participant).filter(
-                        Participant.code == participant_code).first()
-                    if participant is None:
+                if llfc is None:
+                    try:
+                        dno = DNO_MAP[participant_code]
+                    except KeyError:
                         yield ''.join(
-                            "# The participant code ", participant_code,
-                            " doesn't exist in Chellow.\n")
+                            "# There is no DNO with participant code ",
+                            participant_code, ".\n")
                         continue
-
-                    dno = Party.get_by_participant_code_role_code(
-                        sess, participant.code, 'R')
 
                     voltage_level_code = 'LV'
                     llfc_description_upper = llfc_description.upper()
