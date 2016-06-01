@@ -1346,7 +1346,13 @@ def virtual_bill_titles():
     {
         'name': "Check edit view of channel level snag",
         'path': '/channel_snags/1/edit',
-        'status_code': 200},
+        'status_code': 200,
+        'regexes': [
+            r'<form action="" method="post">\s*'
+            r'<fieldset style="border: none;">\s*'
+            r'<input type="hidden" name="ignore" value="true">\s*'
+            r'<input type="submit" value="Ignore">\s*'
+            r'</fieldset>']},
 
     # Check that for a supply with multiple eras, a channel without any data
     # can be deleted. This test needs some hh data loaded somewhere. Supply 2,
