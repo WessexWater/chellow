@@ -8453,11 +8453,6 @@ def virtual_bill(supply_source):
             r'office:value-type="string"/>\s*'
             r'</table:table-row>']},
 
-    {
-        'name': "Show edit channel snag",
-        'path': '/channel_snags/100',
-        'status_code': 200},
-
     # GI Delete LLFC
     {
         'name': "GI Delete LLFC",
@@ -10862,5 +10857,13 @@ def virtual_bill(supply_source):
         'method': 'post',
         'data': {
             'delete': 'Delete'},
+        'status_code': 303},
+
+    {
+        'name': "Ignore channel snag",
+        'path': '/channel_snags/100/edit',
+        'method': 'post',
+        'data': {
+            'ignore': 'true'},
         'status_code': 303},
 ]

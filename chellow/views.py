@@ -2030,7 +2030,7 @@ def channel_snag_edit_post(snag_id):
         sess = db.session()
         set_read_write(sess)
         ignore = req_bool('ignore')
-        snag = db.Snag.get_by_id(sess, snag_id)
+        snag = Snag.get_by_id(sess, snag_id)
         snag.is_ignored = ignore
         sess.commit()
         return redirect("/channel_snags/" + str(snag.id), 303)
