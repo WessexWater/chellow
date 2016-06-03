@@ -4342,6 +4342,7 @@ def virtual_bill(supply_source):
     {
         'path': '/supplier_batches/6',
         'regexes': [
+            r'\[<a href="/supplier_batches/6/edit">edit</a>\]',
             r"<td>2010-06-09 00:00</td>\s*<td>2010-05-01 00:00</td>\s*"
             "<td>2010-05-31 23:30</td>\s*<td>32124.5</td>\s*"
             "<td>2219.41</td>\s*<td>388.4</td>\s*<td>2607.81</td>",
