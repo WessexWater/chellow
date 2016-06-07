@@ -240,6 +240,29 @@ def style_get():
     response.headers['Content-type'] = 'text/css'
     return response
 
+@app.route('/bootstrap', methods=['GET'])
+def bootstrap_get():
+    sess = db.session()
+    props = Contract.get_non_core_by_name(sess, 'configuration'). \
+        make_properties()
+    response = make_response(
+        render_template(
+            'css/bootstrap.min.css', background_colour=props['background_colour']))
+    response.headers['Content-type'] = 'text/css'
+    return response
+
+
+@app.route('/wessexcss', methods=['GET'])
+def wessexcss_get():
+    sess = db.session()
+    props = Contract.get_non_core_by_name(sess, 'configuration'). \
+        make_properties()
+    response = make_response(
+        render_template(
+            'css/wessex.css', background_colour=props['background_colour']))
+    response.headers['Content-type'] = 'text/css'
+    return response
+
 
 @app.route('/ecoes/saveportfolioMpans.asp', methods=['GET'])
 def ecoes_mpans_get():
