@@ -1,3 +1,5 @@
+from io import StringIO
+import csv
 from flask import (
     request, Response, g, redirect, render_template, send_file, flash,
     make_response)
@@ -16,7 +18,7 @@ import pytz
 from dateutil.relativedelta import relativedelta
 from chellow.utils import (
     HH, req_str, req_int, req_date, parse_mpan_core, req_bool, req_hh_date,
-    hh_after, req_decimal, send_response, hh_before)
+    hh_after, req_decimal, send_response, hh_before, hh_format)
 from werkzeug.exceptions import BadRequest
 import chellow.general_import
 import io
@@ -134,7 +136,7 @@ def check_permissions(*args, **kwargs):
     path = request.path
     method = request.method
     if path in (
-            '/health', '/bmreports',
+            '/health', '/nationalgrid/sf_bsuos.xls',
             '/elexonportal/file/download/BESTVIEWPRICES_FILE', '/ecoes',
             '/ecoes/login.asp', '/ecoes/saveportfolioMpans.asp'):
         return
@@ -182,22 +184,12 @@ def check_permissions(*args, **kwargs):
     return Response('Forbidden', 403)
 
 
-el_dir = {
-    'SYSPRICE': 'sysprice'
-}
-
-
-@app.route('/bmreports')
-def bmreports():
-    element = request.args['element']
-    date_str = request.args['dT']
-    fname = Datetime.strptime(date_str, '%Y-%M-%d'). \
-        strftime('%Y_%M_%d') + '.xml'
-    f = open(
-        os.path.join(
-            os.path.dirname(__file__), 'bmreports', el_dir[element], fname))
-
-    return Response(f, status=200, mimetype='text/xml')
+@app.route('/nationalgrid/<fname>')
+def nationalgrid(fname):
+    filename = os.path.join(os.path.dirname(__file__), 'nationalgrid', fname)
+    return send_file(
+        filename, mimetype='application/binary', as_attachment=True,
+        attachment_filename=fname)
 
 
 ELEXON_LOOKUP = {
@@ -263,6 +255,49 @@ def wessexcss_get():
     response.headers['Content-type'] = 'text/css'
     return response
 
+@app.route('/fontawesome', methods=['GET'])
+def fontawesome_get():
+    sess = db.session()
+    props = Contract.get_non_core_by_name(sess, 'configuration'). \
+        make_properties()
+    response = make_response(
+        render_template(
+            'css/font-awesome.min.css', background_colour=props['background_colour']))
+    response.headers['Content-type'] = 'text/css'
+    return response
+
+@app.route('/bootstrapjs', methods=['GET'])
+def bootstrapjs_get():
+    sess = db.session()
+    props = Contract.get_non_core_by_name(sess, 'configuration'). \
+        make_properties()
+    response = make_response(
+        render_template(
+            'js/bootstrap.min.js', background_colour=props['background_colour']))
+    response.headers['Content-type'] = 'text/javascript'
+    return response
+
+@app.route('/gridsjs', methods=['GET'])
+def gridsjs_get():
+    sess = db.session()
+    props = Contract.get_non_core_by_name(sess, 'configuration'). \
+        make_properties()
+    response = make_response(
+        render_template(
+            'js/grids.min.js', background_colour=props['background_colour']))
+    response.headers['Content-type'] = 'text/javascript'
+    return response
+
+@app.route('/wessexjs', methods=['GET'])
+def wessexjs_get():
+    sess = db.session()
+    props = Contract.get_non_core_by_name(sess, 'configuration'). \
+        make_properties()
+    response = make_response(
+        render_template(
+            'js/wessex.js', background_colour=props['background_colour']))
+    response.headers['Content-type'] = 'text/javascript'
+    return response
 
 @app.route('/ecoes/saveportfolioMpans.asp', methods=['GET'])
 def ecoes_mpans_get():
@@ -789,7 +824,7 @@ def sites_get():
                 "select * from site "
                 "where lower(code || ' ' || name) like '%' || lower(:pattern) "
                 "|| '%' order by code limit :lim")).params(
-            pattern=pattern, lim=LIMIT).all()
+            pattern=pattern.strip(), lim=LIMIT).all()
 
         if len(sites) == 1:
             return redirect("/sites/" + str(sites[0].id))
@@ -1938,27 +1973,20 @@ def channel_get(channel_id):
         except ValueError as e:
             raise BadRequest("Invalid date: " + str(e))
     else:
-        era_finish = channel.era.finish_date
-        if era_finish is None:
-            start_date = Datetime.utcnow().replace(tzinfo=pytz.utc)
-        else:
-            start_date = Datetime(
-                era_finish.year, era_finish.month, 1, tzinfo=pytz.utc)
+        now = Datetime.utcnow()
+        start_date = Datetime(now.year, now.month, 1, tzinfo=pytz.utc)
 
-    if start_date is not None:
-        finish_date = start_date + relativedelta(months=1) - HH
-        era = channel.era
-        if hh_after(finish_date, era.finish_date):
-            flash("The finish date is after the end of the era.")
-        if start_date < era.start_date:
-            flash("The start date is before the start of the era.")
-        hh_data = HhDatum.query.filter(
-            HhDatum.channel == channel, HhDatum.start_date >= start_date,
-            HhDatum.start_date <= finish_date).order_by(HhDatum.start_date)
-        snags = Snag.query.filter(Snag.channel == channel).order_by(
-            Snag.start_date)
-    else:
-        hh_data = snags = None
+    finish_date = start_date + relativedelta(months=1) - HH
+    era = channel.era
+    if hh_after(finish_date, era.finish_date):
+        flash("The finish date is after the end of the era.")
+    if start_date < era.start_date:
+        flash("The start date is before the start of the era.")
+    hh_data = HhDatum.query.filter(
+        HhDatum.channel == channel, HhDatum.start_date >= start_date,
+        HhDatum.start_date <= finish_date).order_by(HhDatum.start_date)
+    snags = Snag.query.filter(Snag.channel == channel).order_by(
+        Snag.start_date)
 
     return render_template(
         'channel.html', channel=channel, start_date=start_date,
@@ -2068,7 +2096,7 @@ def channel_snag_edit_post(snag_id):
         sess = db.session()
         set_read_write(sess)
         ignore = req_bool('ignore')
-        snag = db.Snag.get_by_id(sess, snag_id)
+        snag = Snag.get_by_id(sess, snag_id)
         snag.is_ignored = ignore
         sess.commit()
         return redirect("/channel_snags/" + str(snag.id), 303)
@@ -2306,6 +2334,34 @@ def supplier_batch_get(batch_id):
             batch_reports.append(Report.get_by_id(sess, report_id))
         fields['batch_reports'] = batch_reports
     return render_template('supplier_batch.html', **fields)
+
+
+@app.route('/supplier_batches/<int:batch_id>/csv')
+def supplier_batch_csv_get(batch_id):
+    sess = db.session()
+    batch = Batch.get_by_id(sess, batch_id)
+    si = StringIO()
+    cw = csv.writer(si)
+    cw.writerow(
+        [
+            "Supplier Contract", "Batch Reference", "Bill Reference",
+            "Account", "Issued", "From", "To", "kWh", "Net", "VAT", "Gross",
+            "Type"])
+    for bill in Bill.query.filter(Bill.batch == batch).order_by(
+            Bill.reference, Bill.start_date).options(
+                joinedload(Bill.bill_type)):
+        cw.writerow(
+            [
+                batch.contract.name, batch.reference, bill.reference,
+                bill.account, hh_format(bill.issue_date),
+                hh_format(bill.start_date), hh_format(bill.finish_date),
+                str(bill.kwh), str(bill.net), str(bill.vat), str(bill.gross),
+                bill.bill_type.code])
+
+    output = make_response(si.getvalue())
+    output.headers["Content-Disposition"] = 'attachment; filename="batch.csv"'
+    output.headers["Content-type"] = "text/csv"
+    return output
 
 
 @app.route('/hh_data/<int:datum_id>/edit')
@@ -3090,9 +3146,10 @@ def supplier_bill_edit_post(bill_id):
         set_read_write(sess)
         bill = Bill.get_by_id(sess, bill_id)
         if 'delete' in request.values:
+            batch = bill.batch
             bill.delete(sess)
             sess.commit()
-            return redirect("/supplier_batches/" + str(bill.batch.id), 303)
+            return redirect("/supplier_batches/" + str(batch.id), 303)
         else:
             account = req_str("account")
             reference = req_str("reference")
@@ -3716,6 +3773,48 @@ def supply_note_add_post(supply_id):
             render_template('supply_note_add.html', supply=supply), 400)
 
 
+@app.route('/supplies/<int:supply_id>/notes/<int:index>/edit')
+def supply_note_edit_get(supply_id, index):
+    sess = db.session()
+    supply = Supply.get_by_id(sess, supply_id)
+    supply_note = eval(supply.note)
+    note = supply_note['notes'][index]
+    note['index'] = index
+    return render_template('supply_note_edit.html', supply=supply, note=note)
+
+
+@app.route('/supplies/<int:supply_id>/notes/<int:index>/edit')
+def supply_note_edit_post(supply_id, index):
+    try:
+        sess = db.session()
+        db.set_read_write(sess)
+        supply = Supply.get_by_id(sess, supply_id)
+        supply_note = eval(supply.note)
+        if 'update' in request.values:
+            category = req_str('category')
+            is_important = req_bool('is_important')
+            body = req_str('body')
+            note = supply_note['notes'][index]
+            note['category'] = category
+            note['is_important'] = is_important
+            note['body'] = body
+            supply.note = str(supply_note)
+            sess.commit()
+            return redirect('/supplies/' + str(supply_id) + '/notes', 303)
+        elif 'delete' in request.values:
+            del supply_note['notes'][index]
+            supply.note = str(supply_note)
+            sess.commit()
+            return redirect("/supplies/" + str(supply_id) + '/notes', 303)
+    except BadRequest as e:
+        flash(e.description)
+        supply_note = eval(supply.note)
+        note = supply_note['notes'][index]
+        note['index'] = index
+        return render_template(
+            'supply_note_edit.html', supply=supply, note=note)
+
+
 @app.route('/hhdc_contracts/<int:contract_id>/auto_importer')
 def hhdc_auto_importer_get(contract_id):
     sess = db.session()
@@ -4317,6 +4416,7 @@ def site_gen_graph_get(site_id):
 
     days = []
     month_points = []
+    x = 0
     for group in site.groups(sess, start_date, finish_date, True):
         rs = iter(
             sess.query(
@@ -4335,7 +4435,6 @@ def site_gen_graph_get(site_id):
             source_code, sup_id) = next(
                 rs, (None, None, None, None, None, None, None))
 
-        x = 0
         while hh_date <= group.finish_date:
             rvals = dict((n, {'pos': 0, 'neg': 0}) for n in graph_names)
 
@@ -4358,7 +4457,7 @@ def site_gen_graph_get(site_id):
                 if imp_related and source_code in ('net', 'gen-net'):
                     to_adds.append(('imp', 'pos'))
                 if not imp_related and source_code in ('net', 'gen-net'):
-                    to_adds.append(('exp', 'neg'))
+                    to_adds.append(('exp', 'pos'))
                 if (imp_related and source_code == 'gen') or \
                         (not imp_related and source_code == 'gen-net'):
                     to_adds.append(('gen', 'pos'))

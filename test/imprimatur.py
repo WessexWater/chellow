@@ -757,6 +757,7 @@ def virtual_bill_titles():
 
             # Can we see the MOP account?
             r'"mc-22 9205 6799 106"'],
+
         'status_code': 200},
 
     # Supply 2
@@ -789,7 +790,12 @@ def virtual_bill_titles():
         'path': '/eras/8/edit',
         'regexes': [
             r"22 9813 2107 763",
-            r'name="mtc_code" value="845" size="3" maxlength="3"'],
+            r'name="mtc_code" value="845" size="3" maxlength="3"',
+
+            # Form for deleting the era
+            r'<form action="/eras/8/edit">\s*'
+            r'<fieldset>\s*'
+            r'<legend>Delete this era</legend>'],
         'status_code': 200},
 
     # Can we delete the era ok? Supply 2
@@ -1340,7 +1346,13 @@ def virtual_bill_titles():
     {
         'name': "Check edit view of channel level snag",
         'path': '/channel_snags/1/edit',
-        'status_code': 200},
+        'status_code': 200,
+        'regexes': [
+            r'<form action="" method="post">\s*'
+            r'<fieldset style="border: none;">\s*'
+            r'<input type="hidden" name="ignore" value="true">\s*'
+            r'<input type="submit" value="Ignore">\s*'
+            r'</fieldset>']},
 
     # Check that for a supply with multiple eras, a channel without any data
     # can be deleted. This test needs some hh data loaded somewhere. Supply 2,
@@ -1588,6 +1600,7 @@ def virtual_bill_titles():
         'name': "Check the BGlobal data is imported to the right number of "
         "sig figs",
         'path': '/channels/1?start_year=2008&start_month=07',
+        'status_code': 200,
         'regexes': [
             r"0\.262"]},
     {
@@ -1713,7 +1726,7 @@ def virtual_bill_titles():
         'path': '/channels/32?start_year=2008&start_month=07',
         'regexes': [
             r'<td>\s*'
-            '\[<a href="/hh_data/66">'
+            '\[<a href="/hh_data/66/edit">'
             'edit</a>\]\s*</td>\s*<td>2008-07-07 00:00</td>\s*'
             '<td>0.247</td>\s*<td>A</td>'],
         'status_code': 200},
@@ -1790,9 +1803,10 @@ def virtual_bill_titles():
         'path': '/channels/32?start_year=2008&start_month=07',
         'regexes': [
             r'<tbody>\s*<tr>\s*<td>\s*'
-            '\[<a href="/hh_data/114">'
-            'edit</a>\]\s*</td>\s*<td>2008-07-08 00:00</td>\s*'
-            '<td>0.299</td>\s*<td>A</td>'],
+            r'\[<a href="/hh_data/114/edit">edit</a>\]\s*'
+            r'</td>\s*<td>2008-07-08 00:00</td>\s*'
+            r'<td>0.299</td>\s*'
+            r'<td>A</td>'],
         'status_code': 200},
 
     # supply 1, era 1, channel 1 },
@@ -3807,7 +3821,10 @@ def virtual_bill(supply_source):
         'regexes': [
             r'<a href="/supplies/2">view</a>',
             r'<a href="https://maps.google.com/maps\?q=CI005">Google Maps</a>',
-            r'<option value="imp_net">Imported</option>']},
+            r'<option value="imp_net">Imported</option>',
+            r'<form action="/reports/csv_site_hh_data">\s*'
+            r'<fieldset>\s*'
+            r'<legend>HH Data: HH Per Row Format</legend>']},
 
     # Show a dead supply. Supply 11
     {
@@ -4325,6 +4342,7 @@ def virtual_bill(supply_source):
     {
         'path': '/supplier_batches/6',
         'regexes': [
+            r'\[<a href="/supplier_batches/6/edit">edit</a>\]',
             r"<td>2010-06-09 00:00</td>\s*<td>2010-05-01 00:00</td>\s*"
             "<td>2010-05-31 23:30</td>\s*<td>32124.5</td>\s*"
             "<td>2219.41</td>\s*<td>388.4</td>\s*<td>2607.81</td>",
@@ -5531,7 +5549,7 @@ def virtual_bill(supply_source):
             '<a href="/channels/17">REACTIVE_IMP</a>\s*</td>'],
         'status_code': 200},
     {
-        'name': "View the note editing page.",
+        'name': "View the notes page.",
         'path': '/supplies/2/notes',
         'status_code': 200,
         'regexes': [
@@ -5545,6 +5563,10 @@ def virtual_bill(supply_source):
             'category': "general",
             'body': ""},
         'status_code': 303},
+    {
+        'name': "View the note editing page.",
+        'path': '/supplies/2/notes/0/edit',
+        'status_code': 200},
 
     # Try importing HH data from FTP server.
     {
@@ -5562,13 +5584,13 @@ def virtual_bill(supply_source):
     supply_source.dc_bill['net-gbp'] = 0
 """,
             'properties': """
-{'has_importer': True,
-'file_type': '.df2',
-'hostname': 'localhost',
-'port': 2121,
-'username': 'chellow',
-'password': 'HixaNfUBOf*u',
-'directories': ['.']}
+{
+    'file_type': '.df2',
+    'hostname': 'localhost',
+    'port': 2121,
+    'username': 'chellow',
+    'password': 'HixaNfUBOf*u',
+    'directories': ['.']}
 """},
         'status_code': 303},
 
@@ -6055,6 +6077,10 @@ def virtual_bill(supply_source):
             'B00LG Bieling</a>'],
         'status_code': 200},
     {
+        'name': "Site search with trailing whitespace",
+        'path': '/sites?pattern= B00LG',
+        'status_code': 302},
+    {
         'name': "Try TRIAD report when supply starts after first triad",
         'path': '/reports/41?supply_id=6&year=2007',
         'status_code': 200,
@@ -6205,8 +6231,6 @@ def virtual_bill(supply_source):
     {
         'name': "Site generation graph",
         'path': '/sites/7/gen_graph?months=1&finish_year=2013&finish_month=7',
-        'regexes': [
-            r'<input type="hidden" name="site_id" value="7">'],
         'status_code': 200},
 
     # Can we make a supply have source sub and view site level hh data okay?
@@ -8429,11 +8453,6 @@ def virtual_bill(supply_source):
             r'office:value-type="string"/>\s*'
             r'</table:table-row>']},
 
-    {
-        'name': "Show edit channel snag",
-        'path': '/channel_snags/100',
-        'status_code': 200},
-
     # GI Delete LLFC
     {
         'name': "GI Delete LLFC",
@@ -9373,6 +9392,15 @@ def virtual_bill(supply_source):
             r'"triad-estimate-gbp","0.0","triad-estimate-gsp-kw","0.0",'
             r'"triad-estimate-months","1","triad-estimate-rate","23.77056"'],
         'status_code': 200},
+
+    {
+        'name': "Displaced bills for a contract",
+        'path': '/reports/109?supplier_contract_id=33&months=1&'
+        'finish_year=2005&finish_month=11',
+        'status_code': 200,
+        'regexes': [
+            r'"CI005","Wheal Rodney","CI004","2005-11-01 00:00",'
+            r'"2005-11-30 23:30",']},
 
     # Scenario runner with default scenario
     {
@@ -10763,4 +10791,79 @@ def virtual_bill(supply_source):
             r'<td></td>\s*'
             r'<td></td>\s*'
             r'</tr>']},
+
+    {
+        'name': "Graph with export",
+        'path': '/sites/3/gen_graph?months=1&finish_year=2005&finish_month=09',
+        'status_code': 200,
+        'regexes': [
+            r'<rect\s*'
+            r'x="672px" y="64.0px" width="1px"\s*'
+            r'height="16.0px" fill="blue" />']},
+
+    {
+        'name': "BSUoS",
+        'path': '/non_core_contracts/3/edit',
+        'method': 'post',
+        'data': {
+            'name': 'system_price',
+            'properties': """
+{
+    'enabled': True,
+    'url': 'http://127.0.0.1:8080/nationalgrid/sf_bsuos.xls'}
+"""},
+        'status_code': 303},
+
+    {
+        'name': "Do an 'import now'",
+        'path': '/non_core_contracts/3/auto_importer',
+        'method': 'post',
+        'regexes': [
+            '/non_core_contracts/3/auto_importer'],
+        'status_code': 303},
+
+    {
+        'name': 'BSUoS',
+        'path': '/non_core_contracts/3/auto_importer',
+        'tries': {'max': 40, 'period': 1},
+        'regexes': [
+            r"Added new rate script\."],
+        'status_code': 200},
+
+    {
+        'name': "Site generation graph stradling groups",
+        'path': '/sites/3/gen_graph?months=2&finish_year=2005&finish_month=10',
+        'status_code': 200,
+        'regexes': [
+            r'<text x="672px" y="78.54368932038835px">\s*',
+            r'September\s*'
+            r'</text>\s*'
+            r'<text x="2112px" y="78.54368932038835px">\s*'
+            r'October\s*'
+            r'</text>']},
+
+    {
+        'name': "Confirm delete supplier bill",
+        'path': '/supplier_bills/11/edit?confirm_delete=Delete',
+        'status_code': 200,
+        'regexes': [
+            r'<form method="post" action="">\s*',
+            r'<fieldset>\s*',
+            r'<legend>Are you sure you want to delete this bill\?</legend>']},
+
+    {
+        'name': "Delete supplier bill",
+        'path': '/supplier_bills/11/edit',
+        'method': 'post',
+        'data': {
+            'delete': 'Delete'},
+        'status_code': 303},
+
+    {
+        'name': "Ignore channel snag",
+        'path': '/channel_snags/100/edit',
+        'method': 'post',
+        'data': {
+            'ignore': 'true'},
+        'status_code': 303},
 ]

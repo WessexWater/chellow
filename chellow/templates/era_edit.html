@@ -216,12 +216,11 @@
 		</form>
 		<br>
 		{% if era.supply.eras|length > 1 %}
-			<form action=".">
-				<fieldset>
-					<legend>Delete this era</legend>
-					<input type="hidden" name="era_id" value="{{era.id}}">
-					<input type="submit" name="delete" value="Delete">
-				</fieldset>
+		<form action="{{context_path}}/eras/{{era.id}}/edit">
+			<fieldset>
+				<legend>Delete this era</legend>
+				<input type="submit" name="delete" value="Delete">
+			</fieldset>
 			</form>
 		{% endif %}
 	 

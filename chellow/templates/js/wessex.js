@@ -12,6 +12,14 @@ $( document ).ready( function() {
     setTimeout( function() {
         initSameHeight();
     }, 1000 );
+
+    $( '.main-navigation h4' ).click( function() {
+         var navi 	= $( this ).closest( 'nav' );
+         var naviUl 	= $( navi ).find( 'ul' );
+
+         $( navi ).siblings().find( 'ul' ).slideUp( 400 ).removeClass( 'active' );
+         $( naviUl ).slideDown( 400 ).addClass( 'active' );
+    } );
 } );
 
 

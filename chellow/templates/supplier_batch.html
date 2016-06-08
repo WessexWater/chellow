@@ -10,7 +10,7 @@
 	<a href="{{context_path}}/supplier_contracts/{{batch.contract.id}}">{{batch.contract.name}}</a> &gt;
 	<a href="{{context_path}}/supplier_batches?supplier_contract_id={{batch.contract.id}}">Batches</a> &gt;
 	{{batch.reference}}
-	[<a href="{{context_path}}/supplier_batch/{{batch.id}}/edit">edit</a>]
+	[<a href="{{context_path}}/supplier_batches/{{batch.id}}/edit">edit</a>]
 {% endblock %}
 
 {% block content %}
@@ -54,11 +54,17 @@
 					href="{{context_path}}/supplier_bill_imports?supplier_batch_id={{batch.id}}"
 					>Bill Imports</a>
 		</li>
+		<li>
+			<a
+					href="{{context_path}}/supplier_batches/{{batch.id}}/csv"
+					>CSV of Bills</a>
+		</li>
 	</ul>
 	<table>
 		<caption>
 			Bills
-			[<a href="{{context_path}}/supplier_batches/{{batch.id}}/add_bill">add</a>]
+			[<a href="{{context_path}}/supplier_batches/{{batch.id}}/add_bill"
+					>add</a>]
 		</caption>
 		<thead>
 			<tr>
