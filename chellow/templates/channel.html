@@ -20,6 +20,7 @@
 	<form action="">
 		<fieldset>
 			<legend>Show HH Data</legend>
+			<input type="hidden" name="channel_id" value="{{channel.id}}">
 			{{input_date('start', start_date, resolution='month')}}
 			<input type="submit" value="Show">
 		</fieldset>
@@ -46,7 +47,7 @@
 			{% for hh in hh_data %}
 				<tr>
 					<td>
-						[<a href="{{context_path}}/hh_data/{{hh.id}}/edit">edit</a>]
+						[<a href="{{context_path}}/hh_data/{{hh.id}}">edit</a>]
 					</td>
 					<td>{{hh.start_date|hh_format}}</td>
 					<td>{{hh.value}}</td>

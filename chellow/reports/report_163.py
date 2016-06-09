@@ -5,11 +5,10 @@ import io
 from flask import render_template, request
 from chellow.models import (
     Session, VoltageLevel, Participant, Party, MarketRole, Llfc, Mtc,
-    MeterType)
+    MeterType, MeterPaymentType)
 from chellow.utils import hh_format, send_response
 import pytz
 from werkzeug.exceptions import BadRequest
-from sqlalchemy.orm import joinedload
 
 
 def to_iso(dmy):
@@ -34,16 +33,12 @@ def content(table, version, f):
         reader = iter(csv.reader(f))
         next(reader)
         if table == 'Line_Loss_Factor_Class':
-            LLFC_MAP = dict(
-                ((llfc.dno.participant.code, llfc.code), llfc) for
-                llfc in Llfc.query.join(Party).options(
-                    joinedload(Llfc.dno).joinedload('participant')))
             VOLTAGE_LEVEL_CODES = set(
                 [v.code for v in sess.query(VoltageLevel)])
-            DNO_MAP = dict(
-                (dno.participant.code, dno) for dno in Party.query.
-                join(MarketRole).filter(MarketRole.code == 'R').options(
-                    joinedload(Party.participant)))
+            DNO_ID_MAP = dict(
+                (code, dno_id) for code, dno_id in sess.query(
+                    Participant.code, Party.id).join(Party).join(
+                    MarketRole).filter(MarketRole.code == 'R'))
             for i, values in enumerate(reader):
                 participant_code = values[0]
                 # market_role_code = values[1]
@@ -55,16 +50,24 @@ def content(table, version, f):
                 to_date_settlement = values[7]
 
                 llfc_code = llfc_code_raw.zfill(3)
-                llfc = LLFC_MAP.get((participant_code, llfc_code))
+                try:
+                    llfc_id = sess.query(Llfc.id).filter(
+                        Llfc.dno_id == DNO_ID_MAP[participant_code],
+                        Llfc.code == llfc_code).first()
+                except KeyError:
+                    llfc_id = None
 
-                if llfc is None:
-                    try:
-                        dno = DNO_MAP[participant_code]
-                    except KeyError:
+                if llfc_id is None:
+                    participant = sess.query(Participant).filter(
+                        Participant.code == participant_code).first()
+                    if participant is None:
                         yield ''.join(
-                            "# There is no DNO with participant code ",
-                            participant_code, ".\n")
+                            "# The participant code ", participant_code,
+                            " doesn't exist in Chellow.\n")
                         continue
+
+                    dno = Party.get_by_participant_code_role_code(
+                        sess, participant.code, 'R')
 
                     voltage_level_code = 'LV'
                     llfc_description_upper = llfc_description.upper()
@@ -231,22 +234,17 @@ def content(table, version, f):
                                     meter_payment_type_code, tpr_count,
                                     valid_from_out, valid_to_out))) + "\n"
         elif table == 'MTC_in_PES_Area':
-            dnos = dict(
-                (p.participant.code, (p.id, p.dno_code)) for p in sess.query(
-                    Party).join(Participant).join(MarketRole).filter(
-                    MarketRole.code == 'R').options(
-                    joinedload(Party.participant)))
-            mtcs = dict(
-                ((m.dno_id, m.code), m) for m in Mtc.query.options(
-                    joinedload(Mtc.meter_type),
-                    joinedload(Mtc.meter_payment_type)).all())
+            market_role_r = MarketRole.get_by_code(sess, 'R')
             for i, values in enumerate(reader):
                 code_str = values[0]
                 code_int = int(code_str)
                 if not is_common_mtc(code_int):
                     code = code_str.zfill(3)
                     participant_code = values[2]
-                    dno_id, dno_code = dnos[participant_code]
+                    dno_id, dno_code = sess.query(
+                        Party.id, Party.dno_code).join(Participant).filter(
+                            Participant.code == participant_code,
+                            Party.market_role == market_role_r).first()
                     valid_from_str = values[3]
                     valid_from = Datetime.strptime(
                         valid_from_str, "%d/%m/%Y").replace(tzinfo=pytz.utc)
@@ -272,9 +270,13 @@ def content(table, version, f):
                         tpr_count = int(tpr_count_str)
 
                     mtc_dno_id = dno_id if Mtc.has_dno(code) else None
-                    mtc = mtcs.get((mtc_dno_id, code))
+                    mtc_result = sess.query(
+                        Mtc, MeterPaymentType.code, MeterType.code). \
+                        join(MeterPaymentType). \
+                        join(MeterType).filter(
+                            Mtc.dno_id == mtc_dno_id, Mtc.code == code).first()
 
-                    if mtc is None:
+                    if mtc_result is None:
                         yield ','.join(
                             (
                                 '"' + str(v) + '"' for v in (
@@ -283,22 +285,26 @@ def content(table, version, f):
                                     has_comms, is_hh, meter_type_code,
                                     meter_payment_type_code, tpr_count,
                                     valid_from_out, valid_to_out))) + "\n"
-                    elif (
-                            description, has_related_metering, has_comms,
-                            is_hh, meter_type_code, meter_payment_type_code,
-                            tpr_count, valid_from, valid_to) != (
-                            mtc.description, mtc.has_related_metering,
-                            mtc.has_comms, mtc.is_hh, mtc.meter_type.code,
-                            mtc.meter_payment_type.code, mtc.tpr_count,
-                            mtc.valid_from, mtc.valid_to):
-                        yield ','.join(
-                            (
-                                '"' + str(v) + '"' for v in (
-                                    'update', 'mtc', dno_code, code,
-                                    description, has_related_metering,
-                                    has_comms, is_hh, meter_type_code,
-                                    meter_payment_type_code, tpr_count,
-                                    valid_from_out, valid_to_out))) + "\n"
+                    else:
+                        mtc, mtc_meter_payment_type_code, \
+                            mtc_meter_type_code = mtc_result
+                        if (
+                                description, has_related_metering, has_comms,
+                                is_hh, meter_type_code,
+                                meter_payment_type_code, tpr_count, valid_from,
+                                valid_to) != (
+                                mtc.description, mtc.has_related_metering,
+                                mtc.has_comms, mtc.is_hh, mtc_meter_type_code,
+                                mtc_meter_payment_type_code, mtc.tpr_count,
+                                mtc.valid_from, mtc.valid_to):
+                            yield ','.join(
+                                (
+                                    '"' + str(v) + '"' for v in (
+                                        'update', 'mtc', dno_code, code,
+                                        description, has_related_metering,
+                                        has_comms, is_hh, meter_type_code,
+                                        meter_payment_type_code, tpr_count,
+                                        valid_from_out, valid_to_out))) + "\n"
         elif table == 'MTC_Meter_Type':
             for i, values in enumerate(reader):
                 code = values[0]

@@ -437,7 +437,7 @@ class Bill(db.Model, PersistentClass):
         sess.flush()
         return read
 
-    def delete(self, sess):
+    def delete(sess, self):
         sess.delete(self)
         sess.flush()
 
@@ -986,11 +986,7 @@ class Contract(db.Model, PersistentClass):
         return eval(self.properties, {'datetime': datetime.datetime})
 
     def make_state(self):
-        s = "{}" if self.state is None else self.state.strip()
-        if len(s) == 0:
-            return {}
-        else:
-            return eval(s)
+        return eval(self.state)
 
     def get_batch(self, sess, reference):
         batch = sess.query(Batch).filter(

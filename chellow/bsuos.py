@@ -1,6 +1,6 @@
 import xlrd
 from dateutil.relativedelta import relativedelta
-from datetime import datetime as Datetime
+import datetime
 import pytz
 import traceback
 import threading
@@ -100,7 +100,7 @@ class BsuosImporter(threading.Thread):
 
     def log(self, message):
         self.messages.appendleft(
-            Datetime.utcnow().replace(
+            datetime.datetime.utcnow().replace(
                 tzinfo=pytz.utc).strftime("%Y-%m-%d %H:%M:%S") + " - " +
             message)
         if len(self.messages) > 100:
@@ -122,23 +122,22 @@ class BsuosImporter(threading.Thread):
                         relativedelta(months=1)
                     next_month_start = this_month_start + \
                         relativedelta(months=1)
-                    now = Datetime.now(pytz.utc)
-                    props = contract.make_properties()
-                    if props.get('enabled', False):
+                    now = datetime.datetime.now(pytz.utc)
+                    if contract.make_properties().get('enabled', False):
 
                         if now > next_month_start:
-                            url = props['url']
                             self.log(
                                 "Checking to see if data is available from " +
                                 str(this_month_start) + " to " +
                                 str(next_month_start - HH) +
-                                " at " + url)
-                            res = requests.get(url)
+                                " on the National Grid website.")
+                            res = requests.get(
+                                'http://www2.nationalgrid.com/'
+                                'WorkArea/DownloadAsset.aspx?id=32719')
                             self.log(
                                 "Received " + str(res.status_code) + " " +
                                 res.reason)
-                            book = xlrd.open_workbook(
-                                file_contents=res.content)
+                            book = xlrd.open_workbook(file_contents=res.txt)
                             sheet = book.sheet_by_index(0)
 
                             ct_tz = pytz.timezone('Europe/London')
@@ -146,7 +145,7 @@ class BsuosImporter(threading.Thread):
                             month_bsuos = {}
                             for row_index in range(1, sheet.nrows):
                                 row = sheet.row(row_index)
-                                raw_date = Datetime(
+                                raw_date = datetime.datetime(
                                     *xlrd.xldate_as_tuple(
                                         row[0].value, book.datemode))
                                 hh_date_ct = ct_tz.localize(raw_date)

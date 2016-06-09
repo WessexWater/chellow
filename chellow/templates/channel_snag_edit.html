@@ -30,8 +30,9 @@
 					{% else %}
 						Not ignored
 					{% endif %}
-					<form action="" method="post">
+					<form action="." method="post">
 						<fieldset style="border: none;">
+							<input type="hidden" name="snag_id" value="{{snag.id}}">
 							<input type="hidden" name="ignore" value="
 								{%- if snag.is_ignored -%}
 									false

@@ -140,7 +140,7 @@
   </head>
   <body>
 		{% block body %}
-			<!--<p><a href="/">Chellow</a> &gt; {% block nav %}{% endblock %}</p>
+			<!--
 
 			{% with messages = get_flashed_messages() %}
 				{% if messages %}
@@ -168,9 +168,9 @@
                         	<div class="col-sm-10 top-header">
 			
                             		<div class="pull-left">
-						
-                                		<p class="panel-breadcrumbs" style="vertical-align: middle"><a href="/" title="Dashboard">Chellow</a> 
-						&raquo; <span>Dashboard</span>
+				<p class="panel-breadcrumbs"><a href="/">Chellow</a> {% block nav %}{% endblock %}</p>		
+                                		<!--<p class="panel-breadcrumbs" style="vertical-align: middle"><a href="/" title="Dashboard">Chellow</a> 
+						&raquo; <span>Dashboard</span>-->
 						</p>
                             		</div>
                         	</div>
@@ -185,13 +185,15 @@
                         <!-- Layer Sidebar -->
                         <div class="layer-sidebar col-sm-2 bgWhite bodySameHeight">
                             <div class="main-navigation">
-                                <!-- Nav Main 
+                                <!-- Nav Main -->
                                 <nav class="nav-main active">
                                     <h4><i class="fa fa-th-large" aria-hidden="true"></i> Main</h4>
                                     <ul>
+<!--
                                         <li class="Selected"><a href="/" title="Dashboard">Dashboard</a></li>
                                         <li><a href="{{context_path}}/sites" title="Sites">Sites</a></li>
                                         <li><a href="{{context_path}}/supplies" title="Supplies">Supplies</a></li>
+-->
                                         <li>
                                             <a href="#" title="Contracts">Contracts</a>
                                             <ul>
@@ -208,7 +210,7 @@
                                         <li><a href="https://github.com/WessexWater/chellow" title="Docs">Docs</a></li>
                                     </ul>
                                 </nav>
-                                 End Nav Main -->
+                                <!-- End Nav Main -->
                                 
                                 <!-- Nav Industry -->
                                 <nav class="nav-industry">
