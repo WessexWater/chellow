@@ -836,6 +836,7 @@ table.DataTable.widthAuto {
 input.input-text, 
 .standardForm .input-text, 
 .standardForm textarea, 
+.standardForm input, 
 .standardForm input[type="password"], 
 .standardForm input[type="text"], 
 .standardForm input[type="email"] {
@@ -860,6 +861,7 @@ input[type="submit"] {
     padding: 5px 10px;
     text-transform: uppercase;
     transition: background-color 230ms ease-in-out, color 230ms ease-in-out; -moz-transition: background-color 230ms ease-in-out, color 230ms ease-in-out; -o-transition: background-color 230ms ease-in-out, color 230ms ease-in-out; -webkit-transition: background-color 230ms ease-in-out, color 230ms ease-in-out;
+    width: auto !important;
 }
 
 .btn:hover, 
@@ -869,7 +871,9 @@ input[type="submit"]:hover {
     color: #FFF;
 }
 
-
+.link a::before{
+	content: "- ";
+}
 
 /* Bootstrap Overwrite */
 .page-header {
