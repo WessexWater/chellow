@@ -7,7 +7,7 @@ from chellow.models import Batch, BillType, Tpr, ReadType
 from werkzeug.exceptions import BadRequest
 import importlib
 from pkgutil import iter_modules
-from chellow.models import db, set_read_write
+from chellow.models import set_read_write, Session
 import chellow
 import chellow.bill_parser_sse_edi
 
@@ -80,7 +80,8 @@ class BillImport(threading.Thread):
         try:
             self._log(
                 "Starting to parse the file with '" + self.parser_name + "'.")
-            sess = db.session()
+            sess = Session()
+            set_read_write(sess)
             batch = Batch.get_by_id(sess, self.batch_id)
             raw_bills = self.parser.make_raw_bills()
             self._log(
@@ -88,7 +89,10 @@ class BillImport(threading.Thread):
                 "insert the raw bills.")
             for self.bill_num, raw_bill in enumerate(raw_bills):
                 try:
-                    set_read_write(sess)
+                    sess.begin_nested()
+                    sess.execute(
+                        "set transaction isolation level serializable read "
+                        "write")
                     bill_type = BillType.get_by_code(
                         sess, raw_bill['bill_type_code'])
                     bill = batch.insert_bill(
@@ -126,15 +130,19 @@ class BillImport(threading.Thread):
                     self.failed_bills.append(raw_bill)
 
             if len(self.failed_bills) == 0:
+                sess.commit()
                 self._log(
                     "All the bills have been successfully loaded and attached "
                     "to the batch.")
             else:
+                sess.rollback()
                 self._log(
-                    "The import has finished, but " +
-                    str(len(self.failed_bills)) + " bills failed to load.")
+                    "The import has finished, but there were " +
+                    str(len(self.failed_bills)) + " failures, and so the "
+                    "whole import has been rolled back.")
 
         except:
+            sess.rollback()
             self._log("I've encountered a problem: " + traceback.format_exc())
         finally:
             if sess is not None:
