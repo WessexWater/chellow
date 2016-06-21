@@ -25,9 +25,12 @@ def content(year, supply_id):
                 return [''] * 19
 
             chellow.duos.duos_vb(supply_source)
-            chellow.triad.triad_bill(supply_source)
-
+            chellow.triad.hh(supply_source)
+            chellow.triad.bill(supply_source)
             bill = supply_source.supplier_bill
+            for rname, rset in supply_source.supplier_rate_sets.items():
+                if len(rset) == 1:
+                    bill[rname] = rset.pop()
             values = [supply_source.mpan_core]
             for i in range(1, 4):
                 triad_prefix = 'triad-actual-' + str(i)

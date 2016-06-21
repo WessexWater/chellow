@@ -69,9 +69,13 @@ def content(year, site_id):
                     sess, site, chunk_start, chunk_finish, forecast_date, None,
                     caches, displaced_era)
                 chellow.duos.duos_vb(site_ds)
-                chellow.triad.triad_bill(site_ds)
+                chellow.triad.hh(site_ds)
+                chellow.triad.bill(site_ds)
 
                 bill = site_ds.supplier_bill
+                for rname, rset in site_ds.supplier_rate_sets.items():
+                    if len(rset) == 1:
+                        bill[rname] = rset.pop()
                 values = []
                 for i in range(1, 4):
                     triad_prefix = 'triad-actual-' + str(i)

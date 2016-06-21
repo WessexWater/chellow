@@ -16,19 +16,19 @@ finally:
 
 
 def triad_calc(
-        bill, prefix, triad_data, financial_year_start, financial_year_finish,
+        hh, prefix, triad_data, financial_year_start, financial_year_finish,
         data_source, month_begin):
     gsp_kw = 0
     for i, triad_hh in enumerate(triad_data):
         triad_prefix = prefix + '-' + str(i + 1)
-        bill[triad_prefix + '-date'] = triad_hh['hist-start']
-        bill[triad_prefix + '-msp-kw'] = triad_hh['msp-kw']
-        bill[triad_prefix + '-status'] = triad_hh['status']
-        bill[triad_prefix + '-laf'] = triad_hh['laf']
-        bill[triad_prefix + '-gsp-kw'] = triad_hh['gsp-kw']
+        hh[triad_prefix + '-date'] = triad_hh['hist-start']
+        hh[triad_prefix + '-msp-kw'] = triad_hh['msp-kw']
+        hh[triad_prefix + '-status'] = triad_hh['status']
+        hh[triad_prefix + '-laf'] = triad_hh['laf']
+        hh[triad_prefix + '-gsp-kw'] = triad_hh['gsp-kw']
         gsp_kw += triad_hh['gsp-kw']
 
-    bill[prefix + '-gsp-kw'] = gsp_kw / 3
+    hh[prefix + '-gsp-kw'] = gsp_kw / 3
 
     if prefix == 'triad-actual':
         tot_rate = 0
@@ -61,11 +61,10 @@ def triad_calc(
             triad_rates_contract_id, month_begin,
             'hh_demand_gbp_per_kw')[data_source.dno_code]
 
-    bill[prefix + '-rate'] = rate
+    hh[prefix + '-rate'] = rate
 
 
-def triad_bill(data_source, rate_period='monthly'):
-    bill = data_source.supplier_bill
+def hh(data_source, rate_period='monthly'):
     for hh in (h for h in data_source.hh_data if h['utc-is-month-end']):
         month_finish = hh['start-date']
         month_start = month_finish + HH - relativedelta(months=1)
@@ -109,17 +108,16 @@ def triad_bill(data_source, rate_period='monthly'):
                         est_datum['laf']
 
         triad_calc(
-            bill, 'triad-estimate', est_triad_kws, financial_year_start,
+            hh, 'triad-estimate', est_triad_kws, financial_year_start,
             financial_year_finish, data_source, month_start)
 
-        est_triad_gbp = bill['triad-estimate-rate'] * \
-            bill['triad-estimate-gsp-kw']
+        est_triad_gbp = hh['triad-estimate-rate'] * hh['triad-estimate-gsp-kw']
 
         if rate_period == 'monthly':
             total_intervals = 12
 
             est_intervals = 1
-            bill['triad-estimate-months'] = est_intervals
+            hh['triad-estimate-months'] = est_intervals
         else:
             dt = financial_year_start
             total_intervals = 0
@@ -134,9 +132,9 @@ def triad_bill(data_source, rate_period='monthly'):
                     if h['utc-decimal-hour'] == 0:
                         est_intervals += 1
 
-            bill['triad-estimate-days'] = est_intervals
+            hh['triad-estimate-days'] = est_intervals
 
-        bill['triad-estimate-gbp'] = est_triad_gbp / total_intervals * \
+        hh['triad-estimate-gbp'] = est_triad_gbp / total_intervals * \
             est_intervals
 
         if month_num == 3:
@@ -166,10 +164,10 @@ def triad_bill(data_source, rate_period='monthly'):
                 triad_kws.append(thh)
 
             triad_calc(
-                bill, 'triad-actual', triad_kws, financial_year_start,
+                hh, 'triad-actual', triad_kws, financial_year_start,
                 financial_year_finish, data_source, month_start)
-            bill['triad-actual-gbp'] = bill['triad-actual-rate'] * \
-                bill['triad-actual-gsp-kw']
+            hh['triad-actual-gbp'] = hh['triad-actual-rate'] * \
+                hh['triad-actual-gsp-kw']
 
             era = data_source.supply.find_era_at(
                 data_source.sess, month_finish)
@@ -186,8 +184,38 @@ def triad_bill(data_source, rate_period='monthly'):
                     era = data_source.supply.find_era_at(data_source.sess, dt)
 
             if rate_period == 'monthly':
-                bill['triad-all-estimates-months'] = est_intervals
+                hh['triad-all-estimates-months'] = est_intervals
             else:
-                bill['triad-all-estimates-days'] = est_intervals
-            bill['triad-all-estimates-gbp'] = est_triad_gbp / \
+                hh['triad-all-estimates-days'] = est_intervals
+            hh['triad-all-estimates-gbp'] = est_triad_gbp / \
                 total_intervals * est_intervals * -1
+
+RATE_TITLES = [
+    'triad-estimate-months', 'triad-all-estimates-months',
+    'triad-all-estimates-gbp']
+SCALAR_TITLES = []
+
+for eora in ('actual', 'estimate'):
+    for i in range(1, 4):
+        for suffix, titles in (
+                ('date', RATE_TITLES), ('msp-kw', SCALAR_TITLES),
+                ('status', RATE_TITLES), ('laf', RATE_TITLES),
+                ('gsp-kw', SCALAR_TITLES)):
+            titles.append('-'.join(('triad', eora, str(i), suffix)))
+    for suf, titles in (
+            ('rate', RATE_TITLES), ('gbp', SCALAR_TITLES),
+            ('gsp-kw', SCALAR_TITLES)):
+        titles.append('-'.join(('triad', eora, suf)))
+
+
+def bill(ds):
+    bill = ds.supplier_bill
+    rate_sets = ds.supplier_rate_sets
+    for hh in ds.hh_data:
+        for title in RATE_TITLES:
+            if title in hh:
+                rate_sets[title].add(hh[title])
+
+        for title in SCALAR_TITLES:
+            if title in hh:
+                bill[title] += hh[title]

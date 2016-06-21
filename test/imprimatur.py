@@ -2066,6 +2066,23 @@ import chellow.tlms
 import chellow.duos
 import chellow.system_price
 
+TRIAD_TITLES = (
+    'triad-actual-1-date', 'triad-actual-1-msp-kw', 'triad-actual-1-status',
+    'triad-actual-1-laf', 'triad-actual-1-gsp-kw', 'triad-actual-2-date',
+    'triad-actual-2-msp-kw', 'triad-actual-2-status', 'triad-actual-2-laf',
+    'triad-actual-2-gsp-kw', 'triad-actual-3-date', 'triad-actual-3-msp-kw',
+    'triad-actual-3-status', 'triad-actual-3-laf', 'triad-actual-3-gsp-kw',
+    'triad-actual-gsp-kw', 'triad-actual-rate', 'triad-actual-gbp',
+    'triad-estimate-1-date', 'triad-estimate-1-msp-kw',
+    'triad-estimate-1-status', 'triad-estimate-1-laf',
+    'triad-estimate-1-gsp-kw', 'triad-estimate-2-date',
+    'triad-estimate-2-msp-kw', 'triad-estimate-2-status',
+    'triad-estimate-2-laf', 'triad-estimate-2-gsp-kw', 'triad-estimate-3-date',
+    'triad-estimate-3-msp-kw', 'triad-estimate-3-status',
+    'triad-estimate-3-laf', 'triad-estimate-3-gsp-kw', 'triad-estimate-gsp-kw',
+    'triad-estimate-rate', 'triad-estimate-months', 'triad-estimate-gbp',
+    'triad-all-estimates-months', 'triad-all-estimates-gbp')
+
 
 def virtual_bill_titles():
     return [
@@ -2082,24 +2099,8 @@ def virtual_bill_titles():
         'summer-pk-gbp', 'winter-low-pk-msp-kwh', 'winter-low-pk-gsp-kwh',
         'winter-low-pk-gbp', 'winter-off-pk-msp-kwh', 'winter-off-pk-gsp-kwh',
         'winter-off-pk-gbp', 'winter-pk-msp-kwh', 'winter-pk-gsp-kwh',
-        'winter-pk-gbp', 'bsuos-kwh', 'bsuos-rate', 'bsuos-gbp',
-        'triad-actual-1-date', 'triad-actual-1-msp-kw',
-        'triad-actual-1-status', 'triad-actual-1-laf', 'triad-actual-1-gsp-kw',
-        'triad-actual-2-date', 'triad-actual-2-msp-kw',
-        'triad-actual-2-status', 'triad-actual-2-laf', 'triad-actual-2-gsp-kw',
-        'triad-actual-3-date', 'triad-actual-3-msp-kw',
-        'triad-actual-3-status', 'triad-actual-3-laf', 'triad-actual-3-gsp-kw',
-        'triad-actual-gsp-kw', 'triad-actual-rate', 'triad-actual-gbp',
-        'triad-estimate-1-date', 'triad-estimate-1-msp-kw',
-        'triad-estimate-1-status', 'triad-estimate-1-laf',
-        'triad-estimate-1-gsp-kw', 'triad-estimate-2-date',
-        'triad-estimate-2-msp-kw', 'triad-estimate-2-status',
-        'triad-estimate-2-laf', 'triad-estimate-2-gsp-kw',
-        'triad-estimate-3-date', 'triad-estimate-3-msp-kw',
-        'triad-estimate-3-status', 'triad-estimate-3-laf',
-        'triad-estimate-3-gsp-kw', 'triad-estimate-gsp-kw',
-        'triad-estimate-rate', 'triad-estimate-months', 'triad-estimate-gbp',
-        'triad-all-estimates-months', 'triad-all-estimates-gbp', 'problem']
+        'winter-pk-gbp', 'bsuos-kwh', 'bsuos-rate', 'bsuos-gbp'] + \
+        list(TRIAD_TITLES) + ['problem']
 
 def displaced_virtual_bill_titles():
     return [
@@ -2112,23 +2113,8 @@ def displaced_virtual_bill_titles():
         'summer-pk-msp-kwh', 'triad-gbp', 'triad-working', 'winter-low-pk-gbp',
         'winter-low-pk-gsp-kwh', 'winter-low-pk-msp-kwh', 'winter-off-pk-gbp',
         'winter-off-pk-gsp-kwh', 'winter-off-pk-msp-kwh', 'winter-pk-gbp',
-        'winter-pk-gsp-kwh', 'winter-pk-msp-kwh', 'triad-actual-1-date',
-        'triad-actual-1-msp-kw', 'triad-actual-1-status', 'triad-actual-1-laf',
-        'triad-actual-1-gsp-kw', 'triad-actual-2-date',
-        'triad-actual-2-msp-kw', 'triad-actual-2-status', 'triad-actual-2-laf',
-        'triad-actual-2-gsp-kw', 'triad-actual-3-date',
-        'triad-actual-3-msp-kw', 'triad-actual-3-status', 'triad-actual-3-laf',
-        'triad-actual-3-gsp-kw', 'triad-actual-gsp-kw', 'triad-actual-rate',
-        'triad-actual-gbp', 'triad-estimate-1-date', 'triad-estimate-1-msp-kw',
-        'triad-estimate-1-status', 'triad-estimate-1-laf',
-        'triad-estimate-1-gsp-kw', 'triad-estimate-2-date',
-        'triad-estimate-2-msp-kw', 'triad-estimate-2-status',
-        'triad-estimate-2-laf', 'triad-estimate-2-gsp-kw',
-        'triad-estimate-3-date', 'triad-estimate-3-msp-kw',
-        'triad-estimate-3-status', 'triad-estimate-3-laf',
-        'triad-estimate-3-gsp-kw', 'triad-estimate-gsp-kw',
-        'triad-estimate-rate', 'triad-estimate-months', 'triad-estimate-gbp',
-        'triad-all-estimates-months', 'triad-all-estimates-gbp', 'problem']
+        'winter-pk-gsp-kwh', 'winter-pk-msp-kwh'] + list(TRIAD_TITLES) + \
+        ['problem']
 
 slot_names = [
     'winter-pk', 'winter-low-pk', 'winter-off-pk', 'summer-pk', 'night',
@@ -2143,6 +2129,7 @@ for slot_name in slot_names:
 
 def displaced_virtual_bill(supply_source):
     bill = supply_source.supplier_bill
+    rate_sets = supply_source.supplier_rate_sets
 
     # just check that revolving works
     supply_source.revolve_to_3rd_party_used()
@@ -2157,6 +2144,8 @@ def displaced_virtual_bill(supply_source):
     supply_source.is_green = False
     chellow.duos.duos_vb(supply_source)
     chellow.ccl.ccl(supply_source)
+    chellow.triad.hh(supply_source)
+    chellow.triad.bill(supply_source)
 
     for hh in sorted(supply_source.hh_data, key=itemgetter('start-date')):
         is_weekday = hh['utc-day-of-week'] < 5
@@ -2186,13 +2175,11 @@ def displaced_virtual_bill(supply_source):
             bill['ccl-kwh'] += hh['ccl-kwh']
             bill['ccl-gbp'] += hh['ccl-gbp']
 
-
-    chellow.triad.triad_bill(supply_source)
     chellow.tlms.hh(supply_source)
     chellow.bsuos.hh(supply_source)
     chellow.system_price.hh(supply_source)
 
-    for rate_name, rate_set in supply_source.supplier_rate_sets.items():
+    for rate_name, rate_set in rate_sets.items():
         if len(rate_set) == 1:
             bill[rate_name] = rate_set.pop()
 
@@ -2207,6 +2194,9 @@ def displaced_virtual_bill(supply_source):
 def virtual_bill(supply_source):
     chellow.duos.duos_vb(supply_source)
     chellow.ccl.ccl(supply_source)
+    chellow.triad.hh(supply_source)
+    chellow.triad.bill(supply_source)
+    rate_sets = supply_source.supplier_rate_sets
     bill = supply_source.supplier_bill
     bill.update(
         {
@@ -2225,33 +2215,33 @@ def virtual_bill(supply_source):
     supply_capacity = supply_source.sc
     supply_source.is_green = False
 
-    for datum in sorted(supply_source.hh_data, key=itemgetter('start-date')):
-        is_weekday = datum['utc-day-of-week'] < 5
-        if is_weekday and datum['utc-month'] in (1, 12) and \
-                16 < datum['utc-decimal-hour'] <= 19:
+    for hh in sorted(supply_source.hh_data, key=itemgetter('start-date')):
+        is_weekday = hh['utc-day-of-week'] < 5
+        if is_weekday and hh['utc-month'] in (1, 12) and \
+                16 < hh['utc-decimal-hour'] <= 19:
             slot_key = 'winter-pk'
-        elif is_weekday and datum['utc-month'] in (2, 11) and \
-                16 < datum['utc-decimal-hour'] <= 19:
+        elif is_weekday and hh['utc-month'] in (2, 11) and \
+                16 < hh['utc-decimal-hour'] <= 19:
             slot_key = 'winter-low-pk'
-        elif is_weekday and (datum['utc-month'] > 10 or \
-                datum['utc-month'] < 4) and \
-                8 < datum['utc-decimal-hour'] <= 20:
+        elif is_weekday and (hh['utc-month'] > 10 or \
+                hh['utc-month'] < 4) and \
+                8 < hh['utc-decimal-hour'] <= 20:
             slot_key = 'winter-off-pk'
-        elif is_weekday and (datum['utc-month'] > 3 or \
-                datum['utc-month'] < 11) and \
-                8 < datum['utc-decimal-hour'] <= 20:
+        elif is_weekday and (hh['utc-month'] > 3 or \
+                hh['utc-month'] < 11) and \
+                8 < hh['utc-decimal-hour'] <= 20:
             slot_key = 'summer-pk'
-        elif 0 < datum['utc-decimal-hour'] <= 7:
+        elif 0 < hh['utc-decimal-hour'] <= 7:
             slot_key = 'night'
         else:
             slot_key = 'other'
         slot_keys = slots[slot_key]
-        bill[slot_keys['msp-kwh']] += datum['msp-kwh']
-        bill[slot_keys['gsp-kwh']] += datum['gsp-kwh']
+        bill[slot_keys['msp-kwh']] += hh['msp-kwh']
+        bill[slot_keys['gsp-kwh']] += hh['gsp-kwh']
 
-        if 'ccl-kwh' in datum:
-            bill['ccl-kwh'] += datum['ccl-kwh']
-            bill['ccl-gbp'] += datum['ccl-gbp']
+        if 'ccl-kwh' in hh:
+            bill['ccl-kwh'] += hh['ccl-kwh']
+            bill['ccl-gbp'] += hh['ccl-gbp']
 
     month_begin = Datetime(
         supply_source.start_date.year, supply_source.start_date.month, 1,
@@ -2261,7 +2251,6 @@ def virtual_bill(supply_source):
     bill['data-collection-gbp'] += 5.89
     bill['settlement-gbp'] += 88
 
-    chellow.triad.triad_bill(supply_source)
     chellow.tlms.hh(supply_source)
     chellow.bsuos.hh(supply_source)
     chellow.system_price.hh(supply_source)
@@ -2271,7 +2260,7 @@ def virtual_bill(supply_source):
         slot_keys = slots[slot_name]
         bill[slot_keys['gbp']] = bill[slot_keys['gsp-kwh']] * rates[slot_name]
 
-    for rate_name, rate_set in supply_source.supplier_rate_sets.items():
+    for rate_name, rate_set in rate_sets.items():
         if len(rate_set) == 1:
             bill[rate_name] = rate_set.pop()
 
@@ -3671,6 +3660,8 @@ def displaced_virtual_bill(supply_source):
     supply_source.is_green = False
     chellow.duos.duos_vb(supply_source)
     chellow.ccl.ccl(supply_source)
+    chellow.triad.hh(supply_source)
+    chellow.triad.bill(supply_source)
 
     for datum in sorted(supply_source.hh_data, key=itemgetter('start-date')):
         is_weekday = datum['start-date'].weekday() < 5
@@ -3699,7 +3690,6 @@ def displaced_virtual_bill(supply_source):
             bill['ccl-kwh'] += datum['ccl-kwh']
             bill['ccl-gbp'] += datum['ccl-gbp']
 
-    chellow.triad.triad_bill(supply_source)
     chellow.tlms.hh(supply_source)
     chellow.bsuos.hh(supply_source)
     chellow.aahedc.hh(supply_source)
@@ -3721,7 +3711,8 @@ def displaced_virtual_bill(supply_source):
 def virtual_bill(supply_source):
     chellow.duos.duos_vb(supply_source)
     chellow.ccl.ccl(supply_source)
-    chellow.triad.triad_bill(supply_source)
+    chellow.triad.hh(supply_source)
+    chellow.triad.bill(supply_source)
     chellow.tlms.hh(supply_source)
     chellow.rcrc.hh(supply_source)
     chellow.bsuos.hh(supply_source)
