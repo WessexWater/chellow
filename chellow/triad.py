@@ -190,11 +190,11 @@ def hh(data_source, rate_period='monthly'):
             hh['triad-all-estimates-gbp'] = est_triad_gbp / \
                 total_intervals * est_intervals * -1
 
-RATE_TITLES = [
+RATE_TITLES = {
     'triad-estimate-months', 'triad-all-estimates-months',
     'triad-estimate-days', 'triad-all-estimates-days',
-    'triad-all-estimates-gbp']
-SCALAR_TITLES = []
+    'triad-all-estimates-gbp'}
+SCALAR_TITLES = set()
 
 for eora in ('actual', 'estimate'):
     for i in range(1, 4):
@@ -202,21 +202,19 @@ for eora in ('actual', 'estimate'):
                 ('date', RATE_TITLES), ('msp-kw', SCALAR_TITLES),
                 ('status', RATE_TITLES), ('laf', RATE_TITLES),
                 ('gsp-kw', SCALAR_TITLES)):
-            titles.append('-'.join(('triad', eora, str(i), suffix)))
+            titles.add('-'.join(('triad', eora, str(i), suffix)))
     for suf, titles in (
             ('rate', RATE_TITLES), ('gbp', SCALAR_TITLES),
             ('gsp-kw', SCALAR_TITLES)):
-        titles.append('-'.join(('triad', eora, suf)))
+        titles.add('-'.join(('triad', eora, suf)))
 
 
 def bill(ds):
     bill = ds.supplier_bill
     rate_sets = ds.supplier_rate_sets
     for hh in ds.hh_data:
-        for title in RATE_TITLES:
-            if title in hh:
-                rate_sets[title].add(hh[title])
+        for title in RATE_TITLES & hh.keys():
+            rate_sets[title].add(hh[title])
 
-        for title in SCALAR_TITLES:
-            if title in hh:
-                bill[title] += hh[title]
+        for title in SCALAR_TITLES & hh.keys():
+            bill[title] += hh[title]
