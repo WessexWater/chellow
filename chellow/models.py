@@ -3045,21 +3045,3 @@ def find_db_version(session):
         Contract.name == 'configuration', MarketRole.code == 'Z').one()
     conf_state = conf.make_state()
     return conf_state.get('db_version', 0)
-
-
-def is_db_version_correct(session):
-    db_version = find_db_version(session)
-    curr_version = len(upgrade_funcs)
-    if db_version is None:
-        log_message(
-            "It looks like the chellow database hasn't been initialized. "
-            "To initialize the database run the 'chellow_db_init' command.")
-    elif db_version < curr_version:
-        log_message(
-            "It looks like the version of the Chellow database is " +
-            str(db_version) + " but this version of Chellow needs version " +
-            str(curr_version) + ". To upgrade the database run the " +
-            "'chellow_db_upgrade' command.")
-    else:
-        return True
-    return False
