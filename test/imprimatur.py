@@ -5886,14 +5886,10 @@ def virtual_bill(supply_source):
         'status_code': 200},
     {
         'name': "Check CSV Supplies HH Data. With supply_id",
-        'path': '/reports/169',
-        'method': 'post',
-        'data': {
-            'supply_id': '1', 'imp_related': 'true', 'channel_type': 'ACTIVE',
-            'start_year': '2008', 'start_month': '7', 'start_day': '1',
-            'start_hour': '0', 'start_minute': '0', 'finish_year': '2008',
-            'finish_month': '07', 'finish_day': '31', 'finish_hour': '23',
-            'finish_minute': '30'},
+        'path': '/reports/169?supply_id=1&imp_related=true&'
+        'channel_type=ACTIVE&start_year=2008&start_month=7&start_day=1&'
+        'start_hour=0&start_minute=0&finish_year=2008&finish_month=07&'
+        'finish_day=31&finish_hour=23&finish_minute=30',
         'status_code': 303},
     {
         'path': '/downloads',

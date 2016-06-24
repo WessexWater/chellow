@@ -108,15 +108,11 @@ def content(
             sess.close()
 
 
+def do_get(sess):
+    return handle_request()
+
+
 def do_post(sess):
-    start_date = req_date('start')
-    finish_date = req_date('finish')
-    imp_related = req_bool('imp_related')
-    channel_type = req_str('channel_type')
-    is_zipped = req_bool('is_zipped')
-
-    supply_id = req_int('supply_id') if 'supply_id' in request.values else None
-
     if 'mpan_cores' in request.values:
         mpan_cores_str = req_str('mpan_cores')
         mpan_cores = mpan_cores_str.splitlines()
@@ -125,9 +121,16 @@ def do_post(sess):
         else:
             for i in range(len(mpan_cores)):
                 mpan_cores[i] = parse_mpan_core(mpan_cores[i])
-    else:
-        mpan_cores = None
+    return handle_request(mpan_cores)
 
+
+def handle_request(mpan_cores=None):
+    start_date = req_date('start')
+    finish_date = req_date('finish')
+    imp_related = req_bool('imp_related')
+    channel_type = req_str('channel_type')
+    is_zipped = req_bool('is_zipped')
+    supply_id = req_int('supply_id') if 'supply_id' in request.values else None
     user = g.user
     threading.Thread(
         target=content, args=(
