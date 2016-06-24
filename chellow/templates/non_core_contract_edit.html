@@ -39,17 +39,8 @@
 				Properties
 				<br>
 				{{ input_textarea('properties', contract.properties, 20, 80) }}
-				<br>
-				{% if contract.name == 'bsuos' %}
-					<pre>{
-    'enabled': True,
-    'url': 'http://www2.nationalgrid.com/Current-SF-BSUoS-Data/'}</pre>
-				{% elif contract.name == 'tlms' %}
-					<pre>{
-    'enabled': True,
-    'url': 'https://downloads.elexonportal.co.uk/'}</pre>
-				{% endif %}
-				<br>
+				<br />
+				<br />
 				<input type="submit" value="Update">
 			</fieldset>
 		</form>

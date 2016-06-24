@@ -1,0 +1,9 @@
+
+[docs]
+Sphinx
+docutils
+pylons-sphinx-themes >= 0.3
+
+[testing]
+nose
+coverage

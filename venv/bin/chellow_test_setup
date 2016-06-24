@@ -1,0 +1,10 @@
+#!/home/JuviAndaya/chellow/venv/bin/python
+# EASY-INSTALL-ENTRY-SCRIPT: 'chellow==100','console_scripts','chellow_test_setup'
+__requires__ = 'chellow==100'
+import sys
+from pkg_resources import load_entry_point
+
+if __name__ == '__main__':
+    sys.exit(
+        load_entry_point('chellow==100', 'console_scripts', 'chellow_test_setup')()
+    )

@@ -31,7 +31,7 @@ setup(
         'templates/*.html',
         'templates/*.css',
         'static/fonts/*.ttf',
-        'nationalgrid/*',
+        'bmreports/sysprice/*.xml',
         'elexonportal/*']},
     install_requires=[
         'Flask==0.10.1',
@@ -42,7 +42,7 @@ setup(
         'pytz==2015.6',
         'xlrd==0.9.4',
         'ftputil==3.2',
-        'requests==2.10.0',
+        'requests==2.8.1',
         'waitress==0.8.10',
         'pep3143daemon==0.0.6',
         'pip>=8.1.1',

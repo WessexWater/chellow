@@ -97,7 +97,7 @@ def content(scenario_props, scenario_id, base_name, site_id, supply_id, user):
             Era.start_date <= finish_date,
             or_(
                 Era.finish_date == null(),
-                Era.finish_date >= start_date)).distinct().order_by(Site.code)
+                Era.finish_date >= start_date)).distinct()
         if site_id is not None:
             site = Site.get_by_id(sess, site_id)
             sites = sites.filter(Site.id == site.id)
