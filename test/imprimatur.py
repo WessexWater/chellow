@@ -6438,6 +6438,7 @@ def virtual_bill(supply_source):
         'path': '/hhdc_batches/8',
         'status_code': 200,
         'regexes': [
+            r'<a href="/local_reports/1/output\?batch_id=8">',
             r"<tbody>\s*<tr>"]},
 
     # Supplier contract 61, batch 7, bill 10
