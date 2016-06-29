@@ -17,45 +17,6 @@
 {% endblock %}
 
 {% block content %}
-	<form action="">
-		<fieldset>
-			<legend>Show HH Data</legend>
-			{{input_date('start', start_date, resolution='month')}}
-			<input type="submit" value="Show">
-		</fieldset>
-	</form>
-	<br>
-	<table><caption>HH Data</caption>
-		<thead>
-			<tr>
-				<th>Edit</th>
-				<th>Start Time</th>
-				<th>
-					{% if channel.imp_related %}
-						Import
-					{% else %}
-						Export
-					{% endif %}
-
-					{{channel.channel_type}}
-				</th>
-				<th>Status</th>
-			</tr>
-		</thead>
-		<tbody>
-			{% for hh in hh_data %}
-				<tr>
-					<td>
-						[<a href="{{context_path}}/hh_data/{{hh.id}}/edit">edit</a>]
-					</td>
-					<td>{{hh.start_date|hh_format}}</td>
-					<td>{{hh.value}}</td>
-					<td>{{hh.status}}</td>
-				</tr>
-			{% endfor %}
-		</tbody>
-	</table>
-	<br>
 	<table><caption>Snags</caption>
 		<thead>
 			<tr>
@@ -84,6 +45,36 @@
 					</td>
 				</tr>
 			{% endfor %}
+		</tbody>
+	</table>
+	<br>
+	<br>
+	<table><caption>HH Data</caption>
+		<thead>
+			<tr>
+				<th>Edit</th>
+				<th>Start Time</th>
+				<th>
+					{% if channel.imp_related %}
+						Import
+					{% else %}
+						Export
+					{% endif %}
+
+					{{channel.channel_type}}
+				</th>
+				<th>Status</th>
+			</tr>
+		</thead>
+		<tbody>
+			{% for hh in hh_data %}
+				<tr>
+					<td>[<a href="{{context_path}}/hh_data/{{hh.id}}/edit">edit</a>]</td>
+					<td>{{hh.start_date|hh_format}}</td>
+					<td>{{hh.value}}</td>
+					<td>{{hh.status}}</td>
+				</tr>
+			{%- endfor %}
 		</tbody>
 	</table>
 {% endblock %}

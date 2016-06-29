@@ -1288,7 +1288,6 @@ def virtual_bill_titles():
             r"The import has completed.*successfully\."],
         'status_code': 200},
 
-    # Make sure 'show HH data' button works, supply 6, era 6
     {
         'name': "Manipulate channels",
         'path': '/channels/19',
@@ -1296,20 +1295,12 @@ def virtual_bill_titles():
             r"Import\s*ACTIVE"],
         'status_code': 200},
 
-    # Manipulate Hh data"
     {
-        'name': "Make sure 'show HH data' button works, supply 6, era 6",
+        'name': "View channel, supply 6, era 6",
         'path': '/channels/21',
         'regexes': [
-            r"Export\s*REACTIVE_EXP",
-            r'action="">'],
+            r"Export\s*REACTIVE_EXP"],
         'status_code': 200},
-    {
-        'name': "Give good error for invalid date.",
-        'path': '/channels/21?start_year=2006&start_month=13',
-        'regexes': [
-            r"Invalid date"],
-        'status_code': 400},
     {
         'name': "Check site level snag",
         'path': '/site_snags',

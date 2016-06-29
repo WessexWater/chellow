@@ -1899,32 +1899,12 @@ def supply_get(supply_id):
 def channel_get(channel_id):
     sess = db.session()
     channel = Channel.get_by_id(sess, channel_id)
-    if 'start_year' in request.values:
-        start_year = req_int('start_year')
-        start_month = req_int('start_month')
-        try:
-            start_date = Datetime(start_year, start_month, 1, tzinfo=pytz.utc)
-        except ValueError as e:
-            raise BadRequest("Invalid date: " + str(e))
-    else:
-        now = Datetime.utcnow()
-        start_date = Datetime(now.year, now.month, 1, tzinfo=pytz.utc)
-
-    finish_date = start_date + relativedelta(months=1) - HH
-    era = channel.era
-    if hh_after(finish_date, era.finish_date):
-        flash("The finish date is after the end of the era.")
-    if start_date < era.start_date:
-        flash("The start date is before the start of the era.")
     hh_data = HhDatum.query.filter(
-        HhDatum.channel == channel, HhDatum.start_date >= start_date,
-        HhDatum.start_date <= finish_date).order_by(HhDatum.start_date)
+        HhDatum.channel == channel).order_by(HhDatum.start_date)
     snags = Snag.query.filter(Snag.channel == channel).order_by(
         Snag.start_date)
-
     return render_template(
-        'channel.html', channel=channel, start_date=start_date,
-        hh_data=hh_data, snags=snags)
+        'channel.html', channel=channel, hh_data=hh_data, snags=snags)
 
 
 @app.route('/hhdc_contracts/<int:contract_id>/hh_imports')
