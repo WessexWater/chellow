@@ -40,6 +40,7 @@ import chellow.bsuos
 import chellow.tlms
 import chellow.bank_holidays
 import chellow.dloads
+from decimal import Decimal
 
 
 APPLICATION_ROOT = app.config['APPLICATION_ROOT']
@@ -2905,7 +2906,7 @@ def supplier_bill_get(bill_id):
         RegisterRead.present_date.desc())
     fields = {'bill': bill, 'register_reads': register_reads}
     try:
-        breakdown_dict = eval(bill.breakdown, {})
+        breakdown_dict = eval(bill.breakdown, {'Decimal': Decimal})
 
         raw_lines = []
         for key in ('raw_lines', 'raw-lines'):
@@ -2942,6 +2943,8 @@ def supplier_bill_get(bill_id):
             column_name = pair[-1]
             rows.add(row_name)
             columns.add(column_name)
+            if isinstance(v, set):
+                v = ', '.join(str(r) for r in sorted(list(v)))
             grid[row_name][column_name] = v
 
         column_list = sorted(list(columns))
@@ -2954,6 +2957,7 @@ def supplier_bill_get(bill_id):
             column_list.append('gbp')
 
         row_list = sorted(list(rows))
+
         fields.update(
             {
                 'raw_lines': raw_lines, 'row_list': row_list,
