@@ -102,10 +102,9 @@ def content(batch_id, bill_id, user):
 
             era = supply.find_era_at(sess, bill.finish_date)
             if era is None:
-                tmp_file.write(
-                    "\n,,,,,,,,,,Extraordinary! There isn't a era for "
-                    "this bill!")
-                continue
+                raise BadRequest(
+                    "Extraordinary! There isn't an era for the bill " +
+                    str(bill.id) + ".")
 
             tmp_file.write(
                 ','.join(
