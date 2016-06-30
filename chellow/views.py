@@ -2185,7 +2185,7 @@ def supplier_bill_imports_post():
         batch_id = req_int('supplier_batch_id')
         batch = Batch.get_by_id(sess, batch_id)
         file_item = request.files["import_file"]
-        f = io.StringIO(str(file_item.stream.read(), 'utf-8'))
+        f = io.StringIO(str(file_item.stream.read(), 'utf-8', errors='ignore'))
         f.seek(0, os.SEEK_END)
         file_size = f.tell()
         f.seek(0)
