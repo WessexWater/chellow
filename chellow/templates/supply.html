@@ -14,32 +14,38 @@
       }
 
       function collapseBills(collapseId) {
-        var collapsibles = document.getElementsByClassName('collapsible_' + collapseId);
+        var collapsibles = document.getElementsByClassName(
+						'collapsible_' + collapseId);
         for (var i = 0; i < collapsibles.length; i++) {
           collapsibles[i].style.display = 'none';
         }
-        var expanders = document.getElementsByClassName('expander_' + collapseId);
+        var expanders = document.getElementsByClassName(
+					'expander_' + collapseId);
         for (var i = 0; i < expanders.length; i++) {
-          expanders[i].style.display = 'inline';
+          expanders[i].style.display = 'table-row';
         }
-        var collapsers = document.getElementsByClassName('collapser_' + collapseId);
+        var collapsers = document.getElementsByClassName(
+					'collapser_' + collapseId);
         for (var i = 0; i < collapsers.length; i++) {
           collapsers[i].style.display = 'none';
         }
       }
 
       function expandBills(collapseId) {
-        var collapsibles = document.getElementsByClassName('collapsible_' + collapseId);
+        var collapsibles = document.getElementsByClassName(
+					'collapsible_' + collapseId);
         for (var i = 0; i < collapsibles.length; i++) {
-          collapsibles[i].style.display = 'block';
+          collapsibles[i].style.display = 'table-row';
         }
-        var expanders = document.getElementsByClassName('expander_' + collapseId);
+        var expanders = document.getElementsByClassName(
+					'expander_' + collapseId);
         for (var i = 0; i < expanders.length; i++) {
           expanders[i].style.display = 'none';
         }
-        var collapsers = document.getElementsByClassName('collapser_' + collapseId);
+        var collapsers = document.getElementsByClassName(
+					'collapser_' + collapseId);
         for (var i = 0; i < collapsers.length; i++) {
-          collapsers[i].style.display = 'inline';
+          collapsers[i].style.display = 'table-row';
         }
       }    
     
@@ -118,7 +124,7 @@
 			</td>
 		</tr>
 	</table>
-	<br />
+	<br>
 	{% for era_bundle in era_bundles %}
 		{% set era = era_bundle['era'] %}
 		{% set physical_site = era_bundle['physical_site'] %}
@@ -294,7 +300,7 @@
 					</tr>
 				</tbody>
 		</table>
-		<br/>
+		<br>
 		<table>
 			{% set imp_bills = era_bundle['imp_bills'] %}
 			<caption>Import Supplier Bills</caption>
@@ -343,21 +349,24 @@
 					{% set bill = bill_dict['bill'] %}
 					{% set rows_high = bill_dict['rows_high'] %}
 					{% if bill_dict.first_collapsible %}
-						<tr style="background-color: silver; cursor: pointer;">
+						<tr
+								style="background-color: silver; cursor: pointer;"
+								class="expander_{{bill_dict.collapse_id}}">
 							<td
 								style="text-decoration: none; padding-top: 0px; padding-bottom: 0px; font-size: x-small;"
 								colspan="{{9 + imp_bills['inner_headers']|length * 4 + imp_bills['num_outer_cols'] * 5}}"
-								class="expander_{{bill_dict.collapse_id}}"
 								onClick="expandBills({{bill_dict.collapse_id}})"
 							>
 								+
 							</td>
+						</tr>
+						<tr
+								style="background-color: silver; cursor: pointer; display: none"
+								class="collapser_{{bill_dict.collapse_id}}">
 							<td
-								style="text-decoration: none; display: none; padding-top: 0px; padding-bottom: 0px; font-size: x-small;"
+								style="text-decoration: none; padding-top: 0px; padding-bottom: 0px; font-size: x-small;"
 								colspan="{{9 + imp_bills['inner_headers']|length * 4 + imp_bills['num_outer_cols'] * 5}}"
-								class="collapser_{{bill_dict.collapse_id}}"
-								onClick="collapseBills({{bill_dict.collapse_id}})"
-							>
+								onClick="collapseBills({{bill_dict.collapse_id}})">
 								-
 							</td>
 						</tr>
@@ -371,22 +380,22 @@
 					>
 						<td rowspan="{{ rows_high }}">
 							<a href="{{ context_path }}/supplier_bills/{{bill.id}}">View</a>
-							</td>
-							<td rowspan="{{ rows_high }}">
-								<a title="{{bill.start_date|hh_format}}">{{bill.start_date|hh_format('date')}}</a>
-							</td>
-							<td rowspan="{{ rows_high }}">
-								<a title="{{ bill.finish_date|hh_format }}">{{ bill.finish_date|hh_format('date') }}</a>
-							</td>
-							<td rowspan="{{ rows_high }}">
+						</td>
+						<td rowspan="{{ rows_high }}">
+							<a title="{{bill.start_date|hh_format}}">{{bill.start_date|hh_format('date')}}</a>
+						</td>
+						<td rowspan="{{ rows_high }}">
+							<a title="{{ bill.finish_date|hh_format }}">{{ bill.finish_date|hh_format('date') }}</a>
+						</td>
+						<td rowspan="{{ rows_high }}">
 								<a href="{{context_path}}/supplier_batches/{{bill.batch.id}}">{{bill.batch.reference}}</a>
-							</td>
-							<td rowspan="{{ rows_high }}">{{ bill.reference }}</td>
-							<td rowspan="{{ rows_high }}">{{ bill.kwh }}</td>
-							<td rowspan="{{ rows_high }}">{{ bill.net }}</td>
-							<td rowspan="{{ rows_high }}">{{ bill.vat }}</td>
-							<td rowspan="{{ rows_high }}">
-								<a href="{{ context_path }}/bill_types/{{bill.bill_type.id}}" title="{{bill.bill_type.description}}">{{bill.bill_type.code}}</a>
+						</td>
+						<td rowspan="{{ rows_high }}">{{ bill.reference }}</td>
+						<td rowspan="{{ rows_high }}">{{ bill.kwh }}</td>
+						<td rowspan="{{ rows_high }}">{{ bill.net }}</td>
+						<td rowspan="{{ rows_high }}">{{ bill.vat }}</td>
+						<td rowspan="{{ rows_high }}">
+							<a href="{{ context_path }}/bill_types/{{bill.bill_type.id}}" title="{{bill.bill_type.description}}">{{bill.bill_type.code}}</a>
 						</td>
 						{% for read_row in read_rows %}
 							{% if not loop.first %}
@@ -453,12 +462,12 @@
 									</tr>
 								{% endif %}
 							{% endfor %}
-						</tr>
-					{% endfor %}
+						{% endfor %}
+					</tr>
 				{% endfor %}
 			</tbody>
 		</table>
-		<br />
+		<br>
 
 		<table>
 			{% set exp_bills = era_bundle['exp_bills'] %}

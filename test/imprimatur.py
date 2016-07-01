@@ -866,7 +866,8 @@ def virtual_bill_titles():
             r'<legend>TRIAD</legend>\s*<input type="hidden" name="supply_id"',
             r'<a href="/supplies/5/months\?'
             'is_import=true&amp;year=\d{4}&amp;years=1">Import</a>',
-            r'<a href="/supplies/5/virtual_bill']},
+            r'<a href="/supplies/5/virtual_bill',
+            r"'table-row'"]},
 
     # Supply 5, Era 5
     {
@@ -10845,4 +10846,34 @@ def virtual_bill(supply_source):
         'data': {
             'ignore': 'true'},
         'status_code': 303},
+
+    {
+        'name': "Collapsing bills. Edit bill to make it collapsible",
+        'path': '/supplier_bills/2/edit',
+        'method': 'post',
+        'data': {
+            'reference': '00009',
+            'account': '141 5532',
+            'issue_year': '2006',
+            'issue_month': '10',
+            'issue_day': '08',
+            'issue_hour': '23',
+            'issue_minute': '00',
+            'start_year': '2006',
+            'start_month': '10',
+            'start_day': '08',
+            'start_hour': '23',
+            'start_minute': '00',
+            'finish_year': '2006',
+            'finish_month': '10',
+            'finish_day': '31',
+            'finish_hour': '00',
+            'finish_minute': '00',
+            'kwh': '0',
+            'net': '-641.67',
+            'vat': '-290.87',
+            'gross': '0',
+            'bill_type_id': '2',
+            'breakdown': '{}'},
+        'status_code': 303}
 ]
