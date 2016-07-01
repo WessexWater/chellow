@@ -283,17 +283,14 @@ class Parser():
                         prefix = tpr + '-'
 
                     nuct = self.parser.elements[15]
-                    breakdown[prefix + 'kwh'] += \
-                        self.parser.to_decimal(nuct) / 1000
+                    breakdown[prefix + 'kwh'] += float(
+                        self.parser.to_decimal(nuct)) / 1000
                     cppu = self.parser.elements[18]
-                    rate_name = prefix + 'rate'
-                    if rate_name not in breakdown:
-                        breakdown[rate_name] = set()
-                    breakdown[rate_name].add(
-                        self.parser.to_decimal(cppu) / 100000)
+                    breakdown[prefix + 'rate'] += float(
+                        self.parser.to_decimal(cppu)) / 100000
                     ctot = self.parser.elements[19]
-                    breakdown[prefix + 'gbp'] += \
-                        self.parser.to_decimal(ctot) / 100
+                    breakdown[prefix + 'gbp'] += float(
+                        self.parser.to_decimal(ctot)) / 100
 
                     reads.append(
                         {
@@ -328,17 +325,14 @@ class Parser():
                     ndrp = self.parser.elements[8]
                     cona = self.parser.elements[13]
                     nuct = self.parser.elements[15]
-                    breakdown[prefix + 'kwh'] += \
-                        self.parser.to_decimal(nuct) / 1000
+                    breakdown[prefix + 'kwh'] += float(
+                        self.parser.to_decimal(nuct)) / 1000
                     cppu = self.parser.elements[18]
-                    rate_name = prefix + 'rate'
-                    if rate_name not in breakdown:
-                        breakdown[rate_name] = set()
-                    breakdown[rate_name].add(
-                        self.parser.to_decimal(cppu) / 100000)
+                    breakdown[prefix + 'rate'] += float(
+                        self.parser.to_decimal(cppu)) / 100000
                     ctot = self.parser.elements[19]
-                    breakdown[prefix + 'gbp'] += \
-                        self.parser.to_decimal(ctot) / 100
+                    breakdown[prefix + 'gbp'] += float(
+                        self.parser.to_decimal(ctot)) / 100
                 elif consumption_charge_indicator == '4':
                     # tcod = self.parser.elements[2]
                     tmod = self.parser.elements[3]
@@ -354,8 +348,8 @@ class Parser():
                     cppu = self.parser.elements[18]
                     ctot = self.parser.elements[19]
                     if len(ctot[0]) > 0:
-                        breakdown['standing-gbp'] += \
-                            self.parser.to_decimal(ctot) / 100
+                        breakdown['standing-gbp'] += float(
+                            self.parser.to_decimal(ctot)) / 100
             elif code == "MTR":
                 if message_type == "UTLBIL":
                     raw_bills.append(

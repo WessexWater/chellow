@@ -139,17 +139,10 @@ class Parser():
             bill_to = validate_hh_start(date_val('Bill Period End')) + \
                 relativedelta(days=1) - HH
             kwh = Decimal(val('Site Data'))
-            breakdown = {}
-            for k, v in col_map.items():
-                if k in titles:
-                    value = val(k)
-                    if v.endswith('-rate'):
-                        if k not in breakdown:
-                            breakdown[v] = set()
-                        breakdown[v].add(value)
-                    else:
-                        breakdown[v] = float(value)
-
+            breakdown = dict(
+                [
+                    (v, float(val(k))) for k, v in col_map.items()
+                    if k in titles])
             breakdown['raw_lines'] = [self._title_line, self.last_line]
             net = Decimal(val('NET_AMT'))
             vat = Decimal(val('VATTTL'))

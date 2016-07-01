@@ -14,7 +14,6 @@ import threading
 from werkzeug.exceptions import BadRequest
 from chellow.utils import HH, hh_format, hh_before, req_int
 from flask import request, g, redirect
-from decimal import Decimal
 
 
 def content(batch_id, bill_id, user):
@@ -160,12 +159,10 @@ def content(batch_id, bill_id, user):
                 covered_bdown['sum-msp-kwh'] += float(covered_bill.kwh)
                 if len(covered_bill.breakdown) > 0:
                     covered_rates = collections.defaultdict(set)
-                    for k, v in eval(
-                            covered_bill.breakdown,
-                            {'Decimal': Decimal}).items():
+                    for k, v in eval(covered_bill.breakdown, {}).items():
 
-                        if isinstance(v, set):
-                            covered_rates[k].update(v)
+                        if k.endswith('rate'):
+                            covered_rates[k].add(v)
                         elif k != 'raw-lines':
                             try:
                                 covered_bdown[k] += v
@@ -178,11 +175,7 @@ def content(batch_id, bill_id, user):
                                     " can't be added to the existing value " +
                                     str(covered_bdown[k]) + ". " + str(detail))
                     for k, v in covered_rates.items():
-                        if len(v) == 0:
-                            covered_bdown[k] = None
-                        else:
-                            covered_bdown[k] = ', '.join(
-                                str(r) for r in sorted(list(v)))
+                        covered_bdown[k] = v.pop() if len(v) == 1 else None
 
             virtual_bill = {}
 
