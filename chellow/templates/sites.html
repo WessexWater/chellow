@@ -1,30 +1,45 @@
 {% extends "base.html" %}
 
 {% block title %}
-	Sites
+	&raquo; Sites
 {% endblock %}
 
 {% block nav %}
-	Sites [<a href="{{context_path}}/sites/add">add</a>]
+	&raquo; Sites [<a href="{{context_path}}/sites/add">add</a>]
 {% endblock %}
 
 {% block content %}
-	<form action="">
-		<fieldset>
-			{{input_text('pattern', '')}}
-			<input type="submit" value="Search">
-		</fieldset>
-	</form>
-	{% if sites %}
-		<p>Only the first {{limit}} sites of the search results are shown.</p>
-		<ul>
-			{% for site in sites %}
-				<li>
-					<a href="{{context_path}}/sites/{{site.id}}">{{site.code}} {{site.name}}</a>
-				</li>
-			{% endfor %}
-		</ul>
-	{% elif request.values.pattern %}
-		<p>No sites matched your search</p>
-	{% endif %}
+<div class="layer-section">
+	<div class="section-header">
+		<h2>Sites</h2>
+	</div>
+	<div class="section-content">
+		<div class="section-data">
+			<div class="standardForm textWidthAuto">
+				<div class="row">
+					<div class="col-sm-6">	
+						<form action="">
+							<fieldset>
+								{{input_text('pattern', '')}}
+								<input type="submit" value="Search">
+							</fieldset>
+						</form>					
+					</div>					
+				</div>				
+			</div>	
+			{% if sites %}
+				<p>Only the first {{limit}} sites of the search results are shown.</p>
+				<ul>
+					{% for site in sites %}
+						<li>
+							<a href="{{context_path}}/sites/{{site.id}}">{{site.code}} {{site.name}}</a>
+						</li>
+					{% endfor %}
+				</ul>
+			{% elif request.values.pattern %}
+				<p>No sites matched your search</p>
+			{% endif %}
+		</div>
+	</div>
+</div>
 {% endblock %}

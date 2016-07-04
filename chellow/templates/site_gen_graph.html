@@ -1,18 +1,29 @@
 {% extends "base.html" %}
 
 {% block title %}
-	Sites &gt; {{site.name}}
+	Sites &raquo; {{site.name}}
 {% endblock %}
 
 {% block nav %}
-	<a href="{{context_path}}/sites">Sites</a> &gt;
-	<a href="{{context_path}}/sites/{{site.id}}">{{site.name}}</a> &gt;
+	&raquo; <a href="{{context_path}}/sites">Sites</a> &raquo;
+	<a href="{{context_path}}/sites/{{site.id}}">{{site.name}}</a> &raquo;
  	Generation Graph
 {% endblock %}
 
 {% block content %}
-	<svg
-			width="{{graphs.used.pos_hhs|length + 300}}px"
+					<!-- Layer Section -->
+                                        <div class="layer-section">
+                                            <!-- Section Header -->
+                                            <div class="section-header">
+                                                <h2>HH graph of site use</h2>
+                                            </div>
+                                            <!-- End Section Header -->
+                                            <!-- Section Content -->
+                                            <div class="section-content">
+                                                <div class="section-data">
+                                                    <div class="noWrap">
+							<svg
+			width="{{graphs.used.pos_hhs|length + 100}}px"
 			height="{{height}}px" xmlns="http://www.w3.org/2000/svg" version="1.1"
 		 	font-family="Overclock, sans-serif" font-size="12" fill="black">
 		<text x="{{title.x}}" y="{{title.y}}">
@@ -86,14 +97,44 @@
 			</g>
 		{%- endfor %}
 	</svg>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <!-- End Section Content -->
+                                        </div>
+                                        <!-- End Layer Section -->
+                                        
+                                        <!-- Layer Section -->
+                                        <div class="layer-section">
+                                            <!-- Section Header -->
+                                            <div class="section-header">
+                                                <h2>Show graph</h2>
+                                            </div>
+                                            <!-- End Section Header -->
+                                            <!-- Section Content -->
+                                            <div class="section-content">
+                                                <div class="section-data">
+                                                    <div class="standardForm textWidthAuto inlineFormSubmit">
+                                                        <form action="">
+								<fieldset>
+									<input type="hidden" name="site_id" value="{{site.id}}">
 
-	<form action="">
-		<fieldset>
-			<legend>Show graph</legend>
-			For <input name="months" maxlength="2" size="2" value="{{months}}">
-			months finishing at the end of
-			{{input_date('finish', finish_date, 'month')}}
-			<input type="submit" value="Show">
-		</fieldset>
-	</form>
+									For <input name="months" maxlength="2" size="2" value="{{months}}">
+									months finishing at the end of
+									{{input_date('finish', finish_date, 'month')}}
+									<input type="submit" value="Show">
+								</fieldset>
+							</form>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <!-- End Section Content -->
+                                        </div>
+                                        <!-- End Layer Section -->
+
+
+
+	
+
+	
 {% endblock %}

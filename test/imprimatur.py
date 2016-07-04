@@ -936,8 +936,7 @@ def virtual_bill_titles():
             r'<legend>TRIAD</legend>\s*<input type="hidden" name="supply_id"',
             r'<a href="/supplies/5/months\?'
             'is_import=true&amp;year=\d{4}&amp;years=1">Import</a>',
-            r'<a href="/supplies/5/virtual_bill',
-            r"'table-row'"]},
+            r'<a href="/supplies/5/virtual_bill']},
 
     # Supply 5, Era 5
     {
@@ -11100,6 +11099,14 @@ def virtual_bill(supply_source):
             'bill_type_id': '2',
             'breakdown': '{}'},
         'status_code': 303},
+    {
+        'name': "Fetch bootstrap css",
+        'path': '/bootstrap',
+        'status_code': 200},
+    {
+        'name': "Fetch wessex js",
+        'path': '/bootstrapjs',
+        'status_code': 200},
     {
         'name': "Bill check with exception",
         'path': "/supplier_contracts/37/edit",

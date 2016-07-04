@@ -1,248 +1,280 @@
 {% extends "base.html" %}
 
 {% block title %}
-	Sites &gt; {{site.name}}
+	&raquo; Sites &raquo; {{site.name}}
 {% endblock %}
 
 {% block nav %}
-	<a href="{{context_path}}/sites">Sites</a> &gt; {{site.name}}
+	&raquo; <a href="{{context_path}}/sites">Sites</a> &raquo; {{site.name}}
 	[<a href="{{context_path}}/sites/{{site.id}}/edit">edit</a>]
 {% endblock %}
 
 {% block content %}
-	<table>
-		<tr>
-			<th>Code</th>
-			<td>{{site.code}}</td>
-		</tr>
-		<tr>
-			<th>Name</th>
-			<td>{{site.name}}</td>
-		</tr>
-		{% if properties.site_reports %}
-			<tr>
-				<th>Custom Reports</th>
-				<td>
-					<ul>
-						{% for report in properties.site_reports %}
-							<li>
-								<a href="{{context_path}}/local_reports/{{report.id}}/output/?site_id={{site.id}}">{{report.name}}</a>
-							</li>
-						{% endfor %}
-					</ul>
-				</td>
-			</tr>
-		{% endif %}
-		{% if properties.site_links %}
-			<tr>
-				<th>External Links</th>
-				<td>
-					<ul>
-						{% for link in properties.site_links %}
-							<li><a href="{{link.href}}{{site.code}}">{{link.name}}</a></li>
-						{% endfor %}
-					</ul>
-				</td>
-			</tr>
-		{% endif %}
-	</table>
-	<br>
-
-	{% if other_sites|length > 0 %}
-		<table>
-			<caption>Other sites in this group</caption>
-			<tr>
-				<th>Code</th>
-				<th>Name</th>
-			</tr>
-			{% for osite in other_sites %}
+<div class="layer-section">
+	<div class="section-header">
+		<h2>Site Details</h2>
+	</div>
+	<div class="section-content">
+		<div class="section-data">
+			<table class="DataTable widthAuto noMarginBottom">
 				<tr>
-					<td>
-						<a href="{{context_path}}/sites/{{osite.id}}">{{osite.code}}</a>
-					</td>
-					<td>{{osite.name}}</td>
+					<th>Code</th>
+					<td>{{site.code}}</td>
 				</tr>
-			{% endfor %}
-		</table>
-	{% endif %}
-	<br>
-	<table>
-		<caption>Supplies that power this site</caption>
-		<thead>
-			<tr>
-				<th>View</th>
-				<th>Name</th>
-				<th>From</th>
-				<th>To</th>
-				<th>Source</th>
-				<th>Generator Type</th>
-				<th>Import MPAN core</th>
-				<th>Export MPAN core</th>
-				<th>Physical Location</th>
-				<th>Also Supplies</th>
-				<th>Meter Category</th>
-				<th>Meter Serial Number</th>
-			</tr>
-		</thead>
-		<tbody>
-			{% for group in groups %}
-				{% set last_era = group['last_era'] %}
-				<tr
-					{% if not group['is_ongoing'] %}
-						style="color: silver;"
-					{% endif %}
-				>
-					<td>
-						<a href="{{context_path}}/supplies/{{last_era.supply_id}}">view</a>
-					</td>
-					<td>{{last_era.supply.name}}</td>
-					<td>{{group['first_era'].start_date|hh_format}}</td>
-					<td>{{last_era.finish_date|hh_format}}</td>
-					<td>{{last_era.supply.source.code}}</td>
-					<td>
-						{% if last_era.supply.generator_type %}
-							{{last_era.supply.generator_type.code}}
-						{% endif %}
-					</td>
-					<td>
-						{% if last_era.imp_mpan_core %}
-							<a href="{{context_path}}/dno_contracts/{{last_era.supply.dno_contract.id}}">{{last_era.supply.dno_contract.name}}</a>
-							{{last_era.imp_mpan_core[2:]}}
-						{% endif %}
-					</td>
-					<td>
-						{% if last_era.exp_mpan_core %}
-							<a href="{{context_path}}/dno_contracts/{{last_era.supply.dno_contract.id}}">{{last_era.supply.dno_contract.name}}</a>
-							{{last_era.exp_mpan_core[2:]}}
-						{% endif %}
-					</td>
-					<td>
-						{% for site_era in last_era.site_eras %}
-							{% if site_era.is_physical %}
-								{% if site_era.site.id == site.id %}
-									this site
-								{% else %}
-									<a href="{{context_path}}/sites/{{site_era.site.id}}" title="{{site_era.site.name}}">{{site_era.site.code}}</a>
-								{% endif %}
-							{% endif %}
-						{% endfor %}
-					</td>
-					<td>
-						{% for site_era in last_era.site_eras %}
-							{% if site_era.site.id != site.id %}
-								<a href="{{context_path}}/sites/{{site_era.site.id}}" title="{{site_era.site.name}}">{{site_era.site.code}}</a>
-							{% endif %}
-						{% endfor %}
-					</td>
-					<td>{{group.meter_category}}</td>
-					<td>{{last_era.msn}}</td>
+				<tr>
+					<th>Name</th>
+					<td>{{site.name}}</td>
 				</tr>
-			{% endfor %}
-		</tbody>
-	</table>
-	<ul>
-		<li>
-			<a href="{{context_path}}/sites/{{site.id}}/used_graph?months=1&amp;finish_year={{month_finish.year}}&amp;finish_month={{month_finish.month}}">Graph of site usage</a>
-		</li>
-		<li>
-			<a href="{{context_path}}/sites/{{site.id}}/gen_graph?months=1&amp;finish_year={{month_finish.year}}&amp;finish_month={{month_finish.month}}">Generation Graph</a>
-		</li>
-		<li>
-			<a href="{{context_path}}/sites/{{site.id}}/months?finish_year={{last_month_finish.year}}&amp;finish_month={{last_month_finish.month}}">
-Table of site level monthly kWh, MD kWh etc.</a>
-		</li>
-		<li>
-			<a href="{{context_path}}/sites/{{site.id}}/hh_data?year={{month_finish.year}}&amp;month={{month_finish.month}}">Table of hh data</a>
-		</li>
-	</ul>
+				{% if properties.site_reports %}
+					<tr>
+						<th>Custom Reports</th>
+						<td>
+							<ul>
+								{% for report in properties.site_reports %}
+									<li>
+										<a href="{{context_path}}/local_reports/{{report.id}}/output/?site_id={{site.id}}">{{report.name}}</a>
+									</li>
+								{% endfor %}
+							</ul>
+						</td>
+					</tr>
+				{% endif %}
+				{% if properties.site_links %}
+					<tr>
+						<th>External Links</th>
+						<td>
+							<ul>
+								{% for link in properties.site_links %}
+									<li><a href="{{link.href}}{{site.code}}">{{link.name}}</a></li>
+								{% endfor %}
+							</ul>
+						</td>
+					</tr>
+				{% endif %}
+			</table>
+		</div>
 
-	<h3>CSV Downloads</h3>
-	
-	<form action="{{context_path}}/reports/161">
-		<fieldset>
-			<input type="hidden" name="site_id" value="{{site.id}}">
-			<legend>Monthly Duration</legend>
-			<br>
-			For {{input_text('months', '1', 2, 2)}}
-			month(s) until the end of {{input_date('finish', last_month_finish, resolution='month')}}
-			<input type="submit" value="Download"/>
-		</fieldset>
-	</form>
-	<br>
-	<form action="{{context_path}}/reports/247">
-		<fieldset>
-			<input type="hidden" name="site_id" value="{{site.id}}">
-			<legend>Unified Monthly Duration</legend>
-			<br>
-			For {{input_text('months', '1', 2, 2)}}
-			month(s) until the end of {{input_date('finish', last_month_finish, resolution='month')}}
-			<input type="submit" value="Download">
-		</fieldset>
-	</form>
-	<br>
-	<form action="{{context_path}}/reports/181">
-		<fieldset>
-			<input type="hidden" name="site_id" value="{{site.id}}">
-			<legend>Download TRIAD CSV</legend>
-			<br>
-			For financial year ending March
-			{{input_date(None, last_month_finish, resolution='year')}}
-			<input type="submit" value="Download">
-		</fieldset>
-	</form>
-	<br>
-	<form action="{{context_path}}/reports/29">
-		<fieldset>
-			<legend>HH Data: 48 Column Format</legend>
-			<input type="hidden" name="site_id" value="{{site.id}}">
-			<br>
-			<select name="type">
-				<option value="used">Used</option>
-				<option value="imp_net">Imported</option>
-				<option value="exp_net">Exported</option>
-				<option value="imp_gen">Generated</option>
-				<option value="displaced">Displaced</option>
-				<option value="exp_gen">Parasitic</option>
-			</select>
-			for {{input_text('months', '1', 2, 2)}}
-			month(s) until the end of {{input_date('finish', last_month_finish, resolution='month')}}
-			<input type="submit" value="Download">
-		</fieldset>
-	</form>
-	<br>
-	<form action="{{context_path}}/reports/csv_site_hh_data">
-		<fieldset>
-			<legend>HH Data: HH Per Row Format</legend>
-			<input type="hidden" name="site_id" value="{{site.id}}">
-			<p>
-				From {{input_date('start', last_month_start)}} to
-				{{input_date('finish', last_month_finish)}}
-				<input type="submit" value="Download">
-			</p>
-		</fieldset>
-	</form>
-	<br>
-	<form action="{{context_path}}/reports/389">
-		<fieldset>
-			<input type="hidden" name="site_id" value="{{site.id}}">
-			<legend>Displaced Virtual Bills</legend>
-			<br>
-			For {{input_text('months', '1', 2, 2)}}
-			month(s) until the end of {{input_date('finish', last_month_finish, resolution='month')}}
-			<input type="submit" value="Download">
-		</fieldset>
-	</form>
-	<br>
-	<form action="{{context_path}}/reports/247">
-		<fieldset>
-			<input type="hidden" name="site_id" value="{{site.id}}">
-			<legend>Run Scenario</legend>
-			<select name="scenario_id">
-				{% for scenario in scenarios %}
-					{{input_option('scenario', scenario.id, scenario.name)}}
+		{% if other_sites|length > 0 %}
+		<div class="section-data">
+			<table>
+				<caption>Other sites in this group</caption>
+				<tr>
+					<th>Code</th>
+					<th>Name</th>
+				</tr>
+				{% for osite in other_sites %}
+					<tr>
+						<td>
+							<a href="{{context_path}}/sites/{{osite.id}}">{{osite.code}}</a>
+						</td>
+						<td>{{osite.name}}</td>
+					</tr>
 				{% endfor %}
-			</select>
-			<input type="submit" value="Run">
-		</fieldset>
-	</form>
+			</table>
+		</div>
+		{% endif %}
+
+		<div class="section-data">
+			<div class="noWrap-lg">
+				<p>Supplies that power this site</p>
+				<table class="DataTable noMarginBottom">
+					
+					<thead>
+						<tr>
+							<th>View</th>
+							<th>Name</th>
+							<th>From</th>
+							<th>To</th>
+							<th>Source</th>
+							<th>Generator Type</th>
+							<th>Import MPAN core</th>
+							<th>Export MPAN core</th>
+							<th>Physical Location</th>
+							<th>Also Supplies</th>
+							<th>Meter Category</th>
+							<th>Meter Serial Number</th>
+						</tr>
+					</thead>
+					<tbody>
+						{% for group in groups %}
+							{% set last_era = group['last_era'] %}
+							<tr
+								{% if not group['is_ongoing'] %}
+									style="color: silver;"
+								{% endif %}
+							>
+								<td>
+									<a href="{{context_path}}/supplies/{{last_era.supply_id}}">view</a>
+								</td>
+								<td>{{last_era.supply.name}}</td>
+								<td>{{group['first_era'].start_date|hh_format}}</td>
+								<td>{{last_era.finish_date|hh_format}}</td>
+								<td>{{last_era.supply.source.code}}</td>
+								<td>
+									{% if last_era.supply.generator_type %}
+										{{last_era.supply.generator_type.code}}
+									{% endif %}
+								</td>
+								<td>
+									{% if last_era.imp_mpan_core %}
+										<a href="{{context_path}}/dno_contracts/{{last_era.supply.dno_contract.id}}">{{last_era.supply.dno_contract.name}}</a>
+										{{last_era.imp_mpan_core[2:]}}
+									{% endif %}
+								</td>
+								<td>
+									{% if last_era.exp_mpan_core %}
+										<a href="{{context_path}}/dno_contracts/{{last_era.supply.dno_contract.id}}">{{last_era.supply.dno_contract.name}}</a>
+										{{last_era.exp_mpan_core[2:]}}
+									{% endif %}
+								</td>
+								<td>
+									{% for site_era in last_era.site_eras %}
+										{% if site_era.is_physical %}
+											{% if site_era.site.id == site.id %}
+												this site
+											{% else %}
+												<a href="{{context_path}}/sites/{{site_era.site.id}}" title="{{site_era.site.name}}">{{site_era.site.code}}</a>
+											{% endif %}
+										{% endif %}
+									{% endfor %}
+								</td>
+								<td>
+									{% for site_era in last_era.site_eras %}
+										{% if site_era.site.id != site.id %}
+											<a href="{{context_path}}/sites/{{site_era.site.id}}" title="{{site_era.site.name}}">{{site_era.site.code}}</a>
+										{% endif %}
+									{% endfor %}
+								</td>
+								<td>{{group.meter_category}}</td>
+								<td>{{last_era.msn}}</td>
+							</tr>
+						{% endfor %}
+					</tbody>
+				</table>
+			</div>
+		</div>
+		<div class="section-data">
+			<ul>
+				<li>
+					<a href="{{context_path}}/sites/{{site.id}}/used_graph?months=1&amp;finish_year={{month_finish.year}}&amp;finish_month={{month_finish.month}}">Graph of site usage</a>
+				</li>
+				<li>
+					<a href="{{context_path}}/sites/{{site.id}}/gen_graph?months=1&amp;finish_year={{month_finish.year}}&amp;finish_month={{month_finish.month}}">Generation Graph</a>
+				</li>
+				<li>
+					<a href="{{context_path}}/sites/{{site.id}}/months?finish_year={{last_month_finish.year}}&amp;finish_month={{last_month_finish.month}}">
+		Table of site level monthly kWh, MD kWh etc.</a>
+				</li>
+				<li>
+					<a href="{{context_path}}/sites/{{site.id}}/hh_data?year={{month_finish.year}}&amp;month={{month_finish.month}}">Table of hh data</a>
+				</li>
+			</ul>
+		</div>
+	</div>	
+</div>
+<div class="layer-section">
+	<div class="section-header">
+		<h2>CSV Downloads</h2>
+	</div>
+	<div class="section-content">
+		<div class="standardForm textWidthAuto inlineFormSubmit">
+			<div class="section-data">
+				<form action="{{context_path}}/reports/161">
+					<fieldset>
+						<input type="hidden" name="site_id" value="{{site.id}}">
+						<legend>Monthly Duration</legend>
+						<br>
+						For {{input_text('months', '1', 2, 2)}}
+						month(s) until the end of {{input_date('finish', last_month_finish, resolution='month')}}
+						<input type="submit" value="Download"/>
+					</fieldset>
+				</form>
+			</div>
+			<div class="section-data">
+				<form action="{{context_path}}/reports/247">
+					<fieldset>
+						<input type="hidden" name="site_id" value="{{site.id}}">
+						<legend>Unified Monthly Duration</legend>
+						<br>
+						For {{input_text('months', '1', 2, 2)}}
+						month(s) until the end of {{input_date('finish', last_month_finish, resolution='month')}}
+						<input type="submit" value="Download">
+					</fieldset>
+				</form>			
+			</div>
+			<div class="section-data">
+					<form action="{{context_path}}/reports/181">
+						<fieldset>
+							<input type="hidden" name="site_id" value="{{site.id}}">
+							<legend>Download TRIAD CSV</legend>
+							<br>
+							For financial year ending March
+							{{input_date(None, last_month_finish, resolution='year')}}
+							<input type="submit" value="Download">
+						</fieldset>
+					</form>			
+			</div>
+			<div class="section-data">
+				<form action="{{context_path}}/reports/29">
+					<fieldset>
+						<legend>HH Data: 48 Column Format</legend>
+						<input type="hidden" name="site_id" value="{{site.id}}">
+						<br>
+						<select name="type">
+							<option value="used">Used</option>
+							<option value="imp_net">Imported</option>
+							<option value="exp_net">Exported</option>
+							<option value="imp_gen">Generated</option>
+							<option value="displaced">Displaced</option>
+							<option value="exp_gen">Parasitic</option>
+						</select>
+						for {{input_text('months', '1', 2, 2)}}
+						month(s) until the end of {{input_date('finish', last_month_finish, resolution='month')}}
+						<input type="submit" value="Download">
+					</fieldset>
+				</form>
+			</div>
+			<div class="section-data">
+				<form action="{{context_path}}/reports/csv_site_hh_data">
+					<fieldset>
+						<legend>HH Data: HH Per Row Format</legend>
+						<input type="hidden" name="site_id" value="{{site.id}}">
+						<p>
+							From {{input_date('start', last_month_start)}} to
+							{{input_date('finish', last_month_finish)}}
+							<input type="submit" value="Download">
+						</p>
+					</fieldset>
+				</form>
+			</div>
+			<div class="section-data">
+				<form action="{{context_path}}/reports/389">
+					<fieldset>
+						<input type="hidden" name="site_id" value="{{site.id}}">
+						<legend>Displaced Virtual Bills</legend>
+						<br>
+						For {{input_text('months', '1', 2, 2)}}
+						month(s) until the end of {{input_date('finish', last_month_finish, resolution='month')}}
+						<input type="submit" value="Download">
+					</fieldset>
+				</form>
+			</div>
+			<div class="section-data">
+				<form action="{{context_path}}/reports/247">
+					<fieldset>
+						<input type="hidden" name="site_id" value="{{site.id}}">
+						<legend>Run Scenario</legend>
+						<select name="scenario_id">
+							{% for scenario in scenarios %}
+								{{input_option('scenario', scenario.id, scenario.name)}}
+							{% endfor %}
+						</select>
+						<input type="submit" value="Run">
+					</fieldset>
+				</form>
+			</div>
+		</div>
+
+	</div>
+</div>
 {% endblock %}

@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 
 {% block title %}
-	Sites &gt; {{site.code}} {{site.name}} &gt; HH data
+	Sites &raquo; {{site.code}} {{site.name}} &raquo; HH data
 {% endblock %}
 
 {% block inner_head %}
@@ -17,91 +17,118 @@
 {% endblock %}
 
 {% block nav %}
-	<a href="{{context_path}}/sites">Sites</a> &gt;
+	&raquo; <a href="{{context_path}}/sites">Sites</a> &raquo;
 	<a href="{{context_path}}/sites/{{site.id}}">
-	{{site.code}} {{site.name}}</a> &gt; HH data
+	{{site.code}} {{site.name}}</a> &raquo; HH data
 {% endblock %}
 
 {% block content %}
-	<form action="">
-		<fieldset>
-			<legend>Show data</legend>
-			<br>
-			<label>
-				Site Code {{input_text('site_code', site.code)}}
-			</label>
-			<br>
-			<br>
-			<fieldset>
-				<legend>Month</legend>
-				{{input_date(None, None, 'month')}}
-				<br>
-			</fieldset>
-			<br>
-			<input type="submit" value="Show">
-		</fieldset>
-	</form>
-
-	{% for group in groups %}
-		<table>
-			<caption>HH Data</caption>
-			<colgroup>
-			<colgroup class="gray">
-			<colgroup>
-			<colgroup class="gray">
-			<colgroup>
-			<colgroup class="gray">
-			<thead>
-				<tr>
-					<th rowspan="3">HH Starting</th>
-					<th colspan="6">kWh</th>
-					{% for supply in group.supplies %}
-						<th colspan="4">
-							{{supply.name}} {{supply.source.code}}
-							{{supply.generator_type.code}}
-						</th>
-					{% endfor %}
-				</tr>
-				<tr>
-					<th rowspan="2">Imported</th>
-					<th rowspan="2">Used</th>
-					<th rowspan="2">Displaced</th>
-					<th rowspan="2">Generated</th>
-					<th rowspan="2">Exported</th>
-					<th rowspan="2">Parasitic</th>
-					{% for supply in group.supplies %}
-						<th colspan="2">Import</th>
-						<th colspan="2">Export</th>
-					{% endfor %}
-				</tr>
-				<tr>
-					{% for supply in group.supplies %}
-						<th>kWh</th>
-						<th>Status</th>
-						<th>kWh</th>
-						<th>Status</th>
-					{% endfor %}
-				</tr>
-			</thead>
-			<tbody>
-				{% for hh in group.hh_data %}
-					<tr>
-						<td>{{hh.start_date|hh_format}}</td>
-						<td>{{hh.import_kwh}}</td>
-						<td>{{hh.used_kwh}}</td>
-						<td>{{hh.displaced_kwh}}</td>
-						<td>{{hh.generated_kwh}}</td>
-						<td>{{hh.export_kwh}}</td>
-						<td>{{hh.parasitic_kwh}}</td>
-						{% for datum in hh.supplies %}
-							<td>{{datum.import_kwh}}</td>
-							<td>{{datum.import_status}}</td>
-							<td>{{datum.export_kwh}}</td>
-							<td>{{datum.export_status}}</td>
+					<!-- Layer Section -->
+                                        <div class="layer-section">
+                                            <!-- Section Header -->
+                                            <div class="section-header">
+                                                <h2>Show data</h2>
+                                            </div>
+                                            <!-- End Section Header -->
+                                            <!-- Section Content -->
+                                            <div class="section-content">
+                                                <div class="section-data">
+                                                    <div class="standardForm textWidthAuto">
+                                                        <form action="">
+								<fieldset>
+									<label>
+										Site Code {{input_text('site_code', site.code)}}
+									</label>
+									<fieldset>
+										<legend>Month</legend>
+										{{input_date(None, None, 'month')}}
+									</fieldset>
+									<input type="submit" value="Show">
+								</fieldset>
+							</form>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <!-- End Section Content -->
+                                        </div>
+                                        <!-- End Layer Section -->
+                                        
+                                        <!-- Layer Section -->
+                                        <div class="layer-section">
+                                            <!-- Section Header -->
+                                            <div class="section-header">
+                                                <h2>HH Data</h2>
+                                            </div>
+                                            <!-- End Section Header -->
+                                            <!-- Section Content -->
+                                            <div class="section-content">
+                                                <div class="section-data">
+                                                    <div class="noWrap">
+                                                        {% for group in groups %}
+							<table class="DataTable">
+								<colgroup>
+								<colgroup class="gray">
+								<colgroup>
+								<colgroup class="gray">
+								<colgroup>
+								<colgroup class="gray">
+								<thead>
+									<tr>
+										<th rowspan="3">HH Starting</th>
+										<th colspan="6">kWh</th>
+										{% for supply in group.supplies %}
+											<th colspan="4">
+												{{supply.name}} {{supply.source.code}}
+												{{supply.generator_type.code}}
+											</th>
+										{% endfor %}
+									</tr>
+									<tr>
+										<th rowspan="2">Imported</th>
+										<th rowspan="2">Used</th>
+										<th rowspan="2">Displaced</th>
+										<th rowspan="2">Generated</th>
+										<th rowspan="2">Exported</th>
+										<th rowspan="2">Parasitic</th>
+										{% for supply in group.supplies %}
+											<th colspan="2">Import</th>
+											<th colspan="2">Export</th>
+										{% endfor %}
+									</tr>
+									<tr>
+										{% for supply in group.supplies %}
+											<th>kWh</th>
+											<th>Status</th>
+											<th>kWh</th>
+											<th>Status</th>
+										{% endfor %}
+									</tr>
+								</thead>
+								<tbody>
+									{% for hh in group.hh_data %}
+										<tr>
+											<td>{{hh.start_date|hh_format}}</td>
+											<td>{{hh.import_kwh}}</td>
+											<td>{{hh.used_kwh}}</td>
+											<td>{{hh.displaced_kwh}}</td>
+											<td>{{hh.generated_kwh}}</td>
+											<td>{{hh.export_kwh}}</td>
+											<td>{{hh.parasitic_kwh}}</td>
+											{% for datum in hh.supplies %}
+												<td>{{datum.import_kwh}}</td>
+												<td>{{datum.import_status}}</td>
+												<td>{{datum.export_kwh}}</td>
+												<td>{{datum.export_status}}</td>
+											{% endfor %}
+										</tr>
+									{% endfor %}
+								</tbody>
+							</table>
 						{% endfor %}
-					</tr>
-				{% endfor %}
-			</tbody>
-		</table>
-	{% endfor %}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <!-- End Section Content -->
+                                        </div>
+                                        <!-- End Layer Section -->
 {% endblock %}
