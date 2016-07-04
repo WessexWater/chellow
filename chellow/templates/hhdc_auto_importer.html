@@ -1,54 +1,100 @@
 {% extends "base.html" %}
 
 {% block title %}
-	HHDC Contracts &gt; {{contract.name}} &gt; Automatic HH Data Downloader
+	&raquo; HHDC Contracts &raquo; {{contract.name}} &raquo; Automatic HH Data Downloader
 {% endblock %}
 
 {% block nav %}
-	<a href="{{context_path}}/hhdc_contracts">HHDC Contracts</a> &gt;
-	<a href="{{context_path}}/hhdc_contracts/{{contract.id}}">{{contract.name}}</a> &gt;
+	&raquo; <a href="{{context_path}}/hhdc_contracts">HHDC Contracts</a> &raquo; 
+	<a href="{{context_path}}/hhdc_contracts/{{contract.id}}">{{contract.name}}</a> &raquo; 
 	Automatic HH Data Downloader
 {% endblock %}
 
 {% block content %}
-	<p>
-		<a href="{{context_path}}/hhdc_contracts/{{contract.id}}/auto_importer">Refresh page</a>
-	</p>
+{% if task %}
 
-	{% if task %}
+ <!-- Layer Section -->
+<div class="layer-section">
+    <!-- Section Header -->
+    <div class="section-header">
+        <div class="ActionMenu">
+            <div class="WidgetAction">
+                <a href="{{context_path}}/hhdc_contracts/{{contract.id}}/auto_importer">Refresh page</a>
+            </div>
+        </div>
+        <h2>Automatic HH Data Downloader</h2>
+    </div>
+    <!-- End Section Header -->
+    
+    <!-- Section Content -->
+    <div class="section-content">
+        <div class="section-data">
+		    <table class="DataTable widthAuto noMarginBottom">
+				<tr>
+					<th>Is Locked?</th>
+					<th>Is stopping?</th>
+				</tr>
+				<tr>
+					<td>{{task.is_locked()}}</td>
+					<td>{{task.stopped.isSet()}}</td>
+				</tr>
+			</table>        
+        </div>
+    </div>
+    <!-- End Section Content -->
+</div>
+<!-- End Layer Section -->
 
-		<table>
-			<tr>
-				<th>Is Locked?</th>
-				<th>Is stopping?</th>
-			</tr>
-			<tr>
-				<td>{{task.is_locked()}}</td>
-				<td>{{task.stopped.isSet()}}</td>
-			</tr>
-		</table>
-		<br>
+<!-- Layer Section -->
+<div class="layer-section">
+    <!-- Section Header -->
+    <div class="section-header">
+        <h2>Import Now</h2>
+    </div>
+    <!-- End Section Header -->
+    <!-- Section Content -->
+    <div class="section-content">
+        <div class="section-data">
+            <div class="standardForm">
+                {% if not task.is_locked() %}
+					<form action="" method="post">
+						<fieldset>
+							<input type="hidden" name="hhdc_contract_id" value="{{contract.id}}">
+							<input type="submit" value="Import" name="now">
+						</fieldset>
+					</form>
+				{% endif %}
+            </div>
+        </div>
+    </div>
+    <!-- End Section Content -->
+</div>
+<!-- End Layer Section -->
 
-		{% if not task.is_locked() %}
-			<form action="" method="post">
-				<fieldset>
-					<legend>Import Now</legend>
-					<input type="hidden" name="hhdc_contract_id" value="{{contract.id}}">
-					<input type="submit" value="Import" name="now">
-				</fieldset>
-			</form>
-		{% endif %}
+<!-- Layer Section -->
+<div class="layer-section">
+    <!-- Section Header -->
+    <div class="section-header">
+        <h2>Log</h2>
+    </div>
+    <!-- End Section Header -->
+    <!-- Section Content -->
+    <div class="section-content">
+        <div class="section-data">
+            <p>No importer.</p>
 
-		<h3>Log</h3>
+            <ul>
+				{% for message in task.messages %}
+					<li>{{message}}</li>
+				{% endfor %}
+			</ul>
+        </div>
+    </div>
+    <!-- End Section Content -->
+</div>
+<!-- End Layer Section -->
 
-		<p>{{task.get_status()}}</p>
-
-		<ul>
-			{% for message in task.messages %}
-				<li>{{message}}</li>
-			{% endfor %}
-		</ul>
-	{% else %}
-		<p>The importer task has not been started.</p>
-	{% endif %}
+{% else %}
+	<p>The importer task has not been started.</p>
+{% endif %}
 {% endblock %}

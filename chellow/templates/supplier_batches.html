@@ -1,34 +1,44 @@
 {% extends "base.html" %}
 
 {% block title %}
-	Supplier Contracts &gt; {{contract.name}} &gt; Batches
+	&raquo; Supplier Contracts &raquo; {{contract.name}} &raquo; Batches
 {% endblock %}
 
 {% block nav %}
-	<a href="{{context_path}}/supplier_contracts">Supplier Contracts</a> &gt;
-	<a href="{{context_path}}/supplier_contracts/{{contract.id}}">{{contract.name}}</a> &gt;
+	&raquo; <a href="{{context_path}}/supplier_contracts">Supplier Contracts</a> &raquo; 
+	<a href="{{context_path}}/supplier_contracts/{{contract.id}}">{{contract.name}}</a> &raquo; 
 	Batches
 	[<a href="{{context_path}}/supplier_contracts/{{contract.id}}/add_batch">add</a>]
 {% endblock %}
 
 {% block content %}
-	<table>
-		<caption>Batches</caption>
-		<thead>
-			<tr>
-				<th>Reference</th>
-				<th>Description</th>
-			</tr>
-		</thead>
-		<tbody>
-			{% for batch in batches %}
-				<tr>
-					<td>
-						<a href="{{context_path}}/supplier_batches/{{batch.id}}">{{batch.reference}}</a>
-					</td>
-					<td>{{batch.description}}</td>
-				</tr>
-			{% endfor %}
-		</tbody>
-	</table>
+<div class="layer-section">
+	<div class="section-header">
+		<h2>Batches</h2>	
+	</div>
+	<div class="section-content">
+		<div class="section-data">
+			<table class="DataTable widthAuto noMarginBottom">
+				<thead>
+					<tr>
+						<th>Reference</th>
+						<th>Description</th>
+					</tr>
+				</thead>
+				<tbody>
+					{% for batch in batches %}
+						<tr>
+							<td>
+								<a href="{{context_path}}/supplier_batches/{{batch.id}}">{{batch.reference}}</a>
+							</td>
+							<td>{{batch.description}}</td>
+						</tr>
+					{% endfor %}
+				</tbody>
+			</table>
+		</div>
+	</div>
+</div>
+
+	
 {% endblock %}

@@ -1,106 +1,129 @@
 {% extends "base.html" %}
 
 {% block title %}
-	HHDC Contracts &gt; {{ batch.contract.name }} &gt; Batches &gt;
+	&raquo; HHDC Contracts &raquo; {{ batch.contract.name }} &raquo; Batches &raquo;
  	{{ batch.reference }}
 {% endblock %}
 
 {% block nav %}
-	<a href="{{context_path}}/hhdc_contracts">HHDC Contracts</a> &gt;
-	<a href="{{context_path}}/hhdc_contracts/{{batch.contract.id}}">{{batch.contract.name}}</a> &gt;
-	<a href="{{ context_path }}/hhdc_batches?hhdc_contract_id={{batch.contract.id}}">Batches</a> &gt;
+	&raquo; <a href="{{context_path}}/hhdc_contracts">HHDC Contracts</a> &raquo;
+	<a href="{{context_path}}/hhdc_contracts/{{batch.contract.id}}">{{batch.contract.name}}</a> &raquo;
+	<a href="{{ context_path }}/hhdc_batches?hhdc_contract_id={{batch.contract.id}}">Batches</a> &raquo;
 	{{batch.reference}}
 	[<a href="{{context_path}}/hhdc_batches/{{batch.id}}/edit">edit</a>]
 {% endblock %}
 
 {% block content %}
-	<table>
-		<tr>
-			<th>Reference</th>
-			<td>{{ batch.reference }}</td>
-		</tr>
-		<tr>
-			<th>Description</th>
-			<td>{{ batch.description }}</td>
-		</tr>
-		<tr>
-			<th>Number Of Bills</th>
-			<td>{{ bills|length }}</td>
-		</tr>
-		{% if batch_reports %}
-			<tr>
-				<th>Custom Reports</th>
-				<td>
-					<ul>
-						{% for report in batch_reports %}
-							<li>
-								<a href="{{context_path}}/local_reports/{{report.id}}/output?batch_id={{batch.id}}">{{report.name}}</a>
-							</li>
-						{% endfor %}
-					</ul>
-				</td>
-			</tr>
-		{% endif %}
-	</table>
-	<br>
-	<ul>
-		<li>
-			<a href="{{context_path}}/reports/111?batch_id={{batch.id}}">Check Bills</a>
-		</li>
-		<li>
-			[<a href="{{context_path}}/hhdc_bill_imports?hhdc_batch_id={{batch.id}}">Bill Imports</a>]
-		</li>
-		<li>
-			<a
-					href="{{context_path}}/hhdc_batches/{{batch.id}}/csv"
-					>CSV of Bills</a>
-		</li>
-	</ul>
-	<table>
-		<caption>
-			Bills
-		 	[<a href="{{context_path}}/hhdc_batches/{{batch.id}}/add_bill">add</a>]
-		</caption>
-		<thead>
-			<tr>
-				<th>View</th>
-				<th>Reference</th>
-				<th>Supply</th>
-				<th>Account</th>
-				<th>Issue Date</th>
-				<th>From</th>
-				<th>To</th>
-				<th>kWh</th>
-				<th>Net</th>
-				<th>VAT</th>
-				<th>Gross</th>
-				<th>Type</th>
-			</tr>
-		</thead>
-		<tbody>
-			{% for bill in bills %}
-				<tr>
-					<td>
-						<a href="{{context_path}}/hhdc_bills/{{bill.id}}">View</a>
-					</td>
-					<td>{{ bill.reference }}</td>
-					<td>
-						<a href="{{context_path}}/supplies/{{bill.supply.id}}">supply</a>
-					</td>
-					<td>{{ bill.account }}</td>
-					<td>{{ bill.issue_date|hh_format }}</td>
-					<td>{{ bill.start_date|hh_format }}</td>
-					<td>{{ bill.finish_date|hh_format }}</td>
-					<td>{{ bill.kwh }}</td>
-					<td>{{ bill.net }}</td>
-					<td>{{ bill.vat }}</td>
-					<td>{{ bill.gross }}</td>
-					<td>
-						<a href="{{context_path}}/bill_types/{{bill.bill_type.id}}"
-						 	title="{{bill.bill_type.description}}">{{bill.bill_type.code}}</a>
-					</td>
-				</tr>
-			{% endfor %}
-		</tbody>
-	</table>
+	<div class="layer-section">
+		<div class="section-header">
+			<h2>{{batch.reference}}</h2>
+		</div>
+		<div class="section-content">
+			<div class="section-data">
+				<table class="DataTable widthAuto noMarginBottom">
+					<tr>
+						<th>Reference</th>
+						<td>{{ batch.reference }}</td>
+					</tr>
+					<tr>
+						<th>Description</th>
+						<td>{{ batch.description }}</td>
+					</tr>
+					<tr>
+						<th>Number Of Bills</th>
+						<td>{{ bills|length }}</td>
+					</tr>
+					{% if batch_reports %}
+						<tr>
+							<th>Custom Reports</th>
+							<td>
+								<ul>
+									{% for report in batch_reports %}
+										<li>
+											<a href="{{context_path}}/local_reports/{{report.id}}/output?batch_id={{batch.id}}">{{report.name}}</a>
+										</li>
+									{% endfor %}
+								</ul>
+							</td>
+						</tr>
+					{% endif %}
+				</table>
+			</div>
+			
+			<div class="section-data">
+				<ul>
+					<li>
+						<a href="{{context_path}}/reports/111?batch_id={{batch.id}}">Check Bills</a>
+					</li>
+					<li>
+						[<a href="{{context_path}}/hhdc_bill_imports?hhdc_batch_id={{batch.id}}">Bill Imports</a>]
+					</li>
+					<li>
+						<a
+								href="{{context_path}}/hhdc_batches/{{batch.id}}/csv"
+								>CSV of Bills</a>
+					</li>
+				</ul>
+			</div>
+		</div>
+	</div>
+
+	<div class="layer-section">
+		<div class="section-header">
+			<h2>
+				Bills [<a href="{{context_path}}/hhdc_batches/{{batch.id}}/add_bill">add</a>]
+			</h2>
+		</div>
+		<div class="section-content">
+			<div class="section-data">
+				<div class="noWrap">
+					<table  class="DataTable widthAuto noMarginBottom">
+						<thead>
+							<tr>
+								<th>View</th>
+								<th>Reference</th>
+								<th>Supply</th>
+								<th>Account</th>
+								<th>Issue Date</th>
+								<th>From</th>
+								<th>To</th>
+								<th>kWh</th>
+								<th>Net</th>
+								<th>VAT</th>
+								<th>Gross</th>
+								<th>Type</th>
+							</tr>
+						</thead>
+						<tbody>
+							{% for bill in bills %}
+								<tr>
+									<td>
+										<a href="{{context_path}}/hhdc_bills/{{bill.id}}">View</a>
+									</td>
+									<td>{{ bill.reference }}</td>
+									<td>
+										<a href="{{context_path}}/supplies/{{bill.supply.id}}">supply</a>
+									</td>
+									<td>{{ bill.account }}</td>
+									<td>{{ bill.issue_date|hh_format }}</td>
+									<td>{{ bill.start_date|hh_format }}</td>
+									<td>{{ bill.finish_date|hh_format }}</td>
+									<td>{{ bill.kwh }}</td>
+									<td>{{ bill.net }}</td>
+									<td>{{ bill.vat }}</td>
+									<td>{{ bill.gross }}</td>
+									<td>
+										<a href="{{context_path}}/bill_types/{{bill.bill_type.id}}"
+										 	title="{{bill.bill_type.description}}">{{bill.bill_type.code}}</a>
+									</td>
+								</tr>
+							{% endfor %}
+						</tbody>
+					</table>
+				</div>
+			</div>
+		</div>
+	</div>
+	
+	
 {% endblock %}

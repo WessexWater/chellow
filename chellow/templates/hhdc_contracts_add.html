@@ -1,47 +1,59 @@
 {% extends "base.html" %}
 
 {% block title %}
-	HHDC Contracts &gt; Add
+	&raquo; HHDC Contracts &raquo; Add
 {% endblock %}
 
 {% block nav %}
-	<a href="{{context_path}}/hhdc_contracts">HHDC Contracts</a> &gt; Add
+	&raquo; <a href="{{context_path}}/hhdc_contracts">HHDC Contracts</a> &raquo; Add
 {% endblock %}
 
 {% block content %}
-	<form action="" method="post">
-		<fieldset>
-			<legend>Add a HHDC contract</legend>
-			<br />
-			<label>
-				Participant
-				<select name="participant_id">
-					{% for party in parties %}
-						{{ input_option('participant_id', party.participant.id,
-								party.participant.code + " : " + party.name) }}
-					{% endfor %}
-				</select>
-			</label>
-			<br />
-			<br />
-			<label>
-				Name
-				<input name="name" value="
-					{%- if request.values.name -%}
-						{{ request.values.name }}
-					{%- endif -%}
-				">
-			</label>
-			<br />
-			<br />
-			<fieldset>
-				<legend>Start Date</legend>
-				{{ input_date('start', initial_date) }}
-			</fieldset>
-			<br />
-			<br />
-			<input type="submit" value="Add">
-			<input type="reset" value="Reset">
-		</fieldset>
-	</form>
+<div class="layer-section">
+		<div class="section-header">
+			<h2>Add a HHDC contract</h2>
+		</div>
+		<div class="section-content">
+			<div class="section-data">
+				<div class="standardForm">
+					<form action="" method="post">
+						<div class="row">
+							<div class="col-sm-6">
+								<label>Participant</label>
+								<select name="participant_id">
+									{% for party in parties %}
+										{{ input_option('participant_id', party.participant.id,
+												party.participant.code + " : " + party.name) }}
+									{% endfor %}
+								</select>
+							</div>
+							<div class="col-sm-6">
+								<label>Name</label>
+								<input name="name" value="
+									{%- if request.values.name -%}
+										{{ request.values.name }}
+									{%- endif -%}
+								">
+							</div>
+						</div>
+						
+						<fieldset>
+							<fieldset>
+								<div class="standardForm textWidthAuto">
+								<legend>Start Date</legend>
+								{{ input_date('start', initial_date) }}
+								</div>
+							</fieldset>
+							<input type="submit" value="Add">
+							<input type="reset" value="Reset">
+						</fieldset>
+					</form>
+				</div>
+			</div>
+		</div>
+</div>
+	
+
+
+	
 {% endblock %}

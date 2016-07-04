@@ -4,7 +4,7 @@ To change this template file, choose Tools | Templates
 and open the template in the editor.
 */
 /* 
-    Created on : May 27, 2016, 11:09:42 AM
+    Created on : July 11, 2016, 2:09:42 PM
     Author     : AL
 */
 
@@ -57,6 +57,15 @@ a:hover {
     text-decoration: none !important;
 }
 
+dt, dd {
+    margin: 0;
+}
+
+dd {
+    margin-bottom: 15px;
+    margin-left: 20px;
+}
+
 table {
     border-collapse: collapse;
     margin: 0 0 12px;
@@ -83,7 +92,7 @@ table {
 .paddingTop30 { padding-top: 30px !important; }
 
 ol, ul {
-    margin: 0;
+    margin: 0 0 15px;
     padding: 0 0 0 20px;
 }
 
@@ -568,7 +577,7 @@ body.LoginScreen,
     opacity: 0; visibility: hidden;
 }
 
-.main-navigation nav li.Selected ul,
+/*.main-navigation nav li.Selected ul,*/
 .main-navigation nav ul li:hover ul {
     max-height: 500px;
     opacity: 1; visibility: visible;
@@ -699,6 +708,22 @@ body.LoginScreen,
     cursor: default;
     line-height: 15px;
     padding: 15px;
+}
+
+.section-header .ActionMenu {
+    color: #009FD9;
+    display: block;
+    float: right;
+    /*opacity: 0; visibility: hidden;*/
+    padding: 0;
+    position: relative;
+    right: auto;
+    top: auto;
+    transition: visibility 250ms, opacity 250ms linear; -moz-transition: visibility 250ms, opacity 250ms linear; -o-transition: visibility 250ms, opacity 250ms linear; -webkit-transition: visibility 250ms, opacity 250ms linear;
+}
+
+.section-header:hover .ActionMenu {
+    /*opacity: 1; visibility: visible;*/
 }
 
 .layer-section .section-action {
@@ -881,6 +906,10 @@ table.DataTable.noMarginBottom {
     display: block;
 }
 
+.standardForm.inlineFormSubmit label {
+    display: inline-block;
+}
+
 .standardForm legend {
     font-size: 18px;
     margin-bottom: 15px;
@@ -898,11 +927,14 @@ input.input-text,
     height: 34px;
     line-height: 24px;
     margin: 0 0 15px;
+    max-width: 100%;
     padding: 5px 10px;
     width: 100%;
 }
 
 .standardForm textarea {
+    font-family: monospace;
+    font-size: 13px;
     min-height: 200px;
 }
 
@@ -915,13 +947,16 @@ input.input-text,
     width: 100%;
 }
 
+.standardForm input[type="file"], 
 .textWidthAuto.standardForm .input-text, 
 .textWidthAuto.standardForm textarea, 
 .textWidthAuto.standardForm input, 
 .textWidthAuto.standardForm input[type="password"], 
 .textWidthAuto.standardForm input[type="text"], 
 .textWidthAuto.standardForm input[type="email"], 
+.textWidthAuto.standardForm input[type="file"], 
 .textWidthAuto.standardForm select {
+    display: inline-block;
     width: auto;
 }
 
@@ -934,17 +969,23 @@ input.input-text,
 .btn, 
 a.btn, 
 .button, 
-input[type="submit"] {
+input[type="submit"], 
+input[type="reset"] {
     background-color: #009FD9;
     border: 0;
     border-radius: 0; -moz-border-radius: 0; -o-border-radius: 0; -webkit-border-radius: 0;
     color: #FFF;
     font-size: 14px;
     line-height: 24px;
+    margin: 0;
     padding: 5px 10px;
     text-transform: uppercase;
     transition: background-color 230ms ease-in-out, color 230ms ease-in-out; -moz-transition: background-color 230ms ease-in-out, color 230ms ease-in-out; -o-transition: background-color 230ms ease-in-out, color 230ms ease-in-out; -webkit-transition: background-color 230ms ease-in-out, color 230ms ease-in-out;
     width: auto !important;
+}
+
+input[type="reset"] {
+    background-color: #CDCA25;
 }
 
 .inlineFormSubmit.standardForm input[type="submit"] {
@@ -963,6 +1004,20 @@ a.btn:hover,
 input[type="submit"]:hover {
     background-color: #008EC2;
     color: #FFF;
+}
+
+input[type="reset"]:hover {
+    background-color: #A09E1D;
+}
+
+.standardForm input[type="submit"], 
+.standardForm input[type="reset"] {
+    margin-bottom: 15px;
+}
+
+.standardForm.btnNoMargin input[type="submit"], 
+.standardForm.btnNoMargin input[type="reset"] {
+    margin-bottom: 0;
 }
 
 

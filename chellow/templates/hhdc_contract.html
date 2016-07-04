@@ -1,105 +1,178 @@
 {% extends "base.html" %}
 
 {% block title %}
-	HHDC Contracts &gt; {{hhdc_contract.name}}
+	&raquo; HHDC Contracts &raquo; {{hhdc_contract.name}}
 {% endblock %}
 
 {% block nav %}
-	<a href="{{context_path}}/hhdc_contracts">HHDC Contracts</a> &gt;
+	&raquo; <a href="{{context_path}}/hhdc_contracts">HHDC Contracts</a> &raquo;
 	{{hhdc_contract.name}}
 	[<a href="{{context_path}}/hhdc_contracts/{{hhdc_contract.id}}/edit">edit</a>]
 {% endblock %}
 
 {% block content %}
-	<table>
-		<tbody>
-			<tr>
-				<th>Party</th>
-				<td>
-					<a href="{{context_path}}/parties/{{hhdc_contract.party.id}}">
-						{{hhdc_contract.party.name}}
-					</a>
-				</td>
-			</tr>
-			<tr>
-				<th>Name</th>
-				<td>{{hhdc_contract.name}}</td>
-			</tr>
-			<tr>
-				<th>Start Date</th>
-				<td>{{hhdc_contract.start_rate_script.start_date|hh_format }}</td>
-			</tr>
-			<tr>
-				<th>Finish Date</th>
-				<td>{{hhdc_contract.finish_rate_script.finish_date|hh_format }}</td>
-			</tr>
-		</tbody>
-	</table>
-
-	<br />
-	<table>
-		<caption>
-			Rate Scripts
-			[<a href="{{context_path}}/hhdc_contracts/{{hhdc_contract.id}}/add_rate_script">add</a>]
-		</caption>
-		<thead>
-			<tr>
-				<th></th>
-				<th>From</th>
-				<th>To</th>
-			</tr>
-		</thead>
-		<tbody>
-			{% for rate_script in rate_scripts %}
+	<!-- Layer Section -->
+	<div class="layer-section">
+	    <!-- Section Header -->
+	    <div class="section-header">
+		<h2>{{hhdc_contract.name}}</h2>
+	    </div>
+	    <!-- End Section Header -->
+	    <!-- Section Content -->
+	    <div class="section-content">
+		<div class="section-data">
+		    <table class="DataTable widthAuto noMarginBottom">
+			<tbody>
 				<tr>
+					<th>Party</th>
 					<td>
-						<a href="{{context_path}}/hhdc_rate_scripts/{{rate_script.id}}">
-							view
+						<a href="{{context_path}}/parties/{{hhdc_contract.party.id}}">
+							{{hhdc_contract.party.name}}
 						</a>
 					</td>
-					<td>{{rate_script.start_date|hh_format}}</td>
-					<td>{{rate_script.finish_date|hh_format}}</td>
 				</tr>
-			{% endfor %}
-		</tbody>
-	</table>
+				<tr>
+					<th>Name</th>
+					<td>{{hhdc_contract.name}}</td>
+				</tr>
+				<tr>
+					<th>Start Date</th>
+					<td>{{hhdc_contract.start_rate_script.start_date|hh_format }}</td>
+				</tr>
+				<tr>
+					<th>Finish Date</th>
+					<td>{{hhdc_contract.finish_rate_script.finish_date|hh_format }}</td>
+				</tr>
+			</tbody>
+     		    </table>
+		</div>
 
-	<ul>
-		<li>
-			<a href="{{context_path}}/hhdc_batches?hhdc_contract_id={{hhdc_contract.id}}">Batches</a>
-		</li>
-		<li>
-			<a href="{{context_path}}/channel_snags?hhdc_contract_id={{hhdc_contract.id}}&days_hidden=5">Channel Snags</a>
-		</li>
-		<li>
-			<a href="{{context_path}}/hhdc_contracts/{{hhdc_contract.id}}/auto_importer">Automatic HH Data Importer</a>
-		</li>
-		<li>
-		[<a href="{{context_path}}/hhdc_contracts/{{hhdc_contract.id}}/hh_imports">HH data imports</a>]
-		</li>
-	</ul>
-	<br>
-	<form action="{{context_path}}/reports/81">
-		<fieldset>
-			<legend>Download Virtual Bills</legend>
-			<input type="hidden" name="hhdc_contract_id" value="{{hhdc_contract.id}}">
-			<br>
-			For <input name="months" value="1" maxlength="2" size="2">
-			month(s) until the end of
-			{{input_date('end', last_month_finish, 'month')}}
-			<input type="submit" value="Download">
-		</fieldset>
-	</form>
-						 
-	<h2>Script</h2>
-	
-	<pre>{{hhdc_contract.charge_script}}</pre>
+		<div class="section-data">
+		    <table class="DataTable widthAuto">
+			<caption>
+				Rate Scripts
+				[<a href="{{context_path}}/hhdc_contracts/{{hhdc_contract.id}}/add_rate_script">add</a>]
+			</caption>
+			<thead>
+				<tr>
+					<th></th>
+					<th>From</th>
+					<th>To</th>
+				</tr>
+			</thead>
+			<tbody>
+				{% for rate_script in rate_scripts %}
+					<tr>
+						<td>
+							<a href="{{context_path}}/hhdc_rate_scripts/{{rate_script.id}}">
+								view
+							</a>
+						</td>
+						<td>{{rate_script.start_date|hh_format}}</td>
+						<td>{{rate_script.finish_date|hh_format}}</td>
+					</tr>
+				{% endfor %}
+			</tbody>
+		</table>
+		</div>
 
-	<h2>Properties</h2>
-	
-	<pre>{{hhdc_contract.properties }}</pre>
+		<div class="section-data">
+		    <ul>
+			<li>
+				<a href="{{context_path}}/hhdc_batches?hhdc_contract_id={{hhdc_contract.id}}">Batches</a>
+			</li>
+			<li>
+				<a href="{{context_path}}/channel_snags?hhdc_contract_id={{hhdc_contract.id}}&days_hidden=5">Channel Snags</a>
+			</li>
+			<li>
+				<a href="{{context_path}}/hhdc_contracts/{{hhdc_contract.id}}/auto_importer">Automatic HH Data Importer</a>
+			</li>
+			<li>
+			[<a href="{{context_path}}/hhdc_contracts/{{hhdc_contract.id}}/hh_imports">HH data imports</a>]
+			</li>
+		</ul>
+		</div>
+	    </div>
+	    <!-- End Section Content -->
+	</div>
+	<!-- End Layer Section -->
 
-	<h2>State</h2>
-	
-	<pre>{{hhdc_contract.state }}</pre>
+	<!-- Layer Section -->
+	<div class="layer-section">
+	    <!-- Section Header -->
+	    <div class="section-header">
+		<h2>Download Virtual Bills</h2>
+	    </div>
+	    <!-- End Section Header -->
+	    <!-- Section Content -->
+	    <div class="section-content">
+		<div class="section-data">
+		    <div class="standardForm textWidthAuto inlineFormSubmit">
+		        <form action="{{context_path}}/reports/81">
+				<fieldset>
+					<input type="hidden" name="hhdc_contract_id" value="{{hhdc_contract.id}}">
+					<br>
+					For <input name="months" value="1" maxlength="2" size="2">
+					month(s) until the end of
+					{{input_date('end', last_month_finish, 'month')}}
+					<input type="submit" value="Download">
+				</fieldset>
+			</form>
+		    </div>
+		</div>
+	    </div>
+	    <!-- End Section Content -->
+	</div>
+	<!-- End Layer Section -->
+
+	<!-- Layer Section -->
+	<div class="layer-section">
+	    <!-- Section Header -->
+	    <div class="section-header">
+		<h2>Script</h2>
+	    </div>
+	    <!-- Section Content -->
+	    <div class="section-content">
+		<div class="section-data">
+		    <pre>{{hhdc_contract.charge_script}}</pre>
+		</div>
+	    </div>
+	    <!-- End Section Content -->
+	</div>
+	<!-- End Layer Section -->
+
+	<!-- Layer Section -->
+	<div class="layer-section">
+	    <!-- Section Header -->
+	    <div class="section-header">
+		<h2>Properties</h2>
+	    </div>
+	    <!-- End Section Header -->
+	    <!-- Section Content -->
+	    <div class="section-content">
+		<div class="section-data">
+		    <pre>{{hhdc_contract.properties }}</pre>
+		</div>
+	    </div>
+	    <!-- End Section Content -->
+	</div>
+	<!-- End Layer Section -->
+
+	<!-- Layer Section -->
+	<div class="layer-section">
+	    <!-- Section Header -->
+	    <div class="section-header">
+		<h2>State</h2>
+	    </div>
+	    <!-- End Section Header -->
+	    <!-- Section Content -->
+	    <div class="section-content">
+		<div class="section-data">
+		    <pre>{{hhdc_contract.state }}</pre>
+		</div>
+	    </div>
+	    <!-- End Section Content -->
+	</div>
+	<!-- End Layer Section -->
+
 {% endblock %}

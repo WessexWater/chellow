@@ -1,77 +1,117 @@
 {% extends "base.html" %}
 
 {% block title %}
-	Non-core Contracts &gt; {{contract.name}}
+	&raquo; Non-core Contracts &raquo; {{contract.name}}
 {% endblock %}
 
 {% block nav %}
-	<a href="{{context_path}}/non_core_contracts">Non-core Contracts</a> &gt;
+	&raquo; <a href="{{context_path}}/non_core_contracts">Non-core Contracts</a> &raquo; 
 	<a href="{{context_path}}/non_core_contracts/{{contract.id}}">{{contract.name}}</a>
-	&gt; Edit
+	&raquo; Edit
 {% endblock %}
 
 {% block content %}
 	{% if request.method == 'GET' and request.values.view == 'confirm_delete' %}
-		<form method="post" action="">
-			<fieldset>
-				<legend>
-					Are you sure you want to delete this contract?
-				</legend>
-				<input type="hidden" name="non_core_contract_id"
-					value="{{contract.id}}"
-				>
-				<input type="submit" name="delete" value="Delete">
-			</fieldset>
-		</form>
-		<p>
-			<a href="">Cancel</a>
-		</p>
+	
+	<div class="layer-section">
+		<div class="section-header">
+			<h2>Are you sure you want to delete this contract?</h2>	
+		</div>
+		<div class="section-content">
+			<div class="section-data">
+				<div class="standardForm">
+					<form method="post" action="">
+						<fieldset>
+							<input type="hidden" name="non_core_contract_id"
+								value="{{contract.id}}"
+							>
+							<input type="submit" name="delete" value="Delete">
+							<a class="btn" href="{{context_path}}/non_core_contracts/{{contract.id}}/edit">Cancel</a>
+						</fieldset>
+					</form>
+				</div>
+			</div>
+		</div>
+	</div>
+	
+		
 	{% else %}
-		<form action="" method="post">
-			<fieldset>
-				<legend>Update Contract</legend>
-				<br>
-				<label>
-					{{contract.name}}
-				</label>
-				<br>
-				<br>
-				Properties
-				<br>
-				{{ input_textarea('properties', contract.properties, 20, 80) }}
-				<br>
-				{% if contract.name == 'bsuos' %}
-					<pre>{
+	
+	<div class="layer-section">
+		<div class="section-header">
+			<h2>Update Contract</h2>	
+		</div>
+		<div class="section-content">
+			<div class="standardForm">
+				<form action="" method="post">
+					<fieldset>
+						<div class="section-data">
+							<div class="row">
+								<div class="col-sm-6"
+									<label>Name</label>						
+								    <input name="name" value={{contract.name}}>
+							    </div>
+							</div>
+						</div>
+						<div class="section-data">
+							Properties
+							
+							{{ input_textarea('properties', contract.properties, 20, 80) }}
+							
+							{% if contract.name == 'bsuos' %}
+								<pre>{
     'enabled': True,
     'url': 'http://www2.nationalgrid.com/Current-SF-BSUoS-Data/'}</pre>
-				{% elif contract.name == 'tlms' %}
-					<pre>{
-    'enabled': True,
-    'url': 'https://downloads.elexonportal.co.uk/'}</pre>
-				{% endif %}
-				<br>
-				<input type="submit" value="Update">
-			</fieldset>
-		</form>
-		<br>
-		<br>
-		<form action="" method="post">
-			<fieldset>
-				<legend>Update State</legend>
-				<label>State</label>
-				<br>
-				{{ input_textarea('state', contract.state, 40, 80) }}
-				<br>
-				<input type="submit" name="update_state" value="Update">
-			</fieldset>
-		</form>
-		<br>
-		<form action="">
-			<fieldset>
-				<legend>Delete this contract</legend>
-				<input type="hidden" name="view" value="confirm_delete">
-				<input type="submit" value="Delete">
-			</fieldset>
-		</form>
+    {% elif contract.name == 'tlms' %}
+								<pre>{
+'enabled': True,
+'url': 'https://downloads.elexonportal.co.uk/'}</pre>
+							{% endif %}
+							<br>
+							<input type="submit" value="Update">
+						</div>
+					</fieldset>
+				</form>
+			</div>
+		</div>
+	</div>
+	<div class="layer-section">
+		<div class="section-header">
+			<h2>Update State</h2>	
+		</div>
+		<div class="section-content">
+			<div class="section-data">
+				<div class="standardForm">
+					<form action="" method="post">
+						<fieldset>
+							<label>State</label>
+							{{ input_textarea('state', contract.state, 40, 80) }}
+							<br>
+							<input type="submit" name="update_state" value="Update">
+						</fieldset>
+					</form>
+				</div>
+			</div>
+		</div>
+	</div>
+	
+	<div class="layer-section">
+		<div class="section-header">
+			<h2>Delete this contract</h2>	
+		</div>
+		<div class="section-content">
+			<div class="section-data">
+				<div class="standardForm">
+					<form action="">
+						<fieldset>
+							<input type="hidden" name="view" value="confirm_delete">
+							<input type="submit" value="Delete">
+						</fieldset>
+					</form>
+				</div>
+			</div>
+		</div>
+	</div>
+
 	{% endif %}
 {% endblock %}

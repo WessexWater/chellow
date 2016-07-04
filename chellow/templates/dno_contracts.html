@@ -1,34 +1,45 @@
 {% extends "base.html" %}
 
 {% block title %}
-	DNO Contracts
+	&raquo; DNO Contracts
 {% endblock %}
 
 {% block nav %}
-	DNO Contracts
+	&raquo; DNO Contracts
 {% endblock %}
 
 {% block content %}
-	<table>
-		<thead>
-			<tr>
-				<th>Code</th>
-				<th>Name</th>
-				<th>Start Date</th>
-				<th>Finish Date</th>
-			</tr>
-		</thead>
-		<tbody>
-			{% for contract in dno_contracts %}
-				<tr>
-					<td>
-						<a href="{{context_path}}/dno_contracts/{{contract.id}}">{{contract.name}}</a>
-					</td>
-					<td>{{contract.party.name}}</td>
-					<td>{{contract.start_rate_script.start_date|hh_format}}</td>
-					<td>{{contract.finish_rate_script.finish_date|hh_format}}</td>
-				</tr>
-			{% endfor %}
-		</tbody>
-	</table>
+<div class="layer-section">
+	<div class="section-header">
+		<h2>DNO Contracts</h2>	
+	</div>
+	<div class="section-content">
+		<div class="section-data">
+			<table class="DataTable widthAuto noMarginBottom">
+				<thead>
+					<tr>
+						<th>Code</th>
+						<th>Name</th>
+						<th>Start Date</th>
+						<th>Finish Date</th>
+					</tr>
+				</thead>
+				<tbody>
+					{% for contract in dno_contracts %}
+						<tr>
+							<td>
+								<a href="{{context_path}}/dno_contracts/{{contract.id}}">{{contract.name}}</a>
+							</td>
+							<td>{{contract.party.name}}</td>
+							<td>{{contract.start_rate_script.start_date|hh_format}}</td>
+							<td>{{contract.finish_rate_script.finish_date|hh_format}}</td>
+						</tr>
+					{% endfor %}
+				</tbody>
+			</table>
+		</div>
+	</div>
+</div>
+
+	
 {% endblock %}

@@ -1,28 +1,39 @@
 {% extends "base.html" %}
 
 {% block title %}
-	Supplier Contracts &gt; {{contract.name}} &gt; Add Rate Script
+	&raquo; Supplier Contracts &raquo; {{contract.name}} &raquo; Add Rate Script
 {% endblock %}
 
 {% block nav %}
-	<a href="{{context_path}}/supplier_contracts">Supplier Contracts</a> &gt;
+	&raquo; <a href="{{context_path}}/supplier_contracts">Supplier Contracts</a> &raquo; 
 	<a href="{{context_path}}/supplier_contracts/{{contract.id}}">{{contract.name}}</a>
-	&gt; Add Rate Script
+	&raquo; Add Rate Script
 {% endblock %}
 
 {% block content %}
-	<form action="" method="post">
-		<fieldset>
-			<legend>Add a rate script</legend>
-			<input type="hidden" name="supplier_contract_id" value="{{contract.id}}">
-			<br>
-			<fieldset>
-				<legend>Start Date</legend>
-				{{input_date('start', initial_date)}}
-			</fieldset>
-			<br>
-			<br>
-			<input type="submit" value="Add">
-		</fieldset>
-	</form>
+<div class="layer-section">
+	<div class="section-header">
+		<h2>Add a rate script</h2>	
+	</div>
+	<div class="section-content">
+		<div class="section-data">
+			<div class="standardForm textWidthAuto">
+				<form action="" method="post">
+					<fieldset>
+						<input type="hidden" name="supplier_contract_id" value="{{contract.id}}">
+						
+						<fieldset>
+							<legend>Start Date</legend>
+							{{input_date('start', initial_date)}}
+						</fieldset>
+					
+						<input type="submit" value="Add">
+					</fieldset>
+				</form>
+			</div>
+		</div>
+	</div>
+</div>
+
+	
 {% endblock %}

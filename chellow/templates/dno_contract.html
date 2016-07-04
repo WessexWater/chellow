@@ -1,83 +1,101 @@
 {% extends "base.html" %}
 
 {% block title %}
-	DNO Contracts &gt; {{contract.name}}
+	&raquo; DNO Contracts &raquo; {{contract.name}}
 {% endblock %}
 
 {% block nav %}
-	<a href="{{context_path}}/dno_contracts">DNO Contracts</a> &gt;
+	&raquo; <a href="{{context_path}}/dno_contracts">DNO Contracts</a> &raquo; 
 	{{ contract.name }}
 	[<a href="{{context_path}}/dno_contracts/{{contract.id}}">edit</a>]
 {% endblock %}
 
 {% block content %}
-	<table>
-		<tbody>
-			<tr>
-				<th>Name</th>
-				<td>{{contract.name}}</td>
-			</tr>
-			<tr>
-				<th>Start Date</th>
-				<td>{{ contract.start_rate_script.start_date|hh_format }}</td>
-			</tr>
-			<tr>
-				<th>Finish Date</th>
-				<td>{{ contract.finish_rate_script.start_date|hh_format }}</td>
-			</tr>
-			<tr>
-				<th>Custom Reports</th>
-				<td>
-					<ul>
-						{% for report in custom_reports %}
-							<li>
-								<a href="{{context_path}}/local_reports/{{report.id}}/output/?dno_id={{contract.id}}">{{report.name}}</a>
-							</li>
-						{% endfor %}
-					</ul>
-				</td>
-			</tr>
-			<tr>
-				<th>Party</th>
-				<td>
-					<a href="{{context_path}}/parties/{{contract.party.id}}">{{contract.party.name}}</a>
-				</td>
-			</tr>
-			<tr>
-				<th>Line Loss Factor Classes</th>
-				<td>
-					<a href="{{context_path}}/llfcs?dno_contract_id={{contract.id}}">LLFCs</a>
-				</td>
-			</tr>
-		</tbody>
-	</table>
+<div class="layer-section">
+	<div class="section-header">
+		<h2>DNO Contract</h2>	
+	</div>
+	<div class="section-content">
+		<div class="section-data">
+			<table class="DataTable widthAuto noMarginBottom">
+				<tbody>
+					<tr>
+						<th>Name</th>
+						<td>{{contract.name}}</td>
+					</tr>
+					<tr>
+						<th>Start Date</th>
+						<td>{{ contract.start_rate_script.start_date|hh_format }}</td>
+					</tr>
+					<tr>
+						<th>Finish Date</th>
+						<td>{{ contract.finish_rate_script.start_date|hh_format }}</td>
+					</tr>
+					<tr>
+						<th>Custom Reports</th>
+						<td>
+							<ul>
+								{% for report in custom_reports %}
+									<li>
+										<a href="{{context_path}}/local_reports/{{report.id}}/output/?dno_id={{contract.id}}">{{report.name}}</a>
+									</li>
+								{% endfor %}
+							</ul>
+						</td>
+					</tr>
+					<tr>
+						<th>Party</th>
+						<td>
+							<a href="{{context_path}}/parties/{{contract.party.id}}">{{contract.party.name}}</a>
+						</td>
+					</tr>
+					<tr>
+						<th>Line Loss Factor Classes</th>
+						<td>
+							<a href="{{context_path}}/llfcs?dno_contract_id={{contract.id}}">LLFCs</a>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
+		<div class="section-data">
+			<table class="DataTable widthAuto noMarginBottom">
+				<caption>
+					Rate Scripts
+					[<a href="{{context_path}}/dno_contracts/{{contract.id}}/add_rate_script">add</a>]
+				</caption>
+				<thead>
+					<tr>
+						<th></th>
+						<th>From</th>
+						<th>To</th>
+					</tr>
+				</thead>
+				<tbody>
+					{% for rate_script in rate_scripts %}
+						<tr>
+							<td>
+								<a href="{{context_path}}/dno_rate_scripts/{{rate_script.id}}">View</a>
+							</td>
+							<td>{{ rate_script.start_date|hh_format }}</td>
+							<td>{{ rate_script.finish_date|hh_format }}</td>
+						</tr>
+					{% endfor %}
+				</tbody>
+			</table>
+		</div>
+	</div>
+</div>
 
-	<br/>
-	<table>
-		<caption>
-			Rate Scripts
-			[<a href="{{context_path}}/dno_contracts/{{contract.id}}/rate_script_add">add</a>]
-		</caption>
-		<thead>
-			<tr>
-				<th></th>
-				<th>From</th>
-				<th>To</th>
-			</tr>
-		</thead>
-		<tbody>
-			{% for rate_script in rate_scripts %}
-				<tr>
-					<td>
-						<a href="{{context_path}}/dno_rate_scripts/{{rate_script.id}}">View</a>
-					</td>
-					<td>{{ rate_script.start_date|hh_format }}</td>
-					<td>{{ rate_script.finish_date|hh_format }}</td>
-				</tr>
-			{% endfor %}
-		</tbody>
-	</table>
+<div class="layer-section">
+	<div class="section-header">
+		<h2>Script</h2>	
+	</div>
+	<div class="section-content">
+		<div class="section-data">
+			<pre>{{ contract.charge_script }}</pre>
+		</div>
+	</div>
+</div>
 
-	<h2>Script</h2>
-	<pre>{{ contract.charge_script }}</pre>
 {% endblock %}
