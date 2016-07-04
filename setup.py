@@ -29,6 +29,8 @@ setup(
         'dno_contracts/*/rate_scripts/*.py',
         'mdd/*.csv',
         'templates/*.html',
+        'templates/css/*.css',
+        'templates/js/*.js',
         'templates/*.css',
         'static/fonts/*.ttf',
         'nationalgrid/*',

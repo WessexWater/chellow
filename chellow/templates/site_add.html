@@ -3,24 +3,37 @@
 {% block title %}Sites &gt; Add{% endblock %}
 
 {% block nav %}
-	<a href="{{context_path}}/sites">Sites</a> &gt; Add
+	&raquo; <a href="{{context_path}}/sites">Sites</a> &raquo; Add
 {% endblock %}
 
 {% block content %}
-	<form action="" method="post">
-		<fieldset>
-			<legend>Add a site</legend>
-			<br>
-			<label>
-				Code {{ input_text('code', '') }}
-			</label>
-			<br>
-			<label>
-				Name {{ input_text('name', '') }}
-			</label>
-			<br>
-			<br>
-			<input type="submit" value="Add">
-		</fieldset>
-	</form>
+<div class="layer-section">
+	<div class="section-header">
+		<h2>Add a site</h2>
+	</div>
+	<div class="section-content">
+		<div class="section-data">	
+			<div class="standardForm inlineFormSubmit">		
+				<form action="" method="post">
+					<fieldset>
+						
+						<div class="col-sm-4">
+							<label>
+								Code {{ input_text('code', '') }}
+							</label>
+						</div>
+						<div class="col-sm-8">
+							<label>
+								Name {{ input_text('name', '') }}
+							</label>
+<input type="submit" value="Add">
+						</div>
+						
+					</fieldset>
+				</form>
+			</div>
+		</div>
+	</div>
+</div>
+	
 {% endblock %}

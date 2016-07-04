@@ -1,102 +1,122 @@
 {% extends "base.html" %}
 
 {% block title %}
-	Supplies
+	&raquo; Supplies
 {% endblock %}
 
 {% block nav %}
-	Supplies
+	&raquo; Supplies
 {% endblock %}
 
 {% block content %}
-	<form action="">
-		<fieldset>
-			<legend>
-				Search for supply eras by MPAN core, account number or meter serial
-				number
-			</legend>
-			{{input_text('search_pattern', '')}}
-			<input type="submit" value="Search">
-		</fieldset>
-	</form>
-	{% if eras %}
-		<p>
-			Only the first {{max_results}} supply eras of the search results are
-		 	shown.
-		</p>
-		<table>
-			<caption>Supplies</caption>
-			<thead>
-				<tr>
-					<th rowspan="3">Supply</th>
-					<th rowspan="3">Meter Serial Number</th>
-					<th colspan="2">HHDC</th>
-					<th colspan="3">Import</th>
-					<th colspan="3">Export</th>
-				</tr>
-				<tr>
-					<th rowspan="2">Contract</th>
-					<th rowspan="2">Account</th>
-					<th rowspan="2">Mpan</th>
-					<th colspan="2">Supplier</th>
-					<th rowspan="2">Mpan</th>
-					<th colspan="2">Supplier</th>
-				</tr>
-				<tr>
-					<th>Contract</th>
-					<th>Account</th> 
-					<th>Contract</th>
-					<th>Account</th> 
-				</tr>
-			</thead>
-			<tbody>
-				{% for era in eras %}
-					<tr>
-						<td>
-							<a href="{{context_path}}/supplies/{{era.supply_id}}">supply</a>
-						</td>
-						<td>{{era.msn}}</td>
-						<td>
-							<a href="{{context_path}}/hhdc_contracts/{{era.hhdc_contract.id}}">{{era.hhdc_contract.name}}</a>
-						</td>
-						<td>{{era.hhdc_account}}</td>
-						<td>
-							{% if era.imp_mpan_core %}
-								{{era.pc.code}} {{era.mtc.code}} {{era.imp_llfc.code}}
-								{{era.imp_mpan_core}}
-							{% endif %}
-						</td>
-						<td>
-							{% if era.imp_mpan_core %}
-								<a href="{{context_path}}/supplier_contracts/{{era.imp_supplier_contract.id}}">{{era.imp_supplier_contract.name}}</a>
-							{% endif %}
-						</td>
-						<td>
-							{% if era.imp_mpan_core %}
-								{{era.imp_supplier_account}}
-							{% endif %}
-						</td>
-						<td>
-							{% if era.exp_mpan_core %}
-								{{era.pc.code}} {{era.mtc.code}} {{era.exp_llfc.code}}
-								{{era.exp_mpan_core}}
-							{% endif %}
-						</td>
-						<td>
-							{% if era.exp_mpan_core %}
-								<a href="{{context_path}}/supplier_contracts/{{era.exp_supplier_contract.id}}">{{era.exp_supplier_contract.name}}</a>
-							{% endif %}
-						</td>
-						<td>
-							{% if era.exp_mpan_core %}
-								{{era.exp_supplier_account}}
-							{% endif %}
-						</td>
-					</tr>
-				{% endfor %}
-			</tbody>
-		</table>
-	{% elif request.values.search_pattern %}
-		<p>No supplies matched your search</p>
-	{% endif %}
+	<div class="layer-section">
+		<div class="section-header">
+			<h2>Search for supply eras by MPAN core, account number or meter serial number</h2>
+		</div>
+		<div class="section-content">
+			<div class="section-data">
+				<div class="standardForm textWidthAuto">
+					<div class="row">
+						<div class="col-sm-6">
+							<form action="">
+								<fieldset>
+									{{input_text('search_pattern', '')}}
+									<input type="submit" value="Search">
+								</fieldset>
+							</form>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="section-data">
+				<p>
+					Only the first {{max_results}} supply eras of the search results are
+				 	shown.
+				</p>
+				<div class="noWrap-lg">					
+					{% if eras %}
+					
+					<table class="DataTable">
+						<caption>Supplies</caption>
+						<thead>
+							<tr>
+								<th rowspan="3">Supply</th>
+								<th rowspan="3">Meter Serial Number</th>
+								<th colspan="2">HHDC</th>
+								<th colspan="3">Import</th>
+								<th colspan="3">Export</th>
+							</tr>
+							<tr>
+								<th rowspan="2">Contract</th>
+								<th rowspan="2">Account</th>
+								<th rowspan="2">Mpan</th>
+								<th colspan="2">Supplier</th>
+								<th rowspan="2">Mpan</th>
+								<th colspan="2">Supplier</th>
+							</tr>
+							<tr>
+								<th>Contract</th>
+								<th>Account</th> 
+								<th>Contract</th>
+								<th>Account</th> 
+							</tr>
+						</thead>
+						<tbody>
+							{% for era in eras %}
+								<tr>
+									<td>
+										<a href="{{context_path}}/supplies/{{era.supply_id}}">supply</a>
+									</td>
+									<td>{{era.msn}}</td>
+									<td>
+										<a href="{{context_path}}/hhdc_contracts/{{era.hhdc_contract.id}}">{{era.hhdc_contract.name}}</a>
+									</td>
+									<td>{{era.hhdc_account}}</td>
+									<td>
+										{% if era.imp_mpan_core %}
+											{{era.pc.code}} {{era.mtc.code}} {{era.imp_llfc.code}}
+											{{era.imp_mpan_core}}
+										{% endif %}
+									</td>
+									<td>
+										{% if era.imp_mpan_core %}
+											<a href="{{context_path}}/supplier_contracts/{{era.imp_supplier_contract.id}}">{{era.imp_supplier_contract.name}}</a>
+										{% endif %}
+									</td>
+									<td>
+										{% if era.imp_mpan_core %}
+											{{era.imp_supplier_account}}
+										{% endif %}
+									</td>
+									<td>
+										{% if era.exp_mpan_core %}
+											{{era.pc.code}} {{era.mtc.code}} {{era.exp_llfc.code}}
+											{{era.exp_mpan_core}}
+										{% endif %}
+									</td>
+									<td>
+										{% if era.exp_mpan_core %}
+											<a href="{{context_path}}/supplier_contracts/{{era.exp_supplier_contract.id}}">{{era.exp_supplier_contract.name}}</a>
+										{% endif %}
+									</td>
+									<td>
+										{% if era.exp_mpan_core %}
+											{{era.exp_supplier_account}}
+										{% endif %}
+									</td>
+								</tr>
+							{% endfor %}
+						</tbody>
+					</table>
+				{% elif request.values.search_pattern %}
+					<p>No supplies matched your search</p>
+				{% endif %}
+			</div>
+			</div>
+		</div>
+	</div>
+
+
+	
+	
 {% endblock %}

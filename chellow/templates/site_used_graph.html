@@ -1,17 +1,29 @@
 {% extends "base.html" %}
 
 {% block title %}
-	Sites &gt; {{site.name}} &gt; HH graph of site use
+	Sites &raquo; {{site.name}} &raquo; HH graph of site use
 {% endblock %}
 
 {% block nav %}
-	<a href="{{context_path}}/sites">Sites</a> &gt;
-	<a href="{{context_path}}/sites/{{site.id}}">{{site.name}}</a> &gt;
+	&raquo; <a href="{{context_path}}/sites">Sites</a> &raquo;
+	<a href="{{context_path}}/sites/{{site.id}}">{{site.name}}</a> &raquo;
 	HH graph of site use
 {% endblock %}
 
 {% block content %}
-	<svg width="{{graph_left + result_data|length + 100}}px" height="400px"
+
+					<!-- Layer Section -->
+                                        <div class="layer-section">
+                                            <!-- Section Header -->
+                                            <div class="section-header">
+                                                <h2>HH graph of site use</h2>
+                                            </div>
+                                            <!-- End Section Header -->
+                                            <!-- Section Content -->
+                                            <div class="section-content">
+                                                <div class="section-data">
+                                                    <div class="noWrap">
+                                                        <svg width="{{graph_left + result_data|length + 100}}px" height="400px"
 			 xmlns="http://www.w3.org/2000/svg" version="1.1" font-family="Overclock, sans-serif" font-size="12">
 
 		{% if result_data|length > 0 %}
@@ -91,14 +103,36 @@
 			</text>
 		{% endif %}
 	</svg>
-
-	<br>	
-	<form action="">
-		<fieldset>
-			<legend>Show graph</legend>
-			For {{input_text('months', request.values.months, 2, 2)}}
-			months finishing in {{input_date('finish', finish_date, 'month')}}
-			<input type="submit" value="Show">
-		</fieldset>
-	</form>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <!-- End Section Content -->
+                                        </div>
+                                        <!-- End Layer Section -->
+                                        
+                                        <!-- Layer Section -->
+                                        <div class="layer-section">
+                                            <!-- Section Header -->
+                                            <div class="section-header">
+                                                <h2>Show graph</h2>
+                                            </div>
+                                            <!-- End Section Header -->
+                                            <!-- Section Content -->
+                                            <div class="section-content">
+                                                <div class="section-data">
+                                                    <div class="standardForm textWidthAuto inlineFormSubmit">
+                                                       <form action="">
+								<fieldset>
+									For {{input_text('months', request.values.months, 2, 2)}}
+									months finishing in {{input_date('finish', finish_date, 'month')}}
+									<input type="submit" value="Show">
+								</fieldset>
+							</form>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <!-- End Section Content -->
+                                        </div>
+                                        <!-- End Layer Section -->
+	
 {% endblock %}
