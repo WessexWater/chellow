@@ -12056,6 +12056,14 @@ def virtual_bill(supply_source):
             'breakdown': '{}'},
         'status_code': 303},
     {
+        'name': "Fetch bootstrap css",
+        'path': '/bootstrap',
+        'status_code': 200},
+    {
+        'name': "Fetch wessex js",
+        'path': '/bootstrapjs',
+        'status_code': 200},
+    {
         'name': "Bill check with exception",
         'path': "/supplier_contracts/42/edit",
         'method': 'post',
