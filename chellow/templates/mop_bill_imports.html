@@ -1,35 +1,55 @@
 {% extends "base.html" %}
 
 {% block title %}
-	MOP Contracts &gt; {{batch.contract.name}} &gt; Batches &gt;
- 	{{batch.reference}} &gt; Bill Imports
+	&raquo; MOP Contracts &raquo; {{batch.contract.name}} &raquo; Batches &raquo; 
+ 	{{batch.reference}} &raquo; Bill Imports
 {% endblock %}
 
 {% block nav %}
-	<a href="{{context_path}}/mop_contracts">MOP Contracts</a> &gt;
-	<a href="{{context_path}}/mop_contracts/{{batch.contract.id}}">{{batch.contract.name}}</a> &gt;
-	<a href="{{context_path}}/mop_batches?mop_contract_id={{batch.contract.id}}">Batches</a> &gt;
+	&raquo; <a href="{{context_path}}/mop_contracts">MOP Contracts</a> &raquo; 
+	<a href="{{context_path}}/mop_contracts/{{batch.contract.id}}">{{batch.contract.name}}</a> &raquo; 
+	<a href="{{context_path}}/mop_batches?mop_contract_id={{batch.contract.id}}">Batches</a> &raquo; 
 	<a href="{{context_path}}/mop_batches/{{batch.id}}">{{batch.reference}}</a>
- 	&gt; Bill Imports
+ 	&raquo; Bill Imports
 {% endblock %}
 
 {% block content %}
-	<form enctype="multipart/form-data" method="post" action="">
-		<fieldset>
-			<input type="hidden" name="mop_batch_id" value="{{batch.id}}">
-			<legend>Import Bill File</legend>
-			<input type="file" name="import_file" size="45"
-				value="{{request.getParameter('import_file')}}">
-			<input type="submit" value="Import">
-		</fieldset>
-	</form>
-	{% if importer_ids %}
-		<ul>
-			{% for id in importer_ids %}
-				<li>
-					<a href="{{context_path}}/bill_imports/{{id}}">{{id}}</a>
-				</li>
-			{% endfor %}
-		</ul>
-	{% endif %}
+<!-- Layer Section -->
+<div class="layer-section">
+	<!-- Section Header -->
+	<div class="section-header">
+		<h2>Import Bill File</h2>	
+	</div>
+	<!-- End Section Header -->
+	<!-- Section Content -->
+	<div class="section-content">
+		<div class="section-data">
+			<div class="standardForm">
+				<form enctype="multipart/form-data" method="post" action="">
+					<fieldset>
+						<input type="hidden" name="mop_batch_id" value="{{batch.id}}">
+						<input type="file" name="import_file" size="45"
+							value="{{request.getParameter('import_file')}}">
+						<input type="submit" value="Import">
+					</fieldset>
+				</form>
+			</div>
+		</div>
+		<div class="section-data">
+			{% if importer_ids %}
+				<ul>
+					{% for id in importer_ids %}
+						<li>
+							<a href="{{context_path}}/bill_imports/{{id}}">{{id}}</a>
+						</li>
+					{% endfor %}
+				</ul>
+			{% endif %}
+		</div>
+	</div>
+	<!-- End Section Content -->
+</div>
+<!-- End Layer Section -->
+
+	
 {% endblock %}

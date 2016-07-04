@@ -1,32 +1,44 @@
 {% extends "base.html" %}
 
 {% block title %}
-	MOP Contracts &gt; {{rate_script.contract.name}} &gt;
+	&raquo; MOP Contracts &raquo; {{rate_script.contract.name}} &raquo; 
  	Rate Script {{rate_script.start_date|hh_format}}
 {% endblock %}
 
 {% block nav %}
-	<a href="{{context_path}}/mop_contracts">MOP Contracts</a> &gt;
-	<a href="{{context_path}}/mop_contracts/{{rate_script.contract.id}}">{{rate_script.contract.name}}</a> &gt;
+	&raquo; <a href="{{context_path}}/mop_contracts">MOP Contracts</a> &raquo; 
+	<a href="{{context_path}}/mop_contracts/{{rate_script.contract.id}}">{{rate_script.contract.name}}</a> &raquo; 
 	{{rate_script.start_date|hh_format}}
-	[<a href="{{context_path}}/mop_rate_scripts/{{rate_script.id}}">edit</a>]
+	[<a href="{{context_path}}/mop_rate_scripts/{{rate_script.id}}/edit">edit</a>]
 {% endblock %}
 
 {% block content %}
-	<table>
-		<tr>
-			<th>Start Date</th>
-			<td>{{rate_script.start_date|hh_format}}</td>
-		</tr>
-		<tr>
-			<th>Finish Date</th>
-			<td>{{rate_script.finish_date|hh_format}}</td>
-		</tr>
-	</table>
-
-	<h2>Script</h2>
-
-	<pre>
-		{{rate_script.script}}
-	</pre>
+<div class="layer-section">
+	<div class="section-content">
+		<div class="section-data">
+			<div class="DataTable widthAuto">
+				<table>
+					<tr>
+						<th>Start Date</th>
+						<td>{{rate_script.start_date|hh_format}}</td>
+					</tr>
+					<tr>
+						<th>Finish Date</th>
+						<td>{{rate_script.finish_date|hh_format}}</td>
+					</tr>
+				</table>
+			</div>
+		</div>
+	</div>
+</div>
+<div class="layer-section">
+	<div class="section-header">
+		<h2>Script</h2>
+	</div>
+	<div class="section-content">
+		<div class="section-data">
+			<pre>{{rate_script.script}}</pre>
+		</div>
+	</div>
+</div>
 {% endblock %}

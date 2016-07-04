@@ -2720,7 +2720,7 @@ def virtual_bill(supply_source):
         'name': "Try 'Supply MPAN Months' report.",
         'path': '/supplies/2/months?is_import=true&year=2014&years=1',
         'regexes': [
-            r"&gt;\s*Import\s*data by month"],
+            r"&raquo;\s*Import\s*data by month"],
         'status_code': 200},
     {
         'name': "Try 'Supply Raw HH Data' report.",
@@ -4818,7 +4818,7 @@ def virtual_bill(supply_source):
         'path': '/supplier_batches/6/edit?confirm_delete=Delete',
         'status_code': 200,
         'regexes': [
-            r'<a href="/supplier_batches/6/edit">Cancel</a>']},
+            r'<a class="btn" href="/supplier_batches/6/edit">Cancel</a>']},
 
     {
         'name': "Check we can see it in 'view' mode. Contract 32",
@@ -6617,7 +6617,7 @@ def virtual_bill(supply_source):
         'regexes': [
             r'<form method="post" action="">\s*'
             r'<fieldset>\s*'
-            r'<legend>Delete</legend>']},
+            r'<input type="submit" name="delete" value="Delete">\s']},
     {
         'name': "Delete it. HHDC contract 29",
         'path': '/hhdc_batches/10/edit',

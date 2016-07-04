@@ -1,40 +1,51 @@
 {% extends "base.html" %}
 
 {% block title %}
-	Supplier Contracts
+	&raquo; Supplier Contracts
 {% endblock %}
 
 {% block nav %}
-	Supplier Contracts [<a href="{{context_path}}/supplier_contracts/add">add</a>]
+	&raquo; Supplier Contracts [<a href="{{context_path}}/supplier_contracts/add">add</a>]
 {% endblock %}
 
 {% block content %}
-	<table>
-		<thead>
-			<tr>
-				<th>Name</th>
-				<th>Start Date</th>
-				<th>Finish Date</th>
-				<th>Party</th>
-			</tr>
-		</thead>
-		<tbody>
-			{% for contract in supplier_contracts %}
-				<tr>
-					<td>
-						<a href="{{context_path}}/supplier_contracts/{{contract.id}}">{{contract.name}}</a>
-					</td>
-					<td>
-						{{contract.start_rate_script.start_date|hh_format}}
-					</td>
-					<td>
-						{{contract.finish_rate_script.finish_date|hh_format}}
-					</td>
-					<td>
-						<a href="{{context_path}}/parties/{{contract.party.id}}">{{contract.party.name}}</a>
-					</td>
-				</tr>
-			{% endfor %}
-		</tbody>
-	</table>
+
+<div class="layer-section">
+	<div class="section-header">
+		<h2>Supplier Contracts</h2>	
+	</div>
+	<div class="section-content">
+		<div class="section-data">
+			<table class="DataTable widthAuto noMarginBottom">
+				<thead>
+					<tr>
+						<th>Name</th>
+						<th>Start Date</th>
+						<th>Finish Date</th>
+						<th>Party</th>
+					</tr>
+				</thead>
+				<tbody>
+					{% for contract in supplier_contracts %}
+						<tr>
+							<td>
+								<a href="{{context_path}}/supplier_contracts/{{contract.id}}">{{contract.name}}</a>
+							</td>
+							<td>
+								{{contract.start_rate_script.start_date|hh_format}}
+							</td>
+							<td>
+								{{contract.finish_rate_script.finish_date|hh_format}}
+							</td>
+							<td>
+								<a href="{{context_path}}/parties/{{contract.party.id}}">{{contract.party.name}}</a>
+							</td>
+						</tr>
+					{% endfor %}
+				</tbody>
+			</table>
+		</div>
+	</div>
+</div>
+	
 {% endblock %}

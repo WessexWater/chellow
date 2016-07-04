@@ -1,29 +1,41 @@
 {% extends "base.html" %}
 
 {% block title %}
-	Non-core Contracts &gt; {{ rate_script.contract.name }} &gt;
+	&raquo; Non-core Contracts &raquo; {{ rate_script.contract.name }} &raquo; 
  	{{ rate_script.start_date|hh_format }}
 {% endblock %}
 
 {% block nav %}
-	<a href="{{context_path}}/non_core_contracts">Non-core Contracts</a> &gt;
-	<a href="{{context_path}}/non_core_contracts/{{rate_script.contract.id}}">{{rate_script.contract.name}}</a> &gt; {{ rate_script.start_date|hh_format }} [<a
+	&raquo; <a href="{{context_path}}/non_core_contracts">Non-core Contracts</a> &raquo; 
+	<a href="{{context_path}}/non_core_contracts/{{rate_script.contract.id}}">{{rate_script.contract.name}}</a> &raquo; {{ rate_script.start_date|hh_format }} [<a
 	href="{{context_path}}/non_core_rate_scripts/{{rate_script.id}}/edit">edit</a>]
 {% endblock %}
 
 {% block content %}
-	<table>
-		<tr>
-			<th>Start Date</th>
-			<td>{{ rate_script.start_date|hh_format }}</td>
-		</tr>
-		<tr>
-			<th>Finish Date</th>
-			<td>{{ rate_script.finish_date|hh_format }}</td>
-		</tr>
-	</table>
+<div class="layer-section">
+	<div class="section-header">
+		<h2>Rate Script</h2>	
+	</div>
+	<div class="section-content">
+		<div class="section-data">
+			<table class="DataTable widthAuto noMarginBottom">
+				<tr>
+					<th>Start Date</th>
+					<td>{{ rate_script.start_date|hh_format }}</td>
+				</tr>
+				<tr>
+					<th>Finish Date</th>
+					<td>{{ rate_script.finish_date|hh_format }}</td>
+				</tr>
+			</table>
+		</div>
+		<div class="section-data">
+			Script
+			<pre>{{ rate_script.script }}</pre>
+		</div>
+	</div>
+</div>
+	
 
-	<h2>Script</h2>
 
-	<pre>{{ rate_script.script }}</pre>
 {% endblock %}

@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 
 {% block title %}
-	MOP Contracts &gt; {{contract.name}} &gt; Batches &gt; Add
+	&raquo; MOP Contracts &raquo; {{contract.name}} &raquo; Batches &raquo; Add
 {% endblock %}
 
 {% block inside_head %}
@@ -14,42 +14,66 @@
 {% endblock %}
 
 {% block nav %}
-	<a href="{{context_path}}/mop_contracts">MOP Contracts</a> &gt;
-	<a href="{{context_path}}/mop_contracts/{{contract.id}}">{{contract.name}}</a> &gt;
+	&raquo; <a href="{{context_path}}/mop_contracts">MOP Contracts</a> &raquo; 
+	<a href="{{context_path}}/mop_contracts/{{contract.id}}">{{contract.name}}</a> &raquo; 
 	<a href="{{context_path}}/mop_batches?mop_contract_id={{contract.id}}">Batches</a>
-	&gt; Add
+	&raquo; Add
 {% endblock %}
 
 {% block content %}
-	<form action="" method="post">
-		<fieldset>
-			<legend>Add a batch</legend>
-			<input type="hidden" name="mop_contract_id" value="{{contract.id}}">
-			<br>
-			<label>Reference</label> {{input_text('reference', '')}}
-			<br>
-			<label>Description</label> {{input_text('description', '')}}
-			<br>
-			<br>
-			<input type="submit" value="Add">
-		</fieldset>
-	</form>
+<div class="layer-section">
+	<div class="section-header">
+		<h2>Add a batch</h2>
+	</div>
+	<div class="section-content">
+		<div class="section-data">
+			<div class="standardForm textBoxWidthAuto">
+				<form action="" method="post">
+					<fieldset>
+						<input type="hidden" name="mop_contract_id" value="{{contract.id}}">
+						<div class="row">
+							<div class="col-sm-6">
+								<label>Reference</label> {{input_text('reference', '')}}
+							</div>
+							<div class="col-sm-6">
+								<label>Description</label> {{input_text('description', '')}}
+							</div>
+						</div>						
+						<input type="submit" value="Add">
+					</fieldset>
+				</form>
+			</div>
+		</div>
+	</div>
+</div>
+<div class="layer-section">
+	<div class="section-header">
+		<h2>Existing Batches</h2>
+	</div>
+	<div class="section-content">
+		<div class="section-data">
+			<div class="noWrap">
+				<table class="DataTable widthAuto noMarginBottom">					
+					<thead>
+						<tr>
+							<th>Reference</th>
+							<th>Description</th>
+						</tr>
+					</thead>
+					<tbody>
+						{% for batch in batches %}
+							<tr>
+								<td>{{batch.reference}}</td>
+								<td>{{batch.description}}</td>
+							</tr>
+						{% endfor %}
+					</tbody>
+				</table>
+			</div>
+		</div>
+	</div>
+</div>
+	
 
-	<table>
-		<caption>Existing Batches</caption>
-		<thead>
-			<tr>
-				<th>Reference</th>
-				<th>Description</th>
-			</tr>
-		</thead>
-		<tbody>
-			{% for batch in batches %}
-				<tr>
-					<td>{{batch.reference}}</td>
-					<td>{{batch.description}}</td>
-				</tr>
-			{% endfor %}
-		</tbody>
-	</table>
+	
 {% endblock %}

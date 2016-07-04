@@ -1,51 +1,76 @@
 {% extends "base.html" %}
 
 {% block title %}
-	Non-Core Contracts &gt; {{contract.name}}
+	&raquo; Non-Core Contracts &raquo; {{contract.name}}
 {% endblock %}
 
 {% block nav %}
-	<a href="{{context_path}}/non_core_contracts">Non-Core Contracts</a> &gt;
+	&raquo; <a href="{{context_path}}/non_core_contracts">Non-Core Contracts</a> &raquo; 
  	{{contract.name}}
  	[<a href="{{context_path}}/non_core_contracts/{{contract.id}}/edit">edit</a>]
 {% endblock %}
 
 {% block content %}
-	<p>
-		<a href="{{context_path}}/non_core_contracts/{{contract.id}}/auto_importer">Automatic Importer</a>
-	</p>
-	<br>
-	<table>
-		<caption>
-				Rate Scripts
-				[<a href="{{context_path}}/non_core_contracts/{{contract.id}}/add_rate_script">add</a>]
-		</caption>
-		<thead>
-			<tr>
-				<th></th>
-				<th>Start Date</th>
-				<th>Finish Date</th>
-			</tr>
-		</thead>
-		<tbody>
-			{% for rate_script in rate_scripts %}
-				<tr>
-					<td>
-						<a href="{{context_path}}/non_core_rate_scripts/{{rate_script.id}}">View</a>
-					</td>
-					<td>{{ rate_script.start_date|hh_format }}</td>
-					<td>{{ rate_script.finish_date|hh_format }}</td>
-				</tr>
-			{% endfor %}
-		</tbody>
-	</table>
+<div class="layer-section">
+	<div class="section-header">
+		<h2>{{contract.name}}</h2>	
+	</div>
+	<div class="section-content">
+		<div class="section-data">
+			<p>
+				<a href="{{context_path}}/non_core_contracts/{{contract.id}}/auto_importer">Automatic Importer</a>
+			</p>
+			<br>
+			<table class="DataTable widthAuto noMarginBottom">
+				<caption>
+						Rate Scripts
+						[<a href="{{context_path}}/non_core_contracts/{{contract.id}}/add_rate_script">add</a>]
+				</caption>
+				<thead>
+					<tr>
+						<th></th>
+						<th>Start Date</th>
+						<th>Finish Date</th>
+					</tr>
+				</thead>
+				<tbody>
+					{% for rate_script in rate_scripts %}
+						<tr>
+							<td>
+								<a href="{{context_path}}/non_core_rate_scripts/{{rate_script.id}}">View</a>
+							</td>
+							<td>{{ rate_script.start_date|hh_format }}</td>
+							<td>{{ rate_script.finish_date|hh_format }}</td>
+						</tr>
+					{% endfor %}
+				</tbody>
+			</table>
+		</div>
+	</div>
+</div>
 
-	<h3>Properties</h3>
+<div class="layer-section">
+	<div class="section-header">
+		<h2>Properties</h2>	
+	</div>
+	<div class="section-content">
+		<div class="section-data">
+			<pre>{{contract.properties}}</pre>
+		</div>
+	</div>
+</div>
 
-	<pre>{{contract.properties}}</pre>
+<div class="layer-section">
+	<div class="section-header">
+		<h2>State</h2>	
+	</div>
+	<div class="section-content">
+		<div class="section-data">
+			<pre>{{contract.state}}</pre>
+		</div>
+	</div>
+</div>	
 
-
-	<h2>State</h2>
 	
-	<pre>{{contract.state}}</pre>
+	
 {% endblock %}
