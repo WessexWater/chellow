@@ -2318,13 +2318,13 @@ def virtual_bill(supply_source):
         'tries': {'max': 10, 'period': 1},
         'status_code': 200,
         'regexes': [
-            r'"2005-12-31 23:30","CI005","Wheal Rodney","","","11","net","",'
-            '"22","LV","nhh","no","05","803","5","0154","2","MOP Contract",'
-            '"mc-22 9974 3438 105","Dynamat data","dc-22 9974 3438 105",'
-            '"K87D74429","2005-10-06 00:00","","","","","false","false",'
-            '"false","false","false","false","22 9974 3438 105","20","540",'
-            '"PC 5-8 & HH S/S","Non half-hourlies 2007","341665","","","","",'
-            '"","","","","",""']},
+            r'2005-12-31 23:30,CI005,Wheal Rodney,,,11,net,,_L,'
+            '22,LV,nhh,no,05,803,5,0154,2,MOP Contract,'
+            'mc-22 9974 3438 105,Dynamat data,dc-22 9974 3438 105,'
+            'K87D74429,2005-10-06 00:00,,,,,false,false,'
+            'false,false,false,false,22 9974 3438 105,20,540,'
+            'PC 5-8 & HH S/S,Non half-hourlies 2007,341665,,,,,'
+            ',,,,,']},
 
     {
         'name': "Check supplies snapshot mandatory kw",
@@ -2344,7 +2344,8 @@ def virtual_bill(supply_source):
         'status_code': 200,
         'regexes': [
             r'Date,Physical Site Id,Physical Site Name,Other Site Ids,'
-            r'Other Site Names,Supply Id,Source,Generator Type,DNO Name,'
+            r'Other Site Names,Supply Id,Source,Generator Type,GSP Group,'
+            r'DNO Name,'
             r'Voltage Level,Metering Type,Mandatory HH,PC,MTC,CoP,SSC,'
             r'Number Of Registers,MOP Contract,Mop Account,HHDC Contract,'
             r'HHDC Account,Meter Serial Number,Meter Installation Date,'
@@ -2362,13 +2363,13 @@ def virtual_bill(supply_source):
             r'Export Supplier Contract,Export Supplier Account,'
             r'Export Mandatory kW,Latest Export Supplier Bill Date',
 
-            r'"2008-09-30 23:30","CH017","Parbola","","","1","net","","22",'
-            r'"LV","hh","no","00","845","5","","","MOP Contract",'
-            r'"mc-22 0470 7514 535","HH contract","01","","2003-08-03 00:00",'
-            r'"hh","","","","true","true","false","true","false","true","","",'
-            r'"","","","","1.866","","22 0470 7514 535","150","581",'
-            r'"Export \(LV\)","Half-hourlies 2007","010","",'
-            r'"2007-02-28 23:30"']},
+            r'2008-09-30 23:30,CH017,Parbola,,,1,net,,_L,22,'
+            r'LV,hh,no,00,845,5,,,MOP Contract,'
+            r'mc-22 0470 7514 535,HH contract,01,,2003-08-03 00:00,'
+            r'hh,,,,true,true,false,true,false,true,,,'
+            r',,,,1.866,,22 0470 7514 535,150,581,'
+            r'Export \(LV\),Half-hourlies 2007,010,,'
+            r'2007-02-28 23:30']},
 
     {
         'name': "Generate an orphaned hh data message. Supply 5",
@@ -6687,14 +6688,14 @@ def virtual_bill(supply_source):
         '017_FINISHED_watkinsexamplecom_supplies_snapshot.csv',
         'status_code': 200,
         'regexes': [
-            r'"2007-09-30 23:30","CI004","Lower Treave","","","9","net","",'
-            '"22","HV","nhh","no","05","535","5","0127","3","MOP Contract",'
-            '"mc-22 0195 4836 192","Dynamat data","dc-22 0195 4836 192",'
-            '"P96C93722","2005-08-06 00:00","2007-08-01 00:00","N","","",'
-            '"false","false","false","false","false","false",'
-            '"22 0195 4836 192","30","510","PC 5-8 & HH HV",'
-            '"Non half-hourlies 2007","341664","","2007-08-01 00:00","","","",'
-            '"","","","",""']},
+            r'2007-09-30 23:30,CI004,Lower Treave,,,9,net,,_L,'
+            r'22,HV,nhh,no,05,535,5,0127,3,MOP Contract,'
+            r'mc-22 0195 4836 192,Dynamat data,dc-22 0195 4836 192,'
+            r'P96C93722,2005-08-06 00:00,2007-08-01 00:00,N,,,'
+            r'false,false,false,false,false,false,'
+            r'22 0195 4836 192,30,510,PC 5-8 & HH HV,'
+            r'Non half-hourlies 2007,341664,,2007-08-01 00:00,,,,'
+            r',,,,']},
 
     # Try a supplies snapshot where previous era isn't AMR
     {
@@ -6712,14 +6713,14 @@ def virtual_bill(supply_source):
         '018_FINISHED_watkinsexamplecom_supplies_snapshot.csv',
         'status_code': 200,
         'regexes': [
-            r'"2011-05-31 23:30","CI004","Lower Treave","","","9","net","",'
-            '"22","LV","unmetered","no","08","857","6c","0428","2",'
-            '"MOP Contract","mc-22 0195 4836 192","Dynamat data",'
-            '"dc-22 0195 4836 192","P96C93722","2005-08-06 00:00","unmetered",'
-            '"","","","false","false","false","false","false","false",'
-            '"22 0195 4836 192","304","980","NHH UMS Cat B : Dusk to Dawn",'
-            '"Non half-hourlies 2007","SA342376","","2007-08-01 00:00","","",'
-            r'"","","","","",""$']},
+            r'2011-05-31 23:30,CI004,Lower Treave,,,9,net,,_L,'
+            r'22,LV,unmetered,no,08,857,6c,0428,2,'
+            r'MOP Contract,mc-22 0195 4836 192,Dynamat data,'
+            r'dc-22 0195 4836 192,P96C93722,2005-08-06 00:00,unmetered,'
+            r',,,false,false,false,false,false,false,'
+            r'22 0195 4836 192,304,980,NHH UMS Cat B : Dusk to Dawn,'
+            r'Non half-hourlies 2007,SA342376,,2007-08-01 00:00,,,'
+            r',,,,,$']},
 
     # Try a supplies snapshot to check that latest import supplier bill is
     # correct
@@ -6738,14 +6739,14 @@ def virtual_bill(supply_source):
         '019_FINISHED_watkinsexamplecom_supplies_snapshot.csv',
         'status_code': 200,
         'regexes': [
-            r"Other Site Ids,Other Site Names",
-            r'"2012-05-31 23:30","CI017","Roselands","","","6","net","","22",'
-            '"LV","hh","no","00","845","5","","","MOP Contract",'
-            '"mc-22 6354 2983 570","HH contract","01","","2007-01-01 00:00",'
-            '"hh","","","","true","true","false","false","false","true",'
-            '"22 6354 2983 570","2300","570","PC 5-8 & HH LV",'
-            '"Half-hourlies 2007","141 5532","","2011-06-30 00:00","","","",'
-            '"","","","",""$']},
+            r'Other Site Ids,Other Site Names',
+            r'2012-05-31 23:30,CI017,Roselands,,,6,net,,_L,22,'
+            r'LV,hh,no,00,845,5,,,MOP Contract,'
+            'mc-22 6354 2983 570,HH contract,01,,2007-01-01 00:00,'
+            'hh,,,,true,true,false,false,false,true,'
+            '22 6354 2983 570,2300,570,PC 5-8 & HH LV,'
+            'Half-hourlies 2007,141 5532,,2011-06-30 00:00,,,,'
+            ',,,,$']},
 
     {
         'name': "Run supply virtual bill over 2 months",
@@ -6873,13 +6874,13 @@ def virtual_bill(supply_source):
         'tries': {},
         'status_code': 200,
         'regexes': [
-            r'"2014-05-31 23:30","CI005","Wheal Rodney","","","5","gen",'
-            '"chp","22","LV","hh","no","00","845","5","","","MOP Contract",'
-            '"22 0883 6932 301","HH contract","22 0883 6932 301","",'
-            '"2002-01-01 00:00","hh","","2007-10-31 23:30","2007-10-31 23:30",'
-            '"true","true","false","false","false","true","22 0883 6932 301",'
-            '"350","570","PC 5-8 & HH LV","Half-hourlies 2013","4341","0","",'
-            '"","","","","","","",""']},
+            r'2014-05-31 23:30,CI005,Wheal Rodney,,,5,gen,'
+            'chp,_L,22,LV,hh,no,00,845,5,,,MOP Contract,'
+            '22 0883 6932 301,HH contract,22 0883 6932 301,,'
+            '2002-01-01 00:00,hh,,2007-10-31 23:30,2007-10-31 23:30,'
+            'true,true,false,false,false,true,22 0883 6932 301,'
+            '350,570,PC 5-8 & HH LV,Half-hourlies 2013,4341,0,,'
+            ',,,,,,,']},
     {
         'name': "Site summary page that has data quality errors.",
         'path': '/sites/1/months?finish_year=2005&finish_month=11',

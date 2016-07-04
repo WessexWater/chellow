@@ -13,6 +13,7 @@ import sys
 import os
 import threading
 from flask import g, request, redirect
+import csv
 
 
 def content(running_name, finished_name, date, supply_id, mpan_cores):
@@ -20,30 +21,30 @@ def content(running_name, finished_name, date, supply_id, mpan_cores):
     try:
         sess = db.session()
 
-        f = open(running_name, "w")
-        f.write(
-            ','.join(
-                (
-                    'Date', 'Physical Site Id', 'Physical Site Name',
-                    'Other Site Ids', 'Other Site Names', 'Supply Id',
-                    'Source', 'Generator Type', 'DNO Name', 'Voltage Level',
-                    'Metering Type', 'Mandatory HH', 'PC', 'MTC', 'CoP', 'SSC',
-                    'Number Of Registers', 'MOP Contract', 'Mop Account',
-                    'HHDC Contract', 'HHDC Account', 'Meter Serial Number',
-                    'Meter Installation Date', 'Latest Normal Meter Read Date',
-                    'Latest Normal Meter Read Type', 'Latest DC Bill Date',
-                    'Latest MOP Bill Date', 'Import ACTIVE?',
-                    'Import REACTIVE_IMPORT?', 'Import REACTIVE_EXPORT?',
-                    'Export ACTIVE?', 'Export REACTIVE_IMPORT?',
-                    'Export REACTIVE_EXPORT?', 'Import MPAN core',
-                    'Import Agreed Supply Capacity (kVA)', 'Import LLFC Code',
-                    'Import LLFC Description', 'Import Supplier Contract',
-                    'Import Supplier Account', 'Import Mandatory kW',
-                    'Latest Import Supplier Bill Date', 'Export MPAN core',
-                    'Export Agreed Supply Capacity (kVA)', 'Export LLFC Code',
-                    'Export LLFC Description', 'Export Supplier Contract',
-                    'Export Supplier Account', 'Export Mandatory kW',
-                    'Latest Export Supplier Bill Date')) + '\n')
+        f = open(running_name, mode='w', newline='')
+        writer = csv.writer(f, lineterminator='\n')
+        writer.writerow(
+            (
+                'Date', 'Physical Site Id', 'Physical Site Name',
+                'Other Site Ids', 'Other Site Names', 'Supply Id', 'Source',
+                'Generator Type', 'GSP Group', 'DNO Name', 'Voltage Level',
+                'Metering Type', 'Mandatory HH', 'PC', 'MTC', 'CoP', 'SSC',
+                'Number Of Registers', 'MOP Contract', 'Mop Account',
+                'HHDC Contract', 'HHDC Account', 'Meter Serial Number',
+                'Meter Installation Date', 'Latest Normal Meter Read Date',
+                'Latest Normal Meter Read Type', 'Latest DC Bill Date',
+                'Latest MOP Bill Date', 'Import ACTIVE?',
+                'Import REACTIVE_IMPORT?', 'Import REACTIVE_EXPORT?',
+                'Export ACTIVE?', 'Export REACTIVE_IMPORT?',
+                'Export REACTIVE_EXPORT?', 'Import MPAN core',
+                'Import Agreed Supply Capacity (kVA)', 'Import LLFC Code',
+                'Import LLFC Description', 'Import Supplier Contract',
+                'Import Supplier Account', 'Import Mandatory kW',
+                'Latest Import Supplier Bill Date', 'Export MPAN core',
+                'Export Agreed Supply Capacity (kVA)', 'Export LLFC Code',
+                'Export LLFC Description', 'Export Supplier Contract',
+                'Export Supplier Account', 'Export Mandatory kW',
+                'Latest Export Supplier Bill Date'))
 
         NORMAL_READ_TYPES = ('N', 'C', 'N3')
         year_start = date + HH - relativedelta(years=1)
@@ -263,43 +264,37 @@ def content(running_name, finished_name, date, supply_id, mpan_cores):
                 num_registers = sess.query(MeasurementRequirement).filter(
                     MeasurementRequirement.ssc == era.ssc).count()
 
-            f.write(
-                ','.join(
-                    (
-                        '"' + ('' if value is None else str(value)) + '"')
-                    for value in [
-                        hh_format(date), physical_site.code,
-                        physical_site.name, ', '.join(site_codes),
-                        ', '.join(site_names), supply.id, supply.source.code,
-                        generator_type, supply.dno_contract.name,
-                        voltage_level_code, metering_type, mandatory_hh,
-                        era.pc.code, era.mtc.code, era.cop.code, ssc_code,
-                        num_registers, mop_contract_name, mop_account,
-                        hhdc_contract_name, hhdc_account, era.msn,
-                        hh_format(meter_installation_date),
-                        latest_normal_read_date, latest_normal_read_type,
-                        latest_hhdc_bill_date, latest_mop_bill_date] +
-                    channel_values + [
-                        era.imp_mpan_core, era.imp_sc,
-                        None if era.imp_llfc is None else era.imp_llfc.code,
-                        None if era.imp_llfc is None else
-                        era.imp_llfc.description,
-                        None if era.imp_supplier_contract is None else
-                        era.imp_supplier_contract.name,
-                        era.imp_supplier_account, imp_avg_months,
-                        imp_latest_supplier_bill_date] + [
-                        era.exp_mpan_core, era.exp_sc,
-                        None if era.exp_llfc is None else era.exp_llfc.code,
-                        None if era.exp_llfc is None else
-                        era.exp_llfc.description,
-                        None if era.exp_supplier_contract is None else
-                        era.exp_supplier_contract.name,
-                        era.exp_supplier_account, exp_avg_months,
-                        exp_latest_supplier_bill_date]) + '\n')
+            writer.writerow(
+                (
+                    ('' if value is None else str(value))) for value in [
+                    hh_format(date), physical_site.code, physical_site.name,
+                    ', '.join(site_codes), ', '.join(site_names), supply.id,
+                    supply.source.code, generator_type, supply.gsp_group.code,
+                    supply.dno_contract.name, voltage_level_code,
+                    metering_type, mandatory_hh, era.pc.code, era.mtc.code,
+                    era.cop.code, ssc_code, num_registers, mop_contract_name,
+                    mop_account, hhdc_contract_name, hhdc_account, era.msn,
+                    hh_format(meter_installation_date),
+                    latest_normal_read_date, latest_normal_read_type,
+                    latest_hhdc_bill_date, latest_mop_bill_date] +
+                channel_values + [
+                    era.imp_mpan_core, era.imp_sc,
+                    None if era.imp_llfc is None else era.imp_llfc.code,
+                    None if era.imp_llfc is None else era.imp_llfc.description,
+                    None if era.imp_supplier_contract is None else
+                    era.imp_supplier_contract.name,
+                    era.imp_supplier_account, imp_avg_months,
+                    imp_latest_supplier_bill_date] + [
+                    era.exp_mpan_core, era.exp_sc,
+                    None if era.exp_llfc is None else era.exp_llfc.code,
+                    None if era.exp_llfc is None else era.exp_llfc.description,
+                    None if era.exp_supplier_contract is None else
+                    era.exp_supplier_contract.name, era.exp_supplier_account,
+                    exp_avg_months, exp_latest_supplier_bill_date])
     except:
         msg = traceback.format_exc()
         sys.stderr.write(msg)
-        f.write(msg)
+        writer.writerow([msg])
     finally:
         if f is not None:
             f.close()
