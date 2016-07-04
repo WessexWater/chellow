@@ -33,12 +33,8 @@
 					<form method="post" action="">
 						<fieldset>
 							<input type="hidden" name="site_id" value="{{site.id}}">
-							<!-- <legend>
-								Are you sure you want to delete this site and any associated snags?
-							</legend> -->
 							<input type="submit" name="delete" value="delete"> 
-							<input type="reset" value="Cancel" onClick="window.location='/sites/{{site.id}}/edit'" />
-							
+							<input type="reset" value="Cancel" onClick="window.location='{{context_path}}/sites/{{site.id}}/edit'" />
 						</fieldset>
 					</form>
 					
@@ -49,7 +45,7 @@
 {% else %}
 	<div class="layer-section">
 		<div class="section-header">
-			<h2>Update this site</h2>
+		<h2>Update this site</h2>
 		</div>
 		<div class="section-content">
 			<div class="section-data">
@@ -324,8 +320,7 @@
             		</div>
 				</fieldset>
 			</form>					
-		</div>
-		
+		</div>	
 	</div>
 
 		

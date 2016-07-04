@@ -11,11 +11,26 @@
 {% endblock %}
 
 {% block content %}
-	<!-- Layer Section -->
-	<div class="layer-section">
-		<!-- Section Header -->
-		<div class="section-header">
-			<h2>HH graph of site use</h2>	
+
+<!-- Layer Section -->
+<div class="layer-section">
+	<!-- Section Header -->
+	<div class="section-header">
+		<h2>HH graph of site use</h2>	
+	</div>
+	<!-- End Section Header -->
+	<!-- Section Content -->
+	<div class="section-content">
+		<div class="section-data">
+		    <div class="standardForm textWidthAuto">
+                <form action="">
+                    <fieldset>
+                        For {{input_text('months', request.values.months, 2, 2)}}
+                        months finishing in {{input_date('finish', finish_date, 'month')}}
+                        <input type="submit" value="Show">
+                    </fieldset>
+                </form>
+            </div>
 		</div>
 		<!-- End Section Header -->
 		<!-- Section Content -->
@@ -129,5 +144,8 @@
 		</div>
 		<!-- End Section Content -->
 	</div>
-	<!-- End Layer Section -->
+
+	<!-- End Section Content -->
+</div>
+<!-- End Layer Section -->
 {% endblock %}
