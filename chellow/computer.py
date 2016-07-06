@@ -1095,6 +1095,177 @@ class SupplySource(DataSource):
                                     'imp-msp-kvarh': 0, 'exp-msp-kvar': 0,
                                     'exp-msp-kvarh': 0})
                         self.hh_data += hh_part
+            elif self.bill is not None and hist_measurement_type in (
+                    'nhh', 'amr'):
+                tpr_codes = sess.query(Tpr.code). \
+                    join(MeasurementRequirement).filter(
+                        MeasurementRequirement.ssc == self.ssc).all()
+                bills = []
+                for cand_bill in sess.query(Bill).join(Batch) \
+                        .join(BillType).filter(
+                            Bill.supply == self.supply,
+                            Bill.reads.any(),
+                            Batch.contract == self.supplier_contract,
+                            Bill.start_date <= chunk_finish,
+                            Bill.finish_date >= chunk_start,
+                            BillType.code != 'W').order_by(
+                            Bill.issue_date.desc(), Bill.start_date):
+                    can_insert = True
+                    for bill in bills:
+                        if not cand_bill.start_date > bill.finish_date \
+                                and not cand_bill.finish_date < \
+                                bill.start_date:
+                            can_insert = False
+                            break
+                    if can_insert:
+                        bills.append(cand_bill)
+
+                prev_type_alias = aliased(ReadType)
+                pres_type_alias = aliased(ReadType)
+                for bill in bills:
+                    for coefficient, previous_date, previous_value, \
+                            previous_type, present_date, present_value, \
+                            present_type, tpr_code in sess.query(
+                            cast(RegisterRead.coefficient, Float),
+                            RegisterRead.previous_date,
+                            cast(RegisterRead.previous_value, Float),
+                            prev_type_alias.code,
+                            RegisterRead.present_date,
+                            cast(RegisterRead.present_value, Float),
+                            pres_type_alias.code, Tpr.code) \
+                            .join(Bill).join(Tpr).join(
+                                prev_type_alias,
+                                RegisterRead.previous_type_id ==
+                                prev_type_alias.id).join(
+                            pres_type_alias,
+                            RegisterRead.present_type_id ==
+                            pres_type_alias.id).filter(
+                            Bill.id == bill.id, RegisterRead.units == 0,
+                            RegisterRead.previous_date <= chunk_finish,
+                            RegisterRead.present_date >= chunk_start) \
+                            .order_by(RegisterRead.present_date):
+
+                        if tpr_code not in tpr_codes:
+                            self.problem += "The TPR " + str(tpr_code) + \
+                                " from the register read does not match any " \
+                                "of the TPRs associated with the MPAN."
+
+                        if previous_date < bill.start_date:
+                            self.problem += "There's a read before the " \
+                                "start of the bill!"
+                        if present_date > bill.finish_date:
+                            self.problem += "There's a read after the end " \
+                                "of the bill!"
+                        advance = present_value - previous_value
+                        if advance < 0:
+                            self.problem += "Clocked? "
+                            digits = int(math.log10(previous_value)) + 1
+                            advance = 10 ** digits - previous_value + \
+                                present_value
+
+                        kwh = advance * coefficient
+                        self.consumption_info += "dumb nhh kwh for " + \
+                            tpr_code + " is " + str(kwh) + "\n"
+                        tpr_dict = _tpr_dict(
+                            sess, self.caches, tpr_code, self.pw)
+                        days_of_week = tpr_dict['days-of-week']
+
+                        ct_tz = pytz.timezone('Europe/London')
+
+                        tz = pytz.utc if tpr_dict['is-gmt'] else ct_tz
+
+                        if present_type in ACTUAL_READ_TYPES \
+                                and previous_type in ACTUAL_READ_TYPES:
+                            status = 'A'
+                        else:
+                            status = 'E'
+
+                        if previous_date < chunk_start:
+                            hh_date = chunk_start
+                        else:
+                            hh_date = previous_date
+
+                        if present_date > chunk_finish:
+                            pass_finish = chunk_finish
+                        else:
+                            pass_finish = present_date
+
+                        year_delta = relativedelta(year=self.years_back)
+                        hh_part = []
+
+                        while not hh_date > pass_finish:
+                            dt = tz.normalize(
+                                hh_date.astimezone(tz)) + year_delta
+                            decimal_hour = dt.hour + float(dt.minute) / 60
+                            fractional_month = dt.month * 100 + dt.day
+                            for ci in days_of_week[dt.weekday()]:
+
+                                if (
+                                        (
+                                            ci['start-hour'] <
+                                            ci['end-hour'] and
+                                            ci['start-hour'] <=
+                                            decimal_hour < ci['end-hour']) or
+                                        (
+                                            ci['start-hour'] >=
+                                            ci['end-hour'] and (
+                                                ci['start-hour'] <=
+                                                decimal_hour or
+                                                decimal_hour <
+                                                ci['end-hour']))) \
+                                        and ci['start-month'] <= \
+                                        fractional_month <= ci['end-month']:
+
+                                    dt_utc = hh_date + year_delta
+                                    next_dt_utc = dt_utc + HH
+                                    utc_is_month_end = \
+                                        next_dt_utc.day == 1 and \
+                                        next_dt_utc.hour == 0 and \
+                                        next_dt_utc.minute == 0
+                                    dt_ct = ct_tz.normalize(
+                                        dt_utc.astimezone(ct_tz))
+                                    next_dt_ct = dt_ct + HH
+                                    ct_is_month_end = next_dt_ct.day == 1 and \
+                                        next_dt_ct.hour == 0 and \
+                                        next_dt_ct.minute == 0
+                                    hh_part.append(
+                                        {
+                                            'imp-msp-kvarh': 0,
+                                            'imp-msp-kvar': 0,
+                                            'exp-msp-kvarh': 0,
+                                            'exp-msp-kvar': 0,
+                                            'hist-start-date': chunk_start,
+                                            'start-date': dt_utc,
+                                            'ct-day': dt_ct.day,
+                                            'utc-month': dt_utc.month,
+                                            'utc-day': dt_utc.day,
+                                            'utc-decimal-hour': dt_utc.hour +
+                                            float(dt_utc.minute) / 60,
+                                            'utc-year': dt_utc.year,
+                                            'utc-hour': dt_utc.hour,
+                                            'utc-minute': dt_utc.minute,
+                                            'ct-year': dt_ct.year,
+                                            'ct-month': dt_ct.month,
+                                            'ct-decimal-hour': dt_ct.hour +
+                                            float(dt_ct.minute) / 60,
+                                            'ct-day-of-week': dt_ct.weekday(),
+                                            'utc-day-of-week':
+                                            dt_utc.weekday(),
+                                            'utc-is-month-end':
+                                            utc_is_month_end,
+                                            'ct-is-month-end':
+                                            ct_is_month_end,
+                                            'status': status})
+                                    break
+                            hh_date += HH
+
+                        num_hh = len(hh_part)
+                        if num_hh > 0:
+                            rate = float(kwh) / num_hh
+                            for h in hh_part:
+                                h['msp-kw'] = rate * 2
+                                h['msp-kwh'] = h['hist-kwh'] = rate
+                            self.hh_data += hh_part
             elif hist_measurement_type in ('hh', 'amr'):
                 has_exp_active = False
                 has_imp_related_reactive = False
@@ -1265,177 +1436,5 @@ order by hh_datum.start_date
                         self.hh_data.append(datum)
                         hh_date += HH
                         dte += HH
-
-            elif self.bill is not None and hist_measurement_type == 'nhh':
-                tpr_codes = sess.query(Tpr.code). \
-                    join(MeasurementRequirement).filter(
-                        MeasurementRequirement.ssc == self.ssc).all()
-                bills = []
-                for cand_bill in sess.query(Bill).join(Batch) \
-                        .join(BillType).filter(
-                            Bill.supply == self.supply,
-                            Bill.reads.any(),
-                            Batch.contract == self.supplier_contract,
-                            Bill.start_date <= chunk_finish,
-                            Bill.finish_date >= chunk_start,
-                            BillType.code != 'W').order_by(
-                            Bill.issue_date.desc(), Bill.start_date):
-                    can_insert = True
-                    for bill in bills:
-                        if not cand_bill.start_date > bill.finish_date \
-                                and not cand_bill.finish_date < \
-                                bill.start_date:
-                            can_insert = False
-                            break
-                    if can_insert:
-                        bills.append(cand_bill)
-
-                prev_type_alias = aliased(ReadType)
-                pres_type_alias = aliased(ReadType)
-                for bill in bills:
-                    for coefficient, previous_date, previous_value, \
-                            previous_type, present_date, present_value, \
-                            present_type, tpr_code in sess.query(
-                            cast(RegisterRead.coefficient, Float),
-                            RegisterRead.previous_date,
-                            cast(RegisterRead.previous_value, Float),
-                            prev_type_alias.code,
-                            RegisterRead.present_date,
-                            cast(RegisterRead.present_value, Float),
-                            pres_type_alias.code, Tpr.code) \
-                            .join(Bill).join(Tpr).join(
-                                prev_type_alias,
-                                RegisterRead.previous_type_id ==
-                                prev_type_alias.id).join(
-                            pres_type_alias,
-                            RegisterRead.present_type_id ==
-                            pres_type_alias.id).filter(
-                            Bill.id == bill.id, RegisterRead.units == 0,
-                            RegisterRead.previous_date <= chunk_finish,
-                            RegisterRead.present_date >= chunk_start) \
-                            .order_by(RegisterRead.present_date):
-
-                        if tpr_code not in tpr_codes:
-                            self.problem += "The TPR " + str(tpr_code) + \
-                                " from the register read does not match any " \
-                                "of the TPRs associated with the MPAN."
-
-                        if previous_date < bill.start_date:
-                            self.problem += "There's a read before the " \
-                                "start of the bill!"
-                        if present_date > bill.finish_date:
-                            self.problem += "There's a read after the end " \
-                                "of the bill!"
-                        advance = present_value - previous_value
-                        if advance < 0:
-                            self.problem += "Clocked? "
-                            digits = int(math.log10(previous_value)) + 1
-                            advance = 10 ** digits - previous_value + \
-                                present_value
-
-                        kwh = advance * coefficient
-                        self.consumption_info += "dumb nhh kwh for " + \
-                            tpr_code + " is " + str(kwh) + "\n"
-                        tpr_dict = _tpr_dict(
-                            sess, self.caches, tpr_code, self.pw)
-                        days_of_week = tpr_dict['days-of-week']
-
-                        ct_tz = pytz.timezone('Europe/London')
-
-                        tz = pytz.utc if tpr_dict['is-gmt'] else ct_tz
-
-                        if present_type in ACTUAL_READ_TYPES \
-                                and previous_type in ACTUAL_READ_TYPES:
-                            status = 'A'
-                        else:
-                            status = 'E'
-
-                        if previous_date < chunk_start:
-                            hh_date = chunk_start
-                        else:
-                            hh_date = previous_date
-
-                        if present_date > chunk_finish:
-                            pass_finish = chunk_finish
-                        else:
-                            pass_finish = present_date
-
-                        year_delta = relativedelta(year=self.years_back)
-                        hh_part = []
-
-                        while not hh_date > pass_finish:
-                            dt = tz.normalize(
-                                hh_date.astimezone(tz)) + year_delta
-                            decimal_hour = dt.hour + float(dt.minute) / 60
-                            fractional_month = dt.month * 100 + dt.day
-                            for ci in days_of_week[dt.weekday()]:
-
-                                if (
-                                        (
-                                            ci['start-hour'] <
-                                            ci['end-hour'] and
-                                            ci['start-hour'] <=
-                                            decimal_hour < ci['end-hour']) or
-                                        (
-                                            ci['start-hour'] >=
-                                            ci['end-hour'] and (
-                                                ci['start-hour'] <=
-                                                decimal_hour or
-                                                decimal_hour <
-                                                ci['end-hour']))) \
-                                        and ci['start-month'] <= \
-                                        fractional_month <= ci['end-month']:
-
-                                    dt_utc = hh_date + year_delta
-                                    next_dt_utc = dt_utc + HH
-                                    utc_is_month_end = \
-                                        next_dt_utc.day == 1 and \
-                                        next_dt_utc.hour == 0 and \
-                                        next_dt_utc.minute == 0
-                                    dt_ct = ct_tz.normalize(
-                                        dt_utc.astimezone(ct_tz))
-                                    next_dt_ct = dt_ct + HH
-                                    ct_is_month_end = next_dt_ct.day == 1 and \
-                                        next_dt_ct.hour == 0 and \
-                                        next_dt_ct.minute == 0
-                                    hh_part.append(
-                                        {
-                                            'imp-msp-kvarh': 0,
-                                            'imp-msp-kvar': 0,
-                                            'exp-msp-kvarh': 0,
-                                            'exp-msp-kvar': 0,
-                                            'hist-start-date': chunk_start,
-                                            'start-date': dt_utc,
-                                            'ct-day': dt_ct.day,
-                                            'utc-month': dt_utc.month,
-                                            'utc-day': dt_utc.day,
-                                            'utc-decimal-hour': dt_utc.hour +
-                                            float(dt_utc.minute) / 60,
-                                            'utc-year': dt_utc.year,
-                                            'utc-hour': dt_utc.hour,
-                                            'utc-minute': dt_utc.minute,
-                                            'ct-year': dt_ct.year,
-                                            'ct-month': dt_ct.month,
-                                            'ct-decimal-hour': dt_ct.hour +
-                                            float(dt_ct.minute) / 60,
-                                            'ct-day-of-week': dt_ct.weekday(),
-                                            'utc-day-of-week':
-                                            dt_utc.weekday(),
-                                            'utc-is-month-end':
-                                            utc_is_month_end,
-                                            'ct-is-month-end':
-                                            ct_is_month_end,
-                                            'status': status})
-                                    break
-                            hh_date += HH
-
-                        num_hh = len(hh_part)
-                        if num_hh > 0:
-                            rate = float(kwh) / num_hh
-                            for h in hh_part:
-                                h['msp-kw'] = rate * 2
-                                h['msp-kwh'] = h['hist-kwh'] = rate
-                            self.hh_data += hh_part
-
             else:
                 raise BadRequest("gen type not recognized")
