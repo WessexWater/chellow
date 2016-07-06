@@ -15,6 +15,7 @@ from werkzeug.exceptions import BadRequest
 from chellow.utils import HH, hh_format, hh_before, req_int
 from chellow.views import chellow_redirect
 from flask import request, g
+import csv
 
 
 def content(batch_id, bill_id, user):
@@ -26,7 +27,8 @@ def content(batch_id, bill_id, user):
 
         running_name, finished_name = chellow.dloads.make_names(
             'bill_check.csv', user)
-        tmp_file = open(running_name, "w")
+        tmp_file = open(running_name, mode='w', newline='')
+        writer = csv.writer(tmp_file, lineterminator='\n')
         if batch_id is not None:
             batch = Batch.get_by_id(sess, batch_id)
             bills = sess.query(Bill).filter(
@@ -54,18 +56,18 @@ def content(batch_id, bill_id, user):
                 " doesn't have a function virtual_bill_titles.")
         virtual_bill_titles = virtual_bill_titles_func()
 
-        tmp_file.write(
-            ','.join(
-                [
-                    'batch', 'bill-reference', 'bill-type', 'bill-kwh',
-                    'bill-net-gbp', 'bill-vat-gbp', 'bill-start-date',
-                    'bill-finish-date', 'bill-mpan-core', 'site-code',
-                    'site-name', 'covered-from', 'covered-to',
-                    'covered-bills'] +
-                [
-                    'covered-' + val + ',virtual-' + val + (
-                        ',difference-' + val if val.endswith('-gbp') else '')
-                    for val in virtual_bill_titles]) + '\n')
+        titles = [
+            'batch', 'bill-reference', 'bill-type', 'bill-kwh', 'bill-net-gbp',
+            'bill-vat-gbp', 'bill-start-date', 'bill-finish-date',
+            'bill-mpan-core', 'site-code', 'site-name', 'covered-from',
+            'covered-to', 'covered-bills', 'metered-kwh']
+        for t in virtual_bill_titles:
+            titles.append('covered-' + t)
+            titles.append('virtual-' + t)
+            if t.endswith('-gbp'):
+                titles.append('difference-' + t)
+
+        writer.writerow(titles)
 
         for bill in bills:
             problem = ''
@@ -107,13 +109,10 @@ def content(batch_id, bill_id, user):
                     "Extraordinary! There isn't an era for the bill " +
                     str(bill.id) + ".")
 
-            tmp_file.write(
-                ','.join(
-                    '"' + str(val) + '"' for val in [
-                        batch.reference, bill.reference, bill.bill_type.code,
-                        bill.kwh,
-                        bill.net, bill.vat, hh_format(bill_start),
-                        hh_format(bill_finish), era.imp_mpan_core]) + ",")
+            values = [
+                batch.reference, bill.reference, bill.bill_type.code,
+                bill.kwh, bill.net, bill.vat, hh_format(bill_start),
+                hh_format(bill_finish), era.imp_mpan_core]
 
             covered_start = bill_start
             covered_finish = bill_finish
@@ -178,7 +177,7 @@ def content(batch_id, bill_id, user):
                         covered_bdown[k] = v.pop() if len(v) == 1 else None
 
             virtual_bill = {}
-
+            metered_kwh = 0
             for era in sess.query(Era).filter(
                     Era.supply_id == supply.id, Era.imp_mpan_core != null(),
                     Era.start_date <= covered_finish,
@@ -202,6 +201,16 @@ def content(batch_id, bill_id, user):
                 data_source = chellow.computer.SupplySource(
                     sess, chunk_start, chunk_finish, forecast_date, era, True,
                     None, caches, covered_primary_bill)
+
+                if data_source.measurement_type == 'hh':
+                    metered_kwh += sum(
+                        h['msp-kwh'] for h in data_source.hh_data)
+                else:
+                    ds = chellow.computer.SupplySource(
+                        sess, chunk_start, chunk_finish, forecast_date, era,
+                        True, None, caches)
+                    metered_kwh += sum(h['msp-kwh'] for h in ds.hh_data)
+
                 vbf(data_source)
 
                 if market_role_code == 'X':
@@ -228,10 +237,11 @@ def content(batch_id, bill_id, user):
                                 "For key " + str(k) + " and value " + str(v) +
                                 ". " + str(detail))
 
-            values = [
+            values += [
                 site.code, site.name, hh_format(covered_start),
                 hh_format(covered_finish),
-                ';'.join(str(id).replace(',', '') for id in covered_bill_ids)]
+                ';'.join(str(id).replace(',', '') for id in covered_bill_ids),
+                metered_kwh]
             for title in virtual_bill_titles:
                 try:
                     cov_val = covered_bdown[title]
@@ -272,8 +282,7 @@ def content(batch_id, bill_id, user):
                 else:
                     values += ['', '']
 
-            tmp_file.write(
-                ','.join('"' + str(value) + '"' for value in values) + '\n')
+            writer.writerow(values)
     except BadRequest as e:
         tmp_file.write("Problem: " + e.description)
     except:
