@@ -4705,6 +4705,12 @@ def virtual_bill(supply_source):
         'status_code': 200,
         'regexes': [
             r'<input type="hidden" name="mop_batch_id" value="9">']},
+    {
+        'name': "Supplier Batch: confirm-delete page.",
+        'path': '/supplier_batches/6/edit?confirm_delete=Delete',
+        'status_code': 200,
+        'regexes': [
+            r'<a href="/supplier_batches/6/edit">Cancel</a>']},
 
     {
         'name': "Check we can see it in 'view' mode. Contract 32",
@@ -10830,7 +10836,8 @@ def virtual_bill(supply_source):
         'regexes': [
             r'<form method="post" action="">\s*',
             r'<fieldset>\s*',
-            r'<legend>Are you sure you want to delete this bill\?</legend>']},
+            r'<legend>Are you sure you want to delete this bill\?</legend>',
+            r'<a href="/supplier_bills/11/edit">Cancel</a>']},
 
     {
         'name': "Delete supplier bill",
