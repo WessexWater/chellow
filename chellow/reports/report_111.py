@@ -274,6 +274,8 @@ def content(batch_id, bill_id, user):
 
             tmp_file.write(
                 ','.join('"' + str(value) + '"' for value in values) + '\n')
+    except BadRequest as e:
+        tmp_file.write("Problem: " + e.description)
     except:
         msg = traceback.format_exc()
         sys.stderr.write(msg + '\n')

@@ -4234,6 +4234,7 @@ def virtual_bill(supply_source):
             r"The file has been imported successfully"],
         'status_code': 200},
 
+
     # Test that generator is set to None if source is 'net'. },
     {
         'name': "Create a supply, and then delete it.",
@@ -9885,7 +9886,6 @@ def virtual_bill(supply_source):
             r'</table:table-row>\s*'
             r'</table:table>']},
 
-    # Dumb NHH supply with DUoS pass-through
     {
         'name': "Dumb NHH supply with DUoS pass-through: "
         "Update Non half-hourlies 2010",
@@ -10876,5 +10876,50 @@ def virtual_bill(supply_source):
             'gross': '0',
             'bill_type_id': '2',
             'breakdown': '{}'},
-        'status_code': 303}
+        'status_code': 303},
+    {
+        'name': "Bill check with exception",
+        'path': "/supplier_contracts/37/edit",
+        'method': 'post',
+        'data': {
+            'party_id': '90',
+            'name': 'Non half-hourlies 2010',
+            'charge_script': """import chellow.duos
+from werkzeug.exceptions import BadRequest
+
+
+def virtual_bill_titles():
+    return ['net-gbp', 'sum-msp-kwh', 'problem']
+
+def virtual_bill(supply_source):
+    raise BadRequest("Theory laden.")
+    sum_msp_kwh = sum(h['msp-kwh'] for h in supply_source.hh_data)
+    bill = supply_source.supplier_bill
+    chellow.duos.duos_vb(supply_source)
+    for rate_name, rate_set in supply_source.supplier_rate_sets.items():
+        if len(rate_set) == 1:
+            bill[rate_name] = rate_set.pop()
+    bill['net-gbp'] += sum_msp_kwh * 0.1
+    bill['sum-msp-kwh'] += sum_msp_kwh
+""",
+            'properties': '{}'},
+        'status_code': 303},
+    {
+        'name': "Bill check with exception",
+        'path': '/reports/111?bill_id=12',
+        'status_code': 303},
+    {
+        'name': "Bill check with exception",
+        'path': '/downloads',
+        'tries': {},
+        'regexes': [
+            r"001_FINISHED_adminexamplecom_bill_check\.csv"],
+        'status_code': 200},
+    {
+        'name': "Bill check with exception",
+        'path': '/downloads/'
+        '001_FINISHED_adminexamplecom_bill_check.csv',
+        'regexes': [
+            r'Theory laden\.'],
+        'status_code': 200},
 ]
