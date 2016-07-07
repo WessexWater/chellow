@@ -111,27 +111,43 @@ def log_request():
 def check_permissions(*args, **kwargs):
     g.user = None
     sess = db.session()
-    auth = request.authorization
-
-    if auth is None:
-        config_contract = Contract.get_non_core_by_name(sess, 'configuration')
-        try:
-            ips = config_contract.make_properties()['ips']
-            if request.remote_addr in ips:
-                key = request.remote_addr
-            elif '*.*.*.*' in ips:
-                key = '*.*.*.*'
-            else:
-                key = None
-
-            email = ips[key]
-            g.user = User.query.filter(User.email_address == email).first()
-        except KeyError:
-            pass
-    else:
-        user = User.query.filter(User.email_address == auth.username).first()
-        if user is not None and user.password_matches(auth.password):
+    config_contract = Contract.get_non_core_by_name(sess, 'configuration')
+    props = config_contract.make_properties()
+    ad_props = props.get('ad_authentication', {})
+    if ad_props.get('on', False):
+        username = request.headers['X-Isrw-Proxy-Logon-User']
+        user = User.query.filter(User.email_address == username).first()
+        if user is None:
+            try:
+                username = ad_props['default_user']
+                user = User.query.filter(
+                    User.email_address == username).first()
+            except KeyError:
+                user = None
+        if user is not None:
             g.user = user
+    else:
+        auth = request.authorization
+
+        if auth is None:
+            try:
+                ips = props['ips']
+                if request.remote_addr in ips:
+                    key = request.remote_addr
+                elif '*.*.*.*' in ips:
+                    key = '*.*.*.*'
+                else:
+                    key = None
+
+                email = ips[key]
+                g.user = User.query.filter(User.email_address == email).first()
+            except KeyError:
+                pass
+        else:
+            user = User.query.filter(
+                User.email_address == auth.username).first()
+            if user is not None and user.password_matches(auth.password):
+                g.user = user
 
     # Got our user
     path = request.path

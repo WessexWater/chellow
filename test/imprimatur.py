@@ -10933,4 +10933,33 @@ def virtual_bill(supply_source):
         'name': "System Page",
         'path': '/system',
         'status_code': 200},
+    {
+        'name': "Reverse proxy authentication",
+        'path': '/non_core_contracts/5/edit',
+        'method': 'post',
+        'data': {
+            'name': "configuration",
+            'properties': """
+{
+    'site_links': [
+        {'name': 'Google Maps', 'href': 'https://maps.google.com/maps?q='}],
+    'batch_reports': [1],
+    'elexonportal_scripting_key': 'xxx',
+    'ecoes': {
+        'user_name': 'a',
+        'password': 'a',
+        'prefix': 'http://localhost:8080/ecoes/'},
+    'background_colour': 'aquamarine',
+    'ad_authentication': {
+        'on': True,
+        'default_user': 'admin@example.com'}}
+""", },
+        'status_code': 303},
+    {
+        'name': "Reverse proxy authentication",
+        'path': '/',
+        'auth': None,
+        'headers': {
+            'X-Isrw-Proxy-Logon-User': 'admin@example.com'},
+        'status_code': 200},
 ]
