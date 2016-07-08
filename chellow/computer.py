@@ -541,6 +541,7 @@ class SiteSource(DataSource):
             self.is_substation = llfc.is_substation
             self.sc = era.imp_sc
             self.pc_code = era.pc.code
+            self.gsp_group_code = self.supply.gsp_group.code
             self.supplier_contract = era.imp_supplier_contract
 
         datum_generator = _datum_generator(
@@ -734,6 +735,7 @@ class SupplySource(DataSource):
         self.ssc_code = None if self.ssc is None else self.ssc.code
 
         self.pc_code = self.era.pc.code
+        self.gsp_group_code = self.supply.gsp_group.code
 
         self.measurement_type = era.make_meter_category()
 
