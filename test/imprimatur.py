@@ -10935,6 +10935,14 @@ def virtual_bill(supply_source):
         'path': '/system',
         'status_code': 200},
     {
+        'name': "Virtual bill with exception",
+        'path': '/reports/291?supply_id=10&start_year=2016&start_month=06&'
+        'start_day=01&start_hour=00&start_minute=0&finish_year=2016&'
+        'finish_month=06&finish_day=30&finish_hour=23&finish_minute=30',
+        'regexes': [
+            r'Theory laden\.'],
+        'status_code': 200},
+    {
         'name': "Reverse proxy authentication",
         'path': '/non_core_contracts/5/edit',
         'method': 'post',

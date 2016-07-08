@@ -8,6 +8,7 @@ from chellow.models import db, Supply, Era, Site, SiteEra
 from chellow.utils import (
     HH, hh_before, hh_format, req_int, req_date, send_response)
 import chellow.computer
+from werkzeug.exceptions import BadRequest
 
 
 def content(supply_id, file_name, start_date, finish_date):
@@ -156,6 +157,8 @@ def content(supply_id, file_name, start_date, finish_date):
                     '"' for v in output_line) + '\n'
 
             month_start += relativedelta(months=1)
+    except BadRequest as e:
+        yield "Problem: " + e.description + '\n'
     except:
         yield traceback.format_exc()
     finally:
