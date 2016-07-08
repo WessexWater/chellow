@@ -46,4 +46,23 @@
 			{% endfor %}
 		</tbody>
 	</table>
+
+	<table>
+		<caption>HTTP Request Headers</caption>
+		<thead>
+			<tr>
+				<th>Name</th>
+				<th>Value</th>
+			</tr>
+		</thead>
+		<tbody>
+			{% for k, v in request.headers.items() %}
+				<tr>
+					<td>{{k}}</td>
+					<td>{{v}}</td>
+				</tr>
+			{% endfor %}
+		</tbody>
+	</table>
+
 {% endblock %}

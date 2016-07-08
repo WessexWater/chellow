@@ -10929,4 +10929,8 @@ def virtual_bill(supply_source):
         'regexes': [
             r'Theory laden\.'],
         'status_code': 200},
+    {
+        'name': "System Page",
+        'path': '/system',
+        'status_code': 200},
 ]

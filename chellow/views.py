@@ -338,7 +338,8 @@ def system_get():
     return render_template(
         'system.html', traces='\n'.join(traces),
         version_number=chellow.versions['version'],
-        version_hash=chellow.versions['full-revisionid'], pg_stats=pg_stats)
+        version_hash=chellow.versions['full-revisionid'], pg_stats=pg_stats,
+        request=request)
 
 
 @app.route('/')
