@@ -40,6 +40,7 @@ import chellow.bsuos
 import chellow.tlms
 import chellow.bank_holidays
 import chellow.dloads
+import chellow.computer
 
 
 APPLICATION_ROOT = app.config['APPLICATION_ROOT']
