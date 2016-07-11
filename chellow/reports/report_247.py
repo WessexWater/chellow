@@ -22,7 +22,9 @@ import odswriter
 import sys
 from werkzeug.exceptions import BadRequest
 from chellow.utils import hh_format, HH, hh_before, req_int
-from flask import request, g, redirect
+from flask import request, g
+from chellow.views import chellow_redirect
+
 
 CATEGORY_ORDER = {None: 0, 'unmetered': 1, 'nhh': 2, 'amr': 3, 'hh': 4}
 meter_order = {'hh': 0, 'amr': 1, 'nhh': 2, 'unmetered': 3}
@@ -705,4 +707,4 @@ def do_get(sess):
         target=content, args=(
             scenario_props, scenario_id, base_name, site_id, supply_id,
             user)).start()
-    return redirect("/downloads", 303)
+    return chellow_redirect("/downloads", 303)

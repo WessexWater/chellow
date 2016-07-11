@@ -12,7 +12,8 @@ from chellow.utils import HH, hh_format, hh_after, req_int
 import chellow.computer
 import threading
 import chellow.dloads
-from flask import g, request, redirect
+from flask import g, request
+from chellow.views import chellow_redirect
 
 
 def content(year, month, months, supply_id, user):
@@ -230,4 +231,4 @@ def do_get(sess):
     user = g.user
     threading.Thread(
         target=content, args=(year, month, months, supply_id, user)).start()
-    return redirect("/downloads", 303)
+    return chellow_redirect("/downloads", 303)

@@ -12,7 +12,8 @@ import chellow.dloads
 import sys
 from chellow.models import Era, Bill, Session, Site
 from chellow.utils import hh_after, hh_format, HH, req_int
-from flask import redirect, request, g
+from flask import request, g
+from chellow.views import chellow_redirect
 
 
 def process_site(
@@ -295,4 +296,4 @@ def do_get(sess):
     threading.Thread(
         target=long_process, args=(
             start_date, finish_date, st_id, months, year, month, user)).start()
-    return redirect("/downloads", 303)
+    return chellow_redirect("/downloads", 303)

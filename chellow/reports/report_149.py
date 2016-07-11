@@ -12,7 +12,8 @@ import chellow.dloads
 import os
 import threading
 from itertools import chain
-from flask import request, g, redirect
+from flask import request, g
+from chellow.views import chellow_redirect
 
 NORMAL_READ_TYPES = 'C', 'N', 'N3'
 
@@ -245,4 +246,4 @@ def do_get(sess):
     thread = threading.Thread(
         target=content, args=(supply_id, start_date, finish_date, g.user))
     thread.start()
-    return redirect("/downloads", 303)
+    return chellow_redirect("/downloads", 303)

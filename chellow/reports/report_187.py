@@ -8,8 +8,9 @@ import zipfile
 import threading
 import os
 import chellow.dloads
-from flask import request, g, redirect
+from flask import request, g
 from werkzeug.exceptions import BadRequest
+from chellow.views import chellow_redirect
 
 
 def content(
@@ -184,4 +185,4 @@ def do_post(sess):
         target=content, args=(
             start_date, finish_date, supply_id, mpan_cores, is_zipped, user)
         ).start()
-    return redirect("/downloads", 303)
+    return chellow_redirect("/downloads", 303)

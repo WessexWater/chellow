@@ -4,7 +4,7 @@ import pytz
 from decimal import Decimal
 import collections
 from datetime import datetime as Datetime
-from flask import request, Response
+from flask import request, Response, redirect
 from jinja2 import Environment
 import time
 import traceback
@@ -345,3 +345,5 @@ def render(template, vals, status_code=200, content_type='text/html'):
             "Problem rendering template: " + traceback.format_exc())
 
     return Response(template_str, status_code, headers)
+
+

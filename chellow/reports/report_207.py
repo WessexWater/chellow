@@ -13,7 +13,8 @@ from chellow.utils import HH, hh_after, hh_format, req_int
 from chellow.models import (
     Supply, Era, Source, Site, SiteEra, Bill, RegisterRead, BillType, ReadType,
     HhDatum, Channel, Session)
-from flask import request, g, redirect
+from flask import request, g
+from chellow.views import chellow_redirect
 
 
 def content(year, supply_id, user):
@@ -469,4 +470,4 @@ def do_get(sess):
     supply_id = req_int('supply_id') if 'supply_id' in request.values else None
     user = g.user
     threading.Thread(target=content, args=(year, supply_id, user)).start()
-    return redirect("/downloads", 303)
+    return chellow_redirect("/downloads", 303)

@@ -13,7 +13,8 @@ import os
 import threading
 from werkzeug.exceptions import BadRequest
 from chellow.utils import HH, hh_format, hh_before, req_int
-from flask import request, g, redirect
+from chellow.views import chellow_redirect
+from flask import request, g
 
 
 def content(batch_id, bill_id, user):
@@ -302,4 +303,4 @@ def do_get(sess):
 
     user = g.user
     threading.Thread(target=content, args=(batch_id, bill_id, user)).start()
-    return redirect('/downloads', 303)
+    return chellow_redirect('/downloads', 303)

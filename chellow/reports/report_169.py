@@ -8,7 +8,8 @@ import threading
 import chellow.dloads
 from chellow.utils import (
     HH, req_date, req_bool, req_int, req_str, parse_mpan_core)
-from flask import request, g, redirect
+from flask import request, g
+from chellow.views import chellow_redirect
 
 
 def content(
@@ -136,4 +137,4 @@ def handle_request(mpan_cores=None):
         target=content, args=(
             start_date, finish_date, imp_related, channel_type, is_zipped,
             supply_id, mpan_cores, user)).start()
-    return redirect("/downloads", 303)
+    return chellow_redirect("/downloads", 303)
