@@ -10962,4 +10962,33 @@ def virtual_bill(supply_source):
         'headers': {
             'X-Isrw-Proxy-Logon-User': 'admin@example.com'},
         'status_code': 200},
+    {
+        'name': "Reverse proxy authentication: revert to basic auth",
+        'path': '/non_core_contracts/5/edit',
+        'method': 'post',
+        'headers': {
+            'X-Isrw-Proxy-Logon-User': 'admin@example.com'},
+        'data': {
+            'name': "configuration",
+            'properties': """
+{
+    'site_links': [
+        {'name': 'Google Maps', 'href': 'https://maps.google.com/maps?q='}],
+    'batch_reports': [1],
+    'elexonportal_scripting_key': 'xxx',
+    'ecoes': {
+        'user_name': 'a',
+        'password': 'a',
+        'prefix': 'http://localhost:8080/ecoes/'},
+    'background_colour': 'aquamarine'}
+""", },
+        'status_code': 303},
+
+    {
+        'name': "View site snag edit",
+        'path': '/site_snags/41/edit',
+        'auth': ('admin@example.com', 'admin'),
+        'regexes': [
+            r'<form action=""'],
+        'status_code': 200},
 ]
