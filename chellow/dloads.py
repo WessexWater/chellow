@@ -43,7 +43,7 @@ def make_names(base, user):
             addr = str(user.getEmailAddress())
         else:
             addr = user.email_address
-        uname = addr.replace('@', '').replace('.', '')
+        uname = addr.replace('@', '').replace('.', '').replace('\\', '')
 
     names = tuple(
         '_'.join((serial, v, uname, base)) for v in ('RUNNING', 'FINISHED'))

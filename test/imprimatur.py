@@ -13,7 +13,7 @@
         'path': '/users',
         'method': 'post',
         'data': {
-            'email_address': "watkins@example.com",
+            'email_address': "watkin\\s@example.com",
             'user_role_code': "editor",
             'password': "alan"},
         'status_code': 303,
@@ -103,7 +103,7 @@
 
     {
         'name': "Insert local report",
-        'auth': ('watkins@example.com', 'alan'),
+        'auth': ('watkin\\s@example.com', 'alan'),
         'path': '/local_reports',
         'method': 'post',
         'data': {
@@ -1880,7 +1880,7 @@ def virtual_bill_titles():
     {
         'name': "Make sure everything's there on the home page.",
         'path': '/',
-        'auth': ('watkins@example.com', 'alan'),
+        'auth': ('watkin\\s@example.com', 'alan'),
         'regexes': [
             r'<a href="/participants">Market Participants</a>',
             r'<a href="/meter_payment_types">Meter Payment Types</a>',
