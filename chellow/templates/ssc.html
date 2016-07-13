@@ -1,50 +1,67 @@
 {% extends "base.html" %}
 
 {% block title %}
-	SSCs &gt; {{ssc.code}}
+	&raquo; SSCs &raquo; {{ssc.code}}
 {% endblock %}
 
 {% block nav %}
-	<a href="{{context_path}}/sscs">SSCs</a> &gt; {{ssc.code}}
+	&raquo; <a href="{{context_path}}/sscs">SSCs</a> &raquo; {{ssc.code}}
 {% endblock %}
 
 {% block content %}
-	<table>
-		<tr>
-			<th>Code</th>
-			<td>{{ ssc.code }}</td>
-		</tr>
-		<tr>
-			<th>Description</th>
-			<td>{{ ssc.description }}</td>
-		</tr>
-		<tr>
-			<th>Is Import?</th>
-			<td>
-				{% if ssc.is_import %}
-					Import
-				{% else %}
-					Export
-				{% endif %}
-			</td>
-		</tr>
-		<tr>
-			<th>From</th>
-			<td>{{ ssc.valid_from|hh_format }}</td>
-		<tr>
-		</tr>
-			<th>To</th>
-			<td>{{ ssc.valid_to|hh_format }}</td>
-		</tr>
-	</table>
+<!-- Layer Section -->
+<div class="layer-section">
+	<!-- Section Header -->
+	<div class="section-header">
+		<h2>{{ssc.code}}</h2>	
+	</div>
+	<!-- End Section Header -->
+	<!-- Section Content -->
+	<div class="section-content">
+		<div class="section-data">
+			<table class="DataTable widthAuto">
+				<tr>
+					<th>Code</th>
+					<td>{{ ssc.code }}</td>
+				</tr>
+				<tr>
+					<th>Description</th>
+					<td>{{ ssc.description }}</td>
+				</tr>
+				<tr>
+					<th>Is Import?</th>
+					<td>
+						{% if ssc.is_import %}
+							Import
+						{% else %}
+							Export
+						{% endif %}
+					</td>
+				</tr>
+				<tr>
+					<th>From</th>
+					<td>{{ ssc.valid_from|hh_format }}</td>
+				<tr>
+				</tr>
+					<th>To</th>
+					<td>{{ ssc.valid_to|hh_format }}</td>
+				</tr>
+			</table>
 
-	<h4>TPRs</h4>
+			<h4>TPRs</h4>
 
-	<ul>
-		{% for mr in ssc.measurement_requirements %}
-			<li>
-				<a href="{{context_path}}/tprs/{{mr.tpr.id}}">{{mr.tpr.code}}</a>
-			</li>
-		{% endfor %}
-	</ul>
+			<ul>
+				{% for mr in ssc.measurement_requirements %}
+					<li>
+						<a href="{{context_path}}/tprs/{{mr.tpr.id}}">{{mr.tpr.code}}</a>
+					</li>
+				{% endfor %}
+			</ul>
+		</div>
+	</div>
+	<!-- End Section Content -->
+</div>
+<!-- End Layer Section -->
+
+	
 {% endblock %}

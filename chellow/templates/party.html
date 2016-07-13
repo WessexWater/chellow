@@ -1,75 +1,91 @@
 {% extends "base.html" %}
 
 {% block title %}
-	Parties &gt; {{party.name}}
+	&raquo; Parties &raquo; {{party.name}}
 {% endblock %}
 
 {% block nav %}
-	<a href="{{context_path}}/parties">Parties</a> &gt; {{ party.name }}
+	&raquo; <a href="{{context_path}}/parties">Parties</a> &raquo; {{ party.name }}
 {% endblock %}
 
 {% block content %}
-	<table>
-		<tr>
-			<th>Name</th>
-			<td>{{party.name}}</td>
-		</tr>
-		<tr>
-			<th>Participant</th>
-			<td>
-				<a href="{{context_path}}/participants/{{party.participant.id}}">{{party.participant.name}}</a>
-			</td>
-		</tr>
-		<tr>
-			<th>Role</th>
-			<td>
-				<a href="{{context_path}}/market_roles/{{ party.market_role.id }}">{{party.market_role.description}}</a>
-			</td>
-		</tr>
-			{% if party.market_role.code == 'R' %}
+<!-- Layer Section -->
+<div class="layer-section">
+	<!-- Section Header -->
+	<div class="section-header">
+		<h2>{{ party.name }}</h2>	
+	</div>
+	<!-- End Section Header -->
+	<!-- Section Content -->
+	<div class="section-content">
+		<div class="section-data">
+			<table class="DataTable widthAuto">
 				<tr>
-					<th>DNO Code</th>
-					<td>{{ party.dno_code }}</td>
+					<th>Name</th>
+					<td>{{party.name}}</td>
 				</tr>
-			{% endif %}
-		<tr>
-			<th>Valid From</th>
-			<td>{{party.valid_from|hh_format}}</a>
-			</td>
-		</tr>
-		<tr>
-			<th>Valid To</th>
-			<td>{{party.valid_to|hh_format}}</a>
-		</tr>
-	</table>
-	<br />
-	<table>
-		<caption>Contracts</caption>
-		<thead>
-			<tr>
-				<th>Name</th>
-				<th>Start Date</th>
-				<th>Finish Date</th>
-			</tr>
-		</thead>
-		<tbody>
-			{% for contract in party.contracts %}
 				<tr>
+					<th>Participant</th>
 					<td>
-						{% if contract.market_role.code == 'C' %}
-							<a href="{{context_path}}/hhdc_contracts/{{contract.id}}">{{contract.name}}</a>
-						{% elif contract.market_role.code == 'R' %}
-							<a href="{{context_path}}/dno_contracts/{{contract.id}}">{{contract.name}}</a>
-						{% elif contract.market_role.code == 'X' %}
-							<a href="{{ context_path }}/supplier_contracts/{{contract.id}}">{{contract.name}}</a>
-						{% elif contract.market_role.code == 'M' %}
-							<a href="{{context_path}}/mop_contracts/{{contract.id}}">{{contract.name}}</a>
-						{% endif %}
+						<a href="{{context_path}}/participants/{{party.participant.id}}">{{party.participant.name}}</a>
 					</td>
-					<td>{{contract.start_rate_script.start_date|hh_format}}</td>
-					<td>{{contract.finish_rate_script.finish_date|hh_format}}</td>
 				</tr>
-			{% endfor %}
-		</tbody>
-	</table>
+				<tr>
+					<th>Role</th>
+					<td>
+						<a href="{{context_path}}/market_roles/{{ party.market_role.id }}">{{party.market_role.description}}</a>
+					</td>
+				</tr>
+					{% if party.market_role.code == 'R' %}
+						<tr>
+							<th>DNO Code</th>
+							<td>{{ party.dno_code }}</td>
+						</tr>
+					{% endif %}
+				<tr>
+					<th>Valid From</th>
+					<td>{{party.valid_from|hh_format}}</a>
+					</td>
+				</tr>
+				<tr>
+					<th>Valid To</th>
+					<td>{{party.valid_to|hh_format}}</a>
+				</tr>
+			</table>
+			<table  class="DataTable widthAuto">
+				<caption>Contracts</caption>
+				<thead>
+					<tr>
+						<th>Name</th>
+						<th>Start Date</th>
+						<th>Finish Date</th>
+					</tr>
+				</thead>
+				<tbody>
+					{% for contract in party.contracts %}
+						<tr>
+							<td>
+								{% if contract.market_role.code == 'C' %}
+									<a href="{{context_path}}/hhdc_contracts/{{contract.id}}">{{contract.name}}</a>
+								{% elif contract.market_role.code == 'R' %}
+									<a href="{{context_path}}/dno_contracts/{{contract.id}}">{{contract.name}}</a>
+								{% elif contract.market_role.code == 'X' %}
+									<a href="{{ context_path }}/supplier_contracts/{{contract.id}}">{{contract.name}}</a>
+								{% elif contract.market_role.code == 'M' %}
+									<a href="{{context_path}}/mop_contracts/{{contract.id}}">{{contract.name}}</a>
+								{% endif %}
+							</td>
+							<td>{{contract.start_rate_script.start_date|hh_format}}</td>
+							<td>{{contract.finish_rate_script.finish_date|hh_format}}</td>
+						</tr>
+					{% endfor %}
+				</tbody>
+			</table>
+		</div>
+	</div>
+	<!-- End Section Content -->
+</div>
+<!-- End Layer Section -->
+
+	
 {% endblock %}

@@ -1,48 +1,65 @@
 {% extends "base.html" %}
 
 {% block title %}
-	MTCs
+	&raquo; MTCs
 {% endblock %}
 
 {% block nav %}
-	MTCs
+	&raquo; MTCs
 {% endblock %}
 
 {% block content %}
-	<table>
-		<thead>
-			<tr>
-				<th>Code</th>
-				<th>Dno</th>
-				<th>Description</th>
-				<th>Meter Type</th>
-				<th>TPR count</th>
-			</tr>
-		</thead>
-		<tbody>
-			{% for mtc, contract in mtcs %}
-				<tr>
-					<td>
-						<a href="{{context_path}}/mtcs/{{mtc.id}}">{{mtc.code}}</a>
-					</td>
-					<td>
-						{% if mtc.dno %}
-							<a href="{{context_path}}/dno_contracts/{{contract.id}}">
-								{{mtc.dno.dno_code}}
-							</a>
-						{% else %}
-							All
-						{% endif %}
-					</td>
-					<td>{{mtc.description}}</td>
-					<td>
-						<a href="{{context_path}}/meter_types/{{mtc.meter_type.id}}">
-							{{mtc.meter_type.code}}
-						</a>
-					</td>
-					<td>{{mtc.tpr_count}}</td>
-				</tr>
-			{% endfor %}
-		</tbody>
-	</table>
+<!-- Layer Section -->
+<div class="layer-section">
+	<!-- Section Header -->
+	<div class="section-header">
+		<h2>Meter Timeswitch Classes</h2>	
+	</div>
+	<!-- End Section Header -->
+	<!-- Section Content -->
+	<div class="section-content">
+		<div class="section-data">
+			<table class="DataTable widthAuto">
+				<thead>
+					<tr>
+						<th>Code</th>
+						<th>Dno</th>
+						<th>Description</th>
+						<th>Meter Type</th>
+						<th>TPR count</th>
+					</tr>
+				</thead>
+				<tbody>
+					{% for mtc, contract in mtcs %}
+						<tr>
+							<td>
+								<a href="{{context_path}}/mtcs/{{mtc.id}}">{{mtc.code}}</a>
+							</td>
+							<td>
+								{% if mtc.dno %}
+									<a href="{{context_path}}/dno_contracts/{{contract.id}}">
+										{{mtc.dno.dno_code}}
+									</a>
+								{% else %}
+									All
+								{% endif %}
+							</td>
+							<td>{{mtc.description}}</td>
+							<td>
+								<a href="{{context_path}}/meter_types/{{mtc.meter_type.id}}">
+									{{mtc.meter_type.code}}
+								</a>
+							</td>
+							<td>{{mtc.tpr_count}}</td>
+						</tr>
+					{% endfor %}
+				</tbody>
+			</table>
+		</div>
+	</div>
+	<!-- End Section Content -->
+</div>
+<!-- End Layer Section -->
+
+	
 {% endblock %}
