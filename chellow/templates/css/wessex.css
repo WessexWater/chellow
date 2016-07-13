@@ -4,7 +4,7 @@ To change this template file, choose Tools | Templates
 and open the template in the editor.
 */
 /* 
-    Created on : July 11, 2016, 2:09:42 PM
+    Created on : July 13, 2016, 12:02:30 PM
     Author     : AL
 */
 
@@ -13,7 +13,8 @@ html, body {
 }
 
 body {
-    background-color: #FFF;
+    /*background-color: #FFF;*/
+    background-color: #EEF4F9;
     color: #333;
     font-size: 14px;
     position: relative;
@@ -94,6 +95,10 @@ table {
 ol, ul {
     margin: 0 0 15px;
     padding: 0 0 0 20px;
+}
+
+pre {
+    margin: 0 0 15px;
 }
 
 
@@ -691,7 +696,8 @@ body.LoginScreen,
 
 /* Layer Content */
 .layer-content {
-    padding: 15px 0;
+    /*padding: 15px 0;*/
+    padding: 15px 0 0;
 }
 
 
@@ -700,6 +706,10 @@ body.LoginScreen,
     background-color: #FFF;
     box-shadow: 1px 2px 5px #D9D9D9;
     margin: 0 0 30px;
+}
+
+.layer-content .layer-section:last-of-type {
+    margin-bottom: 0;
 }
 
 .layer-section .section-header {
@@ -754,8 +764,8 @@ body.LoginScreen,
 .section-data .noWrap-md, 
 .section-data .noWrap-lg {
     clear: both;
-    overflow-x: auto;
-    white-space: nowrap;
+/*    overflow-x: auto;
+    white-space: nowrap;*/
 }
 
 .well .DataTable {
@@ -764,15 +774,15 @@ body.LoginScreen,
 
 @media( min-width: 768px ) {
     .section-data .noWrap-md {
-        overflow-x: visible;
-        white-space: normal;
+/*        overflow-x: visible;
+        white-space: normal;*/
     }
 }
 
 @media( min-width: 1200px ) {
     .section-data .noWrap-lg {
-        overflow-x: visible;
-        white-space: normal;
+/*        overflow-x: visible;
+        white-space: normal;*/
     }
 }
 
@@ -825,7 +835,17 @@ table.DataTable.noMarginBottom {
     /*border: 0;*/
     font-size: 12px;
     line-height: 18px;
-    padding: 5px 10px;
+    /*padding: 5px 10px;*/
+    padding: 5px;
+}
+
+.DataTable .btn, 
+.DataTable a.btn, 
+.DataTable .button, 
+.DataTable input[type="submit"], 
+.DataTable input[type="reset"] {
+    font-size: 12px;
+    padding: 0px 5px;
 }
 
 .DataTable tr:nth-child(even) td {
@@ -835,7 +855,7 @@ table.DataTable.noMarginBottom {
 .DataTable thead th, 
 .DataTable tfoot th {
     color: #444;
-    font-size: 90%;
+    /*font-size: 90%;*/
     font-weight: 700;
     text-align: center;
     text-transform: capitalize;
@@ -890,6 +910,15 @@ table.DataTable.noMarginBottom {
 
 .DataTable a:hover {
     text-decoration: underline !important;
+}
+
+.DataTable pre {
+    margin-bottom: 0;
+    transition: background-color 150ms ease-in-out; -moz-transition: background-color 150ms ease-in-out; -o-transition: background-color 150ms ease-in-out; -webkit-transition: background-color 150ms ease-in-out;
+}
+
+.DataTable tr:hover pre {
+    background-color: #E1E1E1;
 }
 
 
@@ -958,6 +987,10 @@ input.input-text,
 .textWidthAuto.standardForm select {
     display: inline-block;
     width: auto;
+}
+
+.standardForm input[type="file"] {
+    height: auto;
 }
 
 .standardForm input[type="checkbox"], 

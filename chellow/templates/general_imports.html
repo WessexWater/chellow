@@ -1,360 +1,399 @@
 {% extends "base.html" %}
 
 {% block title %}
-	Chellow &gt; General Imports
+	&raquo; Chellow &raquo; General Imports
 {% endblock %}
 
 {% block nav %}
-	General Imports
+	&raquo; General Imports
 {% endblock %}
 
 {% block content %}
-	<form enctype="multipart/form-data" method="post" action="">
-		<fieldset>
-			<legend>Import CSV File</legend>
-			<input type="file" name="import_file" size="45"
-				value="{{request.values.import_file}}">
-			<input type="submit" value="Import">
-		</fieldset>
-	</form>
-	{% if process_ids %}
-		<ul>
-			{% for id in process_ids %}
+<!-- Layer Section -->
+<div class="layer-section">
+	<!-- Section Header -->
+	<div class="section-header">
+		<h2>Import CSV File</h2>	
+	</div>
+	<!-- End Section Header -->
+	
+	<!-- Section Content -->
+	<div class="section-content">
+		<div class="section-data">
+			<div class="standardForm">
+				<form enctype="multipart/form-data" method="post" action="">
+					<fieldset>
+						<input type="file" name="import_file" size="45"
+							value="{{request.values.import_file}}" />
+						<input type="submit" value="Import" />
+					</fieldset>
+				</form>
+				
+				{% if process_ids %}
+					<ul>
+						{% for id in process_ids %}
+							<li>
+								<a href="{{context_path}}/general_imports/{{id}}">{{id}}</a>
+							</li>
+						{% endfor %}
+					</ul>
+				{% endif %}
+			</div>
+	
+			<ul>
+				<li>Lines beginning with the '#' character are comment lines.</li>
 				<li>
-					<a href="{{context_path}}/general_imports/{{id}}">{{id}}</a>
+					You can import any number of lines, and mix actions and types in a
+					single file.
 				</li>
-			{% endfor %}
-		</ul>
-	{% endif %}
+				<li>
+					When updating a record, if the field contains {no change}, then that
+					field won't be updated.
+				</li>
+				<li>A blank date field means 'ongoing'.</li>
+			</ul>
+		</div>
+	</div>
+	<!-- End Section Content -->
+</div>
+<!-- End Layer Section -->
 
-	<ul>
-		<li>Lines beginning with the '#' character are comment lines.</li>
-		<li>
-			You can import any number of lines, and mix actions and types in a
-			single file.
-		</li>
-		<li>
-			When updating a record, if the field contains {no change}, then that
-			field won't be updated.
-		</li>
-		<li>A blank date field means 'ongoing'.</li>
-	</ul>
+<!-- Layer Section -->
+<div class="layer-section">
+	<!-- Section Header -->
+	<div class="section-header">
+		<h2>Formats</h2>	
+	</div>
+	<!-- End Section Header -->
+	<!-- Section Content -->
+	<div class="section-content">
+		<div class="section-data">
+			<div class="noWrap">
+				<table class="DataTable">
+					<tbody>
+						<tr>
+							<th>Action</th>
+							<th>Type</th>
+						</tr>
+						<tr>
+							<td><em>insert</em></td>
+							<td><em>site</em></td>
+							<td>Site Code</td>
+							<td>Site Name</td>
+						</tr>
+						<tr>
+							<td><em>delete</em></td>
+							<td><em>site</em></td>
+							<td>Site Code</td>
+						</tr>
+						<tr>
+							<td><em>update</em></td>
+							<td><em>site</em></td>
+							<td>Current Site Code</td>
+							<td>New Site Code</td>
+							<td>Site Name</td>
+						</tr>
+						<tr>
+							<td><em>insert</em></td>
+							<td><em>supply</em></td>
+							<td>Site Code</td>
+							<td>Source Code</td>
+							<td>Generator Type</td>
+							<td>Supply Name</td>
+							<td>GSP Group (geographic location)</td>
+							<td>Start date (yyyy-MM-dd)</td>
+							<td>Finish Date</td>
+							<td>MOP Contract</td>
+							<td>MOP Account</td>
+							<td>HHDC Contract</td>
+							<td>HHDC Account</td>
+							<td>Meter Serial Number</td>
+							<td>Profile Class</td>
+							<td>Meter Timeswitch Class</td>
+							<td>CoP</td>
+							<td>Standard Settlement Configuration (blank for HH supplies)</td>
+							<td>Import MPAN Core</td>
+							<td>Import LLFC</td>
+							<td>Import Supply Capacity</td>
+							<td>Import Supplier Contract</td>
+							<td>Import Supplier Account</td>
+							<td>Export MPAN Core</td>
+							<td>Export LLFC</td>
+							<td>Export Supply Capacity</td>
+							<td>Export Supplier Contract</td>
+							<td>Export Supplier Account</td>
+						</tr>
+						<tr>
+							<td><em>update</em></td>
+							<td><em>supply</em></td>
+							<td>MPAN Core</td>
+							<td>Source Code</td>
+							<td>Generator Type</td>
+							<td>Supply Name</td>
+							<td>GSP Group</td>
+						</tr>
+						<tr>
+							<td><em>insert</em></td>
+							<td><em>era</em></td>
+							<td><em>MPAN Core</em></td>
+							<td>Start date (yyyy-MM-dd)</td>
+							<td>Site Code</td>
+							<td>MOP Contract</td>
+							<td>MOP Account</td>
+							<td>HHDC Contract</td>
+							<td>HHDC Account</td>
+							<td>Meter Serial Number</td>
+							<td>Profile Class</td>
+							<td>MTC</td>
+							<td>CoP</td>
+							<td>SSC</td>
+							<td>Import MPAN Core</td>
+							<td>Import LLFC</td>
+							<td>Import Supply Capacity</td>
+							<td>Import Supplier Contract</td>
+							<td>Import Supplier Account</td>
+							<td>Import ACTIVE?</td>
+							<td>Import REACTIVE_IMP?</td>
+							<td>Import REACTIVE_EXP?</td>
+							<td>Export MPAN Core</td>
+							<td>Export LLFC</td>
+							<td>Export Supply Capacity</td>
+							<td>Export Supplier Contract</td>
+							<td>Export Supplier Account</td>
+							<td>Export ACTIVE?</td>
+							<td>Export REACTIVE_IMP?</td>
+							<td>Export REACTIVE_EXP?</td>
+						</tr>
+						<tr>
+							<td><em>update</em></td>
+							<td><em>era</em></td>
+							<td>MPAN Core</td>
+							<td>Date</td>
+							<td>Start date</td>
+							<td>Finish date</td>
+							<td>MOP Contract</td>
+							<td>MOP Account</td>
+							<td>HHDC Contract</td>
+							<td>HHDC Account</td>
+							<td>Meter Serial Number</td>
+							<td>Profile Class</td>
+							<td>MTC</td>
+							<td>CoP</td>
+							<td>SSC</td>
+							<td>Import MPAN Core</td>
+							<td>Import LLFC</td>
+							<td>Import Supply Capacity</td>
+							<td>Import Supplier Contract</td>
+							<td>Import Supplier Account</td>
+							<td>Export MPAN Core</td>
+							<td>Export LLFC</td>
+							<td>Export Supply Capacity</td>
+							<td>Export Supplier Contract</td>
+							<td>Export Supplier Account</td>
+						</tr>
+						<tr>
+							<td><em>delete</em></td>
+							<td><em>era</em</td>
+							<td>MPAN Core</td>
+							<td>Date</td>
+						</tr>
+						<tr>
+							<td><em>insert</em></td>
+							<td><em>channel</em></td>
+							<td>MPAN Core</td>
+							<td>Date (yyyy-MM-dd hh:mm)</td>
+							<td>Import Related?</td>
+							<td>Channel Type (active, reactive import, reactive export)</td>
+						</tr>
+						<tr>
+							<td><em>delete</em></td>
+							<td><em>channel</em></td>
+							<td>MPAN Core</td>
+							<td>Date</td>
+							<td>Import Related?</td>
+							<td>Channel Type (active, reactive import, reactive export)</td>
+						</tr>
+						<tr>
+							<td><em>insert</em></td>
+							<td><em>site_era</em></td>
+							<td>Site Code</td>
+							<td>Core MPAN</td>
+							<td>Era Start Date</td>
+							<td>Is Physical?</td>
+						</tr>
+						<tr>
+							<td><em>insert</em></td>
+							<td><em>hh_datum</em></td>
+							<td>MPAN Core</td>
+							<td>Date</td>
+							<td>Channel Type</td>
+							<td>Value</td>
+							<td>Status</td>
+						</tr>
+						<tr>
+							<td><em>insert</em></td>
+							<td><em>user</em></td>
+							<td>Email Address</td>
+							<td>Password</td>
+							<td>Password Digest</td>
+							<td>User Role</td>
+							<td>Participant Code</td>
+							<td>Role Code</td>
+						</tr>
+						<tr>
+							<td><em>update</em></td>
+							<td><em>user</em></td>
+							<td>Current Email Address</td>
+							<td>Email Address</td>
+							<td>Password</td>
+							<td>Password Digest</td>
+							<td>User Role</td>
+							<td>Participant Code</td>
+							<td>Role Code</td>
+						</tr>
+						<tr>
+							<td><em>insert</em></td>
+							<td><em>channel_snag_ignore_</em></td>
+							<td>MPAN Core</td>
+							<td>Is Import?</td>
+							<td>Is kWh?</td>
+							<td>Description</td>
+							<td>From</td>
+							<td>To</td>
+						</tr>
+						<tr>
+							<td><em>insert</em></td>
+							<td><em>site_snag_ignore</em></td>
+							<td>Site Code</td>
+							<td>Description</td>
+							<td>From</td>
+							<td>To</td>
+						</tr>
+						<tr>
+							<td><em>insert</em></td>
+							<td><em>batch</em></td>
+							<td>Role Name (hhdc, supplier or mop)</td>
+							<td>Contract Name</td>
+							<td>Reference</td>
+							<td>Description</td>
+						</tr>
+						<tr>
+							<td><em>update</em></td>
+							<td><em>batch</em></td>
+							<td>Role Name (hhdc, supplier or mop)</td>
+							<td>Contract Name</td>
+							<td>Old Reference</td>
+							<td>New Reference</td>
+							<td>Description</td>
+						</tr>
+						<tr>
+							<td><em>insert<em></td>
+							<td><em>bill</em></td>
+							<td>Role Name(hhdc, supplier or mop)</td>
+							<td>Contract Name</td>
+							<td>Batch Reference</td>
+							<td>Mpan Core</td>
+							<td>Issue Date</td>
+							<td>Start Date</td>
+							<td>Finish Date</td>
+							<td>Net</td>
+							<td>Vat</td>
+							<td>Gross</td>
+							<td>Account Reference</td>
+							<td>Reference</td>
+							<td>Type</td>
+							<td>Breakdown</td>
+							<td>Kwh</td>
+							<td>(Meter Serial Number</td>
+							<td>Mpan</td>
+							<td>Coefficient</td>
+							<td>Units</td>
+							<td>TPR</td>
+							<td>Previous Date</td>
+							<td>Previous Value</td>
+							<td>Previous Type</td>
+							<td>Present Date</td>
+							<td>Present Value</td>
+							<td>Present Type)*</td>
+						</tr>
+						<tr>
+							<td><em>update</em></td>
+							<td><em>bill</em></td>
+							<td>Chellow Id</td>
+							<td>Account</td>
+							<td>Reference</td>
+							<td>Issue Date</td>
+							<td>Start Date</td>
+							<td>Finish Date</td>
+							<td>kwh</td>
+							<td>Net</td>
+							<td>Vat</td>
+							<td>Type</td>
+							<td>Paid?</td>
+							<td>Breakdown</td>
+						</tr>
+						<tr>
+							<td><em>update</em></td>
+							<td><em>register_read</em></td>
+							<td>Chellow Id</td>
+							<td>TPR</td>
+							<td>Coefficient</td>
+							<td>Units</td>
+							<td>Meter Serial Number</td>
+							<td>MPAN</td>
+							<td>Previous Date</td>
+							<td>Previous Value</td>
+							<td>Previous Type</td>
+							<td>Present Date</td>
+							<td>Present Value</td>
+							<td>Present Type</td>
+						</tr>
+						<tr>
+							<td><em>insert</em></td>
+							<td><em>llfc</em></td>
+							<td>DNO Code</td>
+							<td>LLFC Code</td>
+							<td>LLFC Description</td>
+							<td>Voltage Level Code</td>
+							<td>Is Substation?</td>
+							<td>Is Import?</td>
+							<td>Valid From</td>
+							<td>Valid To</td>
+						</tr>
+						<tr>
+							<td><em>delete</em></td>
+							<td><em>llfc</em></td>
+							<td>DNO Code</td>
+							<td>LLFC Code</td>
+							<td>Date</td>
+						</tr>
+						<tr>
+							<td><em>insert</em></td>
+							<td><em>market_role</em></td>
+							<td>Market Role Code</td>
+							<td>Market Role Description</td>
+						</tr>
+						<tr>
+							<td><em>insert</em></td>
+							<td><em>party</em></td>
+							<td>Market Role Code</td>
+							<td>Participant Code</td>
+							<td>Name</td>
+							<td>Valid From (YYYY-MM-dd hh:mm)</td>
+							<td>Valid To (YYYY-MM-dd hh:mm)</td>
+							<td>DNO Code</td>
+						</tr>
+					</tbody>
+				<table>
+			</div>
+		</div>
+	</div>
+	<!-- End Section Content -->
+</div>
+<!-- End Layer Section -->
 
-	<table>
-		<caption>Formats</caption>
-		<tbody>
-			<tr>
-				<th>Action</th>
-				<th>Type</th>
-			</tr>
-			<tr>
-				<td><em>insert</em></td>
-				<td><em>site</em></td>
-				<td>Site Code</td>
-				<td>Site Name</td>
-			</tr>
-			<tr>
-				<td><em>delete</em></td>
-				<td><em>site</em></td>
-				<td>Site Code</td>
-			</tr>
-			<tr>
-				<td><em>update</em></td>
-				<td><em>site</em></td>
-				<td>Current Site Code</td>
-				<td>New Site Code</td>
-				<td>Site Name</td>
-			</tr>
-			<tr>
-				<td><em>insert</em></td>
-				<td><em>supply</em></td>
-				<td>Site Code</td>
-				<td>Source Code</td>
-				<td>Generator Type</td>
-				<td>Supply Name</td>
-				<td>GSP Group (geographic location)</td>
-				<td>Start date (yyyy-MM-dd)</td>
-				<td>Finish Date</td>
-				<td>MOP Contract</td>
-				<td>MOP Account</td>
-				<td>HHDC Contract</td>
-				<td>HHDC Account</td>
-				<td>Meter Serial Number</td>
-				<td>Profile Class</td>
-				<td>Meter Timeswitch Class</td>
-				<td>CoP</td>
-				<td>Standard Settlement Configuration (blank for HH supplies)</td>
-				<td>Import MPAN Core</td>
-				<td>Import LLFC</td>
-				<td>Import Supply Capacity</td>
-				<td>Import Supplier Contract</td>
-				<td>Import Supplier Account</td>
-				<td>Export MPAN Core</td>
-				<td>Export LLFC</td>
-				<td>Export Supply Capacity</td>
-				<td>Export Supplier Contract</td>
-				<td>Export Supplier Account</td>
-			</tr>
-			<tr>
-				<td><em>update</em></td>
-				<td><em>supply</em></td>
-				<td>MPAN Core</td>
-				<td>Source Code</td>
-				<td>Generator Type</td>
-				<td>Supply Name</td>
-				<td>GSP Group</td>
-			</tr>
-			<tr>
-				<td><em>insert</em></td>
-				<td><em>era</em></td>
-				<td><em>MPAN Core</em></td>
-				<td>Start date (yyyy-MM-dd)</td>
-				<td>Site Code</td>
-				<td>MOP Contract</td>
-				<td>MOP Account</td>
-				<td>HHDC Contract</td>
-				<td>HHDC Account</td>
-				<td>Meter Serial Number</td>
-				<td>Profile Class</td>
-				<td>MTC</td>
-				<td>CoP</td>
-				<td>SSC</td>
-				<td>Import MPAN Core</td>
-				<td>Import LLFC</td>
-				<td>Import Supply Capacity</td>
-				<td>Import Supplier Contract</td>
-				<td>Import Supplier Account</td>
-				<td>Import ACTIVE?</td>
-				<td>Import REACTIVE_IMP?</td>
-				<td>Import REACTIVE_EXP?</td>
-				<td>Export MPAN Core</td>
-				<td>Export LLFC</td>
-				<td>Export Supply Capacity</td>
-				<td>Export Supplier Contract</td>
-				<td>Export Supplier Account</td>
-				<td>Export ACTIVE?</td>
-				<td>Export REACTIVE_IMP?</td>
-				<td>Export REACTIVE_EXP?</td>
-			</tr>
-			<tr>
-				<td><em>update</em></td>
-				<td><em>era</em></td>
-				<td>MPAN Core</td>
-				<td>Date</td>
-				<td>Start date</td>
-				<td>Finish date</td>
-				<td>MOP Contract</td>
-				<td>MOP Account</td>
-				<td>HHDC Contract</td>
-				<td>HHDC Account</td>
-				<td>Meter Serial Number</td>
-				<td>Profile Class</td>
-				<td>MTC</td>
-				<td>CoP</td>
-				<td>SSC</td>
-				<td>Import MPAN Core</td>
-				<td>Import LLFC</td>
-				<td>Import Supply Capacity</td>
-				<td>Import Supplier Contract</td>
-				<td>Import Supplier Account</td>
-				<td>Export MPAN Core</td>
-				<td>Export LLFC</td>
-				<td>Export Supply Capacity</td>
-				<td>Export Supplier Contract</td>
-				<td>Export Supplier Account</td>
-			</tr>
-			<tr>
-				<td><em>delete</em></td>
-				<td><em>era</em</td>
-				<td>MPAN Core</td>
-				<td>Date</td>
-			</tr>
-			<tr>
-				<td><em>insert</em></td>
-				<td><em>channel</em></td>
-				<td>MPAN Core</td>
-				<td>Date (yyyy-MM-dd hh:mm)</td>
-				<td>Import Related?</td>
-				<td>Channel Type (active, reactive import, reactive export)</td>
-			</tr>
-			<tr>
-				<td><em>delete</em></td>
-				<td><em>channel</em></td>
-				<td>MPAN Core</td>
-				<td>Date</td>
-				<td>Import Related?</td>
-				<td>Channel Type (active, reactive import, reactive export)</td>
-			</tr>
-			<tr>
-				<td><em>insert</em></td>
-				<td><em>site_era</em></td>
-				<td>Site Code</td>
-				<td>Core MPAN</td>
-				<td>Era Start Date</td>
-				<td>Is Physical?</td>
-			</tr>
-			<tr>
-				<td><em>insert</em></td>
-				<td><em>hh_datum</em></td>
-				<td>MPAN Core</td>
-				<td>Date</td>
-				<td>Channel Type</td>
-				<td>Value</td>
-				<td>Status</td>
-			</tr>
-			<tr>
-				<td><em>insert</em></td>
-				<td><em>user</em></td>
-				<td>Email Address</td>
-				<td>Password</td>
-				<td>Password Digest</td>
-				<td>User Role</td>
-				<td>Participant Code</td>
-				<td>Role Code</td>
-			</tr>
-			<tr>
-				<td><em>update</em></td>
-				<td><em>user</em></td>
-				<td>Current Email Address</td>
-				<td>Email Address</td>
-				<td>Password</td>
-				<td>Password Digest</td>
-				<td>User Role</td>
-				<td>Participant Code</td>
-				<td>Role Code</td>
-			</tr>
-			<tr>
-				<td><em>insert</em></td>
-				<td><em>channel_snag_ignore_</em></td>
-				<td>MPAN Core</td>
-				<td>Is Import?</td>
-				<td>Is kWh?</td>
-				<td>Description</td>
-				<td>From</td>
-				<td>To</td>
-			</tr>
-			<tr>
-				<td><em>insert</em></td>
-				<td><em>site_snag_ignore</em></td>
-				<td>Site Code</td>
-				<td>Description</td>
-				<td>From</td>
-				<td>To</td>
-			</tr>
-			<tr>
-				<td><em>insert</em></td>
-				<td><em>batch</em></td>
-				<td>Role Name (hhdc, supplier or mop)</td>
-				<td>Contract Name</td>
-				<td>Reference</td>
-				<td>Description</td>
-			</tr>
-			<tr>
-				<td><em>update</em></td>
-				<td><em>batch</em></td>
-				<td>Role Name (hhdc, supplier or mop)</td>
-				<td>Contract Name</td>
-				<td>Old Reference</td>
-				<td>New Reference</td>
-				<td>Description</td>
-			</tr>
-			<tr>
-				<td><em>insert<em></td>
-				<td><em>bill</em></td>
-				<td>Role Name(hhdc, supplier or mop)</td>
-				<td>Contract Name</td>
-				<td>Batch Reference</td>
-				<td>Mpan Core</td>
-				<td>Issue Date</td>
-				<td>Start Date</td>
-				<td>Finish Date</td>
-				<td>Net</td>
-				<td>Vat</td>
-				<td>Gross</td>
-				<td>Account Reference</td>
-				<td>Reference</td>
-				<td>Type</td>
-				<td>Breakdown</td>
-				<td>Kwh</td>
-				<td>(Meter Serial Number</td>
-				<td>Mpan</td>
-				<td>Coefficient</td>
-				<td>Units</td>
-				<td>TPR</td>
-				<td>Previous Date</td>
-				<td>Previous Value</td>
-				<td>Previous Type</td>
-				<td>Present Date</td>
-				<td>Present Value</td>
-				<td>Present Type)*</td>
-			</tr>
-			<tr>
-				<td><em>update</em></td>
-				<td><em>bill</em></td>
-				<td>Chellow Id</td>
-				<td>Account</td>
-				<td>Reference</td>
-				<td>Issue Date</td>
-				<td>Start Date</td>
-				<td>Finish Date</td>
-				<td>kwh</td>
-				<td>Net</td>
-				<td>Vat</td>
-				<td>Type</td>
-				<td>Paid?</td>
-				<td>Breakdown</td>
-			</tr>
-			<tr>
-				<td><em>update</em></td>
-				<td><em>register_read</em></td>
-				<td>Chellow Id</td>
-				<td>TPR</td>
-				<td>Coefficient</td>
-				<td>Units</td>
-				<td>Meter Serial Number</td>
-				<td>MPAN</td>
-				<td>Previous Date</td>
-				<td>Previous Value</td>
-				<td>Previous Type</td>
-				<td>Present Date</td>
-				<td>Present Value</td>
-				<td>Present Type</td>
-			</tr>
-			<tr>
-				<td><em>insert</em></td>
-				<td><em>llfc</em></td>
-				<td>DNO Code</td>
-				<td>LLFC Code</td>
-				<td>LLFC Description</td>
-				<td>Voltage Level Code</td>
-				<td>Is Substation?</td>
-				<td>Is Import?</td>
-				<td>Valid From</td>
-				<td>Valid To</td>
-			</tr>
-			<tr>
-				<td><em>delete</em></td>
-				<td><em>llfc</em></td>
-				<td>DNO Code</td>
-				<td>LLFC Code</td>
-				<td>Date</td>
-			</tr>
-			<tr>
-				<td><em>insert</em></td>
-				<td><em>market_role</em></td>
-				<td>Market Role Code</td>
-				<td>Market Role Description</td>
-			</tr>
-			<tr>
-				<td><em>insert</em></td>
-				<td><em>party</em></td>
-				<td>Market Role Code</td>
-				<td>Participant Code</td>
-				<td>Name</td>
-				<td>Valid From (YYYY-MM-dd hh:mm)</td>
-				<td>Valid To (YYYY-MM-dd hh:mm)</td>
-				<td>DNO Code</td>
-			</tr>
-		</tbody>
-	<table>
+
+	
+	
+	
 {% endblock %}

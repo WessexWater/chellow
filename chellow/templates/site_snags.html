@@ -1,47 +1,65 @@
 {% extends "base.html" %}
 
 {% block title %}
-	Site Snags
+	&raquo; Site Snags
 {% endblock %}
 
 {% block nav %}
-	Site Snags [<a href="{{context_path}}/site_snags/edit">edit</a>]
+	&raquo; Site Snags [<a href="{{context_path}}/site_snags/edit">edit</a>]
 {% endblock %}
 
 {% block content %}
-	<p>
-		There are {{snags|length}} snag(s), over {{site_count}} site(s)
-	</p>
+<!-- Layer Section -->
+<div class="layer-section">
+	<!-- Section Header -->
+	<div class="section-header">
+		<h2>Site Snags</h2>	
+	</div>
+	<!-- End Section Header -->
+	
+	<!-- Section Content -->
+	<div class="section-content">
+		<div class="section-data">
+			<p>
+				There are {{snags|length}} snag(s), over {{site_count}} site(s)
+			</p>
 
-	<table>
-		<thead>
-			<tr>
-				<th></th>
-				<th>Creation Date</th>
-				<th>Site ID</th>
-				<th>Site Name</th>
-				<th>Snag Description</th>
-				<th>Start Date</th>
-				<th>Finish Date</th>
-			</tr>
-		</thead>
-		<tbody>
-			{% for snag in snags %}
-				<tr>
-					<td>
-						<a href="{{context_path}}/site_snags/{{snag.id}}">view</a>
-					 	[<a href="{{context_path}}/site_snags/{{snag.id}}/edit">edit</a>]
-					</td>
-					<td>{{snag.date_created|hh_format}}</td>
-					<td>
-						<a href="{{context_path}}/sites/{{snag.site.id}}">{{snag.site.code}}</a>
-					</td>
-					<td>{{snag.site.name}}</td>
-					<td>{{snag.description}}</td>
-					<td>{{snag.start_date|hh_format}}</td>
-					<td>{{snag.finish_date|hh_format}}</td>
-				</tr>
-			{% endfor %}
-		</tbody>
-	</table>
+			<table class="DataTable widthAuto noMarginBottom">
+				<thead>
+					<tr>
+						<th></th>
+						<th>Creation Date</th>
+						<th>Site ID</th>
+						<th>Site Name</th>
+						<th>Snag Description</th>
+						<th>Start Date</th>
+						<th>Finish Date</th>
+					</tr>
+				</thead>
+				<tbody>
+					{% for snag in snags %}
+						<tr>
+							<td>
+								<a href="{{context_path}}/site_snags/{{snag.id}}">view</a>
+							 	[<a href="{{context_path}}/site_snags/{{snag.id}}/edit">edit</a>]
+							</td>
+							<td>{{snag.date_created|hh_format}}</td>
+							<td>
+								<a href="{{context_path}}/sites/{{snag.site.id}}">{{snag.site.code}}</a>
+							</td>
+							<td>{{snag.site.name}}</td>
+							<td>{{snag.description}}</td>
+							<td>{{snag.start_date|hh_format}}</td>
+							<td>{{snag.finish_date|hh_format}}</td>
+						</tr>
+					{% endfor %}
+				</tbody>
+			</table>
+		</div>
+	</div>
+	<!-- End Section Content -->
+</div>
+<!-- End Layer Section -->
+
+	
 {% endblock %}

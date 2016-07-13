@@ -1,22 +1,39 @@
 {% extends "base.html" %}
 
 {% block title %}
-	CoPs &gt; {{cop.description}}
+	&raquo; CoPs &raquo; {{cop.description}}
 {% endblock %}
 
 {% block nav %}
-	<a href="{{context_path}}/cops">CoPs</a> &gt; {{cop.description}}
+	&raquo; <a href="{{context_path}}/cops">CoPs</a> &raquo; {{cop.description}}
 {% endblock %}
 
 {% block content %}
-	<table>
-		<tr>
-			<th>Code</th>
-			<td>{{cop.code}}</td>
-		</tr>
-		<tr>
-			<th>Description</th>
-			<td>{{cop.description}}</td>
-		</tr>
-	</table>
+
+<!-- Layer Section -->
+<div class="layer-section">
+	<!-- Section Header -->
+	<div class="section-header">
+		<h2>{{cop.description}}</h2>	
+	</div>
+	<!-- End Section Header -->
+	<!-- Section Content -->
+	<div class="section-content">
+		<div class="section-data">
+			<table class="DataTable widthAuto">
+				<tr>
+					<th>Code</th>
+					<td>{{cop.code}}</td>
+				</tr>
+				<tr>
+					<th>Description</th>
+					<td>{{cop.description}}</td>
+				</tr>
+			</table>
+		</div>
+	</div>
+	<!-- End Section Content -->
+</div>
+<!-- End Layer Section -->
+	
 {% endblock %}

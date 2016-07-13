@@ -1,49 +1,67 @@
 {% extends "base.html" %}
 
 {% block title %}
-	SSCs
+	&raquo; SSCs
 {% endblock %}
 
 {% block nav %}
-	SSCs
+	&raquo; SSCs
 {% endblock %}
 
 {% block content %}
-	<table>
-		<thead>
-			<tr>
-				<th>Code</th>
-				<th>Description</th>
-				<th>Imp / Exp</th>
-				<th>From</th>
-				<th>To</th>
-				<th>Tprs</th>
-			</tr>
-		</thead>
-		<tbody>
-			{% for ssc in sscs %}
-				<tr>
-					<td>
-						<a href="{{context_path}}/sscs/{{ssc.id}}">{{ssc.code}}</a>
-					</td>
-					<td>{{ ssc.description }}</td>
-					<td>
-						{%- if ssc.is_import -%}
-							Import
-						{%- else -%}
-							Export
-						{%- endif -%}
-					</td>
-					<td>{{ ssc.valid_from|hh_format }}</td>
-					<td>{{ ssc.valid_to|hh_format }}</td>
-					<td>
-						{%- for mr in ssc.measurement_requirements -%}
-							<a href="{{context_path}}/tprs/{{mr.tpr.id}}">{{mr.tpr.code}}</a>
-							{%- if not loop.last %}, {% endif %}
-						{%- endfor -%}
-					</td>
-				</tr>
-			{% endfor %}
-		</tbody>
-	</table>
+<!-- Layer Section -->
+<div class="layer-section">
+	<!-- Section Header -->
+	<div class="section-header">
+		<h2>SSCS</h2>	
+	</div>
+	<!-- End Section Header -->
+	<!-- Section Content -->
+	<div class="section-content">
+		<div class="section-data">
+			<table class="DataTable widthAuto">
+				<thead>
+					<tr>
+						<th>Code</th>
+						<th>Description</th>
+						<th>Imp / Exp</th>
+						<th>From</th>
+						<th>To</th>
+						<th>Tprs</th>
+					</tr>
+				</thead>
+				<tbody>
+					{% for ssc in sscs %}
+						<tr>
+							<td>
+								<a href="{{context_path}}/sscs/{{ssc.id}}">{{ssc.code}}</a>
+							</td>
+							<td>{{ ssc.description }}</td>
+							<td>
+								{%- if ssc.is_import -%}
+									Import
+								{%- else -%}
+									Export
+								{%- endif -%}
+							</td>
+							<td>{{ ssc.valid_from|hh_format }}</td>
+							<td>{{ ssc.valid_to|hh_format }}</td>
+							<td>
+								{%- for mr in ssc.measurement_requirements -%}
+									<a href="{{context_path}}/tprs/{{mr.tpr.id}}">{{mr.tpr.code}}</a>
+									{%- if not loop.last %}, {% endif %}
+								{%- endfor -%}
+							</td>
+						</tr>
+					{% endfor %}
+				</tbody>
+			</table>
+		</div>
+	</div>
+	<!-- End Section Content -->
+</div>
+<!-- End Layer Section -->
+
+
+	
 {% endblock %}

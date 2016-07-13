@@ -1,23 +1,40 @@
 {% extends "base.html" %}
 
 {% block title %}
-	Generator Types &gt; {{generator_type.code}}
+	&raquo; Generator Types &raquo; {generator_type.code}}
 {% endblock %}
 
 {% block nav %}
-	<a href="{{context_path}}/generator_types">Generator Types</a> &gt;
+	&raquo; <a href="{{context_path}}/generator_types">Generator Types</a> &raquo; 
 	{{generator_type.code}}
 {% endblock %}
 
 {% block content %}
-	<table>
-		<tr>
-			<th>Code</th>
-			<td>{{generator_type.code}}</td>
-		</tr>
-		<tr>
-			<th>Description</th>
-			<td>{{generator_type.description}}</td>
-		</tr>
-	</table>
+<!-- Layer Section -->
+<div class="layer-section">
+	<!-- Section Header -->
+	<div class="section-header">
+		<h2>{{generator_type.code}}</h2>	
+	</div>
+	<!-- End Section Header -->
+	<!-- Section Content -->
+	<div class="section-content">
+		<div class="section-data">
+			<table class="DataTable widthAuto">
+				<tr>
+					<th>Code</th>
+					<td>{{generator_type.code}}</td>
+				</tr>
+				<tr>
+					<th>Description</th>
+					<td>{{generator_type.description}}</td>
+				</tr>
+			</table>
+		</div>
+	</div>
+	<!-- End Section Content -->
+</div>
+<!-- End Layer Section -->
+
+	
 {% endblock %}

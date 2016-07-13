@@ -1,22 +1,39 @@
 {% extends "base.html" %}
 
 {% block title %}
-	GSP Groups &gt; {{gsp_group.code}}
+	&raquo; GSP Groups &raquo; {{gsp_group.code}}
 {% endblock %}
 
 {% block nav %}
-	<a href="{{context_path}}/gsp_groups">GSP Groups</a> &gt; {{gsp_group.code}}
+	&raquo; <a href="{{context_path}}/gsp_groups">GSP Groups</a> &raquo; {{gsp_group.code}}
 {% endblock %}
 
 {% block content %}
-	<table>
-		<tr>
-			<th>Code</th>
-			<td>{{gsp_group.code}}</td>
-		</tr>
-		<tr>
-				<th>Description</th>
-				<td>{{gsp_group.description}}</td>
-		</tr>
-	</table>
+<!-- Layer Section -->
+<div class="layer-section">
+	<!-- Section Header -->
+	<div class="section-header">
+		<h2>{{gsp_group.code}}</h2>	
+	</div>
+	<!-- End Section Header -->
+	<!-- Section Content -->
+	<div class="section-content">
+		<div class="section-data">
+			<table class="DataTable widthAuto">
+				<tr>
+					<th>Code</th>
+					<td>{{gsp_group.code}}</td>
+				</tr>
+				<tr>
+						<th>Description</th>
+						<td>{{gsp_group.description}}</td>
+				</tr>
+			</table>
+		</div>
+	</div>
+	<!-- End Section Content -->
+</div>
+<!-- End Layer Section -->
+
+	
 {% endblock %}

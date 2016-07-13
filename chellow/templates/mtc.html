@@ -1,92 +1,109 @@
 {% extends "base.html" %}
 
 {% block title %}
-	MTCs &gt; {{mtc.code}}
+	&raquo; MTCs &raquo; {{mtc.code}}
 {% endblock %}
 
 {% block nav %}
-	<a href="{{context_path}}/mtcs">MTCs</a> &gt; {{mtc.code}}
+	&raquo; <a href="{{context_path}}/mtcs">MTCs</a> &raquo; {{mtc.code}}
 {% endblock %}
 
 {% block content %}
-	<table>
-		<tr>
-			<th>Code</th>
-			<td>{{mtc.code}}</td>
-		</tr>
-		<tr>
-			<th>DNO</th>
-			<td>
-				{% if dno_contract %}
-					<a href="{{context_path}}/dno_contracts/{{dno_contract.id}}">
-						{{dno_contract.name}}
-					</a>
-				{% else %}
-					All
-				{% endif %}
-			</td>
-		</tr>
-		<tr>
-			<th>Description</th>
-			<td>{{mtc.description}}</td>
-		</tr>
-		<tr>
-			<th>Has Related Metering?</th>
-			<td>
-				{% if mtc.has_related_metering == True %}
-					Yes
-				{% else %}
-					No
-				{% endif %}
-			</td>
-		</tr>
-		<tr>
-			<th>Has Comms?</th>
-			<td>
-				{% if mtc.has_comms == True %}
-					Yes
-				{% else %}
-					No
-				{% endif %}
-			</td>
-		</tr>
-		<tr>
-			<th>Measurement Class</th>
-			<td>
-				{% if mtc.is_hh == True %}
-					HH
-				{% else %}
-					NHH
-				{% endif %}
-			</td>
-		</tr>
-		<tr>
-			<th>Meter Type</th>
-			<td>
-				<a href="{{context_path}}/meter_types/{{mtc.meter_type.id}}">
-					{{mtc.meter_type.description}}
-				</a>
-			</td>
-		</tr>
-		<tr>
-			<th>Payment Type</th>
-			<td>
-				<a href="{{context_path}}/meter_payment_types/{{mtc.meter_payment_type.id}}">
-					{{mtc.meter_payment_type.description}}
-				</a>
-			</td>
-		</tr>
-		<tr>
-			<th>TPR Count</th>
-			<td>{{mtc.tpr_count}}</td>
-		</tr>
-		<tr>
-			<th>Valid From</th>
-			<td>{{mtc.valid_from|hh_format}}</td>
-		</tr>
-		<tr>
-			<th>Valid To</th>
-			<td>{{mtc.valid_to|hh_format}}</td>
-		</tr>
-	</table>
+<!-- Layer Section -->
+<div class="layer-section">
+	<!-- Section Header -->
+	<div class="section-header">
+		<h2>{{mtc.code}}</h2>	
+	</div>
+	<!-- End Section Header -->
+	<!-- Section Content -->
+	<div class="section-content">
+		<div class="section-data">
+			<table class="DataTable widthAuto">
+				<tr>
+					<th>Code</th>
+					<td>{{mtc.code}}</td>
+				</tr>
+				<tr>
+					<th>DNO</th>
+					<td>
+						{% if dno_contract %}
+							<a href="{{context_path}}/dno_contracts/{{dno_contract.id}}">
+								{{dno_contract.name}}
+							</a>
+						{% else %}
+							All
+						{% endif %}
+					</td>
+				</tr>
+				<tr>
+					<th>Description</th>
+					<td>{{mtc.description}}</td>
+				</tr>
+				<tr>
+					<th>Has Related Metering?</th>
+					<td>
+						{% if mtc.has_related_metering == True %}
+							Yes
+						{% else %}
+							No
+						{% endif %}
+					</td>
+				</tr>
+				<tr>
+					<th>Has Comms?</th>
+					<td>
+						{% if mtc.has_comms == True %}
+							Yes
+						{% else %}
+							No
+						{% endif %}
+					</td>
+				</tr>
+				<tr>
+					<th>Measurement Class</th>
+					<td>
+						{% if mtc.is_hh == True %}
+							HH
+						{% else %}
+							NHH
+						{% endif %}
+					</td>
+				</tr>
+				<tr>
+					<th>Meter Type</th>
+					<td>
+						<a href="{{context_path}}/meter_types/{{mtc.meter_type.id}}">
+							{{mtc.meter_type.description}}
+						</a>
+					</td>
+				</tr>
+				<tr>
+					<th>Payment Type</th>
+					<td>
+						<a href="{{context_path}}/meter_payment_types/{{mtc.meter_payment_type.id}}">
+							{{mtc.meter_payment_type.description}}
+						</a>
+					</td>
+				</tr>
+				<tr>
+					<th>TPR Count</th>
+					<td>{{mtc.tpr_count}}</td>
+				</tr>
+				<tr>
+					<th>Valid From</th>
+					<td>{{mtc.valid_from|hh_format}}</td>
+				</tr>
+				<tr>
+					<th>Valid To</th>
+					<td>{{mtc.valid_to|hh_format}}</td>
+				</tr>
+			</table>
+		</div>
+	</div>
+	<!-- End Section Content -->
+</div>
+<!-- End Layer Section -->
+
+	
 {% endblock %}
