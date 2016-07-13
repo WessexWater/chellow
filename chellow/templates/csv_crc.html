@@ -1,132 +1,161 @@
 {% extends "base.html" %}
 
 {% block title %}
-	CSV CRC
+	&raquo; CSV CRC
 {% endblock %}
 
 {% block nav %}
-	CSV CRC
+	&raquo; CSV CRC
 {% endblock %}
 
 {% block content %}
-	<form action="{{context_path}}/reports/207">
-		<fieldset>
-			<legend>Download CRC CSV</legend>
-			<br/>
-			For financial year starting April
-			{{input_text('year', start_date.year, 4, 4)}}
-			<input type="submit" value="Download">
-			<p>
-				The CRC report has a row for each supply. A supply is in one of the
-				the following categories at any one time:
-				<dl>
-					<dt>HH</dt>
-					<dd>
-						Measurement classes C (Half Hourly Metered in 100kW premises)
-						and E (Half Hourly Metered not 100kW).
-					<dt>AMR</dt>
-					<dd>
-						Measurement class A (Non Half Hourly Metered) but HH
-						non-settlement data used rather than settlement register reads.
-					</dd>
-					<dt>NHH</dt>
-					<dd>
-						Measurement class A (Non Half Hourly Metered) but with register
-						reads only.
-					</dd>
-					<dt>Unmetered</dt>
-					<dd>
-						Measurement class B (Non Half Hourly Unmetered)
-					</dd>
-				</dl>
-				The report works out the number of days with actual data for each
-				category and totals them up to give the 'Total Actual Days'. It then
-				works out the maximum possible number of days with actual data for
-				each supply category (HH, AMR, NHH or Unmetered) and totals them up
-				to give the 'Total Max Actual Days'. If (actual / maximum) &gt;= 183
-				/ 365, the supply is classed as 'Actual' for the CRC period, otherwise
-				it is classed as 'Estimated'. The total (estimated + actual) kWh are
-				given for each category.
-			</p>
-			<p>
-				For a period of time (the span) when a supply is in the NHH category,
-				the kWh and number of normal days are worked out as follows.
-				<ul>
-					<li>
-						All reads that aren't 'actual' are discarded.
-					</li>
-					<li>
-						If there are &lt; 2 reads, then the billed kWh is found, and two
-						reads are added after the span that reflect the billed kWh rate.
-					</li>
-					<li>
-						The remaining reads are ordered by time. Working backwards in time
-						from the start of the span, the first two reads are kept and earlier
-						ones are discarded. Working forwards in time from the start of the
-					 	span to the end of the span, the earliest and latest reads are kept
-					 	and any others are discarded. Working forwards in time from the end
-					 	of the span, the first two reads are kept, and the later ones are
-					 	discarded.
-					</li>
-					<li>
-						With the reads still in order, all the segments are considered. A
-					 	segment is just a read and the next read, so for n reads there are
-					 	n - 1 segments. The kWh for each segment is calculated.
-					</li>
-					<li>
-						If the two reads of a segment lie within the span, the days of the
-						segment are added to the actual days. The kWh of the segment is
-						added to the total kWh.
-					</li>
-					<li>
-						If a read lies outside the span, no days are added to the actual
-					 	days. The kWh for the segment is multiplied by (days of segment
-					 	that are also in the period) / (total days in segment), and then
-					 	added to the total kWh.
-					</li>
-					<li>
-						If there are parts of the span not covered by a segment, the
-						gap is filled with a pro-rata of the segment before the gap, or if
-						there is not segment before the gap, the segment after the gap.
-					</li>
-					<li>
-						If there's a meter change at some point along the line of reads,
-						there will be two reads for the same point in time. One of the
-						reads is the end of the preceding segment, and the other one is
-						the beginning of the succeeding segment, so it's always the case
-						that the two reads that make up a segment belong to the same
-						meter.
-					</li>
-				</ul>
-			</p>
-			<p>
-				For AMR and HH categories, the kWh figure is found by summing:
-				<ul>
-					<li>
-						The sum of the kWh of all the half-hours that lie within the
-						period.
-					</li>
-					<li>
-						The average kWh of present HHs over the period, multiplied by the
-						number of missing half-hours.
-					</li>
-				</ul>
+<!-- Layer Section -->
+<div class="layer-section">
+	<!-- Section Header -->
+	<div class="section-header">
+		<h2>Download CRC CSV</h2>	
+	</div>
+	<!-- End Section Header -->
+	<!-- Section Content -->
+	<div class="section-content">
+		<div class="section-data">
+			<div class="standardForm textWidthAuto inlineFormSubmit">
+				<form action="{{context_path}}/reports/207">
+					<fieldset>
+						For financial year starting April
+						{{input_text('year', start_date.year, 4, 4)}}
+						<input type="submit" value="Download">
+						<p>
+							The CRC report has a row for each supply. A supply is in one of the
+							the following categories at any one time:
+							<dl>
+								<dt>HH</dt>
+								<dd>
+									Measurement classes C (Half Hourly Metered in 100kW premises)
+									and E (Half Hourly Metered not 100kW).
+								<dt>AMR</dt>
+								<dd>
+									Measurement class A (Non Half Hourly Metered) but HH
+									non-settlement data used rather than settlement register reads.
+								</dd>
+								<dt>NHH</dt>
+								<dd>
+									Measurement class A (Non Half Hourly Metered) but with register
+									reads only.
+								</dd>
+								<dt>Unmetered</dt>
+								<dd>
+									Measurement class B (Non Half Hourly Unmetered)
+								</dd>
+							</dl>
+							The report works out the number of days with actual data for each
+							category and totals them up to give the 'Total Actual Days'. It then
+							works out the maximum possible number of days with actual data for
+							each supply category (HH, AMR, NHH or Unmetered) and totals them up
+							to give the 'Total Max Actual Days'. If (actual / maximum) &gt;= 183
+							/ 365, the supply is classed as 'Actual' for the CRC period, otherwise
+							it is classed as 'Estimated'. The total (estimated + actual) kWh are
+							given for each category.
+						</p>
+						<p>
+							For a period of time (the span) when a supply is in the NHH category,
+							the kWh and number of normal days are worked out as follows.
+							<ul>
+								<li>
+									All reads that aren't 'actual' are discarded.
+								</li>
+								<li>
+									If there are &lt; 2 reads, then the billed kWh is found, and two
+									reads are added after the span that reflect the billed kWh rate.
+								</li>
+								<li>
+									The remaining reads are ordered by time. Working backwards in time
+									from the start of the span, the first two reads are kept and earlier
+									ones are discarded. Working forwards in time from the start of the
+								 	span to the end of the span, the earliest and latest reads are kept
+								 	and any others are discarded. Working forwards in time from the end
+								 	of the span, the first two reads are kept, and the later ones are
+								 	discarded.
+								</li>
+								<li>
+									With the reads still in order, all the segments are considered. A
+								 	segment is just a read and the next read, so for n reads there are
+								 	n - 1 segments. The kWh for each segment is calculated.
+								</li>
+								<li>
+									If the two reads of a segment lie within the span, the days of the
+									segment are added to the actual days. The kWh of the segment is
+									added to the total kWh.
+								</li>
+								<li>
+									If a read lies outside the span, no days are added to the actual
+								 	days. The kWh for the segment is multiplied by (days of segment
+								 	that are also in the period) / (total days in segment), and then
+								 	added to the total kWh.
+								</li>
+								<li>
+									If there are parts of the span not covered by a segment, the
+									gap is filled with a pro-rata of the segment before the gap, or if
+									there is not segment before the gap, the segment after the gap.
+								</li>
+								<li>
+									If there's a meter change at some point along the line of reads,
+									there will be two reads for the same point in time. One of the
+									reads is the end of the preceding segment, and the other one is
+									the beginning of the succeeding segment, so it's always the case
+									that the two reads that make up a segment belong to the same
+									meter.
+								</li>
+							</ul>
+						</p>
+						<p>
+							For AMR and HH categories, the kWh figure is found by summing:
+							<ul>
+								<li>
+									The sum of the kWh of all the half-hours that lie within the
+									period.
+								</li>
+								<li>
+									The average kWh of present HHs over the period, multiplied by the
+									number of missing half-hours.
+								</li>
+							</ul>
 
-				The number of actual days is found by (number of actual half-hours /
-				48).
-			</p>
-		</fieldset> 
-	</form>
+							The number of actual days is found by (number of actual half-hours /
+							48).
+						</p>
+					</fieldset> 
+				</form>
+			</div>
+		</div>
+	</div>
+	<!-- End Section Content -->
+</div>
+<!-- End Layer Section -->
 
-	<br/>
+<!-- Layer Section -->
+<div class="layer-section">
+	<!-- Section Header -->
+	<div class="section-header">
+		<h2>Download CRC Special Events CSV</h2>	
+	</div>
+	<!-- End Section Header -->
+	<!-- Section Content -->
+	<div class="section-content">
+		<div class="section-data">
+			<div class="standardForm textWidthAuto inlineFormSubmit">
+				<form action="{{context_path}}/reports/215">
+					<fieldset>
+						For financial year starting April
+						{{input_text('year', start_date.year, 4, 4)}}
+						<input type="submit" value="Download">
+					</fieldset>
+				</form>
+			</div>
+		</div>
+	</div>
+	<!-- End Section Content -->
+</div>
+<!-- End Layer Section -->
 
-	<form action="{{context_path}}/reports/215">
-		<fieldset>
-			<legend>Download CRC Special Events CSV</legend>
-			<br/>
-			For financial year starting April
-			{{input_text('year', start_date.year, 4, 4)}}
-			<input type="submit" value="Download">
-		</fieldset>
-	</form>
 {% endblock %}

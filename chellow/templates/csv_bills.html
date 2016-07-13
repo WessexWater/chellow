@@ -1,22 +1,37 @@
 {% extends "base.html" %}
 
 {% block title %}
-	CSV Bills
+	&raquo; CSV Bills
 {% endblock %}
 
 {% block nav %}
-	CSV Bills
+	&raquo; CSV Bills
 {% endblock %}
 
 {% block content %}
-	<form action="{{context_path}}/reports/27">
-		<fieldset>
-			<legend>Download</legend>
-			<br>
-			For {{input_text('months', 1, 2, 2)}}
-			month(s) finishing at the end of
-			{{input_date('end', init, resolution='month')}}
-			<input type="submit" value="Download">
-		</fieldset>
-	</form>
+<!-- Layer Section -->
+<div class="layer-section">
+	<!-- Section Header -->
+	<div class="section-header">
+		<h2>Download</h2>	
+	</div>
+	<!-- End Section Header -->
+	<!-- Section Content -->
+	<div class="section-content">
+		<div class="section-data">
+			<form action="{{context_path}}/reports/27">
+				<fieldset>
+					For {{input_text('months', 1, 2, 2)}}
+					month(s) finishing at the end of
+					{{input_date('end', init, resolution='month')}}
+					<input type="submit" value="Download">
+				</fieldset>
+			</form>
+		</div>
+	</div>
+	<!-- End Section Content -->
+</div>
+<!-- End Layer Section -->
+
+	
 {% endblock %}

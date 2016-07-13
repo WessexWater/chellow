@@ -13,22 +13,23 @@
 	</div>
 	<div class="section-content">
 		<div class="section-data">	
-			<div class="standardForm inlineFormSubmit">		
+			<div class="standardForm ">		
 				<form action="" method="post">
 					<fieldset>
-						
-						<div class="col-sm-4">
-							<label>
-								Code {{ input_text('code', '') }}
-							</label>
+						<div class="row">
+							<div class="col-sm-6">
+								<label>
+									Code {{ input_text('code', '') }}
+								</label>
+							</div>
+							<div class="col-sm-6">
+								<label>
+									Name {{ input_text('name', '') }}
+								</label>
+
+							</div>
 						</div>
-						<div class="col-sm-8">
-							<label>
-								Name {{ input_text('name', '') }}
-							</label>
-<input type="submit" value="Add">
-						</div>
-						
+						<input type="submit" value="Add">
 					</fieldset>
 				</form>
 			</div>
