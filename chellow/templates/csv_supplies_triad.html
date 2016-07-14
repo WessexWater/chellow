@@ -1,20 +1,37 @@
 {% extends "base.html" %}
 
 {% block title %}
-	CSV Supplies TRIAD
+	&raquo; CSV Supplies TRIAD
 {% endblock %}
 
 {% block nav %}
-	CSV Supplies TRIAD
+	&raquo; CSV Supplies TRIAD
 {% endblock %}
 
 {% block content %}
-	<form action="{{context_path}}/reports/41">
-		<fieldset>
-			<legend>Download Supplies TRIAD CSV</legend>
-			<br>
-			For financial year ending March {{input_text('year', year, 4, 4)}} 
-			<input type="submit" value="Download">
-		</fieldset>
-	</form>
+<!-- Layer Section -->
+<div class="layer-section">
+	<!-- Section Header -->
+	<div class="section-header">
+		<h2>Download Supplies TRIAD CSV</h2>	
+	</div>
+	<!-- End Section Header -->
+	<!-- Section Content -->
+	<div class="section-content">
+		<div class="section-data">
+			<div class="standardForm textWidthAuto inlineFormSubmit">
+				<form action="{{context_path}}/reports/41">
+					<fieldset>
+						For financial year ending March {{input_text('year', year, 4, 4)}} 
+						<input type="submit" value="Download">
+					</fieldset>
+				</form>
+			</div>
+		</div>
+	</div>
+	<!-- End Section Content -->
+</div>
+<!-- End Layer Section -->
+
+	
 {% endblock %}

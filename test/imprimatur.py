@@ -865,7 +865,7 @@ def virtual_bill_titles():
             # Form for deleting the era
             r'<form action="/eras/8/edit">\s*'
             r'<fieldset>\s*'
-            r'<legend>Delete this era</legend>'],
+            r'<input type="submit" name="delete" value="Delete">'],
         'status_code': 200},
 
     # Can we delete the era ok? Supply 2

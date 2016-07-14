@@ -1,18 +1,5 @@
 {% extends "base.html" %}
-{% block head %}
-		<link rel="stylesheet" type="text/css" 	href="{{context_path}}/style">
-    	<link rel="stylesheet" href="{{context_path}}/bootstrap" />
-<!--    <link rel="stylesheet" href="{{context_path}}/font-awesome.min.css" />-->
-	 	<link rel="stylesheet" href="{{context_path}}/wessexcss" />
 
-		<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.0/jquery.min.js"></script>
-    	<script src="{{context_path}}/bootstrapjs"></script>
-    	<script src="{{context_path}}/gridsjs"></script>
-    	<script src="{{context_path}}/wessexjs"></script>
-		
-		<title>Chellow</title>
-
-{% endblock %}
 {% block body %}
 <!-- Layer Page -->
 <div class="layer-page">
@@ -183,7 +170,7 @@
 																	<tr>
 																		<th>Duration</th>
 																		<td><a href="{{context_path}}/csv_supplies_duration" title="Download">Download</a></td>
-																		<td><a href="#" title="Download">Download</a></td>
+																		<td><a href="{{context_path}}/csv_sites_duration" title="Download">Download</a></td>
 																	</tr>
 																	<tr>
 																		<th>Monthly Duration</th>

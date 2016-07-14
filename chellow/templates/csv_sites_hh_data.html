@@ -1,21 +1,38 @@
 {% extends "base.html" %}
 
 {% block title %}
-	CSV Sites HH Data
+	&raquo; CSV Sites HH Data
 {% endblock %}
 
 {% block nav %}
-	CSV Sites HH Data
+	&raquo; CSV Sites HH Data
 {% endblock %}
 
 {% block content %}
-	<form action="{{context_path}}/reports/183">
-		<fieldset>
-			<legend>Download</legend>
-			<br>
-			From {{input_date('start', start_date)}} to
-			{{input_date('finish', finish_date)}}
-			<input type="submit" value="Download">
-		</fieldset>
-	</form>
+<!-- Layer Section -->
+<div class="layer-section">
+	<!-- Section Header -->
+	<div class="section-header">
+		<h2>Download</h2>	
+	</div>
+	<!-- End Section Header -->
+	<!-- Section Content -->
+	<div class="section-content">
+		<div class="section-data">
+			<div class="standardForm textWidthAuto inlineFormSubmit">
+				<form action="{{context_path}}/reports/183">
+					<fieldset>
+						From {{input_date('start', start_date)}} to
+						{{input_date('finish', finish_date)}}
+						<input type="submit" value="Download">
+					</fieldset>
+				</form>
+			</div>
+		</div>
+	</div>
+	<!-- End Section Content -->
+</div>
+<!-- End Layer Section -->
+
+	
 {% endblock %}

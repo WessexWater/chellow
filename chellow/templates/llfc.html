@@ -1,37 +1,54 @@
 {% extends "base.html" %}
 
 {% block title %}
-	DNO Contracts &gt; {{dno_contract.name}} &gt; LLFCs &gt; {{llfc.code}}
+	&raquo; DNO Contracts &raquo; {{dno_contract.name}} &raquo; LLFCs &raquo; {{llfc.code}}
 {% endblock %}
 
 {% block nav %}
-	<a href="{{context_path}}/dno_contracts">DNO Contracts</a> &gt;
-	<a href="{{context_path}}/dno_contracts/{{dno_contract.id}}">{{dno_contract.name}}</a> &gt;
+	&raquo; <a href="{{context_path}}/dno_contracts">DNO Contracts</a> &raquo; 
+	<a href="{{context_path}}/dno_contracts/{{dno_contract.id}}">{{dno_contract.name}}</a> &raquo; 
 	<a href="{{context_path}}/llfcs?dno_contract_id={{dno_contract.id}}">LLFCs</a>
-	&gt; {{llfc.code}}
+	&raquo; {{llfc.code}}
 {% endblock %}
 
 {% block content %}
-	<table>
-		<tr>
-			<th>Code</th>
-			<td>{{llfc.code}}</td>
-		</tr>
-		<tr>
-			<th>Description</th>
-			<td>{{llfc.description}}</td>
-		</tr>
-		<tr>
-			<th>Voltage Level</th>
-			<td>{{llfc.voltage_level.code}} - {{llfc.voltage_level.name}}</td>
-		</tr>
-		<tr>
-			<th>Is Substation?</th>
-			<td>{{llfc.is_substation}}</td>
-		</tr>
-		<tr>
-			<th>Is Import?</th>
-			<td>{{llfc.is_import}}</td>
-		</tr>
-	</table>
+<!-- Layer Section -->
+<div class="layer-section">
+	<!-- Section Header -->
+	<div class="section-header">
+		<h2>{{llfc.description}}</h2>	
+	</div>
+	<!-- End Section Header -->
+	<!-- Section Content -->
+	<div class="section-content">
+		<div class="section-data">
+			<table class="DataTable widthAuto">
+				<tr>
+					<th>Code</th>
+					<td>{{llfc.code}}</td>
+				</tr>
+				<tr>
+					<th>Description</th>
+					<td>{{llfc.description}}</td>
+				</tr>
+				<tr>
+					<th>Voltage Level</th>
+					<td>{{llfc.voltage_level.code}} - {{llfc.voltage_level.name}}</td>
+				</tr>
+				<tr>
+					<th>Is Substation?</th>
+					<td>{{llfc.is_substation}}</td>
+				</tr>
+				<tr>
+					<th>Is Import?</th>
+					<td>{{llfc.is_import}}</td>
+				</tr>
+			</table>
+		</div>
+	</div>
+	<!-- End Section Content -->
+</div>
+<!-- End Layer Section -->
+
+	
 {% endblock %}
