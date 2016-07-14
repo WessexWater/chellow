@@ -1,81 +1,125 @@
 {% extends "base.html" %}
 
 {% block title %}
-	Local Reports &gt; {{report.name}}
+	&raquo; Local Reports &raquo; {{report.name}}
 {% endblock %}
 
 {% block nav %}
-	<a href="/local_reports">Local Reports</a> &gt; {{report.name}}
+	&raquo; <a href="/local_reports">Local Reports</a> &raquo; {{report.name}}
 {% endblock %}
 
 {% block content %}
 	{% if request.values.confirm_delete %}
-		<form method="delete" action="">
-			<fieldset>
-				<legend>
-					Are you sure you want to delete this
-					report?
-				</legend>
-				<input type="submit" value="Delete">
-			</fieldset>
-		</form>
-		<p>
-			<a href="">Cancel</a>
-		</p>
+		<!-- Layer Section -->
+		<div class="layer-section">
+			<!-- Section Header -->
+			<div class="section-header">
+				<h2>Are you sure you want to delete this report?</h2>	
+			</div>
+			<!-- End Section Header -->
+			<!-- Section Content -->
+			<div class="section-content">
+				<div class="section-data">
+					<div class="standardForm">
+						<form method="delete" action="">
+							<fieldset>
+								<input type="submit" value="Delete">
+								<input type="reset" value="Cancel" onClick="window.location='/local_reports/{{report.id}}'" />
+							</fieldset>
+						</form>
+					</div>
+				</div>
+			</div>
+			<!-- End Section Content -->
+		</div>
+		<!-- End Layer Section -->
+	
+		
 	{% else %}
-		<ul>
-			<li>
-				<a href="{{report.id}}/output">Output</a>
-			</li>
-		</ul>
+		<!-- Layer Section -->
+		<div class="layer-section">
+			<!-- Section Header -->
+			<div class="section-header">
+				<h2>Minority Report</h2>	
+			</div>
+			<!-- End Section Header -->
+			<!-- Section Content -->
+			<div class="section-content">
+				<div class="section-data">
+					<ul>
+						<li>
+							<a href="{{report.id}}/output">Output</a>
+						</li>
+					</ul>	
+					
+					<div class="standardForm">
+						<form method="post" action="">
+							<fieldset>
+								<legend>Update Report</legend>
+								<div class="row">
+									<div class="col-sm-6">
+										<label>
+											Name
+										</label>
+											<input name="name" size="100"
+												{% if request.args['name'] %}
+													value="{{request.args['name']}}"
+												{% else %}
+													value="{{report.name}}"
+												{% endif %}
+											>
+									</div>
+								</div>
+								
+								<label>Script</label>
+								<textarea name="script" cols="80" rows="50">
+									{%- if request.values['script'] -%}
+										{{request.values['script']}}
+									{%- else -%}
+										{{report.script}}
+									{%- endif -%}
+								</textarea>
+								<label>Template</label>
+								<textarea name="template" cols="80" rows="50">
+									{%- if request.values['template'] -%}
+										{{request.values['template']}}
+									{%- else -%}
+										{{report.template}}
+									{%- endif -%}
+								</textarea>
+								<input type="submit" value="Save">
+							</fieldset>
+						</form>
+					</div>
+				</div>
+			</div>
+			<!-- End Section Content -->
+		</div>
+		<!-- End Layer Section -->
+	
+		<!-- Layer Section -->
+		<div class="layer-section">
+			<!-- Section Header -->
+			<div class="section-header">
+				<h2>Delete this report</h2>	
+			</div>
+			<!-- End Section Header -->
+			<!-- Section Content -->
+			<div class="section-content">
+				<div class="section-data">
+					<div class="standardForm">
+						<form action="">
+							<fieldset>
+								<input type="hidden" name="view" value="confirm_delete">
+								<input type="submit" value="Delete">
+							</fieldset>
+						</form>
+					</div>
+				</div>
+			</div>
+			<!-- End Section Content -->
+		</div>
+		<!-- End Layer Section -->
 
-		<form method="post" action="">
-			<fieldset>
-				<legend>Update Report</legend>
-				<label>
-					Name
-					<input name="name" size="100"
-						{% if request.args['name'] %}
-							value="{{request.args['name']}}"
-						{% else %}
-							value="{{report.name}}"
-						{% endif %}
-					>
-				</label>
-				<br />
-				<br />
-				<label>Script</label>
-				<br />
-				<textarea name="script" cols="80" rows="50">
-					{%- if request.values['script'] -%}
-						{{request.values['script']}}
-					{%- else -%}
-						{{report.script}}
-					{%- endif -%}
-				</textarea>
-				<br>
-				<br>
-				<label>Template</label>
-				<br>
-				<textarea name="template" cols="80" rows="50">
-					{%- if request.values['template'] -%}
-						{{request.values['template']}}
-					{%- else -%}
-						{{report.template}}
-					{%- endif -%}
-				</textarea>
-				<br>
-				<input type="submit" value="Save">
-			</fieldset>
-		</form>
-		<br>
-		<br>
-		<form action="">
-			<fieldset>
-				<legend>Delete this report</legend>
-				<input type="hidden" name="view" value="confirm_delete">
-				<input type="submit" value="Delete">
-			</fieldset>
-		</form>
 	{% endif %}
 {% endblock %}

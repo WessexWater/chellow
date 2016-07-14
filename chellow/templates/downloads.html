@@ -1,56 +1,92 @@
 {% extends "base.html" %}
 
 {% block title %}
-	Report Downloads
+	&raquo; Report Downloads
 {% endblock %}
 
 {% block nav %}
-	Report Downloads
+	&raquo; Report Downloads
 {% endblock %}
 
 {% block content %}
-	<p><a href="{{context_path}}/downloads">Refresh</a> the page.</p>
 
-	<table><caption>Report Files</caption>
-		<thead>
-			<tr>
-				<th>Name</th>
-				<th>Size</th>
-				<th>Creation Date</th>   
-				<th>Last Modified</th>
-				<th></th>
-			</tr>
-		</thead>
-		<tbody>
-			{% for file in files %}
-				<tr>
-					<td>
-						<a href="{{context_path}}/downloads/{{file.name}}">{{file.name}}</a>
-					</td>
-					<td>{{file.size}} B</td>
-					<td>
-					  {% if file.creation_date != file.last_modified -%}
-					   {{file.creation_date|hh_format}} 
-				    {%- endif %}
-					</td> 
-					<td>{{file.last_modified|hh_format}}</td>
-					<td>
-						<form
-							method="post" action="{{context_path}}/downloads/{{file.name}}">
-							<fieldset style="border: none;">
-								<input type="submit" name="delete" value="Delete">
-							</fieldset>
-						</form>
-					</td>
-				</tr>
-			{% endfor %}
-		</tbody>
-	</table>
+<!-- Layer Section -->
+<div class="layer-section">
+	<!-- Section Header -->
+	<div class="section-header">
+		<h2>Reports</h2>	
+	</div>
+	<!-- End Section Header -->
+	<!-- Section Content -->
+	<div class="section-content">
+		<div class="section-data">
+			<p><a href="{{context_path}}/downloads">Refresh</a> the page.</p>
+
+			<table class="DataTable widthAuto">
+				<caption>Report Files</caption>
+				<thead>
+					<tr>
+						<th>Name</th>
+						<th>Size</th>
+						<th>Creation Date</th>   
+						<th>Last Modified</th>
+						<th></th>
+					</tr>
+				</thead>
+				<tbody>
+					{% for file in files %}
+						<tr>
+							<td>
+								<a href="{{context_path}}/downloads/{{file.name}}">{{file.name}}</a>
+							</td>
+							<td>{{file.size}} B</td>
+							<td>
+							  {% if file.creation_date != file.last_modified -%}
+							   {{file.creation_date|hh_format}} 
+						    {%- endif %}
+							</td> 
+							<td>{{file.last_modified|hh_format}}</td>
+							<td>
+								<form
+									method="post" action="{{context_path}}/downloads/{{file.name}}">
+									<fieldset style="border: none;">
+										<input type="submit" name="delete" value="Delete">
+									</fieldset>
+								</form>
+							</td>
+						</tr>
+					{% endfor %}
+				</tbody>
+			</table>
+		</div>
+	</div>
+	<!-- End Section Content -->
+</div>
+<!-- End Layer Section -->
+
+<!-- Layer Section -->
+<div class="layer-section">
+	<!-- Section Header -->
+	<div class="section-header">
+		<h2>Delete All Files</h2>	
+	</div>
+	<!-- End Section Header -->
+	<!-- Section Content -->
+	<div class="section-content">
+		<div class="section-data">
+			<div class="standardForm">
+				<form method="post" action="">
+					<fieldset>
+						<input type="submit" name="delete" value="Delete">
+					</fieldset>
+				</form>
+			</div>
+		</div>
+	</div>
+	<!-- End Section Content -->
+</div>
+<!-- End Layer Section -->
+
 	<br>
-	<form method="post" action="">
-		<fieldset>
-			<legend>Delete All Files</legend>
-			<input type="submit" name="delete" value="Delete">
-		</fieldset>
-	</form>
+	
 {% endblock %}

@@ -1,44 +1,73 @@
 {% extends "base.html" %}
 
 {% block title %}
-	Local Reports
+	&raquo; Local Reports
 {% endblock %}
 
 {% block nav %}
-	Local Reports
+	&raquo; Local Reports
 {% endblock %}
 
 {% block content %}
-	<table>
-		<thead>
-			<tr>
-				<th>View</th>
-				<th>Name</th>
-			</tr>
-		</thead>
-		<tbody>
-			{% for report in reports %}
-				<tr>
-					<td>
-						<a href="/local_reports/{{report.id}}">View</a>
-					</td>
-					<td>
-						{{report.name}}
-					</td>
-				</tr>
-			{% endfor %}
-		</tbody>
-	</table>
-	<br />
-	<form action="" method="post">
-		<fieldset>
-			<legend>Add a report</legend>
-			<label>Name
-				<input name="name" value="{{request.values['name']}}">
-			</label>
-			<br>
-			<br>
-			<input type="submit" value="Add">
-		</fieldset>
-	</form>
+<!-- Layer Section -->
+<div class="layer-section">
+	<!-- Section Header -->
+	<div class="section-header">
+		<h2>Local </h2>	
+	</div>
+	<!-- End Section Header -->
+	<!-- Section Content -->
+	<div class="section-content">
+		<div class="section-data">
+			<table class="DataTable widthAuto">
+				<thead>
+					<tr>
+						<th>View</th>
+						<th>Name</th>
+					</tr>
+				</thead>
+				<tbody>
+					{% for report in reports %}
+						<tr>
+							<td>
+								<a href="/local_reports/{{report.id}}">View</a>
+							</td>
+							<td>
+								{{report.name}}
+							</td>
+						</tr>
+					{% endfor %}
+				</tbody>
+			</table>
+		</div>
+	</div>
+	<!-- End Section Content -->
+</div>
+<!-- End Layer Section -->
+	
+<!-- Layer Section -->
+<div class="layer-section">
+	<!-- Section Header -->
+	<div class="section-header">
+		<h2>Add a report</h2>	
+	</div>
+	<!-- End Section Header -->
+	<!-- Section Content -->
+	<div class="section-content">
+		<div class="section-data">
+			<div class="standardForm textWidthAuto">
+				<form action="" method="post">
+					<fieldset>
+						<label>Name
+							<input name="name" value="{{request.values['name']}}">
+						</label>
+						<input type="submit" value="Add">
+					</fieldset>
+				</form>
+			</div>
+		</div>
+	</div>
+	<!-- End Section Content -->
+</div>
+<!-- End Layer Section -->
 {% endblock %}

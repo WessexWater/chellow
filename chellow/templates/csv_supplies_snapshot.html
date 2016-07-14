@@ -1,28 +1,42 @@
 {% extends "base.html" %}
 
 {% block title %}
-	CSV Supplies Snapshot
+	&raquo; CSV Supplies Snapshot
 {% endblock %}
 
 {% block nav %}
-	CSV Supplies Snapshot
+	&raquo; CSV Supplies Snapshot
 {% endblock %}
 
 {% block content %}
-	<form action="{{context_path}}/reports/33">
-		<fieldset>
-			<legend>Download supply info for a point in time</legend>
-			<br>
-			At {{input_date('date', last_month)}}<br><br>
-			MPAN Cores (one on each line, includes all supplies if left
-			blank)<br> {{input_textarea('mpan_cores', '', 5, 40)}} <br><br>
-			<input type="submit" value="Download">
-		</fieldset>
-	</form>
-
-	<p>
-	  It's mandatory that a supply is HH if the import or export average of
-		the three highest monthly maximum demands over the past 12 complete months
-	 	is &gt; 100 kW.
-	</p>
+<!-- Layer Section -->
+<div class="layer-section">
+	<!-- Section Header -->
+	<div class="section-header">
+		<h2>Download supply info for a point in time</h2>	
+	</div>
+	<!-- End Section Header -->
+	<!-- Section Content -->
+	<div class="section-content">
+		<div class="section-data">
+			<div class="standardForm textWidthAuto">
+				<form action="{{context_path}}/reports/33">
+					<fieldset>
+						At {{input_date('date', last_month)}}<br><br>
+						MPAN Cores (one on each line, includes all supplies if left
+						blank)<br> {{input_textarea('mpan_cores', '', 5, 40)}} <br><br>
+						<input type="submit" value="Download">
+					</fieldset>
+				</form>
+			</div>
+			<p>
+			  It's mandatory that a supply is HH if the import or export average of
+				the three highest monthly maximum demands over the past 12 complete months
+			 	is &gt; 100 kW.
+			</p>
+		</div>
+	</div>
+	<!-- End Section Content -->
+</div>
+<!-- End Layer Section -->
 {% endblock %}
