@@ -21,7 +21,7 @@ setup(
     cmdclass=versioneer.get_cmdclass(),
     packages=[
         'chellow', 'chellow.reports', 'odswriter', 'odswriter.v1_1',
-        'odswriter.v1_2'],
+        'odswriter.v1_2', 'pg8000'],
     package_data={'chellow': [
         'non_core_contracts/*/*.py',
         'non_core_contracts/*/rate_scripts/*.py',
@@ -37,7 +37,6 @@ setup(
         'Flask==0.10.1',
         'Flask-SQLAlchemy==2.1',
         'SQLAlchemy==1.0.11',
-        'pg8000==1.10.5',
         'python-dateutil==2.4.2',
         'pytz==2015.6',
         'xlrd==0.9.4',
