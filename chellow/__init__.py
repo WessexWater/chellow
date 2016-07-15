@@ -1,10 +1,3 @@
-import pip
-
-try:
-    pip.main(['uninstall', '--yes', 'pg8000'])
-except:
-    pass
-
 from flask import Flask
 import os
 
