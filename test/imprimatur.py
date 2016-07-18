@@ -11051,8 +11051,7 @@ def virtual_bill(supply_source):
         'regexes': [
             r'<form method="post" action="">\s*',
             r'<fieldset>\s*',
-            r'<legend>Are you sure you want to delete this bill\?</legend>',
-            r'<a href="/supplier_bills/11/edit">Cancel</a>']},
+            r'<input type="submit" name="delete" value="Delete">']},
 
     {
         'name': "Delete supplier bill",

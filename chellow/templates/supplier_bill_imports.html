@@ -1,72 +1,92 @@
 {% extends "base.html" %}
 
 {% block title %}
-	Supplier Contracts &gt; {{batch.contract.name}} &gt; Batches &gt;
- 	{{batch.reference}} &gt; Bill Imports
+	&raquo; Supplier Contracts &raquo; {{batch.contract.name}} &raquo; Batches &raquo; 
+ 	{{batch.reference}} &raquo; Bill Imports
 {% endblock %}
 
 {% block nav %}
-	<a href="{{context_path}}/supplier_contracts">Supplier Contracts</a> &gt;
-	<a href="{{context_path}}/supplier_contracts/{{batch.contract.id}}">{{batch.contract.name}}</a> &gt;
-	<a href="{{context_path}}/supplier_batches?supplier_contract_id={{batch.contract.id}}">Batches</a> &gt;
-	<a href="{{context_path}}/supplier_batches/{{batch.id}}">{{batch.reference}}</a> &gt;
+	&raquo; <a href="{{context_path}}/supplier_contracts">Supplier Contracts</a> &raquo; 
+	<a href="{{context_path}}/supplier_contracts/{{batch.contract.id}}">{{batch.contract.name}}</a> &raquo; 
+	<a href="{{context_path}}/supplier_batches?supplier_contract_id={{batch.contract.id}}">Batches</a> &raquo; 
+	<a href="{{context_path}}/supplier_batches/{{batch.id}}">{{batch.reference}}</a> &raquo; 
  	Bill Imports
 {% endblock %}
 
 {% block content %}
-	<form enctype="multipart/form-data" method="post" action="">
-		<fieldset>
-			<input type="hidden" name="supplier_batch_id" value="{{batch.id}}">
-			<legend>Import Bill File</legend>
-			<input type="file" name="import_file" size="45"
-				value="{{request.values.import_file}}">
-			<input type="submit" value="Import">
-			<br>
-			<p>Valid file name extensions are {{parser_names}}.</p>
-			<table><caption>The '.csv' Format</caption>
-				<tbody>
-					<tr>
-						<td># Bill Type (N - Normal, W - Withdrawn or F -Final)</td>
-						<td>Account Reference</td>
-						<td>Mpans</td>
-						<td>Invoice Reference</td>
-						<td>Issue Date (YYYY-mm-dd HH:MM)</td>
-						<td>Start Date (YYYY-mm-dd HH:MM)</td>
-						<td>Finish Date (YYYY-mm-dd HH:MM)</td>
-						<td>kWh</td>
-						<td>Net</td>
-						<td>VAT</td>
-						<td>Gross</td>
-	 					<td>Breakdown</td>
-						<td>R1 Meter Serial Number</td>
-						<td>R1 MPAN</td>
-						<td>R1 Coefficient</td>
-						<td>R1 Units (kWh, kW, kVA or kVArh)</td>
-						<td>R1 TPR (Blank if kW or kVA)</td>
-						<td>R1 Previous Read Date</td>
-						<td>R1 Previous Read Value</td>
-						<td>R1 Previous Read Type</td>
-						<td>R1 Present Read Date</td>
-						<td>R1 Present Read Value</td>
-						<td>R1 Present Read Type</td>
-					</tr>
-				</tbody>
-			</table>
+<!-- Layer Section -->
+<div class="layer-section">
+	<!-- Section Header -->
+	<div class="section-header">
+		<h2>Import Bill File</h2>	
+	</div>
+	<!-- End Section Header -->
+	<!-- Section Content -->
+	<div class="section-content">
+		<div class="section-data">
+			<div class="standardForm">
+				<form enctype="multipart/form-data" method="post" action="">
+					<fieldset>
+						<input type="hidden" name="supplier_batch_id" value="{{batch.id}}">
+						<input type="file" name="import_file" size="45"
+							value="{{request.values.import_file}}">
+						<input type="submit" value="Import">
+						<br>
+						<p>Valid file name extensions are {{parser_names}}.</p>
+						<table class="DataTable widthAuto">
+							<caption>The '.csv' Format</caption>
+							<tbody>
+								<tr>
+									<td># Bill Type (N - Normal, W - Withdrawn or F -Final)</td>
+									<td>Account Reference</td>
+									<td>Mpans</td>
+									<td>Invoice Reference</td>
+									<td>Issue Date (YYYY-mm-dd HH:MM)</td>
+									<td>Start Date (YYYY-mm-dd HH:MM)</td>
+									<td>Finish Date (YYYY-mm-dd HH:MM)</td>
+									<td>kWh</td>
+									<td>Net</td>
+									<td>VAT</td>
+									<td>Gross</td>
+				 					<td>Breakdown</td>
+									<td>R1 Meter Serial Number</td>
+									<td>R1 MPAN</td>
+									<td>R1 Coefficient</td>
+									<td>R1 Units (kWh, kW, kVA or kVArh)</td>
+									<td>R1 TPR (Blank if kW or kVA)</td>
+									<td>R1 Previous Read Date</td>
+									<td>R1 Previous Read Value</td>
+									<td>R1 Previous Read Type</td>
+									<td>R1 Present Read Date</td>
+									<td>R1 Present Read Value</td>
+									<td>R1 Present Read Type</td>
+								</tr>
+							</tbody>
+						</table>
 
-			<p>
-				The register read block of fields can be repeated for each register, or
-			 	can be left out entirely if the bill doesn't have any readings
-			 	associated with it.
-			</p>
-		</fieldset>
-	</form>
-	{% if importer_ids %}
-		<ul>
-			{% for id in importer_ids %}
-				<li>
-					<a href="{{context_path}}/supplier_bill_imports/{{id}}">{{id}}</a>
-				</li>
-			{% endfor %}
-		</ul>
-	{% endif %}
+						<p>
+							The register read block of fields can be repeated for each register, or
+						 	can be left out entirely if the bill doesn't have any readings
+						 	associated with it.
+						</p>
+					</fieldset>
+				</form>
+			</div>
+		</div>
+		<div class="section-data">
+			{% if importer_ids %}
+				<ul>
+					{% for id in importer_ids %}
+						<li>
+							<a href="{{context_path}}/supplier_bill_imports/{{id}}">{{id}}</a>
+						</li>
+					{% endfor %}
+				</ul>
+			{% endif %}
+		</div>
+	</div>
+	<!-- End Section Content -->
+</div>
+<!-- End Layer Section -->
+	
 {% endblock %}
