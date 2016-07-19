@@ -1,81 +1,140 @@
 {% extends "base.html" %}
 
 {% block title %}
-	Supplier Contracts &gt; {{bill.batch.contract.name}} &gt; Batches &gt;
- 	{{bill.batch.reference}} &gt; Bills &gt; {{bill.id}} &gt; Add Read
+	&raquo; Supplier Contracts &raquo; {{bill.batch.contract.name}} &raquo; Batches &raquo; 
+ 	{{bill.batch.reference}} &raquo; Bills &raquo; {{bill.id}} &raquo; Add Read
 {% endblock %}
 
 {% block nav %}
-	<a href="{{context_path}}/supplier_contracts">Supplier Contracts</a> &gt;
-	<a href="{{context_path}}/supplier_contracts/{{bill.batch.contract.id}}">{{bill.batch.contract.name}}</a> &gt;
-	<a href="{{context_path}}/supplier_batches?supplier_contract_id={{bill.batch.contract.id}}">Batches</a> &gt;
-	<a href="{{context_path}}/supplier_batches/{{bill.batch.id}}">{{bill.batch.reference}}</a> &gt;
+	<a href="{{context_path}}/supplier_contracts">Supplier Contracts</a> &raquo; 
+	<a href="{{context_path}}/supplier_contracts/{{bill.batch.contract.id}}">{{bill.batch.contract.name}}</a> &raquo; 
+	<a href="{{context_path}}/supplier_batches?supplier_contract_id={{bill.batch.contract.id}}">Batches</a> &raquo; 
+	<a href="{{context_path}}/supplier_batches/{{bill.batch.id}}">{{bill.batch.reference}}</a> &raquo; 
 	<a href="{{context_path}}/supplier_bills/{{bill.id}}">Bill {{bill.id}}</a>
- 	&gt; Add Read
+ 	&raquo; Add Read
 {% endblock %}
 
 {% block content %}
-	<form action="" method="post">
-		<fieldset>
-			<input type="hidden" name="supplier_bill_id" value="{{bill.id}}">
-			<legend>Add New Register Read</legend>
-			<br>
-			<label>MPAN {{input_text('mpan', '')}}</label>
-			<br>
-			<label>Coefficient {{input_text('coefficient', '1')}}</label>
-			<br>
-			<label>Meter Serial Number {{input_text('msn', '1')}}</label>
-			<br>
-			<label>Units {{input_text('units', 'kWh')}}</label>
-			<br>
-			<label>TPR
-				<select name="tpr_id">
-					{% for tpr in tprs %}
-						{{input_option('tpr_id', tpr.id, tpr.code)}}
-					{% endfor %}
-				</select>
-			</label>
-			<br>
-			<br>
-			<fieldset>
-				<legend>Previous Read</legend>
-				<fieldset>
-					<legend>Date</legend>
-					{{input_date('previous', None)}}
-				</fieldset>
-				<br>
-				<label>Value {{input_text('previous_value', 0)}}</label>
-				<br>
-				<label>Type
-					<select name="previous_type_id">
-						{% for read_type in read_types %}
-							{{input_option('previous_type_id', read_type.id, read_type.code + ' ' + read_type.description)}}
-						{% endfor %}
-					</select>
-				</label>
-			</fieldset>
-			<br>
-			<br>
-			<fieldset>
-				<legend>Present Read</legend>
-				<fieldset>
-					<legend>Date</legend>
-					{{input_date('present', None)}}
-				</fieldset>
-				<br>
-				<label>Value {{input_text('present_value', 0)}}</label>
-				<br>
-				<label>Type
-					<select name="present_type_id">
-						{% for read_type in read_types %}
-							{{input_option('present_type_id', read_type.id, read_type.code + ' ' + read_type.description)}}
-						{% endfor %}
-					</select>
-				</label>
-			</fieldset>
-			<br>
-			<br>
-			<input type="submit" value="Add">
-		</fieldset>
-	</form>
+<!-- Layer Section -->
+<div class="layer-section">
+	<!-- Section Header -->
+	<div class="section-header">
+		<h2>Add New Register Read</h2>	
+	</div>
+	<!-- End Section Header -->
+	<!-- Section Content -->
+	<div class="section-content">
+		
+		    <form action="" method="post">
+        		<fieldset>
+        			<input type="hidden" name="supplier_bill_id" value="{{bill.id}}">
+        			<div class="section-data">
+            			<div class="standardForm">
+            			    <div class="row">
+            			        <div class="col-sm-4">
+            			            <label>MPAN</label>
+            			            {{input_text('mpan', '')}}
+            			        </div>
+            			        <div class="col-sm-4">
+            			            <label>Coefficient</label>
+            			            {{input_text('coefficient', '1')}}
+            			        </div>
+            			        <div class="col-sm-4">
+            			            <label>Meter Serial Number</label>
+            			            {{input_text('msn', '1')}}
+            			        </div>
+            			    </div>
+            			    <div class="row">
+            			        <div class="col-sm-4">
+            			            <label>Units</label>
+            			            {{input_text('units', 'kWh')}}
+            			        </div>
+            			        <div class="col-sm-4">
+            			            <label>TPR</label>
+                    				<select name="tpr_id">
+                    					{% for tpr in tprs %}
+                    						{{input_option('tpr_id', tpr.id, tpr.code)}}
+                    					{% endfor %}
+                    				</select>
+            			        </div>
+            			       
+            			    </div>
+            			</div>
+        			</div>
+        			<div class="section-data">
+        			    <fieldset>
+            				<legend>Previous Read</legend>
+            				<div class="row">
+                			    <div class="col-sm-4">
+                			        <div class="standardForm textWidthAuto">
+                    			        <fieldset>
+                        					<label>Date</label>
+                        					{{input_date('previous', None)}}
+                        				</fieldset>
+                    				</div>
+                			    </div>
+                			    <div class="col-sm-4">
+                			        <div class="standardForm">
+                			            <label>Value</label>
+                    			        {{input_text('previous_value', 0)}}
+                			        </div>
+                			    </div>
+                			    <div class="col-sm-4">
+                			        <div class="standardForm">
+                    			        <label>Type</label>
+                    			        <select name="previous_type_id">
+                    						{% for read_type in read_types %}
+                    							{{input_option('previous_type_id', read_type.id, read_type.code + ' ' + read_type.description)}}
+                    						{% endfor %}
+                    					</select>
+                    				</div>
+                			    </div>
+                			</div>            				
+            			</fieldset>
+        			</div>
+        			<div class="section-data">
+        			    <fieldset>
+            				<legend>Present Read</legend>
+            				<div class="row">
+                			    <div class="col-sm-4">
+                			        <div class="standardForm textWidthAuto">
+                    			        <fieldset>
+                        					<label>Date</label>
+                        					{{input_date('present', None)}}
+                        				</fieldset>
+                    				</div>
+                			    </div>
+                			    <div class="col-sm-4">
+                			        <div class="standardForm">
+                			            <label>Value</label>
+                			            {{input_text('present_value', 0)}}
+                			        </div>
+                			    </div>
+                			    <div class="col-sm-4">
+                			        <div class="standardForm">
+                    			        <label>Type
+                        					<select name="present_type_id">
+                        						{% for read_type in read_types %}
+                        							{{input_option('present_type_id', read_type.id, read_type.code + ' ' + read_type.description)}}
+                        						{% endfor %}
+                        					</select>
+                        				</label>
+                    				</div>
+                			    </div>
+                			</div>            				
+            			</fieldset>
+        			</div>
+        			<div class="section-data">
+            			<input type="submit" value="Add">
+            		</div>
+        		</fieldset>
+        	</form>
+		
+	</div>
+	<!-- End Section Content -->
+</div>
+<!-- End Layer Section -->
+
+
+	
 {% endblock %}

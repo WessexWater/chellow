@@ -27,11 +27,9 @@
 				<div class="section-data">
 					<div class="standardForm textWidthAuto">
 						<form method="post" action="">
-							
 							<fieldset>
-							
 								<input type="submit" name="delete" value="Delete">
-								<a href="{{context_path}}/hhdc_batches/{{batch.id}}/edit" class="btn">Cancel</a>
+								<input type="reset" value="Cancel" onClick="window.location='{{context_path}}/hhdc_batches/{{batch.id}}/edit'" />
 							</fieldset>
 						</form>
 						

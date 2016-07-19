@@ -9,7 +9,7 @@
 {% endblock %}
 
 {% block content %}
-	{% if request.values.confirm_delete %}
+	{% if request.method == 'GET' and request.values.confirm_delete %}
 		<!-- Layer Section -->
 		<div class="layer-section">
 			<!-- Section Header -->
@@ -110,8 +110,8 @@
 					<div class="standardForm">
 						<form action="">
 							<fieldset>
-								<input type="hidden" name="view" value="confirm_delete">
-								<input type="submit" value="Delete">
+								<input type="hidden" name="view" value="Delete">
+								<input type="submit" name="confirm_delete" value="Delete">
 							</fieldset>
 						</form>
 					</div>

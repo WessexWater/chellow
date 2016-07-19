@@ -197,7 +197,6 @@
 						<fieldset>
 							<input type="hidden" name="site_id" value="{{site.id}}">
 							<legend>Download TRIAD CSV</legend>
-							<br>
 							For financial year ending March
 							{{input_date(None, last_month_finish, resolution='year')}}
 							<input type="submit" value="Download">
@@ -209,7 +208,6 @@
 					<fieldset>
 						<legend>HH Data: 48 Column Format</legend>
 						<input type="hidden" name="site_id" value="{{site.id}}">
-						<br>
 						<select name="type">
 							<option value="used">Used</option>
 							<option value="imp_net">Imported</option>
@@ -254,5 +252,4 @@
 		</div>
     </div>
 </div>
->>>>>>> Site Module and master page redesign
 {% endblock %}

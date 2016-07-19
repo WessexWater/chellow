@@ -14,16 +14,18 @@
 <div class="layer-section">
 	<!-- Section Header -->
 	<div class="section-header">
-		<h2>Reports</h2>	
+	    <div class="ActionMenu">
+	        <div class="WidgetAction">
+	            <a href="{{context_path}}/downloads">Refresh</a>
+	        </div>
+	    </div>
+		<h2>Report Files</h2>	
 	</div>
 	<!-- End Section Header -->
 	<!-- Section Content -->
 	<div class="section-content">
 		<div class="section-data">
-			<p><a href="{{context_path}}/downloads">Refresh</a> the page.</p>
-
 			<table class="DataTable widthAuto">
-				<caption>Report Files</caption>
 				<thead>
 					<tr>
 						<th>Name</th>
@@ -59,24 +61,11 @@
 				</tbody>
 			</table>
 		</div>
-	</div>
-	<!-- End Section Content -->
-</div>
-<!-- End Layer Section -->
-
-<!-- Layer Section -->
-<div class="layer-section">
-	<!-- Section Header -->
-	<div class="section-header">
-		<h2>Delete All Files</h2>	
-	</div>
-	<!-- End Section Header -->
-	<!-- Section Content -->
-	<div class="section-content">
 		<div class="section-data">
 			<div class="standardForm">
 				<form method="post" action="">
 					<fieldset>
+    					<legend>Delete All Files</legend>
 						<input type="submit" name="delete" value="Delete">
 					</fieldset>
 				</form>
@@ -86,7 +75,5 @@
 	<!-- End Section Content -->
 </div>
 <!-- End Layer Section -->
-
-	<br>
 	
 {% endblock %}

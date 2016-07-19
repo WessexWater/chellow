@@ -23,163 +23,163 @@
 {% endblock %}
 
 {% block content %}
-					<!-- Layer Section -->
-                                        <div class="layer-section">
-                                            <!-- Section Header -->
-                                            <div class="section-header">
-                                                <h2>Show table</h2>
-                                            </div>
-                                            <!-- End Section Header -->
-                                            <!-- Section Content -->
-                                            <div class="section-content">
-                                                <div class="section-data">
-                                                    <div class="standardForm textWidthAuto inlineFormSubmit">
-                                                        <form action="">
-								<fieldset>
-									<input type="hidden" name="site_id" value="{{site.id}}">
-									For 12 months finishing at the end of {{input_date('finish', resolution='month')}}
-									<input type="submit" value="Show">
-								</fieldset>
-							</form>
-                                                    </div>
-                                                </div>
-                                                
-                                                <div class="section-data">
-                                                    <div class="noWrap">
-                                                        <table class="DataTable">
-								<caption>Months</caption>
-								<colgroup>
-								<colgroup class="gray" span="3">
-								<colgroup span="3">
-								<colgroup class="gray" span="3">
-								<colgroup span="3">
-								<colgroup class="gray" span="3">
-								<colgroup span="3">
-								<tfoot>
-									<tr>
-										<th>For all months</th>
-										<th>{{months[-1].imp_net.md|round(1)}}</th>
-										<th>{{months[-1].imp_net.md_date|hh_format}}</th>
-										<th>{{months[-1].imp_net.kwh|round(1)}}</th>
-										<th>{{months[-1].used.md|round(1)}}</th>
-										<th>{{months[-1].used.md_date|hh_format}}</th>
-										<th>{{months[-1].used.kwh|round(1)}}</th>
-										<th>{{months[-1].displaced.md|round(1)}}</th>
-										<th>{{months[-1].displaced.md_date|hh_format}}</th>
-										<th>{{months[-1].displaced.kwh|round(1)}}</th>
-										<th>{{months[-1].imp_gen.md|round(1)}}</th>
-										<th>{{months[-1].imp_gen.md_date|hh_format}}</th>
-										<th>{{months[-1].imp_gen.kwh|round(1)}}</th>
-										<th>{{months[-1].exp_net.md|round(1)}}</th>
-										<th>{{months[-1].exp_net.md_date|hh_format}}</th>
-										<th>{{months[-1].exp_net.kwh|round(1)}}</th>
-										<th>{{months[-1].exp_gen.md|round(1)}}</th>
-										<th>{{months[-1].exp_gen.md_date|hh_format}}</th>
-										<th>{{months[-1].exp_gen.kwh|round(1)}}</th>
-									</tr>
-								</tfoot>
-								<thead>
-									<tr>
-										<th rowspan="2">Month</th>
-										<th colspan="3">Imported</th>
-										<th colspan="3">Used</th>
-										<th colspan="3">Displaced</th>
-										<th colspan="3">Generated</th>
-										<th colspan="3">Exported</th>
-										<th colspan="3">Parasitic</th>
-									</tr>
-									<tr>
-										<th>MD / kW</th>
-										<th>Date of MD</th>
-										<th>kWh</th>
-										<th>MD / kW</th>
-										<th>Date of MD</th>
-										<th>kWh</th>
-										<th>MD / kW</th>
-										<th>Date of MD</th>
-										<th>kWh</th>
-										<th>MD / kW</th>
-										<th>Date of MD</th>
-										<th>kWh</th>
-										<th>MD / kW</th>
-										<th>Date of MD</th>
-										<th>kWh</th>
-										<th>MD / kW</th>
-										<th>Date of MD</th>
-										<th>kWh</th>
-										<th>Data quality</th>
-									</tr>
-								</thead>
-								<tbody>
-									{% for month in months[:-1] %}
-										<tr
-											{%- if month.has_site_snags -%}
-												class="error"
-											{%- endif -%}
-										>
-											<td>{{month.start_date|hh_format('date')}}</td>
-											<td>{{month.imp_net.md|round(1)}}</td>
-											<td>
-												{% if month.imp_net.md_date %}
-													{{month.imp_net.md_date|hh_format}}
-												{% endif %}
-											</td>
-											<td>{{month.imp_net.kwh|round(1)}}</td>
+<!-- Layer Section -->
+<div class="layer-section">
+    <!-- Section Header -->
+    <div class="section-header">
+        <h2>Show table</h2>
+    </div>
+    <!-- End Section Header -->
+    <!-- Section Content -->
+    <div class="section-content">
+        <div class="section-data">
+            <div class="standardForm textWidthAuto inlineFormSubmit">
+                <form action="">
+    				<fieldset>
+    					<input type="hidden" name="site_id" value="{{site.id}}">
+    					For 12 months finishing at the end of {{input_date('finish', resolution='month')}}
+    					<input type="submit" value="Show">
+    				</fieldset>
+    			</form>
+            </div>
+        </div>
+                                
+        <div class="section-data">
+            <div class="noWrap">
+                <table class="DataTable widthAuto">
+    				<caption>Months</caption>
+    				<colgroup>
+    				<colgroup class="gray" span="3">
+    				<colgroup span="3">
+    				<colgroup class="gray" span="3">
+    				<colgroup span="3">
+    				<colgroup class="gray" span="3">
+    				<colgroup span="3">
+    				<tfoot>
+    					<tr>
+    						<th>For all months</th>
+    						<th>{{months[-1].imp_net.md|round(1)}}</th>
+    						<th>{{months[-1].imp_net.md_date|hh_format}}</th>
+    						<th>{{months[-1].imp_net.kwh|round(1)}}</th>
+    						<th>{{months[-1].used.md|round(1)}}</th>
+    						<th>{{months[-1].used.md_date|hh_format}}</th>
+    						<th>{{months[-1].used.kwh|round(1)}}</th>
+    						<th>{{months[-1].displaced.md|round(1)}}</th>
+    						<th>{{months[-1].displaced.md_date|hh_format}}</th>
+    						<th>{{months[-1].displaced.kwh|round(1)}}</th>
+    						<th>{{months[-1].imp_gen.md|round(1)}}</th>
+    						<th>{{months[-1].imp_gen.md_date|hh_format}}</th>
+    						<th>{{months[-1].imp_gen.kwh|round(1)}}</th>
+    						<th>{{months[-1].exp_net.md|round(1)}}</th>
+    						<th>{{months[-1].exp_net.md_date|hh_format}}</th>
+    						<th>{{months[-1].exp_net.kwh|round(1)}}</th>
+    						<th>{{months[-1].exp_gen.md|round(1)}}</th>
+    						<th>{{months[-1].exp_gen.md_date|hh_format}}</th>
+    						<th>{{months[-1].exp_gen.kwh|round(1)}}</th>
+    					</tr>
+    				</tfoot>
+    				<thead>
+    					<tr>
+    						<th rowspan="2">Month</th>
+    						<th colspan="3">Imported</th>
+    						<th colspan="3">Used</th>
+    						<th colspan="3">Displaced</th>
+    						<th colspan="3">Generated</th>
+    						<th colspan="3">Exported</th>
+    						<th colspan="3">Parasitic</th>
+    					</tr>
+    					<tr>
+    						<th>MD / kW</th>
+    						<th>Date of MD</th>
+    						<th>kWh</th>
+    						<th>MD / kW</th>
+    						<th>Date of MD</th>
+    						<th>kWh</th>
+    						<th>MD / kW</th>
+    						<th>Date of MD</th>
+    						<th>kWh</th>
+    						<th>MD / kW</th>
+    						<th>Date of MD</th>
+    						<th>kWh</th>
+    						<th>MD / kW</th>
+    						<th>Date of MD</th>
+    						<th>kWh</th>
+    						<th>MD / kW</th>
+    						<th>Date of MD</th>
+    						<th>kWh</th>
+    						<th>Data quality</th>
+    					</tr>
+    				</thead>
+    				<tbody>
+    					{% for month in months[:-1] %}
+    						<tr
+    							{%- if month.has_site_snags -%}
+    								class="error"
+    							{%- endif -%}
+    						>
+    							<td>{{month.start_date|hh_format('date')}}</td>
+    							<td>{{month.imp_net.md|round(1)}}</td>
+    							<td>
+    								{% if month.imp_net.md_date %}
+    									{{month.imp_net.md_date|hh_format}}
+    								{% endif %}
+    							</td>
+    							<td>{{month.imp_net.kwh|round(1)}}</td>
 
-											<td>{{month.used.md|round(1)}}</td>
-											<td>
-												{% if month.used.md_date %}
-													{{month.used.md_date|hh_format}}
-												{% endif %}
-											</td>
-											<td>{{month.used.kwh|round(1)}}</td>
+    							<td>{{month.used.md|round(1)}}</td>
+    							<td>
+    								{% if month.used.md_date %}
+    									{{month.used.md_date|hh_format}}
+    								{% endif %}
+    							</td>
+    							<td>{{month.used.kwh|round(1)}}</td>
 
-											<td>{{month.displaced.md|round(1)}}</td>
-											<td>
-												{% if month.displaced.md_date %}
-													{{month.displaced.md_date|hh_format}}
-												{% endif %}
-											</td>
-											<td>{{month.displaced.kwh|round(1)}}</td>
+    							<td>{{month.displaced.md|round(1)}}</td>
+    							<td>
+    								{% if month.displaced.md_date %}
+    									{{month.displaced.md_date|hh_format}}
+    								{% endif %}
+    							</td>
+    							<td>{{month.displaced.kwh|round(1)}}</td>
 
-											<td>{{month.imp_gen.md|round(1)}}</td>
-											<td>
-												{% if month.imp_gen.md_date %}
-													{{month.imp_gen.md_date|hh_format}}
-												{% endif %}
-											</td>
-											<td>{{month.imp_gen.kwh|round(1)}}</td>
+    							<td>{{month.imp_gen.md|round(1)}}</td>
+    							<td>
+    								{% if month.imp_gen.md_date %}
+    									{{month.imp_gen.md_date|hh_format}}
+    								{% endif %}
+    							</td>
+    							<td>{{month.imp_gen.kwh|round(1)}}</td>
 
-											<td>{{month.exp_net.md|round(1)}}</td>
-											<td>
-												{% if month.exp_net.md_date %}
-													{{month.exp_net.md_date|hh_format}}
-												{% endif %}
-											</td>
-											<td>{{month.exp_net.kwh|round(1)}}</td>
+    							<td>{{month.exp_net.md|round(1)}}</td>
+    							<td>
+    								{% if month.exp_net.md_date %}
+    									{{month.exp_net.md_date|hh_format}}
+    								{% endif %}
+    							</td>
+    							<td>{{month.exp_net.kwh|round(1)}}</td>
 
-											<td>{{month.exp_gen.md|round(1)}}</td>
-											<td>
-												{% if month.exp_gen.md_date %}
-													{{month.exp_gen.md_date|hh_format}}
-												{% endif %}
-											</td>
-											<td>{{month.exp_gen.kwh|round(1)}}</td>
+    							<td>{{month.exp_gen.md|round(1)}}</td>
+    							<td>
+    								{% if month.exp_gen.md_date %}
+    									{{month.exp_gen.md_date|hh_format}}
+    								{% endif %}
+    							</td>
+    							<td>{{month.exp_gen.kwh|round(1)}}</td>
 
-											<td>
-												{% if month.has_site_snags %}
-													See <a href="{{context_path}}/sites/{{site.id}}/gen_graph?months=1&amp;finish_year={{month.start_date.year}}&amp;finish_month={{month.start_date.month}}">generation graph</a> for errors.
-												{% endif %}
-											</td>
-										</tr>
-									{% endfor %}
-								</tbody>
-							</table>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <!-- End Section Content -->
-                                        </div>
-                                        <!-- End Layer Section -->
+    							<td>
+    								{% if month.has_site_snags %}
+    									See <a href="{{context_path}}/sites/{{site.id}}/gen_graph?months=1&amp;finish_year={{month.start_date.year}}&amp;finish_month={{month.start_date.month}}">generation graph</a> for errors.
+    								{% endif %}
+    							</td>
+    						</tr>
+    					{% endfor %}
+    				</tbody>
+    			</table>
+            </div>
+        </div>
+    </div>
+    <!-- End Section Content -->
+</div>
+<!-- End Layer Section -->
 	
 {% endblock %}

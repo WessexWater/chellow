@@ -15,11 +15,11 @@
 	&raquo; 
 	<a href="{{context_path}}/channels/{{hh.channel.id}}">Channel
 		{%- if hh.channel.imp_related -%}
-			Import
+			&nbspImport
 		{%- else -%}
-			Export
+			&nbspExport
 		{%- endif -%}
-		{{hh.channel.channel_type}}</a> &raquo;
+		&nbsp{{hh.channel.channel_type}}</a> &raquo;
 	HH {{hh.start_date|hh_format}} Edit
 {% endblock %}
 

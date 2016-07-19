@@ -21,7 +21,7 @@
 	<!-- Section Content -->
 	<div class="section-content">
 		<div class="section-data">
-			<div class="standardForm textWidthAuto">
+			<div class="standardForm textWidthAuto inlineFormSubmit">
 				<form action="{{context_path}}/reports/233">
 					<fieldset>
 						<input type="hidden" name="hhdc_contract_id" value="{{contract.id}}">
@@ -50,7 +50,7 @@
 	<!-- Section Content -->
 	<div class="section-content">
 		<div class="section-data">
-			<div class="standardForm textWidthAuto">
+			<div class="standardForm textWidthAuto inlineFormSubmit">
 				<form action="">
 					<fieldset>
 						<input type="hidden" name="hhdc_contract_id" value="{{contract.id}}">
@@ -59,87 +59,89 @@
 							hidden.
 						</label>
 						<label>
-							{{input_checkbox('is_ignored', False)}} Include ignored snags 
+							Include ignored snags {{input_checkbox('is_ignored', False)}} 
 						</label>
 						<input type="submit" value="Show">
 					</fieldset>
 				</form>
 			</div>
-			<p>
-				There are {{total_snags}} snag(s) older than
-				{{request.values.days_hidden}} days
-				{%- if not is_ignored %}
-					that aren't ignored
-				{%- endif -%}.
-			</p>
-			<table class="DataTable widthAuto">
-				<caption>Snags (truncated after 200)</caption>
-				<thead>
-					<tr>
-						<th>View</th>
-						<th>Import MPAN Core</th>
-						<th>Export MPAN Core</th>
-						<th>Sites</th>
-						<th>Snag Description</th>
-						<th>Channels</th>
-						<th>Duration</th>
-					</tr>
-				</thead>
-				<tbody>
-					{% for snag_group in snag_groups %}
-						<tr>
-							<td>
-								<ul>
-									{% for snag in snag_group.snags %}
-										<li>
-											<a href="{{context_path}}/channel_snags/{{snag.id}}">view</a>
-											[<a href="{{context_path}}/channel_snags/{{snag.id}}/edit">edit</a>]
-											{% if snag.is_ignored %} ignored{% endif %}
-										</li>
-									{% endfor %}
-								</ul>
-							</td>
-							<td>
-								{% if snag_group.era.imp_mpan_core %}
-									{{snag_group.era.imp_mpan_core}}
-								{% endif %}
-							</td>
-							<td>
-								{% if snag_group.era.exp_mpan_core %}
-									{{snag_group.era.exp_mpan_core}}
-								{% endif %}
-							</td>
-							<td>
-								<ul>
-									{% for site in snag_group.sites %}
-										<li>{{site.code}} {{site.name}}</li>
-									{% endfor %}
-								</ul>
-							</td>
-							<td>{{snag_group.description}}</td>
-							<td>
-								<ul>
-									{% for snag in snag_group.snags %}
-										<li>
-											{% if snag.channel.imp_related %}
-												Import
-											{% else %}
-												Export
-											{% endif %}
-											{{snag.channel.channel_type}}
-										</li>
-									{% endfor %}
-								</ul>
-							</td>
-							<td>
-								{{snag_group.start_date|hh_format}} to
-								{{snag_group.finish_date|hh_format}}
-							</td>
-						</tr>
-					{% endfor %}
-				</tbody>
-			</table>
 		</div>
+		<div class="section-data">
+			    <p>
+    				There are {{total_snags}} snag(s) older than
+    				{{request.values.days_hidden}} days
+    				{%- if not is_ignored %}
+    					that aren't ignored
+    				{%- endif -%}.
+    			</p>
+    			<table class="DataTable widthAuto">
+    				<caption>Snags (truncated after 200)</caption>
+    				<thead>
+    					<tr>
+    						<th>View</th>
+    						<th>Import MPAN Core</th>
+    						<th>Export MPAN Core</th>
+    						<th>Sites</th>
+    						<th>Snag Description</th>
+    						<th>Channels</th>
+    						<th>Duration</th>
+    					</tr>
+    				</thead>
+    				<tbody>
+    					{% for snag_group in snag_groups %}
+    						<tr>
+    							<td>
+    								<ul>
+    									{% for snag in snag_group.snags %}
+    										<li>
+    											<a href="{{context_path}}/channel_snags/{{snag.id}}">view</a>
+    											[<a href="{{context_path}}/channel_snags/{{snag.id}}/edit">edit</a>]
+    											{% if snag.is_ignored %} ignored{% endif %}
+    										</li>
+    									{% endfor %}
+    								</ul>
+    							</td>
+    							<td>
+    								{% if snag_group.era.imp_mpan_core %}
+    									{{snag_group.era.imp_mpan_core}}
+    								{% endif %}
+    							</td>
+    							<td>
+    								{% if snag_group.era.exp_mpan_core %}
+    									{{snag_group.era.exp_mpan_core}}
+    								{% endif %}
+    							</td>
+    							<td>
+    								<ul>
+    									{% for site in snag_group.sites %}
+    										<li>{{site.code}} {{site.name}}</li>
+    									{% endfor %}
+    								</ul>
+    							</td>
+    							<td>{{snag_group.description}}</td>
+    							<td>
+    								<ul>
+    									{% for snag in snag_group.snags %}
+    										<li>
+    											{% if snag.channel.imp_related %}
+    												Import
+    											{% else %}
+    												Export
+    											{% endif %}
+    											{{snag.channel.channel_type}}
+    										</li>
+    									{% endfor %}
+    								</ul>
+    							</td>
+    							<td>
+    								{{snag_group.start_date|hh_format}} to
+    								{{snag_group.finish_date|hh_format}}
+    							</td>
+    						</tr>
+    					{% endfor %}
+    				</tbody>
+    			</table>
+			</div>
 	</div>
 	<!-- End Section Content -->
 </div>

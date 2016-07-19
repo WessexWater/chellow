@@ -264,8 +264,7 @@ def style_get():
 
 @app.route('/bootstrap', methods=['GET'])
 def bootstrap_get():
-    sess = db.session()
-    props = Contract.get_non_core_by_name(sess, 'configuration'). \
+    props = Contract.get_non_core_by_name(g.sess, 'configuration'). \
         make_properties()
     response = make_response(
         render_template(
@@ -276,8 +275,7 @@ def bootstrap_get():
 
 @app.route('/wessexcss', methods=['GET'])
 def wessexcss_get():
-    sess = db.session()
-    props = Contract.get_non_core_by_name(sess, 'configuration'). \
+    props = Contract.get_non_core_by_name(g.sess, 'configuration'). \
         make_properties()
     response = make_response(
         render_template(
@@ -287,8 +285,7 @@ def wessexcss_get():
 
 @app.route('/bootstrapjs', methods=['GET'])
 def bootstrapjs_get():
-    sess = db.session()
-    props = Contract.get_non_core_by_name(sess, 'configuration'). \
+    props = Contract.get_non_core_by_name(g.sess, 'configuration'). \
         make_properties()
     response = make_response(
         render_template(
@@ -298,8 +295,7 @@ def bootstrapjs_get():
 
 @app.route('/gridsjs', methods=['GET'])
 def gridjs_get():
-    sess = db.session()
-    props = Contract.get_non_core_by_name(sess, 'configuration'). \
+    props = Contract.get_non_core_by_name(g.sess, 'configuration'). \
         make_properties()
     response = make_response(
         render_template(
@@ -309,8 +305,7 @@ def gridjs_get():
 
 @app.route('/wessexjs', methods=['GET'])
 def wessexjs_get():
-    sess = db.session()
-    props = Contract.get_non_core_by_name(sess, 'configuration'). \
+    props = Contract.get_non_core_by_name(g.sess, 'configuration'). \
         make_properties()
     response = make_response(
         render_template(
