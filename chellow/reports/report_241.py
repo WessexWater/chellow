@@ -5,17 +5,14 @@ import traceback
 from sqlalchemy.sql.expression import true
 from chellow.utils import (
     HH, hh_after, hh_format, req_int, req_bool, send_response)
-from chellow.models import Session, Supply, Site, SiteEra
+from chellow.models import Supply, Site, SiteEra
 import chellow.computer
 
 
 def content(
         start_year, start_month, start_day, finish_year, finish_month,
-        finish_day, is_import, supply_id):
-    sess = None
+        finish_day, is_import, supply_id, sess):
     try:
-        sess = Session()
-
         start_date = Datetime(
             start_year, start_month, start_day, tzinfo=pytz.utc)
         finish_date = Datetime(
@@ -84,9 +81,6 @@ def content(
             day_start += relativedelta(days=1)
     except:
         yield traceback.format_exc()
-    finally:
-        if sess is not None:
-            sess.close()
 
 
 def do_get(sess):
@@ -104,5 +98,5 @@ def do_get(sess):
     return send_response(
         content, args=(
             start_year, start_month, start_day, finish_year, finish_month,
-            finish_day, is_import, supply_id),
+            finish_day, is_import, supply_id, sess),
         file_name='daily_supplier_virtual_bill.csv')

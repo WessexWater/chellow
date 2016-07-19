@@ -4,11 +4,11 @@ from sqlalchemy.sql.expression import null, true
 from datetime import datetime
 import pytz
 from chellow.utils import send_response, prev_hh, hh_after, hh_before, req_int
-from chellow.models import Supply, Source, Era, Session, Site, SiteEra
+from chellow.models import Supply, Source, Era, Site, SiteEra
 from flask import request
 
 
-def content(year, supply_id):
+def content(year, supply_id, sess):
     yield "MPAN Core,Site Id,Site Name,Date,Event,"
 
     year_start = datetime(year, 4, 1, tzinfo=pytz.utc)
@@ -27,9 +27,7 @@ def content(year, supply_id):
         for mpan_core in mpan_cores:
             events.append({'date': date, 'code': code, 'mpan-core': mpan_core})
 
-    sess = None
     try:
-        sess = Session()
         if supply_id is None:
             supplies = sess.query(Supply).join(Source).join(Era).filter(
                 Source.code.in_(('net', 'gen-net', 'gen')),
@@ -114,13 +112,11 @@ def content(year, supply_id):
                 yield ' '
     except:
         yield traceback.format_exc()
-    finally:
-        sess.close()
 
 
 def do_get(sess):
     year = req_int('year')
     supply_id = req_int('supply_id') if 'supply_id' in request.values else None
     return send_response(
-        content, args=(year, supply_id), status=200, mimetype='text/csv',
+        content, args=(year, supply_id, sess), status=200, mimetype='text/csv',
         file_name='output.csv')

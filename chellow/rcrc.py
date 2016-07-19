@@ -167,15 +167,12 @@ class RcrcImporter(threading.Thread):
                             self.log(msg)
                 except:
                     self.log("Outer problem " + traceback.format_exc())
-                    if sess is not None:
-                        sess.rollback()
+                    sess.rollback()
                 finally:
-                    try:
-                        if sess is not None:
-                            sess.close()
-                    finally:
-                        self.lock.release()
-                        self.log("Finished checking RCRC rates.")
+                    self.lock.release()
+                    self.log("Finished checking RCRC rates.")
+                    if sess is not None:
+                        sess.close()
 
             self.going.wait(30 * 60)
             self.going.clear()

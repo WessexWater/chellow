@@ -20,11 +20,10 @@ import csv
 
 def content(batch_id, bill_id, user):
     caches = {}
-    sess = tmp_file = None
+    tmp_file = sess = None
     forecast_date = Datetime.max.replace(tzinfo=pytz.utc)
     try:
         sess = Session()
-
         running_name, finished_name = chellow.dloads.make_names(
             'bill_check.csv', user)
         tmp_file = open(running_name, mode='w', newline='')
@@ -290,14 +289,10 @@ def content(batch_id, bill_id, user):
         sys.stderr.write(msg + '\n')
         tmp_file.write("Problem " + msg)
     finally:
-        try:
-            if sess is not None:
-                sess.close()
-        except:
-            tmp_file.write("\nProblem closing session.")
-        finally:
-            tmp_file.close()
-            os.rename(running_name, finished_name)
+        if sess is not None:
+            sess.close()
+        tmp_file.close()
+        os.rename(running_name, finished_name)
 
 
 def do_get(sess):

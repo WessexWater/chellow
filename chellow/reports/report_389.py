@@ -2,17 +2,14 @@ from datetime import datetime as Datetime
 from dateutil.relativedelta import relativedelta
 import pytz
 import traceback
-from chellow.models import db, Site
+from chellow.models import Site
 from chellow.utils import HH, hh_format, req_int, send_response
 import chellow.computer
 
 
-def content(end_year, end_month, months, site_id):
+def content(end_year, end_month, months, site_id, sess):
     caches = {}
-    sess = None
     try:
-        sess = db.session()
-
         finish_date = Datetime(end_year, end_month, 1, tzinfo=pytz.utc) + \
             relativedelta(months=1) - HH
 
@@ -182,9 +179,6 @@ def content(end_year, end_month, months, site_id):
 
     except:
         yield traceback.format_exc()
-    finally:
-        if sess is not None:
-            sess.close()
 
 
 def do_get(sess):
@@ -193,5 +187,5 @@ def do_get(sess):
     months = req_int('months')
     site_id = req_int('site_id')
     return send_response(
-        content, args=(end_year, end_month, months, site_id),
+        content, args=(end_year, end_month, months, site_id, sess),
         file_name='displaced.csv')

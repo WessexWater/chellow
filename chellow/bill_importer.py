@@ -78,9 +78,9 @@ class BillImport(threading.Thread):
     def run(self):
         sess = None
         try:
+            sess = Session()
             self._log(
                 "Starting to parse the file with '" + self.parser_name + "'.")
-            sess = Session()
             set_read_write(sess)
             batch = Batch.get_by_id(sess, self.batch_id)
             raw_bills = self.parser.make_raw_bills()
@@ -89,43 +89,40 @@ class BillImport(threading.Thread):
                 "insert the raw bills.")
             for self.bill_num, raw_bill in enumerate(raw_bills):
                 try:
-                    sess.begin_nested()
-                    sess.execute(
-                        "set transaction isolation level serializable read "
-                        "write")
-                    bill_type = BillType.get_by_code(
-                        sess, raw_bill['bill_type_code'])
-                    bill = batch.insert_bill(
-                        sess, raw_bill['account'], raw_bill['reference'],
-                        raw_bill['issue_date'], raw_bill['start_date'],
-                        raw_bill['finish_date'], raw_bill['kwh'],
-                        raw_bill['net'], raw_bill['vat'], raw_bill['gross'],
-                        bill_type, raw_bill['breakdown'])
-                    sess.flush()
-                    for raw_read in raw_bill['reads']:
-                        tpr_code = raw_read['tpr_code']
-                        if tpr_code is None:
-                            tpr = None
-                        else:
-                            tpr = Tpr.get_by_code(sess, tpr_code)
+                    with sess.begin_nested():
+                        sess.execute(
+                            "set transaction isolation level serializable "
+                            "read write")
+                        bill_type = BillType.get_by_code(
+                            sess, raw_bill['bill_type_code'])
+                        bill = batch.insert_bill(
+                            sess, raw_bill['account'], raw_bill['reference'],
+                            raw_bill['issue_date'], raw_bill['start_date'],
+                            raw_bill['finish_date'], raw_bill['kwh'],
+                            raw_bill['net'], raw_bill['vat'],
+                            raw_bill['gross'],
+                            bill_type, raw_bill['breakdown'])
+                        sess.flush()
+                        for raw_read in raw_bill['reads']:
+                            tpr_code = raw_read['tpr_code']
+                            if tpr_code is None:
+                                tpr = None
+                            else:
+                                tpr = Tpr.get_by_code(sess, tpr_code)
 
-                        prev_type = ReadType.get_by_code(
-                            sess, raw_read['prev_type_code'])
-                        pres_type = ReadType.get_by_code(
-                            sess, raw_read['pres_type_code'])
-                        read = bill.insert_read(
-                            sess, tpr, raw_read['coefficient'],
-                            raw_read['units'], raw_read['msn'],
-                            raw_read['mpan'], raw_read['prev_date'],
-                            raw_read['prev_value'], prev_type,
-                            raw_read['pres_date'], raw_read['pres_value'],
-                            pres_type)
-                        sess.expunge(read)
-                    sess.commit()
-                    self.successful_bills.append(raw_bill)
-                    sess.expunge(bill)
+                            prev_type = ReadType.get_by_code(
+                                sess, raw_read['prev_type_code'])
+                            pres_type = ReadType.get_by_code(
+                                sess, raw_read['pres_type_code'])
+                            bill.insert_read(
+                                sess, tpr, raw_read['coefficient'],
+                                raw_read['units'], raw_read['msn'],
+                                raw_read['mpan'], raw_read['prev_date'],
+                                raw_read['prev_value'], prev_type,
+                                raw_read['pres_date'], raw_read['pres_value'],
+                                pres_type)
+                        self.successful_bills.append(raw_bill)
                 except BadRequest as e:
-                    sess.rollback()
                     raw_bill['error'] = str(e.description)
                     self.failed_bills.append(raw_bill)
 

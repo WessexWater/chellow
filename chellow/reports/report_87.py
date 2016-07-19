@@ -4,19 +4,16 @@ import pytz
 import traceback
 from sqlalchemy import or_
 from sqlalchemy.sql.expression import null, true
-from chellow.models import db, Contract, Era, Site, SiteEra
+from chellow.models import Contract, Era, Site, SiteEra
 from chellow.utils import (
     HH, hh_after, hh_format, req_date, req_int, send_response)
 from chellow.computer import contract_func, SupplySource
 import chellow.computer
 
 
-def content(start_date, finish_date, contract_id):
+def content(start_date, finish_date, contract_id, sess):
     caches = {}
-    sess = None
     try:
-        sess = db.session()
-
         contract = Contract.get_supplier_by_id(sess, contract_id)
         forecast_date = chellow.computer.forecast_date()
 
@@ -98,9 +95,6 @@ def content(start_date, finish_date, contract_id):
             month_finish = month_start + relativedelta(months=1) - HH
     except:
         yield traceback.format_exc()
-    finally:
-        if sess is not None:
-            sess.close()
 
 
 def do_get(sess):
@@ -109,5 +103,5 @@ def do_get(sess):
     contract_id = req_int('supplier_contract_id')
 
     return send_response(
-        content, args=(start_date, finish_date, contract_id),
+        content, args=(start_date, finish_date, contract_id, sess),
         file_name='virtual_bills.csv')

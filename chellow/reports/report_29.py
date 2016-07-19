@@ -3,13 +3,11 @@ import pytz
 from dateutil.relativedelta import relativedelta
 import traceback
 from chellow.utils import send_response, req_int, HH, req_str
-from chellow.models import Site, Session
+from chellow.models import Site
 
 
-def content(start_date, finish_date, site_id, typ):
-    sess = None
+def content(start_date, finish_date, site_id, typ, sess):
     try:
-        sess = Session()
         site = Site.get_by_id(sess, site_id)
         yield ','.join(
             ('Site Code', 'Type', 'Date') + tuple(map(str, range(1, 49))))
@@ -22,9 +20,6 @@ def content(start_date, finish_date, site_id, typ):
                 yield "," + str(hh[typ])
     except:
         yield traceback.format_exc()
-    finally:
-        if sess is not None:
-            sess.close()
 
 
 def do_get(sess):
@@ -40,5 +35,5 @@ def do_get(sess):
     typ = req_str('type')
     site_id = req_int('site_id')
     return send_response(
-        content, args=(start_date, finish_date, site_id, typ),
+        content, args=(start_date, finish_date, site_id, typ, sess),
         file_name=file_name)

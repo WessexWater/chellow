@@ -3,7 +3,7 @@ from sqlalchemy import or_
 from sqlalchemy.sql.expression import null, true
 import pytz
 import traceback
-from chellow.models import Session, Era, Supply, Source, Pc, Site, SiteEra
+from chellow.models import Era, Supply, Source, Pc, Site, SiteEra
 import chellow.duos
 import chellow.triad
 import chellow.computer
@@ -11,12 +11,9 @@ from chellow.utils import HH, hh_format, req_int, send_response
 from flask import request
 
 
-def content(year, supply_id):
+def content(year, supply_id, sess):
     caches = {}
-    sess = None
     try:
-        sess = Session()
-
         year_finish = Datetime(year, 4, 1, tzinfo=pytz.utc) - HH
 
         def triad_csv(supply_source):
@@ -103,13 +100,10 @@ def content(year, supply_id):
             yield '\n'
     except:
         yield traceback.format_exc()
-    finally:
-        if sess is not None:
-            sess.close()
 
 
 def do_get(sess):
     year = req_int('year')
     supply_id = req_int('supply_id') if 'supply_id' in request.values else None
     return send_response(
-        content, args=(year, supply_id), file_name='supplies_triad.csv')
+        content, args=(year, supply_id, sess), file_name='supplies_triad.csv')

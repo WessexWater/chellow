@@ -4,18 +4,14 @@ import pytz
 from sqlalchemy import or_
 from sqlalchemy.sql.expression import null
 import traceback
-from chellow.models import (
-    Session, Contract, Site, SiteEra, Era, Supply, Source)
+from chellow.models import Contract, Site, SiteEra, Era, Supply, Source
 from chellow.utils import HH, hh_format, req_int, send_response
 import chellow.computer
 
 
-def content(contract_id, end_year, end_month, months):
+def content(contract_id, end_year, end_month, months, sess):
     caches = {}
-    sess = None
     try:
-        sess = Session()
-
         yield ','.join(
             (
                 'Site Code', 'Site Name', 'Associated Site Ids', 'From', 'To',
@@ -193,9 +189,6 @@ def content(contract_id, end_year, end_month, months):
                 month_finish = month_start + relativedelta(months=1) - HH
     except:
         yield traceback.format_exc()
-    finally:
-        if sess is not None:
-            sess.close()
 
 
 def do_get(sess):
@@ -204,5 +197,5 @@ def do_get(sess):
     months = req_int('months')
     contract_id = req_int('supplier_contract_id')
     return send_response(
-        content, args=(contract_id, end_year, end_month, months),
+        content, args=(contract_id, end_year, end_month, months, sess),
         file_name='displaced.csv')

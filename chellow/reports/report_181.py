@@ -4,19 +4,16 @@ from sqlalchemy import or_
 from sqlalchemy.sql.expression import null
 import traceback
 from chellow.utils import send_response, HH, hh_format, req_int
-from chellow.models import Site, SiteEra, Era, Supply, Session, Source
+from chellow.models import Site, SiteEra, Era, Supply, Source
 import chellow.computer
 import chellow.duos
 import chellow.triad
 from flask import request
 
 
-def content(year, site_id):
-    sess = None
+def content(year, site_id, sess):
     caches = {}
     try:
-        sess = Session()
-
         march_finish = datetime.datetime(year, 4, 1, tzinfo=pytz.utc) - HH
         march_start = datetime.datetime(year, 3, 1, tzinfo=pytz.utc)
 
@@ -94,12 +91,10 @@ def content(year, site_id):
                 yield '\n'
     except:
         yield traceback.format_exc()
-    finally:
-        if sess is not None:
-            sess.close()
 
 
 def do_get(sess):
     site_id = req_int('site_id') if 'site_id' in request.values else None
     year = req_int('year')
-    return send_response(content, args=(year, site_id), file_name='output.csv')
+    return send_response(
+        content, args=(year, site_id, sess), file_name='output.csv')

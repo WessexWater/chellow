@@ -1,8 +1,7 @@
 from chellow import app
-from flask.ext.sqlalchemy import SQLAlchemy
 from sqlalchemy import (
     ForeignKey, Column, Integer, String, Boolean, DateTime, Text, Numeric, or_,
-    not_, and_, Enum, null)
+    not_, and_, Enum, null, create_engine)
 from sqlalchemy.orm import sessionmaker, relationship
 from sqlalchemy.schema import UniqueConstraint
 import datetime
@@ -12,6 +11,7 @@ import math
 from sqlalchemy.sql.expression import true
 from sqlalchemy.exc import ProgrammingError, SQLAlchemyError
 from sqlalchemy.orm.exc import NoResultFound
+from sqlalchemy.ext.declarative import declarative_base
 import operator
 from chellow.utils import (
     hh_after, HH, parse_mpan_core, hh_before, next_hh, prev_hh, hh_format)
@@ -24,12 +24,17 @@ import sys
 from hashlib import pbkdf2_hmac
 from binascii import hexlify, unhexlify
 
-db = SQLAlchemy(app)
-
+config = app.config
+db_url = ''.join(
+    [
+        "postgresql+pg8000://", config['PGUSER'], ":", config['PGPASSWORD'],
+        "@", config['PGHOST'], ":", config['PGPORT'], "/",
+        config['PGDATABASE']])
+engine = create_engine(db_url)
+Session = sessionmaker(bind=engine)
+Base = declarative_base()
 
 CHANNEL_TYPES = ('ACTIVE', 'REACTIVE_IMP', 'REACTIVE_EXP')
-
-Session = sessionmaker(bind=db.engine)
 
 
 def log_message(msg):
@@ -43,17 +48,21 @@ def set_read_write(sess):
 
 @lru_cache()
 def get_non_core_contract_id(name):
-    sess = Session()
-    cont = sess.query(Contract).join(MarketRole).filter(
-        MarketRole.code == 'Z', Contract.name == name).one()
-    sess.close()
-    return cont.id
+    sess = None
+    try:
+        sess = Session()
+        cont = sess.query(Contract).join(MarketRole).filter(
+            MarketRole.code == 'Z', Contract.name == name).one()
+        return cont.id
+    finally:
+        if sess is not None:
+            sess.close()
 
 
 class PersistentClass():
     @classmethod
-    def get_by_id(cls, session, oid):
-        obj = session.query(cls).get(oid)
+    def get_by_id(cls, sess, oid):
+        obj = sess.query(cls).get(oid)
         if obj is None:
             raise NotFound(
                 "There isn't a " + str(cls.__name__) + " with the id " +
@@ -64,7 +73,7 @@ class PersistentClass():
         return type(other) is type(self) and other.id == self.id
 
 
-class Snag(db.Model, PersistentClass):
+class Snag(Base, PersistentClass):
     NEGATIVE = "Negative values"
     ESTIMATED = "Estimated"
     MISSING = "Missing"
@@ -171,7 +180,7 @@ class Snag(db.Model, PersistentClass):
         self.finish_date = finish_date
 
 
-class GspGroup(db.Model, PersistentClass):
+class GspGroup(Base, PersistentClass):
     @staticmethod
     def get_by_code(sess, code):
         code = code.strip()
@@ -188,7 +197,7 @@ class GspGroup(db.Model, PersistentClass):
     supplies = relationship('Supply', backref='gsp_group')
 
 
-class VoltageLevel(db.Model, PersistentClass):
+class VoltageLevel(Base, PersistentClass):
 
     __tablename__ = "voltage_level"
     id = Column(Integer, primary_key=True)
@@ -209,7 +218,7 @@ class VoltageLevel(db.Model, PersistentClass):
         return vl
 
 
-class GeneratorType(db.Model, PersistentClass):
+class GeneratorType(Base, PersistentClass):
     @staticmethod
     def get_by_code(sess, code):
         gen_type = sess.query(GeneratorType).filter_by(code=code).first()
@@ -229,7 +238,7 @@ class GeneratorType(db.Model, PersistentClass):
         self.description = description
 
 
-class Source(db.Model, PersistentClass):
+class Source(Base, PersistentClass):
     @staticmethod
     def get_by_code(sess, code):
         source = sess.query(Source).filter_by(code=code.strip()).first()
@@ -249,7 +258,7 @@ class Source(db.Model, PersistentClass):
         self.name = name
 
 
-class ReadType(db.Model, PersistentClass):
+class ReadType(Base, PersistentClass):
 
     @staticmethod
     def get_by_code(sess, code):
@@ -270,7 +279,7 @@ class ReadType(db.Model, PersistentClass):
         self.description = description
 
 
-class Cop(db.Model, PersistentClass):
+class Cop(Base, PersistentClass):
 
     @staticmethod
     def get_by_code(sess, code):
@@ -292,7 +301,7 @@ class Cop(db.Model, PersistentClass):
         self.description = description
 
 
-class RegisterRead(db.Model, PersistentClass):
+class RegisterRead(Base, PersistentClass):
     UNITS_INT = {0: 'kWh', 1: 'kVArh', 2: 'kW', 3: 'kVA'}
     UNITS_STR = {'kWh': 0, 'kVArh': 1, 'kW': 2, 'kVA': 3}
 
@@ -363,7 +372,7 @@ class RegisterRead(db.Model, PersistentClass):
         return self.UNITS_INT[self.units]
 
 
-class Bill(db.Model, PersistentClass):
+class Bill(Base, PersistentClass):
 
     __tablename__ = 'bill'
     id = Column(Integer, primary_key=True)
@@ -442,7 +451,7 @@ class Bill(db.Model, PersistentClass):
         sess.flush()
 
 
-class BillType(db.Model, PersistentClass):
+class BillType(Base, PersistentClass):
 
     @staticmethod
     def get_by_code(sess, code):
@@ -463,7 +472,7 @@ class BillType(db.Model, PersistentClass):
         self.description = description
 
 
-class Pc(db.Model, PersistentClass):
+class Pc(Base, PersistentClass):
     @staticmethod
     def get_by_code(sess, code):
         code = code.strip()
@@ -480,7 +489,7 @@ class Pc(db.Model, PersistentClass):
     eras = relationship('Era', backref='pc')
 
 
-class Batch(db.Model, PersistentClass):
+class Batch(Base, PersistentClass):
     __tablename__ = 'batch'
     id = Column(Integer, primary_key=True)
     contract_id = Column(Integer, ForeignKey('contract.id'), nullable=False)
@@ -548,7 +557,7 @@ class Batch(db.Model, PersistentClass):
         return bill
 
 
-class Party(db.Model, PersistentClass):
+class Party(Base, PersistentClass):
 
     @staticmethod
     def get_by_participant_id_role_id(sess, participant_id, market_role_id):
@@ -616,7 +625,7 @@ class Party(db.Model, PersistentClass):
         return llfc
 
 
-class Contract(db.Model, PersistentClass):
+class Contract(Base, PersistentClass):
 
     @staticmethod
     def get_non_core_by_name(sess, name):
@@ -1001,7 +1010,7 @@ class Contract(db.Model, PersistentClass):
         return batch
 
 
-class Site(db.Model, PersistentClass):
+class Site(Base, PersistentClass):
     __tablename__ = 'site'
     id = Column(Integer, primary_key=True)
     code = Column(String, unique=True, nullable=False)
@@ -1274,7 +1283,7 @@ class Site(db.Model, PersistentClass):
 SALT_LENGTH = 16
 
 
-class User(db.Model, PersistentClass):
+class User(Base, PersistentClass):
     @staticmethod
     def insert(sess, email_address, password, user_role, party):
         try:
@@ -1326,7 +1335,7 @@ class User(db.Model, PersistentClass):
         self.password_digest = hexlify(salt + dk).decode('ascii')
 
 
-class UserRole(db.Model, PersistentClass):
+class UserRole(Base, PersistentClass):
     __tablename__ = 'user_role'
     id = Column(Integer, primary_key=True)
     code = Column(String, unique=True, nullable=False)
@@ -1344,7 +1353,7 @@ class UserRole(db.Model, PersistentClass):
         return role
 
 
-class MarketRole(db.Model, PersistentClass):
+class MarketRole(Base, PersistentClass):
 
     @staticmethod
     def get_by_code(sess, code):
@@ -1362,7 +1371,7 @@ class MarketRole(db.Model, PersistentClass):
     parties = relationship('Party', backref='market_role')
 
 
-class Participant(db.Model, PersistentClass):
+class Participant(Base, PersistentClass):
     @staticmethod
     def get_by_code(sess, code):
         participant = sess.query(Participant).filter_by(code=code).first()
@@ -1378,7 +1387,7 @@ class Participant(db.Model, PersistentClass):
     parties = relationship('Party', backref='participant')
 
 
-class RateScript(db.Model, PersistentClass):
+class RateScript(Base, PersistentClass):
     @staticmethod
     def get_by_role_code_id(sess, market_role_code, oid):
         try:
@@ -1429,7 +1438,7 @@ class RateScript(db.Model, PersistentClass):
         self.script = script
 
 
-class Llfc(db.Model, PersistentClass):
+class Llfc(Base, PersistentClass):
     __tablename__ = 'llfc'
     id = Column(Integer, primary_key=True)
     dno_id = Column(Integer, ForeignKey('party.id'))
@@ -1442,7 +1451,7 @@ class Llfc(db.Model, PersistentClass):
     valid_to = Column(DateTime(timezone=True))
 
 
-class MeterType(db.Model, PersistentClass):
+class MeterType(Base, PersistentClass):
 
     @staticmethod
     def get_by_code(sess, code):
@@ -1462,7 +1471,7 @@ class MeterType(db.Model, PersistentClass):
     mtcs = relationship('Mtc', backref='meter_type')
 
 
-class MeterPaymentType(db.Model, PersistentClass):
+class MeterPaymentType(Base, PersistentClass):
     @staticmethod
     def get_by_code(sess, code):
         meter_payment_type = sess.query(MeterPaymentType).filter(
@@ -1481,7 +1490,7 @@ class MeterPaymentType(db.Model, PersistentClass):
     mtcs = relationship('Mtc', backref='meter_payment_type')
 
 
-class Mtc(db.Model, PersistentClass):
+class Mtc(Base, PersistentClass):
     @staticmethod
     def has_dno(code):
         num = int(code)
@@ -1518,7 +1527,7 @@ class Mtc(db.Model, PersistentClass):
     __table_args__ = (UniqueConstraint('dno_id', 'code'),)
 
 
-class Tpr(db.Model, PersistentClass):
+class Tpr(Base, PersistentClass):
     @staticmethod
     def get_by_code(sess, code):
         code = code.zfill(5)
@@ -1538,7 +1547,7 @@ class Tpr(db.Model, PersistentClass):
     register_reads = relationship('RegisterRead', backref='tpr')
 
 
-class ClockInterval(db.Model, PersistentClass):
+class ClockInterval(Base, PersistentClass):
     __tablename__ = 'clock_interval'
     id = Column(Integer, primary_key=True)
     tpr_id = Column(Integer, ForeignKey('tpr.id'))
@@ -1553,14 +1562,14 @@ class ClockInterval(db.Model, PersistentClass):
     end_minute = Column(Integer, nullable=False)
 
 
-class MeasurementRequirement(db.Model, PersistentClass):
+class MeasurementRequirement(Base, PersistentClass):
     __tablename__ = 'measurement_requirement'
     id = Column(Integer, primary_key=True)
     ssc_id = Column(Integer, ForeignKey('ssc.id'))
     tpr_id = Column(Integer, ForeignKey('tpr.id'))
 
 
-class Ssc(db.Model, PersistentClass):
+class Ssc(Base, PersistentClass):
     @staticmethod
     def get_by_code(sess, code):
         code = code.zfill(4)
@@ -1582,7 +1591,7 @@ class Ssc(db.Model, PersistentClass):
     eras = relationship('Era', backref='ssc')
 
 
-class SiteEra(db.Model, PersistentClass):
+class SiteEra(Base, PersistentClass):
     __tablename__ = 'site_era'
     id = Column(Integer, primary_key=True)
     site_id = Column(Integer, ForeignKey('site.id'))
@@ -1595,7 +1604,7 @@ class SiteEra(db.Model, PersistentClass):
         self.is_physical = is_physical
 
 
-class Era(db.Model, PersistentClass):
+class Era(Base, PersistentClass):
     __tablename__ = "era"
     id = Column(Integer, primary_key=True)
     supply_id = Column(Integer, ForeignKey('supply.id'), nullable=False)
@@ -1931,7 +1940,7 @@ class Era(db.Model, PersistentClass):
             return 'nhh'
 
 
-class Channel(db.Model, PersistentClass):
+class Channel(Base, PersistentClass):
     __tablename__ = 'channel'
     id = Column(Integer, primary_key=True)
     era_id = Column(Integer, ForeignKey('era.id'))
@@ -2106,7 +2115,7 @@ class Channel(db.Model, PersistentClass):
         sess.flush()
 
 
-class Supply(db.Model, PersistentClass):
+class Supply(Base, PersistentClass):
     @staticmethod
     def get_by_mpan_core(sess, mpan_core):
         supply = Supply.find_by_mpan_core(sess, mpan_core)
@@ -2568,7 +2577,7 @@ class Supply(db.Model, PersistentClass):
                     sess, start, finish)
 
 
-class HhDatum(db.Model, PersistentClass):
+class HhDatum(Base, PersistentClass):
     # status A actual, E estimated, C padding
     @staticmethod
     def insert(sess, raw_data):
@@ -2642,7 +2651,7 @@ class HhDatum(db.Model, PersistentClass):
             year=nw.year, month=nw.month, day=nw.day, tzinfo=pytz.utc)
 
 
-class Report(db.Model, PersistentClass):
+class Report(Base, PersistentClass):
 
     __tablename__ = 'report'
     id = Column(Integer, primary_key=True)
@@ -2751,25 +2760,25 @@ def read_file(pth, fname, attr):
         return {attr: contents}
 
 
-def db_init(session):
+def db_init(sess):
     webinf_path = app.root_path
     config = app.config
     db_name = config['PGDATABASE']
     log_message("Initializing database.")
-    db.create_all()
+    Base.metadata.create_all(bind=engine)
     for code, desc in (
             ("LV", "Low voltage"),
             ("HV", "High voltage"),
             ("EHV", "Extra high voltage")):
-        session.add(VoltageLevel(code, desc))
-    session.commit()
+        sess.add(VoltageLevel(code, desc))
+    sess.commit()
 
-    set_read_write(session)
+    set_read_write(sess)
     for code in ("editor", "viewer", "party-viewer"):
-        session.add(UserRole(code))
-    session.commit()
+        sess.add(UserRole(code))
+    sess.commit()
 
-    set_read_write(session)
+    set_read_write(sess)
     for code, desc in (
             ('net', "Public distribution system."),
             ('sub', "Sub meter"),
@@ -2780,19 +2789,19 @@ def db_init(session):
                 '3rd-party-reverse',
                 "Third party supply with import going out of the site."),
             ):
-        session.add(Source(code, desc))
-    session.commit()
+        sess.add(Source(code, desc))
+    sess.commit()
 
-    set_read_write(session)
+    set_read_write(sess)
     for code, desc in (
             ("chp", "Combined heat and power."),
             ("lm", "Load management."),
             ("turb", "Water turbine."),
             ("pv", "Solar Photovoltaics.")):
-        session.add(GeneratorType(code, desc))
-    session.commit()
+        sess.add(GeneratorType(code, desc))
+    sess.commit()
 
-    set_read_write(session)
+    set_read_write(sess)
     for code, desc in (
             ("N", "Normal"),
             ("N3", "Normal 3rd Party"),
@@ -2804,10 +2813,10 @@ def db_init(session):
             ("X", "Exchange"),
             ("CP", "Computer"),
             ("IF", "Information")):
-        session.add(ReadType(code, desc))
-    session.commit()
+        sess.add(ReadType(code, desc))
+    sess.commit()
 
-    set_read_write(session)
+    set_read_write(sess)
     for code, desc in (
             ('1', "CoP 1"),
             ('2', "CoP 2"),
@@ -2819,18 +2828,18 @@ def db_init(session):
             ('6c', "CoP 6c 250 day memory"),
             ('6d', "CoP 6d 450 day memory"),
             ('7', "CoP 7")):
-        session.add(Cop(code, desc))
-    session.commit()
+        sess.add(Cop(code, desc))
+    sess.commit()
 
-    set_read_write(session)
+    set_read_write(sess)
     for code, desc in (
             ("F", "Final"),
             ("N", "Normal"),
             ("W", "Withdrawn")):
-        session.add(BillType(code, desc))
-    session.commit()
+        sess.add(BillType(code, desc))
+    sess.commit()
 
-    dbapi_conn = session.connection().connection.connection
+    dbapi_conn = sess.connection().connection.connection
     cursor = dbapi_conn.cursor()
     mdd_path = os.path.join(webinf_path, 'mdd')
     for tname, fname in (
@@ -2885,7 +2894,7 @@ def db_init(session):
         dbapi_conn.commit()
         f.close()
 
-    set_read_write(session)
+    set_read_write(sess)
     for path_name, role_code in (
             ('non_core_contracts', 'Z'),
             ('dno_contracts', 'R')):
@@ -2899,16 +2908,16 @@ def db_init(session):
                     ('properties.py', 'properties'),
                     ('state.py', 'state')):
                 params.update(read_file(contract_path, fname, attr))
-            params['party'] = session.query(Party).join(Participant). \
+            params['party'] = sess.query(Party).join(Participant). \
                 join(MarketRole). \
                 filter(
                     Participant.code == params['participant_code'],
                     MarketRole.code == role_code).one()
             del params['participant_code']
             contract = Contract(**params)
-            session.add(contract)
+            sess.add(contract)
 
-            session.flush()
+            sess.flush()
             rscripts_path = os.path.join(contract_path, 'rate_scripts')
             for rscript_fname in sorted(os.listdir(rscripts_path)):
                 if not rscript_fname.endswith('.py'):
@@ -2935,36 +2944,35 @@ def db_init(session):
                     'contract': contract}
                 rparams.update(
                     read_file(rscripts_path, rscript_fname, 'script'))
-                session.add(RateScript(**rparams))
-                session.flush()
+                sess.add(RateScript(**rparams))
+                sess.flush()
 
-            session.flush()
+            sess.flush()
             # Assign start and finish rate scripts
-            scripts = session.query(RateScript). \
+            scripts = sess.query(RateScript). \
                 filter(RateScript.contract_id == contract.id). \
                 order_by(RateScript.start_date).all()
             contract.start_rate_script = scripts[0]
             contract.finish_rate_script = scripts[-1]
-    session.commit()
+    sess.commit()
 
-    set_read_write(session)
-    session.execute(
+    set_read_write(sess)
+    sess.execute(
         "alter database " + db_name +
         " set default_transaction_isolation = 'serializable'")
-    session.execute(
+    sess.execute(
         "alter database " + db_name +
         " set default_transaction_deferrable = on")
-    session.execute(
+    sess.execute(
         "alter database " + db_name + " SET DateStyle TO 'ISO, YMD'")
-    session.execute(
+    sess.execute(
         "alter database " + db_name +
         " set default_transaction_read_only = on")
-    session.commit()
-    session.close()
-    db.engine.dispose()
-    session = Session()
+    sess.commit()
+    sess.close()
+    engine.dispose()
     # Check the transaction isolation level is serializable
-    isolation_level = session.execute(
+    isolation_level = sess.execute(
         "show transaction isolation level").scalar()
     if isolation_level != 'serializable':
         raise Exception(
@@ -2972,39 +2980,39 @@ def db_init(session):
             " should be 'serializable' but in fact " "it's " +
             isolation_level + ".")
 
-    set_read_write(session)
-    session.execute("create extension tablefunc")
-    conf = session.query(Contract).join(MarketRole).filter(
+    set_read_write(sess)
+    sess.execute("create extension tablefunc")
+    conf = sess.query(Contract).join(MarketRole).filter(
         Contract.name == 'configuration', MarketRole.code == 'Z').one()
     state = conf.make_state()
     state['db_version'] = len(upgrade_funcs)
     conf.update_state(state)
-    session.commit()
+    sess.commit()
 
 
-def db_upgrade_0_to_1(session):
-    max_id = session.execute("select max(id) from report;").scalar()
-    session.execute("create sequence report_id_seq start " + str(max_id + 1))
-    session.execute(
+def db_upgrade_0_to_1(sess):
+    max_id = sess.execute("select max(id) from report;").scalar()
+    sess.execute("create sequence report_id_seq start " + str(max_id + 1))
+    sess.execute(
         "alter table report alter column id "
         "set default nextval('report_id_seq');")
-    session.execute("alter sequence report_id_seq owned by report.id;")
+    sess.execute("alter sequence report_id_seq owned by report.id;")
 
 
 upgrade_funcs = [db_upgrade_0_to_1]
 
 
 def db_upgrade():
-    session = None
+    sess = None
     try:
-        session = Session()
-        set_read_write(session)
-        db_version = find_db_version(session)
+        sess = Session()
+        set_read_write(sess)
+        db_version = find_db_version(sess)
         curr_version = len(upgrade_funcs)
         if db_version is None:
             log_message(
                 "It looks like the chellow database hasn't been initialized.")
-            db_init(session)
+            db_init(sess)
         elif db_version == curr_version:
             log_message(
                 "The database version is " + str(db_version) +
@@ -3019,29 +3027,29 @@ def db_upgrade():
             log_message(
                 "Upgrading from database version " + str(db_version) +
                 " to database version " + str(db_version + 1) + ".")
-            upgrade_funcs[db_version](session)
-            conf = session.query(Contract).join(MarketRole).filter(
+            upgrade_funcs[db_version](sess)
+            conf = sess.query(Contract).join(MarketRole).filter(
                 Contract.name == 'configuration', MarketRole.code == 'Z').one()
             state = conf.make_state()
             state['db_version'] = db_version + 1
             conf.update_state(state)
-            session.commit()
+            sess.commit()
             log_message(
                 "Successfully upgraded from database version " +
                 str(db_version) + " to database version " +
                 str(db_version + 1) + ".")
     finally:
-        if session is not None:
-            session.close()
+        if sess is not None:
+            sess.close()
 
 
-def find_db_version(session):
-    engine = session.get_bind()
+def find_db_version(sess):
+    engine = sess.get_bind()
     if engine.execute(
             """select count(*) from information_schema.tables """
             """where table_schema = 'public'""").scalar() == 0:
         return None
-    conf = session.query(Contract).join(MarketRole).filter(
+    conf = sess.query(Contract).join(MarketRole).filter(
         Contract.name == 'configuration', MarketRole.code == 'Z').one()
     conf_state = conf.make_state()
     return conf_state.get('db_version', 0)

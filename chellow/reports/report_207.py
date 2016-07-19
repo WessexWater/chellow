@@ -18,9 +18,9 @@ from chellow.views import chellow_redirect
 
 
 def content(year, supply_id, user):
-    sess = None
-    f = None
+    f = sess = None
     try:
+        sess = Session()
         fname = ['crc', str(year), str(year + 1)]
         if supply_id is None:
             fname.append('all_supplies')
@@ -29,8 +29,6 @@ def content(year, supply_id, user):
         running_name, finished_name = chellow.dloads.make_names(
             '_'.join(fname) + '.csv', user)
         f = open(running_name, "w")
-
-        sess = Session()
 
         ACTUAL_READ_TYPES = ['N', 'N3', 'C', 'X', 'CP']
         f.write(
@@ -458,11 +456,11 @@ def content(year, supply_id, user):
         sys.stderr.write(msg + '\n')
         f.write("Problem " + msg)
     finally:
+        if sess is not None:
+            sess.close()
         if f is not None:
             f.close()
             os.rename(running_name, finished_name)
-        if sess is not None:
-            sess.close()
 
 
 def do_get(sess):

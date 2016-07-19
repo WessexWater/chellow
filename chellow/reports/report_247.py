@@ -667,12 +667,12 @@ def content(scenario_props, scenario_id, base_name, site_id, supply_id, user):
         sys.stderr.write(msg + '\n')
         group_tab.writerow(["Problem " + msg])
     finally:
+        if sess is not None:
+            sess.close()
         try:
             f.close()
             rf.close()
             os.rename(running_name, finished_name)
-            if sess is not None:
-                sess.close()
         except:
             msg = traceback.format_exc()
             r_name, f_name = chellow.dloads.make_names('error.txt', user)

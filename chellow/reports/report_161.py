@@ -223,8 +223,7 @@ def process_site(
 
 def long_process(start_date, finish_date, st_id, months, year, month, user):
     caches = {}
-    sess = None
-    tmp_file = None
+    tmp_file = sess = None
     try:
         sess = Session()
         if st_id is None:
@@ -271,14 +270,10 @@ def long_process(start_date, finish_date, st_id, months, year, month, user):
         sys.stderr.write(msg + '\n')
         tmp_file.write("Problem " + msg)
     finally:
-        try:
-            if sess is not None:
-                sess.close()
-        except:
-            tmp_file.write("\nProblem closing session.")
-        finally:
-            tmp_file.close()
-            os.rename(running_name, finished_name)
+        if sess is not None:
+            sess.close()
+        tmp_file.close()
+        os.rename(running_name, finished_name)
 
 
 def do_get(sess):

@@ -15,13 +15,10 @@ from chellow.views import chellow_redirect
 def content(
         start_date, finish_date, imp_related, channel_type, is_zipped,
         supply_id, mpan_cores, user):
-    sess = None
-    zf = None
-    tf = None
+    zf = sess = tf = None
     base_name = ["supplies_hh_data", finish_date.strftime('%Y%m%d%H%M')]
     try:
         sess = Session()
-
         supplies = sess.query(Supply).join(Era).filter(
             or_(Era.finish_date == null(), Era.finish_date >= start_date),
             Era.start_date <= finish_date).order_by(Supply.id).distinct()
@@ -104,9 +101,9 @@ def content(
         else:
             tf.write(msg)
     finally:
-        os.rename(running_name, finished_name)
         if sess is not None:
             sess.close()
+        os.rename(running_name, finished_name)
 
 
 def do_get(sess):

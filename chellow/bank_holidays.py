@@ -17,8 +17,7 @@ def get_db_id():
     sess = None
     try:
         sess = Session()
-        contract = Contract.get_non_core_by_name(sess, 'bank_holidays')
-        return contract.id
+        return Contract.get_non_core_by_name(sess, 'bank_holidays').id
     finally:
         if sess is not None:
             sess.close()
@@ -138,15 +137,12 @@ class BankHolidayImporter(threading.Thread):
 
                 except:
                     self.log("Outer problem " + traceback.format_exc())
-                    if sess is not None:
-                        sess.rollback()
+                    sess.rollback()
                 finally:
-                    try:
-                        if sess is not None:
-                            sess.close()
-                    finally:
-                        self.lock.release()
-                        self.log("Finished checking bank holidays.")
+                    if sess is not None:
+                        sess.close()
+                    self.lock.release()
+                    self.log("Finished checking bank holidays.")
 
             self.going.wait(24 * 60 * 60)
             self.going.clear()

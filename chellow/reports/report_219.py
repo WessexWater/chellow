@@ -3,16 +3,13 @@ import pytz
 from dateutil.relativedelta import relativedelta
 from sqlalchemy import or_, and_
 import traceback
-from chellow.models import Session, RegisterRead, Bill, Supply, Era
+from chellow.models import RegisterRead, Bill, Supply, Era
 from chellow.utils import HH, hh_format, req_int, send_response
 from flask import request
 
 
-def content(year, month, months, supply_id):
-    sess = None
+def content(year, month, months, supply_id, sess):
     try:
-        sess = Session()
-
         finish_date = Datetime(year, month, 1, tzinfo=pytz.utc) + \
             relativedelta(months=1) - HH
 
@@ -70,9 +67,6 @@ def content(year, month, months, supply_id):
                     read.present_type.code]) + '\n'
     except:
         yield traceback.format_exc()
-    finally:
-        if sess is not None:
-            sess.close()
 
 
 def do_get(sess):
@@ -83,4 +77,5 @@ def do_get(sess):
     file_name = 'reads_' + \
         Datetime.now(pytz.utc).strftime("%Y%M%d%H%m") + '.csv'
     return send_response(
-        content, args=(year, month, months, supply_id), file_name=file_name)
+        content, args=(
+            year, month, months, supply_id, sess), file_name=file_name)

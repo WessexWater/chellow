@@ -2048,7 +2048,6 @@ from operator import itemgetter
 from datetime import datetime as Datetime
 import pytz
 from dateutil.relativedelta import relativedelta
-from chellow.models import db
 from chellow.utils import HH
 import chellow.triad
 import chellow.computer

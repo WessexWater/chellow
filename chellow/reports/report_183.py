@@ -3,16 +3,13 @@ import zipfile
 import traceback
 from sqlalchemy.sql.expression import true, null
 from sqlalchemy import or_
-from chellow.models import Session, Site, SiteEra, Era
+from chellow.models import Site, SiteEra, Era
 from chellow.utils import hh_format, req_date, req_int, send_response
 from flask import request
 
 
-def none_content(site_id, start_date, finish_date):
-    sess = None
+def none_content(site_id, start_date, finish_date, sess):
     try:
-        sess = Session()
-
         sites = sess.query(Site).join(SiteEra).join(Era).filter(
             SiteEra.is_physical == true(), or_(
                 Era.finish_date == null(), Era.finish_date >= start_date),
@@ -64,16 +61,10 @@ def none_content(site_id, start_date, finish_date):
                 bffr.truncate()
     except:
         yield traceback.format_exc()
-    finally:
-        if sess is not None:
-            sess.close()
 
 
-def site_content(site_id, start_date, finish_date):
-    sess = None
+def site_content(site_id, start_date, finish_date, sess):
     try:
-        sess = Session()
-
         site = Site.get_by_id(sess, site_id)
         sites = sess.query(Site).filter(Site.id == site_id)
 
@@ -110,9 +101,6 @@ def site_content(site_id, start_date, finish_date):
                     yield ',' + str(round(used_kwh, 2))
     except:
         yield traceback.format_exc()
-    finally:
-        if sess is not None:
-            sess.close()
 
 
 def do_get(sess):
@@ -132,5 +120,5 @@ def do_get(sess):
 
     content = none_content if site_id is None else site_content
     return send_response(
-        content, args=(site_id, start_date, finish_date), mimetype=mime_type,
-        file_name=file_name)
+        content, args=(site_id, start_date, finish_date, sess),
+        mimetype=mime_type, file_name=file_name)

@@ -5,15 +5,12 @@ import pytz
 from sqlalchemy.sql.expression import true
 import traceback
 from chellow.models import (
-    Contract, Snag, Channel, Era, Supply, Session, SiteEra, Site)
+    Contract, Snag, Channel, Era, Supply, SiteEra, Site)
 from chellow.utils import req_int, send_response
 
 
-def content(contract_id, days_hidden):
-    sess = None
+def content(contract_id, days_hidden, sess):
     try:
-        sess = Session()
-
         yield ','.join(
             (
                 'Hidden Days', 'Chellow Id', 'Imp MPAN Core', 'Exp MPAN Core',
@@ -56,14 +53,11 @@ def content(contract_id, days_hidden):
                 snag.is_ignored]) + '\n'
     except:
         yield traceback.format_exc()
-    finally:
-        if sess is not None:
-            sess.close()
 
 
 def do_get(sess):
     contract_id = req_int('hhdc_contract_id')
     days_hidden = req_int('days_hidden')
     return send_response(
-        content, args=(contract_id, days_hidden),
+        content, args=(contract_id, days_hidden, sess),
         file_name="channel_snags.csv")

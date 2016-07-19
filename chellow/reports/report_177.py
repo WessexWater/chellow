@@ -17,8 +17,7 @@ from chellow.views import chellow_redirect
 
 
 def content(year, month, months, supply_id, user):
-    sess = None
-    tmp_file = None
+    tmp_file = sess = None
     try:
         sess = Session()
         supplies = sess.query(Supply).join(Era).distinct()

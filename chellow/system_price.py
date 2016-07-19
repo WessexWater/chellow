@@ -272,15 +272,12 @@ class SystemPriceImporter(threading.Thread):
 
                 except:
                     self.log("Outer problem " + traceback.format_exc())
-                    if sess is not None:
-                        sess.rollback()
+                    sess.rollback()
                 finally:
-                    try:
-                        if sess is not None:
-                            sess.close()
-                    finally:
-                        self.lock.release()
-                        self.log("Finished checking System Price rates.")
+                    self.lock.release()
+                    self.log("Finished checking System Price rates.")
+                    if sess is not None:
+                        sess.close()
 
             self.going.wait(24 * 60 * 60)
             self.going.clear()

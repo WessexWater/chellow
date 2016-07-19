@@ -23,12 +23,6 @@ for var_name in (
         config[var_name] = os.environ[var_name]
 
 config['CHELLOW_PORT'] = int(config['CHELLOW_PORT'])
-config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-config['SQLALCHEMY_DATABASE_URI'] = ''.join(
-    [
-        "postgresql+pg8000://", config['PGUSER'], ":", config['PGPASSWORD'],
-        "@", config['PGHOST'], ":", config['PGPORT'], "/",
-        config['PGDATABASE']])
 
 import chellow.views
 __all__ = [chellow]

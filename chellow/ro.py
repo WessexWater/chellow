@@ -1,7 +1,6 @@
 import chellow.scenario
 from chellow.models import Session, Contract
 
-
 sess = None
 try:
     sess = Session()
@@ -10,6 +9,7 @@ try:
 finally:
     if sess is not None:
         sess.close()
+
 
 create_future_func = chellow.scenario.make_create_future_func_simple(
     'ro', ['gbp_per_msp_kwh'])

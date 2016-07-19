@@ -194,15 +194,12 @@ class BsuosImporter(threading.Thread):
                             "set 'enabled' to True.")
                 except:
                     self.log("Outer problem " + traceback.format_exc())
-                    if sess is not None:
-                        sess.rollback()
+                    sess.rollback()
                 finally:
-                    try:
-                        if sess is not None:
-                            sess.close()
-                    finally:
-                        self.lock.release()
-                        self.log("Finished checking BSUoS rates.")
+                    if sess is not None:
+                        sess.close()
+                    self.lock.release()
+                    self.log("Finished checking BSUoS rates.")
 
             self.going.wait(30 * 60)
             self.going.clear()

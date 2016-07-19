@@ -15,7 +15,6 @@ from chellow.views import chellow_redirect
 
 def content(
         start_date, finish_date, supply_id, mpan_cores, is_zipped, user):
-    sess = None
     if is_zipped:
         file_extension = ".zip"
     else:
@@ -39,6 +38,7 @@ def content(
         zf = zipfile.ZipFile(running_name, 'w')
     else:
         tmp_file = open(running_name, "w")
+    sess = None
     try:
         sess = Session()
         supplies = sess.query(Supply).join(Era).filter(
@@ -142,21 +142,13 @@ order by hh_base.start_date
         else:
             tmp_file.write(msg)
     finally:
-        try:
-            if sess is not None:
-                sess.close()
-        except:
-            msg = "\nProblem closing session."
-            if is_zipped:
-                zf.writestr('error.txt', msg)
-            else:
-                tmp_file.write(msg)
-        finally:
-            if is_zipped:
-                zf.close()
-            else:
-                tmp_file.close()
-            os.rename(running_name, finished_name)
+        if sess is not None:
+            sess.close()
+        if is_zipped:
+            zf.close()
+        else:
+            tmp_file.close()
+        os.rename(running_name, finished_name)
 
 
 def do_post(sess):

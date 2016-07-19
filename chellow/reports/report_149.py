@@ -4,7 +4,8 @@ from sqlalchemy import or_, func, Float, cast
 from sqlalchemy.sql.expression import null
 import pytz
 from chellow.models import (
-    HhDatum, Channel, Era, db, Supply, RegisterRead, Bill, BillType, ReadType)
+    HhDatum, Channel, Era, Session, Supply, RegisterRead, Bill, BillType,
+    ReadType)
 from chellow.utils import hh_before, hh_format, HH, req_hh_date, req_int
 import chellow.computer
 import chellow.duos
@@ -115,13 +116,11 @@ def mpan_bit(
 
 
 def content(supply_id, start_date, finish_date, user):
-    sess = None
     forecast_date = datetime.datetime.max.replace(tzinfo=pytz.utc)
     caches = {}
-    f = None
+    f = sess = None
     try:
-        sess = db.session()
-
+        sess = Session()
         running_name, finished_name = chellow.dloads.make_names(
             'supplies_duration.csv', user)
         f = open(running_name, "w")
@@ -233,8 +232,7 @@ def content(supply_id, start_date, finish_date, user):
     except:
         f.write(traceback.format_exc())
     finally:
-        if sess is not None:
-            sess.close()
+        sess.close()
         f.close()
         os.rename(running_name, finished_name)
 

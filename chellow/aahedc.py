@@ -9,6 +9,7 @@ finally:
     if sess is not None:
         sess.close()
 
+
 create_future_func = chellow.scenario.make_create_future_func_simple(
     'aahedc', ['aahedc_gbp_per_gsp_kwh'])
 

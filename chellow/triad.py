@@ -6,13 +6,15 @@ from chellow.utils import HH, hh_after
 import chellow.computer
 import chellow.duos
 
+sess = None
 try:
     sess = Session()
     db_id = Contract.get_non_core_by_name(sess, 'triad').id
     triad_rates_contract_id = Contract.get_non_core_by_name(
         sess, 'triad_rates').id
 finally:
-    sess.close()
+    if sess is not None:
+        sess.close()
 
 
 def triad_calc(

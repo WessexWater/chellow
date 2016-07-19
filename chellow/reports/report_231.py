@@ -2,16 +2,13 @@ import traceback
 from sqlalchemy import or_
 from sqlalchemy.sql.expression import null
 import chellow.computer
-from chellow.models import Session, Contract, Era
+from chellow.models import Contract, Era
 from chellow.utils import hh_format, req_date, req_int, send_response
 
 
-def content(start_date, finish_date, contract_id):
-    sess = None
+def content(start_date, finish_date, contract_id, sess):
     caches = {}
     try:
-        sess = Session()
-
         contract = Contract.get_mop_by_id(sess, contract_id)
 
         forecast_date = chellow.computer.forecast_date()
@@ -65,9 +62,6 @@ def content(start_date, finish_date, contract_id):
             yield '\n'
     except:
         yield traceback.format_exc()
-    finally:
-        if sess is None:
-            sess.close()
 
 
 def do_get(sess):
@@ -75,5 +69,5 @@ def do_get(sess):
     finish_date = req_date('finish')
     contract_id = req_int('mop_contract_id')
     return send_response(
-        content, args=(start_date, finish_date, contract_id),
+        content, args=(start_date, finish_date, contract_id, sess),
         file_name='output.csv')

@@ -1,16 +1,14 @@
 import traceback
 from sqlalchemy import or_
 from sqlalchemy.sql.expression import null, true
-from chellow.models import Session, Supply, Era, Site, SiteEra
+from chellow.models import Supply, Era, Site, SiteEra
 from chellow.utils import hh_format, HH, req_int, req_date, send_response
 import chellow.computer
 
 
-def content(supply_id, start_date, finish_date):
+def content(supply_id, start_date, finish_date, sess):
     caches = {}
-    sess = None
     try:
-        sess = Session()
         supply = Supply.get_by_id(sess, supply_id)
 
         forecast_date = chellow.computer.forecast_date()
@@ -116,9 +114,6 @@ def content(supply_id, start_date, finish_date):
             hh_start += HH
     except:
         yield traceback.format_exc()
-    finally:
-        if sess is not None:
-            sess.close()
 
 
 def do_get(sess):
@@ -127,5 +122,5 @@ def do_get(sess):
     finish_date = req_date('finish')
     file_name = 'supply_virtual_bills_hh_' + str(supply_id) + '.csv'
     return send_response(
-        content, args=(supply_id, start_date, finish_date),
+        content, args=(supply_id, start_date, finish_date, sess),
         file_name=file_name)

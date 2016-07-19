@@ -63,7 +63,6 @@ class HhDataImportProcess(threading.Thread):
             self.messages.append("Outer problem " + traceback.format_exc())
         finally:
             if sess is not None:
-                sess.rollback()
                 sess.close()
 
     def get_status(self):
@@ -123,15 +122,15 @@ class HhImportTask(threading.Thread):
 
     def import_now(self):
         if self.lock.acquire(False):
+            sess = None
             try:
+                sess = Session()
                 found_new = True
                 while found_new:
                     found_new = False
-                    sess = None
                     ftp = None
 
                     try:
-                        sess = Session()
                         contract = Contract.get_hhdc_by_id(
                             sess, self.contract_id)
                         properties = contract.make_properties()
@@ -239,13 +238,8 @@ class HhImportTask(threading.Thread):
                         self.log("Unknown Exception " + traceback.format_exc())
                         sess.rollback()
                     finally:
-                        try:
-                            if sess is not None:
-                                sess.close()
-                        except:
-                            self.log(
-                                "Unknown Exception II" +
-                                traceback.format_exc())
+                        if sess is not None:
+                            sess.close()
             except Exception:
                 self.log("Outer Exception " + traceback.format_exc())
             finally:
@@ -269,17 +263,16 @@ def startup_contract(contract_id):
 
 
 def startup():
-    sess = None
+    for procs in processes.values():
+        for proc in procs:
+            if proc.isAlive():
+                raise BadRequest(
+                    "Can't start hh importer, there are still some " +
+                    "hh imports running.")
 
+    sess = None
     try:
         sess = Session()
-        for procs in processes.values():
-            for proc in procs:
-                if proc.isAlive():
-                    raise BadRequest(
-                        "Can't start hh importer, there are still some " +
-                        "hh imports running.")
-
         for contract in sess.query(Contract).join(MarketRole).filter(
                 MarketRole.code == 'C').order_by(Contract.id):
             startup_contract(contract.id)

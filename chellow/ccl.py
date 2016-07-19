@@ -5,11 +5,14 @@ import chellow.computer
 import chellow.scenario
 from chellow.utils import HH
 
+sess = None
 try:
     sess = Session()
     ccl_contract_id = Contract.get_non_core_by_name(sess, 'ccl').id
 finally:
-    sess.close()
+    if sess is not None:
+        sess.close()
+
 
 create_future_func = chellow.scenario.make_create_future_func_simple(
     'ccl', ['ccl_rate'])

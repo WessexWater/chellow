@@ -12,9 +12,8 @@ from chellow.models import (
     Site, Era, Supply, HhDatum, Source, GeneratorType, GspGroup, Contract, Pc,
     Cop, Ssc, Snag, Channel, Mtc, BillType, Tpr, ReadType, Participant, Bill,
     RegisterRead, UserRole, Party, User, VoltageLevel, Llfc, MarketRole,
-    MeterType, MeterPaymentType, set_read_write)
+    MeterType, MeterPaymentType, set_read_write, Session)
 from werkzeug.exceptions import BadRequest
-import chellow.models
 
 
 process_id = 0
@@ -1190,8 +1189,9 @@ class GeneralImporter(threading.Thread):
         return fields
 
     def run(self):
+        sess = None
         try:
-            sess = chellow.models.Session()
+            sess = Session()
             reader = csv.reader(self.f)
             hh_data = []
             for idx, line in enumerate(reader):

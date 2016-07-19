@@ -1,13 +1,11 @@
 import traceback
 from flask import request
 from chellow.utils import req_date, send_response, req_int
-from chellow.models import Session, Site
+from chellow.models import sess, Site
 
 
 def content(start_date, finish_date, site_id):
-    sess = None
     try:
-        sess = Session()
         yield ','.join(
             (
                 "Site Id", "Site Name", "Associated Site Ids", "Sources",
@@ -69,9 +67,6 @@ def content(start_date, finish_date, site_id):
                             metering_type)) + '\n'
     except:
         yield traceback.format_exc()
-    finally:
-        if sess is not None:
-            sess.close()
 
 
 def do_get(sess):

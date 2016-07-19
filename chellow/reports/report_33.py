@@ -4,7 +4,7 @@ from sqlalchemy.sql import func
 from sqlalchemy import or_
 from sqlalchemy.sql.expression import null
 from chellow.models import (
-    Era, db, Supply, RegisterRead, Bill, ReadType, Batch,
+    Session, Era, Supply, RegisterRead, Bill, ReadType, Batch,
     MeasurementRequirement)
 from chellow.utils import (
     HH, hh_format, CHANNEL_TYPES, req_date, req_int, req_str, parse_mpan_core)
@@ -20,8 +20,7 @@ from chellow.views import chellow_redirect
 def content(running_name, finished_name, date, supply_id, mpan_cores):
     sess = None
     try:
-        sess = db.session()
-
+        sess = Session()
         f = open(running_name, mode='w', newline='')
         writer = csv.writer(f, lineterminator='\n')
         writer.writerow(
@@ -297,11 +296,11 @@ def content(running_name, finished_name, date, supply_id, mpan_cores):
         sys.stderr.write(msg)
         writer.writerow([msg])
     finally:
+        if sess is not None:
+            sess.close()
         if f is not None:
             f.close()
             os.rename(running_name, finished_name)
-        if sess is not None:
-            sess.close()
 
 
 def do_get(session):

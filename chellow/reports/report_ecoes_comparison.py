@@ -5,15 +5,12 @@ from werkzeug.exceptions import BadRequest
 import requests
 import urllib.parse
 from itertools import chain
-from chellow.models import Contract, db, Era, Supply, Source
+from chellow.models import Contract, Era, Supply, Source
 from chellow.utils import send_response
 
 
-def content():
-    sess = None
+def content(sess):
     try:
-        sess = db.session()
-
         props = Contract.get_non_core_by_name(sess, 'configuration'). \
             make_properties()
 
@@ -271,10 +268,7 @@ def content():
         yield e.description
     except:
         yield traceback.format_exc()
-    finally:
-        if sess is not None:
-            sess.close()
 
 
 def do_get(sess):
-    return send_response(content, file_name='output.csv')
+    return send_response(content, args=(sess,), file_name='output.csv')

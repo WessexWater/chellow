@@ -4,18 +4,16 @@ from dateutil.relativedelta import relativedelta
 from sqlalchemy import or_
 from sqlalchemy.sql.expression import null, true
 import traceback
-from chellow.models import db, Supply, Era, Site, SiteEra
+from chellow.models import Supply, Era, Site, SiteEra
 from chellow.utils import (
     HH, hh_before, hh_format, req_int, req_date, send_response)
 import chellow.computer
 from werkzeug.exceptions import BadRequest
 
 
-def content(supply_id, file_name, start_date, finish_date):
+def content(supply_id, file_name, start_date, finish_date, sess):
     caches = {}
-    sess = None
     try:
-        sess = db.session()
         supply = Supply.get_by_id(sess, supply_id)
 
         forecast_date = chellow.computer.forecast_date()
@@ -161,9 +159,6 @@ def content(supply_id, file_name, start_date, finish_date):
         yield "Problem: " + e.description + '\n'
     except:
         yield traceback.format_exc()
-    finally:
-        if sess is not None:
-            sess.close()
 
 
 def do_get(sess):
@@ -171,5 +166,5 @@ def do_get(sess):
     file_name = 'supply_virtual_bills_' + str(supply_id) + '.csv'
     start_date = req_date('start')
     finish_date = req_date('finish')
-    args = (supply_id, file_name, start_date, finish_date)
+    args = (supply_id, file_name, start_date, finish_date, sess)
     return send_response(content, args=args, file_name=file_name)
