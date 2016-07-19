@@ -126,6 +126,7 @@
 		<link rel="stylesheet" type="text/css" 	href="{{context_path}}/style">
         	<link rel="stylesheet" href="{{context_path}}/bootstrap" />
 <!--        	<link rel="stylesheet" href="{{context_path}}/font-awesome.min.css" />-->
+       	 	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css" />
        	 	<link rel="stylesheet" href="{{context_path}}/wessexcss" />
 		
        		<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.0/jquery.min.js"></script>
@@ -149,12 +150,12 @@
 		<div class="container-fluid">
         	<div class="row">
 				<!-- Logo -->
-            	<div class="col-sm-2 alignCenter bgBlue">
+            	<div class="col-sm-3 col-md-2 alignCenter bgBlue">
                 		<p class="panel-logo"><a href="/" title="Wessex Water"><span class="hide"></span></a></p>
             	</div>
             	
 				<!-- Top Header -->
-            	<div class="col-sm-10 top-header">
+            	<div class="col-sm-9 col-md-10 top-header">
             		<div class="pull-left">
                 		<p class="panel-breadcrumbs"><a href="/">Chellow</a> {% block nav %}{% endblock %}</p>
 						{% with messages = get_flashed_messages() %}
@@ -167,6 +168,45 @@
 							{% endif %}
 						{% endwith %}
             		</div>
+                    
+                    <div class="pull-right layer-profilemenu">
+                        <!-- Layer Header Top -->
+                        <div class="layer-headertop">
+                            <div class="headertop createnew blue">
+                                <div class="menu-topbar">
+                                    <div class="topbar-main">
+                                        <div class="standardForm siteSearch">
+                                            <form action="{{context_path}}/sites">
+                                                <fieldset>
+                                                    <span class="topbarmain-title">
+                                                        <input type="text" class="input-text" name="pattern" value="Search Sites..." onBlur="if( this.value == '' ) this.value = 'Search Sites...'" onFocus="if( this.value == 'Search Sites...' ) this.value = '';"/>
+                                                    </span>
+                                                    <span class="topbarmain-arrow"><button type="submit" class="btn" onClick="removePlaceHolder()"><i class="fa fa-search" aria-hidden="true"></i></button></span>
+                                                </fieldset>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="headertop search blue">
+                                <div class="menu-topbar">
+                                    <div class="topbar-main">
+                                        <div class="standardForm supplySearch">
+                                            <form action="{{context_path}}/supplies">
+                                                <fieldset>
+                                                    <span class="topbarmain-title">
+                                                        <input type="text" class="input-text" name="search_pattern" value="Search Supplies..." onBlur="if( this.value == '' ) this.value = 'Search Supplies...';" onFocus="if( this.value == 'Search Supplies...' ) this.value = '';" />
+                                                    </span>
+                                                    <span class="topbarmain-arrow"><button type="submit" class="btn" onClick="removePlaceHolder()"><i class="fa fa-search" aria-hidden="true"></i></button></span>
+                                                </fieldset>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- End Layer Header Top -->
+                    </div>
             	</div>
 				
 			</div>
@@ -176,9 +216,78 @@
 	
 	
 	<!-- Layer Body -->
-    <div class="layer-body">
+    <div class="layer-body menuHide">
 		<div class="container-fluid">
-            <div class="row">                                       
+            <div class="row">           
+                <!-- Layer Sidebar -->
+                    <div class="layer-sidebar col-sm-2 bgWhite bodySameHeight">
+                        <div class="main-navigation">
+                            <!-- Nav Main -->
+                            <nav class="nav-main active">
+                                <h4><i class="fa fa-th-large" aria-hidden="true"></i> Main</h4>
+                                <ul>
+                                    <li>
+                                        <a href="#" title="Contracts">Contracts</a>
+                                        <ul>
+                                            <li><a href="{{context_path}}/hhdc_contracts" title="HHDC">HHDC</a></li>
+                                            <li><a href="{{context_path}}/mop_contracts" title="MOP">MOP</a></li>
+                                            <li><a href="{{context_path}}/supplier_contracts" title="Supplier">Supplier</a></li>
+                                            <li><a href="{{context_path}}/dno_contracts" title="DNO">DNO</a></li>
+                                            <li><a href="{{context_path}}/non_core_contracts" title="Non-Core">Non-Core</a></li>
+                                        </ul>
+                                    </li>
+                                    <li><a href="{{context_path}}/site_snags" title="Site Snags">Site Snags</a></li>
+                                    {# 
+                                    {% if properties.local_reports_id %}
+	                                    <li><a href="{{context_path}}/local_reports/{{properties.local_reports_id}}/output" title="Local Reports">Local Reports</a></li>
+                                    {% endif %}
+                                    #}
+                                    <li><a href="{{context_path}}/general_imports" title="General Import">General Import</a></li>
+                                    <li><a href="https://github.com/WessexWater/chellow" title="Docs">Docs</a></li>
+                                </ul>
+                            </nav>
+                            <!-- End Nav Main -->
+                            
+                            <!-- Nav Industry -->
+                            <nav class="nav-industry">
+                                <h4><i class="fa fa-question" aria-hidden="true"></i> Industry Info</h4>
+                                <ul>
+                                    <li><a href="{{context_path}}/participants" title="Market Participants">Market Participants</a></li>
+                                    <li><a href="{{context_path}}/market_roles" title="Market Roles">Market Roles</a></li>
+                                    <li><a href="{{context_path}}/parties" title="Parties">Parties</a></li>
+                                    <li><a href="{{context_path}}/pcs" title="Profile Classes">Profile Classes</a></li>
+                                    <li><a href="{{context_path}}/mtcs" title="Meter Timeswitch Classes">Meter Timeswitch Classes</a></li>
+                                    <li><a href="{{context_path}}/meter_types" title="Meter Types">Meter Types</a></li>
+                                    <li><a href="{{context_path}}/meter_payment_types" title="Meter Payments Types">Meter Payments Types</a></li>
+                                    <li><a href="{{context_path}}/tprs" title="TPRs">TPRs</a></li>
+                                    <li><a href="{{context_path}}/sscs" title="SSCs">SSCs</a></li>
+                                    <li><a href="{{context_path}}/gsp_groups" title="GSP Groups">GSP Groups</a></li>
+                                    <li><a href="{{context_path}}/cops" title="CoPs">CoPs</a></li>
+                                    <li><a href="{{context_path}}/bill_types" title="Bill Types">Bill Types</a></li>
+                                    <li><a href="{{context_path}}/read_types" title="Read Types">Read Types</a></li>
+                                    <li><a href="{{context_path}}/sources" title="Sources">Sources</a></li>
+                                    <li><a href="{{context_path}}/generator_types" title="Generator Types">Generator Types</a></li>
+                                    <li><a href="{{context_path}}/reports/163" title="MDD Converter">MDD Converter</a></li>
+                                </ul>
+                            </nav>
+                            <!-- End Nav Industry -->
+                            
+                            <!-- Nav Editors -->
+                            <nav class="nav-editors">
+                                <h4><i class="fa fa-cog" aria-hidden="true"></i> For Editors</h4>
+                                <ul>
+                                    <li><a href="{{context_path}}/local_reports" title="Edit Local Reports">Edit Local Reports</a></li>
+                                    <li><a href="{{context_path}}/users" title="Users">Users</a></li>
+                                    <li><a href="{{context_path}}/user_roles" title="Users Roles">Users Roles</a></li>
+                                    <li><a href="{{context_path}}/system" title="System">System</a></li>
+                                    <li><a href="{{context_path}}/reports/ecoes_comparison" title="Comparison against ECOES">Comparison against ECOES</a></li>
+                                </ul>
+                            </nav>
+                            <!-- End Nav Editors -->
+                        </div>
+                    </div>
+                <!-- End Layer Sidebar -->
+                                            
 				<!-- Layer Content -->
 					<div class="col-sm-12 bgLightBlue bodySameHeight">
                         <div class="layer-content">
@@ -195,6 +304,8 @@
 	</div>
 	<!-- End Layer Body -->
 	
+
+    <p class="panel-mainmenubutton"><a href="javascript:void(0)" title="Menu Toggle" onClick="toggleMenuMain()"><i class="fa fa-bars" aria-hidden="true"></i></a></p>
 </div>
 <!-- End Layer Page -->
 {% endblock %}

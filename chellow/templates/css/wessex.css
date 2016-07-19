@@ -4,8 +4,9 @@ To change this template file, choose Tools | Templates
 and open the template in the editor.
 */
 /* 
-    Created on : July 13, 2016, 12:02:30 PM
-    Author     : AL
+    Created on  : May 27, 2016, 11:03:30 AM
+    Edited on   : July 20, 2016, 12:15:08 PM
+    Author      : AL
 */
 
 html, body {
@@ -184,7 +185,8 @@ body.LoginScreen,
     background-color: #FFF;
 }
 
-.layer-header .col-sm-10 {
+.layer-header .col-sm-10, 
+.layer-header .col-sm-9 {
     font-size: 0;
     padding: 0px 15px;
 }
@@ -196,9 +198,12 @@ body.LoginScreen,
 
 .layer-header .panel-breadcrumbs {
     font-size: 12px;
-    /* margin: 7px 0; */
-    margin: 28px 0px 24px;
-    width: 90%;
+     margin: 7px 0; 
+    /*margin: 28px 0px 24px;*/
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    /*width: 90%;*/
 }
 
 .layer-header .panel-menubutton {
@@ -412,7 +417,10 @@ body.LoginScreen,
 
 @media( min-width: 768px ) {
     .layer-header .col-sm-2, 
-    .layer-header .col-sm-10 {
+    .layer-header .col-sm-10, 
+    
+    .layer-header .col-sm-3, 
+    .layer-header .col-sm-9 {
         height: 76px;
     }
 
@@ -444,7 +452,8 @@ body.LoginScreen,
 }
 
 
-@media( min-width: 1025px ) {
+@media( min-width: 992px ) {
+    .layer-header .col-sm-9, 
     .layer-header .col-sm-10 {
         font-size: 0;
         padding: 20px 15px;
@@ -480,8 +489,8 @@ body.LoginScreen,
 
 .panel-mainmenubutton, 
 .panel-mainmenubuttonclose {
-    font-size: 25px;
-    left: 20px;
+    font-size: 20px;
+    left: 15px;
     margin: 0;
     position: absolute;
     top: 20px;
@@ -576,16 +585,8 @@ body.LoginScreen,
     border-style: solid;
     border-width: 1px 0;
     margin: 0;
-    /*max-height: 0;*/
     padding: 0;
     transition: opacity 300ms ease-in-out, visibility 300ms ease-in-out; -moz-transition: opacity 300ms ease-in-out, visibility 300ms ease-in-out; -o-transition: opacity 300ms ease-in-out, visibility 300ms ease-in-out; -webkit-transition: opacity 300ms ease-in-out, visibility 300ms ease-in-out;
-    opacity: 0; visibility: hidden;
-}
-
-/*.main-navigation nav li.Selected ul,*/
-.main-navigation nav ul li:hover ul {
-    max-height: 500px;
-    opacity: 1; visibility: visible;
 }
 
 .main-navigation nav ul ul li {
@@ -632,10 +633,18 @@ body.LoginScreen,
     .main-navigation nav ul ul {
         background-color: #FFF;
         border-width: 1px;
+        max-height: 0;
         min-width: 160px;
         position: absolute;
         right: -160px;
         top: -1px;
+        opacity: 0; visibility: hidden;
+    }
+
+    /*.main-navigation nav li.Selected ul,*/
+    .main-navigation nav ul li:hover ul {
+        max-height: 500px;
+        opacity: 1; visibility: visible;
     }
     
     .main-navigation nav ul ul li {
@@ -809,7 +818,7 @@ body.LoginScreen,
 table.DataTable {
     /* background-color: transparent; */
     background-color: #FFF;
-    border: 1px solid #D9D9D9;
+    /*border: 1px solid #D9D9D9;*/
     margin-bottom: 15px;
     margin-right: 1px;
     width: 100%;
@@ -991,6 +1000,8 @@ input.input-text,
 
 .standardForm input[type="file"] {
     height: auto;
+    padding-bottom: 3px;
+    padding-top: 4px;
 }
 
 .standardForm input[type="checkbox"], 
@@ -1074,4 +1085,83 @@ input[type="reset"]:hover {
 /* Bootstrap Overwrite */
 .page-header {
     margin: 20px 0;
+}
+
+
+/* Header Top StandardForm */
+.topbar-main span {
+    float: left;
+    padding: 0;
+}
+
+.topbar-main .topbarmain-title {
+    width: 150px;
+}
+
+.headertop .standardForm {
+    
+}
+
+.headertop .standardForm .input-text, 
+.headertop .standardForm .btn {
+    margin: 0;
+}
+
+.headertop .standardForm .input-text {
+    background-color: transparent;
+    border: 0;
+    color: #FFF;
+    font-weight: 100;
+    height: 34px;
+}
+
+.headertop .standardForm .btn {
+    background-color: transparent;
+}
+
+@media( min-width: 768px ) {
+    .menuHide .layer-sidebar {
+        /*border: 1px solid #D9D9D9;*/
+        /*border-radius: 7px; -moz-border-radius: 7px; -o-border-radius: 7px; -webkit-border-radius: 7px;*/
+        left: -100%;
+        /*margin: 15px 0 0;*/
+        overflow-y: auto;
+        overflow: visible;
+        /* padding: 15px 0; */
+        padding: 0px 0px 30px;
+        position: absolute;
+        width: 95%;
+    }
+    
+    .menuHide .layer-sidebar.shown {
+        /*display: block;*/
+    }
+    
+    .menuHide .main-navigation {
+        background-color: #FFF;
+    }
+    
+    .menuHide .main-navigation nav {
+/*        float: left;
+        padding: 0 15px;
+        width: 33.33333%;*/
+    }
+    
+    .menuHide .main-navigation nav ul {
+        /*display: block;*/
+    }
+    
+    .menuHide .main-navigation .nav-main h4 {
+        padding-top: 10px;
+    }
+    
+    .menuHide .col-sm-10.bodySameHeight {
+        width: 100%;
+    }
+}
+
+@media( min-width: 992px ) {
+    .menuHide .layer-sidebar {
+        width: 16.66666667%;
+    }
 }

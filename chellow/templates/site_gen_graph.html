@@ -11,130 +11,112 @@
 {% endblock %}
 
 {% block content %}
-					<!-- Layer Section -->
-                                        <div class="layer-section">
-                                            <!-- Section Header -->
-                                            <div class="section-header">
-                                                <h2>HH graph of site use</h2>
-                                            </div>
-                                            <!-- End Section Header -->
-                                            <!-- Section Content -->
-                                            <div class="section-content">
-                                                <div class="section-data">
-                                                    <div class="noWrap">
-							<svg
-			width="{{graphs.used.pos_hhs|length + 100}}px"
-			height="{{height}}px" xmlns="http://www.w3.org/2000/svg" version="1.1"
-		 	font-family="Overclock, sans-serif" font-size="12" fill="black">
-		<text x="{{title.x}}" y="{{title.y}}">
-				{{title.text}}
-		</text>
+<!-- Layer Section -->
+<div class="layer-section">
+    <!-- Section Header -->
+    <div class="section-header">
+        <h2>HH graph of site use</h2>
+    </div>
+    <!-- End Section Header -->
+    <!-- Section Content -->
+    <div class="section-content">
+        <div class="section-data">
+            <div class="standardForm textWidthAuto inlineFormSubmit">
+                <form action="">
+                    <fieldset>
+                        <input type="hidden" name="site_id" value="{{site.id}}">
 
-		{% for graph_name in graph_names %}
-			{% set graph = graphs[graph_name] %}
-			<g transform="translate(0, {{graph.y}})">
-				<text x="0px" y="0">{{graph.title}}</text>
+                        For <input name="months" maxlength="2" size="2" value="{{months}}">
+                        months finishing at the end of
+                        {{input_date('finish', finish_date, 'month')}}
+                        <input type="submit" value="Show">
+                    </fieldset>
+                </form>
+            </div>
+        </div>
+        <div class="section-data">
+            <div class="noWrap">
+                <svg
+                    width="{{graphs.used.pos_hhs|length + 100}}px"
+                    height="{{height}}px" xmlns="http://www.w3.org/2000/svg" version="1.1"
+                    font-family="Overclock, sans-serif" font-size="12" fill="black">
+                        <text x="{{title.x}}" y="{{title.y}}">
+                        {{title.text}}
+                        </text>
 
-				{% for supply in graph.supplies.values() %}
-				{% set legend_y = 13 * loop.index0 + 8 %}
-					<rect
-							x="0px" y="{{legend_y}}px" width="10px" height="10px"
-							fill="{{supply.colour}}"/>
-					<text x="17px" y="{{legend_y + 8}}px">
-						{{supply.text}}
-					</text>
-					
-				{% endfor %}
+                    {% for graph_name in graph_names %}
+                    {% set graph = graphs[graph_name] %}
+                        <g transform="translate(0, {{graph.y}})">
+                            <text x="0px" y="0">{{graph.title}}</text>
 
-				<g transform="translate(230, 0)">
-					<text x="-80" y="0">kW</text>
+                            {% for supply in graph.supplies.values() %}
+                            {% set legend_y = 13 * loop.index0 + 8 %}
+                                <rect
+                                x="0px" y="{{legend_y}}px" width="10px" height="10px"
+                                fill="{{supply.colour}}"/>
+                                <text x="17px" y="{{legend_y + 8}}px">
+                                {{supply.text}}
+                                </text>
 
-					{% for scale_line in graph.scale_lines %}
-						<rect
-								x="0px" y="{{scale_line.y}}px"
-								width="{{scale_line.width}}px" height="1px"/>
-						<text x="-28px" y="{{scale_line.y_val}}px">
-							{{scale_line.text}}
-						</text>
-					{% endfor %}
+                            {% endfor %}
 
-					{% for scale_value in graph.monthly_scale_values %}
-						<text x="{{scale_value.x}}" y="{{scale_value.y}}px">
-							{{scale_value.text}}
-						</text>
-					{% endfor %}
+                            <g transform="translate(230, 0)">
+                                <text x="-80" y="0">kW</text>
 
-					{% for tick in graph.ticks %}
-						<rect x="{{tick.x}}px" y="{{tick.y}}px" width="1px" height="4px"/>
-					{% endfor %}
+                                {% for scale_line in graph.scale_lines %}
+                                    <rect
+                                    x="0px" y="{{scale_line.y}}px"
+                                    width="{{scale_line.width}}px" height="1px"/>
+                                    <text x="-28px" y="{{scale_line.y_val}}px">
+                                    {{scale_line.text}}
+                                    </text>
+                                {% endfor %}
 
-					{% for hh in graph.pos_hhs %}
-						<rect
-								x="{{hh.x}}px" y="{{hh.y}}px" width="1px"
-								height="{{hh.height}}px" fill="{{hh.colour}}" />
-					{%- endfor %}
+                                {% for scale_value in graph.monthly_scale_values %}
+                                    <text x="{{scale_value.x}}" y="{{scale_value.y}}px">
+                                    {{scale_value.text}}
+                                    </text>
+                                {% endfor %}
 
-					{% for hh in graph.neg_hhs %}
-						<rect
-								x="{{hh.x}}px" y="{{hh.y}}px" width="1px"
-								height="{{hh.height}}px" fill="{{hh.colour}}" />
-					{%- endfor %}
+                                {% for tick in graph.ticks %}
+                                    <rect x="{{tick.x}}px" y="{{tick.y}}px" width="1px" height="4px"/>
+                                {% endfor %}
 
-					{% if loop.last %}
-						{% for day in days %}
-							<text x="{{day.x}}px" y="{{day.y}}px" fill="{{day.colour}}">
-								{{day.text}}
-							</text>
-						{%- endfor %}
+                                {% for hh in graph.pos_hhs %}
+                                    <rect
+                                    x="{{hh.x}}px" y="{{hh.y}}px" width="1px"
+                                    height="{{hh.height}}px" fill="{{hh.colour}}" />
+                                {%- endfor %}
 
-						{% for month_point in month_points %}
-							<text x="{{month_point.x}}px" y="{{month_point.y}}px">
-								{{month_point.text}}
-							</text>
-						{%- endfor %}
-					{% endif %}
-				</g>
-			</g>
-		{%- endfor %}
-	</svg>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <!-- End Section Content -->
-                                        </div>
-                                        <!-- End Layer Section -->
-                                        
-                                        <!-- Layer Section -->
-                                        <div class="layer-section">
-                                            <!-- Section Header -->
-                                            <div class="section-header">
-                                                <h2>Show graph</h2>
-                                            </div>
-                                            <!-- End Section Header -->
-                                            <!-- Section Content -->
-                                            <div class="section-content">
-                                                <div class="section-data">
-                                                    <div class="standardForm textWidthAuto inlineFormSubmit">
-                                                        <form action="">
-								<fieldset>
-									<input type="hidden" name="site_id" value="{{site.id}}">
+                                {% for hh in graph.neg_hhs %}
+                                    <rect
+                                    x="{{hh.x}}px" y="{{hh.y}}px" width="1px"
+                                    height="{{hh.height}}px" fill="{{hh.colour}}" />
+                                {%- endfor %}
 
-									For <input name="months" maxlength="2" size="2" value="{{months}}">
-									months finishing at the end of
-									{{input_date('finish', finish_date, 'month')}}
-									<input type="submit" value="Show">
-								</fieldset>
-							</form>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <!-- End Section Content -->
-                                        </div>
-                                        <!-- End Layer Section -->
+                                {% if loop.last %}
+                                    {% for day in days %}
+                                        <text x="{{day.x}}px" y="{{day.y}}px" fill="{{day.colour}}">
+                                        {{day.text}}
+                                        </text>
+                                    {%- endfor %}
+
+                                    {% for month_point in month_points %}
+                                        <text x="{{month_point.x}}px" y="{{month_point.y}}px">
+                                        {{month_point.text}}
+                                        </text>
+                                    {%- endfor %}
+                                {% endif %}
+                            </g>
+                        </g>
+                    {%- endfor %}
+                </svg>
+            </div>
+        </div>
+    </div>
+    <!-- End Section Content -->
+</div>
+<!-- End Layer Section -->
 
 
-
-	
-
-	
 {% endblock %}

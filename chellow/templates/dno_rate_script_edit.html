@@ -26,7 +26,7 @@
 							<input type="hidden" name="dno_rate_script_id"
 									value="{{rate_script.id}}">
 							<input type="submit" name="delete" value="Delete">
-							<a class="btn" href="{{context_path}}/dno_rate_scripts/{{rate_script.id}}/edit">Cancel</a>
+							<input type="reset" value="Cancel" onClick="window.location='{{context_path}}/dno_rate_scripts/{{rate_script.id}}/edit'" />
 						</fieldset>
 					</form>
 				</div>

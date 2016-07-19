@@ -183,7 +183,6 @@
 					<fieldset>
 						<input type="hidden" name="site_id" value="{{site.id}}">
 						<legend>Monthly Duration</legend>
-						<br>
 						For {{input_text('months', '1', 2, 2)}}
 						month(s) until the end of {{input_date('finish', last_month_finish, resolution='month')}}
 						<input type="submit" value="Download"/>
@@ -195,7 +194,6 @@
 					<fieldset>
 						<input type="hidden" name="site_id" value="{{site.id}}">
 						<legend>Unified Monthly Duration</legend>
-						<br>
 						For {{input_text('months', '1', 2, 2)}}
 						month(s) until the end of {{input_date('finish', last_month_finish, resolution='month')}}
 						<input type="submit" value="Download">
@@ -207,7 +205,6 @@
 						<fieldset>
 							<input type="hidden" name="site_id" value="{{site.id}}">
 							<legend>Download TRIAD CSV</legend>
-							<br>
 							For financial year ending March
 							{{input_date(None, last_month_finish, resolution='year')}}
 							<input type="submit" value="Download">
@@ -219,7 +216,6 @@
 					<fieldset>
 						<legend>HH Data: 48 Column Format</legend>
 						<input type="hidden" name="site_id" value="{{site.id}}">
-						<br>
 						<select name="type">
 							<option value="used">Used</option>
 							<option value="imp_net">Imported</option>
@@ -252,7 +248,6 @@
 					<fieldset>
 						<input type="hidden" name="site_id" value="{{site.id}}">
 						<legend>Displaced Virtual Bills</legend>
-						<br>
 						For {{input_text('months', '1', 2, 2)}}
 						month(s) until the end of {{input_date('finish', last_month_finish, resolution='month')}}
 						<input type="submit" value="Download">

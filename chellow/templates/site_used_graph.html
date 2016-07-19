@@ -11,128 +11,116 @@
 {% endblock %}
 
 {% block content %}
+<!-- Layer Section -->
+<div class="layer-section">
+	<!-- Section Header -->
+	<div class="section-header">
+		<h2>HH graph of site use</h2>	
+	</div>
+	<!-- End Section Header -->
+	<!-- Section Content -->
+	<div class="section-content">
+		<div class="section-data">
+		    <div class="standardForm textWidthAuto inlineFormSubmit">
+                <form action="">
+                    <fieldset>
+                        For {{input_text('months', request.values.months, 2, 2)}}
+                        months finishing in {{input_date('finish', finish_date, 'month')}}
+                        <input type="submit" value="Show">
+                    </fieldset>
+                </form>
+            </div>
+		</div>
+		<div class="section-data">
+		    <div class="noWrap">
+                <svg width="{{graph_left + result_data|length + 100}}px" height="400px"
+    			 xmlns="http://www.w3.org/2000/svg" version="1.1" font-family="Overclock, sans-serif" font-size="12">
 
-					<!-- Layer Section -->
-                                        <div class="layer-section">
-                                            <!-- Section Header -->
-                                            <div class="section-header">
-                                                <h2>HH graph of site use</h2>
-                                            </div>
-                                            <!-- End Section Header -->
-                                            <!-- Section Content -->
-                                            <div class="section-content">
-                                                <div class="section-data">
-                                                    <div class="noWrap">
-                                                        <svg width="{{graph_left + result_data|length + 100}}px" height="400px"
-			 xmlns="http://www.w3.org/2000/svg" version="1.1" font-family="Overclock, sans-serif" font-size="12">
+            		{% if result_data|length > 0 %}
+            			{% for hh in result_data %}
+            					{% if not hh.is_complete %}
+            						<rect x="{{graph_left + loop.index0}}px" y="{{graph_top}}px" width="1px" height="{{max_height}}px" stroke="grey" />
+            					{% endif %}
 
-		{% if result_data|length > 0 %}
-			{% for hh in result_data %}
-					{% if not hh.is_complete %}
-						<rect x="{{graph_left + loop.index0}}px" y="{{graph_top}}px" width="1px" height="{{max_height}}px" stroke="grey" />
-					{% endif %}
+            					{%- if hh.height > 0 %}
+            						<rect x="{{graph_left + loop.index0}}px" y="{{x_axis - hh.height}}px" width="1px" height="{{hh.height}}px" fill="
+            								{%- if hh.is_complete -%}
+            									blue
+            								{%- else -%}
+            									black
+            								{%- endif -%}">
+            							<title>{{hh.value}} kW at {{hh.start_date|hh_format}}</title>
+            						</rect> 
+            					{% else %}
+            						<rect x="{{graph_left + loop.index0}}" y="{{x_axis}}" width="1" height="{{hh.height|abs}}"
+            							fill="
+            								{%- if hh.is_complete -%}
+            									blue
+            								{%- else -%}
+            									black
+            								{%- endif -%}"
+            						/>
+            					{%- endif %}
+            			{%- endfor %}
 
-					{%- if hh.height > 0 %}
-						<rect x="{{graph_left + loop.index0}}px" y="{{x_axis - hh.height}}px" width="1px" height="{{hh.height}}px" fill="
-								{%- if hh.is_complete -%}
-									blue
-								{%- else -%}
-									black
-								{%- endif -%}">
-							<title>{{hh.value}} kW at {{hh.start_date|hh_format}}</title>
-						</rect> 
-					{% else %}
-						<rect x="{{graph_left + loop.index0}}" y="{{x_axis}}" width="1" height="{{hh.height|abs}}"
-							fill="
-								{%- if hh.is_complete -%}
-									blue
-								{%- else -%}
-									black
-								{%- endif -%}"
-						/>
-					{%- endif %}
-			{%- endfor %}
+            			{% for day in days %}
+            				<text x="{{graph_left + 48 * loop.index0 + 16}}"
+            					y="{{graph_top + max_height + 20}}" fill="{{day.colour}}"
+            				>
+            					{{day.day}}
+            				</text>
 
-			{% for day in days %}
-				<text x="{{graph_left + 48 * loop.index0 + 16}}"
-					y="{{graph_top + max_height + 20}}" fill="{{day.colour}}"
-				>
-					{{day.day}}
-				</text>
+            				<rect x="{{graph_left + loop.index0 * 48}}"
+            					y="{{graph_top + max_height}}" width="1" height="5"
+            					fill="black"
+            				/>
+            			{% endfor %}
 
-				<rect x="{{graph_left + loop.index0 * 48}}"
-					y="{{graph_top + max_height}}" width="1" height="5"
-					fill="black"
-				/>
-			{% endfor %}
+            			{% for month in months %}
+            				<text x="{{graph_left + month.x + 16}}"
+            					y="{{graph_top + max_height + 45}}" fill="black"
+            				>
+            					{{month.name}}
+            				</text>
+            			{% endfor %}
 
-			{% for month in months %}
-				<text x="{{graph_left + month.x + 16}}"
-					y="{{graph_top + max_height + 45}}" fill="black"
-				>
-					{{month.name}}
-				</text>
-			{% endfor %}
+            			{% for line in scale_lines %}
+            					<rect x="{{graph_left - 5}}" y="{{line.y}}" width="{{result_data|length + 5}}" height="1" fill="black" />
+            				<text x="{{graph_left - 40}}" y="{{line.y + 5}}" fill="black">
+            				 {{line.height * 2}}
+            				</text>
 
-			{% for line in scale_lines %}
-					<rect x="{{graph_left - 5}}" y="{{line.y}}" width="{{result_data|length + 5}}" height="1" fill="black" />
-				<text x="{{graph_left - 40}}" y="{{line.y + 5}}" fill="black">
-				 {{line.height * 2}}
-				</text>
+            				{% for month in months %}
+            					<text x="{{graph_left + month.x + 16}}" y="{{line.y + -2}}"
+            						fill="black"
+            					>
+            						{{line.height * 2}}
+            					</text>
+            				{% endfor %}
+            			{% endfor %}
 
-				{% for month in months %}
-					<text x="{{graph_left + month.x + 16}}" y="{{line.y + -2}}"
-						fill="black"
-					>
-						{{line.height * 2}}
-					</text>
-				{% endfor %}
-			{% endfor %}
+            			<rect x="{{graph_left}}" y="{{graph_top}}" width="1" height="{{max_height}}"/>
 
-			<rect x="{{graph_left}}" y="{{graph_top}}" width="1" height="{{max_height}}"/>
+            			<text x="{{graph_left - 90}}" y="100">kW</text>
+            			<text x="30" y="30">{{title}}</text>
+            			<text x="30" y="395" font-size="10">
+            				Poor data is denoted by a grey background and black foreground
+            			</text>
 
-			<text x="{{graph_left - 90}}" y="100">kW</text>
-			<text x="30" y="30">{{title}}</text>
-			<text x="30" y="395" font-size="10">
-				Poor data is denoted by a grey background and black foreground
-			</text>
+            		{% else %}
+            			<text x="30" y="10" font-height="12">
+            				No data available for this period.
+            			</text>
+            		{% endif %}
+                </svg>
+            </div>
+		<div>
+	</div>
+	<!-- End Section Content -->
+</div>
+<!-- End Layer Section -->
 
-		{% else %}
-			<text x="30" y="10" font-height="12">
-				No data available for this period.
-			</text>
-		{% endif %}
-	</svg>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <!-- End Section Content -->
-                                        </div>
-                                        <!-- End Layer Section -->
-                                        
-                                        <!-- Layer Section -->
-                                        <div class="layer-section">
-                                            <!-- Section Header -->
-                                            <div class="section-header">
-                                                <h2>Show graph</h2>
-                                            </div>
-                                            <!-- End Section Header -->
-                                            <!-- Section Content -->
-                                            <div class="section-content">
-                                                <div class="section-data">
-                                                    <div class="standardForm textWidthAuto inlineFormSubmit">
-                                                       <form action="">
-								<fieldset>
-									For {{input_text('months', request.values.months, 2, 2)}}
-									months finishing in {{input_date('finish', finish_date, 'month')}}
-									<input type="submit" value="Show">
-								</fieldset>
-							</form>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <!-- End Section Content -->
-                                        </div>
-                                        <!-- End Layer Section -->
+
+
 	
 {% endblock %}
