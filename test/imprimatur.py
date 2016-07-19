@@ -6560,20 +6560,30 @@ def virtual_bill(supply_source):
         'start_month=12&start_day=01&start_hour=00&start_minute=00&'
         'finish_year=2013&finish_month=12&finish_day=01&finish_hour=23&'
         'finish_minute=30',
-        'status_code': 200,
+        'status_code': 303},
+    {
+        'path': '/downloads',
+        'tries': {'max': 20, 'period': 1},
         'regexes': [
-            r'"22 0470 7514 535","CH017","Parbola","010","2013-12-01 00:00",'
-            '"2013-12-01 23:30","93.89","","","","","5.89","150","1",'
-            '"0","0","","","","","","","","","0.00147","0.0","","88","0",'
-            '"0.0",'
-            '"0.0","0","0.0","0.0","0","0","0.0","0","0","0.0","0","0","0.0",'
-            '"0","0","0.0","0.0","","0.0","","","","","","","","",'
-            '"","","","","","","","","","","","","","","","","","","","","",'
-            '"","","","","","","","","","","","duos-amber-gbp","0.0",'
-            '"duos-amber-kwh","0","duos-amber-rate","-0.00649",'
-            '"duos-fixed-days","1",'
-            '"duos-fixed-gbp","0","duos-fixed-rate","0","duos-green-gbp",'
-            '"0.0","duos-green-kwh","0","duos-green-rate","-0.00649"']},
+            r"018_FINISHED_watkinsexamplecom_virtual_bills\.csv"],
+        'status_code': 200},
+    {
+        'path': '/downloads/'
+        '018_FINISHED_watkinsexamplecom_virtual_bills.csv',
+        'regexes': [
+            r'22 0470 7514 535,CH017,Parbola,010,2013-12-01 00:00,'
+            '2013-12-01 23:30,93.89,,,,,5.89,150,1,'
+            '0,0,,,,,,,,,0.00147,0.0,,88,0,'
+            '0.0,'
+            '0.0,0,0.0,0.0,0,0,0.0,0,0,0.0,0,0,0.0,'
+            '0,0,0.0,0.0,,0.0,,,,,,,,,'
+            ',,,,,,,,,,,,,,,,,,,,,'
+            ',,,,,,,,,,,duos-amber-gbp,0.0,'
+            'duos-amber-kwh,0,duos-amber-rate,-0.00649,'
+            'duos-fixed-days,1,'
+            'duos-fixed-gbp,0,duos-fixed-rate,0,duos-green-gbp,'
+            '0.0,duos-green-kwh,0,duos-green-rate,-0.00649'],
+        'status_code': 200},
 
     {
         'name': "Contract displaced virtual bills",
@@ -6698,11 +6708,11 @@ def virtual_bill(supply_source):
         'path': '/downloads',
         'tries': {'max': 20, 'period': 1},
         'regexes': [
-            r"018_FINISHED_watkinsexamplecom_supplies_snapshot\.csv"],
+            r"019_FINISHED_watkinsexamplecom_supplies_snapshot\.csv"],
         'status_code': 200},
     {
         'path': '/downloads/'
-        '018_FINISHED_watkinsexamplecom_supplies_snapshot.csv',
+        '019_FINISHED_watkinsexamplecom_supplies_snapshot.csv',
         'status_code': 200,
         'regexes': [
             r'2007-09-30 23:30,CI004,Lower Treave,,,9,net,,_L,'
@@ -6723,11 +6733,11 @@ def virtual_bill(supply_source):
         'path': '/downloads',
         'tries': {'max': 20, 'period': 1},
         'regexes': [
-            r"019_FINISHED_watkinsexamplecom_supplies_snapshot\.csv"],
+            r"020_FINISHED_watkinsexamplecom_supplies_snapshot\.csv"],
         'status_code': 200},
     {
         'path': '/downloads/'
-        '019_FINISHED_watkinsexamplecom_supplies_snapshot.csv',
+        '020_FINISHED_watkinsexamplecom_supplies_snapshot.csv',
         'status_code': 200,
         'regexes': [
             r'2011-05-31 23:30,CI004,Lower Treave,,,9,net,,_L,'
@@ -6749,11 +6759,11 @@ def virtual_bill(supply_source):
         'path': '/downloads',
         'tries': {'max': 20, 'period': 1},
         'regexes': [
-            r"020_FINISHED_watkinsexamplecom_supplies_snapshot\.csv"],
+            r"021_FINISHED_watkinsexamplecom_supplies_snapshot\.csv"],
         'status_code': 200},
     {
         'path': '/downloads/'
-        '020_FINISHED_watkinsexamplecom_supplies_snapshot.csv',
+        '021_FINISHED_watkinsexamplecom_supplies_snapshot.csv',
         'status_code': 200,
         'regexes': [
             r'Other Site Ids,Other Site Names',
@@ -6883,11 +6893,11 @@ def virtual_bill(supply_source):
         'path': '/downloads',
         'tries': {'max': 20, 'period': 1},
         'regexes': [
-            r"021_FINISHED_watkinsexamplecom_supplies_snapshot\.csv"],
+            r"022_FINISHED_watkinsexamplecom_supplies_snapshot\.csv"],
         'status_code': 200},
     {
         'path': '/downloads/'
-        '021_FINISHED_watkinsexamplecom_supplies_snapshot.csv',
+        '022_FINISHED_watkinsexamplecom_supplies_snapshot.csv',
         'tries': {},
         'status_code': 200,
         'regexes': [
@@ -6970,11 +6980,11 @@ def virtual_bill(supply_source):
         'tries': {'max': 30, 'period': 1},
         'status_code': 200,
         'regexes': [
-            r"022_FINISHED_watkinsexamplecom_site_monthly_duration_for_"
+            r"023_FINISHED_watkinsexamplecom_site_monthly_duration_for_"
             r"CI004_1_to_2010_7\.csv"]},
     {
         'path': '/downloads/'
-        '022_FINISHED_watkinsexamplecom_site_monthly_duration_for_'
+        '023_FINISHED_watkinsexamplecom_site_monthly_duration_for_'
         'CI004_1_to_2010_7.csv',
         'status_code': 200,
         'regexes': [
@@ -6989,11 +6999,11 @@ def virtual_bill(supply_source):
         'tries': {'max': 30, 'period': 1},
         'status_code': 200,
         'regexes': [
-            r"023_FINISHED_watkinsexamplecom_site_monthly_duration_for_"
+            r"024_FINISHED_watkinsexamplecom_site_monthly_duration_for_"
             r"CI017_1_to_2011_5\.csv"]},
     {
         'path': '/downloads/'
-        '023_FINISHED_watkinsexamplecom_site_monthly_duration_for_'
+        '024_FINISHED_watkinsexamplecom_site_monthly_duration_for_'
         'CI017_1_to_2011_5.csv',
         'status_code': 200,
         'regexes': [
@@ -7015,11 +7025,11 @@ def virtual_bill(supply_source):
         'tries': {'max': 30, 'period': 1},
         'status_code': 200,
         'regexes': [
-            r"024_FINISHED_watkinsexamplecom_site_monthly_duration_for_"
+            r"025_FINISHED_watkinsexamplecom_site_monthly_duration_for_"
             r"CI017_1_to_2012_2\.csv"]},
     {
         'path': '/downloads/'
-        '024_FINISHED_watkinsexamplecom_site_monthly_duration_for_'
+        '025_FINISHED_watkinsexamplecom_site_monthly_duration_for_'
         'CI017_1_to_2012_2.csv',
         'status_code': 200,
         'regexes': [
@@ -7034,9 +7044,9 @@ def virtual_bill(supply_source):
         'tries': {'max': 20, 'period': 1},
         'status_code': 200,
         'regexes': [
-            r"025_FINISHED_watkinsexamplecom_bill_check\.csv"]},
+            r"026_FINISHED_watkinsexamplecom_bill_check\.csv"]},
     {
-        'path': '/downloads/025_FINISHED_watkinsexamplecom_bill_check.csv',
+        'path': '/downloads/026_FINISHED_watkinsexamplecom_bill_check.csv',
         'status_code': 200,
         'regexes': [
             r'07-002,3423760010,N,10,9.07,0.21,2012-01-05 00:00,'
@@ -7053,11 +7063,11 @@ def virtual_bill(supply_source):
         'tries': {},
         'status_code': 200,
         'regexes': [
-            r"026_FINISHED_watkinsexamplecom_supplies_monthly_duration_for_"
+            r"027_FINISHED_watkinsexamplecom_supplies_monthly_duration_for_"
             r"1_1_to_2008_7\.csv"]},
     {
         'path': '/downloads/'
-        '026_FINISHED_watkinsexamplecom_supplies_monthly_duration_for_'
+        '027_FINISHED_watkinsexamplecom_supplies_monthly_duration_for_'
         '1_1_to_2008_7.csv',
         'status_code': 200,
         'regexes': [
@@ -7088,10 +7098,10 @@ def virtual_bill(supply_source):
         'tries': {},
         'status_code': 200,
         'regexes': [
-            r"027_FINISHED_watkinsexamplecom_hh_data_row_200801010000\.csv"]},
+            r"028_FINISHED_watkinsexamplecom_hh_data_row_200801010000\.csv"]},
     {
         'path': '/downloads/'
-        '027_FINISHED_watkinsexamplecom_hh_data_row_200801010000.csv',
+        '028_FINISHED_watkinsexamplecom_hh_data_row_200801010000.csv',
         'status_code': 200,
         'regexes': [
             r'"CH023","22 4862 4512 332","","2008-01-01 00:00","3.77","A","",'
@@ -7112,10 +7122,10 @@ def virtual_bill(supply_source):
         'tries': {},
         'status_code': 200,
         'regexes': [
-            r"028_FINISHED_watkinsexamplecom_hh_data_row_201001010000\.csv"]},
+            r"029_FINISHED_watkinsexamplecom_hh_data_row_201001010000\.csv"]},
     {
         'path': '/downloads/'
-        '028_FINISHED_watkinsexamplecom_hh_data_row_201001010000.csv',
+        '029_FINISHED_watkinsexamplecom_hh_data_row_201001010000.csv',
         'status_code': 200,
         'regexes': [
             r'"Export REACTIVE_EXP Status"\s'
@@ -7346,11 +7356,11 @@ def virtual_bill(supply_source):
         'path': '/downloads',
         'tries': {'max': 20, 'period': 1},
         'regexes': [
-            r"029_FINISHED_watkinsexamplecom_bill_check\.csv"],
+            r"030_FINISHED_watkinsexamplecom_bill_check\.csv"],
         'status_code': 200},
     {
         'path': '/downloads/'
-        '029_FINISHED_watkinsexamplecom_bill_check.csv',
+        '030_FINISHED_watkinsexamplecom_bill_check.csv',
         'status_code': 200,
         'regexes': [
             r'06-002,23618619,N,0,49119,8596,2007-06-30 00:00,'
@@ -7398,9 +7408,9 @@ def virtual_bill(supply_source):
         'tries': {'max': 20, 'period': 1},
         'status_code': 200,
         'regexes': [
-            r"030_FINISHED_watkinsexamplecom_bill_check\.csv"]},
+            r"031_FINISHED_watkinsexamplecom_bill_check\.csv"]},
     {
-        'path': '/downloads/030_FINISHED_watkinsexamplecom_bill_check.csv',
+        'path': '/downloads/031_FINISHED_watkinsexamplecom_bill_check.csv',
         'status_code': 200,
         'regexes': [
             r'07-002,3423760005,N,150,98.17,15.01,'
@@ -7454,9 +7464,9 @@ def virtual_bill(supply_source):
         'tries': {'max': 20, 'period': 1},
         'status_code': 200,
         'regexes': [
-            r"031_FINISHED_watkinsexamplecom_bill_check\.csv"]},
+            r"032_FINISHED_watkinsexamplecom_bill_check\.csv"]},
     {
-        'path': '/downloads/031_FINISHED_watkinsexamplecom_bill_check.csv',
+        'path': '/downloads/032_FINISHED_watkinsexamplecom_bill_check.csv',
         'status_code': 200,
         'regexes': [
             r'07-002,3423760010,N,10,9.07,0.21,2012-01-05 00:00,'
@@ -7499,10 +7509,10 @@ def virtual_bill(supply_source):
         'tries': {'max': 20, 'period': 1},
         'status_code': 200,
         'regexes': [
-            r"032_FINISHED_watkinsexamplecom_crc_2009_2010_supply_10\.csv"]},
+            r"033_FINISHED_watkinsexamplecom_crc_2009_2010_supply_10\.csv"]},
     {
         'path': '/downloads/'
-        '032_FINISHED_watkinsexamplecom_crc_2009_2010_supply_10.csv',
+        '033_FINISHED_watkinsexamplecom_crc_2009_2010_supply_10.csv',
         'status_code': 200,
         'regexes': [
             r'"10","22 1065 3921 534","CI017","Roselands","2009-04-01 00:00",'
@@ -7567,11 +7577,11 @@ def virtual_bill(supply_source):
         'tries': {},
         'status_code': 200,
         'regexes': [
-            r"033_FINISHED_watkinsexamplecom_scenario_bau_20150601_0000_for_"
+            r"034_FINISHED_watkinsexamplecom_scenario_bau_20150601_0000_for_"
             r"1_months_site_CI004\.ods"]},
     {
         'path': '/downloads/'
-        '033_FINISHED_watkinsexamplecom_scenario_bau_20150601_0000_for_'
+        '034_FINISHED_watkinsexamplecom_scenario_bau_20150601_0000_for_'
         '1_months_site_CI004.ods',
         'status_code': 200,
 
@@ -7590,11 +7600,11 @@ def virtual_bill(supply_source):
         'tries': {'max': 30, 'period': 1},
         'status_code': 200,
         'regexes': [
-            r"034_FINISHED_watkinsexamplecom_scenario_bau_20150601_0000_for_"
+            r"035_FINISHED_watkinsexamplecom_scenario_bau_20150601_0000_for_"
             r"1_months_site_CI005\.ods"]},
     {
         'path': '/downloads/'
-        '034_FINISHED_watkinsexamplecom_scenario_bau_20150601_0000_for_'
+        '035_FINISHED_watkinsexamplecom_scenario_bau_20150601_0000_for_'
         '1_months_site_CI005.ods',
         'status_code': 200,
         'regexes': [
@@ -7677,11 +7687,11 @@ def virtual_bill(supply_source):
         'tries': {'max': 30, 'period': 1},
         'status_code': 200,
         'regexes': [
-            r"035_FINISHED_watkinsexamplecom_scenario_bsuos_20110101_0000_"
+            r"036_FINISHED_watkinsexamplecom_scenario_bsuos_20110101_0000_"
             r"for_1_months_site_CI005\.ods"]},
     {
         'path': '/downloads/'
-        '035_FINISHED_watkinsexamplecom_scenario_bsuos_20110101_0000_for_'
+        '036_FINISHED_watkinsexamplecom_scenario_bsuos_20110101_0000_for_'
         '1_months_site_CI005.ods',
         'status_code': 200,
         'regexes': [
@@ -8016,11 +8026,11 @@ def virtual_bill(supply_source):
         'tries': {'max': 30, 'period': 1},
         'status_code': 200,
         'regexes': [
-            r'036_FINISHED_watkinsexamplecom_scenario_used_20110101_0000_for_'
+            r'037_FINISHED_watkinsexamplecom_scenario_used_20110101_0000_for_'
             r'1_months_site_CI005\.ods']},
     {
         'path': '/downloads/'
-        '036_FINISHED_watkinsexamplecom_scenario_used_20110101_0000_for_'
+        '037_FINISHED_watkinsexamplecom_scenario_used_20110101_0000_for_'
         '1_months_site_CI005.ods',
         'status_code': 200,
         'regexes': [
@@ -8171,11 +8181,11 @@ def virtual_bill(supply_source):
         'tries': {'max': 30, 'period': 1},
         'status_code': 200,
         'regexes': [
-            r"037_FINISHED_watkinsexamplecom_scenario_bsuos_50110101_0000_"
+            r"038_FINISHED_watkinsexamplecom_scenario_bsuos_50110101_0000_"
             r"for_1_months_site_CI005\.ods"]},
     {
         'path': '/downloads/'
-        '037_FINISHED_watkinsexamplecom_scenario_bsuos_50110101_0000_'
+        '038_FINISHED_watkinsexamplecom_scenario_bsuos_50110101_0000_'
         'for_1_months_site_CI005.ods',
         'status_code': 200,
         'regexes': [
@@ -8736,11 +8746,11 @@ def virtual_bill(supply_source):
         'tries': {'max': 30, 'period': 1},
         'status_code': 200,
         'regexes': [
-            r"038_FINISHED_watkinsexamplecom_scenario_leap_day_20160201_0000_"
+            r"039_FINISHED_watkinsexamplecom_scenario_leap_day_20160201_0000_"
             r"for_1_months_site_CH023\.ods"]},
     {
         'path': '/downloads/'
-        '038_FINISHED_watkinsexamplecom_scenario_leap_day_20160201_0000_'
+        '039_FINISHED_watkinsexamplecom_scenario_leap_day_20160201_0000_'
         'for_1_months_site_CH023.ods',
         'status_code': 200,
         'regexes': [
@@ -8826,11 +8836,11 @@ def virtual_bill(supply_source):
         'tries': {'max': 20, 'period': 1},
         'status_code': 200,
         'regexes': [
-            r"039_FINISHED_watkinsexamplecom_supplies_hh_data_200808012330_"
+            r"040_FINISHED_watkinsexamplecom_supplies_hh_data_200808012330_"
             r"filter\.csv"]},
     {
         'path': '/downloads/'
-        '039_FINISHED_watkinsexamplecom_supplies_hh_data_200808012330_'
+        '040_FINISHED_watkinsexamplecom_supplies_hh_data_200808012330_'
         'filter.csv',
         'status_code': 200,
 
@@ -8839,7 +8849,7 @@ def virtual_bill(supply_source):
             r'NA,2008-07-06,0\.262',
             r"\A\('Connection', 'close'\)\s*"
             r"\('Content-Disposition', 'attachment; "
-            r'filename="039_FINISHED_watkinsexamplecom_supplies_hh_data_'
+            r'filename="040_FINISHED_watkinsexamplecom_supplies_hh_data_'
             r'200808012330_filter.csv"'
             r"'\)\s*"
             r"\('Content-Type', 'text/csv; charset=utf-8'\)\s*"
@@ -8940,10 +8950,10 @@ def virtual_bill(supply_source):
         'tries': {'max': 20, 'period': 1},
         'status_code': 200,
         'regexes': [
-            r"040_FINISHED_watkinsexamplecom_crc_2005_2006_supply_2\.csv"]},
+            r"041_FINISHED_watkinsexamplecom_crc_2005_2006_supply_2\.csv"]},
     {
         'path': '/downloads/'
-        '040_FINISHED_watkinsexamplecom_crc_2005_2006_supply_2.csv',
+        '041_FINISHED_watkinsexamplecom_crc_2005_2006_supply_2.csv',
         'status_code': 200,
         'regexes': [
             r'"2","22 9813 2107 763"']},
@@ -8958,10 +8968,10 @@ def virtual_bill(supply_source):
         'tries': {'max': 20, 'period': 1},
         'status_code': 200,
         'regexes': [
-            r"041_FINISHED_watkinsexamplecom_crc_2008_2009_supply_7\.csv"]},
+            r"042_FINISHED_watkinsexamplecom_crc_2008_2009_supply_7\.csv"]},
     {
         'path': '/downloads/'
-        '041_FINISHED_watkinsexamplecom_crc_2008_2009_supply_7.csv',
+        '042_FINISHED_watkinsexamplecom_crc_2008_2009_supply_7.csv',
         'status_code': 200,
         'regexes': [
             r'"7","22 4862 4512 332","CH023","Treglisson","2008-04-01 00:00",'
@@ -9076,12 +9086,12 @@ def virtual_bill(supply_source):
         'path': '/downloads',
         'tries': {},
         'regexes': [
-            r"042_FINISHED_watkinsexamplecom_crc_2011_2012_supply_10\.csv"],
+            r"043_FINISHED_watkinsexamplecom_crc_2011_2012_supply_10\.csv"],
         'status_code': 200},
     {
         'name': "CRC report for mismatched TPRs",
         'path': '/downloads/'
-        '042_FINISHED_watkinsexamplecom_crc_2011_2012_supply_10.csv',
+        '043_FINISHED_watkinsexamplecom_crc_2011_2012_supply_10.csv',
         'tries': {},
         'status_code': 200,
         'regexes': [
@@ -9209,12 +9219,12 @@ def virtual_bill(supply_source):
         'path': '/downloads',
         'tries': {},
         'regexes': [
-            r"043_FINISHED_watkinsexamplecom_crc_2010_2011_supply_10\.csv"],
+            r"044_FINISHED_watkinsexamplecom_crc_2010_2011_supply_10\.csv"],
         'status_code': 200},
     {
         'name': "CRC meter change reads",
         'path': '/downloads/'
-        '043_FINISHED_watkinsexamplecom_crc_2010_2011_supply_10.csv',
+        '044_FINISHED_watkinsexamplecom_crc_2010_2011_supply_10.csv',
         'status_code': 200,
         'regexes': [
             r'73142.39335486847']},
@@ -9262,11 +9272,11 @@ def virtual_bill(supply_source):
         'path': '/downloads',
         'tries': {},
         'regexes': [
-            r"044_FINISHED_watkinsexamplecom_supplies_duration\.csv"],
+            r"045_FINISHED_watkinsexamplecom_supplies_duration\.csv"],
         'status_code': 200},
     {
         'path': '/downloads/'
-        '044_FINISHED_watkinsexamplecom_supplies_duration.csv',
+        '045_FINISHED_watkinsexamplecom_supplies_duration.csv',
         'regexes': [
             r'"10","2","net","","CI017","Roselands","2012-01-05 00:00",'
             r'"2012-01-10 23:30","03","801","6a","0366","1","nhh",110,'
@@ -9281,11 +9291,11 @@ def virtual_bill(supply_source):
         'path': '/downloads',
         'tries': {},
         'regexes': [
-            r"045_FINISHED_watkinsexamplecom_bill_check\.csv"],
+            r"046_FINISHED_watkinsexamplecom_bill_check\.csv"],
         'status_code': 200},
     {
         'path': '/downloads/'
-        '045_FINISHED_watkinsexamplecom_bill_check.csv',
+        '046_FINISHED_watkinsexamplecom_bill_check.csv',
         'regexes': [
             r'07-002,3423760010,N,10,9.07,0.21,2012-01-05 00:00,'
             r'2012-01-10 23:30,22 1065 3921 534,CI017,Roselands,'
@@ -9303,11 +9313,11 @@ def virtual_bill(supply_source):
         'path': '/downloads',
         'tries': {},
         'regexes': [
-            r"046_FINISHED_watkinsexamplecom_supplies_duration\.csv"],
+            r"047_FINISHED_watkinsexamplecom_supplies_duration\.csv"],
         'status_code': 200},
     {
         'path': '/downloads/'
-        '046_FINISHED_watkinsexamplecom_supplies_duration.csv',
+        '047_FINISHED_watkinsexamplecom_supplies_duration.csv',
         'regexes': [
             r'"10","2","net","","CI017","Roselands","2007-02-01 00:00",'
             r'"2007-02-28 23:30","03","801","5","0393","0","nhh",'
@@ -9352,12 +9362,12 @@ def virtual_bill(supply_source):
         'path': '/downloads',
         'tries': {},
         'regexes': [
-            r"047_FINISHED_watkinsexamplecom_supplies_duration\.csv"],
+            r"048_FINISHED_watkinsexamplecom_supplies_duration\.csv"],
         'status_code': 200},
     {
         'name': "Supplies duration normal reads with prev, pres the same.",
         'path': '/downloads/'
-        '047_FINISHED_watkinsexamplecom_supplies_duration.csv',
+        '048_FINISHED_watkinsexamplecom_supplies_duration.csv',
         'regexes': [
             r'"10","2","net","","CI017","Roselands","2009-04-01 00:00",'
             r'"2009-04-10 23:30","03","801","5","0393","1","nhh",'
@@ -9410,13 +9420,13 @@ def virtual_bill(supply_source):
         'tries': {'max': 20, 'period': 1},
         'status_code': 200,
         'regexes': [
-            r"048_FINISHED_watkinsexamplecom_unified_supplies_monthly_"
+            r"049_FINISHED_watkinsexamplecom_unified_supplies_monthly_"
             r"duration_20150201_0000_for_1_months_site_CH023\.ods"]
         },
 
     {
         'path': '/downloads/'
-        '048_FINISHED_watkinsexamplecom_unified_supplies_monthly_'
+        '049_FINISHED_watkinsexamplecom_unified_supplies_monthly_'
         'duration_20150201_0000_for_1_months_site_CH023.ods',
         'status_code': 200,
         'regexes': [
@@ -9509,12 +9519,12 @@ def virtual_bill(supply_source):
         'path': '/downloads',
         'tries': {},
         'regexes': [
-            r"049_FINISHED_watkinsexamplecom_crc_2010_2011_supply_10\.csv"],
+            r"050_FINISHED_watkinsexamplecom_crc_2010_2011_supply_10\.csv"],
         'status_code': 200},
     {
         'name': "CRC meter change reads",
         'path': '/downloads/'
-        '049_FINISHED_watkinsexamplecom_crc_2010_2011_supply_10.csv',
+        '050_FINISHED_watkinsexamplecom_crc_2010_2011_supply_10.csv',
         'status_code': 200,
         'regexes': [
             r'73142.39335486847']},
@@ -9529,12 +9539,12 @@ def virtual_bill(supply_source):
         'path': '/downloads',
         'tries': {'max': 20, 'period': 1},
         'regexes': [
-            r"050_FINISHED_watkinsexamplecom_unified_supplies_monthly_"
+            r"051_FINISHED_watkinsexamplecom_unified_supplies_monthly_"
             r"duration_20100101_0000_for_1_months_supply_10\.ods"],
         'status_code': 200},
     {
         'path': '/downloads/'
-        '050_FINISHED_watkinsexamplecom_unified_supplies_monthly_'
+        '051_FINISHED_watkinsexamplecom_unified_supplies_monthly_'
         'duration_20100101_0000_for_1_months_supply_10.ods',
         'status_code': 200,
         'regexes': [
@@ -9772,12 +9782,12 @@ def virtual_bill(supply_source):
         'path': '/downloads',
         'tries': {'max': 20, 'period': 1},
         'regexes': [
-            r'051_FINISHED_watkinsexamplecom_unified_supplies_monthly_'
+            r'052_FINISHED_watkinsexamplecom_unified_supplies_monthly_'
             r'duration_20141201_0000_for_1_months_supply_16\.ods'],
         'status_code': 200},
     {
         'path': '/downloads/'
-        '051_FINISHED_watkinsexamplecom_unified_supplies_monthly_'
+        '052_FINISHED_watkinsexamplecom_unified_supplies_monthly_'
         'duration_20141201_0000_for_1_months_supply_16.ods',
         'status_code': 200,
         'regexes': [
@@ -9987,13 +9997,13 @@ def virtual_bill(supply_source):
         'path': '/downloads',
         'tries': {},
         'regexes': [
-            r'052_FINISHED_watkinsexamplecom_unified_supplies_monthly_'
+            r'053_FINISHED_watkinsexamplecom_unified_supplies_monthly_'
             r'duration_20150501_0000_for_1_months_supply_5\.ods'],
         'status_code': 200},
     {
         'name': "Unified report for a gen-net supply",
         'path': '/downloads/'
-        '052_FINISHED_watkinsexamplecom_unified_supplies_monthly_'
+        '053_FINISHED_watkinsexamplecom_unified_supplies_monthly_'
         'duration_20150501_0000_for_1_months_supply_5.ods',
         'status_code': 200,
         'regexes': [
@@ -10036,12 +10046,12 @@ def virtual_bill(supply_source):
         'path': '/downloads',
         'tries': {},
         'regexes': [
-            r"053_FINISHED_watkinsexamplecom_supplies_duration\.csv"],
+            r"054_FINISHED_watkinsexamplecom_supplies_duration\.csv"],
         'status_code': 200},
     {
         'name': "Supplies duration normal reads with prev, pres the same.",
         'path': '/downloads/'
-        '053_FINISHED_watkinsexamplecom_supplies_duration.csv',
+        '054_FINISHED_watkinsexamplecom_supplies_duration.csv',
         'regexes': [
             r'"10","2","net","","CI017","Roselands","2009-04-01 00:00",'
             r'"2009-04-10 23:30","03","801","5","0393","1","nhh",'
@@ -10073,13 +10083,13 @@ def virtual_bill(supply_source):
         'path': '/downloads',
         'tries': {'max': 30, 'period': 1},
         'regexes': [
-            r'054_FINISHED_watkinsexamplecom_unified_supplies_monthly_'
+            r'055_FINISHED_watkinsexamplecom_unified_supplies_monthly_'
             r'duration_20150501_0000_for_1_months_site_CI005\.ods'],
         'status_code': 200},
     {
         'name': "Unified Supplies Monthly Duration - displaced kWh",
         'path': '/downloads/'
-        '054_FINISHED_watkinsexamplecom_unified_supplies_monthly_'
+        '055_FINISHED_watkinsexamplecom_unified_supplies_monthly_'
         'duration_20150501_0000_for_1_months_site_CI005.ods',
         'status_code': 200,
         'regexes': [
@@ -10095,13 +10105,13 @@ def virtual_bill(supply_source):
         'path': '/downloads',
         'tries': {'max': 30, 'period': 1},
         'regexes': [
-            r'055_FINISHED_watkinsexamplecom_unified_supplies_monthly_'
+            r'056_FINISHED_watkinsexamplecom_unified_supplies_monthly_'
             r'duration_20030801_0000_for_1_months_supply_7\.ods'],
         'status_code': 200},
     {
         'name': "Unified supply starts after period",
         'path': '/downloads/'
-        '055_FINISHED_watkinsexamplecom_unified_supplies_monthly_'
+        '056_FINISHED_watkinsexamplecom_unified_supplies_monthly_'
         'duration_20030801_0000_for_1_months_supply_7.ods',
         'status_code': 200,
         'regexes': [
@@ -10117,13 +10127,13 @@ def virtual_bill(supply_source):
         'path': '/downloads',
         'tries': {'max': 30, 'period': 1},
         'regexes': [
-            r'056_FINISHED_watkinsexamplecom_site_monthly_duration_for_CI005_'
+            r'057_FINISHED_watkinsexamplecom_site_monthly_duration_for_CI005_'
             r'1_to_2010_4\.csv'],
         'status_code': 200},
     {
         'name': "Monthly sites duration: multiple site groups",
         'path': '/downloads/'
-        '056_FINISHED_watkinsexamplecom_site_monthly_duration_for_CI005_'
+        '057_FINISHED_watkinsexamplecom_site_monthly_duration_for_CI005_'
         '1_to_2010_4.csv',
         'status_code': 200,
         'regexes': [
@@ -10142,13 +10152,13 @@ def virtual_bill(supply_source):
         'path': '/downloads',
         'tries': {'max': 30, 'period': 1},
         'regexes': [
-            r'057_FINISHED_watkinsexamplecom_site_monthly_duration_for_CI004_'
+            r'058_FINISHED_watkinsexamplecom_site_monthly_duration_for_CI004_'
             r'1_to_2015_7\.csv'],
         'status_code': 200},
     {
         'name': "Monthly sites duration: multiple site groups",
         'path': '/downloads/'
-        '057_FINISHED_watkinsexamplecom_site_monthly_duration_for_CI004_'
+        '058_FINISHED_watkinsexamplecom_site_monthly_duration_for_CI004_'
         '1_to_2015_7.csv',
         'status_code': 200,
         'regexes': [
@@ -10192,13 +10202,13 @@ def virtual_bill(supply_source):
         'path': '/downloads',
         'tries': {'max': 30, 'period': 1},
         'regexes': [
-            r'058_FINISHED_watkinsexamplecom_site_monthly_duration_for_CI005_'
+            r'059_FINISHED_watkinsexamplecom_site_monthly_duration_for_CI005_'
             r'1_to_2015_7\.csv'],
         'status_code': 200},
     {
         'name': "Monthly sites duration: multiple site groups",
         'path': '/downloads/'
-        '058_FINISHED_watkinsexamplecom_site_monthly_duration_for_CI005_'
+        '059_FINISHED_watkinsexamplecom_site_monthly_duration_for_CI005_'
         '1_to_2015_7.csv',
         'status_code': 200,
         'regexes': [
@@ -10259,13 +10269,13 @@ def virtual_bill(supply_source):
         'path': '/downloads',
         'tries': {'max': 30, 'period': 1},
         'regexes': [
-            r'059_FINISHED_watkinsexamplecom_unified_supplies_monthly_'
+            r'060_FINISHED_watkinsexamplecom_unified_supplies_monthly_'
             r'duration_20150801_0000_for_1_months_site_CI005\.ods'],
         'status_code': 200},
     {
         'name': "Unified report, billed",
         'path': '/downloads/'
-        '059_FINISHED_watkinsexamplecom_unified_supplies_monthly_'
+        '060_FINISHED_watkinsexamplecom_unified_supplies_monthly_'
         'duration_20150801_0000_for_1_months_site_CI005.ods',
         'status_code': 200,
         'regexes': [

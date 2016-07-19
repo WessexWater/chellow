@@ -4,16 +4,29 @@ import pytz
 import traceback
 from sqlalchemy import or_
 from sqlalchemy.sql.expression import null, true
-from chellow.models import Contract, Era, Site, SiteEra
-from chellow.utils import (
-    HH, hh_after, hh_format, req_date, req_int, send_response)
+from chellow.models import Session, Contract, Era, Site, SiteEra
+from chellow.utils import (HH, hh_after, hh_format, req_date, req_int)
 from chellow.computer import contract_func, SupplySource
+from chellow.views import chellow_redirect
 import chellow.computer
+import chellow.dloads
+from werkzeug.exceptions import BadRequest
+import csv
+import os
+import threading
+from flask import g
 
 
-def content(start_date, finish_date, contract_id, sess):
+def content(start_date, finish_date, contract_id, user):
     caches = {}
+    sess = f = None
     try:
+        sess = Session()
+        running_name, finished_name = chellow.dloads.make_names(
+            'virtual_bills.csv', user)
+
+        f = open(running_name, mode='w', newline='')
+        writer = csv.writer(f, lineterminator='\n')
         contract = Contract.get_supplier_by_id(sess, contract_id)
         forecast_date = chellow.computer.forecast_date()
 
@@ -24,8 +37,9 @@ def content(start_date, finish_date, contract_id, sess):
 
         bill_titles = contract_func(
             caches, contract, 'virtual_bill_titles', None)()
-        yield 'MPAN Core,Site Code,Site Name,Account,From,To,' + \
-            ','.join(bill_titles) + '\n'
+        writer.writerow(
+            ['MPAN Core', 'Site Code', 'Site Name', 'Account', 'From', 'To'] +
+            bill_titles)
 
         while not month_start > finish_date:
             period_start = start_date \
@@ -62,6 +76,7 @@ def content(start_date, finish_date, contract_id, sess):
                 if era.exp_supplier_contract == contract:
                     polarities.append(False)
                 for polarity in polarities:
+                    vals = []
                     data_source = SupplySource(
                         sess, chunk_start, chunk_finish, forecast_date, era,
                         polarity, None, caches)
@@ -70,11 +85,11 @@ def content(start_date, finish_date, contract_id, sess):
                         SiteEra.era == era,
                         SiteEra.is_physical == true()).one()
 
-                    yield ','.join('"' + str(value) + '"' for value in [
+                    vals = [
                         data_source.mpan_core, site.code, site.name,
                         data_source.supplier_account,
                         hh_format(data_source.start_date),
-                        hh_format(data_source.finish_date)])
+                        hh_format(data_source.finish_date)]
 
                     contract_func(
                         caches, contract, 'virtual_bill', None)(data_source)
@@ -85,16 +100,24 @@ def content(start_date, finish_date, contract_id, sess):
                             del bill[title]
                         else:
                             val = ''
-                        yield ',"' + val + '"'
+                        vals.append(val)
 
                     for k in sorted(bill.keys()):
-                        yield ',"' + k + '","' + str(bill[k]) + '"'
-                    yield '\n'
+                        vals.append(k)
+                        vals.append(str(bill[k]))
+                    writer.writerow(vals)
 
             month_start += relativedelta(months=1)
             month_finish = month_start + relativedelta(months=1) - HH
+    except BadRequest as e:
+        writer.writerow([e.description])
     except:
-        yield traceback.format_exc()
+        writer.writerow([traceback.format_exc()])
+    finally:
+        if sess is not None:
+            sess.close()
+        f.close()
+        os.rename(running_name, finished_name)
 
 
 def do_get(sess):
@@ -102,6 +125,7 @@ def do_get(sess):
     finish_date = req_date('finish')
     contract_id = req_int('supplier_contract_id')
 
-    return send_response(
-        content, args=(start_date, finish_date, contract_id, sess),
-        file_name='virtual_bills.csv')
+    threading.Thread(
+        target=content,
+        args=(start_date, finish_date, contract_id, g.user)).start()
+    return chellow_redirect("/downloads", 303)
