@@ -35,7 +35,6 @@
 		    <div class="noWrap">
                 <svg width="{{graph_left + result_data|length + 100}}px" height="400px"
     			 xmlns="http://www.w3.org/2000/svg" version="1.1" font-family="Overclock, sans-serif" font-size="12">
-
             		{% if result_data|length > 0 %}
             			{% for hh in result_data %}
             					{% if not hh.is_complete %}
@@ -119,5 +118,5 @@
 	<!-- End Section Content -->
 </div>
 <!-- End Layer Section -->
-	
+
 {% endblock %}
