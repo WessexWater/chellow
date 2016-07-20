@@ -4,16 +4,27 @@ from dateutil.relativedelta import relativedelta
 from sqlalchemy import or_
 from sqlalchemy.sql.expression import null, true
 import traceback
-from chellow.models import Supply, Era, Site, SiteEra
-from chellow.utils import (
-    HH, hh_before, hh_format, req_int, req_date, send_response)
+from chellow.models import Session, Supply, Era, Site, SiteEra
+from chellow.utils import HH, hh_before, hh_format, req_int, req_date
+from chellow.views import chellow_redirect
 import chellow.computer
 from werkzeug.exceptions import BadRequest
+import csv
+import os
+from flask import g
+import threading
 
 
-def content(supply_id, file_name, start_date, finish_date, sess):
+def content(supply_id, file_name, start_date, finish_date, user):
     caches = {}
+    sess = None
     try:
+        sess = Session()
+        running_name, finished_name = chellow.dloads.make_names(
+            'supply_virtual_bills_' + str(supply_id) + '.csv', user)
+        f = open(running_name, mode='w', newline='')
+        writer = csv.writer(f, lineterminator='\n')
+
         supply = Supply.get_by_id(sess, supply_id)
 
         forecast_date = chellow.computer.forecast_date()
@@ -142,7 +153,7 @@ def content(supply_id, file_name, start_date, finish_date, sess):
 
                 if titles != prev_titles:
                     prev_titles != titles
-                    yield ','.join('"' + str(v) + '"' for v in titles) + '\n'
+                    writer.writerow([str(v) for v in titles])
                 for i, val in enumerate(output_line):
                     if isinstance(val, datetime.datetime):
                         output_line[i] = hh_format(val)
@@ -150,15 +161,18 @@ def content(supply_id, file_name, start_date, finish_date, sess):
                         output_line[i] = ''
                     else:
                         output_line[i] = str(val)
-                yield ','.join(
-                    '"' + str('' if v is None else v) +
-                    '"' for v in output_line) + '\n'
-
+                writer.writerow(output_line)
             month_start += relativedelta(months=1)
     except BadRequest as e:
-        yield "Problem: " + e.description + '\n'
+        writer.writerow(["Problem: " + e.description])
     except:
-        yield traceback.format_exc()
+        writer.writerow([traceback.format_exc()])
+    finally:
+        if sess is not None:
+            sess.close()
+        if f is not None:
+            f.close()
+            os.rename(running_name, finished_name)
 
 
 def do_get(sess):
@@ -166,5 +180,7 @@ def do_get(sess):
     file_name = 'supply_virtual_bills_' + str(supply_id) + '.csv'
     start_date = req_date('start')
     finish_date = req_date('finish')
-    args = (supply_id, file_name, start_date, finish_date, sess)
-    return send_response(content, args=args, file_name=file_name)
+    args = (supply_id, file_name, start_date, finish_date, g.user)
+
+    threading.Thread(target=content, args=args).start()
+    return chellow_redirect("/downloads", 303)
