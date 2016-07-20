@@ -70,8 +70,8 @@ def hh(data_source):
             rates = data_source.hh_rate(db_id, h_start, 'gbp_per_nbp_mwh')
             try:
                 rdict = rates[key_format(h_start)]
-                sbp = float(rdict['sbp']) / 1000
-                ssp = float(rdict['ssp']) / 1000
+                sbp = rdict['sbp'] / 1000
+                ssp = rdict['ssp'] / 1000
                 system_price_cache[h_start] = (sbp, ssp)
             except KeyError:
                 raise BadRequest(
