@@ -111,14 +111,14 @@ def do_get(sess):
         site_id = req_int('site_id')
         file_name = "sites_hh_data_" + str(site_id) + "_" + \
             finish_date.strftime('%Y%m%d%M%H') + ".csv"
-        mime_type = 'text/csv'
+        content_type = 'text/csv'
     else:
         site_id = None
         file_name = "supplies_hh_data_" + \
             finish_date.strftime('%Y%m%d%M%H') + ".zip"
-        mime_type = 'application/zip'
+        content_type = 'application/zip'
 
     content = none_content if site_id is None else site_content
     return send_response(
         content, args=(site_id, start_date, finish_date, sess),
-        mimetype=mime_type, file_name=file_name)
+        content_type=content_type, file_name=file_name)

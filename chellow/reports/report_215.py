@@ -118,5 +118,6 @@ def do_get(sess):
     year = req_int('year')
     supply_id = req_int('supply_id') if 'supply_id' in request.values else None
     return send_response(
-        content, args=(year, supply_id, sess), status=200, mimetype='text/csv',
+        content, args=(year, supply_id, sess), status=200,
+        content_type='text/csv; charset=utf-8',
         file_name='output.csv')

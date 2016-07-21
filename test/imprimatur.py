@@ -224,6 +224,48 @@
         'status_code': 200},
 
     {
+        'name': "Set configuration properties",
+        'path': '/non_core_contracts/5/edit',
+        'method': 'post',
+        'data': {
+            'properties': """
+{
+    'ips': {'127.0.0.1': 'implicit-user@localhost'},
+    'site_links': [
+        {'name': 'Google Maps', 'href': 'https://maps.google.com/maps?q='}],
+    'elexonportal_scripting_key': 'xxx',
+    'background_colour': 'aquamarine'}
+"""},
+        'status_code': 303},
+
+    {
+        'name': "Set up TLM downloader",
+        'path': '/non_core_contracts/9/edit',
+        'method': 'post',
+        'data': {
+            'properties': """
+{
+            'enabled': True,
+            'url': 'http://127.0.0.1:8080/elexonportal/',
+            'limit': True}
+"""},
+        'status_code': 303},
+    {
+        'name': "Do an 'import now' on TLM.",
+        'path': '/non_core_contracts/9/auto_importer',
+        'method': 'post',
+        'data': {
+            'now': 'Now'},
+        'status_code': 303},
+    {
+        'name': "Check that an TLM import has happened.",
+        'path': '/non_core_contracts/9/auto_importer',
+        'tries': {},
+        'regexes': [
+            r"Added new rate script\."],
+        'status_code': 200},
+
+    {
         'name': "HHDC contracts",
         'path': '/hhdc_contracts/add',
         'method': 'post',
@@ -269,7 +311,7 @@ def virtual_bill(ds):
 
     {
         'name': "Check that we can see HHDC rate script okay. Contract 29.",
-        'path': '/hhdc_rate_scripts/154',
+        'path': '/hhdc_rate_scripts/125',
 
         # Check that 'has_finished' field is there
         'regexes': [
@@ -279,7 +321,7 @@ def virtual_bill(ds):
     {
         'name': "Check that we can see the edit view of the HHDC rate "
         "script okay. Contract 29.",
-        'path': '/hhdc_rate_scripts/154/edit',
+        'path': '/hhdc_rate_scripts/125/edit',
 
         # Check that 'has_finished' field is there
         'regexes': [
@@ -288,12 +330,12 @@ def virtual_bill(ds):
             # Check the hhdc_rate_script_id for update is there
             r'<legend>Update Rate Script</legend>\s*'
             r'<input type="hidden" name="hhdc_rate_script_id"\s*'
-            'value="154">'],
+            'value="125">'],
         'status_code': 200},
 
     {
         'name': "Check that we can update an HHDC rate script okay",
-        'path': '/hhdc_rate_scripts/154/edit',
+        'path': '/hhdc_rate_scripts/125/edit',
         'method': 'post',
         'data': {
             'start_year': "2000",
@@ -440,7 +482,7 @@ def virtual_bill(ds):
 
     {
         'name': "Update the associated rate script. Supplier contract 31",
-        'path': '/supplier_rate_scripts/156/edit',
+        'path': '/supplier_rate_scripts/127/edit',
         'method': 'post',
         'data': {
             'start_year': "2000",
@@ -462,15 +504,15 @@ def gsp_gbp_per_kwh():
         'status_code': 303},
     {
         'name': "View supplier rate script",
-        'path': '/supplier_rate_scripts/156',
+        'path': '/supplier_rate_scripts/127',
         'regexes': [
-            r'"/supplier_rate_scripts/156/edit"'],
+            r'"/supplier_rate_scripts/127/edit"'],
         'status_code': 200},
     {
         'name': "Edit view of supplier rate script",
-        'path': '/supplier_rate_scripts/156/edit',
+        'path': '/supplier_rate_scripts/127/edit',
         'regexes': [
-            r'"/supplier_rate_scripts/156"'],
+            r'"/supplier_rate_scripts/127"'],
         'status_code': 200},
 
 
@@ -551,7 +593,7 @@ def virtual_bill_titles():
         'status_code': 303},
     {
         'name': "Update the associated rate script. Supplier contract 33",
-        'path': '/supplier_rate_scripts/158/edit',
+        'path': '/supplier_rate_scripts/129/edit',
         'method': 'post',
         'data': {
             'start_year': "2000",
@@ -572,7 +614,7 @@ def gsp_gbp_per_kwh():
 """},
         'status_code': 303,
         'regexes': [
-            r'/supplier_rate_scripts/158']},
+            r'/supplier_rate_scripts/129']},
 
     {
         'name': "Create a new supplier contract",
@@ -1923,7 +1965,7 @@ def virtual_bill_titles():
     {
         'name': "Test deleting the only rate script attached to a supplier "
         "contract.",
-        'path': '/supplier_rate_scripts/159/edit',
+        'path': '/supplier_rate_scripts/129/edit',
         'method': 'post',
         'data': {
             'delete': "Delete"},
@@ -2667,7 +2709,7 @@ def virtual_bill(supply_source):
     {
         'name': "Check we can delete a rate script (when it's not the only "
         "one). Supplier contract 33.",
-        'path': '/supplier_rate_scripts/159/edit',
+        'path': '/supplier_rate_scripts/130/edit',
         'method': 'post',
         'data': {
             'delete': "Delete"},
@@ -2780,16 +2822,16 @@ def virtual_bill(supply_source):
             'start_hour': "00",
             'start_minute': "00"},
         'regexes': [
-            r"/dno_rate_scripts/163"],
+            r"/dno_rate_scripts/134"],
         'status_code': 303},
 
     {
-        'path': '/dno_rate_scripts/163',
+        'path': '/dno_rate_scripts/134',
         'status_code': 200},
 
     # Test bad syntax gives an error
     {
-        'path': '/dno_rate_scripts/163/edit',
+        'path': '/dno_rate_scripts/134/edit',
         'method': 'post',
         'data': {
             'start_year': "2010",
@@ -2803,7 +2845,7 @@ def virtual_bill(supply_source):
 
     # Delete rate script
     {
-        'path': '/dno_rate_scripts/163/edit',
+        'path': '/dno_rate_scripts/134/edit',
         'method': 'post',
         'data': {
             'delete': "Delete"},
@@ -3829,20 +3871,6 @@ def virtual_bill(supply_source):
             'sum-msp-kwh': sum_msp_kwh})
 """,
             'properties': "{}"},
-        'status_code': 303},
-    {
-        'name': "Set configuration properties",
-        'path': '/non_core_contracts/5/edit',
-        'method': 'post',
-        'data': {
-            'properties': """
-{
-    'ips': {'127.0.0.1': 'implicit-user@localhost'},
-    'site_links': [
-        {'name': 'Google Maps', 'href': 'https://maps.google.com/maps?q='}],
-    'elexonportal_scripting_key': 'xxx',
-    'background_colour': 'aquamarine'}
-"""},
         'status_code': 303},
     {
         'name': "Site In View World",
@@ -5296,21 +5324,21 @@ def virtual_bill(supply_source):
             'start_minute': "00",
             'insert': "Insert"},
         'regexes': [
-            r"/non_core_rate_scripts/165"],
+            r"/non_core_rate_scripts/136"],
         'status_code': 303},
     {
-        'path': '/non_core_rate_scripts/165/edit?delete=Delete',
+        'path': '/non_core_rate_scripts/136/edit?delete=Delete',
         'regexes': [
             r"Are you sure you want to delete this rate script\?"],
         'status_code': 200},
     {
-        'path': '/non_core_rate_scripts/165/edit',
+        'path': '/non_core_rate_scripts/136/edit',
         'method': 'post',
         'data': {
             'delete': "Delete"},
         'status_code': 303},
     {
-        'path': '/non_core_rate_scripts/165',
+        'path': '/non_core_rate_scripts/136',
         'status_code': 404},
     {
         'name': "Try adding a rate script before other rate scripts.",
@@ -5324,10 +5352,10 @@ def virtual_bill(supply_source):
             'start_minute': "00",
             'insert': "Insert"},
         'regexes': [
-            r"/non_core_rate_scripts/166"],
+            r"/non_core_rate_scripts/137"],
         'status_code': 303},
     {
-        'path': '/non_core_rate_scripts/166/edit',
+        'path': '/non_core_rate_scripts/137/edit',
         'regexes': [
             r'<input name="finish_year" maxlength="4" size="4" value="2000">',
 
@@ -5336,7 +5364,7 @@ def virtual_bill(supply_source):
             '<option value="0" selected>00</option>'],
         'status_code': 200},
     {
-        'path': '/non_core_rate_scripts/166/edit',
+        'path': '/non_core_rate_scripts/137/edit',
         'method': 'post',
         'data': {
             'delete': "Delete"},
@@ -6375,7 +6403,7 @@ def virtual_bill(supply_source):
         'regexes': [
             r'"22 6354 2983 570","CI017","Roselands","141 5532",'
             r'"2013-10-31 00:00","2013-10-31 23:30","153.78050000000002",'
-            r'"1.011286","","0.00525288","","5.89","2300","1","0.026","59.8",'
+            r'"","","0.00525288","","5.89","2300","1","0.026","59.8",'
             r'"0","31","0.026","0.0","","","","","0.00382","0.0","","88","0",'
             r'"0.0","0.0","0","0.0","0.0","0","0.0","0.0","0","0","0.0","0",'
             r'"0","0.0","0","0","0.0","0.0","","0.0","","","","","","","","",'
@@ -6423,7 +6451,7 @@ def virtual_bill(supply_source):
             '"2007-01-04 00:00","45","E","2007-01-17 00:00","76","E"']},
     {
         'name': "View a MOP rate script. Contract 31.",
-        'path': '/mop_rate_scripts/157',
+        'path': '/mop_rate_scripts/128',
         'status_code': 200},
 
     {
@@ -7048,7 +7076,7 @@ def virtual_bill(supply_source):
 
     {
         'name': "Make sure rate scripts remain contiguous.",
-        'path': '/non_core_rate_scripts/86/edit',
+        'path': '/non_core_rate_scripts/56/edit',
         'method': 'post',
         'data': {
             # First rate script of non-core contract triad
@@ -7066,13 +7094,13 @@ def virtual_bill(supply_source):
             'script': ""},
         'status_code': 303},
     {
-        'path': '/non_core_rate_scripts/87',
+        'path': '/non_core_rate_scripts/57',
         'regexes': [
             r"2006-03-31 00:00"],
         'status_code': 200},
     {
         'name': "Put it back to how it was",
-        'path': '/non_core_rate_scripts/86/edit',
+        'path': '/non_core_rate_scripts/56/edit',
         'method': 'post',
         'data': {
             'start_year': "2005",
@@ -9154,13 +9182,13 @@ def virtual_bill(supply_source):
         'regexes': [
             r'22 0883 6932 301,,CI005,Wheal Rodney,4341,'
             r'2014-06-04 00:00,2014-06-04 23:30,,0,,,0,,,'
-            r'116.134976551\d*,,,,,5.89,350,1,0.0269,'
+            r'116.13495975\d*,,,,,5.89,350,1,0.0269,'
             r'9.415000000000001,,,,,0,0.00147,0.0,,,0.0,'
             r'0,0.25405,12.423045,0.0,0.00399,0.0,1,0.0878,'
             r'0.0878,88,48.9,52.5186,0.00021361,0.011218498146,'
-            r'52.97793817932,,-0.023480635264263427,0,0.0,0.0,0,'
+            r'53.02001082\d*,,-0.0234992825\d*,0,0.0,0.0,0,'
             r'0.0,0.0,48.9,52.5186,0.32906054015999997,,,,,'
-            r',,,,,52.97793817932,,0.00233314839\d*,,,'
+            r',,,,,53.02001082\d*,,0.00233500127\d*,,,'
             r',,,,,,,,,,,,,,,,,,,,,'
             r',,,,,,,,,,,,,,,,,'
             r'duos-amber-rate,0.00344,duos-red-kwh,48.9'],
@@ -9215,13 +9243,13 @@ def virtual_bill(supply_source):
         'regexes': [
             r'22 0883 6932 301,,CI005,Wheal Rodney,4341,'
             r'2014-06-04 00:00,2014-06-04 23:30,,0,,,0,,,'
-            r'116.1349765514\d*,,,,,5.89,350,1,0.0269,'
+            r'116.134959757\d*,,,,,5.89,350,1,0.0269,'
             r'9.415000000000001,,,,,0,0.00147,0.0,,,0.0,'
             r'0,0.25405,12.423045,0.0,0.00399,0.0,1,0.0878,'
             r'0.0878,88,48.9,52.5186,0.00021361,0.011218498146,'
-            r'52.97793817932,,-0.023480635264263427,0,0.0,0.0,'
+            r'53.02001\d*,,-0.02349928250\d*,0,0.0,0.0,'
             r'48.9,52.5186,0.32906054015999997,,,,,,,,,'
-            r',,,,52.97793817932,,0.00233314839741\d*,,,,'
+            r',,,,53.02001082\d*,,0.002335001\d*,,,,'
             r',,,,,,,,,,,,,,,,,,,,,'
             r',,,,,,,,,,,,,,,,'
             r'duos-amber-rate,0.00344,duos-red-kwh,48.9'],
@@ -10803,32 +10831,6 @@ def virtual_bill(supply_source):
     {
         'name': "Check that an RCRC import has happened.",
         'path': '/non_core_contracts/6/auto_importer',
-        'tries': {},
-        'regexes': [
-            r"There isn&#39;t a whole month there yet\."],
-        'status_code': 200},
-    {
-        'name': "Set up TLM downloader",
-        'path': '/non_core_contracts/9/edit',
-        'method': 'post',
-        'data': {
-            'properties': """
-{
-            'enabled': True,
-            'url': 'http://127.0.0.1:8080/elexonportal/',
-            'limit': True}
-"""},
-        'status_code': 303},
-    {
-        'name': "Do an 'import now' on TLM.",
-        'path': '/non_core_contracts/9/auto_importer',
-        'method': 'post',
-        'data': {
-            'now': 'Now'},
-        'status_code': 303},
-    {
-        'name': "Check that an TLM import has happened.",
-        'path': '/non_core_contracts/9/auto_importer',
         'tries': {},
         'regexes': [
             r"There isn&#39;t a whole month there yet\."],

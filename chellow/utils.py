@@ -4,7 +4,7 @@ import pytz
 from decimal import Decimal
 import collections
 from datetime import datetime as Datetime
-from flask import request, Response, redirect
+from flask import request, Response
 from jinja2 import Environment
 import time
 import traceback
@@ -163,7 +163,8 @@ def parse_pc_code(code):
 
 
 def send_response(
-        content, args=None, status=200, mimetype='text/csv', file_name=None):
+        content, args=None, status=200, content_type='text/csv; charset=utf-8',
+        file_name=None):
     headers = {}
     if args is None:
         args = ()
@@ -173,7 +174,8 @@ def send_response(
             file_name + '"'
 
     return Response(
-        content(*args), status=status, mimetype=mimetype, headers=headers)
+        content(*args), status=status, content_type=content_type,
+        headers=headers)
 
 
 FORMATS = {
@@ -345,5 +347,3 @@ def render(template, vals, status_code=200, content_type='text/html'):
             "Problem rendering template: " + traceback.format_exc())
 
     return Response(template_str, status_code, headers)
-
-

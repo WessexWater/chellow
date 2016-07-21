@@ -143,7 +143,7 @@ class TlmImporter(threading.Thread):
                             raise BadRequest(
                                 "The property " +
                                 ELEXON_PORTAL_SCRIPTING_KEY_KEY +
-                                " cannot be found in the configuration "
+                                " cannot be found in the configuration " +
                                 "properties.")
 
                         contract_props = contract.make_properties()
@@ -157,14 +157,12 @@ class TlmImporter(threading.Thread):
                         parser = csv.reader(
                             (l.decode() for l in r.iter_lines()),
                             delimiter=',', quotechar='"')
-                        self.log("Opened URL.")
+                        self.log("Opened " + url_str + ".")
 
                         ct_tz = pytz.timezone('Europe/London')
-                        piterator = iter(parser)
-                        values = next(piterator)
-                        values = next(piterator)
+                        next(parser, None)
                         month_tlms = {}
-                        for values in piterator:
+                        for values in parser:
                             hh_date_ct = ct_tz.localize(
                                 datetime.datetime.strptime(
                                     values[0], "%d/%m/%Y"))
