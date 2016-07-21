@@ -195,6 +195,34 @@
             'code': "CH017",
             'name': "Parbola"},
         'status_code': 303},
+
+    {
+        'name': "BSUoS",
+        'path': '/non_core_contracts/3/edit',
+        'method': 'post',
+        'data': {
+            'name': 'system_price',
+            'properties': """
+{
+    'enabled': True,
+    'url': 'http://127.0.0.1:8080/nationalgrid/sf_bsuos.xls'}
+"""},
+        'status_code': 303},
+    {
+        'name': "Do an 'import now'",
+        'path': '/non_core_contracts/3/auto_importer',
+        'method': 'post',
+        'regexes': [
+            '/non_core_contracts/3/auto_importer'],
+        'status_code': 303},
+    {
+        'name': 'BSUoS',
+        'path': '/non_core_contracts/3/auto_importer',
+        'tries': {'max': 40, 'period': 1},
+        'regexes': [
+            r"Added new rate script\."],
+        'status_code': 200},
+
     {
         'name': "HHDC contracts",
         'path': '/hhdc_contracts/add',
@@ -241,7 +269,7 @@ def virtual_bill(ds):
 
     {
         'name': "Check that we can see HHDC rate script okay. Contract 29.",
-        'path': '/hhdc_rate_scripts/204',
+        'path': '/hhdc_rate_scripts/154',
 
         # Check that 'has_finished' field is there
         'regexes': [
@@ -251,7 +279,7 @@ def virtual_bill(ds):
     {
         'name': "Check that we can see the edit view of the HHDC rate "
         "script okay. Contract 29.",
-        'path': '/hhdc_rate_scripts/204/edit',
+        'path': '/hhdc_rate_scripts/154/edit',
 
         # Check that 'has_finished' field is there
         'regexes': [
@@ -259,13 +287,13 @@ def virtual_bill(ds):
 
             # Check the hhdc_rate_script_id for update is there
             r'<legend>Update Rate Script</legend>\s*'
-            '<input type="hidden" name="hhdc_rate_script_id"\s*'
-            'value="204">'],
+            r'<input type="hidden" name="hhdc_rate_script_id"\s*'
+            'value="154">'],
         'status_code': 200},
 
     {
         'name': "Check that we can update an HHDC rate script okay",
-        'path': '/hhdc_rate_scripts/204/edit',
+        'path': '/hhdc_rate_scripts/154/edit',
         'method': 'post',
         'data': {
             'start_year': "2000",
@@ -412,7 +440,7 @@ def virtual_bill(ds):
 
     {
         'name': "Update the associated rate script. Supplier contract 31",
-        'path': '/supplier_rate_scripts/206/edit',
+        'path': '/supplier_rate_scripts/156/edit',
         'method': 'post',
         'data': {
             'start_year': "2000",
@@ -434,15 +462,15 @@ def gsp_gbp_per_kwh():
         'status_code': 303},
     {
         'name': "View supplier rate script",
-        'path': '/supplier_rate_scripts/206',
+        'path': '/supplier_rate_scripts/156',
         'regexes': [
-            r'"/supplier_rate_scripts/206/edit"'],
+            r'"/supplier_rate_scripts/156/edit"'],
         'status_code': 200},
     {
         'name': "Edit view of supplier rate script",
-        'path': '/supplier_rate_scripts/206/edit',
+        'path': '/supplier_rate_scripts/156/edit',
         'regexes': [
-            r'"/supplier_rate_scripts/206"'],
+            r'"/supplier_rate_scripts/156"'],
         'status_code': 200},
 
 
@@ -523,7 +551,7 @@ def virtual_bill_titles():
         'status_code': 303},
     {
         'name': "Update the associated rate script. Supplier contract 33",
-        'path': '/supplier_rate_scripts/208/edit',
+        'path': '/supplier_rate_scripts/158/edit',
         'method': 'post',
         'data': {
             'start_year': "2000",
@@ -544,7 +572,7 @@ def gsp_gbp_per_kwh():
 """},
         'status_code': 303,
         'regexes': [
-            r'/supplier_rate_scripts/208']},
+            r'/supplier_rate_scripts/158']},
 
     {
         'name': "Create a new supplier contract",
@@ -1895,7 +1923,7 @@ def virtual_bill_titles():
     {
         'name': "Test deleting the only rate script attached to a supplier "
         "contract.",
-        'path': '/supplier_rate_scripts/209/edit',
+        'path': '/supplier_rate_scripts/159/edit',
         'method': 'post',
         'data': {
             'delete': "Delete"},
@@ -2639,7 +2667,7 @@ def virtual_bill(supply_source):
     {
         'name': "Check we can delete a rate script (when it's not the only "
         "one). Supplier contract 33.",
-        'path': '/supplier_rate_scripts/209/edit',
+        'path': '/supplier_rate_scripts/159/edit',
         'method': 'post',
         'data': {
             'delete': "Delete"},
@@ -2752,16 +2780,16 @@ def virtual_bill(supply_source):
             'start_hour': "00",
             'start_minute': "00"},
         'regexes': [
-            r"/dno_rate_scripts/213"],
+            r"/dno_rate_scripts/163"],
         'status_code': 303},
 
     {
-        'path': '/dno_rate_scripts/213',
+        'path': '/dno_rate_scripts/163',
         'status_code': 200},
 
     # Test bad syntax gives an error
     {
-        'path': '/dno_rate_scripts/213/edit',
+        'path': '/dno_rate_scripts/163/edit',
         'method': 'post',
         'data': {
             'start_year': "2010",
@@ -2775,7 +2803,7 @@ def virtual_bill(supply_source):
 
     # Delete rate script
     {
-        'path': '/dno_rate_scripts/213/edit',
+        'path': '/dno_rate_scripts/163/edit',
         'method': 'post',
         'data': {
             'delete': "Delete"},
@@ -5268,21 +5296,21 @@ def virtual_bill(supply_source):
             'start_minute': "00",
             'insert': "Insert"},
         'regexes': [
-            r"/non_core_rate_scripts/215"],
+            r"/non_core_rate_scripts/165"],
         'status_code': 303},
     {
-        'path': '/non_core_rate_scripts/215/edit?delete=Delete',
+        'path': '/non_core_rate_scripts/165/edit?delete=Delete',
         'regexes': [
             r"Are you sure you want to delete this rate script\?"],
         'status_code': 200},
     {
-        'path': '/non_core_rate_scripts/215/edit',
+        'path': '/non_core_rate_scripts/165/edit',
         'method': 'post',
         'data': {
             'delete': "Delete"},
         'status_code': 303},
     {
-        'path': '/non_core_rate_scripts/215',
+        'path': '/non_core_rate_scripts/165',
         'status_code': 404},
     {
         'name': "Try adding a rate script before other rate scripts.",
@@ -5296,10 +5324,10 @@ def virtual_bill(supply_source):
             'start_minute': "00",
             'insert': "Insert"},
         'regexes': [
-            r"/non_core_rate_scripts/216"],
+            r"/non_core_rate_scripts/166"],
         'status_code': 303},
     {
-        'path': '/non_core_rate_scripts/216/edit',
+        'path': '/non_core_rate_scripts/166/edit',
         'regexes': [
             r'<input name="finish_year" maxlength="4" size="4" value="2000">',
 
@@ -5308,7 +5336,7 @@ def virtual_bill(supply_source):
             '<option value="0" selected>00</option>'],
         'status_code': 200},
     {
-        'path': '/non_core_rate_scripts/216/edit',
+        'path': '/non_core_rate_scripts/166/edit',
         'method': 'post',
         'data': {
             'delete': "Delete"},
@@ -6395,7 +6423,7 @@ def virtual_bill(supply_source):
             '"2007-01-04 00:00","45","E","2007-01-17 00:00","76","E"']},
     {
         'name': "View a MOP rate script. Contract 31.",
-        'path': '/mop_rate_scripts/207',
+        'path': '/mop_rate_scripts/157',
         'status_code': 200},
 
     {
@@ -7020,7 +7048,7 @@ def virtual_bill(supply_source):
 
     {
         'name': "Make sure rate scripts remain contiguous.",
-        'path': '/non_core_rate_scripts/137/edit',
+        'path': '/non_core_rate_scripts/86/edit',
         'method': 'post',
         'data': {
             # First rate script of non-core contract triad
@@ -7038,13 +7066,13 @@ def virtual_bill(supply_source):
             'script': ""},
         'status_code': 303},
     {
-        'path': '/non_core_rate_scripts/138',
+        'path': '/non_core_rate_scripts/87',
         'regexes': [
             r"2006-03-31 00:00"],
         'status_code': 200},
     {
         'name': "Put it back to how it was",
-        'path': '/non_core_rate_scripts/137/edit',
+        'path': '/non_core_rate_scripts/86/edit',
         'method': 'post',
         'data': {
             'start_year': "2005",
@@ -9126,13 +9154,13 @@ def virtual_bill(supply_source):
         'regexes': [
             r'22 0883 6932 301,,CI005,Wheal Rodney,4341,'
             r'2014-06-04 00:00,2014-06-04 23:30,,0,,,0,,,'
-            r'116.17401069628967,,,,,5.89,350,1,0.0269,'
+            r'116.134976551\d*,,,,,5.89,350,1,0.0269,'
             r'9.415000000000001,,,,,0,0.00147,0.0,,,0.0,'
             r'0,0.25405,12.423045,0.0,0.00399,0.0,1,0.0878,'
             r'0.0878,88,48.9,52.5186,0.00021361,0.011218498146,'
             r'52.97793817932,,-0.023480635264263427,0,0.0,0.0,0,'
             r'0.0,0.0,48.9,52.5186,0.32906054015999997,,,,,'
-            r',,,,,52.97793817932,,0.04136729324794023,,,'
+            r',,,,,52.97793817932,,0.00233314839\d*,,,'
             r',,,,,,,,,,,,,,,,,,,,,'
             r',,,,,,,,,,,,,,,,,'
             r'duos-amber-rate,0.00344,duos-red-kwh,48.9'],
@@ -9187,13 +9215,13 @@ def virtual_bill(supply_source):
         'regexes': [
             r'22 0883 6932 301,,CI005,Wheal Rodney,4341,'
             r'2014-06-04 00:00,2014-06-04 23:30,,0,,,0,,,'
-            r'116.17401069628968,,,,,5.89,350,1,0.0269,'
+            r'116.1349765514\d*,,,,,5.89,350,1,0.0269,'
             r'9.415000000000001,,,,,0,0.00147,0.0,,,0.0,'
             r'0,0.25405,12.423045,0.0,0.00399,0.0,1,0.0878,'
             r'0.0878,88,48.9,52.5186,0.00021361,0.011218498146,'
             r'52.97793817932,,-0.023480635264263427,0,0.0,0.0,'
             r'48.9,52.5186,0.32906054015999997,,,,,,,,,'
-            r',,,,52.97793817932,,0.04136729324794023,,,,'
+            r',,,,52.97793817932,,0.00233314839741\d*,,,,'
             r',,,,,,,,,,,,,,,,,,,,,'
             r',,,,,,,,,,,,,,,,'
             r'duos-amber-rate,0.00344,duos-red-kwh,48.9'],
@@ -10958,35 +10986,6 @@ def virtual_bill(supply_source):
             r'<rect\s*'
             r'x="672px" y="64.0px" width="1px"\s*'
             r'height="16.0px" fill="blue" />']},
-
-    {
-        'name': "BSUoS",
-        'path': '/non_core_contracts/3/edit',
-        'method': 'post',
-        'data': {
-            'name': 'system_price',
-            'properties': """
-{
-    'enabled': True,
-    'url': 'http://127.0.0.1:8080/nationalgrid/sf_bsuos.xls'}
-"""},
-        'status_code': 303},
-
-    {
-        'name': "Do an 'import now'",
-        'path': '/non_core_contracts/3/auto_importer',
-        'method': 'post',
-        'regexes': [
-            '/non_core_contracts/3/auto_importer'],
-        'status_code': 303},
-
-    {
-        'name': 'BSUoS',
-        'path': '/non_core_contracts/3/auto_importer',
-        'tries': {'max': 40, 'period': 1},
-        'regexes': [
-            r"Added new rate script\."],
-        'status_code': 200},
 
     {
         'name': "Site generation graph stradling groups",
