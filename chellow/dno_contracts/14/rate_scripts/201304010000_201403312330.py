@@ -5,7 +5,7 @@ def lafs():
             'winter-weekday-peak': 1.077,
             'winter-weekday-day': 1.069,
             'other': 1.060},
-				'lv-sub': {
+        'lv-sub': {
             'night': 1.052,
             'winter-weekday-peak': 1.077,
             'winter-weekday-day': 1.069,
@@ -64,7 +64,7 @@ def tariffs():
             'amber-gbp-per-kwh': 0.00292,
             'green-gbp-per-kwh': 0.00017,
             'gbp-per-kvarh': 0.00171},
-'625': {
+        '625': {
             'description': 'LV Generation NHH',
             'gbp-per-mpan-per-day': 0,
             'gbp-per-kva-per-day': 0,
@@ -72,8 +72,8 @@ def tariffs():
             'red-gbp-per-kwh': -0.00702,
             'amber-gbp-per-kwh': -0.00702,
             'green-gbp-per-kwh': -0.0702,
-            'gbp-per-kvarh': 0}, 
-'570': {
+            'gbp-per-kvarh': 0},
+        '570': {
             'description': 'LV Sub Generation NHH',
             'gbp-per-mpan-per-day': 0,
             'gbp-per-kva-per-day': 0,
@@ -82,7 +82,7 @@ def tariffs():
             'amber-gbp-per-kwh': -0.00592,
             'green-gbp-per-kwh': -0.00592,
             'gbp-per-kvarh': 0},
-'571': {
+        '571': {
             'description': 'LV Generation Intermittent',
             'gbp-per-mpan-per-day': 0,
             'gbp-per-kva-per-day': 0,
@@ -91,7 +91,7 @@ def tariffs():
             'amber-gbp-per-kwh': -0.00702,
             'green-gbp-per-kwh': -0.00702,
             'gbp-per-kvarh': -0.00279},
-'573': {
+        '573': {
             'description': 'LV Generation Non-Intermittent',
             'gbp-per-mpan-per-day': 0,
             'gbp-per-kva-per-day': 0,
@@ -100,7 +100,7 @@ def tariffs():
             'amber-gbp-per-kwh': -0.00563,
             'green-gbp-per-kwh': -0.0006,
             'gbp-per-kvarh': -0.00279},
-'572': {
+        '572': {
             'description': 'LV Sub Generation Intermittent',
             'gbp-per-mpan-per-day': 0,
             'gbp-per-kva-per-day': 0,
@@ -109,7 +109,7 @@ def tariffs():
             'amber-gbp-per-kwh': -0.00592,
             'green-gbp-per-kwh': -0.00592,
             'gbp-per-kvarh': -0.00251},
-'574': {
+        '574': {
             'description': 'LV Sub Generation Non-Intermittent',
             'gbp-per-mpan-per-day': 0,
             'gbp-per-kva-per-day': 0,
@@ -118,7 +118,7 @@ def tariffs():
             'amber-gbp-per-kwh': -0.00471,
             'green-gbp-per-kwh': -0.00047,
             'gbp-per-kvarh': -0.00251},
-'575': {
+        '575': {
             'description': 'HV Generation Intermittent',
             'gbp-per-mpan-per-day': -0.1798,
             'gbp-per-kva-per-day': 0,
@@ -127,7 +127,7 @@ def tariffs():
             'amber-gbp-per-kwh': -0.0592,
             'green-gbp-per-kwh': -0.0592,
             'gbp-per-kvarh': -0.0206},
-'577': {
+        '577': {
             'description': 'HV Generation Non-Intermittent',
             'gbp-per-mpan-per-day': -0.1798,
             'gbp-per-kva-per-day': 0,

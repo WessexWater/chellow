@@ -11,6 +11,7 @@ def lafs():
             'winter-weekday-day': 1.022,
             'other': 1.030}}
 
+
 def tariffs():
     return {
         '127': {

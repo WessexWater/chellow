@@ -66,6 +66,7 @@ def tariffs():
         '910,478': {
             'gbp-per-kva-per-month': 0.51}}
 
+
 def lafs():
     return {
         'hv': {

@@ -16,6 +16,7 @@ def lafs():
             'night': 1.046,
             'other': 1.051}}
 
+
 def tariffs():
     return {
         '510': {
@@ -85,7 +86,7 @@ def tariffs():
             'description': 'LV Sub Generation Non-Intermittent',
             'gbp-per-mpan-per-day': 0.00,
             'gbp-per-kva-per-day': 0.00,
-            'excess-gbp-per-kva-per-day': 0.00, 
+            'excess-gbp-per-kva-per-day': 0.00,
             'red-gbp-per-kwh': -0.06204,
             'amber-gbp-per-kwh': -0.00181,
             'green-gbp-per-kwh': -0.00117,

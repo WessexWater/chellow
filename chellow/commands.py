@@ -2,26 +2,26 @@ import shutil
 import subprocess
 import sys
 import os.path
-import os
+from os import environ
 from pep3143daemon import DaemonContext, PidFile
 import waitress
 import argparse
 import signal
 import time
-import chellow
+from chellow import app
 
 
 def chellow_test_setup():
-    downloads_path = os.path.join(chellow.app.instance_path, 'downloads')
+    downloads_path = os.path.join(app.instance_path, 'downloads')
     if os.path.exists(downloads_path):
         shutil.rmtree(downloads_path)
     subprocess.Popen(["python", "test/ftp.py"])
 
 
 def chellow_start(daemon):
-    chellow_port = chellow.app.config['CHELLOW_PORT']
+    chellow_port = environ['CHELLOW_PORT'] if 'CHELLOW_PORT' in environ else 80
     daemon.open()
-    waitress.serve(chellow.app, host='0.0.0.0', port=chellow_port)
+    waitress.serve(app, host='0.0.0.0', port=chellow_port)
 
 
 def chellow_stop(pidfile_path):
@@ -38,10 +38,10 @@ def chellow_command():
     args = parser.parse_args()
 
     try:
-        os.makedirs(chellow.app.instance_path)
+        os.makedirs(app.instance_path)
     except:
         pass
-    pidfile_path = os.path.join(chellow.app.instance_path, 'chellow.pid')
+    pidfile_path = os.path.join(app.instance_path, 'chellow.pid')
     pidfile = PidFile(pidfile_path)
     daemon = DaemonContext(
         pidfile=pidfile, stdin=sys.stdin, stderr=sys.stderr, stdout=sys.stdout)

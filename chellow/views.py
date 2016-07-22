@@ -2,8 +2,7 @@ from io import StringIO
 import csv
 from flask import (
     request, Response, g, redirect, render_template, send_file, flash,
-    make_response)
-from chellow import app
+    make_response, Flask)
 from chellow.models import (
     Session, Contract, Report, User, set_read_write, Party, MarketRole,
     Participant, UserRole, Site, Source, GeneratorType, GspGroup, Era, SiteEra,
@@ -42,21 +41,20 @@ import chellow.bank_holidays
 import chellow.dloads
 import chellow.computer
 
-
-APPLICATION_ROOT = app.config['APPLICATION_ROOT']
-CONTEXT_PATH = '' if APPLICATION_ROOT is None else APPLICATION_ROOT
+app = Flask('chellow', instance_relative_config=True)
+app.secret_key = os.urandom(24)
 
 
 @app.before_first_request
 def before_first_request():
-    db_upgrade()
+    db_upgrade(app.root_path)
     chellow.rcrc.startup()
     chellow.bsuos.startup()
     chellow.system_price.startup()
     chellow.hh_importer.startup()
     chellow.tlms.startup()
     chellow.bank_holidays.startup()
-    chellow.dloads.startup()
+    chellow.dloads.startup(app.instance_path)
 
 
 @app.before_request
@@ -73,7 +71,7 @@ def shutdown_session(exception=None):
 @app.context_processor
 def chellow_context_processor():
     return {
-        'context_path': CONTEXT_PATH,
+        'context_path': '',
         'current_user': g.user}
 
 TEMPLATE_FORMATS = {
@@ -2360,9 +2358,11 @@ def site_hh_data_get(site_id):
 
             hh_dict['displaced_kwh'] = hh_dict['generated_kwh'] - \
                 hh_dict['export_kwh'] - hh_dict['parasitic_kwh']
-            hh_dict['used_kwh'] = hh_dict['import_kwh'] + \
-                hh_dict['displaced_kwh'] + hh_dict['third_party_import_kwh'] - \
-                hh_dict['third_party_export_kwh']
+            hh_dict['used_kwh'] = sum(
+                (
+                    hh_dict['import_kwh'], hh_dict['displaced_kwh'],
+                    hh_dict['third_party_import_kwh'] -
+                    hh_dict['third_party_export_kwh']))
             hh_date = hh_date + HH
 
     return render_template('site_hh_data.html', site=site, groups=groups)
@@ -2450,7 +2450,7 @@ def downloads_post():
 def download_get(fname):
     head, name = os.path.split(os.path.normcase(os.path.normpath(fname)))
 
-    download_path = os.path.join(chellow.app.instance_path, 'downloads')
+    download_path = os.path.join(app.instance_path, 'downloads')
 
     full_name = os.path.join(download_path, name)
 
@@ -2468,7 +2468,7 @@ def download_get(fname):
 def download_post(fname):
     head, name = os.path.split(os.path.normcase(os.path.normpath(fname)))
 
-    download_path = os.path.join(chellow.app.instance_path, 'downloads')
+    download_path = os.path.join(app.instance_path, 'downloads')
     full_name = os.path.join(download_path, name)
     os.remove(full_name)
     return chellow_redirect("/downloads", 303)

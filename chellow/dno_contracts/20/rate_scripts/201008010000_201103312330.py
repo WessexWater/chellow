@@ -46,11 +46,11 @@ def tariffs():
             'description': 'LV Sub Generation Intermittent',
             'gbp-per-mpan-per-day': 0,
             'gbp-per-kva-per-day': 0.00,
-            'excess-gbp-per-kva-per-day': 0.00},
+            'excess-gbp-per-kva-per-day': 0.00,
             'red-gbp-per-kwh': -0.00656,
             'amber-gbp-per-kwh': -0.00656,
             'green-gbp-per-kwh': -0.00656,
-            'gbp-per-kvarh': 0.00199,
+            'gbp-per-kvarh': 0.00199},
         '004': {
             'description': 'LV Sub Generation Non-Intermittent',
             'gbp-per-mpan-per-day': 0,

@@ -1,6 +1,7 @@
 def triad():
     return 19.147817
 
+
 def tariffs():
     return {
         '121': {
@@ -38,6 +39,7 @@ def tariffs():
             'day-gbp-per-kwh': 0.0012,
             'night-gbp-per-kwh': 0.0006,
             'reactive-gbp-per-kvarh': 0.0013}}
+
 
 def lafs():
     return {

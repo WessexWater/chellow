@@ -1,4 +1,3 @@
-from chellow import app
 from sqlalchemy import (
     ForeignKey, Column, Integer, String, Boolean, DateTime, Text, Numeric, or_,
     not_, and_, Enum, null, create_engine)
@@ -24,7 +23,27 @@ import sys
 from hashlib import pbkdf2_hmac
 from binascii import hexlify, unhexlify
 
-config = app.config
+config = {
+    'PGUSER': 'postgres',
+    'PGPASSWORD': 'postgres',
+    'PGHOST': 'localhost',
+    'PGDATABASE': 'chellow',
+    'PGPORT': '5432'}
+
+
+if 'RDS_HOSTNAME' in os.environ:
+    for conf_name, rds_name in (
+            ('PGDATABASE', 'RDS_DB_NAME'), ('PGUSER', 'RDS_USERNAME'),
+            ('PGPASSWORD', 'RDS_PASSWORD'), ('PGHOST', 'RDS_HOSTNAME'),
+            ('PGPORT', 'RDS_PORT')):
+        config[conf_name] = os.environ[rds_name]
+
+for var_name in (
+        'PGUSER', 'PGPASSWORD', 'PGHOST', 'PGPORT', 'PGDATABASE',
+        'CHELLOW_PORT'):
+    if var_name in os.environ:
+        config[var_name] = os.environ[var_name]
+
 db_url = ''.join(
     [
         "postgresql+pg8000://", config['PGUSER'], ":", config['PGPASSWORD'],
@@ -2760,9 +2779,7 @@ def read_file(pth, fname, attr):
         return {attr: contents}
 
 
-def db_init(sess):
-    webinf_path = app.root_path
-    config = app.config
+def db_init(sess, root_path):
     db_name = config['PGDATABASE']
     log_message("Initializing database.")
     Base.metadata.create_all(bind=engine)
@@ -2841,7 +2858,7 @@ def db_init(sess):
 
     dbapi_conn = sess.connection().connection.connection
     cursor = dbapi_conn.cursor()
-    mdd_path = os.path.join(webinf_path, 'mdd')
+    mdd_path = os.path.join(root_path, 'mdd')
     for tname, fname in (
             ("gsp_group", "GSP_Group"),
             ("pc", "Profile_Class"),
@@ -2898,7 +2915,7 @@ def db_init(sess):
     for path_name, role_code in (
             ('non_core_contracts', 'Z'),
             ('dno_contracts', 'R')):
-        contracts_path = os.path.join(webinf_path, path_name)
+        contracts_path = os.path.join(root_path, path_name)
 
         for contract_name in sorted(os.listdir(contracts_path)):
             contract_path = os.path.join(contracts_path, contract_name)
@@ -3002,7 +3019,7 @@ def db_upgrade_0_to_1(sess):
 upgrade_funcs = [db_upgrade_0_to_1]
 
 
-def db_upgrade():
+def db_upgrade(root_path):
     sess = None
     try:
         sess = Session()
@@ -3012,7 +3029,7 @@ def db_upgrade():
         if db_version is None:
             log_message(
                 "It looks like the chellow database hasn't been initialized.")
-            db_init(sess)
+            db_init(sess, root_path)
         elif db_version == curr_version:
             log_message(
                 "The database version is " + str(db_version) +

@@ -1,34 +1,35 @@
 def tariffs():
     return {
-'450': {
-    'fixed-gbp-per-month': 14.91,
-    'day-gbp-per-kwh': 0.00508,
-    'capacity-<=200-gbp-per-kva-per-month': 1.06,
-    'capacity->200-gbp-per-kva-per-month': 0.93,
-    'excess-gbp-per-kva-per-month': 0.42},
-'453': {
-    'fixed-gbp-per-month': 14.91,
-    'day-gbp-per-kwh': 0.00606,
-    'night-gbp-per-kwh': 0.00118,
-    'capacity-<=200-gbp-per-kva-per-month': 1.06,
-    'capacity->200-gbp-per-kva-per-month': 0.93,
-    'excess-gbp-per-kva-per-month': 0.42},
-'520': {
-    'fixed-gbp-per-month': 51.50,
-    'day-gbp-per-kwh':  0.01157},
-'655': {
-    'fixed-gbp-per-month': 98.23,
-    'day-gbp-per-kwh':   0.00379,
-    'capacity-<=200-gbp-per-kva-per-month': 0.86,
-    'capacity->200-gbp-per-kva-per-month': 0.86,
-    'excess-gbp-per-kva-per-month': 0.40},
-'658': {
-    'fixed-gbp-per-month': 98.23,
-    'day-gbp-per-kwh': 0.00433,
-    'night-gbp-per-kwh': 0.00108,
-    'capacity-<=200-gbp-per-kva-per-month': 0.86,
-    'capacity->200-gbp-per-kva-per-month': 0.86,
-    'excess-gbp-per-kva-per-month': 0.40}}
+        '450': {
+            'fixed-gbp-per-month': 14.91,
+            'day-gbp-per-kwh': 0.00508,
+            'capacity-<=200-gbp-per-kva-per-month': 1.06,
+            'capacity->200-gbp-per-kva-per-month': 0.93,
+            'excess-gbp-per-kva-per-month': 0.42},
+        '453': {
+            'fixed-gbp-per-month': 14.91,
+            'day-gbp-per-kwh': 0.00606,
+            'night-gbp-per-kwh': 0.00118,
+            'capacity-<=200-gbp-per-kva-per-month': 1.06,
+            'capacity->200-gbp-per-kva-per-month': 0.93,
+            'excess-gbp-per-kva-per-month': 0.42},
+        '520': {
+            'fixed-gbp-per-month': 51.50,
+            'day-gbp-per-kwh':  0.01157},
+        '655': {
+            'fixed-gbp-per-month': 98.23,
+            'day-gbp-per-kwh':   0.00379,
+            'capacity-<=200-gbp-per-kva-per-month': 0.86,
+            'capacity->200-gbp-per-kva-per-month': 0.86,
+            'excess-gbp-per-kva-per-month': 0.40},
+        '658': {
+            'fixed-gbp-per-month': 98.23,
+            'day-gbp-per-kwh': 0.00433,
+            'night-gbp-per-kwh': 0.00108,
+            'capacity-<=200-gbp-per-kva-per-month': 0.86,
+            'capacity->200-gbp-per-kva-per-month': 0.86,
+            'excess-gbp-per-kva-per-month': 0.40}}
+
 
 def lafs():
     return {

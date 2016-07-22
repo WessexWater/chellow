@@ -7,22 +7,29 @@ import os
 import os.path
 import time
 import datetime
-import chellow
 import atexit
 
-download_path = os.path.join(chellow.app.instance_path, 'downloads')
-
-if not os.path.exists(download_path):
-    os.makedirs(download_path)
-
-
 download_id = 0
-
 lock = threading.Lock()
 
-files = sorted(os.listdir(download_path), reverse=True)
-if len(files) > 0:
-    download_id = int(files[0][:3]) + 1
+download_path = None
+
+
+def startup(instance_path):
+    global file_deleter
+    global download_id
+    global download_path
+    file_deleter = FileDeleter()
+    file_deleter.start()
+
+    download_path = os.path.join(instance_path, 'downloads')
+
+    if not os.path.exists(download_path):
+        os.makedirs(download_path)
+
+    files = sorted(os.listdir(download_path), reverse=True)
+    if len(files) > 0:
+        download_id = int(files[0][:3]) + 1
 
 
 def make_names(base, user):
@@ -160,12 +167,6 @@ class FileDeleter(threading.Thread):
 
 def get_file_deleter():
     return file_deleter
-
-
-def startup():
-    global file_deleter
-    file_deleter = FileDeleter()
-    file_deleter.start()
 
 
 @atexit.register

@@ -21,6 +21,7 @@ def lafs():
             'other': 1.018,
             'night': 1.017}}
 
+
 def tariffs():
     return {
         '001,477,909': {
