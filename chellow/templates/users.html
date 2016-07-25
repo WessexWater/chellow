@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 
 {% block title %}
-	Users
+	&raquo; Users
 {% endblock %}
 
 {% block inside_head %}
@@ -14,93 +14,136 @@
 {% endblock %}
 
 {% block nav %}
-	Users
+	&raquo; Users
 {% endblock %}
 
 {% block content %}
-	<ul>
-		{% if current_user is defined %}
-			<li>
-				<a href="{{context_path}}/users/{{current_user.id}}">Me</a>
-			</li>
-		{% endif %}
-	</ul>
+<!-- Layer Section -->
+<div class="layer-section">
+	<!-- Section Header -->
+	<div class="section-header">
+		<h2>Users</h2>	
+	</div>
+	<!-- End Section Header -->
+	<!-- Section Content -->
+	<div class="section-content">
+		<div class="section-data">
+		    <ul>
+        		{% if current_user is defined %}
+        			<li>
+        				<a href="{{context_path}}/users/{{current_user.id}}">Me</a>
+        			</li>
+        		{% endif %}
+        	</ul>
 
-	{% if users|length > 0 %}
-		<table>
-			<thead>
-				<tr>
-					<th></th>
-					<th>Email Address</th>
-					<th>Role</th>
-					<th>Party</th>
-				</tr>
-			</thead>
-			<tbody>
-				{% for user in users %}
-					<tr>
-						<td><a href="{{context_path}}/users/{{user.id}}">view</a></td>
-						<td>{{ user.email_address }}</td>
-						<td>{{ user.user_role.code }}</td>
-						<td>{{ user.party.name }}</td>
-					</tr>
-				{% endfor %}
-			</tbody>
-		</table>
-	{% endif %}
+        	{% if users|length > 0 %}
+        		<table class="DataTable widthAuto">
+        			<thead>
+        				<tr>
+        					<th></th>
+        					<th>Email Address</th>
+        					<th>Role</th>
+        					<th>Party</th>
+        				</tr>
+        			</thead>
+        			<tbody>
+        				{% for user in users %}
+        					<tr>
+        						<td><a href="{{context_path}}/users/{{user.id}}">view</a></td>
+        						<td>{{ user.email_address }}</td>
+        						<td>{{ user.user_role.code }}</td>
+        						<td>{{ user.party.name }}</td>
+        					</tr>
+        				{% endfor %}
+        			</tbody>
+        		</table>
+        	{% endif %}
+		</div>
+	</div>
+	<!-- End Section Content -->
+</div>
+<!-- End Layer Section -->
+
+
+<!-- Layer Section -->
+<div class="layer-section">
+	<!-- Section Header -->
+	<div class="section-header">
+		<h2>Add new user</h2>	
+	</div>
+	<!-- End Section Header -->
+	<!-- Section Content -->
+	<div class="section-content">
+		<div class="section-data">
+		    <div class="standardForm">
+		        <form method="post" action="">
+            		<fieldset>
+            		    <div class="row">
+            		        <div class="col-sm-6">
+            		            <label>Email Address</label>
+                    			<input name="email_address" value="{{request.values.email_address}}">
+            		        </div>
+            		        <div class="col-sm-6">
+            		            <label>Password</label>
+                    			<input type="password" name="password">
+            		        </div>
+            		    </div>
+            			<div class="row">
+            			    <div class="col-sm-6">
+                			    <fieldset>
+                    				<label>Role</label>
+                    				<br>
+                    				</br>
+                    				<input type="radio" name="user_role_code" value="editor"
+                    					{% if request.values.user_role_code %}
+                    						{% if request.values.user_role_code == 'editor' %}
+                    							checked
+                    						{% endif %}
+                    					{% else %}
+                    						checked
+                    					{% endif %}
+                    				>
+                    				Editor
+                    				<br>
+                    				<input type="radio" name="user_role_code" value="viewer"
+                    					{% if request.values.user_role_code == 'viewer' %}
+                    						checked
+                    					{% endif %}
+                    				>
+                    				Viewer
+                    				<br>
+                    				<input type="radio" name="user_role_code" value="party-viewer"
+                    					{% if request.values.user_role_code == 'party-viewer' %}
+                    						checked
+                    					{% endif %}
+                    				>
+                    				Party Viewer
+                    				<select name="party_id">
+                    					{% for party in parties %}
+                    						<option value="{{ party.id }}"
+                    							{%- if request.values.user_role_id == party.id -%}
+                    								selected
+                    							{% endif %}
+                    						>{{ party.name }} {{ party.participant.code }}
+                    							{{ party.market_role.description }}
+                    						</option>
+                    					{% endfor %}
+                    				</select>
+                    			</fieldset>
+                    		</div>
+            			</div>
+            			<input type="submit" value="Add">
+            		</fieldset>
+            	</form>
+		    </div>
+		</div>
+	</div>
+	<!-- End Section Content -->
+</div>
+<!-- End Layer Section -->
+
+
+	
 	<br>
-	<form method="post" action="">
-		<fieldset>
-			<legend>Add new user</legend>
-			<br>
-			<label>Email Address</label>
-			<input name="email_address" value="{{request.values.email_address}}">
-			<br>
-			<label>Password</label>
-			<input type="password" name="password">
-			<br>
-			<br>
-			<fieldset>
-				<legend>Role</legend>
-				<input type="radio" name="user_role_code" value="editor"
-					{% if request.values.user_role_code %}
-						{% if request.values.user_role_code == 'editor' %}
-							checked
-						{% endif %}
-					{% else %}
-						checked
-					{% endif %}
-				>
-				Editor
-				<br>
-				<input type="radio" name="user_role_code" value="viewer"
-					{% if request.values.user_role_code == 'viewer' %}
-						checked
-					{% endif %}
-				>
-				Viewer
-				<br>
-				<input type="radio" name="user_role_code" value="party-viewer"
-					{% if request.values.user_role_code == 'party-viewer' %}
-						checked
-					{% endif %}
-				>
-				Party Viewer
-				<select name="party_id">
-					{% for party in parties %}
-						<option value="{{ party.id }}"
-							{%- if request.values.user_role_id == party.id -%}
-								selected
-							{% endif %}
-						>{{ party.name }} {{ party.participant.code }}
-							{{ party.market_role.description }}
-						</option>
-					{% endfor %}
-				</select>
-			</fieldset>
-			<br>
-			<br>
-			<input type="submit" value="Add">
-		</fieldset>
-	</form>
+	
 {% endblock %}

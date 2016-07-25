@@ -261,26 +261,29 @@ def style_get():
     response.headers['Content-type'] = 'text/css'
     return response
 
+
 @app.route('/bootstrap', methods=['GET'])
 def bootstrap_get():
     props = Contract.get_non_core_by_name(g.sess, 'configuration'). \
         make_properties()
     response = make_response(
         render_template(
-            'css/bootstrap.min.css', background_colour=props['background_colour']))
+            'css/bootstrap.min.css',
+            background_colour=props['background_colour']))
     response.headers['Content-type'] = 'text/css'
     return response
 
 
-@app.route('/wessexcss', methods=['GET'])
-def wessexcss_get():
+@app.route('/chellowcss', methods=['GET'])
+def chellowcss_get():
     props = Contract.get_non_core_by_name(g.sess, 'configuration'). \
         make_properties()
     response = make_response(
         render_template(
-            'css/wessex.css', background_colour=props['background_colour']))
+            'css/chellow.css', background_colour=props['background_colour']))
     response.headers['Content-type'] = 'text/css'
     return response
+
 
 @app.route('/bootstrapjs', methods=['GET'])
 def bootstrapjs_get():
@@ -288,9 +291,23 @@ def bootstrapjs_get():
         make_properties()
     response = make_response(
         render_template(
-            'js/bootstrap.min.js', background_colour=props['background_colour']))
+            'js/bootstrap.min.js',
+            background_colour=props['background_colour']))
     response.headers['Content-type'] = 'text/javascript'
     return response
+
+
+@app.route('/jqueryminjs', methods=['GET'])
+def jqueryminjs_get():
+    props = Contract.get_non_core_by_name(g.sess, 'configuration'). \
+        make_properties()
+    response = make_response(
+        render_template(
+            'js/jquery-3.1.0.min.js',
+            background_colour=props['background_colour']))
+    response.headers['Content-type'] = 'text/javascript'
+    return response
+
 
 @app.route('/gridsjs', methods=['GET'])
 def gridjs_get():
@@ -298,20 +315,21 @@ def gridjs_get():
         make_properties()
     response = make_response(
         render_template(
-            'js/grids.min.js', background_colour=props['background_colour']))
+            'js/grids.min.js',
+            background_colour=props['background_colour']))
     response.headers['Content-type'] = 'text/javascript'
     return response
 
-@app.route('/wessexjs', methods=['GET'])
-def wessexjs_get():
+
+@app.route('/chellowjs', methods=['GET'])
+def chellowjs_get():
     props = Contract.get_non_core_by_name(g.sess, 'configuration'). \
         make_properties()
     response = make_response(
         render_template(
-            'js/wessex.js', background_colour=props['background_colour']))
+            'js/chellow.js', background_colour=props['background_colour']))
     response.headers['Content-type'] = 'text/javascript'
     return response
-
 
 
 @app.route('/ecoes/saveportfolioMpans.asp', methods=['GET'])

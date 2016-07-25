@@ -1,26 +1,42 @@
 {% extends "base.html" %}
 
 {% block title %}
-	User Roles
+	&raquo; User Roles
 {% endblock %}
 
 {% block nav %}
-	User Roles
+	&raquo; User Roles
 {% endblock %}
 
 {% block content %}
-	<table>
-		<thead>
-			<th>Code</th>
-		</thead>
-		<tbody>
-			{% for user_role in user_roles %}
-				<tr>
-					<td>
-						<a href="{{context_path}}/user_roles/{{user_role.id}}">{{user_role.code}}</a>
-					</td>
-				</tr>
-			{% endfor %}
-		</tbody>
-	</table>
+<!-- Layer Section -->
+<div class="layer-section">
+	<!-- Section Header -->
+	<div class="section-header">
+		<h2>User Roles</h2>	
+	</div>
+	<!-- End Section Header -->
+	<!-- Section Content -->
+	<div class="section-content">
+		<div class="section-data">
+		    <table class="DataTable widthAuto">
+        		<thead>
+        			<th>Code</th>
+        		</thead>
+        		<tbody>
+        			{% for user_role in user_roles %}
+        				<tr>
+        					<td>
+        						<a href="{{context_path}}/user_roles/{{user_role.id}}">{{user_role.code}}</a>
+        					</td>
+        				</tr>
+        			{% endfor %}
+        		</tbody>
+        	</table>
+		</div>
+	</div>
+	<!-- End Section Content -->
+</div>
+<!-- End Layer Section -->
+	
 {% endblock %}

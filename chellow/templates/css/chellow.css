@@ -172,7 +172,7 @@ body.LoginScreen,
 }
 
 .panel-logo a {
-    background: url('http://dev.mynameislatif.net/ww/chellow/images/logo.png') left top no-repeat;
+    background: url('') left top no-repeat;
     background-size: cover;
     display: inline-block;
     height: 51px;
