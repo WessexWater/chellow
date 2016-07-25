@@ -36,8 +36,9 @@
 							<!-- <legend>
 								Are you sure you want to delete this site and any associated snags?
 							</legend> -->
-							<input type="submit" name="delete" value="Delete"> 
-							<a href="{{context_path}}/sites/{{site.id}}/edit" class="btn">Cancel</a>
+							<input type="submit" name="delete" value="delete"> 
+							<input type="reset" value="Cancel" onClick="window.location='{{context_path}}/sites/{{site.id}}/edit'" />
+							
 						</fieldset>
 					</form>
 					
