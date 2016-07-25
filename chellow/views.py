@@ -693,7 +693,7 @@ def site_edit_post(site_id):
             site.delete(g.sess)
             g.sess.commit()
             flash("Site deleted successfully.")
-            return chellow_redirect('/sites/', 303)
+            return chellow_redirect('/sites', 303)
         elif 'update' in request.form:
             code = req_str('code')
             name = req_str('site_name')
