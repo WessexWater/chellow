@@ -11153,6 +11153,17 @@ def virtual_bill(supply_source):
             'X-Isrw-Proxy-Logon-User': 'admin@example.com'},
         'status_code': 200},
     {
+        'name': "Reverse proxy authentication. Forbidden.",
+        'path': '/sites/7/edit',
+        'method': 'post',
+        'data': {
+            'code': "CH017",
+            'name': "Parbola"},
+        'auth': None,
+        'headers': {
+            'X-Isrw-Proxy-Logon-User': 'watkins@example.com'},
+        'status_code': 403},
+    {
         'name': "Reverse proxy authentication: revert to basic auth",
         'path': '/non_core_contracts/5/edit',
         'method': 'post',

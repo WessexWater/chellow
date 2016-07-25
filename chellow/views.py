@@ -123,7 +123,8 @@ def check_permissions(*args, **kwargs):
     config_contract = Contract.get_non_core_by_name(g.sess, 'configuration')
     props = config_contract.make_properties()
     ad_props = props.get('ad_authentication', {})
-    if ad_props.get('on', False):
+    ad_auth_on = ad_props.get('on', False)
+    if ad_auth_on:
         username = request.headers['X-Isrw-Proxy-Logon-User']
         user = g.sess.query(User).filter(
             User.email_address == username).first()
@@ -204,7 +205,7 @@ def check_permissions(*args, **kwargs):
         g.sess.commit()
         return
 
-    if g.user is None or auth is None:
+    if g.user is None or (not ad_auth_on and auth is None):
         return Response(
             'Could not verify your access level for that URL.\n'
             'You have to login with proper credentials', 401,
