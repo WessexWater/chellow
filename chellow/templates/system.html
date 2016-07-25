@@ -1,68 +1,96 @@
 {% extends "base.html" %}
 
 {% block title %}
-	System
+	&raquo; System
 {% endblock %}
 
 {% block nav %}
-	System
+	&raquo; System
 {% endblock %}
 
 {% block content %}
-	<table>
-		<tr>
-			<th>Version Number</th>
-			<td>{{version_number}}</td>
-		</tr>
-		<tr>
-			<th>Version Hash</th>
-			<td>
-				<a
-				 	href="https://github.com/WessexWater/chellow/commit/{{version_hash}}"
-					>
-					{{version_hash}}
-				</a>
-			</td>
-		</tr>
-	</table>
+<!-- Layer Section -->
+<div class="layer-section">
+	<!-- Section Header -->
+	<div class="section-header">
+		<h2>System</h2>	
+	</div>
+	<!-- End Section Header -->
+	<!-- Section Content -->
+	<div class="section-content">
+		<div class="section-data">
+		    <table class="DataTable widthAuto">
+        		<tr>
+        			<th>Version Number</th>
+        			<td>{{version_number}}</td>
+        		</tr>
+        		<tr>
+        			<th>Version Hash</th>
+        			<td>
+        				<a
+        				 	href="https://github.com/WessexWater/chellow/commit/{{version_hash}}"
+        					>
+        					{{version_hash}}
+        				</a>
+        			</td>
+        		</tr>
+        	</table>
+		</div>
+		<div class="section-data">
+    		<pre>{{traces}}</pre>
+		</div>
+		<div class="section-data">
+		    <table class="DataTable widthAuto">
+		        <caption>pg_stat</caption>
+        		<thead>
+        			<tr>
+        				{% for title in pg_stats[0].keys() %}
+        					<th>{{title}}</th>
+        				{% endfor %}
+        			</tr>
+        		</thead>
+        		<tbody>
+        			{% for row in pg_stats %}
+        				<tr>
+        					{% for cell in row %}
+        						<td>{{cell}}</td>
+        					{% endfor %}
+        				</tr>
+        			{% endfor %}
+        		</tbody>
+        	</table>
+		</div>
+		<div class="section-data">
+		    <table class="DataTable widthAuto">
+        		<caption>HTTP Request Headers</caption>
+        		<thead>
+        			<tr>
+        				<th>Name</th>
+        				<th>Value</th>
+        			</tr>
+        		</thead>
+        		<tbody>
+        			{% for k, v in request.headers.items() %}
+        				<tr>
+        					<td>{{k}}</td>
+        					<td>{{v}}</td>
+        				</tr>
+        			{% endfor %}
+        		</tbody>
+        	</table>
+		</div>
+	</div>
+	<!-- End Section Content -->
+</div>
+<!-- End Layer Section -->
 
-	<pre>{{traces}}</pre>
 
-	<table><caption>pg_stat</caption>
-		<thead>
-			<tr>
-				{% for title in pg_stats[0].keys() %}
-					<th>{{title}}</th>
-				{% endfor %}
-			</tr>
-		</thead>
-		<tbody>
-			{% for row in pg_stats %}
-				<tr>
-					{% for cell in row %}
-						<td>{{cell}}</td>
-					{% endfor %}
-				</tr>
-			{% endfor %}
-		</tbody>
-	</table>
+	
 
-	<table>
-		<caption>HTTP Request Headers</caption>
-		<thead>
-			<tr>
-				<th>Name</th>
-				<th>Value</th>
-			</tr>
-		</thead>
-		<tbody>
-			{% for k, v in request.headers.items() %}
-				<tr>
-					<td>{{k}}</td>
-					<td>{{v}}</td>
-				</tr>
-			{% endfor %}
-		</tbody>
-	</table>
+	
+
+	
+
+	
 
 {% endblock %}

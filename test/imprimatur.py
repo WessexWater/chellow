@@ -36,10 +36,10 @@
         'regexes': [
             r'<form method="post" action="">\s*'
             r'<fieldset>\s*'
-            r'<legend>Change password</legend>',
+            r'<input type="hidden" name="change_password">\s*',
             r'<form action="">\s*'
             r'<fieldset>\s*'
-            r'<legend>Delete this user</legend>'],
+            r'<input type="hidden" name="Delete this user">\s*'],
         'status_code': 200},
 
     {
@@ -326,6 +326,7 @@ def virtual_bill(ds):
         # Check that 'has_finished' field is there
         'regexes': [
             r"has_finished"],
+
         'status_code': 200},
 
     {
@@ -12063,7 +12064,7 @@ def virtual_bill(supply_source):
         'path': '/bootstrap',
         'status_code': 200},
     {
-        'name': "Fetch wessex js",
+        'name': "Fetch bootstrap js",
         'path': '/bootstrapjs',
         'status_code': 200},
     {
