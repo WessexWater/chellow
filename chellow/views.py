@@ -3608,7 +3608,8 @@ def supplier_batch_edit_post(batch_id):
             batch.delete(g.sess)
             g.sess.commit()
             return chellow_redirect(
-                'supplier_contracts/' + str(contract_id), 303)
+                '/supplier_batches?supplier_contract_id=' +
+                str(contract_id), 303)
     except BadRequest as e:
         flash(e.description)
         return make_response(

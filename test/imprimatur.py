@@ -5541,7 +5541,9 @@ def virtual_bill(supply_source):
         'method': 'post',
         'data': {
             'delete': "Delete"},
-        'status_code': 303},
+        'status_code': 303,
+        'regexes': [
+            r'/supplier_batches\?supplier_contract_id=37']},
     {
         'name': "Check 'insert supplier batch' page.",
         'path': '/supplier_contracts/37/add_batch',
