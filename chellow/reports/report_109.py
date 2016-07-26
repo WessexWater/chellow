@@ -4,18 +4,31 @@ import pytz
 from sqlalchemy import or_
 from sqlalchemy.sql.expression import null
 import traceback
-from chellow.models import Contract, Site, SiteEra, Era, Supply, Source
-from chellow.utils import HH, hh_format, req_int, send_response
+from chellow.models import (
+    Contract, Site, SiteEra, Era, Supply, Source, Session)
+from chellow.utils import HH, hh_format, req_int
 import chellow.computer
+import chellow.dloads
+import csv
+import sys
+import os
+from flask import g
+import threading
+from chellow.views import chellow_redirect
 
 
-def content(contract_id, end_year, end_month, months, sess):
+def content(contract_id, end_year, end_month, months, user):
     caches = {}
+    sess = f = None
     try:
-        yield ','.join(
-            (
-                'Site Code', 'Site Name', 'Associated Site Ids', 'From', 'To',
-                'Gen Types', 'CHP kWh', 'LM kWh', 'Turbine kWh', 'PV kWh'))
+        sess = Session()
+        running_name, finished_name = chellow.dloads.make_names(
+            'displaced.csv', user)
+        f = open(running_name, mode='w', newline='')
+        writer = csv.writer(f, lineterminator='\n')
+        titles = [
+            'Site Code', 'Site Name', 'Associated Site Ids', 'From', 'To',
+            'Gen Types', 'CHP kWh', 'LM kWh', 'Turbine kWh', 'PV kWh']
 
         finish_date = Datetime(end_year, end_month, 1, tzinfo=pytz.utc) + \
             relativedelta(months=1) - HH
@@ -39,8 +52,8 @@ def content(contract_id, end_year, end_month, months, sess):
         for title in bill_titles:
             if title == 'total-msp-kwh':
                 title = 'total-displaced-msp-kwh'
-            yield ',' + title
-        yield '\n'
+            titles.append(title)
+        writer.writerow(titles)
 
         for site in sites:
             month_start = start_date
@@ -74,12 +87,10 @@ def content(contract_id, end_year, end_month, months, sess):
                                 supply.generator_type.code for supply in
                                 site_group.supplies
                                 if supply.generator_type is not None]))
-
-                    yield ','.join(
-                        '"' + value + '"' for value in [
-                            site.code, site.name, linked_sites,
-                            hh_format(chunk_start), hh_format(chunk_finish),
-                            generator_types])
+                    vals = [
+                        site.code, site.name, linked_sites,
+                        hh_format(chunk_start), hh_format(chunk_finish),
+                        generator_types]
 
                     total_gen_breakdown = {}
 
@@ -159,7 +170,7 @@ def content(contract_id, end_year, end_month, months, sess):
                         hh_date += HH
 
                     for title in ['chp', 'lm', 'turb', 'pv']:
-                        yield ',' + str(total_gen_breakdown.get(title, ''))
+                        vals.append(str(total_gen_breakdown.get(title, '')))
 
                     site_ds = chellow.computer.SiteSource(
                         sess, site, chunk_start, chunk_finish, forecast_date,
@@ -176,19 +187,28 @@ def content(contract_id, end_year, end_month, months, sess):
                                 val = hh_format(val)
                             else:
                                 val = str(val)
-                            yield ',"' + val + '"'
+                            vals.append(val)
                             del bill[title]
                         else:
-                            yield ',""'
+                            vals.append('')
 
                     for k in sorted(bill.keys()):
-                        yield ',"' + k + '","' + str(bill[k]) + '"'
-                    yield '\n'
+                        vals.append(k)
+                        vals.append(str(bill[k]))
+                    writer.writerow(vals)
 
                 month_start += relativedelta(months=1)
                 month_finish = month_start + relativedelta(months=1) - HH
     except:
-        yield traceback.format_exc()
+        msg = traceback.format_exc()
+        sys.stderr.write(msg)
+        writer.writerow([msg])
+    finally:
+        if sess is not None:
+            sess.close()
+        if f is not None:
+            f.close()
+            os.rename(running_name, finished_name)
 
 
 def do_get(sess):
@@ -196,6 +216,6 @@ def do_get(sess):
     end_month = req_int('finish_month')
     months = req_int('months')
     contract_id = req_int('supplier_contract_id')
-    return send_response(
-        content, args=(contract_id, end_year, end_month, months, sess),
-        file_name='displaced.csv')
+    args = (contract_id, end_year, end_month, months, g.user)
+    threading.Thread(target=content, args=args).start()
+    return chellow_redirect("/downloads", 303)
