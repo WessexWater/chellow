@@ -1403,7 +1403,10 @@ def virtual_bill_titles():
     {
         'name': "Check view of channel level snag",
         'path': '/channel_snags/1',
-        'status_code': 200},
+        'status_code': 200,
+        'regexes': [
+            r'<a href="/channel_snags\?hhdc_contract_id=29&amp;days_hidden=5">'
+            r'Channel Snags</a>']},
 
     {
         'name': "Check edit view of channel level snag",

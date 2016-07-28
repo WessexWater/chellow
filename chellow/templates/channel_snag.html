@@ -8,7 +8,7 @@
 {% block nav %}
 	<a href="{{context_path}}/hhdc_contracts">HHDC Contracts</a> &gt;
 	<a href="{{context_path}}/hhdc_contracts/{{snag.channel.era.hhdc_contract.id}}">{{snag.channel.era.hhdc_contract.name}}</a> &gt;
-	<a href="{{context_path}}/channel_snags?hhdc_contract={{snag.channel.era.hhdc_contract.id}}&amp;hidden_days=5">Channel Snags</a> &gt;
+	<a href="{{context_path}}/channel_snags?hhdc_contract_id={{snag.channel.era.hhdc_contract.id}}&amp;days_hidden=5">Channel Snags</a> &gt;
 	{{snag.id}}
 	[<a href="{{context_path}}/channel_snags/{{snag.id}}/edit">edit</a>]
 {% endblock %}
