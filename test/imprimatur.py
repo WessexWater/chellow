@@ -748,8 +748,7 @@ def virtual_bill_titles():
             r"22 6354 2983 570",
 
             # Check we the 'site_id' field is there
-            r'<fieldset>\s*<input type="hidden" name="site_id" value="4">\s*'
-            '<legend>Update this site</legend>'],
+            r'<fieldset>\s*<input type="hidden" name="site_id" value="4">\s*'],
         'status_code': 200},
 
     # Can we see a site ok?
