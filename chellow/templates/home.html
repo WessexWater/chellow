@@ -10,24 +10,12 @@
         	<div class="row">
 				<!-- Logo -->
             	<div class="col-sm-2 alignCenter bgBlue">
-                		<p class="panel-logo"><a href="/" title="Wessex Water"><span class="hide"></span></a></p>
+                		<!--<p class="panel-logo"><a href="/"><span class="hide"></span></a></p>-->
             	</div>
             	
 				<!-- Top Header -->
             	<div class="col-sm-10 top-header">
             		<div class="pull-left">
-            		<!--
-                		<p class="panel-breadcrumbs"><a href="/">Chellow</a> {% block nav %}{% endblock %}</p>
-						{% with messages = get_flashed_messages() %}
-							{% if messages %}
-								<ul>
-									{% for message in messages %}
-										<li>{{ message }}</li>
-									{% endfor %}
-								</ul>
-							{% endif %}
-						{% endwith %}
-					-->
 					<p class="panel-breadcrumbs">Chellow</p>
             		</div>
             	</div>
@@ -44,33 +32,37 @@
                 <!-- Layer Sidebar -->
                     <div class="layer-sidebar col-sm-2 bgWhite bodySameHeight">
                         <div class="main-navigation">
-                            <!-- Nav Main -->
+                            <!-- Nav Contracts -->
                             <nav class="nav-main active">
-                                <h4><i class="fa fa-th-large" aria-hidden="true"></i> Main</h4>
+                                <h4><i class="fa fa-file" aria-hidden="true"></i> Contracts</h4>
+                                <ul class="active">
+                                    <li><a href="{{context_path}}/hhdc_contracts" title="HHDC">HHDC</a></li>
+                                    <li><a href="{{context_path}}/mop_contracts" title="MOP">MOP</a></li>
+                                    <li><a href="{{context_path}}/supplier_contracts" title="Supplier">Supplier</a></li>
+                                    <li><a href="{{context_path}}/dno_contracts" title="DNO">DNO</a></li>
+                                    <li><a href="{{context_path}}/non_core_contracts" title="Non-Core">Non-Core</a></li>
+                                </ul>
+                            </nav>
+                            <!-- End Nav Contracts -->
+                            <!-- Nav Editors -->
+                            <nav class="nav-editors">
+                                <h4><i class="fa fa-cog" aria-hidden="true"></i> For Editors</h4>
                                 <ul>
-                                    <li>
-                                        <a href="#" title="Contracts">Contracts</a>
-                                        <ul>
-                                            <li><a href="{{context_path}}/hhdc_contracts" title="HHDC">HHDC</a></li>
-                                            <li><a href="{{context_path}}/mop_contracts" title="MOP">MOP</a></li>
-                                            <li><a href="{{context_path}}/supplier_contracts" title="Supplier">Supplier</a></li>
-                                            <li><a href="{{context_path}}/dno_contracts" title="DNO">DNO</a></li>
-                                            <li><a href="{{context_path}}/non_core_contracts" title="Non-Core">Non-Core</a></li>
-                                        </ul>
-                                    </li>
-                                    <li><a href="{{context_path}}/site_snags" title="Site Snags">Site Snags</a></li>
                                     {% if properties.local_reports_id %}
 	                                    <li><a href="{{context_path}}/local_reports/{{properties.local_reports_id}}/output" title="Local Reports">Local Reports</a></li>
                                     {% endif %}
                                     <li><a href="{{context_path}}/general_imports" title="General Import">General Import</a></li>
-                                    <li><a href="https://github.com/WessexWater/chellow" title="Docs">Docs</a></li>
+                                    <li><a href="{{context_path}}/downloads" title="Downloads">Downloads</a></li>
+                                    <li><a href="{{context_path}}/reports/ecoes_comparison" title="Comparison against ECOES">Comparison against ECOES</a></li>
+                                    <li><a href="{{context_path}}/local_reports" title="Edit Local Reports">Edit Local Reports</a></li>
+                                    <li><a href="{{context_path}}/site_snags" title="Site Snags">Site Snags</a></li>
+                                    <li><a href="https://github.com/WessexWater/chellow" title="Docs">Docs</a></li> 
                                 </ul>
                             </nav>
-                            <!-- End Nav Main -->
-                            
+                            <!-- End Nav Editors -->
                             <!-- Nav Industry -->
                             <nav class="nav-industry">
-                                <h4><i class="fa fa-question" aria-hidden="true"></i> Industry Info</h4>
+                                <h4><i class="fa fa-industry" aria-hidden="true"></i> Industry Info</h4>
                                 <ul>
                                     <li><a href="{{context_path}}/participants" title="Market Participants">Market Participants</a></li>
                                     <li><a href="{{context_path}}/market_roles" title="Market Roles">Market Roles</a></li>
@@ -91,19 +83,16 @@
                                 </ul>
                             </nav>
                             <!-- End Nav Industry -->
-                            
-                            <!-- Nav Editors -->
-                            <nav class="nav-editors">
-                                <h4><i class="fa fa-cog" aria-hidden="true"></i> For Editors</h4>
+                            <!-- Nav Administration -->
+                            <nav class="nav-administration">
+                                <h4><i class="fa fa-user" aria-hidden="true"></i> Administration</h4>
                                 <ul>
-                                    <li><a href="{{context_path}}/local_reports" title="Edit Local Reports">Edit Local Reports</a></li>
                                     <li><a href="{{context_path}}/users" title="Users">Users</a></li>
                                     <li><a href="{{context_path}}/user_roles" title="Users Roles">Users Roles</a></li>
                                     <li><a href="{{context_path}}/system" title="System">System</a></li>
-                                    <li><a href="{{context_path}}/reports/ecoes_comparison" title="Comparison against ECOES">Comparison against ECOES</a></li>
                                 </ul>
                             </nav>
-                            <!-- End Nav Editors -->
+                            <!-- End Nav Administration -->
                         </div>
                     </div>
                 <!-- End Layer Sidebar -->
@@ -155,10 +144,15 @@
 														<div class="well">
 															<table class="DataTable">
 																<thead>
-																	<tr>
-																		<th style="font-weight:bold"><a href="{{context_path}}/downloads">Core Reports</th>
+																    <tr>
+																        <th colspan=3><a href="{{context_path}}/downloads">Downloads</a></th>
+																    </tr>
+																    <tr>
+																		<th>Core Reports</th>
 																		<th>Supplies</th>
-																		<th>Sites</th>                                                   					</tr>
+																		<th>Sites</th>                                                   					
+																	</tr>
+																		
 																</thead>
 																<tbody>
 																	<tr>

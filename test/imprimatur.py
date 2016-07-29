@@ -5550,8 +5550,7 @@ def virtual_bill(supply_source):
         'path': '/supplier_batches/6/edit?confirm_delete=Delete',
         'status_code': 200,
         'regexes': [
-            r'<a class="btn" href="/supplier_batches/6/edit">Cancel</a>']},
-
+            r'<input type="submit" name="delete" value="Delete">']},
     {
         'name': "Check we can see it in 'view' mode. Contract 37",
         'path': '/mop_batches/9',

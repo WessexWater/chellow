@@ -892,7 +892,7 @@ table.DataTable.noMarginBottom {
 .DataTable tbody tr:hover th, 
 .DataTable tbody tr:hover td {
     background-color: #D0E7F9;
-    cursor: pointer;
+    cursor: default;
     text-align: left;
 }
 

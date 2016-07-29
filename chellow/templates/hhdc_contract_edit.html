@@ -19,15 +19,15 @@
 			<h2>Are you sure you want to delete this contract?</h2>
 		</div>
 		<div class="section-content">
-			<div class="standardForm">
-				<form method="delete" action="">
-					<fieldset>
-						<input type="submit" name="delete" value="Delete">
-					</fieldset>
-				</form>
-				<p>
-					<a href="">Cancel</a>
-				</p>
+			<div class="section-data">
+			    <div class="standardForm">
+    				<form method="delete" action="">
+    					<fieldset>
+    						<input type="submit" name="delete" value="delete">
+    						<input type="reset" value="Cancel" onClick="window.location='{{context_path}}/hhdc_contracts/{{hhdc_contract.id}}/edit'" />
+    					</fieldset>
+    				</form>
+    			</div>
 			</div>
 		</div>
 	</div>

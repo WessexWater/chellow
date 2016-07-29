@@ -24,20 +24,21 @@
             <!-- Section Content -->
             <div class="section-content">
                 <div class="section-data">
-			<form enctype="multipart/form-data" method="post" action="">
-				<fieldset>
-		                    <div class="standardForm">
-					<input type="hidden" name="hhdc_batch_id" value="{{batch.id}}">
-					<div class="row">
+                    <div class="standardForm">
+                        <form enctype="multipart/form-data" method="post" action="">
+            				<fieldset>
+    		                    <div class="standardForm">
+            					<input type="hidden" name="hhdc_batch_id" value="{{batch.id}}">
+            					<div class="row">
 		                            <div class="col-sm-6">
-						<input type="file" name="import_file">
-                                        	<input type="submit" value="Import">
-					    </div>
-					</div>
-		                    </div>
+                						<input type="file" name="import_file">
+                                    	<input type="submit" value="Import">
+            					    </div>
+            					</div>
+    		                    </div>
 
-					<p>Valid file name extensions are {{parser_names}}.</p>
-		                        
+            					<p>Valid file name extensions are {{parser_names}}.</p>
+            		                        
 		                        <div class="noWrap">
 		                            <table class="DataTable">
 		                                <caption>The '.csv' Format</caption>
@@ -75,18 +76,18 @@
 		                            can be left out entirely if the bill doesn't have any readings
 		                            associated with it.
 		                        </p>
-				</fieldset>
-			</form>
-			
-			{% if importer_ids %}
-				<ul>
-					{% for id in importer_ids %}
-						<li>
-							<a href="{{context_path}}/hhdc_bill_imports/{{id}}">{{id}}</a>
-						</li>
-					{% endfor %}
-				</ul>
-			{% endif %}
+            				</fieldset>
+            			</form>
+                    </div>
+        			{% if importer_ids %}
+        				<ul>
+        					{% for id in importer_ids %}
+        						<li>
+        							<a href="{{context_path}}/hhdc_bill_imports/{{id}}">{{id}}</a>
+        						</li>
+        					{% endfor %}
+        				</ul>
+        			{% endif %}
                 </div>
             </div>
             <!-- End Section Content -->

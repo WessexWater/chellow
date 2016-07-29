@@ -33,6 +33,10 @@ setup(
         'templates/js/*.js',
         'templates/*.css',
         'static/fonts/*.ttf',
+        'static/fonts/*.eot',
+        'static/fonts/*.woff',
+        'static/fonts/*.woff2',
+        'static/fonts/*.svg',
         'nationalgrid/*',
         'elexonportal/*']},
     install_requires=[

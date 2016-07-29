@@ -25,7 +25,8 @@
 					<form method="delete" action="">
 						<fieldset>
 							<input type="submit" value="Delete">
-							<a class="btn" href="{{context_path}}/supplier_rate_scripts/{{supplier_rate_script.id}}/edit">Cancel</a>
+							<input type="reset" value="Cancel" onClick="window.location='{{context_path}}/supplier_rate_scripts/{{supplier_rate_script.id}}/edit'" />
+						
 						</fieldset>
 					</form>
 				</div>
