@@ -94,10 +94,20 @@ function checkScreenWidth() {
         
         var navi 	= $( this ).closest( 'nav' );
         var naviUl 	= $( navi ).find( 'ul' );
-        
-        // if( !windowSize > 768 ) {
+        var isActive = $( this ).siblings( 'ul' ).attr( 'class' );
+        if( isActive == 'active' ){
+        //    $( navi ).siblings().find( 'ul' ).slideUp( 400 ).removeClass( 'active' );
+            $( naviUl ).slideUp( 400 ).removeClass( 'active' );
+        }else{
+            
             $( navi ).siblings().find( 'ul' ).slideUp( 400 ).removeClass( 'active' );
             $( naviUl ).slideDown( 400 ).addClass( 'active' );
+        
+        }
+        
+        // if( !windowSize > 768 ) {
+        //    $( navi ).siblings().find( 'ul' ).slideUp( 400 ).removeClass( 'active' );
+        //    $( naviUl ).slideDown( 400 ).addClass( 'active' );
         // }
     } );
     

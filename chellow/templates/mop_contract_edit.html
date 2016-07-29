@@ -57,22 +57,18 @@
 										</select>
 									</div>
 									<div class="col-sm-6">
-										<label>
-											Name {{input_text('name', contract.name)}}
-										</label>
+										<label>Name </label>
+										{{input_text('name', contract.name)}}
 									</div>
 								</div>
-								Charge script
-								<br>
+								<label>Charge script</label>
+								
 								{{input_textarea('charge_script', contract.charge_script, 40, 80)}}
-								<br />
-								<br>
-								Properties
-								<br>
+								
+								<label>Properties</label>
 								{{input_textarea('properties', contract.properties, 40, 80)}}
-								<br />
-								<br />
-								<h4>Example</h4>
+								
+								<label>Example</label>
 								<code><pre>
 has.importer=yes
 file.type=.df2
@@ -84,24 +80,36 @@ directory1=downloads2
 								</pre></code>
 								<input type="submit" value="Update">
 							</fieldset>
-						</form>
-						<br />
-						<br />
-						<form action="" method="post">
-							<fieldset>
-								<legend>Update State</legend>
-								<input type="hidden" name="mop_contract_id" value="{{contract.id}}">
-								<label>State</label>
-								<br>
-								{{input_textarea('state', contract.state, 40, 80)}}
-								<br>
-								<input type="submit" name="update_state" value="Update">
-							</fieldset>
-						</form>
+						</form>						
 					</div>
 				</div>
 			</div>
 		</div>
+		<!-- Layer Section -->
+        <div class="layer-section">
+        	<!-- Section Header -->
+        	<div class="section-header">
+        		<h2>Update State</h2>	
+        	</div>
+        	<!-- End Section Header -->
+        	<!-- Section Content -->
+        	<div class="section-content">
+        		<div class="section-data">
+        		    <div class="standardForm">
+        		        <form action="" method="post">
+							<fieldset>
+								<input type="hidden" name="mop_contract_id" value="{{contract.id}}">
+								<label>State</label>
+								{{input_textarea('state', contract.state, 40, 80)}}
+								<input type="submit" name="update_state" value="Update">
+							</fieldset>
+						</form>
+        		    </div>
+        		</div>
+        	</div>
+        	<!-- End Section Content -->
+        </div>
+        <!-- End Layer Section -->
 			
 		<div class="layer-section">
 			<div class="section-header">

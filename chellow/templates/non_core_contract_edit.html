@@ -26,7 +26,7 @@
 								value="{{contract.id}}"
 							>
 							<input type="submit" name="delete" value="Delete">
-							<a class="btn" href="{{context_path}}/non_core_contracts/{{contract.id}}/edit">Cancel</a>
+							<input type="reset" value="Cancel" onClick="window.location='{{context_path}}/non_core_contracts/{{contract.id}}/edit'" />
 						</fieldset>
 					</form>
 				</div>
