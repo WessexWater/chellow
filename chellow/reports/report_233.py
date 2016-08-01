@@ -5,19 +5,32 @@ import pytz
 from sqlalchemy.sql.expression import true
 import traceback
 from chellow.models import (
-    Contract, Snag, Channel, Era, Supply, SiteEra, Site)
-from chellow.utils import req_int, send_response
+    Contract, Snag, Channel, Era, Supply, SiteEra, Site, Session)
+from chellow.utils import req_int
+from chellow.views import chellow_redirect
+import chellow.dloads
+import csv
+from flask import g
+import threading
+import sys
+import os
 
 
-def content(contract_id, days_hidden, sess):
+def content(contract_id, days_hidden, user):
+    sess = f = writer = None
     try:
-        yield ','.join(
+        sess = Session()
+        running_name, finished_name = chellow.dloads.make_names(
+            'channel_snags.csv', user)
+        f = open(running_name, mode='w', newline='')
+        writer = csv.writer(f, lineterminator='\n')
+        writer.writerow(
             (
                 'Hidden Days', 'Chellow Id', 'Imp MPAN Core', 'Exp MPAN Core',
                 'Site Code', 'Site Name', 'Snag Description',
                 'Import Related?', 'Channel Type', 'Start Date', 'Finish Date',
                 'Days Since Snag Finished', 'Duration Of Snag (Days)',
-                'Is Ignored?')) + '\n'
+                'Is Ignored?'))
 
         contract = Contract.get_hhdc_by_id(sess, contract_id)
 
@@ -43,21 +56,33 @@ def content(contract_id, days_hidden, sess):
                 duration = snag_finish - snag_start
                 age_of_snag = now - snag_finish
 
-            yield ','.join('"' + str(val) + '"' for val in [
-                days_hidden, snag.id, era.imp_mpan_core, era.exp_mpan_core,
-                site.code, site.name, snag.description, channel.imp_related,
-                channel.channel_type, snag_start.strftime("%Y-%m-%d %H:%M"),
-                snag_finish_str,
-                age_of_snag.days + float(age_of_snag.seconds) / (3600 * 24),
-                duration.days + float(duration.seconds) / (3600 * 24),
-                snag.is_ignored]) + '\n'
+            writer.writerow(
+                (
+                    str(days_hidden), str(snag.id),
+                    '' if era.imp_mpan_core is None else era.imp_mpan_core,
+                    '' if era.exp_mpan_core is None else era.exp_mpan_core,
+                    site.code, site.name, snag.description,
+                    str(channel.imp_related), channel.channel_type,
+                    snag_start.strftime("%Y-%m-%d %H:%M"), snag_finish_str,
+                    str(age_of_snag.days + age_of_snag.seconds / (3600 * 24)),
+                    str(duration.days + duration.seconds / (3600 * 24)),
+                    str(snag.is_ignored)))
     except:
-        yield traceback.format_exc()
+        msg = traceback.format_exc()
+        sys.stderr.write(msg)
+        writer.writerow([msg])
+    finally:
+        if sess is not None:
+            sess.close()
+        if f is not None:
+            f.close()
+            os.rename(running_name, finished_name)
 
 
 def do_get(sess):
     contract_id = req_int('hhdc_contract_id')
     days_hidden = req_int('days_hidden')
-    return send_response(
-        content, args=(contract_id, days_hidden, sess),
-        file_name="channel_snags.csv")
+
+    args = (contract_id, days_hidden, g.user)
+    threading.Thread(target=content, args=args).start()
+    return chellow_redirect("/downloads", 303)
