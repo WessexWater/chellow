@@ -49,17 +49,19 @@
 						<fieldset>
 							<input type="hidden" name="supplier_batch_id" value="{{batch.id}}">
 							<div class="row">
-								<div class="col-sm-6">
+								<div class="col-sm-4">
 									<label>
 										Reference {{input_text('reference', batch.reference)}}
 									</label>
 								</div>
-								<div class="col-sm-6">
+							</div>		
+							<div class="row">
+								<div class="col-sm-4">
 									<label>
 										Description {{input_text('description', batch.description)}}
 									</label>
 								</div>
-							</div>				
+							</div>		
 							<input type="submit" name="update" value="Update">
 						</fieldset>
 					</form>

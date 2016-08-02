@@ -32,13 +32,15 @@
 					<fieldset>						
 						<input type="hidden" name="supplier_contract_id" value="{{contract.id}}">
 						<div class="row">
-							<div class="col-sm-6">
+							<div class="col-sm-4">
 								<label>Reference</label> {{ input_text('reference', '') }}
 							</div>
-							<div class="col-sm-6">
+						</div>			
+						<div class="row">
+							<div class="col-sm-4">
 								<label>Description</label> {{ input_text('description', '') }}
 							</div>
-						</div>						
+						</div>  			
 						<input type="submit" value="Add">
 					</fieldset>
 				</form>
