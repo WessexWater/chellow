@@ -3,21 +3,30 @@ import datetime
 from sqlalchemy import or_
 from sqlalchemy.sql.expression import null
 import traceback
-from chellow.utils import send_response, HH, hh_format, req_int
-from chellow.models import Site, SiteEra, Era, Supply, Source
+from chellow.utils import HH, hh_format, req_int
+from chellow.models import Site, SiteEra, Era, Supply, Source, Session
 import chellow.computer
 import chellow.duos
 import chellow.triad
-from flask import request
+from flask import request, g
+import csv
+import chellow.dloads
+import sys
+import os
+from chellow.views import chellow_redirect
+import threading
 
 
-def content(year, site_id, sess):
+def content(year, site_id, user):
     caches = {}
+    sess = f = writer = None
     try:
-        march_finish = datetime.datetime(year, 4, 1, tzinfo=pytz.utc) - HH
-        march_start = datetime.datetime(year, 3, 1, tzinfo=pytz.utc)
-
-        yield ', '.join(
+        sess = Session()
+        running_name, finished_name = chellow.dloads.make_names(
+            'output.csv', user)
+        f = open(running_name, mode='w', newline='')
+        writer = csv.writer(f, lineterminator='\n')
+        writer.writerow(
             (
                 "Site Code", "Site Name", "Displaced TRIAD 1 Date",
                 "Displaced TRIAD 1 MSP kW", "Displaced TRIAD LAF",
@@ -26,7 +35,10 @@ def content(year, site_id, sess):
                 "Displaced TRIAD 2 GSP kW", "Displaced TRIAD 3 Date",
                 "Displaced TRIAD 3 MSP kW", "Displaced TRIAD 3 LAF",
                 "Displaced TRIAD 3 GSP kW", "Displaced GSP kW",
-                "Displaced Rate GBP / kW", "GBP")) + '\n'
+                "Displaced Rate GBP / kW", "GBP"))
+
+        march_finish = datetime.datetime(year, 4, 1, tzinfo=pytz.utc) - HH
+        march_start = datetime.datetime(year, 3, 1, tzinfo=pytz.utc)
 
         forecast_date = chellow.computer.forecast_date()
 
@@ -55,8 +67,6 @@ def content(year, site_id, sess):
                 else:
                     continue
 
-                yield '"' + site.code + '","' + site.name + '"'
-
                 displaced_era = chellow.computer.displaced_era(
                     sess, site_group, chunk_start, chunk_finish)
                 if displaced_era is None:
@@ -73,28 +83,32 @@ def content(year, site_id, sess):
                 for rname, rset in site_ds.supplier_rate_sets.items():
                     if len(rset) == 1:
                         bill[rname] = rset.pop()
-                values = []
+                values = [site.code, site.name]
                 for i in range(1, 4):
                     triad_prefix = 'triad-actual-' + str(i)
-                    for suffix in ['-date', '-msp-kw', '-laf', '-gsp-kw']:
+                    values.append(hh_format(bill[triad_prefix + '-date']))
+                    for suffix in ['-msp-kw', '-laf', '-gsp-kw']:
                         values.append(bill[triad_prefix + suffix])
 
                 values += [
-                    bill['triad-actual-' + suf] for suf in [
+                    str(bill['triad-actual-' + suf]) for suf in [
                         'gsp-kw', 'rate', 'gbp']]
 
-                for value in values:
-                    if isinstance(value, datetime.datetime):
-                        yield "," + hh_format(value)
-                    else:
-                        yield "," + str(value)
-                yield '\n'
+                writer.writerow(values)
     except:
-        yield traceback.format_exc()
+        msg = traceback.format_exc()
+        sys.stderr.write(msg)
+        writer.writerow([msg])
+    finally:
+        if sess is not None:
+            sess.close()
+        if f is not None:
+            f.close()
+            os.rename(running_name, finished_name)
 
 
 def do_get(sess):
     site_id = req_int('site_id') if 'site_id' in request.values else None
     year = req_int('year')
-    return send_response(
-        content, args=(year, site_id, sess), file_name='output.csv')
+    threading.Thread(target=content, args=(year, site_id, g.user)).start()
+    return chellow_redirect("/downloads", 303)
