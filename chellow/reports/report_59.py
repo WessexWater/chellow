@@ -1,14 +1,29 @@
 import traceback
-from chellow.utils import send_response, req_date, req_int
-from chellow.models import Site
-from flask import request
+from chellow.utils import req_date, req_int
+from chellow.models import Site, Session
+from flask import request, g
+import csv
+import chellow.dloads
+from chellow.views import chellow_redirect
+import threading
+import sys
+import os
 
 
-def content(start_date, finish_date, site_id, sess):
+def content(start_date, finish_date, site_id, user):
+    sess = None
     try:
-        yield "Site Id, Site Name, Associated Site Ids, Sources, " + \
-            "Generator Types, From, To, Imported kWh, Displaced kWh, " + \
-            "Exported kWh, Used kWh, Parasitic kWh, Generated kWh,Meter Type\n"
+        sess = Session()
+        running_name, finished_name = chellow.dloads.make_names(
+            'sites_duration.csv', user)
+        f = open(running_name, mode='w', newline='')
+        writer = csv.writer(f, lineterminator='\n')
+        writer.writerow(
+            (
+                "Site Id", "Site Name", "Associated Site Ids", "Sources",
+                "Generator Types", "From", "To", "Imported kWh",
+                "Displaced kWh", "Exported kWh", "Used kWh", "Parasitic kWh",
+                "Generated kWh", "Meter Type"))
 
         streams = (
             'imp_net', 'displaced', 'exp_net', 'used', 'exp_gen', 'imp_gen')
@@ -60,20 +75,29 @@ def content(start_date, finish_date, site_id, sess):
             assoc_str = ','.join(sorted(list(assoc)))
             sources_str = ','.join(sorted(list(sources)))
             generators_str = ','.join(sorted(list(generator_types)))
-            yield ','.join('"' + str(v) + '"' for v in (
-                site.code, site.name, assoc_str, sources_str, generators_str,
-                start_date.strftime("%Y-%m-%d %H:%M"),
-                finish_date.strftime("%Y-%m-%d %H:%M"), totals['imp_net'],
-                totals['displaced'], totals['exp_net'], totals['used'],
-                totals['exp_gen'], totals['imp_gen'], metering_type)) + '\n'
+            writer.writerow(
+                (
+                    site.code, site.name, assoc_str, sources_str,
+                    generators_str, start_date.strftime("%Y-%m-%d %H:%M"),
+                    finish_date.strftime("%Y-%m-%d %H:%M"), totals['imp_net'],
+                    totals['displaced'], totals['exp_net'], totals['used'],
+                    totals['exp_gen'], totals['imp_gen'], metering_type))
     except:
-        yield traceback.format_exc()
+        msg = traceback.format_exc()
+        sys.stderr.write(msg)
+        writer.writerow([msg])
+    finally:
+        if sess is not None:
+            sess.close()
+        if f is not None:
+            f.close()
+            os.rename(running_name, finished_name)
 
 
 def do_get(sess):
     start_date = req_date('start')
     finish_date = req_date('finish')
     site_id = req_int('site_id') if 'site_id' in request.values else None
-    return send_response(
-        content, args=(start_date, finish_date, site_id, sess),
-        file_name='sites_duration.csv')
+    args = (start_date, finish_date, site_id, g.user)
+    threading.Thread(target=content, args=args).start()
+    return chellow_redirect("/downloads", 303)
