@@ -10926,6 +10926,16 @@ def virtual_bill(supply_source):
     {
         'name': "Comparison against ECOES",
         'path': '/reports/ecoes_comparison',
+        'status_code': 303},
+    {
+        'path': '/downloads',
+        'tries': {},
+        'regexes': [
+            r"000_FINISHED_adminexamplecom_ecoes_comparison\.csv"],
+        'status_code': 200},
+    {
+        'path': '/downloads/'
+        '000_FINISHED_adminexamplecom_ecoes_comparison.csv',
         'status_code': 200},
 
     {
@@ -10985,12 +10995,12 @@ def virtual_bill(supply_source):
         'path': '/downloads',
         'tries': {},
         'regexes': [
-            r"000_FINISHED_adminexamplecom_supplies_snapshot\.csv"],
+            r"001_FINISHED_adminexamplecom_supplies_snapshot\.csv"],
         'status_code': 200},
     {
         'name': "Check supplies snapshot at beginning of supply",
         'path': '/downloads/'
-        '000_FINISHED_adminexamplecom_supplies_snapshot.csv',
+        '001_FINISHED_adminexamplecom_supplies_snapshot.csv',
         'regexes': [
             r'CI005'],
         'status_code': 200},
@@ -11136,12 +11146,12 @@ def virtual_bill(supply_source):
         'path': '/downloads',
         'tries': {},
         'regexes': [
-            r"001_FINISHED_adminexamplecom_bill_check\.csv"],
+            r"002_FINISHED_adminexamplecom_bill_check\.csv"],
         'status_code': 200},
     {
         'name': "Bill check with exception",
         'path': '/downloads/'
-        '001_FINISHED_adminexamplecom_bill_check.csv',
+        '002_FINISHED_adminexamplecom_bill_check.csv',
         'regexes': [
             r'Theory laden\.'],
         'status_code': 200},
@@ -11159,11 +11169,11 @@ def virtual_bill(supply_source):
         'path': '/downloads',
         'tries': {},
         'regexes': [
-            r"002_FINISHED_adminexamplecom_supply_virtual_bills_10\.csv"],
+            r"003_FINISHED_adminexamplecom_supply_virtual_bills_10\.csv"],
         'status_code': 200},
     {
         'path': '/downloads/'
-        '002_FINISHED_adminexamplecom_supply_virtual_bills_10.csv',
+        '003_FINISHED_adminexamplecom_supply_virtual_bills_10.csv',
         'regexes': [
             r'Theory laden\.'],
         'status_code': 200},

@@ -5,12 +5,24 @@ from werkzeug.exceptions import BadRequest
 import requests
 import urllib.parse
 from itertools import chain
-from chellow.models import Contract, Era, Supply, Source
-from chellow.utils import send_response
+from chellow.models import Contract, Era, Supply, Source, Session
+from chellow.views import chellow_redirect
+import chellow.dloads
+import sys
+import os
+import threading
+from flask import g
 
 
-def content(sess):
+def content(user):
+    sess = None
     try:
+        sess = Session()
+        running_name, finished_name = chellow.dloads.make_names(
+            'ecoes_comparison.csv', user)
+        f = open(running_name, mode='w', newline='')
+        writer = csv.writer(f, lineterminator='\n')
+
         props = Contract.get_non_core_by_name(sess, 'configuration'). \
             make_properties()
 
@@ -62,7 +74,7 @@ def content(sess):
             ecoes_props['prefix'] + 'saveportfolioMpans.asp?guid=' + guid,
             proxies=proxies)
 
-        yield ','.join(
+        writer.writerow(
             (
                 "MPAN Core", "MPAN Core No Spaces", "ECOES PC", "Chellow PC",
                 "ECOES MTC", "Chellow MTC", "ECOES LLFC", "Chellow LLFC",
@@ -212,8 +224,8 @@ def content(sess):
                 chellow_meter_type = ''
 
             if len(problem) > 0:
-                yield '\n' + ','.join(
-                    '"' + str(val) + '"' for val in [
+                writer.writerow(
+                    [
                         mpan_spaces, ecoes['mpan-core'], ecoes['pc'],
                         chellow_pc, ecoes['mtc'], chellow_mtc,
                         ecoes['llfc'], chellow_llfc, ecoes['ssc'],
@@ -222,8 +234,6 @@ def content(sess):
                         ecoes['gsp-group'], chellow_gsp_group,
                         ecoes['msn'], chellow_msn, ecoes['meter-type'],
                         chellow_meter_type, problem])
-            else:
-                yield ' '
             sess.expunge_all()
 
         for mpan_core in mpans:
@@ -257,18 +267,25 @@ def content(sess):
             else:
                 meter_type = 'RCAMR' if len(era.channels) > 0 else 'N'
 
-            yield '\n' + ','.join(
-                '"' + str(val) + '"' for val in [
+            writer.writerow(
+                [
                     mpan_core, mpan_core.replace(' ', ''), '', era.pc.code,
                     '', era.mtc.code, '', llfc.code, '', ssc, '',
                     supplier_contract.party.participant.code, '', dc, '',
                     mop, '', supply.gsp_group.code, '', msn, '',
                     meter_type, 'In Chellow, but not in ECOES.'])
-    except BadRequest as e:
-        yield e.description
     except:
-        yield traceback.format_exc()
+        msg = traceback.format_exc()
+        sys.stderr.write(msg)
+        writer.writerow([msg])
+    finally:
+        if sess is not None:
+            sess.close()
+        if f is not None:
+            f.close()
+            os.rename(running_name, finished_name)
 
 
 def do_get(sess):
-    return send_response(content, args=(sess,), file_name='output.csv')
+    threading.Thread(target=content, args=(g.user,)).start()
+    return chellow_redirect("/downloads", 303)
