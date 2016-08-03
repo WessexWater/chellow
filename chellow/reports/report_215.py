@@ -3,31 +3,44 @@ from sqlalchemy import or_
 from sqlalchemy.sql.expression import null, true
 from datetime import datetime
 import pytz
-from chellow.utils import send_response, prev_hh, hh_after, hh_before, req_int
-from chellow.models import Supply, Source, Era, Site, SiteEra
-from flask import request
+from chellow.utils import prev_hh, hh_after, hh_before, req_int
+from chellow.views import chellow_redirect
+from chellow.models import Supply, Source, Era, Site, SiteEra, Session
+from flask import request, g
+import chellow.dloads
+import csv
+import sys
+import os
+import threading
 
 
-def content(year, supply_id, sess):
-    yield "MPAN Core,Site Id,Site Name,Date,Event,"
-
-    year_start = datetime(year, 4, 1, tzinfo=pytz.utc)
-    year_finish = prev_hh(datetime(year + 1, 4, 1, tzinfo=pytz.utc))
-
-    def add_event(events, date, code, era=None, mpan_core=None):
-        if era is None:
-            mpan_cores = [mpan_core]
-        else:
-            mpan_cores = []
-            if era.imp_mpan_core is not None:
-                mpan_cores.append(era.imp_mpan_core)
-            if era.exp_mpan_core is not None:
-                mpan_cores.append(era.exp_mpan_core)
-
-        for mpan_core in mpan_cores:
-            events.append({'date': date, 'code': code, 'mpan-core': mpan_core})
-
+def content(year, supply_id, user):
+    sess = f = writer = None
     try:
+        sess = Session()
+        running_name, finished_name = chellow.dloads.make_names(
+            'crc_special_events.csv', user)
+        f = open(running_name, mode='w', newline='')
+        writer = csv.writer(f, lineterminator='\n')
+        writer.writerow(("MPAN Core", "Site Id", "Site Name", "Date", "Event"))
+
+        year_start = datetime(year, 4, 1, tzinfo=pytz.utc)
+        year_finish = prev_hh(datetime(year + 1, 4, 1, tzinfo=pytz.utc))
+
+        def add_event(events, date, code, era=None, mpan_core=None):
+            if era is None:
+                mpan_cores = [mpan_core]
+            else:
+                mpan_cores = []
+                if era.imp_mpan_core is not None:
+                    mpan_cores.append(era.imp_mpan_core)
+                if era.exp_mpan_core is not None:
+                    mpan_cores.append(era.exp_mpan_core)
+
+            for mpan_core in mpan_cores:
+                events.append(
+                    {'date': date, 'code': code, 'mpan-core': mpan_core})
+
         if supply_id is None:
             supplies = sess.query(Supply).join(Source).join(Era).filter(
                 Source.code.in_(('net', 'gen-net', 'gen')),
@@ -106,18 +119,22 @@ def content(year, supply_id, sess):
                         event['mpan-core'], site.code, site.name,
                         event['date'].strftime("%Y-%m-%d %H:%M"),
                         event['code']]
-                    yield '\n' + ','.join(
-                        '"' + str(val) + '"' for val in vals) + ','
-            else:
-                yield ' '
+                    writer.writerow(vals)
     except:
-        yield traceback.format_exc()
+        msg = traceback.format_exc()
+        sys.stderr.write(msg)
+        writer.writerow([msg])
+    finally:
+        if sess is not None:
+            sess.close()
+        if f is not None:
+            f.close()
+            os.rename(running_name, finished_name)
 
 
 def do_get(sess):
     year = req_int('year')
     supply_id = req_int('supply_id') if 'supply_id' in request.values else None
-    return send_response(
-        content, args=(year, supply_id, sess), status=200,
-        content_type='text/csv; charset=utf-8',
-        file_name='output.csv')
+
+    threading.Thread(target=content, args=(year, supply_id, g.user)).start()
+    return chellow_redirect("/downloads", 303)
