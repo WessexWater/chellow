@@ -11296,4 +11296,13 @@ def virtual_bill(supply_source):
         'regexes': [
             r'<form action=""'],
         'status_code': 200},
+    {
+        'name': "Attempt to delete an HHDC contract that has batches",
+        'path': '/hhdc_contracts/29/edit',
+        'method': 'post',
+        'data': {
+            'delete': "Delete"},
+        'regexes': [
+            r'Can&#39;t delete a contract that has batches\.'],
+        'status_code': 400},
 ]

@@ -944,9 +944,10 @@ def hhdc_contract_edit_post(contract_id):
                 filter(
                     MarketRole.code == 'C').order_by(Participant.code).all()
             initial_date = Datetime.now(pytz.utc)
-            return render_template(
-                'hhdc_contract_edit.html', parties=parties,
-                initial_date=initial_date)
+            return make_response(
+                render_template(
+                    'hhdc_contract_edit.html', parties=parties,
+                    initial_date=initial_date, hhdc_contract=contract), 400)
 
 
 @app.route('/hhdc_rate_scripts/<int:hhdc_rate_script_id>')
