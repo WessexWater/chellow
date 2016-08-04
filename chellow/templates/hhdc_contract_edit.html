@@ -13,7 +13,7 @@
 
 {% block content %}
 	{% if request.method == 'GET' and request.values.view == 'confirm_delete' %}
-		<form method="delete" action="">
+		<form method="post" action="">
 			<fieldset>
 				<legend>
 					Are you sure you want to delete this contract?
@@ -28,9 +28,6 @@
 		<form action="" method="post">
 			<fieldset>
 				<legend>Update Contract</legend>
-				<input type="hidden" name="hhdc_contract_id"
-					value="{{hhdc_contract.id}}"
-				>
 				<br>
 				<label>Party</label>
 				<select name="party_id">
@@ -72,8 +69,6 @@
 		<form action="" method="post">
 			<fieldset>
 				<legend>Update State</legend>
-				<input type="hidden" name="hhdc_contract_id"
-								value="{{hhdc_contract.id}}">
 				<label>State</label>
 				<br>
 				{{ input_textarea('state', hhdc_contract.state, 40, 80) }}
@@ -86,8 +81,6 @@
 		<form action="">
 			<fieldset>
 				<legend>Delete this contract</legend>
-				<input
-			 		type="hidden" name="hhdc_contract_id" value="{{hhdc_contract.id}}">
 				<input type="hidden" name="view" value="confirm_delete">
 				<input type="submit" value="Delete">
 			</fieldset>
@@ -96,7 +89,6 @@
 		<form method="post" action="">
 			<fieldset>
 				<legend>Ignore all snags before</legend>
-				<input type="hidden" name="hhdc_contract_id" value="{{hhdc_contract.id}}">
 				<br>
 				{{ input_date('ignore', initial_date) }}
 				<input type="submit" name="ignore_snags" value="Ignore">
