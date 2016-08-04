@@ -3,17 +3,30 @@ from sqlalchemy import or_
 from sqlalchemy.sql.expression import null, true
 import pytz
 import traceback
-from chellow.models import Era, Supply, Source, Pc, Site, SiteEra
+from chellow.models import Era, Supply, Source, Pc, Site, SiteEra, Session
 import chellow.duos
 import chellow.triad
 import chellow.computer
-from chellow.utils import HH, hh_format, req_int, send_response
-from flask import request
+from chellow.utils import HH, hh_format, req_int
+from flask import request, g
+import chellow.dloads
+import csv
+import sys
+import os
+from chellow.views import chellow_redirect
+import threading
 
 
-def content(year, supply_id, sess):
+def content(year, supply_id, user):
     caches = {}
+    sess = f = writer = None
     try:
+        sess = Session()
+        running_name, finished_name = chellow.dloads.make_names(
+            'supplies_triad.csv', user)
+        f = open(running_name, mode='w', newline='')
+        writer = csv.writer(f, lineterminator='\n')
+
         year_finish = Datetime(year, 4, 1, tzinfo=pytz.utc) - HH
 
         def triad_csv(supply_source):
@@ -39,7 +52,7 @@ def content(year, supply_id, sess):
             values += [bill['triad-actual-' + suf] for suf in suffixes]
             return values
 
-        yield ', '.join(
+        writer.writerow(
             (
                 "Site Code", "Site Name", "Supply Name", "Source",
                 "Generator Type", "Import MPAN Core", "Import T1 Date",
@@ -54,7 +67,7 @@ def content(year, supply_id, sess):
                 "Export T2 MSP kW", "Export T2 Status", "Export T2 LAF",
                 "Export T2 GSP kW", "Export T3 Date", "Export T3 MSP kW",
                 "Export T3 Status", "Export T3 LAF", "Export T3 GSP kW",
-                "Export GSP kW", "Export Rate GBP / kW", "Export GBP")) + '\n'
+                "Export GSP kW", "Export Rate GBP / kW", "Export GBP"))
 
         forecast_date = chellow.computer.forecast_date()
         eras = sess.query(Era).join(Supply).join(Source).join(Pc).filter(
@@ -70,8 +83,6 @@ def content(year, supply_id, sess):
             site = sess.query(Site).join(SiteEra).filter(
                 SiteEra.is_physical == true(), SiteEra.era == era).one()
             supply = era.supply
-            yield site.code + ',"' + site.name + '","' + supply.name + '",' + \
-                supply.source.code
 
             imp_mpan_core = era.imp_mpan_core
             if imp_mpan_core is None:
@@ -91,19 +102,30 @@ def content(year, supply_id, sess):
 
             gen_type = supply.generator_type
             gen_type = '' if gen_type is None else gen_type.code
-            for value in [gen_type] + triad_csv(imp_supply_source) + \
+            vals = []
+            for value in [
+                    site.code, site.name, supply.name, supply.source.code,
+                    gen_type] + triad_csv(imp_supply_source) + \
                     triad_csv(exp_supply_source):
                 if isinstance(value, Datetime):
-                    yield ',"' + hh_format(value) + '"'
+                    vals.append(hh_format(value))
                 else:
-                    yield ',"' + str(value) + '"'
-            yield '\n'
+                    vals.append(str(value))
+            writer.writerow(vals)
     except:
-        yield traceback.format_exc()
+        msg = traceback.format_exc()
+        sys.stderr.write(msg)
+        writer.writerow([msg])
+    finally:
+        if sess is not None:
+            sess.close()
+        if f is not None:
+            f.close()
+            os.rename(running_name, finished_name)
 
 
 def do_get(sess):
     year = req_int('year')
     supply_id = req_int('supply_id') if 'supply_id' in request.values else None
-    return send_response(
-        content, args=(year, supply_id, sess), file_name='supplies_triad.csv')
+    threading.Thread(target=content, args=(year, supply_id, g.user)).start()
+    return chellow_redirect("/downloads", 303)
