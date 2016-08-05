@@ -344,7 +344,9 @@ def virtual_bill(ds):
             'start_hour': "00",
             'start_minute': "00",
             'script': "{}"},
-        'status_code': 303},
+        'status_code': 303,
+        'regexes': [
+            r'/hhdc_rate_scripts/95']},
 
     {
         'name': "Add another HHDC contract",

@@ -1016,7 +1016,7 @@ def hhdc_rate_script_edit_post(hhdc_rate_script_id):
                 g.sess, hhdc_rate_script, start_date, finish_date, script)
             g.sess.commit()
             return chellow_redirect(
-                'hhdc_rate_scripts/' + str(hhdc_rate_script.id), 303)
+                '/hhdc_rate_scripts/' + str(hhdc_rate_script.id), 303)
     except BadRequest as e:
         flash(e.description)
         return render_template(
