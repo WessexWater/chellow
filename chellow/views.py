@@ -3475,6 +3475,56 @@ def mop_bill_import_get(import_id):
     return render_template('mop_bill_import.html', **fields)
 
 
+@app.route('/mop_batches/<int:batch_id>/add_bill')
+def mop_bill_add_get(batch_id):
+    batch = Batch.get_by_id(g.sess, batch_id)
+    bill_types = g.sess.query(BillType).order_by(BillType.code)
+    bills = g.sess.query(Bill).filter(Bill.batch == batch).order_by(
+        Bill.start_date)
+    return render_template(
+        'mop_bill_add.html', batch=batch, bill_types=bill_types, bills=bills)
+
+
+@app.route('/mop_batches/<int:batch_id>/add_bill', methods=['POST'])
+def mop_bill_add_post(batch_id):
+    try:
+        set_read_write(g.sess)
+        batch = Batch.get_by_id(g.sess, batch_id)
+        mpan_core = req_str("mpan_core")
+        mpan_core = parse_mpan_core(mpan_core)
+        account = req_str("account")
+        reference = req_str("reference")
+        issue_date = req_date("issue")
+        start_date = req_hh_date("start")
+        finish_date = req_hh_date("finish")
+        kwh = req_decimal("kwh")
+        net = req_decimal("net")
+        vat = req_decimal("vat")
+        gross = req_decimal("gross")
+        bill_type_id = req_int("bill_type_id")
+        bill_type = BillType.get_by_id(g.sess, bill_type_id)
+        breakdown_str = req_str("breakdown")
+
+        breakdown = eval(breakdown_str)
+        bill_type = BillType.get_by_id(g.sess, bill_type_id)
+        bill = batch.insert_bill(
+            g.sess, account, reference, issue_date, start_date, finish_date,
+            kwh, net, vat, gross, bill_type, breakdown,
+            Supply.get_by_mpan_core(g.sess, mpan_core))
+        g.sess.commit()
+        return chellow_redirect("/mop_bills/" + str(bill.id), 303)
+    except BadRequest as e:
+        g.sess.rollback()
+        flash(e.description)
+        bill_types = g.sess.query(BillType).order_by(BillType.code)
+        bills = g.sess.query(Bill).filter(Bill.batch == batch).order_by(
+            Bill.start_date)
+        return make_response(
+            render_template(
+                'mop_bill_add.html', batch=batch, bill_types=bill_types,
+                bills=bills), 400)
+
+
 @app.route('/meter_payment_types')
 def meter_payment_types_get():
     meter_payment_types = g.sess.query(MeterPaymentType).order_by(

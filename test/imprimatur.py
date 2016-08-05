@@ -11311,4 +11311,8 @@ def virtual_bill(supply_source):
         'name': "View add HHDC rate script",
         'path': '/hhdc_contracts/30/add_rate_script',
         'status_code': 200},
+    {
+        'name': "View add mop bill.",
+        'path': '/mop_batches/9/add_bill',
+        'status_code': 200},
 ]
