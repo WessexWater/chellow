@@ -11305,4 +11305,8 @@ def virtual_bill(supply_source):
         'regexes': [
             r'Can&#39;t delete a contract that has batches\.'],
         'status_code': 400},
+    {
+        'name': "View add HHDC rate script",
+        'path': '/hhdc_contracts/30/add_rate_script',
+        'status_code': 200},
 ]

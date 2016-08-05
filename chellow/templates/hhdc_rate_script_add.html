@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+
+{% block title %}
+	HHDC Contracts &gt; {{contract.name}} &gt; Add Rate Script
+{% endblock %}
+
+{% block nav %}
+	<a href="{{context_path}}/hhdc_contracts">HHDC Contracts</a> &gt;
+	<a href="{{context_path}}/hhdc_contracts/{{contract.id}}">{{contract.name}}</a>
+	&gt; Add Rate Script
+{% endblock %}
+
+{% block content %}
+	<form action="" method="post">
+		<fieldset>
+			<legend>Add a rate script</legend>
+			<br>
+			<fieldset>
+				<legend>Start Date</legend>
+				{{input_date('start', initial_date)}}
+			</fieldset>
+			<br>
+			<br>
+			<input type="submit" value="Add">
+		</fieldset>
+	</form>
+{% endblock %}

@@ -950,6 +950,36 @@ def hhdc_contract_edit_post(contract_id):
                     initial_date=initial_date, hhdc_contract=contract), 400)
 
 
+@app.route('/hhdc_contracts/<int:contract_id>/add_rate_script')
+def hhdc_rate_script_add_get(contract_id):
+    now = Datetime.now(pytz.utc)
+    initial_date = Datetime(now.year, now.month, 1, tzinfo=pytz.utc)
+    contract = Contract.get_hhdc_by_id(g.sess, contract_id)
+    return render_template(
+        'hhdc_rate_script_add.html', now=now, contract=contract,
+        initial_date=initial_date)
+
+
+@app.route(
+    '/hhdc_contracts/<int:contract_id>/add_rate_script', methods=['POST'])
+def hhdc_rate_script_add_post(contract_id):
+    try:
+        set_read_write(g.sess)
+        contract = Contract.get_hhdc_by_id(g.sess, contract_id)
+        start_date = req_date('start')
+        rate_script = contract.insert_rate_script(g.sess, start_date, '')
+        g.sess.commit()
+        return chellow_redirect(
+            '/hhdc_rate_scripts/' + str(rate_script.id), 303)
+    except BadRequest as e:
+        flash(e.description)
+        now = Datetime.now(pytz.utc)
+        initial_date = Datetime(now.year, now.month, 1, tzinfo=pytz.utc)
+        return render_template(
+            'hhdc_rate_script_add.html', now=now, contract=contract,
+            initial_date=initial_date)
+
+
 @app.route('/hhdc_rate_scripts/<int:hhdc_rate_script_id>')
 def hhdc_rate_script_get(hhdc_rate_script_id):
     hhdc_rate_script = RateScript.get_hhdc_by_id(g.sess, hhdc_rate_script_id)
