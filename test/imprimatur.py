@@ -5599,7 +5599,8 @@ def virtual_bill(supply_source):
     {
         'path': '/mop_batches/9',
         'regexes': [
-            r"/local_reports/1/output"],
+            r"/local_reports/1/output",
+            r'<a href="/mop_bill_imports\?mop_batch_id=9">Bill Imports</a>'],
         'status_code': 200},
 
     # Check that we can see a supplier batch okay. Contract 56
