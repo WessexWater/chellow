@@ -56,13 +56,10 @@ class BillImport(threading.Thread):
         self.bill_num = None
 
     def _log(self, msg):
-        try:
-            import_lock.acquire()
+        with import_lock:
             self.log.appendleft(
                 datetime.datetime.now(pytz.utc).strftime("%Y-%m-%d %H:%M:%S") +
                 ' - ' + msg)
-        finally:
-            import_lock.release()
 
     def status(self):
         if self.isAlive():
@@ -146,8 +143,7 @@ class BillImport(threading.Thread):
                 sess.close()
 
     def make_fields(self):
-        try:
-            import_lock.acquire()
+        with import_lock:
             fields = {
                 'log': tuple(self.log), 'is_alive': self.isAlive(),
                 'importer_id': self.import_id}
@@ -155,33 +151,22 @@ class BillImport(threading.Thread):
                 fields['successful_bills'] = self.successful_bills
                 fields['failed_bills'] = self.failed_bills
             return fields
-        finally:
-            import_lock.release()
 
 
 def start_bill_import(sess, batch_id, file_name, file_size, f):
-    try:
-        import_lock.acquire()
+    with import_lock:
         bi = BillImport(sess, batch_id, file_name, file_size, f)
         imports[bi.import_id] = bi
         bi.start()
-    finally:
-        import_lock.release()
 
     return bi.import_id
 
 
 def get_bill_import_ids(batch_id):
-    try:
-        import_lock.acquire()
+    with import_lock:
         return [k for k, v in imports.items() if v.batch_id == batch_id]
-    finally:
-        import_lock.release()
 
 
 def get_bill_import(id):
-    try:
-        import_lock.acquire()
+    with import_lock:
         return imports[id]
-    finally:
-        import_lock.release()
