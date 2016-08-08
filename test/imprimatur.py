@@ -11315,4 +11315,28 @@ def virtual_bill(supply_source):
         'name': "View add mop bill.",
         'path': '/mop_batches/9/add_bill',
         'status_code': 200},
+
+    {
+        'name': "Test the supplier batch checking",
+        'path': '/reports/111?bill_id=14',
+        'status_code': 303},
+    {
+        'path': '/downloads',
+        'tries': {'max': 20, 'period': 1},
+        'regexes': [
+            r"004_FINISHED_adminexamplecom_bill_check\.csv"],
+        'status_code': 200},
+    {
+        'path': '/downloads/004_FINISHED_adminexamplecom_bill_check.csv',
+        'status_code': 200},
+    {
+        'name': "Update a MOP batch",
+        'path': '/mop_batches/9/edit',
+        'method': 'post',
+        'data': {
+            'reference': "99/992",
+            'description': "mop batch"},
+        'status_code': 303,
+        'regexes': [
+            r'/mop_batches/9']},
 ]

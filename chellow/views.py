@@ -3359,22 +3359,22 @@ def mop_batch_edit_get(batch_id):
     return render_template('mop_batch_edit.html', batch=batch)
 
 
-@app.route('/mop_batches/<int:batch_id>/add_batch', methods=['POST'])
+@app.route('/mop_batches/<int:batch_id>/edit', methods=['POST'])
 def mop_batch_edit_post(batch_id):
     try:
         set_read_write(g.sess)
         batch = Batch.get_by_id(g.sess, batch_id)
-        if 'update' in request.values:
+        if 'delete' in request.values:
+            contract = batch.contract
+            batch.delete(g.sess)
+            g.sess.commit()
+            return chellow_redirect("/mop_contracts/" + str(contract.id), 303)
+        else:
             reference = req_str('reference')
             description = req_str('description')
             batch.update(g.sess, reference, description)
             g.sess.commit()
             return chellow_redirect("/mop_batches/" + str(batch.id), 303)
-        elif 'delete' in request.values:
-            contract = batch.contract
-            batch.delete(g.sess)
-            g.sess.commit()
-            return chellow_redirect("/mop_contracts/" + str(contract.id), 303)
     except BadRequest as e:
         flash(e.description)
         return render_template('mop_batch_edit.html', batch=batch)
