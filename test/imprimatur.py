@@ -11346,4 +11346,9 @@ def virtual_bill(supply_source):
         'name': "Mop bill imports for a batch",
         'path': '/mop_bill_imports?mop_batch_id=9',
         'status_code': 200},
+
+    {
+        'name': "Non-core contract without module (configuration)",
+        'path': '/non_core_contracts/5',
+        'status_code': 200},
 ]

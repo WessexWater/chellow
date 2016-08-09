@@ -2569,6 +2569,8 @@ def non_core_contract_get(contract_id):
         has_auto_importer = True
     except AttributeError:
         has_auto_importer = False
+    except ImportError:
+        has_auto_importer = False
 
     return render_template(
         'non_core_contract.html', contract=contract, rate_scripts=rate_scripts,
