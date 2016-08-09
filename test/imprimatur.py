@@ -1966,6 +1966,18 @@ def virtual_bill_titles():
             r'<a href="/ods_scenario_runner">\s*Scenario Runner\s*</a>'],
         'status_code': 200},
 
+    {
+        'name': "Show confirm-delete supplier rate script"
+        "contract.",
+        'path': '/supplier_rate_scripts/99/edit?delete=Delete',
+        'status_code': 200,
+        'regexes': [
+            r'<form method="post" action="">\s*'
+            r'<fieldset>\s*'
+            r'<legend>\s*'
+            r'Are you sure you want to delete this rate script\?\s*'
+            r'</legend>']},
+
     # Supplier contract 47
     {
         'name': "Test deleting the only rate script attached to a supplier "
