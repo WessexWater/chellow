@@ -2564,8 +2564,15 @@ def non_core_contract_get(contract_id):
     rate_scripts = g.sess.query(RateScript).filter(
         RateScript.contract == contract).order_by(
         RateScript.start_date.desc()).all()
+    try:
+        import_module('chellow.' + contract.name).get_importer()
+        has_auto_importer = True
+    except AttributeError:
+        has_auto_importer = False
+
     return render_template(
-        'non_core_contract.html', contract=contract, rate_scripts=rate_scripts)
+        'non_core_contract.html', contract=contract, rate_scripts=rate_scripts,
+        has_auto_importer=has_auto_importer)
 
 
 @app.route('/sites/<int:site_id>/used_graph')

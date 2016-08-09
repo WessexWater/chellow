@@ -11,9 +11,11 @@
 {% endblock %}
 
 {% block content %}
-	<p>
-		<a href="{{context_path}}/non_core_contracts/{{contract.id}}/auto_importer">Automatic Importer</a>
-	</p>
+	{% if has_auto_importer %}
+		<p>
+			<a href="{{context_path}}/non_core_contracts/{{contract.id}}/auto_importer">Automatic Importer</a>
+		</p>
+	{% endif %}
 	<br>
 	<table>
 		<caption>
