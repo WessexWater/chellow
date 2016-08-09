@@ -11340,4 +11340,8 @@ def virtual_bill(supply_source):
         'status_code': 303,
         'regexes': [
             r'/mop_batches/9']},
+    {
+        'name': "Mop bill imports for a batch",
+        'path': '/mop_bill_imports?mop_batch_id=9',
+        'status_code': 200},
 ]
