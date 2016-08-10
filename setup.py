@@ -21,7 +21,7 @@ setup(
     cmdclass=versioneer.get_cmdclass(),
     packages=[
         'chellow', 'chellow.reports', 'odswriter', 'odswriter.v1_1',
-        'odswriter.v1_2', 'pg8000'],
+        'odswriter.v1_2'],
     package_data={'chellow': [
         'non_core_contracts/*/*.py',
         'non_core_contracts/*/rate_scripts/*.py',
@@ -34,6 +34,7 @@ setup(
         'nationalgrid/*',
         'elexonportal/*']},
     install_requires=[
+        'pg8000==1.10.6',
         'Flask==0.11.1',
         'SQLAlchemy==1.0.14',
         'python-dateutil==2.4.2',
