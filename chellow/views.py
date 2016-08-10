@@ -3768,13 +3768,20 @@ def supply_note_edit_get(supply_id, index):
     return render_template('supply_note_edit.html', supply=supply, note=note)
 
 
-@app.route('/supplies/<int:supply_id>/notes/<int:index>/edit')
+@app.route(
+    '/supplies/<int:supply_id>/notes/<int:index>/edit', methods=['POST'])
 def supply_note_edit_post(supply_id, index):
     try:
         set_read_write(g.sess)
         supply = Supply.get_by_id(g.sess, supply_id)
         supply_note = eval(supply.note)
-        if 'update' in request.values:
+        if 'delete' in request.values:
+            del supply_note['notes'][index]
+            supply.note = str(supply_note)
+            g.sess.commit()
+            return chellow_redirect(
+                "/supplies/" + str(supply_id) + '/notes', 303)
+        else:
             category = req_str('category')
             is_important = req_bool('is_important')
             body = req_str('body')
@@ -3786,12 +3793,6 @@ def supply_note_edit_post(supply_id, index):
             g.sess.commit()
             return chellow_redirect(
                 '/supplies/' + str(supply_id) + '/notes', 303)
-        elif 'delete' in request.values:
-            del supply_note['notes'][index]
-            supply.note = str(supply_note)
-            g.sess.commit()
-            return chellow_redirect(
-                "/supplies/" + str(supply_id) + '/notes', 303)
     except BadRequest as e:
         flash(e.description)
         supply_note = eval(supply.note)

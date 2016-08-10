@@ -5705,6 +5705,16 @@ def virtual_bill(supply_source):
         'path': '/supplies/2/notes/0/edit',
         'status_code': 200},
 
+    {
+        'name': "Edit a note",
+        'path': '/supplies/2/notes/0/edit',
+        'method': 'post',
+        'data': {
+            'is_important': "False",
+            'category': "general",
+            'body': "Do not hurry the sublime."},
+        'status_code': 303},
+
     # Try importing HH data from FTP server.
     {
         'name': "Update Contract",
