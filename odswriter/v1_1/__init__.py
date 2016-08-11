@@ -78,24 +78,8 @@ class ODSWriter(object):
     context manager.
     """
     def __init__(self, odsfile, compression=ZIP_STORED):
-        self.zipf = ZipFile(odsfile, "w", compression)
-        # Make the skeleton of an ODS.
-
-        self.zipf.writestr(
-            "mimetype",
-            odswriter.v1_1.ods_components.mimetype.encode("utf-8"))
-        self.zipf.writestr(
-            "meta.xml",
-            odswriter.v1_1.ods_components.meta_xml.encode("utf-8"))
-        self.zipf.writestr(
-            "styles.xml",
-            odswriter.v1_1.ods_components.styles_xml.encode("utf-8"))
-        self.zipf.writestr(
-            "settings.xml",
-            odswriter.v1_1.ods_components.settings_xml.encode("utf-8"))
-        self.zipf.writestr(
-            "META-INF/manifest.xml",
-            odswriter.v1_1.ods_components.manifest_xml.encode("utf-8"))
+        self.odsfile = odsfile
+        self.compression = compression
         self.sheets = []
 
     def __enter__(self):
@@ -104,7 +88,7 @@ class ODSWriter(object):
     def __exit__(self, *args, **kwargs):
         self.close()
 
-    def close(self):
+    def write(self):
         """
         Finalises the compressed version of the spreadsheet. If you aren't
         using the context manager ('with' statement, you must call this
@@ -205,8 +189,25 @@ class ODSWriter(object):
             end_elem(f, 'office:body')
             end_elem(f, 'office:document-content')
 
-        self.zipf.write(f_path, "content.xml")
-        self.zipf.close()
+        zipf = ZipFile(self.odsfile, "w", self.compression)
+        # Make the skeleton of an ODS.
+
+        zipf.writestr(
+            "mimetype", odswriter.v1_1.ods_components.mimetype.encode("utf-8"))
+        zipf.writestr(
+            "meta.xml", odswriter.v1_1.ods_components.meta_xml.encode("utf-8"))
+        zipf.writestr(
+            "styles.xml",
+            odswriter.v1_1.ods_components.styles_xml.encode("utf-8"))
+        zipf.writestr(
+            "settings.xml",
+            odswriter.v1_1.ods_components.settings_xml.encode("utf-8"))
+        zipf.writestr(
+            "META-INF/manifest.xml",
+            odswriter.v1_1.ods_components.manifest_xml.encode("utf-8"))
+
+        zipf.write(f_path, "content.xml")
+        zipf.close()
         shutil.rmtree(f_dir)
 
     def new_sheet(self, name):

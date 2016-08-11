@@ -663,7 +663,9 @@ def content(
                         ', '.join(sorted(list(site_gen_types)))] +
                     [site_month_data[k] for k in summary_titles])
                 sess.rollback()
-
+            rf.seek(0)
+            rf.truncate()
+            f.write()
             month_start += relativedelta(months=1)
     except BadRequest as e:
         msg = e.description + traceback.format_exc()
@@ -677,7 +679,9 @@ def content(
         if sess is not None:
             sess.close()
         try:
-            f.close()
+            rf.seek(0)
+            rf.truncate()
+            f.write()
             rf.close()
             os.rename(running_name, finished_name)
         except:
