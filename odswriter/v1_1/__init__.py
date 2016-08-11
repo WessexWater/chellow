@@ -1,4 +1,4 @@
-from zipfile import ZipFile
+from zipfile import ZipFile, ZIP_STORED
 import decimal
 import datetime
 import odswriter.v1_1.ods_components
@@ -77,8 +77,8 @@ class ODSWriter(object):
     new_sheet). It is suggested that you use with object like a
     context manager.
     """
-    def __init__(self, odsfile):
-        self.zipf = ZipFile(odsfile, "w")
+    def __init__(self, odsfile, compression=ZIP_STORED):
+        self.zipf = ZipFile(odsfile, "w", compression)
         # Make the skeleton of an ODS.
 
         self.zipf.writestr(

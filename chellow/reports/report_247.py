@@ -21,16 +21,19 @@ import threading
 import odswriter
 import sys
 from werkzeug.exceptions import BadRequest
-from chellow.utils import hh_format, HH, hh_before, req_int
+from chellow.utils import hh_format, HH, hh_before, req_int, req_bool
 from flask import request, g
 from chellow.views import chellow_redirect
+import zipfile
 
 
 CATEGORY_ORDER = {None: 0, 'unmetered': 1, 'nhh': 2, 'amr': 3, 'hh': 4}
 meter_order = {'hh': 0, 'amr': 1, 'nhh': 2, 'unmetered': 3}
 
 
-def content(scenario_props, scenario_id, base_name, site_id, supply_id, user):
+def content(
+        scenario_props, scenario_id, base_name, site_id, supply_id, user,
+        compression):
     now = Datetime.now(pytz.utc)
     report_context = {}
     future_funcs = {}
@@ -115,7 +118,11 @@ def content(scenario_props, scenario_id, base_name, site_id, supply_id, user):
             '_'.join(base_name) + '.ods', user)
 
         rf = open(running_name, "wb")
-        f = odswriter.writer(rf, '1.1')
+        if compression:
+            zp = zipfile.ZIP_DEFLATED
+        else:
+            zp = zipfile.ZIP_STORED
+        f = odswriter.writer(rf, '1.1', compression=zp)
         group_tab = f.new_sheet("Site Level")
         sup_tab = f.new_sheet("Supply Level")
         changes = defaultdict(list, {})
@@ -701,10 +708,14 @@ def do_get(sess):
 
     site_id = req_int('site_id') if 'site_id' in request.values else None
     supply_id = req_int('supply_id') if 'supply_id' in request.values else None
+    if 'compression' in request.values:
+        compression = req_bool('compression')
+    else:
+        compression = True
     user = g.user
 
     threading.Thread(
         target=content, args=(
             scenario_props, scenario_id, base_name, site_id, supply_id,
-            user)).start()
+            user, compression)).start()
     return chellow_redirect("/downloads", 303)

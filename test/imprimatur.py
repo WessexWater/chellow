@@ -2904,7 +2904,7 @@ def virtual_bill(supply_source):
     {
         'name': "Unified Supplies Monthly Duration",
         'path': '/reports/247?site_id=5&months=1&finish_year=2009&'
-        'finish_month=03',
+        'finish_month=03&compression=False',
         'status_code': 303},
     {
         'path': '/downloads',
@@ -2971,7 +2971,7 @@ def virtual_bill(supply_source):
     {
         'name': "Unified Supplies Monthly Duration - no virtual bill function",
         'path': '/reports/247?site_id=4&months=1&finish_year=2009&'
-        'finish_month=04',
+        'finish_month=04&compression=False',
         'status_code': 303},
     {
         'path': '/downloads',
@@ -5055,7 +5055,7 @@ def virtual_bill(supply_source):
 
     {
         'path': '/reports/247?site_id=4&months=1&finish_year=2010&'
-        'finish_month=07',
+        'finish_month=07&compression=False',
         'status_code': 303},
     {
         'path': '/downloads',
@@ -7861,7 +7861,7 @@ def virtual_bill(supply_source):
 
     {
         'name': "Run scenario for a site where there are no site groups",
-        'path': '/reports/247?site_id=1&scenario_id=38',
+        'path': '/reports/247?site_id=1&scenario_id=38&compression=False',
         'status_code': 303},
     {
         'path': '/downloads',
@@ -7884,7 +7884,7 @@ def virtual_bill(supply_source):
 
     {
         'name': "Run scenario for a site where there are site groups",
-        'path': '/reports/247?site_id=3&scenario_id=38',
+        'path': '/reports/247?site_id=3&scenario_id=38&compression=False',
         'status_code': 303},
     {
         'path': '/downloads',
@@ -7971,7 +7971,7 @@ def virtual_bill(supply_source):
 
     # Run scenario for a site
     {
-        'path': '/reports/247?site_id=3&scenario_id=39',
+        'path': '/reports/247?site_id=3&scenario_id=39&compression=False',
         'status_code': 303},
     {
         'path': '/downloads',
@@ -8310,7 +8310,7 @@ def virtual_bill(supply_source):
 
     # Run scenario for a site
     {
-        'path': '/reports/247?site_id=3&scenario_id=40',
+        'path': '/reports/247?site_id=3&scenario_id=40&compression=False',
         'status_code': 303},
     {
         'path': '/downloads',
@@ -8465,7 +8465,7 @@ def virtual_bill(supply_source):
 
     # Run scenario for a site
     {
-        'path': '/reports/247?site_id=3&scenario_id=39',
+        'path': '/reports/247?site_id=3&scenario_id=39&compression=False',
         'status_code': 303},
     {
         'path': '/downloads',
@@ -9040,7 +9040,7 @@ def virtual_bill(supply_source):
 
     {
         'name': "Leap day forecast. Run scenario for a site",
-        'path': '/reports/247?site_id=5&scenario_id=41',
+        'path': '/reports/247?site_id=5&scenario_id=41&compression=False',
         'status_code': 303},
     {
         'path': '/downloads',
@@ -9745,7 +9745,7 @@ def virtual_bill(supply_source):
     {
         'name': "Scenario runner with default scenario",
         'path': '/reports/247?site_id=5&months=1&finish_year=2015&'
-        'finish_month=2',
+        'finish_month=2&compression=False',
         'status_code': 303},
     {
         'path': '/downloads',
@@ -9865,7 +9865,7 @@ def virtual_bill(supply_source):
     {
         'name': "Unified Supplies Monthly Duration - billed amounts",
         'path': '/reports/247?supply_id=10&months=1&finish_year=2010&'
-        'finish_month=01',
+        'finish_month=01&compression=False',
         'status_code': 303},
     {
         'path': '/downloads',
@@ -10108,7 +10108,7 @@ def virtual_bill(supply_source):
     {
         'name': "3rd party in unified report.",
         'path': '/reports/247?supply_id=16&months=1&finish_year=2014&'
-        'finish_month=12',
+        'finish_month=12&compression=False',
         'status_code': 303},
     {
         'path': '/downloads',
@@ -10332,7 +10332,7 @@ def virtual_bill(supply_source):
     {
         'name': "Unified report for a gen-net supply",
         'path': '/reports/247?supply_id=5&months=1&finish_year=2015&'
-        'finish_month=05',
+        'finish_month=05&compression=False',
         'status_code': 303},
     {
         'name': "Unified report for a gen-net supply",
@@ -10418,7 +10418,7 @@ def virtual_bill(supply_source):
     {
         'name': "Unified Supplies Monthly Duration - displaced kWh",
         'path': '/reports/247?site_id=3&months=1&finish_year=2015&'
-        'finish_month=05',
+        'finish_month=05&compression=False',
         'status_code': 303},
     {
         'name': "Unified Supplies Monthly Duration - displaced kWh",
@@ -10440,7 +10440,7 @@ def virtual_bill(supply_source):
     {
         'name': "Unified supply starts after period",
         'path': '/reports/247?supply_id=7&months=1&finish_year=2003&'
-        'finish_month=08',
+        'finish_month=08&compression=False',
         'status_code': 303},
     {
         'name': "Unified supply starts after period",
@@ -10604,7 +10604,7 @@ def virtual_bill(supply_source):
     {
         'name': "Unified report, billed",
         'path': '/reports/247?site_id=3&months=1&finish_year=2015&'
-        'finish_month=08',
+        'finish_month=08&compression=False',
         'status_code': 303},
     {
         'name': "Unified report, billed",
