@@ -498,27 +498,27 @@ def content(
                                     ' from the contract ' + \
                                     imp_supplier_contract.name + \
                                     ' does not contain the net-gbp key.'
+
+                            kwh = sum(hh['msp-kwh'] for hh in imp_ss.hh_data)
+
                             if source_code in ('net', 'gen-net'):
                                 month_data['import-net-gbp'] += gbp
+                                month_data['import-net-kwh'] += kwh
                                 month_data['used-gbp'] += gbp
+                                month_data['used-kwh'] += kwh
                             elif source_code == '3rd-party':
                                 month_data['import-3rd-party-gbp'] += gbp
+                                month_data['import-3rd-party-kwh'] += kwh
+                                month_data['used-3rd-party-gbp'] += gbp
+                                month_data['used-3rd-party-kwh'] += kwh
                                 month_data['used-gbp'] += gbp
+                                month_data['used-kwh'] += kwh
                             elif source_code == '3rd-party-reverse':
                                 month_data['export-3rd-party-gbp'] += gbp
-                                month_data['used-gbp'] -= gbp
-
-                            kwh = sum(
-                                hh['msp-kwh'] for hh in imp_ss.hh_data)
-
-                            if source_code in ('net', 'gen-net'):
-                                month_data['import-net-kwh'] += kwh
-                                month_data['used-kwh'] += kwh
-                            elif source_code == '3rd-party':
-                                month_data['import-3rd-party-kwh'] += kwh
-                                month_data['used-kwh'] += kwh
-                            elif source_code == '3rd-party-reverse':
                                 month_data['export-3rd-party-kwh'] += kwh
+                                month_data['used-3rd-party-gbp'] -= gbp
+                                month_data['used-3rd-party-kwh'] -= kwh
+                                month_data['used-gbp'] -= gbp
                                 month_data['used-kwh'] -= kwh
                             elif source_code in ('gen', 'gen-net'):
                                 month_data['import-gen-kwh'] += kwh
@@ -557,15 +557,23 @@ def content(
                             kwh = sum(hh['msp-kwh'] for hh in exp_ss.hh_data)
 
                             if source_code in ('net', 'gen-net'):
-                                month_data['export-net-kwh'] += kwh
                                 month_data['export-net-gbp'] += gbp
-                            elif source_code in \
-                                    ('3rd-party', '3rd-party-reverse'):
-                                month_data['export-3rd-party-kwh'] += kwh
+                                month_data['export-net-kwh'] += kwh
+                            elif source_code == '3rd-party':
                                 month_data['export-3rd-party-gbp'] += gbp
-                                month_data['used-kwh'] -= kwh
+                                month_data['export-3rd-party-kwh'] += kwh
+                                month_data['used-3rd-party-gbp'] -= gbp
+                                month_data['used-3rd-party-kwh'] -= kwh
                                 month_data['used-gbp'] -= gbp
-                            elif source_code == 'gen':
+                                month_data['used-kwh'] -= kwh
+                            elif source_code == '3rd-party-reverse':
+                                month_data['import-3rd-party-gbp'] += gbp
+                                month_data['import-3rd-party-kwh'] += kwh
+                                month_data['used-3rd-party-gbp'] += gbp
+                                month_data['used-3rd-party-kwh'] += kwh
+                                month_data['used-gbp'] += gbp
+                                month_data['used-kwh'] += kwh
+                            elif source_code in ('gen', 'gen-net'):
                                 month_data['export-gen-kwh'] += kwh
 
                         sss = exp_ss if imp_ss is None else imp_ss
@@ -584,6 +592,7 @@ def content(
 
                         if source_code in ('3rd-party', '3rd-party-reverse'):
                             month_data['import-3rd-party-gbp'] += gbp
+                            month_data['used-3rd-party-gbp'] += gbp
                         else:
                             month_data['import-net-gbp'] += gbp
                         month_data['used-gbp'] += gbp
