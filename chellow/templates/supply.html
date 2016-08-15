@@ -131,7 +131,7 @@
 		{% set physical_site = era_bundle['physical_site'] %}
 		{% set other_sites = era_bundle['other_sites'] %}
 
-		<table>
+		<table class="DataTable widthAuto">
 				<caption>
 					Era [<a href="{{context_path}}/eras/{{era.id}}/edit">edit</a>]
 				</caption>
@@ -264,7 +264,6 @@
 										{%- if not loop.first    -%} {%- endif -%}
 											<a href="{{context_path}}/supplies/{{sup.id}}">{{sup.id}}</a>
 									{%- endfor -%}
-
 										)
 									{% endif %}
 								{% endif %}
