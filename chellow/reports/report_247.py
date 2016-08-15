@@ -520,7 +520,8 @@ def content(
                                 month_data['used-3rd-party-kwh'] -= kwh
                                 month_data['used-gbp'] -= gbp
                                 month_data['used-kwh'] -= kwh
-                            elif source_code in ('gen', 'gen-net'):
+
+                            if source_code in ('gen', 'gen-net'):
                                 month_data['import-gen-kwh'] += kwh
 
                         exp_supplier_contract = era.exp_supplier_contract
@@ -573,7 +574,8 @@ def content(
                                 month_data['used-3rd-party-kwh'] += kwh
                                 month_data['used-gbp'] += gbp
                                 month_data['used-kwh'] += kwh
-                            elif source_code in ('gen', 'gen-net'):
+
+                            if source_code in ('gen', 'gen-net'):
                                 month_data['export-gen-kwh'] += kwh
 
                         sss = exp_ss if imp_ss is None else imp_ss
