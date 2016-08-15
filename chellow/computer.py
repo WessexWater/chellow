@@ -13,6 +13,7 @@ from chellow.models import (
     Bill, BillType, ReadType, Batch)
 from chellow.utils import HH, hh_format, hh_after
 import chellow.bank_holidays
+from itertools import combinations
 
 
 class imdict(dict):
@@ -790,7 +791,6 @@ class SupplySource(DataSource):
                 chunk_finish = self.history_finish
 
             hist_measurement_type = hist_era.make_meter_category()
-
             if hist_measurement_type == 'unmetered':
 
                 kwh = hist_era.imp_sc * 60 * 30 / (
@@ -1102,16 +1102,34 @@ class SupplySource(DataSource):
                 tpr_codes = sess.query(Tpr.code). \
                     join(MeasurementRequirement).filter(
                         MeasurementRequirement.ssc == self.ssc).all()
+
+                cand_bills = dict(
+                    (b.id, b) for b in sess.query(Bill).join(Batch)
+                    .join(BillType).filter(
+                        Bill.supply == self.supply,
+                        Bill.reads.any(),
+                        Bill.start_date <= chunk_finish,
+                        Bill.finish_date >= chunk_start).order_by(
+                        Bill.issue_date.desc(), Bill.start_date))
+                while True:
+                    to_del = None
+                    for a, b in combinations(cand_bills.values(), 2):
+                        if all(
+                                (
+                                    a.start_date == b.start_date,
+                                    a.finish_date == b.finish_date,
+                                    a.kwh == -1 * b.kwh, a.net == -1 * b.net,
+                                    a.vat == -1 * b.vat,
+                                    a.gross == -1 * b.gross)):
+                            to_del = (a.id, b.id)
+                            break
+                    if to_del is None:
+                        break
+                    else:
+                        for k in to_del:
+                            del cand_bills[k]
                 bills = []
-                for cand_bill in sess.query(Bill).join(Batch) \
-                        .join(BillType).filter(
-                            Bill.supply == self.supply,
-                            Bill.reads.any(),
-                            Batch.contract == self.supplier_contract,
-                            Bill.start_date <= chunk_finish,
-                            Bill.finish_date >= chunk_start,
-                            BillType.code != 'W').order_by(
-                            Bill.issue_date.desc(), Bill.start_date):
+                for cand_bill in cand_bills.values():
                     can_insert = True
                     for bill in bills:
                         if not cand_bill.start_date > bill.finish_date \

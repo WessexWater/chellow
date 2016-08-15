@@ -6806,7 +6806,7 @@ def virtual_bill(supply_source):
         'regexes': [
             r'06-004,00101,N,244,3810.08,355.03,'
             r'2011-05-01 00:00,2011-06-30 00:00,22 6354 2983 570,CI017,'
-            r'Roselands,2011-05-01 00:00,2011-06-30 00:00,9;8,0,'
+            r'Roselands,2011-05-01 00:00,2011-06-30 00:00,"8,9",0,'
             r'4701.16,3010.2260000000024,1690.9339999999975,,,,,'
             r'11.4,0.00485,,,,,5.89,,,2300,,60,,'
             r'0.0211,,2911.8000000000025,,,0,,31,,0.0211,'
@@ -9635,7 +9635,7 @@ def virtual_bill(supply_source):
         'regexes': [
             r'07-002,3423760010,N,10,9.07,0.21,2012-01-05 00:00,'
             r'2012-01-10 23:30,22 1065 3921 534,CI017,Roselands,'
-            r'2012-01-05 00:00,2012-01-10 23:30,22;21,756.0,54.77,'
+            r'2012-01-05 00:00,2012-01-10 23:30,"21,22",756.0,54.77,'
             r'25.200000000000003,29.57,10.0,252.0,,'],
         'status_code': 200},
 
@@ -11373,7 +11373,7 @@ def virtual_bill(supply_source):
             'finish_minute': '00',
             'kwh': '0',
             'net': '-641.67',
-            'vat': '-290.87',
+            'vat': '-112.29',
             'gross': '0',
             'bill_type_id': '2',
             'breakdown': '{}'},
@@ -11445,6 +11445,33 @@ def virtual_bill(supply_source):
         'regexes': [
             r'Theory laden\.'],
         'status_code': 200},
+    {
+        'name': "Bill check with exception. Put back to how it was.",
+        'path': "/supplier_contracts/37/edit",
+        'method': 'post',
+        'data': {
+            'party_id': '90',
+            'name': 'Non half-hourlies 2010',
+            'charge_script': """import chellow.duos
+from werkzeug.exceptions import BadRequest
+
+
+def virtual_bill_titles():
+    return ['net-gbp', 'sum-msp-kwh', 'problem']
+
+def virtual_bill(supply_source):
+    sum_msp_kwh = sum(h['msp-kwh'] for h in supply_source.hh_data)
+    bill = supply_source.supplier_bill
+    chellow.duos.duos_vb(supply_source)
+    for rate_name, rate_set in supply_source.supplier_rate_sets.items():
+        if len(rate_set) == 1:
+            bill[rate_name] = rate_set.pop()
+    bill['net-gbp'] += sum_msp_kwh * 0.1
+    bill['sum-msp-kwh'] += sum_msp_kwh
+""",
+            'properties': '{}'},
+        'status_code': 303},
+
     {
         'name': "Reverse proxy authentication",
         'path': '/non_core_contracts/5/edit',
@@ -11533,6 +11560,36 @@ def virtual_bill(supply_source):
         'status_code': 200},
 
     {
+        'name': "Bill that cancel, bill check.",
+        'path': '/supplier_bills/14/edit',
+        'method': 'post',
+        'data': {
+            'reference': 'SA342376',
+            'account': '21767837',
+            'issue_year': '2007',
+            'issue_month': '01',
+            'issue_day': '01',
+            'issue_hour': '00',
+            'issue_minute': '00',
+            'start_year': '2007',
+            'start_month': '02',
+            'start_day': '28',
+            'start_hour': '00',
+            'start_minute': '00',
+            'finish_year': '2007',
+            'finish_month': '03',
+            'finish_day': '01',
+            'finish_hour': '00',
+            'finish_minute': '00',
+            'kwh': '0',
+            'net': '3163479',
+            'vat': '553609',
+            'gross': '0',
+            'bill_type_id': '2',
+            'breakdown': '{}'},
+        'status_code': 303},
+
+    {
         'name': "Test the supplier batch checking",
         'path': '/reports/111?bill_id=14',
         'status_code': 303},
@@ -11545,6 +11602,57 @@ def virtual_bill(supply_source):
     {
         'path': '/downloads/004_FINISHED_adminexamplecom_bill_check.csv',
         'status_code': 200},
+
+    {
+        'name': "Bill that cancel, bill check with primary bill.",
+        'path': '/supplier_bills/12/edit',
+        'method': 'post',
+        'data': {
+            'reference': '3423760004',
+            'account': 'SA342376000',
+            'issue_year': '2007',
+            'issue_month': '01',
+            'issue_day': '01',
+            'issue_hour': '00',
+            'issue_minute': '00',
+            'start_year': '2007',
+            'start_month': '02',
+            'start_day': '28',
+            'start_hour': '00',
+            'start_minute': '00',
+            'finish_year': '2007',
+            'finish_month': '03',
+            'finish_day': '01',
+            'finish_hour': '00',
+            'finish_minute': '00',
+            'kwh': '150',
+            'net': '98.17',
+            'vat': '15.01',
+            'gross': '0',
+            'bill_type_id': '2',
+            'breakdown': '{}'},
+        'status_code': 303},
+    {
+        'name': "Test the supplier batch checking",
+        'path': '/reports/111?bill_id=14',
+        'status_code': 303},
+    {
+        'path': '/downloads',
+        'tries': {},
+        'regexes': [
+            r"005_FINISHED_adminexamplecom_bill_check\.csv"],
+        'status_code': 200},
+    {
+        'path': '/downloads/'
+        '005_FINISHED_adminexamplecom_bill_check.csv',
+        'regexes': [
+            r'06-002,SA342376,N,0,3163479,553609,'
+            r'2007-02-28 00:00,2007-03-01 00:00,22 1065 3921 534,CI017,'
+            r'Roselands,2007-02-28 00:00,2007-03-01 00:00,12,'
+            r'142.66107799304527,98.17,0.0,98.17,15.01,0.0,15.01,,0.0,,150.0,'
+            r'0,,'],
+        'status_code': 200},
+
     {
         'name': "Update a MOP batch",
         'path': '/mop_batches/9/edit',
@@ -11568,12 +11676,12 @@ def virtual_bill(supply_source):
         'path': '/downloads',
         'tries': {'max': 40, 'period': 1},
         'regexes': [
-            r'005_FINISHED_adminexamplecom_unified_supplies_monthly_'
+            r'006_FINISHED_adminexamplecom_unified_supplies_monthly_'
             r'duration_20140601_0000_for_1_months_supply_5\.ods'],
         'status_code': 200},
     {
         'path': '/downloads/'
-        '005_FINISHED_adminexamplecom_unified_supplies_monthly_duration_'
+        '006_FINISHED_adminexamplecom_unified_supplies_monthly_duration_'
         '20140601_0000_for_1_months_supply_5.ods',
         'regexes': [
             r'<table:table-row>\s*'

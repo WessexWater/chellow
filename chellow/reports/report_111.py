@@ -5,7 +5,8 @@ from dateutil.relativedelta import relativedelta
 from sqlalchemy import or_
 from sqlalchemy.sql.expression import null, true
 import traceback
-from chellow.models import Batch, Bill, Session, Era, Site, SiteEra
+from chellow.models import (
+    Batch, Bill, Session, Era, Site, SiteEra, Contract, MarketRole)
 import chellow.computer
 import chellow.dloads
 import sys
@@ -16,6 +17,7 @@ from chellow.utils import HH, hh_format, hh_before, req_int
 from chellow.views import chellow_redirect
 from flask import request, g
 import csv
+from itertools import combinations
 
 
 def content(batch_id, bill_id, user):
@@ -122,35 +124,49 @@ def content(batch_id, bill_id, user):
 
             while enlarged:
                 enlarged = False
-                for covered_bill in sess.query(Bill).filter(
-                        Bill.supply_id == supply.id,
+                covered_bills = []
+                cand_bills = dict(
+                    (b.id, b) for b in sess.query(Bill).join(Batch).
+                    join(Contract).join(MarketRole).filter(
+                        Bill.supply == supply,
                         Bill.start_date <= covered_finish,
-                        Bill.finish_date >= covered_start).order_by(
-                        Bill.issue_date.desc(), Bill.start_date):
-                    if market_role_code != \
-                            covered_bill.batch.contract.market_role.code:
-                        continue
-
+                        Bill.finish_date >= covered_start,
+                        MarketRole.code == market_role_code).order_by(
+                        Bill.issue_date.desc(), Bill.start_date))
+                while True:
+                    to_del = None
+                    for a, b in combinations(cand_bills.values(), 2):
+                        if all(
+                                (
+                                    a.start_date == b.start_date,
+                                    a.finish_date == b.finish_date,
+                                    a.kwh == -1 * b.kwh, a.net == -1 * b.net,
+                                    a.vat == -1 * b.vat,
+                                    a.gross == -1 * b.gross)):
+                            to_del = (a.id, b.id)
+                            break
+                    if to_del is None:
+                        break
+                    else:
+                        for k in to_del:
+                            del cand_bills[k]
+                for cand_bill_id in sorted(cand_bills.keys()):
+                    cand_bill = cand_bills[cand_bill_id]
+                    print("cand bill", cand_bill)
                     if covered_primary_bill is None and \
-                            len(covered_bill.reads) > 0:
-                        covered_primary_bill = covered_bill
-                    if covered_bill.start_date < covered_start:
-                        covered_start = covered_bill.start_date
+                            len(cand_bill.reads) > 0:
+                        covered_primary_bill = cand_bill
+                    if cand_bill.start_date < covered_start:
+                        covered_start = cand_bill.start_date
                         enlarged = True
                         break
-                    if covered_bill.finish_date > covered_finish:
-                        covered_finish = covered_bill.finish_date
+                    if cand_bill.finish_date > covered_finish:
+                        covered_finish = cand_bill.finish_date
                         enlarged = True
                         break
+                    covered_bills.append(cand_bill)
 
-            for covered_bill in sess.query(Bill).filter(
-                    Bill.supply_id == supply.id,
-                    Bill.start_date <= covered_finish,
-                    Bill.finish_date >= covered_start).order_by(
-                    Bill.issue_date.desc(), Bill.start_date):
-                if market_role_code != \
-                        covered_bill.batch.contract.market_role.code:
-                    continue
+            for covered_bill in covered_bills:
                 covered_bill_ids.append(covered_bill.id)
                 covered_bdown['net-gbp'] += float(covered_bill.net)
                 covered_bdown['vat-gbp'] += float(covered_bill.vat)
@@ -239,7 +255,7 @@ def content(batch_id, bill_id, user):
             values += [
                 site.code, site.name, hh_format(covered_start),
                 hh_format(covered_finish),
-                ';'.join(str(id).replace(',', '') for id in covered_bill_ids),
+                ','.join(str(id).replace(',', '') for id in covered_bill_ids),
                 metered_kwh]
             for title in virtual_bill_titles:
                 try:
