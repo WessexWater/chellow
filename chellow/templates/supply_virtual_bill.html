@@ -21,7 +21,7 @@
 		<!-- Section Content -->
 		<div class="section-content">
 			<div class="section-data">
-				<div class="standardForm textWidthAuto inlineFormSubmit">
+				<div class="standardForm textWidthAuto">
 					<form action="">
 						<fieldset>
 							<input type="hidden" name="supply_id" value="{{supply.id}}">
@@ -30,8 +30,6 @@
 						</fieldset>
 					</form>
 				</div>
-			</div>
-			<div class="section-data">
 				<table class="DataTable widthAuto">
 					<caption>Summary</caption>
 					<tr>
@@ -47,8 +45,6 @@
 						<td>{{net_gbp}}</td>
 					</tr>
 				</table>
-			</div>
-			<div class="section-data">
 				<table class="DataTable widthAuto">
 					<caption>Import Supplier Virtual Bill</caption>
 					{% for mera in meras %}
@@ -71,17 +67,10 @@
 					{% endfor %}
 				</table>
 			</div>
+			
 		</div>
 		<!-- End Section Content -->
 	</div>
 	<!-- End Layer Section -->
-
-	
-	<br>
-
-	
-
-	<br>
-
 	
 {% endblock %}

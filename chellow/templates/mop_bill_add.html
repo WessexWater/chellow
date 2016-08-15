@@ -1,8 +1,8 @@
 {% extends "base.html" %}
 
 {% block title %}
-	MOP Contracts &gt; {{batch.contract.name}} &gt; Batches &gt;
- 	{{batch.reference}} &gt; Add Bill
+	&raquo; MOP Contracts &raquo; {{batch.contract.name}} &raquo; Batches &raquo; 
+ 	{{batch.reference}} &raquo; Add Bill
 {% endblock %}
 
 {% block inside_head %}
@@ -15,67 +15,149 @@
 {% endblock %}
 
 {% block nav %}
-	<a href="{{context_path}}/mop_contracts">MOP Contracts</a> &gt;
-	<a href="{{context_path}}/mop_contracts/{{batch.contract.id}}">{{batch.contract.name}}</a> &gt;
-	<a href="{{context_path}}/mop_batches?mop_contract_id={{batch.contract.id}}">Batches</a> &gt;
+	&raquo; <a href="{{context_path}}/mop_contracts">MOP Contracts</a> &raquo; 
+	<a href="{{context_path}}/mop_contracts/{{batch.contract.id}}">{{batch.contract.name}}</a> &raquo; 
+	<a href="{{context_path}}/mop_batches?mop_contract_id={{batch.contract.id}}">Batches</a> &raquo; 
 	<a href="{{context_path}}/mop_batches/{{batch.id}}">{{batch.reference}}</a>
- 	&gt; Add Bill
+ 	&raquo; Add Bill
 {% endblock %}
 
 {% block content %}
-	<form action="" method="post">
-		<fieldset>
-			<legend>Add a bill</legend>
-			<br>
-			<label>MPAN Core</label>
-			{{input_text('mpan_core')}}
-			<br>
-			<label>Reference</label>
-			{{input_text('reference')}}
-			<br>
-			<br>
-			<fieldset>
-				<legend>Issue Date</legend>
-				{{input_date('issue')}}
-			</fieldset>
-			<br>
-			<fieldset>
-				<legend>Start Date</legend>
-				{{input_date('start')}}
-			</fieldset>
-			<br>
-			<fieldset>
-				<legend>Finish Date</legend>
-				{{input_date('finish')}}
-			</fieldset>
-			<br>
-			<label>kWh</label>
-			{{input_text('kwh', '0')}}
-			<br>
-			<label>Net</label>
-			{{input_text('net', '0')}}
-			<br>
-			<label>VAT</label>
-			{{input_text('vat', '0')}}
-			<br>
-			<label>Gross</label>
-			{{input_text('gross', '0')}}
-			<br>
-			<label>Account</label>
-			{{input_text('account', '0')}}
-			<br>
-			<label>Type</label>
-			<select name="bill_type_id">
-				{% for bill_type in bill_types %}
-					{{input_option('bill_type_id', bill_type.id, bill_type.code, bill_type.description)}}
-				{% endfor %}
-			</select>
-			<br>
-			<label>Breakdown</label>
-			{{input_text('breakdown', '{}')}}
-			<br>
-			<br>
-			<input type="submit" value="Add">
-		</fieldset>
-	</form>
+<!-- Layer Section -->
+	<div class="layer-section">
+	    <!-- Section Header -->
+	    <div class="section-header">
+		<h2>Add A Bill</h2>
+	    </div>
+	    <!-- End Section Header -->
+	    <!-- Section Content -->
+	    <div class="section-content">
+		<div class="section-data">
+		   <form action="" method="post">
+		        <fieldset>
+		            <div class="standardForm">
+		                <div class="row">
+		                    <div class="col-sm-2">
+		                        <label>MPAN Core</label>
+		                    </div>
+		                    <div class="col-sm-4">
+								{{input_text('mpan_core')}}
+		                    </div>
+		                </div>
+		                <div class="row">
+		                    <div class="col-sm-2">
+		                        <label>Reference</label>
+		                    </div>
+		                    <div class="col-sm-4">
+								{{input_text('reference')}}
+		                    </div>
+		                </div>
+		            </div>
+		            
+		            <div class="standardForm textWidthAuto">
+		            	<fieldset>
+		            	    <div class="row">
+    		                    <div class="col-sm-2">
+    		                        <label>Issue Date</label>
+    		                    </div>
+    		                    <div class="col-sm-4">
+    		                        {{input_date('issue')}}
+    		                    </div>
+    		                </div>
+				        </fieldset>
+				        
+				        <fieldset>
+				            <div class="row">
+    		                    <div class="col-sm-2">
+    		                        <label>Start Date</label>
+    		                    </div>
+    		                    <div class="col-sm-4">
+    		                        {{input_date('start')}}
+    		                    </div>
+    		                </div>
+				        </fieldset>
+				        
+				        <fieldset>
+				            <div class="row">
+    		                    <div class="col-sm-2">
+    		                        <label>Finish Date</label>
+    		                    </div>
+    		                    <div class="col-sm-4">
+    		                        {{input_date('finish')}}
+    		                    </div>
+    		                </div>
+				        </fieldset>
+		            </div>
+		            		            
+		            <div class="standardForm">
+		                <div class="row">
+		                    <div class="col-sm-2">
+		                        <label>kWh</label>
+		                    </div>
+		                    <div class="col-sm-4">
+		                        {{input_text('kwh', '0')}}
+		                    </div>
+		                </div>
+		                <div class="row">
+		                    <div class="col-sm-2">
+		                        <label>Net</label>
+		                    </div>
+		                    <div class="col-sm-4">
+		                        {{input_text('net', '0')}}
+		                    </div>
+		                </div>   
+		                <div class="row">
+		                    <div class="col-sm-2">
+		                        <label>VAT</label>
+		                    </div>
+		                    <div class="col-sm-4">
+            					{{input_text('vat', '0')}}
+		                    </div>
+		                </div>
+		                <div class="row">
+		                    <div class="col-sm-2">
+		                        <label>Gross</label>
+		                    </div>
+		                    <div class="col-sm-4">
+		                        {{input_text('gross', '0')}}
+		                    </div>
+		                </div>
+		                <div class="row">
+		                    <div class="col-sm-2">
+		                        <label>Account</label>
+		                    </div>
+		                    <div class="col-sm-4">
+            					{{input_text('account', '0')}}
+		                    </div>
+		                </div>
+		                <div class="row">
+		                    <div class="col-sm-2">
+    		                    <label>Type</label> 
+    		                </div>
+		                    <div class="col-sm-4">
+            					<select name="bill_type_id">
+                    				{% for bill_type in bill_types %}
+                    					{{input_option('bill_type_id', bill_type.id, bill_type.code, bill_type.description)}}
+                    				{% endfor %}
+                    			</select>
+		                    </div>
+		                </div>
+		                <div class="row">
+		                    <div class="col-sm-2">
+		                        <label>Breakdown</label>
+		                    </div>
+		                    <div class="col-sm-4">
+            					{{input_text('breakdown', '{}')}}
+		                    </div>
+		                </div>
+
+		                <input type="submit" value="Add">
+		            </div>
+		        </fieldset>
+		    </form>
+		</div>
+	    </div>
+	    <!-- End Section Content -->
+	</div>
+	<!-- End Layer Section -->
 {% endblock %}

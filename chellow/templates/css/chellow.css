@@ -941,7 +941,7 @@ table.DataTable.noMarginBottom {
 }
 
 .standardForm label {
-    display: block;
+    /* display: block; */
 }
 
 .standardForm.inlineFormSubmit label {
@@ -981,7 +981,7 @@ input.input-text,
     height: 34px;
     line-height: 24px;
     margin: 0 0 15px;
-    /*padding: 5px 0px 5px 5px;*/
+    padding: 5px 0px 5px 5px;
     width: 100%;
 }
 

@@ -144,59 +144,89 @@
 		<div class="section-content">
 			<form action="" method="post">	
 				<fieldset>
-					<div class="standardForm textWidthAuto">
-						<input type="hidden" name="era_id" value="{{era.id}}">
-							<div class="section-data">
-								<fieldset>
-									<legend>Start date</legend>
-									{{input_date('start', era.start_date)}}
-								</fieldset>
-							</div>
-						<div class="section-data">
-							<fieldset>
-								<legend>End Date</legend>
-								<label>Ended?
-								{{input_checkbox('is_ended', era.finish_date is not none)}}
-								</label>
-								{{input_date('finish', era.finish_date)}}
-							</fieldset>
-						</div>
-					</div>
 					<div class="section-data">
+					    <div class="standardForm textWidthAuto">
+					        <input type="hidden" name="era_id" value="{{era.id}}">
+					        <div class="row">
+    					        <fieldset>
+								    <div class="col-sm-2">
+    					                <label>Start date</label>
+    					            </div>
+    					            <div class="col-sm-4">
+    					                {{input_date('start', era.start_date)}}
+    					            </div> 
+								</fieldset>
+					        </div>
+					        <div class="row">
+					            <fieldset>
+								    <div class="col-sm-2">
+    					                <label>End date</label>
+    					            </div>
+    					            <div class="col-sm-4">
+    					                {{input_date('finish', era.finish_date)}}
+    					                <label>Ended?
+        								{{input_checkbox('is_ended', era.finish_date is not none)}}
+        								</label>
+    					            </div> 
+								</fieldset>
+					        </div>
+					    </div>
 						<div class="standardForm">
 							<div class="row">
-								<div class="col-sm-4">
+								<div class="col-sm-2">
 									<label class="aligned">MOP Contract</label>
-									<select name="mop_contract_id">
+								</div>
+								<div class="col-sm-4">
+								    <select name="mop_contract_id">
 										{% for contract in mop_contracts %}
 											{{input_option('mop_contract_id', contract.id, contract.name, era.mop_contract.id)}}
 										{% endfor %}
 									</select>
 								</div>
-								<div class="col-sm-4">
+							</div> 
+							<div class="row">
+							    <div class="col-sm-2">
 									<label class="aligned">MOP Account</label>
-									{{input_text('mop_account', era.mop_account)}}
 								</div>
 								<div class="col-sm-4">
+									{{input_text('mop_account', era.mop_account)}}
+							    </div>
+							</div>
+							
+							
+							<div class="row">
+							    <div class="col-sm-2">
 									<label class="aligned">HHDC Contract</label>
+								</div>	
+								<div class="col-sm-4">
 									<select name="hhdc_contract_id">
 										{% for contract in hhdc_contracts %}
 											{{input_option('hhdc_contract_id', contract.id, contract.name, era.hhdc_contract.id)}}
 										{% endfor %}
 									</select>
-								</div>	
-							</div> 
+								</div>
+							</div>
 							<div class="row">
-								<div class="col-sm-4">
-									<label class="aligned">HHDC Account</label>
+							    <div class="col-sm-2">
+							        <label class="aligned">HHDC Account</label>
+							    </div>
+							    <div class="col-sm-4">
 									{{input_text('hhdc_account', era.hhdc_account)}}
 								</div>
-								<div class="col-sm-4">
-									<label class="aligned">Meter Serial Number</label>
+							</div>
+							<div class="row">
+							    <div class="col-sm-2">
+							        <label class="aligned">Meter Serial Number</label>
+							    </div>
+							    <div class="col-sm-4">
 									{{input_text('msn', era.msn)}}
 								</div>
-								<div class="col-sm-4">
-									<label class="aligned">Profile Class</label>
+							</div>
+							<div class="row">
+							    <div class="col-sm-2">
+							        <label class="aligned">Profile Class</label>
+							    </div>
+							    <div class="col-sm-4">
 									<select name="pc_id">
 										{% for pc in pcs %}
 											{{input_option('pc_id', pc.id, pc.code + ' - ' + pc.name, era.pc.id)}}
@@ -205,20 +235,31 @@
 								</div>
 							</div>
 							<div class="row">
-								<div class="col-sm-4">
+								<div class="col-sm-2">
 									<label class="aligned">Meter Timeswitch Class</label>
-									{{input_text('mtc_code', era.mtc.code, 3, 3)}}
 								</div>
 								<div class="col-sm-4">
-									<label class="aligned">CoP</label>
+									{{input_text('mtc_code', era.mtc.code, 3, 3)}}
+								</div>
+							</div>
+							<div class="row">
+							    <div class="col-sm-2">
+							        <label class="aligned">CoP</label>
+							    </div>
+							    <div class="col-sm-4">
 									<select name="cop_id">
 										{% for cop in cops %}
 											{{input_option('cop_id', cop.id, cop.code + ' ' + cop.description, era.cop.id)}}
 										{% endfor %}
 									</select>
 								</div>
-								<div class="col-sm-4">
+							</div>
+							
+							<div class="row">
+								<div class="col-sm-2">
 									<label class="aligned">SSC</label>
+								</div>								
+								<div class="col-sm-4">
 									{{input_text('ssc_code', era.ssc.code, 4, 4)}}
 								</div>
 							</div>
@@ -229,30 +270,46 @@
 							<fieldset>
 								<legend>Import MPAN</legend>
 								<div class="row">
+								    <div class="col-sm-2">
+								        <label class="aligned">Line Loss Factor Class</label>
+								    </div>
 									<div class="col-sm-4">
-										<label class="aligned">Line Loss Factor Class</label>
 										{{input_text('imp_llfc_code', era.imp_llfc.code, 3,3)}}
 									</div>
+								</div>
+								<div class="row">
+								    <div class="col-sm-2">
+								        <label class="aligned">MPAN Core</label>
+								    </div>
 									<div class="col-sm-4">
-										<label class="aligned">MPAN Core</label>
 										{{input_text('imp_mpan_core', era.imp_mpan_core|default(''), 16)}}										
 									</div>
+								</div>
+								<div class="row">
+								    <div class="col-sm-2">
+								        <label class="aligned">Agreed Supply Capacity (kVA)</label>
+								    </div>
 									<div class="col-sm-4">
-										<label class="aligned">Agreed Supply Capacity (kVA)</label>
 										{{input_text('imp_sc', era.imp_sc, 9, 9)}}
 									</div>
 								</div>
 								<div class="row">
+								    <div class="col-sm-2">
+								        <label class="aligned">Supplier Contract</label>
+								    </div>
 									<div class="col-sm-4">
-										<label class="aligned">Supplier Contract</label>
 										<select name="imp_supplier_contract_id">
 											{% for contract in supplier_contracts %}
 												{{input_option('imp_supplier_contract_id', contract.id, contract.name, era.imp_supplier_contract.id)}}
 											{% endfor %}
 										</select>
 									</div>
-									<div class="col-sm-4">
+								</div>
+								<div class="row">
+								    <div class="col-sm-2">
 										<label class="aligned">Supplier Account</label>
+								    </div>
+									<div class="col-sm-4">
 										{{input_text('imp_supplier_account', era.imp_supplier_account)}}
 									</div>
 								</div>
@@ -265,30 +322,46 @@
 							<fieldset>
 								<legend>Export MPAN</legend>
 								<div class="row">
+								    <div class="col-sm-2">
+								        <label class="aligned">Line Loss Factor Class</label>
+								    </div>
 									<div class="col-sm-4">
-										<label class="aligned">Line Loss Factor Class</label>
 										{{input_text('exp_llfc_code', era.exp_llfc.code, 3, 3)}}
 									</div>
-									<div class="col-sm-4">
-										<label class="aligned">MPAN Core</label>
+								</div>
+								<div class="row">
+								    <div class="col-sm-2">
+								        <label class="aligned">MPAN Core</label>
+								    </div>
+								    <div class="col-sm-4">
 										{{input_text('exp_mpan_core', era.exp_mpan_core, 16)}}
 									</div>
-									<div class="col-sm-4">
+								</div>
+								<div class="row">
+								    <div class="col-sm-2">
 										<label class="aligned">Agreed Supply Capacity (kVA)</label>
+								    </div>
+									<div class="col-sm-4">
 										{{input_text('exp_sc', era.exp_sc, 9, 9)}}
 									</div>
 								</div>
 								<div class="row">
-									<div class="col-sm-4">
-										<label class="aligned">Supplier Contract</label>
+								    <div class="col-sm-2">
+								        <label class="aligned">Supplier Contract</label>
+								    </div>
+								    <div class="col-sm-4">
 										<select name="exp_supplier_contract_id">
 											{% for contract in supplier_contracts %}
 												{{input_option('exp_supplier_contract_id', contract.id, contract.name, era.exp_supplier_contract.id)}}
 											{% endfor %}
 										</select>
 									</div>
-									<div class="col-sm-4">
+								</div>
+								<div class="row">
+									<div class="col-sm-2">
 										<label class="aligned">Supplier Account</label>
+									</div>
+									<div class="col-sm-4">
 										{{input_text('exp_supplier_account', era.supplier_account)}}
 									</div>
 								</div>

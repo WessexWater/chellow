@@ -39,12 +39,18 @@
 		            
 		            <div class="standardForm">
 		                <div class="row">
-		                    <div class="col-sm-6">
+		                    <div class="col-sm-2">
 		                        <label>MPAN Core</label>
+		                    </div>
+		                    <div class="col-sm-4">
 								{{input_text('mpan_core')}}
 		                    </div>
-		                    <div class="col-sm-6">
+		                </div>
+		                <div class="row">
+		                    <div class="col-sm-2">
 		                        <label>Reference</label>
+		                    </div>
+		                    <div class="col-sm-4">
 								{{input_text('reference')}}
 		                    </div>
 		                </div>
@@ -52,60 +58,98 @@
 		            
 		            <div class="standardForm textWidthAuto">
 		            	<fieldset>
-				            <legend>Issue Date</legend>
-							{{input_date('issue')}}
+		            	    <div class="row">
+    		                    <div class="col-sm-2">
+    		                        <label>Issue Date</label>
+    		                    </div>
+    		                    <div class="col-sm-4">
+    		                        {{input_date('issue')}}
+    		                    </div>
+    		                </div>
 				        </fieldset>
 				        
 				        <fieldset>
-				            <legend>Start Date</legend>
-							{{input_date('start')}}
+				            <div class="row">
+    		                    <div class="col-sm-2">
+    		                        <label>Start Date</label>
+    		                    </div>
+    		                    <div class="col-sm-4">
+    		                        {{input_date('start')}}
+    		                    </div>
+    		                </div>
 				        </fieldset>
 				        
 				        <fieldset>
-				            <legend>Finish Date</legend>
-							{{input_date('finish')}}
+				            <div class="row">
+    		                    <div class="col-sm-2">
+    		                        <label>Finish Date</label>
+    		                    </div>
+    		                    <div class="col-sm-4">
+    		                        {{input_date('finish')}}
+    		                    </div>
+    		                </div>
 				        </fieldset>
 		            </div>
 		            		            
 		            <div class="standardForm">
 		                <div class="row">
-		                    <div class="col-sm-4">
+		                    <div class="col-sm-2">
 		                        <label>kWh</label>
-					{{input_text('kwh', '0')}}
 		                    </div>
 		                    <div class="col-sm-4">
+		                        {{input_text('kwh', '0')}}
+		                    </div>
+		                </div>
+		                <div class="row">
+		                    <div class="col-sm-2">
 		                        <label>Net</label>
-					{{input_text('net', '0')}}
 		                    </div>
 		                    <div class="col-sm-4">
+		                        {{input_text('net', '0')}}
+		                    </div>
+		                </div>   
+		                <div class="row">
+		                    <div class="col-sm-2">
 		                        <label>VAT</label>
-					{{input_text('vat', '0')}}
+		                    </div>
+		                    <div class="col-sm-4">
+            					{{input_text('vat', '0')}}
 		                    </div>
 		                </div>
-
 		                <div class="row">
-		                    <div class="col-sm-4">
+		                    <div class="col-sm-2">
 		                        <label>Gross</label>
-					{{input_text('gross', '0')}}
 		                    </div>
 		                    <div class="col-sm-4">
-		                        <label>Account</label>
-					{{input_text('account', '0')}}
-		                    </div>
-		                    <div class="col-sm-4">
-		                        <label>Type</label>
-					<select name="bill_type_id">
-						{% for bill_type in bill_types %}
-							{{input_option('bill_type_id', bill_type.id, bill_type.code, bill_type.description)}}
-						{% endfor %}
-					</select>
+		                        {{input_text('gross', '0')}}
 		                    </div>
 		                </div>
-
 		                <div class="row">
+		                    <div class="col-sm-2">
+		                        <label>Account</label>
+		                    </div>
 		                    <div class="col-sm-4">
+            					{{input_text('account', '0')}}
+		                    </div>
+		                </div>
+		                <div class="row">
+		                    <div class="col-sm-2">
+    		                    <label>Type</label> 
+    		                </div>
+		                    <div class="col-sm-4">
+            					<select name="bill_type_id">
+            						{% for bill_type in bill_types %}
+            							{{input_option('bill_type_id', bill_type.id, bill_type.code, bill_type.description)}}
+            						{% endfor %}
+            					</select>
+		                    </div>
+		                </div>
+		                <div class="row">
+		                    <div class="col-sm-2">
 		                        <label>Breakdown</label>
-					{{input_text('breakdown', '{}')}}
+		                    </div>
+		                    <div class="col-sm-4">
+            					{{input_text('breakdown', '{}')}}
 		                    </div>
 		                </div>
 

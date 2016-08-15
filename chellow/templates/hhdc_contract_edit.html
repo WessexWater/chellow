@@ -163,11 +163,11 @@
 	    <!-- Section Content -->
 	    <div class="section-content">
 		<div class="section-data">
-		    <div class="standardForm textWidthAuto inlineFormSubmit">
+		    <div class="standardForm textWidthAuto">
 			<form method="post" action="">
 				<fieldset>
 					<input type="hidden" name="hhdc_contract_id" value="{{hhdc_contract.id}}">
-					<br>
+				
 					{{ input_date('ignore', initial_date) }}
 					<input type="submit" name="ignore_snags" value="Ignore">
 				</fieldset>

@@ -394,10 +394,10 @@
 									<a href="{{ context_path }}/supplier_bills/{{bill.id}}">View</a>
 									</td>
 									<td rowspan="{{ rows_high }}">
-										<a title="{{bill.start_date|hh_format}}">{{bill.start_date|hh_format('date')}}</a>
+										<label title="{{bill.start_date|hh_format}}">{{bill.start_date|hh_format('date')}}</label>
 									</td>
 									<td rowspan="{{ rows_high }}">
-										<a title="{{ bill.finish_date|hh_format }}">{{ bill.finish_date|hh_format('date') }}</a>
+										<label title="{{ bill.finish_date|hh_format }}">{{ bill.finish_date|hh_format('date') }}</label>
 									</td>
 									<td rowspan="{{ rows_high }}">
 										<a href="{{context_path}}/supplier_batches/{{bill.batch.id}}">{{bill.batch.reference}}</a>
@@ -535,10 +535,10 @@
 									<a href="{{context_path}}/supplier_bills/{{bill.id}}">View</a>
 								</td>
 								<td rowspan="{{ rows_high }}">
-									<a title="{{ bill.start_date|hh_format }}">{{ bill.start_date|hh_format('date') }}</a>
+									<label title="{{ bill.start_date|hh_format }}">{{ bill.start_date|hh_format('date') }}</label>
 								</td>
 								<td rowspan="{{ rows_high }}">
-									<a title="{{ bill.finish_date|hh_format }}">{{ bill.finish_date|hh_format('date') }}</a>
+									<label title="{{ bill.finish_date|hh_format }}">{{ bill.finish_date|hh_format('date') }}</label>
 								</td>
 								<td rowspan="{{ rows_high }}">
 									<a href="{{context_path}}/supplier_batches/{{bill.batch.id}}">{{bill.batch.reference}}</a>
@@ -555,7 +555,7 @@
 									{% for read in read_row['inner_reads'] %}
 										<td style="border-right: none;">
 											{% if read %}
-												<a title="{{ read.previous_date|hh_format }} {{ read.msn }}">{{ read.previous_value }}</a>
+												<label title="{{ read.previous_date|hh_format }} {{ read.msn }}">{{ read.previous_value }}</label>
 											{% endif %}
 										</td>
 										<td style="border-left: none;">
@@ -565,7 +565,7 @@
 										</td>
 										<td style="border-right: none;">
 											{% if read %}
-												<a title="{{ read.presentDate|hh_format }} {{ read.msn }}">{{ read.presentValue }}</a>
+												<label title="{{ read.presentDate|hh_format }} {{ read.msn }}">{{ read.presentValue }}</label>
 											{% endif %}
 										</td>
 										<td style="border-left: none;">
@@ -584,13 +584,13 @@
 												{% endif %}
 											</td>
 											<td style="border-right: none;">
-												<a title="{{ read.previous_date|hh_format }} {{ read.msn }}">{{ read.previous_value }}</a>
+												<label title="{{ read.previous_date|hh_format }} {{ read.msn }}">{{ read.previous_value }}</label>
 											</td>
 											<td style="border-left: none;">
 												{{ read.previous_type.code }}
 											</td>
 											<td style="border-right: none;">
-												<a title="{{ read.present_date|hh_format }} {{ read.msn }}">{{ read.present_value }}</a>
+												<label title="{{ read.present_date|hh_format }} {{ read.msn }}">{{ read.present_value }}</label>
 											</td>
 											<td style="border-left: none;">
 												{{ read.present_type.code }}
@@ -726,7 +726,7 @@
 	<div class="section-header">
 		<h2>CSV Downloads</h2>
 	</div>
-	<div class="standardForm textWidthAuto inlineFormSubmit">
+	<div class="standardForm textWidthAuto">
 		<div class="section-data ">
 			<form action="{{ context_path }}/reports/291">
 				<fieldset>

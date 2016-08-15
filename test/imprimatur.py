@@ -773,7 +773,7 @@ def virtual_bill_titles():
 
         # Check table of existing eras is there
         'regexes': [
-            r"<table>\s*<caption>Existing Eras</caption>",
+            r'<table class="DataTable widthAuto">\s',
 
             # Check reference to ongoing era
             r"<td>2003-08-03 00:00</td>\s*<td>\s*Ongoing", ],
@@ -1967,11 +1967,9 @@ def virtual_bill_titles():
         'path': '/supplier_rate_scripts/104/edit?delete=Delete',
         'status_code': 200,
         'regexes': [
-            r'<form method="post" action="">\s*'
+            r'<form method="delete" action="">\s*'
             r'<fieldset>\s*'
-            r'<legend>\s*'
-            r'Are you sure you want to delete this rate script\?\s*'
-            r'</legend>']},
+            r'<input type="submit" value="Delete">\s*']},
 
     # Supplier contract 47
     {
