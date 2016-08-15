@@ -16,12 +16,7 @@
  <!-- Layer Section -->
 <div class="layer-section">
     <!-- Section Header -->
-    <div class="section-header">
-        <div class="ActionMenu">
-            <div class="WidgetAction">
-                <a href="{{context_path}}/hhdc_contracts/{{contract.id}}/auto_importer">Refresh page</a>
-            </div>
-        </div>
+    <div class="section-header">      
         <h2>Automatic HH Data Downloader</h2>
     </div>
     <!-- End Section Header -->
@@ -30,6 +25,7 @@
     <div class="section-content">
         <div class="section-data">
 		    <table class="DataTable widthAuto noMarginBottom">
+		        <caption><a href="{{context_path}}/hhdc_contracts/{{contract.id}}/auto_importer">Refresh page</a></caption>
 				<tr>
 					<th>Is Locked?</th>
 					<th>Is stopping?</th>

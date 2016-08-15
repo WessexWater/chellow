@@ -72,6 +72,7 @@
 								</div>
 								
 								<label>Script</label>
+								</br>
 								<textarea name="script" cols="80" rows="50">
 									{%- if request.values['script'] -%}
 										{{request.values['script']}}
@@ -79,7 +80,9 @@
 										{{report.script}}
 									{%- endif -%}
 								</textarea>
+								</br>
 								<label>Template</label>
+								</br>
 								<textarea name="template" cols="80" rows="50">
 									{%- if request.values['template'] -%}
 										{{request.values['template']}}
@@ -87,6 +90,7 @@
 										{{report.template}}
 									{%- endif -%}
 								</textarea>
+								</br>
 								<input type="submit" value="Save">
 							</fieldset>
 						</form>
