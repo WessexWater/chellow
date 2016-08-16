@@ -202,7 +202,7 @@ body.LoginScreen,
     /*margin: 28px 0px 24px;*/
     overflow: hidden;
     text-overflow: ellipsis;
-    white-space: nowrap;
+    /*white-space: nowrap;*/
     /*width: 90%;*/
 }
 
@@ -421,7 +421,7 @@ body.LoginScreen,
     
     .layer-header .col-sm-3, 
     .layer-header .col-sm-9 {
-        height: 76px;
+        /*height: 76px;*/
     }
 
     .layer-header .panel-breadcrumbs {

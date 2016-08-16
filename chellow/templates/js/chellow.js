@@ -45,6 +45,7 @@ function initSameHeight() {
     
     if( screen_width >= 768 ) {
         $( '.bodySameHeight' ).responsiveEqualHeightGrid();
+        $( '.headerSameHeight' ).responsiveEqualHeightGrid();
     }
     
     $( '.colSameHeight' ).responsiveEqualHeightGrid();
