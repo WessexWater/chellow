@@ -46,11 +46,16 @@ def req_int(name):
             "Problem parsing the field " + name + " as an integer: " + str(e))
 
 
-def req_date(prefix):
-    return Datetime(
-        req_int(prefix + '_year'), req_int(prefix + '_month'),
-        req_int(prefix + '_day'), req_int(prefix + '_hour'),
-        req_int(prefix + '_minute'), tzinfo=pytz.utc)
+def req_date(prefix, resolution='minute'):
+    if resolution == 'minute':
+        return Datetime(
+            req_int(prefix + '_year'), req_int(prefix + '_month'),
+            req_int(prefix + '_day'), req_int(prefix + '_hour'),
+            req_int(prefix + '_minute'), tzinfo=pytz.utc)
+    elif resolution == 'day':
+        return Datetime(
+            req_int(prefix + '_year'), req_int(prefix + '_month'),
+            req_int(prefix + '_day'), tzinfo=pytz.utc)
 
 
 def req_decimal(name):
