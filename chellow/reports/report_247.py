@@ -4,14 +4,13 @@ from datetime import datetime as Datetime
 import traceback
 import pytz
 from dateutil.relativedelta import relativedelta
-from sqlalchemy import or_, Float
-from sqlalchemy.sql.expression import null, false, cast
-from sqlalchemy.sql import func
+from sqlalchemy import or_
+from sqlalchemy.sql.expression import null
 from sqlalchemy.orm import joinedload
 from collections import defaultdict
 from chellow.models import (
-    Session, Contract, MarketRole, Site, Era, SiteEra, Supply, Source, HhDatum,
-    Channel, Bill, Mtc, Llfc)
+    Session, Contract, MarketRole, Site, Era, SiteEra, Supply, Source, Bill,
+    Mtc, Llfc)
 from chellow.computer import SupplySource, contract_func
 import chellow.computer
 import csv
@@ -475,6 +474,7 @@ def content(
 
                         imp_supplier_contract = era.imp_supplier_contract
                         if imp_supplier_contract is not None:
+                            kwh = sum(hh['msp-kwh'] for hh in imp_ss.hh_data)
                             import_vb_function = contract_func(
                                 report_context, imp_supplier_contract,
                                 'virtual_bill', None)
@@ -490,6 +490,7 @@ def content(
                             try:
                                 gbp = imp_supplier_bill['net-gbp']
                             except KeyError:
+                                gbp = 0
                                 imp_supplier_bill['problem'] += \
                                     'For the supply ' + \
                                     imp_ss.mpan_core + \
@@ -499,13 +500,13 @@ def content(
                                     imp_supplier_contract.name + \
                                     ' does not contain the net-gbp key.'
 
-                            kwh = sum(hh['msp-kwh'] for hh in imp_ss.hh_data)
-
                             if source_code in ('net', 'gen-net'):
                                 month_data['import-net-gbp'] += gbp
                                 month_data['import-net-kwh'] += kwh
                                 month_data['used-gbp'] += gbp
                                 month_data['used-kwh'] += kwh
+                                if source_code == 'gen-net':
+                                    month_data['export-gen-kwh'] += kwh
                             elif source_code == '3rd-party':
                                 month_data['import-3rd-party-gbp'] += gbp
                                 month_data['import-3rd-party-kwh'] += kwh
@@ -520,23 +521,12 @@ def content(
                                 month_data['used-3rd-party-kwh'] -= kwh
                                 month_data['used-gbp'] -= gbp
                                 month_data['used-kwh'] -= kwh
-
-                            if source_code in ('gen', 'gen-net'):
+                            elif source_code == 'gen':
                                 month_data['import-gen-kwh'] += kwh
 
                         exp_supplier_contract = era.exp_supplier_contract
-                        if exp_supplier_contract is None:
-                            kwh = sess.query(
-                                func.coalesce(
-                                    func.sum(
-                                        cast(HhDatum.value, Float)), 0)). \
-                                join(Channel).filter(
-                                    Channel.era == era,
-                                    Channel.channel_type == 'ACTIVE',
-                                    Channel.imp_related == false()).scalar()
-                            if source_code == 'gen':
-                                month_data['export-net-kwh'] += kwh
-                        else:
+                        if exp_supplier_contract is not None:
+                            kwh = sum(hh['msp-kwh'] for hh in exp_ss.hh_data)
                             export_vb_function = contract_func(
                                 report_context, exp_supplier_contract,
                                 'virtual_bill', None)
@@ -547,19 +537,19 @@ def content(
                                 gbp = exp_supplier_bill['net-gbp']
                             except KeyError:
                                 exp_supplier_bill['problem'] += \
-                                    'For the supply ' + \
-                                    imp_ss.mpan_core + \
+                                    'For the supply ' + imp_ss.mpan_core + \
                                     ' the virtual bill ' + \
                                     str(imp_supplier_bill) + \
                                     ' from the contract ' + \
                                     imp_supplier_contract.name + \
                                     ' does not contain the net-gbp key.'
 
-                            kwh = sum(hh['msp-kwh'] for hh in exp_ss.hh_data)
-
                             if source_code in ('net', 'gen-net'):
                                 month_data['export-net-gbp'] += gbp
                                 month_data['export-net-kwh'] += kwh
+                                if source_code == 'gen-net':
+                                    month_data['import-gen-kwh'] += kwh
+
                             elif source_code == '3rd-party':
                                 month_data['export-3rd-party-gbp'] += gbp
                                 month_data['export-3rd-party-kwh'] += kwh
@@ -574,14 +564,12 @@ def content(
                                 month_data['used-3rd-party-kwh'] += kwh
                                 month_data['used-gbp'] += gbp
                                 month_data['used-kwh'] += kwh
-
-                            if source_code in ('gen', 'gen-net'):
+                            elif source_code == 'gen':
                                 month_data['export-gen-kwh'] += kwh
 
                         sss = exp_ss if imp_ss is None else imp_ss
                         dc_contract = era.hhdc_contract
-                        sss.contract_func(
-                            dc_contract, 'virtual_bill')(sss)
+                        sss.contract_func(dc_contract, 'virtual_bill')(sss)
                         dc_bill = sss.dc_bill
                         gbp = dc_bill['net-gbp']
 

@@ -10440,21 +10440,21 @@ def virtual_bill(supply_source):
             r'<table:table-cell office:string-value="22 7907 4116 080" '
             r'office:value-type="string"/>\s*'
             r'<table:table-cell office:string-value="hh" '
-            r'office:value-type="string"/>\s*\s*'
+            r'office:value-type="string"/>\s*'
             r'<table:table-cell office:string-value="gen" '
-            r'office:value-type="string"/>\s*\s*'
+            r'office:value-type="string"/>\s*'
             r'<table:table-cell office:string-value="chp" '
-            r'office:value-type="string"/>\s*\s*'
+            r'office:value-type="string"/>\s*'
             r'<table:table-cell office:string-value="2" '
-            r'office:value-type="string"/>\s*\s*'
+            r'office:value-type="string"/>\s*'
             r'<table:table-cell office:string-value="" '
-            r'office:value-type="string"/>\s*\s*'
+            r'office:value-type="string"/>\s*'
             r'<table:table-cell office:string-value="00" '
-            r'office:value-type="string"/>\s*\s*'
+            r'office:value-type="string"/>\s*'
             r'<table:table-cell office:string-value="CI005" '
-            r'office:value-type="string"/>\s*\s*'
+            r'office:value-type="string"/>\s*'
             r'<table:table-cell office:string-value="Wheal Rodney" '
-            r'office:value-type="string"/>\s*\s*'
+            r'office:value-type="string"/>\s*'
             r'<table:table-cell office:string-value="CI004" '
             r'office:value-type="string"/>\s*'
             r'<table:table-cell office:date-value="2015-05-31T23:30:00" '
@@ -11546,6 +11546,73 @@ def virtual_bill(supply_source):
     {
         'name': "Mop bill imports for a batch",
         'path': '/mop_bill_imports?mop_batch_id=9',
+        'status_code': 200},
+    {
+        'name': "Unified Report: gen-net",
+        'path': '/reports/247?supply_id=5&months=1&finish_year=2014&'
+        'finish_month=06&compression=False',
+        'status_code': 303},
+    {
+        'path': '/downloads',
+        'tries': {'max': 40, 'period': 1},
+        'regexes': [
+            r'005_FINISHED_adminexamplecom_unified_supplies_monthly_'
+            r'duration_20140601_0000_for_1_months_supply_5\.ods'],
+        'status_code': 200},
+    {
+        'path': '/downloads/'
+        '005_FINISHED_adminexamplecom_unified_supplies_monthly_duration_'
+        '20140601_0000_for_1_months_supply_5.ods',
+        'regexes': [
+            r'<table:table-row>\s*'
+            r'<table:table-cell office:string-value="22 0883 6932 301" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell office:string-value="22 7824 9120 097" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell office:string-value="hh" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell office:string-value="gen-net" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell office:string-value="chp" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell office:string-value="Hello" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell office:string-value="" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell office:string-value="00" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell office:string-value="CI005" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell office:string-value="Wheal Rodney" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell office:string-value="CI004" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell office:date-value="2014-06-30T23:30:00" '
+            r'office:value-type="date" table:style-name="cDateISO"/>\s*'
+            r'<table:table-cell office:value="48.9" '
+            r'office:value-type="float"/>\s*'
+            r'<table:table-cell office:value="0" office:value-type="float" '
+            r'table:number-columns-repeated="2"/>\s*'
+            r'<table:table-cell office:value="48.9" '
+            r'office:value-type="float"/>\s*'
+            r'<table:table-cell office:value="0" office:value-type="float" '
+            r'table:number-columns-repeated="3"/>\s*'
+            r'<table:table-cell office:value="48.9" '
+            r'office:value-type="float"/>\s*'
+            r'<table:table-cell office:value="0" '
+            r'office:value-type="float"/>\s*'
+            r'<table:table-cell office:value="401.7172\d*" '
+            r'office:value-type="float"/>\s*'
+            r'<table:table-cell office:value="93.89" '
+            r'office:value-type="float"/>\s*'
+            r'<table:table-cell office:value="0" office:value-type="float" '
+            r'table:number-columns-repeated="5"/>\s*'
+            r'<table:table-cell office:value="401.7172\d*" '
+            r'office:value-type="float"/>\s*'
+            r'<table:table-cell office:value="0" office:value-type="float" '
+            r'table:number-columns-repeated="3"/>\s*'
+            r'<table:table-cell table:number-columns-repeated="4"/>\s*'
+            r'</table:table-row>'],
         'status_code': 200},
 
     {
