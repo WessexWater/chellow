@@ -275,18 +275,6 @@ def bootstrap_get():
     return response
 
 
-@app.route('/fontawesome', methods=['GET'])
-def fontawesome_get():
-    props = Contract.get_non_core_by_name(g.sess, 'configuration'). \
-        make_properties()
-    response = make_response(
-        render_template(
-            'css/font-awesome.min.css',
-            background_colour=props['background_colour']))
-    response.headers['Content-type'] = 'text/css'
-    return response
-
-
 @app.route('/chellowcss', methods=['GET'])
 def chellowcss_get():
     props = Contract.get_non_core_by_name(g.sess, 'configuration'). \
