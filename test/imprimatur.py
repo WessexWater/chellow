@@ -325,12 +325,7 @@ def virtual_bill(ds):
 
         # Check that 'has_finished' field is there
         'regexes': [
-            r"has_finished",
-
-            # Check the hhdc_rate_script_id for update is there
-            r'<legend>Update Rate Script</legend>\s*'
-            r'<input type="hidden" name="hhdc_rate_script_id"\s*'
-            'value="95">'],
+            r"has_finished"],
         'status_code': 200},
 
     {
