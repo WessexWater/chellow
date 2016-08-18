@@ -77,7 +77,7 @@
     <!-- Section Content -->
     <div class="section-content">
         <div class="section-data">
-            <p>No importer.</p>
+            <p>{{ task.get_status() }}</p>
 
             <ul>
 				{% for message in task.messages %}
