@@ -11568,12 +11568,12 @@ def virtual_bill(supply_source):
         'path': '/downloads',
         'tries': {'max': 40, 'period': 1},
         'regexes': [
-            r'006_FINISHED_adminexamplecom_unified_supplies_monthly_'
+            r'005_FINISHED_adminexamplecom_unified_supplies_monthly_'
             r'duration_20140601_0000_for_1_months_supply_5\.ods'],
         'status_code': 200},
     {
         'path': '/downloads/'
-        '006_FINISHED_adminexamplecom_unified_supplies_monthly_duration_'
+        '005_FINISHED_adminexamplecom_unified_supplies_monthly_duration_'
         '20140601_0000_for_1_months_supply_5.ods',
         'regexes': [
             r'<table:table-row>\s*'
