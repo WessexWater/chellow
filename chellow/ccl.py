@@ -74,10 +74,6 @@ def ccl(data_source):
                     hh['ccl-gbp'] = gbp
 
     elif data_source.is_last_bill_gen:
-        if data_source.pc_code in ['03', '04']:
-            threshold = 2999
-        else:
-            threshold = 999
         kwh = 0
         gbp = 0
         for ds in chellow.computer.get_data_sources(
@@ -94,6 +90,8 @@ def ccl(data_source):
                 kwh += hh['msp-kwh']
                 gbp += hh['msp-kwh'] * rate
 
-        if kwh > threshold:
+        hhs = (
+            data_source.bill_finish - data_source.bill_start).total_seconds()
+        if (kwh / hhs) > ((1000 * 12) / (365 * 24 * 60 * 60)):
             data_source.hh_data[-1]['ccl-kwh'] = kwh
             data_source.hh_data[-1]['ccl-gbp'] = gbp
