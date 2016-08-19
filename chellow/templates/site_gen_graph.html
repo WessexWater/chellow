@@ -37,7 +37,7 @@
         <div class="section-data">
             <div class="noWrap">
                 <svg
-                    width="{{graphs.used.pos_hhs|length + 100}}px"
+                    width="{{graphs.used.pos_hhs|length + 300}}px"
                     height="{{height}}px" xmlns="http://www.w3.org/2000/svg" version="1.1"
                     font-family="Overclock, sans-serif" font-size="12" fill="black">
                         <text x="{{title.x}}" y="{{title.y}}">
@@ -85,13 +85,17 @@
                                 {% for hh in graph.pos_hhs %}
                                     <rect
                                     x="{{hh.x}}px" y="{{hh.y}}px" width="1px"
-                                    height="{{hh.height}}px" fill="{{hh.colour}}" />
+                                    height="{{hh.height}}px" fill="{{hh.colour}}">
+                                    <title>{{hh.value}} kW @ {{hh.start_date|hh_format}}</title>
+                                    </rect>
                                 {%- endfor %}
 
                                 {% for hh in graph.neg_hhs %}
                                     <rect
                                     x="{{hh.x}}px" y="{{hh.y}}px" width="1px"
-                                    height="{{hh.height}}px" fill="{{hh.colour}}" />
+                                    height="{{hh.height}}px" fill="{{hh.colour}}">
+                                    <title>-{{hh.value}} kW @ {{hh.start_date|hh_format}}</title>
+                                    </rect>
                                 {%- endfor %}
 
                                 {% if loop.last %}
