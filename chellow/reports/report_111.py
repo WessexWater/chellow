@@ -104,7 +104,7 @@ def content(batch_id, bill_id, user):
             bill_start = bill.start_date
             bill_finish = bill.finish_date
 
-            era = supply.find_era_at(sess, bill.finish_date)
+            era = supply.find_era_at(sess, bill_finish)
             if era is None:
                 raise BadRequest(
                     "Extraordinary! There isn't an era for the bill " +
@@ -117,15 +117,13 @@ def content(batch_id, bill_id, user):
 
             covered_start = bill_start
             covered_finish = bill_finish
-            covered_bill_ids = []
             covered_bdown = {'sum-msp-kwh': 0, 'net-gbp': 0, 'vat-gbp': 0}
             covered_primary_bill = None
             enlarged = True
 
             while enlarged:
                 enlarged = False
-                covered_bills = []
-                cand_bills = dict(
+                covered_bills = dict(
                     (b.id, b) for b in sess.query(Bill).join(Batch).
                     join(Contract).join(MarketRole).filter(
                         Bill.supply == supply,
@@ -135,7 +133,7 @@ def content(batch_id, bill_id, user):
                         Bill.issue_date.desc(), Bill.start_date))
                 while True:
                     to_del = None
-                    for a, b in combinations(cand_bills.values(), 2):
+                    for a, b in combinations(covered_bills.values(), 2):
                         if all(
                                 (
                                     a.start_date == b.start_date,
@@ -149,25 +147,25 @@ def content(batch_id, bill_id, user):
                         break
                     else:
                         for k in to_del:
-                            del cand_bills[k]
-                for cand_bill_id in sorted(cand_bills.keys()):
-                    cand_bill = cand_bills[cand_bill_id]
-                    print("cand bill", cand_bill)
+                            del covered_bills[k]
+                for covered_bill_id in sorted(covered_bills.keys()):
+                    covered_bill = covered_bills[covered_bill_id]
                     if covered_primary_bill is None and \
-                            len(cand_bill.reads) > 0:
-                        covered_primary_bill = cand_bill
-                    if cand_bill.start_date < covered_start:
-                        covered_start = cand_bill.start_date
+                            len(covered_bill.reads) > 0:
+                        covered_primary_bill = covered_bill
+                    if covered_bill.start_date < covered_start:
+                        covered_start = covered_bill.start_date
                         enlarged = True
                         break
-                    if cand_bill.finish_date > covered_finish:
-                        covered_finish = cand_bill.finish_date
+                    if covered_bill.finish_date > covered_finish:
+                        covered_finish = covered_bill.finish_date
                         enlarged = True
                         break
-                    covered_bills.append(cand_bill)
 
-            for covered_bill in covered_bills:
-                covered_bill_ids.append(covered_bill.id)
+            if bill.id not in covered_bills:
+                continue
+
+            for covered_bill_id, covered_bill in sorted(covered_bills.items()):
                 covered_bdown['net-gbp'] += float(covered_bill.net)
                 covered_bdown['vat-gbp'] += float(covered_bill.vat)
                 covered_bdown['sum-msp-kwh'] += float(covered_bill.kwh)
@@ -255,7 +253,8 @@ def content(batch_id, bill_id, user):
             values += [
                 site.code, site.name, hh_format(covered_start),
                 hh_format(covered_finish),
-                ','.join(str(id).replace(',', '') for id in covered_bill_ids),
+                ':'.join(
+                    str(i).replace(',', '') for i in covered_bills.keys()),
                 metered_kwh]
             for title in virtual_bill_titles:
                 try:
