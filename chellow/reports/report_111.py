@@ -278,9 +278,11 @@ def content(batch_id, bill_id, user):
                     values.append('')
 
                 if title.endswith('-gbp'):
-                    if all(isinstance(val, (int, float)) for val in [
-                            cov_val, virt_val]):
-                        values.append(cov_val - virt_val)
+                    if isinstance(virt_val, (int, float)):
+                        if isinstance(cov_val, (int, float)):
+                            values.append(cov_val - virt_val)
+                        else:
+                            values.append(0 - virt_val)
                     else:
                         values.append('')
 
