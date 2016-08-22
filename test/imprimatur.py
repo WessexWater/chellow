@@ -4342,8 +4342,8 @@ def virtual_bill(supply_source):
             r'07-008,3423760005,N,253,36.16,1.8,'
             r'2010-01-19 00:00,2010-04-20 23:30,22 1065 3921 534,'
             r'CI017,Roselands,2010-01-19 00:00,2010-04-20 23:30,10,'
-            r'0.0,36.16,25.29999999999758,10.860000000002415,253.0,'
-            r'252.99999999998357,,'],
+            r'0.0,36.16,25.299999999997\d*,10.860000000002\d*,253.0,'
+            r'252.9999999999\d*,,'],
         'status_code': 200},
 
     # Create a new site
@@ -7356,8 +7356,8 @@ def virtual_bill(supply_source):
             r'07-002,3423760010,N,10,9.07,0.21,2012-01-05 00:00,'
             '2012-01-10 23:30,22 1065 3921 534,CI017,Roselands,'
             r'2012-01-05 00:00,2012-01-10 23:30,21,30.00\d*,9.07,'
-            r'0.9999999999999986,8.070000000000002,10.0,'
-            r'9.999999999999998,,']},
+            r'0.99999999999999\d*,8.07000000000\d*,10.0,'
+            r'9.9999999999999\d*,,']},
     {
         'name': "Monthly supplies duration with export hh data",
         'path': '/reports/177?supply_id=1&months=1&end_year=2008&end_month=07',
@@ -7720,8 +7720,8 @@ def virtual_bill(supply_source):
             r'07-002,3423760005,N,150,98.17,15.01,'
             r'2011-01-05 00:00,2011-01-10 23:30,22 1065 3921 534,'
             r'CI017,Roselands,2011-01-05 00:00,2011-01-10 23:30,13,'
-            r'692.9175824\d*,98.17,164.0999999999997,-65.92999999999971,150.0,'
-            r'1641.0,,']},
+            r'692.9175824\d*,98.17,1423.8999999\d*,-1325.7299999\d*,150.0,'
+            r'14239.0\d*,,']},
 
     # Update register read to make the TPR a teleswitch one
     {
@@ -9636,7 +9636,7 @@ def virtual_bill(supply_source):
             r'07-002,3423760010,N,10,9.07,0.21,2012-01-05 00:00,'
             r'2012-01-10 23:30,22 1065 3921 534,CI017,Roselands,'
             r'2012-01-05 00:00,2012-01-10 23:30,21:22,756.0,54.77,'
-            r'25.200000000000003,29.57,10.0,252.0,,'],
+            r'25.2000000000000\d*,29.5\d*,10.0,252.0\d*,,'],
         'status_code': 200},
 
     {
@@ -11452,17 +11452,12 @@ def virtual_bill(supply_source):
         'data': {
             'party_id': '90',
             'name': 'Non half-hourlies 2010',
-            'charge_script': """import chellow.duos
-from werkzeug.exceptions import BadRequest
-
-
-def virtual_bill_titles():
+            'charge_script': """def virtual_bill_titles():
     return ['net-gbp', 'sum-msp-kwh', 'problem']
 
 def virtual_bill(supply_source):
     sum_msp_kwh = sum(h['msp-kwh'] for h in supply_source.hh_data)
     bill = supply_source.supplier_bill
-    chellow.duos.duos_vb(supply_source)
     for rate_name, rate_set in supply_source.supplier_rate_sets.items():
         if len(rate_set) == 1:
             bill[rate_name] = rate_set.pop()

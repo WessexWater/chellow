@@ -4,7 +4,7 @@ import pytz
 from dateutil.relativedelta import relativedelta
 from sqlalchemy import or_, cast, Float
 from sqlalchemy.sql.expression import null, false
-from sqlalchemy.orm import aliased, joinedload
+from sqlalchemy.orm import joinedload, aliased
 import math
 import json
 from werkzeug.exceptions import BadRequest
@@ -1103,17 +1103,16 @@ class SupplySource(DataSource):
                     join(MeasurementRequirement).filter(
                         MeasurementRequirement.ssc == self.ssc).all()
 
-                cand_bills = dict(
+                bills = dict(
                     (b.id, b) for b in sess.query(Bill).join(Batch)
                     .join(BillType).filter(
-                        Bill.supply == self.supply,
-                        Bill.reads.any(),
+                        Bill.supply == self.supply, Bill.reads.any(),
                         Bill.start_date <= chunk_finish,
                         Bill.finish_date >= chunk_start).order_by(
                         Bill.issue_date.desc(), Bill.start_date))
                 while True:
                     to_del = None
-                    for a, b in combinations(cand_bills.values(), 2):
+                    for a, b in combinations(bills.values(), 2):
                         if all(
                                 (
                                     a.start_date == b.start_date,
@@ -1127,22 +1126,12 @@ class SupplySource(DataSource):
                         break
                     else:
                         for k in to_del:
-                            del cand_bills[k]
-                bills = []
-                for cand_bill in cand_bills.values():
-                    can_insert = True
-                    for bill in bills:
-                        if not cand_bill.start_date > bill.finish_date \
-                                and not cand_bill.finish_date < \
-                                bill.start_date:
-                            can_insert = False
-                            break
-                    if can_insert:
-                        bills.append(cand_bill)
+                            del bills[k]
 
                 prev_type_alias = aliased(ReadType)
                 pres_type_alias = aliased(ReadType)
-                for bill in bills:
+                for bill in bills.values():
+                    kws = defaultdict(int)
                     for coefficient, previous_date, previous_value, \
                             previous_type, present_date, present_value, \
                             present_type, tpr_code in sess.query(
@@ -1152,18 +1141,16 @@ class SupplySource(DataSource):
                             prev_type_alias.code,
                             RegisterRead.present_date,
                             cast(RegisterRead.present_value, Float),
-                            pres_type_alias.code, Tpr.code) \
-                            .join(Bill).join(Tpr).join(
+                            pres_type_alias.code, Tpr.code).join(Tpr).join(
                                 prev_type_alias,
                                 RegisterRead.previous_type_id ==
                                 prev_type_alias.id).join(
                             pres_type_alias,
                             RegisterRead.present_type_id ==
                             pres_type_alias.id).filter(
-                            Bill.id == bill.id, RegisterRead.units == 0,
-                            RegisterRead.previous_date <= chunk_finish,
-                            RegisterRead.present_date >= chunk_start) \
-                            .order_by(RegisterRead.present_date):
+                            RegisterRead.bill == bill,
+                            RegisterRead.units == 0).order_by(
+                                RegisterRead.present_date):
 
                         if tpr_code not in tpr_codes:
                             self.problem += "The TPR " + str(tpr_code) + \
@@ -1186,6 +1173,10 @@ class SupplySource(DataSource):
                         kwh = advance * coefficient
                         self.consumption_info += "dumb nhh kwh for " + \
                             tpr_code + " is " + str(kwh) + "\n"
+
+                        kws[tpr_code] += kwh
+
+                    for tpr_code, kwh in kws.items():
                         tpr_dict = _tpr_dict(
                             sess, self.caches, tpr_code, self.pw)
                         days_of_week = tpr_dict['days-of-week']
@@ -1200,23 +1191,14 @@ class SupplySource(DataSource):
                         else:
                             status = 'E'
 
-                        if previous_date < chunk_start:
-                            hh_date = chunk_start
-                        else:
-                            hh_date = previous_date
-
-                        if present_date > chunk_finish:
-                            pass_finish = chunk_finish
-                        else:
-                            pass_finish = present_date
-
                         year_delta = relativedelta(year=self.years_back)
                         hh_part = []
+                        hh_date = chunk_start
 
-                        while not hh_date > pass_finish:
+                        while not hh_date > chunk_finish:
                             dt = tz.normalize(
                                 hh_date.astimezone(tz)) + year_delta
-                            decimal_hour = dt.hour + float(dt.minute) / 60
+                            decimal_hour = dt.hour + dt.minute / 60
                             fractional_month = dt.month * 100 + dt.day
                             for ci in days_of_week[dt.weekday()]:
 
@@ -1260,28 +1242,27 @@ class SupplySource(DataSource):
                                             'utc-month': dt_utc.month,
                                             'utc-day': dt_utc.day,
                                             'utc-decimal-hour': dt_utc.hour +
-                                            float(dt_utc.minute) / 60,
+                                            dt_utc.minute / 60,
                                             'utc-year': dt_utc.year,
                                             'utc-hour': dt_utc.hour,
                                             'utc-minute': dt_utc.minute,
                                             'ct-year': dt_ct.year,
                                             'ct-month': dt_ct.month,
                                             'ct-decimal-hour': dt_ct.hour +
-                                            float(dt_ct.minute) / 60,
+                                            dt_ct.minute / 60,
                                             'ct-day-of-week': dt_ct.weekday(),
                                             'utc-day-of-week':
                                             dt_utc.weekday(),
                                             'utc-is-month-end':
                                             utc_is_month_end,
-                                            'ct-is-month-end':
-                                            ct_is_month_end,
+                                            'ct-is-month-end': ct_is_month_end,
                                             'status': status})
                                     break
                             hh_date += HH
 
                         num_hh = len(hh_part)
                         if num_hh > 0:
-                            rate = float(kwh) / num_hh
+                            rate = kwh / num_hh
                             for h in hh_part:
                                 h['msp-kw'] = rate * 2
                                 h['msp-kwh'] = h['hist-kwh'] = rate
