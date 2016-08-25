@@ -22,7 +22,7 @@ from itertools import combinations
 
 def content(batch_id, bill_id, user):
     caches = {}
-    tmp_file = sess = None
+    tmp_file = sess = bill = None
     forecast_date = Datetime.max.replace(tzinfo=pytz.utc)
     try:
         sess = Session()
@@ -300,7 +300,11 @@ def content(batch_id, bill_id, user):
 
             writer.writerow(values)
     except BadRequest as e:
-        tmp_file.write("Problem: " + e.description)
+        if bill is None:
+            prefix = "Problem: "
+        else:
+            prefix = "Problem with bill " + str(bill.id) + ':'
+        tmp_file.write(prefix + e.description)
     except:
         msg = traceback.format_exc()
         sys.stderr.write(msg + '\n')
