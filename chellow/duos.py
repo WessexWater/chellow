@@ -449,9 +449,13 @@ def datum_2010_04_01(ds, hh):
     kvarh = max(max(hh['imp-msp-kvarh'], hh['exp-msp-kvarh']) -
                 (0.95 ** -2 - 1) ** 0.5 * hh['msp-kwh'], 0)
     bill['duos-reactive-kvarh'] += kvarh
-    rate = tariff['gbp-per-kvarh']
-    ds.supplier_rate_sets['duos-reactive-rate'].add(rate)
-    bill['duos-reactive-gbp'] += kvarh * rate
+
+    try:
+        rate = tariff['gbp-per-kvarh']
+        ds.supplier_rate_sets['duos-reactive-rate'].add(rate)
+        bill['duos-reactive-gbp'] += kvarh * rate
+    except KeyError:
+        pass
 
     rate = tariff[KEYS[band]['tariff-rate']]
     ds.supplier_rate_sets[KEYS[band]['bill-rate']].add(rate)

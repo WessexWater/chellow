@@ -19,6 +19,11 @@ def lafs():
 
 def tariffs():
     return {
+        '110': {
+            'description': 'Small Non Domestic Unrestricted',
+            'red-gbp-per-kwh': 0.02541,
+            'amber-gbp-per-kwh': 0.02541,
+            'green-gbp-per-kwh': 0.02541},
         '510': {
             'description': 'High Voltage HH Metered',
             'gbp-per-mpan-per-day': 0.7295,

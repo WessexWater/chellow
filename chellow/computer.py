@@ -10,7 +10,7 @@ import json
 from werkzeug.exceptions import BadRequest
 from chellow.models import (
     RateScript, Channel, Era, Pc, Tpr, MeasurementRequirement, RegisterRead,
-    Bill, BillType, ReadType, Batch)
+    Bill, BillType, ReadType)
 from chellow.utils import HH, hh_format, hh_after
 import chellow.bank_holidays
 from itertools import combinations
@@ -447,9 +447,8 @@ def _datum_generator(sess, years_back, caches, pw):
                 sess2, caches, chellow.bank_holidays.get_db_id(), hh_date,
                 'bank_holidays', pw)
             if utc_bank_holidays is None:
-                msg = "\nCan't find bank holidays for " + str(hh_date)
-                pw.println(msg)
-                raise BadRequest(msg)
+                raise BadRequest(
+                    "Can't find bank holidays for " + str(hh_date))
             utc_bank_holidays = utc_bank_holidays[:]
             for i in range(len(utc_bank_holidays)):
                 utc_bank_holidays[i] = utc_bank_holidays[i][5:]
@@ -1099,13 +1098,27 @@ class SupplySource(DataSource):
                         self.hh_data += hh_part
             elif self.bill is not None and hist_measurement_type in (
                     'nhh', 'amr'):
+                datum_generator = _datum_generator(
+                    sess, self.years_back, self.caches, self.pw)
+                hhd = {}
+                hh_date = chunk_start
+                while hh_date <= chunk_finish:
+                    datum = datum_generator(sess, hh_date).copy()
+                    datum.update(
+                        {
+                            'status': 'X', 'imp-msp-kvarh': 0,
+                            'imp-msp-kvar': 0, 'exp-msp-kvarh': 0,
+                            'exp-msp-kvar': 0, 'msp-kw': 0,
+                            'msp-kwh': 0, 'hist-kwh': 0})
+                    hhd[hh_date] = datum
+                    hh_date += HH
+
                 tpr_codes = sess.query(Tpr.code). \
                     join(MeasurementRequirement).filter(
                         MeasurementRequirement.ssc == self.ssc).all()
 
                 bills = dict(
-                    (b.id, b) for b in sess.query(Bill).join(Batch)
-                    .join(BillType).filter(
+                    (b.id, b) for b in sess.query(Bill).filter(
                         Bill.supply == self.supply, Bill.reads.any(),
                         Bill.start_date <= chunk_finish,
                         Bill.finish_date >= chunk_start).order_by(
@@ -1191,8 +1204,8 @@ class SupplySource(DataSource):
                         else:
                             status = 'E'
 
-                        year_delta = relativedelta(year=self.years_back)
-                        hh_part = []
+                        year_delta = relativedelta(years=self.years_back)
+                        hh_part = {}
                         hh_date = chunk_start
 
                         while not hh_date > chunk_finish:
@@ -1218,55 +1231,21 @@ class SupplySource(DataSource):
                                         and ci['start-month'] <= \
                                         fractional_month <= ci['end-month']:
 
-                                    dt_utc = hh_date + year_delta
-                                    next_dt_utc = dt_utc + HH
-                                    utc_is_month_end = \
-                                        next_dt_utc.day == 1 and \
-                                        next_dt_utc.hour == 0 and \
-                                        next_dt_utc.minute == 0
-                                    dt_ct = ct_tz.normalize(
-                                        dt_utc.astimezone(ct_tz))
-                                    next_dt_ct = dt_ct + HH
-                                    ct_is_month_end = next_dt_ct.day == 1 and \
-                                        next_dt_ct.hour == 0 and \
-                                        next_dt_ct.minute == 0
-                                    hh_part.append(
-                                        {
-                                            'imp-msp-kvarh': 0,
-                                            'imp-msp-kvar': 0,
-                                            'exp-msp-kvarh': 0,
-                                            'exp-msp-kvar': 0,
-                                            'hist-start-date': chunk_start,
-                                            'start-date': dt_utc,
-                                            'ct-day': dt_ct.day,
-                                            'utc-month': dt_utc.month,
-                                            'utc-day': dt_utc.day,
-                                            'utc-decimal-hour': dt_utc.hour +
-                                            dt_utc.minute / 60,
-                                            'utc-year': dt_utc.year,
-                                            'utc-hour': dt_utc.hour,
-                                            'utc-minute': dt_utc.minute,
-                                            'ct-year': dt_ct.year,
-                                            'ct-month': dt_ct.month,
-                                            'ct-decimal-hour': dt_ct.hour +
-                                            dt_ct.minute / 60,
-                                            'ct-day-of-week': dt_ct.weekday(),
-                                            'utc-day-of-week':
-                                            dt_utc.weekday(),
-                                            'utc-is-month-end':
-                                            utc_is_month_end,
-                                            'ct-is-month-end': ct_is_month_end,
-                                            'status': status})
+                                    hh_part[hh_date] = {'status': status}
                                     break
                             hh_date += HH
 
                         num_hh = len(hh_part)
                         if num_hh > 0:
                             rate = kwh / num_hh
-                            for h in hh_part:
-                                h['msp-kw'] = rate * 2
-                                h['msp-kwh'] = h['hist-kwh'] = rate
-                            self.hh_data += hh_part
+                            for d, h in hh_part.items():
+                                hhd_datum = hhd[d]
+                                hhd_datum['msp-kw'] += rate * 2
+                                hhd_datum['msp-kwh'] += rate
+                                hhd_datum['hist-kwh'] += rate
+                                if hhd_datum['status'] in ('X', 'A'):
+                                    hhd_datum['status'] = h['status']
+                self.hh_data.extend(v for k, v in sorted(hhd.items()))
             elif hist_measurement_type in ('hh', 'amr'):
                 has_exp_active = False
                 has_imp_related_reactive = False

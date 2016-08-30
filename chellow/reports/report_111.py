@@ -69,7 +69,6 @@ def content(batch_id, bill_id, user):
                 titles.append('difference-' + t)
 
         writer.writerow(titles)
-
         for bill in bills:
             problem = ''
             supply = bill.supply
@@ -118,7 +117,6 @@ def content(batch_id, bill_id, user):
             covered_start = bill_start
             covered_finish = bill_finish
             covered_bdown = {'sum-msp-kwh': 0, 'net-gbp': 0, 'vat-gbp': 0}
-            covered_primary_bill = None
             enlarged = True
 
             while enlarged:
@@ -150,9 +148,6 @@ def content(batch_id, bill_id, user):
                             del covered_bills[k]
                 for covered_bill_id in sorted(covered_bills.keys()):
                     covered_bill = covered_bills[covered_bill_id]
-                    if covered_primary_bill is None and \
-                            len(covered_bill.reads) > 0:
-                        covered_primary_bill = covered_bill
                     if covered_bill.start_date < covered_start:
                         covered_start = covered_bill.start_date
                         enlarged = True
@@ -165,6 +160,7 @@ def content(batch_id, bill_id, user):
             if bill.id not in covered_bills:
                 continue
 
+            primary_covered_bill = None
             for covered_bill_id, covered_bill in sorted(covered_bills.items()):
                 covered_bdown['net-gbp'] += float(covered_bill.net)
                 covered_bdown['vat-gbp'] += float(covered_bill.vat)
@@ -188,18 +184,18 @@ def content(batch_id, bill_id, user):
                                     str(covered_bdown[k]) + ". " + str(detail))
                     for k, v in covered_rates.items():
                         covered_bdown[k] = v.pop() if len(v) == 1 else None
+                primary_covered_bill = covered_bill
 
             virtual_bill = {}
             metered_kwh = 0
             for era in sess.query(Era).filter(
-                    Era.supply_id == supply.id, Era.imp_mpan_core != null(),
+                    Era.supply == supply, Era.imp_mpan_core != null(),
                     Era.start_date <= covered_finish,
                     or_(
                         Era.finish_date == null(),
                         Era.finish_date >= covered_start)).distinct():
                 site = sess.query(Site).join(SiteEra).filter(
-                    SiteEra.is_physical == true(),
-                    SiteEra.era_id == era.id).one()
+                    SiteEra.is_physical == true(), SiteEra.era == era).one()
 
                 if covered_start > era.start_date:
                     chunk_start = covered_start
@@ -213,7 +209,7 @@ def content(batch_id, bill_id, user):
 
                 data_source = chellow.computer.SupplySource(
                     sess, chunk_start, chunk_finish, forecast_date, era, True,
-                    None, caches, covered_primary_bill)
+                    None, caches, primary_covered_bill)
 
                 if data_source.measurement_type == 'hh':
                     metered_kwh += sum(

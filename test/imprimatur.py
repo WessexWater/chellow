@@ -7775,7 +7775,7 @@ def virtual_bill(supply_source):
         'regexes': [
             r'07-002,3423760010,N,10,9.07,0.21,2012-01-05 00:00,'
             '2012-01-10 23:30,22 1065 3921 534,CI017,Roselands,'
-            '2012-01-05 00:00,2012-01-10 23:30,21,0,9.07,0,9.07,'
+            '2012-01-05 00:00,2012-01-10 23:30,21,0,9.07,0.0,9.07,'
             '10.0,0,,']},
 
     # Update register read to make the TPR a teleswitch one },
@@ -11729,5 +11729,50 @@ def virtual_bill(supply_source):
     {
         'name': "Non-core contract without module (configuration)",
         'path': '/non_core_contracts/5',
+        'status_code': 200},
+
+    {
+        'name': "NHH bill with triad: Update Non half-hourlies 2010:",
+        'path': "/supplier_contracts/37/edit",
+        'method': 'post',
+        'data': {
+            'party_id': '90',
+            'name': 'Non half-hourlies 2010',
+            'charge_script': """import chellow.duos
+import chellow.triad
+
+def virtual_bill_titles():
+    return ['net-gbp', 'sum-msp-kwh', 'problem']
+
+def virtual_bill(supply_source):
+    sum_msp_kwh = sum(h['msp-kwh'] for h in supply_source.hh_data)
+    bill = supply_source.supplier_bill
+    chellow.duos.duos_vb(supply_source)
+    chellow.triad.hh(supply_source)
+    for rate_name, rate_set in supply_source.supplier_rate_sets.items():
+        if len(rate_set) == 1:
+            bill[rate_name] = rate_set.pop()
+    bill['net-gbp'] += sum_msp_kwh * 0.1
+    bill['sum-msp-kwh'] += sum_msp_kwh
+""",
+            'properties': '{}'},
+        'status_code': 303},
+    {
+        'name': "Test the supplier batch checking",
+        'path': '/reports/111?bill_id=23',
+        'status_code': 303},
+    {
+        'path': '/downloads',
+        'tries': {'max': 40, 'period': 1},
+        'regexes': [
+            r'007_FINISHED_adminexamplecom_bill_check.csv'],
+        'status_code': 200},
+    {
+        'path': '/downloads/007_FINISHED_adminexamplecom_bill_check.csv',
+        'regexes': [
+            r'07-002,3Pb,F,10,2,0.5,2014-12-01 00:00,2014-12-31 23:30,'
+            r'22 9789 0534 938,CI017,Roselands,2014-12-01 00:00,'
+            r'2014-12-31 23:30,23,100.06724\d*,2.0,9.99999999\d*,'
+            r'-7.9999\d*,10.0,99.9999\d*,,,'],
         'status_code': 200},
 ]
