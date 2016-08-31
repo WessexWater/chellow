@@ -5757,6 +5757,7 @@ def virtual_bill(supply_source):
 """,
             'properties': """
 {
+    'protocol': 'ftp',
     'file_type': '.df2',
     'hostname': 'localhost',
     'port': 2121,

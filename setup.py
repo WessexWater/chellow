@@ -45,6 +45,7 @@ setup(
         'waitress==0.9.0',
         'pep3143daemon==0.0.6',
         'pip>=8.1.1',
+        'pysftp==0.2.9',
         'pympler'],
     data_files=[('config', ['config/chellow.conf'])],
     entry_points={
