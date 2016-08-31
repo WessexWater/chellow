@@ -6,7 +6,7 @@ from sqlalchemy import or_
 from sqlalchemy.sql.expression import null, true
 import traceback
 from chellow.models import (
-    Batch, Bill, Session, Era, Site, SiteEra, Contract, MarketRole)
+    Batch, Bill, Session, Era, Site, SiteEra, MarketRole, Contract)
 import chellow.computer
 import chellow.dloads
 import sys
@@ -18,6 +18,7 @@ from chellow.views import chellow_redirect
 from flask import request, g
 import csv
 from itertools import combinations
+from operator import attrgetter
 
 
 def content(batch_id, bill_id, user):
@@ -123,15 +124,18 @@ def content(batch_id, bill_id, user):
                 enlarged = False
                 covered_bills = dict(
                     (b.id, b) for b in sess.query(Bill).join(Batch).
-                    join(Contract).join(MarketRole).filter(
+                    join(Contract).join(MarketRole).
+                    filter(
                         Bill.supply == supply,
                         Bill.start_date <= covered_finish,
                         Bill.finish_date >= covered_start,
-                        MarketRole.code == market_role_code).order_by(
-                        Bill.issue_date.desc(), Bill.start_date))
+                        MarketRole.code == market_role_code))
                 while True:
                     to_del = None
-                    for a, b in combinations(covered_bills.values(), 2):
+                    for a, b in combinations(
+                            sorted(
+                                covered_bills.values(),
+                                key=attrgetter('issue_date')), 2):
                         if all(
                                 (
                                     a.start_date == b.start_date,
@@ -184,7 +188,13 @@ def content(batch_id, bill_id, user):
                                     str(covered_bdown[k]) + ". " + str(detail))
                     for k, v in covered_rates.items():
                         covered_bdown[k] = v.pop() if len(v) == 1 else None
-                primary_covered_bill = covered_bill
+                if primary_covered_bill is None or (
+                        (
+                            covered_bill.finish_date -
+                            covered_bill.start_date) > (
+                            primary_covered_bill.finish_date -
+                            primary_covered_bill.start_date)):
+                    primary_covered_bill = covered_bill
 
             virtual_bill = {}
             metered_kwh = 0
