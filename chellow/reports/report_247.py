@@ -97,8 +97,7 @@ def content(
         else:
             kwh_start = kwh_start.replace(tzinfo=pytz.utc)
 
-        sites = sess.query(Site).join(SiteEra).join(Era).distinct().order_by(
-            Site.code)
+        sites = sess.query(Site).distinct().order_by(Site.code)
         if site_id is not None:
             site = Site.get_by_id(sess, site_id)
             sites = sites.filter(Site.id == site.id)
@@ -108,7 +107,7 @@ def content(
             supply = Supply.get_by_id(sess, supply_id)
             base_name.append('supply')
             base_name.append(str(supply.id))
-            sites = sites.filter(Era.supply == supply)
+            sites = sites.join(SiteEra).join(Era).filter(Era.supply == supply)
 
         running_name, finished_name = chellow.dloads.make_names(
             '_'.join(base_name) + '.ods', user)
