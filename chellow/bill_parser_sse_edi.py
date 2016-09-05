@@ -376,6 +376,8 @@ class Parser():
                 net += self.parser.to_decimal(uvla) / Decimal('100')
                 uvtt = self.parser.elements[6]
                 vat += self.parser.to_decimal(uvtt) / Decimal('100')
+                ucsi = self.parser.elements[7]
+                gross += self.parser.to_decimal(ucsi) / Decimal('100')
 
             if breakdown is not None:
                 breakdown['raw-lines'].append(self.parser.line)
