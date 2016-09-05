@@ -4376,12 +4376,12 @@ def site_gen_graph_get(site_id):
             n, {
                 'supplies': OrderedDict(), 'ticks': [], 'pos_hhs': [],
                 'neg_hhs': [], 'scale_lines': [], 'scale_values': [],
-                'monthly_scale_values': [], 'pos_max_scl': 10,
-                'neg_max_scl': 1}) for n in graph_names)
+                'monthly_scale_values': []}) for n in graph_names)
 
     days = []
     month_points = []
     x = 0
+    max_scls = {'pos': 10, 'neg': 1}
     for group in site.groups(g.sess, start_date, finish_date, True):
         rs = iter(
             g.sess.query(
@@ -4453,8 +4453,8 @@ def site_gen_graph_get(site_id):
                             'running_total': grvals[polarity],
                             'value': hhd_value, 'x': x, 'start_date': hh_date})
                     grvals[polarity] += hhd_value
-                    graph[polarity + '_max_scl'] = max(
-                        graph[polarity + '_max_scl'], int(grvals[polarity]))
+                    max_scls[polarity] = max(
+                        max_scls[polarity], int(grvals[polarity]))
 
                 (
                     hhd_value, hhd_start_date, status, imp_related,
@@ -4474,17 +4474,15 @@ def site_gen_graph_get(site_id):
                         {
                             'colour': 'blue', 'x': x, 'start_date': hh_date,
                             'value': gval, 'running_total': 0})
-                    mscl = prefix + '_max_scl'
-                    graph[mscl] = max(graph[mscl], int(gval))
+                    max_scls[prefix] = max(max_scls[prefix], int(gval))
 
             hh_date += HH
             x += 1
 
-    max_overall_scl = max(g['pos_max_scl'] for g in graphs.values())
     max_height = 80
-    scl_factor = max_height / max_overall_scl
+    scl_factor = max_height / max_scls['pos']
 
-    raw_step_overall = max_overall_scl / (max_height / 20)
+    raw_step_overall = max_scls['pos'] / (max_height / 20)
     factor_overall = 10**int(math.floor(math.log10(raw_step_overall)))
     end_overall = raw_step_overall / factor_overall
     new_end_overall = 1
@@ -4503,10 +4501,10 @@ def site_gen_graph_get(site_id):
         graph = graphs[graph_name]
         graph['y'] = y
         graph['height'] = sum(
-            graph[p + '_max_scl'] * scl_factor for p in ('pos', 'neg')) + 50
+            max_scls[p] * scl_factor for p in ('pos', 'neg')) + 50
         y += graph['height']
 
-        x_axis_px = graph['pos_max_scl'] * scl_factor
+        x_axis_px = max_scls['pos'] * scl_factor
         graph['x_axis'] = x_axis_px
         graph['title'] = graph_titles[graph_name]
         for tick in graph['ticks']:
@@ -4514,13 +4512,13 @@ def site_gen_graph_get(site_id):
 
         graph['scale_lines'] = []
         for pref in ('pos', 'neg'):
-            for i in range(0, graph[pref + '_max_scl'], step_overall):
+            for i in range(0, max_scls[pref], step_overall):
                 if pref == 'pos':
-                    y_scale = (-1 * i + graph[pref + '_max_scl']) * scl_factor
+                    y_scale = (-1 * i + max_scls[pref]) * scl_factor
                     fac = 1
                 else:
                     fac = -1
-                    y_scale = (i + graph['pos_max_scl']) * scl_factor
+                    y_scale = (i + max_scls['pos']) * scl_factor
                 graph['scale_lines'].append(
                     {
                         'y': y_scale,

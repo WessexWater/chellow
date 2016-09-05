@@ -11310,17 +11310,19 @@ def virtual_bill(supply_source):
         'regexes': [
             r'<rect\s*'
             r'x="672px" y="64.0px" width="1px"\s*'
-            r'height="16.0px" fill="blue" />']},
+            r'height="16.0px" fill="blue">\s*'
+            r'<title>2\.0 kW @ 2005-09-15 00:00</title>\s*'
+            r'</rect>']},
 
     {
         'name': "Site generation graph stradling groups",
         'path': '/sites/3/gen_graph?months=2&finish_year=2005&finish_month=10',
         'status_code': 200,
         'regexes': [
-            r'<text x="672px" y="78.54368932038835px">\s*',
+            r'<text x="672px" y="230.0px">\s*'
             r'September\s*'
             r'</text>\s*'
-            r'<text x="2112px" y="78.54368932038835px">\s*'
+            r'<text x="2112px" y="230.0px">\s*'
             r'October\s*'
             r'</text>']},
 

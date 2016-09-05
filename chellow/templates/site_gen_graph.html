@@ -60,13 +60,17 @@
 					{% for hh in graph.pos_hhs %}
 						<rect
 								x="{{hh.x}}px" y="{{hh.y}}px" width="1px"
-								height="{{hh.height}}px" fill="{{hh.colour}}" />
+								height="{{hh.height}}px" fill="{{hh.colour}}">
+							<title>{{hh.value}} kW @ {{hh.start_date|hh_format}}</title>
+						</rect>
 					{%- endfor %}
 
 					{% for hh in graph.neg_hhs %}
 						<rect
 								x="{{hh.x}}px" y="{{hh.y}}px" width="1px"
-								height="{{hh.height}}px" fill="{{hh.colour}}" />
+								height="{{hh.height}}px" fill="{{hh.colour}}">
+							<title>-{{hh.value}} kW @ {{hh.start_date|hh_format}}</title>
+						</rect>
 					{%- endfor %}
 
 					{% if loop.last %}
