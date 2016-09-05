@@ -2024,7 +2024,7 @@ def channel_snag_edit_post(snag_id):
         set_read_write(g.sess)
         ignore = req_bool('ignore')
         snag = Snag.get_by_id(g.sess, snag_id)
-        snag.is_ignored = ignore
+        snag.set_is_ignored(ignore)
         g.sess.commit()
         return chellow_redirect("/channel_snags/" + str(snag.id), 303)
     except BadRequest as e:
@@ -4065,7 +4065,7 @@ def site_snag_edit_post(snag_id):
         set_read_write(g.sess)
         ignore = req_bool('ignore')
         snag = Snag.get_by_id(g.sess, snag_id)
-        snag.is_ignored = ignore
+        snag.set_is_ignored(ignore)
         g.sess.commit()
         return chellow_redirect("/site_snags/" + str(snag.id), 303)
     except BadRequest as e:

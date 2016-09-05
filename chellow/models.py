@@ -198,6 +198,10 @@ class Snag(Base, PersistentClass):
         self.start_date = start_date
         self.finish_date = finish_date
 
+    def set_is_ignored(self, ignore):
+        if not self.is_ignored and ignore and self.finish_date is None:
+            raise BadRequest("An ongoing snag cannot be ignored.")
+
 
 class GspGroup(Base, PersistentClass):
     @staticmethod
