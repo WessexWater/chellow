@@ -1,8 +1,9 @@
 from sqlalchemy import (
     ForeignKey, Column, Integer, String, Boolean, DateTime, Text, Numeric, or_,
-    not_, and_, Enum, null, create_engine)
+    not_, and_, Enum, null, create_engine, event)
 from sqlalchemy.orm import sessionmaker, relationship
 from sqlalchemy.schema import UniqueConstraint
+from sqlalchemy.engine import Engine
 import datetime
 import pytz
 import ast
@@ -76,6 +77,17 @@ def get_non_core_contract_id(name):
     finally:
         if sess is not None:
             sess.close()
+
+
+@event.listens_for(Engine, "handle_error")
+def handle_exception(context):
+    msg = "could not serialize access due to read/write dependencies " + \
+        "among transactions"
+    exc_txt = str(context.original_exception)
+    if msg in exc_txt:
+        raise BadRequest(
+            "Temporary conflict with other database writes. Might work if you "
+            "try again. " + exc_txt)
 
 
 class PersistentClass():
