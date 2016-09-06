@@ -24,7 +24,8 @@ import io
 import chellow.hh_importer
 import chellow.bill_importer
 import chellow.system_price
-from sqlalchemy import text, true, false, null, func, not_, or_, cast, Float
+from sqlalchemy import (
+    text, true, false, null, func, not_, or_, cast, Float)
 from sqlalchemy.orm import joinedload
 from collections import defaultdict, OrderedDict
 from itertools import chain, islice
@@ -1919,12 +1920,23 @@ def supply_get(supply_id):
 @app.route('/channels/<int:channel_id>')
 def channel_get(channel_id):
     channel = Channel.get_by_id(g.sess, channel_id)
-    hh_data = g.sess.query(HhDatum).filter(
-        HhDatum.channel == channel).order_by(HhDatum.start_date)
+    page = req_int('page') if 'page' in request.values else 0
+    page_size = 3000
+    prev_page = None if page == 0 else page - 1
+    hh_data = g.sess.query(HhDatum).filter(HhDatum.channel == channel). \
+        order_by(HhDatum.start_date).offset(page * page_size). \
+        limit(page_size)
+    if g.sess.query(HhDatum).filter(HhDatum.channel == channel). \
+            order_by(HhDatum.start_date).offset((page + 1) * page_size). \
+            limit(page_size).count() > 0:
+        next_page = page + 1
+    else:
+        next_page = None
     snags = g.sess.query(Snag).filter(Snag.channel == channel).order_by(
         Snag.start_date)
     return render_template(
-        'channel.html', channel=channel, hh_data=hh_data, snags=snags)
+        'channel.html', channel=channel, hh_data=hh_data, snags=snags,
+        prev_page=prev_page, this_page=page, next_page=next_page)
 
 
 @app.route('/hhdc_contracts/<int:contract_id>/hh_imports')
