@@ -1411,7 +1411,7 @@ def virtual_bill_titles():
         'path': '/channel_snags/1/edit',
         'status_code': 200,
         'regexes': [
-            r'<form action="" method="post">\s*'
+            r'<form method="post">\s*'
             r'<fieldset style="border: none;">\s*'
             r'<input type="hidden" name="ignore" value="true">\s*'
             r'<input type="submit" value="Ignore">\s*'
@@ -12055,14 +12055,6 @@ def virtual_bill(supply_source):
             'bill_type_id': '2',
             'breakdown': '{}'},
         'status_code': 303},
-    {
-        'name': "Fetch bootstrap css",
-        'path': '/bootstrap',
-        'status_code': 200},
-    {
-        'name': "Fetch bootstrap js",
-        'path': '/bootstrapjs',
-        'status_code': 200},
     {
         'name': "Bill check with exception",
         'path': "/supplier_contracts/42/edit",

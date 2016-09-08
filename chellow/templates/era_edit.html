@@ -32,7 +32,7 @@
 		<div class="section-content">
 			<div class="section-data">
 				<div class="standardForm">
-					<form method="post" action="">
+					<form method="post">
 						<fieldset>
 							<input type="hidden" name="era_id" value="{{era.id}}">
 							<input type="submit" name="delete" value="Delete">
@@ -85,7 +85,7 @@
 										{% if site_era.is_physical %}
 											Located here
 										{% else %}
-											<form method="post" action="">
+											<form method="post">
 												<fieldset>
 													<input type="hidden" name="era_id" value="{{era.id}}">
 													<input type="hidden" name="site_id" value="{{site_era.site.id}}">
@@ -95,9 +95,9 @@
 										{% endif %}
 									</td>
 									<td>
-										<form method="post" action="">
+										<form method="post">
 											<fieldset>
-												<legend>Detach from site</legend>
+												<label>Detach from site</label>
 												<input type="hidden" name="era_id" value="{{era.id}}">
 												<input type="hidden" name="site_id" value="{{site_era.site.id}}">
 												<input type="submit" name="detach" value="Detach">
@@ -112,10 +112,10 @@
 			</div>
 			<div class="section-data">
 				<div class="standardForm">
-					<form method="post" action="">
+				    <legend>Attach to another site</legend>
+					<form method="post">
 						<fieldset>
-							<input type="hidden" name="era_id" value="{{era.id}}">
-							<legend>Attach to another site</legend>
+							<input type="hidden" name="era_id" value="{{era.id}}">							
 							<div class="row">
 								<div class="col-sm-6">
 									<label>Site Code {{input_text("site_code", '')}}</label>
@@ -142,7 +142,7 @@
 		<!-- End Section Header -->
 		<!-- Section Content -->
 		<div class="section-content">
-			<form action="" method="post">	
+			<form method="post">	
 				<fieldset>
 					<div class="section-data">
 					    <div class="standardForm textWidthAuto">

@@ -21,7 +21,7 @@
 		<div class="section-content">
 			<div class="section-data">
 				<div class="standardForm">
-					<form method="" action="">
+					<form>
 						<fieldset>
 							<input type="hidden" name="dno_rate_script_id"
 									value="{{rate_script.id}}">
@@ -43,7 +43,7 @@
 		<div class="section-content">
 			
 				<div class="standardForm textWidthAuto">
-					<form action="" method="post">
+					<form>
 						<fieldset>
 							<input type="hidden" name="dno_rate_script_id"
 									value="{{rate_script.id}}">
@@ -65,9 +65,9 @@
 							</div>
 							<div class="section-data">
 								Script
-								</br>
+								<br>
 								{{ input_textarea('script', rate_script.script, 40, 80) }}
-								</br>
+								<br>
 								<input type="submit" value="Update">
 								<input type="reset" value="Reset">
 							</div>
@@ -86,7 +86,7 @@
 		<div class="section-content">
 			<div class="section-data">
 				<div class="standardForm">
-					<form action="">
+					<form>
 						<fieldset>
 							<input type="hidden" name="dno_rate_script_id"
 									value="{{ rate_script.id }}">

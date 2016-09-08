@@ -34,9 +34,9 @@
     						</select> from {{input_date('start', start_date)}} to
     						{{input_date('finish', finish_date)}}
     						<label>{{input_checkbox('is_zipped', False)}} Zipped?</label> 
-    						</br>
+    						<br>
     						MPAN Cores (one on each line, includes all supplies if left
-    						blank)</br>
+    						blank)<br>
     						{{input_textarea('mpan_cores', '', 5, 40)}}    						
 						</div>
 						<input type="submit" value="Download">
@@ -66,7 +66,7 @@
 						<label>From</label> {{input_date('start', start_date)}}
 						<label>to</label> {{input_date('finish', finish_date)}}
 						<label>{{input_checkbox('is_zipped', False)}} Zipped?</label> 
-						</br>
+						<br>
 						MPAN Cores (one on each line, includes all supplies if left
 						blank)<br>
 						{{input_textarea('mpan_cores', '', 5, 40)}}

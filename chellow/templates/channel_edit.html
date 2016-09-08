@@ -27,7 +27,7 @@
 			<div class="section-content">
 				<div class="section-data">
 					<div class="standardForm">
-						<form method="post" action="">
+						<form method="post">
 							<fieldset>
 								<input type="submit" name="delete" value="Delete">
 								<input type="reset" value="Cancel" onClick="window.location='{{context_path}}/channels/{{channel.id}}/edit'" />
@@ -54,11 +54,11 @@
 		<div class="section-content">
 			<div class="section-data">
 				<div class="standardForm textWidthAuto">
-					<form action="" method="post">
+					<form method="post">
 						<fieldset>
 							From {{input_date('start', None, 'minute')}} to
 							{{input_date('finish', None, 'minute')}}
-							</br>
+							<br>
 							<input type="submit" name="delete_data" value="Delete">
 						</fieldset>
 					</form>
@@ -80,19 +80,19 @@
 		<div class="section-content">
 			<div class="section-data">
 				<div class="standardForm textWidthAuto">
-					<form action="" method="post">
+					<form method="post">
 						<fieldset>
-							<label>
-								Start Date {{input_date('start', None, 'minute')}}
-							</label>
+							<label>Start Date </label>
+								{{input_date('start', None, 'minute')}}
+							
 							Value {{input_text('value', '')}}
 						
-							<label>Status
-								<select name="status">
-									{{input_option('status', 'E', 'E')}}
-									{{input_option('status', 'A', 'A')}}
-								</select>
-							</label>	
+							<label>Status </label>
+							<select name="status">
+								{{input_option('status', 'E', 'E')}}
+								{{input_option('status', 'A', 'A')}}
+							</select>	
+							<br>
 							<input type="submit" name="insert" value="Insert">
 						</fieldset>
 					</form>
@@ -114,7 +114,7 @@
 		<div class="section-content">
 			<div class="section-data">
 				<div class="standardForm">
-					<form action="">
+					<form>
 						<fieldset>
 							<input type="hidden" name="channel_id" value="{{channel.id}}">
 							<input type="hidden" name="start_year" value="{{now.year}}">

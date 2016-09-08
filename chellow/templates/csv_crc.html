@@ -27,9 +27,11 @@
 						<input type="submit" value="Download">
 					</div>
         		
-        		    <p>
+        		    <div>
+        		        <p>
 						The CRC report has a row for each supply. A supply is in one of the
 						the following categories at any one time:
+						</p>
 						<dl>
 							<dt>HH</dt>
 							<dd>
@@ -50,6 +52,7 @@
 								Measurement class B (Non Half Hourly Unmetered)
 							</dd>
 						</dl>
+						<p>
 						The report works out the number of days with actual data for each
 						category and totals them up to give the 'Total Actual Days'. It then
 						works out the maximum possible number of days with actual data for
@@ -58,10 +61,13 @@
 						/ 365, the supply is classed as 'Actual' for the CRC period, otherwise
 						it is classed as 'Estimated'. The total (estimated + actual) kWh are
 						given for each category.
-					</p>
-					<p>
+						</p>
+					</div>
+					<div>
+					    <p>
 						For a period of time (the span) when a supply is in the NHH category,
 						the kWh and number of normal days are worked out as follows.
+						</p>
 						<ul>
 							<li>
 								All reads that aren't 'actual' are discarded.
@@ -109,9 +115,11 @@
 								meter.
 							</li>
 						</ul>
-					</p>
-					<p>
+					</div>
+					<div>
+					    <p>
 						For AMR and HH categories, the kWh figure is found by summing:
+						</p>
 						<ul>
 							<li>
 								The sum of the kWh of all the half-hours that lie within the
@@ -125,7 +133,7 @@
 
 						The number of actual days is found by (number of actual half-hours /
 						48).
-					</p>
+					</div>
         		</div>
 			</fieldset> 
 		</form>

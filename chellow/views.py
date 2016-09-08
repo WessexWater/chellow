@@ -263,18 +263,6 @@ def style_get():
     return response
 
 
-@app.route('/bootstrap', methods=['GET'])
-def bootstrap_get():
-    props = Contract.get_non_core_by_name(g.sess, 'configuration'). \
-        make_properties()
-    response = make_response(
-        render_template(
-            'css/bootstrap.min.css',
-            background_colour=props['background_colour']))
-    response.headers['Content-type'] = 'text/css'
-    return response
-
-
 @app.route('/chellowcss', methods=['GET'])
 def chellowcss_get():
     props = Contract.get_non_core_by_name(g.sess, 'configuration'). \
@@ -284,42 +272,6 @@ def chellowcss_get():
             'css/chellow.css',
             background_colour=props['background_colour']))
     response.headers['Content-type'] = 'text/css'
-    return response
-
-
-@app.route('/bootstrapjs', methods=['GET'])
-def bootstrapjs_get():
-    props = Contract.get_non_core_by_name(g.sess, 'configuration'). \
-        make_properties()
-    response = make_response(
-        render_template(
-            'js/bootstrap.min.js',
-            background_colour=props['background_colour']))
-    response.headers['Content-type'] = 'text/javascript'
-    return response
-
-
-@app.route('/jqueryminjs', methods=['GET'])
-def jqueryminjs_get():
-    props = Contract.get_non_core_by_name(g.sess, 'configuration'). \
-        make_properties()
-    response = make_response(
-        render_template(
-            'js/jquery-2.2.4.min.js',
-            background_colour=props['background_colour']))
-    response.headers['Content-type'] = 'text/javascript'
-    return response
-
-
-@app.route('/gridsjs', methods=['GET'])
-def gridjs_get():
-    props = Contract.get_non_core_by_name(g.sess, 'configuration'). \
-        make_properties()
-    response = make_response(
-        render_template(
-            'js/grids.min.js',
-            background_colour=props['background_colour']))
-    response.headers['Content-type'] = 'text/javascript'
     return response
 
 
