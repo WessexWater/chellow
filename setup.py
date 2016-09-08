@@ -32,6 +32,7 @@ setup(
         'templates/css/*.css',
         'templates/js/*.js',
         'templates/*.css',
+        'static/images/**',
         'static/font-awesome-4.6.3/**',
         'static/font-awesome-4.6.3/css/**',
         'static/font-awesome-4.6.3/fonts/**',

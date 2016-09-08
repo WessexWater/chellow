@@ -452,6 +452,14 @@ def home_get():
         month_start=month_start, month_finish=month_finish)
 
 
+@app.route('/local_reports_home')
+def local_reports_home():
+    config = Contract.get_non_core_by_name(g.sess, 'configuration')
+    properties = config.make_properties()
+    report_id = properties['local_reports_id']
+    return local_report_output_post(report_id)
+
+
 @app.errorhandler(500)
 def error_500(error):
     return traceback.format_exc(), 500

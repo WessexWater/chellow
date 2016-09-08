@@ -47,15 +47,15 @@
 					<fieldset>
 						<div class="section-data">
 							<div class="row">
-								<div class="col-sm-6"
+								<div class="col-sm-6">
 									<label>Name</label>						
 								    <input name="name" value={{contract.name}}>
 							    </div>
 							</div>
 						</div>
 						<div class="section-data">
-							Properties
-							
+							<label>Properties</label>
+							</br>
 							{{ input_textarea('properties', contract.properties, 20, 80) }}
 							
 							{% if contract.name == 'bsuos' %}
@@ -85,6 +85,7 @@
 					<form action="" method="post">
 						<fieldset>
 							<label>State</label>
+							</br>
 							{{ input_textarea('state', contract.state, 40, 80) }}
 							<br>
 							<input type="submit" name="update_state" value="Update">

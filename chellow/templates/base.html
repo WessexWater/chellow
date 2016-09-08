@@ -232,12 +232,8 @@
                             <!-- Nav Editors -->
                             <nav class="nav-editors">
                                 <h4><i class="fa fa-cog" aria-hidden="true"></i> For Editors</h4>
-                                <ul>
-                                    {#
-                                    {% if properties.local_reports_id %}
-	                                    <li><a href="{{context_path}}/local_reports/{{properties.local_reports_id}}/output" title="Local Reports">Local Reports</a></li>
-                                    {% endif %}
-                                    #}
+                                <ul>                                    
+                                    <li><a href="{{context_path}}/local_reports_home" title="Local Reports">Local Reports</a></li>
                                     <li><a href="{{context_path}}/general_imports" title="General Import">General Import</a></li>
                                     <li><a href="{{context_path}}/downloads" title="Downloads">Downloads</a></li>
                                     <li><a href="{{context_path}}/reports/ecoes_comparison" title="Comparison against ECOES">Comparison against ECOES</a></li>
