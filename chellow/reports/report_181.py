@@ -55,46 +55,34 @@ def content(year, site_id, user):
             sites = sess.query(Site).filter(Site.id == site.id)
 
         for site in sites:
-            for site_group in site.groups(
-                    sess, march_start, march_finish, True):
-                if site_group.start_date > march_start:
-                    chunk_start = site_group.start_date
-                else:
-                    chunk_start = march_start
+            displaced_era = chellow.computer.displaced_era(
+                sess, site, march_start, march_finish)
+            if displaced_era is None:
+                continue
 
-                if not site_group.finish_date < march_finish:
-                    chunk_finish = march_finish
-                else:
-                    continue
+            site_ds = chellow.computer.SiteSource(
+                sess, site, march_start, march_finish, forecast_date, None,
+                caches, displaced_era)
+            chellow.duos.duos_vb(site_ds)
+            chellow.triad.hh(site_ds)
+            chellow.triad.bill(site_ds)
 
-                displaced_era = chellow.computer.displaced_era(
-                    sess, site_group, chunk_start, chunk_finish)
-                if displaced_era is None:
-                    continue
+            bill = site_ds.supplier_bill
+            for rname, rset in site_ds.supplier_rate_sets.items():
+                if len(rset) == 1:
+                    bill[rname] = rset.pop()
+            values = [site.code, site.name]
+            for i in range(1, 4):
+                triad_prefix = 'triad-actual-' + str(i)
+                values.append(hh_format(bill[triad_prefix + '-date']))
+                for suffix in ['-msp-kw', '-laf', '-gsp-kw']:
+                    values.append(bill[triad_prefix + suffix])
 
-                site_ds = chellow.computer.SiteSource(
-                    sess, site, chunk_start, chunk_finish, forecast_date, None,
-                    caches, displaced_era)
-                chellow.duos.duos_vb(site_ds)
-                chellow.triad.hh(site_ds)
-                chellow.triad.bill(site_ds)
+            values += [
+                str(bill['triad-actual-' + suf]) for suf in [
+                    'gsp-kw', 'rate', 'gbp']]
 
-                bill = site_ds.supplier_bill
-                for rname, rset in site_ds.supplier_rate_sets.items():
-                    if len(rset) == 1:
-                        bill[rname] = rset.pop()
-                values = [site.code, site.name]
-                for i in range(1, 4):
-                    triad_prefix = 'triad-actual-' + str(i)
-                    values.append(hh_format(bill[triad_prefix + '-date']))
-                    for suffix in ['-msp-kw', '-laf', '-gsp-kw']:
-                        values.append(bill[triad_prefix + suffix])
-
-                values += [
-                    str(bill['triad-actual-' + suf]) for suf in [
-                        'gsp-kw', 'rate', 'gbp']]
-
-                writer.writerow(values)
+            writer.writerow(values)
     except:
         msg = traceback.format_exc()
         sys.stderr.write(msg)

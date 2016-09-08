@@ -10,7 +10,7 @@ import json
 from werkzeug.exceptions import BadRequest
 from chellow.models import (
     RateScript, Channel, Era, Pc, Tpr, MeasurementRequirement, RegisterRead,
-    Bill, BillType, ReadType)
+    Bill, BillType, ReadType, SiteEra, Supply, Source)
 from chellow.utils import HH, hh_format, hh_after
 import chellow.bank_holidays
 from itertools import combinations
@@ -233,33 +233,36 @@ def forecast_date():
     return Datetime(now.year, now.month, 1, tzinfo=pytz.utc)
 
 
-def displaced_era(sess, site_group, start_date, finish_date):
+def displaced_era(sess, site, start_date, finish_date):
+    if (start_date.year, start_date.month) != \
+            (finish_date.year, finish_date.month):
+        raise BadRequest(
+            "The start and end dates of a displaced period must be within the "
+            "same month")
+    month_start = Datetime(
+        start_date.year, start_date.month, 1, tzinfo=pytz.utc)
+    month_finish = month_start + relativedelta(months=1) - HH
     has_displaced = False
     eras = {}
-    for supply in site_group.supplies:
-        source_code = supply.source.code
-        if source_code in ('gen', 'gen-net'):
-            has_displaced = True
-        if source_code in ('net', 'gen-net'):
-            export_channels = sess.query(Channel).join(Era).filter(
-                Era.supply == supply, Channel.imp_related == false(),
-                Channel.channel_type == 'ACTIVE',
-                Era.start_date <= finish_date,
-                or_(
+    for site_era in sess.query(SiteEra).join(Era).join(Supply).join(Source). \
+            filter(
+                SiteEra.site == site, Era.start_date <= month_finish, or_(
                     Era.finish_date == null(),
-                    Era.finish_date >= start_date)).count()
-            if export_channels is not None and export_channels > 0:
-                has_displaced = True
+                    Era.finish_date >= month_start)):
+        era = site_era.era
+        source_code = era.supply.source.code
+        if site_era.is_physical and (
+                source_code in ('gen', 'gen-net') or (
+                    source_code == 'net' and sess.query(Channel).filter(
+                        Channel.era == era, Channel.imp_related == false(),
+                        Channel.channel_type == 'ACTIVE').first()
+                    is not None)):
+            has_displaced = True
 
-            for era in sess.query(Era).join(Pc).filter(
-                    Era.imp_mpan_core != null(),
-                    Era.supply == supply, Era.start_date <= finish_date,
-                    or_(
-                        Era.finish_date == null(),
-                        Era.finish_date >= start_date)):
-                eras[
-                    era.pc.code + hh_format(era.start_date) +
-                    era.imp_mpan_core] = era
+        if source_code in ('net', 'gen-net') and era.imp_mpan_core is not None:
+            eras[
+                era.pc.code + hh_format(era.start_date) +
+                era.imp_mpan_core] = era
 
     if has_displaced and len(eras) > 0:
         return eras[sorted(eras.keys())[0]]
@@ -548,121 +551,122 @@ class SiteSource(DataSource):
             sess, self.years_back, self.caches, self.pw)
 
         hh_date = start_date
-        for group in site.groups(
-                sess, self.history_start, self.history_finish, True):
-            supplies = group.supplies
-            if len(supplies) == 0:
-                continue
-            hist_date = group.start_date
-            group_finish = group.finish_date
-            rs = iter(
-                sess.execute(
-                    "select hh_datum.value, hh_datum.start_date, "
-                    "hh_datum.status, channel.imp_related, source.code "
-                    "from hh_datum, channel, era, supply, source "
-                    "where hh_datum.channel_id = channel.id "
-                    "and channel.era_id = era.id "
-                    "and era.supply_id = supply.id "
-                    "and supply.source_id = source.id "
-                    "and channel.channel_type = 'ACTIVE' "
-                    "and hh_datum.start_date >= :group_start "
-                    "and hh_datum.start_date <= :group_finish "
-                    "and supply.id = any(:supply_ids) "
-                    "order by hh_datum.start_date",
-                    params={
-                        'group_start': group.start_date,
-                        'group_finish': group.finish_date,
-                        'supply_ids': [sup.id for sup in supplies]}))
-            try:
-                row = next(rs)
-                hh_value = float(row[0])
-                hh_start_date = row[1]
-                imp_related = row[3]
-                source_code = row[4]
-            except StopIteration:
-                hh_start_date = None
+        hist_date = start_date
+        supply_ids = set(
+            s.id for s in sess.query(Supply).join(Era).join(SiteEra).
+            join(Source).filter(
+                SiteEra.site == site, Era.start_date <= finish_date,
+                SiteEra.is_physical, Source.code != 'sub', or_(
+                    Era.finish_date == null(),
+                    Era.finish_date >= start_date)).distinct().all())
+        rs = iter(
+            sess.execute(
+                "select hh_datum.value, hh_datum.start_date, "
+                "hh_datum.status, channel.imp_related, source.code "
+                "from hh_datum, channel, era, supply, source "
+                "where hh_datum.channel_id = channel.id "
+                "and channel.era_id = era.id "
+                "and era.supply_id = supply.id "
+                "and supply.source_id = source.id "
+                "and channel.channel_type = 'ACTIVE' "
+                "and hh_datum.start_date >= :start_date "
+                "and hh_datum.start_date <= :finish_date "
+                "and supply.id = any(:supply_ids) "
+                "order by hh_datum.start_date",
+                params={
+                    'start_date': start_date,
+                    'finish_date': finish_date,
+                    'supply_ids': list(supply_ids)}))
+        try:
+            row = next(rs)
+            hh_value = float(row[0])
+            hh_start_date = row[1]
+            imp_related = row[3]
+            source_code = row[4]
+        except StopIteration:
+            hh_start_date = None
 
-            while not hist_date > group_finish:
-                export_net_kwh = 0
-                import_net_kwh = 0
-                export_gen_kwh = 0
-                import_gen_kwh = 0
-                import_3rd_party_kwh = 0
-                export_3rd_party_kwh = 0
-                while hh_start_date == hist_date:
-                    if not imp_related and source_code in ('net', 'gen-net'):
-                        export_net_kwh += hh_value
-                    if imp_related and source_code in ('net', 'gen-net'):
-                        import_net_kwh += hh_value
-                    if (imp_related and source_code == 'gen') or \
-                            (not imp_related and source_code == 'gen-net'):
-                        import_gen_kwh += hh_value
-                    if (not imp_related and source_code == 'gen') or \
-                            (imp_related and source_code == 'gen-net'):
-                        export_gen_kwh += hh_value
-                    if (imp_related and source_code == '3rd-party') or (
-                            not imp_related and
-                            source_code == '3rd-party-reverse'):
-                        import_3rd_party_kwh += hh_value
-                    if (not imp_related and source_code == '3rd-party') or (
-                            imp_related and
-                            source_code == '3rd-party-reverse'):
-                        export_3rd_party_kwh += hh_value
-                    try:
-                        row = next(rs)
-                        hh_value = float(row[0])
-                        hh_start_date = row[1]
-                        imp_related = row[3]
-                        source_code = row[4]
-                    except StopIteration:
-                        hh_start_date = None
+        while not hist_date > finish_date:
+            export_net_kwh = 0
+            import_net_kwh = 0
+            export_gen_kwh = 0
+            import_gen_kwh = 0
+            import_3rd_party_kwh = 0
+            export_3rd_party_kwh = 0
+            while hh_start_date == hist_date:
+                if not imp_related and source_code in ('net', 'gen-net'):
+                    export_net_kwh += hh_value
+                if imp_related and source_code in ('net', 'gen-net'):
+                    import_net_kwh += hh_value
+                if (imp_related and source_code == 'gen') or \
+                        (not imp_related and source_code == 'gen-net'):
+                    import_gen_kwh += hh_value
+                if (not imp_related and source_code == 'gen') or \
+                        (imp_related and source_code == 'gen-net'):
+                    export_gen_kwh += hh_value
+                if (imp_related and source_code == '3rd-party') or (
+                        not imp_related and
+                        source_code == '3rd-party-reverse'):
+                    import_3rd_party_kwh += hh_value
+                if (not imp_related and source_code == '3rd-party') or (
+                        imp_related and
+                        source_code == '3rd-party-reverse'):
+                    export_3rd_party_kwh += hh_value
+                try:
+                    row = next(rs)
+                    hh_value = float(row[0])
+                    hh_start_date = row[1]
+                    imp_related = row[3]
+                    source_code = row[4]
+                except StopIteration:
+                    hh_start_date = None
 
-                hh_values = datum_generator(sess, hh_date).copy()
-                hh_values.update(
-                    {
-                        'status': 'E', 'hist-import-net-kwh': import_net_kwh,
-                        'hist-import-net-kvarh': 0,
-                        'hist-export-net-kwh': export_net_kwh,
-                        'hist-export-net-kvarh': 0,
-                        'hist-import-gen-kwh': import_gen_kwh,
-                        'hist-export-gen-kwh': export_gen_kwh,
-                        'anti-msp-kwh': 0, 'anti-msp-kw': 0,
-                        'hist-import-3rd-party-kwh': import_3rd_party_kwh,
-                        'hist-export-3rd-party-kwh': export_3rd_party_kwh})
-                hh_values['hist-used-3rd-party-kwh'] = \
-                    hh_values['hist-import-3rd-party-kwh'] - \
-                    hh_values['hist-export-3rd-party-kwh']
-                hh_values['used-3rd-party-kwh'] = \
-                    hh_values['hist-used-3rd-party-kwh']
-                hh_values['hist-kwh'] = hh_values['hist-used-gen-msp-kwh'] = \
-                    hh_values['hist-import-gen-kwh'] - \
-                    hh_values['hist-export-gen-kwh'] - \
-                    hh_values['hist-export-net-kwh']
+            hh_values = datum_generator(sess, hh_date).copy()
+            hh_values.update(
+                {
+                    'status': 'E', 'hist-import-net-kwh': import_net_kwh,
+                    'hist-import-net-kvarh': 0,
+                    'hist-export-net-kwh': export_net_kwh,
+                    'hist-export-net-kvarh': 0,
+                    'hist-import-gen-kwh': import_gen_kwh,
+                    'hist-export-gen-kwh': export_gen_kwh,
+                    'anti-msp-kwh': 0, 'anti-msp-kw': 0,
+                    'hist-import-3rd-party-kwh': import_3rd_party_kwh,
+                    'hist-export-3rd-party-kwh': export_3rd_party_kwh})
+            hh_values['hist-used-3rd-party-kwh'] = \
+                hh_values['hist-import-3rd-party-kwh'] - \
+                hh_values['hist-export-3rd-party-kwh']
+            hh_values['used-3rd-party-kwh'] = \
+                hh_values['hist-used-3rd-party-kwh']
+            hh_values['hist-kwh'] = hh_values['hist-used-gen-msp-kwh'] = \
+                hh_values['hist-import-gen-kwh'] - \
+                hh_values['hist-export-gen-kwh'] - \
+                hh_values['hist-export-net-kwh']
 
-                hh_values['msp-kwh'] = hh_values['used-gen-msp-kwh'] \
-                    = hh_values['hist-used-gen-msp-kwh']
-                for lec_cat in lec_cats:
-                    hh_values[lec_cat + '-kwh'] = \
-                        hh_values['hist-' + lec_cat + '-kwh']
+            hh_values['msp-kwh'] = hh_values['used-gen-msp-kwh'] \
+                = hh_values['hist-used-gen-msp-kwh']
+            for lec_cat in lec_cats:
+                hh_values[lec_cat + '-kwh'] = \
+                    hh_values['hist-' + lec_cat + '-kwh']
 
-                hh_values['hist-used-kwh'] = \
-                    hh_values['hist-used-gen-msp-kwh'] + \
-                    hh_values['hist-import-net-kwh'] + \
-                    hh_values['hist-used-3rd-party-kwh']
-                hh_values['hist-imp-msp-kvarh'] = 0
-                hh_values['imp-msp-kvarh'] = 0
-                hh_values['exp-msp-kvarh'] = 0
+            hh_values['hist-used-kwh'] = \
+                hh_values['hist-used-gen-msp-kwh'] + \
+                hh_values['hist-import-net-kwh'] + \
+                hh_values['hist-used-3rd-party-kwh']
+            hh_values['hist-imp-msp-kvarh'] = 0
+            hh_values['imp-msp-kvarh'] = 0
+            hh_values['exp-msp-kvarh'] = 0
 
-                hh_values['used-kwh'] = hh_values['hist-used-kwh']
-                hh_values['import-net-kwh'] = hh_values['hist-import-net-kwh']
-                hh_values['msp-kw'] = hh_values['used-gen-msp-kw'] \
-                    = hh_values['used-gen-msp-kwh'] * 2
-                hh_values['imp-msp-kvar'] = hh_values['imp-msp-kvarh'] * 2
-                hh_values['exp-msp-kvar'] = hh_values['exp-msp-kvarh'] * 2
+            hh_values['used-kwh'] = hh_values['hist-used-kwh']
+            hh_values['import-net-kwh'] = hh_values['hist-import-net-kwh']
+            hh_values['msp-kw'] = hh_values['used-gen-msp-kw'] \
+                = hh_values['used-gen-msp-kwh'] * 2
+            hh_values['imp-msp-kvar'] = hh_values['imp-msp-kvarh'] * 2
+            hh_values['exp-msp-kvar'] = hh_values['exp-msp-kvarh'] * 2
 
-                self.hh_data.append(hh_values)
-                hh_date += HH
-                hist_date += HH
+            self.hh_data.append(hh_values)
+            hh_date += HH
+            hist_date += HH
 
     def revolve_to_3rd_party_used(self):
         for hh in self.hh_data:

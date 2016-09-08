@@ -3946,16 +3946,6 @@ def csv_sites_hh_data_get():
         finish_date=finish_date)
 
 
-@app.route('/csv_sites_monthly_duration')
-def csv_sites_monthly_duration_get():
-    now = Datetime.utcnow()
-    month_start = Datetime(now.year, now.month, 1) - relativedelta(months=1)
-    month_finish = Datetime(now.year, now.month, 1) - HH
-    return render_template(
-        'csv_sites_monthly_duration.html', month_start=month_start,
-        month_finish=month_finish)
-
-
 @app.route('/csv_sites_duration')
 def csv_sites_duration_get():
     now = Datetime.now(pytz.utc)
@@ -4394,102 +4384,105 @@ def site_gen_graph_get(site_id):
     month_points = []
     x = 0
     max_scls = {'pos': 10, 'neg': 1}
-    for group in site.groups(g.sess, start_date, finish_date, True):
-        rs = iter(
-            g.sess.query(
-                cast(HhDatum.value * 2, Float), HhDatum.start_date,
-                HhDatum.status, Channel.imp_related, Supply.name, Source.code,
-                Supply.id).
-            join(Channel).join(Era).join(Supply).join(Source).filter(
-                Channel.channel_type == 'ACTIVE',
-                HhDatum.start_date >= group.start_date,
-                HhDatum.start_date <= group.finish_date,
-                Supply.id.in_(s.id for s in group.supplies)).order_by(
-                HhDatum.start_date, Supply.id))
-        hh_date = group.start_date
-        (
-            hhd_value, hhd_start_date, status, imp_related, supply_name,
-            source_code, sup_id) = next(
-                rs, (None, None, None, None, None, None, None))
+    supply_ids = list(
+        s.id for s in g.sess.query(Supply).join(Era).join(SiteEra).
+        join(Source).filter(
+            SiteEra.site == site, Source.code != 'sub',
+            SiteEra.is_physical == true(), Era.start_date <= finish_date,
+            or_(Era.finish_date == null(), Era.finish_date >= start_date))
+        .distinct().all())
 
-        while hh_date <= group.finish_date:
-            rvals = dict((n, {'pos': 0, 'neg': 0}) for n in graph_names)
+    rs = iter(
+        g.sess.query(
+            cast(HhDatum.value * 2, Float), HhDatum.start_date, HhDatum.status,
+            Channel.imp_related, Supply.name, Source.code, Supply.id).
+        join(Channel).join(Era).join(Supply).join(Source).filter(
+            Channel.channel_type == 'ACTIVE', HhDatum.start_date >= start_date,
+            HhDatum.start_date <= finish_date, Supply.id.in_(supply_ids)).
+        order_by(HhDatum.start_date, Supply.id))
+    hh_date = start_date
+    (
+        hhd_value, hhd_start_date, status, imp_related, supply_name,
+        source_code, sup_id) = next(
+            rs, (None, None, None, None, None, None, None))
 
-            if hh_date.hour == 0 and hh_date.minute == 0:
-                day = hh_date.day
-                days.append(
+    while hh_date <= finish_date:
+        rvals = dict((n, {'pos': 0, 'neg': 0}) for n in graph_names)
+
+        if hh_date.hour == 0 and hh_date.minute == 0:
+            day = hh_date.day
+            days.append(
+                {
+                    'text': str(day), 'x': x + 20,
+                    'colour': 'red' if hh_date.weekday() > 4 else 'black'})
+
+            for g_name, graph in graphs.items():
+                graph['ticks'].append({'x': x})
+
+            if day == 15:
+                month_points.append({'x': x, 'text': hh_date.strftime("%B")})
+
+        while hhd_start_date == hh_date:
+            to_adds = []
+            if imp_related and source_code in ('net', 'gen-net'):
+                to_adds.append(('imp', 'pos'))
+            if not imp_related and source_code in ('net', 'gen-net'):
+                to_adds.append(('exp', 'pos'))
+            if (imp_related and source_code == 'gen') or \
+                    (not imp_related and source_code == 'gen-net'):
+                to_adds.append(('gen', 'pos'))
+            if (not imp_related and source_code == 'gen') or \
+                    (imp_related and source_code == 'gen-net'):
+                to_adds.append(('gen', 'neg'))
+            if (imp_related and source_code == '3rd-party') or (
+                    not imp_related and source_code ==
+                    '3rd-party-reverse'):
+                to_adds.append(('third', 'pos'))
+            if (not imp_related and source_code == '3rd-party') or (
+                    imp_related and source_code == '3rd-party-reverse'):
+                to_adds.append(('third', 'neg'))
+
+            for gname, polarity in to_adds:
+                graph = graphs[gname]
+                supplies = graph['supplies']
+                if sup_id not in supplies:
+                    supplies[sup_id] = {
+                        'colour': colour_list[len(supplies)],
+                        'text': source_code + ' ' + supply_name,
+                        'source_code': source_code}
+
+                grvals = rvals[gname]
+                graph[polarity + '_hhs'].append(
                     {
-                        'text': str(day), 'x': x + 20,
-                        'colour': 'red' if hh_date.weekday() > 4 else 'black'})
+                        'colour': graph['supplies'][sup_id]['colour'],
+                        'running_total': grvals[polarity],
+                        'value': hhd_value, 'x': x, 'start_date': hh_date})
+                grvals[polarity] += hhd_value
+                max_scls[polarity] = max(
+                    max_scls[polarity], int(grvals[polarity]))
 
-                for g_name, graph in graphs.items():
-                    graph['ticks'].append({'x': x})
+            (
+                hhd_value, hhd_start_date, status, imp_related,
+                supply_name, source_code, sup_id) = next(
+                    rs, (None, None, None, None, None, None, None))
 
-                if day == 15:
-                    month_points.append(
-                        {'x': x, 'text': hh_date.strftime("%B")})
+        disp_val = rvals['gen']['pos'] - rvals['gen']['neg'] - \
+            rvals['exp']['pos']
+        used_val = rvals['imp']['pos'] + disp_val + rvals['third']['pos'] - \
+            rvals['third']['neg']
+        for val, graph_name in ((used_val, 'used'), (disp_val, 'disp')):
+            graph = graphs[graph_name]
+            pos_val = max(val, 0)
+            neg_val = abs(min(val, 0))
+            for gval, prefix in ((pos_val, 'pos'), (neg_val, 'neg')):
+                graph[prefix + '_hhs'].append(
+                    {
+                        'colour': 'blue', 'x': x, 'start_date': hh_date,
+                        'value': gval, 'running_total': 0})
+                max_scls[prefix] = max(max_scls[prefix], int(gval))
 
-            while hhd_start_date == hh_date:
-                to_adds = []
-                if imp_related and source_code in ('net', 'gen-net'):
-                    to_adds.append(('imp', 'pos'))
-                if not imp_related and source_code in ('net', 'gen-net'):
-                    to_adds.append(('exp', 'pos'))
-                if (imp_related and source_code == 'gen') or \
-                        (not imp_related and source_code == 'gen-net'):
-                    to_adds.append(('gen', 'pos'))
-                if (not imp_related and source_code == 'gen') or \
-                        (imp_related and source_code == 'gen-net'):
-                    to_adds.append(('gen', 'neg'))
-                if (imp_related and source_code == '3rd-party') or (
-                        not imp_related and source_code ==
-                        '3rd-party-reverse'):
-                    to_adds.append(('third', 'pos'))
-                if (not imp_related and source_code == '3rd-party') or (
-                        imp_related and source_code == '3rd-party-reverse'):
-                    to_adds.append(('third', 'neg'))
-
-                for gname, polarity in to_adds:
-                    graph = graphs[gname]
-                    supplies = graph['supplies']
-                    if sup_id not in supplies:
-                        supplies[sup_id] = {
-                            'colour': colour_list[len(supplies)],
-                            'text': source_code + ' ' + supply_name,
-                            'source_code': source_code}
-
-                    grvals = rvals[gname]
-                    graph[polarity + '_hhs'].append(
-                        {
-                            'colour': graph['supplies'][sup_id]['colour'],
-                            'running_total': grvals[polarity],
-                            'value': hhd_value, 'x': x, 'start_date': hh_date})
-                    grvals[polarity] += hhd_value
-                    max_scls[polarity] = max(
-                        max_scls[polarity], int(grvals[polarity]))
-
-                (
-                    hhd_value, hhd_start_date, status, imp_related,
-                    supply_name, source_code, sup_id) = next(
-                        rs, (None, None, None, None, None, None, None))
-
-            disp_val = rvals['gen']['pos'] - rvals['gen']['neg'] - \
-                rvals['exp']['pos']
-            used_val = rvals['imp']['pos'] + disp_val + \
-                rvals['third']['pos'] - rvals['third']['neg']
-            for val, graph_name in ((used_val, 'used'), (disp_val, 'disp')):
-                graph = graphs[graph_name]
-                pos_val = max(val, 0)
-                neg_val = abs(min(val, 0))
-                for gval, prefix in ((pos_val, 'pos'), (neg_val, 'neg')):
-                    graph[prefix + '_hhs'].append(
-                        {
-                            'colour': 'blue', 'x': x, 'start_date': hh_date,
-                            'value': gval, 'running_total': 0})
-                    max_scls[prefix] = max(max_scls[prefix], int(gval))
-
-            hh_date += HH
-            x += 1
+        hh_date += HH
+        x += 1
 
     max_height = 80
     scl_factor = max_height / max_scls['pos']

@@ -58,144 +58,145 @@ def content(contract_id, end_year, end_month, months, user):
         for site in sites:
             month_start = start_date
             month_finish = month_start + relativedelta(months=1) - HH
-            while not month_finish > finish_date:
-                for site_group in site.groups(
-                        sess, month_start, month_finish, True):
-                    if site_group.start_date > month_start:
-                        chunk_start = site_group.start_date
-                    else:
-                        chunk_start = month_start
-                    if site_group.finish_date > month_finish:
-                        chunk_finish = month_finish
-                    else:
-                        chunk_finish = site_group.finish_date
+            for i in range(months):
+                displaced_era = chellow.computer.displaced_era(
+                    sess, site, month_start, month_finish)
+                if displaced_era is None:
+                    continue
+                supplier_contract = displaced_era.imp_supplier_contract
+                if contract is not None and contract != supplier_contract:
+                    continue
 
-                    displaced_era = chellow.computer.displaced_era(
-                        sess, site_group, chunk_start, chunk_finish)
-                    if displaced_era is None:
-                        continue
-                    supplier_contract = displaced_era.imp_supplier_contract
-                    if contract is not None and contract != supplier_contract:
-                        continue
+                linked_sites = set()
+                generator_types = set()
+                for era in sess.query(Era).join(SiteEra).filter(
+                        SiteEra.site == site, Era.start_date <= month_finish,
+                        or_(
+                            Era.finish_date == null(),
+                            Era.finish_date >= month_start)):
+                    for site_era in era.site_eras:
+                        if site_era.site != site:
+                            linked_sites.add(site_era.site.code)
+                    supply = era.supply
+                    if supply.generator_type is not None:
+                        generator_types.add(supply.generator_type.code)
 
-                    linked_sites = ','.join(
-                        a_site.code for a_site in site_group.sites
-                        if not a_site == site)
-                    generator_types = ' '.join(
-                        sorted(
-                            [
-                                supply.generator_type.code for supply in
-                                site_group.supplies
-                                if supply.generator_type is not None]))
-                    vals = [
-                        site.code, site.name, linked_sites,
-                        hh_format(chunk_start), hh_format(chunk_finish),
-                        generator_types]
+                supply_ids = set()
+                for era in sess.query(Era).join(SiteEra).filter(
+                        SiteEra.site == site, SiteEra.is_physical,
+                        Era.start_date <= month_finish, or_(
+                            Era.finish_date == null(),
+                            Era.finish_date >= month_start)):
+                    supply_ids.add(era.supply.id)
 
-                    total_gen_breakdown = {}
+                vals = [
+                    site.code, site.name, ', '.join(list(linked_sites)),
+                    hh_format(month_start), hh_format(month_finish),
+                    ', '.join(list(generator_types))]
 
-                    results = iter(
-                        sess.execute(
-                            "select supply.id, hh_datum.value, "
-                            "hh_datum.start_date, channel.imp_related, "
-                            "source.code, generator_type.code as "
-                            "gen_type_code from hh_datum, channel, source, "
-                            "era, supply left outer join generator_type on "
-                            "supply.generator_type_id = generator_type.id "
-                            "where hh_datum.channel_id = channel.id and "
-                            "channel.era_id = era.id and era.supply_id = "
-                            "supply.id and supply.source_id = source.id and "
-                            "channel.channel_type = 'ACTIVE' and not "
-                            "(source.code = 'net' and channel.imp_related "
-                            "is true) and hh_datum.start_date >= "
-                            ":chunk_start and hh_datum.start_date "
-                            "<= :chunk_finish and "
-                            "supply.id = any(:supply_ids) order "
-                            "by hh_datum.start_date, supply.id",
-                            params={
-                                'chunk_start': chunk_start,
-                                'chunk_finish': chunk_finish,
-                                'supply_ids': [
-                                    s.id for s in site_group.supplies]}))
+                total_gen_breakdown = {}
 
-                    (
-                        sup_id, hh_val, hh_start, imp_related, source_code,
-                        gen_type_code) = next(
-                        results, (None, None, None, None, None, None))
+                results = iter(
+                    sess.execute(
+                        "select supply.id, hh_datum.value, "
+                        "hh_datum.start_date, channel.imp_related, "
+                        "source.code, generator_type.code as "
+                        "gen_type_code from hh_datum, channel, source, "
+                        "era, supply left outer join generator_type on "
+                        "supply.generator_type_id = generator_type.id "
+                        "where hh_datum.channel_id = channel.id and "
+                        "channel.era_id = era.id and era.supply_id = "
+                        "supply.id and supply.source_id = source.id and "
+                        "channel.channel_type = 'ACTIVE' and not "
+                        "(source.code = 'net' and channel.imp_related "
+                        "is true) and hh_datum.start_date >= "
+                        ":month_start and hh_datum.start_date "
+                        "<= :month_finish and "
+                        "supply.id = any(:supply_ids) order "
+                        "by hh_datum.start_date, supply.id",
+                        params={
+                            'month_start': month_start,
+                            'month_finish': month_finish,
+                            'supply_ids': sorted(list(supply_ids))}))
 
-                    hh_date = chunk_start
+                (
+                    sup_id, hh_val, hh_start, imp_related, source_code,
+                    gen_type_code) = next(
+                    results, (None, None, None, None, None, None))
 
-                    while hh_date <= finish_date:
-                        gen_breakdown = {}
-                        exported = 0
-                        while hh_start == hh_date:
-                            if not imp_related and source_code in (
-                                    'net', 'gen-net'):
-                                exported += hh_val
-                            if (imp_related and source_code == 'gen') or \
-                                    (not imp_related and
-                                        source_code == 'gen-net'):
-                                gen_breakdown[gen_type_code] = \
-                                    gen_breakdown.setdefault(
-                                        gen_type_code, 0) + hh_val
+                hh_date = month_start
 
-                            if (
-                                    not imp_related and
-                                    source_code == 'gen') or (
-                                    imp_related and
+                while hh_date <= finish_date:
+                    gen_breakdown = {}
+                    exported = 0
+                    while hh_start == hh_date:
+                        if not imp_related and source_code in (
+                                'net', 'gen-net'):
+                            exported += hh_val
+                        if (imp_related and source_code == 'gen') or \
+                                (not imp_related and
                                     source_code == 'gen-net'):
-                                gen_breakdown[gen_type_code] = \
-                                    gen_breakdown.setdefault(
-                                        gen_type_code, 0) - hh_val
+                            gen_breakdown[gen_type_code] = \
+                                gen_breakdown.setdefault(
+                                    gen_type_code, 0) + hh_val
 
-                            (
-                                sup_id, hh_val, hh_start, imp_related,
-                                source_code, gen_type_code) = next(
-                                results, (None, None, None, None, None, None))
+                        if (
+                                not imp_related and
+                                source_code == 'gen') or (
+                                imp_related and
+                                source_code == 'gen-net'):
+                            gen_breakdown[gen_type_code] = \
+                                gen_breakdown.setdefault(
+                                    gen_type_code, 0) - hh_val
 
-                        displaced = sum(gen_breakdown.values()) - exported
-                        added_so_far = 0
-                        for key in sorted(gen_breakdown.keys()):
-                            kwh = gen_breakdown[key]
-                            if kwh + added_so_far > displaced:
-                                total_gen_breakdown[key] = \
-                                    total_gen_breakdown.get(key, 0) + \
-                                    displaced - added_so_far
-                                break
-                            else:
-                                total_gen_breakdown[key] = \
-                                    total_gen_breakdown.get(key, 0) + kwh
-                                added_so_far += kwh
+                        (
+                            sup_id, hh_val, hh_start, imp_related,
+                            source_code, gen_type_code) = next(
+                            results, (None, None, None, None, None, None))
 
-                        hh_date += HH
-
-                    for title in ['chp', 'lm', 'turb', 'pv']:
-                        vals.append(str(total_gen_breakdown.get(title, '')))
-
-                    site_ds = chellow.computer.SiteSource(
-                        sess, site, chunk_start, chunk_finish, forecast_date,
-                        None, caches, displaced_era)
-                    disp_func = chellow.computer.contract_func(
-                        caches, supplier_contract, 'displaced_virtual_bill',
-                        None)
-                    disp_func(site_ds)
-                    bill = site_ds.supplier_bill
-                    for title in bill_titles:
-                        if title in bill:
-                            val = bill[title]
-                            if isinstance(val, Datetime):
-                                val = hh_format(val)
-                            else:
-                                val = str(val)
-                            vals.append(val)
-                            del bill[title]
+                    displaced = sum(gen_breakdown.values()) - exported
+                    added_so_far = 0
+                    for key in sorted(gen_breakdown.keys()):
+                        kwh = gen_breakdown[key]
+                        if kwh + added_so_far > displaced:
+                            total_gen_breakdown[key] = \
+                                total_gen_breakdown.get(key, 0) + \
+                                displaced - added_so_far
+                            break
                         else:
-                            vals.append('')
+                            total_gen_breakdown[key] = \
+                                total_gen_breakdown.get(key, 0) + kwh
+                            added_so_far += kwh
 
-                    for k in sorted(bill.keys()):
-                        vals.append(k)
-                        vals.append(str(bill[k]))
-                    writer.writerow(vals)
+                    hh_date += HH
+
+                for title in ['chp', 'lm', 'turb', 'pv']:
+                    vals.append(str(total_gen_breakdown.get(title, '')))
+
+                site_ds = chellow.computer.SiteSource(
+                    sess, site, month_start, month_finish, forecast_date,
+                    None, caches, displaced_era)
+                disp_func = chellow.computer.contract_func(
+                    caches, supplier_contract, 'displaced_virtual_bill',
+                    None)
+                disp_func(site_ds)
+                bill = site_ds.supplier_bill
+                for title in bill_titles:
+                    if title in bill:
+                        val = bill[title]
+                        if isinstance(val, Datetime):
+                            val = hh_format(val)
+                        else:
+                            val = str(val)
+                        vals.append(val)
+                        del bill[title]
+                    else:
+                        vals.append('')
+
+                for k in sorted(bill.keys()):
+                    vals.append(k)
+                    vals.append(str(bill[k]))
+                writer.writerow(vals)
 
                 month_start += relativedelta(months=1)
                 month_finish = month_start + relativedelta(months=1) - HH
