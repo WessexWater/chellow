@@ -2,7 +2,7 @@
 
 {% block title %}
 	Gas Contracts &gt; {{g_bill.g_batch.g_contract.name}} &gt; Batches &gt;
- 	{{g_bill.batch.reference}} &gt; {{g_bill.reference}}
+ 	{{g_bill.g_batch.reference}} &gt; {{g_bill.reference}}
 {% endblock %}
 
 {% block nav %}
@@ -11,7 +11,7 @@
 			href="{{context_path}}/g_contracts/{{g_bill.g_batch.g_contract.id}}"
 			>{{g_bill.g_batch.g_contract.name}}</a> &gt;
 	<a
-	 		href="{{context_path}}/g_batches?g_contract_id={{bill.batch.contract.id}}"
+	 		href="{{context_path}}/g_batches?g_contract_id={{g_bill.g_batch.g_contract.id}}"
 			>Batches</a> &gt;
 	<a
 	 		href="{{context_path}}/g_batches/{{g_bill.g_batch.id}}"

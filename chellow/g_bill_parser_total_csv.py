@@ -1,16 +1,12 @@
 from dateutil.relativedelta import relativedelta
-from net.sf.chellow.monad import Monad
-import utils
 import csv
 import pytz
-import collections
-import datetime
-import decimal
+from collections import defaultdict
+from datetime import datetime as Datetime
+from decimal import Decimal
+from chellow.utils import HH
+from io import StringIO
 
-Monad.getUtils()['impt'](
-    globals(), 'db', 'utils', 'templater', 'bill_import', 'edi_lib')
-validate_hh_start, HH = utils.validate_hh_start, utils.HH
-UserException = utils.UserException
 
 READ_TYPE_MAP = {'PA': 'A'}
 
@@ -21,23 +17,19 @@ def parse_read_type(rt):
 
 
 def parse_date(date_str):
-    return datetime.datetime.strptime(
-        date_str, "%d/%m/%y").replace(tzinfo=pytz.utc)
+    return Datetime.strptime(date_str, "%d/%m/%y").replace(tzinfo=pytz.utc)
 
 
 def parse_decimal(dec_str):
-    return decimal.Decimal(''.join(c for c in dec_str if c in '-0123456789.'))
-
-
-def unicode_reader(reader):
-    for vals in reader:
-        yield tuple(unicode(val, 'utf-8', 'ignore') for val in vals)
+    return Decimal(''.join(c for c in dec_str if c in '-0123456789.'))
 
 
 class Parser():
     def __init__(self, f):
-        self.csv_reader = iter(unicode_reader(csv.reader(f)))
-        self.titles = ','.join(self.csv_reader.next())
+        self.csv_reader = csv.reader(
+            StringIO(f.getvalue().decode('utf8', errors='ignore')),
+            skipinitialspace=True)
+        self.titles = ','.join(next(self.csv_reader))
         self._line_number = None
 
     @property
@@ -57,7 +49,7 @@ class Parser():
                 continue
             bill_reference = row[8]
             if last_bill_reference != bill_reference:
-                breakdown = collections.defaultdict(int, {'gas_rate': set()})
+                breakdown = defaultdict(int, {'gas_rate': set()})
                 raw_bill = {
                     'reference': bill_reference, 'reads': [], 'kwh': 0,
                     'breakdown': breakdown, 'net_gbp': 0, 'vat_gbp': 0,

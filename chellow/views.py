@@ -49,7 +49,6 @@ import gc
 import psutil
 from pympler import muppy, summary
 import platform
-import json
 import chellow.g_bill_import
 
 
@@ -753,7 +752,7 @@ def site_edit_get(site_id):
 @app.route('/sites/<int:site_id>/edit', methods=['POST'])
 def site_edit_post(site_id):
     try:
-        chellow.models.set_read_write(g.sess)
+        set_read_write(g.sess)
         site = Site.get_by_id(g.sess, site_id)
         if 'delete' in request.form:
             site.delete(g.sess)
@@ -845,7 +844,7 @@ def site_edit_post(site_id):
                 exp_sc = req_int('exp_sc')
                 exp_llfc_code = req_str("exp_llfc_code")
 
-            supply = site.insert_supply(
+            supply = site.insert_e_supply(
                 g.sess, source, generator_type, name, start_date, None,
                 gsp_group, mop_contract, mop_account, hhdc_contract,
                 hhdc_account, msn, pc, mtc_code, cop, ssc, imp_mpan_core,
@@ -862,10 +861,10 @@ def site_edit_post(site_id):
             g_contract = GContract.get_by_id(g.sess, g_contract_id)
             account = req_str('account')
             start_date = req_date('start')
-            g_supply = site.insert_gas_supply(
+            site.insert_g_supply(
                 g.sess, name, start_date, None, msn, mprn, g_contract, account)
             g.sess.commit()
-            return chellow_redirect('/g_supplies/' + str(g_supply.id), 303)
+            return chellow_redirect('/sites/' + str(site.id), 303)
 
     except BadRequest as e:
         g.sess.rollback()
@@ -4739,17 +4738,19 @@ def g_supplies_get():
             max_results = 50
 
         g_eras = g.sess.query(GEra).from_statement(
-            "select e1.* from g_era as e1 "
-            "inner join (select e2.g_supply_id, max(e2.start_date) "
-            "as max_start_date from g_era as e2 "
-            "join g_supply on (e2.g_supply_id = g_supply.id) "
-            "where replace(lower(g_supply.mprn), ' ', '') "
-            "like lower(:reducedPattern) "
-            "or lower(e2.account) like lower(:pattern) "
-            "or lower(e2.msn) like lower(:pattern) "
-            "group by e2.g_supply_id) as sq "
-            "on e1.g_supply_id = sq.g_supply_id "
-            "and e1.start_date = sq.max_start_date limit :max_results").params(
+            text(
+                "select e1.* from g_era as e1 "
+                "inner join (select e2.g_supply_id, max(e2.start_date) "
+                "as max_start_date from g_era as e2 "
+                "join g_supply on (e2.g_supply_id = g_supply.id) "
+                "where replace(lower(g_supply.mprn), ' ', '') "
+                "like lower(:reducedPattern) "
+                "or lower(e2.account) like lower(:pattern) "
+                "or lower(e2.msn) like lower(:pattern) "
+                "group by e2.g_supply_id) as sq "
+                "on e1.g_supply_id = sq.g_supply_id "
+                "and e1.start_date = sq.max_start_date limit :max_results")
+            ).params(
             pattern="%" + pattern + "%",
             reducedPattern="%" + reduced_pattern + "%",
             max_results=max_results).all()
@@ -4763,7 +4764,7 @@ def g_supplies_get():
         return render_template('g_supplies.html')
 
 
-@app.route('/g_supplies/<int:g_supply_id')
+@app.route('/g_supplies/<int:g_supply_id>')
 def g_supply_get(g_supply_id):
     debug = ''
     try:
@@ -4862,7 +4863,7 @@ def g_supply_edit_post(g_supply_id):
         if 'delete' in request.values:
             g_supply.delete(g.sess)
             g.sess.commit()
-            return chellow_redirect("/g_supplies")
+            return chellow_redirect("/g_supplies", 303)
         elif 'insert_g_era' in request.values:
             start_date = req_date('start')
             g_supply.insert_g_era_at(g.sess, start_date)
@@ -4873,7 +4874,7 @@ def g_supply_edit_post(g_supply_id):
             name = req_str("name")
             g_supply.update(mprn, name)
             g.sess.commit()
-            return chellow_redirect("/g_supplies/" + str(g_supply.id))
+            return chellow_redirect("/g_supplies/" + str(g_supply.id), 303)
     except BadRequest as e:
         flash(e.description)
         g_eras = g.sess.query(GEra).filter(
@@ -4923,7 +4924,7 @@ def g_contract_add_post():
         contract = GContract.insert(
             g.sess, name, charge_script, properties, start_date, None, {})
         g.sess.commit()
-        return chellow_redirect("/g_contracts/" + str(contract.id))
+        return chellow_redirect("/g_contracts/" + str(contract.id), 303)
     except BadRequest as e:
         flash(e.description)
         g.sess.rollback()
@@ -4953,7 +4954,7 @@ def g_contract_edit_post(g_contract_id):
             properties = req_json('properties')
             g_contract.update(g.sess, name, charge_script, properties)
             g.sess.commit()
-            return chellow_redirect('/g_contracts/' + str(g_contract.id))
+            return chellow_redirect('/g_contracts/' + str(g_contract.id), 303)
     except BadRequest as e:
         flash(e.description)
         g.sess.rollback()
@@ -4981,7 +4982,8 @@ def g_rate_script_add_post(g_contract_id):
         start_date = req_date('start')
         g_rate_script = g_contract.insert_g_rate_script(g.sess, start_date, {})
         g.sess.commit()
-        return chellow_redirect('/g_rate_scripts/' + str(g_rate_script.id))
+        return chellow_redirect(
+            '/g_rate_scripts/' + str(g_rate_script.id), 303)
     except BadRequest as e:
         flash(e.description)
         now = utc_datetime_now()
@@ -5000,17 +5002,16 @@ def g_rate_script_edit_get(g_rate_script_id):
 
 
 @app.route(
-    '/g_rate_scripts/<int:g_rate_script_id>/<int:g_rate_script>',
-    methods=["POST"])
+    '/g_rate_scripts/<int:g_rate_script_id>/edit', methods=["POST"])
 def g_rate_script_edit_post(g_rate_script_id):
     try:
         set_read_write(g.sess)
         g_rate_script = GRateScript.get_by_id(g.sess, g_rate_script_id)
         g_contract = g_rate_script.g_contract
-        if 'delete' in 'delete':
+        if 'delete' in request.values:
             g_contract.delete_g_rate_script(g.sess, g_rate_script)
             g.sess.commit()
-            return chellow_redirect('/g_contracts/' + str(g_contract.id))
+            return chellow_redirect('/g_contracts/' + str(g_contract.id), 303)
         else:
             script = req_json('script')
             start_date = req_date('start')
@@ -5019,7 +5020,8 @@ def g_rate_script_edit_post(g_rate_script_id):
             g_contract.update_g_rate_script(
                 g.sess, g_rate_script, start_date, finish_date, script)
             g.sess.commit()
-            return chellow_redirect('/g_rate_scripts/' + str(g_rate_script.id))
+            return chellow_redirect(
+                '/g_rate_scripts/' + str(g_rate_script.id), 303)
     except BadRequest as e:
         flash(e.description)
         g.sess.rollback()
@@ -5063,7 +5065,7 @@ def g_batch_add_post(g_contract_id):
 
         g_batch = g_contract.insert_g_batch(g.sess, reference, description)
         g.sess.commit()
-        return chellow_redirect("/g_batches/" + str(g_batch.id), 400)
+        return chellow_redirect("/g_batches/" + str(g_batch.id), 303)
     except BadRequest as e:
         flash(e.description)
         g.sess.rollback()
@@ -5117,7 +5119,7 @@ def g_batch_edit_post(g_batch_id):
             g_contract = g_batch.g_contract
             g_batch.delete(g.sess)
             g.sess.commit()
-            return chellow_redirect("/g_contracts/" + str(g_contract.id))
+            return chellow_redirect("/g_contracts/" + str(g_contract.id), 303)
     except BadRequest as e:
         flash(e.description)
         return make_response(
@@ -5132,7 +5134,7 @@ def g_bill_get(g_bill_id):
         GRegisterRead.pres_date.desc())
     fields = {'g_bill': g_bill, 'g_reads': g_reads}
     try:
-        breakdown = json.loads(g_bill.breakdown)
+        breakdown = g_bill.make_breakdown()
 
         raw_lines = g_bill.raw_lines
 
@@ -5140,7 +5142,7 @@ def g_bill_get(g_bill_id):
         columns = set()
         grid = defaultdict(dict)
 
-        for k, v in breakdown.iteritems():
+        for k, v in breakdown.items():
             if k.endswith('-gbp'):
                 columns.add('gbp')
                 row_name = k[:-4]
@@ -5148,7 +5150,7 @@ def g_bill_get(g_bill_id):
                 grid[row_name]['gbp'] = v
                 del breakdown[k]
 
-        for k, v in breakdown.iteritems():
+        for k, v in breakdown.items():
             for row_name in sorted(list(rows), key=len, reverse=True):
                 if k.startswith(row_name + '-'):
                     col_name = k[len(row_name) + 1:]
@@ -5157,7 +5159,7 @@ def g_bill_get(g_bill_id):
                     del breakdown[k]
                     break
 
-        for k, v in breakdown.iteritems():
+        for k, v in breakdown.items():
             pair = k.split('-')
             row_name = '-'.join(pair[:-1])
             column_name = pair[-1]
@@ -5188,43 +5190,37 @@ def g_bill_get(g_bill_id):
 def g_bill_imports_get():
     g_batch_id = req_int('g_batch_id')
     g_batch = GBatch.get_by_id(g.sess, g_batch_id)
-    parser_names = ', '.join(
-        '.' + row[0][14:] for row in g.sess.query(Contract.name).filter(
-            Contract.name.like("g_bill_parser_%")))
     importer_ids = sorted(
         chellow.g_bill_import.get_bill_importer_ids(g_batch.id), reverse=True)
 
     return render_template(
         'g_bill_imports.html', importer_ids=importer_ids, g_batch=g_batch,
-        parser_names=parser_names)
+        parser_names=chellow.g_bill_import.find_parser_names())
 
 
-@app.route('/g_bill_imports')
+@app.route('/g_bill_imports', methods=["POST"])
 def g_bill_imports_post():
     try:
         g_batch_id = req_int('g_batch_id')
         g_batch = GBatch.get_by_id(g.sess, g_batch_id)
         file_item = request.files["import_file"]
-        f = StringIO.StringIO()
-        f.writelines(file_item.f.stream)
+        f = io.BytesIO(file_item.stream.read())
         f.seek(0, os.SEEK_END)
         file_size = f.tell()
         f.seek(0)
         imp_id = chellow.g_bill_import.start_bill_importer(
-            g.sess, g_batch.id, file_item.getName(), file_size, f)
-        return chellow_redirect("/g_bill_imports/" + str(imp_id))
+            g.sess, g_batch.id, file_item.filename, file_size, f)
+        return chellow_redirect("/g_bill_imports/" + str(imp_id), 303)
     except BadRequest as e:
         flash(e.description)
-        parser_names = ', '.join(
-            '.' + row[0][14:] for row in g.sess.query(Contract.name).filter(
-                Contract.name.like("g_bill_parser_%")))
         importer_ids = sorted(
             chellow.g_bill_import.get_bill_importer_ids(g_batch.id),
             reverse=True)
         return make_response(
             render_template(
                 'g_bill_imports.html', importer_ids=importer_ids,
-                g_batch=g_batch, parser_names=parser_names), 400)
+                g_batch=g_batch,
+                parser_names=chellow.g_bill_import.find_parser_names()), 400)
 
 
 @app.route('/g_bill_imports/<int:imp_id>')
@@ -5272,7 +5268,7 @@ def g_bill_add_post(g_batch_id):
             g.sess, account, reference, issue_date, start_date, finish_date,
             kwh, net, vat, gross, breakdown, GSupply.get_by_mprn(g.sess, mprn))
         g.sess.commit()
-        return chellow_redirect("/g_bills/" + str(g_bill.id))
+        return chellow_redirect("/g_bills/" + str(g_bill.id), 303)
     except BadRequest as e:
         flash(e.description)
         g.sess.rollback()
@@ -5304,32 +5300,34 @@ def g_era_get(g_era_id):
 def g_era_post(g_era_id):
     try:
         set_read_write(g.sess)
-        g_era_id = req_int('g_era_id')
         g_era = GEra.get_by_id(g.sess, g_era_id)
 
         if 'delete' in request.values:
             g_supply = g_era.supply
             g_supply.delete_g_era(g.sess, g_era)
             g.sess.commit()
-            return chellow_redirect('/g_supplies/' + str(g_supply.id))
+            return chellow_redirect('/g_supplies/' + str(g_supply.id), 303)
         elif 'attach' in request.values:
             site_code = req_str('site_code')
             site = Site.get_by_code(g.sess, site_code)
             g_era.attach_site(g.sess, site)
             g.sess.commit()
-            return chellow_redirect('/g_supplies/' + str(g_era.g_supply.id))
+            return chellow_redirect(
+                '/g_supplies/' + str(g_era.g_supply.id), 303)
         elif 'detach' in request.values:
             site_id = req_int('site_id')
             site = Site.get_by_id(g.sess, site_id)
             g_era.detach_site(g.sess, site)
             g.sess.commit()
-            return chellow_redirect('/g_supplies/' + str(g_era.g_supply.id))
+            return chellow_redirect(
+                '/g_supplies/' + str(g_era.g_supply.id), 303)
         elif 'locate' in request.values:
             site_id = req_int('site_id')
             site = Site.get_by_id(g.sess, site_id)
             g_era.set_physical_location(g.sess, site)
             g.sess.commit()
-            return chellow_redirect('/g_supplies/' + str(g_era.g_supply.id))
+            return chellow_redirect(
+                '/g_supplies/' + str(g_era.g_supply.id), 303)
         else:
             start_date = req_date('start')
             is_ended = req_bool('is_ended')
@@ -5343,7 +5341,8 @@ def g_era_post(g_era_id):
                 g.sess, g_era, start_date, finish_date, msn, g_contract,
                 account)
             g.sess.commit()
-            return chellow_redirect('/g_supplies/' + str(g_era.g_supply.id))
+            return chellow_redirect(
+                '/g_supplies/' + str(g_era.g_supply.id), 303)
     except BadRequest as e:
         flash(e.description)
         supplier_g_contracts = g.sess.query(GContract).order_by(GContract.name)
@@ -5373,7 +5372,7 @@ def g_bill_edit_post(g_bill_id):
             g_batch = g_bill.g_batch
             g_bill.delete(g.sess)
             g.sess.commit()
-            return chellow_redirect("/g_batches/" + str(g_batch.id))
+            return chellow_redirect("/g_batches/" + str(g_batch.id), 303)
         else:
             account = req_str('account')
             reference = req_str('reference')
@@ -5390,11 +5389,11 @@ def g_bill_edit_post(g_bill_id):
             bill_type = BillType.get_by_id(g.sess, type_id)
 
             g_bill.update(
-                g.sess, bill_type, reference, account, issue_date, start_date,
+                bill_type, reference, account, issue_date, start_date,
                 finish_date, kwh, net_gbp, vat_gbp, gross_gbp, raw_lines,
                 breakdown)
             g.sess.commit()
-            return chellow_redirect("/g_bills/" + str(g_bill.id))
+            return chellow_redirect("/g_bills/" + str(g_bill.id), 303)
     except BadRequest as e:
         flash(e.description)
         g_bill = GBill.get_by_id(g.sess, g_bill_id)
@@ -5435,7 +5434,7 @@ def g_read_add_post(g_bill_id):
             g.sess, msn, prev_value, prev_date, prev_type, pres_value,
             pres_date, pres_type, units, correction_factor, calorific_value)
         g.sess.commit()
-        return chellow_redirect("/g_bills/" + str(g_bill.id))
+        return chellow_redirect("/g_bills/" + str(g_bill.id), 303)
     except BadRequest as e:
         flash(e.description)
         g_read_types = g.sess.query(GReadType).order_by(GReadType.code)
@@ -5443,15 +5442,15 @@ def g_read_add_post(g_bill_id):
             'g_read_add.html', g_bill=g_bill, g_read_types=g_read_types)
 
 
-@app.route('/g_reads/<int:g_read_id>/edit', methods=['POST'])
+@app.route('/g_reads/<int:g_read_id>/edit')
 def g_read_edit_get(g_read_id):
     g_read_types = g.sess.query(GReadType).order_by(GReadType.code).all()
-    g_read = RegisterRead.get_by_id(g.sess, g_read_id)
+    g_read = GRegisterRead.get_by_id(g.sess, g_read_id)
     return render_template(
         'g_read_edit.html', g_read=g_read, g_read_types=g_read_types)
 
 
-@app.route('/g_reads/<int:g_read_id>/edit')
+@app.route('/g_reads/<int:g_read_id>/edit', methods=['POST'])
 def g_read_edit_post(g_read_id):
     try:
         set_read_write(g.sess)
@@ -5474,11 +5473,11 @@ def g_read_edit_post(g_read_id):
                 msn, prev_value, prev_date, prev_type, pres_value, pres_date,
                 pres_type, units, correction_factor, calorific_value)
             g.sess.commit()
-            return chellow_redirect("/g_bills/" + str(g_read.g_bill.id))
+            return chellow_redirect("/g_bills/" + str(g_read.g_bill.id), 303)
         elif 'delete' in request.values:
             g_read.delete()
             g.sess.commit()
-            return chellow_redirect('/g_bills/' + str(g_read.g_bill.id))
+            return chellow_redirect('/g_bills/' + str(g_read.g_bill.id), 303)
     except BadRequest as e:
         flash(e.description)
         g_read_types = g.sess.query(GReadType).order_by(GReadType.code).all()

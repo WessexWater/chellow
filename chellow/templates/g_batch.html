@@ -12,7 +12,7 @@
 			>{{g_batch.g_contract.name}}</a> &gt;
 	<a
 	 		href="{{context_path}}/g_batches?g_contract_id={{g_batch.g_contract.id}}"
-			>Batches</a> &gt; {{batch.reference}}
+			>Batches</a> &gt; {{g_batch.reference}}
 	[<a href="{{context_path}}/g_batches/{{g_batch.id}}/edit">edit</a>]
 {% endblock %}
 
@@ -20,17 +20,17 @@
 	<table>
 		<tr>
 			<th>Reference</th>
-			<td>{{batch.reference}}</td>
+			<td>{{g_batch.reference}}</td>
 		</tr>
 		<tr>
 			<th>Description</th>
-			<td>{{batch.description}}</td>
+			<td>{{g_batch.description}}</td>
 		</tr>
 		<tr>
 			<th>Number Of Bills</th>
-			<td>{{ bills|length }}</td>
+			<td>{{ g_bills|length }}</td>
 		</tr>
-		{% if batch_reports %}
+		{% if g_batch_reports %}
 			<tr>
 				<th>Custom Reports</th>
 				<td>
@@ -55,7 +55,7 @@
 		</li>
 		<li>
 			<a
-			 		href="{{context_path}}/reports/431?g_batch_id={{g_batch.id}}"
+			 		href="{{context_path}}/g_bill_imports?g_batch_id={{g_batch.id}}"
 					>Bill Imports</a>
 		</li>
 	</ul>
@@ -99,19 +99,19 @@
 		<tbody>
 			{% for g_bill in g_bills %}
 				<tr>
-					<td><a href="{{context_path}}/g_bills/{{bill.id}}">View</a></td>
-					<td>{{bill.reference}}</td>
-					<td>{{bill.account}}</td>
-					<td>{{bill.issue_date|hh_format}}</td>
-					<td>{{bill.start_date|hh_format}}</td>
-					<td>{{bill.finish_date|hh_format}}</td>
-					<td>{{bill.bill_type.code}}</td>
-					<td>{{bill.kwh}}</td>
-					<td>{{bill.net_gbp}}</td>
-					<td>{{bill.vat_gbp}}</td>
-					<td>{{bill.gross_gbp}}</td>
-					<td>{{bill.breakdown}}</td>
-					{% for read in bill.g_reads %}
+					<td><a href="{{context_path}}/g_bills/{{g_bill.id}}">View</a></td>
+					<td>{{g_bill.reference}}</td>
+					<td>{{g_bill.account}}</td>
+					<td>{{g_bill.issue_date|hh_format}}</td>
+					<td>{{g_bill.start_date|hh_format}}</td>
+					<td>{{g_bill.finish_date|hh_format}}</td>
+					<td>{{g_bill.bill_type.code}}</td>
+					<td>{{g_bill.kwh}}</td>
+					<td>{{g_bill.net_gbp}}</td>
+					<td>{{g_bill.vat_gbp}}</td>
+					<td>{{g_bill.gross_gbp}}</td>
+					<td>{{g_bill.breakdown}}</td>
+					{% for read in g_bill.g_reads %}
 						<td>{{read.msn}}</td>
 						<td>{{read.prev_date|hh_format}}</td>
 						<td>{{read.prev_value}}</td>

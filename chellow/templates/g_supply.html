@@ -56,7 +56,7 @@
 {% endblock %}
 
 {% block nav %}
-	<a href="{{context_path}}/g_supplies">Gas Supplies</a> &gt; {{supply.id}}
+	<a href="{{context_path}}/g_supplies">Gas Supplies</a> &gt; {{g_supply.id}}
  	[<a href="{{context_path}}/g_supplies/{{g_supply.id}}/edit">edit</a>]
 {% endblock %}
 
@@ -326,7 +326,7 @@
 
 	<form action="{{ context_path }}/reports/291/output/">
 		<fieldset>
-			<input type="hidden" name="supply_id" value="{{g_supply.id}}">
+			<input type="hidden" name="g_supply_id" value="{{g_supply.id}}">
 			<legend>Virtual Bills</legend>
 			From {{input_date('start', last_month_start)}} to
 			{{input_date('finish', last_month_finish)}}

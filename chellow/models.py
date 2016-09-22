@@ -1168,7 +1168,7 @@ class Site(Base, PersistentClass):
                     Era.finish_date >= start_date)).distinct(). \
             order_by(Site.code).all()
 
-    def insert_electricity_supply(
+    def insert_e_supply(
             self, sess, source, generator_type, supply_name, start_date,
             finish_date, gsp_group, mop_contract, mop_account, hhdc_contract,
             hhdc_account, msn, pc, mtc_code, cop, ssc, imp_mpan_core,
@@ -1207,7 +1207,7 @@ class Site(Base, PersistentClass):
         sess.flush()
         return supply
 
-    def insert_gas_supply(
+    def insert_g_supply(
             self, sess, supply_name, start_date, finish_date, msn, mprn,
             g_contract, account):
         g_supply = GSupply(mprn, supply_name, '')
@@ -3079,6 +3079,7 @@ def db_init(sess, root_path):
             ("HCUF", "Hundreds of cubic feet", '2.8317'),
             ("TCUF", "Tens of cubic feet", '0.28317'),
             ("OCUF", "One cubic foot", '0.028317'),
+            ("M3", "Cubic metres", '1'),
             ("HM3", "Hundreds of cubic metres", '100'),
             ("TM3", "Tens of cubic metres", '10'),
             ("NM3", "Tenths of cubic metres", '0.1')):
@@ -3610,7 +3611,7 @@ class GBill(Base, PersistentClass):
         self.vat_gbp = vat_gbp
         self.gross_gbp = gross_gbp
         self.raw_lines = raw_lines
-        self.breakdown = json.dumps(breakdown)
+        self.breakdown = str(breakdown)
 
     def insert_g_read(
             self, sess, msn, prev_value, prev_date, prev_type, pres_value,
@@ -3626,6 +3627,9 @@ class GBill(Base, PersistentClass):
     def delete(self, sess):
         sess.delete(self)
         sess.flush()
+
+    def make_breakdown(self):
+        return eval(self.breakdown)
 
 
 class GBatch(Base, PersistentClass):
@@ -3733,10 +3737,13 @@ class GContract(Base, PersistentClass):
         if not isinstance(properties, dict):
             raise BadRequest(
                 "The 'properties' argument must be a dictionary.")
-        self.properties = json.dumps(properties)
+        self.properties = str(properties)
 
     def update_state(self, state):
-        self.state = json.dumps(state)
+        if not isinstance(state, dict):
+            raise BadRequest(
+                "The 'state' argument must be a dictionary.")
+        self.state = str(state)
 
     def update_g_rate_script(
             self, sess, rscript, start_date, finish_date, script):
@@ -3751,7 +3758,7 @@ class GContract(Base, PersistentClass):
             raise BadRequest(
                 "The start date can't be after the finish date.")
 
-        rscript.script = json.dumps(script, sort_keys=True, indent='  ')
+        rscript.script = str(script)
 
         prev_rscript = self.find_g_rate_script_at(
             sess, rscript.start_date - HH)
@@ -3897,7 +3904,14 @@ class GContract(Base, PersistentClass):
         return batch
 
     def make_properties(self):
-        return json.loads(self.properties)
+        return eval(self.properties, {'datetime': Datetime})
+
+    def make_state(self):
+        s = "{}" if self.state is None else self.state.strip()
+        if len(s) == 0:
+            return {}
+        else:
+            return eval(s)
 
     @staticmethod
     def insert(
@@ -3941,7 +3955,10 @@ class GRateScript(Base, PersistentClass):
         self.g_contract = g_contract
         self.start_date = start_date
         self.finish_date = finish_date
-        self.script = json.dumps(script)
+        self.script = str(script)
+
+    def make_script(self):
+        return eval(self.script)
 
 
 class GUnits(Base):
@@ -3951,6 +3968,11 @@ class GUnits(Base):
     description = Column(String, nullable=False)
     factor = Column(Numeric, nullable=False)
     g_register_reads = relationship('GRegisterRead', backref='g_units')
+
+    def __init__(self, code, description, factor):
+        self.code = code
+        self.description = description
+        self.factor = factor
 
     @staticmethod
     def get_by_code(sess, code):

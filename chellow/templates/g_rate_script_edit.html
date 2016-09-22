@@ -35,21 +35,24 @@
 				<br>
 				<fieldset>
 					<legend>Start date</legend>
-					{{ input_date('start', rate_script.start_date) }}
+					{{ input_date('start', g_rate_script.start_date) }}
 				</fieldset>
 				<br />
 				<fieldset>
 					<legend>Finish date</legend>
 					<label>
-						Ended? {{ input_checkbox('has_finished', rate_script.finish_date != None) }}
+						Ended?
+					 	{{
+					 		input_checkbox(
+								'has_finished', g_rate_script.finish_date != None) }}
 					</label>
-					{{ input_date('finish', rate_script.finish_date) }}
+					{{ input_date('finish', g_rate_script.finish_date) }}
 				</fieldset>
 				<br>
 				<br>
 				Script
 				<br>
-				{{ input_textarea('script', rate_script.script, 40, 80) }}
+				{{ input_textarea('script', g_rate_script.script, 40, 80) }}
 				<br />
 		<br />
 		<input type="submit" value="Update">

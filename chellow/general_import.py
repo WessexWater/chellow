@@ -899,7 +899,7 @@ def general_import_supply(sess, action, vals, args):
                 exp_supplier_account = add_arg(
                     args, "Export Supplier Account", vals, 25)
 
-        supply = site.insert_electricity_supply(
+        supply = site.insert_e_supply(
             sess, source, gen_type, supply_name, start_date,
             finish_date, gsp_group, mop_contract, mop_account,
             hhdc_contract, hhdc_account, msn, pc, mtc_code, cop, ssc,

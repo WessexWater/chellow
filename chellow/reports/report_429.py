@@ -8,7 +8,6 @@ import sys
 import os
 import threading
 import csv
-import json
 from chellow.models import Session, GBatch, GBill, GEra, Site, SiteGEra
 import chellow.dloads
 from werkzeug.exceptions import BadRequest
@@ -131,7 +130,7 @@ def content(g_batch_id, g_bill_id, user):
                     GBill.finish_date >= vals['covered_start']).order_by(
                     GBill.issue_date.desc(), GBill.start_date):
                 vals['covered_bill_ids'].append(covered_bill.id)
-                bdown = json.loads(covered_bill.breakdown)
+                bdown = covered_bill.make_breakdown()
                 for title in bill_titles:
                     k = 'covered_' + title
                     v = None
@@ -214,8 +213,8 @@ def content(g_batch_id, g_bill_id, user):
             vals['site_code'] = site.code
             vals['site_name'] = site.name
 
-            for k, v in vals.iteritems():
-                if isinstance(v, Datetime.datetime):
+            for k, v in vals.items():
+                if isinstance(v, Datetime):
                     vals[k] = hh_format(v)
                 elif isinstance(v, list):
                     vals[k] = ','.join(map(str, v))

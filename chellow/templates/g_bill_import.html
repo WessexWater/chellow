@@ -15,7 +15,7 @@
 			>Batches</a> &gt;
 	<a
 			href="{{context_path}}/g_batches/{{g_batch.id}}"
-			>{{batch.reference}}</a> &gt;
+			>{{g_batch.reference}}</a> &gt;
 	<a
 	 		href="{{context_path}}/g_bill_imports?g_batch_id={{g_batch.id}}"
 			>Bill Imports</a> &gt;
@@ -50,7 +50,7 @@
 					<th>Issue Date</th>
 					<th>Start Date</th>
 					<th>Finish Date</th>
-					<th>Standing GBP</th>
+					<th>Net GBP</th>
 					<th>VAT 5%</th>
 					<th>VAT 15%</th>
 					<th>VAT 17.5%</th>
@@ -75,7 +75,7 @@
 						<td>{{bill.issue_date|hh_format}}</td>
 						<td>{{bill.start_date|hh_format}}</td>
 						<td>{{bill.finish_date|hh_format}}</td>
-						<td>{{bill.standing_gbp}}</td>
+						<td>{{bill.net_gbp}}</td>
 						<td>{{bill.vat_5pc}}</td>
 						<td>{{bill.vat_15pc}}</td>
 						<td>{{bill.vat_17_5pc}}</td>

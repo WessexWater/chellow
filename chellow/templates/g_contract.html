@@ -5,11 +5,10 @@
 {% endblock %}
 
 {% block nav %}
-	<a href="{{context_path}}/g_supplier_contracts">Gas Contracts</a>
-	&gt; {{contract.name}}
+	<a href="{{context_path}}/g_contracts">Gas Contracts</a> &gt;
+ 	{{contract.name}}
  	[<a
-	 	href="{{context_path}}/g_supplier_contracts/{{contract.id}}/edit"
-		>edit</a>]
+	 	href="{{context_path}}/g_contracts/{{contract.id}}/edit">edit</a>]
 {% endblock %}
 
 {% block content %}

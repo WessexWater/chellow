@@ -11,7 +11,7 @@
 {% endblock %}
 
 {% block content %}
-	{% if request.getMethod() == 'GET' and request.getParameter('delete') %}
+	{% if request.method == 'GET' and request.values.delete %}
 		<form method="post" action=".">
 			<fieldset>
 				<legend>Delete</legend>

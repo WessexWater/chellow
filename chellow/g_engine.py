@@ -1,5 +1,3 @@
-from net.sf.chellow.monad import Monad
-import collections
 import datetime
 import pytz
 from dateutil.relativedelta import relativedelta
@@ -7,24 +5,13 @@ from sqlalchemy import or_, cast, Float
 from sqlalchemy.sql.expression import null
 from sqlalchemy.orm import aliased
 import math
-import utils
-import db
-import simplejson as json
-import bank_holidays
-import computer
-
-Monad.getUtils()['impt'](
-    globals(), 'db', 'utils', 'templater', 'bank_holidays', 'computer')
-
-HH, hh_after, totalseconds = utils.HH, utils.hh_after, utils.totalseconds
-hh_before, hh_format = utils.hh_before, utils.hh_format
-
-Contract, GEra, GRateScript = db.Contract, db.GEra, db.GRateScript
-GRegisterRead = db.GRegisterRead
-BillType, GBill, GReadType = db.BillType, db.GBill, db.GReadType
-GBatch, GUnits = db.GBatch, db.GUnits
-
-UserException = utils.UserException
+from werkzeug.exceptions import BadRequest
+from collections import defaultdict
+from chellow.models import (
+    GRateScript, GEra, GRegisterRead, GBill, BillType, GReadType, GBatch,
+    GUnits)
+from chellow.utils import HH, hh_format, hh_after
+import chellow.computer
 
 
 class imdict(dict):
@@ -61,8 +48,8 @@ def get_times(sess, caches, start_date, finish_date, forecast_date, pw):
         return f_cache[forecast_date]
     except KeyError:
         if start_date > finish_date:
-            raise UserException('The start date is after the finish date.')
-        times_dict = collections.defaultdict(int)
+            raise BadRequest('The start date is after the finish date.')
+        times_dict = defaultdict(int)
         dt = finish_date
         years_back = 0
         while dt > forecast_date:
@@ -82,7 +69,7 @@ def get_g_engine_cache(caches, name):
     try:
         return caches['g_engine'][name]
     except KeyError:
-        caches['g_engine'] = collections.defaultdict(dict)
+        caches['g_engine'] = defaultdict(dict)
         return caches['g_engine'][name]
 
 
@@ -200,7 +187,7 @@ def g_rate(sess, caches, g_contract_id, date, name, pw):
                 cstart = max(start_date, month_before)
                 cfinish = month_after
 
-        ns = json.loads(rs.script)
+        ns = rs.make_script()
 
         script_dict = {'ns': func(ns), 'rates': {}}
         script_dict['rates']['_script_dict'] = script_dict
@@ -220,7 +207,7 @@ def g_rate(sess, caches, g_contract_id, date, name, pw):
         try:
             val = script_dict['ns'][name]
         except KeyError:
-            raise UserException(
+            raise BadRequest(
                 "Can't find the rate " + name + " in the rate script at " +
                 hh_format(date) + " of the contract " +
                 str(g_contract_id) + ".")
@@ -299,16 +286,16 @@ def _datum_generator(sess, years_back, caches, pw):
             utc_is_month_end = (hh_date + HH).day == 1 and hh_date.day != 1
             ct_is_month_end = (ct_dt + HH).day == 1 and ct_dt.day != 1
 
-            utc_decimal_hour = hh_date.hour + float(hh_date.minute) / 60
-            ct_decimal_hour = ct_dt.hour + float(ct_dt.minute) / 60
+            utc_decimal_hour = hh_date.hour + hh_date.minute / 60
+            ct_decimal_hour = ct_dt.hour + ct_dt.minute / 60
 
-            utc_bank_holidays = computer.hh_rate(
-                sess2, caches, bank_holidays.db_id, hh_date, 'bank_holidays',
-                pw)
+            utc_bank_holidays = chellow.computer.hh_rate(
+                sess2, caches, chellow.bank_holidays.db_id, hh_date,
+                'bank_holidays', pw)
             if utc_bank_holidays is None:
                 msg = "\nCan't find bank holidays for " + str(hh_date)
                 pw.println(msg)
-                raise UserException(msg)
+                raise BadRequest(msg)
             utc_bank_holidays = utc_bank_holidays[:]
             for i in range(len(utc_bank_holidays)):
                 utc_bank_holidays[i] = utc_bank_holidays[i][5:]
@@ -355,9 +342,9 @@ class DataSource():
         self.history_finish = times['history-finish']
 
         self.problem = ''
-        self.bill = collections.defaultdict(int, {'problem': ''})
+        self.bill = defaultdict(int, {'problem': ''})
         self.hh_data = []
-        self.rate_sets = collections.defaultdict(set)
+        self.rate_sets = defaultdict(set)
 
         self.g_bill = g_bill
         if self.g_bill is not None:
@@ -567,14 +554,13 @@ class DataSource():
                                 fore_read = read_list[-2]
 
                             if aft_read['msn'] == fore_read['msn']:
-                                num_hh = float(
-                                    totalseconds(
-                                        fore_read['date'] -
-                                        aft_read['date'])) / (30 * 60)
+                                num_hh = (
+                                    fore_read['date'] - aft_read['date']
+                                    ).total_seconds() / (30 * 60)
 
                                 tprs = {}
                                 for tpr_code, initial_val in \
-                                        aft_read['reads'].iteritems():
+                                        aft_read['reads'].items():
                                     if tpr_code in fore_read['reads']:
                                         end_val = fore_read['reads'][tpr_code]
                                     else:
@@ -587,7 +573,7 @@ class DataSource():
                                             math.log10(initial_val)) + 1
                                         kwh = 10 ** digits + kwh
 
-                                    tprs[tpr_code] = float(kwh) / num_hh
+                                    tprs[tpr_code] = kwh / num_hh
 
                                 pairs.append(
                                     {
@@ -638,11 +624,11 @@ class DataSource():
                 self.consumption_info += 'pairs - \n' + str(pairs)
 
                 for pair in pairs:
-                    pair_hhs = totalseconds(
-                        pair['finish-date'] + HH - pair['start-date']) / \
-                        (60 * 30)
+                    pair_hhs = (
+                        pair['finish-date'] + HH - pair['start-date']
+                        ).total_seconds() / (60 * 30)
                     orig_dte = dte
-                    for tpr_code, pair_kwh in pair['tprs'].iteritems():
+                    for tpr_code, pair_kwh in pair['tprs'].items():
                         hh_date = pair['start-date']
                         dte = orig_dte
                         datum_generator = _datum_generator(
@@ -731,10 +717,9 @@ class DataSource():
                             units_consumed = 10 ** digits - prev_value + \
                                 pres_value
 
-                        hh_units_consumed = float(units_consumed) / \
-                            float(
-                                totalseconds(pres_date - prev_date) /
-                                (60 * 30))
+                        hh_units_consumed = units_consumed / (
+                            (pres_date - prev_date).total_seconds() /
+                            (60 * 30))
                         hh_kwh = hh_units_consumed * g_units_factor * \
                             correction_factor * calorific_value
 
@@ -775,14 +760,14 @@ class DataSource():
                                     'utc_month': dt_utc.month,
                                     'utc_day': dt_utc.day,
                                     'utc_decimal_hour': dt_utc.hour +
-                                    float(dt_utc.minute) / 60,
+                                    dt_utc.minute / 60,
                                     'utc_year': dt_utc.year,
                                     'utc_hour': dt_utc.hour,
                                     'utc_minute': dt_utc.minute,
                                     'ct_year': dt_ct.year,
                                     'ct_month': dt_ct.month,
                                     'ct_decimal-hour': dt_ct.hour +
-                                    float(dt_ct.minute) / 60,
+                                    dt_ct.minute / 60,
                                     'ct_day_of_week': dt_ct.weekday(),
                                     'utc_day_of_week':
                                     dt_utc.weekday(),
@@ -815,5 +800,5 @@ class DataSource():
             return val
 
     def rate(self, contract_id, date, name):
-        return computer.hh_rate(
+        return chellow.computer.hh_rate(
             self.sess, self.caches, contract_id, date, name, self.pw)

@@ -9,6 +9,7 @@ from jinja2 import Environment
 import time
 import traceback
 from json import loads
+from json.decoder import JSONDecodeError
 
 
 clogs = deque()
@@ -48,7 +49,11 @@ def req_int(name):
 
 
 def req_json(name):
-    return loads(req_str(name))
+    try:
+        return loads(req_str(name))
+    except JSONDecodeError as e:
+        raise BadRequest(
+            "Problem parsing the field " + name + " as JSON " + str(e) + ".")
 
 
 def req_date(prefix, resolution='minute'):

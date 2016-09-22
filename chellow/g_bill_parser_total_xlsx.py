@@ -1,24 +1,19 @@
 from dateutil.relativedelta import relativedelta
-from net.sf.chellow.monad import Monad
-import utils
 import openpyxl
 import pytz
-import collections
+from collections import defaultdict
 from itertools import islice
-
-Monad.getUtils()['impt'](
-    globals(), 'db', 'utils', 'templater', 'bill_import', 'edi_lib')
-validate_hh_start, HH = utils.validate_hh_start, utils.HH
-UserException = utils.UserException
+from chellow.utils import HH
 
 
 class Parser():
     def __init__(self, f):
         self.book = openpyxl.load_workbook(filename=f)
         self.sheet = self.book.get_sheet_by_name('Report')
+        self.rows = tuple(self.sheet.rows)
 
         self.titles = ','.join(
-            c.value for c in self.sheet.rows[0] if c.value is not None)
+            c.value for c in self.rows[0] if c.value is not None)
         self._line_number = None
 
     @property
@@ -33,12 +28,12 @@ class Parser():
         raw_bills = []
         last_bill_reference = None
         raw_bill = None
-        for self._line_number, row in enumerate(self.sheet.rows[1:]):
+        for self._line_number, row in enumerate(self.rows[1:]):
             if row[0].value is None:
                 continue
             bill_reference = str(row[8].value)
             if last_bill_reference != bill_reference:
-                breakdown = collections.defaultdict(int, {'gas_rate': set()})
+                breakdown = defaultdict(int, {'gas_rate': set()})
                 raw_bill = {
                     'reference': bill_reference, 'reads': [], 'kwh': 0,
                     'breakdown': breakdown, 'net_gbp': 0, 'vat_gbp': 0,

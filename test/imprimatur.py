@@ -240,7 +240,7 @@
 
     {
         'name': "Set up TLM downloader",
-        'path': '/non_core_contracts/9/edit',
+        'path': '/non_core_contracts/10/edit',
         'method': 'post',
         'data': {
             'properties': """
@@ -252,14 +252,14 @@
         'status_code': 303},
     {
         'name': "Do an 'import now' on TLM.",
-        'path': '/non_core_contracts/9/auto_importer',
+        'path': '/non_core_contracts/10/auto_importer',
         'method': 'post',
         'data': {
             'now': 'Now'},
         'status_code': 303},
     {
         'name': "Check that an TLM import has happened.",
-        'path': '/non_core_contracts/9/auto_importer',
+        'path': '/non_core_contracts/10/auto_importer',
         'tries': {},
         'regexes': [
             r"Added new rate script\."],
@@ -742,10 +742,8 @@ def virtual_bill_titles():
     {
         'path': '/sites/4/edit',
         'regexes': [
-            r"22 6354 2983 570",
-
-            # Check we the 'site_id' field is there
-            r'<fieldset>\s*<input type="hidden" name="site_id" value="4">\s*'],
+            r'22 6354 2983 570',
+            r'<legend>Update this site</legend>'],
         'status_code': 200},
 
     # Can we see a site ok?
@@ -1537,7 +1535,7 @@ def virtual_bill_titles():
             "Half-hourlies 2007 with the reference 04-003\."],
         'status_code': 400},
 
-    # Create a new import. Supplier contract 30
+    # Create a new import. Supplier contract 31
     {
         'name': "Bill imports",
         'path': '/supplier_bill_imports',
@@ -2866,7 +2864,7 @@ def virtual_bill(supply_source):
     # Insert rate script
     {
         'name': "Manipulate dno contracts",
-        'path': '/dno_contracts/13/add_rate_script',
+        'path': '/dno_contracts/14/add_rate_script',
         'method': 'post',
         'data': {
             # DNO 10
@@ -5271,7 +5269,7 @@ def virtual_bill(supply_source):
 
     {
         'name': "Test bulk ignore.",
-        'path': '/hhdc_contracts/34/edit',
+        'path': '/hhdc_contracts/30/edit',
         'method': 'post',
         'data': {
             'ignore_year': "2008",
@@ -5316,7 +5314,7 @@ def virtual_bill(supply_source):
         'status_code': 200},
     {
         'name': "NHH CSV import",
-        'path': '/supplier_contracts/42/add_batch',
+        'path': '/supplier_contracts/38/add_batch',
         'method': 'post',
         'data': {
             'reference': "07-002",
@@ -5324,7 +5322,7 @@ def virtual_bill(supply_source):
         'status_code': 303},
 
     {
-        'name': "Supplier contract 42",
+        'name': "Supplier contract 38",
         'path': '/supplier_bill_imports',
         'method': 'post',
         'data': {
@@ -5335,7 +5333,7 @@ def virtual_bill(supply_source):
             r"/supplier_bill_imports/5"]},
 
     {
-        'name': "Supplier contract 42, batch 7",
+        'name': "Supplier contract 38, batch 7",
         'path': '/supplier_bill_imports/5',
         'tries': {},
         'status_code': 200,
@@ -5343,7 +5341,7 @@ def virtual_bill(supply_source):
             r"All the bills have been successfully loaded and attached to "
             "the batch\."]},
 
-    # Supplier contract 42, batch 7, bill 10
+    # Supplier contract 38, batch 7, bill 10
     {
         'path': '/reads/7/edit',
         'regexes': [
@@ -5403,10 +5401,7 @@ def virtual_bill(supply_source):
             r"/supplies/2/hh_data?",
 
             # Check we can see the site
-            r'<a\s*'
-            r'href="/sites/1"\s*'
-            r'title="Lower Treave"\s*'
-            r'>CI004</a>',
+            r'<a href="/sites/1" title="Lower Treave">CI004</a>',
 
             # Check a link to supplier bill is correct
             r'<a href="/supplier_bills/11">View</a>',
@@ -5415,15 +5410,11 @@ def virtual_bill(supply_source):
             r'<form action="/reports/149">\s*<fieldset>\s*'
             '<input type="hidden" name="supply_id"',
             r'<td rowspan="4">\s*'
-            r'<a\s*'
-            r'href="/pcs/9"\s*'
-            r'title="Half-hourly">00</a>\s*'
-            r'</td>\s*'
-            r'<td rowspan="4"></td>\s*'
-            r'<td rowspan="4">\s*'
-            r'<a href="/mtcs/52"\s*'
-            r'title="HH COP5 And Above With Comms">845</a>\s*'
-            r'</td>'],
+            '<a href="/pcs/9" title="Half-'
+            'hourly">00</a>\s*</td>\s*<td rowspan="4"></td>\s*'
+            '<td rowspan="4">\s*'
+            '<a href="/mtcs/52" title="HH '
+            'COP5 And Above With Comms">845</a>\s*</td>'],
         'status_code': 200},
 
     # Supply 10
@@ -5444,9 +5435,9 @@ def virtual_bill(supply_source):
             'finish_day': "03",
             'finish_hour': "23",
             'finish_minute': "30",
-            'mop_contract_id': "37",
+            'mop_contract_id': "33",
             'mop_account': "mc-22 1065 3921 534",
-            'hhdc_contract_id': "35",
+            'hhdc_contract_id': "31",
             'hhdc_account': "dc-22 1065 3921 534",
             'msn': "I02D89150",
             'pc_id': "3",
@@ -5456,7 +5447,7 @@ def virtual_bill(supply_source):
             'imp_llfc_code': "110",
             'imp_mpan_core': "22 1065 3921 534",
             'imp_sc': "30",
-            'imp_supplier_contract_id': "39",
+            'imp_supplier_contract_id': "35",
             'imp_supplier_account': "SA342376"},
         'status_code': 303},
     {
@@ -6503,9 +6494,10 @@ def virtual_bill(supply_source):
 
     {
         'name': "Check that the update worked",
-        'path': '/chellow/reports/279/output/?hhdc_contract_id=58',
+        'path': '/hhdc_contracts/30',
         'status_code': 200,
-        'regexes': [r'&#39;hostname&#39;: &#39;localhost&#39;,']},
+        'regexes': [
+            r'&#39;hostname&#39;: &#39;localhost&#39;,']},
 
     # Do an 'import now'
     {
@@ -6529,7 +6521,7 @@ def virtual_bill(supply_source):
 
     {
         'name': "System price",
-        'path': '/non_core_contracts/8/edit',
+        'path': '/non_core_contracts/9/edit',
         'method': 'post',
         'data': {
             'name': 'system_price',
@@ -6543,15 +6535,15 @@ def virtual_bill(supply_source):
 
     {
         'name': "Do an 'import now'",
-        'path': '/non_core_contracts/8/auto_importer',
+        'path': '/non_core_contracts/9/auto_importer',
         'method': 'post',
         'regexes': [
-            '/non_core_contracts/8/auto_importer'],
+            '/non_core_contracts/9/auto_importer'],
         'status_code': 303},
 
     {
         'name': 'System Price',
-        'path': '/non_core_contracts/8/auto_importer',
+        'path': '/non_core_contracts/9/auto_importer',
         'tries': {'max': 40, 'period': 1},
         'regexes': [
             r"Updating rate script starting at 2005-01-01 00:00\."],
@@ -6559,42 +6551,42 @@ def virtual_bill(supply_source):
 
     {
         'name': 'System Price Feb',
-        'path': '/non_core_contracts/8/auto_importer',
+        'path': '/non_core_contracts/9/auto_importer',
         'method': 'post',
         'data': {
             'name': 'now'},
         'status_code': 303},
     {
         'name': 'System Price',
-        'path': '/non_core_contracts/8/auto_importer',
+        'path': '/non_core_contracts/9/auto_importer',
         'tries': {'max': 40, 'period': 1},
         'regexes': [
             r"Updating rate script starting at 2005-02-01 00:00\."],
         'status_code': 200},
     {
         'name': 'System Price March',
-        'path': '/non_core_contracts/8/auto_importer',
+        'path': '/non_core_contracts/9/auto_importer',
         'method': 'post',
         'data': {
             'name': 'now'},
         'status_code': 303},
     {
         'name': 'System Price',
-        'path': '/non_core_contracts/8/auto_importer',
+        'path': '/non_core_contracts/9/auto_importer',
         'tries': {'max': 40, 'period': 1},
         'regexes': [
             r"Updating rate script starting at 2005-03-01 00:00\."],
         'status_code': 200},
     {
         'name': 'System Price April',
-        'path': '/non_core_contracts/8/auto_importer',
+        'path': '/non_core_contracts/9/auto_importer',
         'method': 'post',
         'data': {
             'name': 'now'},
         'status_code': 303},
     {
         'name': 'System Price',
-        'path': '/non_core_contracts/8/auto_importer',
+        'path': '/non_core_contracts/9/auto_importer',
         'tries': {'max': 40, 'period': 1},
         'regexes': [
             r"Updating rate script starting at 2005-04-01 00:00\."],
@@ -7984,7 +7976,7 @@ def virtual_bill(supply_source):
 
     {
         'name': "Make sure rate scripts remain contiguous.",
-        'path': '/non_core_rate_scripts/26/edit',
+        'path': '/non_core_rate_scripts/27/edit',
         'method': 'post',
         'data': {
             # First rate script of non-core contract triad
@@ -8002,13 +7994,13 @@ def virtual_bill(supply_source):
             'script': ""},
         'status_code': 303},
     {
-        'path': '/non_core_rate_scripts/27',
+        'path': '/non_core_rate_scripts/28',
         'regexes': [
             r"2006-03-31 00:00"],
         'status_code': 200},
     {
         'name': "Put it back to how it was",
-        'path': '/non_core_rate_scripts/26/edit',
+        'path': '/non_core_rate_scripts/27/edit',
         'method': 'post',
         'data': {
             'start_year': "2005",
@@ -8278,7 +8270,7 @@ def virtual_bill(supply_source):
             r'<tr>\s*<td>\s*'
             '<a href="/mtcs/96">\s*001\s*'
             '</a>\s*</td>\s*<td>\s*'
-            '<a href="/dno_contracts/15">\s*'
+            '<a href="/dno_contracts/16">\s*'
             '12\s*</a>\s*</td>\s*<td>Economy 7, 23.30 - 06.30</td>\s*<td>\s*'
             '<a href="/meter_types/15">\s*TP\s*'
             '</a>\s*</td>\s*<td>2</td>\s*</tr>']},
@@ -8289,7 +8281,7 @@ def virtual_bill(supply_source):
         'regexes': [
             r'<tr>\s*<th>Code</th>\s*<td>001</td>\s*</tr>\s*<tr>\s*'
             '<th>DNO</th>\s*<td>\s*'
-            '<a href="/dno_contracts/15">\s*'
+            '<a href="/dno_contracts/16">\s*'
             '12\s*</a>\s*</td>\s*</tr>']},
 
     {
@@ -8627,13 +8619,13 @@ def virtual_bill(supply_source):
             r"Is Locked\?"]},
     {
         'name': "Check RCRC automatic import page",
-        'path': '/non_core_contracts/6/auto_importer',
+        'path': '/non_core_contracts/7/auto_importer',
         'status_code': 200,
         'regexes': [
             r"Is Locked\?"]},
     {
         'name': "Check TLM automatic import page",
-        'path': '/non_core_contracts/9/auto_importer',
+        'path': '/non_core_contracts/10/auto_importer',
         'status_code': 200,
         'regexes': [
             r"Is Locked\?"]},
@@ -9123,7 +9115,7 @@ def virtual_bill(supply_source):
             "physically located.</li>"]},
     {
         'name': "Look at a DNO",
-        'path': '/dno_contracts/13',
+        'path': '/dno_contracts/14',
         'status_code': 200},
 
     {
@@ -12071,7 +12063,7 @@ def virtual_bill(supply_source):
         'status_code': 200},
     {
         'name': "Set up RCRC downloader",
-        'path': '/non_core_contracts/6/edit',
+        'path': '/non_core_contracts/7/edit',
         'method': 'post',
         'data': {
             'properties': """
@@ -12083,14 +12075,14 @@ def virtual_bill(supply_source):
         'status_code': 303},
     {
         'name': "Do an 'import now' on RCRC.",
-        'path': '/non_core_contracts/6/auto_importer',
+        'path': '/non_core_contracts/7/auto_importer',
         'method': 'post',
         'data': {
             'now': 'Now'},
         'status_code': 303},
     {
         'name': "Check that an RCRC import has happened.",
-        'path': '/non_core_contracts/6/auto_importer',
+        'path': '/non_core_contracts/7/auto_importer',
         'tries': {},
         'regexes': [
             r"Added new rate script\."],
@@ -12134,7 +12126,7 @@ def virtual_bill(supply_source):
 
     {
         'name': "A DNO's LLFCs",
-        'path': '/llfcs?dno_contract_id=25',
+        'path': '/llfcs?dno_contract_id=26',
         'status_code': 200,
         'regexes': [
             r'<a href="/dno_contracts">DNO Contracts</a>']},
@@ -14630,12 +14622,12 @@ finally:
 
     {
         'name': "Show insert gas contract",
-        'path': '/chellow/reports/401/output/',
+        'path': '/g_contracts/add',
         'status_code': 200},
 
     {
         'name': "Insert gas contract",
-        'path': '/chellow/reports/401/output/',
+        'path': '/g_contracts/add',
         'method': 'post',
         'data': {
             'name': "Total",
@@ -14649,18 +14641,18 @@ finally:
 """},
         'status_code': 303,
         'regexes': [
-            r'/reports/399/output/\?g_contract_id=1']},
+            r'/g_contracts/1']},
 
     {
         'name': "View gas contracts",
-        'path': '/chellow/reports/395/output/',
+        'path': '/g_contracts',
         'status_code': 200,
         'regexes': [
             r'Total']},
 
     {
         'name': "View gas contract",
-        'path': '/chellow/reports/399/output/?g_contract_id=1',
+        'path': '/g_contracts/1',
         'status_code': 200,
         'regexes': [
             r'<td>Total</td>',
@@ -14669,22 +14661,21 @@ finally:
 
     {
         'name': "View gas contract rate script",
-        'path': '/chellow/reports/411/output/?g_rate_script_id=1',
+        'path': '/g_rate_scripts/1',
         'status_code': 200},
 
     {
         'name': "View edit gas contract",
-        'path': '/chellow/reports/403/output/?g_contract_id=1',
+        'path': '/g_contracts/1/edit',
         'status_code': 200,
         'regexes': [
             r'Total']},
 
     {
         'name': "Edit gas contract",
-        'path': '/chellow/reports/403/output/',
+        'path': '/g_contracts/1/edit',
         'method': 'post',
         'data': {
-            'g_contract_id': '1',
             'name': "Total",
             'start_year': '2015',
             'start_month': '07',
@@ -14693,8 +14684,7 @@ finally:
             'start_minute': '00',
             'properties': '{}',
             'charge_script': """
-from net.sf.chellow.monad import Monad
-Monad.getUtils()['impt'](globals(), 'g_ccl')
+import chellow.g_ccl
 
 def virtual_bill_titles():
     return [
@@ -14705,7 +14695,7 @@ def virtual_bill_titles():
 
 def virtual_bill(ds):
     bill = ds.bill
-    g_ccl.vb(ds)
+    chellow.g_ccl.vb(ds)
     for hh in ds.hh_data:
         bill['units_consumed'] += hh['units_consumed']
         ds.rate_sets['correction_factor'].add(hh['correction_factor'])
@@ -14722,7 +14712,7 @@ def virtual_bill(ds):
             ds.rate_sets['standing_rate'].add(standing_rate)
             bill['standing_gbp'] += standing_rate
 
-    for k, rset in ds.rate_sets.iteritems():
+    for k, rset in ds.rate_sets.items():
         if len(rset) == 1:
             bill[k] = rset.pop()
 
@@ -14732,10 +14722,10 @@ def virtual_bill(ds):
 """},
         'status_code': 303,
         'regexes': [
-            r'/reports/399/output/\?g_contract_id=1']},
+            r'/g_contracts/1']},
     {
         'name': "Edit gas contract: check correct",
-        'path': '/chellow/reports/399/output/?g_contract_id=1',
+        'path': '/g_contracts/1',
         'status_code': 200,
         'regexes': [
             r'<h3 id="properties">Properties</h3>\s*'
@@ -14743,10 +14733,9 @@ def virtual_bill(ds):
 
     {
         'name': "Add rate script to gas contract",
-        'path': '/chellow/reports/407/output/',
+        'path': '/g_contracts/1/add_rate_script',
         'method': 'post',
         'data': {
-            'g_contract_id': "1",
             'start_year': '2015',
             'start_month': '09',
             'start_day': '01',
@@ -14754,13 +14743,12 @@ def virtual_bill(ds):
             'start_minute': '00'},
         'status_code': 303,
         'regexes': [
-            r'/reports/411/output/\?g_rate_script_id=2']},
+            r'/g_rate_scripts/2']},
     {
         'name': "Edit the added rate script",
-        'path': '/chellow/reports/409/output/',
+        'path': '/g_rate_scripts/2/edit',
         'method': 'post',
         'data': {
-            'g_rate_script_id': "2",
             'start_year': '2015',
             'start_month': '09',
             'start_day': '01',
@@ -14769,14 +14757,13 @@ def virtual_bill(ds):
             'script': '{"gas_rate": 0.019548, "standing_rate": 67.80}'},
         'status_code': 303,
         'regexes': [
-            r'/reports/411/output/\?g_rate_script_id=2']},
+            r'/g_rate_scripts/2']},
 
     {
         'name': "Edit gas rate script: error in JSON",
-        'path': '/chellow/reports/409/output/',
+        'path': '/g_rate_scripts/2/edit',
         'method': 'post',
         'data': {
-            'g_rate_script_id': "2",
             'start_year': '2015',
             'start_month': '09',
             'start_day': '01',
@@ -14789,22 +14776,20 @@ def virtual_bill(ds):
 
     {
         'name': "Add a batch to a gas contract",
-        'path': '/chellow/reports/415/output/',
+        'path': '/g_contracts/1/add_batch',
         'method': 'post',
         'data': {
-            'g_contract_id': "1",
             'reference': 'TB1',
             'description': 'Total Batch 1'},
         'status_code': 303,
         'regexes': [
-            r'/reports/417/output/\?g_batch_id=1']},
+            r'/g_batches/1']},
 
     {
         'name': "Insert a gas supply",
-        'path': '/chellow/reports/311/output/',
+        'path': '/sites/7/edit',
         'method': 'post',
         'data': {
-            'site_id': '7',
             'name': 'Main Gas',
             'start_year': '2015',
             'start_month': '09',
@@ -14818,24 +14803,24 @@ def virtual_bill(ds):
             'insert_gas': 'Insert Gas'},
         'status_code': 303,
         'regexes': [
-            r'/reports/5/output/\?site_id=7']},
+            r'/sites/7']},
 
     {
         'name': "View a gas supply",
-        'path': '/chellow/reports/423/output/?g_supply_id=1',
+        'path': '/g_supplies/1',
         'status_code': 200,
         'regexes': [
             r'Main Gas']},
 
     {
         'name': "Edit view of a gas supply",
-        'path': '/chellow/reports/385/output/?g_supply_id=1',
+        'path': '/g_supplies/1/edit',
         'status_code': 200,
         'regexes': [
             r'Main Gas']},
     {
         'name': "Edit gas supply",
-        'path': '/chellow/reports/385/output/?g_supply_id=1',
+        'path': '/g_supplies/1/edit',
         'method': 'post',
         'data': {
             'mprn': '750278673',
@@ -14843,28 +14828,27 @@ def virtual_bill(ds):
             'update': 'Update'},
         'status_code': 303,
         'regexes': [
-            r'/reports/423/output/\?g_supply_id=1']},
+            r'/g_supplies/1']},
 
     {
         'name': "Check supply has been updated properly",
-        'path': '/chellow/reports/423/output/?g_supply_id=1',
+        'path': '/g_supplies/1',
         'status_code': 200,
         'regexes': [
             r'Main Gas Supply']},
 
     {
         'name': "Edit view of gas era",
-        'path': '/chellow/reports/441/output/?g_era_id=1',
+        'path': '/g_eras/1/edit',
         'status_code': 200,
         'regexes': [
             r'hwo8tt']},
 
     {
         'name': "Edit gas era",
-        'path': '/chellow/reports/441/output/',
+        'path': '/g_eras/1/edit',
         'method': 'post',
         'data': {
-            'g_era_id': '1',
             'start_year': '2015',
             'start_month': '09',
             'start_day': '01',
@@ -14875,36 +14859,36 @@ def virtual_bill(ds):
             'account': 'ghoIIl'},
         'status_code': 303,
         'regexes': [
-            r'/reports/423/output/\?g_supply_id=1']},
+            r'/g_supplies/1']},
 
     {
         'name': "Check era has been updated properly",
-        'path': '/chellow/reports/423/output/?g_supply_id=1',
+        'path': '/g_supplies/1',
         'status_code': 200,
         'regexes': [
             r'hwo8th']},
 
     {
-        'name': "Show import bills",
-        'path': '/chellow/reports/431/output/?g_batch_id=1',
+        'name': "Show import gas bills",
+        'path': '/g_bill_imports?g_batch_id=1',
         'status_code': 200,
         'regexes': [
             r'Total']},
 
     {
         'name': "Test Total XLSX bill import",
-        'path': '/chellow/reports/431/output/',
+        'path': '/g_bill_imports',
         'method': 'post',
         'data': {
             'g_batch_id': "1", },
         'files': {'import_file': 'test/bills.total.xlsx'},
         'status_code': 303,
         'regexes': [
-            r"/reports/433/output/\?importer_id=0"]},
+            r"/g_bill_imports/0"]},
 
     {
         'name': "View bill import",
-        'path': '/chellow/reports/433/output/?importer_id=0',
+        'path': '/g_bill_imports/0',
         'tries': {},
         'status_code': 200,
         'regexes': [
@@ -14913,32 +14897,33 @@ def virtual_bill(ds):
 
     {
         'name': "Gas bill shown correctly in batch",
-        'path': '/chellow/reports/417/output/?g_batch_id=1',
+        'path': '/g_batches/1',
         'status_code': 200,
         'regexes': [
             r"<th>0 Pres Type</th>\s*"
+            r"<th>0 Units Consumed</th>\s*"
             r"<th>0 Units</th>\s*"
             r"<th>0 Correction Factor</th>\s*"
             r"<th>0 Calorific Value</th>\s*"
+            r"<th>0 kWh</th>\s*"
             r"</tr>",
             r"2015-09-01 00:00"]},
 
     {
         'name': "View gas bill",
-        'path': '/chellow/reports/427/output/?g_bill_id=1',
+        'path': '/g_bills/1',
         'status_code': 200},
 
     {
         'name': "View edit gas bill",
-        'path': '/chellow/reports/443/output/?g_bill_id=1',
+        'path': '/g_bills/1/edit',
         'status_code': 200},
 
     {
         'name': "Edit gas bill",
-        'path': '/chellow/reports/443/output/',
+        'path': '/g_bills/1/edit',
         'method': 'post',
         'data': {
-            'g_bill_id': '1',
             'bill_type_id': '2',
             'reference': '88999000127',
             'account': 'ghoIIl',
@@ -14981,10 +14966,9 @@ def virtual_bill(ds):
         'status_code': 303},
     {
         'name': "Delete gas bill",
-        'path': '/chellow/reports/443/output/',
+        'path': '/g_bills/1/edit',
         'method': 'post',
         'data': {
-            'g_bill_id': '1',
             'delete': 'delete'},
         'status_code': 303},
 
@@ -15018,74 +15002,71 @@ def virtual_bill(ds):
 
     {
         'name': "Delete gas batch",
-        'path': '/chellow/reports/421/output/',
+        'path': '/g_batches/1/edit',
         'method': 'post',
         'data': {
-            'g_batch_id': '1',
             'delete': 'delete'},
         'status_code': 303},
 
     {
         'name': "Add a new batch to a gas contract",
-        'path': '/chellow/reports/415/output/',
+        'path': '/g_contracts/1/add_batch',
         'method': 'post',
         'data': {
-            'g_contract_id': "1",
             'reference': 'TB2',
             'description': 'Total Batch 2'},
         'status_code': 303,
         'regexes': [
-            r'/reports/417/output/\?g_batch_id=2']},
+            r'/g_batches/2']},
 
     {
         'name': "Import CSV gas bills that will fail",
-        'path': '/chellow/reports/431/output/',
+        'path': '/g_bill_imports',
         'method': 'post',
         'data': {
             'g_batch_id': "2"},
         'files': {'import_file': 'test/bills-fail.total.csv'},
         'status_code': 303,
         'regexes': [
-            r"/reports/433/output/\?importer_id=1"]},
+            r"/g_bill_imports/1"]},
     {
         'name': "View failed gas bill import",
-        'path': '/chellow/reports/433/output/?importer_id=1',
+        'path': '/g_bill_imports/1',
         'tries': {},
         'status_code': 200,
         'regexes': [r'Net GBP']},
 
     {
         'name': "Gas: Import CSV bills",
-        'path': '/chellow/reports/431/output/',
+        'path': '/g_bill_imports',
         'method': 'post',
         'data': {
             'g_batch_id': "2"},
         'files': {'import_file': 'test/bills.total.csv'},
         'status_code': 303,
         'regexes': [
-            r"/reports/433/output/\?importer_id=2"]},
+            r"/g_bill_imports/2"]},
 
     {
         'name': "Gas: View bill import",
-        'path': '/chellow/reports/433/output/?importer_id=2',
+        'path': '/g_bill_imports/2',
         'tries': {},
         'status_code': 200,
         'regexes': [r'successfully']},
     {
         'name': "Gas bill check",
-        'path': '/chellow/reports/429/output/?g_bill_id=4',
+        'path': '/reports/429?g_bill_id=4',
         'status_code': 303},
     {
         'name': "Gas bill check",
-        'path': '/chellow/reports/251/output/',
+        'path': '/downloads',
         'tries': {'max': 20, 'period': 1},
         'regexes': [
-            r"059_FINISHED_watkinsexamplecom_g_bill_check\.csv"],
+            r"008_FINISHED_adminexamplecom_g_bill_check\.csv"],
         'status_code': 200},
     {
         'name': "Gas bill check",
-        'path': '/chellow/reports/253/output/?'
-        'name=059_FINISHED_watkinsexamplecom_g_bill_check.csv',
+        'path': '/downloads/008_FINISHED_adminexamplecom_g_bill_check.csv',
         'status_code': 200,
         'regexes': [
             r'batch,bill_reference,bill_type,bill_start_date,'
@@ -15112,10 +15093,9 @@ def virtual_bill(ds):
 
     {
         'name': "Delete gas supply. Insert the gas supply",
-        'path': '/chellow/reports/311/output/',
+        'path': '/sites/7/edit',
         'method': 'post',
         'data': {
-            'site_id': '7',
             'name': 'Another Gas',
             'start_year': '2015',
             'start_month': '09',
@@ -15129,21 +15109,20 @@ def virtual_bill(ds):
             'insert_gas': 'Insert Gas'},
         'status_code': 303,
         'regexes': [
-            r'/reports/5/output/\?site_id=7']},
+            r'/sites/7']},
 
     {
         'name': "Delete gas supply. Check the search contains it.",
-        'path': '/chellow/reports/437/output/?search_pattern=',
+        'path': '/g_supplies?search_pattern=',
         'regexes': [
             r"Another Gas"],
         'status_code': 200},
 
     {
         'name': "Delete gas supply.",
-        'path': '/chellow/reports/385/output/',
+        'path': '/g_supplies/2/edit',
         'method': 'post',
         'data': {
-            'g_supply_id': '2',
             'delete': 'Delete'},
         'status_code': 303},
 ]

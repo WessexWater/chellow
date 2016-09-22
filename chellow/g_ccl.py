@@ -1,15 +1,22 @@
-from net.sf.chellow.monad import Monad
 import datetime
 import pytz
-import utils
-import computer
-import scenario
-Monad.getUtils()['impt'](globals(), 'utils', 'computer', 'scenario')
-HH = utils.HH
-db_id = globals()['db_id']
+import chellow.scenario
+from chellow.utils import HH
+from chellow.models import Session, Contract
+import chellow.computer
 
-create_future_func = scenario.make_create_future_func_simple(
-    'ccl', ['ccl_rate'])
+
+sess = None
+try:
+    sess = Session()
+    g_ccl_contract_id = Contract.get_non_core_by_name(sess, 'g_ccl').id
+finally:
+    if sess is not None:
+        sess.close()
+
+
+create_future_func = chellow.scenario.make_create_future_func_simple(
+    'g_ccl', ['g_ccl_rate'])
 
 THRESHOLD = 4397
 
@@ -36,9 +43,9 @@ def vb(data_source):
             data_source.caches['future_funcs'] = future_funcs
 
         try:
-            future_funcs[db_id]
+            future_funcs[g_ccl_contract_id]
         except KeyError:
-            future_funcs[db_id] = {
+            future_funcs[g_ccl_contract_id] = {
                 'start_date': None, 'func': create_future_func(1, 0)}
 
     if data_source.g_bill is None:
@@ -50,14 +57,15 @@ def vb(data_source):
                 month_start = datetime.datetime(
                     month_finish.year, month_finish.month, 1, tzinfo=pytz.utc)
 
-                for ds in computer.get_data_sources(
+                for ds in chellow.computer.get_data_sources(
                         data_source, month_start, month_finish):
                     for datum in ds.hh_data:
                         try:
                             rate = cache[datum['start_date']]
                         except KeyError:
                             cache[datum['start_date']] = data_source.rate(
-                                db_id, datum['start_date'], 'ccl_gbp_per_kwh')
+                                g_ccl_contract_id, datum['start_date'],
+                                'ccl_gbp_per_kwh')
                             rate = cache[datum['start_date']]
 
                         rate_set.add(rate)
@@ -71,7 +79,7 @@ def vb(data_source):
     elif data_source.is_last_g_bill_gen:
         kwh = 0
         gbp = 0
-        for ds in computer.get_data_sources(
+        for ds in chellow.computer.get_data_sources(
                 data_source, data_source.g_bill_start,
                 data_source.g_bill_finish):
             for hh in ds.hh_data:
@@ -79,7 +87,7 @@ def vb(data_source):
                     rate = cache[hh['start_date']]
                 except KeyError:
                     cache[hh['start_date']] = data_source.rate(
-                        db_id, hh['start_date'], 'ccl_gbp_per_kwh')
+                        g_ccl_contract_id, hh['start_date'], 'ccl_gbp_per_kwh')
                     rate = cache[hh['start_date']]
 
                 rate_set.add(rate)

@@ -1,20 +1,26 @@
-from net.sf.chellow.monad import Monad
 import threading
 import traceback
 import datetime
 import collections
 import pytz
-import utils
-import db
-import computer
-Monad.getUtils()['impt'](globals(), 'db', 'utils', 'templater', 'computer')
-UserException = utils.UserException
-BillType, GBatch, GReadType = db.BillType, db.GBatch, db.GReadType
-Contract, MarketRole, GUnits = db.Contract, db.MarketRole, db.GUnits
+from werkzeug.exceptions import BadRequest
+import importlib
+from pkgutil import iter_modules
+import chellow
+from chellow.models import (
+    Session, GBatch, BillType, GReadType, GUnits, set_read_write)
+import chellow.g_bill_parser_total_xlsx
+
 
 importer_id = 0
 import_lock = threading.Lock()
 importers = {}
+
+
+def find_parser_names():
+    return ', '.join(
+        '.' + name[14:].replace('_', '.') for module_finder, name, ispkg in
+        iter_modules(chellow.__path__) if name.startswith('g_bill_parser_'))
 
 
 class GBillImporter(threading.Thread):
@@ -26,43 +32,34 @@ class GBillImporter(threading.Thread):
 
         self.g_batch_id = g_batch_id
         if file_size == 0:
-            raise UserException("File has zero length")
-
-        contract = None
+            raise BadRequest("File has zero length")
+        imp_mod = None
         parts = file_name.split('.')[::-1]
         for i in range(len(parts)):
-            contr = db.Contract.find_by_role_code_name(
-                sess, 'Z',
-                'g_bill_parser_' + '.'.join(parts[:i+1][::-1]).lower())
-            if contr is not None:
-                contract = contr
+            nm = 'g_bill_parser_' + '_'.join(parts[:i+1][::-1]).lower()
+            try:
+                imp_mod = nm, importlib.import_module('chellow.' + nm)
+            except ImportError:
+                pass
 
-        if contract is None:
-            raise UserException(
+        if imp_mod is None:
+            raise BadRequest(
                 "Can't find a parser for the file '" + file_name +
                 "'. The file name needs to have an extension that's one of " +
-                "the following: " +
-                ','.join(
-                    name[0][12:] for name in sess.query(Contract.name).join(
-                        MarketRole).filter(
-                        MarketRole.code == 'Z',
-                        Contract.name.like("g_bill_parser_%"))) + ".")
+                "the following: " + find_parser_names() + ".")
 
-        self.contract_name = contract.name
-        self.parser = computer.contract_func({}, contract, 'Parser', None)(f)
+        self.parser_name = imp_mod[0]
+        self.parser = imp_mod[1].Parser(f)
         self.successful_bills = []
         self.failed_bills = []
         self.log = collections.deque()
         self.bill_num = None
 
     def _log(self, msg):
-        try:
-            import_lock.acquire()
+        with import_lock:
             self.log.appendleft(
                 datetime.datetime.now(pytz.utc).strftime("%Y-%m-%d %H:%M:%S") +
                 ' - ' + msg)
-        finally:
-            import_lock.release()
 
     def status(self):
         if self.isAlive():
@@ -79,9 +76,8 @@ class GBillImporter(threading.Thread):
         sess = None
         try:
             self._log(
-                "Starting to parse the file with '" +
-                self.contract_name + "'.")
-            sess = db.session()
+                "Starting to parse the file with '" + self.parser_name + "'.")
+            sess = Session()
             g_batch = GBatch.get_by_id(sess, self.g_batch_id)
             raw_bills = self.parser.make_raw_bills()
             self._log(
@@ -89,7 +85,7 @@ class GBillImporter(threading.Thread):
                 "insert the raw bills.")
             for self.bill_num, raw_bill in enumerate(raw_bills):
                 try:
-                    db.set_read_write(sess)
+                    set_read_write(sess)
                     bill_type = BillType.get_by_code(
                         sess, raw_bill['bill_type_code'])
                     g_bill = g_batch.insert_g_bill(
@@ -118,9 +114,9 @@ class GBillImporter(threading.Thread):
                     sess.commit()
                     self.successful_bills.append(raw_bill)
                     sess.expunge(g_bill)
-                except UserException, e:
+                except BadRequest as e:
                     sess.rollback()
-                    raw_bill['error'] = str(e)
+                    raw_bill['error'] = e.description
                     self.failed_bills.append(raw_bill)
 
             if len(self.failed_bills) == 0:
@@ -139,8 +135,7 @@ class GBillImporter(threading.Thread):
                 sess.close()
 
     def make_fields(self):
-        try:
-            import_lock.acquire()
+        with import_lock:
             fields = {
                 'log': tuple(self.log), 'is_alive': self.isAlive(),
                 'importer_id': self.importer_id}
@@ -148,34 +143,23 @@ class GBillImporter(threading.Thread):
                 fields['successful_bills'] = self.successful_bills
                 fields['failed_bills'] = self.failed_bills
             return fields
-        finally:
-            import_lock.release()
 
 
 def start_bill_importer(sess, batch_id, file_name, file_size, f):
-    try:
-        import_lock.acquire()
+    with import_lock:
         bi = GBillImporter(sess, batch_id, file_name, file_size, f)
         importers[bi.importer_id] = bi
         bi.start()
-    finally:
-        import_lock.release()
 
     return bi.importer_id
 
 
 def get_bill_importer_ids(g_batch_id):
-    try:
-        import_lock.acquire()
+    with import_lock:
         return [
-            k for k, v in importers.iteritems() if v.g_batch_id == g_batch_id]
-    finally:
-        import_lock.release()
+            k for k, v in importers.items() if v.g_batch_id == g_batch_id]
 
 
 def get_bill_importer(id):
-    try:
-        import_lock.acquire()
+    with import_lock:
         return importers[id]
-    finally:
-        import_lock.release()
