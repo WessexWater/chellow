@@ -11613,4 +11613,41 @@ def virtual_bill(supply_source):
         'status_code': 200,
         'regexes': [
             r'-45']},
+
+    {
+        'name': "Unified report for site with no supplies",
+        'path': '/reports/247?site_id=8&months=1&finish_year=2015&'
+        'finish_month=05&compression=False',
+        'status_code': 303},
+    {
+        'name': "Unified report for site with no supplies",
+        'path': '/downloads',
+        'tries': {'max': 30, 'period': 1},
+        'regexes': [
+            r'009_FINISHED_adminexamplecom_unified_supplies_monthly_'
+            r'duration_20150501_0000_for_1_months_site_MOBY\.ods'],
+        'status_code': 200},
+    {
+        'name': "Unified report for site with no supplies",
+        'path': '/downloads/'
+        '009_FINISHED_adminexamplecom_unified_supplies_monthly_'
+        'duration_20150501_0000_for_1_months_site_MOBY.ods',
+        'status_code': 200,
+        'regexes': [
+            r'<table:table-row>\s*'
+            r'<table:table-cell office:string-value="MOBY" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell office:string-value="Ishmael" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell office:string-value="" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell office:date-value="2015-05-31T23:30:00" '
+            r'office:value-type="date" table:style-name="cDateISO"/>\s*'
+            r'<table:table-cell/>\s*'
+            r'<table:table-cell office:string-value="" '
+            r'office:value-type="string" '
+            r'table:number-columns-repeated="2"/>\s*'
+            r'<table:table-cell office:value="0" office:value-type="float" '
+            r'table:number-columns-repeated="20"/>\s*'
+            r'</table:table-row>']},
 ]

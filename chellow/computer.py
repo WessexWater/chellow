@@ -10,7 +10,7 @@ import json
 from werkzeug.exceptions import BadRequest
 from chellow.models import (
     RateScript, Channel, Era, Pc, Tpr, MeasurementRequirement, RegisterRead,
-    Bill, BillType, ReadType, SiteEra, Supply, Source)
+    Bill, BillType, ReadType, SiteEra, Supply, Source, HhDatum)
 from chellow.utils import HH, hh_format, hh_after
 import chellow.bank_holidays
 from itertools import combinations
@@ -559,32 +559,21 @@ class SiteSource(DataSource):
                 SiteEra.is_physical, Source.code != 'sub', or_(
                     Era.finish_date == null(),
                     Era.finish_date >= start_date)).distinct().all())
-        rs = iter(
-            sess.execute(
-                "select hh_datum.value, hh_datum.start_date, "
-                "hh_datum.status, channel.imp_related, source.code "
-                "from hh_datum, channel, era, supply, source "
-                "where hh_datum.channel_id = channel.id "
-                "and channel.era_id = era.id "
-                "and era.supply_id = supply.id "
-                "and supply.source_id = source.id "
-                "and channel.channel_type = 'ACTIVE' "
-                "and hh_datum.start_date >= :start_date "
-                "and hh_datum.start_date <= :finish_date "
-                "and supply.id = any(:supply_ids) "
-                "order by hh_datum.start_date",
-                params={
-                    'start_date': start_date,
-                    'finish_date': finish_date,
-                    'supply_ids': list(supply_ids)}))
-        try:
-            row = next(rs)
-            hh_value = float(row[0])
-            hh_start_date = row[1]
-            imp_related = row[3]
-            source_code = row[4]
-        except StopIteration:
-            hh_start_date = None
+        if len(supply_ids) == 0:
+            rs = iter([])
+        else:
+            rs = iter(
+                sess.query(
+                    cast(HhDatum.value, Float), HhDatum.start_date,
+                    Channel.imp_related, Source.code).join(Channel).join(Era).
+                join(Supply).join(Source).filter(
+                    Channel.channel_type == 'ACTIVE',
+                    HhDatum.start_date >= start_date,
+                    HhDatum.start_date <= finish_date,
+                    Supply.id.in_(list(supply_ids))))
+
+        hh_value, hh_start_date, imp_related, source_code = \
+            next(rs, (None, None, None, None))
 
         while not hist_date > finish_date:
             export_net_kwh = 0
@@ -612,14 +601,9 @@ class SiteSource(DataSource):
                         imp_related and
                         source_code == '3rd-party-reverse'):
                     export_3rd_party_kwh += hh_value
-                try:
-                    row = next(rs)
-                    hh_value = float(row[0])
-                    hh_start_date = row[1]
-                    imp_related = row[3]
-                    source_code = row[4]
-                except StopIteration:
-                    hh_start_date = None
+
+                hh_value, hh_start_date, imp_related, source_code = \
+                    next(rs, (None, None, None, None))
 
             hh_values = datum_generator(sess, hh_date).copy()
             hh_values.update(
