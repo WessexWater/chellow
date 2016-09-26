@@ -206,7 +206,8 @@ def content(
                         SiteEra.site == site, Era.start_date <= month_finish,
                         or_(
                             Era.finish_date == null(),
-                            Era.finish_date >= month_start)):
+                            Era.finish_date >= month_start)).options(
+                        joinedload(Era.site_eras)):
                     for site_era in era.site_eras:
                         if site_era.site != site:
                             site_associates.add(site_era.site.code)

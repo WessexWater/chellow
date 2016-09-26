@@ -9,8 +9,8 @@ import math
 import json
 from werkzeug.exceptions import BadRequest
 from chellow.models import (
-    RateScript, Channel, Era, Pc, Tpr, MeasurementRequirement, RegisterRead,
-    Bill, BillType, ReadType, SiteEra, Supply, Source, HhDatum)
+    RateScript, Channel, Era, Tpr, MeasurementRequirement, RegisterRead, Bill,
+    BillType, ReadType, SiteEra, Supply, Source, HhDatum)
 from chellow.utils import HH, hh_format, hh_after
 import chellow.bank_holidays
 from itertools import combinations
@@ -290,8 +290,7 @@ def get_data_sources(data_source, start_date, finish_date, forecast_date=None):
             eras = data_source.sess.query(Era).filter(
                 Era.supply == data_source.supply, Era.exp_mpan_core != null(),
                 Era.start_date <= finish_date,
-                or_(
-                    Era.finish_date == null(), Era.finish_date >= start_date))
+                or_(Era.finish_date == null(), Era.finish_date >= start_date))
 
         for era in eras:
             era_start = era.start_date
@@ -310,36 +309,18 @@ def get_data_sources(data_source, start_date, finish_date, forecast_date=None):
             yield ds
 
     else:
-        for group in data_source.site.groups(
-                data_source.sess, start_date, finish_date, True):
+        if data_source.stream_focus == 'gen-used':
+            era = displaced_era(
+                data_source.sess, data_source.site, start_date, finish_date)
+        else:
+            era = data_source.era
 
-            chunk_start = group.start_date if \
-                group.start_date > start_date else start_date
-
-            chunk_finish = finish_date if \
-                group.finish_date > finish_date else group.finish_date
-
-            if data_source.stream_focus == 'gen-used':
-                eras = {}
-                for supply in group.supplies:
-                    for era in data_source.sess.query(Era).join(Pc).filter(
-                            Era.imp_mpan_core != null(), Pc.code == '00',
-                            Era.supply == supply,
-                            Era.start_date <= finish_date,
-                            or_(
-                                Era.finish_date == null(),
-                                Era.finish_date >= start_date)).order_by(
-                            Era.start_date):
-                        eras[era.imp_mpan_core] = era
-                era = eras[sorted(eras.keys())[0]]
-            else:
-                era = data_source.era
-            site_ds = SiteSource(
-                data_source.sess, data_source.site, chunk_start, chunk_finish,
-                forecast_date, data_source.pw, data_source.caches, era)
-            if data_source.stream_focus == '3rd-party-used':
-                site_ds.revolve_to_3rd_party_used()
-            yield site_ds
+        site_ds = SiteSource(
+            data_source.sess, data_source.site, start_date, finish_date,
+            forecast_date, data_source.pw, data_source.caches, era)
+        if data_source.stream_focus == '3rd-party-used':
+            site_ds.revolve_to_3rd_party_used()
+        yield site_ds
 
 
 def _tpr_dict(sess, caches, tpr_code, pw):
