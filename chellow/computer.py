@@ -551,7 +551,8 @@ class SiteSource(DataSource):
                     Channel.channel_type == 'ACTIVE',
                     HhDatum.start_date >= start_date,
                     HhDatum.start_date <= finish_date,
-                    Supply.id.in_(list(supply_ids))))
+                    Supply.id.in_(list(supply_ids))).order_by(
+                        HhDatum.start_date))
 
         hh_value, hh_start_date, imp_related, source_code = \
             next(rs, (None, None, None, None))
