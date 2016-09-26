@@ -248,7 +248,9 @@ def displaced_era(sess, site, start_date, finish_date):
             filter(
                 SiteEra.site == site, Era.start_date <= month_finish, or_(
                     Era.finish_date == null(),
-                    Era.finish_date >= month_start)):
+                    Era.finish_date >= month_start)).options(
+                        joinedload(SiteEra.era).joinedload(Era.supply).
+                        joinedload(Supply.source)):
         era = site_era.era
         source_code = era.supply.source.code
         if site_era.is_physical and (

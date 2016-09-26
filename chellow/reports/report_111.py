@@ -3,6 +3,7 @@ import pytz
 from datetime import datetime as Datetime
 from dateutil.relativedelta import relativedelta
 from sqlalchemy import or_
+from sqlalchemy.orm import joinedload
 from sqlalchemy.sql.expression import null, true
 import traceback
 from chellow.models import (
@@ -31,14 +32,16 @@ def content(batch_id, bill_id, user):
             'bill_check.csv', user)
         tmp_file = open(running_name, mode='w', newline='')
         writer = csv.writer(tmp_file, lineterminator='\n')
+        bills = sess.query(Bill)
         if batch_id is not None:
             batch = Batch.get_by_id(sess, batch_id)
-            bills = sess.query(Bill).filter(
+            bills = bills.filter(
                 Bill.batch_id == batch.id).order_by(Bill.reference)
         elif bill_id is not None:
             bill = Bill.get_by_id(sess, bill_id)
-            bills = sess.query(Bill).filter(Bill.id == bill.id)
+            bills = bills.filter(Bill.id == bill.id)
             batch = bill.batch
+        bills = bills.options(joinedload(Bill.supply))
 
         contract = batch.contract
         market_role_code = contract.market_role.code

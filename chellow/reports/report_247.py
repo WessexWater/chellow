@@ -235,7 +235,10 @@ def content(
                         joinedload(Era.cop),
                         joinedload(Era.supply).joinedload(
                             Supply.dno_contract),
-                        joinedload(Era.mtc).joinedload(Mtc.meter_type)):
+                        joinedload(Era.supply).joinedload(
+                            Supply.gsp_group),
+                        joinedload(Era.mtc).joinedload(Mtc.meter_type),
+                        joinedload(Era.pc)):
 
                     supply = era.supply
                     if supply.generator_type is not None:
@@ -629,7 +632,6 @@ def content(
                         ', '.join(sorted(list(site_sources))),
                         ', '.join(sorted(list(site_gen_types)))] +
                     [site_month_data[k] for k in summary_titles])
-                sess.rollback()
             rf.seek(0)
             rf.truncate()
             f.write()
