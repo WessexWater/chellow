@@ -11147,6 +11147,14 @@ def virtual_bill(supply_source):
         'data': {
             'ignore': 'true'},
         'status_code': 303},
+    {
+        'name': "Ignore channel snag",
+        'path': '/channel_snags/100',
+        'status_code': 200,
+        'regexes': [
+            r'<td>\s*'
+            r'Ignored\s*'
+            r'</td>']},
 
     {
         'name': "Collapsing bills. Edit bill to make it collapsible",

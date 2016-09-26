@@ -12,7 +12,9 @@
 			>{{snag.channel.era.hhdc_contract.name}}</a> &gt;
 	<a
 			href="{{context_path}}/channel_snags?hhdc_contract_id={{snag.channel.era.hhdc_contract.id}}&amp;days_hidden=5"
-			>Channel Snags</a> &gt; {{snag.id}}
+	 >Channel Snags</a> &gt;
+	<a href="{{context_path}}/channel_snags/{{snag.id}}">{{snag.id}}</a> &gt;
+	Edit
 {% endblock %}
 
 {% block content %}
