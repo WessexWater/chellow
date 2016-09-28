@@ -32,9 +32,10 @@ class imdict(dict):
     popitem = _immutable
 
 cons_types = ['construction', 'commissioning', 'operation']
-lec_cats = [
-    'import-net', 'export-net', 'import-gen', 'export-gen', 'import-3rd-party',
-    'export-3rd-party']
+lec_cats = list(
+    (v + '-kwh', 'hist-' + v + '-kwh') for v in [
+        'import-net', 'export-net', 'import-gen', 'export-gen',
+        'import-3rd-party', 'export-3rd-party'])
 
 
 def get_times(sess, caches, start_date, finish_date, forecast_date, pw):
@@ -606,7 +607,10 @@ class SiteSource(DataSource):
                     'hist-export-gen-kwh': export_gen_kwh,
                     'anti-msp-kwh': 0, 'anti-msp-kw': 0,
                     'hist-import-3rd-party-kwh': import_3rd_party_kwh,
-                    'hist-export-3rd-party-kwh': export_3rd_party_kwh})
+                    'hist-export-3rd-party-kwh': export_3rd_party_kwh,
+                    'imp-msp-kvarh': 0, 'exp-msp-kvarh': 0,
+                    'hist-imp-msp-kvarh': 0})
+
             hh_values['hist-used-3rd-party-kwh'] = \
                 hh_values['hist-import-3rd-party-kwh'] - \
                 hh_values['hist-export-3rd-party-kwh']
@@ -619,17 +623,13 @@ class SiteSource(DataSource):
 
             hh_values['msp-kwh'] = hh_values['used-gen-msp-kwh'] \
                 = hh_values['hist-used-gen-msp-kwh']
-            for lec_cat in lec_cats:
-                hh_values[lec_cat + '-kwh'] = \
-                    hh_values['hist-' + lec_cat + '-kwh']
+            for cat_kwh, hist_cat_kwh in lec_cats:
+                hh_values[cat_kwh] = hh_values[hist_cat_kwh]
 
             hh_values['hist-used-kwh'] = \
                 hh_values['hist-used-gen-msp-kwh'] + \
                 hh_values['hist-import-net-kwh'] + \
                 hh_values['hist-used-3rd-party-kwh']
-            hh_values['hist-imp-msp-kvarh'] = 0
-            hh_values['imp-msp-kvarh'] = 0
-            hh_values['exp-msp-kvarh'] = 0
 
             hh_values['used-kwh'] = hh_values['hist-used-kwh']
             hh_values['import-net-kwh'] = hh_values['hist-import-net-kwh']
