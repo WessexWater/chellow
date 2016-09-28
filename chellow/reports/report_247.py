@@ -288,7 +288,8 @@ def content(
                 imp_gen_delts = defaultdict(int)
 
                 displaced_era = chellow.computer.displaced_era(
-                    sess, site, month_start, month_finish)
+                    sess, report_context, site, month_start, month_finish,
+                    kwh_start)
                 site_ds = chellow.computer.SiteSource(
                     sess, site, month_start, month_finish, kwh_start, None,
                     report_context, displaced_era)

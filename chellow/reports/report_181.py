@@ -56,7 +56,7 @@ def content(year, site_id, user):
 
         for site in sites:
             displaced_era = chellow.computer.displaced_era(
-                sess, site, march_start, march_finish)
+                sess, caches, site, march_start, march_finish, forecast_date)
             if displaced_era is None:
                 continue
 

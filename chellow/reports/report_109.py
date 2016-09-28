@@ -60,7 +60,8 @@ def content(contract_id, end_year, end_month, months, user):
             month_finish = month_start + relativedelta(months=1) - HH
             for i in range(months):
                 displaced_era = chellow.computer.displaced_era(
-                    sess, site, month_start, month_finish)
+                    sess, caches, site, month_start, month_finish,
+                    forecast_date)
                 if displaced_era is None:
                     continue
                 supplier_contract = displaced_era.imp_supplier_contract

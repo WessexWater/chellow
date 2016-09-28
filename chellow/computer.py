@@ -233,14 +233,16 @@ def forecast_date():
     return Datetime(now.year, now.month, 1, tzinfo=pytz.utc)
 
 
-def displaced_era(sess, site, start_date, finish_date):
+def displaced_era(sess, caches, site, start_date, finish_date, forecast_date):
     if (start_date.year, start_date.month) != \
             (finish_date.year, finish_date.month):
         raise BadRequest(
             "The start and end dates of a displaced period must be within the "
             "same month")
+    t = get_times(sess, caches, start_date, finish_date, forecast_date, None)
+    hist_start = t['history-start']
     month_start = Datetime(
-        start_date.year, start_date.month, 1, tzinfo=pytz.utc)
+        hist_start.year, hist_start.month, 1, tzinfo=pytz.utc)
     month_finish = month_start + relativedelta(months=1) - HH
     has_displaced = False
     eras = {}
@@ -267,9 +269,10 @@ def displaced_era(sess, site, start_date, finish_date):
                 era.imp_mpan_core] = era
 
     if has_displaced and len(eras) > 0:
-        return eras[sorted(eras.keys())[0]]
+        era = eras[sorted(eras.keys())[0]]
     else:
-        return None
+        era = None
+    return era
 
 
 def get_data_sources(data_source, start_date, finish_date, forecast_date=None):
@@ -280,7 +283,6 @@ def get_data_sources(data_source, start_date, finish_date, forecast_date=None):
             data_source.finish_date == finish_date \
             and forecast_date == data_source.forecast_date:
         yield data_source
-        return
     elif data_source.site is None:
         if data_source.is_import:
             eras = data_source.sess.query(Era).filter(
@@ -311,9 +313,13 @@ def get_data_sources(data_source, start_date, finish_date, forecast_date=None):
             yield ds
 
     else:
-        if data_source.stream_focus == 'gen-used':
+        if data_source.stream_focus == 'gen-used' and \
+                data_source.era is not None:
             era = displaced_era(
-                data_source.sess, data_source.site, start_date, finish_date)
+                data_source.sess, data_source.caches, data_source.site,
+                start_date, finish_date, forecast_date)
+            if era is None:
+                return
         else:
             era = data_source.era
 

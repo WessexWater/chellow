@@ -9593,15 +9593,6 @@ def virtual_bill(supply_source):
             r'"0.0","0","","0.0","0","","aahedc-gbp","0.0","aahedc-gsp-kwh",'
             r'"0.0","aahedc-msp-kwh","0","aahedc-rate","0.00016456",'
             r'"duos-reactive-rate","0.0023","problem","",'
-            r'"triad-estimate-1-date","2002-11-25 17:00",'
-            r'"triad-estimate-1-gsp-kw","0.0","triad-estimate-1-laf","1.065",'
-            r'"triad-estimate-1-msp-kw","0","triad-estimate-1-status","E",'
-            r'"triad-estimate-2-date","2002-12-06 17:00",'
-            r'"triad-estimate-2-gsp-kw","0.0","triad-estimate-2-laf","1.05",'
-            r'"triad-estimate-2-msp-kw","0","triad-estimate-2-status","E",'
-            r'"triad-estimate-3-date","2003-01-30 17:00",'
-            r'"triad-estimate-3-gsp-kw","0.0","triad-estimate-3-laf","1.065",'
-            r'"triad-estimate-3-msp-kw","0","triad-estimate-3-status","E",'
             r'"triad-estimate-gbp","0.0","triad-estimate-gsp-kw","0.0",'
             r'"triad-estimate-months","1","triad-estimate-rate","23.77056"'],
         'status_code': 200},
