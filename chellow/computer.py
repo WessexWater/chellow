@@ -426,8 +426,8 @@ def _datum_generator(sess, years_back, caches, pw):
             utc_is_month_end = (hh_date + HH).day == 1 and hh_date.day != 1
             ct_is_month_end = (ct_dt + HH).day == 1 and ct_dt.day != 1
 
-            utc_decimal_hour = hh_date.hour + float(hh_date.minute) / 60
-            ct_decimal_hour = ct_dt.hour + float(ct_dt.minute) / 60
+            utc_decimal_hour = hh_date.hour + hh_date.minute / 60
+            ct_decimal_hour = ct_dt.hour + ct_dt.minute / 60
 
             utc_bank_holidays = hh_rate(
                 sess2, caches, chellow.bank_holidays.get_db_id(), hh_date,
@@ -985,7 +985,7 @@ class SupplySource(DataSource):
                                             math.log10(initial_val)) + 1
                                         kwh = 10 ** digits + kwh
 
-                                    tprs[tpr_code] = float(kwh) / num_hh
+                                    tprs[tpr_code] = kwh / num_hh
 
                                 pairs.append(
                                     {
