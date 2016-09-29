@@ -5190,7 +5190,7 @@ def virtual_bill(supply_source):
         'status_code': 303},
     {
         'path': '/downloads',
-        'tries': {'max': 30, 'period': 1},
+        'tries': {'max': 100, 'period': 1},
         'regexes': [
             r'016_FINISHED_watkinsexamplecom_monthly_duration_20100701_0000_'
             r'for_12_months_site_CI004\.ods'],
@@ -12055,14 +12055,6 @@ def virtual_bill(supply_source):
             'bill_type_id': '2',
             'breakdown': '{}'},
         'status_code': 303},
-    {
-        'name': "Fetch bootstrap css",
-        'path': '/bootstrap',
-        'status_code': 200},
-    {
-        'name': "Fetch wessex js",
-        'path': '/bootstrapjs',
-        'status_code': 200},
     {
         'name': "Bill check with exception",
         'path': "/supplier_contracts/42/edit",
