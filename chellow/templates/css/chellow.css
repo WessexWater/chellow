@@ -78,7 +78,10 @@ table {
 .alignRight { text-align: right; }
 
 .bgBlue { background-color: #009FD9; }
-.bgLightBlue { background-color: #EEF4F9; }
+.bgLightBlue { 
+    /*background-color: #EEF4F9; */
+    background-color: {{background_colour}};
+    }
 .bgWhite { background-color: #FFF; }
 .bgYellow, .btn.bgYellow { background-color: #CDCA25; color: #FFF; }
 
@@ -773,8 +776,8 @@ body.LoginScreen,
 .section-data .noWrap-md, 
 .section-data .noWrap-lg {
     clear: both;
-/*    overflow-x: auto;
-    white-space: nowrap;*/
+    overflow-x: auto;
+    white-space: nowrap;
 }
 
 .well .DataTable {
@@ -783,15 +786,15 @@ body.LoginScreen,
 
 @media( min-width: 768px ) {
     .section-data .noWrap-md {
-/*        overflow-x: visible;
-        white-space: normal;*/
+        overflow-x: visible;
+        white-space: normal;
     }
 }
 
 @media( min-width: 1200px ) {
     .section-data .noWrap-lg {
-/*        overflow-x: visible;
-        white-space: normal;*/
+        overflow-x: visible;
+        white-space: normal;
     }
 }
 
