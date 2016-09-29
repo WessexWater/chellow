@@ -3026,7 +3026,7 @@ def db_init(sess, root_path):
     sess.commit()
 
 
-def db_upgrade_0_to_1(sess):
+def db_upgrade_0_to_1(sess, root_path):
     max_id = sess.execute("select max(id) from report;").scalar()
     sess.execute("create sequence report_id_seq start " + str(max_id + 1))
     sess.execute(
@@ -3035,7 +3035,68 @@ def db_upgrade_0_to_1(sess):
     sess.execute("alter sequence report_id_seq owned by report.id;")
 
 
-upgrade_funcs = [db_upgrade_0_to_1]
+def db_upgrade_1_to_2(sess, root_path):
+    contracts_path = os.path.join(root_path, 'dno_contracts')
+    for contract_name in ('25', '26', '27', '28', '29'):
+        existing_contract = sess.query(Contract).join(Party).filter(
+            Party.dno_code == contract_name).first()
+        if existing_contract is not None:
+            continue
+        contract_path = os.path.join(contracts_path, contract_name)
+        params = {'name': contract_name, 'charge_script': ''}
+        for fname, attr in (
+                ('meta.py', None),
+                ('properties.py', 'properties'),
+                ('state.py', 'state')):
+            params.update(read_file(contract_path, fname, attr))
+        params['party'] = sess.query(Party).join(Participant). \
+            join(MarketRole).filter(
+                Participant.code == params['participant_code'],
+                MarketRole.code == 'R').one()
+        del params['participant_code']
+        contract = Contract(**params)
+        sess.add(contract)
+
+        sess.flush()
+        rscripts_path = os.path.join(contract_path, 'rate_scripts')
+        for rscript_fname in sorted(os.listdir(rscripts_path)):
+            if not rscript_fname.endswith('.py'):
+                continue
+            try:
+                start_str, finish_str = \
+                    rscript_fname.split('.')[0].split('_')
+            except ValueError:
+                raise Exception(
+                    "The rate script " + rscript_fname +
+                    " in the directory " + rscripts_path +
+                    " should consist of two dates separated by an " +
+                    "underscore.")
+            start_date = datetime.datetime.strptime(
+                start_str, "%Y%m%d%H%M").replace(tzinfo=pytz.utc)
+            if finish_str == 'ongoing':
+                finish_date = None
+            else:
+                finish_date = datetime.datetime.strptime(
+                    finish_str, "%Y%m%d%H%M").replace(tzinfo=pytz.utc)
+            rparams = {
+                'start_date': start_date,
+                'finish_date': finish_date,
+                'contract': contract}
+            rparams.update(
+                read_file(rscripts_path, rscript_fname, 'script'))
+            sess.add(RateScript(**rparams))
+            sess.flush()
+
+        sess.flush()
+        # Assign start and finish rate scripts
+        scripts = sess.query(RateScript). \
+            filter(RateScript.contract_id == contract.id). \
+            order_by(RateScript.start_date).all()
+        contract.start_rate_script = scripts[0]
+        contract.finish_rate_script = scripts[-1]
+
+
+upgrade_funcs = [db_upgrade_0_to_1, db_upgrade_1_to_2]
 
 
 def db_upgrade(root_path):
@@ -3063,7 +3124,7 @@ def db_upgrade(root_path):
             log_message(
                 "Upgrading from database version " + str(db_version) +
                 " to database version " + str(db_version + 1) + ".")
-            upgrade_funcs[db_version](sess)
+            upgrade_funcs[db_version](sess, root_path)
             conf = sess.query(Contract).join(MarketRole).filter(
                 Contract.name == 'configuration', MarketRole.code == 'Z').one()
             state = conf.make_state()
