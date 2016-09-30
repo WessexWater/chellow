@@ -6,7 +6,7 @@ import pytz
 from dateutil.relativedelta import relativedelta
 from sqlalchemy import or_, true
 from sqlalchemy.sql.expression import null
-from sqlalchemy.orm import joinedload
+from sqlalchemy.orm import joinedload, aliased
 from collections import defaultdict
 from chellow.models import (
     Session, Contract, MarketRole, Site, Era, SiteEra, Supply, Source, Bill,
@@ -28,6 +28,8 @@ import zipfile
 
 CATEGORY_ORDER = {None: 0, 'unmetered': 1, 'nhh': 2, 'amr': 3, 'hh': 4}
 meter_order = {'hh': 0, 'amr': 1, 'nhh': 2, 'unmetered': 3}
+
+site_era_alias = aliased(SiteEra)
 
 
 def content(
@@ -201,16 +203,16 @@ def content(
             month_finish = month_start + relativedelta(months=1) - HH
             for site in sites:
                 site_changes = changes[site.code]
-                site_associates = set()
-                for era in sess.query(Era).join(SiteEra).filter(
-                        SiteEra.site == site, Era.start_date <= month_finish,
-                        or_(
+
+                site_associates = ', '.join(
+                    s[0] for s in sess.query(Site.code).join(SiteEra).
+                    join(Era).join(site_era_alias).filter(
+                        Site.id != site.id, site_era_alias.site == site,
+                        Era.start_date <= month_finish, or_(
                             Era.finish_date == null(),
-                            Era.finish_date >= month_start)).options(
-                        joinedload(Era.site_eras)):
-                    for site_era in era.site_eras:
-                        if site_era.site != site:
-                            site_associates.add(site_era.site.code)
+                            Era.finish_date >= month_start)).distinct().
+                    order_by(Site.code))
+
                 site_category = None
                 site_sources = set()
                 site_gen_types = set()
@@ -238,7 +240,7 @@ def content(
                         joinedload(Era.supply).joinedload(
                             Supply.gsp_group),
                         joinedload(Era.mtc).joinedload(Mtc.meter_type),
-                        joinedload(Era.pc)):
+                        joinedload(Era.pc), joinedload(Era.site_eras)):
 
                     supply = era.supply
                     if supply.generator_type is not None:
@@ -394,8 +396,8 @@ def content(
                     out = [
                         None, None, displaced_era.make_meter_category(),
                         'displaced', None, None, None, None, site.code,
-                        site.name, '', month_finish] + \
-                        [month_data[t] for t in summary_titles]
+                        site.name, '', month_finish] + [
+                            month_data[t] for t in summary_titles]
 
                     era_tab.writerow(out)
                     for k, v in month_data.items():
@@ -627,10 +629,8 @@ def content(
 
                 site_tab.writerow(
                     [
-                        site.code, site.name,
-                        ''.join(sorted(list(site_associates))),
-                        month_finish, site_category,
-                        ', '.join(sorted(list(site_sources))),
+                        site.code, site.name, site_associates, month_finish,
+                        site_category, ', '.join(sorted(list(site_sources))),
                         ', '.join(sorted(list(site_gen_types)))] +
                     [site_month_data[k] for k in summary_titles])
             rf.seek(0)
