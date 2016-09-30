@@ -5588,12 +5588,8 @@ def virtual_bill(supply_source):
         'path': '/hhdc_contracts/34/hh_imports/13',
         'tries': {},
         'regexes': [
-            r"There is no channel for the datum: \{&#39;channel_type&#39;: "
-            "&#39;REACTIVE_EXP&#39;, &#39;mpan_core&#39;: &#39;22 4862 4512 "
-            "332&#39;, &#39;start_date&#39;: "
-            "datetime.datetime\(2010, 2, 4, 20, 0, tzinfo=&lt;UTC&gt;\), "
-            "&#39;status&#39;: &#39;A&#39;, &#39;value&#39;: "
-            "Decimal\(&#3\d;30.4339&#3\d;\)\}\."],
+            r'There is no channel for the datum \(22 4862 4512 332, '
+            r'2010-02-04 20:00, REACTIVE_EXP, 30.4339, A\)\.'],
         'status_code': 200},
     {
         'name': "Check the bill import page.",

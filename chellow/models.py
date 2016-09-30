@@ -1,14 +1,15 @@
 from sqlalchemy import (
     ForeignKey, Column, Integer, String, Boolean, DateTime, Text, Numeric, or_,
     not_, and_, Enum, null, create_engine, event)
-from sqlalchemy.orm import sessionmaker, relationship
+from sqlalchemy.orm import sessionmaker, relationship, joinedload
 from sqlalchemy.schema import UniqueConstraint
 from sqlalchemy.engine import Engine
+from datetime import datetime as Datetime
 import datetime
 import pytz
 import ast
 import math
-from sqlalchemy.sql.expression import true
+from sqlalchemy.sql.expression import true, false
 from sqlalchemy.exc import ProgrammingError, SQLAlchemyError
 from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.ext.declarative import declarative_base
@@ -197,7 +198,7 @@ class Snag(Base, PersistentClass):
         self.site = site
         self.channel = channel
 
-        self.date_created = datetime.datetime.now(pytz.utc)
+        self.date_created = Datetime.now(pytz.utc)
         self.description = description
         self.is_ignored = False
         self.update(start_date, finish_date)
@@ -838,7 +839,7 @@ class Contract(Base, PersistentClass):
 
     def update_properties(self, properties):
         try:
-            eval(properties, {'datetime': datetime.datetime})
+            eval(properties, {'datetime': Datetime})
         except SyntaxError as e:
             raise BadRequest(str(e))
         except NameError as e:
@@ -1030,7 +1031,7 @@ class Contract(Base, PersistentClass):
         return batch
 
     def make_properties(self):
-        return eval(self.properties, {'datetime': datetime.datetime})
+        return eval(self.properties, {'datetime': Datetime})
 
     def make_state(self):
         s = "{}" if self.state is None else self.state.strip()
@@ -2346,12 +2347,12 @@ class Supply(Base, PersistentClass):
         if prev_era is None:
             old_stripes.append(
                 {
-                    'start_date': datetime.datetime(
+                    'start_date': Datetime(
                         datetime.MINYEAR, 1, 2, tzinfo=pytz.utc),
                     'finish_date': era.start_date - HH, 'era': None})
             new_stripes.append(
                 {
-                    'start_date': datetime.datetime(
+                    'start_date': Datetime(
                         datetime.MINYEAR, 1, 2, tzinfo=pytz.utc),
                     'finish_date': start_date - HH, 'era': None})
         else:
@@ -2619,9 +2620,8 @@ class HhDatum(Base, PersistentClass):
     # status A actual, E estimated, C padding
     @staticmethod
     def insert(sess, raw_data):
-        mpan_core = channel_type = prev_date = era_finish_date = None
+        mpan_core = channel_type = prev_date = era_finish_date = channel = None
         data = []
-        channel = None
         for datum in raw_data:
             if len(data) > 1000 or not (
                     mpan_core == datum['mpan_core'] and
@@ -2633,25 +2633,28 @@ class HhDatum(Base, PersistentClass):
                     channel.add_hh_data(sess, data)
                     data = []
                 mpan_core = datum['mpan_core']
-                supply = Supply.get_by_mpan_core(sess, mpan_core)
-                era = supply.find_era_at(sess, datum['start_date'])
-                if era is None:
-                    raise BadRequest(
-                        "This datum is either before or after the supply: " +
-                        str(datum) + ".")
-
                 channel_type = datum['channel_type']
-                channel = era.find_channel(
-                    sess, mpan_core == era.imp_mpan_core, channel_type)
+                channel = sess.query(Channel).join(Era).filter(
+                    Channel.channel_type == channel_type,
+                    Era.start_date <= datum['start_date'], or_(
+                        Era.finish_date == null(),
+                        Era.finish_date >= datum['start_date']), or_(
+                        and_(
+                            Era.imp_mpan_core == mpan_core,
+                            Channel.imp_related == true()),
+                        and_(
+                            Era.exp_mpan_core == mpan_core,
+                            Channel.imp_related == false()))).options(
+                    joinedload(Channel.era)).first()
                 if channel is None:
-                    vals = []
-                    for k in sorted(datum.keys()):
-                        vals.append("'" + k + "': " + repr(datum[k]))
                     raise BadRequest(
-                        "There is no channel for the datum: {" +
-                        ', '.join(vals) + "}.")
+                        "There is no channel for the datum (" + ', '.join(
+                            [
+                                mpan_core, hh_format(datum['start_date']),
+                                channel_type, str(datum['value']),
+                                datum['status']]) + ").")
 
-                era_finish_date = era.finish_date
+                era_finish_date = channel.era.finish_date
             prev_date = datum['start_date']
             data.append(datum)
         if len(data) > 0:
@@ -2684,8 +2687,8 @@ class HhDatum(Base, PersistentClass):
 
         self.value = value
         self.status = status
-        nw = datetime.datetime.now(pytz.utc)
-        self.last_modified = datetime.datetime(
+        nw = Datetime.now(pytz.utc)
+        self.last_modified = Datetime(
             year=nw.year, month=nw.month, day=nw.day, tzinfo=pytz.utc)
 
 
@@ -2967,12 +2970,12 @@ def db_init(sess, root_path):
                         " in the directory " + rscripts_path +
                         " should consist of two dates separated by an " +
                         "underscore.")
-                start_date = datetime.datetime.strptime(
+                start_date = Datetime.strptime(
                     start_str, "%Y%m%d%H%M").replace(tzinfo=pytz.utc)
                 if finish_str == 'ongoing':
                     finish_date = None
                 else:
-                    finish_date = datetime.datetime.strptime(
+                    finish_date = Datetime.strptime(
                         finish_str, "%Y%m%d%H%M").replace(tzinfo=pytz.utc)
                 rparams = {
                     'start_date': start_date,
@@ -3071,12 +3074,12 @@ def db_upgrade_1_to_2(sess, root_path):
                     " in the directory " + rscripts_path +
                     " should consist of two dates separated by an " +
                     "underscore.")
-            start_date = datetime.datetime.strptime(
+            start_date = Datetime.strptime(
                 start_str, "%Y%m%d%H%M").replace(tzinfo=pytz.utc)
             if finish_str == 'ongoing':
                 finish_date = None
             else:
-                finish_date = datetime.datetime.strptime(
+                finish_date = Datetime.strptime(
                     finish_str, "%Y%m%d%H%M").replace(tzinfo=pytz.utc)
             rparams = {
                 'start_date': start_date,
