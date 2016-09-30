@@ -2044,17 +2044,15 @@ class Channel(Base, PersistentClass):
 
     def add_hh_data(self, sess, data_raw):
         set_read_write(sess)
-        data = iter(sess.query(HhDatum).filter(
-            HhDatum.channel == self,
-            HhDatum.start_date >= data_raw[0]['start_date'],
-            HhDatum.start_date <= data_raw[-1]['start_date']).order_by(
-            HhDatum.start_date))
+        data = iter(
+            sess.query(HhDatum.start_date, HhDatum.value, HhDatum.status).
+            filter(
+                HhDatum.channel == self,
+                HhDatum.start_date >= data_raw[0]['start_date'],
+                HhDatum.start_date <= data_raw[-1]['start_date']).order_by(
+                HhDatum.start_date))
 
-        try:
-            datum = next(data)
-            datum_date = datum.start_date
-        except StopIteration:
-            datum_date = None
+        datum_date, datum_value, datum_status = next(data, (None, None, None))
 
         insert_blocks, insert_date = [], None
         update_blocks, update_date = [], None
@@ -2063,14 +2061,12 @@ class Channel(Base, PersistentClass):
         negative_blocks, negative_date = [], None
 
         for datum_raw in data_raw:
-            datum_raw['channel_id'] = self.id
             if datum_raw['start_date'] == datum_date:
-                if (datum.value, datum.status) != \
-                        (datum_raw['value'], datum_raw['status']):
+                if (datum_value, datum_status) != (
+                        datum_raw['value'], datum_raw['status']):
                     if update_date != datum_raw['start_date']:
                         update_block = []
                         update_blocks.append(update_block)
-                    datum_raw['id'] = datum.id
                     update_block.append(datum_raw)
                     update_date = datum_raw['start_date'] + HH
                     if upsert_date != datum_raw['start_date']:
@@ -2078,16 +2074,13 @@ class Channel(Base, PersistentClass):
                         upsert_blocks.append(upsert_block)
                     upsert_block.append(datum_raw)
                     upsert_date = datum_raw['start_date'] + HH
-                try:
-                    datum = next(data)
-                    sess.expunge(datum)
-                    datum_date = datum.start_date
-                except StopIteration:
-                    datum_date = None
+                datum_date, datum_value, datum_status = next(
+                    data, (None, None, None))
             else:
                 if datum_raw['start_date'] != insert_date:
                     insert_block = []
                     insert_blocks.append(insert_block)
+                datum_raw['channel_id'] = self.id
                 insert_block.append(datum_raw)
                 insert_date = datum_raw['start_date'] + HH
                 if upsert_date != datum_raw['start_date']:
@@ -2108,7 +2101,7 @@ class Channel(Base, PersistentClass):
                     if negative_date != datum_raw['start_date']:
                         negative_block = []
                         negative_blocks.append(negative_block)
-                    negative_block.append(datum)
+                    negative_block.append(datum_raw)
                     negative_date = datum_raw['start_date'] + HH
 
         for b in insert_blocks:
@@ -2128,10 +2121,11 @@ class Channel(Base, PersistentClass):
             for dw in block:
                 sess.execute(
                     "update hh_datum set value = :value, status = :status, "
-                    "last_modified = current_timestamp where id = :id",
-                    params={
+                    "last_modified = current_timestamp "
+                    "where channel_id = :channel_id and "
+                    "start_date = :start_date", params={
                         'value': dw['value'], 'status': dw['status'],
-                        'id': dw['id']})
+                        'channel_id': self.id, 'start_date': dw['start_date']})
             self.remove_snag(sess, Snag.NEGATIVE, start_date, finish_date)
             self.remove_snag(sess, Snag.ESTIMATED, start_date, finish_date)
             sess.flush()
