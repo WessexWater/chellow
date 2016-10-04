@@ -53,11 +53,11 @@ def triad_calc(
             if finish_month < 4:
                 finish_month += 12
 
-            tot_rate += float(finish_month - start_month + 1) * \
+            tot_rate += (finish_month - start_month + 1) * \
                 data_source.hh_rate(
                     triad_rates_contract_id, rate_script.start_date,
                     'hh_demand_gbp_per_kw')[data_source.dno_code]
-        rate = tot_rate / float(12)
+        rate = tot_rate / 12
     else:
         rate = data_source.hh_rate(
             triad_rates_contract_id, month_begin,
@@ -96,7 +96,6 @@ def hh(data_source, rate_period='monthly'):
                     data_source, t_date, t_date, financial_year_start):
                 chellow.duos.duos_vb(ds)
                 est_triad_kws.append(ds.hh_data[0])
-
         if data_source.site is None:
             era = data_source.supply.find_era_at(
                 data_source.sess, earliest_triad)

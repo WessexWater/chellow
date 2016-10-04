@@ -352,3 +352,10 @@ def render(template, vals, status_code=200, content_type='text/html'):
             "Problem rendering template: " + traceback.format_exc())
 
     return Response(template_str, status_code, headers)
+
+
+def hh_range(start_date, finish_date):
+    dt = start_date
+    while dt <= finish_date:
+        yield dt
+        dt += HH
