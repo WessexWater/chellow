@@ -75,11 +75,11 @@ def hh(data_source):
                 system_price_cache[h_start] = (sbp, ssp)
             except KeyError:
                 raise BadRequest(
-                    "For the System Price Unified rate script at " +
+                    "For the System Price rate script at " +
                     hh_format(h_start) + " the rate cannot be found.")
             except TypeError:
                 raise BadRequest(
-                    "For the System Price Unified rate script at " +
+                    "For the System Price rate script at " +
                     hh_format(h_start) +
                     " the rate 'rates_gbp_per_mwh' has the problem: " +
                     traceback.format_exc())
@@ -98,8 +98,7 @@ system_price_importer = None
 
 class SystemPriceImporter(threading.Thread):
     def __init__(self):
-        super(SystemPriceImporter, self).__init__(
-            name="System Price Unified Importer")
+        super(SystemPriceImporter, self).__init__(name="System Price Importer")
         self.lock = threading.RLock()
         self.messages = collections.deque()
         self.stopped = threading.Event()

@@ -680,7 +680,7 @@ def do_get(sess):
         scenario_props = {
             'scenario_start': start_date, 'scenario_duration': months}
         scenario_id = None
-        base_name.append('unified_supplies_monthly_duration')
+        base_name.append('monthly_duration')
 
     site_id = req_int('site_id') if 'site_id' in request.values else None
     supply_id = req_int('supply_id') if 'supply_id' in request.values else None

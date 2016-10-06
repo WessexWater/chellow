@@ -2901,7 +2901,7 @@ def virtual_bill(supply_source):
             'delete': "Delete"},
         'status_code': 303},
     {
-        'name': "Unified Supplies Monthly Duration",
+        'name': "Supplies Monthly Duration",
         'path': '/reports/247?site_id=5&months=1&finish_year=2009&'
         'finish_month=03&compression=False',
         'status_code': 303},
@@ -2909,7 +2909,7 @@ def virtual_bill(supply_source):
         'path': '/downloads',
         'tries': {'max': 40, 'period': 1},
         'regexes': [
-            r'009_FINISHED_watkinsexamplecom_unified_supplies_monthly_'
+            r'009_FINISHED_watkinsexamplecom_monthly_'
             r'duration_20090301_0000_for_1_months_site_CH023\.ods'],
         'status_code': 200},
     {
@@ -2930,10 +2930,8 @@ def virtual_bill(supply_source):
             r'CI005,Wheal Rodney,2010-01-07 17:00,'],
         'status_code': 200},
 
-    # See if unified report handles the case where there isn't an import
-    # virtual bill function.
     {
-        'name': "Unified Supplies Monthly Duration - no virtual bill function",
+        'name': "Monthly Duration - no virtual bill function",
         'path': '/reports/247?site_id=4&months=1&finish_year=2009&'
         'finish_month=04&compression=False',
         'status_code': 303},
@@ -2941,12 +2939,12 @@ def virtual_bill(supply_source):
         'path': '/downloads',
         'tries': {'max': 30, 'period': 1},
         'regexes': [
-            r'011_FINISHED_watkinsexamplecom_unified_supplies_monthly_'
+            r'011_FINISHED_watkinsexamplecom_monthly_'
             r'duration_20090401_0000_for_1_months_site_CI017\.ods'],
         'status_code': 200},
     {
         'path': '/downloads/'
-        '011_FINISHED_watkinsexamplecom_unified_supplies_monthly_'
+        '011_FINISHED_watkinsexamplecom_monthly_'
         'duration_20090401_0000_for_1_months_site_CI017.ods',
         'status_code': 200,
         'regexes': [
@@ -5003,12 +5001,12 @@ def virtual_bill(supply_source):
         'path': '/downloads',
         'tries': {'max': 30, 'period': 1},
         'regexes': [
-            r'016_FINISHED_watkinsexamplecom_unified_supplies_monthly_'
+            r'016_FINISHED_watkinsexamplecom_monthly_'
             r'duration_20100701_0000_for_1_months_site_CI017\.ods'],
         'status_code': 200},
     {
         'path': '/downloads/'
-        '016_FINISHED_watkinsexamplecom_unified_supplies_monthly_'
+        '016_FINISHED_watkinsexamplecom_monthly_'
         'duration_20100701_0000_for_1_months_site_CI017.ods',
         'regexes': [
             r'<table:table-row>\s*'
@@ -6590,8 +6588,8 @@ def virtual_bill(supply_source):
         'status_code': 200},
 
     {
-        'name': "Unified report",
-        'path': '/ods_unified_report',
+        'name': "Monthly duration report",
+        'path': '/ods_monthly_duration',
         'status_code': 200},
 
     {
@@ -7107,7 +7105,9 @@ def virtual_bill(supply_source):
         'path': '/sites/1',
         'regexes': [
             r'3475 1614 211\s*</td>\s*<td>\s*this site\s*</td>\s*<td>\s*'
-            '<a href="/sites/3" title="Wheal Rodney">CI005</a>\s*</td>'],
+            r'<a\s*'
+            r'href="/sites/3"\s*'
+            r'title="Wheal Rodney">CI005</a>\s*</td>'],
         'status_code': 200},
     {
         'name': "In supplies snapshot, test the last billed date of MOP and "
@@ -9621,13 +9621,13 @@ def virtual_bill(supply_source):
         'tries': {'max': 20, 'period': 1},
         'status_code': 200,
         'regexes': [
-            r"068_FINISHED_watkinsexamplecom_unified_supplies_monthly_"
+            r"068_FINISHED_watkinsexamplecom_monthly_"
             r"duration_20150201_0000_for_1_months_site_CH023\.ods"]
         },
 
     {
         'path': '/downloads/'
-        '068_FINISHED_watkinsexamplecom_unified_supplies_monthly_'
+        '068_FINISHED_watkinsexamplecom_monthly_'
         'duration_20150201_0000_for_1_months_site_CH023.ods',
         'status_code': 200,
         'regexes': [
@@ -9730,9 +9730,8 @@ def virtual_bill(supply_source):
         'regexes': [
             r'73142.39335486847']},
 
-    # See if unified report shows billed amounts correctly
     {
-        'name': "Unified Supplies Monthly Duration - billed amounts",
+        'name': "Monthly Duration - billed amounts",
         'path': '/reports/247?supply_id=10&months=1&finish_year=2010&'
         'finish_month=01&compression=False',
         'status_code': 303},
@@ -9740,12 +9739,12 @@ def virtual_bill(supply_source):
         'path': '/downloads',
         'tries': {'max': 20, 'period': 1},
         'regexes': [
-            r"070_FINISHED_watkinsexamplecom_unified_supplies_monthly_"
+            r"070_FINISHED_watkinsexamplecom_monthly_"
             r"duration_20100101_0000_for_1_months_supply_10\.ods"],
         'status_code': 200},
     {
         'path': '/downloads/'
-        '070_FINISHED_watkinsexamplecom_unified_supplies_monthly_'
+        '070_FINISHED_watkinsexamplecom_monthly_'
         'duration_20100101_0000_for_1_months_supply_10.ods',
         'status_code': 200,
         'regexes': [
@@ -9900,7 +9899,8 @@ def virtual_bill(supply_source):
 
     # Supplier contract 66
     {
-        'name': "3rd party in unified report. Make 3rd-party-reverse.",
+        'name': "3rd party in monthly duration report. "
+        "Make 3rd-party-reverse.",
         'path': '/supplies/16/edit',
         'method': 'post',
         'data': {
@@ -9910,7 +9910,7 @@ def virtual_bill(supply_source):
             'gsp_group_id': "3"},
         'status_code': 303},
     {
-        'name': "3rd party in unified report.",
+        'name': "3rd party in monthly duration report.",
         'path': '/supplier_batches/7/add_bill',
         'method': 'post',
         'data': {
@@ -9942,7 +9942,7 @@ def virtual_bill(supply_source):
             r"/supplier_bills/23"],
         'status_code': 303},
     {
-        'name': "3rd party in unified report.",
+        'name': "3rd party in monthly duration report.",
         'path': '/supplier_bills/23/add_read',
         'method': 'post',
         'data': {
@@ -9969,13 +9969,13 @@ def virtual_bill(supply_source):
             r"/supplier_bills/23"],
         'status_code': 303},
     {
-        'name': "3rd party in unified report.",
+        'name': "3rd party in monthly duration report.",
         'path': '/supplier_bills/23',
         'regexes': [
             r"/reads/17"],
         'status_code': 200},
     {
-        'name': "3rd party in unified report.",
+        'name': "3rd party in monthly duration report.",
         'path': '/reports/247?supply_id=16&months=1&finish_year=2014&'
         'finish_month=12&compression=False',
         'status_code': 303},
@@ -9983,12 +9983,12 @@ def virtual_bill(supply_source):
         'path': '/downloads',
         'tries': {'max': 20, 'period': 1},
         'regexes': [
-            r'071_FINISHED_watkinsexamplecom_unified_supplies_monthly_'
+            r'071_FINISHED_watkinsexamplecom_monthly_'
             r'duration_20141201_0000_for_1_months_supply_16\.ods'],
         'status_code': 200},
     {
         'path': '/downloads/'
-        '071_FINISHED_watkinsexamplecom_unified_supplies_monthly_'
+        '071_FINISHED_watkinsexamplecom_monthly_'
         'duration_20141201_0000_for_1_months_supply_16.ods',
         'status_code': 200,
         'regexes': [
@@ -10187,7 +10187,7 @@ def virtual_bill(supply_source):
 
 
     {
-        'name': "Unified report for a gen-net supply",
+        'name': "Monthly duration report for a gen-net supply",
         'path': '/supplies/5/edit',
         'method': 'post',
         'data': {
@@ -10197,22 +10197,22 @@ def virtual_bill(supply_source):
             'gsp_group_id': "11"},
         'status_code': 303},
     {
-        'name': "Unified report for a gen-net supply",
+        'name': "Monthly duration report for a gen-net supply",
         'path': '/reports/247?supply_id=5&months=1&finish_year=2015&'
         'finish_month=05&compression=False',
         'status_code': 303},
     {
-        'name': "Unified report for a gen-net supply",
+        'name': "Monthly duration report for a gen-net supply",
         'path': '/downloads',
         'tries': {},
         'regexes': [
-            r'073_FINISHED_watkinsexamplecom_unified_supplies_monthly_'
+            r'073_FINISHED_watkinsexamplecom_monthly_'
             r'duration_20150501_0000_for_1_months_supply_5\.ods'],
         'status_code': 200},
     {
-        'name': "Unified report for a gen-net supply",
+        'name': "Monthly duration report for a gen-net supply",
         'path': '/downloads/'
-        '073_FINISHED_watkinsexamplecom_unified_supplies_monthly_'
+        '073_FINISHED_watkinsexamplecom_monthly_'
         'duration_20150501_0000_for_1_months_supply_5.ods',
         'status_code': 200,
         'regexes': [
@@ -10269,7 +10269,7 @@ def virtual_bill(supply_source):
         'status_code': 200},
 
     {
-        'name': "Unified Supplies Monthly Duration - displaced kWh",
+        'name': "Monthly Duration report - displaced kWh",
         'path': '/channels/10/edit',
         'method': 'post',
         'data': {
@@ -10283,22 +10283,22 @@ def virtual_bill(supply_source):
             'status': "A", },
         'status_code': 303},
     {
-        'name': "Unified Supplies Monthly Duration - displaced kWh",
+        'name': "Monthly Duration report - displaced kWh",
         'path': '/reports/247?site_id=1&months=1&finish_year=2015&'
         'finish_month=05&compression=False',
         'status_code': 303},
     {
-        'name': "Unified Supplies Monthly Duration - displaced kWh",
+        'name': "Monthly Duration report - displaced kWh",
         'path': '/downloads',
         'tries': {'max': 30, 'period': 1},
         'regexes': [
-            r'075_FINISHED_watkinsexamplecom_unified_supplies_monthly_'
+            r'075_FINISHED_watkinsexamplecom_monthly_'
             r'duration_20150501_0000_for_1_months_site_CI004\.ods'],
         'status_code': 200},
     {
-        'name': "Unified Supplies Monthly Duration - displaced kWh",
+        'name': "Monthly Duration report - displaced kWh",
         'path': '/downloads/'
-        '075_FINISHED_watkinsexamplecom_unified_supplies_monthly_'
+        '075_FINISHED_watkinsexamplecom_monthly_'
         'duration_20150501_0000_for_1_months_site_CI004.ods',
         'status_code': 200,
         'regexes': [
@@ -10561,22 +10561,22 @@ def virtual_bill(supply_source):
             r'</table:table-row>\s*']},
 
     {
-        'name': "Unified supply starts after period",
+        'name': "Monthly duration supply starts after period",
         'path': '/reports/247?supply_id=7&months=1&finish_year=2003&'
         'finish_month=08&compression=False',
         'status_code': 303},
     {
-        'name': "Unified supply starts after period",
+        'name': "Monthly duration supply starts after period",
         'path': '/downloads',
         'tries': {'max': 30, 'period': 1},
         'regexes': [
-            r'076_FINISHED_watkinsexamplecom_unified_supplies_monthly_'
+            r'076_FINISHED_watkinsexamplecom_monthly_'
             r'duration_20030801_0000_for_1_months_supply_7\.ods'],
         'status_code': 200},
     {
-        'name': "Unified supply starts after period",
+        'name': "Monthly duration supply starts after period",
         'path': '/downloads/'
-        '076_FINISHED_watkinsexamplecom_unified_supplies_monthly_'
+        '076_FINISHED_watkinsexamplecom_monthly_'
         'duration_20030801_0000_for_1_months_supply_7.ods',
         'status_code': 200,
         'regexes': [
@@ -10610,7 +10610,8 @@ def virtual_bill(supply_source):
         'status_code': 303},
 
     {
-        'name': "Unified report, billed: add batch to Dynamat contract",
+        'name': "Montly duration report, billed: "
+        "add batch to Dynamat contract",
         'path': '/hhdc_contracts/35/add_batch',
         'method': 'post',
         'data': {
@@ -10620,7 +10621,7 @@ def virtual_bill(supply_source):
         'regexes': [
             r"/hhdc_batches/15"]},
     {
-        'name': "Unified report, billed: add bill to batch",
+        'name': "Monthly duration report, billed: add bill to batch",
         'path': '/hhdc_batches/15/add_bill',
         'method': 'post',
         'data': {
@@ -10652,22 +10653,22 @@ def virtual_bill(supply_source):
         'regexes': [
             r"/hhdc_bills/24"]},
     {
-        'name': "Unified report, billed",
+        'name': "Monthly duration report, billed",
         'path': '/reports/247?site_id=1&months=1&finish_year=2015&'
         'finish_month=08&compression=False',
         'status_code': 303},
     {
-        'name': "Unified report, billed",
+        'name': "Monthly duration report, billed",
         'path': '/downloads',
         'tries': {'max': 30, 'period': 1},
         'regexes': [
-            r'077_FINISHED_watkinsexamplecom_unified_supplies_monthly_'
+            r'077_FINISHED_watkinsexamplecom_monthly_'
             r'duration_20150801_0000_for_1_months_site_CI004\.ods'],
         'status_code': 200},
     {
-        'name': "Unified report, billed",
+        'name': "Monthly duration report, billed",
         'path': '/downloads/'
-        '077_FINISHED_watkinsexamplecom_unified_supplies_monthly_'
+        '077_FINISHED_watkinsexamplecom_monthly_'
         'duration_20150801_0000_for_1_months_site_CI004.ods',
         'status_code': 200,
         'regexes': [
@@ -11561,7 +11562,7 @@ def virtual_bill(supply_source):
         'path': '/mop_bill_imports?mop_batch_id=9',
         'status_code': 200},
     {
-        'name': "Unified Report: gen-net",
+        'name': "Monthly duration Report: gen-net",
         'path': '/reports/247?supply_id=5&months=1&finish_year=2014&'
         'finish_month=06&compression=False',
         'status_code': 303},
@@ -11569,12 +11570,12 @@ def virtual_bill(supply_source):
         'path': '/downloads',
         'tries': {'max': 40, 'period': 1},
         'regexes': [
-            r'006_FINISHED_adminexamplecom_unified_supplies_monthly_'
+            r'006_FINISHED_adminexamplecom_monthly_'
             r'duration_20140601_0000_for_1_months_supply_5\.ods'],
         'status_code': 200},
     {
         'path': '/downloads/'
-        '006_FINISHED_adminexamplecom_unified_supplies_monthly_duration_'
+        '006_FINISHED_adminexamplecom_monthly_duration_'
         '20140601_0000_for_1_months_supply_5.ods',
         'regexes': [
             r'<table:table-row>\s*'
@@ -11679,7 +11680,7 @@ def virtual_bill(supply_source):
         'status_code': 200},
 
     {
-        'name': "Unified report for site with only generation",
+        'name': "Monthly duration report for site with only generation",
         'path': '/eras/4/edit',
         'method': 'post',
         'data': {
@@ -11687,7 +11688,7 @@ def virtual_bill(supply_source):
             'attach': "Attach"},
         'status_code': 303},
     {
-        'name': "Unified report for site with only generation",
+        'name': "Monthly duration report for site with only generation",
         'path': '/eras/4/edit',
         'method': 'post',
         'data': {
@@ -11696,22 +11697,22 @@ def virtual_bill(supply_source):
             'locate': "Locate"},
         'status_code': 303},
     {
-        'name': "Unified report for site with only generation",
+        'name': "Monthly duration report for site with only generation",
         'path': '/reports/247?site_id=1&months=1&finish_year=2015&'
         'finish_month=05&compression=False',
         'status_code': 303},
     {
-        'name': "Unified report for site with only generation",
+        'name': "Monthly duration report for site with only generation",
         'path': '/downloads',
         'tries': {'max': 30, 'period': 1},
         'regexes': [
-            r'008_FINISHED_adminexamplecom_unified_supplies_monthly_'
+            r'008_FINISHED_adminexamplecom_monthly_'
             r'duration_20150501_0000_for_1_months_site_CI004\.ods'],
         'status_code': 200},
     {
-        'name': "Unified report for site with only generation",
+        'name': "Monthly duration report for site with only generation",
         'path': '/downloads/'
-        '008_FINISHED_adminexamplecom_unified_supplies_monthly_'
+        '008_FINISHED_adminexamplecom_monthly_'
         'duration_20150501_0000_for_1_months_site_CI004.ods',
         'status_code': 200,
         'regexes': [
@@ -11759,22 +11760,22 @@ def virtual_bill(supply_source):
             r'</table:table-row>']},
 
     {
-        'name': "Unified report for site with no supplies",
+        'name': "Monthly duration report for site with no supplies",
         'path': '/reports/247?site_id=8&months=1&finish_year=2015&'
         'finish_month=05&compression=False',
         'status_code': 303},
     {
-        'name': "Unified report for site with no supplies",
+        'name': "Monthly duration report for site with no supplies",
         'path': '/downloads',
         'tries': {'max': 30, 'period': 1},
         'regexes': [
-            r'009_FINISHED_adminexamplecom_unified_supplies_monthly_'
+            r'009_FINISHED_adminexamplecom_monthly_'
             r'duration_20150501_0000_for_1_months_site_MOBY\.ods'],
         'status_code': 200},
     {
-        'name': "Unified report for site with no supplies",
+        'name': "Monthly duration report for site with no supplies",
         'path': '/downloads/'
-        '009_FINISHED_adminexamplecom_unified_supplies_monthly_'
+        '009_FINISHED_adminexamplecom_monthly_'
         'duration_20150501_0000_for_1_months_site_MOBY.ods',
         'status_code': 200,
         'regexes': [

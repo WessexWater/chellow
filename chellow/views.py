@@ -4033,13 +4033,13 @@ def bill_type_get(type_id):
     return render_template('bill_type.html', bill_type=bill_type)
 
 
-@app.route('/ods_unified_report')
-def ods_unified_report_get():
+@app.route('/ods_monthly_duration')
+def ods_monthly_duration_get():
     now = Datetime.utcnow()
     month_start = Datetime(now.year, now.month, 1) - relativedelta(months=1)
     month_finish = Datetime(now.year, now.month, 1) - HH
     return render_template(
-        'ods_unified_report.html', month_start=month_start,
+        'ods_monthly_duration.html', month_start=month_start,
         month_finish=month_finish)
 
 
