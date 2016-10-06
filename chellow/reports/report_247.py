@@ -121,7 +121,7 @@ def content(
             zp = zipfile.ZIP_STORED
         f = odswriter.writer(rf, '1.1', compression=zp)
         site_tab = f.new_sheet("Site Level")
-        era_tab = f.new_sheet("Supply Level")
+        era_tab = f.new_sheet("Era Level")
         changes = defaultdict(list, {})
 
         try:
@@ -380,24 +380,26 @@ def content(
                     try:
                         gbp = disp_supplier_bill['net-gbp']
                     except KeyError:
-                        disp_supplier_bill['problem'] += \
-                            'For the supply ' + \
-                            site_ds.mpan_core + \
-                            ' the virtual bill ' + \
-                            str(disp_supplier_bill) + \
-                            ' from the contract ' + \
+                        disp_supplier_bill['problem'] += 'For the supply ' + \
+                            site_ds.mpan_core + ' the virtual bill ' + \
+                            str(disp_supplier_bill) + ' from the contract ' + \
                             disp_supplier_contract.name + \
                             ' does not contain the net-gbp key.'
 
-                    month_data['used-gbp'] = \
-                        month_data['displaced-gbp'] = \
+                    month_data['used-gbp'] = month_data['displaced-gbp'] = \
                         site_ds.supplier_bill['net-gbp']
 
                     out = [
                         None, None, displaced_era.make_meter_category(),
                         'displaced', None, None, None, None, site.code,
                         site.name, '', month_finish] + [
-                            month_data[t] for t in summary_titles]
+                            month_data[t] for t in summary_titles] + [None] + [
+                        None] * len(title_dict['mop']) + [None] + [
+                        None] * len(title_dict['dc']) + [None] + [
+                            (
+                                disp_supplier_bill[t]
+                                if t in disp_supplier_bill else None)
+                            for t in title_dict['imp-supplier']]
 
                     era_tab.writerow(out)
                     for k, v in month_data.items():
