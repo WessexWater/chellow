@@ -10,6 +10,8 @@ from pkgutil import iter_modules
 from chellow.models import set_read_write, Session
 import chellow
 import chellow.bill_parser_sse_edi
+from functools import lru_cache
+
 
 import_id = 0
 import_lock = threading.Lock()
@@ -76,9 +78,22 @@ class BillImport(threading.Thread):
         sess = None
         try:
             sess = Session()
+            set_read_write(sess)
             self._log(
                 "Starting to parse the file with '" + self.parser_name + "'.")
-            set_read_write(sess)
+
+            @lru_cache()
+            def find_bill_type(code):
+                return BillType.get_by_code(sess, code)
+
+            @lru_cache()
+            def find_tpr(code):
+                return None if code is None else Tpr.get_by_code(sess, code)
+
+            @lru_cache()
+            def find_read_type(code):
+                return ReadType.get_by_code(sess, code)
+
             batch = Batch.get_by_id(sess, self.batch_id)
             raw_bills = self.parser.make_raw_bills()
             self._log(
@@ -87,37 +102,24 @@ class BillImport(threading.Thread):
             for self.bill_num, raw_bill in enumerate(raw_bills):
                 try:
                     with sess.begin_nested():
-                        sess.execute(
-                            "set transaction isolation level serializable "
-                            "read write")
-                        bill_type = BillType.get_by_code(
-                            sess, raw_bill['bill_type_code'])
                         bill = batch.insert_bill(
                             sess, raw_bill['account'], raw_bill['reference'],
                             raw_bill['issue_date'], raw_bill['start_date'],
                             raw_bill['finish_date'], raw_bill['kwh'],
                             raw_bill['net'], raw_bill['vat'],
                             raw_bill['gross'],
-                            bill_type, raw_bill['breakdown'])
+                            find_bill_type(raw_bill['bill_type_code']),
+                            raw_bill['breakdown'])
                         sess.flush()
                         for raw_read in raw_bill['reads']:
-                            tpr_code = raw_read['tpr_code']
-                            if tpr_code is None:
-                                tpr = None
-                            else:
-                                tpr = Tpr.get_by_code(sess, tpr_code)
-
-                            prev_type = ReadType.get_by_code(
-                                sess, raw_read['prev_type_code'])
-                            pres_type = ReadType.get_by_code(
-                                sess, raw_read['pres_type_code'])
                             bill.insert_read(
-                                sess, tpr, raw_read['coefficient'],
-                                raw_read['units'], raw_read['msn'],
-                                raw_read['mpan'], raw_read['prev_date'],
-                                raw_read['prev_value'], prev_type,
+                                sess, find_tpr(raw_read['tpr_code']),
+                                raw_read['coefficient'], raw_read['units'],
+                                raw_read['msn'], raw_read['mpan'],
+                                raw_read['prev_date'], raw_read['prev_value'],
+                                find_read_type(raw_read['prev_type_code']),
                                 raw_read['pres_date'], raw_read['pres_value'],
-                                pres_type)
+                                find_read_type(raw_read['pres_type_code']))
                         self.successful_bills.append(raw_bill)
                 except BadRequest as e:
                     raw_bill['error'] = str(e.description)
