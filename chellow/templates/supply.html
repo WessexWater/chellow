@@ -551,12 +551,12 @@
 								</td>
 								<td style="border-right: none;">
 									{% if read %}
-										<a title="{{ read.presentDate|hh_format }} {{ read.msn }}">{{ read.presentValue }}</a>
+										<a title="{{ read.present_date|hh_format }} {{ read.msn }}">{{ read.presentValue }}</a>
 									{% endif %}
 								</td>
 								<td style="border-left: none;">
 									{% if read %}
-										{{ read.presentType.code }}
+										{{ read.present_type.code }}
 									{% endif %}
 								</td>
 							{% endfor %}

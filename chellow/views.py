@@ -18,7 +18,7 @@ from dateutil.relativedelta import relativedelta
 from chellow.utils import (
     HH, req_str, req_int, req_date, parse_mpan_core, req_bool, req_hh_date,
     hh_after, req_decimal, send_response, hh_before, hh_format, hh_range)
-from werkzeug.exceptions import BadRequest
+from werkzeug.exceptions import BadRequest, NotFound
 import chellow.general_import
 import io
 import chellow.hh_importer
@@ -1724,9 +1724,20 @@ def supplies_get():
 def supply_get(supply_id):
     debug = ''
     era_bundles = []
+    supply = g.sess.query(Supply).filter(Supply.id == supply_id).options(
+        joinedload(Supply.source), joinedload(Supply.generator_type),
+        joinedload(Supply.gsp_group), joinedload(Supply.dno_contract)).first()
+    if supply is None:
+        raise NotFound("There isn't a supply with the id " + str(supply_id))
+
     supply = Supply.get_by_id(g.sess, supply_id)
     eras = g.sess.query(Era).filter(Era.supply == supply).order_by(
-        Era.start_date.desc()).all()
+        Era.start_date.desc()).options(
+            joinedload(Era.pc), joinedload(Era.imp_supplier_contract),
+            joinedload(Era.exp_supplier_contract),
+            joinedload(Era.ssc), joinedload(Era.mtc),
+            joinedload(Era.mop_contract), joinedload(Era.hhdc_contract),
+            joinedload(Era.imp_llfc), joinedload(Era.exp_llfc)).all()
     for era in eras:
         imp_mpan_core = era.imp_mpan_core
         exp_mpan_core = era.exp_mpan_core
@@ -1775,7 +1786,9 @@ def supply_get(supply_id):
 
         bills = g.sess.query(Bill).filter(Bill.supply == supply).order_by(
             Bill.start_date.desc(), Bill.issue_date.desc(),
-            Bill.reference.desc())
+            Bill.reference.desc()).options(
+            joinedload(Bill.batch).joinedload(Batch.contract),
+            joinedload(Bill.bill_type))
         if era.finish_date is not None:
             bills = bills.filter(Bill.start_date <= era.finish_date)
         if era != eras[-1]:
@@ -1813,7 +1826,10 @@ def supply_get(supply_id):
                 for read, tpr in g.sess.query(
                         RegisterRead, Tpr).join(Tpr).filter(
                         RegisterRead.bill == bill).order_by(
-                        Tpr.id, RegisterRead.present_date.desc()):
+                        Tpr.id, RegisterRead.present_date.desc()).options(
+                        joinedload(RegisterRead.previous_type),
+                        joinedload(RegisterRead.present_type),
+                        joinedload(RegisterRead.tpr)):
                     tpr_code = 'md' if tpr is None else tpr.code
                     try:
                         inner_tpr_map[tpr_code].append(read)
