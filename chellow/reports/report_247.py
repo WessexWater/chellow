@@ -6,7 +6,7 @@ import pytz
 from dateutil.relativedelta import relativedelta
 from sqlalchemy import or_, true
 from sqlalchemy.sql.expression import null
-from sqlalchemy.orm import joinedload, aliased
+from sqlalchemy.orm import joinedload
 from collections import defaultdict
 from chellow.models import (
     Session, Contract, MarketRole, Site, Era, SiteEra, Supply, Source, Bill,
@@ -28,8 +28,6 @@ import zipfile
 
 CATEGORY_ORDER = {None: 0, 'unmetered': 1, 'nhh': 2, 'amr': 3, 'hh': 4}
 meter_order = {'hh': 0, 'amr': 1, 'nhh': 2, 'unmetered': 3}
-
-site_era_alias = aliased(SiteEra)
 
 
 def content(
@@ -203,15 +201,6 @@ def content(
             month_finish = month_start + relativedelta(months=1) - HH
             for site in sites:
                 site_changes = changes[site.code]
-
-                site_associates = ', '.join(
-                    s[0] for s in sess.query(Site.code).join(SiteEra).
-                    join(Era).join(site_era_alias).filter(
-                        Site.id != site.id, site_era_alias.site == site,
-                        Era.start_date <= month_finish, or_(
-                            Era.finish_date == null(),
-                            Era.finish_date >= month_start)).distinct().
-                    order_by(Site.code))
 
                 site_category = None
                 site_sources = set()
@@ -631,8 +620,11 @@ def content(
 
                 site_tab.writerow(
                     [
-                        site.code, site.name, site_associates, month_finish,
-                        site_category, ', '.join(sorted(list(site_sources))),
+                        site.code, site.name, ', '.join(
+                            site.find_linked_sites(
+                                sess, month_start, month_finish)),
+                        month_finish, site_category,
+                        ', '.join(sorted(list(site_sources))),
                         ', '.join(sorted(list(site_gen_types)))] +
                     [site_month_data[k] for k in summary_titles])
             rf.seek(0)

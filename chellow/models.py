@@ -1,7 +1,7 @@
 from sqlalchemy import (
     ForeignKey, Column, Integer, String, Boolean, DateTime, Text, Numeric, or_,
     not_, and_, Enum, null, create_engine, event)
-from sqlalchemy.orm import sessionmaker, relationship, joinedload
+from sqlalchemy.orm import sessionmaker, relationship, joinedload, aliased
 from sqlalchemy.schema import UniqueConstraint
 from sqlalchemy.engine import Engine
 from datetime import datetime as Datetime
@@ -1105,6 +1105,16 @@ class Site(Base, PersistentClass):
             raise BadRequest(
                 "There isn't a site with the code " + code + ".")
         return site
+
+    def find_linked_sites(self, sess, start_date, finish_date):
+        return [
+            s[0] for s in sess.query(Site.code).join(SiteEra).join(Era).
+            join(site_era_alias).filter(
+                Site.id != self.id, site_era_alias.site == self,
+                Era.start_date <= finish_date, or_(
+                    Era.finish_date == null(),
+                    Era.finish_date >= start_date)).distinct().
+            order_by(Site.code)]
 
     def insert_supply(
             self, sess, source, generator_type, supply_name, start_date,
@@ -2783,6 +2793,8 @@ class SiteGroup():
     def delete_snag(self, sess, description, start_date, finish_date):
         Snag.remove_snag(
             sess, self.sites[0], None, description, start_date, finish_date)
+
+site_era_alias = aliased(SiteEra)
 
 
 def read_file(pth, fname, attr):
