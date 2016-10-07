@@ -2,7 +2,7 @@ import traceback
 from sqlalchemy import or_
 from sqlalchemy.sql.expression import null, true
 from chellow.models import Supply, Era, Site, SiteEra
-from chellow.utils import hh_format, HH, req_int, req_date, send_response
+from chellow.utils import hh_format, hh_range, req_int, req_date, send_response
 import chellow.computer
 
 
@@ -15,9 +15,7 @@ def content(supply_id, start_date, finish_date, sess):
 
         prev_titles = None
 
-        hh_start = start_date
-
-        while not hh_start > finish_date:
+        for hh_start in hh_range(start_date, finish_date):
             era = sess.query(Era).filter(
                 Era.supply == supply, Era.start_date <= hh_start,
                 or_(
@@ -110,8 +108,6 @@ def content(supply_id, start_date, finish_date, sess):
                 prev_titles = titles
                 yield ','.join('"' + str(v) + '"' for v in titles) + '\n'
             yield ','.join('"' + str(v) + '"' for v in output_line) + '\n'
-
-            hh_start += HH
     except:
         yield traceback.format_exc()
 

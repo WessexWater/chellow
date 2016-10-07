@@ -7,7 +7,7 @@ import os
 import threading
 import chellow.dloads
 from chellow.utils import (
-    HH, req_date, req_bool, req_int, req_str, parse_mpan_core)
+    hh_range, req_date, req_bool, req_int, req_str, parse_mpan_core)
 from flask import request, g
 from chellow.views import chellow_redirect
 
@@ -61,7 +61,6 @@ def content(
             else:
                 mpan_core_str = era.imp_mpan_core
 
-            current_date = start_date
             hh_data = iter(
                 sess.query(HhDatum).join(Channel).join(Era).filter(
                     Era.supply == supply, HhDatum.start_date >= start_date,
@@ -71,7 +70,7 @@ def content(
                 ).order_by(HhDatum.start_date))
             datum = next(hh_data, None)
 
-            while not current_date > finish_date:
+            for current_date in hh_range(start_date, finish_date):
                 if current_date.hour == 0 and current_date.minute == 0:
                     outs.append(
                         "\n" + mpan_core_str + "," +
@@ -81,7 +80,6 @@ def content(
                 if datum is not None and datum.start_date == current_date:
                     outs.append(str(datum.value))
                     datum = next(hh_data, None)
-                current_date += HH
             if is_zipped:
                 fname = mpan_core_str + '_' + str(supply.id) + '.csv'
                 zf.writestr(fname.encode('ascii'), titles + ''.join(outs))

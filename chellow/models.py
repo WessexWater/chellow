@@ -15,7 +15,8 @@ from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.ext.declarative import declarative_base
 import operator
 from chellow.utils import (
-    hh_after, HH, parse_mpan_core, hh_before, next_hh, prev_hh, hh_format)
+    hh_after, HH, parse_mpan_core, hh_before, next_hh, prev_hh, hh_format,
+    hh_range)
 import json
 from dateutil.relativedelta import relativedelta
 from functools import lru_cache
@@ -2742,7 +2743,6 @@ class SiteGroup():
             (
                 c.id, keys[c.era.supply.source.code][c.imp_related])
             for c in channels)
-        hh_start = self.start_date
 
         if len(channels) == 0:
             hh = None
@@ -2760,7 +2760,7 @@ class SiteGroup():
 
             hh = next(db_data, None)
 
-        while hh_start <= self.finish_date:
+        for hh_start in hh_range(self.start_date, self.finish_date):
             dd = {
                 'start_date': hh_start, 'imp_net': 0, 'exp_net': 0,
                 'imp_gen': 0, 'exp_gen': 0, 'imp_3p': 0, 'exp_3p': 0}
@@ -2773,7 +2773,6 @@ class SiteGroup():
             dd['displaced'] = dd['imp_gen'] - dd['exp_gen'] - dd['exp_net']
             dd['used'] = dd['displaced'] + dd['imp_net'] + dd['imp_3p'] - \
                 dd['exp_3p']
-            hh_start += HH
 
         return data
 

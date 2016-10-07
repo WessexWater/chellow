@@ -3,7 +3,7 @@ from dateutil.relativedelta import relativedelta
 import pytz
 import traceback
 from chellow.models import Site, Era, SiteEra
-from chellow.utils import HH, hh_format, req_int, send_response
+from chellow.utils import HH, hh_format, req_int, send_response, hh_range
 import chellow.computer
 from sqlalchemy import or_, null
 
@@ -54,7 +54,7 @@ def content(end_year, end_month, months, site_id, sess):
 
             results = iter(
                 sess.execute(
-                    "select supply.id, hh_datum.value, "
+                    "select hh_datum.value, "
                     "hh_datum.start_date, channel.imp_related, "
                     "source.code, generator_type.code as gen_type_code "
                     "from hh_datum, channel, source, era, supply left "
@@ -73,62 +73,43 @@ def content(end_year, end_month, months, site_id, sess):
                         'month_start': month_start,
                         'month_finish': month_finish,
                         'supply_ids': list(supply_ids)}))
-            try:
-                res = next(results)
-                hhChannelValue = res.value
-                hhChannelStartDate = res.start_date
-                imp_related = res.imp_related
-                source_code = res.code
-                gen_type = res.gen_type_code
-                hh_date = month_start
+            (
+                val, hh_start, imp_related, source_code, gen_type_code) = next(
+                    results, (None, None, None, None, None))
 
-                while hh_date <= finish_date:
-                    gen_breakdown = {}
-                    exported = 0
-                    while hhChannelStartDate == hh_date:
-                        if not imp_related and source_code in (
-                                'net', 'gen-net'):
-                            exported += hhChannelValue
-                        if (imp_related and source_code == 'gen') or (
-                                not imp_related and
-                                source_code == 'gen-net'):
-                            gen_breakdown[gen_type] = \
-                                gen_breakdown.setdefault(gen_type, 0) + \
-                                hhChannelValue
+            for hh_date in hh_range(month_start, month_finish):
+                gen_breakdown = {}
+                exported = 0
+                while hh_start == hh_date:
+                    if not imp_related and source_code in (
+                            'net', 'gen-net'):
+                        exported += val
+                    if (imp_related and source_code == 'gen') or (
+                            not imp_related and source_code == 'gen-net'):
+                        gen_breakdown[gen_type_code] = \
+                            gen_breakdown.setdefault(gen_type_code, 0) + val
 
-                        if (not imp_related and source_code == 'gen') or \
-                                (imp_related and source_code == 'gen-net'):
-                            gen_breakdown[gen_type] = \
-                                gen_breakdown.setdefault(gen_type, 0) - \
-                                hhChannelValue
+                    if (not imp_related and source_code == 'gen') or \
+                            (imp_related and source_code == 'gen-net'):
+                        gen_breakdown[gen_type_code] = \
+                            gen_breakdown.setdefault(gen_type_code, 0) - val
+                    (
+                        val, hh_start, imp_related, source_code, gen_type_code
+                        ) = next(results, (None, None, None, None, None))
 
-                        try:
-                            res = next(results)
-                            source_code = res.code
-                            hhChannelValue = res.value
-                            hhChannelStartDate = res.start_date
-                            imp_related = res.imp_related
-                            gen_type = res.gen_type_code
-                        except StopIteration:
-                            hhChannelStartDate = None
-
-                    displaced = sum(gen_breakdown.values()) - exported
-                    added_so_far = 0
-                    for key in sorted(gen_breakdown.keys()):
-                        kwh = gen_breakdown[key]
-                        if kwh + added_so_far > displaced:
-                            total_gen_breakdown[key] = \
-                                total_gen_breakdown.get(key, 0) + \
-                                displaced - added_so_far
-                            break
-                        else:
-                            total_gen_breakdown[key] = \
-                                total_gen_breakdown.get(key, 0) + kwh
-                            added_so_far += kwh
-
-                    hh_date += HH
-            except StopIteration:
-                pass
+                displaced = sum(gen_breakdown.values()) - exported
+                added_so_far = 0
+                for key in sorted(gen_breakdown.keys()):
+                    kwh = gen_breakdown[key]
+                    if kwh + added_so_far > displaced:
+                        total_gen_breakdown[key] = \
+                            total_gen_breakdown.get(key, 0) + displaced - \
+                            added_so_far
+                        break
+                    else:
+                        total_gen_breakdown[key] = \
+                            total_gen_breakdown.get(key, 0) + kwh
+                        added_so_far += kwh
 
             site_ds = chellow.computer.SiteSource(
                 sess, site, month_start, month_finish, forecast_date, None,

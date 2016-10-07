@@ -17,7 +17,7 @@ import pytz
 from dateutil.relativedelta import relativedelta
 from chellow.utils import (
     HH, req_str, req_int, req_date, parse_mpan_core, req_bool, req_hh_date,
-    hh_after, req_decimal, send_response, hh_before, hh_format)
+    hh_after, req_decimal, send_response, hh_before, hh_format, hh_range)
 from werkzeug.exceptions import BadRequest
 import chellow.general_import
 import io
@@ -2615,7 +2615,6 @@ def site_used_graph_get(site_id):
             Supply.id.in_(s.id for s in supplies)).order_by(
                 HhDatum.start_date))
 
-    hh_date = start_date
     max_scale = 2
     min_scale = 0
     result_data = []
@@ -2628,7 +2627,7 @@ def site_used_graph_get(site_id):
         is_import, source_code) = next(
         results, (None, None, None, None, None))
 
-    while hh_date <= finish_date:
+    for hh_date in hh_range(start_date, finish_date):
         complete = None
         hh_value = 0
 
@@ -2654,7 +2653,6 @@ def site_used_graph_get(site_id):
                 'is_complete': complete is True})
         max_scale = max(max_scale, int(math.ceil(hh_value)))
         min_scale = min(min_scale, int(math.floor(hh_value)))
-        hh_date += HH
 
     step = 10**int(math.floor(math.log10(max_scale - min_scale)))
 
@@ -2725,27 +2723,18 @@ def supply_hh_data_get(supply_id):
 
     hh_data = iter(g.sess.query(HhDatum).join(Channel).join(Era).filter(
         Era.supply == supply, HhDatum.start_date >= start_date,
-        HhDatum.start_date <= finish_date).order_by(HhDatum.start_date))
+        HhDatum.start_date <= finish_date).order_by(HhDatum.start_date).
+        options(joinedload(HhDatum.channel)))
     hh_lines = []
 
-    hh_date = start_date
-    try:
-        hh_datum = next(hh_data)
-    except StopIteration:
-        hh_datum = None
-    while hh_date <= finish_date:
+    hh_datum = next(hh_data, None)
+    for hh_date in hh_range(start_date, finish_date):
         hh_line = {'timestamp': hh_date}
         hh_lines.append(hh_line)
         while hh_datum is not None and hh_datum.start_date == hh_date:
             channel = hh_datum.channel
-            hh_line[keys[channel.imp_related][channel.channel_type]] = \
-                hh_datum
-            try:
-                hh_datum = next(hh_data)
-            except StopIteration:
-                hh_datum = None
-
-        hh_date += HH
+            hh_line[keys[channel.imp_related][channel.channel_type]] = hh_datum
+            hh_datum = next(hh_data, None)
     return render_template(
         'supply_hh_data.html', supply=supply, era=era, hh_lines=hh_lines,
         start_date=start_date, finish_date=finish_date)
@@ -4400,13 +4389,12 @@ def site_gen_graph_get(site_id):
             Channel.channel_type == 'ACTIVE', HhDatum.start_date >= start_date,
             HhDatum.start_date <= finish_date, Supply.id.in_(supply_ids)).
         order_by(HhDatum.start_date, Supply.id))
-    hh_date = start_date
     (
         hhd_value, hhd_start_date, status, imp_related, supply_name,
         source_code, sup_id) = next(
             rs, (None, None, None, None, None, None, None))
 
-    while hh_date <= finish_date:
+    for hh_date in hh_range(start_date, finish_date):
         rvals = dict((n, {'pos': 0, 'neg': 0}) for n in graph_names)
 
         if hh_date.hour == 0 and hh_date.minute == 0:
@@ -4481,7 +4469,6 @@ def site_gen_graph_get(site_id):
                         'value': gval, 'running_total': 0})
                 max_scls[prefix] = max(max_scls[prefix], int(gval))
 
-        hh_date += HH
         x += 1
 
     max_height = 80

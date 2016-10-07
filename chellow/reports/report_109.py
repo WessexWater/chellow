@@ -6,7 +6,7 @@ from sqlalchemy.sql.expression import null
 import traceback
 from chellow.models import (
     Contract, Site, SiteEra, Era, Supply, Source, Session)
-from chellow.utils import HH, hh_format, req_int
+from chellow.utils import HH, hh_format, req_int, hh_range
 import chellow.computer
 import chellow.dloads
 import csv
@@ -125,9 +125,7 @@ def content(contract_id, end_year, end_month, months, user):
                     gen_type_code) = next(
                     results, (None, None, None, None, None, None))
 
-                hh_date = month_start
-
-                while hh_date <= finish_date:
+                for hh_date in hh_range(month_start, month_finish):
                     gen_breakdown = {}
                     exported = 0
                     while hh_start == hh_date:
@@ -169,8 +167,6 @@ def content(contract_id, end_year, end_month, months, user):
                                 total_gen_breakdown.get(key, 0) + kwh
                             added_so_far += kwh
 
-                    hh_date += HH
-
                 for title in ['chp', 'lm', 'turb', 'pv']:
                     vals.append(str(total_gen_breakdown.get(title, '')))
 
@@ -178,8 +174,7 @@ def content(contract_id, end_year, end_month, months, user):
                     sess, site, month_start, month_finish, forecast_date,
                     None, caches, displaced_era)
                 disp_func = chellow.computer.contract_func(
-                    caches, supplier_contract, 'displaced_virtual_bill',
-                    None)
+                    caches, supplier_contract, 'displaced_virtual_bill', None)
                 disp_func(site_ds)
                 bill = site_ds.supplier_bill
                 for title in bill_titles:
