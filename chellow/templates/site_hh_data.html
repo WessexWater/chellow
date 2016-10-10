@@ -42,66 +42,64 @@
 		</fieldset>
 	</form>
 
-	{% for group in groups %}
-		<table>
-			<caption>HH Data</caption>
-			<colgroup>
-			<colgroup class="gray">
-			<colgroup>
-			<colgroup class="gray">
-			<colgroup>
-			<colgroup class="gray">
-			<thead>
-				<tr>
-					<th rowspan="3">HH Starting</th>
-					<th colspan="6">kWh</th>
-					{% for supply in group.supplies %}
-						<th colspan="4">
-							{{supply.name}} {{supply.source.code}}
-							{{supply.generator_type.code}}
-						</th>
-					{% endfor %}
-				</tr>
-				<tr>
-					<th rowspan="2">Imported</th>
-					<th rowspan="2">Used</th>
-					<th rowspan="2">Displaced</th>
-					<th rowspan="2">Generated</th>
-					<th rowspan="2">Exported</th>
-					<th rowspan="2">Parasitic</th>
-					{% for supply in group.supplies %}
-						<th colspan="2">Import</th>
-						<th colspan="2">Export</th>
-					{% endfor %}
-				</tr>
-				<tr>
-					{% for supply in group.supplies %}
-						<th>kWh</th>
-						<th>Status</th>
-						<th>kWh</th>
-						<th>Status</th>
-					{% endfor %}
-				</tr>
-			</thead>
-			<tbody>
-				{% for hh in group.hh_data %}
-					<tr>
-						<td>{{hh.start_date|hh_format}}</td>
-						<td>{{hh.import_kwh}}</td>
-						<td>{{hh.used_kwh}}</td>
-						<td>{{hh.displaced_kwh}}</td>
-						<td>{{hh.generated_kwh}}</td>
-						<td>{{hh.export_kwh}}</td>
-						<td>{{hh.parasitic_kwh}}</td>
-						{% for datum in hh.supplies %}
-							<td>{{datum.import_kwh}}</td>
-							<td>{{datum.import_status}}</td>
-							<td>{{datum.export_kwh}}</td>
-							<td>{{datum.export_status}}</td>
-						{% endfor %}
-					</tr>
+	<table>
+		<caption>HH Data</caption>
+		<colgroup>
+		<colgroup class="gray">
+		<colgroup>
+		<colgroup class="gray">
+		<colgroup>
+		<colgroup class="gray">
+		<thead>
+			<tr>
+				<th rowspan="3">HH Starting</th>
+				<th colspan="6">kWh</th>
+				{% for supply in supplies %}
+					<th colspan="4">
+						{{supply.name}} {{supply.source.code}}
+						{{supply.generator_type.code}}
+					</th>
 				{% endfor %}
-			</tbody>
-		</table>
-	{% endfor %}
+			</tr>
+			<tr>
+				<th rowspan="2">Imported</th>
+				<th rowspan="2">Used</th>
+				<th rowspan="2">Displaced</th>
+				<th rowspan="2">Generated</th>
+				<th rowspan="2">Exported</th>
+				<th rowspan="2">Parasitic</th>
+				{% for supply in supplies %}
+					<th colspan="2">Import</th>
+					<th colspan="2">Export</th>
+				{% endfor %}
+			</tr>
+			<tr>
+				{% for supply in supplies %}
+					<th>kWh</th>
+					<th>Status</th>
+					<th>kWh</th>
+					<th>Status</th>
+				{% endfor %}
+			</tr>
+		</thead>
+		<tbody>
+			{% for hh in hh_data %}
+				<tr>
+					<td>{{hh.start_date|hh_format}}</td>
+					<td>{{hh.import_kwh}}</td>
+					<td>{{hh.used_kwh}}</td>
+					<td>{{hh.displaced_kwh}}</td>
+					<td>{{hh.generated_kwh}}</td>
+					<td>{{hh.export_kwh}}</td>
+					<td>{{hh.parasitic_kwh}}</td>
+					{% for datum in hh.supplies %}
+						<td>{{datum.import_kwh}}</td>
+						<td>{{datum.import_status}}</td>
+						<td>{{datum.export_kwh}}</td>
+						<td>{{datum.export_status}}</td>
+					{% endfor %}
+				</tr>
+			{% endfor %}
+		</tbody>
+	</table>
 {% endblock %}

@@ -359,3 +359,19 @@ def hh_range(start_date, finish_date):
     while dt <= finish_date:
         yield dt
         dt += HH
+
+
+def hh_min(a_date, b_date):
+    if a_date is None:
+        return b_date
+    if b_date is None:
+        return a_date
+    return min(a_date, b_date)
+
+
+def hh_max(a_date, b_date):
+    if a_date is None:
+        return a_date
+    if b_date is None:
+        return b_date
+    return max(a_date, b_date)

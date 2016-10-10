@@ -16,7 +16,7 @@ from sqlalchemy.ext.declarative import declarative_base
 import operator
 from chellow.utils import (
     hh_after, HH, parse_mpan_core, hh_before, next_hh, prev_hh, hh_format,
-    hh_range)
+    hh_range, hh_max, hh_min)
 import json
 from dateutil.relativedelta import relativedelta
 from functools import lru_cache
@@ -1080,6 +1080,58 @@ class Site(Base, PersistentClass):
         sess.delete(self)
         sess.flush()
 
+    def hh_data(self, sess, start_date, finish_date):
+        keys = {
+            'net': {True: ['imp_net'], False: ['exp_net']},
+            'gen-net': {
+                True: ['imp_net', 'exp_gen'], False: ['exp_net', 'imp_gen']},
+            'gen': {True: ['imp_gen'], False: ['exp_gen']},
+            '3rd-party': {True: ['imp_3p'], False: ['exp_3p']},
+            '3rd-party-reverse': {True: ['exp_3p'], False: ['imp_3p']}}
+        data = []
+
+        for channel in sess.query(Channel).join(Era).join(SiteEra). \
+                join(Supply).join(Source).filter(
+                    SiteEra.site == self, SiteEra.is_physical == true(),
+                    Era.start_date <= finish_date, or_(
+                        Era.finish_date == null(),
+                        Era.finish_date >= start_date),
+                    Source.code != 'sub', Channel.channel_type == 'ACTIVE'). \
+                options(
+                    joinedload(Channel.era),
+                    joinedload(Channel.era).joinedload(Era.supply).
+                    joinedload(Supply.source)):
+
+            era = channel.era
+            chunk_start = hh_max(era.start_date, start_date)
+            chunk_finish = hh_min(era.finish_date, finish_date)
+
+            db_data = iter(
+                sess.query(HhDatum.start_date, HhDatum.value).filter(
+                    HhDatum.channel_id == channel.id,
+                    HhDatum.start_date >= chunk_start,
+                    HhDatum.start_date <= chunk_finish).order_by(
+                    HhDatum.start_date))
+
+            channel_keys = keys[era.supply.source.code][channel.imp_related]
+            hh_date, value = next(db_data, (None, None))
+
+            for hh_start in hh_range(chunk_start, chunk_finish):
+                dd = {
+                    'start_date': hh_start, 'imp_net': 0, 'exp_net': 0,
+                    'imp_gen': 0, 'exp_gen': 0, 'imp_3p': 0, 'exp_3p': 0}
+                data.append(dd)
+                while hh_date == hh_start:
+                    for key in channel_keys:
+                        dd[key] += value
+                    hh_date, value = next(db_data, (None, None))
+
+                dd['displaced'] = dd['imp_gen'] - dd['exp_gen'] - dd['exp_net']
+                dd['used'] = dd['displaced'] + dd['imp_net'] + dd['imp_3p'] - \
+                    dd['exp_3p']
+
+        return data
+
     @staticmethod
     def insert(sess, code, name):
         site = Site(code, name)
@@ -1107,14 +1159,13 @@ class Site(Base, PersistentClass):
         return site
 
     def find_linked_sites(self, sess, start_date, finish_date):
-        return [
-            s[0] for s in sess.query(Site.code).join(SiteEra).join(Era).
-            join(site_era_alias).filter(
+        return sess.query(Site).join(SiteEra).join(Era).join(site_era_alias). \
+            filter(
                 Site.id != self.id, site_era_alias.site == self,
                 Era.start_date <= finish_date, or_(
                     Era.finish_date == null(),
-                    Era.finish_date >= start_date)).distinct().
-            order_by(Site.code)]
+                    Era.finish_date >= start_date)).distinct(). \
+            order_by(Site.code).all()
 
     def insert_supply(
             self, sess, source, generator_type, supply_name, start_date,

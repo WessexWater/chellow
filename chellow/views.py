@@ -2354,78 +2354,78 @@ def site_hh_data_get(site_id):
     month = req_int('month')
     start_date = Datetime(year, month, 1, tzinfo=pytz.utc)
     finish_date = start_date + relativedelta(months=1) - HH
-    groups = []
 
-    for group in site.groups(g.sess, start_date, finish_date, True):
-        sup_ids = sorted(supply.id for supply in group.supplies)
-        group_dict = {
-            'supplies': [Supply.get_by_id(g.sess, id) for id in sup_ids]}
-        groups.append(group_dict)
+    supplies = g.sess.query(Supply).join(Era).join(SiteEra).join(Source). \
+        filter(
+            SiteEra.site == site, SiteEra.is_physical == true(),
+            Era.start_date <= finish_date, or_(
+                Era.finish_date == null(), Era.finish_date >= start_date),
+            Source.code != 'sub').order_by(Supply.id).distinct().options(
+            joinedload(Supply.source), joinedload(Supply.generator_type)).all()
 
-        data = iter(
-            g.sess.query(HhDatum).join(Channel, Era, Supply, Source).filter(
-                Channel.channel_type == 'ACTIVE', Supply.id.in_(sup_ids),
-                HhDatum.start_date >= group.start_date,
-                HhDatum.start_date <= group.finish_date).order_by(
-                HhDatum.start_date, Supply.id))
-        datum = next(data, None)
+    data = iter(
+        g.sess.query(HhDatum).join(Channel).join(Era).filter(
+            Channel.channel_type == 'ACTIVE',
+            Era.supply_id.in_([s.id for s in supplies]),
+            HhDatum.start_date >= start_date,
+            HhDatum.start_date <= finish_date).order_by(
+            HhDatum.start_date, Era.supply_id).options(
+            joinedload(HhDatum.channel).joinedload(Channel.era).
+            joinedload(Era.supply).joinedload(Supply.source)))
+    datum = next(data, None)
 
-        hh_date = group.start_date
+    hh_data = []
+    for hh_date in hh_range(start_date, finish_date):
+        sups = []
+        hh_dict = {
+            'start_date': hh_date, 'supplies': sups, 'export_kwh': 0,
+            'import_kwh': 0, 'parasitic_kwh': 0, 'generated_kwh': 0,
+            'third_party_import_kwh': 0, 'third_party_export_kwh': 0}
+        hh_data.append(hh_dict)
+        for supply in supplies:
+            sup_hh = {}
+            sups.append(sup_hh)
+            while datum is not None and datum.start_date == hh_date and \
+                    datum.channel.era.supply_id == supply.id:
+                channel = datum.channel
+                imp_related = channel.imp_related
+                hh_float_value = float(datum.value)
+                source_code = channel.era.supply.source.code
 
-        hh_data = []
-        group_dict['hh_data'] = hh_data
+                prefix = 'import_' if imp_related else 'export_'
+                sup_hh[prefix + 'kwh'] = datum.value
+                sup_hh[prefix + 'status'] = datum.status
 
-        while not hh_date > group.finish_date:
-            sups = []
-            hh_dict = {
-                'start_date': hh_date, 'supplies': sups, 'export_kwh': 0,
-                'import_kwh': 0, 'parasitic_kwh': 0, 'generated_kwh': 0,
-                'third_party_import_kwh': 0, 'third_party_export_kwh': 0}
-            hh_data.append(hh_dict)
-            for sup_id in sup_ids:
-                sup_hh = {}
-                sups.append(sup_hh)
-                while datum is not None and datum.start_date == hh_date and \
-                        datum.channel.era.supply.id == sup_id:
-                    channel = datum.channel
-                    imp_related = channel.imp_related
-                    hh_float_value = float(datum.value)
-                    source_code = channel.era.supply.source.code
+                if not imp_related and source_code in ('net', 'gen-net'):
+                    hh_dict['export_kwh'] += hh_float_value
+                if imp_related and source_code in ('net', 'gen-net'):
+                    hh_dict['import_kwh'] += hh_float_value
+                if (imp_related and source_code == 'gen') or \
+                        (not imp_related and source_code == 'gen-net'):
+                    hh_dict['generated_kwh'] += hh_float_value
+                if (not imp_related and source_code == 'gen') or \
+                        (imp_related and source_code == 'gen-net'):
+                    hh_dict['parasitic_kwh'] += hh_float_value
+                if (imp_related and source_code == '3rd-party') or \
+                        (not imp_related and
+                            source_code == '3rd-party-reverse'):
+                    hh_dict['third_party_import_kwh'] += hh_float_value
+                if (not imp_related and source_code == '3rd-party') or \
+                        (imp_related and
+                            source_code == '3rd-party-reverse'):
+                    hh_dict['third_party_export_kwh'] += hh_float_value
+                datum = next(data, None)
 
-                    prefix = 'import_' if imp_related else 'export_'
-                    sup_hh[prefix + 'kwh'] = datum.value
-                    sup_hh[prefix + 'status'] = datum.status
+        hh_dict['displaced_kwh'] = hh_dict['generated_kwh'] - \
+            hh_dict['export_kwh'] - hh_dict['parasitic_kwh']
+        hh_dict['used_kwh'] = sum(
+            (
+                hh_dict['import_kwh'], hh_dict['displaced_kwh'],
+                hh_dict['third_party_import_kwh'] -
+                hh_dict['third_party_export_kwh']))
 
-                    if not imp_related and source_code in ('net', 'gen-net'):
-                        hh_dict['export_kwh'] += hh_float_value
-                    if imp_related and source_code in ('net', 'gen-net'):
-                        hh_dict['import_kwh'] += hh_float_value
-                    if (imp_related and source_code == 'gen') or \
-                            (not imp_related and source_code == 'gen-net'):
-                        hh_dict['generated_kwh'] += hh_float_value
-                    if (not imp_related and source_code == 'gen') or \
-                            (imp_related and source_code == 'gen-net'):
-                        hh_dict['parasitic_kwh'] += hh_float_value
-                    if (imp_related and source_code == '3rd-party') or \
-                            (not imp_related and
-                                source_code == '3rd-party-reverse'):
-                        hh_dict['third_party_import_kwh'] += hh_float_value
-                    if (not imp_related and source_code == '3rd-party') or \
-                            (imp_related and
-                                source_code == '3rd-party-reverse'):
-                        hh_dict['third_party_export_kwh'] += hh_float_value
-                    datum = next(data, None)
-
-            hh_dict['displaced_kwh'] = hh_dict['generated_kwh'] - \
-                hh_dict['export_kwh'] - hh_dict['parasitic_kwh']
-            hh_dict['used_kwh'] = sum(
-                (
-                    hh_dict['import_kwh'], hh_dict['displaced_kwh'],
-                    hh_dict['third_party_import_kwh'] -
-                    hh_dict['third_party_export_kwh']))
-            hh_date = hh_date + HH
-
-    return render_template('site_hh_data.html', site=site, groups=groups)
+    return render_template(
+        'site_hh_data.html', site=site, supplies=supplies, hh_data=hh_data)
 
 
 @app.route('/sites/<int:site_id>')
@@ -2467,8 +2467,7 @@ def site_get(site_id):
     last_month_finish = month_start - HH
 
     properties = configuration_contract.make_properties()
-    other_sites = [
-        s for s in site.groups(g.sess, now, now, False)[0].sites if s != site]
+    other_sites = site.find_linked_sites(g.sess, now, now)
     scenarios = g.sess.query(Contract).join(MarketRole).filter(
         MarketRole.code == 'X', Contract.name.like('scenario_%')).order_by(
         Contract.name).all()
@@ -2871,8 +2870,7 @@ def site_months_get(site_id):
     start_date -= relativedelta(months=11)
     site = Site.get_by_id(g.sess, site_id)
 
-    typs = (
-        'imp_net', 'exp_net', 'used', 'displaced', 'imp_gen', 'exp_gen')
+    typs = ('imp_net', 'exp_net', 'used', 'displaced', 'imp_gen', 'exp_gen')
 
     months = []
     month_start = start_date
@@ -2883,25 +2881,22 @@ def site_months_get(site_id):
         month['start_date'] = month_start
         months.append(month)
 
-        for group in site.groups(g.sess, month_start, month_finish, True):
-            for hh in group.hh_data(g.sess):
-                for tp in typs:
-                    if hh[tp] * 2 > month[tp]['md']:
-                        month[tp]['md'] = hh[tp] * 2
-                        month[tp]['md_date'] = hh['start_date']
-                    month[tp]['kwh'] += hh[tp]
+        for hh in site.hh_data(g.sess, month_start, month_finish):
+            for tp in typs:
+                if hh[tp] * 2 > month[tp]['md']:
+                    month[tp]['md'] = hh[tp] * 2
+                    month[tp]['md_date'] = hh['start_date']
+                month[tp]['kwh'] += hh[tp]
 
-        has_snags = g.sess.query(Snag).filter(
+        month['has_site_snags'] = g.sess.query(Snag).filter(
             Snag.site == site, Snag.start_date <= month_finish,
             or_(
-                Snag.finish_date is None,
+                Snag.finish_date == null(),
                 Snag.finish_date > month_start)).count() > 0
-        month['has_site_snags'] = has_snags
 
         month_start += relativedelta(months=1)
 
-    totals = dict(
-        (typ, {'md': 0, 'md_date': None, 'kwh': 0}) for typ in typs)
+    totals = dict((typ, {'md': 0, 'md_date': None, 'kwh': 0}) for typ in typs)
 
     for month in months:
         for typ in typs:

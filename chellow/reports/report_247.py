@@ -621,7 +621,7 @@ def content(
                 site_tab.writerow(
                     [
                         site.code, site.name, ', '.join(
-                            site.find_linked_sites(
+                            s.code for s in site.find_linked_sites(
                                 sess, month_start, month_finish)),
                         month_finish, site_category,
                         ', '.join(sorted(list(site_sources))),
