@@ -2,7 +2,7 @@ from dateutil.relativedelta import relativedelta
 from werkzeug.exceptions import BadRequest
 import pytz
 from decimal import Decimal
-import collections
+from collections import defaultdict, deque
 from datetime import datetime as Datetime
 from flask import request, Response
 from jinja2 import Environment
@@ -10,7 +10,7 @@ import time
 import traceback
 
 
-clogs = collections.deque()
+clogs = deque()
 
 
 def clog(msg):
@@ -375,3 +375,12 @@ def hh_max(a_date, b_date):
     if b_date is None:
         return b_date
     return max(a_date, b_date)
+
+
+class keydefaultdict(defaultdict):
+    def __missing__(self, key):
+        if self.default_factory is None:
+            raise KeyError(key)
+        else:
+            ret = self[key] = self.default_factory(key)
+            return ret

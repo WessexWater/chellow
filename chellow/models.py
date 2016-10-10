@@ -562,30 +562,7 @@ class Batch(Base, PersistentClass):
 
     def insert_bill(
             self, sess, account, reference, issue_date, start_date,
-            finish_date, kwh, net, vat, gross, bill_type, breakdown,
-            supply=None):
-        if supply is None:
-            supply = sess.query(Supply).distinct().join(Era).filter(
-                or_(
-                    and_(
-                        Era.imp_supplier_contract == self.contract,
-                        Era.imp_supplier_account == account),
-                    and_(
-                        Era.exp_supplier_contract == self.contract,
-                        Era.exp_supplier_account == account),
-                    and_(
-                        Era.mop_contract == self.contract,
-                        Era.mop_account == account),
-                    and_(
-                        Era.hhdc_contract == self.contract,
-                        Era.hhdc_account == account))).order_by(
-                Supply.id).first()
-
-        if supply is None:
-            raise BadRequest(
-                "Can't find an era with contract '" + self.contract.name +
-                "' and account '" + account + "'.")
-
+            finish_date, kwh, net, vat, gross, bill_type, breakdown, supply):
         bill = Bill(
             self, supply, account, reference, issue_date, start_date,
             finish_date, kwh, net, vat, gross, bill_type, breakdown)
