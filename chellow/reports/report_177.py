@@ -4,11 +4,12 @@ from datetime import datetime as Datetime
 from dateutil.relativedelta import relativedelta
 import pytz
 from sqlalchemy import or_, cast, Float, func
+from sqlalchemy.orm import joinedload
 from sqlalchemy.sql.expression import null, true
 import time
 from chellow.models import (
     Session, Era, Supply, Site, SiteEra, HhDatum, Channel, Bill)
-from chellow.utils import HH, hh_format, hh_after, req_int
+from chellow.utils import HH, hh_format, hh_min, hh_max, req_int
 import chellow.computer
 import threading
 import chellow.dloads
@@ -20,7 +21,8 @@ def content(year, month, months, supply_id, user):
     tmp_file = sess = None
     try:
         sess = Session()
-        supplies = sess.query(Supply).join(Era).distinct()
+        supplies = sess.query(Supply).join(Era).distinct().options(
+            joinedload(Supply.generator_type))
 
         if supply_id is None:
             base_name = "supplies_monthly_duration_for_all_supplies_for_" + \
@@ -59,8 +61,7 @@ def content(year, month, months, supply_id, user):
             month_finish = month_start + relativedelta(months=1) - HH
 
             for supply in supplies.filter(
-                    Era.start_date <= month_finish,
-                    or_(
+                    Era.start_date <= month_finish, or_(
                         Era.finish_date == null(),
                         Era.finish_date >= month_start)):
 
@@ -153,14 +154,8 @@ def content(year, month, months, supply_id, user):
                         overlap_proportion * float(bill.kwh)
 
                 for era in eras:
-                    if era.start_date > month_start:
-                        chunk_start = era.start_date
-                    else:
-                        chunk_start = month_start
-                    if hh_after(era.finish_date, month_finish):
-                        chunk_finish = month_finish
-                    else:
-                        chunk_finish = era.finish_date
+                    chunk_start = hh_max(era.start_date, month_start)
+                    chunk_finish = hh_min(era.finish_date, month_finish)
 
                     import_mpan_core = era.imp_mpan_core
                     if import_mpan_core is None:

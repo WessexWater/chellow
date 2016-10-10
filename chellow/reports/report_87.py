@@ -5,7 +5,7 @@ import traceback
 from sqlalchemy import or_
 from sqlalchemy.sql.expression import null, true
 from chellow.models import Session, Contract, Era, Site, SiteEra
-from chellow.utils import (HH, hh_after, hh_format, req_date, req_int)
+from chellow.utils import (HH, hh_min, hh_max, hh_format, req_date, req_int)
 from chellow.computer import contract_func, SupplySource
 from chellow.views import chellow_redirect
 import chellow.computer
@@ -42,33 +42,20 @@ def content(start_date, finish_date, contract_id, user):
             bill_titles)
 
         while not month_start > finish_date:
-            period_start = start_date \
-                if month_start < start_date else month_start
-
-            if month_finish > finish_date:
-                period_finish = finish_date
-            else:
-                period_finish = month_finish
+            period_start = hh_max(start_date, month_start)
+            period_finish = hh_min(finish_date, month_finish)
 
             for era in sess.query(Era).distinct().filter(
                     or_(
-                        Era.imp_supplier_contract_id == contract.id,
-                        Era.exp_supplier_contract_id == contract.id),
+                        Era.imp_supplier_contract == contract,
+                        Era.exp_supplier_contract == contract),
                     Era.start_date <= period_finish,
                     or_(
                         Era.finish_date == null(),
                         Era.finish_date >= period_start)):
 
-                era_start = era.start_date
-                if period_start < era_start:
-                    chunk_start = era_start
-                else:
-                    chunk_start = period_start
-                era_finish = era.finish_date
-                if hh_after(period_finish, era_finish):
-                    chunk_finish = era_finish
-                else:
-                    chunk_finish = period_finish
+                chunk_start = hh_max(period_start, era.start_date)
+                chunk_finish = hh_min(period_finish, era.finish_date)
 
                 polarities = []
                 if era.imp_supplier_contract == contract:

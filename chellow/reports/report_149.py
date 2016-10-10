@@ -6,7 +6,7 @@ import pytz
 from chellow.models import (
     HhDatum, Channel, Era, Session, Supply, RegisterRead, Bill, BillType,
     ReadType)
-from chellow.utils import hh_before, hh_format, HH, req_hh_date, req_int
+from chellow.utils import hh_min, hh_max, hh_format, HH, req_hh_date, req_int
 import chellow.computer
 import chellow.duos
 import chellow.dloads
@@ -48,15 +48,8 @@ def mpan_bit(
             if gsp_kwh == '':
                 gsp_kwh = 0
 
-            if chunk_start > era.start_date:
-                block_start = chunk_start
-            else:
-                block_start = era.start_date
-
-            if hh_before(chunk_finish, era.finish_date):
-                block_finish = chunk_finish
-            else:
-                block_finish = era.finish_date
+            block_start = hh_max(era.start_date, chunk_start)
+            block_finish = hh_min(era.finish_date, chunk_finish)
 
             supply_source = chellow.computer.SupplySource(
                 sess, block_start, block_finish, forecast_date, era, is_import,
@@ -64,8 +57,7 @@ def mpan_bit(
 
             chellow.duos.duos_vb(supply_source)
 
-            gsp_kwh += sum(
-                [datum['gsp-kwh'] for datum in supply_source.hh_data])
+            gsp_kwh += sum(datum['gsp-kwh'] for datum in supply_source.hh_data)
 
     md = 0
     sum_kwh = 0
@@ -75,7 +67,7 @@ def mpan_bit(
     num_na = 0
 
     for datum in sess.query(HhDatum).join(Channel).join(Era).filter(
-            Era.supply_id == supply.id, Channel.imp_related == is_import,
+            Era.supply == supply, Channel.imp_related == is_import,
             Channel.channel_type == 'ACTIVE',
             HhDatum.start_date >= chunk_start,
             HhDatum.start_date <= chunk_finish).order_by(HhDatum.id):
@@ -200,16 +192,8 @@ def content(supply_id, start_date, finish_date, user):
 
             supply_type = era.make_meter_category()
 
-            if eras[0].start_date > start_date:
-                chunk_start = eras[0].start_date
-            else:
-                chunk_start = start_date
-
-            if hh_before(finish_date, era.finish_date):
-                chunk_finish = finish_date
-            else:
-                chunk_finish = era.finish_date
-
+            chunk_start = hh_max(eras[0].start_date, start_date)
+            chunk_finish = hh_min(era.finish_date, finish_date)
             num_hh = int(
                 (chunk_finish - (chunk_start - HH)).total_seconds() /
                 (30 * 60))

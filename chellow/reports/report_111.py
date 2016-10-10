@@ -3,18 +3,19 @@ import pytz
 from datetime import datetime as Datetime
 from dateutil.relativedelta import relativedelta
 from sqlalchemy import or_
-from sqlalchemy.orm import joinedload
+from sqlalchemy.orm import joinedload, subqueryload
 from sqlalchemy.sql.expression import null, true
 import traceback
 from chellow.models import (
-    Batch, Bill, Session, Era, Site, SiteEra, MarketRole, Contract)
+    Batch, Bill, Session, Era, Site, SiteEra, MarketRole, Contract,
+    RegisterRead)
 import chellow.computer
 import chellow.dloads
 import sys
 import os
 import threading
 from werkzeug.exceptions import BadRequest
-from chellow.utils import HH, hh_format, hh_before, req_int
+from chellow.utils import HH, hh_format, hh_min, hh_max, req_int
 from chellow.views import chellow_redirect
 from flask import request, g
 import csv
@@ -32,16 +33,17 @@ def content(batch_id, bill_id, user):
             'bill_check.csv', user)
         tmp_file = open(running_name, mode='w', newline='')
         writer = csv.writer(tmp_file, lineterminator='\n')
-        bills = sess.query(Bill)
+        bills = sess.query(Bill).options(
+            joinedload(Bill.supply),
+            subqueryload(Bill.reads).joinedload(RegisterRead.present_type),
+            subqueryload(Bill.reads).joinedload(RegisterRead.previous_type))
         if batch_id is not None:
             batch = Batch.get_by_id(sess, batch_id)
-            bills = bills.filter(
-                Bill.batch_id == batch.id).order_by(Bill.reference)
+            bills = bills.filter(Bill.batch == batch).order_by(Bill.reference)
         elif bill_id is not None:
             bill = Bill.get_by_id(sess, bill_id)
             bills = bills.filter(Bill.id == bill.id)
             batch = bill.batch
-        bills = bills.options(joinedload(Bill.supply))
 
         contract = batch.contract
         market_role_code = contract.market_role.code
@@ -210,15 +212,8 @@ def content(batch_id, bill_id, user):
                 site = sess.query(Site).join(SiteEra).filter(
                     SiteEra.is_physical == true(), SiteEra.era == era).one()
 
-                if covered_start > era.start_date:
-                    chunk_start = covered_start
-                else:
-                    chunk_start = era.start_date
-
-                if hh_before(covered_finish, era.finish_date):
-                    chunk_finish = covered_finish
-                else:
-                    chunk_finish = era.finish_date
+                chunk_start = hh_max(covered_start, era.start_date)
+                chunk_finish = hh_min(covered_finish, era.finish_date)
 
                 data_source = chellow.computer.SupplySource(
                     sess, chunk_start, chunk_finish, forecast_date, era, True,

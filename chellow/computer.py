@@ -11,7 +11,7 @@ from werkzeug.exceptions import BadRequest
 from chellow.models import (
     RateScript, Channel, Era, Tpr, MeasurementRequirement, RegisterRead, Bill,
     BillType, ReadType, SiteEra, Supply, Source, HhDatum)
-from chellow.utils import HH, hh_format, hh_after, hh_range
+from chellow.utils import HH, hh_format, hh_max, hh_range, hh_min
 import chellow.bank_holidays
 from itertools import combinations
 
@@ -296,14 +296,8 @@ def get_data_sources(data_source, start_date, finish_date, forecast_date=None):
                 or_(Era.finish_date == null(), Era.finish_date >= start_date))
 
         for era in eras:
-            era_start = era.start_date
-
-            chunk_start = era_start if start_date < era_start else start_date
-
-            era_finish = era.finish_date
-
-            chunk_finish = era_finish if \
-                hh_after(finish_date, era_finish) else finish_date
+            chunk_start = hh_max(era.start_date, start_date)
+            chunk_finish = hh_min(era.finish_date, finish_date)
 
             ds = SupplySource(
                 data_source.sess, chunk_start, chunk_finish, forecast_date,
@@ -752,10 +746,7 @@ class SupplySource(DataSource):
                 else:
                     chunk_start = hist_era.start_date
 
-            if hh_after(self.history_finish, hist_era.finish_date):
-                chunk_finish = hist_era.finish_date
-            else:
-                chunk_finish = self.history_finish
+            chunk_finish = hh_min(self.history_finish, hist_era.finish_date)
 
             hist_measurement_type = hist_era.make_meter_category()
             if hist_measurement_type == 'unmetered':

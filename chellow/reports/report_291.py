@@ -1,11 +1,11 @@
-import datetime
+from datetime import datetime as Datetime
 import pytz
 from dateutil.relativedelta import relativedelta
 from sqlalchemy import or_
 from sqlalchemy.sql.expression import null, true
 import traceback
 from chellow.models import Session, Supply, Era, Site, SiteEra
-from chellow.utils import HH, hh_before, hh_format, req_int, req_date
+from chellow.utils import HH, hh_min, hh_max, hh_format, req_int, req_date
 from chellow.views import chellow_redirect
 import chellow.computer
 from werkzeug.exceptions import BadRequest
@@ -31,20 +31,13 @@ def content(supply_id, file_name, start_date, finish_date, user):
 
         prev_titles = None
 
-        month_start = datetime.datetime(
+        month_start = Datetime(
             start_date.year, start_date.month, 1, tzinfo=pytz.utc)
 
         while not month_start > finish_date:
             month_finish = month_start + relativedelta(months=1) - HH
-            if month_start > start_date:
-                period_start = month_start
-            else:
-                period_start = start_date
-
-            if month_finish > finish_date:
-                period_finish = finish_date
-            else:
-                period_finish = month_finish
+            period_start = hh_max(month_start, start_date)
+            period_finish = hh_min(month_finish, finish_date)
 
             for era in sess.query(Era).filter(
                     Era.supply == supply, Era.start_date < period_finish, or_(
@@ -52,13 +45,8 @@ def content(supply_id, file_name, start_date, finish_date, user):
                         Era.finish_date > period_start
                     )).order_by(Era.start_date):
 
-                chunk_start = era.start_date \
-                    if era.start_date > period_start else period_start
-
-                chunk_finish = period_finish \
-                    if hh_before(period_finish, era.finish_date) \
-                    else era.finish_date
-
+                chunk_start = hh_max(era.start_date, period_start)
+                chunk_finish = hh_min(era.finish_date, period_finish)
                 site = sess.query(Site).join(SiteEra).filter(
                     SiteEra.era == era, SiteEra.is_physical == true()).one()
 
@@ -155,7 +143,7 @@ def content(supply_id, file_name, start_date, finish_date, user):
                     prev_titles != titles
                     writer.writerow([str(v) for v in titles])
                 for i, val in enumerate(output_line):
-                    if isinstance(val, datetime.datetime):
+                    if isinstance(val, Datetime):
                         output_line[i] = hh_format(val)
                     elif val is None:
                         output_line[i] = ''

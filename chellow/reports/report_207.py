@@ -9,7 +9,7 @@ import chellow.dloads
 import sys
 import os
 import threading
-from chellow.utils import HH, hh_after, hh_format, req_int
+from chellow.utils import HH, hh_after, hh_format, req_int, hh_min, hh_max
 from chellow.models import (
     Supply, Era, Source, Site, SiteEra, Bill, RegisterRead, BillType, ReadType,
     HhDatum, Channel, Session)
@@ -320,15 +320,9 @@ def content(year, supply_id, user):
                             pair_finish = pair['finish-date']
                             if pair_start >= year_start and \
                                     pair_finish <= year_finish:
-                                if pair_start > period_start:
-                                    block_start = pair_start
-                                else:
-                                    block_start = period_start
-
-                                if pair_finish < period_finish:
-                                    block_finish = pair_finish
-                                else:
-                                    block_finish = period_finish
+                                block_start = hh_max(pair_start, period_start)
+                                block_finish = hh_min(
+                                    pair_finish, period_finish)
 
                                 if block_start <= block_finish:
                                     normal_days[meter_type] += (

@@ -17,7 +17,7 @@ import pytz
 from dateutil.relativedelta import relativedelta
 from chellow.utils import (
     HH, req_str, req_int, req_date, parse_mpan_core, req_bool, req_hh_date,
-    hh_after, req_decimal, send_response, hh_before, hh_format, hh_range)
+    hh_after, req_decimal, send_response, hh_min, hh_max, hh_format, hh_range)
 from werkzeug.exceptions import BadRequest, NotFound
 import chellow.general_import
 import io
@@ -4095,29 +4095,18 @@ def supply_virtual_bill_get(supply_id):
     while not month_start > finish_date:
         month_finish = month_start + relativedelta(months=1) - HH
 
-        chunk_start = start_date if start_date > month_start else month_start
-
-        if finish_date < month_finish:
-            chunk_finish = finish_date
-        else:
-            chunk_finish = month_finish
+        chunk_start = hh_max(start_date, month_start)
+        chunk_finish = hh_min(finish_date, month_finish)
 
         for era in g.sess.query(Era).filter(
                 Era.supply == supply, Era.imp_mpan_core != null(),
                 Era.start_date <= chunk_finish, or_(
                     Era.finish_date == null(),
                     Era.finish_date >= chunk_start)):
-            if era.start_date > chunk_start:
-                block_start = era.start_date
-            else:
-                block_start = chunk_start
+            block_start = hh_max(era.start_date, chunk_start)
+            block_finish = hh_min(era.finish_date, chunk_finish)
 
             debug += 'found an era'
-
-            if hh_before(chunk_finish, era.finish_date):
-                block_finish = chunk_finish
-            else:
-                block_finish = era.finish_date
 
             contract = era.imp_supplier_contract
             data_source = chellow.computer.SupplySource(

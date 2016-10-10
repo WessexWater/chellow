@@ -4,7 +4,7 @@ import pytz
 import traceback
 from sqlalchemy.sql.expression import true
 from chellow.utils import (
-    HH, hh_after, hh_format, req_int, req_bool, send_response)
+    HH, hh_min, hh_max, hh_format, req_int, req_bool, send_response)
 from chellow.models import Supply, Site, SiteEra
 import chellow.computer
 
@@ -29,15 +29,8 @@ def content(
             day_finish = day_start + relativedelta(days=1) - HH
 
             for era in supply.find_eras(sess, day_start, day_finish):
-                if era.start_date > day_start:
-                    chunk_start = era.start_date
-                else:
-                    chunk_start = day_start
-
-                if hh_after(era.finish_date, day_finish):
-                    chunk_finish = day_finish
-                else:
-                    chunk_finish = era.finish_date
+                chunk_start = hh_max(era.start_date, day_start)
+                chunk_finish = hh_min(era.finish_date, day_finish)
 
                 ss = chellow.computer.SupplySource(
                     sess, chunk_start, chunk_finish, forecast_date, era,

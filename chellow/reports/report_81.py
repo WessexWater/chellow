@@ -6,7 +6,7 @@ from dateutil.relativedelta import relativedelta
 import traceback
 from chellow.models import Session, Contract, Era
 import chellow.computer
-from chellow.utils import HH, hh_before, hh_format, req_int
+from chellow.utils import HH, hh_min, hh_max, hh_format, req_int
 from werkzeug.exceptions import BadRequest
 import os
 from flask import g
@@ -60,15 +60,8 @@ def content(contract_id, end_year, end_month, months, user):
             exp_mpan_core = era.exp_mpan_core
             exp_mpan_core_str = '' if exp_mpan_core is None else exp_mpan_core
 
-            if era.start_date > start_date:
-                chunk_start = era.start_date
-            else:
-                chunk_start = start_date
-
-            if hh_before(era.finish_date, finish_date):
-                chunk_finish = era.finish_date
-            else:
-                chunk_finish = finish_date
+            chunk_start = hh_max(era.start_date, start_date)
+            chunk_finish = hh_min(era.finish_date, finish_date)
 
             vals.append(imp_mpan_core_str)
             vals.append(exp_mpan_core_str)
