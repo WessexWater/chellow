@@ -62,54 +62,46 @@ mem_lock = threading.Lock()
 mem_vals = {}
 
 
+def reset():
+    global mem_id
+    global mem_vals
+    with mem_lock:
+        mem_id = 0
+        mem_vals = {}
+
+    for fl in sorted(os.listdir(download_path)):
+        os.remove(os.path.join(download_path, fl))
+
+
 def get_mem_id():
     global mem_id
-    try:
-        mem_lock.acquire()
+    with mem_lock:
         mid = mem_id
         mem_id += 1
         mem_vals[mid] = None
-    finally:
-        mem_lock.release()
     return mid
 
 
 def put_mem_val(mem_id, val):
-    try:
-        mem_lock.acquire()
+    with mem_lock:
         mem_vals[mem_id] = val
-    finally:
-        mem_lock.release()
 
 
 def get_mem_val(mem_id):
-    try:
-        mem_lock.acquire()
-        if mem_id in mem_vals:
-            val = mem_vals[mem_id]
-            # del mem_vals[mem_id]
-        else:
-            val = None
-    finally:
-        mem_lock.release()
+    with mem_lock:
+        val = mem_vals.get(mem_id)
     return val
 
 
 def get_mem_items():
-    try:
-        mem_lock.acquire()
+    with mem_lock:
         return mem_vals.copy()
-    finally:
-        mem_lock.release()
 
 
 def remove_item(mem_id):
-    try:
-        mem_lock.acquire()
+    with mem_lock:
         if mem_id in mem_vals:
             del mem_vals[mem_id]
-    finally:
-        mem_lock.release()
 
 
 file_deleter = None

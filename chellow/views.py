@@ -2499,11 +2499,7 @@ def downloads_get():
 
 @app.route('/downloads', methods=['POST'])
 def downloads_post():
-    download_path = chellow.dloads.download_path
-
-    for fl in sorted(os.listdir(download_path)):
-        os.remove(os.path.join(download_path, fl))
-
+    chellow.dloads.reset()
     return chellow_redirect("/downloads", 303)
 
 
