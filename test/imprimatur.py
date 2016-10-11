@@ -928,7 +928,9 @@ def virtual_bill_titles():
         'regexes': [
             r'<form action="/reports/219">\s*'
                 r'<input type="hidden" name="supply_id" value="5">',
-            r'<a title="2003-08-13 23:30">2003-08-13</a>',
+            r'<a\s*'
+            r'title="2003-08-13 23:30"\s*'
+            r'>2003-08-13</a>',
             r'<form action="/reports/187" method="post">',
             r'<legend>TRIAD</legend>\s*<input type="hidden" name="supply_id"',
             r'<a href="/supplies/5/months\?'
@@ -1383,7 +1385,7 @@ def virtual_bill_titles():
             r'</td>\s*<td>[^<]*</td>\s*'
             '<td>\s*'
             '<a href="/sites/1">CI004</a>\s*'
-            '</td>\s*<td>Lower Treave</td>\s*'
+            r'</td>\s*<td>Lower Treave</td>\s*'
             '<td>Export to net &gt; import from generators.</td>\s*'
             '<td>2005-10-29 23:30</td>\s*<td>\s*2005-10-30 01:00</td>\s*'
             '</tr>\s*</tbody>'],
@@ -4620,7 +4622,10 @@ def virtual_bill(supply_source):
             r"/supplies/2/hh_data?",
 
             # Check we can see the site
-            r'<a href="/sites/1" title="Lower Treave">CI004</a>',
+            r'<a\s*'
+            r'href="/sites/1"\s*'
+            r'title="Lower Treave"\s*'
+            r'>CI004</a>',
 
             # Check a link to supplier bill is correct
             r'<a href="/supplier_bills/11">View</a>',
@@ -4629,11 +4634,15 @@ def virtual_bill(supply_source):
             r'<form action="/reports/149">\s*<fieldset>\s*'
             '<input type="hidden" name="supply_id"',
             r'<td rowspan="4">\s*'
-            '<a href="/pcs/9" title="Half-'
-            'hourly">00</a>\s*</td>\s*<td rowspan="4"></td>\s*'
-            '<td rowspan="4">\s*'
-            '<a href="/mtcs/52" title="HH '
-            'COP5 And Above With Comms">845</a>\s*</td>'],
+            r'<a\s*'
+            r'href="/pcs/9"\s*'
+            r'title="Half-hourly">00</a>\s*'
+            r'</td>\s*'
+            r'<td rowspan="4"></td>\s*'
+            r'<td rowspan="4">\s*'
+            r'<a href="/mtcs/52"\s*'
+            r'title="HH COP5 And Above With Comms">845</a>\s*'
+            r'</td>'],
         'status_code': 200},
 
     # Supply 10

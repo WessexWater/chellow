@@ -581,8 +581,7 @@ def content(
                             min(bill_finish, sss.finish_date) -
                             max(bill_start, sss.start_date)
                             ).total_seconds() + (30 * 60)
-                        overlap_proportion = \
-                            float(overlap_duration) / bill_duration
+                        overlap_proportion = overlap_duration / bill_duration
                         month_data['billed-import-net-kwh'] += \
                             overlap_proportion * float(bill.kwh)
                         month_data['billed-import-net-gbp'] += \

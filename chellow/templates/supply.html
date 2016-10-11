@@ -175,23 +175,35 @@
 				<tbody>
 					<tr>
 						<td rowspan="4">
-							<a title="{{ era.start_date|hh_format }}">{{ era.start_date|hh_format(modifier='date') }}</a>
+							<a
+									title="{{ era.start_date|hh_format }}"
+									>{{ era.start_date|hh_format(modifier='date') }}</a>
 						</td>
 						<td rowspan="4">
-							<a title="{{ era.finish_date|hh_format }}">{{ era.finish_date|hh_format(modifier='date') }}</a>
+							<a
+				 					title="{{ era.finish_date|hh_format }}"
+									>{{ era.finish_date|hh_format(modifier='date') }}</a>
 						</td>
 						<td rowspan="4">
-							<a href="{{context_path}}/sites/{{physical_site.id}}" title="{{ physical_site.name }}">{{ physical_site.code }}</a>
+							<a
+				 					href="{{context_path}}/sites/{{physical_site.id}}"
+								 	title="{{physical_site.name}}"
+									>{{ physical_site.code }}</a>
 							{% if other_sites %}
 								(also
 									{% for other_site in other_sites %}
-										<a href="{{ context_path }}/sites/{{ other_site.id }}" title="{{ other_site.name }}">{{ other_site.code }}</a>
+										<a
+												href="{{ context_path }}/sites/{{ other_site.id }}"
+											 	title="{{other_site.name}}"
+												>{{ other_site.code }}</a>
 									{%- endfor -%}
 								)
 							{% endif %}
 						</td>
 						<td rowspan="4">
-							<a href="{{ context_path }}/pcs/{{era.pc.id}}" title="{{era.pc.name}}">{{era.pc.code}}</a>
+							<a
+							 		href="{{context_path}}/pcs/{{era.pc.id}}"
+								 	title="{{era.pc.name}}">{{era.pc.code}}</a>
 						</td>
 						<td rowspan="4">{{ era.msn }}</td>
 						<td rowspan="4">

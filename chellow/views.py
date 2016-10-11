@@ -1737,7 +1737,8 @@ def supply_get(supply_id):
             joinedload(Era.exp_supplier_contract),
             joinedload(Era.ssc), joinedload(Era.mtc),
             joinedload(Era.mop_contract), joinedload(Era.hhdc_contract),
-            joinedload(Era.imp_llfc), joinedload(Era.exp_llfc)).all()
+            joinedload(Era.imp_llfc), joinedload(Era.exp_llfc),
+            joinedload(Era.supply).joinedload(Supply.dno_contract)).all()
     for era in eras:
         imp_mpan_core = era.imp_mpan_core
         exp_mpan_core = era.exp_mpan_core
@@ -1787,7 +1788,8 @@ def supply_get(supply_id):
         bills = g.sess.query(Bill).filter(Bill.supply == supply).order_by(
             Bill.start_date.desc(), Bill.issue_date.desc(),
             Bill.reference.desc()).options(
-            joinedload(Bill.batch).joinedload(Batch.contract),
+            joinedload(Bill.batch).joinedload(Batch.contract).
+            joinedload(Contract.party).joinedload(Party.market_role),
             joinedload(Bill.bill_type))
         if era.finish_date is not None:
             bills = bills.filter(Bill.start_date <= era.finish_date)
