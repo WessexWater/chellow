@@ -2,31 +2,41 @@ import traceback
 from sqlalchemy import or_
 from sqlalchemy.sql.expression import null
 import chellow.computer
-from chellow.models import Contract, Era
-from chellow.utils import hh_format, req_date, req_int, send_response
+from chellow.models import Contract, Era, Session
+from chellow.utils import hh_format, req_date, req_int
+import csv
+import sys
+import os
+from chellow.views import chellow_redirect
+import threading
+from flask import g
 
 
-def content(start_date, finish_date, contract_id, sess):
+def content(start_date, finish_date, contract_id, user):
     caches = {}
+    sess = None
     try:
+        sess = Session()
+        running_name, finished_name = chellow.dloads.make_names(
+            'mop_virtual_bills.csv', user)
+        f = open(running_name, mode='w', newline='')
+        writer = csv.writer(f, lineterminator='\n')
         contract = Contract.get_mop_by_id(sess, contract_id)
 
         forecast_date = chellow.computer.forecast_date()
+        header_titles = [
+            'Import MPAN Core', 'Export MPAN Core', 'Start Date',
+            'Finish Date']
 
-        yield ','.join(
-            (
-                'Import MPAN Core', 'Export MPAN Core', 'Start Date',
-                'Finish Date'))
         bill_titles = chellow.computer.contract_func(
             caches, contract, 'virtual_bill_titles', None)()
-        for title in bill_titles:
-            yield ',' + title
-        yield '\n'
+        writer.writerow(header_titles + bill_titles)
 
         for era in sess.query(Era).filter(
-                or_(Era.finish_date == null(), Era.finish_date >= start_date),
-                Era.start_date <= finish_date,
-                Era.mop_contract_id == contract.id).order_by(Era.supply_id):
+                or_(
+                    Era.finish_date == null(), Era.finish_date >= start_date),
+                Era.start_date <= finish_date, Era.mop_contract == contract). \
+                order_by(Era.supply_id):
             import_mpan_core = era.imp_mpan_core
             if import_mpan_core is None:
                 import_mpan_core_str = ''
@@ -43,8 +53,9 @@ def content(start_date, finish_date, contract_id, sess):
                 mpan_core = export_mpan_core
                 export_mpan_core_str = mpan_core
 
-            yield import_mpan_core_str + ',' + export_mpan_core_str + ',' + \
-                hh_format(start_date) + ',' + hh_format(finish_date) + ','
+            out = [
+                import_mpan_core_str, export_mpan_core_str,
+                hh_format(start_date), hh_format(finish_date)]
             supply_source = chellow.computer.SupplySource(
                 sess, start_date, finish_date, forecast_date, era, is_import,
                 None, caches)
@@ -53,21 +64,30 @@ def content(start_date, finish_date, contract_id, sess):
             bill = supply_source.mop_bill
             for title in bill_titles:
                 if title in bill:
-                    yield '"' + str(bill[title]) + '",'
+                    out.append(str(bill[title]))
                     del bill[title]
                 else:
-                    yield ','
+                    out.append('')
             for k in sorted(bill.keys()):
-                yield ',"' + k + '","' + str(bill[k]) + '"'
-            yield '\n'
+                out.append(k)
+                out.append(str(bill[k]))
+            writer.writerow(out)
     except:
-        yield traceback.format_exc()
+        msg = traceback.format_exc()
+        sys.stderr.write(msg)
+        writer.writerow([msg])
+    finally:
+        if sess is not None:
+            sess.close()
+        if f is not None:
+            f.close()
+            os.rename(running_name, finished_name)
 
 
 def do_get(sess):
     start_date = req_date('start')
     finish_date = req_date('finish')
     contract_id = req_int('mop_contract_id')
-    return send_response(
-        content, args=(start_date, finish_date, contract_id, sess),
-        file_name='output.csv')
+    args = (start_date, finish_date, contract_id, g.user)
+    threading.Thread(target=content, args=args).start()
+    return chellow_redirect("/downloads", 303)

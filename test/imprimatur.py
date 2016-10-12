@@ -9173,12 +9173,22 @@ def virtual_bill(supply_source):
         'start_month=04&start_day=01&start_hour=00&start_minute=00&'
         'finish_year=2015&finish_month=04&finish_day=01&finish_hour=23&'
         'finish_minute=30',
+        'status_code': 303},
+    {
+        'path': '/downloads',
+        'tries': {'max': 20, 'period': 1},
+        'status_code': 200,
+        'regexes': [
+            r'059_FINISHED_watkinsexamplecom_mop_virtual_bills\.csv']},
+    {
+        'path': '/downloads/'
+        '059_FINISHED_watkinsexamplecom_mop_virtual_bills.csv',
+        'status_code': 200,
         'regexes': [
             r'Import MPAN Core,Export MPAN Core,Start Date,Finish Date,'
             r'net-gbp,problem',
 
-            r',22 0470 7514 535,2015-04-01 00:00,2015-04-01 23:30,"0","",'],
-        'status_code': 200},
+            r',22 0470 7514 535,2015-04-01 00:00,2015-04-01 23:30,0,']},
 
     {
         'name': "Bank holiday day change without restart. Add HH.",
@@ -9205,12 +9215,12 @@ def virtual_bill(supply_source):
         'path': '/downloads',
         'tries': {},
         'regexes': [
-            r"059_FINISHED_watkinsexamplecom_supply_virtual_bills_5\.csv"],
+            r"060_FINISHED_watkinsexamplecom_supply_virtual_bills_5\.csv"],
         'status_code': 200},
     {
         'name': "Check supplies snapshot at beginning of supply",
         'path': '/downloads/'
-        '059_FINISHED_watkinsexamplecom_supply_virtual_bills_5.csv',
+        '060_FINISHED_watkinsexamplecom_supply_virtual_bills_5.csv',
         'regexes': [
             r'22 0883 6932 301,,CI005,Wheal Rodney,4341,'
             r'2014-06-04 00:00,2014-06-04 23:30,,0,,,0,,,'
@@ -9267,11 +9277,11 @@ def virtual_bill(supply_source):
         'path': '/downloads',
         'tries': {},
         'regexes': [
-            r"060_FINISHED_watkinsexamplecom_supply_virtual_bills_5\.csv"],
+            r"061_FINISHED_watkinsexamplecom_supply_virtual_bills_5\.csv"],
         'status_code': 200},
     {
         'path': '/downloads/'
-        '060_FINISHED_watkinsexamplecom_supply_virtual_bills_5.csv',
+        '061_FINISHED_watkinsexamplecom_supply_virtual_bills_5.csv',
         'regexes': [
             r'22 0883 6932 301,,CI005,Wheal Rodney,4341,'
             r'2014-06-04 00:00,2014-06-04 23:30,,0,,,0,,,'
@@ -9296,12 +9306,12 @@ def virtual_bill(supply_source):
         'path': '/downloads',
         'tries': {},
         'regexes': [
-            r"061_FINISHED_watkinsexamplecom_crc_2011_2012_supply_10\.csv"],
+            r"062_FINISHED_watkinsexamplecom_crc_2011_2012_supply_10\.csv"],
         'status_code': 200},
     {
         'name': "CRC report for mismatched TPRs",
         'path': '/downloads/'
-        '061_FINISHED_watkinsexamplecom_crc_2011_2012_supply_10.csv',
+        '062_FINISHED_watkinsexamplecom_crc_2011_2012_supply_10.csv',
         'tries': {},
         'status_code': 200,
         'regexes': [
@@ -9429,12 +9439,12 @@ def virtual_bill(supply_source):
         'path': '/downloads',
         'tries': {},
         'regexes': [
-            r"062_FINISHED_watkinsexamplecom_crc_2010_2011_supply_10\.csv"],
+            r"063_FINISHED_watkinsexamplecom_crc_2010_2011_supply_10\.csv"],
         'status_code': 200},
     {
         'name': "CRC meter change reads",
         'path': '/downloads/'
-        '062_FINISHED_watkinsexamplecom_crc_2010_2011_supply_10.csv',
+        '063_FINISHED_watkinsexamplecom_crc_2010_2011_supply_10.csv',
         'status_code': 200,
         'regexes': [
             r'73142.39335486847']},
@@ -9482,11 +9492,11 @@ def virtual_bill(supply_source):
         'path': '/downloads',
         'tries': {},
         'regexes': [
-            r"063_FINISHED_watkinsexamplecom_supplies_duration\.csv"],
+            r"064_FINISHED_watkinsexamplecom_supplies_duration\.csv"],
         'status_code': 200},
     {
         'path': '/downloads/'
-        '063_FINISHED_watkinsexamplecom_supplies_duration.csv',
+        '064_FINISHED_watkinsexamplecom_supplies_duration.csv',
         'regexes': [
             r'"10","2","net","","CI017","Roselands","2012-01-05 00:00",'
             r'"2012-01-10 23:30","03","801","6a","0366","1","nhh",110,'
@@ -9501,11 +9511,11 @@ def virtual_bill(supply_source):
         'path': '/downloads',
         'tries': {},
         'regexes': [
-            r"064_FINISHED_watkinsexamplecom_bill_check\.csv"],
+            r"065_FINISHED_watkinsexamplecom_bill_check\.csv"],
         'status_code': 200},
     {
         'path': '/downloads/'
-        '064_FINISHED_watkinsexamplecom_bill_check.csv',
+        '065_FINISHED_watkinsexamplecom_bill_check.csv',
         'regexes': [
             r'07-002,3423760010,N,10,9.07,0.21,2012-01-05 00:00,'
             r'2012-01-10 23:30,22 1065 3921 534,CI017,Roselands,'
@@ -9523,11 +9533,11 @@ def virtual_bill(supply_source):
         'path': '/downloads',
         'tries': {},
         'regexes': [
-            r"065_FINISHED_watkinsexamplecom_supplies_duration\.csv"],
+            r"066_FINISHED_watkinsexamplecom_supplies_duration\.csv"],
         'status_code': 200},
     {
         'path': '/downloads/'
-        '065_FINISHED_watkinsexamplecom_supplies_duration.csv',
+        '066_FINISHED_watkinsexamplecom_supplies_duration.csv',
         'regexes': [
             r'"10","2","net","","CI017","Roselands","2007-02-01 00:00",'
             r'"2007-02-28 23:30","03","801","5","0393","0","nhh",'
@@ -9572,12 +9582,12 @@ def virtual_bill(supply_source):
         'path': '/downloads',
         'tries': {},
         'regexes': [
-            r"066_FINISHED_watkinsexamplecom_supplies_duration\.csv"],
+            r"067_FINISHED_watkinsexamplecom_supplies_duration\.csv"],
         'status_code': 200},
     {
         'name': "Supplies duration normal reads with prev, pres the same.",
         'path': '/downloads/'
-        '066_FINISHED_watkinsexamplecom_supplies_duration.csv',
+        '067_FINISHED_watkinsexamplecom_supplies_duration.csv',
         'regexes': [
             r'"10","2","net","","CI017","Roselands","2009-04-01 00:00",'
             r'"2009-04-10 23:30","03","801","5","0393","1","nhh",'
@@ -9611,9 +9621,9 @@ def virtual_bill(supply_source):
         'tries': {'max': 30, 'period': 1},
         'status_code': 200,
         'regexes': [
-            r"067_FINISHED_watkinsexamplecom_displaced\.csv"]},
+            r"068_FINISHED_watkinsexamplecom_displaced\.csv"]},
     {
-        'path': '/downloads/067_FINISHED_watkinsexamplecom_displaced.csv',
+        'path': '/downloads/068_FINISHED_watkinsexamplecom_displaced.csv',
         'status_code': 200,
         'regexes': [
             r'CI005,Wheal Rodney,CI004,2005-11-01 00:00,'
@@ -9630,13 +9640,13 @@ def virtual_bill(supply_source):
         'tries': {'max': 20, 'period': 1},
         'status_code': 200,
         'regexes': [
-            r"068_FINISHED_watkinsexamplecom_monthly_"
+            r"069_FINISHED_watkinsexamplecom_monthly_"
             r"duration_20150201_0000_for_1_months_site_CH023\.ods"]
         },
 
     {
         'path': '/downloads/'
-        '068_FINISHED_watkinsexamplecom_monthly_'
+        '069_FINISHED_watkinsexamplecom_monthly_'
         'duration_20150201_0000_for_1_months_site_CH023.ods',
         'status_code': 200,
         'regexes': [
@@ -9729,12 +9739,12 @@ def virtual_bill(supply_source):
         'path': '/downloads',
         'tries': {},
         'regexes': [
-            r"069_FINISHED_watkinsexamplecom_crc_2010_2011_supply_10\.csv"],
+            r"070_FINISHED_watkinsexamplecom_crc_2010_2011_supply_10\.csv"],
         'status_code': 200},
     {
         'name': "CRC meter change reads",
         'path': '/downloads/'
-        '069_FINISHED_watkinsexamplecom_crc_2010_2011_supply_10.csv',
+        '070_FINISHED_watkinsexamplecom_crc_2010_2011_supply_10.csv',
         'status_code': 200,
         'regexes': [
             r'73142.39335486847']},
@@ -9748,12 +9758,12 @@ def virtual_bill(supply_source):
         'path': '/downloads',
         'tries': {'max': 20, 'period': 1},
         'regexes': [
-            r"070_FINISHED_watkinsexamplecom_monthly_"
+            r"071_FINISHED_watkinsexamplecom_monthly_"
             r"duration_20100101_0000_for_1_months_supply_10\.ods"],
         'status_code': 200},
     {
         'path': '/downloads/'
-        '070_FINISHED_watkinsexamplecom_monthly_'
+        '071_FINISHED_watkinsexamplecom_monthly_'
         'duration_20100101_0000_for_1_months_supply_10.ods',
         'status_code': 200,
         'regexes': [
@@ -9992,12 +10002,12 @@ def virtual_bill(supply_source):
         'path': '/downloads',
         'tries': {'max': 20, 'period': 1},
         'regexes': [
-            r'071_FINISHED_watkinsexamplecom_monthly_'
+            r'072_FINISHED_watkinsexamplecom_monthly_'
             r'duration_20141201_0000_for_1_months_supply_16\.ods'],
         'status_code': 200},
     {
         'path': '/downloads/'
-        '071_FINISHED_watkinsexamplecom_monthly_'
+        '072_FINISHED_watkinsexamplecom_monthly_'
         'duration_20141201_0000_for_1_months_supply_16.ods',
         'status_code': 200,
         'regexes': [
@@ -10155,11 +10165,11 @@ def virtual_bill(supply_source):
         'path': '/downloads',
         'tries': {},
         'regexes': [
-            r"072_FINISHED_watkinsexamplecom_supply_virtual_bills_16\.csv"],
+            r"073_FINISHED_watkinsexamplecom_supply_virtual_bills_16\.csv"],
         'status_code': 200},
     {
         'path': '/downloads/'
-        '072_FINISHED_watkinsexamplecom_supply_virtual_bills_16.csv',
+        '073_FINISHED_watkinsexamplecom_supply_virtual_bills_16.csv',
         'regexes': [
             r'Imp MPAN Core,Exp MPAN Core,Site Code,Site Name,'],
         'status_code': 200},
@@ -10215,13 +10225,13 @@ def virtual_bill(supply_source):
         'path': '/downloads',
         'tries': {},
         'regexes': [
-            r'073_FINISHED_watkinsexamplecom_monthly_'
+            r'074_FINISHED_watkinsexamplecom_monthly_'
             r'duration_20150501_0000_for_1_months_supply_5\.ods'],
         'status_code': 200},
     {
         'name': "Monthly duration report for a gen-net supply",
         'path': '/downloads/'
-        '073_FINISHED_watkinsexamplecom_monthly_'
+        '074_FINISHED_watkinsexamplecom_monthly_'
         'duration_20150501_0000_for_1_months_supply_5.ods',
         'status_code': 200,
         'regexes': [
@@ -10264,12 +10274,12 @@ def virtual_bill(supply_source):
         'path': '/downloads',
         'tries': {},
         'regexes': [
-            r"074_FINISHED_watkinsexamplecom_supplies_duration\.csv"],
+            r"075_FINISHED_watkinsexamplecom_supplies_duration\.csv"],
         'status_code': 200},
     {
         'name': "Supplies duration normal reads with prev, pres the same.",
         'path': '/downloads/'
-        '074_FINISHED_watkinsexamplecom_supplies_duration.csv',
+        '075_FINISHED_watkinsexamplecom_supplies_duration.csv',
         'regexes': [
             r'"10","2","net","","CI017","Roselands","2009-04-01 00:00",'
             r'"2009-04-10 23:30","03","801","5","0393","1","nhh",'
@@ -10301,13 +10311,13 @@ def virtual_bill(supply_source):
         'path': '/downloads',
         'tries': {'max': 30, 'period': 1},
         'regexes': [
-            r'075_FINISHED_watkinsexamplecom_monthly_'
+            r'076_FINISHED_watkinsexamplecom_monthly_'
             r'duration_20150501_0000_for_1_months_site_CI004\.ods'],
         'status_code': 200},
     {
         'name': "Monthly Duration report - displaced kWh",
         'path': '/downloads/'
-        '075_FINISHED_watkinsexamplecom_monthly_'
+        '076_FINISHED_watkinsexamplecom_monthly_'
         'duration_20150501_0000_for_1_months_site_CI004.ods',
         'status_code': 200,
         'regexes': [
@@ -10579,13 +10589,13 @@ def virtual_bill(supply_source):
         'path': '/downloads',
         'tries': {'max': 30, 'period': 1},
         'regexes': [
-            r'076_FINISHED_watkinsexamplecom_monthly_'
+            r'077_FINISHED_watkinsexamplecom_monthly_'
             r'duration_20030801_0000_for_1_months_supply_7\.ods'],
         'status_code': 200},
     {
         'name': "Monthly duration supply starts after period",
         'path': '/downloads/'
-        '076_FINISHED_watkinsexamplecom_monthly_'
+        '077_FINISHED_watkinsexamplecom_monthly_'
         'duration_20030801_0000_for_1_months_supply_7.ods',
         'status_code': 200,
         'regexes': [
@@ -10671,13 +10681,13 @@ def virtual_bill(supply_source):
         'path': '/downloads',
         'tries': {'max': 30, 'period': 1},
         'regexes': [
-            r'077_FINISHED_watkinsexamplecom_monthly_'
+            r'078_FINISHED_watkinsexamplecom_monthly_'
             r'duration_20150801_0000_for_1_months_site_CI004\.ods'],
         'status_code': 200},
     {
         'name': "Monthly duration report, billed",
         'path': '/downloads/'
-        '077_FINISHED_watkinsexamplecom_monthly_'
+        '078_FINISHED_watkinsexamplecom_monthly_'
         'duration_20150801_0000_for_1_months_site_CI004.ods',
         'status_code': 200,
         'regexes': [
@@ -10889,11 +10899,11 @@ def virtual_bill(supply_source):
         'path': '/downloads',
         'tries': {},
         'regexes': [
-            r"078_FINISHED_watkinsexamplecom_supply_virtual_bills_5\.csv"],
+            r"079_FINISHED_watkinsexamplecom_supply_virtual_bills_5\.csv"],
         'status_code': 200},
     {
         'path': '/downloads/'
-        '078_FINISHED_watkinsexamplecom_supply_virtual_bills_5.csv',
+        '079_FINISHED_watkinsexamplecom_supply_virtual_bills_5.csv',
         'regexes': [r'22 7824 9120 097'],
         'status_code': 200},
 
@@ -10908,11 +10918,11 @@ def virtual_bill(supply_source):
         'path': '/downloads',
         'tries': {},
         'regexes': [
-            r"079_FINISHED_watkinsexamplecom_supply_virtual_bills_10\.csv"],
+            r"080_FINISHED_watkinsexamplecom_supply_virtual_bills_10\.csv"],
         'status_code': 200},
     {
         'path': '/downloads/'
-        '079_FINISHED_watkinsexamplecom_supply_virtual_bills_10.csv',
+        '080_FINISHED_watkinsexamplecom_supply_virtual_bills_10.csv',
         'regexes': [
             r'3409.15883838'],
         'status_code': 200},
