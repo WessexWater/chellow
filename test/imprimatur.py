@@ -4443,50 +4443,767 @@ def virtual_bill(supply_source):
         'status_code': 200},
     {
         'name': "Test displaced virtual bill.",
-        'path': '/reports/389?site_id=1&months=1&finish_year=2010&'
-        'finish_month=06',
+        'path': '/reports/247?site_id=1&months=1&finish_year=2010&'
+        'finish_month=06&compression=False',
+        'status_code': 303},
+    {
+        'path': '/downloads',
+        'tries': {},
         'regexes': [
-            r"Site Code,Site Name,Associated Site Ids,From,To,Gen Types,"
-            "CHP kWh,LM kWh,Turbine kWh,PV kWh,net-gbp,bsuos-kwh,bsuos-rate,"
-            "bsuos-gbp,ccl-kwh,ccl-rate,ccl-gbp,ssp-rate,tlm,duos-green-kwh,"
-            "duos-green-rate,duos-green-gbp,duos-reactive-gbp,"
-            "duos-reactive-working,duos-standing-gbp,night-gbp,night-gsp-kwh,"
-            "night-msp-kwh,other-gbp,other-gsp-kwh,other-msp-kwh,"
-            "summer-pk-gbp,summer-pk-gsp-kwh,summer-pk-msp-kwh,triad-gbp,"
-            "triad-working,winter-low-pk-gbp,winter-low-pk-gsp-kwh,"
-            "winter-low-pk-msp-kwh,winter-off-pk-gbp,winter-off-pk-gsp-kwh,"
-            "winter-off-pk-msp-kwh,winter-pk-gbp,winter-pk-gsp-kwh,"
-            "winter-pk-msp-kwh,triad-actual-1-date,triad-actual-1-msp-kw,"
-            "triad-actual-1-status,triad-actual-1-laf,triad-actual-1-gsp-kw,"
-            "triad-actual-2-date,triad-actual-2-msp-kw,triad-actual-2-status,"
-            "triad-actual-2-laf,triad-actual-2-gsp-kw,triad-actual-3-date,"
-            "triad-actual-3-msp-kw,triad-actual-3-status,triad-actual-3-laf,"
-            "triad-actual-3-gsp-kw,triad-actual-gsp-kw,triad-actual-rate,"
-            "triad-actual-gbp,triad-estimate-1-date,triad-estimate-1-msp-kw,"
-            "triad-estimate-1-status,triad-estimate-1-laf,"
-            "triad-estimate-1-gsp-kw,triad-estimate-2-date,"
-            "triad-estimate-2-msp-kw,triad-estimate-2-status,"
-            "triad-estimate-2-laf,triad-estimate-2-gsp-kw,"
-            "triad-estimate-3-date,triad-estimate-3-msp-kw,"
-            "triad-estimate-3-status,triad-estimate-3-laf,"
-            "triad-estimate-3-gsp-kw,triad-estimate-gsp-kw,"
-            "triad-estimate-rate,triad-estimate-months,triad-estimate-gbp,"
-            "triad-all-estimates-months,triad-all-estimates-gbp,problem",
-            r'"CI004","Lower Treave","","2010-06-01 00:00","2010-06-30 23:30",'
-            '"chp","","","","","0.0","0.0","","0.0","","0.0047","","","","0",'
-            '"0.0013","0.0","","","","0.0","0.0","0","0.0","0.0","0","0.0",'
-            '"0.0","0","","","","0","0","","0","0","","0","0","","","","","",'
-            '"","","","","","","","","","","","","","2010-01-07 17:00","0",'
-            '"E","1.078","0.0","2010-01-25 17:00","0","E","1.078","0.0",'
-            '"2009-12-15 17:00","0","E","1.078","0.0","0.0","26.057832","1",'
-            '"0.0","","",""'],
+            r'015_FINISHED_watkinsexamplecom_monthly_duration_20100601_0000_'
+            r'for_1_months_site_CI004\.ods'],
+        'status_code': 200},
+    {
+        'path': '/downloads/'
+        '015_FINISHED_watkinsexamplecom_monthly_duration_20100601_0000_for_1_'
+        'months_site_CI004.ods',
+        'regexes': [
+            r'<table:table-row>\s*'
+            r'<table:table-cell office:string-value="imp-mpan-core" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell office:string-value="exp-mpan-core" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell office:string-value="metering-type" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell office:string-value="source" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell office:string-value="generator-type" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell office:string-value="supply-name" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell office:string-value="msn" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell office:string-value="pc" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell office:string-value="site-id" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell office:string-value="site-name" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell office:string-value="associated-site-ids" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell office:string-value="month" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell office:string-value="import-net-kwh" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell office:string-value="export-net-kwh" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell office:string-value="import-gen-kwh" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell office:string-value="export-gen-kwh" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell office:string-value="import-3rd-party-kwh" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell office:string-value="export-3rd-party-kwh" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell office:string-value="displaced-kwh" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell office:string-value="used-kwh" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell office:string-value="used-3rd-party-kwh" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell office:string-value="import-net-gbp" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell office:string-value="export-net-gbp" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell office:string-value="import-gen-gbp" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell office:string-value="export-gen-gbp" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell office:string-value="import-3rd-party-gbp" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell office:string-value="export-3rd-party-gbp" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell office:string-value="displaced-gbp" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell office:string-value="used-gbp" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell office:string-value="used-3rd-party-gbp" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell office:string-value="billed-import-net-kwh" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell office:string-value="billed-import-net-gbp" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell/>\s*'
+            r'<table:table-cell office:string-value="mop-net-gbp" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell office:string-value="mop-problem" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell/>\s*'
+            r'<table:table-cell office:string-value="dc-net-gbp" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell office:string-value="dc-problem" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell/>\s*'
+            r'<table:table-cell office:string-value="imp-supplier-net-gbp" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell office:string-value="imp-supplier-tlm" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell office:string-value="imp-supplier-ccl-kwh" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell office:string-value="imp-supplier-ccl-rate" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell office:string-value="imp-supplier-ccl-gbp" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell '
+            r'office:string-value="imp-supplier-data-collection-gbp" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell '
+            r'office:string-value="imp-supplier-duos-availability-kva" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell '
+            r'office:string-value="imp-supplier-duos-availability-days" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell '
+            r'office:string-value="imp-supplier-duos-availability-rate" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell '
+            r'office:string-value="imp-supplier-duos-availability-gbp" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell '
+            r'office:string-value="imp-supplier-duos-excess-availability-kva" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell '
+            r'office:string-value='
+            r'"imp-supplier-duos-excess-availability-days" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell '
+            r'office:string-value='
+            r'"imp-supplier-duos-excess-availability-rate" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell '
+            r'office:string-value="imp-supplier-duos-excess-availability-gbp" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell '
+            r'office:string-value="imp-supplier-duos-day-kwh" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell '
+            r'office:string-value="imp-supplier-duos-day-gbp" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell '
+            r'office:string-value="imp-supplier-duos-night-kwh" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell '
+            r'office:string-value="imp-supplier-duos-night-gbp" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell '
+            r'office:string-value="imp-supplier-duos-reactive-rate" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell '
+            r'office:string-value="imp-supplier-duos-reactive-gbp" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell '
+            r'office:string-value="imp-supplier-duos-standing-gbp" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell '
+            r'office:string-value="imp-supplier-settlement-gbp" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell '
+            r'office:string-value="imp-supplier-night-msp-kwh" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell '
+            r'office:string-value="imp-supplier-night-gsp-kwh" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell '
+            r'office:string-value="imp-supplier-night-gbp" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell '
+            r'office:string-value="imp-supplier-other-msp-kwh" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell '
+            r'office:string-value="imp-supplier-other-gsp-kwh" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell office:string-value="imp-supplier-other-gbp" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell '
+            r'office:string-value="imp-supplier-summer-pk-msp-kwh" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell '
+            r'office:string-value="imp-supplier-summer-pk-gsp-kwh" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell '
+            r'office:string-value="imp-supplier-summer-pk-gbp" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell '
+            r'office:string-value="imp-supplier-winter-low-pk-msp-kwh" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell '
+            r'office:string-value="imp-supplier-winter-low-pk-gsp-kwh" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell '
+            r'office:string-value="imp-supplier-winter-low-pk-gbp" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell '
+            r'office:string-value="imp-supplier-winter-off-pk-msp-kwh" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell '
+            r'office:string-value="imp-supplier-winter-off-pk-gsp-kwh" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell '
+            r'office:string-value="imp-supplier-winter-off-pk-gbp" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell '
+            r'office:string-value="imp-supplier-winter-pk-msp-kwh" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell '
+            r'office:string-value="imp-supplier-winter-pk-gsp-kwh" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell '
+            r'office:string-value="imp-supplier-winter-pk-gbp" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell office:string-value="imp-supplier-bsuos-kwh" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell office:string-value="imp-supplier-bsuos-rate" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell office:string-value="imp-supplier-bsuos-gbp" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell '
+            r'office:string-value="imp-supplier-triad-actual-1-date" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell '
+            r'office:string-value="imp-supplier-triad-actual-1-msp-kw" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell '
+            r'office:string-value="imp-supplier-triad-actual-1-status" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell '
+            r'office:string-value="imp-supplier-triad-actual-1-laf" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell '
+            r'office:string-value="imp-supplier-triad-actual-1-gsp-kw" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell '
+            r'office:string-value="imp-supplier-triad-actual-2-date" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell '
+            r'office:string-value="imp-supplier-triad-actual-2-msp-kw" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell '
+            r'office:string-value="imp-supplier-triad-actual-2-status" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell '
+            r'office:string-value="imp-supplier-triad-actual-2-laf" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell '
+            r'office:string-value="imp-supplier-triad-actual-2-gsp-kw" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell '
+            r'office:string-value="imp-supplier-triad-actual-3-date" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell '
+            r'office:string-value="imp-supplier-triad-actual-3-msp-kw" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell '
+            r'office:string-value="imp-supplier-triad-actual-3-status" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell '
+            r'office:string-value="imp-supplier-triad-actual-3-laf" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell '
+            r'office:string-value="imp-supplier-triad-actual-3-gsp-kw" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell '
+            r'office:string-value="imp-supplier-triad-actual-gsp-kw" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell '
+            r'office:string-value="imp-supplier-triad-actual-rate" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell '
+            r'office:string-value="imp-supplier-triad-actual-gbp" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell '
+            r'office:string-value="imp-supplier-triad-estimate-1-date" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell '
+            r'office:string-value="imp-supplier-triad-estimate-1-msp-kw" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell '
+            r'office:string-value="imp-supplier-triad-estimate-1-status" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell '
+            r'office:string-value="imp-supplier-triad-estimate-1-laf" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell '
+            r'office:string-value="imp-supplier-triad-estimate-1-gsp-kw" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell '
+            r'office:string-value="imp-supplier-triad-estimate-2-date" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell '
+            r'office:string-value="imp-supplier-triad-estimate-2-msp-kw" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell '
+            r'office:string-value="imp-supplier-triad-estimate-2-status" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell '
+            r'office:string-value="imp-supplier-triad-estimate-2-laf" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell '
+            r'office:string-value="imp-supplier-triad-estimate-2-gsp-kw" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell '
+            r'office:string-value="imp-supplier-triad-estimate-3-date" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell '
+            r'office:string-value="imp-supplier-triad-estimate-3-msp-kw" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell '
+            r'office:string-value="imp-supplier-triad-estimate-3-status" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell '
+            r'office:string-value="imp-supplier-triad-estimate-3-laf" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell '
+            r'office:string-value="imp-supplier-triad-estimate-3-gsp-kw" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell '
+            r'office:string-value="imp-supplier-triad-estimate-gsp-kw" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell '
+            r'office:string-value="imp-supplier-triad-estimate-rate" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell '
+            r'office:string-value="imp-supplier-triad-estimate-months" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell '
+            r'office:string-value="imp-supplier-triad-estimate-gbp" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell '
+            r'office:string-value="imp-supplier-triad-all-estimates-months" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell '
+            r'office:string-value="imp-supplier-triad-all-estimates-gbp" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell office:string-value="imp-supplier-problem" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell '
+            r'office:string-value="imp-supplier-duos-green-kwh" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell '
+            r'office:string-value="imp-supplier-duos-green-rate" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell '
+            r'office:string-value="imp-supplier-duos-green-gbp" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell '
+            r'office:string-value="imp-supplier-duos-amber-gbp" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell '
+            r'office:string-value="imp-supplier-duos-amber-kwh" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell '
+            r'office:string-value="imp-supplier-duos-red-rate" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell '
+            r'office:string-value="imp-supplier-duos-red-gbp" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell '
+            r'office:string-value="imp-supplier-duos-reactive-kvarh" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell '
+            r'office:string-value="imp-supplier-duos-fixed-days" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell '
+            r'office:string-value="imp-supplier-duos-fixed-rate" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell '
+            r'office:string-value="imp-supplier-duos-fixed-gbp" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell '
+            r'office:string-value="imp-supplier-aahedc-msp-kwh" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell '
+            r'office:string-value="imp-supplier-aahedc-gsp-kwh" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell '
+            r'office:string-value="imp-supplier-aahedc-rate" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell '
+            r'office:string-value="imp-supplier-aahedc-gbp" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell office:string-value="imp-supplier-rcrc-kwh" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell office:string-value="imp-supplier-rcrc-rate" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell office:string-value="imp-supplier-rcrc-gbp" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell office:string-value="imp-supplier-vat-gbp" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell office:string-value="imp-supplier-gross-gbp" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell '
+            r'office:string-value="imp-supplier-sum-msp-kwh" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell/>\s*'
+            r'<table:table-cell office:string-value="exp-supplier-net-gbp" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell office:string-value="exp-supplier-tlm" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell office:string-value="exp-supplier-ccl-kwh" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell office:string-value="exp-supplier-ccl-rate" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell office:string-value="exp-supplier-ccl-gbp" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell '
+            r'office:string-value="exp-supplier-data-collection-gbp" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell '
+            r'office:string-value="exp-supplier-duos-availability-kva" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell '
+            r'office:string-value="exp-supplier-duos-availability-days" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell '
+            r'office:string-value="exp-supplier-duos-availability-rate" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell '
+            r'office:string-value="exp-supplier-duos-availability-gbp" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell '
+            r'office:string-value="exp-supplier-duos-excess-availability-kva" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell '
+            r'office:string-value='
+            r'"exp-supplier-duos-excess-availability-days" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell '
+            r'office:string-value='
+            r'"exp-supplier-duos-excess-availability-rate" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell '
+            r'office:string-value="exp-supplier-duos-excess-availability-gbp" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell '
+            r'office:string-value="exp-supplier-duos-day-kwh" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell '
+            r'office:string-value="exp-supplier-duos-day-gbp" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell '
+            r'office:string-value="exp-supplier-duos-night-kwh" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell '
+            r'office:string-value="exp-supplier-duos-night-gbp" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell '
+            r'office:string-value="exp-supplier-duos-reactive-rate" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell '
+            r'office:string-value="exp-supplier-duos-reactive-gbp" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell '
+            r'office:string-value="exp-supplier-duos-standing-gbp" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell '
+            r'office:string-value="exp-supplier-settlement-gbp" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell '
+            r'office:string-value="exp-supplier-night-msp-kwh" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell '
+            r'office:string-value="exp-supplier-night-gsp-kwh" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell '
+            r'office:string-value="exp-supplier-night-gbp" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell '
+            r'office:string-value="exp-supplier-other-msp-kwh" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell '
+            r'office:string-value="exp-supplier-other-gsp-kwh" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell office:string-value="exp-supplier-other-gbp" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell '
+            r'office:string-value="exp-supplier-summer-pk-msp-kwh" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell '
+            r'office:string-value="exp-supplier-summer-pk-gsp-kwh" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell '
+            r'office:string-value="exp-supplier-summer-pk-gbp" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell '
+            r'office:string-value="exp-supplier-winter-low-pk-msp-kwh" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell '
+            r'office:string-value="exp-supplier-winter-low-pk-gsp-kwh" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell '
+            r'office:string-value="exp-supplier-winter-low-pk-gbp" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell '
+            r'office:string-value="exp-supplier-winter-off-pk-msp-kwh" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell '
+            r'office:string-value="exp-supplier-winter-off-pk-gsp-kwh" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell '
+            r'office:string-value="exp-supplier-winter-off-pk-gbp" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell '
+            r'office:string-value="exp-supplier-winter-pk-msp-kwh" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell '
+            r'office:string-value="exp-supplier-winter-pk-gsp-kwh" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell '
+            r'office:string-value="exp-supplier-winter-pk-gbp" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell office:string-value="exp-supplier-bsuos-kwh" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell office:string-value="exp-supplier-bsuos-rate" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell office:string-value="exp-supplier-bsuos-gbp" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell '
+            r'office:string-value="exp-supplier-triad-actual-1-date" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell '
+            r'office:string-value="exp-supplier-triad-actual-1-msp-kw" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell '
+            r'office:string-value="exp-supplier-triad-actual-1-status" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell '
+            r'office:string-value="exp-supplier-triad-actual-1-laf" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell '
+            r'office:string-value="exp-supplier-triad-actual-1-gsp-kw" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell '
+            r'office:string-value="exp-supplier-triad-actual-2-date" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell '
+            r'office:string-value="exp-supplier-triad-actual-2-msp-kw" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell '
+            r'office:string-value="exp-supplier-triad-actual-2-status" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell '
+            r'office:string-value="exp-supplier-triad-actual-2-laf" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell '
+            r'office:string-value="exp-supplier-triad-actual-2-gsp-kw" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell '
+            r'office:string-value="exp-supplier-triad-actual-3-date" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell '
+            r'office:string-value="exp-supplier-triad-actual-3-msp-kw" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell '
+            r'office:string-value="exp-supplier-triad-actual-3-status" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell '
+            r'office:string-value="exp-supplier-triad-actual-3-laf" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell '
+            r'office:string-value="exp-supplier-triad-actual-3-gsp-kw" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell '
+            r'office:string-value="exp-supplier-triad-actual-gsp-kw" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell '
+            r'office:string-value="exp-supplier-triad-actual-rate" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell '
+            r'office:string-value="exp-supplier-triad-actual-gbp" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell '
+            r'office:string-value="exp-supplier-triad-estimate-1-date" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell '
+            r'office:string-value="exp-supplier-triad-estimate-1-msp-kw" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell '
+            r'office:string-value="exp-supplier-triad-estimate-1-status" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell '
+            r'office:string-value="exp-supplier-triad-estimate-1-laf" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell '
+            r'office:string-value="exp-supplier-triad-estimate-1-gsp-kw" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell '
+            r'office:string-value="exp-supplier-triad-estimate-2-date" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell '
+            r'office:string-value="exp-supplier-triad-estimate-2-msp-kw" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell '
+            r'office:string-value="exp-supplier-triad-estimate-2-status" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell '
+            r'office:string-value="exp-supplier-triad-estimate-2-laf" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell '
+            r'office:string-value="exp-supplier-triad-estimate-2-gsp-kw" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell '
+            r'office:string-value="exp-supplier-triad-estimate-3-date" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell '
+            r'office:string-value="exp-supplier-triad-estimate-3-msp-kw" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell '
+            r'office:string-value="exp-supplier-triad-estimate-3-status" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell '
+            r'office:string-value="exp-supplier-triad-estimate-3-laf" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell '
+            r'office:string-value="exp-supplier-triad-estimate-3-gsp-kw" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell '
+            r'office:string-value="exp-supplier-triad-estimate-gsp-kw" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell '
+            r'office:string-value="exp-supplier-triad-estimate-rate" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell '
+            r'office:string-value="exp-supplier-triad-estimate-months" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell '
+            r'office:string-value="exp-supplier-triad-estimate-gbp" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell '
+            r'office:string-value="exp-supplier-triad-all-estimates-months" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell '
+            r'office:string-value="exp-supplier-triad-all-estimates-gbp" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell office:string-value="exp-supplier-problem" '
+            r'office:value-type="string"/>\s*'
+            r'</table:table-row>\s*'
+            r'<table:table-row>\s*'
+            r'<table:table-cell table:number-columns-repeated="2"/>\s*'
+            r'<table:table-cell office:string-value="hh" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell office:string-value="displaced" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell table:number-columns-repeated="4"/>\s*'
+            r'<table:table-cell office:string-value="CI004" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell office:string-value="Lower Treave" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell office:string-value="" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell office:date-value="2010-06-30T23:30:00" '
+            r'office:value-type="date" table:style-name="cDateISO"/>\s*'
+            r'<table:table-cell office:value="0" office:value-type="float" '
+            r'table:number-columns-repeated="15"/>\s*'
+            r'<table:table-cell office:value="0.0" office:value-type="float" '
+            r'table:number-columns-repeated="2"/>\s*'
+            r'<table:table-cell office:value="0" office:value-type="float" '
+            r'table:number-columns-repeated="3"/>\s*'
+            r'<table:table-cell table:number-columns-repeated="7"/>\s*'
+            r'<table:table-cell office:value="0.0" '
+            r'office:value-type="float"/>\s*'
+            r'<table:table-cell table:number-columns-repeated="2"/>\s*'
+            r'<table:table-cell office:value="0.0047" '
+            r'office:value-type="float"/>\s*'
+            r'<table:table-cell table:number-columns-repeated="18"/>\s*'
+            r'<table:table-cell office:value="0" '
+            r'office:value-type="float"/>\s*'
+            r'<table:table-cell office:value="0.0" office:value-type="float" '
+            r'table:number-columns-repeated="2"/>\s*'
+            r'<table:table-cell office:value="0" '
+            r'office:value-type="float"/>\s*'
+            r'<table:table-cell office:value="0.0" office:value-type="float" '
+            r'table:number-columns-repeated="2"/>\s*'
+            r'<table:table-cell office:value="0" '
+            r'office:value-type="float"/>\s*'
+            r'<table:table-cell office:value="0.0" office:value-type="float" '
+            r'table:number-columns-repeated="2"/>\s*'
+            r'<table:table-cell office:value="0" office:value-type="float" '
+            r'table:number-columns-repeated="2"/>\s*'
+            r'<table:table-cell/>\s*'
+            r'<table:table-cell office:value="0" office:value-type="float" '
+            r'table:number-columns-repeated="2"/>\s*'
+            r'<table:table-cell/>\s*'
+            r'<table:table-cell office:value="0" office:value-type="float" '
+            r'table:number-columns-repeated="2"/>\s*'
+            r'<table:table-cell/>\s*'
+            r'<table:table-cell office:value="0.0" '
+            r'office:value-type="float"/>\s*'
+            r'<table:table-cell/>\s*'
+            r'<table:table-cell office:value="0.0" '
+            r'office:value-type="float"/>\s*'
+            r'<table:table-cell table:number-columns-repeated="18"/>\s*'
+            r'<table:table-cell office:date-value="2010-01-07T17:00:00" '
+            r'office:value-type="date" table:style-name="cDateISO"/>\s*'
+            r'<table:table-cell office:value="0" '
+            r'office:value-type="float"/>\s*'
+            r'<table:table-cell office:string-value="E" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell office:value="1.078" '
+            r'office:value-type="float"/>\s*'
+            r'<table:table-cell office:value="0.0" '
+            r'office:value-type="float"/>\s*'
+            r'<table:table-cell office:date-value="2010-01-25T17:00:00" '
+            r'office:value-type="date" table:style-name="cDateISO"/>\s*'
+            r'<table:table-cell office:value="0" '
+            r'office:value-type="float"/>\s*'
+            r'<table:table-cell office:string-value="E" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell office:value="1.078" '
+            r'office:value-type="float"/>\s*'
+            r'<table:table-cell office:value="0.0" '
+            r'office:value-type="float"/>\s*'
+            r'<table:table-cell office:date-value="2009-12-15T17:00:00" '
+            r'office:value-type="date" table:style-name="cDateISO"/>\s*'
+            r'<table:table-cell office:value="0" '
+            r'office:value-type="float"/>\s*'
+            r'<table:table-cell office:string-value="E" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell office:value="1.078" '
+            r'office:value-type="float"/>\s*'
+            r'<table:table-cell office:value="0.0" office:value-type="float" '
+            r'table:number-columns-repeated="2"/>\s*'
+            r'<table:table-cell office:value="26.057832" '
+            r'office:value-type="float"/>\s*'
+            r'<table:table-cell office:value="1" '
+            r'office:value-type="float"/>\s*'
+            r'<table:table-cell office:value="0.0" '
+            r'office:value-type="float"/>\s*'
+            r'<table:table-cell table:number-columns-repeated="2"/>\s*'
+            r'<table:table-cell office:string-value="" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell office:value="0" '
+            r'office:value-type="float"/>\s*'
+            r'<table:table-cell office:value="0.0013" '
+            r'office:value-type="float"/>\s*'
+            r'<table:table-cell office:value="0.0" office:value-type="float" '
+            r'table:number-columns-repeated="2"/>\s*'
+            r'<table:table-cell office:value="0" '
+            r'office:value-type="float"/>\s*'
+            r'<table:table-cell office:value="0.16146" '
+            r'office:value-type="float"/>\s*'
+            r'<table:table-cell office:value="0.0" '
+            r'office:value-type="float"/>\s*'
+            r'<table:table-cell table:number-columns-repeated="14"/>\s*'
+            r'</table:table-row>\s*'],
         'status_code': 200},
 
-    # Try a 12 month run
     {
-        'path': '/reports/389?site_id=1&months=12&finish_year=2011&'
+        'name': "Try a 12 month run",
+        'path': '/reports/247?site_id=1&months=12&finish_year=2011&'
         'finish_month=06',
+        'status_code': 303},
+    {
+        'path': '/downloads',
+        'tries': {'max': 30, 'period': 1},
+        'regexes': [
+            r'016_FINISHED_watkinsexamplecom_monthly_duration_20100701_0000_'
+            r'for_12_months_site_CI004\.ods'],
         'status_code': 200},
+    {
+        'path': '/downloads/'
+        '016_FINISHED_watkinsexamplecom_monthly_duration_20100701_0000_for_'
+        '12_months_site_CI004.ods',
+        'status_code': 200},
+
     {
         'name': "Test bulk ignore.",
         'path': '/hhdc_contracts/34/edit',
@@ -4517,11 +5234,11 @@ def virtual_bill(supply_source):
         'path': '/downloads',
         'tries': {},
         'regexes': [
-            r"015_FINISHED_watkinsexamplecom_supply_virtual_bills_11\.csv"],
+            r"017_FINISHED_watkinsexamplecom_supply_virtual_bills_11\.csv"],
         'status_code': 200},
     {
         'path': '/downloads/'
-        '015_FINISHED_watkinsexamplecom_supply_virtual_bills_11.csv',
+        '017_FINISHED_watkinsexamplecom_supply_virtual_bills_11.csv',
         'regexes': [
             r'Imp MPAN Core,Exp MPAN Core,Site Code,Site Name,'
             r'Account,From,To,,mop-net-gbp,mop-problem,,'
@@ -5010,12 +5727,12 @@ def virtual_bill(supply_source):
         'path': '/downloads',
         'tries': {'max': 30, 'period': 1},
         'regexes': [
-            r'016_FINISHED_watkinsexamplecom_monthly_'
+            r'018_FINISHED_watkinsexamplecom_monthly_'
             r'duration_20100701_0000_for_1_months_site_CI017\.ods'],
         'status_code': 200},
     {
         'path': '/downloads/'
-        '016_FINISHED_watkinsexamplecom_monthly_'
+        '018_FINISHED_watkinsexamplecom_monthly_'
         'duration_20100701_0000_for_1_months_site_CI017.ods',
         'regexes': [
             r'<table:table-row>\s*'
@@ -5837,11 +6554,11 @@ def virtual_bill(supply_source):
         'path': '/downloads',
         'tries': {},
         'regexes': [
-            r"017_FINISHED_watkinsexamplecom_crc_2012_2013_supply_7\.csv"],
+            r"019_FINISHED_watkinsexamplecom_crc_2012_2013_supply_7\.csv"],
         'status_code': 200},
     {
         'path': '/downloads/'
-        '017_FINISHED_watkinsexamplecom_crc_2012_2013_supply_7.csv',
+        '019_FINISHED_watkinsexamplecom_crc_2012_2013_supply_7.csv',
         'status_code': 200,
         'regexes': [
             r'^"7","22 4862 4512 332"']},
@@ -5882,11 +6599,11 @@ def virtual_bill(supply_source):
         'path': '/downloads',
         'tries': {},
         'regexes': [
-            r"018_FINISHED_watkinsexamplecom_supply_virtual_bills_9\.csv"],
+            r"020_FINISHED_watkinsexamplecom_supply_virtual_bills_9\.csv"],
         'status_code': 200},
     {
         'path': '/downloads/'
-        '018_FINISHED_watkinsexamplecom_supply_virtual_bills_9.csv',
+        '020_FINISHED_watkinsexamplecom_supply_virtual_bills_9.csv',
         'regexes': [
             r'Imp MPAN Core,Exp MPAN Core,Site Code,Site Name,'
             r'Account,From,To,,mop-net-gbp,mop-problem,,'
@@ -5931,12 +6648,12 @@ def virtual_bill(supply_source):
         'tries': {},
         'status_code': 200,
         'regexes': [
-            r"019_FINISHED_watkinsexamplecom_supplies_monthly_duration_for_"
+            r"021_FINISHED_watkinsexamplecom_supplies_monthly_duration_for_"
             r"10_1_to_2011_1\.csv"]
         },
     {
         'path': '/downloads/'
-        '019_FINISHED_watkinsexamplecom_supplies_monthly_duration_for_'
+        '021_FINISHED_watkinsexamplecom_supplies_monthly_duration_for_'
         '10_1_to_2011_1.csv',
         'status_code': 200,
         'regexes': [
@@ -5959,11 +6676,11 @@ def virtual_bill(supply_source):
         'tries': {},
         'status_code': 200,
         'regexes': [
-            r"020_FINISHED_watkinsexamplecom_supplies_monthly_duration_for_"
+            r"022_FINISHED_watkinsexamplecom_supplies_monthly_duration_for_"
             r"4_1_to_2010_5\.csv"]},
     {
         'path': '/downloads/'
-        '020_FINISHED_watkinsexamplecom_supplies_monthly_duration_for_'
+        '022_FINISHED_watkinsexamplecom_supplies_monthly_duration_for_'
         '4_1_to_2010_5.csv',
         'status_code': 200,
         'regexes': [
@@ -6003,10 +6720,10 @@ def virtual_bill(supply_source):
         'tries': {'max': 20, 'period': 1},
         'status_code': 200,
         'regexes': [
-            r"021_FINISHED_watkinsexamplecom_sites_duration.csv"]},
+            r"023_FINISHED_watkinsexamplecom_sites_duration.csv"]},
     {
         'path': '/downloads/'
-        '021_FINISHED_watkinsexamplecom_sites_duration.csv',
+        '023_FINISHED_watkinsexamplecom_sites_duration.csv',
         'status_code': 200,
         'regexes': [
             r'CH017,Parbola,,sub,,2013-04-01 00:00,'
@@ -6031,11 +6748,11 @@ def virtual_bill(supply_source):
         'tries': {'max': 20, 'period': 1},
         'status_code': 200,
         'regexes': [
-            r"022_FINISHED_watkinsexamplecom_supplies_hh_data_200807312330_"
+            r"024_FINISHED_watkinsexamplecom_supplies_hh_data_200807312330_"
             r"supply_22_9205_6799_106\.csv"]},
     {
         'path': '/downloads/'
-        '022_FINISHED_watkinsexamplecom_supplies_hh_data_200807312330_'
+        '024_FINISHED_watkinsexamplecom_supplies_hh_data_200807312330_'
         'supply_22_9205_6799_106.csv',
         'status_code': 200,
 
@@ -6095,11 +6812,11 @@ def virtual_bill(supply_source):
         'path': '/downloads',
         'tries': {},
         'regexes': [
-            r"023_FINISHED_watkinsexamplecom_supply_virtual_bills_5\.csv"],
+            r"025_FINISHED_watkinsexamplecom_supply_virtual_bills_5\.csv"],
         'status_code': 200},
     {
         'path': '/downloads/'
-        '023_FINISHED_watkinsexamplecom_supply_virtual_bills_5.csv',
+        '025_FINISHED_watkinsexamplecom_supply_virtual_bills_5.csv',
         'regexes': [
             r'Imp MPAN Core,Exp MPAN Core,Site Code,Site Name,'
             'Account,From,To,,mop-net-gbp,mop-problem,,'
@@ -6215,11 +6932,11 @@ def virtual_bill(supply_source):
         'path': '/downloads',
         'tries': {},
         'regexes': [
-            r"024_FINISHED_watkinsexamplecom_supplies_triad\.csv"],
+            r"026_FINISHED_watkinsexamplecom_supplies_triad\.csv"],
         'status_code': 200},
     {
         'path': '/downloads/'
-        '024_FINISHED_watkinsexamplecom_supplies_triad.csv',
+        '026_FINISHED_watkinsexamplecom_supplies_triad.csv',
         'regexes': [
             r'CI017,Roselands,1,net,,22 6354 2983 570,'
             '2007-01-23 17:00,0,X,1.074,0.0,2006-12-20 17:00,0,'
@@ -6271,11 +6988,11 @@ def virtual_bill(supply_source):
         'path': '/downloads',
         'tries': {},
         'regexes': [
-            r"025_FINISHED_watkinsexamplecom_supply_virtual_bills_17\.csv"],
+            r"027_FINISHED_watkinsexamplecom_supply_virtual_bills_17\.csv"],
         'status_code': 200},
     {
         'path': '/downloads/'
-        '025_FINISHED_watkinsexamplecom_supply_virtual_bills_17.csv',
+        '027_FINISHED_watkinsexamplecom_supply_virtual_bills_17.csv',
         'regexes': [
             r'Imp MPAN Core,Exp MPAN Core,Site Code,Site Name,'
             r'Account,From,To,,mop-net-gbp,mop-problem,,'
@@ -6370,11 +7087,11 @@ def virtual_bill(supply_source):
         'path': '/downloads',
         'tries': {},
         'regexes': [
-            r"026_FINISHED_watkinsexamplecom_channel_snags\.csv"],
+            r"028_FINISHED_watkinsexamplecom_channel_snags\.csv"],
         'status_code': 200},
     {
         'path': '/downloads/'
-        '026_FINISHED_watkinsexamplecom_channel_snags.csv',
+        '028_FINISHED_watkinsexamplecom_channel_snags.csv',
         'regexes': [
             r'83,22 0883 6932 301,,CI005,Wheal Rodney,Missing,'
             'True,ACTIVE,2002-01-01 00:00,2003-08-02 23:30,'],
@@ -6415,11 +7132,11 @@ def virtual_bill(supply_source):
         'path': '/downloads',
         'tries': {},
         'regexes': [
-            r"027_FINISHED_watkinsexamplecom_site_hh_data_200807010000\.csv"],
+            r"029_FINISHED_watkinsexamplecom_site_hh_data_200807010000\.csv"],
         'status_code': 200},
     {
         'path': '/downloads/'
-        '027_FINISHED_watkinsexamplecom_site_hh_data_200807010000.csv',
+        '029_FINISHED_watkinsexamplecom_site_hh_data_200807010000.csv',
         'regexes': [
             r"CH017,used,2008-07-01,", ],
         'status_code': 200},
@@ -6431,11 +7148,11 @@ def virtual_bill(supply_source):
         'path': '/downloads',
         'tries': {},
         'regexes': [
-            r"028_FINISHED_watkinsexamplecom_site_hh_data_200807010000\.csv"],
+            r"030_FINISHED_watkinsexamplecom_site_hh_data_200807010000\.csv"],
         'status_code': 200},
     {
         'path': '/downloads/'
-        '028_FINISHED_watkinsexamplecom_site_hh_data_200807010000.csv',
+        '030_FINISHED_watkinsexamplecom_site_hh_data_200807010000.csv',
         'regexes': [
             r"CH017,displaced,2008-07-01,"],
         'status_code': 200},
@@ -6545,11 +7262,11 @@ def virtual_bill(supply_source):
         'path': '/downloads',
         'tries': {'max': 20, 'period': 1},
         'regexes': [
-            r"029_FINISHED_watkinsexamplecom_supplies_duration\.csv"],
+            r"031_FINISHED_watkinsexamplecom_supplies_duration\.csv"],
         'status_code': 200},
     {
         'path': '/downloads/'
-        '029_FINISHED_watkinsexamplecom_supplies_duration.csv',
+        '031_FINISHED_watkinsexamplecom_supplies_duration.csv',
         'regexes': [
             r'"10","2",'],
         'status_code': 200},
@@ -6685,11 +7402,11 @@ def virtual_bill(supply_source):
         'path': '/downloads',
         'tries': {},
         'regexes': [
-            r"030_FINISHED_watkinsexamplecom_crc_special_events\.csv"],
+            r"032_FINISHED_watkinsexamplecom_crc_special_events\.csv"],
         'status_code': 200},
     {
         'path': '/downloads/'
-        '030_FINISHED_watkinsexamplecom_crc_special_events.csv',
+        '032_FINISHED_watkinsexamplecom_crc_special_events.csv',
         'status_code': 200,
         'regexes': [
             r'22 0883 6932 301,CI005,']},
@@ -6704,11 +7421,11 @@ def virtual_bill(supply_source):
         'path': '/downloads',
         'tries': {},
         'regexes': [
-            r"031_FINISHED_watkinsexamplecom_supply_virtual_bills_10\.csv"],
+            r"033_FINISHED_watkinsexamplecom_supply_virtual_bills_10\.csv"],
         'status_code': 200},
     {
         'path': '/downloads/'
-        '031_FINISHED_watkinsexamplecom_supply_virtual_bills_10.csv',
+        '033_FINISHED_watkinsexamplecom_supply_virtual_bills_10.csv',
         'regexes': [
             r'Imp MPAN Core,Exp MPAN Core,Site Code,Site Name,'
             'Account,From,To,,mop-net-gbp,mop-problem,,'
@@ -6727,11 +7444,11 @@ def virtual_bill(supply_source):
         'path': '/downloads',
         'tries': {'max': 20, 'period': 1},
         'regexes': [
-            r"032_FINISHED_watkinsexamplecom_bill_check\.csv"],
+            r"034_FINISHED_watkinsexamplecom_bill_check\.csv"],
         'status_code': 200},
     {
         'path': '/downloads/'
-        '032_FINISHED_watkinsexamplecom_bill_check.csv',
+        '034_FINISHED_watkinsexamplecom_bill_check.csv',
         'regexes': [
             r'06-004,00101,N,244,3810.08,355.03,'
             r'2011-05-01 00:00,2011-06-30 00:00,22 6354 2983 570,CI017,'
@@ -6768,11 +7485,11 @@ def virtual_bill(supply_source):
         'path': '/downloads',
         'tries': {'max': 20, 'period': 1},
         'regexes': [
-            r"033_FINISHED_watkinsexamplecom_virtual_bills\.csv"],
+            r"035_FINISHED_watkinsexamplecom_virtual_bills\.csv"],
         'status_code': 200},
     {
         'path': '/downloads/'
-        '033_FINISHED_watkinsexamplecom_virtual_bills.csv',
+        '035_FINISHED_watkinsexamplecom_virtual_bills.csv',
         'regexes': [
             r'22 0470 7514 535,CH017,Parbola,010,2013-12-01 00:00,'
             '2013-12-01 23:30,93.89,,,,,5.89,150,1,'
@@ -6797,11 +7514,11 @@ def virtual_bill(supply_source):
         'path': '/downloads',
         'tries': {},
         'regexes': [
-            r"034_FINISHED_watkinsexamplecom_displaced\.csv"],
+            r"036_FINISHED_watkinsexamplecom_displaced\.csv"],
         'status_code': 200},
     {
         'path': '/downloads/'
-        '034_FINISHED_watkinsexamplecom_displaced.csv',
+        '036_FINISHED_watkinsexamplecom_displaced.csv',
         'regexes': [
             r'CI004,Lower Treave,,2013-01-01 00:00,'
             r'2013-01-31 23:30,chp,,,,,0.0,0.0,,0.0,,0.00509,'
@@ -6887,11 +7604,11 @@ def virtual_bill(supply_source):
         'path': '/downloads',
         'tries': {},
         'regexes': [
-            r"035_FINISHED_watkinsexamplecom_channel_snags\.csv"],
+            r"037_FINISHED_watkinsexamplecom_channel_snags\.csv"],
         'status_code': 200},
     {
         'path': '/downloads/'
-        '035_FINISHED_watkinsexamplecom_channel_snags.csv',
+        '037_FINISHED_watkinsexamplecom_channel_snags.csv',
         'status_code': 200,
         'regexes': [
             r'0,107,22 4862 4512 332,,CH023,Treglisson,'
@@ -6931,11 +7648,11 @@ def virtual_bill(supply_source):
         'path': '/downloads',
         'tries': {'max': 20, 'period': 1},
         'regexes': [
-            r"036_FINISHED_watkinsexamplecom_supplies_snapshot\.csv"],
+            r"038_FINISHED_watkinsexamplecom_supplies_snapshot\.csv"],
         'status_code': 200},
     {
         'path': '/downloads/'
-        '036_FINISHED_watkinsexamplecom_supplies_snapshot.csv',
+        '038_FINISHED_watkinsexamplecom_supplies_snapshot.csv',
         'status_code': 200,
         'regexes': [
             r'2007-09-30 23:30,CI004,Lower Treave,,,9,net,,_L,'
@@ -6956,11 +7673,11 @@ def virtual_bill(supply_source):
         'path': '/downloads',
         'tries': {'max': 20, 'period': 1},
         'regexes': [
-            r"037_FINISHED_watkinsexamplecom_supplies_snapshot\.csv"],
+            r"039_FINISHED_watkinsexamplecom_supplies_snapshot\.csv"],
         'status_code': 200},
     {
         'path': '/downloads/'
-        '037_FINISHED_watkinsexamplecom_supplies_snapshot.csv',
+        '039_FINISHED_watkinsexamplecom_supplies_snapshot.csv',
         'status_code': 200,
         'regexes': [
             r'2011-05-31 23:30,CI004,Lower Treave,,,9,net,,_L,'
@@ -6982,11 +7699,11 @@ def virtual_bill(supply_source):
         'path': '/downloads',
         'tries': {'max': 20, 'period': 1},
         'regexes': [
-            r"038_FINISHED_watkinsexamplecom_supplies_snapshot\.csv"],
+            r"040_FINISHED_watkinsexamplecom_supplies_snapshot\.csv"],
         'status_code': 200},
     {
         'path': '/downloads/'
-        '038_FINISHED_watkinsexamplecom_supplies_snapshot.csv',
+        '040_FINISHED_watkinsexamplecom_supplies_snapshot.csv',
         'status_code': 200,
         'regexes': [
             r'Other Site Ids,Other Site Names',
@@ -7008,11 +7725,11 @@ def virtual_bill(supply_source):
         'path': '/downloads',
         'tries': {},
         'regexes': [
-            r"039_FINISHED_watkinsexamplecom_supply_virtual_bills_7\.csv"],
+            r"041_FINISHED_watkinsexamplecom_supply_virtual_bills_7\.csv"],
         'status_code': 200},
     {
         'path': '/downloads/'
-        '039_FINISHED_watkinsexamplecom_supply_virtual_bills_7.csv',
+        '041_FINISHED_watkinsexamplecom_supply_virtual_bills_7.csv',
         'regexes': [
             r'22 4862 4512 332,,CH023,Treglisson,141 5532,'
             r'2013-10-01 00:00,2013-10-31 23:30,,10,,,0,,,'
@@ -7128,11 +7845,11 @@ def virtual_bill(supply_source):
         'path': '/downloads',
         'tries': {'max': 20, 'period': 1},
         'regexes': [
-            r"040_FINISHED_watkinsexamplecom_supplies_snapshot\.csv"],
+            r"042_FINISHED_watkinsexamplecom_supplies_snapshot\.csv"],
         'status_code': 200},
     {
         'path': '/downloads/'
-        '040_FINISHED_watkinsexamplecom_supplies_snapshot.csv',
+        '042_FINISHED_watkinsexamplecom_supplies_snapshot.csv',
         'tries': {},
         'status_code': 200,
         'regexes': [
@@ -7224,9 +7941,9 @@ def virtual_bill(supply_source):
         'tries': {'max': 20, 'period': 1},
         'status_code': 200,
         'regexes': [
-            r"041_FINISHED_watkinsexamplecom_bill_check\.csv"]},
+            r"043_FINISHED_watkinsexamplecom_bill_check\.csv"]},
     {
-        'path': '/downloads/041_FINISHED_watkinsexamplecom_bill_check.csv',
+        'path': '/downloads/043_FINISHED_watkinsexamplecom_bill_check.csv',
         'status_code': 200,
         'regexes': [
             r'07-002,3423760010,N,10,9.07,0.21,2012-01-05 00:00,'
@@ -7243,11 +7960,11 @@ def virtual_bill(supply_source):
         'tries': {},
         'status_code': 200,
         'regexes': [
-            r"042_FINISHED_watkinsexamplecom_supplies_monthly_duration_for_"
+            r"044_FINISHED_watkinsexamplecom_supplies_monthly_duration_for_"
             r"1_1_to_2008_7\.csv"]},
     {
         'path': '/downloads/'
-        '042_FINISHED_watkinsexamplecom_supplies_monthly_duration_for_'
+        '044_FINISHED_watkinsexamplecom_supplies_monthly_duration_for_'
         '1_1_to_2008_7.csv',
         'status_code': 200,
         'regexes': [
@@ -7278,10 +7995,10 @@ def virtual_bill(supply_source):
         'tries': {},
         'status_code': 200,
         'regexes': [
-            r"043_FINISHED_watkinsexamplecom_hh_data_row_200801010000\.csv"]},
+            r"045_FINISHED_watkinsexamplecom_hh_data_row_200801010000\.csv"]},
     {
         'path': '/downloads/'
-        '043_FINISHED_watkinsexamplecom_hh_data_row_200801010000.csv',
+        '045_FINISHED_watkinsexamplecom_hh_data_row_200801010000.csv',
         'status_code': 200,
         'regexes': [
             r'"CH023","22 4862 4512 332","","2008-01-01 00:00","3.77","A","",'
@@ -7302,10 +8019,10 @@ def virtual_bill(supply_source):
         'tries': {},
         'status_code': 200,
         'regexes': [
-            r"044_FINISHED_watkinsexamplecom_hh_data_row_201001010000\.csv"]},
+            r"046_FINISHED_watkinsexamplecom_hh_data_row_201001010000\.csv"]},
     {
         'path': '/downloads/'
-        '044_FINISHED_watkinsexamplecom_hh_data_row_201001010000.csv',
+        '046_FINISHED_watkinsexamplecom_hh_data_row_201001010000.csv',
         'status_code': 200,
         'regexes': [
             r'"Export REACTIVE_EXP Status"\s'
@@ -7536,11 +8253,11 @@ def virtual_bill(supply_source):
         'path': '/downloads',
         'tries': {'max': 20, 'period': 1},
         'regexes': [
-            r"045_FINISHED_watkinsexamplecom_bill_check\.csv"],
+            r"047_FINISHED_watkinsexamplecom_bill_check\.csv"],
         'status_code': 200},
     {
         'path': '/downloads/'
-        '045_FINISHED_watkinsexamplecom_bill_check.csv',
+        '047_FINISHED_watkinsexamplecom_bill_check.csv',
         'status_code': 200,
         'regexes': [
             r'06-002,23618619,N,0,49119,8596,2007-06-30 00:00,'
@@ -7588,9 +8305,9 @@ def virtual_bill(supply_source):
         'tries': {'max': 20, 'period': 1},
         'status_code': 200,
         'regexes': [
-            r"046_FINISHED_watkinsexamplecom_bill_check\.csv"]},
+            r"048_FINISHED_watkinsexamplecom_bill_check\.csv"]},
     {
-        'path': '/downloads/046_FINISHED_watkinsexamplecom_bill_check.csv',
+        'path': '/downloads/048_FINISHED_watkinsexamplecom_bill_check.csv',
         'status_code': 200,
         'regexes': [
             r'07-002,3423760005,N,150,98.17,15.01,'
@@ -7644,9 +8361,9 @@ def virtual_bill(supply_source):
         'tries': {'max': 20, 'period': 1},
         'status_code': 200,
         'regexes': [
-            r"047_FINISHED_watkinsexamplecom_bill_check\.csv"]},
+            r"049_FINISHED_watkinsexamplecom_bill_check\.csv"]},
     {
-        'path': '/downloads/047_FINISHED_watkinsexamplecom_bill_check.csv',
+        'path': '/downloads/049_FINISHED_watkinsexamplecom_bill_check.csv',
         'status_code': 200,
         'regexes': [
             r'07-002,3423760010,N,10,9.07,0.21,2012-01-05 00:00,'
@@ -7689,10 +8406,10 @@ def virtual_bill(supply_source):
         'tries': {'max': 20, 'period': 1},
         'status_code': 200,
         'regexes': [
-            r"048_FINISHED_watkinsexamplecom_crc_2009_2010_supply_10\.csv"]},
+            r"050_FINISHED_watkinsexamplecom_crc_2009_2010_supply_10\.csv"]},
     {
         'path': '/downloads/'
-        '048_FINISHED_watkinsexamplecom_crc_2009_2010_supply_10.csv',
+        '050_FINISHED_watkinsexamplecom_crc_2009_2010_supply_10.csv',
         'status_code': 200,
         'regexes': [
             r'"10","22 1065 3921 534","CI017","Roselands","2009-04-01 00:00",'
@@ -7757,11 +8474,11 @@ def virtual_bill(supply_source):
         'tries': {},
         'status_code': 200,
         'regexes': [
-            r"049_FINISHED_watkinsexamplecom_scenario_bau_20150601_0000_for_"
+            r"051_FINISHED_watkinsexamplecom_scenario_bau_20150601_0000_for_"
             r"1_months_site_CI004\.ods"]},
     {
         'path': '/downloads/'
-        '049_FINISHED_watkinsexamplecom_scenario_bau_20150601_0000_for_'
+        '051_FINISHED_watkinsexamplecom_scenario_bau_20150601_0000_for_'
         '1_months_site_CI004.ods',
         'status_code': 200,
 
@@ -7780,11 +8497,11 @@ def virtual_bill(supply_source):
         'tries': {'max': 30, 'period': 1},
         'status_code': 200,
         'regexes': [
-            r"050_FINISHED_watkinsexamplecom_scenario_bau_20150601_0000_for_"
+            r"052_FINISHED_watkinsexamplecom_scenario_bau_20150601_0000_for_"
             r"1_months_site_CI005\.ods"]},
     {
         'path': '/downloads/'
-        '050_FINISHED_watkinsexamplecom_scenario_bau_20150601_0000_for_'
+        '052_FINISHED_watkinsexamplecom_scenario_bau_20150601_0000_for_'
         '1_months_site_CI005.ods',
         'status_code': 200,
         'regexes': [
@@ -7867,11 +8584,11 @@ def virtual_bill(supply_source):
         'tries': {'max': 30, 'period': 1},
         'status_code': 200,
         'regexes': [
-            r"051_FINISHED_watkinsexamplecom_scenario_bsuos_20110101_0000_"
+            r"053_FINISHED_watkinsexamplecom_scenario_bsuos_20110101_0000_"
             r"for_1_months_site_CI005\.ods"]},
     {
         'path': '/downloads/'
-        '051_FINISHED_watkinsexamplecom_scenario_bsuos_20110101_0000_for_'
+        '053_FINISHED_watkinsexamplecom_scenario_bsuos_20110101_0000_for_'
         '1_months_site_CI005.ods',
         'status_code': 200,
         'regexes': [
@@ -8205,11 +8922,11 @@ def virtual_bill(supply_source):
         'tries': {'max': 30, 'period': 1},
         'status_code': 200,
         'regexes': [
-            r'052_FINISHED_watkinsexamplecom_scenario_used_20110101_0000_for_'
+            r'054_FINISHED_watkinsexamplecom_scenario_used_20110101_0000_for_'
             r'1_months_site_CI004\.ods']},
     {
         'path': '/downloads/'
-        '052_FINISHED_watkinsexamplecom_scenario_used_20110101_0000_for_'
+        '054_FINISHED_watkinsexamplecom_scenario_used_20110101_0000_for_'
         '1_months_site_CI004.ods',
         'status_code': 200,
         'regexes': [
@@ -8359,11 +9076,11 @@ def virtual_bill(supply_source):
         'tries': {'max': 30, 'period': 1},
         'status_code': 200,
         'regexes': [
-            r"053_FINISHED_watkinsexamplecom_scenario_bsuos_50110101_0000_"
+            r"055_FINISHED_watkinsexamplecom_scenario_bsuos_50110101_0000_"
             r"for_1_months_site_CI005\.ods"]},
     {
         'path': '/downloads/'
-        '053_FINISHED_watkinsexamplecom_scenario_bsuos_50110101_0000_'
+        '055_FINISHED_watkinsexamplecom_scenario_bsuos_50110101_0000_'
         'for_1_months_site_CI005.ods',
         'status_code': 200,
         'regexes': [
@@ -8884,11 +9601,11 @@ def virtual_bill(supply_source):
         'path': '/downloads',
         'tries': {},
         'regexes': [
-            r"054_FINISHED_watkinsexamplecom_supply_virtual_bills_16\.csv"],
+            r"056_FINISHED_watkinsexamplecom_supply_virtual_bills_16\.csv"],
         'status_code': 200},
     {
         'path': '/downloads/'
-        '054_FINISHED_watkinsexamplecom_supply_virtual_bills_16.csv',
+        '056_FINISHED_watkinsexamplecom_supply_virtual_bills_16.csv',
         'regexes': [
             r'Imp MPAN Core,Exp MPAN Core,Site Code,Site Name,'],
         'status_code': 200},
@@ -8934,11 +9651,11 @@ def virtual_bill(supply_source):
         'tries': {'max': 30, 'period': 1},
         'status_code': 200,
         'regexes': [
-            r"055_FINISHED_watkinsexamplecom_scenario_leap_day_20160201_0000_"
+            r"057_FINISHED_watkinsexamplecom_scenario_leap_day_20160201_0000_"
             r"for_1_months_site_CH023\.ods"]},
     {
         'path': '/downloads/'
-        '055_FINISHED_watkinsexamplecom_scenario_leap_day_20160201_0000_'
+        '057_FINISHED_watkinsexamplecom_scenario_leap_day_20160201_0000_'
         'for_1_months_site_CH023.ods',
         'status_code': 200,
         'regexes': [
@@ -9024,11 +9741,11 @@ def virtual_bill(supply_source):
         'tries': {'max': 20, 'period': 1},
         'status_code': 200,
         'regexes': [
-            r"056_FINISHED_watkinsexamplecom_supplies_hh_data_200808012330_"
+            r"058_FINISHED_watkinsexamplecom_supplies_hh_data_200808012330_"
             r"filter\.csv"]},
     {
         'path': '/downloads/'
-        '056_FINISHED_watkinsexamplecom_supplies_hh_data_200808012330_'
+        '058_FINISHED_watkinsexamplecom_supplies_hh_data_200808012330_'
         'filter.csv',
         'status_code': 200,
 
@@ -9037,7 +9754,7 @@ def virtual_bill(supply_source):
             r'NA,2008-07-06,0\.262',
             r"\A\('Connection', 'close'\)\s*"
             r"\('Content-Disposition', 'attachment; "
-            r'filename="056_FINISHED_watkinsexamplecom_supplies_hh_data_'
+            r'filename="058_FINISHED_watkinsexamplecom_supplies_hh_data_'
             r'200808012330_filter.csv"'
             r"'\)\s*"
             r"\('Content-Type', 'text/csv; charset=utf-8'\)\s*"
@@ -9138,10 +9855,10 @@ def virtual_bill(supply_source):
         'tries': {'max': 20, 'period': 1},
         'status_code': 200,
         'regexes': [
-            r"057_FINISHED_watkinsexamplecom_crc_2005_2006_supply_2\.csv"]},
+            r"059_FINISHED_watkinsexamplecom_crc_2005_2006_supply_2\.csv"]},
     {
         'path': '/downloads/'
-        '057_FINISHED_watkinsexamplecom_crc_2005_2006_supply_2.csv',
+        '059_FINISHED_watkinsexamplecom_crc_2005_2006_supply_2.csv',
         'status_code': 200,
         'regexes': [
             r'"2","22 9813 2107 763"']},
@@ -9156,10 +9873,10 @@ def virtual_bill(supply_source):
         'tries': {'max': 20, 'period': 1},
         'status_code': 200,
         'regexes': [
-            r"058_FINISHED_watkinsexamplecom_crc_2008_2009_supply_7\.csv"]},
+            r"060_FINISHED_watkinsexamplecom_crc_2008_2009_supply_7\.csv"]},
     {
         'path': '/downloads/'
-        '058_FINISHED_watkinsexamplecom_crc_2008_2009_supply_7.csv',
+        '060_FINISHED_watkinsexamplecom_crc_2008_2009_supply_7.csv',
         'status_code': 200,
         'regexes': [
             r'"7","22 4862 4512 332","CH023","Treglisson","2008-04-01 00:00",'
@@ -9179,10 +9896,10 @@ def virtual_bill(supply_source):
         'tries': {'max': 20, 'period': 1},
         'status_code': 200,
         'regexes': [
-            r'059_FINISHED_watkinsexamplecom_mop_virtual_bills\.csv']},
+            r'061_FINISHED_watkinsexamplecom_mop_virtual_bills\.csv']},
     {
         'path': '/downloads/'
-        '059_FINISHED_watkinsexamplecom_mop_virtual_bills.csv',
+        '061_FINISHED_watkinsexamplecom_mop_virtual_bills.csv',
         'status_code': 200,
         'regexes': [
             r'Import MPAN Core,Export MPAN Core,Start Date,Finish Date,'
@@ -9215,12 +9932,12 @@ def virtual_bill(supply_source):
         'path': '/downloads',
         'tries': {},
         'regexes': [
-            r"060_FINISHED_watkinsexamplecom_supply_virtual_bills_5\.csv"],
+            r"062_FINISHED_watkinsexamplecom_supply_virtual_bills_5\.csv"],
         'status_code': 200},
     {
         'name': "Check supplies snapshot at beginning of supply",
         'path': '/downloads/'
-        '060_FINISHED_watkinsexamplecom_supply_virtual_bills_5.csv',
+        '062_FINISHED_watkinsexamplecom_supply_virtual_bills_5.csv',
         'regexes': [
             r'22 0883 6932 301,,CI005,Wheal Rodney,4341,'
             r'2014-06-04 00:00,2014-06-04 23:30,,0,,,0,,,'
@@ -9277,11 +9994,11 @@ def virtual_bill(supply_source):
         'path': '/downloads',
         'tries': {},
         'regexes': [
-            r"061_FINISHED_watkinsexamplecom_supply_virtual_bills_5\.csv"],
+            r"063_FINISHED_watkinsexamplecom_supply_virtual_bills_5\.csv"],
         'status_code': 200},
     {
         'path': '/downloads/'
-        '061_FINISHED_watkinsexamplecom_supply_virtual_bills_5.csv',
+        '063_FINISHED_watkinsexamplecom_supply_virtual_bills_5.csv',
         'regexes': [
             r'22 0883 6932 301,,CI005,Wheal Rodney,4341,'
             r'2014-06-04 00:00,2014-06-04 23:30,,0,,,0,,,'
@@ -9306,12 +10023,12 @@ def virtual_bill(supply_source):
         'path': '/downloads',
         'tries': {},
         'regexes': [
-            r"062_FINISHED_watkinsexamplecom_crc_2011_2012_supply_10\.csv"],
+            r"064_FINISHED_watkinsexamplecom_crc_2011_2012_supply_10\.csv"],
         'status_code': 200},
     {
         'name': "CRC report for mismatched TPRs",
         'path': '/downloads/'
-        '062_FINISHED_watkinsexamplecom_crc_2011_2012_supply_10.csv',
+        '064_FINISHED_watkinsexamplecom_crc_2011_2012_supply_10.csv',
         'tries': {},
         'status_code': 200,
         'regexes': [
@@ -9439,12 +10156,12 @@ def virtual_bill(supply_source):
         'path': '/downloads',
         'tries': {},
         'regexes': [
-            r"063_FINISHED_watkinsexamplecom_crc_2010_2011_supply_10\.csv"],
+            r"065_FINISHED_watkinsexamplecom_crc_2010_2011_supply_10\.csv"],
         'status_code': 200},
     {
         'name': "CRC meter change reads",
         'path': '/downloads/'
-        '063_FINISHED_watkinsexamplecom_crc_2010_2011_supply_10.csv',
+        '065_FINISHED_watkinsexamplecom_crc_2010_2011_supply_10.csv',
         'status_code': 200,
         'regexes': [
             r'73142.39335486847']},
@@ -9492,11 +10209,11 @@ def virtual_bill(supply_source):
         'path': '/downloads',
         'tries': {},
         'regexes': [
-            r"064_FINISHED_watkinsexamplecom_supplies_duration\.csv"],
+            r"066_FINISHED_watkinsexamplecom_supplies_duration\.csv"],
         'status_code': 200},
     {
         'path': '/downloads/'
-        '064_FINISHED_watkinsexamplecom_supplies_duration.csv',
+        '066_FINISHED_watkinsexamplecom_supplies_duration.csv',
         'regexes': [
             r'"10","2","net","","CI017","Roselands","2012-01-05 00:00",'
             r'"2012-01-10 23:30","03","801","6a","0366","1","nhh",110,'
@@ -9511,11 +10228,11 @@ def virtual_bill(supply_source):
         'path': '/downloads',
         'tries': {},
         'regexes': [
-            r"065_FINISHED_watkinsexamplecom_bill_check\.csv"],
+            r"067_FINISHED_watkinsexamplecom_bill_check\.csv"],
         'status_code': 200},
     {
         'path': '/downloads/'
-        '065_FINISHED_watkinsexamplecom_bill_check.csv',
+        '067_FINISHED_watkinsexamplecom_bill_check.csv',
         'regexes': [
             r'07-002,3423760010,N,10,9.07,0.21,2012-01-05 00:00,'
             r'2012-01-10 23:30,22 1065 3921 534,CI017,Roselands,'
@@ -9533,11 +10250,11 @@ def virtual_bill(supply_source):
         'path': '/downloads',
         'tries': {},
         'regexes': [
-            r"066_FINISHED_watkinsexamplecom_supplies_duration\.csv"],
+            r"068_FINISHED_watkinsexamplecom_supplies_duration\.csv"],
         'status_code': 200},
     {
         'path': '/downloads/'
-        '066_FINISHED_watkinsexamplecom_supplies_duration.csv',
+        '068_FINISHED_watkinsexamplecom_supplies_duration.csv',
         'regexes': [
             r'"10","2","net","","CI017","Roselands","2007-02-01 00:00",'
             r'"2007-02-28 23:30","03","801","5","0393","0","nhh",'
@@ -9582,12 +10299,12 @@ def virtual_bill(supply_source):
         'path': '/downloads',
         'tries': {},
         'regexes': [
-            r"067_FINISHED_watkinsexamplecom_supplies_duration\.csv"],
+            r"069_FINISHED_watkinsexamplecom_supplies_duration\.csv"],
         'status_code': 200},
     {
         'name': "Supplies duration normal reads with prev, pres the same.",
         'path': '/downloads/'
-        '067_FINISHED_watkinsexamplecom_supplies_duration.csv',
+        '069_FINISHED_watkinsexamplecom_supplies_duration.csv',
         'regexes': [
             r'"10","2","net","","CI017","Roselands","2009-04-01 00:00",'
             r'"2009-04-10 23:30","03","801","5","0393","1","nhh",'
@@ -9596,19 +10313,47 @@ def virtual_bill(supply_source):
         'status_code': 200},
 
     {
-        'name': "Group starting after report period.",
-        'path': '/reports/389?site_id=3&months=1&finish_year=2003&'
-        'finish_month=08',
+        'name': "Eras starting after report period.",
+        'path': '/reports/247?site_id=3&months=1&finish_year=2003&'
+        'finish_month=08&compression=False',
+        'status_code': 303},
+    {
+        'name': "Eras starting after report period.",
+        'path': '/downloads',
+        'tries': {},
         'regexes': [
-            r'"CI005","Wheal Rodney","CI004","2003-08-01 00:00",'
-            r'"2003-08-31 23:30","chp","","","","","0.0","","0.0","",'
-            r'"0.00525288","","0.0","0","0.0","0","0.0","","0.0","","0.0",'
-            r'"0.0","0","0.0","0.0","0","0.0","0.0","0","","","0.0","0","",'
-            r'"0.0","0","","0.0","0","","aahedc-gbp","0.0","aahedc-gsp-kwh",'
-            r'"0.0","aahedc-msp-kwh","0","aahedc-rate","0.00016456",'
-            r'"duos-reactive-rate","0.0023","problem","",'
-            r'"triad-estimate-gbp","0.0","triad-estimate-gsp-kw","0.0",'
-            r'"triad-estimate-months","1","triad-estimate-rate","23.77056"'],
+            r'070_FINISHED_watkinsexamplecom_monthly_duration_20030801_0000_'
+            r'for_1_months_site_CI005\.ods'],
+        'status_code': 200},
+    {
+        'name': "Eras starting after report period.",
+        'path': '/downloads/'
+        '070_FINISHED_watkinsexamplecom_monthly_duration_20030801_0000_'
+        'for_1_months_site_CI005.ods',
+        'regexes': [
+            r'<table:table-row>\s*'
+            r'<table:table-cell table:number-columns-repeated="2"/>\s*'
+            r'<table:table-cell office:string-value="hh" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell office:string-value="displaced" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell table:number-columns-repeated="4"/>\s*'
+            r'<table:table-cell office:string-value="CI005" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell office:string-value="Wheal Rodney" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell office:string-value="" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell office:date-value="2003-08-31T23:30:00" '
+            r'office:value-type="date" table:style-name="cDateISO"/>\s*'
+            r'<table:table-cell office:value="0" office:value-type="float" '
+            r'table:number-columns-repeated="15"/>\s*'
+            r'<table:table-cell office:value="0.0" office:value-type="float" '
+            r'table:number-columns-repeated="2"/>\s*'
+            r'<table:table-cell office:value="0" office:value-type="float" '
+            r'table:number-columns-repeated="3"/>\s*'
+            r'<table:table-cell table:number-columns-repeated="3"/>\s*'
+            r'</table:table-row>'],
         'status_code': 200},
 
     {
@@ -9621,9 +10366,9 @@ def virtual_bill(supply_source):
         'tries': {'max': 30, 'period': 1},
         'status_code': 200,
         'regexes': [
-            r"068_FINISHED_watkinsexamplecom_displaced\.csv"]},
+            r"071_FINISHED_watkinsexamplecom_displaced\.csv"]},
     {
-        'path': '/downloads/068_FINISHED_watkinsexamplecom_displaced.csv',
+        'path': '/downloads/071_FINISHED_watkinsexamplecom_displaced.csv',
         'status_code': 200,
         'regexes': [
             r'CI005,Wheal Rodney,CI004,2005-11-01 00:00,'
@@ -9640,13 +10385,13 @@ def virtual_bill(supply_source):
         'tries': {'max': 20, 'period': 1},
         'status_code': 200,
         'regexes': [
-            r"069_FINISHED_watkinsexamplecom_monthly_"
+            r"072_FINISHED_watkinsexamplecom_monthly_"
             r"duration_20150201_0000_for_1_months_site_CH023\.ods"]
         },
 
     {
         'path': '/downloads/'
-        '069_FINISHED_watkinsexamplecom_monthly_'
+        '072_FINISHED_watkinsexamplecom_monthly_'
         'duration_20150201_0000_for_1_months_site_CH023.ods',
         'status_code': 200,
         'regexes': [
@@ -9739,12 +10484,12 @@ def virtual_bill(supply_source):
         'path': '/downloads',
         'tries': {},
         'regexes': [
-            r"070_FINISHED_watkinsexamplecom_crc_2010_2011_supply_10\.csv"],
+            r"073_FINISHED_watkinsexamplecom_crc_2010_2011_supply_10\.csv"],
         'status_code': 200},
     {
         'name': "CRC meter change reads",
         'path': '/downloads/'
-        '070_FINISHED_watkinsexamplecom_crc_2010_2011_supply_10.csv',
+        '073_FINISHED_watkinsexamplecom_crc_2010_2011_supply_10.csv',
         'status_code': 200,
         'regexes': [
             r'73142.39335486847']},
@@ -9758,12 +10503,12 @@ def virtual_bill(supply_source):
         'path': '/downloads',
         'tries': {'max': 20, 'period': 1},
         'regexes': [
-            r"071_FINISHED_watkinsexamplecom_monthly_"
+            r"074_FINISHED_watkinsexamplecom_monthly_"
             r"duration_20100101_0000_for_1_months_supply_10\.ods"],
         'status_code': 200},
     {
         'path': '/downloads/'
-        '071_FINISHED_watkinsexamplecom_monthly_'
+        '074_FINISHED_watkinsexamplecom_monthly_'
         'duration_20100101_0000_for_1_months_supply_10.ods',
         'status_code': 200,
         'regexes': [
@@ -10002,12 +10747,12 @@ def virtual_bill(supply_source):
         'path': '/downloads',
         'tries': {'max': 20, 'period': 1},
         'regexes': [
-            r'072_FINISHED_watkinsexamplecom_monthly_'
+            r'075_FINISHED_watkinsexamplecom_monthly_'
             r'duration_20141201_0000_for_1_months_supply_16\.ods'],
         'status_code': 200},
     {
         'path': '/downloads/'
-        '072_FINISHED_watkinsexamplecom_monthly_'
+        '075_FINISHED_watkinsexamplecom_monthly_'
         'duration_20141201_0000_for_1_months_supply_16.ods',
         'status_code': 200,
         'regexes': [
@@ -10165,11 +10910,11 @@ def virtual_bill(supply_source):
         'path': '/downloads',
         'tries': {},
         'regexes': [
-            r"073_FINISHED_watkinsexamplecom_supply_virtual_bills_16\.csv"],
+            r"076_FINISHED_watkinsexamplecom_supply_virtual_bills_16\.csv"],
         'status_code': 200},
     {
         'path': '/downloads/'
-        '073_FINISHED_watkinsexamplecom_supply_virtual_bills_16.csv',
+        '076_FINISHED_watkinsexamplecom_supply_virtual_bills_16.csv',
         'regexes': [
             r'Imp MPAN Core,Exp MPAN Core,Site Code,Site Name,'],
         'status_code': 200},
@@ -10225,13 +10970,13 @@ def virtual_bill(supply_source):
         'path': '/downloads',
         'tries': {},
         'regexes': [
-            r'074_FINISHED_watkinsexamplecom_monthly_'
+            r'077_FINISHED_watkinsexamplecom_monthly_'
             r'duration_20150501_0000_for_1_months_supply_5\.ods'],
         'status_code': 200},
     {
         'name': "Monthly duration report for a gen-net supply",
         'path': '/downloads/'
-        '074_FINISHED_watkinsexamplecom_monthly_'
+        '077_FINISHED_watkinsexamplecom_monthly_'
         'duration_20150501_0000_for_1_months_supply_5.ods',
         'status_code': 200,
         'regexes': [
@@ -10274,12 +11019,12 @@ def virtual_bill(supply_source):
         'path': '/downloads',
         'tries': {},
         'regexes': [
-            r"075_FINISHED_watkinsexamplecom_supplies_duration\.csv"],
+            r"078_FINISHED_watkinsexamplecom_supplies_duration\.csv"],
         'status_code': 200},
     {
         'name': "Supplies duration normal reads with prev, pres the same.",
         'path': '/downloads/'
-        '075_FINISHED_watkinsexamplecom_supplies_duration.csv',
+        '078_FINISHED_watkinsexamplecom_supplies_duration.csv',
         'regexes': [
             r'"10","2","net","","CI017","Roselands","2009-04-01 00:00",'
             r'"2009-04-10 23:30","03","801","5","0393","1","nhh",'
@@ -10311,13 +11056,13 @@ def virtual_bill(supply_source):
         'path': '/downloads',
         'tries': {'max': 30, 'period': 1},
         'regexes': [
-            r'076_FINISHED_watkinsexamplecom_monthly_'
+            r'079_FINISHED_watkinsexamplecom_monthly_'
             r'duration_20150501_0000_for_1_months_site_CI004\.ods'],
         'status_code': 200},
     {
         'name': "Monthly Duration report - displaced kWh",
         'path': '/downloads/'
-        '076_FINISHED_watkinsexamplecom_monthly_'
+        '079_FINISHED_watkinsexamplecom_monthly_'
         'duration_20150501_0000_for_1_months_site_CI004.ods',
         'status_code': 200,
         'regexes': [
@@ -10589,13 +11334,13 @@ def virtual_bill(supply_source):
         'path': '/downloads',
         'tries': {'max': 30, 'period': 1},
         'regexes': [
-            r'077_FINISHED_watkinsexamplecom_monthly_'
+            r'080_FINISHED_watkinsexamplecom_monthly_'
             r'duration_20030801_0000_for_1_months_supply_7\.ods'],
         'status_code': 200},
     {
         'name': "Monthly duration supply starts after period",
         'path': '/downloads/'
-        '077_FINISHED_watkinsexamplecom_monthly_'
+        '080_FINISHED_watkinsexamplecom_monthly_'
         'duration_20030801_0000_for_1_months_supply_7.ods',
         'status_code': 200,
         'regexes': [
@@ -10681,13 +11426,13 @@ def virtual_bill(supply_source):
         'path': '/downloads',
         'tries': {'max': 30, 'period': 1},
         'regexes': [
-            r'078_FINISHED_watkinsexamplecom_monthly_'
+            r'081_FINISHED_watkinsexamplecom_monthly_'
             r'duration_20150801_0000_for_1_months_site_CI004\.ods'],
         'status_code': 200},
     {
         'name': "Monthly duration report, billed",
         'path': '/downloads/'
-        '078_FINISHED_watkinsexamplecom_monthly_'
+        '081_FINISHED_watkinsexamplecom_monthly_'
         'duration_20150801_0000_for_1_months_site_CI004.ods',
         'status_code': 200,
         'regexes': [
@@ -10899,11 +11644,11 @@ def virtual_bill(supply_source):
         'path': '/downloads',
         'tries': {},
         'regexes': [
-            r"079_FINISHED_watkinsexamplecom_supply_virtual_bills_5\.csv"],
+            r"082_FINISHED_watkinsexamplecom_supply_virtual_bills_5\.csv"],
         'status_code': 200},
     {
         'path': '/downloads/'
-        '079_FINISHED_watkinsexamplecom_supply_virtual_bills_5.csv',
+        '082_FINISHED_watkinsexamplecom_supply_virtual_bills_5.csv',
         'regexes': [r'22 7824 9120 097'],
         'status_code': 200},
 
@@ -10918,21 +11663,36 @@ def virtual_bill(supply_source):
         'path': '/downloads',
         'tries': {},
         'regexes': [
-            r"080_FINISHED_watkinsexamplecom_supply_virtual_bills_10\.csv"],
+            r"083_FINISHED_watkinsexamplecom_supply_virtual_bills_10\.csv"],
         'status_code': 200},
     {
         'path': '/downloads/'
-        '080_FINISHED_watkinsexamplecom_supply_virtual_bills_10.csv',
+        '083_FINISHED_watkinsexamplecom_supply_virtual_bills_10.csv',
         'regexes': [
             r'3409.15883838'],
         'status_code': 200},
 
     {
         'name': "Test displaced virtual bill with generation",
-        'path': '/reports/389?site_id=3&months=1&finish_year=2005&'
-        'finish_month=11',
+        'path': '/reports/247?site_id=3&months=1&finish_year=2005&'
+        'finish_month=11&compression=False',
+        'status_code': 303},
+    {
+        'name': "Test displaced virtual bill with generation",
+        'path': '/downloads',
+        'tries': {},
         'regexes': [
-            r'"CI005"']},
+            r'084_FINISHED_watkinsexamplecom_monthly_duration_20051101_0000_'
+            r'for_1_months_site_CI005\.ods'],
+        'status_code': 200},
+    {
+        'name': "Test displaced virtual bill with generation",
+        'path': '/downloads/'
+        '084_FINISHED_watkinsexamplecom_monthly_duration_20051101_0000_for_1_'
+        r'months_site_CI005.ods',
+        'regexes': [
+            r'"CI005"'],
+        'status_code': 200},
 
     {
         'name': "GSP Groups",

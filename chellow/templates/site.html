@@ -223,17 +223,6 @@ Table of site level monthly kWh, MD kWh etc.</a>
 		</fieldset>
 	</form>
 	<br>
-	<form action="{{context_path}}/reports/389">
-		<fieldset>
-			<input type="hidden" name="site_id" value="{{site.id}}">
-			<legend>Displaced Virtual Bills</legend>
-			<br>
-			For {{input_text('months', '1', 2, 2)}} month(s) until the end of
-		 	{{input_date('finish', last_month_finish, resolution='month')}}
-			<input type="submit" value="Download">
-		</fieldset>
-	</form>
-	<br>
 	<form action="{{context_path}}/reports/247">
 		<fieldset>
 			<input type="hidden" name="site_id" value="{{site.id}}">

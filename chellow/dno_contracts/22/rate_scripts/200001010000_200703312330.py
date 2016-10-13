@@ -35,6 +35,11 @@ def tariffs():
             'day-gbp-per-kwh': 0.0047,
             'night-gbp-per-kwh': 0.0014,
             'reactive-gbp-per-kvarh': 0.0023},
+        '521': {
+            'gbp-per-kva-per-day': 0.0372,
+            'day-gbp-per-kwh': 0.0047,
+            'night-gbp-per-kwh': 0.0014,
+            'reactive-gbp-per-kvarh': 0.0023},
         '540': {
             'gbp-per-kva-per-day': 0.0352,
             'day-gbp-per-kwh': 0.0080,
