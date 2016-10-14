@@ -1,4 +1,4 @@
-import collections
+from collections import OrderedDict, defaultdict
 import pytz
 from datetime import datetime as Datetime
 from dateutil.relativedelta import relativedelta
@@ -20,7 +20,6 @@ from chellow.views import chellow_redirect
 from flask import request, g
 import csv
 from itertools import combinations
-from operator import attrgetter
 
 
 def content(batch_id, bill_id, user):
@@ -127,20 +126,18 @@ def content(batch_id, bill_id, user):
 
             while enlarged:
                 enlarged = False
-                covered_bills = dict(
+                covered_bills = OrderedDict(
                     (b.id, b) for b in sess.query(Bill).join(Batch).
                     join(Contract).join(MarketRole).
                     filter(
                         Bill.supply == supply,
                         Bill.start_date <= covered_finish,
                         Bill.finish_date >= covered_start,
-                        MarketRole.code == market_role_code))
+                        MarketRole.code == market_role_code).order_by(
+                            Bill.start_date, Bill.issue_date))
                 while True:
                     to_del = None
-                    for a, b in combinations(
-                            sorted(
-                                covered_bills.values(),
-                                key=attrgetter('issue_date')), 2):
+                    for a, b in combinations(covered_bills.values(), 2):
                         if all(
                                 (
                                     a.start_date == b.start_date,
@@ -155,8 +152,7 @@ def content(batch_id, bill_id, user):
                     else:
                         for k in to_del:
                             del covered_bills[k]
-                for covered_bill_id in sorted(covered_bills.keys()):
-                    covered_bill = covered_bills[covered_bill_id]
+                for covered_bill in covered_bills.values():
                     if covered_bill.start_date < covered_start:
                         covered_start = covered_bill.start_date
                         enlarged = True
@@ -170,12 +166,12 @@ def content(batch_id, bill_id, user):
                 continue
 
             primary_covered_bill = None
-            for covered_bill_id, covered_bill in sorted(covered_bills.items()):
+            for covered_bill in covered_bills.values():
                 covered_bdown['net-gbp'] += float(covered_bill.net)
                 covered_bdown['vat-gbp'] += float(covered_bill.vat)
                 covered_bdown['sum-msp-kwh'] += float(covered_bill.kwh)
                 if len(covered_bill.breakdown) > 0:
-                    covered_rates = collections.defaultdict(set)
+                    covered_rates = defaultdict(set)
                     for k, v in eval(covered_bill.breakdown, {}).items():
 
                         if k.endswith('rate'):
