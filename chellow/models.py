@@ -1075,7 +1075,6 @@ class Site(Base, PersistentClass):
                         Era.finish_date >= start_date),
                     Source.code != 'sub', Channel.channel_type == 'ACTIVE'). \
                 options(
-                    joinedload(Channel.era),
                     joinedload(Channel.era).joinedload(Era.supply).
                     joinedload(Supply.source)):
 
@@ -1085,7 +1084,7 @@ class Site(Base, PersistentClass):
 
             db_data = iter(
                 sess.query(HhDatum.start_date, HhDatum.value).filter(
-                    HhDatum.channel_id == channel.id,
+                    HhDatum.channel == channel,
                     HhDatum.start_date >= chunk_start,
                     HhDatum.start_date <= chunk_finish).order_by(
                     HhDatum.start_date))
