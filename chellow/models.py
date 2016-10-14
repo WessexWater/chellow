@@ -15,7 +15,7 @@ from sqlalchemy.ext.declarative import declarative_base
 import operator
 from chellow.utils import (
     hh_after, HH, parse_mpan_core, hh_before, next_hh, prev_hh, hh_format,
-    hh_range, utc_datetime, utc_datetime_now, utc_datetime_parse)
+    hh_range, utc_datetime, utc_datetime_now, to_utc)
 import json
 from dateutil.relativedelta import relativedelta
 from functools import lru_cache
@@ -2863,391 +2863,6 @@ class SiteGroup():
             sess, self.sites[0], None, description, start_date, finish_date)
 
 
-def read_file(pth, fname, attr):
-    with open(os.path.join(pth, fname), 'r') as f:
-        contents = f.read()
-    if attr is None:
-        return eval(contents)
-    else:
-        return {attr: contents}
-
-
-def db_init(sess, root_path):
-    db_name = config['PGDATABASE']
-    log_message("Initializing database.")
-    Base.metadata.create_all(bind=engine)
-    for code, desc in (
-            ("LV", "Low voltage"),
-            ("HV", "High voltage"),
-            ("EHV", "Extra high voltage")):
-        sess.add(VoltageLevel(code, desc))
-    sess.commit()
-
-    set_read_write(sess)
-    for code in ("editor", "viewer", "party-viewer"):
-        sess.add(UserRole(code))
-    sess.commit()
-
-    set_read_write(sess)
-    for code, desc in (
-            ('net', "Public distribution system."),
-            ('sub', "Sub meter"),
-            ('gen-net', "Generator connected directly to network."),
-            ('gen', "Generator."),
-            ('3rd-party', "Third party supply."),
-            (
-                '3rd-party-reverse',
-                "Third party supply with import going out of the site."),
-            ):
-        sess.add(Source(code, desc))
-    sess.commit()
-
-    set_read_write(sess)
-    for code, desc in (
-            ("chp", "Combined heat and power."),
-            ("lm", "Load management."),
-            ("turb", "Water turbine."),
-            ("pv", "Solar Photovoltaics.")):
-        sess.add(GeneratorType(code, desc))
-    sess.commit()
-
-    set_read_write(sess)
-    for code, desc in (
-            ("N", "Normal"),
-            ("N3", "Normal 3rd Party"),
-            ("C", "Customer"),
-            ("E", "Estimated"),
-            ("E3", "Estimated 3rd Party"),
-            ("EM", "Estimated Manual"),
-            ("W", "Withdrawn"),
-            ("X", "Exchange"),
-            ("CP", "Computer"),
-            ("IF", "Information")):
-        sess.add(ReadType(code, desc))
-    sess.commit()
-
-    set_read_write(sess)
-    for code, desc in (
-            ('1', "CoP 1"),
-            ('2', "CoP 2"),
-            ('3', "CoP 3"),
-            ('4', "CoP 4"),
-            ('5', "CoP 5"),
-            ('6a', "CoP 6a 20 day memory"),
-            ('6b', "CoP 6b 100 day memory"),
-            ('6c', "CoP 6c 250 day memory"),
-            ('6d', "CoP 6d 450 day memory"),
-            ('7', "CoP 7")):
-        sess.add(Cop(code, desc))
-    sess.commit()
-
-    set_read_write(sess)
-    for code, desc in (
-            ("F", "Final"),
-            ("N", "Normal"),
-            ("W", "Withdrawn")):
-        sess.add(BillType(code, desc))
-    sess.commit()
-
-    dbapi_conn = sess.connection().connection.connection
-    cursor = dbapi_conn.cursor()
-    mdd_path = os.path.join(root_path, 'mdd')
-    for tname, fname in (
-            ("gsp_group", "GSP_Group"),
-            ("pc", "Profile_Class"),
-            ("market_role", "Market_Role"),
-            ("participant", "Market_Participant"),
-            ("party", "Market_Participant_Role"),
-            ("llfc", "Line_Loss_Factor_Class"),
-            ("meter_type", "MTC_Meter_Type"),
-            ("meter_payment_type", "MTC_Payment_Type"),
-            ("mtc", "Meter_Timeswitch_Class"),
-            ("tpr", "Time_Pattern_Regime"),
-            ("clock_interval", "Clock_Interval"),
-            ("ssc", "Standard_Settlement_Configuration"),
-            ("measurement_requirement", "Measurement_Requirement")):
-        f = open(os.path.join(mdd_path, fname + '.csv'), 'rb')
-        cursor.execute(
-            "set transaction isolation level serializable read write")
-        if tname == 'llfc':
-            cursor.execute(
-                "COPY " + tname +
-                " (dno_id, code, description, voltage_level_id, "
-                "is_substation, is_import, valid_from, valid_to) "
-                "FROM STDIN CSV HEADER", stream=f)
-        elif tname == 'participant':
-            cursor.execute(
-                "COPY " + tname + " (code, name) "
-                "FROM STDIN CSV HEADER", stream=f)
-        elif tname == 'market_role':
-            cursor.execute(
-                "COPY " + tname + " (code, description) "
-                "FROM STDIN CSV HEADER", stream=f)
-        elif tname == 'party':
-            cursor.execute(
-                "COPY " + tname + " (market_role_id, participant_id, "
-                "name, valid_from, valid_to, dno_code) "
-                "FROM STDIN CSV HEADER", stream=f)
-        elif tname == 'meter_type':
-            cursor.execute(
-                "COPY " + tname + " (code, description, valid_from, "
-                "valid_to) FROM STDIN CSV HEADER", stream=f)
-        elif tname == 'mtc':
-            cursor.execute(
-                "COPY " + tname + " (dno_id, code, description, "
-                "has_related_metering, has_comms, is_hh, meter_type_id, "
-                "meter_payment_type_id, tpr_count, valid_from, valid_to) "
-                "FROM STDIN CSV HEADER", stream=f)
-        else:
-            cursor.execute(
-                "COPY " + tname + " FROM STDIN CSV HEADER", stream=f)
-        dbapi_conn.commit()
-        f.close()
-
-    set_read_write(sess)
-    for path_name, role_code in (
-            ('non_core_contracts', 'Z'),
-            ('dno_contracts', 'R')):
-        contracts_path = os.path.join(root_path, path_name)
-
-        for contract_name in sorted(os.listdir(contracts_path)):
-            contract_path = os.path.join(contracts_path, contract_name)
-            params = {'name': contract_name, 'charge_script': ''}
-            for fname, attr in (
-                    ('meta.py', None),
-                    ('properties.py', 'properties'),
-                    ('state.py', 'state')):
-                params.update(read_file(contract_path, fname, attr))
-            params['party'] = sess.query(Party).join(Participant). \
-                join(MarketRole). \
-                filter(
-                    Participant.code == params['participant_code'],
-                    MarketRole.code == role_code).one()
-            del params['participant_code']
-            contract = Contract(**params)
-            sess.add(contract)
-
-            sess.flush()
-            rscripts_path = os.path.join(contract_path, 'rate_scripts')
-            for rscript_fname in sorted(os.listdir(rscripts_path)):
-                if not rscript_fname.endswith('.py'):
-                    continue
-                try:
-                    start_str, finish_str = \
-                        rscript_fname.split('.')[0].split('_')
-                except ValueError:
-                    raise Exception(
-                        "The rate script " + rscript_fname +
-                        " in the directory " + rscripts_path +
-                        " should consist of two dates separated by an " +
-                        "underscore.")
-                start_date = utc_datetime_parse(start_str, "%Y%m%d%H%M")
-                if finish_str == 'ongoing':
-                    finish_date = None
-                else:
-                    finish_date = utc_datetime_parse(finish_str, "%Y%m%d%H%M")
-                rparams = {
-                    'start_date': start_date,
-                    'finish_date': finish_date,
-                    'contract': contract}
-                rparams.update(
-                    read_file(rscripts_path, rscript_fname, 'script'))
-                sess.add(RateScript(**rparams))
-                sess.flush()
-
-            sess.flush()
-            # Assign start and finish rate scripts
-            scripts = sess.query(RateScript). \
-                filter(RateScript.contract_id == contract.id). \
-                order_by(RateScript.start_date).all()
-            contract.start_rate_script = scripts[0]
-            contract.finish_rate_script = scripts[-1]
-    sess.commit()
-
-    set_read_write(sess)
-    for code, desc in (
-            ("A", "Actual"),
-            ("C", "Customer"),
-            ("E", "Estimated"),
-            ("S", "Deemed read")):
-        sess.add(GReadType(code, desc))
-    sess.commit()
-
-    set_read_write(sess)
-    for code, desc, factor_str in (
-            ("MCUF", "Thousands of cubic feet", '28.317'),
-            ("HCUF", "Hundreds of cubic feet", '2.8317'),
-            ("TCUF", "Tens of cubic feet", '0.28317'),
-            ("OCUF", "One cubic foot", '0.028317'),
-            ("M3", "Cubic metres", '1'),
-            ("HM3", "Hundreds of cubic metres", '100'),
-            ("TM3", "Tens of cubic metres", '10'),
-            ("NM3", "Tenths of cubic metres", '0.1')):
-        sess.add(GUnits(code, desc, Decimal(factor_str)))
-    sess.commit()
-
-    set_read_write(sess)
-    sess.execute(
-        "alter database " + db_name +
-        " set default_transaction_isolation = 'serializable'")
-    sess.execute(
-        "alter database " + db_name +
-        " set default_transaction_deferrable = on")
-    sess.execute(
-        "alter database " + db_name + " SET DateStyle TO 'ISO, YMD'")
-    sess.execute(
-        "alter database " + db_name +
-        " set default_transaction_read_only = on")
-    sess.commit()
-    sess.close()
-    engine.dispose()
-    # Check the transaction isolation level is serializable
-    isolation_level = sess.execute(
-        "show transaction isolation level").scalar()
-    if isolation_level != 'serializable':
-        raise Exception(
-            "The transaction isolation level for database " + db_name +
-            " should be 'serializable' but in fact " "it's " +
-            isolation_level + ".")
-
-    set_read_write(sess)
-    sess.execute("create extension tablefunc")
-    conf = sess.query(Contract).join(MarketRole).filter(
-        Contract.name == 'configuration', MarketRole.code == 'Z').one()
-    state = conf.make_state()
-    state['db_version'] = len(upgrade_funcs)
-    conf.update_state(state)
-    sess.commit()
-
-
-def db_upgrade_0_to_1(sess, root_path):
-    max_id = sess.execute("select max(id) from report;").scalar()
-    sess.execute("create sequence report_id_seq start " + str(max_id + 1))
-    sess.execute(
-        "alter table report alter column id "
-        "set default nextval('report_id_seq');")
-    sess.execute("alter sequence report_id_seq owned by report.id;")
-
-
-def db_upgrade_1_to_2(sess, root_path):
-    contracts_path = os.path.join(root_path, 'dno_contracts')
-    for contract_name in ('25', '26', '27', '28', '29'):
-        existing_contract = sess.query(Contract).join(Party).filter(
-            Party.dno_code == contract_name).first()
-        if existing_contract is not None:
-            continue
-        contract_path = os.path.join(contracts_path, contract_name)
-        params = {'name': contract_name, 'charge_script': ''}
-        for fname, attr in (
-                ('meta.py', None),
-                ('properties.py', 'properties'),
-                ('state.py', 'state')):
-            params.update(read_file(contract_path, fname, attr))
-        params['party'] = sess.query(Party).join(Participant). \
-            join(MarketRole).filter(
-                Participant.code == params['participant_code'],
-                MarketRole.code == 'R').one()
-        del params['participant_code']
-        contract = Contract(**params)
-        sess.add(contract)
-
-        sess.flush()
-        rscripts_path = os.path.join(contract_path, 'rate_scripts')
-        for rscript_fname in sorted(os.listdir(rscripts_path)):
-            if not rscript_fname.endswith('.py'):
-                continue
-            try:
-                start_str, finish_str = \
-                    rscript_fname.split('.')[0].split('_')
-            except ValueError:
-                raise Exception(
-                    "The rate script " + rscript_fname +
-                    " in the directory " + rscripts_path +
-                    " should consist of two dates separated by an " +
-                    "underscore.")
-            start_date = utc_datetime_parse(start_str, "%Y%m%d%H%M")
-            if finish_str == 'ongoing':
-                finish_date = None
-            else:
-                finish_date = utc_datetime_parse(finish_str, "%Y%m%d%H%M")
-            rparams = {
-                'start_date': start_date,
-                'finish_date': finish_date,
-                'contract': contract}
-            rparams.update(
-                read_file(rscripts_path, rscript_fname, 'script'))
-            sess.add(RateScript(**rparams))
-            sess.flush()
-
-        sess.flush()
-        # Assign start and finish rate scripts
-        scripts = sess.query(RateScript). \
-            filter(RateScript.contract_id == contract.id). \
-            order_by(RateScript.start_date).all()
-        contract.start_rate_script = scripts[0]
-        contract.finish_rate_script = scripts[-1]
-
-
-def db_upgrade_2_to_3(sess, root_path):
-    sess.execute("alter table contract drop column is_core;")
-
-
-upgrade_funcs = [db_upgrade_0_to_1, db_upgrade_1_to_2, db_upgrade_2_to_3]
-
-
-def db_upgrade(root_path):
-    sess = None
-    try:
-        sess = Session()
-        set_read_write(sess)
-        db_version = find_db_version(sess)
-        curr_version = len(upgrade_funcs)
-        if db_version is None:
-            log_message(
-                "It looks like the chellow database hasn't been initialized.")
-            db_init(sess, root_path)
-        elif db_version == curr_version:
-            log_message(
-                "The database version is " + str(db_version) +
-                " and the latest version is " + str(curr_version) +
-                " so it doesn't look like you need to run an upgrade.")
-        elif db_version > curr_version:
-            log_message(
-                "The database version is " + str(db_version) +
-                " and the latest database version is " + str(curr_version) +
-                " so it looks like you're using an old version of Chellow.")
-        else:
-            log_message(
-                "Upgrading from database version " + str(db_version) +
-                " to database version " + str(db_version + 1) + ".")
-            upgrade_funcs[db_version](sess, root_path)
-            conf = sess.query(Contract).join(MarketRole).filter(
-                Contract.name == 'configuration', MarketRole.code == 'Z').one()
-            state = conf.make_state()
-            state['db_version'] = db_version + 1
-            conf.update_state(state)
-            sess.commit()
-            log_message(
-                "Successfully upgraded from database version " +
-                str(db_version) + " to database version " +
-                str(db_version + 1) + ".")
-    finally:
-        if sess is not None:
-            sess.close()
-
-
-def find_db_version(sess):
-    engine = sess.get_bind()
-    if engine.execute(
-            """select count(*) from information_schema.tables """
-            """where table_schema = 'public'""").scalar() == 0:
-        return None
-    conf = sess.query(Contract).join(MarketRole).filter(
-        Contract.name == 'configuration', MarketRole.code == 'Z').one()
-    conf_state = conf.make_state()
-    return conf_state.get('db_version', 0)
-
-
 class GRegisterRead(Base, PersistentClass):
     __tablename__ = 'g_register_read'
     id = Column('id', Integer, primary_key=True)
@@ -3982,3 +3597,390 @@ class GUnits(Base):
             raise BadRequest(
                 "The gas units with code " + code + " can't be found.")
         return typ
+
+
+def read_file(pth, fname, attr):
+    with open(os.path.join(pth, fname), 'r') as f:
+        contents = f.read()
+    if attr is None:
+        return eval(contents)
+    else:
+        return {attr: contents}
+
+
+def db_init(sess, root_path):
+    db_name = config['PGDATABASE']
+    log_message("Initializing database.")
+    Base.metadata.create_all(bind=engine)
+    for code, desc in (
+            ("LV", "Low voltage"),
+            ("HV", "High voltage"),
+            ("EHV", "Extra high voltage")):
+        sess.add(VoltageLevel(code, desc))
+    sess.commit()
+
+    set_read_write(sess)
+    for code in ("editor", "viewer", "party-viewer"):
+        sess.add(UserRole(code))
+    sess.commit()
+
+    set_read_write(sess)
+    for code, desc in (
+            ('net', "Public distribution system."),
+            ('sub', "Sub meter"),
+            ('gen-net', "Generator connected directly to network."),
+            ('gen', "Generator."),
+            ('3rd-party', "Third party supply."),
+            (
+                '3rd-party-reverse',
+                "Third party supply with import going out of the site."),
+            ):
+        sess.add(Source(code, desc))
+    sess.commit()
+
+    set_read_write(sess)
+    for code, desc in (
+            ("chp", "Combined heat and power."),
+            ("lm", "Load management."),
+            ("turb", "Water turbine."),
+            ("pv", "Solar Photovoltaics.")):
+        sess.add(GeneratorType(code, desc))
+    sess.commit()
+
+    set_read_write(sess)
+    for code, desc in (
+            ("N", "Normal"),
+            ("N3", "Normal 3rd Party"),
+            ("C", "Customer"),
+            ("E", "Estimated"),
+            ("E3", "Estimated 3rd Party"),
+            ("EM", "Estimated Manual"),
+            ("W", "Withdrawn"),
+            ("X", "Exchange"),
+            ("CP", "Computer"),
+            ("IF", "Information")):
+        sess.add(ReadType(code, desc))
+    sess.commit()
+
+    set_read_write(sess)
+    for code, desc in (
+            ('1', "CoP 1"),
+            ('2', "CoP 2"),
+            ('3', "CoP 3"),
+            ('4', "CoP 4"),
+            ('5', "CoP 5"),
+            ('6a', "CoP 6a 20 day memory"),
+            ('6b', "CoP 6b 100 day memory"),
+            ('6c', "CoP 6c 250 day memory"),
+            ('6d', "CoP 6d 450 day memory"),
+            ('7', "CoP 7")):
+        sess.add(Cop(code, desc))
+    sess.commit()
+
+    set_read_write(sess)
+    for code, desc in (
+            ("F", "Final"),
+            ("N", "Normal"),
+            ("W", "Withdrawn")):
+        sess.add(BillType(code, desc))
+    sess.commit()
+
+    dbapi_conn = sess.connection().connection.connection
+    cursor = dbapi_conn.cursor()
+    mdd_path = os.path.join(root_path, 'mdd')
+    for tname, fname in (
+            ("gsp_group", "GSP_Group"),
+            ("pc", "Profile_Class"),
+            ("market_role", "Market_Role"),
+            ("participant", "Market_Participant"),
+            ("party", "Market_Participant_Role"),
+            ("llfc", "Line_Loss_Factor_Class"),
+            ("meter_type", "MTC_Meter_Type"),
+            ("meter_payment_type", "MTC_Payment_Type"),
+            ("mtc", "Meter_Timeswitch_Class"),
+            ("tpr", "Time_Pattern_Regime"),
+            ("clock_interval", "Clock_Interval"),
+            ("ssc", "Standard_Settlement_Configuration"),
+            ("measurement_requirement", "Measurement_Requirement")):
+        f = open(os.path.join(mdd_path, fname + '.csv'), 'rb')
+        cursor.execute(
+            "set transaction isolation level serializable read write")
+        if tname == 'llfc':
+            cursor.execute(
+                "COPY " + tname +
+                " (dno_id, code, description, voltage_level_id, "
+                "is_substation, is_import, valid_from, valid_to) "
+                "FROM STDIN CSV HEADER", stream=f)
+        elif tname == 'participant':
+            cursor.execute(
+                "COPY " + tname + " (code, name) "
+                "FROM STDIN CSV HEADER", stream=f)
+        elif tname == 'market_role':
+            cursor.execute(
+                "COPY " + tname + " (code, description) "
+                "FROM STDIN CSV HEADER", stream=f)
+        elif tname == 'party':
+            cursor.execute(
+                "COPY " + tname + " (market_role_id, participant_id, "
+                "name, valid_from, valid_to, dno_code) "
+                "FROM STDIN CSV HEADER", stream=f)
+        elif tname == 'meter_type':
+            cursor.execute(
+                "COPY " + tname + " (code, description, valid_from, "
+                "valid_to) FROM STDIN CSV HEADER", stream=f)
+        elif tname == 'mtc':
+            cursor.execute(
+                "COPY " + tname + " (dno_id, code, description, "
+                "has_related_metering, has_comms, is_hh, meter_type_id, "
+                "meter_payment_type_id, tpr_count, valid_from, valid_to) "
+                "FROM STDIN CSV HEADER", stream=f)
+        else:
+            cursor.execute(
+                "COPY " + tname + " FROM STDIN CSV HEADER", stream=f)
+        dbapi_conn.commit()
+        f.close()
+
+    set_read_write(sess)
+    for path_name, role_code in (
+            ('non_core_contracts', 'Z'),
+            ('dno_contracts', 'R')):
+        contracts_path = os.path.join(root_path, path_name)
+
+        for contract_name in sorted(os.listdir(contracts_path)):
+            contract_path = os.path.join(contracts_path, contract_name)
+            params = {'name': contract_name, 'charge_script': ''}
+            for fname, attr in (
+                    ('meta.py', None),
+                    ('properties.py', 'properties'),
+                    ('state.py', 'state')):
+                params.update(read_file(contract_path, fname, attr))
+            params['party'] = sess.query(Party).join(Participant). \
+                join(MarketRole). \
+                filter(
+                    Participant.code == params['participant_code'],
+                    MarketRole.code == role_code).one()
+            del params['participant_code']
+            contract = Contract(**params)
+            sess.add(contract)
+
+            sess.flush()
+            rscripts_path = os.path.join(contract_path, 'rate_scripts')
+            for rscript_fname in sorted(os.listdir(rscripts_path)):
+                if not rscript_fname.endswith('.py'):
+                    continue
+                try:
+                    start_str, finish_str = \
+                        rscript_fname.split('.')[0].split('_')
+                except ValueError:
+                    raise Exception(
+                        "The rate script " + rscript_fname +
+                        " in the directory " + rscripts_path +
+                        " should consist of two dates separated by an " +
+                        "underscore.")
+                start_date = to_utc(Datetime.strptime(start_str, "%Y%m%d%H%M"))
+                if finish_str == 'ongoing':
+                    finish_date = None
+                else:
+                    finish_date = to_utc(
+                        Datetime.strptime(finish_str, "%Y%m%d%H%M"))
+                rparams = {
+                    'start_date': start_date,
+                    'finish_date': finish_date,
+                    'contract': contract}
+                rparams.update(
+                    read_file(rscripts_path, rscript_fname, 'script'))
+                sess.add(RateScript(**rparams))
+                sess.flush()
+
+            sess.flush()
+            # Assign start and finish rate scripts
+            scripts = sess.query(RateScript). \
+                filter(RateScript.contract_id == contract.id). \
+                order_by(RateScript.start_date).all()
+            contract.start_rate_script = scripts[0]
+            contract.finish_rate_script = scripts[-1]
+    sess.commit()
+
+    set_read_write(sess)
+    for code, desc in (
+            ("A", "Actual"),
+            ("C", "Customer"),
+            ("E", "Estimated"),
+            ("S", "Deemed read")):
+        sess.add(GReadType(code, desc))
+    sess.commit()
+
+    set_read_write(sess)
+    for code, desc, factor_str in (
+            ("MCUF", "Thousands of cubic feet", '28.317'),
+            ("HCUF", "Hundreds of cubic feet", '2.8317'),
+            ("TCUF", "Tens of cubic feet", '0.28317'),
+            ("OCUF", "One cubic foot", '0.028317'),
+            ("M3", "Cubic metres", '1'),
+            ("HM3", "Hundreds of cubic metres", '100'),
+            ("TM3", "Tens of cubic metres", '10'),
+            ("NM3", "Tenths of cubic metres", '0.1')):
+        sess.add(GUnits(code, desc, Decimal(factor_str)))
+    sess.commit()
+
+    set_read_write(sess)
+    sess.execute(
+        "alter database " + db_name +
+        " set default_transaction_isolation = 'serializable'")
+    sess.execute(
+        "alter database " + db_name +
+        " set default_transaction_deferrable = on")
+    sess.execute(
+        "alter database " + db_name + " SET DateStyle TO 'ISO, YMD'")
+    sess.execute(
+        "alter database " + db_name +
+        " set default_transaction_read_only = on")
+    sess.commit()
+    sess.close()
+    engine.dispose()
+    # Check the transaction isolation level is serializable
+    isolation_level = sess.execute(
+        "show transaction isolation level").scalar()
+    if isolation_level != 'serializable':
+        raise Exception(
+            "The transaction isolation level for database " + db_name +
+            " should be 'serializable' but in fact " "it's " +
+            isolation_level + ".")
+
+    set_read_write(sess)
+    sess.execute("create extension tablefunc")
+    conf = sess.query(Contract).join(MarketRole).filter(
+        Contract.name == 'configuration', MarketRole.code == 'Z').one()
+    state = conf.make_state()
+    state['db_version'] = len(upgrade_funcs)
+    conf.update_state(state)
+    sess.commit()
+
+
+def db_upgrade_0_to_1(sess, root_path):
+    max_id = sess.execute("select max(id) from report;").scalar()
+    sess.execute("create sequence report_id_seq start " + str(max_id + 1))
+    sess.execute(
+        "alter table report alter column id "
+        "set default nextval('report_id_seq');")
+    sess.execute("alter sequence report_id_seq owned by report.id;")
+
+
+def db_upgrade_1_to_2(sess, root_path):
+    contracts_path = os.path.join(root_path, 'dno_contracts')
+    for contract_name in ('25', '26', '27', '28', '29'):
+        existing_contract = sess.query(Contract).join(Party).filter(
+            Party.dno_code == contract_name).first()
+        if existing_contract is not None:
+            continue
+        contract_path = os.path.join(contracts_path, contract_name)
+        params = {'name': contract_name, 'charge_script': ''}
+        for fname, attr in (
+                ('meta.py', None),
+                ('properties.py', 'properties'),
+                ('state.py', 'state')):
+            params.update(read_file(contract_path, fname, attr))
+        params['party'] = sess.query(Party).join(Participant). \
+            join(MarketRole).filter(
+                Participant.code == params['participant_code'],
+                MarketRole.code == 'R').one()
+        del params['participant_code']
+        contract = Contract(**params)
+        sess.add(contract)
+
+        sess.flush()
+        rscripts_path = os.path.join(contract_path, 'rate_scripts')
+        for rscript_fname in sorted(os.listdir(rscripts_path)):
+            if not rscript_fname.endswith('.py'):
+                continue
+            try:
+                start_str, finish_str = \
+                    rscript_fname.split('.')[0].split('_')
+            except ValueError:
+                raise Exception(
+                    "The rate script " + rscript_fname +
+                    " in the directory " + rscripts_path +
+                    " should consist of two dates separated by an " +
+                    "underscore.")
+            start_date = to_utc(Datetime.strptime(start_str, "%Y%m%d%H%M"))
+            if finish_str == 'ongoing':
+                finish_date = None
+            else:
+                finish_date = to_utc(Datetime.strptime(
+                    finish_str, "%Y%m%d%H%M"))
+            rparams = {
+                'start_date': start_date,
+                'finish_date': finish_date,
+                'contract': contract}
+            rparams.update(
+                read_file(rscripts_path, rscript_fname, 'script'))
+            sess.add(RateScript(**rparams))
+            sess.flush()
+
+        sess.flush()
+        # Assign start and finish rate scripts
+        scripts = sess.query(RateScript). \
+            filter(RateScript.contract_id == contract.id). \
+            order_by(RateScript.start_date).all()
+        contract.start_rate_script = scripts[0]
+        contract.finish_rate_script = scripts[-1]
+
+
+def db_upgrade_2_to_3(sess, root_path):
+    sess.execute("alter table contract drop column is_core;")
+
+
+upgrade_funcs = [db_upgrade_0_to_1, db_upgrade_1_to_2, db_upgrade_2_to_3]
+
+
+def db_upgrade(root_path):
+    sess = None
+    try:
+        sess = Session()
+        set_read_write(sess)
+        db_version = find_db_version(sess)
+        curr_version = len(upgrade_funcs)
+        if db_version is None:
+            log_message(
+                "It looks like the chellow database hasn't been initialized.")
+            db_init(sess, root_path)
+        elif db_version == curr_version:
+            log_message(
+                "The database version is " + str(db_version) +
+                " and the latest version is " + str(curr_version) +
+                " so it doesn't look like you need to run an upgrade.")
+        elif db_version > curr_version:
+            log_message(
+                "The database version is " + str(db_version) +
+                " and the latest database version is " + str(curr_version) +
+                " so it looks like you're using an old version of Chellow.")
+        else:
+            log_message(
+                "Upgrading from database version " + str(db_version) +
+                " to database version " + str(db_version + 1) + ".")
+            upgrade_funcs[db_version](sess, root_path)
+            conf = sess.query(Contract).join(MarketRole).filter(
+                Contract.name == 'configuration', MarketRole.code == 'Z').one()
+            state = conf.make_state()
+            state['db_version'] = db_version + 1
+            conf.update_state(state)
+            sess.commit()
+            log_message(
+                "Successfully upgraded from database version " +
+                str(db_version) + " to database version " +
+                str(db_version + 1) + ".")
+    finally:
+        if sess is not None:
+            sess.close()
+
+
+def find_db_version(sess):
+    engine = sess.get_bind()
+    if engine.execute(
+            """select count(*) from information_schema.tables """
+            """where table_schema = 'public'""").scalar() == 0:
+        return None
+    conf = sess.query(Contract).join(MarketRole).filter(
+        Contract.name == 'configuration', MarketRole.code == 'Z').one()
+    conf_state = conf.make_state()
+    return conf_state.get('db_version', 0)
