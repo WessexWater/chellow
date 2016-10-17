@@ -286,8 +286,11 @@ class Parser():
                     breakdown[prefix + 'kwh'] += float(
                         self.parser.to_decimal(nuct)) / 1000
                     cppu = self.parser.elements[18]
-                    breakdown[prefix + 'rate'] += float(
-                        self.parser.to_decimal(cppu)) / 100000
+                    rate_key = prefix + 'rate'
+                    if rate_key not in breakdown:
+                        breakdown[rate_key] = set()
+                    breakdown[rate_key].add(
+                        float(self.parser.to_decimal(cppu)) / 100000)
                     ctot = self.parser.elements[19]
                     breakdown[prefix + 'gbp'] += float(
                         self.parser.to_decimal(ctot)) / 100
@@ -328,8 +331,13 @@ class Parser():
                     breakdown[prefix + 'kwh'] += float(
                         self.parser.to_decimal(nuct)) / 1000
                     cppu = self.parser.elements[18]
-                    breakdown[prefix + 'rate'] += float(
-                        self.parser.to_decimal(cppu)) / 100000
+
+                    rate_key = prefix + 'rate'
+                    if rate_key not in breakdown:
+                        breakdown[rate_key] = set()
+                    breakdown[rate_key].add(
+                        float(self.parser.to_decimal(cppu)) / 100000)
+
                     ctot = self.parser.elements[19]
                     breakdown[prefix + 'gbp'] += float(
                         self.parser.to_decimal(ctot)) / 100
@@ -352,6 +360,10 @@ class Parser():
                             self.parser.to_decimal(ctot)) / 100
             elif code == "MTR":
                 if message_type == "UTLBIL":
+                    for k, v in tuple(breakdown.items()):
+                        if isinstance(v, set):
+                            breakdown[k] = ', '.join(sorted(map(str, v)))
+
                     raw_bills.append(
                         {
                             'bill_type_code': bill_type_code,

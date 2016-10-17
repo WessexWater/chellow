@@ -12525,7 +12525,7 @@ def virtual_bill(supply_source):
             r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="0" office:value-type="float" '
             r'table:number-columns-repeated="4"/>\s*'
-            r'<table:table-cell office:value="-0.439834188324553" '
+            r'<table:table-cell office:value="-0.43983418832455\d*" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="715.2836658116756" '
             r'office:value-type="float"/>\s*'
@@ -14030,4 +14030,32 @@ def virtual_bill(supply_source):
             r'CH017,Parbola,,3rd-party,,2016-09-30 23:00,0,0,0,0,0,0,hh\s*'
             r'CH017,Parbola,,3rd-party,,2016-09-30 23:30,0,0,0,0,0,0,hh\s*'
             r'\Z']},
+
+    {
+        'name': "SSE EDI bill with multiple rates for an element",
+        'path': '/supplier_contracts/42/add_batch',
+        'method': 'post',
+        'data': {
+            'reference': "07-009",
+            'description': "Multiple rate batch"},
+        'status_code': 303,
+        'regexes': [
+            r"/supplier_batches/16"]},
+    {
+        'name': "SSE EDI bill with multiple rates for an element",
+        'path': '/supplier_bill_imports',
+        'method': 'post',
+        'data': {
+            'supplier_batch_id': '16'},
+        'files': {'import_file': 'test/bills3.sse.edi'},
+        'status_code': 303,
+        'regexes': [
+            r"/supplier_bill_imports/12"]},
+    {
+        'name': "SSE EDI bill with multiple rates for an element",
+        'path': '/supplier_bill_imports/12',
+        'tries': {},
+        'regexes': [
+            r'\(&#39;fit-rate&#39;, &#39;0.00205, 0.00206&#39;\)'],
+        'status_code': 200},
 ]
