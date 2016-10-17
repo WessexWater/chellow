@@ -12569,4 +12569,25 @@ def virtual_bill(supply_source):
             r'<table:table-cell office:value="0" office:value-type="float" '
             r'table:number-columns-repeated="20"/>\s*'
             r'</table:table-row>']},
+
+    {
+        'name': "Site level HH data, row per hh",
+        'path': '/reports/csv_site_hh_data?site_id=7&start_year=2016&'
+        'start_month=09&start_day=1&start_hour=0&start_minute=0&'
+        'finish_year=2016&finish_month=09&finish_day=30&finish_hour=23&'
+        'finish_minute=30',
+        'status_code': 303},
+    {
+        'name': "Site level HH data, row per hh",
+        'path': '/downloads',
+        'tries': {'max': 30, 'period': 1},
+        'regexes': [
+            r'010_FINISHED_adminexamplecom_site_hh_data\.csv'],
+        'status_code': 200},
+    {
+        'name': "Site level HH data, row per hh",
+        'path': '/downloads/010_FINISHED_adminexamplecom_site_hh_data.csv',
+        'status_code': 200,
+        'regexes': [
+            r'CH017']},
 ]

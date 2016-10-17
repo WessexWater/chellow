@@ -1,72 +1,84 @@
 import traceback
-from flask import request
-from chellow.utils import req_date, send_response, req_int
-from chellow.models import sess, Site
+from flask import request, g
+from chellow.utils import req_date, req_int, hh_format
+from chellow.models import Site, Era, SiteEra, Source, Supply, Session
+from sqlalchemy import true, or_, null
+from sqlalchemy.orm import joinedload
+import chellow.dloads
+import csv
+import sys
+import os
+import threading
+from chellow.views import chellow_redirect
 
 
-def content(start_date, finish_date, site_id):
+TYPE_ORDER = {'hh': 0, 'amr': 1, 'nhh': 2, 'unmetered': 3}
+
+
+def content(sess, start_date, finish_date, site_id, user):
+    sess = None
     try:
-        yield ','.join(
+        sess = Session()
+        running_name, finished_name = chellow.dloads.make_names(
+            "site_hh_data.csv", user)
+        f = open(running_name, mode='w', newline='')
+        writer = csv.writer(f, lineterminator='\n')
+        writer.writerow(
             (
                 "Site Id", "Site Name", "Associated Site Ids", "Sources",
                 "Generator Types", "Date", "Imported kWh", "Displaced kWh",
                 "Exported kWh", "Used kWh", "Parasitic kWh", "Generated kWh",
-                "Meter Type")) + '\n'
+                "Meter Type"))
 
-        sites = Site.query.order_by(Site.code)
+        sites = sess.query(Site).order_by(Site.code)
         if site_id is not None:
             sites = sites.filter(Site.id == site_id)
 
         for site in sites:
             sources = set()
             generator_types = set()
-            assoc = set()
+            assoc = site.find_linked_sites(sess, start_date, finish_date)
+            metering_type = ''
+            for era in sess.query(Era).join(SiteEra).filter(
+                    SiteEra.site == site, SiteEra.is_physical == true(),
+                    Era.start_date <= finish_date, or_(
+                        Era.finish_date == null(),
+                        Era.finish_date >= start_date),
+                    Source.code != 'sub').options(
+                        joinedload(Era.supply).joinedload(Supply.source),
+                        joinedload(Era.supply).joinedload(
+                            Supply.generator_type)):
+                mtype = era.make_meter_category()
+                if metering_type == '' or \
+                        TYPE_ORDER[mtype] < TYPE_ORDER[metering_type]:
+                    metering_type = mtype
+                sources.add(era.supply.source.code)
+                generator_type = era.supply.generator_type
+                if generator_type is not None:
+                    generator_types.add(generator_type.code)
 
-            metering_type = 'nhh'
-            site_code = site.code
+            assoc_str = ','.join(sorted(s.code for s in assoc))
+            sources_str = ','.join(sorted(list(sources)))
+            generators_str = ','.join(sorted(list(generator_types)))
 
-            for group in site.groups(sess, start_date, finish_date, False):
-                assoc.update(
-                    s.code for s in group.sites if s.code != site_code)
-
-                for supply in group.supplies:
-                    for era in supply.find_eras(
-                            sess, group.start_date, group.finish_date):
-                        if metering_type != 'hh':
-                            if era.pc.code == '00':
-                                metering_type = 'hh'
-                            elif metering_type != 'amr':
-                                if len(era.channels) > 0:
-                                    metering_type = 'amr'
-                                elif metering_type != 'nhh':
-                                    if era.mtc.meter_type.code in ['UM', 'PH']:
-                                        metering_type = 'unmetered'
-                                    else:
-                                        metering_type = 'nhh'
-
-            assoc_str = ','.join(sorted(list(assoc)))
-
-            for group in site.groups(sess, start_date, finish_date, True):
-                for supply in group.supplies:
-                    sources.add(supply.source.code)
-                    generator_type = supply.generator_type
-                    if generator_type is not None:
-                        generator_types.add(generator_type.code)
-
-                sources_str = ','.join(sorted(list(sources)))
-                generators_str = ','.join(sorted(list(generator_types)))
-
-                for hh in group.hh_data(sess):
-                    yield ','.join(
-                        '"' + str(v) + '"' for v in (
-                            site.code, site.name, assoc_str, sources_str,
-                            generators_str,
-                            hh['start_date'].strftime("%Y-%m-%d %H:%M"),
-                            hh['imp_net'], hh['displaced'], hh['exp_net'],
-                            hh['used'], hh['exp_gen'], hh['imp_gen'],
-                            metering_type)) + '\n'
+            for hh in site.hh_data(sess, start_date, finish_date):
+                writer.writerow(
+                    (
+                        site.code, site.name, assoc_str, sources_str,
+                        generators_str, hh_format(hh['start_date']),
+                        hh['imp_net'], hh['displaced'], hh['exp_net'],
+                        hh['used'], hh['exp_gen'], hh['imp_gen'],
+                        metering_type))
     except:
-        yield traceback.format_exc()
+        msg = traceback.format_exc()
+        sys.stderr.write(msg)
+        writer.writerow([msg])
+    finally:
+        if sess is not None:
+            sess.close()
+        if f is not None:
+            f.close()
+            os.rename(running_name, finished_name)
 
 
 def do_get(sess):
@@ -77,6 +89,6 @@ def do_get(sess):
     else:
         site_id = None
 
-    return send_response(
-        content, args=(start_date, finish_date, site_id),
-        file_name="site_hh_data.csv")
+    args = (sess, start_date, finish_date, site_id, g.user)
+    threading.Thread(target=content, args=args).start()
+    return chellow_redirect("/downloads", 303)
