@@ -15,6 +15,20 @@ from flask import g
 import threading
 
 
+def make_val(v):
+    if v is None:
+        return ''
+    elif isinstance(v, set):
+        if len(v) == 1:
+            return make_val(v.pop())
+        else:
+            return None
+    elif isinstance(v, Datetime):
+        return hh_format(v)
+    else:
+        return str(v)
+
+
 def content(supply_id, file_name, start_date, finish_date, user):
     caches = {}
     sess = None
@@ -143,12 +157,7 @@ def content(supply_id, file_name, start_date, finish_date, user):
                     prev_titles != titles
                     writer.writerow([str(v) for v in titles])
                 for i, val in enumerate(output_line):
-                    if isinstance(val, Datetime):
-                        output_line[i] = hh_format(val)
-                    elif val is None:
-                        output_line[i] = ''
-                    else:
-                        output_line[i] = str(val)
+                    output_line[i] = make_val(val)
                 writer.writerow(output_line)
             month_start += relativedelta(months=1)
     except BadRequest as e:

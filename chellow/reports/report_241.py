@@ -9,6 +9,15 @@ from chellow.models import Supply, Site, SiteEra
 import chellow.computer
 
 
+def make_val(v):
+    if isinstance(v, Datetime):
+        return hh_format(v)
+    elif isinstance(v, set):
+        return make_val(v.pop())
+    else:
+        return str(v)
+
+
 def content(
         start_year, start_month, start_day, finish_year, finish_month,
         finish_day, is_import, supply_id, sess):
@@ -57,13 +66,7 @@ def content(
                 bill = ss.supplier_bill
                 for title in bill_titles:
                     if title in bill:
-                        val_raw = bill[title]
-                        if isinstance(val_raw, Datetime):
-                            val = hh_format(val_raw)
-                        else:
-                            val = str(val_raw)
-
-                        yield ',"' + val + '"'
+                        yield ',"' + make_val(bill[title]) + '"'
                         del bill[title]
                     else:
                         yield ',""'

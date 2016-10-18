@@ -30,6 +30,21 @@ CATEGORY_ORDER = {None: 0, 'unmetered': 1, 'nhh': 2, 'amr': 3, 'hh': 4}
 meter_order = {'hh': 0, 'amr': 1, 'nhh': 2, 'unmetered': 3}
 
 
+def make_bill_row(titles, bill):
+    row = []
+    for t in titles:
+        v = bill.get(t)
+        if isinstance(v, set):
+            if len(v) == 1:
+                val = v.pop()
+            else:
+                val = None
+        else:
+            val = v
+        row.append(val)
+    return row
+
+
 def content(
         scenario_props, scenario_id, base_name, site_id, supply_id, user,
         compression):
@@ -384,11 +399,8 @@ def content(
                         site.name, '', month_finish] + [
                             month_data[t] for t in summary_titles] + [None] + [
                         None] * len(title_dict['mop']) + [None] + [
-                        None] * len(title_dict['dc']) + [None] + [
-                            (
-                                disp_supplier_bill[t]
-                                if t in disp_supplier_bill else None)
-                            for t in title_dict['imp-supplier']]
+                        None] * len(title_dict['dc']) + [None] + make_bill_row(
+                            title_dict['imp-supplier'], disp_supplier_bill)
 
                     era_tab.writerow(out)
                     for k, v in month_data.items():
@@ -593,25 +605,17 @@ def content(
                         era.pc.code, site.code, site.name,
                         ','.join(sorted(list(era_associates))),
                         month_finish] + [
-                        month_data[t] for t in summary_titles] + [None] + [
-                        (mop_bill[t] if t in mop_bill else None)
-                        for t in title_dict['mop']] + [None] + \
-                        [(dc_bill[t] if t in dc_bill else None)
-                            for t in title_dict['dc']]
+                        month_data[t] for t in summary_titles] + [None] + \
+                        make_bill_row(title_dict['mop'], mop_bill) + [None] + \
+                        make_bill_row(title_dict['dc'], dc_bill)
                     if imp_supplier_contract is None:
                         out += [None] * (len(title_dict['imp-supplier']) + 1)
                     else:
-                        out += [None] + [
-                            (
-                                imp_supplier_bill[t]
-                                if t in imp_supplier_bill else None)
-                            for t in title_dict['imp-supplier']]
+                        out += [None] + make_bill_row(
+                            title_dict['imp-supplier'], imp_supplier_bill)
                     if exp_supplier_contract is not None:
-                        out += [None] + [
-                            (
-                                exp_supplier_bill[t]
-                                if t in exp_supplier_bill else None)
-                            for t in title_dict['exp-supplier']]
+                        out += [None] + make_bill_row(
+                            title_dict['exp-supplier'], exp_supplier_bill)
 
                     for k, v in month_data.items():
                         site_month_data[k] += v

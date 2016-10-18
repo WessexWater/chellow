@@ -17,6 +17,18 @@ import threading
 from flask import g
 
 
+def make_val(v):
+    if isinstance(v, set):
+        if len(v) == 1:
+            return make_val(v.pop())
+        else:
+            return ''
+    elif isinstance(v, Datetime):
+        return hh_format(v)
+    else:
+        return v
+
+
 def content(start_date, finish_date, contract_id, user):
     caches = {}
     sess = f = None
@@ -83,7 +95,7 @@ def content(start_date, finish_date, contract_id, user):
                     bill = data_source.supplier_bill
                     for title in bill_titles:
                         if title in bill:
-                            val = str(bill[title])
+                            val = make_val(bill[title])
                             del bill[title]
                         else:
                             val = ''

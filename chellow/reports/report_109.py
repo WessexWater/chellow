@@ -17,6 +17,18 @@ import threading
 from chellow.views import chellow_redirect
 
 
+def to_val(v):
+    if isinstance(v, Datetime):
+        return hh_format(v)
+    elif isinstance(v, set):
+        if len(v) == 1:
+            return to_val(v.pop())
+        else:
+            return ''
+    else:
+        return str(v)
+
+
 def content(contract_id, end_year, end_month, months, user):
     caches = {}
     sess = f = None
@@ -179,12 +191,7 @@ def content(contract_id, end_year, end_month, months, user):
                 bill = site_ds.supplier_bill
                 for title in bill_titles:
                     if title in bill:
-                        val = bill[title]
-                        if isinstance(val, Datetime):
-                            val = hh_format(val)
-                        else:
-                            val = str(val)
-                        vals.append(val)
+                        vals.append(to_val(bill[title]))
                         del bill[title]
                     else:
                         vals.append('')

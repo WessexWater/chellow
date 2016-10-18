@@ -22,6 +22,18 @@ import csv
 from itertools import combinations
 
 
+def make_val(v):
+    if isinstance(v, set):
+        if len(v) == 1:
+            return make_val(v.pop())
+        else:
+            return ''
+    elif isinstance(v, Datetime):
+        return hh_format(v)
+    else:
+        return v
+
+
 def content(batch_id, bill_id, user):
     caches = {}
     tmp_file = sess = bill = None
@@ -236,19 +248,17 @@ def content(batch_id, bill_id, user):
                     raise BadRequest("Odd market role.")
 
                 for k, v in vb.items():
-                    if k.endswith('-rate'):
-                        if k not in virtual_bill:
-                            virtual_bill[k] = set()
-                        virtual_bill[k].add(v)
-                    else:
-                        try:
+                    try:
+                        if isinstance(v, set):
+                            virtual_bill[k].update(v)
+                        else:
                             virtual_bill[k] += v
-                        except KeyError:
-                            virtual_bill[k] = v
-                        except TypeError as detail:
-                            raise BadRequest(
-                                "For key " + str(k) + " and value " + str(v) +
-                                ". " + str(detail))
+                    except KeyError:
+                        virtual_bill[k] = v
+                    except TypeError as detail:
+                        raise BadRequest(
+                            "For key " + str(k) + " and value " + str(v) +
+                            ". " + str(detail))
 
             values += [
                 site.code, site.name, hh_format(covered_start),
@@ -266,11 +276,7 @@ def content(batch_id, bill_id, user):
                     values.append('')
 
                 try:
-                    virt_val = virtual_bill[title]
-                    if isinstance(virt_val, set):
-                        virt_val = ', '.join(str(v) for v in virt_val)
-                    elif isinstance(virt_val, Datetime):
-                        virt_val = hh_format(virt_val)
+                    virt_val = make_val(virtual_bill[title])
                     values.append(virt_val)
                     del virtual_bill[title]
                 except KeyError:
@@ -287,11 +293,7 @@ def content(batch_id, bill_id, user):
                         values.append('')
 
             for title in sorted(virtual_bill.keys()):
-                virt_val = virtual_bill[title]
-                if isinstance(virt_val, set):
-                    virt_val = ', '.join(str(v) for v in virt_val)
-                elif isinstance(virt_val, Datetime):
-                    virt_val = hh_format(virt_val)
+                virt_val = make_val(virtual_bill[title])
                 values += ['virtual-' + title, virt_val]
                 if title in covered_bdown:
                     values += ['covered-' + title, covered_bdown[title]]
