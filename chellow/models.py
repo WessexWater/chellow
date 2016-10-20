@@ -16,7 +16,7 @@ from sqlalchemy.ext.declarative import declarative_base
 import operator
 from chellow.utils import (
     hh_after, HH, parse_mpan_core, hh_before, next_hh, prev_hh, hh_format,
-    hh_range, hh_max, hh_min)
+    hh_range)
 import json
 from dateutil.relativedelta import relativedelta
 from functools import lru_cache
@@ -1067,44 +1067,42 @@ class Site(Base, PersistentClass):
             '3rd-party-reverse': {True: ['exp_3p'], False: ['imp_3p']}}
         data = []
 
-        for channel in sess.query(Channel).join(Era).join(SiteEra). \
-                join(Supply).join(Source).filter(
-                    SiteEra.site == self, SiteEra.is_physical == true(),
-                    Era.start_date <= finish_date, or_(
-                        Era.finish_date == null(),
-                        Era.finish_date >= start_date),
-                    Source.code != 'sub', Channel.channel_type == 'ACTIVE'). \
-                options(
-                    joinedload(Channel.era).joinedload(Era.supply).
-                    joinedload(Supply.source)):
+        channel_ids = list(
+            cid[0] for cid in sess.query(Channel.id).join(Era).join(SiteEra).
+            join(Supply).join(Source).filter(
+                SiteEra.site == self, SiteEra.is_physical == true(),
+                Era.start_date <= finish_date, or_(
+                    Era.finish_date == null(),
+                    Era.finish_date >= start_date),
+                Source.code != 'sub', Channel.channel_type == 'ACTIVE'))
 
-            era = channel.era
-            chunk_start = hh_max(era.start_date, start_date)
-            chunk_finish = hh_min(era.finish_date, finish_date)
+        db_data = iter(
+            sess.query(
+                HhDatum.start_date, HhDatum.value, Channel.imp_related,
+                Source.code).join(Channel).join(Era).join(Supply).join(Source).
+            filter(
+                HhDatum.channel_id.in_(channel_ids),
+                HhDatum.start_date >= start_date,
+                HhDatum.start_date <= finish_date).order_by(
+                HhDatum.start_date))
 
-            db_data = iter(
-                sess.query(HhDatum.start_date, HhDatum.value).filter(
-                    HhDatum.channel == channel,
-                    HhDatum.start_date >= chunk_start,
-                    HhDatum.start_date <= chunk_finish).order_by(
-                    HhDatum.start_date))
+        start, value, imp_related, source_code = next(
+            db_data, (None, None, None, None))
 
-            channel_keys = keys[era.supply.source.code][channel.imp_related]
-            hh_date, value = next(db_data, (None, None))
+        for hh_start in hh_range(start_date, finish_date):
+            dd = {
+                'start_date': hh_start, 'imp_net': 0, 'exp_net': 0,
+                'imp_gen': 0, 'exp_gen': 0, 'imp_3p': 0, 'exp_3p': 0}
+            data.append(dd)
+            while start == hh_start:
+                for key in keys[source_code][imp_related]:
+                    dd[key] += value
+                start, value, imp_related, source_code = next(
+                    db_data, (None, None, None, None))
 
-            for hh_start in hh_range(chunk_start, chunk_finish):
-                dd = {
-                    'start_date': hh_start, 'imp_net': 0, 'exp_net': 0,
-                    'imp_gen': 0, 'exp_gen': 0, 'imp_3p': 0, 'exp_3p': 0}
-                data.append(dd)
-                while hh_date == hh_start:
-                    for key in channel_keys:
-                        dd[key] += value
-                    hh_date, value = next(db_data, (None, None))
-
-                dd['displaced'] = dd['imp_gen'] - dd['exp_gen'] - dd['exp_net']
-                dd['used'] = dd['displaced'] + dd['imp_net'] + dd['imp_3p'] - \
-                    dd['exp_3p']
+            dd['displaced'] = dd['imp_gen'] - dd['exp_gen'] - dd['exp_net']
+            dd['used'] = dd['displaced'] + dd['imp_net'] + dd['imp_3p'] - \
+                dd['exp_3p']
 
         return data
 
