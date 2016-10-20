@@ -1,6 +1,6 @@
 import traceback
-from chellow.utils import req_date, req_int
-from chellow.models import Site, Session
+from chellow.utils import req_date, req_int, hh_format
+from chellow.models import Site, Session, Era, SiteEra, Supply
 from flask import request, g
 import csv
 import chellow.dloads
@@ -8,6 +8,11 @@ from chellow.views import chellow_redirect
 import threading
 import sys
 import os
+from sqlalchemy import true, or_, null
+from sqlalchemy.orm import joinedload
+
+
+METER_ORDER = {'hh': 0, 'amr': 1, 'nhh': 2, 'unmetered': 3, '': 4}
 
 
 def content(start_date, finish_date, site_id, user):
@@ -32,56 +37,51 @@ def content(start_date, finish_date, site_id, user):
         if site_id is not None:
             sites = sites.filter(Site.id == site_id)
 
+        start_date_str = hh_format(start_date)
+        finish_date_str = hh_format(finish_date)
+
         for site in sites:
-            sources = set()
-            generator_types = set()
-            assoc = set()
+            assoc = ' '.join(
+                s.code for s in site.find_linked_sites(
+                    sess, start_date, finish_date))
 
             totals = dict((stream, 0) for stream in streams)
 
-            metering_type = 'nhh'
-            site_code = site.code
+            metering_type = ''
+            source_codes = set()
+            gen_types = set()
+            for era in sess.query(Era).join(SiteEra).filter(
+                    SiteEra.is_physical == true(), SiteEra.site == site,
+                    Era.start_date <= finish_date, or_(
+                        Era.finish_date == null(),
+                        Era.finish_date >= start_date)).distinct().options(
+                            joinedload(Era.supply).joinedload(Supply.source),
+                            joinedload(Era.supply).
+                            joinedload(Supply.generator_type)):
+                supply = era.supply
+                source_codes.add(supply.source.code)
+                gen_type = supply.generator_type
+                if gen_type is not None:
+                    gen_types.add(gen_type.code)
+                era_meter_type = era.make_meter_category()
+                if METER_ORDER[era_meter_type] < METER_ORDER[metering_type]:
+                    metering_type = era_meter_type
 
-            for group in site.groups(sess, start_date, finish_date, False):
-                assoc.update(
-                    s.code for s in group.sites if s.code != site_code)
+            assoc_str = ','.join(sorted(assoc))
+            sources_str = ','.join(sorted(source_codes))
+            generators_str = ','.join(sorted(gen_types))
 
-                for supply in group.supplies:
-                    for era in supply.find_eras(
-                            sess, group.start_date, group.finish_date):
-                        if metering_type != 'hh':
-                            if era.pc.code == '00':
-                                metering_type = 'hh'
-                            elif metering_type != 'amr':
-                                if len(era.channels) > 0:
-                                    metering_type = 'amr'
-                                elif metering_type != 'nhh':
-                                    if era.mtc.meter_type.code in ['UM', 'PH']:
-                                        metering_type = 'unmetered'
-                                    else:
-                                        metering_type = 'nhh'
+            for hh in site.hh_data(sess, start_date, finish_date):
+                for stream in streams:
+                    totals[stream] += hh[stream]
 
-            for group in site.groups(sess, start_date, finish_date, True):
-                for supply in group.supplies:
-                    sources.add(supply.source.code)
-                    generator_type = supply.generator_type
-                    if generator_type is not None:
-                        generator_types.add(generator_type.code)
-
-                for hh in group.hh_data(sess):
-                    for stream in streams:
-                        totals[stream] += hh[stream]
-
-            assoc_str = ','.join(sorted(list(assoc)))
-            sources_str = ','.join(sorted(list(sources)))
-            generators_str = ','.join(sorted(list(generator_types)))
             writer.writerow(
                 (
                     site.code, site.name, assoc_str, sources_str,
-                    generators_str, start_date.strftime("%Y-%m-%d %H:%M"),
-                    finish_date.strftime("%Y-%m-%d %H:%M"), totals['imp_net'],
-                    totals['displaced'], totals['exp_net'], totals['used'],
-                    totals['exp_gen'], totals['imp_gen'], metering_type))
+                    generators_str, start_date_str, finish_date_str,
+                    totals['imp_net'], totals['displaced'], totals['exp_net'],
+                    totals['used'], totals['exp_gen'], totals['imp_gen'],
+                    metering_type))
     except:
         msg = traceback.format_exc()
         sys.stderr.write(msg)

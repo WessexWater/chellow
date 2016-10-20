@@ -25,14 +25,13 @@ def content(start_date, finish_date, site_id, typ, user):
             ('Site Code', 'Type', 'Date') + tuple(map(str, range(1, 49))))
         site = Site.get_by_id(sess, site_id)
         line = None
-        for group in site.groups(sess, start_date, finish_date, True):
-            for hh in group.hh_data(sess):
-                hh_start = hh['start_date']
-                if (hh_start.hour, hh_start.minute) == (0, 0):
-                    if line is not None:
-                        writer.writerow(line)
-                    line = [site.code, typ, hh_start.strftime("%Y-%m-%d")]
-                line.append(str(hh[typ]))
+        for hh in site.hh_data(sess, start_date, finish_date):
+            hh_start = hh['start_date']
+            if (hh_start.hour, hh_start.minute) == (0, 0):
+                if line is not None:
+                    writer.writerow(line)
+                line = [site.code, typ, hh_start.strftime("%Y-%m-%d")]
+            line.append(str(hh[typ]))
         if line is not None:
             writer.writerow(line)
     except:

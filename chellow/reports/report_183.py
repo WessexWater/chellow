@@ -2,7 +2,8 @@ import zipfile
 import traceback
 from sqlalchemy.sql.expression import true, null
 from sqlalchemy import or_
-from chellow.models import Site, SiteEra, Era, Session
+from sqlalchemy.orm import joinedload
+from chellow.models import Site, SiteEra, Era, Session, Supply
 from chellow.utils import hh_format, req_date, req_int, HH
 from flask import request, g
 import chellow.dloads
@@ -27,47 +28,54 @@ def none_content(site_id, start_date, finish_date, user, file_name):
             Era.start_date <= finish_date)
         zf = zipfile.ZipFile(running_name, 'w')
 
+        start_date_str = hh_format(start_date)
+        finish_date_str = hh_format(finish_date)
         for site in sites:
-            for group in site.groups(sess, start_date, finish_date, True):
-                buf = StringIO()
-                writer = csv.writer(buf, lineterminator='\n')
-                writer.writerow(
-                    [
-                        "Site Code", "Site Name", "Associated Site Codes",
-                        "Sources", "Generator Types", "From", "To", "Type",
-                        "Date"] + list(map(str, range(1, 49))))
-                associates = ' '.join(site.code for site in group.sites[1:])
-                source_codes = ' '.join(
-                    sorted(set(sup.source.code for sup in group.supplies)))
-                gen_types = ' '.join(
-                    sorted(
-                        set(
-                            sup.generator_type.code for sup in
-                            group.supplies
-                            if sup.generator_type is not None)))
-                group_start_str = hh_format(group.start_date)
-                group_finish_str = hh_format(group.finish_date)
-                row = None
-                for hh in group.hh_data(sess):
-                    hh_start = hh['start_date']
-                    if hh_start.hour == 0 and hh_start.minute == 0:
-                        if row is not None:
-                            writer.writerow(row)
-                        row = [
-                            site.code, site.name, associates, source_codes,
-                            gen_types, group_start_str, group_finish_str,
-                            'used', hh_start.strftime('%Y-%m-%d')]
-                    used_gen_kwh = hh['imp_gen'] - hh['exp_net'] - \
-                        hh['exp_gen']
-                    used_3p_kwh = hh['imp_3p'] - hh['exp_3p']
-                    used_kwh = hh['imp_net'] + used_gen_kwh + used_3p_kwh
-                    row.append(str(round(used_kwh, 2)))
-                if row is not None:
-                    writer.writerow(row)
-                zf.writestr(
-                    site.code + '_' +
-                    group.finish_date.strftime('%Y%m%d%M%H') + '.csv',
-                    buf.getvalue())
+            buf = StringIO()
+            writer = csv.writer(buf, lineterminator='\n')
+            writer.writerow(
+                [
+                    "Site Code", "Site Name", "Associated Site Codes",
+                    "Sources", "Generator Types", "From", "To", "Type",
+                    "Date"] + list(map(str, range(1, 49))))
+            associates = ' '.join(
+                s.code for s in site.find_linked_sites(
+                    sess, start_date, finish_date))
+            source_codes = set()
+            gen_types = set()
+            for supply in sess.query(Supply).join(Era).join(SiteEra).filter(
+                    SiteEra.is_physical == true(), SiteEra.site == site,
+                    Era.start_date <= finish_date, or_(
+                        Era.finish_date == null(),
+                        Era.finish_date >= start_date)).distinct().options(
+                            joinedload(Supply.source),
+                            joinedload(Supply.generator_type)):
+                source_codes.add(supply.source.code)
+                gen_type = supply.generator_type
+                if gen_type is not None:
+                    gen_types.add(gen_type.code)
+            source_codes_str = ', '.join(sorted(source_codes))
+            gen_types_str = ', '.join(sorted(gen_types))
+            row = None
+            for hh in site.hh_data(sess, start_date, finish_date):
+                hh_start = hh['start_date']
+                if hh_start.hour == 0 and hh_start.minute == 0:
+                    if row is not None:
+                        writer.writerow(row)
+                    row = [
+                        site.code, site.name, associates, source_codes_str,
+                        gen_types_str, start_date_str, finish_date_str,
+                        'used', hh_start.strftime('%Y-%m-%d')]
+                used_gen_kwh = hh['imp_gen'] - hh['exp_net'] - hh['exp_gen']
+                used_3p_kwh = hh['imp_3p'] - hh['exp_3p']
+                used_kwh = hh['imp_net'] + used_gen_kwh + used_3p_kwh
+                row.append(str(round(used_kwh, 2)))
+            if row is not None:
+                writer.writerow(row)
+            zf.writestr(
+                site.code + '_' +
+                finish_date.strftime('%Y%m%d%M%H') + '.csv',
+                buf.getvalue())
     except:
         msg = traceback.format_exc()
         sys.stderr.write(msg)
@@ -90,42 +98,49 @@ def site_content(site_id, start_date, finish_date, user, file_name):
         writer = csv.writer(f, lineterminator='\n')
         site = Site.get_by_id(sess, site_id)
         sites = sess.query(Site).filter(Site.id == site_id)
+        start_date_str = hh_format(start_date)
+        finish_date_str = hh_format(finish_date)
 
         for site in sites:
-            for group in site.groups(sess, start_date, finish_date, True):
-                writer.writerow(
-                    [
-                        "Site Code", "Site Name", "Associated Site Codes",
-                        "Sources", "Generator Types", "From", "To", "Type",
-                        "Date"] + list(map(str, range(1, 49))))
-                associates = ' '.join(st.code for st in group.sites[1:])
-                source_codes = ' '.join(
-                    sorted(set(sup.source.code for sup in group.supplies)))
-                gen_types = ' '.join(
-                    sorted(
-                        set(
-                            sup.generator_type.code for sup in
-                            group.supplies
-                            if sup.generator_type is not None)))
-                group_start_str = hh_format(group.start_date)
-                group_finish_str = hh_format(group.finish_date)
-                vals = None
-                for hh in group.hh_data(sess):
-                    hh_start = hh['start_date']
-                    if hh_start.hour == 0 and hh_start.minute == 0:
-                        if vals is not None:
-                            writer.writerow(vals)
-                        vals = [
-                            site.code, site.name, associates, source_codes,
-                            gen_types, group_start_str, group_finish_str,
-                            'used', hh_start.strftime('%Y-%m-%d')]
-                    used_gen_kwh = hh['imp_gen'] - hh['exp_net'] - \
-                        hh['exp_gen']
-                    used_3p_kwh = hh['imp_3p'] - hh['exp_3p']
-                    used_kwh = hh['imp_net'] + used_gen_kwh + used_3p_kwh
-                    vals.append(str(round(used_kwh, 2)))
-                if vals is not None:
-                    writer.writerow(vals)
+            writer.writerow(
+                [
+                    "Site Code", "Site Name", "Associated Site Codes",
+                    "Sources", "Generator Types", "From", "To", "Type",
+                    "Date"] + list(map(str, range(1, 49))))
+            associates = ' '.join(
+                s.code for s in site.find_linked_sites(
+                    sess, start_date, finish_date))
+            source_codes = set()
+            gen_types = set()
+            for supply in sess.query(Supply).join(Era).join(SiteEra).filter(
+                    SiteEra.is_physical == true(), SiteEra.site == site,
+                    Era.start_date <= finish_date, or_(
+                        Era.finish_date == null(),
+                        Era.finish_date >= start_date)).distinct().options(
+                            joinedload(Supply.source),
+                            joinedload(Supply.generator_type)):
+                source_codes.add(supply.source.code)
+                gen_type = supply.generator_type
+                if gen_type is not None:
+                    gen_types.add(gen_type.code)
+            source_codes_str = ', '.join(sorted(source_codes))
+            gen_types_str = ', '.join(sorted(gen_types))
+            vals = None
+            for hh in site.hh_data(sess, start_date, finish_date):
+                hh_start = hh['start_date']
+                if hh_start.hour == 0 and hh_start.minute == 0:
+                    if vals is not None:
+                        writer.writerow(vals)
+                    vals = [
+                        site.code, site.name, associates, source_codes_str,
+                        gen_types_str, start_date_str, finish_date_str, 'used',
+                        hh_start.strftime('%Y-%m-%d')]
+                used_gen_kwh = hh['imp_gen'] - hh['exp_net'] - hh['exp_gen']
+                used_3p_kwh = hh['imp_3p'] - hh['exp_3p']
+                used_kwh = hh['imp_net'] + used_gen_kwh + used_3p_kwh
+                vals.append(str(round(used_kwh, 2)))
+            if vals is not None:
+                writer.writerow(vals)
     except:
         msg = traceback.format_exc()
         sys.stderr.write(msg)
