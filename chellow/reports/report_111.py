@@ -216,7 +216,12 @@ def content(batch_id, bill_id, user):
                     Era.start_date <= covered_finish,
                     or_(
                         Era.finish_date == null(),
-                        Era.finish_date >= covered_start)).distinct():
+                        Era.finish_date >= covered_start),
+                    or_(
+                        Era.mop_contract == contract,
+                        Era.hhdc_contract == contract,
+                        Era.imp_supplier_contract == contract,
+                        Era.exp_supplier_contract == contract)).distinct():
                 site = sess.query(Site).join(SiteEra).filter(
                     SiteEra.is_physical == true(), SiteEra.era == era).one()
 
