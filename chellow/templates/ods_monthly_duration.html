@@ -1,39 +1,37 @@
 {% extends "base.html" %}
 
 {% block title %}
-
-	&raquo; Unified Monthly Durationfasfas
+	&raquo; Monthly Duration
 {% endblock %}
 
 {% block nav %}
-	&raquo; Unified Monthly Duration
+	&raquo; Monthly Duration
 {% endblock %}
 
 {% block content %}
-<!-- Layer Section -->
-<div class="layer-section">
-	<!-- Section Header -->
-	<div class="section-header">
-		<h2>Download</h2>	
-	</div>
-	<!-- End Section Header -->
-	<!-- Section Content -->
-	<div class="section-content">
-		<div class="section-data">
-		    <div class="standardForm textWidthAuto inlineFormSubmit">
-		        <form action="{{context_path}}/reports/247">
-            		<fieldset>
-            			For {{input_text('months', '1', 2, 2)}}
-            			month(s) finishing at the end of
-            			{{input_date('finish', month_finish, resolution='month')}}
-            			<input type="submit" value="Download">
-            		</fieldset>
-            	</form>
-		    </div>
+	<!-- Layer Section -->
+	<div class="layer-section">
+		<!-- Section Header -->
+		<div class="section-header">
+			<h2>Download</h2>	
 		</div>
+		<!-- End Section Header -->
+		<!-- Section Content -->
+		<div class="section-content">
+			<div class="section-data">
+				<div class="standardForm textWidthAuto inlineFormSubmit">
+					<form action="{{context_path}}/reports/247">
+						<fieldset>
+							For {{input_text('months', '1', 2, 2)}}
+							month(s) finishing at the end of
+							{{input_date('finish', month_finish, resolution='month')}}
+							<input type="submit" value="Download">
+						</fieldset>
+					</form>
+				</div>
+			</div>
+		</div>
+		<!-- End Section Content -->
 	</div>
-	<!-- End Section Content -->
-</div>
-<!-- End Layer Section -->
-	
+	<!-- End Layer Section -->
 {% endblock %}
