@@ -679,6 +679,10 @@ class Contract(Base, PersistentClass):
         return Contract.get_by_role_code_id(sess, 'X', oid)
 
     @staticmethod
+    def find_supplier_by_name(sess, name):
+        return Contract.find_by_role_code_name(sess, 'X', name)
+
+    @staticmethod
     def get_supplier_by_name(sess, name):
         return Contract.get_by_role_code_name(sess, 'X', name)
 

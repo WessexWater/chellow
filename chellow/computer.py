@@ -10,7 +10,8 @@ import json
 from werkzeug.exceptions import BadRequest
 from chellow.models import (
     RateScript, Channel, Era, Tpr, MeasurementRequirement, RegisterRead, Bill,
-    BillType, ReadType, SiteEra, Supply, Source, HhDatum)
+    BillType, ReadType, SiteEra, Supply, Source, HhDatum, Contract,
+    ClockInterval)
 from chellow.utils import HH, hh_format, hh_max, hh_range, hh_min
 import chellow.bank_holidays
 from itertools import combinations
@@ -298,28 +299,49 @@ def _tpr_dict(sess, caches, tpr_code, pw):
     except KeyError:
         tpr_cache = get_computer_cache(caches, 'tprs')
 
-        tpr_dict = {}
-        days_of_week = dict([i, []] for i in range(7))
-        tpr_dict['days-of-week'] = days_of_week
         tpr = Tpr.get_by_code(sess, tpr_code)
-        for ci in sess.execute(
-                "select ci.day_of_week - 1 as day_of_week, "
-                "ci.start_month * 100 + ci.start_day as start_month, "
-                "ci.start_hour + (ci.start_minute / 60.0) as start_hour, "
-                "ci.end_month * 100 + ci.end_day as end_month, "
-                "ci.end_hour + (ci.end_minute / 60.0) as end_hour "
-                "from clock_interval ci where ci.tpr_id = :tpr_id",
-                params={'tpr_id': tpr.id}):
-            days_of_week[ci.day_of_week].append(
+        days_of_week = dict([i, []] for i in range(7))
+        tpr_dict = {
+            'days-of-week': days_of_week, 'is-gmt': tpr.is_gmt,
+            'datum-cache': {}}
+        if tpr.is_teleswitch:
+            contract = Contract.find_supplier_by_name(sess, 'teleswitch')
+            if contract is None:
+                cis = []
+            else:
+                tprs = hh_rate(
+                    sess, caches, contract.id, Datetime.now(pytz.utc), 'tprs',
+                    pw)
+                try:
+                    cis = tprs[tpr_code]
+                except KeyError:
+                    raise BadRequest(
+                        "Can't find the TPR " + tpr_code +
+                        " in the rate script of the 'teleswitch' supplier "
+                        "contract.")
+        else:
+            cis = [
                 {
-                    'start-month': ci.start_month,
-                    'start-hour': float(ci.start_hour),
-                    'end-month': ci.end_month,
-                    'end-hour': float(ci.end_hour)})
+                    'day_of_week': ci.day_of_week,
+                    'start_month': ci.start_month,
+                    'start_day': ci.start_day,
+                    'start_hour': ci.start_hour,
+                    'start_minute': ci.start_minute,
+                    'end_month': ci.end_month,
+                    'end_day': ci.end_day,
+                    'end_hour': ci.end_hour,
+                    'end_minute': ci.end_minute}
+                for ci in sess.query(ClockInterval).filter(
+                    ClockInterval.tpr == tpr)]
 
-        tpr_dict['is-gmt'] = tpr.is_gmt
+        for ci in cis:
+            days_of_week[ci['day_of_week'] - 1].append(
+                {
+                    'start-month': ci['start_month'] * 100 + ci['start_day'],
+                    'start-hour': ci['start_hour'] + ci['start_minute'] / 60,
+                    'end-month': ci['end_month'] * 100 + ci['end_day'],
+                    'end-hour': ci['end_hour'] + ci['end_minute'] / 60})
 
-        tpr_dict['datum-cache'] = {}
         tpr_cache[tpr_code] = tpr_dict
         return tpr_dict
 
