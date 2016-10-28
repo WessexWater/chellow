@@ -84,6 +84,8 @@ col_map = {
     'Network UoS Charges Charge': 'triad-estimate-gbp',
     'CAP_M_TTL': 'capacity-market-gbp'}
 
+CT_TZ = pytz.timezone('Europe/London')
+
 
 class Parser():
     def __init__(self, f):
@@ -125,8 +127,12 @@ class Parser():
 
             def date_val(title):
                 try:
-                    return Datetime.strptime(
-                        val(title), "%d/%m/%Y").replace(tzinfo=pytz.utc)
+                    dt = Datetime.strptime(val(title), "%d/%m/%Y")
+                    if dt.year > 2016 or (
+                            dt.year == 2016 and dt.month >= 8):
+                        return CT_TZ.localize(dt).astimezone(pytz.utc)
+                    else:
+                        return dt.replace(tzinfo=pytz.utc)
                 except ValueError as e:
                     raise BadRequest(
                         "At line number " + str(self._line_number) +
