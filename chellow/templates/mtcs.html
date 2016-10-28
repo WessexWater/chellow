@@ -33,11 +33,11 @@
 					{% for mtc, contract in mtcs %}
 						<tr>
 							<td>
-								<a href="{{context_path}}/mtcs/{{mtc.id}}">{{mtc.code}}</a>
+								<a href="/mtcs/{{mtc.id}}">{{mtc.code}}</a>
 							</td>
 							<td>
 								{% if mtc.dno %}
-									<a href="{{context_path}}/dno_contracts/{{contract.id}}">
+									<a href="/dno_contracts/{{contract.id}}">
 										{{mtc.dno.dno_code}}
 									</a>
 								{% else %}
@@ -46,7 +46,7 @@
 							</td>
 							<td>{{mtc.description}}</td>
 							<td>
-								<a href="{{context_path}}/meter_types/{{mtc.meter_type.id}}">
+								<a href="/meter_types/{{mtc.meter_type.id}}">
 									{{mtc.meter_type.code}}
 								</a>
 							</td>

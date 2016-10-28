@@ -5,8 +5,8 @@
 {% endblock %}
 
 {% block nav %}
-	&raquo; <a href="{{context_path}}/hhdc_contracts">HHDC Contracts</a> &raquo; 
-	<a href="{{context_path}}/hhdc_contracts/{{contract.id}}">{{contract.name}}</a> &raquo; 
+	&raquo; <a href="/hhdc_contracts">HHDC Contracts</a> &raquo; 
+	<a href="/hhdc_contracts/{{contract.id}}">{{contract.name}}</a> &raquo; 
 	Automatic HH Data Downloader
 {% endblock %}
 
@@ -25,7 +25,7 @@
     <div class="section-content">
         <div class="section-data">
 		    <table class="DataTable widthAuto noMarginBottom">
-		        <caption><a href="{{context_path}}/hhdc_contracts/{{contract.id}}/auto_importer">Refresh page</a></caption>
+		        <caption><a href="/hhdc_contracts/{{contract.id}}/auto_importer">Refresh page</a></caption>
 				<tr>
 					<th>Is Locked?</th>
 					<th>Is stopping?</th>

@@ -5,9 +5,9 @@
 {% endblock %}
 
 {% block nav %}
-	&raquo; <a href="{{context_path}}/supplier_contracts">Supplier Contracts</a>
+	&raquo; <a href="/supplier_contracts">Supplier Contracts</a>
 	&raquo; {{contract.name}}
- 	[<a href="{{context_path}}/supplier_contracts/{{contract.id}}/edit">edit</a>]
+ 	[<a href="/supplier_contracts/{{contract.id}}/edit">edit</a>]
 {% endblock %}
 
 {% block content %}
@@ -26,7 +26,7 @@
 					<tr>
 						<th>Supplier</th>
 						<td>
-							<a href="{{context_path}}/parties/{{contract.party.id}}">{{contract.party.name}}</a>
+							<a href="/parties/{{contract.party.id}}">{{contract.party.name}}</a>
 						</td>
 					</tr>
 					<tr>
@@ -44,7 +44,7 @@
 			<table class="DataTable widthAuto noMarginBottom">
 				<caption>Rate Scripts
 		 	[<a
-			 		href="{{context_path}}/supplier_contracts/{{contract.id}}/add_rate_script"
+			 		href="/supplier_contracts/{{contract.id}}/add_rate_script"
 					>add</a>]</caption>
 				<thead>
 					<tr>
@@ -57,7 +57,7 @@
 					{% for rate_script in rate_scripts %}
 						<tr>
 							<td>
-								<a href="{{context_path}}/supplier_rate_scripts/{{rate_script.id}}">view</a>
+								<a href="/supplier_rate_scripts/{{rate_script.id}}">view</a>
 							</td>
 							<td>{{rate_script.start_date|hh_format}}</td>
 							<td>{{rate_script.finish_date|hh_format}}</td>
@@ -69,7 +69,7 @@
 		<div class="section-data">
 			<ul>
 				<li>
-					<a href="{{context_path}}/supplier_batches?supplier_contract_id={{contract.id}}">Batches</a>
+					<a href="/supplier_batches?supplier_contract_id={{contract.id}}">Batches</a>
 				</li>
 			</ul>
 		</div>
@@ -85,7 +85,7 @@
 	<div class="section-content">
 		<div class="standardForm textWidthAuto">
 			<div class="section-data">
-				<form action="{{context_path}}/reports/87">
+				<form action="/reports/87">
 					<fieldset>
 						<input type="hidden" name="supplier_contract_id" value="{{contract.id}}">
 						<legend>Download Supply Level Virtual Bills</legend>
@@ -97,7 +97,7 @@
 				</form>
 			</div>
 			<div class="section-data">
-				<form action="{{context_path}}/reports/109">
+				<form action="/reports/109">
 					<fieldset>
 						<input type="hidden" name="supplier_contract_id" value="{{contract.id}}">
 						<legend>Download Displaced Virtual Bills</legend>

@@ -6,9 +6,9 @@
 {% endblock %}
 
 {% block nav %}
-	&raquo; <a href="{{context_path}}/mop_contracts">MOP Contracts</a> &raquo; 
-	<a href="{{context_path}}/mop_contracts/{{rate_script.contract.id}}">{{rate_script.contract.name}}</a> &raquo; 
-	<a href="{{context_path}}/mop_rate_scripts/{{rate_script.id}}">{{rate_script.start_date|hh_format }}</a> &raquo; Edit
+	&raquo; <a href="/mop_contracts">MOP Contracts</a> &raquo; 
+	<a href="/mop_contracts/{{rate_script.contract.id}}">{{rate_script.contract.name}}</a> &raquo; 
+	<a href="/mop_rate_scripts/{{rate_script.id}}">{{rate_script.start_date|hh_format }}</a> &raquo; Edit
 {% endblock %}
 
 {% block content %}
@@ -26,7 +26,7 @@
 								<input type="hidden" name="mop_rate_script_id"
 										value="{{rate_script.id}}">
 								<input type="submit" name="delete" value="Delete">
-								<a href="{{context_path}}/mop_rate_scripts/{{rate_script.id}}/edit" class="btn">Cancel</a>
+								<a href="/mop_rate_scripts/{{rate_script.id}}/edit" class="btn">Cancel</a>
 							</fieldset>
 						</form>
 					</div>

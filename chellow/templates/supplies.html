@@ -62,11 +62,11 @@
 							{% for era in eras %}
 								<tr>
 									<td>
-										<a href="{{context_path}}/supplies/{{era.supply_id}}">supply</a>
+										<a href="/supplies/{{era.supply_id}}">supply</a>
 									</td>
 									<td>{{era.msn}}</td>
 									<td>
-										<a href="{{context_path}}/hhdc_contracts/{{era.hhdc_contract.id}}">{{era.hhdc_contract.name}}</a>
+										<a href="/hhdc_contracts/{{era.hhdc_contract.id}}">{{era.hhdc_contract.name}}</a>
 									</td>
 									<td>{{era.hhdc_account}}</td>
 									<td>
@@ -77,7 +77,7 @@
 									</td>
 									<td>
 										{% if era.imp_mpan_core %}
-											<a href="{{context_path}}/supplier_contracts/{{era.imp_supplier_contract.id}}">{{era.imp_supplier_contract.name}}</a>
+											<a href="/supplier_contracts/{{era.imp_supplier_contract.id}}">{{era.imp_supplier_contract.name}}</a>
 										{% endif %}
 									</td>
 									<td>
@@ -93,7 +93,7 @@
 									</td>
 									<td>
 										{% if era.exp_mpan_core %}
-											<a href="{{context_path}}/supplier_contracts/{{era.exp_supplier_contract.id}}">{{era.exp_supplier_contract.name}}</a>
+											<a href="/supplier_contracts/{{era.exp_supplier_contract.id}}">{{era.exp_supplier_contract.name}}</a>
 										{% endif %}
 									</td>
 									<td>

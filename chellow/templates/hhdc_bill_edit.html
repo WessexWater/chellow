@@ -6,17 +6,17 @@
 {% endblock %}
 
 {% block nav %}
-	&raquo; <a href="{{context_path}}/hhdc_contracts">HHDC Contracts</a> &raquo;
+	&raquo; <a href="/hhdc_contracts">HHDC Contracts</a> &raquo;
 	<a
-			href="{{context_path}}/hhdc_contracts/{{bill.batch.contract.id}}"
+			href="/hhdc_contracts/{{bill.batch.contract.id}}"
 			>{{bill.batch.contract.name}}</a> &raquo;
 	<a
-			href="{{context_path}}/hhdc_batches?hhdc_contract_id={{bill.batch.contract.id}}"
+			href="/hhdc_batches?hhdc_contract_id={{bill.batch.contract.id}}"
 			>Batches</a> &raquo;
 	<a
-			href="{{context_path}}/hhdc_batches/{{bill.batch.id}}"
+			href="/hhdc_batches/{{bill.batch.id}}"
 			>{{bill.batch.reference}}</a> &raquo;
-	<a href="{{context_path}}/hhdc_bills/{{bill.id}}">Bill {{bill.id}}</a> &raquo;
+	<a href="/hhdc_bills/{{bill.id}}">Bill {{bill.id}}</a> &raquo;
 	Edit
 {% endblock %}
 
@@ -36,7 +36,7 @@
 					<form method="post" action="">
 						<fieldset>
 						  <input type="submit" name="delete" value="Delete">
-						  <input type="reset" value="Cancel" onClick="window.location='{{context_path}}/hhdc_bills/{{bill.id}}/edit'" />
+						  <input type="reset" value="Cancel" onClick="window.location='/hhdc_bills/{{bill.id}}/edit'" />
 						</fieldset>
 				  	</form>
 				  	<p></p>
@@ -58,7 +58,7 @@
         <!-- Section Content -->
         <div class="section-content">
             <div class="section-data">
-            	<p><a href="{{context_path}}/supplies/{{bill.supply.id}}">Supply</a></p>
+            	<p><a href="/supplies/{{bill.supply.id}}">Supply</a></p>
             	
                 <form action="" method="post">
                     <fieldset>

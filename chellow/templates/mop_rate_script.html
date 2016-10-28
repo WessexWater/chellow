@@ -6,10 +6,10 @@
 {% endblock %}
 
 {% block nav %}
-	&raquo; <a href="{{context_path}}/mop_contracts">MOP Contracts</a> &raquo; 
-	<a href="{{context_path}}/mop_contracts/{{rate_script.contract.id}}">{{rate_script.contract.name}}</a> &raquo; 
+	&raquo; <a href="/mop_contracts">MOP Contracts</a> &raquo; 
+	<a href="/mop_contracts/{{rate_script.contract.id}}">{{rate_script.contract.name}}</a> &raquo; 
 	{{rate_script.start_date|hh_format}}
-	[<a href="{{context_path}}/mop_rate_scripts/{{rate_script.id}}/edit">edit</a>]
+	[<a href="/mop_rate_scripts/{{rate_script.id}}/edit">edit</a>]
 {% endblock %}
 
 {% block content %}

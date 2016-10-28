@@ -6,14 +6,14 @@
 {% endblock %}
 
 {% block nav %}
-	&raquo; <a href="{{context_path}}/mop_contracts">MOP Contracts</a> &raquo; 
-	<a href="{{context_path}}/mop_contracts/{{bill.batch.contract.id}}">{{bill.batch.contract.name}}</a>
+	&raquo; <a href="/mop_contracts">MOP Contracts</a> &raquo; 
+	<a href="/mop_contracts/{{bill.batch.contract.id}}">{{bill.batch.contract.name}}</a>
 	&raquo; 
-	<a href="{{context_path}}/mop_batches?mop_contract_id={{bill.batch.contract.id}}">Batches</a>
+	<a href="/mop_batches?mop_contract_id={{bill.batch.contract.id}}">Batches</a>
 	&raquo; 
-	<a href="{{context_path}}/mop_batches/{{bill.batch.id}}">{{bill.batch.reference}}</a>
+	<a href="/mop_batches/{{bill.batch.id}}">{{bill.batch.reference}}</a>
 	&raquo; {{bill.reference}}
-	[<a href="{{context_path}}/mop_bills/{{bill.id}}">edit</a>]
+	[<a href="/mop_bills/{{bill.id}}">edit</a>]
 {% endblock %}
 
 {% block content %}
@@ -47,7 +47,7 @@
 				<tbody>
 					<tr>
 						<td>
-							<a href="{{context_path}}/supplies/{{bill.supply.id}}">Supply</a>
+							<a href="/supplies/{{bill.supply.id}}">Supply</a>
 						</td>
 						<td>{{bill.reference}}</td>
 						<td>{{bill.account}}</td>
@@ -59,11 +59,11 @@
 						<td>{{bill.vat}}</td>
 						<td>{{bill.gross}}</td>
 						<td>
-							<a href="{{context_path}}/bill_types/{{bill.bill_type.id}}"
+							<a href="/bill_types/{{bill.bill_type.id}}"
 							 	title="{{bill.bill_type.description}}">{{bill.bill_type.code}}</a>
 						</td>
 						<td>
-							<a href="{{context_path}}/reports/111?bill_id={{bill.id}}">Check</a>
+							<a href="/reports/111?bill_id={{bill.id}}">Check</a>
 						</td>
 					</tr>
 				</tbody>

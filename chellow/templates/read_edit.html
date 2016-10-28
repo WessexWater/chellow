@@ -16,11 +16,11 @@
 {% endblock %}
 
 {% block nav %}
-	&raquo; <a href="{{context_path}}/supplier_contracts">Supplier Contracts</a> &raquo; 
-	<a href="{{context_path}}/supplier_contracts/{{read.bill.batch.contract.id}}">{{read.bill.batch.contract.name}}</a> &raquo; 
-	<a href="{{context_path}}/supplier_batches?supplier_contract_id={{read.bill.batch.contract.id}}">Batches</a> &raquo; 
-	<a href="{{context_path}}/supplier_batches/{{read.bill.batch.id}}">{{read.bill.batch.reference}}</a> &raquo; 
-	<a href="{{context_path}}/supplier_bills/{{read.bill.id}}">Bill {{read.bill.id}}</a> &raquo; 
+	&raquo; <a href="/supplier_contracts">Supplier Contracts</a> &raquo; 
+	<a href="/supplier_contracts/{{read.bill.batch.contract.id}}">{{read.bill.batch.contract.name}}</a> &raquo; 
+	<a href="/supplier_batches?supplier_contract_id={{read.bill.batch.contract.id}}">Batches</a> &raquo; 
+	<a href="/supplier_batches/{{read.bill.batch.id}}">{{read.bill.batch.reference}}</a> &raquo; 
+	<a href="/supplier_bills/{{read.bill.id}}">Bill {{read.bill.id}}</a> &raquo; 
  	Read {{read.id}} Edit
 {% endblock %}
 
@@ -39,7 +39,7 @@
         		    <form method="post" action="">
             			<fieldset>
             				<input type="submit" name="delete" value="Delete">
-            				<input type="reset" value="Cancel" onClick="window.location='{{context_path}}/reads/{{read.id}}/edit'" />
+            				<input type="reset" value="Cancel" onClick="window.location='/reads/{{read.id}}/edit'" />
             			</fieldset>
             		</form>
         		</div>

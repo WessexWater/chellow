@@ -6,9 +6,9 @@
 {% endblock %}
 
 {% block nav %}
-	&raquo; <a href="{{context_path}}/non_core_contracts">Non-core Contracts</a> &raquo; 
-	<a href="{{context_path}}/non_core_contracts/{{rate_script.contract.id}}">{{rate_script.contract.name}}</a> &raquo; 
-	<a href="{{context_path}}/non_core_rate_scripts/{{rate_script.id}}">{{rate_script.start_date|hh_format}}</a>
+	&raquo; <a href="/non_core_contracts">Non-core Contracts</a> &raquo; 
+	<a href="/non_core_contracts/{{rate_script.contract.id}}">{{rate_script.contract.name}}</a> &raquo; 
+	<a href="/non_core_rate_scripts/{{rate_script.id}}">{{rate_script.start_date|hh_format}}</a>
  	&raquo; Edit
 {% endblock %}
 
@@ -25,7 +25,7 @@
 						<fieldset>
 							<input type="hidden" name="rate_script_id" value="{{rate_script.id}}">
 							<input type="submit" name="delete" value="Delete" />
-							<input type="reset" value="Cancel" onClick="window.location='{{context_path}}/non_core_rate_scripts/{{rate_script.id}}/edit'" />
+							<input type="reset" value="Cancel" onClick="window.location='/non_core_rate_scripts/{{rate_script.id}}/edit'" />
 						</fieldset>
 					</form>
 				</div>

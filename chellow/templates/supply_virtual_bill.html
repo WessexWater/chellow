@@ -5,8 +5,8 @@
 {% endblock %}
 
 {% block nav %}
-	&raquo; <a href="{{context_path}}/supplies">Supplies</a> &raquo; 
-	<a href="{{context_path}}/supplies/{{supply.id}}">{{supply.id}}</a> &raquo; 
+	&raquo; <a href="/supplies">Supplies</a> &raquo; 
+	<a href="/supplies/{{supply.id}}">{{supply.id}}</a> &raquo; 
  	Virtual Bill
 {% endblock %}
 
@@ -26,7 +26,8 @@
 						<fieldset>
 							<input type="hidden" name="supply_id" value="{{supply.id}}">
 							From {{input_date('start', start_date)}} to
-							{{input_date('finish', finish_date)}} <input type="submit" value="Show">
+							{{input_date('finish', finish_date)}}
+						 	<input type="submit" value="Show">
 						</fieldset>
 					</form>
 				</div>
@@ -72,5 +73,4 @@
 		<!-- End Section Content -->
 	</div>
 	<!-- End Layer Section -->
-	
 {% endblock %}

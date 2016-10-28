@@ -5,7 +5,7 @@
 {% endblock %}
 
 {% block nav %}
-	&raquo; <a href="{{context_path}}/market_roles">Market Roles</a> &raquo; 
+	&raquo; <a href="/market_roles">Market Roles</a> &raquo; 
 	{{ market_role.description }}
 {% endblock %}
 
@@ -45,10 +45,10 @@
 					{% for party in market_role.parties %}
 						<tr>
 							<td>
-								<a href="{{context_path}}/parties/{{party.id}}">{{party.name}}</a>
+								<a href="/parties/{{party.id}}">{{party.name}}</a>
 							</td>
 							<td>
-								<a href="{{context_path}}/participants/{{party.participant.id}}">{{party.participant.code}}</a>
+								<a href="/participants/{{party.participant.id}}">{{party.participant.code}}</a>
 							</td>
 							{% if market_role.code == 'R' %}
 								<td>{{ party.dno_code }}</td>

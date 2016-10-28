@@ -8,9 +8,9 @@
 {% endblock %}
 
 {% block nav %}
-	&raquo; <a href="{{context_path}}/supplies">Supplies</a> &raquo; 
-	<a href="{{context_path}}/supplies/{{channel.era.supply.id }}">Supply {{channel.era.supply.name}} Era {{channel.era.start_date|hh_format}}</a> &raquo; 
-	<a href="{{context_path}}/channels/{{channel.id}}">Channel {% if channel.imp_related %}Import{% else %}Export{% endif %}
+	&raquo; <a href="/supplies">Supplies</a> &raquo; 
+	<a href="/supplies/{{channel.era.supply.id }}">Supply {{channel.era.supply.name}} Era {{channel.era.start_date|hh_format}}</a> &raquo; 
+	<a href="/channels/{{channel.id}}">Channel {% if channel.imp_related %}Import{% else %}Export{% endif %}
 	{{channel.channel_type}}</a> &raquo; Edit
 {% endblock %}
 
@@ -30,7 +30,7 @@
 						<form method="post">
 							<fieldset>
 								<input type="submit" name="delete" value="Delete">
-								<input type="reset" value="Cancel" onClick="window.location='{{context_path}}/channels/{{channel.id}}/edit'" />
+								<input type="reset" value="Cancel" onClick="window.location='/channels/{{channel.id}}/edit'" />
 							</fieldset>
 						</form>
 					</div>

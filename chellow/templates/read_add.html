@@ -6,11 +6,11 @@
 {% endblock %}
 
 {% block nav %}
-	<a href="{{context_path}}/supplier_contracts">Supplier Contracts</a> &raquo; 
-	<a href="{{context_path}}/supplier_contracts/{{bill.batch.contract.id}}">{{bill.batch.contract.name}}</a> &raquo; 
-	<a href="{{context_path}}/supplier_batches?supplier_contract_id={{bill.batch.contract.id}}">Batches</a> &raquo; 
-	<a href="{{context_path}}/supplier_batches/{{bill.batch.id}}">{{bill.batch.reference}}</a> &raquo; 
-	<a href="{{context_path}}/supplier_bills/{{bill.id}}">Bill {{bill.id}}</a>
+	<a href="/supplier_contracts">Supplier Contracts</a> &raquo; 
+	<a href="/supplier_contracts/{{bill.batch.contract.id}}">{{bill.batch.contract.name}}</a> &raquo; 
+	<a href="/supplier_batches?supplier_contract_id={{bill.batch.contract.id}}">Batches</a> &raquo; 
+	<a href="/supplier_batches/{{bill.batch.id}}">{{bill.batch.reference}}</a> &raquo; 
+	<a href="/supplier_bills/{{bill.id}}">Bill {{bill.id}}</a>
  	&raquo; Add Read
 {% endblock %}
 

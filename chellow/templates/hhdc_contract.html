@@ -5,9 +5,9 @@
 {% endblock %}
 
 {% block nav %}
-	&raquo; <a href="{{context_path}}/hhdc_contracts">HHDC Contracts</a> &raquo;
+	&raquo; <a href="/hhdc_contracts">HHDC Contracts</a> &raquo;
 	{{hhdc_contract.name}}
-	[<a href="{{context_path}}/hhdc_contracts/{{hhdc_contract.id}}/edit">edit</a>]
+	[<a href="/hhdc_contracts/{{hhdc_contract.id}}/edit">edit</a>]
 {% endblock %}
 
 {% block content %}
@@ -26,7 +26,7 @@
 				<tr>
 					<th>Party</th>
 					<td>
-						<a href="{{context_path}}/parties/{{hhdc_contract.party.id}}">
+						<a href="/parties/{{hhdc_contract.party.id}}">
 							{{hhdc_contract.party.name}}
 						</a>
 					</td>
@@ -51,7 +51,7 @@
 		    <table class="DataTable widthAuto">
 			<caption>
 				Rate Scripts
-				[<a href="{{context_path}}/hhdc_contracts/{{hhdc_contract.id}}/add_rate_script">add</a>]
+				[<a href="/hhdc_contracts/{{hhdc_contract.id}}/add_rate_script">add</a>]
 			</caption>
 			<thead>
 				<tr>
@@ -64,7 +64,7 @@
 				{% for rate_script in rate_scripts %}
 					<tr>
 						<td>
-							<a href="{{context_path}}/hhdc_rate_scripts/{{rate_script.id}}">
+							<a href="/hhdc_rate_scripts/{{rate_script.id}}">
 								view
 							</a>
 						</td>
@@ -79,16 +79,16 @@
 		<div class="section-data">
 		    <ul>
 			<li>
-				<a href="{{context_path}}/hhdc_batches?hhdc_contract_id={{hhdc_contract.id}}">Batches</a>
+				<a href="/hhdc_batches?hhdc_contract_id={{hhdc_contract.id}}">Batches</a>
 			</li>
 			<li>
-				<a href="{{context_path}}/channel_snags?hhdc_contract_id={{hhdc_contract.id}}&days_hidden=5">Channel Snags</a>
+				<a href="/channel_snags?hhdc_contract_id={{hhdc_contract.id}}&days_hidden=5">Channel Snags</a>
 			</li>
 			<li>
-				<a href="{{context_path}}/hhdc_contracts/{{hhdc_contract.id}}/auto_importer">Automatic HH Data Importer</a>
+				<a href="/hhdc_contracts/{{hhdc_contract.id}}/auto_importer">Automatic HH Data Importer</a>
 			</li>
 			<li>
-			[<a href="{{context_path}}/hhdc_contracts/{{hhdc_contract.id}}/hh_imports">HH data imports</a>]
+			[<a href="/hhdc_contracts/{{hhdc_contract.id}}/hh_imports">HH data imports</a>]
 			</li>
 		</ul>
 		</div>
@@ -108,7 +108,7 @@
 	    <div class="section-content">
 		<div class="section-data">
 		    <div class="standardForm textWidthAuto">
-		        <form action="{{context_path}}/reports/81">
+		        <form action="/reports/81">
 				<fieldset>
 					<input type="hidden" name="hhdc_contract_id" value="{{hhdc_contract.id}}">
 					

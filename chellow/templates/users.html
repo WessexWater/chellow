@@ -31,7 +31,7 @@
 		    <ul>
         		{% if current_user is defined %}
         			<li>
-        				<a href="{{context_path}}/users/{{current_user.id}}">Me</a>
+        				<a href="/users/{{current_user.id}}">Me</a>
         			</li>
         		{% endif %}
         	</ul>
@@ -49,7 +49,7 @@
         			<tbody>
         				{% for user in users %}
         					<tr>
-        						<td><a href="{{context_path}}/users/{{user.id}}">view</a></td>
+        						<td><a href="/users/{{user.id}}">view</a></td>
         						<td>{{ user.email_address }}</td>
         						<td>{{ user.user_role.code }}</td>
         						<td>{{ user.party.name }}</td>

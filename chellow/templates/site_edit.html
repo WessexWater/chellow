@@ -14,8 +14,8 @@
 {% endblock %}
 
 {% block nav %}
-	&raquo; <a href="{{context_path}}/sites">Sites</a> &raquo;
-	<a href="{{context_path}}/sites/{{site.id}}">{{site.code}} {{site.name}}</a>
+	&raquo; <a href="/sites">Sites</a> &raquo;
+	<a href="/sites/{{site.id}}">{{site.code}} {{site.name}}</a>
  	&raquo; Edit
 {% endblock %}
 
@@ -37,7 +37,7 @@
 								Are you sure you want to delete this site and any associated snags?
 							</legend> -->
 							<input type="submit" name="delete" value="delete"> 
-							<input type="reset" value="Cancel" onClick="window.location='{{context_path}}/sites/{{site.id}}/edit'" />
+							<input type="reset" value="Cancel" onClick="window.location='/sites/{{site.id}}/edit'" />
 							
 						</fieldset>
 					</form>

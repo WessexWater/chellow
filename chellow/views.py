@@ -71,9 +71,8 @@ def shutdown_session(exception=None):
 
 @app.context_processor
 def chellow_context_processor():
-    return {
-        'context_path': '',
-        'current_user': g.user}
+    return {'current_user': g.user}
+
 
 TEMPLATE_FORMATS = {
     'year': '%Y', 'month': '%m', 'day': '%d', 'hour': '%H',

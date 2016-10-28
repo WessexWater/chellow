@@ -5,8 +5,8 @@
 {% endblock %}
 
 {% block nav %}
-	&raquo; <a href="{{context_path}}/hhdc_contracts">HHDC Contracts</a> &raquo; 
-	<a href="{{context_path}}/hhdc_contracts/{{contract.id}}">{{contract.name}}</a>
+	&raquo; <a href="/hhdc_contracts">HHDC Contracts</a> &raquo; 
+	<a href="/hhdc_contracts/{{contract.id}}">{{contract.name}}</a>
 	&raquo; Channel Snags
 {% endblock %}
 
@@ -22,7 +22,7 @@
 	<div class="section-content">
 		<div class="section-data">
 			<div class="standardForm textWidthAuto ">
-				<form action="{{context_path}}/reports/233">
+				<form action="/reports/233">
 					<fieldset>
 						<input type="hidden" name="hhdc_contract_id" value="{{contract.id}}">
 						<label>
@@ -92,8 +92,8 @@
 								<ul>
 									{% for snag in snag_group.snags %}
 										<li>
-											<a href="{{context_path}}/channel_snags/{{snag.id}}">view</a>
-											[<a href="{{context_path}}/channel_snags/{{snag.id}}/edit">edit</a>]
+											<a href="/channel_snags/{{snag.id}}">view</a>
+											[<a href="/channel_snags/{{snag.id}}/edit">edit</a>]
 											{% if snag.is_ignored %} ignored{% endif %}
 										</li>
 									{% endfor %}

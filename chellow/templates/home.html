@@ -37,11 +37,11 @@
                             <nav class="nav-main active">
                                 <h4><i class="fa fa-file" aria-hidden="true"></i> Contracts</h4>
                                 <ul class="active">
-                                    <li><a href="{{context_path}}/hhdc_contracts" title="HHDC">HHDC</a></li>
-                                    <li><a href="{{context_path}}/mop_contracts" title="MOP">MOP</a></li>
-                                    <li><a href="{{context_path}}/supplier_contracts" title="Supplier">Supplier</a></li>
-                                    <li><a href="{{context_path}}/dno_contracts" title="DNO">DNO</a></li>
-                                    <li><a href="{{context_path}}/non_core_contracts" title="Non-Core">Non-Core</a></li>
+                                    <li><a href="/hhdc_contracts" title="HHDC">HHDC</a></li>
+                                    <li><a href="/mop_contracts" title="MOP">MOP</a></li>
+                                    <li><a href="/supplier_contracts" title="Supplier">Supplier</a></li>
+                                    <li><a href="/dno_contracts" title="DNO">DNO</a></li>
+                                    <li><a href="/non_core_contracts" title="Non-Core">Non-Core</a></li>
                                 </ul>
                             </nav>
                             <!-- End Nav Contracts -->
@@ -50,13 +50,13 @@
                                 <h4><i class="fa fa-cog" aria-hidden="true"></i> For Editors</h4>
                                 <ul>
                                     {% if properties.local_reports_id %}
-	                                    <li><a href="{{context_path}}/local_reports/{{properties.local_reports_id}}/output" title="Local Reports">Local Reports</a></li>
+	                                    <li><a href="/local_reports/{{properties.local_reports_id}}/output" title="Local Reports">Local Reports</a></li>
                                     {% endif %}
-                                    <li><a href="{{context_path}}/general_imports" title="General Import">General Import</a></li>
-                                    <li><a href="{{context_path}}/downloads" title="Downloads">Downloads</a></li>
-                                    <li><a href="{{context_path}}/reports/ecoes_comparison" title="Comparison against ECOES">Comparison against ECOES</a></li>
-                                    <li><a href="{{context_path}}/local_reports" title="Edit Local Reports">Edit Local Reports</a></li>
-                                    <li><a href="{{context_path}}/site_snags" title="Site Snags">Site Snags</a></li>
+                                    <li><a href="/general_imports" title="General Import">General Import</a></li>
+                                    <li><a href="/downloads" title="Downloads">Downloads</a></li>
+                                    <li><a href="/reports/ecoes_comparison" title="Comparison against ECOES">Comparison against ECOES</a></li>
+                                    <li><a href="/local_reports" title="Edit Local Reports">Edit Local Reports</a></li>
+                                    <li><a href="/site_snags" title="Site Snags">Site Snags</a></li>
                                     <li><a href="https://github.com/WessexWater/chellow" title="Docs">Docs</a></li> 
                                 </ul>
                             </nav>
@@ -65,22 +65,22 @@
                             <nav class="nav-industry">
                                 <h4><i class="fa fa-industry" aria-hidden="true"></i> Industry Info</h4>
                                 <ul>
-                                    <li><a href="{{context_path}}/participants" title="Market Participants">Market Participants</a></li>
-                                    <li><a href="{{context_path}}/market_roles" title="Market Roles">Market Roles</a></li>
-                                    <li><a href="{{context_path}}/parties" title="Parties">Parties</a></li>
-                                    <li><a href="{{context_path}}/pcs" title="Profile Classes">Profile Classes</a></li>
-                                    <li><a href="{{context_path}}/mtcs" title="Meter Timeswitch Classes">Meter Timeswitch Classes</a></li>
-                                    <li><a href="{{context_path}}/meter_types" title="Meter Types">Meter Types</a></li>
-                                    <li><a href="{{context_path}}/meter_payment_types" title="Meter Payments Types">Meter Payments Types</a></li>
-                                    <li><a href="{{context_path}}/tprs" title="TPRs">TPRs</a></li>
-                                    <li><a href="{{context_path}}/sscs" title="SSCs">SSCs</a></li>
-                                    <li><a href="{{context_path}}/gsp_groups" title="GSP Groups">GSP Groups</a></li>
-                                    <li><a href="{{context_path}}/cops" title="CoPs">CoPs</a></li>
-                                    <li><a href="{{context_path}}/bill_types" title="Bill Types">Bill Types</a></li>
-                                    <li><a href="{{context_path}}/read_types" title="Read Types">Read Types</a></li>
-                                    <li><a href="{{context_path}}/sources" title="Sources">Sources</a></li>
-                                    <li><a href="{{context_path}}/generator_types" title="Generator Types">Generator Types</a></li>
-                                    <li><a href="{{context_path}}/reports/163" title="MDD Converter">MDD Converter</a></li>
+                                    <li><a href="/participants" title="Market Participants">Market Participants</a></li>
+                                    <li><a href="/market_roles" title="Market Roles">Market Roles</a></li>
+                                    <li><a href="/parties" title="Parties">Parties</a></li>
+                                    <li><a href="/pcs" title="Profile Classes">Profile Classes</a></li>
+                                    <li><a href="/mtcs" title="Meter Timeswitch Classes">Meter Timeswitch Classes</a></li>
+                                    <li><a href="/meter_types" title="Meter Types">Meter Types</a></li>
+                                    <li><a href="/meter_payment_types" title="Meter Payments Types">Meter Payments Types</a></li>
+                                    <li><a href="/tprs" title="TPRs">TPRs</a></li>
+                                    <li><a href="/sscs" title="SSCs">SSCs</a></li>
+                                    <li><a href="/gsp_groups" title="GSP Groups">GSP Groups</a></li>
+                                    <li><a href="/cops" title="CoPs">CoPs</a></li>
+                                    <li><a href="/bill_types" title="Bill Types">Bill Types</a></li>
+                                    <li><a href="/read_types" title="Read Types">Read Types</a></li>
+                                    <li><a href="/sources" title="Sources">Sources</a></li>
+                                    <li><a href="/generator_types" title="Generator Types">Generator Types</a></li>
+                                    <li><a href="/reports/163" title="MDD Converter">MDD Converter</a></li>
                                 </ul>
                             </nav>
                             <!-- End Nav Industry -->
@@ -88,9 +88,9 @@
                             <nav class="nav-administration">
                                 <h4><i class="fa fa-user" aria-hidden="true"></i> Administration</h4>
                                 <ul>
-                                    <li><a href="{{context_path}}/users" title="Users">Users</a></li>
-                                    <li><a href="{{context_path}}/user_roles" title="Users Roles">Users Roles</a></li>
-                                    <li><a href="{{context_path}}/system" title="System">System</a></li>
+                                    <li><a href="/users" title="Users">Users</a></li>
+                                    <li><a href="/user_roles" title="Users Roles">Users Roles</a></li>
+                                    <li><a href="/system" title="System">System</a></li>
                                 </ul>
                             </nav>
                             <!-- End Nav Administration -->
@@ -114,7 +114,7 @@
 														<div class="standardForm">
 															<div class="well">
 																<h4>Site Search</h4>
-																<form action="{{context_path}}/sites">
+																<form action="/sites">
 																	<fieldset>
 																	<input type="text" class="input-text" name="pattern" />
 																	<input type="submit" value="Search">
@@ -127,7 +127,7 @@
 														<div class="standardForm">
 															<div class="well">
 																<h4>Supply Search</h4>
-																<form action="{{context_path}}/supplies">
+																<form action="/supplies">
 																	<fieldset>
 																	<input type="text" class="input-text" name="search_pattern" />
 																	<input type="submit" value="Search">
@@ -145,7 +145,7 @@
 															<table class="DataTable">
 																<thead>
 																    <tr>
-																        <th colspan=3><a href="{{context_path}}/downloads">Downloads</a></th>
+																        <th colspan=3><a href="/downloads">Downloads</a></th>
 																    </tr>
 																    <tr>
 																		<th>Core Reports</th>
@@ -157,38 +157,38 @@
 																<tbody>
 																	<tr>
 																		<th>Snapshot</th>
-																		<td><a href="{{context_path}}/csv_supplies_snapshot" title="Download">Download</a></td>
+																		<td><a href="/csv_supplies_snapshot" title="Download">Download</a></td>
 																		<td>&nbsp;</td>
 																	</tr>
 																	<tr>
 																		<th>HH Data</th>
-																		<td><a href="{{context_path}}/csv_supplies_hh_data">Download</a></td>
-																		<td><a href="{{context_path}}/csv_sites_hh_data">Download</a></td>
+																		<td><a href="/csv_supplies_hh_data">Download</a></td>
+																		<td><a href="/csv_sites_hh_data">Download</a></td>
 																	</tr>
 																	<tr>
 																		<th>TRIAD</th>
-																		<td><a href="{{context_path}}/csv_supplies_triad">Download</a></td>
-																		<td><a href="{{context_path}}/csv_sites_triad">Download</a></td>
+																		<td><a href="/csv_supplies_triad">Download</a></td>
+																		<td><a href="/csv_sites_triad">Download</a></td>
 																	</tr>
 																	<tr>
 																		<th>CRC</th>
-																		<td><a href="{{context_path}}/csv_crc">Download</a></td>
+																		<td><a href="/csv_crc">Download</a></td>
 																		<td>&nbsp;</td>
 																	</tr>
 																	<tr>
 																		<th>Register Reads</th>
-																		<td><a href="{{context_path}}/csv_crc">Download</a></td>
+																		<td><a href="/csv_crc">Download</a></td>
 																		<td>&nbsp;</td>
 																	</tr>
 																	<tr>
 																		<th>
-																			<a href="{{context_path}}/ods_monthly_duration">Monthly Duration</a>
+																			<a href="/ods_monthly_duration">Monthly Duration</a>
 																		</th>
 																		<td>&nbsp;</td>
 																		<td>&nbsp;</td>
 																	</tr>
 																	<tr>
-																		<th><a href="{{context_path}}/ods_scenario_runner">Scenario Runner</a></th>
+																		<th><a href="/ods_scenario_runner">Scenario Runner</a></th>
 																		<td>&nbsp;</td>
 																		<td>&nbsp;</td>
 																	</tr>
@@ -204,23 +204,23 @@
 																		<td rowspan=6>Contracts</td>
 																	</tr>							
 																	<tr>								
-																		<td><a href="{{context_path}}/hhdc_contracts">HHDC</a></td>
+																		<td><a href="/hhdc_contracts">HHDC</a></td>
 																	</tr>
 																	<tr>
 																
-																		<td><a href="{{context_path}}/mop_contracts">MOP</a></td>
+																		<td><a href="/mop_contracts">MOP</a></td>
 																	</tr>
 																	<tr>
 																
-																		<td><a href="{{context_path}}/supplier_contracts">Supplier</a></td>
+																		<td><a href="/supplier_contracts">Supplier</a></td>
 																	</tr>
 																	<tr>
 																
-																		<td><a href="{{context_path}}/dno_contracts">DNO</a></td>
+																		<td><a href="/dno_contracts">DNO</a></td>
 																	</tr>
 																	<tr>
 																
-																		<td><a href="{{context_path}}/non_core_contracts">Non-Core</a></td>
+																		<td><a href="/non_core_contracts">Non-Core</a></td>
 																	</tr>	
 																</tbody>
 															</table>
@@ -236,26 +236,26 @@
 															<div class="row">
 																<div class="col-sm-6">
 																	<ul class="listing-dash alignLeft">
-																		<li><a href="{{context_path}}/participants">Market Participants</a></li>
-																		<li><a href="{{context_path}}/parties">Parties</a></li>
-																		<li><a href="{{context_path}}/generator_types">Generator Types</a></li>
-																		<li><a href="{{context_path}}/meter_payment_types">Meter Payment Types</a></li>
-																		<li><a href="{{context_path}}/sscs">SSCs</a></li>
-																		<li><a href="{{context_path}}/cops">CoPs</a></li>
-																		<li><a href="{{context_path}}/read_types">Read Types</a></li>
-																		<li><a href="{{context_path}}/mtcs">Meter Timeswitch Classes</a></li>
+																		<li><a href="/participants">Market Participants</a></li>
+																		<li><a href="/parties">Parties</a></li>
+																		<li><a href="/generator_types">Generator Types</a></li>
+																		<li><a href="/meter_payment_types">Meter Payment Types</a></li>
+																		<li><a href="/sscs">SSCs</a></li>
+																		<li><a href="/cops">CoPs</a></li>
+																		<li><a href="/read_types">Read Types</a></li>
+																		<li><a href="/mtcs">Meter Timeswitch Classes</a></li>
 																	</ul>
 																</div>
 																<div class="col-sm-6">
 																	<ul class="listing-dash alignLeft">
-																		<li><a href="{{context_path}}/market_roles">Market Roles</a></li>
-																		<li><a href="{{context_path}}/pcs">Profile Classes</a></li>
-																		<li><a href="{{context_path}}/reports/163">MDD Converter</a></li>
-																		<li><a href="{{context_path}}/tprs">TPRs</a></li>
-																		<li><a href="{{context_path}}/gsp_groups">GSP Groups</a></li>
-																		<li><a href="{{context_path}}/bill_types">Bill Types</a></li>
-																		<li><a href="{{context_path}}/sources">Sources</a></li>
-																		<li><a href="{{context_path}}/meter_types">Meter Types</a></li>
+																		<li><a href="/market_roles">Market Roles</a></li>
+																		<li><a href="/pcs">Profile Classes</a></li>
+																		<li><a href="/reports/163">MDD Converter</a></li>
+																		<li><a href="/tprs">TPRs</a></li>
+																		<li><a href="/gsp_groups">GSP Groups</a></li>
+																		<li><a href="/bill_types">Bill Types</a></li>
+																		<li><a href="/sources">Sources</a></li>
+																		<li><a href="/meter_types">Meter Types</a></li>
 																	</ul>
 																</div>
 															</div>
@@ -267,15 +267,15 @@
 															<div class="row">
 																<div class="col-sm-6">
 																	<ul class="listing-dash alignLeft">
-																		<li><a href="{{context_path}}/local_reports">Edit Local Reports</a></li>
-																		<li><a href="{{context_path}}/user_roles">Users Roles</a></li>
-																		<li><a href="{{context_path}}/reports/ecoes_comparison" >Comparison against ECOES</a></li>
+																		<li><a href="/local_reports">Edit Local Reports</a></li>
+																		<li><a href="/user_roles">Users Roles</a></li>
+																		<li><a href="/reports/ecoes_comparison" >Comparison against ECOES</a></li>
 																	</ul>
 																</div>							
 																<div class="col-sm-6">
 																	<ul class="listing-dash alignLeft">
-																		<li><a href="{{context_path}}/users">Users</a></li>
-																		<li><a href="{{context_path}}/system">System</a></li>
+																		<li><a href="/users">Users</a></li>
+																		<li><a href="/system">System</a></li>
 																	</ul>	
 																</div>
 															</div>

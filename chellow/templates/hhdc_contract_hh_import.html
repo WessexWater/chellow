@@ -5,9 +5,9 @@
 {% endblock %}
 
 {% block nav %}
-	&raquo; <a href="{{context_path}}/hhdc_contracts">HHDC Contracts</a> &raquo;
-	<a href="{{context_path}}/hhdc_contracts/{{contract.id}}">{{contract.name}}</a> &raquo;
-	<a href="{{context_path}}/hhdc_contracts/{{contract.id}}/hh_imports">HH Data Imports</a> &raquo;
+	&raquo; <a href="/hhdc_contracts">HHDC Contracts</a> &raquo;
+	<a href="/hhdc_contracts/{{contract.id}}">{{contract.name}}</a> &raquo;
+	<a href="/hhdc_contracts/{{contract.id}}/hh_imports">HH Data Imports</a> &raquo;
 	{{process.id}}
 {% endblock %}
 

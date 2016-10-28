@@ -24,7 +24,7 @@
     		     
             
 			<table class="DataTable widthAuto">
-				<caption><a href="{{context_path}}/downloads">Refresh page</a></caption>
+				<caption><a href="/downloads">Refresh page</a></caption>
 				<thead>
 					<tr>
 						<th>Name</th>
@@ -44,7 +44,7 @@
 					{% for file in files %}
 						<tr>
 							<td>
-								<a href="{{context_path}}/downloads/{{file.name}}">{{file.name}}</a>
+								<a href="/downloads/{{file.name}}">{{file.name}}</a>
 							</td>
 							<td>{{file.size}} B</td>
 							<td>
@@ -55,7 +55,7 @@
 							<td>{{file.last_modified|hh_format}}</td>
 							<td>
 								<form
-									method="post" action="{{context_path}}/downloads/{{file.name}}">
+									method="post" action="/downloads/{{file.name}}">
 									<fieldset style="border: none;">
 										<input type="submit" name="delete" value="Delete">
 									</fieldset>

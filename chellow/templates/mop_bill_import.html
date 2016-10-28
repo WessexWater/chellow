@@ -6,12 +6,12 @@
 {% endblock %}
 
 {% block nav %}
-	<a href="{{context_path}}/mop_contracts">MOP Contracts</a> &gt;
-	<a href="{{context_path}}/mop_contracts/{{batch.contract.id}}">{{batch.contract.name}}</a> &gt;
-	<a href="{{context_path}}/mop_batches?mop_contract_id={{batch.contract.id}}">Batches</a> &gt;
-	<a href="{{context_path}}/mop_batches/{{batch.id}}">{{batch.reference}}</a>
+	<a href="/mop_contracts">MOP Contracts</a> &gt;
+	<a href="/mop_contracts/{{batch.contract.id}}">{{batch.contract.name}}</a> &gt;
+	<a href="/mop_batches?mop_contract_id={{batch.contract.id}}">Batches</a> &gt;
+	<a href="/mop_batches/{{batch.id}}">{{batch.reference}}</a>
  	&gt;
-	<a href="{{context_path}}/mop_bill_imports?mop_batch_id={{batch.id}}">Bill Imports</a>
+	<a href="/mop_bill_imports?mop_batch_id={{batch.id}}">Bill Imports</a>
  	&gt; {{importer_id}}
 {% endblock %}
 

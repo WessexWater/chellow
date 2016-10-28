@@ -14,8 +14,8 @@
 {% endblock %}
 
 {% block nav %}
-	&raquo; <a href="{{context_path}}/supplies">Supplies</a> &raquo; 
-	<a href="{{context_path}}/supplies/{{era.supply.id}}">{{era.supply.id}}</a>
+	&raquo; <a href="/supplies">Supplies</a> &raquo; 
+	<a href="/supplies/{{era.supply.id}}">{{era.supply.id}}</a>
  	&raquo; Era {{era.start_date|hh_format}} Edit
 {% endblock %}
 
@@ -36,7 +36,7 @@
 						<fieldset>
 							<input type="hidden" name="era_id" value="{{era.id}}">
 							<input type="submit" name="delete" value="Delete">
-							<input type="reset" value="Cancel" onClick="window.location='{{context_path}}/eras/{{era.supply.id}}/edit'" />
+							<input type="reset" value="Cancel" onClick="window.location='/eras/{{era.supply.id}}/edit'" />
 						</fieldset>
 					</form>
 				</div>
@@ -390,7 +390,7 @@
 		<div class="section-content">
 			<div class="section-data">
 				<div class="standardForm">
-					<form action="{{context_path}}/eras/{{era.id}}/edit">
+					<form action="/eras/{{era.id}}/edit">
 						<fieldset>
 							<input type="submit" name="delete" value="Delete">
 						</fieldset>

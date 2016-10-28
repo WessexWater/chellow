@@ -28,7 +28,7 @@
 					{% for contract in dno_contracts %}
 						<tr>
 							<td>
-								<a href="{{context_path}}/dno_contracts/{{contract.id}}">{{contract.name}}</a>
+								<a href="/dno_contracts/{{contract.id}}">{{contract.name}}</a>
 							</td>
 							<td>{{contract.party.name}}</td>
 							<td>{{contract.start_rate_script.start_date|hh_format}}</td>

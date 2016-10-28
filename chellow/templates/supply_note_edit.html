@@ -5,10 +5,9 @@
 {% endblock %}
 
 {% block nav %}
-	<a href="{{context_path}}/supplies">Supplies</a>  &gt;
-	<a href="{{context_path}}/supplies/{{supply.id}}">{{supply.id}}</a>  &gt;
-	<a href="{{context_path}}/supplies/{{supply.id}}/notes">Notes</a>  &gt;
-	{{note.index}} Edit
+	<a href="/supplies">Supplies</a>  &gt;
+	<a href="/supplies/{{supply.id}}">{{supply.id}}</a>  &gt;
+	<a href="/supplies/{{supply.id}}/notes">Notes</a>  &gt; {{note.index}} Edit
 {% endblock %}
 
 {% block content %}

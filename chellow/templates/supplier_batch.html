@@ -7,15 +7,15 @@
 
 {% block nav %}
 	&raquo;
- 	<a href="{{context_path}}/supplier_contracts">Supplier Contracts</a> &raquo; 
+ 	<a href="/supplier_contracts">Supplier Contracts</a> &raquo; 
 	<a
-	 		href="{{context_path}}/supplier_contracts/{{batch.contract.id}}"
+	 		href="/supplier_contracts/{{batch.contract.id}}"
 			>{{batch.contract.name}}</a> &raquo; 
 	<a
-	 		href="{{context_path}}/supplier_batches?supplier_contract_id={{batch.contract.id}}"
+	 		href="/supplier_batches?supplier_contract_id={{batch.contract.id}}"
 			>Batches</a> &raquo; 
 	{{batch.reference}}
-	[<a href="{{context_path}}/supplier_batches/{{batch.id}}/edit">edit</a>]
+	[<a href="/supplier_batches/{{batch.id}}/edit">edit</a>]
 {% endblock %}
 
 {% block content %}
@@ -43,7 +43,7 @@
 									{% for report in batch_reports %}
 										<li>
 											<a
-											 		href="{{context_path}}/local_reports/{{report.id}}/output?batch_id={{batch.id}}"
+											 		href="/local_reports/{{report.id}}/output?batch_id={{batch.id}}"
 													>{{report.name}}</a>
 										</li>
 									{% endfor %}
@@ -55,17 +55,17 @@
 				<ul>
 					<li>
 						<a
-								href="{{context_path}}/reports/111?batch_id={{batch.id}}"
+								href="/reports/111?batch_id={{batch.id}}"
 								>Check Bills</a>
 					</li>
 					<li>
 						<a
-								href="{{context_path}}/supplier_bill_imports?supplier_batch_id={{batch.id}}"
+								href="/supplier_bill_imports?supplier_batch_id={{batch.id}}"
 								>Bill Imports</a>
 					</li>
 					<li>
 						<a
-								href="{{context_path}}/supplier_batches/{{batch.id}}/csv"
+								href="/supplier_batches/{{batch.id}}/csv"
 								>CSV of Bills</a>
 					</li>
 				</ul>
@@ -76,7 +76,7 @@
 	<div class="layer-section">
 		<div class="section-header">
 			<h2>Bills
-				[<a href="{{context_path}}/supplier_batches/{{batch.id}}/add_bill"
+				[<a href="/supplier_batches/{{batch.id}}/add_bill"
 						>add</a>]</h2>	
 		</div>
 		<div class="section-content">
@@ -103,7 +103,7 @@
 								<tr>
 									<td>
 										<a
-										 		href="{{context_path}}/supplier_bills/{{bill.id}}"
+										 		href="/supplier_bills/{{bill.id}}"
 												>View</a>
 									</td>
 									<td>{{bill.reference}}</td>
@@ -117,7 +117,7 @@
 									<td>{{bill.gross}}</td>
 									<td>
 										<a
-												href="{{context_path}}/bill_types/{{bill.bill_type.id}}"
+												href="/bill_types/{{bill.bill_type.id}}"
 											 	title="{{bill.bill_type.description}}"
 												>{{bill.bill_type.code}}</a>
 									</td>

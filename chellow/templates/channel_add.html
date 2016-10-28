@@ -6,8 +6,8 @@
 {% endblock %}
 
 {% block nav %}
-	&raquo; <a href="{{context_path}}/supplies">Supplies</a> &raquo; 
-	<a href="{{context_path}}/supplies/{{era.supply.id}}">Supply {{era.supply.id}} Era {{era.start_date|hh_format}}</a> &raquo; 
+	&raquo; <a href="/supplies">Supplies</a> &raquo; 
+	<a href="/supplies/{{era.supply.id}}">Supply {{era.supply.id}} Era {{era.start_date|hh_format}}</a> &raquo; 
 	Add Channel
 {% endblock %}
 

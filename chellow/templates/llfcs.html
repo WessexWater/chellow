@@ -5,8 +5,8 @@
 {% endblock %}
 
 {% block nav %}
-	&raquo; <a href="{{context_path}}/dno_contracts">DNO Contracts</a> &raquo; 
-	<a href="{{context_path}}/dno_contracts/{{contract.id}}">{{contract.name}}</a>
+	&raquo; <a href="/dno_contracts">DNO Contracts</a> &raquo; 
+	<a href="/dno_contracts/{{contract.id}}">{{contract.name}}</a>
 	&raquo; LLFCs
 {% endblock %}
 
@@ -35,7 +35,7 @@
 					{% for llfc in llfcs %}
 						<tr>
 							<td>
-								<a href="{{context_path}}/llfcs/{{llfc.id}}">{{llfc.code}}</a>
+								<a href="/llfcs/{{llfc.id}}">{{llfc.code}}</a>
 							</td>
 							<td>{{llfc.description}}</td>
 							<td>{{llfc.voltage_level.code}} - {{llfc.voltage_level.name}}</td>

@@ -6,9 +6,9 @@
 {% endblock %}
 
 {% block nav %}
-	&raquo; <a href="{{context_path}}/supplier_contracts">Supplier Contracts</a> &raquo; 
-	<a href="{{context_path}}/supplier_contracts/{{supplier_rate_script.contract.id}}">{{supplier_rate_script.contract.name}}</a> &raquo; 
-	<a href="{{context_path}}/supplier_rate_scripts/{{supplier_rate_script.id}}">Rate Script {{supplier_rate_script.start_date|hh_format}}</a>
+	&raquo; <a href="/supplier_contracts">Supplier Contracts</a> &raquo; 
+	<a href="/supplier_contracts/{{supplier_rate_script.contract.id}}">{{supplier_rate_script.contract.name}}</a> &raquo; 
+	<a href="/supplier_rate_scripts/{{supplier_rate_script.id}}">Rate Script {{supplier_rate_script.start_date|hh_format}}</a>
  	&raquo; Edit
 {% endblock %}
 
@@ -25,7 +25,7 @@
 					<form method="delete" action="">
 						<fieldset>
 							<input type="submit" value="Delete">
-							<input type="reset" value="Cancel" onClick="window.location='{{context_path}}/supplier_rate_scripts/{{supplier_rate_script.id}}/edit'" />
+							<input type="reset" value="Cancel" onClick="window.location='/supplier_rate_scripts/{{supplier_rate_script.id}}/edit'" />
 						
 						</fieldset>
 					</form>

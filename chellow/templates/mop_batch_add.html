@@ -14,9 +14,9 @@
 {% endblock %}
 
 {% block nav %}
-	&raquo; <a href="{{context_path}}/mop_contracts">MOP Contracts</a> &raquo; 
-	<a href="{{context_path}}/mop_contracts/{{contract.id}}">{{contract.name}}</a> &raquo; 
-	<a href="{{context_path}}/mop_batches?mop_contract_id={{contract.id}}">Batches</a>
+	&raquo; <a href="/mop_contracts">MOP Contracts</a> &raquo; 
+	<a href="/mop_contracts/{{contract.id}}">{{contract.name}}</a> &raquo; 
+	<a href="/mop_batches?mop_contract_id={{contract.id}}">Batches</a>
 	&raquo; Add
 {% endblock %}
 

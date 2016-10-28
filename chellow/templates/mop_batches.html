@@ -5,10 +5,10 @@
 {% endblock %}
 
 {% block nav %}
-	&raquo; <a href="{{context_path}}/mop_contracts">MOP Contracts</a> &raquo; 
-	<a href="{{context_path}}/mop_contracts/{{contract.id}}">{{contract.name}}</a>
+	&raquo; <a href="/mop_contracts">MOP Contracts</a> &raquo; 
+	<a href="/mop_contracts/{{contract.id}}">{{contract.name}}</a>
 	&raquo; Batches
-	[<a href="{{context_path}}/mop_contracts/{{contract.id}}/add_batch">add</a>]
+	[<a href="/mop_contracts/{{contract.id}}/add_batch">add</a>]
 {% endblock %}
 
 {% block content %}
@@ -30,7 +30,7 @@
 						{% for batch in batches %}
 							<tr>
 								<td>
-									<a href="{{context_path}}/mop_batches/{{batch.id}}">
+									<a href="/mop_batches/{{batch.id}}">
 										{{batch.reference}}
 									</a>
 								</td>

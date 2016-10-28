@@ -5,10 +5,10 @@
 {% endblock %}
 
 {% block nav %}
-	&raquo; <a href="{{context_path}}/hhdc_contracts">HHDC Contracts</a> &raquo;
-	<a href="{{context_path}}/hhdc_contracts/{{contract.id}}">{{contract.name}}</a>
+	&raquo; <a href="/hhdc_contracts">HHDC Contracts</a> &raquo;
+	<a href="/hhdc_contracts/{{contract.id}}">{{contract.name}}</a>
  	&raquo; Batches
-	[<a href="{{context_path}}/hhdc_contracts/{{contract.id}}/add_batch">add</a>]
+	[<a href="/hhdc_contracts/{{contract.id}}/add_batch">add</a>]
 {% endblock %}
 
 {% block content %}
@@ -29,7 +29,7 @@
 						{% for batch in batches %}
 							<tr>
 								<td>
-									<a href="{{context_path}}/hhdc_batches/{{batch.id}}">
+									<a href="/hhdc_batches/{{batch.id}}">
 										{{batch.reference}}
 									</a>
 								</td>

@@ -36,16 +36,16 @@
         				<tr>
         					<td>{{scenario.name}}</td>
         					<td>
-        						<a href="{{context_path}}/247?scenario_id={{scenario.id}}">
+        						<a href="/247?scenario_id={{scenario.id}}">
         							Run
         						</a>
         					<td>
-        						<a href="{{context_path}}/supplier_contracts/{{scenario.id}}#properties">
+        						<a href="/supplier_contracts/{{scenario.id}}#properties">
         							View
         						</a>
         					</td>
         					<td>
-        						[<a href="{{context_path}}/supplier_contracts/{{scenario.id}}/edit#properties">edit</a>]
+        						[<a href="/supplier_contracts/{{scenario.id}}/edit#properties">edit</a>]
         					</td>
         					<td>{{props.scenario_start}}</td>
         					<td>{{props.scenario_duration}}</td>
@@ -84,7 +84,7 @@
         			{% for contract in contracts %}
         				<tr>
         					<td>
-        						<a href="{{context_path}}/non_core_contracts/{{contract.id}}">
+        						<a href="/non_core_contracts/{{contract.id}}">
         							{{contract.name}}
         						</a>
         					</td>

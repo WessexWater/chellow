@@ -5,7 +5,7 @@
 {% endblock %}
 
 {% block nav %}
-	&raquo; <a href="{{context_path}}/sscs">SSCs</a> &raquo; {{ssc.code}}
+	&raquo; <a href="/sscs">SSCs</a> &raquo; {{ssc.code}}
 {% endblock %}
 
 {% block content %}
@@ -53,7 +53,7 @@
 			<ul>
 				{% for mr in ssc.measurement_requirements %}
 					<li>
-						<a href="{{context_path}}/tprs/{{mr.tpr.id}}">{{mr.tpr.code}}</a>
+						<a href="/tprs/{{mr.tpr.id}}">{{mr.tpr.code}}</a>
 					</li>
 				{% endfor %}
 			</ul>

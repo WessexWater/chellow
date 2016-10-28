@@ -15,10 +15,10 @@
 {% endblock %}
 
 {% block nav %}
-	&raquo; <a href="{{context_path}}/hhdc_contracts">HHDC Contracts</a> &raquo;
-	<a href="{{context_path}}/hhdc_contracts/{{batch.contract.id}}">{{batch.contract.name}}</a> &raquo;
-	<a href="{{context_path}}/hhdc_batches?hhdc_contract_id={{batch.contract.id}}">Batches</a> &raquo;
-	<a href="{{context_path}}/hhdc_batches/{{batch.id}}">{{batch.reference}}</a>
+	&raquo; <a href="/hhdc_contracts">HHDC Contracts</a> &raquo;
+	<a href="/hhdc_contracts/{{batch.contract.id}}">{{batch.contract.name}}</a> &raquo;
+	<a href="/hhdc_batches?hhdc_contract_id={{batch.contract.id}}">Batches</a> &raquo;
+	<a href="/hhdc_batches/{{batch.id}}">{{batch.reference}}</a>
  	&raquo; Add Bill
 {% endblock %}
 

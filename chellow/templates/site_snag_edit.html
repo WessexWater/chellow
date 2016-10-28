@@ -5,8 +5,8 @@
 {% endblock %}
 
 {% block nav %}
-	&raquo; <a href="{{context_path}}/site_snags">Site Snags</a> &raquo; 
-	<a href="{{context_path}}/site_snags/{{snag.id}}">{{snag.id}}</a> &raquo; Edit
+	&raquo; <a href="/site_snags">Site Snags</a> &raquo; 
+	<a href="/site_snags/{{snag.id}}">{{snag.id}}</a> &raquo; Edit
 {% endblock %}
 
 {% block content %}
@@ -64,7 +64,7 @@
 						<tr>
 							<th>Site</th>
 							<td>
-								<a href="{{context_path}}/sites/{{snag.site.id}}">{{snag.site.code}}</a>
+								<a href="/sites/{{snag.site.id}}">{{snag.site.code}}</a>
 							</td>
 						</tr>
 						<tr>

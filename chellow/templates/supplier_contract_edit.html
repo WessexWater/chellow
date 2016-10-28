@@ -5,8 +5,8 @@
 {% endblock %}
 
 {% block nav %}
-		&raquo; <a href="{{context_path}}/supplier_contracts">Supplier Contracts</a> &raquo; 
-		<a href="{{context_path}}/supplier_contracts/{{contract.id}}">{{contract.name}}</a>
+		&raquo; <a href="/supplier_contracts">Supplier Contracts</a> &raquo; 
+		<a href="/supplier_contracts/{{contract.id}}">{{contract.name}}</a>
 		&raquo; Edit
 {% endblock %}
 
@@ -24,7 +24,7 @@
 							<fieldset>
 								<input type="hidden" name="supplier_contract_id" value="{{contract.id}}">
 								<input type="submit" name="delete" value="Delete">
-								<a class="btn" href="{{context_path}}/supplier_contracts/{{contract.id}}/edit">Cancel</a>
+								<a class="btn" href="/supplier_contracts/{{contract.id}}/edit">Cancel</a>
 							</fieldset>
 						</form>
 					</div>

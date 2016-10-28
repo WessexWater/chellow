@@ -6,18 +6,18 @@
 {% endblock %}
 
 {% block nav %}
-	&raquo; <a href="{{context_path}}/hhdc_contracts">HHDC Contracts</a> &raquo; 
+	&raquo; <a href="/hhdc_contracts">HHDC Contracts</a> &raquo; 
 	<a
-			href="{{context_path}}/hhdc_contracts/{{bill.batch.contract.id}}"
+			href="/hhdc_contracts/{{bill.batch.contract.id}}"
 			>{{bill.batch.contract.name}}</a> &raquo; 
 	<a
 			href=
-			"{{context_path}}/hhdc_batches?hhdc_contract_id={{bill.batch.contract.id}}"
+			"/hhdc_batches?hhdc_contract_id={{bill.batch.contract.id}}"
 			>Batches</a> &raquo; 
 	<a
-			href="{{context_path}}/hhdc_batches/{{bill.batch.id}}"
+			href="/hhdc_batches/{{bill.batch.id}}"
 			>{{bill.batch.reference}}</a> &raquo; Bill {{bill.id}}
-	[<a href="{{context_path}}/hhdc_bills/{{bill.id}}/edit">edit</a>]
+	[<a href="/hhdc_bills/{{bill.id}}/edit">edit</a>]
 {% endblock %}
 
 {% block content %}
@@ -48,7 +48,7 @@
 					<tbody>
 						<tr>
 							<td>
-								<a href="{{context_path}}/supplies/{{bill.supply.id}}">Supply</a>
+								<a href="/supplies/{{bill.supply.id}}">Supply</a>
 							</td>
 							<td>{{bill.reference}}</td>
 							<td>{{bill.account}}</td>
@@ -61,12 +61,12 @@
 							<td>{{bill.gross}}</td>
 							<td>
 								<a
-										href="{{context_path}}/bill_types/{{bill.bill_type.id}}"
+										href="/bill_types/{{bill.bill_type.id}}"
 										title="{{bill.bill_type.description}}"
 										>{{bill.bill_type.code}}</a>
 							</td>
 							<td>
-								<a href="{{context_path}}/reports/111?bill_id={{bill.id}}">Check</a>
+								<a href="/reports/111?bill_id={{bill.id}}">Check</a>
 							</td>
 						</tr>
 					</tbody>

@@ -10,24 +10,28 @@
 
 {% block content %}
 	{% if request.values.delete %}
-	<!-- Layer Section -->
+		<!-- Layer Section -->
     <div class="layer-section">
     	<!-- Section Header -->
     	<div class="section-header">
-    		<h2>Do you really want to delete the user '{{ user.email_address }}'?</h2>	
+    		<h2>
+					Do you really want to delete the user '{{ user.email_address }}'?
+				</h2>	
     	</div>
     	<!-- End Section Header -->
     	<!-- Section Content -->
     	<div class="section-content">
     		<div class="section-data">
-    		    <div class="standardForm">
-    		        <form method="post" action="">
-            			<fieldset>
-            				<input type="submit" name="delete" value="Delete">
-            				<input type="reset" value="Cancel" onClick="window.location='{{context_path}}/users/{{user.id}}'" />
-            			</fieldset>
-            		</form>
-    		    </div>
+					<div class="standardForm">
+						<form method="post" action="">
+							<fieldset>
+								<input type="submit" name="delete" value="Delete">
+								<input
+							 			type="reset" value="Cancel"
+									 	onClick="window.location='/users/{{user.id}}'" />
+							</fieldset>
+						</form>
+					</div>
     		</div>
     	</div>
     	<!-- End Section Content -->

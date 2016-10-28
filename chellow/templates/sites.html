@@ -5,7 +5,7 @@
 {% endblock %}
 
 {% block nav %}
-	&raquo; Sites [<a href="{{context_path}}/sites/add">add</a>]
+	&raquo; Sites [<a href="/sites/add">add</a>]
 {% endblock %}
 
 {% block content %}
@@ -33,7 +33,7 @@
 				<ul>
 					{% for site in sites %}
 						<li>
-							<a href="{{context_path}}/sites/{{site.id}}">{{site.code}} {{site.name}}</a>
+							<a href="/sites/{{site.id}}">{{site.code}} {{site.name}}</a>
 						</li>
 					{% endfor %}
 				</ul>

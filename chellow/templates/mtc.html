@@ -5,7 +5,7 @@
 {% endblock %}
 
 {% block nav %}
-	&raquo; <a href="{{context_path}}/mtcs">MTCs</a> &raquo; {{mtc.code}}
+	&raquo; <a href="/mtcs">MTCs</a> &raquo; {{mtc.code}}
 {% endblock %}
 
 {% block content %}
@@ -28,7 +28,7 @@
 					<th>DNO</th>
 					<td>
 						{% if dno_contract %}
-							<a href="{{context_path}}/dno_contracts/{{dno_contract.id}}">
+							<a href="/dno_contracts/{{dno_contract.id}}">
 								{{dno_contract.name}}
 							</a>
 						{% else %}
@@ -73,7 +73,7 @@
 				<tr>
 					<th>Meter Type</th>
 					<td>
-						<a href="{{context_path}}/meter_types/{{mtc.meter_type.id}}">
+						<a href="/meter_types/{{mtc.meter_type.id}}">
 							{{mtc.meter_type.description}}
 						</a>
 					</td>
@@ -81,7 +81,7 @@
 				<tr>
 					<th>Payment Type</th>
 					<td>
-						<a href="{{context_path}}/meter_payment_types/{{mtc.meter_payment_type.id}}">
+						<a href="/meter_payment_types/{{mtc.meter_payment_type.id}}">
 							{{mtc.meter_payment_type.description}}
 						</a>
 					</td>

@@ -5,9 +5,9 @@
 {% endblock %}
 
 {% block nav %}
-	&raquo; <a href="{{context_path}}/dno_contracts">DNO Contracts</a> &raquo; 
-	<a href="{{context_path}}/dno_contracts/{{dno_contract.id}}">{{dno_contract.name}}</a> &raquo; 
-	<a href="{{context_path}}/llfcs?dno_contract_id={{dno_contract.id}}">LLFCs</a>
+	&raquo; <a href="/dno_contracts">DNO Contracts</a> &raquo; 
+	<a href="/dno_contracts/{{dno_contract.id}}">{{dno_contract.name}}</a> &raquo; 
+	<a href="/llfcs?dno_contract_id={{dno_contract.id}}">LLFCs</a>
 	&raquo; {{llfc.code}}
 {% endblock %}
 

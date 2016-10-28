@@ -5,8 +5,8 @@
 {% endblock %}
 
 {% block nav %}
-	&raquo; <a href="{{context_path}}/hhdc_contracts">HHDC Contracts</a> &raquo;
-	<a href="{{context_path}}/hhdc_contracts/{{hhdc_contract.id}}">
+	&raquo; <a href="/hhdc_contracts">HHDC Contracts</a> &raquo;
+	<a href="/hhdc_contracts/{{hhdc_contract.id}}">
 		{{hhdc_contract.name}}
 	</a> &raquo; Edit
 {% endblock %}
@@ -24,7 +24,7 @@
     				<form method="post" action="">
     					<fieldset>
     						<input type="submit" name="delete" value="delete">
-    						<input type="reset" value="Cancel" onClick="window.location='{{context_path}}/hhdc_contracts/{{hhdc_contract.id}}/edit'" />
+    						<input type="reset" value="Cancel" onClick="window.location='/hhdc_contracts/{{hhdc_contract.id}}/edit'" />
     					</fieldset>
     				</form>
     			</div>

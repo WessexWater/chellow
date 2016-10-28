@@ -5,8 +5,8 @@
 {% endblock %}
 
 {% block nav %}
-	&raquo; <a href="{{context_path}}/supplies">Supplies</a> &raquo; 
-	<a href="{{context_path}}/supplies/{{supply.id}}">{{supply.id}}</a> &raquo; Edit
+	&raquo; <a href="/supplies">Supplies</a> &raquo; 
+	<a href="/supplies/{{supply.id}}">{{supply.id}}</a> &raquo; Edit
 {% endblock %}
 
 {% block content %}
@@ -21,7 +21,7 @@
 				<form method="post" action="">
 					<fieldset>						
 						<input type="submit" name="delete" value="Delete">
-						<a class="btn" href="{{context_path}}/supplies/{{supply.id}}/edit">Cancel</a>
+						<a class="btn" href="/supplies/{{supply.id}}/edit">Cancel</a>
 					</fieldset>
 				</form>
 			</div>			

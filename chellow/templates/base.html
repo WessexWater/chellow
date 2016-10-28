@@ -123,16 +123,16 @@
 <html lang="en">
     <head>
 		{% block head %}
-    		<link rel="stylesheet" href="{{context_path}}/style" />
+    		<link rel="stylesheet" href="/style" />
 		    <link rel="stylesheet" href="/static/css/bootstrap.min.css" />
         	<link rel="stylesheet" href="/static/font-awesome-4.6.3/css/font-awesome.min.css" />
-        	<link rel="stylesheet" href="{{context_path}}/chellowcss" />
+        	<link rel="stylesheet" href="/chellowcss" />
         	
 		
        		<script src="/static/js/jquery-2.2.4.min.js"></script>
         	<script src="/static/js/bootstrap.min.js"></script>
         	<script src="/static/js/grids.min.js"></script>
-        	<script src="{{context_path}}/chellowjs"></script>
+        	<script src="/chellowjs"></script>
 		
 		    <title>Chellow {% block title %}{% endblock %}</title>
 		    {% block inside_head %}{% endblock %}
@@ -169,7 +169,7 @@
                                         <div class="menu-topbar">
                                             <div class="topbar-main">
                                                 <div class="standardForm siteSearch">
-                                                    <form action="{{context_path}}/sites">
+                                                    <form action="/sites">
                                                         <fieldset>
                                                             <span class="topbarmain-title">
                                                                 <input type="text" class="input-text" name="pattern" value="Search Sites..." onBlur="if( this.value == '' ) this.value = 'Search Sites...'" onFocus="if( this.value == 'Search Sites...' ) this.value = '';"/>
@@ -185,7 +185,7 @@
                                         <div class="menu-topbar">
                                             <div class="topbar-main">
                                                 <div class="standardForm supplySearch">
-                                                    <form action="{{context_path}}/supplies">
+                                                    <form action="/supplies">
                                                         <fieldset>
                                                             <span class="topbarmain-title">
                                                                 <input type="text" class="input-text" name="search_pattern" value="Search Supplies..." onBlur="if( this.value == '' ) this.value = 'Search Supplies...';" onFocus="if( this.value == 'Search Supplies...' ) this.value = '';" />
@@ -218,11 +218,11 @@
                                 <nav class="nav-main active">
                                     <h4><i class="fa fa-file" aria-hidden="true"></i> Contracts</h4>
                                     <ul class="active">
-                                        <li><a href="{{context_path}}/hhdc_contracts" title="HHDC">HHDC</a></li>
-                                        <li><a href="{{context_path}}/mop_contracts" title="MOP">MOP</a></li>
-                                        <li><a href="{{context_path}}/supplier_contracts" title="Supplier">Supplier</a></li>
-                                        <li><a href="{{context_path}}/dno_contracts" title="DNO">DNO</a></li>
-                                        <li><a href="{{context_path}}/non_core_contracts" title="Non-Core">Non-Core</a></li>
+                                        <li><a href="/hhdc_contracts" title="HHDC">HHDC</a></li>
+                                        <li><a href="/mop_contracts" title="MOP">MOP</a></li>
+                                        <li><a href="/supplier_contracts" title="Supplier">Supplier</a></li>
+                                        <li><a href="/dno_contracts" title="DNO">DNO</a></li>
+                                        <li><a href="/non_core_contracts" title="Non-Core">Non-Core</a></li>
                                     </ul>
                                 </nav>
                                 <!-- End Nav Contracts -->
@@ -230,12 +230,12 @@
                                 <nav class="nav-editors">
                                     <h4><i class="fa fa-cog" aria-hidden="true"></i> For Editors</h4>
                                     <ul>                                    
-                                        <li><a href="{{context_path}}/local_reports_home" title="Local Reports">Local Reports</a></li>
-                                        <li><a href="{{context_path}}/general_imports" title="General Import">General Import</a></li>
-                                        <li><a href="{{context_path}}/downloads" title="Downloads">Downloads</a></li>
-                                        <li><a href="{{context_path}}/reports/ecoes_comparison" title="Comparison against ECOES">Comparison against ECOES</a></li>
-                                        <li><a href="{{context_path}}/local_reports" title="Edit Local Reports">Edit Local Reports</a></li>
-                                        <li><a href="{{context_path}}/site_snags" title="Site Snags">Site Snags</a></li>
+                                        <li><a href="/local_reports_home" title="Local Reports">Local Reports</a></li>
+                                        <li><a href="/general_imports" title="General Import">General Import</a></li>
+                                        <li><a href="/downloads" title="Downloads">Downloads</a></li>
+                                        <li><a href="/reports/ecoes_comparison" title="Comparison against ECOES">Comparison against ECOES</a></li>
+                                        <li><a href="/local_reports" title="Edit Local Reports">Edit Local Reports</a></li>
+                                        <li><a href="/site_snags" title="Site Snags">Site Snags</a></li>
                                         <li><a href="https://github.com/WessexWater/chellow" title="Docs">Docs</a></li> 
                                     </ul>
                                 </nav>
@@ -244,22 +244,22 @@
                                 <nav class="nav-industry">
                                     <h4><i class="fa fa-industry" aria-hidden="true"></i> Industry Info</h4>
                                     <ul>
-                                        <li><a href="{{context_path}}/participants" title="Market Participants">Market Participants</a></li>
-                                        <li><a href="{{context_path}}/market_roles" title="Market Roles">Market Roles</a></li>
-                                        <li><a href="{{context_path}}/parties" title="Parties">Parties</a></li>
-                                        <li><a href="{{context_path}}/pcs" title="Profile Classes">Profile Classes</a></li>
-                                        <li><a href="{{context_path}}/mtcs" title="Meter Timeswitch Classes">Meter Timeswitch Classes</a></li>
-                                        <li><a href="{{context_path}}/meter_types" title="Meter Types">Meter Types</a></li>
-                                        <li><a href="{{context_path}}/meter_payment_types" title="Meter Payments Types">Meter Payments Types</a></li>
-                                        <li><a href="{{context_path}}/tprs" title="TPRs">TPRs</a></li>
-                                        <li><a href="{{context_path}}/sscs" title="SSCs">SSCs</a></li>
-                                        <li><a href="{{context_path}}/gsp_groups" title="GSP Groups">GSP Groups</a></li>
-                                        <li><a href="{{context_path}}/cops" title="CoPs">CoPs</a></li>
-                                        <li><a href="{{context_path}}/bill_types" title="Bill Types">Bill Types</a></li>
-                                        <li><a href="{{context_path}}/read_types" title="Read Types">Read Types</a></li>
-                                        <li><a href="{{context_path}}/sources" title="Sources">Sources</a></li>
-                                        <li><a href="{{context_path}}/generator_types" title="Generator Types">Generator Types</a></li>
-                                        <li><a href="{{context_path}}/reports/163" title="MDD Converter">MDD Converter</a></li>
+                                        <li><a href="/participants" title="Market Participants">Market Participants</a></li>
+                                        <li><a href="/market_roles" title="Market Roles">Market Roles</a></li>
+                                        <li><a href="/parties" title="Parties">Parties</a></li>
+                                        <li><a href="/pcs" title="Profile Classes">Profile Classes</a></li>
+                                        <li><a href="/mtcs" title="Meter Timeswitch Classes">Meter Timeswitch Classes</a></li>
+                                        <li><a href="/meter_types" title="Meter Types">Meter Types</a></li>
+                                        <li><a href="/meter_payment_types" title="Meter Payments Types">Meter Payments Types</a></li>
+                                        <li><a href="/tprs" title="TPRs">TPRs</a></li>
+                                        <li><a href="/sscs" title="SSCs">SSCs</a></li>
+                                        <li><a href="/gsp_groups" title="GSP Groups">GSP Groups</a></li>
+                                        <li><a href="/cops" title="CoPs">CoPs</a></li>
+                                        <li><a href="/bill_types" title="Bill Types">Bill Types</a></li>
+                                        <li><a href="/read_types" title="Read Types">Read Types</a></li>
+                                        <li><a href="/sources" title="Sources">Sources</a></li>
+                                        <li><a href="/generator_types" title="Generator Types">Generator Types</a></li>
+                                        <li><a href="/reports/163" title="MDD Converter">MDD Converter</a></li>
                                     </ul>
                                 </nav>
                                 <!-- End Nav Industry -->
@@ -267,9 +267,9 @@
                                 <nav class="nav-administration">
                                     <h4><i class="fa fa-user" aria-hidden="true"></i> Administration</h4>
                                     <ul>
-                                        <li><a href="{{context_path}}/users" title="Users">Users</a></li>
-                                        <li><a href="{{context_path}}/user_roles" title="Users Roles">Users Roles</a></li>
-                                        <li><a href="{{context_path}}/system" title="System">System</a></li>
+                                        <li><a href="/users" title="Users">Users</a></li>
+                                        <li><a href="/user_roles" title="Users Roles">Users Roles</a></li>
+                                        <li><a href="/system" title="System">System</a></li>
                                     </ul>
                                 </nav>
                                 <!-- End Nav Administration -->

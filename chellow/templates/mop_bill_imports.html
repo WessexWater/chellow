@@ -6,10 +6,10 @@
 {% endblock %}
 
 {% block nav %}
-	&raquo; <a href="{{context_path}}/mop_contracts">MOP Contracts</a> &raquo; 
-	<a href="{{context_path}}/mop_contracts/{{batch.contract.id}}">{{batch.contract.name}}</a> &raquo; 
-	<a href="{{context_path}}/mop_batches?mop_contract_id={{batch.contract.id}}">Batches</a> &raquo; 
-	<a href="{{context_path}}/mop_batches/{{batch.id}}">{{batch.reference}}</a>
+	&raquo; <a href="/mop_contracts">MOP Contracts</a> &raquo; 
+	<a href="/mop_contracts/{{batch.contract.id}}">{{batch.contract.name}}</a> &raquo; 
+	<a href="/mop_batches?mop_contract_id={{batch.contract.id}}">Batches</a> &raquo; 
+	<a href="/mop_batches/{{batch.id}}">{{batch.reference}}</a>
  	&raquo; Bill Imports
 {% endblock %}
 
@@ -41,7 +41,7 @@
 				<ul>
 					{% for id in importer_ids %}
 						<li>
-							<a href="{{context_path}}/bill_imports/{{id}}">{{id}}</a>
+							<a href="/bill_imports/{{id}}">{{id}}</a>
 						</li>
 					{% endfor %}
 				</ul>

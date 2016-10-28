@@ -15,10 +15,10 @@
 {% endblock %}
 
 {% block nav %}
-	&raquo; <a href="{{context_path}}/supplier_contracts">Supplier Contracts</a> &raquo; 
-	<a href="{{context_path}}/supplier_contracts/{{batch.contract.id}}">{{batch.contract.name}}</a> &raquo; 
-	<a href="{{context_path}}/supplier_batches?supplier_contract_id={{batch.contract.id}}">Batches</a> &raquo; 
-	<a href="{{context_path}}/supplier_batches/{{batch.id}}">{{batch.reference}}</a> &raquo; 
+	&raquo; <a href="/supplier_contracts">Supplier Contracts</a> &raquo; 
+	<a href="/supplier_contracts/{{batch.contract.id}}">{{batch.contract.name}}</a> &raquo; 
+	<a href="/supplier_batches?supplier_contract_id={{batch.contract.id}}">Batches</a> &raquo; 
+	<a href="/supplier_batches/{{batch.id}}">{{batch.reference}}</a> &raquo; 
 	Add Bill
 {% endblock %}
 

@@ -6,11 +6,11 @@
 {% endblock %}
 
 {% block nav %}
-	&raquo; <a href="{{context_path}}/supplier_contracts">Supplier Contracts</a> &raquo; 
-	<a href="{{context_path}}/supplier_contracts/{{bill.batch.contract.id}}">{{bill.batch.contract.name}}</a> &raquo; 
-	<a href="{{context_path}}/supplier_batches?supplier_contract_id={{bill.batch.contract.id}}">Batches</a> &raquo; 
-	<a href="{{context_path}}/supplier_batches/{{bill.batch.id}}">{{bill.batch.reference}}</a> &raquo; 
-	<a href="{{context_path}}/supplier_bills/{{bill.id}}">Bill {{bill.id}}</a>
+	&raquo; <a href="/supplier_contracts">Supplier Contracts</a> &raquo; 
+	<a href="/supplier_contracts/{{bill.batch.contract.id}}">{{bill.batch.contract.name}}</a> &raquo; 
+	<a href="/supplier_batches?supplier_contract_id={{bill.batch.contract.id}}">Batches</a> &raquo; 
+	<a href="/supplier_batches/{{bill.batch.id}}">{{bill.batch.reference}}</a> &raquo; 
+	<a href="/supplier_bills/{{bill.id}}">Bill {{bill.id}}</a>
  	&raquo; Edit
 {% endblock %}
 
@@ -30,7 +30,7 @@
 					<form method="post" action="">
 						<fieldset>
 							<input type="submit" name="delete" value="Delete">
-							<input type="reset" value="Cancel" onClick="window.location='{{context_path}}/supplier_bills/{{bill.id}}/edit'" />
+							<input type="reset" value="Cancel" onClick="window.location='/supplier_bills/{{bill.id}}/edit'" />
 						</fieldset>
 					</form>
 				</div>
@@ -56,7 +56,7 @@
 					<fieldset>
 						<div class="standardForm">
 							<p>
-								<a href="{{context_path}}/supplies/{{bill.supply.id}}">Supply</a>
+								<a href="/supplies/{{bill.supply.id}}">Supply</a>
 							</p>
 							<div class="row">
 								<div class="col-sm-6">

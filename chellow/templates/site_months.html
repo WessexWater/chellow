@@ -17,8 +17,8 @@
 {% endblock %}
 
 {% block nav %}
-	&raquo; <a href="{{context_path}}/sites">Sites</a> &raquo;
-	<a href="{{context_path}}/sites/{{site.id}}">{{site.code}} {{site.name}}</a>
+	&raquo; <a href="/sites">Sites</a> &raquo;
+	<a href="/sites/{{site.id}}">{{site.code}} {{site.name}}</a>
 	&raquo; Monthly figures
 {% endblock %}
 
@@ -169,7 +169,7 @@
 
     							<td>
     								{% if month.has_site_snags %}
-    									See <a href="{{context_path}}/sites/{{site.id}}/gen_graph?months=1&amp;finish_year={{month.start_date.year}}&amp;finish_month={{month.start_date.month}}">generation graph</a> for errors.
+    									See <a href="/sites/{{site.id}}/gen_graph?months=1&amp;finish_year={{month.start_date.year}}&amp;finish_month={{month.start_date.month}}">generation graph</a> for errors.
     								{% endif %}
     							</td>
     						</tr>

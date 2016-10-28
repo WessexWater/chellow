@@ -5,9 +5,9 @@
 {% endblock %}
 
 {% block nav %}
-	&raquo; <a href="{{context_path}}/dno_contracts">DNO Contracts</a> &raquo; 
+	&raquo; <a href="/dno_contracts">DNO Contracts</a> &raquo; 
 	{{ contract.name }}
-	[<a href="{{context_path}}/dno_contracts/{{contract.id}}">edit</a>]
+	[<a href="/dno_contracts/{{contract.id}}">edit</a>]
 {% endblock %}
 
 {% block content %}
@@ -37,7 +37,7 @@
 							<ul>
 								{% for report in custom_reports %}
 									<li>
-										<a href="{{context_path}}/local_reports/{{report.id}}/output/?dno_id={{contract.id}}">{{report.name}}</a>
+										<a href="/local_reports/{{report.id}}/output/?dno_id={{contract.id}}">{{report.name}}</a>
 									</li>
 								{% endfor %}
 							</ul>
@@ -46,13 +46,13 @@
 					<tr>
 						<th>Party</th>
 						<td>
-							<a href="{{context_path}}/parties/{{contract.party.id}}">{{contract.party.name}}</a>
+							<a href="/parties/{{contract.party.id}}">{{contract.party.name}}</a>
 						</td>
 					</tr>
 					<tr>
 						<th>Line Loss Factor Classes</th>
 						<td>
-							<a href="{{context_path}}/llfcs?dno_contract_id={{contract.id}}">LLFCs</a>
+							<a href="/llfcs?dno_contract_id={{contract.id}}">LLFCs</a>
 						</td>
 					</tr>
 				</tbody>
@@ -62,7 +62,7 @@
 			<table class="DataTable widthAuto noMarginBottom">
 				<caption>
 					Rate Scripts
-					[<a href="{{context_path}}/dno_contracts/{{contract.id}}/add_rate_script">add</a>]
+					[<a href="/dno_contracts/{{contract.id}}/add_rate_script">add</a>]
 				</caption>
 				<thead>
 					<tr>
@@ -75,7 +75,7 @@
 					{% for rate_script in rate_scripts %}
 						<tr>
 							<td>
-								<a href="{{context_path}}/dno_rate_scripts/{{rate_script.id}}">View</a>
+								<a href="/dno_rate_scripts/{{rate_script.id}}">View</a>
 							</td>
 							<td>{{ rate_script.start_date|hh_format }}</td>
 							<td>{{ rate_script.finish_date|hh_format }}</td>

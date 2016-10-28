@@ -6,12 +6,12 @@
 {% endblock %}
 
 {% block nav %}
-	&raquo; <a href="{{context_path}}/hhdc_contracts">HHDC Contracts</a> &raquo; 
-	<a href="{{context_path}}/hhdc_contracts/{{snag.channel.era.hhdc_contract.id}}">{{snag.channel.era.hhdc_contract.name}}</a> &raquo; 
-	<a href="{{context_path}}/channel_snags?hhdc_contract_id={{snag.channel.era.hhdc_contract.id}}&amp;days_hidden=5">Channel Snags</a> &raquo; 
+	&raquo; <a href="/hhdc_contracts">HHDC Contracts</a> &raquo; 
+	<a href="/hhdc_contracts/{{snag.channel.era.hhdc_contract.id}}">{{snag.channel.era.hhdc_contract.name}}</a> &raquo; 
+	<a href="/channel_snags?hhdc_contract_id={{snag.channel.era.hhdc_contract.id}}&amp;days_hidden=5">Channel Snags</a> &raquo; 
 
 	{{snag.id}}
-	[<a href="{{context_path}}/channel_snags/{{snag.id}}/edit">edit</a>]
+	[<a href="/channel_snags/{{snag.id}}/edit">edit</a>]
 {% endblock %}
 
 {% block content %}
@@ -54,7 +54,7 @@
 								Export
 							{% endif %}
 							{{snag.channel.channel_type}}
-							channel of <a href="{{context_path}}/supplies/{{snag.channel.era.supply.id}}">supply {{snag.channel.era.supply.name}}</a>
+							channel of <a href="/supplies/{{snag.channel.era.supply.id}}">supply {{snag.channel.era.supply.name}}</a>
 						</td>
 					</tr>
 					<tr>

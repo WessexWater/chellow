@@ -5,8 +5,8 @@
 {% endblock %}
 
 {% block nav %}
-	<a href="{{context_path}}/non_core_contracts">Non-Core Contracts</a> &raquo;
-	<a href="{{context_path}}/non_core_contracts/{{contract.id}}">{{contract.name}}</a>
+	<a href="/non_core_contracts">Non-Core Contracts</a> &raquo;
+	<a href="/non_core_contracts/{{contract.id}}">{{contract.name}}</a>
 	&raquo; Automatic Importer
 {% endblock %}
 
@@ -15,7 +15,7 @@
 	<div class="section-content">
 		<div class="section-data">
 		    <p>
-	            <a href="{{context_path}}/non_core_contracts/{{contract.id}}/auto_importer">Refresh page</a>
+	            <a href="/non_core_contracts/{{contract.id}}/auto_importer">Refresh page</a>
 	        </p>
 	        {% if importer %}
 		        <table class="DataTable widthAuto">

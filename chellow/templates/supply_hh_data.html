@@ -5,8 +5,8 @@
 {% endblock %}
 
 {% block nav %}
-	&raquo; <a href="{{context_path}}/supplies">Supplies</a> &raquo;
-	<a href="{{context_path}}/supplies/{{supply.id}}">{{supply.name}}</a>
+	&raquo; <a href="/supplies">Supplies</a> &raquo;
+	<a href="/supplies/{{supply.id}}">{{supply.name}}</a>
 	&raquo; HH Data
 {% endblock %}
 
@@ -46,7 +46,7 @@
 	</div>
 	<div class="section-data">
 		<div class="standardForm textWidthAuto">
-			<form action="{{context_path}}/supplies/{{supply.id}}/hh_data">
+			<form action="/supplies/{{supply.id}}/hh_data">
 				<fieldset>
 					For {{ input_text('months', months, 2, 2) }} month(s)
 					finishing at the end of

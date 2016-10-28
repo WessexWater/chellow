@@ -6,12 +6,12 @@
 {% endblock %}
 
 {% block nav %}
-	&raquo; <a href="{{context_path}}/supplier_contracts">Supplier Contracts</a> &raquo; 
-	<a href="{{context_path}}/supplier_contracts/{{bill.batch.contract.id}}">{{bill.batch.contract.name}}</a> &raquo; 
-	<a href="{{context_path}}/supplier_batches?supplier_contract_id={{bill.batch.contract.id}}">Batches</a> &raquo; 
-	<a href="{{context_path}}/supplier_batches/{{bill.batch.id}}">{{bill.batch.reference}}</a> &raquo; 
+	&raquo; <a href="/supplier_contracts">Supplier Contracts</a> &raquo; 
+	<a href="/supplier_contracts/{{bill.batch.contract.id}}">{{bill.batch.contract.name}}</a> &raquo; 
+	<a href="/supplier_batches?supplier_contract_id={{bill.batch.contract.id}}">Batches</a> &raquo; 
+	<a href="/supplier_batches/{{bill.batch.id}}">{{bill.batch.reference}}</a> &raquo; 
 	Bill {{bill.id}}
-	[<a href="{{context_path}}/supplier_bills/{{bill.id}}/edit">edit</a>]
+	[<a href="/supplier_bills/{{bill.id}}/edit">edit</a>]
 {% endblock %}
 
 {% block content %}
@@ -45,7 +45,7 @@
 				<tbody>
 					<tr>
 						<td>
-							<a href="{{context_path}}/supplies/{{bill.supply.id}}">Supply</a>
+							<a href="/supplies/{{bill.supply.id}}">Supply</a>
 						</td>
 						<td>{{bill.reference}}</td>
 						<td>{{bill.account}}</td>
@@ -57,11 +57,11 @@
 						<td>{{bill.vat}}</td>
 						<td>{{bill.gross}}</td>
 						<td>
-							<a href="{{context_path}}/bill_types/{{bill.bill_type.id}}"
+							<a href="/bill_types/{{bill.bill_type.id}}"
 							 	title="{{bill.bill_type.description}}">{{bill.bill_type.code}}</a>
 						</td>
 						<td>
-							<a href="{{context_path}}/reports/111?bill_id={{bill.id}}">Check</a>
+							<a href="/reports/111?bill_id={{bill.id}}">Check</a>
 						</td>
 					</tr>
 				</tbody>
@@ -76,7 +76,7 @@
 	<!-- Section Header -->
 	<div class="section-header">
 		<h2>Reads
-					[<a href="{{context_path}}/supplier_bills/{{bill.id}}/add_read">add</a>]</h2>	
+					[<a href="/supplier_bills/{{bill.id}}/add_read">add</a>]</h2>	
 	</div>
 	<!-- End Section Header -->
 	<!-- Section Content -->
@@ -107,26 +107,26 @@
 					{% for read in register_reads %}
 						<tr>
 							<td>
-								[<a href="{{context_path}}/reads/{{read.id}}/edit">edit</a>]
+								[<a href="/reads/{{read.id}}/edit">edit</a>]
 							</td>
 							<td>{{read.mpan_str}}</td>
 							<td>{{read.coefficient}}</td>
 							<td>{{read.units_as_str()}}</td>
 							<td>
-								<a href="{{context_path}}/tprs/{{read.tpr.id}}">{{read.tpr.code}}</a>
+								<a href="/tprs/{{read.tpr.id}}">{{read.tpr.code}}</a>
 							</td>
 							<td>{{read.msn}}</td>
 							<td>{{read.previous_date|hh_format}}</td>
 							<td>{{read.previous_value}}</td>
 							<td>
 								<a title="{{read.previous_type.description}}"
-								href="{{context_path}}/read_types/{{read.previous_type.id}}">{{read.previous_type.code}}</a>
+								href="/read_types/{{read.previous_type.id}}">{{read.previous_type.code}}</a>
 							</td>
 							<td>{{read.present_date|hh_format}}</td>
 							<td>{{read.present_value}}</td>
 							<td>
 								<a title="{{read.present_type.description}}"
-								href="{{context_path}}/read_types/{{read.present_type.id}}">{{read.present_type.code}}</a>
+								href="/read_types/{{read.present_type.id}}">{{read.present_type.code}}</a>
 							</td>
 						</tr>
 					{% endfor %}

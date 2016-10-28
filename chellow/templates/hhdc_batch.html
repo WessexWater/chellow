@@ -6,11 +6,11 @@
 {% endblock %}
 
 {% block nav %}
-	&raquo; <a href="{{context_path}}/hhdc_contracts">HHDC Contracts</a> &raquo;
-	<a href="{{context_path}}/hhdc_contracts/{{batch.contract.id}}">{{batch.contract.name}}</a> &raquo;
+	&raquo; <a href="/hhdc_contracts">HHDC Contracts</a> &raquo;
+	<a href="/hhdc_contracts/{{batch.contract.id}}">{{batch.contract.name}}</a> &raquo;
 	<a href="{{ context_path }}/hhdc_batches?hhdc_contract_id={{batch.contract.id}}">Batches</a> &raquo;
 	{{batch.reference}}
-	[<a href="{{context_path}}/hhdc_batches/{{batch.id}}/edit">edit</a>]
+	[<a href="/hhdc_batches/{{batch.id}}/edit">edit</a>]
 {% endblock %}
 
 {% block content %}
@@ -40,7 +40,7 @@
 								<ul>
 									{% for report in batch_reports %}
 										<li>
-											<a href="{{context_path}}/local_reports/{{report.id}}/output?batch_id={{batch.id}}">{{report.name}}</a>
+											<a href="/local_reports/{{report.id}}/output?batch_id={{batch.id}}">{{report.name}}</a>
 										</li>
 									{% endfor %}
 								</ul>
@@ -53,14 +53,14 @@
 			<div class="section-data">
 				<ul>
 					<li>
-						<a href="{{context_path}}/reports/111?batch_id={{batch.id}}">Check Bills</a>
+						<a href="/reports/111?batch_id={{batch.id}}">Check Bills</a>
 					</li>
 					<li>
-						[<a href="{{context_path}}/hhdc_bill_imports?hhdc_batch_id={{batch.id}}">Bill Imports</a>]
+						[<a href="/hhdc_bill_imports?hhdc_batch_id={{batch.id}}">Bill Imports</a>]
 					</li>
 					<li>
 						<a
-								href="{{context_path}}/hhdc_batches/{{batch.id}}/csv"
+								href="/hhdc_batches/{{batch.id}}/csv"
 								>CSV of Bills</a>
 					</li>
 				</ul>
@@ -71,7 +71,7 @@
 	<div class="layer-section">
 		<div class="section-header">
 			<h2>
-				Bills [<a href="{{context_path}}/hhdc_batches/{{batch.id}}/add_bill">add</a>]
+				Bills [<a href="/hhdc_batches/{{batch.id}}/add_bill">add</a>]
 			</h2>
 		</div>
 		<div class="section-content">
@@ -98,11 +98,11 @@
 							{% for bill in bills %}
 								<tr>
 									<td>
-										<a href="{{context_path}}/hhdc_bills/{{bill.id}}">View</a>
+										<a href="/hhdc_bills/{{bill.id}}">View</a>
 									</td>
 									<td>{{ bill.reference }}</td>
 									<td>
-										<a href="{{context_path}}/supplies/{{bill.supply.id}}">supply</a>
+										<a href="/supplies/{{bill.supply.id}}">supply</a>
 									</td>
 									<td>{{ bill.account }}</td>
 									<td>{{ bill.issue_date|hh_format }}</td>
@@ -113,7 +113,7 @@
 									<td>{{ bill.vat }}</td>
 									<td>{{ bill.gross }}</td>
 									<td>
-										<a href="{{context_path}}/bill_types/{{bill.bill_type.id}}"
+										<a href="/bill_types/{{bill.bill_type.id}}"
 										 	title="{{bill.bill_type.description}}">{{bill.bill_type.code}}</a>
 									</td>
 								</tr>
