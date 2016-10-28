@@ -1,1 +1,1 @@
-{'participant_code': 'LENG', 'is_core': 'True'}
+{'participant_code': 'LENG'}

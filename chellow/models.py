@@ -723,15 +723,15 @@ class Contract(Base, PersistentClass):
             sess, name, participant, charge_script, properties, start_date,
             finish_date, rate_script):
         return Contract.insert(
-            sess, False, name, participant, 'M', charge_script, properties,
+            sess, name, participant, 'M', charge_script, properties,
             start_date, finish_date, rate_script)
 
     @staticmethod
     def insert_non_core(
-            sess, is_core, name, charge_script, properties, start_date,
-            finish_date, rate_script):
+            sess, name, charge_script, properties, start_date, finish_date,
+            rate_script):
         return Contract.insert(
-            sess, is_core, name, Participant.get_by_code(sess, 'CALB'), 'Z',
+            sess, name, Participant.get_by_code(sess, 'CALB'), 'Z',
             charge_script, properties, start_date, finish_date, rate_script)
 
     @staticmethod
@@ -739,7 +739,7 @@ class Contract(Base, PersistentClass):
             sess, name, participant, charge_script, properties, start_date,
             finish_date, rate_script):
         return Contract.insert(
-            sess, False, name, participant, 'C', charge_script, properties,
+            sess, name, participant, 'C', charge_script, properties,
             start_date, finish_date, rate_script)
 
     @staticmethod
@@ -747,17 +747,16 @@ class Contract(Base, PersistentClass):
             sess, name, participant, charge_script, properties, start_date,
             finish_date, rate_script):
         return Contract.insert(
-            sess, False, name, participant, 'X', charge_script, properties,
+            sess, name, participant, 'X', charge_script, properties,
             start_date, finish_date, rate_script)
 
     @staticmethod
     def insert(
-            sess, is_core, name, participant, role_code, charge_script,
-            properties, start_date, finish_date, rate_script):
+            sess, name, participant, role_code, charge_script, properties,
+            start_date, finish_date, rate_script):
         party = Party.get_by_participant_id_role_code(
             sess, participant.id, role_code)
-        contract = Contract(
-            is_core, name, party, charge_script, properties, '{}')
+        contract = Contract(name, party, charge_script, properties, '{}')
         sess.add(contract)
         sess.flush()
         rscript = contract.insert_rate_script(sess, start_date, rate_script)
@@ -767,7 +766,6 @@ class Contract(Base, PersistentClass):
 
     __tablename__ = 'contract'
     id = Column(Integer, primary_key=True)
-    is_core = Column(Boolean, nullable=False)
     name = Column(String, nullable=False)
     charge_script = Column(Text, nullable=False)
     properties = Column(Text, nullable=False)
@@ -791,14 +789,12 @@ class Contract(Base, PersistentClass):
         "RateScript",
         primaryjoin="RateScript.id==Contract.finish_rate_script_id")
 
-    def __init__(
-            self, is_core, name, party, charge_script, properties, state):
+    def __init__(self, name, party, charge_script, properties, state):
         self.market_role = party.market_role
-        self.update(is_core, name, party, charge_script, properties)
+        self.update(name, party, charge_script, properties)
         self.update_state(state)
 
-    def update(self, is_core, name, party, charge_script, properties):
-        self.is_core = is_core
+    def update(self, name, party, charge_script, properties):
         name = name.strip()
         if len(name) == 0:
             raise BadRequest("The contract name can't be blank.")
@@ -3133,7 +3129,11 @@ def db_upgrade_1_to_2(sess, root_path):
         contract.finish_rate_script = scripts[-1]
 
 
-upgrade_funcs = [db_upgrade_0_to_1, db_upgrade_1_to_2]
+def db_upgrade_2_to_3(sess, root_path):
+    sess.execute("alter table contract drop column is_core;")
+
+
+upgrade_funcs = [db_upgrade_0_to_1, db_upgrade_1_to_2, db_upgrade_2_to_3]
 
 
 def db_upgrade(root_path):

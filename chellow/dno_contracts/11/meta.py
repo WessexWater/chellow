@@ -1,1 +1,1 @@
-{'participant_code': u'EMEB', 'is_core': 'True'}
+{'participant_code': 'EMEB'}

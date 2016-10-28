@@ -958,7 +958,7 @@ def hhdc_contract_edit_post(contract_id):
             charge_script = req_str("charge_script")
             properties = req_str("properties")
             party = Party.get_by_id(g.sess, party_id)
-            contract.update(False, name, party, charge_script, properties)
+            contract.update(name, party, charge_script, properties)
             g.sess.commit()
             return chellow_redirect('/hhdc_contracts/' + str(contract.id), 303)
     except BadRequest as e:
@@ -1073,7 +1073,7 @@ def supplier_contract_edit_post(contract_id):
             name = req_str('name')
             charge_script = req_str('charge_script')
             properties = req_str('properties')
-            contract.update(False, name, party, charge_script, properties)
+            contract.update(name, party, charge_script, properties)
             g.sess.commit()
             return chellow_redirect(
                 '/supplier_contracts/' + str(contract.id), 303)
@@ -1271,7 +1271,7 @@ def mop_contract_edit_post(contract_id):
             charge_script = req_str("charge_script")
             properties = req_str("properties")
             party = Party.get_by_id(g.sess, party_id)
-            contract.update(False, name, party, charge_script, properties)
+            contract.update(name, party, charge_script, properties)
             g.sess.commit()
             return chellow_redirect('/mop_contracts/' + str(contract.id), 303)
     except BadRequest as e:
