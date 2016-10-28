@@ -2748,7 +2748,9 @@ def virtual_bill(supply_source):
     {
         'name': "Try site graph report.",
         'path': '/sites/7/used_graph?finish_year=2008&finish_month=7&months=1',
-        'status_code': 200},
+        'status_code': 200,
+        'regexes': [
+            r'<title>0.524 kW at 2008-07-06 00:00</title>']},
     {
         'name': "Try generation graph report.",
         'path': '/sites/7/gen_graph?finish_year=2008&finish_month=7&months=1',
@@ -11217,7 +11219,7 @@ def virtual_bill(supply_source):
             r'<table:table-cell office:string-value="" '
             r'office:value-type="string"/>\s*'
             r'<table:table-cell table:number-columns-repeated="106"/>\s*'
-            r'<table:table-cell office:value="94.02041880541346" '
+            r'<table:table-cell office:value="94.0204188054134\d*" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell table:number-columns-repeated="2"/>\s*'
             r'<table:table-cell office:value="0.00525288" '
