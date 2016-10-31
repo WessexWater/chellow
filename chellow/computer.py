@@ -428,17 +428,17 @@ def _datum_generator(sess, years_back, caches, pw):
             utc_decimal_hour = dt.hour + dt.minute / 60
             ct_decimal_hour = ct_dt.hour + ct_dt.minute / 60
 
-            utc_bank_holidays = hh_rate(
+            bank_holidays = hh_rate(
                 sess2, caches, chellow.bank_holidays.get_db_id(), dt,
                 'bank_holidays', pw)
-            if utc_bank_holidays is None:
+            if bank_holidays is None:
                 raise BadRequest(
                     "Can't find bank holidays for " + str(dt))
-            utc_bank_holidays = utc_bank_holidays[:]
-            for i in range(len(utc_bank_holidays)):
-                utc_bank_holidays[i] = utc_bank_holidays[i][5:]
-            utc_is_bank_holiday = dt.strftime("%m-%d") in \
-                utc_bank_holidays
+            bank_holidays = bank_holidays[:]
+            for i, bank_holiday in enumerate(bank_holidays):
+                bank_holidays[i] = bank_holiday[5:]
+            utc_is_bank_holiday = dt.strftime("%m-%d") in bank_holidays
+            ct_is_bank_holiday = ct_dt.strftime("%m-%d") in bank_holidays
 
             hh = {
                 'status': 'E', 'hist-start': hist_date, 'start-date': dt,
@@ -450,6 +450,7 @@ def _datum_generator(sess, years_back, caches, pw):
                 'ct-day-of-week': ct_dt.weekday(),
                 'utc-day-of-week': dt.weekday(),
                 'utc-is-bank-holiday': utc_is_bank_holiday,
+                'ct-is-bank-holiday': ct_is_bank_holiday,
                 'utc-is-month-end': utc_is_month_end,
                 'ct-is-month-end': ct_is_month_end}
 
