@@ -14,22 +14,9 @@ from chellow.models import (
 from chellow.utils import HH, hh_format, hh_max, hh_range, hh_min
 import chellow.bank_holidays
 from itertools import combinations
+from types import MappingProxyType
+from functools import lru_cache
 
-
-class imdict(dict):
-    def __hash__(self):
-        return id(self)
-
-    def _immutable(self, *args, **kws):
-        raise TypeError('object is immutable')
-
-    __setitem__ = _immutable
-    __delitem__ = _immutable
-    clear = _immutable
-    update = _immutable
-    setdefault = _immutable
-    pop = _immutable
-    popitem = _immutable
 
 cons_types = ['construction', 'commissioning', 'operation']
 lec_cats = list(
@@ -38,39 +25,21 @@ lec_cats = list(
         'import-3rd-party', 'export-3rd-party'])
 
 
-def get_times(sess, caches, start_date, finish_date, forecast_date, pw):
-    times_cache = get_computer_cache(caches, 'times')
-    try:
-        s_cache = times_cache[start_date]
-    except KeyError:
-        s_cache = {}
-        times_cache[start_date] = s_cache
+@lru_cache()
+def get_times(start_date, finish_date, forecast_date):
+    if start_date > finish_date:
+        raise BadRequest('The start date is after the finish date.')
+    dt = finish_date
+    years_back = 0
+    while dt > forecast_date:
+        dt -= relativedelta(years=1)
+        years_back += 1
 
-    try:
-        f_cache = s_cache[finish_date]
-    except KeyError:
-        f_cache = {}
-        s_cache[finish_date] = f_cache
-
-    try:
-        return f_cache[forecast_date]
-    except KeyError:
-        if start_date > finish_date:
-            raise BadRequest('The start date is after the finish date.')
-        times_dict = defaultdict(int)
-        dt = finish_date
-        years_back = 0
-        while dt > forecast_date:
-            dt -= relativedelta(years=1)
-            years_back += 1
-
-        times_dict['history-finish'] = dt
-        times_dict['history-start'] = dt - (finish_date - start_date)
-
-        times_dict['years-back'] = years_back
-
-        f_cache[forecast_date] = times_dict
-        return times_dict
+    return MappingProxyType(
+        {
+            'history-finish': dt,
+            'history-start': dt - (finish_date - start_date),
+            'years-back': years_back})
 
 
 def get_computer_cache(caches, name):
@@ -238,7 +207,7 @@ def displaced_era(sess, caches, site, start_date, finish_date, forecast_date):
         raise BadRequest(
             "The start and end dates of a displaced period must be within the "
             "same month")
-    t = get_times(sess, caches, start_date, finish_date, forecast_date, None)
+    t = get_times(start_date, finish_date, forecast_date)
     hist_start = t['history-start']
     month_start = Datetime(
         hist_start.year, hist_start.month, 1, tzinfo=pytz.utc)
@@ -454,7 +423,7 @@ def _datum_generator(sess, years_back, caches, pw):
                 'utc-is-month-end': utc_is_month_end,
                 'ct-is-month-end': ct_is_month_end}
 
-            datum_cache[hist_date] = imdict(hh)
+            datum_cache[hist_date] = MappingProxyType(hh)
             return datum_cache[hist_date]
     return _generator
 
@@ -468,8 +437,7 @@ class DataSource():
         self.start_date = start_date
         self.finish_date = finish_date
         self.pw = pw
-        times = get_times(
-            sess, caches, start_date, finish_date, forecast_date, pw)
+        times = get_times(start_date, finish_date, forecast_date)
         self.years_back = times['years-back']
         self.history_start = times['history-start']
         self.history_finish = times['history-finish']
