@@ -50,7 +50,7 @@ def hh(data_source):
             rates = data_source.hh_rate(db_id, h_start, 'rates_gbp_per_mwh')
             try:
                 h['bsuos-gbp-per-kwh'] = bsuos_rate = bsuos_cache[h_start] = \
-                    float(rates[h_start.strftime("%d %H:%M Z")]) / 1000
+                    rates[h_start.strftime("%d %H:%M Z")] / 1000
             except KeyError:
                 raise BadRequest(
                     "For the BSUoS rate script at " + hh_format(h_start) +

@@ -18,8 +18,9 @@ create_future_func = chellow.scenario.make_create_future_func_simple(
     'ccl', ['ccl_rate'])
 
 
-def ccl(data_source):
+def ccl(data_source, ct_month=False):
     rate_set = data_source.supplier_rate_sets['ccl-rate']
+    end_key = 'ct-is-month-end' if ct_month else 'utc-is-month-end'
 
     if data_source.supply.find_era_at(
             data_source.sess, data_source.finish_date + HH) is None:
@@ -47,7 +48,7 @@ def ccl(data_source):
 
     if data_source.bill is None:
         for hh in data_source.hh_data:
-            if hh['utc-is-month-end'] or hh['start-date'] == sup_end:
+            if hh[end_key] or hh['start-date'] == sup_end:
                 month_finish = hh['start-date']
                 kwh = 0
                 gbp = 0

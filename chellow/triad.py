@@ -66,8 +66,9 @@ def triad_calc(
     hh[prefix + '-rate'] = rate
 
 
-def hh(data_source, rate_period='monthly'):
-    for hh in (h for h in data_source.hh_data if h['utc-is-month-end']):
+def hh(data_source, rate_period='monthly', ct_month=False):
+    end_key = 'ct-is-month-end' if ct_month else 'utc-is-month-end'
+    for hh in (h for h in data_source.hh_data if h[end_key]):
         month_finish = hh['start-date']
         month_start = month_finish + HH - relativedelta(months=1)
         month_num = month_start.month
