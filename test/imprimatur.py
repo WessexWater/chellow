@@ -8614,7 +8614,7 @@ def virtual_bill(supply_source):
             r'office:value-type="float" table:number-columns-repeated="9"/>\s*'
             r'<table:table-cell office:value="189.2268\d*" '
             r'office:value-type="float"/>\s*'
-            r'<table:table-cell office:value="112.0808" '
+            r'<table:table-cell office:value="112.080\d*" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="0" '
             r'office:value-type="float" table:number-columns-repeated="5"/>\s*'
@@ -8758,7 +8758,7 @@ def virtual_bill(supply_source):
             r'<table:table-cell office:value="0.0" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell table:number-columns-repeated="4"/>\s*'
-            r'<table:table-cell office:value="112.0808" '
+            r'<table:table-cell office:value="112.080\d*" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell table:number-columns-repeated="2"/>\s*'
             r'<table:table-cell office:value="0.0047" '
@@ -14056,4 +14056,43 @@ def virtual_bill(supply_source):
         'regexes': [
             r'\(&#39;fit-rate&#39;, &#39;0.00205, 0.00206&#39;\)'],
         'status_code': 200},
+
+    {
+        'name': "Check months before and after forecast for NHH",
+        'path': '/local_reports/1',
+        'method': 'post',
+        'data': {
+            'name': 'Minority Report',
+            'script': """from chellow.models import Session
+import chellow.computer
+from datetime import datetime as Datetime
+import pytz
+
+
+sess = None
+try:
+    caches = {}
+    sess = Session()
+    t = Datetime(2010, 10, 1, tzinfo=pytz.utc)
+    dgen1 = chellow.computer._tpr_datum_generator(
+        sess, caches, '00001', 0, None)
+    datum1 = dgen1(sess, t)
+    dgen2 = chellow.computer._tpr_datum_generator(
+        sess, caches, '00001', 1, None)
+    datum2 = dgen2(sess, t)
+    if datum1 == datum2:
+        raise Exception("datums match!")
+    response = 'Henriki'
+finally:
+    if sess is not None:
+        sess.close()
+""",
+            'template': ''},
+        'status_code': 303},
+    {
+        'name': "Run a local report",
+        'path': '/local_reports/1/output',
+        'status_code': 200,
+        'regexes': [
+            r'Henriki']},
 ]

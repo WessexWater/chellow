@@ -326,8 +326,14 @@ def _tpr_dict(sess, caches, tpr_code, pw):
 
 def _tpr_datum_generator(sess, caches, tpr_code, years_back, pw):
     tpr_dict = _tpr_dict(sess, caches, tpr_code, pw)
-    datum_cache = tpr_dict['datum-cache']
-    dgenerator = _datum_generator(sess, years_back, caches, pw)
+    datum_caches = tpr_dict['datum-cache']
+    try:
+        datum_cache = datum_caches[years_back]
+    except KeyError:
+        datum_cache = {}
+        datum_caches[years_back] = datum_cache
+
+    dgenerator = _datum_generator(years_back, caches, pw)
 
     def _generator(sess2, hh_date):
         try:
@@ -361,7 +367,7 @@ def _tpr_datum_generator(sess, caches, tpr_code, years_back, pw):
     return _generator
 
 
-def _datum_generator(sess, years_back, caches, pw):
+def _datum_generator(years_back, caches, pw):
     try:
         datum_cache = caches['computer']['datum'][years_back]
     except KeyError:
@@ -383,7 +389,7 @@ def _datum_generator(sess, years_back, caches, pw):
             d_cache[years_back] = {}
             datum_cache = d_cache[years_back]
 
-    def _generator(sess2, hist_date):
+    def _generator(sess, hist_date):
         try:
             return datum_cache[hist_date]
         except KeyError:
@@ -397,33 +403,32 @@ def _datum_generator(sess, years_back, caches, pw):
             utc_decimal_hour = dt.hour + dt.minute / 60
             ct_decimal_hour = ct_dt.hour + ct_dt.minute / 60
 
-            bank_holidays = hh_rate(
-                sess2, caches, chellow.bank_holidays.get_db_id(), dt,
+            bhs = hh_rate(
+                sess, caches, chellow.bank_holidays.get_db_id(), dt,
                 'bank_holidays', pw)
-            if bank_holidays is None:
+            if bhs is None:
                 raise BadRequest(
                     "Can't find bank holidays for " + str(dt))
-            bank_holidays = bank_holidays[:]
-            for i, bank_holiday in enumerate(bank_holidays):
-                bank_holidays[i] = bank_holiday[5:]
+            bank_holidays = [b[5:] for b in bhs]
             utc_is_bank_holiday = dt.strftime("%m-%d") in bank_holidays
             ct_is_bank_holiday = ct_dt.strftime("%m-%d") in bank_holidays
 
-            hh = {
-                'status': 'E', 'hist-start': hist_date, 'start-date': dt,
-                'ct-day': ct_dt.day, 'utc-month': dt.month, 'utc-day': dt.day,
-                'utc-decimal-hour': utc_decimal_hour, 'utc-year': dt.year,
-                'utc-hour': dt.hour, 'utc-minute': dt.minute,
-                'ct-year': ct_dt.year, 'ct-month': ct_dt.month,
-                'ct-decimal-hour': ct_decimal_hour,
-                'ct-day-of-week': ct_dt.weekday(),
-                'utc-day-of-week': dt.weekday(),
-                'utc-is-bank-holiday': utc_is_bank_holiday,
-                'ct-is-bank-holiday': ct_is_bank_holiday,
-                'utc-is-month-end': utc_is_month_end,
-                'ct-is-month-end': ct_is_month_end}
+            datum_cache[hist_date] = MappingProxyType(
+                {
+                    'status': 'E', 'hist-start': hist_date, 'start-date': dt,
+                    'ct-day': ct_dt.day, 'utc-month': dt.month,
+                    'utc-day': dt.day, 'utc-decimal-hour': utc_decimal_hour,
+                    'utc-year': dt.year, 'utc-hour': dt.hour,
+                    'utc-minute': dt.minute, 'ct-year': ct_dt.year,
+                    'ct-month': ct_dt.month,
+                    'ct-decimal-hour': ct_decimal_hour,
+                    'ct-day-of-week': ct_dt.weekday(),
+                    'utc-day-of-week': dt.weekday(),
+                    'utc-is-bank-holiday': utc_is_bank_holiday,
+                    'ct-is-bank-holiday': ct_is_bank_holiday,
+                    'utc-is-month-end': utc_is_month_end,
+                    'ct-is-month-end': ct_is_month_end})
 
-            datum_cache[hist_date] = MappingProxyType(hh)
             return datum_cache[hist_date]
     return _generator
 
@@ -497,7 +502,7 @@ class SiteSource(DataSource):
             self.supplier_contract = era.imp_supplier_contract
 
         datum_generator = _datum_generator(
-            sess, self.years_back, self.caches, self.pw)
+            self.years_back, self.caches, self.pw)
 
         supply_ids = set(
             s.id for s in sess.query(Supply).join(Era).join(SiteEra).
@@ -1016,7 +1021,7 @@ class SupplySource(DataSource):
             elif self.bill is not None and hist_measurement_type in (
                     'nhh', 'amr'):
                 datum_generator = _datum_generator(
-                    sess, self.years_back, self.caches, self.pw)
+                    self.years_back, self.caches, self.pw)
                 hhd = {}
                 for hh_date in hh_range(chunk_start, chunk_finish):
                     datum = datum_generator(sess, hh_date).copy()
@@ -1177,7 +1182,7 @@ class SupplySource(DataSource):
                         and has_imp_related_reactive:
                     #  old style
                     datum_generator = _datum_generator(
-                        sess, self.years_back, self.caches, self.pw)
+                        self.years_back, self.caches, self.pw)
                     data = iter(sess.execute("""
 select sum(cast(coalesce(kwh.value, 0) as double precision)),
     sum(cast(coalesce(anti_kwh.value, 0) as double precision)),
@@ -1248,7 +1253,7 @@ order by hh_datum.start_date
                 else:
                     # new style
                     datum_generator = _datum_generator(
-                        sess, self.years_back, self.caches, self.pw)
+                        self.years_back, self.caches, self.pw)
 
                     data = iter(sess.execute(
                         "select "
