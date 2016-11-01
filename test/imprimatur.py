@@ -742,8 +742,7 @@ def virtual_bill_titles():
     {
         'path': '/sites/4/edit',
         'regexes': [
-            r'22 6354 2983 570',
-            r'<legend>Update this site</legend>'],
+            r'22 6354 2983 570'],
         'status_code': 200},
 
     # Can we see a site ok?
@@ -3925,14 +3924,15 @@ def virtual_bill(supply_source):
         'path': '/sites/3',
         'status_code': 200,
         'regexes': [
-            r'<a href="/supplies/2">view</a>',
+            r'<a\s*'
+            r'href="/supplies/2"\s*'
+            r'>view</a>',
             r'<a href="https://maps.google.com/maps\?q=CI005">Google Maps</a>',
             r'<option value="imp_net">Imported</option>',
             r'<form action="/reports/csv_site_hh_data">\s*'
             r'<fieldset>\s*'
             r'<legend>HH Data: HH Per Row Format</legend>']},
 
-    # Show a dead supply. Supply 11
     {
         'name': "Show a dead supply. Supply 11. Mark as dead.",
         'path': '/eras/11/edit',
@@ -3969,9 +3969,11 @@ def virtual_bill(supply_source):
         'status_code': 200,
         'regexes': [
             r'<td>\s*'
-            '<a href="/supplies/11">view</a>\s*'
-            '</td>\s*<td>3</td>\s*<td>2005-10-03 00:00</td>\s*<td>\s*'
-            '2010-04-13 23:30\s*</td>']},
+            r'<a\s*'
+            r'href="/supplies/11"\s*'
+            r'>view</a>\s*'
+            r'</td>\s*<td>3</td>\s*<td>2005-10-03 00:00</td>\s*<td>\s*'
+            r'2010-04-13 23:30\s*</td>']},
 
     # Insert a 20 supply
     {
@@ -14343,7 +14345,7 @@ def virtual_bill(ss):
 
     {
         'name': "SSE EDI bill with multiple rates for an element",
-        'path': '/supplier_contracts/42/add_batch',
+        'path': '/supplier_contracts/43/add_batch',
         'method': 'post',
         'data': {
             'reference': "07-009",
@@ -15068,11 +15070,11 @@ def virtual_bill(ds):
         'path': '/downloads',
         'tries': {'max': 20, 'period': 1},
         'regexes': [
-            r"010_FINISHED_adminexamplecom_g_bill_check\.csv"],
+            r"011_FINISHED_adminexamplecom_g_bill_check\.csv"],
         'status_code': 200},
     {
         'name': "Gas bill check",
-        'path': '/downloads/010_FINISHED_adminexamplecom_g_bill_check.csv',
+        'path': '/downloads/011_FINISHED_adminexamplecom_g_bill_check.csv',
         'status_code': 200,
         'regexes': [
             r'batch,bill_reference,bill_type,bill_start_date,'
