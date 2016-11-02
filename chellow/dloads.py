@@ -2,7 +2,6 @@ import traceback
 import collections
 import pytz
 import threading
-import sys
 import os
 import os.path
 import time
@@ -13,6 +12,7 @@ download_id = 0
 lock = threading.Lock()
 
 download_path = None
+SERIAL_DIGITS = 4
 
 
 def startup(instance_path):
@@ -29,7 +29,7 @@ def startup(instance_path):
 
     files = sorted(os.listdir(download_path), reverse=True)
     if len(files) > 0:
-        download_id = int(files[0][:3]) + 1
+        download_id = int(files[0][:SERIAL_DIGITS]) + 1
 
 
 def make_names(base, user):
@@ -38,7 +38,7 @@ def make_names(base, user):
         lock.acquire()
         if len(os.listdir(download_path)) == 0:
             download_id = 0
-        serial = str(download_id).zfill(3)
+        serial = str(download_id).zfill(SERIAL_DIGITS)
         download_id += 1
     finally:
         lock.release()
@@ -46,10 +46,7 @@ def make_names(base, user):
     if user is None:
         uname = ''
     else:
-        if sys.platform.startswith('java'):
-            addr = str(user.getEmailAddress())
-        else:
-            addr = user.email_address
+        addr = user.email_address
         uname = addr.replace('@', '').replace('.', '').replace('\\', '')
 
     names = tuple(
