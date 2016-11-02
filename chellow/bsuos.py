@@ -20,7 +20,6 @@ create_future_func = chellow.scenario.make_create_future_func_monthly(
 
 def hh(data_source):
     rate_set = data_source.supplier_rate_sets['bsuos-rate']
-    bill = data_source.supplier_bill
 
     try:
         bsuos_cache = data_source.caches['bsuos']
@@ -60,9 +59,7 @@ def hh(data_source):
                     "For the BSUoS rate script at " + hh_format(h_start) +
                     " the rate 'rates_gbp_per_mwh' has the problem: " + str(e))
 
-        bill['bsuos-kwh'] += h['nbp-kwh']
         h['bsuos-gbp'] = h['nbp-kwh'] * bsuos_rate
-        bill['bsuos-gbp'] += h['bsuos-gbp']
         rate_set.add(bsuos_rate)
 
 

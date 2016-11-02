@@ -2217,6 +2217,8 @@ def displaced_virtual_bill(supply_source):
     chellow.ccl.ccl(supply_source)
     chellow.triad.hh(supply_source)
     chellow.triad.bill(supply_source)
+    chellow.tlms.hh(supply_source)
+    chellow.bsuos.hh(supply_source)
 
     for hh in supply_source.hh_data:
         is_weekday = hh['utc-day-of-week'] < 5
@@ -2245,9 +2247,9 @@ def displaced_virtual_bill(supply_source):
         if 'ccl-kwh' in hh:
             bill['ccl-kwh'] += hh['ccl-kwh']
             bill['ccl-gbp'] += hh['ccl-gbp']
+        bill['bsuos-kwh'] += hh['nbp-kwh']
+        bill['bsuos-gbp'] += hh['bsuos-gbp']
 
-    chellow.tlms.hh(supply_source)
-    chellow.bsuos.hh(supply_source)
     chellow.system_price.hh(supply_source)
 
     for rate_name, rate_set in rate_sets.items():
@@ -2284,6 +2286,8 @@ def virtual_bill(supply_source):
     is_substation = supply_source.is_substation
     supply_capacity = supply_source.sc
     supply_source.is_green = False
+    chellow.tlms.hh(supply_source)
+    chellow.bsuos.hh(supply_source)
 
     for hh in supply_source.hh_data:
         is_weekday = hh['utc-day-of-week'] < 5
@@ -2312,6 +2316,8 @@ def virtual_bill(supply_source):
         if 'ccl-kwh' in hh:
             bill['ccl-kwh'] += hh['ccl-kwh']
             bill['ccl-gbp'] += hh['ccl-gbp']
+        bill['bsuos-kwh'] += hh['nbp-kwh']
+        bill['bsuos-gbp'] += hh['bsuos-gbp']
 
     month_begin = Datetime(
         supply_source.start_date.year, supply_source.start_date.month, 1,
@@ -2321,8 +2327,6 @@ def virtual_bill(supply_source):
     bill['data-collection-gbp'] += 5.89
     bill['settlement-gbp'] += 88
 
-    chellow.tlms.hh(supply_source)
-    chellow.bsuos.hh(supply_source)
     chellow.system_price.hh(supply_source)
     rates = supply_source.hh_rate(
         db_id, supply_source.finish_date, 'gsp_gbp_per_kwh')
@@ -3752,6 +3756,8 @@ def displaced_virtual_bill(supply_source):
     chellow.ccl.ccl(supply_source)
     chellow.triad.hh(supply_source)
     chellow.triad.bill(supply_source)
+    chellow.tlms.hh(supply_source)
+    chellow.bsuos.hh(supply_source)
 
     for datum in supply_source.hh_data:
         is_weekday = datum['start-date'].weekday() < 5
@@ -3779,9 +3785,9 @@ def displaced_virtual_bill(supply_source):
         if 'ccl-kwh' in datum:
             bill['ccl-kwh'] += datum['ccl-kwh']
             bill['ccl-gbp'] += datum['ccl-gbp']
+        bill['bsuos-kwh'] += datum['nbp-kwh']
+        bill['bsuos-gbp'] += datum['bsuos-gbp']
 
-    chellow.tlms.hh(supply_source)
-    chellow.bsuos.hh(supply_source)
     chellow.aahedc.hh(supply_source)
 
     rates = supply_source.hh_rate(
@@ -3841,6 +3847,8 @@ def virtual_bill(supply_source):
         if 'ccl-kwh' in hh:
             bill['ccl-kwh'] += hh['ccl-kwh']
             bill['ccl-gbp'] += hh['ccl-gbp']
+        bill['bsuos-kwh'] += hh['nbp-kwh']
+        bill['bsuos-gbp'] += hh['bsuos-gbp']
 
     bill['data-collection-gbp'] += 5.89
     bill['settlement-gbp'] += 88
