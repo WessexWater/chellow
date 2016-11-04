@@ -15070,11 +15070,11 @@ def virtual_bill(ds):
         'path': '/downloads',
         'tries': {'max': 20, 'period': 1},
         'regexes': [
-            r"011_FINISHED_adminexamplecom_g_bill_check\.csv"],
+            r"0011_FINISHED_adminexamplecom_g_bill_check\.csv"],
         'status_code': 200},
     {
         'name': "Gas bill check",
-        'path': '/downloads/011_FINISHED_adminexamplecom_g_bill_check.csv',
+        'path': '/downloads/0011_FINISHED_adminexamplecom_g_bill_check.csv',
         'status_code': 200,
         'regexes': [
             r'batch,bill_reference,bill_type,bill_start_date,'
