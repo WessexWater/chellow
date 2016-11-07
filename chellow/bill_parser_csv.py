@@ -5,6 +5,7 @@ import pytz
 from dateutil.relativedelta import relativedelta
 from chellow.utils import HH, validate_hh_start
 from werkzeug.exceptions import BadRequest
+from io import StringIO
 
 
 def parse_date(date_str, is_finish=False):
@@ -20,7 +21,9 @@ def parse_date(date_str, is_finish=False):
 
 class Parser():
     def __init__(self, f):
-        self.reader = csv.reader(f, skipinitialspace=True)
+        self.reader = csv.reader(
+            StringIO(str(f.read(), 'utf-8', errors='ignore')),
+            skipinitialspace=True)
         self.line_number = None
 
     def make_raw_bills(self):

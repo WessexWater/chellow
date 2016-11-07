@@ -6,7 +6,7 @@ def test_bill_parser_csv():
     Check bills have a UTC timezone
     '''
 
-    with open('test/bills-nhh.csv') as f:
+    with open('test/bills-nhh.csv', 'rb') as f:
         parser = chellow.bill_parser_csv.Parser(f)
         for bill in parser.make_raw_bills():
             for read in bill['reads']:

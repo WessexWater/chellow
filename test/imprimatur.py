@@ -1549,7 +1549,7 @@ def virtual_bill_titles():
         'files': {'import_file': 'test/bills.mm'},
         'status_code': 303,
         'regexes': [
-            r"/supplier_bill_imports/0"]},
+            r'/supplier_bill_imports/0']},
 
     {
         'name': "Supplier contract 36, batch 1",
@@ -14102,4 +14102,96 @@ finally:
         'status_code': 200,
         'regexes': [
             r'Henriki']},
+
+    {
+        'name': "Engie XLS Bills",
+        'path': '/eras/8/edit',
+        'method': 'post',
+        'data': {
+            'start_year': "2006",
+            'start_month': "07",
+            'start_day': "20",
+            'start_hour': "00",
+            'start_minute': "00",
+            'is_ended': "false",
+            'mop_contract_id': "37",
+            'mop_account': "mc-22 9813 2107 763",
+            'hhdc_contract_id': "34",
+            'hhdc_account': "01",
+            'msn': "",
+            'pc_id': "9",
+            'mtc_code': "845",
+            'cop_id': "5",
+            'ssc_code': "",
+            'imp_llfc_code': "570",
+            'imp_mpan_core': "22 9813 2107 763",
+            'imp_sc': "430",
+            'imp_supplier_contract_id': '36',
+            'imp_supplier_account': '22 9813 2107 763',
+            'exp_llfc_code': '581',
+            'exp_mpan_core': '22 3475 1614 211',
+            'exp_sc': "900",
+            'exp_supplier_contract_id': "36",
+            'exp_supplier_account': "4341"},
+        'status_code': 303},
+    {
+        'name': "Engie XLS Bills",
+        'path': '/supplier_contracts/36/add_batch',
+        'method': 'post',
+        'data': {
+            'reference': "009",
+            'description': "Engie XLS batch"},
+        'status_code': 303,
+        'regexes': [
+            r"/supplier_batches/17"]},
+
+    {
+        'name': "Engie XLS Bills",
+        'path': '/supplier_bill_imports',
+        'method': 'post',
+        'data': {
+            'supplier_batch_id': '17'},
+        'files': {'import_file': 'test/bills.engie.xls'},
+        'status_code': 303,
+        'regexes': [
+            r"/supplier_bill_imports/13"]},
+
+    {
+        'name': "Engie XLS Bills",
+        'path': '/supplier_bill_imports/13',
+        'tries': {},
+        'regexes': [
+            r'<tr>\s*'
+            r'<td>20160731_20160831_22 9813 2107 763</td>\s*'
+            r'<td>22 9813 2107 763</td>\s*'
+            r'<td>N</td>\s*'
+            r'<td>\[&#39;22 9813 2107 763&#39;\]</td>\s*'
+            r'<td>2016-09-13 23:00</td>\s*'
+            r'<td>2016-07-31 23:00</td>\s*'
+            r'<td>2016-08-31 22:30</td>\s*'
+            r'<td>116384\.42</td>\s*'
+            r'<td>89630\.02</td>\s*'
+            r'<td>6122\.00</td>\s*'
+            r'<td>95752\.02</td>\s*'
+            r'<td>\[\(&#39;aahedc-gbp&#39;, 0.89\), .*'
+            r'cfd-fit-estimate-nbp-kwh.*'
+            r'\(&#39;duos-availability-kva&#39;, &#39;220&#39;\).*'
+            r'fit-reconciliation-gbp.*'
+            r'meter-rental-gbp.*winter-night-gbp',
+            r"All the bills have been successfully loaded and attached to "
+            "the batch\."],
+        'status_code': 200},
+
+    {
+        'name': "Engie XLS Bills",
+        'path': '/supplier_batches/17',
+        'regexes': [
+            r'<td>2016-09-13 23:00</td>\s*'
+            r'<td>2016-07-31 23:00</td>\s*'
+            r'<td>2016-08-31 22:30</td>\s*'
+            r'<td>116384\.42</td>\s*'
+            r'<td>89630\.02</td>\s*'
+            r'<td>6122\.00</td>\s*'
+            r'<td>95752\.02</td>'],
+        'status_code': 200},
 ]

@@ -4,6 +4,7 @@ from collections import defaultdict
 import chellow.edi_lib
 from chellow.utils import HH
 from werkzeug.exceptions import BadRequest
+from io import StringIO
 
 
 read_type_map = {
@@ -130,7 +131,8 @@ tmod_map = {
 
 class Parser():
     def __init__(self, f):
-        self.parser = chellow.edi_lib.EdiParser(f)
+        self.parser = chellow.edi_lib.EdiParser(
+            StringIO(str(f.read(), 'utf-8', errors='ignore')))
         self.line_number = None
 
     def make_raw_bills(self):

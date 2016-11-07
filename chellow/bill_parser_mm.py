@@ -1,6 +1,7 @@
 from decimal import Decimal
 import datetime
 from chellow.utils import validate_hh_start
+from io import StringIO
 
 
 def parse_date(date_string):
@@ -9,12 +10,14 @@ def parse_date(date_string):
 
 class Parser():
     def __init__(self, f):
-        self.f = f
+        self.f = StringIO(str(f.read(), 'utf-8', errors='ignore'))
         self.line_number = None
 
     def make_raw_bills(self):
+        print("making raw bills")
         raw_bills = []
         for i, line in enumerate(self.f):
+            print(line)
             self.line_number = i
             record_type = line[62:66]
             if record_type == "0100":

@@ -1,6 +1,7 @@
 from decimal import Decimal
 import chellow.edi_lib
 from chellow.utils import hh_after
+from io import StringIO
 
 read_type_map = {
     '00': 'N', '01': 'E', '02': 'E', '04': 'C', '06': 'X', '07': 'N'}
@@ -8,7 +9,8 @@ read_type_map = {
 
 class Parser():
     def __init__(self, f):
-        self.parser = chellow.edi_lib.EdiParser(f)
+        self.parser = chellow.edi_lib.EdiParser(
+            StringIO(str(f.read(), 'utf-8', errors='ignore')))
         self.line_number = None
 
     def make_raw_bills(self):

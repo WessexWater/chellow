@@ -9,7 +9,7 @@ from pkgutil import iter_modules
 from chellow.models import (
     set_read_write, Session, Era, Supply, Batch, BillType, Tpr, ReadType)
 import chellow
-import chellow.bill_parser_sse_edi
+import chellow.bill_parser_engie_xls
 from chellow.utils import keydefaultdict
 from sqlalchemy import or_, and_
 

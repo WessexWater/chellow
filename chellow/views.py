@@ -2245,7 +2245,7 @@ def supplier_bill_imports_post():
         batch_id = req_int('supplier_batch_id')
         batch = Batch.get_by_id(g.sess, batch_id)
         file_item = request.files["import_file"]
-        f = io.StringIO(str(file_item.stream.read(), 'utf-8', errors='ignore'))
+        f = io.BytesIO(file_item.stream.read())
         f.seek(0, os.SEEK_END)
         file_size = f.tell()
         f.seek(0)
@@ -3228,10 +3228,9 @@ def hhdc_bill_imports_post():
         batch = Batch.get_by_id(g.sess, batch_id)
         file_item = request.files["import_file"]
 
-        f = io.StringIO(str(file_item.stream.read(), 'utf8'))
+        f = io.BytesIO(file_item.stream.read())
         f.seek(0, os.SEEK_END)
         file_size = f.tell()
-
         f.seek(0)
         import_id = chellow.bill_importer.start_bill_import(
             g.sess, batch.id, file_item.filename, file_size, f)
@@ -3485,7 +3484,7 @@ def mop_bill_imports_post():
         batch_id = req_int('mop_batch_id')
         batch = Batch.get_by_id(g.sess, batch_id)
         file_item = request.files["import_file"]
-        f = io.StringIO(str(file_item.stream.read(), 'utf8'))
+        f = io.BytesIO(file_item.stream.read())
         f.seek(0, os.SEEK_END)
         file_size = f.tell()
         f.seek(0)

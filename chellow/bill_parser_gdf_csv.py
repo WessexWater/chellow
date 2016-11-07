@@ -5,6 +5,7 @@ from dateutil.relativedelta import relativedelta
 import pytz
 from werkzeug.exceptions import BadRequest
 from chellow.utils import validate_hh_start, HH
+from io import StringIO
 
 
 col_map = {
@@ -88,7 +89,8 @@ col_map = {
 class Parser():
     def __init__(self, f):
         self.last_line = None
-        lines = (self._set_last_line(i, l) for i, l in enumerate(f))
+        tf = StringIO(str(f.read(), 'utf-8', errors='ignore'))
+        lines = (self._set_last_line(i, l) for i, l in enumerate(tf))
         self.reader = csv.reader(lines, skipinitialspace=True)
         self._line_number = None
         self._title_line = None
