@@ -1,11 +1,9 @@
 from datetime import datetime as Datetime
-import pytz
-from dateutil.relativedelta import relativedelta
 from sqlalchemy import or_
 from sqlalchemy.sql.expression import null, true
 import traceback
 from chellow.models import Session, Supply, Era, Site, SiteEra
-from chellow.utils import HH, hh_min, hh_max, hh_format, req_int, req_date
+from chellow.utils import hh_min, hh_max, hh_format, req_int, req_date
 from chellow.views import chellow_redirect
 import chellow.computer
 from werkzeug.exceptions import BadRequest
@@ -45,45 +43,73 @@ def content(supply_id, file_name, start_date, finish_date, user):
 
         prev_titles = None
 
-        month_start = Datetime(
-            start_date.year, start_date.month, 1, tzinfo=pytz.utc)
+        for era in sess.query(Era).filter(
+                Era.supply == supply, Era.start_date < finish_date, or_(
+                    Era.finish_date == null(),
+                    Era.finish_date > start_date)).order_by(Era.start_date):
 
-        while not month_start > finish_date:
-            month_finish = month_start + relativedelta(months=1) - HH
-            period_start = hh_max(month_start, start_date)
-            period_finish = hh_min(month_finish, finish_date)
+            chunk_start = hh_max(era.start_date, start_date)
+            chunk_finish = hh_min(era.finish_date, finish_date)
+            site = sess.query(Site).join(SiteEra).filter(
+                SiteEra.era == era, SiteEra.is_physical == true()).one()
 
-            for era in sess.query(Era).filter(
-                    Era.supply == supply, Era.start_date < period_finish, or_(
-                        Era.finish_date == null(),
-                        Era.finish_date > period_start
-                    )).order_by(Era.start_date):
+            ds = chellow.computer.SupplySource(
+                sess, chunk_start, chunk_finish, forecast_date, era, True,
+                None, caches)
 
-                chunk_start = hh_max(era.start_date, period_start)
-                chunk_finish = hh_min(era.finish_date, period_finish)
-                site = sess.query(Site).join(SiteEra).filter(
-                    SiteEra.era == era, SiteEra.is_physical == true()).one()
+            titles = [
+                'Imp MPAN Core', 'Exp MPAN Core', 'Site Code', 'Site Name',
+                'Account', 'From', 'To', '']
 
-                ds = chellow.computer.SupplySource(
-                    sess, chunk_start, chunk_finish, forecast_date, era, True,
-                    None, caches)
+            output_line = [
+                era.imp_mpan_core, era.exp_mpan_core, site.code,
+                site.name, ds.supplier_account, hh_format(ds.start_date),
+                hh_format(ds.finish_date), '']
 
-                titles = [
-                    'Imp MPAN Core', 'Exp MPAN Core', 'Site Code', 'Site Name',
-                    'Account', 'From', 'To', '']
+            mop_titles = ds.contract_func(
+                era.mop_contract, 'virtual_bill_titles')()
+            titles.extend(['mop-' + t for t in mop_titles])
 
-                output_line = [
-                    era.imp_mpan_core, era.exp_mpan_core, site.code,
-                    site.name, ds.supplier_account, hh_format(ds.start_date),
-                    hh_format(ds.finish_date), '']
+            ds.contract_func(era.mop_contract, 'virtual_bill')(ds)
+            bill = ds.mop_bill
+            for title in mop_titles:
+                if title in bill:
+                    output_line.append(bill[title])
+                    del bill[title]
+                else:
+                    output_line.append('')
 
-                mop_titles = ds.contract_func(
-                    era.mop_contract, 'virtual_bill_titles')()
-                titles.extend(['mop-' + t for t in mop_titles])
+            for k in sorted(bill.keys()):
+                output_line.extend([k, bill[k]])
 
-                ds.contract_func(era.mop_contract, 'virtual_bill')(ds)
-                bill = ds.mop_bill
-                for title in mop_titles:
+            output_line.append('')
+            dc_titles = ds.contract_func(
+                era.hhdc_contract, 'virtual_bill_titles')()
+            titles.append('')
+            titles.extend(['dc-' + t for t in dc_titles])
+
+            ds.contract_func(era.hhdc_contract, 'virtual_bill')(ds)
+            bill = ds.dc_bill
+            for title in dc_titles:
+                output_line.append(bill.get(title, ''))
+                if title in bill:
+                    del bill[title]
+            for k in sorted(bill.keys()):
+                output_line.extend([k, bill[k]])
+
+            if era.imp_supplier_contract is not None:
+                output_line.append('')
+                imp_supplier_titles = ds.contract_func(
+                    era.imp_supplier_contract, 'virtual_bill_titles')()
+                titles.append('')
+                titles.extend(
+                    ['imp-supplier-' + t for t in imp_supplier_titles])
+
+                ds.contract_func(
+                    era.imp_supplier_contract, 'virtual_bill')(ds)
+                bill = ds.supplier_bill
+
+                for title in imp_supplier_titles:
                     if title in bill:
                         output_line.append(bill[title])
                         del bill[title]
@@ -93,73 +119,35 @@ def content(supply_id, file_name, start_date, finish_date, user):
                 for k in sorted(bill.keys()):
                     output_line.extend([k, bill[k]])
 
-                output_line.append('')
-                dc_titles = ds.contract_func(
-                    era.hhdc_contract, 'virtual_bill_titles')()
-                titles.append('')
-                titles.extend(['dc-' + t for t in dc_titles])
+            if era.exp_supplier_contract is not None:
+                ds = chellow.computer.SupplySource(
+                    sess, chunk_start, chunk_finish, forecast_date, era,
+                    False, None, caches)
 
-                ds.contract_func(era.hhdc_contract, 'virtual_bill')(ds)
-                bill = ds.dc_bill
-                for title in dc_titles:
+                output_line.append('')
+                exp_supplier_titles = ds.contract_func(
+                    era.exp_supplier_contract, 'virtual_bill_titles')()
+                titles.append('')
+                titles.extend(
+                    ['exp-supplier-' + t for t in exp_supplier_titles])
+
+                ds.contract_func(
+                    era.exp_supplier_contract, 'virtual_bill')(ds)
+                bill = ds.supplier_bill
+                for title in exp_supplier_titles:
                     output_line.append(bill.get(title, ''))
                     if title in bill:
                         del bill[title]
+
                 for k in sorted(bill.keys()):
                     output_line.extend([k, bill[k]])
 
-                if era.imp_supplier_contract is not None:
-                    output_line.append('')
-                    imp_supplier_titles = ds.contract_func(
-                        era.imp_supplier_contract, 'virtual_bill_titles')()
-                    titles.append('')
-                    titles.extend(
-                        ['imp-supplier-' + t for t in imp_supplier_titles])
-
-                    ds.contract_func(
-                        era.imp_supplier_contract, 'virtual_bill')(ds)
-                    bill = ds.supplier_bill
-
-                    for title in imp_supplier_titles:
-                        if title in bill:
-                            output_line.append(bill[title])
-                            del bill[title]
-                        else:
-                            output_line.append('')
-
-                    for k in sorted(bill.keys()):
-                        output_line.extend([k, bill[k]])
-
-                if era.exp_supplier_contract is not None:
-                    ds = chellow.computer.SupplySource(
-                        sess, chunk_start, chunk_finish, forecast_date, era,
-                        False, None, caches)
-
-                    output_line.append('')
-                    exp_supplier_titles = ds.contract_func(
-                        era.exp_supplier_contract, 'virtual_bill_titles')()
-                    titles.append('')
-                    titles.extend(
-                        ['exp-supplier-' + t for t in exp_supplier_titles])
-
-                    ds.contract_func(
-                        era.exp_supplier_contract, 'virtual_bill')(ds)
-                    bill = ds.supplier_bill
-                    for title in exp_supplier_titles:
-                        output_line.append(bill.get(title, ''))
-                        if title in bill:
-                            del bill[title]
-
-                    for k in sorted(bill.keys()):
-                        output_line.extend([k, bill[k]])
-
-                if titles != prev_titles:
-                    prev_titles != titles
-                    writer.writerow([str(v) for v in titles])
-                for i, val in enumerate(output_line):
-                    output_line[i] = make_val(val)
-                writer.writerow(output_line)
-            month_start += relativedelta(months=1)
+            if titles != prev_titles:
+                prev_titles != titles
+                writer.writerow([str(v) for v in titles])
+            for i, val in enumerate(output_line):
+                output_line[i] = make_val(val)
+            writer.writerow(output_line)
     except BadRequest as e:
         writer.writerow(["Problem: " + e.description])
     except:

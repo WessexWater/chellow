@@ -7725,9 +7725,8 @@ def virtual_bill(supply_source):
         'path': '/downloads/'
         '0041_FINISHED_watkinsexamplecom_supply_virtual_bills_7.csv',
         'regexes': [
-            r'22 4862 4512 332,,CH023,Treglisson,141 5532,'
-            r'2013-10-01 00:00,2013-10-31 23:30,,10,,,0,,,'
-            r'0.0,0.0,0.0,0,'],
+            r'22 4862 4512 332,,CH023,Treglisson,141 5532,2013-09-29 00:00,'
+            r'2013-11-28 23:30,,20,,,0,,,0.0,0.0,0.0,0,'],
         'status_code': 200},
     {
         'name': "Un-ignore a site snag",
