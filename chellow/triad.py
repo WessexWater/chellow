@@ -191,10 +191,12 @@ def hh(data_source, rate_period='monthly'):
             hh['triad-all-estimates-gbp'] = est_triad_gbp / \
                 total_intervals * est_intervals * -1
 
+
 RATE_TITLES = {
     'triad-estimate-months', 'triad-all-estimates-months',
     'triad-estimate-days', 'triad-all-estimates-days'}
 SCALAR_TITLES = {'triad-all-estimates-gbp'}
+
 
 for eora in ('actual', 'estimate'):
     for i in range(1, 4):

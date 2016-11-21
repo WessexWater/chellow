@@ -502,6 +502,7 @@ def datum_2010_04_01(ds, hh):
             bill['duos-excess-availability-gbp'] += rate * excess_kva * \
                 days_in_month
 
+
 CUTOFF_DATE = Datetime(2010, 4, 1, tzinfo=pytz.utc)
 
 

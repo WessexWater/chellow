@@ -1355,6 +1355,7 @@ class Site(Base, PersistentClass):
             return False
         return True
 
+
 SALT_LENGTH = 16
 
 
@@ -2818,6 +2819,7 @@ class SiteGroup():
     def delete_snag(self, sess, description, start_date, finish_date):
         Snag.remove_snag(
             sess, self.sites[0], None, description, start_date, finish_date)
+
 
 site_era_alias = aliased(SiteEra)
 

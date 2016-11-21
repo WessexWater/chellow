@@ -256,6 +256,7 @@ class HhImportTask(threading.Thread):
                             ftp = pysftp.Connection(
                                 host_name, username=user_name,
                                 password=password, cnopts=cnopts)
+                            ftp.timeout = 120
                             home_path = ftp.pwd
 
                             f = None
