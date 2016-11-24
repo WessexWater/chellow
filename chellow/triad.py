@@ -5,6 +5,8 @@ from chellow.models import Session, Contract, RateScript
 from chellow.utils import HH, hh_after
 import chellow.computer
 import chellow.duos
+from datetime import datetime as Datetime
+import pytz
 
 sess = None
 try:
@@ -66,11 +68,12 @@ def triad_calc(
     hh[prefix + '-rate'] = rate
 
 
-def hh(data_source, rate_period='monthly', ct_month=False):
-    end_key = 'ct-is-month-end' if ct_month else 'utc-is-month-end'
-    for hh in (h for h in data_source.hh_data if h[end_key]):
-        month_finish = hh['start-date']
-        month_start = month_finish + HH - relativedelta(months=1)
+def hh(data_source, rate_period='monthly'):
+    for hh in (h for h in data_source.hh_data if h['ct-is-month-end']):
+        hh_start = hh['start-date']
+        month_start = Datetime(
+            hh_start.year, hh_start.month, 1, tzinfo=pytz.utc)
+        month_finish = month_start + relativedelta(months=1) - HH
         month_num = month_start.month
 
         # Get start of last financial year

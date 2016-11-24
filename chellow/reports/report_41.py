@@ -27,7 +27,8 @@ def content(year, supply_id, user):
         f = open(running_name, mode='w', newline='')
         writer = csv.writer(f, lineterminator='\n')
 
-        year_finish = Datetime(year, 4, 1, tzinfo=pytz.utc) - HH
+        march_start = Datetime(year, 3, 1, tzinfo=pytz.utc)
+        march_finish = Datetime(year, 4, 1, tzinfo=pytz.utc) - HH
 
         def triad_csv(supply_source):
             if supply_source is None or \
@@ -71,8 +72,8 @@ def content(year, supply_id, user):
 
         forecast_date = chellow.computer.forecast_date()
         eras = sess.query(Era).join(Supply).join(Source).join(Pc).filter(
-            Era.start_date <= year_finish,
-            or_(Era.finish_date == null(), Era.finish_date >= year_finish),
+            Era.start_date <= march_finish,
+            or_(Era.finish_date == null(), Era.finish_date >= march_start),
             Source.code.in_(('net', 'gen-net')),
             Pc.code == '00').order_by(Supply.id)
 
@@ -89,7 +90,7 @@ def content(year, supply_id, user):
                 imp_supply_source = None
             else:
                 imp_supply_source = chellow.computer.SupplySource(
-                    sess, year_finish, year_finish, forecast_date, era, True,
+                    sess, march_start, march_finish, forecast_date, era, True,
                     None, caches)
 
             exp_mpan_core = era.exp_mpan_core
@@ -97,7 +98,7 @@ def content(year, supply_id, user):
                 exp_supply_source = None
             else:
                 exp_supply_source = chellow.computer.SupplySource(
-                    sess, year_finish, year_finish, forecast_date, era, False,
+                    sess, march_start, march_finish, forecast_date, era, False,
                     None, caches)
 
             gen_type = supply.generator_type
