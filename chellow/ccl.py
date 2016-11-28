@@ -1,9 +1,11 @@
 from datetime import datetime as Datetime
-import pytz
 from chellow.models import Session, Contract
 import chellow.computer
 import chellow.scenario
-from chellow.utils import HH
+from chellow.utils import HH, from_ct
+from dateutil.relativedelta import relativedelta
+import pytz
+
 
 sess = None
 try:
@@ -20,7 +22,6 @@ create_future_func = chellow.scenario.make_create_future_func_simple(
 
 def ccl(data_source, ct_month=False):
     rate_set = data_source.supplier_rate_sets['ccl-rate']
-    end_key = 'ct-is-month-end' if ct_month else 'utc-is-month-end'
 
     if data_source.supply.find_era_at(
             data_source.sess, data_source.finish_date + HH) is None:
@@ -48,12 +49,18 @@ def ccl(data_source, ct_month=False):
 
     if data_source.bill is None:
         for hh in data_source.hh_data:
-            if hh[end_key] or hh['start-date'] == sup_end:
-                month_finish = hh['start-date']
+            if hh['ct-is-month-end'] or hh['start-date'] == sup_end:
+                finish_year = hh['start-date'].year
+                finish_month = hh['start-date'].month
                 kwh = 0
                 gbp = 0
-                month_start = Datetime(
-                    month_finish.year, month_finish.month, 1, tzinfo=pytz.utc)
+                if ct_month:
+                    month_start = from_ct(finish_year, finish_month)
+                    month_finish = hh['start-date']
+                else:
+                    month_start = Datetime(
+                        finish_year, finish_month, 1, tzinfo=pytz.utc)
+                    month_finish = month_start + relativedelta(months=1) - HH
 
                 for ds in chellow.computer.get_data_sources(
                         data_source, month_start, month_finish):

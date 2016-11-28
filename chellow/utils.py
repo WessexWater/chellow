@@ -384,3 +384,12 @@ class keydefaultdict(defaultdict):
         else:
             ret = self[key] = self.default_factory(key)
             return ret
+
+
+CT_TZ = pytz.timezone('Europe/London')
+
+
+def from_ct(year, month, day=1, hour=0, minute=0):
+    return CT_TZ.normalize(
+        CT_TZ.localize(Datetime(year, month, day, hour, minute))).astimezone(
+            pytz.utc)

@@ -14,10 +14,8 @@ class Parser():
         self.line_number = None
 
     def make_raw_bills(self):
-        print("making raw bills")
         raw_bills = []
         for i, line in enumerate(self.f):
-            print(line)
             self.line_number = i
             record_type = line[62:66]
             if record_type == "0100":

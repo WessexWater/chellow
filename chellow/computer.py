@@ -275,22 +275,29 @@ def get_data_sources(data_source, start_date, finish_date, forecast_date=None):
             yield ds
 
     else:
-        if data_source.stream_focus == 'gen-used' and \
-                data_source.era is not None:
-            era = displaced_era(
-                data_source.sess, data_source.caches, data_source.site,
-                start_date, finish_date, forecast_date)
-            if era is None:
-                return
-        else:
-            era = data_source.era
+        month_start = Datetime(
+            start_date.year, start_date.month, 1, tzinfo=pytz.utc)
+        while month_start <= finish_date:
+            month_finish = month_start + relativedelta(months=1) - HH
+            chunk_start = hh_max(month_start, start_date)
+            chunk_finish = hh_min(month_finish, finish_date)
+            if data_source.stream_focus == 'gen-used' and \
+                    data_source.era is not None:
+                era = displaced_era(
+                    data_source.sess, data_source.caches, data_source.site,
+                    chunk_start, chunk_finish, forecast_date)
+                if era is None:
+                    return
+            else:
+                era = data_source.era
 
-        site_ds = SiteSource(
-            data_source.sess, data_source.site, start_date, finish_date,
-            forecast_date, data_source.pw, data_source.caches, era)
-        if data_source.stream_focus == '3rd-party-used':
-            site_ds.revolve_to_3rd_party_used()
-        yield site_ds
+            site_ds = SiteSource(
+                data_source.sess, data_source.site, chunk_start, chunk_finish,
+                forecast_date, data_source.pw, data_source.caches, era)
+            if data_source.stream_focus == '3rd-party-used':
+                site_ds.revolve_to_3rd_party_used()
+            month_start += relativedelta(months=1)
+            yield site_ds
 
 
 def _tpr_dict(sess, caches, tpr_code, pw):
