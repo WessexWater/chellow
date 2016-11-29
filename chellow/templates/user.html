@@ -5,7 +5,7 @@
 {% endblock %}
 
 {% block nav %}
-	&raquo; <a href="{{ context_path }}/users">Users</a> &raquo; {{ user.email_address }}
+	&raquo; <a href="/users">Users</a> &raquo; {{ user.email_address }}
 {% endblock %}
 
 {% block content %}
@@ -41,7 +41,7 @@
 	
 		
 	{% else %}
-	<!-- Layer Section -->
+		<!-- Layer Section -->
     <div class="layer-section">
     	<!-- Section Header -->
     	<div class="section-header">
@@ -51,100 +51,98 @@
     	<!-- Section Content -->
     	<div class="section-content">
     		<div class="section-data">
-    		    <div class ="standardForm">
-        		    <form method="post" action="">
-            			<fieldset>
-            			    <div class="row">
-            			        <div class="col-sm-6">
-            			            <label>
-                    					Email Address
-                    				</label>
-                					<input name="email_address" size="100" value="
-                						{%- if request.values.email_address -%}
-                							{{ request.values.email_address }}
-                						{%- else -%}
-                							{{ user.email_address }}
-                						{%- endif -%}
-                					">
-            			        </div>
-            			    </div>
-            			    <div class="row">
-            			        <div class="col-sm-6">
-            			            
-            					        <label>Role</label>
-                    					<label>
-                    						<input type="radio" name="user_role_code" value="editor"
-                    							{%- if request.values.user_role_editor -%}
-                    								{%- if request.values.user_role_editor == 'editor' %}
-                    									checked
-                    								{%- endif -%}
-                    							{%- else -%}
-                    								{%- if user.user_role.code == 'editor' %}
-                    									checked
-                    								{%- endif -%}
-                    							{%- endif -%}
-                    						>
-                    						Editor
-                    					</label>
-                    					<label>
-                    						<input type="radio" name="user_role_code" value="viewer"
-                    							{% if request.values.user_role_code %}
-                    								{% if request.values.user_role_code == 'viewer' %}
-                    									checked
-                    								{% endif %}
-                    							{% else %}
-                    								{% if user.user_role.code == 'viewer' %}
-                    									checked
-                    								{% endif %}
-                    							{% endif %}
-                    						>
-                    						Viewer
-                    					</label>
-                    					<label>
-                    						<input type="radio" name="user_role_code" value="party-viewer"
-                    							{%- if request.values.user_role_code -%}
-                    								{%- if request.values.user_role_code == 'party-viewer' -%}
-                    									checked
-                    								{%- endif -%}
-                    							{%- else -%}
-                    								{%- if user.user_role.code == 'party-viewer' -%}
-                    									checked
-                    								{% endif %}
-                    							{% endif %}
-                    						>
-                    						Party Viewer
-                    					</label>
-                    					<select name="party_id">
-                    						{% for party in parties %}
-                    							<option value="{{ party.id }}"
-                    								{%- if request.values.party_id -%}
-                    									{%- if request.values.party_id == party.id %}
-                    										selected
-                    									{%- endif -%}
-                    								{%- else -%}
-                    									{%- if user.party.id == party.id %}
-                    										selected
-                    									{%- endif -%}
-                    								{%- endif -%}
-                    							>
-                    								{{ party.name }} {{ party.participant.code }}
-                    								{{ party.market_role.description }}
-                    							</option>
-                    						{% endfor %}
-                    					</select>
-                    				
-            			        </div>
-            			    </div>
-            				<input type="submit" value="Update">
-            			</fieldset>
-            		</form>
+					<div class ="standardForm">
+						<form method="post" action="">
+							<fieldset>
+								<div class="row">
+									<div class="col-sm-6">
+										<label>
+											Email Address
+										</label>
+										<input name="email_address" size="100" value="
+									      {%- if request.values.email_address -%}
+												  {{ request.values.email_address }}
+											  {%- else -%}
+												  {{ user.email_address }}
+											  {%- endif -%}">
+									</div>
+								</div>
+								<div class="row">
+									<div class="col-sm-6">
+										<label>Role</label>
+										<label>
+											<input type="radio" name="user_role_code" value="editor"
+													{%- if request.values.user_role_editor -%}
+														{%- if request.values.user_role_editor == 'editor' %}
+															checked
+														{%- endif -%}
+													{%- else -%}
+														{%- if user.user_role.code == 'editor' %}
+															checked
+														{%- endif -%}
+													{%- endif -%}
+											>
+												Editor
+											</label>
+											<label>
+												<input type="radio" name="user_role_code" value="viewer"
+												    {% if request.values.user_role_code %}
+														  {% if request.values.user_role_code == 'viewer' %}
+															  checked
+															{% endif %}
+														{% else %}
+														  {% if user.user_role.code == 'viewer' %}
+														 	  checked
+														  {% endif %}
+													  {% endif %}
+														>
+												Viewer
+											</label>
+											<label>
+												<input
+												    type="radio" name="user_role_code"
+														value="party-viewer"
+														{%- if request.values.user_role_code -%}
+														  {%- if request.values.user_role_code == 'party-viewer' -%}
+															  checked
+														  {%- endif -%}
+													  {%- else -%}
+														  {%- if user.user_role.code == 'party-viewer' -%}
+																checked
+															{% endif %}
+														{% endif %}>
+												Party Viewer
+											</label>
+											<select name="party_id">
+												{% for party in parties %}
+													<option value="{{ party.id }}"
+														{%- if request.values.party_id -%}
+															{%- if request.values.party_id == party.id %}
+																selected
+															{%- endif -%}
+														{%- else -%}
+															{%- if user.party.id == party.id %}
+																selected
+															{%- endif -%}
+														{%- endif -%}
+													>
+														{{ party.name }} {{ party.participant.code }}
+														{{ party.market_role.description }}
+													</option>
+												{% endfor %}
+											</select>
+										</div>
+									</div>
+									<input type="submit" value="Update">
+								</fieldset>
+							</form>
     		    </div>
-    		</div>
-    	</div>
-    	<!-- End Section Content -->
-    </div>
-    <!-- End Layer Section -->
-	<!-- Layer Section -->
+					</div>
+				</div>
+				<!-- End Section Content -->
+			</div>
+			<!-- End Layer Section -->
+			<!-- Layer Section -->
     <div class="layer-section">
     	<!-- Section Header -->
     	<div class="section-header">
@@ -198,7 +196,7 @@
     </div>
     <!-- End Layer Section -->
 	
-	<!-- Layer Section -->
+		<!-- Layer Section -->
     <div class="layer-section">
     	<!-- Section Header -->
     	<div class="section-header">

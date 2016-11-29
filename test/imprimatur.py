@@ -6232,16 +6232,29 @@ def virtual_bill(supply_source):
         'path': '/supplies/10',
         'regexes': [
             r'<td rowspan="2">\s*'
-            '<a href="/bill_types/2" title="Normal">N</a>\s*</td>\s*'
-            '<td style="border-right: none;">\s*'
-            '<a title="2011-02-04 23:30 I02D89150">34285</a>\s*</td>',
-            r'25927</a>\s*</td>\s*'
-            '<td style="border-left: none; text-align: right;">\s*E\s*</td>\s*'
-            '<td>\s*</td>\s*<td style="border-right: none;">\s*</td>\s*'
-            '<td style="border-left: none; text-align: right;">\s*</td>\s*'
-            '<td style="border-right: none;">\s*</td>\s*'
-            '<td style="border-left: none; text-align: right;">\s*</td>\s*'
-            '</tr>',
+            r'<a\s*'
+            r'href="/bill_types/2"\s*'
+            r'title="Normal"\s*'
+            r'>N</a>\s*'
+            r'</td>\s*'
+            r'<td style="border-right: none;">\s*'
+            r'<a title="2011-02-04 23:30 I02D89150">34285</a>\s*</td>',
+            r'25927</a>\s*'
+            r'</td>\s*'
+            r'<td style="border-left: none; text-align: right;">\s*'
+            r'E\s*'
+            r'</td>\s*'
+            r'<td>\s*'
+            r'</td>\s*'
+            r'<td style="border-right: none;">\s*'
+            r'</td>\s*'
+            r'<td style="border-left: none; text-align: right;">\s*'
+            r'</td>\s*'
+            r'<td style="border-right: none;">\s*'
+            r'</td>\s*'
+            r'<td style="border-left: none; text-align: right;">\s*'
+            r'</td>\s*'
+            r'</tr>',
 
             # Check form action for virtual bills is correct
             r'<form action="/reports/291">',
