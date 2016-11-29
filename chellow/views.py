@@ -4371,15 +4371,22 @@ def gsp_group_get(group_id):
 
 @app.route('/sites/<int:site_id>/gen_graph')
 def site_gen_graph_get(site_id):
-    finish_year = req_int("finish_year")
-    finish_month = req_int("finish_month")
-    months = req_int("months")
-    site = Site.get_by_id(g.sess, site_id)
+    if 'finish_year' in request.args:
+        finish_year = req_int("finish_year")
+        finish_month = req_int("finish_month")
+        months = req_int("months")
+    else:
+        now = Datetime.utcnow()
+        finish_year = now.year
+        finish_month = now.month
+        months = 1
 
     finish_date = Datetime(finish_year, finish_month, 1, tzinfo=pytz.utc) + \
         relativedelta(months=1) - HH
     start_date = Datetime(finish_year, finish_month, 1, tzinfo=pytz.utc) - \
         relativedelta(months=months-1)
+
+    site = Site.get_by_id(g.sess, site_id)
 
     colour_list = (
         'blue', 'green', 'red', 'yellow', 'maroon', 'aqua', 'fuchsia', 'olive')
@@ -4402,7 +4409,7 @@ def site_gen_graph_get(site_id):
             SiteEra.site == site, Source.code != 'sub',
             SiteEra.is_physical == true(), Era.start_date <= finish_date,
             or_(Era.finish_date == null(), Era.finish_date >= start_date))
-        .distinct().all())
+        .distinct())
 
     rs = iter(
         g.sess.query(
