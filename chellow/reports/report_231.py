@@ -3,13 +3,26 @@ from sqlalchemy import or_
 from sqlalchemy.sql.expression import null
 import chellow.computer
 from chellow.models import Contract, Era, Session
-from chellow.utils import hh_format, req_date, req_int
+from chellow.utils import hh_format, req_date, req_int, hh_min, hh_max
 import csv
 import sys
 import os
 from chellow.views import chellow_redirect
 import threading
 from flask import g
+from datetime import datetime as Datetime
+
+
+def make_val(v):
+    if isinstance(v, set):
+        if len(v) == 1:
+            return make_val(v.pop())
+        else:
+            return ''
+    elif isinstance(v, Datetime):
+        return hh_format(v)
+    else:
+        return v
 
 
 def content(start_date, finish_date, contract_id, user):
@@ -31,40 +44,41 @@ def content(start_date, finish_date, contract_id, user):
         bill_titles = chellow.computer.contract_func(
             caches, contract, 'virtual_bill_titles', None)()
         writer.writerow(header_titles + bill_titles)
+        vb_func = chellow.computer.contract_func(
+            caches, contract, 'virtual_bill', None)
 
         for era in sess.query(Era).filter(
                 or_(
                     Era.finish_date == null(), Era.finish_date >= start_date),
                 Era.start_date <= finish_date, Era.mop_contract == contract). \
-                order_by(Era.supply_id):
+                order_by(Era.imp_mpan_core, Era.exp_mpan_core, Era.start_date):
+            chunk_start = hh_max(era.start_date, start_date)
+            chunk_finish = hh_min(era.finish_date, finish_date)
             import_mpan_core = era.imp_mpan_core
             if import_mpan_core is None:
                 import_mpan_core_str = ''
             else:
-                mpan_core = import_mpan_core
                 is_import = True
-                import_mpan_core_str = mpan_core
+                import_mpan_core_str = import_mpan_core
 
             export_mpan_core = era.exp_mpan_core
             if export_mpan_core is None:
                 export_mpan_core_str = ''
             else:
                 is_import = False
-                mpan_core = export_mpan_core
-                export_mpan_core_str = mpan_core
+                export_mpan_core_str = export_mpan_core
 
             out = [
                 import_mpan_core_str, export_mpan_core_str,
-                hh_format(start_date), hh_format(finish_date)]
+                hh_format(chunk_start), hh_format(chunk_finish)]
             supply_source = chellow.computer.SupplySource(
-                sess, start_date, finish_date, forecast_date, era, is_import,
+                sess, chunk_start, chunk_finish, forecast_date, era, is_import,
                 None, caches)
-            chellow.computer.contract_func(
-                caches, contract, 'virtual_bill', None)(supply_source)
+            vb_func(supply_source)
             bill = supply_source.mop_bill
             for title in bill_titles:
                 if title in bill:
-                    out.append(str(bill[title]))
+                    out.append(make_val(bill[title]))
                     del bill[title]
                 else:
                     out.append('')

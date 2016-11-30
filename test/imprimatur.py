@@ -14220,4 +14220,27 @@ finally:
             r'<td>6122\.00</td>\s*'
             r'<td>95752\.02</td>'],
         'status_code': 200},
+
+    {
+        'name': "Contract level MOP virtual bills, straddling eras",
+        'path': '/reports/231?mop_contract_id=37&start_year=2008&'
+        'start_month=09&start_day=05&start_hour=00&start_minute=00&'
+        'finish_year=2008&finish_month=09&finish_day=06&finish_hour=23&'
+        'finish_minute=30',
+        'status_code': 303},
+    {
+        'name': "Contract level MOP virtual bills, straddling eras",
+        'path': '/downloads',
+        'tries': {'max': 20, 'period': 1},
+        'status_code': 200,
+        'regexes': [
+            r'0011_FINISHED_adminexamplecom_mop_virtual_bills\.csv']},
+    {
+        'name': "Contract level MOP virtual bills, straddling eras",
+        'path': '/downloads/'
+        '0011_FINISHED_adminexamplecom_mop_virtual_bills.csv',
+        'status_code': 200,
+        'regexes': [
+            r',22 0470 7514 535,2008-09-05 00:00,2008-09-05 23:30,0,\s*'
+            r',22 0470 7514 535,2008-09-06 00:00,2008-09-06 23:30,0,']},
 ]

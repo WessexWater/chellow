@@ -42,13 +42,15 @@ def content(contract_id, end_year, end_month, months, user):
             'Import MPAN Core', 'Export MPAN Core', 'Start Date',
             'Finish Date']
 
+        vb_func = chellow.computer.contract_func(
+            caches, contract, 'virtual_bill', None)
+
         writer.writerow(header_titles + bill_titles)
 
         for era in sess.query(Era).distinct().filter(
                 or_(Era.finish_date == null(), Era.finish_date >= start_date),
                 Era.start_date <= finish_date,
                 Era.hhdc_contract == contract).order_by(Era.supply_id):
-            vals = []
             imp_mpan_core = era.imp_mpan_core
             if imp_mpan_core is None:
                 imp_mpan_core_str = ''
@@ -63,16 +65,14 @@ def content(contract_id, end_year, end_month, months, user):
             chunk_start = hh_max(era.start_date, start_date)
             chunk_finish = hh_min(era.finish_date, finish_date)
 
-            vals.append(imp_mpan_core_str)
-            vals.append(exp_mpan_core_str)
-            vals.append(hh_format(chunk_start))
-            vals.append(hh_format(chunk_finish))
+            vals = [
+                imp_mpan_core_str, exp_mpan_core_str, hh_format(chunk_start),
+                hh_format(chunk_finish)]
 
             supply_source = chellow.computer.SupplySource(
                 sess, chunk_start, chunk_finish, forecast_date, era, is_import,
                 None, caches)
-            supply_source.contract_func(contract, 'virtual_bill')(
-                supply_source)
+            vb_func(supply_source)
             bill = supply_source.dc_bill
             for title in bill_titles:
                 vals.append(str(bill.get(title, '')))
