@@ -55,7 +55,7 @@ def content(supply_id, file_name, start_date, finish_date, user):
 
             ds = chellow.computer.SupplySource(
                 sess, chunk_start, chunk_finish, forecast_date, era, True,
-                None, caches)
+                caches)
 
             titles = [
                 'Imp MPAN Core', 'Exp MPAN Core', 'Site Code', 'Site Name',
@@ -121,8 +121,8 @@ def content(supply_id, file_name, start_date, finish_date, user):
 
             if era.exp_supplier_contract is not None:
                 ds = chellow.computer.SupplySource(
-                    sess, chunk_start, chunk_finish, forecast_date, era,
-                    False, None, caches)
+                    sess, chunk_start, chunk_finish, forecast_date, era, False,
+                    caches)
 
                 output_line.append('')
                 exp_supplier_titles = ds.contract_func(

@@ -26,8 +26,7 @@ def content(supply_id, start_date, finish_date, sess):
                 SiteEra.era == era, SiteEra.is_physical == true()).one()
 
             ds = chellow.computer.SupplySource(
-                sess, hh_start, hh_start, forecast_date, era, True, None,
-                caches)
+                sess, hh_start, hh_start, forecast_date, era, True, caches)
 
             titles = [
                 'MPAN Core', 'Site Code', 'Site Name', 'Account', 'HH Start',
@@ -86,7 +85,7 @@ def content(supply_id, start_date, finish_date, sess):
             if era.exp_supplier_contract is not None:
                 contract = era.exp_supplier_contract
                 ds = chellow.computer.SupplySource(
-                    sess, hh_start, hh_start, forecast_date, era, False, None,
+                    sess, hh_start, hh_start, forecast_date, era, False,
                     caches)
                 output_line.append('')
                 supplier_titles = ds.contract_func(

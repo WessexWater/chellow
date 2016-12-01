@@ -59,7 +59,7 @@ def content(contract_id, end_year, end_month, months, user):
                     Source.code.in_(('gen', 'gen-net')),
                     Era.exp_mpan_core != null())).distinct()
         bill_titles = chellow.computer.contract_func(
-            caches, contract, 'displaced_virtual_bill_titles', None)()
+            caches, contract, 'displaced_virtual_bill_titles')()
 
         for title in bill_titles:
             if title == 'total-msp-kwh':
@@ -184,9 +184,9 @@ def content(contract_id, end_year, end_month, months, user):
 
                 site_ds = chellow.computer.SiteSource(
                     sess, site, month_start, month_finish, forecast_date,
-                    None, caches, displaced_era)
+                    caches, displaced_era)
                 disp_func = chellow.computer.contract_func(
-                    caches, supplier_contract, 'displaced_virtual_bill', None)
+                    caches, supplier_contract, 'displaced_virtual_bill')
                 disp_func(site_ds)
                 bill = site_ds.supplier_bill
                 for title in bill_titles:

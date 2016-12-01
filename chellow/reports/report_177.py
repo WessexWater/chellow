@@ -166,7 +166,7 @@ def content(year, month, months, supply_id, user):
                     if source_code in ['net', 'gen-net', '3rd-party']:
                         supply_source = chellow.computer.SupplySource(
                             sess, chunk_start, chunk_finish, forecast_date,
-                            era, True, None, caches)
+                            era, True, caches)
 
                         values['metered-import-kwh'] += sum(
                             datum['msp-kwh']

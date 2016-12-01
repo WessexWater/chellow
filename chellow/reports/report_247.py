@@ -192,7 +192,7 @@ def content(
                 conts = conts.filter(Era.supply_id == supply_id)
             for cont in conts:
                 title_func = chellow.computer.contract_func(
-                    report_context, cont, 'virtual_bill_titles', None)
+                    report_context, cont, 'virtual_bill_titles')
                 if title_func is None:
                     raise Exception(
                         "For the contract " + cont.name +
@@ -268,7 +268,7 @@ def content(
                     else:
                         imp_ss = SupplySource(
                             sess, ss_start, ss_finish, kwh_start, era, True,
-                            None, report_context)
+                            report_context)
 
                     if era.exp_mpan_core is None:
                         exp_ss = None
@@ -276,7 +276,7 @@ def content(
                     else:
                         exp_ss = SupplySource(
                             sess, ss_start, ss_finish, kwh_start, era, False,
-                            None, report_context)
+                            report_context)
                         measurement_type = exp_ss.measurement_type
 
                     order = meter_order[measurement_type]
@@ -297,7 +297,7 @@ def content(
                     sess, report_context, site, month_start, month_finish,
                     kwh_start)
                 site_ds = chellow.computer.SiteSource(
-                    sess, site, month_start, month_finish, kwh_start, None,
+                    sess, site, month_start, month_finish, kwh_start,
                     report_context, displaced_era)
 
                 for hh in site_ds.hh_data:
@@ -371,7 +371,7 @@ def content(
                         displaced_era.imp_supplier_contract
                     disp_vb_function = chellow.computer.contract_func(
                         report_context, disp_supplier_contract,
-                        'displaced_virtual_bill', None)
+                        'displaced_virtual_bill')
                     if disp_vb_function is None:
                         raise BadRequest(
                             "The supplier contract " +
@@ -456,7 +456,7 @@ def content(
                         kwh = sum(hh['msp-kwh'] for hh in imp_ss.hh_data)
                         import_vb_function = contract_func(
                             report_context, imp_supplier_contract,
-                            'virtual_bill', None)
+                            'virtual_bill')
                         if import_vb_function is None:
                             raise BadRequest(
                                 "The supplier contract " +
@@ -508,7 +508,7 @@ def content(
                         kwh = sum(hh['msp-kwh'] for hh in exp_ss.hh_data)
                         export_vb_function = contract_func(
                             report_context, exp_supplier_contract,
-                            'virtual_bill', None)
+                            'virtual_bill')
                         export_vb_function(exp_ss)
 
                         exp_supplier_bill = exp_ss.supplier_bill

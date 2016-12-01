@@ -59,15 +59,14 @@ def content(batch_id, bill_id, user):
         contract = batch.contract
         market_role_code = contract.market_role.code
 
-        vbf = chellow.computer.contract_func(
-            caches, contract, 'virtual_bill', None)
+        vbf = chellow.computer.contract_func(caches, contract, 'virtual_bill')
         if vbf is None:
             raise BadRequest(
                 'The contract ' + contract.name +
                 " doesn't have a function virtual_bill.")
 
         virtual_bill_titles_func = chellow.computer.contract_func(
-            caches, contract, 'virtual_bill_titles', None)
+            caches, contract, 'virtual_bill_titles')
         if virtual_bill_titles_func is None:
             raise BadRequest(
                 'The contract ' + contract.name +
@@ -230,7 +229,7 @@ def content(batch_id, bill_id, user):
 
                 data_source = chellow.computer.SupplySource(
                     sess, chunk_start, chunk_finish, forecast_date, era, True,
-                    None, caches, primary_covered_bill)
+                    caches, primary_covered_bill)
 
                 if data_source.measurement_type == 'hh':
                     metered_kwh += sum(
@@ -238,7 +237,7 @@ def content(batch_id, bill_id, user):
                 else:
                     ds = chellow.computer.SupplySource(
                         sess, chunk_start, chunk_finish, forecast_date, era,
-                        True, None, caches)
+                        True, caches)
                     metered_kwh += sum(h['msp-kwh'] for h in ds.hh_data)
 
                 vbf(data_source)

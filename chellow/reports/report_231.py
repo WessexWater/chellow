@@ -42,10 +42,10 @@ def content(start_date, finish_date, contract_id, user):
             'Finish Date']
 
         bill_titles = chellow.computer.contract_func(
-            caches, contract, 'virtual_bill_titles', None)()
+            caches, contract, 'virtual_bill_titles')()
         writer.writerow(header_titles + bill_titles)
         vb_func = chellow.computer.contract_func(
-            caches, contract, 'virtual_bill', None)
+            caches, contract, 'virtual_bill')
 
         for era in sess.query(Era).filter(
                 or_(
@@ -73,7 +73,7 @@ def content(start_date, finish_date, contract_id, user):
                 hh_format(chunk_start), hh_format(chunk_finish)]
             supply_source = chellow.computer.SupplySource(
                 sess, chunk_start, chunk_finish, forecast_date, era, is_import,
-                None, caches)
+                caches)
             vb_func(supply_source)
             bill = supply_source.mop_bill
             for title in bill_titles:

@@ -61,8 +61,8 @@ def content(year, site_id, user):
                 continue
 
             site_ds = chellow.computer.SiteSource(
-                sess, site, march_start, march_finish, forecast_date, None,
-                caches, displaced_era)
+                sess, site, march_start, march_finish, forecast_date, caches,
+                displaced_era)
             chellow.duos.duos_vb(site_ds)
             chellow.triad.hh(site_ds)
             chellow.triad.bill(site_ds)

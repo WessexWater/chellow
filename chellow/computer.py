@@ -30,16 +30,18 @@ lec_cats = list(
 def get_times(start_date, finish_date, forecast_date):
     if start_date > finish_date:
         raise BadRequest('The start date is after the finish date.')
-    dt = finish_date
+    hist_start = start_date
+    hist_finish = finish_date
     years_back = 0
-    while dt > forecast_date:
-        dt -= relativedelta(years=1)
+    while hist_finish > forecast_date:
+        hist_start -= relativedelta(years=1)
+        hist_finish -= relativedelta(years=1)
         years_back += 1
 
     return MappingProxyType(
         {
-            'history-finish': dt,
-            'history-start': dt - (finish_date - start_date),
+            'history-finish': hist_finish,
+            'history-start': hist_start,
             'years-back': years_back})
 
 
@@ -51,7 +53,7 @@ def get_computer_cache(caches, name):
         return caches['computer'][name]
 
 
-def contract_func(caches, contract, func_name, pw):
+def contract_func(caches, contract, func_name):
     try:
         ns = caches['computer']['funcs'][contract.id]
     except KeyError:
@@ -75,7 +77,7 @@ def identity_func(x):
     return x
 
 
-def hh_rate(sess, caches, contract_id, date, name, pw):
+def hh_rate(sess, caches, contract_id, date, name):
     try:
         rate_cache = caches['computer']['rates']
     except KeyError:
@@ -271,7 +273,7 @@ def get_data_sources(data_source, start_date, finish_date, forecast_date=None):
 
             ds = SupplySource(
                 data_source.sess, chunk_start, chunk_finish, forecast_date,
-                era, data_source.is_import, data_source.pw, data_source.caches)
+                era, data_source.is_import, data_source.caches)
             yield ds
 
     else:
@@ -293,14 +295,14 @@ def get_data_sources(data_source, start_date, finish_date, forecast_date=None):
 
             site_ds = SiteSource(
                 data_source.sess, data_source.site, chunk_start, chunk_finish,
-                forecast_date, data_source.pw, data_source.caches, era)
+                forecast_date, data_source.caches, era)
             if data_source.stream_focus == '3rd-party-used':
                 site_ds.revolve_to_3rd_party_used()
             month_start += relativedelta(months=1)
             yield site_ds
 
 
-def _tpr_dict(sess, caches, tpr_code, pw):
+def _tpr_dict(sess, caches, tpr_code):
     try:
         return caches['computer']['tprs'][tpr_code]
     except KeyError:
@@ -317,8 +319,7 @@ def _tpr_dict(sess, caches, tpr_code, pw):
                 cis = []
             else:
                 tprs = hh_rate(
-                    sess, caches, contract.id, Datetime.now(pytz.utc), 'tprs',
-                    pw)
+                    sess, caches, contract.id, Datetime.now(pytz.utc), 'tprs')
                 try:
                     cis = tprs[tpr_code]
                 except KeyError:
@@ -353,76 +354,58 @@ def _tpr_dict(sess, caches, tpr_code, pw):
         return tpr_dict
 
 
-def _tpr_datum_generator(sess, caches, tpr_code, years_back, pw):
-    tpr_dict = _tpr_dict(sess, caches, tpr_code, pw)
-    datum_caches = tpr_dict['datum-cache']
+def is_tpr(sess, caches, tpr_code, hh_date):
     try:
-        datum_cache = datum_caches[years_back]
+        return _tpr_dict(sess, caches, tpr_code)['datum-cache'][hh_date]
     except KeyError:
-        datum_cache = {}
-        datum_caches[years_back] = datum_cache
+        tpr_dict = _tpr_dict(sess, caches, tpr_code)
+        datum_cache = tpr_dict['datum-cache']
 
-    dgenerator = _datum_generator(years_back, caches, pw)
+        days_of_week = tpr_dict['days-of-week']
+        datum = datum_range(sess, caches, 0, hh_date, hh_date)[0]
+        pref = 'utc-' if tpr_dict['is-gmt'] else 'ct-'
 
-    def _generator(sess2, hh_date):
-        try:
-            return datum_cache[hh_date]
-        except KeyError:
-            days_of_week = tpr_dict['days-of-week']
-            datum = dgenerator(sess2, hh_date)
-            pref = 'utc-' if tpr_dict['is-gmt'] else 'ct-'
+        decimal_hour = datum[pref + 'decimal-hour']
+        fractional_month = datum[pref + 'month'] * 100 + \
+            datum[pref + 'day']
 
-            decimal_hour = datum[pref + 'decimal-hour']
-            fractional_month = datum[pref + 'month'] * 100 + \
-                datum[pref + 'day']
+        result = False
 
-            result = None
-
-            for ci in days_of_week[datum[pref + 'day-of-week']]:
-                if (
-                        (
-                            ci['start-hour'] < ci['end-hour'] and
-                            ci['start-hour'] <= decimal_hour < ci['end-hour']
-                        ) or (
-                            ci['start-hour'] >= ci['end-hour'] and (
-                                ci['start-hour'] <= decimal_hour or
-                                decimal_hour < ci['end-hour']))) and \
-                        ci['start-month'] <= fractional_month \
-                        <= ci['end-month']:
-                    result = datum
-                    break
-            datum_cache[hh_date] = result
-            return result
-    return _generator
+        for ci in days_of_week[datum[pref + 'day-of-week']]:
+            if (
+                    (
+                        ci['start-hour'] < ci['end-hour'] and
+                        ci['start-hour'] <= decimal_hour < ci['end-hour']
+                    ) or (
+                        ci['start-hour'] >= ci['end-hour'] and (
+                            ci['start-hour'] <= decimal_hour or
+                            decimal_hour < ci['end-hour']))) and \
+                    ci['start-month'] <= fractional_month \
+                    <= ci['end-month']:
+                result = True
+                break
+        datum_cache[hh_date] = result
+        return result
 
 
-def _datum_generator(years_back, caches, pw):
+def datum_range(sess, caches, years_back, start_date, finish_date):
     try:
-        datum_cache = caches['computer']['datum'][years_back]
+        return caches['computer']['datum'][years_back, start_date, finish_date]
     except KeyError:
         try:
             computer_cache = caches['computer']
         except KeyError:
-            caches['computer'] = {}
-            computer_cache = caches['computer']
+            caches['computer'] = computer_cache = {}
 
         try:
             d_cache = computer_cache['datum']
         except KeyError:
-            computer_cache['datum'] = {}
-            d_cache = computer_cache['datum']
+            computer_cache['datum'] = d_cache = {}
 
-        try:
-            datum_cache = d_cache[years_back]
-        except KeyError:
-            d_cache[years_back] = {}
-            datum_cache = d_cache[years_back]
+        datum_list = []
 
-    def _generator(sess, hist_date):
-        try:
-            return datum_cache[hist_date]
-        except KeyError:
-            dt = hist_date + relativedelta(years=years_back)
+        for dt in hh_range(start_date, finish_date):
+            hist_date = dt - relativedelta(years=years_back)
             ct_tz = pytz.timezone('Europe/London')
             ct_dt = ct_tz.normalize(dt.astimezone(ct_tz))
 
@@ -434,7 +417,7 @@ def _datum_generator(years_back, caches, pw):
 
             bhs = hh_rate(
                 sess, caches, chellow.bank_holidays.get_db_id(), dt,
-                'bank_holidays', pw)
+                'bank_holidays')
             if bhs is None:
                 raise BadRequest(
                     "Can't find bank holidays for " + str(dt))
@@ -442,35 +425,40 @@ def _datum_generator(years_back, caches, pw):
             utc_is_bank_holiday = dt.strftime("%m-%d") in bank_holidays
             ct_is_bank_holiday = ct_dt.strftime("%m-%d") in bank_holidays
 
-            datum_cache[hist_date] = MappingProxyType(
-                {
-                    'status': 'E', 'hist-start': hist_date, 'start-date': dt,
-                    'ct-day': ct_dt.day, 'utc-month': dt.month,
-                    'utc-day': dt.day, 'utc-decimal-hour': utc_decimal_hour,
-                    'utc-year': dt.year, 'utc-hour': dt.hour,
-                    'utc-minute': dt.minute, 'ct-year': ct_dt.year,
-                    'ct-month': ct_dt.month,
-                    'ct-decimal-hour': ct_decimal_hour,
-                    'ct-day-of-week': ct_dt.weekday(),
-                    'utc-day-of-week': dt.weekday(),
-                    'utc-is-bank-holiday': utc_is_bank_holiday,
-                    'ct-is-bank-holiday': ct_is_bank_holiday,
-                    'utc-is-month-end': utc_is_month_end,
-                    'ct-is-month-end': ct_is_month_end})
-
-            return datum_cache[hist_date]
-    return _generator
+            datum_list.append(
+                MappingProxyType(
+                    {
+                        'hist-start': hist_date, 'start-date': dt,
+                        'ct-day': ct_dt.day, 'utc-month': dt.month,
+                        'utc-day': dt.day,
+                        'utc-decimal-hour': utc_decimal_hour,
+                        'utc-year': dt.year, 'utc-hour': dt.hour,
+                        'utc-minute': dt.minute, 'ct-year': ct_dt.year,
+                        'ct-month': ct_dt.month,
+                        'ct-decimal-hour': ct_decimal_hour,
+                        'ct-day-of-week': ct_dt.weekday(),
+                        'utc-day-of-week': dt.weekday(),
+                        'utc-is-bank-holiday': utc_is_bank_holiday,
+                        'ct-is-bank-holiday': ct_is_bank_holiday,
+                        'utc-is-month-end': utc_is_month_end,
+                        'ct-is-month-end': ct_is_month_end,
+                        'status': 'X', 'imp-msp-kvarh': 0,
+                        'imp-msp-kvar': 0, 'exp-msp-kvarh': 0,
+                        'exp-msp-kvar': 0, 'msp-kw': 0, 'msp-kwh': 0,
+                        'hist-kwh': 0}))
+        datum_tuple = tuple(datum_list)
+        d_cache[years_back, start_date, finish_date] = datum_tuple
+        return datum_tuple
 
 
 class DataSource():
     def __init__(
-            self, sess, start_date, finish_date, forecast_date, pw, caches):
+            self, sess, start_date, finish_date, forecast_date, caches):
         self.sess = sess
         self.caches = caches
         self.forecast_date = forecast_date
         self.start_date = start_date
         self.finish_date = finish_date
-        self.pw = pw
         times = get_times(start_date, finish_date, forecast_date)
         self.years_back = times['years-back']
         self.history_start = times['history-start']
@@ -487,27 +475,25 @@ class DataSource():
         self.dc_rate_sets = defaultdict(set, {'problem': ''})
 
     def contract_func(self, contract, func_name):
-        return contract_func(self.caches, contract, func_name, self.pw)
+        return contract_func(self.caches, contract, func_name)
 
     def hh_rate(self, contract_id, date, name):
         try:
             return self.rate_cache[contract_id][date][name]
         except KeyError:
-            return hh_rate(
-                self.sess, self.caches, contract_id, date, name, self.pw)
+            return hh_rate(self.sess, self.caches, contract_id, date, name)
         except AttributeError:
-            val = hh_rate(
-                self.sess, self.caches, contract_id, date, name, self.pw)
+            val = hh_rate(self.sess, self.caches, contract_id, date, name)
             self.rate_cache = self.caches['computer']['rates']
             return val
 
 
 class SiteSource(DataSource):
     def __init__(
-            self, sess, site, start_date, finish_date, forecast_date, pw,
-            caches, era=None):
+            self, sess, site, start_date, finish_date, forecast_date, caches,
+            era=None):
         DataSource.__init__(
-            self, sess, start_date, finish_date, forecast_date, pw, caches)
+            self, sess, start_date, finish_date, forecast_date, caches)
         self.site = site
         self.bill = None
         self.stream_focus = 'gen-used'
@@ -529,9 +515,6 @@ class SiteSource(DataSource):
             self.pc_code = era.pc.code
             self.gsp_group_code = self.supply.gsp_group.code
             self.supplier_contract = era.imp_supplier_contract
-
-        datum_generator = _datum_generator(
-            self.years_back, self.caches, self.pw)
 
         supply_ids = set(
             s.id for s in sess.query(Supply).join(Era).join(SiteEra).
@@ -556,6 +539,7 @@ class SiteSource(DataSource):
 
         hh_value, hh_start_date, imp_related, source_code = next(
             rs, (None, None, None, None))
+        hist_map = {}
 
         for hist_date in hh_range(self.history_start, self.history_finish):
             export_net_kwh = 0
@@ -587,20 +571,18 @@ class SiteSource(DataSource):
                 hh_value, hh_start_date, imp_related, source_code = \
                     next(rs, (None, None, None, None))
 
-            hh_values = datum_generator(sess, hist_date).copy()
-            hh_values.update(
-                {
-                    'status': 'E', 'hist-import-net-kwh': import_net_kwh,
-                    'hist-import-net-kvarh': 0,
-                    'hist-export-net-kwh': export_net_kwh,
-                    'hist-export-net-kvarh': 0,
-                    'hist-import-gen-kwh': import_gen_kwh,
-                    'hist-export-gen-kwh': export_gen_kwh,
-                    'anti-msp-kwh': 0, 'anti-msp-kw': 0,
-                    'hist-import-3rd-party-kwh': import_3rd_party_kwh,
-                    'hist-export-3rd-party-kwh': export_3rd_party_kwh,
-                    'imp-msp-kvarh': 0, 'exp-msp-kvarh': 0,
-                    'hist-imp-msp-kvarh': 0})
+            hh_values = {
+                'status': 'E', 'hist-import-net-kwh': import_net_kwh,
+                'hist-import-net-kvarh': 0,
+                'hist-export-net-kwh': export_net_kwh,
+                'hist-export-net-kvarh': 0,
+                'hist-import-gen-kwh': import_gen_kwh,
+                'hist-export-gen-kwh': export_gen_kwh,
+                'anti-msp-kwh': 0, 'anti-msp-kw': 0,
+                'hist-import-3rd-party-kwh': import_3rd_party_kwh,
+                'hist-export-3rd-party-kwh': export_3rd_party_kwh,
+                'imp-msp-kvarh': 0, 'exp-msp-kvarh': 0,
+                'hist-imp-msp-kvarh': 0}
 
             hh_values['hist-used-3rd-party-kwh'] = \
                 hh_values['hist-import-3rd-party-kwh'] - \
@@ -629,7 +611,13 @@ class SiteSource(DataSource):
             hh_values['imp-msp-kvar'] = hh_values['imp-msp-kvarh'] * 2
             hh_values['exp-msp-kvar'] = hh_values['exp-msp-kvarh'] * 2
 
-            self.hh_data.append(hh_values)
+            hist_map[hist_date] = hh_values
+
+        for dtm in datum_range(
+                sess, self.caches, self.years_back, start_date, finish_date):
+            datum = dtm.copy()
+            datum.update(hist_map[datum['hist-start']])
+            self.hh_data.append(datum)
 
     def revolve_to_3rd_party_used(self):
         for hh in self.hh_data:
@@ -655,9 +643,9 @@ ACTUAL_READ_TYPES = ['N', 'N3', 'C', 'X', 'CP']
 class SupplySource(DataSource):
     def __init__(
             self, sess, start_date, finish_date, forecast_date, era, is_import,
-            pw, caches, bill=None):
+            caches, bill=None):
         DataSource.__init__(
-            self, sess, start_date, finish_date, forecast_date, pw, caches)
+            self, sess, start_date, finish_date, forecast_date, caches)
 
         self.is_displaced = False
         self.bill = bill
@@ -707,6 +695,7 @@ class SupplySource(DataSource):
         self.measurement_type = era.make_meter_category()
 
         self.consumption_info = ''
+        hist_map = {}
 
         if self.years_back == 0:
             hist_eras = [self.era]
@@ -760,20 +749,13 @@ class SupplySource(DataSource):
 
                 for tpr in sess.query(Tpr).join(MeasurementRequirement).filter(
                         MeasurementRequirement.ssc == hist_era.ssc):
-                    datum_generator = _tpr_datum_generator(
-                        sess, self.caches, tpr.code, self.years_back,
-                        self.pw)
                     for hist_date in hh_range(chunk_start, chunk_finish):
-                        datum = datum_generator(sess, hist_date)
-                        if datum is not None:
-                            new_datum = datum.copy()
-                            new_datum.update(
-                                {
-                                    'msp-kw': kwh * 2, 'msp-kwh': kwh,
-                                    'hist-kwh': kwh, 'imp-msp-kvarh': 0,
-                                    'imp-msp-kvar': 0, 'exp-msp-kvarh': 0,
-                                    'exp-msp-kvar': 0})
-                            self.hh_data.append(new_datum)
+                        if is_tpr(sess, self.caches, tpr.code, hist_date):
+                            hist_map[hist_date] = {
+                                'msp-kw': kwh * 2, 'msp-kwh': kwh,
+                                'hist-kwh': kwh, 'imp-msp-kvarh': 0,
+                                'imp-msp-kvar': 0, 'exp-msp-kvarh': 0,
+                                'exp-msp-kvar': 0}
             elif self.bill is None and hist_measurement_type == 'nhh':
                 read_list = []
                 read_keys = {}
@@ -1025,42 +1007,33 @@ class SupplySource(DataSource):
                         pair['finish-date'] + HH - pair['start-date']
                         ).total_seconds() / (60 * 30)
                     for tpr_code, pair_kwh in pair['tprs'].items():
-                        datum_generator = _tpr_datum_generator(
-                            sess, self.caches, tpr_code, self.years_back,
-                            self.pw)
-                        hh_part = []
+                        hh_part = {}
 
                         for hh_date in hh_range(
                                 pair['start-date'], pair['finish-date']):
-                            datum = datum_generator(sess, hh_date)
-                            if datum is not None:
-                                hh_part.append(datum.copy())
+                            if is_tpr(sess, self.caches, tpr_code, hh_date):
+                                hh_part[hh_date] = {}
 
                         kwh = pair_kwh * pair_hhs / len(hh_part) \
                             if len(hh_part) > 0 else 0
 
-                        for datum in hh_part:
+                        for datum in hh_part.values():
                             datum.update(
                                 {
                                     'msp-kw': kwh * 2, 'msp-kwh': kwh,
                                     'hist-kwh': kwh, 'imp-msp-kvar': 0,
                                     'imp-msp-kvarh': 0, 'exp-msp-kvar': 0,
                                     'exp-msp-kvarh': 0})
-                        self.hh_data += hh_part
+                        hist_map.update(hh_part)
             elif self.bill is not None and hist_measurement_type in (
                     'nhh', 'amr'):
-                datum_generator = _datum_generator(
-                    self.years_back, self.caches, self.pw)
                 hhd = {}
                 for hh_date in hh_range(chunk_start, chunk_finish):
-                    datum = datum_generator(sess, hh_date).copy()
-                    datum.update(
-                        {
-                            'status': 'X', 'imp-msp-kvarh': 0,
-                            'imp-msp-kvar': 0, 'exp-msp-kvarh': 0,
-                            'exp-msp-kvar': 0, 'msp-kw': 0,
-                            'msp-kwh': 0, 'hist-kwh': 0})
-                    hhd[hh_date] = datum
+                    hhd[hh_date] = {
+                        'status': 'X', 'imp-msp-kvarh': 0,
+                        'imp-msp-kvar': 0, 'exp-msp-kvarh': 0,
+                        'exp-msp-kvar': 0, 'msp-kw': 0, 'msp-kwh': 0,
+                        'hist-kwh': 0}
 
                 tpr_codes = sess.query(Tpr.code). \
                     join(MeasurementRequirement).filter(
@@ -1139,8 +1112,7 @@ class SupplySource(DataSource):
                         kws[tpr_code] += kwh
 
                     for tpr_code, kwh in kws.items():
-                        tpr_dict = _tpr_dict(
-                            sess, self.caches, tpr_code, self.pw)
+                        tpr_dict = _tpr_dict(sess, self.caches, tpr_code)
                         days_of_week = tpr_dict['days-of-week']
 
                         ct_tz = pytz.timezone('Europe/London')
@@ -1191,7 +1163,7 @@ class SupplySource(DataSource):
                                 hhd_datum['hist-kwh'] += rate
                                 if hhd_datum['status'] in ('X', 'A'):
                                     hhd_datum['status'] = h['status']
-                self.hh_data.extend(v for k, v in sorted(hhd.items()))
+                hist_map.update(hhd)
             elif hist_measurement_type in ('hh', 'amr'):
                 has_exp_active = False
                 has_imp_related_reactive = False
@@ -1210,8 +1182,6 @@ class SupplySource(DataSource):
                 if has_exp_active and not has_exp_related_reactive \
                         and has_imp_related_reactive:
                     #  old style
-                    datum_generator = _datum_generator(
-                        self.years_back, self.caches, self.pw)
                     data = iter(sess.execute("""
 select sum(cast(coalesce(kwh.value, 0) as double precision)),
     sum(cast(coalesce(anti_kwh.value, 0) as double precision)),
@@ -1250,40 +1220,33 @@ order by hh_datum.start_date
                             data, (None, None, None, None, None, None))
 
                     for hh_date in hh_range(chunk_start, chunk_finish):
-                        datum = datum_generator(sess, hh_date).copy()
-
                         if hh_date == hist_start:
                             if not (msp_kwh > 0 and anti_msp_kwh == 0):
                                 imp_kvarh = 0
                                 exp_kvarh = 0
 
-                            datum.update(
-                                {
-                                    'status': status,
-                                    'imp-msp-kvarh': imp_kvarh,
-                                    'imp-msp-kvar': imp_kvarh * 2,
-                                    'exp-msp-kvarh': exp_kvarh,
-                                    'exp-msp-kvar': exp_kvarh * 2,
-                                    'msp-kw': msp_kwh * 2, 'msp-kwh': msp_kwh,
-                                    'hist-kwh': msp_kwh})
+                            datum = {
+                                'status': status,
+                                'imp-msp-kvarh': imp_kvarh,
+                                'imp-msp-kvar': imp_kvarh * 2,
+                                'exp-msp-kvarh': exp_kvarh,
+                                'exp-msp-kvar': exp_kvarh * 2,
+                                'msp-kw': msp_kwh * 2, 'msp-kwh': msp_kwh,
+                                'hist-kwh': msp_kwh}
                             (
                                 msp_kwh, anti_msp_kwh, status, imp_kvarh,
                                 exp_kvarh, hist_start) = next(
                                     data, (None, None, None, None, None, None))
                         else:
-                            datum.update(
-                                {
-                                    'status': 'X', 'imp-msp-kvarh': 0,
-                                    'imp-msp-kvar': 0, 'exp-msp-kvarh': 0,
-                                    'exp-msp-kvar': 0, 'msp-kw': 0,
-                                    'msp-kwh': 0, 'hist-kwh': 0})
+                            datum = {
+                                'status': 'X', 'imp-msp-kvarh': 0,
+                                'imp-msp-kvar': 0, 'exp-msp-kvarh': 0,
+                                'exp-msp-kvar': 0, 'msp-kw': 0, 'msp-kwh': 0,
+                                'hist-kwh': 0}
 
-                        self.hh_data.append(datum)
+                        hist_map[hh_date] = datum
                 else:
                     # new style
-                    datum_generator = _datum_generator(
-                        self.years_back, self.caches, self.pw)
-
                     data = iter(sess.execute(
                         "select "
                         "    start_date, "
@@ -1321,7 +1284,7 @@ order by hh_datum.start_date
                         next(data, (None, None, None, None, None))
 
                     for hh_date in hh_range(chunk_start, chunk_finish):
-                        datum = datum_generator(sess, hh_date).copy()
+                        datum = {}
                         if hh_date == hist_start:
                             if msp_kwh is None:
                                 datum['status'] = 'X'
@@ -1348,6 +1311,15 @@ order by hh_datum.start_date
                             datum['msp-kw'] = datum['msp-kwh'] = 0
                             datum['hist-kwh'] = 0
 
-                        self.hh_data.append(datum)
+                        hist_map[hh_date] = datum
             else:
                 raise BadRequest("gen type not recognized")
+
+        for dtm in datum_range(
+                sess, self.caches, self.years_back, start_date, finish_date):
+            datum = dtm.copy()
+            try:
+                datum.update(hist_map[datum['hist-start']])
+            except KeyError:
+                pass
+            self.hh_data.append(datum)

@@ -55,11 +55,11 @@ def content(
 
                 ss = chellow.computer.SupplySource(
                     sess, chunk_start, chunk_finish, forecast_date, era,
-                    is_import, None, caches)
+                    is_import, caches)
 
                 sup_con = ss.supplier_contract
                 bill_titles = chellow.computer.contract_func(
-                    caches, sup_con, 'virtual_bill_titles', None)()
+                    caches, sup_con, 'virtual_bill_titles')()
                 if bill_titles != prev_bill_titles:
                     writer.writerow(
                         [
@@ -74,7 +74,7 @@ def content(
                     hh_format(ss.start_date), hh_format(ss.finish_date)]
 
                 chellow.computer.contract_func(
-                    caches, sup_con, 'virtual_bill', None)(ss)
+                    caches, sup_con, 'virtual_bill')(ss)
                 bill = ss.supplier_bill
                 for title in bill_titles:
                     if title in bill:

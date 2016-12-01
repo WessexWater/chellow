@@ -91,7 +91,7 @@ def content(year, supply_id, user):
             else:
                 imp_supply_source = chellow.computer.SupplySource(
                     sess, march_start, march_finish, forecast_date, era, True,
-                    None, caches)
+                    caches)
 
             exp_mpan_core = era.exp_mpan_core
             if exp_mpan_core is None:
@@ -99,7 +99,7 @@ def content(year, supply_id, user):
             else:
                 exp_supply_source = chellow.computer.SupplySource(
                     sess, march_start, march_finish, forecast_date, era, False,
-                    None, caches)
+                    caches)
 
             gen_type = supply.generator_type
             gen_type = '' if gen_type is None else gen_type.code

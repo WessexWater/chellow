@@ -9711,11 +9711,11 @@ def virtual_bill(supply_source):
             r'<table:table-cell '
             r'office:date-value="2016-02-29T23:30:00" '
             r'office:value-type="date" table:style-name="cDateISO"/>\s*'
-            r'<table:table-cell office:value="23562.049999999996" '
+            r'<table:table-cell office:value="18825.5\d*" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="0" '
             r'office:value-type="float" table:number-columns-repeated="6"/>\s*'
-            r'<table:table-cell office:value="23562.049999999996" '
+            r'<table:table-cell office:value="18825.5\d*" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="0" '
             r'office:value-type="float"/>\s*'
@@ -9746,7 +9746,7 @@ def virtual_bill(supply_source):
             r'<table:table-cell table:number-columns-repeated="18"/>\s*'
             r'<table:table-cell office:value="0.0" '
             r'office:value-type="float" table:number-columns-repeated="2"/>\s*'
-            r'<table:table-cell office:value="23562.049999999996" '
+            r'<table:table-cell office:value="18825.5\d*" '
             r'office:value-type="float"/>\s*'
             r'</table:table-row>']},
 
@@ -14097,7 +14097,7 @@ def virtual_bill(supply_source):
         'data': {
             'name': 'Minority Report',
             'script': """from chellow.models import Session
-import chellow.computer
+from chellow.computer import datum_range
 from datetime import datetime as Datetime
 import pytz
 
@@ -14107,12 +14107,8 @@ try:
     caches = {}
     sess = Session()
     t = Datetime(2010, 10, 1, tzinfo=pytz.utc)
-    dgen1 = chellow.computer._tpr_datum_generator(
-        sess, caches, '00001', 0, None)
-    datum1 = dgen1(sess, t)
-    dgen2 = chellow.computer._tpr_datum_generator(
-        sess, caches, '00001', 1, None)
-    datum2 = dgen2(sess, t)
+    datum1 = datum_range(sess, caches, 0, t, t)
+    datum2 = datum_range(sess, caches, 1, t, t)
     if datum1 == datum2:
         raise Exception("datums match!")
     response = 'Henriki'

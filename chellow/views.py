@@ -4134,7 +4134,7 @@ def supply_virtual_bill_get(supply_id):
             contract = era.imp_supplier_contract
             data_source = chellow.computer.SupplySource(
                 g.sess, block_start, block_finish, forecast_date, era, True,
-                None, caches)
+                caches)
             headings = [
                 'id', 'supplier_contract', 'account', 'start date',
                 'finish date']
@@ -4145,12 +4145,12 @@ def supply_virtual_bill_get(supply_id):
 
             meras.append(mera)
             chellow.computer.contract_func(
-                caches, contract, 'virtual_bill', None)(data_source)
+                caches, contract, 'virtual_bill')(data_source)
             bill = data_source.supplier_bill
             net_gbp += bill['net-gbp']
 
             for title in chellow.computer.contract_func(
-                    caches, contract, 'virtual_bill_titles', None)():
+                    caches, contract, 'virtual_bill_titles')():
                 if title == 'consumption-info':
                     del bill[title]
                     continue

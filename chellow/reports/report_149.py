@@ -53,7 +53,7 @@ def mpan_bit(
 
             supply_source = chellow.computer.SupplySource(
                 sess, block_start, block_finish, forecast_date, era, is_import,
-                None, caches)
+                caches)
 
             chellow.duos.duos_vb(supply_source)
 

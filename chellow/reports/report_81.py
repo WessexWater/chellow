@@ -37,13 +37,13 @@ def content(contract_id, end_year, end_month, months, user):
         writer = csv.writer(f, lineterminator='\n')
 
         bill_titles = chellow.computer.contract_func(
-            caches, contract, 'virtual_bill_titles', None)()
+            caches, contract, 'virtual_bill_titles')()
         header_titles = [
             'Import MPAN Core', 'Export MPAN Core', 'Start Date',
             'Finish Date']
 
         vb_func = chellow.computer.contract_func(
-            caches, contract, 'virtual_bill', None)
+            caches, contract, 'virtual_bill')
 
         writer.writerow(header_titles + bill_titles)
 
@@ -71,7 +71,7 @@ def content(contract_id, end_year, end_month, months, user):
 
             supply_source = chellow.computer.SupplySource(
                 sess, chunk_start, chunk_finish, forecast_date, era, is_import,
-                None, caches)
+                caches)
             vb_func(supply_source)
             bill = supply_source.dc_bill
             for title in bill_titles:

@@ -47,11 +47,11 @@ def content(start_date, finish_date, contract_id, user):
 
         month_finish = month_start + relativedelta(months=1) - HH
 
-        bill_titles = contract_func(
-            caches, contract, 'virtual_bill_titles', None)()
+        bill_titles = contract_func(caches, contract, 'virtual_bill_titles')()
         writer.writerow(
             ['MPAN Core', 'Site Code', 'Site Name', 'Account', 'From', 'To'] +
             bill_titles)
+        vb_func = contract_func(caches, contract, 'virtual_bill')
 
         while not month_start > finish_date:
             period_start = hh_max(start_date, month_start)
@@ -78,7 +78,7 @@ def content(start_date, finish_date, contract_id, user):
                     vals = []
                     data_source = SupplySource(
                         sess, chunk_start, chunk_finish, forecast_date, era,
-                        polarity, None, caches)
+                        polarity, caches)
 
                     site = sess.query(Site).join(SiteEra).filter(
                         SiteEra.era == era,
@@ -90,8 +90,7 @@ def content(start_date, finish_date, contract_id, user):
                         hh_format(data_source.start_date),
                         hh_format(data_source.finish_date)]
 
-                    contract_func(
-                        caches, contract, 'virtual_bill', None)(data_source)
+                    vb_func(data_source)
                     bill = data_source.supplier_bill
                     for title in bill_titles:
                         if title in bill:
