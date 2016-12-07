@@ -36,7 +36,6 @@ def hh(supply_source):
                 'start_date': None, 'func': create_future_func(1, 0)}
 
     for hh in supply_source.hh_data:
-        bill['aahedc-msp-kwh'] += hh['msp-kwh']
         bill['aahedc-gsp-kwh'] += hh['gsp-kwh']
         rate = supply_source.hh_rate(
             db_id, hh['start-date'], 'aahedc_gbp_per_gsp_kwh')
