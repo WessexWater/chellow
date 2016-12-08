@@ -1958,7 +1958,11 @@ def virtual_bill_titles():
             r'<a href="/sources">\s*Sources\s*</a>',
             r'<a href="/generator_types">\s*Generator Types\s*'
             '</a>',
-            r'<a href="/ods_scenario_runner">\s*Scenario Runner\s*</a>'],
+            r'<a\s*'
+            r'href="/ods_scenario_runner"\s*'
+            r'>\s*'
+            r'Scenario Runner\s*'
+            r'</a>'],
         'status_code': 200},
 
     {
