@@ -1280,16 +1280,14 @@ order by hh_datum.start_date
                             "    and hh_datum.start_date <= '" +
                             hh_format(chunk_finish) + "+00'"
                             "    order by 1,3"}))
-                    hist_start, status, msp_kwh, imp_kvarh, exp_kvarh = \
-                        next(data, (None, None, None, None, None))
+                    hist_start, status, msp_kwh, imp_kvarh, exp_kvarh = next(
+                        data, (None, None, None, None, None))
 
                     for hh_date in hh_range(chunk_start, chunk_finish):
                         datum = {}
                         if hh_date == hist_start:
                             if msp_kwh is None:
-                                datum['status'] = 'X'
-                                datum['hist-kwh'] = datum['msp-kwh'] = 0
-                                datum['msp-kw'] = 0
+                                datum['hist-kwh'] = 0
                             else:
                                 datum['status'] = status
                                 datum['hist-kwh'] = msp_kwh
@@ -1300,26 +1298,13 @@ order by hh_datum.start_date
                             datum['exp-msp-kvarh'] = exp_kvarh
                             datum['exp-msp-kvar'] = exp_kvarh * 2
 
-                            (
-                                hist_start, status, msp_kwh, imp_kvarh,
-                                exp_kvarh) = next(
-                                    data, (None, None, None, None, None))
-                        else:
-                            datum['status'] = 'X'
-                            datum['imp-msp-kvarh'] = datum['imp-msp-kvar'] = 0
-                            datum['exp-msp-kvarh'] = datum['exp-msp-kvar'] = 0
-                            datum['msp-kw'] = datum['msp-kwh'] = 0
-                            datum['hist-kwh'] = 0
+                            hist_start, status, msp_kwh, imp_kvarh, exp_kvarh \
+                                = next(data, (None, None, None, None, None))
 
                         hist_map[hh_date] = datum
             else:
                 raise BadRequest("gen type not recognized")
 
-        for dtm in datum_range(
-                sess, self.caches, self.years_back, start_date, finish_date):
-            datum = dtm.copy()
-            try:
-                datum.update(hist_map[datum['hist-start']])
-            except KeyError:
-                pass
-            self.hh_data.append(datum)
+        self.hh_data.extend(
+            {**d, **hist_map.get(d['hist-start'], {})} for d in datum_range(
+                sess, self.caches, self.years_back, start_date, finish_date))
