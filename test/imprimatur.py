@@ -2404,12 +2404,12 @@ def virtual_bill(supply_source):
         'status_code': 200,
         'regexes': [
             r'2005-12-31 23:30,CI005,Wheal Rodney,,,11,net,,_L,'
-            '22,LV,nhh,no,05,803,5,0154,2,MOP Contract,'
-            'mc-22 9974 3438 105,Dynamat data,dc-22 9974 3438 105,'
-            'K87D74429,2005-10-06 00:00,,,,,false,false,'
-            'false,false,false,false,22 9974 3438 105,20,540,'
-            'PC 5-8 & HH S/S,Non half-hourlies 2007,341665,,,,,'
-            ',,,,,']},
+            r'22,LV,nhh,no,05,803,5,0154,2,MOP Contract,'
+            r'mc-22 9974 3438 105,Dynamat data,dc-22 9974 3438 105,'
+            r'K87D74429,2005-10-06 00:00,,,,,false,false,'
+            r'false,false,false,false,22 9974 3438 105,20,540,'
+            r'PC 5-8 & HH S/S,Non half-hourlies 2007,341665,,'
+            r'2007-07-31 00:00,,,,,,,,']},
 
     {
         'name': "Check supplies snapshot mandatory kw",

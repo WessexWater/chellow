@@ -224,35 +224,39 @@ def content(running_name, finished_name, date, supply_id, mpan_cores):
             imp_latest_supplier_bill_date = None
             exp_latest_supplier_bill_date = None
             for is_import in [True, False]:
-                if is_import:
-                    if era.imp_mpan_core is None:
-                        continue
-                    else:
-                        supplier_contract = era.imp_supplier_contract
-                else:
-                    if era.exp_mpan_core is None:
-                        continue
-                    else:
-                        supplier_contract = era.exp_supplier_contract
-
-                latest_supplier_bill_date = sess.query(Bill.finish_date) \
-                    .join(Batch).filter(
-                        Bill.start_date <= date, Bill.supply == supply,
-                        Batch.contract == supplier_contract).order_by(
-                        Bill.finish_date.desc()).first()
-
-                if latest_supplier_bill_date is not None:
-                    latest_supplier_bill_date = \
-                        latest_supplier_bill_date[0]
-                    latest_supplier_bill_date = hh_format(
-                        latest_supplier_bill_date)
-
+                for er in sess.query(Era).filter(
+                            Era.supply == era.supply).order_by(
+                            Era.start_date.desc()):
                     if is_import:
-                        imp_latest_supplier_bill_date = \
-                            latest_supplier_bill_date
+                        if er.imp_mpan_core is None:
+                            break
+                        else:
+                            supplier_contract = er.imp_supplier_contract
                     else:
-                        exp_latest_supplier_bill_date = \
-                            latest_supplier_bill_date
+                        if er.exp_mpan_core is None:
+                            break
+                        else:
+                            supplier_contract = er.exp_supplier_contract
+
+                    latest_bill_date_q = sess.query(Bill.finish_date) \
+                        .join(Batch).filter(
+                            Bill.finish_date >= er.start_date,
+                            Bill.supply == supply,
+                            Batch.contract == supplier_contract).order_by(
+                            Bill.finish_date.desc())
+                    if er.finish_date is not None:
+                        latest_bill_date_q = latest_bill_date_q.filter(
+                            Bill.start_date <= er.finish_date)
+                    latest_bill_date = latest_bill_date_q.first()
+
+                    if latest_bill_date is not None:
+                        latest_bill_date = hh_format(latest_bill_date[0])
+
+                        if is_import:
+                            imp_latest_supplier_bill_date = latest_bill_date
+                        else:
+                            exp_latest_supplier_bill_date = latest_bill_date
+                        break
 
             meter_installation_date = sess.query(func.min(Era.start_date)) \
                 .filter(Era.supply == era.supply, Era.msn == era.msn).one()[0]
