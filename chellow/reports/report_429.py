@@ -40,7 +40,7 @@ def content(g_batch_id, g_bill_id, user):
         g_contract = g_batch.g_contract
 
         vbf = chellow.g_engine.g_contract_func(
-            report_context, g_contract, 'virtual_bill', None)
+            report_context, g_contract, 'virtual_bill')
         if vbf is None:
             raise BadRequest(
                 'The contract ' + g_contract.name +
@@ -51,7 +51,7 @@ def content(g_batch_id, g_bill_id, user):
             'bill_finish_date', 'mprn', 'site_code', 'site_name',
             'covered_start', 'covered_finish', 'covered_bill_ids']
         bill_titles = chellow.g_engine.g_contract_func(
-            report_context, g_contract, 'virtual_bill_titles', None)()
+            report_context, g_contract, 'virtual_bill_titles')()
 
         titles = header_titles[:]
         for title in bill_titles:
@@ -194,7 +194,7 @@ def content(g_batch_id, g_bill_id, user):
 
                 data_source = chellow.g_engine.DataSource(
                     sess, chunk_start, chunk_finish, forecast_date, g_era,
-                    None, report_context, covered_primary_bill)
+                    report_context, covered_primary_bill)
 
                 vbf(data_source)
                 for k in bill_titles:

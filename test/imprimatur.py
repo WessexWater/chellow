@@ -14417,9 +14417,9 @@ finally:
             'start_hour': "00",
             'start_minute': "00",
             'is_ended': "false",
-            'mop_contract_id': "37",
+            'mop_contract_id': "38",
             'mop_account': "mc-22 9813 2107 763",
-            'hhdc_contract_id': "34",
+            'hhdc_contract_id': "35",
             'hhdc_account': "01",
             'msn': "",
             'pc_id': "9",
@@ -14429,17 +14429,17 @@ finally:
             'imp_llfc_code': "570",
             'imp_mpan_core': "22 9813 2107 763",
             'imp_sc': "430",
-            'imp_supplier_contract_id': '36',
+            'imp_supplier_contract_id': '37',
             'imp_supplier_account': '22 9813 2107 763',
             'exp_llfc_code': '581',
             'exp_mpan_core': '22 3475 1614 211',
             'exp_sc': "900",
-            'exp_supplier_contract_id': "36",
-            'exp_supplier_account': "4341"},
+            'exp_supplier_contract_id': '37',
+            'exp_supplier_account': '4341'},
         'status_code': 303},
     {
         'name': "Engie XLS Bills",
-        'path': '/supplier_contracts/36/add_batch',
+        'path': '/supplier_contracts/37/add_batch',
         'method': 'post',
         'data': {
             'reference': "009",
@@ -14500,7 +14500,7 @@ finally:
 
     {
         'name': "Contract level MOP virtual bills, straddling eras",
-        'path': '/reports/231?mop_contract_id=37&start_year=2008&'
+        'path': '/reports/231?mop_contract_id=38&start_year=2008&'
         'start_month=09&start_day=05&start_hour=00&start_minute=00&'
         'finish_year=2008&finish_month=09&finish_day=06&finish_hour=23&'
         'finish_minute=30',
@@ -15070,11 +15070,11 @@ def virtual_bill(ds):
         'path': '/downloads',
         'tries': {'max': 20, 'period': 1},
         'regexes': [
-            r"0011_FINISHED_adminexamplecom_g_bill_check\.csv"],
+            r"0012_FINISHED_adminexamplecom_g_bill_check\.csv"],
         'status_code': 200},
     {
         'name': "Gas bill check",
-        'path': '/downloads/0011_FINISHED_adminexamplecom_g_bill_check.csv',
+        'path': '/downloads/0012_FINISHED_adminexamplecom_g_bill_check.csv',
         'status_code': 200,
         'regexes': [
             r'batch,bill_reference,bill_type,bill_start_date,'

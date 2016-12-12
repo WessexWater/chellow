@@ -30,7 +30,7 @@ class imdict(dict):
     popitem = _immutable
 
 
-def get_times(sess, caches, start_date, finish_date, forecast_date, pw):
+def get_times(sess, caches, start_date, finish_date, forecast_date):
     times_cache = get_g_engine_cache(caches, 'times')
     try:
         s_cache = times_cache[start_date]
@@ -73,7 +73,7 @@ def get_g_engine_cache(caches, name):
         return caches['g_engine'][name]
 
 
-def g_contract_func(caches, contract, func_name, pw):
+def g_contract_func(caches, contract, func_name):
     try:
         ns = caches['g_engine']['funcs'][contract.id]
     except KeyError:
@@ -97,7 +97,7 @@ def identity_func(x):
     return x
 
 
-def g_rate(sess, caches, g_contract_id, date, name, pw):
+def g_rate(sess, caches, g_contract_id, date, name):
     try:
         rate_cache = caches['g_engine']['rates']
     except KeyError:
@@ -250,11 +250,11 @@ def get_data_sources(data_source, start_date, finish_date, forecast_date=None):
 
             ds = DataSource(
                 data_source.sess, chunk_start, chunk_finish, forecast_date,
-                g_era, data_source.pw, data_source.caches, data_source.bill)
+                g_era, data_source.caches, data_source.bill)
             yield ds
 
 
-def _datum_generator(sess, years_back, caches, pw):
+def _datum_generator(sess, years_back, caches):
     try:
         datum_cache = caches['g_engine']['datum'][years_back]
     except KeyError:
@@ -291,11 +291,10 @@ def _datum_generator(sess, years_back, caches, pw):
 
             utc_bank_holidays = chellow.computer.hh_rate(
                 sess2, caches, chellow.bank_holidays.db_id, hh_date,
-                'bank_holidays', pw)
+                'bank_holidays')
             if utc_bank_holidays is None:
-                msg = "\nCan't find bank holidays for " + str(hh_date)
-                pw.println(msg)
-                raise BadRequest(msg)
+                raise BadRequest(
+                    "\nCan't find bank holidays for " + str(hh_date))
             utc_bank_holidays = utc_bank_holidays[:]
             for i in range(len(utc_bank_holidays)):
                 utc_bank_holidays[i] = utc_bank_holidays[i][5:]
@@ -327,16 +326,15 @@ ACTUAL_READ_TYPES = ['N', 'N3', 'C', 'X', 'CP']
 
 class DataSource():
     def __init__(
-            self, sess, start_date, finish_date, forecast_date, g_era, pw,
+            self, sess, start_date, finish_date, forecast_date, g_era,
             caches, g_bill):
         self.sess = sess
         self.caches = caches
         self.forecast_date = forecast_date
         self.start_date = start_date
         self.finish_date = finish_date
-        self.pw = pw
         times = get_times(
-            sess, caches, start_date, finish_date, forecast_date, pw)
+            sess, caches, start_date, finish_date, forecast_date)
         self.years_back = times['years-back']
         self.history_start = times['history-start']
         self.history_finish = times['history-finish']
@@ -632,7 +630,7 @@ class DataSource():
                         hh_date = pair['start-date']
                         dte = orig_dte
                         datum_generator = _datum_generator(
-                            sess, self.caches, self.years_back, self.pw)
+                            sess, self.caches, self.years_back)
                         hh_part = []
 
                         while not hh_date > pair['finish-date']:
@@ -785,20 +783,20 @@ class DataSource():
                             hh_date += HH
 
     def g_contract_func(self, g_contract, func_name):
-        return g_contract_func(self.caches, g_contract, func_name, self.pw)
+        return g_contract_func(self.caches, g_contract, func_name)
 
     def g_rate(self, g_contract_id, date, name):
         try:
             return self.rate_cache[g_contract_id][date][name]
         except KeyError:
             return g_rate(
-                self.sess, self.caches, g_contract_id, date, name, self.pw)
+                self.sess, self.caches, g_contract_id, date, name)
         except AttributeError:
             val = g_rate(
-                self.sess, self.caches, g_contract_id, date, name, self.pw)
+                self.sess, self.caches, g_contract_id, date, name)
             self.rate_cache = self.caches['g_engine']['rates']
             return val
 
     def rate(self, contract_id, date, name):
         return chellow.computer.hh_rate(
-            self.sess, self.caches, contract_id, date, name, self.pw)
+            self.sess, self.caches, contract_id, date, name)
