@@ -389,7 +389,29 @@ class keydefaultdict(defaultdict):
 CT_TZ = pytz.timezone('Europe/London')
 
 
-def from_ct(year, month, day=1, hour=0, minute=0):
-    return CT_TZ.normalize(
-        CT_TZ.localize(Datetime(year, month, day, hour, minute))).astimezone(
-            pytz.utc)
+def ct_datetime(year, month, day=1, hour=0, minute=0):
+    return tz_datetime(CT_TZ, year, month, day, hour, minute)
+
+
+def utc_datetime(year, month, day=1, hour=0, minute=0):
+    return tz_datetime(pytz.utc, year, month, day, hour, minute)
+
+
+def tz_datetime(tz, year, month, day=1, hour=0, minute=0):
+    return tz.normalize(tz.localize(Datetime(year, month, day, hour, minute)))
+
+
+def to_tz_datetime(tz, dt):
+    return tz.normalize(dt.astimezone(tz))
+
+
+def to_ct_datetime(dt):
+    return to_tz_datetime(CT_TZ, dt)
+
+
+def to_utc_datetime(dt):
+    return to_tz_datetime(pytz.utc, dt)
+
+
+def ct_datetime_utc(year, month, day=1, hour=0, minute=0):
+    return to_utc_datetime(ct_datetime(year, month, day, hour, minute))

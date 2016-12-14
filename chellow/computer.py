@@ -12,7 +12,7 @@ from chellow.models import (
     RateScript, Channel, Era, Tpr, MeasurementRequirement, RegisterRead, Bill,
     BillType, ReadType, SiteEra, Supply, Source, HhDatum, Contract,
     ClockInterval)
-from chellow.utils import HH, hh_format, hh_max, hh_range, hh_min
+from chellow.utils import HH, hh_format, hh_max, hh_range, hh_min, utc_datetime
 import chellow.bank_holidays
 from itertools import combinations
 from types import MappingProxyType
@@ -201,7 +201,7 @@ def hh_rate(sess, caches, contract_id, date, name):
 
 def forecast_date():
     now = Datetime.now(pytz.utc)
-    return Datetime(now.year, now.month, 1, tzinfo=pytz.utc)
+    return utc_datetime(now.year, now.month, 1)
 
 
 def displaced_era(sess, caches, site, start_date, finish_date, forecast_date):
@@ -212,8 +212,7 @@ def displaced_era(sess, caches, site, start_date, finish_date, forecast_date):
             "same month")
     t = get_times(start_date, finish_date, forecast_date)
     hist_start = t['history-start']
-    month_start = Datetime(
-        hist_start.year, hist_start.month, 1, tzinfo=pytz.utc)
+    month_start = utc_datetime(hist_start.year, hist_start.month)
     month_finish = month_start + relativedelta(months=1) - HH
     has_displaced = False
     eras = {}
@@ -277,8 +276,7 @@ def get_data_sources(data_source, start_date, finish_date, forecast_date=None):
             yield ds
 
     else:
-        month_start = Datetime(
-            start_date.year, start_date.month, 1, tzinfo=pytz.utc)
+        month_start = utc_datetime(start_date.year, start_date.month)
         while month_start <= finish_date:
             month_finish = month_start + relativedelta(months=1) - HH
             chunk_start = hh_max(month_start, start_date)

@@ -16,7 +16,7 @@ from sqlalchemy.ext.declarative import declarative_base
 import operator
 from chellow.utils import (
     hh_after, HH, parse_mpan_core, hh_before, next_hh, prev_hh, hh_format,
-    hh_range)
+    hh_range, utc_datetime)
 import json
 from dateutil.relativedelta import relativedelta
 from functools import lru_cache
@@ -2378,13 +2378,11 @@ class Supply(Base, PersistentClass):
         if prev_era is None:
             old_stripes.append(
                 {
-                    'start_date': Datetime(
-                        datetime.MINYEAR, 1, 2, tzinfo=pytz.utc),
+                    'start_date': utc_datetime(datetime.MINYEAR, 1, 2),
                     'finish_date': era.start_date - HH, 'era': None})
             new_stripes.append(
                 {
-                    'start_date': Datetime(
-                        datetime.MINYEAR, 1, 2, tzinfo=pytz.utc),
+                    'start_date': utc_datetime(datetime.MINYEAR, 1, 2),
                     'finish_date': start_date - HH, 'era': None})
         else:
             old_stripes.append(
@@ -2719,8 +2717,8 @@ class HhDatum(Base, PersistentClass):
         self.value = value
         self.status = status
         nw = Datetime.now(pytz.utc)
-        self.last_modified = Datetime(
-            year=nw.year, month=nw.month, day=nw.day, tzinfo=pytz.utc)
+        self.last_modified = utc_datetime(
+            year=nw.year, month=nw.month, day=nw.day)
 
 
 class Report(Base, PersistentClass):

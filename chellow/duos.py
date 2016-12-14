@@ -1,10 +1,8 @@
-from datetime import datetime as Datetime
 from dateutil.relativedelta import relativedelta
-import pytz
 from sqlalchemy import func
 from sqlalchemy.sql.expression import true
 import chellow.computer
-from chellow.utils import hh_format, HH
+from chellow.utils import hh_format, HH, utc_datetime
 from werkzeug.exceptions import BadRequest
 from chellow.models import HhDatum, Channel, Era
 
@@ -503,7 +501,7 @@ def datum_2010_04_01(ds, hh):
                 days_in_month
 
 
-CUTOFF_DATE = Datetime(2010, 4, 1, tzinfo=pytz.utc)
+CUTOFF_DATE = utc_datetime(2010, 4)
 
 
 def duos_vb(ds):

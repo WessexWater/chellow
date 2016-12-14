@@ -2,11 +2,9 @@ from dateutil.relativedelta import relativedelta
 from sqlalchemy.sql.expression import null
 from sqlalchemy import or_
 from chellow.models import Session, Contract, RateScript
-from chellow.utils import HH, hh_after
+from chellow.utils import HH, hh_after, utc_datetime
 import chellow.computer
 import chellow.duos
-from datetime import datetime as Datetime
-import pytz
 
 sess = None
 try:
@@ -71,8 +69,7 @@ def triad_calc(
 def hh(data_source, rate_period='monthly'):
     for hh in (h for h in data_source.hh_data if h['ct-is-month-end']):
         hh_start = hh['start-date']
-        month_start = Datetime(
-            hh_start.year, hh_start.month, 1, tzinfo=pytz.utc)
+        month_start = utc_datetime(hh_start.year, hh_start.month)
         month_finish = month_start + relativedelta(months=1) - HH
         month_num = month_start.month
 

@@ -17,7 +17,8 @@ import pytz
 from dateutil.relativedelta import relativedelta
 from chellow.utils import (
     HH, req_str, req_int, req_date, parse_mpan_core, req_bool, req_hh_date,
-    hh_after, req_decimal, send_response, hh_min, hh_max, hh_format, hh_range)
+    hh_after, req_decimal, send_response, hh_min, hh_max, hh_format, hh_range,
+    utc_datetime)
 from werkzeug.exceptions import BadRequest, NotFound
 import chellow.general_import
 import io
@@ -979,7 +980,7 @@ def hhdc_contract_edit_post(contract_id):
 @app.route('/hhdc_contracts/<int:contract_id>/add_rate_script')
 def hhdc_rate_script_add_get(contract_id):
     now = Datetime.now(pytz.utc)
-    initial_date = Datetime(now.year, now.month, 1, tzinfo=pytz.utc)
+    initial_date = utc_datetime(now.year, now.month)
     contract = Contract.get_hhdc_by_id(g.sess, contract_id)
     return render_template(
         'hhdc_rate_script_add.html', now=now, contract=contract,
@@ -1000,7 +1001,7 @@ def hhdc_rate_script_add_post(contract_id):
     except BadRequest as e:
         flash(e.description)
         now = Datetime.now(pytz.utc)
-        initial_date = Datetime(now.year, now.month, 1, tzinfo=pytz.utc)
+        initial_date = utc_datetime(now.year, now.month)
         return render_template(
             'hhdc_rate_script_add.html', now=now, contract=contract,
             initial_date=initial_date)
@@ -1201,7 +1202,7 @@ def supplier_contract_get(contract_id):
 @app.route('/supplier_contracts/<int:contract_id>/add_rate_script')
 def supplier_rate_script_add_get(contract_id):
     now = Datetime.now(pytz.utc)
-    initial_date = Datetime(now.year, now.month, 1, tzinfo=pytz.utc)
+    initial_date = utc_datetime(now.year, now.month)
     contract = Contract.get_supplier_by_id(g.sess, contract_id)
     return render_template(
         'supplier_rate_script_add.html', now=now, contract=contract,
@@ -1222,7 +1223,7 @@ def supplier_rate_script_add_post(contract_id):
     except BadRequest as e:
         flash(e.description)
         now = Datetime.now(pytz.utc)
-        initial_date = Datetime(now.year, now.month, 1, tzinfo=pytz.utc)
+        initial_date = utc_datetime(now.year, now.month)
         return render_template(
             'supplier_rate_script_add.html', now=now, contract=contract,
             initial_date=initial_date)
@@ -1391,7 +1392,7 @@ def mop_rate_script_add_get():
     contract_id = req_str('mop_contract_id')
     contract = Contract.get_mop_by_id(g.sess, contract_id)
     now = Datetime.now(pytz.utc)
-    initial_date = Datetime(now.year, now.month, 1, tzinfo=pytz.utc)
+    initial_date = utc_datetime(now.year, now.month)
     return render_template(
         'mop_rate_script_add.html', contract=contract,
         initial_date=initial_date)
@@ -1411,7 +1412,7 @@ def mop_rate_script_add_post():
     except BadRequest as e:
         flash(e.description)
         now = Datetime.now(pytz.utc)
-        initial_date = Datetime(now.year, now.month, 1, tzinfo=pytz.utc)
+        initial_date = utc_datetime(now.year, now.month)
         return make_response(
             render_template(
                 'mop_rate_script_add.html', contract=contract,
@@ -1426,7 +1427,7 @@ def supply_months_get(supply_id):
     year = req_int('year')
     years = req_int('years')
 
-    month_start = Datetime(year - years + 1, 1, 1, tzinfo=pytz.utc)
+    month_start = utc_datetime(year - years + 1, 1)
     months = []
     for i in range(12 * years):
         next_month_start = month_start + relativedelta(months=1)
@@ -2380,7 +2381,7 @@ def site_hh_data_get(site_id):
 
     year = req_int('year')
     month = req_int('month')
-    start_date = Datetime(year, month, 1, tzinfo=pytz.utc)
+    start_date = utc_datetime(year, month)
     finish_date = start_date + relativedelta(months=1) - HH
 
     supplies = g.sess.query(Supply).join(Era).join(SiteEra).join(Source). \
@@ -2634,9 +2635,9 @@ def site_used_graph_get(site_id):
     finish_month = req_int("finish_month")
     months = req_int("months")
 
-    finish_date = Datetime(finish_year, finish_month, 1, tzinfo=pytz.utc) + \
+    finish_date = utc_datetime(finish_year, finish_month) + \
         relativedelta(months=1) - HH
-    start_date = Datetime(finish_year, finish_month, 1, tzinfo=pytz.utc) - \
+    start_date = utc_datetime(finish_year, finish_month) - \
         relativedelta(months=months-1)
 
     site = Site.get_by_id(g.sess, site_id)
@@ -2737,11 +2738,9 @@ def supply_hh_data_get(supply_id):
     finish_month = req_int("finish_month")
     supply = Supply.get_by_id(g.sess, supply_id)
 
-    finish_date = Datetime(
-        finish_year, finish_month, 1, tzinfo=pytz.utc) + \
+    finish_date = utc_datetime(finish_year, finish_month) + \
         relativedelta(months=1) - HH
-    start_date = Datetime(
-        finish_year, finish_month, 1, tzinfo=pytz.utc) - \
+    start_date = utc_datetime(finish_year, finish_month) - \
         relativedelta(months=months-1)
 
     era = g.sess.query(Era).filter(
@@ -2788,7 +2787,7 @@ def dno_rate_script_get(rate_script_id):
 @app.route('/dno_contracts/<int:contract_id>/add_rate_script')
 def dno_rate_script_add_get(contract_id):
     now = Datetime.now(pytz.utc)
-    initial_date = Datetime(now.year, now.month, 1, tzinfo=pytz.utc)
+    initial_date = utc_datetime(now.year, now.month)
     contract = Contract.get_dno_by_id(g.sess, contract_id)
     return render_template(
         'dno_rate_script_add.html', contract=contract,
@@ -2809,7 +2808,7 @@ def dno_rate_script_add_post(contract_id):
     except BadRequest as e:
         flash(e.description)
         now = Datetime.now(pytz.utc)
-        initial_date = Datetime(now.year, now.month, 1, tzinfo=pytz.utc)
+        initial_date = utc_datetime(now.year, now.month)
         return make_response(
             render_template(
                 'dno_rate_script_add.html', contract=contract,
@@ -2890,7 +2889,7 @@ def non_core_contract_edit_post(contract_id):
 def site_months_get(site_id):
     finish_year = req_int('finish_year')
     finish_month = req_int('finish_month')
-    start_date = Datetime(finish_year, finish_month, 1, tzinfo=pytz.utc)
+    start_date = utc_datetime(finish_year, finish_month)
     start_date -= relativedelta(months=11)
     site = Site.get_by_id(g.sess, site_id)
 
@@ -3586,7 +3585,7 @@ def meter_payment_type_get(type_id):
 @app.route('/non_core_contracts/<int:contract_id>/add_rate_script')
 def non_core_rate_script_add_get(contract_id):
     now = Datetime.now(pytz.utc)
-    initial_date = Datetime(now.year, now.month, 1, tzinfo=pytz.utc)
+    initial_date = utc_datetime(now.year, now.month)
     contract = Contract.get_non_core_by_id(g.sess, contract_id)
     return render_template(
         'non_core_rate_script_add.html', now=now, initial_date=initial_date,
@@ -3607,7 +3606,7 @@ def non_core_rate_script_add_post(contract_id):
     except BadRequest as e:
         flash(e.description)
         now = Datetime.now(pytz.utc)
-        initial_date = Datetime(now.year, now.month, 1, tzinfo=pytz.utc)
+        initial_date = utc_datetime(now.year, now.month)
         return make_response(
             render_template(
                 'non_core_rate_script_add.html', now=now,
@@ -4000,15 +3999,14 @@ def csv_supplies_hh_data_get():
 def csv_supplies_snapshot_get():
     now = Datetime.now(pytz.utc)
     return render_template(
-        'csv_supplies_snapshot.html', last_month=Datetime(
-            now.year, now.month, 1, tzinfo=pytz.utc) - relativedelta(months=1))
+        'csv_supplies_snapshot.html', last_month=utc_datetime(
+            now.year, now.month) - relativedelta(months=1))
 
 
 @app.route('/csv_supplies_duration')
 def csv_supplies_duration_get():
     last_month = Datetime.now(pytz.utc) - relativedelta(months=1)
-    last_month_start = Datetime(
-        last_month.year, last_month.month, 1, tzinfo=pytz.utc)
+    last_month_start = utc_datetime(last_month.year, last_month.month)
     last_month_finish = last_month_start + relativedelta(months=1) - HH
     return render_template(
         'csv_supplies_duration.html', last_month_start=last_month_start,
@@ -4112,8 +4110,7 @@ def supply_virtual_bill_get(supply_id):
     meras = []
     debug = ''
 
-    month_start = Datetime(
-        start_date.year, start_date.month, 1, tzinfo=pytz.utc)
+    month_start = utc_datetime(start_date.year, start_date.month)
 
     while not month_start > finish_date:
         month_finish = month_start + relativedelta(months=1) - HH
@@ -4381,9 +4378,9 @@ def site_gen_graph_get(site_id):
         finish_month = now.month
         months = 1
 
-    finish_date = Datetime(finish_year, finish_month, 1, tzinfo=pytz.utc) + \
+    finish_date = utc_datetime(finish_year, finish_month) + \
         relativedelta(months=1) - HH
-    start_date = Datetime(finish_year, finish_month, 1, tzinfo=pytz.utc) - \
+    start_date = utc_datetime(finish_year, finish_month) - \
         relativedelta(months=months-1)
 
     site = Site.get_by_id(g.sess, site_id)

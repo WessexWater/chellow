@@ -1,10 +1,8 @@
-from datetime import datetime as Datetime
 from chellow.models import Session, Contract
 import chellow.computer
 import chellow.scenario
-from chellow.utils import HH, from_ct
+from chellow.utils import HH, ct_datetime_utc, utc_datetime
 from dateutil.relativedelta import relativedelta
-import pytz
 
 
 sess = None
@@ -55,11 +53,10 @@ def ccl(data_source, ct_month=False):
                 kwh = 0
                 gbp = 0
                 if ct_month:
-                    month_start = from_ct(finish_year, finish_month)
+                    month_start = ct_datetime_utc(finish_year, finish_month)
                     month_finish = hh['start-date']
                 else:
-                    month_start = Datetime(
-                        finish_year, finish_month, 1, tzinfo=pytz.utc)
+                    month_start = utc_datetime(finish_year, finish_month)
                     month_finish = month_start + relativedelta(months=1) - HH
 
                 for ds in chellow.computer.get_data_sources(
