@@ -464,15 +464,14 @@ class DataSource():
         self.history_start = times['history-start']
         self.history_finish = times['history-finish']
 
-        self.problem = ''
         self.is_green = False
         self.supplier_bill = defaultdict(int, {'problem': ''})
         self.mop_bill = defaultdict(int, {'problem': ''})
         self.dc_bill = defaultdict(int, {'problem': ''})
         self.hh_data = []
         self.supplier_rate_sets = defaultdict(set)
-        self.mop_rate_sets = defaultdict(set, {'problem': ''})
-        self.dc_rate_sets = defaultdict(set, {'problem': ''})
+        self.mop_rate_sets = defaultdict(set)
+        self.dc_rate_sets = defaultdict(set)
 
     def contract_func(self, contract, func_name):
         return contract_func(self.caches, contract, func_name)
@@ -486,6 +485,11 @@ class DataSource():
             val = hh_rate(self.sess, self.caches, contract_id, date, name)
             self.rate_cache = self.caches['computer']['rates']
             return val
+
+    def _add_problem(self, problem):
+        self.supplier_bill['problem'] += problem
+        self.mop_bill['problem'] += problem
+        self.dc_bill['problem'] += problem
 
 
 class SiteSource(DataSource):
@@ -1035,9 +1039,10 @@ class SupplySource(DataSource):
                         'exp-msp-kvar': 0, 'msp-kw': 0, 'msp-kwh': 0,
                         'hist-kwh': 0}
 
-                tpr_codes = sess.query(Tpr.code). \
+                tpr_codes = [
+                    t[0] for t in sess.query(Tpr.code).
                     join(MeasurementRequirement).filter(
-                        MeasurementRequirement.ssc == self.ssc).all()
+                        MeasurementRequirement.ssc == self.ssc)]
 
                 bills = dict(
                     (b.id, b) for b in sess.query(Bill).filter(
@@ -1088,19 +1093,22 @@ class SupplySource(DataSource):
                                 RegisterRead.present_date):
 
                         if tpr_code not in tpr_codes:
-                            self.problem += "The TPR " + str(tpr_code) + \
-                                " from the register read does not match any " \
-                                "of the TPRs associated with the MPAN."
+                            self._add_problem(
+                                "The TPR " + str(tpr_code) +
+                                " from the register read does not match any " +
+                                "of the TPRs (" + ', '.join(tpr_codes) +
+                                ") associated with the MPAN.")
 
                         if previous_date < bill.start_date:
-                            self.problem += "There's a read before the " \
-                                "start of the bill!"
+                            self._add_problem(
+                                "There's a read before the "
+                                "start of the bill!")
                         if present_date > bill.finish_date:
-                            self.problem += "There's a read after the end " \
-                                "of the bill!"
+                            self._add_problem(
+                                "There's a read after the end of the bill!")
                         advance = present_value - previous_value
                         if advance < 0:
-                            self.problem += "Clocked? "
+                            self._add_problem("Clocked?")
                             digits = int(math.log10(previous_value)) + 1
                             advance = 10 ** digits - previous_value + \
                                 present_value
@@ -1163,6 +1171,13 @@ class SupplySource(DataSource):
                                 hhd_datum['hist-kwh'] += rate
                                 if hhd_datum['status'] in ('X', 'A'):
                                     hhd_datum['status'] = h['status']
+                        elif kwh > 0:
+                            self._add_problem(
+                                "For the TPR code " + tpr_code +
+                                " the bill says that there are " + str(kwh) +
+                                " kWh, but the time of the TPR doesn't cover "
+                                "the time between the register reads.")
+
                 hist_map.update(hhd)
             elif hist_measurement_type in ('hh', 'amr'):
                 has_exp_active = False
