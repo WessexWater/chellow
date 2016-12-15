@@ -237,7 +237,8 @@ class Parser():
             amount_dec = Decimal(amount)
             product_item_name = get_value(row, 'Product Item Name')
             rate_name = get_value(row, 'Rate Name')
-            if usage_units == 'kWh' and product_item_name == 'Unit Rate':
+            if usage_units == 'kWh' and \
+                    product_item_name == 'Renewables Obligation (RO)':
                 bill['kwh'] += round(Decimal(usage), 2)
             description = get_value(row, 'Description')
             if description == 'Standard VAT@20%':

@@ -401,17 +401,13 @@ def tz_datetime(tz, year, month, day=1, hour=0, minute=0):
     return tz.normalize(tz.localize(Datetime(year, month, day, hour, minute)))
 
 
-def to_tz_datetime(tz, dt):
+def to_tz(tz, dt):
     return tz.normalize(dt.astimezone(tz))
 
 
-def to_ct_datetime(dt):
-    return to_tz_datetime(CT_TZ, dt)
+def to_ct(dt):
+    return to_tz(CT_TZ, dt)
 
 
-def to_utc_datetime(dt):
-    return to_tz_datetime(pytz.utc, dt)
-
-
-def ct_datetime_utc(year, month, day=1, hour=0, minute=0):
-    return to_utc_datetime(ct_datetime(year, month, day, hour, minute))
+def to_utc(dt):
+    return to_tz(pytz.utc, dt)
