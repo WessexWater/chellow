@@ -23,14 +23,15 @@ def content(
     base_name = "hh_data_row_" + start_date.strftime("%Y%m%d%H%M") + \
         file_extension
 
-    titles = ','.join('"' + v + '"' for v in (
-        "Site Code", "Imp MPAN Core", "Exp Mpan Core", "Start Date",
-        "Import ACTIVE", "Import ACTIVE Status", "Import REACTIVE_IMP",
-        "Import REACTIVE_IMP Status", "Import REACTIVE_EXP",
-        "Import REACTIVE_EXP Status", "Export ACTIVE",
-        "Export ACTIVE Status", "Export REACTIVE_IMP",
-        "Export REACTIVE_IMP Status", "Export REACTIVE_EXP",
-        "Export REACTIVE_EXP Status")) + "\n"
+    titles = ','.join(
+        '"' + v + '"' for v in (
+            "Site Code", "Imp MPAN Core", "Exp Mpan Core", "Start Date",
+            "Import ACTIVE kWh", "Import ACTIVE Status",
+            "Import REACTIVE_IMP kVArh", "Import REACTIVE_IMP Status",
+            "Import REACTIVE_EXP kVArh", "Import REACTIVE_EXP Status",
+            "Export ACTIVE kWh", "Export ACTIVE Status",
+            "Export REACTIVE_IMP kVArh", "Export REACTIVE_IMP Status",
+            "Export REACTIVE_EXP kVArh", "Export REACTIVE_EXP Status")) + "\n"
 
     running_name, finished_name = chellow.dloads.make_names(base_name, user)
 
