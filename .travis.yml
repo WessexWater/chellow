@@ -1,3 +1,5 @@
+dist: trusty
+sudo: false
 language: python
 python:
   - '3.5'
@@ -9,7 +11,7 @@ script:
   - tox
 
 addons:
-  postgresql: '9.4'
+  postgresql: '9.5'
 
 git:
   depth: 1000000
