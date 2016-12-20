@@ -8,6 +8,7 @@ from flask import request, Response
 from jinja2 import Environment
 import time
 import traceback
+from functools import lru_cache
 
 
 clogs = deque()
@@ -354,11 +355,14 @@ def render(template, vals, status_code=200, content_type='text/html'):
     return Response(template_str, status_code, headers)
 
 
+@lru_cache()
 def hh_range(start_date, finish_date):
+    r = []
     dt = start_date
     while dt <= finish_date:
-        yield dt
+        r.append(dt)
         dt += HH
+    return tuple(r)
 
 
 def hh_min(a_date, b_date):
