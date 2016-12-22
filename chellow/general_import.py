@@ -1159,11 +1159,7 @@ def general_import_channel_snag_ignore(sess, action, vals, args):
 
 
 PREFIX = 'general_import_'
-'''
-typ_funcs = dict(
-    (k[len(PREFIX):], globals()[k])
-    for k in tuple(globals().keys()) if k.startswith(PREFIX))
-'''
+
 typ_funcs = {}
 for k in tuple(globals().keys()):
     if k.startswith(PREFIX):
