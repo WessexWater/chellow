@@ -583,7 +583,10 @@ def general_imports_post():
         if not file_name.endswith('.csv'):
             raise BadRequest(
                 "The file name should have the extension '.csv'.")
-        f = io.StringIO(str(file_item.stream.read(), 'utf-8-sig'))
+        f = io.StringIO(
+            str(
+                file_item.stream.read(), encoding='utf-8-sig',
+                errors='ignore'))
         f.seek(0)
         proc_id = chellow.general_import.start_process(f)
         return chellow_redirect('/general_imports/' + str(proc_id), 303)
