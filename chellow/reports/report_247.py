@@ -10,7 +10,7 @@ from sqlalchemy.orm import joinedload
 from collections import defaultdict
 from chellow.models import (
     Session, Contract, MarketRole, Site, Era, SiteEra, Supply, Source, Bill,
-    Mtc, Llfc)
+    Mtc, Llfc, MeasurementRequirement, Ssc, Tpr)
 from chellow.computer import SupplySource, contract_func
 import chellow.computer
 import csv
@@ -180,10 +180,9 @@ def content(
                 ('exp-supplier', Era.exp_supplier_contract)):
             titles = []
             title_dict[cont_type] = titles
-            conts = sess.query(Contract).join(con_attr) \
-                .join(Era.supply).join(Source).filter(
-                    Era.start_date <= start_date,
-                    or_(
+            conts = sess.query(Contract).join(con_attr).join(Era.supply). \
+                join(Source).filter(
+                    Era.start_date <= finish_date, or_(
                         Era.finish_date == null(),
                         Era.finish_date >= start_date),
                     Source.code.in_(('net', '3rd-party'))
@@ -201,6 +200,19 @@ def content(
                 for title in title_func():
                     if title not in titles:
                         titles.append(title)
+
+        tpr_query = sess.query(Tpr).join(MeasurementRequirement).join(Ssc). \
+            join(Era).filter(
+                Era.start_date <= finish_date, or_(
+                    Era.finish_date == null(),
+                    Era.finish_date >= start_date)
+            ).order_by(Tpr.code).distinct()
+        for tpr in tpr_query.filter(Era.imp_supplier_contract != null()):
+            for suffix in ('-kwh', '-rate', '-gbp'):
+                title_dict['imp-supplier'].append(tpr.code + suffix)
+        for tpr in tpr_query.filter(Era.exp_supplier_contract != null()):
+            for suffix in ('-kwh', '-rate', '-gbp'):
+                title_dict['exp-supplier'].append(tpr.code + suffix)
 
         era_tab.writerow(
             sup_header_titles + summary_titles + [None] +
