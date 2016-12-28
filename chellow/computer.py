@@ -5,7 +5,7 @@ from dateutil.relativedelta import relativedelta
 from sqlalchemy import or_, cast, Float
 from sqlalchemy.sql.expression import null, false
 from sqlalchemy.orm import joinedload, aliased
-import math
+from math import log10
 import json
 from werkzeug.exceptions import BadRequest
 from chellow.models import (
@@ -948,8 +948,7 @@ class SupplySource(DataSource):
                                     kwh = end_val - initial_val
 
                                     if kwh < 0:
-                                        digits = int(
-                                            math.log10(initial_val)) + 1
+                                        digits = int(log10(initial_val)) + 1
                                         kwh = 10 ** digits + kwh
 
                                     tprs[tpr_code] = kwh / num_hh
@@ -1108,7 +1107,7 @@ class SupplySource(DataSource):
                         advance = present_value - previous_value
                         if advance < 0:
                             self._add_problem("Clocked?")
-                            digits = int(math.log10(previous_value)) + 1
+                            digits = int(log10(previous_value)) + 1
                             advance = 10 ** digits - previous_value + \
                                 present_value
 
