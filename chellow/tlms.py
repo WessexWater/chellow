@@ -2,15 +2,14 @@ import csv
 import threading
 import collections
 import traceback
-import datetime
-import pytz
 from dateutil.relativedelta import relativedelta
 import requests
 from chellow.models import (
     set_read_write, Session, Contract, RateScript, get_non_core_contract_id)
-from chellow.utils import HH, hh_format
+from chellow.utils import HH, hh_format, utc_datetime_now, to_utc, to_ct
 from werkzeug.exceptions import BadRequest
 import atexit
+from datetime import datetime as Datetime
 
 
 ELEXON_PORTAL_SCRIPTING_KEY_KEY = 'elexonportal_scripting_key'
@@ -105,8 +104,7 @@ class TlmImporter(threading.Thread):
 
     def log(self, message):
         self.messages.appendleft(
-            datetime.datetime.utcnow().replace(tzinfo=pytz.utc)
-            .strftime("%Y-%m-%d %H:%M:%S") + " - " + message)
+            utc_datetime_now().strftime("%Y-%m-%d %H:%M:%S") + " - " + message)
         if len(self.messages) > 100:
             self.messages.pop()
 
@@ -127,7 +125,7 @@ class TlmImporter(threading.Thread):
                     next_month_finish = latest_rs.start_date + \
                         relativedelta(months=2) - HH
 
-                    now = datetime.datetime.now(pytz.utc)
+                    now = utc_datetime_now()
                     if now > next_month_start:
                         self.log(
                             "Checking to see if data is available from " +
@@ -159,15 +157,12 @@ class TlmImporter(threading.Thread):
                             delimiter=',', quotechar='"')
                         self.log("Opened " + url_str + ".")
 
-                        ct_tz = pytz.timezone('Europe/London')
                         next(parser, None)
                         month_tlms = {}
                         for values in parser:
-                            hh_date_ct = ct_tz.localize(
-                                datetime.datetime.strptime(
-                                    values[0], "%d/%m/%Y"))
-                            hh_date = pytz.utc.normalize(
-                                hh_date_ct.astimezone(pytz.utc))
+                            hh_date_ct = to_ct(
+                                Datetime.strptime(values[0], "%d/%m/%Y"))
+                            hh_date = to_utc(hh_date_ct)
                             hh_date += relativedelta(minutes=30*int(values[2]))
                             if next_month_start <= hh_date <= \
                                     next_month_finish:

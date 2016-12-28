@@ -1,8 +1,6 @@
 import threading
 import traceback
-import datetime
 import collections
-import pytz
 from werkzeug.exceptions import BadRequest
 import importlib
 from pkgutil import iter_modules
@@ -10,7 +8,7 @@ from chellow.models import (
     set_read_write, Session, Era, Supply, Batch, BillType, Tpr, ReadType)
 import chellow
 import chellow.bill_parser_engie_xls
-from chellow.utils import keydefaultdict
+from chellow.utils import keydefaultdict, utc_datetime_now
 from sqlalchemy import or_, and_
 
 
@@ -61,8 +59,7 @@ class BillImport(threading.Thread):
     def _log(self, msg):
         with import_lock:
             self.log.appendleft(
-                datetime.datetime.now(pytz.utc).strftime("%Y-%m-%d %H:%M:%S") +
-                ' - ' + msg)
+                utc_datetime_now().strftime("%Y-%m-%d %H:%M:%S") + ' - ' + msg)
 
     def status(self):
         if self.isAlive():

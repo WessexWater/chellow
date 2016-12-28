@@ -13,12 +13,11 @@ from sqlalchemy.exc import ProgrammingError
 import traceback
 from datetime import datetime as Datetime
 import os
-import pytz
 from dateutil.relativedelta import relativedelta
 from chellow.utils import (
     HH, req_str, req_int, req_date, parse_mpan_core, req_bool, req_hh_date,
     hh_after, req_decimal, send_response, hh_min, hh_max, hh_format, hh_range,
-    utc_datetime)
+    utc_datetime, utc_datetime_now)
 from werkzeug.exceptions import BadRequest, NotFound
 import chellow.general_import
 import io
@@ -388,7 +387,7 @@ def system_get():
 @app.route('/')
 def home_get():
     config = Contract.get_non_core_by_name(g.sess, 'configuration')
-    now = Datetime.now(pytz.utc)
+    now = utc_datetime_now()
     month_start = Datetime(now.year, now.month, 1) - \
         relativedelta(months=1)
     month_finish = Datetime(now.year, now.month, 1) - HH
@@ -837,7 +836,7 @@ def hhdc_contracts_add_post():
         return chellow_redirect('/hhdc_contracts/' + str(contract.id), 303)
     except BadRequest as e:
         flash(e.description)
-        initial_date = Datetime.utcnow().replace(tzinfo=pytz.utc)
+        initial_date = utc_datetime_now()
         initial_date = Datetime(initial_date.year, initial_date.month, 1)
         parties = g.sess.query(Party).join(MarketRole).join(Participant). \
             filter(MarketRole.code == 'C').order_by(Participant.code).all()
@@ -847,7 +846,7 @@ def hhdc_contracts_add_post():
 
 @app.route('/hhdc_contracts/add')
 def hhdc_contracts_add_get():
-    initial_date = Datetime.utcnow().replace(tzinfo=pytz.utc)
+    initial_date = utc_datetime_now()
     initial_date = Datetime(initial_date.year, initial_date.month, 1)
     parties = g.sess.query(Party).join(MarketRole).join(Participant).filter(
         MarketRole.code == 'C').order_by(Participant.code).all()
@@ -863,7 +862,7 @@ def hhdc_contract_get(hhdc_contract_id):
         rate_scripts = g.sess.query(RateScript).filter(
             RateScript.contract == contract).order_by(
             RateScript.start_date.desc()).all()
-        now = Datetime.now(pytz.utc)
+        now = utc_datetime_now()
         last_month_finish = Datetime(now.year, now.month, 1) - \
             relativedelta(minutes=30)
         return render_template(
@@ -923,7 +922,7 @@ def hhdc_contract_edit_get(hhdc_contract_id):
     parties = g.sess.query(Party).join(MarketRole).join(Participant).filter(
         MarketRole.code == 'C').order_by(Participant.code).all()
     hhdc_contract = Contract.get_hhdc_by_id(g.sess, hhdc_contract_id)
-    initial_date = Datetime.now(pytz.utc)
+    initial_date = utc_datetime_now()
     return render_template(
         'hhdc_contract_edit.html', parties=parties, initial_date=initial_date,
         hhdc_contract=hhdc_contract)
@@ -973,7 +972,7 @@ def hhdc_contract_edit_post(contract_id):
             parties = g.sess.query(Party).join(MarketRole).join(Participant). \
                 filter(
                     MarketRole.code == 'C').order_by(Participant.code).all()
-            initial_date = Datetime.now(pytz.utc)
+            initial_date = utc_datetime_now()
             return make_response(
                 render_template(
                     'hhdc_contract_edit.html', parties=parties,
@@ -982,7 +981,7 @@ def hhdc_contract_edit_post(contract_id):
 
 @app.route('/hhdc_contracts/<int:contract_id>/add_rate_script')
 def hhdc_rate_script_add_get(contract_id):
-    now = Datetime.now(pytz.utc)
+    now = utc_datetime_now()
     initial_date = utc_datetime(now.year, now.month)
     contract = Contract.get_hhdc_by_id(g.sess, contract_id)
     return render_template(
@@ -1003,7 +1002,7 @@ def hhdc_rate_script_add_post(contract_id):
             '/hhdc_rate_scripts/' + str(rate_script.id), 303)
     except BadRequest as e:
         flash(e.description)
-        now = Datetime.now(pytz.utc)
+        now = utc_datetime_now()
         initial_date = utc_datetime(now.year, now.month)
         return render_template(
             'hhdc_rate_script_add.html', now=now, contract=contract,
@@ -1204,7 +1203,7 @@ def supplier_contract_get(contract_id):
 
 @app.route('/supplier_contracts/<int:contract_id>/add_rate_script')
 def supplier_rate_script_add_get(contract_id):
-    now = Datetime.now(pytz.utc)
+    now = utc_datetime_now()
     initial_date = utc_datetime(now.year, now.month)
     contract = Contract.get_supplier_by_id(g.sess, contract_id)
     return render_template(
@@ -1225,7 +1224,7 @@ def supplier_rate_script_add_post(contract_id):
             '/supplier_rate_scripts/' + str(rate_script.id), 303)
     except BadRequest as e:
         flash(e.description)
-        now = Datetime.now(pytz.utc)
+        now = utc_datetime_now()
         initial_date = utc_datetime(now.year, now.month)
         return render_template(
             'supplier_rate_script_add.html', now=now, contract=contract,
@@ -1236,7 +1235,7 @@ def supplier_rate_script_add_post(contract_id):
 def mop_contract_edit_get(contract_id):
     parties = g.sess.query(Party).join(MarketRole).join(Participant).filter(
         MarketRole.code == 'M').order_by(Participant.code).all()
-    initial_date = Datetime.now(pytz.utc)
+    initial_date = utc_datetime_now()
     contract = Contract.get_mop_by_id(g.sess, contract_id)
     return render_template(
         'mop_contract_edit.html', contract=contract, parties=parties,
@@ -1282,7 +1281,7 @@ def mop_contract_edit_post(contract_id):
         flash(e.description)
         parties = g.sess.query(Party).join(MarketRole).join(Participant). \
             filter(MarketRole.code == 'M').order_by(Participant.code).all()
-        initial_date = Datetime.now(pytz.utc)
+        initial_date = utc_datetime_now()
         contract = Contract.get_mop_by_id(g.sess, contract_id)
         return make_response(
             render_template(
@@ -1353,7 +1352,7 @@ def mop_contract_add_post():
         return chellow_redirect('/mop_contracts/' + str(contract.id), 303)
     except BadRequest as e:
         flash(e.description)
-        initial_date = Datetime.utcnow().replace(tzinfo=pytz.utc)
+        initial_date = utc_datetime_now()
         initial_date = Datetime(initial_date.year, initial_date.month, 1)
         parties = g.sess.query(Party).join(MarketRole).join(Participant). \
             filter(MarketRole.code == 'C').order_by(Participant.code).all()
@@ -1365,7 +1364,7 @@ def mop_contract_add_post():
 
 @app.route('/mop_contracts/add')
 def mop_contract_add_get():
-    initial_date = Datetime.utcnow().replace(tzinfo=pytz.utc)
+    initial_date = utc_datetime_now()
     initial_date = Datetime(initial_date.year, initial_date.month, 1)
     parties = g.sess.query(Party).join(MarketRole).join(Participant).filter(
         MarketRole.code == 'C').order_by(Participant.code).all()
@@ -1379,9 +1378,9 @@ def mop_contract_get(contract_id):
     rate_scripts = g.sess.query(RateScript).filter(
         RateScript.contract == contract).order_by(
         RateScript.start_date.desc()).all()
-    now = Datetime.utcnow().replace(tzinfo=pytz.utc)
-    last_month_start = Datetime(
-        now.year, now.month, 1, tzinfo=pytz.utc) - relativedelta(months=1)
+    now = utc_datetime_now()
+    last_month_start = utc_datetime(now.year, now.month) - \
+        relativedelta(months=1)
     last_month_finish = last_month_start + relativedelta(months=1) - HH
     party = contract.party
     return render_template(
@@ -1394,7 +1393,7 @@ def mop_contract_get(contract_id):
 def mop_rate_script_add_get():
     contract_id = req_str('mop_contract_id')
     contract = Contract.get_mop_by_id(g.sess, contract_id)
-    now = Datetime.now(pytz.utc)
+    now = utc_datetime_now()
     initial_date = utc_datetime(now.year, now.month)
     return render_template(
         'mop_rate_script_add.html', contract=contract,
@@ -1414,7 +1413,7 @@ def mop_rate_script_add_post():
             '/mop_rate_scripts/' + str(rate_script.id), 303)
     except BadRequest as e:
         flash(e.description)
-        now = Datetime.now(pytz.utc)
+        now = utc_datetime_now()
         initial_date = utc_datetime(now.year, now.month)
         return make_response(
             render_template(
@@ -1498,7 +1497,7 @@ def supply_months_get(supply_id):
 
     return render_template(
         'supply_months.html', supply=supply, months=months,
-        is_import=is_import, now=Datetime.now(pytz.utc))
+        is_import=is_import, now=utc_datetime_now())
 
 
 @app.route('/supplies/<int:supply_id>/edit')
@@ -2096,7 +2095,7 @@ def channel_snag_edit_post(snag_id):
 @app.route('/channels/<int:channel_id>/edit')
 def channel_edit_get(channel_id):
     channel = Channel.get_by_id(g.sess, channel_id)
-    now = Datetime.utcnow().replace(tzinfo=pytz.utc)
+    now = utc_datetime_now()
     return render_template('channel_edit.html', channel=channel, now=now)
 
 
@@ -2150,7 +2149,7 @@ def channel_edit_post(channel_id):
             return chellow_redirect('/channels/' + str(channel_id), 303)
     except BadRequest as e:
         flash(e.description)
-        now = Datetime.utcnow().replace(tzinfo=pytz.utc)
+        now = utc_datetime_now()
         return render_template('channel_edit.html', channel=channel, now=now)
 
 
@@ -2492,7 +2491,7 @@ def site_get(site_id):
     groups = sorted(
         groups, key=operator.itemgetter('is_ongoing'), reverse=True)
 
-    now = Datetime.now(pytz.utc)
+    now = utc_datetime_now()
     month_start = Datetime(now.year, now.month, 1)
     month_finish = month_start + relativedelta(months=1) - HH
     last_month_start = month_start - relativedelta(months=1)
@@ -2570,12 +2569,12 @@ def channel_snags_get():
 
     total_snags = g.sess.query(Snag).join(Channel).join(Era).filter(
         Snag.is_ignored == false(), Era.hhdc_contract == contract,
-        Snag.start_date < Datetime.now(pytz.utc) -
+        Snag.start_date < utc_datetime_now() -
         relativedelta(days=days_hidden)).count()
     snags = g.sess.query(Snag).join(Channel).join(Era).join(
         Era.site_eras).join(SiteEra.site).filter(
         Snag.is_ignored == is_ignored, Era.hhdc_contract == contract,
-        Snag.start_date < Datetime.now(pytz.utc) -
+        Snag.start_date < utc_datetime_now() -
         relativedelta(days=days_hidden)).order_by(
         Site.code, Era.id, Snag.start_date, Snag.finish_date,
         Snag.channel_id)
@@ -2789,7 +2788,7 @@ def dno_rate_script_get(rate_script_id):
 
 @app.route('/dno_contracts/<int:contract_id>/add_rate_script')
 def dno_rate_script_add_get(contract_id):
-    now = Datetime.now(pytz.utc)
+    now = utc_datetime_now()
     initial_date = utc_datetime(now.year, now.month)
     contract = Contract.get_dno_by_id(g.sess, contract_id)
     return render_template(
@@ -2810,7 +2809,7 @@ def dno_rate_script_add_post(contract_id):
             '/dno_rate_scripts/' + str(rate_script.id), 303)
     except BadRequest as e:
         flash(e.description)
-        now = Datetime.now(pytz.utc)
+        now = utc_datetime_now()
         initial_date = utc_datetime(now.year, now.month)
         return make_response(
             render_template(
@@ -3587,7 +3586,7 @@ def meter_payment_type_get(type_id):
 
 @app.route('/non_core_contracts/<int:contract_id>/add_rate_script')
 def non_core_rate_script_add_get(contract_id):
-    now = Datetime.now(pytz.utc)
+    now = utc_datetime_now()
     initial_date = utc_datetime(now.year, now.month)
     contract = Contract.get_non_core_by_id(g.sess, contract_id)
     return render_template(
@@ -3608,7 +3607,7 @@ def non_core_rate_script_add_post(contract_id):
             '/non_core_rate_scripts/' + str(rate_script.id), 303)
     except BadRequest as e:
         flash(e.description)
-        now = Datetime.now(pytz.utc)
+        now = utc_datetime_now()
         initial_date = utc_datetime(now.year, now.month)
         return make_response(
             render_template(
@@ -3973,7 +3972,7 @@ def csv_sites_hh_data_get():
 
 @app.route('/csv_sites_duration')
 def csv_sites_duration_get():
-    now = Datetime.now(pytz.utc)
+    now = utc_datetime_now()
     month_start = Datetime(now.year, now.month, 1) - relativedelta(months=1)
     month_finish = month_start + relativedelta(months=1) - HH
     return render_template(
@@ -4000,7 +3999,7 @@ def csv_supplies_hh_data_get():
 
 @app.route('/csv_supplies_snapshot')
 def csv_supplies_snapshot_get():
-    now = Datetime.now(pytz.utc)
+    now = utc_datetime_now()
     return render_template(
         'csv_supplies_snapshot.html', last_month=utc_datetime(
             now.year, now.month) - relativedelta(months=1))
@@ -4008,7 +4007,7 @@ def csv_supplies_snapshot_get():
 
 @app.route('/csv_supplies_duration')
 def csv_supplies_duration_get():
-    last_month = Datetime.now(pytz.utc) - relativedelta(months=1)
+    last_month = utc_datetime_now() - relativedelta(months=1)
     last_month_start = utc_datetime(last_month.year, last_month.month)
     last_month_finish = last_month_start + relativedelta(months=1) - HH
     return render_template(
@@ -4189,7 +4188,7 @@ def mtc_get(mtc_id):
 
 @app.route('/csv_crc')
 def csv_crc_get():
-    start_date = Datetime.now(pytz.utc)
+    start_date = utc_datetime_now()
     if start_date.month < 3:
         start_date = start_date - relativedelta(years=1)
     return render_template('csv_crc.html', start_date=start_date)

@@ -1,9 +1,7 @@
 from decimal import Decimal
-from datetime import datetime as Datetime
 import csv
-import pytz
 from dateutil.relativedelta import relativedelta
-from chellow.utils import HH, validate_hh_start
+from chellow.utils import HH, validate_hh_start, utc_datetime_parse
 from werkzeug.exceptions import BadRequest
 from io import StringIO
 
@@ -11,12 +9,12 @@ from io import StringIO
 def parse_date(date_str, is_finish=False):
     date_str = date_str.strip()
     if len(date_str) == 10:
-        dt = Datetime.strptime(date_str, "%Y-%m-%d")
+        dt = utc_datetime_parse(date_str, "%Y-%m-%d")
         if is_finish:
             dt = dt + relativedelta(days=1) - HH
     else:
-        dt = Datetime.strptime(date_str, "%Y-%m-%d %H:%M")
-    return validate_hh_start(dt.replace(tzinfo=pytz.utc))
+        dt = utc_datetime_parse(date_str, "%Y-%m-%d %H:%M")
+    return validate_hh_start(dt)
 
 
 class Parser():

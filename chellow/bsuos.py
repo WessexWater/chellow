@@ -1,13 +1,12 @@
 import xlrd
 from dateutil.relativedelta import relativedelta
 from datetime import datetime as Datetime
-import pytz
 import traceback
 import threading
 import collections
 from chellow.models import (
     RateScript, Contract, Session, set_read_write, get_non_core_contract_id)
-from chellow.utils import HH, hh_format
+from chellow.utils import HH, hh_format, utc_datetime_now, to_utc, to_ct
 import chellow.scenario
 from werkzeug.exceptions import BadRequest
 import atexit
@@ -97,9 +96,7 @@ class BsuosImporter(threading.Thread):
 
     def log(self, message):
         self.messages.appendleft(
-            Datetime.utcnow().replace(
-                tzinfo=pytz.utc).strftime("%Y-%m-%d %H:%M:%S") + " - " +
-            message)
+            utc_datetime_now().strftime("%Y-%m-%d %H:%M:%S") + " - " + message)
         if len(self.messages) > 100:
             self.messages.pop()
 
@@ -119,7 +116,7 @@ class BsuosImporter(threading.Thread):
                         relativedelta(months=1)
                     next_month_start = this_month_start + \
                         relativedelta(months=1)
-                    now = Datetime.now(pytz.utc)
+                    now = utc_datetime_now()
                     props = contract.make_properties()
                     if props.get('enabled', False):
 
@@ -138,17 +135,14 @@ class BsuosImporter(threading.Thread):
                                 file_contents=res.content)
                             sheet = book.sheet_by_index(0)
 
-                            ct_tz = pytz.timezone('Europe/London')
-
                             month_bsuos = {}
                             for row_index in range(1, sheet.nrows):
                                 row = sheet.row(row_index)
                                 raw_date = Datetime(
                                     *xlrd.xldate_as_tuple(
                                         row[0].value, book.datemode))
-                                hh_date_ct = ct_tz.localize(raw_date)
-                                hh_date = pytz.utc.normalize(
-                                    hh_date_ct.astimezone(pytz.utc))
+                                hh_date_ct = to_ct(raw_date)
+                                hh_date = to_utc(hh_date_ct)
                                 hh_date += relativedelta(
                                     minutes=30*int(row[1].value))
                                 if not hh_date < this_month_start and \

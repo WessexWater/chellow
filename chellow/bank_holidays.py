@@ -1,10 +1,9 @@
 import collections
-import pytz
 import threading
-import datetime
 import traceback
 from chellow.models import Contract, RateScript, Session, set_read_write
-from chellow.utils import HH, hh_format
+from chellow.utils import (
+    HH, hh_format, utc_datetime_now, utc_datetime, utc_datetime_parse)
 import json
 from dateutil.relativedelta import relativedelta
 import atexit
@@ -56,8 +55,7 @@ class BankHolidayImporter(threading.Thread):
 
     def log(self, message):
         self.messages.appendleft(
-            datetime.datetime.now(pytz.utc).strftime("%Y-%m-%d %H:%M:%S") +
-            " - " + message)
+            utc_datetime_now().strftime("%Y-%m-%d %H:%M:%S") + " - " + message)
         if len(self.messages) > 100:
             self.messages.pop()
 
@@ -86,15 +84,12 @@ class BankHolidayImporter(threading.Thread):
                         hols = collections.defaultdict(list)
                         for line in res.text.splitlines():
                             if line.startswith(PREFIX):
-                                dt = datetime.datetime.strptime(
-                                    line[-8:], "%Y%m%d"). \
-                                    replace(tzinfo=pytz.utc)
+                                dt = utc_datetime_parse(line[-8:], "%Y%m%d")
                                 hols[dt.year].append(dt)
 
                         for year in sorted(hols.keys()):
                             set_read_write(sess)
-                            year_start = datetime.datetime(
-                                year, 1, 1, tzinfo=pytz.utc)
+                            year_start = utc_datetime(year, 1, 1)
                             year_finish = year_start + \
                                 relativedelta(years=1) - HH
                             rs = sess.query(RateScript).filter(

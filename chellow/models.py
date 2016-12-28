@@ -6,7 +6,6 @@ from sqlalchemy.schema import UniqueConstraint
 from sqlalchemy.engine import Engine
 from datetime import datetime as Datetime
 import datetime
-import pytz
 import ast
 import math
 from sqlalchemy.sql.expression import true, false
@@ -16,7 +15,7 @@ from sqlalchemy.ext.declarative import declarative_base
 import operator
 from chellow.utils import (
     hh_after, HH, parse_mpan_core, hh_before, next_hh, prev_hh, hh_format,
-    hh_range, utc_datetime)
+    hh_range, utc_datetime, utc_datetime_now, utc_datetime_parse)
 import json
 from dateutil.relativedelta import relativedelta
 from functools import lru_cache
@@ -199,7 +198,7 @@ class Snag(Base, PersistentClass):
         self.site = site
         self.channel = channel
 
-        self.date_created = Datetime.now(pytz.utc)
+        self.date_created = utc_datetime_now()
         self.description = description
         self.is_ignored = False
         self.update(start_date, finish_date)
@@ -2716,7 +2715,7 @@ class HhDatum(Base, PersistentClass):
 
         self.value = value
         self.status = status
-        nw = Datetime.now(pytz.utc)
+        nw = utc_datetime_now()
         self.last_modified = utc_datetime(
             year=nw.year, month=nw.month, day=nw.day)
 
@@ -3000,13 +2999,11 @@ def db_init(sess, root_path):
                         " in the directory " + rscripts_path +
                         " should consist of two dates separated by an " +
                         "underscore.")
-                start_date = Datetime.strptime(
-                    start_str, "%Y%m%d%H%M").replace(tzinfo=pytz.utc)
+                start_date = utc_datetime_parse(start_str, "%Y%m%d%H%M")
                 if finish_str == 'ongoing':
                     finish_date = None
                 else:
-                    finish_date = Datetime.strptime(
-                        finish_str, "%Y%m%d%H%M").replace(tzinfo=pytz.utc)
+                    finish_date = utc_datetime_parse(finish_str, "%Y%m%d%H%M")
                 rparams = {
                     'start_date': start_date,
                     'finish_date': finish_date,
@@ -3104,13 +3101,11 @@ def db_upgrade_1_to_2(sess, root_path):
                     " in the directory " + rscripts_path +
                     " should consist of two dates separated by an " +
                     "underscore.")
-            start_date = Datetime.strptime(
-                start_str, "%Y%m%d%H%M").replace(tzinfo=pytz.utc)
+            start_date = utc_datetime_parse(start_str, "%Y%m%d%H%M")
             if finish_str == 'ongoing':
                 finish_date = None
             else:
-                finish_date = Datetime.strptime(
-                    finish_str, "%Y%m%d%H%M").replace(tzinfo=pytz.utc)
+                finish_date = utc_datetime_parse(finish_str, "%Y%m%d%H%M")
             rparams = {
                 'start_date': start_date,
                 'finish_date': finish_date,

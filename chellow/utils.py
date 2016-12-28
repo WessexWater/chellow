@@ -1,6 +1,6 @@
 from dateutil.relativedelta import relativedelta
 from werkzeug.exceptions import BadRequest
-import pytz
+from pytz import timezone, utc
 from decimal import Decimal
 from collections import defaultdict, deque
 from datetime import datetime as Datetime
@@ -15,7 +15,7 @@ clogs = deque()
 
 def clog(msg):
     clogs.appendleft(
-        Datetime.now(pytz.utc).strftime("%Y-%m-%d %H:%M:%S") + " - " +
+        utc_datetime_now().strftime("%Y-%m-%d %H:%M:%S") + " - " +
         str(msg))
     if len(clogs) > 1000:
         clogs.pop()
@@ -48,14 +48,14 @@ def req_int(name):
 
 def req_date(prefix, resolution='minute'):
     if resolution == 'minute':
-        return Datetime(
+        return utc_datetime(
             req_int(prefix + '_year'), req_int(prefix + '_month'),
             req_int(prefix + '_day'), req_int(prefix + '_hour'),
-            req_int(prefix + '_minute'), tzinfo=pytz.utc)
+            req_int(prefix + '_minute'))
     elif resolution == 'day':
-        return Datetime(
+        return utc_datetime(
             req_int(prefix + '_year'), req_int(prefix + '_month'),
-            req_int(prefix + '_day'), tzinfo=pytz.utc)
+            req_int(prefix + '_day'))
 
 
 def req_decimal(name):
@@ -114,8 +114,7 @@ def parse_hh_start(start_date_str):
         day = int(start_date_str[8:10])
         hour = int(start_date_str[11:13])
         minute = int(start_date_str[14:])
-        return validate_hh_start(
-            Datetime(year, month, day, hour, minute, tzinfo=pytz.utc))
+        return validate_hh_start(utc_datetime(year, month, day, hour, minute))
     except ValueError as e:
         raise BadRequest(
             "Can't parse the date: " + start_date_str +
@@ -317,7 +316,7 @@ def hh_format_filter(dt, modifier='full'):
 
 
 def now_if_none(dt):
-    return Datetime.utcnow() if dt is None else dt
+    return utc_datetime_now() if dt is None else dt
 
 
 env = Environment(autoescape=True)
@@ -386,15 +385,15 @@ class keydefaultdict(defaultdict):
             return ret
 
 
-CT_TZ = pytz.timezone('Europe/London')
+ct = timezone('Europe/London')
 
 
 def ct_datetime(year, month, day=1, hour=0, minute=0):
-    return tz_datetime(CT_TZ, year, month, day, hour, minute)
+    return tz_datetime(ct, year, month, day, hour, minute)
 
 
 def utc_datetime(year, month, day=1, hour=0, minute=0):
-    return tz_datetime(pytz.utc, year, month, day, hour, minute)
+    return tz_datetime(utc, year, month, day, hour, minute)
 
 
 def tz_datetime(tz, year, month, day=1, hour=0, minute=0):
@@ -402,12 +401,23 @@ def tz_datetime(tz, year, month, day=1, hour=0, minute=0):
 
 
 def to_tz(tz, dt):
-    return tz.normalize(dt.astimezone(tz))
+    if dt.tzinfo is None:
+        return tz.normalize(tz.localize(dt))
+    else:
+        return tz.normalize(dt.astimezone(tz))
 
 
 def to_ct(dt):
-    return to_tz(CT_TZ, dt)
+    return to_tz(ct, dt)
 
 
 def to_utc(dt):
-    return to_tz(pytz.utc, dt)
+    return to_tz(utc, dt)
+
+
+def utc_datetime_now():
+    return Datetime.utcnow().replace(tzinfo=utc)
+
+
+def utc_datetime_parse(date_str, format_str):
+    return Datetime.strptime(date_str, format_str).replace(tzinfo=utc)

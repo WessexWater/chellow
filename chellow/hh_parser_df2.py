@@ -1,8 +1,6 @@
 import decimal
 import itertools
-import datetime
-import pytz
-from chellow.utils import parse_mpan_core, HH
+from chellow.utils import parse_mpan_core, HH, utc_datetime
 from werkzeug.exceptions import BadRequest
 
 
@@ -55,9 +53,9 @@ class StarkDf2HhParser():
                         raise BadRequest(
                             "The number of seconds (if present) must always "
                             "be zero.")
-                    start_date = datetime.datetime(
-                        d_year, d_month, d_day, time_fields[0], time_fields[1],
-                        tzinfo=pytz.utc) - HH
+                    start_date = utc_datetime(
+                        d_year, d_month, d_day, time_fields[0],
+                        time_fields[1]) - HH
 
                     try:
                         value = decimal.Decimal(fields[2])

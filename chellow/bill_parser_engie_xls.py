@@ -1,8 +1,7 @@
 from decimal import Decimal
 from datetime import datetime as Datetime
 import csv
-import pytz
-from chellow.utils import parse_mpan_core, HH
+from chellow.utils import parse_mpan_core, HH, to_utc, to_ct
 from itertools import count
 from xlrd import xldate_as_tuple, open_workbook
 from dateutil.relativedelta import relativedelta
@@ -99,9 +98,6 @@ ELEM_MAP = {
     ('Reverse CfD FiT (Estimate)', '', 'Amount'): 'cfd-fit-prev-estimate-gbp'}
 
 
-CT_TZ = pytz.timezone('Europe/London')
-
-
 COLUMNS = [
     'Billing Entity',
     'Customer Name',
@@ -143,8 +139,7 @@ def get_date(row, name, datemode):
         return None
     else:
         dt_raw = Datetime(*xldate_as_tuple(get_value(row, name), datemode))
-        dt_ct = CT_TZ.localize(dt_raw)
-        return pytz.utc.normalize(dt_ct.astimezone(pytz.utc))
+        return to_utc(to_ct(dt_raw))
 
 
 def get_value(row, name):
@@ -203,9 +198,7 @@ class Parser():
                 str(int(get_value(row, 'Meter Point'))))
             bill_period = get_value(row, 'Bill Period')
             start_date, finish_date = [
-                pytz.utc.normalize(
-                    CT_TZ.localize(
-                        Datetime.strptime(d, '%Y-%m-%d')).astimezone(pytz.utc))
+                to_utc(to_ct(Datetime.strptime(d, '%Y-%m-%d')))
                 for d in bill_period.split(' - ')]
             finish_date = finish_date + relativedelta(days=1) - HH
             key = (start_date, finish_date, mpan_core)

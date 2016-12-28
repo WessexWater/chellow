@@ -1,5 +1,4 @@
 import collections
-import pytz
 import threading
 import datetime
 import traceback
@@ -7,7 +6,7 @@ import urllib.parse
 import http.client
 from chellow.models import (
     Contract, RateScript, get_non_core_contract_id, Session, set_read_write)
-from chellow.utils import HH, hh_format
+from chellow.utils import HH, hh_format, utc_datetime_now, to_utc, to_ct
 import xlrd
 import json
 from werkzeug.exceptions import BadRequest
@@ -123,8 +122,7 @@ class SystemPriceImporter(threading.Thread):
 
     def log(self, message):
         self.messages.appendleft(
-            datetime.datetime.now(pytz.utc).strftime("%Y-%m-%d %H:%M:%S") +
-            " - " + message)
+            utc_datetime_now().strftime("%Y-%m-%d %H:%M:%S") + " - " + message)
         if len(self.messages) > 100:
             self.messages.pop()
 
@@ -193,8 +191,6 @@ class SystemPriceImporter(threading.Thread):
                         sbp_sheet = book.sheet_by_index(1)
                         ssp_sheet = book.sheet_by_index(2)
 
-                        ct_tz = pytz.timezone('Europe/London')
-
                         sp_months = []
                         sp_month = None
                         for row_index in range(1, sbp_sheet.nrows):
@@ -203,9 +199,8 @@ class SystemPriceImporter(threading.Thread):
                             raw_date = datetime.datetime(
                                 *xlrd.xldate_as_tuple(
                                     sbp_row[0].value, book.datemode))
-                            hh_date_ct = ct_tz.localize(raw_date)
-                            hh_date = pytz.utc.normalize(
-                                hh_date_ct.astimezone(pytz.utc))
+                            hh_date_ct = to_ct(raw_date)
+                            hh_date = to_utc(hh_date_ct)
                             run_code = sbp_row[1].value
                             for col_idx in range(2, 52):
                                 if hh_date >= fill_start:

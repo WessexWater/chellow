@@ -1,10 +1,8 @@
 import csv
 import itertools
 import decimal
-import datetime
 from datetime import timedelta
-import pytz
-from chellow.utils import parse_mpan_core
+from chellow.utils import parse_mpan_core, utc_datetime
 from werkzeug.exceptions import BadRequest
 
 
@@ -44,8 +42,7 @@ class HhParserBglobal():
                 elif self.col_idx == 2:
                     day, month, year = map(
                         int, self.values[self.col_idx].split('/'))
-                    self.date = datetime.datetime(
-                        year, month, day, tzinfo=pytz.utc)
+                    self.date = utc_datetime(year, month, day)
                 elif 2 < self.col_idx < len(self.values):
                     hh_value = self.values[self.col_idx].strip()
                     mins = 30 * (self.col_idx - 3)

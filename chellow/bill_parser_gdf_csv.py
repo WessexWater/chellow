@@ -2,9 +2,8 @@ from decimal import Decimal
 from datetime import datetime as Datetime
 import csv
 from dateutil.relativedelta import relativedelta
-import pytz
 from werkzeug.exceptions import BadRequest
-from chellow.utils import validate_hh_start, HH
+from chellow.utils import validate_hh_start, HH, to_utc
 from io import StringIO
 
 
@@ -127,8 +126,7 @@ class Parser():
 
             def date_val(title):
                 try:
-                    return Datetime.strptime(
-                        val(title), "%d/%m/%Y").replace(tzinfo=pytz.utc)
+                    return to_utc(Datetime.strptime(val(title), "%d/%m/%Y"))
                 except ValueError as e:
                     raise BadRequest(
                         "At line number " + str(self._line_number) +

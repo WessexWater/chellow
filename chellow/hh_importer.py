@@ -1,9 +1,7 @@
 import threading
 import traceback
-import datetime
-import collections
+from collections import defaultdict, deque
 import tempfile
-import pytz
 import ftplib
 import os
 from chellow.models import (
@@ -14,9 +12,10 @@ import importlib
 import atexit
 import paramiko
 import pysftp
+from chellow.utils import utc_datetime_now
 
 
-processes = collections.defaultdict(list)
+processes = defaultdict(list)
 tasks = {}
 
 extensions = ['.df2', '.simple.csv', '.bg.csv']
@@ -93,7 +92,7 @@ class HhImportTask(threading.Thread):
         super(HhImportTask, self).__init__(
             name="HH Automatic Import: contract " + str(contract_id))
         self.lock = threading.RLock()
-        self.messages = collections.deque()
+        self.messages = deque()
         self.contract_id = contract_id
         self.importer = None
         self.stopped = threading.Event()
@@ -114,8 +113,8 @@ class HhImportTask(threading.Thread):
             return True
 
     def log(self, message):
-        self.messages.appendleft(datetime.datetime.utcnow().replace(
-            tzinfo=pytz.utc).strftime("%Y-%m-%d %H:%M:%S") + " - " + message)
+        self.messages.appendleft(
+            utc_datetime_now().strftime("%Y-%m-%d %H:%M:%S") + " - " + message)
         if len(self.messages) > 100:
             self.messages.pop()
 

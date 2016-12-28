@@ -1,10 +1,9 @@
 import csv
-import datetime
-import decimal
-import pytz
+from decimal import Decimal
+from datetime import datetime as Datetime
 import itertools
 from chellow.utils import (
-    parse_channel_type, parse_mpan_core, validate_hh_start)
+    parse_channel_type, parse_mpan_core, validate_hh_start, to_utc)
 from werkzeug.exceptions import BadRequest
 
 
@@ -38,11 +37,10 @@ class HhParserCsvSimple():
 
             start_date_str = self.get_field(2, "Start Date")
             datum['start_date'] = validate_hh_start(
-                datetime.datetime.strptime(
-                    start_date_str, "%Y-%m-%d %H:%M").replace(tzinfo=pytz.utc))
+                to_utc(Datetime.strptime(start_date_str, "%Y-%m-%d %H:%M")))
 
             value_str = self.get_field(3, "Value")
-            datum['value'] = decimal.Decimal(value_str)
+            datum['value'] = Decimal(value_str)
 
             status = self.get_field(4, "Status")
             if len(status) != 1:

@@ -1,14 +1,12 @@
 import threading
 import csv
 import collections
-from datetime import datetime as Datetime
-import pytz
 import traceback
 import requests
 from dateutil.relativedelta import relativedelta
 from chellow.models import (
     Contract, RateScript, get_non_core_contract_id, Session, set_read_write)
-from chellow.utils import HH, hh_format
+from chellow.utils import HH, hh_format, utc_datetime_now, utc_datetime_parse
 from werkzeug.exceptions import BadRequest
 import atexit
 
@@ -79,9 +77,7 @@ class RcrcImporter(threading.Thread):
 
     def log(self, message):
         self.messages.appendleft(
-            Datetime.utcnow().replace(
-                tzinfo=pytz.utc).strftime("%Y-%m-%d %H:%M:%S") +
-            " - " + message)
+            utc_datetime_now().strftime("%Y-%m-%d %H:%M:%S") + " - " + message)
         if len(self.messages) > 100:
             self.messages.pop()
 
@@ -101,7 +97,7 @@ class RcrcImporter(threading.Thread):
 
                     month_start = latest_rs_start + relativedelta(months=1)
                     month_finish = month_start + relativedelta(months=1) - HH
-                    now = Datetime.now(pytz.utc)
+                    now = utc_datetime_now()
                     if now > month_finish:
                         self.log(
                             "Checking to see if data is available from " +
@@ -136,8 +132,7 @@ class RcrcImporter(threading.Thread):
                         values = next(piterator)
                         month_rcrcs = {}
                         for values in piterator:
-                            hh_date = Datetime.strptime(
-                                values[0], "%d/%m/%Y").replace(tzinfo=pytz.utc)
+                            hh_date = utc_datetime_parse(values[0], "%d/%m/%Y")
                             hh_date += relativedelta(minutes=30*int(values[2]))
                             if month_start <= hh_date <= month_finish:
                                 month_rcrcs[key_format(hh_date)] = values[3]

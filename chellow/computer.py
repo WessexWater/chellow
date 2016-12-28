@@ -1,6 +1,6 @@
 from collections import defaultdict
 from datetime import datetime as Datetime
-import pytz
+from pytz import utc, timezone
 from dateutil.relativedelta import relativedelta
 from sqlalchemy import or_, cast, Float
 from sqlalchemy.sql.expression import null, false
@@ -12,7 +12,9 @@ from chellow.models import (
     RateScript, Channel, Era, Tpr, MeasurementRequirement, RegisterRead, Bill,
     BillType, ReadType, SiteEra, Supply, Source, HhDatum, Contract,
     ClockInterval)
-from chellow.utils import HH, hh_format, hh_max, hh_range, hh_min, utc_datetime
+from chellow.utils import (
+    HH, hh_format, hh_max, hh_range, hh_min, utc_datetime, utc_datetime_now,
+    to_tz, to_ct)
 import chellow.bank_holidays
 from itertools import combinations
 from types import MappingProxyType
@@ -200,7 +202,7 @@ def hh_rate(sess, caches, contract_id, date, name):
 
 
 def forecast_date():
-    now = Datetime.now(pytz.utc)
+    now = utc_datetime_now()
     return utc_datetime(now.year, now.month, 1)
 
 
@@ -317,7 +319,7 @@ def _tpr_dict(sess, caches, tpr_code):
                 cis = []
             else:
                 tprs = hh_rate(
-                    sess, caches, contract.id, Datetime.now(pytz.utc), 'tprs')
+                    sess, caches, contract.id, utc_datetime_now(), 'tprs')
                 try:
                     cis = tprs[tpr_code]
                 except KeyError:
@@ -401,11 +403,9 @@ def datum_range(sess, caches, years_back, start_date, finish_date):
             computer_cache['datum'] = d_cache = {}
 
         datum_list = []
-
         for dt in hh_range(start_date, finish_date):
             hist_date = dt - relativedelta(years=years_back)
-            ct_tz = pytz.timezone('Europe/London')
-            ct_dt = ct_tz.normalize(dt.astimezone(ct_tz))
+            ct_dt = to_ct(dt)
 
             utc_is_month_end = (dt + HH).day == 1 and dt.day != 1
             ct_is_month_end = (ct_dt + HH).day == 1 and ct_dt.day != 1
@@ -1068,6 +1068,7 @@ class SupplySource(DataSource):
 
                 prev_type_alias = aliased(ReadType)
                 pres_type_alias = aliased(ReadType)
+                ct_tz = timezone('Europe/London')
                 for bill in bills.values():
                     kws = defaultdict(int)
                     for coefficient, previous_date, previous_value, \
@@ -1121,9 +1122,7 @@ class SupplySource(DataSource):
                         tpr_dict = _tpr_dict(sess, self.caches, tpr_code)
                         days_of_week = tpr_dict['days-of-week']
 
-                        ct_tz = pytz.timezone('Europe/London')
-
-                        tz = pytz.utc if tpr_dict['is-gmt'] else ct_tz
+                        tz = utc if tpr_dict['is-gmt'] else ct_tz
 
                         if present_type in ACTUAL_READ_TYPES \
                                 and previous_type in ACTUAL_READ_TYPES:
@@ -1134,8 +1133,7 @@ class SupplySource(DataSource):
                         year_delta = relativedelta(years=self.years_back)
                         hh_part = {}
                         for hh_date in hh_range(chunk_start, chunk_finish):
-                            dt = tz.normalize(
-                                hh_date.astimezone(tz)) + year_delta
+                            dt = to_tz(tz, hh_date) + year_delta
                             decimal_hour = dt.hour + dt.minute / 60
                             fractional_month = dt.month * 100 + dt.day
                             for ci in days_of_week[dt.weekday()]:

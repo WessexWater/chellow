@@ -1,11 +1,10 @@
 import traceback
+from chellow.utils import utc_datetime_now
 import collections
-import pytz
 import threading
 import os
 import os.path
 import time
-import datetime
 import atexit
 
 download_id = 0
@@ -130,8 +129,7 @@ class FileDeleter(threading.Thread):
 
     def log(self, message):
         self.messages.appendleft(
-            datetime.datetime.now(pytz.utc).strftime("%Y-%m-%d %H:%M:%S") +
-            " - " + message)
+            utc_datetime_now().strftime("%Y-%m-%d %H:%M:%S") + " - " + message)
         if len(self.messages) > 100:
             self.messages.pop()
 
