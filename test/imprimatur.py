@@ -7148,7 +7148,7 @@ def virtual_bill(supply_source):
             r',,,,'
             '2009-01-06 17:00,0,X,1.037,0.0,2008-12-01 17:00,0,'
             'X,1.037,0.0,2008-12-15 17:00,0,X,1.037,0.0,0.0,'
-            '20.526611,1,0.0,,,,duos-availability-agreed-kva,'
+            '20.526611,1,0.0,,,,,,,,,,,,,,,,,,,duos-availability-agreed-kva,'
             '2300,duos-availability-billed-kva,2300'],
         'status_code': 200},
     {
@@ -10029,9 +10029,8 @@ def virtual_bill(supply_source):
             r'0.0878,88,52.5186,0.00021361,0.011218498146,'
             r'53.02001082\d*,,-0.02242648231\d*,0,0.0,0.0,0,'
             r'0.0,0.0,48.9,52.5186,0.32906054015999997,,,,,'
-            r',,,,,53.02001082\d*,,0.00233500127\d*,,,'
-            r',,,,,,,,,,,,,,,,,,,,,'
-            r',,,,,,,,,,,,,,,,,'
+            r',,,,,53.02001082\d*,,0.00233500127\d*,,,,,,,,,,,,,,,,,,,,,,,,,,'
+            r',,,,,,,,,,,,,,,,,,,,,,,,,,,,,,'
             r'duos-amber-rate,0.00344,duos-red-kwh,48.9'],
         'status_code': 200},
     {
@@ -10090,10 +10089,9 @@ def virtual_bill(supply_source):
             r'0.0878,88,52.5186,0.00021361,0.011218498146,'
             r'53.02001\d*,,-0.02242648231\d*,0,0.0,0.0,'
             r'48.9,52.5186,0.32906054015999997,,,,,,,,,'
-            r',,,,53.02001082\d*,,0.002335001\d*,,,,'
-            r',,,,,,,,,,,,,,,,,,,,,'
-            r',,,,,,,,,,,,,,,,'
-            r'duos-amber-rate,0.00344,duos-red-kwh,48.9'],
+            r',,,,53.02001082\d*,,0.002335001\d*,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,'
+            r',,,,,,,,,,,,,,,,,,,,,,,,,,duos-amber-rate,0.00344,duos-red-kwh,'
+            r'48.9'],
         'status_code': 200},
 
     {
@@ -12641,20 +12639,30 @@ def virtual_bill(supply_source):
             'name': 'Non half-hourlies 2010',
             'charge_script': """import chellow.duos
 import chellow.triad
+from chellow.computer import is_tpr
+from chellow.models import Tpr, MeasurementRequirement
 
 def virtual_bill_titles():
-    return ['net-gbp', 'sum-msp-kwh', 'problem']
+    return ['net-gbp', 'problem']
 
-def virtual_bill(supply_source):
-    sum_msp_kwh = sum(h['msp-kwh'] for h in supply_source.hh_data)
-    bill = supply_source.supplier_bill
-    chellow.duos.duos_vb(supply_source)
-    chellow.triad.hh(supply_source)
-    for rate_name, rate_set in supply_source.supplier_rate_sets.items():
-        if len(rate_set) == 1:
-            bill[rate_name] = rate_set
-    bill['net-gbp'] += sum_msp_kwh * 0.1
-    bill['sum-msp-kwh'] += sum_msp_kwh
+def virtual_bill(ss):
+    bill = ss.supplier_bill
+    chellow.duos.duos_vb(ss)
+    chellow.triad.hh(ss)
+    tpr_codes = [
+        t[0] for t in ss.sess.query(Tpr.code).join(MeasurementRequirement).
+        filter(MeasurementRequirement.ssc == ss.ssc)]
+    for hh in ss.hh_data:
+        for tpr_code in tpr_codes:
+            if is_tpr(ss.sess, ss.caches, tpr_code, hh['start-date']):
+                rate = 0.1
+                ss.supplier_rate_sets[tpr_code + '-rate'].add(rate)
+                bill[tpr_code + '-kwh'] += hh['msp-kwh']
+                bill[tpr_code + '-gbp'] += hh['msp-kwh'] * rate
+
+    for rate_name, rate_set in ss.supplier_rate_sets.items():
+        bill[rate_name] = rate_set
+    bill['net-gbp'] = sum(v for k, v in bill.items() if k.endswith('-gbp'))
 """,
             'properties': '{}'},
         'status_code': 303},
@@ -12673,8 +12681,9 @@ def virtual_bill(supply_source):
         'regexes': [
             r'07-002,3Pb,F,10,2,0.5,2014-12-01 00:00,2014-12-31 23:30,'
             r'22 9789 0534 938,CI017,Roselands,2014-12-01 00:00,'
-            r'2014-12-31 23:30,23,100.06724\d*,2.0,9.99999999\d*,'
-            r'-7.9999\d*,10.0,99.9999\d*,,,'],
+            r'2014-12-31 23:30,23,100.06724\d*,2.0,14.67509999\d*,'
+            r'-12.67509999\d*,,,,99.9999\d*,,0.1,,9.9999\d*,-9.999\d*'
+            r',,,,,,,,,,,,,,,,,,,,,,,,,,,,,'],
         'status_code': 200},
 
     {
@@ -14432,4 +14441,52 @@ finally:
         'regexes': [
             r',22 0470 7514 535,2008-09-05 00:00,2008-09-05 23:30,0,\s*'
             r',22 0470 7514 535,2008-09-06 00:00,2008-09-06 23:30,0,']},
+
+    {
+        'name': "Check TPRs in virtual bill",
+        'path': '/reports/291?supply_id=16&start_year=2014&'
+        'start_month=12&start_day=01&start_hour=00&start_minute=00&'
+        'finish_year=2014&finish_month=12&finish_day=31&finish_hour=23&'
+        'finish_minute=30',
+        'status_code': 303},
+    {
+        'name': "Check TPRs in virtual bill",
+        'path': '/downloads',
+        'tries': {},
+        'status_code': 200,
+        'regexes': [
+            r'0012_FINISHED_adminexamplecom_supply_virtual_bills_16\.csv']},
+    {
+        'name': "Check TPRs in virtual bill",
+        'path': '/downloads/'
+        '0012_FINISHED_adminexamplecom_supply_virtual_bills_16.csv',
+        'status_code': 200,
+        'regexes': [
+            r'Imp MPAN Core,Exp MPAN Core,Site Code,Site Name,Account,From,To'
+            r',,mop-net-gbp,mop-problem,,dc-net-gbp,dc-problem,,'
+            r'imp-supplier-net-gbp,imp-supplier-problem,'
+            r'imp-supplier-00001-kwh,imp-supplier-00001-rate,'
+            r'imp-supplier-00001-gbp,imp-supplier-00258-kwh,'
+            r'imp-supplier-00258-rate,imp-supplier-00258-gbp,'
+            r'imp-supplier-00259-kwh,imp-supplier-00259-rate,'
+            r'imp-supplier-00259-gbp,imp-supplier-01218-kwh,'
+            r'imp-supplier-01218-rate,imp-supplier-01218-gbp,'
+            r'imp-supplier-01219-kwh,imp-supplier-01219-rate,'
+            r'imp-supplier-01219-gbp\s*'
+            r'22 9789 0534 938,,CI017,Roselands,taa2,2014-12-01 00:00,'
+            r'2014-12-31 23:30,,10,,,0,,,14.68352837928714\d*,,'
+            r'100.06724949562901,0.1,10.006724949562878,,,,,,,,,,,,,'
+            r'duos-amber-gbp,1.0220578345662372,duos-amber-kwh,'
+            r'40.34969737726923,duos-amber-rate,0.02533,'
+            r'duos-availability-days,31,duos-availability-gbp,0,'
+            r'duos-availability-kva,0,duos-availability-rate,0,'
+            r'duos-excess-availability-days,31,duos-excess-availability-gbp,'
+            r'0.0,duos-excess-availability-kva,0.13449899125756556,'
+            r'duos-excess-availability-rate,0,duos-fixed-days,31,'
+            r'duos-fixed-gbp,2.1420999999999992,duos-fixed-rate,'
+            r'0.0691,duos-green-gbp,1.3559300605245412,duos-green-kwh,'
+            r'53.53059852050996,duos-green-rate,0.02533,duos-reactive-gbp,0,'
+            r'duos-reactive-kvarh,0,duos-reactive-rate,0,duos-red-gbp,'
+            r'0.1567155346334899,duos-red-kwh,6.186953597848016,duos-red-rate,'
+            r'0.02533']},
 ]

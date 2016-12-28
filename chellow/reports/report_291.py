@@ -2,7 +2,8 @@ from datetime import datetime as Datetime
 from sqlalchemy import or_
 from sqlalchemy.sql.expression import null, true
 import traceback
-from chellow.models import Session, Supply, Era, Site, SiteEra
+from chellow.models import (
+    Session, Supply, Era, Site, SiteEra, Tpr, MeasurementRequirement, Ssc)
 from chellow.utils import hh_min, hh_max, hh_format, req_int, req_date
 from chellow.views import chellow_redirect
 import chellow.computer
@@ -97,19 +98,28 @@ def content(supply_id, file_name, start_date, finish_date, user):
             for k in sorted(bill.keys()):
                 output_line.extend([k, bill[k]])
 
+            tpr_query = sess.query(Tpr).join(MeasurementRequirement). \
+                join(Ssc).join(Era).filter(
+                    Era.start_date <= chunk_finish, or_(
+                        Era.finish_date == null(),
+                        Era.finish_date >= chunk_start)
+                ).order_by(Tpr.code).distinct()
+
             if era.imp_supplier_contract is not None:
                 output_line.append('')
-                imp_supplier_titles = ds.contract_func(
+                supplier_titles = ds.contract_func(
                     era.imp_supplier_contract, 'virtual_bill_titles')()
+                for tpr in tpr_query.filter(
+                        Era.imp_supplier_contract != null()):
+                    for suffix in ('-kwh', '-rate', '-gbp'):
+                        supplier_titles.append(tpr.code + suffix)
                 titles.append('')
-                titles.extend(
-                    ['imp-supplier-' + t for t in imp_supplier_titles])
+                titles.extend(['imp-supplier-' + t for t in supplier_titles])
 
-                ds.contract_func(
-                    era.imp_supplier_contract, 'virtual_bill')(ds)
+                ds.contract_func(era.imp_supplier_contract, 'virtual_bill')(ds)
                 bill = ds.supplier_bill
 
-                for title in imp_supplier_titles:
+                for title in supplier_titles:
                     if title in bill:
                         output_line.append(bill[title])
                         del bill[title]
@@ -125,16 +135,19 @@ def content(supply_id, file_name, start_date, finish_date, user):
                     caches)
 
                 output_line.append('')
-                exp_supplier_titles = ds.contract_func(
+                supplier_titles = ds.contract_func(
                     era.exp_supplier_contract, 'virtual_bill_titles')()
+                for tpr in tpr_query.filter(
+                        Era.exp_supplier_contract != null()):
+                    for suffix in ('-kwh', '-rate', '-gbp'):
+                        supplier_titles.append(tpr.code + suffix)
                 titles.append('')
-                titles.extend(
-                    ['exp-supplier-' + t for t in exp_supplier_titles])
+                titles.extend(['exp-supplier-' + t for t in supplier_titles])
 
                 ds.contract_func(
                     era.exp_supplier_contract, 'virtual_bill')(ds)
                 bill = ds.supplier_bill
-                for title in exp_supplier_titles:
+                for title in supplier_titles:
                     output_line.append(bill.get(title, ''))
                     if title in bill:
                         del bill[title]
@@ -143,7 +156,7 @@ def content(supply_id, file_name, start_date, finish_date, user):
                     output_line.extend([k, bill[k]])
 
             if titles != prev_titles:
-                prev_titles != titles
+                prev_titles = titles
                 writer.writerow([str(v) for v in titles])
             for i, val in enumerate(output_line):
                 output_line[i] = make_val(val)
