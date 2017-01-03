@@ -2408,8 +2408,7 @@ def virtual_bill(supply_source):
             r'mc-22 9974 3438 105,Dynamat data,dc-22 9974 3438 105,'
             r'K87D74429,2005-10-06 00:00,,,,,false,false,'
             r'false,false,false,false,22 9974 3438 105,20,540,'
-            r'PC 5-8 & HH S/S,Non half-hourlies 2007,341665,,'
-            r'2007-07-31 00:00,,,,,,,,']},
+            r'PC 5-8 & HH S/S,Non half-hourlies 2007,341665,,,,,,,,,,']},
 
     {
         'name': "Check supplies snapshot mandatory kw",

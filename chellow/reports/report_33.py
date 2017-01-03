@@ -7,7 +7,8 @@ from chellow.models import (
     Session, Era, Supply, RegisterRead, Bill, ReadType, Batch,
     MeasurementRequirement)
 from chellow.utils import (
-    HH, hh_format, CHANNEL_TYPES, req_date, req_int, req_str, parse_mpan_core)
+    HH, hh_format, CHANNEL_TYPES, req_date, req_int, req_str, parse_mpan_core,
+    hh_min)
 import chellow.dloads
 import sys
 import os
@@ -225,7 +226,8 @@ def content(running_name, finished_name, date, supply_id, mpan_cores):
             exp_latest_supplier_bill_date = None
             for is_import in [True, False]:
                 for er in sess.query(Era).filter(
-                            Era.supply == era.supply).order_by(
+                            Era.supply == era.supply,
+                            Era.start_date <= date).order_by(
                             Era.start_date.desc()):
                     if is_import:
                         if er.imp_mpan_core is None:
@@ -238,16 +240,13 @@ def content(running_name, finished_name, date, supply_id, mpan_cores):
                         else:
                             supplier_contract = er.exp_supplier_contract
 
-                    latest_bill_date_q = sess.query(Bill.finish_date) \
+                    latest_bill_date = sess.query(Bill.finish_date) \
                         .join(Batch).filter(
                             Bill.finish_date >= er.start_date,
+                            Bill.finish_date <= hh_min(er.finish_date, date),
                             Bill.supply == supply,
                             Batch.contract == supplier_contract).order_by(
-                            Bill.finish_date.desc())
-                    if er.finish_date is not None:
-                        latest_bill_date_q = latest_bill_date_q.filter(
-                            Bill.start_date <= er.finish_date)
-                    latest_bill_date = latest_bill_date_q.first()
+                            Bill.finish_date.desc()).first()
 
                     if latest_bill_date is not None:
                         latest_bill_date = hh_format(latest_bill_date[0])
