@@ -157,8 +157,9 @@ def content(
                     'type': typ.strip(), 'date': date,
                     'multiplier': float(kw_str)})
 
-        sup_header_titles = [
-            'imp-mpan-core', 'exp-mpan-core', 'metering-type', 'source',
+        era_header_titles = [
+            'imp-mpan-core', 'imp-supplier-contract', 'exp-mpan-core',
+            'exp-supplier-contract', 'metering-type', 'source',
             'generator-type', 'supply-name', 'msn', 'pc', 'site-id',
             'site-name', 'associated-site-ids', 'month']
         site_header_titles = [
@@ -215,7 +216,7 @@ def content(
                 title_dict['exp-supplier'].append(tpr.code + suffix)
 
         era_tab.writerow(
-            sup_header_titles + summary_titles + [None] +
+            era_header_titles + summary_titles + [None] +
             ['mop-' + t for t in title_dict['mop']] +
             [None] + ['dc-' + t for t in title_dict['dc']] + [None] +
             ['imp-supplier-' + t for t in title_dict['imp-supplier']] +
@@ -406,9 +407,10 @@ def content(
                         site_ds.supplier_bill['net-gbp']
 
                     out = [
-                        None, None, displaced_era.make_meter_category(),
-                        'displaced', None, None, None, None, site.code,
-                        site.name, '', month_finish] + [
+                        None, disp_supplier_contract.name, None, None,
+                        displaced_era.make_meter_category(), 'displaced', None,
+                        None, None, None, site.code, site.name, '',
+                        month_finish] + [
                             month_data[t] for t in summary_titles] + [None] + [
                         None] * len(title_dict['mop']) + [None] + [
                         None] * len(title_dict['dc']) + [None] + make_bill_row(
@@ -612,9 +614,14 @@ def content(
                             overlap_proportion * float(bill.net)
 
                     out = [
-                        era.imp_mpan_core, era.exp_mpan_core, era_category,
-                        source_code, generator_type, supply.name, era.msn,
-                        era.pc.code, site.code, site.name,
+                        era.imp_mpan_core, (
+                            None if imp_supplier_contract is None else
+                            imp_supplier_contract.name),
+                        era.exp_mpan_core, (
+                            None if exp_supplier_contract is None else
+                            exp_supplier_contract.name),
+                        era_category, source_code, generator_type, supply.name,
+                        era.msn, era.pc.code, site.code, site.name,
                         ','.join(sorted(list(era_associates))),
                         month_finish] + [
                         month_data[t] for t in summary_titles] + [None] + \
