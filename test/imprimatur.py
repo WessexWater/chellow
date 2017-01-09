@@ -12739,8 +12739,27 @@ def virtual_bill(ss):
             r'07-002,3Pb,F,10,2,0.5,2014-12-01 00:00,2014-12-31 23:30,'
             r'22 9789 0534 938,CI017,Roselands,2014-12-01 00:00,'
             r'2014-12-31 23:30,23,100.06724\d*,2.0,14.67509999\d*,'
-            r'-12.67509999\d*,,,,99.9999\d*,,0.1,,9.9999\d*,-9.999\d*'
-            r',,,,,,,,,,,,,,,,,,,,,,,,,,,,,'],
+            r'-12.67509999\d*,,,virtual-00001-gbp,9.999999999999876,,,'
+            r'virtual-00001-kwh,99.9999999999988,,,virtual-00001-rate,0.1,,,'
+            r'virtual-duos-amber-gbp,1.021370967741939,,,'
+            r'virtual-duos-amber-kwh,40.322580645161395,,,'
+            r'virtual-duos-amber-rate,0.02533,,,'
+            r'virtual-duos-availability-days,31,,,'
+            r'virtual-duos-availability-gbp,0,,,'
+            r'virtual-duos-availability-kva,0,,,'
+            r'virtual-duos-availability-rate,0,,,'
+            r'virtual-duos-excess-availability-days,31,,,'
+            r'virtual-duos-excess-availability-gbp,0.0,,,'
+            r'virtual-duos-excess-availability-kva,0.13440860215053763,,,'
+            r'virtual-duos-excess-availability-rate,0,,,'
+            r'virtual-duos-fixed-days,31,,,virtual-duos-fixed-gbp,'
+            r'2.1420999999999992,,,virtual-duos-fixed-rate,0.0691,,,'
+            r'virtual-duos-green-gbp,1.3550188172042883,,,'
+            r'virtual-duos-green-kwh,53.49462365591464,,,'
+            r'virtual-duos-green-rate,0.02533,,,virtual-duos-reactive-gbp,0,,,'
+            r'virtual-duos-reactive-kvarh,0,,,virtual-duos-reactive-rate,0,,,'
+            r'virtual-duos-red-gbp,0.15661021505376346,,,virtual-duos-red-kwh,'
+            r'6.18279569892474,,,virtual-duos-red-rate,0.02533,,'],
         'status_code': 200},
 
     {

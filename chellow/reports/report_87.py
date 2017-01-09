@@ -4,7 +4,8 @@ import pytz
 import traceback
 from sqlalchemy import or_
 from sqlalchemy.sql.expression import null, true
-from chellow.models import Session, Contract, Era, Site, SiteEra
+from chellow.models import (
+    Session, Contract, Era, Site, SiteEra, Tpr, MeasurementRequirement, Ssc)
 from chellow.utils import (HH, hh_min, hh_max, hh_format, req_date, req_int)
 from chellow.computer import contract_func, SupplySource
 from chellow.views import chellow_redirect
@@ -48,6 +49,17 @@ def content(start_date, finish_date, contract_id, user):
         month_finish = month_start + relativedelta(months=1) - HH
 
         bill_titles = contract_func(caches, contract, 'virtual_bill_titles')()
+
+        for tpr in sess.query(Tpr).join(MeasurementRequirement).join(Ssc). \
+                join(Era).filter(
+                    Era.start_date <= finish_date, or_(
+                        Era.finish_date == null(),
+                        Era.finish_date >= start_date), or_(
+                        Era.imp_supplier_contract == contract,
+                        Era.exp_supplier_contract == contract)
+                ).order_by(Tpr.code).distinct():
+            for suffix in ('-kwh', '-rate', '-gbp'):
+                bill_titles.append(tpr.code + suffix)
         writer.writerow(
             ['MPAN Core', 'Site Code', 'Site Name', 'Account', 'From', 'To'] +
             bill_titles)
