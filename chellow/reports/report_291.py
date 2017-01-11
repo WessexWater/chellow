@@ -1,10 +1,10 @@
-from datetime import datetime as Datetime
 from sqlalchemy import or_
 from sqlalchemy.sql.expression import null, true
 import traceback
 from chellow.models import (
     Session, Supply, Era, Site, SiteEra, Tpr, MeasurementRequirement, Ssc)
-from chellow.utils import hh_min, hh_max, hh_format, req_int, req_date
+from chellow.utils import (
+    hh_min, hh_max, hh_format, req_int, req_date, csv_make_val)
 from chellow.views import chellow_redirect
 import chellow.computer
 from werkzeug.exceptions import BadRequest
@@ -12,20 +12,6 @@ import csv
 import os
 from flask import g
 import threading
-
-
-def make_val(v):
-    if v is None:
-        return ''
-    elif isinstance(v, set):
-        if len(v) == 1:
-            return make_val(v.pop())
-        else:
-            return None
-    elif isinstance(v, Datetime):
-        return hh_format(v)
-    else:
-        return str(v)
 
 
 def content(supply_id, file_name, start_date, finish_date, user):
@@ -159,7 +145,7 @@ def content(supply_id, file_name, start_date, finish_date, user):
                 prev_titles = titles
                 writer.writerow([str(v) for v in titles])
             for i, val in enumerate(output_line):
-                output_line[i] = make_val(val)
+                output_line[i] = csv_make_val(val)
             writer.writerow(output_line)
     except BadRequest as e:
         writer.writerow(["Problem: " + e.description])

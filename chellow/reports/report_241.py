@@ -4,7 +4,7 @@ import pytz
 import traceback
 from sqlalchemy.sql.expression import true
 from chellow.utils import (
-    HH, hh_min, hh_max, hh_format, req_int, req_bool)
+    HH, hh_min, hh_max, hh_format, req_int, req_bool, csv_make_val)
 from chellow.views import chellow_redirect
 from chellow.models import Supply, Site, SiteEra, Session
 import chellow.computer
@@ -13,15 +13,6 @@ import csv
 from werkzeug.exceptions import BadRequest
 import os
 import threading
-
-
-def make_val(v):
-    if isinstance(v, Datetime):
-        return hh_format(v)
-    elif isinstance(v, set):
-        return make_val(v.pop())
-    else:
-        return str(v)
 
 
 def content(
@@ -78,14 +69,14 @@ def content(
                 bill = ss.supplier_bill
                 for title in bill_titles:
                     if title in bill:
-                        row.append(make_val(bill[title]))
+                        row.append(csv_make_val(bill[title]))
                         del bill[title]
                     else:
                         row.append('')
 
                 for k in sorted(bill.keys()):
                     row.append(k)
-                    row.append(bill[k])
+                    row.append(csv_make_val(bill[k]))
                 writer.writerow(row)
 
             day_start += relativedelta(days=1)

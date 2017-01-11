@@ -2257,8 +2257,7 @@ def displaced_virtual_bill(supply_source):
     chellow.system_price.hh(supply_source)
 
     for rate_name, rate_set in rate_sets.items():
-        if len(rate_set) < 3:
-            bill[rate_name] = rate_set
+        bill[rate_name] = rate_set
 
     for k in list(bill.keys()):
         if k.startswith('duos-reactive-'):
@@ -2339,8 +2338,7 @@ def virtual_bill(supply_source):
         bill[slot_keys['gbp']] = bill[slot_keys['gsp-kwh']] * rates[slot_name]
 
     for rate_name, rate_set in rate_sets.items():
-        if len(rate_set) == 1:
-            bill[rate_name] = rate_set
+        bill[rate_name] = rate_set
 
     bill['net-gbp'] = sum(v for k, v in bill.items() if k.endswith('-gbp'))
 """,
@@ -3837,8 +3835,7 @@ def displaced_virtual_bill(supply_source):
         bill[slot_keys['gbp']] = bill[slot_keys['gsp-kwh']] * rates[slot_name]
 
     for rate_name, rate_set in supply_source.supplier_rate_sets.items():
-        if len(rate_set) == 1:
-            bill[rate_name] = rate_set
+        bill[rate_name] = rate_set
 
     bill['net-gbp'] = sum(v for k, v in bill.items() if k[-4:] == '-gbp')
 
@@ -3894,8 +3891,7 @@ def virtual_bill(supply_source):
     bill['settlement-gbp'] += 88
 
     for rate_name, rate_set in supply_source.supplier_rate_sets.items():
-        if len(rate_set) == 1:
-            bill[rate_name] = rate_set
+        bill[rate_name] = rate_set
 
     bill['net-gbp'] = sum(v for k, v in bill.items() if k[-4:] == '-gbp')
 
@@ -3918,8 +3914,7 @@ def virtual_bill(supply_source):
     bill = supply_source.supplier_bill
     sum_msp_kwh = sum(h['msp-kwh'] for h in supply_source.hh_data)
     for rate_name, rate_set in supply_source.supplier_rate_sets.items():
-        if len(rate_set) == 1:
-            bill[rate_name] = rate_set
+        bill[rate_name] = rate_set
     bill.update(
         {
             'net-gbp': 0.0, 'vat-gbp':0.0, 'gross-gbp': 0.0,
@@ -4207,8 +4202,8 @@ def virtual_bill(supply_source):
     bill['sum-msp-kwh'] = 0
 
     for rate_name, rate_set in supply_source.supplier_rate_sets.items():
-        if len(rate_set) == 1:
-            bill[rate_name] = rate_set
+        bill[rate_name] = rate_set
+
     for h in supply_source.hh_data:
         msp_kwh = h['msp-kwh']
         bill['sum-msp-kwh'] += msp_kwh
@@ -7287,12 +7282,12 @@ def virtual_bill(supply_source):
             r'1.087,0.0,2012-12-12 17:00,0,X,1.087,0.0,'
             r'2013-01-16 17:00,0,X,1.087,0.0,0.0,33.551731,1,'
             r'0.0,,,,duos-amber-gbp,0.0,duos-amber-kwh,0,'
-            r'duos-amber-rate,{0.00287},duos-fixed-days,1,'
-            r'duos-fixed-gbp,0.0905,duos-fixed-rate,{0.0905},'
+            r'duos-amber-rate,0.00287,duos-fixed-days,1,'
+            r'duos-fixed-gbp,0.0905,duos-fixed-rate,0.0905,'
             r'duos-green-gbp,0.0,duos-green-kwh,0,duos-green-rate,'
-            r'{0.00161},duos-reactive-kvarh,0.0,duos-red-gbp,0.0,'
-            r'duos-red-kwh,0,duos-red-rate,{0.2441},sbp-rate,'
-            r'{0.02436},ssp-rate,{0.01844324}\s*\Z']},
+            r'0.00161,duos-reactive-kvarh,0.0,duos-red-gbp,0.0,'
+            r'duos-red-kwh,0,duos-red-rate,0.2441,sbp-rate,'
+            r'0.02436,ssp-rate,0.01844324\s*\Z']},
 
     # See if selector is working
     {
@@ -9693,8 +9688,7 @@ def virtual_bill(supply_source):
     bill['consumption_info'] = supply_source.consumption_info
     chellow.duos.duos_vb(supply_source)
     for rate_name, rate_set in supply_source.supplier_rate_sets.items():
-        if len(rate_set) == 1:
-            bill[rate_name] = rate_set
+        bill[rate_name] = rate_set
     bill['net-gbp'] = sum_msp_kwh * 0.1
     bill['sum-msp-kwh'] = sum_msp_kwh
 """,
@@ -11149,8 +11143,7 @@ def virtual_bill(supply_source):
     bill = supply_source.supplier_bill
     chellow.duos.duos_vb(supply_source)
     for rate_name, rate_set in supply_source.supplier_rate_sets.items():
-        if len(rate_set) == 1:
-            bill[rate_name] = rate_set
+        bill[rate_name] = rate_set
     bill['net-gbp'] += sum_msp_kwh * 0.1
     bill['sum-msp-kwh'] += sum_msp_kwh
 """,
@@ -12350,8 +12343,7 @@ def virtual_bill(supply_source):
     bill = supply_source.supplier_bill
     chellow.duos.duos_vb(supply_source)
     for rate_name, rate_set in supply_source.supplier_rate_sets.items():
-        if len(rate_set) == 1:
-            bill[rate_name] = rate_set
+        bill[rate_name] = rate_set
     bill['net-gbp'] += sum_msp_kwh * 0.1
     bill['sum-msp-kwh'] += sum_msp_kwh
 """,
@@ -12411,8 +12403,7 @@ def virtual_bill(supply_source):
     sum_msp_kwh = sum(h['msp-kwh'] for h in supply_source.hh_data)
     bill = supply_source.supplier_bill
     for rate_name, rate_set in supply_source.supplier_rate_sets.items():
-        if len(rate_set) == 1:
-            bill[rate_name] = rate_set
+        bill[rate_name] = rate_set
     bill['net-gbp'] += sum_msp_kwh * 0.1
     bill['sum-msp-kwh'] += sum_msp_kwh
 """,
@@ -14565,4 +14556,53 @@ finally:
             r'duos-reactive-kvarh,0,duos-reactive-rate,0,duos-red-gbp,'
             r'0.1567155346334899,duos-red-kwh,6.186953597848016,duos-red-rate,'
             r'0.02533']},
+
+    {
+        'name': "Virtual bill with 2 hh data items.",
+        'path': '/reports/291?supply_id=5&start_year=2014&start_month=03&'
+        'start_day=01&start_hour=00&start_minute=00&finish_year=2014&'
+        'finish_month=06&finish_day=30&finish_hour=23&finish_minute=30',
+        'status_code': 303},
+    {
+        'name': "Virtual bill with 2 hh data items.",
+        'path': '/downloads',
+        'tries': {},
+        'regexes': [
+            r"0013_FINISHED_adminexamplecom_supply_virtual_bills_5\.csv"],
+        'status_code': 200},
+    {
+        'name': "Virtual bill with 2 hh data items.",
+        'path': '/downloads/'
+        '0013_FINISHED_adminexamplecom_supply_virtual_bills_5.csv',
+        'regexes': [
+            r'22 0883 6932 301,22 7824 9120 097,CI005,Wheal Rodney,413,'
+            r'2014-03-01 00:00,2014-06-30 23:30,,40,,,0,,,'
+            r'1256.293532557266\d*,,'
+            r',0.00525288,,5.89,350,122,0.026; 0.0269,1138.8649999999982,0,'
+            r'124,0.026; 0.0269,0.0,0.0,0.00147; 0.00161,0.0,,,0.0,0,'
+            r'0.2441; 0.25405,12.423045,0.0,0.00382; 0.00399,0.0,122,'
+            r'0.0878; 0.0905,10.795299999999976,88,52.5186,'
+            r'0.0001897; 0.00021361,0.011218498146,53.02001082978,,'
+            r'-0.022426482314941622,0.0,0.0,0.0,0,0.0,0.0,48.9,52.5186,'
+            r'0.32906054015999997,,,,0,0.0,0.0,,,,53.02001082978,,'
+            r'0.0023350012769435113,2013-11-25 17:00,0,X,1.087,0.0,'
+            r'2013-12-06 17:00,0,X,1.087,0.0,2014-01-30 17:00,0,X,1.087,0.0,'
+            r'0.0,33.551731,0.0,2012-11-29 17:00; 2013-11-25 17:00,'
+            r'0,X,1.087,0.0,2012-12-12 17:00; 2013-12-06 17:00,0,X,'
+            r'1.074; 1.087,0.0,2013-01-16 17:00; 2014-01-30 17:00,'
+            r'0,X,1.087,0.0,0.0,33.551731; 38.699518,1,0.0,12,0.0,,,,,,,,,'
+            r',,,,,,,,duos-amber-rate,0.00287; 0.00344,duos-red-kwh,48.9,,'
+            r'93.89,,,0.00525288,,5.89,150,122,0,0,0,124,0,0,0,'
+            r'-0.00667; -0.00649,0.0,,,0.0,0,-0.00667; -0.00649,0.0,0.0,'
+            r'0.00147; 0.00151,0.0,122,0,0,88,0.0,0.0001897; 0.00021361,'
+            r'0.0,0.0,,0.0,0,0.0,0.0,0,0.0,0.0,0,0.0,0.0,,,,0,0.0,0.0,,,,0.0,,'
+            r'0.0,2013-11-25 17:00,0,before start of supply,'
+            r'before start of supply,0,2013-12-06 17:00,0,'
+            r'before start of supply,before start of supply,0,'
+            r'2014-01-30 17:00,0,X,1.087,0.0,0.0,33.551731,0.0,'
+            r'2013-01-16 17:00; 2013-11-25 17:00,0,X,1.087,0.0,'
+            r'2013-12-06 17:00,0,X,1.074,0.0,2014-01-30 17:00,0,X,1.087,0.0,'
+            r'0.0,33.551731; 38.699518,1,0.0,12,0.0,,duos-amber-rate,'
+            r'-0.00667; -0.00649,duos-red-kwh,0'],
+        'status_code': 200},
 ]

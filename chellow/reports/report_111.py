@@ -15,23 +15,11 @@ import sys
 import os
 import threading
 from werkzeug.exceptions import BadRequest
-from chellow.utils import HH, hh_format, hh_min, hh_max, req_int
+from chellow.utils import HH, hh_format, hh_min, hh_max, req_int, csv_make_val
 from chellow.views import chellow_redirect
 from flask import request, g
 import csv
 from itertools import combinations
-
-
-def make_val(v):
-    if isinstance(v, set):
-        if len(v) == 1:
-            return make_val(v.pop())
-        else:
-            return ''
-    elif isinstance(v, Datetime):
-        return hh_format(v)
-    else:
-        return v
 
 
 def content(batch_id, bill_id, user):
@@ -280,7 +268,7 @@ def content(batch_id, bill_id, user):
                     values.append('')
 
                 try:
-                    virt_val = make_val(virtual_bill[title])
+                    virt_val = csv_make_val(virtual_bill[title])
                     values.append(virt_val)
                     del virtual_bill[title]
                 except KeyError:
@@ -297,7 +285,7 @@ def content(batch_id, bill_id, user):
                         values.append('')
 
             for title in sorted(virtual_bill.keys()):
-                virt_val = make_val(virtual_bill[title])
+                virt_val = csv_make_val(virtual_bill[title])
                 values += ['virtual-' + title, virt_val]
                 if title in covered_bdown:
                     values += ['covered-' + title, covered_bdown[title]]

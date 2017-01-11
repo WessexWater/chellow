@@ -20,7 +20,7 @@ import threading
 import odswriter
 import sys
 from werkzeug.exceptions import BadRequest
-from chellow.utils import hh_format, HH, hh_before, req_int, req_bool
+from chellow.utils import hh_format, HH, hh_before, req_int, req_bool, make_val
 from flask import request, g
 from chellow.views import chellow_redirect
 import zipfile
@@ -31,18 +31,7 @@ meter_order = {'hh': 0, 'amr': 1, 'nhh': 2, 'unmetered': 3}
 
 
 def make_bill_row(titles, bill):
-    row = []
-    for t in titles:
-        v = bill.get(t)
-        if isinstance(v, set):
-            if len(v) == 1:
-                val = v.pop()
-            else:
-                val = None
-        else:
-            val = v
-        row.append(val)
-    return row
+    return [make_val(bill.get(t)) for t in titles]
 
 
 def content(

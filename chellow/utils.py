@@ -421,3 +421,23 @@ def utc_datetime_now():
 
 def utc_datetime_parse(date_str, format_str):
     return Datetime.strptime(date_str, format_str).replace(tzinfo=utc)
+
+
+def csv_make_val(v):
+    val = make_val(v)
+    if isinstance(val, Datetime):
+        return hh_format(val)
+    else:
+        return val
+
+
+def make_val(v):
+    if isinstance(v, set):
+        if len(v) == 1:
+            return make_val(v.pop())
+        elif 1 < len(v) < 4:
+            return '; '.join(str(csv_make_val(el)) for el in sorted(v))
+        else:
+            return None
+    else:
+        return v
