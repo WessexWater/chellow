@@ -1097,10 +1097,6 @@ class SupplySource(DataSource):
                                 "of the TPRs (" + ', '.join(tpr_codes) +
                                 ") associated with the MPAN.")
 
-                        if previous_date < bill.start_date:
-                            self._add_problem(
-                                "There's a read before the "
-                                "start of the bill!")
                         if present_date > bill.finish_date:
                             self._add_problem(
                                 "There's a read after the end of the bill!")
