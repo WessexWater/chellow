@@ -14607,4 +14607,14 @@ finally:
             r'0.0,33.551731; 38.699518,1,0.0,12,0.0,,duos-amber-rate,'
             r'-0.00667; -0.00649,duos-red-kwh,0'],
         'status_code': 200},
+
+    {
+        'name': "Delete all bills from a batch",
+        'path': '/supplier_batches/17/edit',
+        'method': 'post',
+        'data': {
+            'delete_bills': 'delete bills'},
+        'status_code': 303,
+        'regexes': [
+            r'/supplier_batches/17']},
 ]
