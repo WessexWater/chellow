@@ -513,7 +513,6 @@ def gsp_gbp_per_kwh():
             r'"/supplier_rate_scripts/102"'],
         'status_code': 200},
 
-
     {
         'name': "View add MOP contract",
         'path': '/mop_contracts/add',
@@ -1971,9 +1970,12 @@ def virtual_bill_titles():
         'path': '/supplier_rate_scripts/104/edit?delete=Delete',
         'status_code': 200,
         'regexes': [
-            r'<form method="delete" action="">\s*'
+            r'<form\s*'
+            r'method="post"\s*'
+            r'action="/supplier_rate_scripts/104/edit"\s*'
+            r'>\s*'
             r'<fieldset>\s*'
-            r'<input type="submit" value="Delete">\s*']},
+            r'<input type="submit" name="delete" value="Delete">']},
 
     # Supplier contract 47
     {
@@ -14566,7 +14568,7 @@ finally:
     {
         'name': "Virtual bill with 2 hh data items.",
         'path': '/downloads',
-        'tries': {},
+        'tries': {'max': 20, 'period': 1},
         'regexes': [
             r"0013_FINISHED_adminexamplecom_supply_virtual_bills_5\.csv"],
         'status_code': 200},
