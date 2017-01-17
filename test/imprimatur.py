@@ -1967,7 +1967,7 @@ def virtual_bill_titles():
         'regexes': [
             r'<form\s*'
             r'method="post"\s*'
-            r'action="/supplier_rate_scripts/104/edit"\s*'
+            r'action="/supplier_rate_scripts/105/edit"\s*'
             r'>\s*'
             r'<fieldset>\s*'
             r'<input type="submit" name="delete" value="Delete">']},
@@ -15070,11 +15070,11 @@ def virtual_bill(ds):
         'path': '/downloads',
         'tries': {'max': 20, 'period': 1},
         'regexes': [
-            r"0012_FINISHED_adminexamplecom_g_bill_check\.csv"],
+            r"0014_FINISHED_adminexamplecom_g_bill_check\.csv"],
         'status_code': 200},
     {
         'name': "Gas bill check",
-        'path': '/downloads/0012_FINISHED_adminexamplecom_g_bill_check.csv',
+        'path': '/downloads/0014_FINISHED_adminexamplecom_g_bill_check.csv',
         'status_code': 200,
         'regexes': [
             r'batch,bill_reference,bill_type,bill_start_date,'
