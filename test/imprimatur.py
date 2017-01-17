@@ -8363,7 +8363,7 @@ def virtual_bill(supply_source):
             r'06-002,23618619,N,0,49119,8596,2007-06-30 00:00,'
             '2007-07-31 00:00,22 9974 3438 105,CI005,Wheal Rodney,'
             '2007-06-30 00:00,2007-07-31 00:00,6,1209.0322580\d*,49119.0,0.0,'
-            '49119.0,8596.0,0.0,8596.0,,0.0,0.0,0.0,9.53\d*,,']},
+            '49119.0,8596.0,0.0,8596.0,,0.0,0.0,0.0,4.765\d*,,']},
     {
         'name': "NHH dumb bill with prev and pres dates in different eras",
         'path': '/eras/10/edit',
@@ -14617,4 +14617,34 @@ finally:
         'status_code': 303,
         'regexes': [
             r'/supplier_batches/17']},
+
+    {
+        'name': "Bill check straddling two eras",
+        'path': '/supplier_bills/20/edit',
+        'method': 'post',
+        'data': {
+            'reference': 'jg87593jfj',
+            'account': '141 5532',
+            'issue_year': '2002',
+            'issue_month': '02',
+            'issue_day': '02',
+            'issue_hour': '00',
+            'issue_minute': '00',
+            'start_year': '2008',
+            'start_month': '10',
+            'start_day': '01',
+            'start_hour': '00',
+            'start_minute': '00',
+            'finish_year': '2008',
+            'finish_month': '11',
+            'finish_day': '02',
+            'finish_hour': '23',
+            'finish_minute': '30',
+            'kwh': '150',
+            'net': '6.88',
+            'vat': '1.07',
+            'gross': '0',
+            'bill_type_id': '2',
+            'breakdown': '{}'},
+        'status_code': 303},
 ]

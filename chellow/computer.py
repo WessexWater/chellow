@@ -1028,6 +1028,10 @@ class SupplySource(DataSource):
                         hist_map.update(hh_part)
             elif self.bill is not None and hist_measurement_type in (
                     'nhh', 'amr'):
+                print("bill not none")
+                print(
+                    "chunk_start", hh_format(chunk_start), "chunk_finish",
+                    hh_format(chunk_finish))
                 hhd = {}
                 for hh_date in hh_range(chunk_start, chunk_finish):
                     hhd[hh_date] = {
@@ -1127,7 +1131,8 @@ class SupplySource(DataSource):
 
                         year_delta = relativedelta(years=self.years_back)
                         hh_part = {}
-                        for hh_date in hh_range(chunk_start, chunk_finish):
+                        for hh_date in hh_range(
+                                bill.start_date, bill.finish_date):
                             dt = to_tz(tz, hh_date) + year_delta
                             decimal_hour = dt.hour + dt.minute / 60
                             fractional_month = dt.month * 100 + dt.day
@@ -1156,12 +1161,13 @@ class SupplySource(DataSource):
                         if num_hh > 0:
                             rate = kwh / num_hh
                             for d, h in hh_part.items():
-                                hhd_datum = hhd[d]
-                                hhd_datum['msp-kw'] += rate * 2
-                                hhd_datum['msp-kwh'] += rate
-                                hhd_datum['hist-kwh'] += rate
-                                if hhd_datum['status'] in ('X', 'A'):
-                                    hhd_datum['status'] = h['status']
+                                if chunk_start <= d <= chunk_finish:
+                                    hhd_datum = hhd[d]
+                                    hhd_datum['msp-kw'] += rate * 2
+                                    hhd_datum['msp-kwh'] += rate
+                                    hhd_datum['hist-kwh'] += rate
+                                    if hhd_datum['status'] in ('X', 'A'):
+                                        hhd_datum['status'] = h['status']
                         elif kwh > 0:
                             self._add_problem(
                                 "For the TPR code " + tpr_code +
