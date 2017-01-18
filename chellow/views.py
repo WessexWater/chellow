@@ -4994,7 +4994,7 @@ def g_rate_script_add_post(g_contract_id):
                 initial_date=initial_date), 400)
 
 
-@app.route('/g_rate_scripts/<int:g_rate_script_id>/<int:g_rate_script>')
+@app.route('/g_rate_scripts/<int:g_rate_script_id>/edit')
 def g_rate_script_edit_get(g_rate_script_id):
     g_rate_script = GRateScript.get_by_id(g.sess, g_rate_script_id)
     return render_template(

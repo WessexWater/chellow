@@ -14755,6 +14755,12 @@ def virtual_bill(ds):
         'status_code': 303,
         'regexes': [
             r'/g_rate_scripts/2']},
+
+    {
+        'name': "Edit view of gas rate script",
+        'path': '/g_rate_scripts/2/edit',
+        'status_code': 200},
+
     {
         'name': "Edit the added rate script",
         'path': '/g_rate_scripts/2/edit',
