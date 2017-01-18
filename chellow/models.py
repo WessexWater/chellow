@@ -3930,7 +3930,12 @@ def db_upgrade_2_to_3(sess, root_path):
     sess.execute("alter table contract drop column is_core;")
 
 
-upgrade_funcs = [db_upgrade_0_to_1, db_upgrade_1_to_2, db_upgrade_2_to_3]
+def db_upgrade_3_to_4(sess, root_path):
+    Base.metadata.create_all(bind=engine)
+
+
+upgrade_funcs = [
+    db_upgrade_0_to_1, db_upgrade_1_to_2, db_upgrade_2_to_3, db_upgrade_3_to_4]
 
 
 def db_upgrade(root_path):
