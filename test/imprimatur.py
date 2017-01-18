@@ -14656,7 +14656,8 @@ finally:
         'path': '/g_contracts',
         'status_code': 200,
         'regexes': [
-            r'Total']},
+            r'Total',
+            r'\[<a href="/g_contracts/add">add</a>\]']},
 
     {
         'name': "View gas contract",
