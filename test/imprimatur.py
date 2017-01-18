@@ -14631,7 +14631,9 @@ finally:
     {
         'name': "Show insert gas contract",
         'path': '/g_contracts/add',
-        'status_code': 200},
+        'status_code': 200,
+        'regexes': [
+            r'<form action="/g_contracts/add" method="post">']},
 
     {
         'name': "Insert gas contract",
