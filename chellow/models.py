@@ -2972,7 +2972,7 @@ class GEra(Base, PersistentClass):
 
     def update_dates(self, sess, start_date, finish_date):
         self.update(
-            sess, start_date, finish_date, self.msn, self.contract,
+            sess, start_date, finish_date, self.msn, self.g_contract,
             self.account)
 
     def update(self, sess, start_date, finish_date, msn, g_contract, account):
@@ -3051,45 +3051,58 @@ class GSupply(Base, PersistentClass):
                 "The MPRN " + mprn + " is not set up in Chellow.")
         return supply
 
+    def insert_g_era_at(self, sess, start_date):
+        g_era = self.find_g_era_at(sess, start_date)
+        physical_site = sess.query(Site).join(SiteGEra).filter(
+            SiteGEra.is_physical == true(), SiteGEra.g_era == g_era).one()
+        logical_sites = sess.query(Site).join(SiteGEra).filter(
+            SiteGEra.is_physical == false(), SiteGEra.g_era == g_era).all()
+        return self.insert_g_era(
+            sess, physical_site, logical_sites, start_date, g_era.finish_date,
+            g_era.msn, g_era.g_contract, g_era.account)
+
     def insert_g_era(
             self, sess, physical_site, logical_sites, start_date, finish_date,
             msn, g_contract, account):
-        covered_era = None
+        covered_g_era = None
 
-        if len(self.g_eras) > 0:
-            if hh_after(start_date, self.find_last_era(sess).finish_date):
+        last_g_era = sess.query(GEra).filter(GEra.g_supply == self).order_by(
+            GEra.start_date.desc()).first()
+        if last_g_era is not None:
+            if hh_after(start_date, last_g_era.finish_date):
                 raise BadRequest(
                     "One can't add a era that starts after "
                     "the supply has finished.")
 
-            first_era = self.find_first_g_era(sess)
+            first_g_era = sess.query(GEra).filter(
+                GEra.g_supply == self).order_by(GEra.start_date).first()
 
-            if hh_before(start_date, first_era.start_date):
-                finish_date = prev_hh(first_era.start_date)
+            if hh_before(start_date, first_g_era.start_date):
+                finish_date = prev_hh(first_g_era.start_date)
             else:
-                covered_era = self.find_g_era_at(sess, start_date)
-                if start_date == covered_era.start_date:
+                covered_g_era = self.find_g_era_at(sess, start_date)
+                if start_date == covered_g_era.start_date:
                     raise BadRequest(
                         "There's already an era with that start date.")
 
-                finish_date = covered_era.finish_date
+                finish_date = covered_g_era.finish_date
 
         sess.flush()
-        era = GEra(
+        g_era = GEra(
             sess, self, start_date, finish_date, msn, g_contract, account)
-        sess.add(era)
+        sess.add(g_era)
         sess.flush()
 
         sess.flush()
-        era.attach_site(sess, physical_site, True)
+        g_era.attach_site(sess, physical_site, True)
         for site in logical_sites:
-            era.attach_site(sess, site, False)
+            g_era.attach_site(sess, site, False)
 
         sess.flush()
-        if covered_era is not None:
-            covered_era.update_dates(
-                sess, covered_era.start_date, start_date - HH)
-        return era
+        if covered_g_era is not None:
+            covered_g_era.update_dates(
+                sess, covered_g_era.start_date, start_date - HH)
+        return g_era
 
     def attach_site(self, sess, site, is_location=False):
         if site in sess.query(Site).join(SiteGEra).filter(

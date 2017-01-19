@@ -14836,7 +14836,10 @@ def virtual_bill(ds):
         'path': '/g_supplies/1/edit',
         'status_code': 200,
         'regexes': [
-            r'Main Gas']},
+            r'Main Gas',
+            r'<form method="post" action="/g_supplies/1/edit">\s*'
+            r'<fieldset>\s*'
+            r'<legend>Insert a new era</legend>\s*']},
     {
         'name': "Edit gas supply",
         'path': '/g_supplies/1/edit',
@@ -15144,4 +15147,58 @@ def virtual_bill(ds):
         'data': {
             'delete': 'Delete'},
         'status_code': 303},
+
+
+    {
+        'name': "Gas: Insert era",
+        'path': '/g_supplies/1/edit',
+        'method': 'post',
+        'data': {
+            'start_year': '2016',
+            'start_month': '01',
+            'start_day': '10',
+            'start_hour': '00',
+            'start_minute': '00',
+            'insert_g_era': 'Insert'},
+        'status_code': 303,
+        'regexes': [
+            r"/g_supplies/1"]},
+
+    {
+        'name': "Add a batch to a gas contract",
+        'path': '/g_contracts/1/add_batch',
+        'method': 'post',
+        'data': {
+            'reference': 'EB1',
+            'description': 'Engie Batch 1'},
+        'status_code': 303,
+        'regexes': [
+            r'/g_batches/3']},
+
+    {
+        'name': "Gas: Engie XLSX bill import",
+        'path': '/g_bill_imports',
+        'method': 'post',
+        'data': {
+            'g_batch_id': '3', },
+        'files': {'import_file': 'test/gas/bills.engie.xlsx'},
+        'status_code': 303,
+        'regexes': [
+            r"/g_bill_imports/3"]},
+
+    {
+        'name': "View bill import",
+        'path': '/g_bill_imports/3',
+        'tries': {},
+        'status_code': 200,
+        'regexes': [
+            r"successfully",
+            r'144\.61']},
+
+    {
+        'name': "Gas bill shown correctly in batch",
+        'path': '/g_batches/3',
+        'status_code': 200,
+        'regexes': [
+            r'2016-04-01 00:00']},
 ]

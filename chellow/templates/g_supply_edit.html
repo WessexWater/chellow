@@ -12,7 +12,7 @@
 
 {% block content %}
 	{% if request.method == 'GET' and request.values.delete %}
-		<form method="post" action=".">
+		<form method="post" action="/g_supplies/{{g_supply.id}}/edit">
 			<fieldset>
 				<legend>Delete</legend>
 				<p>Are you sure you want to delete this supply?</p>
@@ -24,7 +24,7 @@
 			<a href="{{context_path}}/g_supplies/{{g_supply.id}}">Cancel</a>
 		</p>
 	{% else %}
-		<form method="post" action=".">
+		<form method="post" action="/g_supplies/{{g_supply.id}}/edit">
 			<fieldset>
 				<legend>Update this supply</legend>
 				<br>
@@ -37,14 +37,14 @@
 			</fieldset>
 		</form>
 		<br>
-		<form action=".">
+		<form action="/g_supplies/{{g_supply.id}}/edit">
 			<fieldset>
 				<legend>Delete this supply</legend>
 				<input type="submit" name="delete" value="Delete">
 			</fieldset>
 		</form>
 		<br>
-		<form method="post" action=".">
+		<form method="post" action="/g_supplies/{{g_supply.id}}/edit">
 			<fieldset>
 				<legend>Insert a new era</legend>
 				<br>
