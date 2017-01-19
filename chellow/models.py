@@ -3946,6 +3946,15 @@ def db_upgrade_2_to_3(sess, root_path):
 def db_upgrade_3_to_4(sess, root_path):
     Base.metadata.create_all(bind=engine)
 
+    set_read_write(sess)
+    for code, desc in (
+            ("A", "Actual"),
+            ("C", "Customer"),
+            ("E", "Estimated"),
+            ("S", "Deemed read")):
+        sess.add(GReadType(code, desc))
+    sess.commit()
+
 
 upgrade_funcs = [
     db_upgrade_0_to_1, db_upgrade_1_to_2, db_upgrade_2_to_3, db_upgrade_3_to_4]
