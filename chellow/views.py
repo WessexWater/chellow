@@ -438,7 +438,7 @@ def object_get(obj_id):
         props['filename'] = obj.__file__
 
     referrers = []
-    for r in gc.get_referrers(obj):
+    for r in gc.get_referrers(obj)[:10]:
         if isinstance(r, (int, float, str)):
             value = repr(r)
         elif isinstance(r, (list, dict)):
