@@ -78,19 +78,43 @@
         			{% endfor %}
         		</tbody>
         	</table>
+			</div>
+		</div>
+		<div class="section-data">
+		    <table class="DataTable widthAuto">
+        		<caption>HTTP Request Headers</caption>
+        		<thead>
+        			<tr>
+        				<th>Name</th>
+        				<th>Value</th>
+        			</tr>
+        		</thead>
+        		<tbody>
+        			{% for k, v in request.headers.items() %}
+        				<tr>
+        					<td>{{k}}</td>
+        					<td>{{v}}</td>
+        				</tr>
+        			{% endfor %}
+        		</tbody>
+        	</table>
+			</div>
+		</div>
+		<!-- End Section Content -->
+	</div>
+
+	<!-- End Layer Section -->
+	<div class="section-header">
+		<h2>Object Browser</h2>	
+	</div>
+	<!-- End Section Header -->
+
+	<!-- Section Content -->
+	<div class="section-content">
+		<div class="section-data">
+			<p>
+				See the <a href="/system/objects">Object Browser</a>.
+			</p>
 		</div>
 	</div>
-	<!-- End Section Content -->
-</div>
-<!-- End Layer Section -->
-
-
-	
-
-	
-
-	
-
-	
-
 {% endblock %}

@@ -31,7 +31,7 @@ from collections import defaultdict, OrderedDict
 from itertools import chain, islice
 import importlib
 import math
-import operator
+from operator import itemgetter
 import ast
 from importlib import import_module
 import sys
@@ -41,6 +41,9 @@ import chellow.tlms
 import chellow.bank_holidays
 import chellow.dloads
 import chellow.computer
+from random import choice
+import types
+import gc
 
 app = Flask('chellow', instance_relative_config=True)
 app.secret_key = os.urandom(24)
@@ -377,11 +380,86 @@ def system_get():
             if line:
                 traces.append("  %s" % (line.strip()))
     pg_stats = g.sess.execute("select * from pg_stat_activity").fetchall()
+
     return render_template(
         'system.html', traces='\n'.join(traces),
         version_number=chellow.versions['version'],
         version_hash=chellow.versions['full-revisionid'], pg_stats=pg_stats,
         request=request)
+
+
+def get_objects():
+    objs = {}
+    for obj in gc.get_objects():
+        objs[id(obj)] = obj
+        for o in gc.get_referents(obj):
+            objs[id(o)] = o
+    return tuple(objs.values())
+
+
+@app.route('/system/objects')
+def objects_get():
+    an_obj = choice(get_objects())
+    return chellow_redirect('/system/objects/' + str(id(an_obj)))
+
+
+@app.route('/system/objects/<int:obj_id>')
+def object_get(obj_id):
+    obj = None
+    for o in get_objects():
+        if id(o) == obj_id:
+            obj = o
+            break
+
+    props = OrderedDict()
+    props['type'] = str(type(obj))
+
+    if isinstance(obj, (int, float, str)):
+        props['value'] = repr(obj)
+    elif isinstance(obj, list):
+        props['length'] = len(obj)
+        value = []
+        for o in obj[:10]:
+            if isinstance(o, (int, float, str)):
+                value.append(str(o))
+            else:
+                value.append(str(type(o)))
+        props['value'] = ', '.join(value)
+    elif isinstance(obj, types.CodeType):
+        props['filename'] = obj.co_filename
+    elif isinstance(obj, types.FunctionType):
+        props['name'] = obj.__name__
+    elif isinstance(obj, types.FrameType):
+        props['filename'] = obj.f_code.co_filename
+        props['lineno'] = str(obj.f_lineno)
+    elif isinstance(obj, types.MethodType):
+        props['name'] = obj.__name__
+    elif isinstance(obj, types.ModuleType):
+        props['filename'] = obj.__file__
+
+    referrers = []
+    for r in gc.get_referrers(obj):
+        if isinstance(r, (int, float, str)):
+            value = repr(r)
+        elif isinstance(r, (list, dict)):
+            value = 'length: ' + str(len(r))
+        elif isinstance(r, types.CodeType):
+            value = r.co_filename
+        elif isinstance(r, types.FunctionType):
+            value = r.__name__
+        elif isinstance(r, types.FrameType):
+            value = r.f_code.co_filename + ' ' + str(r.f_lineno)
+        elif isinstance(r, types.MethodType):
+            value = r.__name__
+        elif isinstance(r, types.ModuleType):
+            value = r.__file__
+        else:
+            value = ''
+        referrers.append((id(r), r, str(type(r)), value))
+
+    return render_template(
+        'object.html', obj=obj, obj_id=id(obj), obj_props=props,
+        referrers=referrers)
 
 
 @app.route('/')
@@ -2488,8 +2566,7 @@ def site_get(site_id):
         if era == eras[-1] or era.supply_id != eras[idx + 1]:
             groups[-1]['first_era'] = era
 
-    groups = sorted(
-        groups, key=operator.itemgetter('is_ongoing'), reverse=True)
+    groups = sorted(groups, key=itemgetter('is_ongoing'), reverse=True)
 
     now = utc_datetime_now()
     month_start = Datetime(now.year, now.month, 1)
