@@ -44,6 +44,7 @@ import chellow.computer
 from random import choice
 import types
 import gc
+import psutil
 
 app = Flask('chellow', instance_relative_config=True)
 app.secret_key = os.urandom(24)
@@ -385,7 +386,8 @@ def system_get():
         'system.html', traces='\n'.join(traces),
         version_number=chellow.versions['version'],
         version_hash=chellow.versions['full-revisionid'], pg_stats=pg_stats,
-        request=request)
+        request=request, virtual_memory=psutil.virtual_memory(),
+        swap_memory=psutil.swap_memory())
 
 
 def get_objects():
