@@ -45,6 +45,7 @@ from random import choice
 import types
 import gc
 import psutil
+from pympler import muppy, summary
 
 app = Flask('chellow', instance_relative_config=True)
 app.secret_key = os.urandom(24)
@@ -462,6 +463,14 @@ def object_get(obj_id):
     return render_template(
         'object.html', obj=obj, obj_id=id(obj), obj_props=props,
         referrers=referrers)
+
+
+@app.route('/system/object_summary')
+def object_summary_get():
+    sumry = summary.summarize(muppy.get_objects())
+    sumry_text = '\n'.join(
+        summary.format_(sumry, sort='size', order='descending'))
+    return render_template('object_summary.html', summary=sumry_text)
 
 
 @app.route('/')

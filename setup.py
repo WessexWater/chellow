@@ -55,6 +55,7 @@ setup(
         'pep3143daemon==0.0.6',
         'pip>=9.0.1',
         'pysftp==0.2.9',
+        'pympler==0.4.3',
         'psutil==5.0.1'],
     data_files=[('config', ['config/chellow.conf'])],
     entry_points={

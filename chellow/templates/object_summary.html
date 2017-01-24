@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block title %}
+	&raquo; System &raquo; Object Summary
+{% endblock %}
+
+{% block nav %}
+	&raquo; <a href="/system">System</a> &raquo; Object Summary
+{% endblock %}
+
+{% block content %}
+<!-- Layer Section -->
+<div class="layer-section">
+	<!-- Section Header -->
+	<div class="section-header">
+		<h2>Object Summary</h2>	
+	</div>
+	<!-- End Section Header -->
+
+	<!-- Section Content -->
+	<div class="section-content">
+		<div class="section-data">
+			<pre>{{summary}}</pre>
+		</div>
+	</div>
+{% endblock %}
