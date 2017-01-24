@@ -8,8 +8,9 @@ from flask import request, Response
 from jinja2 import Environment
 import time
 import traceback
-from json import loads
-from json.decoder import JSONDecodeError
+from amazon.ion.simpleion import load
+from amazon.ion.exceptions import IonException
+from io import StringIO
 
 
 clogs = deque()
@@ -48,12 +49,12 @@ def req_int(name):
             "Problem parsing the field " + name + " as an integer: " + str(e))
 
 
-def req_json(name):
+def req_ion(name):
     try:
-        return loads(req_str(name))
-    except JSONDecodeError as e:
+        return load(StringIO(req_str(name)))
+    except IonException as e:
         raise BadRequest(
-            "Problem parsing the field " + name + " as JSON " + str(e) + ".")
+            "Problem parsing the field " + name + " as ION " + str(e) + ".")
 
 
 def req_date(prefix, resolution='minute'):

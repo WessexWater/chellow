@@ -21,7 +21,7 @@ setup(
     cmdclass=versioneer.get_cmdclass(),
     packages=[
         'chellow', 'chellow.reports', 'odswriter', 'odswriter.v1_1',
-        'odswriter.v1_2'],
+        'odswriter.v1_2', 'amazon', 'amazon.ion'],
     package_data={'chellow': [
         'non_core_contracts/*/*.py',
         'non_core_contracts/*/rate_scripts/*.py',

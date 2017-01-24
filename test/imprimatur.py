@@ -14715,17 +14715,17 @@ def virtual_bill(ds):
         ds.rate_sets['calorific_value'].add(hh['calorific_value'])
         kwh = hh['kwh']
         bill['kwh'] += kwh
-        gas_rate = ds.g_rate(db_id, hh['start_date'], 'gas_rate')
+        gas_rate = float(ds.g_rate(db_id, hh['start_date'], 'gas_rate'))
         ds.rate_sets['gas_rate'].add(gas_rate)
         bill['gas_gbp'] += gas_rate * kwh
         if hh['utc_is_month_end']:
-            standing_rate = ds.g_rate(db_id, hh['start_date'], 'standing_rate')
+            standing_rate = float(
+                ds.g_rate(db_id, hh['start_date'], 'standing_rate'))
             ds.rate_sets['standing_rate'].add(standing_rate)
             bill['standing_gbp'] += standing_rate
 
     for k, rset in ds.rate_sets.items():
-        if len(rset) == 1:
-            bill[k] = rset.pop()
+        bill[k] = rset.pop()
 
     bill['net_gbp'] = sum(v for k, v in bill.items() if k.endswith('gbp'))
     bill['vat_gbp'] = 0

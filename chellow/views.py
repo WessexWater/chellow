@@ -19,7 +19,7 @@ from dateutil.relativedelta import relativedelta
 from chellow.utils import (
     HH, req_str, req_int, req_date, parse_mpan_core, req_bool, req_hh_date,
     hh_after, req_decimal, send_response, hh_min, hh_max, hh_format, hh_range,
-    utc_datetime, utc_datetime_now, req_json)
+    utc_datetime, utc_datetime_now, req_ion)
 from werkzeug.exceptions import BadRequest, NotFound
 import chellow.general_import
 import io
@@ -4919,7 +4919,7 @@ def g_contract_add_post():
         name = req_str('name')
         start_date = req_date('start')
         charge_script = req_str('charge_script')
-        properties = req_json('properties')
+        properties = req_ion('properties')
 
         contract = GContract.insert(
             g.sess, name, charge_script, properties, start_date, None, {})
@@ -4951,7 +4951,7 @@ def g_contract_edit_post(g_contract_id):
         else:
             name = req_str('name')
             charge_script = req_str('charge_script')
-            properties = req_json('properties')
+            properties = req_ion('properties')
             g_contract.update(g.sess, name, charge_script, properties)
             g.sess.commit()
             return chellow_redirect('/g_contracts/' + str(g_contract.id), 303)
@@ -5013,7 +5013,7 @@ def g_rate_script_edit_post(g_rate_script_id):
             g.sess.commit()
             return chellow_redirect('/g_contracts/' + str(g_contract.id), 303)
         else:
-            script = req_json('script')
+            script = req_ion('script')
             start_date = req_date('start')
             has_finished = req_bool('has_finished')
             finish_date = req_date('finish') if has_finished else None
@@ -5263,7 +5263,7 @@ def g_bill_add_post(g_batch_id):
         net = req_decimal('net')
         vat = req_decimal('vat')
         gross = req_decimal('gross')
-        breakdown = req_json("breakdown")
+        breakdown = req_ion("breakdown")
         g_bill = g_batch.insert_g_bill(
             g.sess, account, reference, issue_date, start_date, finish_date,
             kwh, net, vat, gross, breakdown, GSupply.get_by_mprn(g.sess, mprn))
@@ -5385,7 +5385,7 @@ def g_bill_edit_post(g_bill_id):
             gross_gbp = req_decimal('gross_gbp')
             type_id = req_int('bill_type_id')
             raw_lines = req_str('raw_lines')
-            breakdown = req_json('breakdown')
+            breakdown = req_ion('breakdown')
             bill_type = BillType.get_by_id(g.sess, type_id)
 
             g_bill.update(
