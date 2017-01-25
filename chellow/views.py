@@ -397,72 +397,65 @@ def get_objects():
         objs[id(obj)] = obj
         for o in gc.get_referents(obj):
             objs[id(o)] = o
-    return tuple(objs.values())
+    return objs
+
+
+def object_tuple(obj):
+    if isinstance(obj, (int, float, str)):
+        value = repr(obj)
+    elif isinstance(obj, (list, dict, set)):
+        value = 'length: ' + str(len(obj))
+    elif isinstance(obj, types.CodeType):
+        value = obj.co_filename
+    elif isinstance(obj, types.FunctionType):
+        value = obj.__name__
+    elif isinstance(obj, types.FrameType):
+        value = obj.f_code.co_filename + ' ' + str(obj.f_lineno)
+    elif isinstance(obj, types.MethodType):
+        value = obj.__name__
+    elif isinstance(obj, types.ModuleType):
+        value = obj.__file__
+    else:
+        value = ''
+    return id(obj), str(type(obj)), value
 
 
 @app.route('/system/objects')
 def objects_get():
-    an_obj = choice(get_objects())
+    an_obj = choice(tuple(get_objects().values()))
     return chellow_redirect('/system/objects/' + str(id(an_obj)))
 
 
-@app.route('/system/objects/<int:obj_id>')
-def object_get(obj_id):
-    obj = None
-    for o in get_objects():
-        if id(o) == obj_id:
-            obj = o
-            break
+@app.route('/system/objects/<int:root_id>')
+def object_get(root_id):
+    path_ids = [root_id]
+    if 'path' in request.values:
+        path_str = req_str('path')
+        if len(path_str) > 0:
+            path_ids.extend(int(id_str) for id_str in path_str.split(','))
 
-    props = OrderedDict()
-    props['type'] = str(type(obj))
+    if 'next' in request.values:
+        next_id = req_int('next')
+        if next_id not in path_ids:
+            path_ids.append(next_id)
 
-    if isinstance(obj, (int, float, str)):
-        props['value'] = repr(obj)
-    elif isinstance(obj, list):
-        props['length'] = len(obj)
-        value = []
-        for o in obj[:10]:
-            if isinstance(o, (int, float, str)):
-                value.append(str(o))
-            else:
-                value.append(str(type(o)))
-        props['value'] = ', '.join(value)
-    elif isinstance(obj, types.CodeType):
-        props['filename'] = obj.co_filename
-    elif isinstance(obj, types.FunctionType):
-        props['name'] = obj.__name__
-    elif isinstance(obj, types.FrameType):
-        props['filename'] = obj.f_code.co_filename
-        props['lineno'] = str(obj.f_lineno)
-    elif isinstance(obj, types.MethodType):
-        props['name'] = obj.__name__
-    elif isinstance(obj, types.ModuleType):
-        props['filename'] = obj.__file__
+    print("path ids", path_ids)
+
+    objects = get_objects()
+    path = []
+    for path_id in path_ids:
+        try:
+            path.append(object_tuple(objects[path_id]))
+        except KeyError:
+            pass
 
     referrers = []
-    for r in gc.get_referrers(obj)[:10]:
-        if isinstance(r, (int, float, str)):
-            value = repr(r)
-        elif isinstance(r, (list, dict)):
-            value = 'length: ' + str(len(r))
-        elif isinstance(r, types.CodeType):
-            value = r.co_filename
-        elif isinstance(r, types.FunctionType):
-            value = r.__name__
-        elif isinstance(r, types.FrameType):
-            value = r.f_code.co_filename + ' ' + str(r.f_lineno)
-        elif isinstance(r, types.MethodType):
-            value = r.__name__
-        elif isinstance(r, types.ModuleType):
-            value = r.__file__
-        else:
-            value = ''
-        referrers.append((id(r), r, str(type(r)), value))
+    for r in gc.get_referrers(objects[path_ids[-1]])[:10]:
+        referrers.append(object_tuple(r))
 
     return render_template(
-        'object.html', obj=obj, obj_id=id(obj), obj_props=props,
-        referrers=referrers)
+        'object.html', path=path, root_id=root_id, referrers=referrers,
+        path_str=','.join([str(path_id) for path_id in path_ids[1:]]))
 
 
 @app.route('/system/object_summary')
