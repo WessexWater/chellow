@@ -403,7 +403,7 @@ def get_objects():
 def object_tuple(obj):
     if isinstance(obj, (int, float, str)):
         value = repr(obj)
-    elif isinstance(obj, (list, dict, set)):
+    elif isinstance(obj, (list, dict, set, tuple)):
         value = 'length: ' + str(len(obj))
     elif isinstance(obj, types.CodeType):
         value = obj.co_filename

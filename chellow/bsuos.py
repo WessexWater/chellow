@@ -178,6 +178,9 @@ class BsuosImporter(threading.Thread):
                                     "There isn't a whole month there yet. The "
                                     "last date is " +
                                     sorted(month_bsuos.keys())[-1])
+
+                            # Set to null to free up memory
+                            book = sheet = None
                     else:
                         self.log(
                             "The automatic importer is disabled. To "
