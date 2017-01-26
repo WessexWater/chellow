@@ -3,9 +3,10 @@ from dateutil.relativedelta import relativedelta
 from sqlalchemy.sql import func
 from sqlalchemy import or_
 from sqlalchemy.sql.expression import null
+from sqlalchemy.orm import joinedload
 from chellow.models import (
     Session, Era, Supply, RegisterRead, Bill, ReadType, Batch,
-    MeasurementRequirement)
+    MeasurementRequirement, GeneratorType)
 from chellow.utils import (
     HH, hh_format, CHANNEL_TYPES, req_date, req_int, req_str, parse_mpan_core,
     hh_min)
@@ -50,10 +51,11 @@ def content(running_name, finished_name, date, supply_id, mpan_cores):
         NORMAL_READ_TYPES = ('N', 'C', 'N3')
         year_start = date + HH - relativedelta(years=1)
 
-        eras = sess.query(Era).filter(
+        eras = sess.query(Era, Supply, GeneratorType).join(Supply).outerjoin(
+            GeneratorType).filter(
             Era.start_date <= date,
             or_(Era.finish_date == null(), Era.finish_date >= date)).order_by(
-            Era.supply_id)
+            Era.supply_id).options(joinedload(Era.site_eras))
 
         if supply_id is not None:
             supply = Supply.get_by_id(sess, supply_id)
@@ -66,7 +68,7 @@ def content(running_name, finished_name, date, supply_id, mpan_cores):
                     Era.imp_mpan_core.in_(mpan_cores),
                     Era.exp_mpan_core.in_(mpan_cores)))
 
-        for era in eras:
+        for era, supply, generator_type in eras:
             site_codes = []
             site_names = []
             for site_era in era.site_eras:
@@ -76,16 +78,16 @@ def content(running_name, finished_name, date, supply_id, mpan_cores):
                     site = site_era.site
                     site_codes.append(site.code)
                     site_names.append(site.name)
-            supply = era.supply
+
             if era.imp_mpan_core is None:
                 voltage_level_code = era.exp_llfc.voltage_level.code
             else:
                 voltage_level_code = era.imp_llfc.voltage_level.code
 
-            if supply.generator_type is None:
-                generator_type = ''
+            if generator_type is None:
+                generator_type_str = ''
             else:
-                generator_type = supply.generator_type.code
+                generator_type_str = generator_type.code
 
             metering_type = era.make_meter_category()
 
@@ -272,11 +274,12 @@ def content(running_name, finished_name, date, supply_id, mpan_cores):
                     ('' if value is None else str(value))) for value in [
                     hh_format(date), physical_site.code, physical_site.name,
                     ', '.join(site_codes), ', '.join(site_names), supply.id,
-                    supply.source.code, generator_type, supply.gsp_group.code,
-                    supply.dno_contract.name, voltage_level_code,
-                    metering_type, mandatory_hh, era.pc.code, era.mtc.code,
-                    era.cop.code, ssc_code, num_registers, mop_contract_name,
-                    mop_account, hhdc_contract_name, hhdc_account, era.msn,
+                    supply.source.code, generator_type_str,
+                    supply.gsp_group.code, supply.dno_contract.name,
+                    voltage_level_code, metering_type, mandatory_hh,
+                    era.pc.code, era.mtc.code, era.cop.code, ssc_code,
+                    num_registers, mop_contract_name, mop_account,
+                    hhdc_contract_name, hhdc_account, era.msn,
                     hh_format(meter_installation_date),
                     latest_normal_read_date, latest_normal_read_type,
                     latest_hhdc_bill_date, latest_mop_bill_date] +
