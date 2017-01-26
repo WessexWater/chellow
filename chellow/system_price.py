@@ -258,9 +258,6 @@ class SystemPriceImporter(threading.Thread):
                                 json.dumps(
                                     script, indent='    ', sort_keys=True))
                             sess.commit()
-
-                        # Free up memory
-                        book = sbp_sheet = ssp_sheet = None
                     else:
                         self.log(
                             "The automatic importer is disabled. To "
