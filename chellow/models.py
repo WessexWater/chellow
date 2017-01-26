@@ -1132,6 +1132,7 @@ class Site(Base, PersistentClass):
         return site
 
     def find_linked_sites(self, sess, start_date, finish_date):
+        site_era_alias = aliased(SiteEra)
         return sess.query(Site).join(SiteEra).join(Era).join(site_era_alias). \
             filter(
                 Site.id != self.id, site_era_alias.site == self,
@@ -2816,9 +2817,6 @@ class SiteGroup():
     def delete_snag(self, sess, description, start_date, finish_date):
         Snag.remove_snag(
             sess, self.sites[0], None, description, start_date, finish_date)
-
-
-site_era_alias = aliased(SiteEra)
 
 
 def read_file(pth, fname, attr):
