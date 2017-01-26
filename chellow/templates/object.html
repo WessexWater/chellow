@@ -1,12 +1,12 @@
 {% extends "base.html" %}
 
 {% block title %}
-	&raquo; System &raquo; Objects &raquo; {{root_id}}
+	&raquo; System &raquo; Objects &raquo; {{obj_id}}
 {% endblock %}
 
 {% block nav %}
 	&raquo; <a href="/system">System</a> &raquo;
-	<a href="/system/objects">Objects</a> &raquo; {{root_id}}
+	<a href="/system/objects">Objects</a> &raquo; {{obj_id}}
 {% endblock %}
 
 {% block content %}
@@ -22,22 +22,12 @@
 	<div class="section-content">
 		<div class="section-data">
 			<table class="DataTable widthAuto">
-				<caption>Path</caption>
-				<thead>
-						<tr>
-							<th>New Root</th>
-							<th>Id</th>
-							<th>Type</th>
-							<th>Value</th>
-						</tr>
-				</thead>
+				<caption>Object Properties</caption>
 				<tbody>
-					{% for oid, typ, val in path %}
+					{% for k, v in obj_props.items() %}
 						<tr>
-							<td><a href="/system/objects/{{oid}}">New Root</a></td>
-							<td>{{oid}}</td>
-							<td>{{typ}}</td>
-							<td>{{val}}</td>
+							<th>{{k}}</th>
+							<td>{{v}}</td>
 						</tr>
 					{% endfor %}
 				</tbody>
@@ -48,20 +38,16 @@
 				<caption>Referrers</caption>
 				<thead>
 						<tr>
-							<th>Add To Path</th>
+							<th>View</th>
 							<th>Id</th>
 							<th>Type</th>
 							<th>Value</th>
 						</tr>
 				</thead>
 				<tbody>
-					{% for referrer_id, typ, val in referrers %}
+					{% for referrer_id, referrer, typ, val in referrers %}
 						<tr>
-							<td>
-								<a
-								 	href="/system/objects/{{root_id}}?path={{path_str}}&amp;next={{referrer_id}}"
-								>Add</a>
-							</td>
+							<td><a href="/system/objects/{{referrer_id}}">View</a></td>
 							<td>{{referrer_id}}</td>
 							<td>{{typ}}</td>
 							<td>{{val}}</td>
