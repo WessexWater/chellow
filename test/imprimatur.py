@@ -14647,4 +14647,22 @@ finally:
             'bill_type_id': '2',
             'breakdown': '{}'},
         'status_code': 303},
+
+    {
+        'name': "Insert bills with negative register reads",
+        'path': '/supplier_bill_imports',
+        'method': 'post',
+        'data': {
+            'supplier_batch_id': '7'},
+        'files': {'import_file': 'test/bills-nhh-negative.csv'},
+        'status_code': 303,
+        'regexes': [
+            r"/supplier_bill_imports/14"]},
+    {
+        'name': "Insert bills with negative register reads",
+        'path': '/supplier_bill_imports/14',
+        'tries': {},
+        'status_code': 200,
+        'regexes': [
+            r"Negative register reads aren&#39;t allowed"]},
 ]

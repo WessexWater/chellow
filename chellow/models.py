@@ -389,6 +389,9 @@ class RegisterRead(Base, PersistentClass):
         if tpr is None and units == 'kWh':
             raise BadRequest(
                 "If a register read is measuring kWh, there must be a TPR.")
+        if previous_value < 0 or present_value < 0:
+            raise BadRequest(
+                "Negative register reads aren't allowed.")
 
         self.tpr = tpr
         self.coefficient = coefficient
