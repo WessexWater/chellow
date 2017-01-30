@@ -443,7 +443,12 @@ def datum_range(sess, caches, years_back, start_date, finish_date):
                         'status': 'X', 'imp-msp-kvarh': 0,
                         'imp-msp-kvar': 0, 'exp-msp-kvarh': 0,
                         'exp-msp-kvar': 0, 'msp-kw': 0, 'msp-kwh': 0,
-                        'hist-kwh': 0}))
+                        'hist-import-net-kvarh': 0,
+                        'hist-export-net-kvarh': 0,
+                        'anti-msp-kwh': 0, 'anti-msp-kw': 0,
+                        'imp-msp-kvarh': 0, 'exp-msp-kvarh': 0,
+                        'imp-msp-kvar': 0, 'exp-msp-kvar': 0,
+                        'hist-imp-msp-kvarh': 0, 'hist-kwh': 0}))
         datum_tuple = tuple(datum_list)
         d_cache[years_back, start_date, finish_date] = datum_tuple
         return datum_tuple
@@ -570,25 +575,19 @@ class SiteSource(DataSource):
                         source_code == '3rd-party-reverse'):
                     export_3rd_party_kwh += hh_value
 
-                hh_value, hh_start_date, imp_related, source_code = \
-                    next(rs, (None, None, None, None))
+                hh_value, hh_start_date, imp_related, source_code = next(
+                    rs, (None, None, None, None))
 
             hh_values = {
                 'status': 'E', 'hist-import-net-kwh': import_net_kwh,
-                'hist-import-net-kvarh': 0,
                 'hist-export-net-kwh': export_net_kwh,
-                'hist-export-net-kvarh': 0,
                 'hist-import-gen-kwh': import_gen_kwh,
                 'hist-export-gen-kwh': export_gen_kwh,
-                'anti-msp-kwh': 0, 'anti-msp-kw': 0,
                 'hist-import-3rd-party-kwh': import_3rd_party_kwh,
                 'hist-export-3rd-party-kwh': export_3rd_party_kwh,
-                'imp-msp-kvarh': 0, 'exp-msp-kvarh': 0,
-                'hist-imp-msp-kvarh': 0}
+                'hist-used-3rd-party-kwh':
+                    import_3rd_party_kwh - export_3rd_party_kwh}
 
-            hh_values['hist-used-3rd-party-kwh'] = \
-                hh_values['hist-import-3rd-party-kwh'] - \
-                hh_values['hist-export-3rd-party-kwh']
             hh_values['used-3rd-party-kwh'] = \
                 hh_values['hist-used-3rd-party-kwh']
             hh_values['hist-kwh'] = hh_values['hist-used-gen-msp-kwh'] = \
@@ -608,10 +607,8 @@ class SiteSource(DataSource):
 
             hh_values['used-kwh'] = hh_values['hist-used-kwh']
             hh_values['import-net-kwh'] = hh_values['hist-import-net-kwh']
-            hh_values['msp-kw'] = hh_values['used-gen-msp-kw'] \
-                = hh_values['used-gen-msp-kwh'] * 2
-            hh_values['imp-msp-kvar'] = hh_values['imp-msp-kvarh'] * 2
-            hh_values['exp-msp-kvar'] = hh_values['exp-msp-kvarh'] * 2
+            hh_values['msp-kw'] = hh_values['used-gen-msp-kw'] = \
+                hh_values['used-gen-msp-kwh'] * 2
 
             hist_map[hist_date] = hh_values
 
@@ -1298,9 +1295,7 @@ order by hh_datum.start_date
                     for hh_date in hh_range(chunk_start, chunk_finish):
                         datum = {}
                         if hh_date == hist_start:
-                            if msp_kwh is None:
-                                datum['hist-kwh'] = 0
-                            else:
+                            if msp_kwh is not None:
                                 datum['status'] = status
                                 datum['hist-kwh'] = msp_kwh
                                 datum['msp-kwh'] = msp_kwh
