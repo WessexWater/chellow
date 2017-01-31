@@ -31,7 +31,7 @@ class Parser():
         for self._line_number, row in enumerate(self.invoice_rows[10:]):
             bill_reference_raw = row[1].value
             if bill_reference_raw is None:
-                continue
+                break
             bill_reference = str(bill_reference_raw)
             breakdown = {
                 'commodity_rate': row[11].value / 100,
