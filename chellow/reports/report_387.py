@@ -1,19 +1,30 @@
 import traceback
 from sqlalchemy import or_
 from sqlalchemy.sql.expression import null, true
-from chellow.models import Supply, Era, Site, SiteEra
-from chellow.utils import hh_format, hh_range, req_int, req_date, send_response
+from chellow.models import Supply, Era, Site, SiteEra, Session
+from chellow.utils import hh_format, hh_range, req_int, req_date
 import chellow.computer
+import csv
+from flask import g
+import threading
+from chellow.views import chellow_redirect
+import sys
+import os
 
 
-def content(supply_id, start_date, finish_date, sess):
+def content(supply_id, start_date, finish_date, user):
     caches = {}
     try:
+        sess = Session()
         supply = Supply.get_by_id(sess, supply_id)
 
         forecast_date = chellow.computer.forecast_date()
 
         prev_titles = None
+        running_name, finished_name = chellow.dloads.make_names(
+            'supply_virtual_bills_hh_' + str(supply_id) + '.csv', user)
+        f = open(running_name, mode='w', newline='')
+        w = csv.writer(f, lineterminator='\n')
 
         for hh_start in hh_range(start_date, finish_date):
             era = sess.query(Era).filter(
@@ -105,17 +116,25 @@ def content(supply_id, start_date, finish_date, sess):
 
             if titles != prev_titles:
                 prev_titles = titles
-                yield ','.join('"' + str(v) + '"' for v in titles) + '\n'
-            yield ','.join('"' + str(v) + '"' for v in output_line) + '\n'
+                w.writerow(titles)
+            w.writerow(output_line)
     except:
-        yield traceback.format_exc()
+        msg = traceback.format_exc()
+        sys.stderr.write(msg)
+        w.writerow([msg])
+    finally:
+        if sess is not None:
+            sess.close()
+        if f is not None:
+            f.close()
+            os.rename(running_name, finished_name)
 
 
 def do_get(sess):
     supply_id = req_int('supply_id')
     start_date = req_date('start')
     finish_date = req_date('finish')
-    file_name = 'supply_virtual_bills_hh_' + str(supply_id) + '.csv'
-    return send_response(
-        content, args=(supply_id, start_date, finish_date, sess),
-        file_name=file_name)
+
+    args = supply_id, start_date, finish_date, g.user
+    threading.Thread(target=content, args=args).start()
+    return chellow_redirect("/downloads", 303)
