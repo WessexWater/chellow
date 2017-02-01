@@ -1,7 +1,6 @@
 {% extends "base.html" %}
 
 {% block inside_head %}
-	<link rel="stylesheet" type="text/css" href="{{context_path}}/style">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
 	<title>Chellow &gt; Gas Supplies &gt; {{g_supply.id}}</title>
 
@@ -17,7 +16,8 @@
 		}
 
 		function collapseBills(collapseId) {
-			var collapsibles = document.getElementsByClassName('collapsible_' + collapseId);
+			var collapsibles =
+			 	document.getElementsByClassName('collapsible_' + collapseId);
 			for (var i = 0; i < collapsibles.length; i++) {
 				collapsibles[i].style.display = 'none';
 			}
@@ -25,7 +25,8 @@
 			for (var i = 0; i < expanders.length; i++) {
 				expanders[i].style.display = 'inline';
 			}
-			var collapsers = document.getElementsByClassName('collapser_' + collapseId);
+			var collapsers =
+			 	document.getElementsByClassName('collapser_' + collapseId);
 			for (var i = 0; i < collapsers.length; i++) {
 				collapsers[i].style.display = 'none';
 			}
@@ -61,277 +62,284 @@
 {% endblock %}
 
 {% block content %}
-	<table>
-		<tr>
-			<th>Name</th>
-			<td>{{g_supply.name}}</td>
-		</tr>
-		<tr>
-			<th>MPRN</th>
-			<td>{{g_supply.mprn}}</td>
-		</tr>
-			{% if system_properties['g_supply_links'] %}
-				<tr>
-					<th>Links</th>
-					<td>
-						<ul>
-							{% for link in system_properties['g_supply_links'] %}
-								<li>
-									<a href="{{link.url}}g_supply_id={{site.id}}">{{link.name}}</a>
-								</li>
-							{% endfor %}
-						</ul>
-					</td>
-				</tr>
-			{% endif %}
-		<tr>
-			<th>
-				<a href="{{context_path}}/g_supplies/{{g_supply.id}}/notes">Notes</a>
-			</th>
-			<td>
-				{% if note %}
-					{% if is_truncated %}
-						<div id="truncated_note">
-							{{ truncated_note }} 
-						</div>
-						<div id="full_note" style="display: none;">
-							<pre style=" white-space: pre-wrap;">{{ g_supply.note }}</pre>
-							<a href="JavaScript:void()" onClick="hideText()" />Less...</a>
-						</div>
-					{% else %}
-						Category: {{note.category}}
-						{% if note.is_important %}
-							Important
-						{% else %}
-							Not important
+	<div class="layer-section">
+		<div class="section-content">
+			<div class="section-data">
+				<table class="DataTable widthAuto noMarginBottom">
+					<tr>
+						<th>Name</th>
+						<td>{{g_supply.name}}</td>
+					</tr>
+					<tr>
+						<th>MPRN</th>
+						<td>{{g_supply.mprn}}</td>
+					</tr>
+						{% if system_properties['g_supply_links'] %}
+							<tr>
+								<th>Links</th>
+								<td>
+									<ul>
+										{% for link in system_properties['g_supply_links'] %}
+											<li>
+												<a
+													href="{{link.url}}g_supply_id={{site.id}}">{{link.name}}</a>
+											</li>
+										{% endfor %}
+									</ul>
+								</td>
+							</tr>
 						{% endif %}
-						<pre style="display: inline;">{{note.body}}</pre>
-					{% endif %}
-				{% endif %}
-			</td>
-		</tr>
-	</table>
-	<br>
-	
-	{% for g_era_bundle in g_era_bundles %}
-		{% set g_era = g_era_bundle['g_era'] %}
-		{% set physical_site = g_era_bundle['physical_site'] %}
-		{% set other_sites = g_era_bundle['other_sites'] %}
-		<table>
-				<caption>
-					Era
-					[<a href="{{context_path}}/g_eras/{{g_era.id}}/edit">edit</a>]
-				</caption>
-				<thead>
 					<tr>
-						<th>From</th>
-						<th>To</th>
-						<th>Sites</th>
-						<th><a title="Meter Serial Number">MSN</a></th>
-						<th>Contract</th>
-						<th>Account</th>
-					</tr>
-				</thead>
-				<tbody>
-					<tr>
+						<th>
+							<a href="{{context_path}}/g_supplies/{{g_supply.id}}/notes">Notes</a>
+						</th>
 						<td>
-							<a title="{{ g_era.start_date|hh_format }}">{{ g_era.start_date|hh_format(modifier='date') }}</a>
-						</td>
-						<td>
-							<a title="{{ g_era.finish_date|hh_format }}">{{ g_era.finish_date|hh_format(modifier='date') }}</a>
-						</td>
-						<td>
-							<a
-							 	  href="{{context_path}}/sites/{{physical_site.id}}"
-								 	title="{{physical_site.name}}">{{physical_site.code}}</a>
-							{% if other_sites %}
-								(also
-									{% for other_site in other_sites %}
-										<a
-										 	href="{{context_path}}/sites/{{other_site.id}}"
-										 	title="{{other_site.name}}">{{other_site.code}}</a>
-									{%- endfor -%}
-								)
-							{% endif %}
-						</td>
-						<td>{{g_era.msn}}</td>
-						<td>
-							<a href="{{context_path}}/g_contracts/{{g_era.g_contract.id}}"
-								  >{{g_era.g_contract.name }}</a>
-						</td>
-						<td>
-							{{ g_era.account }}
-							{% if g_era_bundle['shared_accounts'] %}(
-								{%- for sup in g_era_bundle['shared_accounts'] -%}
-									{%- if not loop.first    -%} {%- endif -%}
-										<a href="{{context_path}}/g_supplies/{{sup.id}}"
-											  >{{sup.id}}</a>
-								{%- endfor -%}
-								)
+							{% if note %}
+								{% if is_truncated %}
+									<div id="truncated_note">
+										{{ truncated_note }} 
+									</div>
+									<div id="full_note" style="display: none;">
+										<pre style=" white-space: pre-wrap;">{{ g_supply.note }}</pre>
+										<a href="JavaScript:void()" onClick="hideText()" />Less...</a>
+									</div>
+								{% else %}
+									Category: {{note.category}}
+									{% if note.is_important %}
+										Important
+									{% else %}
+										Not important
+									{% endif %}
+									<pre style="display: inline;">{{note.body}}</pre>
+								{% endif %}
 							{% endif %}
 						</td>
 					</tr>
-				</tbody>
-		</table>
-		<br>
+				</table>
+				<br>
+				
+				{% for g_era_bundle in g_era_bundles %}
+					{% set g_era = g_era_bundle['g_era'] %}
+					{% set physical_site = g_era_bundle['physical_site'] %}
+					{% set other_sites = g_era_bundle['other_sites'] %}
+					<table class="DataTable widthAuto noMarginBottom">
+						<caption>
+							Era
+							[<a href="{{context_path}}/g_eras/{{g_era.id}}/edit">edit</a>]
+						</caption>
+						<thead>
+							<tr>
+								<th>From</th>
+								<th>To</th>
+								<th>Sites</th>
+								<th><a title="Meter Serial Number">MSN</a></th>
+								<th>Contract</th>
+								<th>Account</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr>
+								<td>
+									<a title="{{ g_era.start_date|hh_format }}">{{ g_era.start_date|hh_format(modifier='date') }}</a>
+								</td>
+								<td>
+									<a title="{{ g_era.finish_date|hh_format }}">{{ g_era.finish_date|hh_format(modifier='date') }}</a>
+								</td>
+								<td>
+									<a
+											href="{{context_path}}/sites/{{physical_site.id}}"
+											title="{{physical_site.name}}">{{physical_site.code}}</a>
+									{% if other_sites %}
+										(also
+											{% for other_site in other_sites %}
+												<a
+													href="{{context_path}}/sites/{{other_site.id}}"
+													title="{{other_site.name}}">{{other_site.code}}</a>
+											{%- endfor -%}
+										)
+									{% endif %}
+								</td>
+								<td>{{g_era.msn}}</td>
+								<td>
+									<a href="{{context_path}}/g_contracts/{{g_era.g_contract.id}}"
+											>{{g_era.g_contract.name }}</a>
+								</td>
+								<td>
+									{{ g_era.account }}
+									{% if g_era_bundle['shared_accounts'] %}(
+										{%- for sup in g_era_bundle['shared_accounts'] -%}
+											{%- if not loop.first    -%} {%- endif -%}
+												<a href="{{context_path}}/g_supplies/{{sup.id}}"
+														>{{sup.id}}</a>
+										{%- endfor -%}
+										)
+									{% endif %}
+								</td>
+							</tr>
+						</tbody>
+					</table>
+					<br>
 
-		<table>
-			{% set g_bills = g_era_bundle['g_bills'] %}
-			<caption>Gas Bills</caption>
-			<thead>
-				<tr>
-					<th rowspan="2">View</th>
-					<th rowspan="2">From</th>
-					<th rowspan="2">To</th>
-					<th rowspan="2">Batch</th>
-					<th rowspan="2">Reference</th>
-					<th rowspan="2">kWh</th>
-					<th rowspan="2">Net</th>
-					<th rowspan="2">VAT</th>
-					<th rowspan="2">Type</th>
-				</tr>
-			</thead>
-			<tbody>
-				{% for bill_dict in g_bills['bill_dicts'] %}
-					{% set read_rows = bill_dict['read_rows'] %}
-					{% set bill = bill_dict['bill'] %}
-					{% set rows_high = bill_dict['rows_high'] %}
-					{% if bill_dict.first_collapsible %}
-						<tr style="background-color: silver; cursor: pointer;">
-							<td
-								style="text-decoration: none; padding-top: 0px; padding-bottom: 0px; font-size: x-small;"
-								colspan="{{9 + imp_bills['inner_headers']|length * 4 + imp_bills['num_outer_cols'] * 5}}"
-								class="expander_{{bill_dict.collapse_id}}"
-								onClick="expandBills({{bill_dict.collapse_id}})"
-							>
-								+
-							</td>
-							<td
-								style="text-decoration: none; display: none; padding-top: 0px; padding-bottom: 0px; font-size: x-small;"
-								colspan="{{9 + imp_bills['inner_headers']|length * 4 + imp_bills['num_outer_cols'] * 5}}"
-								class="collapser_{{bill_dict.collapse_id}}"
-								onClick="collapseBills({{bill_dict.collapse_id}})"
-							>
-								-
-							</td>
-						</tr>
-					{% endif %}
-					
-					<tr
-						{% if bill_dict.collapsible %}
-							class="collapsible_{{bill_dict.collapse_id}}"
-							style="display: none; background-color: silver;"
-						{% endif %}
-					>
-						<td rowspan="{{ rows_high }}">
-							<a href="{{ context_path }}/g_bills/{{bill.id}}">View</a>
-							</td>
-							<td rowspan="{{ rows_high }}">
-								<a title="{{ bill.start_date|hh_format }}">{{ bill.start_date|hh_format('date') }}</a>
-							</td>
-							<td rowspan="{{ rows_high }}">
-								<a title="{{ bill.finish_date|hh_format }}">{{ bill.finish_date|hh_format('date') }}</a>
-							</td>
-							<td rowspan="{{ rows_high }}">
-								<a href="{{ context_path }}/g_batches/{{bill.batch.id}}">{{ bill.batch.reference }}</a>
-							</td>
-							<td rowspan="{{ rows_high }}">{{ bill.reference }}</td>
-							<td rowspan="{{ rows_high }}">{{ bill.kwh }}</td>
-							<td rowspan="{{ rows_high }}">{{ bill.net }}</td>
-							<td rowspan="{{ rows_high }}">{{ bill.vat }}</td>
-							<td rowspan="{{ rows_high }}">
-								<a
-								   	href="{{ context_path }}/g_bill_types/{{bill.bill_type.id}}"
-									 	title="{{bill.bill_type.description}}"
-										>{{bill.bill_type.code}}</a>
-						</td>
-						{% for read_row in read_rows %}
-							{% if not loop.first %}
+					<table class="DataTable widthAuto noMarginBottom">
+						{% set g_bills = g_era_bundle['g_bills'] %}
+						<caption>Gas Bills</caption>
+						<thead>
+							<tr>
+								<th rowspan="2">View</th>
+								<th rowspan="2">From</th>
+								<th rowspan="2">To</th>
+								<th rowspan="2">Batch</th>
+								<th rowspan="2">Reference</th>
+								<th rowspan="2">kWh</th>
+								<th rowspan="2">Net</th>
+								<th rowspan="2">VAT</th>
+								<th rowspan="2">Type</th>
+							</tr>
+						</thead>
+						<tbody>
+							{% for bill_dict in g_bills['bill_dicts'] %}
+								{% set read_rows = bill_dict['read_rows'] %}
+								{% set bill = bill_dict['bill'] %}
+								{% set rows_high = bill_dict['rows_high'] %}
+								{% if bill_dict.first_collapsible %}
+									<tr style="background-color: silver; cursor: pointer;">
+										<td
+											style="text-decoration: none; padding-top: 0px; padding-bottom: 0px; font-size: x-small;"
+											colspan="{{9 + imp_bills['inner_headers']|length * 4 + imp_bills['num_outer_cols'] * 5}}"
+											class="expander_{{bill_dict.collapse_id}}"
+											onClick="expandBills({{bill_dict.collapse_id}})"
+										>
+											+
+										</td>
+										<td
+											style="text-decoration: none; display: none; padding-top: 0px; padding-bottom: 0px; font-size: x-small;"
+											colspan="{{9 + imp_bills['inner_headers']|length * 4 + imp_bills['num_outer_cols'] * 5}}"
+											class="collapser_{{bill_dict.collapse_id}}"
+											onClick="collapseBills({{bill_dict.collapse_id}})"
+										>
+											-
+										</td>
+									</tr>
+								{% endif %}
+								
 								<tr
 									{% if bill_dict.collapsible %}
-										class="collapsible_{{bill_dict.collapse_id}}" 
+										class="collapsible_{{bill_dict.collapse_id}}"
 										style="display: none; background-color: silver;"
 									{% endif %}
 								>
-							{% endif %}
-							{% for read in read_row['inner_reads'] %}
-								<td style="border-right: none;">
-									{% if read %}
-										<a
-										    title="{{ read.previous_date|hh_format }} {{ read.msn }}">{{ read.previous_value }}</a>
-									{% endif %}
-								</td>
-								<td style="border-left: none; text-align: right;">
-									{% if read %}
-										{{ read.previous_type.code }}
-									{% endif %}
-								</td>
-								<td style="border-right: none;">
-									{% if read %}
-										<a
-										   	title="{{ read.present_date|hh_format }} {{ read.msn }}">{{ read.present_value }}</a>
-									{% endif %}
-								</td>
-								<td style="border-left: none; text-align: right;">
-									{% if read %}
-										{{ read.present_type.code }}
-									{% endif %}
-								</td>
-							{% endfor %}
-							{% for read in read_row['outer_reads'] %}
-								<td>
-									{% if read %}
-										{% if read.tpr %}
+									<td rowspan="{{ rows_high }}">
+										<a href="{{ context_path }}/g_bills/{{bill.id}}">View</a>
+										</td>
+										<td rowspan="{{ rows_high }}">
+											<a title="{{ bill.start_date|hh_format }}">{{ bill.start_date|hh_format('date') }}</a>
+										</td>
+										<td rowspan="{{ rows_high }}">
+											<a title="{{ bill.finish_date|hh_format }}">{{ bill.finish_date|hh_format('date') }}</a>
+										</td>
+										<td rowspan="{{ rows_high }}">
+											<a href="{{ context_path }}/g_batches/{{bill.batch.id}}">{{ bill.batch.reference }}</a>
+										</td>
+										<td rowspan="{{ rows_high }}">{{ bill.reference }}</td>
+										<td rowspan="{{ rows_high }}">{{ bill.kwh }}</td>
+										<td rowspan="{{ rows_high }}">{{ bill.net }}</td>
+										<td rowspan="{{ rows_high }}">{{ bill.vat }}</td>
+										<td rowspan="{{ rows_high }}">
 											<a
-											  href="{{ context_path }}/reports/97/output/?tpr_id={{ read.tpr.id }}">{{ read.tpr.code }}</a>
-										{% else %}
-											MD
+													href="{{ context_path }}/g_bill_types/{{bill.bill_type.id}}"
+													title="{{bill.bill_type.description}}"
+													>{{bill.bill_type.code}}</a>
+									</td>
+									{% for read_row in read_rows %}
+										{% if not loop.first %}
+											<tr
+												{% if bill_dict.collapsible %}
+													class="collapsible_{{bill_dict.collapse_id}}" 
+													style="display: none; background-color: silver;"
+												{% endif %}
+											>
 										{% endif %}
-									{% endif %}
-								</td>
-								<td style="border-right: none;">
-									{% if read %}
-										<a title="{{read.previous_date|hh_format}} {{read.msn}}">{{read.previous_value}}</a>
-									{% endif %}
-								</td>
-								<td style="border-left: none; text-align: right;">
-									{% if read %}
-										{{read.previous_type.code}}
-									{% endif %}
-								</td>
-								<td style="border-right: none;">
-									{% if read %}
-										<a title="{{read.present_date|hh_format}} {{read.msn}}">{{read.present_value}}</a>
-									{% endif %}
-								</td>
-								<td style="border-left: none; text-align: right;">
-									{% if read %}
-										{{read.present_type.code}}
-									{% endif %}
-								</td>
-								{% if not loop.first %}
+										{% for read in read_row['inner_reads'] %}
+											<td style="border-right: none;">
+												{% if read %}
+													<a
+															title="{{ read.previous_date|hh_format }} {{ read.msn }}">{{ read.previous_value }}</a>
+												{% endif %}
+											</td>
+											<td style="border-left: none; text-align: right;">
+												{% if read %}
+													{{ read.previous_type.code }}
+												{% endif %}
+											</td>
+											<td style="border-right: none;">
+												{% if read %}
+													<a
+															title="{{ read.present_date|hh_format }} {{ read.msn }}">{{ read.present_value }}</a>
+												{% endif %}
+											</td>
+											<td style="border-left: none; text-align: right;">
+												{% if read %}
+													{{ read.present_type.code }}
+												{% endif %}
+											</td>
+										{% endfor %}
+										{% for read in read_row['outer_reads'] %}
+											<td>
+												{% if read %}
+													{% if read.tpr %}
+														<a
+															href="{{ context_path }}/reports/97/output/?tpr_id={{ read.tpr.id }}">{{ read.tpr.code }}</a>
+													{% else %}
+														MD
+													{% endif %}
+												{% endif %}
+											</td>
+											<td style="border-right: none;">
+												{% if read %}
+													<a title="{{read.previous_date|hh_format}} {{read.msn}}">{{read.previous_value}}</a>
+												{% endif %}
+											</td>
+											<td style="border-left: none; text-align: right;">
+												{% if read %}
+													{{read.previous_type.code}}
+												{% endif %}
+											</td>
+											<td style="border-right: none;">
+												{% if read %}
+													<a title="{{read.present_date|hh_format}} {{read.msn}}">{{read.present_value}}</a>
+												{% endif %}
+											</td>
+											<td style="border-left: none; text-align: right;">
+												{% if read %}
+													{{read.present_type.code}}
+												{% endif %}
+											</td>
+											{% if not loop.first %}
+												</tr>
+											{% endif %}
+										{% endfor %}
 									</tr>
-								{% endif %}
+								{% endfor %}
 							{% endfor %}
-						</tr>
-					{% endfor %}
+						</tbody>
+					</table>
+					<br>
 				{% endfor %}
-			</tbody>
-		</table>
-		<br>
-	{% endfor %}
-	<br>
+				<br>
 
-	<h3>CSV Downloads</h3>
+				<h3>CSV Downloads</h3>
 
-	<form action="{{ context_path }}/reports/291/output/">
-		<fieldset>
-			<input type="hidden" name="g_supply_id" value="{{g_supply.id}}">
-			<legend>Virtual Bills</legend>
-			From {{input_date('start', last_month_start)}} to
-			{{input_date('finish', last_month_finish)}}
-			<input type="submit" value="Download">
-		</fieldset>
-	</form>
-	<br>
+				<form action="{{ context_path }}/reports/291/output/">
+					<fieldset>
+						<input type="hidden" name="g_supply_id" value="{{g_supply.id}}">
+						<legend>Virtual Bills</legend>
+						From {{input_date('start', last_month_start)}} to
+						{{input_date('finish', last_month_finish)}}
+						<input type="submit" value="Download">
+					</fieldset>
+				</form>
+				<br>
+			</div>
+		</div>
+	</div>
 {% endblock %}
