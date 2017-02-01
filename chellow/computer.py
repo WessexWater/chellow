@@ -1341,7 +1341,7 @@ order by hh_datum.start_date
                                 imp_kvarh = 0
                                 exp_kvarh = 0
 
-                            datum = {
+                            hist_map[hh_date] = {
                                 'status': status,
                                 'imp-msp-kvarh': imp_kvarh,
                                 'imp-msp-kvar': imp_kvarh * 2,
@@ -1352,18 +1352,10 @@ order by hh_datum.start_date
                             (
                                 msp_kwh, anti_msp_kwh, status, imp_kvarh,
                                 exp_kvarh, hist_start) = next(
-                                    data, (None, None, None, None, None, None))
-                        else:
-                            datum = {
-                                'status': 'X', 'imp-msp-kvarh': 0,
-                                'imp-msp-kvar': 0, 'exp-msp-kvarh': 0,
-                                'exp-msp-kvar': 0, 'msp-kw': 0, 'msp-kwh': 0,
-                                'hist-kwh': 0}
-
-                        hist_map[hh_date] = datum
+                                data, (None, None, None, None, None, None))
                 else:
                     # new style
-                    data = iter(sess.execute(
+                    data = sess.execute(
                         "select "
                         "    start_date, "
                         "    status, "
@@ -1395,27 +1387,23 @@ order by hh_datum.start_date
                             hh_format(chunk_start) + "+00'"
                             "    and hh_datum.start_date <= '" +
                             hh_format(chunk_finish) + "+00'"
-                            "    order by 1,3"}))
-                    hist_start, status, msp_kwh, imp_kvarh, exp_kvarh = next(
-                        data, (None, None, None, None, None))
+                            "    order by 1,3"})
+                    for (
+                            hist_start, status, msp_kwh, imp_kvarh,
+                            exp_kvarh) in data:
 
-                    for hh_date in hh_range(chunk_start, chunk_finish):
-                        datum = {}
-                        if hh_date == hist_start:
-                            if msp_kwh is not None:
-                                datum['status'] = status
-                                datum['hist-kwh'] = msp_kwh
-                                datum['msp-kwh'] = msp_kwh
-                                datum['msp-kw'] = msp_kwh * 2
-                            datum['imp-msp-kvarh'] = imp_kvarh
-                            datum['imp-msp-kvar'] = imp_kvarh * 2
-                            datum['exp-msp-kvarh'] = exp_kvarh
-                            datum['exp-msp-kvar'] = exp_kvarh * 2
+                        datum = {
+                            'imp-msp-kvarh': imp_kvarh,
+                            'imp-msp-kvar': imp_kvarh * 2,
+                            'exp-msp-kvarh': exp_kvarh,
+                            'exp-msp-kvar': exp_kvarh * 2}
+                        if msp_kwh is not None:
+                            datum['status'] = status
+                            datum['hist-kwh'] = msp_kwh
+                            datum['msp-kwh'] = msp_kwh
+                            datum['msp-kw'] = msp_kwh * 2
 
-                            hist_start, status, msp_kwh, imp_kvarh, exp_kvarh \
-                                = next(data, (None, None, None, None, None))
-
-                        hist_map[hh_date] = datum
+                        hist_map[hist_start] = datum
             else:
                 raise BadRequest("gen type not recognized")
 
