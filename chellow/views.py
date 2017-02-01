@@ -2645,7 +2645,8 @@ def site_get(site_id):
         'site.html', site=site, groups=groups, properties=properties,
         other_sites=other_sites, month_start=month_start,
         month_finish=month_finish, last_month_start=last_month_start,
-        last_month_finish=last_month_finish, scenarios=scenarios)
+        last_month_finish=last_month_finish, scenarios=scenarios,
+        g_groups=g_groups)
 
 
 @app.route('/downloads')

@@ -15214,4 +15214,11 @@ def virtual_bill(ds):
         'status_code': 200,
         'regexes': [
             r'2016-04-01 00:00']},
+
+    {
+        'name': "Does site page show the gas supply?",
+        'path': '/sites/7',
+        'status_code': 200,
+        'regexes': [
+            r'750278673']},
 ]
