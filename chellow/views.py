@@ -734,11 +734,13 @@ def site_edit_get(site_id):
             MarketRole.code == 'X').order_by(Contract.name)
         pcs = g.sess.query(Pc).order_by(Pc.code)
         cops = g.sess.query(Cop).order_by(Cop.code)
+        g_contracts = g.sess.query(GContract).order_by(GContract.name)
         return render_template(
             'site_edit.html', site=site, sources=sources,
             generator_types=generator_types, gsp_groups=gsp_groups, eras=eras,
             mop_contracts=mop_contracts, hhdc_contracts=hhdc_contracts,
-            supplier_contracts=supplier_contracts, pcs=pcs, cops=cops)
+            supplier_contracts=supplier_contracts, pcs=pcs, cops=cops,
+            g_contracts=g_contracts)
     except BadRequest as e:
         g.sess.rollback()
         flash(e.description)
@@ -746,7 +748,8 @@ def site_edit_get(site_id):
             'site_edit.html', site=site, sources=sources,
             generator_types=generator_types, gsp_groups=gsp_groups, eras=eras,
             mop_contracts=mop_contracts, hhdc_contracts=hhdc_contracts,
-            supplier_contracts=supplier_contracts, pcs=pcs, cops=cops)
+            supplier_contracts=supplier_contracts, pcs=pcs, cops=cops,
+            g_contracts=g_contracts)
 
 
 @app.route('/sites/<int:site_id>/edit', methods=['POST'])
@@ -883,14 +886,15 @@ def site_edit_post(site_id):
             MarketRole.code == 'X').order_by(Contract.name)
         pcs = g.sess.query(Pc).order_by(Pc.code)
         cops = g.sess.query(Cop).order_by(Cop.code)
+        g_contracts = g.sess.query(GContract).order_by(GContract.name)
         return make_response(
             render_template(
                 'site_edit.html', site=site, sources=sources,
                 generator_types=generator_types, gsp_groups=gsp_groups,
                 eras=eras, mop_contracts=mop_contracts,
                 hhdc_contracts=hhdc_contracts,
-                supplier_contracts=supplier_contracts, pcs=pcs, cops=cops),
-            400)
+                supplier_contracts=supplier_contracts, pcs=pcs, cops=cops,
+                g_contracts=g_contracts), 400)
 
 
 @app.route('/sites/add', methods=['POST'])

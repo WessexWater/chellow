@@ -738,11 +738,14 @@ def virtual_bill_titles():
             r"The file has been imported successfully"],
         'status_code': 200},
 
-    # Check that a supply with only an import MPAN is there
     {
+        'name': "Check that a supply with only an import MPAN is there",
         'path': '/sites/4/edit',
         'regexes': [
-            r'22 6354 2983 570'],
+            r'22 6354 2983 570',
+            r'<form action="/sites/4/edit" method="post">\s*'
+            r'<fieldset>\s*'
+            r'<legend>Insert a gas supply</legend>'],
         'status_code': 200},
 
     # Can we see a site ok?
@@ -14803,6 +14806,16 @@ def virtual_bill(ds):
         'status_code': 303,
         'regexes': [
             r'/g_batches/1']},
+
+
+    {
+        'name': "View edit site - with gas contracts",
+        'path': '/sites/7/edit',
+        'status_code': 200,
+        'regexes': [
+            r'<select name="g_contract_id">\s*'
+            r'<option value="1">Total</option>\s*'
+            r'</select>']},
 
     {
         'name': "Insert a gas supply",
