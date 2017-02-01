@@ -10,7 +10,7 @@ from werkzeug.exceptions import BadRequest
 from chellow.models import (
     RateScript, Channel, Era, Tpr, MeasurementRequirement, RegisterRead, Bill,
     BillType, ReadType, SiteEra, Supply, Source, HhDatum, Contract,
-    ClockInterval)
+    ClockInterval, Mtc)
 from chellow.utils import (
     HH, hh_format, hh_max, hh_range, hh_min, utc_datetime, utc_datetime_now,
     to_tz, to_ct, loads)
@@ -821,7 +821,9 @@ class SupplySource(DataSource):
                 hist_eras = hist_eras.filter(Era.imp_mpan_core != null())
             else:
                 hist_eras = hist_eras.filter(Era.exp_mpan_core != null())
-            hist_eras = hist_eras.all()
+            hist_eras = hist_eras.options(
+                joinedload(Era.pc), joinedload(Era.channels),
+                joinedload(Era.mtc).joinedload(Mtc.meter_type)).all()
             if len(hist_eras) == 0:
                 hist_eras = sess.query(Era).filter(
                     Era.supply == self.supply).order_by(Era.start_date)
