@@ -21,11 +21,14 @@
 	<div class="section-content">
 		<div class="section-data">
 			<div class="standardForm">
-				<form enctype="multipart/form-data" method="post" action="">
+				<form
+						enctype="multipart/form-data" method="post"
+					 	action="/general_imports">
 					<fieldset>
-						<input type="file" name="import_file" size="45"
-							value="{{request.values.import_file}}" />
-						<input type="submit" value="Import" />
+						<input
+			 					type="file" name="import_file" size="45"
+								value="{{request.values.import_file}}">
+						<input type="submit" value="Import">
 					</fieldset>
 				</form>
 				
@@ -131,6 +134,35 @@
 							<td>Generator Type</td>
 							<td>Supply Name</td>
 							<td>GSP Group</td>
+						</tr>
+						<tr>
+							<td><em>delete</em></td>
+							<td><em>supply</em></td>
+							<td>MPAN Core</td>
+						</tr>
+						<tr>
+							<td><em>insert</em></td>
+							<td><em>g_supply</em></td>
+							<td>Site Code</td>
+							<td>Supply Name</td>
+							<td>Start date (yyyy-MM-dd)</td>
+							<td>Finish Date</td>
+							<td>Meter Serial Number</td>
+							<td>MPRN</td>
+							<td>Contract</td>
+							<td>Account</td>
+						</tr>
+						<tr>
+							<td><em>update</em></td>
+							<td><em>g_supply</em></td>
+							<td>Existing MPRN</td>
+							<td>MPRN</td>
+							<td>Supply Name</td>
+						</tr>
+						<tr>
+							<td><em>delete</em></td>
+							<td><em>g_supply</em></td>
+							<td>MPRN</td>
 						</tr>
 						<tr>
 							<td><em>insert</em></td>

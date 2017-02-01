@@ -12,7 +12,7 @@ from chellow.models import (
     Site, Era, Supply, HhDatum, Source, GeneratorType, GspGroup, Contract, Pc,
     Cop, Ssc, Snag, Channel, Mtc, BillType, Tpr, ReadType, Participant, Bill,
     RegisterRead, UserRole, Party, User, VoltageLevel, Llfc, MarketRole,
-    MeterType, MeterPaymentType, set_read_write, Session)
+    MeterType, MeterPaymentType, set_read_write, Session, GContract, GSupply)
 from werkzeug.exceptions import BadRequest
 
 
@@ -35,7 +35,7 @@ def add_arg(args, name, values, index):
     return value
 
 
-ALLOWED_ACTIONS = ['insert', 'update', 'delete']
+ALLOWED_ACTIONS = ('insert', 'update', 'delete')
 
 
 def general_import_era(sess, action, vals, args):
@@ -408,6 +408,45 @@ def general_import_era(sess, action, vals, args):
             imp_mpan_core, imp_llfc_code, imp_supplier_contract,
             imp_supplier_account, imp_sc, exp_mpan_core, exp_llfc_code,
             exp_supplier_contract, exp_supplier_account, exp_sc, channel_set)
+
+
+def general_import_g_supply(sess, action, vals, args):
+    if action == "insert":
+        site_code = add_arg(args, "Site Code", vals, 0)
+        site = Site.get_by_code(sess, site_code)
+        supply_name = add_arg(args, "Supply Name", vals, 1)
+        start_date_str = add_arg(args, "Start Date", vals, 2)
+        start_date = parse_hh_start(start_date_str)
+        finish_date_str = add_arg(args, "Finish Date", vals, 3)
+        finish_date = parse_hh_start(finish_date_str)
+        msn = add_arg(args, "Meter Serial Number", vals, 4)
+        mprn = add_arg(args, "MPRN", vals, 5)
+        g_contract_name = add_arg(args, "Contract", vals, 6)
+        if len(g_contract_name) > 0:
+            g_contract = GContract.get_by_name(sess, g_contract_name)
+        else:
+            g_contract = None
+        account = add_arg(args, "Account", vals, 7)
+
+        site.insert_g_supply(
+            sess, supply_name, start_date, finish_date, msn, mprn,
+            g_contract, account)
+        sess.flush()
+    elif action == "update":
+        existing_mprn = add_arg(args, "Existing MPRN", vals, 0)
+        g_supply = GSupply.get_by_mprn(sess, existing_mprn)
+        mprn = add_arg(args, "MPRN", vals, 0)
+        mprn = g_supply.mprn if mprn == NO_CHANGE else mprn
+        g_supply_name = add_arg(args, "Supply Name", vals, 4)
+        if g_supply_name == NO_CHANGE:
+            g_supply_name = g_supply.name
+        g_supply.update(mprn, supply_name)
+        sess.flush()
+    elif action == "delete":
+        mprn = add_arg(args, "MPRN", vals, 0)
+        g_supply = GSupply.get_by_mprn(sess, mprn)
+        g_supply.delete()
+        sess.flush()
 
 
 def general_import_party(sess, action, vals, args):
