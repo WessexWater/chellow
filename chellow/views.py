@@ -864,10 +864,10 @@ def site_edit_post(site_id):
             g_contract = GContract.get_by_id(g.sess, g_contract_id)
             account = req_str('account')
             start_date = req_date('start')
-            site.insert_g_supply(
+            g_supply = site.insert_g_supply(
                 g.sess, name, start_date, None, msn, mprn, g_contract, account)
             g.sess.commit()
-            return chellow_redirect('/sites/' + str(site.id), 303)
+            return chellow_redirect('/g_supplies/' + str(g_supply.id), 303)
 
     except BadRequest as e:
         g.sess.rollback()

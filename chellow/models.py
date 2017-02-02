@@ -1215,9 +1215,14 @@ class Site(Base, PersistentClass):
         try:
             sess.add(g_supply)
             sess.flush()
-        except SQLAlchemyError as e:
+        except ProgrammingError as e:
             sess.rollback()
-            raise e
+            if 'duplicate key value violates unique constraint ' + \
+                    '"g_supply_mprn_key"' in str(e):
+                raise BadRequest(
+                    "There's already a gas supply with that MPRN.")
+            else:
+                raise e
 
         g_supply.insert_g_era(
             sess, self, [], start_date, finish_date, msn, g_contract, account)

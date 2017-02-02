@@ -14835,7 +14835,7 @@ def virtual_bill(ds):
             'insert_gas': 'Insert Gas'},
         'status_code': 303,
         'regexes': [
-            r'/sites/7']},
+            r'/g_supplies/1']},
 
     {
         'name': "View a gas supply",
@@ -14871,6 +14871,26 @@ def virtual_bill(ds):
         'status_code': 200,
         'regexes': [
             r'Main Gas Supply']},
+
+    {
+        'name': "Insert duplicate gas supply",
+        'path': '/sites/7/edit',
+        'method': 'post',
+        'data': {
+            'name': 'Main Gas',
+            'start_year': '2015',
+            'start_month': '09',
+            'start_day': '01',
+            'start_hour': '00',
+            'start_minute': '00',
+            'msn': 'hwo8tt',
+            'mprn': '750278673',
+            'g_contract_id': '1',
+            'account': 'ghoIIl',
+            'insert_gas': 'Insert Gas'},
+        'status_code': 400,
+        'regexes': [
+            r'There&#39;s already a gas supply with that MPRN\.']},
 
     {
         'name': "Edit view of gas era",
@@ -15144,7 +15164,7 @@ def virtual_bill(ds):
             'insert_gas': 'Insert Gas'},
         'status_code': 303,
         'regexes': [
-            r'/sites/7']},
+            r'/g_supplies/3']},
 
     {
         'name': "Delete gas supply. Check the search contains it.",
@@ -15155,7 +15175,7 @@ def virtual_bill(ds):
 
     {
         'name': "Delete gas supply.",
-        'path': '/g_supplies/2/edit',
+        'path': '/g_supplies/3/edit',
         'method': 'post',
         'data': {
             'delete': 'Delete'},
