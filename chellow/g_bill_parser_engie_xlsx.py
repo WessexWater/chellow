@@ -75,7 +75,7 @@ class Parser():
         for self._line_number, row in enumerate(self.consumption_rows[10:]):
             bill_reference_raw = row[1].value
             if bill_reference_raw is None:
-                continue
+                break
             bill_reference = str(bill_reference_raw)
             read = {
                 'msn': '',
