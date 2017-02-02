@@ -1,7 +1,8 @@
 {% extends "base.html" %}
 
 {% block title %}
-	&raquo; Supplies &raquo; {{era.supply.id}} &raquo; Era {{era.start_date|hh_format}} Edit
+	&raquo; Supplies &raquo; {{era.supply.id}} &raquo;
+ 	Era {{era.start_date|hh_format}} Edit
 {% endblock %}
 
 {% block style %}
@@ -14,9 +15,9 @@
 {% endblock %}
 
 {% block nav %}
-	&raquo; <a href="/supplies">Supplies</a> &raquo; 
-	<a href="/supplies/{{era.supply.id}}">{{era.supply.id}}</a>
- 	&raquo; Era {{era.start_date|hh_format}} Edit
+	<a href="/supplies">Supplies</a> &raquo; 
+	<a href="/supplies/{{era.supply.id}}">{{era.supply.id}}</a> &raquo;
+ 	Era {{era.start_date|hh_format}} Edit
 {% endblock %}
 
 {% block content %}
@@ -34,7 +35,6 @@
 				<div class="standardForm">
 					<form method="post">
 						<fieldset>
-							<input type="hidden" name="era_id" value="{{era.id}}">
 							<input type="submit" name="delete" value="Delete">
 							<input type="reset" value="Cancel" onClick="window.location='/eras/{{era.supply.id}}/edit'" />
 						</fieldset>

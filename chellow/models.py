@@ -2950,29 +2950,29 @@ class GEra(Base, PersistentClass):
         self.update(sess, start_date, finish_date, msn, contract, account)
 
     def attach_site(self, sess, site, is_location=False):
-        if site in sess.query(Site).join(SiteGEra).filter(
-                SiteGEra.g_era == self).all():
+        if sess.query(SiteGEra).filter(
+                SiteGEra.g_era == self, SiteGEra.site == site).count() == 1:
             raise BadRequest(
                 "The site is already attached to this supply.")
 
-        site_era = SiteGEra(site, self, False)
-        sess.add(site_era)
+        site_g_era = SiteGEra(site, self, False)
+        sess.add(site_g_era)
         sess.flush()
         if is_location:
             self.set_physical_location(sess, site)
 
     def detach_site(self, sess, site):
-        site_era = sess.query(SiteGEra).filter(
-            SiteGEra.era == self, SiteGEra.site == site).first()
-        if site_era is None:
+        site_g_era = sess.query(SiteGEra).filter(
+            SiteGEra.g_era == self, SiteGEra.site == site).first()
+        if site_g_era is None:
             raise BadRequest(
                 "Can't detach this era from this site, as it isn't attached.")
-        if site_era.is_physical:
+        if site_g_era.is_physical:
             raise BadRequest(
                 "You can't detach an era from the site where it is "
                 "physically located.")
 
-        sess.delete(site_era)
+        sess.delete(site_g_era)
         sess.flush()
 
     def update_dates(self, sess, start_date, finish_date):

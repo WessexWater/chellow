@@ -15241,4 +15241,22 @@ def virtual_bill(ds):
         'status_code': 200,
         'regexes': [
             r'750278673']},
+
+    {
+        'name': "Attach a gas era to a site",
+        'path': '/g_eras/3/edit',
+        'method': 'post',
+        'data': {
+            'site_code': 'CH023',
+            'attach': 'Attach'},
+        'status_code': 303},
+
+    {
+        'name': "Detach a gas era from a site",
+        'path': '/g_eras/3/edit',
+        'method': 'post',
+        'data': {
+            'site_id': '5',
+            'detach': 'Detach'},
+        'status_code': 303},
 ]
