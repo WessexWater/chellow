@@ -3960,6 +3960,19 @@ def db_upgrade_3_to_4(sess, root_path):
         sess.add(GReadType(code, desc))
     sess.commit()
 
+    set_read_write(sess)
+    for code, desc, factor_str in (
+            ("MCUF", "Thousands of cubic feet", '28.317'),
+            ("HCUF", "Hundreds of cubic feet", '2.8317'),
+            ("TCUF", "Tens of cubic feet", '0.28317'),
+            ("OCUF", "One cubic foot", '0.028317'),
+            ("M3", "Cubic metres", '1'),
+            ("HM3", "Hundreds of cubic metres", '100'),
+            ("TM3", "Tens of cubic metres", '10'),
+            ("NM3", "Tenths of cubic metres", '0.1')):
+        sess.add(GUnits(code, desc, Decimal(factor_str)))
+    sess.commit()
+
 
 upgrade_funcs = [
     db_upgrade_0_to_1, db_upgrade_1_to_2, db_upgrade_2_to_3, db_upgrade_3_to_4]
