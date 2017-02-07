@@ -230,6 +230,8 @@ def content(g_batch_id, g_bill_id, user):
             csv_writer.writerow(
                 [(vals[k] if vals[k] is not None else '') for k in titles])
 
+    except BadRequest as e:
+        tmp_file.write("Problem: " + e.description)
     except:
         msg = traceback.format_exc()
         sys.stderr.write(msg + '\n')
