@@ -66,6 +66,7 @@ def before_first_request():
     chellow.tlms.startup()
     chellow.bank_holidays.startup()
     chellow.dloads.startup(app.instance_path)
+    chellow.utils.root_path = app.root_path
 
 
 @app.before_request

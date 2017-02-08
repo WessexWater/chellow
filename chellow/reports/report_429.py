@@ -192,7 +192,7 @@ def content(g_batch_id, g_bill_id, user):
                 else:
                     chunk_finish = g_era.finish_date
 
-                data_source = chellow.g_engine.DataSource(
+                data_source = chellow.g_engine.GDataSource(
                     sess, chunk_start, chunk_finish, forecast_date, g_era,
                     report_context, covered_primary_bill)
 

@@ -3,7 +3,7 @@ from werkzeug.exceptions import BadRequest
 from pytz import timezone, utc
 from decimal import Decimal
 from collections import defaultdict, deque
-from datetime import datetime as Datetime
+from datetime import datetime as Datetime, timedelta
 from flask import request, Response
 from jinja2 import Environment
 import time
@@ -11,6 +11,7 @@ import traceback
 from amazon.ion.simpleion import load
 from amazon.ion.exceptions import IonException
 from io import StringIO
+import os
 
 
 clogs = deque()
@@ -397,6 +398,7 @@ class keydefaultdict(defaultdict):
 
 
 ct = timezone('Europe/London')
+root_path = None
 
 
 def ct_datetime(year, month, day=1, hour=0, minute=0):
@@ -452,3 +454,60 @@ def make_val(v):
             return None
     else:
         return v
+
+
+def get_file_rates(cache, contract_name, dt):
+    try:
+        return cache['contract_names'][contract_name][dt]
+    except KeyError:
+        try:
+            contract_names = cache['contract_names']
+        except KeyError:
+            contract_names = {}
+            cache['contract_names'] = contract_names
+
+        try:
+            cont = contract_names[contract_name]
+        except KeyError:
+            cont = {}
+            contract_names[contract_name] = cont
+
+        try:
+            return cont[dt]
+        except KeyError:
+            rscripts_path = os.path.join(
+                root_path, 'rate_scripts', contract_name)
+            for rscript_fname in sorted(os.listdir(rscripts_path)):
+                if not rscript_fname.endswith('.ion'):
+                    continue
+                try:
+                    start_str, finish_str = \
+                        rscript_fname.split('.')[0].split('_')
+                except ValueError:
+                    raise Exception(
+                        "The rate script " + rscript_fname +
+                        " in the directory " + rscripts_path +
+                        " should consist of two dates separated by an " +
+                        "underscore.")
+                start_date = to_utc(Datetime.strptime(start_str, "%Y%m%d%H%M"))
+                if finish_str == 'ongoing':
+                    finish_date = to_utc(Datetime.max)
+                else:
+                    finish_date = to_utc(
+                        Datetime.strptime(finish_str, "%Y%m%d%H%M"))
+                if start_date <= dt <= finish_date:
+                    with open(
+                            os.path.join(rscripts_path, rscript_fname),
+                            'r') as f:
+                        rscript = load(f)
+                    FOUR_WEEKS = timedelta(weeks=4)
+                    range_start = hh_max(start_date, dt - FOUR_WEEKS)
+                    range_finish = hh_min(finish_date, dt + FOUR_WEEKS)
+                    for hh_date in hh_range(range_start, range_finish):
+                        cont[hh_date] = rscript
+                    break
+            try:
+                return cont[dt]
+            except KeyError:
+                raise BadRequest(
+                    "Can't find a rate script at " + hh_format(dt))

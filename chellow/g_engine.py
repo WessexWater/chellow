@@ -10,7 +10,7 @@ from collections import defaultdict
 from chellow.models import (
     GRateScript, GEra, GRegisterRead, GBill, BillType, GReadType, GBatch,
     GUnits)
-from chellow.utils import HH, hh_format, hh_after
+from chellow.utils import HH, hh_format, hh_after, get_file_rates
 import chellow.computer
 
 
@@ -248,7 +248,7 @@ def get_data_sources(data_source, start_date, finish_date, forecast_date=None):
             chunk_finish = g_era_finish if \
                 hh_after(finish_date, g_era_finish) else finish_date
 
-            ds = DataSource(
+            ds = GDataSource(
                 data_source.sess, chunk_start, chunk_finish, forecast_date,
                 g_era, data_source.caches, data_source.bill)
             yield ds
@@ -324,7 +324,7 @@ def _datum_generator(sess, years_back, caches):
 ACTUAL_READ_TYPES = ['N', 'N3', 'C', 'X', 'CP']
 
 
-class DataSource():
+class GDataSource():
     def __init__(
             self, sess, start_date, finish_date, forecast_date, g_era,
             caches, g_bill):
@@ -800,3 +800,9 @@ class DataSource():
     def rate(self, contract_id, date, name):
         return chellow.computer.hh_rate(
             self.sess, self.caches, contract_id, date, name)
+
+    def file_rate(self, contract_name, timestamp, rate_name):
+        return get_file_rates(self.caches, contract_name, timestamp)[rate_name]
+
+    def get_file_rates(self, contract_name, timestamp):
+        return get_file_rates(self.caches, contract_name, timestamp)

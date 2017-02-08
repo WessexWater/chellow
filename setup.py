@@ -41,7 +41,8 @@ setup(
         'static/font-awesome-4.6.3/less/**',
         'static/font-awesome-4.6.3/scss/**',
         'nationalgrid/*',
-        'elexonportal/*']},
+        'elexonportal/*',
+        'rate_scripts/*/*.ion']},
     install_requires=[
         'pg8000==1.10.6',
         'Flask==0.12',
