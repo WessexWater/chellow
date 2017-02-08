@@ -148,5 +148,5 @@ def blocking_writer(writer, output):
     while True:
         ion_event = (yield result_type)
         for result_event in _drain(writer, ion_event):
-            output.write(result_event.data)
+            output.write(result_event.data.decode('utf8'))
         result_type = result_event.type

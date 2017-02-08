@@ -1,34 +1,45 @@
 {% extends "base.html" %}
 
 {% block title %}
-	Gas Contracts &gt; {{g_rate_script.g_contract.name}} &gt;
+	Gas Contracts &raquo; {{g_rate_script.g_contract.name}} &raquo;
  	Rate Script {{g_rate_script.id}}
 {% endblock %}
 
 {% block nav %}
-	<a href="{{context_path}}/g_contracts">Gas Contracts</a> &gt;
+	<a href="/g_contracts">Gas Contracts</a> &raquo;
 	<a
-			href="{{context_path}}/g_contracts/{{g_rate_script.g_contract.id}}"
-			>{{g_rate_script.g_contract.name}}</a> &gt;
+			href="/g_contracts/{{g_rate_script.g_contract.id}}"
+			>{{g_rate_script.g_contract.name}}</a> &raquo;
 	 	Rate Script {{g_rate_script.start_date|hh_format}}
-	[<a
-			href="{{context_path}}/g_rate_scripts/{{g_rate_script.id}}/edit"
-			>edit</a>]
+	[<a href="/g_rate_scripts/{{g_rate_script.id}}/edit">edit</a>]
 {% endblock %}
 
 {% block content %}
-	<table>
-		<tr>
-			<th>Start Date</th>
-			<td>{{ g_rate_script.start_date|hh_format }}</td>
-		</tr>
-		<tr>
-			<th>Finish Date</th>
-			<td>{{ g_rate_script.finish_date|hh_format }}</td>
-		</tr>
-	</table>
-
-	<h2>Script</h2>
-
-	<pre>{{g_rate_script.script}}</pre>
+	<div class="layer-section">
+		<div class="section-header">
+			<h2>Properties</h2>	
+		</div>
+		<div class="section-content">
+			<div class="section-data">
+				<table class="DataTable widthAuto noMarginBottom">
+					<tr>
+						<th>Start Date</th>
+						<td>{{ g_rate_script.start_date|hh_format }}</td>
+					</tr>
+					<tr>
+						<th>Finish Date</th>
+						<td>{{ g_rate_script.finish_date|hh_format }}</td>
+					</tr>
+				</table>
+			</div>
+		</div>
+	</div>
+	<div class="layer-section">
+		<div class="section-header">
+			<h2>Script</h2>	
+		</div>
+		<div class="section-content">
+			<pre>{{g_rate_script.script}}</pre>
+		</div>
+	</div>
 {% endblock %}

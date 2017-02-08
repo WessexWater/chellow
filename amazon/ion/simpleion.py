@@ -129,7 +129,7 @@ def dump(obj, fp, imports=None, binary=True, sequence_as_stream=False, skipkeys=
         **kw: NOT IMPLEMENTED
 
     """
-    raw_writer = binary_writer(imports) if binary else text_writer()
+    raw_writer = text_writer()
     writer = blocking_writer(raw_writer, fp)
     writer.send(ION_VERSION_MARKER_EVENT)  # The IVM is emitted automatically in binary; it's optional in text.
     if sequence_as_stream and isinstance(obj, (list, tuple)):

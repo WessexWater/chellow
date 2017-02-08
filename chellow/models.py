@@ -25,6 +25,8 @@ import sys
 from hashlib import pbkdf2_hmac
 from binascii import hexlify, unhexlify
 from decimal import Decimal
+from amazon.ion.simpleion import dump, load
+from io import StringIO
 
 
 config = {
@@ -3391,7 +3393,9 @@ class GContract(Base, PersistentClass):
             raise BadRequest(
                 "The start date can't be after the finish date.")
 
-        rscript.script = str(script)
+        script_f = StringIO()
+        dump(script, script_f, binary=False)
+        rscript.script = script_f.getvalue()
 
         prev_rscript = self.find_g_rate_script_at(
             sess, rscript.start_date - HH)
@@ -3588,10 +3592,13 @@ class GRateScript(Base, PersistentClass):
         self.g_contract = g_contract
         self.start_date = start_date
         self.finish_date = finish_date
-        self.script = str(script)
+        script_f = StringIO()
+        dump(script, script_f, binary=False)
+        self.script = script_f.getvalue()
 
     def make_script(self):
-        return eval(self.script)
+        script_f = StringIO(self.script)
+        return load(script_f)
 
 
 class GUnits(Base):
