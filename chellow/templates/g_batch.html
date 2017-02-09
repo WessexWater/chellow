@@ -1,132 +1,139 @@
 {% extends "base.html" %}
 
 {% block title %}
-	Gas Contracts &gt; {{g_batch.g_contract.name}} &gt; Batches &gt;
+	Gas Contracts &raquo; {{g_batch.g_contract.name}} &raquo; Batches &gt;
  	{{g_batch.reference}}
 {% endblock %}
 
 {% block nav %}
-	<a href="{{context_path}}/g_contracts">Gas Contracts</a> &gt;
+	<a href="/g_contracts">Gas Contracts</a> &raquo;
 	<a
-	 		href="{{context_path}}/g_contracts/{{g_batch.g_contract.id}}"
-			>{{g_batch.g_contract.name}}</a> &gt;
+	 		href="/g_contracts/{{g_batch.g_contract.id}}"
+			>{{g_batch.g_contract.name}}</a> &raquo;
 	<a
-	 		href="{{context_path}}/g_batches?g_contract_id={{g_batch.g_contract.id}}"
-			>Batches</a> &gt; {{g_batch.reference}}
-	[<a href="{{context_path}}/g_batches/{{g_batch.id}}/edit">edit</a>]
+	 		href="/g_batches?g_contract_id={{g_batch.g_contract.id}}"
+			>Batches</a> &raquo;
+	{{g_batch.reference}} [<a href="/g_batches/{{g_batch.id}}/edit">edit</a>]
 {% endblock %}
 
 {% block content %}
-	<table>
-		<tr>
-			<th>Reference</th>
-			<td>{{g_batch.reference}}</td>
-		</tr>
-		<tr>
-			<th>Description</th>
-			<td>{{g_batch.description}}</td>
-		</tr>
-		<tr>
-			<th>Number Of Bills</th>
-			<td>{{ g_bills|length }}</td>
-		</tr>
-		{% if g_batch_reports %}
-			<tr>
-				<th>Custom Reports</th>
-				<td>
-					<ul>
-						{% for report in g_batch_reports %}
-							<li>
-								<a href="{{context_path}}/local_reports/{{report.id}}/output?g_batch_id={{g_batch.id}}"
-										>{{report.name}}</a>
-							</li>
+	<div class="layer-section">
+		<div class="section-content">
+			<div class="section-data">
+				<table class="DataTable widthAuto noMarginBottom">
+					<tr>
+						<th>Reference</th>
+						<td>{{g_batch.reference}}</td>
+					</tr>
+					<tr>
+						<th>Description</th>
+						<td>{{g_batch.description}}</td>
+					</tr>
+					<tr>
+						<th>Number Of Bills</th>
+						<td>{{g_bills|length}}</td>
+					</tr>
+					{% if g_batch_reports %}
+						<tr>
+							<th>Custom Reports</th>
+							<td>
+								<ul>
+									{% for report in g_batch_reports %}
+										<li>
+											<a
+					 								href="/local_reports/{{report.id}}/output?g_batch_id={{g_batch.id}}"
+													>{{report.name}}</a>
+										</li>
+									{% endfor %}
+								</ul>
+							</td>
+						</tr>
+					{% endif %}
+				</table>
+				<br>
+				<ul>
+					<li>
+						<a
+								href="/reports/429?g_batch_id={{g_batch.id}}"
+								>Check Bills</a>
+					</li>
+					<li>
+						<a
+								href="/g_bill_imports?g_batch_id={{g_batch.id}}"
+								>Bill Imports</a>
+					</li>
+				</ul>
+				<table class="DataTable widthAuto noMarginBottom">
+					<caption>
+						Bills
+						[<a
+								href="/reports/435?g_batch_id={{g_batch.id}}"
+								>add</a>]
+					</caption>
+					<thead>
+						<tr>
+							<th>View</th>
+							<th>Reference</th>
+							<th>Account</th>
+							<th>Issued</th>
+							<th>Start Date</th>
+							<th>Finish Date</th>
+							<th>Bill Type</th>
+							<th>kWh</th>
+							<th>Net GBP</th>
+							<th>VAT GBP</th>
+							<th>Gross GBP</th>
+							<th>Breakdown</th>
+							{% for i in range(max_reads) %}
+								<th>{{i}} MSN</th>
+								<th>{{i}} Prev Date</th>
+								<th>{{i}} Prev Value</th>
+								<th>{{i}} Prev Type</th>
+								<th>{{i}} Pres Date</th>
+								<th>{{i}} Pres Value</th>
+								<th>{{i}} Pres Type</th>
+								<th>{{i}} Units Consumed</th>
+								<th>{{i}} Units</th>
+								<th>{{i}} Correction Factor</th>
+								<th>{{i}} Calorific Value</th>
+								<th>{{i}} kWh</th>
+							{% endfor %}
+						</tr>
+					</thead>
+					<tbody>
+						{% for g_bill in g_bills %}
+							<tr>
+								<td><a href="/g_bills/{{g_bill.id}}">View</a></td>
+								<td>{{g_bill.reference}}</td>
+								<td>{{g_bill.account}}</td>
+								<td>{{g_bill.issue_date|hh_format}}</td>
+								<td>{{g_bill.start_date|hh_format}}</td>
+								<td>{{g_bill.finish_date|hh_format}}</td>
+								<td>{{g_bill.bill_type.code}}</td>
+								<td>{{g_bill.kwh}}</td>
+								<td>{{g_bill.net_gbp}}</td>
+								<td>{{g_bill.vat_gbp}}</td>
+								<td>{{g_bill.gross_gbp}}</td>
+								<td>{{g_bill.breakdown}}</td>
+								{% for read in g_bill.g_reads %}
+									<td>{{read.msn}}</td>
+									<td>{{read.prev_date|hh_format}}</td>
+									<td>{{read.prev_value}}</td>
+									<td>{{read.prev_type.code}}</td>
+									<td>{{read.pres_date|hh_format}}</td>
+									<td>{{read.pres_value}}</td>
+									<td>{{read.pres_type.code}}</td>
+									<td>{{read.units_consumed}}</td>
+									<td>{{read.units}}</th>
+									<td>{{read.correction_factor}}</td>
+									<td>{{read.calorific_value}}</td>
+									<td>{{read.kwh}}</td>
+								{% endfor %}
+							</tr>
 						{% endfor %}
-					</ul>
-				</td>
-			</tr>
-		{% endif %}
-	</table>
-	<br>
-	<ul>
-		<li>
-			<a
-			 		href="{{context_path}}/reports/429?g_batch_id={{g_batch.id}}"
-					>Check Bills</a>
-		</li>
-		<li>
-			<a
-			 		href="{{context_path}}/g_bill_imports?g_batch_id={{g_batch.id}}"
-					>Bill Imports</a>
-		</li>
-	</ul>
-	<table>
-		<caption>
-			Bills
-			[<a
-					href="{{context_path}}/reports/435?g_batch_id={{g_batch.id}}"
-					>add</a>]
-		</caption>
-		<thead>
-			<tr>
-				<th>View</th>
-				<th>Reference</th>
-				<th>Account</th>
-				<th>Issued</th>
-				<th>Start Date</th>
-				<th>Finish Date</th>
-				<th>Bill Type</th>
-				<th>kWh</th>
-				<th>Net GBP</th>
-				<th>VAT GBP</th>
-				<th>Gross GBP</th>
-				<th>Breakdown</th>
-				{% for i in range(max_reads) %}
-					<th>{{i}} MSN</th>
-					<th>{{i}} Prev Date</th>
-					<th>{{i}} Prev Value</th>
-					<th>{{i}} Prev Type</th>
-					<th>{{i}} Pres Date</th>
-					<th>{{i}} Pres Value</th>
-					<th>{{i}} Pres Type</th>
-					<th>{{i}} Units Consumed</th>
-					<th>{{i}} Units</th>
-					<th>{{i}} Correction Factor</th>
-					<th>{{i}} Calorific Value</th>
-					<th>{{i}} kWh</th>
-				{% endfor %}
-			</tr>
-		</thead>
-		<tbody>
-			{% for g_bill in g_bills %}
-				<tr>
-					<td><a href="{{context_path}}/g_bills/{{g_bill.id}}">View</a></td>
-					<td>{{g_bill.reference}}</td>
-					<td>{{g_bill.account}}</td>
-					<td>{{g_bill.issue_date|hh_format}}</td>
-					<td>{{g_bill.start_date|hh_format}}</td>
-					<td>{{g_bill.finish_date|hh_format}}</td>
-					<td>{{g_bill.bill_type.code}}</td>
-					<td>{{g_bill.kwh}}</td>
-					<td>{{g_bill.net_gbp}}</td>
-					<td>{{g_bill.vat_gbp}}</td>
-					<td>{{g_bill.gross_gbp}}</td>
-					<td>{{g_bill.breakdown}}</td>
-					{% for read in g_bill.g_reads %}
-						<td>{{read.msn}}</td>
-						<td>{{read.prev_date|hh_format}}</td>
-						<td>{{read.prev_value}}</td>
-						<td>{{read.prev_type.code}}</td>
-						<td>{{read.pres_date|hh_format}}</td>
-						<td>{{read.pres_value}}</td>
-						<td>{{read.pres_type.code}}</td>
-						<td>{{read.units_consumed}}</td>
-						<td>{{read.units}}</th>
-						<td>{{read.correction_factor}}</td>
-						<td>{{read.calorific_value}}</td>
-						<td>{{read.kwh}}</td>
-					{% endfor %}
-				</tr>
-			{% endfor %}
-		</tbody>
-	</table>
+					</tbody>
+				</table>
+			</div>
+		</div>
+	</div>
 {% endblock %}

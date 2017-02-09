@@ -33,7 +33,9 @@ class Parser():
             if bill_reference_raw is None:
                 break
             bill_reference = str(bill_reference_raw)
+            volume_kwh = row[9].value
             breakdown = {
+                'volume_kwh': volume_kwh,
                 'commodity_rate': row[11].value / 100,
                 'commodity_gbp': row[12].value,
                 'transport_fixed_rate': row[13].value / 100,
@@ -68,7 +70,7 @@ class Parser():
                 'vat_gbp': row[32].value,
                 'gross_gbp': row[33].value,
                 'raw_lines': '',
-                'kwh': row[9].value,
+                'kwh': volume_kwh,
                 'reads': []}
             raw_bills[bill_reference] = raw_bill
 
