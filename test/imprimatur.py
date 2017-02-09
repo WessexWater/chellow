@@ -15052,7 +15052,14 @@ def virtual_bill(ds):
         'data': {
             'delete': 'Delete'},
         'regexes': [
-            r'/supplier_bills/20'],
+            r'/supplier_bills/20']},
+
+    {
+        'name': "Delete bills of gas batch",
+        'path': '/g_batches/1/edit',
+        'method': 'post',
+        'data': {
+            'delete_bills': 'Delete Bills'},
         'status_code': 303},
 
     {
@@ -15261,4 +15268,9 @@ def virtual_bill(ds):
             'site_id': '5',
             'detach': 'Detach'},
         'status_code': 303},
+
+    {
+        'name': "View gas batch edit page",
+        'path': '/g_batches/3/edit',
+        'status_code': 200},
 ]

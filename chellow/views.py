@@ -5126,6 +5126,10 @@ def g_batch_edit_post(g_batch_id):
             g_batch.delete(g.sess)
             g.sess.commit()
             return chellow_redirect("/g_contracts/" + str(g_contract.id), 303)
+        elif 'delete_bills' in request.values:
+            g.sess.query(GBill).filter(GBill.g_batch == g_batch).delete(False)
+            g.sess.commit()
+            return chellow_redirect('/g_batches/' + str(g_batch.id), 303)
     except BadRequest as e:
         flash(e.description)
         return make_response(
