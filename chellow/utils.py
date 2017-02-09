@@ -449,7 +449,7 @@ def make_val(v):
         if len(v) == 1:
             return make_val(v.pop())
         elif 1 < len(v) < 4:
-            return '; '.join(str(csv_make_val(el)) for el in sorted(v))
+            return ' | '.join(str(csv_make_val(el)) for el in sorted(v))
         else:
             return None
     else:

@@ -11,7 +11,7 @@ import csv
 from chellow.models import Session, GBatch, GBill, GEra, Site, SiteGEra
 import chellow.dloads
 from werkzeug.exceptions import BadRequest
-from chellow.utils import hh_before, hh_format, req_int
+from chellow.utils import hh_before, csv_make_val, req_int
 import chellow.g_engine
 from flask import request, g
 from chellow.views import chellow_redirect
@@ -89,8 +89,7 @@ def content(g_batch_id, g_bill_id, user):
                         "Extraordinary! There isn't a era for this bill!"])
                 continue
 
-            vals = collections.defaultdict(
-                int, {
+            vals = {
                     'batch': g_batch.reference,
                     'bill_reference': g_bill.reference,
                     'bill_type': g_bill.bill_type.code,
@@ -99,7 +98,7 @@ def content(g_batch_id, g_bill_id, user):
                     'mprn': g_supply.mprn, 'covered_vat_gbp': g_bill.vat_gbp,
                     'covered_start': g_bill.start_date,
                     'covered_finish': g_bill.finish_date,
-                    'covered_bill_ids': []})
+                    'covered_bill_ids': []}
 
             covered_primary_bill = None
             enlarged = True
@@ -150,6 +149,8 @@ def content(g_batch_id, g_bill_id, user):
                         else:
                             try:
                                 vals[k] += v
+                            except KeyError:
+                                vals[k] = v
                             except TypeError:
                                 raise BadRequest(
                                     "Problem with key " + str(k) +
@@ -197,38 +198,40 @@ def content(g_batch_id, g_bill_id, user):
                     report_context, covered_primary_bill)
 
                 vbf(data_source)
-                for k in bill_titles:
-                    if k in data_source.bill:
-                        k_str = 'virtual_' + k
-                        v = data_source.bill[k]
-                        if k.endswith('_rate') or k in (
-                                'correction_factor', 'calorific_value',
-                                'units_code', 'units_factor'):
-                            if k_str not in vals:
-                                vals[k_str] = set()
-                            vals[k_str].add(v)
+
+                for k, v in data_source.bill.items():
+                    vk = 'virtual_' + k
+                    try:
+                        if isinstance(v, set):
+                            vals[vk].update(v)
                         else:
-                            vals[k_str] += v
+                            vals[vk] += v
+                    except KeyError:
+                        vals[vk] = v
+                    except TypeError as detail:
+                        raise BadRequest(
+                            "For key " + str(vk) + " and value " + str(v) +
+                            ". " + str(detail))
 
             vals['site_code'] = site.code
             vals['site_name'] = site.name
 
             for k, v in vals.items():
-                if isinstance(v, Datetime):
-                    vals[k] = hh_format(v)
-                elif isinstance(v, list):
-                    vals[k] = ','.join(map(str, v))
-                elif isinstance(v, set):
-                    vals[k] = v.pop() if len(v) == 1 else ''
+                vals[k] = csv_make_val(v)
 
             for i, title in enumerate(titles):
                 if title.startswith('difference_'):
-                    covered_val = float(vals[titles[i - 2]])
-                    virtual_val = float(vals[titles[i - 1]])
-                    vals[title] = covered_val - virtual_val
+                    try:
+                        covered_val = float(vals[titles[i - 2]])
+                        virtual_val = float(vals[titles[i - 1]])
+                        vals[title] = covered_val - virtual_val
+                    except KeyError:
+                        vals[title] = None
 
             csv_writer.writerow(
-                [(vals[k] if vals[k] is not None else '') for k in titles])
+                [
+                    (vals.get(k) if vals.get(k) is not None else '')
+                    for k in titles])
 
     except BadRequest as e:
         tmp_file.write("Problem: " + e.description)
