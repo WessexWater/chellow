@@ -1,4 +1,3 @@
-import datetime
 import pytz
 from dateutil.relativedelta import relativedelta
 from sqlalchemy import or_, cast, Float
@@ -10,7 +9,9 @@ from collections import defaultdict
 from chellow.models import (
     GRateScript, GEra, GRegisterRead, GBill, BillType, GReadType, GBatch,
     GUnits)
-from chellow.utils import HH, hh_format, hh_after, get_file_rates
+from chellow.utils import (
+    HH, hh_format, hh_after, get_file_rates, hh_max, hh_min, hh_range, to_ct,
+    utc_datetime_now, utc_datetime)
 import chellow.computer
 
 
@@ -193,11 +194,8 @@ def g_rate(sess, caches, g_contract_id, date, name):
         script_dict['rates']['_script_dict'] = script_dict
 
         d_cache = script_dict['rates']
-
-        dt = cstart
-        while dt <= cfinish:
+        for dt in hh_range(cstart, cfinish):
             cont_cache[dt] = d_cache
-            dt += HH
 
     try:
         return d_cache[name]
@@ -216,8 +214,8 @@ def g_rate(sess, caches, g_contract_id, date, name):
 
 
 def forecast_date():
-    now = datetime.datetime.now(pytz.utc)
-    return datetime.datetime(now.year, now.month, 1, tzinfo=pytz.utc)
+    now = utc_datetime_now()
+    return utc_datetime(now.year, now.month, 1)
 
 
 def get_data_sources(data_source, start_date, finish_date, forecast_date=None):
@@ -701,7 +699,6 @@ class GDataSource():
                             GRegisterRead.prev_date <= chunk_finish,
                             GRegisterRead.pres_date >= chunk_start) \
                             .order_by(GRegisterRead.pres_date):
-
                         if prev_date < g_bill.start_date:
                             self.problem += "There's a read before the " \
                                 "start of the bill!"
@@ -721,31 +718,22 @@ class GDataSource():
                         hh_kwh = hh_units_consumed * g_units_factor * \
                             correction_factor * calorific_value
 
-                        ct_tz = pytz.timezone('Europe/London')
-
                         if pres_type in ACTUAL_READ_TYPES \
                                 and prev_type in ACTUAL_READ_TYPES:
                             status = 'A'
                         else:
                             status = 'E'
-                        if prev_date < chunk_start:
-                            hh_date = chunk_start
-                        else:
-                            hh_date = prev_date
-
-                        if pres_date > chunk_finish:
-                            pass_finish = chunk_finish
-                        else:
-                            pass_finish = pres_date
+                        pass_start = hh_max(prev_date, chunk_start)
+                        pass_finish = hh_min(pres_date, chunk_finish)
 
                         year_delta = relativedelta(year=self.years_back)
-                        while not hh_date > pass_finish:
+                        for hh_date in hh_range(pass_start, pass_finish):
                             dt_utc = hh_date + year_delta
                             next_dt_utc = dt_utc + HH
                             utc_is_month_end = all((
                                 next_dt_utc.day == 1, next_dt_utc.hour == 0,
                                 next_dt_utc.minute == 0))
-                            dt_ct = ct_tz.normalize(dt_utc.astimezone(ct_tz))
+                            dt_ct = to_ct(dt_utc)
                             next_dt_ct = dt_ct + HH
                             ct_is_month_end = all((
                                 next_dt_ct.day == 1, next_dt_ct.hour == 0,
@@ -780,7 +768,6 @@ class GDataSource():
                                     'correction_factor': correction_factor,
                                     'units_consumed': hh_units_consumed,
                                     'kwh': hh_kwh})
-                            hh_date += HH
 
     def g_contract_func(self, g_contract, func_name):
         return g_contract_func(self.caches, g_contract, func_name)

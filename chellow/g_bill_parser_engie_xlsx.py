@@ -85,10 +85,10 @@ class Parser():
                 'prev_value': row[6].value,
                 'prev_date': to_utc(row[7].value),
                 'prev_type_code': row[8].value[1],
-                'pres_value': row[6].value,
+                'pres_value': row[9].value,
                 'pres_date': to_utc(row[10].value),
                 'pres_type_code': row[11].value[1],
-                'correction_factor': 0,
+                'correction_factor': 1,
                 'calorific_value': 0,
                 'units': 'M3'}
             raw_bill = raw_bills[bill_reference]
