@@ -11,41 +11,36 @@
 {% endblock %}
 
 {% block content %}
-	<!-- Layer Section -->
-	<div class="layer-section">
-		<!-- Section Header -->
-		<div class="section-header">
-			<h2>HH graph of site use</h2>	
-		</div>
-		<!-- End Section Header -->
-		<!-- Section Content -->
-		<div class="section-content">
-			<div class="section-data">
-				<div class="standardForm textWidthAuto">
-					<form action="/sites/{{site.id}}/used_graph">
-						<fieldset>
-							For {{input_text('months', request.values.months, 2, 2)}}
-							months finishing in
-							{{input_date('finish', finish_date, 'month')}}
-							<input type="submit" value="Show">
-						</fieldset>
-					</form>
-				</div>
-			</div>
-			<div class="section-data">
-				<div class="noWrap">
-					<svg
-							width="{{graph_left + result_data|length + 100}}px"
-							height="400px" xmlns="http://www.w3.org/2000/svg" version="1.1"
-						 	font-family="Overclock, sans-serif" font-size="12">
 
-						{% if result_data|length > 0 %}
-							{% for hh in result_data %}
-								{% if not hh.is_complete %}
-									<rect
-								 			x="{{graph_left + loop.index0}}px" y="{{graph_top}}px"
-										 	width="1px" height="{{max_height}}px" stroke="grey" />
-								{% endif %}
+<!-- Layer Section -->
+<div class="layer-section">
+	<!-- Section Header -->
+	<div class="section-header">
+		<h2>HH graph of site use</h2>	
+	</div>
+	<!-- End Section Header -->
+	<!-- Section Content -->
+	<div class="section-content">
+		<div class="section-data">
+		    <div class="standardForm textWidthAuto">
+                <form action="">
+                    <fieldset>
+                        For {{input_text('months', request.values.months, 2, 2)}}
+                        months finishing in {{input_date('finish', finish_date, 'month')}}
+                        <input type="submit" value="Show">
+                    </fieldset>
+                </form>
+            </div>
+		</div>
+		<div class="section-data">
+		    <div class="noWrap">
+                <svg width="{{graph_left + result_data|length + 100}}px" height="400px"
+    			 xmlns="http://www.w3.org/2000/svg" version="1.1" font-family="Overclock, sans-serif" font-size="12">
+            		{% if result_data|length > 0 %}
+            			{% for hh in result_data %}
+            					{% if not hh.is_complete %}
+            						<rect x="{{graph_left + loop.index0}}px" y="{{graph_top}}px" width="1px" height="{{max_height}}px" stroke="grey" />
+            					{% endif %}
 
 								{%- if hh.height > 0 %}
 									<rect
@@ -129,5 +124,8 @@
 		</div>
 		<!-- End Section Content -->
 	</div>
-	<!-- End Layer Section -->
+
+	<!-- End Section Content -->
+</div>
+<!-- End Layer Section -->
 {% endblock %}

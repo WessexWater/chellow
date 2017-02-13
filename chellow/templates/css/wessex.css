@@ -4,6 +4,7 @@ To change this template file, choose Tools | Templates
 and open the template in the editor.
 */
 /* 
+
     Created on  : May 27, 2016, 11:03:30 AM
     Edited on   : July 20, 2016, 12:15:08 PM
     Author      : AL
@@ -14,8 +15,7 @@ html, body {
 }
 
 body {
-    /*background-color: #FFF;*/
-    background-color: #EEF4F9;
+    background-color: #FFF;
     color: #333;
     font-size: 14px;
     position: relative;
@@ -59,15 +59,6 @@ a:hover {
     text-decoration: none !important;
 }
 
-dt, dd {
-    margin: 0;
-}
-
-dd {
-    margin-bottom: 15px;
-    margin-left: 20px;
-}
-
 table {
     border-collapse: collapse;
     margin: 0 0 12px;
@@ -78,10 +69,7 @@ table {
 .alignRight { text-align: right; }
 
 .bgBlue { background-color: #009FD9; }
-.bgLightBlue { 
-    /*background-color: #EEF4F9; */
-    background-color: {{background_colour}};
-    }
+.bgLightBlue { background-color: #EEF4F9; }
 .bgWhite { background-color: #FFF; }
 .bgYellow, .btn.bgYellow { background-color: #CDCA25; color: #FFF; }
 
@@ -97,12 +85,8 @@ table {
 .paddingTop30 { padding-top: 30px !important; }
 
 ol, ul {
-    margin: 0 0 15px;
+    margin: 0;
     padding: 0 0 0 20px;
-}
-
-pre {
-    margin: 0 0 15px;
 }
 
 
@@ -171,14 +155,14 @@ body.LoginScreen,
 /* Panel Logo */
 .panel-logo {
     margin: 0;
-    padding: 20px 0;
+    padding: 10px 0;
 }
 
 .panel-logo a {
-    background: url("../../static/images/chellow_test.png") left top no-repeat;
+    background: url('http://dev.mynameislatif.net/ww/chellow/images/logo.png') left top no-repeat;
     background-size: cover;
     display: inline-block;
-    height: 30px;
+    height: 51px;
     width: 82px;
 }
 
@@ -205,7 +189,7 @@ body.LoginScreen,
     /*margin: 28px 0px 24px;*/
     overflow: hidden;
     text-overflow: ellipsis;
-    /*white-space: nowrap;*/
+    white-space: nowrap;
     /*width: 90%;*/
 }
 
@@ -424,7 +408,7 @@ body.LoginScreen,
     
     .layer-header .col-sm-3, 
     .layer-header .col-sm-9 {
-        /*height: 76px;*/
+        height: 76px;
     }
 
     .layer-header .panel-breadcrumbs {
@@ -590,6 +574,13 @@ body.LoginScreen,
     margin: 0;
     padding: 0;
     transition: opacity 300ms ease-in-out, visibility 300ms ease-in-out; -moz-transition: opacity 300ms ease-in-out, visibility 300ms ease-in-out; -o-transition: opacity 300ms ease-in-out, visibility 300ms ease-in-out; -webkit-transition: opacity 300ms ease-in-out, visibility 300ms ease-in-out;
+    opacity: 0; visibility: hidden;
+}
+
+.main-navigation nav li.Selected ul,
+.main-navigation nav ul li:hover ul {
+    max-height: 500px;
+    opacity: 1; visibility: visible;
 }
 
 .main-navigation nav ul ul li {
@@ -708,8 +699,7 @@ body.LoginScreen,
 
 /* Layer Content */
 .layer-content {
-    /*padding: 15px 0;*/
-    padding: 15px 0 0;
+    padding: 15px 0;
 }
 
 
@@ -720,32 +710,12 @@ body.LoginScreen,
     margin: 0 0 30px;
 }
 
-.layer-content .layer-section:last-of-type {
-    margin-bottom: 0;
-}
-
 .layer-section .section-header {
     background-color: #FFF;
     border-bottom: 2px solid #EEF4F9;
     cursor: default;
     line-height: 15px;
     padding: 15px;
-}
-
-.section-header .ActionMenu {
-    color: #009FD9;
-    display: block;
-    float: right;
-    /*opacity: 0; visibility: hidden;*/
-    padding: 0;
-    position: relative;
-    right: auto;
-    top: auto;
-    transition: visibility 250ms, opacity 250ms linear; -moz-transition: visibility 250ms, opacity 250ms linear; -o-transition: visibility 250ms, opacity 250ms linear; -webkit-transition: visibility 250ms, opacity 250ms linear;
-}
-
-.section-header:hover .ActionMenu {
-    /*opacity: 1; visibility: visible;*/
 }
 
 .layer-section .section-action {
@@ -847,17 +817,7 @@ table.DataTable.noMarginBottom {
     /*border: 0;*/
     font-size: 12px;
     line-height: 18px;
-    /*padding: 5px 10px;*/
-    padding: 5px;
-}
-
-.DataTable .btn, 
-.DataTable a.btn, 
-.DataTable .button, 
-.DataTable input[type="submit"], 
-.DataTable input[type="reset"] {
-    font-size: 12px;
-    padding: 0px 5px;
+    padding: 5px 10px;
 }
 
 .DataTable tr:nth-child(even) td {
@@ -867,7 +827,7 @@ table.DataTable.noMarginBottom {
 .DataTable thead th, 
 .DataTable tfoot th {
     color: #444;
-    /*font-size: 90%;*/
+    font-size: 90%;
     font-weight: 700;
     text-align: center;
     text-transform: capitalize;
@@ -895,7 +855,7 @@ table.DataTable.noMarginBottom {
 .DataTable tbody tr:hover th, 
 .DataTable tbody tr:hover td {
     background-color: #D0E7F9;
-    cursor: default;
+    cursor: pointer;
     text-align: left;
 }
 
@@ -924,15 +884,6 @@ table.DataTable.noMarginBottom {
     text-decoration: underline !important;
 }
 
-.DataTable pre {
-    margin-bottom: 0;
-    transition: background-color 150ms ease-in-out; -moz-transition: background-color 150ms ease-in-out; -o-transition: background-color 150ms ease-in-out; -webkit-transition: background-color 150ms ease-in-out;
-}
-
-.DataTable tr:hover pre {
-    background-color: #E1E1E1;
-}
-
 
 /* StandardForm */
 .standardForm {
@@ -944,11 +895,7 @@ table.DataTable.noMarginBottom {
 }
 
 .standardForm label {
-    /* display: block; */
-}
-
-.standardForm.inlineFormSubmit label {
-    display: inline-block;
+    display: block;
 }
 
 .standardForm legend {
@@ -958,7 +905,7 @@ table.DataTable.noMarginBottom {
 
 input.input-text, 
 .standardForm .input-text, 
-/*.standardForm textarea, */
+.standardForm textarea, 
 .standardForm input, 
 .standardForm input[type="password"], 
 .standardForm input[type="text"], 
@@ -968,23 +915,12 @@ input.input-text,
     height: 34px;
     line-height: 24px;
     margin: 0 0 15px;
-    max-width: 100%;
     padding: 5px 10px;
     width: 100%;
 }
 
 .standardForm textarea {
-    font-family: monospace;
-    font-size: 13px;
     min-height: 200px;
-    border: 1px solid #999;
-    box-shadow: 0 0 0;
-    height: 450px;
-    line-height: 24px;
-    margin: 0 0 15px;
-    max-width: 100%;
-    padding: 4px 10px;
-   
 }
 
 .standardForm select {
@@ -996,16 +932,13 @@ input.input-text,
     width: 100%;
 }
 
-.standardForm input[type="file"], 
 .textWidthAuto.standardForm .input-text, 
 .textWidthAuto.standardForm textarea, 
 .textWidthAuto.standardForm input, 
 .textWidthAuto.standardForm input[type="password"], 
 .textWidthAuto.standardForm input[type="text"], 
 .textWidthAuto.standardForm input[type="email"], 
-.textWidthAuto.standardForm input[type="file"], 
 .textWidthAuto.standardForm select {
-    display: inline-block;
     width: auto;
 }
 
@@ -1014,7 +947,6 @@ input.input-text,
     padding-bottom: 3px;
     padding-top: 4px;
 }
-
 .standardForm input[type="checkbox"], 
 .standardForm input[type="radio"] {
     height: auto;
@@ -1024,23 +956,17 @@ input.input-text,
 .btn, 
 a.btn, 
 .button, 
-input[type="submit"], 
-input[type="reset"] {
+input[type="submit"] {
     background-color: #009FD9;
     border: 0;
     border-radius: 0; -moz-border-radius: 0; -o-border-radius: 0; -webkit-border-radius: 0;
     color: #FFF;
     font-size: 14px;
     line-height: 24px;
-    margin: 0;
     padding: 5px 10px;
     text-transform: uppercase;
     transition: background-color 230ms ease-in-out, color 230ms ease-in-out; -moz-transition: background-color 230ms ease-in-out, color 230ms ease-in-out; -o-transition: background-color 230ms ease-in-out, color 230ms ease-in-out; -webkit-transition: background-color 230ms ease-in-out, color 230ms ease-in-out;
     width: auto !important;
-}
-
-input[type="reset"] {
-    background-color: #CDCA25;
 }
 
 .inlineFormSubmit.standardForm input[type="submit"] {
@@ -1059,20 +985,6 @@ a.btn:hover,
 input[type="submit"]:hover {
     background-color: #008EC2;
     color: #FFF;
-}
-
-input[type="reset"]:hover {
-    background-color: #A09E1D;
-}
-
-.standardForm input[type="submit"], 
-.standardForm input[type="reset"] {
-    margin-bottom: 15px;
-}
-
-.standardForm.btnNoMargin input[type="submit"], 
-.standardForm.btnNoMargin input[type="reset"] {
-    margin-bottom: 0;
 }
 
 

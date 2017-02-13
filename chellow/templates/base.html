@@ -126,8 +126,7 @@
     		<link rel="stylesheet" href="/style" />
 		    <link rel="stylesheet" href="/static/css/bootstrap.min.css" />
         	<link rel="stylesheet" href="/static/font-awesome-4.6.3/css/font-awesome.min.css" />
-        	<link rel="stylesheet" href="/chellowcss" />
-        	
+        	<link rel="stylesheet" href="{{context_path}}/chellowcss" />
 		
        		<script src="/static/js/jquery-2.2.4.min.js"></script>
         	<script src="/static/js/bootstrap.min.js"></script>
@@ -140,10 +139,8 @@
     </head>
     <body>
         {% block body %}
-			
         <!-- Layer Page -->
-        <div class="layer-page">
-	
+        <div class="layer-page">	
 	        <!-- Layer Header -->
             <div class="layer-header">
 		        <div class="container-fluid">
@@ -159,7 +156,6 @@
                         		<p class="panel-breadcrumbs">
                         		<!-- <a href="/">Chellow</a> -->
                         		{% block nav %}{% endblock %}</p>
-						
                     		</div>
                             
                             <div class="pull-right layer-profilemenu">
@@ -205,8 +201,7 @@
 		        </div>
 	        </div>
 	        <!-- End Layer Header -->
-	
-	
+
 	        <!-- Layer Body -->
             <div class="layer-body menuHide">
 		        <div class="container-fluid">
@@ -263,6 +258,7 @@
                                     </ul>
                                 </nav>
                                 <!-- End Nav Industry -->
+
                                 <!-- Nav Administration -->
                                 <nav class="nav-administration">
                                     <h4><i class="fa fa-user" aria-hidden="true"></i> Administration</h4>

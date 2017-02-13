@@ -269,9 +269,11 @@ def style_get():
 
 @app.route('/chellowcss', methods=['GET'])
 def chellowcss_get():
+    props = Contract.get_non_core_by_name(g.sess, 'configuration'). \
+        make_properties()
     response = make_response(
         render_template(
-            'css/chellow.css'))
+            'css/chellow.css', background_colour=props['background_colour']))
     response.headers['Content-type'] = 'text/css'
     return response
 

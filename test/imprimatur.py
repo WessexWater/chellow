@@ -5261,7 +5261,7 @@ def virtual_bill(supply_source):
         'status_code': 303},
     {
         'path': '/downloads',
-        'tries': {'max': 60, 'period': 1},
+        'tries': {'max': 100, 'period': 1},
         'regexes': [
             r'0016_FINISHED_watkinsexamplecom_monthly_duration_20100701_0000_'
             r'for_12_months_site_CI004\.ods'],

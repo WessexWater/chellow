@@ -130,8 +130,8 @@
 		{% set era = era_bundle['era'] %}
 		{% set physical_site = era_bundle['physical_site'] %}
 		{% set other_sites = era_bundle['other_sites'] %}
-
-		<table>
+		<div class="section-data">
+			<table class="DataTable widthAuto">
 				<caption>
 					Era [<a href="/eras/{{era.id}}/edit">edit</a>]
 				</caption>
@@ -273,6 +273,7 @@
 						</tr>
 						<tr>
 							<td>
+
 								{% for channel in era_bundle['exp_channels'] %}
 									<a href="/channels/{{channel.id}}">{{channel.channel_type}}</a>
 								{% endfor %}
@@ -312,7 +313,7 @@
 						</tr>
 					</tbody>
 				</table>
-			</div>
+			
 		</div>
 		<div class="section-data">
 			<div class="noWrap">	
@@ -607,7 +608,7 @@
 			</div>
 		</div>
 		<div class="section-data">
-			<div class="noWrap">	
+			<div class="noWrap">
 				<table class="DataTable widthAuto noMarginBottom">
 					<caption>DC Bills</caption>
 					<thead>
