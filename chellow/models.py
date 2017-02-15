@@ -405,8 +405,9 @@ class RegisterRead(Base, PersistentClass):
         self.msn = msn
         self.mpan_str = mpan_str
 
-    def delete(sess, self):
+    def delete(self, sess):
         sess.delete(self)
+        sess.flush()
 
     def units_as_str(self):
         return self.UNITS_INT[self.units]

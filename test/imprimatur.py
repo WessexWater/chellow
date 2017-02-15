@@ -5372,8 +5372,7 @@ def virtual_bill(supply_source):
             '<option value="23" selected>23</option>\s*'
             '</select>:<select name="present_minute">\s*'
             '<option value="0">00</option>\s*'
-            '<option value="30" selected>30</option>\s*</select>',
-            r'<input type="hidden" name="supplier_read_id" value="7">']},
+            '<option value="30" selected>30</option>\s*</select>']},
     {
         'name': "Test viewers' search",
         'path': '/supplies?search_pattern=',
@@ -14675,4 +14674,14 @@ finally:
         'status_code': 200,
         'regexes': [
             r"Negative register reads aren&#39;t allowed"]},
+
+    {
+        'name': "Delete an electricity register read",
+        'path': '/reads/15/edit',
+        'method': 'post',
+        'data': {
+            'delete': 'Delete'},
+        'regexes': [
+            r'/supplier_bills/20'],
+        'status_code': 303},
 ]
