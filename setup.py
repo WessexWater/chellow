@@ -25,6 +25,7 @@ setup(
     package_data={'chellow': [
         'non_core_contracts/*/*.py',
         'non_core_contracts/*/rate_scripts/*.py',
+        'non_core_contracts/*/rate_scripts/*.ion',
         'dno_contracts/*/*.py',
         'dno_contracts/*/rate_scripts/*.py',
         'mdd/*.csv',

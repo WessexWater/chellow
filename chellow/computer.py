@@ -6,7 +6,6 @@ from sqlalchemy import or_, cast, Float
 from sqlalchemy.sql.expression import null, false
 from sqlalchemy.orm import joinedload, aliased
 from math import log10
-import json
 from werkzeug.exceptions import BadRequest
 from chellow.models import (
     RateScript, Channel, Era, Tpr, MeasurementRequirement, RegisterRead, Bill,
@@ -14,11 +13,12 @@ from chellow.models import (
     ClockInterval)
 from chellow.utils import (
     HH, hh_format, hh_max, hh_range, hh_min, utc_datetime, utc_datetime_now,
-    to_tz, to_ct)
+    to_tz, to_ct, loads)
 import chellow.bank_holidays
 from itertools import combinations
 from types import MappingProxyType
 from functools import lru_cache
+import json
 
 
 cons_types = ['construction', 'commissioning', 'operation']
@@ -198,7 +198,109 @@ def hh_rate(sess, caches, contract_id, date, name):
         if not script_dict['is_json']:
             val = val()
         script_dict['rates'][name] = val
-        return val
+    return val
+
+
+def ion_rs(sess, caches, contract_id, date):
+    try:
+        return caches['computer']['rss'][contract_id][date]
+    except KeyError:
+        try:
+            rss_cache = caches['computer']['rss']
+        except KeyError:
+            rss_cache = get_computer_cache(caches, 'rss')
+
+        try:
+            cont_cache = rss_cache[contract_id]
+        except KeyError:
+            cont_cache = {}
+            rss_cache[contract_id] = cont_cache
+
+        try:
+            return cont_cache[date]
+        except KeyError:
+            month_after = date + relativedelta(months=1) + \
+                relativedelta(days=1)
+            month_before = date - relativedelta(months=1) - \
+                relativedelta(days=1)
+
+            try:
+                future_funcs = caches['future_funcs']
+            except KeyError:
+                future_funcs = {}
+                caches['future_funcs'] = future_funcs
+
+            try:
+                future_func = future_funcs[contract_id]
+            except KeyError:
+                future_func = {'start_date': None, 'func': identity_func}
+                future_funcs[contract_id] = future_func
+
+            start_date = future_func['start_date']
+            ffunc = future_func['func']
+
+            if start_date is None:
+                rs = sess.query(RateScript).filter(
+                    RateScript.contract_id == contract_id,
+                    RateScript.start_date <= date,
+                    or_(
+                        RateScript.finish_date == null(),
+                        RateScript.finish_date >= date)).first()
+
+                if rs is None:
+                    rs = sess.query(RateScript).filter(
+                        RateScript.contract_id == contract_id). \
+                        order_by(RateScript.start_date.desc()).first()
+                    func = ffunc
+                    if date < rs.start_date:
+                        cstart = month_before
+                        cfinish = min(month_after, rs.start_date - HH)
+                    else:
+                        cstart = max(rs.finish_date + HH, month_before)
+                        cfinish = month_after
+                else:
+                    func = identity_func
+                    cstart = max(rs.start_date, month_before)
+                    if rs.finish_date is None:
+                        cfinish = month_after
+                    else:
+                        cfinish = min(rs.finish_date, month_after)
+            else:
+                if date < start_date:
+                    rs = sess.query(RateScript).filter(
+                        RateScript.contract_id == contract_id,
+                        RateScript.start_date <= date,
+                        or_(
+                            RateScript.finish_date == null(),
+                            RateScript.finish_date >= date)).first()
+
+                    if rs is None:
+                        rs = sess.query(RateScript).filter(
+                            RateScript.contract_id == contract_id). \
+                            order_by(RateScript.start_date.desc()).first()
+                    func = identity_func
+                    cstart = max(rs.start_date, month_before)
+                    cfinish = min(month_after, start_date - HH)
+                else:
+                    rs = sess.query(RateScript).filter(
+                        RateScript.contract_id == contract_id,
+                        RateScript.start_date <= start_date,
+                        or_(
+                            RateScript.finish_date == null(),
+                            RateScript.finish_date >= start_date)).first()
+                    if rs is None:
+                        rs = sess.query(RateScript).filter(
+                            RateScript.contract_id == contract_id). \
+                            order_by(RateScript.start_date.desc()).first()
+                    func = ffunc
+                    cstart = max(start_date, month_before)
+                    cfinish = month_after
+
+            ion = func(loads(rs.script))
+            for dt in hh_range(cstart, cfinish):
+                cont_cache[dt] = ion
+
+            return ion
 
 
 def forecast_date():

@@ -50,6 +50,7 @@ import psutil
 from pympler import muppy, summary
 import platform
 import chellow.g_bill_import
+import chellow.g_cv
 
 
 app = Flask('chellow', instance_relative_config=True)
@@ -66,6 +67,7 @@ def before_first_request():
     chellow.tlms.startup()
     chellow.bank_holidays.startup()
     chellow.dloads.startup(app.instance_path)
+    chellow.g_cv.startup()
     chellow.utils.root_path = app.root_path
 
 

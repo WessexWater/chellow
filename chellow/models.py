@@ -15,7 +15,7 @@ from sqlalchemy.ext.declarative import declarative_base
 import operator
 from chellow.utils import (
     hh_after, HH, parse_mpan_core, hh_before, next_hh, prev_hh, hh_format,
-    hh_range, utc_datetime, utc_datetime_now, to_utc)
+    hh_range, utc_datetime, utc_datetime_now, to_utc, loads, dumps)
 import json
 from dateutil.relativedelta import relativedelta
 from functools import lru_cache
@@ -25,8 +25,6 @@ import sys
 from hashlib import pbkdf2_hmac
 from binascii import hexlify, unhexlify
 from decimal import Decimal
-from amazon.ion.simpleion import dump, load
-from io import StringIO
 
 
 config = {
@@ -167,8 +165,8 @@ class Snag(Base, PersistentClass):
             background_start = None if snag.finish_date is None else \
                 snag.finish_date + HH
 
-        if background_start is not None and \
-                not hh_after(background_start, finish_date):
+        if background_start is not None and not hh_after(
+                background_start, finish_date):
             Snag.insert_snag(
                 sess, site, channel, description, background_start,
                 finish_date)
@@ -863,9 +861,15 @@ class Contract(Base, PersistentClass):
             raise BadRequest("""The start date can't be after the finish
                     date.""")
 
-        if len(script) > 0 and script[0] == '{':
+        script_trimmed = script.lstrip()
+        if script_trimmed.startswith('{'):
             try:
                 json.loads(script)
+            except SyntaxError as e:
+                raise BadRequest(str(e))
+        elif script_trimmed.startswith('$ion'):
+            try:
+                loads(script)
             except SyntaxError as e:
                 raise BadRequest(str(e))
         else:
@@ -3393,9 +3397,7 @@ class GContract(Base, PersistentClass):
             raise BadRequest(
                 "The start date can't be after the finish date.")
 
-        script_f = StringIO()
-        dump(script, script_f, binary=False)
-        rscript.script = script_f.getvalue()
+        rscript.script = dumps(script)
 
         prev_rscript = self.find_g_rate_script_at(
             sess, rscript.start_date - HH)
@@ -3592,13 +3594,10 @@ class GRateScript(Base, PersistentClass):
         self.g_contract = g_contract
         self.start_date = start_date
         self.finish_date = finish_date
-        script_f = StringIO()
-        dump(script, script_f, binary=False)
-        self.script = script_f.getvalue()
+        self.script = dumps(script)
 
     def make_script(self):
-        script_f = StringIO(self.script)
-        return load(script_f)
+        return loads(self.script)
 
 
 class GUnits(Base):
@@ -3791,7 +3790,7 @@ def db_init(sess, root_path):
             sess.flush()
             rscripts_path = os.path.join(contract_path, 'rate_scripts')
             for rscript_fname in sorted(os.listdir(rscripts_path)):
-                if not rscript_fname.endswith('.py'):
+                if not any(rscript_fname.endswith(s) for s in ('.py', '.ion')):
                     continue
                 try:
                     start_str, finish_str = \
@@ -3978,6 +3977,60 @@ def db_upgrade_3_to_4(sess, root_path):
             ("TM3", "Tens of cubic metres", '10'),
             ("NM3", "Tenths of cubic metres", '0.1')):
         sess.add(GUnits(code, desc, Decimal(factor_str)))
+    sess.commit()
+
+    set_read_write(sess)
+    contract_path = os.path.join(root_path, 'non_core_contracts', 'g_cv')
+    params = {'name': 'g_cv', 'charge_script': ''}
+    for fname, attr in (
+            ('meta.py', None),
+            ('properties.py', 'properties'),
+            ('state.py', 'state')):
+        params.update(read_file(contract_path, fname, attr))
+    params['party'] = sess.query(Party).join(Participant).join(MarketRole). \
+        filter(
+            Participant.code == params['participant_code'],
+            MarketRole.code == 'Z').one()
+    del params['participant_code']
+    contract = Contract(**params)
+    sess.add(contract)
+
+    sess.flush()
+    rscripts_path = os.path.join(contract_path, 'rate_scripts')
+    for rscript_fname in sorted(os.listdir(rscripts_path)):
+        if not any(rscript_fname.endswith(s) for s in ('.py', '.ion')):
+            continue
+        try:
+            start_str, finish_str = \
+                rscript_fname.split('.')[0].split('_')
+        except ValueError:
+            raise Exception(
+                "The rate script " + rscript_fname +
+                " in the directory " + rscripts_path +
+                " should consist of two dates separated by an " +
+                "underscore.")
+        start_date = to_utc(Datetime.strptime(start_str, "%Y%m%d%H%M"))
+        if finish_str == 'ongoing':
+            finish_date = None
+        else:
+            finish_date = to_utc(
+                Datetime.strptime(finish_str, "%Y%m%d%H%M"))
+        rparams = {
+            'start_date': start_date,
+            'finish_date': finish_date,
+            'contract': contract}
+        rparams.update(
+            read_file(rscripts_path, rscript_fname, 'script'))
+        sess.add(RateScript(**rparams))
+        sess.flush()
+
+    sess.flush()
+    # Assign start and finish rate scripts
+    scripts = sess.query(RateScript). \
+        filter(RateScript.contract_id == contract.id). \
+        order_by(RateScript.start_date).all()
+    contract.start_rate_script = scripts[0]
+    contract.finish_rate_script = scripts[-1]
     sess.commit()
 
 

@@ -8,27 +8,12 @@ from werkzeug.exceptions import BadRequest
 from collections import defaultdict
 from chellow.models import (
     GRateScript, GEra, GRegisterRead, GBill, BillType, GReadType, GBatch,
-    GUnits)
+    GUnits, get_non_core_contract_id)
 from chellow.utils import (
     HH, hh_format, hh_after, get_file_rates, hh_max, hh_min, hh_range, to_ct,
     utc_datetime_now, utc_datetime)
 import chellow.computer
-
-
-class imdict(dict):
-    def __hash__(self):
-        return id(self)
-
-    def _immutable(self, *args, **kws):
-        raise TypeError('object is immutable')
-
-    __setitem__ = _immutable
-    __delitem__ = _immutable
-    clear = _immutable
-    update = _immutable
-    setdefault = _immutable
-    pop = _immutable
-    popitem = _immutable
+from types import MappingProxyType
 
 
 def get_times(sess, caches, start_date, finish_date, forecast_date):
@@ -299,6 +284,10 @@ def _datum_generator(sess, years_back, caches):
             utc_is_bank_holiday = hh_date.strftime("%m-%d") in \
                 utc_bank_holidays
 
+            g_cv_id = get_non_core_contract_id('g_cv')
+            cv = chellow.computer.ion_rs(sess2, caches, g_cv_id, hh_date)[
+                hh_date.day-1]['SW']
+
             hh = {
                 'status': 'E',
                 'hist-start': hh_date - relativedelta(years=years_back),
@@ -312,14 +301,15 @@ def _datum_generator(sess, years_back, caches):
                 'utc-day-of-week': hh_date.weekday(),
                 'utc-is-bank-holiday': utc_is_bank_holiday,
                 'utc-is-month-end': utc_is_month_end,
-                'ct-is-month-end': ct_is_month_end}
+                'ct-is-month-end': ct_is_month_end, 'cv': cv}
 
-            datum_cache[hh_date] = imdict(hh)
+            datum_cache[hh_date] = MappingProxyType(hh)
             return datum_cache[hh_date]
     return _generator
 
 
 ACTUAL_READ_TYPES = ['N', 'N3', 'C', 'X', 'CP']
+CORRECTION_FACTOR = 1.02264
 
 
 class GDataSource():
@@ -674,21 +664,16 @@ class GDataSource():
                 pres_type_alias = aliased(GReadType)
                 for g_bill in g_bills:
                     for prev_date, prev_value, prev_type, pres_date, \
-                            pres_value, pres_type, correction_factor, \
-                            g_units_code, g_units_factor, calorific_value \
-                            in sess.query(
+                            pres_value, pres_type, g_units_code, \
+                            g_units_factor in sess.query(
                             GRegisterRead.prev_date,
                             cast(GRegisterRead.prev_value, Float),
                             prev_type_alias.code,
                             GRegisterRead.pres_date,
                             cast(GRegisterRead.pres_value, Float),
-                            pres_type_alias.code,
-                            cast(GRegisterRead.correction_factor, Float),
-                            GUnits.code,
-                            cast(GUnits.factor, Float),
-                            cast(GRegisterRead.calorific_value, Float)) \
-                            .join(GUnits) \
-                            .join(
+                            pres_type_alias.code, GUnits.code,
+                            cast(GUnits.factor, Float)).join(
+                                GUnits).join(
                                 prev_type_alias,
                                 GRegisterRead.prev_type_id ==
                                 prev_type_alias.id).join(
@@ -715,9 +700,6 @@ class GDataSource():
                         hh_units_consumed = units_consumed / (
                             (pres_date - prev_date).total_seconds() /
                             (60 * 30))
-                        hh_kwh = hh_units_consumed * g_units_factor * \
-                            correction_factor * calorific_value
-
                         if pres_type in ACTUAL_READ_TYPES \
                                 and prev_type in ACTUAL_READ_TYPES:
                             status = 'A'
@@ -725,6 +707,7 @@ class GDataSource():
                             status = 'E'
                         pass_start = hh_max(prev_date, chunk_start)
                         pass_finish = hh_min(pres_date, chunk_finish)
+                        g_cv_id = get_non_core_contract_id('g_cv')
 
                         year_delta = relativedelta(year=self.years_back)
                         for hh_date in hh_range(pass_start, pass_finish):
@@ -738,6 +721,15 @@ class GDataSource():
                             ct_is_month_end = all((
                                 next_dt_ct.day == 1, next_dt_ct.hour == 0,
                                 next_dt_ct.minute == 0))
+
+                            cv = float(
+                                chellow.computer.ion_rs(
+                                    sess, caches, g_cv_id, hh_date)[
+                                        hh_date.day - 1]['SW']) / 3.6
+
+                            hh_kwh = hh_units_consumed * g_units_factor * \
+                                CORRECTION_FACTOR * cv
+
                             self.hh_data.append(
                                 {
                                     'hist_start_date': chunk_start,
@@ -763,9 +755,8 @@ class GDataSource():
                                     ct_is_month_end,
                                     'status': status,
                                     'units_code': g_units_code,
-                                    'units_factor': g_units_factor,
-                                    'calorific_value': calorific_value,
-                                    'correction_factor': correction_factor,
+                                    'units_factor': g_units_factor, 'cv': cv,
+                                    'correction_factor': CORRECTION_FACTOR,
                                     'units_consumed': hh_units_consumed,
                                     'kwh': hh_kwh})
 

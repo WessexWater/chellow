@@ -8,7 +8,7 @@ from flask import request, Response
 from jinja2 import Environment
 import time
 import traceback
-from amazon.ion.simpleion import load
+from amazon.ion.simpleion import load, dump
 from amazon.ion.exceptions import IonException
 from io import StringIO
 import os
@@ -511,3 +511,13 @@ def get_file_rates(cache, contract_name, dt):
             except KeyError:
                 raise BadRequest(
                     "Can't find a rate script at " + hh_format(dt))
+
+
+def loads(ion_str):
+    return load(StringIO(ion_str))
+
+
+def dumps(val):
+    f = StringIO()
+    dump(val, f)
+    return f.getvalue()
