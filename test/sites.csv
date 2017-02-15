@@ -5,3 +5,4 @@ insert, site, CI005, Wheal Rodney
 insert, site, CI017, Roselands
 # comment
 insert, site, CH023, Treglisson
+update, site, CH023, CH023, Treglisson

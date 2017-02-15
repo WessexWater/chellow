@@ -1059,8 +1059,8 @@ def general_import_site(sess, action, vals, args):
         if action == "delete":
             site.delete()
         elif action == "update":
-            new_code = add_arg(args, "new_site_code", vals, 2)
-            name = add_arg(args, "new_site_name", vals, 3)
+            new_code = add_arg(args, "new_site_code", vals, 1)
+            name = add_arg(args, "new_site_name", vals, 2)
             site.update(new_code, name)
 
 
