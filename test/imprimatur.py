@@ -14723,6 +14723,8 @@ def virtual_bill(ds):
                 ds.g_rate(db_id, hh['start_date'], 'standing_rate'))
             ds.rate_sets['standing_rate'].add(standing_rate)
             bill['standing_gbp'] += standing_rate
+        if hh['utc_decimal_hour'] == 0:
+            pass
 
     for k, rset in ds.rate_sets.items():
         bill[k] = rset

@@ -278,7 +278,7 @@ def datum_range(sess, caches, years_back, start_date, finish_date):
                         'hist_start': hist_date, 'start_date': dt,
                         'ct_day': ct_dt.day, 'utc_month': dt.month,
                         'utc_day': dt.day,
-                        'utc_decimal-hour': utc_decimal_hour,
+                        'utc_decimal_hour': utc_decimal_hour,
                         'utc_year': dt.year, 'utc_hour': dt.hour,
                         'utc_minute': dt.minute, 'ct_year': ct_dt.year,
                         'ct_month': ct_dt.month,
