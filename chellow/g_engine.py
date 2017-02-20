@@ -10,7 +10,7 @@ from chellow.models import (
     GRateScript, GEra, GRegisterRead, GBill, BillType, GReadType, GBatch,
     GUnits, get_non_core_contract_id)
 from chellow.utils import (
-    HH, hh_format, hh_after, get_file_rates, hh_max, hh_min, hh_range, to_ct,
+    HH, hh_format, hh_after, get_file_rates, hh_min, hh_range, to_ct,
     utc_datetime_now, utc_datetime)
 import chellow.computer
 from types import MappingProxyType
@@ -237,6 +237,64 @@ def get_data_sources(data_source, start_date, finish_date, forecast_date=None):
             yield ds
 
 
+def datum_range(sess, caches, years_back, start_date, finish_date):
+    try:
+        return caches['g_engine']['datum'][years_back, start_date, finish_date]
+    except KeyError:
+        try:
+            g_engine_cache = caches['g_engine']
+        except KeyError:
+            caches['g_engine'] = g_engine_cache = {}
+
+        try:
+            d_cache = g_engine_cache['datum']
+        except KeyError:
+            g_engine_cache['datum'] = d_cache = {}
+
+        datum_list = []
+        for dt in hh_range(start_date, finish_date):
+            hist_date = dt - relativedelta(years=years_back)
+            ct_dt = to_ct(dt)
+
+            utc_is_month_end = (dt + HH).day == 1 and dt.day != 1
+            ct_is_month_end = (ct_dt + HH).day == 1 and ct_dt.day != 1
+
+            utc_decimal_hour = dt.hour + dt.minute / 60
+            ct_decimal_hour = ct_dt.hour + ct_dt.minute / 60
+
+            bhs = chellow.computer.hh_rate(
+                sess, caches, chellow.bank_holidays.get_db_id(), dt,
+                'bank_holidays')
+            if bhs is None:
+                raise BadRequest(
+                    "Can't find bank holidays for " + str(dt))
+            bank_holidays = [b[5:] for b in bhs]
+            utc_is_bank_holiday = dt.strftime("%m-%d") in bank_holidays
+            ct_is_bank_holiday = ct_dt.strftime("%m-%d") in bank_holidays
+
+            datum_list.append(
+                MappingProxyType(
+                    {
+                        'hist_start': hist_date, 'start_date': dt,
+                        'ct_day': ct_dt.day, 'utc_month': dt.month,
+                        'utc_day': dt.day,
+                        'utc_decimal-hour': utc_decimal_hour,
+                        'utc_year': dt.year, 'utc_hour': dt.hour,
+                        'utc_minute': dt.minute, 'ct_year': ct_dt.year,
+                        'ct_month': ct_dt.month,
+                        'ct_decimal_hour': ct_decimal_hour,
+                        'ct_day_of_week': ct_dt.weekday(),
+                        'utc_day_of_week': dt.weekday(),
+                        'utc_is_bank_holiday': utc_is_bank_holiday,
+                        'ct_is_bank_holiday': ct_is_bank_holiday,
+                        'utc_is_month_end': utc_is_month_end,
+                        'ct_is_month_end': ct_is_month_end,
+                        'status': 'X', 'kwh': 0, 'hist_kwh': 0}))
+        datum_tuple = tuple(datum_list)
+        d_cache[years_back, start_date, finish_date] = datum_tuple
+        return datum_tuple
+
+
 def _datum_generator(sess, years_back, caches):
     try:
         datum_cache = caches['g_engine']['datum'][years_back]
@@ -364,6 +422,7 @@ class GDataSource():
                     GEra.start_date).limit(1).all()
 
         dte = start_date
+        hist_map = {}
 
         for i, hist_g_era in enumerate(hist_g_eras):
             if self.history_start > hist_g_era.start_date:
@@ -374,10 +433,7 @@ class GDataSource():
                 else:
                     chunk_start = hist_g_era.start_date
 
-            if hh_after(self.history_finish, hist_g_era.finish_date):
-                chunk_finish = hist_g_era.finish_date
-            else:
-                chunk_finish = self.history_finish
+            chunk_finish = hh_min(hist_g_era.finish_date, self.history_finish)
             if self.g_bill is None:
                 read_list = []
                 read_keys = {}
@@ -663,6 +719,7 @@ class GDataSource():
                 prev_type_alias = aliased(GReadType)
                 pres_type_alias = aliased(GReadType)
                 for g_bill in g_bills:
+                    units_consumed = 0
                     for prev_date, prev_value, prev_type, pres_date, \
                             pres_value, pres_type, g_units_code, \
                             g_units_factor in sess.query(
@@ -680,9 +737,7 @@ class GDataSource():
                             pres_type_alias,
                             GRegisterRead.pres_type_id ==
                             pres_type_alias.id).filter(
-                            GRegisterRead.g_bill == g_bill,
-                            GRegisterRead.prev_date <= chunk_finish,
-                            GRegisterRead.pres_date >= chunk_start) \
+                            GRegisterRead.g_bill == g_bill) \
                             .order_by(GRegisterRead.pres_date):
                         if prev_date < g_bill.start_date:
                             self.problem += "There's a read before the " \
@@ -690,75 +745,36 @@ class GDataSource():
                         if pres_date > g_bill.finish_date:
                             self.problem += "There's a read after the end " \
                                 "of the bill!"
-                        units_consumed = pres_value - prev_value
-                        if units_consumed < 0:
+                        advance = pres_value - prev_value
+                        if advance < 0:
                             self.problem += "Clocked? "
                             digits = int(math.log10(prev_value)) + 1
-                            units_consumed = 10 ** digits - prev_value + \
-                                pres_value
+                            advance = 10 ** digits - prev_value + pres_value
+                        units_consumed += advance
 
-                        hh_units_consumed = units_consumed / (
-                            (pres_date - prev_date).total_seconds() /
-                            (60 * 30))
-                        if pres_type in ACTUAL_READ_TYPES \
-                                and prev_type in ACTUAL_READ_TYPES:
-                            status = 'A'
-                        else:
-                            status = 'E'
-                        pass_start = hh_max(prev_date, chunk_start)
-                        pass_finish = hh_min(pres_date, chunk_finish)
-                        g_cv_id = get_non_core_contract_id('g_cv')
+                    hh_units_consumed = units_consumed / (
+                        (pres_date - prev_date).total_seconds() / (60 * 30))
+                    g_cv_id = get_non_core_contract_id('g_cv')
 
-                        year_delta = relativedelta(year=self.years_back)
-                        for hh_date in hh_range(pass_start, pass_finish):
-                            dt_utc = hh_date + year_delta
-                            next_dt_utc = dt_utc + HH
-                            utc_is_month_end = all((
-                                next_dt_utc.day == 1, next_dt_utc.hour == 0,
-                                next_dt_utc.minute == 0))
-                            dt_ct = to_ct(dt_utc)
-                            next_dt_ct = dt_ct + HH
-                            ct_is_month_end = all((
-                                next_dt_ct.day == 1, next_dt_ct.hour == 0,
-                                next_dt_ct.minute == 0))
+                    for hh_date in hh_range(
+                            g_bill.start_date, g_bill.finish_date):
+                        cv = float(
+                            chellow.computer.ion_rs(
+                                sess, caches, g_cv_id, hh_date)[
+                                    hh_date.day - 1]['SW']) / 3.6
 
-                            cv = float(
-                                chellow.computer.ion_rs(
-                                    sess, caches, g_cv_id, hh_date)[
-                                        hh_date.day - 1]['SW']) / 3.6
+                        hh_kwh = hh_units_consumed * g_units_factor * \
+                            CORRECTION_FACTOR * cv
 
-                            hh_kwh = hh_units_consumed * g_units_factor * \
-                                CORRECTION_FACTOR * cv
-
-                            self.hh_data.append(
-                                {
-                                    'hist_start_date': chunk_start,
-                                    'start_date': dt_utc,
-                                    'ct_day': dt_ct.day,
-                                    'utc_month': dt_utc.month,
-                                    'utc_day': dt_utc.day,
-                                    'utc_decimal_hour': dt_utc.hour +
-                                    dt_utc.minute / 60,
-                                    'utc_year': dt_utc.year,
-                                    'utc_hour': dt_utc.hour,
-                                    'utc_minute': dt_utc.minute,
-                                    'ct_year': dt_ct.year,
-                                    'ct_month': dt_ct.month,
-                                    'ct_decimal-hour': dt_ct.hour +
-                                    dt_ct.minute / 60,
-                                    'ct_day_of_week': dt_ct.weekday(),
-                                    'utc_day_of_week':
-                                    dt_utc.weekday(),
-                                    'utc_is_month_end':
-                                    utc_is_month_end,
-                                    'ct_is_month_end':
-                                    ct_is_month_end,
-                                    'status': status,
-                                    'units_code': g_units_code,
-                                    'units_factor': g_units_factor, 'cv': cv,
-                                    'correction_factor': CORRECTION_FACTOR,
-                                    'units_consumed': hh_units_consumed,
-                                    'kwh': hh_kwh})
+                        hist_map[hh_date] = {
+                            'units_code': g_units_code,
+                            'units_factor': g_units_factor, 'cv': cv,
+                            'correction_factor': CORRECTION_FACTOR,
+                            'units_consumed': hh_units_consumed,
+                            'kwh': hh_kwh}
+        self.hh_data.extend(
+            {**d, **hist_map.get(d['hist_start'], {})} for d in datum_range(
+                sess, self.caches, self.years_back, start_date, finish_date))
 
     def g_contract_func(self, g_contract, func_name):
         return g_contract_func(self.caches, g_contract, func_name)
