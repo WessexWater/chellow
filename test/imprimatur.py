@@ -14593,7 +14593,8 @@ finally:
         'tries': {},
         'regexes': [
             r'<tr>\s*'
-            r'<td>20160731_20160831_22 9813 2107 763</td>\s*'
+            r'<td>2016-08-01 - 2016-08-31_20160731_20160831_20160913_22 9813 '
+            r'2107 763</td>\s*'
             r'<td>22 9813 2107 763</td>\s*'
             r'<td>N</td>\s*'
             r'<td>\[&#39;22 9813 2107 763&#39;\]</td>\s*'
@@ -14601,14 +14602,12 @@ finally:
             r'<td>2016-07-31 23:00</td>\s*'
             r'<td>2016-08-31 22:30</td>\s*'
             r'<td>27997\.33</td>\s*'
-            r'<td>89630\.02</td>\s*'
+            r'<td>89564\.02</td>\s*'
             r'<td>6122\.00</td>\s*'
-            r'<td>95752\.02</td>\s*'
-            r'<td>\[\(&#39;aahedc-gbp&#39;, 0.89\), .*'
-            r'cfd-fit-estimate-nbp-kwh.*'
+            r'<td>95686\.02</td>\s*'
+            r'<td>\[\(&#39;aahedc-gbp&#39;, 0.89\), .*cfd-fit-nbp-kwh.*'
             r'\(&#39;duos-availability-kva&#39;, &#39;220&#39;\).*'
-            r'fit-reconciliation-gbp.*'
-            r'meter-rental-gbp.*winter-night-gbp',
+            r'fit-gbp.*meter-rental-gbp.*winter-night-gbp',
             r"All the bills have been successfully loaded and attached to "
             "the batch\."],
         'status_code': 200},
@@ -14621,9 +14620,9 @@ finally:
             r'<td>2016-07-31 23:00</td>\s*'
             r'<td>2016-08-31 22:30</td>\s*'
             r'<td>27997\.33</td>\s*'
-            r'<td>89630\.02</td>\s*'
+            r'<td>89564\.02</td>\s*'
             r'<td>6122\.00</td>\s*'
-            r'<td>95752\.02</td>'],
+            r'<td>95686\.02</td>'],
         'status_code': 200},
 
     {

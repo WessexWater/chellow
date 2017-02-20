@@ -14,13 +14,16 @@ ELEM_MAP = {
         '', 'Price'): 'aahedc-rate',
     ('Assistance for Areas with High Electricity Distribution Costs (AAHEDC)',
         '', 'Amount'): 'aahedc-gbp',
+    ('Balancing Services Use of System (BSUoS)', '', 'Usage'): 'buos-nbp-kwh',
+    ('Balancing Services Use of System (BSUoS)', '', 'Price'): 'bsuos-rate',
+    ('Balancing Services Use of System (BSUoS)', '', 'Amount'): 'bsuos-gbp',
     ('Capacity Market (Estimate)', '', 'Amount'): 'capacity-market-gbp',
-    ('CfD FiT (Actual)', '', 'Usage'): 'cfd-fit-prev-actual-nbp-kwh',
-    ('CfD FiT (Actual)', '', 'Price'): 'cfd-fit-prev-actual-rate',
-    ('CfD FiT (Actual)', '', 'Amount'): 'cfd-fit-prev-actual-gbp',
-    ('CfD FiT (Estimate)', '', 'Usage'): 'cfd-fit-estimate-nbp-kwh',
-    ('CfD FiT (Estimate)', '', 'Price'): 'cfd-fit-estimate-rate',
-    ('CfD FiT (Estimate)', '', 'Amount'): 'cfd-fit-estimate-gbp',
+    ('CfD FiT (Actual)', '', 'Usage'): 'cfd-fit-nbp-kwh',
+    ('CfD FiT (Actual)', '', 'Price'): 'cfd-fit-rate',
+    ('CfD FiT (Actual)', '', 'Amount'): 'cfd-fit-gbp',
+    ('CfD FiT (Estimate)', '', 'Usage'): 'cfd-fit-nbp-kwh',
+    ('CfD FiT (Estimate)', '', 'Price'): 'cfd-fit-rate',
+    ('CfD FiT (Estimate)', '', 'Amount'): 'cfd-fit-gbp',
     ('CCL', '', 'Usage'): 'ccl-kwh',
     ('CCL', '', 'Price'): 'ccl-rate',
     ('CCL', '', 'Amount'): 'ccl-gbp',
@@ -40,16 +43,16 @@ ELEM_MAP = {
     ('DUoS Reactive', '', 'Price'): 'duos-reactive-rate',
     ('DUoS Reactive', '', 'Amount'): 'duos-reactive-gbp',
     ('Flex Adj', '', 'Amount'): 'reconciliation-gbp',
-    ('Feed in Tariff (FiT)', '', 'Usage'): 'fit-estimate-msp-kwh',
-    ('Feed in Tariff (FiT)', '', 'Price'): 'fit-estimate-rate',
-    ('Feed in Tariff (FiT)', '', 'Amount'): 'fit-estimate-gbp',
-    ('Feed in Tariff (FiT) Actual', '', 'Usage'): 'fit-prev-actual-msp-kwh',
-    ('Feed in Tariff (FiT) Actual', '', 'Price'): 'fit-prev-actual-rate',
-    ('Feed in Tariff (FiT) Actual', '', 'Amount'): 'fit-prev-actual-gbp',
+    ('Feed in Tariff (FiT)', '', 'Usage'): 'fit-msp-kwh',
+    ('Feed in Tariff (FiT)', '', 'Price'): 'fit-rate',
+    ('Feed in Tariff (FiT)', '', 'Amount'): 'fit-gbp',
+    ('Feed in Tariff (FiT) Actual', '', 'Usage'): 'fit-msp-kwh',
+    ('Feed in Tariff (FiT) Actual', '', 'Price'): 'fit-rate',
+    ('Feed in Tariff (FiT) Actual', '', 'Amount'): 'fit-gbp',
     ('Feed in Tariff (FiT) Estimate', '', 'Usage'):
         'fit-prev-estimate-msp-kwh',
-    ('Feed in Tariff (FiT) Estimate', '', 'Price'): 'fit-prev-estimate-rate',
-    ('Feed in Tariff (FiT) Estimate', '', 'Amount'): 'fit-prev-estimate-gbp',
+    ('Feed in Tariff (FiT) Estimate', '', 'Price'): 'fit-rate',
+    ('Feed in Tariff (FiT) Estimate', '', 'Amount'): 'fit-gbp',
     ('Meter Rental', '', 'Usage'): 'meter-rental-days',
     ('Meter Rental', '', 'Price'): 'meter-rental-rate',
     ('Meter Rental', '', 'Amount'): 'meter-rental-gbp',
@@ -94,8 +97,8 @@ ELEM_MAP = {
     ('Reverse BSUoS in Unit Rate', '', 'Amount'): 'bsuos-reverse-gbp',
     ('Reverse CfD FiT (Estimate)', '', 'Usage'):
         'cfd-fit-prev-estimate-nbp-kwh',
-    ('Reverse CfD FiT (Estimate)', '', 'Price'): 'cfd-fit-prev-estimate-rate',
-    ('Reverse CfD FiT (Estimate)', '', 'Amount'): 'cfd-fit-prev-estimate-gbp'}
+    ('Reverse CfD FiT (Estimate)', '', 'Price'): 'cfd-rate',
+    ('Reverse CfD FiT (Estimate)', '', 'Amount'): 'cfd-fit-gbp'}
 
 
 COLUMNS = [
@@ -135,11 +138,10 @@ COLUMN_MAP = dict(zip(COLUMNS, count()))
 
 def get_date(row, name, datemode):
     val = get_value(row, name)
-    if val == '':
-        return None
+    if isinstance(val, float):
+        return to_utc(to_ct(Datetime(*xldate_as_tuple(val, datemode))))
     else:
-        dt_raw = Datetime(*xldate_as_tuple(get_value(row, name), datemode))
-        return to_utc(to_ct(dt_raw))
+        return None
 
 
 def get_value(row, name):
@@ -189,39 +191,48 @@ class Parser():
         return line
 
     def make_raw_bills(self):
-        raw_bills = []
-        last_key = None
+        bills = {}
         title_row = self.sheet.row(0)
         for row_index in range(1, self.sheet.nrows):
             row = self.sheet.row(row_index)
             mpan_core = parse_mpan_core(
                 str(int(get_value(row, 'Meter Point'))))
             bill_period = get_value(row, 'Bill Period')
-            start_date, finish_date = [
+            period_start, period_finish = [
                 to_utc(to_ct(Datetime.strptime(d, '%Y-%m-%d')))
                 for d in bill_period.split(' - ')]
-            finish_date = finish_date + relativedelta(days=1) - HH
-            key = (start_date, finish_date, mpan_core)
-            from_date = get_date(row, 'From Date', self.book.datemode)
-            # to_date = get_date(row, 'To Date', self.book.datemode) + \
-            #    relativedelta(days=1) - HH
-            issue_date = get_date(row, 'Bill Date', self.book.datemode)
-            if last_key != key:
-                last_key = key
+            period_finish += relativedelta(days=1) - HH
 
-                bd = {}
-                bill = {
-                    'bill_type_code': 'N', 'account': mpan_core,
-                    'mpans': [mpan_core],
+            from_date = get_date(row, 'From Date', self.book.datemode)
+            if from_date is None:
+                from_date = period_start
+
+            to_date = get_date(row, 'To Date', self.book.datemode)
+            if to_date is None:
+                to_date = period_finish
+            else:
+                to_date += relativedelta(days=1) - HH
+
+            issue_date = get_date(row, 'Bill Date', self.book.datemode)
+            key = bill_period, from_date, to_date, mpan_core, issue_date
+            try:
+                bill = bills[key]
+            except KeyError:
+                bills[key] = bill = {
+                    'bill_type_code': 'N', 'kwh': Decimal(0),
+                    'vat': Decimal('0.00'), 'net': Decimal('0.00'),
+                    'reads': [],
+                    'breakdown': {'raw_lines': [str(title_row)]},
+                    'account': mpan_core,
+                    'issue_date': issue_date, 'start_date': from_date,
+                    'finish_date': to_date, 'mpans': [mpan_core],
                     'reference': '_'.join(
                         (
-                            start_date.strftime('%Y%m%d'),
-                            finish_date.strftime('%Y%m%d'), mpan_core)),
-                    'issue_date': issue_date, 'start_date': start_date,
-                    'finish_date': finish_date, 'kwh': Decimal(0),
-                    'net': Decimal('0.00'), 'vat': Decimal('0.00'),
-                    'breakdown': bd, 'reads': []}
-                raw_bills.append(bill)
+                            bill_period, from_date.strftime('%Y%m%d'),
+                            to_date.strftime('%Y%m%d'),
+                            issue_date.strftime('%Y%m%d'),
+                            mpan_core))}
+            bd = bill['breakdown']
 
             usage = get_value(row, 'Usage')
             usage_units = get_value(row, 'Usage Unit')
@@ -267,34 +278,23 @@ class Parser():
                 bd_add(bd, 'duos-excess-availability-days', usage)
                 bd_add(bd, 'duos-excess-availability-rate', price)
                 bd_add(bd, 'duos-excess-availability-gbp', amount)
-            elif description == 'Balancing Services Use of System (BSUoS)':
-                if from_date == start_date:
-                    bd_add(bd, 'bsuos-estimated-nbp-kwh', usage)
-                    bd_add(bd, 'bsuos-estimated-rate', price)
-                    bd_add(bd, 'bsuos-estimated-gbp', amount)
-                elif amount < 0:
-                    bd_add(bd, 'bsuos-prev-estimated-nbp-kwh', usage)
-                    bd_add(bd, 'bsuos-prev-estimated-rate', price)
-                    bd_add(bd, 'bsuos-prev-estimated-gbp', amount)
-                else:
-                    bd_add(bd, 'bsuos-prev-sf-nbp-kwh', usage)
-                    bd_add(bd, 'bsuos-prev-sf-rate', price)
-                    bd_add(bd, 'bsuos-prev-sf-gbp', amount)
+            elif description.startswith('BSUoS Reconcilliation - '):
+                bd_add(bd, 'bsuos-nbp-kwh', usage)
+                bd_add(bd, 'bsuos-rate', price)
+                bd_add(bd, 'bsuos-gbp', amount)
             elif description.startswith("FiT Rec - "):
-                bd_add(bd, 'fit-reconciliation-gbp', amount)
+                bd_add(bd, 'fit-gbp', amount)
             elif description.startswith("CfD FiT Rec - "):
-                bd_add(bd, 'cfd-fit-reconciliation-gbp', amount)
+                bd_add(bd, 'cfd-fit-gbp', amount)
 
-            bd['raw_lines'] = [str(title_row), str(row)]
-            bill['gross'] = bill['net'] + bill['vat']
-
-        for raw_bill in raw_bills:
-            bd = raw_bill['breakdown']
+        for bill in bills.values():
+            bd = bill['breakdown']
             for k, v in tuple(bd.items()):
                 if isinstance(v, set):
                     val = ', '.join(sorted(map(str, v)))
                 else:
                     val = v
                 bd[k] = val
+            bill['gross'] = bill['net'] + bill['vat']
 
-        return raw_bills
+        return [v for k, v in sorted(bills.items())]
