@@ -56,7 +56,7 @@ class HhDataImportProcess(threading.Thread):
             self.converter = parser_module.create_parser(
                 self.istream, mpan_map)
             sess.rollback()
-            HhDatum.insert(sess, self.converter)
+            HhDatum.insert(sess, self.converter, contract)
             sess.commit()
         except BadRequest as e:
             self.messages.append(e.description)

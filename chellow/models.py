@@ -2706,7 +2706,7 @@ class Supply(Base, PersistentClass):
 class HhDatum(Base, PersistentClass):
     # status A actual, E estimated, C padding
     @staticmethod
-    def insert(sess, raw_data):
+    def insert(sess, raw_data, contract=None):
         mpan_core = channel_type = prev_date = era_finish_date = channel = None
         data = []
         for datum in raw_data:
@@ -2721,7 +2721,7 @@ class HhDatum(Base, PersistentClass):
                     data = []
                 mpan_core = datum['mpan_core']
                 channel_type = datum['channel_type']
-                channel = sess.query(Channel).join(Era).filter(
+                channel_q = sess.query(Channel).join(Era).filter(
                     Channel.channel_type == channel_type,
                     Era.start_date <= datum['start_date'], or_(
                         Era.finish_date == null(),
@@ -2732,14 +2732,27 @@ class HhDatum(Base, PersistentClass):
                         and_(
                             Era.exp_mpan_core == mpan_core,
                             Channel.imp_related == false()))).options(
-                    joinedload(Channel.era)).first()
+                    joinedload(Channel.era))
+
+                if contract is not None:
+                    channel_q = channel_q.filter(Era.hhdc_contract == contract)
+
+                channel = channel_q.first()
+
                 if channel is None:
-                    raise BadRequest(
-                        "There is no channel for the datum (" + ', '.join(
-                            [
-                                mpan_core, hh_format(datum['start_date']),
-                                channel_type, str(datum['value']),
-                                datum['status']]) + ").")
+                    datum_str = ', '.join(
+                        [
+                            mpan_core, hh_format(datum['start_date']),
+                            channel_type, str(datum['value']),
+                            datum['status']])
+                    if contract is None:
+                        msg = "There is no channel for the datum (" + \
+                            datum_str + ")."
+                    else:
+                        msg = "There is no channel under the contract " + \
+                            contract.name + " for the datum (" + datum_str + \
+                            ")."
+                    raise BadRequest(msg)
 
                 era_finish_date = channel.era.finish_date
             prev_date = datum['start_date']

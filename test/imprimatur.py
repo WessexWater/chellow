@@ -4020,8 +4020,8 @@ def virtual_bill(supply_source):
             r"/supplies/12"],
         'status_code': 303},
 
-    # Add import related ACTIVE channel. Supply 12
     {
+        'name': "Add import related ACTIVE channel. Supply 12",
         'path': '/eras/16/add_channel',
         'method': 'post',
         'data': {
@@ -4031,11 +4031,11 @@ def virtual_bill(supply_source):
             r"/channels/42"],
         'status_code': 303},
 
-    # Try out simple.csv hh import format.
     {
         'path': '/hhdc_contracts/36/hh_imports',
+        'name': "Try out simple.csv hh import format.",
         'method': 'post',
-        'files': {'import_file': 'test/hh.simple.csv'},
+        'files': {'import_file': 'test/hh_dyn.simple.csv'},
         'status_code': 303,
         'regexes': [
             r"/hhdc_contracts/36/hh_imports/0"]},
@@ -4046,8 +4046,23 @@ def virtual_bill(supply_source):
             r"The import has completed.*successfully."],
         'status_code': 200},
 
-    # Check that the first datum has been correctly loaded in
     {
+        'name': "Try out simple.csv hh import format.",
+        'path': '/hhdc_contracts/35/hh_imports',
+        'method': 'post',
+        'files': {'import_file': 'test/hh_con.simple.csv'},
+        'status_code': 303,
+        'regexes': [
+            r"/hhdc_contracts/35/hh_imports/13"]},
+    {
+        'path': '/hhdc_contracts/35/hh_imports/13',
+        'tries': {},
+        'regexes': [
+            r"The import has completed.*successfully."],
+        'status_code': 200},
+
+    {
+        'name': "that the first datum has been correctly loaded in",
         'path': '/supplies/7/hh_data?months=1&finish_year=2010&'
         'finish_month=02',
         'regexes': [
@@ -4177,7 +4192,7 @@ def virtual_bill(supply_source):
 
     # supply 12, era 16, channel 42
     {
-        'path': '/hh_data/6773/edit',
+        'path': '/hh_data/6772/edit',
         'method': 'post',
         'data': {
             'delete': "Delete"},
@@ -6419,12 +6434,13 @@ def virtual_bill(supply_source):
         'files': {'import_file': 'test/hh-no-channel.simple.csv'},
         'status_code': 303,
         'regexes': [
-            r"/hhdc_contracts/35/hh_imports/13"]},
+            r"/hhdc_contracts/35/hh_imports/14"]},
     {
-        'path': '/hhdc_contracts/35/hh_imports/13',
+        'path': '/hhdc_contracts/35/hh_imports/14',
         'tries': {},
         'regexes': [
-            r'There is no channel for the datum \(22 4862 4512 332, '
+            r'There is no channel under the contract HH contract for the '
+            r'datum \(22 4862 4512 332, '
             r'2010-02-04 20:00, REACTIVE_EXP, 30.4339, A\)\.'],
         'status_code': 200},
     {
@@ -7917,9 +7933,9 @@ def virtual_bill(supply_source):
         'files': {'import_file': 'test/hh_clock_change.df2'},
         'status_code': 303,
         'regexes': [
-            r"/hhdc_contracts/35/hh_imports/14"]},
+            r"/hhdc_contracts/35/hh_imports/15"]},
     {
-        'path': '/hhdc_contracts/35/hh_imports/14',
+        'path': '/hhdc_contracts/35/hh_imports/15',
         'tries': {},
         'regexes': [
             r"The import has completed.*successfully."],
