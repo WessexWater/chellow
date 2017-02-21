@@ -14,6 +14,7 @@ from chellow.utils import (
     utc_datetime_now, utc_datetime)
 import chellow.computer
 from types import MappingProxyType
+from datetime import timedelta
 
 
 def get_times(sess, caches, start_date, finish_date, forecast_date):
@@ -252,6 +253,7 @@ def datum_range(sess, caches, years_back, start_date, finish_date):
             g_engine_cache['datum'] = d_cache = {}
 
         datum_list = []
+        g_cv_id = get_non_core_contract_id('g_cv')
         for dt in hh_range(start_date, finish_date):
             hist_date = dt - relativedelta(years=years_back)
             ct_dt = to_ct(dt)
@@ -272,6 +274,11 @@ def datum_range(sess, caches, years_back, start_date, finish_date):
             utc_is_bank_holiday = dt.strftime("%m-%d") in bank_holidays
             ct_is_bank_holiday = ct_dt.strftime("%m-%d") in bank_holidays
 
+            cv = float(
+                chellow.computer.ion_rs(
+                    sess, caches, g_cv_id,
+                    hist_date)[hist_date.day - 1]['SW']) / 3.6
+
             datum_list.append(
                 MappingProxyType(
                     {
@@ -289,7 +296,10 @@ def datum_range(sess, caches, years_back, start_date, finish_date):
                         'ct_is_bank_holiday': ct_is_bank_holiday,
                         'utc_is_month_end': utc_is_month_end,
                         'ct_is_month_end': ct_is_month_end,
-                        'status': 'X', 'kwh': 0, 'hist_kwh': 0}))
+                        'status': 'X', 'kwh': 0, 'hist_kwh': 0,
+                        'cv': cv, 'correction_factor': CORRECTION_FACTOR,
+                        'units_code': 'M3', 'units_factor': 1,
+                        'units_consumed': 0}))
         datum_tuple = tuple(datum_list)
         d_cache[years_back, start_date, finish_date] = datum_tuple
         return datum_tuple
@@ -752,29 +762,26 @@ class GDataSource():
                             advance = 10 ** digits - prev_value + pres_value
                         units_consumed += advance
 
-                    hh_units_consumed = units_consumed / (
-                        (pres_date - prev_date).total_seconds() / (60 * 30))
-                    g_cv_id = get_non_core_contract_id('g_cv')
+                    bill_s = (
+                        g_bill.finish_date - g_bill.start_date +
+                        timedelta(minutes=30)).total_seconds()
+                    hh_units_consumed = units_consumed / (bill_s / (60 * 30))
 
                     for hh_date in hh_range(
                             g_bill.start_date, g_bill.finish_date):
-                        cv = float(
-                            chellow.computer.ion_rs(
-                                sess, caches, g_cv_id, hh_date)[
-                                    hh_date.day - 1]['SW']) / 3.6
-
-                        hh_kwh = hh_units_consumed * g_units_factor * \
-                            CORRECTION_FACTOR * cv
-
                         hist_map[hh_date] = {
                             'units_code': g_units_code,
-                            'units_factor': g_units_factor, 'cv': cv,
-                            'correction_factor': CORRECTION_FACTOR,
-                            'units_consumed': hh_units_consumed,
-                            'kwh': hh_kwh}
-        self.hh_data.extend(
-            {**d, **hist_map.get(d['hist_start'], {})} for d in datum_range(
-                sess, self.caches, self.years_back, start_date, finish_date))
+                            'units_factor': g_units_factor,
+                            'units_consumed': hh_units_consumed}
+
+        for d in datum_range(
+                sess, self.caches, self.years_back, start_date, finish_date):
+            h = d.copy()
+            hist_start = h['hist_start']
+            h.update(hist_map.get(hist_start, {}))
+            h['kwh'] = h['units_consumed'] * h['units_factor'] * \
+                h['correction_factor'] * h['cv']
+            self.hh_data.append(h)
 
     def g_contract_func(self, g_contract, func_name):
         return g_contract_func(self.caches, g_contract, func_name)
