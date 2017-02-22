@@ -514,7 +514,10 @@ def get_file_rates(cache, contract_name, dt):
 
 
 def loads(ion_str):
-    return load(StringIO(ion_str))
+    try:
+        return load(StringIO(ion_str))
+    except IonException as e:
+        raise BadRequest("Problem with ION: " + str(e))
 
 
 def dumps(val):

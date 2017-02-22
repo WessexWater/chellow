@@ -15,7 +15,7 @@ from sqlalchemy.ext.declarative import declarative_base
 import operator
 from chellow.utils import (
     hh_after, HH, parse_mpan_core, hh_before, next_hh, prev_hh, hh_format,
-    hh_range, utc_datetime, utc_datetime_now, to_utc, loads, dumps)
+    hh_range, utc_datetime, utc_datetime_now, to_utc, loads)
 import json
 from dateutil.relativedelta import relativedelta
 from functools import lru_cache
@@ -3397,7 +3397,8 @@ class GContract(Base, PersistentClass):
             raise BadRequest(
                 "The start date can't be after the finish date.")
 
-        rscript.script = dumps(script)
+        loads(script)
+        rscript.script = script
 
         prev_rscript = self.find_g_rate_script_at(
             sess, rscript.start_date - HH)
@@ -3594,7 +3595,7 @@ class GRateScript(Base, PersistentClass):
         self.g_contract = g_contract
         self.start_date = start_date
         self.finish_date = finish_date
-        self.script = dumps(script)
+        self.script = script
 
     def make_script(self):
         return loads(self.script)

@@ -4930,7 +4930,7 @@ def g_contract_add_post():
         properties = req_ion('properties')
 
         contract = GContract.insert(
-            g.sess, name, charge_script, properties, start_date, None, {})
+            g.sess, name, charge_script, properties, start_date, None, '{}')
         g.sess.commit()
         return chellow_redirect("/g_contracts/" + str(contract.id), 303)
     except BadRequest as e:
@@ -4988,7 +4988,8 @@ def g_rate_script_add_post(g_contract_id):
         set_read_write(g.sess)
         g_contract = GContract.get_by_id(g.sess, g_contract_id)
         start_date = req_date('start')
-        g_rate_script = g_contract.insert_g_rate_script(g.sess, start_date, {})
+        g_rate_script = g_contract.insert_g_rate_script(
+            g.sess, start_date, '{}')
         g.sess.commit()
         return chellow_redirect(
             '/g_rate_scripts/' + str(g_rate_script.id), 303)
@@ -5021,7 +5022,7 @@ def g_rate_script_edit_post(g_rate_script_id):
             g.sess.commit()
             return chellow_redirect('/g_contracts/' + str(g_contract.id), 303)
         else:
-            script = req_ion('script')
+            script = req_str('script')
             start_date = req_date('start')
             has_finished = req_bool('has_finished')
             finish_date = req_date('finish') if has_finished else None

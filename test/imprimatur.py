@@ -14781,7 +14781,7 @@ def virtual_bill(ds):
             r'/g_rate_scripts/2']},
 
     {
-        'name': "Edit gas rate script: error in JSON",
+        'name': "Edit gas rate script: error in ION",
         'path': '/g_rate_scripts/2/edit',
         'method': 'post',
         'data': {
