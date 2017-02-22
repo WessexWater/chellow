@@ -15130,8 +15130,8 @@ def virtual_bill(ds):
         'path': '/downloads/0014_FINISHED_adminexamplecom_g_bill_check.csv',
         'status_code': 200,
         'regexes': [
-            r'batch,bill_reference,bill_type,bill_start_date,'
-            r'bill_finish_date,mprn,site_code,site_name,covered_start,'
+            r'batch,bill_reference,bill_type,bill_start_date,bill_finish_date,'
+            r'mprn,supply_name,site_code,site_name,covered_start,'
             r'covered_finish,covered_bill_ids,covered_units_consumed,'
             r'virtual_units_consumed,covered_correction_factor,'
             r'virtual_correction_factor,covered_units_code,'
@@ -15146,7 +15146,8 @@ def virtual_bill(ds):
             r'difference_vat_gbp,covered_gross_gbp,virtual_gross_gbp,'
             r'difference_gross_gbp',
             r'TB2,8899900012,N,2015-09-01 00:00,2015-09-30 23:30,750278673,'
-            r'CH017,Parbola,2015-09-01 00:00,2015-09-30 23:30,"\[5, 4\]",'
+            r'Main Gas Supply,CH017,Parbola,2015-09-01 00:00,2015-09-30 23:30,'
+            r'"\[5, 4\]",'
             r'25964,7830.0,1.00941,1.02264,HCUF \| M3,M3,1 \| 2.8317,1.0,,,'
             r'9001802,87345.98333999788,0.019448,0.019548,17872.26,'
             r'1707.4392823302724,16164.820717669725,,67.8,157.8,67.8,'

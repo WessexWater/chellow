@@ -1,5 +1,4 @@
 import collections
-import pytz
 from datetime import datetime as Datetime
 from sqlalchemy import or_
 from sqlalchemy.sql.expression import null, true
@@ -11,14 +10,14 @@ import csv
 from chellow.models import Session, GBatch, GBill, GEra, Site, SiteGEra
 import chellow.dloads
 from werkzeug.exceptions import BadRequest
-from chellow.utils import hh_before, csv_make_val, req_int
+from chellow.utils import hh_before, csv_make_val, req_int, to_utc
 import chellow.g_engine
 from flask import request, g
 from chellow.views import chellow_redirect
 
 
 def content(g_batch_id, g_bill_id, user):
-    forecast_date = Datetime.max.replace(tzinfo=pytz.utc)
+    forecast_date = to_utc(Datetime.max)
     report_context = {}
     sess = tmp_file = None
     try:
@@ -48,8 +47,8 @@ def content(g_batch_id, g_bill_id, user):
 
         header_titles = [
             'batch', 'bill_reference', 'bill_type', 'bill_start_date',
-            'bill_finish_date', 'mprn', 'site_code', 'site_name',
-            'covered_start', 'covered_finish', 'covered_bill_ids']
+            'bill_finish_date', 'mprn', 'supply_name', 'site_code',
+            'site_name', 'covered_start', 'covered_finish', 'covered_bill_ids']
         bill_titles = chellow.g_engine.g_contract_func(
             report_context, g_contract, 'virtual_bill_titles')()
 
@@ -213,6 +212,7 @@ def content(g_batch_id, g_bill_id, user):
                             "For key " + str(vk) + " and value " + str(v) +
                             ". " + str(detail))
 
+            vals['supply_name'] = g_supply.name
             vals['site_code'] = site.code
             vals['site_name'] = site.name
 
