@@ -1025,10 +1025,6 @@ class SupplySource(DataSource):
                         hist_map.update(hh_part)
             elif self.bill is not None and hist_measurement_type in (
                     'nhh', 'amr'):
-                print("bill not none")
-                print(
-                    "chunk_start", hh_format(chunk_start), "chunk_finish",
-                    hh_format(chunk_finish))
                 hhd = {}
                 for hh_date in hh_range(chunk_start, chunk_finish):
                     hhd[hh_date] = {
