@@ -15242,7 +15242,11 @@ def virtual_bill(ds):
         'path': '/g_batches/3',
         'status_code': 200,
         'regexes': [
-            r'2016-04-01 00:00']},
+            r'2016-04-01 00:00',
+            r'Bills\s*'
+            r'\[<a\s*'
+            r'href="/g_batches/3/add_bill"\s*'
+            r'>add</a>\]']},
 
     {
         'name': "Does site page show the gas supply?",
