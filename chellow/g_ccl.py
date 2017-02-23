@@ -49,8 +49,7 @@ def vb(ds):
                 ds, ds.g_bill_start, ds.g_bill_finish):
             for hh in ds.hh_data:
                 rate = float(
-                    ds.file_rate(
-                        'g_ccl', hh['start_date'], 'ccl_gbp_per_kwh'))
+                    ds.file_rate('g_ccl', hh['start_date'], 'ccl_gbp_per_kwh'))
                 rate_set.add(rate)
                 kwh += hh['kwh']
                 gbp += hh['kwh'] * rate

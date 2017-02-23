@@ -15272,5 +15272,9 @@ def virtual_bill(ds):
     {
         'name': "View gas batch edit page",
         'path': '/g_batches/3/edit',
-        'status_code': 200},
+        'status_code': 200,
+        'regexes': [
+            r'<form action="/g_batches/3/edit">\s*'
+            r'<fieldset>\s*'
+            r'<input type="submit" name="confirm_delete" value="Delete">']},
 ]
