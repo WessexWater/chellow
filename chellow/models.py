@@ -15,7 +15,7 @@ from sqlalchemy.ext.declarative import declarative_base
 import operator
 from chellow.utils import (
     hh_after, HH, parse_mpan_core, hh_before, next_hh, prev_hh, hh_format,
-    hh_range, utc_datetime, utc_datetime_now, to_utc, loads)
+    hh_range, utc_datetime, utc_datetime_now, to_utc, loads, dumps)
 import json
 from dateutil.relativedelta import relativedelta
 from functools import lru_cache
@@ -3250,7 +3250,7 @@ class GBill(Base, PersistentClass):
         self.vat_gbp = vat_gbp
         self.gross_gbp = gross_gbp
         self.raw_lines = raw_lines
-        self.breakdown = str(breakdown)
+        self.breakdown = dumps(breakdown)
 
     def insert_g_read(
             self, sess, msn, prev_value, prev_date, prev_type, pres_value,
@@ -3268,7 +3268,7 @@ class GBill(Base, PersistentClass):
         sess.flush()
 
     def make_breakdown(self):
-        return eval(self.breakdown)
+        return loads(self.breakdown)
 
 
 class GBatch(Base, PersistentClass):
