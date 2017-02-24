@@ -4,13 +4,12 @@ from flask import (
     request, Response, g, redirect, render_template, send_file, flash,
     make_response, Flask)
 from chellow.models import (
-    Session, Contract, Report, User, set_read_write, Party, MarketRole,
-    Participant, UserRole, Site, Source, GeneratorType, GspGroup, Era, SiteEra,
-    Pc, Cop, Ssc, RateScript, Supply, Mtc, Channel, Tpr,
-    MeasurementRequirement, Bill, RegisterRead, HhDatum, Snag, Batch, ReadType,
-    BillType, MeterPaymentType, ClockInterval, db_upgrade, Llfc, MeterType,
-    GEra, GSupply, SiteGEra, GBill, GContract, GRateScript, GBatch,
-    GRegisterRead, GReadType)
+    Session, Contract, Report, User, Party, MarketRole, Participant, UserRole,
+    Site, Source, GeneratorType, GspGroup, Era, SiteEra, Pc, Cop, Ssc,
+    RateScript, Supply, Mtc, Channel, Tpr, MeasurementRequirement, Bill,
+    RegisterRead, HhDatum, Snag, Batch, ReadType, BillType, MeterPaymentType,
+    ClockInterval, db_upgrade, Llfc, MeterType, GEra, GSupply, SiteGEra, GBill,
+    GContract, GRateScript, GBatch, GRegisterRead, GReadType)
 from sqlalchemy.exc import ProgrammingError
 import traceback
 from datetime import datetime as Datetime
@@ -211,7 +210,6 @@ def check_permissions(*args, **kwargs):
 
     if g.user is None and g.sess.query(User).count() == 0:
         g.sess.rollback()
-        set_read_write(g.sess)
         user_role = g.sess.query(UserRole).filter(
             UserRole.code == 'editor').one()
         User.insert(g.sess, 'admin@example.com', 'admin', user_role, None)
@@ -339,7 +337,6 @@ def local_reports_get():
 
 @app.route('/local_reports', methods=['POST'])
 def local_reports_post():
-    set_read_write(g.sess)
     name = req_str("name")
     report = Report(name, "", None)
     g.sess.add(report)
@@ -362,7 +359,6 @@ def local_report_get(report_id):
 
 @app.route('/local_reports/<int:report_id>', methods=['POST'])
 def local_report_post(report_id):
-    set_read_write(g.sess)
     report = Report.get_by_id(g.sess, report_id)
     name = req_str("name")
     script = req_str("script")
@@ -602,7 +598,6 @@ def users_get():
 
 @app.route('/users', methods=['POST'])
 def users_post():
-    set_read_write(g.sess)
     email_address = req_str('email_address')
     password = req_str('password')
     user_role_code = req_str('user_role_code')
@@ -628,7 +623,6 @@ def users_post():
 @app.route('/users/<int:user_id>', methods=['POST'])
 def user_post(user_id):
     try:
-        set_read_write(g.sess)
         user = User.get_by_id(g.sess, user_id)
         if 'current_password' in request.values:
             current_password = req_str('current_password')
@@ -758,7 +752,6 @@ def site_edit_get(site_id):
 @app.route('/sites/<int:site_id>/edit', methods=['POST'])
 def site_edit_post(site_id):
     try:
-        set_read_write(g.sess)
         site = Site.get_by_id(g.sess, site_id)
         if 'delete' in request.form:
             site.delete(g.sess)
@@ -903,7 +896,6 @@ def site_edit_post(site_id):
 @app.route('/sites/add', methods=['POST'])
 def site_add_post():
     try:
-        set_read_write(g.sess)
         code = req_str("code")
         name = req_str("name")
         site = Site.insert(g.sess, code, name)
@@ -950,7 +942,6 @@ def hhdc_contracts_get():
 @app.route('/hhdc_contracts/add', methods=['POST'])
 def hhdc_contracts_add_post():
     try:
-        set_read_write(g.sess)
         participant_id = req_int('participant_id')
         name = req_str('name')
         start_date = req_date('start')
@@ -1058,7 +1049,6 @@ def hhdc_contract_edit_get(hhdc_contract_id):
 def hhdc_contract_edit_post(contract_id):
     contract = None
     try:
-        set_read_write(g.sess)
         contract = Contract.get_hhdc_by_id(g.sess, contract_id)
         if 'update_state' in request.form:
             state = req_str("state")
@@ -1119,7 +1109,6 @@ def hhdc_rate_script_add_get(contract_id):
     '/hhdc_contracts/<int:contract_id>/add_rate_script', methods=['POST'])
 def hhdc_rate_script_add_post(contract_id):
     try:
-        set_read_write(g.sess)
         contract = Contract.get_hhdc_by_id(g.sess, contract_id)
         start_date = req_date('start')
         rate_script = contract.insert_rate_script(g.sess, start_date, '')
@@ -1153,7 +1142,6 @@ def hhdc_rate_script_edit_get(hhdc_rate_script_id):
     '/hhdc_rate_scripts/<int:hhdc_rate_script_id>/edit', methods=['POST'])
 def hhdc_rate_script_edit_post(hhdc_rate_script_id):
     try:
-        set_read_write(g.sess)
         hhdc_rate_script = RateScript.get_hhdc_by_id(
             g.sess, hhdc_rate_script_id)
         hhdc_contract = hhdc_rate_script.contract
@@ -1190,7 +1178,6 @@ def supplier_contract_edit_get(contract_id):
 @app.route('/supplier_contracts/<int:contract_id>/edit', methods=['POST'])
 def supplier_contract_edit_post(contract_id):
     try:
-        set_read_write(g.sess)
         contract = Contract.get_supplier_by_id(g.sess, contract_id)
         if 'delete' in request.form:
             contract.delete(g.sess)
@@ -1239,7 +1226,6 @@ def supplier_rate_script_edit_get(rate_script_id):
     '/supplier_rate_scripts/<int:rate_script_id>/edit', methods=['POST'])
 def supplier_rate_script_edit_post(rate_script_id):
     try:
-        set_read_write(g.sess)
         rate_script = RateScript.get_supplier_by_id(g.sess, rate_script_id)
         contract = rate_script.contract
         if 'delete' in request.values:
@@ -1277,7 +1263,6 @@ def supplier_contracts_get():
 @app.route('/supplier_contracts/add', methods=['POST'])
 def supplier_contract_add_post():
     try:
-        set_read_write(g.sess)
         participant_id = req_str("participant_id")
         participant = Participant.get_by_id(g.sess, participant_id)
         name = req_str("name")
@@ -1341,7 +1326,6 @@ def supplier_rate_script_add_get(contract_id):
     '/supplier_contracts/<int:contract_id>/add_rate_script', methods=['POST'])
 def supplier_rate_script_add_post(contract_id):
     try:
-        set_read_write(g.sess)
         contract = Contract.get_supplier_by_id(g.sess, contract_id)
         start_date = req_date('start')
         rate_script = contract.insert_rate_script(g.sess, start_date, '')
@@ -1371,7 +1355,6 @@ def mop_contract_edit_get(contract_id):
 @app.route('/mop_contracts/<int:contract_id>/edit', methods=['POST'])
 def mop_contract_edit_post(contract_id):
     try:
-        set_read_write(g.sess)
         contract = Contract.get_mop_by_id(g.sess, contract_id)
         if 'update_state' in request.form:
             state = req_str('state')
@@ -1430,7 +1413,6 @@ def mop_rate_script_edit_get(rate_script_id):
 
 @app.route('/mop_rate_scripts/<int:rate_script_id>/edit', methods=['POST'])
 def mop_rate_script_edit_post(rate_script_id):
-    set_read_write(g.sess)
     rate_script = RateScript.get_mop_by_id(g.sess, rate_script_id)
     contract = rate_script.contract
     if 'delete' in request.form:
@@ -1467,7 +1449,6 @@ def mop_contracts_get():
 @app.route('/mop_contracts/add', methods=['POST'])
 def mop_contract_add_post():
     try:
-        set_read_write(g.sess)
         participant_id = req_int('participant_id')
         name = req_str('name')
         start_date = req_date('start')
@@ -1529,7 +1510,6 @@ def mop_rate_script_add_get():
 @app.route('/mop_rate_scripts/add', methods=['POST'])
 def mop_rate_script_add_post():
     try:
-        set_read_write(g.sess)
         contract_id = req_str('mop_contract_id')
         contract = Contract.get_mop_by_id(g.sess, contract_id)
         start_date = req_date('start')
@@ -1642,7 +1622,6 @@ def supply_edit_get(supply_id):
 @app.route('/supplies/<int:supply_id>/edit', methods=['POST'])
 def supply_edit_post(supply_id):
     try:
-        set_read_write(g.sess)
         supply = Supply.get_by_id(g.sess, supply_id)
 
         if 'delete' in request.form:
@@ -1708,7 +1687,6 @@ def era_edit_get(era_id):
 @app.route('/eras/<int:era_id>/edit', methods=['POST'])
 def era_edit_post(era_id):
     try:
-        set_read_write(g.sess)
         era = Era.get_by_id(g.sess, era_id)
 
         if 'delete' in request.form:
@@ -2177,7 +2155,6 @@ def site_snags_edit_get():
 @app.route('/site_snags/edit', methods=['POST'])
 def site_snags_edit_post():
     try:
-        set_read_write(g.sess)
         finish_date = req_date('ignore')
         g.sess.execute(
             "update snag set is_ignored = true "
@@ -2205,7 +2182,6 @@ def channel_snag_edit_get(snag_id):
 @app.route('/channel_snags/<int:snag_id>/edit', methods=['POST'])
 def channel_snag_edit_post(snag_id):
     try:
-        set_read_write(g.sess)
         ignore = req_bool('ignore')
         snag = Snag.get_by_id(g.sess, snag_id)
         snag.set_is_ignored(ignore)
@@ -2228,7 +2204,6 @@ def channel_edit_get(channel_id):
 @app.route('/channels/<int:channel_id>/edit', methods=['POST'])
 def channel_edit_post(channel_id):
     try:
-        set_read_write(g.sess)
         channel = Channel.get_by_id(g.sess, channel_id)
         if 'delete' in request.values:
             supply_id = channel.era.supply.id
@@ -2290,7 +2265,6 @@ def add_channel_get(era_id):
 @app.route('/eras/<int:era_id>/add_channel', methods=['POST'])
 def add_channel_post(era_id):
     try:
-        set_read_write(g.sess)
         imp_related = req_bool('imp_related')
         channel_type = req_str('channel_type')
         era = Era.get_by_id(g.sess, era_id)
@@ -2336,7 +2310,6 @@ def supplier_batch_add_get(contract_id):
 
 @app.route('/supplier_contracts/<int:contract_id>/add_batch', methods=['POST'])
 def supplier_batch_add_post(contract_id):
-    set_read_write(g.sess)
     contract = Contract.get_supplier_by_id(g.sess, contract_id)
     try:
         reference = req_str("reference")
@@ -2474,7 +2447,6 @@ def hh_datum_edit_get(datum_id):
 @app.route('/hh_data/<int:datum_id>/edit', methods=['POST'])
 def hh_datum_edit_post(datum_id):
     try:
-        set_read_write(g.sess)
         hh = HhDatum.get_by_id(g.sess, datum_id)
         channel_id = hh.channel.id
         if 'delete' in request.values:
@@ -2943,7 +2915,6 @@ def dno_rate_script_add_get(contract_id):
     '/dno_contracts/<int:contract_id>/add_rate_script', methods=['POST'])
 def dno_rate_script_add_post(contract_id):
     try:
-        set_read_write(g.sess)
         contract = Contract.get_dno_by_id(g.sess, contract_id)
         start_date = req_date('start')
         rate_script = contract.insert_rate_script(g.sess, start_date, '')
@@ -2969,7 +2940,6 @@ def dno_rate_script_edit_get(rs_id):
 @app.route('/dno_rate_scripts/<int:rs_id>/edit', methods=['POST'])
 def dno_rate_script_edit_post(rs_id):
     try:
-        set_read_write(g.sess)
         rate_script = RateScript.get_dno_by_id(g.sess, rs_id)
         contract = rate_script.contract
         if 'delete' in request.values:
@@ -3005,7 +2975,6 @@ def non_core_contract_edit_get(contract_id):
 @app.route('/non_core_contracts/<int:contract_id>/edit', methods=['POST'])
 def non_core_contract_edit_post(contract_id):
     try:
-        set_read_write(g.sess)
         contract = Contract.get_non_core_by_id(g.sess, contract_id)
         if 'delete' in request.values:
             contract.delete(g.sess)
@@ -3156,7 +3125,6 @@ def read_edit_get(read_id):
 @app.route('/reads/<int:read_id>/edit', methods=['POST'])
 def read_edit_post(read_id):
     try:
-        set_read_write(g.sess)
         read = RegisterRead.get_by_id(g.sess, read_id)
         if 'update' in request.values:
             tpr_id = req_int('tpr_id')
@@ -3261,7 +3229,6 @@ def supplier_bill_edit_get(bill_id):
 @app.route('/supplier_bills/<int:bill_id>/edit', methods=['POST'])
 def supplier_bill_edit_post(bill_id):
     try:
-        set_read_write(g.sess)
         bill = Bill.get_by_id(g.sess, bill_id)
         if 'delete' in request.values:
             batch = bill.batch
@@ -3309,7 +3276,6 @@ def hhdc_batch_add_get(contract_id):
 @app.route('/hhdc_contracts/<int:contract_id>/add_batch', methods=['POST'])
 def hhdc_batch_add_post(contract_id):
     try:
-        set_read_write(g.sess)
         contract = Contract.get_hhdc_by_id(g.sess, contract_id)
         reference = req_str('reference')
         description = req_str('description')
@@ -3335,7 +3301,6 @@ def hhdc_batch_edit_get(batch_id):
 @app.route('/hhdc_batches/<int:batch_id>/edit', methods=['POST'])
 def hhdc_batch_edit_post(batch_id):
     try:
-        set_read_write(g.sess)
         batch = Batch.get_by_id(g.sess, batch_id)
         if 'delete' in request.values:
             contract = batch.contract
@@ -3481,7 +3446,6 @@ def hhdc_bill_edit_get(bill_id):
 @app.route('/hhdc_bills/<int:bill_id>/edit', methods=["POST"])
 def hhdc_bill_edit_post(bill_id):
     try:
-        set_read_write(g.sess)
         bill = Bill.get_by_id(g.sess, bill_id)
         if 'update' in request.values:
             account = req_str('account')
@@ -3525,7 +3489,6 @@ def mop_batch_add_get(contract_id):
 @app.route('/mop_contracts/<int:contract_id>/add_batch', methods=['POST'])
 def mop_batch_add_post(contract_id):
     try:
-        set_read_write(g.sess)
         contract = Contract.get_mop_by_id(g.sess, contract_id)
         reference = req_str("reference")
         description = req_str("description")
@@ -3551,7 +3514,6 @@ def mop_batch_edit_get(batch_id):
 @app.route('/mop_batches/<int:batch_id>/edit', methods=['POST'])
 def mop_batch_edit_post(batch_id):
     try:
-        set_read_write(g.sess)
         batch = Batch.get_by_id(g.sess, batch_id)
         if 'delete' in request.values:
             contract = batch.contract
@@ -3676,7 +3638,6 @@ def mop_bill_add_get(batch_id):
 @app.route('/mop_batches/<int:batch_id>/add_bill', methods=['POST'])
 def mop_bill_add_post(batch_id):
     try:
-        set_read_write(g.sess)
         batch = Batch.get_by_id(g.sess, batch_id)
         mpan_core = req_str("mpan_core")
         mpan_core = parse_mpan_core(mpan_core)
@@ -3742,7 +3703,6 @@ def non_core_rate_script_add_get(contract_id):
     '/non_core_contracts/<int:contract_id>/add_rate_script', methods=['POST'])
 def non_core_rate_script_add_post(contract_id):
     try:
-        set_read_write(g.sess)
         contract = Contract.get_non_core_by_id(g.sess, contract_id)
         start_date = req_date('start')
         rate_script = contract.insert_rate_script(g.sess, start_date, '')
@@ -3776,7 +3736,6 @@ def non_core_rate_script_edit_get(rs_id):
 @app.route('/non_core_rate_scripts/<int:rs_id>/edit', methods=['POST'])
 def non_core_rate_script_edit_post(rs_id):
     try:
-        set_read_write(g.sess)
         rate_script = RateScript.get_non_core_by_id(g.sess, rs_id)
         contract = rate_script.contract
         if 'delete' in request.values:
@@ -3819,7 +3778,6 @@ def supplier_bill_add_get(batch_id):
 @app.route('/supplier_batches/<int:batch_id>/add_bill', methods=['POST'])
 def supplier_bill_add_post(batch_id):
     try:
-        set_read_write(g.sess)
         batch = Batch.get_by_id(g.sess, batch_id)
         mpan_core = req_str('mpan_core')
         mpan_core = parse_mpan_core(mpan_core)
@@ -3864,7 +3822,6 @@ def supplier_batch_edit_get(batch_id):
 @app.route('/supplier_batches/<int:batch_id>/edit', methods=['POST'])
 def supplier_batch_edit_post(batch_id):
     try:
-        set_read_write(g.sess)
         batch = Batch.get_by_id(g.sess, batch_id)
         if 'update' in request.values:
             reference = req_str('reference')
@@ -3922,7 +3879,6 @@ def supply_note_add_get(supply_id):
 @app.route('/supplies/<int:supply_id>/notes/add', methods=['POST'])
 def supply_note_add_post(supply_id):
     try:
-        set_read_write(g.sess)
         supply = Supply.get_by_id(g.sess, supply_id)
         body = req_str('body')
         category = req_str('category')
@@ -3956,7 +3912,6 @@ def supply_note_edit_get(supply_id, index):
     '/supplies/<int:supply_id>/notes/<int:index>/edit', methods=['POST'])
 def supply_note_edit_post(supply_id, index):
     try:
-        set_read_write(g.sess)
         supply = Supply.get_by_id(g.sess, supply_id)
         supply_note = eval(supply.note)
         if 'delete' in request.values:
@@ -4235,7 +4190,6 @@ def site_snag_edit_get(snag_id):
 @app.route('/site_snags/<int:snag_id>/edit', methods=['POST'])
 def site_snag_edit_post(snag_id):
     try:
-        set_read_write(g.sess)
         ignore = req_bool('ignore')
         snag = Snag.get_by_id(g.sess, snag_id)
         snag.set_is_ignored(ignore)
@@ -4409,7 +4363,6 @@ def read_add_get(bill_id):
 @app.route('/supplier_bills/<int:bill_id>/add_read', methods=["POST"])
 def read_add_post(bill_id):
     try:
-        set_read_write(g.sess)
         bill = Bill.get_by_id(g.sess, bill_id)
         tpr_id = req_int("tpr_id")
         tpr = Tpr.get_by_id(g.sess, tpr_id)
@@ -4455,7 +4408,6 @@ def hhdc_bill_add_get(batch_id):
 @app.route('/hhdc_batches/<int:batch_id>/add_bill', methods=['POST'])
 def hhdc_bill_add_post(batch_id):
     try:
-        set_read_write(g.sess)
         batch = Batch.get_by_id(g.sess, batch_id)
         mpan_core = req_str("mpan_core")
         mpan_core = parse_mpan_core(mpan_core)
@@ -4865,7 +4817,6 @@ def g_supply_edit_get(g_supply_id):
 
 @app.route('/g_supplies/<int:g_supply_id>/edit', methods=["POST"])
 def g_supply_edit_post(g_supply_id):
-    set_read_write(g.sess)
     g_supply = GSupply.get_by_id(g.sess, g_supply_id)
     try:
         if 'delete' in request.values:
@@ -4923,7 +4874,6 @@ def g_contract_add_get():
 @app.route('/g_contracts/add', methods=["POST"])
 def g_contract_add_post():
     try:
-        set_read_write(g.sess)
         name = req_str('name')
         start_date = req_date('start')
         charge_script = req_str('charge_script')
@@ -4950,7 +4900,6 @@ def g_contract_edit_get(g_contract_id):
 @app.route('/g_contracts/<int:g_contract_id>/edit', methods=["POST"])
 def g_contract_edit_post(g_contract_id):
     try:
-        set_read_write(g.sess)
         g_contract = GContract.get_by_id(g.sess, g_contract_id)
         if 'delete' in request.values:
             g_contract.delete(g.sess)
@@ -4985,7 +4934,6 @@ def g_rate_script_add_get(g_contract_id):
     '/g_contracts/<int:g_contract_id>/add_rate_script', methods=["POST"])
 def g_rate_script_add_post(g_contract_id):
     try:
-        set_read_write(g.sess)
         g_contract = GContract.get_by_id(g.sess, g_contract_id)
         start_date = req_date('start')
         g_rate_script = g_contract.insert_g_rate_script(
@@ -5014,7 +4962,6 @@ def g_rate_script_edit_get(g_rate_script_id):
     '/g_rate_scripts/<int:g_rate_script_id>/edit', methods=["POST"])
 def g_rate_script_edit_post(g_rate_script_id):
     try:
-        set_read_write(g.sess)
         g_rate_script = GRateScript.get_by_id(g.sess, g_rate_script_id)
         g_contract = g_rate_script.g_contract
         if 'delete' in request.values:
@@ -5067,7 +5014,6 @@ def g_batch_add_get(g_contract_id):
 @app.route('/g_contracts/<int:g_contract_id>/add_batch', methods=["POST"])
 def g_batch_add_post(g_contract_id):
     try:
-        set_read_write(g.sess)
         g_contract = GContract.get_by_id(g.sess, g_contract_id)
         reference = req_str("reference")
         description = req_str("description")
@@ -5116,7 +5062,6 @@ def g_batch_edit_get(g_batch_id):
 @app.route('/g_batches/<int:g_batch_id>/edit', methods=["POST"])
 def g_batch_edit_post(g_batch_id):
     try:
-        set_read_write(g.sess)
         g_batch = GBatch.get_by_id(g.sess, g_batch_id)
         if 'update' in request.values:
             reference = req_str('reference')
@@ -5264,7 +5209,6 @@ def g_bill_add_get(g_batch_id):
 @app.route('/g_batches/<int:g_batch_id>/add_bill')
 def g_bill_add_post(g_batch_id):
     try:
-        set_read_write(g.sess)
         g_batch = GBatch.get_by_id(g.sess, g_batch_id)
         mprn = req_str('mprn')
         account = req_str('account')
@@ -5312,7 +5256,6 @@ def g_era_get(g_era_id):
 @app.route('/g_eras/<int:g_era_id>/edit', methods=['POST'])
 def g_era_post(g_era_id):
     try:
-        set_read_write(g.sess)
         g_era = GEra.get_by_id(g.sess, g_era_id)
 
         if 'delete' in request.values:
@@ -5379,7 +5322,6 @@ def g_bill_edit_get(g_bill_id):
 @app.route('/g_bills/<int:g_bill_id>/edit', methods=['POST'])
 def g_bill_edit_post(g_bill_id):
     try:
-        set_read_write(g.sess)
         g_bill = GBill.get_by_id(g.sess, g_bill_id)
         if 'delete' in request.values:
             g_batch = g_bill.g_batch
@@ -5428,7 +5370,6 @@ def g_read_add_get(g_bill_id):
 @app.route('/g_bills/<int:g_bill_id>/add_read', methods=['POST'])
 def g_read_add_post(g_bill_id):
     try:
-        set_read_write(g.sess)
         g_bill = GBill.get_by_id(g.sess, g_bill_id)
         msn = req_str('msn')
         prev_date = req_date('prev_date')
@@ -5466,7 +5407,6 @@ def g_read_edit_get(g_read_id):
 @app.route('/g_reads/<int:g_read_id>/edit', methods=['POST'])
 def g_read_edit_post(g_read_id):
     try:
-        set_read_write(g.sess)
         g_read = GRegisterRead.get_by_id(g.sess, g_read_id)
         if 'update' in request.values:
             msn = req_str('msn')

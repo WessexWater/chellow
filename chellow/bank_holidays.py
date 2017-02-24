@@ -1,7 +1,7 @@
 import collections
 import threading
 import traceback
-from chellow.models import Contract, RateScript, Session, set_read_write
+from chellow.models import Contract, RateScript, Session
 from chellow.utils import (
     HH, hh_format, utc_datetime_now, utc_datetime, utc_datetime_parse)
 import json
@@ -88,7 +88,6 @@ class BankHolidayImporter(threading.Thread):
                                 hols[dt.year].append(dt)
 
                         for year in sorted(hols.keys()):
-                            set_read_write(sess)
                             year_start = utc_datetime(year, 1, 1)
                             year_finish = year_start + \
                                 relativedelta(years=1) - HH

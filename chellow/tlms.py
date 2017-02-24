@@ -5,7 +5,7 @@ import traceback
 from dateutil.relativedelta import relativedelta
 import requests
 from chellow.models import (
-    set_read_write, Session, Contract, RateScript, get_non_core_contract_id)
+    Session, Contract, RateScript, get_non_core_contract_id)
 from chellow.utils import HH, hh_format, utc_datetime_now, to_utc, to_ct
 from werkzeug.exceptions import BadRequest
 import atexit
@@ -177,7 +177,6 @@ class TlmImporter(threading.Thread):
                                     "'" + k + "': " +
                                     month_tlms[k]['off-taking'] for k in
                                     sorted(month_tlms.keys())) + "}"
-                            set_read_write(sess)
                             contract = Contract.get_non_core_by_name(
                                 sess, 'tlms')
                             rs = RateScript.get_by_id(sess, latest_rs_id)

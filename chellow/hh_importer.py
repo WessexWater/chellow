@@ -4,8 +4,7 @@ from collections import defaultdict, deque
 import tempfile
 import ftplib
 import os
-from chellow.models import (
-    Contract, MarketRole, Session, HhDatum, set_read_write)
+from chellow.models import Contract, MarketRole, Session, HhDatum
 from io import TextIOWrapper
 from werkzeug.exceptions import BadRequest
 import importlib
@@ -239,7 +238,6 @@ class HhImportTask(threading.Thread):
                                 if len(messages) > 0:
                                     raise BadRequest("Problem loading file.")
 
-                                set_read_write(sess)
                                 contract = Contract.get_hhdc_by_id(
                                     sess, self.contract_id)
                                 contract.update_state(state)
@@ -326,7 +324,6 @@ class HhImportTask(threading.Thread):
                                 if len(messages) > 0:
                                     raise BadRequest("Problem loading file.")
 
-                                set_read_write(sess)
                                 contract = Contract.get_hhdc_by_id(
                                     sess, self.contract_id)
                                 contract.update_state(state)

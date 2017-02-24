@@ -2,8 +2,7 @@ from dateutil.relativedelta import relativedelta
 import traceback
 import threading
 from collections import defaultdict, deque
-from chellow.models import (
-    RateScript, Contract, Session, set_read_write)
+from chellow.models import RateScript, Contract, Session
 from chellow.utils import HH, hh_format, utc_datetime_now, to_utc, dumps
 import chellow.scenario
 import atexit
@@ -135,7 +134,6 @@ class GCvImporter(threading.Thread):
                     self.log("The whole month's data is there.")
                     month_ion = [v for k, v in sorted(month_cv.items())]
                     script = dumps(month_ion)
-                    set_read_write(sess)
                     contract = Contract.get_non_core_by_name(sess, 'g_cv')
                     rs = RateScript.get_by_id(sess, latest_rs_id)
                     contract.update_rate_script(

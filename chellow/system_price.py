@@ -5,7 +5,7 @@ import traceback
 import urllib.parse
 import http.client
 from chellow.models import (
-    Contract, RateScript, get_non_core_contract_id, Session, set_read_write)
+    Contract, RateScript, get_non_core_contract_id, Session)
 from chellow.utils import HH, hh_format, utc_datetime_now, to_utc, to_ct
 import xlrd
 import json
@@ -226,7 +226,6 @@ class SystemPriceImporter(threading.Thread):
                             sorted_keys = sorted(sp_month.keys())
                             month_start = sorted_keys[0]
                             month_finish = sorted_keys[-1]
-                            set_read_write(sess)
                             rs = sess.query(RateScript).filter(
                                 RateScript.contract == contract,
                                 RateScript.start_date == month_start).first()

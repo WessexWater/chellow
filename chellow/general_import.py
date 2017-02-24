@@ -12,7 +12,7 @@ from chellow.models import (
     Site, Era, Supply, HhDatum, Source, GeneratorType, GspGroup, Contract, Pc,
     Cop, Ssc, Snag, Channel, Mtc, BillType, Tpr, ReadType, Participant, Bill,
     RegisterRead, UserRole, Party, User, VoltageLevel, Llfc, MarketRole,
-    MeterType, MeterPaymentType, set_read_write, Session, GContract, GSupply)
+    MeterType, MeterPaymentType, Session, GContract, GSupply)
 from werkzeug.exceptions import BadRequest
 
 
@@ -1266,7 +1266,6 @@ class GeneralImporter(threading.Thread):
                 else:
                     try:
                         typ_func = typ_funcs[typ]
-                        set_read_write(sess)
                         typ_func(sess, action, vals, self.args)
                         sess.commit()
                     except KeyError:

@@ -5,7 +5,7 @@ import traceback
 import requests
 from dateutil.relativedelta import relativedelta
 from chellow.models import (
-    Contract, RateScript, get_non_core_contract_id, Session, set_read_write)
+    Contract, RateScript, get_non_core_contract_id, Session)
 from chellow.utils import HH, hh_format, utc_datetime_now, utc_datetime_parse
 from werkzeug.exceptions import BadRequest
 import atexit
@@ -143,7 +143,6 @@ class RcrcImporter(threading.Thread):
                                 ',\n'.join(
                                     "'" + k + "': " + month_rcrcs[k] for k in
                                     sorted(month_rcrcs.keys())) + "}"
-                            set_read_write(sess)
                             contract = Contract.get_non_core_by_name(
                                 sess, 'rcrc')
                             rs = RateScript.get_by_id(sess, latest_rs_id)

@@ -65,11 +65,6 @@ def log_message(msg):
     sys.stderr.write(str(msg) + "\n")
 
 
-def set_read_write(sess):
-    sess.execute("rollback")
-    sess.execute("set transaction isolation level serializable read write")
-
-
 @lru_cache()
 def get_non_core_contract_id(name):
     sess = None
@@ -2136,7 +2131,6 @@ class Channel(Base, PersistentClass):
         self.site_check(sess, start, finish)
 
     def add_hh_data(self, sess, data_raw):
-        set_read_write(sess)
         data = iter(
             sess.query(HhDatum.start_date, HhDatum.value, HhDatum.status).
             filter(
@@ -3644,12 +3638,10 @@ def db_init(sess, root_path):
         sess.add(VoltageLevel(code, desc))
     sess.commit()
 
-    set_read_write(sess)
     for code in ("editor", "viewer", "party-viewer"):
         sess.add(UserRole(code))
     sess.commit()
 
-    set_read_write(sess)
     for code, desc in (
             ('net', "Public distribution system."),
             ('sub', "Sub meter"),
@@ -3663,7 +3655,6 @@ def db_init(sess, root_path):
         sess.add(Source(code, desc))
     sess.commit()
 
-    set_read_write(sess)
     for code, desc in (
             ("chp", "Combined heat and power."),
             ("lm", "Load management."),
@@ -3672,7 +3663,6 @@ def db_init(sess, root_path):
         sess.add(GeneratorType(code, desc))
     sess.commit()
 
-    set_read_write(sess)
     for code, desc in (
             ("N", "Normal"),
             ("N3", "Normal 3rd Party"),
@@ -3687,7 +3677,6 @@ def db_init(sess, root_path):
         sess.add(ReadType(code, desc))
     sess.commit()
 
-    set_read_write(sess)
     for code, desc in (
             ('1', "CoP 1"),
             ('2', "CoP 2"),
@@ -3702,7 +3691,6 @@ def db_init(sess, root_path):
         sess.add(Cop(code, desc))
     sess.commit()
 
-    set_read_write(sess)
     for code, desc in (
             ("F", "Final"),
             ("N", "Normal"),
@@ -3765,7 +3753,6 @@ def db_init(sess, root_path):
         dbapi_conn.commit()
         f.close()
 
-    set_read_write(sess)
     for path_name, role_code in (
             ('non_core_contracts', 'Z'),
             ('dno_contracts', 'R')):
@@ -3826,7 +3813,6 @@ def db_init(sess, root_path):
             contract.finish_rate_script = scripts[-1]
     sess.commit()
 
-    set_read_write(sess)
     for code, desc in (
             ("A", "Actual"),
             ("C", "Customer"),
@@ -3835,7 +3821,6 @@ def db_init(sess, root_path):
         sess.add(GReadType(code, desc))
     sess.commit()
 
-    set_read_write(sess)
     for code, desc, factor_str in (
             ("MCUF", "Thousands of cubic feet", '28.317'),
             ("HCUF", "Hundreds of cubic feet", '2.8317'),
@@ -3848,7 +3833,6 @@ def db_init(sess, root_path):
         sess.add(GUnits(code, desc, Decimal(factor_str)))
     sess.commit()
 
-    set_read_write(sess)
     sess.execute(
         "alter database " + db_name +
         " set default_transaction_isolation = 'serializable'")
@@ -3857,9 +3841,6 @@ def db_init(sess, root_path):
         " set default_transaction_deferrable = on")
     sess.execute(
         "alter database " + db_name + " SET DateStyle TO 'ISO, YMD'")
-    sess.execute(
-        "alter database " + db_name +
-        " set default_transaction_read_only = on")
     sess.commit()
     sess.close()
     engine.dispose()
@@ -3872,7 +3853,6 @@ def db_init(sess, root_path):
             " should be 'serializable' but in fact " "it's " +
             isolation_level + ".")
 
-    set_read_write(sess)
     sess.execute("create extension tablefunc")
     conf = sess.query(Contract).join(MarketRole).filter(
         Contract.name == 'configuration', MarketRole.code == 'Z').one()
@@ -3959,7 +3939,6 @@ def db_upgrade_2_to_3(sess, root_path):
 
 
 def db_upgrade_3_to_4(sess, root_path):
-    set_read_write(sess)
     for code, desc in (
             ("A", "Actual"),
             ("C", "Customer"),
@@ -3968,7 +3947,6 @@ def db_upgrade_3_to_4(sess, root_path):
         sess.add(GReadType(code, desc))
     sess.commit()
 
-    set_read_write(sess)
     for code, desc, factor_str in (
             ("MCUF", "Thousands of cubic feet", '28.317'),
             ("HCUF", "Hundreds of cubic feet", '2.8317'),
@@ -3981,7 +3959,6 @@ def db_upgrade_3_to_4(sess, root_path):
         sess.add(GUnits(code, desc, Decimal(factor_str)))
     sess.commit()
 
-    set_read_write(sess)
     contract_path = os.path.join(root_path, 'non_core_contracts', 'g_cv')
     params = {'name': 'g_cv', 'charge_script': ''}
     for fname, attr in (
@@ -4041,40 +4018,11 @@ upgrade_funcs = [
 
 
 def db_upgrade(root_path):
-    sess = None
-    rw_engine = create_engine(db_url)
-    rwSession = sessionmaker(bind=rw_engine)
-    try:
-        sess = rwSession()
-        set_read_write(sess)
-        db_name = config['PGDATABASE']
-        sess.execute(
-            "alter database " + db_name +
-            " set default_transaction_read_only = off")
-        sess.commit()
-    finally:
-        if sess is not None:
-            sess.close()
-
-    rw_engine.dispose()
-    rw_engine = create_engine(db_url)
-    Base.metadata.create_all(bind=rw_engine)
-    rw_engine.dispose()
-
-    global engine, Session
-    engine = create_engine(db_url)
-    Session = sessionmaker(bind=engine)
+    Base.metadata.create_all(bind=engine)
 
     sess = None
     try:
         sess = Session()
-        set_read_write(sess)
-        sess.execute(
-            "alter database " + db_name +
-            " set default_transaction_read_only = on")
-        sess.commit()
-        set_read_write(sess)
-
         db_version = find_db_version(sess)
         curr_version = len(upgrade_funcs)
         if db_version is None:
@@ -4096,7 +4044,6 @@ def db_upgrade(root_path):
                 "Upgrading from database version " + str(db_version) +
                 " to database version " + str(db_version + 1) + ".")
             upgrade_funcs[db_version](sess, root_path)
-            set_read_write(sess)
             conf = sess.query(Contract).join(MarketRole).filter(
                 Contract.name == 'configuration', MarketRole.code == 'Z').one()
             state = conf.make_state()

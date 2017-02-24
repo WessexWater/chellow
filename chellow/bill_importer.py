@@ -4,8 +4,7 @@ import collections
 from werkzeug.exceptions import BadRequest
 import importlib
 from pkgutil import iter_modules
-from chellow.models import (
-    set_read_write, Session, Era, Supply, Batch, BillType, Tpr, ReadType)
+from chellow.models import Session, Era, Supply, Batch, BillType, Tpr, ReadType
 import chellow
 import chellow.bill_parser_engie_xls
 from chellow.utils import keydefaultdict, utc_datetime_now
@@ -76,7 +75,6 @@ class BillImport(threading.Thread):
         sess = None
         try:
             sess = Session()
-            set_read_write(sess)
             self._log(
                 "Starting to parse the file with '" + self.parser_name + "'.")
 

@@ -5,7 +5,7 @@ import traceback
 import threading
 import collections
 from chellow.models import (
-    RateScript, Contract, Session, set_read_write, get_non_core_contract_id)
+    RateScript, Contract, Session, get_non_core_contract_id)
 from chellow.utils import HH, hh_format, utc_datetime_now, to_utc, to_ct
 import chellow.scenario
 from werkzeug.exceptions import BadRequest
@@ -158,7 +158,6 @@ class BsuosImporter(threading.Thread):
                                         "'" + k + "': " + str(month_bsuos[k])
                                         for k in sorted(
                                             month_bsuos.keys())) + "}"
-                                set_read_write(sess)
                                 contract = Contract.get_non_core_by_name(
                                     sess, 'bsuos')
                                 rs = RateScript.get_by_id(sess, latest_rs_id)

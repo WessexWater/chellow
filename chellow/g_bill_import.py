@@ -7,8 +7,7 @@ from werkzeug.exceptions import BadRequest
 import importlib
 from pkgutil import iter_modules
 import chellow
-from chellow.models import (
-    Session, GBatch, BillType, GReadType, GUnits, set_read_write)
+from chellow.models import Session, GBatch, BillType, GReadType, GUnits
 import chellow.g_bill_parser_total_xlsx
 
 
@@ -85,7 +84,6 @@ class GBillImporter(threading.Thread):
                 "insert the raw bills.")
             for self.bill_num, raw_bill in enumerate(raw_bills):
                 try:
-                    set_read_write(sess)
                     bill_type = BillType.get_by_code(
                         sess, raw_bill['bill_type_code'])
                     g_bill = g_batch.insert_g_bill(
