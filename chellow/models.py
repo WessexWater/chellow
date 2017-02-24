@@ -53,6 +53,7 @@ db_url = ''.join(
         "postgresql+pg8000://", config['PGUSER'], ":", config['PGPASSWORD'],
         "@", config['PGHOST'], ":", config['PGPORT'], "/",
         config['PGDATABASE']])
+
 engine = create_engine(db_url)
 Session = sessionmaker(bind=engine)
 Base = declarative_base()
@@ -3636,7 +3637,6 @@ def read_file(pth, fname, attr):
 def db_init(sess, root_path):
     db_name = config['PGDATABASE']
     log_message("Initializing database.")
-    Base.metadata.create_all(bind=engine)
     for code, desc in (
             ("LV", "Low voltage"),
             ("HV", "High voltage"),
@@ -3889,6 +3889,7 @@ def db_upgrade_0_to_1(sess, root_path):
         "alter table report alter column id "
         "set default nextval('report_id_seq');")
     sess.execute("alter sequence report_id_seq owned by report.id;")
+    sess.commit()
 
 
 def db_upgrade_1_to_2(sess, root_path):
@@ -3949,15 +3950,15 @@ def db_upgrade_1_to_2(sess, root_path):
             order_by(RateScript.start_date).all()
         contract.start_rate_script = scripts[0]
         contract.finish_rate_script = scripts[-1]
+    sess.commit()
 
 
 def db_upgrade_2_to_3(sess, root_path):
     sess.execute("alter table contract drop column is_core;")
+    sess.commit()
 
 
 def db_upgrade_3_to_4(sess, root_path):
-    Base.metadata.create_all(bind=engine)
-
     set_read_write(sess)
     for code, desc in (
             ("A", "Actual"),
@@ -4041,9 +4042,39 @@ upgrade_funcs = [
 
 def db_upgrade(root_path):
     sess = None
+    rw_engine = create_engine(db_url)
+    rwSession = sessionmaker(bind=rw_engine)
+    try:
+        sess = rwSession()
+        set_read_write(sess)
+        db_name = config['PGDATABASE']
+        sess.execute(
+            "alter database " + db_name +
+            " set default_transaction_read_only = off")
+        sess.commit()
+    finally:
+        if sess is not None:
+            sess.close()
+
+    rw_engine.dispose()
+    rw_engine = create_engine(db_url)
+    Base.metadata.create_all(bind=rw_engine)
+    rw_engine.dispose()
+
+    global engine, Session
+    engine = create_engine(db_url)
+    Session = sessionmaker(bind=engine)
+
+    sess = None
     try:
         sess = Session()
         set_read_write(sess)
+        sess.execute(
+            "alter database " + db_name +
+            " set default_transaction_read_only = on")
+        sess.commit()
+        set_read_write(sess)
+
         db_version = find_db_version(sess)
         curr_version = len(upgrade_funcs)
         if db_version is None:
@@ -4065,6 +4096,7 @@ def db_upgrade(root_path):
                 "Upgrading from database version " + str(db_version) +
                 " to database version " + str(db_version + 1) + ".")
             upgrade_funcs[db_version](sess, root_path)
+            set_read_write(sess)
             conf = sess.query(Contract).join(MarketRole).filter(
                 Contract.name == 'configuration', MarketRole.code == 'Z').one()
             state = conf.make_state()
@@ -4081,12 +4113,9 @@ def db_upgrade(root_path):
 
 
 def find_db_version(sess):
-    engine = sess.get_bind()
-    if engine.execute(
-            """select count(*) from information_schema.tables """
-            """where table_schema = 'public'""").scalar() == 0:
-        return None
     conf = sess.query(Contract).join(MarketRole).filter(
-        Contract.name == 'configuration', MarketRole.code == 'Z').one()
+        Contract.name == 'configuration', MarketRole.code == 'Z').first()
+    if conf is None:
+        return None
     conf_state = conf.make_state()
     return conf_state.get('db_version', 0)
