@@ -4040,7 +4040,7 @@ def mop_bill_get(bill_id):
 def csv_sites_triad_get():
     now = Datetime.utcnow()
     if now.month < 3:
-        now += relativedelta(year=1)
+        now -= relativedelta(years=1)
     return render_template('csv_sites_triad.html', year=now.year)
 
 

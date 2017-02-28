@@ -9939,7 +9939,6 @@ def virtual_bill(supply_source):
             r"The file has been imported successfully"],
         'status_code': 200},
 
-    # Supplies TRIAD selector
     {
         'name': "Supplies TRIAD selector",
         'path': '/csv_supplies_triad',
@@ -9947,7 +9946,6 @@ def virtual_bill(supply_source):
         'regexes': [
             r"<!DOCTYPE html>"]},
 
-    # Sites TRIAD selector
     {
         'name': "Sites TRIAD selector",
         'path': '/csv_sites_triad',
