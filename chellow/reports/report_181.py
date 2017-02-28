@@ -11,10 +11,10 @@ import chellow.triad
 from flask import request, g
 import csv
 import chellow.dloads
-import sys
 import os
 from chellow.views import chellow_redirect
 import threading
+from werkzeug.exceptions import BadRequest
 
 
 def content(year, site_id, user):
@@ -54,7 +54,7 @@ def content(year, site_id, user):
             site = Site.get_by_id(sess, site_id)
             sites = sess.query(Site).filter(Site.id == site.id)
 
-        for site in sites:
+        for site in sites.order_by(Site.code):
             displaced_era = chellow.computer.displaced_era(
                 sess, caches, site, march_start, march_finish, forecast_date)
             if displaced_era is None:
@@ -83,10 +83,10 @@ def content(year, site_id, user):
                     'gsp-kw', 'rate', 'gbp']]
 
             writer.writerow(values)
+    except BadRequest as e:
+        writer.writerow([e.description])
     except:
-        msg = traceback.format_exc()
-        sys.stderr.write(msg)
-        writer.writerow([msg])
+        writer.writerow([traceback.format_exc()])
     finally:
         if sess is not None:
             sess.close()
