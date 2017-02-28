@@ -400,72 +400,60 @@ def get_objects():
         objs[id(obj)] = obj
         for o in gc.get_referents(obj):
             objs[id(o)] = o
-    return tuple(objs.values())
+    return objs
 
 
-@app.route('/system/objects')
-def objects_get():
-    an_obj = choice(get_objects())
-    return chellow_redirect('/system/objects/' + str(id(an_obj)))
-
-
-@app.route('/system/objects/<int:obj_id>')
-def object_get(obj_id):
-    obj = None
-    for o in get_objects():
-        if id(o) == obj_id:
-            obj = o
-            break
-
-    props = OrderedDict()
-    props['type'] = str(type(obj))
-
+def obj_val(obj):
     if isinstance(obj, (int, float, str)):
-        props['value'] = repr(obj)
-    elif isinstance(obj, list):
-        props['length'] = len(obj)
-        value = []
-        for o in obj[:10]:
-            if isinstance(o, (int, float, str)):
-                value.append(str(o))
-            else:
-                value.append(str(type(o)))
-        props['value'] = ', '.join(value)
+        return repr(obj)
+    elif isinstance(obj, (list, dict)):
+        return 'length: ' + str(len(obj))
     elif isinstance(obj, types.CodeType):
-        props['filename'] = obj.co_filename
+        return obj.co_filename
     elif isinstance(obj, types.FunctionType):
-        props['name'] = obj.__name__
+        return obj.__name__
     elif isinstance(obj, types.FrameType):
-        props['filename'] = obj.f_code.co_filename
-        props['lineno'] = str(obj.f_lineno)
+        return obj.f_code.co_filename + ' ' + str(obj.f_lineno)
     elif isinstance(obj, types.MethodType):
-        props['name'] = obj.__name__
+        return obj.__name__
     elif isinstance(obj, types.ModuleType):
-        props['filename'] = obj.__file__
+        return obj.__file__
+    else:
+        return ''
 
-    referrers = []
-    for r in gc.get_referrers(obj)[:10]:
-        if isinstance(r, (int, float, str)):
-            value = repr(r)
-        elif isinstance(r, (list, dict)):
-            value = 'length: ' + str(len(r))
-        elif isinstance(r, types.CodeType):
-            value = r.co_filename
-        elif isinstance(r, types.FunctionType):
-            value = r.__name__
-        elif isinstance(r, types.FrameType):
-            value = r.f_code.co_filename + ' ' + str(r.f_lineno)
-        elif isinstance(r, types.MethodType):
-            value = r.__name__
-        elif isinstance(r, types.ModuleType):
-            value = r.__file__
-        else:
-            value = ''
-        referrers.append((id(r), r, str(type(r)), value))
+
+@app.route('/system/chains')
+def chains_get():
+    an_obj = choice(tuple(get_objects().values()))
+    return chellow_redirect('/system/chains/' + str(id(an_obj)))
+
+
+@app.route('/system/chains/<chain_str>')
+def chain_get(chain_str):
+    try:
+        objects = get_objects()
+        chain = [objects[int(id_str)] for id_str in chain_str.split(',')]
+        referrers = gc.get_referrers(chain[-1])[:10]
+    except KeyError as e:
+        raise BadRequest("Object not found in chain. " + str(e))
 
     return render_template(
-        'object.html', obj=obj, obj_id=id(obj), obj_props=props,
-        referrers=referrers)
+        'chain.html', chain_str=chain_str,
+        chain=[(id(o), type(o), obj_val(o)) for o in chain],
+        referrers=[(id(r), type(r), obj_val(r)) for r in referrers])
+
+
+@app.route('/system/chains/<chain_str>', methods=['POST'])
+def chain_post(chain_str):
+    objects = get_objects()
+    chain = [objects[int(id_str)] for id_str in chain_str.split(',')]
+
+    obj_id = req_int('obj_id')
+    obj = objects[obj_id]
+    chain.append(obj)
+
+    return chellow_redirect(
+        '/system/chains/' + ','.join(str(id(o)) for o in chain))
 
 
 @app.route('/system/object_summary')

@@ -106,26 +106,6 @@
 						</table>
 				</div>
 			</div>
-			<div class="section-data">
-				<table class="DataTable widthAuto">
-						<caption>HTTP Request Headers</caption>
-						<thead>
-							<tr>
-								<th>Name</th>
-								<th>Value</th>
-							</tr>
-						</thead>
-						<tbody>
-							{% for k, v in request.headers.items() %}
-								<tr>
-									<td>{{k}}</td>
-									<td>{{v}}</td>
-								</tr>
-							{% endfor %}
-						</tbody>
-					</table>
-				</div>
-			</div>
 		</div>
 		<!-- End Section Content -->
 	</div>
@@ -141,7 +121,7 @@
 		<div class="section-content">
 			<div class="section-data">
 				<ul>
-					<li><a href="/system/objects">Object Browser</a></li>
+					<li><a href="/system/chains">Object Chains</a></li>
 					<li><a href="/system/object_summary">Object Summary</a></li>
 				</ul>
 			</div>
