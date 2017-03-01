@@ -42,8 +42,8 @@ class Parser():
                         'bill_type_code': 'N', 'account': account,
                         'mpan_strings': mpan_strings, 'reference': reference,
                         'issue_date': start_date, 'start_date': start_date,
-                        'finish_date': finish_date, 'kwh': Decimal(0),
-                        'net': net, 'vat': vat, 'gross': Decimal(0),
+                        'finish_date': finish_date, 'kwh': Decimal('0.00'),
+                        'net': net, 'vat': vat, 'gross': Decimal('0.00'),
                         'breakdown': {}, 'reads': []})
 
         return raw_bills

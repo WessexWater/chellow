@@ -28,16 +28,16 @@ class Parser():
                 bill_type_code = btcd[0]
                 issue_date = self.parser.to_date(ivdt[0])
             elif code == "MHD":
-                type = self.parser.elements[1]
-                message_type = type[0]
+                typ = self.parser.elements[1]
+                message_type = typ[0]
                 if message_type == "UTLBIL":
                     issue_date = None
                     start_date = None
                     finish_date = None
                     account = None
                     reference = None
-                    net = Decimal(0)
-                    vat = Decimal(0)
+                    net = Decimal(0.00)
+                    vat = Decimal(0.00)
                     reads = []
                     mpan_strings = []
             elif code == "CCD":
@@ -86,7 +86,7 @@ class Parser():
                             'reference': reference, 'issue_date': issue_date,
                             'start_date': start_date,
                             'finish_date': finish_date, 'kwh': Decimal(0),
-                            'net': net, 'vat': vat, 'gross': Decimal(0),
+                            'net': net, 'vat': vat, 'gross': Decimal('0.00'),
                             'breakdown': {}, 'reads': reads})
             elif code == "MAN":
                 madn = self.parser.elements[2]
@@ -99,7 +99,7 @@ class Parser():
                     madn[0] + " " + madn[1] + madn[2])
             elif code == "VAT":
                 uvla = self.parser.elements[5]
-                net = self.parser.to_decimal(uvla)
+                net = Decimal('0.00') + self.parser.to_decimal(uvla)
                 uvtt = self.parser.elements[6]
-                vat = self.parser.to_decimal(uvtt)
+                vat = Decimal('0.00') + self.parser.to_decimal(uvtt)
         return raw_bills

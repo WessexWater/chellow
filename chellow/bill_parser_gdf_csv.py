@@ -144,15 +144,14 @@ class Parser():
                     (v, float(val(k))) for k, v in col_map.items()
                     if k in titles])
             breakdown['raw_lines'] = [self._title_line, self.last_line]
-            net = Decimal(val('NET_AMT'))
-            vat = Decimal(val('VATTTL'))
-            gross = Decimal(val('TTLCHG'))
+            net = Decimal('0.00') + Decimal(val('NET_AMT'))
+            vat = Decimal('0.00') + Decimal(val('VATTTL'))
+            gross = Decimal('0.00') + Decimal(val('TTLCHG'))
             raw_bills.append(
                 {
                     'bill_type_code': 'N', 'account': val('Bill Ref No.'),
-                    'mpans': [],
-                    'reference': val('Invoice No.'), 'issue_date': issue_date,
-                    'start_date': bill_from, 'finish_date': bill_to,
-                    'kwh': kwh, 'net': net, 'vat': vat,
+                    'mpans': [], 'reference': val('Invoice No.'),
+                    'issue_date': issue_date, 'start_date': bill_from,
+                    'finish_date': bill_to, 'kwh': kwh, 'net': net, 'vat': vat,
                     'gross': gross, 'breakdown': breakdown, 'reads': []})
         return raw_bills

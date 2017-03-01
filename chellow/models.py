@@ -483,6 +483,13 @@ class Bill(Base, PersistentClass):
             raise Exception("kwh can't be null.")
 
         self.kwh = kwh
+
+        for val, name in ((net, 'net'), (vat, 'vat'), (gross, 'gross')):
+            if val.as_tuple().exponent > -2:
+                raise BadRequest(
+                    "The '" + name +
+                    "' field of a bill must be written to at least two "
+                    "decimal places. It's actually " + str(val))
         self.net = net
         self.vat = vat
         self.gross = gross

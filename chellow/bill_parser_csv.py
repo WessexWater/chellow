@@ -44,10 +44,10 @@ class Parser():
             start_date = parse_date(self.vals[5])
             finish_date = parse_date(self.vals[6], True)
 
-            kwh = self.big_decimal(7, 'kwh')
-            net = self.big_decimal(8, 'net')
-            vat = self.big_decimal(9, 'vat')
-            gross = self.big_decimal(10, 'gross')
+            kwh = self.to_decimal(7, 'kwh')
+            net = self.to_decimal(8, 'net', True)
+            vat = self.to_decimal(9, 'vat', True)
+            gross = self.to_decimal(10, 'gross', True)
 
             if len(self.vals) > 11:
                 breakdown = self.vals[11].strip()
@@ -73,7 +73,7 @@ class Parser():
                 reads.append(
                     {
                         'msn': self.vals[i], 'mpan': self.vals[i + 1],
-                        'coefficient': self.big_decimal(i + 2, 'coefficient'),
+                        'coefficient': self.to_decimal(i + 2, 'coefficient'),
                         'units': self.vals[i + 3], 'tpr_code': tpr_code,
                         'prev_date': parse_date(self.vals[i + 5]),
                         'prev_value': Decimal(self.vals[i + 6]),
@@ -92,18 +92,21 @@ class Parser():
                     'reads': reads})
         return raw_bills
 
-    def big_decimal(self, bd_index, bd_name):
+    def to_decimal(self, dec_index, dec_name, is_money=False):
         try:
-            bd_str = self.vals[bd_index]
-            return Decimal(bd_str)
+            dec_str = self.vals[dec_index]
+            dec = Decimal(dec_str)
+            if is_money:
+                dec += Decimal('0.00')
+            return dec
         except IndexError:
             raise BadRequest(
-                "The field '" + bd_name +
+                "The field '" + dec_name +
                 "' can't be found. It's expected at position " +
-                str(bd_index) + " in the list of fields.")
+                str(dec_index) + " in the list of fields.")
         except ValueError:
             raise BadRequest(
-                "The " + bd_name + " field '" + bd_str +
-                "' cannot be parsed as a number. The " + bd_name +
-                " field is the " + str(bd_index) + " field of " +
+                "The " + dec_name + " field '" + dec_str +
+                "' cannot be parsed as a number. The " + dec_name +
+                " field is the " + str(dec_index) + " field of " +
                 str(self.vals) + ".")

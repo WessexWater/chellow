@@ -1555,7 +1555,7 @@ def virtual_bill_titles():
         'tries': {},
         'status_code': 200,
         'regexes': [
-            r"<td>2007-02-28 00:00</td>\s*<td>0</td>\s*<td>4463.08</td>",
+            r"<td>2007-02-28 00:00</td>\s*<td>0.00</td>\s*<td>4463.08</td>",
             r"All the bills have been successfully loaded and attached to the "
             "batch\."]},
 
@@ -4306,10 +4306,10 @@ def virtual_bill(supply_source):
             "<th>R1 Present Read Value</th>\s*<th>R1 Present Read Type</th>\s*"
             "<th>Breakdown</th>",
             r"<td>3423760005</td>\s*<td>SA342376000</td>\s*<td>N</td>\s*"
-            "<td>\[u?&#39;03 801 110 22 10653921534&#39;\]</td>\s*"
+            "<td>\[&#39;03 801 110 22 10653921534&#39;\]</td>\s*"
             "<td>2010-05-12 00:00</td>\s*<td>2010-01-19 00:00</td>\s*"
             "<td>2010-04-20 23:30</td>\s*<td>253</td>\s*<td>36.16</td>\s*"
-            "<td>1.8</td>\s*<td>37.96</td>\s*"
+            "<td>1.80</td>\s*<td>37.96</td>\s*"
             "<td>03 801 110 22 1065 3921 534</td>\s*<td>K87D74429</td>\s*"
             "<td>1</td>\s*<td>kWh</td>\s*<td>00001</td>\s*"
             "<td>2010-01-18 23:30</td>\s*<td>16963</td>\s*<td>E</td>\s*"
@@ -4339,7 +4339,7 @@ def virtual_bill(supply_source):
             r'metered-kwh,covered-net-gbp,virtual-net-gbp,difference-net-gbp,'
             r'covered-sum-msp-kwh,virtual-sum-msp-kwh,covered-problem,'
             r'virtual-problem',
-            r'07-008,3423760005,N,253,36.16,1.8,'
+            r'07-008,3423760005,N,253,36.16,1.80,'
             r'2010-01-19 00:00,2010-04-20 23:30,22 1065 3921 534,'
             r'CI017,Roselands,2010-01-19 00:00,2010-04-20 23:30,10,'
             r'0.0,36.16,25.299999999997\d*,10.860000000002\d*,253.0,'
@@ -4474,20 +4474,20 @@ def virtual_bill(supply_source):
             r"<td>KUH773</td>\s*<td>02</td>\s*<td>N</td>\s*<td>\[\]</td>\s*"
             "<td>2010-06-09 00:00</td>\s*<td>2010-05-01 00:00</td>\s*"
             "<td>2010-05-31 23:30</td>\s*<td>32124.5</td>\s*"
-            r'<td>2219.41</td>\s*<td>388.4</td>\s*<td>2607.81</td>\s*'
+            r'<td>2219.41</td>\s*<td>388.40</td>\s*<td>2607.81</td>\s*'
             r'<td>\[\(&#39;aahedc-gbp&#39;, 5.29\),',
             r"All the bills have been successfully loaded and attached to "
             "the batch\."],
         'status_code': 200},
 
-    # Check the bill appears correctly in batch view
     {
+        'name': "Check the bill appears correctly in batch view",
         'path': '/supplier_batches/6',
         'regexes': [
             r'\[<a href="/supplier_batches/6/edit">edit</a>\]',
             r"<td>2010-06-09 00:00</td>\s*<td>2010-05-01 00:00</td>\s*"
             "<td>2010-05-31 23:30</td>\s*<td>32124.5</td>\s*"
-            "<td>2219.41</td>\s*<td>388.4</td>\s*<td>2607.81</td>",
+            "<td>2219.41</td>\s*<td>388.40</td>\s*<td>2607.81</td>",
             r'<a\s*href="/reports/111\?batch_id=6"\s*>Check Bills</a>'],
         'status_code': 200},
     {
@@ -6208,9 +6208,9 @@ def virtual_bill(supply_source):
             'finish_hour': "00",
             'finish_minute': "00",
             'kwh': "0",
-            'net': "0",
-            'vat': "0",
-            'gross': "0",
+            'net': "0.00",
+            'vat': "0.00",
+            'gross': "0.00",
             'account': "02",
             'bill_type_id': "1",
             'breakdown': "{}"},
@@ -8405,7 +8405,7 @@ def virtual_bill(supply_source):
         '0049_FINISHED_watkinsexamplecom_bill_check.csv',
         'status_code': 200,
         'regexes': [
-            r'06-002,23618619,N,0,49119,8596,2007-06-30 00:00,'
+            r'06-002,23618619,N,0,49119.00,8596.00,2007-06-30 00:00,'
             '2007-07-31 00:00,22 9974 3438 105,CI005,Wheal Rodney,'
             '2007-06-30 00:00,2007-07-31 00:00,6,1209.0322580\d*,49119.0,0.0,'
             '49119.0,8596.0,0.0,8596.0,,0.0,0.0,0.0,4.765\d*,,']},
@@ -10217,7 +10217,7 @@ def virtual_bill(supply_source):
             'kwh': '10',
             'net': '9.07',
             'vat': '0.21',
-            'gross': '0',
+            'gross': '0.00',
             'bill_type_id': '2',
             'breakdown': '{}'},
         'status_code': 303},
@@ -10349,7 +10349,7 @@ def virtual_bill(supply_source):
             'finish_hour': "23",
             'finish_minute': "30",
             'kwh': "0",
-            'net': "45.7",
+            'net': "45.70",
             'vat': "4.90",
             'gross': "50.60",
             'account': "SA342376000",
@@ -10972,9 +10972,9 @@ def virtual_bill(supply_source):
             'finish_hour': "23",
             'finish_minute': "30",
             'kwh': "10",
-            'net': "2",
-            'vat': "0.5",
-            'gross': "2.5",
+            'net': "2.00",
+            'vat': "0.50",
+            'gross': "2.50",
             'account': "taa2",
             'bill_type_id': "1",
             'breakdown': "{}"},
@@ -11261,7 +11261,7 @@ def virtual_bill(supply_source):
             'kwh': '10',
             'net': '9.07',
             'vat': '0.21',
-            'gross': '0',
+            'gross': '0.00',
             'bill_type_id': '2',
             'breakdown': '{}'},
         'status_code': 303},
@@ -12415,7 +12415,7 @@ def virtual_bill(supply_source):
             'kwh': '0',
             'net': '-641.67',
             'vat': '-112.29',
-            'gross': '0',
+            'gross': '0.00',
             'bill_type_id': '2',
             'breakdown': '{}'},
         'status_code': 303},
@@ -12616,9 +12616,9 @@ def virtual_bill(supply_source):
             'finish_hour': '00',
             'finish_minute': '00',
             'kwh': '0',
-            'net': '3163479',
-            'vat': '553609',
-            'gross': '0',
+            'net': '3163479.00',
+            'vat': '553609.00',
+            'gross': '0.00',
             'bill_type_id': '2',
             'breakdown': '{}'},
         'status_code': 303},
@@ -12662,7 +12662,7 @@ def virtual_bill(supply_source):
             'kwh': '150',
             'net': '98.17',
             'vat': '15.01',
-            'gross': '0',
+            'gross': '0.00',
             'bill_type_id': '2',
             'breakdown': '{}'},
         'status_code': 303},
@@ -12826,7 +12826,7 @@ def virtual_bill(ss):
     {
         'path': '/downloads/0007_FINISHED_adminexamplecom_bill_check.csv',
         'regexes': [
-            r'07-002,3Pb,F,10,2,0.5,2014-12-01 00:00,2014-12-31 23:30,'
+            r'07-002,3Pb,F,10,2.00,0.50,2014-12-01 00:00,2014-12-31 23:30,'
             r'22 9789 0534 938,CI017,Roselands,2014-12-01 00:00,'
             r'2014-12-31 23:30,23,100.06724\d*,2.0,14.67509999\d*,'
             r'-12.67509999\d*,,,virtual-00001-gbp,9.999999999999876,,,'

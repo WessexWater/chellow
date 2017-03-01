@@ -164,9 +164,9 @@ class Parser():
                     finish_date = None
                     account = None
                     reference = None
-                    net = Decimal(0)
-                    vat = Decimal(0)
-                    gross = Decimal(0)
+                    net = Decimal('0.00')
+                    vat = Decimal('0.00')
+                    gross = Decimal('0.00')
                     kwh = Decimal(0)
                     reads = []
                     bill_type_code = None
