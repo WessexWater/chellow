@@ -28,7 +28,7 @@ from sqlalchemy import (
     text, true, false, null, func, not_, or_, cast, Float)
 from sqlalchemy.orm import joinedload
 from collections import defaultdict, OrderedDict
-from itertools import chain, islice
+from itertools import chain, islice, filterfalse
 import importlib
 import math
 from operator import itemgetter
@@ -395,17 +395,21 @@ def system_get():
 
 
 def get_objects():
-    objs = {}
+    return dict((id(obj), obj) for obj in gc.get_objects())
+    '''
     for obj in gc.get_objects():
         objs[id(obj)] = obj
         for o in gc.get_referents(obj):
             objs[id(o)] = o
     return objs
+    '''
 
 
 def obj_val(obj):
-    if isinstance(obj, (int, float, str)):
+    if isinstance(obj, (int, float)):
         return repr(obj)
+    elif isinstance(obj, str):
+        return repr(obj[:100])
     elif isinstance(obj, (list, dict)):
         return 'length: ' + str(len(obj))
     elif isinstance(obj, types.CodeType):
@@ -422,6 +426,16 @@ def obj_val(obj):
         return ''
 
 
+def str_to_chain(objects, chain_str):
+    return [
+        objects[oid] for oid in map(int, chain_str.split(','))
+        if oid in objects]
+
+
+def chain_to_str(chain):
+    return ','.join(str(id(o)) for o in chain)
+
+
 @app.route('/system/chains')
 def chains_get():
     an_obj = choice(tuple(get_objects().values()))
@@ -432,13 +446,18 @@ def chains_get():
 def chain_get(chain_str):
     try:
         objects = get_objects()
-        chain = [objects[int(id_str)] for id_str in chain_str.split(',')]
-        referrers = gc.get_referrers(chain[-1])[:10]
+        chain = str_to_chain(objects, chain_str)
+        chain_ids = [id(o) for o in chain]
+        referrers = list(
+            islice(
+                filterfalse(
+                    lambda x: id(x) in chain_ids,
+                    gc.get_referrers(chain[-1])), 0, 10))
     except KeyError as e:
         raise BadRequest("Object not found in chain. " + str(e))
 
     return render_template(
-        'chain.html', chain_str=chain_str,
+        'chain.html', chain_str=chain_to_str(chain),
         chain=[(id(o), type(o), obj_val(o)) for o in chain],
         referrers=[(id(r), type(r), obj_val(r)) for r in referrers])
 
@@ -446,14 +465,18 @@ def chain_get(chain_str):
 @app.route('/system/chains/<chain_str>', methods=['POST'])
 def chain_post(chain_str):
     objects = get_objects()
-    chain = [objects[int(id_str)] for id_str in chain_str.split(',')]
-
+    chain = str_to_chain(objects, chain_str)
     obj_id = req_int('obj_id')
-    obj = objects[obj_id]
-    chain.append(obj)
+    try:
+        obj = objects[obj_id]
+        chain.append(obj)
+    except KeyError:
+        flash("Object to add can't be found.")
 
-    return chellow_redirect(
-        '/system/chains/' + ','.join(str(id(o)) for o in chain))
+    if len(chain) == 0:
+        return chellow_redirect('/system/chains')
+    else:
+        return chellow_redirect('/system/chains/' + chain_to_str(chain))
 
 
 @app.route('/system/object_summary')
