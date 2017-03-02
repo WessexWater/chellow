@@ -4737,9 +4737,10 @@ def g_supply_get(g_supply_id):
                 SiteGEra.is_physical == true(), SiteGEra.g_era == g_era).one()
             other_sites = g.sess.query(Site).join(SiteGEra).filter(
                 SiteGEra.is_physical != true(), SiteGEra.g_era == g_era).all()
+            g_bill_dicts = []
             g_era_bundle = {
                 'g_era': g_era, 'physical_site': physical_site,
-                'other_sites': other_sites, 'g_bills': {'g_bill_dicts': []}}
+                'other_sites': other_sites, 'g_bill_dicts': g_bill_dicts}
             g_era_bundles.append(g_era_bundle)
 
             g_era_bundle['shared_accounts'] = \
@@ -4755,6 +4756,34 @@ def g_supply_get(g_supply_id):
                 g_bills = g_bills.filter(GBill.start_date <= g_era.finish_date)
             if g_era != g_eras[-1]:
                 g_bills = g_bills.filter(GBill.start_date >= g_era.start_date)
+
+            for g_bill in g_bills:
+                g_bill_dict = {'g_bill': g_bill}
+                g_bill_dicts.append(g_bill_dict)
+
+                g_bill_dict['g_reads'] = g.sess.query(GRegisterRead).filter(
+                        GRegisterRead.g_bill == g_bill).order_by(
+                        GRegisterRead.pres_date.desc()).options(
+                        joinedload(GRegisterRead.prev_type),
+                        joinedload(GRegisterRead.pres_type)).all()
+
+            b_dicts = list(reversed(g_bill_dicts))
+            for i, b_dict in enumerate(b_dicts):
+                if i < (len(b_dicts) - 1):
+                    g_bill = b_dict['g_bill']
+                    next_b_dict = b_dicts[i+1]
+                    next_g_bill = next_b_dict['g_bill']
+                    if (
+                            g_bill.start_date, g_bill.finish_date, g_bill.kwh,
+                            g_bill.net) == (
+                            next_g_bill.start_date, next_g_bill.finish_date,
+                            -1 * next_g_bill.kwh, -1 * next_g_bill.net) and \
+                            'collapsible' not in b_dict:
+                        b_dict['collapsible'] = True
+                        next_b_dict['first_collapsible'] = True
+                        next_b_dict['collapsible'] = True
+                        b_dict['collapse_id'] = next_b_dict['collapse_id'] = \
+                            g_bill.id
 
         RELATIVE_YEAR = relativedelta(years=1)
 

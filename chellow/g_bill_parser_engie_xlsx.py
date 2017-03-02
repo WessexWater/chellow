@@ -2,6 +2,11 @@ from dateutil.relativedelta import relativedelta
 import openpyxl
 from chellow.utils import HH, to_utc
 from collections import OrderedDict
+from decimal import Decimal
+
+
+def to_money(cell):
+    return Decimal('0.00') + round(Decimal(cell.value), 2)
 
 
 class Parser():
@@ -33,7 +38,7 @@ class Parser():
             if bill_reference_raw is None:
                 break
             bill_reference = str(bill_reference_raw)
-            volume_kwh = row[9].value
+            volume_kwh = Decimal(row[9].value)
             breakdown = {
                 'volume_kwh': volume_kwh,
                 'commodity_rate': row[11].value / 100,
@@ -66,11 +71,11 @@ class Parser():
                 'start_date': to_utc(row[3].value),
                 'finish_date': to_utc(row[4].value) + relativedelta(days=1) -
                 HH,
-                'net_gbp': row[31].value,
-                'vat_gbp': row[32].value,
-                'gross_gbp': row[33].value,
+                'net_gbp': to_money(row[31]),
+                'vat_gbp': to_money(row[32]),
+                'gross_gbp': to_money(row[33]),
                 'raw_lines': '',
-                'kwh': volume_kwh,
+                'kwh': Decimal(volume_kwh),
                 'reads': []}
             raw_bills[bill_reference] = raw_bill
 

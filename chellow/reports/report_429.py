@@ -14,6 +14,7 @@ from chellow.utils import hh_before, csv_make_val, req_int, to_utc
 import chellow.g_engine
 from flask import request, g
 from chellow.views import chellow_redirect
+from decimal import Decimal
 
 
 def content(g_batch_id, g_bill_id, user):
@@ -94,7 +95,10 @@ def content(g_batch_id, g_bill_id, user):
                     'bill_type': g_bill.bill_type.code,
                     'bill_start_date': g_bill.start_date,
                     'bill_finish_date': g_bill.finish_date,
-                    'mprn': g_supply.mprn, 'covered_vat_gbp': g_bill.vat_gbp,
+                    'mprn': g_supply.mprn, 'covered_vat_gbp': Decimal('0.00'),
+                    'covered_net_gbp': Decimal('0.00'),
+                    'covered_gross_gbp': Decimal('0.00'),
+                    'covered_kwh': Decimal(0),
                     'covered_start': g_bill.start_date,
                     'covered_finish': g_bill.finish_date,
                     'covered_bill_ids': []}
@@ -129,19 +133,18 @@ def content(g_batch_id, g_bill_id, user):
                     GBill.issue_date.desc(), GBill.start_date):
                 vals['covered_bill_ids'].append(covered_bill.id)
                 bdown = covered_bill.make_breakdown()
+                vals['covered_kwh'] += covered_bill.kwh
+                vals['covered_net_gbp'] += covered_bill.net
+                vals['covered_vat_gbp'] += covered_bill.vat
+                vals['covered_gross_gbp'] += covered_bill.gross
                 for title in bill_titles:
                     k = 'covered_' + title
-                    v = None
-                    if title in bdown:
-                        v = bdown[title]
-                    elif hasattr(covered_bill, title):
-                        v = getattr(covered_bill, title)
+                    v = bdown.get(title)
 
                     if v is not None:
-                        if title.endswith('_rate') or \
-                                title in (
-                                    'correction_factor', 'calorific_value',
-                                    'units'):
+                        if title.endswith('_rate') or title in (
+                                'correction_factor', 'calorific_value',
+                                'units'):
                             if k not in vals:
                                 vals[k] = set()
                             vals[k].add(v)

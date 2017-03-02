@@ -3211,9 +3211,9 @@ class GBill(Base, PersistentClass):
     start_date = Column(DateTime(timezone=True), nullable=False, index=True)
     finish_date = Column(DateTime(timezone=True), nullable=False, index=True)
     kwh = Column(Numeric, nullable=False)
-    net_gbp = Column(Numeric, nullable=False)
-    vat_gbp = Column(Numeric, nullable=False)
-    gross_gbp = Column(Numeric, nullable=False)
+    net = Column(Numeric, nullable=False)
+    vat = Column(Numeric, nullable=False)
+    gross = Column(Numeric, nullable=False)
     raw_lines = Column(Text, nullable=False)
     breakdown = Column(Text, nullable=False)
     g_reads = relationship(
@@ -3222,28 +3222,33 @@ class GBill(Base, PersistentClass):
 
     def __init__(
             self, g_batch, g_supply, bill_type, reference, account, issue_date,
-            start_date, finish_date, kwh, net_gbp, vat_gbp, gross_gbp,
-            raw_lines, breakdown):
+            start_date, finish_date, kwh, net, vat, gross, raw_lines,
+            breakdown):
         self.g_batch = g_batch
         self.g_supply = g_supply
         self.update(
             bill_type, reference, account, issue_date, start_date, finish_date,
-            kwh, net_gbp, vat_gbp, gross_gbp, raw_lines, breakdown)
+            kwh, net, vat, gross, raw_lines, breakdown)
 
     def update(
             self, bill_type, reference, account, issue_date,
-            start_date, finish_date, kwh, net_gbp, vat_gbp, gross_gbp,
-            raw_lines, breakdown):
+            start_date, finish_date, kwh, net, vat, gross, raw_lines,
+            breakdown):
         self.bill_type = bill_type
         self.reference = reference
         self.account = account
         self.issue_date = issue_date
         self.start_date = start_date
         self.finish_date = finish_date
+        for name, val in (('net', net), ('vat', vat), ('gross', gross)):
+            if val.as_tuple().exponent != -2:
+                raise BadRequest(
+                    "The bill field '" + name + "' must have exactly two "
+                    "decimal places. It's actually: " + str(val) + ".")
         self.kwh = kwh
-        self.net_gbp = net_gbp
-        self.vat_gbp = vat_gbp
-        self.gross_gbp = gross_gbp
+        self.net = net
+        self.vat = vat
+        self.gross = gross
         self.raw_lines = raw_lines
         self.breakdown = dumps(breakdown)
 

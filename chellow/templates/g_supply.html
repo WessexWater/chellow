@@ -181,41 +181,41 @@
 					<br>
 
 					<table class="DataTable widthAuto noMarginBottom">
-						{% set g_bills = g_era_bundle['g_bills'] %}
 						<caption>Gas Bills</caption>
 						<thead>
 							<tr>
-								<th rowspan="2">View</th>
-								<th rowspan="2">From</th>
-								<th rowspan="2">To</th>
-								<th rowspan="2">Batch</th>
-								<th rowspan="2">Reference</th>
-								<th rowspan="2">kWh</th>
-								<th rowspan="2">Net</th>
-								<th rowspan="2">VAT</th>
-								<th rowspan="2">Type</th>
+								<th>View</th>
+								<th>From</th>
+								<th>To</th>
+								<th>Batch</th>
+								<th>Reference</th>
+								<th>kWh</th>
+								<th>Net</th>
+								<th>VAT</th>
+								<th>Type</th>
+								<th colspan="2">Previous</th>
+								<th colspan="2">Present</th>
 							</tr>
 						</thead>
 						<tbody>
-							{% for bill_dict in g_bills['bill_dicts'] %}
-								{% set read_rows = bill_dict['read_rows'] %}
-								{% set bill = bill_dict['bill'] %}
-								{% set rows_high = bill_dict['rows_high'] %}
-								{% if bill_dict.first_collapsible %}
+							{% for g_bill_dict in g_era_bundle.g_bill_dicts %}
+								{% set g_bill = g_bill_dict.g_bill %}
+								{% set rows_high = g_bill_dict.g_reads|length %}
+								{% if g_bill_dict.first_collapsible %}
 									<tr style="background-color: silver; cursor: pointer;">
 										<td
 											style="text-decoration: none; padding-top: 0px; padding-bottom: 0px; font-size: x-small;"
-											colspan="{{9 + imp_bills['inner_headers']|length * 4 + imp_bills['num_outer_cols'] * 5}}"
-											class="expander_{{bill_dict.collapse_id}}"
-											onClick="expandBills({{bill_dict.collapse_id}})"
+											colspan="11"
+											class="expander_{{g_bill_dict.collapse_id}}"
+											onClick="expandBills({{g_bill_dict.collapse_id}})"
 										>
 											+
 										</td>
 										<td
 											style="text-decoration: none; display: none; padding-top: 0px; padding-bottom: 0px; font-size: x-small;"
-											colspan="{{9 + imp_bills['inner_headers']|length * 4 + imp_bills['num_outer_cols'] * 5}}"
-											class="collapser_{{bill_dict.collapse_id}}"
-											onClick="collapseBills({{bill_dict.collapse_id}})"
+											colspan="11"
+											class="collapser_{{g_bill_dict.collapse_id}}"
+											onClick="collapseBills({{g_bill_dict.collapse_id}})"
 										>
 											-
 										</td>
@@ -223,101 +223,72 @@
 								{% endif %}
 								
 								<tr
-									{% if bill_dict.collapsible %}
-										class="collapsible_{{bill_dict.collapse_id}}"
+									{% if g_bill_dict.collapsible %}
+										class="collapsible_{{g_bill_dict.collapse_id}}"
 										style="display: none; background-color: silver;"
 									{% endif %}
 								>
-									<td rowspan="{{ rows_high }}">
-										<a href="{{ context_path }}/g_bills/{{bill.id}}">View</a>
-										</td>
-										<td rowspan="{{ rows_high }}">
-											<a title="{{ bill.start_date|hh_format }}">{{ bill.start_date|hh_format('date') }}</a>
-										</td>
-										<td rowspan="{{ rows_high }}">
-											<a title="{{ bill.finish_date|hh_format }}">{{ bill.finish_date|hh_format('date') }}</a>
-										</td>
-										<td rowspan="{{ rows_high }}">
-											<a href="{{ context_path }}/g_batches/{{bill.batch.id}}">{{ bill.batch.reference }}</a>
-										</td>
-										<td rowspan="{{ rows_high }}">{{ bill.reference }}</td>
-										<td rowspan="{{ rows_high }}">{{ bill.kwh }}</td>
-										<td rowspan="{{ rows_high }}">{{ bill.net }}</td>
-										<td rowspan="{{ rows_high }}">{{ bill.vat }}</td>
-										<td rowspan="{{ rows_high }}">
-											<a
-													href="{{ context_path }}/g_bill_types/{{bill.bill_type.id}}"
-													title="{{bill.bill_type.description}}"
-													>{{bill.bill_type.code}}</a>
+									<td rowspan="{{rows_high}}">
+										<a href="/g_bills/{{g_bill.id}}">View</a>
 									</td>
-									{% for read_row in read_rows %}
+									<td rowspan="{{rows_high}}">
+										<a
+												title="{{g_bill.start_date|hh_format}}"
+										>{{g_bill.start_date|hh_format('date')}}</a>
+									</td>
+									<td rowspan="{{rows_high}}">
+										<a
+												title="{{g_bill.finish_date|hh_format}}"
+										>{{g_bill.finish_date|hh_format('date')}}</a>
+									</td>
+									<td rowspan="{{rows_high}}">
+										<a
+										 		href="/g_batches/{{g_bill.g_batch.id}}"
+										>{{g_bill.g_batch.reference}}</a>
+									</td>
+									<td rowspan="{{rows_high}}">{{g_bill.reference}}</td>
+									<td rowspan="{{rows_high}}">{{g_bill.kwh}}</td>
+									<td rowspan="{{rows_high}}">{{g_bill.net}}</td>
+									<td rowspan="{{rows_high}}">{{g_bill.vat}}</td>
+									<td rowspan="{{rows_high}}">
+										<a
+												href="/bill_types/{{g_bill.bill_type.id}}"
+												title="{{g_bill.bill_type.description}}"
+										>{{g_bill.bill_type.code}}</a>
+									</td>
+									{% for read in g_bill_dict.g_reads %}
 										{% if not loop.first %}
 											<tr
-												{% if bill_dict.collapsible %}
-													class="collapsible_{{bill_dict.collapse_id}}" 
+												{% if g_bill_dict.collapsible %}
+													class="collapsible_{{g_bill_dict.collapse_id}}" 
 													style="display: none; background-color: silver;"
 												{% endif %}
 											>
 										{% endif %}
-										{% for read in read_row['inner_reads'] %}
-											<td style="border-right: none;">
-												{% if read %}
-													<a
-															title="{{ read.previous_date|hh_format }} {{ read.msn }}">{{ read.previous_value }}</a>
-												{% endif %}
-											</td>
-											<td style="border-left: none; text-align: right;">
-												{% if read %}
-													{{ read.previous_type.code }}
-												{% endif %}
-											</td>
-											<td style="border-right: none;">
-												{% if read %}
-													<a
-															title="{{ read.present_date|hh_format }} {{ read.msn }}">{{ read.present_value }}</a>
-												{% endif %}
-											</td>
-											<td style="border-left: none; text-align: right;">
-												{% if read %}
-													{{ read.present_type.code }}
-												{% endif %}
-											</td>
-										{% endfor %}
-										{% for read in read_row['outer_reads'] %}
-											<td>
-												{% if read %}
-													{% if read.tpr %}
-														<a
-															href="{{ context_path }}/reports/97/output/?tpr_id={{ read.tpr.id }}">{{ read.tpr.code }}</a>
-													{% else %}
-														MD
-													{% endif %}
-												{% endif %}
-											</td>
-											<td style="border-right: none;">
-												{% if read %}
-													<a title="{{read.previous_date|hh_format}} {{read.msn}}">{{read.previous_value}}</a>
-												{% endif %}
-											</td>
-											<td style="border-left: none; text-align: right;">
-												{% if read %}
-													{{read.previous_type.code}}
-												{% endif %}
-											</td>
-											<td style="border-right: none;">
-												{% if read %}
-													<a title="{{read.present_date|hh_format}} {{read.msn}}">{{read.present_value}}</a>
-												{% endif %}
-											</td>
-											<td style="border-left: none; text-align: right;">
-												{% if read %}
-													{{read.present_type.code}}
-												{% endif %}
-											</td>
-											{% if not loop.first %}
-												</tr>
+										<td style="border-right: none;">
+											{% if read %}
+												<a
+														title="{{read.prev_date|hh_format}} {{read.msn }}"
+												>{{read.prev_value}}</a>
 											{% endif %}
-										{% endfor %}
+										</td>
+										<td style="border-left: none; text-align: right;">
+											{% if read %}
+												{{ read.prev_type.code }}
+											{% endif %}
+										</td>
+										<td style="border-right: none;">
+											{% if read %}
+												<a
+														title="{{read.pres_date|hh_format}} {{read.msn}}"
+												>{{read.pres_value}}</a>
+											{% endif %}
+										</td>
+										<td style="border-left: none; text-align: right;">
+											{% if read %}
+												{{read.pres_type.code}}
+											{% endif %}
+										</td>
 									</tr>
 								{% endfor %}
 							{% endfor %}
@@ -329,7 +300,7 @@
 
 				<h3>CSV Downloads</h3>
 
-				<form action="{{ context_path }}/reports/291/output/">
+				<form action="/reports/291/output/">
 					<fieldset>
 						<input type="hidden" name="g_supply_id" value="{{g_supply.id}}">
 						<legend>Virtual Bills</legend>

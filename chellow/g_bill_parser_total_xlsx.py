@@ -1,9 +1,13 @@
 from dateutil.relativedelta import relativedelta
 import openpyxl
-import pytz
 from collections import defaultdict
 from itertools import islice
-from chellow.utils import HH
+from chellow.utils import HH, to_utc
+from decimal import Decimal
+
+
+def to_money(cell):
+    return round(Decimal(cell.value), 2)
 
 
 class Parser():
@@ -36,8 +40,9 @@ class Parser():
                 breakdown = defaultdict(int, {'gas_rate': set()})
                 raw_bill = {
                     'reference': bill_reference, 'reads': [], 'kwh': 0,
-                    'breakdown': breakdown, 'net_gbp': 0, 'vat_gbp': 0,
-                    'gross_gbp': 0, 'raw_lines': self.titles + '\n'}
+                    'breakdown': breakdown, 'net_gbp': Decimal('0.00'),
+                    'vat_gbp': Decimal('0.00'), 'gross_gbp': Decimal('0.00'),
+                    'raw_lines': self.titles + '\n'}
                 raw_bills.append(raw_bill)
                 last_bill_reference = bill_reference
             if row[9].value is None:
@@ -50,16 +55,16 @@ class Parser():
 
                 raw_bill['msn'] = row[9].value
                 raw_bill['mprn'] = str(row[10].value)
-                raw_bill['start_date'] = row[17].value.replace(tzinfo=pytz.utc)
-                raw_bill['finish_date'] = row[18].value. \
-                    replace(tzinfo=pytz.utc) + relativedelta(days=1) - HH
+                raw_bill['start_date'] = to_utc(row[17].value)
+                raw_bill['finish_date'] = to_utc(row[18].value) + \
+                    relativedelta(days=1) - HH
                 breakdown['vat_5pc'] += row[28].value
                 breakdown['vat_15pc'] += row[29].value
                 breakdown['vat_17_5pc'] += row[30].value
                 breakdown['vat_20pc'] += row[31].value
-                raw_bill['vat_gbp'] += row[32].value
+                raw_bill['vat_gbp'] += to_money(row[32])
                 raw_bill['breakdown']['standing_gbp'] = row[33].value
-                raw_bill['gross_gbp'] += row[34].value
+                raw_bill['gross_gbp'] += to_money(row[34])
                 raw_bill['raw_lines'] += ','.join(
                     str(c.value) for c in islice(row, 35)) + '\n'
                 raw_bill['net_gbp'] += raw_bill['gross_gbp'] - \
@@ -69,16 +74,16 @@ class Parser():
                     'msn': row[9].value,
                     'mprn': str(row[10].value),
                     'prev_value': row[11].value,
-                    'prev_date': row[12].value.replace(tzinfo=pytz.utc),
+                    'prev_date': to_utc(row[12].value),
                     'prev_type_code': row[13].value[-1],
                     'pres_value': row[14].value,
-                    'pres_date': row[15].value.replace(tzinfo=pytz.utc),
+                    'pres_date': to_utc(row[15].value),
                     'pres_type_code': row[16].value[-1],
                     'correction_factor': row[20].value,
                     'calorific_value': row[21].value,
                     'units': row[25].value}
-                vat_gbp = row[32].value
-                gross_gbp = row[34].value
+                vat_gbp = to_money(row[32])
+                gross_gbp = to_money(row[34])
                 raw_bill['reads'].append(read)
                 raw_bill['kwh'] += row[22].value
                 raw_bill['net_gbp'] += gross_gbp - vat_gbp
