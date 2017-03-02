@@ -2429,7 +2429,7 @@ def supplier_batch_get(batch_id):
     batch = Batch.get_by_id(g.sess, batch_id)
     bills = g.sess.query(Bill).filter(Bill.batch == batch).order_by(
         Bill.reference, Bill.start_date).options(
-            joinedload(Bill.bill_type)).all()
+        joinedload(Bill.bill_type)).all()
     config_contract = Contract.get_non_core_by_name(g.sess, 'configuration')
     properties = config_contract.make_properties()
     fields = {'batch': batch, 'bills': bills}

@@ -435,17 +435,18 @@ class Bill(Base, PersistentClass):
 
     __tablename__ = 'bill'
     id = Column(Integer, primary_key=True)
-    batch_id = Column(Integer, ForeignKey('batch.id'), nullable=False)
+    batch_id = Column(
+        Integer, ForeignKey('batch.id'), nullable=False, index=True)
     supply_id = Column(Integer, ForeignKey('supply.id'), nullable=False)
-    issue_date = Column(DateTime(timezone=True), nullable=False)
-    start_date = Column(DateTime(timezone=True), nullable=False)
-    finish_date = Column(DateTime(timezone=True), nullable=False)
+    issue_date = Column(DateTime(timezone=True), nullable=False, index=True)
+    start_date = Column(DateTime(timezone=True), nullable=False, index=True)
+    finish_date = Column(DateTime(timezone=True), nullable=False, index=True)
     net = Column(Numeric, nullable=False)
     vat = Column(Numeric, nullable=False)
     gross = Column(Numeric, nullable=False)
     account = Column(String, nullable=False)
-    reference = Column(String, nullable=False)
-    bill_type_id = Column(Integer, ForeignKey('bill_type.id'))
+    reference = Column(String, nullable=False, index=True)
+    bill_type_id = Column(Integer, ForeignKey('bill_type.id'), index=True)
     bill_type = relationship('BillType')
     breakdown = Column(String, nullable=False)
     kwh = Column(Numeric, nullable=False)
@@ -4038,8 +4039,14 @@ def db_upgrade_3_to_4(sess, root_path):
     sess.commit()
 
 
+def db_upgrade_4_to_5(sess, root_path):
+    sess.execute("create index bill_reference_idx on bill(reference);")
+    sess.commit()
+
+
 upgrade_funcs = [
-    db_upgrade_0_to_1, db_upgrade_1_to_2, db_upgrade_2_to_3, db_upgrade_3_to_4]
+    db_upgrade_0_to_1, db_upgrade_1_to_2, db_upgrade_2_to_3, db_upgrade_3_to_4,
+    db_upgrade_4_to_5]
 
 
 def db_upgrade(root_path):
