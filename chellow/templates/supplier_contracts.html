@@ -1,51 +1,94 @@
 {% extends "base.html" %}
 
 {% block title %}
-	&raquo; Supplier Contracts
+	Supplier Contracts
 {% endblock %}
 
 {% block nav %}
-	&raquo; Supplier Contracts [<a href="/supplier_contracts/add">add</a>]
+	Supplier Contracts [<a href="/supplier_contracts/add">add</a>]
 {% endblock %}
 
 {% block content %}
-
-<div class="layer-section">
-	<div class="section-header">
-		<h2>Supplier Contracts</h2>	
-	</div>
-	<div class="section-content">
-		<div class="section-data">
-			<table class="DataTable widthAuto noMarginBottom">
-				<thead>
-					<tr>
-						<th>Name</th>
-						<th>Start Date</th>
-						<th>Finish Date</th>
-						<th>Party</th>
-					</tr>
-				</thead>
-				<tbody>
-					{% for contract in supplier_contracts %}
+	<div class="layer-section">
+		<div class="section-header">
+			<h2>Ongoing Supplier Contracts</h2>	
+		</div>
+		<div class="section-content">
+			<div class="section-data">
+				<table class="DataTable widthAuto noMarginBottom">
+					<thead>
 						<tr>
-							<td>
-								<a href="/supplier_contracts/{{contract.id}}">{{contract.name}}</a>
-							</td>
-							<td>
-								{{contract.start_rate_script.start_date|hh_format}}
-							</td>
-							<td>
-								{{contract.finish_rate_script.finish_date|hh_format}}
-							</td>
-							<td>
-								<a href="/parties/{{contract.party.id}}">{{contract.party.name}}</a>
-							</td>
+							<th>Name</th>
+							<th>Start Date</th>
+							<th>Finish Date</th>
+							<th>Party</th>
 						</tr>
-					{% endfor %}
-				</tbody>
-			</table>
+					</thead>
+					<tbody>
+						{% for contract in ongoing_supplier_contracts %}
+							<tr>
+								<td>
+									<a
+											href="/supplier_contracts/{{contract.id}}"
+									>{{contract.name}}</a>
+								</td>
+								<td>
+									{{contract.start_rate_script.start_date|hh_format}}
+								</td>
+								<td>
+									{{contract.finish_rate_script.finish_date|hh_format}}
+								</td>
+								<td>
+									<a
+											href="/parties/{{contract.party.id}}"
+									>{{contract.party.name}}</a>
+								</td>
+							</tr>
+						{% endfor %}
+					</tbody>
+				</table>
+			</div>
 		</div>
 	</div>
-</div>
-	
+	<div class="layer-section">
+		<div class="section-header">
+			<h2>Ended Supplier Contracts</h2>	
+		</div>
+		<div class="section-content">
+			<div class="section-data">
+				<table class="DataTable widthAuto noMarginBottom">
+					<thead>
+						<tr>
+							<th>Name</th>
+							<th>Start Date</th>
+							<th>Finish Date</th>
+							<th>Party</th>
+						</tr>
+					</thead>
+					<tbody>
+						{% for contract in ended_supplier_contracts %}
+							<tr>
+								<td>
+									<a
+											href="/supplier_contracts/{{contract.id}}"
+									>{{contract.name}}</a>
+								</td>
+								<td>
+									{{contract.start_rate_script.start_date|hh_format}}
+								</td>
+								<td>
+									{{contract.finish_rate_script.finish_date|hh_format}}
+								</td>
+								<td>
+									<a
+											href="/parties/{{contract.party.id}}"
+									>{{contract.party.name}}</a>
+								</td>
+							</tr>
+						{% endfor %}
+					</tbody>
+				</table>
+			</div>
+		</div>
+	</div>
 {% endblock %}

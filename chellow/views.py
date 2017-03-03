@@ -1254,10 +1254,15 @@ def supplier_rate_script_edit_post(rate_script_id):
 
 @app.route('/supplier_contracts')
 def supplier_contracts_get():
-    contracts = g.sess.query(Contract).join(MarketRole).filter(
-        MarketRole.code == 'X').order_by(Contract.name)
+    contracts = g.sess.query(Contract).join(MarketRole).join(
+        Contract.finish_rate_script).filter(MarketRole.code == 'X').order_by(
+        Contract.name)
+    ongoing_contracts = contracts.filter(RateScript.finish_date == null())
+    ended_contracts = contracts.filter(RateScript.finish_date != null())
     return render_template(
-        'supplier_contracts.html', supplier_contracts=contracts)
+        'supplier_contracts.html',
+        ongoing_supplier_contracts=ongoing_contracts,
+        ended_supplier_contracts=ended_contracts)
 
 
 @app.route('/supplier_contracts/add', methods=['POST'])

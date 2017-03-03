@@ -54,8 +54,8 @@
             r"already a user with this email address"],
         'status_code': 400},
 
-    # Test that we're able to change the password
     {
+        'name': "Test that we're able to change the password",
         'path': '/users/3',
         'method': 'post',
         'data': {
@@ -7256,8 +7256,12 @@ def virtual_bill(supply_source):
 
         # Are the contracts in alphabetical order?
         'regexes': [
-            r'<tbody>\s*<tr>\s*<td>\s*'
-            '<a href="/supplier_contracts/37">Half-hourlies 2007</a>'],
+            r'<tbody>\s*'
+            r'<tr>\s*'
+            r'<td>\s*'
+            r'<a\s*'
+            r'href="/supplier_contracts/37"\s*'
+            r'>Half-hourlies 2007</a>'],
         'status_code': 200},
     {
         'name': "Daily supplier virtual bills page.",
