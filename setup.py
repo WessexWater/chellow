@@ -20,8 +20,7 @@ setup(
     url='https://github.com/WessexWater/chellow',
     cmdclass=versioneer.get_cmdclass(),
     packages=[
-        'chellow', 'chellow.reports', 'odswriter', 'odswriter.v1_1',
-        'odswriter.v1_2', 'amazon', 'amazon.ion'],
+        'chellow', 'chellow.reports', 'amazon', 'amazon.ion'],
     package_data={'chellow': [
         'non_core_contracts/*/*.py',
         'non_core_contracts/*/rate_scripts/*.py',
@@ -45,6 +44,7 @@ setup(
         'elexonportal/*',
         'rate_scripts/*/*.ion']},
     install_requires=[
+        'odio==0.0.11',
         'pg8000==1.10.6',
         'Flask==0.12',
         'SQLAlchemy==1.1.4',

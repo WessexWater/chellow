@@ -17,17 +17,28 @@ import csv
 import chellow.dloads
 import io
 import threading
-import odswriter
+import odio
 import sys
 from werkzeug.exceptions import BadRequest
 from chellow.utils import hh_format, HH, hh_before, req_int, req_bool, make_val
 from flask import request, g
 from chellow.views import chellow_redirect
-import zipfile
 
 
 CATEGORY_ORDER = {None: 0, 'unmetered': 1, 'nhh': 2, 'amr': 3, 'hh': 4}
 meter_order = {'hh': 0, 'amr': 1, 'nhh': 2, 'unmetered': 3}
+
+
+def write_spreadsheet(fl, compressed, site_rows, era_rows):
+    fl.seek(0)
+    fl.truncate()
+    with odio.create_spreadsheet(fl, '1.2', compressed=compressed) as f:
+        site_tab = f.append_table("Site Level")
+        for row in site_rows:
+            site_tab.append_row(row)
+        era_tab = f.append_table("Era Level")
+        for row in era_rows:
+            era_tab.append_row(row)
 
 
 def make_bill_row(titles, bill):
@@ -117,13 +128,8 @@ def content(
             '_'.join(base_name) + '.ods', user)
 
         rf = open(running_name, "wb")
-        if compression:
-            zp = zipfile.ZIP_DEFLATED
-        else:
-            zp = zipfile.ZIP_STORED
-        f = odswriter.writer(rf, '1.1', compression=zp)
-        site_tab = f.new_sheet("Site Level")
-        era_tab = f.new_sheet("Era Level")
+        site_rows = []
+        era_rows = []
         changes = defaultdict(list, {})
 
         try:
@@ -204,13 +210,13 @@ def content(
             for suffix in ('-kwh', '-rate', '-gbp'):
                 title_dict['exp-supplier'].append(tpr.code + suffix)
 
-        era_tab.writerow(
+        era_rows.append(
             era_header_titles + summary_titles + [None] +
             ['mop-' + t for t in title_dict['mop']] +
             [None] + ['dc-' + t for t in title_dict['dc']] + [None] +
             ['imp-supplier-' + t for t in title_dict['imp-supplier']] +
             [None] + ['exp-supplier-' + t for t in title_dict['exp-supplier']])
-        site_tab.writerow(site_header_titles + summary_titles)
+        site_rows.append(site_header_titles + summary_titles)
 
         sites = sites.all()
         month_start = start_date
@@ -405,7 +411,7 @@ def content(
                         None] * len(title_dict['dc']) + [None] + make_bill_row(
                             title_dict['imp-supplier'], disp_supplier_bill)
 
-                    era_tab.writerow(out)
+                    era_rows.append(out)
                     for k, v in month_data.items():
                         site_month_data[k] += v
 
@@ -627,9 +633,9 @@ def content(
 
                     for k, v in month_data.items():
                         site_month_data[k] += v
-                    era_tab.writerow(out)
+                    era_rows.append(out)
 
-                site_tab.writerow(
+                site_rows.append(
                     [
                         site.code, site.name, ', '.join(
                             s.code for s in site.find_linked_sites(
@@ -638,25 +644,22 @@ def content(
                         ', '.join(sorted(list(site_sources))),
                         ', '.join(sorted(list(site_gen_types)))] +
                     [site_month_data[k] for k in summary_titles])
-            rf.seek(0)
-            rf.truncate()
-            f.write()
+            write_spreadsheet(rf, compression, site_rows, era_rows)
             month_start += relativedelta(months=1)
     except BadRequest as e:
         msg = e.description + traceback.format_exc()
         sys.stderr.write(msg + '\n')
-        site_tab.writerow(["Problem " + msg])
+        site_rows.append(["Problem " + msg])
+        write_spreadsheet(rf, compression, site_rows, era_rows)
     except:
         msg = traceback.format_exc()
         sys.stderr.write(msg + '\n')
-        site_tab.writerow(["Problem " + msg])
+        site_rows.append(["Problem " + msg])
+        write_spreadsheet(rf, compression, site_rows, era_rows)
     finally:
         if sess is not None:
             sess.close()
         try:
-            rf.seek(0)
-            rf.truncate()
-            f.write()
             rf.close()
             os.rename(running_name, finished_name)
         except:
