@@ -2,7 +2,6 @@ import importlib
 import os
 from datetime import datetime as Datetime
 import traceback
-import pytz
 from dateutil.relativedelta import relativedelta
 from sqlalchemy import or_, true
 from sqlalchemy.sql.expression import null
@@ -20,7 +19,9 @@ import threading
 import odio
 import sys
 from werkzeug.exceptions import BadRequest
-from chellow.utils import hh_format, HH, hh_before, req_int, req_bool, make_val
+from chellow.utils import (
+    hh_format, HH, hh_before, req_int, req_bool, make_val, utc_datetime_now,
+    to_utc, utc_datetime)
 from flask import request, g
 from chellow.views import chellow_redirect
 
@@ -48,7 +49,7 @@ def make_bill_row(titles, bill):
 def content(
         scenario_props, scenario_id, base_name, site_id, supply_id, user,
         compression):
-    now = Datetime.now(pytz.utc)
+    now = utc_datetime_now()
     report_context = {}
     future_funcs = {}
     report_context['future_funcs'] = future_funcs
@@ -76,7 +77,7 @@ def content(
                     contract.name + " the start_date is missing.")
 
             if rate_start is not None:
-                rate_start = rate_start.replace(tzinfo=pytz.utc)
+                rate_start = to_utc(rate_start)
 
             lib = importlib.import_module('chellow.' + contract.name)
 
@@ -88,10 +89,9 @@ def content(
 
         start_date = scenario_props['scenario_start']
         if start_date is None:
-            start_date = Datetime(
-                now.year, now.month, 1, tzinfo=pytz.utc)
+            start_date = utc_datetime(now.year, now.month, 1)
         else:
-            start_date = start_date.replace(tzinfo=pytz.utc)
+            start_date = to_utc(start_date)
 
         base_name.append(
             hh_format(start_date).replace(' ', '_').replace(':', '').
@@ -110,7 +110,7 @@ def content(
         if kwh_start is None:
             kwh_start = chellow.computer.forecast_date()
         else:
-            kwh_start = kwh_start.replace(tzinfo=pytz.utc)
+            kwh_start = to_utc(kwh_start)
 
         sites = sess.query(Site).distinct().order_by(Site.code)
         if site_id is not None:
@@ -145,21 +145,20 @@ def content(
                     "Can't interpret the row " + str(row) + " it should be of "
                     "the form SITE_CODE, USED / GENERATED, DATE, MULTIPLIER")
             site_code, typ, date_str, kw_str = row
-            date = Datetime.strptime(date_str.strip(), "%Y-%m-%d").replace(
-                tzinfo=pytz.utc)
+            date = to_utc(Datetime.strptime(date_str.strip(), "%Y-%m-%d"))
             changes[site_code.strip()].append(
                 {
                     'type': typ.strip(), 'date': date,
                     'multiplier': float(kw_str)})
 
         era_header_titles = [
-            'imp-mpan-core', 'imp-supplier-contract', 'exp-mpan-core',
-            'exp-supplier-contract', 'metering-type', 'source',
-            'generator-type', 'supply-name', 'msn', 'pc', 'site-id',
+            'creation-date', 'imp-mpan-core', 'imp-supplier-contract',
+            'exp-mpan-core', 'exp-supplier-contract', 'metering-type',
+            'source', 'generator-type', 'supply-name', 'msn', 'pc', 'site-id',
             'site-name', 'associated-site-ids', 'month']
         site_header_titles = [
-            'site-id', 'site-name', 'associated-site-ids', 'month',
-            'metering-type', 'sources', 'generator-types']
+            'creation-date', 'site-id', 'site-name', 'associated-site-ids',
+            'month', 'metering-type', 'sources', 'generator-types']
         summary_titles = [
             'import-net-kwh', 'export-net-kwh', 'import-gen-kwh',
             'export-gen-kwh', 'import-3rd-party-kwh', 'export-3rd-party-kwh',
@@ -403,7 +402,7 @@ def content(
                         site_ds.supplier_bill['net-gbp']
 
                     out = [
-                        None, disp_supplier_contract.name, None, None,
+                        now, None, disp_supplier_contract.name, None, None,
                         displaced_era.make_meter_category(), 'displaced', None,
                         None, None, None, site.code, site.name, '',
                         month_finish] + [
@@ -610,7 +609,7 @@ def content(
                             overlap_proportion * float(bill.net)
 
                     out = [
-                        era.imp_mpan_core, (
+                        now, era.imp_mpan_core, (
                             None if imp_supplier_contract is None else
                             imp_supplier_contract.name),
                         era.exp_mpan_core, (
@@ -638,7 +637,7 @@ def content(
 
                 site_rows.append(
                     [
-                        site.code, site.name, ', '.join(
+                        now, site.code, site.name, ', '.join(
                             s.code for s in site.find_linked_sites(
                                 sess, month_start, month_finish)),
                         month_finish, site_category,

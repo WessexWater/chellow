@@ -2955,6 +2955,8 @@ def virtual_bill(supply_source):
             r'<table:table table:name="Era Level">\s*'
             r'<table:table-column/>\s*'
             r'<table:table-row>\s*'
+            r'<table:table-cell office:string-value="creation-date" '
+            r'office:value-type="string"/>\s*'
             r'<table:table-cell office:string-value="imp-mpan-core" '
             r'office:value-type="string"/>\s*'
             r'<table:table-cell office:string-value="imp-supplier-contract" '
@@ -3544,6 +3546,9 @@ def virtual_bill(supply_source):
             r'</table:table-row>',
 
             r'<table:table-row>\s*'
+            r'<table:table-cell '
+            r'office:date-value="\d\d\d\d-\d\d-\d\dT\d\d:\d\d:\d\d" '
+            r'office:value-type="date" table:style-name="cell_date"/>\s*'
             r'<table:table-cell office:string-value="22 6354 2983 570" '
             r'office:value-type="string"/>\s*'
             r'<table:table-cell office:string-value="Half-hourlies 2007" '
@@ -4503,6 +4508,8 @@ def virtual_bill(supply_source):
         'months_site_CI004.ods',
         'regexes': [
             r'<table:table-row>\s*'
+            r'<table:table-cell office:string-value="creation-date" '
+            r'office:value-type="string"/>\s*'
             r'<table:table-cell office:string-value="imp-mpan-core" '
             r'office:value-type="string"/>\s*'
             r'<table:table-cell office:string-value="imp-supplier-contract" '
@@ -5146,6 +5153,9 @@ def virtual_bill(supply_source):
             r'office:value-type="string"/>\s*'
             r'</table:table-row>\s*'
             r'<table:table-row>\s*'
+            r'<table:table-cell '
+            r'office:date-value="\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d" '
+            r'office:value-type="date" table:style-name="cell_date"/>\s*'
             r'<table:table-cell/>\s*'
             r'<table:table-cell office:string-value="Half-hourlies 2007" '
             r'office:value-type="string"/>\s*'
@@ -5808,6 +5818,9 @@ def virtual_bill(supply_source):
         'duration_20100701_0000_for_1_months_site_CI017.ods',
         'regexes': [
             r'<table:table-row>\s*'
+            r'<table:table-cell '
+            r'office:date-value="\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d" '
+            r'office:value-type="date" table:style-name="cell_date"/>\s*'
             r'<table:table-cell office:string-value="22 6354 2983 570" '
             r'office:value-type="string"/>\s*'
             r'<table:table-cell office:string-value="Half-hourlies 2007" '
@@ -5977,6 +5990,9 @@ def virtual_bill(supply_source):
             r'<table:table-cell table:number-columns-repeated="21"/>\s*'
             r'</table:table-row>\s*'
             r'<table:table-row>\s*'
+            r'<table:table-cell '
+            r'office:date-value="\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d" '
+            r'office:value-type="date" table:style-name="cell_date"/>\s*'
             r'<table:table-cell office:string-value="22 1065 3921 534" '
             r'office:value-type="string"/>\s*'
             r'<table:table-cell office:string-value="Non half-hourlies 2010" '
@@ -6040,6 +6056,9 @@ def virtual_bill(supply_source):
             r'<table:table-cell table:number-columns-repeated="12"/>\s*'
             r'</table:table-row>\s*'
             r'<table:table-row>\s*'
+            r'<table:table-cell '
+            r'office:date-value="\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d" '
+            r'office:value-type="date" table:style-name="cell_date"/>\s*'
             r'<table:table-cell office:string-value="22 9789 0534 938" '
             r'office:value-type="string"/>\s*'
             r'<table:table-cell office:string-value="Non half-hourlies 2010" '
@@ -8719,6 +8738,9 @@ def virtual_bill(supply_source):
         'status_code': 200,
         'regexes': [
             r'<table:table-row>\s*'
+            r'<table:table-cell '
+            r'office:date-value="\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d" '
+            r'office:value-type="date" table:style-name="cell_date"/>\s*'
             r'<table:table-cell office:string-value="22 6158 2968 220" '
             r'office:value-type="string"/>\s*'
             r'<table:table-cell office:string-value="Half-hourlies 2013" '
@@ -9059,6 +9081,9 @@ def virtual_bill(supply_source):
         'status_code': 200,
         'regexes': [
             r'<table:table-row>\s*'
+            r'<table:table-cell '
+            r'office:date-value="\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d" '
+            r'office:value-type="date" table:style-name="cell_date"/>\s*'
             r'<table:table-cell office:string-value="22 0195 4836 192" '
             r'office:value-type="string"/>\s*'
             r'<table:table-cell office:string-value="Non half-hourlies 2007" '
@@ -9216,6 +9241,9 @@ def virtual_bill(supply_source):
         'status_code': 200,
         'regexes': [
             r'<table:table-row>\s*'
+            r'<table:table-cell '
+            r'office:date-value="\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d" '
+            r'office:value-type="date" table:style-name="cell_date"/>\s*'
             r'<table:table-cell office:string-value="22 6158 2968 220" '
             r'office:value-type="string"/>\s*'
             r'<table:table-cell office:string-value="Half-hourlies 2013" '
@@ -9790,6 +9818,9 @@ def virtual_bill(supply_source):
         'regexes': [
 
             r'<table:table-row>\s*'
+            r'<table:table-cell '
+            r'office:date-value="\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d" '
+            r'office:value-type="date" table:style-name="cell_date"/>\s*'
             r'<table:table-cell office:string-value="22 4862 4512 332" '
             r'office:value-type="string"/>\s*'
             r'<table:table-cell office:string-value="Non half-hourlies 2007" '
@@ -10460,6 +10491,9 @@ def virtual_bill(supply_source):
         'for_1_months_site_CI005.ods',
         'regexes': [
             r'<table:table-row>\s*'
+            r'<table:table-cell '
+            r'office:date-value="\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d" '
+            r'office:value-type="date" table:style-name="cell_date"/>\s*'
             r'<table:table-cell/>\s*'
             r'<table:table-cell office:string-value="Half-hourlies 2013" '
             r'office:value-type="string"/>\s*'
@@ -10713,6 +10747,8 @@ def virtual_bill(supply_source):
         'status_code': 200,
         'regexes': [
             r'<table:table-row>\s*'
+            r'<table:table-cell office:string-value="creation-date" '
+            r'office:value-type="string"/>\s*'
             r'<table:table-cell office:string-value="imp-mpan-core" '
             r'office:value-type="string"/>\s*'
             r'<table:table-cell office:string-value="imp-supplier-contract" '
@@ -10833,6 +10869,9 @@ def virtual_bill(supply_source):
             r'</table:table-row>',
 
             r'<table:table-row>\s*'
+            r'<table:table-cell '
+            r'office:date-value="\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d" '
+            r'office:value-type="date" table:style-name="cell_date"/>\s*'
             r'<table:table-cell office:string-value="22 1065 3921 534" '
             r'office:value-type="string"/>\s*'
             r'<table:table-cell office:string-value="Non half-hourlies 2010" '
@@ -10996,6 +11035,8 @@ def virtual_bill(supply_source):
             r'<table:table table:name="Era Level">\s*'
             r'<table:table-column/>\s*'
             r'<table:table-row>\s*'
+            r'<table:table-cell office:string-value="creation-date" '
+            r'office:value-type="string"/>\s*'
             r'<table:table-cell office:string-value="imp-mpan-core" '
             r'office:value-type="string"/>\s*'
             r'<table:table-cell office:string-value="imp-supplier-contract" '
@@ -11098,6 +11139,9 @@ def virtual_bill(supply_source):
             r'<table:table-cell/>\s*'
             r'</table:table-row>\s*'
             r'<table:table-row>\s*'
+            r'<table:table-cell '
+            r'office:date-value="\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d" '
+            r'office:value-type="date" table:style-name="cell_date"/>\s*'
             r'<table:table-cell office:string-value="22 9789 0534 938" '
             r'office:value-type="string"/>\s*'
             r'<table:table-cell office:string-value="Non half-hourlies 2010" '
@@ -11340,6 +11384,9 @@ def virtual_bill(supply_source):
         'status_code': 200,
         'regexes': [
             r'<table:table-row>\s*'
+            r'<table:table-cell '
+            r'office:date-value="\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d" '
+            r'office:value-type="date" table:style-name="cell_date"/>\s*'
             r'<table:table-cell/>\s*'
             r'<table:table-cell office:string-value="Half-hourlies 2007" '
             r'office:value-type="string"/>\s*'
@@ -11460,6 +11507,9 @@ def virtual_bill(supply_source):
             r'</table:table-row>\s*',
 
             r'<table:table-row>\s*'
+            r'<table:table-cell '
+            r'office:date-value="\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d" '
+            r'office:value-type="date" table:style-name="cell_date"/>\s*'
             r'<table:table-cell table:number-columns-repeated="2"/>\s*'
             r'<table:table-cell office:string-value="22 7907 4116 080" '
             r'office:value-type="string"/>\s*'
@@ -11722,6 +11772,9 @@ def virtual_bill(supply_source):
         'status_code': 200,
         'regexes': [
             r'<table:table-row>\s*'
+            r'<table:table-cell '
+            r'office:date-value="\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d" '
+            r'office:value-type="date" table:style-name="cell_date"/>\s*'
             r'<table:table-cell table:number-columns-repeated="2"/>\s*'
             r'<table:table-cell office:string-value="22 7907 4116 080" '
             r'office:value-type="string"/>\s*'
@@ -12662,6 +12715,9 @@ def virtual_bill(supply_source):
         '20140601_0000_for_1_months_supply_5.ods',
         'regexes': [
             r'<table:table-row>\s*'
+            r'<table:table-cell '
+            r'office:date-value="\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d" '
+            r'office:value-type="date" table:style-name="cell_date"/>\s*'
             r'<table:table-cell office:string-value="22 0883 6932 301" '
             r'office:value-type="string"/>\s*'
             r'<table:table-cell office:string-value="Half-hourlies 2013" '
@@ -12834,6 +12890,9 @@ def virtual_bill(ss):
         'status_code': 200,
         'regexes': [
             r'<table:table-row>\s*'
+            r'<table:table-cell '
+            r'office:date-value="\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d" '
+            r'office:value-type="date" table:style-name="cell_date"/>\s*'
             r'<table:table-cell office:string-value="CI004" '
             r'office:value-type="string"/>\s*'
             r'<table:table-cell office:string-value="Lower Treave" '
@@ -12897,6 +12956,9 @@ def virtual_bill(ss):
         'status_code': 200,
         'regexes': [
             r'<table:table-row>\s*'
+            r'<table:table-cell '
+            r'office:date-value="\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d" '
+            r'office:value-type="date" table:style-name="cell_date"/>\s*'
             r'<table:table-cell office:string-value="MOBY" '
             r'office:value-type="string"/>\s*'
             r'<table:table-cell office:string-value="Ishmael" '
