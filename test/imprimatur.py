@@ -15390,4 +15390,20 @@ def virtual_bill(ds):
             r'<form action="/g_batches/3/edit">\s*'
             r'<fieldset>\s*'
             r'<input type="submit" name="confirm_delete" value="Delete">']},
+
+    {
+        'name': "General import of gas supply",
+        'path': '/general_imports',
+        'method': 'post',
+        'files': {'import_file': 'test/gas/g_supplies.csv'},
+        'status_code': 303,
+        'regexes': [
+            r"/general_imports/30"]},
+    {
+        'name': "General import of gas supply",
+        'path': '/general_imports/30',
+        'tries': {'max': 10, 'period': 1},
+        'status_code': 200,
+        'regexes': [
+            r"The file has been imported successfully\."]},
 ]

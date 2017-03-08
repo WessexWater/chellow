@@ -3578,6 +3578,19 @@ class GContract(Base, PersistentClass):
     def find_by_id(sess, cid):
         return sess.query(GContract).filter(GContract.id == cid).first()
 
+    @staticmethod
+    def get_by_name(sess, name):
+        cont = GContract.find_by_name(sess, name)
+        if cont is None:
+            raise BadRequest(
+                "There isn't a gas supplier contract with the name '" +
+                str(name) + "'.")
+        return cont
+
+    @staticmethod
+    def find_by_name(sess, name):
+        return sess.query(GContract).filter(GContract.name == name).first()
+
 
 class GRateScript(Base, PersistentClass):
     __tablename__ = "g_rate_script"
