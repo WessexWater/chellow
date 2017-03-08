@@ -190,6 +190,7 @@
 				<div class="section-data">
 					<form action="/reports/247">
 						<fieldset>
+							<input type="hidden" name="site_id" value="{{site.id}}">
 							<legend>Monthly Duration</legend>
 							<br>
 							For {{input_text('months', '1', 2, 2)}}
@@ -201,6 +202,7 @@
 				</div>
 				<div class="section-data">
 						<form action="/reports/181">
+							<input type="hidden" name="site_id" value="{{site.id}}">
 							<fieldset>
 								<legend>Download TRIAD CSV</legend>
 								For financial year ending March
@@ -212,6 +214,7 @@
 				<div class="section-data">
 					<form action="/reports/29">
 						<fieldset>
+							<input type="hidden" name="site_id" value="{{site.id}}">
 							<legend>HH Data: 48 Column Format</legend>
 							<select name="type">
 								<option value="used">Used</option>
@@ -230,6 +233,7 @@
 				<div class="section-data">
 					<form action="/reports/csv_site_hh_data">
 						<fieldset>
+							<input type="hidden" name="site_id" value="{{site.id}}">
 							<legend>HH Data: HH Per Row Format</legend>
 							<p>
 								From {{input_date('start', last_month_start)}} to
@@ -242,6 +246,7 @@
 				<div class="section-data">
 					<form action="/reports/247">
 						<fieldset>
+							<input type="hidden" name="site_id" value="{{site.id}}">
 							<legend>Run Scenario</legend>
 							<select name="scenario_id">
 								{% for scenario in scenarios %}

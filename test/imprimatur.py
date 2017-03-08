@@ -3934,7 +3934,11 @@ def virtual_bill(supply_source):
             r'<option value="imp_net">Imported</option>',
             r'<form action="/reports/csv_site_hh_data">\s*'
             r'<fieldset>\s*'
-            r'<legend>HH Data: HH Per Row Format</legend>']},
+            r'<input type="hidden" name="site_id" value="3">\s*'
+            r'<legend>HH Data: HH Per Row Format</legend>',
+            r'<fieldset>\s*'
+            r'<input type="hidden" name="site_id" value="3">\s*'
+            r'<legend>Monthly Duration</legend>']},
 
     {
         'name': "Show a dead supply. Supply 11. Mark as dead.",
