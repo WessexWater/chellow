@@ -1,5 +1,0 @@
-rm -r ${CHELLOW_HOME}/downloads
-. ${CHELLOW_HOME}/venv/bin/activate
-python ${CHELLOW_HOME}/test/ftp.py &
-cd ${CHELLOW_HOME}/test
-imprimatur ${CHELLOW_HOME}/test/imprimatur.py  || { exit 1; }
