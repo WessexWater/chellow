@@ -15076,6 +15076,10 @@ def virtual_bill(ds):
     {
         'name': "View edit gas bill",
         'path': '/g_bills/1/edit',
+        'regexes': [
+            r'<form action="/g_bills/1/edit">\s*'
+            r'<fieldset>\s*'
+            r'<legend>Delete This Bill</legend>'],
         'status_code': 200},
 
     {
