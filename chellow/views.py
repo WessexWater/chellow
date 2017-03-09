@@ -4874,7 +4874,7 @@ def g_supply_edit_post(g_supply_id):
             GEra.g_supply == g_supply).order_by(GEra.start_date.desc())
         return make_response(
             render_template(
-                'g_supply.html', g_supply=g_supply, g_eras=g_eras), 400)
+                'g_supply_edit.html', g_supply=g_supply, g_eras=g_eras), 400)
 
 
 @app.route('/g_contracts')

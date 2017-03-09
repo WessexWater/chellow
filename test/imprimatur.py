@@ -14958,6 +14958,18 @@ def virtual_bill(ds):
             r'/g_supplies/1']},
 
     {
+        'name': "Failed edit of gas supply",
+        'path': '/g_supplies/1/edit',
+        'method': 'post',
+        'data': {
+            'mprn': '',
+            'name': 'Main Gas Supply',
+            'update': 'Update'},
+        'status_code': 400,
+        'regexes': [
+            r'The MPRN can&#39;t be blank\.']},
+
+    {
         'name': "Check supply has been updated properly",
         'path': '/g_supplies/1',
         'status_code': 200,
