@@ -220,6 +220,7 @@ def content(
 
         sites = sites.all()
         month_start = start_date
+        print("start date", start_date, "finish date", finish_date)
         while month_start < finish_date:
             month_finish = month_start + relativedelta(months=1) - HH
             for site in sites:

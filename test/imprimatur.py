@@ -5261,7 +5261,7 @@ def virtual_bill(supply_source):
     {
         'name': "Try a 12 month run",
         'path': '/reports/247?site_id=1&months=12&finish_year=2011&'
-        'finish_month=06',
+        'finish_month=06&compression=False',
         'status_code': 303},
     {
         'path': '/downloads',
@@ -5274,6 +5274,9 @@ def virtual_bill(supply_source):
         'path': '/downloads/'
         '0016_FINISHED_watkinsexamplecom_monthly_duration_20100701_0000_for_'
         '12_months_site_CI004.ods',
+        'regexes': [
+            r'<table:table-cell office:date-value="2011-06-30T23:30:00" '
+            r'office:value-type="date" table:style-name="cell_date"/>'],
         'status_code': 200},
 
     {
