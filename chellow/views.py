@@ -387,13 +387,38 @@ def system_get():
                 traces.append("  %s" % (line.strip()))
     pg_stats = g.sess.execute("select * from pg_stat_activity").fetchall()
 
+    pg_indexes = g.sess.execute(
+        """
+        select
+            t.relname as table_name,
+            i.relname as index_name,
+            array_to_string(array_agg(a.attname), ', ') as column_names
+        from
+            pg_class t,
+            pg_class i,
+            pg_index ix,
+            pg_attribute a
+        where
+            t.oid = ix.indrelid
+            and i.oid = ix.indexrelid
+            and a.attrelid = t.oid
+            and a.attnum = ANY(ix.indkey)
+            and t.relkind = 'r'
+        group by
+            t.relname,
+            i.relname
+        order by
+            t.relname,
+            i.relname;
+        """).fetchall()
+
     return render_template(
         'system.html', traces='\n'.join(traces),
         version_number=chellow.versions['version'],
         version_hash=chellow.versions['full-revisionid'], pg_stats=pg_stats,
         request=request, virtual_memory=psutil.virtual_memory(),
         swap_memory=psutil.swap_memory(),
-        python_version=platform.python_version())
+        python_version=platform.python_version(), pg_indexes=pg_indexes)
 
 
 def get_objects():
