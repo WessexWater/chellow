@@ -219,7 +219,7 @@ class Parser():
                             finish_date.strftime('%Y%m%d'), mpan_core)),
                     'issue_date': issue_date, 'start_date': start_date,
                     'finish_date': finish_date, 'kwh': Decimal(0),
-                    'net': Decimal('0'), 'vat': Decimal('0'),
+                    'net': Decimal('0.00'), 'vat': Decimal('0.00'),
                     'breakdown': bd, 'reads': []}
                 raw_bills.append(bill)
 
@@ -237,7 +237,7 @@ class Parser():
                     bd_add(bd, 'sum-gsp-kwh', usage)
             description = get_value(row, 'Description')
             if description == 'Standard VAT@20%':
-                bill['vat'] = round(amount_dec, 2)
+                bill['vat'] += round(amount_dec, 2)
             else:
                 bill['net'] += round(amount_dec, 2)
 
