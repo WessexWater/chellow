@@ -34,10 +34,10 @@
     {
         'path': '/users/3',
         'regexes': [
-            r'<form method="post" action="">\s*'
+            r'<form method="post">\s*'
             r'<fieldset>\s*'
             r'<input type="hidden" name="change_password">\s*',
-            r'<form action="">\s*'
+            r'<form>\s*'
             r'<fieldset>\s*'
             r'<input type="hidden" name="Delete this user">\s*'],
         'status_code': 200},
@@ -7511,7 +7511,7 @@ def virtual_bill(supply_source):
         'path': '/hhdc_batches/10/edit?confirm_delete=Delete',
         'status_code': 200,
         'regexes': [
-            r'<form method="post" action="">\s*'
+            r'<form method="post">\s*'
             r'<fieldset>\s*'
             r'<input type="submit" name="delete" value="Delete">\s']},
     {
@@ -12573,7 +12573,7 @@ def virtual_bill(supply_source):
         'path': '/site_snags/41/edit',
         'auth': ('admin@example.com', 'admin'),
         'regexes': [
-            r'<form action=""'],
+            r'<form'],
         'status_code': 200},
     {
         'name': "Attempt to delete an HHDC contract that has batches",

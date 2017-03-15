@@ -53,7 +53,7 @@
         <div class="section-data">
             <div class="standardForm">
                 {% if not task.is_locked() %}
-					<form action="" method="post">
+					<form method="post">
 						<fieldset>
 							<input type="hidden" name="hhdc_contract_id" value="{{contract.id}}">
 							<input type="submit" value="Import" name="now">

@@ -33,7 +33,7 @@
 		<div class="section-content">
 			<div class="section-data">
 				<div class="standardForm">
-					<form method="post" action="">
+					<form method="post">
 						<fieldset>
 						  <input type="submit" name="delete" value="Delete">
 						  <input type="reset" value="Cancel" onClick="window.location='/hhdc_bills/{{bill.id}}/edit'" />
@@ -60,7 +60,7 @@
             <div class="section-data">
             	<p><a href="/supplies/{{bill.supply.id}}">Supply</a></p>
             	
-                <form action="" method="post">
+                <form method="post">
                     <fieldset>
                         <input type="hidden" name="supplier_batch_id" value="1893">
                         
@@ -166,7 +166,7 @@
 		<div class="section-content">
 			<div class="section-data">
 				<div class="standardForm">
-					<form action="">
+					<form>
 						<fieldset>
 							<input type="submit" name="confirm_delete" value="Delete">
 						</fieldset>
