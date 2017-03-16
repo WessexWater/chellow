@@ -745,7 +745,8 @@ def virtual_bill_titles():
             r'22 6354 2983 570',
             r'<form action="/sites/4/edit" method="post">\s*'
             r'<fieldset>\s*'
-            r'<legend>Insert a gas supply</legend>'],
+            r'<legend>Insert a gas supply</legend>',
+            r'<input name="insert_electricity" type="submit" value="Insert">'],
         'status_code': 200},
 
     # Can we see a site ok?
