@@ -7,7 +7,7 @@
         'auth': ('admin@example.com', 'admin'),
         'status_code': 200,
         'regexes': [
-            r'"/style"']},
+            r'"/chellowcss"']},
     {
         'name': "Manipulating users",
         'path': '/users',
@@ -423,7 +423,7 @@ def virtual_bill(ds):
         if hh['utc-is-month-end']:
             bill['net-gbp'] += 7
 """,
-            'properties': "{}"},
+            'properties': "{'protocol': 'sftp'}"},
         'status_code': 303},
 
     {
@@ -1031,7 +1031,7 @@ def virtual_bill_titles():
         'path': '/general_imports',
         'status_code': 200,
         'regexes': [
-            r'"/style"']},
+            r'"/chellowcss"']},
 
     {
         'name': "Valid bulk update of supply eras",
@@ -2116,9 +2116,9 @@ def virtual_bill(supply, startDate, finishDate, pw):
 """,
             'properties': "{}"},
         'regexes': [
-            #  Different errors for CPython and Jython
-            r"<li>invalid syntax \(&lt;unknown&gt;, line 3\)</li>|"
-            r"\(&lt;unknown&gt;, line 3\)</li>"],
+            r'<li>\s*'
+            r'invalid syntax \(&lt;unknown&gt;, line 3\)\s*'
+            r'</li>'],
         'status_code': 400},
 
     # Put back to how it was before
@@ -6519,6 +6519,7 @@ def virtual_bill(supply_source):
 """,
             'properties': """
 {
+    'enabled': True,
     'protocol': 'ftp',
     'file_type': '.df2',
     'hostname': 'localhost',
@@ -6827,7 +6828,7 @@ def virtual_bill(supply_source):
 
         # Should have link to CSS
         'regexes': [
-            r"/style"],
+            r"/chellowcss"],
         'status_code': 200},
     {
         'path': '/reports/59?start_year=2013&start_month=04&start_day=01&'
@@ -6853,7 +6854,7 @@ def virtual_bill(supply_source):
 
         # Should have link to CSS
         'regexes': [
-            r"/style"],
+            r"/chellowcss"],
         'status_code': 200},
     {
         'name': "Check CSV Supplies HH Data. With supply_id",
@@ -9174,8 +9175,10 @@ def virtual_bill(supply_source):
             'detach': "Detach"},
         'status_code': 400,
         'regexes': [
-            r"<li>You can&#39;t detach an era from the site where it is "
-            "physically located.</li>"]},
+            r'<li>\s*'
+            r'You can&#39;t detach an era from the site where it is '
+            r'physically located.\s*'
+            r'</li>']},
     {
         'name': "Look at a DNO",
         'path': '/dno_contracts/14',
@@ -15446,4 +15449,87 @@ def virtual_bill(ds):
         'status_code': 303,
         'regexes': [
             r"/mop_contracts/38"]},
+    {
+        'name': "Cause an error in auto importer.",
+        'path': '/hhdc_contracts/35/edit',
+        'method': 'post',
+        'data': {
+            'party_id': "97",  # DASL
+            'name': "HH contract",
+            'charge_script': """
+def virtual_bill_titles():
+    return ['net-gbp', 'problem']
+
+def virtual_bill(supply_source):
+    supply_source.dc_bill['net-gbp'] = 0
+""",
+            'properties': """
+{
+    'enabled': True,
+    'protocol': 'ftp',
+    'file_type': '.df2',
+    'hostname': 'localhost',
+    'port': 2121,
+    'username': 'chellow',
+    'password': 'HixaNfUBOf*u',
+    'directories': ['error']}
+"""},
+        'status_code': 303},
+
+    {
+        'name': "Cause an error in ftp auto importer. Import now",
+        'path': '/hhdc_contracts/35/auto_importer',
+        'method': 'post',
+        'regexes': [
+            '/hhdc_contracts/35/auto_importer'],
+        'status_code': 303},
+
+    {
+        'name': "Cause an error in ftp auto importer, check for global error",
+        'path': '/',
+        'tries': {},
+        'regexes': [
+            r'class="global"']},
+
+    {
+        'name': "Cause an error in sftp auto importer.",
+        'path': '/hhdc_contracts/35/edit',
+        'method': 'post',
+        'data': {
+            'party_id': "97",  # DASL
+            'name': "HH contract",
+            'charge_script': """
+def virtual_bill_titles():
+    return ['net-gbp', 'problem']
+
+def virtual_bill(supply_source):
+    supply_source.dc_bill['net-gbp'] = 0
+""",
+            'properties': """
+{
+    'enabled': True,
+    'protocol': 'sftp',
+    'file_type': '.df2',
+    'hostname': 'localhost',
+    'port': 2120,
+    'username': 'chellow',
+    'password': 'HixaNfUBOf*u',
+    'directories': ['error']}
+"""},
+        'status_code': 303},
+
+    {
+        'name': "Cause an error in sftp auto importer. Import now",
+        'path': '/hhdc_contracts/35/auto_importer',
+        'method': 'post',
+        'regexes': [
+            '/hhdc_contracts/35/auto_importer'],
+        'status_code': 303},
+
+    {
+        'name': "Cause an error in sftp auto importer, check for global error",
+        'path': '/',
+        'tries': {},
+        'regexes': [
+            r'class="global"']},
 ]

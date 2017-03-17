@@ -51,6 +51,7 @@ import platform
 import chellow.g_bill_import
 import chellow.g_cv
 from xml.dom import Node
+import chellow.hh_importer
 
 
 app = Flask('chellow', instance_relative_config=True)
@@ -75,6 +76,15 @@ def before_first_request():
 def before_request():
     g.sess = Session()
 
+    print(
+        ' '.join(
+            '-' if v is None else v for v in (
+                request.remote_addr, str(request.user_agent),
+                request.remote_user,
+                '[' + Datetime.now().strftime('%d/%b/%Y:%H:%M:%S') + ']',
+                '"' + request.method + ' ' + request.path + ' ' +
+                request.environ.get('SERVER_PROTOCOL') + '"', None, None)))
+
 
 @app.teardown_appcontext
 def shutdown_session(exception=None):
@@ -84,7 +94,17 @@ def shutdown_session(exception=None):
 
 @app.context_processor
 def chellow_context_processor():
-    return {'current_user': g.user}
+    global_alerts = []
+    for task in chellow.hh_importer.tasks.values():
+        if task.is_error:
+            try:
+                contract = Contract.get_by_id(g.sess, task.contract_id)
+                global_alerts.append(
+                    "There's a problem with the automatic HH data importer "
+                    "for contract '" + str(contract.name) + "'.")
+            except NotFound:
+                pass
+    return {'current_user': g.user, 'global_alerts': global_alerts}
 
 
 TEMPLATE_FORMATS = {
@@ -116,18 +136,6 @@ def chellow_redirect(path, code=None):
         return redirect(location)
     else:
         return redirect(location, code)
-
-
-@app.before_request
-def log_request():
-    print(
-        ' '.join(
-            '-' if v is None else v for v in (
-                request.remote_addr, str(request.user_agent),
-                request.remote_user,
-                '[' + Datetime.now().strftime('%d/%b/%Y:%H:%M:%S') + ']',
-                '"' + request.method + ' ' + request.path + ' ' +
-                request.environ.get('SERVER_PROTOCOL') + '"', None, None)))
 
 
 @app.before_request

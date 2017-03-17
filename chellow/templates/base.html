@@ -119,91 +119,104 @@
 				{%- if initial == True %} checked{% endif -%}
 				{%- endif -%}>
 {%- endmacro -%}
+
 <!DOCTYPE html>
 <html lang="en">
-    <head>
+	<head>
 		{% block head %}
-    		<link rel="stylesheet" href="/style" />
-		    <link rel="stylesheet" href="/static/css/bootstrap.min.css" />
-        	<link rel="stylesheet" href="/static/font-awesome-4.6.3/css/font-awesome.min.css" />
-        	<link rel="stylesheet" href="/chellowcss" />
-        	
+			<link rel="stylesheet" href="/static/css/bootstrap.min.css">
+			<link
+		 			rel="stylesheet"
+				 	href="/static/font-awesome-4.6.3/css/font-awesome.min.css">
+			<link rel="stylesheet" href="/chellowcss">
+
+			<script src="/static/js/jquery-2.2.4.min.js"></script>
+			<script src="/static/js/bootstrap.min.js"></script>
+			<script src="/static/js/grids.min.js"></script>
+			<script src="/chellowjs"></script>
 		
-       		<script src="/static/js/jquery-2.2.4.min.js"></script>
-        	<script src="/static/js/bootstrap.min.js"></script>
-        	<script src="/static/js/grids.min.js"></script>
-        	<script src="/chellowjs"></script>
-		
-		    <title>Chellow {% block title %}{% endblock %}</title>
-		    {% block inside_head %}{% endblock %}
+			<title>Chellow {% block title %}{% endblock %}</title>
+			{% block inside_head %}{% endblock %}
 		{% endblock %}
-    </head>
-    <body>
-        {% block body %}
-			
-        <!-- Layer Page -->
-        <div class="layer-page">
+	</head>
+	<body>
+		{% block body %}
+			<!-- Layer Page -->
+			<div class="layer-page">
 	
-	        <!-- Layer Header -->
-            <div class="layer-header">
-		        <div class="container-fluid">
-                	<div class="row">
+				<!-- Layer Header -->
+					<div class="layer-header">
+						<div class="container-fluid">
+							<div class="row">
 				        <!-- Logo -->
-                    	<div class="col-sm-3 col-md-2 alignCenter bgBlue headerSameHeight">
-                        		<p class="panel-logo"><a href="/"><span class="hide"></span></a></p>
-                    	</div>
+								<div
+								 		class="col-sm-3 col-md-2 alignCenter bgBlue headerSameHeight">
+									<p class="panel-logo"><a href="/"><span class="hide"></span></a></p>
+								</div>
                     	
 				        <!-- Top Header -->
-                    	<div class="col-sm-9 col-md-10 top-header headerSameHeight">
-                    		<div class="pull-left">
-                        		<p class="panel-breadcrumbs">
-                        		<!-- <a href="/">Chellow</a> -->
-                        		{% block nav %}{% endblock %}</p>
+								<div class="col-sm-9 col-md-10 top-header headerSameHeight">
+									<div class="pull-left">
+										<p class="panel-breadcrumbs">
+											<!-- <a href="/">Chellow</a> -->
+											{% block nav %}{% endblock %}</p>
 						
-                    		</div>
+									</div>
                             
-                            <div class="pull-right layer-profilemenu">
-                                <!-- Layer Header Top -->
-                                <div class="layer-headertop">
-                                    <div class="headertop createnew blue">
-                                        <div class="menu-topbar">
-                                            <div class="topbar-main">
-                                                <div class="standardForm siteSearch">
-                                                    <form action="/sites">
-                                                        <fieldset>
-                                                            <span class="topbarmain-title">
-                                                                <input type="text" class="input-text" name="pattern" value="Search Sites..." onBlur="if( this.value == '' ) this.value = 'Search Sites...'" onFocus="if( this.value == 'Search Sites...' ) this.value = '';"/>
-                                                            </span>
-                                                            <span class="topbarmain-arrow"><button type="submit" class="btn" onClick="removePlaceHolder()"><i class="fa fa-search" aria-hidden="true"></i></button></span>
-                                                        </fieldset>
-                                                    </form>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="headertop search blue">
-                                        <div class="menu-topbar">
-                                            <div class="topbar-main">
-                                                <div class="standardForm supplySearch">
-                                                    <form action="/supplies">
-                                                        <fieldset>
-                                                            <span class="topbarmain-title">
-                                                                <input type="text" class="input-text" name="search_pattern" value="Search Supplies..." onBlur="if( this.value == '' ) this.value = 'Search Supplies...';" onFocus="if( this.value == 'Search Supplies...' ) this.value = '';" />
-                                                            </span>
-                                                            <span class="topbarmain-arrow"><button type="submit" class="btn" onClick="removePlaceHolder()"><i class="fa fa-search" aria-hidden="true"></i></button></span>
-                                                        </fieldset>
-                                                    </form>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <!-- End Layer Header Top -->
-                            </div>
-                    	</div>
-			        </div>
-		        </div>
-	        </div>
+									<div class="pull-right layer-profilemenu">
+										<!-- Layer Header Top -->
+										<div class="layer-headertop">
+											<div class="headertop createnew blue">
+												<div class="menu-topbar">
+													<div class="topbar-main">
+														<div class="standardForm siteSearch">
+															<form action="/sites">
+																<fieldset>
+																	<span class="topbarmain-title">
+																		<input
+																	 			type="text" class="input-text"
+																			 	name="pattern" value="Search Sites..."
+																			 	onBlur="if( this.value == '' ) this.value = 'Search Sites...'" onFocus="if( this.value == 'Search Sites...' ) this.value = '';"
+																		>
+																	</span>
+																	<span class="topbarmain-arrow"><button type="submit" class="btn" onClick="removePlaceHolder()"><i class="fa fa-search" aria-hidden="true"></i></button></span>
+																</fieldset>
+															</form>
+														</div>
+													</div>
+												</div>
+											</div>
+											<div class="headertop search blue">
+												<div class="menu-topbar">
+													<div class="topbar-main">
+														<div class="standardForm supplySearch">
+															<form action="/supplies">
+																<fieldset>
+																	<span class="topbarmain-title">
+																		<input type="text" class="input-text" name="search_pattern" value="Search Supplies..." onBlur="if( this.value == '' ) this.value = 'Search Supplies...';" onFocus="if( this.value == 'Search Supplies...' ) this.value = '';">
+																	</span>
+																	<span class="topbarmain-arrow">
+																		<button
+																		 		type="submit" class="btn"
+																			 	onClick="removePlaceHolder()">
+																			<i
+																			 	class="fa fa-search" aria-hidden="true">
+																			</i>
+																		</button>
+																	</span>
+																</fieldset>
+															</form>
+														</div>
+													</div>
+												</div>
+											</div>
+										</div>
+										<!-- End Layer Header Top -->
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
 	        <!-- End Layer Header -->
 	
 	
@@ -292,45 +305,70 @@
                         </div>
                         <!-- End Layer Sidebar -->
                                                     
-				        <!-- Layer Content -->
-					        <div class="col-sm-12 bodySameHeight bgColor">
-                                <div class="layer-content">
-							        <div class="row">
-                                        <div class="col-md-12">
-                                         {% with messages = get_flashed_messages() %}
-                							{% if messages %}
-                							    <!-- Layer Section -->
-                                                <div class="layer-section">
-                                                	<!-- Section Content -->
-                                                	<div class="section-content">
-                                                		<div class="section-data">
-                                                		    <ul>
-                            									{% for message in messages %}
-                            										<li>{{ message }}</li>
-                            									{% endfor %}
-                            								</ul>
-                                                		</div>
-                                                	</div>
-                                                	<!-- End Section Content -->
-                                                </div>
-                                                <!-- End Layer Section -->
-                							{% endif %}
-                						{% endwith %}
-								        {% block content %}
+								<!-- Layer Content -->
+								<div class="col-sm-12 bodySameHeight bgColor">
+									<div class="layer-content">
+										<div class="row">
+											<div class="col-md-12">
+												{% if global_alerts %}
+													<!-- Layer Section -->
+													<div class="layer-section">
+														<!-- Section Content -->
+														<div class="section-content">
+															<div class="section-data">
+																<ul>
+																	{% for alert in global_alerts %}
+																		<li class="global">{{alert}}</li>
+																	{% endfor %}
+																</ul>
+															</div>
+														</div>
+														<!-- End Section Content -->
+													</div>
+													<!-- End Layer Section -->
+												{% endif %}
+
+												{% with messages = get_flashed_messages() %}
+													{% if messages %}
+														<!-- Layer Section -->
+														<div class="layer-section">
+															<!-- Section Content -->
+															<div class="section-content">
+																<div class="section-data">
+																	<ul>
+																		{% for message in messages %}
+																			<li>{{message}}</li>
+																		{% endfor %}
+																	</ul>
+																</div>
+															</div>
+															<!-- End Section Content -->
+														</div>
+														<!-- End Layer Section -->
+													{% endif %}
+												{% endwith %}
+												{% block content %}
 								           
 								        {% endblock %}
-							            </div>
-							        </div>
-						        </div>
-				            </div>
-	            		<!-- Layer Content -->
-			        </div>		
-		        </div>	
-	        </div>
-	        <!-- End Layer Body -->
-            <p class="panel-mainmenubutton"><a href="javascript:void(0)" title="Menu Toggle" onClick="toggleMenuMain()"><i class="fa fa-bars" aria-hidden="true"></i></a></p>
-        </div>
-        <!-- End Layer Page -->
-{% endblock %}
-</body>
+											</div>
+										</div>
+									</div>
+								</div>
+							<!-- Layer Content -->
+						</div>		
+					</div>	
+				</div>
+				<!-- End Layer Body -->
+
+				<p class="panel-mainmenubutton">
+					<a
+					 		href="javascript:void(0)" title="Menu Toggle"
+						 	onClick="toggleMenuMain()">
+						<i class="fa fa-bars" aria-hidden="true"></i>
+					</a>
+				</p>
+			</div>
+			<!-- End Layer Page -->
+		{% endblock %}
+	</body>
 </html>

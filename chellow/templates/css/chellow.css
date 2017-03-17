@@ -1174,3 +1174,8 @@ input[type="reset"]:hover {
         width: 16.66666667%;
     }
 }
+
+.global {
+	color: red;
+	font-weight: bold;
+}
