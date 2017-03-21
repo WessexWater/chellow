@@ -129,7 +129,7 @@ class SystemPriceImporter(threading.Thread):
     def run(self):
         while not self.stopped.isSet():
             if self.lock.acquire(False):
-                sess = None
+                sess = book = sbp_sheet = ssp_sheet = None
                 try:
                     sess = Session()
                     self.log("Starting to check System Prices.")
@@ -267,6 +267,7 @@ class SystemPriceImporter(threading.Thread):
                     self.log("Outer problem " + traceback.format_exc())
                     sess.rollback()
                 finally:
+                    book = sbp_sheet = ssp_sheet = None
                     self.lock.release()
                     self.log("Finished checking System Price rates.")
                     if sess is not None:
