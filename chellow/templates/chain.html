@@ -1,12 +1,12 @@
 {% extends "base.html" %}
 
 {% block title %}
-	&raquo; System &raquo; Chains &raquo; {{chain_str}}
+	&raquo; System &raquo; Chains &raquo; {{paths[0][0][0]}}
 {% endblock %}
 
 {% block nav %}
 	<a href="/system">System</a> &raquo;
-	<a href="/system/chains">Chains</a> &raquo; {{chain_str}}
+	<a href="/system/chains">Chains</a> &raquo; {{paths[0][0][0]}}
 {% endblock %}
 
 {% block content %}
@@ -21,6 +21,7 @@
 		<!-- Section Content -->
 		<div class="section-content">
 			<div class="section-data">
+				{% for chain in paths %}
 				<table class="DataTable widthAuto">
 					<caption>Chain</caption>
 					<thead>
@@ -40,33 +41,7 @@
 						{% endfor %}
 					</tbody>
 				</table>
-			</div>
-			<div class="section-data">
-				<table class="DataTable widthAuto">
-					<caption>Referrers</caption>
-					<thead>
-							<tr>
-								<th>Add</th>
-								<th>Id</th>
-								<th>Type</th>
-								<th>Value</th>
-							</tr>
-					</thead>
-					<tbody>
-						{% for referrer_id, typ, val in referrers %}
-							<tr>
-								<td>
-									<form method="POST" action="/system/chains/{{chain_str}}">
-										<input type="hidden" name="obj_id" value="{{referrer_id}}">
-										<input type="submit" name="append" value="Append">
-									</form>
-								<td>{{referrer_id}}</td>
-								<td>{{typ}}</td>
-								<td>{{val}}</td>
-							</tr>
-						{% endfor %}
-					</tbody>
-				</table>
+				{% endfor %}
 			</div>
 		</div>
 	</div>

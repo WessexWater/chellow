@@ -50,6 +50,7 @@ from pympler import muppy, summary
 import platform
 import chellow.g_bill_import
 import chellow.g_cv
+from xml.dom import Node
 
 
 app = Flask('chellow', instance_relative_config=True)
@@ -428,8 +429,32 @@ def obj_val(obj):
         return repr(obj)
     elif isinstance(obj, str):
         return repr(obj[:100])
-    elif isinstance(obj, (list, dict)):
-        return 'length: ' + str(len(obj))
+    elif isinstance(obj, list):
+        ls = []
+        for o in obj[:10]:
+            if isinstance(o, (int, float)):
+                desc = repr(o)
+            elif isinstance(o, str):
+                desc = repr(o[:100])
+            elif isinstance(o, (list, dict)):
+                desc = 'length: ' + str(len(o))
+            else:
+                desc = ''
+            ls.append('(' + ', '.join([str(type(o)), desc]) + ')')
+        return 'length: ' + str(len(obj)) + '[' + ', '.join(ls)
+    elif isinstance(obj, dict):
+        ls = []
+        for k, v in islice(obj.items(), 10):
+            if isinstance(v, (int, float)):
+                desc = repr(v)
+            elif isinstance(v, str):
+                desc = repr(v[:100])
+            elif isinstance(v, (list, dict)):
+                desc = 'length: ' + str(len(v))
+            else:
+                desc = ''
+            ls.append(str(k) + ': ' + desc)
+        return 'length: ' + str(len(obj)) + '{' + ', '.join(ls)
     elif isinstance(obj, types.CodeType):
         return obj.co_filename
     elif isinstance(obj, types.FunctionType):
@@ -439,7 +464,14 @@ def obj_val(obj):
     elif isinstance(obj, types.MethodType):
         return obj.__name__
     elif isinstance(obj, types.ModuleType):
-        return obj.__file__
+        return obj.__name__
+    elif isinstance(obj, Node):
+        parent_node = obj.parentNode
+        if parent_node is None:
+            id_str = 'None'
+        else:
+            id_str = str(id(parent_node))
+        return 'parent: ' + id_str
     else:
         return ''
 
@@ -454,10 +486,51 @@ def chain_to_str(chain):
     return ','.join(str(id(o)) for o in chain)
 
 
+'''
 @app.route('/system/chains')
 def chains_get():
     an_obj = choice(tuple(get_objects().values()))
     return chellow_redirect('/system/chains/' + str(id(an_obj)))
+'''
+
+
+def get_path(node):
+    path = [node]
+    parent = node['parent']
+    while parent is not None:
+        path.append(parent)
+        parent = parent['parent']
+    return path
+
+
+def add_obj(objects, path, leaves):
+    if len(leaves) > 50:
+        return
+
+    added = False
+    path_ids = set(id(o) for o in path)
+    for ref in gc.get_referrers(path[-1]):
+        ref_id = id(ref)
+        if ref_id not in path_ids and ref_id in objects:
+            add_obj(objects, path + [ref], leaves)
+            added = True
+    if not added:
+        leaves.append(path)
+
+
+@app.route('/system/chains')
+def chains_get():
+    gc.collect()
+    objects = get_objects()
+    obj = choice(tuple(objects.values()))
+    leaves = []
+    root_path = [obj]
+    add_obj(objects, root_path, leaves)
+    paths = []
+    for leaf in leaves:
+        path_tuples = [(id(o), type(o), obj_val(o)) for o in leaf]
+        paths.append(path_tuples)
+    return render_template('chain.html', paths=paths)
 
 
 @app.route('/system/chains/<chain_str>')
