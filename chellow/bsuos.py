@@ -103,7 +103,7 @@ class BsuosImporter(threading.Thread):
     def run(self):
         while not self.stopped.isSet():
             if self.lock.acquire(False):
-                sess = None
+                sess = book = sheet = None
                 try:
                     sess = Session()
                     self.log("Starting to check BSUoS rates.")
@@ -186,6 +186,7 @@ class BsuosImporter(threading.Thread):
                     self.log("Outer problem " + traceback.format_exc())
                     sess.rollback()
                 finally:
+                    book = sheet = None
                     if sess is not None:
                         sess.close()
                     self.lock.release()
