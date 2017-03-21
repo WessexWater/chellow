@@ -3875,18 +3875,26 @@ def virtual_bill(supply_source):
             'name': "Non half-hourlies 2007",
             'party_id': "664",  # HYDE
             'charge_script': """
+import chellow.ccl
+
+
 def virtual_bill_titles():
-    return ['net-gbp', 'vat-gbp', 'gross-gbp', 'sum-msp-kwh', 'problem']
+    return [
+        'ccl-kwh', 'ccl-rate', 'ccl-gbp', 'net-gbp', 'vat-gbp', 'gross-gbp',
+        'sum-msp-kwh', 'problem']
 
 def virtual_bill(supply_source):
+    chellow.ccl.ccl(supply_source)
     bill = supply_source.supplier_bill
-    sum_msp_kwh = sum(h['msp-kwh'] for h in supply_source.hh_data)
+    for h in supply_source.hh_data:
+        bill['ccl-kwh'] += h.get('ccl-kwh', 0)
+        bill['ccl-gbp'] += h.get('ccl-gbp', 0)
+        bill['sum-msp-kwh'] += h['msp-kwh']
     for rate_name, rate_set in supply_source.supplier_rate_sets.items():
         bill[rate_name] = rate_set
     bill.update(
         {
-            'net-gbp': 0.0, 'vat-gbp':0.0, 'gross-gbp': 0.0,
-            'sum-msp-kwh': sum_msp_kwh})
+            'net-gbp': 0.0, 'vat-gbp':0.0, 'gross-gbp': 0.0,})
 """,
             'properties': "{}"},
         'status_code': 303},
@@ -5287,7 +5295,7 @@ def virtual_bill(supply_source):
             'delete': "Delete"},
         'status_code': 303},
     {
-        'name': "Check a contract virtual bill that crosses a era boundary "
+        'name': "Check a contract virtual bill that crosses an era boundary "
         "comes out correctly.",
         'path': '/reports/291?supply_id=11&start_year=2010&start_month=04&'
         'start_day=01&start_hour=00&start_minute=00&finish_year=2010&'
@@ -5305,12 +5313,13 @@ def virtual_bill(supply_source):
         'regexes': [
             r'Imp MPAN Core,Exp MPAN Core,Site Code,Site Name,'
             r'Account,From,To,,mop-net-gbp,mop-problem,,'
-            r'dc-net-gbp,dc-problem,,imp-supplier-net-gbp,'
+            r'dc-net-gbp,dc-problem,,imp-supplier-ccl-kwh,'
+            r'imp-supplier-ccl-rate,imp-supplier-ccl-gbp,imp-supplier-net-gbp,'
             r'imp-supplier-vat-gbp,imp-supplier-gross-gbp,'
             r'imp-supplier-sum-msp-kwh,imp-supplier-problem',
             r'22 9974 3438 105,,CI005,Wheal Rodney,SA341665,'
             r'2010-04-01 00:00,2010-04-13 23:30,,0,,,,,,'
-            r'0.0,0.0,0.0,0.0,'],
+            r'0,0.0047,0,0.0,0.0,0.0,0.0,'],
         'status_code': 200},
     {
         'name': "NHH CSV import",
@@ -6706,12 +6715,13 @@ def virtual_bill(supply_source):
         'regexes': [
             r'Imp MPAN Core,Exp MPAN Core,Site Code,Site Name,'
             r'Account,From,To,,mop-net-gbp,mop-problem,,'
-            r'dc-net-gbp,dc-problem,,imp-supplier-net-gbp,'
+            r'dc-net-gbp,dc-problem,,imp-supplier-ccl-kwh,'
+            r'imp-supplier-ccl-rate,imp-supplier-ccl-gbp,imp-supplier-net-gbp,'
             r'imp-supplier-vat-gbp,imp-supplier-gross-gbp,'
             r'imp-supplier-sum-msp-kwh,imp-supplier-problem',
             r'22 0195 4836 192,,CI004,Lower Treave,SA342376,'
             r'2011-05-01 00:00,2011-05-31 23:30,,10,,,7,,,'
-            r'0.0,0.0,0.0,25.819178082191478,'],
+            r'0,0.00485,0,0.0,0.0,0.0,25.819178082191478,'],
         'status_code': 200},
 
     # Parties
@@ -7560,13 +7570,14 @@ def virtual_bill(supply_source):
         '0034_FINISHED_watkinsexamplecom_supply_virtual_bills_10.csv',
         'regexes': [
             r'Imp MPAN Core,Exp MPAN Core,Site Code,Site Name,'
-            'Account,From,To,,mop-net-gbp,mop-problem,,'
-            'dc-net-gbp,dc-problem,,imp-supplier-net-gbp,'
+            r'Account,From,To,,mop-net-gbp,mop-problem,,'
+            r'dc-net-gbp,dc-problem,,imp-supplier-ccl-kwh,'
+            r'imp-supplier-ccl-rate,imp-supplier-ccl-gbp,imp-supplier-net-gbp,'
             'imp-supplier-vat-gbp,imp-supplier-gross-gbp,'
             'imp-supplier-sum-msp-kwh,imp-supplier-problem',
             r'22 1065 3921 534,,CI017,Roselands,SA342376,'
             '2010-01-01 00:00,2010-01-03 23:30,,0,,,,,,'
-            '0.0,0.0,0.0,0.0,'],
+            '0,,0,0.0,0.0,0.0,0.0,'],
         'status_code': 200},
     {
         'name': "A bill check with multiple covered bills",
@@ -7864,7 +7875,7 @@ def virtual_bill(supply_source):
         '0042_FINISHED_watkinsexamplecom_supply_virtual_bills_7.csv',
         'regexes': [
             r'22 4862 4512 332,,CH023,Treglisson,141 5532,2013-09-29 00:00,'
-            r'2013-11-28 23:30,,20,,,0,,,0.0,0.0,0.0,0,'],
+            r'2013-11-28 23:30,,20,,,0,,,0,0.00525288,0,0.0,0.0,0.0,0,'],
         'status_code': 200},
     {
         'name': "Un-ignore a site snag",
@@ -8402,9 +8413,11 @@ def virtual_bill(supply_source):
         'status_code': 200,
         'regexes': [
             r'06-002,23618619,N,0,49119.00,8596.00,2007-06-30 00:00,'
-            '2007-07-31 00:00,22 9974 3438 105,CI005,Wheal Rodney,'
-            '2007-06-30 00:00,2007-07-31 00:00,6,1209.0322580\d*,49119.0,0.0,'
-            '49119.0,8596.0,0.0,8596.0,,0.0,0.0,0.0,4.765\d*,,']},
+            r'2007-07-31 00:00,22 9974 3438 105,CI005,Wheal Rodney,'
+            r'2007-06-30 00:00,2007-07-31 00:00,6,1209.0322580\d*,'
+            r',0,,0.00441,,0,'
+            r'0,49119.0,0.0,'
+            r'49119.0,8596.0,0.0,8596.0,,0.0,0.0,0.0,4.765\d*,,']},
     {
         'name': "NHH dumb bill with prev and pres dates in different eras",
         'path': '/eras/10/edit',
@@ -9133,7 +9146,14 @@ def virtual_bill(supply_source):
             r'<table:table-cell/>\s*'
             r'<table:table-cell office:value="0.0" '
             r'office:value-type="float"/>\s*'
-            r'<table:table-cell table:number-columns-repeated="81"/>\s*'
+            r'<table:table-cell/>\s*'
+            r'<table:table-cell office:value="0" '
+            r'office:value-type="float"/>\s*'
+            r'<table:table-cell office:value="0.0047" '
+            r'office:value-type="float"/>\s*'
+            r'<table:table-cell office:value="0" '
+            r'office:value-type="float"/>\s*'
+            r'<table:table-cell table:number-columns-repeated="77"/>\s*'
             r'<table:table-cell office:string-value="" '
             r'office:value-type="string"/>\s*'
             r'<table:table-cell table:number-columns-repeated="17"/>\s*'
@@ -9874,7 +9894,14 @@ def virtual_bill(supply_source):
             r'<table:table-cell/>\s*'
             r'<table:table-cell office:value="0.0" '
             r'office:value-type="float"/>\s*'
-            r'<table:table-cell table:number-columns-repeated="81"/>\s*'
+            r'<table:table-cell/>\s*'
+            r'<table:table-cell office:value="18825.559999999998" '
+            r'office:value-type="float"/>\s*'
+            r'<table:table-cell office:value="0.00525288" '
+            r'office:value-type="float"/>\s*'
+            r'<table:table-cell office:value="98.88840761279994" '
+            r'office:value-type="float"/>\s*'
+            r'<table:table-cell table:number-columns-repeated="77"/>\s*'
             r'<table:table-cell office:string-value="" '
             r'office:value-type="string"/>\s*'
             r'<table:table-cell table:number-columns-repeated="17"/>\s*'

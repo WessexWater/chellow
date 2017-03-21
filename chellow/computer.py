@@ -376,7 +376,8 @@ def get_data_sources(data_source, start_date, finish_date, forecast_date=None):
 
             ds = SupplySource(
                 data_source.sess, chunk_start, chunk_finish, forecast_date,
-                era, data_source.is_import, data_source.caches)
+                era, data_source.is_import, data_source.caches,
+                data_source.bill)
             yield ds
 
     else:
