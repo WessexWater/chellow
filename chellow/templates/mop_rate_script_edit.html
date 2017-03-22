@@ -6,9 +6,13 @@
 {% endblock %}
 
 {% block nav %}
-	&raquo; <a href="/mop_contracts">MOP Contracts</a> &raquo; 
-	<a href="/mop_contracts/{{rate_script.contract.id}}">{{rate_script.contract.name}}</a> &raquo; 
-	<a href="/mop_rate_scripts/{{rate_script.id}}">{{rate_script.start_date|hh_format }}</a> &raquo; Edit
+	<a href="/mop_contracts">MOP Contracts</a> &raquo; 
+	<a
+			href="/mop_contracts/{{rate_script.contract.id}}"
+	>{{rate_script.contract.name}}</a> &raquo; 
+	<a
+		 href="/mop_rate_scripts/{{rate_script.id}}"
+	>{{rate_script.start_date|hh_format }}</a> &raquo; Edit
 {% endblock %}
 
 {% block content %}
@@ -21,12 +25,14 @@
 			<div class="section-content">
 				<div class="section-data">
 					<div class="standardForm">
-						<form method="post">
+						<form
+								method="post"
+							 	action="/mop_rate_scripts/{{rate_script_id}}/edit">
 							<fieldset>
-								<input type="hidden" name="mop_rate_script_id"
-										value="{{rate_script.id}}">
 								<input type="submit" name="delete" value="Delete">
-								<a href="/mop_rate_scripts/{{rate_script.id}}/edit" class="btn">Cancel</a>
+								<a
+								 		href="/mop_rate_scripts/{{rate_script.id}}/edit"
+									 	class="btn">Cancel</a>
 							</fieldset>
 						</form>
 					</div>
@@ -41,29 +47,30 @@
 				<h2>Update Rate Script</h2>	
 			</div>
 			<div class="section-content">
-				<div class="standardForm textWidthAuto">
-				<input type="hidden" name="mop_rate_script_id"
-						value="{{rate_script.id}}">
-					<div class="section-data">
-						<fieldset>
-							<legend>Start date</legend>
-							{{input_date('start', rate_script.start_date)}}
-						</fieldset>
-					</div>
-					<div class="section-data">
-						<fieldset>
-							<legend>Finish date</legend>
-							<label>
-								Ended? {{input_checkbox('has_finished', rate_script.finish_date != None)}}
-							</label>
-							{{input_date('finish', rate_script.finish_date)}}
-						</fieldset>
-					</div>
-					<div class="section-data">
-						<fieldset>
-							<legend>Script</legend>
-							{{input_textarea('script', rate_script.script, 40, 80)}}
-						</fieldset>
+				<div class="section-data">
+					<div class="standardForm textWidthAuto">
+						<form
+								method="post"
+								action="/mop_rate_scripts/{{rate_script.id}}/edit">
+							<fieldset>
+								<fieldset>
+									<legend>Start date</legend>
+									{{input_date('start', rate_script.start_date)}}
+								</fieldset>
+								<fieldset>
+									<legend>Finish date</legend>
+									<label>
+										Ended? {{input_checkbox('has_finished', rate_script.finish_date != None)}}
+									</label>
+									{{input_date('finish', rate_script.finish_date)}}
+								</fieldset>
+								<fieldset>
+									<legend>Script</legend>
+									{{input_textarea('script', rate_script.script, 40, 80)}}
+								</fieldset>
+								<input type="submit" value="Update">
+							</fieldset>
+						</form>
 					</div>
 				</div>
 			</div>

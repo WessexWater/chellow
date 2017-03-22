@@ -7366,6 +7366,13 @@ def virtual_bill(supply_source):
             r'<a href="/mop_rate_scripts/105/edit">edit</a>']},
 
     {
+        'name': "View a MOP rate script edit. Contract 38.",
+        'path': '/mop_rate_scripts/105/edit',
+        'status_code': 200,
+        'regexes': [
+            r'<input type="submit" value="Update">']},
+
+    {
         'name': "View supplies duration selector.",
         'path': '/csv_supplies_duration',
         'status_code': 200,
