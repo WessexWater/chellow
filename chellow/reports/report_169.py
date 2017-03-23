@@ -17,6 +17,7 @@ def content(
         supply_id, mpan_cores, user):
     zf = sess = tf = None
     base_name = ["supplies_hh_data", finish_date.strftime('%Y%m%d%H%M')]
+    cache = {}
     try:
         sess = Session()
         supplies = sess.query(Supply).join(Era).filter(
@@ -70,7 +71,7 @@ def content(
                 ).order_by(HhDatum.start_date))
             datum = next(hh_data, None)
 
-            for current_date in hh_range(start_date, finish_date):
+            for current_date in hh_range(cache, start_date, finish_date):
                 if current_date.hour == 0 and current_date.minute == 0:
                     outs.append(
                         "\n" + mpan_core_str + "," +

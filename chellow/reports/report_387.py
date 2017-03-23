@@ -26,7 +26,7 @@ def content(supply_id, start_date, finish_date, user):
         f = open(running_name, mode='w', newline='')
         w = csv.writer(f, lineterminator='\n')
 
-        for hh_start in hh_range(start_date, finish_date):
+        for hh_start in hh_range(caches, start_date, finish_date):
             era = sess.query(Era).filter(
                 Era.supply == supply, Era.start_date <= hh_start,
                 or_(

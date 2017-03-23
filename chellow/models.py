@@ -1094,6 +1094,7 @@ class Site(Base, PersistentClass):
         sess.flush()
 
     def hh_data(self, sess, start_date, finish_date):
+        cache = {}
         keys = {
             'net': {True: ['imp_net'], False: ['exp_net']},
             'gen-net': {
@@ -1125,7 +1126,7 @@ class Site(Base, PersistentClass):
         start, value, imp_related, source_code = next(
             db_data, (None, None, None, None))
 
-        for hh_start in hh_range(start_date, finish_date):
+        for hh_start in hh_range(cache, start_date, finish_date):
             dd = {
                 'start_date': hh_start, 'imp_net': 0, 'exp_net': 0,
                 'imp_gen': 0, 'exp_gen': 0, 'imp_3p': 0, 'exp_3p': 0}
@@ -2825,6 +2826,7 @@ class SiteGroup():
         self.supplies = supplies
 
     def hh_data(self, sess):
+        caches = {}
         keys = {
             'net': {True: ['imp_net'], False: ['exp_net']},
             'gen-net': {
@@ -2865,7 +2867,7 @@ class SiteGroup():
 
             hh = next(db_data, None)
 
-        for hh_start in hh_range(self.start_date, self.finish_date):
+        for hh_start in hh_range(caches, self.start_date, self.finish_date):
             dd = {
                 'start_date': hh_start, 'imp_net': 0, 'exp_net': 0,
                 'imp_gen': 0, 'exp_gen': 0, 'imp_3p': 0, 'exp_3p': 0}

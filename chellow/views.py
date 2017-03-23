@@ -2529,6 +2529,7 @@ def hh_datum_edit_post(datum_id):
 
 @app.route('/sites/<int:site_id>/hh_data')
 def site_hh_data_get(site_id):
+    caches = {}
     site = Site.get_by_id(g.sess, site_id)
 
     year = req_int('year')
@@ -2556,7 +2557,7 @@ def site_hh_data_get(site_id):
     datum = next(data, None)
 
     hh_data = []
-    for hh_date in hh_range(start_date, finish_date):
+    for hh_date in hh_range(caches, start_date, finish_date):
         sups = []
         hh_dict = {
             'start_date': hh_date, 'supplies': sups, 'export_kwh': 0,
@@ -2800,6 +2801,7 @@ def non_core_contract_get(contract_id):
 
 @app.route('/sites/<int:site_id>/used_graph')
 def site_used_graph_get(site_id):
+    cache = {}
     finish_year = req_int("finish_year")
     finish_month = req_int("finish_month")
     months = req_int("months")
@@ -2836,7 +2838,7 @@ def site_used_graph_get(site_id):
         is_import, source_code) = next(
         results, (None, None, None, None, None))
 
-    for hh_date in hh_range(start_date, finish_date):
+    for hh_date in hh_range(cache, start_date, finish_date):
         complete = None
         hh_value = 0
 
@@ -2902,6 +2904,7 @@ def site_used_graph_get(site_id):
 
 @app.route('/supplies/<int:supply_id>/hh_data')
 def supply_hh_data_get(supply_id):
+    caches = {}
     months = req_int('months')
     finish_year = req_int("finish_year")
     finish_month = req_int("finish_month")
@@ -2935,7 +2938,7 @@ def supply_hh_data_get(supply_id):
     hh_lines = []
 
     hh_datum = next(hh_data, None)
-    for hh_date in hh_range(start_date, finish_date):
+    for hh_date in hh_range(caches, start_date, finish_date):
         hh_line = {'timestamp': hh_date}
         hh_lines.append(hh_line)
         while hh_datum is not None and hh_datum.start_date == hh_date:
@@ -4471,6 +4474,7 @@ def gsp_group_get(group_id):
 
 @app.route('/sites/<int:site_id>/gen_graph')
 def site_gen_graph_get(site_id):
+    cache = {}
     if 'finish_year' in request.args:
         finish_year = req_int("finish_year")
         finish_month = req_int("finish_month")
@@ -4524,7 +4528,7 @@ def site_gen_graph_get(site_id):
         source_code, sup_id) = next(
             rs, (None, None, None, None, None, None, None))
 
-    for hh_date in hh_range(start_date, finish_date):
+    for hh_date in hh_range(cache, start_date, finish_date):
         rvals = dict((n, {'pos': 0, 'neg': 0}) for n in graph_names)
 
         if hh_date.hour == 0 and hh_date.minute == 0:

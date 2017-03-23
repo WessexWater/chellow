@@ -137,7 +137,7 @@ def content(contract_id, end_year, end_month, months, user):
                     gen_type_code) = next(
                     results, (None, None, None, None, None, None))
 
-                for hh_date in hh_range(month_start, month_finish):
+                for hh_date in hh_range(caches, month_start, month_finish):
                     gen_breakdown = {}
                     exported = 0
                     while hh_start == hh_date:

@@ -180,7 +180,7 @@ def g_rate(sess, caches, g_contract_id, date, name):
         script_dict['rates']['_script_dict'] = script_dict
 
         d_cache = script_dict['rates']
-        for dt in hh_range(cstart, cfinish):
+        for dt in hh_range(caches, cstart, cfinish):
             cont_cache[dt] = d_cache
 
     try:
@@ -254,7 +254,7 @@ def datum_range(sess, caches, years_back, start_date, finish_date):
 
         datum_list = []
         g_cv_id = get_non_core_contract_id('g_cv')
-        for dt in hh_range(start_date, finish_date):
+        for dt in hh_range(caches, start_date, finish_date):
             hist_date = dt - relativedelta(years=years_back)
             ct_dt = to_ct(dt)
 
@@ -768,7 +768,7 @@ class GDataSource():
                     hh_units_consumed = units_consumed / (bill_s / (60 * 30))
 
                     for hh_date in hh_range(
-                            g_bill.start_date, g_bill.finish_date):
+                            caches, g_bill.start_date, g_bill.finish_date):
                         hist_map[hh_date] = {
                             'units_code': g_units_code,
                             'units_factor': g_units_factor,

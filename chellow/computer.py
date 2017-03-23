@@ -181,7 +181,7 @@ def hh_rate(sess, caches, contract_id, date, name):
 
         d_cache = script_dict['rates']
 
-        for dt in hh_range(cstart, cfinish):
+        for dt in hh_range(caches, cstart, cfinish):
             cont_cache[dt] = d_cache
 
     try:
@@ -297,7 +297,7 @@ def ion_rs(sess, caches, contract_id, date):
                     cfinish = month_after
 
             ion = func(loads(rs.script))
-            for dt in hh_range(cstart, cfinish):
+            for dt in hh_range(caches, cstart, cfinish):
                 cont_cache[dt] = ion
 
             return ion
@@ -511,7 +511,7 @@ def datum_range(sess, caches, years_back, start_date, finish_date):
         yb_datum_cache = cache_level(datum_cache, years_back)
 
         datum_list = []
-        for dt in hh_range(start_date, finish_date):
+        for dt in hh_range(caches, start_date, finish_date):
             try:
                 datum = yb_datum_cache[dt]
             except KeyError:
@@ -659,7 +659,8 @@ class SiteSource(DataSource):
             rs, (None, None, None, None))
         hist_map = {}
 
-        for hist_date in hh_range(self.history_start, self.history_finish):
+        for hist_date in hh_range(
+                self.caches, self.history_start, self.history_finish):
             export_net_kwh = 0
             import_net_kwh = 0
             export_gen_kwh = 0
@@ -861,7 +862,8 @@ class SupplySource(DataSource):
 
                 for tpr in sess.query(Tpr).join(MeasurementRequirement).filter(
                         MeasurementRequirement.ssc == hist_era.ssc):
-                    for hist_date in hh_range(chunk_start, chunk_finish):
+                    for hist_date in hh_range(
+                            self.caches, chunk_start, chunk_finish):
                         if is_tpr(sess, self.caches, tpr.code, hist_date):
                             hist_map[hist_date] = {
                                 'msp-kw': kwh * 2, 'msp-kwh': kwh,
@@ -1121,7 +1123,8 @@ class SupplySource(DataSource):
                         hh_part = {}
 
                         for hh_date in hh_range(
-                                pair['start-date'], pair['finish-date']):
+                                self.caches, pair['start-date'],
+                                pair['finish-date']):
                             if is_tpr(sess, self.caches, tpr_code, hh_date):
                                 hh_part[hh_date] = {}
 
@@ -1139,7 +1142,8 @@ class SupplySource(DataSource):
             elif self.bill is not None and hist_measurement_type in (
                     'nhh', 'amr'):
                 hhd = {}
-                for hh_date in hh_range(chunk_start, chunk_finish):
+                for hh_date in hh_range(
+                        self.caches, chunk_start, chunk_finish):
                     hhd[hh_date] = {
                         'status': 'X', 'imp-msp-kvarh': 0,
                         'imp-msp-kvar': 0, 'exp-msp-kvarh': 0,
@@ -1238,7 +1242,8 @@ class SupplySource(DataSource):
                         year_delta = relativedelta(years=self.years_back)
                         hh_part = {}
                         for hh_date in hh_range(
-                                bill.start_date, bill.finish_date):
+                                self.caches, bill.start_date,
+                                bill.finish_date):
                             dt = to_tz(tz, hh_date) + year_delta
                             decimal_hour = dt.hour + dt.minute / 60
                             fractional_month = dt.month * 100 + dt.day
@@ -1337,7 +1342,8 @@ order by hh_datum.start_date
                         hist_start) = next(
                             data, (None, None, None, None, None, None))
 
-                    for hh_date in hh_range(chunk_start, chunk_finish):
+                    for hh_date in hh_range(
+                            self.caches, chunk_start, chunk_finish):
                         if hh_date == hist_start:
                             if not (msp_kwh > 0 and anti_msp_kwh == 0):
                                 imp_kvarh = 0

@@ -365,11 +365,43 @@ def render(template, vals, status_code=200, content_type='text/html'):
     return Response(template_str, status_code, headers)
 
 
-def hh_range(start_date, finish_date):
-    dt = start_date
-    while dt <= finish_date:
-        yield dt
-        dt += HH
+def hh_range(caches, start_date, finish_date):
+    try:
+        return caches['utils']['hh_range'][start_date][finish_date]
+    except KeyError:
+        try:
+            utils_cache = caches['utils']
+        except KeyError:
+            utils_cache = caches['utils'] = {}
+
+        try:
+            ranges_cache = utils_cache['hh_range']
+        except KeyError:
+            ranges_cache = utils_cache['hh_range'] = {}
+
+        try:
+            range_start_cache = ranges_cache[start_date]
+        except KeyError:
+            range_start_cache = ranges_cache[start_date] = {}
+
+        try:
+            datetime_cache = utils_cache['datetime']
+        except KeyError:
+            datetime_cache = utils_cache['datetime'] = {}
+
+        rg = []
+        dt = start_date
+        while dt <= finish_date:
+            try:
+                dt_stored = datetime_cache[dt]
+            except KeyError:
+                dt_stored = datetime_cache[dt] = dt
+
+            rg.append(dt_stored)
+            dt += HH
+
+        range_tuple = range_start_cache[finish_date] = tuple(rg)
+        return range_tuple
 
 
 def hh_min(a_date, b_date):
@@ -520,7 +552,7 @@ def get_file_rates(cache, contract_name, dt):
                     FOUR_WEEKS = timedelta(weeks=4)
                     range_start = hh_max(start_date, dt - FOUR_WEEKS)
                     range_finish = hh_min(end_date, dt + FOUR_WEEKS)
-                    for hh_date in hh_range(range_start, range_finish):
+                    for hh_date in hh_range(cache, range_start, range_finish):
                         cont[hh_date] = rscript
                     break
             try:
