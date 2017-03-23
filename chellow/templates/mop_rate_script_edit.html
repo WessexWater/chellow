@@ -27,7 +27,7 @@
 					<div class="standardForm">
 						<form
 								method="post"
-							 	action="/mop_rate_scripts/{{rate_script_id}}/edit">
+							 	action="/mop_rate_scripts/{{rate_script.id}}/edit">
 							<fieldset>
 								<input type="submit" name="delete" value="Delete">
 								<a
@@ -60,7 +60,10 @@
 								<fieldset>
 									<legend>Finish date</legend>
 									<label>
-										Ended? {{input_checkbox('has_finished', rate_script.finish_date != None)}}
+										Ended?
+									 	{{
+											input_checkbox(
+												'has_finished', rate_script.finish_date != None)}}
 									</label>
 									{{input_date('finish', rate_script.finish_date)}}
 								</fieldset>
@@ -85,8 +88,6 @@
 					<div class="standardForm">
 						<form>
 							<fieldset>
-								<input type="hidden" name="mop_rate_script_id"
-										value="{{rate_script.id}}">
 								<input type="submit" name="delete" value="Delete">
 							</fieldset>
 						</form>

@@ -2864,9 +2864,8 @@ def virtual_bill(supply_source):
             r'158159.10402,399.72,2009-03-13 08:00,None,0,,,,,0,0,,0,,None,'
             r'1488']},
 
-    # Insert rate script
     {
-        'name': "Manipulate dno contracts",
+        'name': "Manipulate dno contracts. Add rate script",
         'path': '/dno_contracts/14/add_rate_script',
         'method': 'post',
         'data': {
@@ -7371,6 +7370,15 @@ def virtual_bill(supply_source):
         'status_code': 200,
         'regexes': [
             r'<input type="submit" value="Update">']},
+
+    {
+        'name': "View a MOP rate script confirm delete. Contract 38.",
+        'path': '/mop_rate_scripts/105/edit?&delete=Delete',
+        'status_code': 200,
+        'regexes': [
+            r'<form\s*'
+            r'method="post"\s*'
+            r'action="/mop_rate_scripts/105/edit">']},
 
     {
         'name': "View supplies duration selector.",
@@ -15414,4 +15422,28 @@ def virtual_bill(ds):
         'status_code': 200,
         'regexes': [
             r"The file has been imported successfully\."]},
+
+    {
+        'name': "Add mop rate script",
+        'path': '/mop_contracts/38/add_rate_script',
+        'method': 'post',
+        'data': {
+            'start_year': "2017",
+            'start_month': "03",
+            'start_day': "01",
+            'start_hour': "00",
+            'start_minute': "00"},
+        'status_code': 303,
+        'regexes': [
+            r"/mop_rate_scripts/129"]},
+
+    {
+        'name': "Delete mop rate script",
+        'path': '/mop_rate_scripts/129/edit',
+        'method': 'post',
+        'data': {
+            'delete': "Delete"},
+        'status_code': 303,
+        'regexes': [
+            r"/mop_contracts/38"]},
 ]

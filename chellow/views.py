@@ -1439,7 +1439,7 @@ def mop_rate_script_edit_post(rate_script_id):
     if 'delete' in request.form:
         contract.delete_rate_script(g.sess, rate_script)
         g.sess.commit()
-        return chellow_redirect('mop_contracts/' + str(contract.id), 303)
+        return chellow_redirect('/mop_contracts/' + str(contract.id), 303)
     else:
         try:
             script = req_str('script')
@@ -1517,9 +1517,8 @@ def mop_contract_get(contract_id):
         party=party)
 
 
-@app.route('/mop_rate_scripts/add')
-def mop_rate_script_add_get():
-    contract_id = req_str('mop_contract_id')
+@app.route('/mop_contracts/<int:contract_id>/add_rate_script')
+def mop_rate_script_add_get(contract_id):
     contract = Contract.get_mop_by_id(g.sess, contract_id)
     now = utc_datetime_now()
     initial_date = utc_datetime(now.year, now.month)
@@ -1528,10 +1527,10 @@ def mop_rate_script_add_get():
         initial_date=initial_date)
 
 
-@app.route('/mop_rate_scripts/add', methods=['POST'])
-def mop_rate_script_add_post():
+@app.route(
+    '/mop_contracts/<int:contract_id>/add_rate_script', methods=['POST'])
+def mop_rate_script_add_post(contract_id):
     try:
-        contract_id = req_str('mop_contract_id')
         contract = Contract.get_mop_by_id(g.sess, contract_id)
         start_date = req_date('start')
         rate_script = contract.insert_rate_script(g.sess, start_date, '')

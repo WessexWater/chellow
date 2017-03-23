@@ -5,34 +5,32 @@
 {% endblock %}
 
 {% block nav %}
-	&raquo; <a href="/mop_contracts">MOP Contracts</a> &raquo; 
-	<a href="/mop_contracts/{{contract.id}}">{{contract.name}}</a>
-	&raquo; Add Rate Script
+	<a href="/mop_contracts">MOP Contracts</a> &raquo; 
+	<a href="/mop_contracts/{{contract.id}}">{{contract.name}}</a> &raquo;
+ 	Add Rate Script
 {% endblock %}
 
 {% block content %}
-<div class="layer-section">
-	<div class="section-header">
-		<h2>Add a rate script</h2>	
-	</div>
-	<div class="section-content">
-		<div class="section-data">
-			<div class="standardForm textWidthAuto">
-				<form method="post">
-					<fieldset>
-						<input type="hidden" name="mop_contract_id" value="{{contract.id}}">
-						
+	<div class="layer-section">
+		<div class="section-header">
+			<h2>Add a rate script</h2>	
+		</div>
+		<div class="section-content">
+			<div class="section-data">
+				<div class="standardForm textWidthAuto">
+					<form
+					 		method="post"
+						 	action="/mop_contracts/{{contract.id}}/add_rate_script">
 						<fieldset>
-							<legend>Start Date</legend>
-							{{ input_date('start', initial_date) }}
+							<fieldset>
+								<legend>Start Date</legend>
+								{{ input_date('start', initial_date) }}
+							</fieldset>
+							<input type="submit" value="Add">
 						</fieldset>
-						<input type="submit" value="Add">
-					</fieldset>
-				</form>
+					</form>
+				</div>
 			</div>
 		</div>
 	</div>
-</div>
-
-	
 {% endblock %}
