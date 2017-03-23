@@ -339,106 +339,126 @@ def datum_beginning_14(ds, hh):
 def datum_2010_04_01(ds, hh):
     bill = ds.supplier_bill
     dno_cache = ds.caches['dno'][ds.dno_code]
+    start_date = hh['start-date']
 
     try:
-        tariff_bands_cache = dno_cache['tariff_bands']
+        tariff = dno_cache['tariffs'][ds.llfc_code][start_date]
     except KeyError:
-        dno_cache['tariff_bands'] = {}
-        tariff_bands_cache = dno_cache['tariff_bands']
+        try:
+            tariff_cache = dno_cache['tariffs']
+        except KeyError:
+            tariff_cache = dno_cache['tariffs'] = {}
+
+        try:
+            tariffs = tariff_cache[ds.llfc_code]
+        except KeyError:
+            tariffs = tariff_cache[ds.llfc_code] = {}
+
+        try:
+            tariff = tariffs[start_date]
+        except KeyError:
+            tariff = None
+            for llfcs, tf in ds.hh_rate(
+                    ds.dno_contract.id, start_date, 'tariffs').items():
+                if ds.llfc_code in [cd.strip() for cd in llfcs.split(',')]:
+                    tariff = tf
+                    break
+            if tariff is None:
+                raise BadRequest(
+                    "For the DNO " + ds.dno_code + " and timestamp " +
+                    hh_format(start_date) + " the LLFC '" +
+                    ds.llfc_code +
+                    "' can't be found in the 'tariffs' section.")
+
+            tariffs[start_date] = tariff
 
     try:
-        tariff_bands = tariff_bands_cache[ds.llfc_code]
+        band = dno_cache['bands'][start_date]
     except KeyError:
-        tariff_bands_cache[ds.llfc_code] = {}
-        tariff_bands = tariff_bands_cache[ds.llfc_code]
+        try:
+            bands_cache = dno_cache['bands']
+        except KeyError:
+            bands_cache = dno_cache['bands'] = {}
 
-    try:
-        tariff, band = tariff_bands[hh['start-date']]
-    except KeyError:
-        tariff = None
-        for llfcs, tf in ds.hh_rate(
-                ds.dno_contract.id, hh['start-date'], 'tariffs').items():
-            if ds.llfc_code in [cd.strip() for cd in llfcs.split(',')]:
-                tariff = tf
-                break
-        if tariff is None:
-            raise BadRequest(
-                "For the DNO " + ds.dno_code + " and timestamp " +
-                hh_format(hh['start-date']) + " the LLFC '" +
-                ds.llfc_code + "' can't be found in the 'tariffs' section.")
-
-        band = 'green'
-        if ds.dno_code == '14':
-            if hh['ct-day-of-week'] < 5:
-                if 16 <= hh['ct-decimal-hour'] < 19:
-                    band = 'red'
-                elif 7 < hh['ct-decimal-hour'] < 21:
-                    band = 'amber'
-        elif ds.dno_code == '20':
-            if hh['ct-day-of-week'] < 5:
-                if 16 < hh['ct-decimal-hour'] < 19:
-                    band = 'red'
-                elif 9 <= hh['ct-decimal-hour'] <= 20:
-                    band = 'amber'
-        elif ds.dno_code == '22':
-            if hh['ct-day-of-week'] > 4:
-                if 16 < hh['ct-decimal-hour'] <= 19:
-                    band = 'amber'
+        try:
+            band = bands_cache[start_date]
+        except KeyError:
+            band = 'green'
+            if ds.dno_code == '14':
+                if hh['ct-day-of-week'] < 5:
+                    if 16 <= hh['ct-decimal-hour'] < 19:
+                        band = 'red'
+                    elif 7 < hh['ct-decimal-hour'] < 21:
+                        band = 'amber'
+            elif ds.dno_code == '20':
+                if hh['ct-day-of-week'] < 5:
+                    if 16 < hh['ct-decimal-hour'] < 19:
+                        band = 'red'
+                    elif 9 <= hh['ct-decimal-hour'] <= 20:
+                        band = 'amber'
+            elif ds.dno_code == '22':
+                if hh['ct-day-of-week'] > 4:
+                    if 16 < hh['ct-decimal-hour'] <= 19:
+                        band = 'amber'
+                else:
+                    if 17 <= hh['ct-decimal-hour'] < 19:
+                        band = 'red'
+                    elif 7 < hh['ct-decimal-hour'] <= 21:
+                        band = 'amber'
             else:
-                if 17 <= hh['ct-decimal-hour'] < 19:
-                    band = 'red'
-                elif 7 < hh['ct-decimal-hour'] <= 21:
-                    band = 'amber'
-        else:
-            raise BadRequest("DNO code not recognized.")
-        tariff_bands[hh['start-date']] = (tariff, band)
+                raise BadRequest("DNO code not recognized.")
+
+            bands_cache[start_date] = band
 
     try:
-        laf_cache = dno_cache['lafs']
+        laf = dno_cache['lafs'][ds.voltage_level_code][
+            ds.is_substation][start_date]
     except KeyError:
-        dno_cache['lafs'] = {}
-        laf_cache = dno_cache['lafs']
+        try:
+            laf_cache = dno_cache['lafs']
+        except KeyError:
+            laf_cache = dno_cache['lafs'] = {}
 
-    try:
-        laf_cache_v = laf_cache[ds.voltage_level_code]
-    except KeyError:
-        laf_cache[ds.voltage_level_code] = {}
-        laf_cache_v = laf_cache[ds.voltage_level_code]
+        try:
+            laf_cache_v = laf_cache[ds.voltage_level_code]
+        except KeyError:
+            laf_cache_v = laf_cache[ds.voltage_level_code] = {}
 
-    try:
-        lafs = laf_cache_v[ds.is_substation]
-    except KeyError:
-        laf_cache_v[ds.is_substation] = {}
-        lafs = laf_cache_v[ds.is_substation]
+        try:
+            lafs = laf_cache_v[ds.is_substation]
+        except KeyError:
+            lafs = laf_cache_v[ds.is_substation] = {}
 
-    try:
-        laf = lafs[hh['start-date']]
-    except KeyError:
-        vl_key = ds.voltage_level_code.lower() + \
-            ('-sub' if ds.is_substation else '-net')
-        slot_name = 'other'
-        if ds.dno_code == '20':
-            if 0 < hh['ct-decimal-hour'] <= 7:
-                slot_name = 'night'
-            elif hh['ct-day-of-week'] < 5 and hh['ct-month'] in [11, 12, 1, 2]:
-                if 16 <= hh['ct-decimal-hour'] < 19:
-                    slot_name = 'peak'
-                elif 7 < hh['ct-decimal-hour'] < 20:
-                    slot_name = 'winter-weekday'
-        elif ds.dno_code in ['14', '22']:
-            if 23 < hh['ct-decimal-hour'] or hh['ct-decimal-hour'] <= 6:
-                slot_name = 'night'
-            elif hh['ct-day-of-week'] < 5 and hh['ct-month'] in [11, 12, 1, 2]:
-                if 16 <= hh['ct-decimal-hour'] < 19:
-                    slot_name = 'winter-weekday-peak'
-                elif hh['ct-decimal-hour'] < 16:
-                    slot_name = 'winter-weekday-day'
-        else:
-            raise BadRequest("Not recognized")
+        try:
+            laf = lafs[start_date]
+        except KeyError:
+            vl_key = ds.voltage_level_code.lower() + \
+                ('-sub' if ds.is_substation else '-net')
+            slot_name = 'other'
+            if ds.dno_code == '20':
+                if 0 < hh['ct-decimal-hour'] <= 7:
+                    slot_name = 'night'
+                elif hh['ct-day-of-week'] < 5 and \
+                        hh['ct-month'] in [11, 12, 1, 2]:
+                    if 16 <= hh['ct-decimal-hour'] < 19:
+                        slot_name = 'peak'
+                    elif 7 < hh['ct-decimal-hour'] < 20:
+                        slot_name = 'winter-weekday'
+            elif ds.dno_code in ['14', '22']:
+                if 23 < hh['ct-decimal-hour'] or hh['ct-decimal-hour'] <= 6:
+                    slot_name = 'night'
+                elif hh['ct-day-of-week'] < 5 and \
+                        hh['ct-month'] in [11, 12, 1, 2]:
+                    if 16 <= hh['ct-decimal-hour'] < 19:
+                        slot_name = 'winter-weekday-peak'
+                    elif hh['ct-decimal-hour'] < 16:
+                        slot_name = 'winter-weekday-day'
+            else:
+                raise BadRequest("Not recognized")
 
-        laf = ds.hh_rate(
-            ds.dno_contract.id, hh['start-date'], 'lafs')[vl_key][slot_name]
-        lafs[hh['start-date']] = laf
+            laf = ds.hh_rate(
+                ds.dno_contract.id, start_date, 'lafs')[vl_key][slot_name]
+            lafs[start_date] = laf
 
     hh['laf'] = laf
     hh['gsp-kwh'] = laf * hh['msp-kwh']
@@ -474,7 +494,7 @@ def datum_2010_04_01(ds, hh):
         bill['duos-availability-gbp'] += rate * kva
 
     if hh['ct-is-month-end'] and not ds.is_displaced:
-        month_to = hh['start-date']
+        month_to = start_date
         month_from = month_to - relativedelta(months=1) + HH
         md_kva = 0
         days_in_month = 0
