@@ -29,7 +29,7 @@ from sqlalchemy import (
     text, true, false, null, func, not_, or_, cast, Float)
 from sqlalchemy.orm import joinedload
 from collections import defaultdict, OrderedDict
-from itertools import chain, islice, filterfalse
+from itertools import chain, islice
 import importlib
 import math
 from operator import itemgetter
@@ -415,13 +415,6 @@ def system_get():
 
 def get_objects():
     return dict((id(obj), obj) for obj in gc.get_objects())
-    '''
-    for obj in gc.get_objects():
-        objs[id(obj)] = obj
-        for o in gc.get_referents(obj):
-            objs[id(o)] = o
-    return objs
-    '''
 
 
 def obj_val(obj):
@@ -441,7 +434,20 @@ def obj_val(obj):
             else:
                 desc = ''
             ls.append('(' + ', '.join([str(type(o)), desc]) + ')')
-        return 'length: ' + str(len(obj)) + '[' + ', '.join(ls)
+        return 'length: ' + str(len(obj)) + ' [' + ', '.join(ls)
+    elif isinstance(obj, tuple):
+        ls = []
+        for o in obj[:10]:
+            if isinstance(o, (int, float)):
+                desc = repr(o)
+            elif isinstance(o, str):
+                desc = repr(o[:100])
+            elif isinstance(o, (list, dict)):
+                desc = 'length: ' + str(len(o))
+            else:
+                desc = ''
+            ls.append('(' + ', '.join([str(type(o)), desc]) + ')')
+        return 'length: ' + str(len(obj)) + ' (' + ', '.join(ls)
     elif isinstance(obj, dict):
         ls = []
         for k, v in islice(obj.items(), 10):
@@ -452,9 +458,9 @@ def obj_val(obj):
             elif isinstance(v, (list, dict)):
                 desc = 'length: ' + str(len(v))
             else:
-                desc = ''
+                desc = str(type(v))
             ls.append(str(k) + ': ' + desc)
-        return 'length: ' + str(len(obj)) + '{' + ', '.join(ls)
+        return 'length: ' + str(len(obj)) + ' {' + ', '.join(ls)
     elif isinstance(obj, types.CodeType):
         return obj.co_filename
     elif isinstance(obj, types.FunctionType):
@@ -476,24 +482,6 @@ def obj_val(obj):
         return ''
 
 
-def str_to_chain(objects, chain_str):
-    return [
-        objects[oid] for oid in map(int, chain_str.split(','))
-        if oid in objects]
-
-
-def chain_to_str(chain):
-    return ','.join(str(id(o)) for o in chain)
-
-
-'''
-@app.route('/system/chains')
-def chains_get():
-    an_obj = choice(tuple(get_objects().values()))
-    return chellow_redirect('/system/chains/' + str(id(an_obj)))
-'''
-
-
 def get_path(node):
     path = [node]
     parent = node['parent']
@@ -504,7 +492,7 @@ def get_path(node):
 
 
 def add_obj(objects, path, leaves):
-    if len(leaves) > 50:
+    if len(leaves) > 10:
         return
 
     added = False
@@ -531,43 +519,6 @@ def chains_get():
         path_tuples = [(id(o), type(o), obj_val(o)) for o in leaf]
         paths.append(path_tuples)
     return render_template('chain.html', paths=paths)
-
-
-@app.route('/system/chains/<chain_str>')
-def chain_get(chain_str):
-    try:
-        objects = get_objects()
-        chain = str_to_chain(objects, chain_str)
-        chain_ids = [id(o) for o in chain]
-        referrers = list(
-            islice(
-                filterfalse(
-                    lambda x: id(x) in chain_ids,
-                    gc.get_referrers(chain[-1])), 0, 10))
-    except KeyError as e:
-        raise BadRequest("Object not found in chain. " + str(e))
-
-    return render_template(
-        'chain.html', chain_str=chain_to_str(chain),
-        chain=[(id(o), type(o), obj_val(o)) for o in chain],
-        referrers=[(id(r), type(r), obj_val(r)) for r in referrers])
-
-
-@app.route('/system/chains/<chain_str>', methods=['POST'])
-def chain_post(chain_str):
-    objects = get_objects()
-    chain = str_to_chain(objects, chain_str)
-    obj_id = req_int('obj_id')
-    try:
-        obj = objects[obj_id]
-        chain.append(obj)
-    except KeyError:
-        flash("Object to add can't be found.")
-
-    if len(chain) == 0:
-        return chellow_redirect('/system/chains')
-    else:
-        return chellow_redirect('/system/chains/' + chain_to_str(chain))
 
 
 @app.route('/system/object_summary')
