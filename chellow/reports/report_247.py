@@ -34,12 +34,8 @@ def write_spreadsheet(fl, compressed, site_rows, era_rows):
     fl.seek(0)
     fl.truncate()
     with odio.create_spreadsheet(fl, '1.2', compressed=compressed) as f:
-        site_tab = f.append_table("Site Level")
-        for row in site_rows:
-            site_tab.append_row(row)
-        era_tab = f.append_table("Era Level")
-        for row in era_rows:
-            era_tab.append_row(row)
+        f.append_table("Site Level", site_rows)
+        f.append_table("Era Level", era_rows)
 
 
 def make_bill_row(titles, bill):
