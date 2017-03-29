@@ -44,7 +44,7 @@ setup(
         'elexonportal/*',
         'rate_scripts/*/*.ion']},
     install_requires=[
-        'odio==0.0.14',
+        'odio==0.0.15',
         'pg8000==1.10.6',
         'Flask==0.12',
         'SQLAlchemy==1.1.4',
