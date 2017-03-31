@@ -236,7 +236,7 @@ class Parser():
                 elif product_item_name == "Unit Rate":
                     bd_add(bd, 'sum-gsp-kwh', usage)
             description = get_value(row, 'Description')
-            if description == 'Standard VAT@20%':
+            if description in ('Standard VAT@20%', 'Reduced VAT@5%'):
                 bill['vat'] += round(amount_dec, 2)
             else:
                 bill['net'] += round(amount_dec, 2)
