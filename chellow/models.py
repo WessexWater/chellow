@@ -3816,40 +3816,43 @@ def db_init(sess, root_path):
 
             sess.flush()
             rscripts_path = os.path.join(contract_path, 'rate_scripts')
-            for rscript_fname in sorted(os.listdir(rscripts_path)):
-                if not any(rscript_fname.endswith(s) for s in ('.py', '.ion')):
-                    continue
-                try:
-                    start_str, finish_str = \
-                        rscript_fname.split('.')[0].split('_')
-                except ValueError:
-                    raise Exception(
-                        "The rate script " + rscript_fname +
-                        " in the directory " + rscripts_path +
-                        " should consist of two dates separated by an " +
-                        "underscore.")
-                start_date = to_utc(Datetime.strptime(start_str, "%Y%m%d%H%M"))
-                if finish_str == 'ongoing':
-                    finish_date = None
-                else:
-                    finish_date = to_utc(
-                        Datetime.strptime(finish_str, "%Y%m%d%H%M"))
-                rparams = {
-                    'start_date': start_date,
-                    'finish_date': finish_date,
-                    'contract': contract}
-                rparams.update(
-                    read_file(rscripts_path, rscript_fname, 'script'))
-                sess.add(RateScript(**rparams))
-                sess.flush()
+            if os.path.isdir(rscripts_path):
+                for rscript_fname in sorted(os.listdir(rscripts_path)):
+                    if not any(rscript_fname.endswith(s) for s in (
+                            '.py', '.ion')):
+                        continue
+                    try:
+                        start_str, finish_str = \
+                            rscript_fname.split('.')[0].split('_')
+                    except ValueError:
+                        raise Exception(
+                            "The rate script " + rscript_fname +
+                            " in the directory " + rscripts_path +
+                            " should consist of two dates separated by an " +
+                            "underscore.")
+                    start_date = to_utc(
+                        Datetime.strptime(start_str, "%Y%m%d%H%M"))
+                    if finish_str == 'ongoing':
+                        finish_date = None
+                    else:
+                        finish_date = to_utc(
+                            Datetime.strptime(finish_str, "%Y%m%d%H%M"))
+                    rparams = {
+                        'start_date': start_date,
+                        'finish_date': finish_date,
+                        'contract': contract}
+                    rparams.update(
+                        read_file(rscripts_path, rscript_fname, 'script'))
+                    sess.add(RateScript(**rparams))
+                    sess.flush()
 
-            sess.flush()
-            # Assign start and finish rate scripts
-            scripts = sess.query(RateScript). \
-                filter(RateScript.contract_id == contract.id). \
-                order_by(RateScript.start_date).all()
-            contract.start_rate_script = scripts[0]
-            contract.finish_rate_script = scripts[-1]
+                sess.flush()
+                # Assign start and finish rate scripts
+                scripts = sess.query(RateScript). \
+                    filter(RateScript.contract_id == contract.id). \
+                    order_by(RateScript.start_date).all()
+                contract.start_rate_script = scripts[0]
+                contract.finish_rate_script = scripts[-1]
     sess.commit()
 
     for code, desc in (

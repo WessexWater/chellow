@@ -18,7 +18,7 @@ from dateutil.relativedelta import relativedelta
 from chellow.utils import (
     HH, req_str, req_int, req_date, parse_mpan_core, req_bool, req_hh_date,
     hh_after, req_decimal, send_response, hh_min, hh_max, hh_format, hh_range,
-    utc_datetime, utc_datetime_now, req_ion)
+    utc_datetime, utc_datetime_now, req_ion, get_file_scripts, to_utc)
 from werkzeug.exceptions import BadRequest, NotFound
 import chellow.general_import
 import io
@@ -2947,75 +2947,20 @@ def supply_hh_data_get(supply_id):
         start_date=start_date, finish_date=finish_date)
 
 
-@app.route('/dno_rate_scripts/<int:rate_script_id>')
-def dno_rate_script_get(rate_script_id):
-    rate_script = RateScript.get_dno_by_id(g.sess, rate_script_id)
-    return render_template('dno_rate_script.html', rate_script=rate_script)
-
-
-@app.route('/dno_contracts/<int:contract_id>/add_rate_script')
-def dno_rate_script_add_get(contract_id):
-    now = utc_datetime_now()
-    initial_date = utc_datetime(now.year, now.month)
-    contract = Contract.get_dno_by_id(g.sess, contract_id)
+@app.route('/dno_contracts/<int:contract_id>/rate_scripts/<start_date_str>')
+def dno_rate_script_get(contract_id, start_date_str):
+    dno_contract = Contract.get_dno_by_id(g.sess, contract_id)
+    start_date = to_utc(Datetime.strptime(start_date_str, '%Y%m%d%H%M'))
+    rate_script = None
+    for rscript in get_file_scripts(dno_contract.name):
+        if rscript[0] == start_date:
+            rate_script = rscript
+            break
+    if rate_script is None:
+        raise NotFound()
     return render_template(
-        'dno_rate_script_add.html', contract=contract,
-        initial_date=initial_date)
-
-
-@app.route(
-    '/dno_contracts/<int:contract_id>/add_rate_script', methods=['POST'])
-def dno_rate_script_add_post(contract_id):
-    try:
-        contract = Contract.get_dno_by_id(g.sess, contract_id)
-        start_date = req_date('start')
-        rate_script = contract.insert_rate_script(g.sess, start_date, '')
-        g.sess.commit()
-        return chellow_redirect(
-            '/dno_rate_scripts/' + str(rate_script.id), 303)
-    except BadRequest as e:
-        flash(e.description)
-        now = utc_datetime_now()
-        initial_date = utc_datetime(now.year, now.month)
-        return make_response(
-            render_template(
-                'dno_rate_script_add.html', contract=contract,
-                initial_date=initial_date), 400)
-
-
-@app.route('/dno_rate_scripts/<int:rs_id>/edit')
-def dno_rate_script_edit_get(rs_id):
-    rs = RateScript.get_dno_by_id(g.sess, rs_id)
-    return render_template('dno_rate_script_edit.html', rate_script=rs)
-
-
-@app.route('/dno_rate_scripts/<int:rs_id>/edit', methods=['POST'])
-def dno_rate_script_edit_post(rs_id):
-    try:
-        rate_script = RateScript.get_dno_by_id(g.sess, rs_id)
-        contract = rate_script.contract
-        if 'delete' in request.values:
-            contract.delete_rate_script(g.sess, rate_script)
-            g.sess.commit()
-            return chellow_redirect(
-                '/dno_rate_scripts/' + str(contract.id), 303)
-        else:
-            script = req_str('script')
-            start_date = req_date('start')
-            if 'has_finished' in request.values:
-                finish_date = req_date('finish')
-            else:
-                finish_date = None
-            contract.update_rate_script(
-                g.sess, rate_script, start_date, finish_date, script)
-            g.sess.commit()
-            return chellow_redirect(
-                '/dno_rate_scripts/' + str(rate_script.id), 303)
-    except BadRequest as e:
-        flash(e.description)
-        return make_response(
-            render_template(
-                'dno_rate_script_edit.html', rate_script=rate_script), 400)
+        'dno_rate_script.html', dno_contract=dno_contract,
+        rate_script=rate_script)
 
 
 @app.route('/non_core_contracts/<int:contract_id>/edit')
@@ -4350,21 +4295,25 @@ def csv_crc_get():
 
 @app.route('/dno_contracts')
 def dno_contracts_get():
-    dno_contracts = g.sess.query(Contract).join(MarketRole).filter(
-        MarketRole.code == 'R').order_by(Contract.name).all()
+    dno_contracts = []
+    for contract in g.sess.query(Contract).join(MarketRole).filter(
+            MarketRole.code == 'R').order_by(Contract.name):
+        scripts = get_file_scripts(contract.name)
+        dno_contract = {
+            'contract': contract,
+            'start_date': scripts[0][0],
+            'finish_date': scripts[-1][1]}
+        dno_contracts.append(dno_contract)
     return render_template('dno_contracts.html', dno_contracts=dno_contracts)
 
 
 @app.route('/dno_contracts/<int:contract_id>')
 def dno_contract_get(contract_id):
     contract = Contract.get_dno_by_id(g.sess, contract_id)
-    rate_scripts = g.sess.query(RateScript).filter(
-        RateScript.contract == contract).order_by(
-        RateScript.start_date.desc()).all()
-    reports = []
+    rate_scripts = get_file_scripts(contract.name)[::-1]
     return render_template(
         'dno_contract.html', contract=contract, rate_scripts=rate_scripts,
-        reports=reports)
+        reports=[])
 
 
 @app.route('/llfcs')

@@ -456,6 +456,34 @@ def make_val(v):
         return v
 
 
+def get_file_scripts(contract_name):
+    rscripts_path = os.path.join(root_path, 'rate_scripts', contract_name)
+
+    rscripts = []
+    for rscript_fname in sorted(os.listdir(rscripts_path)):
+        if not rscript_fname.endswith('.ion'):
+            continue
+        try:
+            start_str, finish_str = \
+                rscript_fname.split('.')[0].split('_')
+        except ValueError:
+            raise Exception(
+                "The rate script " + rscript_fname +
+                " in the directory " + rscripts_path +
+                " should consist of two dates separated by an " +
+                "underscore.")
+        start_date = to_utc(Datetime.strptime(start_str, "%Y%m%d%H%M"))
+        if finish_str == 'ongoing':
+            finish_date = None
+        else:
+            finish_date = to_utc(
+                Datetime.strptime(finish_str, "%Y%m%d%H%M"))
+        with open(os.path.join(rscripts_path, rscript_fname), 'r') as f:
+            script = f.read()
+        rscripts.append((start_date, finish_date, script))
+    return tuple(rscripts)
+
+
 def get_file_rates(cache, contract_name, dt):
     try:
         return cache['contract_names'][contract_name][dt]
@@ -463,46 +491,35 @@ def get_file_rates(cache, contract_name, dt):
         try:
             contract_names = cache['contract_names']
         except KeyError:
-            contract_names = {}
-            cache['contract_names'] = contract_names
+            contract_names = cache['contract_names'] = {}
 
         try:
             cont = contract_names[contract_name]
         except KeyError:
-            cont = {}
-            contract_names[contract_name] = cont
+            cont = contract_names[contract_name] = {}
 
         try:
             return cont[dt]
         except KeyError:
-            rscripts_path = os.path.join(
-                root_path, 'rate_scripts', contract_name)
-            for rscript_fname in sorted(os.listdir(rscripts_path)):
-                if not rscript_fname.endswith('.ion'):
-                    continue
-                try:
-                    start_str, finish_str = \
-                        rscript_fname.split('.')[0].split('_')
-                except ValueError:
-                    raise Exception(
-                        "The rate script " + rscript_fname +
-                        " in the directory " + rscripts_path +
-                        " should consist of two dates separated by an " +
-                        "underscore.")
-                start_date = to_utc(Datetime.strptime(start_str, "%Y%m%d%H%M"))
-                if finish_str == 'ongoing':
-                    finish_date = to_utc(Datetime.max)
+            for start_date, finish_date, script in get_file_scripts(
+                    contract_name):
+
+                if finish_date is None:
+                    end_date = to_utc(Datetime.max)
                 else:
-                    finish_date = to_utc(
-                        Datetime.strptime(finish_str, "%Y%m%d%H%M"))
-                if start_date <= dt <= finish_date:
-                    with open(
-                            os.path.join(rscripts_path, rscript_fname),
-                            'r') as f:
-                        rscript = load(f)
+                    end_date = finish_date
+
+                if start_date <= dt <= end_date:
+                    try:
+                        rscript = loads(script)
+                    except BadRequest as e:
+                        raise BadRequest(
+                            "Problem with rate script for contract " +
+                            contract_name + " starting at " +
+                            hh_format(start_date) + ": " + e.description)
                     FOUR_WEEKS = timedelta(weeks=4)
                     range_start = hh_max(start_date, dt - FOUR_WEEKS)
-                    range_finish = hh_min(finish_date, dt + FOUR_WEEKS)
+                    range_finish = hh_min(end_date, dt + FOUR_WEEKS)
                     for hh_date in hh_range(range_start, range_finish):
                         cont[hh_date] = rscript
                     break
@@ -510,7 +527,8 @@ def get_file_rates(cache, contract_name, dt):
                 return cont[dt]
             except KeyError:
                 raise BadRequest(
-                    "Can't find a rate script at " + hh_format(dt))
+                    "Can't find a file rate script for " + contract_name +
+                    " at " + hh_format(dt) + ".")
 
 
 def loads(ion_str):

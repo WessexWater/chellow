@@ -1,50 +1,47 @@
 {% extends "base.html" %}
 
 {% block title %}
-	&raquo; DNO Contracts &raquo; {{rate_script.contract.name}} &raquo; 
-	{{rate_script.start_date|hh_format}}
+	&raquo; DNO Contracts &raquo; {{dno_contract.name}} &raquo; 
+	{{rate_script[0]|hh_format}}
 {% endblock %}
 
 {% block nav %}
-	&raquo; <a href="/dno_contracts">DNO Contracts</a> &raquo; 
-	<a href="/dno_contracts/{{rate_script.contract.id}}">{{rate_script.contract.name}}</a> &raquo; 
-	{{rate_script.start_date|hh_format}}
-	[<a href="/dno_rate_scripts/{{rate_script.id}}/edit">edit</a>]
+	<a href="/dno_contracts">DNO Contracts</a> &raquo; 
+	<a href="/dno_contracts/{{dno_contract.id}}">{{dno_contract.name}}</a> &raquo;
+	{{rate_script[0]|hh_format}}
 {% endblock %}
 
 {% block content %}
-
-<div class="layer-section">
-	<div class="section-header">
-		<h2>Rate Script</h2>	
-	</div>
-	<div class="section-content">
-		<div class="section-data">
-			<table class="DataTable widthAuto noMarginBottom">
-				<tbody>
-					<tr>
-						<th>Start Date</th>
-						<td>{{rate_script.start_date|hh_format}}</td>
-					</tr>
-					<tr>
-						<th>Finish Date</th>
-						<td>{{rate_script.finish_date|hh_format}}</td>
-					</tr>
-				</tbody>
-			</table>
+	<div class="layer-section">
+		<div class="section-header">
+			<h2>Rate Script</h2>	
+		</div>
+		<div class="section-content">
+			<div class="section-data">
+				<table class="DataTable widthAuto noMarginBottom">
+					<tbody>
+						<tr>
+							<th>Start Date</th>
+							<td>{{rate_script[0]|hh_format}}</td>
+						</tr>
+						<tr>
+							<th>Finish Date</th>
+							<td>{{rate_script[1]|hh_format}}</td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
 		</div>
 	</div>
-</div>
 
-<div class="layer-section">
-	<div class="section-header">
-		<h2>Script</h2>	
-	</div>
-	<div class="section-content">
-		<div class="section-data">
-			<pre>{{rate_script.script}}</pre>
+	<div class="layer-section">
+		<div class="section-header">
+			<h2>Script</h2>	
+		</div>
+		<div class="section-content">
+			<div class="section-data">
+				<pre>{{rate_script[2]}}</pre>
+			</div>
 		</div>
 	</div>
-</div>
-
 {% endblock %}
