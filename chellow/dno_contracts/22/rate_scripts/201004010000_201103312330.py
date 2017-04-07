@@ -19,6 +19,15 @@ def lafs():
 
 def tariffs():
     return {
+        '110': {
+            'description': 'High Voltage HH Metered',
+            'gbp-per-mpan-per-day': 0.6338,
+            'gbp-per-kva-per-day': 0.0163,
+            'excess-gbp-per-kva-per-day': 0.0163,
+            'red-gbp-per-kwh': 0.11678,
+            'amber-gbp-per-kwh': 0.0003,
+            'green-gbp-per-kwh': 0.00052,
+            'gbp-per-kvarh': 0.00202},
         '510': {
             'description': 'High Voltage HH Metered',
             'gbp-per-mpan-per-day': 0.6338,

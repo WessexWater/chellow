@@ -15548,4 +15548,31 @@ def virtual_bill(supply_source):
         'tries': {},
         'regexes': [
             r'class="global"']},
+
+    {
+
+        'name': "Test the supplier batch checking",
+        'path': '/reports/111?bill_id=7',
+        'status_code': 303},
+    {
+        'path': '/downloads',
+        'tries': {'max': 20, 'period': 1},
+        'regexes': [
+            r"0015_FINISHED_adminexamplecom_bill_check\.csv"],
+        'status_code': 200},
+    {
+        'path': '/downloads/0015_FINISHED_adminexamplecom_bill_check.csv',
+        'regexes': [
+            r'batch,bill-reference,bill-type,bill-kwh,bill-net-gbp,'
+            r'bill-vat-gbp,bill-start-date,bill-finish-date,bill-mpan-core,'
+            r'site-code,site-name,covered-from,covered-to,covered-bills,'
+            r'metered-kwh,covered-net-gbp,virtual-net-gbp,difference-net-gbp,'
+            r'covered-sum-msp-kwh,virtual-sum-msp-kwh,covered-problem,'
+            r'virtual-problem',
+            r'07-008,3423760005,N,253,36.16,1.80,'
+            r'2010-01-19 00:00,2010-04-20 23:30,22 1065 3921 534,'
+            r'CI017,Roselands,2010-01-19 00:00,2010-04-20 23:30,10,'
+            r'0.0,36.16,25.299999999997\d*,10.860000000002\d*,253.0,'
+            r'252.9999999999\d*,,'],
+        'status_code': 200},
 ]
