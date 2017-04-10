@@ -15563,16 +15563,11 @@ def virtual_bill(supply_source):
     {
         'path': '/downloads/0015_FINISHED_adminexamplecom_bill_check.csv',
         'regexes': [
-            r'batch,bill-reference,bill-type,bill-kwh,bill-net-gbp,'
-            r'bill-vat-gbp,bill-start-date,bill-finish-date,bill-mpan-core,'
-            r'site-code,site-name,covered-from,covered-to,covered-bills,'
-            r'metered-kwh,covered-net-gbp,virtual-net-gbp,difference-net-gbp,'
-            r'covered-sum-msp-kwh,virtual-sum-msp-kwh,covered-problem,'
-            r'virtual-problem',
-            r'07-008,3423760005,N,253,36.16,1.80,'
-            r'2010-01-19 00:00,2010-04-20 23:30,22 1065 3921 534,'
-            r'CI017,Roselands,2010-01-19 00:00,2010-04-20 23:30,10,'
-            r'0.0,36.16,25.299999999997\d*,10.860000000002\d*,253.0,'
-            r'252.9999999999\d*,,'],
+            r'06-004,00080,N,0,4463.08,781.03,2007-02-02 00:00,'
+            r'2007-02-28 23:30,,CH017,Parbola,2007-02-01 00:00,'
+            r'2007-02-28 23:30,1:7,0,8926.16,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,'
+            r',,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,'
+            r',,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,'
+            r',,,,,,,,,,,,,,,,,,,,,,,,,,'],
         'status_code': 200},
 ]

@@ -112,6 +112,8 @@ def content(batch_id, bill_id, user):
                 raise BadRequest(
                     "Extraordinary! There isn't an era for the bill " +
                     str(bill.id) + ".")
+            site = sess.query(Site).join(SiteEra).filter(
+                SiteEra.is_physical == true(), SiteEra.era == era).one()
 
             values = [
                 batch.reference, bill.reference, bill.bill_type.code,
@@ -199,18 +201,14 @@ def content(batch_id, bill_id, user):
             virtual_bill = {}
             metered_kwh = 0
             for era in sess.query(Era).filter(
-                    Era.supply == supply, Era.imp_mpan_core != null(),
-                    Era.start_date <= covered_finish,
+                    Era.supply == supply, Era.start_date <= covered_finish,
                     or_(
                         Era.finish_date == null(),
                         Era.finish_date >= covered_start),
                     or_(
                         Era.mop_contract == contract,
                         Era.hhdc_contract == contract,
-                        Era.imp_supplier_contract == contract,
-                        Era.exp_supplier_contract == contract)).distinct():
-                site = sess.query(Site).join(SiteEra).filter(
-                    SiteEra.is_physical == true(), SiteEra.era == era).one()
+                        Era.imp_supplier_contract == contract)).distinct():
 
                 chunk_start = hh_max(covered_start, era.start_date)
                 chunk_finish = hh_min(covered_finish, era.finish_date)
