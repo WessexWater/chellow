@@ -175,8 +175,8 @@ def content(batch_id, bill_id, user):
                     covered_rates = defaultdict(set)
                     for k, v in eval(covered_bill.breakdown, {}).items():
 
-                        if k.endswith('rate'):
-                            covered_rates[k].add(v)
+                        if k.split('-')[-1] in ('rate', 'kva'):
+                            covered_rates[k].add(str(v))
                         elif k != 'raw-lines':
                             try:
                                 covered_bdown[k] += v
