@@ -53,6 +53,9 @@ ELEM_MAP = {
         'fit-prev-estimate-msp-kwh',
     ('Feed in Tariff (FiT) Estimate', '', 'Price'): 'fit-rate',
     ('Feed in Tariff (FiT) Estimate', '', 'Amount'): 'fit-gbp',
+    ('Levy Exempt Energy', '', 'Usage'): 'lec-kwh',
+    ('Levy Exempt Energy', '', 'Price'): 'lec-rate',
+    ('Levy Exempt Energy', '', 'Amount'): 'lec-gbp',
     ('Meter Rental', '', 'Usage'): 'meter-rental-days',
     ('Meter Rental', '', 'Price'): 'meter-rental-rate',
     ('Meter Rental', '', 'Amount'): 'meter-rental-gbp',
@@ -74,9 +77,12 @@ ELEM_MAP = {
     ('Unit Rate', 'Summer Night', 'Usage'): 'summer-night-gsp-kwh',
     ('Unit Rate', 'Summer Night', 'Price'): 'summer-night-rate',
     ('Unit Rate', 'Summer Night', 'Amount'): 'summer-night-gbp',
-    ('Unit Rate', 'Summer Weekend', 'Usage'): 'summer-weekend-gsp-kwh',
-    ('Unit Rate', 'Summer Weekend', 'Price'): 'summer-weekend-rate',
-    ('Unit Rate', 'Summer Weekend', 'Amount'): 'summer-weekend-gbp',
+    ('Unit Rate', 'Summer Weekend & Bank Holiday', 'Usage'):
+        'summer-weekend-gsp-kwh',
+    ('Unit Rate', 'Summer Weekend & Bank Holiday', 'Price'):
+        'summer-weekend-rate',
+    ('Unit Rate', 'Summer Weekend & Bank Holiday', 'Amount'):
+        'summer-weekend-gbp',
     ('Unit Rate', 'Night', 'Usage'): 'night-gsp-kwh',
     ('Unit Rate', 'Night', 'Price'): 'night-rate',
     ('Unit Rate', 'Night', 'Amount'): 'night-gbp',
@@ -286,6 +292,8 @@ class Parser():
                 bd_add(bd, 'fit-gbp', amount)
             elif description.startswith("CfD FiT Rec - "):
                 bd_add(bd, 'cfd-fit-gbp', amount)
+            elif description.startswith("Flex Adj - "):
+                bd_add(bd, 'reconciliation-gbp', amount)
 
         for bill in bills.values():
             bd = bill['breakdown']

@@ -14605,9 +14605,13 @@ finally:
             r'<td>89564\.02</td>\s*'
             r'<td>6122\.00</td>\s*'
             r'<td>95686\.02</td>\s*'
-            r'<td>\[\(&#39;aahedc-gbp&#39;, 0.89\), .*cfd-fit-nbp-kwh.*'
+            r'<td>\[\(&#39;aahedc-gbp&#39;, 0.89\),.*'
+            r'\(&#39;ccl-gbp&#39;, 100\.0\),.*'
+            r'cfd-fit-nbp-kwh.*'
             r'\(&#39;duos-availability-kva&#39;, &#39;220&#39;\).*'
-            r'fit-gbp.*meter-rental-gbp.*winter-night-gbp',
+            r'fit-gbp.*meter-rental-gbp.*'
+            r'reconciliation-gbp.*'
+            r'winter-night-gbp',
             r"All the bills have been successfully loaded and attached to "
             "the batch\."],
         'status_code': 200},
