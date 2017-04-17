@@ -62,6 +62,7 @@ PostgreSQL database. To install Chellow, follow these steps:
 in bash an environment variable can be set by doing:
 
  export CHELLOW_PORT=8080
+ export PGUSER=postgres
 +
 in Windows an environment variable can be set by doing:
 
