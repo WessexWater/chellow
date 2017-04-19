@@ -98,11 +98,20 @@ $ion_1_0 {
       'green-gbp-per-kwh': 0.00026,
       'gbp-per-kvarh': 0.00256},
     '126,127,128,133,134,162,473': {
-      'description': 'Small Non Domestic Unrestricted',},
+      'description': 'Small Non Domestic Unrestricted'},
     '129,130,131,135,136,163,474': {
-      'description': 'Small Non Domestic Two Rate',},
+      'description': 'Small Non Domestic Two Rate'},
     '140,144': {
-      'description': 'Small Non Domestic Off Peak (related MPAN)',},
+      'description': 'Small Non Domestic Off Peak (related MPAN)'},
+    '500': {
+      'description': 'NHH UMS Category A',
+      'gbp-per-mpan-per-day': 0.00,
+      'gbp-per-kva-per-day': 0.0000,
+      'excess-gbp-per-kva-per-day': 0.0000,
+      'red-gbp-per-kwh': 0.1629,
+      'amber-gbp-per-kwh': 0.1629,
+      'green-gbp-per-kwh': 0.1629,
+      'gbp-per-kvarh': 0.00},
     '658,476': {
       'description': 'HV HH Metered',
       'gbp-per-mpan-per-day': 0.9289,
