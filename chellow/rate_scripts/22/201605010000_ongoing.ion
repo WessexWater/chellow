@@ -17,11 +17,20 @@ $ion_1_0 {
       'other': 1.045}},
   'tariffs': {
     '110': {
-      'description': 'Small Non Domestic Unrestricted',},
+      'description': 'Small Non Domestic Unrestricted'},
+    '202': {
+      'description':'LV Network Domestic',
+      'gbp-per-mpan-per-day': 0.0608,
+      'gbp-per-kva-per-day': 0.0000,
+      'excess-gbp-per-kva-per-day': 0.0,
+      'red-gbp-per-kwh': 0.32236,
+      'amber-gbp-per-kwh': 0.00572,
+      'green-gbp-per-kwh': 0.00153,
+      'gbp-per-kvarh': 0.00},
     '210': {
-      'description': 'Small Non Domestic Two Rate',},
+      'description': 'Small Non Domestic Two Rate'},
     '251': {
-      'description': 'Small Non Domestic Off Peak (related MPAN)',},
+      'description': 'Small Non Domestic Off Peak (related MPAN)'},
     '510': {
       'description': 'High Voltage HH Metered',
       'gbp-per-mpan-per-day': 0.7729,
