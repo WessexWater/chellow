@@ -130,6 +130,15 @@ $ion_1_0 {
       'amber-gbp-per-kwh': -0.00161,
       'green-gbp-per-kwh': -0.00013,
       'gbp-per-kvarh': 0.00162},
+    '632': {      
+      'description': 'LV Network Domestic',
+      'gbp-per-mpan-per-day': 0.0534,
+      'gbp-per-kva-per-day': 0,
+      'excess-gbp-per-kva-per-day': 0,
+      'red-gbp-per-kwh': -0.013434,
+      'amber-gbp-per-kwh': -0.00822,
+      'green-gbp-per-kwh': -0.0006,
+      'gbp-per-kvarh': 0}, 
     '633': {
       'description': 'LV Non-CT',
       'gbp-per-mpan-per-day': 0.0591,
