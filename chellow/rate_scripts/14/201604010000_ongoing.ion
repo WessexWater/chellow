@@ -16,15 +16,21 @@ $ion_1_0 {
       'winter-weekday-day': 1.047,
       'other': 1.039}},
   'tariffs': {
-    '633': {
-      'description': 'LV Non-CT',
-      'gbp-per-mpan-per-day': 0.0591,
-      'gbp-per-kva-per-day': 0.00,
-      'excess-gbp-per-kva-per-day': 0.00,
-      'red-gbp-per-kwh': 0.12545,
-      'amber-gbp-per-kwh': 0.00765,
-      'green-gbp-per-kwh': 0.00056,
-      'gbp-per-kvarh': 0.00},
+    '007': {
+      'description': 'Small Non Domestic Unrestricted',},
+    '010': {
+      'description': 'Small Non Domestic Two Rate',},
+    '020,021,022,025,026,027': {
+      'description': 'LV Medium Non-Domestic',
+      'gbp-per-mpan-per-day': 0.3566,
+      'gbp-per-kva-per-day': 0,
+      'excess-gbp-per-kva-per-day': 0,
+      'red-gbp-per-kwh': 0.02236,
+      'amber-gbp-per-kwh': 0.00058,
+      'green-gbp-per-kwh': 0.00058,
+      'gbp-per-kvarh': 0},
+    '040': {
+      'description': 'Small Non Domestic Off Peak (related MPAN)',},
     '127': {
       'description': 'LV',
       'gbp-per-mpan-per-day': 0.0739,
@@ -115,12 +121,6 @@ $ion_1_0 {
       'amber-gbp-per-kwh': -0.00236,
       'green-gbp-per-kwh': -0.00236,
       'gbp-per-kvarh': 0.00162},
-    '007': {
-      'description': 'Small Non Domestic Unrestricted',},
-    '010': {
-      'description': 'Small Non Domestic Two Rate',},
-    '040': {
-      'description': 'Small Non Domestic Off Peak (related MPAN)',},
     '577': {
       'description': 'HV Generation Non-Intermittent',
       'gbp-per-mpan-per-day': 0.2721,
@@ -129,4 +129,13 @@ $ion_1_0 {
       'red-gbp-per-kwh': -0.01988,
       'amber-gbp-per-kwh': -0.00161,
       'green-gbp-per-kwh': -0.00013,
-      'gbp-per-kvarh': 0.00162}}}
+      'gbp-per-kvarh': 0.00162},
+    '633': {
+      'description': 'LV Non-CT',
+      'gbp-per-mpan-per-day': 0.0591,
+      'gbp-per-kva-per-day': 0.00,
+      'excess-gbp-per-kva-per-day': 0.00,
+      'red-gbp-per-kwh': 0.12545,
+      'amber-gbp-per-kwh': 0.00765,
+      'green-gbp-per-kwh': 0.00056,
+      'gbp-per-kvarh': 0.00}}}

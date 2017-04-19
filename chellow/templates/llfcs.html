@@ -29,6 +29,8 @@
 						<th>Voltage Level</th>
 						<th>Is Substation?</th>
 						<th>Is Import?</th>
+						<th>Valid From</th>
+						<th>Valid To</th>
 					</tr>
 				</thead>
 				<tbody>
@@ -53,6 +55,8 @@
 									Export
 								{% endif %}
 							</td>
+							<td>{{llfc.valid_from|hh_format}}</td>
+							<td>{{llfc.valid_to|hh_format}}</td>
 						</tr>
 					{% endfor %}
 				</tbody>
