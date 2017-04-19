@@ -18,6 +18,19 @@ $ion_1_0 {
   'tariffs': {
     '110': {
       'description': 'Small Non Domestic Unrestricted',},
+    '202': {      
+      'description': '},  'tariffs': {
+    '110': {
+      'description': 'Small Non Domestic Unrestricted',},
+    '202': {      
+      'description':'LV Network Domestic',      
+      'gbp-per-mpan-per-day': 0.0608,      
+      'gbp-per-kva-per-day': 0.0000,      
+      'excess-gbp-per-kva-per-day': 0.0,      
+      'red-gbp-per-kwh': 0.32236,      
+      'amber-gbp-per-kwh': 0.00572,      
+      'green-gbp-per-kwh': 0.00153,      
+      'gbp-per-kvarh': 0.00},
     '210': {
       'description': 'Small Non Domestic Two Rate',},
     '251': {
