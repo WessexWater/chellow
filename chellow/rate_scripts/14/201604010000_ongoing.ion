@@ -17,9 +17,9 @@ $ion_1_0 {
       'other': 1.039}},
   'tariffs': {
     '007': {
-      'description': 'Small Non Domestic Unrestricted',},
+      'description': 'Small Non Domestic Unrestricted'},
     '010': {
-      'description': 'Small Non Domestic Two Rate',},
+      'description': 'Small Non Domestic Two Rate'},
     '020,021,022,025,026,027': {
       'description': 'LV Medium Non-Domestic',
       'gbp-per-mpan-per-day': 0.3566,
@@ -30,7 +30,7 @@ $ion_1_0 {
       'green-gbp-per-kwh': 0.00058,
       'gbp-per-kvarh': 0},
     '040': {
-      'description': 'Small Non Domestic Off Peak (related MPAN)',},
+      'description': 'Small Non Domestic Off Peak (related MPAN)'},
     '127': {
       'description': 'LV',
       'gbp-per-mpan-per-day': 0.0739,
@@ -130,6 +130,15 @@ $ion_1_0 {
       'amber-gbp-per-kwh': -0.00161,
       'green-gbp-per-kwh': -0.00013,
       'gbp-per-kvarh': 0.00162},
+    '632': {
+      'description': 'LV Network Domestic',
+      'gbp-per-mpan-per-day': 0.0534,
+      'gbp-per-kva-per-day': 0,
+      'excess-gbp-per-kva-per-day': 0,
+      'red-gbp-per-kwh': -0.013434,
+      'amber-gbp-per-kwh': -0.00822,
+      'green-gbp-per-kwh': -0.0006,
+      'gbp-per-kvarh': 0},
     '633': {
       'description': 'LV Non-CT',
       'gbp-per-mpan-per-day': 0.0591,
