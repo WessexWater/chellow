@@ -82,7 +82,7 @@ $ion_1_0 {
     '457': {
       'description': 'LV NON-CT HH Metered',
       'gbp-per-mpan-per-day': 0.0462,
-      'gbp-per-kva-per-day': 0.00,
+      'gbp-per-kva-per-day': 0.Small Non Domestic Off Peak00,
       'excess-gbp-per-kva-per-day': 0.00,
       'red-gbp-per-kwh': 0.13389,
       'amber-gbp-per-kwh': 0.01101,
@@ -103,6 +103,15 @@ $ion_1_0 {
       'description': 'Small Non Domestic Two Rate',},
     '140,144': {
       'description': 'Small Non Domestic Off Peak (related MPAN)',},
+    '500': {      
+      'description': 'NHH UMS Category A',
+      'gbp-per-mpan-per-day': 0.00,
+      'gbp-per-kva-per-day': 0.0000,
+      'excess-gbp-per-kva-per-day': 0.0000,
+      'red-gbp-per-kwh': 0.1629,
+      'amber-gbp-per-kwh': 0.1629,
+      'green-gbp-per-kwh': 0.1629,
+      'gbp-per-kvarh': 0.00,},
     '658,476': {
       'description': 'HV HH Metered',
       'gbp-per-mpan-per-day': 0.9289,
