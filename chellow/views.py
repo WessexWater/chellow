@@ -2711,7 +2711,11 @@ def download_get(fname):
     def content():
         try:
             with open(full_name, 'rb') as fl:
-                yield fl.read()
+                while True:
+                    data = fl.read(1024)
+                    if len(data) == 0:
+                        break
+                    yield data
         except:
             yield traceback.format_exc()
 
