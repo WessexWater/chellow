@@ -1,4 +1,4 @@
-from io import StringIO
+from io import StringIO, DEFAULT_BUFFER_SIZE
 import csv
 from flask import (
     request, Response, g, redirect, render_template, send_file, flash,
@@ -2712,7 +2712,7 @@ def download_get(fname):
         try:
             with open(full_name, 'rb') as fl:
                 while True:
-                    data = fl.read(1024)
+                    data = fl.read(DEFAULT_BUFFER_SIZE)
                     if len(data) == 0:
                         break
                     yield data
