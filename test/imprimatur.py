@@ -4280,19 +4280,20 @@ def virtual_bill(supply_source):
         'path': '/supplier_bill_imports/3',
         'tries': {},
         'regexes': [
-            r"<th>Reference</th>\s*<th>Account</th>\s*<th>Bill Type</th>\s*"
-            "<th>MPANs</th>\s*<th>Issue Date</th>\s*<th>Start Date</th>\s*"
-            "<th>Finish Date</th>\s*<th>kWh</th>\s*<th>Net</th>\s*"
-            "<th>VAT</th>\s*<th>Gross</th>\s*<th>R1 MPAN</th>\s*"
-            "<th>R1 Meter Serial Number</th>\s*<th>R1 Coefficient</th>\s*"
-            "<th>R1 Units</th>\s*<th>R1 TPR</th>\s*"
-            "<th>R1 Previous Read Date</th>\s*"
+            r'<th>Reference</th>\s*<th>Account</th>\s*<th>Bill Type</th>\s*'
+            r'<th>MPAN Cores</th>\s*<th>Issue Date</th>\s*'
+            r'<th>Start Date</th>\s*'
+            r"<th>Finish Date</th>\s*<th>kWh</th>\s*<th>Net</th>\s*"
+            r"<th>VAT</th>\s*<th>Gross</th>\s*<th>R1 MPAN</th>\s*"
+            r"<th>R1 Meter Serial Number</th>\s*<th>R1 Coefficient</th>\s*"
+            r"<th>R1 Units</th>\s*<th>R1 TPR</th>\s*"
+            r"<th>R1 Previous Read Date</th>\s*"
             "<th>R1 Previous Read Value</th>\s*"
             "<th>R1 Previous Read Type</th>\s*<th>R1 Present Read Date</th>\s*"
             "<th>R1 Present Read Value</th>\s*<th>R1 Present Read Type</th>\s*"
             "<th>Breakdown</th>",
             r"<td>3423760005</td>\s*<td>SA342376000</td>\s*<td>N</td>\s*"
-            "<td>\[&#39;03 801 110 22 10653921534&#39;\]</td>\s*"
+            r'<td>2210653921534</td>\s*'
             "<td>2010-05-12 00:00</td>\s*<td>2010-01-19 00:00</td>\s*"
             "<td>2010-04-20 23:30</td>\s*<td>253</td>\s*<td>36.16</td>\s*"
             "<td>1.80</td>\s*<td>37.96</td>\s*"
@@ -4454,10 +4455,11 @@ def virtual_bill(supply_source):
         'tries': {},
         'regexes': [
             r"<th>Reference</th>\s*<th>Account</th>\s*<th>Bill Type</th>\s*"
-            "<th>MPANs</th>\s*<th>Issue Date</th>\s*<th>Start Date</th>\s*"
+            r'<th>MPAN Cores</th>\s*<th>Issue Date</th>\s*'
+            r'<th>Start Date</th>\s*'
             "<th>Finish Date</th>\s*<th>kWh</th>\s*<th>Net</th>\s*"
             "<th>VAT</th>\s*<th>Gross</th>\s*<th>Breakdown</th>",
-            r"<td>KUH773</td>\s*<td>02</td>\s*<td>N</td>\s*<td>\[\]</td>\s*"
+            r"<td>KUH773</td>\s*<td>02</td>\s*<td>N</td>\s*<td></td>\s*"
             "<td>2010-06-09 00:00</td>\s*<td>2010-05-01 00:00</td>\s*"
             "<td>2010-05-31 23:30</td>\s*<td>32124.5</td>\s*"
             r'<td>2219.41</td>\s*<td>388.40</td>\s*<td>2607.81</td>\s*'
@@ -14594,7 +14596,7 @@ finally:
             r'2107 763</td>\s*'
             r'<td>22 9813 2107 763</td>\s*'
             r'<td>N</td>\s*'
-            r'<td>\[&#39;22 9813 2107 763&#39;\]</td>\s*'
+            r'<td></td>\s*'
             r'<td>2016-09-13 23:00</td>\s*'
             r'<td>2016-07-31 23:00</td>\s*'
             r'<td>2016-08-31 22:30</td>\s*'

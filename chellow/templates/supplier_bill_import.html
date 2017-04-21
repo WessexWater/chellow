@@ -45,6 +45,7 @@
 					<thead>
 						<tr>
 							<th>Error</th>
+							<th>MPAN Cores</th>
 							<th>Account</th>
 							<th>Reference</th>
 							<th>Bill Type Code</th>
@@ -63,6 +64,11 @@
 						{% for bill in failed_bills %}
 							<tr>
 								<td>{{bill.error}}</td>
+								<td>
+									<a
+									 		href="/supplies?search_pattern={{bill.mpan_cores}}"
+											>{{bill.mpan_cores}}</a>
+								</td>
 								<td>{{bill.account}}</td>
 								<td>{{bill.reference}}</td>
 								<td>{{bill.bill_type_code}}</td>
@@ -89,7 +95,7 @@
 							<th>Reference</th>
 							<th>Account</th>
 							<th>Bill Type</th>
-							<th>MPANs</th>
+							<th>MPAN Cores</th>
 							<th>Issue Date</th>
 							<th>Start Date</th>
 							<th>Finish Date</th>
@@ -119,7 +125,7 @@
 								<td>{{bill.reference}}</td>
 								<td>{{bill.account}}</td>
 								<td>{{bill.bill_type_code}}</td>
-								<td>{{bill.mpans}}</td>
+								<td>{{bill.mpan_cores}}</td>
 								<td>{{bill.issue_date|hh_format}}</td>
 								<td>{{bill.start_date|hh_format}}</td>
 								<td>{{bill.finish_date|hh_format}}</td>

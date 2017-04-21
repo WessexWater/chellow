@@ -170,7 +170,7 @@ class Parser():
                     kwh = Decimal(0)
                     reads = []
                     bill_type_code = None
-                    mpan_strings = []
+                    mpan_cores = []
                     breakdown = defaultdict(int, {'raw-lines': []})
             elif code == "CCD":
                 ccde = self.parser.elements[1]
@@ -370,21 +370,22 @@ class Parser():
                         {
                             'bill_type_code': bill_type_code,
                             'account': account,
-                            'mpans': mpan_strings, 'reference': reference,
-                            'issue_date': issue_date, 'start_date': start_date,
+                            'mpan_cores': ', '.join(mpan_cores),
+                            'reference': reference, 'issue_date': issue_date,
+                            'start_date': start_date,
                             'finish_date': finish_date, 'kwh': kwh, 'net': net,
                             'vat': vat, 'gross': gross, 'breakdown': breakdown,
                             'reads': reads})
                     breakdown = None
             elif code == "MAN":
                 madn = self.parser.elements[2]
+                '''
                 pc_code = madn[3]
                 mtc_code = madn[4]
                 llfc_code = madn[5]
+                '''
 
-                mpan_strings.append(
-                    pc_code + " " + mtc_code + " " + llfc_code + " " +
-                    madn[0] + " " + madn[1] + madn[2])
+                mpan_cores.append(''.join((madn[0], madn[1], madn[2])))
             elif code == "VAT":
                 uvla = self.parser.elements[5]
                 net += self.parser.to_decimal(uvla) / Decimal('100')
