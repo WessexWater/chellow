@@ -5,7 +5,7 @@
 {% endblock %}
 
 {% block nav %}
-	&raquo; CSV Supplies Snapshot
+	CSV Supplies Snapshot
 {% endblock %}
 
 {% block content %}
@@ -22,7 +22,7 @@
 				<div class="standardForm textWidthAuto">
 					<form action="/reports/33">
 						<fieldset>
-							At {{input_date('date', last_month)}}<br><br>
+							At {{input_date('date', default_timestamp)}}<br><br>
 							MPAN Cores (one on each line, includes all supplies if left
 							blank)<br> {{input_textarea('mpan_cores', '', 5, 40)}} <br><br>
 							<input type="submit" value="Download">

@@ -4108,8 +4108,8 @@ def csv_supplies_hh_data_get():
 def csv_supplies_snapshot_get():
     now = utc_datetime_now()
     return render_template(
-        'csv_supplies_snapshot.html', last_month=utc_datetime(
-            now.year, now.month) - relativedelta(months=1))
+        'csv_supplies_snapshot.html', default_timestamp=utc_datetime(
+            now.year, now.month, now.day))
 
 
 @app.route('/csv_supplies_duration')
