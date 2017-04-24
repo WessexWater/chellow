@@ -151,6 +151,9 @@ class BillImport(threading.Thread):
                     str(len(self.failed_bills)) + " failures, and so the "
                     "whole import has been rolled back.")
 
+        except BadRequest as e:
+            sess.rollback()
+            self._log("Problem: " + e.description)
         except:
             sess.rollback()
             self._log("I've encountered a problem: " + traceback.format_exc())

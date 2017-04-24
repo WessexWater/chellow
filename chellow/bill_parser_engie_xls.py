@@ -5,6 +5,7 @@ from chellow.utils import parse_mpan_core, HH, to_utc, to_ct
 from itertools import count
 from xlrd import xldate_as_tuple, open_workbook
 from dateutil.relativedelta import relativedelta
+from werkzeug.exceptions import BadRequest
 
 
 ELEM_MAP = {
@@ -151,7 +152,14 @@ def get_date(row, name, datemode):
 
 
 def get_value(row, name):
-    val = row[COLUMN_MAP[name]].value
+    idx = COLUMN_MAP[name]
+    try:
+        val = row[idx].value
+    except IndexError:
+        raise BadRequest(
+            "For the row " + str(row) + " and name '" + name +
+            "', the index is " + str(idx) +
+            " which is beyond the end of the row. ")
     if isinstance(val, str):
         return val.strip()
     else:
