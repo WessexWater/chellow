@@ -1,19 +1,39 @@
-from datetime import datetime as Datetime
-import pytz
 from dateutil.relativedelta import relativedelta
 from sqlalchemy import or_, and_
 import traceback
-from chellow.models import RegisterRead, Bill, Supply, Era
-from chellow.utils import HH, hh_format, req_int, send_response
-from flask import request
+from chellow.models import RegisterRead, Bill, Supply, Era, Session
+from chellow.utils import HH, hh_format, req_int, utc_datetime
+from flask import request, g
+import chellow.dloads
+import csv
+import os
+from werkzeug.exceptions import BadRequest
+import threading
+from chellow.views import chellow_redirect
 
 
-def content(year, month, months, supply_id, sess):
+def content(year, month, months, supply_id, user):
+    sess = f = None
     try:
-        finish_date = Datetime(year, month, 1, tzinfo=pytz.utc) + \
+        sess = Session()
+        running_name, finished_name = chellow.dloads.make_names(
+            'register_reads.csv', user)
+        f = open(running_name, mode='w', newline='')
+        w = csv.writer(f, lineterminator='\n')
+        w.writerow(
+            (
+                'Duration Start', 'Duration Finish', 'Supply Id',
+                'Import MPAN Core', 'Export MPAN Core', 'Batch Reference',
+                'Bill Id', 'Bill Reference', 'Bill Issue Date', 'Bill Type',
+                'Register Read Id', 'TPR', 'Coefficient',
+                'Previous Read Date', 'Previous Read Value',
+                'Previous Read Type', 'Present Read Date',
+                'Present Read Value', 'Present Read Type'))
+
+        finish_date = utc_datetime(year, month, 1) + \
             relativedelta(months=1) - HH
 
-        start_date = Datetime(year, month, 1, tzinfo=pytz.utc) - \
+        start_date = utc_datetime(year, month, 1) - \
             relativedelta(months=months-1)
 
         reads = sess.query(RegisterRead).filter(
@@ -30,16 +50,6 @@ def content(year, month, months, supply_id, sess):
             supply = Supply.get_by_id(sess, supply_id)
             reads = reads.filter(Bill.supply == supply)
 
-        yield ','.join(
-            (
-                'Duration Start', 'Duration Finish', 'Supply Id',
-                'Import MPAN Core', 'Export MPAN Core', 'Batch Reference',
-                'Bill Id,Bill Reference', 'Bill Issue Date', 'Bill Type',
-                'Register Read Id', 'TPR', 'Coefficient',
-                'Previous Read Date', 'Previous Read Value',
-                'Previous Read Type', 'Present Read Date',
-                'Present Read Value', 'Present Read Type')) + '\n'
-
         for read in reads:
             bill = read.bill
             supply = bill.supply
@@ -54,8 +64,8 @@ def content(year, month, months, supply_id, sess):
                 else:
                     era = eras[-1]
 
-            yield ','.join(
-                '"' + ('' if val is None else str(val)) + '"' for val in [
+            w.writerow(
+                ('' if val is None else val) for val in [
                     hh_format(start_date), hh_format(finish_date), supply.id,
                     era.imp_mpan_core, era.exp_mpan_core, batch.reference,
                     bill.id, bill.reference, hh_format(bill.issue_date),
@@ -64,9 +74,18 @@ def content(year, month, months, supply_id, sess):
                     read.coefficient, hh_format(read.previous_date),
                     read.previous_value, read.previous_type.code,
                     hh_format(read.present_date), read.present_value,
-                    read.present_type.code]) + '\n'
+                    read.present_type.code])
+    except BadRequest as e:
+        w.writerow([e.description])
     except:
-        yield traceback.format_exc()
+        msg = traceback.format_exc()
+        f.write(msg)
+    finally:
+        if sess is not None:
+            sess.close()
+        if f is not None:
+            f.close()
+            os.rename(running_name, finished_name)
 
 
 def do_get(sess):
@@ -74,8 +93,6 @@ def do_get(sess):
     month = req_int('end_month')
     months = req_int('months')
     supply_id = req_int('supply_id') if 'supply_id' in request.values else None
-    file_name = 'reads_' + \
-        Datetime.now(pytz.utc).strftime("%Y%M%d%H%m") + '.csv'
-    return send_response(
-        content, args=(
-            year, month, months, supply_id, sess), file_name=file_name)
+    args = (year, month, months, supply_id, g.user)
+    threading.Thread(target=content, args=args).start()
+    return chellow_redirect("/downloads", 303)
