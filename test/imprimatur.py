@@ -1951,6 +1951,7 @@ def virtual_bill_titles():
         'path': '/',
         'auth': ('watkin\\s@example.com', 'alan'),
         'regexes': [
+            r'csv_register_reads',
             r'<a href="/participants">Market Participants</a>',
             r'<a href="/meter_payment_types">Meter Payment Types</a>',
             r'<a href="/sources">\s*Sources\s*</a>',
