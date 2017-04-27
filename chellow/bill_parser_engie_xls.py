@@ -63,9 +63,15 @@ ELEM_MAP = {
     ('Renewables Obligation (RO)', '', 'Usage'): 'ro-msp-kwh',
     ('Renewables Obligation (RO)', '', 'Price'): 'ro-rate',
     ('Renewables Obligation (RO)', '', 'Amount'): 'ro-gbp',
-    ('TNUoS (Estimated)', '', 'Usage'): 'triad-estimate-gsp-kw',
-    ('TNUoS (Estimated)', '', 'Price'): 'triad-estimate-rate',
-    ('TNUoS (Estimated)', '', 'Amount'): 'triad-estimate-gbp',
+    ('TNUoS (Estimated)', '', 'Usage'): 'triad-gsp-kw',
+    ('TNUoS (Estimated)', '', 'Price'): 'triad-rate',
+    ('TNUoS (Estimated)', '', 'Amount'): 'triad-gbp',
+    ('TNUoS (Credit)', '', 'Usage'): 'triad-gsp-kw',
+    ('TNUoS (Credit)', '', 'Price'): 'triad-rate',
+    ('TNUoS (Credit)', '', 'Amount'): 'triad-gbp',
+    ('TNUoS (Actual)', '', 'Usage'): 'triad-gsp-kw',
+    ('TNUoS (Actual)', '', 'Price'): 'triad-rate',
+    ('TNUoS (Actual)', '', 'Amount'): 'triad-gbp',
     ('Unit Rate', 'Summer Weekday', 'Usage'): 'summer-weekday-gsp-kwh',
     ('Unit Rate', 'Summer Weekday', 'Price'): 'summer-weekday-rate',
     ('Unit Rate', 'Summer Weekday', 'Amount'): 'summer-weekday-gbp',
@@ -302,6 +308,8 @@ class Parser():
                 bd_add(bd, 'cfd-fit-gbp', amount)
             elif description.startswith("Flex Adj - "):
                 bd_add(bd, 'reconciliation-gbp', amount)
+            elif description.startswith("Legacy TNUoS Reversal "):
+                bd_add(bd, 'triad-gbp', amount)
 
         for bill in bills.values():
             bd = bill['breakdown']
