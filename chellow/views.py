@@ -2683,8 +2683,7 @@ def downloads_get():
             {
                 'name': fl,
                 'last_modified': Datetime.utcfromtimestamp(statinfo.st_mtime),
-                'size': statinfo.st_size,
-                'creation_date': Datetime.utcfromtimestamp(statinfo.st_ctime)})
+                'size': statinfo.st_size})
 
     return render_template('downloads.html', files=files)
 

@@ -29,7 +29,6 @@
 					<tr>
 						<th>Name</th>
 						<th>Size</th>
-						<th>Creation Date</th>   
 						<th>Last Modified</th>
 						<th>
 						    <form method="post">
@@ -47,11 +46,6 @@
 								<a href="/downloads/{{file.name}}">{{file.name}}</a>
 							</td>
 							<td>{{file.size}} B</td>
-							<td>
-							  {% if file.creation_date != file.last_modified -%}
-							   {{file.creation_date|hh_format}} 
-						    {%- endif %}
-							</td> 
 							<td>{{file.last_modified|hh_format}}</td>
 							<td>
 								<form
