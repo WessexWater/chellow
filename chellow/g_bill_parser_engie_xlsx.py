@@ -38,6 +38,7 @@ class Parser():
             if bill_reference_raw is None:
                 break
             bill_reference = str(bill_reference_raw)
+            mprn = str(row[7].value)
             volume_kwh = Decimal(row[9].value)
             breakdown = {
                 'volume_kwh': volume_kwh,
@@ -67,7 +68,7 @@ class Parser():
                 'issue_date': row[2].value,
                 'bill_type_code': 'N',
                 'msn': '',
-                'mprn': str(row[7].value),
+                'mprn': mprn,
                 'start_date': to_utc(row[3].value),
                 'finish_date': to_utc(row[4].value) + relativedelta(days=1) -
                 HH,
@@ -77,16 +78,17 @@ class Parser():
                 'raw_lines': '',
                 'kwh': Decimal(volume_kwh),
                 'reads': []}
-            raw_bills[bill_reference] = raw_bill
+            raw_bills[mprn] = raw_bill
 
         for self._line_number, row in enumerate(self.consumption_rows[10:]):
             bill_reference_raw = row[1].value
             if bill_reference_raw is None:
                 break
             bill_reference = str(bill_reference_raw)
+            mprn = str(row[5].value)
             read = {
                 'msn': '',
-                'mprn': str(row[5].value),
+                'mprn': mprn,
                 'prev_value': row[6].value,
                 'prev_date': to_utc(row[7].value),
                 'prev_type_code': row[8].value[1],
@@ -96,6 +98,6 @@ class Parser():
                 'correction_factor': 1,
                 'calorific_value': 0,
                 'units': 'M3'}
-            raw_bill = raw_bills[bill_reference]
+            raw_bill = raw_bills[mprn]
             raw_bill['reads'].append(read)
         return raw_bills.values()
