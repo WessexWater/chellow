@@ -1825,11 +1825,11 @@ def virtual_bill_titles():
             # Check starts with titles
             r'\)\s\sSupply',
 
-            r'("1","1","net","","CH017",){1}',
+            r'(1,1,net,,CH017,){1}',
 
             # Check full line
-            r'"2","1","net","","CI004","Lower Treave","2008-07-01 00:00",'
-            '"2008-07-31 23:30","00","845","5","","0","hh",'
+            r'2,1,net,,CI004,Lower Treave,,2008-07-01 00:00,'
+            r'2008-07-31 23:30,00,845,5,,0,hh,'
             '570,22 9813 2107 763,430,Half-hourlies 2007,0,0,0.0,0,,None,1488,'
             '581,22 3475 1614 211,900,Half-hourlies 2007,0,0,,0,,None,1488'],
         'status_code': 200},
@@ -2857,8 +2857,8 @@ def virtual_bill(supply_source):
         'tries': {},
         'status_code': 200,
         'regexes': [
-            r'"7","1","net","","CH023","Treglisson","2009-03-01 00:00",'
-            r'"2009-03-31 23:30","00","845","5","","0","hh",540,'
+            r'7,1,net,,CH023,Treglisson,,2009-03-01 00:00,'
+            r'2009-03-31 23:30,00,845,5,,0,hh,540,'
             r'22 4862 4512 332,230,Half-hourlies 2007,148925.71000000002,0,'
             r'158159.10402,399.72,2009-03-13 08:00,None,0,,,,,0,0,,0,,None,'
             r'1488']},
@@ -7436,7 +7436,7 @@ def virtual_bill(supply_source):
         'path': '/downloads/'
         '0034_FINISHED_watkinsexamplecom_supplies_duration.csv',
         'regexes': [
-            r'"10","2",'],
+            r'10,2,'],
         'status_code': 200},
     {
         'name': "Try the site level monthly data HTML report.",

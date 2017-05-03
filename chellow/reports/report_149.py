@@ -1,12 +1,12 @@
 import traceback
-import datetime
+from datetime import datetime as Datetime
 from sqlalchemy import or_, func, Float, cast
 from sqlalchemy.sql.expression import null
-import pytz
 from chellow.models import (
     HhDatum, Channel, Era, Session, Supply, RegisterRead, Bill, BillType,
     ReadType)
-from chellow.utils import hh_min, hh_max, hh_format, HH, req_hh_date, req_int
+from chellow.utils import (
+    hh_min, hh_max, hh_format, HH, req_hh_date, req_int, to_utc)
 import chellow.computer
 import chellow.duos
 import chellow.dloads
@@ -15,6 +15,7 @@ import threading
 from itertools import chain
 from flask import request, g
 from chellow.views import chellow_redirect
+import csv
 
 NORMAL_READ_TYPES = 'C', 'N', 'N3'
 
@@ -82,7 +83,7 @@ def mpan_bit(
                 Era.supply == supply,
                 Channel.imp_related == is_import,
                 Channel.channel_type != 'ACTIVE',
-                HhDatum.start_date == date_at_md).one()[0]
+                HhDatum.start_date == date_at_md).scalar()
 
         sum_kwh += hh_value
         if hh_status != 'A':
@@ -102,35 +103,35 @@ def mpan_bit(
 
     date_at_md_str = '' if date_at_md is None else hh_format(date_at_md)
 
-    return ','.join(str(val) for val in [
+    return [
         llfc_code, mpan_core_str, sc_str, supplier_contract_name, sum_kwh,
-        non_actual, gsp_kwh, kw_at_md, date_at_md_str, kva_at_md, num_bad])
+        non_actual, gsp_kwh, kw_at_md, date_at_md_str, kva_at_md, num_bad]
 
 
 def content(supply_id, start_date, finish_date, user):
-    forecast_date = datetime.datetime.max.replace(tzinfo=pytz.utc)
+    forecast_date = to_utc(Datetime.max)
     caches = {}
     f = sess = None
     try:
         sess = Session()
         running_name, finished_name = chellow.dloads.make_names(
             'supplies_duration.csv', user)
-        f = open(running_name, "w")
-        f.write(
-            ','.join(
-                (
-                    "Supply Id", "Supply Name", "Source", "Generator Type",
-                    "Site Ids", "Site Names", "From", "To", "PC", "MTC", "CoP",
-                    "SSC", "Normal Reads", "Type", "Import LLFC",
-                    "Import MPAN Core", "Import Supply Capacity",
-                    "Import Supplier", "Import Total MSP kWh",
-                    "Import Non-actual MSP kWh", "Import Total GSP kWh",
-                    "Import MD / kW", "Import MD Date", "Import MD / kVA",
-                    "Import Bad HHs", "Export LLFC", "Export MPAN Core",
-                    "Export Supply Capacity", "Export Supplier",
-                    "Export Total MSP kWh", "Export Non-actual MSP kWh",
-                    "Export GSP kWh", "Export MD / kW", "Export MD Date",
-                    "Export MD / kVA", "Export Bad HHs")))
+        f = open(running_name, mode='w', newline='')
+        w = csv.writer(f, lineterminator='\n')
+        w.writerow(
+            (
+                "Supply Id", "Supply Name", "Source", "Generator Type",
+                "Site Code", "Site Name", "Associated Site Codes", "From",
+                "To", "PC", "MTC", "CoP", "SSC", "Normal Reads", "Type",
+                "Import LLFC", "Import MPAN Core", "Import Supply Capacity",
+                "Import Supplier", "Import Total MSP kWh",
+                "Import Non-actual MSP kWh", "Import Total GSP kWh",
+                "Import MD / kW", "Import MD Date", "Import MD / kVA",
+                "Import Bad HHs", "Export LLFC", "Export MPAN Core",
+                "Export Supply Capacity", "Export Supplier",
+                "Export Total MSP kWh", "Export Non-actual MSP kWh",
+                "Export GSP kWh", "Export MD / kW", "Export MD Date",
+                "Export MD / kVA", "Export Bad HHs"))
 
         supplies = sess.query(Supply).join(Era).filter(
             or_(Era.finish_date == null(), Era.finish_date >= start_date),
@@ -141,17 +142,21 @@ def content(supply_id, start_date, finish_date, user):
                 Supply.id == Supply.get_by_id(sess, supply_id).id)
 
         for supply in supplies:
-            site_codes = ''
-            site_names = ''
-            eras = supply.find_eras(sess, start_date, finish_date)
+            site_codes = set()
+            site = None
+            eras = sess.query(Era).filter(
+                Era.supply == supply, Era.start_date <= finish_date,
+                or_(
+                    Era.finish_date == null(),
+                    Era.finish_date >= start_date)).order_by(
+                Era.start_date).all()
 
             era = eras[-1]
             for site_era in era.site_eras:
-                site = site_era.site
-                site_codes = site_codes + site.code + ', '
-                site_names = site_names + site.name + ', '
-            site_codes = site_codes[:-2]
-            site_names = site_names[:-2]
+                if site_era.is_physical:
+                    site = site_era.site
+                else:
+                    site_codes.add(site_era.site.code)
 
             if supply.generator_type is None:
                 generator_type = ''
@@ -198,19 +203,15 @@ def content(supply_id, start_date, finish_date, user):
                 (chunk_finish - (chunk_start - HH)).total_seconds() /
                 (30 * 60))
 
-            f.write(
-                '\n' + ','.join(
-                    ('"' + str(value) + '"') for value in [
-                        supply.id, supply.name, supply.source.code,
-                        generator_type, site_codes, site_names,
-                        hh_format(start_date), hh_format(finish_date),
-                        era.pc.code, era.mtc.code, era.cop.code, ssc_code,
-                        len(prime_reads), supply_type]) + ',')
-            f.write(
-                mpan_bit(
+            w.writerow(
+                [
+                    supply.id, supply.name, supply.source.code, generator_type,
+                    site.code, site.name, '| '.join(sorted(site_codes)),
+                    hh_format(start_date), hh_format(finish_date), era.pc.code,
+                    era.mtc.code, era.cop.code, ssc_code, len(prime_reads),
+                    supply_type] + mpan_bit(
                     sess, supply, True, num_hh, eras, chunk_start,
-                    chunk_finish, forecast_date, caches) + "," +
-                mpan_bit(
+                    chunk_finish, forecast_date, caches) + mpan_bit(
                     sess, supply, False, num_hh, eras, chunk_start,
                     chunk_finish, forecast_date, caches))
     except:
