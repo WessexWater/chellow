@@ -16,6 +16,12 @@ $ion_1_0 {
       'night': 1.067,
       'other': 1.069}},
   'tariffs': {
+    '110': {
+      'gbp-per-kva-per-day': 0,
+      'excess-gbp-per-kva-per-day': 0,
+      'day-gbp-per-kwh': 0,
+      'night-gbp-per-kwh': 0,
+      'reactive-gbp-per-kvarh': 0},
     '510': {
       'gbp-per-kva-per-day': 0.0378,
       'excess-gbp-per-kva-per-day': 0.0378,
@@ -32,7 +38,8 @@ $ion_1_0 {
       'gbp-per-kva-per-day': 0.0174,
       'excess-gbp-per-kva-per-day': 0.0174,
       'day-gbp-per-kwh': 0,
-      'night-gbp-per-kwh': 0},
+      'night-gbp-per-kwh': 0,
+      'reactive-gbp-per-kvarh': 0},
     '540': {
       'gbp-per-kva-per-day': 0.0368,
       'excess-gbp-per-kva-per-day': 0.0368,
@@ -61,4 +68,5 @@ $ion_1_0 {
       'gbp-per-kva-per-day': 0.0167,
       'excess-gbp-per-kva-per-day': 0.0167,
       'day-gbp-per-kwh': 0,
-      'night-gbp-per-kwh': 0}}}
+      'night-gbp-per-kwh': 0,
+      'reactive-gbp-per-kvarh': 0}}}

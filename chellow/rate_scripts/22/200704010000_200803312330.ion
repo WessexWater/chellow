@@ -16,6 +16,11 @@ $ion_1_0 {
       'night': 1.064,
       'other': 1.065}},
   'tariffs': {
+    '110': {
+      'gbp-per-kva-per-day': 0.0372,
+      'day-gbp-per-kwh': 0.0047,
+      'night-gbp-per-kwh': 0.0014,
+      'reactive-gbp-per-kvarh': 0.0023},
     '510': {
       'gbp-per-kva-per-day': 0.0372,
       'day-gbp-per-kwh': 0.0047,

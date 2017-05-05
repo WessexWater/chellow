@@ -16,6 +16,8 @@ from itertools import chain
 from flask import request, g
 from chellow.views import chellow_redirect
 import csv
+from werkzeug.exceptions import BadRequest
+
 
 NORMAL_READ_TYPES = 'C', 'N', 'N3'
 
@@ -27,7 +29,8 @@ def mpan_bit(
     llfc_code = ''
     sc_str = ''
     supplier_contract_name = ''
-    gsp_kwh = ''
+    gsp_kwh = 0
+    msp_kwh = 0
     for era in eras:
         mpan_core = era.imp_mpan_core if is_import else era.exp_mpan_core
         if mpan_core is None:
@@ -43,25 +46,20 @@ def mpan_bit(
             sc = era.exp_sc
         llfc_code = llfc.code
         sc_str = str(sc)
-        if llfc.is_import and era.pc.code == '00' and \
-                supply.source.code not in ('gen') and \
-                supply.dno_contract.name != '99':
-            if gsp_kwh == '':
-                gsp_kwh = 0
 
-            block_start = hh_max(era.start_date, chunk_start)
-            block_finish = hh_min(era.finish_date, chunk_finish)
+        block_start = hh_max(era.start_date, chunk_start)
+        block_finish = hh_min(era.finish_date, chunk_finish)
 
-            supply_source = chellow.computer.SupplySource(
-                sess, block_start, block_finish, forecast_date, era, is_import,
-                caches)
+        supply_source = chellow.computer.SupplySource(
+            sess, block_start, block_finish, forecast_date, era, is_import,
+            caches)
 
-            chellow.duos.duos_vb(supply_source)
-
-            gsp_kwh += sum(datum['gsp-kwh'] for datum in supply_source.hh_data)
+        chellow.duos.duos_vb(supply_source)
+        for hh in supply_source.hh_data:
+            gsp_kwh += hh['gsp-kwh']
+            msp_kwh += hh['msp-kwh']
 
     md = 0
-    sum_kwh = 0
     non_actual = 0
     date_at_md = None
     kvarh_at_md = None
@@ -85,7 +83,6 @@ def mpan_bit(
                 Channel.channel_type != 'ACTIVE',
                 HhDatum.start_date == date_at_md).scalar()
 
-        sum_kwh += hh_value
         if hh_status != 'A':
             non_actual += hh_value
             num_na += 1
@@ -104,7 +101,7 @@ def mpan_bit(
     date_at_md_str = '' if date_at_md is None else hh_format(date_at_md)
 
     return [
-        llfc_code, mpan_core_str, sc_str, supplier_contract_name, sum_kwh,
+        llfc_code, mpan_core_str, sc_str, supplier_contract_name, msp_kwh,
         non_actual, gsp_kwh, kw_at_md, date_at_md_str, kva_at_md, num_bad]
 
 
@@ -214,6 +211,8 @@ def content(supply_id, start_date, finish_date, user):
                     chunk_finish, forecast_date, caches) + mpan_bit(
                     sess, supply, False, num_hh, eras, chunk_start,
                     chunk_finish, forecast_date, caches))
+    except BadRequest as e:
+        f.write('Problem:' + e.description)
     except:
         f.write(traceback.format_exc())
     finally:

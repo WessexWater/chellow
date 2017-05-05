@@ -12,7 +12,7 @@ from amazon.ion.simpleion import load, dump
 from amazon.ion.exceptions import IonException
 from io import StringIO
 import os
-
+from collections.abc import Mapping
 
 clogs = deque()
 
@@ -516,6 +516,34 @@ def get_file_scripts(contract_name):
     return tuple(rscripts)
 
 
+class RateDict(Mapping):
+    def __init__(self, contract_name, dt, rate_dict, key_history):
+        self._contract_name = contract_name
+        self._dt = dt
+        for k, v in tuple(rate_dict.items()):
+            if isinstance(v, Mapping):
+                rate_dict[k] = RateDict(
+                    contract_name, dt, v, key_history + [k])
+        self._storage = rate_dict
+        self._key_history = key_history
+
+    def __getitem__(self, key):
+        try:
+            return self._storage[key]
+        except KeyError:
+            raise BadRequest(
+                "For the contract " + self._contract_name +
+                " and the rate script at " + hh_format(self._dt) +
+                " the key " + str(self._key_history + [key]) +
+                " can't be found.")
+
+    def __iter__(self):
+        return iter(self._storage)
+
+    def __len__(self):
+        return len(self._storage)
+
+
 def get_file_rates(cache, contract_name, dt):
     try:
         return cache['contract_names'][contract_name][dt]
@@ -543,7 +571,8 @@ def get_file_rates(cache, contract_name, dt):
 
                 if start_date <= dt <= end_date:
                     try:
-                        rscript = loads(script)
+                        rscript = RateDict(
+                            contract_name, dt, loads(script), [])
                     except BadRequest as e:
                         raise BadRequest(
                             "Problem with rate script for contract " +

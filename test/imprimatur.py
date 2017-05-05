@@ -1830,8 +1830,9 @@ def virtual_bill_titles():
             # Check full line
             r'2,1,net,,CI004,Lower Treave,,2008-07-01 00:00,'
             r'2008-07-31 23:30,00,845,5,,0,hh,'
-            '570,22 9813 2107 763,430,Half-hourlies 2007,0,0,0.0,0,,None,1488,'
-            '581,22 3475 1614 211,900,Half-hourlies 2007,0,0,,0,,None,1488'],
+            r'570,22 9813 2107 763,430,Half-hourlies 2007,0,0,0.0,0,,None,'
+            r'1488,581,22 3475 1614 211,900,Half-hourlies 2007,0,0,0.0,0,,'
+            r'None,1488'],
         'status_code': 200},
 
     # Delete a day of data. Supply 1, era 13 },
@@ -2860,7 +2861,7 @@ def virtual_bill(supply_source):
             r'7,1,net,,CH023,Treglisson,,2009-03-01 00:00,'
             r'2009-03-31 23:30,00,845,5,,0,hh,540,'
             r'22 4862 4512 332,230,Half-hourlies 2007,148925.71000000002,0,'
-            r'158159.10402,399.72,2009-03-13 08:00,None,0,,,,,0,0,,0,,None,'
+            r'158159.10402,399.72,2009-03-13 08:00,None,0,,,,,0,0,0,0,,None,'
             r'1488']},
 
     {
@@ -3577,7 +3578,10 @@ def virtual_bill(supply_source):
             r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="0" '
             r'office:value-type="float"/>\s*'
-            r'<table:table-cell table:number-columns-repeated="3"/>\s*'
+            r'<table:table-cell office:value="30" '
+            r'office:value-type="float"/>\s*'
+            r'<table:table-cell office:value="0.0" office:value-type="float" '
+            r'table:number-columns-repeated="2"/>\s*'
             r'<table:table-cell office:value="0" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="0.0" '
@@ -10446,10 +10450,10 @@ def virtual_bill(supply_source):
         'path': '/downloads/'
         '0071_FINISHED_watkinsexamplecom_supplies_duration.csv',
         'regexes': [
-            r'"10","2","net","","CI017","Roselands","2012-01-05 00:00",'
-            r'"2012-01-10 23:30","03","801","6a","0366","1","nhh",110,'
-            r'22 1065 3921 534,30,Non half-hourlies 2010,0,0,,0,,None,288,,,,,'
-            r'0,0,,0,,None,288'],
+            r'10,2,net,,CI017,Roselands,,2012-01-05 00:00,'
+            r'2012-01-10 23:30,03,801,6a,0366,1,nhh,110,'
+            r'22 1065 3921 534,30,Non half-hourlies 2010,756.0,0,813.79\d*,0,'
+            r',None,288,,,,,0,0,0,0,,None,288'],
         'status_code': 200},
     {
         'name': "Reads covered by bill without. Run bill check.",
@@ -10487,10 +10491,10 @@ def virtual_bill(supply_source):
         'path': '/downloads/'
         '0073_FINISHED_watkinsexamplecom_supplies_duration.csv',
         'regexes': [
-            r'"10","2","net","","CI017","Roselands","2007-02-01 00:00",'
-            r'"2007-02-28 23:30","03","801","5","0393","0","nhh",'
-            r'110,22 1065 3921 534,30,Non half-hourlies 2010,0,0,,0,,None,'
-            r'1344,,,,,0,0,,0,,None,1344'],
+            r'10,2,net,,CI017,Roselands,,2007-02-01 00:00,'
+            r'2007-02-28 23:30,03,801,5,0393,0,nhh,'
+            r'110,22 1065 3921 534,30,Non half-hourlies 2010,166.0794\d*,'
+            r'0,177.13161\d*,0,,None,1344,,,,,0,0,0,0,,None,1344'],
         'status_code': 200},
 
     {
@@ -10537,10 +10541,10 @@ def virtual_bill(supply_source):
         'path': '/downloads/'
         '0074_FINISHED_watkinsexamplecom_supplies_duration.csv',
         'regexes': [
-            r'"10","2","net","","CI017","Roselands","2009-04-01 00:00",'
-            r'"2009-04-10 23:30","03","801","5","0393","1","nhh",'
-            r'110,22 1065 3921 534,30,Non half-hourlies 2010,0,0,,0,,None,480,'
-            r',,,,0,0,,0,,None,480'],
+            r'10,2,net,,CI017,Roselands,,2009-04-01 00:00,'
+            r'2009-04-10 23:30,03,801,5,0393,1,nhh,'
+            r'110,22 1065 3921 534,30,Non half-hourlies 2010,59.314\d*,0,'
+            r'63.406\d*,0,,None,480,,,,,0,0,0,0,,None,480'],
         'status_code': 200},
 
     {
@@ -11415,10 +11419,10 @@ def virtual_bill(supply_source):
         'path': '/downloads/'
         '0083_FINISHED_watkinsexamplecom_supplies_duration.csv',
         'regexes': [
-            r'"10","2","net","","CI017","Roselands","2009-04-01 00:00",'
-            r'"2009-04-10 23:30","03","801","5","0393","1","nhh",'
-            r'110,22 1065 3921 534,30,Non half-hourlies 2010,0,0,,0,,None,480,'
-            r',,,,0,0,,0,,None,480'],
+            r'10,2,net,,CI017,Roselands,,2009-04-01 00:00,'
+            r'2009-04-10 23:30,03,801,5,0393,1,nhh,'
+            r'110,22 1065 3921 534,30,Non half-hourlies 2010,59.31\d*,0,'
+            r'63.40\d*,0,,None,480,,,,,0,0,0,0,,None,480'],
         'status_code': 200},
 
     {

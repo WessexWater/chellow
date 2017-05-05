@@ -7,7 +7,7 @@ from werkzeug.exceptions import BadRequest
 from chellow.models import HhDatum, Channel, Era
 
 
-BANDS = ['red', 'amber', 'green']
+BANDS = ('red', 'amber', 'green')
 
 KEYS = dict(
     (
@@ -396,7 +396,7 @@ def datum_2010_04_01(ds, hh):
                         band = 'red'
                     elif 9 <= hh['ct-decimal-hour'] <= 20:
                         band = 'amber'
-            elif ds.dno_code == '22':
+            elif ds.dno_code in ('22', '99'):
                 if hh['ct-day-of-week'] > 4:
                     if 16 < hh['ct-decimal-hour'] <= 19:
                         band = 'amber'
@@ -406,7 +406,8 @@ def datum_2010_04_01(ds, hh):
                     elif 7 < hh['ct-decimal-hour'] <= 21:
                         band = 'amber'
             else:
-                raise BadRequest("DNO code not recognized.")
+                raise BadRequest(
+                    "DNO code '" + ds.dno_code + "' not recognized.")
 
             bands_cache[start_date] = band
 

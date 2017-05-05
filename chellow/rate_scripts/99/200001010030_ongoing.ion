@@ -1,1 +1,22 @@
-$ion_1_0 {}
+$ion_1_0 {
+  'tariffs': {
+    '510': {
+      'description': 'Generation',
+      'gbp-per-mpan-per-day': 0.00,
+      'gbp-per-kva-per-day': 0.00,
+      'excess-gbp-per-kva-per-day': 0.00,
+      'red-gbp-per-kwh': -0.04699,
+      'amber-gbp-per-kwh': -0.00485,
+      'green-gbp-per-kwh': -0.00135,
+      'gbp-per-kvarh': 0.00151}},
+  'lafs': {
+    'hv': {
+      'peak': 1.047,
+      'winter-weekday': 1.044,
+      'other': 1.037,
+      'night': 1.032},
+    'lv': {
+      'peak': 1.096,
+      'winter-weekday': 1.089,
+      'other': 1.080,
+      'night': 1.075}}}
