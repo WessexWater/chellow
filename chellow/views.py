@@ -4176,7 +4176,7 @@ def ods_monthly_duration_get():
 def ods_scenario_runner_get():
     contracts = [
         Contract.get_non_core_by_name(g.sess, name)
-        for name in sorted(('ccl', 'aahedc', 'bsuos', 'tlms', 'rcrc'))]
+        for name in sorted(('aahedc', 'bsuos', 'tlms', 'rcrc'))]
     scenarios = g.sess.query(Contract).join(MarketRole).filter(
         MarketRole.code == 'X', Contract.name.like('scenario_%')).order_by(
         Contract.name).all()
