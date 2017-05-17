@@ -311,7 +311,7 @@ def virtual_bill(ds):
 
     {
         'name': "Check that we can see HHDC rate script okay. Contract 35.",
-        'path': '/hhdc_rate_scripts/50',
+        'path': '/hhdc_rate_scripts/71',
 
         # Check that 'has_finished' field is there
         'regexes': [
@@ -321,7 +321,7 @@ def virtual_bill(ds):
     {
         'name': "Check that we can see the edit view of the HHDC rate "
         "script okay. Contract 35.",
-        'path': '/hhdc_rate_scripts/50/edit',
+        'path': '/hhdc_rate_scripts/71/edit',
 
         # Check that 'has_finished' field is there
         'regexes': [
@@ -331,7 +331,7 @@ def virtual_bill(ds):
 
     {
         'name': "Check that we can update an HHDC rate script okay",
-        'path': '/hhdc_rate_scripts/50/edit',
+        'path': '/hhdc_rate_scripts/71/edit',
         'method': 'post',
         'data': {
             'start_year': "2000",
@@ -342,7 +342,7 @@ def virtual_bill(ds):
             'script': "{}"},
         'status_code': 303,
         'regexes': [
-            r'/hhdc_rate_scripts/50']},
+            r'/hhdc_rate_scripts/71']},
 
     {
         'name': "Add another HHDC contract",
@@ -480,7 +480,7 @@ def virtual_bill(ds):
 
     {
         'name': "Update the associated rate script. Supplier contract 37",
-        'path': '/supplier_rate_scripts/52/edit',
+        'path': '/supplier_rate_scripts/73/edit',
         'method': 'post',
         'data': {
             'start_year': "2000",
@@ -502,15 +502,15 @@ def gsp_gbp_per_kwh():
         'status_code': 303},
     {
         'name': "View supplier rate script",
-        'path': '/supplier_rate_scripts/52',
+        'path': '/supplier_rate_scripts/73',
         'regexes': [
-            r'"/supplier_rate_scripts/52/edit"'],
+            r'"/supplier_rate_scripts/73/edit"'],
         'status_code': 200},
     {
         'name': "Edit view of supplier rate script",
-        'path': '/supplier_rate_scripts/52/edit',
+        'path': '/supplier_rate_scripts/73/edit',
         'regexes': [
-            r'"/supplier_rate_scripts/52"'],
+            r'"/supplier_rate_scripts/73"'],
         'status_code': 200},
 
     {
@@ -590,7 +590,7 @@ def virtual_bill_titles():
         'status_code': 303},
     {
         'name': "Update the associated rate script. Supplier contract 39",
-        'path': '/supplier_rate_scripts/54/edit',
+        'path': '/supplier_rate_scripts/75/edit',
         'method': 'post',
         'data': {
             'start_year': "2000",
@@ -611,7 +611,7 @@ def gsp_gbp_per_kwh():
 """},
         'status_code': 303,
         'regexes': [
-            r'/supplier_rate_scripts/54']},
+            r'/supplier_rate_scripts/75']},
 
     {
         'name': "Create a new supplier contract",
@@ -1968,12 +1968,12 @@ def virtual_bill_titles():
     {
         'name': "Show confirm-delete supplier rate script"
         "contract.",
-        'path': '/supplier_rate_scripts/52/edit?delete=Delete',
+        'path': '/supplier_rate_scripts/73/edit?delete=Delete',
         'status_code': 200,
         'regexes': [
             r'<form\s*'
             r'method="post"\s*'
-            r'action="/supplier_rate_scripts/52/edit"\s*'
+            r'action="/supplier_rate_scripts/73/edit"\s*'
             r'>\s*'
             r'<fieldset>\s*'
             r'<input type="submit" name="delete" value="Delete">']},
@@ -1981,7 +1981,7 @@ def virtual_bill_titles():
     {
         'name': "Test deleting the only rate script attached to a supplier "
         "contract.",
-        'path': '/supplier_rate_scripts/52/edit',
+        'path': '/supplier_rate_scripts/73/edit',
         'method': 'post',
         'data': {
             'delete': "Delete"},
@@ -2733,7 +2733,7 @@ def virtual_bill(supply_source):
     {
         'name': "Check we can delete a rate script (when it's not the only "
         "one). Supplier contract 33.",
-        'path': '/supplier_rate_scripts/56/edit',
+        'path': '/supplier_rate_scripts/77/edit',
         'method': 'post',
         'data': {
             'delete': "Delete"},
@@ -6133,21 +6133,21 @@ def virtual_bill(supply_source):
             'start_minute': "00",
             'insert': "Insert"},
         'regexes': [
-            r"/non_core_rate_scripts/60"],
+            r"/non_core_rate_scripts/81"],
         'status_code': 303},
     {
-        'path': '/non_core_rate_scripts/60/edit?delete=Delete',
+        'path': '/non_core_rate_scripts/81/edit?delete=Delete',
         'regexes': [
             r"Are you sure you want to delete this rate script\?"],
         'status_code': 200},
     {
-        'path': '/non_core_rate_scripts/60/edit',
+        'path': '/non_core_rate_scripts/81/edit',
         'method': 'post',
         'data': {
             'delete': "Delete"},
         'status_code': 303},
     {
-        'path': '/non_core_rate_scripts/60',
+        'path': '/non_core_rate_scripts/81',
         'status_code': 404},
     {
         'name': "Try adding a rate script before other rate scripts.",
@@ -6161,10 +6161,10 @@ def virtual_bill(supply_source):
             'start_minute': "00",
             'insert': "Insert"},
         'regexes': [
-            r"/non_core_rate_scripts/61"],
+            r"/non_core_rate_scripts/82"],
         'status_code': 303},
     {
-        'path': '/non_core_rate_scripts/61/edit',
+        'path': '/non_core_rate_scripts/82/edit',
         'regexes': [
             r'<input name="finish_year" maxlength="4" size="4" value="2000">',
 
@@ -6173,7 +6173,7 @@ def virtual_bill(supply_source):
             '<option value="0" selected>00</option>'],
         'status_code': 200},
     {
-        'path': '/non_core_rate_scripts/61/edit',
+        'path': '/non_core_rate_scripts/82/edit',
         'method': 'post',
         'data': {
             'delete': "Delete"},
@@ -6731,7 +6731,6 @@ def virtual_bill(supply_source):
             r'0,0.00485,0,0.0,0.0,0.0,25.819178082191478,'],
         'status_code': 200},
 
-    # Parties
     {
         'name': "Parties",
         'path': '/parties',
@@ -7379,26 +7378,26 @@ def virtual_bill(supply_source):
 
     {
         'name': "View a MOP rate script. Contract 38.",
-        'path': '/mop_rate_scripts/53',
+        'path': '/mop_rate_scripts/74',
         'status_code': 200,
         'regexes': [
-            r'<a href="/mop_rate_scripts/53/edit">edit</a>']},
+            r'<a href="/mop_rate_scripts/74/edit">edit</a>']},
 
     {
         'name': "View a MOP rate script edit. Contract 38.",
-        'path': '/mop_rate_scripts/53/edit',
+        'path': '/mop_rate_scripts/74/edit',
         'status_code': 200,
         'regexes': [
             r'<input type="submit" value="Update">']},
 
     {
         'name': "View a MOP rate script confirm delete. Contract 38.",
-        'path': '/mop_rate_scripts/53/edit?&delete=Delete',
+        'path': '/mop_rate_scripts/74/edit?&delete=Delete',
         'status_code': 200,
         'regexes': [
             r'<form\s*'
             r'method="post"\s*'
-            r'action="/mop_rate_scripts/53/edit">']},
+            r'action="/mop_rate_scripts/74/edit">']},
 
     {
         'name': "View supplies duration selector.",
@@ -15508,11 +15507,11 @@ def virtual_bill(ds):
             'start_minute': "00"},
         'status_code': 303,
         'regexes': [
-            r"/mop_rate_scripts/76"]},
+            r"/mop_rate_scripts/97"]},
 
     {
         'name': "Delete mop rate script",
-        'path': '/mop_rate_scripts/76/edit',
+        'path': '/mop_rate_scripts/97/edit',
         'method': 'post',
         'data': {
             'delete': "Delete"},
@@ -15623,5 +15622,10 @@ def virtual_bill(supply_source):
             r',,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,'
             r',,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,'
             r',,,,,,,,,,,,,,,,,,,,,,,,,,'],
+        'status_code': 200},
+
+    {
+        'name': "Look at a DNO party",
+        'path': '/parties/81',
         'status_code': 200},
 ]
