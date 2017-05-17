@@ -136,7 +136,7 @@
 						<td>{{bill.net_gbp}}</td>
 						<td>{{bill.vat_gbp}}</td>
 						<td>{{bill.gross_gbp}}</td>
-						<td>{{bill.breakdown}}</td>
+						<td>{{bill.breakdown|dumps}}</td>
 						{% for g_read in bill.reads %}
 							<td>{{g_read.msn}}</td>
 							<td>{{g_read.prev_date|hh_format}}</td>

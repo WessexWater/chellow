@@ -2,9 +2,10 @@ import traceback
 from datetime import datetime as Datetime
 from sqlalchemy import or_, func, Float, cast
 from sqlalchemy.sql.expression import null
+from sqlalchemy.orm import joinedload
 from chellow.models import (
     HhDatum, Channel, Era, Session, Supply, RegisterRead, Bill, BillType,
-    ReadType)
+    ReadType, SiteEra, Mtc, Llfc)
 from chellow.utils import (
     hh_min, hh_max, hh_format, HH, req_hh_date, req_int, to_utc)
 import chellow.computer
@@ -25,16 +26,17 @@ NORMAL_READ_TYPES = 'C', 'N', 'N3'
 def mpan_bit(
         sess, supply, is_import, num_hh, eras, chunk_start, chunk_finish,
         forecast_date, caches):
-    mpan_core_str = ''
-    llfc_code = ''
-    sc_str = ''
-    supplier_contract_name = ''
-    gsp_kwh = 0
-    msp_kwh = 0
+    mpan_core_str = llfc_code = sc_str = supplier_contract_name = num_bad = ''
+    gsp_kwh = msp_kwh = md = non_actual = 0
+    date_at_md = kvarh_at_md = None
+
     for era in eras:
         mpan_core = era.imp_mpan_core if is_import else era.exp_mpan_core
         if mpan_core is None:
             continue
+        if num_bad == '':
+            num_bad = 0
+
         mpan_core_str = mpan_core
         if is_import:
             supplier_contract_name = era.imp_supplier_contract.name
@@ -57,46 +59,30 @@ def mpan_bit(
         chellow.duos.duos_vb(supply_source)
         for hh in supply_source.hh_data:
             gsp_kwh += hh['gsp-kwh']
-            msp_kwh += hh['msp-kwh']
+            hh_msp_kwh = hh['msp-kwh']
+            msp_kwh += hh_msp_kwh
+            if hh['status'] != 'A':
+                num_bad += 1
+                non_actual += hh_msp_kwh
+            if hh_msp_kwh > md:
+                md = hh_msp_kwh
+                date_at_md = hh['start-date']
 
-    md = 0
-    non_actual = 0
-    date_at_md = None
-    kvarh_at_md = None
-    num_na = 0
-
-    for datum in sess.query(HhDatum).join(Channel).join(Era).filter(
-            Era.supply == supply, Channel.imp_related == is_import,
-            Channel.channel_type == 'ACTIVE',
-            HhDatum.start_date >= chunk_start,
-            HhDatum.start_date <= chunk_finish).order_by(HhDatum.id):
-        hh_value = float(datum.value)
-        hh_status = datum.status
-        if hh_value > md:
-            md = hh_value
-            date_at_md = datum.start_date
-            kvarh_at_md = sess.query(
-                cast(func.max(HhDatum.value), Float)).join(
-                Channel).join(Era).filter(
-                Era.supply == supply,
-                Channel.imp_related == is_import,
-                Channel.channel_type != 'ACTIVE',
-                HhDatum.start_date == date_at_md).scalar()
-
-        if hh_status != 'A':
-            non_actual += hh_value
-            num_na += 1
+    if date_at_md is not None:
+        kvarh_at_md = sess.query(
+            cast(func.max(HhDatum.value), Float)).join(
+            Channel).join(Era).filter(
+            Era.supply == supply,
+            Channel.imp_related == is_import,
+            Channel.channel_type != 'ACTIVE',
+            HhDatum.start_date == date_at_md).scalar()
 
     kw_at_md = md * 2
+
     if kvarh_at_md is None:
         kva_at_md = 'None'
     else:
         kva_at_md = (kw_at_md ** 2 + (kvarh_at_md * 2) ** 2) ** 0.5
-
-    num_bad = num_hh - sess.query(HhDatum).join(Channel).join(Era).filter(
-        Era.supply == supply, Channel.imp_related == is_import,
-        Channel.channel_type == 'ACTIVE', HhDatum.start_date >= chunk_start,
-        HhDatum.start_date <= chunk_finish).count() + num_na
 
     date_at_md_str = '' if date_at_md is None else hh_format(date_at_md)
 
@@ -132,7 +118,9 @@ def content(supply_id, start_date, finish_date, user):
 
         supplies = sess.query(Supply).join(Era).filter(
             or_(Era.finish_date == null(), Era.finish_date >= start_date),
-            Era.start_date <= finish_date).order_by(Supply.id).distinct()
+            Era.start_date <= finish_date).order_by(Supply.id).distinct(). \
+            options(
+                joinedload(Supply.source), joinedload(Supply.generator_type))
 
         if supply_id is not None:
             supplies = supplies.filter(
@@ -146,7 +134,16 @@ def content(supply_id, start_date, finish_date, user):
                 or_(
                     Era.finish_date == null(),
                     Era.finish_date >= start_date)).order_by(
-                Era.start_date).all()
+                Era.start_date).options(
+                    joinedload(Era.imp_llfc).joinedload(Llfc.voltage_level),
+                    joinedload(Era.exp_llfc).joinedload(Llfc.voltage_level),
+                    joinedload(Era.channels),
+                    joinedload(Era.site_eras).joinedload(SiteEra.site),
+                    joinedload(Era.pc), joinedload(Era.cop),
+                    joinedload(Era.mtc).joinedload(Mtc.meter_type),
+                    joinedload(Era.imp_supplier_contract),
+                    joinedload(Era.exp_supplier_contract),
+                    joinedload(Era.ssc)).all()
 
             era = eras[-1]
             for site_era in era.site_eras:
@@ -172,7 +169,8 @@ def content(supply_id, start_date, finish_date, user):
                     Bill.supply == supply, BillType.code != 'W',
                     RegisterRead.previous_date >= start_date,
                     RegisterRead.previous_date <= finish_date,
-                    ReadType.code.in_(NORMAL_READ_TYPES)),
+                    ReadType.code.in_(NORMAL_READ_TYPES)).options(
+                        joinedload(RegisterRead.bill)),
 
                     sess.query(
                         RegisterRead, RegisterRead.present_date).join(
@@ -181,7 +179,8 @@ def content(supply_id, start_date, finish_date, user):
                     Bill.supply == supply, BillType.code != 'W',
                     RegisterRead.present_date >= start_date,
                     RegisterRead.present_date <= finish_date,
-                    ReadType.code.in_(NORMAL_READ_TYPES))):
+                    ReadType.code.in_(NORMAL_READ_TYPES)).options(
+                        joinedload(RegisterRead.bill))):
                 prime_bill = sess.query(Bill).join(BillType).filter(
                     Bill.supply == supply,
                     Bill.start_date <= read.bill.finish_date,

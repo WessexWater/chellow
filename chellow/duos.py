@@ -337,16 +337,20 @@ def datum_beginning_14(ds, hh):
 
 def datum_2010_04_01(ds, hh):
     bill = ds.supplier_bill
-    dno_cache = ds.caches['dno'][ds.dno_code]
     start_date = hh['start-date']
 
     try:
-        tariff = dno_cache['tariffs'][ds.llfc_code][start_date]
+        gsp_group_cache = ds.caches['dno'][ds.dno_code][ds.gsp_group_code]
+    except KeyError:
+        gsp_group_cache = ds.caches['dno'][ds.dno_code][ds.gsp_group_code] = {}
+
+    try:
+        tariff = gsp_group_cache['tariffs'][ds.llfc_code][start_date]
     except KeyError:
         try:
-            tariff_cache = dno_cache['tariffs']
+            tariff_cache = gsp_group_cache['tariffs']
         except KeyError:
-            tariff_cache = dno_cache['tariffs'] = {}
+            tariff_cache = gsp_group_cache['tariffs'] = {}
 
         try:
             tariffs = tariff_cache[ds.llfc_code]
@@ -359,26 +363,26 @@ def datum_2010_04_01(ds, hh):
             tariff = None
             for llfcs, tf in get_file_rates(
                     ds.caches, ds.dno_contract.name,
-                    start_date)['tariffs'].items():
+                    start_date)[ds.gsp_group_code]['tariffs'].items():
                 if ds.llfc_code in [cd.strip() for cd in llfcs.split(',')]:
                     tariff = tf
                     break
             if tariff is None:
                 raise BadRequest(
                     "For the DNO " + ds.dno_code + " and timestamp " +
-                    hh_format(start_date) + " the LLFC '" +
-                    ds.llfc_code +
+                    hh_format(start_date) + " and GSP group " +
+                    ds.gsp_group_code + ", the LLFC '" + ds.llfc_code +
                     "' can't be found in the 'tariffs' section.")
 
             tariffs[start_date] = tariff
 
     try:
-        band = dno_cache['bands'][start_date]
+        band = gsp_group_cache['bands'][start_date]
     except KeyError:
         try:
-            bands_cache = dno_cache['bands']
+            bands_cache = gsp_group_cache['bands']
         except KeyError:
-            bands_cache = dno_cache['bands'] = {}
+            bands_cache = gsp_group_cache['bands'] = {}
 
         try:
             band = bands_cache[start_date]
@@ -396,7 +400,7 @@ def datum_2010_04_01(ds, hh):
                         band = 'red'
                     elif 9 <= hh['ct-decimal-hour'] <= 20:
                         band = 'amber'
-            elif ds.dno_code in ('22', '99'):
+            else:  # 22 and 24
                 if hh['ct-day-of-week'] > 4:
                     if 16 < hh['ct-decimal-hour'] <= 19:
                         band = 'amber'
@@ -405,20 +409,17 @@ def datum_2010_04_01(ds, hh):
                         band = 'red'
                     elif 7 < hh['ct-decimal-hour'] <= 21:
                         band = 'amber'
-            else:
-                raise BadRequest(
-                    "DNO code '" + ds.dno_code + "' not recognized.")
 
             bands_cache[start_date] = band
 
     try:
-        laf = dno_cache['lafs'][ds.voltage_level_code][
+        laf = gsp_group_cache['lafs'][ds.voltage_level_code][
             ds.is_substation][start_date]
     except KeyError:
         try:
-            laf_cache = dno_cache['lafs']
+            laf_cache = gsp_group_cache['lafs']
         except KeyError:
-            laf_cache = dno_cache['lafs'] = {}
+            laf_cache = gsp_group_cache['lafs'] = {}
 
         try:
             laf_cache_v = laf_cache[ds.voltage_level_code]
@@ -442,10 +443,10 @@ def datum_2010_04_01(ds, hh):
                 elif hh['ct-day-of-week'] < 5 and \
                         hh['ct-month'] in [11, 12, 1, 2]:
                     if 16 <= hh['ct-decimal-hour'] < 19:
-                        slot_name = 'peak'
+                        slot_name = 'winter-weekday-peak'
                     elif 7 < hh['ct-decimal-hour'] < 20:
-                        slot_name = 'winter-weekday'
-            elif ds.dno_code in ['14', '22']:
+                        slot_name = 'winter-weekday-day'
+            else:  # 14, 22, 99, 24
                 if 23 < hh['ct-decimal-hour'] or hh['ct-decimal-hour'] <= 6:
                     slot_name = 'night'
                 elif hh['ct-day-of-week'] < 5 and \
@@ -454,13 +455,11 @@ def datum_2010_04_01(ds, hh):
                         slot_name = 'winter-weekday-peak'
                     elif hh['ct-decimal-hour'] < 16:
                         slot_name = 'winter-weekday-day'
-            else:
-                raise BadRequest("Not recognized")
 
             lafs[start_date] = laf = float(
                 get_file_rates(
                     ds.caches, ds.dno_contract.name,
-                    start_date)['lafs'][vl_key][slot_name])
+                    start_date)[ds.gsp_group_code]['lafs'][vl_key][slot_name])
 
     hh['laf'] = laf
     hh['gsp-kwh'] = laf * hh['msp-kwh']
@@ -556,10 +555,10 @@ def duos_vb(ds):
                     data_func = datum_beginning_14
                 elif ds.dno_code == '20':
                     data_func = datum_beginning_20
-                elif ds.dno_code == '22':
+                elif ds.dno_code in ('22', '99'):
                     data_func = datum_beginning_22
                 else:
-                    raise BadRequest('Not recognized')
+                    raise Exception('Not recognized')
             else:
                 data_func = datum_2010_04_01
             data_func_cache[hh['start-date']] = data_func

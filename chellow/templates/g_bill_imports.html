@@ -1,42 +1,50 @@
 {% extends "base.html" %}
 
 {% block title %}
-	Gas Contracts &gt; {{g_batch.g_contract.name}} &gt; Batches &gt;
- 	{{g_batch.reference}} &gt; Bill Imports
+	Gas Contracts &raquo; {{g_batch.g_contract.name}} &raquo; Batches &raquo;
+ 	{{g_batch.reference}} &raquo; Bill Imports
 {% endblock %}
 
 {% block nav %}
-	<a href="{{context_path}}/g_contracts">Gas Contracts</a> &gt;
+	<a href="/g_contracts">Gas Contracts</a> &raquo;
 	<a
-	 		href="{{context_path}}/g_contracts/{{g_batch.g_contract.id}}"
-			>{{g_batch.g_contract.name}}</a> &gt;
+	 		href="/g_contracts/{{g_batch.g_contract.id}}"
+			>{{g_batch.g_contract.name}}</a> &raquo;
 	<a
-	 		href="{{context_path}}/g_batches?g_contract_id={{g_batch.g_contract.id}}"
-			>Batches</a> &gt;
-	<a
-	 		href="{{context_path}}/g_batches/{{g_batch.id}}"
-			>{{g_batch.reference}}</a> &gt; Bill Imports
+	 		href="/g_batches?g_contract_id={{g_batch.g_contract.id}}"
+			>Batches</a> &raquo;
+	<a href="/g_batches/{{g_batch.id}}">{{g_batch.reference}}</a> &raquo;
+	Bill Imports
 {% endblock %}
 
 {% block content %}
-	<form enctype="multipart/form-data" method="post" action="">
-		<fieldset>
-			<input type="hidden" name="g_batch_id" value="{{g_batch.id}}">
-			<legend>Import Bill File</legend>
-			<input type="file" name="import_file" size="45"
-				value="{{request.values.import_file}}">
-			<input type="submit" value="Import">
-			<br>
-			<p>Valid file name extensions are {{parser_names}}.</p>
-		</fieldset>
-	</form>
-	{% if importer_ids %}
-		<ul>
-			{% for id in importer_ids %}
-				<li>
-					<a href="{{context_path}}/g_bill_imports/{{id}}">{{id}}</a>
-				</li>
-			{% endfor %}
-		</ul>
-	{% endif %}
+	<div class="layer-section">
+		<div class="section-content">
+			<div class="section-data">
+				<div class="standardForm">
+					<form
+					 		enctype="multipart/form-data" method="post" action="">
+						<fieldset>
+							<input type="hidden" name="g_batch_id" value="{{g_batch.id}}">
+							<legend>Import Bill File</legend>
+							<input type="file" name="import_file" size="45"
+								value="{{request.values.import_file}}">
+							<input type="submit" value="Import">
+							<br>
+							<p>Valid file name extensions are {{parser_names}}.</p>
+						</fieldset>
+					</form>
+				</div>
+				{% if importer_ids %}
+					<ul>
+						{% for id in importer_ids %}
+							<li>
+								<a href="/g_bill_imports/{{id}}">{{id}}</a>
+							</li>
+						{% endfor %}
+					</ul>
+				{% endif %}
+			</div>
+		</div>
+	</div>
 {% endblock %}

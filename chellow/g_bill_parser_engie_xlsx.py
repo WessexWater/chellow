@@ -5,8 +5,20 @@ from collections import OrderedDict
 from decimal import Decimal
 
 
-def to_money(cell):
-    return Decimal('0.00') + round(Decimal(cell.value), 2)
+def to_money(row, idx):
+    return to_decimal(row, idx, rounding=2)
+
+
+def to_decimal(row, idx, rounding=6):
+    return round(Decimal(row[idx].value), rounding)
+
+
+def to_int(row, idx):
+    return int(row[idx].value)
+
+
+def to_rate(row, idx):
+    return round(Decimal(row[idx].value) / Decimal('100'), 5)
 
 
 class Parser():
@@ -39,27 +51,27 @@ class Parser():
                 break
             bill_reference = str(bill_reference_raw)
             mprn = str(row[7].value)
-            volume_kwh = Decimal(row[9].value)
+            volume_kwh = to_int(row, 9)
             breakdown = {
                 'volume_kwh': volume_kwh,
-                'commodity_rate': row[11].value / 100,
-                'commodity_gbp': row[12].value,
-                'transportation_fixed_rate': row[13].value / 100,
-                'transportation_fixed_gbp': row[14].value,
-                'transportation_variable_rate': row[15].value / 100,
-                'transportation_variable_gbp': row[16].value,
-                'metering_rate': row[17].value / 100,
-                'metering_gbp': row[18].value,
-                'admin_fixed_rate': row[19].value / 100,
-                'admin_fixed_gbp': row[20].value,
-                'admin_variable_rate': row[21].value / 100,
-                'admin_variable_gbp': row[22].value,
-                'swing_rate': row[23].value / 100,
-                'swing_gbp': row[24].value,
-                'ug_gbp': row[25].value,
-                'amr_gbp': row[26].value,
-                'ad_hoc_gbp': row[27].value,
-                'ccl_gbp': row[28].value}
+                'commodity_rate': to_rate(row, 11),
+                'commodity_gbp': to_money(row, 12),
+                'transportation_fixed_rate': to_rate(row, 13),
+                'transportation_fixed_gbp': to_money(row, 14),
+                'transportation_variable_rate': to_rate(row, 15),
+                'transportation_variable_gbp': to_money(row, 16),
+                'metering_rate': to_rate(row, 17),
+                'metering_gbp': to_money(row, 18),
+                'admin_fixed_rate': to_rate(row, 19),
+                'admin_fixed_gbp': to_money(row, 20),
+                'admin_variable_rate': to_rate(row, 21),
+                'admin_variable_gbp': to_money(row, 22),
+                'swing_rate': to_rate(row, 23),
+                'swing_gbp': to_money(row, 24),
+                'ug_gbp': to_money(row, 25),
+                'amr_gbp': to_money(row, 26),
+                'ad_hoc_gbp': to_money(row, 27),
+                'ccl_gbp': to_money(row, 28)}
 
             raw_bill = {
                 'breakdown': breakdown,
@@ -72,11 +84,11 @@ class Parser():
                 'start_date': to_utc(row[3].value),
                 'finish_date': to_utc(row[4].value) + relativedelta(days=1) -
                 HH,
-                'net_gbp': to_money(row[31]),
-                'vat_gbp': to_money(row[32]),
-                'gross_gbp': to_money(row[33]),
+                'net_gbp': to_money(row, 31),
+                'vat_gbp': to_money(row, 32),
+                'gross_gbp': to_money(row, 33),
                 'raw_lines': '',
-                'kwh': Decimal(volume_kwh),
+                'kwh': volume_kwh,
                 'reads': []}
             raw_bills[mprn] = raw_bill
 
@@ -89,10 +101,10 @@ class Parser():
             read = {
                 'msn': '',
                 'mprn': mprn,
-                'prev_value': row[6].value,
+                'prev_value': to_int(row, 6),
                 'prev_date': to_utc(row[7].value),
                 'prev_type_code': row[8].value[1],
-                'pres_value': row[9].value,
+                'pres_value': to_int(row, 9),
                 'pres_date': to_utc(row[10].value),
                 'pres_type_code': row[11].value[1],
                 'correction_factor': 1,

@@ -2861,8 +2861,15 @@ def virtual_bill(supply_source):
             r'7,1,net,,CH023,Treglisson,,2009-03-01 00:00,'
             r'2009-03-31 23:30,00,845,5,,0,hh,540,'
             r'22 4862 4512 332,230,Half-hourlies 2007,148925.71000000002,0,'
-            r'158159.10402,399.72,2009-03-13 08:00,None,0,,,,,0,0,0,0,,None,'
-            r'1488']},
+            r'158159.10402,399.72,2009-03-13 08:00,None,0,,,,,0,0,0,0,,'
+            r'None,']},
+
+    {
+        'name': "View DNO contracts",
+        'path': '/dno_contracts',
+        'status_code': 200,
+        'regexes': [
+            r'option']},
 
     {
         'name': "View a DNO rate script",
@@ -5776,7 +5783,7 @@ def virtual_bill(supply_source):
             'start_hour': "00",
             'start_minute': "00",
             'msn': "",
-            'gsp_group_id': "3",
+            'gsp_group_id': "11",
             'mop_contract_id': "38",
             'mop_account': "mc-22 9789 0534 938",
             'hhdc_contract_id': "35",
@@ -9342,12 +9349,12 @@ def virtual_bill(supply_source):
             r'<table:table-cell office:value="0" '
             r'office:value-type="float" table:number-columns-repeated="9"/>\s*'
             r'<table:table-cell '
-            r'office:value="232\.732\d*" office:value-type="float"/>\s*'
-            r'<table:table-cell office:value="106.0761\d*" '
+            r'office:value="243.8953\d*" office:value-type="float"/>\s*'
+            r'<table:table-cell office:value="107.375\d*" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="0" '
             r'office:value-type="float" table:number-columns-repeated="5"/>\s*'
-            r'<table:table-cell office:value="232\.732\d*" '
+            r'<table:table-cell office:value="243.8953\d*" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="0" '
             r'office:value-type="float" table:number-columns-repeated="3"/>\s*'
@@ -9362,7 +9369,7 @@ def virtual_bill(supply_source):
             r'<table:table-cell office:string-value="" '
             r'office:value-type="string"/>\s*'
             r'<table:table-cell/>\s*'
-            r'<table:table-cell office:value="222.732\d*" '
+            r'<table:table-cell office:value="233.8953\d*" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell table:number-columns-repeated="2"/>\s*'
             r'<table:table-cell office:value="0.00525288" '
@@ -9374,20 +9381,20 @@ def virtual_bill(supply_source):
             r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="31" '
             r'office:value-type="float"/>\s*'
-            r'<table:table-cell office:value="0.0257" '
+            r'<table:table-cell office:value="0.0278" '
             r'office:value-type="float"/>\s*'
-            r'<table:table-cell office:value="103.57\d*" '
+            r'<table:table-cell office:value="112.034\d*" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="0" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="31" '
             r'office:value-type="float"/>\s*'
-            r'<table:table-cell office:value="0.0257" '
+            r'<table:table-cell office:value="0.00072" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="0.0" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell table:number-columns-repeated="4"/>\s*'
-            r'<table:table-cell office:value="0.00252" '
+            r'<table:table-cell office:value="0.0682" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="0.0" '
             r'office:value-type="float"/>\s*'
@@ -9459,21 +9466,21 @@ def virtual_bill(supply_source):
             r'office:value-type="string"/>\s*'
             r'<table:table-cell office:value="0" '
             r'office:value-type="float"/>\s*'
-            r'<table:table-cell office:value="0.00046" '
+            r'<table:table-cell office:value="0.01324" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="0.0" '
             r'office:value-type="float" table:number-columns-repeated="2"/>\s*'
             r'<table:table-cell office:value="0" '
             r'office:value-type="float"/>\s*'
-            r'<table:table-cell office:value="0.1917" '
+            r'<table:table-cell office:value="0.06463" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="0.0" '
             r'office:value-type="float" table:number-columns-repeated="2"/>\s*'
             r'<table:table-cell office:value="31" '
             r'office:value-type="float"/>\s*'
-            r'<table:table-cell office:value="0.8152" '
+            r'<table:table-cell office:value="0.9023" '
             r'office:value-type="float"/>\s*'
-            r'<table:table-cell office:value="25.2712\d*" '
+            r'<table:table-cell office:value="27.9713\d*" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="0.0" '
             r'office:value-type="float"/>\s*'
@@ -9485,7 +9492,7 @@ def virtual_bill(supply_source):
             r'<table:table-cell office:value="0.0" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell table:number-columns-repeated="19"/>\s*'
-            r'<table:table-cell office:value="106.0761\d*" '
+            r'<table:table-cell office:value="107.375\d*" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell table:number-columns-repeated="2"/>\s*'
             r'<table:table-cell office:value="0.00525288" '
@@ -9503,13 +9510,13 @@ def virtual_bill(supply_source):
             r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="31" '
             r'office:value-type="float"/>\s*'
+            r'<table:table-cell office:value="0.00096" '
+            r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="0.0" '
-            r'office:value-type="float" table:number-columns-repeated="2"/>\s*'
+            r'office:value-type="float"/>\s*'
             r'<table:table-cell table:number-columns-repeated="4"/>\s*'
-            r'<table:table-cell office:value="0.00099" '
-            r'office:value-type="float"/>\s*'
-            r'<table:table-cell office:value="0.0" '
-            r'office:value-type="float"/>\s*'
+            r'<table:table-cell office:value="0.0" office:value-type="float" '
+            r'table:number-columns-repeated="2"/>\s*'
             r'<table:table-cell/>\s*'
             r'<table:table-cell office:value="88" '
             r'office:value-type="float"/>\s*'
@@ -10451,8 +10458,8 @@ def virtual_bill(supply_source):
         'regexes': [
             r'10,2,net,,CI017,Roselands,,2012-01-05 00:00,'
             r'2012-01-10 23:30,03,801,6a,0366,1,nhh,110,'
-            r'22 1065 3921 534,30,Non half-hourlies 2010,756.0,0,813.79\d*,0,'
-            r',None,288,,,,,0,0,0,0,,None,288'],
+            r'22 1065 3921 534,30,Non half-hourlies 2010,756.0,756.0,'
+            r'813.79\d*,5.25,2012-01-05 00:00,None,288,,,,,0,0,0,0,,None,'],
         'status_code': 200},
     {
         'name': "Reads covered by bill without. Run bill check.",
@@ -10493,7 +10500,8 @@ def virtual_bill(supply_source):
             r'10,2,net,,CI017,Roselands,,2007-02-01 00:00,'
             r'2007-02-28 23:30,03,801,5,0393,0,nhh,'
             r'110,22 1065 3921 534,30,Non half-hourlies 2010,166.0794\d*,'
-            r'0,177.13161\d*,0,,None,1344,,,,,0,0,0,0,,None,1344'],
+            r'166.0794\d*,177.13161\d*,0.2471\d*,2007-02-01 00:00,None,'
+            r'1344,,,,,0,0,0,0,,None,'],
         'status_code': 200},
 
     {
@@ -10542,8 +10550,9 @@ def virtual_bill(supply_source):
         'regexes': [
             r'10,2,net,,CI017,Roselands,,2009-04-01 00:00,'
             r'2009-04-10 23:30,03,801,5,0393,1,nhh,'
-            r'110,22 1065 3921 534,30,Non half-hourlies 2010,59.314\d*,0,'
-            r'63.406\d*,0,,None,480,,,,,0,0,0,0,,None,480'],
+            r'110,22 1065 3921 534,30,Non half-hourlies 2010,59.314\d*,'
+            r'59.3140\d*,63.406\d*,0.24714\d*,2009-04-01 00:00,'
+            r'None,480,,,,,0,0,0,0,,None,'],
         'status_code': 200},
 
     {
@@ -11022,7 +11031,7 @@ def virtual_bill(supply_source):
             'name': "3",
             'source_id': "6",
             'generator_type_id': "1",
-            'gsp_group_id': "3"},
+            'gsp_group_id': "11"},
         'status_code': 303},
     {
         'name': "3rd party in monthly duration report.",
@@ -11420,8 +11429,9 @@ def virtual_bill(supply_source):
         'regexes': [
             r'10,2,net,,CI017,Roselands,,2009-04-01 00:00,'
             r'2009-04-10 23:30,03,801,5,0393,1,nhh,'
-            r'110,22 1065 3921 534,30,Non half-hourlies 2010,59.31\d*,0,'
-            r'63.40\d*,0,,None,480,,,,,0,0,0,0,,None,480'],
+            r'110,22 1065 3921 534,30,Non half-hourlies 2010,59.31\d*,'
+            r'59.314079422382534,63.40\d*,0.2471\d*,2009-04-01 00:00,None,'
+            r'480,,,,,0,0,0,0,,None,'],
         'status_code': 200},
 
     {
@@ -11485,12 +11495,12 @@ def virtual_bill(supply_source):
             r'office:value-type="float" table:number-columns-repeated="2"/>\s*'
             r'<table:table-cell office:value="0" office:value-type="float" '
             r'table:number-columns-repeated="7"/>\s*'
-            r'<table:table-cell office:value="-0.59261790336\d*" '
+            r'<table:table-cell office:value="-0.59141\d*" '
             r'office:value-type="float" table:number-columns-repeated="2"/>\s*'
             r'<table:table-cell office:value="0" office:value-type="float" '
             r'table:number-columns-repeated="3"/>\s*'
             r'<table:table-cell table:number-columns-repeated="7"/>\s*'
-            r'<table:table-cell office:value="-0.59261790336\d*" '
+            r'<table:table-cell office:value="-0.59141\d*" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell table:number-columns-repeated="2"/>\s*'
             r'<table:table-cell office:value="0.00525288" '
@@ -11506,10 +11516,10 @@ def virtual_bill(supply_source):
             r'table:number-columns-repeated="2"/>\s*'
             r'<table:table-cell office:value="-45.0" '
             r'office:value-type="float"/>\s*'
-            r'<table:table-cell office:value="-48.285" '
+            r'<table:table-cell office:value="-48.15\d*" '
             r'office:value-type="float"/>\s*'
-            r'<table:table-cell office:value="-0.30253\d*" '
-            r'office:value-type="float"/>\s*',
+            r'<table:table-cell office:value="-0.301\d*" '
+            r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="0" office:value-type="float" '
             r'table:number-columns-repeated="2"/>\s*'
             r'<table:table-cell/>\s*'
@@ -11519,10 +11529,10 @@ def virtual_bill(supply_source):
             r'<table:table-cell office:value="0" office:value-type="float" '
             r'table:number-columns-repeated="2"/>\s*'
             r'<table:table-cell/>\s*'
-            r'<table:table-cell office:value="-48.74778758\d*" '
+            r'<table:table-cell office:value="-48.611\d*" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell/>\s*'
-            r'<table:table-cell office:value="-0.12763340736\d*" '
+            r'<table:table-cell office:value="-0.1272\d*" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell table:number-columns-repeated="18"/>\s*'
             r'<table:table-cell office:date-value="2014-11-25T17:00:00" '
@@ -11635,12 +11645,12 @@ def virtual_bill(supply_source):
             r'<table:table-cell office:string-value="" '
             r'office:value-type="string"/>\s*'
             r'<table:table-cell table:number-columns-repeated="120"/>\s*'
-            r'<table:table-cell office:value="94.00471790336\d*" '
+            r'<table:table-cell office:value="94.3189\d*" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell table:number-columns-repeated="2"/>\s*'
             r'<table:table-cell office:value="0.00525288" '
             r'office:value-type="float"/>\s*'
-            r'<table:table-cell/>\s*',
+            r'<table:table-cell/>\s*'
             r'<table:table-cell office:value="5.89" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="600" '
@@ -11656,7 +11666,7 @@ def virtual_bill(supply_source):
             r'<table:table-cell office:value="0.0" office:value-type="float" '
             r'table:number-columns-repeated="2"/>\s*'
             r'<table:table-cell table:number-columns-repeated="4"/>\s*'
-            r'<table:table-cell office:value="0.00151" '
+            r'<table:table-cell office:value="0.0016" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="0.0" '
             r'office:value-type="float"/>\s*'
@@ -11673,13 +11683,9 @@ def virtual_bill(supply_source):
             r'table:number-columns-repeated="2"/>\s*'
             r'<table:table-cell office:value="45.0" '
             r'office:value-type="float"/>\s*'
-            r'<table:table-cell office:value="48.285" '
+            r'<table:table-cell office:value="48.15\d*" '
             r'office:value-type="float"/>\s*'
-            r'<table:table-cell office:value="0.30253\d*" '
-            r'office:value-type="float"/>\s*'
-            r'<table:table-cell office:value="0" office:value-type="float" '
-            r'table:number-columns-repeated="2"/>\s*'
-            r'<table:table-cell office:value="0.0" '
+            r'<table:table-cell office:value="0.30168\d*" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="0" office:value-type="float" '
             r'table:number-columns-repeated="2"/>\s*'
@@ -11689,10 +11695,14 @@ def virtual_bill(supply_source):
             r'table:number-columns-repeated="2"/>\s*'
             r'<table:table-cell office:value="0.0" '
             r'office:value-type="float"/>\s*'
-            r'<table:table-cell office:value="48.7477875\d*" '
+            r'<table:table-cell office:value="0" office:value-type="float" '
+            r'table:number-columns-repeated="2"/>\s*'
+            r'<table:table-cell office:value="0.0" '
+            r'office:value-type="float"/>\s*'
+            r'<table:table-cell office:value="48.611\d*" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell/>\s*'
-            r'<table:table-cell office:value="0.12763340736\d*" '
+            r'<table:table-cell office:value="0.12727655\d*" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell table:number-columns-repeated="18"/>\s*'
             r'<table:table-cell office:date-value="2014-11-25T17:00:00" '
@@ -11909,7 +11919,7 @@ def virtual_bill(supply_source):
             r'office:value-type="float"/>\s*'
             r'<table:table-cell/>\s*'
             r'<table:table-cell office:value="5.89" '
-            r'office:value-type="float"/>\s*',
+            r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="600" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="31" '
@@ -11923,7 +11933,7 @@ def virtual_bill(supply_source):
             r'<table:table-cell office:value="0.0" office:value-type="float" '
             r'table:number-columns-repeated="2"/>\s*'
             r'<table:table-cell table:number-columns-repeated="4"/>\s*'
-            r'<table:table-cell office:value="0.00151" '
+            r'<table:table-cell office:value="0.0016" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="0.0" '
             r'office:value-type="float"/>\s*'
@@ -13008,9 +13018,9 @@ def virtual_bill(ss):
             r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="0" office:value-type="float" '
             r'table:number-columns-repeated="4"/>\s*'
-            r'<table:table-cell office:value="-0.444572823868\d*" '
+            r'<table:table-cell office:value="-0.44210973684\d*" '
             r'office:value-type="float"/>\s*'
-            r'<table:table-cell office:value="752.4665271\d*" '
+            r'<table:table-cell office:value="752.468990\d*" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="0" office:value-type="float" '
             r'table:number-columns-repeated="3"/>\s*'
@@ -15208,9 +15218,9 @@ def virtual_bill(ds):
                 'Units Consumed,Unit of Measure,Gas Charge,CCL Charge,'
                 'VAT at 5%,VAT at 15.0%,Vat at 17.50%,VAT at 20%,Total VAT,'
                 'Standing Charge,Total Charges',
-            'breakdown': '{"vat_20pc": 45, "gas_gbp": 8936.13,'
-                ' "vat_17_5pc": 0, "gas_rate": 0.019448, "vat_15pc": 0, '
-                '"vat_5pc": 0, "standing_gbp": 78.9, "ccl_gbp": 275.32}'},
+            'breakdown': "$ion_1_0 {'vat_20pc': 45, 'gas_gbp': 8936.13,"
+                " 'vat_17_5pc': 0, 'gas_rate': 0.019448, 'vat_15pc': 0, "
+                "'vat_5pc': 0, 'standing_gbp': 78.9, 'ccl_gbp': 275.32}"},
         'status_code': 303},
     {
         'name': "Delete gas bill",
@@ -15627,5 +15637,114 @@ def virtual_bill(supply_source):
     {
         'name': "Look at a DNO party",
         'path': '/parties/81',
+        'status_code': 200},
+
+    {
+        'name': "Insert a 99 supply",
+        'path': '/sites/5/edit',
+        'method': 'post',
+        'data': {
+            'source_id': '4',
+            'generator_type_id': '1',
+            'name': 'CHP 2',
+            'start_year': "2017",
+            'start_month': "04",
+            'start_day': "01",
+            'start_hour': "00",
+            'start_minute': "00",
+            'msn': "8hkk522h",
+            'gsp_group_id': '11',
+            'pc_id': '9',
+            'mtc_code': '845',
+            'cop_id': '5',
+            'ssc_code': '',
+            'mop_contract_id': '38',
+            'mop_account': "m 99 4881 3898 138",
+            'hhdc_contract_id': "35",
+            'hhdc_account': "dc-14 7206 6139 971",
+            'imp_llfc_code': "510",
+            'imp_mpan_core': "99 4881 3898 138",
+            'imp_sc': "23",
+            'imp_supplier_contract_id': "37",
+            'imp_supplier_account': "sup 99 4881 3898 138",
+            'insert_electricity': "insert"},
+        'regexes': [
+            r"/supplies/18"],
+        'status_code': 303},
+    {
+        'name': "Test supplies duration with 99 MPAN",
+        'path': '/reports/149?start_year=2017&start_month=04&start_day=01&'
+        'start_hour=0&start_minute=0&finish_year=2017&finish_month=04&'
+        'finish_day=30&finish_hour=23&finish_minute=30&supply_id=18',
+        'status_code': 303},
+    {
+        'path': '/downloads',
+        'tries': {'max': 20, 'period': 1},
+        'regexes': [
+            r"0016_FINISHED_adminexamplecom_supplies_duration\.csv"],
+        'status_code': 200},
+    {
+        'path': '/downloads/'
+        '0016_FINISHED_adminexamplecom_supplies_duration.csv',
+        'regexes': [
+            r'18,'],
+        'status_code': 200},
+
+    {
+        'name': "DNO rate parser",
+        'path': '/reports/dno_rate_parser',
+        'method': 'post',
+        'files': {'dno_file': 'test/dno_20_rates_2017.xlsx'},
+        'data': {
+            'gsp_group_id': '8',
+            'llfc_tab': '1',
+            'laf_tab': '7'},
+        'status_code': 303,
+        'regexes': [
+            r"/downloads"]},
+    {
+        'path': '/downloads',
+        'tries': {'max': 20, 'period': 1},
+        'regexes': [
+            r"0017_FINISHED_adminexamplecom_dno_rates.ion"],
+        'status_code': 200},
+    {
+        'path': '/downloads/'
+        '0017_FINISHED_adminexamplecom_dno_rates.ion',
+        'regexes': [
+            r"'605,606': \{",
+            r"'455': \{\s*"
+            r"'description': 'LV Sub HH Metered',\s*"
+            r"'gbp-per-mpan-per-day': 0.04170,\s*"
+            r"'gbp-per-kva-per-day': 0.04260,\s*"
+            r"'excess-gbp-per-kva-per-day': 0.04260,\s*"
+            r"'red-gbp-per-kwh': 0.08838,\s*"
+            r"'amber-gbp-per-kwh': 0.00335,\s*"
+            r"'green-gbp-per-kwh': 0.00079,\s*"
+            r"'gbp-per-kvarh': 0.00250},"],
+        'status_code': 200},
+    {
+        'name': "DNO rate parser",
+        'path': '/reports/dno_rate_parser',
+        'method': 'post',
+        'files': {'dno_file': 'test/dno_24_L_rates_2017.xlsx'},
+        'data': {
+            'gsp_group_id': '3',
+            'llfc_tab': '1',
+            'laf_tab': '7'},
+        'status_code': 303,
+        'regexes': [
+            r"/downloads"]},
+    {
+        'path': '/downloads',
+        'tries': {'max': 20, 'period': 1},
+        'regexes': [
+            r"0018_FINISHED_adminexamplecom_dno_rates.ion"],
+        'status_code': 200},
+    {
+        'path': '/downloads/'
+        '0018_FINISHED_adminexamplecom_dno_rates.ion',
+        'regexes': [
+            r"'601,603': \{"],
         'status_code': 200},
 ]

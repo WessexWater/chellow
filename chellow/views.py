@@ -18,7 +18,7 @@ from dateutil.relativedelta import relativedelta
 from chellow.utils import (
     HH, req_str, req_int, req_date, parse_mpan_core, req_bool, req_hh_date,
     hh_after, req_decimal, send_response, hh_min, hh_max, hh_format, hh_range,
-    utc_datetime, utc_datetime_now, req_ion, get_file_scripts, to_utc)
+    utc_datetime, utc_datetime_now, req_ion, get_file_scripts, to_utc, dumps)
 from werkzeug.exceptions import BadRequest, NotFound
 import chellow.general_import
 import io
@@ -120,6 +120,11 @@ def hh_format_filter(dt, modifier='full'):
 @app.template_filter('now_if_none')
 def now_if_none(dt):
     return Datetime.utcnow() if dt is None else dt
+
+
+@app.template_filter('dumps')
+def dumps_filter(d):
+    return dumps(d)
 
 
 def chellow_redirect(path, code=None):
@@ -4305,7 +4310,10 @@ def dno_contracts_get():
             'start_date': scripts[0][0],
             'finish_date': scripts[-1][1]}
         dno_contracts.append(dno_contract)
-    return render_template('dno_contracts.html', dno_contracts=dno_contracts)
+    gsp_groups = g.sess.query(GspGroup).order_by(GspGroup.code)
+    return render_template(
+        'dno_contracts.html', dno_contracts=dno_contracts,
+        gsp_groups=gsp_groups)
 
 
 @app.route('/dno_contracts/<int:contract_id>')

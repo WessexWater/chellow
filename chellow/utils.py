@@ -12,7 +12,7 @@ from amazon.ion.simpleion import load, dump
 from amazon.ion.exceptions import IonException
 from io import StringIO
 import os
-from collections.abc import Mapping
+from collections.abc import Mapping, Sequence
 
 clogs = deque()
 
@@ -52,7 +52,7 @@ def req_int(name):
 
 def req_ion(name):
     try:
-        return load(StringIO(req_str(name)))
+        return loads(req_str(name))
     except IonException as e:
         raise BadRequest(
             "Problem parsing the field " + name + " as ION " + str(e) + ".")
@@ -531,7 +531,7 @@ class RateDict(Mapping):
         try:
             return self._storage[key]
         except KeyError:
-            raise BadRequest(
+            raise Exception(
                 "For the contract " + self._contract_name +
                 " and the rate script at " + hh_format(self._dt) +
                 " the key " + str(self._key_history + [key]) +
@@ -599,7 +599,42 @@ def loads(ion_str):
         raise BadRequest("Problem with ION: " + str(e))
 
 
-def dumps(val):
+def dumps_orig(val):
     f = StringIO()
     dump(val, f)
     return f.getvalue()
+
+
+def dump_val(val, indent):
+    out = []
+    next_indent = indent + '  '
+    if isinstance(val, str):
+        out.append("'" + val + "'")
+    elif isinstance(val, Mapping):
+        out.append('{\n')
+        for i, (k, v) in enumerate(val.items()):
+            out.append(
+                next_indent + "'" + k + "': " + dump_val(v, next_indent))
+            if i < len(val) - 1:
+                out.append(',\n')
+        out.append('}')
+    elif isinstance(val, Sequence):
+        out.append('[\n')
+        for i, v in enumerate(val):
+            out.append(next_indent + dump_val(v, next_indent))
+            if i < len(val) - 1:
+                out.append(',\n')
+        out.append(']')
+    elif isinstance(val, Decimal):
+        out.append(str(val))
+    elif isinstance(val, int):
+        out.append(str(val))
+    else:
+        raise Exception(
+            "Must be either a str, Decimal Mapping or Sequence, but got a " +
+            str(type(val)))
+    return ''.join(out)
+
+
+def dumps(val):
+    return '$ion_1_0 ' + dump_val(val, '')

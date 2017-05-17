@@ -60,19 +60,19 @@
 				</fieldset>
 				<br>
 				<label>
-					kWh {{input_text('kwh', '' ~ g_bill.kwh)}}
+					kWh {{input_text('kwh', g_bill.kwh)}}
 				</label>
 				<br>
 				<label>
-					Net GBP {{input_text('net_gbp', '' ~ g_bill.net_gbp)}}
+					Net GBP {{input_text('net_gbp', g_bill.net)}}
 				</label>
 				<br>
 				<label>
-					VAT GBP {{input_text('vat_gbp', '' ~ g_bill.vat_gbp)}}
+					VAT GBP {{input_text('vat_gbp', g_bill.vat)}}
 				</label>
 				<br>
 				<label>
-					Gross GBP {{input_text('gross_gbp', '' ~ g_bill.gross_gbp)}}
+					Gross GBP {{input_text('gross_gbp', g_bill.gross)}}
 				</label>
 				<br>
 				<label>Type
@@ -99,7 +99,11 @@
 				Example Breakdown
 
 				<pre>
-{"unrestricted_kwh": 1000, "unrestricted_rate": 0.1, "unrestricted_gbp": 100}          </pre>
+$ion_1_0 {
+  'unrestricted_kwh': 1000,
+  'unrestricted_rate': 0.1,
+  'unrestricted_gbp': 100}
+				</pre>
 				<br>
 				<input type="submit" name="update" value="Update">
 			</fieldset>
