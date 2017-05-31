@@ -6758,7 +6758,7 @@ def virtual_bill(supply_source):
         '0019_FINISHED_watkinsexamplecom_crc_2012_2013_supply_7.csv',
         'status_code': 200,
         'regexes': [
-            r'^"7","22 4862 4512 332"']},
+            r'^7,22 4862 4512 332']},
 
     # Supply 9
     {
@@ -8696,10 +8696,10 @@ def virtual_bill(supply_source):
         '0055_FINISHED_watkinsexamplecom_crc_2009_2010_supply_10.csv',
         'status_code': 200,
         'regexes': [
-            r'"10","22 1065 3921 534","CI017","Roselands","2009-04-01 00:00",'
-            r'"2010-03-31 23:30",".*?","0","0","277.0","0","0","0","365.0",'
-            r'"0","277.0","365.0","Actual","0","0","2164.9638989169675","0",'
-            r'"0","0","2164.9638989169675"']},
+            r'10,22 1065 3921 534,CI017,Roselands,2009-04-01 00:00,'
+            r'2010-03-31 23:30,.*?,0,0,277.0,0,0,0,365.0,'
+            r'0,277.0,365.0,Actual,0,0,2164.9638989169675,0,'
+            r'0,0,2164.9638989169675']},
 
     # Add a scenario
     {
@@ -10174,7 +10174,7 @@ def virtual_bill(supply_source):
         '0064_FINISHED_watkinsexamplecom_crc_2005_2006_supply_2.csv',
         'status_code': 200,
         'regexes': [
-            r'"2","22 9813 2107 763"']},
+            r'2,22 9813 2107 763']},
 
     # CRC for HH supply that straddles eras with missing data
     {
@@ -10192,10 +10192,10 @@ def virtual_bill(supply_source):
         '0065_FINISHED_watkinsexamplecom_crc_2008_2009_supply_7.csv',
         'status_code': 200,
         'regexes': [
-            r'"7","22 4862 4512 332","CH023","Treglisson","2008-04-01 00:00",'
-            r'"2009-03-31 23:30","","0","127.0","0","0","0","365.0","0","0",'
-            r'"127.0","365.0","Estimated","0","612952.9400000019","0","0","0",'
-            r'"1148683.4623622093","1761636.4023622111",""']},
+            r'7,22 4862 4512 332,CH023,Treglisson,2008-04-01 00:00,'
+            r'2009-03-31 23:30,,0,127.0,0,0,0,365.0,0,0,'
+            r'127.0,365.0,Estimated,0,612952.9400000019,0,0,0,'
+            r'1148683.4623622093,1761636.4023622111,']},
 
     {
         'name': "Contract level MOP virtual bills",
@@ -15821,4 +15821,33 @@ def virtual_bill(supply_source):
             r"'night': 1.07000,\s*",
             r"'other': 1.07300}"],
         'status_code': 200},
+
+    {
+        'name': "CRC report for unmetered supply.",
+        'path': '/reports/207?supply_id=9&year=2016',
+        'status_code': 303,
+        'regexes': [
+            r"/downloads"]},
+    {
+        'path': '/downloads',
+        'tries': {'max': 20, 'period': 1},
+        'status_code': 200,
+        'regexes': [
+            r'0019_FINISHED_adminexamplecom_crc_2016_2017_supply_9\.csv']},
+    {
+        'path': '/downloads/'
+        '0019_FINISHED_adminexamplecom_crc_2016_2017_supply_9.csv',
+        'status_code': 200,
+        'regexes': [
+            r'Chellow Supply Id,MPAN Core,Site Id,Site Name,From,To,'
+            r'NHH Breakdown,Actual HH Normal Days,Actual AMR Normal Days,'
+            r'Actual NHH Normal Days,Actual Unmetered Normal Days,'
+            r'Max HH Normal Days,Max AMR Normal Days,Max NHH Normal Days,'
+            r'Max Unmetered Normal Days,Total Actual Normal Days,'
+            r'Total Max Normal Days,Data Type,HH kWh,AMR kWh,NHH kWh,'
+            r'Unmetered kwh,HH Filled kWh,AMR Filled kWh,Total kWh,Note',
+
+            r'9,22 0195 4836 192,CI004,Lower Treave,2016-04-01 00:00,'
+            r'2017-03-31 23:30,,0,0,0,365.0,0,0,0,365.0,365.0,365.0,Actual,0,'
+            r'0,0,304.0,0,0,304.0,']},
 ]

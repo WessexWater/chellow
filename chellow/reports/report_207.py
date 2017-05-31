@@ -9,12 +9,13 @@ import chellow.dloads
 import sys
 import os
 import threading
-from chellow.utils import HH, hh_after, hh_format, req_int, hh_min, hh_max
+from chellow.utils import HH, hh_format, req_int, hh_min, hh_max
 from chellow.models import (
     Supply, Era, Source, Site, SiteEra, Bill, RegisterRead, BillType, ReadType,
     HhDatum, Channel, Session)
 from flask import request, g
 from chellow.views import chellow_redirect
+import csv
 
 
 def content(year, supply_id, user):
@@ -28,21 +29,21 @@ def content(year, supply_id, user):
             fname.append('supply_' + str(supply_id))
         running_name, finished_name = chellow.dloads.make_names(
             '_'.join(fname) + '.csv', user)
-        f = open(running_name, "w")
+        f = open(running_name, mode='w', newline='')
+        w = csv.writer(f, lineterminator='\n')
 
         ACTUAL_READ_TYPES = ['N', 'N3', 'C', 'X', 'CP']
-        f.write(
-            ','.join(
-                (
-                    'Chellow Supply Id', 'MPAN Core', 'Site Id', 'Site Name',
-                    'From', 'To', 'NHH Breakdown', 'Actual HH Normal Days',
-                    'Actual AMR Normal Days', 'Actual NHH Normal Days',
-                    'Actual Unmetered Normal Days', 'Max HH Normal Days',
-                    'Max AMR Normal Days', 'Max NHH Normal Days',
-                    'Max Unmetered Normal Days', 'Total Actual Normal Days',
-                    'Total Max Normal Days', 'Data Type', 'HH kWh', 'AMR kWh',
-                    'NHH kWh', 'Unmetered kwh', 'HH Filled kWh',
-                    'AMR Filled kWh', 'Total kWh', 'Note')) + '\n')
+        w.writerow(
+            (
+                'Chellow Supply Id', 'MPAN Core', 'Site Id', 'Site Name',
+                'From', 'To', 'NHH Breakdown', 'Actual HH Normal Days',
+                'Actual AMR Normal Days', 'Actual NHH Normal Days',
+                'Actual Unmetered Normal Days', 'Max HH Normal Days',
+                'Max AMR Normal Days', 'Max NHH Normal Days',
+                'Max Unmetered Normal Days', 'Total Actual Normal Days',
+                'Total Max Normal Days', 'Data Type', 'HH kWh', 'AMR kWh',
+                'NHH kWh', 'Unmetered kwh', 'HH Filled kWh', 'AMR Filled kWh',
+                'Total kWh', 'Note'))
 
         year_start = Datetime(year, 4, 1, tzinfo=pytz.utc)
         year_finish = year_start + relativedelta(years=1) - HH
@@ -74,15 +75,8 @@ def content(year, supply_id, user):
 
                 meter_type = era.make_meter_category()
 
-                era_start = era.start_date
-                period_start = era_start \
-                    if era_start > year_start else year_start
-
-                era_finish = era.finish_date
-                if hh_after(era_finish, year_finish):
-                    period_finish = year_finish
-                else:
-                    period_finish = era_finish
+                period_start = hh_max(era.start_date, year_start)
+                period_finish = hh_min(era.finish_date, year_finish)
 
                 max_normal_days[meter_type] += (
                     (period_finish - period_start).total_seconds() +
@@ -408,40 +402,33 @@ def content(year, supply_id, user):
                             HhDatum.start_date <= period_finish,
                             HhDatum.status == 'A').one()[0] / 48
                 elif meter_type == 'unmetered':
-                    bills = sess.query(Bill).filter(
-                        Bill.supply == supply,
-                        Bill.finish_date >= period_start,
-                        Bill.start_date <= period_finish)
-                    for bill in bills:
-                        total_kwh[meter_type] += kwh
-                    normal_days[meter_type] += (
-                        (
-                            period_finish - period_start).total_seconds() +
-                        60 * 30) / (60 * 60 * 24)
+                    year_seconds = (
+                        year_finish - year_start).total_seconds() + 60 * 30
+                    period_seconds = (
+                        period_finish - period_start).total_seconds() + 60 * 30
+
+                    total_kwh[meter_type] += era.imp_sc * period_seconds / \
+                        year_seconds
+
+                    normal_days[meter_type] += period_seconds / (60 * 60 * 24)
 
             # for full year 183
             total_normal_days = sum(normal_days.values())
             total_max_normal_days = sum(max_normal_days.values())
             is_normal = total_normal_days / total_max_normal_days >= 183 / 365
 
-            f.write(
-                ','.join(
-                    '"' + str(val) + '"' for val in
-                    [
-                        supply.id, mpan_core, site.code, site.name,
-                        hh_format(year_start), hh_format(year_finish),
-                        breakdown] +
-                    [
-                        normal_days[type] for type in meter_types] +
-                    [
-                        max_normal_days[type] for type in meter_types] +
-                    [
-                        total_normal_days, total_max_normal_days,
-                        "Actual" if is_normal else "Estimated"] +
-                    [total_kwh[type] for type in meter_types] +
-                    [filled_kwh[type] for type in ('hh', 'amr')] +
-                    [sum(total_kwh.values()) + sum(filled_kwh.values()), '']) +
-                '\n')
+            w.writerow(
+                [
+                    supply.id, mpan_core, site.code, site.name,
+                    hh_format(year_start), hh_format(year_finish), breakdown] +
+                [
+                    normal_days[t] for t in meter_types] + [
+                    max_normal_days[t] for t in meter_types] + [
+                    total_normal_days, total_max_normal_days,
+                    "Actual" if is_normal else "Estimated"] +
+                [total_kwh[t] for t in meter_types] +
+                [filled_kwh[t] for t in ('hh', 'amr')] +
+                [sum(total_kwh.values()) + sum(filled_kwh.values()), ''])
 
             # avoid a long running transaction
             sess.rollback()
