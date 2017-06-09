@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+
+{% block title %}
+	&raquo; Industry Contracts &raquo; {{contract_code}}
+{% endblock %}
+
+{% block nav %}
+	<a href="/industry_contracts">Industry Contracts</a> &raquo;
+ 	{{contract_code}}
+{% endblock %}
+
+{% block content %}
+	<div class="layer-section">
+		<div class="section-header">
+			<h2>Industry Contract</h2>	
+		</div>
+		<div class="section-content">
+			<div class="section-data">
+				<table class="DataTable widthAuto noMarginBottom">
+					<tbody>
+						<tr>
+							<th>Code</th>
+							<td>{{contract_code}}</td>
+						</tr>
+						<tr>
+						<tr>
+							<th>Start Date</th>
+							<td>{{rate_scripts[0][0]|hh_format }}</td>
+						</tr>
+						<tr>
+							<th>Finish Date</th>
+							<td>{{rate_scripts[-1][1]|hh_format }}</td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+			<div class="section-data">
+				<table class="DataTable widthAuto noMarginBottom">
+					<caption>
+						Rate Scripts
+					</caption>
+					<thead>
+						<tr>
+							<th></th>
+							<th>From</th>
+							<th>To</th>
+						</tr>
+					</thead>
+					<tbody>
+						{% for start_date, finish_date, script in rate_scripts %}
+							<tr>
+								<td>
+									<a
+									 		href="/industry_contracts/{{contract_code}}/rate_scripts/{{start_date.strftime('%Y%m%d%H%M')}}"
+											>View</a>
+								</td>
+								<td>{{start_date|hh_format}}</td>
+								<td>{{finish_date|hh_format}}</td>
+							</tr>
+						{% endfor %}
+					</tbody>
+				</table>
+			</div>
+		</div>
+	</div>
+{% endblock %}

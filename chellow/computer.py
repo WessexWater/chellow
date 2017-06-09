@@ -623,8 +623,8 @@ class SiteSource(DataSource):
             self.is_displaced = True
             self.supply = self.era.supply
             self.mpan_core = era.imp_mpan_core
-            self.dno_contract = self.supply.dno_contract
-            self.dno_code = self.dno_contract.name
+            self.dno = self.supply.dno
+            self.dno_code = self.dno.dno_code
             llfc = era.imp_llfc
             self.llfc_code = llfc.code
             self.is_import = True
@@ -790,8 +790,8 @@ class SupplySource(DataSource):
         self.voltage_level_code = self.voltage_level.code
         self.is_substation = self.llfc.is_substation
         self.supply = era.supply
-        self.dno_contract = self.supply.dno_contract
-        self.dno_code = self.dno_contract.name
+        self.dno = self.supply.dno
+        self.dno_code = self.dno.dno_code
         self.is_new = False
         self.mtc = self.era.mtc
         self.meter_type = self.mtc.meter_type

@@ -1,50 +1,50 @@
 {% extends "base.html" %}
 
 {% block inside_head %}
-<meta http-equiv="X-UA-Compatible" content="IE=edge">
-<script type="text/javascript" language="javascript">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<script type="text/javascript" language="javascript">
 
-      function hideText() {
-        document.getElementById('full_note').style.display='none';
-        document.getElementById('truncated_note').style.display='inline';
-      }
+		function hideText() {
+			document.getElementById('full_note').style.display='none';
+			document.getElementById('truncated_note').style.display='inline';
+		}
 
-      function showText() {
-        document.getElementById('truncated_note').style.display='none';
-        document.getElementById('full_note').style.display='inline';
-      }
+		function showText() {
+			document.getElementById('truncated_note').style.display='none';
+			document.getElementById('full_note').style.display='inline';
+		}
 
-      function collapseBills(collapseId) {
-        var collapsibles = document.getElementsByClassName('collapsible_' + collapseId);
-        for (var i = 0; i < collapsibles.length; i++) {
-          collapsibles[i].style.display = 'none';
-        }
-        var expanders = document.getElementsByClassName('expander_' + collapseId);
-        for (var i = 0; i < expanders.length; i++) {
-          expanders[i].style.display = 'table-cell';
-        }
-        var collapsers = document.getElementsByClassName('collapser_' + collapseId);
-        for (var i = 0; i < collapsers.length; i++) {
-          collapsers[i].style.display = 'none';
-        }
-      }
+		function collapseBills(collapseId) {
+			var collapsibles = document.getElementsByClassName('collapsible_' + collapseId);
+			for (var i = 0; i < collapsibles.length; i++) {
+				collapsibles[i].style.display = 'none';
+			}
+			var expanders = document.getElementsByClassName('expander_' + collapseId);
+			for (var i = 0; i < expanders.length; i++) {
+				expanders[i].style.display = 'table-cell';
+			}
+			var collapsers = document.getElementsByClassName('collapser_' + collapseId);
+			for (var i = 0; i < collapsers.length; i++) {
+				collapsers[i].style.display = 'none';
+			}
+		}
 
-      function expandBills(collapseId) {
-        var collapsibles = document.getElementsByClassName('collapsible_' + collapseId);
-        for (var i = 0; i < collapsibles.length; i++) {
-          collapsibles[i].style.display = 'table-row';
-        }
-        var expanders = document.getElementsByClassName('expander_' + collapseId);
-        for (var i = 0; i < expanders.length; i++) {
-          expanders[i].style.display = 'none';
-        }
-        var collapsers = document.getElementsByClassName('collapser_' + collapseId);
-        for (var i = 0; i < collapsers.length; i++) {
-          collapsers[i].style.display = 'table-cell';
-        }
-      }
+		function expandBills(collapseId) {
+			var collapsibles = document.getElementsByClassName('collapsible_' + collapseId);
+			for (var i = 0; i < collapsibles.length; i++) {
+				collapsibles[i].style.display = 'table-row';
+			}
+			var expanders = document.getElementsByClassName('expander_' + collapseId);
+			for (var i = 0; i < expanders.length; i++) {
+				expanders[i].style.display = 'none';
+			}
+			var collapsers = document.getElementsByClassName('collapser_' + collapseId);
+			for (var i = 0; i < collapsers.length; i++) {
+				collapsers[i].style.display = 'table-cell';
+			}
+		}
 
-</script>
+	</script>
 {% endblock %}
 
 {% block title %}
@@ -224,44 +224,44 @@
                     <th colspan="6">Import</th>
                 </tr>
                 <tr>
-                    <td>
-                        {% for channel in era_bundle['imp_channels'] %}
-                        <a href="/channels/{{channel.id}}">{{channel.channel_type}}</a>
-                        {% endfor %}
-                    </td>
-                    <td>
-                        {% if era.imp_mpan_core %}
-                        <a href="/llfcs/{{era.imp_llfc.id}}" title="{{era.imp_llfc.description}}">
-                            {{era.imp_llfc.code}}
-                        </a>
-                        {% endif %}
-                    </td>
-                    <td>
-                        {% if era.imp_mpan_core %}
-                        <a title="{{ supply.dno_contract.name }}" href="/dno_contracts/{{supply.dno_contract.id}}">{{supply.dno_contract.name}}</a> {{era.imp_mpan_core[3:]}}
-                        {% endif %}
-                    <td>
-                        {% if era.imp_mpan_core %}
-                        {{ era.imp_sc }}
-                        {% endif %}
-                    </td>
-                    <td>
-                        {% if era.imp_mpan_core %}
-                        <a href="/supplier_contracts/{{era.imp_supplier_contract.id}}">{{era.imp_supplier_contract.name}}</a>
-                        {% endif %}
-                    </td>
-                    <td>
-                        {% if era.imp_mpan_core %}
-                        {{ era.imp_supplier_account }}
-                        {% if era_bundle['imp_shared_supplier_accounts'] %}(
-                        {%- for sup in era_bundle['imp_shared_supplier_accounts'] -%}
-                        {%- if not loop.first    -%} {%- endif -%}
-                        <a href="/supplies/{{sup.id}}">{{sup.id}}</a>
-                        {%- endfor -%}
-                        )
-                        {% endif %}
-                        {% endif %}
-                    </td>
+									<td>
+										{% for channel in era_bundle['imp_channels'] %}
+											<a href="/channels/{{channel.id}}">{{channel.channel_type}}</a>
+										{% endfor %}
+									</td>
+									<td>
+											{% if era.imp_mpan_core %}
+											<a href="/llfcs/{{era.imp_llfc.id}}" title="{{era.imp_llfc.description}}">
+													{{era.imp_llfc.code}}
+											</a>
+											{% endif %}
+									</td>
+									<td>
+											{% if era.imp_mpan_core %}
+											<a title="{{supply.dno.dno_name}}" href="/dnos/{{supply.dno.id}}">{{supply.dno.dno_code}}</a> {{era.imp_mpan_core[3:]}}
+											{% endif %}
+									<td>
+										{% if era.imp_mpan_core %}
+											{{ era.imp_sc }}
+										{% endif %}
+									</td>
+									<td>
+										{% if era.imp_mpan_core %}
+											<a href="/supplier_contracts/{{era.imp_supplier_contract.id}}">{{era.imp_supplier_contract.name}}</a>
+										{% endif %}
+									</td>
+									<td>
+										{% if era.imp_mpan_core %}
+											{{ era.imp_supplier_account }}
+											{% if era_bundle['imp_shared_supplier_accounts'] %}(
+												{%- for sup in era_bundle['imp_shared_supplier_accounts'] -%}
+												{%- if not loop.first    -%} {%- endif -%}
+											<a href="/supplies/{{sup.id}}">{{sup.id}}</a>
+											{%- endfor -%}
+											)
+											{% endif %}
+										{% endif %}
+									</td>
                 </tr>
                 <tr>
                     <th colspan="6">Export</th>
@@ -279,13 +279,13 @@
                     </td>
                     <td>
                         {% if era.exp_mpan_core %}
-                        <a title="{{era.supply.dno_contract.name}}" href="/dno_contracts/{{era.supply.dno_contract.id}}">{{era.supply.dno_contract.name}}</a> {{era.exp_mpan_core[3:]}}
+                        <a title="{{era.supply.dno.dno_code}}" href="/dnos/{{era.supply.dno.id}}">{{era.supply.dno.dno_code}}</a> {{era.exp_mpan_core[3:]}}
                         {% endif %}
                     </td>
                     <td>
-                        {% if era.exp_mpan_core %}
+											{% if era.exp_mpan_core %}
                         {{ era.exp_sc }}
-                        {% endif %}
+											{% endif %}
                     </td>
                     <td>
                         {% if era.exp_mpan_core %}
@@ -293,7 +293,7 @@
                         {% endif %}
                     </td>
                     <td>
-                        {% if era.exp_mpan_core %}
+											{% if era.exp_mpan_core %}
                         {{ era.exp_supplier_account }}
                         {% if era_bundle['exp_shared_supplier_accounts'] %}(
                         {%- for sup in era_bundle['exp_shared_supplier_accounts'] -%}

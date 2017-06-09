@@ -25,7 +25,7 @@ VL_LOOKUP = {
 def datum_beginning_22(ds, hh):
     bill = ds.supplier_bill
 
-    rs = get_file_rates(ds.caches, ds.dno_contract.name, hh['start-date'])
+    rs = get_file_rates(ds.caches, ds.dno_code, hh['start-date'])
     tariff = rs['tariffs'][ds.llfc_code]
     lafs = rs['lafs'][VL_LOOKUP[ds.voltage_level_code][ds.is_substation]]
 
@@ -34,7 +34,7 @@ def datum_beginning_22(ds, hh):
             day_rate = float(tariff['day-gbp-per-kwh'])
         except KeyError:
             raise BadRequest(
-                "For the DNO " + ds.dno_contract.name +
+                "For the DNO " + ds.dno_code +
                 " and the rate script at date " +
                 hh_format(hh['start-date']) +
                 " and the rate 'tariffs' with the LLFC code " + ds.llfc_code +
@@ -81,8 +81,7 @@ def datum_beginning_22(ds, hh):
                 month_kwh += h['msp-kwh']
 
         tariff = get_file_rates(
-            ds.caches, ds.dno_contract.name,
-            hh['start-date'])['tariffs'][ds.llfc_code]
+            ds.caches, ds.dno_code, hh['start-date'])['tariffs'][ds.llfc_code]
         reactive_rate = float(tariff['reactive-gbp-per-kvarh'])
         bill['duos-reactive-rate'] = reactive_rate
 
@@ -110,8 +109,7 @@ def datum_beginning_20(ds, hh):
 
     tariff = None
     for k, tf in get_file_rates(
-            ds.caches, ds.dno_contract.name,
-            hh['start-date'])['tariffs'].items():
+            ds.caches, ds.dno_code, hh['start-date'])['tariffs'].items():
         if ds.llfc_code in [cd.strip() for cd in k.split(',')]:
             tariff = tf
 
@@ -122,7 +120,7 @@ def datum_beginning_20(ds, hh):
             hh_format(hh['start-date']) + ".")
 
     lafs = get_file_rates(
-        ds.caches, ds.dno_contract.name,
+        ds.caches, ds.dno_code,
         hh['start-date'])['lafs'][ds.voltage_level_code.lower()]
 
     day_rate = float(tariff['day-gbp-per-kwh'])
@@ -159,8 +157,7 @@ def datum_beginning_20(ds, hh):
     if hh['ct-is-month-end']:
         tariff = None
         for k, tf in get_file_rates(
-                ds.caches, ds.dno_contract.name,
-                hh['start-date'])['tariffs'].items():
+                ds.caches, ds.dno_code, hh['start-date'])['tariffs'].items():
             if ds.llfc_code in map(str.strip, k.split(',')):
                 tariff = tf
                 break
@@ -284,7 +281,7 @@ def year_md_095_site(data_source, finish, pw):
 def datum_beginning_14(ds, hh):
     bill = ds.supplier_bill
 
-    rates = get_file_rates(ds.caches, ds.dno_contract.name, hh['start-date'])
+    rates = get_file_rates(ds.caches, ds.dno_code, hh['start-date'])
     tariff = rates['tariffs'][ds.llfc_code]
     if 0 < hh['ct-decimal-hour'] <= 7:
         bill['duos-night-kwh'] += hh['msp-kwh']
@@ -373,7 +370,7 @@ def datum_2010_04_01(ds, hh):
         except KeyError:
             tariff = None
             for llfcs, tf in get_file_rates(
-                    ds.caches, ds.dno_contract.name,
+                    ds.caches, ds.dno_code,
                     start_date)[ds.gsp_group_code]['tariffs'].items():
                 if ds.llfc_code in [cd.strip() for cd in llfcs.split(',')]:
                     tariff = tf
@@ -469,7 +466,7 @@ def datum_2010_04_01(ds, hh):
 
             lafs[start_date] = laf = float(
                 get_file_rates(
-                    ds.caches, ds.dno_contract.name,
+                    ds.caches, ds.dno_code,
                     start_date)[ds.gsp_group_code]['lafs'][vl_key][slot_name])
 
     hh['laf'] = laf
@@ -542,20 +539,17 @@ def duos_vb(ds):
     try:
         dno_caches = ds.caches['dno']
     except KeyError:
-        ds.caches['dno'] = {}
-        dno_caches = ds.caches['dno']
+        dno_caches = ds.caches['dno'] = {}
 
     try:
-        dno_cache = dno_caches[ds.dno_contract.name]
+        dno_cache = dno_caches[ds.dno_code]
     except KeyError:
-        dno_caches[ds.dno_contract.name] = {}
-        dno_cache = dno_caches[ds.dno_contract.name]
+        dno_cache = dno_caches[ds.dno_code] = {}
 
     try:
         data_func_cache = dno_cache['data_funcs']
     except KeyError:
-        dno_cache['data_funcs'] = {}
-        data_func_cache = dno_cache['data_funcs']
+        data_func_cache = dno_cache['data_funcs'] = {}
 
     for hh in ds.hh_data:
         try:

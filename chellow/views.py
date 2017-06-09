@@ -1697,8 +1697,7 @@ def supply_edit_post(supply_id):
             else:
                 generator_type = None
             gsp_group = GspGroup.get_by_id(g.sess, gsp_group_id)
-            supply.update(
-                name, source, generator_type, gsp_group, supply.dno_contract)
+            supply.update(name, source, generator_type, gsp_group, supply.dno)
             g.sess.commit()
             return chellow_redirect("/supplies/" + str(supply.id), 303)
     except BadRequest as e:
@@ -1781,8 +1780,7 @@ def era_edit_post(era_id):
             pc_id = req_int("pc_id")
             pc = Pc.get_by_id(g.sess, pc_id)
             mtc_code = req_str("mtc_code")
-            mtc = Mtc.get_by_code(
-                g.sess, era.supply.dno_contract.party, mtc_code)
+            mtc = Mtc.get_by_code(g.sess, era.supply.dno, mtc_code)
             cop_id = req_int("cop_id")
             cop = Cop.get_by_id(g.sess, cop_id)
             ssc_code = req_str("ssc_code")
@@ -1910,7 +1908,7 @@ def supply_get(supply_id):
     era_bundles = []
     supply = g.sess.query(Supply).filter(Supply.id == supply_id).options(
         joinedload(Supply.source), joinedload(Supply.generator_type),
-        joinedload(Supply.gsp_group), joinedload(Supply.dno_contract)).first()
+        joinedload(Supply.gsp_group), joinedload(Supply.dno)).first()
     if supply is None:
         raise NotFound("There isn't a supply with the id " + str(supply_id))
 
@@ -1922,7 +1920,7 @@ def supply_get(supply_id):
             joinedload(Era.ssc), joinedload(Era.mtc),
             joinedload(Era.mop_contract), joinedload(Era.hhdc_contract),
             joinedload(Era.imp_llfc), joinedload(Era.exp_llfc),
-            joinedload(Era.supply).joinedload(Supply.dno_contract)).all()
+            joinedload(Era.supply).joinedload(Supply.dno)).all()
     for era in eras:
         imp_mpan_core = era.imp_mpan_core
         exp_mpan_core = era.exp_mpan_core
@@ -2953,20 +2951,19 @@ def supply_hh_data_get(supply_id):
         start_date=start_date, finish_date=finish_date)
 
 
-@app.route('/dno_contracts/<int:contract_id>/rate_scripts/<start_date_str>')
-def dno_rate_script_get(contract_id, start_date_str):
-    dno_contract = Contract.get_dno_by_id(g.sess, contract_id)
+@app.route('/dnos/<int:dno_id>/rate_scripts/<start_date_str>')
+def dno_rate_script_get(dno_id, start_date_str):
+    dno = Party.get_dno_by_id(g.sess, dno_id)
     start_date = to_utc(Datetime.strptime(start_date_str, '%Y%m%d%H%M'))
     rate_script = None
-    for rscript in get_file_scripts(dno_contract.name):
+    for rscript in get_file_scripts(dno.dno_code):
         if rscript[0] == start_date:
             rate_script = rscript
             break
     if rate_script is None:
         raise NotFound()
     return render_template(
-        'dno_rate_script.html', dno_contract=dno_contract,
-        rate_script=rate_script)
+        'dno_rate_script.html', dno=dno, rate_script=rate_script)
 
 
 @app.route('/non_core_contracts/<int:contract_id>/edit')
@@ -4279,16 +4276,16 @@ def supply_virtual_bill_get(supply_id):
 
 @app.route('/mtcs')
 def mtcs_get():
-    mtcs = g.sess.query(Mtc, Contract).outerjoin(Mtc.dno).outerjoin(
-        Contract).order_by(Mtc.code, Party.dno_code).all()
+    mtcs = g.sess.query(Mtc).outerjoin(Mtc.dno).order_by(
+        Mtc.code, Party.dno_code).options(joinedload(Mtc.dno)).all()
     return render_template('mtcs.html', mtcs=mtcs)
 
 
 @app.route('/mtcs/<int:mtc_id>')
 def mtc_get(mtc_id):
-    mtc, dno_contract = g.sess.query(Mtc, Contract).outerjoin(Mtc.dno) \
-        .outerjoin(Contract).filter(Mtc.id == mtc_id).one()
-    return render_template('mtc.html', mtc=mtc, dno_contract=dno_contract)
+    mtc = g.sess.query(Mtc).outerjoin(Mtc.dno).filter(
+        Mtc.id == mtc_id).options(joinedload(Mtc.dno)).one()
+    return render_template('mtc.html', mtc=mtc)
 
 
 @app.route('/csv_crc')
@@ -4299,46 +4296,89 @@ def csv_crc_get():
     return render_template('csv_crc.html', start_date=start_date)
 
 
-@app.route('/dno_contracts')
-def dno_contracts_get():
-    dno_contracts = []
-    for contract in g.sess.query(Contract).join(MarketRole).filter(
-            MarketRole.code == 'R').order_by(Contract.name):
-        scripts = get_file_scripts(contract.name)
-        dno_contract = {
-            'contract': contract,
-            'start_date': scripts[0][0],
-            'finish_date': scripts[-1][1]}
-        dno_contracts.append(dno_contract)
+@app.route('/dnos')
+def dnos_get():
+    dnos = []
+    for dno in g.sess.query(Party).join(MarketRole).filter(
+            MarketRole.code == 'R').order_by(Party.dno_code):
+        scripts = get_file_scripts(dno.dno_code)
+        try:
+            dno_dict = {
+                'dno': dno,
+                'start_date': scripts[0][0],
+                'finish_date': scripts[-1][1]}
+            dnos.append(dno_dict)
+        except IndexError:
+            raise BadRequest(
+                "Can't find any rate scripts for the DNO '" + dno.dno_code +
+                "'.")
     gsp_groups = g.sess.query(GspGroup).order_by(GspGroup.code)
-    return render_template(
-        'dno_contracts.html', dno_contracts=dno_contracts,
-        gsp_groups=gsp_groups)
+    return render_template('dnos.html', dnos=dnos, gsp_groups=gsp_groups)
 
 
-@app.route('/dno_contracts/<int:contract_id>')
-def dno_contract_get(contract_id):
-    contract = Contract.get_dno_by_id(g.sess, contract_id)
-    rate_scripts = get_file_scripts(contract.name)[::-1]
+@app.route('/dnos/<int:dno_id>')
+def dno_get(dno_id):
+    dno = Party.get_dno_by_id(g.sess, dno_id)
+    rate_scripts = get_file_scripts(dno.dno_code)[::-1]
     return render_template(
-        'dno_contract.html', contract=contract, rate_scripts=rate_scripts,
-        reports=[])
+        'dno.html', dno=dno, rate_scripts=rate_scripts, reports=[])
+
+
+@app.route('/industry_contracts')
+def industry_contracts_get():
+    contracts = []
+    contracts_path = os.path.join(app.root_path, 'rate_scripts')
+
+    for contract_code in sorted(os.listdir(contracts_path)):
+        try:
+            int(contract_code)
+            continue
+        except ValueError:
+            scripts = get_file_scripts(contract_code)
+            contracts.append(
+                {
+                    'code': contract_code,
+                    'start_date': scripts[0][0],
+                    'finish_date': scripts[-1][1]})
+
+    return render_template('industry_contracts.html', contracts=contracts)
+
+
+@app.route('/industry_contracts/<contract_code>')
+def industry_contract_get(contract_code):
+    rate_scripts = get_file_scripts(contract_code)[::-1]
+    return render_template(
+        'industry_contract.html', rate_scripts=rate_scripts,
+        contract_code=contract_code)
+
+
+@app.route('/industry_contracts/<contract_code>/rate_scripts/<start_date_str>')
+def industry_rate_script_get(contract_code, start_date_str):
+    rate_script = None
+    start_date = to_utc(Datetime.strptime(start_date_str, '%Y%m%d%H%M'))
+    for rscript in get_file_scripts(contract_code):
+        if rscript[0] == start_date:
+            rate_script = rscript
+            break
+    if rate_script is None:
+        raise NotFound()
+    return render_template(
+        'industry_rate_script.html', contract_code=contract_code,
+        rate_script=rate_script)
 
 
 @app.route('/llfcs')
 def llfcs_get():
-    dno_contract_id = req_int('dno_contract_id')
-    contract = Contract.get_dno_by_id(g.sess, dno_contract_id)
-    llfcs = g.sess.query(Llfc).filter(Llfc.dno_id == contract.party.id). \
-        order_by(Llfc.code).all()
-    return render_template('llfcs.html', llfcs=llfcs, contract=contract)
+    dno_id = req_int('dno_id')
+    dno = Party.get_dno_by_id(g.sess, dno_id)
+    llfcs = g.sess.query(Llfc).filter(Llfc.dno == dno).order_by(Llfc.code)
+    return render_template('llfcs.html', llfcs=llfcs, dno=dno)
 
 
 @app.route('/llfcs/<int:llfc_id>')
 def llfc_get(llfc_id):
     llfc = Llfc.get_by_id(g.sess, llfc_id)
-    dno_contract = Contract.get_dno_by_name(g.sess, llfc.dno.dno_code)
-    return render_template('llfc.html', llfc=llfc, dno_contract=dno_contract)
+    return render_template('llfc.html', llfc=llfc)
 
 
 @app.route('/sscs')

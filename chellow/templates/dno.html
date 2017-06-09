@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+
+{% block title %}
+	&raquo; DNOs &raquo; {{dno.dno_code}}
+{% endblock %}
+
+{% block nav %}
+	<a href="/dnos">DNOs</a> &raquo; {{dno.dno_code}}
+	[<a href="/dnos/{{dno.id}}">edit</a>]
+{% endblock %}
+
+{% block content %}
+	<div class="layer-section">
+		<div class="section-header">
+			<h2>DNO</h2>	
+		</div>
+		<div class="section-content">
+			<div class="section-data">
+				<table class="DataTable widthAuto noMarginBottom">
+					<tbody>
+						<tr>
+							<th>Code</th>
+							<td>{{dno.dno_code}}</td>
+						</tr>
+						<tr>
+						<tr>
+							<th>Name</th>
+							<td>{{dno.name}}</td>
+						</tr>
+						<tr>
+							<th>Start Date</th>
+							<td>{{rate_scripts[0][0]|hh_format }}</td>
+						</tr>
+						<tr>
+							<th>Finish Date</th>
+							<td>{{rate_scripts[-1][1]|hh_format }}</td>
+						</tr>
+						<tr>
+							<th>Custom Reports</th>
+							<td>
+								<ul>
+									{% for report in custom_reports %}
+										<li>
+											<a
+													href="/local_reports/{{report.id}}/output/?dno_id={{contract.id}}"
+													>{{report.name}}</a>
+										</li>
+									{% endfor %}
+								</ul>
+							</td>
+						</tr>
+						<tr>
+							<th>Line Loss Factor Classes</th>
+							<td>
+								<a href="/llfcs?dno_id={{dno.id}}">LLFCs</a>
+							</td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+			<div class="section-data">
+				<table class="DataTable widthAuto noMarginBottom">
+					<caption>
+						Rate Scripts
+					</caption>
+					<thead>
+						<tr>
+							<th></th>
+							<th>From</th>
+							<th>To</th>
+						</tr>
+					</thead>
+					<tbody>
+						{% for start_date, finish_date, script in rate_scripts %}
+							<tr>
+								<td>
+									<a
+									 		href="/dnos/{{dno.id}}/rate_scripts/{{start_date.strftime('%Y%m%d%H%M')}}"
+											>View</a>
+								</td>
+								<td>{{start_date|hh_format}}</td>
+								<td>{{finish_date|hh_format}}</td>
+							</tr>
+						{% endfor %}
+					</tbody>
+				</table>
+			</div>
+		</div>
+	</div>
+{% endblock %}

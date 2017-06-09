@@ -280,11 +280,11 @@
             'has_finished': "false"},
         'status_code': 303,
         'regexes': [
-            r"/hhdc_contracts/34"]},
+            r"/hhdc_contracts/13"]},
 
     {
         'name': "Update Contract",
-        'path': '/hhdc_contracts/34/edit',
+        'path': '/hhdc_contracts/13/edit',
         'method': 'post',
         'data': {
             'party_id': "97",  # DASL HHDC
@@ -303,14 +303,14 @@ def virtual_bill(ds):
         'status_code': 303},
 
     {
-        'path': '/hhdc_contracts/34',
+        'path': '/hhdc_contracts/13',
         'regexes': [
-            r'HH contract\s*\[<a href="/hhdc_contracts/34/edit">edit</a>\]',
+            r'HH contract\s*\[<a href="/hhdc_contracts/13/edit">edit</a>\]',
             r'<form action="/reports/81">'],
         'status_code': 200},
 
     {
-        'name': "Check that we can see HHDC rate script okay. Contract 34.",
+        'name': "Check that we can see HHDC rate script okay. Contract 13.",
         'path': '/hhdc_rate_scripts/44',
 
         # Check that 'has_finished' field is there
@@ -320,7 +320,7 @@ def virtual_bill(ds):
 
     {
         'name': "Check that we can see the edit view of the HHDC rate "
-        "script okay. Contract 34.",
+        "script okay. Contract 13.",
         'path': '/hhdc_rate_scripts/44/edit',
 
         # Check that 'has_finished' field is there
@@ -358,11 +358,11 @@ def virtual_bill(ds):
             'start_minute': "00"},
         'status_code': 303,
         'regexes': [
-            r"/hhdc_contracts/35"]},
+            r"/hhdc_contracts/14"]},
 
     {
         'name': "Update the newly added HHDC",
-        'path': '/hhdc_contracts/35/edit',
+        'path': '/hhdc_contracts/14/edit',
         'method': 'post',
         'data': {
             'party_id': "97",  # DASL HHDC
@@ -382,7 +382,7 @@ def virtual_bill(ds):
 
     {
         'name': "Update state of Dynamat HHDC",
-        'path': '/hhdc_contracts/35/edit',
+        'path': '/hhdc_contracts/14/edit',
         'method': 'post',
         'data': {
             'update_state': "",
@@ -391,7 +391,7 @@ def virtual_bill(ds):
 
     {
         'name': "View edit Dynamat HHDC",
-        'path': '/hhdc_contracts/35/edit',
+        'path': '/hhdc_contracts/14/edit',
         'status_code': 200,
         'regexes': [
             r'<textarea name="charge_script" rows="40" cols="80">\s*'
@@ -402,7 +402,7 @@ def virtual_bill(ds):
             '\{&#34;stat&#34;: 2\}</textarea>']},
     {
         'name': "Check one can update the participant for an HHDC contract.",
-        'path': '/hhdc_contracts/35/edit',
+        'path': '/hhdc_contracts/14/edit',
         'method': 'post',
         'data': {
             'party_id': "651",
@@ -428,7 +428,7 @@ def virtual_bill(ds):
 
     {
         'name': "Check it's still there",
-        'path': '/hhdc_contracts/35/edit',
+        'path': '/hhdc_contracts/14/edit',
         'status_code': 200,
         'regexes': [
             r'option value="651" selected']},
@@ -456,18 +456,18 @@ def virtual_bill(ds):
             'charge_script': "",
             'properties': "{'hydrogen': 'sonata'}"},
         'regexes': [
-            r"/supplier_contracts/36"]},
+            r"/supplier_contracts/15"]},
 
     {
         'name': "Check that it's displayed properly",
-        'path': '/supplier_contracts/36/edit',
+        'path': '/supplier_contracts/15/edit',
         'regexes': [
             r'<option value="22" selected>',
             r'<textarea name="properties" rows="20" '
             'cols="80">\{&#39;hydrogen&#39;: &#39;sonata&#39;\}</textarea>'],
         'status_code': 200},
     {
-        'path': '/supplier_contracts/36',
+        'path': '/supplier_contracts/15',
         'regexes': [
             r'<legend>Download Displaced Virtual Bills</legend>\s*<br/>\s*'
             'For <input name="months" value="1" maxlength="2" size="2">\s*'
@@ -475,11 +475,11 @@ def virtual_bill(ds):
             '<input name="finish_year" maxlength="4" size="4" '
             'value="201\d">',
             r'Rate Scripts\s*\[<a\s*'
-            r'href="/supplier_contracts/36/add_rate_script"\s*>add</a>\]'],
+            r'href="/supplier_contracts/15/add_rate_script"\s*>add</a>\]'],
         'status_code': 200},
 
     {
-        'name': "Update the associated rate script. Supplier contract 36",
+        'name': "Update the associated rate script. Supplier contract 15",
         'path': '/supplier_rate_scripts/46/edit',
         'method': 'post',
         'data': {
@@ -532,11 +532,11 @@ def gsp_gbp_per_kwh():
             'start_minute': "00"},
         'status_code': 303,
         'regexes': [
-            r"/mop_contracts/37"]},
+            r"/mop_contracts/16"]},
 
     {
         'name': "Update with a charge script",
-        'path': '/mop_contracts/37/edit',
+        'path': '/mop_contracts/16/edit',
         'method': 'post',
         'data': {
             'party_id': "690",  # LENG
@@ -560,11 +560,11 @@ def virtual_bill(ds):
             'properties': "{}"},
         'status_code': 303,
         'regexes': [
-            r"/mop_contracts/37"]},
+            r"/mop_contracts/16"]},
 
     {
         'name': "Check we can see the rate scripts",
-        'path': '/mop_contracts/37',
+        'path': '/mop_contracts/16',
         'status_code': 200},
 
     {
@@ -586,7 +586,7 @@ def virtual_bill_titles():
 """,
             'properties': "{}", },
         'regexes': [
-            r"/supplier_contracts/38"],
+            r"/supplier_contracts/17"],
         'status_code': 303},
     {
         'name': "Update the associated rate script. Supplier contract 39",
@@ -632,7 +632,7 @@ def virtual_bill_titles():
 """,
             'properties': "{}"},
         'regexes': [
-            r"/supplier_contracts/39"],
+            r"/supplier_contracts/18"],
         'status_code': 303},
 
     {
@@ -682,7 +682,7 @@ def virtual_bill_titles():
 
         # check that it knows that line 2 has a DNO that doesn't exist
         'regexes': [
-            r"There isn&#39;t a DNO contract with the code &#39;79&#39;\."],
+            r"There is no DNO with the code &#39;79&#39;\."],
         'status_code': 200},
 
     # Check that it gives a sensible error message if a data is malformed
@@ -817,9 +817,9 @@ def virtual_bill_titles():
         # Check start date year is there
         'regexes': [
             r"start_year",
-            r'<option value="34" selected>HH contract</option>',
+            r'<option value="13" selected>HH contract</option>',
             r'"imp_supplier_contract_id">\s*'
-            '<option value="36" selected>Half-hourlies 2007',
+            '<option value="15" selected>Half-hourlies 2007',
 
             # Can we see the MOP account?
             r'"mc-22 9205 6799 106"'],
@@ -888,9 +888,9 @@ def virtual_bill_titles():
             'finish_hour': "23",
             'finish_minute': "30",
             'gsp_group_id': "11",
-            'mop_contract_id': "37",
+            'mop_contract_id': "16",
             'mop_account': "22 0883 6932 301",
-            'hhdc_contract_id': "35",
+            'hhdc_contract_id': "14",
             'hhdc_account': "22 0883 6932 301",
             'msn': "",
             'pc_id': "9",
@@ -900,7 +900,7 @@ def virtual_bill_titles():
             'imp_llfc_code': "570",
             'imp_mpan_core': "22 0883 6932 301",
             'imp_sc': "350",
-            'imp_supplier_contract_id': "36",
+            'imp_supplier_contract_id': "15",
             'imp_supplier_account': "4341"},
         'status_code': 303},
 
@@ -968,9 +968,9 @@ def virtual_bill_titles():
             'finish_day': "13",
             'finish_hour': "23",
             'finish_minute': "30",
-            'mop_contract_id': "37",
+            'mop_contract_id': "16",
             'mop_account': "22 0883 6932 301",
-            'hhdc_contract_id': "34",
+            'hhdc_contract_id': "13",
             'hhdc_account': "22 0883 6932 301",
             'pc_id': "9",
             'mtc_code': "845",
@@ -980,7 +980,7 @@ def virtual_bill_titles():
             'imp_mpan_core': "22 0883 6932 301",
             'imp_gsp_group_id': "11",
             'imp_sc': "430",
-            'imp_supplier_contract_id': "36",
+            'imp_supplier_contract_id': "15",
             'imp_supplier_account': "4341"},
         'status_code': 303},
 
@@ -1011,9 +1011,9 @@ def virtual_bill_titles():
             'start_hour': "00",
             'start_minute': "00",
             'is_ended': "false",
-            'mop_contract_id': "37",
+            'mop_contract_id': "16",
             'mop_account': "22 0883 6932 301",
-            'hhdc_contract_id': "34",
+            'hhdc_contract_id': "13",
             'hhdc_account': "22 0883 6932 301",
             'pc_id': "9",
             'mtc_code': "845",
@@ -1022,7 +1022,7 @@ def virtual_bill_titles():
             'imp_llfc_code': "570",
             'imp_mpan_core': "22 0883 6932 301",
             'imp_sc': "350",
-            'imp_supplier_contract_id': "36",
+            'imp_supplier_contract_id': "15",
             'imp_supplier_account': "4341"},
         'status_code': 303},
 
@@ -1088,9 +1088,9 @@ def virtual_bill_titles():
             'start_hour': "00",
             'start_minute': "00",
             'is_ended': "false",
-            'mop_contract_id': "37",
+            'mop_contract_id': "16",
             'mop_account': "mc-22 9813 2107 763",
-            'hhdc_contract_id': "34",
+            'hhdc_contract_id': "13",
             'hhdc_account': "01",
             'pc_id': "9",
             'mtc_code': "845",
@@ -1099,7 +1099,7 @@ def virtual_bill_titles():
             'imp_llfc_code': "570",
             'imp_mpan_core': "2276930477695",
             'imp_sc': "430",
-            'imp_supplier_contract_id': "36",
+            'imp_supplier_contract_id': "15",
             'imp_supplier_account': "01"},
         'status_code': 400,
 
@@ -1122,9 +1122,9 @@ def virtual_bill_titles():
             'start_hour': "00",
             'start_minute': "00",
             'is_ended': "false",
-            'mop_contract_id': "37",
+            'mop_contract_id': "16",
             'mop_account': "mc-22 9813 2107 763",
-            'hhdc_contract_id': "34",
+            'hhdc_contract_id': "13",
             'hhdc_account': "01",
             'pc_id': "9",
             'mtc_code': "845",
@@ -1133,7 +1133,7 @@ def virtual_bill_titles():
             'imp_llfc_code': "521",
             'imp_mpan_core': "22 9813 2107 763",
             'imp_sc': "430",
-            'imp_supplier_contract_id': "36",
+            'imp_supplier_contract_id': "15",
             'imp_supplier_account': "01"},
         'status_code': 400,
         'regexes': [
@@ -1143,14 +1143,14 @@ def virtual_bill_titles():
     # with #F2
     {
         'name': "Import hh data",
-        'path': '/hhdc_contracts/34/hh_imports',
+        'path': '/hhdc_contracts/13/hh_imports',
         'method': 'post',
         'files': {'import_file': 'test/no_hash.df2'},
         'regexes': [
-            r"/hhdc_contracts/34/hh_imports/0"],
+            r"/hhdc_contracts/13/hh_imports/0"],
         'status_code': 303},
     {
-        'path': '/hhdc_contracts/34/hh_imports/0',
+        'path': '/hhdc_contracts/13/hh_imports/0',
         'tries': {},
         'regexes': [
             r"The first line must be &#39;#F2&#39;"],
@@ -1158,14 +1158,14 @@ def virtual_bill_titles():
 
     {
         'name': "Import some hh Stark DF2 data",
-        'path': '/hhdc_contracts/34/hh_imports',
+        'path': '/hhdc_contracts/13/hh_imports',
         'method': 'post',
         'files': {'import_file': 'test/ftp/hh_data.df2'},
         'status_code': 303,
         'regexes': [
-            r"/hhdc_contracts/34/hh_imports/1"]},
+            r"/hhdc_contracts/13/hh_imports/1"]},
     {
-        'path': '/hhdc_contracts/34/hh_imports/1',
+        'path': '/hhdc_contracts/13/hh_imports/1',
         'tries': {},
 
         # Check it's loaded ok and has ignored the blank line and the #F2 line
@@ -1173,7 +1173,7 @@ def virtual_bill_titles():
             r"The import has completed.*successfully.",
 
             # Check link to hhdc is correct
-            r"/hhdc_contracts/34"],
+            r"/hhdc_contracts/13"],
         'status_code': 200},
 
     {
@@ -1189,7 +1189,7 @@ def virtual_bill_titles():
 
     {
         'name': "Check if more hh data imports ok",
-        'path': '/hhdc_contracts/34/hh_imports',
+        'path': '/hhdc_contracts/13/hh_imports',
         'method': 'post',
         'files': {'import_file': 'test/hh_data2.df2'},
         'status_code': 303},
@@ -1199,14 +1199,14 @@ def virtual_bill_titles():
     {
         'name': "Detect if hh import still works if first hh datum is "
         "missing.",
-        'path': '/hhdc_contracts/34/hh_imports',
+        'path': '/hhdc_contracts/13/hh_imports',
         'method': 'post',
         'files': {'import_file': 'test/missing.df2'},
         'regexes': [
-            r"/hhdc_contracts/34/hh_imports/3"],
+            r"/hhdc_contracts/13/hh_imports/3"],
         'status_code': 303},
     {
-        'path': '/hhdc_contracts/34/hh_imports/3',
+        'path': '/hhdc_contracts/13/hh_imports/3',
         'tries': {},
         'regexes': [
             r"The import has completed.*successfully."],
@@ -1215,14 +1215,14 @@ def virtual_bill_titles():
     # This relies on the default timezone being BST },
     {
         'name': "Do we handle BST ok?",
-        'path': '/hhdc_contracts/34/hh_imports',
+        'path': '/hhdc_contracts/13/hh_imports',
         'method': 'post',
         'files': {'import_file': 'test/hh_data_timezone.df2'},
         'regexes': [
-            r"/hhdc_contracts/34/hh_imports/4"],
+            r"/hhdc_contracts/13/hh_imports/4"],
         'status_code': 303},
     {
-        'path': '/hhdc_contracts/34/hh_imports/4',
+        'path': '/hhdc_contracts/13/hh_imports/4',
 
         # Check it's loaded ok
         'tries': {},
@@ -1233,14 +1233,14 @@ def virtual_bill_titles():
     # Test that 3 non-actual reads in a row generate a single snag
     {
         'name': "Actual reads snags combined properly",
-        'path': '/hhdc_contracts/34/hh_imports',
+        'path': '/hhdc_contracts/13/hh_imports',
         'method': 'post',
         'files': {'import_file': 'test/hh_data_not_actual.df2'},
         'regexes': [
-            r"/hhdc_contracts/34/hh_imports/5"],
+            r"/hhdc_contracts/13/hh_imports/5"],
         'status_code': 303},
     {
-        'path': '/hhdc_contracts/34/hh_imports/5',
+        'path': '/hhdc_contracts/13/hh_imports/5',
         'tries': {},
         'regexes': [
             r"The import has completed.*successfully."],
@@ -1261,14 +1261,14 @@ def virtual_bill_titles():
             '<td>Missing</td>'],
         'status_code': 200},
     {
-        'path': '/hhdc_contracts/34/hh_imports',
+        'path': '/hhdc_contracts/13/hh_imports',
         'method': 'post',
         'files': {'import_file': 'test/hh_data_not_actual2.df2'},
         'regexes': [
-            r'/hhdc_contracts/34/hh_imports/6'],
+            r'/hhdc_contracts/13/hh_imports/6'],
         'status_code': 303},
     {
-        'path': '/hhdc_contracts/34/hh_imports/6',
+        'path': '/hhdc_contracts/13/hh_imports/6',
         'tries': {},
         'regexes': [
             r"The import has completed.*successfully."],
@@ -1288,14 +1288,14 @@ def virtual_bill_titles():
     # Test if a CSV HH file can be imported },
     {
         'name': "Importing simple CSV data",
-        'path': '/hhdc_contracts/34/hh_imports',
+        'path': '/hhdc_contracts/13/hh_imports',
         'method': 'post',
         'files': {'import_file': 'test/hh_data.simple.csv'},
         'regexes': [
-            r"/hhdc_contracts/34/hh_imports/7"],
+            r"/hhdc_contracts/13/hh_imports/7"],
         'status_code': 303},
     {
-        'path': '/hhdc_contracts/34/hh_imports/7',
+        'path': '/hhdc_contracts/13/hh_imports/7',
         'tries': {},
         'regexes': [
             r"The import has completed.*successfully."],
@@ -1312,14 +1312,14 @@ def virtual_bill_titles():
     # missing
     {
         'name': "Various DF2 tests.",
-        'path': '/hhdc_contracts/34/hh_imports',
+        'path': '/hhdc_contracts/13/hh_imports',
         'method': 'post',
         'files': {'import_file': 'test/hh_data_malformed.df2'},
         'regexes': [
-            r"/hhdc_contracts/34/hh_imports/8"],
+            r"/hhdc_contracts/13/hh_imports/8"],
         'status_code': 303},
     {
-        'path': '/hhdc_contracts/34/hh_imports/8',
+        'path': '/hhdc_contracts/13/hh_imports/8',
         'tries': {},
         'regexes': [
             r"Problem at line number: 4"],
@@ -1327,14 +1327,14 @@ def virtual_bill_titles():
 
     # Check it gives a sensible error message if the first mpan is malformed
     {
-        'path': '/hhdc_contracts/34/hh_imports',
+        'path': '/hhdc_contracts/13/hh_imports',
         'method': 'post',
         'files': {'import_file': 'test/hh_data_bad_beginning.df2'},
         'regexes': [
-            r"/hhdc_contracts/34/hh_imports/9"],
+            r"/hhdc_contracts/13/hh_imports/9"],
         'status_code': 303},
     {
-        'path': '/hhdc_contracts/34/hh_imports/9',
+        'path': '/hhdc_contracts/13/hh_imports/9',
         'tries': {},
         'regexes': [
             r"The MPAN core &#39;2204707514535,,,&#39; must contain exactly "
@@ -1343,14 +1343,14 @@ def virtual_bill_titles():
 
     {
         'name': "Check sensible error message if header but no data",
-        'path': '/hhdc_contracts/34/hh_imports',
+        'path': '/hhdc_contracts/13/hh_imports',
         'method': 'post',
         'files': {'import_file': 'test/hh_data_header_but_no_data.df2'},
         'regexes': [
-            r"/hhdc_contracts/34/hh_imports/10"],
+            r"/hhdc_contracts/13/hh_imports/10"],
         'status_code': 303},
     {
-        'path': '/hhdc_contracts/34/hh_imports/10',
+        'path': '/hhdc_contracts/13/hh_imports/10',
         'tries': {},
         'regexes': [
             r"The import has completed.*successfully\."],
@@ -1402,7 +1402,7 @@ def virtual_bill_titles():
         'path': '/channel_snags/1',
         'status_code': 200,
         'regexes': [
-            r'<a href="/channel_snags\?hhdc_contract_id=34&amp;days_hidden=5">'
+            r'<a href="/channel_snags\?hhdc_contract_id=13&amp;days_hidden=5">'
             r'Channel Snags</a>']},
 
     {
@@ -1489,14 +1489,14 @@ def virtual_bill_titles():
             'ignore': "Ignore"},
         'status_code': 303},
     {
-        'path': '/hhdc_contracts/34/hh_imports',
+        'path': '/hhdc_contracts/13/hh_imports',
         'method': 'post',
         'files': {'import_file': 'test/ftp/hh_data.df2'},
         'regexes': [
-            r"/hhdc_contracts/34/hh_imports/11"],
+            r"/hhdc_contracts/13/hh_imports/11"],
         'status_code': 303},
     {
-        'path': '/hhdc_contracts/34/hh_imports/11',
+        'path': '/hhdc_contracts/13/hh_imports/11',
         'tries': {},
         'regexes': [
             r"The import has completed.*successfully"],
@@ -1519,7 +1519,7 @@ def virtual_bill_titles():
     # Create a new batch
     {
         'name': "Batches",
-        'path': '/supplier_contracts/36/add_batch',
+        'path': '/supplier_contracts/15/add_batch',
         'method': 'post',
         'data': {
             'reference': "04-003",
@@ -1528,7 +1528,7 @@ def virtual_bill_titles():
 
     # Check it gives a good error message for a duplicate name
     {
-        'path': '/supplier_contracts/36/add_batch',
+        'path': '/supplier_contracts/15/add_batch',
         'method': 'post',
         'data': {
             'reference': "04-003",
@@ -1551,7 +1551,7 @@ def virtual_bill_titles():
             r'/supplier_bill_imports/0']},
 
     {
-        'name': "Supplier contract 36, batch 1",
+        'name': "Supplier contract 15, batch 1",
         'path': '/supplier_bill_imports/0',
         'tries': {},
         'status_code': 200,
@@ -1587,7 +1587,7 @@ def virtual_bill_titles():
 
     # Create a new batch
     {
-        'path': '/supplier_contracts/39/add_batch',
+        'path': '/supplier_contracts/18/add_batch',
         'method': 'post',
         'data': {
             'reference': "06-002",
@@ -1595,7 +1595,7 @@ def virtual_bill_titles():
         'status_code': 303},
 
     {
-        'name': "Supplier contract 39",
+        'name': "Supplier contract 18",
         'path': '/supplier_bill_imports',
         'method': 'post',
         'data': {
@@ -1606,7 +1606,7 @@ def virtual_bill_titles():
             r"/supplier_bill_imports/1"]},
 
     {
-        'name': "Supplier contract 40, batch 3",
+        'name': "Supplier contract 19, batch 3",
         'path': '/supplier_bill_imports/1',
         'tries': {},
         'status_code': 200,
@@ -1643,15 +1643,15 @@ def virtual_bill_titles():
         'status_code': 303},
     {
         'name': "Test of BGlobal HH data import",
-        'path': '/hhdc_contracts/34/hh_imports',
+        'path': '/hhdc_contracts/13/hh_imports',
         'method': 'post',
         'files': {'import_file': 'test/hh_data.bg.csv'},
         'status_code': 303,
         'regexes': [
-            r"/hhdc_contracts/34/hh_imports/12"]
+            r"/hhdc_contracts/13/hh_imports/12"]
         },
     {
-        'path': '/hhdc_contracts/34/hh_imports/12',
+        'path': '/hhdc_contracts/13/hh_imports/12',
         'tries': {},
         'regexes': [
             r"The import has completed.*successfully."],
@@ -1712,7 +1712,7 @@ def virtual_bill_titles():
     # Create new batch },
     {
         'name': "CSV import",
-        'path': '/supplier_contracts/36/add_batch',
+        'path': '/supplier_contracts/15/add_batch',
         'method': 'post',
         'data': {
             'reference': "06-004",
@@ -1895,7 +1895,7 @@ def virtual_bill_titles():
             'start_hour': "00",
             'start_minute': "00",
             'is_ended': "false",
-            'mop_contract_id': "37",
+            'mop_contract_id': "16",
             'mop_account': "22 0883 6932 301",
             'hhdc_contract_id': "null",
             'pc_id': "9",
@@ -1933,14 +1933,14 @@ def virtual_bill_titles():
             r"/users/5"]},
     {
         'name': "Check that the party viewer is able to view snags.",
-        'path': '/channel_snags?hhdc_contract_id=34&days_hidden=5',
+        'path': '/channel_snags?hhdc_contract_id=13&days_hidden=5',
         'auth': ('mishka@localhost', 'fyodor'),
         'regexes': [
             r"<td>\s*22 0470 7514 535\s*</td>\s*<td>\s*<ul>\s*<li>\s*"
             "CH017 Parbola\s*</li>",
             r"There are 46 snag\(s\) older than\s*5 days\s*"
             r"that aren't ignored\.",
-            r'<a href="/hhdc_contracts/34">HH contract</a>',
+            r'<a href="/hhdc_contracts/13">HH contract</a>',
             r'<li>\s*'
             '<a href="/channel_snags/1">view</a>\s*'
             '\[<a href="/channel_snags/1/edit">edit</a>\]\s*'
@@ -1991,7 +1991,7 @@ def virtual_bill_titles():
     {
         'name': "Try adding a second rate script (set to 'ongoing'), and see "
         "if the era can be updated.",
-        'path': '/supplier_contracts/36/add_rate_script',
+        'path': '/supplier_contracts/15/add_rate_script',
         'method': 'post',
         'data': {
             'start_year': "2009",
@@ -2012,9 +2012,9 @@ def virtual_bill_titles():
             'start_hour': "00",
             'start_minute': "00",
             'is_ended': "false",
-            'mop_contract_id': "37",
+            'mop_contract_id': "16",
             'mop_account': "mc-22 0470 7514 535",
-            'hhdc_contract_id': "34",
+            'hhdc_contract_id': "13",
             'hhdc_account': "01",
             'msn': "",
             'pc_id': "9",
@@ -2024,12 +2024,12 @@ def virtual_bill_titles():
             'exp_llfc_code': "581",
             'exp_mpan_core': "22 0470 7514 535",
             'exp_sc': "150",
-            'exp_supplier_contract_id': "36",
+            'exp_supplier_contract_id': "15",
             'exp_supplier_account': "010"},
         'status_code': 303},
     {
         'name': "Check updating of HHDC contract state.",
-        'path': '/hhdc_contracts/34/edit',
+        'path': '/hhdc_contracts/13/edit',
         'method': 'post',
         'data': {
             'state': """{
@@ -2038,7 +2038,7 @@ def virtual_bill_titles():
             'update_state': "Update State"},
         'status_code': 303},
     {
-        'path': '/hhdc_contracts/34',
+        'path': '/hhdc_contracts/13',
         'status_code': 200,
         'regexes': [
             r"\{\s*&#39;last_import_keys&#39;: \{&#39;.&#39;: "
@@ -2049,7 +2049,7 @@ def virtual_bill_titles():
 
             # Check link to add a rate script
             r'Rate Scripts\s*'
-            r'\[<a href="/hhdc_contracts/34/add_rate_script">'
+            r'\[<a href="/hhdc_contracts/13/add_rate_script">'
             r'add</a>\]']},
 
     # Insert era
@@ -2083,17 +2083,17 @@ def virtual_bill_titles():
         'status_code': 200},
     {
         'name': "Test 'view' link from supplier rate script add.",
-        'path': '/supplier_contracts/36/add_rate_script',
+        'path': '/supplier_contracts/15/add_rate_script',
         'regexes': [
-            r"/supplier_contracts/36"]},
+            r"/supplier_contracts/15"]},
     {
         'name': "Check 'HH Contract' option is there. Supply 9.",
         'path': '/eras/9/edit',
         'regexes': [
-            r'<option value="34">HH contract</option>\s*</select>']},
+            r'<option value="13">HH contract</option>\s*</select>']},
     {
         'name': "Try bulk delete of HHDC snags.",
-        'path': '/hhdc_contracts/34/edit',
+        'path': '/hhdc_contracts/13/edit',
         'method': 'post',
         'data': {
             'ignore_year': "2010",
@@ -2105,7 +2105,7 @@ def virtual_bill_titles():
         'status_code': 303},
     {
         'name': "Check python compile error gives a reasonable message.",
-        'path': '/supplier_contracts/36/edit',
+        'path': '/supplier_contracts/15/edit',
         'method': 'post',
         'data': {
             'party_id': "22",  # BIZZ
@@ -2123,7 +2123,7 @@ def virtual_bill(supply, startDate, finishDate, pw):
 
     # Put back to how it was before
     {
-        'path': '/supplier_contracts/36/edit',
+        'path': '/supplier_contracts/15/edit',
         'method': 'post',
         'data': {
             'party_id': "22",
@@ -2379,9 +2379,9 @@ def virtual_bill(supply_source):
             'start_hour': "00",
             'start_minute': "00",
             'is_ended': "false",
-            'mop_contract_id': "37",
+            'mop_contract_id': "16",
             'mop_account': "mc-22 0470 7514 535",
-            'hhdc_contract_id': "34",
+            'hhdc_contract_id': "13",
             'hhdc_account': "01",
             'msn': "",
             'pc_id': "9",
@@ -2391,7 +2391,7 @@ def virtual_bill(supply_source):
             'exp_llfc_code': "581",
             'exp_mpan_core': "22 0470 7514 535",
             'exp_sc': "150",
-            'exp_supplier_contract_id': "36",
+            'exp_supplier_contract_id': "15",
             'exp_supplier_account': "010"},
         'status_code': 303},
 
@@ -2492,14 +2492,14 @@ def virtual_bill(supply_source):
             'mtc_code': "845",
             'cop_id': "5",
             'ssc_code': "",
-            'mop_contract_id': "37",
+            'mop_contract_id': "16",
             'mop_account': "mc-22 0883 6932 301",
-            'hhdc_contract_id': "34",
+            'hhdc_contract_id': "13",
             'hhdc_account': "22 0883 6932 301",
             'imp_llfc_code': "570",
             'imp_mpan_core': "22 0883 6932 301",
             'imp_sc': "350",
-            'imp_supplier_contract_id': "36",
+            'imp_supplier_contract_id': "15",
             'imp_supplier_account': "01"},
         'status_code': 400,
         'regexes': [
@@ -2527,14 +2527,14 @@ def virtual_bill(supply_source):
             'mtc_code': "845",
             'cop_id': "5",
             'ssc_code': "",
-            'mop_contract_id': "37",
+            'mop_contract_id': "16",
             'mop_account': "mc-22 0883 6932 301",
-            'hhdc_contract_id': "34",
+            'hhdc_contract_id': "13",
             'hhdc_account': "22 0883 6932 301",
             'imp_llfc_code': "570",
             'imp_mpan_core': "22 0883 6932 301",
             'imp_sc': "350",
-            'imp_supplier_contract_id': "36",
+            'imp_supplier_contract_id': "15",
             'imp_supplier_account': "01"},
         'status_code': 400,
         'regexes': [
@@ -2557,12 +2557,12 @@ def virtual_bill(supply_source):
             'charge_script': "",
             'properties': "{}", },
         'regexes': [
-            r"/supplier_contracts/40"],
+            r"/supplier_contracts/19"],
         'status_code': 303},
 
     {
         'name': "Now delete the contract",
-        'path': '/supplier_contracts/40/edit',
+        'path': '/supplier_contracts/19/edit',
         'method': 'post',
         'data': {
             'delete': "Delete"},
@@ -2570,7 +2570,7 @@ def virtual_bill(supply_source):
 
     {
         'name': "Check that it's really gone",
-        'path': '/supplier_contracts/40',
+        'path': '/supplier_contracts/19',
         'status_code': 404},
 
     # Create an HHDC contract
@@ -2588,11 +2588,11 @@ def virtual_bill(supply_source):
             'start_minute': "00"},
         'status_code': 303,
         'regexes': [
-            r"/hhdc_contracts/41"]},
+            r"/hhdc_contracts/20"]},
 
     {
         'name': "Now delete the contract",
-        'path': '/hhdc_contracts/41/edit',
+        'path': '/hhdc_contracts/20/edit',
         'method': 'post',
         'data': {
             'delete': "Delete"},
@@ -2600,7 +2600,7 @@ def virtual_bill(supply_source):
 
     # Check that it's really gone
     {
-        'path': '/hhdc_contracts/41',
+        'path': '/hhdc_contracts/20',
         'status_code': 404},
 
     # Load in march's HH data
@@ -2804,7 +2804,7 @@ def virtual_bill(supply_source):
 
     {
         'name': "Try HHDC virtual bills.",
-        'path': '/reports/81?hhdc_contract_id=34&months=1&end_year=2008&'
+        'path': '/reports/81?hhdc_contract_id=13&months=1&end_year=2008&'
         'end_month=7',
         'status_code': 303},
     {
@@ -2887,15 +2887,15 @@ def virtual_bill(supply_source):
             r'None,']},
 
     {
-        'name': "View DNO contracts",
-        'path': '/dno_contracts',
+        'name': "View DNOs",
+        'path': '/dnos',
         'status_code': 200,
         'regexes': [
             r'option']},
 
     {
         'name': "View a DNO rate script",
-        'path': '/dno_contracts/14/rate_scripts/200001010000',
+        'path': '/dnos/131/rate_scripts/200001010000',
         'status_code': 200},
 
     {
@@ -3706,7 +3706,7 @@ def virtual_bill(supply_source):
 
     {
         'name': "Update the supplier contract",
-        'path': '/supplier_contracts/38/edit',
+        'path': '/supplier_contracts/17/edit',
         'method': 'post',
         'data': {
             'party_id': "22",  # BIZZ
@@ -3925,9 +3925,9 @@ def virtual_bill(supply_source):
             'properties': "{}"},
         'status_code': 303,
         'regexes': [
-            r'/supplier_contracts/38']},
+            r'/supplier_contracts/17']},
     {
-        'path': '/supplier_contracts/39/edit',
+        'path': '/supplier_contracts/18/edit',
         'method': 'post',
         'data': {
             'name': "Non half-hourlies 2007",
@@ -4016,9 +4016,9 @@ def virtual_bill(supply_source):
             'finish_day': "13",
             'finish_hour': "23",
             'finish_minute': "30",
-            'mop_contract_id': "37",
+            'mop_contract_id': "16",
             'mop_account': "mc-22 9974 3438 105",
-            'hhdc_contract_id': "34",
+            'hhdc_contract_id': "13",
             'hhdc_account': "dc-22 9974 3438 105",
             'msn': "K87D74429",
             'pc_id': "5",
@@ -4028,7 +4028,7 @@ def virtual_bill(supply_source):
             'imp_llfc_code': "540",
             'imp_mpan_core': "22 9974 3438 105",
             'imp_sc': "20",
-            'imp_supplier_contract_id': "39",
+            'imp_supplier_contract_id': "18",
             'imp_supplier_account': "SA341665"},
         'status_code': 303},
     {
@@ -4061,14 +4061,14 @@ def virtual_bill(supply_source):
             'mtc_code': "845",
             'cop_id': "5",
             'ssc_code': "",
-            'mop_contract_id': "37",
+            'mop_contract_id': "16",
             'mop_account': "mc-22 6354 2983 570",
-            'hhdc_contract_id': "35",
+            'hhdc_contract_id': "14",
             'hhdc_account': "01",
             'imp_llfc_code': "453",
             'imp_mpan_core': "20 6354 2983 571",
             'imp_sc': "2300",
-            'imp_supplier_contract_id': "36",
+            'imp_supplier_contract_id': "15",
             'imp_supplier_account': "141 5532",
             'insert_electricity': "insert_electricity"},
         'regexes': [
@@ -4087,15 +4087,15 @@ def virtual_bill(supply_source):
         'status_code': 303},
 
     {
-        'path': '/hhdc_contracts/35/hh_imports',
+        'path': '/hhdc_contracts/14/hh_imports',
         'name': "Try out simple.csv hh import format.",
         'method': 'post',
         'files': {'import_file': 'test/hh_dyn.simple.csv'},
         'status_code': 303,
         'regexes': [
-            r"/hhdc_contracts/35/hh_imports/0"]},
+            r"/hhdc_contracts/14/hh_imports/0"]},
     {
-        'path': '/hhdc_contracts/35/hh_imports/0',
+        'path': '/hhdc_contracts/14/hh_imports/0',
         'tries': {},
         'regexes': [
             r"The import has completed.*successfully."],
@@ -4103,14 +4103,14 @@ def virtual_bill(supply_source):
 
     {
         'name': "Try out simple.csv hh import format.",
-        'path': '/hhdc_contracts/34/hh_imports',
+        'path': '/hhdc_contracts/13/hh_imports',
         'method': 'post',
         'files': {'import_file': 'test/hh_con.simple.csv'},
         'status_code': 303,
         'regexes': [
-            r"/hhdc_contracts/34/hh_imports/13"]},
+            r"/hhdc_contracts/13/hh_imports/13"]},
     {
-        'path': '/hhdc_contracts/34/hh_imports/13',
+        'path': '/hhdc_contracts/13/hh_imports/13',
         'tries': {},
         'regexes': [
             r"The import has completed.*successfully."],
@@ -4225,8 +4225,8 @@ def virtual_bill(supply_source):
             r'X,1.095,0.0,0.0,22.19481,1,0.0,12,0.0,'],
         'status_code': 200},
 
-    # Check it works when the DNO rate script contains a double LLFC 453,470
     {
+        'name': "DNO rate script contains a double LLFC 453,470",
         'path': '/reports/291?supply_id=12&start_year=2009&start_month=6&'
         'start_day=01&start_hour=00&start_minute=0&finish_year=2009&'
         'finish_month=06&finish_day=30&finish_hour=23&finish_minute=30',
@@ -4295,7 +4295,7 @@ def virtual_bill(supply_source):
 """,
             'properties': "{}"},
         'regexes': [
-            r"/supplier_contracts/42"],
+            r"/supplier_contracts/21"],
         'status_code': 303},
 
     # Add new era
@@ -4323,9 +4323,9 @@ def virtual_bill(supply_source):
             'start_hour': "00",
             'start_minute': "00",
             'is_ended': "false",
-            'mop_contract_id': "37",
+            'mop_contract_id': "16",
             'mop_account': "mc-22 1065 3921 534",
-            'hhdc_contract_id': "34",
+            'hhdc_contract_id': "13",
             'hhdc_account': "dc-22 1065 3921 534",
             'msn': "I02D89150",
             'pc_id': "3",
@@ -4335,13 +4335,13 @@ def virtual_bill(supply_source):
             'imp_llfc_code': "110",
             'imp_mpan_core': "22 1065 3921 534",
             'imp_sc': "30",
-            'imp_supplier_contract_id': "42",
+            'imp_supplier_contract_id': "21",
             'imp_supplier_account': "SA342376000"},
         'status_code': 303},
 
     # Create a new batch
     {
-        'path': '/supplier_contracts/42/add_batch',
+        'path': '/supplier_contracts/21/add_batch',
         'method': 'post',
         'data': {
             'reference': "07-008",
@@ -4479,9 +4479,9 @@ def virtual_bill(supply_source):
             'start_minute': "26",
             'msn': "",
             'gsp_group_id': "3",
-            'mop_contract_id': "37",
+            'mop_contract_id': "16",
             'mop_account': "mc-22 9879 0084 358",
-            'hhdc_contract_id': "34",
+            'hhdc_contract_id': "13",
             'hhdc_account': "dc-22 9879 0084 358",
             'pc_id': "9",
             'mtc_code': "845",
@@ -4490,15 +4490,15 @@ def virtual_bill(supply_source):
             'imp_mpan_core': "22 9879 0084 358",
             'imp_llfc_code': "540",
             'imp_sc': "700",
-            'imp_supplier_contract_id': "36",
+            'imp_supplier_contract_id': "15",
             'imp_supplier_account': "d",
             'insert_electricity': "Insert"},
         'regexes': [
             r"/supplies/13"],
         'status_code': 303},
 
-    # Check that the generator type 'chp' has been ignored.
     {
+        'name': "Check that the generator type 'chp' has been ignored.",
         'path': '/sites/7',
         'regexes': [
             r"<td>net</td>\s*<td>\s*</td>"],
@@ -4513,7 +4513,7 @@ def virtual_bill(supply_source):
     # Create a new batch.
     {
         'name': "GDF CSV Bills",
-        'path': '/supplier_contracts/36/add_batch',
+        'path': '/supplier_contracts/15/add_batch',
         'method': 'post',
         'data': {
             'reference': "008",
@@ -4521,7 +4521,7 @@ def virtual_bill(supply_source):
         'status_code': 303},
 
     {
-        'name': "Supplier contract 36",
+        'name': "Supplier contract 15",
         'path': '/supplier_bill_imports',
         'method': 'post',
         'data': {
@@ -4534,7 +4534,7 @@ def virtual_bill(supply_source):
             r"/supplier_bill_imports/4"]},
 
     {
-        'name': "Supplier contract 36, batch 6",
+        'name': "Supplier contract 15, batch 6",
         'path': '/supplier_bill_imports/4',
         'tries': {},
         'regexes': [
@@ -5363,7 +5363,7 @@ def virtual_bill(supply_source):
 
     {
         'name': "Test bulk ignore.",
-        'path': '/hhdc_contracts/35/edit',
+        'path': '/hhdc_contracts/14/edit',
         'method': 'post',
         'data': {
             'ignore_year': "2008",
@@ -5409,7 +5409,7 @@ def virtual_bill(supply_source):
         'status_code': 200},
     {
         'name': "NHH CSV import",
-        'path': '/supplier_contracts/42/add_batch',
+        'path': '/supplier_contracts/21/add_batch',
         'method': 'post',
         'data': {
             'reference': "07-002",
@@ -5417,7 +5417,7 @@ def virtual_bill(supply_source):
         'status_code': 303},
 
     {
-        'name': "Supplier contract 42",
+        'name': "Supplier contract 21",
         'path': '/supplier_bill_imports',
         'method': 'post',
         'data': {
@@ -5428,7 +5428,7 @@ def virtual_bill(supply_source):
             r"/supplier_bill_imports/5"]},
 
     {
-        'name': "Supplier contract 42, batch 7",
+        'name': "Supplier contract 21, batch 7",
         'path': '/supplier_bill_imports/5',
         'tries': {},
         'status_code': 200,
@@ -5436,7 +5436,7 @@ def virtual_bill(supply_source):
             r"All the bills have been successfully loaded and attached to "
             "the batch\."]},
 
-    # Supplier contract 37, batch 7, bill 10
+    # Supplier contract 16, batch 7, bill 10
     {
         'path': '/reads/7/edit',
         'regexes': [
@@ -5536,9 +5536,9 @@ def virtual_bill(supply_source):
             'finish_day': "03",
             'finish_hour': "23",
             'finish_minute': "30",
-            'mop_contract_id': "37",
+            'mop_contract_id': "16",
             'mop_account': "mc-22 1065 3921 534",
-            'hhdc_contract_id': "35",
+            'hhdc_contract_id': "14",
             'hhdc_account': "dc-22 1065 3921 534",
             'msn': "I02D89150",
             'pc_id': "3",
@@ -5548,7 +5548,7 @@ def virtual_bill(supply_source):
             'imp_llfc_code': "110",
             'imp_mpan_core': "22 1065 3921 534",
             'imp_sc': "30",
-            'imp_supplier_contract_id': "39",
+            'imp_supplier_contract_id': "18",
             'imp_supplier_account': "SA342376"},
         'status_code': 303},
     {
@@ -5639,7 +5639,7 @@ def virtual_bill(supply_source):
 
     {
         'name': "Add batch to HHDC contract",
-        'path': '/hhdc_contracts/34/add_batch',
+        'path': '/hhdc_contracts/13/add_batch',
         'method': 'post',
         'data': {
             'reference': "001-7t",
@@ -5653,13 +5653,13 @@ def virtual_bill(supply_source):
         'path': '/hhdc_batches/8/edit',
         'status_code': 200},
     {
-        'name': "View HHDC bill imports. Contract 34",
+        'name': "View HHDC bill imports. Contract 13",
         'path': '/hhdc_bill_imports?hhdc_batch_id=8',
         'status_code': 200,
         'regexes': [
             r'<a href="/hhdc_batches/8">001-7t</a>']},
     {
-        'name': "Try adding bills to the HHDC batch. Contract 35",
+        'name': "Try adding bills to the HHDC batch. Contract 14",
         'path': '/hhdc_bill_imports',
         'method': 'post',
         'data': {
@@ -5680,7 +5680,7 @@ def virtual_bill(supply_source):
 
     {
         'name': "Add batch to MOP contract",
-        'path': '/mop_contracts/37/add_batch',
+        'path': '/mop_contracts/16/add_batch',
         'method': 'post',
         'data': {
             'reference': "99/992",
@@ -5690,14 +5690,14 @@ def virtual_bill(supply_source):
             r"/mop_batches/9"]},
 
     {
-        'name': "Check that it's there in edit mode. Contract 36",
+        'name': "Check that it's there in edit mode. Contract 15",
         'path': '/mop_batches/9/edit',
         'status_code': 200,
         'regexes': [
             r'<input type="hidden" name="mop_batch_id" value="9">']},
 
     {
-        'name': "Check confirm-delete page. Contract 37",
+        'name': "Check confirm-delete page. Contract 'MOP Contract'",
         'path': '/mop_batches/9/edit?confirm_delete=Delete',
         'status_code': 200,
         'regexes': [
@@ -5709,11 +5709,10 @@ def virtual_bill(supply_source):
         'regexes': [
             r'<input type="submit" name="delete" value="Delete">']},
     {
-        'name': "Check we can see it in 'view' mode. Contract 37",
+        'name': "Check we can see it in 'view' mode. Contract 'MOP Contract'",
         'path': '/mop_batches/9',
         'status_code': 200},
 
-    # Mop contract 61
     {
         'name': "Try adding bills to the MOP batch",
         'path': '/mop_bill_imports',
@@ -5725,7 +5724,6 @@ def virtual_bill(supply_source):
         'regexes': [
             r"/mop_bill_imports/7"]},
 
-    # Mop contract 60, batch 9
     {
         'path': '/mop_bill_imports/7',
         'tries': {},
@@ -5749,9 +5747,9 @@ def virtual_bill(supply_source):
             'start_minute': "00",
             'msn': "",
             'gsp_group_id': "3",
-            'mop_contract_id': "37",
+            'mop_contract_id': "16",
             'mop_account': "mc-22 9879 0084 358",
-            'hhdc_contract_id': "34",
+            'hhdc_contract_id': "13",
             'hhdc_account': "dc-22 9879 0084 358",
             'pc_id': "9",
             'mtc_code': "845",
@@ -5760,7 +5758,7 @@ def virtual_bill(supply_source):
             'imp_mpan_core': "22 9879 0084 358",
             'imp_llfc_code': "",
             'imp_sc': "700",
-            'imp_supplier_contract_id': "36",
+            'imp_supplier_contract_id': "15",
             'imp_supplier_account': "d",
             'insert_electricity': "Insert"},
         'regexes': [
@@ -5783,9 +5781,9 @@ def virtual_bill(supply_source):
             'start_minute': "00",
             'msn': "",
             'gsp_group_id': "3",
-            'mop_contract_id': "37",
+            'mop_contract_id': "16",
             'mop_account': "mc-22 9879 0084 358",
-            'hhdc_contract_id': "34",
+            'hhdc_contract_id': "13",
             'hhdc_account': "dc-22 9879 0084 358",
             'pc_id': "9",
             'mtc_code': "845",
@@ -5794,7 +5792,7 @@ def virtual_bill(supply_source):
             'imp_mpan_core': "22 9879 0084 358",
             'imp_llfc_code': "570",
             'imp_sc': "",
-            'imp_supplier_contract_id': "36",
+            'imp_supplier_contract_id': "15",
             'imp_supplier_account': "d",
             'insert_electricity': "Insert"},
         'regexes': [
@@ -5816,9 +5814,9 @@ def virtual_bill(supply_source):
             'start_minute': "00",
             'msn': "",
             'gsp_group_id': "3",
-            'mop_contract_id': "37",
+            'mop_contract_id': "16",
             'mop_account': "mc-22 9879 0084 358",
-            'hhdc_contract_id': "34",
+            'hhdc_contract_id': "13",
             'hhdc_account': "dc-22 9879 0084 358",
             'pc_id': "9",
             'mtc_code': "",
@@ -5827,7 +5825,7 @@ def virtual_bill(supply_source):
             'imp_mpan_core': "22 9879 0084 358",
             'imp_llfc_code': "570",
             'imp_sc': "700",
-            'imp_supplier_contract_id': "36",
+            'imp_supplier_contract_id': "15",
             'imp_supplier_account': "d",
             'insert_electricity': "Insert"},
         'regexes': [
@@ -5855,10 +5853,10 @@ def virtual_bill(supply_source):
             'start_hour': "00",
             'start_minute': "00",
             'msn': "",
-            'gsp_group_id': "3",
-            'mop_contract_id': "37",
+            'gsp_group_id': '11',
+            'mop_contract_id': "16",
             'mop_account': "mc-22 9789 0534 938",
-            'hhdc_contract_id': "34",
+            'hhdc_contract_id': "13",
             'hhdc_account': "dc-22 9789 0534 938",
             'pc_id': "3",
             'mtc_code': "801",
@@ -5867,7 +5865,7 @@ def virtual_bill(supply_source):
             'imp_mpan_core': "22 9789 0534 938",
             'imp_llfc_code': "110",
             'imp_sc': "0",
-            'imp_supplier_contract_id': "42",
+            'imp_supplier_contract_id': "21",
             'imp_supplier_account': "taa2",
             'insert_electricity': "Insert"},
         'regexes': [
@@ -6444,15 +6442,15 @@ def virtual_bill(supply_source):
             'delete': "Delete"},
         'status_code': 303,
         'regexes': [
-            r'/supplier_batches\?supplier_contract_id=42']},
+            r'/supplier_batches\?supplier_contract_id=21']},
     {
         'name': "Check 'insert supplier batch' page.",
-        'path': '/supplier_contracts/42/add_batch',
+        'path': '/supplier_contracts/21/add_batch',
         'regexes': [
             r'="description"']},
     {
         'name': "Viewing the insert batch page of a DC contract.",
-        'path': '/hhdc_contracts/35/add_batch',
+        'path': '/hhdc_contracts/14/add_batch',
         'regexes': [
             r'="description"']},
     {
@@ -6471,30 +6469,30 @@ def virtual_bill(supply_source):
 """, },
         'status_code': 303},
 
-    # Check that we can see a MOP batch okay. Contract 47
     {
+        'name': "Check that we can see a MOP batch okay. Contract 47",
         'path': '/mop_batches/9',
         'regexes': [
             r"/local_reports/1/output",
             r'<a href="/mop_bill_imports\?mop_batch_id=9">Bill Imports</a>'],
         'status_code': 200},
 
-    # Check that we can see a supplier batch okay. Contract 58
     {
+        'name': "Check that we can see a supplier batch okay. Contract 58",
         'path': '/supplier_batches/4',
         'regexes': [
             r'/local_reports/1/output\?batch_id=4'],
         'status_code': 200},
     {
         'name': "Check 'no channel' error when importing hh data.",
-        'path': '/hhdc_contracts/34/hh_imports',
+        'path': '/hhdc_contracts/13/hh_imports',
         'method': 'post',
         'files': {'import_file': 'test/hh-no-channel.simple.csv'},
         'status_code': 303,
         'regexes': [
-            r"/hhdc_contracts/34/hh_imports/14"]},
+            r"/hhdc_contracts/13/hh_imports/14"]},
     {
-        'path': '/hhdc_contracts/34/hh_imports/14',
+        'path': '/hhdc_contracts/13/hh_imports/14',
         'tries': {},
         'regexes': [
             r'There is no channel under the contract HH contract for the '
@@ -6503,10 +6501,10 @@ def virtual_bill(supply_source):
         'status_code': 200},
     {
         'name': "Check the bill import page.",
-        'path': '/hhdc_contracts/34/hh_imports',
+        'path': '/hhdc_contracts/13/hh_imports',
         'status_code': 200,
         'regexes': [
-            r"/hhdc_contracts/34"]},
+            r"/hhdc_contracts/13"]},
 
     # Can we add a new era ok?
     {
@@ -6579,7 +6577,7 @@ def virtual_bill(supply_source):
     # Try importing HH data from FTP server.
     {
         'name': "Update Contract",
-        'path': '/hhdc_contracts/34/edit',
+        'path': '/hhdc_contracts/13/edit',
         'method': 'post',
         'data': {
             'party_id': "97",  # DASL
@@ -6606,7 +6604,7 @@ def virtual_bill(supply_source):
 
     {
         'name': "Check that the update worked",
-        'path': '/hhdc_contracts/34',
+        'path': '/hhdc_contracts/13',
         'status_code': 200,
         'regexes': [
             r'&#39;hostname&#39;: &#39;localhost&#39;,']},
@@ -6614,20 +6612,20 @@ def virtual_bill(supply_source):
     # Do an 'import now'
     {
         'name': "Do an 'import now'",
-        'path': '/hhdc_contracts/34/auto_importer',
+        'path': '/hhdc_contracts/13/auto_importer',
         'method': 'post',
         'regexes': [
-            '/hhdc_contracts/34/auto_importer'],
+            '/hhdc_contracts/13/auto_importer'],
         'status_code': 303},
     {
         'name': "Check that file from FTP server has imported properly",
-        'path': '/hhdc_contracts/34/auto_importer',
+        'path': '/hhdc_contracts/13/auto_importer',
         'tries': {},
         'regexes': [
             r"Finished loading",
-            r'<a href="/hhdc_contracts/34/auto_importer">Refresh page</a>']},
+            r'<a href="/hhdc_contracts/13/auto_importer">Refresh page</a>']},
     {
-        'path': '/hhdc_contracts/34',
+        'path': '/hhdc_contracts/13',
         'regexes': [
             r"hh_data\.df2"]},
 
@@ -6729,14 +6727,14 @@ def virtual_bill(supply_source):
             'mtc_code': "845",
             'cop_id': "5",
             'ssc_code': "393",
-            'mop_contract_id': "37",
+            'mop_contract_id': "16",
             'mop_account': "mc-22 6354 2983 570",
-            'hhdc_contract_id': "34",
+            'hhdc_contract_id': "13",
             'hhdc_account': "01",
             'imp_llfc_code': "210",
             'imp_mpan_core': "22 4862 4512 332",
             'imp_sc': "230",
-            'imp_supplier_contract_id': "39",
+            'imp_supplier_contract_id': "18",
             'imp_supplier_account': "141 5532"},
         'status_code': 303},
 
@@ -6769,9 +6767,9 @@ def virtual_bill(supply_source):
             'start_hour': "00",
             'start_minute': "00",
             'is_ended': "false",
-            'mop_contract_id': "37",
+            'mop_contract_id': "16",
             'mop_account': "mc-22 0195 4836 192",
-            'hhdc_contract_id': "35",
+            'hhdc_contract_id': "14",
             'hhdc_account': "dc-22 0195 4836 192",
             'msn': "P96C93722",
             'pc_id': "8",
@@ -6781,7 +6779,7 @@ def virtual_bill(supply_source):
             'imp_llfc_code': "980",
             'imp_mpan_core': "22 0195 4836 192",
             'imp_sc': "304",
-            'imp_supplier_contract_id': "39",
+            'imp_supplier_contract_id': "18",
             'imp_supplier_account': "SA342376"},
         'status_code': 303},
     {
@@ -6982,9 +6980,9 @@ def virtual_bill(supply_source):
             'start_minute': "00",
             'is_ended': "false",
             'gsp_group_id': "11",
-            'mop_contract_id': "37",
+            'mop_contract_id': "16",
             'mop_account': "22 0883 6932 301",
-            'hhdc_contract_id': "34",
+            'hhdc_contract_id': "13",
             'hhdc_account': "22 0883 6932 301",
             'msn': "",
             'pc_id': "9",
@@ -6994,7 +6992,7 @@ def virtual_bill(supply_source):
             'imp_llfc_code': "570",
             'imp_mpan_core': "22 0883 6932 301",
             'imp_sc': "350",
-            'imp_supplier_contract_id': "38",
+            'imp_supplier_contract_id': "17",
             'imp_supplier_account': "4341"},
         'status_code': 303},
     {
@@ -7158,22 +7156,22 @@ def virtual_bill(supply_source):
             'mtc_code': "845",
             'cop_id': "5",
             'ssc_code': "",
-            'mop_contract_id': "37",
+            'mop_contract_id': "16",
             'mop_account': "mc-14 7206 6139 971",
-            'hhdc_contract_id': "34",
+            'hhdc_contract_id': "13",
             'hhdc_account': "dc-14 7206 6139 971",
             'imp_llfc_code': "365",
             'imp_mpan_core': "14 7206 6139 971",
             'imp_sc': "2300",
-            'imp_supplier_contract_id': "36",
+            'imp_supplier_contract_id': "15",
             'imp_supplier_account': "sup-14 7206 6139 971",
             'insert_electricity': "insert"},
         'regexes': [
             r"/supplies/17"],
         'status_code': 303},
 
-    # Try a pre 2010-04-01 DNO 14 bill.
     {
+        'name': "Try a pre 2010-04-01 DNO 14 bill.",
         'path': '/reports/291?supply_id=17&start_year=2009&start_month=06&'
         'start_day=01&start_hour=00&start_minute=00&finish_year=2009&'
         'finish_month=06&finish_day=30&finish_hour=23&finish_minute=30',
@@ -7275,7 +7273,7 @@ def virtual_bill(supply_source):
         'status_code': 200},
     {
         'name': "Report of HHDC snags",
-        'path': '/reports/233?hhdc_contract_id=34&days_hidden=1',
+        'path': '/reports/233?hhdc_contract_id=13&days_hidden=1',
         'status_code': 303},
     {
         'path': '/downloads',
@@ -7361,7 +7359,7 @@ def virtual_bill(supply_source):
             r'<tr>\s*'
             r'<td>\s*'
             r'<a\s*'
-            r'href="/supplier_contracts/36"\s*'
+            r'href="/supplier_contracts/15"\s*'
             r'>Half-hourlies 2007</a>'],
         'status_code': 200},
     {
@@ -7611,7 +7609,7 @@ def virtual_bill(supply_source):
     # Insert a new batch
     {
         'name': "Add and delete an HHDC contract",
-        'path': '/hhdc_contracts/34/add_batch',
+        'path': '/hhdc_contracts/13/add_batch',
         'method': 'post',
         'data': {
             'reference': "to_delete",
@@ -7629,16 +7627,16 @@ def virtual_bill(supply_source):
             r'<fieldset>\s*'
             r'<input type="submit" name="delete" value="Delete">\s']},
     {
-        'name': "Delete it. HHDC contract 34",
+        'name': "Delete it. HHDC contract 13",
         'path': '/hhdc_batches/10/edit',
         'method': 'post',
         'data': {
             'delete': 'Delete'},
         'status_code': 303,
         'regexes': [
-            '/hhdc_batches\?hhdc_contract_id=34']},
+            '/hhdc_batches\?hhdc_contract_id=13']},
     {
-        'name': "Check it's really gone. HHDC contract 34",
+        'name': "Check it's really gone. HHDC contract 13",
         'path': '/hhdc_batches/10',
         'status_code': 404},
 
@@ -7727,7 +7725,7 @@ def virtual_bill(supply_source):
         'status_code': 200},
     {
         'name': "Contract virtual bills",
-        'path': '/reports/87?supplier_contract_id=36&start_year=2013&'
+        'path': '/reports/87?supplier_contract_id=15&start_year=2013&'
         'start_month=12&start_day=01&start_hour=00&start_minute=00&'
         'finish_year=2013&finish_month=12&finish_day=01&finish_hour=23&'
         'finish_minute=30',
@@ -7758,7 +7756,7 @@ def virtual_bill(supply_source):
 
     {
         'name': "Contract displaced virtual bills",
-        'path': '/reports/109?supplier_contract_id=36&months=1&'
+        'path': '/reports/109?supplier_contract_id=15&months=1&'
         'finish_year=2013&finish_month=01',
         'status_code': 303},
     {
@@ -7801,9 +7799,9 @@ def virtual_bill(supply_source):
             'finish_day': "06",
             'finish_hour': "23",
             'finish_minute': "30",
-            'mop_contract_id': "37",
+            'mop_contract_id': "16",
             'mop_account': "mc-22 9205 6799 106",
-            'hhdc_contract_id': "34",
+            'hhdc_contract_id': "13",
             'hhdc_account': "01",
             'msn': "",
             'pc_id': "9",
@@ -7813,16 +7811,16 @@ def virtual_bill(supply_source):
             'imp_llfc_code': "540",
             'imp_mpan_core': "22 9205 6799 106",
             'imp_sc': "450",
-            'imp_supplier_contract_id': "36",
+            'imp_supplier_contract_id': "15",
             'imp_supplier_account': "11640077",
             'exp_llfc_code': "581",
             'exp_mpan_core': "22 0470 7514 535",
             'exp_sc': "150",
-            'exp_supplier_contract_id': "36",
+            'exp_supplier_contract_id': "15",
             'exp_supplier_account': ""},
         'status_code': 303},
     {
-        'path': '/channel_snags?hhdc_contract_id=34&days_hidden=5',
+        'path': '/channel_snags?hhdc_contract_id=13&days_hidden=5',
         'status_code': 200,
         'regexes': [
             r'<tr>\s*<td>\s*<ul>\s*<li>\s*'
@@ -7849,7 +7847,7 @@ def virtual_bill(supply_source):
             'insert_era': "insert_era"},
         'status_code': 303},
     {
-        'path': '/reports/233?hhdc_contract_id=34&days_hidden=0',
+        'path': '/reports/233?hhdc_contract_id=13&days_hidden=0',
         'status_code': 303},
     {
         'path': '/downloads',
@@ -8010,14 +8008,14 @@ def virtual_bill(supply_source):
     # Import some hh Stark DF2 data
     {
         'name': "Check df2 clock change",
-        'path': '/hhdc_contracts/34/hh_imports',
+        'path': '/hhdc_contracts/13/hh_imports',
         'method': 'post',
         'files': {'import_file': 'test/hh_clock_change.df2'},
         'status_code': 303,
         'regexes': [
-            r"/hhdc_contracts/34/hh_imports/15"]},
+            r"/hhdc_contracts/13/hh_imports/15"]},
     {
-        'path': '/hhdc_contracts/34/hh_imports/15',
+        'path': '/hhdc_contracts/13/hh_imports/15',
         'tries': {},
         'regexes': [
             r"The import has completed.*successfully."],
@@ -8033,7 +8031,7 @@ def virtual_bill(supply_source):
     # Create a new batch
     {
         'name': "NHH bill outside supply period.",
-        'path': '/supplier_contracts/39/add_batch',
+        'path': '/supplier_contracts/18/add_batch',
         'method': 'post',
         'data': {
             'reference': "06-078",
@@ -8052,7 +8050,7 @@ def virtual_bill(supply_source):
             r"/supplier_bill_imports/9"]},
 
     {
-        'name': 'Supplier contract 39, batch 12',
+        'name': 'Supplier contract 18, batch 12',
         'path': '/supplier_bill_imports/9',
         'tries': {},
         'status_code': 200,
@@ -8401,17 +8399,17 @@ def virtual_bill(supply_source):
     # Add in second batch
     {
         'name': "Order of HHDC batches",
-        'path': '/hhdc_contracts/34/add_batch',
+        'path': '/hhdc_contracts/13/add_batch',
         'method': 'post',
         'data': {
             'reference': "7",
             'description': ""},
         'status_code': 303},
     {
-        'path': '/hhdc_batches?hhdc_contract_id=34',
+        'path': '/hhdc_batches?hhdc_contract_id=13',
         'status_code': 200,
         'regexes': [
-            r'<a\s*href="/hhdc_contracts/34"\s*>HH contract</a>',
+            r'<a\s*href="/hhdc_contracts/13"\s*>HH contract</a>',
             r'<tr>\s*<td>\s*'
             '<a href="/hhdc_batches/13">\s*7\s*'
             '</a>\s*</td>\s*<td></td>\s*</tr>\s*<tr>\s*<td>\s*'
@@ -8421,14 +8419,14 @@ def virtual_bill(supply_source):
     # Add in second batch
     {
         'name': "Order of MOP batches",
-        'path': '/mop_contracts/37/add_batch',
+        'path': '/mop_contracts/16/add_batch',
         'method': 'post',
         'data': {
             'reference': "7a",
             'description': ""},
         'status_code': 303},
     {
-        'path': '/mop_batches?mop_contract_id=37',
+        'path': '/mop_batches?mop_contract_id=16',
         'status_code': 200,
         'regexes': [
             r'<tr>\s*<td>\s*'
@@ -8446,7 +8444,7 @@ def virtual_bill(supply_source):
             r'<tr>\s*<td>\s*'
             '<a href="/mtcs/96">\s*001\s*'
             '</a>\s*</td>\s*<td>\s*'
-            '<a href="/dno_contracts/15">\s*'
+            '<a href="/dnos/703">\s*'
             '12\s*</a>\s*</td>\s*<td>Economy 7, 23.30 - 06.30</td>\s*<td>\s*'
             '<a href="/meter_types/15">\s*TP\s*'
             '</a>\s*</td>\s*<td>2</td>\s*</tr>']},
@@ -8457,7 +8455,7 @@ def virtual_bill(supply_source):
         'regexes': [
             r'<tr>\s*<th>Code</th>\s*<td>001</td>\s*</tr>\s*<tr>\s*'
             '<th>DNO</th>\s*<td>\s*'
-            '<a href="/dno_contracts/15">\s*'
+            '<a href="/dnos/703">\s*'
             '12\s*</a>\s*</td>\s*</tr>']},
 
     {
@@ -8487,9 +8485,9 @@ def virtual_bill(supply_source):
             'start_hour': "00",
             'start_minute': "00",
             'is_ended': "false",
-            'mop_contract_id': "37",
+            'mop_contract_id': "16",
             'mop_account': "mc-22 1065 3921 534",
-            'hhdc_contract_id': "34",
+            'hhdc_contract_id': "13",
             'hhdc_account': "dc-22 1065 3921 534",
             'pc_id': "3",
             'mtc_code': "801",
@@ -8498,7 +8496,7 @@ def virtual_bill(supply_source):
             'imp_llfc_code': "110",
             'imp_mpan_core': "22 1065 3921 534",
             'imp_sc': "30",
-            'imp_supplier_contract_id': "42",
+            'imp_supplier_contract_id': "21",
             'imp_supplier_account': "SA342376000"},
         'status_code': 303},
 
@@ -8561,9 +8559,9 @@ def virtual_bill(supply_source):
             'finish_day': "19",
             'finish_hour': "23",
             'finish_minute': "30",
-            'mop_contract_id': "37",
+            'mop_contract_id': "16",
             'mop_account': "mc-22 1065 3921 534",
-            'hhdc_contract_id': "35",
+            'hhdc_contract_id': "14",
             'hhdc_account': "dc-22 1065 3921 534",
             'msn': "I02D89150",
             'pc_id': "3",
@@ -8573,7 +8571,7 @@ def virtual_bill(supply_source):
             'imp_llfc_code': "110",
             'imp_mpan_core': "22 1065 3921 534",
             'imp_sc': "30",
-            'imp_supplier_contract_id': "42",
+            'imp_supplier_contract_id': "21",
             'imp_supplier_account': "SA342376"},
         'status_code': 303},
 
@@ -8743,12 +8741,12 @@ def virtual_bill(supply_source):
 }
 """, },
         'regexes': [
-            r"/supplier_contracts/43"],
+            r"/supplier_contracts/22"],
         'status_code': 303},
 
     {
         'name': "Run scenario for a site where there are no site groups",
-        'path': '/reports/247?site_id=1&scenario_id=43&compression=False',
+        'path': '/reports/247?site_id=1&scenario_id=22&compression=False',
         'status_code': 303},
     {
         'path': '/downloads',
@@ -8771,7 +8769,7 @@ def virtual_bill(supply_source):
 
     {
         'name': "Run scenario for a site where there are site groups",
-        'path': '/reports/247?site_id=3&scenario_id=43&compression=False',
+        'path': '/reports/247?site_id=3&scenario_id=22&compression=False',
         'status_code': 303},
     {
         'path': '/downloads',
@@ -8853,12 +8851,12 @@ def virtual_bill(supply_source):
 }
 """},
         'regexes': [
-            r"/supplier_contracts/44"],
+            r"/supplier_contracts/23"],
         'status_code': 303},
 
     {
         'name': "Run scenario for a site",
-        'path': '/reports/247?site_id=3&scenario_id=44&compression=False',
+        'path': '/reports/247?site_id=3&scenario_id=23&compression=False',
         'status_code': 303},
     {
         'path': '/downloads',
@@ -9196,12 +9194,12 @@ def virtual_bill(supply_source):
     "CI005, used, 2011-01-01, 0.5\nCI005, generated, 2011-01-01, 2"}
 """, },
         'regexes': [
-            r"/supplier_contracts/45"],
+            r"/supplier_contracts/24"],
         'status_code': 303},
 
     {
         'name': "Run scenario for a site",
-        'path': '/reports/247?site_id=1&scenario_id=45&compression=False',
+        'path': '/reports/247?site_id=1&scenario_id=24&compression=False',
         'status_code': 303},
     {
         'path': '/downloads',
@@ -9303,7 +9301,7 @@ def virtual_bill(supply_source):
             r'</li>']},
     {
         'name': "Look at a DNO",
-        'path': '/dno_contracts/14',
+        'path': '/dnos/131',
         'status_code': 200},
 
     {
@@ -9318,7 +9316,7 @@ def virtual_bill(supply_source):
 
     {
         'name': "Rate start after last rate scripts",
-        'path': '/supplier_contracts/44/edit',
+        'path': '/supplier_contracts/23/edit',
         'method': 'post',
         'data': {
             'party_id': "90",  # COOP
@@ -9361,12 +9359,12 @@ def virtual_bill(supply_source):
 }
 """},
         'regexes': [
-            r"/supplier_contracts/44"],
+            r"/supplier_contracts/23"],
         'status_code': 303},
 
     # Run scenario for a site
     {
-        'path': '/reports/247?site_id=3&scenario_id=44&compression=False',
+        'path': '/reports/247?site_id=3&scenario_id=23&compression=False',
         'status_code': 303},
     {
         'path': '/downloads',
@@ -9868,7 +9866,7 @@ def virtual_bill(supply_source):
     {
         'name': "Dumb NHH supply with DUoS pass-through: "
         "Update Non half-hourlies 2010",
-        'path': "/supplier_contracts/42/edit",
+        'path': "/supplier_contracts/21/edit",
         'method': 'post',
         'data': {
             'party_id': '90',
@@ -9938,12 +9936,12 @@ def virtual_bill(supply_source):
 }
 """, },
         'regexes': [
-            r"/supplier_contracts/46"],
+            r"/supplier_contracts/25"],
         'status_code': 303},
 
     {
         'name': "Leap day forecast. Run scenario for a site",
-        'path': '/reports/247?site_id=5&scenario_id=46&compression=False',
+        'path': '/reports/247?site_id=5&scenario_id=25&compression=False',
         'status_code': 303},
     {
         'path': '/downloads',
@@ -10196,7 +10194,7 @@ def virtual_bill(supply_source):
 
     {
         'name': "Contract level MOP virtual bills",
-        'path': '/reports/231?mop_contract_id=37&start_year=2015&'
+        'path': '/reports/231?mop_contract_id=16&start_year=2015&'
         'start_month=04&start_day=01&start_hour=00&start_minute=00&'
         'finish_year=2015&finish_month=04&finish_day=01&finish_hour=23&'
         'finish_minute=30',
@@ -10672,7 +10670,7 @@ def virtual_bill(supply_source):
             r'<table:table-cell office:value="0.0" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell table:number-columns-repeated="2"/>\s*'
-            r'<table:table-cell office:value="0.00525288" '
+            r'<table:table-cell office:value="0.00441" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell table:number-columns-repeated="10"/>\s*'
             r'<table:table-cell office:value="0" '
@@ -10743,7 +10741,7 @@ def virtual_bill(supply_source):
 
     {
         'name': "Displaced bills for a contract",
-        'path': '/reports/109?supplier_contract_id=38&months=1&'
+        'path': '/reports/109?supplier_contract_id=17&months=1&'
         'finish_year=2005&finish_month=11',
         'status_code': 303},
     {
@@ -11346,7 +11344,7 @@ def virtual_bill(supply_source):
     {
         'name': "Dumb NHH supply with DUoS pass-through: "
         "Update Non half-hourlies 2010",
-        'path': "/supplier_contracts/43/edit",
+        'path': "/supplier_contracts/21/edit",
         'method': 'post',
         'data': {
             'party_id': '90',
@@ -11570,7 +11568,7 @@ def virtual_bill(supply_source):
             r'<table:table-cell office:value="-0.59141\d*" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell table:number-columns-repeated="2"/>\s*'
-            r'<table:table-cell office:value="0.00525288" '
+            r'<table:table-cell office:value="0.00554" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell table:number-columns-repeated="18"/>\s*'
             r'<table:table-cell office:value="0" '
@@ -11715,7 +11713,7 @@ def virtual_bill(supply_source):
             r'<table:table-cell office:value="94.3189\d*" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell table:number-columns-repeated="2"/>\s*'
-            r'<table:table-cell office:value="0.00525288" '
+            r'<table:table-cell office:value="0.00554" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell/>\s*'
             r'<table:table-cell office:value="5.89" '
@@ -11846,9 +11844,9 @@ def virtual_bill(supply_source):
             'start_hour': "00",
             'start_minute': "00",
             'is_ended': "false",
-            'mop_contract_id': "38",
+            'mop_contract_id': "16",
             'mop_account': "mc-22 7907 4116 080",
-            'hhdc_contract_id': "36",
+            'hhdc_contract_id': "14",
             'hhdc_account': "01",
             'msn': "",
             'pc_id': "9",
@@ -11858,14 +11856,14 @@ def virtual_bill(supply_source):
             'exp_llfc_code': "581",
             'exp_mpan_core': "22 7907 4116 080",
             'exp_sc': "600",
-            'exp_supplier_contract_id': "37",
+            'exp_supplier_contract_id': "15",
             'exp_supplier_account': ""},
         'status_code': 303},
 
     {
         'name': "Montly duration report, billed: "
         "add batch to Dynamat contract",
-        'path': '/hhdc_contracts/36/add_batch',
+        'path': '/hhdc_contracts/14/add_batch',
         'method': 'post',
         'data': {
             'reference': "Zathustra",
@@ -11875,7 +11873,7 @@ def virtual_bill(supply_source):
             r"/hhdc_batches/15"]},
     {
         'name': "Monthly duration report, billed: add bill to batch",
-        'path': '/hhdc_batches/15/add_bill',
+        'path': '/hhdc_batches/14/add_bill',
         'method': 'post',
         'data': {
             'mpan_core': '22 7907 4116 080',
@@ -11982,7 +11980,7 @@ def virtual_bill(supply_source):
             r'<table:table-cell office:value="93.89" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell table:number-columns-repeated="2"/>\s*'
-            r'<table:table-cell office:value="0.00525288" '
+            r'<table:table-cell office:value="0.00554" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell/>\s*'
             r'<table:table-cell office:value="5.89" '
@@ -12084,9 +12082,9 @@ def virtual_bill(supply_source):
             'start_day': "01",
             'start_hour': "00",
             'start_minute': "00",
-            'mop_contract_id': "38",
+            'mop_contract_id': "16",
             'mop_account': "22 0883 6932 301",
-            'hhdc_contract_id': "36",
+            'hhdc_contract_id': "13",
             'hhdc_account': "22 0883 6932 301",
             'msn': "",
             'pc_id': "9",
@@ -12096,12 +12094,12 @@ def virtual_bill(supply_source):
             'imp_llfc_code': "510",
             'imp_mpan_core': "22 0883 6932 301",
             'imp_sc': "350",
-            'imp_supplier_contract_id': "39",
+            'imp_supplier_contract_id': "17",
             'imp_supplier_account': "4341",
             'exp_llfc_code': "521",
             'exp_mpan_core': "22 6158 2968 220",
             'exp_sc': "20",
-            'exp_supplier_contract_id': "39",
+            'exp_supplier_contract_id': "17",
             'exp_supplier_account': "5bb8"},
         'status_code': 400},
     {
@@ -12130,9 +12128,9 @@ def virtual_bill(supply_source):
             'start_hour': "00",
             'start_minute': "00",
             'is_ended': "false",
-            'mop_contract_id': "38",
+            'mop_contract_id': "16",
             'mop_account': "22 0883 6932 301",
-            'hhdc_contract_id': "35",
+            'hhdc_contract_id': "13",
             'hhdc_account': "22 0883 6932 301",
             'msn': "",
             'pc_id': "9",
@@ -12142,12 +12140,12 @@ def virtual_bill(supply_source):
             'imp_llfc_code': "570",
             'imp_mpan_core': "22 0883 6932 301",
             'imp_sc': "350",
-            'imp_supplier_contract_id': "39",
+            'imp_supplier_contract_id': "17",
             'imp_supplier_account': "413",
             'exp_llfc_code': "581",
             'exp_mpan_core': "22 7824 9120 097",
             'exp_sc': "150",
-            'exp_supplier_contract_id': "39",
+            'exp_supplier_contract_id': "17",
             'exp_supplier_account': "669"},
         'status_code': 303},
     {
@@ -12217,7 +12215,7 @@ def virtual_bill(supply_source):
 
     {
         'name': 'Wildcard user. Add config.',
-        'path': '/non_core_contracts/5/edit',
+        'path': '/non_core_contracts/4/edit',
         'method': 'post',
         'data': {
             'name': "configuration",
@@ -12311,7 +12309,7 @@ def virtual_bill(supply_source):
         'status_code': 200},
     {
         'name': "Set up RCRC downloader",
-        'path': '/non_core_contracts/7/edit',
+        'path': '/non_core_contracts/6/edit',
         'method': 'post',
         'data': {
             'properties': """
@@ -12323,14 +12321,14 @@ def virtual_bill(supply_source):
         'status_code': 303},
     {
         'name': "Do an 'import now' on RCRC.",
-        'path': '/non_core_contracts/7/auto_importer',
+        'path': '/non_core_contracts/6/auto_importer',
         'method': 'post',
         'data': {
             'now': 'Now'},
         'status_code': 303},
     {
         'name': "Check that an RCRC import has happened.",
-        'path': '/non_core_contracts/7/auto_importer',
+        'path': '/non_core_contracts/6/auto_importer',
         'tries': {},
         'regexes': [
             r"Added new rate script\."],
@@ -12347,7 +12345,7 @@ def virtual_bill(supply_source):
         'regexes': [
             r"/supplier_bill_imports/11"]},
     {
-        'name': "Supplier contract 37, batch 4",
+        'name': "Supplier contract 16, batch 4",
         'path': '/supplier_bill_imports/11',
         'tries': {},
         'status_code': 200,
@@ -12374,10 +12372,10 @@ def virtual_bill(supply_source):
 
     {
         'name': "A DNO's LLFCs",
-        'path': '/llfcs?dno_contract_id=28',
+        'path': '/llfcs?dno_id=131',
         'status_code': 200,
         'regexes': [
-            r'<a href="/dno_contracts">DNO Contracts</a>']},
+            r'<a href="/dnos">DNOs</a>']},
 
     {
         'name': "Comparison against ECOES",
@@ -12577,7 +12575,7 @@ def virtual_bill(supply_source):
         'status_code': 303},
     {
         'name': "Bill check with exception",
-        'path': "/supplier_contracts/43/edit",
+        'path': "/supplier_contracts/21/edit",
         'method': 'post',
         'data': {
             'party_id': '90',
@@ -12643,7 +12641,7 @@ def virtual_bill(supply_source):
         'status_code': 200},
     {
         'name': "Bill check with exception. Put back to how it was.",
-        'path': "/supplier_contracts/43/edit",
+        'path': "/supplier_contracts/21/edit",
         'method': 'post',
         'data': {
             'party_id': '90',
@@ -12664,7 +12662,7 @@ def virtual_bill(supply_source):
 
     {
         'name': "Reverse proxy authentication",
-        'path': '/non_core_contracts/5/edit',
+        'path': '/non_core_contracts/4/edit',
         'method': 'post',
         'data': {
             'name': "configuration",
@@ -12704,7 +12702,7 @@ def virtual_bill(supply_source):
         'status_code': 403},
     {
         'name': "Reverse proxy authentication: revert to basic auth",
-        'path': '/non_core_contracts/5/edit',
+        'path': '/non_core_contracts/4/edit',
         'method': 'post',
         'headers': {
             'X-Isrw-Proxy-Logon-User': 'admin@example.com'},
@@ -12733,7 +12731,7 @@ def virtual_bill(supply_source):
         'status_code': 200},
     {
         'name': "Attempt to delete an HHDC contract that has batches",
-        'path': '/hhdc_contracts/35/edit',
+        'path': '/hhdc_contracts/14/edit',
         'method': 'post',
         'data': {
             'delete': "Delete"},
@@ -12742,7 +12740,7 @@ def virtual_bill(supply_source):
         'status_code': 400},
     {
         'name': "View add HHDC rate script",
-        'path': '/hhdc_contracts/36/add_rate_script',
+        'path': '/hhdc_contracts/14/add_rate_script',
         'status_code': 200},
     {
         'name': "View add mop bill.",
@@ -12930,12 +12928,12 @@ def virtual_bill(supply_source):
 
     {
         'name': "Non-core contract without module (configuration)",
-        'path': '/non_core_contracts/5',
+        'path': '/non_core_contracts/4',
         'status_code': 200},
 
     {
         'name': "NHH bill with triad: Update Non half-hourlies 2010:",
-        'path': "/supplier_contracts/43/edit",
+        'path': "/supplier_contracts/21/edit",
         'method': 'post',
         'data': {
             'party_id': '90',
@@ -14596,7 +14594,7 @@ def virtual_bill(ss):
 
     {
         'name': "SSE EDI bill with multiple rates for an element",
-        'path': '/supplier_contracts/43/add_batch',
+        'path': '/supplier_contracts/21/add_batch',
         'method': 'post',
         'data': {
             'reference': "07-009",
@@ -14668,9 +14666,9 @@ finally:
             'start_hour': "00",
             'start_minute': "00",
             'is_ended': "false",
-            'mop_contract_id': "38",
+            'mop_contract_id': "16",
             'mop_account': "mc-22 9813 2107 763",
-            'hhdc_contract_id': "35",
+            'hhdc_contract_id': "13",
             'hhdc_account': "01",
             'msn': "",
             'pc_id': "9",
@@ -14680,17 +14678,17 @@ finally:
             'imp_llfc_code': "570",
             'imp_mpan_core': "22 9813 2107 763",
             'imp_sc': "430",
-            'imp_supplier_contract_id': '37',
+            'imp_supplier_contract_id': '15',
             'imp_supplier_account': '22 9813 2107 763',
             'exp_llfc_code': '581',
             'exp_mpan_core': '22 3475 1614 211',
             'exp_sc': "900",
-            'exp_supplier_contract_id': '37',
+            'exp_supplier_contract_id': '15',
             'exp_supplier_account': '4341'},
         'status_code': 303},
     {
         'name': "Engie XLS Bills",
-        'path': '/supplier_contracts/37/add_batch',
+        'path': '/supplier_contracts/15/add_batch',
         'method': 'post',
         'data': {
             'reference': "009",
@@ -14754,7 +14752,7 @@ finally:
 
     {
         'name': "Contract level MOP virtual bills, straddling eras",
-        'path': '/reports/231?mop_contract_id=38&start_year=2008&'
+        'path': '/reports/231?mop_contract_id=16&start_year=2008&'
         'start_month=09&start_day=05&start_hour=00&start_minute=00&'
         'finish_year=2008&finish_month=09&finish_day=06&finish_hour=23&'
         'finish_minute=30',
@@ -14844,7 +14842,7 @@ finally:
             r'22 0883 6932 301,22 7824 9120 097,CI005,Wheal Rodney,413,'
             r'2014-03-01 00:00,2014-06-30 23:30,,40,,,0,,,'
             r'1256.293532557266\d*,,'
-            r',0.00525288,,5.89,350,122,0.026 \| 0.0269,1138.8649999999982,0,'
+            r',,,5.89,350,122,0.026 \| 0.0269,1138.8649999999982,0,'
             r'124,0.026 \| 0.0269,0.0,0.0,0.00147 \| 0.00161,0.0,,,0.0,0,'
             r'0.2441 \| 0.25405,12.423045,0.0,0.00382 \| 0.00399,0.0,122,'
             r'0.0878 \| 0.0905,10.795299999999976,88,52.5186,'
@@ -14858,7 +14856,7 @@ finally:
             r'1.074 \| 1.087,0.0,2013-01-16 17:00 \| 2014-01-30 17:00,'
             r'0,X,1.087,0.0,0.0,33.551731 \| 38.699518,1,0.0,12,0.0,,,,,,,,,'
             r',,,,,,,,duos-amber-rate,0.00287 \| 0.00344,duos-red-kwh,48.9,,'
-            r'93.89,,,0.00525288,,5.89,150,122,0.0,0.0,0,124,0.0,0.0,0,'
+            r'93.89,,,,,5.89,150,122,0.0,0.0,0,124,0.0,0.0,0,'
             r'-0.00667 \| -0.00649,0.0,,,0.0,0,-0.00667 \| -0.00649,0.0,0.0,'
             r'0.00147 \| 0.00151,0.0,122,0.0,0.0,88,0.0,0.0001897 \| '
             r'0.00021361,'
@@ -15574,7 +15572,7 @@ def virtual_bill(ds):
 
     {
         'name': "Add mop rate script",
-        'path': '/mop_contracts/38/add_rate_script',
+        'path': '/mop_contracts/16/add_rate_script',
         'method': 'post',
         'data': {
             'start_year': "2017",
@@ -15584,20 +15582,20 @@ def virtual_bill(ds):
             'start_minute': "00"},
         'status_code': 303,
         'regexes': [
-            r"/mop_rate_scripts/97"]},
+            r"/mop_rate_scripts/70"]},
 
     {
         'name': "Delete mop rate script",
-        'path': '/mop_rate_scripts/97/edit',
+        'path': '/mop_rate_scripts/70/edit',
         'method': 'post',
         'data': {
             'delete': "Delete"},
         'status_code': 303,
         'regexes': [
-            r"/mop_contracts/38"]},
+            r"/mop_contracts/16"]},
     {
         'name': "Cause an error in auto importer.",
-        'path': '/hhdc_contracts/35/edit',
+        'path': '/hhdc_contracts/13/edit',
         'method': 'post',
         'data': {
             'party_id': "97",  # DASL
@@ -15624,10 +15622,10 @@ def virtual_bill(supply_source):
 
     {
         'name': "Cause an error in ftp auto importer. Import now",
-        'path': '/hhdc_contracts/35/auto_importer',
+        'path': '/hhdc_contracts/13/auto_importer',
         'method': 'post',
         'regexes': [
-            '/hhdc_contracts/35/auto_importer'],
+            '/hhdc_contracts/13/auto_importer'],
         'status_code': 303},
 
     {
@@ -15639,7 +15637,7 @@ def virtual_bill(supply_source):
 
     {
         'name': "Cause an error in sftp auto importer.",
-        'path': '/hhdc_contracts/35/edit',
+        'path': '/hhdc_contracts/13/edit',
         'method': 'post',
         'data': {
             'party_id': "97",  # DASL
@@ -15666,10 +15664,10 @@ def virtual_bill(supply_source):
 
     {
         'name': "Cause an error in sftp auto importer. Import now",
-        'path': '/hhdc_contracts/35/auto_importer',
+        'path': '/hhdc_contracts/13/auto_importer',
         'method': 'post',
         'regexes': [
-            '/hhdc_contracts/35/auto_importer'],
+            '/hhdc_contracts/13/auto_importer'],
         'status_code': 303},
 
     {
@@ -15725,14 +15723,14 @@ def virtual_bill(supply_source):
             'mtc_code': '845',
             'cop_id': '5',
             'ssc_code': '',
-            'mop_contract_id': '38',
+            'mop_contract_id': '16',
             'mop_account': "m 99 4881 3898 138",
-            'hhdc_contract_id': "35",
+            'hhdc_contract_id': '13',
             'hhdc_account': "dc-14 7206 6139 971",
             'imp_llfc_code': "510",
             'imp_mpan_core': "99 4881 3898 138",
             'imp_sc': "23",
-            'imp_supplier_contract_id': "37",
+            'imp_supplier_contract_id': '15',
             'imp_supplier_account': "sup 99 4881 3898 138",
             'insert_electricity': "insert"},
         'regexes': [

@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block title %}
+	&raquo; Industry Contracts
+{% endblock %}
+
+{% block nav %}
+	Industry Contracts
+{% endblock %}
+
+{% block content %}
+	<div class="layer-section">
+		<div class="section-header">
+			<h2>Industry Contracts</h2>	
+		</div>
+		<div class="section-content">
+			<div class="section-data">
+				<table class="DataTable widthAuto noMarginBottom">
+					<thead>
+						<tr>
+							<th>Name</th>
+							<th>Start Date</th>
+							<th>Finish Date</th>
+						</tr>
+					</thead>
+					<tbody>
+						{% for contract in contracts %}
+							<tr>
+								<td>
+									<a
+									 	href="/industry_contracts/{{contract.code}}"
+										>{{contract.code}}</a>
+								</td>
+								<td>{{contract.start_date|hh_format}}</td>
+								<td>{{contract.finish_date|hh_format}}</td>
+							</tr>
+						{% endfor %}
+					</tbody>
+				</table>
+			</div>
+		</div>
+	</div>
+{% endblock %}

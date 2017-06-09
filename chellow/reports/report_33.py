@@ -275,7 +275,7 @@ def content(running_name, finished_name, date, supply_id, mpan_cores):
                     hh_format(date), physical_site.code, physical_site.name,
                     ', '.join(site_codes), ', '.join(site_names), supply.id,
                     supply.source.code, generator_type_str,
-                    supply.gsp_group.code, supply.dno_contract.name,
+                    supply.gsp_group.code, supply.dno.dno_code,
                     voltage_level_code, metering_type, mandatory_hh,
                     era.pc.code, era.mtc.code, era.cop.code, ssc_code,
                     num_registers, mop_contract_name, mop_account,

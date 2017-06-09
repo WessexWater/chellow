@@ -242,10 +242,8 @@ def content(
                         joinedload(Era.exp_llfc).joinedload(
                             Llfc.voltage_level),
                         joinedload(Era.cop),
-                        joinedload(Era.supply).joinedload(
-                            Supply.dno_contract),
-                        joinedload(Era.supply).joinedload(
-                            Supply.gsp_group),
+                        joinedload(Era.supply).joinedload(Supply.dno),
+                        joinedload(Era.supply).joinedload(Supply.gsp_group),
                         joinedload(Era.mtc).joinedload(Mtc.meter_type),
                         joinedload(Era.pc), joinedload(Era.site_eras)):
 

@@ -640,11 +640,20 @@ class Party(Base, PersistentClass):
         return party
 
     @staticmethod
-    def get_by_dno_code(sess, dno_code):
+    def get_dno_by_code(sess, dno_code):
         dno = sess.query(Party).filter_by(dno_code=dno_code).first()
         if dno is None:
             raise BadRequest(
                 "There is no DNO with the code '" + dno_code + "'.")
+        return dno
+
+    @staticmethod
+    def get_dno_by_id(sess, dno_id):
+        dno = sess.query(Party).filter(
+            Party.id == dno_id, Party.dno_code != null()).first()
+        if dno is None:
+            raise BadRequest(
+                "There is no DNO with the id '" + str(dno_id) + "'.")
         return dno
 
     __tablename__ = 'party'
@@ -659,6 +668,7 @@ class Party(Base, PersistentClass):
     contracts = relationship('Contract', back_populates='party')
     mtcs = relationship('Mtc', backref='dno')
     llfcs = relationship('Llfc', backref='dno')
+    supplies = relationship('Supply', backref='dno')
 
     def get_llfc_by_code(self, sess, code):
         llfc = sess.query(Llfc).filter_by(dno=self, code=code).first()
@@ -678,18 +688,6 @@ class Contract(Base, PersistentClass):
     @staticmethod
     def get_hhdc_by_id(sess, oid):
         return Contract.get_by_role_code_id(sess, 'C', oid)
-
-    @staticmethod
-    def get_dno_by_id(sess, oid):
-        return Contract.get_by_role_code_id(sess, 'R', oid)
-
-    @staticmethod
-    def get_dno_by_name(sess, name):
-        cont = Contract.find_by_role_code_name(sess, 'R', name)
-        if cont is None:
-            raise BadRequest(
-                "There isn't a DNO contract with the code '" + name + "'.")
-        return cont
 
     @staticmethod
     def get_hhdc_by_name(sess, name):
@@ -805,7 +803,6 @@ class Contract(Base, PersistentClass):
         "RateScript", back_populates="contract",
         primaryjoin="Contract.id==RateScript.contract_id")
     batches = relationship('Batch', backref='contract')
-    supplies = relationship('Supply', backref='dno_contract')
     party_id = Column(Integer, ForeignKey('party.id'))
     party = relationship("Party", back_populates="contracts")
     start_rate_script_id = Column(Integer, ForeignKey('rate_script.id'))
@@ -1191,9 +1188,8 @@ class Site(Base, PersistentClass):
             raise BadRequest(
                 "An era must have either an import or export MPAN core or "
                 "both.")
-        dno_contract = Contract.get_dno_by_name(sess, mpan_core[:2])
-        supply = Supply(
-            supply_name, source, generator_type, gsp_group, dno_contract)
+        dno = Party.get_dno_by_code(sess, mpan_core[:2])
+        supply = Supply(supply_name, source, generator_type, gsp_group, dno)
 
         try:
             sess.add(supply)
@@ -1208,7 +1204,7 @@ class Site(Base, PersistentClass):
             raise BadRequest(
                 "The MTC code must be a whole number. " + str(e))
 
-        mtc = Mtc.get_by_code(sess, dno_contract.party, mtc_code)
+        mtc = Mtc.get_by_code(sess, dno, mtc_code)
         supply.insert_era(
             sess, self, [], start_date, finish_date, mop_contract, mop_account,
             hhdc_contract, hhdc_account, msn, pc, mtc, cop, ssc, imp_mpan_core,
@@ -1900,7 +1896,7 @@ class Era(Base, PersistentClass):
 
             mcore = parse_mpan_core(mcore_str)
 
-            if mcore[:2] != self.supply.dno_contract.name:
+            if mcore[:2] != self.supply.dno.dno_code:
                 raise BadRequest(
                     "The DNO code of the MPAN core " + mcore +
                     "doesn't match the DNO code of the supply.")
@@ -1924,8 +1920,7 @@ class Era(Base, PersistentClass):
             setattr(self, polarity + '_supplier_account', supplier_account)
 
             llfc_code = locs[polarity + '_llfc_code']
-            llfc = self.supply.dno_contract.party.get_llfc_by_code(
-                sess, llfc_code)
+            llfc = self.supply.dno.get_llfc_by_code(sess, llfc_code)
             if llfc.is_import != ('imp' == polarity):
                 raise BadRequest(
                     "The " + polarity + " line loss factor " + llfc.code +
@@ -2352,16 +2347,15 @@ class Supply(Base, PersistentClass):
     generator_type_id = Column(Integer, ForeignKey('generator_type.id'))
     gsp_group_id = Column(
         Integer, ForeignKey('gsp_group.id'), nullable=False)
-    dno_contract_id = Column(
-        Integer, ForeignKey('contract.id'), nullable=False)
+    dno_id = Column(Integer, ForeignKey('party.id'), nullable=False)
     eras = relationship('Era', backref='supply', order_by='Era.start_date')
     bills = relationship('Bill', backref='supply')
 
-    def __init__(self, name, source, generator_type, gsp_group, dno_contract):
+    def __init__(self, name, source, generator_type, gsp_group, dno):
         self.note = ''
-        self.update(name, source, generator_type, gsp_group, dno_contract)
+        self.update(name, source, generator_type, gsp_group, dno)
 
-    def update(self, name, source, generator_type, gsp_group, dno_contract):
+    def update(self, name, source, generator_type, gsp_group, dno):
         if name is None:
             raise Exception("The supply name cannot be null.")
 
@@ -2376,7 +2370,7 @@ class Supply(Base, PersistentClass):
                 "If the source is 'gen' or 'gen-net', there " +
                 "must be a generator type.")
 
-        if source.code == 'net' and dno_contract.name == "99":
+        if source.code == 'net' and dno.dno_code == "99":
             raise BadRequest(
                 "A network supply can't have a DNO code  of 99.")
 
@@ -2386,7 +2380,7 @@ class Supply(Base, PersistentClass):
             self.generator_type = None
 
         self.gsp_group = gsp_group
-        self.dno_contract = dno_contract
+        self.dno = dno
 
     def find_era_at(self, sess, dt):
         if dt is None:
@@ -3794,67 +3788,64 @@ def db_init(sess, root_path):
         dbapi_conn.commit()
         f.close()
 
-    for path_name, role_code in (
-            ('non_core_contracts', 'Z'),
-            ('dno_contracts', 'R')):
-        contracts_path = os.path.join(root_path, path_name)
+    contracts_path = os.path.join(root_path, 'non_core_contracts')
 
-        for contract_name in sorted(os.listdir(contracts_path)):
-            contract_path = os.path.join(contracts_path, contract_name)
-            params = {'name': contract_name, 'charge_script': ''}
-            for fname, attr in (
-                    ('meta.py', None),
-                    ('properties.py', 'properties'),
-                    ('state.py', 'state')):
-                params.update(read_file(contract_path, fname, attr))
-            params['party'] = sess.query(Party).join(Participant). \
-                join(MarketRole). \
-                filter(
-                    Participant.code == params['participant_code'],
-                    MarketRole.code == role_code).one()
-            del params['participant_code']
-            contract = Contract(**params)
-            sess.add(contract)
+    for contract_name in sorted(os.listdir(contracts_path)):
+        contract_path = os.path.join(contracts_path, contract_name)
+        params = {'name': contract_name, 'charge_script': ''}
+        for fname, attr in (
+                ('meta.py', None),
+                ('properties.py', 'properties'),
+                ('state.py', 'state')):
+            params.update(read_file(contract_path, fname, attr))
+        params['party'] = sess.query(Party).join(Participant). \
+            join(MarketRole). \
+            filter(
+                Participant.code == params['participant_code'],
+                MarketRole.code == 'Z').one()
+        del params['participant_code']
+        contract = Contract(**params)
+        sess.add(contract)
+
+        sess.flush()
+        rscripts_path = os.path.join(contract_path, 'rate_scripts')
+        if os.path.isdir(rscripts_path):
+            for rscript_fname in sorted(os.listdir(rscripts_path)):
+                if not any(rscript_fname.endswith(s) for s in (
+                        '.py', '.ion')):
+                    continue
+                try:
+                    start_str, finish_str = \
+                        rscript_fname.split('.')[0].split('_')
+                except ValueError:
+                    raise Exception(
+                        "The rate script " + rscript_fname +
+                        " in the directory " + rscripts_path +
+                        " should consist of two dates separated by an " +
+                        "underscore.")
+                start_date = to_utc(
+                    Datetime.strptime(start_str, "%Y%m%d%H%M"))
+                if finish_str == 'ongoing':
+                    finish_date = None
+                else:
+                    finish_date = to_utc(
+                        Datetime.strptime(finish_str, "%Y%m%d%H%M"))
+                rparams = {
+                    'start_date': start_date,
+                    'finish_date': finish_date,
+                    'contract': contract}
+                rparams.update(
+                    read_file(rscripts_path, rscript_fname, 'script'))
+                sess.add(RateScript(**rparams))
+                sess.flush()
 
             sess.flush()
-            rscripts_path = os.path.join(contract_path, 'rate_scripts')
-            if os.path.isdir(rscripts_path):
-                for rscript_fname in sorted(os.listdir(rscripts_path)):
-                    if not any(rscript_fname.endswith(s) for s in (
-                            '.py', '.ion')):
-                        continue
-                    try:
-                        start_str, finish_str = \
-                            rscript_fname.split('.')[0].split('_')
-                    except ValueError:
-                        raise Exception(
-                            "The rate script " + rscript_fname +
-                            " in the directory " + rscripts_path +
-                            " should consist of two dates separated by an " +
-                            "underscore.")
-                    start_date = to_utc(
-                        Datetime.strptime(start_str, "%Y%m%d%H%M"))
-                    if finish_str == 'ongoing':
-                        finish_date = None
-                    else:
-                        finish_date = to_utc(
-                            Datetime.strptime(finish_str, "%Y%m%d%H%M"))
-                    rparams = {
-                        'start_date': start_date,
-                        'finish_date': finish_date,
-                        'contract': contract}
-                    rparams.update(
-                        read_file(rscripts_path, rscript_fname, 'script'))
-                    sess.add(RateScript(**rparams))
-                    sess.flush()
-
-                sess.flush()
-                # Assign start and finish rate scripts
-                scripts = sess.query(RateScript). \
-                    filter(RateScript.contract_id == contract.id). \
-                    order_by(RateScript.start_date).all()
-                contract.start_rate_script = scripts[0]
-                contract.finish_rate_script = scripts[-1]
+            # Assign start and finish rate scripts
+            scripts = sess.query(RateScript). \
+                filter(RateScript.contract_id == contract.id). \
+                order_by(RateScript.start_date).all()
+            contract.start_rate_script = scripts[0]
+            contract.finish_rate_script = scripts[-1]
     sess.commit()
 
     for code, desc in (
@@ -4062,9 +4053,50 @@ def db_upgrade_4_to_5(sess, root_path):
     sess.commit()
 
 
+def db_upgrade_5_to_6(sess, root_path):
+    sess.execute(
+        "alter table supply add column dno_id integer references party(id);")
+    sess.execute("create index supply_dno_id_idx on supply(dno_id);")
+    sess.execute(
+        "update supply set dno_id = contract.party_id from contract "
+        "where supply.dno_contract_id = contract.id;")
+    sess.execute(
+        "alter table supply alter column dno_id set not null;")
+
+    sess.execute(
+        "alter table supply drop column dno_contract_id;")
+    sess.execute(
+        "update contract set start_rate_script_id = null, "
+        "finish_rate_script_id = null where contract.id in "
+        "(select c.id from contract as c, market_role where "
+        "c.market_role_id = market_role.id and market_role.code = 'R');")
+    sess.execute(
+        "delete from rate_script where rate_script.id in "
+        "(select rs.id from rate_script as rs, contract, market_role where "
+        "rs.contract_id = contract.id and "
+        "contract.market_role_id = market_role.id and "
+        "market_role.code = 'R');")
+    sess.execute(
+        "delete from contract where contract.id in "
+        "(select c.id from contract as c, market_role where "
+        "c.market_role_id = market_role.id and market_role.code = 'R');")
+
+    sess.execute(
+        "update contract set start_rate_script_id = null, "
+        "finish_rate_script_id = null where contract.id in "
+        "(select c.id from contract as c where c.name = 'ccl');")
+    sess.execute(
+        "delete from rate_script where rate_script.id in "
+        "(select rs.id from rate_script as rs, contract where "
+        "rs.contract_id = contract.id and contract.name = 'ccl');")
+    sess.execute(
+        "delete from contract where contract.name = 'ccl';")
+    sess.commit()
+
+
 upgrade_funcs = [
     db_upgrade_0_to_1, db_upgrade_1_to_2, db_upgrade_2_to_3, db_upgrade_3_to_4,
-    db_upgrade_4_to_5]
+    db_upgrade_4_to_5, db_upgrade_5_to_6]
 
 
 def db_upgrade(root_path):

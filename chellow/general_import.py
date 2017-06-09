@@ -99,7 +99,7 @@ def general_import_era(sess, action, vals, args):
         if mtc_code == NO_CHANGE:
             mtc = era.mtc
         else:
-            mtc = Mtc.get_by_code(sess, supply.dno_contract.party, mtc_code)
+            mtc = Mtc.get_by_code(sess, supply.dno, mtc_code)
 
         cop_code = add_arg(args, "CoP", vals, 11)
         cop = era.cop if cop_code == NO_CHANGE else Cop.get_by_code(
@@ -275,7 +275,7 @@ def general_import_era(sess, action, vals, args):
         if mtc_code == NO_CHANGE:
             mtc = existing_era.mtc
         else:
-            mtc = Mtc.get_by_code(sess, supply.dno_contract.party, mtc_code)
+            mtc = Mtc.get_by_code(sess, supply.dno, mtc_code)
 
         cop_code = add_arg(args, "CoP", vals, 10)
         if cop_code == NO_CHANGE:
@@ -519,7 +519,7 @@ def general_import_mtc(sess, action, vals, args):
         if dno_code == '':
             dno = None
         else:
-            dno = Party.get_by_dno_code(sess, dno_code)
+            dno = Party.get_dno_by_code(sess, dno_code)
         code = add_arg(args, "Code", vals, 1)
         description = add_arg(args, "Description", vals, 2)
         has_related_metering_str = add_arg(
@@ -555,7 +555,7 @@ def general_import_mtc(sess, action, vals, args):
         if dno_code == '':
             dno = None
         else:
-            dno = Contract.get_dno_by_code(sess, dno_code)
+            dno = Party.get_dno_by_code(sess, dno_code)
         code = add_arg(args, "Code", vals, 1)
         mtc = Mtc.get_by_code(sess, dno, code)
 
@@ -982,7 +982,7 @@ def general_import_supply(sess, action, vals, args):
 def general_import_llfc(sess, action, vals, args):
     if action == 'insert':
         dno_code = add_arg(args, 'dno', vals, 0)
-        dno = Party.get_by_dno_code(sess, dno_code)
+        dno = Party.get_dno_by_code(sess, dno_code)
         llfc_code = add_arg(args, 'llfc', vals, 1)
         llfc_description = add_arg(args, 'llfc_description', vals, 2)
         vl_code = add_arg(args, 'voltage_level', vals, 3)
@@ -1004,7 +1004,7 @@ def general_import_llfc(sess, action, vals, args):
         sess.flush()
     elif action == 'delete':
         dno_code = add_arg(args, 'dno_code', vals, 0)
-        dno = Party.get_by_dno_code(sess, dno_code)
+        dno = Party.get_dno_by_code(sess, dno_code)
         llfc_code = add_arg(args, 'llfc', vals, 1)
         date_str = add_arg(args, 'date', vals, 2)
         date = parse_hh_start(date_str)

@@ -105,9 +105,7 @@
 											style="color: silver;"
 										{% endif %}>
 									<td>
-										<a
-												href="{{context_path}}/supplies/{{last_era.supply_id}}"
-												>view</a>
+										<a href="/supplies/{{last_era.supply_id}}">view</a>
 									</td>
 									<td>{{last_era.supply.name}}</td>
 									<td>{{group['first_era'].start_date|hh_format}}</td>
@@ -121,16 +119,16 @@
 									<td>
 										{% if last_era.imp_mpan_core %}
 											<a
-													href="{{context_path}}/dno_contracts/{{last_era.supply.dno_contract.id}}"
-													>{{last_era.supply.dno_contract.name}}</a>
+													href="/dnos/{{last_era.supply.dno.id}}"
+													>{{last_era.supply.dno.dno_code}}</a>
 											{{last_era.imp_mpan_core[2:]}}
 										{% endif %}
 									</td>
 									<td>
 										{% if last_era.exp_mpan_core %}
 											<a
-													href="{{context_path}}/dno_contracts/{{last_era.supply.dno_contract.id}}"
-													>{{last_era.supply.dno_contract.name}}</a>
+													href="/dnos/{{last_era.supply.dno.id}}"
+													>{{last_era.supply.dno.dno_code}}</a>
 											{{last_era.exp_mpan_core[2:]}}
 										{% endif %}
 									</td>

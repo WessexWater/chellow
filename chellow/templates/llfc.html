@@ -1,62 +1,60 @@
 {% extends "base.html" %}
 
 {% block title %}
-	&raquo; DNO Contracts &raquo; {{dno_contract.name}} &raquo; LLFCs &raquo; {{llfc.code}}
+	&raquo; DNOs &raquo; {{llfc.dno.dno_code}} &raquo; LLFCs &raquo;
+ 	{{llfc.code}}
 {% endblock %}
 
 {% block nav %}
-	&raquo; <a href="/dno_contracts">DNO Contracts</a> &raquo; 
-	<a href="/dno_contracts/{{dno_contract.id}}">{{dno_contract.name}}</a> &raquo; 
-	<a href="/llfcs?dno_contract_id={{dno_contract.id}}">LLFCs</a>
-	&raquo; {{llfc.code}}
+	<a href="/dnos">DNOs</a> &raquo; 
+	<a href="/dnos/{{llfc.dno.id}}">{{llfc.dno.dno_code}}</a> &raquo; 
+	<a href="/llfcs?dno_id={{llfc.dno.id}}">LLFCs</a> &raquo; {{llfc.code}}
 {% endblock %}
 
 {% block content %}
-<!-- Layer Section -->
-<div class="layer-section">
-	<!-- Section Header -->
-	<div class="section-header">
-		<h2>{{llfc.description}}</h2>	
-	</div>
-	<!-- End Section Header -->
-	<!-- Section Content -->
-	<div class="section-content">
-		<div class="section-data">
-			<table class="DataTable widthAuto">
-				<tr>
-					<th>Code</th>
-					<td>{{llfc.code}}</td>
-				</tr>
-				<tr>
-					<th>Description</th>
-					<td>{{llfc.description}}</td>
-				</tr>
-				<tr>
-					<th>Voltage Level</th>
-					<td>{{llfc.voltage_level.code}} - {{llfc.voltage_level.name}}</td>
-				</tr>
-				<tr>
-					<th>Is Substation?</th>
-					<td>{{llfc.is_substation}}</td>
-				</tr>
-				<tr>
-					<th>Is Import?</th>
-					<td>{{llfc.is_import}}</td>
-				</tr>
-				<tr>
-					<th>Valid From</th>
-					<td>{{llfc.valid_from|hh_format}}</td>
-				</tr>
-				<tr>
-					<th>Valid To</th>
-					<td>{{llfc.valid_to|hh_format}}</td>
-				</tr>
-			</table>
+	<!-- Layer Section -->
+	<div class="layer-section">
+		<!-- Section Header -->
+		<div class="section-header">
+			<h2>{{llfc.description}}</h2>	
 		</div>
+		<!-- End Section Header -->
+		<!-- Section Content -->
+		<div class="section-content">
+			<div class="section-data">
+				<table class="DataTable widthAuto">
+					<tr>
+						<th>Code</th>
+						<td>{{llfc.code}}</td>
+					</tr>
+					<tr>
+						<th>Description</th>
+						<td>{{llfc.description}}</td>
+					</tr>
+					<tr>
+						<th>Voltage Level</th>
+						<td>{{llfc.voltage_level.code}} - {{llfc.voltage_level.name}}</td>
+					</tr>
+					<tr>
+						<th>Is Substation?</th>
+						<td>{{llfc.is_substation}}</td>
+					</tr>
+					<tr>
+						<th>Is Import?</th>
+						<td>{{llfc.is_import}}</td>
+					</tr>
+					<tr>
+						<th>Valid From</th>
+						<td>{{llfc.valid_from|hh_format}}</td>
+					</tr>
+					<tr>
+						<th>Valid To</th>
+						<td>{{llfc.valid_to|hh_format}}</td>
+					</tr>
+				</table>
+			</div>
+		</div>
+		<!-- End Section Content -->
 	</div>
-	<!-- End Section Content -->
-</div>
-<!-- End Layer Section -->
-
-	
+	<!-- End Layer Section -->
 {% endblock %}
