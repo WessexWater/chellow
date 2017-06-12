@@ -63,20 +63,30 @@ def datum_beginning_22(ds, hh):
     hh['gsp-kwh'] = hh['laf'] * hh['msp-kwh']
     hh['gsp-kw'] = hh['gsp-kwh'] * 2
 
-    if hh['utc-is-month-end']:
+    if hh['ct-is-month-end']:
+        month_to = hh['start-date']
+        month_from = month_to - relativedelta(months=1) + HH
+        days_in_month = 0
+        md_kva = 0
+        month_imp_kvarh = 0
+        month_kwh = 0
+        for dsc in chellow.computer.get_data_sources(ds, month_from, month_to):
+            for h in dsc.hh_data:
+                if h['ct-decimal-hour'] == 0:
+                    days_in_month += 1
+                md_kva = max(
+                    md_kva,
+                    (h['msp-kw'] ** 2 + h['imp-msp-kvar'] ** 2) ** 0.5)
+                month_imp_kvarh += h['imp-msp-kvarh']
+                month_kwh += h['msp-kwh']
+
         tariff = get_file_rates(
             ds.caches, ds.dno_contract.name,
             hh['start-date'])['tariffs'][ds.llfc_code]
         reactive_rate = float(tariff['reactive-gbp-per-kvarh'])
         bill['duos-reactive-rate'] = reactive_rate
 
-        days_in_month = hh['utc-day']
-
         if not ds.is_displaced:
-            md_kva = max(
-                (datum['msp-kw'] ** 2 + datum['imp-msp-kvar'] ** 2) **
-                0.5 for datum in ds.hh_data)
-
             bill['duos-availability-kva'] = ds.sc
             bill['duos-excess-availability-kva'] = max(md_kva - ds.sc, 0)
             for prefix in ['', 'excess-']:
@@ -90,12 +100,6 @@ def datum_beginning_22(ds, hh):
                         bill[rate_key] * \
                         bill['duos-' + prefix + 'availability-kva'] * \
                         bill['duos-' + prefix + 'availability-days']
-
-        month_imp_kvarh = sum(h['imp-msp-kvarh'] for h in ds.hh_data)
-        month_kwh = sum(h['msp-kwh'] for h in ds.hh_data)
-
-        if month_kwh is None:
-            month_kwh = 0
 
         bill['duos-reactive-gbp'] += max(0, month_imp_kvarh - month_kwh / 2) \
             * reactive_rate
@@ -152,7 +156,7 @@ def datum_beginning_20(ds, hh):
     hh['gsp-kwh'] = hh['laf'] * hh['msp-kwh']
     hh['gsp-kw'] = hh['gsp-kwh'] * 2
 
-    if hh['utc-is-month-end']:
+    if hh['ct-is-month-end']:
         tariff = None
         for k, tf in get_file_rates(
                 ds.caches, ds.dno_contract.name,
@@ -312,23 +316,30 @@ def datum_beginning_14(ds, hh):
     if hh['utc-decimal-hour'] == 0:
         bill['duos-standing-gbp'] += float(tariff['fixed-gbp-per-day'])
 
-    if hh['utc-is-month-end']:
+    if hh['ct-is-month-end']:
+        month_to = hh['start-date']
+        month_from = month_to - relativedelta(months=1) + HH
         availability = ds.sc
         reactive_rate = float(tariff['reactive-gbp-per-kvarh'])
         bill['duos-reactive-rate'] = reactive_rate
+        imp_msp_kvarh = 0
+        msp_kwh = 0
+        md_kva = 0
+        for dsc in chellow.computer.get_data_sources(ds, month_from, month_to):
+            for h in dsc.hh_data:
+                imp_msp_kvarh += h['imp-msp-kvarh']
+                msp_kwh += h['msp-kwh']
+                md_kva = max(
+                    md_kva, (
+                        h['msp-kw'] ** 2 + (
+                            h['imp-msp-kvar'] + h['exp-msp-kvar']) ** 2) **
+                    0.5)
         bill['duos-reactive-gbp'] = max(
-            0, sum(h['imp-msp-kvarh'] for h in ds.hh_data) -
-            sum(h['msp-kwh'] for h in ds.hh_data) / 3) * reactive_rate
+            0, imp_msp_kvarh - msp_kwh / 3) * reactive_rate
         if not ds.is_displaced:
             availability_rate = float(
                 tariff['availability-gbp-per-kva-per-day'])
             bill['duos-availability-rate'] = availability_rate
-            md_kva = max(
-                (
-                    datum['msp-kw'] ** 2 + (
-                        datum['imp-msp-kvar'] + datum['exp-msp-kvar']) ** 2) **
-                0.5 for datum in ds.hh_data)
-
             billed_avail = max(availability, md_kva)
             bill['duos-availability-gbp'] += availability_rate * billed_avail
             bill['duos-availability-agreed-kva'] = ds.sc
@@ -524,7 +535,7 @@ def datum_2010_04_01(ds, hh):
                 days_in_month
 
 
-CUTOFF_DATE = utc_datetime(2010, 4)
+CUTOFF_DATE = utc_datetime(2010, 3, 31, 23, 0)
 
 
 def duos_vb(ds):
