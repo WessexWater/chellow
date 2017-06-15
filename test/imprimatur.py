@@ -294,6 +294,11 @@ def virtual_bill_titles():
     return ['net-gbp', 'problem']
 
 def virtual_bill(ds):
+    level = ds.sess.execute("show transaction isolation level;").fetchone()[0]
+    if level != 'serializable':
+        raise Exception(
+            "Transaction isolation level is " + level +
+            ", but it should be serializable!")
     bill = ds.dc_bill
     for hh in ds.hh_data:
         if hh['utc-is-month-end']:

@@ -54,7 +54,7 @@ db_url = ''.join(
         "@", config['PGHOST'], ":", config['PGPORT'], "/",
         config['PGDATABASE']])
 
-engine = create_engine(db_url)
+engine = create_engine(db_url, isolation_level="SERIALIZABLE")
 Session = sessionmaker(bind=engine)
 Base = declarative_base()
 
@@ -3868,9 +3868,6 @@ def db_init(sess, root_path):
         sess.add(GUnits(code, desc, Decimal(factor_str)))
     sess.commit()
 
-    sess.execute(
-        "alter database " + db_name +
-        " set default_transaction_isolation = 'serializable'")
     sess.execute(
         "alter database " + db_name +
         " set default_transaction_deferrable = on")
