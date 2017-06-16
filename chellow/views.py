@@ -3520,6 +3520,10 @@ def mop_batch_edit_post(batch_id):
             batch.delete(g.sess)
             g.sess.commit()
             return chellow_redirect("/mop_contracts/" + str(contract.id), 303)
+        elif 'delete_bills' in request.values:
+            g.sess.query(Bill).filter(Bill.batch_id == batch.id).delete(False)
+            g.sess.commit()
+            return chellow_redirect('/mop_batches/' + str(batch.id), 303)
         else:
             reference = req_str('reference')
             description = req_str('description')
