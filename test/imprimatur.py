@@ -15810,6 +15810,9 @@ def virtual_bill(supply_source):
         'path': '/downloads/'
         '0018_FINISHED_adminexamplecom_dno_rates.ion',
         'regexes': [
-            r"'601,603': \{"],
+            r"'601,603': \{",
+
+            r"'night': 1.07000,\s*",
+            r"'other': 1.07300}"],
         'status_code': 200},
 ]

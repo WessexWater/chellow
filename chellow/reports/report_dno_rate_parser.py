@@ -67,6 +67,15 @@ VL_MAP = {
     '132kV Generic': '132kv'}
 
 
+PERIOD_MAP = {
+    'peak': 'winter-weekday-peak',
+    'winter': 'winter-weekday-day',
+    'night': 'night',
+    'other': 'other',
+    'winter weekday peak': 'winter-weekday-peak',
+    'winter weekday': 'winter-weekday-day'}
+
+
 def content(user, file_name, file_contents, gsp_group_id, llfc_tab, laf_tab):
     f = sess = None
     try:
@@ -107,16 +116,20 @@ def content(user, file_name, file_contents, gsp_group_id, llfc_tab, laf_tab):
                         in_tariffs = True
             laf_sheet = book.sheet_by_index(laf_tab)
             lafs = OrderedDict()
+            period_lookup = {}
             for row_index in range(1, laf_sheet.nrows):
                 row = laf_sheet.row(row_index)
                 val_0 = get_value(row, 0)
                 if val_0 in VL_MAP:
                     lafs[VL_MAP[val_0]] = OrderedDict(
-                        (
-                            ('winter-weekday-peak', get_decimal(row, 1)),
-                            ('winter-weekday-day', get_decimal(row, 2)),
-                            ('other', get_decimal(row, 3)),
-                            ('night', get_decimal(row, 4))))
+                        (period_lookup[i], get_decimal(row, i+1))
+                        for i in range(4))
+                val_1 = get_value(row, 1)
+                if isinstance(val_1, str) and val_1.lower() in PERIOD_MAP:
+                    for i in range(4):
+                        key = get_value(row, i+1).lower()
+                        period_lookup[i] = PERIOD_MAP[key]
+
         else:
             raise BadRequest(
                 "The file extension for " + file_name + " isn't recognized.")
