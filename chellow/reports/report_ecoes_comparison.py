@@ -5,7 +5,7 @@ from werkzeug.exceptions import BadRequest
 import requests
 import urllib.parse
 from itertools import chain
-from chellow.models import Contract, Era, Supply, Source, Session
+from chellow.models import Contract, Era, Supply, Source, Session, Party
 from chellow.views import chellow_redirect
 import chellow.dloads
 import sys
@@ -58,14 +58,14 @@ def content(user):
         mpans = [
             v for (v,) in chain(
                 sess.query(Era.imp_mpan_core).join(Supply, Source).
-                join(Supply.dno_contract).filter(
-                    Contract.name != '99', Era.finish_date == null(),
+                join(Supply.dno).filter(
+                    Party.dno_code != '99', Era.finish_date == null(),
                     Source.code != '3rd-party',
                     Era.imp_mpan_core != null()).distinct().order_by(
                     Era.imp_mpan_core),
                 sess.query(Era.exp_mpan_core).join(Supply, Source)
-                .join(Supply.dno_contract).filter(
-                    Contract.name != '99', Era.finish_date == null(),
+                .join(Supply.dno).filter(
+                    Party.dno_code != '99', Era.finish_date == null(),
                     Source.code != '3rd-party',
                     Era.exp_mpan_core != null()).distinct().order_by(
                     Era.exp_mpan_core))]

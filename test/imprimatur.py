@@ -12395,7 +12395,13 @@ def virtual_bill(supply_source):
     {
         'path': '/downloads/'
         '0000_FINISHED_adminexamplecom_ecoes_comparison.csv',
-        'status_code': 200},
+        'status_code': 200,
+        'regexes': [
+            r'MPAN Core,MPAN Core No Spaces,ECOES PC,Chellow PC,ECOES MTC,'
+            r'Chellow MTC,ECOES LLFC,Chellow LLFC,ECOES SSC,Chellow SSC,'
+            r'ECOES Supplier,Chellow Supplier,ECOES DC,Chellow DC,ECOES MOP,'
+            r'Chellow MOP,ECOES GSP Group,Chellow GSP Group,ECOES MSN,'
+            r'Chellow MSN,ECOES Meter Type,Chellow Meter Type,Problem']},
 
     {
         'name': "View a CoP",
