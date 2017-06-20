@@ -4,23 +4,23 @@ $ion_1_0 {
       'lv-net': {
         'winter-weekday-peak': 1.08500,
         'winter-weekday-day': 1.07800,
-        'other': 1.07000,
-        'night': 1.07300},
+        'night': 1.07000,
+        'other': 1.07300},
       'lv-sub': {
         'winter-weekday-peak': 1.07000,
         'winter-weekday-day': 1.06500,
-        'other': 1.05900,
-        'night': 1.06200},
+        'night': 1.05900,
+        'other': 1.06200},
       'hv-net': {
         'winter-weekday-peak': 1.05700,
         'winter-weekday-day': 1.05000,
-        'other': 1.03900,
-        'night': 1.04500},
+        'night': 1.03900,
+        'other': 1.04500},
       'hv-sub': {
         'winter-weekday-peak': 1.03400,
         'winter-weekday-day': 1.03100,
-        'other': 1.02500,
-        'night': 1.02800}},
+        'night': 1.02500,
+        'other': 1.02800}},
     'tariffs': {
       '010,020': {
         'description': 'Domestic Unrestricted',

@@ -4,23 +4,23 @@ $ion_1_0 {
       'lv-net': {
         'winter-weekday-peak': 1.08700,
         'winter-weekday-day': 1.08100,
-        'other': 1.06700,
-        'night': 1.07200},
+        'night': 1.06700,
+        'other': 1.07200},
       'lv-sub': {
         'winter-weekday-peak': 1.07000,
         'winter-weekday-day': 1.06600,
-        'other': 1.05600,
-        'night': 1.06000},
+        'night': 1.05600,
+        'other': 1.06000},
       'hv-net': {
         'winter-weekday-peak': 1.05100,
         'winter-weekday-day': 1.04700,
-        'other': 1.03200,
-        'night': 1.03900},
+        'night': 1.03200,
+        'other': 1.03900},
       'hv-sub': {
         'winter-weekday-peak': 1.02300,
         'winter-weekday-day': 1.02200,
-        'other': 1.01800,
-        'night': 1.02000}},
+        'night': 1.01800,
+        'other': 1.02000}},
     'tariffs': {
       '': {
         'description': 'LV Sub Generation Non-Intermittent no RP charge',
@@ -303,28 +303,29 @@ $ion_1_0 {
         'amber-gbp-per-kwh': -0.00192,
         'green-gbp-per-kwh': -0.00055,
         'gbp-per-kvarh': 0.00000}}},
+$ion_1_0 {
   '_L': {
     'lafs': {
       'lv-net': {
         'winter-weekday-peak': 1.06200,
         'winter-weekday-day': 1.05800,
-        'other': 1.05600,
-        'night': 1.05600},
+        'night': 1.05600,
+        'other': 1.05600},
       'lv-sub': {
         'winter-weekday-peak': 1.04900,
         'winter-weekday-day': 1.04700,
-        'other': 1.04700,
-        'night': 1.04700},
+        'night': 1.04700,
+        'other': 1.04700},
       'hv-net': {
         'winter-weekday-peak': 1.03800,
         'winter-weekday-day': 1.03400,
-        'other': 1.02700,
-        'night': 1.03100},
+        'night': 1.02700,
+        'other': 1.03100},
       'hv-sub': {
         'winter-weekday-peak': 1.02100,
         'winter-weekday-day': 1.02000,
-        'other': 1.01800,
-        'night': 1.01900}},
+        'night': 1.01800,
+        'other': 1.01900}},
     'tariffs': {
       '': {
         'description': 'LV Sub Generation Non-Intermittent no RP charge',
