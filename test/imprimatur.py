@@ -14727,6 +14727,7 @@ finally:
             r'<td>6122\.00</td>\s*'
             r'<td>95686\.02</td>\s*'
             r'<td>\[\(&#39;aahedc-gbp&#39;, 0.89\),.*'
+            r'capacity-gbp.*'
             r'\(&#39;ccl-gbp&#39;, 100\.0\),.*'
             r'cfd-fit-nbp-kwh.*'
             r'\(&#39;duos-availability-kva&#39;, &#39;220&#39;\).*'
