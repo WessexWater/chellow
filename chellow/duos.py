@@ -2,7 +2,8 @@ from dateutil.relativedelta import relativedelta
 from sqlalchemy import func
 from sqlalchemy.sql.expression import true
 import chellow.computer
-from chellow.utils import hh_format, HH, utc_datetime, get_file_rates
+from chellow.utils import (
+    hh_format, HH, utc_datetime, get_file_rates, to_utc, ct_datetime)
 from werkzeug.exceptions import BadRequest
 from chellow.models import HhDatum, Channel, Era
 
@@ -395,6 +396,7 @@ def datum_2010_04_01(ds, hh):
         try:
             band = bands_cache[start_date]
         except KeyError:
+            ct_hr = hh['ct-decimal-hour']
             band = 'green'
             if ds.dno_code == '14':
                 if hh['ct-day-of-week'] < 5:
@@ -403,11 +405,21 @@ def datum_2010_04_01(ds, hh):
                     elif 7 < hh['ct-decimal-hour'] < 21:
                         band = 'amber'
             elif ds.dno_code == '20':
-                if hh['ct-day-of-week'] < 5:
-                    if 16 < hh['ct-decimal-hour'] < 19:
-                        band = 'red'
-                    elif 9 <= hh['ct-decimal-hour'] <= 20:
-                        band = 'amber'
+                if start_date < to_utc(ct_datetime(2017, 4, 1)):
+                    if hh['ct-day-of-week'] < 5:
+                        if 16 < ct_hr < 19:
+                            band = 'red'
+                        elif 9 <= ct_hr <= 20:
+                            band = 'amber'
+                else:
+                    if hh['ct-day-of-week'] < 5:
+                        if 16 < ct_hr <= 19:
+                            band = 'red'
+                        elif (7 <= ct_hr <= 16) or (19 < ct_hr < 22):
+                            band = 'amber'
+                    else:
+                        if 9 < ct_hr <= 21:
+                            band = 'amber'
             else:  # 22 and 24
                 if hh['ct-day-of-week'] > 4:
                     if 16 < hh['ct-decimal-hour'] <= 19:
