@@ -16,6 +16,17 @@ $ion_1_0 {
         'winter-weekday-peak': 1.044,
         'winter-weekday-day': 1.041,
         'other': 1.035}},
+    'bands': [
+      {
+        'weekend': false,
+        'start': 16,
+        'finish': 19,
+        'band': "red"},
+      {
+        'weekend': false,
+        'start': 7.5,
+        'finish': 21,
+        'band': "amber"}],
     'tariffs': {
       '127': {
         'description': 'LV',

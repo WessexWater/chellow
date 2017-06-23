@@ -16,6 +16,22 @@ $ion_1_0 {
         'winter-weekday-day': 1.058,
         'night': 1.044,
         'other': 1.050}},
+    'bands': [
+      {
+        'weekend': true,
+        'start': 16.5,
+        'finish': 19.5,
+        'band': "amber"},
+      {
+        'weekend': false,
+        'start': 17,
+        'finish': 19,
+        'band': "red"},
+      {
+        'weekend': false,
+        'start': 7.5,
+        'finish': 21.5,
+        'band': "amber"}],
     'tariffs': {
       '510': {
         'description': 'High Voltage HH Metered',

@@ -21,6 +21,17 @@ $ion_1_0 {
         'winter-weekday-day': 1.023,
         'other': 1.020,
         'night': 1.019}},
+    "bands": [
+      {
+        "weekend": False,
+        "start": 16.5,
+        "finish": 19,
+        "band": "red"},
+      {
+        "weekend": False,
+        "start": 9,
+        "finish": 20.5,
+        "band": "amber"}],
     'tariffs': {
       '001,477,909': {
         'description': 'LV Generation Intermittent',

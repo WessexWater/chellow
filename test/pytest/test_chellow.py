@@ -32,5 +32,5 @@ def test_dumps():
         (
             ('hello', Decimal('89')), ('me', '99')))
     assert dumps(desired) == """$ion_1_0 {
-  'hello': 89,
-  'me': '99'}"""
+  "hello": 89,
+  "me": "99"}"""

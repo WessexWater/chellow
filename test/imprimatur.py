@@ -5228,7 +5228,25 @@ def virtual_bill(supply_source):
             r'office:value-type="string"/>\s*'
             r'<table:table-cell office:string-value="exp-supplier-problem" '
             r'office:value-type="string"/>\s*'
-            r'</table:table-row>\s*'
+            r'</table:table-row>\s*',
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
             r'<table:table-row>\s*'
             r'<table:table-cell '
             r'office:date-value="\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d" '
@@ -5299,7 +5317,18 @@ def virtual_bill(supply_source):
             r'<table:table-cell office:value="1.078" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="0.0" '
-            r'office:value-type="float"/>\s*'
+            r'office:value-type="float"/>\s*',
+
+
+
+
+
+
+
+
+
+
+
             r'<table:table-cell office:date-value="2010-01-25T17:00:00" '
             r'office:value-type="date" table:style-name="cell_date"/>\s*'
             r'<table:table-cell office:value="0" '
@@ -5321,7 +5350,14 @@ def virtual_bill(supply_source):
             r'<table:table-cell office:value="0.0" office:value-type="float" '
             r'table:number-columns-repeated="2"/>\s*'
             r'<table:table-cell office:value="26.057832" '
-            r'office:value-type="float"/>\s*'
+            r'office:value-type="float"/>\s*',
+
+
+
+
+
+
+
             r'<table:table-cell office:value="1" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="0.0" '
@@ -15789,16 +15825,18 @@ def virtual_bill(supply_source):
         'path': '/downloads/'
         '0017_FINISHED_adminexamplecom_dno_rates.ion',
         'regexes': [
-            r"'605,606': \{",
-            r"'455': \{\s*"
-            r"'description': 'LV Sub HH Metered',\s*"
-            r"'gbp-per-mpan-per-day': 0.04170,\s*"
-            r"'gbp-per-kva-per-day': 0.04260,\s*"
-            r"'excess-gbp-per-kva-per-day': 0.04260,\s*"
-            r"'red-gbp-per-kwh': 0.08838,\s*"
-            r"'amber-gbp-per-kwh': 0.00335,\s*"
-            r"'green-gbp-per-kwh': 0.00079,\s*"
-            r"'gbp-per-kvarh': 0.00250},"],
+            r'"weekend": false,',
+
+            r'"605,606": \{',
+            r'"455": \{\s*'
+            r'"description": "LV Sub HH Metered",\s*'
+            r'"gbp-per-mpan-per-day": 0.04170,\s*'
+            r'"gbp-per-kva-per-day": 0.04260,\s*'
+            r'"excess-gbp-per-kva-per-day": 0.04260,\s*'
+            r'"red-gbp-per-kwh": 0.08838,\s*'
+            r'"amber-gbp-per-kwh": 0.00335,\s*'
+            r'"green-gbp-per-kwh": 0.00079,\s*'
+            r'"gbp-per-kvarh": 0.00250},'],
         'status_code': 200},
     {
         'name': "DNO rate parser",
@@ -15822,10 +15860,10 @@ def virtual_bill(supply_source):
         'path': '/downloads/'
         '0018_FINISHED_adminexamplecom_dno_rates.ion',
         'regexes': [
-            r"'601,603': \{",
+            r'"601,603": \{',
 
-            r"'night': 1.07000,\s*",
-            r"'other': 1.07300}"],
+            r'"night": 1.07000,\s*',
+            r'"other": 1.07300}'],
         'status_code': 200},
 
     {

@@ -76,6 +76,21 @@ PERIOD_MAP = {
     'winter weekday': 'winter-weekday-day'}
 
 
+BAND_WEEKEND = {
+    'Monday to Friday': False,
+    'Weekends': True,
+    'Monday to Friday (Including Bank Holidays) All Year': False,
+    'Saturday and Sunday All Year': True}
+
+
+def str_to_hr(hr_str):
+    for sep in (':', '.'):
+        if sep in hr_str:
+            break
+    hours, minutes = map(Decimal, hr_str.strip().split(sep))
+    return hours + minutes / Decimal(60)
+
+
 def content(user, file_name, file_contents, gsp_group_id, llfc_tab, laf_tab):
     f = sess = None
     try:
@@ -85,13 +100,14 @@ def content(user, file_name, file_contents, gsp_group_id, llfc_tab, laf_tab):
         f = open(running_name, mode='w')
         gsp_group = GspGroup.get_by_id(sess, gsp_group_id)
         tariffs = {}
+        bands = []
         if file_name.endswith('.xlsx'):
             book = xlrd.open_workbook(file_contents=file_contents)
             llfc_sheet = book.sheet_by_index(llfc_tab)
             in_tariffs = False
             for row_index in range(1, llfc_sheet.nrows):
                 row = llfc_sheet.row(row_index)
-                val_0 = get_value(row, 0)
+                val_0 = ' '.join(get_value(row, 0).split())
                 if in_tariffs:
                     if len(val_0) == 0:
                         continue
@@ -114,6 +130,25 @@ def content(user, file_name, file_contents, gsp_group_id, llfc_tab, laf_tab):
                     if val_0 == 'Tariff name' or \
                             get_value(row, 1) == "Open LLFCs":
                         in_tariffs = True
+
+                if val_0 in BAND_WEEKEND:
+                    for i, band_name in enumerate(('red', 'amber')):
+                        time_str = get_value(row, i+1).strip()
+                        if len(time_str) == 0:
+                            continue
+                        for t_str in time_str.splitlines():
+                            for sep in ('-', 'to'):
+                                if sep in t_str:
+                                    break
+                            start_str, finish_str = t_str.split(sep)
+                            bands.append(
+                                OrderedDict(
+                                    (
+                                        ('weekend', BAND_WEEKEND[val_0]),
+                                        ('start', str_to_hr(start_str)),
+                                        ('finish', str_to_hr(finish_str)),
+                                        ('band', band_name))))
+
             laf_sheet = book.sheet_by_index(laf_tab)
             lafs = OrderedDict()
             period_lookup = {}
@@ -137,6 +172,7 @@ def content(user, file_name, file_contents, gsp_group_id, llfc_tab, laf_tab):
             gsp_group.code: OrderedDict(
                 (
                     ('lafs', lafs),
+                    ('bands', bands),
                     ('tariffs', OrderedDict(sorted(tariffs.items())))))}
         f.write(dumps(rs))
     except:

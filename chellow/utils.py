@@ -609,12 +609,12 @@ def dump_val(val, indent):
     out = []
     next_indent = indent + '  '
     if isinstance(val, str):
-        out.append("'" + val + "'")
+        out.append('"' + val + '"')
     elif isinstance(val, Mapping):
         out.append('{\n')
         for i, (k, v) in enumerate(val.items()):
             out.append(
-                next_indent + "'" + k + "': " + dump_val(v, next_indent))
+                next_indent + '"' + k + '": ' + dump_val(v, next_indent))
             if i < len(val) - 1:
                 out.append(',\n')
         out.append('}')
@@ -627,12 +627,14 @@ def dump_val(val, indent):
         out.append(']')
     elif isinstance(val, Decimal):
         out.append(str(val))
+    elif isinstance(val, bool):
+        out.append('true' if val else 'false')
     elif isinstance(val, int):
         out.append(str(val))
     else:
         raise Exception(
-            "Must be either a str, Decimal Mapping or Sequence, but got a " +
-            str(type(val)))
+            "Must be either a str, Decimal, Mapping, bool  or Sequence, " +
+            "but got a " + str(type(val)))
     return ''.join(out)
 
 
