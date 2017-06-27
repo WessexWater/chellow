@@ -158,8 +158,8 @@ def parse_bool(bool_str):
     return bool_str.lower() == 'true'
 
 
-def hh_format(dt):
-    return 'ongoing' if dt is None else dt.strftime("%Y-%m-%d %H:%M")
+def hh_format(dt, ongoing_str='ongoing'):
+    return ongoing_str if dt is None else dt.strftime("%Y-%m-%d %H:%M")
 
 
 CHANNEL_TYPES = 'ACTIVE', 'REACTIVE_IMP', 'REACTIVE_EXP'

@@ -35,7 +35,8 @@ def content(running_name, finished_name, date, supply_id, mpan_cores):
                 'HHDC Contract', 'HHDC Account', 'Meter Serial Number',
                 'Meter Installation Date', 'Latest Normal Meter Read Date',
                 'Latest Normal Meter Read Type', 'Latest DC Bill Date',
-                'Latest MOP Bill Date', 'Import ACTIVE?',
+                'Latest MOP Bill Date', 'Supply Start Date',
+                'Supply Finish Date', 'Import ACTIVE?',
                 'Import REACTIVE_IMPORT?', 'Import REACTIVE_EXPORT?',
                 'Export ACTIVE?', 'Export REACTIVE_IMPORT?',
                 'Export REACTIVE_EXPORT?', 'Import MPAN core',
@@ -78,6 +79,11 @@ def content(running_name, finished_name, date, supply_id, mpan_cores):
                     site = site_era.site
                     site_codes.append(site.code)
                     site_names.append(site.name)
+
+            sup_eras = sess.query(Era).filter(
+                Era.supply == supply).order_by(Era.start_date).all()
+            supply_start_date = sup_eras[0].start_date
+            supply_finish_date = sup_eras[-1].finish_date
 
             if era.imp_mpan_core is None:
                 voltage_level_code = era.exp_llfc.voltage_level.code
@@ -226,7 +232,7 @@ def content(running_name, finished_name, date, supply_id, mpan_cores):
 
             imp_latest_supplier_bill_date = None
             exp_latest_supplier_bill_date = None
-            for is_import in [True, False]:
+            for is_import in (True, False):
                 for er in sess.query(Era).filter(
                             Era.supply == era.supply,
                             Era.start_date <= date).order_by(
@@ -282,7 +288,9 @@ def content(running_name, finished_name, date, supply_id, mpan_cores):
                     hhdc_contract_name, hhdc_account, era.msn,
                     hh_format(meter_installation_date),
                     latest_normal_read_date, latest_normal_read_type,
-                    latest_hhdc_bill_date, latest_mop_bill_date] +
+                    latest_hhdc_bill_date, latest_mop_bill_date,
+                    hh_format(supply_start_date),
+                    hh_format(supply_finish_date, ongoing_str='')] +
                 channel_values + [
                     era.imp_mpan_core, era.imp_sc,
                     None if era.imp_llfc is None else era.imp_llfc.code,
