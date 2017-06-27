@@ -106,6 +106,7 @@ def content(supply_id, start_date, finish_date, user):
                 "Supply Id", "Supply Name", "Source", "Generator Type",
                 "Site Code", "Site Name", "Associated Site Codes", "From",
                 "To", "PC", "MTC", "CoP", "SSC", "Normal Reads", "Type",
+                "Supply Start", "Supply Finish",
                 "Import LLFC", "Import MPAN Core", "Import Supply Capacity",
                 "Import Supplier", "Import Total MSP kWh",
                 "Import Non-actual MSP kWh", "Import Total GSP kWh",
@@ -151,6 +152,11 @@ def content(supply_id, start_date, finish_date, user):
                     site = site_era.site
                 else:
                     site_codes.add(site_era.site.code)
+
+            sup_eras = sess.query(Era).filter(
+                Era.supply == supply).order_by(Era.start_date).all()
+            supply_start = sup_eras[0].start_date
+            supply_finish = sup_eras[-1].finish_date
 
             if supply.generator_type is None:
                 generator_type = ''
@@ -205,7 +211,8 @@ def content(supply_id, start_date, finish_date, user):
                     site.code, site.name, '| '.join(sorted(site_codes)),
                     hh_format(start_date), hh_format(finish_date), era.pc.code,
                     era.mtc.code, era.cop.code, ssc_code, len(prime_reads),
-                    supply_type] + mpan_bit(
+                    supply_type, hh_format(supply_start),
+                    hh_format(supply_finish, ongoing_str='')] + mpan_bit(
                     sess, supply, True, num_hh, eras, chunk_start,
                     chunk_finish, forecast_date, caches) + mpan_bit(
                     sess, supply, False, num_hh, eras, chunk_start,
