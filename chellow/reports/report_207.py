@@ -35,8 +35,9 @@ def content(year, supply_id, user):
         ACTUAL_READ_TYPES = ['N', 'N3', 'C', 'X', 'CP']
         w.writerow(
             (
-                'Chellow Supply Id', 'MPAN Core', 'Site Id', 'Site Name',
-                'From', 'To', 'NHH Breakdown', 'Actual HH Normal Days',
+                'Chellow Supply Id', 'Report Start', 'Report Finish',
+                'MPAN Core', 'Site Id', 'Site Name', 'From', 'To',
+                'NHH Breakdown', 'Actual HH Normal Days',
                 'Actual AMR Normal Days', 'Actual NHH Normal Days',
                 'Actual Unmetered Normal Days', 'Max HH Normal Days',
                 'Max AMR Normal Days', 'Max NHH Normal Days',
@@ -66,12 +67,15 @@ def content(year, supply_id, user):
             max_normal_days = dict([(mtype, 0) for mtype in meter_types])
 
             breakdown = ''
+            eras = sess.query(Era).filter(
+                Era.supply == supply, Era.start_date <= year_finish, or_(
+                    Era.finish_date == null(),
+                    Era.finish_date >= year_start)).order_by(
+                Era.start_date).all()
+            supply_from = hh_max(eras[0].start_date, year_start)
+            supply_to = hh_min(eras[-1].finish_date, year_finish)
 
-            for era in sess.query(Era).filter(
-                    Era.supply_id == supply.id, Era.start_date <= year_finish,
-                    or_(
-                        Era.finish_date == null(),
-                        Era.finish_date >= year_start)):
+            for era in eras:
 
                 meter_type = era.make_meter_category()
 
@@ -419,8 +423,9 @@ def content(year, supply_id, user):
 
             w.writerow(
                 [
-                    supply.id, mpan_core, site.code, site.name,
-                    hh_format(year_start), hh_format(year_finish), breakdown] +
+                    supply.id, hh_format(year_start), hh_format(year_finish),
+                    mpan_core, site.code, site.name, hh_format(supply_from),
+                    hh_format(supply_to), breakdown] +
                 [
                     normal_days[t] for t in meter_types] + [
                     max_normal_days[t] for t in meter_types] + [
