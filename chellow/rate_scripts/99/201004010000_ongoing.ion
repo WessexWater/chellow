@@ -1,5 +1,26 @@
 $ion_1_0 {
   '_A': {
+    "bands": [
+      {
+        "weekend": false,
+        "start": 17,
+        "finish": 19,
+        "band": "red"},
+      {
+        "weekend": false,
+        "start": 7.5,
+        "finish": 17,
+        "band": "amber"},
+      {
+        "weekend": false,
+        "start": 19,
+        "finish": 21.5,
+        "band": "amber"},
+      {
+        "weekend": true,
+        "start": 16.5,
+        "finish": 19.5,
+        "band": "amber"}],
     'tariffs': {
       '110': {
         'description': 'Generation',
@@ -72,6 +93,27 @@ $ion_1_0 {
         'night': 1.039,
         'other': 1.045}}},
   '_E': {
+    "bands": [
+      {
+        "weekend": false,
+        "start": 17,
+        "finish": 19,
+        "band": "red"},
+      {
+        "weekend": false,
+        "start": 7.5,
+        "finish": 17,
+        "band": "amber"},
+      {
+        "weekend": false,
+        "start": 19,
+        "finish": 21.5,
+        "band": "amber"},
+      {
+        "weekend": true,
+        "start": 16.5,
+        "finish": 19.5,
+        "band": "amber"}],
     'tariffs': {
       '110': {
         'description': 'Generation',
@@ -144,6 +186,27 @@ $ion_1_0 {
         'night': 1.039,
         'other': 1.045}}},
   '_H': {
+    "bands": [
+      {
+        "weekend": false,
+        "start": 17,
+        "finish": 19,
+        "band": "red"},
+      {
+        "weekend": false,
+        "start": 7.5,
+        "finish": 17,
+        "band": "amber"},
+      {
+        "weekend": false,
+        "start": 19,
+        "finish": 21.5,
+        "band": "amber"},
+      {
+        "weekend": true,
+        "start": 16.5,
+        "finish": 19.5,
+        "band": "amber"}],
     'tariffs': {
       '110': {
         'description': 'Generation',
@@ -216,6 +279,27 @@ $ion_1_0 {
         'night': 1.039,
         'other': 1.045}}},
   '_L': {
+    "bands": [
+      {
+        "weekend": false,
+        "start": 17,
+        "finish": 19,
+        "band": "red"},
+      {
+        "weekend": false,
+        "start": 7.5,
+        "finish": 17,
+        "band": "amber"},
+      {
+        "weekend": false,
+        "start": 19,
+        "finish": 21.5,
+        "band": "amber"},
+      {
+        "weekend": true,
+        "start": 16.5,
+        "finish": 19.5,
+        "band": "amber"}],
     'bands': [
       {
         'weekend': true,
