@@ -194,7 +194,7 @@
 							For {{input_text('months', '1', 2, 2)}}
 							month(s) until the end of
 						 	{{input_date('finish', last_month_finish, resolution='month')}}
-							<input type="submit" value="Download">
+							UTC <input type="submit" value="Download">
 						</fieldset>
 					</form>			
 				</div>
@@ -205,7 +205,7 @@
 								<legend>Download TRIAD CSV</legend>
 								For financial year ending March
 								{{input_date(None, last_month_finish, resolution='year')}}
-								<input type="submit" value="Download">
+								UTC <input type="submit" value="Download">
 							</fieldset>
 						</form>			
 				</div>
@@ -223,8 +223,9 @@
 								<option value="exp_gen">Parasitic</option>
 							</select>
 							for {{input_text('months', '1', 2, 2)}}
-							month(s) until the end of {{input_date('finish', last_month_finish, resolution='month')}}
-							<input type="submit" value="Download">
+							month(s) until the end of
+						 	{{input_date('finish', last_month_finish, resolution='month')}}
+							UTC <input type="submit" value="Download">
 						</fieldset>
 					</form>
 				</div>
@@ -234,8 +235,8 @@
 							<input type="hidden" name="site_id" value="{{site.id}}">
 							<legend>HH Data: HH Per Row Format</legend>
 							<p>
-								From {{input_date('start', last_month_start)}} to
-								{{input_date('finish', last_month_finish)}}
+								From {{input_date('start', last_month_start)}} UTC to
+								{{input_date('finish', last_month_finish)}} UTC
 								<input type="submit" value="Download">
 							</p>
 						</fieldset>

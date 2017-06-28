@@ -661,206 +661,206 @@
                     <tbody>
                         {% for bill_dict in era_bundle['mop_bills']['bill_dicts'] %}
                         {% set bill = bill_dict['bill'] %}
-                        <tr>
-                            <td>
-                                [<a href="/mop_bills/{{bill.id}}">edit</a>]
-                            </td>
-                            <td>
-                                <a href="/mop_batches/{{bill.batch.id}}">{{bill.batch.reference}}</a>
-                            </td>
-                            <td>{{ bill.reference }}</td>
-                            <td>{{ bill.account }}</td>
-                            <td>{{ bill.issue_date|hh_format }}</td>
-                            <td>{{ bill.start_date|hh_format }}</td>
-                            <td>{{ bill.finish_date|hh_format }}</td>
-                            <td>{{ bill.kwh }}</td>
-                            <td>{{ bill.net }}</td>
-                            <td>{{ bill.vat }}</td>
-                            <td>{{ bill.gross }}</td>
-                            <td>
-                                <a href="/bill_types/{{bill.bill_type.id}}" title="{{bill.bill_type.description}}">{{bill.bill_type.code}}</a>
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
+											<tr>
+											<td>
+												[<a href="/mop_bills/{{bill.id}}">edit</a>]
+											</td>
+											<td>
+												<a href="/mop_batches/{{bill.batch.id}}">{{bill.batch.reference}}</a>
+											</td>
+											<td>{{ bill.reference }}</td>
+											<td>{{ bill.account }}</td>
+											<td>{{ bill.issue_date|hh_format }}</td>
+											<td>{{ bill.start_date|hh_format }}</td>
+											<td>{{ bill.finish_date|hh_format }}</td>
+											<td>{{ bill.kwh }}</td>
+											<td>{{ bill.net }}</td>
+											<td>{{ bill.vat }}</td>
+											<td>{{ bill.gross }}</td>
+											<td>
+											<a href="/bill_types/{{bill.bill_type.id}}" title="{{bill.bill_type.description}}">{{bill.bill_type.code}}</a>
+										</td>
+									</tr>
+								{% endfor %}
+							</tbody>
+						</table>
+					</div>
         </div>
-	{% endfor %}
+			{% endfor %}
+		</div>
 	</div>
-</div>
-<div class="layer-section">
+	<div class="layer-section">
     <div class="section-content">
-        <div class="section-data">
-            <ul>
-                <li>
-                    kWh, kVA, MD etc. by month:
-                    <a href="/supplies/{{supply.id}}/months?is_import=true&amp;year={{last_month_start.year}}&amp;years=1">Import</a>
-                    <a href="/supplies/{{supply.id}}/months?is_import=false&amp;year={{last_month_start.year}}&amp;years=1">Export</a>
-                </li>
-                <li>
-                    <a href="/supplies/{{ supply.id }}/hh_data?months=1&amp;finish_year={{ now.year }}&amp;finish_month={{ now.month }}">Raw HH data</a>
-                </li>
-                <li>
-                    <a href="/supplies/{{supply.id}}/virtual_bill?start_year={{last_month_start.year}}&amp;start_month={{last_month_start.month}}&amp;start_day={{last_month_start.day}}&amp;start_hour={{last_month_start.hour}}&amp;start_minute={{last_month_start.minute}}&amp;finish_year={{last_month_finish.year}}&amp;finish_month={{last_month_finish.month}}&amp;finish_day={{last_month_finish.day}}&amp;finish_hour={{last_month_finish.hour}}&amp;finish_minute={{last_month_finish.minute}}">Supplier Virtual Bill</a>
-                </li>
-            </ul>
-        </div>
+			<div class="section-data">
+				<ul>
+					<li>
+						kWh, kVA, MD etc. by month:
+						<a href="/supplies/{{supply.id}}/months?is_import=true&amp;year={{last_month_start.year}}&amp;years=1">Import</a>
+						<a href="/supplies/{{supply.id}}/months?is_import=false&amp;year={{last_month_start.year}}&amp;years=1">Export</a>
+					</li>
+					<li>
+						<a href="/supplies/{{ supply.id }}/hh_data?months=1&amp;finish_year={{ now.year }}&amp;finish_month={{ now.month }}">Raw HH data</a>
+					</li>
+					<li>
+						<a href="/supplies/{{supply.id}}/virtual_bill?start_year={{last_month_start.year}}&amp;start_month={{last_month_start.month}}&amp;start_day={{last_month_start.day}}&amp;start_hour={{last_month_start.hour}}&amp;start_minute={{last_month_start.minute}}&amp;finish_year={{last_month_finish.year}}&amp;finish_month={{last_month_finish.month}}&amp;finish_day={{last_month_finish.day}}&amp;finish_hour={{last_month_finish.hour}}&amp;finish_minute={{last_month_finish.minute}}">Supplier Virtual Bill</a>
+					</li>
+				</ul>
+			</div>
     </div>
-
-</div>
-<div class="layer-section">
+	</div>
+	<div class="layer-section">
     <div class="section-header">
-        <h2>CSV Downloads</h2>
+			<h2>CSV Downloads</h2>
     </div>
-    <div class="standardForm textWidthAuto">
+			<div class="standardForm textWidthAuto">
         <div class="section-content">
-            <div class="section-data ">
-                <form action="/reports/291">
-                    <fieldset>
-                        <input type="hidden" name="supply_id" value="{{supply.id}}">
-                        <legend>Virtual Bills</legend>
-                        From {{input_date('start', last_month_start)}} to
-                        {{input_date('finish', last_month_finish)}}
-                        <input type="submit" value="Download">
-                    </fieldset>
-                </form>
-            </div>
-            <div class="section-data ">
-                <form action="/reports/241">
-                    <fieldset>
-                        <input type="hidden" name="supply_id" value="{{supply.id}}">
-                        <legend>Daily Supplier Virtual Bills</legend>
-                        <select name="is_import">
-                            <option value="true">Import</option>
-                            <option value="false">Export</option>
-                        </select>
-                        from {{input_date('start', last_month_start, 'day')}}
-                        to {{input_date('finish', last_month_finish, 'day')}}
-                        <input type="submit" value="Download">
-                    </fieldset>
-                </form>
-            </div>
-            <div class="section-data ">
-                <form action="/reports/387">
-                    <fieldset>
-                        <input type="hidden" name="supply_id" value="{{supply.id}}">
-                        <legend>Virtual Bills By Half-Hour</legend>
-                        From {{input_date('start', last_month_start)}} to
-                        {{input_date('finish', last_month_finish)}}
-                        <input type="submit" value="Download">
-                    </fieldset>
-                </form>
-            </div>
-            <div class="section-data ">
-                <form action="/reports/169">
-                    <fieldset>
-                        <legend>HH Data: 48 Column Format</legend>
-                        <input type="hidden" name="supply_id" value="{{supply.id}}">
-                        <select name="imp_related">
-                            <option value="true">Import</option>
-                            <option value="false">Export</option>
-                        </select>
-                        <select name="channel_type">
-                            <option value="ACTIVE">ACTIVE</option>
-                            <option value="REACTIVE_IMP">REACTIVE_IMP</option>
-                            <option value="REACTIVE_EXP">REACTIVE_EXP</option>
-                        </select>
-                        from {{ input_date('start', last_month_start) }} to
-                        {{ input_date('finish', last_month_finish) }}
-                        <input type="submit" value="Download">
-                    </fieldset>
-                </form>
-            </div>
-            <div class="section-data ">
-                <form action="/reports/187" method="post">
-                    <fieldset>
-                        <legend>HH Data: HH Per Row</legend>
-                        <input type="hidden" name="supply_id" value="{{supply.id}}">
-                        From {{ input_date('start', last_month_start) }} to
-                        {{ input_date('finish', last_month_finish) }}
-                        <input type="submit" value="Download">
-                    </fieldset>
-                </form>
-            </div>
-            <div class="section-data ">
-                <form action="/reports/41?supply_id">
-                    <fieldset>
-                        <legend>TRIAD</legend>
-                        <input type="hidden" name="supply_id" value="{{ supply.id }}">
-                        <br>
-                        For financial year ending March
-                        <input name="year" value="{{ triad_year }}" size="4" maxlength="4">
-                        <input type="submit" value="Download" />
-                    </fieldset>
-                </form>
-            </div>
-            <div class="section-data ">
-                <form action="/reports/149">
-                    <fieldset>
-                        <input type="hidden" name="supply_id" value="{{supply.id}}">
-                        <legend>Duration</legend>
-                        <p>
-                            From {{ input_date('start', last_month_start) }}
-                            to {{ input_date('finish', last_month_finish) }}
-                            <input type="submit" value="Download">
-                        </p>
-                    </fieldset>
-                </form>
-            </div>
-            <div class="section-data ">
-                <form action="/reports/247">
-                    <fieldset>
-                        <input type="hidden" name="supply_id" value="{{supply.id}}" />
-                        <legend>Monthly Duration</legend>
-                        <br />
-                        For <input name="months" maxlength="2" size="2" value="1">
-                        month(s) finishing at the end of
-                        {{ input_date('finish', last_month_finish, 'month') }}
-                        <input type="submit" value="Download">
-                    </fieldset>
-                </form>
-            </div>
-            <div class="section-data ">
-                <form action="/reports/33">
-                    <input type="hidden" name="supply_id" value="{{ supply.id }}">
-                    <fieldset>
-                        <legend>Snapshot</legend>
-                        <br />
-                        For {{ input_date('date', last_month_finish) }}
-                        <input type="submit" value="Download">
-                    </fieldset>
-                </form>
-            </div>
-            <div class="section-data ">
-                <form action="/reports/219">
-                    <input type="hidden" name="supply_id" value="{{ supply.id }}">
-                    <fieldset>
-                        <legend>Register Reads</legend>
-                        <br>
-                        <br>
-                        For <input name="months" maxlength="2" size="2" value="1">
-                        month(s) finishing at the end of
-                        {{ input_date('end', last_month_finish, 'month') }}
-                        <input type="submit" value="Download">
-                    </fieldset>
-                </form>
-            </div>
-            <div class="section-data ">
-                <form action="/reports/207">
-                    <input type="hidden" name="supply_id" value="{{supply.id}}">
-                    <fieldset>
-                        <legend>CRC</legend>
-                        <br>
-                        For financial year starting April
-                        <input name="year" value="{{ last_month_start.year }}" size="4"
-                               maxlength="4">
-                        <input type="submit" value="Download">
-                    </fieldset>
-                </form>
-            </div>
-        </div>
-       </div>
-</div>
-
+					<div class="section-data ">
+						<form action="/reports/291">
+							<fieldset>
+								<input type="hidden" name="supply_id" value="{{supply.id}}">
+								<legend>Virtual Bills</legend>
+								From {{input_date('start', last_month_start)}} UTC to
+								{{input_date('finish', last_month_finish)}} UTC
+								<input type="submit" value="Download">
+							</fieldset>
+						</form>
+					</div>
+					<div class="section-data ">
+						<form action="/reports/241">
+							<fieldset>
+								<input type="hidden" name="supply_id" value="{{supply.id}}">
+								<legend>Daily Supplier Virtual Bills</legend>
+								<select name="is_import">
+									<option value="true">Import</option>
+									<option value="false">Export</option>
+								</select>
+								from {{input_date('start', last_month_start, 'day')}} UTC
+								to {{input_date('finish', last_month_finish, 'day')}} UTC
+								<input type="submit" value="Download">
+							</fieldset>
+						</form>
+					</div>
+					<div class="section-data ">
+						<form action="/reports/387">
+							<fieldset>
+								<input type="hidden" name="supply_id" value="{{supply.id}}">
+								<legend>Virtual Bills By Half-Hour</legend>
+								From {{input_date('start', last_month_start)}} UTC to
+								{{input_date('finish', last_month_finish)}} UTC
+								<input type="submit" value="Download">
+							</fieldset>
+						</form>
+					</div>
+					<div class="section-data ">
+						<form action="/reports/169">
+							<fieldset>
+								<legend>HH Data: 48 Column Format</legend>
+								<input type="hidden" name="supply_id" value="{{supply.id}}">
+								<select name="imp_related">
+									<option value="true">Import</option>
+									<option value="false">Export</option>
+								</select>
+								<select name="channel_type">
+									<option value="ACTIVE">ACTIVE</option>
+									<option value="REACTIVE_IMP">REACTIVE_IMP</option>
+									<option value="REACTIVE_EXP">REACTIVE_EXP</option>
+								</select>
+								from {{ input_date('start', last_month_start) }} UTC to
+								{{ input_date('finish', last_month_finish) }} UTC
+								<input type="submit" value="Download">
+							</fieldset>
+						</form>
+					</div>
+					<div class="section-data ">
+						<form action="/reports/187" method="post">
+							<fieldset>
+								<legend>HH Data: HH Per Row</legend>
+								<input type="hidden" name="supply_id" value="{{supply.id}}">
+								From {{ input_date('start', last_month_start) }} UTC to
+								{{ input_date('finish', last_month_finish) }} UTC
+								<input type="submit" value="Download">
+							</fieldset>
+						</form>
+					</div>
+					<div class="section-data ">
+						<form action="/reports/41?supply_id">
+							<fieldset>
+								<legend>TRIAD</legend>
+								<input type="hidden" name="supply_id" value="{{ supply.id }}">
+								<br>
+								For financial year ending March
+								<input
+							 			name="year" value="{{triad_year}}" size="4" maxlength="4">
+								<input type="submit" value="Download">
+							</fieldset>
+						</form>
+					</div>
+					<div class="section-data ">
+						<form action="/reports/149">
+							<fieldset>
+								<input type="hidden" name="supply_id" value="{{supply.id}}">
+								<legend>Duration</legend>
+								<p>
+									From {{ input_date('start', last_month_start) }} UTC
+									to {{ input_date('finish', last_month_finish) }} UTC
+									<input type="submit" value="Download">
+								</p>
+							</fieldset>
+						</form>
+					</div>
+					<div class="section-data ">
+						<form action="/reports/247">
+							<fieldset>
+								<input type="hidden" name="supply_id" value="{{supply.id}}">
+								<legend>Monthly Duration</legend>
+								<br />
+								For <input name="months" maxlength="2" size="2" value="1">
+								month(s) finishing at the end of
+								{{ input_date('finish', last_month_finish, 'month') }} UTC
+								<input type="submit" value="Download">
+							</fieldset>
+						</form>
+					</div>
+					<div class="section-data ">
+						<form action="/reports/33">
+							<input type="hidden" name="supply_id" value="{{supply.id}}">
+							<fieldset>
+								<legend>Snapshot</legend>
+								<br>
+								For {{ input_date('date', last_month_finish) }} UTC
+								<input type="submit" value="Download">
+							</fieldset>
+						</form>
+					</div>
+					<div class="section-data ">
+					<form action="/reports/219">
+						<input type="hidden" name="supply_id" value="{{ supply.id }}">
+						<fieldset>
+							<legend>Register Reads</legend>
+							<br>
+							<br>
+							For <input name="months" maxlength="2" size="2" value="1">
+							month(s) finishing at the end of
+							{{ input_date('end', last_month_finish, 'month') }} UTC
+							<input type="submit" value="Download">
+						</fieldset>
+					</form>
+				</div>
+				<div class="section-data ">
+					<form action="/reports/207">
+						<input type="hidden" name="supply_id" value="{{supply.id}}">
+						<fieldset>
+							<legend>CRC</legend>
+							<br>
+							For financial year starting April
+							<input
+									name="year" value="{{ last_month_start.year }}" size="4"
+									maxlength="4">
+							<input type="submit" value="Download">
+						</fieldset>
+					</form>
+				</div>
+			</div>
+		</div>
+	</div>
 {% endblock %}
