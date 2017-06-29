@@ -312,11 +312,12 @@ class Parser():
                     tmod = self.parser.elements[3]
                     tmod0 = tmod[0]
                     if tmod0 == 'CCL':
-                        prefix = 'ccl-'
+                        prefix = kwh_prefix = 'ccl-'
                     elif tmod0 in ['CQFITC', 'CMFITC']:
                         prefix = 'fit-'
+                        kwh_prefix = 'fit-msp-'
                     elif tmod0 == 'FITARR':
-                        prefix = 'fit-reconciliation-'
+                        prefix = kwh_prefix = 'fit-reconciliation-'
                     else:
                         tpr_code = tmod0
                         if tpr_code not in tmod_map:
@@ -324,13 +325,13 @@ class Parser():
                                 "The TPR code " + tpr_code +
                                 " can't be found in the TPR list for mpan " +
                                 mpan + ".")
-                        prefix = tmod_map[tpr_code] + '-'
+                        prefix = kwh_prefix = tmod_map[tpr_code] + '-'
 
                     mtnr = self.parser.elements[4]
                     ndrp = self.parser.elements[8]
                     cona = self.parser.elements[13]
                     nuct = self.parser.elements[15]
-                    breakdown[prefix + 'kwh'] += float(
+                    breakdown[kwh_prefix + 'kwh'] += float(
                         self.parser.to_decimal(nuct)) / 1000
                     cppu = self.parser.elements[18]
 
