@@ -1,5 +1,4 @@
 from collections import OrderedDict, defaultdict
-import pytz
 from datetime import datetime as Datetime
 from dateutil.relativedelta import relativedelta
 from sqlalchemy import or_
@@ -15,36 +14,43 @@ import sys
 import os
 import threading
 from werkzeug.exceptions import BadRequest
-from chellow.utils import HH, hh_format, hh_min, hh_max, req_int, csv_make_val
+from chellow.utils import (
+    HH, hh_format, hh_min, hh_max, req_int, csv_make_val, to_utc, req_date)
 from chellow.views import chellow_redirect
 from flask import request, g
 import csv
 from itertools import combinations
 
 
-def content(batch_id, bill_id, user):
+def content(batch_id, bill_id, contract_id, start_date, finish_date, user):
     caches = {}
     tmp_file = sess = bill = None
-    forecast_date = Datetime.max.replace(tzinfo=pytz.utc)
+    forecast_date = to_utc(Datetime.max)
     try:
         sess = Session()
         running_name, finished_name = chellow.dloads.make_names(
             'bill_check.csv', user)
         tmp_file = open(running_name, mode='w', newline='')
         writer = csv.writer(tmp_file, lineterminator='\n')
-        bills = sess.query(Bill).options(
+        bills = sess.query(Bill).order_by(Bill.reference).options(
             joinedload(Bill.supply),
             subqueryload(Bill.reads).joinedload(RegisterRead.present_type),
-            subqueryload(Bill.reads).joinedload(RegisterRead.previous_type))
+            subqueryload(Bill.reads).joinedload(RegisterRead.previous_type),
+            joinedload(Bill.batch))
         if batch_id is not None:
             batch = Batch.get_by_id(sess, batch_id)
-            bills = bills.filter(Bill.batch == batch).order_by(Bill.reference)
+            bills = bills.filter(Bill.batch == batch)
+            contract = batch.contract
         elif bill_id is not None:
             bill = Bill.get_by_id(sess, bill_id)
             bills = bills.filter(Bill.id == bill.id)
-            batch = bill.batch
+            contract = bill.batch.contract
+        elif contract_id is not None:
+            contract = Contract.get_by_id(sess, contract_id)
+            bills = bills.join(Batch).filter(
+                Batch.contract == contract, Bill.start_date <= finish_date,
+                Bill.finish_date >= start_date)
 
-        contract = batch.contract
         market_role_code = contract.market_role.code
 
         vbf = chellow.computer.contract_func(caches, contract, 'virtual_bill')
@@ -93,16 +99,16 @@ def content(batch_id, bill_id, user):
                         " of the register read " + str(read.id) + \
                         " doesn't match the MSN of the era."
 
-                for dt, type in [
+                for dt, typ in [
                         (read.present_date, read.present_type),
                         (read.previous_date, read.previous_type)]:
                     key = str(dt) + "-" + read.msn
                     try:
-                        if type != read_dict[key]:
+                        if typ != read_dict[key]:
                             problem += " Reads taken on " + str(dt) + \
                                 " have differing read types."
                     except KeyError:
-                        read_dict[key] = type
+                        read_dict[key] = typ
 
             bill_start = bill.start_date
             bill_finish = bill.finish_date
@@ -116,7 +122,7 @@ def content(batch_id, bill_id, user):
                 SiteEra.is_physical == true(), SiteEra.era == era).one()
 
             values = [
-                batch.reference, bill.reference, bill.bill_type.code,
+                bill.batch.reference, bill.reference, bill.bill_type.code,
                 bill.kwh, bill.net, bill.vat, hh_format(bill_start),
                 hh_format(bill_finish), era.imp_mpan_core]
 
@@ -309,15 +315,20 @@ def content(batch_id, bill_id, user):
 
 
 def do_get(sess):
+    batch_id = bill_id = contract_id = start_date = finish_date = None
     if 'batch_id' in request.values:
         batch_id = req_int("batch_id")
-        bill_id = None
     elif 'bill_id' in request.values:
         bill_id = req_int("bill_id")
-        batch_id = None
+    elif 'contract_id' in request.values:
+        contract_id = req_int("contract_id")
+        start_date = req_date("start_date")
+        finish_date = req_date("finish_date")
     else:
-        raise BadRequest("The bill check needs a batch_id or bill_id.")
+        raise BadRequest(
+            "The bill check needs a batch_id, a bill_id or a start_date "
+            "and finish_date.")
 
-    user = g.user
-    threading.Thread(target=content, args=(batch_id, bill_id, user)).start()
+    args = batch_id, bill_id, contract_id, start_date, finish_date, g.user
+    threading.Thread(target=content, args=args).start()
     return chellow_redirect('/downloads', 303)
