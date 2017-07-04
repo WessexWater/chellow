@@ -285,18 +285,19 @@ class HhImportTask(threading.Thread):
                     else:
                         key, fpath = f
                         self.log(
-                            "Attempting to download " + fpath +
-                            " with key " + key + ".")
+                            "Attempting to download " + fpath + " with key " +
+                            key + ".")
                         f = tempfile.TemporaryFile()
                         ftp.getfo(fpath, f)
                         self.log("File downloaded successfully.")
                         ftp.close()
                         self.log("Logged out.")
 
-                        self.log("Treating files as type " + file_type)
                         f.seek(0, os.SEEK_END)
                         fsize = f.tell()
                         f.seek(0)
+                        self.log("File size is " + fsize + " bytes.")
+                        self.log("Treating files as type " + file_type)
                         self.importer = HhDataImportProcess(
                             self.contract_id, 0, TextIOWrapper(f, 'utf8'),
                             fpath + file_type, fsize)
