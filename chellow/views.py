@@ -26,7 +26,7 @@ import chellow.hh_importer
 import chellow.bill_importer
 import chellow.system_price
 from sqlalchemy import (
-    text, true, false, null, func, not_, or_, cast, Float)
+    text, true, false, null, func, not_, or_, cast, Float, case)
 from sqlalchemy.orm import joinedload
 from collections import defaultdict, OrderedDict
 from itertools import chain, islice
@@ -1615,23 +1615,30 @@ def supply_months_get(supply_id):
                 or_(
                     Era.finish_date == null(), Era.finish_date >= month_start),
                 Channel.imp_related == is_import)]
-        for kwh, kvarh, hh_date in g.sess.execute(
-                "select cast(max("
-                "case when channel.channel_type = 'ACTIVE' then "
-                "hh_datum.value else 0 end) as double precision), "
-                "cast(max(case when channel.channel_type in ("
-                "'REACTIVE_IMP', 'REACTIVE_EXP') then hh_datum.value else 0 "
-                "end) as double precision), "
-                "hh_datum.start_date "
-                "from hh_datum join channel "
-                "on (hh_datum.channel_id = channel.id) "
-                "where channel.id = any(:channel_ids) and "
-                "hh_datum.start_date >= :month_start "
-                "and hh_datum.start_date <= :month_finish "
-                "group by hh_datum.start_date",
-                params={
-                    'channel_ids': channel_ids, 'month_start': month_start,
-                    'month_finish': month_finish}):
+        for kwh, kvarh, hh_date in g.sess.query(
+                cast(
+                    func.max(
+                        case(
+                            [
+                                (
+                                    Channel.channel_type == 'ACTIVE',
+                                    HhDatum.value)], else_=0)), Float),
+                cast(
+                    func.max(
+                        case(
+                            [
+                                (
+                                    Channel.channel_type.in_(
+                                        (
+                                            'REACTIVE_IMP', 'REACTIVE_EXP')),
+                                    HhDatum.value)], else_=0)), Float),
+                HhDatum.start_date).join(
+                Channel, HhDatum.channel_id == Channel.id).filter(
+                Channel.id.in_(channel_ids),
+                HhDatum.start_date >= month_start,
+                HhDatum.start_date <= month_finish).group_by(
+                HhDatum.start_date):
+
             kvah = (kwh ** 2 + kvarh ** 2) ** 0.5
             if kvah > md_kvah:
                 md_kvah = kvah

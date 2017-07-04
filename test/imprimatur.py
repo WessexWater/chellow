@@ -15916,4 +15916,11 @@ def virtual_bill(supply_source):
             r'^5,2012-04-01 00:00,2013-03-31 23:30,22 0883 6932 301,CI005,'
             r'Wheal Rodney,2012-04-01 00:00,2013-03-31 23:30,,0.0,0,0,0,365.0,'
             r'0,0,0,0.0,365.0,Estimated,0,0,0,0,0,0,0,']},
+
+    {
+        'path': '/supplies/16/months?is_import=true&year=2017&years=1',
+        'regexes': [
+            r'Import\s*'
+            r'data by month'],
+        'status_code': 200},
 ]
