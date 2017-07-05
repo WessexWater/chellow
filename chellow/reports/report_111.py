@@ -118,19 +118,6 @@ def content(batch_id, bill_id, contract_id, start_date, finish_date, user):
             bill_start = bill.start_date
             bill_finish = bill.finish_date
 
-            era = supply.find_era_at(sess, bill_finish)
-            if era is None:
-                raise BadRequest(
-                    "Extraordinary! There isn't an era for the bill " +
-                    str(bill.id) + ".")
-            site = sess.query(Site).join(SiteEra).filter(
-                SiteEra.is_physical == true(), SiteEra.era == era).one()
-
-            values = [
-                bill.batch.reference, bill.reference, bill.bill_type.code,
-                bill.kwh, bill.net, bill.vat, hh_format(bill_start),
-                hh_format(bill_finish), era.imp_mpan_core]
-
             covered_start = bill_start
             covered_finish = bill_finish
             covered_bdown = {'sum-msp-kwh': 0, 'net-gbp': 0, 'vat-gbp': 0}
@@ -263,12 +250,25 @@ def content(batch_id, bill_id, contract_id, start_date, finish_date, user):
                             "For key " + str(k) + " and value " + str(v) +
                             ". " + str(detail))
 
-            values += [
-                site.code, site.name, hh_format(covered_start),
-                hh_format(covered_finish),
-                ':'.join(
+            era = supply.find_era_at(sess, bill_finish)
+            if era is None:
+                imp_mpan_core = site_code = site_name = None
+                problem += "This bill finishes before or after the supply. "
+            else:
+                imp_mpan_core = era.imp_mpan_core
+                site = sess.query(Site).join(SiteEra).filter(
+                    SiteEra.is_physical == true(), SiteEra.era == era).one()
+                site_code = site.code
+                site_name = site.name
+
+            values = [
+                bill.batch.reference, bill.reference, bill.bill_type.code,
+                bill.kwh, bill.net, bill.vat, hh_format(bill_start),
+                hh_format(bill_finish), imp_mpan_core, site_code, site_name,
+                hh_format(covered_start), hh_format(covered_finish), ':'.join(
                     str(i).replace(',', '') for i in covered_bills.keys()),
                 metered_kwh]
+
             for title in virtual_bill_titles:
                 try:
                     cov_val = covered_bdown[title]
@@ -283,7 +283,7 @@ def content(batch_id, bill_id, contract_id, start_date, finish_date, user):
                     values.append(virt_val)
                     del virtual_bill[title]
                 except KeyError:
-                    virt_val = None
+                    virt_val = 0
                     values.append('')
 
                 if title.endswith('-gbp'):
