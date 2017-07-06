@@ -11,6 +11,7 @@ import chellow.scenario
 from werkzeug.exceptions import BadRequest
 import atexit
 import requests
+from zish import loads
 
 
 create_future_func = chellow.scenario.make_create_future_func_monthly(
@@ -45,10 +46,10 @@ def hh(data_source):
         except KeyError:
             h_start = h['start-date']
             db_id = get_non_core_contract_id('bsuos')
-            rates = data_source.hh_rate(db_id, h_start, 'rates_gbp_per_mwh')
+            rates = data_source.hh_rate(db_id, h_start)['rates_gbp_per_mwh']
             try:
                 h['bsuos-gbp-per-kwh'] = bsuos_rate = bsuos_cache[h_start] = \
-                    rates[h_start.strftime("%d %H:%M Z")] / 1000
+                    float(rates[h_start.strftime("%d %H:%M Z")] / 1000)
             except KeyError:
                 raise BadRequest(
                     "For the BSUoS rate script at " + hh_format(h_start) +
@@ -73,7 +74,7 @@ class BsuosImporter(threading.Thread):
     def __init__(self):
         super(BsuosImporter, self).__init__(name="BSUoS Importer")
         self.lock = threading.RLock()
-        self.messages = collections.deque()
+        self.messages = collections.deque(maxlen=100)
         self.stopped = threading.Event()
         self.going = threading.Event()
         self.PROXY_HOST_KEY = 'proxy.host'
@@ -97,8 +98,6 @@ class BsuosImporter(threading.Thread):
     def log(self, message):
         self.messages.appendleft(
             utc_datetime_now().strftime("%Y-%m-%d %H:%M:%S") + " - " + message)
-        if len(self.messages) > 100:
-            self.messages.pop()
 
     def run(self):
         while not self.stopped.isSet():
@@ -112,10 +111,10 @@ class BsuosImporter(threading.Thread):
                         RateScript.contract == contract).order_by(
                         RateScript.start_date.desc()).first()
                     latest_rs_id = latest_rs.id
-                    this_month_start = latest_rs.start_date + \
-                        relativedelta(months=1)
-                    next_month_start = this_month_start + \
-                        relativedelta(months=1)
+                    this_month_start = latest_rs.start_date + relativedelta(
+                        months=1)
+                    next_month_start = this_month_start + relativedelta(
+                        months=1)
                     now = utc_datetime_now()
                     props = contract.make_properties()
                     if props.get('enabled', False):
@@ -153,18 +152,15 @@ class BsuosImporter(threading.Thread):
                             if key_format(next_month_start - HH) in \
                                     month_bsuos:
                                 self.log("The whole month's data is there.")
-                                script = "def rates_gbp_per_mwh():\n    " \
-                                    "return {\n" + ',\n'.join(
-                                        "'" + k + "': " + str(month_bsuos[k])
-                                        for k in sorted(
-                                            month_bsuos.keys())) + "}"
+                                script = {
+                                    'rates_gbp_per_mwh': month_bsuos}
                                 contract = Contract.get_non_core_by_name(
                                     sess, 'bsuos')
                                 rs = RateScript.get_by_id(sess, latest_rs_id)
                                 contract.update_rate_script(
                                     sess, rs, rs.start_date,
                                     rs.start_date + relativedelta(months=2) -
-                                    HH, rs.script)
+                                    HH, loads(rs.script))
                                 sess.flush()
                                 contract.insert_rate_script(
                                     sess,

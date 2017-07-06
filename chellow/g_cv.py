@@ -3,13 +3,14 @@ import traceback
 import threading
 from collections import defaultdict, deque
 from chellow.models import RateScript, Contract, Session
-from chellow.utils import HH, hh_format, utc_datetime_now, to_utc, dumps
+from chellow.utils import HH, hh_format, utc_datetime_now, to_utc
 import chellow.scenario
 import atexit
 import requests
 import csv
 from decimal import Decimal
 from datetime import datetime as Datetime
+from zish import dumps
 
 
 create_future_func = chellow.scenario.make_create_future_func_monthly(

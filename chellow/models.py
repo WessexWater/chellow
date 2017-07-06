@@ -15,8 +15,7 @@ from sqlalchemy.ext.declarative import declarative_base
 import operator
 from chellow.utils import (
     hh_after, HH, parse_mpan_core, hh_before, next_hh, prev_hh, hh_format,
-    hh_range, utc_datetime, utc_datetime_now, to_utc, loads, dumps)
-import json
+    hh_range, utc_datetime, utc_datetime_now, to_utc)
 from dateutil.relativedelta import relativedelta
 from functools import lru_cache
 from werkzeug.exceptions import BadRequest, NotFound
@@ -25,6 +24,11 @@ import sys
 from hashlib import pbkdf2_hmac
 from binascii import hexlify, unhexlify
 from decimal import Decimal
+from zish import dumps, loads, ZishException
+import amazon.ion.simpleion
+import inspect
+from io import StringIO
+import json
 
 
 config = {
@@ -499,7 +503,7 @@ class Bill(Base, PersistentClass):
 
         self.bill_type = bill_type
         if isinstance(breakdown, dict):
-            self.breakdown = repr(dict(breakdown))
+            self.breakdown = dumps(breakdown)
         else:
             raise BadRequest(
                 "The 'breakdown' parameter must be a mapping type.")
@@ -839,16 +843,10 @@ class Contract(Base, PersistentClass):
         self.charge_script = charge_script
 
     def update_state(self, state):
-        self.state = str(state)
+        self.state = dumps(state)
 
     def update_properties(self, properties):
-        try:
-            eval(properties, {'datetime': Datetime})
-        except SyntaxError as e:
-            raise BadRequest(str(e))
-        except NameError as e:
-            raise BadRequest(str(e))
-        self.properties = properties
+        self.properties = dumps(properties)
 
     def update_rate_script(
             self, sess, rscript, start_date, finish_date, script):
@@ -859,28 +857,11 @@ class Contract(Base, PersistentClass):
             raise BadRequest("The start date can't be None.")
 
         if hh_after(start_date, finish_date):
-            raise BadRequest("""The start date can't be after the finish
-                    date.""")
+            raise BadRequest("The start date can't be after the finish date.")
 
-        script_trimmed = script.lstrip()
-        if script_trimmed.startswith('{'):
-            try:
-                json.loads(script)
-            except SyntaxError as e:
-                raise BadRequest(str(e))
-        elif script_trimmed.startswith('$ion'):
-            try:
-                loads(script)
-            except SyntaxError as e:
-                raise BadRequest(str(e))
-        else:
-            try:
-                ast.parse(script)
-            except SyntaxError as e:
-                raise BadRequest(str(e))
-            except NameError as e:
-                raise BadRequest(str(e))
-        rscript.script = script
+        if not isinstance(script, dict):
+            raise Exception("The script must be be a dict.")
+        rscript.script = dumps(script)
 
         prev_rscript = self.find_rate_script_at(sess, rscript.start_date - HH)
         if rscript.finish_date is None:
@@ -911,7 +892,7 @@ class Contract(Base, PersistentClass):
 
         sess.flush()
         rscripts = sess.query(RateScript).filter(
-            RateScript.contract_id == self.id).order_by(
+            RateScript.contract == self).order_by(
             RateScript.start_date).all()
         self.start_rate_script = rscripts[0]
         self.finish_rate_script = rscripts[-1]
@@ -919,10 +900,9 @@ class Contract(Base, PersistentClass):
         eras_before = sess.query(Era).filter(
             Era.start_date < self.start_rate_script.start_date,
             or_(
-                Era.imp_supplier_contract_id == self.id,
-                Era.exp_supplier_contract_id == self.id,
-                Era.hhdc_contract_id == self.id,
-                Era.mop_contract_id == self.id)).all()
+                Era.imp_supplier_contract == self,
+                Era.exp_supplier_contract == self,
+                Era.hhdc_contract == self, Era.mop_contract == self)).all()
         if len(eras_before) > 0:
             mpan_core = eras_before[0].imp_mpan_core
             if mpan_core is None:
@@ -936,10 +916,9 @@ class Contract(Base, PersistentClass):
             eras_after = sess.query(Era).filter(
                 Era.finish_date > self.finish_rate_script.finish_date,
                 or_(
-                    Era.imp_supplier_contract_id == self.id,
-                    Era.exp_supplier_contract_id == self.id,
-                    Era.hhdc_contract_id == self.id,
-                    Era.mop_contract_id == self.id)).all()
+                    Era.imp_supplier_contract == self,
+                    Era.exp_supplier_contract == self,
+                    Era.hhdc_contract == self, Era.mop_contract == self)).all()
             if len(eras_after) > 0:
                 mpan_core = eras_after[0].imp_mpan_core
                 if mpan_core is None:
@@ -993,8 +972,7 @@ class Contract(Base, PersistentClass):
 
     def insert_rate_script(self, sess, start_date, script):
         scripts = sess.query(RateScript).filter(
-            RateScript.contract_id == self.id).order_by(
-            RateScript.start_date).all()
+            RateScript.contract == self).order_by(RateScript.start_date).all()
         if len(scripts) == 0:
             finish_date = None
         else:
@@ -1041,14 +1019,10 @@ class Contract(Base, PersistentClass):
         return batch
 
     def make_properties(self):
-        return eval(self.properties, {'datetime': Datetime})
+        return loads(self.properties)
 
     def make_state(self):
-        s = "{}" if self.state is None else self.state.strip()
-        if len(s) == 0:
-            return {}
-        else:
-            return eval(s)
+        return loads(self.state)
 
     def get_batch(self, sess, reference):
         batch = sess.query(Batch).filter(
@@ -1567,7 +1541,10 @@ class RateScript(Base, PersistentClass):
         self.contract = contract
         self.start_date = start_date
         self.finish_date = finish_date
-        self.script = script
+        if not isinstance(script, dict):
+            print(script)
+            raise BadRequest("A script must be a dictionary.")
+        self.script = dumps(script)
 
 
 class Llfc(Base, PersistentClass):
@@ -3373,11 +3350,11 @@ class GContract(Base, PersistentClass):
         "GRateScript",
         primaryjoin="GRateScript.id==GContract.finish_g_rate_script_id")
 
-    def __init__(self, sess, name, charge_script, properties):
-        self.update(sess, name, charge_script, properties)
+    def __init__(self, name, charge_script, properties):
+        self.update(name, charge_script, properties)
         self.update_state({})
 
-    def update(self, sess, name, charge_script, properties):
+    def update(self, name, charge_script, properties):
         name = name.strip()
         if len(name) == 0:
             raise BadRequest("The gas contract name can't be blank.")
@@ -3390,16 +3367,17 @@ class GContract(Base, PersistentClass):
         except NameError as e:
             raise BadRequest(str(e))
         self.charge_script = charge_script
+
         if not isinstance(properties, dict):
             raise BadRequest(
                 "The 'properties' argument must be a dictionary.")
-        self.properties = str(properties)
+        self.properties = dumps(properties)
 
     def update_state(self, state):
         if not isinstance(state, dict):
             raise BadRequest(
                 "The 'state' argument must be a dictionary.")
-        self.state = str(state)
+        self.state = dumps(state)
 
     def update_g_rate_script(
             self, sess, rscript, start_date, finish_date, script):
@@ -3414,8 +3392,9 @@ class GContract(Base, PersistentClass):
             raise BadRequest(
                 "The start date can't be after the finish date.")
 
-        loads(script)
-        rscript.script = script
+        if not isinstance(script, dict):
+            raise Exception("The gas rate script must be a dictionary.")
+        rscript.script = dumps(script)
 
         prev_rscript = self.find_g_rate_script_at(
             sess, rscript.start_date - HH)
@@ -3561,20 +3540,16 @@ class GContract(Base, PersistentClass):
         return batch
 
     def make_properties(self):
-        return eval(self.properties, {'datetime': Datetime})
+        return loads(self.properties)
 
     def make_state(self):
-        s = "{}" if self.state is None else self.state.strip()
-        if len(s) == 0:
-            return {}
-        else:
-            return eval(s)
+        return loads(self.state)
 
     @staticmethod
     def insert(
             sess, name, charge_script, properties, start_date,
             finish_date, rate_script):
-        contract = GContract(sess, name, charge_script, properties)
+        contract = GContract(name, charge_script, properties)
         sess.add(contract)
         sess.flush()
         rscript = contract.insert_g_rate_script(sess, start_date, rate_script)
@@ -3625,7 +3600,10 @@ class GRateScript(Base, PersistentClass):
         self.g_contract = g_contract
         self.start_date = start_date
         self.finish_date = finish_date
-        self.script = script
+
+        if not isinstance(script, dict):
+            raise Exception("The script must be a dictionary.")
+        self.script = dumps(script)
 
     def make_script(self):
         return loads(self.script)
@@ -3658,9 +3636,9 @@ def read_file(pth, fname, attr):
     with open(os.path.join(pth, fname), 'r') as f:
         contents = f.read()
     if attr is None:
-        return eval(contents)
+        return loads(contents)
     else:
-        return {attr: contents}
+        return {attr: loads(contents)}
 
 
 def db_init(sess, root_path):
@@ -3794,9 +3772,9 @@ def db_init(sess, root_path):
         contract_path = os.path.join(contracts_path, contract_name)
         params = {'name': contract_name, 'charge_script': ''}
         for fname, attr in (
-                ('meta.py', None),
-                ('properties.py', 'properties'),
-                ('state.py', 'state')):
+                ('meta.zish', None),
+                ('properties.zish', 'properties'),
+                ('state.zish', 'state')):
             params.update(read_file(contract_path, fname, attr))
         params['party'] = sess.query(Party).join(Participant). \
             join(MarketRole). \
@@ -3811,9 +3789,6 @@ def db_init(sess, root_path):
         rscripts_path = os.path.join(contract_path, 'rate_scripts')
         if os.path.isdir(rscripts_path):
             for rscript_fname in sorted(os.listdir(rscripts_path)):
-                if not any(rscript_fname.endswith(s) for s in (
-                        '.py', '.ion')):
-                    continue
                 try:
                     start_str, finish_str = \
                         rscript_fname.split('.')[0].split('_')
@@ -3834,8 +3809,13 @@ def db_init(sess, root_path):
                     'start_date': start_date,
                     'finish_date': finish_date,
                     'contract': contract}
-                rparams.update(
-                    read_file(rscripts_path, rscript_fname, 'script'))
+                try:
+                    rparams.update(
+                        read_file(rscripts_path, rscript_fname, 'script'))
+                except ZishException as e:
+                    raise Exception(
+                        "Contract name " + contract_name + " rscript fname " +
+                        rscript_fname + ": " + str(e))
                 sess.add(RateScript(**rparams))
                 sess.flush()
 
@@ -3876,6 +3856,7 @@ def db_init(sess, root_path):
     sess.commit()
     sess.close()
     engine.dispose()
+
     # Check the transaction isolation level is serializable
     isolation_level = sess.execute(
         "show transaction isolation level").scalar()
@@ -4115,9 +4096,105 @@ def db_upgrade_6_to_7(sess, root_path):
         sess.commit()
 
 
+def db_upgrade_7_to_8(sess, root_path):
+    def two_dps(val):
+        return Decimal('0.00') + round(val, 2)
+
+    def parse_all(data_str, use_exec=True):
+        data = None if data_str is None else data_str.strip()
+        if data is None or data == '':
+            return {}
+
+        try:
+            return loads(data)
+        except ZishException:
+            if data.startswith('$ion'):
+                return amazon.ion.simpleion.load(StringIO(data))
+            else:
+                try:
+                    if use_exec:
+                        ns = {
+                            'datetime': Datetime}
+                        exec(data, ns)
+
+                        ret = {}
+                        for k, v in ns.items():
+                            if inspect.isfunction(v) and not inspect.isbuiltin(
+                                    v):
+                                ret[k] = v()
+                        return ret
+                    else:
+                        return eval(data, {'datetime': Datetime})
+                except:
+                    return json.loads(data)
+
+    for bill in sess.query(Bill):
+        breakdown = parse_all(bill.breakdown, use_exec=False)
+        if not isinstance(breakdown, dict):
+            breakdown = {'val': breakdown}
+        try:
+            bill.update(
+                bill.account, bill.reference, bill.issue_date, bill.start_date,
+                bill.finish_date, bill.kwh, two_dps(bill.net),
+                two_dps(bill.vat), two_dps(bill.gross), bill.bill_type,
+                breakdown)
+        except Exception as e:
+            raise Exception(
+                "Problem with bill id " + str(bill.id) +
+                " the original breakdown is " + str(bill.breakdown) +
+                ": " + str(e))
+    sess.commit()
+
+    for contract in sess.query(Contract):
+        contract.update_properties(
+            parse_all(contract.properties, use_exec=False))
+        contract.update_state(parse_all(contract.state, use_exec=False))
+        for rscript in contract.rate_scripts:
+            try:
+                rscript.script = dumps(parse_all(rscript.script))
+            except Exception as e:
+                raise Exception(
+                    "Problem parsing rate script " + str(rscript.id) +
+                    " with script " + str(rscript.script) +
+                    " giving problem " + str(e))
+
+    sess.commit()
+
+    for g_bill in sess.query(GBill):
+        breakdown = parse_all(g_bill.breakdown, use_exec=False)
+        if not isinstance(breakdown, dict):
+            breakdown = {'val': breakdown}
+        try:
+            g_bill.update(
+                g_bill.bill_type, g_bill.reference, g_bill.account,
+                g_bill.issue_date, g_bill.start_date, g_bill.finish_date,
+                g_bill.kwh, two_dps(g_bill.net), two_dps(g_bill.vat),
+                two_dps(g_bill.gross), g_bill.raw_lines, breakdown)
+        except Exception as e:
+            raise Exception(
+                "Problem with g_bill id " + str(g_bill.id) +
+                " the original breakdown is " + str(g_bill.breakdown) +
+                ": " + str(e))
+    sess.commit()
+
+    for g_contract in sess.query(GContract):
+        g_contract.update(
+            g_contract.name, g_contract.charge_script, parse_all(
+                g_contract.properties, use_exec=False))
+
+        for g_rscript in g_contract.g_rate_scripts:
+            try:
+                g_rscript.script = dumps(parse_all(g_rscript.script))
+            except Exception as e:
+                raise Exception(
+                    "Problem parsing gas rate script " + str(g_rscript.id) +
+                    " with script " + str(g_rscript.script) +
+                    " giving problem " + str(e))
+
+
 upgrade_funcs = [
     db_upgrade_0_to_1, db_upgrade_1_to_2, db_upgrade_2_to_3, db_upgrade_3_to_4,
-    db_upgrade_4_to_5, db_upgrade_5_to_6, db_upgrade_6_to_7]
+    db_upgrade_4_to_5, db_upgrade_5_to_6, db_upgrade_6_to_7, db_upgrade_7_to_8]
 
 
 def db_upgrade(root_path):
@@ -4167,5 +4244,5 @@ def find_db_version(sess):
         Contract.name == 'configuration', MarketRole.code == 'Z').first()
     if conf is None:
         return None
-    conf_state = conf.make_state()
+    conf_state = amazon.ion.simpleion.load(StringIO(conf.state))
     return conf_state.get('db_version', 0)

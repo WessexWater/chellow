@@ -22,11 +22,8 @@ setup(
     packages=[
         'chellow', 'chellow.reports', 'amazon', 'amazon.ion'],
     package_data={'chellow': [
-        'non_core_contracts/*/*.py',
-        'non_core_contracts/*/rate_scripts/*.py',
-        'non_core_contracts/*/rate_scripts/*.ion',
-        'dno_contracts/*/*.py',
-        'dno_contracts/*/rate_scripts/*.py',
+        'non_core_contracts/*/*.zish',
+        'non_core_contracts/*/rate_scripts/*.zish',
         'mdd/*.csv',
         'templates/*.html',
         'templates/css/*.css',
@@ -60,7 +57,7 @@ setup(
         'pympler==0.5',
         'psutil==5.0.1',
         'xlrd==0.9.4',
-        'zish==0.0.3'],
+        'zish==0.0.18'],
     data_files=[('config', ['config/chellow.conf'])],
     entry_points={
         'console_scripts': [

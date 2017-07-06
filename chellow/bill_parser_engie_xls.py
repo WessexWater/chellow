@@ -1,4 +1,5 @@
 from decimal import Decimal
+import decimal
 from datetime import datetime as Datetime
 import csv
 from chellow.utils import parse_mpan_core, HH, to_utc, to_ct
@@ -173,6 +174,13 @@ def get_value(row, name):
         return val
 
 
+def get_dec(row, name):
+    try:
+        return Decimal(str(get_value(row, name)))
+    except decimal.InvalidOperation:
+        return None
+
+
 def bd_add(bd, el_name, val):
     if el_name.split('-')[-1] in ('rate', 'kva'):
         if el_name not in bd:
@@ -255,23 +263,22 @@ class Parser():
                             mpan_core))}
             bd = bill['breakdown']
 
-            usage = get_value(row, 'Usage')
+            usage = get_dec(row, 'Usage')
             usage_units = get_value(row, 'Usage Unit')
-            price = get_value(row, 'Price')
-            amount = get_value(row, 'Amount')
-            amount_dec = Decimal(amount)
+            price = get_dec(row, 'Price')
+            amount = get_dec(row, 'Amount')
             product_item_name = get_value(row, 'Product Item Name')
             rate_name = get_value(row, 'Rate Name')
             if usage_units == 'kWh':
                 if product_item_name == 'Renewables Obligation (RO)':
-                    bill['kwh'] += round(Decimal(usage), 2)
+                    bill['kwh'] += round(usage, 2)
                 elif product_item_name == "Unit Rate":
                     bd_add(bd, 'sum-gsp-kwh', usage)
             description = get_value(row, 'Description')
             if description in ('Standard VAT@20%', 'Reduced VAT@5%'):
-                bill['vat'] += round(amount_dec, 2)
+                bill['vat'] += round(amount, 2)
             else:
-                bill['net'] += round(amount_dec, 2)
+                bill['net'] += round(amount, 2)
 
             for q, qname in (
                     (usage, 'Usage'), (price, 'Price'), (amount, 'Amount')):
@@ -299,9 +306,11 @@ class Parser():
                 bd_add(bd, 'duos-excess-availability-days', usage)
                 bd_add(bd, 'duos-excess-availability-rate', price)
                 bd_add(bd, 'duos-excess-availability-gbp', amount)
-            elif description.startswith('BSUoS Reconcilliation - '):
-                bd_add(bd, 'bsuos-nbp-kwh', usage)
-                bd_add(bd, 'bsuos-rate', price)
+            elif description.startswith('BSUoS Reconciliation - '):
+                if usage is not None:
+                    bd_add(bd, 'bsuos-nbp-kwh', usage)
+                if price is not None:
+                    bd_add(bd, 'bsuos-rate', price)
                 bd_add(bd, 'bsuos-gbp', amount)
             elif description.startswith("FiT Rec - "):
                 bd_add(bd, 'fit-gbp', amount)

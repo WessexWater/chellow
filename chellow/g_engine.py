@@ -10,11 +10,12 @@ from chellow.models import (
     GRateScript, GEra, GRegisterRead, GBill, BillType, GReadType, GBatch,
     GUnits, get_non_core_contract_id)
 from chellow.utils import (
-    HH, hh_format, hh_after, get_file_rates, hh_min, hh_range, to_ct,
-    utc_datetime_now, utc_datetime)
+    HH, hh_after, get_file_rates, hh_min, hh_range, to_ct, utc_datetime_now,
+    utc_datetime, RateDict)
 import chellow.computer
 from types import MappingProxyType
 from datetime import timedelta
+from zish import loads
 
 
 def get_times(sess, caches, start_date, finish_date, forecast_date):
@@ -84,67 +85,44 @@ def identity_func(x):
     return x
 
 
-def g_rate(sess, caches, g_contract_id, date, name):
+def g_rates(sess, caches, g_contract_id, date):
     try:
-        rate_cache = caches['g_engine']['rates']
+        return caches['g_engine']['rates']['g_contract_id'][date]
     except KeyError:
-        rate_cache = get_g_engine_cache(caches, 'rates')
-
-    try:
-        cont_cache = rate_cache[g_contract_id]
-    except KeyError:
-        cont_cache = {}
-        rate_cache[g_contract_id] = cont_cache
-
-    try:
-        d_cache = cont_cache[date]
-    except KeyError:
-        month_after = date + relativedelta(months=1) + relativedelta(days=1)
-        month_before = date - relativedelta(months=1) - relativedelta(days=1)
+        try:
+            rate_cache = caches['g_engine']['rates']
+        except KeyError:
+            rate_cache = get_g_engine_cache(caches, 'rates')
 
         try:
-            future_funcs = caches['future_funcs']
+            cont_cache = rate_cache[g_contract_id]
         except KeyError:
-            future_funcs = {}
-            caches['future_funcs'] = future_funcs
+            cont_cache = rate_cache[g_contract_id] = {}
 
         try:
-            future_func = future_funcs[g_contract_id]
+            rates = cont_cache[date]
         except KeyError:
-            future_func = {'start_date': None, 'func': identity_func}
-            future_funcs[g_contract_id] = future_func
+            month_after = date + relativedelta(months=1) + \
+                relativedelta(days=1)
+            month_before = date - relativedelta(months=1) - \
+                relativedelta(days=1)
 
-        start_date = future_func['start_date']
-        ffunc = future_func['func']
+            try:
+                future_funcs = caches['future_funcs']
+            except KeyError:
+                future_funcs = {}
+                caches['future_funcs'] = future_funcs
 
-        if start_date is None:
-            rs = sess.query(GRateScript).filter(
-                GRateScript.g_contract_id == g_contract_id,
-                GRateScript.start_date <= date,
-                or_(
-                    GRateScript.finish_date == null(),
-                    GRateScript.finish_date >= date)).first()
+            try:
+                future_func = future_funcs[g_contract_id]
+            except KeyError:
+                future_func = {'start_date': None, 'func': identity_func}
+                future_funcs[g_contract_id] = future_func
 
-            if rs is None:
-                rs = sess.query(GRateScript).filter(
-                    GRateScript.g_contract_id == g_contract_id). \
-                    order_by(GRateScript.start_date.desc()).first()
-                func = ffunc
-                if date < rs.start_date:
-                    cstart = month_before
-                    cfinish = min(month_after, rs.start_date - HH)
-                else:
-                    cstart = max(rs.finish_date + HH, month_before)
-                    cfinish = month_after
-            else:
-                func = identity_func
-                cstart = max(rs.start_date, month_before)
-                if rs.finish_date is None:
-                    cfinish = month_after
-                else:
-                    cfinish = min(rs.finish_date, month_after)
-        else:
-            if date < start_date:
+            start_date = future_func['start_date']
+            ffunc = future_func['func']
+
+            if start_date is None:
                 rs = sess.query(GRateScript).filter(
                     GRateScript.g_contract_id == g_contract_id,
                     GRateScript.start_date <= date,
@@ -156,47 +134,58 @@ def g_rate(sess, caches, g_contract_id, date, name):
                     rs = sess.query(GRateScript).filter(
                         GRateScript.g_contract_id == g_contract_id). \
                         order_by(GRateScript.start_date.desc()).first()
-                func = identity_func
-                cstart = max(rs.start_date, month_before)
-                cfinish = min(month_after, start_date - HH)
+                    func = ffunc
+                    if date < rs.start_date:
+                        cstart = month_before
+                        cfinish = min(month_after, rs.start_date - HH)
+                    else:
+                        cstart = max(rs.finish_date + HH, month_before)
+                        cfinish = month_after
+                else:
+                    func = identity_func
+                    cstart = max(rs.start_date, month_before)
+                    if rs.finish_date is None:
+                        cfinish = month_after
+                    else:
+                        cfinish = min(rs.finish_date, month_after)
             else:
-                rs = sess.query(GRateScript).filter(
-                    GRateScript.g_contract_id == g_contract_id,
-                    GRateScript.start_date <= start_date,
-                    or_(
-                        GRateScript.finish_date == null(),
-                        GRateScript.finish_date >= start_date)).first()
-                if rs is None:
+                if date < start_date:
                     rs = sess.query(GRateScript).filter(
-                        GRateScript.g_contract_id == g_contract_id). \
-                        order_by(GRateScript.start_date.desc()).first()
-                func = ffunc
-                cstart = max(start_date, month_before)
-                cfinish = month_after
+                        GRateScript.g_contract_id == g_contract_id,
+                        GRateScript.start_date <= date,
+                        or_(
+                            GRateScript.finish_date == null(),
+                            GRateScript.finish_date >= date)).first()
 
-        ns = rs.make_script()
+                    if rs is None:
+                        rs = sess.query(GRateScript).filter(
+                            GRateScript.g_contract_id == g_contract_id). \
+                            order_by(GRateScript.start_date.desc()).first()
+                    func = identity_func
+                    cstart = max(rs.start_date, month_before)
+                    cfinish = min(month_after, start_date - HH)
+                else:
+                    rs = sess.query(GRateScript).filter(
+                        GRateScript.g_contract_id == g_contract_id,
+                        GRateScript.start_date <= start_date,
+                        or_(
+                            GRateScript.finish_date == null(),
+                            GRateScript.finish_date >= start_date)).first()
+                    if rs is None:
+                        rs = sess.query(GRateScript).filter(
+                            GRateScript.g_contract_id == g_contract_id). \
+                            order_by(GRateScript.start_date.desc()).first()
+                    func = ffunc
+                    cstart = max(start_date, month_before)
+                    cfinish = month_after
 
-        script_dict = {'ns': func(ns), 'rates': {}}
-        script_dict['rates']['_script_dict'] = script_dict
+            rates = RateDict(
+                str(g_contract_id), cstart, func(loads(rs.script)), [])
 
-        d_cache = script_dict['rates']
-        for dt in hh_range(caches, cstart, cfinish):
-            cont_cache[dt] = d_cache
+            for dt in hh_range(caches, cstart, cfinish):
+                cont_cache[dt] = rates
 
-    try:
-        return d_cache[name]
-    except KeyError:
-        script_dict = d_cache['_script_dict']
-
-        try:
-            val = script_dict['ns'][name]
-        except KeyError:
-            raise BadRequest(
-                "Can't find the rate " + name + " in the rate script at " +
-                hh_format(date) + " of the contract " +
-                str(g_contract_id) + ".")
-        script_dict['rates'][name] = val
-        return val
+        return rates
 
 
 def forecast_date():
@@ -265,19 +254,17 @@ def datum_range(sess, caches, years_back, start_date, finish_date):
             ct_decimal_hour = ct_dt.hour + ct_dt.minute / 60
 
             bhs = chellow.computer.hh_rate(
-                sess, caches, chellow.bank_holidays.get_db_id(), dt,
-                'bank_holidays')
-            if bhs is None:
-                raise BadRequest(
-                    "Can't find bank holidays for " + str(dt))
+                sess, caches, chellow.bank_holidays.get_db_id(),
+                dt)['bank_holidays']
+
             bank_holidays = [b[5:] for b in bhs]
             utc_is_bank_holiday = dt.strftime("%m-%d") in bank_holidays
             ct_is_bank_holiday = ct_dt.strftime("%m-%d") in bank_holidays
 
             cv = float(
-                chellow.computer.ion_rs(
+                chellow.computer.hh_rate(
                     sess, caches, g_cv_id,
-                    hist_date)[hist_date.day - 1]['SW']) / 3.6
+                    hist_date)['cvs'][hist_date.day - 1]['SW']) / 3.6
 
             datum_list.append(
                 MappingProxyType(
@@ -341,8 +328,8 @@ def _datum_generator(sess, years_back, caches):
             ct_decimal_hour = ct_dt.hour + ct_dt.minute / 60
 
             utc_bank_holidays = chellow.computer.hh_rate(
-                sess2, caches, chellow.bank_holidays.db_id, hh_date,
-                'bank_holidays')
+                sess2, caches, chellow.bank_holidays.db_id,
+                hh_date)['bank_holidays']
             if utc_bank_holidays is None:
                 raise BadRequest(
                     "\nCan't find bank holidays for " + str(hh_date))
@@ -786,24 +773,15 @@ class GDataSource():
     def g_contract_func(self, g_contract, func_name):
         return g_contract_func(self.caches, g_contract, func_name)
 
-    def g_rate(self, g_contract_id, date, name):
+    def g_rates(self, g_contract_id, date):
         try:
-            return self.rate_cache[g_contract_id][date][name]
+            return self.rate_cache[g_contract_id][date]
         except KeyError:
-            return g_rate(
-                self.sess, self.caches, g_contract_id, date, name)
+            return g_rates(self.sess, self.caches, g_contract_id, date)
         except AttributeError:
-            val = g_rate(
-                self.sess, self.caches, g_contract_id, date, name)
+            val = g_rates(self.sess, self.caches, g_contract_id, date)
             self.rate_cache = self.caches['g_engine']['rates']
             return val
-
-    def rate(self, contract_id, date, name):
-        return chellow.computer.hh_rate(
-            self.sess, self.caches, contract_id, date, name)
-
-    def file_rate(self, contract_name, timestamp, rate_name):
-        return get_file_rates(self.caches, contract_name, timestamp)[rate_name]
 
     def get_file_rates(self, contract_name, timestamp):
         return get_file_rates(self.caches, contract_name, timestamp)

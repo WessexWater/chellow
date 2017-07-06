@@ -18,7 +18,7 @@ from dateutil.relativedelta import relativedelta
 from chellow.utils import (
     HH, req_str, req_int, req_date, parse_mpan_core, req_bool, req_hh_date,
     hh_after, req_decimal, send_response, hh_min, hh_max, hh_format, hh_range,
-    utc_datetime, utc_datetime_now, req_ion, get_file_scripts, to_utc, dumps)
+    utc_datetime, utc_datetime_now, req_zish, get_file_scripts, to_utc)
 from werkzeug.exceptions import BadRequest, NotFound
 import chellow.general_import
 import io
@@ -33,7 +33,6 @@ from itertools import chain, islice
 import importlib
 import math
 from operator import itemgetter
-import ast
 from importlib import import_module
 import sys
 import chellow.rcrc
@@ -52,6 +51,7 @@ import chellow.g_bill_import
 import chellow.g_cv
 from xml.dom import Node
 import chellow.hh_importer
+from zish import dumps, loads
 
 
 app = Flask('chellow', instance_relative_config=True)
@@ -1000,7 +1000,7 @@ def hhdc_contracts_add_post():
         start_date = req_date('start')
         participant = Participant.get_by_id(g.sess, participant_id)
         contract = Contract.insert_hhdc(
-            g.sess, name, participant, '{}', '{}', start_date, None, '{}')
+            g.sess, name, participant, '{}', {}, start_date, None, {})
         g.sess.commit()
         chellow.hh_importer.startup_contract(contract.id)
         return chellow_redirect('/hhdc_contracts/' + str(contract.id), 303)
@@ -1104,8 +1104,8 @@ def hhdc_contract_edit_post(contract_id):
     try:
         contract = Contract.get_hhdc_by_id(g.sess, contract_id)
         if 'update_state' in request.form:
-            state = req_str("state")
-            contract.state = state
+            state = req_zish("state")
+            contract.update_state(state)
             g.sess.commit()
             return chellow_redirect('/hhdc_contracts/' + str(contract.id), 303)
         elif 'ignore_snags' in request.form:
@@ -1128,7 +1128,7 @@ def hhdc_contract_edit_post(contract_id):
             party_id = req_str('party_id')
             name = req_str("name")
             charge_script = req_str("charge_script")
-            properties = req_str("properties")
+            properties = req_zish("properties")
             party = Party.get_by_id(g.sess, party_id)
             contract.update(name, party, charge_script, properties)
             g.sess.commit()
@@ -1204,7 +1204,7 @@ def hhdc_rate_script_edit_post(hhdc_rate_script_id):
             return chellow_redirect(
                 '/hhdc_contracts/' + str(hhdc_contract.id), 303)
         else:
-            script = req_str('script')
+            script = req_zish('script')
             start_date = req_date('start')
             has_finished = req_bool('has_finished')
             finish_date = req_date('finish') if has_finished else None
@@ -1241,7 +1241,7 @@ def supplier_contract_edit_post(contract_id):
             party = Party.get_by_id(g.sess, party_id)
             name = req_str('name')
             charge_script = req_str('charge_script')
-            properties = req_str('properties')
+            properties = req_zish('properties')
             contract.update(name, party, charge_script, properties)
             g.sess.commit()
             return chellow_redirect(
@@ -1287,7 +1287,7 @@ def supplier_rate_script_edit_post(rate_script_id):
             return chellow_redirect(
                 '/supplier_contracts/' + str(contract.id), 303)
         else:
-            script = req_str('script')
+            script = req_zish('script')
             start_date = req_date('start')
             has_finished = req_bool('has_finished')
             finish_date = req_date('finish') if has_finished else None
@@ -1326,10 +1326,10 @@ def supplier_contract_add_post():
         name = req_str("name")
         start_date = req_date("start")
         charge_script = req_str("charge_script")
-        properties = req_str("properties")
+        properties = req_zish("properties")
         contract = Contract.insert_supplier(
             g.sess, name, participant, charge_script, properties, start_date,
-            None, '{}')
+            None, {})
         g.sess.commit()
         return chellow_redirect("/supplier_contracts/" + str(contract.id), 303)
     except BadRequest as e:
@@ -1386,7 +1386,7 @@ def supplier_rate_script_add_post(contract_id):
     try:
         contract = Contract.get_supplier_by_id(g.sess, contract_id)
         start_date = req_date('start')
-        rate_script = contract.insert_rate_script(g.sess, start_date, '')
+        rate_script = contract.insert_rate_script(g.sess, start_date, {})
         g.sess.commit()
         return chellow_redirect(
             '/supplier_rate_scripts/' + str(rate_script.id), 303)
@@ -1415,8 +1415,8 @@ def mop_contract_edit_post(contract_id):
     try:
         contract = Contract.get_mop_by_id(g.sess, contract_id)
         if 'update_state' in request.form:
-            state = req_str('state')
-            contract.state = state
+            state = req_zish('state')
+            contract.update_state(state)
             g.sess.commit()
             return chellow_redirect("/mop_contracts/" + str(contract.id), 303)
         elif 'ignore_snags' in request.form:
@@ -1439,7 +1439,7 @@ def mop_contract_edit_post(contract_id):
             party_id = req_int("party_id")
             name = req_str("name")
             charge_script = req_str("charge_script")
-            properties = req_str("properties")
+            properties = req_zish("properties")
             party = Party.get_by_id(g.sess, party_id)
             contract.update(name, party, charge_script, properties)
             g.sess.commit()
@@ -1479,7 +1479,7 @@ def mop_rate_script_edit_post(rate_script_id):
         return chellow_redirect('/mop_contracts/' + str(contract.id), 303)
     else:
         try:
-            script = req_str('script')
+            script = req_zish('script')
             start_date = req_date('start')
             if 'has_finished' in request.form:
                 finish_date = req_date('finish')
@@ -1512,7 +1512,7 @@ def mop_contract_add_post():
         start_date = req_date('start')
         participant = Participant.get_by_id(g.sess, participant_id)
         contract = Contract.insert_mop(
-            g.sess, name, participant, '{}', '{}', start_date, None, '{}')
+            g.sess, name, participant, '{}', '{}', start_date, None, {})
         g.sess.commit()
         return chellow_redirect('/mop_contracts/' + str(contract.id), 303)
     except BadRequest as e:
@@ -1570,7 +1570,7 @@ def mop_rate_script_add_post(contract_id):
     try:
         contract = Contract.get_mop_by_id(g.sess, contract_id)
         start_date = req_date('start')
-        rate_script = contract.insert_rate_script(g.sess, start_date, '')
+        rate_script = contract.insert_rate_script(g.sess, start_date, {})
         g.sess.commit()
         return chellow_redirect(
             '/mop_rate_scripts/' + str(rate_script.id), 303)
@@ -2988,13 +2988,13 @@ def non_core_contract_edit_post(contract_id):
             g.sess.commit()
             return chellow_redirect('/non_core_contracts', 303)
         if 'update_state' in request.values:
-            state = req_str("state")
-            contract.state = state
+            state = req_zish("state")
+            contract.update_state(state)
             g.sess.commit()
             return chellow_redirect(
                 '/non_core_contracts/' + str(contract.id), 303)
         else:
-            properties = req_str('properties')
+            properties = req_zish('properties')
             contract.update_properties(properties)
             g.sess.commit()
             return chellow_redirect(
@@ -3062,7 +3062,7 @@ def supplier_bill_get(bill_id):
         RegisterRead.present_date.desc())
     fields = {'bill': bill, 'register_reads': register_reads}
     try:
-        breakdown_dict = eval(bill.breakdown, {})
+        breakdown_dict = loads(bill.breakdown)
 
         raw_lines = []
         for key in ('raw_lines', 'raw-lines'):
@@ -3254,7 +3254,7 @@ def supplier_bill_edit_post(bill_id):
             gross = req_decimal("gross")
             type_id = req_int("bill_type_id")
             breakdown_str = req_str("breakdown")
-            breakdown = ast.literal_eval(breakdown_str)
+            breakdown = loads(breakdown_str)
             bill_type = BillType.get_by_id(g.sess, type_id)
 
             bill.update(
@@ -3384,7 +3384,7 @@ def hhdc_bill_get(bill_id):
     bill = Bill.get_by_id(g.sess, bill_id)
     fields = {'bill': bill}
     try:
-        breakdown_dict = eval(bill.breakdown, {})
+        breakdown_dict = loads(bill.breakdown)
 
         raw_lines = []
         for key in ('raw_lines', 'raw-lines'):
@@ -3665,7 +3665,7 @@ def mop_bill_add_post(batch_id):
         bill_type = BillType.get_by_id(g.sess, bill_type_id)
         breakdown_str = req_str("breakdown")
 
-        breakdown = eval(breakdown_str)
+        breakdown = loads(breakdown_str)
         bill_type = BillType.get_by_id(g.sess, bill_type_id)
         bill = batch.insert_bill(
             g.sess, account, reference, issue_date, start_date, finish_date,
@@ -3716,7 +3716,7 @@ def non_core_rate_script_add_post(contract_id):
     try:
         contract = Contract.get_non_core_by_id(g.sess, contract_id)
         start_date = req_date('start')
-        rate_script = contract.insert_rate_script(g.sess, start_date, '')
+        rate_script = contract.insert_rate_script(g.sess, start_date, {})
         g.sess.commit()
         return chellow_redirect(
             '/non_core_rate_scripts/' + str(rate_script.id), 303)
@@ -3755,7 +3755,7 @@ def non_core_rate_script_edit_post(rs_id):
             return chellow_redirect(
                 '/non_core_contracts/' + str(contract.id), 303)
         else:
-            script = req_str('script')
+            script = req_zish('script')
             start_date = req_hh_date('start')
             if 'has_finished' in request.values:
                 finish_date = req_date('finish')
@@ -3804,7 +3804,7 @@ def supplier_bill_add_post(batch_id):
         bill_type_id = req_int('bill_type_id')
         bill_type = BillType.get_by_id(g.sess, bill_type_id)
         breakdown_str = req_str('breakdown')
-        breakdown = eval(breakdown_str)
+        breakdown = loads(breakdown_str)
         bill_type = BillType.get_by_id(g.sess, bill_type_id)
         bill = batch.insert_bill(
             g.sess, account, reference, issue_date, start_date, finish_date,
@@ -4008,7 +4008,7 @@ def mop_bill_get(bill_id):
         RegisterRead.bill == bill).order_by(RegisterRead.present_date.desc())
     fields = {'bill': bill, 'register_reads': register_reads}
     try:
-        breakdown_dict = eval(bill.breakdown, {})
+        breakdown_dict = loads(bill.breakdown)
 
         raw_lines = []
         for key in ('raw_lines', 'raw-lines'):
@@ -4486,7 +4486,7 @@ def hhdc_bill_add_post(batch_id):
         bill_type = BillType.get_by_id(g.sess, bill_type_id)
         breakdown_str = req_str("breakdown")
 
-        breakdown = eval(breakdown_str)
+        breakdown = loads(breakdown_str)
         bill_type = BillType.get_by_id(g.sess, bill_type_id)
         bill = batch.insert_bill(
             g.sess, account, reference, issue_date, start_date, finish_date,
@@ -4969,10 +4969,10 @@ def g_contract_add_post():
         name = req_str('name')
         start_date = req_date('start')
         charge_script = req_str('charge_script')
-        properties = req_ion('properties')
+        properties = req_zish('properties')
 
         contract = GContract.insert(
-            g.sess, name, charge_script, properties, start_date, None, '{}')
+            g.sess, name, charge_script, properties, start_date, None, {})
         g.sess.commit()
         return chellow_redirect("/g_contracts/" + str(contract.id), 303)
     except BadRequest as e:
@@ -5000,8 +5000,8 @@ def g_contract_edit_post(g_contract_id):
         else:
             name = req_str('name')
             charge_script = req_str('charge_script')
-            properties = req_ion('properties')
-            g_contract.update(g.sess, name, charge_script, properties)
+            properties = req_zish('properties')
+            g_contract.update(name, charge_script, properties)
             g.sess.commit()
             return chellow_redirect('/g_contracts/' + str(g_contract.id), 303)
     except BadRequest as e:
@@ -5029,7 +5029,7 @@ def g_rate_script_add_post(g_contract_id):
         g_contract = GContract.get_by_id(g.sess, g_contract_id)
         start_date = req_date('start')
         g_rate_script = g_contract.insert_g_rate_script(
-            g.sess, start_date, '{}')
+            g.sess, start_date, {})
         g.sess.commit()
         return chellow_redirect(
             '/g_rate_scripts/' + str(g_rate_script.id), 303)
@@ -5061,7 +5061,7 @@ def g_rate_script_edit_post(g_rate_script_id):
             g.sess.commit()
             return chellow_redirect('/g_contracts/' + str(g_contract.id), 303)
         else:
-            script = req_str('script')
+            script = req_zish('script')
             start_date = req_date('start')
             has_finished = req_bool('has_finished')
             finish_date = req_date('finish') if has_finished else None
@@ -5312,7 +5312,7 @@ def g_bill_add_post(g_batch_id):
         net = req_decimal('net')
         vat = req_decimal('vat')
         gross = req_decimal('gross')
-        breakdown = req_ion("breakdown")
+        breakdown = req_zish("breakdown")
         g_bill = g_batch.insert_g_bill(
             g.sess, account, reference, issue_date, start_date, finish_date,
             kwh, net, vat, gross, breakdown, GSupply.get_by_mprn(g.sess, mprn))
@@ -5432,7 +5432,7 @@ def g_bill_edit_post(g_bill_id):
             gross_gbp = req_decimal('gross_gbp')
             type_id = req_int('bill_type_id')
             raw_lines = req_str('raw_lines')
-            breakdown = req_ion('breakdown')
+            breakdown = req_zish('breakdown')
             bill_type = BillType.get_by_id(g.sess, type_id)
 
             g_bill.update(

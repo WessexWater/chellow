@@ -134,19 +134,21 @@ class Parser():
                         " the date couldn't be parsed. " + str(e) +
                         " The full line is " + self.last_line)
 
+            def dec_val(title):
+                return Decimal(val(title))
+
             issue_date = date_val('Invoice Date')
             bill_from = validate_hh_start(date_val('Bill Period Start'))
             bill_to = validate_hh_start(date_val('Bill Period End')) + \
                 relativedelta(days=1) - HH
-            kwh = Decimal(val('Site Data'))
+            kwh = dec_val('Site Data')
             breakdown = dict(
-                [
-                    (v, float(val(k))) for k, v in col_map.items()
-                    if k in titles])
-            breakdown['raw_lines'] = [self._title_line, self.last_line]
-            net = Decimal('0.00') + Decimal(val('NET_AMT'))
-            vat = Decimal('0.00') + Decimal(val('VATTTL'))
-            gross = Decimal('0.00') + Decimal(val('TTLCHG'))
+                [(v, dec_val(k)) for k, v in col_map.items() if k in titles])
+            breakdown['raw_lines'] = [
+                self._title_line.strip(), self.last_line.strip()]
+            net = Decimal('0.00') + dec_val('NET_AMT')
+            vat = Decimal('0.00') + dec_val('VATTTL')
+            gross = Decimal('0.00') + dec_val('TTLCHG')
             raw_bills.append(
                 {
                     'bill_type_code': 'N', 'account': val('Bill Ref No.'),

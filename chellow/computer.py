@@ -13,12 +13,11 @@ from chellow.models import (
     ClockInterval, Mtc)
 from chellow.utils import (
     HH, hh_format, hh_max, hh_range, hh_min, utc_datetime, utc_datetime_now,
-    to_tz, to_ct, loads)
+    to_tz, to_ct, loads, RateDict)
 import chellow.bank_holidays
 from itertools import combinations
 from types import MappingProxyType
 from functools import lru_cache
-import json
 
 
 cons_types = ['construction', 'commissioning', 'operation']
@@ -79,150 +78,27 @@ def identity_func(x):
     return x
 
 
-def hh_rate(sess, caches, contract_id, date, name):
+def hh_rate(sess, caches, contract_id, date):
     try:
-        rate_cache = caches['computer']['rates']
-    except KeyError:
-        rate_cache = get_computer_cache(caches, 'rates')
-
-    try:
-        cont_cache = rate_cache[contract_id]
-    except KeyError:
-        cont_cache = {}
-        rate_cache[contract_id] = cont_cache
-
-    try:
-        d_cache = cont_cache[date]
-    except KeyError:
-        month_after = date + relativedelta(months=1) + relativedelta(days=1)
-        month_before = date - relativedelta(months=1) - relativedelta(days=1)
-
-        try:
-            future_funcs = caches['future_funcs']
-        except KeyError:
-            future_funcs = {}
-            caches['future_funcs'] = future_funcs
-
-        try:
-            future_func = future_funcs[contract_id]
-        except KeyError:
-            future_func = {'start_date': None, 'func': identity_func}
-            future_funcs[contract_id] = future_func
-
-        start_date = future_func['start_date']
-        ffunc = future_func['func']
-
-        if start_date is None:
-            rs = sess.query(RateScript).filter(
-                RateScript.contract_id == contract_id,
-                RateScript.start_date <= date,
-                or_(
-                    RateScript.finish_date == null(),
-                    RateScript.finish_date >= date)).first()
-
-            if rs is None:
-                rs = sess.query(RateScript).filter(
-                    RateScript.contract_id == contract_id). \
-                    order_by(RateScript.start_date.desc()).first()
-                func = ffunc
-                if date < rs.start_date:
-                    cstart = month_before
-                    cfinish = min(month_after, rs.start_date - HH)
-                else:
-                    cstart = max(rs.finish_date + HH, month_before)
-                    cfinish = month_after
-            else:
-                func = identity_func
-                cstart = max(rs.start_date, month_before)
-                if rs.finish_date is None:
-                    cfinish = month_after
-                else:
-                    cfinish = min(rs.finish_date, month_after)
-        else:
-            if date < start_date:
-                rs = sess.query(RateScript).filter(
-                    RateScript.contract_id == contract_id,
-                    RateScript.start_date <= date,
-                    or_(
-                        RateScript.finish_date == null(),
-                        RateScript.finish_date >= date)).first()
-
-                if rs is None:
-                    rs = sess.query(RateScript).filter(
-                        RateScript.contract_id == contract_id). \
-                        order_by(RateScript.start_date.desc()).first()
-                func = identity_func
-                cstart = max(rs.start_date, month_before)
-                cfinish = min(month_after, start_date - HH)
-            else:
-                rs = sess.query(RateScript).filter(
-                    RateScript.contract_id == contract_id,
-                    RateScript.start_date <= start_date,
-                    or_(
-                        RateScript.finish_date == null(),
-                        RateScript.finish_date >= start_date)).first()
-                if rs is None:
-                    rs = sess.query(RateScript).filter(
-                        RateScript.contract_id == contract_id). \
-                        order_by(RateScript.start_date.desc()).first()
-                func = ffunc
-                cstart = max(start_date, month_before)
-                cfinish = month_after
-
-        is_json = rs.script.lstrip()[0] == '{'
-        if is_json:
-            ns = json.loads(rs.script)
-        else:
-            ns = {}
-            exec(rs.script, ns)
-
-        script_dict = {'is_json': is_json, 'ns': func(ns), 'rates': {}}
-        script_dict['rates']['_script_dict'] = script_dict
-
-        d_cache = script_dict['rates']
-
-        for dt in hh_range(caches, cstart, cfinish):
-            cont_cache[dt] = d_cache
-
-    try:
-        return d_cache[name]
-    except KeyError:
-        script_dict = d_cache['_script_dict']
-
-        try:
-            val = script_dict['ns'][name]
-        except KeyError:
-            raise BadRequest(
-                "Can't find the rate " + name + " in the rate script at " +
-                hh_format(date) + " of the contract " + str(contract_id) + ".")
-        if not script_dict['is_json']:
-            val = val()
-        script_dict['rates'][name] = val
-    return val
-
-
-def ion_rs(sess, caches, contract_id, date):
-    try:
-        return caches['computer']['rss'][contract_id][date]
+        return caches['computer']['rates'][contract_id][date]
     except KeyError:
         try:
-            rss_cache = caches['computer']['rss']
+            rss_cache = caches['computer']['rates']
         except KeyError:
-            rss_cache = get_computer_cache(caches, 'rss')
+            rss_cache = get_computer_cache(caches, 'rates')
 
         try:
             cont_cache = rss_cache[contract_id]
         except KeyError:
-            cont_cache = {}
-            rss_cache[contract_id] = cont_cache
+            cont_cache = rss_cache[contract_id] = cont_cache = {}
 
         try:
             return cont_cache[date]
         except KeyError:
-            month_after = date + relativedelta(months=1) + \
-                relativedelta(days=1)
-            month_before = date - relativedelta(months=1) - \
-                relativedelta(days=1)
+            month_after = date + relativedelta(months=1) + relativedelta(
+                days=1)
+            month_before = date - relativedelta(months=1) - relativedelta(
+                days=1)
 
             try:
                 future_funcs = caches['future_funcs']
@@ -276,8 +152,8 @@ def ion_rs(sess, caches, contract_id, date):
 
                     if rs is None:
                         rs = sess.query(RateScript).filter(
-                            RateScript.contract_id == contract_id). \
-                            order_by(RateScript.start_date.desc()).first()
+                            RateScript.contract_id == contract_id).order_by(
+                            RateScript.start_date.desc()).first()
                     func = identity_func
                     cstart = max(rs.start_date, month_before)
                     cfinish = min(month_after, start_date - HH)
@@ -290,17 +166,18 @@ def ion_rs(sess, caches, contract_id, date):
                             RateScript.finish_date >= start_date)).first()
                     if rs is None:
                         rs = sess.query(RateScript).filter(
-                            RateScript.contract_id == contract_id). \
-                            order_by(RateScript.start_date.desc()).first()
+                            RateScript.contract_id == contract_id).order_by(
+                            RateScript.start_date.desc()).first()
                     func = ffunc
                     cstart = max(start_date, month_before)
                     cfinish = month_after
 
-            ion = func(loads(rs.script))
+            vals = RateDict(
+                str(contract_id), cstart, func(loads(rs.script)), [])
             for dt in hh_range(caches, cstart, cfinish):
-                cont_cache[dt] = ion
+                cont_cache[dt] = vals
 
-            return ion
+            return vals
 
 
 def forecast_date():
@@ -422,7 +299,7 @@ def _tpr_dict(sess, caches, tpr_code):
                 cis = []
             else:
                 tprs = hh_rate(
-                    sess, caches, contract.id, utc_datetime_now(), 'tprs')
+                    sess, caches, contract.id, utc_datetime_now())['tprs']
                 try:
                     cis = tprs[tpr_code]
                 except KeyError:
@@ -526,11 +403,9 @@ def datum_range(sess, caches, years_back, start_date, finish_date):
                 ct_decimal_hour = ct_dt.hour + ct_dt.minute / 60
 
                 bhs = hh_rate(
-                    sess, caches, chellow.bank_holidays.get_db_id(), dt,
-                    'bank_holidays')
-                if bhs is None:
-                    raise BadRequest(
-                        "Can't find bank holidays for " + str(dt))
+                    sess, caches, chellow.bank_holidays.get_db_id(),
+                    dt)['bank_holidays']
+
                 bank_holidays = [b[5:] for b in bhs]
                 utc_is_bank_holiday = dt.strftime("%m-%d") in bank_holidays
                 ct_is_bank_holiday = ct_dt.strftime("%m-%d") in bank_holidays
@@ -591,13 +466,13 @@ class DataSource():
     def contract_func(self, contract, func_name):
         return contract_func(self.caches, contract, func_name)
 
-    def hh_rate(self, contract_id, date, name):
+    def hh_rate(self, contract_id, date):
         try:
-            return self.rate_cache[contract_id][date][name]
+            return self.rate_cache[contract_id][date]
         except KeyError:
-            return hh_rate(self.sess, self.caches, contract_id, date, name)
+            return hh_rate(self.sess, self.caches, contract_id, date)
         except AttributeError:
-            val = hh_rate(self.sess, self.caches, contract_id, date, name)
+            val = hh_rate(self.sess, self.caches, contract_id, date)
             self.rate_cache = self.caches['computer']['rates']
             return val
 

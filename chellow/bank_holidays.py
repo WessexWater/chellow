@@ -4,11 +4,11 @@ import traceback
 from chellow.models import Contract, RateScript, Session
 from chellow.utils import (
     HH, hh_format, utc_datetime_now, utc_datetime, utc_datetime_parse)
-import json
 from dateutil.relativedelta import relativedelta
 import atexit
 import functools
 import requests
+from zish import dumps
 
 
 @functools.lru_cache()
@@ -32,7 +32,7 @@ class BankHolidayImporter(threading.Thread):
     def __init__(self):
         super(BankHolidayImporter, self).__init__(name="Bank Holiday Importer")
         self.lock = threading.RLock()
-        self.messages = collections.deque()
+        self.messages = collections.deque(maxlen=100)
         self.stopped = threading.Event()
         self.going = threading.Event()
         self.PROXY_HOST_KEY = 'proxy.host'
@@ -56,8 +56,6 @@ class BankHolidayImporter(threading.Thread):
     def log(self, message):
         self.messages.appendleft(
             utc_datetime_now().strftime("%Y-%m-%d %H:%M:%S") + " - " + message)
-        if len(self.messages) > 100:
-            self.messages.pop()
 
     def run(self):
         while not self.stopped.isSet():
@@ -120,8 +118,7 @@ class BankHolidayImporter(threading.Thread):
                                 hh_format(year_start) + ".")
                             contract.update_rate_script(
                                 sess, rs, rs.start_date, rs.finish_date,
-                                json.dumps(
-                                    script, indent='    ', sort_keys=True))
+                                dumps(script))
                             sess.commit()
                     else:
                         self.log(

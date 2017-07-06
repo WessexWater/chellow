@@ -15,7 +15,8 @@ import os
 import threading
 from werkzeug.exceptions import BadRequest
 from chellow.utils import (
-    HH, hh_format, hh_min, hh_max, req_int, csv_make_val, to_utc, req_date)
+    HH, hh_format, hh_min, hh_max, req_int, csv_make_val, to_utc, req_date,
+    loads)
 from chellow.views import chellow_redirect
 from flask import request, g
 import csv
@@ -185,7 +186,7 @@ def content(batch_id, bill_id, contract_id, start_date, finish_date, user):
                 covered_bdown['sum-msp-kwh'] += float(covered_bill.kwh)
                 if len(covered_bill.breakdown) > 0:
                     covered_rates = defaultdict(set)
-                    for k, v in eval(covered_bill.breakdown, {}).items():
+                    for k, v in loads(covered_bill.breakdown).items():
 
                         if k.split('-')[-1] in ('rate', 'kva'):
                             covered_rates[k].add(str(v))

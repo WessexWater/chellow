@@ -17,8 +17,7 @@ def hh(supply_source):
         try:
             future_funcs = supply_source.caches['future_funcs']
         except KeyError:
-            future_funcs = {}
-            supply_source.caches['future_funcs'] = future_funcs
+            future_funcs = supply_source.caches['future_funcs'] = {}
 
         try:
             future_funcs['aahedc']

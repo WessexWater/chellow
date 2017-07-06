@@ -8,9 +8,9 @@ from chellow.models import (
     Contract, RateScript, get_non_core_contract_id, Session)
 from chellow.utils import HH, hh_format, utc_datetime_now, to_utc, to_ct
 import xlrd
-import json
 from werkzeug.exceptions import BadRequest
 import atexit
+from zish import loads
 
 
 ELEXON_PORTAL_SCRIPTING_KEY_KEY = 'elexonportal_scripting_key'
@@ -66,11 +66,11 @@ def hh(data_source):
         except KeyError:
             db_id = get_non_core_contract_id('system_price')
             h_start = h['start-date']
-            rates = data_source.hh_rate(db_id, h_start, 'gbp_per_nbp_mwh')
+            rates = data_source.hh_rate(db_id, h_start)['gbp_per_nbp_mwh']
             try:
                 rdict = rates[key_format(h_start)]
-                sbp = rdict['sbp'] / 1000
-                ssp = rdict['ssp'] / 1000
+                sbp = float(rdict['sbp'] / 1000)
+                ssp = float(rdict['ssp'] / 1000)
                 system_price_cache[h_start] = (sbp, ssp)
             except KeyError:
                 raise BadRequest(
@@ -142,7 +142,7 @@ class SystemPriceImporter(threading.Thread):
                         for rscript in sess.query(RateScript).filter(
                                 RateScript.contract == contract).order_by(
                                 RateScript.start_date.desc()):
-                            ns = json.loads(rscript.script)
+                            ns = loads(rscript.script)
                             rates = ns['gbp_per_nbp_mwh']
                             if len(rates) == 0:
                                 fill_start = rscript.start_date
@@ -241,9 +241,9 @@ class SystemPriceImporter(threading.Thread):
 
                                 contract.update_rate_script(
                                     sess, latest_rs, latest_rs.start_date,
-                                    month_finish, latest_rs.script)
+                                    month_finish, loads(latest_rs.script))
                                 rs = contract.insert_rate_script(
-                                    sess, month_start, '')
+                                    sess, month_start, {})
                                 sess.flush()
                             script = {
                                 'gbp_per_nbp_mwh': dict(
@@ -254,8 +254,7 @@ class SystemPriceImporter(threading.Thread):
                                 hh_format(month_start) + ".")
                             contract.update_rate_script(
                                 sess, rs, rs.start_date, rs.finish_date,
-                                json.dumps(
-                                    script, indent='    ', sort_keys=True))
+                                script)
                             sess.commit()
                     else:
                         self.log(

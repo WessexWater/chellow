@@ -204,8 +204,8 @@
             'name': 'system_price',
             'properties': """
 {
-    'enabled': True,
-    'url': 'http://127.0.0.1:8080/nationalgrid/sf_bsuos.xls'}
+    "enabled": true,
+    "url": "http://127.0.0.1:8080/nationalgrid/sf_bsuos.xls"}
 """},
         'status_code': 303},
     {
@@ -230,11 +230,11 @@
         'data': {
             'properties': """
 {
-    'ips': {'127.0.0.1': 'implicit-user@localhost'},
-    'site_links': [
-        {'name': 'Google Maps', 'href': 'https://maps.google.com/maps?q='}],
-    'elexonportal_scripting_key': 'xxx',
-    'background_colour': 'aquamarine'}
+    "ips": {"127.0.0.1": "implicit-user@localhost"},
+    "site_links": [
+        {"name": "Google Maps", "href": "https://maps.google.com/maps?q="}],
+    "elexonportal_scripting_key": "xxx",
+    "background_colour": "aquamarine"}
 """},
         'status_code': 303},
 
@@ -245,9 +245,9 @@
         'data': {
             'properties': """
 {
-            'enabled': True,
-            'url': 'http://127.0.0.1:8080/elexonportal/',
-            'limit': True}
+            "enabled": true,
+            "url": "http://127.0.0.1:8080/elexonportal/",
+            "limit": true}
 """},
         'status_code': 303},
     {
@@ -304,7 +304,7 @@ def virtual_bill(ds):
         if hh['utc-is-month-end']:
             bill['net-gbp'] += 10
 """,
-            'properties': "{'mpan_map': {'maptest': '2292056799106'}}"},
+            'properties': '{"mpan_map": {"maptest": "2292056799106"}}'},
         'status_code': 303},
 
     {
@@ -401,10 +401,10 @@ def virtual_bill(ds):
         'regexes': [
             r'<textarea name="charge_script" rows="40" cols="80">\s*'
             'def virtual_bill_title',
-            r'<textarea name="properties" rows="40" '
-            'cols="80">\{&#34;props&#34;: 1\}</textarea>',
-            r'<textarea name="state" rows="40" cols="80">'
-            '\{&#34;stat&#34;: 2\}</textarea>']},
+            r'<textarea name="properties" rows="40" cols="80">\{\s*'
+            r'&#34;props&#34;: 1\}</textarea>',
+            r'<textarea name="state" rows="40" cols="80">\{\s*'
+            r'&#34;stat&#34;: 2\}</textarea>']},
     {
         'name': "Check one can update the participant for an HHDC contract.",
         'path': '/hhdc_contracts/9/edit',
@@ -428,7 +428,7 @@ def virtual_bill(ds):
         if hh['utc-is-month-end']:
             bill['net-gbp'] += 7
 """,
-            'properties': "{'protocol': 'sftp'}"},
+            'properties': '{"protocol": "sftp"}'},
         'status_code': 303},
 
     {
@@ -459,7 +459,7 @@ def virtual_bill(ds):
             'start_hour': "00",
             'start_minute': "00",
             'charge_script': "",
-            'properties': "{'hydrogen': 'sonata'}"},
+            'properties': '{"hydrogen": "sonata"}'},
         'regexes': [
             r"/supplier_contracts/10"]},
 
@@ -468,8 +468,8 @@ def virtual_bill(ds):
         'path': '/supplier_contracts/10/edit',
         'regexes': [
             r'<option value="22" selected>',
-            r'<textarea name="properties" rows="20" '
-            'cols="80">\{&#39;hydrogen&#39;: &#39;sonata&#39;\}</textarea>'],
+            r'<textarea name="properties" rows="20" cols="80">\{\s*'
+            r'&#34;hydrogen&#34;: &#34;sonata&#34;\}</textarea>'],
         'status_code': 200},
     {
         'path': '/supplier_contracts/10',
@@ -494,15 +494,14 @@ def virtual_bill(ds):
             'start_hour': "00",
             'start_minute': "00",
             'has_finished': "false",
-            'script': """
-def gsp_gbp_per_kwh():
-    return {
-        'winter-pk': 0.0193918,
-        'winter-low-pk': 0.0501474,
-        'winter-off-pk': 0.0062656,
-        'summer-pk': 0.0062656,
-        'night': 0.0062656,
-        'other': 0.0062656}
+            'script': """{
+  "gsp_gbp_per_kwh": {
+  "winter-pk": 0.0193918,
+  "winter-low-pk": 0.0501474,
+  "winter-off-pk": 0.0062656,
+  "summer-pk": 0.0062656,
+  "night": 0.0062656,
+  "other": 0.0062656}}
 """},
         'status_code': 303},
     {
@@ -604,15 +603,14 @@ def virtual_bill_titles():
             'start_hour': "00",
             'start_minute': "00",
             'has_finished': "false",
-            'script': """
-def gsp_gbp_per_kwh():
-    return {
-        'winter-pk': 0.0193918,
-        'winter-low-pk': 0.0501474,
-        'winter-off-pk': 0.0062656,
-        'summer-pk': 0.0062656,
-        'night': 0.0062656,
-        'other': 0.0062656}
+            'script': """{
+"gsp_gbp_per_kwh": {
+  "winter-pk": 0.0193918,
+  "winter-low-pk": 0.0501474,
+  "winter-off-pk": 0.0062656,
+  "summer-pk": 0.0062656,
+  "night": 0.0062656,
+  "other": 0.0062656}}
 """},
         'status_code': 303,
         'regexes': [
@@ -2038,7 +2036,7 @@ def virtual_bill_titles():
         'method': 'post',
         'data': {
             'state': """{
-'last_import_keys': {'.': '1960-11-30 00:00_example.csv'}}
+"last_import_keys": {".": "1960-11-30 00:00_example.csv"}}
 """,
             'update_state': "Update State"},
         'status_code': 303},
@@ -2046,8 +2044,8 @@ def virtual_bill_titles():
         'path': '/hhdc_contracts/8',
         'status_code': 200,
         'regexes': [
-            r"\{\s*&#39;last_import_keys&#39;: \{&#39;.&#39;: "
-            "&#39;1960-11-30 00:00_example.csv&#39;\}\}",
+            r"\{\s*&#34;last_import_keys&#34;: \{\s*"
+            r'&#34;.&#34;: &#34;1960-11-30 00:00_example.csv&#34;\}\}',
 
             # Check link to channel snags
             r"days_hidden",
@@ -2250,8 +2248,8 @@ def displaced_virtual_bill(supply_source):
         bill[slot_keys['msp-kwh']] += hh['msp-kwh']
         bill[slot_keys['gsp-kwh']] += hh['gsp-kwh']
         rates = supply_source.hh_rate(
-            db_id, hh_start, 'gsp_gbp_per_kwh')
-        bill[slot_keys['gbp']] += hh['gsp-kwh'] * rates[slot_name]
+            db_id, hh_start)['gsp_gbp_per_kwh']
+        bill[slot_keys['gbp']] += hh['gsp-kwh'] * float(rates[slot_name])
         bill['bsuos-kwh'] += hh['nbp-kwh']
         bill['bsuos-gbp'] += hh['bsuos-gbp']
 
@@ -2360,10 +2358,11 @@ def virtual_bill(supply_source):
 
     chellow.system_price.hh(supply_source)
     rates = supply_source.hh_rate(
-        db_id, supply_source.finish_date, 'gsp_gbp_per_kwh')
+        db_id, supply_source.finish_date)['gsp_gbp_per_kwh']
     for slot_name in slot_names:
         slot_keys = slots[slot_name]
-        bill[slot_keys['gbp']] = bill[slot_keys['gsp-kwh']] * rates[slot_name]
+        bill[slot_keys['gbp']] = bill[slot_keys['gsp-kwh']] * float(
+            rates[slot_name])
 
     for rate_name, rate_set in rate_sets.items():
         bill[rate_name] = rate_set
@@ -2632,7 +2631,7 @@ def virtual_bill(supply_source):
         'status_code': 303},
     {
         'path': '/downloads',
-        'tries': {},
+        'tries': {'max': 20},
         'regexes': [
             r"0003_FINISHED_watkinsexamplecom_supply_virtual_bills_7\.csv"],
         'status_code': 200},
@@ -3849,10 +3848,11 @@ def displaced_virtual_bill(supply_source):
     chellow.aahedc.hh(supply_source)
 
     rates = supply_source.hh_rate(
-        db_id, supply_source.finish_date, 'gsp_gbp_per_kwh')
+        db_id, supply_source.finish_date)['gsp_gbp_per_kwh']
     for slot_name in slot_names:
         slot_keys = slots[slot_name]
-        bill[slot_keys['gbp']] = bill[slot_keys['gsp-kwh']] * rates[slot_name]
+        bill[slot_keys['gbp']] = bill[slot_keys['gsp-kwh']] * float(
+            rates[slot_name])
 
     for rate_name, rate_set in supply_source.supplier_rate_sets.items():
         bill[rate_name] = rate_set
@@ -3897,9 +3897,8 @@ def virtual_bill(supply_source):
         slot_keys = slots[slot_key]
         bill[slot_keys['msp-kwh']] += hh['msp-kwh']
         bill[slot_keys['gsp-kwh']] += hh['gsp-kwh']
-        rates = supply_source.hh_rate(
-            db_id, hh_start, 'gsp_gbp_per_kwh')
-        bill[slot_keys['gbp']] += hh['gsp-kwh'] * rates[slot_name]
+        rates = supply_source.hh_rate(db_id, hh_start)['gsp_gbp_per_kwh']
+        bill[slot_keys['gbp']] += hh['gsp-kwh'] * float(rates[slot_name])
 
         bill['bsuos-kwh'] += hh['nbp-kwh']
         bill['bsuos-gbp'] += hh['bsuos-gbp']
@@ -4136,7 +4135,7 @@ def virtual_bill(supply_source):
         'status_code': 303},
     {
         'path': '/downloads',
-        'tries': {},
+        'tries': {'max': 20, 'period': 1},
         'regexes': [
             r"0012_FINISHED_watkinsexamplecom_supply_virtual_bills_12\.csv"],
         'status_code': 200},
@@ -4239,7 +4238,7 @@ def virtual_bill(supply_source):
         'status_code': 303},
     {
         'path': '/downloads',
-        'tries': {},
+        'tries': {'max': 30, 'period': 1},
         'regexes': [
             r"0013_FINISHED_watkinsexamplecom_supply_virtual_bills_12\.csv"],
         'status_code': 200},
@@ -4553,7 +4552,7 @@ def virtual_bill(supply_source):
             "<td>2010-06-09 00:00</td>\s*<td>2010-05-01 00:00</td>\s*"
             "<td>2010-05-31 23:30</td>\s*<td>32124.5</td>\s*"
             r'<td>2219.41</td>\s*<td>388.40</td>\s*<td>2607.81</td>\s*'
-            r'<td>\[\(&#39;aahedc-gbp&#39;, 5.29\),',
+            r'<td>\[\(&#39;aahedc-gbp&#39;, Decimal\(&#39;5.29&#39;\)\),',
             r"All the bills have been successfully loaded and attached to "
             "the batch\."],
         'status_code': 200},
@@ -4575,7 +4574,7 @@ def virtual_bill(supply_source):
         'status_code': 303},
     {
         'path': '/downloads',
-        'tries': {},
+        'tries': {'max': 60, 'period': 1},
         'regexes': [
             r'0015_FINISHED_watkinsexamplecom_monthly_duration_20100601_0000_'
             r'for_1_months_site_CI004\.ods'],
@@ -5353,7 +5352,7 @@ def virtual_bill(supply_source):
         'status_code': 303},
     {
         'path': '/downloads',
-        'tries': {'max': 60, 'period': 1},
+        'tries': {'max': 210, 'period': 1},
         'regexes': [
             r'0016_FINISHED_watkinsexamplecom_monthly_duration_20100701_0000_'
             r'for_12_months_site_CI004\.ods'],
@@ -6465,13 +6464,15 @@ def virtual_bill(supply_source):
         'method': 'post',
         'data': {
             'name': "configuration",
-            'properties': """
-{
-    'ips': {'127.0.0.1': 'implicit-user@localhost'},
-    'site_links': [
-        {'name': 'Google Maps', 'href': 'https://maps.google.com/maps?q='}],
-    'batch_reports': [1],
-    'elexonportal_scripting_key': 'xxx'}
+            'properties': """{
+  "ips": {
+    "127.0.0.1": "implicit-user@localhost"},
+  "site_links": [
+    {
+      "name": "Google Maps", "href": "https://maps.google.com/maps?q="}],
+  "batch_reports": [
+    1],
+  "elexonportal_scripting_key": "xxx"}
 """, },
         'status_code': 303},
 
@@ -6595,16 +6596,15 @@ def virtual_bill_titles():
 def virtual_bill(supply_source):
     supply_source.dc_bill['net-gbp'] = 0
 """,
-            'properties': """
-{
-    'enabled': True,
-    'protocol': 'ftp',
-    'file_type': '.df2',
-    'hostname': 'localhost',
-    'port': 2121,
-    'username': 'chellow',
-    'password': 'HixaNfUBOf*u',
-    'directories': ['.']}
+            'properties': """{
+  "enabled": true,
+  "protocol": "ftp",
+  "file_type": ".df2",
+  "hostname": "localhost",
+  "port": 2121,
+  "username": "chellow",
+  "password": "HixaNfUBOf*u",
+  "directories": ["."]}
 """},
         'status_code': 303},
 
@@ -6613,7 +6613,7 @@ def virtual_bill(supply_source):
         'path': '/hhdc_contracts/8',
         'status_code': 200,
         'regexes': [
-            r'&#39;hostname&#39;: &#39;localhost&#39;,']},
+            r'&#34;hostname&#34;: &#34;localhost&#34;,']},
 
     # Do an 'import now'
     {
@@ -6641,11 +6641,10 @@ def virtual_bill(supply_source):
         'method': 'post',
         'data': {
             'name': 'system_price',
-            'properties': """
-{
-    'enabled': True,
-    'url': 'http://127.0.0.1:8080/elexonportal/',
-    'limit': True}
+            'properties': """{
+  "enabled": true,
+  "url": "http://127.0.0.1:8080/elexonportal/",
+  "limit": true}
 """},
         'status_code': 303},
 
@@ -7184,7 +7183,7 @@ def virtual_bill(supply_source):
         'status_code': 303},
     {
         'path': '/downloads',
-        'tries': {},
+        'tries': {'max': 20, 'period': 1},
         'regexes': [
             r"0027_FINISHED_watkinsexamplecom_supply_virtual_bills_17\.csv"],
         'status_code': 200},
@@ -7377,7 +7376,7 @@ def virtual_bill(supply_source):
     {
         'name': "Daily supplier virtual bills page.",
         'path': '/downloads',
-        'tries': {},
+        'tries': {'max': 20, 'period': 1},
         'regexes': [
             r"0031_FINISHED_watkinsexamplecom_daily_"
             r"supplier_virtual_bill\.csv"],
@@ -7767,7 +7766,7 @@ def virtual_bill(supply_source):
         'status_code': 303},
     {
         'path': '/downloads',
-        'tries': {},
+        'tries': {'max': 20, 'period': 1},
         'regexes': [
             r"0039_FINISHED_watkinsexamplecom_displaced\.csv"],
         'status_code': 200},
@@ -8368,7 +8367,7 @@ def virtual_bill(supply_source):
     {
         'name': "HH by HH virtual bill (must straddle two eras)",
         'path': '/downloads',
-        'tries': {},
+        'tries': {'max': 20, 'period': 1},
         'regexes': [
             r'0051_FINISHED_watkinsexamplecom_supply_virtual_bills_hh_5\.csv'],
         'status_code': 200},
@@ -8723,33 +8722,25 @@ def virtual_bill(supply_source):
             'charge_script': "",
             'properties': """
 {
-    'bsuos' : {
-        'start_date': None,  # Date or None for latest rate script
-        'multiplier': 1.5,
-        'constant': 0,
-    },
+    "bsuos" : {
+        "start_date": null,
+        "multiplier": 1.5,
+        "constant": 0},
 
-    'ccl': {
-        'start_date': datetime(2014, 10, 1),
-        'multiplier': 1,
-        'constant': 0,
-    },
+    "ccl": {
+        "start_date": 2014-10-01T00:00:00Z,
+        "multiplier": 1,
+        "constant": 0},
 
-    'aahedc': {
-        'start_date': None,
-        'multiplier': 0,
-        'constant': 0.00091361,
-    },
+    "aahedc": {
+        "start_date": null,
+        "multiplier": 0,
+        "constant": 0.00091361},
 
-    'scenario_start': datetime(2015, 6, 1),  # Date or None for this month
-    'scenario_duration': 1,  # Number of months
+    "scenario_start": 2015-06-01T00:00:00Z,
+    "scenario_duration": 1,
 
-    'kw_changes':
-
-    # MPAN Core, Date, kW
-    '''
-    ''',
-}
+    "kw_changes": ""}
 """, },
         'regexes': [
             r"/supplier_contracts/17"],
@@ -8761,7 +8752,7 @@ def virtual_bill(supply_source):
         'status_code': 303},
     {
         'path': '/downloads',
-        'tries': {},
+        'tries': {'max': 70, 'period': 1},
         'status_code': 200,
         'regexes': [
             r"0056_FINISHED_watkinsexamplecom_scenario_bau_20150601_0000_for_"
@@ -8832,31 +8823,27 @@ def virtual_bill(supply_source):
             'charge_script': "",
             'properties': """
 {
-  'rates': {
-    'bsuos' : {
-      'start_date': datetime(2011, 1, 1),
-      'multiplier': 1,
-      'constant': 0.1},
+  "rates": {
+    "bsuos" : {
+      "start_date": 2011-01-01T00:00:00Z,
+      "multiplier": 1,
+      "constant": 0.1},
 
-    'ccl': {
-      'start_date': datetime(2014, 10, 1),
-      'multiplier': 1,
-      'constant': 0},
+    "ccl": {
+      "start_date": 2014-10-01T00:00:00Z,
+      "multiplier": 1,
+      "constant": 0},
 
-    'aahedc': {
-      'start_date': datetime(2011, 1, 1),
-      'multiplier': 1,
-      'constant': 0.1}},
+    "aahedc": {
+      "start_date": 2011-01-01T00:00:00Z,
+      "multiplier": 1,
+      "constant": 0.1}},
 
-  'scenario_start': datetime(2011, 1, 1),  # Date or None for this month
-  'scenario_duration': 1,  # Number of months
-  'resolution': 'hh',  # 'hh' or 'month'
+  "scenario_start": 2011-01-01T00:00:00Z,
+  "scenario_duration": 1,
+  "resolution": "hh",
 
-  'kw_changes':
-
-  # MPAN Core, Date, kW
-  '''
-  '''}
+  "kw_changes": ""}
 """},
         'regexes': [
             r"/supplier_contracts/18"],
@@ -8938,7 +8925,18 @@ def virtual_bill(supply_source):
             r'<table:table-cell table:number-columns-repeated="2"/>\s*'
             r'<table:table-cell office:value="0.0047" '
             r'office:value-type="float"/>\s*'
-            r'<table:table-cell/>\s*'
+            r'<table:table-cell/>\s*',
+
+
+
+
+
+
+
+
+
+
+
             r'<table:table-cell office:value="5.89" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="130" '
@@ -8990,7 +8988,25 @@ def virtual_bill(supply_source):
             r'office:date-value="2010-01-07T17:00:00" '
             r'office:value-type="date" table:style-name="cell_date"/>\s*'
             r'<table:table-cell office:value="0" '
-            r'office:value-type="float"/>\s*'
+            r'office:value-type="float"/>\s*',
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
             r'<table:table-cell office:string-value="X" '
             r'office:value-type="string"/>\s*'
             r'<table:table-cell office:value="1.058" '
@@ -9052,7 +9068,22 @@ def virtual_bill(supply_source):
             r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="0.0" '
             r'office:value-type="float" table:number-columns-repeated="2"/>\s*'
-            r'<table:table-cell/>\s*'
+            r'<table:table-cell/>\s*',
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
             r'<table:table-cell office:value="0.0" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell table:number-columns-repeated="19"/>\s*'
@@ -9174,31 +9205,26 @@ def virtual_bill(supply_source):
             'charge_script': "",
             'properties': r"""
 {
-    'bsuos' : {
-        'start_date': datetime(2011, 1, 1),
-        'multiplier': 1,
-        'constant': 0,
-    },
+  "bsuos" : {
+    "start_date": 2011-01-01T00:00:00Z,
+    "multiplier": 1,
+    "constant": 0},
 
-    'ccl': {
-        'start_date': datetime(2014, 10, 1),
-        'multiplier': 1,
-        'constant': 0,
-    },
+  "ccl": {
+    "start_date": 2014-10-01T00:00:00Z,
+    "multiplier": 1,
+    "constant": 0},
 
-    'aahedc': {
-        'start_date': None,
-        'multiplier': 0,
-        'constant': 0.00091361,
-    },
+    "aahedc": {
+        "start_date": null,
+        "multiplier": 0,
+        "constant": 0.00091361},
 
-    'scenario_start': datetime(2011, 1, 1),  # Date or None for this month
-    'scenario_duration': 1,  # Number of months
-    'resolution': 'hh',  # 'hh' or 'month'
+    "scenario_start": 2011-01-01T00:00:00Z,
+    "scenario_duration": 1,
+    "resolution": "hh",
 
-    'kw_changes':
-    # CSV format with the following columns
-    # Site Code, Type ('used' or 'generated') , Date (yyyy-mm-dd), Multiplier
+    "kw_changes":
     "CI005, used, 2011-01-01, 0.5\nCI005, generated, 2011-01-01, 2"}
 """, },
         'regexes': [
@@ -9337,34 +9363,26 @@ def virtual_bill(supply_source):
             'charge_script': "",
             'properties': """
 {
-    'bsuos' : {
-        'start_date': datetime(5010, 1, 1),
-        'multiplier': 1,
-        'constant': 0.1,
-    },
+    "bsuos" : {
+        "start_date": 5010-01-01T00:00:00Z,
+        "multiplier": 1,
+        "constant": 0.1},
 
-    'ccl': {
-        'start_date': datetime(2014, 10, 1),
-        'multiplier': 1,
-        'constant': 0,
-    },
+    "ccl": {
+        "start_date": 2014-10-01T00:00:00Z,
+        "multiplier": 1,
+        "constant": 0},
 
-    'aahedc': {
-        'start_date': datetime(2011, 1, 1),
-        'multiplier': 1,
-        'constant': 0.1,
-    },
+    "aahedc": {
+        "start_date": 2011-01-01T00:00:00Z,
+        "multiplier": 1,
+        "constant": 0.1},
 
-    'scenario_start': datetime(5011, 1, 1),  # Date or None for this month
-    'scenario_duration': 1,  # Number of months
-    'resolution': 'hh',  # 'hh' or 'month'
+    "scenario_start": 5011-01-01T00:00:00Z,
+    "scenario_duration": 1,
+    "resolution": "hh",
 
-    'kw_changes':
-
-    # MPAN Core, Date, kW
-    '''
-    ''',
-}
+    "kw_changes": ""}
 """},
         'regexes': [
             r"/supplier_contracts/18"],
@@ -9931,17 +9949,12 @@ def virtual_bill(supply_source):
             'charge_script': "",
             'properties': """
 {
-    'kwh_start': datetime(2009, 4, 1),
-    'scenario_start': datetime(2016, 2, 1),  # Date or None for this month
-    'scenario_duration': 1,  # Number of months
-    'resolution': 'hh',  # 'hh' or 'month'
+  "kwh_start": 2009-04-01T00:00:00Z,
+  "scenario_start": 2016-02-01T00:00:00Z,
+  "scenario_duration": 1,
+  "resolution": "hh",
 
-    'kw_changes':
-
-    # MPAN Core, Date, kW
-    '''
-    ''',
-}
+  "kw_changes": ""}
 """, },
         'regexes': [
             r"/supplier_contracts/20"],
@@ -12199,7 +12212,7 @@ def virtual_bill(supply_source):
     {
         'name': "Test displaced virtual bill with generation",
         'path': '/downloads',
-        'tries': {},
+        'tries': {'max': 20},
         'regexes': [
             r'0089_FINISHED_watkinsexamplecom_monthly_duration_20051101_0000_'
             r'for_1_months_site_CI005\.ods'],
@@ -12226,16 +12239,16 @@ def virtual_bill(supply_source):
             'name': "configuration",
             'properties': """
 {
-    'ips': {'*.*.*.*': 'watkins@example.com'},
-    'site_links': [
-        {'name': 'Google Maps', 'href': 'https://maps.google.com/maps?q='}],
-    'batch_reports': [1],
-    'elexonportal_scripting_key': 'xxx',
-    'ecoes': {
-        'user_name': 'a',
-        'password': 'a',
-        'prefix': 'http://localhost:8080/ecoes/'},
-    'background_colour': 'aquamarine'}
+    "ips": {"*.*.*.*": "watkins@example.com"},
+    "site_links": [
+        {"name": "Google Maps", "href": "https://maps.google.com/maps?q="}],
+    "batch_reports": [1],
+    "elexonportal_scripting_key": "xxx",
+    "ecoes": {
+        "user_name": "a",
+        "password": "a",
+        "prefix": "http://localhost:8080/ecoes/"},
+    "background_colour": "aquamarine"}
 """, },
         'status_code': 303},
     {
@@ -12290,9 +12303,8 @@ def virtual_bill(supply_source):
         'data': {
             'properties': """
 {
-            'enabled': True,
-                'url':
-                    'https://www.gov.uk/bank-holidays/england-and-wales.ics'}
+  "enabled": true,
+  "url": "https://www.gov.uk/bank-holidays/england-and-wales.ics"}
 """},
         'status_code': 303},
     {
@@ -12319,9 +12331,9 @@ def virtual_bill(supply_source):
         'data': {
             'properties': """
 {
-            'enabled': True,
-            'url': 'http://127.0.0.1:8080/elexonportal/',
-            'limit': True}
+            "enabled": true,
+            "url": "http://127.0.0.1:8080/elexonportal/",
+            "limit": true}
 """},
         'status_code': 303},
     {
@@ -12679,18 +12691,18 @@ def virtual_bill(supply_source):
             'name': "configuration",
             'properties': """
 {
-    'site_links': [
-        {'name': 'Google Maps', 'href': 'https://maps.google.com/maps?q='}],
-    'batch_reports': [1],
-    'elexonportal_scripting_key': 'xxx',
-    'ecoes': {
-        'user_name': 'a',
-        'password': 'a',
-        'prefix': 'http://localhost:8080/ecoes/'},
-    'background_colour': 'aquamarine',
-    'ad_authentication': {
-        'on': True,
-        'default_user': 'admin@example.com'}}
+    "site_links": [
+        {"name": "Google Maps", "href": "https://maps.google.com/maps?q="}],
+    "batch_reports": [1],
+    "elexonportal_scripting_key": "xxx",
+    "ecoes": {
+        "user_name": "a",
+        "password": "a",
+        "prefix": "http://localhost:8080/ecoes/"},
+    "background_colour": "aquamarine",
+    "ad_authentication": {
+        "on": true,
+        "default_user": "admin@example.com"}}
 """, },
         'status_code': 303},
     {
@@ -12721,15 +12733,15 @@ def virtual_bill(supply_source):
             'name': "configuration",
             'properties': """
 {
-    'site_links': [
-        {'name': 'Google Maps', 'href': 'https://maps.google.com/maps?q='}],
-    'batch_reports': [1],
-    'elexonportal_scripting_key': 'xxx',
-    'ecoes': {
-        'user_name': 'a',
-        'password': 'a',
-        'prefix': 'http://localhost:8080/ecoes/'},
-    'background_colour': 'aquamarine'}
+  "site_links": [
+      {"name": "Google Maps", "href": "https://maps.google.com/maps?q="}],
+  "batch_reports": [1],
+  "elexonportal_scripting_key": "xxx",
+  "ecoes": {
+    "user_name": "a",
+    "password": "a",
+    "prefix": "http://localhost:8080/ecoes/"},
+  "background_colour": "aquamarine"}
 """, },
         'status_code': 303},
 
@@ -14738,9 +14750,9 @@ finally:
             r'<td>89564\.02</td>\s*'
             r'<td>6122\.00</td>\s*'
             r'<td>95686\.02</td>\s*'
-            r'<td>\[\(&#39;aahedc-gbp&#39;, 0.89\),.*'
+            r'<td>\[\(&#39;aahedc-gbp&#39;, Decimal\(&#39;0.89&#39;\)\),.*'
             r'capacity-gbp.*'
-            r'\(&#39;ccl-gbp&#39;, 100\.0\),.*'
+            r'\(&#39;ccl-gbp&#39;, Decimal\(&#39;100\.0\&#39;\)\),.*'
             r'cfd-fit-nbp-kwh.*'
             r'\(&#39;duos-availability-kva&#39;, &#39;220&#39;\).*'
             r'fit-gbp.*meter-rental-gbp.*'
@@ -14796,7 +14808,7 @@ finally:
     {
         'name': "Check TPRs in virtual bill",
         'path': '/downloads',
-        'tries': {},
+        'tries': {'max': 30},
         'status_code': 200,
         'regexes': [
             r'0012_FINISHED_adminexamplecom_supply_virtual_bills_16\.csv']},
@@ -14843,7 +14855,7 @@ finally:
     {
         'name': "Virtual bill with 2 hh data items.",
         'path': '/downloads',
-        'tries': {'max': 20, 'period': 1},
+        'tries': {'max': 30, 'period': 1},
         'regexes': [
             r"0013_FINISHED_adminexamplecom_supply_virtual_bills_5\.csv"],
         'status_code': 200},
@@ -14860,8 +14872,8 @@ finally:
             r'0.2441 \| 0.25405,12.423045,0.0,0.00382 \| 0.00399,0.0,122,'
             r'0.0878 \| 0.0905,10.795299999999976,88,52.5186,'
             r'0.0001897 \| 0.00021361,0.011218498146,53.02001082978,,'
-            r'-0.022426482314941622,0.0,0.0,0.0,0,0.0,0.0,48.9,52.5186,'
-            r'0.32906054015999997,,,,0,0.0,0.0,,,,53.02001082978,,'
+            r'-0.0224264823149416\d*,0.0,0.0,0.0,48.9,52.5186,'
+            r'0.32906054015999997,0,0.0,0.0,,,,0,0.0,0.0,,,,53.02001082978,,'
             r'0.0023350012769435113,2013-11-25 17:00,0,X,1.087,0.0,'
             r'2013-12-06 17:00,0,X,1.087,0.0,2014-01-30 17:00,0,X,1.087,0.0,'
             r'0.0,33.551731,0.0,2012-11-29 17:00 \| 2013-11-25 17:00,'
@@ -14981,12 +14993,12 @@ def virtual_bill(ds):
         ds.rate_sets['cv'].add(hh['cv'])
         kwh = hh['kwh']
         bill['kwh'] += kwh
-        gas_rate = float(ds.g_rate(db_id, hh['start_date'], 'gas_rate'))
+        gas_rate = float(ds.g_rates(db_id, hh['start_date'])['gas_rate'])
         ds.rate_sets['gas_rate'].add(gas_rate)
         bill['gas_gbp'] += gas_rate * kwh
         if hh['utc_is_month_end']:
             standing_rate = float(
-                ds.g_rate(db_id, hh['start_date'], 'standing_rate'))
+                ds.g_rates(db_id, hh['start_date'])['standing_rate'])
             ds.rate_sets['standing_rate'].add(standing_rate)
             bill['standing_gbp'] += standing_rate
         if hh['utc_decimal_hour'] == 0:
@@ -15047,7 +15059,7 @@ def virtual_bill(ds):
             r'/g_rate_scripts/2']},
 
     {
-        'name': "Edit gas rate script: error in ION",
+        'name': "Edit gas rate script: error in Zish",
         'path': '/g_rate_scripts/2/edit',
         'method': 'post',
         'data': {
@@ -15296,9 +15308,9 @@ def virtual_bill(ds):
                 'Units Consumed,Unit of Measure,Gas Charge,CCL Charge,'
                 'VAT at 5%,VAT at 15.0%,Vat at 17.50%,VAT at 20%,Total VAT,'
                 'Standing Charge,Total Charges',
-            'breakdown': "$ion_1_0 {'vat_20pc': 45, 'gas_gbp': 8936.13,"
-                " 'vat_17_5pc': 0, 'gas_rate': 0.019448, 'vat_15pc': 0, "
-                "'vat_5pc': 0, 'standing_gbp': 78.9, 'ccl_gbp': 275.32}"},
+            'breakdown': '{"vat_20pc": 45, "gas_gbp": 8936.13,'
+                ' "vat_17_5pc": 0, "gas_rate": 0.019448, "vat_15pc": 0, '
+                '"vat_5pc": 0, "standing_gbp": 78.9, "ccl_gbp": 275.32}'},
         'status_code': 303},
     {
         'name': "Delete gas bill",
@@ -15595,11 +15607,11 @@ def virtual_bill(ds):
             'start_minute': "00"},
         'status_code': 303,
         'regexes': [
-            r"/mop_rate_scripts/44"]},
+            r"/mop_rate_scripts/39"]},
 
     {
         'name': "Delete mop rate script",
-        'path': '/mop_rate_scripts/44/edit',
+        'path': '/mop_rate_scripts/39/edit',
         'method': 'post',
         'data': {
             'delete': "Delete"},
@@ -15622,14 +15634,14 @@ def virtual_bill(supply_source):
 """,
             'properties': """
 {
-    'enabled': True,
-    'protocol': 'ftp',
-    'file_type': '.df2',
-    'hostname': 'localhost',
-    'port': 2121,
-    'username': 'chellow',
-    'password': 'HixaNfUBOf*u',
-    'directories': ['error']}
+    "enabled": true,
+    "protocol": "ftp",
+    "file_type": ".df2",
+    "hostname": "localhost",
+    "port": 2121,
+    "username": "chellow",
+    "password": "HixaNfUBOf*u",
+    "directories": ["error"]}
 """},
         'status_code': 303},
 
@@ -15664,14 +15676,14 @@ def virtual_bill(supply_source):
 """,
             'properties': """
 {
-    'enabled': True,
-    'protocol': 'sftp',
-    'file_type': '.df2',
-    'hostname': 'localhost',
-    'port': 2120,
-    'username': 'chellow',
-    'password': 'HixaNfUBOf*u',
-    'directories': ['error']}
+    "enabled": true,
+    "protocol": "sftp",
+    "file_type": ".df2",
+    "hostname": "localhost",
+    "port": 2120,
+    "username": "chellow",
+    "password": "HixaNfUBOf*u",
+    "directories": ["error"]}
 """},
         'status_code': 303},
 
@@ -15896,5 +15908,54 @@ def virtual_bill(supply_source):
         'regexes': [
             r'Import\s*'
             r'data by month'],
+        'status_code': 200},
+
+    {
+        'name': "Create a teleswitch supplier contract",
+        'path': '/supplier_contracts/add',
+        'method': 'post',
+        'data': {
+            'participant_id': "28",  # BIZZ
+            'name': "teleswitch",
+            'start_year': "2000",
+            'start_month': "01",
+            'start_day': "03",
+            'start_hour': "00",
+            'start_minute': "00",
+            'charge_script': "",
+            'properties': '{}'},
+        'regexes': [
+            r"/supplier_contracts/21"]},
+    {
+        'name': "Update the associated rate script.",
+        'path': '/supplier_rate_scripts/40/edit',
+        'method': 'post',
+        'data': {
+            'start_year': "2000",
+            'start_month': "01",
+            'start_day': "03",
+            'start_hour': "00",
+            'start_minute': "00",
+            'has_finished': "false",
+            'script': """{
+  "tprs": {}}
+"""},
+        'status_code': 303},
+    {
+        'path': '/reports/291?supply_id=10&start_year=2016&start_month=03&'
+        'start_day=01&start_hour=00&start_minute=0&finish_year=2016&'
+        'finish_month=03&finish_day=31&finish_hour=23&finish_minute=30',
+        'status_code': 303},
+    {
+        'path': '/downloads',
+        'tries': {'max': 20},
+        'regexes': [
+            r"0021_FINISHED_adminexamplecom_supply_virtual_bills_10\.csv"],
+        'status_code': 200},
+    {
+        'path': '/downloads/'
+        '0021_FINISHED_adminexamplecom_supply_virtual_bills_10.csv',
+        'regexes': [
+            r"Can't find the TPR"],
         'status_code': 200},
 ]

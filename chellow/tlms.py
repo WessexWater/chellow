@@ -10,6 +10,8 @@ from chellow.utils import HH, hh_format, utc_datetime_now, to_utc, to_ct
 from werkzeug.exceptions import BadRequest
 import atexit
 from datetime import datetime as Datetime
+from decimal import Decimal
+from zish import loads
 
 
 ELEXON_PORTAL_SCRIPTING_KEY_KEY = 'elexonportal_scripting_key'
@@ -20,14 +22,12 @@ def key_format(dt):
 
 
 def tlms_future(ns):
-    old_result = ns['tlms']()
+    old_result = ns['tlms']
     last_value = old_result[sorted(old_result.keys())[-1]]
 
     new_result = collections.defaultdict(lambda: last_value, old_result)
 
-    def tlms():
-        return new_result
-    return {'tlms': tlms}
+    return {'tlms': new_result}
 
 
 def hh(data_source):
@@ -57,10 +57,10 @@ def hh(data_source):
         except KeyError:
             h_start = h['start-date']
             db_id = get_non_core_contract_id('tlms')
-            rates = data_source.hh_rate(db_id, h_start, 'tlms')
+            rates = data_source.hh_rate(db_id, h_start)['tlms']
             try:
-                h['tlm'] = tlm = cache[h_start] = \
-                    rates[h_start.strftime("%d %H:%M Z")]
+                h['tlm'] = tlm = cache[h_start] = float(
+                    rates[h_start.strftime("%d %H:%M Z")])
             except KeyError:
                 raise BadRequest(
                     "For the TLMs rate script at " +
@@ -81,7 +81,7 @@ class TlmImporter(threading.Thread):
     def __init__(self):
         super(TlmImporter, self).__init__(name="TLM Importer")
         self.lock = threading.RLock()
-        self.messages = collections.deque()
+        self.messages = collections.deque(maxlen=100)
         self.stopped = threading.Event()
         self.going = threading.Event()
         self.PROXY_HOST_KEY = 'proxy.host'
@@ -105,8 +105,6 @@ class TlmImporter(threading.Thread):
     def log(self, message):
         self.messages.appendleft(
             utc_datetime_now().strftime("%Y-%m-%d %H:%M:%S") + " - " + message)
-        if len(self.messages) > 100:
-            self.messages.pop()
 
     def run(self):
         while not self.stopped.isSet():
@@ -120,10 +118,10 @@ class TlmImporter(threading.Thread):
                         RateScript.contract_id == contract.id).order_by(
                         RateScript.start_date.desc()).first()
                     latest_rs_id = latest_rs.id
-                    next_month_start = latest_rs.start_date + \
-                        relativedelta(months=1)
-                    next_month_finish = latest_rs.start_date + \
-                        relativedelta(months=2) - HH
+                    next_month_start = latest_rs.start_date + relativedelta(
+                        months=1)
+                    next_month_finish = latest_rs.start_date + relativedelta(
+                        months=2) - HH
 
                     now = utc_datetime_now()
                     if now > next_month_start:
@@ -172,18 +170,17 @@ class TlmImporter(threading.Thread):
 
                         if key_format(next_month_finish) in month_tlms:
                             self.log("The whole month's data is there.")
-                            script = "def tlms():\n    return {\n" + \
-                                ',\n'.join(
-                                    "'" + k + "': " +
-                                    month_tlms[k]['off-taking'] for k in
-                                    sorted(month_tlms.keys())) + "}"
+                            script = {
+                                'tlms': dict(
+                                    (k, Decimal(month_tlms[k]['off-taking']))
+                                    for k in month_tlms.keys())}
                             contract = Contract.get_non_core_by_name(
                                 sess, 'tlms')
                             rs = RateScript.get_by_id(sess, latest_rs_id)
                             contract.update_rate_script(
                                 sess, rs, rs.start_date,
                                 rs.start_date + relativedelta(months=2) - HH,
-                                rs.script)
+                                loads(rs.script))
                             sess.flush()
                             contract.insert_rate_script(
                                 sess, rs.start_date + relativedelta(months=1),
@@ -193,8 +190,8 @@ class TlmImporter(threading.Thread):
                         else:
                             msg = "There isn't a whole month there yet."
                             if len(month_tlms) > 0:
-                                msg += "The last date is " + \
-                                    sorted(month_tlms.keys())[-1]
+                                msg += "The last date is " + sorted(
+                                    month_tlms.keys())[-1]
                             self.log(msg)
                 except:
                     self.log("Outer problem " + traceback.format_exc())

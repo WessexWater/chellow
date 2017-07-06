@@ -1,7 +1,7 @@
 from decimal import Decimal
 import csv
 from dateutil.relativedelta import relativedelta
-from chellow.utils import HH, validate_hh_start, utc_datetime_parse
+from chellow.utils import HH, validate_hh_start, utc_datetime_parse, loads
 from werkzeug.exceptions import BadRequest
 from io import StringIO
 
@@ -50,12 +50,12 @@ class Parser():
             gross = self.to_decimal(10, 'gross', True)
 
             if len(self.vals) > 11:
-                breakdown = self.vals[11].strip()
-                if len(breakdown) == 0:
+                breakdown_str = self.vals[11].strip()
+                if len(breakdown_str) == 0:
                     breakdown = {}
                 else:
                     try:
-                        breakdown = eval(breakdown)
+                        breakdown = loads(breakdown_str)
                     except SyntaxError as e:
                         raise BadRequest(str(e))
             else:

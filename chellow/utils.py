@@ -8,22 +8,18 @@ from flask import request, Response
 from jinja2 import Environment
 import time
 import traceback
-from amazon.ion.simpleion import load, dump
-from amazon.ion.exceptions import IonException
-from io import StringIO
 import os
-from collections.abc import Mapping, Sequence
-import zish
+from collections.abc import Mapping
+from zish import loads, ZishException
 
-clogs = deque()
+
+clogs = deque(maxlen=1000)
 
 
 def clog(msg):
     clogs.appendleft(
         utc_datetime_now().strftime("%Y-%m-%d %H:%M:%S") + " - " +
         str(msg))
-    if len(clogs) > 1000:
-        clogs.pop()
 
 
 HH = relativedelta(minutes=30)
@@ -51,12 +47,12 @@ def req_int(name):
             "Problem parsing the field " + name + " as an integer: " + str(e))
 
 
-def req_ion(name):
+def req_zish(name):
     try:
         return loads(req_str(name))
-    except IonException as e:
+    except ZishException as e:
         raise BadRequest(
-            "Problem parsing the field " + name + " as ION " + str(e) + ".")
+            "Problem parsing the field " + name + " as Zish: " + str(e))
 
 
 def req_date(prefix, resolution='minute'):
@@ -529,6 +525,10 @@ def get_file_scripts(contract_name):
 
 class RateDict(Mapping):
     def __init__(self, contract_name, dt, rate_dict, key_history):
+        if not isinstance(rate_dict, Mapping):
+            raise Exception(
+                "The rate_dict must be a mapping, but got a " +
+                str(type(rate_dict)) + " with value " + str(rate_dict))
         self._contract_name = contract_name
         self._dt = dt
         for k, v in tuple(rate_dict.items()):
@@ -542,7 +542,7 @@ class RateDict(Mapping):
         try:
             return self._storage[key]
         except KeyError:
-            raise Exception(
+            raise KeyError(
                 "For the contract " + self._contract_name +
                 " and the rate script at " + hh_format(self._dt) +
                 " the key " + str(self._key_history + [key]) +
@@ -640,8 +640,8 @@ def get_file_rates(cache, contract_name, dt):
                     cfinish = month_after
             try:
                 rscript = RateDict(
-                    contract_name, dt, func(zish.loads(script)), [])
-            except zish.ZishException as e:
+                    contract_name, dt, func(loads(script)), [])
+            except ZishException as e:
                 raise BadRequest(
                     "Problem parsing rate script for contract " +
                     contract_name + " starting at " +
@@ -655,53 +655,3 @@ def get_file_rates(cache, contract_name, dt):
             for hh_date in hh_range(cache, cstart, cfinish):
                 cont[hh_date] = rscript
             return cont[dt]
-
-
-def loads(ion_str):
-    try:
-        return load(StringIO(ion_str))
-    except IonException as e:
-        raise BadRequest("Problem with ION: " + str(e))
-
-
-def dumps_orig(val):
-    f = StringIO()
-    dump(val, f)
-    return f.getvalue()
-
-
-def dump_val(val, indent):
-    out = []
-    next_indent = indent + '  '
-    if isinstance(val, str):
-        out.append('"' + val + '"')
-    elif isinstance(val, Mapping):
-        out.append('{\n')
-        for i, (k, v) in enumerate(val.items()):
-            out.append(
-                next_indent + '"' + k + '": ' + dump_val(v, next_indent))
-            if i < len(val) - 1:
-                out.append(',\n')
-        out.append('}')
-    elif isinstance(val, Sequence):
-        out.append('[\n')
-        for i, v in enumerate(val):
-            out.append(next_indent + dump_val(v, next_indent))
-            if i < len(val) - 1:
-                out.append(',\n')
-        out.append(']')
-    elif isinstance(val, Decimal):
-        out.append(str(val))
-    elif isinstance(val, bool):
-        out.append('true' if val else 'false')
-    elif isinstance(val, int):
-        out.append(str(val))
-    else:
-        raise Exception(
-            "Must be either a str, Decimal, Mapping, bool  or Sequence, " +
-            "but got a " + str(type(val)))
-    return ''.join(out)
-
-
-def dumps(val):
-    return '$ion_1_0 ' + dump_val(val, '')
