@@ -13,6 +13,7 @@ from amazon.ion.exceptions import IonException
 from io import StringIO
 import os
 from collections.abc import Mapping, Sequence
+import zish
 
 clogs = deque()
 
@@ -493,7 +494,7 @@ def get_file_scripts(contract_name):
 
     rscripts = []
     for rscript_fname in sorted(os.listdir(rscripts_path)):
-        if not rscript_fname.endswith('.ion'):
+        if not rscript_fname.endswith('.zish'):
             continue
         try:
             start_str, finish_str = \
@@ -572,7 +573,12 @@ def get_file_rates(cache, contract_name, dt):
                 if start_date <= dt <= end_date:
                     try:
                         rscript = RateDict(
-                            contract_name, dt, loads(script), [])
+                            contract_name, dt, zish.loads(script), [])
+                    except zish.ZishException as e:
+                        raise BadRequest(
+                            "Problem parsing rate script for contract " +
+                            contract_name + " starting at " +
+                            hh_format(start_date) + ": " + str(e))
                     except BadRequest as e:
                         raise BadRequest(
                             "Problem with rate script for contract " +

@@ -4,13 +4,15 @@ import os
 import threading
 from flask import g, request
 from chellow.views import chellow_redirect
-from decimal import Decimal
-import xlrd
+from decimal import Decimal, InvalidOperation
+import openpyxl
 from itertools import chain
 from werkzeug.exceptions import BadRequest
-from chellow.utils import dumps, req_int
+from chellow.utils import req_int
 from collections import OrderedDict
 from chellow.models import Session, GspGroup
+from zish import dumps
+from io import BytesIO
 
 
 def get_value(row, idx):
@@ -22,11 +24,32 @@ def get_value(row, idx):
 
 
 def get_rate(row, idx):
-    val = get_value(row, idx)
-    if isinstance(val, str) and len(val) == 0:
-        return Decimal('0.00000')
+    cell = row[idx]
+    if cell.number_format == '#':
+        return None
+
+    val = cell.value
+    if val is None:
+        return None
+    elif isinstance(val, str) and len(val) == 0:
+        return None
     else:
-        return round(Decimal(val) / Decimal('100'), 5)
+        try:
+            return round(Decimal(val) / Decimal('100'), 5)
+        except InvalidOperation as e:
+            raise BadRequest(
+                "Can't parse the decimal '" + str(val) + "' " + str(e) +
+                ".") from e
+
+
+def get_rag_rate(row, idx):
+    val = get_rate(row, idx)
+    return get_rag_rate(row, idx - 1) if val is None else val
+
+
+def get_zero_rate(row, idx):
+    val = get_rate(row, idx)
+    return Decimal('0.00000') if val is None else val
 
 
 def get_decimal(row, idx):
@@ -35,25 +58,26 @@ def get_decimal(row, idx):
 
 def to_llfcs(row, idx):
     val = get_value(row, idx)
+    llfcs = []
     if isinstance(val, str):
-        llfcs = []
-        for v in val.split(','):
-            val = v.strip()
-            if len(val) == 0:
-                continue
-            if '-' in val:
-                start, finish = val.split('-')
-                for i in range(int(start), int(finish) + 1):
-                    llfcs.append(str(i))
-            else:
-                llfcs.append(val)
+        for v in map(str.strip, val.split(',')):
+            if len(v) > 0:
+                if '-' in v:
+                    start, finish = v.split('-')
+                    for i in range(int(start), int(finish) + 1):
+                        llfcs.append(str(i))
+                else:
+                    llfcs.append(v)
     elif isinstance(val, Decimal):
-        llfcs = [str(int(val))]
+        llfcs.append(str(int(val)))
     elif isinstance(val, float):
         llfcs_str = str(int(val))
-        llfcs = []
         for i in range(0, len(llfcs_str), 3):
             llfcs.append(llfcs_str[i:i+3])
+    elif isinstance(val, int):
+        val_str = str(val)
+        for i in range(0, len(val_str), 3):
+            llfcs.append(val_str[i:i+3])
     return [v.zfill(3) for v in llfcs]
 
 
@@ -91,25 +115,26 @@ def str_to_hr(hr_str):
     return hours + minutes / Decimal(60)
 
 
-def content(user, file_name, file_contents, gsp_group_id, llfc_tab, laf_tab):
+def content(user, file_name, file_like, gsp_group_id, llfc_tab, laf_tab):
     f = sess = None
     try:
         sess = Session()
         running_name, finished_name = chellow.dloads.make_names(
-            'dno_rates.ion', user)
+            'dno_rates.zish', user)
         f = open(running_name, mode='w')
         gsp_group = GspGroup.get_by_id(sess, gsp_group_id)
         tariffs = {}
         bands = []
         if file_name.endswith('.xlsx'):
-            book = xlrd.open_workbook(file_contents=file_contents)
-            llfc_sheet = book.sheet_by_index(llfc_tab)
+            book = openpyxl.load_workbook(
+                file_like, data_only=True, read_only=True)
+            llfc_sheet = book.worksheets[llfc_tab]
             in_tariffs = False
-            for row_index in range(1, llfc_sheet.nrows):
-                row = llfc_sheet.row(row_index)
-                val_0 = ' '.join(get_value(row, 0).split())
+            for row in llfc_sheet.iter_rows():
+                val = get_value(row, 0)
+                val_0 = None if val is None else ' '.join(val.split())
                 if in_tariffs:
-                    if len(val_0) == 0:
+                    if val_0 is None or len(val_0) == 0:
                         continue
 
                     llfcs_str = ','.join(
@@ -117,43 +142,41 @@ def content(user, file_name, file_contents, gsp_group_id, llfc_tab, laf_tab):
                     tariffs[llfcs_str] = OrderedDict(
                         (
                             ('description', val_0),
-                            ('gbp-per-mpan-per-day', get_rate(row, 6)),
-                            ('gbp-per-kva-per-day', get_rate(row, 7)),
+                            ('gbp-per-mpan-per-day', get_zero_rate(row, 6)),
+                            ('gbp-per-kva-per-day', get_zero_rate(row, 7)),
                             (
                                 'excess-gbp-per-kva-per-day',
-                                get_rate(row, 9)),
-                            ('red-gbp-per-kwh', get_rate(row, 3)),
-                            ('amber-gbp-per-kwh', get_rate(row, 4)),
-                            ('green-gbp-per-kwh', get_rate(row, 5)),
-                            ('gbp-per-kvarh', get_rate(row, 8))))
-                else:
-                    if val_0 == 'Tariff name' or \
-                            get_value(row, 1) == "Open LLFCs":
-                        in_tariffs = True
+                                get_zero_rate(row, 9)),
+                            ('red-gbp-per-kwh', get_rag_rate(row, 3)),
+                            ('amber-gbp-per-kwh', get_rag_rate(row, 4)),
+                            ('green-gbp-per-kwh', get_rag_rate(row, 5)),
+                            ('gbp-per-kvarh', get_zero_rate(row, 8))))
+                elif val_0 == 'Tariff name' or \
+                        get_value(row, 1) == "Open LLFCs":
+                    in_tariffs = True
 
                 if val_0 in BAND_WEEKEND:
                     for i, band_name in enumerate(('red', 'amber')):
-                        time_str = get_value(row, i+1).strip()
-                        if len(time_str) == 0:
-                            continue
-                        for t_str in time_str.splitlines():
-                            for sep in ('-', 'to'):
-                                if sep in t_str:
-                                    break
-                            start_str, finish_str = t_str.split(sep)
-                            bands.append(
-                                OrderedDict(
-                                    (
-                                        ('weekend', BAND_WEEKEND[val_0]),
-                                        ('start', str_to_hr(start_str)),
-                                        ('finish', str_to_hr(finish_str)),
-                                        ('band', band_name))))
+                        val = get_value(row, i+1)
+                        time_str = None if val is None else val.strip()
+                        if time_str is not None and len(time_str) > 0:
+                            for t_str in time_str.splitlines():
+                                for sep in ('-', 'to'):
+                                    if sep in t_str:
+                                        break
+                                start_str, finish_str = t_str.split(sep)
+                                bands.append(
+                                    OrderedDict(
+                                        (
+                                            ('weekend', BAND_WEEKEND[val_0]),
+                                            ('start', str_to_hr(start_str)),
+                                            ('finish', str_to_hr(finish_str)),
+                                            ('band', band_name))))
 
-            laf_sheet = book.sheet_by_index(laf_tab)
+            laf_sheet = book.worksheets[laf_tab]
             lafs = OrderedDict()
             period_lookup = {}
-            for row_index in range(1, laf_sheet.nrows):
-                row = laf_sheet.row(row_index)
+            for row in laf_sheet.iter_rows():
                 val_0 = get_value(row, 0)
                 if val_0 in VL_MAP:
                     lafs[VL_MAP[val_0]] = OrderedDict(
@@ -193,7 +216,7 @@ def do_post(session):
     laf_tab = req_int('laf_tab')
 
     args = (
-        user, file_item.filename, file_item.read(), gsp_group_id, llfc_tab,
-        laf_tab)
+        user, file_item.filename, BytesIO(file_item.read()), gsp_group_id,
+        llfc_tab, laf_tab)
     threading.Thread(target=content, args=args).start()
     return chellow_redirect("/downloads", 303)

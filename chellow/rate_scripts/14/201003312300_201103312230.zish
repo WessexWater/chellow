@@ -1,0 +1,61 @@
+{
+  "_E": {
+    "lafs": {
+      "lv-net": {
+        "night": 1.051,
+        "winter-weekday-peak": 1.075,
+        "winter-weekday-day": 1.065,
+        "other": 1.087},
+      "hv-net": {
+        "night": 1.017,
+        "winter-weekday-peak": 1.025,
+        "winter-weekday-day": 1.022,
+        "other": 1.030}},
+    "bands": [
+      {
+        "weekend": false,
+        "start": 16,
+        "finish": 19,
+        "band": "red"},
+      {
+        "weekend": false,
+        "start": 6.5,
+        "finish": 21,
+        "band": "amber"}],
+    "tariffs": {
+      "127": {
+        "description": "LV",
+        "gbp-per-mpan-per-day": 0.0706,
+        "gbp-per-kva-per-day": 0.0273,
+        "excess-gbp-per-kva-per-day": 0.0273,
+        "red-gbp-per-kwh": 0.05749,
+        "amber-gbp-per-kwh": 0.00672,
+        "green-gbp-per-kwh": 0.00048,
+        "gbp-per-kvarh": 0.00294},
+      "128": {
+        "description": "LV Sub",
+        "gbp-per-mpan-per-day": 0.0706,
+        "gbp-per-kva-per-day": 0.0382,
+        "excess-gbp-per-kva-per-day": 0.0382,
+        "red-gbp-per-kwh": 0.03782,
+        "amber-gbp-per-kwh": 0.00383,
+        "green-gbp-per-kwh": 0.00033,
+        "gbp-per-kvarh": 0.00230},
+      "365": {
+        "description": "HV",
+        "gbp-per-mpan-per-day": 0.7096,
+        "gbp-per-kva-per-day": 0.0451,
+        "excess-gbp-per-kva-per-day": 0.0451,
+        "red-gbp-per-kwh": 0.02907,
+        "amber-gbp-per-kwh": 0.00234,
+        "green-gbp-per-kwh": 0.00025,
+        "gbp-per-kvarh": 0.00132},
+      "366": {
+        "description": "HV Sub",
+        "gbp-per-mpan-per-day": 0.7096,
+        "gbp-per-kva-per-day": 0.0403,
+        "excess-gbp-per-kva-per-day": 0.0403,
+        "red-gbp-per-kwh": 0.03299,
+        "amber-gbp-per-kwh": 0.00266,
+        "green-gbp-per-kwh": 0.00031,
+        "gbp-per-kvarh": 0.00168}}}}
