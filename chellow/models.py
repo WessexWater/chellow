@@ -8,7 +8,7 @@ from datetime import datetime as Datetime
 import datetime
 import ast
 import math
-from sqlalchemy.sql.expression import true, false
+from sqlalchemy.sql.expression import true, false, text
 from sqlalchemy.exc import ProgrammingError, SQLAlchemyError
 from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.ext.declarative import declarative_base
@@ -4091,9 +4091,33 @@ def db_upgrade_5_to_6(sess, root_path):
     sess.commit()
 
 
+def db_upgrade_6_to_7(sess, root_path):
+    for name in ('aahedc', 'ro', 'triad', 'triad_rates', 'vat'):
+        params = {
+            'name': name}
+
+        sess.execute(
+            text(
+                "update contract set start_rate_script_id = null, "
+                "finish_rate_script_id = null where contract.id in "
+                "(select c.id from contract as c where c.name = :name);"),
+            params=params)
+        sess.execute(
+            text(
+                "delete from rate_script where rate_script.id in "
+                "(select rs.id from rate_script as rs, contract where "
+                "rs.contract_id = contract.id and contract.name = :name);"),
+            params=params)
+        sess.execute(
+            text(
+                "delete from contract where contract.name = :name;"),
+            params=params)
+        sess.commit()
+
+
 upgrade_funcs = [
     db_upgrade_0_to_1, db_upgrade_1_to_2, db_upgrade_2_to_3, db_upgrade_3_to_4,
-    db_upgrade_4_to_5, db_upgrade_5_to_6]
+    db_upgrade_4_to_5, db_upgrade_5_to_6, db_upgrade_6_to_7]
 
 
 def db_upgrade(root_path):

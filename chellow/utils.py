@@ -3,7 +3,7 @@ from werkzeug.exceptions import BadRequest
 from pytz import timezone, utc
 from decimal import Decimal
 from collections import defaultdict, deque
-from datetime import datetime as Datetime, timedelta
+from datetime import datetime as Datetime
 from flask import request, Response
 from jinja2 import Environment
 import time
@@ -489,6 +489,16 @@ def make_val(v):
         return v
 
 
+def get_file_script_latest(contract_name):
+    return list(get_file_scripts(contract_name))[-1]
+
+
+def get_file_script(contract_name, date):
+    for start_date, finish_date, script in get_file_scripts(contract_name):
+        if date >= start_date and not hh_after(date, finish_date):
+            return start_date, finish_date, script
+
+
 def get_file_scripts(contract_name):
     rscripts_path = os.path.join(root_path, 'rate_scripts', contract_name)
 
@@ -545,6 +555,10 @@ class RateDict(Mapping):
         return len(self._storage)
 
 
+def identity_func(x):
+    return x
+
+
 def get_file_rates(cache, contract_name, dt):
     try:
         return cache['contract_names'][contract_name][dt]
@@ -562,40 +576,85 @@ def get_file_rates(cache, contract_name, dt):
         try:
             return cont[dt]
         except KeyError:
-            for start_date, finish_date, script in get_file_scripts(
-                    contract_name):
+            month_after = dt + relativedelta(months=1) + relativedelta(days=1)
+            month_before = dt - relativedelta(months=1) - relativedelta(days=1)
 
-                if finish_date is None:
-                    end_date = to_utc(Datetime.max)
-                else:
-                    end_date = finish_date
-
-                if start_date <= dt <= end_date:
-                    try:
-                        rscript = RateDict(
-                            contract_name, dt, zish.loads(script), [])
-                    except zish.ZishException as e:
-                        raise BadRequest(
-                            "Problem parsing rate script for contract " +
-                            contract_name + " starting at " +
-                            hh_format(start_date) + ": " + str(e))
-                    except BadRequest as e:
-                        raise BadRequest(
-                            "Problem with rate script for contract " +
-                            contract_name + " starting at " +
-                            hh_format(start_date) + ": " + e.description)
-                    FOUR_WEEKS = timedelta(weeks=4)
-                    range_start = hh_max(start_date, dt - FOUR_WEEKS)
-                    range_finish = hh_min(end_date, dt + FOUR_WEEKS)
-                    for hh_date in hh_range(cache, range_start, range_finish):
-                        cont[hh_date] = rscript
-                    break
             try:
-                return cont[dt]
+                future_funcs = cache['future_funcs']
             except KeyError:
+                future_funcs = {}
+                cache['future_funcs'] = future_funcs
+
+            try:
+                future_func = future_funcs[contract_name]
+            except KeyError:
+                future_func = future_funcs[contract_name] = {
+                    'start_date': None, 'func': identity_func}
+
+            start_date = future_func['start_date']
+            ffunc = future_func['func']
+
+            if start_date is None:
+                rs = get_file_script(contract_name, dt)
+
+                if rs is None:
+                    rs_start, rs_finish, script = get_file_script_latest(
+                        contract_name)
+                    func = ffunc
+                    if dt < rs_start:
+                        cstart = month_before
+                        cfinish = min(month_after, rs_start - HH)
+                    else:
+                        cstart = max(rs_finish + HH, month_before)
+                        cfinish = month_after
+                else:
+                    rs_start, rs_finish, script = rs
+                    func = identity_func
+                    cstart = max(rs_start, month_before)
+                    if rs_finish is None:
+                        cfinish = month_after
+                    else:
+                        cfinish = min(rs_finish, month_after)
+            else:
+                if dt < start_date:
+                    rs = get_file_script(contract_name, dt)
+
+                    if rs is None:
+                        rs_start, rs_finish, script = get_file_script_latest(
+                            contract_name)
+                    else:
+                        rs_start, rs_finish, script = rs
+
+                    func = identity_func
+                    cstart = max(rs_start, month_before)
+                    cfinish = min(month_after, start_date - HH)
+                else:
+                    rs = get_file_script(contract_name, dt)
+                    if rs is None:
+                        rs_start, rs_finish, script = get_file_script_latest(
+                            contract_name)
+                    else:
+                        rs_start, rs_finish, script = rs
+                    func = ffunc
+                    cstart = max(start_date, month_before)
+                    cfinish = month_after
+            try:
+                rscript = RateDict(
+                    contract_name, dt, func(zish.loads(script)), [])
+            except zish.ZishException as e:
                 raise BadRequest(
-                    "Can't find a file rate script for " + contract_name +
-                    " at " + hh_format(dt) + ".")
+                    "Problem parsing rate script for contract " +
+                    contract_name + " starting at " +
+                    hh_format(start_date) + ": " + str(e))
+            except BadRequest as e:
+                raise BadRequest(
+                    "Problem with rate script for contract " +
+                    contract_name + " starting at " +
+                    hh_format(start_date) + ": " + e.description)
+
+            for hh_date in hh_range(cache, cstart, cfinish):
+                cont[hh_date] = rscript
+            return cont[dt]
 
 
 def loads(ion_str):

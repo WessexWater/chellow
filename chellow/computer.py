@@ -536,30 +536,30 @@ def datum_range(sess, caches, years_back, start_date, finish_date):
                 ct_is_bank_holiday = ct_dt.strftime("%m-%d") in bank_holidays
 
                 datum = MappingProxyType(
-                        {
-                            'hist-start': hist_date, 'start-date': dt,
-                            'ct-day': ct_dt.day, 'utc-month': dt.month,
-                            'utc-day': dt.day,
-                            'utc-decimal-hour': utc_decimal_hour,
-                            'utc-year': dt.year, 'utc-hour': dt.hour,
-                            'utc-minute': dt.minute, 'ct-year': ct_dt.year,
-                            'ct-month': ct_dt.month,
-                            'ct-decimal-hour': ct_decimal_hour,
-                            'ct-day-of-week': ct_dt.weekday(),
-                            'utc-day-of-week': dt.weekday(),
-                            'utc-is-bank-holiday': utc_is_bank_holiday,
-                            'ct-is-bank-holiday': ct_is_bank_holiday,
-                            'utc-is-month-end': utc_is_month_end,
-                            'ct-is-month-end': ct_is_month_end,
-                            'status': 'X', 'imp-msp-kvarh': 0,
-                            'imp-msp-kvar': 0, 'exp-msp-kvarh': 0,
-                            'exp-msp-kvar': 0, 'msp-kw': 0, 'msp-kwh': 0,
-                            'hist-import-net-kvarh': 0,
-                            'hist-export-net-kvarh': 0,
-                            'anti-msp-kwh': 0, 'anti-msp-kw': 0,
-                            'imp-msp-kvarh': 0, 'exp-msp-kvarh': 0,
-                            'imp-msp-kvar': 0, 'exp-msp-kvar': 0,
-                            'hist-imp-msp-kvarh': 0, 'hist-kwh': 0})
+                    {
+                        'hist-start': hist_date, 'start-date': dt,
+                        'ct-day': ct_dt.day, 'utc-month': dt.month,
+                        'utc-day': dt.day,
+                        'utc-decimal-hour': utc_decimal_hour,
+                        'utc-year': dt.year, 'utc-hour': dt.hour,
+                        'utc-minute': dt.minute, 'ct-year': ct_dt.year,
+                        'ct-month': ct_dt.month,
+                        'ct-decimal-hour': ct_decimal_hour,
+                        'ct-day-of-week': ct_dt.weekday(),
+                        'utc-day-of-week': dt.weekday(),
+                        'utc-is-bank-holiday': utc_is_bank_holiday,
+                        'ct-is-bank-holiday': ct_is_bank_holiday,
+                        'utc-is-month-end': utc_is_month_end,
+                        'ct-is-month-end': ct_is_month_end,
+                        'status': 'X', 'imp-msp-kvarh': 0,
+                        'imp-msp-kvar': 0, 'exp-msp-kvarh': 0,
+                        'exp-msp-kvar': 0, 'msp-kw': 0, 'msp-kwh': 0,
+                        'hist-import-net-kvarh': 0,
+                        'hist-export-net-kvarh': 0,
+                        'anti-msp-kwh': 0, 'anti-msp-kw': 0,
+                        'imp-msp-kvarh': 0, 'exp-msp-kvarh': 0,
+                        'imp-msp-kvar': 0, 'exp-msp-kvar': 0,
+                        'hist-imp-msp-kvarh': 0, 'hist-kwh': 0})
                 yb_datum_cache[dt] = datum
             datum_list.append(datum)
         datum_tuple = start_range_cache[finish_date] = tuple(datum_list)

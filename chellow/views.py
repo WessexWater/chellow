@@ -4182,14 +4182,15 @@ def ods_monthly_duration_get():
 
 @app.route('/ods_scenario_runner')
 def ods_scenario_runner_get():
-    contracts = [
+    db_contracts = [
         Contract.get_non_core_by_name(g.sess, name)
-        for name in sorted(('aahedc', 'bsuos', 'tlms', 'rcrc'))]
+        for name in sorted(('bsuos', 'tlms', 'rcrc'))]
     scenarios = g.sess.query(Contract).join(MarketRole).filter(
         MarketRole.code == 'X', Contract.name.like('scenario_%')).order_by(
         Contract.name).all()
     return render_template(
-        'ods_scenario_runner.html', contracts=contracts, scenarios=scenarios)
+        'ods_scenario_runner.html', db_contracts=db_contracts,
+        scenarios=scenarios)
 
 
 @app.route('/site_snags/<int:snag_id>/edit')

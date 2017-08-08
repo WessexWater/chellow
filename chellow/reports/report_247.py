@@ -8,8 +8,8 @@ from sqlalchemy.sql.expression import null
 from sqlalchemy.orm import joinedload
 from collections import defaultdict
 from chellow.models import (
-    Session, Contract, MarketRole, Site, Era, SiteEra, Supply, Source, Bill,
-    Mtc, Llfc, MeasurementRequirement, Ssc, Tpr)
+    Session, Contract, Site, Era, SiteEra, Supply, Source, Bill, Mtc, Llfc,
+    MeasurementRequirement, Ssc, Tpr)
 from chellow.computer import SupplySource, contract_func
 import chellow.computer
 import csv
@@ -58,30 +58,24 @@ def content(
             scenario_props = scenario_contract.make_properties()
             base_name.append(scenario_contract.name)
 
-        for contract in sess.query(Contract).join(MarketRole).filter(
-                MarketRole.code == 'Z'):
+        for cname, cprops in scenario_props.get('rates', {}).items():
             try:
-                props = scenario_props[contract.name]
-            except KeyError:
-                continue
-
-            try:
-                rate_start = props['start_date']
+                rate_start = cprops['start_date']
             except KeyError:
                 raise BadRequest(
                     "In " + scenario_contract.name + " for the rate " +
-                    contract.name + " the start_date is missing.")
+                    cname + " the start_date is missing.")
 
             if rate_start is not None:
                 rate_start = to_utc(rate_start)
 
-            lib = importlib.import_module('chellow.' + contract.name)
+            lib = importlib.import_module('chellow.' + cname)
 
             if hasattr(lib, 'create_future_func'):
-                future_funcs[contract.id] = {
+                future_funcs[cname] = {
                     'start_date': rate_start,
                     'func': lib.create_future_func(
-                        props['multiplier'], props['constant'])}
+                        cprops['multiplier'], cprops['constant'])}
 
         start_date = scenario_props['scenario_start']
         if start_date is None:

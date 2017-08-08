@@ -1,20 +1,8 @@
 from dateutil.relativedelta import relativedelta
-from sqlalchemy.sql.expression import null
-from sqlalchemy import or_
-from chellow.models import Session, Contract, RateScript
-from chellow.utils import HH, hh_after, utc_datetime
+from chellow.utils import (
+    HH, hh_after, utc_datetime, get_file_scripts, hh_before, get_file_rates)
 import chellow.computer
 import chellow.duos
-
-sess = None
-try:
-    sess = Session()
-    db_id = Contract.get_non_core_by_name(sess, 'triad').id
-    triad_rates_contract_id = Contract.get_non_core_by_name(
-        sess, 'triad_rates').id
-finally:
-    if sess is not None:
-        sess.close()
 
 
 def triad_calc(
@@ -34,34 +22,32 @@ def triad_calc(
 
     if prefix == 'triad-actual':
         tot_rate = 0
-        for rate_script in data_source.sess.query(RateScript).filter(
-                RateScript.contract_id == triad_rates_contract_id,
-                RateScript.start_date <= financial_year_finish,
-                or_(
-                    RateScript.finish_date == null(),
-                    RateScript.finish_date >= financial_year_start)).order_by(
-                RateScript.start_date):
-            start_month = rate_script.start_date.month
-            if start_month < 4:
-                start_month += 12
-            rate_finish_date = rate_script.finish_date
-            if rate_finish_date is None:
-                finish_month = financial_year_finish.month
-            else:
-                finish_month = rate_script.finish_date.month
+        for start_date, finish_date, script in get_file_scripts('triad_rates'):
+            if start_date <= financial_year_finish and not hh_before(
+                    finish_date, financial_year_start):
+                start_month = start_date.month
+                if start_month < 4:
+                    start_month += 12
 
-            if finish_month < 4:
-                finish_month += 12
+                if finish_date is None:
+                    finish_month = financial_year_finish.month
+                else:
+                    finish_month = finish_date.month
 
-            tot_rate += (finish_month - start_month + 1) * \
-                data_source.hh_rate(
-                    triad_rates_contract_id, rate_script.start_date,
-                    'hh_demand_gbp_per_kw')[data_source.dno_code]
+                if finish_month < 4:
+                    finish_month += 12
+
+                rt = get_file_rates(
+                    data_source.caches, 'triad_rates',
+                    start_date)['triad_gbp_per_gsp_kw'][data_source.dno_code]
+                tot_rate += (finish_month - start_month + 1) * float(rt)
+
         rate = tot_rate / 12
     else:
-        rate = data_source.hh_rate(
-            triad_rates_contract_id, month_begin,
-            'hh_demand_gbp_per_kw')[data_source.dno_code]
+        rate = float(
+            get_file_rates(
+                data_source.caches, 'triad_rates',
+                month_begin)['triad_gbp_per_gsp_kw'][data_source.dno_code])
 
     hh[prefix + '-rate'] = rate
 
@@ -85,8 +71,9 @@ def hh(data_source, rate_period='monthly'):
 
         triad_dates = []
         earliest_triad = None
-        for dt in data_source.hh_rate(
-                db_id, last_financial_year_start, 'triad_dates'):
+        for dt in get_file_rates(
+                data_source.caches, 'triad_dates',
+                last_financial_year_start)['triad_dates']:
             triad_dates.append(dt + relativedelta(years=1))
             if earliest_triad is None or dt < earliest_triad:
                 earliest_triad = dt
@@ -141,8 +128,9 @@ def hh(data_source, rate_period='monthly'):
 
         if month_num == 3:
             triad_kws = []
-            for t_date in data_source.hh_rate(
-                    db_id, month_start, 'triad_dates'):
+            for t_date in get_file_rates(
+                    data_source.caches, 'triad_dates',
+                    month_start)['triad_dates']:
                 try:
                     ds = next(
                         iter(

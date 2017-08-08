@@ -2,23 +2,32 @@ from collections import defaultdict
 from werkzeug.exceptions import BadRequest
 
 
-def make_create_future_func_simple(contract_name, fnames):
+def make_create_future_func_simple(contract_name, fnames=None):
     def create_future_func_simple(multiplier, constant):
-        def future_func(ns):
-            new_ns = {}
-            for fname in fnames:
-                try:
-                    val = ns[fname]() * multiplier + constant
-                except KeyError:
-                    raise BadRequest(
-                        "Can't find " + fname + " in rate script " + str(ns) +
-                        " for contract name " + contract_name + " .")
+        if fnames is None:
+            def future_func(ns):
+                new_ns = {}
+                for k, v in ns.items():
+                    new_ns[k] = float(v) * multiplier + constant
 
-                def rate_func():
-                    return val
+                return new_ns
+        else:
+            def future_func(ns):
+                new_ns = {}
+                for fname in fnames:
+                    try:
+                        val = ns[fname]() * multiplier + constant
+                    except KeyError:
+                        raise BadRequest(
+                            "Can't find " + fname + " in rate script " +
+                            str(ns) + " for contract name " + contract_name +
+                            " .")
 
-                new_ns[fname] = rate_func
-            return new_ns
+                    def rate_func():
+                        return val
+
+                    new_ns[fname] = rate_func
+                return new_ns
         return future_func
     return create_future_func_simple
 

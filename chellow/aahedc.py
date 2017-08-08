@@ -1,17 +1,8 @@
 import chellow.scenario
-from chellow.models import Session, Contract
-
-sess = None
-try:
-    sess = Session()
-    db_id = Contract.get_non_core_by_name(sess, 'aahedc').id
-finally:
-    if sess is not None:
-        sess.close()
+from chellow.utils import get_file_rates
 
 
-create_future_func = chellow.scenario.make_create_future_func_simple(
-    'aahedc', ['aahedc_gbp_per_gsp_kwh'])
+create_future_func = chellow.scenario.make_create_future_func_simple('aahedc')
 
 
 def hh(supply_source):
@@ -30,14 +21,16 @@ def hh(supply_source):
             supply_source.caches['future_funcs'] = future_funcs
 
         try:
-            future_funcs[db_id]
+            future_funcs['aahedc']
         except KeyError:
-            future_funcs[db_id] = {
+            future_funcs['aahedc'] = {
                 'start_date': None, 'func': create_future_func(1, 0)}
 
     for hh in supply_source.hh_data:
         bill['aahedc-gsp-kwh'] += hh['gsp-kwh']
-        rate = supply_source.hh_rate(
-            db_id, hh['start-date'], 'aahedc_gbp_per_gsp_kwh')
+        rate = float(
+            get_file_rates(
+                supply_source.caches, 'aahedc',
+                hh['start-date'])['aahedc_gbp_per_gsp_kwh'])
         rate_set.add(rate)
         bill['aahedc-gbp'] += hh['gsp-kwh'] * rate

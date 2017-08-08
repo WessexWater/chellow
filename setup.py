@@ -47,7 +47,7 @@ setup(
         'odio==0.0.15',
         'pg8000==1.10.6',
         'Flask==0.12',
-        'SQLAlchemy==1.1.4',
+        'SQLAlchemy==1.1.13',
         'openpyxl==2.4.8',
         'python-dateutil==2.4.2',
         'pytz==2016.10',
@@ -60,7 +60,7 @@ setup(
         'pympler==0.5',
         'psutil==5.0.1',
         'xlrd==0.9.4',
-        'zish==0.0.2'],
+        'zish==0.0.3'],
     data_files=[('config', ['config/chellow.conf'])],
     entry_points={
         'console_scripts': [

@@ -69,31 +69,32 @@
 	<!-- Section Content -->
 	<div class="section-content">
 		<div class="section-data">
-		    <table class="DataTable widthAuto"><caption>Pass-through Contract Rates</caption>
-        		<thead>
-        			<tr>
-        				<th rowspan="2">Contract</th>
-        				<th colspan="2">Last Rate Script</th>
-        			</tr>
-        			<tr>
-        				<th>Start Date</th>
-        				<th>Finish Date</th>
-        			</tr>
-        		</thead>
-        		<tbody>
-        			{% for contract in contracts %}
-        				<tr>
-        					<td>
-        						<a href="/non_core_contracts/{{contract.id}}">
-        							{{contract.name}}
-        						</a>
-        					</td>
-        					<td>{{contract.finish_rate_script.start_date|hh_format}}</td>
-        					<td>{{contract.finish_rate_script.finish_date|hh_format}}</td>
-        				</tr>
-        			{% endfor %}
-        		</tbody>
-        	</table>
+			<table class="DataTable widthAuto">
+		    <caption>Pass-through Contract Rates</caption>
+				<thead>
+					<tr>
+						<th rowspan="2">Contract</th>
+						<th colspan="2">Last Rate Script</th>
+					</tr>
+					<tr>
+						<th>Start Date</th>
+						<th>Finish Date</th>
+					</tr>
+				</thead>
+				<tbody>
+					{% for contract in db_contracts %}
+						<tr>
+							<td>
+								<a href="/non_core_contracts/{{contract.id}}">
+									{{contract.name}}
+								</a>
+							</td>
+							<td>{{contract.finish_rate_script.start_date|hh_format}}</td>
+							<td>{{contract.finish_rate_script.finish_date|hh_format}}</td>
+						</tr>
+					{% endfor %}
+				</tbody>
+			</table>
 		</div>
 		<div class="section-data">
 		    <p>
