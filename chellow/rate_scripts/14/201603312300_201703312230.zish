@@ -1,4 +1,6 @@
-nds": [
+{
+  "_E": {
+    "bands": [
       {
         "band": "red",
         "finish": 19,
