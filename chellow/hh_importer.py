@@ -212,11 +212,12 @@ class HhImportTask(threading.Thread):
                         ftp.quit()
                         self.log("Logged out.")
 
-                        self.log(
-                            "Treating files as type " + file_type)
                         f.seek(0, os.SEEK_END)
                         fsize = f.tell()
                         f.seek(0)
+                        self.log("File size is " + str(fsize) + " bytes.")
+                        self.log(
+                            "Treating files as type " + file_type)
                         self.importer = HhDataImportProcess(
                             self.contract_id, 0, TextIOWrapper(f, 'utf8'),
                             fpath + file_type, fsize)
@@ -296,7 +297,7 @@ class HhImportTask(threading.Thread):
                         f.seek(0, os.SEEK_END)
                         fsize = f.tell()
                         f.seek(0)
-                        self.log("File size is " + fsize + " bytes.")
+                        self.log("File size is " + str(fsize) + " bytes.")
                         self.log("Treating files as type " + file_type)
                         self.importer = HhDataImportProcess(
                             self.contract_id, 0, TextIOWrapper(f, 'utf8'),
