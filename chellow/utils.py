@@ -645,7 +645,7 @@ def get_file_rates(cache, contract_name, dt):
                 raise BadRequest(
                     "Problem parsing rate script for contract " +
                     contract_name + " starting at " +
-                    hh_format(start_date) + ": " + str(e))
+                    hh_format(rs_start) + ": " + str(e))
             except BadRequest as e:
                 raise BadRequest(
                     "Problem with rate script for contract " +

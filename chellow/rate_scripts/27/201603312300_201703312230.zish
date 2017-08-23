@@ -155,7 +155,6 @@
         "gbp-per-mpan-per-day": 0.27210,
         "green-gbp-per-kwh": -0.00013,
         "red-gbp-per-kwh": -0.01988}}},
-{
   "_H": {
     "bands": [
       {
@@ -345,7 +344,6 @@
         "gbp-per-mpan-per-day": 1.15050,
         "green-gbp-per-kwh": -0.00021,
         "red-gbp-per-kwh": -0.04541}}},
-{
   "_L": {
     "bands": [
       {
