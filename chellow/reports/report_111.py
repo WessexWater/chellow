@@ -79,7 +79,11 @@ def content(batch_id, bill_id, contract_id, start_date, finish_date, user):
                 titles.append('difference-' + t)
 
         writer.writerow(titles)
-        for bill in bills:
+        bill_ids = set(bill.id for bill in bills)
+        while len(bill_ids) > 0:
+            bill_id = list(sorted(bill_ids))[0]
+            bill_ids.remove(bill_id)
+            bill = Bill.get_by_id(sess, bill_id)
             problem = ''
             supply = bill.supply
 
@@ -174,6 +178,8 @@ def content(batch_id, bill_id, contract_id, start_date, finish_date, user):
 
             primary_covered_bill = None
             for covered_bill in covered_bills.values():
+                if covered_bill.id in bill_ids:
+                    bill_ids.remove(covered_bill.id)
                 covered_bdown['net-gbp'] += float(covered_bill.net)
                 covered_bdown['vat-gbp'] += float(covered_bill.vat)
                 covered_bdown['sum-msp-kwh'] += float(covered_bill.kwh)
