@@ -12,6 +12,7 @@ from werkzeug.exceptions import BadRequest
 import atexit
 import requests
 from zish import loads
+from decimal import Decimal
 
 
 create_future_func = chellow.scenario.make_create_future_func_monthly(
@@ -141,13 +142,13 @@ class BsuosImporter(threading.Thread):
                                     *xlrd.xldate_as_tuple(
                                         row[0].value, book.datemode))
                                 hh_date_ct = to_ct(raw_date)
+                                hh_date_ct += relativedelta(
+                                    minutes=30*(int(row[1].value) - 1))
                                 hh_date = to_utc(hh_date_ct)
-                                hh_date += relativedelta(
-                                    minutes=30*int(row[1].value))
                                 if not hh_date < this_month_start and \
                                         hh_date < next_month_start:
-                                    month_bsuos[key_format(hh_date)] = \
-                                        row[2].value
+                                    month_bsuos[key_format(hh_date)] = Decimal(
+                                        str(row[2].value))
 
                             if key_format(next_month_start - HH) in \
                                     month_bsuos:
