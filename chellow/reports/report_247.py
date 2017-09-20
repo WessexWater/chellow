@@ -77,6 +77,8 @@ def content(
                     'func': lib.create_future_func(
                         cprops['multiplier'], cprops['constant'])}
 
+        era_maps = scenario_props.get('era_maps', {})
+
         start_date = scenario_props['scenario_start']
         if start_date is None:
             start_date = utc_datetime(now.year, now.month, 1)
@@ -211,6 +213,13 @@ def content(
         month_start = start_date
         while month_start < finish_date:
             month_finish = month_start + relativedelta(months=1) - HH
+            era_map = {}
+            for em_start, em in sorted(era_maps.items()):
+                if em_start >= month_start:
+                    era_map = em
+                    break
+            era_map_llfcs = era_map.get('llfcs', {})
+
             for site in sites:
                 site_changes = changes[site.code]
 
@@ -261,17 +270,21 @@ def content(
                     if era.imp_mpan_core is None:
                         imp_ss = None
                     else:
+                        llfc_code = era_map_llfcs.get(
+                            supply.dno.dno_code, {}).get(era.imp_llfc.code)
                         imp_ss = SupplySource(
                             sess, ss_start, ss_finish, kwh_start, era, True,
-                            report_context)
+                            report_context, llfc_code=llfc_code)
 
                     if era.exp_mpan_core is None:
                         exp_ss = None
                         measurement_type = imp_ss.measurement_type
                     else:
+                        llfc_code = era_map_llfcs.get(
+                            supply.dno.dno_code, {}).get(era.exp_llfc.code)
                         exp_ss = SupplySource(
                             sess, ss_start, ss_finish, kwh_start, era, False,
-                            report_context)
+                            report_context, llfc_code=llfc_code)
                         measurement_type = exp_ss.measurement_type
 
                     order = meter_order[measurement_type]

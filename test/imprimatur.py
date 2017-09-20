@@ -7567,10 +7567,6 @@ def virtual_bill(supply_source):
         'regexes': [
             r"party-viewer"]},
 
-    {
-        'name': "Scenario runner",
-        'path': '/ods_scenario_runner',
-        'status_code': 200},
 
     {
         'name': "Monthly duration report",
@@ -8751,6 +8747,14 @@ def virtual_bill(supply_source):
         'regexes': [
             r"/supplier_contracts/17"],
         'status_code': 303},
+    {
+        'name': "Scenario runner",
+        'path': '/ods_scenario_runner',
+        'regexes': [
+            r'<a href="/reports/247\?scenario_id=17">\s*'
+            r'Run\s*'
+            r'</a>'],
+        'status_code': 200},
 
     {
         'name': "Run scenario for a site where there are no site groups",

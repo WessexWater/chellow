@@ -630,7 +630,7 @@ ACTUAL_READ_TYPES = ['N', 'N3', 'C', 'X', 'CP']
 class SupplySource(DataSource):
     def __init__(
             self, sess, start_date, finish_date, forecast_date, era, is_import,
-            caches, bill=None):
+            caches, bill=None, llfc_code=None):
         DataSource.__init__(
             self, sess, start_date, finish_date, forecast_date, caches)
 
@@ -644,17 +644,28 @@ class SupplySource(DataSource):
                 self.bill_finish > self.finish_date
 
         self.site = None
+        self.supply = era.supply
+        self.dno = self.supply.dno
+        self.dno_code = self.dno.dno_code
         self.era = era
+
+        if llfc_code is not None:
+            self.llfc = self.dno.get_llfc_by_code(sess, llfc_code)
+        else:
+            self.llfc = None
+
         self.is_import = is_import
         if is_import:
             self.mpan_core = era.imp_mpan_core
-            self.llfc = era.imp_llfc
+            if self.llfc is None:
+                self.llfc = era.imp_llfc
             self.sc = era.imp_sc
             self.supplier_account = era.imp_supplier_account
             self.supplier_contract = era.imp_supplier_contract
         else:
             self.mpan_core = era.exp_mpan_core
-            self.llfc = era.exp_llfc
+            if self.llfc is None:
+                self.llfc = era.exp_llfc
             self.sc = era.exp_sc
             self.supplier_account = era.exp_supplier_account
             self.supplier_contract = era.exp_supplier_contract
@@ -664,9 +675,6 @@ class SupplySource(DataSource):
         self.voltage_level = self.llfc.voltage_level
         self.voltage_level_code = self.voltage_level.code
         self.is_substation = self.llfc.is_substation
-        self.supply = era.supply
-        self.dno = self.supply.dno
-        self.dno_code = self.dno.dno_code
         self.is_new = False
         self.mtc = self.era.mtc
         self.meter_type = self.mtc.meter_type
