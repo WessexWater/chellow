@@ -21,6 +21,7 @@ from chellow.views import chellow_redirect
 from flask import request, g
 import csv
 from itertools import combinations
+from decimal import Decimal
 
 
 def content(batch_id, bill_id, contract_id, start_date, finish_date, user):
@@ -287,11 +288,11 @@ def content(batch_id, bill_id, contract_id, start_date, finish_date, user):
                     values.append('')
 
                 if title.endswith('-gbp'):
-                    if isinstance(virt_val, (int, float)):
-                        if isinstance(cov_val, (int, float)):
-                            values.append(cov_val - virt_val)
+                    if isinstance(virt_val, (int, float, Decimal)):
+                        if isinstance(cov_val, (int, float, Decimal)):
+                            values.append(float(cov_val) - float(virt_val))
                         else:
-                            values.append(0 - virt_val)
+                            values.append(0 - float(virt_val))
                     else:
                         values.append('')
 
