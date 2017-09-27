@@ -8,7 +8,7 @@ from datetime import datetime as Datetime
 import datetime
 import ast
 import math
-from sqlalchemy.sql.expression import true, false, text
+from sqlalchemy.sql.expression import true, false
 from sqlalchemy.exc import ProgrammingError, SQLAlchemyError
 from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.ext.declarative import declarative_base
@@ -25,10 +25,6 @@ from hashlib import pbkdf2_hmac
 from binascii import hexlify, unhexlify
 from decimal import Decimal
 from zish import dumps, loads, ZishException
-import amazon.ion.simpleion
-import inspect
-from io import StringIO
-import json
 
 
 config = {
@@ -3876,320 +3872,35 @@ def db_init(sess, root_path):
 
 
 def db_upgrade_0_to_1(sess, root_path):
-    max_id = sess.execute("select max(id) from report;").scalar()
-    sess.execute("create sequence report_id_seq start " + str(max_id + 1))
-    sess.execute(
-        "alter table report alter column id "
-        "set default nextval('report_id_seq');")
-    sess.execute("alter sequence report_id_seq owned by report.id;")
-    sess.commit()
+    raise Exception("Upgrading from this version is not supported.")
 
 
 def db_upgrade_1_to_2(sess, root_path):
-    contracts_path = os.path.join(root_path, 'dno_contracts')
-    for contract_name in ('25', '26', '27', '28', '29'):
-        existing_contract = sess.query(Contract).join(Party).filter(
-            Party.dno_code == contract_name).first()
-        if existing_contract is not None:
-            continue
-        contract_path = os.path.join(contracts_path, contract_name)
-        params = {'name': contract_name, 'charge_script': ''}
-        for fname, attr in (
-                ('meta.py', None),
-                ('properties.py', 'properties'),
-                ('state.py', 'state')):
-            params.update(read_file(contract_path, fname, attr))
-        params['party'] = sess.query(Party).join(Participant). \
-            join(MarketRole).filter(
-                Participant.code == params['participant_code'],
-                MarketRole.code == 'R').one()
-        del params['participant_code']
-        contract = Contract(**params)
-        sess.add(contract)
-
-        sess.flush()
-        rscripts_path = os.path.join(contract_path, 'rate_scripts')
-        for rscript_fname in sorted(os.listdir(rscripts_path)):
-            if not rscript_fname.endswith('.py'):
-                continue
-            try:
-                start_str, finish_str = \
-                    rscript_fname.split('.')[0].split('_')
-            except ValueError:
-                raise Exception(
-                    "The rate script " + rscript_fname +
-                    " in the directory " + rscripts_path +
-                    " should consist of two dates separated by an " +
-                    "underscore.")
-            start_date = to_utc(Datetime.strptime(start_str, "%Y%m%d%H%M"))
-            if finish_str == 'ongoing':
-                finish_date = None
-            else:
-                finish_date = to_utc(Datetime.strptime(
-                    finish_str, "%Y%m%d%H%M"))
-            rparams = {
-                'start_date': start_date,
-                'finish_date': finish_date,
-                'contract': contract}
-            rparams.update(
-                read_file(rscripts_path, rscript_fname, 'script'))
-            sess.add(RateScript(**rparams))
-            sess.flush()
-
-        sess.flush()
-        # Assign start and finish rate scripts
-        scripts = sess.query(RateScript). \
-            filter(RateScript.contract_id == contract.id). \
-            order_by(RateScript.start_date).all()
-        contract.start_rate_script = scripts[0]
-        contract.finish_rate_script = scripts[-1]
-    sess.commit()
+    raise Exception("Upgrading from this version is not supported.")
 
 
 def db_upgrade_2_to_3(sess, root_path):
-    sess.execute("alter table contract drop column is_core;")
-    sess.commit()
+    raise Exception("Upgrading from this version is not supported.")
 
 
 def db_upgrade_3_to_4(sess, root_path):
-    for code, desc in (
-            ("A", "Actual"),
-            ("C", "Customer"),
-            ("E", "Estimated"),
-            ("S", "Deemed read")):
-        sess.add(GReadType(code, desc))
-    sess.commit()
-
-    for code, desc, factor_str in (
-            ("MCUF", "Thousands of cubic feet", '28.317'),
-            ("HCUF", "Hundreds of cubic feet", '2.8317'),
-            ("TCUF", "Tens of cubic feet", '0.28317'),
-            ("OCUF", "One cubic foot", '0.028317'),
-            ("M3", "Cubic metres", '1'),
-            ("HM3", "Hundreds of cubic metres", '100'),
-            ("TM3", "Tens of cubic metres", '10'),
-            ("NM3", "Tenths of cubic metres", '0.1')):
-        sess.add(GUnits(code, desc, Decimal(factor_str)))
-    sess.commit()
-
-    contract_path = os.path.join(root_path, 'non_core_contracts', 'g_cv')
-    params = {'name': 'g_cv', 'charge_script': ''}
-    for fname, attr in (
-            ('meta.py', None),
-            ('properties.py', 'properties'),
-            ('state.py', 'state')):
-        params.update(read_file(contract_path, fname, attr))
-    params['party'] = sess.query(Party).join(Participant).join(MarketRole). \
-        filter(
-            Participant.code == params['participant_code'],
-            MarketRole.code == 'Z').one()
-    del params['participant_code']
-    contract = Contract(**params)
-    sess.add(contract)
-
-    sess.flush()
-    rscripts_path = os.path.join(contract_path, 'rate_scripts')
-    for rscript_fname in sorted(os.listdir(rscripts_path)):
-        if not any(rscript_fname.endswith(s) for s in ('.py', '.ion')):
-            continue
-        try:
-            start_str, finish_str = \
-                rscript_fname.split('.')[0].split('_')
-        except ValueError:
-            raise Exception(
-                "The rate script " + rscript_fname +
-                " in the directory " + rscripts_path +
-                " should consist of two dates separated by an " +
-                "underscore.")
-        start_date = to_utc(Datetime.strptime(start_str, "%Y%m%d%H%M"))
-        if finish_str == 'ongoing':
-            finish_date = None
-        else:
-            finish_date = to_utc(
-                Datetime.strptime(finish_str, "%Y%m%d%H%M"))
-        rparams = {
-            'start_date': start_date,
-            'finish_date': finish_date,
-            'contract': contract}
-        rparams.update(
-            read_file(rscripts_path, rscript_fname, 'script'))
-        sess.add(RateScript(**rparams))
-        sess.flush()
-
-    sess.flush()
-    # Assign start and finish rate scripts
-    scripts = sess.query(RateScript). \
-        filter(RateScript.contract_id == contract.id). \
-        order_by(RateScript.start_date).all()
-    contract.start_rate_script = scripts[0]
-    contract.finish_rate_script = scripts[-1]
-    sess.commit()
+    raise Exception("Upgrading from this version is not supported.")
 
 
 def db_upgrade_4_to_5(sess, root_path):
-    sess.execute("create index bill_reference_idx on bill(reference);")
-    sess.commit()
+    raise Exception("Upgrading from this version is not supported.")
 
 
 def db_upgrade_5_to_6(sess, root_path):
-    sess.execute(
-        "alter table supply add column dno_id integer references party(id);")
-    sess.execute("create index supply_dno_id_idx on supply(dno_id);")
-    sess.execute(
-        "update supply set dno_id = contract.party_id from contract "
-        "where supply.dno_contract_id = contract.id;")
-    sess.execute(
-        "alter table supply alter column dno_id set not null;")
-
-    sess.execute(
-        "alter table supply drop column dno_contract_id;")
-    sess.execute(
-        "update contract set start_rate_script_id = null, "
-        "finish_rate_script_id = null where contract.id in "
-        "(select c.id from contract as c, market_role where "
-        "c.market_role_id = market_role.id and market_role.code = 'R');")
-    sess.execute(
-        "delete from rate_script where rate_script.id in "
-        "(select rs.id from rate_script as rs, contract, market_role where "
-        "rs.contract_id = contract.id and "
-        "contract.market_role_id = market_role.id and "
-        "market_role.code = 'R');")
-    sess.execute(
-        "delete from contract where contract.id in "
-        "(select c.id from contract as c, market_role where "
-        "c.market_role_id = market_role.id and market_role.code = 'R');")
-
-    sess.execute(
-        "update contract set start_rate_script_id = null, "
-        "finish_rate_script_id = null where contract.id in "
-        "(select c.id from contract as c where c.name = 'ccl');")
-    sess.execute(
-        "delete from rate_script where rate_script.id in "
-        "(select rs.id from rate_script as rs, contract where "
-        "rs.contract_id = contract.id and contract.name = 'ccl');")
-    sess.execute(
-        "delete from contract where contract.name = 'ccl';")
-    sess.commit()
+    raise Exception("Upgrading from this version is not supported.")
 
 
 def db_upgrade_6_to_7(sess, root_path):
-    for name in ('aahedc', 'ro', 'triad', 'triad_rates', 'vat'):
-        params = {
-            'name': name}
-
-        sess.execute(
-            text(
-                "update contract set start_rate_script_id = null, "
-                "finish_rate_script_id = null where contract.id in "
-                "(select c.id from contract as c where c.name = :name);"),
-            params=params)
-        sess.execute(
-            text(
-                "delete from rate_script where rate_script.id in "
-                "(select rs.id from rate_script as rs, contract where "
-                "rs.contract_id = contract.id and contract.name = :name);"),
-            params=params)
-        sess.execute(
-            text(
-                "delete from contract where contract.name = :name;"),
-            params=params)
-        sess.commit()
+    raise Exception("Upgrading from this version is not supported.")
 
 
 def db_upgrade_7_to_8(sess, root_path):
-    def two_dps(val):
-        return Decimal('0.00') + round(val, 2)
-
-    def parse_all(data_str, use_exec=True):
-        data = None if data_str is None else data_str.strip()
-        if data is None or data == '':
-            return {}
-
-        try:
-            return loads(data)
-        except ZishException:
-            if data.startswith('$ion'):
-                return amazon.ion.simpleion.load(StringIO(data))
-            else:
-                try:
-                    if use_exec:
-                        ns = {
-                            'datetime': Datetime}
-                        exec(data, ns)
-
-                        ret = {}
-                        for k, v in ns.items():
-                            if inspect.isfunction(v) and not inspect.isbuiltin(
-                                    v):
-                                ret[k] = v()
-                        return ret
-                    else:
-                        return eval(data, {'datetime': Datetime})
-                except:
-                    return json.loads(data)
-
-    for bill in sess.query(Bill):
-        breakdown = parse_all(bill.breakdown, use_exec=False)
-        if not isinstance(breakdown, dict):
-            breakdown = {'val': breakdown}
-        try:
-            bill.update(
-                bill.account, bill.reference, bill.issue_date, bill.start_date,
-                bill.finish_date, bill.kwh, two_dps(bill.net),
-                two_dps(bill.vat), two_dps(bill.gross), bill.bill_type,
-                breakdown)
-        except Exception as e:
-            raise Exception(
-                "Problem with bill id " + str(bill.id) +
-                " the original breakdown is " + str(bill.breakdown) +
-                ": " + str(e))
-    sess.commit()
-
-    for contract in sess.query(Contract):
-        contract.update_properties(
-            parse_all(contract.properties, use_exec=False))
-        contract.update_state(parse_all(contract.state, use_exec=False))
-        for rscript in contract.rate_scripts:
-            try:
-                rscript.script = dumps(parse_all(rscript.script))
-            except Exception as e:
-                raise Exception(
-                    "Problem parsing rate script " + str(rscript.id) +
-                    " with script " + str(rscript.script) +
-                    " giving problem " + str(e))
-
-    sess.commit()
-
-    for g_bill in sess.query(GBill):
-        breakdown = parse_all(g_bill.breakdown, use_exec=False)
-        if not isinstance(breakdown, dict):
-            breakdown = {'val': breakdown}
-        try:
-            g_bill.update(
-                g_bill.bill_type, g_bill.reference, g_bill.account,
-                g_bill.issue_date, g_bill.start_date, g_bill.finish_date,
-                g_bill.kwh, two_dps(g_bill.net), two_dps(g_bill.vat),
-                two_dps(g_bill.gross), g_bill.raw_lines, breakdown)
-        except Exception as e:
-            raise Exception(
-                "Problem with g_bill id " + str(g_bill.id) +
-                " the original breakdown is " + str(g_bill.breakdown) +
-                ": " + str(e))
-    sess.commit()
-
-    for g_contract in sess.query(GContract):
-        g_contract.update(
-            g_contract.name, g_contract.charge_script, parse_all(
-                g_contract.properties, use_exec=False))
-
-        for g_rscript in g_contract.g_rate_scripts:
-            try:
-                g_rscript.script = dumps(parse_all(g_rscript.script))
-            except Exception as e:
-                raise Exception(
-                    "Problem parsing gas rate script " + str(g_rscript.id) +
-                    " with script " + str(g_rscript.script) +
-                    " giving problem " + str(e))
+    raise Exception("Upgrading from this version is not supported.")
 
 
 upgrade_funcs = [
@@ -4244,5 +3955,5 @@ def find_db_version(sess):
         Contract.name == 'configuration', MarketRole.code == 'Z').first()
     if conf is None:
         return None
-    conf_state = amazon.ion.simpleion.load(StringIO(conf.state))
+    conf_state = loads(conf.state)
     return conf_state.get('db_version', 0)

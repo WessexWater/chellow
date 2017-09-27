@@ -20,7 +20,7 @@ setup(
     url='https://github.com/WessexWater/chellow',
     cmdclass=versioneer.get_cmdclass(),
     packages=[
-        'chellow', 'chellow.reports', 'amazon', 'amazon.ion'],
+        'chellow', 'chellow.reports'],
     package_data={'chellow': [
         'non_core_contracts/*/*.zish',
         'non_core_contracts/*/rate_scripts/*.zish',
@@ -57,7 +57,7 @@ setup(
         'pympler==0.5',
         'psutil==5.0.1',
         'xlrd==0.9.4',
-        'zish==0.0.18'],
+        'zish==0.0.19'],
     data_files=[('config', ['config/chellow.conf'])],
     entry_points={
         'console_scripts': [
