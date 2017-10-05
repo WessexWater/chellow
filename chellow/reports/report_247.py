@@ -644,6 +644,7 @@ def content(
                         ', '.join(sorted(list(site_sources))),
                         ', '.join(sorted(list(site_gen_types)))] +
                     [site_month_data[k] for k in summary_titles])
+                sess.rollback()
             write_spreadsheet(rf, compression, site_rows, era_rows)
             month_start += relativedelta(months=1)
     except BadRequest as e:
