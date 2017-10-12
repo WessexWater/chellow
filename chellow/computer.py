@@ -254,7 +254,7 @@ def get_data_sources(data_source, start_date, finish_date, forecast_date=None):
             ds = SupplySource(
                 data_source.sess, chunk_start, chunk_finish, forecast_date,
                 era, data_source.is_import, data_source.caches,
-                data_source.bill)
+                data_source.bill, data_source.era_maps)
             yield ds
 
     else:
@@ -275,7 +275,7 @@ def get_data_sources(data_source, start_date, finish_date, forecast_date=None):
 
             site_ds = SiteSource(
                 data_source.sess, data_source.site, chunk_start, chunk_finish,
-                forecast_date, data_source.caches, era)
+                forecast_date, data_source.caches, era, data_source.era_maps)
             if data_source.stream_focus == '3rd-party-used':
                 site_ds.revolve_to_3rd_party_used()
             month_start += relativedelta(months=1)
@@ -443,7 +443,8 @@ def datum_range(sess, caches, years_back, start_date, finish_date):
 
 class DataSource():
     def __init__(
-            self, sess, start_date, finish_date, forecast_date, caches):
+            self, sess, start_date, finish_date, forecast_date, caches,
+            era_maps):
         self.sess = sess
         self.caches = caches
         self.forecast_date = forecast_date
@@ -462,6 +463,14 @@ class DataSource():
         self.supplier_rate_sets = defaultdict(set)
         self.mop_rate_sets = defaultdict(set)
         self.dc_rate_sets = defaultdict(set)
+
+        self.era_maps = {} if era_maps is None else era_maps
+        era_map = {}
+        for em_start, em in sorted(self.era_maps.items()):
+            if em_start <= start_date:
+                era_map = em
+                break
+        self.era_map_llfcs = era_map.get('llfcs', {})
 
     def contract_func(self, contract, func_name):
         return contract_func(self.caches, contract, func_name)
@@ -485,9 +494,10 @@ class DataSource():
 class SiteSource(DataSource):
     def __init__(
             self, sess, site, start_date, finish_date, forecast_date, caches,
-            era=None):
+            era=None, era_maps=None):
         DataSource.__init__(
-            self, sess, start_date, finish_date, forecast_date, caches)
+            self, sess, start_date, finish_date, forecast_date, caches,
+            era_maps)
         self.site = site
         self.bill = None
         self.stream_focus = 'gen-used'
@@ -500,11 +510,17 @@ class SiteSource(DataSource):
             self.mpan_core = era.imp_mpan_core
             self.dno = self.supply.dno
             self.dno_code = self.dno.dno_code
-            llfc = era.imp_llfc
-            self.llfc_code = llfc.code
+
+            if era.imp_llfc.code in self.era_map_llfcs:
+                self.llfc_code = self.era_map_llfcs[era.imp_llfc.code]
+                self.llfc = self.dno.get_llfc_by_code(sess, self.llfc_code)
+            else:
+                self.llfc = era.imp_llfc
+                self.llfc_code = self.llfc.code
+
             self.is_import = True
-            self.voltage_level_code = llfc.voltage_level.code
-            self.is_substation = llfc.is_substation
+            self.voltage_level_code = self.llfc.voltage_level.code
+            self.is_substation = self.llfc.is_substation
             self.sc = era.imp_sc
             self.pc_code = era.pc.code
             self.gsp_group_code = self.supply.gsp_group.code
@@ -630,9 +646,10 @@ ACTUAL_READ_TYPES = ['N', 'N3', 'C', 'X', 'CP']
 class SupplySource(DataSource):
     def __init__(
             self, sess, start_date, finish_date, forecast_date, era, is_import,
-            caches, bill=None, llfc_code=None):
+            caches, bill=None, era_maps=None):
         DataSource.__init__(
-            self, sess, start_date, finish_date, forecast_date, caches)
+            self, sess, start_date, finish_date, forecast_date, caches,
+            era_maps)
 
         self.is_displaced = False
         self.bill = bill
@@ -649,23 +666,30 @@ class SupplySource(DataSource):
         self.dno_code = self.dno.dno_code
         self.era = era
 
-        if llfc_code is not None:
-            self.llfc = self.dno.get_llfc_by_code(sess, llfc_code)
-        else:
-            self.llfc = None
-
+        era_map_llfcs = self.era_map_llfcs.get(self.dno_code, {})
         self.is_import = is_import
         if is_import:
             self.mpan_core = era.imp_mpan_core
-            if self.llfc is None:
+
+            if era.imp_llfc.code in era_map_llfcs:
+                llfc_code = era_map_llfcs[era.imp_llfc.code]
+                self.llfc = self.dno.get_llfc_by_code(sess, llfc_code)
+            else:
                 self.llfc = era.imp_llfc
+
             self.sc = era.imp_sc
             self.supplier_account = era.imp_supplier_account
             self.supplier_contract = era.imp_supplier_contract
+
         else:
             self.mpan_core = era.exp_mpan_core
-            if self.llfc is None:
+
+            if era.exp_llfc.code in era_map_llfcs:
+                llfc_code = era_map_llfcs[era.exp_llfc.code]
+                self.llfc = self.dno.get_llfc_by_code(sess, llfc_code)
+            else:
                 self.llfc = era.exp_llfc
+
             self.sc = era.exp_sc
             self.supplier_account = era.exp_supplier_account
             self.supplier_contract = era.exp_supplier_contract

@@ -213,13 +213,6 @@ def content(
         month_start = start_date
         while month_start < finish_date:
             month_finish = month_start + relativedelta(months=1) - HH
-            era_map = {}
-            for em_start, em in sorted(era_maps.items()):
-                if em_start <= month_start:
-                    era_map = em
-                    break
-            era_map_llfcs = era_map.get('llfcs', {})
-
             for site in sites:
                 site_changes = changes[site.code]
 
@@ -270,21 +263,17 @@ def content(
                     if era.imp_mpan_core is None:
                         imp_ss = None
                     else:
-                        llfc_code = era_map_llfcs.get(
-                            supply.dno.dno_code, {}).get(era.imp_llfc.code)
                         imp_ss = SupplySource(
                             sess, ss_start, ss_finish, kwh_start, era, True,
-                            report_context, llfc_code=llfc_code)
+                            report_context, era_maps=era_maps)
 
                     if era.exp_mpan_core is None:
                         exp_ss = None
                         measurement_type = imp_ss.measurement_type
                     else:
-                        llfc_code = era_map_llfcs.get(
-                            supply.dno.dno_code, {}).get(era.exp_llfc.code)
                         exp_ss = SupplySource(
                             sess, ss_start, ss_finish, kwh_start, era, False,
-                            report_context, llfc_code=llfc_code)
+                            report_context, era_maps=era_maps)
                         measurement_type = exp_ss.measurement_type
 
                     order = meter_order[measurement_type]
