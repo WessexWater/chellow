@@ -175,7 +175,8 @@ def content(batch_id, bill_id, contract_id, start_date, finish_date, user):
                 if len(covered_bill.breakdown) > 0:
                     covered_rates = defaultdict(set)
                     for k, v in loads(covered_bill.breakdown).items():
-
+                        if isinstance(v, Decimal):
+                            v = float(v)
                         if k.split('-')[-1] in ('rate', 'kva'):
                             covered_rates[k].add(str(v))
                         elif k != 'raw-lines':
