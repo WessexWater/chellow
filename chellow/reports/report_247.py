@@ -641,7 +641,7 @@ def content(
         sys.stderr.write(msg + '\n')
         site_rows.append(["Problem " + msg])
         write_spreadsheet(rf, compression, site_rows, era_rows)
-    except:
+    except BaseException:
         msg = traceback.format_exc()
         sys.stderr.write(msg + '\n')
         site_rows.append(["Problem " + msg])
@@ -652,7 +652,7 @@ def content(
         try:
             rf.close()
             os.rename(running_name, finished_name)
-        except:
+        except BaseException:
             msg = traceback.format_exc()
             r_name, f_name = chellow.dloads.make_names('error.txt', user)
             ef = open(r_name, "w")

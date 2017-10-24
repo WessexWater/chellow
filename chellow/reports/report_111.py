@@ -312,7 +312,7 @@ def content(batch_id, bill_id, contract_id, start_date, finish_date, user):
         else:
             prefix = "Problem with bill " + str(bill.id) + ':'
         tmp_file.write(prefix + e.description)
-    except:
+    except BaseException:
         msg = traceback.format_exc()
         sys.stderr.write(msg + '\n')
         tmp_file.write("Problem " + msg)

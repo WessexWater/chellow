@@ -24,7 +24,7 @@ setup(
     package_data={'chellow': [
         'non_core_contracts/*/*.zish',
         'non_core_contracts/*/rate_scripts/*.zish',
-        'mdd/*.csv',
+        'mdd/converted/*.csv',
         'templates/*.html',
         'templates/css/*.css',
         'templates/js/*.js',

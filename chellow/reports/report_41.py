@@ -113,7 +113,7 @@ def content(year, supply_id, user):
                 else:
                     vals.append(str(value))
             writer.writerow(vals)
-    except:
+    except BaseException:
         msg = traceback.format_exc()
         sys.stderr.write(msg)
         writer.writerow([msg])

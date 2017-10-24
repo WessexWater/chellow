@@ -62,7 +62,7 @@ class GCvImporter(threading.Thread):
                 try:
                     sess = Session()
                     self.run_inner(sess)
-                except:
+                except BaseException:
                     self.log("Outer problem " + traceback.format_exc())
                     sess.rollback()
                 finally:

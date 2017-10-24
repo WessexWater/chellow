@@ -92,7 +92,7 @@ def content(
         else:
             tf.close()
 
-    except:
+    except BaseException:
         msg = traceback.format_exc()
         if is_zipped:
             zf.writestr('error.txt', msg)

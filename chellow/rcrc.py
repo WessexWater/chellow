@@ -155,7 +155,7 @@ class RcrcImporter(threading.Thread):
                                 msg += " The last date is " + \
                                     sorted(month_rcrcs.keys())[-1]
                             self.log(msg)
-                except:
+                except BaseException:
                     self.log("Outer problem " + traceback.format_exc())
                     sess.rollback()
                 finally:

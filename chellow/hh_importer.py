@@ -60,7 +60,7 @@ class HhDataImportProcess(threading.Thread):
             sess.commit()
         except BadRequest as e:
             self.messages.append(e.description)
-        except:
+        except BaseException:
             self.messages.append("Outer problem " + traceback.format_exc())
         finally:
             if sess is not None:

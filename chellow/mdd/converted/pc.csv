@@ -1,0 +1,10 @@
+id,code,name,valid_from,valid_to
+0,00,Half-hourly,2000-01-01 00:00:00+00,
+1,01,Domestic Unrestricted,1996-04-01 00:00:00+00,
+2,02,Domestic Economy 7,1996-04-01 00:00:00+00,
+3,03,Non-domestic Unrestricted,1996-04-01 00:00:00+00,
+4,04,Non-domestic Economy 7,1996-04-01 00:00:00+00,
+5,05,"Non-domestic, MD, load factor 0-20%",1996-04-01 00:00:00+00,
+6,06,"Non-domestic, MD, load factor 20-30%",1996-04-01 00:00:00+00,
+7,07,"Non-domestic, MD, load factor 30-40%",1996-04-01 00:00:00+00,
+8,08,"Non-domestic, MD, load factor 40%+",1996-04-01 00:00:00+00,

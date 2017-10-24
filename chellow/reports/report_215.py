@@ -120,7 +120,7 @@ def content(year, supply_id, user):
                         event['date'].strftime("%Y-%m-%d %H:%M"),
                         event['code']]
                     writer.writerow(vals)
-    except:
+    except BaseException:
         msg = traceback.format_exc()
         sys.stderr.write(msg)
         writer.writerow([msg])

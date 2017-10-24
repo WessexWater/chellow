@@ -355,7 +355,7 @@ def render(template, vals, status_code=200, content_type='text/html'):
 
     try:
         template_str = templ.render(vals)
-    except:
+    except BaseException:
         raise BadRequest(
             "Problem rendering template: " + traceback.format_exc())
 

@@ -85,7 +85,7 @@ def content(contract_id, end_year, end_month, months, user):
             writer.writerow(vals)
     except BadRequest as e:
         f.write("Problem " + e.description + traceback.format_exc() + '\n')
-    except:
+    except BaseException:
         msg = "Problem " + traceback.format_exc() + '\n'
         f.write(msg)
     finally:

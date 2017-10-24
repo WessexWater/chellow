@@ -85,7 +85,7 @@ def content(year, site_id, user):
             writer.writerow(values)
     except BadRequest as e:
         writer.writerow([e.description])
-    except:
+    except BaseException:
         writer.writerow([traceback.format_exc()])
     finally:
         if sess is not None:

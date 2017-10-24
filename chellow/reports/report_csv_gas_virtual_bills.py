@@ -110,7 +110,7 @@ def content(start_date, finish_date, g_contract_id, user):
 
             month_start += relativedelta(months=1)
             month_finish = month_start + relativedelta(months=1) - HH
-    except:
+    except BaseException:
         msg = traceback.format_exc()
         sys.stderr.write(msg)
         writer.writerow([msg])

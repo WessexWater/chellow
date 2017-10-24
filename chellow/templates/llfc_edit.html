@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+
+{% block title %}
+	&raquo; DNOs &raquo; {{llfc.dno.dno_code}} &raquo; 
+	LLFCs &raquo; {{llfc.code}} {{llfc.valid_from|hh_format}} &raquo; Edit
+{% endblock %}
+
+{% block nav %}
+	&raquo; <a href="/dnos">DNOs</a> &raquo; 
+	<a href="/dnos/{{llfc.dno.id}}">{{llfc.dno.dno_code}}</a> &raquo; 
+	<a href="/llfcs?dno_id={{llfc.dno.id}}">LLFCs</a> &raquo;
+	<a
+			href="/dnos/{{llfc.dno.id}}/llfcs/{{llfc.id}}"
+			>{{llfc.code}} {{llfc.valid_from|hh_format}}</a> &raquo;
+	Edit
+{% endblock %}
+
+{% block content %}
+	{% if request.method == 'GET' and request.values.delete %}
+
+		<div class="layer-section">
+			<div class="section-header">
+				<h2>Are you sure you want to delete this LLFC?</h2>	
+			</div>
+			<div class="section-content">
+				<div class="section-data">
+					<div class="standardForm">
+						<form method="post" action="/llfcs/{{llfc.id}}/edit">
+							<fieldset>
+								<input type="submit" name="delete" value="Delete">
+								<a href="/llfcs/{{llfc.id}}/edit">Cancel</a>
+							</fieldset>
+						</form>
+					</div>
+				</div>
+			</div>
+		</div>
+	{% else %}
+	
+		<div class="layer-section">
+			<div class="section-header">
+				<h2>Update LLFC</h2>	
+			</div>
+			<div class="section-content">
+				<div class="section-data">
+					<div class="standardForm textWidthAuto">
+						<form action="/llfcs/{{llfc.id}}/edit" method="post">
+							<fieldset>
+								<label>Description</label>
+								{{input_text('description', llfc.description, 40)}}<br>
+								<label>Voltage Level</label>
+								<select name="voltage_level_id">
+									{% for voltage_level in voltage_levels %}
+										{{input_option(
+											'voltage_level_id', voltage_level.id,
+											voltage_level.code, llfc.voltage_level.id)}}
+									{% endfor %}
+								</select>
+								<br>
+								<label>
+									Substation?
+									{{input_checkbox('is_substation', llfc.is_substation)}}
+								</label>
+								<br>
+								<label>
+									Import?
+									{{input_checkbox('is_import', llfc.is_import)}}
+								</label>
+								<fieldset>
+									<legend>Valid From</legend>
+									{{input_date('valid_from', llfc.valid_from)}}
+								</fieldset>
+								<fieldset>
+									<legend>Valid to</legend>
+									<label>
+										Ended?
+										{{ input_checkbox(
+											'has_finished',
+											llfc.valid_to != None)}}
+									</label>
+									<br>
+									{{input_date('valid_to', llfc.valid_to)}}
+								</fieldset>
+								<input type="submit" value="Update">
+							</fieldset>
+						</form>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="layer-section">
+			<div class="section-header">
+				<h2>Delete this LLFC</h2>	
+			</div>
+			<div class="section-content">
+				<div class="section-data">
+					<div class="standardForm">
+						<form>
+							<fieldset>
+								<input type="submit" name="delete" value="Delete">
+							</fieldset>
+						</form>
+					</div>
+				</div>
+			</div>
+		</div>
+	{% endif %}
+{% endblock %}

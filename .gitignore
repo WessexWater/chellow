@@ -8,7 +8,7 @@ flask.pid
 test/imprimatur.xml
 gunicorn/pid
 downloads
-mdd/download
+chellow/mdd/download
 .elasticbeanstalk/
 .tox/
 Chellow.egg-info/

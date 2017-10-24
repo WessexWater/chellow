@@ -238,7 +238,7 @@ def content(g_batch_id, g_bill_id, user):
 
     except BadRequest as e:
         tmp_file.write("Problem: " + e.description)
-    except:
+    except BaseException:
         msg = traceback.format_exc()
         sys.stderr.write(msg + '\n')
         tmp_file.write("Problem " + msg)
@@ -246,7 +246,7 @@ def content(g_batch_id, g_bill_id, user):
         try:
             if sess is not None:
                 sess.close()
-        except:
+        except BaseException:
             tmp_file.write("\nProblem closing session.")
         finally:
             tmp_file.close()

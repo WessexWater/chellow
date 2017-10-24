@@ -118,7 +118,7 @@ def content(supply_id, start_date, finish_date, user):
                 prev_titles = titles
                 w.writerow(titles)
             w.writerow(output_line)
-    except:
+    except BaseException:
         msg = traceback.format_exc()
         sys.stderr.write(msg)
         w.writerow([msg])

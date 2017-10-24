@@ -126,7 +126,7 @@ class BankHolidayImporter(threading.Thread):
                             "enable it, edit the contract properties to "
                             "set 'enabled' to True.")
 
-                except:
+                except BaseException:
                     self.log("Outer problem " + traceback.format_exc())
                     sess.rollback()
                 finally:

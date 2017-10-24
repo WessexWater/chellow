@@ -541,14 +541,26 @@ def general_import_mtc(sess, action, vals, args):
         valid_from = parse_hh_start(valid_from_str)
         valid_to_str = add_arg(args, "Valid To", vals, 10)
         valid_to = parse_hh_start(valid_to_str)
-        mtc = Mtc(
-            dno=dno, code=code, description=description,
-            has_related_metering=has_related_metering, has_comms=has_comms,
-            is_hh=is_hh, meter_type=meter_type,
-            meter_payment_type=meter_payment_type, tpr_count=tpr_count,
-            valid_from=valid_from, valid_to=valid_to)
-        sess.add(mtc)
-        sess.flush()
+
+        mtc_query = sess.query(Mtc).filter(
+            Mtc.dno == dno, Mtc.code == code, or_(
+                Mtc.valid_to == null(), Mtc.valid_to >= valid_from))
+        if valid_to is not None:
+            mtc_query = mtc_query.filter(Mtc.valid_from <= valid_to)
+        existing_mtc = mtc_query.first()
+        if existing_mtc is None:
+            mtc = Mtc(
+                dno=dno, code=code, description=description,
+                has_related_metering=has_related_metering, has_comms=has_comms,
+                is_hh=is_hh, meter_type=meter_type,
+                meter_payment_type=meter_payment_type, tpr_count=tpr_count,
+                valid_from=valid_from, valid_to=valid_to)
+            sess.add(mtc)
+            sess.flush()
+        else:
+            raise BadRequest(
+                "There's already a MTC with this DNO and code for this "
+                "period.")
 
     elif action == "update":
         dno_code = add_arg(args, "DNO Code", vals, 0)
@@ -996,12 +1008,53 @@ def general_import_llfc(sess, action, vals, args):
         valid_to_str = add_arg(args, 'valid_to', vals, 7)
         valid_to = parse_hh_start(valid_to_str)
 
-        llfc = Llfc(
-            dno_id=dno.id, code=llfc_code, description=llfc_description,
-            voltage_level_id=vl.id, is_substation=is_substation,
-            is_import=is_import, valid_from=valid_from, valid_to=valid_to)
-        sess.add(llfc)
+        llfc_query = sess.query(Llfc).filter(
+            Llfc.dno == dno, Llfc.code == llfc_code, or_(
+                Llfc.valid_to == null(), Llfc.valid_to >= valid_from))
+        if valid_to is not None:
+            llfc_query = llfc_query.filter(Llfc.valid_from <= valid_to)
+        existing_llfc = llfc_query.first()
+
+        if existing_llfc is None:
+            llfc = Llfc(
+                dno_id=dno.id, code=llfc_code, description=llfc_description,
+                voltage_level_id=vl.id, is_substation=is_substation,
+                is_import=is_import, valid_from=valid_from, valid_to=valid_to)
+            sess.add(llfc)
+            sess.flush()
+        else:
+            raise BadRequest(
+                "There's already a LLFC with this DNO and code for this "
+                "period.")
+
+    elif action == 'update':
+        dno_code = add_arg(args, 'dno', vals, 0)
+        dno = Party.get_dno_by_code(sess, dno_code)
+        llfc_code = add_arg(args, 'llfc', vals, 1)
+        valid_from_str = add_arg(args, 'valid_from', vals, 2)
+        valid_from = parse_hh_start(valid_from_str)
+        llfc_description = add_arg(args, 'llfc_description', vals, 3)
+        vl_code = add_arg(args, 'voltage_level', vals, 4)
+        vl = VoltageLevel.get_by_code(sess, vl_code.upper())
+        is_substation_str = add_arg(args, 'is_substation', vals, 5)
+        is_substation = parse_bool(is_substation_str)
+        is_import_str = add_arg(args, 'is_import', vals, 6)
+        is_import = parse_bool(is_import_str)
+        valid_to_str = add_arg(args, 'valid_to', vals, 7)
+        valid_to = parse_hh_start(valid_to_str)
+
+        llfc = sess.query(Llfc).filter(
+            Llfc.dno == dno, Llfc.code == llfc_code,
+            Llfc.valid_from == valid_from).first()
+        if llfc is None:
+            raise BadRequest(
+                "Can't find an LLFC for this DNO, code and 'valid from' date.")
+
+        llfc.update(
+            sess, llfc_description, vl, is_substation, is_import,
+            llfc.valid_from, valid_to)
         sess.flush()
+
     elif action == 'delete':
         dno_code = add_arg(args, 'dno_code', vals, 0)
         dno = Party.get_dno_by_code(sess, dno_code)
@@ -1009,17 +1062,7 @@ def general_import_llfc(sess, action, vals, args):
         date_str = add_arg(args, 'date', vals, 2)
         date = parse_hh_start(date_str)
 
-        llfc_query = sess.query(Llfc).filter(
-            Llfc.code == llfc_code, Llfc.dno == dno)
-        if date is None:
-            llfc_query = llfc_query.filter(Llfc.valid_to == null())
-        else:
-            llfc_query = llfc_query.filter(
-                Llfc.valid_from <= date, or_(
-                    Llfc.valid_to == null(), Llfc.valid_to >= date))
-        llfc = llfc_query.first()
-        if llfc is None:
-            raise BadRequest("The LLFC to delete can't be found.")
+        llfc = dno.get_llfc_by_code(sess, llfc_code, date)
         sess.delete(llfc)
         sess.flush()
     else:
@@ -1279,7 +1322,7 @@ class GeneralImporter(threading.Thread):
                 self.error_message = e.description
             finally:
                 self.rd_lock.release()
-        except:
+        except BaseException:
             try:
                 self.rd_lock.acquire()
                 self.error_message = traceback.format_exc()

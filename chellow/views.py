@@ -9,7 +9,7 @@ from chellow.models import (
     RateScript, Supply, Mtc, Channel, Tpr, MeasurementRequirement, Bill,
     RegisterRead, HhDatum, Snag, Batch, ReadType, BillType, MeterPaymentType,
     ClockInterval, db_upgrade, Llfc, MeterType, GEra, GSupply, SiteGEra, GBill,
-    GContract, GRateScript, GBatch, GRegisterRead, GReadType)
+    GContract, GRateScript, GBatch, GRegisterRead, GReadType, VoltageLevel)
 from sqlalchemy.exc import ProgrammingError
 import traceback
 from datetime import datetime as Datetime
@@ -330,7 +330,7 @@ def local_report_output_post(report_id):
             'template': report.template}
         exec(report.script, ns)
         return ns['response']
-    except:
+    except BaseException:
         return Response(traceback.format_exc(), status=500)
 
 
@@ -2468,33 +2468,6 @@ def supplier_batch_get(batch_id):
     return render_template('supplier_batch.html', **fields)
 
 
-@app.route('/supplier_batches/<int:batch_id>/csv')
-def supplier_batch_csv_get(batch_id):
-    batch = Batch.get_by_id(g.sess, batch_id)
-    si = StringIO()
-    cw = csv.writer(si)
-    cw.writerow(
-        [
-            "Supplier Contract", "Batch Reference", "Bill Reference",
-            "Account", "Issued", "From", "To", "kWh", "Net", "VAT", "Gross",
-            "Type"])
-    for bill in g.sess.query(Bill).filter(Bill.batch == batch).order_by(
-            Bill.reference, Bill.start_date).options(
-                joinedload(Bill.bill_type)):
-        cw.writerow(
-            [
-                batch.contract.name, batch.reference, bill.reference,
-                bill.account, hh_format(bill.issue_date),
-                hh_format(bill.start_date), hh_format(bill.finish_date),
-                str(bill.kwh), str(bill.net), str(bill.vat), str(bill.gross),
-                bill.bill_type.code])
-
-    output = make_response(si.getvalue())
-    output.headers["Content-Disposition"] = 'attachment; filename="batch.csv"'
-    output.headers["Content-type"] = "text/csv"
-    return output
-
-
 @app.route('/hh_data/<int:datum_id>/edit')
 def hh_datum_edit_get(datum_id):
     hh = HhDatum.get_by_id(g.sess, datum_id)
@@ -2720,7 +2693,7 @@ def download_get(fname):
                     if len(data) == 0:
                         break
                     yield data
-        except:
+        except BaseException:
             yield traceback.format_exc()
 
     return send_response(content, file_name=name)
@@ -4391,6 +4364,45 @@ def llfcs_get():
 def llfc_get(llfc_id):
     llfc = Llfc.get_by_id(g.sess, llfc_id)
     return render_template('llfc.html', llfc=llfc)
+
+
+@app.route('/llfcs/<int:llfc_id>/edit')
+def llfc_edit_get(llfc_id):
+    llfc = Llfc.get_by_id(g.sess, llfc_id)
+    voltage_levels = g.sess.query(VoltageLevel).order_by(
+        VoltageLevel.code).all()
+    return render_template(
+        'llfc_edit.html', llfc=llfc, voltage_levels=voltage_levels)
+
+
+@app.route('/llfcs/<int:llfc_id>/edit', methods=['POST'])
+def llfc_edit_post(llfc_id):
+    try:
+        llfc = Llfc.get_by_id(g.sess, llfc_id)
+        if 'delete' in request.values:
+            dno = llfc.dno
+            llfc.delete(g.sess)
+            g.sess.commit()
+            return chellow_redirect(
+                '/dnos/' + str(dno.dno_code) + '/llfcs', 303)
+        else:
+            description = req_str('description')
+            voltage_level_id = req_int('voltage_level_id')
+            voltage_level = VoltageLevel.get_by_id(g.sess, voltage_level_id)
+            is_substation = req_bool('is_substation')
+            is_import = req_bool('is_import')
+            valid_from = req_date('valid_from')
+            has_finished = req_bool('has_finished')
+            valid_to = req_date('valid_to') if has_finished else None
+            llfc.update(
+                g.sess, description, voltage_level, is_substation, is_import,
+                valid_from, valid_to)
+            g.sess.commit()
+            return chellow_redirect('/llfcs/' + str(llfc.id), 303)
+    except BadRequest as e:
+        g.sess.rollback()
+        flash(e.description)
+        return make_response(render_template('llfc_edit.html', llfc=llfc), 400)
 
 
 @app.route('/sscs')

@@ -305,7 +305,7 @@ def content(running_name, finished_name, date, supply_id, mpan_cores):
                     None if era.exp_supplier_contract is None else
                     era.exp_supplier_contract.name, era.exp_supplier_account,
                     exp_avg_months, exp_latest_supplier_bill_date])
-    except:
+    except BaseException:
         msg = traceback.format_exc()
         sys.stderr.write(msg)
         writer.writerow([msg])

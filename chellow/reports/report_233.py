@@ -67,7 +67,7 @@ def content(contract_id, days_hidden, user):
                     str(age_of_snag.days + age_of_snag.seconds / (3600 * 24)),
                     str(duration.days + duration.seconds / (3600 * 24)),
                     str(snag.is_ignored)))
-    except:
+    except BaseException:
         msg = traceback.format_exc()
         sys.stderr.write(msg)
         writer.writerow([msg])

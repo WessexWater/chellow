@@ -149,7 +149,7 @@ def content(supply_id, file_name, start_date, finish_date, user):
             writer.writerow(output_line)
     except BadRequest as e:
         writer.writerow(["Problem: " + e.description])
-    except:
+    except BaseException:
         writer.writerow([traceback.format_exc()])
     finally:
         if sess is not None:

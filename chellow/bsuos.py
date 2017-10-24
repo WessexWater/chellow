@@ -179,7 +179,7 @@ class BsuosImporter(threading.Thread):
                             "The automatic importer is disabled. To "
                             "enable it, edit the contract properties to "
                             "set 'enabled' to True.")
-                except:
+                except BaseException:
                     self.log("Outer problem " + traceback.format_exc())
                     sess.rollback()
                 finally:

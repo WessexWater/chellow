@@ -82,7 +82,7 @@ def content(
             day_start += relativedelta(days=1)
     except BadRequest as e:
         writer.writerow(["Problem: " + e.description])
-    except:
+    except BaseException:
         writer.writerow([traceback.format_exc()])
     finally:
         if sess is not None:

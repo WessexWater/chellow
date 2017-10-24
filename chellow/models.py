@@ -4,7 +4,7 @@ from sqlalchemy import (
 from sqlalchemy.orm import sessionmaker, relationship, joinedload, aliased
 from sqlalchemy.schema import UniqueConstraint
 from sqlalchemy.engine import Engine
-from datetime import datetime as Datetime
+from datetime import datetime as Datetime, timedelta as Timedelta
 import datetime
 import ast
 import math
@@ -551,9 +551,13 @@ class Pc(Base, PersistentClass):
 
     __tablename__ = 'pc'
     id = Column(Integer, primary_key=True)
-    code = Column(String, unique=True, nullable=False)
-    name = Column(String, unique=True, nullable=False)
+    code = Column(String, nullable=False)
+    name = Column(String, nullable=False)
+    valid_from = Column(DateTime(timezone=True), nullable=False)
+    valid_to = Column(DateTime(timezone=True))
     eras = relationship('Era', backref='pc')
+    __table_args__ = (
+        UniqueConstraint('code', 'valid_from'),)
 
 
 class Batch(Base, PersistentClass):
@@ -669,13 +673,27 @@ class Party(Base, PersistentClass):
     mtcs = relationship('Mtc', backref='dno')
     llfcs = relationship('Llfc', backref='dno')
     supplies = relationship('Supply', backref='dno')
+    __table_args__ = (
+        UniqueConstraint('market_role_id', 'participant_id', 'valid_from'),)
 
-    def get_llfc_by_code(self, sess, code):
-        llfc = sess.query(Llfc).filter_by(dno=self, code=code).first()
+    def find_llfc_by_code(self, sess, code, date):
+        llfc_query = sess.query(Llfc).filter(
+                Llfc.dno == self, Llfc.code == code)
+        if date is None:
+            llfc_query = llfc_query.filter(Llfc.valid_from == null())
+        else:
+            llfc_query = llfc_query.filter(
+                Llfc.valid_from <= date, or_(
+                    Llfc.valid_to == null(), Llfc.valid_to >= date))
+        return llfc_query.first()
+
+    def get_llfc_by_code(self, sess, code, date):
+        llfc = self.find_llfc_by_code(sess, code, date)
         if llfc is None:
             raise BadRequest(
                 "There is no LLFC with the code '" + code +
-                "' associated with the DNO " + self.dno_code + ".")
+                "' associated with the DNO " + self.dno_code +
+                " at the date " + hh_format(date) + ".")
         return llfc
 
 
@@ -1554,6 +1572,19 @@ class Llfc(Base, PersistentClass):
     is_import = Column(Boolean, nullable=False)
     valid_from = Column(DateTime(timezone=True), nullable=False)
     valid_to = Column(DateTime(timezone=True))
+    __table_args__ = (
+        UniqueConstraint('dno_id', 'code', 'valid_from'),)
+
+    def update(
+            self, sess, description, voltage_level, is_substation, is_import,
+            valid_from, valid_to):
+
+        self.description = description
+        self.voltage_level = voltage_level
+        self.is_substation = is_substation
+        self.is_import = is_import
+        self.valid_from = valid_from
+        self.valid_to = valid_to
 
 
 class MeterType(Base, PersistentClass):
@@ -1569,11 +1600,12 @@ class MeterType(Base, PersistentClass):
 
     __tablename__ = 'meter_type'
     id = Column(Integer, primary_key=True)
-    code = Column(String, unique=True, nullable=False)
-    description = Column(String, unique=True, nullable=False)
+    code = Column(String, nullable=False)
+    description = Column(String, nullable=False)
     valid_from = Column(DateTime(timezone=True), nullable=False)
     valid_to = Column(DateTime(timezone=True))
     mtcs = relationship('Mtc', backref='meter_type')
+    __table_args__ = (UniqueConstraint('code', 'valid_from'),)
 
 
 class MeterPaymentType(Base, PersistentClass):
@@ -1588,18 +1620,19 @@ class MeterPaymentType(Base, PersistentClass):
 
     __tablename__ = 'meter_payment_type'
     id = Column(Integer, primary_key=True)
-    code = Column(String, unique=True, nullable=False)
-    description = Column(String, unique=True, nullable=False)
+    code = Column(String, nullable=False)
+    description = Column(String, nullable=False)
     valid_from = Column(DateTime(timezone=True))
     valid_to = Column(DateTime(timezone=True))
     mtcs = relationship('Mtc', backref='meter_payment_type')
+    __table_args__ = (UniqueConstraint('code', 'valid_from'),)
 
 
 class Mtc(Base, PersistentClass):
     @staticmethod
     def has_dno(code):
         num = int(code)
-        return not ((num > 499 and num < 510) or (num > 799 and num < 1000))
+        return not ((499 < num < 510) or (799 < num < 1000))
 
     @staticmethod
     def find_by_code(sess, dno, code):
@@ -1625,11 +1658,11 @@ class Mtc(Base, PersistentClass):
     meter_type_id = Column(Integer, ForeignKey('meter_type.id'))
     meter_payment_type_id = Column(
         Integer, ForeignKey('meter_payment_type.id'))
-    tpr_count = Column(Integer)
+    tpr_count = Column(Integer, nullable=False)
     valid_from = Column(DateTime(timezone=True), nullable=False)
     valid_to = Column(DateTime(timezone=True))
     eras = relationship('Era', backref='mtc')
-    __table_args__ = (UniqueConstraint('dno_id', 'code'),)
+    __table_args__ = (UniqueConstraint('dno_id', 'code', 'valid_from'),)
 
 
 class Tpr(Base, PersistentClass):
@@ -1694,6 +1727,7 @@ class Ssc(Base, PersistentClass):
     measurement_requirements = relationship(
         'MeasurementRequirement', backref='ssc')
     eras = relationship('Era', backref='ssc')
+    __table_args__ = (UniqueConstraint('code', 'valid_from'),)
 
 
 class SiteEra(Base, PersistentClass):
@@ -1893,7 +1927,8 @@ class Era(Base, PersistentClass):
             setattr(self, polarity + '_supplier_account', supplier_account)
 
             llfc_code = locs[polarity + '_llfc_code']
-            llfc = self.supply.dno.get_llfc_by_code(sess, llfc_code)
+            llfc = self.supply.dno.get_llfc_by_code(
+                sess, llfc_code, start_date)
             if llfc.is_import != ('imp' == polarity):
                 raise BadRequest(
                     "The " + polarity + " line loss factor " + llfc.code +
@@ -3709,56 +3744,67 @@ def db_init(sess, root_path):
 
     dbapi_conn = sess.connection().connection.connection
     cursor = dbapi_conn.cursor()
-    mdd_path = os.path.join(root_path, 'mdd')
-    for tname, fname in (
-            ("gsp_group", "GSP_Group"),
-            ("pc", "Profile_Class"),
-            ("market_role", "Market_Role"),
-            ("participant", "Market_Participant"),
-            ("party", "Market_Participant_Role"),
-            ("llfc", "Line_Loss_Factor_Class"),
-            ("meter_type", "MTC_Meter_Type"),
-            ("meter_payment_type", "MTC_Payment_Type"),
-            ("mtc", "Meter_Timeswitch_Class"),
-            ("tpr", "Time_Pattern_Regime"),
-            ("clock_interval", "Clock_Interval"),
-            ("ssc", "Standard_Settlement_Configuration"),
-            ("measurement_requirement", "Measurement_Requirement")):
-        f = open(os.path.join(mdd_path, fname + '.csv'), 'rb')
+    mdd_path = os.path.join(root_path, 'mdd', 'converted')
+    for name, fields in (
+            (
+                "gsp_group", [
+                    'id', 'code', 'description']),
+            (
+                "pc", [
+                    'id', 'code', 'name', 'valid_from', 'valid_to']),
+            (
+                "market_role", [
+                    'id', 'code', 'description']),
+            (
+                "participant", [
+                    'id', 'code', 'name']),
+            (
+                "party", [
+                    'id', 'participant_id', 'market_role_id', 'name',
+                    'valid_from', 'valid_to', 'dno_code']),
+            (
+                "llfc", [
+                    'id', "dno_id", "code", "description", "voltage_level_id",
+                    "is_substation", "is_import", "valid_from", "valid_to"]),
+            (
+                "meter_type", [
+                    'id', 'code', 'description', 'valid_from', 'valid_to']),
+            (
+                "meter_payment_type", [
+                    'id', 'code', 'description', 'valid_from', 'valid_to']),
+
+            (
+                "mtc", [
+                    'id', "dno_id", "code", "description",
+                    "has_related_metering", "has_comms", "is_hh",
+                    "meter_type_id", "meter_payment_type_id", "tpr_count",
+                    "valid_from", "valid_to"]),
+            (
+                "tpr", [
+                    'id', 'code', 'is_teleswitch', 'is_gmt']),
+            (
+                "clock_interval", [
+                    'id', 'tpr_id', 'day_of_week', 'start_day', 'start_month',
+                    'end_day', 'end_month', 'start_hour', 'start_minute',
+                    'end_hour', 'end_minute']),
+            (
+                "ssc", [
+                    'id', 'code', 'description', 'is_import', 'valid_from',
+                    'valid_to']),
+            (
+                "measurement_requirement", [
+                    "id", "ssc_id", "tpr_id"])):
+        f = open(os.path.join(mdd_path, name + '.csv'), 'rb')
         cursor.execute(
             "set transaction isolation level serializable read write")
-        if tname == 'llfc':
-            cursor.execute(
-                "COPY " + tname +
-                " (dno_id, code, description, voltage_level_id, "
-                "is_substation, is_import, valid_from, valid_to) "
-                "FROM STDIN CSV HEADER", stream=f)
-        elif tname == 'participant':
-            cursor.execute(
-                "COPY " + tname + " (code, name) "
-                "FROM STDIN CSV HEADER", stream=f)
-        elif tname == 'market_role':
-            cursor.execute(
-                "COPY " + tname + " (code, description) "
-                "FROM STDIN CSV HEADER", stream=f)
-        elif tname == 'party':
-            cursor.execute(
-                "COPY " + tname + " (market_role_id, participant_id, "
-                "name, valid_from, valid_to, dno_code) "
-                "FROM STDIN CSV HEADER", stream=f)
-        elif tname == 'meter_type':
-            cursor.execute(
-                "COPY " + tname + " (code, description, valid_from, "
-                "valid_to) FROM STDIN CSV HEADER", stream=f)
-        elif tname == 'mtc':
-            cursor.execute(
-                "COPY " + tname + " (dno_id, code, description, "
-                "has_related_metering, has_comms, is_hh, meter_type_id, "
-                "meter_payment_type_id, tpr_count, valid_from, valid_to) "
-                "FROM STDIN CSV HEADER", stream=f)
-        else:
-            cursor.execute(
-                "COPY " + tname + " FROM STDIN CSV HEADER", stream=f)
+        cursor.execute(
+            "COPY " + name + " (" + ', '.join(fields) +
+            ") FROM STDIN CSV HEADER", stream=f)
+        cursor.execute("select count(*) from " + name + ";")
+        row_count = cursor.fetchall()[0][0]
+        cursor.execute(
+            "ALTER SEQUENCE " + name + "_id_seq restart with " +
+            str(row_count + 1))
         dbapi_conn.commit()
         f.close()
 
@@ -3773,8 +3819,7 @@ def db_init(sess, root_path):
                 ('state.zish', 'state')):
             params.update(read_file(contract_path, fname, attr))
         params['party'] = sess.query(Party).join(Participant). \
-            join(MarketRole). \
-            filter(
+            join(MarketRole).filter(
                 Participant.code == params['participant_code'],
                 MarketRole.code == 'Z').one()
         del params['participant_code']
@@ -3903,9 +3948,360 @@ def db_upgrade_7_to_8(sess, root_path):
     raise Exception("Upgrading from this version is not supported.")
 
 
+def db_upgrade_8_to_9(sess, root_path):
+    sess.execute("update mtc set tpr_count = 0 where tpr_count is null;")
+    sess.execute("alter table mtc alter tpr_count set not null")
+
+    sess.execute("alter table pc add valid_from timestamp with time zone;")
+    sess.execute("update pc set valid_from = '1996-04-01 00:00:00 +0:00';")
+    sess.execute("alter table pc alter valid_from set not null;")
+    sess.execute("alter table pc add valid_to timestamp with time zone;")
+
+    '''
+    for participant_code, llfc_code, valid_from in (
+            ('EELC', '827', utc_datetime(2015, 4, 1)),
+            ('EELC', '835', utc_datetime(2015, 4, 1)),
+            ('EELC', '841', utc_datetime(2015, 4, 1)),
+            ('EELC', '864', utc_datetime(2014, 4, 1)),
+            ('EMEB', '061', utc_datetime(2015, 4, 1)),
+            ('EMEB', '201', utc_datetime(2014, 6, 18)),
+            ('EMEB', '805', utc_datetime(2015, 4, 1)),
+            ('EMEB', '976', utc_datetime(2015, 4, 1)),
+            ('EMEB', '978', utc_datetime(2015, 4, 1)),
+            ('LENG', '010', utc_datetime(2013, 4, 1)),
+            ('LENG', '014', utc_datetime(2013, 4, 1)),
+            ('LENG', '019', utc_datetime(2013, 4, 1)),
+            ('LENG', '022', utc_datetime(2013, 4, 1)),
+            ('LENG', '023', utc_datetime(2014, 2, 19)),
+            ('LENG', '024', utc_datetime(2014, 2, 19)),
+            ('LENG', '031', utc_datetime(2013, 4, 1)),
+            ('LENG', '040', utc_datetime(2014, 2, 19)),
+            ('LENG', '042', utc_datetime(2014, 2, 19)),
+            ('LENG', '047', utc_datetime(2013, 4, 1)),
+            ('LENG', '048', utc_datetime(2013, 4, 1)),
+            ('LENG', '059', utc_datetime(2013, 4, 1)),
+            ('LENG', '078', utc_datetime(2013, 4, 1)),
+            ('LENG', '093', utc_datetime(2013, 4, 1)),
+            ('LENG', '094', utc_datetime(2013, 4, 1)),
+            ('LENG', '095', utc_datetime(2013, 4, 1)),
+            ('LENG', '096', utc_datetime(2013, 4, 1)),
+            ('LENG', '101', utc_datetime(2014, 2, 19)),
+            ('LENG', '107', utc_datetime(2014, 2, 19)),
+            ('LENG', '111', utc_datetime(2014, 2, 19)),
+            ('LENG', '119', utc_datetime(2013, 4, 1)),
+            ('LENG', '135', utc_datetime(2013, 4, 1)),
+            ('LENG', '172', utc_datetime(2014, 8, 20)),
+            ('LENG', '186', utc_datetime(2014, 2, 19)),
+            ('LENG', '192', utc_datetime(2013, 4, 1)),
+            ('LENG', '193', utc_datetime(2013, 4, 1)),
+            ('LENG', '220', utc_datetime(2014, 2, 19)),
+            ('LENG', '241', utc_datetime(2013, 4, 1)),
+            ('LENG', '246', utc_datetime(2013, 4, 1)),
+            ('LENG', '247', utc_datetime(2013, 4, 1)),
+            ('LENG', '252', utc_datetime(2014, 2, 19)),
+            ('LENG', '253', utc_datetime(2013, 4, 1)),
+            ('LENG', '273', utc_datetime(2013, 4, 1)),
+            ('LENG', '274', utc_datetime(2013, 4, 1)),
+            ('LENG', '275', utc_datetime(2013, 4, 1)),
+            ('LENG', '276', utc_datetime(2013, 4, 1)),
+            ('LENG', '305', utc_datetime(2013, 4, 1)),
+            ('LENG', '306', utc_datetime(2013, 4, 1)),
+            ('LENG', '333', utc_datetime(2014, 2, 19)),
+            ('LENG', '335', utc_datetime(2013, 4, 1)),
+            ('LENG', '340', utc_datetime(2013, 4, 1)),
+            ('LENG', '341', utc_datetime(2013, 4, 1)),
+            ('LENG', '376', utc_datetime(2014, 2, 19)),
+            ('LENG', '384', utc_datetime(2013, 4, 1)),
+            ('LENG', '385', utc_datetime(2013, 4, 1)),
+            ('LENG', '412', utc_datetime(2014, 2, 19)),
+            ('LENG', '420', utc_datetime(2013, 4, 1)),
+            ('LENG', '421', utc_datetime(2013, 4, 1)),
+            ('LENG', '449', utc_datetime(2014, 2, 19)),
+            ('LENG', '456', utc_datetime(2013, 4, 1)),
+            ('LENG', '457', utc_datetime(2013, 4, 1)),
+            ('LENG', '471', utc_datetime(2013, 4, 1)),
+            ('LENG', '472', utc_datetime(2013, 4, 1)),
+            ('LENG', '473', utc_datetime(2013, 4, 1)),
+            ('LENG', '474', utc_datetime(2013, 4, 1)),
+            ('LENG', '484', utc_datetime(2014, 2, 19)),
+            ('LENG', '506', utc_datetime(2013, 4, 1)),
+            ('LENG', '507', utc_datetime(2013, 4, 1)),
+            ('LENG', '508', utc_datetime(2013, 4, 1)),
+            ('LENG', '509', utc_datetime(2013, 4, 1)),
+            ('LENG', '519', utc_datetime(2014, 2, 19)),
+            ('LENG', '528', utc_datetime(2013, 4, 1)),
+            ('LENG', '529', utc_datetime(2013, 4, 1)),
+            ('LENG', '559', utc_datetime(2014, 2, 19)),
+            ('LENG', '567', utc_datetime(2013, 4, 1)),
+            ('LENG', '568', utc_datetime(2013, 4, 1)),
+            ('LENG', '595', utc_datetime(2014, 2, 19)),
+            ('LENG', '603', utc_datetime(2013, 4, 1)),
+            ('LENG', '604', utc_datetime(2013, 4, 1)),
+            ('LOND', '808', utc_datetime(2015, 4, 1)),
+            ('MIDE', '129', utc_datetime(2012, 12, 20)),
+            ('MIDE', '130', utc_datetime(2015, 4, 1)),
+            ('MIDE', '366', utc_datetime(2015, 4, 1)),
+            ('MIDE', '367', utc_datetime(2012, 12, 20)),
+            ('MIDE', '576', utc_datetime(2015, 4, 1)),
+            ('MIDE', '578', utc_datetime(2015, 4, 1)),
+            ('SOUT', '081', utc_datetime(2012, 6, 20)),
+            ('SOUT', '082', utc_datetime(2012, 6, 20)),
+            ('SOUT', '083', utc_datetime(2012, 6, 20)),
+            ('SOUT', '084', utc_datetime(2012, 6, 20)),
+            ('SOUT', '085', utc_datetime(2012, 6, 20)),
+            ('SOUT', '590', utc_datetime(2013, 8, 15)),
+            ('SOUT', '591', utc_datetime(2013, 8, 15)),
+            ('SOUT', '592', utc_datetime(2013, 8, 15)),
+            ('SOUT', '731', utc_datetime(2014, 12, 17)),
+            ('SOUT', '732', utc_datetime(2014, 12, 17)),
+            ('SWEB', '640', utc_datetime(2012, 12, 20)),
+            ('SWEB', '650', utc_datetime(2012, 12, 20)),
+            ('SWEB', '690', utc_datetime(2012, 12, 20)),
+            ('SWEB', '692', utc_datetime(2012, 12, 20)),
+            ('SWEB', '693', utc_datetime(2012, 12, 20)),
+            ('SWEB', '694', utc_datetime(2012, 12, 20)),
+            ('SWEB', '695', utc_datetime(2012, 12, 20)),
+            ('SWEB', '696', utc_datetime(2012, 12, 20)),
+            ('SWEB', '720', utc_datetime(2012, 12, 20)),
+            ('SWEB', '741', utc_datetime(2012, 12, 20)),
+            ('SWEB', '750', utc_datetime(2012, 12, 20)),
+            ('SWEB', '751', utc_datetime(2012, 12, 20)),
+            ('SWEB', '752', utc_datetime(2012, 12, 20)),
+            ('SWEB', '753', utc_datetime(2012, 12, 20)),
+            ('SWEB', '754', utc_datetime(2012, 12, 20))):
+                sess.execute(
+                    "update llfc set valid_from = :valid_from "
+                    "from party, participant "
+                    "where llfc.dno_id = party.id "
+                    "and party.participant_id = participant.id "
+                    "and participant.code = :participant_code "
+                    "and llfc.code = :llfc_code and llfc.valid_to is null;",
+                    {
+                        'valid_from': valid_from,
+                        'participant_code': participant_code,
+                        'llfc_code': llfc_code})
+    sess.commit()
+
+    sess.execute(
+        "update llfc set valid_from = '2012-12-20 00:00:00 +0:00' "
+        "where code = '660' "
+        "and description = 'Babcock Marine' and valid_to = '2013-03-31';")
+    '''
+    '''
+    sess.execute(
+        "update llfc set valid_from = '2015-04-01 00:00:00 +0:00' "
+        "where code = '827' and description = 'Bradwell Wind farm - IMPORT';")
+    sess.execute(
+        "update llfc set valid_from = '2015-04-01 00:00:00 +0:00' "
+        "where code = '835' and description = 'Cotton Wind farm - IMPORT';")
+    sess.execute(
+        "update llfc set valid_from = '2015-04-01 00:00:00 +0:00' "
+        "where code = '841' and description = 'Earls Hall Farm - IMPORT';")
+    sess.execute(
+        "update llfc set valid_from = '2014-04-01 00:00:00 +0:00' "
+        "where code = '864' and description = 'LU Manor House - IMPORT';")
+    sess.execute(
+        "update llfc set valid_from = '2015-04-01 00:00:00 +0:00' "
+        "where code = '061' and description = 'Spare EHV/HV 21';")
+    sess.execute(
+        "update llfc set valid_from = '2014-06-18 00:00:00 +0:00' "
+        "where code = '201' and description = 'Corby (MSID 7015)';")
+    sess.execute(
+        "update llfc set valid_from = '2015-04-01 00:00:00 +0:00' "
+        "where code = '805' and description = 'Spare LV 9';")
+    sess.execute(
+        "update llfc set valid_from = '2015-04-01 00:00:00 +0:00' "
+        "where code = '976' and description = 'Spare EHV/HV 22';")
+    sess.execute(
+        "update llfc set valid_from = '2015-04-01 00:00:00 +0:00' "
+        "where code = '978' and description = 'Spare EHV/HV Export 22';")
+    '''
+    '''
+    for row in sess.execute(
+            text(
+                "select t1.id from llfc as t1 "
+                "where (select count(*) from llfc as t2 "
+                "where t1.dno_id = t2.dno_id and t1.code = t2.code "
+                "and t1.valid_from = t2.valid_from) > 1;")).fetchall():
+        llfc_id = row[0]
+        if len(
+                sess.execute(
+                    "select * from era where "
+                    "(era.imp_llfc_id = :llfc_id or "
+                    "era.exp_llfc_id = :llfc_id);",
+                    {'llfc_id': llfc_id}).fetchall()) == 0:
+            sess.execute(
+                "delete from llfc where id = :llfc_id", {'llfc_id': llfc_id})
+    '''
+    for llfc_id, valid_from, valid_to in sess.execute(
+            "select id, valid_from, valid_to from llfc;").fetchall():
+        if len(
+                sess.execute(
+                    "select * from era where "
+                    "(era.imp_llfc_id = :llfc_id or "
+                    "era.exp_llfc_id = :llfc_id);",
+                    {'llfc_id': llfc_id}).fetchall()) == 0:
+            sess.execute(
+                "delete from llfc where id = :llfc_id", {'llfc_id': llfc_id})
+        else:
+            if valid_from.hour == 23:
+                sess.execute(
+                    "update llfc set valid_from = :valid_from "
+                    "where id = :llfc_id;", {
+                        'llfc_id': llfc_id,
+                        'valid_from': valid_from + Timedelta(hours=1)})
+            if valid_to is not None and valid_to.hour == 23:
+                sess.execute(
+                    "update llfc set valid_to = :valid_to "
+                    "where id = :llfc_id;", {
+                        'llfc_id': llfc_id,
+                        'valid_to': valid_to + Timedelta(hours=1)})
+
+    sess.execute(
+        "ALTER TABLE ONLY llfc "
+        "ADD CONSTRAINT llfc_dno_id_code_valid_from_key UNIQUE "
+        "(dno_id, code, valid_from);")
+
+    sess.execute(
+        "alter table meter_payment_type "
+        "add constraint meter_payment_type_code_valid_from_key "
+        "UNIQUE (code, valid_from);")
+
+    sess.execute(
+        "alter table meter_type "
+        "add constraint meter_type_code_valid_from_key "
+        "UNIQUE (code, valid_from);")
+
+    sess.execute(
+        "alter table mtc drop constraint mtc_dno_id_code_key;")
+    sess.execute(
+        "alter table mtc add constraint mtc_dno_id_code_valid_from_key "
+        "UNIQUE (dno_id, code, valid_from);")
+    for mtc_id, valid_from, valid_to in sess.execute(
+            "select id, valid_from, valid_to from mtc;").fetchall():
+        if len(
+                sess.execute(
+                    "select * from era where era.mtc_id = :mtc_id;",
+                    {'mtc_id': mtc_id}).fetchall()) == 0:
+            sess.execute(
+                "delete from mtc where id = :mtc_id", {'mtc_id': mtc_id})
+        else:
+            if valid_from.hour == 23:
+                sess.execute(
+                    "update mtc set valid_from = :valid_from "
+                    "where id = :mtc_id;", {
+                        'mtc_id': mtc_id,
+                        'valid_from': valid_from + Timedelta(hours=1)})
+            if valid_to is not None and valid_to.hour == 23:
+                sess.execute(
+                    "update mtc set valid_to = :valid_to "
+                    "where id = :mtc_id;", {
+                        'mtc_id': mtc_id,
+                        'valid_to': valid_to + Timedelta(hours=1)})
+
+    '''
+    for row in sess.execute(
+            text(
+                "select t1.id from party as t1 "
+                "where (select count(*) from party as t2 "
+                "where t1.market_role_id = t2.market_role_id "
+                "and t1.participant_id = t2.participant_id "
+                "and t1.valid_from = t2.valid_from) > 1;")).fetchall():
+        party_id = row[0]
+        if all(
+                (
+                    len(
+                        sess.execute(
+                            'select * from "user" where party_id = :party_id;',
+                            {'party_id': party_id}).fetchall()) == 0,
+                    len(
+                        sess.execute(
+                            "select * from supply where dno_id = :party_id;",
+                            {'party_id': party_id}).fetchall()) == 0,
+                    len(
+                        sess.execute(
+                            "select * from contract "
+                            "where party_id = :party_id;",
+                            {'party_id': party_id}).fetchall()) == 0,
+                    len(
+                        sess.execute(
+                            "select * from llfc where dno_id = :party_id;",
+                            {'party_id': party_id}).fetchall()) == 0,
+                    len(
+                        sess.execute(
+                            "select * from mtc where dno_id = :party_id;",
+                            {'party_id': party_id}).fetchall()) == 0)):
+            sess.execute(
+                "delete from party where id = :party_id",
+                {'party_id': party_id})
+    '''
+
+    for party_id, valid_from, valid_to in sess.execute(
+            "select id, valid_from, valid_to from party;").fetchall():
+        if all(
+                (
+                    len(
+                        sess.execute(
+                            "select * from contract "
+                            "where party_id = :party_id;",
+                            {'party_id': party_id}).fetchall()) == 0,
+                    len(
+                        sess.execute(
+                            "select * from llfc where dno_id = :party_id;",
+                            {'party_id': party_id}).fetchall()) == 0,
+                    len(
+                        sess.execute(
+                            "select * from mtc where dno_id = :party_id;",
+                            {'party_id': party_id}).fetchall()) == 0)):
+            sess.execute(
+                "delete from party where id = :party_id",
+                {'party_id': party_id})
+        else:
+            if valid_from.hour == 23:
+                sess.execute(
+                    "update party set valid_from = :valid_from "
+                    "where id = :party_id;", {
+                        'party_id': party_id,
+                        'valid_from': valid_from + Timedelta(hours=1)})
+            if valid_to is not None and valid_to.hour == 23:
+                sess.execute(
+                    "update party set valid_to = :valid_to "
+                    "where id = :party_id;", {
+                        'party_id': party_id,
+                        'valid_to': valid_to + Timedelta(hours=1)})
+
+    sess.execute(
+        "alter table party "
+        "add constraint party_market_role_id_participant_id_valid_from_key "
+        "UNIQUE (market_role_id, participant_id, valid_from);")
+
+    sess.execute(
+        "alter table pc "
+        "ADD CONSTRAINT pc_code_valid_from_key UNIQUE (code, valid_from);")
+
+    sess.execute(
+        "ALTER TABLE ONLY ssc "
+        "ADD CONSTRAINT ssc_code_valid_from_key UNIQUE (code, valid_from);")
+    for ssc_id, valid_from, valid_to in sess.execute(
+            "select id, valid_from, valid_to from ssc;").fetchall():
+        if valid_from.hour == 23:
+            sess.execute(
+                "update party set valid_from = :valid_from "
+                "where id = :party_id;", {
+                    'party_id': party_id,
+                    'valid_from': valid_from + Timedelta(hours=1)})
+        if valid_to is not None and valid_to.hour == 23:
+            sess.execute(
+                "update party set valid_to = :valid_to "
+                "where id = :party_id;", {
+                    'party_id': party_id,
+                    'valid_to': valid_to + Timedelta(hours=1)})
+
+
 upgrade_funcs = [
     db_upgrade_0_to_1, db_upgrade_1_to_2, db_upgrade_2_to_3, db_upgrade_3_to_4,
-    db_upgrade_4_to_5, db_upgrade_5_to_6, db_upgrade_6_to_7, db_upgrade_7_to_8]
+    db_upgrade_4_to_5, db_upgrade_5_to_6, db_upgrade_6_to_7, db_upgrade_7_to_8,
+    db_upgrade_8_to_9]
 
 
 def db_upgrade(root_path):

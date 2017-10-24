@@ -1,0 +1,32 @@
+id,code,description
+0,0,Green Deal Licensee
+1,1,Green Deal Provider
+2,2,Green Deal Remittance Processor
+3,3,Unmetered Supplies Operator (UMSO)
+4,4,Meter Administrator (MA)
+5,5,Smart Metering System Operator
+6,6,Non Half Hourly Data Retriever
+7,8,Meter Asset Provider (MAP)
+8,9,Communications Provider
+9,A,HH Data Aggregator
+10,B,Non-HH Data Aggregator
+11,C,HH Data Collector
+12,D,Non-HH Data Collector
+13,E,Capacity Market (CM) Capacity Provider
+14,F,Pool Funds Administrator
+15,G,ISR/IAR Agent
+16,H,Contract for Difference (CFD) Generator
+17,I,Teleswitch Agent
+18,J,Supply Fault Information Centre
+19,K,Profile Administrator
+20,L,Electricity Central Online ENQ Service
+21,M,Meter Operator
+22,P,PRS Agent
+23,R,Distributor
+24,S,Settlement System Administrator
+25,T,Grid Control Company
+26,U,Market Domain Data Agent
+27,V,Prepayment Meter Infrastructure Provider
+28,W,Revenue Protection Service
+29,X,Supplier
+30,Z,Non-core Role

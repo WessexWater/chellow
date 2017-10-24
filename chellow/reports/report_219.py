@@ -77,7 +77,7 @@ def content(year, month, months, supply_id, user):
                     read.present_type.code])
     except BadRequest as e:
         w.writerow([e.description])
-    except:
+    except BaseException:
         msg = traceback.format_exc()
         f.write(msg)
     finally:

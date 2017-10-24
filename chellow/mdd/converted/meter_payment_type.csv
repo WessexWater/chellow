@@ -1,0 +1,9 @@
+id,code,description,valid_from,valid_to
+0,CR,Credit,1996-04-01 00:00:00+00,
+1,KM,Key,1996-04-01 00:00:00+00,
+2,KP,PRI Keypad Metering,2005-06-03 00:00:00+00,
+3,OS,Other/Not Supported,1996-04-01 00:00:00+00,
+4,PL,Power Line Carrier,1996-04-01 00:00:00+00,
+5,SM,Smart Card,1996-04-01 00:00:00+00,
+6,TL,Token - Large,1996-04-01 00:00:00+00,
+7,TS,Token - Small,1996-04-01 00:00:00+00,

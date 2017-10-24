@@ -142,7 +142,7 @@ class FileDeleter(threading.Thread):
                         file_path = os.path.join(download_path, file_name)
                         if cur_time - os.path.getmtime(file_path) > MAX_AGE:
                             os.remove(file_path)
-                except:
+                except BaseException:
                     self.log("Outer problem " + traceback.format_exc())
                 finally:
                     self.lock.release()

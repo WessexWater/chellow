@@ -371,7 +371,7 @@ def is_tpr(sess, caches, tpr_code, hh_date):
 def cache_level(cache, key):
     try:
         return cache[key]
-    except:
+    except BaseException:
         cache[key] = new_cache = {}
         return new_cache
 
@@ -673,7 +673,8 @@ class SupplySource(DataSource):
 
             if era.imp_llfc.code in era_map_llfcs:
                 llfc_code = era_map_llfcs[era.imp_llfc.code]
-                self.llfc = self.dno.get_llfc_by_code(sess, llfc_code)
+                self.llfc = self.dno.get_llfc_by_code(
+                    sess, llfc_code, start_date)
             else:
                 self.llfc = era.imp_llfc
 
@@ -686,7 +687,8 @@ class SupplySource(DataSource):
 
             if era.exp_llfc.code in era_map_llfcs:
                 llfc_code = era_map_llfcs[era.exp_llfc.code]
-                self.llfc = self.dno.get_llfc_by_code(sess, llfc_code)
+                self.llfc = self.dno.get_llfc_by_code(
+                    sess, llfc_code, start_date)
             else:
                 self.llfc = era.exp_llfc
 

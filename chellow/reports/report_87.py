@@ -121,7 +121,7 @@ def content(start_date, finish_date, contract_id, user):
             month_finish = month_start + relativedelta(months=1) - HH
     except BadRequest as e:
         writer.writerow([e.description])
-    except:
+    except BaseException:
         writer.writerow([traceback.format_exc()])
     finally:
         if sess is not None:

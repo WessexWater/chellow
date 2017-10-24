@@ -437,7 +437,7 @@ def content(year, supply_id, user):
 
             # avoid a long running transaction
             sess.rollback()
-    except:
+    except BaseException:
         msg = traceback.format_exc()
         sys.stderr.write(msg + '\n')
         f.write("Problem " + msg)

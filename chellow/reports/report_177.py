@@ -208,7 +208,7 @@ def content(year, month, months, supply_id, user):
                     ','.join(
                         '"' + str(values[name]) +
                         '"' for name in field_names) + '\n')
-    except:
+    except BaseException:
         tmp_file.write(traceback.format_exc())
     finally:
         if sess is not None:

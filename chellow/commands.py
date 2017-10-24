@@ -39,7 +39,7 @@ def chellow_command():
 
     try:
         os.makedirs(app.instance_path)
-    except:
+    except BaseException:
         pass
     pidfile_path = os.path.join(app.instance_path, 'chellow.pid')
     pidfile = PidFile(pidfile_path)

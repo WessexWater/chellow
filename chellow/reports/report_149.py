@@ -219,7 +219,7 @@ def content(supply_id, start_date, finish_date, user):
                     chunk_finish, forecast_date, caches))
     except BadRequest as e:
         f.write('Problem:' + e.description)
-    except:
+    except BaseException:
         f.write(traceback.format_exc())
     finally:
         sess.close()

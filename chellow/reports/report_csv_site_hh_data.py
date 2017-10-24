@@ -69,7 +69,7 @@ def content(sess, start_date, finish_date, site_id, user):
                         hh['imp_net'], hh['displaced'], hh['exp_net'],
                         hh['used'], hh['exp_gen'], hh['imp_gen'],
                         metering_type))
-    except:
+    except BaseException:
         msg = traceback.format_exc()
         sys.stderr.write(msg)
         writer.writerow([msg])

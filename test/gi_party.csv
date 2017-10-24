@@ -1,7 +1,1 @@
-"insert","party","X","BETH","BETHNAL LIMITED","2015-08-19 00:00","",""
-"update","party","X","BETH","BETHNAL ENERGY LIMITED","2015-08-19 00:00","2016-01-01 00:00",""
-# Do twice deliberately, so that we're updating the 'from' date when it's not
-# null
-"update","party","X","BETH","BETHNAL ENERGY LIMITED","2015-08-19 00:00","2016-01-01 00:00",""
-"update","party","X","BETH","BETHNAL ENERGY LIMITED","2015-08-19 00:00","",""
-"insert","party","R","PENL","Peel Electricity Networks Ltd","2015-06-17 00:00","","30"
+"insert","party","M","JOLT","Jolt Metering Services Ltd","2005-08-19 00:00","",""

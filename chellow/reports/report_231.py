@@ -86,7 +86,7 @@ def content(start_date, finish_date, contract_id, user):
                 out.append(k)
                 out.append(str(bill[k]))
             writer.writerow(out)
-    except:
+    except BaseException:
         msg = traceback.format_exc()
         sys.stderr.write(msg)
         writer.writerow([msg])

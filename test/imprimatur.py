@@ -276,7 +276,7 @@
         'path': '/hhdc_contracts/add',
         'method': 'post',
         'data': {
-            'participant_id': "61",  # DASL
+            'participant_id': "81",  # DASL
             'name': "HH contract",
             'start_year': "2000",
             'start_month': "01",
@@ -293,7 +293,7 @@
         'path': '/hhdc_contracts/8/edit',
         'method': 'post',
         'data': {
-            'party_id': "97",  # DASL HHDC
+            'party_id': "116",  # DASL HHDC
             'name': "HH contract",
             'charge_script': """
 def virtual_bill_titles():
@@ -360,7 +360,7 @@ def virtual_bill(ds):
         'path': '/hhdc_contracts/add',
         'method': 'post',
         'data': {
-            'participant_id': "61",  # DASL
+            'participant_id': "81",  # DASL
             'name': "Dynamat data",
             'start_year': "2000",
             'start_month': "01",
@@ -376,7 +376,7 @@ def virtual_bill(ds):
         'path': '/hhdc_contracts/9/edit',
         'method': 'post',
         'data': {
-            'party_id': "97",  # DASL HHDC
+            'party_id': "116",  # DASL HHDC
             'name': "Dynamat data",
             'charge_script': """
 def virtual_bill_titles():
@@ -416,9 +416,7 @@ def virtual_bill(ds):
         'path': '/hhdc_contracts/9/edit',
         'method': 'post',
         'data': {
-            'party_id': "651",
-
-            # UKDC
+            'party_id': "1121",  # UKDC
             'name': "Dynamat data",
             'start_year': "2000",
             'start_month': "01",
@@ -442,7 +440,7 @@ def virtual_bill(ds):
         'path': '/hhdc_contracts/9/edit',
         'status_code': 200,
         'regexes': [
-            r'option value="651" selected']},
+            r'option value="1121" selected']},
 
     # Check correct fields present for adding a supplier contract },
     {
@@ -457,7 +455,7 @@ def virtual_bill(ds):
         'path': '/supplier_contracts/add',
         'method': 'post',
         'data': {
-            'participant_id': "28",  # BIZZ
+            'participant_id': "33",  # BIZZ
             'name': "Half-hourlies 2007",
             'start_year': "2000",
             'start_month': "01",
@@ -473,7 +471,7 @@ def virtual_bill(ds):
         'name': "Check that it's displayed properly",
         'path': '/supplier_contracts/10/edit',
         'regexes': [
-            r'<option value="22" selected>',
+            r'<option value="28" selected>',
             r'<textarea name="properties" rows="20" cols="80">\{\s*'
             r'&#34;hydrogen&#34;: &#34;sonata&#34;\}</textarea>'],
         'status_code': 200},
@@ -533,7 +531,7 @@ def virtual_bill(ds):
         'path': '/mop_contracts/add',
         'method': 'post',
         'data': {
-            'participant_id': "409",  # LENG
+            'participant_id': "487",  # LENG
             'name': "MOP Contract",
             'start_year': "2000",
             'start_month': "01",
@@ -549,7 +547,7 @@ def virtual_bill(ds):
         'path': '/mop_contracts/11/edit',
         'method': 'post',
         'data': {
-            'party_id': "690",  # LENG
+            'party_id': "788",  # LENG
             'name': "MOP Contract",
             'start_year': "2000",
             'start_month': "01",
@@ -583,7 +581,7 @@ def virtual_bill(ds):
         'path': '/supplier_contracts/add',
         'method': 'post',
         'data': {
-            'participant_id': "54",  # COOP
+            'participant_id': "70",  # COOP
             'name': "Half-hourlies 2013",
             'start_year': "2013",
             'start_month': "01",
@@ -627,7 +625,7 @@ def virtual_bill_titles():
         'path': '/supplier_contracts/add',
         'method': 'post',
         'data': {
-            'participant_id': "386",  # HYDE
+            'participant_id': "459",  # HYDE
             'name': "Non half-hourlies 2007",
             'start_year': "2000",
             'start_month': "01",
@@ -797,7 +795,7 @@ def virtual_bill_titles():
             'name': "Hello",
             'source_id': "4",
             'generator_type_id': "1",
-            'gsp_group_id': "11"},
+            'gsp_group_id': "10"},
         'regexes': [
             r"/supplies/1"],
         'status_code': 303},
@@ -816,7 +814,7 @@ def virtual_bill_titles():
             'name': "1",
             'source_id': "1",
             'generator_type_id': "1",
-            'gsp_group_id': "11"},
+            'gsp_group_id': "10"},
         'status_code': 303},
 
     {
@@ -896,13 +894,13 @@ def virtual_bill_titles():
             'finish_day': "13",
             'finish_hour': "23",
             'finish_minute': "30",
-            'gsp_group_id': "11",
+            'gsp_group_id': "10",
             'mop_contract_id': "11",
             'mop_account': "22 0883 6932 301",
             'hhdc_contract_id': "9",
             'hhdc_account': "22 0883 6932 301",
             'msn': "",
-            'pc_id': "9",
+            'pc_id': "0",
             'mtc_code': "845",
             'cop_id': "5",
             'ssc_code': "",
@@ -981,13 +979,13 @@ def virtual_bill_titles():
             'mop_account': "22 0883 6932 301",
             'hhdc_contract_id': "8",
             'hhdc_account': "22 0883 6932 301",
-            'pc_id': "9",
+            'pc_id': "0",
             'mtc_code': "845",
             'cop_id': "5",
             'ssc_code': "",
             'imp_llfc_code': "570",
             'imp_mpan_core': "22 0883 6932 301",
-            'imp_gsp_group_id': "11",
+            'imp_gsp_group_id': "10",
             'imp_sc': "430",
             'imp_supplier_contract_id': "10",
             'imp_supplier_account': "4341"},
@@ -1024,7 +1022,7 @@ def virtual_bill_titles():
             'mop_account': "22 0883 6932 301",
             'hhdc_contract_id': "8",
             'hhdc_account': "22 0883 6932 301",
-            'pc_id': "9",
+            'pc_id': "0",
             'mtc_code': "845",
             'cop_id': "5",
             'ssc_code': "",
@@ -1101,7 +1099,7 @@ def virtual_bill_titles():
             'mop_account': "mc-22 9813 2107 763",
             'hhdc_contract_id': "8",
             'hhdc_account': "01",
-            'pc_id': "9",
+            'pc_id': "0",
             'mtc_code': "845",
             'cop_id': "3",
             'ssc_code': "",
@@ -1135,7 +1133,7 @@ def virtual_bill_titles():
             'mop_account': "mc-22 9813 2107 763",
             'hhdc_contract_id': "8",
             'hhdc_account': "01",
-            'pc_id': "9",
+            'pc_id': "0",
             'mtc_code': "845",
             'cop_id': "3",
             'ssc_code': "",
@@ -1458,8 +1456,8 @@ def virtual_bill_titles():
             'start_minute': "00",
             'is_ended': "false",
             'msn': "",
-            'gsp_group_id': "11",
-            'pc_id': "9",
+            'gsp_group_id': "10",
+            'pc_id': "0",
             'hhdc_contract_id': "null",
             'hhdc_account': "01",
             'imp_mtc_code': "845",
@@ -1685,12 +1683,12 @@ def virtual_bill_titles():
             'start_month': "08",
             'start_day': "06",
             'is_ended': "false",
-            'pc_id': "9",
+            'pc_id': "0",
             'mtc_code': "535",
             'llfc_code': "510",
             'imp_mpan_core': "22 0195 4836 192",
             'ssc_code': "0127",
-            'gsp_group_id': "11",
+            'gsp_group_id': "10",
             'imp_sc': "30",
             'hhdc_contract_id': "HH contract",
             'hhdc_account': "",
@@ -1907,7 +1905,7 @@ def virtual_bill_titles():
             'mop_contract_id': "11",
             'mop_account': "22 0883 6932 301",
             'hhdc_contract_id': "null",
-            'pc_id': "9",
+            'pc_id': "0",
             'mtc_code': "845",
             'cop_id': "5",
             'ssc_code': "",
@@ -1935,7 +1933,7 @@ def virtual_bill_titles():
             'email_address': "mishka@localhost",
             'password': "fyodor",
             'user_role_code': "party-viewer",
-            'party_id': "97"},  # DASL HHDC
+            'party_id': "116"},  # DASL HHDC
 
         'status_code': 303,
         'regexes': [
@@ -2026,7 +2024,7 @@ def virtual_bill_titles():
             'hhdc_contract_id': "8",
             'hhdc_account': "01",
             'msn': "",
-            'pc_id': "9",
+            'pc_id': "0",
             'mtc_code': "845",
             'cop_id': "5",
             'ssc_code': "",
@@ -2117,7 +2115,7 @@ def virtual_bill_titles():
         'path': '/supplier_contracts/10/edit',
         'method': 'post',
         'data': {
-            'party_id': "22",  # BIZZ
+            'party_id': "28",  # BIZZ
             'name': "Half-hourlies 2007",
             'charge_script': """
 def virtual_bill(supply, startDate, finishDate, pw):
@@ -2135,7 +2133,7 @@ def virtual_bill(supply, startDate, finishDate, pw):
         'path': '/supplier_contracts/10/edit',
         'method': 'post',
         'data': {
-            'party_id': "22",
+            'party_id': "28",  # BIZZ
             'name': "Half-hourlies 2007",
             'charge_script': """
 from operator import itemgetter
@@ -2394,7 +2392,7 @@ def virtual_bill(supply_source):
             'hhdc_contract_id': "8",
             'hhdc_account': "01",
             'msn': "",
-            'pc_id': "9",
+            'pc_id': "0",
             'mtc_code': "845",
             'cop_id': "5",
             'ssc_code': "",
@@ -2499,7 +2497,7 @@ def virtual_bill(supply_source):
             'start_minute': "00",
             'is_ended': "false",
             'msn': "",
-            'pc_id': "9",
+            'pc_id': "0",
             'mtc_code': "845",
             'cop_id': "5",
             'ssc_code': "",
@@ -2534,7 +2532,7 @@ def virtual_bill(supply_source):
             'finish_hour': "00",
             'finish_minute': "00",
             'msn': "",
-            'pc_id': "9",
+            'pc_id': "0",
             'mtc_code': "845",
             'cop_id': "5",
             'ssc_code': "",
@@ -2558,7 +2556,7 @@ def virtual_bill(supply_source):
         'path': '/supplier_contracts/add',
         'method': 'post',
         'data': {
-            'participant_id': "485",  # RWED
+            'participant_id': "605",  # RWED
             'name': "GDF",
             'start_year': "2000",
             'start_month': "01",
@@ -2590,7 +2588,7 @@ def virtual_bill(supply_source):
         'path': '/hhdc_contracts/add',
         'method': 'post',
         'data': {
-            'participant_id': "527",  # UKDC
+            'participant_id': "670",  # UKDC
             'name': "Siemens Contract",
             'start_year': "2000",
             'start_month': "01",
@@ -2847,7 +2845,7 @@ def virtual_bill(supply_source):
             'name': "Hello",
             'source_id': "2",
             'generator_type_id': "1",
-            'gsp_group_id': "11"},
+            'gsp_group_id': "10"},
         'regexes': [
             r"/supplies/1"],
         'status_code': 303},
@@ -2906,7 +2904,7 @@ def virtual_bill(supply_source):
 
     {
         'name': "View a DNO rate script",
-        'path': '/dnos/131/rate_scripts/200001010000',
+        'path': '/dnos/160/rate_scripts/200001010000',
         'status_code': 200},
 
     {
@@ -3720,7 +3718,7 @@ def virtual_bill(supply_source):
         'path': '/supplier_contracts/12/edit',
         'method': 'post',
         'data': {
-            'party_id': "22",  # BIZZ
+            'party_id': "28",  # BIZZ
             'name': "Half-hourlies 2013",
             'charge_script': """
 from operator import itemgetter
@@ -3942,7 +3940,7 @@ def virtual_bill(supply_source):
         'method': 'post',
         'data': {
             'name': "Non half-hourlies 2007",
-            'party_id': "664",  # HYDE
+            'party_id': "759",  # HYDE
             'charge_script': """
 import chellow.ccl
 import chellow.computer
@@ -4067,8 +4065,8 @@ def virtual_bill(supply_source):
             'start_hour': "00",
             'start_minute': "00",
             'msn': "",
-            'gsp_group_id': "8",
-            'pc_id': "9",
+            'gsp_group_id': "7",
+            'pc_id': "0",
             'mtc_code': "845",
             'cop_id': "5",
             'ssc_code': "",
@@ -4277,7 +4275,7 @@ def virtual_bill(supply_source):
         'path': '/supplier_contracts/add',
         'method': 'post',
         'data': {
-            'participant_id': "54",  # COOP
+            'participant_id': "70",  # COOP
             'name': "Non half-hourlies 2010",
             'start_year': "2000",
             'start_month': "01",
@@ -4489,12 +4487,12 @@ def virtual_bill(supply_source):
             'start_hour': "05",
             'start_minute': "26",
             'msn': "",
-            'gsp_group_id': "3",
+            'gsp_group_id': "2",
             'mop_contract_id': "11",
             'mop_account': "mc-22 9879 0084 358",
             'hhdc_contract_id': "8",
             'hhdc_account': "dc-22 9879 0084 358",
-            'pc_id': "9",
+            'pc_id': "0",
             'mtc_code': "845",
             'cop_id': "5",
             'ssc_code': "",
@@ -5520,12 +5518,12 @@ def virtual_bill(supply_source):
             '<input type="hidden" name="supply_id"',
             r'<td rowspan="4">\s*'
             r'<a\s*'
-            r'href="/pcs/9"\s*'
+            r'href="/pcs/0"\s*'
             r'title="Half-hourly">00</a>\s*'
             r'</td>\s*'
             r'<td rowspan="4"></td>\s*'
             r'<td rowspan="4">\s*'
-            r'<a href="/mtcs/52"\s*'
+            r'<a href="/mtcs/51"\s*'
             r'title="HH COP5 And Above With Comms">845</a>\s*</td>'],
         'status_code': 200},
 
@@ -5757,12 +5755,12 @@ def virtual_bill(supply_source):
             'start_hour': "00",
             'start_minute': "00",
             'msn': "",
-            'gsp_group_id': "3",
+            'gsp_group_id': "2",
             'mop_contract_id': "11",
             'mop_account': "mc-22 9879 0084 358",
             'hhdc_contract_id': "8",
             'hhdc_account': "dc-22 9879 0084 358",
-            'pc_id': "9",
+            'pc_id': "0",
             'mtc_code': "845",
             'cop_id': "5",
             'ssc_code': "",
@@ -5774,7 +5772,7 @@ def virtual_bill(supply_source):
             'insert_electricity': "Insert"},
         'regexes': [
             r"There is no LLFC with the code &#39;&#39; associated with the "
-            "DNO 22\.",
+            r"DNO 22 at the date 2010-05-26 00:00\.",
             r'<input name="site_name" value="Parbola"'],
         'status_code': 400},
     {
@@ -5791,12 +5789,12 @@ def virtual_bill(supply_source):
             'start_hour': "00",
             'start_minute': "00",
             'msn': "",
-            'gsp_group_id': "3",
+            'gsp_group_id': "2",
             'mop_contract_id': "11",
             'mop_account': "mc-22 9879 0084 358",
             'hhdc_contract_id': "8",
             'hhdc_account': "dc-22 9879 0084 358",
-            'pc_id': "9",
+            'pc_id': "0",
             'mtc_code': "845",
             'cop_id': "5",
             'ssc_code': "",
@@ -5824,12 +5822,12 @@ def virtual_bill(supply_source):
             'start_hour': "00",
             'start_minute': "00",
             'msn': "",
-            'gsp_group_id': "3",
+            'gsp_group_id': "2",
             'mop_contract_id': "11",
             'mop_account': "mc-22 9879 0084 358",
             'hhdc_contract_id': "8",
             'hhdc_account': "dc-22 9879 0084 358",
-            'pc_id': "9",
+            'pc_id': "0",
             'mtc_code': "",
             'cop_id': "5",
             'ssc_code': "",
@@ -5864,7 +5862,7 @@ def virtual_bill(supply_source):
             'start_hour': "00",
             'start_minute': "00",
             'msn': "",
-            'gsp_group_id': '11',
+            'gsp_group_id': '10',
             'mop_contract_id': "11",
             'mop_account': "mc-22 9789 0534 938",
             'hhdc_contract_id': "8",
@@ -6440,7 +6438,7 @@ def virtual_bill(supply_source):
 
             # Check link to TPR from outer read
             r'<td>\s*'
-            '<a href="/tprs/2">00003</a>\s*'
+            '<a href="/tprs/1">00003</a>\s*'
             '</td>'],
         'status_code': 200},
 
@@ -6593,7 +6591,7 @@ def virtual_bill(supply_source):
         'path': '/hhdc_contracts/8/edit',
         'method': 'post',
         'data': {
-            'party_id': "97",  # DASL
+            'party_id': "116",  # DASL
             'name': "HH contract",
             'charge_script': """
 def virtual_bill_titles():
@@ -6823,7 +6821,7 @@ def virtual_bill(supply_source):
         'name': "Parties",
         'path': '/parties',
         'regexes': [
-            r'<a href="/participants/513">SWEB</a>'],
+            r'<a href="/participants/647">SWEB</a>'],
         'status_code': 200},
 
     {
@@ -6990,13 +6988,13 @@ def virtual_bill(supply_source):
             'start_hour': "00",
             'start_minute': "00",
             'is_ended': "false",
-            'gsp_group_id': "11",
+            'gsp_group_id': "10",
             'mop_contract_id': "11",
             'mop_account': "22 0883 6932 301",
             'hhdc_contract_id': "8",
             'hhdc_account': "22 0883 6932 301",
             'msn': "",
-            'pc_id': "9",
+            'pc_id': "0",
             'mtc_code': "845",
             'cop_id': "5",
             'ssc_code': "",
@@ -7162,8 +7160,8 @@ def virtual_bill(supply_source):
             'start_hour': "00",
             'start_minute': "00",
             'msn': "88jiuf ff",
-            'gsp_group_id': "5",
-            'pc_id': "9",
+            'gsp_group_id': "4",
+            'pc_id': "0",
             'mtc_code': "845",
             'cop_id': "5",
             'ssc_code': "",
@@ -7323,7 +7321,7 @@ def virtual_bill(supply_source):
             'name': "Hello",
             'source_id': "2",
             'generator_type_id': "1",
-            'gsp_group_id': "11"},
+            'gsp_group_id': "10"},
         'regexes': [
             r"/supplies/1"],
         'status_code': 303},
@@ -7611,7 +7609,7 @@ def virtual_bill(supply_source):
         'name': "Edit register read with a TPR that's not 00001",
         'path': '/reads/1/edit',
         'regexes': [
-            r'<option value="37" selected>00040</option>']},
+            r'<option value="36" selected>00040</option>']},
 
     # Insert a new batch
     {
@@ -7811,7 +7809,7 @@ def virtual_bill(supply_source):
             'hhdc_contract_id': "8",
             'hhdc_account': "01",
             'msn': "",
-            'pc_id': "9",
+            'pc_id': "0",
             'mtc_code': "845",
             'cop_id': "5",
             'ssc_code': "",
@@ -8453,24 +8451,24 @@ def virtual_bill(supply_source):
         'status_code': 200,
         'regexes': [
             r'<tr>\s*<td>\s*'
-            '<a href="/mtcs/96">\s*001\s*'
+            '<a href="/mtcs/98">\s*001\s*'
             '</a>\s*</td>\s*<td>\s*'
-            '<a href="/dnos/703">\s*'
+            '<a href="/dnos/805">\s*'
             '12\s*</a>\s*</td>\s*<td>Economy 7, 23.30 - 06.30</td>\s*<td>\s*'
             '<a href="/meter_types/15">\s*TP\s*'
             '</a>\s*</td>\s*<td>2</td>\s*</tr>']},
 
     {
-        'path': '/mtcs/96',
+        'path': '/mtcs/98',
         'status_code': 200,
         'regexes': [
             r'<tr>\s*<th>Code</th>\s*<td>001</td>\s*</tr>\s*<tr>\s*'
             '<th>DNO</th>\s*<td>\s*'
-            '<a href="/dnos/703">\s*'
+            '<a href="/dnos/805">\s*'
             '12\s*</a>\s*</td>\s*</tr>']},
 
     {
-        'path': '/mtcs/1',
+        'path': '/mtcs/0',
         'status_code': 200,
         'regexes': [
             r"<tr>\s*<th>Code</th>\s*<td>500</td>\s*</tr>\s*<tr>\s*"
@@ -8616,7 +8614,7 @@ def virtual_bill(supply_source):
             'coefficient': "1",
             'msn': "I02D89150",
             'units': "kWh",
-            'tpr_id': "643",
+            'tpr_id': "642",
             'previous_year': "2012",
             'previous_month': "01",
             'previous_day': "04",
@@ -8671,7 +8669,7 @@ def virtual_bill(supply_source):
             'coefficient': "1",
             'msn': "I02D89150",
             'units': "kWh",
-            'tpr_id': "1",
+            'tpr_id': "0",
             'previous_year': "2009",
             'previous_month': "04",
             'previous_day': "04",
@@ -8714,7 +8712,7 @@ def virtual_bill(supply_source):
         'path': '/supplier_contracts/add',
         'method': 'post',
         'data': {
-            'participant_id': "54",  # COOP
+            'participant_id': "70",  # COOP
             'name': "scenario_bau",
             'start_year': "2000",
             'start_month': "01",
@@ -8823,7 +8821,7 @@ def virtual_bill(supply_source):
         'path': '/supplier_contracts/add',
         'method': 'post',
         'data': {
-            'participant_id': "54",  # COOP
+            'participant_id': "70",  # COOP
             'name': "scenario_bsuos",
             'start_year': "2000",
             'start_month': "01",
@@ -9205,7 +9203,7 @@ def virtual_bill(supply_source):
         'path': '/supplier_contracts/add',
         'method': 'post',
         'data': {
-            'participant_id': "54",  # COOP
+            'participant_id': "70",  # COOP
             'name': "scenario_used",
             'start_year': "2000",
             'start_month': "01",
@@ -9345,7 +9343,7 @@ def virtual_bill(supply_source):
             r'</li>']},
     {
         'name': "Look at a DNO",
-        'path': '/dnos/131',
+        'path': '/dnos/160',
         'status_code': 200},
 
     {
@@ -9363,7 +9361,7 @@ def virtual_bill(supply_source):
         'path': '/supplier_contracts/18/edit',
         'method': 'post',
         'data': {
-            'party_id': "90",  # COOP
+            'party_id': "106",  # COOP
             'name': "scenario_bsuos",
             'start_year': "2000",
             'start_month': "01",
@@ -9712,10 +9710,21 @@ def virtual_bill(supply_source):
         'path': "/reports/163",
         'method': "post",
         'files': {"file": "test/Market_Participant_233.csv"},
+        'status_code': 303},
+    {
+        'path': '/downloads',
+        'tries': {'max': 30, 'period': 1},
+        'status_code': 200,
+        'regexes': [
+            r"0061_FINISHED_watkinsexamplecom_Market_Participant_233_"
+            r"general_import\.csv"]},
+    {
+        'path': '/downloads/'
+        '0061_FINISHED_watkinsexamplecom_Market_Participant_233_general_'
+        'import.csv',
         'status_code': 200,
         'regexes':  [
-            r'"insert","participant","BETH","Bethnal Energy Limited"',
-            r'"insert","participant","PENL","Peel Electricity Networks Ltd"']},
+            r'insert,participant,JOLT,Jolt Energy Ltd.']},
 
     {
         'name': "MDD Converter. Market participant",
@@ -9737,10 +9746,21 @@ def virtual_bill(supply_source):
         'path': "/reports/163",
         'method': "post",
         'files': {"file": "test/Market_Role_234.csv"},
+        'status_code': 303},
+    {
+        'path': '/downloads',
+        'tries': {'max': 30, 'period': 1},
+        'status_code': 200,
+        'regexes': [
+            r"0062_FINISHED_watkinsexamplecom_Market_Role_234_general_"
+            r"import\.csv"]},
+    {
+        'path': '/downloads/'
+        '0062_FINISHED_watkinsexamplecom_Market_Role_234_general_import.csv',
         'status_code': 200,
         'regexes':  [
-            r'"insert","market_role","7","Fusion Balancer"',
-            r'"update","market_role","S","Settlement System Controller"']},
+            r'insert,market_role,7,Fusion Balancer',
+            r'update,market_role,S,Settlement System Controller']},
 
     {
         'name': "MDD Converter. Market role",
@@ -9762,14 +9782,22 @@ def virtual_bill(supply_source):
         'path': "/reports/163",
         'method': "post",
         'files': {"file": "test/Market_Participant_Role_232.csv"},
+        'status_code': 303},
+    {
+        'path': '/downloads',
+        'tries': {'max': 30, 'period': 1},
+        'status_code': 200,
+        'regexes': [
+            r"0063_FINISHED_watkinsexamplecom_Market_Participant_Role_232_"
+            r"general_import\.csv"]},
+    {
+        'path': '/downloads/'
+        '0063_FINISHED_watkinsexamplecom_Market_Participant_Role_232_general_'
+        'import.csv',
         'status_code': 200,
         'regexes':  [
-            r'\s\s"insert","party","M","AMSL",'
-            r'"Accrington Metering Services Ltd","2015-08-19 00:00","",""',
-            r'"insert","party","X","BETH","BETHNAL ENERGY LIMITED",'
-            r'"2015-08-19 00:00","",""',
-            r'"insert","party","R","PENL","Peel Electricity Networks Ltd",'
-            r'"2015-06-17 00:00","","30"']},
+            r'insert,party,M,JOLT,Jolt Metering Services Ltd,'
+            r'2015-08-19 00:00,,']},
 
     {
         'name': "MDD Converter. Party",
@@ -9788,24 +9816,38 @@ def virtual_bill(supply_source):
 
     {
         'name': "MDD Converter. Check imported party looks okay",
-        'path': "/participants/604",
+        'path': "/participants/752",
         'status_code': 200,
         'regexes': [
             r'<tr>\s*<td>\s*'
-            r'<a href="/parties/1011">Peel Electricity Networks Ltd</a>\s*'
+            r'<a href="/parties/1183">Jolt Metering Services Ltd</a>\s*'
             r'</td>\s*<td>\s*'
-            r'<a href="/market_roles/27">Distributor</a>\s*'
-            r'</td>\s*<td>\s*30\s*</td>\s*</tr>']},
+            r'<a href="/market_roles/21">Meter Operator</a>\s*'
+            r'</td>\s*<td>\s*</td>\s*</tr>']},
 
     {
         'name': "MDD Converter. Convert LLFC.",
         'path': "/reports/163",
         'method': "post",
         'files': {"file": "test/Line_Loss_Factor_Class_225.csv"},
+        'status_code': 303},
+    {
+        'path': '/downloads',
+        'tries': {'max': 30, 'period': 1},
+        'status_code': 200,
+        'regexes': [
+            r"0064_FINISHED_watkinsexamplecom_Line_Loss_Factor_Class_225_"
+            r"general_import.csv"]},
+    {
+        'path': '/downloads/'
+        '0064_FINISHED_watkinsexamplecom_Line_Loss_Factor_Class_225_general_'
+        'import.csv',
         'status_code': 200,
         'regexes':  [
-            '"insert","llfc","19","889","PROLOGIS, BEDDINGTON - IMPORT","LV",'
-            '"False","True","1996-04-01 00:00",""']},
+            r'insert,llfc,19,889,"PROLOGIS, BEDDINGTON - IMPORT",LV,'
+            r'False,True,2012-04-01 00:00,',
+            r'update,llfc,14,633,2015-04-01 00:00,Spare LV 2,LV,False,True,'
+            r'2015-05-13 23:30']},
 
     {
         'name': "GI Insert LLFC",
@@ -9827,12 +9869,24 @@ def virtual_bill(supply_source):
         'path': "/reports/163",
         'method': "post",
         'files': {"file": "test/MTC_Meter_Type_234.csv"},
+        'status_code': 303},
+    {
+        'path': '/downloads',
+        'tries': {'max': 30, 'period': 1},
+        'status_code': 200,
+        'regexes': [
+            r"0065_FINISHED_watkinsexamplecom_MTC_Meter_Type_234_general_"
+            r"import\.csv"]},
+    {
+        'path': '/downloads/'
+        '0065_FINISHED_watkinsexamplecom_MTC_Meter_Type_234_general_'
+        'import.csv',
         'status_code': 200,
         'regexes':  [
-            r'"update","meter_type","6A","COP6\(a\)  20 days memory",'
-            r'"1996-04-02 00:00",""']},
+            r'insert,meter_type,6A,COP6\(a\)  20 days memory,'
+            r'1996-04-02 00:00,']},
     {
-        'name': "MDD Converter. Meter Timeswitch Class",
+        'name': "MDD Converter. MTC Meter Type",
         'path': "/general_imports",
         'method': "post",
         'files': {'import_file': "test/gi_mtc_meter_type.csv"},
@@ -9851,10 +9905,24 @@ def virtual_bill(supply_source):
         'path': "/reports/163",
         'method': "post",
         'files': {"file": "test/Meter_Timeswitch_Class_233.csv"},
+        'status_code': 303},
+    {
+        'path': '/downloads',
+        'tries': {'max': 30, 'period': 1},
+        'status_code': 200,
+        'regexes': [
+            r"0066_FINISHED_watkinsexamplecom_Meter_Timeswitch_Class_233_"
+            r"general_import\.csv"]},
+    {
+        'path': '/downloads/'
+        '0066_FINISHED_watkinsexamplecom_Meter_Timeswitch_Class_233_general_'
+        'import.csv',
         'status_code': 200,
         'regexes':  [
-            r'"insert","mtc","","997","ENO - Private Network","False",'
-            r'"False","True","XX","CR","0","2012-08-15 00:00",""']},
+            r'update,mtc,,506,Unmetered Reserved - Site Specific,'
+            r'True,False,False,UM,CR,0,1996-04-01 00:00,'
+            r'2010-04-01 23:30']},
+
     {
         'name': "MDD Converter. Meter Timeswitch Class",
         'path': "/general_imports",
@@ -9875,10 +9943,22 @@ def virtual_bill(supply_source):
         'path': "/reports/163",
         'method': "post",
         'files': {"file": "test/MTC_in_PES_Area_233.csv"},
+        'status_code': 303},
+    {
+        'path': '/downloads',
+        'tries': {'max': 30, 'period': 1},
+        'status_code': 200,
+        'regexes': [
+            r"0067_FINISHED_watkinsexamplecom_MTC_in_PES_Area_233_general_"
+            r"import\.csv"]},
+    {
+        'path': '/downloads/'
+        '0067_FINISHED_watkinsexamplecom_MTC_in_PES_Area_233_general_'
+        'import.csv',
         'status_code': 200,
         'regexes':  [
-            r'"insert","mtc","26","045","4 rate SToD","False","False","False",'
-            r'"TN","CR","4","2015-03-18 00:00",""']},
+            r'update,mtc,19,074,Local Authority Heating,False,'
+            r'False,False,LN,CR,1,1996-04-01 00:00,']},
     {
         'name': "MDD Converter. MTC in PES Area",
         'path': "/general_imports",
@@ -9905,7 +9985,7 @@ def virtual_bill(supply_source):
         'path': "/supplier_contracts/16/edit",
         'method': 'post',
         'data': {
-            'party_id': '90',
+            'party_id': '106',
             'name': 'Non half-hourlies 2010',
             'charge_script': """import chellow.duos
 
@@ -9935,11 +10015,11 @@ def virtual_bill(supply_source):
         'path': '/downloads',
         'tries': {},
         'regexes': [
-            r"0061_FINISHED_watkinsexamplecom_supply_virtual_bills_16\.csv"],
+            r"0068_FINISHED_watkinsexamplecom_supply_virtual_bills_16\.csv"],
         'status_code': 200},
     {
         'path': '/downloads/'
-        '0061_FINISHED_watkinsexamplecom_supply_virtual_bills_16.csv',
+        '0068_FINISHED_watkinsexamplecom_supply_virtual_bills_16.csv',
         'regexes': [
             r'Imp MPAN Core,Exp MPAN Core,Site Code,Site Name,'],
         'status_code': 200},
@@ -9949,7 +10029,7 @@ def virtual_bill(supply_source):
         'path': '/supplier_contracts/add',
         'method': 'post',
         'data': {
-            'participant_id': "54",  # COOP
+            'participant_id': "70",  # COOP
             'name': "scenario_leap_day",
             'start_year': "2000",
             'start_month': "01",
@@ -9979,11 +10059,11 @@ def virtual_bill(supply_source):
         'tries': {'max': 30, 'period': 1},
         'status_code': 200,
         'regexes': [
-            r"0062_FINISHED_watkinsexamplecom_scenario_leap_day_20160201_0000_"
+            r"0069_FINISHED_watkinsexamplecom_scenario_leap_day_20160201_0000_"
             r"for_1_months_site_CH023\.ods"]},
     {
         'path': '/downloads/'
-        '0062_FINISHED_watkinsexamplecom_scenario_leap_day_20160201_0000_'
+        '0069_FINISHED_watkinsexamplecom_scenario_leap_day_20160201_0000_'
         'for_1_months_site_CH023.ods',
         'status_code': 200,
         'regexes': [
@@ -10082,11 +10162,11 @@ def virtual_bill(supply_source):
         'tries': {'max': 20, 'period': 1},
         'status_code': 200,
         'regexes': [
-            r"0063_FINISHED_watkinsexamplecom_supplies_hh_data_200808012330_"
+            r"0070_FINISHED_watkinsexamplecom_supplies_hh_data_200808012330_"
             r"filter\.csv"]},
     {
         'path': '/downloads/'
-        '0063_FINISHED_watkinsexamplecom_supplies_hh_data_200808012330_'
+        '0070_FINISHED_watkinsexamplecom_supplies_hh_data_200808012330_'
         'filter.csv',
         'status_code': 200,
 
@@ -10095,7 +10175,7 @@ def virtual_bill(supply_source):
             r'NA,2008-07-06,0\.262',
             r"\A\('Connection', 'close'\)\s*"
             r"\('Content-Disposition', 'attachment; "
-            r'filename="0063_FINISHED_watkinsexamplecom_supplies_hh_data_'
+            r'filename="0070_FINISHED_watkinsexamplecom_supplies_hh_data_'
             r'200808012330_filter.csv"'
             r"'\)\s*"
             r"\('Content-Type', 'text/csv; charset=utf-8'\)\s*"
@@ -10192,10 +10272,10 @@ def virtual_bill(supply_source):
         'tries': {'max': 20, 'period': 1},
         'status_code': 200,
         'regexes': [
-            r"0064_FINISHED_watkinsexamplecom_crc_2005_2006_supply_2\.csv"]},
+            r"0071_FINISHED_watkinsexamplecom_crc_2005_2006_supply_2\.csv"]},
     {
         'path': '/downloads/'
-        '0064_FINISHED_watkinsexamplecom_crc_2005_2006_supply_2.csv',
+        '0071_FINISHED_watkinsexamplecom_crc_2005_2006_supply_2.csv',
         'status_code': 200,
         'regexes': [
             r'2,2005-04-01 00:00,2006-03-31 23:30,22 9813 2107 763']},
@@ -10209,10 +10289,10 @@ def virtual_bill(supply_source):
         'tries': {'max': 20, 'period': 1},
         'status_code': 200,
         'regexes': [
-            r"0065_FINISHED_watkinsexamplecom_crc_2008_2009_supply_7\.csv"]},
+            r"0072_FINISHED_watkinsexamplecom_crc_2008_2009_supply_7\.csv"]},
     {
         'path': '/downloads/'
-        '0065_FINISHED_watkinsexamplecom_crc_2008_2009_supply_7.csv',
+        '0072_FINISHED_watkinsexamplecom_crc_2008_2009_supply_7.csv',
         'status_code': 200,
         'regexes': [
             r'7,2008-04-01 00:00,2009-03-31 23:30,22 4862 4512 332,CH023,'
@@ -10232,10 +10312,10 @@ def virtual_bill(supply_source):
         'tries': {'max': 20, 'period': 1},
         'status_code': 200,
         'regexes': [
-            r'0066_FINISHED_watkinsexamplecom_mop_virtual_bills\.csv']},
+            r'0073_FINISHED_watkinsexamplecom_mop_virtual_bills\.csv']},
     {
         'path': '/downloads/'
-        '0066_FINISHED_watkinsexamplecom_mop_virtual_bills.csv',
+        '0073_FINISHED_watkinsexamplecom_mop_virtual_bills.csv',
         'status_code': 200,
         'regexes': [
             r'Import MPAN Core,Export MPAN Core,Start Date,Finish Date,'
@@ -10268,12 +10348,12 @@ def virtual_bill(supply_source):
         'path': '/downloads',
         'tries': {},
         'regexes': [
-            r"0067_FINISHED_watkinsexamplecom_supply_virtual_bills_5\.csv"],
+            r"0074_FINISHED_watkinsexamplecom_supply_virtual_bills_5\.csv"],
         'status_code': 200},
     {
         'name': "Check supplies snapshot at beginning of supply",
         'path': '/downloads/'
-        '0067_FINISHED_watkinsexamplecom_supply_virtual_bills_5.csv',
+        '0074_FINISHED_watkinsexamplecom_supply_virtual_bills_5.csv',
         'regexes': [
             r'22 0883 6932 301,,CI005,Wheal Rodney,4341,'
             r'2014-06-04 00:00,2014-06-04 23:30,,0,,,0,,,'
@@ -10329,11 +10409,11 @@ def virtual_bill(supply_source):
         'path': '/downloads',
         'tries': {},
         'regexes': [
-            r"0068_FINISHED_watkinsexamplecom_supply_virtual_bills_5\.csv"],
+            r"0075_FINISHED_watkinsexamplecom_supply_virtual_bills_5\.csv"],
         'status_code': 200},
     {
         'path': '/downloads/'
-        '0068_FINISHED_watkinsexamplecom_supply_virtual_bills_5.csv',
+        '0075_FINISHED_watkinsexamplecom_supply_virtual_bills_5.csv',
         'regexes': [
             r'22 0883 6932 301,,CI005,Wheal Rodney,4341,'
             r'2014-06-04 00:00,2014-06-04 23:30,,0,,,0,,,'
@@ -10357,12 +10437,12 @@ def virtual_bill(supply_source):
         'path': '/downloads',
         'tries': {},
         'regexes': [
-            r"0069_FINISHED_watkinsexamplecom_crc_2011_2012_supply_10\.csv"],
+            r"0076_FINISHED_watkinsexamplecom_crc_2011_2012_supply_10\.csv"],
         'status_code': 200},
     {
         'name': "CRC report for mismatched TPRs",
         'path': '/downloads/'
-        '0069_FINISHED_watkinsexamplecom_crc_2011_2012_supply_10.csv',
+        '0076_FINISHED_watkinsexamplecom_crc_2011_2012_supply_10.csv',
         'tries': {},
         'status_code': 200,
         'regexes': [
@@ -10411,7 +10491,7 @@ def virtual_bill(supply_source):
             'coefficient': "1",
             'msn': "brand new meter",
             'units': "kWh",
-            'tpr_id': "1",
+            'tpr_id': "0",
             'previous_year': "2011",
             'previous_month': "02",
             'previous_day': "06",
@@ -10437,7 +10517,7 @@ def virtual_bill(supply_source):
             'coefficient': "1",
             'msn': "I02D89150",
             'units': "kWh",
-            'tpr_id': "1",
+            'tpr_id': "0",
             'previous_year': "2011",
             'previous_month': "02",
             'previous_day': "04",
@@ -10463,7 +10543,7 @@ def virtual_bill(supply_source):
             'coefficient': "1",
             'msn': "brand new meter",
             'units': "kWh",
-            'tpr_id': "1",
+            'tpr_id': "0",
             'previous_year': "2012",
             'previous_month': "01",
             'previous_day': "04",
@@ -10490,12 +10570,12 @@ def virtual_bill(supply_source):
         'path': '/downloads',
         'tries': {},
         'regexes': [
-            r"0070_FINISHED_watkinsexamplecom_crc_2010_2011_supply_10\.csv"],
+            r"0077_FINISHED_watkinsexamplecom_crc_2010_2011_supply_10\.csv"],
         'status_code': 200},
     {
         'name': "CRC meter change reads",
         'path': '/downloads/'
-        '0070_FINISHED_watkinsexamplecom_crc_2010_2011_supply_10.csv',
+        '0077_FINISHED_watkinsexamplecom_crc_2010_2011_supply_10.csv',
         'status_code': 200,
         'regexes': [
             r'73142.39335486847']},
@@ -10543,11 +10623,11 @@ def virtual_bill(supply_source):
         'path': '/downloads',
         'tries': {},
         'regexes': [
-            r"0071_FINISHED_watkinsexamplecom_supplies_duration\.csv"],
+            r"0078_FINISHED_watkinsexamplecom_supplies_duration\.csv"],
         'status_code': 200},
     {
         'path': '/downloads/'
-        '0071_FINISHED_watkinsexamplecom_supplies_duration.csv',
+        '0078_FINISHED_watkinsexamplecom_supplies_duration.csv',
         'regexes': [
             r'10,2,net,,CI017,Roselands,,2012-01-05 00:00,'
             r'2012-01-10 23:30,03,801,6a,0366,1,nhh,2005-09-06 00:00,,110,'
@@ -10562,11 +10642,11 @@ def virtual_bill(supply_source):
         'path': '/downloads',
         'tries': {},
         'regexes': [
-            r"0072_FINISHED_watkinsexamplecom_bill_check\.csv"],
+            r"0079_FINISHED_watkinsexamplecom_bill_check\.csv"],
         'status_code': 200},
     {
         'path': '/downloads/'
-        '0072_FINISHED_watkinsexamplecom_bill_check.csv',
+        '0079_FINISHED_watkinsexamplecom_bill_check.csv',
         'regexes': [
             r'07-002,3423760010,N,10,9.07,0.21,2012-01-05 00:00,'
             r'2012-01-10 23:30,22 1065 3921 534,CI017,Roselands,'
@@ -10584,11 +10664,11 @@ def virtual_bill(supply_source):
         'path': '/downloads',
         'tries': {},
         'regexes': [
-            r"0073_FINISHED_watkinsexamplecom_supplies_duration\.csv"],
+            r"0080_FINISHED_watkinsexamplecom_supplies_duration\.csv"],
         'status_code': 200},
     {
         'path': '/downloads/'
-        '0073_FINISHED_watkinsexamplecom_supplies_duration.csv',
+        '0080_FINISHED_watkinsexamplecom_supplies_duration.csv',
         'regexes': [
             r'10,2,net,,CI017,Roselands,,2007-02-01 00:00,'
             r'2007-02-28 23:30,03,801,5,0393,0,nhh,2005-09-06 00:00,,'
@@ -10606,7 +10686,7 @@ def virtual_bill(supply_source):
             'coefficient': "1",
             'msn': "I02D89150",
             'units': "kWh",
-            'tpr_id': "1",
+            'tpr_id': "0",
             'previous_year': "2007",
             'previous_month': "01",
             'previous_day': "04",
@@ -10634,12 +10714,12 @@ def virtual_bill(supply_source):
         'path': '/downloads',
         'tries': {},
         'regexes': [
-            r"0074_FINISHED_watkinsexamplecom_supplies_duration\.csv"],
+            r"0081_FINISHED_watkinsexamplecom_supplies_duration\.csv"],
         'status_code': 200},
     {
         'name': "Supplies duration normal reads with prev, pres the same.",
         'path': '/downloads/'
-        '0074_FINISHED_watkinsexamplecom_supplies_duration.csv',
+        '0081_FINISHED_watkinsexamplecom_supplies_duration.csv',
         'regexes': [
             r'10,2,net,,CI017,Roselands,,2009-04-01 00:00,'
             r'2009-04-10 23:30,03,801,5,0393,1,nhh,2005-09-06 00:00,,'
@@ -10658,13 +10738,13 @@ def virtual_bill(supply_source):
         'path': '/downloads',
         'tries': {},
         'regexes': [
-            r'0075_FINISHED_watkinsexamplecom_monthly_duration_20030801_0000_'
+            r'0082_FINISHED_watkinsexamplecom_monthly_duration_20030801_0000_'
             r'for_1_months_site_CI005\.ods'],
         'status_code': 200},
     {
         'name': "Eras starting after report period.",
         'path': '/downloads/'
-        '0075_FINISHED_watkinsexamplecom_monthly_duration_20030801_0000_'
+        '0082_FINISHED_watkinsexamplecom_monthly_duration_20030801_0000_'
         'for_1_months_site_CI005.ods',
         'regexes': [
             r'<table:table-row>\s*'
@@ -10777,9 +10857,9 @@ def virtual_bill(supply_source):
         'tries': {'max': 30, 'period': 1},
         'status_code': 200,
         'regexes': [
-            r"0076_FINISHED_watkinsexamplecom_displaced\.csv"]},
+            r"0083_FINISHED_watkinsexamplecom_displaced\.csv"]},
     {
-        'path': '/downloads/0076_FINISHED_watkinsexamplecom_displaced.csv',
+        'path': '/downloads/0083_FINISHED_watkinsexamplecom_displaced.csv',
         'status_code': 200,
         'regexes': [
             r'CI005,Wheal Rodney,CI004,2005-11-01 00:00,'
@@ -10796,13 +10876,13 @@ def virtual_bill(supply_source):
         'tries': {'max': 20, 'period': 1},
         'status_code': 200,
         'regexes': [
-            r"0077_FINISHED_watkinsexamplecom_monthly_"
+            r"0084_FINISHED_watkinsexamplecom_monthly_"
             r"duration_20150201_0000_for_1_months_site_CH023\.ods"]
         },
 
     {
         'path': '/downloads/'
-        '0077_FINISHED_watkinsexamplecom_monthly_'
+        '0084_FINISHED_watkinsexamplecom_monthly_'
         'duration_20150201_0000_for_1_months_site_CH023.ods',
         'status_code': 200,
         'regexes': [
@@ -10817,7 +10897,7 @@ def virtual_bill(supply_source):
             'coefficient': "1",
             'msn': "brand new meter",
             'units': "kWh",
-            'tpr_id': "1",
+            'tpr_id': "0",
             'previous_year': "2011",
             'previous_month': "02",
             'previous_day': "06",
@@ -10843,7 +10923,7 @@ def virtual_bill(supply_source):
             'coefficient': "1",
             'msn': "I02D89150",
             'units': "kWh",
-            'tpr_id': "1",
+            'tpr_id': "0",
             'previous_year': "2011",
             'previous_month': "02",
             'previous_day': "04",
@@ -10869,7 +10949,7 @@ def virtual_bill(supply_source):
             'coefficient': "1",
             'msn': "brand new meter",
             'units': "kWh",
-            'tpr_id': "1",
+            'tpr_id': "0",
             'previous_year': "2012",
             'previous_month': "01",
             'previous_day': "04",
@@ -10895,12 +10975,12 @@ def virtual_bill(supply_source):
         'path': '/downloads',
         'tries': {},
         'regexes': [
-            r"0078_FINISHED_watkinsexamplecom_crc_2010_2011_supply_10\.csv"],
+            r"0085_FINISHED_watkinsexamplecom_crc_2010_2011_supply_10\.csv"],
         'status_code': 200},
     {
         'name': "CRC meter change reads",
         'path': '/downloads/'
-        '0078_FINISHED_watkinsexamplecom_crc_2010_2011_supply_10.csv',
+        '0085_FINISHED_watkinsexamplecom_crc_2010_2011_supply_10.csv',
         'status_code': 200,
         'regexes': [
             r'73142.39335486847']},
@@ -10914,12 +10994,12 @@ def virtual_bill(supply_source):
         'path': '/downloads',
         'tries': {'max': 20, 'period': 1},
         'regexes': [
-            r"0079_FINISHED_watkinsexamplecom_monthly_"
+            r"0086_FINISHED_watkinsexamplecom_monthly_"
             r"duration_20100101_0000_for_1_months_supply_10\.ods"],
         'status_code': 200},
     {
         'path': '/downloads/'
-        '0079_FINISHED_watkinsexamplecom_monthly_'
+        '0086_FINISHED_watkinsexamplecom_monthly_'
         'duration_20100101_0000_for_1_months_supply_10.ods',
         'status_code': 200,
         'regexes': [
@@ -11124,7 +11204,7 @@ def virtual_bill(supply_source):
             'name': "3",
             'source_id': "6",
             'generator_type_id': "1",
-            'gsp_group_id': "11"},
+            'gsp_group_id': "10"},
         'status_code': 303},
     {
         'name': "3rd party in monthly duration report.",
@@ -11167,7 +11247,7 @@ def virtual_bill(supply_source):
             'coefficient': "1",
             'msn': "",
             'units': "kWh",
-            'tpr_id': "1",
+            'tpr_id': "0",
             'previous_year': "2014",
             'previous_month': "12",
             'previous_day': "01",
@@ -11200,12 +11280,12 @@ def virtual_bill(supply_source):
         'path': '/downloads',
         'tries': {'max': 20, 'period': 1},
         'regexes': [
-            r'0080_FINISHED_watkinsexamplecom_monthly_'
+            r'0087_FINISHED_watkinsexamplecom_monthly_'
             r'duration_20141201_0000_for_1_months_supply_16\.ods'],
         'status_code': 200},
     {
         'path': '/downloads/'
-        '0080_FINISHED_watkinsexamplecom_monthly_'
+        '0087_FINISHED_watkinsexamplecom_monthly_'
         'duration_20141201_0000_for_1_months_supply_16.ods',
         'status_code': 200,
         'regexes': [
@@ -11375,7 +11455,7 @@ def virtual_bill(supply_source):
         'path': "/supplier_contracts/16/edit",
         'method': 'post',
         'data': {
-            'party_id': '90',
+            'party_id': '106',
             'name': 'Non half-hourlies 2010',
             'charge_script': """import chellow.duos
 
@@ -11404,11 +11484,11 @@ def virtual_bill(supply_source):
         'path': '/downloads',
         'tries': {},
         'regexes': [
-            r"0081_FINISHED_watkinsexamplecom_supply_virtual_bills_16\.csv"],
+            r"0088_FINISHED_watkinsexamplecom_supply_virtual_bills_16\.csv"],
         'status_code': 200},
     {
         'path': '/downloads/'
-        '0081_FINISHED_watkinsexamplecom_supply_virtual_bills_16.csv',
+        '0088_FINISHED_watkinsexamplecom_supply_virtual_bills_16.csv',
         'regexes': [
             r'Imp MPAN Core,Exp MPAN Core,Site Code,Site Name,'],
         'status_code': 200},
@@ -11452,7 +11532,7 @@ def virtual_bill(supply_source):
             'name': "Hello",
             'source_id': "3",
             'generator_type_id': "1",
-            'gsp_group_id': "11"},
+            'gsp_group_id': "10"},
         'status_code': 303},
     {
         'name': "Monthly duration report for a gen-net supply",
@@ -11464,13 +11544,13 @@ def virtual_bill(supply_source):
         'path': '/downloads',
         'tries': {},
         'regexes': [
-            r'0082_FINISHED_watkinsexamplecom_monthly_'
+            r'0089_FINISHED_watkinsexamplecom_monthly_'
             r'duration_20150501_0000_for_1_months_supply_5\.ods'],
         'status_code': 200},
     {
         'name': "Monthly duration report for a gen-net supply",
         'path': '/downloads/'
-        '0082_FINISHED_watkinsexamplecom_monthly_'
+        '0089_FINISHED_watkinsexamplecom_monthly_'
         'duration_20150501_0000_for_1_months_supply_5.ods',
         'status_code': 200,
         'regexes': [
@@ -11485,7 +11565,7 @@ def virtual_bill(supply_source):
             'coefficient': "1",
             'msn': "I02D89150",
             'units': "kWh",
-            'tpr_id': "1",
+            'tpr_id': "0",
             'previous_year': "2007",
             'previous_month': "01",
             'previous_day': "04",
@@ -11513,12 +11593,12 @@ def virtual_bill(supply_source):
         'path': '/downloads',
         'tries': {},
         'regexes': [
-            r"0083_FINISHED_watkinsexamplecom_supplies_duration\.csv"],
+            r"0090_FINISHED_watkinsexamplecom_supplies_duration\.csv"],
         'status_code': 200},
     {
         'name': "Supplies duration normal reads with prev, pres the same.",
         'path': '/downloads/'
-        '0083_FINISHED_watkinsexamplecom_supplies_duration.csv',
+        '0090_FINISHED_watkinsexamplecom_supplies_duration.csv',
         'regexes': [
             r'10,2,net,,CI017,Roselands,,2009-04-01 00:00,'
             r'2009-04-10 23:30,03,801,5,0393,1,nhh,2005-09-06 00:00,,'
@@ -11551,13 +11631,13 @@ def virtual_bill(supply_source):
         'path': '/downloads',
         'tries': {'max': 30, 'period': 1},
         'regexes': [
-            r'0084_FINISHED_watkinsexamplecom_monthly_'
+            r'0091_FINISHED_watkinsexamplecom_monthly_'
             r'duration_20150501_0000_for_1_months_site_CI004\.ods'],
         'status_code': 200},
     {
         'name': "Monthly Duration report - displaced kWh",
         'path': '/downloads/'
-        '0084_FINISHED_watkinsexamplecom_monthly_'
+        '0091_FINISHED_watkinsexamplecom_monthly_'
         'duration_20150501_0000_for_1_months_site_CI004.ods',
         'status_code': 200,
         'regexes': [
@@ -11849,13 +11929,13 @@ def virtual_bill(supply_source):
         'path': '/downloads',
         'tries': {'max': 30, 'period': 1},
         'regexes': [
-            r'0085_FINISHED_watkinsexamplecom_monthly_'
+            r'0092_FINISHED_watkinsexamplecom_monthly_'
             r'duration_20030801_0000_for_1_months_supply_7\.ods'],
         'status_code': 200},
     {
         'name': "Monthly duration supply starts after period",
         'path': '/downloads/'
-        '0085_FINISHED_watkinsexamplecom_monthly_'
+        '0092_FINISHED_watkinsexamplecom_monthly_'
         'duration_20030801_0000_for_1_months_supply_7.ods',
         'status_code': 200,
         'regexes': [
@@ -11877,7 +11957,7 @@ def virtual_bill(supply_source):
             'hhdc_contract_id': "9",
             'hhdc_account': "01",
             'msn': "",
-            'pc_id': "9",
+            'pc_id': "0",
             'mtc_code': "845",
             'cop_id': "5",
             'ssc_code': "",
@@ -11941,13 +12021,13 @@ def virtual_bill(supply_source):
         'path': '/downloads',
         'tries': {'max': 30, 'period': 1},
         'regexes': [
-            r'0086_FINISHED_watkinsexamplecom_monthly_'
+            r'0093_FINISHED_watkinsexamplecom_monthly_'
             r'duration_20150801_0000_for_1_months_site_CI004\.ods'],
         'status_code': 200},
     {
         'name': "Monthly duration report, billed",
         'path': '/downloads/'
-        '0086_FINISHED_watkinsexamplecom_monthly_'
+        '0093_FINISHED_watkinsexamplecom_monthly_'
         'duration_20150801_0000_for_1_months_site_CI004.ods',
         'status_code': 200,
         'regexes': [
@@ -12115,7 +12195,7 @@ def virtual_bill(supply_source):
             'hhdc_contract_id': "8",
             'hhdc_account': "22 0883 6932 301",
             'msn': "",
-            'pc_id': "9",
+            'pc_id': "0",
             'mtc_code': "845",
             'cop_id': "5",
             'ssc_code': "",
@@ -12161,7 +12241,7 @@ def virtual_bill(supply_source):
             'hhdc_contract_id': "8",
             'hhdc_account': "22 0883 6932 301",
             'msn': "",
-            'pc_id': "9",
+            'pc_id': "0",
             'mtc_code': "845",
             'cop_id': "5",
             'ssc_code': "",
@@ -12186,11 +12266,11 @@ def virtual_bill(supply_source):
         'path': '/downloads',
         'tries': {},
         'regexes': [
-            r"0087_FINISHED_watkinsexamplecom_supply_virtual_bills_5\.csv"],
+            r"0094_FINISHED_watkinsexamplecom_supply_virtual_bills_5\.csv"],
         'status_code': 200},
     {
         'path': '/downloads/'
-        '0087_FINISHED_watkinsexamplecom_supply_virtual_bills_5.csv',
+        '0094_FINISHED_watkinsexamplecom_supply_virtual_bills_5.csv',
         'regexes': [r'22 7824 9120 097'],
         'status_code': 200},
 
@@ -12205,11 +12285,11 @@ def virtual_bill(supply_source):
         'path': '/downloads',
         'tries': {},
         'regexes': [
-            r"0088_FINISHED_watkinsexamplecom_supply_virtual_bills_10\.csv"],
+            r"0095_FINISHED_watkinsexamplecom_supply_virtual_bills_10\.csv"],
         'status_code': 200},
     {
         'path': '/downloads/'
-        '0088_FINISHED_watkinsexamplecom_supply_virtual_bills_10.csv',
+        '0095_FINISHED_watkinsexamplecom_supply_virtual_bills_10.csv',
         'regexes': [
             r'3409.15883838'],
         'status_code': 200},
@@ -12224,13 +12304,13 @@ def virtual_bill(supply_source):
         'path': '/downloads',
         'tries': {'max': 20},
         'regexes': [
-            r'0089_FINISHED_watkinsexamplecom_monthly_duration_20051101_0000_'
+            r'0096_FINISHED_watkinsexamplecom_monthly_duration_20051101_0000_'
             r'for_1_months_site_CI005\.ods'],
         'status_code': 200},
     {
         'name': "Test displaced virtual bill with generation",
         'path': '/downloads/'
-        '0089_FINISHED_watkinsexamplecom_monthly_duration_20051101_0000_for_1_'
+        '0096_FINISHED_watkinsexamplecom_monthly_duration_20051101_0000_for_1_'
         r'months_site_CI005.ods',
         'regexes': [
             r'"CI005"'],
@@ -12398,8 +12478,13 @@ def virtual_bill(supply_source):
         'status_code': 200},
 
     {
+        'name': "Look at edit LLFC",
+        'path': '/llfcs/6128/edit',
+        'status_code': 200},
+
+    {
         'name': "A DNO's LLFCs",
-        'path': '/llfcs?dno_id=131',
+        'path': '/llfcs?dno_id=160',
         'status_code': 200,
         'regexes': [
             r'<a href="/dnos">DNOs</a>']},
@@ -12500,7 +12585,7 @@ def virtual_bill(supply_source):
             'name': "Hello",
             'source_id': "5",
             'generator_type_id': "1",
-            'gsp_group_id': "11"},
+            'gsp_group_id': "10"},
         'status_code': 303},
     {
         'name': "Site level HH data with 3rd party supply",
@@ -12611,7 +12696,7 @@ def virtual_bill(supply_source):
         'path': "/supplier_contracts/16/edit",
         'method': 'post',
         'data': {
-            'party_id': '90',
+            'party_id': '106',
             'name': 'Non half-hourlies 2010',
             'charge_script': """import chellow.duos
 from werkzeug.exceptions import BadRequest
@@ -12677,7 +12762,7 @@ def virtual_bill(supply_source):
         'path': "/supplier_contracts/16/edit",
         'method': 'post',
         'data': {
-            'party_id': '90',
+            'party_id': '106',
             'name': 'Non half-hourlies 2010',
             'charge_script': """def virtual_bill_titles():
     return ['net-gbp', 'sum-msp-kwh', 'problem']
@@ -12969,7 +13054,7 @@ def virtual_bill(supply_source):
         'path': "/supplier_contracts/16/edit",
         'method': 'post',
         'data': {
-            'party_id': '90',
+            'party_id': '106',
             'name': 'Non half-hourlies 2010',
             'charge_script': """import chellow.duos
 import chellow.triad
@@ -14705,7 +14790,7 @@ finally:
             'hhdc_contract_id': "8",
             'hhdc_account': "01",
             'msn': "",
-            'pc_id': "9",
+            'pc_id': "0",
             'mtc_code': "845",
             'cop_id': "5",
             'ssc_code': "",
@@ -15633,7 +15718,7 @@ def virtual_bill(ds):
         'path': '/hhdc_contracts/8/edit',
         'method': 'post',
         'data': {
-            'party_id': "97",  # DASL
+            'party_id': "116",  # DASL
             'name': "HH contract",
             'charge_script': """
 def virtual_bill_titles():
@@ -15675,7 +15760,7 @@ def virtual_bill(supply_source):
         'path': '/hhdc_contracts/8/edit',
         'method': 'post',
         'data': {
-            'party_id': "97",  # DASL
+            'party_id': "116",  # DASL
             'name': "HH contract",
             'charge_script': """
 def virtual_bill_titles():
@@ -15755,8 +15840,8 @@ def virtual_bill(supply_source):
             'start_hour': "00",
             'start_minute': "00",
             'msn': "8hkk522h",
-            'gsp_group_id': '11',
-            'pc_id': '9',
+            'gsp_group_id': '10',
+            'pc_id': '0',
             'mtc_code': '845',
             'cop_id': '5',
             'ssc_code': '',
@@ -15798,7 +15883,7 @@ def virtual_bill(supply_source):
         'method': 'post',
         'files': {'dno_file': 'test/dno_20_rates_2017.xlsx'},
         'data': {
-            'gsp_group_id': '8',
+            'gsp_group_id': '7',
             'llfc_tab': '1',
             'laf_tab': '7'},
         'status_code': 303,
@@ -15843,7 +15928,7 @@ def virtual_bill(supply_source):
         'method': 'post',
         'files': {'dno_file': 'test/dno_24_L_rates_2017.xlsx'},
         'data': {
-            'gsp_group_id': '3',
+            'gsp_group_id': '2',
             'llfc_tab': '1',
             'laf_tab': '7'},
         'status_code': 303,
@@ -15994,7 +16079,7 @@ def virtual_bill(supply_source):
         'path': '/supplier_contracts/18/edit',
         'method': 'post',
         'data': {
-            'party_id': "90",
+            'party_id': "106",  # COOP
             'name': "scenario_bsuos",
             'start_year': "2000",
             'start_month': "01",
@@ -17262,4 +17347,21 @@ def virtual_bill(supply_source):
             r'office:value-type="float"/>\s*'
             r'<table:table-cell table:number-columns-repeated="24"/>\s*'
             r'</table:table-row>\s*']},
+
+    {
+        'name': "Download CSV of  LLFCs",
+        'path': '/reports/csv_llfcs',
+        'status_code': 303},
+    {
+        'path': '/downloads',
+        'tries': {'max': 30, 'period': 1},
+        'status_code': 200,
+        'regexes': [
+            r"0024_FINISHED_adminexamplecom_llfcs.csv"]},
+    {
+        'path': '/downloads/0024_FINISHED_adminexamplecom_llfcs.csv',
+        'status_code': 200,
+        'regexes': [
+            r'0,28,009,LV HH Metered,LV,False,True,2009-04-16 00:00,'
+            r'2014-08-20 00:00']}
 ]

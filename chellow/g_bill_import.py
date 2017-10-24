@@ -126,7 +126,7 @@ class GBillImporter(threading.Thread):
                     "The import has finished, but " +
                     str(len(self.failed_bills)) + " bills failed to load.")
 
-        except:
+        except BaseException:
             self._log("I've encountered a problem: " + traceback.format_exc())
         finally:
             if sess is not None:

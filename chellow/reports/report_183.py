@@ -76,7 +76,7 @@ def none_content(site_id, start_date, finish_date, user, file_name):
                 site.code + '_' +
                 finish_date.strftime('%Y%m%d%M%H') + '.csv',
                 buf.getvalue())
-    except:
+    except BaseException:
         msg = traceback.format_exc()
         sys.stderr.write(msg)
         zf.write(msg)
@@ -141,7 +141,7 @@ def site_content(site_id, start_date, finish_date, user, file_name):
                 vals.append(str(round(used_kwh, 2)))
             if vals is not None:
                 writer.writerow(vals)
-    except:
+    except BaseException:
         msg = traceback.format_exc()
         sys.stderr.write(msg)
         f.write(msg)

@@ -82,7 +82,7 @@ def content(start_date, finish_date, site_id, user):
                     totals['imp_net'], totals['displaced'], totals['exp_net'],
                     totals['used'], totals['exp_gen'], totals['imp_gen'],
                     metering_type))
-    except:
+    except BaseException:
         msg = traceback.format_exc()
         sys.stderr.write(msg)
         writer.writerow([msg])

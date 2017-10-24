@@ -274,7 +274,7 @@ def content(user):
                     supplier_contract.party.participant.code, '', dc, '',
                     mop, '', supply.gsp_group.code, '', msn, '',
                     meter_type, 'In Chellow, but not in ECOES.'])
-    except:
+    except BaseException:
         msg = traceback.format_exc()
         sys.stderr.write(msg)
         writer.writerow([msg])

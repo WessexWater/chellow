@@ -34,7 +34,7 @@ def content(start_date, finish_date, site_id, typ, user):
             line.append(str(hh[typ]))
         if line is not None:
             writer.writerow(line)
-    except:
+    except BaseException:
         msg = traceback.format_exc()
         sys.stderr.write(msg)
         writer.writerow([msg])

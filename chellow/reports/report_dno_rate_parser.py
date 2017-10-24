@@ -198,7 +198,7 @@ def content(user, file_name, file_like, gsp_group_id, llfc_tab, laf_tab):
                     ('bands', bands),
                     ('tariffs', OrderedDict(sorted(tariffs.items())))))}
         f.write(dumps(rs))
-    except:
+    except BaseException:
         f.write(traceback.format_exc())
     finally:
         if sess is not None:
