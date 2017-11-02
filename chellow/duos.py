@@ -468,12 +468,12 @@ def datum_2010_04_01(ds, hh):
             hh['exp-msp-kvarh']) - (0.95 ** -2 - 1) ** 0.5 * hh['msp-kwh'], 0)
     bill['duos-reactive-kvarh'] += kvarh
 
-    try:
-        rate = float(tariff['gbp-per-kvarh'])
-        ds.supplier_rate_sets['duos-reactive-rate'].add(rate)
-        bill['duos-reactive-gbp'] += kvarh * rate
-    except KeyError:
-        pass
+    duos_reactive_rate = tariff['gbp-per-kvarh']
+    if duos_reactive_rate is not None:
+        duos_reactive_rate = float(duos_reactive_rate)
+        if duos_reactive_rate != 0:
+            ds.supplier_rate_sets['duos-reactive-rate'].add(duos_reactive_rate)
+            bill['duos-reactive-gbp'] += kvarh * duos_reactive_rate
 
     rate = float(tariff[KEYS[band]['tariff-rate']])
     ds.supplier_rate_sets[KEYS[band]['bill-rate']].add(rate)
@@ -510,7 +510,7 @@ def datum_2010_04_01(ds, hh):
 
         excess_kva = max(md_kva - ds.sc, 0)
 
-        if 'excess-gbp-per-kva-per-day' in tariff:
+        if 'excess-gbp-per-kva-per-day' in tariff and excess_kva != 0:
             rate = float(tariff['excess-gbp-per-kva-per-day'])
             ds.supplier_rate_sets['duos-excess-availability-kva'].add(
                 excess_kva)

@@ -52,7 +52,7 @@ def triad_calc(
     hh[prefix + '-rate'] = rate
 
 
-def hh(data_source, rate_period='monthly'):
+def hh(data_source, rate_period='monthly', est_kw=None):
     for hh in (h for h in data_source.hh_data if h['ct-is-month-end']):
         hh_start = hh['start-date']
         month_start = utc_datetime(hh_start.year, hh_start.month)
@@ -89,8 +89,11 @@ def hh(data_source, rate_period='monthly'):
                 data_source.sess, earliest_triad)
             if era is None or era.get_channel(
                     data_source.sess, data_source.is_import, 'ACTIVE') is None:
-                est_triad_kw = 0.85 * max(
-                    datum['msp-kwh'] for datum in data_source.hh_data) * 2
+                if est_kw is not None:
+                    est_triad_kw = est_kw
+                else:
+                    est_triad_kw = 0.85 * max(
+                        datum['msp-kwh'] for datum in data_source.hh_data) * 2
                 for est_datum in est_triad_kws:
                     est_datum['msp-kw'] = est_triad_kw
                     est_datum['gsp-kw'] = est_datum['msp-kw'] * \

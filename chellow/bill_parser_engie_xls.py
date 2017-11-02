@@ -306,6 +306,8 @@ class Parser():
                 bd_add(bd, 'duos-excess-availability-days', usage)
                 bd_add(bd, 'duos-excess-availability-rate', price)
                 bd_add(bd, 'duos-excess-availability-gbp', amount)
+            elif description.startswith('BSUoS Black Start '):
+                bd_add(bd, 'black-start-gbp', amount)
             elif description.startswith('BSUoS Reconciliation - '):
                 if usage is not None:
                     bd_add(bd, 'bsuos-nbp-kwh', usage)
