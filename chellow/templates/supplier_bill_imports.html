@@ -65,10 +65,108 @@
 						</table>
 
 						<p>
-							The register read block of fields can be repeated for each register, or
-						 	can be left out entirely if the bill doesn't have any readings
-						 	associated with it.
+							The register read block of fields can be repeated for each
+						 	register, or can be left out entirely if the bill doesn't have
+						 	any readings associated with it.
 						</p>
+					
+						<table>
+							<caption>
+								Mapping Between Chellow, sse.edi and bgb.edi read types
+							</caption>
+							<thead>
+								<tr>
+									<th>Chellow Code</th>
+									<th>Chellow Description</th>
+									<th>sse.edi Code</th>
+									<th>sse.edi Description</th>
+									<th>bgb.edi Code</th>
+									<th>bgb.edi Description</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr>
+									<td>N</td>
+									<td>Normal</td>
+									<td>00</td>
+									<td>Normal Reading</td>
+									<td>00</td>
+									<td>Normal Reading - Default</td>
+								</tr>
+								<tr>
+									<td>N3</td>
+									<td>Normal 3rd Party</td>
+									<td>09</td>
+									<td>Third Party Normal Reading</td>
+									<td></td>
+									<td></td>
+								</tr>
+								<tr>
+									<td>C</td>
+									<td>Customer</td>
+									<td>04</td>
+									<td>Customer's Own Reading</td>
+									<td>04</td>
+									<td>Customer's own reading</td>
+								</tr>
+								<tr>
+									<td>E</td>
+									<td>Estimated</td>
+									<td>02</td>
+									<td>Estimated (Computer) Reading</td>
+									<td>02</td>
+									<td>Estimated (computer)</td>
+								</tr>
+								<tr>
+									<td>E3</td>
+									<td>Estimated 3rd Party</td>
+									<td>11</td>
+									<td>Third Party Estimated (Computer) Reading</td>
+									<td>	</td>
+									<td>	</td>
+								</tr>
+								<tr>
+									<td>EM</td>
+									<td>Estimated Manual</td>
+									<td>01</td>
+									<td>Estimated (manual)</td>
+									<td>	</td>
+									<td>	</td>
+								</tr>
+								<tr>
+									<td>W</td>
+									<td>Withdrawn</td>
+									<td>03</td>
+									<td>Removed meter reading</td>
+									<td>	</td>
+									<td>	</td>
+								</tr>
+								<tr>
+									<td>X</td>
+									<td>Exchange</td>
+									<td>06</td>
+									<td>Exchange Meter Reading</td>
+									<td>06</td>
+									<td>Exchange Meter Reading</td>
+								</tr>
+								<tr>
+									<td>CP</td>
+									<td>Computer</td>
+									<td>05</td>
+									<td>Computer Reading</td>
+									<td>	</td>
+									<td>	</td>
+								</tr>
+								<tr>
+									<td>IF</td>
+									<td>Information</td>
+									<td>12</td>
+									<td>Reading for Information only</td>
+									<td>	</td>
+									<td>	</td>
+								</tr>
+							</tbody>
+						</table>
 					</fieldset>
 				</form>
 			</div>
