@@ -17363,5 +17363,10 @@ def virtual_bill(supply_source):
         'status_code': 200,
         'regexes': [
             r'0,28,009,LV HH Metered,LV,False,True,2009-04-16 00:00,'
-            r'2014-08-20 00:00']}
+            r'2014-08-20 00:00']},
+
+    {
+        'name': "CSV of supplier batch",
+        'path': '/supplier_batches/4/csv',
+        'status_code': 200}
 ]
