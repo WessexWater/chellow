@@ -162,6 +162,8 @@ def content(table, version, fin, user):
                 name = values[4]
                 dno_code_str = values[14]
                 dno_code = None if len(dno_code_str) == 0 else dno_code_str
+                if dno_code == '99':
+                    continue
 
                 if party is None:
                     w.writerow(
