@@ -17368,5 +17368,35 @@ def virtual_bill(supply_source):
     {
         'name': "CSV of supplier batch",
         'path': '/supplier_batches/4/csv',
-        'status_code': 200}
+        'status_code': 200},
+
+    {
+        'name': "Update an HHDC bill",
+        'path': '/hhdc_bills/15/edit',
+        'method': 'post',
+        'data': {
+            'reference': "00031",
+            'account': "22 0883 6932 301",
+            'issue_year': '2007',
+            'issue_month': '09',
+            'issue_day': '01',
+            'issue_hour': '00',
+            'issue_minute': '00',
+            'start_year': '2007',
+            'start_month': '10',
+            'start_day': '01',
+            'start_hour': '00',
+            'start_minute': '00',
+            'finish_year': '2007',
+            'finish_month': '10',
+            'finish_day': '31',
+            'finish_hour': '23',
+            'finish_minute': '30',
+            'kwh': '0',
+            'net': '0.00',
+            'vat': '0.00',
+            'gross': '0.00',
+            'bill_type_id': '2',
+            'breakdown': '{}'},
+        'status_code': 303},
 ]

@@ -3427,7 +3427,11 @@ def hhdc_bill_edit_get(bill_id):
 def hhdc_bill_edit_post(bill_id):
     try:
         bill = Bill.get_by_id(g.sess, bill_id)
-        if 'update' in request.values:
+        if 'delete' in request.values:
+            bill.delete(g.sess)
+            g.sess.commit()
+            return chellow_redirect("/hhdc_batches/" + str(bill.batch.id), 303)
+        else:
             account = req_str('account')
             reference = req_str('reference')
             issue_date = req_date('issue')
@@ -3438,7 +3442,7 @@ def hhdc_bill_edit_post(bill_id):
             vat = req_decimal('vat')
             gross = req_decimal('gross')
             type_id = req_int('bill_type_id')
-            breakdown = req_str('breakdown')
+            breakdown = req_zish('breakdown')
             bill_type = BillType.get_by_id(g.sess, type_id)
 
             bill.update(
@@ -3446,10 +3450,6 @@ def hhdc_bill_edit_post(bill_id):
                 net, vat, gross, bill_type, breakdown)
             g.sess.commit()
             return chellow_redirect("/hhdc_bills/" + str(bill.id), 303)
-        elif 'delete' in request.values:
-            bill.delete(g.sess)
-            g.sess.commit()
-            return chellow_redirect("/hhdc_batches/" + str(bill.batch.id), 303)
     except BadRequest as e:
         flash(e.description)
         bill_types = g.sess.query(BillType).order_by(BillType.code).all()
