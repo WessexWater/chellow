@@ -39,7 +39,8 @@ def triad_calc(
 
                 rt = get_file_rates(
                     data_source.caches, 'triad_rates',
-                    start_date)['triad_gbp_per_gsp_kw'][data_source.dno_code]
+                    start_date
+                    )['triad_gbp_per_gsp_kw'][data_source.gsp_group_code]
                 tot_rate += (finish_month - start_month + 1) * float(rt)
 
         rate = tot_rate / 12
