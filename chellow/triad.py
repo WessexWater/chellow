@@ -48,7 +48,8 @@ def triad_calc(
         rate = float(
             get_file_rates(
                 data_source.caches, 'triad_rates',
-                month_begin)['triad_gbp_per_gsp_kw'][data_source.dno_code])
+                month_begin
+                )['triad_gbp_per_gsp_kw'][data_source.gsp_group_code])
 
     hh[prefix + '-rate'] = rate
 

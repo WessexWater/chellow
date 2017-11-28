@@ -41,8 +41,8 @@ def content(supply_id, file_name, start_date, finish_date, user):
                 SiteEra.era == era, SiteEra.is_physical == true()).one()
 
             ds = chellow.computer.SupplySource(
-                sess, chunk_start, chunk_finish, forecast_date, era, True,
-                caches)
+                sess, chunk_start, chunk_finish, forecast_date, era,
+                era.imp_supplier_contract is not None, caches)
 
             titles = [
                 'Imp MPAN Core', 'Exp MPAN Core', 'Site Code', 'Site Name',
