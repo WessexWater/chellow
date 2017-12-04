@@ -66,7 +66,7 @@ def add_gap(gaps, elem, start_date, finish_date, is_virtual, gbp):
 
 
 def find_elements(bill):
-    elems = {'net'}
+    elems = set()
 
     for k in loads(bill.breakdown).keys():
         if k.endswith('-gbp'):
@@ -184,12 +184,12 @@ def content(batch_id, bill_id, contract_id, start_date, finish_date, user):
                 covered_finish = bill_finish
                 covered_bdown = {'sum-msp-kwh': 0, 'net-gbp': 0, 'vat-gbp': 0}
 
-                covered_elems = find_elements(bill)
                 vb_elems = set()
                 enlarged = True
 
                 while enlarged:
                     enlarged = False
+                    covered_elems = find_elements(bill)
                     covered_bills = OrderedDict(
                         (b.id, b) for b in sess.query(Bill).join(Batch).
                         join(Contract).join(MarketRole).
@@ -218,11 +218,14 @@ def content(batch_id, bill_id, contract_id, start_date, finish_date, user):
                             for k in to_del:
                                 del covered_bills[k]
 
-                    for k, covered_bill in covered_bills.items():
+                    for k, covered_bill in tuple(covered_bills.items()):
                         elems = find_elements(covered_bill)
                         if elems.isdisjoint(covered_elems):
-                            del covered_bills[k]
-                            continue
+                            if k != bill.id:
+                                del covered_bills[k]
+                                continue
+                        else:
+                            covered_elems.update(elems)
 
                         if covered_bill.start_date < covered_start:
                             covered_start = covered_bill.start_date
