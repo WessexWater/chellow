@@ -49,30 +49,10 @@ def add_gap(gaps, elem, start_date, finish_date, is_virtual, gbp):
         else:
             hhgap['has_covered'] = True
 
-    for hh_start in hhs:
-        try:
-            hhgap = elgap[hh_start]
-        except KeyError:
-            hhgap = elgap[hh_start] = {
-                'has_covered': False,
-                'has_virtual': False,
-                'gbp': 0}
-
-        if is_virtual:
-            hhgap['has_virtual'] = True
-            hhgap['gbp'] = hhgbp
-        else:
-            hhgap['has_covered'] = True
-
 
 def find_elements(bill):
-    elems = set()
-
-    for k in loads(bill.breakdown).keys():
-        if k.endswith('-gbp'):
-            elems.add(k[:-4])
-
-    return elems
+    keys = [k for k in loads(bill.breakdown).keys() if k.endswith('-gbp')]
+    return set(k[:-4] for k in keys)
 
 
 def content(batch_id, bill_id, contract_id, start_date, finish_date, user):
@@ -106,7 +86,6 @@ def content(batch_id, bill_id, contract_id, start_date, finish_date, user):
                 Bill.finish_date >= start_date)
 
         market_role_code = contract.market_role.code
-
         vbf = chellow.computer.contract_func(caches, contract, 'virtual_bill')
         if vbf is None:
             raise BadRequest(
@@ -134,13 +113,12 @@ def content(batch_id, bill_id, contract_id, start_date, finish_date, user):
 
         writer.writerow(titles)
 
-        bill_map = defaultdict(list, {})
+        bill_map = defaultdict(set, {})
         for bill in bills:
-            bill_map[bill.supply.id].append(bill)
+            bill_map[bill.supply.id].add(bill.id)
 
-        for supply_id, bill_list in bill_map.items():
+        for supply_id, bill_ids in bill_map.items():
             gaps = {}
-            bill_ids = set(bill.id for bill in bill_list)
             while len(bill_ids) > 0:
                 bill_id = list(sorted(bill_ids))[0]
                 bill_ids.remove(bill_id)
@@ -298,51 +276,63 @@ def content(batch_id, bill_id, contract_id, start_date, finish_date, user):
                     chunk_start = hh_max(covered_start, era.start_date)
                     chunk_finish = hh_min(covered_finish, era.finish_date)
 
-                    data_source = chellow.computer.SupplySource(
-                        sess, chunk_start, chunk_finish, forecast_date, era,
-                        True, caches, primary_covered_bill)
+                    pairs = []
+                    last_finish = chunk_start - HH
+                    for hd in chellow.computer.datum_range(
+                            sess, caches, 0, chunk_start, chunk_finish):
+                        if hd['utc-is-month-end'] or hd['ct-is-month-end']:
+                            end_date = hd['start-date']
+                            pairs.append((last_finish + HH, end_date))
+                            last_finish = end_date
+                    if hd['start-date'] > last_finish:
+                        pairs.append((last_finish + HH, hd['start-date']))
 
-                    if data_source.measurement_type == 'hh':
-                        metered_kwh += sum(
-                            h['msp-kwh'] for h in data_source.hh_data)
-                    else:
-                        ds = chellow.computer.SupplySource(
-                            sess, chunk_start, chunk_finish, forecast_date,
-                            era, True, caches)
-                        metered_kwh += sum(h['msp-kwh'] for h in ds.hh_data)
+                    for ss_start, ss_finish in pairs:
+                        data_source = chellow.computer.SupplySource(
+                            sess, ss_start, ss_finish, forecast_date, era,
+                            True, caches, primary_covered_bill)
 
-                    vbf(data_source)
+                        if data_source.measurement_type == 'hh':
+                            metered_kwh += sum(
+                                h['msp-kwh'] for h in data_source.hh_data)
+                        else:
+                            ds = chellow.computer.SupplySource(
+                                sess, ss_start, ss_finish, forecast_date, era,
+                                True, caches)
+                            metered_kwh += sum(
+                                h['msp-kwh'] for h in ds.hh_data)
 
-                    if market_role_code == 'X':
-                        vb = data_source.supplier_bill
-                    elif market_role_code == 'C':
-                        vb = data_source.dc_bill
-                    elif market_role_code == 'M':
-                        vb = data_source.mop_bill
-                    else:
-                        raise BadRequest("Odd market role.")
+                        vbf(data_source)
 
-                    for k, v in vb.items():
-                        try:
-                            if isinstance(v, set):
-                                virtual_bill[k].update(v)
-                            else:
-                                virtual_bill[k] += v
-                        except KeyError:
-                            virtual_bill[k] = v
-                        except TypeError as detail:
-                            raise BadRequest(
-                                "For key " + str(k) + " and value " + str(v) +
-                                ". " + str(detail))
+                        if market_role_code == 'X':
+                            vb = data_source.supplier_bill
+                        elif market_role_code == 'C':
+                            vb = data_source.dc_bill
+                        elif market_role_code == 'M':
+                            vb = data_source.mop_bill
+                        else:
+                            raise BadRequest("Odd market role.")
 
-                        if k.endswith('-gbp') and k != 'net-gbp':
-                            add_gap(
-                                gaps, k[:-4], chunk_start, chunk_finish,
-                                True, v)
+                        for k, v in vb.items():
+                            try:
+                                if isinstance(v, set):
+                                    virtual_bill[k].update(v)
+                                else:
+                                    virtual_bill[k] += v
+                            except KeyError:
+                                virtual_bill[k] = v
+                            except TypeError as detail:
+                                raise BadRequest(
+                                    "For key " + str(k) + " and value " +
+                                    str(v) + ". " + str(detail))
 
-                    for k in virtual_bill.keys():
-                        if k.endswith('-gbp'):
-                            vb_elems.add(k[:-4])
+                            if k.endswith('-gbp') and k != 'net-gbp':
+                                add_gap(
+                                    gaps, k[:-4], ss_start, ss_finish, True, v)
+
+                        for k in virtual_bill.keys():
+                            if k.endswith('-gbp'):
+                                vb_elems.add(k[:-4])
 
                 for elem in vb_elems.difference(covered_elems):
                     for k, v in tuple(virtual_bill.items()):
@@ -414,6 +404,18 @@ def content(batch_id, bill_id, contract_id, start_date, finish_date, user):
                         values += ['', '']
 
                 writer.writerow(values)
+
+                for bill in sess.query(Bill).filter(
+                        Bill.supply == supply,
+                        Bill.start_date <= covered_finish,
+                        Bill.finish_date >= covered_start):
+
+                    for k, v in loads(bill.breakdown).items():
+                        if k.endswith('-gbp'):
+                            add_gap(
+                                gaps, k[:-4], bill.start_date,
+                                bill.finish_date, False, v)
+
             clumps = []
             for element, elgap in sorted(gaps.items()):
                 for start_date, hhgap in sorted(elgap.items()):

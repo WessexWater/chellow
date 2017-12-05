@@ -4406,7 +4406,7 @@ def virtual_bill(supply_source):
         'status_code': 303},
     {
         'path': '/downloads',
-        'tries': {'max': 20, 'period': 1},
+        'tries': {'max': 40, 'period': 1},
         'regexes': [
             r"0014_FINISHED_watkinsexamplecom_bill_check\.csv"],
         'status_code': 200},
@@ -4422,7 +4422,7 @@ def virtual_bill(supply_source):
             r'07-008,3423760005,N,253,36.16,1.80,'
             r'2010-01-19 00:00,2010-04-20 23:30,22 1065 3921 534,'
             r'CI017,Roselands,2010-01-19 00:00,2010-04-20 23:30,10,'
-            r'0.0,36.16,0,36.16,253.0,252.9999999999\d*,,'],
+            r'0.0,36.16,0,36.16,253.0,253.0\d*,,'],
         'status_code': 200},
 
     # Create a new site
@@ -8201,8 +8201,8 @@ def virtual_bill(supply_source):
         'regexes': [
             r'07-002,3423760010,N,10,9.07,0.21,2012-01-05 00:00,'
             r'2012-01-10 23:30,22 1065 3921 534,CI017,Roselands,'
-            r'2012-01-05 00:00,2012-01-10 23:30,21,30.0000\d*,9.07,0,9.07,'
-            r'10.0,9.999999999999973,,']},
+            r'2012-01-05 00:00,2012-01-10 23:30,21,30.\d*,9.07,0,9.07,'
+            r'10.0,9.999999\d*,,']},
     {
         'name': "Monthly supplies duration with export hh data",
         'path': '/reports/177?supply_id=1&months=1&end_year=2008&end_month=07',
