@@ -1,19 +1,20 @@
 {% extends "base.html" %}
 
 {% block title %}
-	&raquo; MOP Contracts &raquo; {{bill.batch.contract.name}} &raquo; Batches &raquo; 
- 	{{bill.batch.reference}} &raquo; {{bill.reference}}
+	&raquo; MOP Contracts &raquo; {{bill.batch.contract.name}} &raquo;
+ 	Batches &raquo; {{bill.batch.reference}} &raquo; {{bill.reference}}
 {% endblock %}
 
 {% block nav %}
 	&raquo; <a href="/mop_contracts">MOP Contracts</a> &raquo; 
-	<a href="/mop_contracts/{{bill.batch.contract.id}}">{{bill.batch.contract.name}}</a>
-	&raquo; 
+	<a
+			href="/mop_contracts/{{bill.batch.contract.id}}"
+			>{{bill.batch.contract.name}}</a> &raquo; 
 	<a href="/mop_batches?mop_contract_id={{bill.batch.contract.id}}">Batches</a>
 	&raquo; 
 	<a href="/mop_batches/{{bill.batch.id}}">{{bill.batch.reference}}</a>
 	&raquo; {{bill.reference}}
-	[<a href="/mop_bills/{{bill.id}}">edit</a>]
+	[<a href="/mop_bills/{{bill.id}}/edit">edit</a>]
 {% endblock %}
 
 {% block content %}

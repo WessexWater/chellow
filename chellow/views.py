@@ -4066,6 +4066,48 @@ def mop_bill_get(bill_id):
     return render_template('mop_bill.html', **fields)
 
 
+@app.route('/mop_bills/<int:bill_id>/edit')
+def mop_bill_edit_get(bill_id):
+    bill_types = g.sess.query(BillType).order_by(BillType.code).all()
+    bill = Bill.get_by_id(g.sess, bill_id)
+    return render_template(
+        'mop_bill_edit.html', bill=bill, bill_types=bill_types)
+
+
+@app.route('/mop_bills/<int:bill_id>/edit', methods=["POST"])
+def mop_bill_edit_post(bill_id):
+    try:
+        bill = Bill.get_by_id(g.sess, bill_id)
+        if 'delete' in request.values:
+            bill.delete(g.sess)
+            g.sess.commit()
+            return chellow_redirect("/mop_batches/" + str(bill.batch.id), 303)
+        else:
+            account = req_str('account')
+            reference = req_str('reference')
+            issue_date = req_date('issue')
+            start_date = req_date('start')
+            finish_date = req_date('finish')
+            kwh = req_decimal('kwh')
+            net = req_decimal('net')
+            vat = req_decimal('vat')
+            gross = req_decimal('gross')
+            type_id = req_int('bill_type_id')
+            breakdown = req_zish('breakdown')
+            bill_type = BillType.get_by_id(g.sess, type_id)
+
+            bill.update(
+                account, reference, issue_date, start_date, finish_date, kwh,
+                net, vat, gross, bill_type, breakdown)
+            g.sess.commit()
+            return chellow_redirect("/mop_bills/" + str(bill.id), 303)
+    except BadRequest as e:
+        flash(e.description)
+        bill_types = g.sess.query(BillType).order_by(BillType.code).all()
+        return render_template(
+            'mop_bill_edit.html', bill=bill, bill_types=bill_types)
+
+
 @app.route('/csv_sites_triad')
 def csv_sites_triad_get():
     now = Datetime.utcnow()

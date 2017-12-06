@@ -1,0 +1,183 @@
+{% extends "base.html" %}
+
+{% block title %}
+	&raquo; MOP Contracts &raquo; {{bill.batch.contract.name}} &raquo;
+ 	Batches &raquo; {{bill.batch.reference}} &raquo; Bills &raquo; {{bill.id}}
+{% endblock %}
+
+{% block nav %}
+	&raquo; <a href="/mop_contracts">MOP Contracts</a> &raquo;
+	<a
+			href="/mop_contracts/{{bill.batch.contract.id}}"
+			>{{bill.batch.contract.name}}</a> &raquo;
+	<a
+			href="/mop_batches?mop_contract_id={{bill.batch.contract.id}}"
+			>Batches</a> &raquo;
+	<a
+			href="/mop_batches/{{bill.batch.id}}"
+			>{{bill.batch.reference}}</a> &raquo;
+
+	<a href="/mop_bills/{{bill.id}}">Bill {{bill.id}}</a> &raquo; Edit
+{% endblock %}
+
+{% block content %}
+	{% if 'confirm_delete' in request.values %}
+		<!-- Layer Section -->
+		<div class="layer-section">
+			<!-- Section Header -->
+			<div class="section-header">
+				<h2>Are you sure you want to delete this bill?</h2>	
+			</div>
+			<!-- End Section Header -->
+			<!-- Section Content -->
+			<div class="section-content">
+				<div class="section-data">
+					<div class="standardForm">
+						<form method="post">
+							<fieldset>
+								<input type="submit" name="delete" value="Delete">
+								<a href="/mop_bills/{{bill.id}}/edit">Cancel</a>
+							</fieldset>
+							</form>
+							<p></p>
+					</div>
+				</div>
+			</div>
+			<!-- End Section Content -->
+		</div>
+		<!-- End Layer Section -->
+      
+	{% else %}
+		<!-- Layer Section -->
+    <div class="layer-section">
+			<!-- Section Header -->
+			<div class="section-header">
+				<h2>Update This Bill</h2>
+			</div>
+			<!-- End Section Header -->
+			<!-- Section Content -->
+			<div class="section-content">
+				<div class="section-data">
+					<p><a href="/supplies/{{bill.supply.id}}">Supply</a></p>
+						<form method="post">
+							<fieldset>
+								<div class="standardForm">
+									<div class="row">
+										<div class="col-sm-6">
+											<label>Reference</label>
+											{{input_text('reference', bill.reference)}}
+										</div>
+										<div class="col-sm-6">
+											<label>Account</label>
+											{{input_text('account', bill.account)}}
+										</div>
+									</div>
+								</div>
+                        
+								<fieldset>
+									<legend>Issue Date</legend>
+									<div class="standardForm textWidthAuto">
+										{{input_date('issue', bill.issue_date)}}
+									</div>
+								</fieldset>
+                        
+								<fieldset>
+									<legend>Start Date</legend>
+                            
+									<div class="standardForm textWidthAuto">
+										{{input_date('start', bill.start_date)}}
+									</div>
+									</fieldset>
+                        
+									<fieldset>
+										<legend>Finish Date</legend>
+											<div class="standardForm textWidthAuto">
+												{{input_date('finish', bill.finish_date)}}
+											</div>
+												</fieldset>
+													<div class="standardForm">
+                            <div class="row">
+															<div class="col-sm-4">
+																<label>kWh</label>
+																{{input_text('kwh', '' ~ bill.kwh)}}
+															</div>
+															<div class="col-sm-4">
+																<label>Net</label>
+																{{input_text('net', '' ~ bill.net)}}
+															</div>
+															<div class="col-sm-4">
+																<label>VAT</label>
+																{{input_text('vat', '' ~ bill.vat)}}
+															</div>
+														</div>
+
+													<div class="row">
+												<div class="col-sm-4">
+												<label>Gross</label>
+												{{input_text('gross', '' ~ bill.gross)}}
+											</div>
+											<div class="col-sm-4">
+												<label>Type</label>
+												<select name="bill_type_id">
+													{% for type in bill_types %}
+														{{
+															input_option(
+																'type_id', type.id,
+															 	type.code + ' ' + type.description,
+															 	initial=bill.bill_type.id)}}
+													{% endfor %}
+												</select>
+											</div>
+										</div>
+										<div class="row">
+											<div class="col-sm-12">
+												<label>Breakdown</label><br>
+												{{input_textarea('breakdown', bill.breakdown, 10, 80)}}
+                                    
+												<br>Example Breakdown
+
+												<pre>
+{
+  "raw_lines": [
+    "'net-gbp', 'unrestricted-kwh', 'unrestricted-rate', 'unrestricted-gbp'",
+		"'100', '1000', '0.1', '100'"],
+	"unrestricted-kwh": 1000,
+	"unrestricted-rate": 0.1,
+	"unrestricted-gbp": 100}
+												</pre>
+											</div>
+										</div>
+									<input type="submit" name="update" value="Update">
+								</div>
+							</fieldset>
+						</form>
+					</div>
+        </div>
+        <!-- End Section Content -->
+			</div>
+			<!-- End Layer Section -->
+			
+			<!-- Layer Section -->
+			<div class="layer-section">
+			<!-- Section Header -->
+			<div class="section-header">
+				<h2>Delete This Bill</h2>	
+			</div>
+			<!-- End Section Header -->
+			<!-- Section Content -->
+			<div class="section-content">
+				<div class="section-data">
+					<div class="standardForm">
+						<form>
+							<fieldset>
+								<input type="submit" name="confirm_delete" value="Delete">
+							</fieldset>
+						</form>
+					</div>
+				</div>
+			</div>
+			<!-- End Section Content -->
+		</div>
+		<!-- End Layer Section -->
+	{% endif %}
+{% endblock %}

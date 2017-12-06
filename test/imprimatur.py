@@ -10158,7 +10158,15 @@ def virtual_bill(supply_source):
         'path': '/mop_bills/16',
         'status_code': 200,
         'regexes': [
-            r"<!DOCTYPE html>"]},
+            r'<!DOCTYPE html>',
+            r'/mop_bills/16/edit']},
+
+    {
+        'name': "Edit a MOP bill",
+        'path': '/mop_bills/16/edit',
+        'status_code': 200,
+        'regexes': [
+            r'<!DOCTYPE html>']},
 
     {
         'name': "CRC for HH supply with HH data",
