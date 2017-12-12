@@ -52,8 +52,7 @@ ELEM_MAP = {
     ('Feed in Tariff (FiT) Actual', '', 'Usage'): 'fit-msp-kwh',
     ('Feed in Tariff (FiT) Actual', '', 'Price'): 'fit-rate',
     ('Feed in Tariff (FiT) Actual', '', 'Amount'): 'fit-gbp',
-    ('Feed in Tariff (FiT) Estimate', '', 'Usage'):
-        'fit-prev-estimate-msp-kwh',
+    ('Feed in Tariff (FiT) Estimate', '', 'Usage'): 'fit-msp-kwh',
     ('Feed in Tariff (FiT) Estimate', '', 'Price'): 'fit-rate',
     ('Feed in Tariff (FiT) Estimate', '', 'Amount'): 'fit-gbp',
     ('Levy Exempt Energy', '', 'Usage'): 'lec-kwh',
@@ -110,8 +109,7 @@ ELEM_MAP = {
     ('Reverse BSUoS in Unit Rate', '', 'Usage'): 'bsuos-reverse-nbp-kwh',
     ('Reverse BSUoS in Unit Rate', '', 'Price'): 'bsuos-reverse-rate',
     ('Reverse BSUoS in Unit Rate', '', 'Amount'): 'bsuos-reverse-gbp',
-    ('Reverse CfD FiT (Estimate)', '', 'Usage'):
-        'cfd-fit-prev-estimate-nbp-kwh',
+    ('Reverse CfD FiT (Estimate)', '', 'Usage'): 'cfd-fit-nbp-kwh',
     ('Reverse CfD FiT (Estimate)', '', 'Price'): 'cfd-rate',
     ('Reverse CfD FiT (Estimate)', '', 'Amount'): 'cfd-fit-gbp'}
 

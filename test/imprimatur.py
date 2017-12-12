@@ -14721,13 +14721,13 @@ finally:
             r'<td>2016-07-31 23:00</td>\s*'
             r'<td>2016-08-31 22:30</td>\s*'
             r'<td>27997\.33</td>\s*'
-            r'<td>89564\.02</td>\s*'
+            r'<td>89454\.47</td>\s*'
             r'<td>6122\.00</td>\s*'
-            r'<td>95686\.02</td>\s*'
+            r'<td>95576.47</td>\s*'
             r'<td>\[\(&#39;aahedc-gbp&#39;, Decimal\(&#39;0.89&#39;\)\),.*'
             r'capacity-gbp.*'
-            r'\(&#39;ccl-gbp&#39;, Decimal\(&#39;100\.0\&#39;\)\),.*'
-            r'cfd-fit-nbp-kwh.*'
+            r'\(&#39;ccl-gbp&#39;, Decimal\(&#39;100\.0&#39;\)\),.*'
+            r'cfd-fit-nbp-kwh&#39;, Decimal\(&#39;81146.67&#39;\).*'
             r'\(&#39;duos-availability-kva&#39;, &#39;220&#39;\).*'
             r'fit-gbp.*meter-rental-gbp.*'
             r'reconciliation-gbp.*'
@@ -14744,9 +14744,9 @@ finally:
             r'<td>2016-07-31 23:00</td>\s*'
             r'<td>2016-08-31 22:30</td>\s*'
             r'<td>27997\.33</td>\s*'
-            r'<td>89564\.02</td>\s*'
+            r'<td>89454\.47</td>\s*'
             r'<td>6122\.00</td>\s*'
-            r'<td>95686\.02</td>'],
+            r'<td>95576\.47</td>'],
         'status_code': 200},
 
     {
