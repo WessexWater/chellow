@@ -3957,182 +3957,6 @@ def db_upgrade_8_to_9(sess, root_path):
     sess.execute("alter table pc alter valid_from set not null;")
     sess.execute("alter table pc add valid_to timestamp with time zone;")
 
-    '''
-    for participant_code, llfc_code, valid_from in (
-            ('EELC', '827', utc_datetime(2015, 4, 1)),
-            ('EELC', '835', utc_datetime(2015, 4, 1)),
-            ('EELC', '841', utc_datetime(2015, 4, 1)),
-            ('EELC', '864', utc_datetime(2014, 4, 1)),
-            ('EMEB', '061', utc_datetime(2015, 4, 1)),
-            ('EMEB', '201', utc_datetime(2014, 6, 18)),
-            ('EMEB', '805', utc_datetime(2015, 4, 1)),
-            ('EMEB', '976', utc_datetime(2015, 4, 1)),
-            ('EMEB', '978', utc_datetime(2015, 4, 1)),
-            ('LENG', '010', utc_datetime(2013, 4, 1)),
-            ('LENG', '014', utc_datetime(2013, 4, 1)),
-            ('LENG', '019', utc_datetime(2013, 4, 1)),
-            ('LENG', '022', utc_datetime(2013, 4, 1)),
-            ('LENG', '023', utc_datetime(2014, 2, 19)),
-            ('LENG', '024', utc_datetime(2014, 2, 19)),
-            ('LENG', '031', utc_datetime(2013, 4, 1)),
-            ('LENG', '040', utc_datetime(2014, 2, 19)),
-            ('LENG', '042', utc_datetime(2014, 2, 19)),
-            ('LENG', '047', utc_datetime(2013, 4, 1)),
-            ('LENG', '048', utc_datetime(2013, 4, 1)),
-            ('LENG', '059', utc_datetime(2013, 4, 1)),
-            ('LENG', '078', utc_datetime(2013, 4, 1)),
-            ('LENG', '093', utc_datetime(2013, 4, 1)),
-            ('LENG', '094', utc_datetime(2013, 4, 1)),
-            ('LENG', '095', utc_datetime(2013, 4, 1)),
-            ('LENG', '096', utc_datetime(2013, 4, 1)),
-            ('LENG', '101', utc_datetime(2014, 2, 19)),
-            ('LENG', '107', utc_datetime(2014, 2, 19)),
-            ('LENG', '111', utc_datetime(2014, 2, 19)),
-            ('LENG', '119', utc_datetime(2013, 4, 1)),
-            ('LENG', '135', utc_datetime(2013, 4, 1)),
-            ('LENG', '172', utc_datetime(2014, 8, 20)),
-            ('LENG', '186', utc_datetime(2014, 2, 19)),
-            ('LENG', '192', utc_datetime(2013, 4, 1)),
-            ('LENG', '193', utc_datetime(2013, 4, 1)),
-            ('LENG', '220', utc_datetime(2014, 2, 19)),
-            ('LENG', '241', utc_datetime(2013, 4, 1)),
-            ('LENG', '246', utc_datetime(2013, 4, 1)),
-            ('LENG', '247', utc_datetime(2013, 4, 1)),
-            ('LENG', '252', utc_datetime(2014, 2, 19)),
-            ('LENG', '253', utc_datetime(2013, 4, 1)),
-            ('LENG', '273', utc_datetime(2013, 4, 1)),
-            ('LENG', '274', utc_datetime(2013, 4, 1)),
-            ('LENG', '275', utc_datetime(2013, 4, 1)),
-            ('LENG', '276', utc_datetime(2013, 4, 1)),
-            ('LENG', '305', utc_datetime(2013, 4, 1)),
-            ('LENG', '306', utc_datetime(2013, 4, 1)),
-            ('LENG', '333', utc_datetime(2014, 2, 19)),
-            ('LENG', '335', utc_datetime(2013, 4, 1)),
-            ('LENG', '340', utc_datetime(2013, 4, 1)),
-            ('LENG', '341', utc_datetime(2013, 4, 1)),
-            ('LENG', '376', utc_datetime(2014, 2, 19)),
-            ('LENG', '384', utc_datetime(2013, 4, 1)),
-            ('LENG', '385', utc_datetime(2013, 4, 1)),
-            ('LENG', '412', utc_datetime(2014, 2, 19)),
-            ('LENG', '420', utc_datetime(2013, 4, 1)),
-            ('LENG', '421', utc_datetime(2013, 4, 1)),
-            ('LENG', '449', utc_datetime(2014, 2, 19)),
-            ('LENG', '456', utc_datetime(2013, 4, 1)),
-            ('LENG', '457', utc_datetime(2013, 4, 1)),
-            ('LENG', '471', utc_datetime(2013, 4, 1)),
-            ('LENG', '472', utc_datetime(2013, 4, 1)),
-            ('LENG', '473', utc_datetime(2013, 4, 1)),
-            ('LENG', '474', utc_datetime(2013, 4, 1)),
-            ('LENG', '484', utc_datetime(2014, 2, 19)),
-            ('LENG', '506', utc_datetime(2013, 4, 1)),
-            ('LENG', '507', utc_datetime(2013, 4, 1)),
-            ('LENG', '508', utc_datetime(2013, 4, 1)),
-            ('LENG', '509', utc_datetime(2013, 4, 1)),
-            ('LENG', '519', utc_datetime(2014, 2, 19)),
-            ('LENG', '528', utc_datetime(2013, 4, 1)),
-            ('LENG', '529', utc_datetime(2013, 4, 1)),
-            ('LENG', '559', utc_datetime(2014, 2, 19)),
-            ('LENG', '567', utc_datetime(2013, 4, 1)),
-            ('LENG', '568', utc_datetime(2013, 4, 1)),
-            ('LENG', '595', utc_datetime(2014, 2, 19)),
-            ('LENG', '603', utc_datetime(2013, 4, 1)),
-            ('LENG', '604', utc_datetime(2013, 4, 1)),
-            ('LOND', '808', utc_datetime(2015, 4, 1)),
-            ('MIDE', '129', utc_datetime(2012, 12, 20)),
-            ('MIDE', '130', utc_datetime(2015, 4, 1)),
-            ('MIDE', '366', utc_datetime(2015, 4, 1)),
-            ('MIDE', '367', utc_datetime(2012, 12, 20)),
-            ('MIDE', '576', utc_datetime(2015, 4, 1)),
-            ('MIDE', '578', utc_datetime(2015, 4, 1)),
-            ('SOUT', '081', utc_datetime(2012, 6, 20)),
-            ('SOUT', '082', utc_datetime(2012, 6, 20)),
-            ('SOUT', '083', utc_datetime(2012, 6, 20)),
-            ('SOUT', '084', utc_datetime(2012, 6, 20)),
-            ('SOUT', '085', utc_datetime(2012, 6, 20)),
-            ('SOUT', '590', utc_datetime(2013, 8, 15)),
-            ('SOUT', '591', utc_datetime(2013, 8, 15)),
-            ('SOUT', '592', utc_datetime(2013, 8, 15)),
-            ('SOUT', '731', utc_datetime(2014, 12, 17)),
-            ('SOUT', '732', utc_datetime(2014, 12, 17)),
-            ('SWEB', '640', utc_datetime(2012, 12, 20)),
-            ('SWEB', '650', utc_datetime(2012, 12, 20)),
-            ('SWEB', '690', utc_datetime(2012, 12, 20)),
-            ('SWEB', '692', utc_datetime(2012, 12, 20)),
-            ('SWEB', '693', utc_datetime(2012, 12, 20)),
-            ('SWEB', '694', utc_datetime(2012, 12, 20)),
-            ('SWEB', '695', utc_datetime(2012, 12, 20)),
-            ('SWEB', '696', utc_datetime(2012, 12, 20)),
-            ('SWEB', '720', utc_datetime(2012, 12, 20)),
-            ('SWEB', '741', utc_datetime(2012, 12, 20)),
-            ('SWEB', '750', utc_datetime(2012, 12, 20)),
-            ('SWEB', '751', utc_datetime(2012, 12, 20)),
-            ('SWEB', '752', utc_datetime(2012, 12, 20)),
-            ('SWEB', '753', utc_datetime(2012, 12, 20)),
-            ('SWEB', '754', utc_datetime(2012, 12, 20))):
-                sess.execute(
-                    "update llfc set valid_from = :valid_from "
-                    "from party, participant "
-                    "where llfc.dno_id = party.id "
-                    "and party.participant_id = participant.id "
-                    "and participant.code = :participant_code "
-                    "and llfc.code = :llfc_code and llfc.valid_to is null;",
-                    {
-                        'valid_from': valid_from,
-                        'participant_code': participant_code,
-                        'llfc_code': llfc_code})
-    sess.commit()
-
-    sess.execute(
-        "update llfc set valid_from = '2012-12-20 00:00:00 +0:00' "
-        "where code = '660' "
-        "and description = 'Babcock Marine' and valid_to = '2013-03-31';")
-    '''
-    '''
-    sess.execute(
-        "update llfc set valid_from = '2015-04-01 00:00:00 +0:00' "
-        "where code = '827' and description = 'Bradwell Wind farm - IMPORT';")
-    sess.execute(
-        "update llfc set valid_from = '2015-04-01 00:00:00 +0:00' "
-        "where code = '835' and description = 'Cotton Wind farm - IMPORT';")
-    sess.execute(
-        "update llfc set valid_from = '2015-04-01 00:00:00 +0:00' "
-        "where code = '841' and description = 'Earls Hall Farm - IMPORT';")
-    sess.execute(
-        "update llfc set valid_from = '2014-04-01 00:00:00 +0:00' "
-        "where code = '864' and description = 'LU Manor House - IMPORT';")
-    sess.execute(
-        "update llfc set valid_from = '2015-04-01 00:00:00 +0:00' "
-        "where code = '061' and description = 'Spare EHV/HV 21';")
-    sess.execute(
-        "update llfc set valid_from = '2014-06-18 00:00:00 +0:00' "
-        "where code = '201' and description = 'Corby (MSID 7015)';")
-    sess.execute(
-        "update llfc set valid_from = '2015-04-01 00:00:00 +0:00' "
-        "where code = '805' and description = 'Spare LV 9';")
-    sess.execute(
-        "update llfc set valid_from = '2015-04-01 00:00:00 +0:00' "
-        "where code = '976' and description = 'Spare EHV/HV 22';")
-    sess.execute(
-        "update llfc set valid_from = '2015-04-01 00:00:00 +0:00' "
-        "where code = '978' and description = 'Spare EHV/HV Export 22';")
-    '''
-    '''
-    for row in sess.execute(
-            text(
-                "select t1.id from llfc as t1 "
-                "where (select count(*) from llfc as t2 "
-                "where t1.dno_id = t2.dno_id and t1.code = t2.code "
-                "and t1.valid_from = t2.valid_from) > 1;")).fetchall():
-        llfc_id = row[0]
-        if len(
-                sess.execute(
-                    "select * from era where "
-                    "(era.imp_llfc_id = :llfc_id or "
-                    "era.exp_llfc_id = :llfc_id);",
-                    {'llfc_id': llfc_id}).fetchall()) == 0:
-            sess.execute(
-                "delete from llfc where id = :llfc_id", {'llfc_id': llfc_id})
-    '''
     for llfc_id, valid_from, valid_to in sess.execute(
             "select id, valid_from, valid_to from llfc;").fetchall():
         if len(
@@ -4199,43 +4023,6 @@ def db_upgrade_8_to_9(sess, root_path):
                         'mtc_id': mtc_id,
                         'valid_to': valid_to + Timedelta(hours=1)})
 
-    '''
-    for row in sess.execute(
-            text(
-                "select t1.id from party as t1 "
-                "where (select count(*) from party as t2 "
-                "where t1.market_role_id = t2.market_role_id "
-                "and t1.participant_id = t2.participant_id "
-                "and t1.valid_from = t2.valid_from) > 1;")).fetchall():
-        party_id = row[0]
-        if all(
-                (
-                    len(
-                        sess.execute(
-                            'select * from "user" where party_id = :party_id;',
-                            {'party_id': party_id}).fetchall()) == 0,
-                    len(
-                        sess.execute(
-                            "select * from supply where dno_id = :party_id;",
-                            {'party_id': party_id}).fetchall()) == 0,
-                    len(
-                        sess.execute(
-                            "select * from contract "
-                            "where party_id = :party_id;",
-                            {'party_id': party_id}).fetchall()) == 0,
-                    len(
-                        sess.execute(
-                            "select * from llfc where dno_id = :party_id;",
-                            {'party_id': party_id}).fetchall()) == 0,
-                    len(
-                        sess.execute(
-                            "select * from mtc where dno_id = :party_id;",
-                            {'party_id': party_id}).fetchall()) == 0)):
-            sess.execute(
-                "delete from party where id = :party_id",
-                {'party_id': party_id})
-    '''
-
     for party_id, valid_from, valid_to in sess.execute(
             "select id, valid_from, valid_to from party;").fetchall():
         if all(
@@ -4298,10 +4085,55 @@ def db_upgrade_8_to_9(sess, root_path):
                     'valid_to': valid_to + Timedelta(hours=1)})
 
 
+def db_upgrade_9_to_10(sess, root_path):
+    market_role_id = sess.execute(
+        "select id from market_role where code = 'R'").fetchone()[0]
+    participant_id = sess.execute(
+        "select id from participant where code = 'CIDA'").fetchone()[0]
+    sess.execute(
+        "insert into party ("
+        "market_role_id, participant_id, name, valid_from, valid_to, "
+        "dno_code) values ("
+        ":market_role_id, :participant_id, 'Virtual DNO', '2000-01-01', "
+        "null, '88')", {
+            'market_role_id': market_role_id,
+            'participant_id': participant_id})
+
+    dno_id = sess.execute(
+        "select id from party where "
+        "participant_id = :participant_id and "
+        "market_role_id = :market_role_id", {
+            'market_role_id': market_role_id,
+            'participant_id': participant_id}).fetchone()[0]
+
+    for code, description, voltage_code, is_substation, is_import in (
+            ('510', "PC 5-8 & HH HV", 'HV', False, True),
+            ('521', "Export (HV)", 'HV', False, False),
+            ('570', "PC 5-8 & HH LV", 'LV', False, True),
+            ('581', "Export (LV)", 'LV', False, False),
+            ('110', "Profile 3 Unrestricted", 'LV', False, True),
+            ('210', "Profile 4 Economy 7", 'LV', False, True)):
+        voltage_level_id = sess.execute(
+            "select id from voltage_level where code = :code", {
+                'code': voltage_code}).fetchone()[0]
+        sess.execute(
+            "insert into llfc ("
+            "dno_id, code, description, voltage_level_id, is_substation, "
+            "is_import, valid_from, valid_to) values ("
+            ":dno_id, :code, :description, :voltage_level_id, "
+            ":is_substation, :is_import, '2000-01-01', null)", {
+                'dno_id': dno_id,
+                'code': code,
+                'description': description,
+                'voltage_level_id': voltage_level_id,
+                'is_substation': is_substation,
+                'is_import': is_import})
+
+
 upgrade_funcs = [
     db_upgrade_0_to_1, db_upgrade_1_to_2, db_upgrade_2_to_3, db_upgrade_3_to_4,
     db_upgrade_4_to_5, db_upgrade_5_to_6, db_upgrade_6_to_7, db_upgrade_7_to_8,
-    db_upgrade_8_to_9]
+    db_upgrade_8_to_9, db_upgrade_9_to_10]
 
 
 def db_upgrade(root_path):

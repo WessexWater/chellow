@@ -207,6 +207,19 @@ with open("original/Market_Participant_Role.csv") as fl, \
                 eid, participant_id, market_role_id, name, to_iso(valid_from),
                 to_iso(valid_to), dno_code])
 
+    party_id = eid + 1
+    participant_code = 'CIDA'
+    valid_from = '01/01/2000'
+    market_role_code = 'R'
+    party_map[(participant_code, market_role_code, valid_from)] = party_id
+    dno_lookup[participant_code] = party_id
+    participant_id = participant_map[participant_code]
+    market_role_id = market_role_map[market_role_code]
+    converted.writerow(
+        [
+            party_id, participant_id, market_role_id, 'Virtual DNO',
+            to_iso(valid_from), to_iso(''), '88'])
+
 
 with open("original/Clock_Interval.csv") as fl, \
         open("converted/clock_interval.csv", "w") as conv:
@@ -267,21 +280,22 @@ with open("original/Line_Loss_Factor_Class.csv") as fl, \
                 to_iso(valid_to)])
         eid += 1
 
-    dno_99 = dno_lookup['CIDC']
-    for (
-            code, description, voltage_level_id, is_substation, is_import,
-            valid_from) in (
-            ('510', "PC 5-8 & HH HV", 2, 0, 1, "1996-04-01"),
-            ('521', "Export (HV)", 2, 0, 0, "1996-04-01"),
-            ('570', "PC 5-8 & HH LV", 1, 0, 1, "1996-04-01"),
-            ('581', "Export (LV)", 1, 0, 0, "1996-04-01"),
-            ('110', "Profile 3 Unrestricted", 1, 0, 1, "1996-04-01"),
-            ('210', "Profile 4 Economy 7", 1, 0, 1, "1996-04-01")):
-        converter.writerow(
-            (
-                eid, dno_99, code, description, voltage_level_id,
-                is_substation, is_import, valid_from, ''))
-        eid += 1
+    for participant_code in ('CIDC', 'CIDA'):
+        for (
+                code, description, voltage_level_id, is_substation, is_import,
+                valid_from) in (
+                ('510', "PC 5-8 & HH HV", 2, 0, 1, "1996-04-01"),
+                ('521', "Export (HV)", 2, 0, 0, "1996-04-01"),
+                ('570', "PC 5-8 & HH LV", 1, 0, 1, "1996-04-01"),
+                ('581', "Export (LV)", 1, 0, 0, "1996-04-01"),
+                ('110', "Profile 3 Unrestricted", 1, 0, 1, "1996-04-01"),
+                ('210', "Profile 4 Economy 7", 1, 0, 1, "1996-04-01")):
+            converter.writerow(
+                (
+                    eid, dno_lookup[participant_code], code, description,
+                    voltage_level_id, is_substation, is_import, valid_from,
+                    ''))
+            eid += 1
 
 with open("original/Measurement_Requirement.csv") as fl, \
         open("converted/measurement_requirement.csv", "w") as conv:

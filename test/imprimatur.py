@@ -12363,7 +12363,8 @@ def virtual_bill(supply_source):
         'path': '/channels/40/edit',
         'status_code': 200,
         'regexes': [
-            r'Channel Import\s*ACTIVE']},
+            r'Channel Import\s*ACTIVE',
+            r'<form method="post" action="/channels/40/edit">']},
 
     {
         'name': "Look at a LLFC",
@@ -17261,4 +17262,57 @@ def virtual_bill(supply_source):
             'bill_type_id': '2',
             'breakdown': '{}'},
         'status_code': 303},
+
+    {
+        'name': "Test HHDC HTTPS auto importer: Add ACTIVE channel",
+        'path': '/eras/20/add_channel',
+        'method': 'post',
+        'data': {
+            'imp_related': "true",
+            'channel_type': "ACTIVE"},
+        'status_code': 303},
+    {
+        'name': "Test HHDC HTTPS auto importer: set up contract",
+        'path': '/hhdc_contracts/9/edit',
+        'method': 'post',
+        'data': {
+            'party_id': "1121",  # UKDC
+            'name': "Dynamat data",
+            'charge_script': """
+def virtual_bill_titles():
+    return ['net-gbp', 'problem']
+
+def virtual_bill(ds):
+    bill = ds.dc_bill
+    for hh in ds.hh_data:
+        if hh['utc-is-month-end']:
+            bill['net-gbp'] += 7
+""",
+            'properties': """
+{
+  "enabled": true,
+  "protocol": "https",
+  "download_days": 8,
+  "url_template":
+  "http://localhost:8080/hh_api?from={{chunk_start.strftime('%d/%m/%Y')}}&to={{chunk_finish.strftime('%d/%m/%Y')}}",
+  "url_values": {
+    "22 7907 4116 080": {
+      "api_key": "768234ht"}}}
+"""},
+        'status_code': 303},
+
+    {
+        'name': "Test HHDC HTTPS auto importer: import now",
+        'path': '/hhdc_contracts/9/auto_importer',
+        'method': 'post',
+        'regexes': [
+            '/hhdc_contracts/9/auto_importer'],
+        'status_code': 303},
+
+    {
+        'name': "Test HHDC HTTPS auto importer: check that it completed",
+        'path': '/hhdc_contracts/9/auto_importer',
+        'tries': {},
+        'regexes': [
+            r"Finished loading"]},
 ]

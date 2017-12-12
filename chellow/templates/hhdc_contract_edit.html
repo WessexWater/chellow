@@ -82,16 +82,33 @@
 								<br>
 								<br>
 								<h4>Example</h4>
+								<p>For the SFTP protocol:</p>
 								<code>
 									<pre>
-				{
-					'enabled': True,
-					'protocol': 'sftp',
-					'file_type': '.df2',
-					'hostname': 'example.com',
-					'username': 'username',
-					'password': 'password',
-					'directories': ['downloads1', 'downloads2']}
+{
+  "enabled": true,
+	"protocol": "sftp",
+	"file_type": ".df2",
+	"hostname": "example.com",
+	"username": "username",
+	"password": "password",
+	"directories": ["downloads1", "downloads2"]}
+									</pre>
+								</code>
+								<p>For the HTTPS protocol:</p>
+								<code>
+									<pre>
+										{% raw %}
+{
+  "enabled": true,
+  "protocol": "https",
+  "download_days": 8,
+  "url_template": "https://data.example.com/?from={{chunk_start.strftime('%d/%m/%Y')}}&amp;to={{chunk_finish.strftime('%d/%m/%Y')}}",
+  "url_values": {
+    "99 4298 4729 917": {
+      "name1": val1,
+      "name2": val2}}}
+										{% endraw %}
 									</pre>
 								</code>
 								<input type="submit" value="Update">

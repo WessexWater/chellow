@@ -4,14 +4,19 @@ from collections import defaultdict, deque
 import tempfile
 import ftplib
 import os
-from chellow.models import Contract, MarketRole, Session, HhDatum
+from chellow.models import Contract, MarketRole, Session, HhDatum, Era
 from io import TextIOWrapper
 from werkzeug.exceptions import BadRequest
 import importlib
 import atexit
 import paramiko
 import pysftp
-from chellow.utils import utc_datetime_now
+from chellow.utils import (
+    utc_datetime_now, utc_datetime, HH, hh_format, hh_min, hh_max)
+from datetime import timedelta as Timedelta
+from sqlalchemy import or_, null
+from jinja2 import Environment
+import requests
 
 
 processes = defaultdict(list)
@@ -124,7 +129,6 @@ class HhImportTask(threading.Thread):
 
     def import_file(self, sess):
         found_new = False
-        ftp = None
 
         try:
             contract = Contract.get_hhdc_by_id(sess, self.contract_id)
@@ -132,192 +136,15 @@ class HhImportTask(threading.Thread):
             enabled = properties["enabled"]
             if enabled:
                 protocol = properties["protocol"]
-                host_name = properties["hostname"]
-                user_name = properties["username"]
-                password = properties["password"]
-                try:
-                    port = properties["port"]
-                except KeyError:
-                    port = None
-                file_type = properties["file_type"]
-                directories = properties['directories']
-                state = contract.make_state()
-
-                try:
-                    last_import_keys = state['last_import_keys']
-                except KeyError:
-                    last_import_keys = {}
-                    state['last_import_keys'] = last_import_keys
-
-                sess.rollback()
                 self.log("Protocol is " + protocol)
                 if protocol == 'ftp':
-                    self.log(
-                        "Connecting to ftp server at " +
-                        host_name + ":" + str(port) + ".")
-                    ftp = ftplib.FTP()
-                    if port is None:
-                        ftp.connect(host=host_name, timeout=120)
-                    else:
-                        ftp.connect(host=host_name, port=port, timeout=120)
-
-                    ftp.login(user_name, password)
-                    home_path = ftp.pwd()
-
-                    file = None
-
-                    for directory in directories:
-                        self.log(
-                            "Checking the directory '" +
-                            directory + "'.")
-                        try:
-                            last_import_key = last_import_keys[directory]
-                        except KeyError:
-                            last_import_key = ''
-                            last_import_keys[directory] = last_import_key
-
-                        dir_path = home_path + "/" + directory
-                        ftp.cwd(dir_path)
-                        files = []
-                        for fname in ftp.nlst():
-                            fpath = dir_path + "/" + fname
-                            try:
-                                ftp.cwd(fpath)
-                                continue  # directory
-                            except ftplib.error_perm:
-                                pass
-
-                            key = ftp.sendcmd(
-                                "MDTM " + fpath).split()[1] + '_' + fname
-                            if key > last_import_key:
-                                files.append((key, fpath))
-
-                        if len(files) > 0:
-                            file = sorted(files)[0]
-                            last_import_keys[directory] = file[0]
-                            break
-
-                    if file is None:
-                        self.log("No new files found.")
-                        ftp.quit()
-                        self.log("Logged out.")
-                    else:
-                        key, fpath = file
-                        self.log(
-                            "Attempting to download " + fpath +
-                            " with key " + key + ".")
-                        f = tempfile.TemporaryFile()
-                        ftp.retrbinary("RETR " + fpath, f.write)
-                        self.log("File downloaded successfully.")
-                        ftp.quit()
-                        self.log("Logged out.")
-
-                        f.seek(0, os.SEEK_END)
-                        fsize = f.tell()
-                        f.seek(0)
-                        self.log("File size is " + str(fsize) + " bytes.")
-                        self.log(
-                            "Treating files as type " + file_type)
-                        self.importer = HhDataImportProcess(
-                            self.contract_id, 0, TextIOWrapper(f, 'utf8'),
-                            fpath + file_type, fsize)
-
-                        self.importer.run()
-                        for message in self.importer.messages:
-                            self.log(message)
-
-                        if len(self.importer.messages) > 0:
-                            raise BadRequest("Problem loading file.")
-
-                        contract = Contract.get_hhdc_by_id(
-                            sess, self.contract_id)
-                        contract.update_state(state)
-                        sess.commit()
-                        self.log("Finished loading '" + fpath)
-                        found_new = True
+                    found_new = self.ftp_handler(sess, properties, contract)
                 elif protocol == 'sftp':
-                    self.log(
-                        "Connecting to sftp server at " + host_name + ":" +
-                        str(port) + ".")
-                    cnopts = pysftp.CnOpts()
-                    cnopts.hostkeys = None
-                    ftp = pysftp.Connection(
-                        host_name, username=user_name, password=password,
-                        cnopts=cnopts)
-                    ftp.timeout = 120
-                    home_path = ftp.pwd
-
-                    f = None
-
-                    for directory in directories:
-                        self.log(
-                            "Checking the directory '" +
-                            directory + "'.")
-                        try:
-                            last_import_key = last_import_keys[directory]
-                        except KeyError:
-                            last_import_key = ''
-                            last_import_keys[directory] = last_import_key
-
-                        dir_path = home_path + "/" + directory
-                        ftp.cwd(dir_path)
-                        files = []
-                        for attr in ftp.listdir_attr():
-                            fpath = dir_path + "/" + attr.filename
-                            try:
-                                ftp.cwd(fpath)
-                                continue  # directory
-                            except paramiko.SFTPError:
-                                pass
-
-                            key = str(attr.st_mtime) + '_' + attr.filename
-                            if key > last_import_key:
-                                files.append((key, fpath))
-
-                        if len(files) > 0:
-                            f = sorted(files)[0]
-                            last_import_keys[directory] = f[0]
-                            break
-
-                    if f is None:
-                        self.log("No new files found.")
-                        ftp.close()
-                        self.log("Logged out.")
-                    else:
-                        key, fpath = f
-                        self.log(
-                            "Attempting to download " + fpath + " with key " +
-                            key + ".")
-                        f = tempfile.TemporaryFile()
-                        ftp.getfo(fpath, f)
-                        self.log("File downloaded successfully.")
-                        ftp.close()
-                        self.log("Logged out.")
-
-                        f.seek(0, os.SEEK_END)
-                        fsize = f.tell()
-                        f.seek(0)
-                        self.log("File size is " + str(fsize) + " bytes.")
-                        self.log("Treating files as type " + file_type)
-                        self.importer = HhDataImportProcess(
-                            self.contract_id, 0, TextIOWrapper(f, 'utf8'),
-                            fpath + file_type, fsize)
-
-                        self.importer.run()
-                        messages = self.importer.messages
-                        self.importer = None
-                        for message in messages:
-                            self.log(message)
-
-                        if len(messages) > 0:
-                            raise BadRequest("Problem loading file.")
-
-                        contract = Contract.get_hhdc_by_id(
-                            sess, self.contract_id)
-                        contract.update_state(state)
-                        sess.commit()
-                        self.log("Finished loading '" + fpath)
-                        found_new = True
+                    found_new = self.sftp_handler(sess, properties, contract)
+                elif protocol == 'https':
+                    found_new = self.https_handler(sess, properties, contract)
+                else:
+                    self.log("Protocol '" + protocol + "' not recognized.")
             else:
                 self.log(
                     "Importer is disabled. To enable it, set " +
@@ -353,6 +180,265 @@ class HhImportTask(threading.Thread):
             self.import_now()
             self.going.wait(30 * 60)
             self.going.clear()
+
+    def ftp_handler(self, sess, properties, contract):
+        host_name = properties["hostname"]
+        user_name = properties["username"]
+        password = properties["password"]
+        try:
+            port = properties["port"]
+        except KeyError:
+            port = None
+        file_type = properties["file_type"]
+        directories = properties['directories']
+        state = contract.make_state()
+
+        try:
+            last_import_keys = state['last_import_keys']
+        except KeyError:
+            last_import_keys = {}
+            state['last_import_keys'] = last_import_keys
+
+        sess.rollback()
+        self.log(
+            "Connecting to ftp server at " + host_name + ":" + str(port) + ".")
+        ftp = ftplib.FTP()
+        if port is None:
+            ftp.connect(host=host_name, timeout=120)
+        else:
+            ftp.connect(host=host_name, port=port, timeout=120)
+
+        ftp.login(user_name, password)
+        home_path = ftp.pwd()
+
+        file = None
+
+        for directory in directories:
+            self.log(
+                "Checking the directory '" +
+                directory + "'.")
+            try:
+                last_import_key = last_import_keys[directory]
+            except KeyError:
+                last_import_key = ''
+                last_import_keys[directory] = last_import_key
+
+            dir_path = home_path + "/" + directory
+            ftp.cwd(dir_path)
+            files = []
+            for fname in ftp.nlst():
+                fpath = dir_path + "/" + fname
+                try:
+                    ftp.cwd(fpath)
+                    continue  # directory
+                except ftplib.error_perm:
+                    pass
+
+                key = ftp.sendcmd(
+                    "MDTM " + fpath).split()[1] + '_' + fname
+                if key > last_import_key:
+                    files.append((key, fpath))
+
+            if len(files) > 0:
+                file = sorted(files)[0]
+                last_import_keys[directory] = file[0]
+                break
+
+        if file is None:
+            self.log("No new files found.")
+            ftp.quit()
+            self.log("Logged out.")
+            return False
+        else:
+            key, fpath = file
+            self.log(
+                "Attempting to download " + fpath +
+                " with key " + key + ".")
+            f = tempfile.TemporaryFile()
+            ftp.retrbinary("RETR " + fpath, f.write)
+            self.log("File downloaded successfully.")
+            ftp.quit()
+            self.log("Logged out.")
+
+            f.seek(0, os.SEEK_END)
+            fsize = f.tell()
+            f.seek(0)
+            self.log("File size is " + str(fsize) + " bytes.")
+            self.log(
+                "Treating files as type " + file_type)
+            self.importer = HhDataImportProcess(
+                self.contract_id, 0, TextIOWrapper(f, 'utf8'),
+                fpath + file_type, fsize)
+
+            self.importer.run()
+            for message in self.importer.messages:
+                self.log(message)
+
+            if len(self.importer.messages) > 0:
+                raise BadRequest("Problem loading file.")
+
+            contract = Contract.get_hhdc_by_id(
+                sess, self.contract_id)
+            contract.update_state(state)
+            sess.commit()
+            self.log("Finished loading '" + fpath)
+            return True
+
+    def sftp_handler(self, sess, properties, contract):
+        host_name = properties["hostname"]
+        user_name = properties["username"]
+        password = properties["password"]
+        try:
+            port = properties["port"]
+        except KeyError:
+            port = None
+        file_type = properties["file_type"]
+        directories = properties['directories']
+        state = contract.make_state()
+
+        try:
+            last_import_keys = state['last_import_keys']
+        except KeyError:
+            last_import_keys = {}
+            state['last_import_keys'] = last_import_keys
+
+        sess.rollback()
+        self.log(
+            "Connecting to sftp server at " + host_name + ":" +
+            str(port) + ".")
+        cnopts = pysftp.CnOpts()
+        cnopts.hostkeys = None
+        ftp = pysftp.Connection(
+            host_name, username=user_name, password=password,
+            cnopts=cnopts)
+        ftp.timeout = 120
+        home_path = ftp.pwd
+
+        f = None
+
+        for directory in directories:
+            self.log(
+                "Checking the directory '" +
+                directory + "'.")
+            try:
+                last_import_key = last_import_keys[directory]
+            except KeyError:
+                last_import_key = ''
+                last_import_keys[directory] = last_import_key
+
+            dir_path = home_path + "/" + directory
+            ftp.cwd(dir_path)
+            files = []
+            for attr in ftp.listdir_attr():
+                fpath = dir_path + "/" + attr.filename
+                try:
+                    ftp.cwd(fpath)
+                    continue  # directory
+                except paramiko.SFTPError:
+                    pass
+
+                key = str(attr.st_mtime) + '_' + attr.filename
+                if key > last_import_key:
+                    files.append((key, fpath))
+
+            if len(files) > 0:
+                f = sorted(files)[0]
+                last_import_keys[directory] = f[0]
+                break
+
+        if f is None:
+            self.log("No new files found.")
+            ftp.close()
+            self.log("Logged out.")
+            return False
+        else:
+            key, fpath = f
+            self.log(
+                "Attempting to download " + fpath + " with key " +
+                key + ".")
+            f = tempfile.TemporaryFile()
+            ftp.getfo(fpath, f)
+            self.log("File downloaded successfully.")
+            ftp.close()
+            self.log("Logged out.")
+
+            f.seek(0, os.SEEK_END)
+            fsize = f.tell()
+            f.seek(0)
+            self.log("File size is " + str(fsize) + " bytes.")
+            self.log("Treating files as type " + file_type)
+            self.importer = HhDataImportProcess(
+                self.contract_id, 0, TextIOWrapper(f, 'utf8'),
+                fpath + file_type, fsize)
+
+            self.importer.run()
+            messages = self.importer.messages
+            self.importer = None
+            for message in messages:
+                self.log(message)
+
+            if len(messages) > 0:
+                raise BadRequest("Problem loading file.")
+
+            contract = Contract.get_hhdc_by_id(
+                sess, self.contract_id)
+            contract.update_state(state)
+            sess.commit()
+            self.log("Finished loading '" + fpath)
+            return True
+
+    def https_handler(self, sess, properties, contract):
+        url_template_str = properties['url_template']
+        url_values = properties.get('url_values', {})
+        download_days = properties['download_days']
+        now = utc_datetime_now()
+        window_finish = utc_datetime(now.year, now.month, now.day) - HH
+        window_start = utc_datetime(
+            now.year, now.month, now.day) - Timedelta(days=download_days)
+        self.log("Window start: " + hh_format(window_start))
+        self.log("Window finish: " + hh_format(window_finish))
+        env = Environment(autoescape=True)
+        url_template = env.from_string(url_template_str)
+        for era in sess.query(Era).filter(
+                Era.hhdc_contract == contract,
+                Era.start_date <= window_finish, or_(
+                    Era.finish_date == null(),
+                    Era.finish_date >= window_start)).distinct():
+            chunk_start = hh_max(era.start_date, window_start)
+            chunk_finish = hh_min(era.finish_date, window_finish)
+            if era.imp_mpan_core is None:
+                mpan_core = era.exp_mpan_core
+            else:
+                mpan_core = era.imp_mpan_core
+
+            vals = {
+                'chunk_start': chunk_start,
+                'chunk_finish': chunk_finish}
+            vals.update(url_values.get(mpan_core, {}))
+            try:
+                url = url_template.render(vals)
+            except BaseException:
+                raise BadRequest(
+                    "Problem rendering template: " + traceback.format_exc())
+
+            self.log("Retrieving data for " + mpan_core + " from " + url + ".")
+            res = requests.get(url)
+            res.raise_for_status()
+            result = requests.get(url).json()
+            raw_data = []
+            for jdatum in result['DataPoints']:
+                raw_data.append(
+                    dict(
+                        mpan_core=mpan_core,
+                        start_date=utc_datetime(1, 1, 1) + Timedelta(
+                            seconds=jdatum['Time'] / 10000000),
+                        channel_type='ACTIVE',
+                        value=jdatum['Value'],
+                        status='A'))
+            HhDatum.insert(sess, raw_data, contract)
+            sess.commit()
+        self.log("Finished loading.")
+        return False
 
 
 def get_hh_import_task(contract):

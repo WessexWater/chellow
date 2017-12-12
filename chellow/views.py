@@ -2,7 +2,7 @@ from io import StringIO, DEFAULT_BUFFER_SIZE
 import csv
 from flask import (
     request, Response, g, redirect, render_template, send_file, flash,
-    make_response, Flask)
+    make_response, Flask, jsonify)
 from chellow.models import (
     Session, Contract, Report, User, Party, MarketRole, Participant, UserRole,
     Site, Source, GeneratorType, GspGroup, Era, SiteEra, Pc, Cop, Ssc,
@@ -194,7 +194,7 @@ def check_permissions(*args, **kwargs):
             '/health', '/nationalgrid/sf_bsuos.xls',
             '/elexonportal/file/download/BESTVIEWPRICES_FILE', '/ecoes',
             '/elexonportal/file/download/TLM_FILE', '/ecoes/login.asp',
-            '/ecoes/saveportfolioMpans.asp'):
+            '/ecoes/saveportfolioMpans.asp', '/hh_api'):
         return
 
     if g.user is not None:
@@ -274,6 +274,17 @@ def ecoes_get():
 @app.route('/ecoes/login.asp', methods=['POST'])
 def ecoes_login_post():
     return chellow_redirect('/ecoes/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa')
+
+
+@app.route('/hh_api')
+def hh_api():
+    return jsonify(
+        {
+            'DataPoints': [
+                {
+                    'Flags': 0,
+                    'Time': 636188256000000000,
+                    'Value': 21}]})
 
 
 @app.route('/chellowcss', methods=['GET'])
