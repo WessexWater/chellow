@@ -11,7 +11,7 @@ from chellow.models import (
     GUnits, get_non_core_contract_id)
 from chellow.utils import (
     HH, hh_after, get_file_rates, hh_min, hh_range, to_ct, utc_datetime_now,
-    utc_datetime, RateDict)
+    utc_datetime, PropDict, hh_format)
 import chellow.computer
 from types import MappingProxyType
 from datetime import timedelta
@@ -179,8 +179,9 @@ def g_rates(sess, caches, g_contract_id, date):
                     cstart = max(start_date, month_before)
                     cfinish = month_after
 
-            rates = RateDict(
-                str(g_contract_id), cstart, func(loads(rs.script)), [])
+            rates = PropDict(
+                "local gas rate script in contract " + str(g_contract_id) +
+                " at " + hh_format(cstart), func(loads(rs.script)), [])
 
             for dt in hh_range(caches, cstart, cfinish):
                 cont_cache[dt] = rates

@@ -11,6 +11,7 @@ import xlrd
 from werkzeug.exceptions import BadRequest
 import atexit
 from zish import loads
+from datetime import timedelta as Timedelta
 
 
 ELEXON_PORTAL_SCRIPTING_KEY_KEY = 'elexonportal_scripting_key'
@@ -20,55 +21,28 @@ def key_format(dt):
     return dt.strftime("%d %H:%M")
 
 
-def create_future_func(multiplier, constant):
-    def transform(val):
-        return {
-            'run': val['run'], 'sbp': val['sbp'] * multiplier + constant,
-            'ssp': val['ssp'] * multiplier + constant}
-
-    def future_func(ns):
-        new_ns = {}
-        old_result = ns['gbp_per_nbp_mwh']
-        last_value = old_result[sorted(old_result.keys())[-1]]
-        new_ns['gbp_per_nbp_mwh'] = collections.defaultdict(
-            lambda: transform(last_value), [
-                (k, transform(v)) for k, v in old_result.items()])
-        return new_ns
-    return future_func
-
-
 def hh(data_source):
     ssp_rate_set = data_source.supplier_rate_sets['ssp-rate']
     sbp_rate_set = data_source.supplier_rate_sets['sbp-rate']
 
-    try:
-        system_price_cache = data_source.caches['system_price']
-    except KeyError:
-        data_source.caches['system_price'] = {}
-        system_price_cache = data_source.caches['system_price']
-
-        try:
-            future_funcs = data_source.caches['future_funcs']
-        except KeyError:
-            future_funcs = {}
-            data_source.caches['future_funcs'] = future_funcs
-
-        db_id = get_non_core_contract_id('system_price')
-        try:
-            future_funcs[db_id]
-        except KeyError:
-            future_funcs[db_id] = {
-                'start_date': None, 'func': create_future_func(1, 0)}
-
     for h in data_source.hh_data:
         try:
-            sbp, ssp = system_price_cache[h['start-date']]
+            sbp, ssp = data_source.caches['system_price'][h['start-date']]
         except KeyError:
+            try:
+                system_price_cache = data_source.caches['system_price']
+            except KeyError:
+                system_price_cache = data_source.caches['system_price'] = {}
+
             db_id = get_non_core_contract_id('system_price')
             h_start = h['start-date']
             rates = data_source.hh_rate(db_id, h_start)['gbp_per_nbp_mwh']
+
             try:
-                rdict = rates[key_format(h_start)]
+                try:
+                    rdict = rates[key_format(h_start)]
+                except KeyError:
+                    rdict = rates[key_format(h_start - Timedelta(days=3))]
                 sbp = float(rdict['sbp'] / 1000)
                 ssp = float(rdict['ssp'] / 1000)
                 system_price_cache[h_start] = (sbp, ssp)

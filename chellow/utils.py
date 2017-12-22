@@ -523,40 +523,45 @@ def get_file_scripts(contract_name):
     return tuple(rscripts)
 
 
-class RateDict(Mapping):
-    def __init__(self, contract_name, dt, rate_dict, key_history):
+class PropDict(Mapping):
+    def __init__(self, location, rate_dict, parent_keys=None):
         if not isinstance(rate_dict, Mapping):
             raise Exception(
                 "The rate_dict must be a mapping, but got a " +
                 str(type(rate_dict)) + " with value " + str(rate_dict))
-        self._contract_name = contract_name
-        self._dt = dt
-        for k, v in tuple(rate_dict.items()):
+        self._location = location
+        self._parent_keys = [] if parent_keys is None else parent_keys
+        storage = {}
+        for k, v in rate_dict.items():
             if isinstance(v, Mapping):
-                rate_dict[k] = RateDict(
-                    contract_name, dt, v, key_history + [k])
-        self._storage = rate_dict
-        self._key_history = key_history
+                storage[k] = PropDict(location, v, self._parent_keys + [k])
+            else:
+                storage[k] = v
+                if isinstance(v, list):
+                    for i, val in enumerate(tuple(v)):
+                        if isinstance(val, Mapping):
+                            v[i] = PropDict(
+                                location, val,
+                                parent_keys + ['<list item ' + str(i) + '>'])
+        self._storage = storage
 
     def __getitem__(self, key):
         try:
             return self._storage[key]
         except KeyError:
-            raise KeyError(
-                "For the contract " + self._contract_name +
-                " and the rate script at " + hh_format(self._dt) +
-                " the key " + str(self._key_history + [key]) +
-                " can't be found.")
+            try:
+                return self._storage['*']
+            except KeyError:
+                raise KeyError(
+                    "Can't find the the key " +
+                    str(self._parent_keys + [key]) + " or the wildcard " +
+                    str(self._parent_keys + ['*']) + " in " + self._location)
 
     def __iter__(self):
         return iter(self._storage)
 
     def __len__(self):
         return len(self._storage)
-
-
-def identity_func(x):
-    return x
 
 
 def get_file_rates(cache, contract_name, dt):
@@ -579,79 +584,42 @@ def get_file_rates(cache, contract_name, dt):
             month_after = dt + relativedelta(months=1) + relativedelta(days=1)
             month_before = dt - relativedelta(months=1) - relativedelta(days=1)
 
-            try:
-                future_funcs = cache['future_funcs']
-            except KeyError:
-                future_funcs = {}
-                cache['future_funcs'] = future_funcs
+            rs = get_file_script(contract_name, dt)
 
-            try:
-                future_func = future_funcs[contract_name]
-            except KeyError:
-                future_func = future_funcs[contract_name] = {
-                    'start_date': None, 'func': identity_func}
-
-            start_date = future_func['start_date']
-            ffunc = future_func['func']
-
-            if start_date is None:
-                rs = get_file_script(contract_name, dt)
-
-                if rs is None:
-                    rs_start, rs_finish, script = get_file_script_latest(
-                        contract_name)
-                    func = ffunc
-                    if dt < rs_start:
-                        cstart = month_before
-                        cfinish = min(month_after, rs_start - HH)
-                    else:
-                        cstart = max(rs_finish + HH, month_before)
-                        cfinish = month_after
+            if rs is None:
+                rs_start, rs_finish, script = get_file_script_latest(
+                    contract_name)
+                if dt < rs_start:
+                    cstart = month_before
+                    cfinish = hh_min(month_after, rs_start - HH)
                 else:
-                    rs_start, rs_finish, script = rs
-                    func = identity_func
-                    cstart = max(rs_start, month_before)
-                    if rs_finish is None:
-                        cfinish = month_after
-                    else:
-                        cfinish = min(rs_finish, month_after)
-            else:
-                if dt < start_date:
-                    rs = get_file_script(contract_name, dt)
-
-                    if rs is None:
-                        rs_start, rs_finish, script = get_file_script_latest(
-                            contract_name)
-                    else:
-                        rs_start, rs_finish, script = rs
-
-                    func = identity_func
-                    cstart = max(rs_start, month_before)
-                    cfinish = min(month_after, start_date - HH)
-                else:
-                    rs = get_file_script(contract_name, dt)
-                    if rs is None:
-                        rs_start, rs_finish, script = get_file_script_latest(
-                            contract_name)
-                    else:
-                        rs_start, rs_finish, script = rs
-                    func = ffunc
-                    cstart = max(start_date, month_before)
+                    cstart = hh_max(rs_finish + HH, month_before)
                     cfinish = month_after
+            else:
+                rs_start, rs_finish, script = rs
+                cstart = hh_max(rs_start, month_before)
+                if rs_finish is None:
+                    cfinish = month_after
+                else:
+                    cfinish = hh_min(rs_finish, month_after)
+
             try:
-                rscript = RateDict(
-                    contract_name, dt, func(loads(script)), [])
+                rscript = PropDict(
+                    " in the rate script at " + hh_format(dt) + " of the " +
+                    " contract " + contract_name + ".", loads(script))
             except ZishException as e:
                 raise BadRequest(
                     "Problem parsing rate script for contract " +
-                    contract_name + " starting at " +
-                    hh_format(rs_start) + ": " + str(e))
+                    contract_name + " starting at " + hh_format(rs_start) +
+                    ": " + str(e))
             except BadRequest as e:
                 raise BadRequest(
-                    "Problem with rate script for contract " +
-                    contract_name + " starting at " +
-                    hh_format(start_date) + ": " + e.description)
+                    "Problem with rate script for contract " + contract_name +
+                    " starting at " + hh_format(rs_start) + ": " +
+                    e.description)
 
             for hh_date in hh_range(cache, cstart, cfinish):
-                cont[hh_date] = rscript
+                if hh_date not in cont:
+                    cont[hh_date] = rscript
+
             return cont[dt]

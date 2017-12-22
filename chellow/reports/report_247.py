@@ -1,4 +1,3 @@
-import importlib
 import os
 from datetime import datetime as Datetime
 import traceback
@@ -14,16 +13,17 @@ from chellow.computer import SupplySource, contract_func
 import chellow.computer
 import csv
 import chellow.dloads
-import io
+from io import StringIO
 import threading
 import odio
 import sys
 from werkzeug.exceptions import BadRequest
 from chellow.utils import (
     hh_format, HH, hh_before, req_int, req_bool, make_val, utc_datetime_now,
-    to_utc, utc_datetime)
+    to_utc, utc_datetime, hh_range, PropDict)
 from flask import request, g
 from chellow.views import chellow_redirect
+from collections.abc import Mapping
 
 
 CATEGORY_ORDER = {None: 0, 'unmetered': 1, 'nhh': 2, 'amr': 3, 'hh': 4}
@@ -47,8 +47,21 @@ def content(
         compression):
     now = utc_datetime_now()
     report_context = {}
-    future_funcs = {}
-    report_context['future_funcs'] = future_funcs
+
+    try:
+        comp = report_context['computer']
+    except KeyError:
+        comp = report_context['computer'] = {}
+
+    try:
+        rate_cache = comp['rates']
+    except KeyError:
+        rate_cache = comp['rates'] = {}
+
+    try:
+        ind_cont = report_context['contract_names']
+    except KeyError:
+        ind_cont = report_context['contract_names'] = {}
 
     sess = None
     try:
@@ -58,24 +71,54 @@ def content(
             scenario_props = scenario_contract.make_properties()
             base_name.append(scenario_contract.name)
 
-        for cname, cprops in scenario_props.get('rates', {}).items():
+        for contract_id, rate_script in scenario_props.get(
+                'local_rates', {}).items():
             try:
-                rate_start = cprops['start_date']
+                cont_cache = rate_cache[contract_id]
+            except KeyError:
+                cont_cache = rate_cache[contract_id] = {}
+
+            if not isinstance(rate_script, Mapping):
+                raise BadRequest(
+                    "The values in the local_rates map must be maps.")
+            try:
+                rate_script_start = rate_script['start_date']
             except KeyError:
                 raise BadRequest(
-                    "In " + scenario_contract.name + " for the rate " +
-                    cname + " the start_date is missing.")
+                    "Problem in the scenario properties. Can't find the " +
+                    "'start_date' key of the contract " + str(contract_id) +
+                    " in the 'local_rates' map.")
 
-            if rate_start is not None:
-                rate_start = to_utc(rate_start)
+            try:
+                rate_script_start = rate_script['start_date']
+            except KeyError:
+                raise BadRequest(
+                    "Problem in the scenario properties. Can't find the " +
+                    "'start_date' key of the contract " + str(contract_id) +
+                    " in the 'local_rates' map.")
 
-            lib = importlib.import_module('chellow.' + cname)
+            for dt in hh_range(
+                    report_context, rate_script_start,
+                    rate_script['finish_date']):
+                cont_cache[dt] = PropDict(
+                    'scenario properties', rate_script['script'])
 
-            if hasattr(lib, 'create_future_func'):
-                future_funcs[cname] = {
-                    'start_date': rate_start,
-                    'func': lib.create_future_func(
-                        cprops['multiplier'], cprops['constant'])}
+        for contract_name, rate_script in scenario_props.get(
+                'industry_rates', {}).items():
+            try:
+                cont_cache = ind_cont[contract_name]
+            except KeyError:
+                cont_cache = ind_cont[contract_name] = {}
+
+            rfinish = rate_script['finish_date']
+            if rfinish is None:
+                raise BadRequest(
+                    "For the industry rate " + contract_name + " the "
+                    "finish_date can't be null.")
+            for dt in hh_range(
+                    report_context, rate_script['start_date'], rfinish):
+                cont_cache[dt] = PropDict(
+                    'scenario properties', rate_script['script'])
 
         era_maps = scenario_props.get('era_maps', {})
 
@@ -129,7 +172,7 @@ def content(
         except KeyError:
             kw_changes = ''
 
-        for row in csv.reader(io.StringIO(kw_changes)):
+        for row in csv.reader(StringIO(kw_changes)):
             if len(''.join(row).strip()) == 0:
                 continue
             if len(row) != 4:
@@ -449,8 +492,8 @@ def content(
                             first_hh['msp-kwh'] += left_kwh
                             first_hh['msp-kw'] += left_kwh / 2
 
-                    imp_supplier_contract = era.imp_supplier_contract
-                    if imp_supplier_contract is not None:
+                    if imp_ss is not None:
+                        imp_supplier_contract = imp_ss.supplier_contract
                         kwh = sum(hh['msp-kwh'] for hh in imp_ss.hh_data)
                         import_vb_function = contract_func(
                             report_context, imp_supplier_contract,
@@ -501,8 +544,8 @@ def content(
                         elif source_code == 'gen':
                             month_data['import-gen-kwh'] += kwh
 
-                    exp_supplier_contract = era.exp_supplier_contract
-                    if exp_supplier_contract is not None:
+                    if exp_ss is not None:
+                        exp_supplier_contract = exp_ss.supplier_contract
                         kwh = sum(hh['msp-kwh'] for hh in exp_ss.hh_data)
                         export_vb_function = contract_func(
                             report_context, exp_supplier_contract,
@@ -545,14 +588,12 @@ def content(
                             month_data['export-gen-kwh'] += kwh
 
                     sss = exp_ss if imp_ss is None else imp_ss
-                    dc_contract = era.hhdc_contract
-                    sss.contract_func(dc_contract, 'virtual_bill')(sss)
+                    sss.contract_func(sss.hhdc_contract, 'virtual_bill')(sss)
                     dc_bill = sss.dc_bill
                     gbp = dc_bill['net-gbp']
 
-                    mop_contract = era.mop_contract
                     mop_bill_function = sss.contract_func(
-                        mop_contract, 'virtual_bill')
+                        sss.mop_contract, 'virtual_bill')
                     mop_bill_function(sss)
                     mop_bill = sss.mop_bill
                     gbp += mop_bill['net-gbp']
@@ -599,24 +640,23 @@ def content(
 
                     out = [
                         now, era.imp_mpan_core, (
-                            None if imp_supplier_contract is None else
-                            imp_supplier_contract.name),
-                        era.exp_mpan_core, (
-                            None if exp_supplier_contract is None else
-                            exp_supplier_contract.name),
-                        era_category, source_code, generator_type, supply.name,
+                            None if imp_ss is None else
+                            imp_supplier_contract.name), era.exp_mpan_core, (
+                            None if exp_ss is None else
+                            exp_supplier_contract.name), era_category,
+                        source_code, generator_type, supply.name,
                         era.msn, era.pc.code, site.code, site.name,
                         ','.join(sorted(list(era_associates))),
                         month_finish] + [
                         month_data[t] for t in summary_titles] + [None] + \
                         make_bill_row(title_dict['mop'], mop_bill) + [None] + \
                         make_bill_row(title_dict['dc'], dc_bill)
-                    if imp_supplier_contract is None:
+                    if imp_ss is None:
                         out += [None] * (len(title_dict['imp-supplier']) + 1)
                     else:
                         out += [None] + make_bill_row(
                             title_dict['imp-supplier'], imp_supplier_bill)
-                    if exp_supplier_contract is not None:
+                    if exp_ss is not None:
                         out += [None] + make_bill_row(
                             title_dict['exp-supplier'], exp_supplier_bill)
 

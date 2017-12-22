@@ -13,7 +13,7 @@ from chellow.models import (
     ClockInterval, Mtc)
 from chellow.utils import (
     HH, hh_format, hh_max, hh_range, hh_min, utc_datetime, utc_datetime_now,
-    to_tz, to_ct, loads, RateDict)
+    to_tz, to_ct, loads, PropDict)
 import chellow.bank_holidays
 from itertools import combinations
 from types import MappingProxyType
@@ -46,22 +46,19 @@ def get_times(start_date, finish_date, forecast_date):
             'years-back': years_back})
 
 
-def get_computer_cache(caches, name):
-    try:
-        return caches['computer'][name]
-    except KeyError:
-        caches['computer'] = defaultdict(dict)
-        return caches['computer'][name]
-
-
 def contract_func(caches, contract, func_name):
     try:
         ns = caches['computer']['funcs'][contract.id]
     except KeyError:
         try:
-            contr_func_cache = caches['computer']['funcs']
+            ccache = caches['computer']
         except KeyError:
-            contr_func_cache = get_computer_cache(caches, 'funcs')
+            ccache = caches['computer'] = {}
+
+        try:
+            contr_func_cache = ccache['funcs']
+        except KeyError:
+            contr_func_cache = ccache['funcs'] = {}
 
         try:
             ns = contr_func_cache[contract.id]
@@ -74,23 +71,24 @@ def contract_func(caches, contract, func_name):
     return ns.get(func_name, None)
 
 
-def identity_func(x):
-    return x
-
-
 def hh_rate(sess, caches, contract_id, date):
     try:
         return caches['computer']['rates'][contract_id][date]
     except KeyError:
         try:
-            rss_cache = caches['computer']['rates']
+            ccache = caches['computer']
         except KeyError:
-            rss_cache = get_computer_cache(caches, 'rates')
+            ccache = caches['computer'] = {}
+
+        try:
+            rss_cache = ccache['rates']
+        except KeyError:
+            rss_cache = ccache['rates'] = {}
 
         try:
             cont_cache = rss_cache[contract_id]
         except KeyError:
-            cont_cache = rss_cache[contract_id] = cont_cache = {}
+            cont_cache = rss_cache[contract_id] = {}
 
         try:
             return cont_cache[date]
@@ -100,82 +98,35 @@ def hh_rate(sess, caches, contract_id, date):
             month_before = date - relativedelta(months=1) - relativedelta(
                 days=1)
 
-            try:
-                future_funcs = caches['future_funcs']
-            except KeyError:
-                future_funcs = {}
-                caches['future_funcs'] = future_funcs
+            rs = sess.query(RateScript).filter(
+                RateScript.contract_id == contract_id,
+                RateScript.start_date <= date, or_(
+                    RateScript.finish_date == null(),
+                    RateScript.finish_date >= date)).first()
 
-            try:
-                future_func = future_funcs[contract_id]
-            except KeyError:
-                future_func = {'start_date': None, 'func': identity_func}
-                future_funcs[contract_id] = future_func
-
-            start_date = future_func['start_date']
-            ffunc = future_func['func']
-
-            if start_date is None:
+            if rs is None:
                 rs = sess.query(RateScript).filter(
-                    RateScript.contract_id == contract_id,
-                    RateScript.start_date <= date,
-                    or_(
-                        RateScript.finish_date == null(),
-                        RateScript.finish_date >= date)).first()
-
-                if rs is None:
-                    rs = sess.query(RateScript).filter(
-                        RateScript.contract_id == contract_id). \
-                        order_by(RateScript.start_date.desc()).first()
-                    func = ffunc
-                    if date < rs.start_date:
-                        cstart = month_before
-                        cfinish = min(month_after, rs.start_date - HH)
-                    else:
-                        cstart = max(rs.finish_date + HH, month_before)
-                        cfinish = month_after
+                    RateScript.contract_id == contract_id).order_by(
+                    RateScript.start_date.desc()).first()
+                if date < rs.start_date:
+                    cstart = month_before
+                    cfinish = min(month_after, rs.start_date - HH)
                 else:
-                    func = identity_func
-                    cstart = max(rs.start_date, month_before)
-                    if rs.finish_date is None:
-                        cfinish = month_after
-                    else:
-                        cfinish = min(rs.finish_date, month_after)
-            else:
-                if date < start_date:
-                    rs = sess.query(RateScript).filter(
-                        RateScript.contract_id == contract_id,
-                        RateScript.start_date <= date,
-                        or_(
-                            RateScript.finish_date == null(),
-                            RateScript.finish_date >= date)).first()
-
-                    if rs is None:
-                        rs = sess.query(RateScript).filter(
-                            RateScript.contract_id == contract_id).order_by(
-                            RateScript.start_date.desc()).first()
-                    func = identity_func
-                    cstart = max(rs.start_date, month_before)
-                    cfinish = min(month_after, start_date - HH)
-                else:
-                    rs = sess.query(RateScript).filter(
-                        RateScript.contract_id == contract_id,
-                        RateScript.start_date <= start_date,
-                        or_(
-                            RateScript.finish_date == null(),
-                            RateScript.finish_date >= start_date)).first()
-                    if rs is None:
-                        rs = sess.query(RateScript).filter(
-                            RateScript.contract_id == contract_id).order_by(
-                            RateScript.start_date.desc()).first()
-                    func = ffunc
-                    cstart = max(start_date, month_before)
+                    cstart = max(rs.finish_date + HH, month_before)
                     cfinish = month_after
+            else:
+                cstart = max(rs.start_date, month_before)
+                if rs.finish_date is None:
+                    cfinish = month_after
+                else:
+                    cfinish = min(rs.finish_date, month_after)
 
-            vals = RateDict(
-                str(contract_id), cstart, func(loads(rs.script)), [])
+            vals = PropDict(
+                "the local rate script for contract " + str(contract_id) +
+                " at " + hh_format(cstart) + ".", loads(rs.script), [])
             for dt in hh_range(caches, cstart, cfinish):
-                cont_cache[dt] = vals
+                if dt not in cont_cache:
+                    cont_cache[dt] = vals
 
             return vals
 
@@ -286,7 +237,15 @@ def _tpr_dict(sess, caches, tpr_code):
     try:
         return caches['computer']['tprs'][tpr_code]
     except KeyError:
-        tpr_cache = get_computer_cache(caches, 'tprs')
+        try:
+            ccache = caches['computer']
+        except KeyError:
+            ccache = caches['computer'] = {}
+
+        try:
+            tpr_cache = ccache['tprs']
+        except KeyError:
+            tpr_cache = ccache['tprs'] = {}
 
         tpr = Tpr.get_by_code(sess, tpr_code)
         days_of_week = dict([i, []] for i in range(7))
@@ -470,7 +429,13 @@ class DataSource():
             if em_start <= start_date:
                 era_map = em
                 break
+        era_map = PropDict("scenario properties", era_map)
         self.era_map_llfcs = era_map.get('llfcs', {})
+        self.era_map_pcs = era_map.get('pcs', {})
+        self.era_map_supplier_contracts = era_map.get('supplier_contracts', {})
+        self.era_map_hhdc_contracts = era_map.get('hhdc_contracts', {})
+        self.era_map_mop_contracts = era_map.get('mop_contracts', {})
+        self.era_map_cops = era_map.get('cops', {})
 
     def contract_func(self, contract, func_name):
         return contract_func(self.caches, contract, func_name)
@@ -518,13 +483,41 @@ class SiteSource(DataSource):
                 self.llfc = era.imp_llfc
                 self.llfc_code = self.llfc.code
 
+            if era.pc.code in self.era_map_pcs:
+                self.pc_code = self.era_map_pcs[era.pc.code]
+            else:
+                self.pc_code = era.pc.code
+
+            if era.cop.code in self.era_map_cops:
+                self.cop_code = self.era_map_cops[era.cop.code]
+            else:
+                self.cop_code = era.cop.code
+
+            if era.imp_supplier_contract.id in self.era_map_supplier_contracts:
+                self.supplier_contract = Contract.get_supplier_by_id(
+                    sess,
+                    self.era_map_supplier_contracts[
+                        era.imp_supplier_contract.id])
+            else:
+                self.supplier_contract = era.imp_supplier_contract
+
+            if era.hhdc_contract.id in self.era_map_hhdc_contracts:
+                self.hhdc_contract = Contract.get_hhdc_by_id(
+                    sess, self.era_map_hhdc_contracts[era.hhdc_contract.id])
+            else:
+                self.hhdc_contract = era.hhdc_contract
+
+            if era.mop_contract.id in self.era_map_mop_contracts:
+                self.mop_contract = Contract.get_mop_by_id(
+                    sess, self.era_map_mop_contracts[era.mop_contract.id])
+            else:
+                self.mop_contract = era.mop_contract
+
             self.is_import = True
             self.voltage_level_code = self.llfc.voltage_level.code
             self.is_substation = self.llfc.is_substation
             self.sc = era.imp_sc
-            self.pc_code = era.pc.code
             self.gsp_group_code = self.supply.gsp_group.code
-            self.supplier_contract = era.imp_supplier_contract
 
         supply_ids = set(
             s.id for s in sess.query(Supply).join(Era).join(SiteEra).
@@ -680,8 +673,14 @@ class SupplySource(DataSource):
 
             self.sc = era.imp_sc
             self.supplier_account = era.imp_supplier_account
-            self.supplier_contract = era.imp_supplier_contract
 
+            if era.imp_supplier_contract.id in self.era_map_supplier_contracts:
+                self.supplier_contract = Contract.get_supplier_by_id(
+                    sess,
+                    self.era_map_supplier_contracts[
+                        era.imp_supplier_contract.id])
+            else:
+                self.supplier_contract = era.imp_supplier_contract
         else:
             self.mpan_core = era.exp_mpan_core
 
@@ -694,7 +693,31 @@ class SupplySource(DataSource):
 
             self.sc = era.exp_sc
             self.supplier_account = era.exp_supplier_account
-            self.supplier_contract = era.exp_supplier_contract
+
+            if era.exp_supplier_contract.id in self.era_map_supplier_contracts:
+                self.supplier_contract = Contract.get_supplier_by_id(
+                    sess,
+                    self.era_map_supplier_contracts[
+                        era.exp_supplier_contract.id])
+            else:
+                self.supplier_contract = era.exp_supplier_contract
+
+        if era.hhdc_contract.id in self.era_map_hhdc_contracts:
+            self.hhdc_contract = Contract.get_hhdc_by_id(
+                sess, self.era_map_hhdc_contracts[era.hhdc_contract.id])
+        else:
+            self.hhdc_contract = era.hhdc_contract
+
+        if era.mop_contract.id in self.era_map_mop_contracts:
+            self.mop_contract = Contract.get_mop_by_id(
+                sess, self.era_map_mop_contracts[era.mop_contract.id])
+        else:
+            self.mop_contract = era.mop_contract
+
+        if era.cop.code in self.era_map_cops:
+            self.cop_code = self.era_map_cops[era.cop.code]
+        else:
+            self.cop_code = era.cop.code
 
         self.id = self.mpan_core
         self.llfc_code = self.llfc.code
@@ -706,11 +729,14 @@ class SupplySource(DataSource):
         self.meter_type = self.mtc.meter_type
         self.meter_type_code = self.meter_type.code
         self.ssc = self.era.ssc
-        self.cop_code = self.era.cop.code
 
         self.ssc_code = None if self.ssc is None else self.ssc.code
 
-        self.pc_code = self.era.pc.code
+        if era.pc.code in self.era_map_pcs:
+            self.pc_code = self.era_map_pcs[era.pc.code]
+        else:
+            self.pc_code = era.pc.code
+
         self.gsp_group_code = self.supply.gsp_group.code
 
         self.measurement_type = era.make_meter_category()

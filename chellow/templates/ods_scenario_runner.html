@@ -97,68 +97,79 @@
 				</table>
 			</div>
 			<div class="section-data">
-					<p>
-							Consider a half-hour H, and a contract with rate scripts. The rate at H
-						 is determined by:
-						</p>
-						<dl>
-							<dt>start_date</dt>
-							<dd>A date</dd>
-							<dt>multiplier</dt>
-							<dd>A number</dd>
-							<dt>constant</dt>
-							<dd>A number</dd>
-						</dl>
+				<h3>Template Scenario Properties</h3>
 
-						<p>
-							If H &lt;= start_date, then the rate script at H is used without any
-							change. If H &gt; start_date, then the rate script at start_date is used
-							to obtain the value of the rate at H by doing (rate_at_start_date *
-							multiplier + constant).
-						</p>
-			</div>
-			<div class="section-data">
-					<legend>Template Scenario Properties</legend>
+				<pre>
+{
+  "scenario_start": 2011-01-01T00:00:00Z,  /* Date or null for this month */
+  "scenario_duration": 1,  /* Number of months */
 
-		<pre>
-	{
-		"rates":
-			"bsuos" : {
-				"start_date": 2011-01-01T00:00:00Z,
-				"multiplier": 1,
-				"constant": 0},
 
-			"ccl": {
-				"start_date": 2014-10-01T00:00:00Z,
-				"multiplier": 1,
-				"constant": 0},
+  // Industry rates - those you can't edit in Chellow
 
-			"aahedc": {
-				"start_date": 2012-04-01T00:00:00Z,
-				"multiplier": 0,
-				"constant": 0.00091361}},
+  "industry_rates": {
+    "ccl" : {
+      "start_date": 2014-10-01T00:00:00Z,
+      "finish_date": 2015-05-01T00:00:00Z,
+      "script": {
+        "ccl_gbp_per_msp_kwh": 0.00568}},
 
-		"era_maps": {
-			2012-09-01T00:00:00Z: {
-				"llfcs": {
-					"20": {
-						"409": "607",
-						"090": "502"}
-					"22": {
-						"711": "003"}}}}
-				
+    "aahedc": {
+      "start_date": 2015-01-01T00:00:00Z,
+      "finish_date": 2016-09-04T00:00:00Z,
+      "script": {
+        "aahedc_gbp_per_gsp_kwh": 0.00023116}}},
 
-		"scenario_start": 2011-01-01T00:00:00Z,  // Date or null for this month
-		"scenario_duration": 1,  // Number of months
-		"resolution": "hh",  // "hh" or "month"
-																	
-		"kw_changes":
-		// CSV format with the following columns
-		// Site Code, Type ("used" or "generated") , Date (yyyy-mm-dd), Multiplier
-		"
-		CI005, used, 2011-01-01, 0.5
-		CI005, generated, 2011-01-01, 2
-		"}</pre>
+
+  // Local rates - those that you can edit in Chellow
+
+  "local_rates": {
+    46: {
+      "start_date": 2014-10-01T00:00:00Z,
+      "finish_date": 2015-05-01T00:00:00Z,
+      "script": {
+        "gbp_per_msp_kwh": 0.667}},
+
+    3: {
+      "start_date": 2015-01-01T00:00:00Z,
+      "finish_date": 2015-03-01T00:00:00Z,
+      "script": {
+        "gbp_per_gsp_kwh": 5.77}}},
+
+
+  "era_maps": {
+    2012-09-01T00:00:00Z: {
+      "llfcs": {
+        "20": {
+          "409": "607",
+          "090": "502"},
+        "22": {
+          "711": "003"}},
+      "pcs": {
+        "03": "00",
+        "04": "00"},
+			"cops": {
+        "6c": "5"},
+      "supplier_contracts": {
+        74: 3,
+        9: 51}}},
+
+
+  "kw_changes":
+
+  /*
+       CSV format with the following columns
+
+       Site Code,
+       Type ("used" or "generated") ,
+       Date (yyyy-mm-dd),
+       Multiplier
+    */
+
+    "
+    CI005, used, 2011-01-01, 0.5
+    CI005, generated, 2011-01-01, 2
+    "}</pre>
 			</div>
 		</div>
 		<!-- End Section Content -->

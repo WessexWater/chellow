@@ -7396,8 +7396,7 @@ def virtual_bill(supply_source):
             r'duos-fixed-gbp,0.0905,duos-fixed-rate,0.0905,'
             r'duos-green-gbp,0.0,duos-green-kwh,0,duos-green-rate,'
             r'0.00161,duos-reactive-kvarh,0.0,duos-red-gbp,0.0,'
-            r'duos-red-kwh,0,duos-red-rate,0.2441,sbp-rate,'
-            r'0.02436,ssp-rate,0.01844324\s*\Z']},
+            r'duos-red-kwh,0,duos-red-rate,0.2441,sbp-rate,,ssp-rate,\s*\Z']},
 
     {
         'name': "Test register read page.",
@@ -8680,9 +8679,21 @@ def virtual_bill(supply_source):
             r'0,277.0,365.0,Actual,0,0,2164.9638989169675,0,'
             r'0,0,2164.9638989169675']},
 
-    # Add a scenario
     {
-        'name': "Run a BAU scenario",
+        'name': "BAU scenario. Remove contents of rate script.",
+        'path': '/supplier_rate_scripts/20/edit',
+        'method': 'post',
+        'data': {
+            'start_year': '2000',
+            'start_month': '01',
+            'start_day': '03',
+            'start_hour': '00',
+            'start_minute': '00',
+            'script': '{}'},
+        'status_code': 303},
+
+    {
+        'name': "Run a BAU scenario. Add scenario",
         'path': '/supplier_contracts/add',
         'method': 'post',
         'data': {
@@ -8696,25 +8707,23 @@ def virtual_bill(supply_source):
             'charge_script': "",
             'properties': """
 {
-    "bsuos" : {
-        "start_date": null,
-        "multiplier": 1.5,
-        "constant": 0},
+  "local_rates": {
+    10: {
+      "start_date": 2015-06-01T00:00:00Z,
+      "finish_date": 2015-06-30T23:30:00Z,
+      "script": {
+        "*": {
+          "night": 0.0062656,
+          "other": 0.0062656,
+          "summer-pk": 0.0062656,
+          "winter-low-pk": 0.0501474,
+          "winter-off-pk": 0.0062656,
+          "winter-pk": 0.0193918}}}},
 
-    "ccl": {
-        "start_date": 2014-10-01T00:00:00Z,
-        "multiplier": 1,
-        "constant": 0},
+  "scenario_start": 2015-06-01T00:00:00Z,
+  "scenario_duration": 1,
 
-    "aahedc": {
-        "start_date": null,
-        "multiplier": 0,
-        "constant": 0.00091361},
-
-    "scenario_start": 2015-06-01T00:00:00Z,
-    "scenario_duration": 1,
-
-    "kw_changes": ""}
+  "kw_changes": ""}
 """, },
         'regexes': [
             r"/supplier_contracts/17"],
@@ -8750,6 +8759,26 @@ def virtual_bill(supply_source):
             r'<table:table-cell office:string-value="exp-supplier-problem" '
             r'office:value-type="string"/>\s*'
             r'</table:table-row>']},
+
+    {
+        'name': "BAU scenario. Reinstate contents of rate script.",
+        'path': '/supplier_rate_scripts/20/edit',
+        'method': 'post',
+        'data': {
+            'start_year': '2000',
+            'start_month': '01',
+            'start_day': '03',
+            'start_hour': '00',
+            'start_minute': '00',
+            'script': """{
+                "gsp_gbp_per_kwh": {
+                  "night": 0.0062656,
+                  "other": 0.0062656,
+                  "summer-pk": 0.0062656,
+                  "winter-low-pk": 0.0501474,
+                  "winter-off-pk": 0.0062656,
+                  "winter-pk": 0.0193918}}"""},
+        'status_code': 303},
 
     {
         'name': "Run scenario for a site where there are site groups",
@@ -8805,25 +8834,28 @@ def virtual_bill(supply_source):
             'charge_script': "",
             'properties': """
 {
-  "rates": {
-    "bsuos" : {
-      "start_date": 2011-01-01T00:00:00Z,
-      "multiplier": 1,
-      "constant": 0.1},
-
-    "ccl": {
-      "start_date": 2014-10-01T00:00:00Z,
-      "multiplier": 1,
-      "constant": 0},
-
-    "aahedc": {
-      "start_date": 2011-01-01T00:00:00Z,
-      "multiplier": 1,
-      "constant": 0.1}},
-
   "scenario_start": 2011-01-01T00:00:00Z,
   "scenario_duration": 1,
-  "resolution": "hh",
+
+  "local_rates": {
+    20: {
+      "start_date": 2015-06-01T00:00:00Z,
+      "finish_date": 2015-06-30T23:30:00Z,
+      "script": {
+        "gsp_gbp_per_kwh": {
+          "night": 0.0062656,
+        "other": 0.0062656,
+        "summer-pk": 0.0062656,
+        "winter-low-pk": 0.0501474,
+        "winter-off-pk": 0.0062656,
+        "winter-pk": 0.0193918}}}},
+
+  "industry_rates": {
+    "aahedc": {
+      "start_date": 2011-01-01T00:00:00Z,
+      "finish_date": 2011-01-31T23:30:00Z,
+      "script": {
+          "aahedc_gbp_per_gsp_kwh": 0.10016297}}},
 
   "kw_changes": ""}
 """},
@@ -8907,7 +8939,31 @@ def virtual_bill(supply_source):
             r'<table:table-cell table:number-columns-repeated="2"/>\s*'
             r'<table:table-cell office:value="0.0047" '
             r'office:value-type="float"/>\s*'
-            r'<table:table-cell/>\s*'
+            r'<table:table-cell/>\s*',
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
             r'<table:table-cell office:value="5.89" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="130" '
@@ -9004,7 +9060,24 @@ def virtual_bill(supply_source):
             r'<table:table-cell office:value="31" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="0.6338" '
-            r'office:value-type="float"/>\s*'
+            r'office:value-type="float"/>\s*',
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
             r'<table:table-cell office:value="19.6478\d*" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="0.0" '
@@ -9026,7 +9099,23 @@ def virtual_bill(supply_source):
             r'<table:table-cell office:value="5.89" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="20" '
-            r'office:value-type="float"/>\s*'
+            r'office:value-type="float"/>\s*',
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
             r'<table:table-cell office:value="31" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="0.0163" '
@@ -9052,7 +9141,20 @@ def virtual_bill(supply_source):
             r'<table:table-cell office:value="0" '
             r'office:value-type="float" table:number-columns-repeated="2"/>\s*'
             r'<table:table-cell office:value="0.0" '
-            r'office:value-type="float"/>\s*'
+            r'office:value-type="float"/>\s*',
+
+
+
+
+
+
+
+
+
+
+
+
+
             r'<table:table-cell office:value="0" '
             r'office:value-type="float" table:number-columns-repeated="2"/>\s*'
             r'<table:table-cell office:value="0.0" '

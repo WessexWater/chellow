@@ -25,6 +25,7 @@ from hashlib import pbkdf2_hmac
 from binascii import hexlify, unhexlify
 from decimal import Decimal
 from zish import dumps, loads, ZishException
+from collections.abc import Mapping
 
 
 config = {
@@ -498,7 +499,7 @@ class Bill(Base, PersistentClass):
             raise Exception("Type can't be null.")
 
         self.bill_type = bill_type
-        if isinstance(breakdown, dict):
+        if isinstance(breakdown, Mapping):
             self.breakdown = dumps(breakdown)
         else:
             raise BadRequest(
@@ -873,8 +874,8 @@ class Contract(Base, PersistentClass):
         if hh_after(start_date, finish_date):
             raise BadRequest("The start date can't be after the finish date.")
 
-        if not isinstance(script, dict):
-            raise Exception("The script must be be a dict.")
+        if not isinstance(script, Mapping):
+            raise Exception("The script must be a Mapping type.")
         rscript.script = dumps(script)
 
         prev_rscript = self.find_rate_script_at(sess, rscript.start_date - HH)
@@ -1555,9 +1556,8 @@ class RateScript(Base, PersistentClass):
         self.contract = contract
         self.start_date = start_date
         self.finish_date = finish_date
-        if not isinstance(script, dict):
-            print(script)
-            raise BadRequest("A script must be a dictionary.")
+        if not isinstance(script, Mapping):
+            raise BadRequest("A script must be a Mapping type.")
         self.script = dumps(script)
 
 
@@ -3911,8 +3911,9 @@ def db_init(sess, root_path):
     conf = sess.query(Contract).join(MarketRole).filter(
         Contract.name == 'configuration', MarketRole.code == 'Z').one()
     state = conf.make_state()
-    state['db_version'] = len(upgrade_funcs)
-    conf.update_state(state)
+    new_state = dict(state)
+    new_state['db_version'] = len(upgrade_funcs)
+    conf.update_state(new_state)
     sess.commit()
 
 
