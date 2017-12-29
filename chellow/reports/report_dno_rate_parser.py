@@ -13,6 +13,7 @@ from collections import OrderedDict
 from chellow.models import Session, GspGroup
 from zish import dumps
 from io import BytesIO
+import re
 
 
 def get_value(row, idx):
@@ -115,6 +116,17 @@ def str_to_hr(hr_str):
     return hours + minutes / Decimal(60)
 
 
+def col_match(row, pattern):
+    for i, cell in enumerate(row):
+        txt = cell.value
+        if txt is not None and re.search(pattern, txt.lower()) is not None:
+            return i
+
+    raise BadRequest(
+        "Pattern '" + pattern + "' not found in row " +
+        ', '.join(str(cell.value) for cell in row))
+
+
 def content(user, file_name, file_like, gsp_group_id, llfc_tab, laf_tab):
     f = sess = None
     try:
@@ -130,6 +142,7 @@ def content(user, file_name, file_like, gsp_group_id, llfc_tab, laf_tab):
                 file_like, data_only=True, read_only=True)
             llfc_sheet = book.worksheets[llfc_tab]
             in_tariffs = False
+            title_row = None
             for row in llfc_sheet.iter_rows():
                 val = get_value(row, 0)
                 val_0 = None if val is None else ' '.join(val.split())
@@ -142,18 +155,38 @@ def content(user, file_name, file_like, gsp_group_id, llfc_tab, laf_tab):
                     tariffs[llfcs_str] = OrderedDict(
                         (
                             ('description', val_0),
-                            ('gbp-per-mpan-per-day', get_zero_rate(row, 6)),
-                            ('gbp-per-kva-per-day', get_zero_rate(row, 7)),
+                            (
+                                'gbp-per-mpan-per-day',
+                                get_zero_rate(
+                                    row, col_match(title_row, 'fixed'))),
+                            (
+                                'gbp-per-kva-per-day',
+                                get_zero_rate(
+                                    row, col_match(title_row, '^capacity'))),
                             (
                                 'excess-gbp-per-kva-per-day',
-                                get_zero_rate(row, 9)),
-                            ('red-gbp-per-kwh', get_rag_rate(row, 3)),
-                            ('amber-gbp-per-kwh', get_rag_rate(row, 4)),
-                            ('green-gbp-per-kwh', get_rag_rate(row, 5)),
-                            ('gbp-per-kvarh', get_zero_rate(row, 8))))
+                                get_zero_rate(
+                                    row, col_match(title_row, 'exce'))),
+                            (
+                                'red-gbp-per-kwh',
+                                get_rag_rate(
+                                    row, col_match(title_row, 'red'))),
+                            (
+                                'amber-gbp-per-kwh',
+                                get_rag_rate(
+                                    row, col_match(title_row, 'amber'))),
+                            (
+                                'green-gbp-per-kwh',
+                                get_rag_rate(
+                                    row, col_match(title_row, 'green'))),
+                            (
+                                'gbp-per-kvarh',
+                                get_zero_rate(
+                                    row, col_match(title_row, 'reactive')))))
                 elif val_0 == 'Tariff name' or \
                         get_value(row, 1) == "Open LLFCs":
                     in_tariffs = True
+                    title_row = row
 
                 if val_0 in BAND_WEEKEND:
                     for i, band_name in enumerate(('red', 'amber')):
