@@ -19,7 +19,8 @@ def triad_calc(
         gsp_kw += triad_hh['gsp-kw']
 
     hh[prefix + '-gsp-kw'] = gsp_kw / 3
-
+    polarity = 'import' if data_source.llfc.is_import else 'export'
+    gsp_group_code = data_source.gsp_group_code
     if prefix == 'triad-actual':
         tot_rate = 0
         for start_date, finish_date, script in get_file_scripts('triad_rates'):
@@ -40,7 +41,7 @@ def triad_calc(
                 rt = get_file_rates(
                     data_source.caches, 'triad_rates',
                     start_date
-                    )['triad_gbp_per_gsp_kw'][data_source.gsp_group_code]
+                    )['triad_gbp_per_gsp_kw'][polarity][gsp_group_code]
                 tot_rate += (finish_month - start_month + 1) * float(rt)
 
         rate = tot_rate / 12
@@ -48,8 +49,7 @@ def triad_calc(
         rate = float(
             get_file_rates(
                 data_source.caches, 'triad_rates',
-                month_begin
-                )['triad_gbp_per_gsp_kw'][data_source.gsp_group_code])
+                month_begin)['triad_gbp_per_gsp_kw'][polarity][gsp_group_code])
 
     hh[prefix + '-rate'] = rate
 
