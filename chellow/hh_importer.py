@@ -15,7 +15,7 @@ from chellow.utils import (
     utc_datetime_now, utc_datetime, HH, hh_format, hh_min, hh_max)
 from datetime import timedelta as Timedelta
 from sqlalchemy import or_, null
-from jinja2 import Environment
+import jinja2
 import requests
 
 
@@ -397,7 +397,8 @@ class HhImportTask(threading.Thread):
             now.year, now.month, now.day) - Timedelta(days=download_days)
         self.log("Window start: " + hh_format(window_start))
         self.log("Window finish: " + hh_format(window_finish))
-        env = Environment(autoescape=True)
+        env = jinja2.Environment(
+            autoescape=True, undefined=jinja2.StrictUndefined)
         url_template = env.from_string(url_template_str)
         for era in sess.query(Era).filter(
                 Era.hhdc_contract == contract,
