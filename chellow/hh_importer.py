@@ -418,9 +418,10 @@ class HhImportTask(threading.Thread):
             vals.update(url_values.get(mpan_core, {}))
             try:
                 url = url_template.render(vals)
-            except BaseException:
+            except jinja2.exceptions.UndefinedError as e:
                 raise BadRequest(
-                    "Problem rendering template: " + traceback.format_exc())
+                    "Problem rendering the URL template: " + url_template_str +
+                    ". The problem is: " + str(e) + ".")
 
             self.log("Retrieving data for " + mpan_core + " from " + url + ".")
             res = requests.get(url)
