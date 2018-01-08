@@ -421,7 +421,8 @@ class HhImportTask(threading.Thread):
             except jinja2.exceptions.UndefinedError as e:
                 raise BadRequest(
                     "Problem rendering the URL template: " + url_template_str +
-                    ". The problem is: " + str(e) + ".")
+                    ". The problem is: " + str(e) + ". This can be fixed by " +
+                    "editing the properties of this contract.")
 
             self.log("Retrieving data for " + mpan_core + " from " + url + ".")
             res = requests.get(url)
