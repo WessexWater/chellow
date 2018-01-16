@@ -2215,6 +2215,15 @@ def site_snags_get():
         'site_snags.html', snags=snags, site_count=site_count)
 
 
+@app.route('/sites/<int:site_id>/site_snags')
+def site_site_snags_get(site_id):
+    site = Site.get_by_id(g.sess, site_id)
+    snags = g.sess.query(Snag).filter(
+        Snag.is_ignored == false(), Snag.site == site).order_by(
+        Snag.start_date.desc(), Snag.id)
+    return render_template('site_site_snags.html', site=site, snags=snags)
+
+
 @app.route('/site_snags/edit')
 def site_snags_edit_get():
     return render_template('site_snags_edit.html')

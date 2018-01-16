@@ -1227,99 +1227,7 @@ class Site(Base, PersistentClass):
 
     def hh_check(self, sess, start, finish):
         for group in self.groups(sess, start, finish, False):
-            if len(group.supplies) == 1:
-                continue
-
-            hh_data = group.hh_data(sess)
-
-            resolve_1_start = None
-            resolve_1_finish = None
-            snag_1_start = None
-            snag_1_finish = None
-            resolve_2_start = None
-            resolve_2_finish = None
-            snag_2_start = None
-            snag_2_finish = None
-            prev_start_date = None
-            hh_start_date = group.start_date
-            for hh in hh_data:
-                if hh['exp_net'] > hh['imp_gen']:
-                    if snag_1_start is None:
-                        snag_1_start = hh_start_date
-
-                    snag_1_finish = hh_start_date
-                else:
-                    if resolve_1_start is None:
-                        resolve_1_start = hh_start_date
-
-                    resolve_1_finish = hh_start_date
-
-                    if snag_1_finish is not None and \
-                            snag_1_finish == prev_start_date:
-                        group.add_snag(
-                            sess, SiteGroup.EXPORT_NET_GT_IMPORT_GEN,
-                            snag_1_start, snag_1_finish)
-                        snag_1_start = None
-                        snag_1_finish = None
-
-                    if resolve_1_finish is not None and \
-                            resolve_1_finish == prev_start_date:
-                        group.delete_snag(
-                            sess, SiteGroup.EXPORT_NET_GT_IMPORT_GEN,
-                            resolve_1_start, resolve_1_finish)
-                        resolve_1_start = None
-                        resolve_1_finish = None
-
-                if hh['exp_gen'] > hh['imp_net'] + \
-                        hh['imp_gen']:
-                    if snag_2_start is None:
-                        snag_2_start = hh_start_date
-
-                    snag_2_finish = hh_start_date
-                else:
-                    if resolve_2_start is None:
-                        resolve_2_start = hh_start_date
-
-                    resolve_2_finish = hh_start_date
-
-                    if snag_2_finish is not None and \
-                            snag_2_finish == prev_start_date:
-                        group.add_snag(
-                            sess, SiteGroup.EXPORT_GEN_GT_IMPORT, snag_2_start,
-                            snag_2_finish)
-                        snag_2_start = None
-                        snag_2_finish = None
-
-                    if resolve_2_finish is not None and \
-                            resolve_2_finish == prev_start_date:
-                        group.delete_snag(
-                            sess, SiteGroup.EXPORT_GEN_GT_IMPORT,
-                            resolve_2_start, resolve_2_finish)
-                        resolve_2_start = None
-                        resolve_2_finish = None
-
-                    prev_start_date = hh_start_date
-                    hh_start_date = next_hh(hh_start_date)
-
-            if snag_1_finish is not None:
-                group.add_snag(
-                    sess, SiteGroup.EXPORT_NET_GT_IMPORT_GEN, snag_1_start,
-                    snag_1_finish)
-
-            if resolve_1_finish is not None:
-                group.delete_snag(
-                    sess, SiteGroup.EXPORT_NET_GT_IMPORT_GEN, resolve_1_start,
-                    resolve_1_finish)
-
-            if snag_2_finish is not None:
-                group.add_snag(
-                    sess, SiteGroup.EXPORT_GEN_GT_IMPORT, snag_2_start,
-                    snag_2_finish)
-
-            if resolve_2_finish is not None:
-                group.delete_snag(
-                    sess, SiteGroup.EXPORT_GEN_GT_IMPORT, resolve_2_start,
-                    resolve_2_finish)
+            group.hh_check(sess)
 
     def groups(self, sess, start, finish, primary_only):
         groups = []
@@ -2095,23 +2003,6 @@ class Channel(Base, PersistentClass):
         self.imp_related = imp_related
         self.channel_type = channel_type
 
-    def site_check(self, sess, start_date, finish_date):
-        if self.channel_type == 'ACTIVE':
-            site = sess.query(Site).join(SiteEra).filter(
-                SiteEra.era == self.era, SiteEra.is_physical == true()).one()
-
-            if start_date > self.era.start_date:
-                check_from = start_date
-            else:
-                check_from = self.era.start_date
-
-            if hh_before(finish_date, self.era.finish_date):
-                check_to = finish_date
-            else:
-                check_to = self.era.finish_date
-
-            site.hh_check(sess, check_from, check_to)
-
     def add_snag(self, sess, description, start_date, finish_date):
         Snag.add_snag(sess, None, self, description, start_date, finish_date)
 
@@ -2140,7 +2031,11 @@ class Channel(Base, PersistentClass):
             {'channel_id': self.id, 'start': start, 'finish': finish})
 
         self.add_snag(sess, Snag.MISSING, start, finish)
-        self.site_check(sess, start, finish)
+
+        if self.channel_type == 'ACTIVE':
+            site = sess.query(Site).join(SiteEra).filter(
+                SiteEra.era == self.era, SiteEra.is_physical == true()).one()
+            site.hh_check(sess, start, finish)
 
     def add_hh_data(self, sess, data_raw):
         data = iter(
@@ -2229,9 +2124,12 @@ class Channel(Base, PersistentClass):
             self.remove_snag(sess, Snag.ESTIMATED, start_date, finish_date)
             sess.flush()
 
-        for b in upsert_blocks:
-            self.site_check(sess, b[0]['start_date'], b[-1]['start_date'])
-            sess.flush()
+        if self.channel_type == 'ACTIVE':
+            site = sess.query(Site).join(SiteEra).filter(
+                SiteEra.era == self.era, SiteEra.is_physical == true()).one()
+            for b in upsert_blocks:
+                site.hh_check(sess, b[0]['start_date'], b[-1]['start_date'])
+                sess.flush()
 
         for b in negative_blocks:
             self.add_snag(
@@ -2892,6 +2790,84 @@ class SiteGroup():
     def delete_snag(self, sess, description, start_date, finish_date):
         Snag.remove_snag(
             sess, self.sites[0], None, description, start_date, finish_date)
+
+    def hh_check(self, sess):
+        if len(self.supplies) == 1:
+            return
+
+        resolve_1_start = resolve_1_finish = None
+        snag_1_start = snag_1_finish = None
+        resolve_2_start = resolve_2_finish = None
+        snag_2_start = snag_2_finish = None
+
+        for hh in self.hh_data(sess):
+            hh_start_date = hh['start_date']
+
+            if hh['exp_net'] > hh['imp_gen']:
+                if snag_1_start is None:
+                    snag_1_start = hh_start_date
+
+                snag_1_finish = hh_start_date
+
+                if resolve_1_start is not None:
+                    self.delete_snag(
+                        sess, SiteGroup.EXPORT_NET_GT_IMPORT_GEN,
+                        resolve_1_start, resolve_1_finish)
+                    resolve_1_start = None
+            else:
+                if resolve_1_start is None:
+                    resolve_1_start = hh_start_date
+
+                resolve_1_finish = hh_start_date
+
+                if snag_1_start is not None:
+                    self.add_snag(
+                        sess, SiteGroup.EXPORT_NET_GT_IMPORT_GEN, snag_1_start,
+                        snag_1_finish)
+                    snag_1_start = None
+
+            if hh['exp_gen'] > hh['imp_net'] + hh['imp_gen']:
+                if snag_2_start is None:
+                    snag_2_start = hh_start_date
+
+                snag_2_finish = hh_start_date
+
+                if resolve_2_start is not None:
+                    self.delete_snag(
+                        sess, SiteGroup.EXPORT_GEN_GT_IMPORT, resolve_2_start,
+                        resolve_2_finish)
+                    resolve_2_start = None
+            else:
+                if resolve_2_start is None:
+                    resolve_2_start = hh_start_date
+
+                resolve_2_finish = hh_start_date
+
+                if snag_2_start is not None:
+                    self.add_snag(
+                        sess, SiteGroup.EXPORT_GEN_GT_IMPORT, snag_2_start,
+                        snag_2_finish)
+                    snag_2_start = None
+
+        if snag_1_start is not None:
+            self.add_snag(
+                sess, SiteGroup.EXPORT_NET_GT_IMPORT_GEN, snag_1_start,
+                snag_1_finish)
+
+        if resolve_1_start is not None:
+            self.delete_snag(
+                sess, SiteGroup.EXPORT_NET_GT_IMPORT_GEN, resolve_1_start,
+                resolve_1_finish)
+
+        if snag_2_start is not None:
+            self.add_snag(
+                sess, SiteGroup.EXPORT_GEN_GT_IMPORT, snag_2_start,
+                snag_2_finish)
+
+        if resolve_2_start is not None:
+            self.delete_snag(
+                sess, SiteGroup.EXPORT_GEN_GT_IMPORT, resolve_2_start,
+                resolve_2_finish)
 
 
 class GRegisterRead(Base, PersistentClass):

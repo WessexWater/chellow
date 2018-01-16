@@ -1384,6 +1384,21 @@ def virtual_bill_titles():
 
             # There's an hh where export to net is *less* than imported from
             # generator, check this doesn't show up.
+            r'<tr>\s*'
+            r'<td>\s*'
+            r'<a href="/site_snags/41">view</a>\s*'
+            r'\[<a href="/site_snags/41/edit">edit</a>\]\s*'
+            r'</td>\s*'
+            r'<td>\d\d\d\d-\d\d-\d\d \d\d:\d\d</td>\s*'
+            r'<td>\s*'
+            r'<a href="/sites/1">CI004</a>\s*'
+            r'</td>\s*'
+            r'<td>Lower Treave</td>\s*'
+            r'<td>Export to net &gt; import from generators.</td>\s*'
+            r'<td>2005-11-14 23:30</td>\s*'
+            r'<td>2005-11-15 00:00</td>\s*'
+            r'</tr>\s*'
+            r'<tr>\s*'
             r'<td>\s*'
             '<a href="/site_snags/43">view</a>\s*'
             '\[<a href="/site_snags/43/edit">edit</a>\]\s*'
@@ -1624,7 +1639,7 @@ def virtual_bill_titles():
     # Set a previously estimated HH to actual, supply 1, era 1, channel 3
     {
         'name': "Check that resolved HH estimates have their snags cleared.",
-        'path': '/hh_data/12/edit',
+        'path': '/hh_data/13/edit',
         'method': 'post',
         'data': {
             'update': "Update",
@@ -1642,7 +1657,7 @@ def virtual_bill_titles():
 
     # Change it back. supply 1, era 1.
     {
-        'path': '/hh_data/12/edit',
+        'path': '/hh_data/13/edit',
         'method': 'post',
         'data': {
             'value': "0.5",
@@ -1794,7 +1809,7 @@ def virtual_bill_titles():
         'path': '/channels/32?start_year=2008&start_month=07',
         'regexes': [
             r'<td>\s*'
-            '\[<a href="/hh_data/66/edit">'
+            '\[<a href="/hh_data/67/edit">'
             'edit</a>\]\s*</td>\s*<td>2008-07-07 00:00</td>\s*'
             '<td>0.247</td>\s*<td>A</td>'],
         'status_code': 200},
@@ -1872,7 +1887,7 @@ def virtual_bill_titles():
         'path': '/channels/32?start_year=2008&start_month=07',
         'regexes': [
             r'<tbody>\s*<tr>\s*<td>\s*'
-            r'\[<a href="/hh_data/114/edit">edit</a>\]\s*'
+            r'\[<a href="/hh_data/115/edit">edit</a>\]\s*'
             r'</td>\s*<td>2008-07-08 00:00</td>\s*'
             r'<td>0.299</td>\s*'
             r'<td>A</td>'],
@@ -1881,7 +1896,7 @@ def virtual_bill_titles():
     # supply 1, era 1, channel 1
     {
         'name': "Check one is redirected to hh data when a datum is deleted.",
-        'path': '/hh_data/23/edit',
+        'path': '/hh_data/24/edit',
         'method': 'post',
         'data': {
             'delete': "Delete"},
@@ -4256,7 +4271,7 @@ def virtual_bill(supply_source):
 
     # supply 12, era 16, channel 42
     {
-        'path': '/hh_data/6772/edit',
+        'path': '/hh_data/6773/edit',
         'method': 'post',
         'data': {
             'delete': "Delete"},

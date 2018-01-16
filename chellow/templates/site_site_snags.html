@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+
+{% block title %}
+	&raquo; Sites &raquo; {{site.name}} &raquo; Site Snags
+{% endblock %}
+
+{% block nav %}
+	<a href="/sites">Sites</a> &raquo;
+	<a href="/sites/{{site.id}}">{{site.name}}</a> &raquo; Site Snags
+{% endblock %}
+
+{% block content %}
+	<!-- Layer Section -->
+	<div class="layer-section">
+		<!-- Section Header -->
+		<div class="section-header">
+			<h2>Site Snags</h2>	
+		</div>
+		<!-- End Section Header -->
+		
+		<!-- Section Content -->
+		<div class="section-content">
+			<div class="section-data">
+				<table class="DataTable widthAuto noMarginBottom">
+					<thead>
+						<tr>
+							<th></th>
+							<th>Creation Date</th>
+							<th>Snag Description</th>
+							<th>Start Date</th>
+							<th>Finish Date</th>
+						</tr>
+					</thead>
+					<tbody>
+						{% for snag in snags %}
+							<tr>
+								<td>
+									<a href="/site_snags/{{snag.id}}">view</a>
+									[<a href="/site_snags/{{snag.id}}/edit">edit</a>]
+								</td>
+								<td>{{snag.date_created|hh_format}}</td>
+								<td>{{snag.description}}</td>
+								<td>{{snag.start_date|hh_format}}</td>
+								<td>{{snag.finish_date|hh_format}}</td>
+							</tr>
+						{% endfor %}
+					</tbody>
+				</table>
+			</div>
+		</div>
+		<!-- End Section Content -->
+	</div>
+	<!-- End Layer Section -->
+{% endblock %}
