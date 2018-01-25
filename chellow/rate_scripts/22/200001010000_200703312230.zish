@@ -60,4 +60,9 @@
       "gbp-per-kva-per-day": 0.0332,
       "day-gbp-per-kwh": 0.0121,
       "night-gbp-per-kwh": 0.0040,
+      "reactive-gbp-per-kvarh": 0.0042},
+    "581": {
+      "gbp-per-kva-per-day": 0.0332,
+      "day-gbp-per-kwh": 0.0121,
+      "night-gbp-per-kwh": 0.0040,
       "reactive-gbp-per-kvarh": 0.0042}}}

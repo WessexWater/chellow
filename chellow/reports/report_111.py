@@ -123,7 +123,7 @@ def content(batch_id, bill_id, contract_id, start_date, finish_date, user):
                 bill_id = list(sorted(bill_ids))[0]
                 bill_ids.remove(bill_id)
                 bill = Bill.get_by_id(sess, bill_id)
-                problem = ''
+                virtual_bill = {'problem': ''}
                 supply = bill.supply
 
                 read_dict = {}
@@ -140,7 +140,7 @@ def content(batch_id, bill_id, contract_id, start_date, finish_date, user):
                             break
 
                     if not msn_match:
-                        problem += "The MSN " + read_msn + \
+                        virtual_bill['problem'] += "The MSN " + read_msn + \
                             " of the register read " + str(read.id) + \
                             " doesn't match the MSN of the era."
 
@@ -150,7 +150,8 @@ def content(batch_id, bill_id, contract_id, start_date, finish_date, user):
                         key = str(dt) + "-" + read.msn
                         try:
                             if typ != read_dict[key]:
-                                problem += " Reads taken on " + str(dt) + \
+                                virtual_bill['problem'] += " Reads taken " + \
+                                    "on " + str(dt) + \
                                     " have differing read types."
                         except KeyError:
                             read_dict[key] = typ
@@ -261,21 +262,29 @@ def content(batch_id, bill_id, contract_id, start_date, finish_date, user):
                                 primary_covered_bill.start_date)):
                         primary_covered_bill = covered_bill
 
-                virtual_bill = {}
                 metered_kwh = 0
                 for era in sess.query(Era).filter(
                         Era.supply == supply, Era.start_date <= covered_finish,
                         or_(
                             Era.finish_date == null(),
-                            Era.finish_date >= covered_start),
-                        or_(
-                            Era.mop_contract == contract,
-                            Era.hhdc_contract == contract,
-                            Era.imp_supplier_contract == contract)).distinct():
+                            Era.finish_date >= covered_start)).distinct():
 
                     chunk_start = hh_max(covered_start, era.start_date)
                     chunk_finish = hh_min(covered_finish, era.finish_date)
 
+                    if contract not in (
+                            era.mop_contract, era.hhdc_contract,
+                            era.imp_supplier_contract,
+                            era.exp_supplier_contract):
+                        virtual_bill['problem'] += ''.join(
+                            (
+                                "From ", hh_format(chunk_start), " to ",
+                                hh_format(chunk_finish), " the contract of ",
+                                "the era doesn't match the contract of the ",
+                                "bill."))
+                        continue
+
+                    polarity = contract != era.exp_supplier_contract
                     pairs = []
                     last_finish = chunk_start - HH
                     for hd in chellow.computer.datum_range(
@@ -290,7 +299,7 @@ def content(batch_id, bill_id, contract_id, start_date, finish_date, user):
                     for ss_start, ss_finish in pairs:
                         data_source = chellow.computer.SupplySource(
                             sess, ss_start, ss_finish, forecast_date, era,
-                            True, caches, primary_covered_bill)
+                            polarity, caches, primary_covered_bill)
 
                         if data_source.measurement_type == 'hh':
                             metered_kwh += sum(
@@ -298,7 +307,7 @@ def content(batch_id, bill_id, contract_id, start_date, finish_date, user):
                         else:
                             ds = chellow.computer.SupplySource(
                                 sess, ss_start, ss_finish, forecast_date, era,
-                                True, caches)
+                                polarity, caches)
                             metered_kwh += sum(
                                 h['msp-kwh'] for h in ds.hh_data)
 
@@ -350,7 +359,7 @@ def content(batch_id, bill_id, contract_id, start_date, finish_date, user):
                 era = supply.find_era_at(sess, bill_finish)
                 if era is None:
                     imp_mpan_core = site_code = site_name = None
-                    problem += \
+                    virtual_bill['problem'] += \
                         "This bill finishes before or after the supply. "
                 else:
                     imp_mpan_core = era.imp_mpan_core
