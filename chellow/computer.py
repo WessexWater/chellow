@@ -190,8 +190,7 @@ def get_data_sources(data_source, start_date, finish_date, forecast_date=None):
             eras = data_source.sess.query(Era).filter(
                 Era.supply == data_source.supply,
                 Era.imp_mpan_core != null(), Era.start_date <= finish_date,
-                or_(
-                    Era.finish_date == null(), Era.finish_date >= start_date))
+                or_(Era.finish_date == null(), Era.finish_date >= start_date))
         else:
             eras = data_source.sess.query(Era).filter(
                 Era.supply == data_source.supply, Era.exp_mpan_core != null(),
@@ -205,7 +204,7 @@ def get_data_sources(data_source, start_date, finish_date, forecast_date=None):
             ds = SupplySource(
                 data_source.sess, chunk_start, chunk_finish, forecast_date,
                 era, data_source.is_import, data_source.caches,
-                data_source.bill, data_source.era_maps)
+                data_source.bill, data_source.era_maps, data_source.deltas)
             yield ds
 
     else:
@@ -403,12 +402,13 @@ def datum_range(sess, caches, years_back, start_date, finish_date):
 class DataSource():
     def __init__(
             self, sess, start_date, finish_date, forecast_date, caches,
-            era_maps):
+            era_maps, deltas=None):
         self.sess = sess
         self.caches = caches
         self.forecast_date = forecast_date
         self.start_date = start_date
         self.finish_date = finish_date
+        self.deltas = deltas
         times = get_times(start_date, finish_date, forecast_date)
         self.years_back = times['years-back']
         self.history_start = times['history-start']
@@ -459,10 +459,10 @@ class DataSource():
 class SiteSource(DataSource):
     def __init__(
             self, sess, site, start_date, finish_date, forecast_date, caches,
-            era=None, era_maps=None):
+            era=None, era_maps=None, deltas=None):
         DataSource.__init__(
             self, sess, start_date, finish_date, forecast_date, caches,
-            era_maps)
+            era_maps, deltas=deltas)
         self.site = site
         self.bill = None
         self.stream_focus = 'gen-used'
@@ -615,6 +615,18 @@ class SiteSource(DataSource):
             datum.update(hist_map[datum['hist-start']])
             self.hh_data.append(datum)
 
+        if self.deltas is not None:
+            for hh in self.hh_data:
+                try:
+                    delt_hh = self.deltas['hhs'][hh['start-date']]
+                    hh['import-net-kwh'] = delt_hh['import-net-kwh']
+                    hh['export-net-kwh'] = delt_hh['export-net-kwh']
+                    hh['import-gen-kwh'] = delt_hh['import-gen-kwh']
+                    hh['msp-kwh'] = delt_hh['msp-kwh']
+                    hh['used-kwh'] = delt_hh['used-kwh']
+                except KeyError:
+                    pass
+
     def revolve_to_3rd_party_used(self):
         for hh in self.hh_data:
             hh['msp-kwh'] = hh['used-3rd-party-kwh']
@@ -639,10 +651,10 @@ ACTUAL_READ_TYPES = ['N', 'N3', 'C', 'X', 'CP']
 class SupplySource(DataSource):
     def __init__(
             self, sess, start_date, finish_date, forecast_date, era, is_import,
-            caches, bill=None, era_maps=None):
+            caches, bill=None, era_maps=None, deltas=None):
         DataSource.__init__(
             self, sess, start_date, finish_date, forecast_date, caches,
-            era_maps)
+            era_maps, deltas=deltas)
 
         self.is_displaced = False
         self.bill = bill
@@ -655,6 +667,7 @@ class SupplySource(DataSource):
 
         self.site = None
         self.supply = era.supply
+        self.source_code = self.supply.source.code
         self.dno = self.supply.dno
         self.dno_code = self.dno.dno_code
         self.era = era
@@ -1354,3 +1367,24 @@ order by hh_datum.start_date
         self.hh_data.extend(
             {**d, **hist_map.get(d['hist-start'], {})} for d in datum_range(
                 sess, self.caches, self.years_back, start_date, finish_date))
+
+        if self.deltas is not None:
+            site_deltas = self.deltas['site']
+
+            try:
+                sup_deltas = self.deltas[self.supply.id]
+            except KeyError:
+                sup_deltas = self.deltas[self.supply.id] = {}
+
+            for hh in self.hh_data:
+                hh_start = hh['start-date']
+                if hh_start in sup_deltas:
+                    delt = sup_deltas[hh_start]
+                elif hh_start in site_deltas:
+                    delt = sup_deltas[hh_start] = site_deltas[hh_start]
+                    del site_deltas[hh_start]
+                else:
+                    continue
+
+                hh['msp-kwh'] += delt
+                hh['msp-kw'] += delt / 2

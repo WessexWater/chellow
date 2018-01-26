@@ -105,7 +105,7 @@
   "scenario_duration": 1,  /* Number of months */
 
 
-  // Industry rates - those you can't edit in Chellow
+  /* Industry rates - those you can't edit in Chellow */
 
   "industry_rates": {
     "ccl" : {
@@ -121,7 +121,7 @@
         "aahedc_gbp_per_gsp_kwh": 0.00023116}}},
 
 
-  // Local rates - those that you can edit in Chellow
+  /* Local rates - those that you can edit in Chellow */
 
   "local_rates": {
     46: {
@@ -155,21 +155,35 @@
         9: 51}}},
 
 
-  "kw_changes":
+  /* HH data to use instead of the data in the database. For each site code,
+     you can specify the hh data that's used, generated or parasitic on the
+     site. */
 
-  /*
-       CSV format with the following columns
+  "hh_data": {
 
-       Site Code,
-       Type ("used" or "generated") ,
-       Date (yyyy-mm-dd),
-       Multiplier
-    */
+    /* For site code 12098 */
 
-    "
-    CI005, used, 2011-01-01, 0.5
-    CI005, generated, 2011-01-01, 2
-    "}</pre>
+    "12098": {
+      "used": "
+        2017-10-04 19:00, 78.0
+        2017-10-04 19:30, 74.8
+        2017-10-04 20:00, 65.3",
+      "generated": "
+        2017-10-04 19:00, 8.0
+        2017-10-04 19:30, 8.7
+        2017-10-04 20:00, 8.5",
+      "parasitic": "
+        2017-10-04 19:00, 2.0
+        2017-10-04 19:30, 2.1
+        2017-10-04 20:00, 2.0"},
+
+    /* For site code 59987 */
+
+    "59987": {
+      "generated": "
+        2017-10-09 10:00, 3.0
+        2017-10-09 10:30, 2.7
+        2017-10-09 11:00, 3.5"}}}</pre>
 			</div>
 		</div>
 		<!-- End Section Content -->

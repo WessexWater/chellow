@@ -8736,10 +8736,7 @@ def virtual_bill(supply_source):
           "winter-pk": 0.0193918}}}},
 
   "scenario_start": 2015-06-01T00:00:00Z,
-  "scenario_duration": 1,
-
-  "kw_changes": ""}
-""", },
+  "scenario_duration": 1}""", },
         'regexes': [
             r"/supplier_contracts/17"],
         'status_code': 303},
@@ -8870,10 +8867,7 @@ def virtual_bill(supply_source):
       "start_date": 2011-01-01T00:00:00Z,
       "finish_date": 2011-01-31T23:30:00Z,
       "script": {
-          "aahedc_gbp_per_gsp_kwh": 0.10016297}}},
-
-  "kw_changes": ""}
-"""},
+          "aahedc_gbp_per_gsp_kwh": 0.10016297}}}}"""},
         'regexes': [
             r"/supplier_contracts/18"],
         'status_code': 303},
@@ -8954,31 +8948,7 @@ def virtual_bill(supply_source):
             r'<table:table-cell table:number-columns-repeated="2"/>\s*'
             r'<table:table-cell office:value="0.0047" '
             r'office:value-type="float"/>\s*'
-            r'<table:table-cell/>\s*',
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+            r'<table:table-cell/>\s*'
             r'<table:table-cell office:value="5.89" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="130" '
@@ -9075,24 +9045,7 @@ def virtual_bill(supply_source):
             r'<table:table-cell office:value="31" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="0.6338" '
-            r'office:value-type="float"/>\s*',
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+            r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="19.6478\d*" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="0.0" '
@@ -9114,23 +9067,7 @@ def virtual_bill(supply_source):
             r'<table:table-cell office:value="5.89" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="20" '
-            r'office:value-type="float"/>\s*',
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+            r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="31" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="0.0163" '
@@ -9156,20 +9093,7 @@ def virtual_bill(supply_source):
             r'<table:table-cell office:value="0" '
             r'office:value-type="float" table:number-columns-repeated="2"/>\s*'
             r'<table:table-cell office:value="0.0" '
-            r'office:value-type="float"/>\s*',
-
-
-
-
-
-
-
-
-
-
-
-
-
+            r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="0" '
             r'office:value-type="float" table:number-columns-repeated="2"/>\s*'
             r'<table:table-cell office:value="0.0" '
@@ -9246,35 +9170,23 @@ def virtual_bill(supply_source):
             'charge_script': "",
             'properties': r"""
 {
-  "bsuos" : {
-    "start_date": 2011-01-01T00:00:00Z,
-    "multiplier": 1,
-    "constant": 0},
-
-  "ccl": {
-    "start_date": 2014-10-01T00:00:00Z,
-    "multiplier": 1,
-    "constant": 0},
-
-    "aahedc": {
-        "start_date": null,
-        "multiplier": 0,
-        "constant": 0.00091361},
-
     "scenario_start": 2011-01-01T00:00:00Z,
-    "scenario_duration": 1,
-    "resolution": "hh",
+    "scenario_duration": 2,
 
-    "kw_changes":
-    "CI005, used, 2011-01-01, 0.5\nCI005, generated, 2011-01-01, 2"}
-""", },
+    "hh_data": {
+      "CI005": {
+        "used": "
+          2011-01-01 00:00, 0.5",
+        "generated": "
+          2011-01-01 00:00, 2
+          2011-02-01 00:00, 2"}}}"""},
         'regexes': [
             r"/supplier_contracts/19"],
         'status_code': 303},
 
     {
         'name': "Run scenario for a site",
-        'path': '/reports/247?site_id=1&scenario_id=19&compression=False',
+        'path': '/reports/247?site_id=3&scenario_id=19&compression=False',
         'status_code': 303},
     {
         'path': '/downloads',
@@ -9282,87 +9194,99 @@ def virtual_bill(supply_source):
         'status_code': 200,
         'regexes': [
             r'0059_FINISHED_watkinsexamplecom_scenario_used_20110101_0000_for_'
-            r'1_months_site_CI004\.ods']},
+            r'2_months_site_CI005\.ods']},
     {
         'path': '/downloads/'
         '0059_FINISHED_watkinsexamplecom_scenario_used_20110101_0000_for_'
-        '1_months_site_CI004.ods',
+        '2_months_site_CI005.ods',
         'status_code': 200,
         'regexes': [
-            r'<table:table-row>\s*'
-            r'<table:table-cell '
-            r'office:date-value="\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d" '
-            r'office:value-type="date" table:style-name="cell_date"/>\s*'
-            r'<table:table-cell office:string-value="22 0195 4836 192" '
-            r'office:value-type="string"/>\s*'
-            r'<table:table-cell office:string-value="Non half-hourlies 2007" '
-            r'office:value-type="string"/>\s*'
-            r'<table:table-cell table:number-columns-repeated="2"/>\s*'
-            r'<table:table-cell office:string-value="unmetered" '
-            r'office:value-type="string"/>\s*'
-            r'<table:table-cell office:string-value="net" '
-            r'office:value-type="string"/>\s*'
-            r'<table:table-cell/>\s*'
-            r'<table:table-cell office:string-value="2" '
-            r'office:value-type="string"/>\s*'
-            r'<table:table-cell office:string-value="P96C93722" '
-            r'office:value-type="string"/>\s*'
-            r'<table:table-cell office:string-value="08" '
-            r'office:value-type="string"/>\s*'
-            r'<table:table-cell office:string-value="CI004" '
-            r'office:value-type="string"/>\s*'
-            r'<table:table-cell office:string-value="Lower Treave" '
-            r'office:value-type="string"/>\s*'
-            r'<table:table-cell office:string-value="" '
-            r'office:value-type="string"/>\s*'
-            r'<table:table-cell office:date-value="2011-01-31T23:30:00" '
-            r'office:value-type="date" table:style-name="cell_date"/>\s*'
-            r'<table:table-cell office:value="25.819178082191478" '
-            r'office:value-type="float"/>\s*'
-            r'<table:table-cell office:value="0" '
-            r'office:value-type="float" table:number-columns-repeated="6"/>\s*'
-            r'<table:table-cell office:value="25.819178082191478" '
-            r'office:value-type="float"/>\s*'
-            r'<table:table-cell office:value="0" '
-            r'office:value-type="float"/>\s*'
-            r'<table:table-cell office:value="17.0" '
-            r'office:value-type="float"/>\s*'
-            r'<table:table-cell office:value="0" '
-            r'office:value-type="float" table:number-columns-repeated="6"/>\s*'
-            r'<table:table-cell office:value="17.0" '
-            r'office:value-type="float"/>\s*'
-            r'<table:table-cell office:value="0" '
-            r'office:value-type="float" table:number-columns-repeated="3"/>\s*'
-            r'<table:table-cell/>\s*'
-            r'<table:table-cell office:value="10" '
-            r'office:value-type="float"/>\s*'
-            r'<table:table-cell office:string-value="" '
-            r'office:value-type="string"/>\s*'
-            r'<table:table-cell/>\s*'
-            r'<table:table-cell office:value="7" '
-            r'office:value-type="float"/>\s*'
-            r'<table:table-cell office:string-value="" '
-            r'office:value-type="string"/>\s*'
-            r'<table:table-cell/>\s*'
-            r'<table:table-cell office:value="0.0" '
-            r'office:value-type="float"/>\s*'
-            r'<table:table-cell table:number-columns-repeated="2"/>\s*'
-            r'<table:table-cell office:value="0.0047" '
-            r'office:value-type="float"/>\s*'
-            r'<table:table-cell table:number-columns-repeated="78"/>\s*'
-            r'<table:table-cell office:string-value="" '
-            r'office:value-type="string"/>\s*'
-            r'<table:table-cell table:number-columns-repeated="17"/>\s*'
-            r'<table:table-cell office:value="0.0" '
-            r'office:value-type="float" table:number-columns-repeated="2"/>\s*'
-            r'<table:table-cell office:value="25.819178082191478" '
-            r'office:value-type="float"/>\s*'
-            r'<table:table-cell table:number-columns-repeated="15"/>\s*'
-            r'</table:table-row>']},
+          r'<table:table-row>\s*'
+          r'<table:table-cell '
+          r'office:date-value="\d\d\d\d-\d\d-\d\dT\d\d:\d\d:\d\d" '
+          r'office:value-type="date" table:style-name="cell_date"/>\s*'
+          r'<table:table-cell office:string-value="CI005" '
+          r'office:value-type="string"/>\s*'
+          r'<table:table-cell office:string-value="Wheal Rodney" '
+          r'office:value-type="string"/>\s*'
+          r'<table:table-cell office:string-value="CI004" '
+          r'office:value-type="string"/>\s*'
+          r'<table:table-cell office:date-value="2011-01-31T23:30:00" '
+          r'office:value-type="date" table:style-name="cell_date"/>\s*'
+          r'<table:table-cell office:string-value="hh" '
+          r'office:value-type="string"/>\s*'
+          r'<table:table-cell office:string-value="gen, net" '
+          r'office:value-type="string"/>\s*'
+          r'<table:table-cell office:string-value="chp" '
+          r'office:value-type="string"/>\s*'
+          r'<table:table-cell office:value="0.0" '
+          r'office:value-type="float"/>\s*'
+          r'<table:table-cell office:value="1.5" '
+          r'office:value-type="float"/>\s*'
+          r'<table:table-cell office:value="2.0" '
+          r'office:value-type="float"/>\s*'
+          r'<table:table-cell office:value="0" office:value-type="float" '
+          r'table:number-columns-repeated="3"/>\s*'
+          r'<table:table-cell office:value="0.5" office:value-type="float" '
+          r'table:number-columns-repeated="2"/>\s*'
+          r'<table:table-cell office:value="0" office:value-type="float"/>\s*'
+          r'<table:table-cell office:value="199.2268\d*" '
+          r'office:value-type="float"/>\s*'
+          r'<table:table-cell office:value="112.0867\d*" '
+          r'office:value-type="float"/>\s*'
+          r'<table:table-cell office:value="0" office:value-type="float" '
+          r'table:number-columns-repeated="4"/>\s*'
+          r'<table:table-cell office:value="0.0040761044\d*" '
+          r'office:value-type="float"/>\s*'
+          r'<table:table-cell office:value="199.2308\d*" '
+          r'office:value-type="float"/>\s*'
+          r'<table:table-cell office:value="0" office:value-type="float" '
+          r'table:number-columns-repeated="3"/>\s*'
+          r'</table:table-row>\s*',
 
-    # Try to detach an era from its physical site
+          r'<table:table-row>\s*'
+          r'<table:table-cell '
+          r'office:date-value="\d\d\d\d-\d\d-\d\dT\d\d:\d\d:\d\d" '
+          r'office:value-type="date" table:style-name="cell_date"/>\s*'
+          r'<table:table-cell office:string-value="CI005" '
+          r'office:value-type="string"/>\s*'
+          r'<table:table-cell office:string-value="Wheal Rodney" '
+          r'office:value-type="string"/>\s*'
+          r'<table:table-cell office:string-value="CI004" '
+          r'office:value-type="string"/>\s*'
+          r'<table:table-cell office:date-value="2011-02-28T23:30:00" '
+          r'office:value-type="date" table:style-name="cell_date"/>\s*'
+          r'<table:table-cell office:string-value="hh" '
+          r'office:value-type="string"/>\s*'
+          r'<table:table-cell office:string-value="gen, net" '
+          r'office:value-type="string"/>\s*'
+          r'<table:table-cell office:string-value="chp" '
+          r'office:value-type="string"/>\s*'
+          r'<table:table-cell office:value="0.0" '
+          r'office:value-type="float"/>\s*'
+          r'<table:table-cell office:value="2.0" office:value-type="float" '
+          r'table:number-columns-repeated="2"/>\s*'
+          r'<table:table-cell office:value="0" office:value-type="float" '
+          r'table:number-columns-repeated="3"/>\s*'
+          r'<table:table-cell office:value="0.0" office:value-type="float" '
+          r'table:number-columns-repeated="2"/>\s*'
+          r'<table:table-cell office:value="0" office:value-type="float"/>\s*'
+          r'<table:table-cell office:value="190.968\d*" '
+          r'office:value-type="float"/>\s*'
+          r'<table:table-cell office:value="110.328\d*" '
+          r'office:value-type="float"/>\s*'
+          r'<table:table-cell office:value="0" office:value-type="float" '
+          r'table:number-columns-repeated="4"/>\s*'
+          r'<table:table-cell office:value="0.0" '
+          r'office:value-type="float"/>\s*'
+          r'<table:table-cell office:value="190.968\d*" '
+          r'office:value-type="float"/>\s*'
+          r'<table:table-cell office:value="0" office:value-type="float" '
+          r'table:number-columns-repeated="3"/>\s*'
+          r'</table:table-row>\s*']},
+
     {
-        'name': "Detach an era",
+        'name': "Try to detach an era from its physical site",
         'path': '/eras/8/edit',
         'method': 'post',
         'data': {
