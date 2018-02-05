@@ -9,7 +9,6 @@ import openpyxl
 from itertools import chain
 from werkzeug.exceptions import BadRequest
 from chellow.utils import req_int
-from collections import OrderedDict
 from chellow.models import Session, GspGroup
 from zish import dumps
 from io import BytesIO
@@ -83,13 +82,17 @@ def to_llfcs(row, idx):
 
 
 VL_MAP = {
-    'Low Voltage Network': 'lv-net',
-    'Low Voltage Substation': 'lv-sub',
-    'High Voltage Network': 'hv-net',
-    'High Voltage Substation': 'hv-sub',
-    '33kV Generic': '33kv',
-    '132/33kV Generic': '132kv_33kv',
-    '132kV Generic': '132kv'}
+    'low voltage network': 'lv-net',
+    'low-voltage network': 'lv-net',
+    'low voltage substation': 'lv-sub',
+    'low-voltage substation': 'lv-sub',
+    'high voltage network': 'hv-net',
+    'high-voltage network': 'hv-net',
+    'high voltage substation': 'hv-sub',
+    'high-voltage substation': 'hv-sub',
+    '33kv generic': '33kv',
+    '132/33kv generic': '132kv_33kv',
+    '132kv generic': '132kv'}
 
 
 PERIOD_MAP = {
@@ -116,18 +119,200 @@ def str_to_hr(hr_str):
     return hours + minutes / Decimal(60)
 
 
-def col_match(row, pattern):
+def val_to_slots(val):
+    slots = []
+    time_str = None if val is None else val.strip()
+    if time_str not in (None, '', '[Start] - [End]'):
+        for t_str in time_str.splitlines():
+            for sep in ('-', 'to'):
+                if sep in t_str:
+                    break
+            start_str, finish_str = t_str.split(sep)
+            slots.append(
+                {
+                    'start': str_to_hr(start_str),
+                    'finish': str_to_hr(finish_str)})
+    return slots
+
+
+def col_match(row, pattern, repeats=1):
     for i, cell in enumerate(row):
         txt = cell.value
-        if txt is not None and re.search(pattern, txt.lower()) is not None:
-            return i
+        if txt is not None:
+            txt_str = ' '.join(str(txt).lower().split())
+            if re.search(pattern, txt_str) is not None:
+                if repeats == 1:
+                    return i
+                else:
+                    repeats -= 1
 
     raise BadRequest(
         "Pattern '" + pattern + "' not found in row " +
         ', '.join(str(cell.value) for cell in row))
 
 
-def content(user, file_name, file_like, gsp_group_id, llfc_tab, laf_tab):
+def tab_lv_hv(sheet, gsp_rates):
+    try:
+        tariffs = gsp_rates['tariffs']
+    except KeyError:
+        tariffs = gsp_rates['tariffs'] = {}
+
+    bands = gsp_rates['bands'] = []
+
+    in_tariffs = False
+    title_row = None
+    for row in sheet.iter_rows():
+        val = get_value(row, 0)
+        val_0 = None if val is None else ' '.join(val.split())
+        if in_tariffs:
+            if val_0 is None or len(val_0) == 0:
+                continue
+
+            llfcs_str = ','.join(chain(to_llfcs(row, 1), to_llfcs(row, 10)))
+            tariffs[llfcs_str] = {
+                'description': val_0,
+                'gbp-per-mpan-per-day': get_zero_rate(
+                    row, col_match(title_row, 'fixed')),
+                'gbp-per-kva-per-day': get_zero_rate(
+                    row, col_match(title_row, '^capacity')),
+                'excess-gbp-per-kva-per-day': get_zero_rate(
+                    row, col_match(title_row, 'exce')),
+                'red-gbp-per-kwh': get_rag_rate(
+                    row, col_match(title_row, 'red')),
+                'amber-gbp-per-kwh': get_rag_rate(
+                    row, col_match(title_row, 'amber')),
+                'green-gbp-per-kwh': get_rag_rate(
+                    row, col_match(title_row, 'green')),
+                'gbp-per-kvarh': get_zero_rate(
+                    row, col_match(title_row, 'reactive'))}
+
+        elif val_0 == 'Tariff name' or get_value(row, 1) == "Open LLFCs":
+            in_tariffs = True
+            title_row = row
+
+        if val_0 in BAND_WEEKEND:
+            for i, band_name in enumerate(('red', 'amber')):
+                for slot in val_to_slots(get_value(row, i+1)):
+                    bands.append(
+                        {
+                            'weekend': BAND_WEEKEND[val_0],
+                            'start': slot['start'],
+                            'finish': slot['finish'],
+                            'band': band_name})
+
+
+# State for EHV
+
+EHV_BLANK = 0
+EHV_BANDS = 1
+EHV_TARIFFS = 2
+
+
+def tab_ehv(sheet, gsp_rates):
+    try:
+        tariffs = gsp_rates['tariffs']
+    except KeyError:
+        tariffs = gsp_rates['tariffs'] = {}
+
+    bands = gsp_rates['super_red'] = []
+
+    state = EHV_BLANK
+    title_row = None
+    for row in sheet.iter_rows():
+        val = get_value(row, 0)
+        val_0 = None if val is None else ' '.join(str(val).split()).lower()
+        if state == EHV_BLANK:
+            if val_0 == 'time periods':
+                state = EHV_BANDS
+                title_row = row
+            elif val_0 in (
+                    'import unique identifier', 'import llfc'):
+                state = EHV_TARIFFS
+                title_row = row
+
+        elif state == EHV_TARIFFS:
+            for polarity, repeats in (('import', 1), ('export', 2)):
+                llfc_val = get_value(
+                    row, col_match(title_row, 'llfc', repeats=repeats))
+                llfc = None if llfc_val is None else str(llfc_val).strip()
+                if llfc not in (None, ''):
+                    tariffs[llfc] = {
+                        'gbp-per-kwh': get_rate(
+                            row, col_match(
+                                title_row, polarity + ' super red')),
+                        'gbp-per-day': get_zero_rate(
+                            row, col_match(title_row, polarity + ' fixed')),
+                        'gbp-per-kva-per-day': get_zero_rate(
+                            row, col_match(title_row, polarity + ' capacity')),
+                        'excess-gbp-per-kva-per-day': get_zero_rate(
+                            row, col_match(title_row, polarity + ' exce'))}
+
+        elif state == EHV_BANDS:
+            if val_0 in (None, '', 'notes'):
+                state = EHV_BLANK
+            else:
+                period_str = ' '.join(get_value(row, 0).split()).lower()
+                periods = []
+
+                if period_str == 'monday to friday nov to feb (excluding ' + \
+                        '22nd dec to 4th jan inclusive)':
+                    periods.append(
+                        {
+                            'weekend': False,
+                            'start-month': 11,
+                            'start-day': 1,
+                            'finish-month': 12,
+                            'finish-day': 21})
+                    periods.append(
+                        {
+                            'weekend': False,
+                            'start-month': 1,
+                            'start-day': 5,
+                            'finish-month': 2,
+                            'finish-day': 'last'})
+
+                elif period_str in (
+                        'monday to friday (including bank '
+                        'holidays) november to february',
+                        'monday to friday nov to feb'):
+                    periods.append(
+                        {
+                            'weekend': False,
+                            'start-month': 11,
+                            'start-day': 1,
+                            'finish-month': 2,
+                            'finish-day': 'last'})
+
+                for slot in val_to_slots(get_value(row, 3)):
+                    for period in periods:
+                        bands.append(
+                            {
+                                **period,
+                                'start_hour': slot['start'],
+                                'finish_hour': slot['finish']})
+
+
+def tab_laf(sheet, gsp_rates):
+    lafs = gsp_rates['lafs'] = {}
+    period_lookup = {}
+    for row in sheet.iter_rows():
+        val_0 = get_value(row, 0)
+        val_0 = None if val_0 is None else ' '.join(str(val_0).lower().split())
+        if val_0 in VL_MAP:
+            laf_periods = {}
+            for i in range(4):
+                if get_value(row, i+1) is not None:
+                    laf_periods[period_lookup[i]] = get_decimal(row, i+1)
+
+            lafs[VL_MAP[val_0]] = laf_periods
+        val_1 = get_value(row, 1)
+        if isinstance(val_1, str) and val_1.lower() in PERIOD_MAP:
+            for i in range(4):
+                key = get_value(row, i+1).lower()
+                period_lookup[i] = PERIOD_MAP[key]
+
+
+def content(user, file_name, file_like, gsp_group_id):
     f = sess = None
     try:
         sess = Session()
@@ -135,101 +320,27 @@ def content(user, file_name, file_like, gsp_group_id, llfc_tab, laf_tab):
             'dno_rates.zish', user)
         f = open(running_name, mode='w')
         gsp_group = GspGroup.get_by_id(sess, gsp_group_id)
-        tariffs = {}
-        bands = []
-        if file_name.endswith('.xlsx'):
-            book = openpyxl.load_workbook(
-                file_like, data_only=True, read_only=True)
-            llfc_sheet = book.worksheets[llfc_tab]
-            in_tariffs = False
-            title_row = None
-            for row in llfc_sheet.iter_rows():
-                val = get_value(row, 0)
-                val_0 = None if val is None else ' '.join(val.split())
-                if in_tariffs:
-                    if val_0 is None or len(val_0) == 0:
-                        continue
+        gsp_rates = {}
 
-                    llfcs_str = ','.join(
-                        chain(to_llfcs(row, 1), to_llfcs(row, 10)))
-                    tariffs[llfcs_str] = OrderedDict(
-                        (
-                            ('description', val_0),
-                            (
-                                'gbp-per-mpan-per-day',
-                                get_zero_rate(
-                                    row, col_match(title_row, 'fixed'))),
-                            (
-                                'gbp-per-kva-per-day',
-                                get_zero_rate(
-                                    row, col_match(title_row, '^capacity'))),
-                            (
-                                'excess-gbp-per-kva-per-day',
-                                get_zero_rate(
-                                    row, col_match(title_row, 'exce'))),
-                            (
-                                'red-gbp-per-kwh',
-                                get_rag_rate(
-                                    row, col_match(title_row, 'red'))),
-                            (
-                                'amber-gbp-per-kwh',
-                                get_rag_rate(
-                                    row, col_match(title_row, 'amber'))),
-                            (
-                                'green-gbp-per-kwh',
-                                get_rag_rate(
-                                    row, col_match(title_row, 'green'))),
-                            (
-                                'gbp-per-kvarh',
-                                get_zero_rate(
-                                    row, col_match(title_row, 'reactive')))))
-                elif val_0 == 'Tariff name' or \
-                        get_value(row, 1) == "Open LLFCs":
-                    in_tariffs = True
-                    title_row = row
-
-                if val_0 in BAND_WEEKEND:
-                    for i, band_name in enumerate(('red', 'amber')):
-                        val = get_value(row, i+1)
-                        time_str = None if val is None else val.strip()
-                        if time_str is not None and len(time_str) > 0:
-                            for t_str in time_str.splitlines():
-                                for sep in ('-', 'to'):
-                                    if sep in t_str:
-                                        break
-                                start_str, finish_str = t_str.split(sep)
-                                bands.append(
-                                    OrderedDict(
-                                        (
-                                            ('weekend', BAND_WEEKEND[val_0]),
-                                            ('start', str_to_hr(start_str)),
-                                            ('finish', str_to_hr(finish_str)),
-                                            ('band', band_name))))
-
-            laf_sheet = book.worksheets[laf_tab]
-            lafs = OrderedDict()
-            period_lookup = {}
-            for row in laf_sheet.iter_rows():
-                val_0 = get_value(row, 0)
-                if val_0 in VL_MAP:
-                    lafs[VL_MAP[val_0]] = OrderedDict(
-                        (period_lookup[i], get_decimal(row, i+1))
-                        for i in range(4))
-                val_1 = get_value(row, 1)
-                if isinstance(val_1, str) and val_1.lower() in PERIOD_MAP:
-                    for i in range(4):
-                        key = get_value(row, i+1).lower()
-                        period_lookup[i] = PERIOD_MAP[key]
-
-        else:
+        if not file_name.endswith('.xlsx'):
             raise BadRequest(
                 "The file extension for " + file_name + " isn't recognized.")
+
+        book = openpyxl.load_workbook(
+            file_like, data_only=True, read_only=True)
+
+        for sheet in book.worksheets:
+            title = sheet.title.strip().lower()
+            if title.startswith('annex 1 '):
+                tab_lv_hv(sheet, gsp_rates)
+            elif title.startswith('annex 5 '):
+                tab_laf(sheet, gsp_rates)
+            elif title.startswith('annex 2 '):
+                tab_ehv(sheet, gsp_rates)
+
         rs = {
-            gsp_group.code: OrderedDict(
-                (
-                    ('lafs', lafs),
-                    ('bands', bands),
-                    ('tariffs', OrderedDict(sorted(tariffs.items())))))}
+            gsp_group.code: gsp_rates}
+
         f.write(dumps(rs))
     except BaseException:
         f.write(traceback.format_exc())
@@ -245,11 +356,7 @@ def do_post(session):
     user = g.user
     file_item = request.files["dno_file"]
     gsp_group_id = req_int('gsp_group_id')
-    llfc_tab = req_int('llfc_tab')
-    laf_tab = req_int('laf_tab')
 
-    args = (
-        user, file_item.filename, BytesIO(file_item.read()), gsp_group_id,
-        llfc_tab, laf_tab)
+    args = user, file_item.filename, BytesIO(file_item.read()), gsp_group_id
     threading.Thread(target=content, args=args).start()
     return chellow_redirect("/downloads", 303)

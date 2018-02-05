@@ -18,25 +18,25 @@
         "weekend": false}],
     "lafs": {
       "hv-net": {
-        "night": 1.03200,
-        "other": 1.03900,
-        "winter-weekday-day": 1.04700,
-        "winter-weekday-peak": 1.05100},
+        "night": 1.03000,
+        "other": 1.03700,
+        "winter-weekday-day": 1.04400,
+        "winter-weekday-peak": 1.04800},
       "hv-sub": {
-        "night": 1.01800,
-        "other": 1.02000,
-        "winter-weekday-day": 1.02200,
-        "winter-weekday-peak": 1.02300},
+        "night": 1.01700,
+        "other": 1.01900,
+        "winter-weekday-day": 1.02100,
+        "winter-weekday-peak": 1.02200},
       "lv-net": {
-        "night": 1.06700,
-        "other": 1.07200,
-        "winter-weekday-day": 1.08100,
-        "winter-weekday-peak": 1.08700},
+        "night": 1.06500,
+        "other": 1.07000,
+        "winter-weekday-day": 1.07700,
+        "winter-weekday-peak": 1.08300},
       "lv-sub": {
-        "night": 1.05600,
-        "other": 1.06000,
-        "winter-weekday-day": 1.06600,
-        "winter-weekday-peak": 1.07000}},
+        "night": 1.05500,
+        "other": 1.05700,
+        "winter-weekday-day": 1.06300,
+        "winter-weekday-peak": 1.06600}},
     "tariffs": {
       "001,002,003": {
         "amber-gbp-per-kwh": 0.02146,
