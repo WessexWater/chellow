@@ -225,7 +225,8 @@ def get_data_sources(data_source, start_date, finish_date, forecast_date=None):
 
             site_ds = SiteSource(
                 data_source.sess, data_source.site, chunk_start, chunk_finish,
-                forecast_date, data_source.caches, era, data_source.era_maps)
+                forecast_date, data_source.caches, era, data_source.era_maps,
+                data_source.deltas)
             if data_source.stream_focus == '3rd-party-used':
                 site_ds.revolve_to_3rd_party_used()
             month_start += relativedelta(months=1)
