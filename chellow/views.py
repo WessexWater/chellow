@@ -2866,7 +2866,7 @@ def site_used_graph_get(site_id):
         max_scale = max(max_scale, int(math.ceil(hh_value)))
         min_scale = min(min_scale, int(math.floor(hh_value)))
 
-    step = 10**int(math.floor(math.log10(max_scale - min_scale)))
+    step = 10 ** int(math.floor(math.log10(max_scale - min_scale)))
 
     max_height = 300
     scale_factor = float(max_height) / (max_scale - min_scale)
@@ -2887,7 +2887,7 @@ def site_used_graph_get(site_id):
 
     scale_lines = []
     for height in chain(
-            range(0, max_scale, step), range(0, min_scale, step * -1)):
+            range(0, max_scale + 1, step), range(0, min_scale - 1, step * -1)):
         scale_lines.append(
             {
                 'height': height, 'y': int(x_axis - height * scale_factor)})
