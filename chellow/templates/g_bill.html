@@ -9,13 +9,13 @@
 	<a href="/g_contracts">Gas Contracts</a> &raquo;
 	<a
 			href="/g_contracts/{{g_bill.g_batch.g_contract.id}}"
-			>{{g_bill.g_batch.g_contract.name}}</a> &gt;
+			>{{g_bill.g_batch.g_contract.name}}</a> &raquo;
 	<a
 	 		href="/g_batches?g_contract_id={{g_bill.g_batch.g_contract.id}}"
-			>Batches</a> &gt;
+			>Batches</a> &raquo;
 	<a
 	 		href="/g_batches/{{g_bill.g_batch.id}}"
-			>{{g_bill.g_batch.reference}}</a> &gt; Bill {{g_bill.id}}
+			>{{g_bill.g_batch.reference}}</a> &raquo; Bill {{g_bill.id}}
 	[<a href="/g_bills/{{g_bill.id}}/edit">edit</a>]
 {% endblock %}
 
@@ -89,10 +89,12 @@
 						<tr>
 							<th rowspan="2">Edit</th>
 							<th rowspan="2">MSN</th>
+							<th rowspan="2">Unit</th>
+							<th rowspan="2">Is Corrected?</th>
+							<th rowspan="2">Correction Factor</th>
+							<th rowspan="2">Calorific Value</th>
 							<th colspan="3">Previous</th>
 							<th colspan="3">Present</th>
-							<th rowspan="2">Units</th>
-							<th rowspan="2">Correction Factor</th>
 						</th>
 						</tr>
 						<tr>
@@ -111,6 +113,16 @@
 									[<a href="/g_reads/{{g_read.id}}/edit">edit</a>]
 								</td>
 								<td>{{g_read.msn}}</td>
+								<td>{{g_read.g_unit.code}}</td>
+								<td>
+									{% if g_read.is_corrected %}
+										Yes
+									{% else %}
+										No
+									{% endif %}
+								</td>
+								<td>{{g_read.correction_factor}}</td>
+								<td>{{g_read.calorific_value}}</td>
 								<td>{{g_read.prev_date|hh_format}}</td>
 								<td>{{g_read.prev_value}}
 								<td>
@@ -127,8 +139,6 @@
 											href="/g_read_types/{{g_read.pres_type.id}}"
 											>{{g_read.pres_type.code}}</a>
 								</td>
-								<td>{{g_read.g_units.code}}</td>
-								<td>{{g_read.correction_factor}}</td>
 							</tr>
 						{% endfor %}
 					</tbody>

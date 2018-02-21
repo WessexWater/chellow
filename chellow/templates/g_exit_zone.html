@@ -1,11 +1,13 @@
 {% extends "base.html" %}
 
 {% block title %}
-	Gas Read Types &gt; {{g_read_type.code}}
+	LDZs &raquo; {{g_exit_zone.g_ldz.code}} &raquo; {{g_exit_zone.code}}
 {% endblock %}
 
 {% block nav %}
-	<a href="/g_read_types">Gas Read Types</a> &raquo; {{g_read_type.code}}
+	<a href="/g_ldzs">LDZs</a> &raquo;
+	<a href="/g_ldzs/{{g_exit_zone.g_ldz.id}}">{{g_exit_zone.g_ldz.code}}</a>
+	&raquo; {{g_exit_zone.code}}
 {% endblock %}
 
 {% block content %}
@@ -15,11 +17,7 @@
 				<table>
 					<tr>
 						<th>Code</th>
-						<td>{{g_read_type.code}}</td>
-					</tr>
-					<tr>
-						<th>Description</th>
-						<td>{{g_read_type.description}}</td>
+						<td>{{g_exit_zone.code}}</td>
 					</tr>
 				</table>
 			</div>

@@ -922,8 +922,9 @@ class Contract(Base, PersistentClass):
 
         if next_rscript is not None:
             if finish_date is None:
-                raise BadRequest("""The finish date must be before the
-                        finish date of the next rate script.""")
+                raise BadRequest(
+                    """The finish date must be before the start date of the
+                    next rate script.""")
 
             if not hh_before(finish_date, next_rscript.finish_date):
                 raise BadRequest("""The finish date must be before the
@@ -1230,9 +1231,9 @@ class Site(Base, PersistentClass):
         return supply
 
     def insert_g_supply(
-            self, sess, supply_name, start_date, finish_date, msn, mprn,
-            g_contract, account):
-        g_supply = GSupply(mprn, supply_name, '')
+            self, sess, mprn, supply_name, g_ldz, start_date, finish_date, msn,
+            is_corrected, g_unit, g_contract, account):
+        g_supply = GSupply(mprn, supply_name, g_ldz, '')
 
         try:
             sess.add(g_supply)
@@ -1247,7 +1248,8 @@ class Site(Base, PersistentClass):
                 raise e
 
         g_supply.insert_g_era(
-            sess, self, [], start_date, finish_date, msn, g_contract, account)
+            sess, self, [], start_date, finish_date, msn, is_corrected, g_unit,
+            g_contract, account)
         sess.flush()
         return g_supply
 
@@ -2931,6 +2933,13 @@ class GRegisterRead(Base, PersistentClass):
         Integer, ForeignKey('g_bill.id', ondelete='CASCADE'), nullable=False,
         index=True)
     msn = Column(String, nullable=False, index=True)
+    g_unit_id = Column(
+        Integer, ForeignKey('g_unit.id'), nullable=False, index=True)
+    g_unit = relationship(
+        "GUnit", primaryjoin="GUnit.id==GRegisterRead.g_unit_id")
+    is_corrected = Column(Boolean, nullable=False)
+    correction_factor = Column(Numeric)
+    calorific_value = Column(Numeric)
     prev_date = Column(DateTime(timezone=True), nullable=False, index=True)
     prev_value = Column(Numeric, nullable=False)
     prev_type_id = Column(Integer, ForeignKey('g_read_type.id'), index=True)
@@ -2941,34 +2950,32 @@ class GRegisterRead(Base, PersistentClass):
     pres_value = Column(Numeric, nullable=False)
     pres_type_id = Column(Integer, ForeignKey('g_read_type.id'), index=True)
     pres_type = relationship(
-        "GReadType",
-        primaryjoin="GReadType.id==GRegisterRead.pres_type_id")
-    g_units_id = Column(
-        Integer, ForeignKey('g_units.id'), nullable=False, index=True)
-    correction_factor = Column(Numeric, nullable=False)
-    calorific_value = Column(Numeric, nullable=False)
+        "GReadType", primaryjoin="GReadType.id==GRegisterRead.pres_type_id")
 
     def __init__(
-            self, g_bill, msn, prev_value, prev_date, prev_type, pres_value,
-            pres_date, pres_type, g_units, correction_factor, calorific_value):
+            self, g_bill, msn, g_unit, is_corrected, correction_factor,
+            calorific_value, prev_value, prev_date, prev_type, pres_value,
+            pres_date, pres_type):
         self.g_bill = g_bill
         self.update(
-            msn, prev_value, prev_date, prev_type, pres_value, pres_date,
-            pres_type, g_units, correction_factor, calorific_value)
+            msn, g_unit, is_corrected, correction_factor, calorific_value,
+            prev_value, prev_date, prev_type, pres_value, pres_date, pres_type)
 
     def update(
-            self, msn, prev_value, prev_date, prev_type, pres_value, pres_date,
-            pres_type, g_units, correction_factor, calorific_value):
+            self, msn, g_unit, is_corrected, correction_factor,
+            calorific_value, prev_value, prev_date, prev_type, pres_value,
+            pres_date, pres_type):
         self.msn = msn
+        self.g_unit = g_unit
+        self.is_corrected = is_corrected
+        self.correction_factor = correction_factor
+        self.calorific_value = calorific_value
         self.prev_value = prev_value
         self.prev_date = prev_date
         self.prev_type = prev_type
         self.pres_value = pres_value
         self.pres_date = pres_date
         self.pres_type = pres_type
-        self.g_units = g_units
-        self.correction_factor = correction_factor
-        self.calorific_value = calorific_value
 
 
 class SiteGEra(Base, PersistentClass):
@@ -2993,17 +3000,23 @@ class GEra(Base, PersistentClass):
     start_date = Column(DateTime(timezone=True), nullable=False, index=True)
     finish_date = Column(DateTime(timezone=True), index=True)
     msn = Column(String)
+    is_corrected = Column(Boolean, nullable=False)
+    g_unit_id = Column(
+        Integer, ForeignKey('g_unit.id'), nullable=False, index=True)
+    g_unit = relationship("GUnit", primaryjoin="GUnit.id==GEra.g_unit_id")
     g_contract_id = Column(
-        Integer, ForeignKey('g_contract.id'), index=True)
+        Integer, ForeignKey('g_contract.id'), nullable=False, index=True)
     g_contract = relationship(
         "GContract", primaryjoin="GContract.id==GEra.g_contract_id")
     account = Column(String, nullable=False)
 
     def __init__(
-            self, sess, g_supply, start_date, finish_date, msn, contract,
-            account):
+            self, sess, g_supply, start_date, finish_date, msn, is_corrected,
+            g_unit, contract, account):
         self.g_supply = g_supply
-        self.update(sess, start_date, finish_date, msn, contract, account)
+        self.update(
+            sess, start_date, finish_date, msn, is_corrected, g_unit, contract,
+            account)
 
     def attach_site(self, sess, site, is_location=False):
         if sess.query(SiteGEra).filter(
@@ -3033,17 +3046,22 @@ class GEra(Base, PersistentClass):
 
     def update_dates(self, sess, start_date, finish_date):
         self.update(
-            sess, start_date, finish_date, self.msn, self.g_contract,
-            self.account)
+            sess, start_date, finish_date, self.msn, self.is_corrected,
+            self.g_unit, self.g_contract, self.account)
 
-    def update(self, sess, start_date, finish_date, msn, g_contract, account):
+    def update(
+            self, sess, start_date, finish_date, msn, is_corrected, g_unit,
+            g_contract, account):
+
         if hh_after(start_date, finish_date):
             raise BadRequest(
                 "The era start date can't be after the finish date.")
 
-        self.msn = msn
         self.start_date = start_date
         self.finish_date = finish_date
+        self.msn = msn
+        self.is_corrected = is_corrected
+        self.g_unit = g_unit
         self.g_contract = g_contract
         self.account = account
 
@@ -3081,15 +3099,20 @@ class GSupply(Base, PersistentClass):
     id = Column('id', Integer, primary_key=True)
     mprn = Column(String, nullable=False, unique=True)
     name = Column(String, nullable=False)
+    g_exit_zone_id = Column(
+        Integer, ForeignKey('g_exit_zone.id'), nullable=False, index=True)
+    g_exit_zone = relationship(
+        "GExitZone", primaryjoin="GExitZone.id==GSupply.g_exit_zone_id")
     note = Column(Text, nullable=False)
     g_eras = relationship('GEra', backref='g_supply')
     g_bills = relationship('GBill', backref='g_supply')
 
-    def __init__(self, mprn, name, note):
-        self.update(mprn, name)
+    def __init__(self, mprn, name, g_exit_zone, note):
+        self.update(mprn, name, g_exit_zone)
         self.note = note
 
-    def update(self, mprn, name):
+    def update(self, mprn, name, g_exit_zone):
+        self.g_exit_zone = g_exit_zone
         name = name.strip()
         if len(name) == 0:
             raise BadRequest("The supply name can't be blank.")
@@ -3108,8 +3131,7 @@ class GSupply(Base, PersistentClass):
     def get_by_mprn(sess, mprn):
         supply = GSupply.find_by_mprn(sess, mprn)
         if supply is None:
-            raise BadRequest(
-                "The MPRN " + mprn + " is not set up in Chellow.")
+            raise BadRequest("The MPRN " + mprn + " is not set up in Chellow.")
         return supply
 
     def insert_g_era_at(self, sess, start_date):
@@ -3120,13 +3142,13 @@ class GSupply(Base, PersistentClass):
             SiteGEra.is_physical == false(), SiteGEra.g_era == g_era).all()
         return self.insert_g_era(
             sess, physical_site, logical_sites, start_date, g_era.finish_date,
-            g_era.msn, g_era.g_contract, g_era.account)
+            g_era.msn, g_era.is_corrected, g_era.g_unit, g_era.g_contract,
+            g_era.account)
 
     def insert_g_era(
             self, sess, physical_site, logical_sites, start_date, finish_date,
-            msn, g_contract, account):
+            msn, is_corrected, g_unit, g_contract, account):
         covered_g_era = None
-
         last_g_era = sess.query(GEra).filter(GEra.g_supply == self).order_by(
             GEra.start_date.desc()).first()
         if last_g_era is not None:
@@ -3150,7 +3172,8 @@ class GSupply(Base, PersistentClass):
 
         sess.flush()
         g_era = GEra(
-            sess, self, start_date, finish_date, msn, g_contract, account)
+            sess, self, start_date, finish_date, msn, is_corrected, g_unit,
+            g_contract, account)
         sess.add(g_era)
         sess.flush()
 
@@ -3192,8 +3215,8 @@ class GSupply(Base, PersistentClass):
         sess.flush()
 
     def update_g_era(
-            self, sess, g_era, start_date, finish_date, msn, g_contract,
-            account):
+            self, sess, g_era, start_date, finish_date, msn, is_corrected,
+            g_unit, g_contract, account):
         if g_era.g_supply != self:
             raise Exception("The era doesn't belong to this supply.")
 
@@ -3203,7 +3226,9 @@ class GSupply(Base, PersistentClass):
         else:
             next_g_era = self.find_g_era_at(sess, next_hh(g_era.finish_date))
 
-        g_era.update(sess, start_date, finish_date, msn, g_contract, account)
+        g_era.update(
+            sess, start_date, finish_date, msn, is_corrected, g_unit,
+            g_contract, account)
 
         if prev_g_era is not None:
             prev_g_era.update_dates(
@@ -3308,12 +3333,14 @@ class GBill(Base, PersistentClass):
         self.breakdown = dumps(breakdown)
 
     def insert_g_read(
-            self, sess, msn, prev_value, prev_date, prev_type, pres_value,
-            pres_date, pres_type, units, correction_factor, calorific_value):
+            self, sess, msn, g_units, is_corrected, correction_factor,
+            calorific_value, prev_value, prev_date, prev_type, pres_value,
+            pres_date, pres_type):
 
         read = GRegisterRead(
-            self, msn, prev_value, prev_date, prev_type, pres_value, pres_date,
-            pres_type, units, correction_factor, calorific_value)
+            self, msn, g_units, is_corrected, correction_factor,
+            calorific_value, prev_value, prev_date, prev_type, pres_value,
+            pres_date, pres_type)
         sess.add(read)
         sess.flush()
         return read
@@ -3670,13 +3697,12 @@ class GRateScript(Base, PersistentClass):
         return loads(self.script)
 
 
-class GUnits(Base):
-    __tablename__ = 'g_units'
+class GUnit(Base, PersistentClass):
+    __tablename__ = 'g_unit'
     id = Column('id', Integer, primary_key=True)
     code = Column(String, nullable=False, index=True, unique=True)
     description = Column(String, nullable=False)
     factor = Column(Numeric, nullable=False)
-    g_register_reads = relationship('GRegisterRead', backref='g_units')
 
     def __init__(self, code, description, factor):
         self.code = code
@@ -3686,10 +3712,48 @@ class GUnits(Base):
     @staticmethod
     def get_by_code(sess, code):
         code = code.strip()
-        typ = sess.query(GUnits).filter_by(code=code).first()
+        typ = sess.query(GUnit).filter_by(code=code).first()
         if typ is None:
             raise BadRequest(
                 "The gas units with code " + code + " can't be found.")
+        return typ
+
+
+class GLdz(Base, PersistentClass):
+    __tablename__ = 'g_ldz'
+    id = Column('id', Integer, primary_key=True)
+    code = Column(String, nullable=False, index=True, unique=True)
+    g_exit_zones = relationship("GExitZone", backref="g_ldz")
+
+    def __init__(self, code):
+        self.code = code
+
+    @staticmethod
+    def get_by_code(sess, code):
+        code = code.strip()
+        typ = sess.query(GLdz).filter_by(code=code).first()
+        if typ is None:
+            raise BadRequest("The LDZ with code " + code + " can't be found.")
+        return typ
+
+
+class GExitZone(Base, PersistentClass):
+    __tablename__ = 'g_exit_zone'
+    id = Column('id', Integer, primary_key=True)
+    g_ldz_id = Column(Integer, ForeignKey('g_ldz.id'), index=True)
+    code = Column(String, nullable=False, index=True, unique=True)
+
+    def __init__(self, g_ldz, code):
+        self.g_ldz = g_ldz
+        self.code = code
+
+    @staticmethod
+    def get_by_code(sess, code):
+        code = code.strip()
+        typ = sess.query(GExitZone).filter_by(code=code).first()
+        if typ is None:
+            raise BadRequest(
+                "The Exit Zone with code " + code + " can't be found.")
         return typ
 
 
@@ -3916,7 +3980,32 @@ def db_init(sess, root_path):
             ("HM3", "Hundreds of cubic metres", '100'),
             ("TM3", "Tens of cubic metres", '10'),
             ("NM3", "Tenths of cubic metres", '0.1')):
-        sess.add(GUnits(code, desc, Decimal(factor_str)))
+        sess.add(GUnit(code, desc, Decimal(factor_str)))
+    sess.commit()
+
+    for ldz_code, exit_zone_codes in (
+            ('EA', ['EA1', 'EA2', 'EA3', 'EA4']),
+            ('EM', ['EM1', 'EM2', 'EM3', 'EM4']),
+            ('NT', ['NT1', 'NT2', 'NT3']),
+            ('NW', ['NW1', 'NW2']),
+            ('WM', ['WM1', 'WM2', 'WM3']),
+            ('LC', ['LC']),
+            ('LO', ['LO']),
+            ('LS', ['LS']),
+            ('LT', ['LT']),
+            ('LW', ['LW']),
+            ('SC', ['SC1', 'SC2', 'SC4']),
+            ('SE', ['SE1', 'SE2']),
+            ('SO', ['SO1', 'SO2']),
+            ('NE', ['NE1', 'NE2', 'NE3']),
+            ('NO', ['NO1', 'NO2']),
+            ('SW', ['SW1', 'SW2', 'SW3']),
+            ('WA', ['WA1', 'WA2'])):
+        g_ldz = GLdz(ldz_code)
+        sess.add(g_ldz)
+        for exit_zone_code in exit_zone_codes:
+            g_exit_zone = GExitZone(g_ldz, exit_zone_code)
+            sess.add(g_exit_zone)
     sess.commit()
 
     sess.execute(
@@ -4171,11 +4260,69 @@ def db_upgrade_11_to_12(sess, root_path):
     sess.execute("alter sequence mtc_id_seq restart with " + str(max_id + 1))
 
 
+def db_upgrade_12_to_13(sess, root_path):
+    sess.execute("drop table g_unit;")
+    sess.execute("alter table g_units rename to g_unit;")
+    sess.execute("alter table g_register_read rename g_units_id to g_unit_id;")
+    sess.execute(
+        "alter table g_register_read rename constraint "
+        "g_register_read_g_units_id_fkey to g_register_read_g_unit_id_fkey;")
+
+    sess.execute("alter table g_era add is_corrected boolean;")
+    sess.execute("update g_era set is_corrected = false;")
+    sess.execute("alter table g_era alter is_corrected set not null;")
+
+    sess.execute(
+        "alter table g_era add g_unit_id integer references g_unit (id);")
+    sess.execute("update g_era set g_unit_id = 1;")
+    sess.execute("alter table g_era alter g_unit_id set not null;")
+
+    sess.execute("alter table g_register_read add is_corrected boolean;")
+    sess.execute("update g_register_read set is_corrected = false;")
+    sess.execute(
+        "alter table g_register_read alter is_corrected set not null;")
+
+    sess.execute(
+        "alter table g_register_read alter correction_factor drop not null;")
+    sess.execute(
+        "alter table g_register_read alter calorific_value drop not null;")
+
+    for ldz_code, exit_zone_codes in (
+            ('EA', ['EA1', 'EA2', 'EA3', 'EA4']),
+            ('EM', ['EM1', 'EM2', 'EM3', 'EM4']),
+            ('NT', ['NT1', 'NT2', 'NT3']),
+            ('NW', ['NW1', 'NW2']),
+            ('WM', ['WM1', 'WM2', 'WM3']),
+            ('LC', ['LC']),
+            ('LO', ['LO']),
+            ('LS', ['LS']),
+            ('LT', ['LT']),
+            ('LW', ['LW']),
+            ('SC', ['SC1', 'SC2', 'SC4']),
+            ('SE', ['SE1', 'SE2']),
+            ('SO', ['SO1', 'SO2']),
+            ('NE', ['NE1', 'NE2', 'NE3']),
+            ('NO', ['NO1', 'NO2']),
+            ('SW', ['SW1', 'SW2', 'SW3']),
+            ('WA', ['WA1', 'WA2'])):
+        g_ldz = GLdz(ldz_code)
+        sess.add(g_ldz)
+        for exit_zone_code in exit_zone_codes:
+            g_exit_zone = GExitZone(g_ldz, exit_zone_code)
+            sess.add(g_exit_zone)
+    sess.flush()
+    sess.execute(
+        "alter table g_supply "
+        "add g_exit_zone_id integer references g_exit_zone (id);")
+    sess.execute("update g_supply set g_exit_zone_id = 9;")
+    sess.execute("alter table g_supply alter g_exit_zone_id set not null;")
+
+
 upgrade_funcs = [
     db_upgrade_0_to_1, db_upgrade_1_to_2, db_upgrade_2_to_3, db_upgrade_3_to_4,
     db_upgrade_4_to_5, db_upgrade_5_to_6, db_upgrade_6_to_7, db_upgrade_7_to_8,
     db_upgrade_8_to_9, db_upgrade_9_to_10, db_upgrade_10_to_11,
-    db_upgrade_11_to_12]
+    db_upgrade_11_to_12, db_upgrade_12_to_13]
 
 
 def db_upgrade(root_path):

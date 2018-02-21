@@ -62,6 +62,7 @@
 								href="/g_bill_imports?g_batch_id={{g_batch.id}}"
 								>Bill Imports</a>
 					</li>
+					<li><a href="/g_batches/{{g_batch.id}}/csv">CSV of Bills</a></li>
 				</ul>
 				<table class="DataTable widthAuto noMarginBottom">
 					<caption>
@@ -83,17 +84,16 @@
 							<th>Breakdown</th>
 							{% for i in range(max_reads) %}
 								<th>{{i}} MSN</th>
+								<th>{{i}} Unit</th>
+								<th>{{i}} Is Corrected?</th>
+								<th>{{i}} Correction Factor</th>
+								<th>{{i}} Calorific Value</th>
 								<th>{{i}} Prev Date</th>
 								<th>{{i}} Prev Value</th>
 								<th>{{i}} Prev Type</th>
 								<th>{{i}} Pres Date</th>
 								<th>{{i}} Pres Value</th>
 								<th>{{i}} Pres Type</th>
-								<th>{{i}} Units Consumed</th>
-								<th>{{i}} Units</th>
-								<th>{{i}} Correction Factor</th>
-								<th>{{i}} Calorific Value</th>
-								<th>{{i}} kWh</th>
 							{% endfor %}
 						</tr>
 					</thead>
@@ -108,23 +108,28 @@
 								<td>{{g_bill.finish_date|hh_format}}</td>
 								<td>{{g_bill.bill_type.code}}</td>
 								<td>{{g_bill.kwh}}</td>
-								<td>{{g_bill.net_gbp}}</td>
-								<td>{{g_bill.vat_gbp}}</td>
-								<td>{{g_bill.gross_gbp}}</td>
+								<td>{{g_bill.net}}</td>
+								<td>{{g_bill.vat}}</td>
+								<td>{{g_bill.gross}}</td>
 								<td>{{g_bill.breakdown}}</td>
 								{% for read in g_bill.g_reads %}
 									<td>{{read.msn}}</td>
+									<td>{{read.g_unit.code}}</td>
+									<td>
+										{% if read.is_corrected %}
+											Yes
+										{% else %}
+											No
+										{% endif %}
+									</td>
+									<td>{{read.correction_factor}}</td>
+									<td>{{read.calorific_value}}</td>
 									<td>{{read.prev_date|hh_format}}</td>
 									<td>{{read.prev_value}}</td>
 									<td>{{read.prev_type.code}}</td>
 									<td>{{read.pres_date|hh_format}}</td>
 									<td>{{read.pres_value}}</td>
 									<td>{{read.pres_type.code}}</td>
-									<td>{{read.units_consumed}}</td>
-									<td>{{read.units}}</td>
-									<td>{{read.correction_factor}}</td>
-									<td>{{read.calorific_value}}</td>
-									<td>{{read.kwh}}</td>
 								{% endfor %}
 							</tr>
 						{% endfor %}

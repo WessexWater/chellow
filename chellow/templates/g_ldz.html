@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+{% block title %}
+	LDZs &raquo; {{g_ldz.code}}
+{% endblock %}
+
+{% block nav %}
+	<a href="/g_ldzs">LDZs</a> &raquo; {{g_ldz.code}}
+{% endblock %}
+
+{% block content %}
+	<div class="layer-section">
+		<div class="section-content">
+			<div class="section-data">
+				<table>
+					<tr>
+						<th>Code</th>
+						<td>{{g_ldz.code}}</td>
+					</tr>
+				</table>
+				<br>
+
+				<h4>Exit Zones</h4>
+				<ul>
+					{% for g_exit_zone in g_exit_zones %}
+						<li>
+							<a
+							 		href="/g_exit_zones/{{g_exit_zone.id}}"
+									>{{g_exit_zone.code}}</a>
+						</li>
+					{% endfor %}
+				</ul>
+			</div>
+		</div>
+	</div>
+{% endblock %}

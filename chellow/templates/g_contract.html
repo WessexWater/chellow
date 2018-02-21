@@ -60,7 +60,7 @@
 						{% endfor %}
 					</tbody>
 				</table>
-
+				<br>
 				<ul>
 					<li>
 						<a href="/g_batches?g_contract_id={{contract.id}}">Batches</a>
@@ -69,7 +69,7 @@
 
 				<h3>CSV Downloads</h3>
 
-				<form action="/reports/419">
+				<form action="/reports/g_virtual_bills">
 					<fieldset>
 						<input type="hidden" name="g_contract_id" value="{{contract.id}}">
 						<legend>Download Supply Level Virtual Bills</legend>

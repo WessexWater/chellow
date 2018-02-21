@@ -1,10 +1,7 @@
 import chellow.scenario
-from chellow.utils import HH, utc_datetime
-import chellow.computer
+from chellow.utils import HH, utc_datetime, get_file_rates
+import chellow.g_engine
 
-
-create_future_func = chellow.scenario.make_create_future_func_simple(
-    'g_ccl', ['g_ccl_rate'])
 
 THRESHOLD = 4397
 
@@ -19,20 +16,20 @@ def vb(ds):
 
     if ds.g_bill is None:
         for hh in ds.hh_data:
-            if hh['utc-is-month-end'] or hh['start-date'] == sup_end:
-                month_finish = hh['start-date']
+            if hh['utc_is_month_end'] or hh['start_date'] == sup_end:
+                month_finish = hh['start_date']
                 kwh = 0
                 gbp = 0
                 month_start = utc_datetime(
                     month_finish.year, month_finish.month, 1)
 
-                for dsr in chellow.computer.get_data_sources(
+                for dsr in chellow.g_engine.get_data_sources(
                         ds, month_start, month_finish):
                     for datum in dsr.hh_data:
                         rate = float(
-                            ds.file_rate(
-                                'g_ccl', datum['start_date'],
-                                'ccl_gbp_per_kwh'))
+                            get_file_rates(
+                                ds.caches, 'g_ccl',
+                                datum['start_date'])['ccl_gbp_per_kwh'])
 
                         rate_set.add(rate)
                         kwh += datum['kwh']
@@ -45,12 +42,13 @@ def vb(ds):
     elif ds.is_last_g_bill_gen:
         kwh = 0
         gbp = 0
-        for ds in chellow.computer.get_data_sources(
+        for ds in chellow.g_engine.get_data_sources(
                 ds, ds.g_bill_start, ds.g_bill_finish):
             for hh in ds.hh_data:
                 rate = float(
-                    ds.get_file_rates(
-                        'g_ccl', hh['start_date'])['ccl_gbp_per_kwh'])
+                    get_file_rates(
+                        ds.caches, 'g_ccl',
+                        hh['start_date'])['ccl_gbp_per_kwh'])
                 rate_set.add(rate)
                 kwh += hh['kwh']
                 gbp += hh['kwh'] * rate

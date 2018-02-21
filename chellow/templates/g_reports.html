@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+{% block title %}
+	Gas Reports
+{% endblock %}
+
+{% block nav %}
+	Gas Reports
+{% endblock %}
+
+{% block content %}
+	<div class="layer-section">
+		<div class="section-content">
+			<div class="section-data">
+				<form action="/reports/g_supplies_snapshot">
+					<fieldset>
+						<legend>Supplies Snapshot</legend>
+						At {{input_date('date', now_day)}}
+						<input type="submit" value="Download">
+					</fieldset>
+				</form>
+				<br>
+				<br>
+				<form action="/reports/g_monthly_duration">
+					<legend>Monthly Duration</legend>
+					<fieldset>
+						For {{input_text('months', '1', 2, 2)}}
+						month(s) finishing at the end of
+						{{input_date('finish', month_finish, resolution='month')}}
+						<input type="submit" value="Download">
+					</fieldset>
+				</form>
+			</div>
+		</div>
+	</div>
+{% endblock %}

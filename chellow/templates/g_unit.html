@@ -1,25 +1,29 @@
 {% extends "base.html" %}
 
 {% block title %}
-	Gas Read Types &gt; {{g_read_type.code}}
+	Gas Units &raquo; {{g_unit.code}}
 {% endblock %}
 
 {% block nav %}
-	<a href="/g_read_types">Gas Read Types</a> &raquo; {{g_read_type.code}}
+	<a href="/g_units">Gas Units</a> &raquo; {{g_unit.code}}
 {% endblock %}
 
 {% block content %}
 	<div class="layer-section">
 		<div class="section-content">
 			<div class="section-data">
-				<table>
+				<table class="DataTable">
 					<tr>
 						<th>Code</th>
-						<td>{{g_read_type.code}}</td>
+						<td>{{g_unit.code}}</td>
 					</tr>
 					<tr>
 						<th>Description</th>
-						<td>{{g_read_type.description}}</td>
+						<td>{{g_unit.description}}</td>
+					</tr>
+					<tr>
+						<th>Factor</th>
+						<td>{{g_unit.factor}}</td>
 					</tr>
 				</table>
 			</div>

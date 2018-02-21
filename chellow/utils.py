@@ -152,7 +152,14 @@ def parse_mpan_core(mcore):
 
 
 def parse_bool(bool_str):
-    return bool_str.lower() == 'true'
+    val = bool_str.strip().lower()
+    if val == 'true':
+        return True
+    elif val == 'false':
+        return False
+    else:
+        raise BadRequest(
+            "A boolean must be 'true' or 'false', but got '" + bool_str + "'.")
 
 
 def hh_format(dt, ongoing_str='ongoing'):

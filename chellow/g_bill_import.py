@@ -7,8 +7,7 @@ from werkzeug.exceptions import BadRequest
 import importlib
 from pkgutil import iter_modules
 import chellow
-from chellow.models import Session, GBatch, BillType, GReadType, GUnits
-import chellow.g_bill_parser_total_xlsx
+from chellow.models import Session, GBatch, BillType, GReadType, GUnit
 
 
 importer_id = 0
@@ -100,36 +99,42 @@ class GBillImporter(threading.Thread):
                             sess, raw_read['prev_type_code'])
                         pres_type = GReadType.get_by_code(
                             sess, raw_read['pres_type_code'])
-                        g_units = GUnits.get_by_code(sess, raw_read['units'])
+                        g_unit = GUnit.get_by_code(sess, raw_read['unit'])
                         g_read = g_bill.insert_g_read(
-                            sess, raw_read['msn'], raw_read['prev_value'],
-                            raw_read['prev_date'], prev_type,
-                            raw_read['pres_value'], raw_read['pres_date'],
-                            pres_type, g_units, raw_read['correction_factor'],
-                            raw_read['calorific_value'])
+                            sess, raw_read['msn'], g_unit,
+                            raw_read['is_corrected'],
+                            raw_read['correction_factor'],
+                            raw_read['calorific_value'],
+                            raw_read['prev_value'], raw_read['prev_date'],
+                            prev_type, raw_read['pres_value'],
+                            raw_read['pres_date'], pres_type)
 
                         sess.expunge(g_read)
-                    sess.commit()
                     self.successful_bills.append(raw_bill)
                     sess.expunge(g_bill)
                 except BadRequest as e:
-                    sess.rollback()
                     raw_bill['error'] = e.description
                     self.failed_bills.append(raw_bill)
 
             if len(self.failed_bills) == 0:
+                sess.commit()
                 self._log(
                     "All the bills have been successfully loaded and attached "
                     "to the batch.")
             else:
+                sess.rollback()
                 self._log(
                     "The import has finished, but " +
-                    str(len(self.failed_bills)) + " bills failed to load.")
+                    str(len(self.failed_bills)) + " bills failed to load, " +
+                    "and so the whole import has been rolled back.")
 
+        except BadRequest as e:
+            self._log(e.description)
         except BaseException:
             self._log("I've encountered a problem: " + traceback.format_exc())
         finally:
             if sess is not None:
+                sess.rollback()
                 sess.close()
 
     def make_fields(self):

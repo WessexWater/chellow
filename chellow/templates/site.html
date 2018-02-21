@@ -184,7 +184,7 @@
 	
 	<div class="layer-section">
 		<div class="section-header">
-			<h2>CSV Downloads</h2>
+			<h2>Electricity CSV Downloads</h2>
 		</div>
 		<div class="section-content">
 			<div class="standardForm textWidthAuto">
@@ -329,6 +329,18 @@
 						{% endfor %}
 					</tbody>
 				</table>
+				<br>
+				<form action="/reports/g_monthly_duration">
+					<fieldset>
+						<input type="hidden" name="site_id" value="{{site.id}}">
+						<legend>Monthly Duration</legend>
+						<br>
+						For {{input_text('months', '1', 2, 2)}} month(s) until the end of
+						{{input_date('finish', last_month_finish, resolution='month')}}
+						UTC <input type="submit" value="Download">
+					</fieldset>
+				</form>			
+
 			</div>
 		</div>
 	</div>

@@ -1,57 +1,58 @@
 {% extends "base.html" %}
 
 {% block title %}
-	Gas Contracts &gt; {{g_contract.name}} &gt; Batches &gt; Add
-{% endblock %}
-
-{% block inside_head %}
-	<style>
-		label {
-			width: 6em;
-			float: left;
-		}
-	</style>
+	Gas Contracts &raquo; {{g_contract.name}} &raquo; Batches &gt; Add
 {% endblock %}
 
 {% block nav %}
-	<a href="{{context_path}}/g_contracts">Gas Contracts</a> &gt;
-	<a
-			href="{{context_path}}/g_contracts/{{g_contract.id}}"
-			>{{g_contract.name}}</a> &gt;
-	<a
-	 		href="{{context_path}}/g_batches?g_contract_id={{g_contract.id}}"
-			>Batches</a> &gt; Add
+	<a href="/g_contracts">Gas Contracts</a> &raquo;
+	<a href="/g_contracts/{{g_contract.id}}">{{g_contract.name}}</a> &raquo;
+	<a href="/g_batches?g_contract_id={{g_contract.id}}">Batches</a> &raquo; Add
 {% endblock %}
 
 {% block content %}
-	<form action="" method="post">
-		<fieldset>
-			<legend>Add a batch</legend>
-			<br>
-			<label>Reference</label> {{ input_text('reference', '') }}
-			<br>
-			<label>Description</label> {{ input_text('description', '') }}
-			<br>
-			<br>
-			<input type="submit" value="Add">
-		</fieldset>
-	</form>
-	<br>
-	<table>
-		<caption>Existing Batches</caption>
-		<thead>
-			<tr>
-				<th>Reference</th>
-				<th>Description</th>
-			</tr>
-		</thead>
-		<tbody>
-			{% for batch in batches %}
-				<tr>
-					<td>{{batch.reference}}</td>
-					<td>{{batch.description}}</td>
-				</tr>
-			{% endfor %}
-		</tbody>
-	</table>
+	<div class="layer-section">
+		<div class="section-content">
+			<div class="section-data">
+				<div class="standardForm textWidthAuto">
+					<form action="/g_contracts/{{g_contract.id}}/add" method="post">
+						<fieldset>
+							<legend>Add a batch</legend>
+							<div class="row">						
+								<div class="col-sm-4">
+									<label>Reference</label>
+								 	{{input_text('reference', '')}}
+								</div>
+							</div>
+							<div class="row">						
+								<div class="col-sm-4">
+									<label>Description</label>
+								 	{{input_text('description', '')}}
+								</div>
+							</div>
+							<input type="submit" value="Add">
+						</fieldset>
+					</form>
+				</div>
+				<br>
+				<table>
+					<caption>Existing Batches</caption>
+					<thead>
+						<tr>
+							<th>Reference</th>
+							<th>Description</th>
+						</tr>
+					</thead>
+					<tbody>
+						{% for batch in batches %}
+							<tr>
+								<td>{{batch.reference}}</td>
+								<td>{{batch.description}}</td>
+							</tr>
+						{% endfor %}
+					</tbody>
+				</table>
+			</div>
+		</div>
+	</div>
 {% endblock %}

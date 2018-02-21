@@ -224,7 +224,7 @@
         'status_code': 200},
     {
         'name': 'BSUoS',
-        'path': '/non_core_rate_scripts/16',
+        'path': '/non_core_rate_scripts/15',
         'regexes': [
             r"&#34;01 00:00 Z&#34;: 1.66425,"],
         'status_code': 200},
@@ -377,7 +377,7 @@ def virtual_bill(ds):
 
     {
         'name': "Check that we can see DC rate script okay. Contract 8.",
-        'path': '/dc_rate_scripts/22',
+        'path': '/dc_rate_scripts/21',
 
         # Check that 'has_finished' field is there
         'regexes': [
@@ -387,7 +387,7 @@ def virtual_bill(ds):
     {
         'name': "Check that we can see the edit view of the DC rate "
         "script okay. Contract 8.",
-        'path': '/dc_rate_scripts/22/edit',
+        'path': '/dc_rate_scripts/21/edit',
 
         # Check that 'has_finished' field is there
         'regexes': [
@@ -397,7 +397,7 @@ def virtual_bill(ds):
 
     {
         'name': "Check that we can update an DC rate script okay",
-        'path': '/dc_rate_scripts/22/edit',
+        'path': '/dc_rate_scripts/21/edit',
         'method': 'post',
         'data': {
             'start_year': "2000",
@@ -408,7 +408,7 @@ def virtual_bill(ds):
             'script': "{}"},
         'status_code': 303,
         'regexes': [
-            r'/dc_rate_scripts/22']},
+            r'/dc_rate_scripts/21']},
 
     {
         'name': "Add another DC contract",
@@ -487,7 +487,7 @@ def virtual_bill(ds):
         if hh['utc-is-month-end']:
             bill['net-gbp'] += 7
 """,
-            'properties': '{"protocol": "sftp"}'},
+            'properties': '{"enables": "false"}'},
         'status_code': 303},
 
     {
@@ -544,7 +544,7 @@ def virtual_bill(ds):
 
     {
         'name': "Update the associated rate script. Supplier contract 15",
-        'path': '/supplier_rate_scripts/24/edit',
+        'path': '/supplier_rate_scripts/23/edit',
         'method': 'post',
         'data': {
             'start_year': "2000",
@@ -565,15 +565,15 @@ def virtual_bill(ds):
         'status_code': 303},
     {
         'name': "View supplier rate script",
-        'path': '/supplier_rate_scripts/24',
+        'path': '/supplier_rate_scripts/23',
         'regexes': [
-            r'"/supplier_rate_scripts/24/edit"'],
+            r'"/supplier_rate_scripts/23/edit"'],
         'status_code': 200},
     {
         'name': "Edit view of supplier rate script",
-        'path': '/supplier_rate_scripts/24/edit',
+        'path': '/supplier_rate_scripts/23/edit',
         'regexes': [
-            r'"/supplier_rate_scripts/24"'],
+            r'"/supplier_rate_scripts/23"'],
         'status_code': 200},
 
     {
@@ -655,7 +655,7 @@ def virtual_bill_titles():
         'status_code': 303},
     {
         'name': "Update the associated rate script. Supplier contract 39",
-        'path': '/supplier_rate_scripts/26/edit',
+        'path': '/supplier_rate_scripts/25/edit',
         'method': 'post',
         'data': {
             'start_year': "2000",
@@ -675,7 +675,7 @@ def virtual_bill_titles():
 """},
         'status_code': 303,
         'regexes': [
-            r'/supplier_rate_scripts/26']},
+            r'/supplier_rate_scripts/25']},
 
     {
         'name': "Create a new supplier contract",
@@ -2047,12 +2047,12 @@ def virtual_bill_titles():
     {
         'name': "Show confirm-delete supplier rate script"
         "contract.",
-        'path': '/supplier_rate_scripts/24/edit?delete=Delete',
+        'path': '/supplier_rate_scripts/23/edit?delete=Delete',
         'status_code': 200,
         'regexes': [
             r'<form\s*'
             r'method="post"\s*'
-            r'action="/supplier_rate_scripts/24/edit"\s*'
+            r'action="/supplier_rate_scripts/23/edit"\s*'
             r'>\s*'
             r'<fieldset>\s*'
             r'<input type="submit" name="delete" value="Delete">']},
@@ -2060,7 +2060,7 @@ def virtual_bill_titles():
     {
         'name': "Test deleting the only rate script attached to a supplier "
         "contract.",
-        'path': '/supplier_rate_scripts/24/edit',
+        'path': '/supplier_rate_scripts/23/edit',
         'method': 'post',
         'data': {
             'delete': "Delete"},
@@ -2836,7 +2836,7 @@ def virtual_bill(supply_source):
     {
         'name': "Check we can delete a rate script (when it's not the only "
         "one). Supplier contract 33.",
-        'path': '/supplier_rate_scripts/28/edit',
+        'path': '/supplier_rate_scripts/27/edit',
         'method': 'post',
         'data': {
             'delete': "Delete"},
@@ -5563,7 +5563,7 @@ def virtual_bill(supply_source):
             '<a href="/supplies/9">supply</a>\s*'
             '</td>\s*<td>P96C93722</td>',
             r"<td>\s*</td>\s*<td>\s*</td>\s*<td>\s*</td>\s*<td>\s*"
-            "00 845 581\s*22 0470 7514 535\s*</td>"],
+            "00 845\s*581\s*22 0470 7514 535\s*</td>"],
         'status_code': 200},
 
     {
@@ -6300,21 +6300,21 @@ def virtual_bill(supply_source):
             'start_minute': "00",
             'insert': "Insert"},
         'regexes': [
-            r"/non_core_rate_scripts/32"],
+            r"/non_core_rate_scripts/31"],
         'status_code': 303},
     {
-        'path': '/non_core_rate_scripts/32/edit?delete=Delete',
+        'path': '/non_core_rate_scripts/31/edit?delete=Delete',
         'regexes': [
             r"Are you sure you want to delete this rate script\?"],
         'status_code': 200},
     {
-        'path': '/non_core_rate_scripts/32/edit',
+        'path': '/non_core_rate_scripts/31/edit',
         'method': 'post',
         'data': {
             'delete': "Delete"},
         'status_code': 303},
     {
-        'path': '/non_core_rate_scripts/32',
+        'path': '/non_core_rate_scripts/31',
         'status_code': 404},
     {
         'name': "Try adding a rate script before other rate scripts.",
@@ -6328,10 +6328,10 @@ def virtual_bill(supply_source):
             'start_minute': "00",
             'insert': "Insert"},
         'regexes': [
-            r"/non_core_rate_scripts/33"],
+            r"/non_core_rate_scripts/32"],
         'status_code': 303},
     {
-        'path': '/non_core_rate_scripts/33/edit',
+        'path': '/non_core_rate_scripts/32/edit',
         'regexes': [
             r'<input name="finish_year" maxlength="4" size="4" value="2010">',
 
@@ -6340,7 +6340,7 @@ def virtual_bill(supply_source):
             '<option value="0" selected>00</option>'],
         'status_code': 200},
     {
-        'path': '/non_core_rate_scripts/33/edit',
+        'path': '/non_core_rate_scripts/32/edit',
         'method': 'post',
         'data': {
             'delete': "Delete"},
@@ -7544,26 +7544,26 @@ def virtual_bill(supply_source):
 
     {
         'name': "View a MOP rate script. Contract 38.",
-        'path': '/mop_rate_scripts/25',
+        'path': '/mop_rate_scripts/24',
         'status_code': 200,
         'regexes': [
-            r'<a href="/mop_rate_scripts/25/edit">edit</a>']},
+            r'<a href="/mop_rate_scripts/24/edit">edit</a>']},
 
     {
         'name': "View a MOP rate script edit. Contract 37.",
-        'path': '/mop_rate_scripts/25/edit',
+        'path': '/mop_rate_scripts/24/edit',
         'status_code': 200,
         'regexes': [
             r'<input type="submit" value="Update">']},
 
     {
         'name': "View a MOP rate script confirm delete. Contract 37.",
-        'path': '/mop_rate_scripts/25/edit?&delete=Delete',
+        'path': '/mop_rate_scripts/24/edit?&delete=Delete',
         'status_code': 200,
         'regexes': [
             r'<form\s*'
             r'method="post"\s*'
-            r'action="/mop_rate_scripts/25/edit">']},
+            r'action="/mop_rate_scripts/24/edit">']},
 
     {
         'name': "View supplies duration selector.",
@@ -8789,7 +8789,7 @@ def virtual_bill(supply_source):
 
     {
         'name': "BAU scenario. Remove contents of rate script.",
-        'path': '/supplier_rate_scripts/24/edit',
+        'path': '/supplier_rate_scripts/23/edit',
         'method': 'post',
         'data': {
             'start_year': '2000',
@@ -8868,7 +8868,7 @@ def virtual_bill(supply_source):
 
     {
         'name': "BAU scenario. Reinstate contents of rate script.",
-        'path': '/supplier_rate_scripts/24/edit',
+        'path': '/supplier_rate_scripts/23/edit',
         'method': 'post',
         'data': {
             'start_year': '2000',
@@ -10880,7 +10880,7 @@ def virtual_bill(supply_source):
     {
         'name': "Eras starting after report period.",
         'path': '/downloads',
-        'tries': {},
+        'tries': {'max': 20},
         'regexes': [
             r'0082_FINISHED_watkinsexamplecom_monthly_duration_20030801_0000_'
             r'for_1_months_site_CI005\.ods'],
@@ -15267,12 +15267,15 @@ finally:
             'properties': '{}',
             'charge_script': """
 import chellow.g_ccl
+from chellow.g_engine import g_rates
+
 
 def virtual_bill_titles():
     return [
-        'units_consumed', 'correction_factor', 'units_code', 'units_factor',
-        'cv', 'kwh', 'gas_rate', 'gas_gbp', 'standing_rate', 'standing_gbp',
-        'net_gbp', 'vat_gbp', 'gross_gbp']
+        'units_consumed', 'correction_factor', 'unit_code', 'unit_factor',
+        'calorific_value', 'kwh', 'gas_rate', 'gas_gbp', 'ccl_rate',
+        'standing_rate', 'standing_gbp', 'net_gbp', 'vat_gbp', 'gross_gbp',
+        'problem']
 
 
 def virtual_bill(ds):
@@ -15281,17 +15284,20 @@ def virtual_bill(ds):
     for hh in ds.hh_data:
         bill['units_consumed'] += hh['units_consumed']
         ds.rate_sets['correction_factor'].add(hh['correction_factor'])
-        ds.rate_sets['units_code'].add(hh['units_code'])
-        ds.rate_sets['units_factor'].add(hh['units_factor'])
-        ds.rate_sets['cv'].add(hh['cv'])
+        ds.rate_sets['unit_code'].add(hh['unit_code'])
+        ds.rate_sets['unit_factor'].add(hh['unit_factor'])
+        ds.rate_sets['calorific_value'].add(hh['calorific_value'])
         kwh = hh['kwh']
         bill['kwh'] += kwh
-        gas_rate = float(ds.g_rates(db_id, hh['start_date'])['gas_rate'])
+        gas_rate = float(
+            g_rates(ds.sess, ds.caches, db_id, hh['start_date'])['gas_rate'])
         ds.rate_sets['gas_rate'].add(gas_rate)
         bill['gas_gbp'] += gas_rate * kwh
         if hh['utc_is_month_end']:
             standing_rate = float(
-                ds.g_rates(db_id, hh['start_date'])['standing_rate'])
+                g_rates(
+                    ds.sess, ds.caches, db_id,
+                    hh['start_date'])['standing_rate'])
             ds.rate_sets['standing_rate'].add(standing_rate)
             bill['standing_gbp'] += standing_rate
         if hh['utc_decimal_hour'] == 0:
@@ -15314,6 +15320,15 @@ def virtual_bill(ds):
         'regexes': [
             r'<h3 id="properties">Properties</h3>\s*'
             r'<pre>\{\}</pre>']},
+
+    {
+        'name': "View add rate script to gas contract",
+        'path': '/g_contracts/1/add_rate_script',
+        'status_code': 200,
+        'regexes': [
+            r'<form\s*'
+            r'action="/g_contracts/1/add_rate_script"\s*'
+            r'method="post">']},
 
     {
         'name': "Add rate script to gas contract",
@@ -15399,6 +15414,9 @@ def virtual_bill(ds):
             'start_hour': '00',
             'start_minute': '00',
             'msn': 'hwo8tt',
+            'is_corrected': 'false',
+            'g_unit_id': '5',
+            'g_exit_zone_id': '6',
             'mprn': '7502786737',
             'g_contract_id': '1',
             'account': 'ghoIIl',
@@ -15422,7 +15440,9 @@ def virtual_bill(ds):
             r'Main Gas',
             r'<form method="post" action="/g_supplies/1/edit">\s*'
             r'<fieldset>\s*'
-            r'<legend>Insert a new era</legend>\s*']},
+            r'<legend>Insert a new era</legend>\s*',
+            r'<select name="g_exit_zone_id">\s*'
+            r'<option value="1">EA1</option>']},
     {
         'name': "Edit gas supply",
         'path': '/g_supplies/1/edit',
@@ -15430,6 +15450,7 @@ def virtual_bill(ds):
         'data': {
             'mprn': '750278673',
             'name': 'Main Gas Supply',
+            'g_exit_zone_id': '6',
             'update': 'Update'},
         'status_code': 303,
         'regexes': [
@@ -15442,6 +15463,7 @@ def virtual_bill(ds):
         'data': {
             'mprn': '',
             'name': 'Main Gas Supply',
+            'g_exit_zone_id': '6',
             'update': 'Update'},
         'status_code': 400,
         'regexes': [
@@ -15466,7 +15488,10 @@ def virtual_bill(ds):
             'start_hour': '00',
             'start_minute': '00',
             'msn': 'hwo8tt',
+            'is_corrected': 'false',
+            'g_unit_id': '5',
             'mprn': '750278673',
+            'g_exit_zone_id': '6',
             'g_contract_id': '1',
             'account': 'ghoIIl',
             'insert_gas': 'Insert Gas'},
@@ -15492,6 +15517,8 @@ def virtual_bill(ds):
             'start_hour': '00',
             'start_minute': '00',
             'msn': 'hwo8th',
+            'is_corrected': 'false',
+            'g_unit_id': '5',
             'g_contract_id': 1,
             'account': 'ghoIIl'},
         'status_code': 303,
@@ -15513,12 +15540,12 @@ def virtual_bill(ds):
             r'Total']},
 
     {
-        'name': "Test Total XLSX bill import",
+        'name': "Test gas CSV bill import",
         'path': '/g_bill_imports',
         'method': 'post',
         'data': {
             'g_batch_id': "1", },
-        'files': {'import_file': 'test/bills.total.xlsx'},
+        'files': {'import_file': 'test/gas/gas_bills.csv'},
         'status_code': 303,
         'regexes': [
             r"/g_bill_imports/0"]},
@@ -15530,26 +15557,34 @@ def virtual_bill(ds):
         'status_code': 200,
         'regexes': [
             r"successfully",
-            r'39\.300811</td>\s*</tr>\s*<tr>']},
+            r'39\.300811</td>\s*</tr>\s*</tbody>']},
 
     {
         'name': "Gas bill shown correctly in batch",
         'path': '/g_batches/1',
         'status_code': 200,
         'regexes': [
-            r"<th>0 Pres Type</th>\s*"
-            r"<th>0 Units Consumed</th>\s*"
-            r"<th>0 Units</th>\s*"
+            r"<th>0 MSN</th>\s*"
+            r"<th>0 Unit</th>\s*"
+            r"<th>0 Is Corrected\?</th>\s*"
             r"<th>0 Correction Factor</th>\s*"
             r"<th>0 Calorific Value</th>\s*"
-            r"<th>0 kWh</th>\s*"
+            r"<th>0 Prev Date</th>\s*"
+            r"<th>0 Prev Value</th>\s*"
+            r"<th>0 Prev Type</th>\s*"
+            r"<th>0 Pres Date</th>\s*"
+            r"<th>0 Pres Value</th>\s*"
+            r"<th>0 Pres Type</th>\s*"
             r"</tr>",
             r"2015-09-01 00:00"]},
 
     {
         'name': "View gas bill",
         'path': '/g_bills/1',
-        'status_code': 200},
+        'status_code': 200,
+        'regexes': [
+            r'<tr>\s*'
+            r'<td>ccl</td>']},
 
     {
         'name': "View edit gas bill",
@@ -15654,7 +15689,9 @@ def virtual_bill(ds):
         'method': 'post',
         'data': {
             'delete': 'delete'},
-        'status_code': 303},
+        'status_code': 303,
+        'regexes': [
+            r"/g_batches\?g_contract_id=1"]},
 
     {
         'name': "Add a new batch to a gas contract",
@@ -15673,16 +15710,44 @@ def virtual_bill(ds):
         'method': 'post',
         'data': {
             'g_batch_id': "2"},
-        'files': {'import_file': 'test/bills-fail.total.csv'},
+        'files': {'import_file': 'test/gas/gas_bills_fail.csv'},
         'status_code': 303,
         'regexes': [
             r"/g_bill_imports/1"]},
+
     {
         'name': "View failed gas bill import",
         'path': '/g_bill_imports/1',
         'tries': {},
         'status_code': 200,
-        'regexes': [r'Net GBP']},
+        'regexes': [
+            r'Net GBP']},
+
+    {
+        'name': "Check that the imported bill has been rolled back.",
+        'path': '/g_supplies/1',
+        'status_code': 200,
+        'regexes': [
+            r'<table class="DataTable widthAuto noMarginBottom">\s*'
+            r'<caption>Gas Bills</caption>\s*'
+            r'<thead>\s*'
+            r'<tr>\s*'
+            r'<th>View</th>\s*'
+            r'<th>From</th>\s*'
+            r'<th>To</th>\s*'
+            r'<th>Batch</th>\s*'
+            r'<th>Reference</th>\s*'
+            r'<th>kWh</th>\s*'
+            r'<th>Net</th>\s*'
+            r'<th>VAT</th>\s*'
+            r'<th>Type</th>\s*'
+            r'<th colspan="2">Previous</th>\s*'
+            r'<th colspan="2">Present</th>\s*'
+            r'</tr>\s*'
+            r'</thead>\s*'
+            r'<tbody>\s*'
+            r'</tbody>\s*'
+            r'</table>']},
 
     {
         'name': "Gas: Import CSV bills",
@@ -15690,7 +15755,7 @@ def virtual_bill(ds):
         'method': 'post',
         'data': {
             'g_batch_id': "2"},
-        'files': {'import_file': 'test/bills.total.csv'},
+        'files': {'import_file': 'test/gas/gas_bills.csv'},
         'status_code': 303,
         'regexes': [
             r"/g_bill_imports/2"]},
@@ -15702,8 +15767,26 @@ def virtual_bill(ds):
         'status_code': 200,
         'regexes': [r'successfully']},
     {
+        'name': "Edit the added rate script",
+        'path': '/g_rate_scripts/1/edit',
+        'method': 'post',
+        'data': {
+            'start_year': '2015',
+            'start_month': '07',
+            'start_day': '03',
+            'start_hour': '00',
+            'start_minute': '00',
+            'has_finished': 'true',
+            'finish_year': '2015',
+            'finish_month': '08',
+            'finish_day': '31',
+            'finish_hour': '23',
+            'finish_minute': '30',
+            'script': '{"gas_rate": 0.019548, "standing_rate": 67.80}'},
+        'status_code': 303},
+    {
         'name': "Gas bill check",
-        'path': '/reports/429?g_bill_id=4',
+        'path': '/reports/429?g_bill_id=3',
         'status_code': 303},
     {
         'name': "Gas bill check",
@@ -15717,30 +15800,29 @@ def virtual_bill(ds):
         'path': '/downloads/0014_FINISHED_adminexamplecom_g_bill_check.csv',
         'status_code': 200,
         'regexes': [
-            r'batch,bill_reference,bill_type,bill_start_date,bill_finish_date,'
-            r'mprn,supply_name,site_code,site_name,covered_start,'
-            r'covered_finish,covered_bill_ids,covered_units_consumed,'
-            r'virtual_units_consumed,covered_correction_factor,'
-            r'virtual_correction_factor,covered_units_code,'
-            r'virtual_units_code,covered_units_factor,virtual_units_factor,'
-            r'covered_cv,virtual_cv,covered_kwh,virtual_kwh,covered_gas_rate,'
-            r'virtual_gas_rate,'
-            r'covered_gas_gbp,virtual_gas_gbp,difference_gas_gbp,'
-            r'covered_standing_rate,virtual_standing_rate,'
-            r'covered_standing_gbp,virtual_standing_gbp,'
+            r'batch,bill_reference,bill_type,bill_start_date,'
+            r'bill_finish_date,mprn,supply_name,site_code,site_name,'
+            r'covered_start,covered_finish,covered_bill_ids,'
+            r'covered_units_consumed,virtual_units_consumed,'
+            r'covered_correction_factor,virtual_correction_factor,'
+            r'covered_unit_code,virtual_unit_code,covered_unit_factor,'
+            r'virtual_unit_factor,covered_calorific_value,'
+            r'virtual_calorific_value,covered_kwh,virtual_kwh,'
+            r'covered_gas_rate,virtual_gas_rate,covered_gas_gbp,'
+            r'virtual_gas_gbp,difference_gas_gbp,covered_ccl_rate,'
+            r'virtual_ccl_rate,covered_standing_rate,'
+            r'virtual_standing_rate,covered_standing_gbp,virtual_standing_gbp,'
             r'difference_standing_gbp,covered_net_gbp,virtual_net_gbp,'
             r'difference_net_gbp,covered_vat_gbp,virtual_vat_gbp,'
             r'difference_vat_gbp,covered_gross_gbp,virtual_gross_gbp,'
-            r'difference_gross_gbp',
-            r'TB2,8899900012,N,2015-09-01 00:00,2015-09-30 23:30,750278673,'
-            r'Main Gas Supply,CH017,Parbola,2015-09-01 00:00,2015-09-30 23:30,'
-            r'"\[5, 4\]",'
-            r'25964,7830.0,1.00941,1.02264,HCUF \| M3,M3,1 \| 2.8317,1.0,,,'
-            r'9001802,87345.98333999788,0.019448,0.019548,17872.26,'
-            r'1707.4392823302724,16164.820717669725,,67.8,157.8,67.8,'
-            r'90.00000000000001,24025.32,1775.2392823302723,'
-            r'22250.080717669727,2097.78,0,2097.78,14186.22,'
-            r'1775.2392823302723,12410.980717669727']},
+            r'difference_gross_gbp\s*',
+            r'TB2,8899900012,N,2015-09-01 00:00,2015-09-30 00:00,750278673,'
+            r'Main Gas Supply,CH017,Parbola,2015-09-01 00:00,2015-09-30 00:00,'
+            r'\[3\],,7829.999999999759,,1.02264,HCUF,M3,2.8317,1.0,39.300811,,'
+            r'4500901,87934.521286\d*,0.019448,0.019548,8936.13,'
+            r'1718.9440220988\d*,7217.185977901\d*,,0.00525288,,,,,,6972.33,'
+            r'1718.9440220988\d*,5253.385977901\d*,1003.89,0,1003.89,7976.22,'
+            r'1718.9440220988\d*,6257.275977901\d*,,']},
 
     {
         'name': "Delete gas supply. Insert the gas supply",
@@ -15753,8 +15835,11 @@ def virtual_bill(ds):
             'start_day': '01',
             'start_hour': '00',
             'start_minute': '00',
-            'msn': '7ghwsklh',
             'mprn': '98472777',
+            'g_exit_zone_id': '6',
+            'msn': '7ghwsklh',
+            'is_corrected': 'false',
+            'g_unit_id': '5',
             'g_contract_id': '1',
             'account': 'ghuel',
             'insert_gas': 'Insert Gas'},
@@ -15768,6 +15853,11 @@ def virtual_bill(ds):
         'regexes': [
             r"Another Gas"],
         'status_code': 200},
+
+    {
+        'name': "Global search. Find a gas supply by MPRN",
+        'path': '/supplies?search_pattern=750278673',
+        'status_code': 307},
 
     {
         'name': "Delete gas supply.",
@@ -15819,39 +15909,6 @@ def virtual_bill(ds):
         'status_code': 303,
         'regexes': [
             r'/g_batches/3']},
-
-    {
-        'name': "Gas: Engie XLSX bill import",
-        'path': '/g_bill_imports',
-        'method': 'post',
-        'data': {
-            'g_batch_id': '3', },
-        'files': {'import_file': 'test/gas/bills.engie.xlsx'},
-        'status_code': 303,
-        'regexes': [
-            r"/g_bill_imports/3"]},
-
-    {
-        'name': "View bill import",
-        'path': '/g_bill_imports/3',
-        'tries': {},
-        'status_code': 200,
-        'regexes': [
-            r"successfully",
-            r'144\.61',
-            r'</tr>\s*'
-            r'<tr>']},
-
-    {
-        'name': "Gas bill shown correctly in batch",
-        'path': '/g_batches/3',
-        'status_code': 200,
-        'regexes': [
-            r'2016-04-01 00:00',
-            r'Bills\s*'
-            r'\[<a\s*'
-            r'href="/g_batches/3/add_bill"\s*'
-            r'>add</a>\]']},
 
     {
         'name': "Does site page show the gas supply?",
@@ -18991,5 +19048,160 @@ def virtual_bill(ds):
         'status_code': 200,
 
         'regexes': [
-            r"The 'local_rates' must be a list."]}
+            r"The 'local_rates' must be a list."]},
+
+    {
+        'name': "Gas CV auto-importer",
+        'path': '/non_core_contracts/4/edit',
+        'method': 'post',
+        'data': {
+            'name': 'g_cv',
+            'properties': """{
+  "enabled": true,
+  "url": "http://127.0.0.1:8080/nationalgrid/cv.csv"}
+"""},
+        'status_code': 303},
+
+    {
+        'name': "Do an 'import now'",
+        'path': '/non_core_contracts/4/auto_importer',
+        'method': 'post',
+        'regexes': [
+            '/non_core_contracts/4/auto_importer'],
+        'status_code': 303},
+
+    {
+        'name': "Gas CV",
+        'path': '/non_core_contracts/4/auto_importer',
+        'tries': {'max': 40, 'period': 1},
+        'regexes': [
+            r"Added new rate script\."],
+        'status_code': 200},
+
+    {
+        'name': "Gas supplies snapshot",
+        'path': '/reports/g_supplies_snapshot?g_supply_id=1&date_year=2018&'
+        'date_month=03&date_day=01&date_hour=00&date_minute=00',
+        'status_code': 303},
+    {
+        'path': '/downloads',
+        'tries': {},
+        'status_code': 200,
+        'regexes': [
+            r"0026_FINISHED_adminexamplecom_g_supplies_snapshot\.csv"]},
+    {
+        'path': '/downloads/'
+        '0026_FINISHED_adminexamplecom_g_supplies_snapshot.csv',
+        'status_code': 200,
+        'regexes': [
+            r'2018-03-01 00:00,CH017,Parbola,,,750278673,EM2,hwo8th,no,M3,'
+            r'Total,ghoIIl,2015-09-01 00:00,']},
+
+    {
+        'name': "Gas monthly duration",
+        'path': '/reports/g_monthly_duration?g_supply_id=1&months=1&'
+        'finish_year=2018&finish_month=03&finish_day=01&finish_hour=00&'
+        'finish_minute=00&compression=False',
+        'status_code': 303},
+    {
+        'path': '/downloads',
+        'tries': {},
+        'status_code': 200,
+        'regexes': [
+            r'0027_FINISHED_adminexamplecom_g_monthly_duration_20180301_'
+            r'0000_for_1_months_g_supply_1\.ods']},
+    {
+        'path': '/downloads/'
+        '0027_FINISHED_adminexamplecom_g_monthly_duration_20180301_0000_for_1_'
+        'months_g_supply_1.ods',
+        'status_code': 200,
+        'regexes': [
+            r'<table:table-row>\s*'
+            r'<table:table-cell '
+            r'office:date-value="\d\d\d\d-\d\d-\d\dT\d\d:\d\d:\d\d" '
+            r'office:value-type="date" table:style-name="cell_date"/>\s*'
+            r'<table:table-cell office:string-value="750278673" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell office:string-value="Main Gas Supply" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell office:string-value="EM2" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell office:value="False" '
+            r'office:value-type="float"/>\s*'
+            r'<table:table-cell office:string-value="M3" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell office:string-value="Total" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell office:string-value="CH017" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell office:string-value="Parbola" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell office:string-value="" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell office:date-value="2018-03-31T23:30:00" '
+            r'office:value-type="date" table:style-name="cell_date"/>\s*'
+            r'<table:table-cell office:value="90263.78443636319" '
+            r'office:value-type="float"/>\s*'
+            r'<table:table-cell office:value="1832.2764581620822" '
+            r'office:value-type="float"/>\s*'
+            r'<table:table-cell office:value="0" office:value-type="float" '
+            r'table:number-columns-repeated="2"/>\s*'
+            r'<table:table-cell/>\s*'
+            r'<table:table-cell office:value="8085.385149201755" '
+            r'office:value-type="float"/>\s*'
+            r'<table:table-cell office:value="1.02264" '
+            r'office:value-type="float"/>\s*'
+            r'<table:table-cell office:string-value="M3" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell office:value="1.0" '
+            r'office:value-type="float"/>\s*'
+            r'<table:table-cell office:value="39.3" '
+            r'office:value-type="float"/>\s*'
+            r'<table:table-cell office:value="90263.78443636319" '
+            r'office:value-type="float"/>\s*'
+            r'<table:table-cell office:value="0.019548" '
+            r'office:value-type="float"/>\s*'
+            r'<table:table-cell office:value="1764.4764581620823" '
+            r'office:value-type="float"/>\s*'
+            r'<table:table-cell office:value="0.00198" '
+            r'office:value-type="float"/>\s*'
+            r'<table:table-cell office:value="67.8" '
+            r'office:value-type="float" table:number-columns-repeated="2"/>\s*'
+            r'<table:table-cell office:value="1832.2764581620822" '
+            r'office:value-type="float"/>\s*'
+            r'<table:table-cell office:value="0" '
+            r'office:value-type="float"/>\s*'
+            r'<table:table-cell office:value="1832.2764581620822" '
+            r'office:value-type="float"/>\s*'
+            r'<table:table-cell office:string-value="" '
+            r'office:value-type="string"/>\s*'
+            r'</table:table-row>']},
+
+    {
+        'name': "Gas virtual bill by HH",
+        'path': '/reports/g_virtual_bills_hh?g_supply_id=1&start_year=2018&'
+        'start_month=02&start_day=01&start_hour=00&start_minute=00&'
+        'finish_year=2018&finish_month=02&finish_day=01&finish_hour=00&'
+        'finish_minute=30&compression=False',
+        'status_code': 303},
+    {
+        'path': '/downloads',
+        'tries': {},
+        'status_code': 200,
+        'regexes': [
+            r'0028_FINISHED_adminexamplecom_'
+            r'g_supply_virtual_bills_hh_1\.csv']},
+    {
+        'path': '/downloads/'
+        '0028_FINISHED_adminexamplecom_g_supply_virtual_bills_hh_1.csv',
+        'status_code': 200,
+        'regexes': [
+            r'MPRN,Site Code,Site Name,Account,HH Start,,,units_consumed,'
+            r'correction_factor,unit_code,unit_factor,calorific_value,kwh,'
+            r'gas_rate,gas_gbp,ccl_rate,standing_rate,standing_gbp,net_gbp,'
+            r'vat_gbp,gross_gbp,problem\s*'
+            r'750278673,CH017,Parbola,ghoIIl,2018-02-01 00:00,,,'
+            r'5.433726578764746,1.02264,M3,1.0,39.3,60.66114545454545,'
+            r'0.019548,1.1858040713454543,,,,1.1858040713454543,0,'
+            r'1.1858040713454543,']},
 ]

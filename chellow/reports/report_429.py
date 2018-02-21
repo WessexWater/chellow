@@ -143,8 +143,7 @@ def content(g_batch_id, g_bill_id, user):
 
                     if v is not None:
                         if title.endswith('_rate') or title in (
-                                'correction_factor', 'calorific_value',
-                                'units'):
+                                'correction_factor', 'calorific_value'):
                             if k not in vals:
                                 vals[k] = set()
                             vals[k].add(v)
@@ -161,16 +160,16 @@ def content(g_batch_id, g_bill_id, user):
 
                     if title in (
                             'correction_factor', 'calorific_value',
-                            'units_code', 'units_factor'):
+                            'unit_code', 'unit_factor'):
                         if k not in vals:
                             vals[k] = set()
                         for g_read in covered_bill.g_reads:
-                            if title in ('units_code', 'units_factor'):
-                                g_units = g_read.g_units
-                                if title == 'units_code':
-                                    v = g_units.code
+                            if title in ('unit_code', 'unit_factor'):
+                                g_unit = g_read.g_unit
+                                if title == 'unit_code':
+                                    v = g_unit.code
                                 else:
-                                    v = g_units.factor
+                                    v = g_unit.factor
                             else:
                                 v = getattr(g_read, title)
                             vals[k].add(v)

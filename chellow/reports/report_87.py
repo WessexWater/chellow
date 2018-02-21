@@ -6,7 +6,8 @@ from sqlalchemy import or_
 from sqlalchemy.sql.expression import null, true
 from chellow.models import (
     Session, Contract, Era, Site, SiteEra, Tpr, MeasurementRequirement, Ssc)
-from chellow.utils import (HH, hh_min, hh_max, hh_format, req_date, req_int)
+from chellow.utils import (
+    HH, hh_min, hh_max, hh_format, req_date, req_int, make_val)
 from chellow.computer import contract_func, SupplySource
 from chellow.views import chellow_redirect
 import chellow.computer
@@ -16,18 +17,6 @@ import csv
 import os
 import threading
 from flask import g
-
-
-def make_val(v):
-    if isinstance(v, set):
-        if len(v) == 1:
-            return make_val(v.pop())
-        else:
-            return ''
-    elif isinstance(v, Datetime):
-        return hh_format(v)
-    else:
-        return v
 
 
 def content(start_date, finish_date, contract_id, user):

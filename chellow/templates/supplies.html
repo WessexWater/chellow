@@ -11,7 +11,10 @@
 {% block content %}
 	<div class="layer-section">
 		<div class="section-header">
-			<h2>Search for supply eras by MPAN core, account number or meter serial number</h2>
+			<h2>
+				Search for supply eras by MPAN core, account number or meter serial
+			 	number
+			</h2>
 		</div>
 		<div class="section-content">
 			<div class="section-data">
@@ -28,92 +31,131 @@
 					</div>
 				</div>
 				<div class="noWrap-lg">					
-					{% if eras %}
-					<p>
-						Only the first {{max_results}} supply eras of the search results are
-					 	shown.
-				 	</p>
-					<table class="DataTable">
-						<caption>Supplies</caption>
-						<thead>
-							<tr>
-								<th rowspan="3">Supply</th>
-								<th rowspan="3">Meter Serial Number</th>
-								<th colspan="2">DC</th>
-								<th colspan="3">Import</th>
-								<th colspan="3">Export</th>
-							</tr>
-							<tr>
-								<th rowspan="2">Contract</th>
-								<th rowspan="2">Account</th>
-								<th rowspan="2">Mpan</th>
-								<th colspan="2">Supplier</th>
-								<th rowspan="2">Mpan</th>
-								<th colspan="2">Supplier</th>
-							</tr>
-							<tr>
-								<th>Contract</th>
-								<th>Account</th> 
-								<th>Contract</th>
-								<th>Account</th> 
-							</tr>
-						</thead>
-						<tbody>
-							{% for era in eras %}
+					{% if e_eras %}
+						<p>
+							Only the first {{max_results}} electricity supply eras of the
+						 	search results are shown.
+						</p>
+						<table class="DataTable">
+							<caption>Electricity Supplies</caption>
+							<thead>
 								<tr>
-									<td>
-										<a href="/supplies/{{era.supply_id}}">supply</a>
-									</td>
-									<td>{{era.msn}}</td>
-									<td>
-										<a href="/dc_contracts/{{era.dc_contract.id}}">{{era.dc_contract.name}}</a>
-									</td>
-									<td>{{era.dc_account}}</td>
-									<td>
-										{% if era.imp_mpan_core %}
-											{{era.pc.code}} {{era.mtc.code}} {{era.imp_llfc.code}}
-											{{era.imp_mpan_core}}
-										{% endif %}
-									</td>
-									<td>
-										{% if era.imp_mpan_core %}
-											<a href="/supplier_contracts/{{era.imp_supplier_contract.id}}">{{era.imp_supplier_contract.name}}</a>
-										{% endif %}
-									</td>
-									<td>
-										{% if era.imp_mpan_core %}
-											{{era.imp_supplier_account}}
-										{% endif %}
-									</td>
-									<td>
-										{% if era.exp_mpan_core %}
-											{{era.pc.code}} {{era.mtc.code}} {{era.exp_llfc.code}}
-											{{era.exp_mpan_core}}
-										{% endif %}
-									</td>
-									<td>
-										{% if era.exp_mpan_core %}
-											<a href="/supplier_contracts/{{era.exp_supplier_contract.id}}">{{era.exp_supplier_contract.name}}</a>
-										{% endif %}
-									</td>
-									<td>
-										{% if era.exp_mpan_core %}
-											{{era.exp_supplier_account}}
-										{% endif %}
-									</td>
+									<th rowspan="3">Supply</th>
+									<th rowspan="3">Meter Serial Number</th>
+									<th colspan="2">DC</th>
+									<th colspan="3">Import</th>
+									<th colspan="3">Export</th>
 								</tr>
-							{% endfor %}
-						</tbody>
-					</table>
-				{% elif request.values.search_pattern %}
-					<p>No supplies matched your search</p>
-				{% endif %}
-			</div>
+								<tr>
+									<th rowspan="2">Contract</th>
+									<th rowspan="2">Account</th>
+									<th rowspan="2">Mpan</th>
+									<th colspan="2">Supplier</th>
+									<th rowspan="2">Mpan</th>
+									<th colspan="2">Supplier</th>
+								</tr>
+								<tr>
+									<th>Contract</th>
+									<th>Account</th> 
+									<th>Contract</th>
+									<th>Account</th> 
+								</tr>
+							</thead>
+							<tbody>
+								{% for e_era in e_eras %}
+									<tr>
+										<td>
+											<a href="/supplies/{{e_era.supply_id}}">supply</a>
+										</td>
+										<td>{{e_era.msn}}</td>
+										<td>
+											<a
+													href="/dc_contracts/{{e_era.dc_contract.id}}"
+													>{{e_era.dc_contract.name}}</a>
+										</td>
+										<td>{{e_era.dc_account}}</td>
+										<td>
+											{% if e_era.imp_mpan_core %}
+												{{e_era.pc.code}} {{e_era.mtc.code}}
+												{{e_era.imp_llfc.code}} {{e_era.imp_mpan_core}}
+											{% endif %}
+										</td>
+										<td>
+											{% if e_era.imp_mpan_core %}
+												<a
+														href="/supplier_contracts/{{e_era.imp_supplier_contract.id}}">{{e_era.imp_supplier_contract.name}}</a>
+											{% endif %}
+										</td>
+										<td>
+											{% if e_era.imp_mpan_core %}
+												{{e_era.imp_supplier_account}}
+											{% endif %}
+										</td>
+										<td>
+											{% if e_era.exp_mpan_core %}
+												{{e_era.pc.code}} {{e_era.mtc.code}}
+												{{e_era.exp_llfc.code}} {{e_era.exp_mpan_core}}
+											{% endif %}
+										</td>
+										<td>
+											{% if e_era.exp_mpan_core %}
+												<a
+														href="/supplier_contracts/{{e_era.exp_supplier_contract.id}}"
+														>{{e_era.exp_supplier_contract.name}}</a>
+											{% endif %}
+										</td>
+										<td>
+											{% if e_era.exp_mpan_core %}
+												{{e_era.exp_supplier_account}}
+											{% endif %}
+										</td>
+									</tr>
+								{% endfor %}
+							</tbody>
+						</table>
+					{% elif request.values.search_pattern %}
+						<p>No electricity supplies matched your search</p>
+					{% endif %}
+					<br>
+					{% if g_eras %}
+						<p>
+							Only the first {{max_results}} gas supply eras of the search
+						 	results are shown.
+						</p>
+						<table class="DataTable">
+							<caption>Gas Supplies</caption>
+							<thead>
+								<tr>
+									<th rowspan="3">Supply</th>
+									<th rowspan="2">MPRN</th>
+									<th rowspan="3">Meter Serial Number</th>
+									<th rowspan="2">Contract</th>
+									<th rowspan="2">Account</th>
+								</tr>
+							</thead>
+							<tbody>
+								{% for g_era in g_eras %}
+									<tr>
+										<td>
+											<a href="/g_supplies/{{g_era.g_supply_id}}">supply</a>
+										</td>
+										<td>{{g_era.g_supply.mprn}}</td>
+										<td>{{g_era.msn}}</td>
+										<td>
+											<a
+													href="/g_contracts/{{g_era.g_contract.id}}"
+													>{{g_era.g_contract.name}}</a>
+										</td>
+										<td>{{g_era.account}}</td>
+									</tr>
+								{% endfor %}
+							</tbody>
+						</table>
+					{% elif request.values.search_pattern %}
+						<p>No gas supplies matched your search</p>
+					{% endif %}
+				</div>
 			</div>
 		</div>
 	</div>
-
-
-	
-	
 {% endblock %}

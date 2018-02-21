@@ -12,7 +12,7 @@ from chellow.models import (
     Site, Era, Supply, HhDatum, Source, GeneratorType, GspGroup, Contract, Pc,
     Cop, Ssc, Snag, Channel, Mtc, BillType, Tpr, ReadType, Participant, Bill,
     RegisterRead, UserRole, Party, User, VoltageLevel, Llfc, MarketRole,
-    MeterType, MeterPaymentType, Session, GContract, GSupply)
+    MeterType, MeterPaymentType, Session, GContract, GSupply, GUnit, GExitZone)
 from werkzeug.exceptions import BadRequest
 
 
@@ -413,23 +413,29 @@ def general_import_g_supply(sess, action, vals, args):
     if action == "insert":
         site_code = add_arg(args, "Site Code", vals, 0)
         site = Site.get_by_code(sess, site_code)
-        supply_name = add_arg(args, "Supply Name", vals, 1)
-        start_date_str = add_arg(args, "Start Date", vals, 2)
+        mprn = add_arg(args, "MPRN", vals, 1)
+        supply_name = add_arg(args, "Supply Name", vals, 2)
+        g_exit_zone_code = add_arg(args, "Exit Zone", vals, 3)
+        g_exit_zone = GExitZone.get_by_code(sess, g_exit_zone_code)
+        start_date_str = add_arg(args, "Start Date", vals, 4)
         start_date = parse_hh_start(start_date_str)
-        finish_date_str = add_arg(args, "Finish Date", vals, 3)
+        finish_date_str = add_arg(args, "Finish Date", vals, 5)
         finish_date = parse_hh_start(finish_date_str)
-        msn = add_arg(args, "Meter Serial Number", vals, 4)
-        mprn = add_arg(args, "MPRN", vals, 5)
-        g_contract_name = add_arg(args, "Contract", vals, 6)
+        msn = add_arg(args, "Meter Serial Number", vals, 6)
+        is_corrected_str = add_arg(args, "Is Corrected?", vals, 7)
+        is_corrected = parse_bool(is_corrected_str)
+        g_unit_code = add_arg(args, "Unit of Measurement", vals, 8)
+        g_unit = GUnit.get_by_code(sess, g_unit_code)
+        g_contract_name = add_arg(args, "Contract", vals, 9)
         if len(g_contract_name) > 0:
             g_contract = GContract.get_by_name(sess, g_contract_name)
         else:
             g_contract = None
-        account = add_arg(args, "Account", vals, 7)
+        account = add_arg(args, "Account", vals, 10)
 
         site.insert_g_supply(
-            sess, supply_name, start_date, finish_date, msn, mprn,
-            g_contract, account)
+            sess, mprn, supply_name, g_exit_zone, start_date, finish_date, msn,
+            is_corrected, g_unit, g_contract, account)
         sess.flush()
     elif action == "update":
         existing_mprn = add_arg(args, "Existing MPRN", vals, 0)

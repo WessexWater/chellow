@@ -142,10 +142,24 @@
 							<label class="aligned">Meter Serial Number</label>
 							{{input_text('msn', g_era.msn, 16)}}
 							<br>
+							<label class="aligned">Is Corrected?</label>
+							{{input_checkbox('is_corrected', g_era.is_corrected)}}
+							<br>
+							<label class="aligned">Units</label>
+							<select name="g_unit_id">
+								{% for g_unit in g_units %}
+									{{input_option(
+										'g_unit_id', g_unit.id, g_unit.code, g_era.g_unit.id)}}
+								{% endfor %}
+							</select>
+							<br>
 							<label class="aligned">Contract</label>
 							<select name="g_contract_id">
 								{% for g_contract in supplier_g_contracts %}
-									{{input_option('g_contract_id', g_contract.id, g_contract.name, g_era.g_contract.id)}}
+									{{
+										input_option(
+											'g_contract_id', g_contract.id, g_contract.name,
+										 	g_era.g_contract.id)}}
 								{% endfor %}
 							</select>
 							<br>

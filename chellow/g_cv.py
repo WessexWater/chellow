@@ -4,17 +4,12 @@ import threading
 from collections import defaultdict, deque
 from chellow.models import RateScript, Contract, Session
 from chellow.utils import HH, hh_format, utc_datetime_now, to_utc
-import chellow.scenario
 import atexit
 import requests
 import csv
 from decimal import Decimal
-from datetime import datetime as Datetime
-from zish import dumps
-
-
-create_future_func = chellow.scenario.make_create_future_func_monthly(
-    'g_cv', ['rates_gbp_per_mwh'])
+from datetime import datetime as Datetime, timedelta as Timedelta
+from zish import loads
 
 
 def param_format(dt):
@@ -113,39 +108,49 @@ class GCvImporter(threading.Thread):
                 month_cv = defaultdict(dict)
                 cf = csv.reader(res.text.splitlines())
                 row = next(cf)  # Skip title row
+                last_date = to_utc(Datetime.min)
                 for row in cf:
+                    applicable_at_str = row[0]
                     applicable_for_str = row[1]
+                    applicable_for = to_utc(
+                        Datetime.strptime(applicable_for_str, "%d/%m/%Y"))
                     data_item = row[2]
                     value_str = row[3]
 
-                    if 'LDZ' in data_item:
-                        applicable_for = to_utc(
-                            Datetime.strptime(applicable_for_str, "%d/%m/%Y"))
-                        cvs = month_cv[applicable_for]
+                    if 'LDZ' in data_item and \
+                            this_month_start <= applicable_for < \
+                            next_month_start:
                         ldz = data_item[-3:-1]
-                        cvs[ldz] = Decimal(value_str)
+                        cvs = month_cv[ldz]
+                        applicable_at = to_utc(
+                            Datetime.strptime(
+                                applicable_at_str, "%d/%m/%Y %H:%M:%S"))
+                        last_date = max(last_date, applicable_at)
+                        cv = Decimal(value_str)
+                        try:
+                            existing = cvs[applicable_for.day]
+                            if applicable_at > existing['applicable_at']:
+                                existing['cv'] = cv
+                                existing['applicable_at'] = applicable_at
+                        except KeyError:
+                            cvs[applicable_for.day] = {
+                                'cv': cv,
+                                'applicable_at': applicable_at}
 
                 all_equal = len(set(map(len, month_cv.values()))) <= 1
-                last_date = max(month_cv.keys())
-                if last_date > next_month_start and all_equal:
-                    for dt in tuple(month_cv.keys()):
-                        if (dt.year, dt.month) != (
-                                this_month_start.year, this_month_start.month):
-                            del month_cv[dt]
+                if last_date + Timedelta(days=1) >= next_month_start and \
+                        all_equal:
                     self.log("The whole month's data is there.")
-                    month_ion = [v for k, v in sorted(month_cv.items())]
-                    script = dumps(month_ion)
+                    script = {'cvs': month_cv}
                     contract = Contract.get_non_core_by_name(sess, 'g_cv')
                     rs = RateScript.get_by_id(sess, latest_rs_id)
                     contract.update_rate_script(
                         sess, rs, rs.start_date,
                         rs.start_date + relativedelta(months=2) - HH,
-                        rs.script)
+                        loads(rs.script))
                     sess.flush()
                     contract.insert_rate_script(
-                        sess,
-                        rs.start_date + relativedelta(months=1),
-                        script)
+                        sess, rs.start_date + relativedelta(months=1), script)
                     sess.commit()
                     self.log("Added new rate script.")
                 else:

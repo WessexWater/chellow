@@ -20,9 +20,7 @@
 {% endblock %}
 
 {% block content %}
-
 	{% if request.method == "GET" and request.values.delete %}
-
 		<div class="layer-section">
 			<div class="section-header">
 				<h2>
@@ -139,7 +137,9 @@
 										<label>Source</label>
 										<select name="source_id">
 											{% for source in sources %}
-												{{input_option('source_id', source.id, source.code + ' ' + source.name)}}
+												{{input_option(
+													'source_id', source.id, source.code + ' ' +
+												 	source.name)}}
 											{% endfor %}
 										</select>
 									</div>
@@ -147,7 +147,10 @@
 										<label>Generator Type</label>
 										<select name="generator_type_id">
 											{% for generator_type in generator_types %}
-												{{input_option('generator_type_id', generator_type.id, generator_type.code + ' ' + generator_type.description)}}
+												{{input_option(
+													'generator_type_id', generator_type.id,
+												 	generator_type.code + ' ' +
+												 	generator_type.description)}}
 											{% endfor %}
 										</select>
 										<label>* if source is 'gen' or 'gen-net'</label>
@@ -173,7 +176,9 @@
 											<label>GSP Group</label>
 											<select name="gsp_group_id">
 												{% for gsp_group in gsp_groups %}
-													{{input_option('gsp_group_id', gsp_group.id, gsp_group.code + ' ' + gsp_group.description)}}
+													{{input_option(
+														'gsp_group_id', gsp_group.id,
+													 	gsp_group.code + ' ' + gsp_group.description)}}
 												{% endfor %}
 											</select>
 										</div>
@@ -181,7 +186,8 @@
 											<label>MOP Contract</label>
 											<select name="mop_contract_id">
 												{% for contract in mop_contracts %}
-													{{input_option('mop_contract_id', contract.id, contract.name)}}
+													{{input_option(
+														'mop_contract_id', contract.id, contract.name)}}
 												{% endfor %}
 											</select>
 										</div>
@@ -195,7 +201,8 @@
 											<label>DC Contract</label>
 											<select name="dc_contract_id">
 												{% for contract in dc_contracts %}
-													{{input_option('dc_contract_id', contract.id, contract.name)}}
+													{{input_option(
+														'dc_contract_id', contract.id, contract.name)}}
 												{% endfor %}
 											</select>
 										</div>
@@ -209,7 +216,8 @@
 											<label>Profile Class</label>
 											<select name="pc_id">
 												{% for pc in pcs %}
-													{{input_option('pc_id', pc.id, pc.code + ' ' + pc.name)}}
+													{{input_option(
+														'pc_id', pc.id, pc.code + ' ' + pc.name)}}
 												{% endfor %}
 											</select>
 										</div>
@@ -221,7 +229,8 @@
 											<label>CoP</label>
 											<select name="cop_id">
 													{% for cop in cops %}
-															{{input_option('cop_id', cop.id, cop.description)}}
+															{{input_option(
+																'cop_id', cop.id, cop.description)}}
 													{% endfor %}
 											</select>										
 										</div>
@@ -255,7 +264,9 @@
 												<label>Supplier Contract</label>
 												<select name="imp_supplier_contract_id">
 													{% for contract in supplier_contracts %}
-														{{input_option('imp_supplier_contract_id', contract.id, contract.name)}}
+														{{input_option(
+															'imp_supplier_contract_id', contract.id,
+														 	contract.name)}}
 													{% endfor %}
 												</select>
 											</div>
@@ -292,7 +303,9 @@
 												<label>Supplier Contract</label>
 												<select name="exp_supplier_contract_id">
 													{% for contract in supplier_contracts %}
-														{{input_option('exp_supplier_contract_id', contract.id, contract.name)}}
+														{{input_option(
+															'exp_supplier_contract_id', contract.id,
+														 	contract.name)}}
 													{% endfor %}
 												</select>
 												
@@ -308,45 +321,79 @@
 									</div>
 								</fieldset>
 							</fieldset>
+							<br>
+							<input name="insert_electricity" type="submit" value="Insert">
 						</div>
-						<br>
-						<input name="insert_electricity" type="submit" value="Insert">
 					</fieldset>
 				</form>
-				<br>
-				<form action="/sites/{{site.id}}/edit" method="post">
-					<fieldset>
-						<legend>Insert a gas supply</legend>
-						<label>Name</label>
-						{{input_text('name')}}
-						<br>
-						<br>
-						<fieldset>
-							<legend>Start Date</legend>
-							{{input_date('start')}}
-						</fieldset>
-						<br>
-						<label>Meter Serial Number</label>
-						{{input_text('msn')}}
-						<br>
-						<label>MPRN</label>
-						{{input_text('mprn', '')}}
-						<br>
-						<label>Contract</label>
-						<select name="g_contract_id">
-							{% for g_contract in g_contracts %}
-								{{
-									input_option(
-										'g_contract_id', g_contract.id, g_contract.name)}}
-							{% endfor %}
-						</select>
-						<br>
-						<label>Account</label>
-						{{input_text('account')}}
-						<br>
-						<input name="insert_gas" type="submit" value="Insert">
-					</fieldset>
-				</form>
+			</div>
+		</div>
+		<div class="layer-section">
+			<div class="section-header">
+				<h2>Insert a gas supply</h2>
+			</div>
+			<div class="section-content">
+				<div class="section-data">
+					<div class="standardForm">
+						<form action="/sites/{{site.id}}/edit" method="post">
+							<fieldset>
+								<legend>Insert a gas supply</legend>
+								<label>Name</label>
+								{{input_text('name')}}
+								<br>
+								<br>
+								<fieldset>
+									<div class="standardForm textWidthAuto">
+										<legend>Start Date</legend>
+										{{input_date('start')}}
+									</div>	
+								</fieldset>
+								<br>
+								<label>Meter Serial Number</label>
+								{{input_text('msn')}}
+								<br>
+								<label>Has Corrected Reads?</label>
+								{{input_checkbox('is_corrected')}}
+								<br>
+								<label>MPRN</label>
+								{{input_text('mprn', '')}}
+								<br>
+								<label>Exit Zone</label>
+								<select name="g_exit_zone_id">
+									{% for g_exit_zone in g_exit_zones %}
+										{{
+											input_option(
+												'g_exit_zone_id', g_exit_zone.id, g_exit_zone.code)}}
+									{% endfor %}
+								</select>
+								<br>
+								<label>Contract</label>
+								<select name="g_contract_id">
+									{% for g_contract in g_contracts %}
+										{{
+											input_option(
+												'g_contract_id', g_contract.id, g_contract.name)}}
+									{% endfor %}
+								</select>
+								<br>
+								<label>Account</label>
+								{{input_text('account')}}
+								<br>
+								<br>
+								<label>Units</label>
+								<select name="g_unit_id">
+									{% for g_unit in g_units %}
+										{{
+											input_option(
+												'g_unit_id', g_unit.id,
+											 	g_unit.code + ' ' + g_unit.description)}}
+									{% endfor %}
+								</select>
+								<input name="insert_gas" type="submit" value="Insert">
+							</fieldset>
+						</form>
+					</div>
+				</div>
 			</div>
 		</div>
 	{% endif %}

@@ -2,7 +2,7 @@
 
 {% block inside_head %}
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
-	<title>Chellow &gt; Gas Supplies &gt; {{g_supply.id}}</title>
+	<title>Chellow &raquo; Gas Supplies &raquo; {{g_supply.id}}</title>
 
 	<script type="text/javascript" language="javascript">    
 		function hideText() {
@@ -53,12 +53,12 @@
 {% endblock %}
 
 {% block title %}
-    Gas Supplies &gt; {{g_supply.id}}
+    Gas Supplies &raquo; {{g_supply.id}}
 {% endblock %}
 
 {% block nav %}
-	<a href="{{context_path}}/g_supplies">Gas Supplies</a> &gt; {{g_supply.id}}
- 	[<a href="{{context_path}}/g_supplies/{{g_supply.id}}/edit">edit</a>]
+	<a href="/g_supplies">Gas Supplies</a> &raquo; {{g_supply.id}}
+ 	[<a href="/g_supplies/{{g_supply.id}}/edit">edit</a>]
 {% endblock %}
 
 {% block content %}
@@ -74,6 +74,14 @@
 						<th>MPRN</th>
 						<td>{{g_supply.mprn}}</td>
 					</tr>
+					<tr>
+						<th>Exit Zone</th>
+						<td>
+							<a
+							 		href="/g_exit_zones/{{g_supply.g_exit_zone.id}}"
+									>{{g_supply.g_exit_zone.code}}</a>
+						</td>
+					</tr>
 						{% if system_properties['g_supply_links'] %}
 							<tr>
 								<th>Links</th>
@@ -82,7 +90,8 @@
 										{% for link in system_properties['g_supply_links'] %}
 											<li>
 												<a
-													href="{{link.url}}g_supply_id={{site.id}}">{{link.name}}</a>
+													href="{{link.url}}g_supply_id={{site.id}}"
+													>{{link.name}}</a>
 											</li>
 										{% endfor %}
 									</ul>
@@ -90,9 +99,7 @@
 							</tr>
 						{% endif %}
 					<tr>
-						<th>
-							<a href="{{context_path}}/g_supplies/{{g_supply.id}}/notes">Notes</a>
-						</th>
+						<th><a href="/g_supplies/{{g_supply.id}}/notes">Notes</a></th>
 						<td>
 							{% if note %}
 								{% if is_truncated %}
@@ -100,8 +107,12 @@
 										{{ truncated_note }} 
 									</div>
 									<div id="full_note" style="display: none;">
-										<pre style=" white-space: pre-wrap;">{{ g_supply.note }}</pre>
-										<a href="JavaScript:void()" onClick="hideText()" />Less...</a>
+										<pre
+												style=" white-space: pre-wrap;"
+												>{{ g_supply.note }}</pre>
+										<a
+												href="JavaScript:void()" onClick="hideText()"
+											 	>Less...</a>
 									</div>
 								{% else %}
 									Category: {{note.category}}
@@ -124,15 +135,16 @@
 					{% set other_sites = g_era_bundle['other_sites'] %}
 					<table class="DataTable widthAuto noMarginBottom">
 						<caption>
-							Era
-							[<a href="{{context_path}}/g_eras/{{g_era.id}}/edit">edit</a>]
+							Era [<a href="/g_eras/{{g_era.id}}/edit">edit</a>]
 						</caption>
 						<thead>
 							<tr>
 								<th>From</th>
 								<th>To</th>
 								<th>Sites</th>
-								<th><a title="Meter Serial Number">MSN</a></th>
+								<th title="Meter Serial Number">MSN</th>
+								<th>Corrected Reads?</th>
+								<th>Units</th>
 								<th>Contract</th>
 								<th>Account</th>
 							</tr>
@@ -140,20 +152,24 @@
 						<tbody>
 							<tr>
 								<td>
-									<a title="{{ g_era.start_date|hh_format }}">{{ g_era.start_date|hh_format(modifier='date') }}</a>
-								</td>
-								<td>
-									<a title="{{ g_era.finish_date|hh_format }}">{{ g_era.finish_date|hh_format(modifier='date') }}</a>
+									<a
+											title="{{g_era.start_date|hh_format}}"
+											>{{g_era.start_date|hh_format(modifier='date') }}</a>
 								</td>
 								<td>
 									<a
-											href="{{context_path}}/sites/{{physical_site.id}}"
+											title="{{g_era.finish_date|hh_format}}"
+											>{{ g_era.finish_date|hh_format(modifier='date') }}</a>
+								</td>
+								<td>
+									<a
+											href="/sites/{{physical_site.id}}"
 											title="{{physical_site.name}}">{{physical_site.code}}</a>
 									{% if other_sites %}
 										(also
 											{% for other_site in other_sites %}
 												<a
-													href="{{context_path}}/sites/{{other_site.id}}"
+													href="/sites/{{other_site.id}}"
 													title="{{other_site.name}}">{{other_site.code}}</a>
 											{%- endfor -%}
 										)
@@ -161,7 +177,19 @@
 								</td>
 								<td>{{g_era.msn}}</td>
 								<td>
-									<a href="{{context_path}}/g_contracts/{{g_era.g_contract.id}}"
+									{% if g_era.is_corrected %}
+										yes
+									{% else %}
+										no
+									{% endif %}
+								</td>
+								<td>
+									<a
+									 		href="/g_units/{{g_era.g_unit.id}}"
+											>{{g_era.g_unit.code}}</a>
+								</td>
+								<td>
+									<a href="/g_contracts/{{g_era.g_contract.id}}"
 											>{{g_era.g_contract.name }}</a>
 								</td>
 								<td>
@@ -169,7 +197,7 @@
 									{% if g_era_bundle['shared_accounts'] %}(
 										{%- for sup in g_era_bundle['shared_accounts'] -%}
 											{%- if not loop.first    -%} {%- endif -%}
-												<a href="{{context_path}}/g_supplies/{{sup.id}}"
+												<a href="/g_supplies/{{sup.id}}"
 														>{{sup.id}}</a>
 										{%- endfor -%}
 										)
@@ -298,14 +326,43 @@
 				{% endfor %}
 				<br>
 
-				<h3>CSV Downloads</h3>
-
-				<form action="/reports/291/output/">
+				<form action="/reports/g_supply_virtual_bill">
 					<fieldset>
 						<input type="hidden" name="g_supply_id" value="{{g_supply.id}}">
 						<legend>Virtual Bills</legend>
 						From {{input_date('start', last_month_start)}} to
 						{{input_date('finish', last_month_finish)}}
+						<input type="submit" value="Download">
+					</fieldset>
+				</form>
+				<br>
+				<form action="/reports/g_virtual_bills_hh">
+					<fieldset>
+						<input type="hidden" name="g_supply_id" value="{{g_supply.id}}">
+						<legend>Virtual Bills by HH</legend>
+						From {{input_date('start', last_month_start)}} to
+						{{input_date('finish', last_month_finish)}}
+						<input type="submit" value="Download">
+					</fieldset>
+				</form>
+				<br>
+				<form action="/reports/g_supplies_snapshot">
+					<fieldset>
+						<input type="hidden" name="g_supply_id" value="{{g_supply.id}}">
+						<legend>Snapshot</legend>
+						At {{input_date('date', last_month_finish)}}
+						<input type="submit" value="Download">
+					</fieldset>
+				</form>
+				<br>
+				<form action="/reports/g_monthly_duration">
+					<fieldset>
+						<input type="hidden" name="g_supply_id" value="{{g_supply.id}}">
+						<legend>Monthly Duration</legend>
+						<br>
+						For <input name="months" maxlength="2" size="2" value="1">
+						month(s) finishing at the end of
+						{{ input_date('finish', last_month_finish, 'month') }} UTC
 						<input type="submit" value="Download">
 					</fieldset>
 				</form>

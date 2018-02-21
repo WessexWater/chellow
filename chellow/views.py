@@ -9,7 +9,8 @@ from chellow.models import (
     RateScript, Supply, Mtc, Channel, Tpr, MeasurementRequirement, Bill,
     RegisterRead, HhDatum, Snag, Batch, ReadType, BillType, MeterPaymentType,
     ClockInterval, db_upgrade, Llfc, MeterType, GEra, GSupply, SiteGEra, GBill,
-    GContract, GRateScript, GBatch, GRegisterRead, GReadType, VoltageLevel)
+    GContract, GRateScript, GBatch, GRegisterRead, GReadType, VoltageLevel,
+    GUnit, GLdz, GExitZone)
 from sqlalchemy.exc import ProgrammingError
 import traceback
 from datetime import datetime as Datetime
@@ -191,7 +192,7 @@ def check_permissions(*args, **kwargs):
     path = request.path
     method = request.method
     if path in (
-            '/health', '/nationalgrid/sf_bsuos.xls',
+            '/health', '/nationalgrid/sf_bsuos.xls', '/nationalgrid/cv.csv',
             '/elexonportal/file/download/BESTVIEWPRICES_FILE', '/ecoes',
             '/elexonportal/file/download/TLM_FILE',
             '/elexonportal/file/download/RCRC_FILE',
@@ -238,7 +239,7 @@ def check_permissions(*args, **kwargs):
     return Response('Forbidden', 403)
 
 
-@app.route('/nationalgrid/<fname>')
+@app.route('/nationalgrid/<fname>', methods=['GET', 'POST'])
 def nationalgrid(fname):
     filename = os.path.join(os.path.dirname(__file__), 'nationalgrid', fname)
     return send_file(
@@ -795,12 +796,14 @@ def site_edit_get(site_id):
         pcs = g.sess.query(Pc).order_by(Pc.code)
         cops = g.sess.query(Cop).order_by(Cop.code)
         g_contracts = g.sess.query(GContract).order_by(GContract.name)
+        g_units = g.sess.query(GUnit).order_by(GUnit.code)
+        g_ldzs = g.sess.query(GLdz).order_by(GLdz.code)
         return render_template(
             'site_edit.html', site=site, sources=sources,
             generator_types=generator_types, gsp_groups=gsp_groups, eras=eras,
             mop_contracts=mop_contracts, dc_contracts=dc_contracts,
             supplier_contracts=supplier_contracts, pcs=pcs, cops=cops,
-            g_contracts=g_contracts)
+            g_contracts=g_contracts, g_units=g_units, g_ldzs=g_ldzs)
     except BadRequest as e:
         g.sess.rollback()
         flash(e.description)
@@ -809,7 +812,7 @@ def site_edit_get(site_id):
             generator_types=generator_types, gsp_groups=gsp_groups, eras=eras,
             mop_contracts=mop_contracts, dc_contracts=dc_contracts,
             supplier_contracts=supplier_contracts, pcs=pcs, cops=cops,
-            g_contracts=g_contracts)
+            g_contracts=g_contracts, g_units=g_units, g_ldzs=g_ldzs)
 
 
 @app.route('/sites/<int:site_id>/edit', methods=['POST'])
@@ -919,12 +922,18 @@ def site_edit_post(site_id):
             name = req_str('name')
             msn = req_str('msn')
             mprn = req_str('mprn')
+            is_corrected = req_bool('is_corrected')
+            g_unit_id = req_int('g_unit_id')
+            g_unit = GUnit.get_by_id(g.sess, g_unit_id)
+            g_exit_zone_id = req_int('g_exit_zone_id')
+            g_exit_zone = GExitZone.get_by_id(g.sess, g_exit_zone_id)
             g_contract_id = req_int('g_contract_id')
             g_contract = GContract.get_by_id(g.sess, g_contract_id)
             account = req_str('account')
             start_date = req_date('start')
             g_supply = site.insert_g_supply(
-                g.sess, name, start_date, None, msn, mprn, g_contract, account)
+                g.sess, mprn, name, g_exit_zone, start_date, None, msn,
+                is_corrected, g_unit, g_contract, account)
             g.sess.commit()
             return chellow_redirect('/g_supplies/' + str(g_supply.id), 303)
 
@@ -946,6 +955,8 @@ def site_edit_post(site_id):
         pcs = g.sess.query(Pc).order_by(Pc.code)
         cops = g.sess.query(Cop).order_by(Cop.code)
         g_contracts = g.sess.query(GContract).order_by(GContract.name)
+        g_units = g.sess.query(GUnit).order_by(GUnit.code)
+        g_exit_zones = g.sess.query(GExitZone).order_by(GExitZone.code)
         return make_response(
             render_template(
                 'site_edit.html', site=site, sources=sources,
@@ -953,7 +964,8 @@ def site_edit_post(site_id):
                 eras=eras, mop_contracts=mop_contracts,
                 dc_contracts=dc_contracts,
                 supplier_contracts=supplier_contracts, pcs=pcs, cops=cops,
-                g_contracts=g_contracts), 400)
+                g_contracts=g_contracts, g_units=g_units,
+                g_exit_zones=g_exit_zones), 400)
 
 
 @app.route('/sites/add', methods=['POST'])
@@ -1900,16 +1912,16 @@ def supplies_get():
             max_results = req_int('max_results')
         else:
             max_results = 50
-        eras = g.sess.query(Era).from_statement(
+        e_eras = g.sess.query(Era).from_statement(
             text(
                 "select e1.* from era as e1 "
                 "inner join (select e2.supply_id, max(e2.start_date) "
                 "as max_start_date from era as e2 "
                 "where replace(lower(e2.imp_mpan_core), ' ', '') "
-                "like lower(:reducedPattern) "
+                "like lower(:reduced_pattern) "
                 "or lower(e2.imp_supplier_account) like lower(:pattern) "
                 "or replace(lower(e2.exp_mpan_core), ' ', '') "
-                "like lower(:reducedPattern) "
+                "like lower(:reduced_pattern) "
                 "or lower(e2.exp_supplier_account) like lower(:pattern) "
                 "or lower(e2.dc_account) like lower(:pattern) "
                 "or lower(e2.mop_account) like lower(:pattern) "
@@ -1919,13 +1931,35 @@ def supplies_get():
                 "and e1.start_date = sq.max_start_date limit :max_results")
             ).params(
             pattern="%" + pattern + "%",
-            reducedPattern="%" + reduced_pattern + "%",
+            reduced_pattern="%" + reduced_pattern + "%",
             max_results=max_results).all()
-        if len(eras) == 1:
-            return chellow_redirect("/supplies/" + str(eras[0].supply.id), 307)
+
+        g_eras = g.sess.query(GEra).from_statement(
+            text("""
+select e1.* from g_era as e1 inner join
+  (select e2.g_supply_id, max(e2.start_date) as max_start_date
+  from g_era as e2 join g_supply on e2.g_supply_id = g_supply.id
+  where
+    lower(g_supply.mprn) like lower(:pattern)
+    or lower(e2.account) like lower(:pattern)
+    or lower(e2.msn) like lower(:pattern)
+  group by e2.g_supply_id) as sq
+on e1.g_supply_id = sq.g_supply_id and e1.start_date = sq.max_start_date
+limit :max_results""")
+            ).params(
+            pattern="%" + pattern + "%",
+            max_results=max_results).all()
+
+        if len(e_eras) == 1 and len(g_eras) == 0:
+            return chellow_redirect(
+                "/supplies/" + str(e_eras[0].supply.id), 307)
+        elif len(e_eras) == 0 and len(g_eras) == 1:
+            return chellow_redirect(
+                "/g_supplies/" + str(g_eras[0].g_supply.id), 307)
         else:
             return render_template(
-                'supplies.html', eras=eras, max_results=max_results)
+                'supplies.html', e_eras=e_eras, g_eras=g_eras,
+                max_results=max_results)
     else:
         return render_template('supplies.html')
 
@@ -5061,8 +5095,10 @@ def g_supply_edit_get(g_supply_id):
     g_supply = GSupply.get_by_id(g.sess, g_supply_id)
     g_eras = g.sess.query(GEra).filter(
         GEra.g_supply == g_supply).order_by(GEra.start_date.desc())
+    g_exit_zones = g.sess.query(GExitZone).order_by(GExitZone.code).all()
     return render_template(
-        'g_supply_edit.html', g_supply=g_supply, g_eras=g_eras)
+        'g_supply_edit.html', g_supply=g_supply, g_eras=g_eras,
+        g_exit_zones=g_exit_zones)
 
 
 @app.route('/g_supplies/<int:g_supply_id>/edit', methods=["POST"])
@@ -5081,16 +5117,20 @@ def g_supply_edit_post(g_supply_id):
         else:
             mprn = req_str("mprn")
             name = req_str("name")
-            g_supply.update(mprn, name)
+            g_exit_zone_id = req_int("g_exit_zone_id")
+            g_exit_zone = GExitZone.get_by_id(g.sess, g_exit_zone_id)
+            g_supply.update(mprn, name, g_exit_zone)
             g.sess.commit()
             return chellow_redirect("/g_supplies/" + str(g_supply.id), 303)
     except BadRequest as e:
         flash(e.description)
         g_eras = g.sess.query(GEra).filter(
             GEra.g_supply == g_supply).order_by(GEra.start_date.desc())
+        g_exit_zones = g.sess.query(GExitZone).order_by(GExitZone.code).all()
         return make_response(
             render_template(
-                'g_supply_edit.html', g_supply=g_supply, g_eras=g_eras), 400)
+                'g_supply_edit.html', g_supply=g_supply, g_eras=g_eras,
+                g_exit_zones=g_exit_zones), 400)
 
 
 @app.route('/g_contracts')
@@ -5323,7 +5363,8 @@ def g_batch_edit_post(g_batch_id):
             g_contract = g_batch.g_contract
             g_batch.delete(g.sess)
             g.sess.commit()
-            return chellow_redirect("/g_contracts/" + str(g_contract.id), 303)
+            return chellow_redirect(
+                "/g_batches?g_contract_id=" + str(g_contract.id), 303)
         elif 'delete_bills' in request.values:
             g.sess.query(GBill).filter(GBill.g_batch == g_batch).delete(False)
             g.sess.commit()
@@ -5350,17 +5391,17 @@ def g_bill_get(g_bill_id):
         columns = set()
         grid = defaultdict(dict)
 
-        for k, v in breakdown.items():
-            if k.endswith('-gbp'):
+        for k, v in tuple(breakdown.items()):
+            if k.endswith('_gbp'):
                 columns.add('gbp')
                 row_name = k[:-4]
                 rows.add(row_name)
                 grid[row_name]['gbp'] = v
                 del breakdown[k]
 
-        for k, v in breakdown.items():
+        for k, v in tuple(breakdown.items()):
             for row_name in sorted(list(rows), key=len, reverse=True):
-                if k.startswith(row_name + '-'):
+                if k.startswith(row_name + '_'):
                     col_name = k[len(row_name) + 1:]
                     columns.add(col_name)
                     grid[row_name][col_name] = v
@@ -5368,8 +5409,8 @@ def g_bill_get(g_bill_id):
                     break
 
         for k, v in breakdown.items():
-            pair = k.split('-')
-            row_name = '-'.join(pair[:-1])
+            pair = k.split('_')
+            row_name = '_'.join(pair[:-1])
             column_name = pair[-1]
             rows.add(row_name)
             columns.add(column_name)
@@ -5493,18 +5534,20 @@ def g_supply_notes_get(g_supply_id):
 
 
 @app.route('/g_eras/<int:g_era_id>/edit')
-def g_era_get(g_era_id):
+def g_era_edit_get(g_era_id):
     g_era = GEra.get_by_id(g.sess, g_era_id)
     supplier_g_contracts = g.sess.query(GContract).order_by(GContract.name)
     site_g_eras = g.sess.query(SiteGEra).join(Site).filter(
         SiteGEra.g_era == g_era).order_by(Site.code).all()
+    g_units = g.sess.query(GUnit).order_by(GUnit.code).all()
     return render_template(
         'g_era_edit.html', g_era=g_era,
-        supplier_g_contracts=supplier_g_contracts, site_g_eras=site_g_eras)
+        supplier_g_contracts=supplier_g_contracts, site_g_eras=site_g_eras,
+        g_units=g_units)
 
 
 @app.route('/g_eras/<int:g_era_id>/edit', methods=['POST'])
-def g_era_post(g_era_id):
+def g_era_edit_post(g_era_id):
     try:
         g_era = GEra.get_by_id(g.sess, g_era_id)
 
@@ -5539,13 +5582,15 @@ def g_era_post(g_era_id):
             is_ended = req_bool('is_ended')
             finish_date = req_date('finish') if is_ended else None
             msn = req_str('msn')
-
+            is_corrected = req_bool('is_corrected')
             g_contract_id = req_int('g_contract_id')
             g_contract = GContract.get_by_id(g.sess, g_contract_id)
             account = req_str('account')
+            g_unit_id = req_int('g_unit_id')
+            g_unit = GUnit.get_by_id(g.sess, g_unit_id)
             g_era.g_supply.update_g_era(
-                g.sess, g_era, start_date, finish_date, msn, g_contract,
-                account)
+                g.sess, g_era, start_date, finish_date, msn, is_corrected,
+                g_unit, g_contract, account)
             g.sess.commit()
             return chellow_redirect(
                 '/g_supplies/' + str(g_era.g_supply.id), 303)
@@ -5554,11 +5599,12 @@ def g_era_post(g_era_id):
         supplier_g_contracts = g.sess.query(GContract).order_by(GContract.name)
         site_g_eras = g.sess.query(SiteGEra).join(Site).filter(
             SiteGEra.g_era == g_era).order_by(Site.code).all()
+        g_units = g.sess.query(GUnit).order_by(GUnit.code).all()
         return make_response(
             render_template(
                 'g_era_edit.html', g_era=g_era,
                 supplier_g_contracts=supplier_g_contracts,
-                site_g_eras=site_g_eras), 400)
+                site_g_eras=site_g_eras, g_units=g_units), 400)
 
 
 @app.route('/g_bills/<int:g_bill_id>/edit')
@@ -5690,6 +5736,18 @@ def g_read_edit_post(g_read_id):
             400)
 
 
+@app.route('/g_units')
+def g_units_get():
+    g_units = g.sess.query(GUnit).order_by(GUnit.code)
+    return render_template('g_units.html', g_units=g_units)
+
+
+@app.route('/g_units/<int:g_unit_id>')
+def g_unit_get(g_unit_id):
+    g_unit = GUnit.get_by_id(g.sess, g_unit_id)
+    return render_template('g_unit.html', g_unit=g_unit)
+
+
 @app.route('/g_read_types/<int:g_read_type_id>')
 def g_read_type_get(g_read_type_id):
     g_read_type = GReadType.get_by_id(g.sess, g_read_type_id)
@@ -5700,3 +5758,63 @@ def g_read_type_get(g_read_type_id):
 def g_read_types_get():
     g_read_types = g.sess.query(GReadType).order_by(GReadType.code)
     return render_template('g_read_types.html', g_read_types=g_read_types)
+
+
+@app.route('/g_reports')
+def g_reports_get():
+    now = utc_datetime_now()
+    now_day = utc_datetime(now.year, now.month, now.day)
+    month_start = Datetime(now.year, now.month, 1) - relativedelta(months=1)
+    month_finish = Datetime(now.year, now.month, 1) - HH
+    return render_template(
+        'g_reports.html', month_start=month_start, month_finish=month_finish,
+        now_day=now_day)
+
+
+@app.route('/g_ldzs/<int:g_ldz_id>')
+def g_ldz_get(g_ldz_id):
+    g_ldz = GLdz.get_by_id(g.sess, g_ldz_id)
+    g_exit_zones = g.sess.query(GExitZone).filter(
+        GExitZone.g_ldz == g_ldz).order_by(GExitZone.code).all()
+    return render_template(
+        'g_ldz.html', g_ldz=g_ldz, g_exit_zones=g_exit_zones)
+
+
+@app.route('/g_ldzs')
+def g_ldzs_get():
+    g_ldzs = g.sess.query(GLdz).order_by(GLdz.code)
+    return render_template('g_ldzs.html', g_ldzs=g_ldzs)
+
+
+@app.route('/g_exit_zones/<int:g_exit_zone_id>')
+def g_exit_zone_get(g_exit_zone_id):
+    g_exit_zone = GExitZone.get_by_id(g.sess, g_exit_zone_id)
+    return render_template('g_exit_zone.html', g_exit_zone=g_exit_zone)
+
+
+@app.route('/g_batches/<int:g_batch_id>/csv')
+def g_batch_csv_get(g_batch_id):
+    g_batch = GBatch.get_by_id(g.sess, g_batch_id)
+    si = StringIO()
+    cw = csv.writer(si)
+    cw.writerow(
+        [
+            "Contract", "Batch Reference", "Bill Reference", "Account",
+            "Issued", "From", "To", "kWh", "Net", "VAT", "Gross", "Type"])
+    for g_bill in g.sess.query(GBill).filter(
+            GBill.g_batch == g_batch).order_by(
+            GBill.reference, GBill.start_date).options(
+                joinedload(GBill.bill_type)):
+        cw.writerow(
+            [
+                g_batch.g_contract.name, g_batch.reference, g_bill.reference,
+                g_bill.account, hh_format(g_bill.issue_date),
+                hh_format(g_bill.start_date), hh_format(g_bill.finish_date),
+                str(g_bill.kwh), str(g_bill.net), str(g_bill.vat),
+                str(g_bill.gross), g_bill.bill_type.code])
+
+    disp = 'attachment; filename="g_batch_' + str(g_batch.id) + '.csv"'
+    output = make_response(si.getvalue())
+    output.headers["Content-Disposition"] = disp
+    output.headers["Content-type"] = "text/csv"
+    return output

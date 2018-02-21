@@ -1,11 +1,11 @@
 {% extends "base.html" %}
 
 {% block title %}
-	Gas Read Types
+	Gas Units
 {% endblock %}
 
 {% block nav %}
-	Gas Read Types
+	Gas Units
 {% endblock %}
 
 {% block content %}
@@ -20,14 +20,10 @@
 						</tr>
 					</thead>
 					<tbody>
-						{% for g_read_type in g_read_types %}
+						{% for g_unit in g_units %}
 							<tr>
-								<td>
-									<a
-											href="/g_read_types/{{g_read_type.id}}"
-											>{{g_read_type.code}}</a>
-								</td>
-								<td>{{g_read_type.description}}</td>
+								<td><a href="/g_units/{{g_unit.id}}">{{g_unit.code}}</a></td>
+								<td>{{g_unit.description}}</td>
 							</tr>
 						{% endfor %}
 					</tbody>
