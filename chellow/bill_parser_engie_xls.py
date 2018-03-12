@@ -225,18 +225,32 @@ class Parser():
             mpan_core = parse_mpan_core(
                 str(int(get_value(row, 'Meter Point'))))
             bill_period = get_value(row, 'Bill Period')
-            period_start, period_finish = [
-                to_utc(to_ct(Datetime.strptime(d, '%Y-%m-%d')))
-                for d in bill_period.split(' - ')]
-            period_finish += relativedelta(days=1) - HH
+            if '-' in bill_period:
+                period_start, period_finish = [
+                    to_utc(to_ct(Datetime.strptime(d, '%Y-%m-%d')))
+                    for d in bill_period.split(' - ')]
+                period_finish += relativedelta(days=1) - HH
+            else:
+                period_start, period_finish = None, None
 
             from_date = get_date(row, 'From Date', self.book.datemode)
             if from_date is None:
-                from_date = period_start
+                if period_start is None:
+                    raise BadRequest(
+                        "Can't find a bill finish date in row " +
+                        str(row_index) + ".")
+                else:
+                    from_date = period_start
 
             to_date = get_date(row, 'To Date', self.book.datemode)
             if to_date is None:
-                to_date = period_finish
+                if period_finish is None:
+                    raise BadRequest(
+                        "Can't find a bill finish date in row " +
+                        str(row_index) + " .")
+                else:
+                    to_date = period_finish
+
             else:
                 to_date += relativedelta(days=1) - HH
 

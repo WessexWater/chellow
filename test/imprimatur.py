@@ -14797,6 +14797,25 @@ finally:
         'status_code': 200},
 
     {
+        'name': "Engie XLS Bills",
+        'path': '/supplier_bill_imports',
+        'method': 'post',
+        'data': {
+            'supplier_batch_id': '17'},
+        'files': {'import_file': 'test/bills_fail.engie.xls'},
+        'status_code': 303,
+        'regexes': [
+            r"/supplier_bill_imports/14"]},
+
+    {
+        'name': "Engie XLS Bills",
+        'path': '/supplier_bill_imports/14',
+        'tries': {},
+        'regexes': [
+            r'Can&#39;t find a bill finish date in row 4\.'],
+        'status_code': 200},
+
+    {
         'name': "Contract level MOP virtual bills, straddling eras",
         'path': '/reports/231?mop_contract_id=11&start_year=2008&'
         'start_month=09&start_day=05&start_hour=00&start_minute=00&'
@@ -15349,10 +15368,10 @@ def virtual_bill(ds):
         'files': {'import_file': 'test/bills-nhh-negative.csv'},
         'status_code': 303,
         'regexes': [
-            r"/supplier_bill_imports/14"]},
+            r"/supplier_bill_imports/15"]},
     {
         'name': "Insert bills with negative register reads",
-        'path': '/supplier_bill_imports/14',
+        'path': '/supplier_bill_imports/15',
         'tries': {},
         'status_code': 200,
         'regexes': [
