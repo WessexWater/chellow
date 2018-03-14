@@ -33,6 +33,8 @@ def startup(instance_path):
 
 def make_names(base, user):
     global download_id
+
+    base = base.replace('/', '').replace(' ', '')
     try:
         lock.acquire()
         if len(os.listdir(download_path)) == 0:

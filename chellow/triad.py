@@ -5,55 +5,6 @@ import chellow.computer
 import chellow.duos
 
 
-def triad_calc(
-        hh, prefix, triad_data, financial_year_start, financial_year_finish,
-        data_source, month_begin):
-    gsp_kw = 0
-    for i, triad_hh in enumerate(triad_data):
-        triad_prefix = prefix + '-' + str(i + 1)
-        hh[triad_prefix + '-date'] = triad_hh['hist-start']
-        hh[triad_prefix + '-msp-kw'] = triad_hh['msp-kw']
-        hh[triad_prefix + '-status'] = triad_hh['status']
-        hh[triad_prefix + '-laf'] = triad_hh['laf']
-        hh[triad_prefix + '-gsp-kw'] = triad_hh['gsp-kw']
-        gsp_kw += triad_hh['gsp-kw']
-
-    hh[prefix + '-gsp-kw'] = gsp_kw / 3
-    polarity = 'import' if data_source.llfc.is_import else 'export'
-    gsp_group_code = data_source.gsp_group_code
-    if prefix == 'triad-actual':
-        tot_rate = 0
-        for start_date, finish_date, script in get_file_scripts('triad_rates'):
-            if start_date <= financial_year_finish and not hh_before(
-                    finish_date, financial_year_start):
-                start_month = start_date.month
-                if start_month < 4:
-                    start_month += 12
-
-                if finish_date is None:
-                    finish_month = financial_year_finish.month
-                else:
-                    finish_month = finish_date.month
-
-                if finish_month < 4:
-                    finish_month += 12
-
-                rt = get_file_rates(
-                    data_source.caches, 'triad_rates',
-                    start_date
-                    )['triad_gbp_per_gsp_kw'][polarity][gsp_group_code]
-                tot_rate += (finish_month - start_month + 1) * float(rt)
-
-        rate = tot_rate / 12
-    else:
-        rate = float(
-            get_file_rates(
-                data_source.caches, 'triad_rates',
-                month_begin)['triad_gbp_per_gsp_kw'][polarity][gsp_group_code])
-
-    hh[prefix + '-rate'] = rate
-
-
 def hh(data_source, rate_period='monthly', est_kw=None):
     for hh in (h for h in data_source.hh_data if h['ct-is-month-end']):
         hh_start = hh['start-date']
@@ -101,9 +52,25 @@ def hh(data_source, rate_period='monthly', est_kw=None):
                     est_datum['gsp-kw'] = est_datum['msp-kw'] * \
                         est_datum['laf']
 
-        triad_calc(
-            hh, 'triad-estimate', est_triad_kws, financial_year_start,
-            financial_year_finish, data_source, month_start)
+        gsp_kw = 0
+        for i, triad_hh in enumerate(est_triad_kws):
+            triad_prefix = 'triad-estimate-' + str(i + 1)
+            hh[triad_prefix + '-date'] = triad_hh['hist-start']
+            hh[triad_prefix + '-msp-kw'] = triad_hh['msp-kw']
+            hh[triad_prefix + '-status'] = triad_hh['status']
+            hh[triad_prefix + '-laf'] = triad_hh['laf']
+            hh[triad_prefix + '-gsp-kw'] = triad_hh['gsp-kw']
+            gsp_kw += triad_hh['gsp-kw']
+
+        hh['triad-estimate-gsp-kw'] = gsp_kw / 3
+        polarity = 'import' if data_source.llfc.is_import else 'export'
+        gsp_group_code = data_source.gsp_group_code
+        rate = float(
+            get_file_rates(
+                data_source.caches, 'triad_rates',
+                month_start)['triad_gbp_per_gsp_kw'][polarity][gsp_group_code])
+
+        hh['triad-estimate-rate'] = rate
 
         est_triad_gbp = hh['triad-estimate-rate'] * hh['triad-estimate-gsp-kw']
 
@@ -136,6 +103,10 @@ def hh(data_source, rate_period='monthly', est_kw=None):
             for t_date in get_file_rates(
                     data_source.caches, 'triad_dates',
                     month_start)['triad_dates']:
+
+                while t_date < (month_start - relativedelta(years=1)):
+                    t_date += relativedelta(years=1)
+
                 try:
                     ds = next(
                         iter(
@@ -149,18 +120,56 @@ def hh(data_source, rate_period='monthly', est_kw=None):
                     else:
                         thh = {
                             'hist-start': t_date, 'msp-kw': 0,
-                            'status': 'before contract',
+                            'start-date': t_date, 'status': 'before contract',
                             'laf': 'before contract', 'gsp-kw': 0}
                 except StopIteration:
                     thh = {
                         'hist-start': t_date, 'msp-kw': 0,
+                        'start-date': t_date,
                         'status': 'before start of supply',
                         'laf': 'before start of supply', 'gsp-kw': 0}
                 triad_kws.append(thh)
 
-            triad_calc(
-                hh, 'triad-actual', triad_kws, financial_year_start,
-                financial_year_finish, data_source, month_start)
+            gsp_kw = 0
+
+            for i, triad_hh in enumerate(triad_kws):
+                triad_prefix = 'triad-actual-' + str(i + 1)
+                hh[triad_prefix + '-date'] = triad_hh['start-date']
+                hh[triad_prefix + '-msp-kw'] = triad_hh['msp-kw']
+                hh[triad_prefix + '-status'] = triad_hh['status']
+                hh[triad_prefix + '-laf'] = triad_hh['laf']
+                hh[triad_prefix + '-gsp-kw'] = triad_hh['gsp-kw']
+                gsp_kw += triad_hh['gsp-kw']
+
+            hh['triad-actual-gsp-kw'] = gsp_kw / 3
+            polarity = 'import' if data_source.llfc.is_import else 'export'
+            gsp_group_code = data_source.gsp_group_code
+            tot_rate = 0
+            for start_date, finish_date, script in get_file_scripts(
+                    'triad_rates'):
+                if start_date <= financial_year_finish and not hh_before(
+                        finish_date, financial_year_start):
+                    start_month = start_date.month
+                    if start_month < 4:
+                        start_month += 12
+
+                    if finish_date is None:
+                        finish_month = financial_year_finish.month
+                    else:
+                        finish_month = finish_date.month
+
+                    if finish_month < 4:
+                        finish_month += 12
+
+                    rt = get_file_rates(
+                        data_source.caches, 'triad_rates',
+                        start_date
+                        )['triad_gbp_per_gsp_kw'][polarity][gsp_group_code]
+                    tot_rate += (finish_month - start_month + 1) * float(rt)
+
+            rate = tot_rate / 12
+            hh['triad-actual-rate'] = rate
+
             hh['triad-actual-gbp'] = hh['triad-actual-rate'] * \
                 hh['triad-actual-gsp-kw']
 

@@ -71,8 +71,8 @@ def content(
             scenario_props = scenario_contract.make_properties()
             base_name.append(scenario_contract.name)
 
-        for contract_id, rate_script in scenario_props.get(
-                'local_rates', {}).items():
+        for rate_script in scenario_props.get('local_rates', []):
+            contract_id = rate_script['contract_id']
             try:
                 cont_cache = rate_cache[contract_id]
             except KeyError:
@@ -103,8 +103,8 @@ def content(
                 cont_cache[dt] = PropDict(
                     'scenario properties', rate_script['script'])
 
-        for contract_name, rate_script in scenario_props.get(
-                'industry_rates', {}).items():
+        for rate_script in scenario_props.get('industry_rates', []):
+            contract_name = rate_script['contract_name']
             try:
                 cont_cache = ind_cont[contract_name]
             except KeyError:
@@ -137,15 +137,15 @@ def content(
         base_name.append('months')
         finish_date = start_date + relativedelta(months=months)
 
-        if 'kwh_start' in scenario_props:
-            kwh_start = scenario_props['kwh_start']
+        if 'forecast_from' in scenario_props:
+            forecast_from = scenario_props['forecast_from']
         else:
-            kwh_start = None
+            forecast_from = None
 
-        if kwh_start is None:
-            kwh_start = chellow.computer.forecast_date()
+        if forecast_from is None:
+            forecast_from = chellow.computer.forecast_date()
         else:
-            kwh_start = to_utc(kwh_start)
+            forecast_from = to_utc(forecast_from)
 
         sites = sess.query(Site).distinct().order_by(Site.code)
         if site_id is not None:
@@ -277,134 +277,177 @@ def content(
             if not found_hh:
                 continue
 
-            site_ds = chellow.computer.SiteSource(
-                sess, site, earliest_delta, latest_delta, kwh_start,
-                report_context)
-            hh_map = dict((h['start-date'], h) for h in site_ds.hh_data)
-
-            for era in sess.query(Era).join(SiteEra).join(Pc).filter(
-                    SiteEra.site == site, SiteEra.is_physical == true(),
-                    Era.imp_mpan_core != null(), Pc.code != '00',
-                    Era.start_date <= latest_delta, or_(
-                        Era.finish_date == null(),
-                        Era.finish_date >= earliest_delta)):
-
-                if supply_id is not None and era.supply_id != supply_id:
-                    continue
-
-                ss_start = hh_max(era.start_date, earliest_delta)
-                ss_finish = hh_min(era.finish_date, latest_delta)
-
-                ss = SupplySource(
-                    sess, ss_start, ss_finish, kwh_start, era, True,
-                    report_context)
-
-                if len(era.channels) == 0:
-                    for hh in ss.hh_data:
-                        sdatum = hh_map[hh['start-date']]
-                        sdatum['import-net-kwh'] += hh['msp-kwh']
-                        sdatum['used-kwh'] += hh['msp-kwh']
-
             scenario_used = site_scenario_hh['used']
             scenario_generated = site_scenario_hh['generated']
             scenario_parasitic = site_scenario_hh['parasitic']
 
-            for hh in site_ds.hh_data:
-                hh_start = hh['start-date']
-                if hh_start in scenario_used:
-                    used = scenario_used[hh_start]
-                    exp_net = max(
-                        0,
-                        hh['import-gen-kwh'] - hh['export-gen-kwh'] - used)
+            month_start = utc_datetime(
+                earliest_delta.year, earliest_delta.month)
+            while month_start <= latest_delta:
+                month_finish = month_start + relativedelta(months=1) - HH
+                chunk_start = hh_max(month_start, earliest_delta)
+                chunk_finish = hh_min(month_finish, latest_delta)
+                site_ds = chellow.computer.SiteSource(
+                    sess, site, chunk_start, chunk_finish, forecast_from,
+                    report_context)
+                hh_map = dict((h['start-date'], h) for h in site_ds.hh_data)
 
-                    exp_net_delt = exp_net - hh['export-net-kwh']
-                    try:
-                        delts[False]['net']['site'][hh_start] += exp_net_delt
-                    except KeyError:
-                        delts[False]['net']['site'][hh_start] = exp_net_delt
+                for era in sess.query(Era).join(SiteEra).join(Pc).filter(
+                        SiteEra.site == site, SiteEra.is_physical == true(),
+                        Era.imp_mpan_core != null(), Pc.code != '00',
+                        Era.start_date <= chunk_finish, or_(
+                            Era.finish_date == null(),
+                            Era.finish_date >= chunk_start)):
 
-                    displaced = hh['import-gen-kwh'] - \
-                        hh['export-gen-kwh'] - exp_net
-                    imp_net = used - displaced
-                    imp_delt = imp_net - hh['import-net-kwh']
+                    if supply_id is not None and era.supply_id != supply_id:
+                        continue
 
-                    try:
-                        delts[True]['net']['site'][hh_start] += imp_delt
-                    except KeyError:
-                        delts[True]['net']['site'][hh_start] = imp_delt
+                    ss_start = hh_max(era.start_date, chunk_start)
+                    ss_finish = hh_min(era.finish_date, chunk_finish)
 
-                    hh['import-net-kwh'] = imp_net
-                    hh['used-kwh'] = used
-                    hh['export-net-kwh'] = exp_net
-                    hh['msp-kwh'] = displaced
+                    ss = SupplySource(
+                        sess, ss_start, ss_finish, forecast_from, era, True,
+                        report_context)
 
-                if hh_start in scenario_generated:
-                    imp_gen = scenario_generated[hh_start]
-                    imp_gen_delt = imp_gen - hh['import-gen-kwh']
+                    if len(era.channels) == 0:
+                        for hh in ss.hh_data:
+                            sdatum = hh_map[hh['start-date']]
+                            sdatum['import-net-kwh'] += hh['msp-kwh']
+                            sdatum['used-kwh'] += hh['msp-kwh']
 
-                    try:
-                        delts[True]['gen']['site'][hh_start] += imp_gen_delt
-                    except KeyError:
-                        delts[True]['gen']['site'][hh_start] = imp_gen_delt
+                for hh in site_ds.hh_data:
+                    hh_start = hh['start-date']
+                    if hh_start in scenario_used:
+                        used_delt = scenario_used[hh_start] - hh['used-kwh']
+                        imp_net_delt = 0
+                        exp_net_delt = 0
 
-                    exp_net = max(
-                        0, imp_gen - hh['export-gen-kwh'] - hh['used-kwh'])
-                    exp_net_delt = exp_net - hh['export-net-kwh']
+                        if used_delt < 0:
+                            diff = hh['import-net-kwh'] + used_delt
+                            if diff < 0:
+                                imp_net_delt -= hh['import-net-kwh']
+                                exp_net_delt -= diff
+                            else:
+                                imp_net_delt += used_delt
+                        else:
+                            diff = hh['export-net-kwh'] - used_delt
+                            if diff < 0:
+                                exp_net_delt -= hh['export-net-kwh']
+                                imp_net_delt -= diff
+                            else:
+                                exp_net_delt -= used_delt
 
-                    try:
-                        delts[False]['net']['site'][hh_start] += exp_net_delt
-                    except KeyError:
-                        delts[False]['net']['site'][hh_start] = exp_net_delt
+                        try:
+                            delts[False]['net']['site'][hh_start] += \
+                                exp_net_delt
+                        except KeyError:
+                            delts[False]['net']['site'][hh_start] = \
+                                exp_net_delt
 
-                    displaced = imp_gen - hh['export-gen-kwh'] - exp_net
+                        try:
+                            delts[True]['net']['site'][hh_start] += \
+                                imp_net_delt
+                        except KeyError:
+                            delts[True]['net']['site'][hh_start] = imp_net_delt
 
-                    imp_net = hh['used-kwh'] - displaced
-                    imp_net_delt = imp_net - hh['import-net-kwh']
+                        hh['import-net-kwh'] += imp_net_delt
+                        hh['export-net-kwh'] += exp_net_delt
+                        hh['used-kwh'] += used_delt
+                        hh['msp-kwh'] -= exp_net_delt
 
-                    try:
-                        delts[True]['net']['site'][hh_start] += imp_net_delt
-                    except KeyError:
-                        delts[True]['net']['site'][hh_start] = imp_net_delt
+                    if hh_start in scenario_generated:
+                        imp_gen_delt = scenario_generated[hh_start] - \
+                            hh['import-gen-kwh']
+                        imp_net_delt = 0
+                        exp_net_delt = 0
 
-                    hh['import-net-kwh'] = imp_net
-                    hh['export-net-kwh'] = exp_net
-                    hh['import-gen-kwh'] = imp_gen
-                    hh['msp-kwh'] = displaced
+                        if imp_gen_delt < 0:
+                            diff = hh['export-net-kwh'] + imp_gen_delt
+                            if diff < 0:
+                                exp_net_delt -= hh['export-net-kwh']
+                                imp_net_delt -= diff
+                            else:
+                                exp_net_delt += imp_gen_delt
+                        else:
+                            diff = hh['import-net-kwh'] - imp_gen_delt
+                            if diff < 0:
+                                imp_net_delt -= hh['import-net-kwh']
+                                exp_net_delt -= diff
+                            else:
+                                imp_net_delt -= imp_gen_delt
 
-                if hh_start in scenario_parasitic:
-                    exp_gen = scenario_parasitic[hh_start]
-                    exp_gen_delt = exp_gen - hh['export-gen-kwh']
+                        try:
+                            delts[True]['gen']['site'][hh_start] += \
+                                imp_gen_delt
+                        except KeyError:
+                            delts[True]['gen']['site'][hh_start] = imp_gen_delt
 
-                    try:
-                        delts[False]['gen']['site'][hh_start] += exp_gen_delt
-                    except KeyError:
-                        delts[False]['gen']['site'][hh_start] = exp_gen_delt
+                        try:
+                            delts[False]['net']['site'][hh_start] += \
+                                exp_net_delt
+                        except KeyError:
+                            delts[False]['net']['site'][hh_start] = \
+                                exp_net_delt
 
-                    exp_net = max(
-                        0, hh['import-gen-kwh'] - exp_gen - hh['used-kwh'])
-                    exp_net_delt = exp_net - hh['export-net-kwh']
+                        try:
+                            delts[True]['net']['site'][hh_start] += \
+                                imp_net_delt
+                        except KeyError:
+                            delts[True]['net']['site'][hh_start] = imp_net_delt
 
-                    try:
-                        delts[False]['net']['site'][hh_start] += exp_net_delt
-                    except KeyError:
-                        delts[False]['net']['site'][hh_start] = exp_net_delt
+                        hh['import-net-kwh'] += imp_net_delt
+                        hh['export-net-kwh'] += exp_net_delt
+                        hh['import-gen-kwh'] += imp_gen_delt
+                        hh['msp-kwh'] -= imp_net_delt
 
-                    displaced = hh['import-gen-kwh'] - exp_gen - exp_net
+                    if hh_start in scenario_parasitic:
+                        exp_gen_delt = scenario_parasitic[hh_start] - \
+                            hh['export-gen-kwh']
+                        imp_net_delt = 0
+                        exp_net_delt = 0
 
-                    imp_net = hh['used-kwh'] - displaced
-                    imp_net_delt = imp_net - hh['import-net-kwh']
+                        if exp_gen_delt < 0:
+                            diff = hh['import-net-kwh'] + exp_gen_delt
+                            if diff < 0:
+                                imp_net_delt -= hh['import-net-kwh']
+                                exp_net_delt -= diff
+                            else:
+                                imp_net_delt += exp_gen_delt
+                        else:
+                            diff = hh['export-net-kwh'] - exp_gen_delt
+                            if diff < 0:
+                                exp_net_delt -= hh['export-net-kwh']
+                                imp_net_delt -= diff
+                            else:
+                                exp_net_delt -= exp_gen_delt
 
-                    try:
-                        delts[True]['net']['site'][hh_start] += imp_net_delt
-                    except KeyError:
-                        delts[True]['net']['site'][hh_start] = imp_net_delt
+                        try:
+                            delts[False]['gen']['site'][hh_start] += \
+                                imp_gen_delt
+                        except KeyError:
+                            delts[False]['gen']['site'][hh_start] = \
+                                exp_gen_delt
 
-                    hh['import-net-kwh'] = imp_net
-                    hh['export-net-kwh'] = exp_net
-                    hh['import-gen-kwh'] = imp_gen
-                    hh['msp-kwh'] = displaced
+                        try:
+                            delts[False]['net']['site'][hh_start] += \
+                                exp_net_delt
+                        except KeyError:
+                            delts[False]['net']['site'][hh_start] = \
+                                exp_net_delt
 
-                site_deltas['hhs'][hh_start] = hh
+                        try:
+                            delts[True]['net']['site'][hh_start] += \
+                                imp_net_delt
+                        except KeyError:
+                            delts[True]['net']['site'][hh_start] = imp_net_delt
+
+                        hh['import-net-kwh'] += imp_net_delt
+                        hh['export-net-kwh'] += exp_net_delt
+                        hh['export-gen-kwh'] += exp_gen_delt
+                        hh['msp-kwh'] -= imp_net_delt
+
+                    site_deltas['hhs'][hh_start] = hh
+                month_start += relativedelta(months=1)
 
         month_start = start_date
         while month_start < finish_date:
@@ -415,7 +458,7 @@ def content(
                 site_gen_types = set()
                 site_month_data = defaultdict(int)
                 calcs = []
-                for era in sess.query(Era).join(SiteEra).filter(
+                for era in sess.query(Era).join(SiteEra).join(Pc).filter(
                         SiteEra.site == site, SiteEra.is_physical == true(),
                         Era.start_date <= month_finish, or_(
                             Era.finish_date == null(),
@@ -434,7 +477,8 @@ def content(
                         joinedload(Era.supply).joinedload(Supply.dno),
                         joinedload(Era.supply).joinedload(Supply.gsp_group),
                         joinedload(Era.mtc).joinedload(Mtc.meter_type),
-                        joinedload(Era.pc), joinedload(Era.site_eras)):
+                        joinedload(Era.pc), joinedload(Era.site_eras)
+                        ).order_by(Pc.code):
 
                     supply = era.supply
                     if supply.generator_type is not None:
@@ -453,8 +497,8 @@ def content(
                             supply.source.code]
 
                         imp_ss = SupplySource(
-                            sess, ss_start, ss_finish, kwh_start, era, True,
-                            report_context, era_maps=era_maps,
+                            sess, ss_start, ss_finish, forecast_from, era,
+                            True, report_context, era_maps=era_maps,
                             deltas=sup_deltas)
 
                     if era.exp_mpan_core is None:
@@ -465,8 +509,8 @@ def content(
                             supply.source.code]
 
                         exp_ss = SupplySource(
-                            sess, ss_start, ss_finish, kwh_start, era, False,
-                            report_context, era_maps=era_maps,
+                            sess, ss_start, ss_finish, forecast_from, era,
+                            False, report_context, era_maps=era_maps,
                             deltas=sup_deltas)
                         measurement_type = exp_ss.measurement_type
 
@@ -478,9 +522,9 @@ def content(
 
                 displaced_era = chellow.computer.displaced_era(
                     sess, report_context, site, month_start, month_finish,
-                    kwh_start)
+                    forecast_from)
                 site_ds = chellow.computer.SiteSource(
-                    sess, site, month_start, month_finish, kwh_start,
+                    sess, site, month_start, month_finish, forecast_from,
                     report_context, displaced_era, deltas=site_deltas)
 
                 if displaced_era is not None and supply_id is None:

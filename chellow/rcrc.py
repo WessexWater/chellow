@@ -10,6 +10,7 @@ from chellow.utils import HH, hh_format, utc_datetime_now, utc_datetime_parse
 from werkzeug.exceptions import BadRequest
 import atexit
 from zish import loads
+from decimal import Decimal
 
 
 ELEXON_PORTAL_SCRIPTING_KEY_KEY = 'elexonportal_scripting_key'
@@ -34,12 +35,17 @@ def hh(data_source):
             db_id = get_non_core_contract_id('rcrc')
             rates = data_source.hh_rate(db_id, h_start)['rates']
             try:
-                hh['rcrc-gbp-per-kwh'] = rcrc = cache[h_start] = \
-                    float(rates[h_start.strftime("%d %H:%M Z")] / 1000)
+                hh['rcrc-gbp-per-kwh'] = rcrc = cache[h_start] = float(
+                    rates[key_format(h_start)]) / 1000
             except KeyError:
-                raise BadRequest(
-                    "For the RCRC rate script at " + hh_format(h_start) +
-                    " the rate cannot be found.")
+                try:
+                    dt = h_start - relativedelta(days=3)
+                    hh['rcrc-gbp-per-kwh'] = rcrc = cache[h_start] = float(
+                        rates[key_format(dt)]) / 1000
+                except KeyError:
+                    raise BadRequest(
+                        "For the RCRC rate script at " + hh_format(dt) +
+                        " the rate cannot be found.")
 
         rate_set.add(rcrc)
         bill['rcrc-kwh'] += hh['nbp-kwh']
@@ -100,8 +106,8 @@ class RcrcImporter(threading.Thread):
                     if now > month_finish:
                         self.log(
                             "Checking to see if data is available from " +
-                            str(month_start) + " to " + str(month_finish) +
-                            " on Elexon Portal.")
+                            hh_format(month_start) + " to " +
+                            hh_format(month_finish) + " on Elexon Portal.")
                         config = Contract.get_non_core_by_name(
                             sess, 'configuration')
                         props = config.make_properties()
@@ -126,16 +132,15 @@ class RcrcImporter(threading.Thread):
                         parser = csv.reader(
                             (l.decode() for l in r.iter_lines()),
                             delimiter=',', quotechar='"')
-                        piterator = iter(parser)
-                        values = next(piterator)
-                        values = next(piterator)
+                        next(parser)
+                        next(parser)
                         month_rcrcs = {}
-                        for values in piterator:
+                        for values in parser:
                             hh_date = utc_datetime_parse(values[0], "%d/%m/%Y")
                             hh_date += relativedelta(minutes=30*int(values[2]))
                             if month_start <= hh_date <= month_finish:
-                                month_rcrcs[key_format(hh_date)] = values[3]
-
+                                month_rcrcs[key_format(hh_date)] = Decimal(
+                                    values[3])
                         if key_format(month_finish) in month_rcrcs:
                             self.log("The whole month's data is there.")
                             script = {'rates': month_rcrcs}
@@ -148,7 +153,9 @@ class RcrcImporter(threading.Thread):
                             contract.insert_rate_script(
                                 sess, month_start, script)
                             sess.commit()
-                            self.log("Added new rate script.")
+                            self.log(
+                                "Added a new rate script starting at " +
+                                hh_format(month_start) + ".")
                         else:
                             msg = "There isn't a whole month there yet."
                             if len(month_rcrcs) > 0:

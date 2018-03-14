@@ -193,8 +193,9 @@ def check_permissions(*args, **kwargs):
     if path in (
             '/health', '/nationalgrid/sf_bsuos.xls',
             '/elexonportal/file/download/BESTVIEWPRICES_FILE', '/ecoes',
-            '/elexonportal/file/download/TLM_FILE', '/ecoes/login.asp',
-            '/ecoes/saveportfolioMpans.asp', '/hh_api'):
+            '/elexonportal/file/download/TLM_FILE',
+            '/elexonportal/file/download/RCRC_FILE',
+            '/ecoes/login.asp', '/ecoes/saveportfolioMpans.asp', '/hh_api'):
         return
 
     if g.user is not None:

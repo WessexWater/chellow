@@ -8777,8 +8777,9 @@ def virtual_bill(supply_source):
             'charge_script': "",
             'properties': """
 {
-  "local_rates": {
-    10: {
+  "local_rates": [
+    {
+      "contract_id": 10,
       "start_date": 2015-06-01T00:00:00Z,
       "finish_date": 2015-06-30T23:30:00Z,
       "script": {
@@ -8788,7 +8789,7 @@ def virtual_bill(supply_source):
           "summer-pk": 0.0062656,
           "winter-low-pk": 0.0501474,
           "winter-off-pk": 0.0062656,
-          "winter-pk": 0.0193918}}}},
+          "winter-pk": 0.0193918}}}],
 
   "scenario_start": 2015-06-01T00:00:00Z,
   "scenario_duration": 1}""", },
@@ -8904,8 +8905,9 @@ def virtual_bill(supply_source):
   "scenario_start": 2011-01-01T00:00:00Z,
   "scenario_duration": 1,
 
-  "local_rates": {
-    20: {
+  "local_rates": [
+    {
+      "contract_id": 20,
       "start_date": 2015-06-01T00:00:00Z,
       "finish_date": 2015-06-30T23:30:00Z,
       "script": {
@@ -8915,14 +8917,15 @@ def virtual_bill(supply_source):
         "summer-pk": 0.0062656,
         "winter-low-pk": 0.0501474,
         "winter-off-pk": 0.0062656,
-        "winter-pk": 0.0193918}}}},
+        "winter-pk": 0.0193918}}}],
 
-  "industry_rates": {
-    "aahedc": {
+  "industry_rates": [
+    {
+      "contract_name": "aahedc",
       "start_date": 2011-01-01T00:00:00Z,
       "finish_date": 2011-01-31T23:30:00Z,
       "script": {
-          "aahedc_gbp_per_gsp_kwh": 0.10016297}}}}"""},
+          "aahedc_gbp_per_gsp_kwh": 0.10016297}}]}"""},
         'regexes': [
             r"/supplier_contracts/18"],
         'status_code': 303},
@@ -9225,16 +9228,19 @@ def virtual_bill(supply_source):
             'charge_script': "",
             'properties': r"""
 {
-    "scenario_start": 2011-01-01T00:00:00Z,
+    "scenario_start": 2005-09-01T00:00:00Z,
     "scenario_duration": 2,
+    "forecast_from": 2006-01-01T00:00:00Z,
 
     "hh_data": {
       "CI005": {
         "used": "
-          2011-01-01 00:00, 0.5",
+          2005-09-01 00:00, 0.5",
         "generated": "
-          2011-01-01 00:00, 2
-          2011-02-01 00:00, 2"}}}"""},
+            2005-09-01 00:00, 2
+            2005-09-15 00:00, 2
+            2005-10-01 00:00, 2
+            2006-09-01 00:00, 0"}}}"""},
         'regexes': [
             r"/supplier_contracts/19"],
         'status_code': 303},
@@ -9248,97 +9254,184 @@ def virtual_bill(supply_source):
         'tries': {'max': 30, 'period': 1},
         'status_code': 200,
         'regexes': [
-            r'0059_FINISHED_watkinsexamplecom_scenario_used_20110101_0000_for_'
+            r'0059_FINISHED_watkinsexamplecom_scenario_used_20050901_0000_for_'
             r'2_months_site_CI005\.ods']},
     {
         'path': '/downloads/'
-        '0059_FINISHED_watkinsexamplecom_scenario_used_20110101_0000_for_'
+        '0059_FINISHED_watkinsexamplecom_scenario_used_20050901_0000_for_'
         '2_months_site_CI005.ods',
         'status_code': 200,
         'regexes': [
-          r'<table:table-row>\s*'
-          r'<table:table-cell '
-          r'office:date-value="\d\d\d\d-\d\d-\d\dT\d\d:\d\d:\d\d" '
-          r'office:value-type="date" table:style-name="cell_date"/>\s*'
-          r'<table:table-cell office:string-value="CI005" '
-          r'office:value-type="string"/>\s*'
-          r'<table:table-cell office:string-value="Wheal Rodney" '
-          r'office:value-type="string"/>\s*'
-          r'<table:table-cell office:string-value="CI004" '
-          r'office:value-type="string"/>\s*'
-          r'<table:table-cell office:date-value="2011-01-31T23:30:00" '
-          r'office:value-type="date" table:style-name="cell_date"/>\s*'
-          r'<table:table-cell office:string-value="hh" '
-          r'office:value-type="string"/>\s*'
-          r'<table:table-cell office:string-value="gen, net" '
-          r'office:value-type="string"/>\s*'
-          r'<table:table-cell office:string-value="chp" '
-          r'office:value-type="string"/>\s*'
-          r'<table:table-cell office:value="0.0" '
-          r'office:value-type="float"/>\s*'
-          r'<table:table-cell office:value="1.5" '
-          r'office:value-type="float"/>\s*'
-          r'<table:table-cell office:value="2.0" '
-          r'office:value-type="float"/>\s*'
-          r'<table:table-cell office:value="0" office:value-type="float" '
-          r'table:number-columns-repeated="3"/>\s*'
-          r'<table:table-cell office:value="0.5" office:value-type="float" '
-          r'table:number-columns-repeated="2"/>\s*'
-          r'<table:table-cell office:value="0" office:value-type="float"/>\s*'
-          r'<table:table-cell office:value="199.2268\d*" '
-          r'office:value-type="float"/>\s*'
-          r'<table:table-cell office:value="112.0867\d*" '
-          r'office:value-type="float"/>\s*'
-          r'<table:table-cell office:value="0" office:value-type="float" '
-          r'table:number-columns-repeated="4"/>\s*'
-          r'<table:table-cell office:value="0.0040761044\d*" '
-          r'office:value-type="float"/>\s*'
-          r'<table:table-cell office:value="199.2308\d*" '
-          r'office:value-type="float"/>\s*'
-          r'<table:table-cell office:value="0" office:value-type="float" '
-          r'table:number-columns-repeated="3"/>\s*'
-          r'</table:table-row>\s*',
+            r'<table:table-row>\s*'
+            r'<table:table-cell '
+            r'office:date-value="\d\d\d\d-\d\d-\d\dT\d\d:\d\d:\d\d" '
+            r'office:value-type="date" table:style-name="cell_date"/>\s*'
+            r'<table:table-cell office:string-value="CI005" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell office:string-value="Wheal Rodney" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell office:string-value="CI004" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell office:date-value="2005-09-30T23:30:00" '
+            r'office:value-type="date" table:style-name="cell_date"/>\s*'
+            r'<table:table-cell office:string-value="hh" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell office:string-value="gen, net" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell office:string-value="chp" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell office:value="0.0" '
+            r'office:value-type="float"/>\s*',
 
-          r'<table:table-row>\s*'
-          r'<table:table-cell '
-          r'office:date-value="\d\d\d\d-\d\d-\d\dT\d\d:\d\d:\d\d" '
-          r'office:value-type="date" table:style-name="cell_date"/>\s*'
-          r'<table:table-cell office:string-value="CI005" '
-          r'office:value-type="string"/>\s*'
-          r'<table:table-cell office:string-value="Wheal Rodney" '
-          r'office:value-type="string"/>\s*'
-          r'<table:table-cell office:string-value="CI004" '
-          r'office:value-type="string"/>\s*'
-          r'<table:table-cell office:date-value="2011-02-28T23:30:00" '
-          r'office:value-type="date" table:style-name="cell_date"/>\s*'
-          r'<table:table-cell office:string-value="hh" '
-          r'office:value-type="string"/>\s*'
-          r'<table:table-cell office:string-value="gen, net" '
-          r'office:value-type="string"/>\s*'
-          r'<table:table-cell office:string-value="chp" '
-          r'office:value-type="string"/>\s*'
-          r'<table:table-cell office:value="0.0" '
-          r'office:value-type="float"/>\s*'
-          r'<table:table-cell office:value="2.0" office:value-type="float" '
-          r'table:number-columns-repeated="2"/>\s*'
-          r'<table:table-cell office:value="0" office:value-type="float" '
-          r'table:number-columns-repeated="3"/>\s*'
-          r'<table:table-cell office:value="0.0" office:value-type="float" '
-          r'table:number-columns-repeated="2"/>\s*'
-          r'<table:table-cell office:value="0" office:value-type="float"/>\s*'
-          r'<table:table-cell office:value="190.968\d*" '
-          r'office:value-type="float"/>\s*'
-          r'<table:table-cell office:value="110.328\d*" '
-          r'office:value-type="float"/>\s*'
-          r'<table:table-cell office:value="0" office:value-type="float" '
-          r'table:number-columns-repeated="4"/>\s*'
-          r'<table:table-cell office:value="0.0" '
-          r'office:value-type="float"/>\s*'
-          r'<table:table-cell office:value="190.968\d*" '
-          r'office:value-type="float"/>\s*'
-          r'<table:table-cell office:value="0" office:value-type="float" '
-          r'table:number-columns-repeated="3"/>\s*'
-          r'</table:table-row>\s*']},
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            r'<table:table-cell office:value="1.5" '
+            r'office:value-type="float"/>\s*'
+            r'<table:table-cell office:value="4.0" '
+            r'office:value-type="float"/>\s*'
+            r'<table:table-cell office:value="0" office:value-type="float" '
+            r'table:number-columns-repeated="3"/>\s*'
+            r'<table:table-cell office:value="2.5" office:value-type="float" '
+            r'table:number-columns-repeated="2"/>\s*'
+            r'<table:table-cell office:value="0" '
+            r'office:value-type="float"/>\s*'
+            r'<table:table-cell office:value="263.80\d*" '
+            r'office:value-type="float"/>\s*'
+            r'<table:table-cell office:value="116.96645154896\d*" '
+            r'office:value-type="float"/>\s*'
+            r'<table:table-cell office:value="0" office:value-type="float" '
+            r'table:number-columns-repeated="4"/>\s*'
+            r'<table:table-cell office:value="0.026546699372799\d*" '
+            r'office:value-type="float"/>\s*'
+            r'<table:table-cell office:value="263.83254669937276" '
+            r'office:value-type="float"/>\s*'
+            r'<table:table-cell office:value="0" office:value-type="float" '
+            r'table:number-columns-repeated="3"/>\s*'
+            r'</table:table-row>\s*',
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            r'<table:table-row>\s*'
+            r'<table:table-cell '
+            r'office:date-value="\d\d\d\d-\d\d-\d\dT\d\d:\d\d:\d\d" '
+            r'office:value-type="date" table:style-name="cell_date"/>\s*'
+            r'<table:table-cell office:string-value="CI005" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell office:string-value="Wheal Rodney" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell office:string-value="CI004" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell office:date-value="2005-10-31T23:30:00" '
+            r'office:value-type="date" table:style-name="cell_date"/>\s*'
+            r'<table:table-cell office:string-value="hh" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell office:string-value="gen, net" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell office:string-value="chp" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell office:value="3506.1935483872066" '
+            r'office:value-type="float"/>\s*'
+            r'<table:table-cell office:value="2.0" office:value-type="float" '
+            r'table:number-columns-repeated="2"/>\s*',
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            r'<table:table-cell office:value="2.0" office:value-type="float" '
+            r'table:number-columns-repeated="2"/>\s*'
+            r'<table:table-cell office:value="0" office:value-type="float" '
+            r'table:number-columns-repeated="4"/>\s*'
+            r'<table:table-cell office:value="3506.193548387\d*" '
+            r'office:value-type="float"/>\s*'
+            r'<table:table-cell office:value="0" '
+            r'office:value-type="float"/>\s*'
+            r'<table:table-cell office:value="268.969999999\d*" '
+            r'office:value-type="float"/>\s*'
+            r'<table:table-cell office:value="116.22660206528\d*" '
+            r'office:value-type="float"/>\s*'
+            r'<table:table-cell office:value="0" office:value-type="float" '
+            r'table:number-columns-repeated="4"/>\s*'
+            r'<table:table-cell office:value="0.0" '
+            r'office:value-type="float"/>\s*'
+            r'<table:table-cell office:value="268.96999999\d*" '
+            r'office:value-type="float"/>\s*'
+            r'<table:table-cell office:value="0" office:value-type="float" '
+            r'table:number-columns-repeated="3"/>\s*'
+            r'</table:table-row>']},
 
     {
         'name': "Try to detach an era from its physical site",
@@ -10120,12 +10213,9 @@ def virtual_bill(supply_source):
             'charge_script': "",
             'properties': """
 {
-  "kwh_start": 2009-04-01T00:00:00Z,
+  "forecast_from": 2009-04-01T00:00:00Z,
   "scenario_start": 2016-02-01T00:00:00Z,
-  "scenario_duration": 1,
-  "resolution": "hh",
-
-  "kw_changes": ""}
+  "scenario_duration": 1}
 """, },
         'regexes': [
             r"/supplier_contracts/20"],
@@ -12499,8 +12589,7 @@ def virtual_bill(supply_source):
             'properties': """
 {
             "enabled": true,
-            "url": "http://127.0.0.1:8080/elexonportal/",
-            "limit": true}
+            "url": "http://127.0.0.1:8080/elexonportal/"}
 """},
         'status_code': 303},
     {
@@ -12515,7 +12604,28 @@ def virtual_bill(supply_source):
         'path': '/non_core_contracts/5/auto_importer',
         'tries': {},
         'regexes': [
-            r"Added new rate script\."],
+            r"Added a new rate script starting at 2016-01-01 00:00\."],
+        'status_code': 200},
+    {
+        'name': "Is the rate script correct?",
+        'path': '/non_core_rate_scripts/42',
+        'regexes': [
+            r"&#34;01 00:00 Z&#34;: "
+            r"0\.092536082309507475102132933090071710251,"],
+        'status_code': 200},
+    {
+        'name': "Do an 'import now' on RCRC.",
+        'path': '/non_core_contracts/5/auto_importer',
+        'method': 'post',
+        'data': {
+            'now': 'Now'},
+        'status_code': 303},
+    {
+        'name': "Check that an RCRC import has happened.",
+        'path': '/non_core_contracts/5/auto_importer',
+        'tries': {},
+        'regexes': [
+            r"Added a new rate script starting at 2016-02-01 00:00\."],
         'status_code': 200},
 
     {
@@ -15784,11 +15894,11 @@ def virtual_bill(ds):
             'start_minute': "00"},
         'status_code': 303,
         'regexes': [
-            r"/mop_rate_scripts/43"]},
+            r"/mop_rate_scripts/44"]},
 
     {
         'name': "Delete mop rate script",
-        'path': '/mop_rate_scripts/43/edit',
+        'path': '/mop_rate_scripts/44/edit',
         'method': 'post',
         'data': {
             'delete': "Delete"},
@@ -16120,7 +16230,7 @@ def virtual_bill(supply_source):
             r"/supplier_contracts/21"]},
     {
         'name': "Update the associated rate script.",
-        'path': '/supplier_rate_scripts/44/edit',
+        'path': '/supplier_rate_scripts/45/edit',
         'method': 'post',
         'data': {
             'start_year': "2000",

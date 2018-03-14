@@ -625,6 +625,7 @@ class SiteSource(DataSource):
                     hh['import-gen-kwh'] = delt_hh['import-gen-kwh']
                     hh['msp-kwh'] = delt_hh['msp-kwh']
                     hh['used-kwh'] = delt_hh['used-kwh']
+                    hh['msp-kw'] = hh['msp-kwh'] * 2
                 except KeyError:
                     pass
 
@@ -1388,4 +1389,4 @@ order by hh_datum.start_date
                     continue
 
                 hh['msp-kwh'] += delt
-                hh['msp-kw'] += delt / 2
+                hh['msp-kw'] += delt * 2
