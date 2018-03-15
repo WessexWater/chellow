@@ -21,35 +21,13 @@ def key_format(dt):
     return dt.strftime("%d %H:%M Z")
 
 
-def tlms_future(ns):
-    old_result = ns['tlms']
-    last_value = old_result[sorted(old_result.keys())[-1]]
-
-    new_result = collections.defaultdict(lambda: last_value, old_result)
-
-    return {'tlms': new_result}
-
-
 def hh(data_source):
     rate_set = data_source.supplier_rate_sets['tlm']
 
     try:
         cache = data_source.caches['tlms']
     except KeyError:
-        cache = {}
-        data_source.caches['tlms'] = cache
-
-        try:
-            future_funcs = data_source.caches['future_funcs']
-        except KeyError:
-            future_funcs = {}
-            data_source.caches['future_funcs'] = future_funcs
-
-        db_id = get_non_core_contract_id('tlms')
-        try:
-            future_funcs[db_id]
-        except KeyError:
-            future_funcs[db_id] = {'start_date': None, 'func': tlms_future}
+        cache = data_source.caches['tlms'] = {}
 
     for h in data_source.hh_data:
         try:
@@ -58,17 +36,18 @@ def hh(data_source):
             h_start = h['start-date']
             db_id = get_non_core_contract_id('tlms')
             rates = data_source.hh_rate(db_id, h_start)['tlms']
-            try:
+
+            key = h_start.strftime("%d %H:%M Z")
+            if key in rates:
+                try:
+                    h['tlm'] = tlm = cache[h_start] = float(rates[key])
+                except TypeError as e:
+                    raise BadRequest(
+                        "For the TLMs rate script at " + hh_format(h_start) +
+                        " the rate 'tlms' has the problem: " + str(e))
+            else:
                 h['tlm'] = tlm = cache[h_start] = float(
-                    rates[h_start.strftime("%d %H:%M Z")])
-            except KeyError:
-                raise BadRequest(
-                    "For the TLMs rate script at " +
-                    hh_format(h_start) + " the rate cannot be found.")
-            except TypeError as e:
-                raise BadRequest(
-                    "For the TLMs rate script at " + hh_format(h_start) +
-                    " the rate 'tlms' has the problem: " + str(e))
+                    sorted(rates.items())[-1][1])
 
         rate_set.add(tlm)
         h['nbp-kwh'] = h['gsp-kwh'] * tlm
@@ -182,11 +161,13 @@ class TlmImporter(threading.Thread):
                                 rs.start_date + relativedelta(months=2) - HH,
                                 loads(rs.script))
                             sess.flush()
+                            new_start = rs.start_date + relativedelta(months=1)
                             contract.insert_rate_script(
-                                sess, rs.start_date + relativedelta(months=1),
-                                script)
+                                sess, new_start, script)
                             sess.commit()
-                            self.log("Added new rate script.")
+                            self.log(
+                                "Added new rate script starting at " +
+                                hh_format(new_start) + ".")
                         else:
                             msg = "There isn't a whole month there yet."
                             if len(month_tlms) > 0:
