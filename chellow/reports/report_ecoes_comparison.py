@@ -106,14 +106,19 @@ def content(user):
                 ecoes['mpan-core'][2:6] + ' ' + \
                 ecoes['mpan-core'][6:10] + ' ' + ecoes['mpan-core'][-3:]
 
-            disconnected = len(ecoes['supplier']) == 0
+            ecoes_energisation_status = ecoes['energisation-status']
+            disconnected = ecoes_energisation_status == ''
             current_chell = mpan_spaces in mpans
 
             if disconnected and current_chell:
                 problem += "Disconnected in ECOES, but current in Chellow. "
             elif not disconnected and not current_chell:
-                problem += "In ECOES (energized or de-energized), but " \
-                    "not current in Chellow. "
+                if ecoes_energisation_status == 'D':
+                    st = "de-energised"
+                else:
+                    st = "energised"
+                problem += "In ECOES (as " + st + ") but not current " + \
+                    "in Chellow. "
 
             if current_chell:
                 mpans.remove(mpan_spaces)
