@@ -1524,7 +1524,7 @@ def mop_contract_add_post():
         start_date = req_date('start')
         participant = Participant.get_by_id(g.sess, participant_id)
         contract = Contract.insert_mop(
-            g.sess, name, participant, '{}', '{}', start_date, None, {})
+            g.sess, name, participant, '{}', {}, start_date, None, {})
         g.sess.commit()
         return chellow_redirect('/mop_contracts/' + str(contract.id), 303)
     except BadRequest as e:
@@ -1532,7 +1532,7 @@ def mop_contract_add_post():
         initial_date = utc_datetime_now()
         initial_date = Datetime(initial_date.year, initial_date.month, 1)
         parties = g.sess.query(Party).join(MarketRole).join(Participant). \
-            filter(MarketRole.code == 'C').order_by(Participant.code).all()
+            filter(MarketRole.code == 'M').order_by(Participant.code).all()
         return make_response(
             render_template(
                 'mop_contract_add.html', inital_date=initial_date,
@@ -1544,7 +1544,7 @@ def mop_contract_add_get():
     initial_date = utc_datetime_now()
     initial_date = Datetime(initial_date.year, initial_date.month, 1)
     parties = g.sess.query(Party).join(MarketRole).join(Participant).filter(
-        MarketRole.code == 'C').order_by(Participant.code).all()
+        MarketRole.code == 'M').order_by(Participant.code).all()
     return render_template(
         'mop_contract_add.html', inital_date=initial_date, parties=parties)
 

@@ -579,6 +579,8 @@ def virtual_bill(ds):
     {
         'name': "View add MOP contract",
         'path': '/mop_contracts/add',
+        'regexes': [
+            r'Lowri Beck Services Limited'],
         'status_code': 200},
 
     {
