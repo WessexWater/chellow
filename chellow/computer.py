@@ -430,13 +430,14 @@ class DataSource():
             if em_start <= start_date:
                 era_map = em
                 break
-        era_map = PropDict("scenario properties", era_map)
-        self.era_map_llfcs = era_map.get('llfcs', {})
-        self.era_map_pcs = era_map.get('pcs', {})
-        self.era_map_supplier_contracts = era_map.get('supplier_contracts', {})
-        self.era_map_dc_contracts = era_map.get('dc_contracts', {})
-        self.era_map_mop_contracts = era_map.get('mop_contracts', {})
-        self.era_map_cops = era_map.get('cops', {})
+        self.era_map = PropDict("scenario properties", era_map)
+        self.era_map_llfcs = self.era_map.get('llfcs', {})
+        self.era_map_pcs = self.era_map.get('pcs', {})
+        self.era_map_supplier_contracts = self.era_map.get(
+            'supplier_contracts', {})
+        self.era_map_dc_contracts = self.era_map.get('dc_contracts', {})
+        self.era_map_mop_contracts = self.era_map.get('mop_contracts', {})
+        self.era_map_cops = self.era_map.get('cops', {})
 
     def contract_func(self, contract, func_name):
         return contract_func(self.caches, contract, func_name)
@@ -514,10 +515,14 @@ class SiteSource(DataSource):
             else:
                 self.mop_contract = era.mop_contract
 
+            if 'sc' in self.era_map:
+                self.sc = self.era_map['sc']
+            else:
+                self.sc = era.imp_sc
+
             self.is_import = True
             self.voltage_level_code = self.llfc.voltage_level.code
             self.is_substation = self.llfc.is_substation
-            self.sc = era.imp_sc
             self.gsp_group_code = self.supply.gsp_group.code
 
         supply_ids = set(

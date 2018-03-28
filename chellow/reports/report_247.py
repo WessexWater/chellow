@@ -23,7 +23,6 @@ from chellow.utils import (
     utc_datetime_now, to_utc, utc_datetime, hh_range, PropDict, parse_hh_start)
 from flask import request, g
 from chellow.views import chellow_redirect
-from collections.abc import Mapping
 
 
 CATEGORY_ORDER = {None: 0, 'unmetered': 1, 'nhh': 2, 'amr': 3, 'hh': 4}
@@ -40,6 +39,16 @@ def write_spreadsheet(fl, compressed, site_rows, era_rows):
 
 def make_bill_row(titles, bill):
     return [make_val(bill.get(t)) for t in titles]
+
+
+def get_map_list(properties, name):
+    lst = properties.get(name, [])
+    if not isinstance(lst, list):
+        raise BadRequest("The '" + name + "' must be a list.")
+    for v in lst:
+        if not isinstance(v, dict):
+            raise BadRequest("The values in " + name + " must be maps.")
+    return lst
 
 
 def content(
@@ -71,57 +80,6 @@ def content(
             scenario_props = scenario_contract.make_properties()
             base_name.append(scenario_contract.name)
 
-        for rate_script in scenario_props.get('local_rates', []):
-            contract_id = rate_script['contract_id']
-            try:
-                cont_cache = rate_cache[contract_id]
-            except KeyError:
-                cont_cache = rate_cache[contract_id] = {}
-
-            if not isinstance(rate_script, Mapping):
-                raise BadRequest(
-                    "The values in the local_rates map must be maps.")
-            try:
-                rate_script_start = rate_script['start_date']
-            except KeyError:
-                raise BadRequest(
-                    "Problem in the scenario properties. Can't find the " +
-                    "'start_date' key of the contract " + str(contract_id) +
-                    " in the 'local_rates' map.")
-
-            try:
-                rate_script_start = rate_script['start_date']
-            except KeyError:
-                raise BadRequest(
-                    "Problem in the scenario properties. Can't find the " +
-                    "'start_date' key of the contract " + str(contract_id) +
-                    " in the 'local_rates' map.")
-
-            for dt in hh_range(
-                    report_context, rate_script_start,
-                    rate_script['finish_date']):
-                cont_cache[dt] = PropDict(
-                    'scenario properties', rate_script['script'])
-
-        for rate_script in scenario_props.get('industry_rates', []):
-            contract_name = rate_script['contract_name']
-            try:
-                cont_cache = ind_cont[contract_name]
-            except KeyError:
-                cont_cache = ind_cont[contract_name] = {}
-
-            rfinish = rate_script['finish_date']
-            if rfinish is None:
-                raise BadRequest(
-                    "For the industry rate " + contract_name + " the "
-                    "finish_date can't be null.")
-            for dt in hh_range(
-                    report_context, rate_script['start_date'], rfinish):
-                cont_cache[dt] = PropDict(
-                    'scenario properties', rate_script['script'])
-
-        era_maps = scenario_props.get('era_maps', {})
-
         start_date = scenario_props['scenario_start']
         if start_date is None:
             start_date = utc_datetime(now.year, now.month, 1)
@@ -131,6 +89,7 @@ def content(
         base_name.append(
             hh_format(start_date).replace(' ', '_').replace(':', '').
             replace('-', ''))
+
         months = scenario_props['scenario_duration']
         base_name.append('for')
         base_name.append(str(months))
@@ -165,6 +124,54 @@ def content(
         rf = open(running_name, "wb")
         site_rows = []
         era_rows = []
+
+        for rate_script in get_map_list(scenario_props, 'local_rates'):
+            contract_id = rate_script['contract_id']
+            try:
+                cont_cache = rate_cache[contract_id]
+            except KeyError:
+                cont_cache = rate_cache[contract_id] = {}
+
+            try:
+                rate_script_start = rate_script['start_date']
+            except KeyError:
+                raise BadRequest(
+                    "Problem in the scenario properties. Can't find the " +
+                    "'start_date' key of the contract " + str(contract_id) +
+                    " in the 'local_rates' map.")
+
+            try:
+                rate_script_start = rate_script['start_date']
+            except KeyError:
+                raise BadRequest(
+                    "Problem in the scenario properties. Can't find the " +
+                    "'start_date' key of the contract " + str(contract_id) +
+                    " in the 'local_rates' map.")
+
+            for dt in hh_range(
+                    report_context, rate_script_start,
+                    rate_script['finish_date']):
+                cont_cache[dt] = PropDict(
+                    'scenario properties', rate_script['script'])
+
+        for rate_script in get_map_list(scenario_props, 'industry_rates'):
+            contract_name = rate_script['contract_name']
+            try:
+                cont_cache = ind_cont[contract_name]
+            except KeyError:
+                cont_cache = ind_cont[contract_name] = {}
+
+            rfinish = rate_script['finish_date']
+            if rfinish is None:
+                raise BadRequest(
+                    "For the industry rate " + contract_name + " the "
+                    "finish_date can't be null.")
+            for dt in hh_range(
+                    report_context, rate_script['start_date'], rfinish):
+                cont_cache[dt] = PropDict(
+                    'scenario properties', rate_script['script'])
+
+        era_maps = scenario_props.get('era_maps', {})
         scenario_hh = scenario_props.get('hh_data', {})
 
         era_header_titles = [
@@ -746,14 +753,23 @@ def content(
                         month_data['billed-import-net-gbp'] += \
                             overlap_proportion * float(bill.net)
 
+                    if imp_ss is None:
+                        imp_supplier_contract_name = None
+                        pc_code = exp_ss.pc_code
+                    else:
+                        imp_supplier_contract_name = imp_supplier_contract.name
+                        pc_code = imp_ss.pc_code
+
+                    if exp_ss is None:
+                        exp_supplier_contract_name = None
+                    else:
+                        exp_supplier_contract_name = exp_supplier_contract.name
+
                     out = [
-                        now, era.imp_mpan_core, (
-                            None if imp_ss is None else
-                            imp_supplier_contract.name), era.exp_mpan_core, (
-                            None if exp_ss is None else
-                            exp_supplier_contract.name), era_category,
-                        source_code, generator_type, supply.name,
-                        era.msn, era.pc.code, site.code, site.name,
+                        now, era.imp_mpan_core, imp_supplier_contract_name,
+                        era.exp_mpan_core, exp_supplier_contract_name,
+                        era_category, source_code, generator_type, supply.name,
+                        era.msn, pc_code, site.code, site.name,
                         ','.join(sorted(list(era_associates))),
                         month_finish] + [
                         month_data[t] for t in summary_titles] + [None] + \

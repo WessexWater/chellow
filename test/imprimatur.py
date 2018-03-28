@@ -17677,4 +17677,46 @@ def virtual_bill(ds):
         'status_code': 400,
         'regexes': [
             r'Lowri Beck']},
+
+    {
+        'name': "Malformed scenario properties",
+        'path': '/supplier_contracts/17/edit',
+        'method': 'post',
+        'data': {
+            'party_id': "106",  # COOP
+            'name': "scenario_bau",
+            'start_year': "2000",
+            'start_month': "01",
+            'start_day': "03",
+            'start_hour': "00",
+            'start_minute': "00",
+            'charge_script': "",
+            'properties': """
+{
+  "local_rates": {},
+  "scenario_start": 2015-06-01T00:00:00Z,
+  "scenario_duration": 1}""", },
+        'regexes': [
+            r"/supplier_contracts/17"],
+        'status_code': 303},
+
+    {
+        'name': "Malformed scenario properties",
+        'path': '/reports/247?site_id=1&scenario_id=17&compression=False',
+        'status_code': 303},
+    {
+        'path': '/downloads',
+        'tries': {},
+        'status_code': 200,
+        'regexes': [
+            r"0025_FINISHED_adminexamplecom_scenario_bau_20150601_0000_for_1_"
+            r"months_site_CI004\.ods"]},
+    {
+        'path': '/downloads/'
+        '0025_FINISHED_adminexamplecom_scenario_bau_20150601_0000_for_1_'
+        'months_site_CI004.ods',
+        'status_code': 200,
+
+        'regexes': [
+            r"The 'local_rates' must be a list."]}
 ]

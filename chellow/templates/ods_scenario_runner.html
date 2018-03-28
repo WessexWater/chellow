@@ -108,15 +108,15 @@
   /* Industry rates - those you can't edit in Chellow */
 
   "industry_rates": [
-		{
-			"contract_name": "ccl",
+    {
+      "contract_name": "ccl",
       "start_date": 2014-10-01T00:00:00Z,
       "finish_date": 2015-05-01T00:00:00Z,
       "script": {
         "ccl_gbp_per_msp_kwh": 0.00568}},
 
     {
-			"contract_name": "aahedc",
+      "contract_name": "aahedc",
       "start_date": 2015-01-01T00:00:00Z,
       "finish_date": 2016-09-04T00:00:00Z,
       "script": {
@@ -126,17 +126,19 @@
   /* Local rates - those that you can edit in Chellow */
 
   "local_rates": [
-    46: {
+    {
+      "contract_id": 46,
       "start_date": 2014-10-01T00:00:00Z,
       "finish_date": 2015-05-01T00:00:00Z,
       "script": {
         "gbp_per_msp_kwh": 0.667}},
 
-    3: {
+    {
+      "contract_id": 3,
       "start_date": 2015-01-01T00:00:00Z,
       "finish_date": 2015-03-01T00:00:00Z,
       "script": {
-        "gbp_per_gsp_kwh": 5.77}}},
+        "gbp_per_gsp_kwh": 5.77}}],
 
 
   "era_maps": {
@@ -154,7 +156,8 @@
         "6c": "5"},
       "supplier_contracts": {
         74: 3,
-        9: 51}}},
+        9: 51},
+      "sc": 400}},
 
 
   /* HH data to use instead of the data in the database. For each site code,
@@ -202,6 +205,13 @@
 					recent rate script is used. In the case of TNUoS TRIAD dates, years
 					are added on to the dates in the rate script to bring it forward to
 					the TRIAD year that's being calculated.
+				</p>
+
+				<p>
+					Virtual bills can include TRIAD estimates and actuals in a variety
+					of ways. For example, a virtual bill may use TRIAD estimates for all
+					months until triad dates are available for that financial year, in
+					which case it switches to using the actual TRIAD for March.
 				</p>
 
 
