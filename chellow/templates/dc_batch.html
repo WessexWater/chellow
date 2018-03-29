@@ -1,16 +1,16 @@
 {% extends "base.html" %}
 
 {% block title %}
-	&raquo; HHDC Contracts &raquo; {{ batch.contract.name }} &raquo; Batches &raquo;
+	&raquo; DC Contracts &raquo; {{ batch.contract.name }} &raquo; Batches &raquo;
  	{{ batch.reference }}
 {% endblock %}
 
 {% block nav %}
-	&raquo; <a href="/hhdc_contracts">HHDC Contracts</a> &raquo;
-	<a href="/hhdc_contracts/{{batch.contract.id}}">{{batch.contract.name}}</a> &raquo;
-	<a href="/hhdc_batches?hhdc_contract_id={{batch.contract.id}}">Batches</a>
+	&raquo; <a href="/dc_contracts">DC Contracts</a> &raquo;
+	<a href="/dc_contracts/{{batch.contract.id}}">{{batch.contract.name}}</a> &raquo;
+	<a href="/dc_batches?dc_contract_id={{batch.contract.id}}">Batches</a>
  	&raquo; {{batch.reference}}
-	[<a href="/hhdc_batches/{{batch.id}}/edit">edit</a>]
+	[<a href="/dc_batches/{{batch.id}}/edit">edit</a>]
 {% endblock %}
 
 {% block content %}
@@ -56,11 +56,11 @@
 						<a href="/reports/111?batch_id={{batch.id}}">Check Bills</a>
 					</li>
 					<li>
-						[<a href="/hhdc_bill_imports?hhdc_batch_id={{batch.id}}">Bill Imports</a>]
+						[<a href="/dc_bill_imports?dc_batch_id={{batch.id}}">Bill Imports</a>]
 					</li>
 					<li>
 						<a
-								href="/hhdc_batches/{{batch.id}}/csv"
+								href="/dc_batches/{{batch.id}}/csv"
 								>CSV of Bills</a>
 					</li>
 				</ul>
@@ -71,7 +71,7 @@
 	<div class="layer-section">
 		<div class="section-header">
 			<h2>
-				Bills [<a href="/hhdc_batches/{{batch.id}}/add_bill">add</a>]
+				Bills [<a href="/dc_batches/{{batch.id}}/add_bill">add</a>]
 			</h2>
 		</div>
 		<div class="section-content">
@@ -98,7 +98,7 @@
 							{% for bill in bills %}
 								<tr>
 									<td>
-										<a href="/hhdc_bills/{{bill.id}}">View</a>
+										<a href="/dc_bills/{{bill.id}}">View</a>
 									</td>
 									<td>{{ bill.reference }}</td>
 									<td>

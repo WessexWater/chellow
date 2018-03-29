@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 
 {% block title %}
-	&raquo; HHDC Contracts &raquo; {{ contract.name }} &raquo; Batches &raquo; Add
+	&raquo; DC Contracts &raquo; {{ contract.name }} &raquo; Batches &raquo; Add
 {% endblock %}
 
 {% block inside_head %}
@@ -14,9 +14,9 @@
 {% endblock %}
 
 {% block nav %}
-	&raquo; <a href="/hhdc_contracts">HHDC Contracts</a> &raquo; 
-	<a href="/hhdc_contracts/{{contract.id}}">{{contract.name}}</a> &raquo; 
-	<a href="/hhdc_batches?hhdc_contract_id={{contract.id}}">Batches</a> &raquo; 
+	&raquo; <a href="/dc_contracts">DC Contracts</a> &raquo; 
+	<a href="/dc_contracts/{{contract.id}}">{{contract.name}}</a> &raquo; 
+	<a href="/dc_batches?dc_contract_id={{contract.id}}">Batches</a> &raquo; 
 	Add
 {% endblock %}
 
@@ -27,7 +27,7 @@
 	</div>
 	<div class="section-content">
 		<div class="section-data">
-			<input type="hidden" name="hhdc_contract_id" value="{{ contract.id }}">
+			<input type="hidden" name="dc_contract_id" value="{{ contract.id }}">
 			<div class="standardForm">
 				<form method="post">
 					<fieldset>

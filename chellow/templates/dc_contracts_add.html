@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+
+{% block title %}
+	&raquo; DC Contracts &raquo; Add
+{% endblock %}
+
+{% block nav %}
+	<a href="/dc_contracts">DC Contracts</a> &raquo; Add
+{% endblock %}
+
+{% block content %}
+	<div class="layer-section">
+			<div class="section-header">
+				<h2>Add a DC contract</h2>
+			</div>
+			<div class="section-content">
+				<div class="section-data">
+					<div class="standardForm">
+						<form method="post">
+							<div class="row">
+								<div class="col-sm-6">
+									<label>Participant</label>
+									<select name="party_id">
+										{% for party in parties %}
+											{{ input_option('party_id', party.id,
+												 	party.participant.code + " : " + party.name
+													+ " : " + party.market_role.description) }}
+										{% endfor %}
+									</select>
+								</div>
+								<div class="col-sm-6">
+									<label>Name</label>
+									<input name="name" value="
+										{%- if request.values.name -%}
+											{{ request.values.name }}
+										{%- endif -%}
+									">
+								</div>
+							</div>
+							
+							<fieldset>
+								<fieldset>
+									<div class="standardForm textWidthAuto">
+									<legend>Start Date</legend>
+									{{ input_date('start', initial_date) }}
+									</div>
+								</fieldset>
+								<input type="submit" value="Add">
+								<input type="reset" value="Reset">
+							</fieldset>
+						</form>
+					</div>
+				</div>
+			</div>
+	</div>
+{% endblock %}

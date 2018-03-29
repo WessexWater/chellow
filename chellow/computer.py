@@ -434,7 +434,7 @@ class DataSource():
         self.era_map_llfcs = era_map.get('llfcs', {})
         self.era_map_pcs = era_map.get('pcs', {})
         self.era_map_supplier_contracts = era_map.get('supplier_contracts', {})
-        self.era_map_hhdc_contracts = era_map.get('hhdc_contracts', {})
+        self.era_map_dc_contracts = era_map.get('dc_contracts', {})
         self.era_map_mop_contracts = era_map.get('mop_contracts', {})
         self.era_map_cops = era_map.get('cops', {})
 
@@ -502,11 +502,11 @@ class SiteSource(DataSource):
             else:
                 self.supplier_contract = era.imp_supplier_contract
 
-            if era.hhdc_contract.id in self.era_map_hhdc_contracts:
-                self.hhdc_contract = Contract.get_hhdc_by_id(
-                    sess, self.era_map_hhdc_contracts[era.hhdc_contract.id])
+            if era.dc_contract.id in self.era_map_dc_contracts:
+                self.dc_contract = Contract.get_dc_by_id(
+                    sess, self.era_map_dc_contracts[era.dc_contract.id])
             else:
-                self.hhdc_contract = era.hhdc_contract
+                self.dc_contract = era.dc_contract
 
             if era.mop_contract.id in self.era_map_mop_contracts:
                 self.mop_contract = Contract.get_mop_by_id(
@@ -717,11 +717,11 @@ class SupplySource(DataSource):
             else:
                 self.supplier_contract = era.exp_supplier_contract
 
-        if era.hhdc_contract.id in self.era_map_hhdc_contracts:
-            self.hhdc_contract = Contract.get_hhdc_by_id(
-                sess, self.era_map_hhdc_contracts[era.hhdc_contract.id])
+        if era.dc_contract.id in self.era_map_dc_contracts:
+            self.dc_contract = Contract.get_dc_by_id(
+                sess, self.era_map_dc_contracts[era.dc_contract.id])
         else:
-            self.hhdc_contract = era.hhdc_contract
+            self.dc_contract = era.dc_contract
 
         if era.mop_contract.id in self.era_map_mop_contracts:
             self.mop_contract = Contract.get_mop_by_id(

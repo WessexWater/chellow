@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block title %}
+	&raquo; DC Contracts &raquo; {{contract.name}} &raquo; Add Rate Script
+{% endblock %}
+
+{% block nav %}
+	<a href="/dc_contracts">DC Contracts</a> &raquo; 
+	<a href="/dc_contracts/{{contract.id}}">{{contract.name}}</a> &raquo;
+ 	Add Rate Script
+{% endblock %}
+
+{% block content %}
+	<!-- Layer Section -->
+	<div class="layer-section">
+		<!-- Section Header -->
+		<div class="section-header">
+			<h2>Add a rate script</h2>	
+		</div>
+		<!-- End Section Header -->
+		<!-- Section Content -->
+		<div class="section-content">
+			<div class="section-data">
+					<div class="standardForm textWidthAuto">
+									<form method="post">
+									<fieldset>
+										<fieldset>
+											<label>Start Date</label>
+											{{input_date('start', initial_date)}}
+										</fieldset>
+										<input type="submit" value="Add">
+									</fieldset>
+								</form>		    
+					</div>
+			</div>
+		</div>
+		<!-- End Section Content -->
+	</div>
+	<!-- End Layer Section -->
+{% endblock %}

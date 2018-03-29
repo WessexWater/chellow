@@ -28,13 +28,13 @@ extensions = ['.df2', '.simple.csv', '.bg.csv']
 class HhDataImportProcess(threading.Thread):
 
     def __init__(
-            self, hhdc_contract_id, process_id, istream, file_name, file_size):
+            self, dc_contract_id, process_id, istream, file_name, file_size):
         super(HhDataImportProcess, self).__init__(
-            name="HH Manual Import: contract " + str(hhdc_contract_id))
+            name="HH Manual Import: contract " + str(dc_contract_id))
 
         self.messages = []
         self.istream = istream
-        self.hhdc_contract_id = hhdc_contract_id
+        self.dc_contract_id = dc_contract_id
         self.id = process_id
         if file_size == 0:
             raise BadRequest("File has zero length")
@@ -52,7 +52,7 @@ class HhDataImportProcess(threading.Thread):
         sess = None
         try:
             sess = Session()
-            contract = Contract.get_hhdc_by_id(sess, self.hhdc_contract_id)
+            contract = Contract.get_dc_by_id(sess, self.dc_contract_id)
             sess.rollback()
             properties = contract.make_properties()
             mpan_map = properties.get('mpan_map', {})
@@ -80,11 +80,11 @@ def get_hh_import_processes(contract_id):
     return processes[contract_id]
 
 
-def start_hh_import_process(hhdc_contract_id, istream, file_name, file_size):
-    contract_processes = get_hh_import_processes(hhdc_contract_id)
+def start_hh_import_process(dc_contract_id, istream, file_name, file_size):
+    contract_processes = get_hh_import_processes(dc_contract_id)
     id = len(contract_processes)
     process = HhDataImportProcess(
-        hhdc_contract_id, id, istream, file_name, file_size)
+        dc_contract_id, id, istream, file_name, file_size)
     contract_processes.append(process)
     process.start()
     return process
@@ -131,7 +131,7 @@ class HhImportTask(threading.Thread):
         found_new = False
 
         try:
-            contract = Contract.get_hhdc_by_id(sess, self.contract_id)
+            contract = Contract.get_dc_by_id(sess, self.contract_id)
             properties = contract.make_properties()
             enabled = properties["enabled"]
             if enabled:
@@ -220,8 +220,7 @@ class HhImportTask(threading.Thread):
             try:
                 last_import_key = last_import_keys[directory]
             except KeyError:
-                last_import_key = ''
-                last_import_keys[directory] = last_import_key
+                last_import_key = last_import_keys[directory] = ''
 
             dir_path = home_path + "/" + directory
             ftp.cwd(dir_path)
@@ -234,8 +233,7 @@ class HhImportTask(threading.Thread):
                 except ftplib.error_perm:
                     pass
 
-                key = ftp.sendcmd(
-                    "MDTM " + fpath).split()[1] + '_' + fname
+                key = ftp.sendcmd("MDTM " + fpath).split()[1] + '_' + fname
                 if key > last_import_key:
                     files.append((key, fpath))
 
@@ -277,8 +275,7 @@ class HhImportTask(threading.Thread):
             if len(self.importer.messages) > 0:
                 raise BadRequest("Problem loading file.")
 
-            contract = Contract.get_hhdc_by_id(
-                sess, self.contract_id)
+            contract = Contract.get_dc_by_id(sess, self.contract_id)
             contract.update_state(state)
             sess.commit()
             self.log("Finished loading '" + fpath)
@@ -299,8 +296,7 @@ class HhImportTask(threading.Thread):
         try:
             last_import_keys = state['last_import_keys']
         except KeyError:
-            last_import_keys = {}
-            state['last_import_keys'] = last_import_keys
+            last_import_keys = state['last_import_keys'] = {}
 
         sess.rollback()
         self.log(
@@ -309,8 +305,7 @@ class HhImportTask(threading.Thread):
         cnopts = pysftp.CnOpts()
         cnopts.hostkeys = None
         ftp = pysftp.Connection(
-            host_name, username=user_name, password=password,
-            cnopts=cnopts)
+            host_name, username=user_name, password=password, cnopts=cnopts)
         ftp.timeout = 120
         home_path = ftp.pwd
 
@@ -323,8 +318,7 @@ class HhImportTask(threading.Thread):
             try:
                 last_import_key = last_import_keys[directory]
             except KeyError:
-                last_import_key = ''
-                last_import_keys[directory] = last_import_key
+                last_import_key = last_import_keys[directory] = ''
 
             dir_path = home_path + "/" + directory
             ftp.cwd(dir_path)
@@ -354,8 +348,7 @@ class HhImportTask(threading.Thread):
         else:
             key, fpath = f
             self.log(
-                "Attempting to download " + fpath + " with key " +
-                key + ".")
+                "Attempting to download " + fpath + " with key " + key + ".")
             f = tempfile.TemporaryFile()
             ftp.getfo(fpath, f)
             self.log("File downloaded successfully.")
@@ -380,8 +373,7 @@ class HhImportTask(threading.Thread):
             if len(messages) > 0:
                 raise BadRequest("Problem loading file.")
 
-            contract = Contract.get_hhdc_by_id(
-                sess, self.contract_id)
+            contract = Contract.get_dc_by_id(sess, self.contract_id)
             contract.update_state(state)
             sess.commit()
             self.log("Finished loading '" + fpath)
@@ -401,7 +393,7 @@ class HhImportTask(threading.Thread):
             autoescape=True, undefined=jinja2.StrictUndefined)
         url_template = env.from_string(url_template_str)
         for era in sess.query(Era).filter(
-                Era.hhdc_contract == contract,
+                Era.dc_contract == contract,
                 Era.start_date <= window_finish, or_(
                     Era.finish_date == null(),
                     Era.finish_date >= window_start)).distinct():

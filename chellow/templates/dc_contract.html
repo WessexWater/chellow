@@ -1,13 +1,13 @@
 {% extends "base.html" %}
 
 {% block title %}
-	&raquo; HHDC Contracts &raquo; {{hhdc_contract.name}}
+	&raquo; DC Contracts &raquo; {{dc_contract.name}}
 {% endblock %}
 
 {% block nav %}
-	&raquo; <a href="/hhdc_contracts">HHDC Contracts</a> &raquo;
-	{{hhdc_contract.name}}
-	[<a href="/hhdc_contracts/{{hhdc_contract.id}}/edit">edit</a>]
+	&raquo; <a href="/dc_contracts">DC Contracts</a> &raquo;
+	{{dc_contract.name}}
+	[<a href="/dc_contracts/{{dc_contract.id}}/edit">edit</a>]
 {% endblock %}
 
 {% block content %}
@@ -15,7 +15,7 @@
 	<div class="layer-section">
 	    <!-- Section Header -->
 	    <div class="section-header">
-		<h2>{{hhdc_contract.name}}</h2>
+		<h2>{{dc_contract.name}}</h2>
 	    </div>
 	    <!-- End Section Header -->
 	    <!-- Section Content -->
@@ -26,22 +26,22 @@
 				<tr>
 					<th>Party</th>
 					<td>
-						<a href="/parties/{{hhdc_contract.party.id}}">
-							{{hhdc_contract.party.name}}
+						<a href="/parties/{{dc_contract.party.id}}">
+							{{dc_contract.party.name}}
 						</a>
 					</td>
 				</tr>
 				<tr>
 					<th>Name</th>
-					<td>{{hhdc_contract.name}}</td>
+					<td>{{dc_contract.name}}</td>
 				</tr>
 				<tr>
 					<th>Start Date</th>
-					<td>{{hhdc_contract.start_rate_script.start_date|hh_format }}</td>
+					<td>{{dc_contract.start_rate_script.start_date|hh_format }}</td>
 				</tr>
 				<tr>
 					<th>Finish Date</th>
-					<td>{{hhdc_contract.finish_rate_script.finish_date|hh_format }}</td>
+					<td>{{dc_contract.finish_rate_script.finish_date|hh_format }}</td>
 				</tr>
 			</tbody>
      		    </table>
@@ -51,7 +51,7 @@
 		    <table class="DataTable widthAuto">
 			<caption>
 				Rate Scripts
-				[<a href="/hhdc_contracts/{{hhdc_contract.id}}/add_rate_script">add</a>]
+				[<a href="/dc_contracts/{{dc_contract.id}}/add_rate_script">add</a>]
 			</caption>
 			<thead>
 				<tr>
@@ -64,7 +64,7 @@
 				{% for rate_script in rate_scripts %}
 					<tr>
 						<td>
-							<a href="/hhdc_rate_scripts/{{rate_script.id}}">
+							<a href="/dc_rate_scripts/{{rate_script.id}}">
 								view
 							</a>
 						</td>
@@ -79,16 +79,16 @@
 		<div class="section-data">
 		    <ul>
 			<li>
-				<a href="/hhdc_batches?hhdc_contract_id={{hhdc_contract.id}}">Batches</a>
+				<a href="/dc_batches?dc_contract_id={{dc_contract.id}}">Batches</a>
 			</li>
 			<li>
-				<a href="/channel_snags?hhdc_contract_id={{hhdc_contract.id}}&days_hidden=5">Channel Snags</a>
+				<a href="/channel_snags?dc_contract_id={{dc_contract.id}}&days_hidden=5">Channel Snags</a>
 			</li>
 			<li>
-				<a href="/hhdc_contracts/{{hhdc_contract.id}}/auto_importer">Automatic HH Data Importer</a>
+				<a href="/dc_contracts/{{dc_contract.id}}/auto_importer">Automatic HH Data Importer</a>
 			</li>
 			<li>
-			[<a href="/hhdc_contracts/{{hhdc_contract.id}}/hh_imports">HH data imports</a>]
+			[<a href="/dc_contracts/{{dc_contract.id}}/hh_imports">HH data imports</a>]
 			</li>
 		</ul>
 		</div>
@@ -110,7 +110,7 @@
 		    <div class="standardForm textWidthAuto">
 		        <form action="/reports/81">
 				<fieldset>
-					<input type="hidden" name="hhdc_contract_id" value="{{hhdc_contract.id}}">
+					<input type="hidden" name="dc_contract_id" value="{{dc_contract.id}}">
 					
 					For <input name="months" value="1" maxlength="2" size="2">
 					month(s) until the end of
@@ -134,7 +134,7 @@
 	    <!-- Section Content -->
 	    <div class="section-content">
 		<div class="section-data">
-		    <pre>{{hhdc_contract.charge_script}}</pre>
+		    <pre>{{dc_contract.charge_script}}</pre>
 		</div>
 	    </div>
 	    <!-- End Section Content -->
@@ -151,7 +151,7 @@
 	    <!-- Section Content -->
 	    <div class="section-content">
 		<div class="section-data">
-		    <pre>{{hhdc_contract.properties }}</pre>
+		    <pre>{{dc_contract.properties }}</pre>
 		</div>
 	    </div>
 	    <!-- End Section Content -->
@@ -168,7 +168,7 @@
 	    <!-- Section Content -->
 	    <div class="section-content">
 		<div class="section-data">
-		    <pre>{{hhdc_contract.state }}</pre>
+		    <pre>{{dc_contract.state }}</pre>
 		</div>
 	    </div>
 	    <!-- End Section Content -->

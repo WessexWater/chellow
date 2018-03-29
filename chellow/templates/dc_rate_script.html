@@ -1,15 +1,15 @@
 {% extends "base.html" %}
 
 {% block title %}
-	&raquo; HHDC Contracts &raquo; {{hhdc_rate_script.contract.name}} &raquo;
- 	Rate Script {{hhdc_rate_script.id}}
+	&raquo; DC Contracts &raquo; {{dc_rate_script.contract.name}} &raquo;
+ 	Rate Script {{dc_rate_script.id}}
 {% endblock %}
 
 {% block nav %}
-	&raquo; <a href="/hhdc_contracts">HHDC Contracts</a> &raquo;
-	<a href="/hhdc_contracts/{{hhdc_rate_script.contract.id}}">{{hhdc_rate_script.contract.name}}</a> &raquo;
- 	{{hhdc_rate_script.start_date|hh_format}}
-	[<a href="/hhdc_rate_scripts/{{hhdc_rate_script.id}}/edit">edit</a>]
+	<a href="/dc_contracts">DC Contracts</a> &raquo;
+	<a href="/dc_contracts/{{dc_rate_script.contract.id}}">{{dc_rate_script.contract.name}}</a> &raquo;
+ 	{{dc_rate_script.start_date|hh_format}}
+	[<a href="/dc_rate_scripts/{{dc_rate_script.id}}/edit">edit</a>]
 {% endblock %}
 
 {% block content %}
@@ -22,11 +22,11 @@
 				<table class="DataTable widthAuto noMarginBottom">
 					<tr>
 						<th>Start Date</th>
-						<td>{{hhdc_rate_script.start_date|hh_format }}</td>
+						<td>{{dc_rate_script.start_date|hh_format }}</td>
 					</tr>
 					<tr>
 						<th>Finish Date</th>
-						<td>{{hhdc_rate_script.finish_date|hh_format }}</td>
+						<td>{{dc_rate_script.finish_date|hh_format }}</td>
 					</tr>
 				</table>
 			</div>
@@ -39,7 +39,7 @@
 		</div>
 		<div class="section-content">
 			<div class="section-data">
-				<pre>{{hhdc_rate_script.script}}</pre>
+				<pre>{{dc_rate_script.script}}</pre>
 			</div>
 		</div>
 	</div>

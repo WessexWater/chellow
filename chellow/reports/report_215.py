@@ -78,7 +78,7 @@ def content(year, supply_id, user):
                 if era.mop_contract_id != prev_era.mop_contract_id:
                     add_event(events, era.start_date, "Change Of MOP", era)
 
-                if era.hhdc_contract_id != prev_era.hhdc_contract_id:
+                if era.dc_contract_id != prev_era.dc_contract_id:
                     add_event(events, era.start_date, "Change Of DC", era)
 
                 for is_import in [True, False]:

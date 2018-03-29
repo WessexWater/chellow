@@ -1,17 +1,17 @@
 {% extends "base.html" %}
 
 {% block title %}
-	&raquo; HHDC Contracts
+	&raquo; DC Contracts
 {% endblock %}
 
 {% block nav %}
-	&raquo; HHDC Contracts [<a href="/hhdc_contracts/add">add</a>]
+	&raquo; DC Contracts [<a href="/dc_contracts/add">add</a>]
 {% endblock %}
 
 {% block content %}
 <div class="layer-section">
 	<div class="section-header">
-		<h2>HHDC Contracts</h2>
+		<h2>DC Contracts</h2>
 	</div>
 	<div class="section-content">
 		<div class="section-data">
@@ -22,14 +22,14 @@
 							<th>Name</th>
 							<th>Start Date</th>
 							<th>Finish Date</th>
-							<th>HHDC</th>
+							<th>DC</th>
 						</tr>
 					</thead>
 					<tbody>
-						{% for contract in hhdc_contracts %}
+						{% for contract in dc_contracts %}
 							<tr>
 								<td>
-									<a href="/hhdc_contracts/{{contract.id}}">{{contract.name}}</a>
+									<a href="/dc_contracts/{{contract.id}}">{{contract.name}}</a>
 								</td>
 								<td>{{ contract.start_rate_script.start_date|hh_format }}</td>
 								<td>{{ contract.finish_rate_script.finish_date|hh_format }}</td>

@@ -192,16 +192,16 @@
 											{{input_text('mop_account')}}
 										</div>
 										<div class="col-sm-4">
-											<label>HHDC Contract</label>
-											<select name="hhdc_contract_id">
-												{% for contract in hhdc_contracts %}
-													{{input_option('hhdc_contract_id', contract.id, contract.name)}}
+											<label>DC Contract</label>
+											<select name="dc_contract_id">
+												{% for contract in dc_contracts %}
+													{{input_option('dc_contract_id', contract.id, contract.name)}}
 												{% endfor %}
 											</select>
 										</div>
 										<div class="col-sm-4">
-											<label>HHDC Account</label>
-											{{input_text('hhdc_account')}}
+											<label>DC Account</label>
+											{{input_text('dc_account')}}
 										</div>
 									</div>
 									<div class="row">

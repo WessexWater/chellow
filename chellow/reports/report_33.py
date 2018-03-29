@@ -32,7 +32,7 @@ def content(running_name, finished_name, date, supply_id, mpan_cores):
                 'Generator Type', 'GSP Group', 'DNO Name', 'Voltage Level',
                 'Metering Type', 'Mandatory HH', 'PC', 'MTC', 'CoP', 'SSC',
                 'Number Of Registers', 'MOP Contract', 'Mop Account',
-                'HHDC Contract', 'HHDC Account', 'Meter Serial Number',
+                'DC Contract', 'DC Account', 'Meter Serial Number',
                 'Meter Installation Date', 'Latest Normal Meter Read Date',
                 'Latest Normal Meter Read Type', 'Latest DC Bill Date',
                 'Latest MOP Bill Date', 'Supply Start Date',
@@ -164,22 +164,22 @@ def content(running_name, finished_name, date, supply_id, mpan_cores):
                 if latest_mop_bill_date is not None:
                     latest_mop_bill_date = hh_format(latest_mop_bill_date[0])
 
-            hhdc_contract = era.hhdc_contract
-            if hhdc_contract is None:
-                hhdc_contract_name = ''
-                hhdc_account = ''
-                latest_hhdc_bill_date = 'No HHDC'
+            dc_contract = era.dc_contract
+            if dc_contract is None:
+                dc_contract_name = ''
+                dc_account = ''
+                latest_dc_bill_date = 'No DC'
             else:
-                hhdc_contract_name = hhdc_contract.name
-                hhdc_account = era.hhdc_account
-                latest_hhdc_bill_date = sess.query(Bill.finish_date) \
+                dc_contract_name = dc_contract.name
+                dc_account = era.dc_account
+                latest_dc_bill_date = sess.query(Bill.finish_date) \
                     .join(Batch).filter(
                         Bill.start_date <= date, Bill.supply == supply,
-                        Batch.contract == hhdc_contract).order_by(
+                        Batch.contract == dc_contract).order_by(
                         Bill.finish_date.desc()).first()
 
-                if latest_hhdc_bill_date is not None:
-                    latest_hhdc_bill_date = hh_format(latest_hhdc_bill_date[0])
+                if latest_dc_bill_date is not None:
+                    latest_dc_bill_date = hh_format(latest_dc_bill_date[0])
 
             channel_values = []
             for imp_related in [True, False]:
@@ -285,10 +285,10 @@ def content(running_name, finished_name, date, supply_id, mpan_cores):
                     voltage_level_code, metering_type, mandatory_hh,
                     era.pc.code, era.mtc.code, era.cop.code, ssc_code,
                     num_registers, mop_contract_name, mop_account,
-                    hhdc_contract_name, hhdc_account, era.msn,
+                    dc_contract_name, dc_account, era.msn,
                     hh_format(meter_installation_date),
                     latest_normal_read_date, latest_normal_read_type,
-                    latest_hhdc_bill_date, latest_mop_bill_date,
+                    latest_dc_bill_date, latest_mop_bill_date,
                     hh_format(supply_start_date),
                     hh_format(supply_finish_date, ongoing_str='')] +
                 channel_values + [

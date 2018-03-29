@@ -1,14 +1,14 @@
 {% extends "base.html" %}
 
 {% block title %}
-	&raquo; {{hhdc_rate_script.contract.name}} &raquo; Rate Scripts &raquo; 
-	{{hhdc_rate_script.start_date|hh_format}} &raquo; Edit
+	&raquo; {{dc_rate_script.contract.name}} &raquo; Rate Scripts &raquo; 
+	{{dc_rate_script.start_date|hh_format}} &raquo; Edit
 {% endblock %}
 
 {% block nav %}
-	&raquo; <a href="/hhdc_contracts">HHDC Contracts</a> &raquo; 
-	<a href="/hhdc_contracts/{{hhdc_rate_script.contract.id}}">{{hhdc_rate_script.contract.name}}</a> &raquo; 
-	<a href="/hhdc_rate_scripts/{{hhdc_rate_script.id}}">{{hhdc_rate_script.start_date|hh_format}}</a>
+	<a href="/dc_contracts">DC Contracts</a> &raquo; 
+	<a href="/dc_contracts/{{dc_rate_script.contract.id}}">{{dc_rate_script.contract.name}}</a> &raquo; 
+	<a href="/dc_rate_scripts/{{dc_rate_script.id}}">{{dc_rate_script.start_date|hh_format}}</a>
 	&raquo; Edit
 {% endblock %}
 
@@ -24,10 +24,10 @@
 					<div class="standardForm widthAuto">
 						<form method="post">
 							<fieldset>
-								<input type="hidden" name="hhdc_rate_script_id"
-							 		value="{{hhdc_rate_script.id}}">
+								<input type="hidden" name="dc_rate_script_id"
+							 		value="{{dc_rate_script.id}}">
 								<input type="submit" name="delete" value="Delete">
-								<input type="reset" value="Cancel" onClick="window.location='/hhdc_rate_scripts/{{hhdc_rate_script.id}}/edit'" />
+								<a href="/dc_rate_scripts/{{dc_rate_script.id}}/edit">Cancel</a>
 							</fieldset>
 						</form>
 					</div>
@@ -46,11 +46,11 @@
 					
 					<form method="post">
 						<fieldset>
-							<input type="hidden" name="hhdc_rate_script_id" value="{{hhdc_rate_script.id}}">
+							<input type="hidden" name="dc_rate_script_id" value="{{dc_rate_script.id}}">
 							<div class="section-data">
 									<fieldset>
 										<legend>Start date</legend>
-										{{ input_date('start', hhdc_rate_script.start_date) }}
+										{{ input_date('start', dc_rate_script.start_date) }}
 									</fieldset>
 							</div>
 							<div class="section-data">
@@ -58,16 +58,16 @@
 										<legend>Finish date</legend>
 										<label>
 											Ended?
-										 	{{input_checkbox('has_finished', hhdc_rate_script.finish_date != None)}}
+										 	{{input_checkbox('has_finished', dc_rate_script.finish_date != None)}}
 										</label>
-										{{ input_date('finish', hhdc_rate_script.finish_date) }}
+										{{ input_date('finish', dc_rate_script.finish_date) }}
 									</fieldset>
 							</div>
 							<div class="section-data">
 								
 								Script
 								<br>
-								{{ input_textarea('script', hhdc_rate_script.script, 40, 80) }}
+								{{ input_textarea('script', dc_rate_script.script, 40, 80) }}
 								<div>
 									<input type="submit" value="Update">
 									<input type="reset" value="Reset">
@@ -89,8 +89,8 @@
 						<form>
 							<fieldset>
 
-								<input type="hidden" name="hhdc_rate_script_id"
-										value="{{hhdc_rate_script.id}}">
+								<input type="hidden" name="dc_rate_script_id"
+										value="{{dc_rate_script.id}}">
 								<input type="submit" name="delete" value="Delete">
 							</fieldset>
 						</form>

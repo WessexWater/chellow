@@ -273,7 +273,7 @@ def content(batch_id, bill_id, contract_id, start_date, finish_date, user):
                     chunk_finish = hh_min(covered_finish, era.finish_date)
 
                     if contract not in (
-                            era.mop_contract, era.hhdc_contract,
+                            era.mop_contract, era.dc_contract,
                             era.imp_supplier_contract,
                             era.exp_supplier_contract):
                         virtual_bill['problem'] += ''.join(

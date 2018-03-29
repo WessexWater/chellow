@@ -1,14 +1,14 @@
 {% extends "base.html" %}
 
 {% block title %}
-	&raquo; HHDC Contracts &raquo; {{ contract.name }} &raquo; Batches
+	&raquo; DC Contracts &raquo; {{ contract.name }} &raquo; Batches
 {% endblock %}
 
 {% block nav %}
-	&raquo; <a href="/hhdc_contracts">HHDC Contracts</a> &raquo;
-	<a href="/hhdc_contracts/{{contract.id}}">{{contract.name}}</a>
+	&raquo; <a href="/dc_contracts">DC Contracts</a> &raquo;
+	<a href="/dc_contracts/{{contract.id}}">{{contract.name}}</a>
  	&raquo; Batches
-	[<a href="/hhdc_contracts/{{contract.id}}/add_batch">add</a>]
+	[<a href="/dc_contracts/{{contract.id}}/add_batch">add</a>]
 {% endblock %}
 
 {% block content %}
@@ -29,9 +29,7 @@
 						{% for batch in batches %}
 							<tr>
 								<td>
-									<a href="/hhdc_batches/{{batch.id}}">
-										{{batch.reference}}
-									</a>
+									<a href="/dc_batches/{{batch.id}}">{{batch.reference}}</a>
 								</td>
 								<td>{{ batch.description }}</td>
 							</tr>

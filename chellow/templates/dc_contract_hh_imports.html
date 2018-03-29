@@ -1,12 +1,12 @@
 {% extends "base.html" %}
 
 {% block title %}
-	&raquo; HHDC Contracts &raquo; {{contract.name}} &raquo; HH Data Imports
+	&raquo; DC Contracts &raquo; {{contract.name}} &raquo; HH Data Imports
 {% endblock %}
 
 {% block nav %}
-	&raquo; <a href="/hhdc_contracts">HHDC Contracts</a> &raquo; 
-	<a href="/hhdc_contracts/{{contract.id}}">{{contract.name}}</a>
+	&raquo; <a href="/dc_contracts">DC Contracts</a> &raquo; 
+	<a href="/dc_contracts/{{contract.id}}">{{contract.name}}</a>
 	&raquo; HH Data Imports
 {% endblock %}
 
@@ -20,7 +20,7 @@
 			<div class="standardForm">
 				<form enctype="multipart/form-data" method="post">
 					<fieldset>
-						<input type="hidden" name="hhdc_contract_id" value="{{contract.id}}">
+						<input type="hidden" name="dc_contract_id" value="{{contract.id}}">
 						<input type="file" name="import_file" size="45"
 																value="{{request.values.import_file}}">
 						<input type="submit" value="Import">
@@ -263,7 +263,7 @@ MPAN core, Channel Type, Time, Value, Status
 					<ul>
 						{% for proc in processes %}
 							<li>
-								<a href="/hhdc_contracts/{{contract.id}}/hh_imports/{{proc.id}}">{{proc.id}}</a>
+								<a href="/dc_contracts/{{contract.id}}/hh_imports/{{proc.id}}">{{proc.id}}</a>
 							</li>
 						{% endfor %}
 					</ul>

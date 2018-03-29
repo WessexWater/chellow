@@ -32,7 +32,7 @@ def content(contract_id, days_hidden, user):
                 'Days Since Snag Finished', 'Duration Of Snag (Days)',
                 'Is Ignored?'))
 
-        contract = Contract.get_hhdc_by_id(sess, contract_id)
+        contract = Contract.get_dc_by_id(sess, contract_id)
 
         now = Datetime.now(pytz.utc)
         cutoff_date = now - relativedelta(days=days_hidden)
@@ -40,7 +40,7 @@ def content(contract_id, days_hidden, user):
         for snag, channel, era, supply, site_era, site in sess.query(
                 Snag, Channel, Era, Supply, SiteEra, Site).join(
                 Channel, Era, Supply, SiteEra, Site).filter(
-                SiteEra.is_physical == true(), Era.hhdc_contract == contract,
+                SiteEra.is_physical == true(), Era.dc_contract == contract,
                 Snag.start_date < cutoff_date).order_by(
                 Site.code, Supply.id, Channel.imp_related,
                 Channel.channel_type, Snag.description,
@@ -80,7 +80,7 @@ def content(contract_id, days_hidden, user):
 
 
 def do_get(sess):
-    contract_id = req_int('hhdc_contract_id')
+    contract_id = req_int('dc_contract_id')
     days_hidden = req_int('days_hidden')
 
     args = (contract_id, days_hidden, g.user)

@@ -108,8 +108,8 @@ class BillImport(threading.Thread):
                                 Era.mop_contract == contract,
                                 Era.mop_account == account),
                             and_(
-                                Era.hhdc_contract == contract,
-                                Era.hhdc_account == account))
+                                Era.dc_contract == contract,
+                                Era.dc_account == account))
                         ).distinct().order_by(Supply.id).first()
 
                     if supply is None:

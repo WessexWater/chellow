@@ -705,12 +705,26 @@ class Contract(Base, PersistentClass):
         return Contract.get_by_role_code_name(sess, 'Z', name)
 
     @staticmethod
-    def get_hhdc_by_id(sess, oid):
-        return Contract.get_by_role_code_id(sess, 'C', oid)
+    def get_dc_by_id(sess, oid):
+        role_codes = ('C', 'D')
+        cont = sess.query(Contract).join(MarketRole).filter(
+            MarketRole.code.in_(role_codes), Contract.id == oid).first()
+        if cont is None:
+            raise NotFound(
+                "There isn't a contract with the role codes '" +
+                str(role_codes) + "' and id '" + str(oid) + "'.")
+        return cont
 
     @staticmethod
-    def get_hhdc_by_name(sess, name):
-        return Contract.get_by_role_code_name(sess, 'C', name)
+    def get_dc_by_name(sess, name):
+        role_codes = ('C', 'D')
+        cont = sess.query(Contract).join(MarketRole).filter(
+            MarketRole.code.in_(role_codes), Contract.name == name).first()
+        if cont is None:
+            raise BadRequest(
+                "There isn't a contract with the role codes '" +
+                str(role_codes) + "' and name '" + name + "'.")
+        return cont
 
     @staticmethod
     def get_mop_by_id(sess, oid):
@@ -789,6 +803,14 @@ class Contract(Base, PersistentClass):
             start_date, finish_date, rate_script)
 
     @staticmethod
+    def insert_nhhdc(
+            sess, name, participant, charge_script, properties, start_date,
+            finish_date, rate_script):
+        return Contract.insert(
+            sess, name, participant, 'D', charge_script, properties,
+            start_date, finish_date, rate_script)
+
+    @staticmethod
     def insert_supplier(
             sess, name, participant, charge_script, properties, start_date,
             finish_date, rate_script):
@@ -845,8 +867,12 @@ class Contract(Base, PersistentClass):
             raise BadRequest("The contract name can't be blank.")
         self.name = name
         if party.market_role.id != self.market_role.id:
-            raise BadRequest("""The market role of the party doesn't match
-                    the market role of the contract.""")
+            if party.market_role.code in ('C', 'D') and \
+                    self.market_role.code in ('C', 'D'):
+                self.market_role = party.market_role
+            else:
+                raise BadRequest("""The market role of the party doesn't match
+                        the market role of the contract.""")
         self.party = party
         self.update_properties(properties)
         try:
@@ -917,7 +943,7 @@ class Contract(Base, PersistentClass):
             or_(
                 Era.imp_supplier_contract == self,
                 Era.exp_supplier_contract == self,
-                Era.hhdc_contract == self, Era.mop_contract == self)).all()
+                Era.dc_contract == self, Era.mop_contract == self)).all()
         if len(eras_before) > 0:
             mpan_core = eras_before[0].imp_mpan_core
             if mpan_core is None:
@@ -933,7 +959,7 @@ class Contract(Base, PersistentClass):
                 or_(
                     Era.imp_supplier_contract == self,
                     Era.exp_supplier_contract == self,
-                    Era.hhdc_contract == self, Era.mop_contract == self)).all()
+                    Era.dc_contract == self, Era.mop_contract == self)).all()
             if len(eras_after) > 0:
                 mpan_core = eras_after[0].imp_mpan_core
                 if mpan_core is None:
@@ -1167,8 +1193,8 @@ class Site(Base, PersistentClass):
 
     def insert_e_supply(
             self, sess, source, generator_type, supply_name, start_date,
-            finish_date, gsp_group, mop_contract, mop_account, hhdc_contract,
-            hhdc_account, msn, pc, mtc_code, cop, ssc, imp_mpan_core,
+            finish_date, gsp_group, mop_contract, mop_account, dc_contract,
+            dc_account, msn, pc, mtc_code, cop, ssc, imp_mpan_core,
             imp_llfc_code, imp_supplier_contract, imp_supplier_account, imp_sc,
             exp_mpan_core, exp_llfc_code, exp_supplier_contract,
             exp_supplier_account, exp_sc):
@@ -1196,7 +1222,7 @@ class Site(Base, PersistentClass):
         mtc = Mtc.get_by_code(sess, dno, mtc_code)
         supply.insert_era(
             sess, self, [], start_date, finish_date, mop_contract, mop_account,
-            hhdc_contract, hhdc_account, msn, pc, mtc, cop, ssc, imp_mpan_core,
+            dc_contract, dc_account, msn, pc, mtc, cop, ssc, imp_mpan_core,
             imp_llfc_code, imp_supplier_contract, imp_supplier_account, imp_sc,
             exp_mpan_core, exp_llfc_code, exp_supplier_contract,
             exp_supplier_account, exp_sc, set())
@@ -1431,8 +1457,17 @@ class RateScript(Base, PersistentClass):
                 market_role_code + ".")
 
     @staticmethod
-    def get_hhdc_by_id(sess, oid):
-        return RateScript.get_by_role_code_id(sess, 'C', oid)
+    def get_dc_by_id(sess, oid):
+        roles = ('C', 'D')
+        try:
+            return sess.query(RateScript).join(
+                Contract.rate_scripts, MarketRole).filter(
+                RateScript.id == oid, MarketRole.code.in_(roles)).one()
+        except NoResultFound:
+            raise NotFound(
+                "There isn't a rate script with the id " + str(oid) +
+                " attached to a contract with market role codes " +
+                str(roles) + ".")
 
     @staticmethod
     def get_supplier_by_id(sess, oid):
@@ -1663,11 +1698,11 @@ class Era(Base, PersistentClass):
     mop_contract = relationship(
         "Contract", primaryjoin="Contract.id==Era.mop_contract_id")
     mop_account = Column(String, nullable=False)
-    hhdc_contract_id = Column(
+    dc_contract_id = Column(
         Integer, ForeignKey('contract.id'), nullable=False)
-    hhdc_contract = relationship(
-        "Contract", primaryjoin="Contract.id==Era.hhdc_contract_id")
-    hhdc_account = Column(String)
+    dc_contract = relationship(
+        "Contract", primaryjoin="Contract.id==Era.dc_contract_id")
+    dc_account = Column(String)
     msn = Column(String)
     pc_id = Column(Integer, ForeignKey('pc.id'), nullable=False)
     mtc_id = Column(Integer, ForeignKey('mtc.id'), nullable=False)
@@ -1693,14 +1728,14 @@ class Era(Base, PersistentClass):
 
     def __init__(
             self, sess, supply, start_date, finish_date, mop_contract,
-            mop_account, hhdc_contract, hhdc_account, msn, pc, mtc_code, cop,
-            ssc, imp_mpan_core, imp_llfc_code, imp_supplier_contract,
+            mop_account, dc_contract, dc_account, msn, pc, mtc_code, cop, ssc,
+            imp_mpan_core, imp_llfc_code, imp_supplier_contract,
             imp_supplier_account, imp_sc, exp_mpan_core, exp_llfc_code,
             exp_supplier_contract, exp_supplier_account, exp_sc):
         self.supply = supply
         self.update(
             sess, start_date, finish_date, mop_contract, mop_account,
-            hhdc_contract, hhdc_account, msn, pc, mtc_code, cop, ssc,
+            dc_contract, dc_account, msn, pc, mtc_code, cop, ssc,
             imp_mpan_core, imp_llfc_code, imp_supplier_contract,
             imp_supplier_account, imp_sc, exp_mpan_core, exp_llfc_code,
             exp_supplier_contract, exp_supplier_account, exp_sc)
@@ -1745,7 +1780,7 @@ class Era(Base, PersistentClass):
     def update_dates(self, sess, start_date, finish_date):
         self.update(
             sess, start_date, finish_date, self.mop_contract, self.mop_account,
-            self.hhdc_contract, self.hhdc_account, self.msn, self.pc, self.mtc,
+            self.dc_contract, self.dc_account, self.msn, self.pc, self.mtc,
             self.cop, self.ssc, self.imp_mpan_core,
             None if self.imp_llfc is None else self.imp_llfc.code,
             self.imp_supplier_contract, self.imp_supplier_account, self.imp_sc,
@@ -1755,7 +1790,7 @@ class Era(Base, PersistentClass):
 
     def update(
             self, sess, start_date, finish_date, mop_contract, mop_account,
-            hhdc_contract, hhdc_account, msn, pc, mtc, cop, ssc, imp_mpan_core,
+            dc_contract, dc_account, msn, pc, mtc, cop, ssc, imp_mpan_core,
             imp_llfc_code, imp_supplier_contract, imp_supplier_account, imp_sc,
             exp_mpan_core, exp_llfc_code, exp_supplier_contract,
             exp_supplier_account, exp_sc, do_check=None):
@@ -1777,12 +1812,12 @@ class Era(Base, PersistentClass):
         if len(mop_account) == 0:
             raise BadRequest("There must be a MOP account reference.")
 
-        if hhdc_contract is None:
-            raise BadRequest("An era must have an HHDC contract.")
+        if dc_contract is None:
+            raise BadRequest("An era must have a DC contract.")
 
-        hhdc_account = hhdc_account.strip()
-        if len(hhdc_account) == 0:
-            raise BadRequest("There must be an account reference.")
+        dc_account = dc_account.strip()
+        if len(dc_account) == 0:
+            raise BadRequest("An era must have a DC account reference.")
 
         self.msn = msn
         self.pc = pc
@@ -1797,8 +1832,8 @@ class Era(Base, PersistentClass):
         self.scc = ssc
         self.mop_account = mop_account
         self.mop_contract = mop_contract
-        self.hhdc_account = hhdc_account
-        self.hhdc_contract = hhdc_contract
+        self.dc_account = dc_account
+        self.dc_contract = dc_contract
 
         for polarity in ['imp', 'exp']:
             mcore_str = locs[polarity + '_mpan_core']
@@ -1867,12 +1902,12 @@ class Era(Base, PersistentClass):
                 " is not compatible with the meter type code of " +
                 self.mtc.meter_type.code + ".")
 
-        if hhdc_contract.start_date() > start_date:
-            raise BadRequest("The HHDC contract starts after the era.")
+        if dc_contract.start_date() > start_date:
+            raise BadRequest("The DC contract starts after the era.")
 
-        if hh_before(hhdc_contract.finish_date(), finish_date):
+        if hh_before(dc_contract.finish_date(), finish_date):
             raise BadRequest(
-                "The HHDC contract " + hhdc_contract.id +
+                "The DC contract " + dc_contract.id +
                 " finishes before the era.")
 
         if mop_contract.start_date() > start_date:
@@ -2312,7 +2347,7 @@ class Supply(Base, PersistentClass):
 
     def update_era(
             self, sess, era, start_date, finish_date, mop_contract,
-            mop_account, hhdc_contract, hhdc_account, msn, pc, mtc_code, cop,
+            mop_account, dc_contract, dc_account, msn, pc, mtc_code, cop,
             ssc, imp_mpan_core, imp_llfc_code, imp_supplier_contract,
             imp_supplier_account, imp_sc, exp_mpan_core, exp_llfc_code,
             exp_supplier_contract, exp_supplier_account, exp_sc):
@@ -2410,7 +2445,7 @@ class Supply(Base, PersistentClass):
 
         era.update(
             sess, start_date, finish_date, mop_contract, mop_account,
-            hhdc_contract, hhdc_account, msn, pc, mtc_code, cop, ssc,
+            dc_contract, dc_account, msn, pc, mtc_code, cop, ssc,
             imp_mpan_core, imp_llfc_code, imp_supplier_contract,
             imp_supplier_account, imp_sc, exp_mpan_core, exp_llfc_code,
             exp_supplier_contract, exp_supplier_account, exp_sc)
@@ -2466,7 +2501,7 @@ class Supply(Base, PersistentClass):
         return self.insert_era(
             sess, physical_site, logical_sites, start_date, None,
             template_era.mop_contract, template_era.mop_account,
-            template_era.hhdc_contract, template_era.hhdc_account,
+            template_era.dc_contract, template_era.dc_account,
             template_era.msn, template_era.pc, template_era.mtc,
             template_era.cop, template_era.ssc, template_era.imp_mpan_core,
             imp_llfc_code, template_era.imp_supplier_contract,
@@ -2478,7 +2513,7 @@ class Supply(Base, PersistentClass):
 
     def insert_era(
             self, sess, physical_site, logical_sites, start_date, finish_date,
-            mop_contract, mop_account, hhdc_contract, hhdc_account, msn, pc,
+            mop_contract, mop_account, dc_contract, dc_account, msn, pc,
             mtc, cop, ssc, imp_mpan_core, imp_llfc_code, imp_supplier_contract,
             imp_supplier_account, imp_sc, exp_mpan_core, exp_llfc_code,
             exp_supplier_contract, exp_supplier_account, exp_sc, channel_set):
@@ -2517,7 +2552,7 @@ class Supply(Base, PersistentClass):
         sess.flush()
         era = Era(
             sess, self, start_date, finish_date, mop_contract, mop_account,
-            hhdc_contract, hhdc_account, msn, pc, mtc, cop, ssc, imp_mpan_core,
+            dc_contract, dc_account, msn, pc, mtc, cop, ssc, imp_mpan_core,
             imp_llfc_code, imp_supplier_contract, imp_supplier_account, imp_sc,
             exp_mpan_core, exp_llfc_code, exp_supplier_contract,
             exp_supplier_account, exp_sc)
@@ -2636,7 +2671,7 @@ class HhDatum(Base, PersistentClass):
                     joinedload(Channel.era))
 
                 if contract is not None:
-                    channel_q = channel_q.filter(Era.hhdc_contract == contract)
+                    channel_q = channel_q.filter(Era.dc_contract == contract)
 
                 channel = channel_q.first()
 
@@ -4107,10 +4142,15 @@ def db_upgrade_9_to_10(sess, root_path):
                 'is_import': is_import})
 
 
+def db_upgrade_10_to_11(sess, root_path):
+    sess.execute("alter table era rename hhdc_contract_id to dc_contract_id;")
+    sess.execute("alter table era rename hhdc_account to dc_account;")
+
+
 upgrade_funcs = [
     db_upgrade_0_to_1, db_upgrade_1_to_2, db_upgrade_2_to_3, db_upgrade_3_to_4,
     db_upgrade_4_to_5, db_upgrade_5_to_6, db_upgrade_6_to_7, db_upgrade_7_to_8,
-    db_upgrade_8_to_9, db_upgrade_9_to_10]
+    db_upgrade_8_to_9, db_upgrade_9_to_10, db_upgrade_10_to_11]
 
 
 def db_upgrade(root_path):

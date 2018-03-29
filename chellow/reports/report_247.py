@@ -186,7 +186,7 @@ def content(
 
         title_dict = {}
         for cont_type, con_attr in (
-                ('mop', Era.mop_contract), ('dc', Era.hhdc_contract),
+                ('mop', Era.mop_contract), ('dc', Era.dc_contract),
                 ('imp-supplier', Era.imp_supplier_contract),
                 ('exp-supplier', Era.exp_supplier_contract)):
             titles = []
@@ -464,7 +464,7 @@ def content(
                             Era.finish_date == null(),
                             Era.finish_date >= month_start)).options(
                         joinedload(Era.ssc),
-                        joinedload(Era.hhdc_contract),
+                        joinedload(Era.dc_contract),
                         joinedload(Era.mop_contract),
                         joinedload(Era.imp_supplier_contract),
                         joinedload(Era.exp_supplier_contract),
@@ -696,7 +696,7 @@ def content(
                             month_data['export-gen-kwh'] += kwh
 
                     sss = exp_ss if imp_ss is None else imp_ss
-                    sss.contract_func(sss.hhdc_contract, 'virtual_bill')(sss)
+                    sss.contract_func(sss.dc_contract, 'virtual_bill')(sss)
                     dc_bill = sss.dc_bill
                     gbp = dc_bill['net-gbp']
 

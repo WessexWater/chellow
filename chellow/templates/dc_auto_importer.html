@@ -1,12 +1,12 @@
 {% extends "base.html" %}
 
 {% block title %}
-	&raquo; HHDC Contracts &raquo; {{contract.name}} &raquo; Automatic HH Data Downloader
+	&raquo; DC Contracts &raquo; {{contract.name}} &raquo; Automatic HH Data Downloader
 {% endblock %}
 
 {% block nav %}
-	&raquo; <a href="/hhdc_contracts">HHDC Contracts</a> &raquo; 
-	<a href="/hhdc_contracts/{{contract.id}}">{{contract.name}}</a> &raquo; 
+	&raquo; <a href="/dc_contracts">DC Contracts</a> &raquo; 
+	<a href="/dc_contracts/{{contract.id}}">{{contract.name}}</a> &raquo; 
 	Automatic HH Data Downloader
 {% endblock %}
 
@@ -25,7 +25,7 @@
     <div class="section-content">
         <div class="section-data">
 		    <table class="DataTable widthAuto noMarginBottom">
-		        <caption><a href="/hhdc_contracts/{{contract.id}}/auto_importer">Refresh page</a></caption>
+		        <caption><a href="/dc_contracts/{{contract.id}}/auto_importer">Refresh page</a></caption>
 				<tr>
 					<th>Is Locked?</th>
 					<th>Is stopping?</th>
@@ -55,7 +55,7 @@
                 {% if not task.is_locked() %}
 					<form method="post">
 						<fieldset>
-							<input type="hidden" name="hhdc_contract_id" value="{{contract.id}}">
+							<input type="hidden" name="dc_contract_id" value="{{contract.id}}">
 							<input type="submit" value="Import" name="now">
 						</fieldset>
 					</form>

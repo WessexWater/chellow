@@ -184,7 +184,7 @@ def content(year, month, months, supply_id, user):
                                 supply_source.supplier_bill['net-gbp']
 
                         supply_source.contract_func(
-                            era.hhdc_contract, 'virtual_bill')(supply_source)
+                            era.dc_contract, 'virtual_bill')(supply_source)
                         values['metered-import-net-gbp'] += \
                             supply_source.dc_bill['net-gbp']
 

@@ -1,23 +1,23 @@
 {% extends "base.html" %}
 
 {% block title %}
-	&raquo; HHDC Contracts &raquo; {{bill.batch.contract.name}} &raquo;
+	&raquo; DC Contracts &raquo; {{bill.batch.contract.name}} &raquo;
  	Batches &raquo; {{bill.batch.reference}} &raquo; Bills &raquo; {{bill.id}}
 {% endblock %}
 
 {% block nav %}
-	&raquo; <a href="/hhdc_contracts">HHDC Contracts</a> &raquo;
+	&raquo; <a href="/dc_contracts">DC Contracts</a> &raquo;
 	<a
-			href="/hhdc_contracts/{{bill.batch.contract.id}}"
+			href="/dc_contracts/{{bill.batch.contract.id}}"
 			>{{bill.batch.contract.name}}</a> &raquo;
 	<a
-			href="/hhdc_batches?hhdc_contract_id={{bill.batch.contract.id}}"
+			href="/dc_batches?dc_contract_id={{bill.batch.contract.id}}"
 			>Batches</a> &raquo;
 	<a
-			href="/hhdc_batches/{{bill.batch.id}}"
+			href="/dc_batches/{{bill.batch.id}}"
 			>{{bill.batch.reference}}</a> &raquo;
 
-	<a href="/hhdc_bills/{{bill.id}}">Bill {{bill.id}}</a> &raquo; Edit
+	<a href="/dc_bills/{{bill.id}}">Bill {{bill.id}}</a> &raquo; Edit
 {% endblock %}
 
 {% block content %}
@@ -36,7 +36,7 @@
 						<form method="post">
 							<fieldset>
 								<input type="submit" name="delete" value="Delete">
-								<a href="/hhdc_bills/{{bill.id}}/edit">Cancel</a>
+								<a href="/dc_bills/{{bill.id}}/edit">Cancel</a>
 							</fieldset>
 							</form>
 							<p></p>

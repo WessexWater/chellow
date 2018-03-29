@@ -1,14 +1,13 @@
 {% extends "base.html" %}
 
 {% block title %}
-	&raquo; HHDC Contracts &raquo; {{hhdc_contract.name}}
+	&raquo; DC Contracts &raquo; {{dc_contract.name}}
 {% endblock %}
 
 {% block nav %}
-	&raquo; <a href="/hhdc_contracts">HHDC Contracts</a> &raquo;
-	<a href="/hhdc_contracts/{{hhdc_contract.id}}">
-		{{hhdc_contract.name}}
-	</a> &raquo; Edit
+	<a href="/dc_contracts">DC Contracts</a> &raquo;
+	<a href="/dc_contracts/{{dc_contract.id}}">{{dc_contract.name}}</a> &raquo;
+ 	Edit
 {% endblock %}
 
 {% block content %}
@@ -22,10 +21,10 @@
 					<div class="standardForm">
 						<form
 								method="post"
-								action="/hhdc_contracts/{{hhdc_contract.id}}/edit">
+								action="/dc_contracts/{{dc_contract.id}}/edit">
 							<fieldset>
 								<input type="submit" name="delete" value="delete">
-								<a href="/hhdc_contracts/{{hhdc_contract.id}}/edit">Cancel</a>
+								<a href="/dc_contracts/{{dc_contract.id}}/edit">Cancel</a>
 							</fieldset>
 						</form>
 					</div>
@@ -47,7 +46,7 @@
 				<div class="section-data">
 					<div class="standardForm">
 						<form
-						 		action="/hhdc_contracts/{{hhdc_contract.id}}/edit"
+						 		action="/dc_contracts/{{dc_contract.id}}/edit"
 							 	method="post">
 							<fieldset>
 								<div class="row">
@@ -57,27 +56,28 @@
 											{% for party in parties %}
 												{{ input_option(
 														'party_id', party.id,
-													 	party.participant.code + ' : ' + party.name,
-													 	hhdc_contract.party.id) }}
+													 	party.participant.code + ' : ' + party.name +
+														' : ' + party.market_role.description,
+													 	dc_contract.party.id) }}
 											{% endfor %}
 										</select>
 									</div>
 									<div class="col-sm-6">
 										<label>Name</label>
-											{{input_text('name', hhdc_contract.name)}}
+											{{input_text('name', dc_contract.name)}}
 									</div>
 								</div>
 
 								Charge script
 								<br>
 								{{input_textarea(
-									'charge_script', hhdc_contract.charge_script, 40, 80)}}
+									'charge_script', dc_contract.charge_script, 40, 80)}}
 								<br>
 								<br>
 								Properties
 								<br>
 								{{ input_textarea(
-									'properties', hhdc_contract.properties, 40, 80) }}
+									'properties', dc_contract.properties, 40, 80) }}
 					
 								<br>
 								<br>
@@ -133,12 +133,12 @@
 				<div class="section-data">
 					<div class="standardForm">
 						<form
-								action="/hhdc_contracts/{{hhdc_contract.id}}/edit"
+								action="/dc_contracts/{{dc_contract.id}}/edit"
 								method="post">
 							<fieldset>
 								<label>State</label>
 								<br>
-								{{input_textarea('state', hhdc_contract.state, 40, 80)}}
+								{{input_textarea('state', dc_contract.state, 40, 80)}}
 								<br>
 								<input type="submit" name="update_state" value="Update">
 							</fieldset>
@@ -162,7 +162,7 @@
 			<div class="section-content">
 				<div class="section-data">
 					<div class="standardForm">
-						<form action="/hhdc_contracts/{{hhdc_contract.id}}/edit">
+						<form action="/dc_contracts/{{dc_contract.id}}/edit">
 							<fieldset>
 								<input type="hidden" name="view" value="confirm_delete">
 								<input type="submit" value="Delete">
@@ -189,7 +189,7 @@
 					<div class="standardForm textWidthAuto">
 						<form
 						 		method="post"
-							 	action="/hhdc_contracts/{{hhdc_contract.id}}/edit">
+							 	action="/dc_contracts/{{dc_contract.id}}/edit">
 							<fieldset>
 								{{ input_date('ignore', initial_date) }}
 								<input type="submit" name="ignore_snags" value="Ignore">

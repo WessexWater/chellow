@@ -218,9 +218,9 @@
                         {{era.mop_account}}
                     </td>
                     <td rowspan="4">
-                        <a href="/hhdc_contracts/{{era.hhdc_contract.id}}">{{era.hhdc_contract.name}}</a>
+                        <a href="/dc_contracts/{{era.dc_contract.id}}">{{era.dc_contract.name}}</a>
                     </td>
-                    <td rowspan="4">{{era.hhdc_account}}</td>
+                    <td rowspan="4">{{era.dc_account}}</td>
                     <th colspan="6">Import</th>
                 </tr>
                 <tr>
@@ -611,14 +611,14 @@
                         </tr>
                     </thead>
                     <tbody>
-                        {% for bill_dict in era_bundle['hhdc_bills']['bill_dicts'] %}
+                        {% for bill_dict in era_bundle['dc_bills']['bill_dicts'] %}
                         {% set bill = bill_dict['bill'] %}
                         <tr>
                             <td>
-                                [<a href="/hhdc_bills/{{bill.id}}/edit">edit</a>]
+                                [<a href="/dc_bills/{{bill.id}}/edit">edit</a>]
                             </td>
                             <td>
-                                <a href="/hhdc_batches/{{bill.batch.id}}">{{bill.batch.reference}}</a>
+                                <a href="/dc_batches/{{bill.batch.id}}">{{bill.batch.reference}}</a>
                             </td>
                             <td>{{ bill.reference }}</td>
                             <td>{{ bill.account }}</td>

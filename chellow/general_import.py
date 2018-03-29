@@ -72,17 +72,16 @@ def general_import_era(sess, action, vals, args):
         if mop_account == NO_CHANGE:
             mop_account = era.mop_account
 
-        hhdc_contract = None
-        hhdc_contract_name = add_arg(
-            args, "HHDC Contract", vals, 6)
-        if hhdc_contract_name == NO_CHANGE:
-            hhdc_contract = era.hhdc_contract
-        elif len(hhdc_contract_name) > 0:
-            hhdc_contract = Contract.get_hhdc_by_name(sess, hhdc_contract_name)
+        dc_contract = None
+        dc_contract_name = add_arg(args, "DC Contract", vals, 6)
+        if dc_contract_name == NO_CHANGE:
+            dc_contract = era.dc_contract
+        elif len(dc_contract_name) > 0:
+            dc_contract = Contract.get_dc_by_name(sess, dc_contract_name)
 
-        hhdc_account = add_arg(args, "HHDC account", vals, 7)
-        if hhdc_account == NO_CHANGE:
-            hhdc_account = era.hhdc_account
+        dc_account = add_arg(args, "DC account", vals, 7)
+        if dc_account == NO_CHANGE:
+            dc_account = era.dc_account
 
         msn = add_arg(args, "Meter Serial Number", vals, 8)
         if msn == NO_CHANGE:
@@ -197,7 +196,7 @@ def general_import_era(sess, action, vals, args):
 
         supply.update_era(
             sess, era, start_date, finish_date, mop_contract, mop_account,
-            hhdc_contract, hhdc_account, msn, pc, mtc, cop, ssc, imp_mpan_core,
+            dc_contract, dc_account, msn, pc, mtc, cop, ssc, imp_mpan_core,
             imp_llfc_code, imp_supplier_contract, imp_supplier_account, imp_sc,
             exp_mpan_core, exp_llfc_code, exp_supplier_contract,
             exp_supplier_account, exp_sc)
@@ -250,15 +249,15 @@ def general_import_era(sess, action, vals, args):
         if mop_account == NO_CHANGE:
             mop_account = existing_era.mop_account
 
-        hhdc_contract_name = add_arg(args, "HHDC Contract", vals, 5)
-        if hhdc_contract_name == NO_CHANGE:
-            hhdc_contract = existing_era.hhdc_contract
+        dc_contract_name = add_arg(args, "DC Contract", vals, 5)
+        if dc_contract_name == NO_CHANGE:
+            dc_contract = existing_era.dc_contract
         else:
-            hhdc_contract = Contract.get_hhdc_by_name(sess, hhdc_contract_name)
+            dc_contract = Contract.get_dc_by_name(sess, dc_contract_name)
 
-        hhdc_account = add_arg(args, "HHDC Account Reference", vals, 6)
-        if hhdc_account == NO_CHANGE:
-            hhdc_account = existing_era.hhdc_account
+        dc_account = add_arg(args, "DC Account Reference", vals, 6)
+        if dc_account == NO_CHANGE:
+            dc_account = existing_era.dc_account
 
         msn = add_arg(args, "Meter Serial Number", vals, 7)
         if msn == NO_CHANGE:
@@ -404,7 +403,7 @@ def general_import_era(sess, action, vals, args):
 
         supply.insert_era(
             sess, physical_site, logical_sites, start_date, None, mop_contract,
-            mop_account, hhdc_contract, hhdc_account, msn, pc, mtc, cop, ssc,
+            mop_account, dc_contract, dc_account, msn, pc, mtc, cop, ssc,
             imp_mpan_core, imp_llfc_code, imp_supplier_contract,
             imp_supplier_account, imp_sc, exp_mpan_core, exp_llfc_code,
             exp_supplier_contract, exp_supplier_account, exp_sc, channel_set)
@@ -641,15 +640,15 @@ def general_import_bill(sess, action, vals, args):
         role_name = add_arg(args, "Role Name", vals, 0).lower()
         contract_name = add_arg(args, "Contract Name", vals, 1)
 
-        if role_name == "hhdc":
-            contract = Contract.get_hhdc_by_name(sess, contract_name)
+        if role_name == "dc":
+            contract = Contract.get_dc_by_name(sess, contract_name)
         elif role_name == "supplier":
             contract = Contract.get_supplier_by_name(sess, contract_name)
         elif role_name == "mop":
             contract = Contract.get_mop_by_name(sess, contract_name)
         else:
             raise BadRequest(
-                "The role name must be one of hhdc, supplier or mop.")
+                "The role name must be one of dc, supplier or mop.")
 
         batch_reference = add_arg(args, "Batch Reference", vals, 2)
 
@@ -877,13 +876,13 @@ def general_import_supply(sess, action, vals, args):
             mop_contract = None
 
         mop_account = add_arg(args, "MOP Account", vals, 8)
-        hhdc_contract_name = add_arg(args, "HHDC Contract", vals, 9)
-        if len(hhdc_contract_name) > 0:
-            hhdc_contract = Contract.get_hhdc_by_name(sess, hhdc_contract_name)
+        dc_contract_name = add_arg(args, "DC Contract", vals, 9)
+        if len(dc_contract_name) > 0:
+            dc_contract = Contract.get_dc_by_name(sess, dc_contract_name)
         else:
-            hhdc_contract = None
+            dc_contract = None
 
-        hhdc_account = add_arg(args, "HHDC Account", vals, 10)
+        dc_account = add_arg(args, "DC Account", vals, 10)
         msn = add_arg(args, "Meter Serial Number", vals, 11)
         pc_code = add_arg(args, "Profile Class", vals, 12)
         pc = Pc.get_by_code(sess, parse_pc_code(pc_code))
@@ -953,7 +952,7 @@ def general_import_supply(sess, action, vals, args):
         supply = site.insert_e_supply(
             sess, source, gen_type, supply_name, start_date,
             finish_date, gsp_group, mop_contract, mop_account,
-            hhdc_contract, hhdc_account, msn, pc, mtc_code, cop, ssc,
+            dc_contract, dc_account, msn, pc, mtc_code, cop, ssc,
             imp_mpan_core, imp_llfc_code, imp_supplier_contract,
             imp_supplier_account, imp_sc, exp_mpan_core, exp_llfc_code,
             exp_supplier_contract, exp_supplier_account, exp_sc)
@@ -1151,15 +1150,15 @@ def general_import_batch(sess, action, vals, args):
         role_name = add_arg(args, "Role Name", vals, 0).lower()
         contract_name = add_arg(args, "Contract Name", vals, 1)
 
-        if role_name == "hhdc":
-            contract = Contract.get_hhdc_by_name(sess, contract_name)
+        if role_name == "dc":
+            contract = Contract.get_dc_by_name(sess, contract_name)
         elif role_name == "supplier":
             contract = Contract.get_supplier_by_name(sess, contract_name)
         elif role_name == "mop":
             contract = Contract.get_mop_by_name(sess, contract_name)
         else:
             raise BadRequest(
-                "The role name must be one of hhdc, supplier or mop.")
+                "The role name must be one of dc, supplier or mop.")
 
         reference = add_arg(args, "Reference", vals, 2)
         description = add_arg(args, "Description", vals, 3)
@@ -1168,15 +1167,15 @@ def general_import_batch(sess, action, vals, args):
         role_name = add_arg(args, "Role Name", vals, 0).lower()
         contract_name = add_arg(args, "Contract Name", vals, 1)
 
-        if role_name == "hhdc":
-            contract = Contract.get_hhdc_by_name(sess, contract_name)
+        if role_name == "dc":
+            contract = Contract.get_dc_by_name(sess, contract_name)
         elif role_name == "supplier":
             contract = Contract.get_supplier_by_name(sess, contract_name)
         elif role_name == "mop":
             contract = Contract.get_mop_by_name(sess, contract_name)
         else:
             raise BadRequest(
-                "The role name must be one of hhdc, supplier or mop.")
+                "The role name must be one of dc, supplier or mop.")
 
         old_reference = add_arg(args, "Old Reference", vals, 2)
         batch = contract.get_batch(sess, sess, old_reference)

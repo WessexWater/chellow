@@ -21,7 +21,7 @@ def content(contract_id, end_year, end_month, months, user):
     sess = f = None
     try:
         sess = Session()
-        contract = Contract.get_hhdc_by_id(sess, contract_id)
+        contract = Contract.get_dc_by_id(sess, contract_id)
 
         finish_date = Datetime(end_year, end_month, 1, tzinfo=pytz.utc) + \
             relativedelta(months=1) - HH
@@ -31,7 +31,7 @@ def content(contract_id, end_year, end_month, months, user):
 
         forecast_date = chellow.computer.forecast_date()
         running_name, finished_name = chellow.dloads.make_names(
-            'hhdc_virtual_bills.csv', user)
+            'dc_virtual_bills.csv', user)
 
         f = open(running_name, mode='w', newline='')
         writer = csv.writer(f, lineterminator='\n')
@@ -50,7 +50,7 @@ def content(contract_id, end_year, end_month, months, user):
         for era in sess.query(Era).distinct().filter(
                 or_(Era.finish_date == null(), Era.finish_date >= start_date),
                 Era.start_date <= finish_date,
-                Era.hhdc_contract == contract).order_by(Era.supply_id):
+                Era.dc_contract == contract).order_by(Era.supply_id):
             imp_mpan_core = era.imp_mpan_core
             if imp_mpan_core is None:
                 imp_mpan_core_str = ''
@@ -99,7 +99,7 @@ def do_get(sess):
     end_year = req_int("end_year")
     end_month = req_int("end_month")
     months = req_int("months")
-    contract_id = req_int('hhdc_contract_id')
+    contract_id = req_int('dc_contract_id')
 
     user = g.user
 

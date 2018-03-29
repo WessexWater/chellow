@@ -210,13 +210,11 @@ def check_permissions(*args, **kwargs):
             if method in ("GET", "HEAD"):
                 party = g.user.party
                 market_role_code = party.market_role.code
-                if market_role_code == 'C':
-                    hhdc_contract_id = request.args["hhdc_contract_id"]
-                    hhdc_contract = Contract.get_hhdc_by_id(
-                        g.sess, hhdc_contract_id)
-                    if hhdc_contract.party == party and \
-                            request.full_path.startswith(
-                                "/channel_snags?"):
+                if market_role_code in ('C', 'D'):
+                    dc_contract_id = request.args["dc_contract_id"]
+                    dc_contract = Contract.get_dc_by_id(g.sess, dc_contract_id)
+                    if dc_contract.party == party and \
+                            request.full_path.startswith("/channel_snags?"):
                         return
                 elif market_role_code == 'X':
                     if path.startswith(
@@ -790,8 +788,8 @@ def site_edit_get(site_id):
             SiteEra.site == site).order_by(Era.start_date.desc())
         mop_contracts = g.sess.query(Contract).join(MarketRole).filter(
             MarketRole.code == 'M').order_by(Contract.name)
-        hhdc_contracts = g.sess.query(Contract).join(MarketRole).filter(
-            MarketRole.code == 'C').order_by(Contract.name)
+        dc_contracts = g.sess.query(Contract).join(MarketRole).filter(
+            MarketRole.code.in_(('C', 'D'))).order_by(Contract.name)
         supplier_contracts = g.sess.query(Contract).join(MarketRole).filter(
             MarketRole.code == 'X').order_by(Contract.name)
         pcs = g.sess.query(Pc).order_by(Pc.code)
@@ -800,7 +798,7 @@ def site_edit_get(site_id):
         return render_template(
             'site_edit.html', site=site, sources=sources,
             generator_types=generator_types, gsp_groups=gsp_groups, eras=eras,
-            mop_contracts=mop_contracts, hhdc_contracts=hhdc_contracts,
+            mop_contracts=mop_contracts, dc_contracts=dc_contracts,
             supplier_contracts=supplier_contracts, pcs=pcs, cops=cops,
             g_contracts=g_contracts)
     except BadRequest as e:
@@ -809,7 +807,7 @@ def site_edit_get(site_id):
         return render_template(
             'site_edit.html', site=site, sources=sources,
             generator_types=generator_types, gsp_groups=gsp_groups, eras=eras,
-            mop_contracts=mop_contracts, hhdc_contracts=hhdc_contracts,
+            mop_contracts=mop_contracts, dc_contracts=dc_contracts,
             supplier_contracts=supplier_contracts, pcs=pcs, cops=cops,
             g_contracts=g_contracts)
 
@@ -839,9 +837,9 @@ def site_edit_post(site_id):
             mop_contract_id = req_int("mop_contract_id")
             mop_contract = Contract.get_mop_by_id(g.sess, mop_contract_id)
             mop_account = req_str("mop_account")
-            hhdc_contract_id = req_str("hhdc_contract_id")
-            hhdc_contract = Contract.get_hhdc_by_id(g.sess, hhdc_contract_id)
-            hhdc_account = req_str("hhdc_account")
+            dc_contract_id = req_str("dc_contract_id")
+            dc_contract = Contract.get_dc_by_id(g.sess, dc_contract_id)
+            dc_account = req_str("dc_account")
             msn = req_str("msn")
             pc_id = req_int("pc_id")
             pc = Pc.get_by_id(g.sess, pc_id)
@@ -910,8 +908,8 @@ def site_edit_post(site_id):
 
             supply = site.insert_e_supply(
                 g.sess, source, generator_type, name, start_date, None,
-                gsp_group, mop_contract, mop_account, hhdc_contract,
-                hhdc_account, msn, pc, mtc_code, cop, ssc, imp_mpan_core,
+                gsp_group, mop_contract, mop_account, dc_contract,
+                dc_account, msn, pc, mtc_code, cop, ssc, imp_mpan_core,
                 imp_llfc_code, imp_supplier_contract, imp_supplier_account,
                 imp_sc, exp_mpan_core, exp_llfc_code, exp_supplier_contract,
                 exp_supplier_account, exp_sc)
@@ -941,8 +939,8 @@ def site_edit_post(site_id):
             SiteEra.site == site).order_by(Era.start_date.desc())
         mop_contracts = g.sess.query(Contract).join(MarketRole).filter(
             MarketRole.code == 'M').order_by(Contract.name)
-        hhdc_contracts = g.sess.query(Contract).join(MarketRole).filter(
-            MarketRole.code == 'C').order_by(Contract.name)
+        dc_contracts = g.sess.query(Contract).join(MarketRole).filter(
+            MarketRole.code.in_(('C', 'D'))).order_by(Contract.name)
         supplier_contracts = g.sess.query(Contract).join(MarketRole).filter(
             MarketRole.code == 'X').order_by(Contract.name)
         pcs = g.sess.query(Pc).order_by(Pc.code)
@@ -953,7 +951,7 @@ def site_edit_post(site_id):
                 'site_edit.html', site=site, sources=sources,
                 generator_types=generator_types, gsp_groups=gsp_groups,
                 eras=eras, mop_contracts=mop_contracts,
-                hhdc_contracts=hhdc_contracts,
+                dc_contracts=dc_contracts,
                 supplier_contracts=supplier_contracts, pcs=pcs, cops=cops,
                 g_contracts=g_contracts), 400)
 
@@ -996,51 +994,63 @@ def sites_get():
         return render_template('sites.html')
 
 
-@app.route('/hhdc_contracts')
-def hhdc_contracts_get():
-    hhdc_contracts = g.sess.query(Contract).join(MarketRole).filter(
-        MarketRole.code == 'C').order_by(Contract.name).all()
-    return render_template(
-        'hhdc_contracts.html', hhdc_contracts=hhdc_contracts)
+@app.route('/dc_contracts')
+def dc_contracts_get():
+    dc_contracts = g.sess.query(Contract).join(MarketRole).filter(
+        MarketRole.code.in_(('C', 'D'))).order_by(Contract.name).all()
+    return render_template('dc_contracts.html', dc_contracts=dc_contracts)
 
 
-@app.route('/hhdc_contracts/add', methods=['POST'])
-def hhdc_contracts_add_post():
+@app.route('/dc_contracts/add', methods=['POST'])
+def dc_contracts_add_post():
     try:
-        participant_id = req_int('participant_id')
+        party_id = req_int('party_id')
         name = req_str('name')
         start_date = req_date('start')
-        participant = Participant.get_by_id(g.sess, participant_id)
-        contract = Contract.insert_hhdc(
-            g.sess, name, participant, '{}', {}, start_date, None, {})
+        party = Party.get_by_id(g.sess, party_id)
+        market_role_code = party.market_role.code
+        if market_role_code == 'C':
+            contract = Contract.insert_hhdc(
+                g.sess, name, party.participant, '{}', {}, start_date, None,
+                {})
+        elif market_role_code == 'D':
+            contract = Contract.insert_nhhdc(
+                g.sess, name, party.participant, '{}', {}, start_date, None,
+                {})
+        else:
+            raise BadRequest(
+                "The market role " + market_role_code + " must be C or D.")
         g.sess.commit()
         chellow.hh_importer.startup_contract(contract.id)
-        return chellow_redirect('/hhdc_contracts/' + str(contract.id), 303)
+        return chellow_redirect('/dc_contracts/' + str(contract.id), 303)
     except BadRequest as e:
         flash(e.description)
         initial_date = utc_datetime_now()
         initial_date = Datetime(initial_date.year, initial_date.month, 1)
-        parties = g.sess.query(Party).join(MarketRole).join(Participant). \
-            filter(MarketRole.code == 'C').order_by(Participant.code).all()
-        return render_template(
-            'hhdc_contracts_add', initial_date=initial_date, parties=parties)
+        parties = g.sess.query(Party).join(MarketRole).join(
+            Participant).filter(MarketRole.code.in_(('C', 'D'))).order_by(
+            Participant.code).all()
+        return make_response(
+            render_template(
+                'dc_contracts_add.html', initial_date=initial_date,
+                parties=parties), 400)
 
 
-@app.route('/hhdc_contracts/add')
-def hhdc_contracts_add_get():
+@app.route('/dc_contracts/add')
+def dc_contracts_add_get():
     initial_date = utc_datetime_now()
     initial_date = Datetime(initial_date.year, initial_date.month, 1)
     parties = g.sess.query(Party).join(MarketRole).join(Participant).filter(
-        MarketRole.code == 'C').order_by(Participant.code).all()
+        MarketRole.code.in_(('C', 'D'))).order_by(Participant.code).all()
     return render_template(
-        'hhdc_contracts_add.html', initial_date=initial_date, parties=parties)
+        'dc_contracts_add.html', initial_date=initial_date, parties=parties)
 
 
-@app.route('/hhdc_contracts/<int:hhdc_contract_id>')
-def hhdc_contract_get(hhdc_contract_id):
+@app.route('/dc_contracts/<int:dc_contract_id>')
+def dc_contract_get(dc_contract_id):
     rate_scripts = None
     try:
-        contract = Contract.get_hhdc_by_id(g.sess, hhdc_contract_id)
+        contract = Contract.get_dc_by_id(g.sess, dc_contract_id)
         rate_scripts = g.sess.query(RateScript).filter(
             RateScript.contract == contract).order_by(
             RateScript.start_date.desc()).all()
@@ -1048,7 +1058,7 @@ def hhdc_contract_get(hhdc_contract_id):
         last_month_finish = Datetime(now.year, now.month, 1) - \
             relativedelta(minutes=30)
         return render_template(
-            'hhdc_contract.html', hhdc_contract=contract,
+            'dc_contract.html', dc_contract=contract,
             rate_scripts=rate_scripts, last_month_finish=last_month_finish)
     except BadRequest as e:
         desc = e.description
@@ -1057,7 +1067,7 @@ def hhdc_contract_get(hhdc_contract_id):
             raise e
         else:
             return render_template(
-                'hhdc_contract.html', contract=contract,
+                'dc_contract.html', contract=contract,
                 rate_scripts=rate_scripts, last_month_finish=last_month_finish)
 
 
@@ -1099,27 +1109,27 @@ def participants_get():
     return render_template('participants.html', participants=participants)
 
 
-@app.route('/hhdc_contracts/<int:hhdc_contract_id>/edit')
-def hhdc_contract_edit_get(hhdc_contract_id):
+@app.route('/dc_contracts/<int:dc_contract_id>/edit')
+def dc_contract_edit_get(dc_contract_id):
     parties = g.sess.query(Party).join(MarketRole).join(Participant).filter(
-        MarketRole.code == 'C').order_by(Participant.code).all()
-    hhdc_contract = Contract.get_hhdc_by_id(g.sess, hhdc_contract_id)
+        MarketRole.code.in_(('C', 'D'))).order_by(Participant.code).all()
+    dc_contract = Contract.get_dc_by_id(g.sess, dc_contract_id)
     initial_date = utc_datetime_now()
     return render_template(
-        'hhdc_contract_edit.html', parties=parties, initial_date=initial_date,
-        hhdc_contract=hhdc_contract)
+        'dc_contract_edit.html', parties=parties, initial_date=initial_date,
+        dc_contract=dc_contract)
 
 
-@app.route('/hhdc_contracts/<int:contract_id>/edit', methods=['POST'])
-def hhdc_contract_edit_post(contract_id):
+@app.route('/dc_contracts/<int:contract_id>/edit', methods=['POST'])
+def dc_contract_edit_post(contract_id):
     contract = None
     try:
-        contract = Contract.get_hhdc_by_id(g.sess, contract_id)
+        contract = Contract.get_dc_by_id(g.sess, contract_id)
         if 'update_state' in request.form:
             state = req_zish("state")
             contract.update_state(state)
             g.sess.commit()
-            return chellow_redirect('/hhdc_contracts/' + str(contract.id), 303)
+            return chellow_redirect('/dc_contracts/' + str(contract.id), 303)
         elif 'ignore_snags' in request.form:
             ignore_date = req_date('ignore')
             g.sess.execute(
@@ -1127,15 +1137,15 @@ def hhdc_contract_edit_post(contract_id):
                     "update snag set is_ignored = true from channel, era "
                     "where snag.channel_id = channel.id "
                     "and channel.era_id = era.id "
-                    "and era.hhdc_contract_id = :contract_id "
+                    "and era.dc_contract_id = :contract_id "
                     "and snag.finish_date < :ignore_date"),
                 params=dict(contract_id=contract.id, ignore_date=ignore_date))
             g.sess.commit()
-            return chellow_redirect("/hhdc_contracts/" + str(contract.id), 303)
+            return chellow_redirect("/dc_contracts/" + str(contract.id), 303)
         elif 'delete' in request.form:
             contract.delete(g.sess)
             g.sess.commit()
-            return chellow_redirect('/hhdc_contracts', 303)
+            return chellow_redirect('/dc_contracts', 303)
         else:
             party_id = req_str('party_id')
             name = req_str("name")
@@ -1144,91 +1154,90 @@ def hhdc_contract_edit_post(contract_id):
             party = Party.get_by_id(g.sess, party_id)
             contract.update(name, party, charge_script, properties)
             g.sess.commit()
-            return chellow_redirect('/hhdc_contracts/' + str(contract.id), 303)
+            return chellow_redirect('/dc_contracts/' + str(contract.id), 303)
     except BadRequest as e:
         flash(e.description)
         if contract is None:
             raise e
         else:
-            parties = g.sess.query(Party).join(MarketRole).join(Participant). \
-                filter(
-                    MarketRole.code == 'C').order_by(Participant.code).all()
+            parties = g.sess.query(Party).join(MarketRole).join(
+                Participant).filter(
+                MarketRole.code.in_(('C', 'D'))).order_by(
+                Participant.code).all()
             initial_date = utc_datetime_now()
             return make_response(
                 render_template(
-                    'hhdc_contract_edit.html', parties=parties,
-                    initial_date=initial_date, hhdc_contract=contract), 400)
+                    'dc_contract_edit.html', parties=parties,
+                    initial_date=initial_date, dc_contract=contract), 400)
 
 
-@app.route('/hhdc_contracts/<int:contract_id>/add_rate_script')
-def hhdc_rate_script_add_get(contract_id):
+@app.route('/dc_contracts/<int:contract_id>/add_rate_script')
+def dc_rate_script_add_get(contract_id):
     now = utc_datetime_now()
     initial_date = utc_datetime(now.year, now.month)
-    contract = Contract.get_hhdc_by_id(g.sess, contract_id)
+    contract = Contract.get_dc_by_id(g.sess, contract_id)
     return render_template(
-        'hhdc_rate_script_add.html', now=now, contract=contract,
+        'dc_rate_script_add.html', now=now, contract=contract,
         initial_date=initial_date)
 
 
-@app.route(
-    '/hhdc_contracts/<int:contract_id>/add_rate_script', methods=['POST'])
-def hhdc_rate_script_add_post(contract_id):
+@app.route('/dc_contracts/<int:contract_id>/add_rate_script', methods=['POST'])
+def dc_rate_script_add_post(contract_id):
     try:
-        contract = Contract.get_hhdc_by_id(g.sess, contract_id)
+        contract = Contract.get_dc_by_id(g.sess, contract_id)
         start_date = req_date('start')
         rate_script = contract.insert_rate_script(g.sess, start_date, '')
         g.sess.commit()
         return chellow_redirect(
-            '/hhdc_rate_scripts/' + str(rate_script.id), 303)
+            '/dc_rate_scripts/' + str(rate_script.id), 303)
     except BadRequest as e:
         flash(e.description)
         now = utc_datetime_now()
         initial_date = utc_datetime(now.year, now.month)
         return render_template(
-            'hhdc_rate_script_add.html', now=now, contract=contract,
+            'dc_rate_script_add.html', now=now, contract=contract,
             initial_date=initial_date)
 
 
-@app.route('/hhdc_rate_scripts/<int:hhdc_rate_script_id>')
-def hhdc_rate_script_get(hhdc_rate_script_id):
-    hhdc_rate_script = RateScript.get_hhdc_by_id(g.sess, hhdc_rate_script_id)
+@app.route('/dc_rate_scripts/<int:dc_rate_script_id>')
+def dc_rate_script_get(dc_rate_script_id):
+    dc_rate_script = RateScript.get_dc_by_id(g.sess, dc_rate_script_id)
     return render_template(
-        'hhdc_rate_script.html', hhdc_rate_script=hhdc_rate_script)
+        'dc_rate_script.html', dc_rate_script=dc_rate_script)
 
 
-@app.route('/hhdc_rate_scripts/<int:hhdc_rate_script_id>/edit')
-def hhdc_rate_script_edit_get(hhdc_rate_script_id):
-    hhdc_rate_script = RateScript.get_hhdc_by_id(g.sess, hhdc_rate_script_id)
+@app.route('/dc_rate_scripts/<int:dc_rate_script_id>/edit')
+def dc_rate_script_edit_get(dc_rate_script_id):
+    dc_rate_script = RateScript.get_dc_by_id(g.sess, dc_rate_script_id)
     return render_template(
-        'hhdc_rate_script_edit.html', hhdc_rate_script=hhdc_rate_script)
+        'dc_rate_script_edit.html', dc_rate_script=dc_rate_script)
 
 
 @app.route(
-    '/hhdc_rate_scripts/<int:hhdc_rate_script_id>/edit', methods=['POST'])
-def hhdc_rate_script_edit_post(hhdc_rate_script_id):
+    '/dc_rate_scripts/<int:dc_rate_script_id>/edit', methods=['POST'])
+def dc_rate_script_edit_post(dc_rate_script_id):
     try:
-        hhdc_rate_script = RateScript.get_hhdc_by_id(
-            g.sess, hhdc_rate_script_id)
-        hhdc_contract = hhdc_rate_script.contract
+        dc_rate_script = RateScript.get_dc_by_id(g.sess, dc_rate_script_id)
+        dc_contract = dc_rate_script.contract
         if 'delete' in request.form:
-            hhdc_contract.delete_rate_script(g.sess, hhdc_rate_script)
+            dc_contract.delete_rate_script(g.sess, dc_rate_script)
             g.sess.commit()
             return chellow_redirect(
-                '/hhdc_contracts/' + str(hhdc_contract.id), 303)
+                '/dc_contracts/' + str(dc_contract.id), 303)
         else:
             script = req_zish('script')
             start_date = req_date('start')
             has_finished = req_bool('has_finished')
             finish_date = req_date('finish') if has_finished else None
-            hhdc_contract.update_rate_script(
-                g.sess, hhdc_rate_script, start_date, finish_date, script)
+            dc_contract.update_rate_script(
+                g.sess, dc_rate_script, start_date, finish_date, script)
             g.sess.commit()
             return chellow_redirect(
-                '/hhdc_rate_scripts/' + str(hhdc_rate_script.id), 303)
+                '/dc_rate_scripts/' + str(dc_rate_script.id), 303)
     except BadRequest as e:
         flash(e.description)
         return render_template(
-            'hhdc_rate_script_edit.html', hhdc_rate_script=hhdc_rate_script)
+            'dc_rate_script_edit.html', dc_rate_script=dc_rate_script)
 
 
 @app.route('/supplier_contracts/<int:contract_id>/edit')
@@ -1438,7 +1447,7 @@ def mop_contract_edit_post(contract_id):
                     "update snag set is_ignored = true from channel, era "
                     "where snag.channel_id = channel.id "
                     "and channel.era_id = era.id "
-                    "and era.hhdc_contract_id = :contract_id "
+                    "and era.dc_contract_id = :contract_id "
                     "and snag.finish_date < :ignore_date"),
                 params=dict(contract_id=contract.id, ignore_date=ignore_date))
             g.sess.commit()
@@ -1742,7 +1751,7 @@ def era_edit_get(era_id):
     gsp_groups = g.sess.query(GspGroup).order_by(GspGroup.code)
     mop_contracts = g.sess.query(Contract).join(MarketRole).filter(
         MarketRole.code == 'M').order_by(Contract.name)
-    hhdc_contracts = g.sess.query(Contract).join(MarketRole).filter(
+    dc_contracts = g.sess.query(Contract).join(MarketRole).filter(
         MarketRole.code == 'C').order_by(Contract.name)
     supplier_contracts = g.sess.query(Contract).join(MarketRole).filter(
         MarketRole.code == 'X').order_by(Contract.name)
@@ -1750,7 +1759,7 @@ def era_edit_get(era_id):
         SiteEra.era == era).order_by(Site.code).all()
     return render_template(
         'era_edit.html', era=era, pcs=pcs, cops=cops, gsp_groups=gsp_groups,
-        mop_contracts=mop_contracts, hhdc_contracts=hhdc_contracts,
+        mop_contracts=mop_contracts, dc_contracts=dc_contracts,
         supplier_contracts=supplier_contracts, site_eras=site_eras)
 
 
@@ -1792,9 +1801,9 @@ def era_edit_post(era_id):
             mop_contract_id = req_int("mop_contract_id")
             mop_contract = Contract.get_mop_by_id(g.sess, mop_contract_id)
             mop_account = req_str("mop_account")
-            hhdc_contract_id = req_int("hhdc_contract_id")
-            hhdc_contract = Contract.get_hhdc_by_id(g.sess, hhdc_contract_id)
-            hhdc_account = req_str("hhdc_account")
+            dc_contract_id = req_int("dc_contract_id")
+            dc_contract = Contract.get_dc_by_id(g.sess, dc_contract_id)
+            dc_account = req_str("dc_account")
             msn = req_str("msn")
             pc_id = req_int("pc_id")
             pc = Pc.get_by_id(g.sess, pc_id)
@@ -1853,7 +1862,7 @@ def era_edit_post(era_id):
 
             era.supply.update_era(
                 g.sess, era, start_date, finish_date, mop_contract,
-                mop_account, hhdc_contract, hhdc_account, msn, pc, mtc, cop,
+                mop_account, dc_contract, dc_account, msn, pc, mtc, cop,
                 ssc, imp_mpan_core, imp_llfc_code, imp_supplier_contract,
                 imp_supplier_account, imp_sc, exp_mpan_core, exp_llfc_code,
                 exp_supplier_contract, exp_supplier_account, exp_sc)
@@ -1866,8 +1875,8 @@ def era_edit_post(era_id):
         gsp_groups = g.sess.query(GspGroup).order_by(GspGroup.code)
         mop_contracts = g.sess.query(Contract).join(MarketRole).filter(
             MarketRole.code == 'M').order_by(Contract.name)
-        hhdc_contracts = g.sess.query(Contract).join(MarketRole).filter(
-            MarketRole.code == 'C').order_by(Contract.name)
+        dc_contracts = g.sess.query(Contract).join(MarketRole).filter(
+            MarketRole.code.in_(('C', 'D'))).order_by(Contract.name)
         supplier_contracts = g.sess.query(Contract).join(MarketRole).filter(
             MarketRole.code == 'X').order_by(Contract.name)
         site_eras = g.sess.query(SiteEra).join(Site).filter(
@@ -1876,7 +1885,7 @@ def era_edit_post(era_id):
             render_template(
                 'era_edit.html', era=era, pcs=pcs, cops=cops,
                 gsp_groups=gsp_groups, mop_contracts=mop_contracts,
-                hhdc_contracts=hhdc_contracts,
+                dc_contracts=dc_contracts,
                 supplier_contracts=supplier_contracts, site_eras=site_eras),
             400)
 
@@ -1902,7 +1911,7 @@ def supplies_get():
                 "or replace(lower(e2.exp_mpan_core), ' ', '') "
                 "like lower(:reducedPattern) "
                 "or lower(e2.exp_supplier_account) like lower(:pattern) "
-                "or lower(e2.hhdc_account) like lower(:pattern) "
+                "or lower(e2.dc_account) like lower(:pattern) "
                 "or lower(e2.mop_account) like lower(:pattern) "
                 "or lower(e2.msn) like lower(:pattern) "
                 "group by e2.supply_id) as sq "
@@ -1937,7 +1946,7 @@ def supply_get(supply_id):
             joinedload(Era.pc), joinedload(Era.imp_supplier_contract),
             joinedload(Era.exp_supplier_contract),
             joinedload(Era.ssc), joinedload(Era.mtc),
-            joinedload(Era.mop_contract), joinedload(Era.hhdc_contract),
+            joinedload(Era.mop_contract), joinedload(Era.dc_contract),
             joinedload(Era.imp_llfc), joinedload(Era.exp_llfc),
             joinedload(Era.supply).joinedload(Supply.dno)).all()
     for era in eras:
@@ -1958,7 +1967,7 @@ def supply_get(supply_id):
             'other_sites': other_sites, 'imp_channels': imp_channels,
             'exp_channels': exp_channels, 'imp_bills': {'bill_dicts': []},
             'exp_bills': {'bill_dicts': []},
-            'hhdc_bills': {'bill_dicts': []}, 'mop_bills': {'bill_dicts': []}}
+            'dc_bills': {'bill_dicts': []}, 'mop_bills': {'bill_dicts': []}}
         era_bundles.append(era_bundle)
 
         if imp_mpan_core is not None:
@@ -2008,8 +2017,8 @@ def supply_get(supply_id):
                 else:
                     bill_group_name = 'imp_bills'
 
-            elif bill_role_code == 'C':
-                bill_group_name = 'hhdc_bills'
+            elif bill_role_code in ('C', 'D'):
+                bill_group_name = 'dc_bills'
             elif bill_role_code == 'M':
                 bill_group_name = 'mop_bills'
             else:
@@ -2074,7 +2083,7 @@ def supply_get(supply_id):
         era_bundle['exp_bills']['num_outer_cols'] = 0
 
         for bill_group_name in (
-                'imp_bills', 'exp_bills', 'hhdc_bills', 'mop_bills'):
+                'imp_bills', 'exp_bills', 'dc_bills', 'mop_bills'):
             b_dicts = list(reversed(era_bundle[bill_group_name]['bill_dicts']))
             for i, b_dict in enumerate(b_dicts):
                 if i < (len(b_dicts) - 1):
@@ -2158,20 +2167,19 @@ def channel_get(channel_id):
         prev_page=prev_page, this_page=page, next_page=next_page)
 
 
-@app.route('/hhdc_contracts/<int:contract_id>/hh_imports')
-def hhdc_contracts_hh_imports_get(contract_id):
-    contract = Contract.get_hhdc_by_id(g.sess, contract_id)
+@app.route('/dc_contracts/<int:contract_id>/hh_imports')
+def dc_contracts_hh_imports_get(contract_id):
+    contract = Contract.get_dc_by_id(g.sess, contract_id)
     processes = chellow.hh_importer.get_hh_import_processes(contract.id)
     return render_template(
-        'hhdc_contract_hh_imports.html', contract=contract,
-        processes=processes,
+        'dc_contract_hh_imports.html', contract=contract, processes=processes,
         parser_names=', '.join(chellow.hh_importer.extensions))
 
 
-@app.route('/hhdc_contracts/<int:contract_id>/hh_imports', methods=['POST'])
-def hhdc_contracts_hh_imports_post(contract_id):
+@app.route('/dc_contracts/<int:contract_id>/hh_imports', methods=['POST'])
+def dc_contracts_hh_imports_post(contract_id):
     try:
-        contract = Contract.get_hhdc_by_id(g.sess, contract_id)
+        contract = Contract.get_dc_by_id(g.sess, contract_id)
 
         file_item = request.files["import_file"]
         f = io.StringIO(str(file_item.stream.read(), 'utf-8'))
@@ -2181,7 +2189,7 @@ def hhdc_contracts_hh_imports_post(contract_id):
         hh_import_process = chellow.hh_importer.start_hh_import_process(
             contract_id, f, file_item.filename, file_size)
         return chellow_redirect(
-            "/hhdc_contracts/" + str(contract.id) + "/hh_imports/" +
+            "/dc_contracts/" + str(contract.id) + "/hh_imports/" +
             str(hh_import_process.id), 303)
     except BadRequest as e:
         if contract is None:
@@ -2192,17 +2200,17 @@ def hhdc_contracts_hh_imports_post(contract_id):
                 contract.id)
             return make_response(
                 render_template(
-                    'hhdc_contract_hh_imports.html', contract=contract,
+                    'dc_contract_hh_imports.html', contract=contract,
                     processes=processes), 400)
 
 
-@app.route('/hhdc_contracts/<int:contract_id>/hh_imports/<int:import_id>')
-def hhdc_contracts_hh_import_get(contract_id, import_id):
-    contract = Contract.get_hhdc_by_id(g.sess, contract_id)
+@app.route('/dc_contracts/<int:contract_id>/hh_imports/<int:import_id>')
+def dc_contracts_hh_import_get(contract_id, import_id):
+    contract = Contract.get_dc_by_id(g.sess, contract_id)
     process = chellow.hh_importer.get_hh_import_processes(
         contract_id)[import_id]
     return render_template(
-        'hhdc_contract_hh_import.html', contract=contract, process=process)
+        'dc_contract_hh_import.html', contract=contract, process=process)
 
 
 @app.route('/site_snags')
@@ -2732,18 +2740,18 @@ def download_post(fname):
 
 @app.route('/channel_snags')
 def channel_snags_get():
-    contract_id = req_int('hhdc_contract_id')
-    contract = Contract.get_hhdc_by_id(g.sess, contract_id)
+    contract_id = req_int('dc_contract_id')
+    contract = Contract.get_dc_by_id(g.sess, contract_id)
     days_hidden = req_int('days_hidden')
     is_ignored = req_bool('is_ignored')
 
     total_snags = g.sess.query(Snag).join(Channel).join(Era).filter(
-        Snag.is_ignored == false(), Era.hhdc_contract == contract,
+        Snag.is_ignored == false(), Era.dc_contract == contract,
         Snag.start_date < utc_datetime_now() -
         relativedelta(days=days_hidden)).count()
     snags = g.sess.query(Snag).join(Channel).join(Era).join(
         Era.site_eras).join(SiteEra.site).filter(
-        Snag.is_ignored == is_ignored, Era.hhdc_contract == contract,
+        Snag.is_ignored == is_ignored, Era.dc_contract == contract,
         Snag.start_date < utc_datetime_now() -
         relativedelta(days=days_hidden)).order_by(
         Site.code, Era.id, Snag.start_date, Snag.finish_date,
@@ -3165,18 +3173,18 @@ def read_edit_post(read_id):
             400)
 
 
-@app.route('/hhdc_batches')
-def hhdc_batches_get():
-    contract_id = req_int('hhdc_contract_id')
-    contract = Contract.get_hhdc_by_id(g.sess, contract_id)
+@app.route('/dc_batches')
+def dc_batches_get():
+    contract_id = req_int('dc_contract_id')
+    contract = Contract.get_dc_by_id(g.sess, contract_id)
     batches = g.sess.query(Batch).filter(Batch.contract == contract).order_by(
         Batch.reference.desc()).all()
     return render_template(
-        'hhdc_batches.html', contract=contract, batches=batches)
+        'dc_batches.html', contract=contract, batches=batches)
 
 
-@app.route('/hhdc_batches/<int:batch_id>')
-def hhdc_batch_get(batch_id):
+@app.route('/dc_batches/<int:batch_id>')
+def dc_batch_get(batch_id):
     batch = Batch.get_by_id(g.sess, batch_id)
     bills = g.sess.query(Bill).filter(Bill.batch == batch).order_by(
         Bill.reference).all()
@@ -3189,11 +3197,11 @@ def hhdc_batch_get(batch_id):
         for report_id in properties['batch_reports']:
             batch_reports.append(Report.get_by_id(g.sess, report_id))
         fields['batch_reports'] = batch_reports
-    return render_template('hhdc_batch.html', **fields)
+    return render_template('dc_batch.html', **fields)
 
 
-@app.route('/hhdc_batches/<int:batch_id>/csv')
-def hhdc_batch_csv_get(batch_id):
+@app.route('/dc_batches/<int:batch_id>/csv')
+def dc_batch_csv_get(batch_id):
     batch = Batch.get_by_id(g.sess, batch_id)
     si = StringIO()
     cw = csv.writer(si)
@@ -3265,42 +3273,42 @@ def supplier_bill_edit_post(bill_id):
             400)
 
 
-@app.route('/hhdc_contracts/<int:contract_id>/add_batch')
-def hhdc_batch_add_get(contract_id):
-    contract = Contract.get_hhdc_by_id(g.sess, contract_id)
+@app.route('/dc_contracts/<int:contract_id>/add_batch')
+def dc_batch_add_get(contract_id):
+    contract = Contract.get_dc_by_id(g.sess, contract_id)
     batches = g.sess.query(Batch).filter(Batch.contract == contract).order_by(
         Batch.reference.desc())
     return render_template(
-        'hhdc_batch_add.html', contract=contract, batches=batches)
+        'dc_batch_add.html', contract=contract, batches=batches)
 
 
-@app.route('/hhdc_contracts/<int:contract_id>/add_batch', methods=['POST'])
-def hhdc_batch_add_post(contract_id):
+@app.route('/dc_contracts/<int:contract_id>/add_batch', methods=['POST'])
+def dc_batch_add_post(contract_id):
     try:
-        contract = Contract.get_hhdc_by_id(g.sess, contract_id)
+        contract = Contract.get_dc_by_id(g.sess, contract_id)
         reference = req_str('reference')
         description = req_str('description')
         batch = contract.insert_batch(g.sess, reference, description)
         g.sess.commit()
-        return chellow_redirect("/hhdc_batches/" + str(batch.id), 303)
+        return chellow_redirect("/dc_batches/" + str(batch.id), 303)
     except BadRequest as e:
         flash(e.description)
         batches = g.sess.query(Batch).filter(Batch.contract == contract). \
             order_by(Batch.reference.desc())
         return make_response(
             render_template(
-                'hhdc_batch_add.html', contract=contract, batches=batches),
+                'dc_batch_add.html', contract=contract, batches=batches),
             400)
 
 
-@app.route('/hhdc_batches/<int:batch_id>/edit')
-def hhdc_batch_edit_get(batch_id):
+@app.route('/dc_batches/<int:batch_id>/edit')
+def dc_batch_edit_get(batch_id):
     batch = Batch.get_by_id(g.sess, batch_id)
-    return render_template('hhdc_batch_edit.html', batch=batch)
+    return render_template('dc_batch_edit.html', batch=batch)
 
 
-@app.route('/hhdc_batches/<int:batch_id>/edit', methods=['POST'])
-def hhdc_batch_edit_post(batch_id):
+@app.route('/dc_batches/<int:batch_id>/edit', methods=['POST'])
+def dc_batch_edit_post(batch_id):
     try:
         batch = Batch.get_by_id(g.sess, batch_id)
         if 'delete' in request.values:
@@ -3308,34 +3316,34 @@ def hhdc_batch_edit_post(batch_id):
             batch.delete(g.sess)
             g.sess.commit()
             return chellow_redirect(
-                "/hhdc_batches?hhdc_contract_id=" + str(contract.id), 303)
+                "/dc_batches?dc_contract_id=" + str(contract.id), 303)
         else:
             reference = req_str('reference')
             description = req_str('description')
             batch.update(g.sess, reference, description)
             g.sess.commit()
-            return chellow_redirect("/hhdc_batches/" + str(batch.id), 303)
+            return chellow_redirect("/dc_batches/" + str(batch.id), 303)
     except BadRequest as e:
         flash(e.description)
         return make_response(
-            render_template('hhdc_batch_edit.html', batch=batch), 400)
+            render_template('dc_batch_edit.html', batch=batch), 400)
 
 
-@app.route('/hhdc_bill_imports')
-def hhdc_bill_imports_get():
-    batch_id = req_int('hhdc_batch_id')
+@app.route('/dc_bill_imports')
+def dc_bill_imports_get():
+    batch_id = req_int('dc_batch_id')
     batch = Batch.get_by_id(g.sess, batch_id)
     return render_template(
-        'hhdc_bill_imports.html', importer_ids=sorted(
+        'dc_bill_imports.html', importer_ids=sorted(
             chellow.bill_importer.get_bill_import_ids(batch.id),
             reverse=True), batch=batch,
         parser_names=chellow.bill_importer.find_parser_names())
 
 
-@app.route('/hhdc_bill_imports', methods=['POST'])
-def hhdc_bill_imports_post():
+@app.route('/dc_bill_imports', methods=['POST'])
+def dc_bill_imports_post():
     try:
-        batch_id = req_int('hhdc_batch_id')
+        batch_id = req_int('dc_batch_id')
         batch = Batch.get_by_id(g.sess, batch_id)
         file_item = request.files["import_file"]
 
@@ -3345,18 +3353,18 @@ def hhdc_bill_imports_post():
         f.seek(0)
         import_id = chellow.bill_importer.start_bill_import(
             g.sess, batch.id, file_item.filename, file_size, f)
-        return chellow_redirect("/hhdc_bill_imports/" + str(import_id), 303)
+        return chellow_redirect("/dc_bill_imports/" + str(import_id), 303)
     except BadRequest as e:
         flash(e.description)
         return make_response(
             render_template(
-                'hhdc_bill_imports.html', importer_ids=sorted(
+                'dc_bill_imports.html', importer_ids=sorted(
                     chellow.bill_importer.get_bill_import_ids(batch.id),
                     reverse=True), batch=batch), 400)
 
 
-@app.route('/hhdc_bill_imports/<int:import_id>')
-def hhdc_bill_import_get(import_id):
+@app.route('/dc_bill_imports/<int:import_id>')
+def dc_bill_import_get(import_id):
     importer = chellow.bill_importer.get_bill_import(import_id)
     batch = Batch.get_by_id(g.sess, importer.batch_id)
     fields = {'batch': batch}
@@ -3370,11 +3378,11 @@ def hhdc_bill_import_get(import_id):
                         'successful_bills'])
         fields.update(imp_fields)
         fields['status'] = importer.status()
-    return render_template('hhdc_bill_import.html', **fields)
+    return render_template('dc_bill_import.html', **fields)
 
 
-@app.route('/hhdc_bills/<int:bill_id>')
-def hhdc_bill_get(bill_id):
+@app.route('/dc_bills/<int:bill_id>')
+def dc_bill_get(bill_id):
     bill = Bill.get_by_id(g.sess, bill_id)
     fields = {'bill': bill}
     try:
@@ -3433,25 +3441,25 @@ def hhdc_bill_get(bill_id):
                 'column_list': column_list, 'grid': grid})
     except SyntaxError:
         pass
-    return render_template('hhdc_bill.html', **fields)
+    return render_template('dc_bill.html', **fields)
 
 
-@app.route('/hhdc_bills/<int:bill_id>/edit')
-def hhdc_bill_edit_get(bill_id):
+@app.route('/dc_bills/<int:bill_id>/edit')
+def dc_bill_edit_get(bill_id):
     bill = Bill.get_by_id(g.sess, bill_id)
     bill_types = g.sess.query(BillType).order_by(BillType.code)
     return render_template(
-        'hhdc_bill_edit.html', bill=bill, bill_types=bill_types)
+        'dc_bill_edit.html', bill=bill, bill_types=bill_types)
 
 
-@app.route('/hhdc_bills/<int:bill_id>/edit', methods=["POST"])
-def hhdc_bill_edit_post(bill_id):
+@app.route('/dc_bills/<int:bill_id>/edit', methods=["POST"])
+def dc_bill_edit_post(bill_id):
     try:
         bill = Bill.get_by_id(g.sess, bill_id)
         if 'delete' in request.values:
             bill.delete(g.sess)
             g.sess.commit()
-            return chellow_redirect("/hhdc_batches/" + str(bill.batch.id), 303)
+            return chellow_redirect("/dc_batches/" + str(bill.batch.id), 303)
         else:
             account = req_str('account')
             reference = req_str('reference')
@@ -3470,12 +3478,12 @@ def hhdc_bill_edit_post(bill_id):
                 account, reference, issue_date, start_date, finish_date, kwh,
                 net, vat, gross, bill_type, breakdown)
             g.sess.commit()
-            return chellow_redirect("/hhdc_bills/" + str(bill.id), 303)
+            return chellow_redirect("/dc_bills/" + str(bill.id), 303)
     except BadRequest as e:
         flash(e.description)
         bill_types = g.sess.query(BillType).order_by(BillType.code).all()
         return render_template(
-            'hhdc_bill_edit.html', bill=bill, bill_types=bill_types)
+            'dc_bill_edit.html', bill=bill, bill_types=bill_types)
 
 
 @app.route('/mop_contracts/<int:contract_id>/add_batch')
@@ -3973,27 +3981,27 @@ def supply_note_edit_post(supply_id, index):
             'supply_note_edit.html', supply=supply, note=note)
 
 
-@app.route('/hhdc_contracts/<int:contract_id>/auto_importer')
-def hhdc_auto_importer_get(contract_id):
-    contract = Contract.get_hhdc_by_id(g.sess, contract_id)
+@app.route('/dc_contracts/<int:contract_id>/auto_importer')
+def dc_auto_importer_get(contract_id):
+    contract = Contract.get_dc_by_id(g.sess, contract_id)
     task = chellow.hh_importer.get_hh_import_task(contract)
     return render_template(
-        'hhdc_auto_importer.html', contract=contract, task=task)
+        'dc_auto_importer.html', contract=contract, task=task)
 
 
-@app.route('/hhdc_contracts/<int:contract_id>/auto_importer', methods=['POST'])
-def hhdc_auto_importer_post(contract_id):
+@app.route('/dc_contracts/<int:contract_id>/auto_importer', methods=['POST'])
+def dc_auto_importer_post(contract_id):
     try:
-        contract = Contract.get_hhdc_by_id(g.sess, contract_id)
+        contract = Contract.get_dc_by_id(g.sess, contract_id)
         task = chellow.hh_importer.get_hh_import_task(contract)
         task.go()
         return chellow_redirect(
-            '/hhdc_contracts/' + str(contract.id) + '/auto_importer', 303)
+            '/dc_contracts/' + str(contract.id) + '/auto_importer', 303)
     except BadRequest as e:
         flash(e.description)
         return make_response(
             render_template(
-                'hhdc_auto_importer.html', contract=contract, task=task), 400)
+                'dc_auto_importer.html', contract=contract, task=task), 400)
 
 
 @app.route('/non_core_contracts/<int:contract_id>/auto_importer')
@@ -4559,18 +4567,18 @@ def read_add_post(bill_id):
             400)
 
 
-@app.route('/hhdc_batches/<int:batch_id>/add_bill')
-def hhdc_bill_add_get(batch_id):
+@app.route('/dc_batches/<int:batch_id>/add_bill')
+def dc_bill_add_get(batch_id):
     batch = Batch.get_by_id(g.sess, batch_id)
     bill_types = g.sess.query(BillType).order_by(BillType.code)
     bills = g.sess.query(Bill).filter(Bill.batch == batch).order_by(
         Bill.start_date)
     return render_template(
-        'hhdc_bill_add.html', batch=batch, bill_types=bill_types, bills=bills)
+        'dc_bill_add.html', batch=batch, bill_types=bill_types, bills=bills)
 
 
-@app.route('/hhdc_batches/<int:batch_id>/add_bill', methods=['POST'])
-def hhdc_bill_add_post(batch_id):
+@app.route('/dc_batches/<int:batch_id>/add_bill', methods=['POST'])
+def dc_bill_add_post(batch_id):
     try:
         batch = Batch.get_by_id(g.sess, batch_id)
         mpan_core = req_str("mpan_core")
@@ -4595,7 +4603,7 @@ def hhdc_bill_add_post(batch_id):
             kwh, net, vat, gross, bill_type, breakdown,
             Supply.get_by_mpan_core(g.sess, mpan_core))
         g.sess.commit()
-        return chellow_redirect("/hhdc_bills/" + str(bill.id), 303)
+        return chellow_redirect("/dc_bills/" + str(bill.id), 303)
     except BadRequest as e:
         g.sess.rollback()
         flash(e.description)
@@ -4604,7 +4612,7 @@ def hhdc_bill_add_post(batch_id):
             Bill.start_date)
         return make_response(
             render_template(
-                'hhdc_bill_add.html', batch=batch, bill_types=bill_types,
+                'dc_bill_add.html', batch=batch, bill_types=bill_types,
                 bills=bills), 400)
 
 

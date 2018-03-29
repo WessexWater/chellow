@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block title %}
+	&raquo; DC Contracts &raquo; {{contract.name}} &raquo; HH Data Imports &raquo; {{process.id}}
+{% endblock %}
+
+{% block nav %}
+	&raquo; <a href="/dc_contracts">DC Contracts</a> &raquo;
+	<a href="/dc_contracts/{{contract.id}}">{{contract.name}}</a> &raquo;
+	<a href="/dc_contracts/{{contract.id}}/hh_imports">HH Data Imports</a> &raquo;
+	{{process.id}}
+{% endblock %}
+
+{% block content %}
+	<div class="layer-section">
+		<div class="section-header">
+			<h2>HH Data Imports</h2>
+		</div>
+		<div class="section-content">
+			<div class="section-data">
+				{% if process.isAlive() %}
+					<p>
+						Running.
+						{% if process.converter %}	
+							Reached line number {{process.converter.line_number}}.
+						{% endif %}
+					</p>
+				{% elif process.messages|length == 0 %}
+					<p>The import has completed successfully.</p>
+				{% else %}
+					<p>The import failed:</p>
+					<ul>
+						{% for message in process.messages %}
+							<li>{{message}}</li>
+						{% endfor %}
+					</ul>
+				{% endif %}
+			</div>
+		</div>
+	</div>
+{% endblock %}

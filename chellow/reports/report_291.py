@@ -71,11 +71,11 @@ def content(supply_id, file_name, start_date, finish_date, user):
 
             output_line.append('')
             dc_titles = ds.contract_func(
-                era.hhdc_contract, 'virtual_bill_titles')()
+                era.dc_contract, 'virtual_bill_titles')()
             titles.append('')
             titles.extend(['dc-' + t for t in dc_titles])
 
-            ds.contract_func(era.hhdc_contract, 'virtual_bill')(ds)
+            ds.contract_func(era.dc_contract, 'virtual_bill')(ds)
             bill = ds.dc_bill
             for title in dc_titles:
                 output_line.append(bill.get(title, ''))
