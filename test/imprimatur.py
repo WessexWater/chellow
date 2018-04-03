@@ -12698,7 +12698,9 @@ def virtual_bill(supply_source):
             r'Chellow MTC,ECOES LLFC,Chellow LLFC,ECOES SSC,Chellow SSC,'
             r'ECOES Supplier,Chellow Supplier,ECOES DC,Chellow DC,ECOES MOP,'
             r'Chellow MOP,ECOES GSP Group,Chellow GSP Group,ECOES MSN,'
-            r'Chellow MSN,ECOES Meter Type,Chellow Meter Type,Problem']},
+            r'Chellow MSN,ECOES Meter Type,Chellow Meter Type,Problem',
+            r'14 7206 6139 971,1472066139971,,00,,845,,365,,,,BIZZ,,DASL,,'
+            r'LENG,,_E,,88jiuf ff,,H,"In Chellow, but not in ECOES."']},
 
     {
         'name': "View a CoP",

@@ -175,11 +175,11 @@ def content(user):
                 if chellow_supplier != ecoes['supplier']:
                     problem += "The supplier codes don't match. "
 
-                hhdc_contract = era.hhdc_contract
-                if hhdc_contract is None:
+                dc_contract = era.dc_contract
+                if dc_contract is None:
                     chellow_dc = ''
                 else:
-                    chellow_dc = hhdc_contract.party.participant.code
+                    chellow_dc = dc_contract.party.participant.code
 
                 if chellow_dc != ecoes['dc']:
                     problem += "The DC codes don't match. "
@@ -253,11 +253,11 @@ def content(user):
 
             ssc = '' if era.ssc is None else era.ssc.code
 
-            hhdc_contract = era.hhdc_contract
-            if hhdc_contract is None:
+            dc_contract = era.dc_contract
+            if dc_contract is None:
                 dc = ''
             else:
-                dc = hhdc_contract.party.participant.code
+                dc = dc_contract.party.participant.code
 
             mop_contract = era.mop_contract
             if mop_contract is None:
