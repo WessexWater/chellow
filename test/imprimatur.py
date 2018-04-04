@@ -12670,7 +12670,11 @@ def virtual_bill(supply_source):
     {
         'name': "Look at edit LLFC",
         'path': '/llfcs/6128/edit',
-        'status_code': 200},
+        'status_code': 200,
+        'regexes': [
+            r'<a\s*'
+            r'href="/llfcs/6128"\s*'
+            r'>128 2010-03-17 00:00</a>']},
 
     {
         'name': "A DNO's LLFCs",
