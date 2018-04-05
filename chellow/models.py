@@ -4147,10 +4147,16 @@ def db_upgrade_10_to_11(sess, root_path):
     sess.execute("alter table era rename hhdc_account to dc_account;")
 
 
+def db_upgrade_11_to_12(sess, root_path):
+    max_id = sess.execute("select max(id) from mtc;").fetchone()[0]
+    sess.execute("alter sequence mtc_id_seq restart with " + str(max_id + 1))
+
+
 upgrade_funcs = [
     db_upgrade_0_to_1, db_upgrade_1_to_2, db_upgrade_2_to_3, db_upgrade_3_to_4,
     db_upgrade_4_to_5, db_upgrade_5_to_6, db_upgrade_6_to_7, db_upgrade_7_to_8,
-    db_upgrade_8_to_9, db_upgrade_9_to_10, db_upgrade_10_to_11]
+    db_upgrade_8_to_9, db_upgrade_9_to_10, db_upgrade_10_to_11,
+    db_upgrade_11_to_12]
 
 
 def db_upgrade(root_path):
