@@ -1607,6 +1607,25 @@ class Mtc(Base, PersistentClass):
     eras = relationship('Era', backref='mtc')
     __table_args__ = (UniqueConstraint('dno_id', 'code', 'valid_from'),)
 
+    def update(
+            self, sess, description, has_related_metering, has_comms, is_hh,
+            meter_type_id, meter_payment_type_id, tpr_count, valid_from,
+            valid_to):
+
+        self.description = description
+        self.has_related_metering = has_related_metering
+        self.has_comms = has_comms
+        self.is_hh = is_hh
+        self.meter_type_id = meter_type_id
+        self.meter_payment_type_id = meter_payment_type_id
+        self.tpr_count = tpr_count
+        self.valid_from = valid_from
+        self.valid_to = valid_to
+
+        if hh_after(valid_from, valid_to):
+            raise BadRequest(
+                "The valid_from date can't be over the valid_to date.")
+
 
 class Tpr(Base, PersistentClass):
     @staticmethod

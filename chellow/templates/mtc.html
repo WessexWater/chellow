@@ -2,10 +2,24 @@
 
 {% block title %}
 	&raquo; MTCs &raquo; {{mtc.code}}
+ 	DNO
+	{% if mtc.dno %}
+		{{mtc.dno.dno_code}}
+	{% else %}
+		All
+	{% endif %}
+ 	{{mtc.valid_from|hh_format}}
 {% endblock %}
 
 {% block nav %}
-	<a href="/mtcs">MTCs</a> &raquo; {{mtc.code}}
+	<a href="/mtcs">MTCs</a> &raquo; {{mtc.code}} DNO
+	{% if mtc.dno %}
+		{{mtc.dno.dno_code}}
+	{% else %}
+		All
+	{% endif %}
+ 	{{mtc.valid_from|hh_format}}
+ 	[<a href="/mtcs/{{mtc.id}}/edit">edit</a>]
 {% endblock %}
 
 {% block content %}
@@ -102,6 +116,4 @@
 		<!-- End Section Content -->
 	</div>
 	<!-- End Layer Section -->
-
-		
 {% endblock %}

@@ -8521,6 +8521,24 @@ def virtual_bill(supply_source):
             "<th>DNO</th>\s*<td>\s*All\s*</td>\s*</tr>"]},
 
     {
+        'path': '/mtcs/0/edit',
+        'method': 'post',
+        'data': {
+            'description': 'NHH Unrestricted 1-rate Non-Prog Credit Meter',
+            'has_related_metering': 'true',
+            'has_comms': 'false',
+            'is_hh': 'false',
+            'meter_type_id': '17',
+            'meter_payment_type_id': '0',
+            'tpr_count': '1',
+            'valid_from_year': '1996',
+            'valid_from_month': '04',
+            'valid_from_day': '01',
+            'valid_from_hour': '00',
+            'valid_from_minute': '00'},
+        'status_code': 303},
+
+    {
         'name': "Move forward era with channels, when era with no channels "
         "precedes it",
         'path': '/eras/17/add_channel',

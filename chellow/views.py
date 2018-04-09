@@ -4371,6 +4371,54 @@ def mtc_get(mtc_id):
     return render_template('mtc.html', mtc=mtc)
 
 
+@app.route('/mtcs/<int:mtc_id>/edit')
+def mtc_edit_get(mtc_id):
+    mtc = Mtc.get_by_id(g.sess, mtc_id)
+    meter_types = g.sess.query(MeterType).order_by(MeterType.code).all()
+    meter_payment_types = g.sess.query(MeterPaymentType).order_by(
+        MeterPaymentType.code).all()
+    return render_template(
+        'mtc_edit.html', mtc=mtc, meter_types=meter_types,
+        meter_payment_types=meter_payment_types)
+
+
+@app.route('/mtcs/<int:mtc_id>/edit', methods=['POST'])
+def mtc_edit_post(mtc_id):
+    try:
+        mtc = Mtc.get_by_id(g.sess, mtc_id)
+        if 'delete' in request.values:
+            mtc.delete(g.sess)
+            g.sess.commit()
+            return chellow_redirect('/mtcs/', 303)
+        else:
+            description = req_str('description')
+            has_related_metering = req_bool('has_related_metering')
+            has_comms = req_bool('has_comms')
+            is_hh = req_bool('is_hh')
+            meter_type_id = req_int('meter_type_id')
+            meter_payment_type_id = req_int('meter_payment_type_id')
+            tpr_count = req_int('tpr_count')
+            valid_from = req_date('valid_from')
+            has_finished = req_bool('has_finished')
+            valid_to = req_date('valid_to') if has_finished else None
+            mtc.update(
+                g.sess, description, has_related_metering, has_comms, is_hh,
+                meter_type_id, meter_payment_type_id, tpr_count, valid_from,
+                valid_to)
+            g.sess.commit()
+            return chellow_redirect('/mtcs/' + str(mtc.id), 303)
+    except BadRequest as e:
+        g.sess.rollback()
+        flash(e.description)
+        meter_types = g.sess.query(MeterType).order_by(MeterType.code).all()
+        meter_payment_types = g.sess.query(MeterPaymentType).order_by(
+            MeterPaymentType.code).all()
+        return make_response(
+            render_template(
+                'mtc_edit.html', mtc=mtc, meter_types=meter_types,
+                meter_payment_types=meter_payment_types), 400)
+
+
 @app.route('/csv_crc')
 def csv_crc_get():
     start_date = utc_datetime_now()

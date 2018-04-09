@@ -1,0 +1,134 @@
+{% extends "base.html" %}
+
+{% block title %}
+	&raquo; MTCs &raquo; {{mtc.code}}
+	{% if mtc.dno %}
+		{{mtc.dno.dno_code}}
+	{% else %}
+		All
+	{% endif %}
+	{{mtc.valid_from|hh_format}} &raquo; Edit
+{% endblock %}
+
+{% block nav %}
+	<a href="/mtcs">MTCs</a> &raquo; 
+	<a href="/mtcs/{{mtc.id}}">{{mtc.dno_code}}
+	{{mtc.code}} DNO
+	{% if mtc.dno %}
+		{{mtc.dno.dno_code}}
+	{% else %}
+		All
+	{% endif %}
+	{{mtc.valid_from|hh_format}}</a> &raquo; Edit
+{% endblock %}
+
+{% block content %}
+	{% if request.method == 'GET' and request.values.delete %}
+
+		<div class="layer-section">
+			<div class="section-header">
+				<h2>Are you sure you want to delete this MTC?</h2>	
+			</div>
+			<div class="section-content">
+				<div class="section-data">
+					<div class="standardForm">
+						<form method="post" action="/mtcs/{{mtc.id}}/edit">
+							<fieldset>
+								<input type="submit" name="delete" value="Delete">
+								<a href="/mtcs/{{mtc.id}}/edit">Cancel</a>
+							</fieldset>
+						</form>
+					</div>
+				</div>
+			</div>
+		</div>
+	{% else %}
+	
+		<div class="layer-section">
+			<div class="section-header">
+				<h2>Update MTC</h2>	
+			</div>
+			<div class="section-content">
+				<div class="section-data">
+					<div class="standardForm textWidthAuto">
+						<form action="/mtcs/{{mtc.id}}/edit" method="post">
+							<fieldset>
+								<label>Description</label>
+								{{input_text('description', mtc.description, 80)}}<br>
+
+								<label>
+									Has Related Metering?
+									{{input_checkbox(
+										'has_related_metering', mtc.has_related_metering)}}
+								</label>
+								<br>
+								<label>
+									Has Comms?  {{input_checkbox('has_comms', mtc.has_comms)}}
+								</label>
+								<br>
+								<label>
+									Is HH?  {{input_checkbox('is_hh', mtc.is_hh)}}
+								</label>
+								<br>
+								<label>Meter Type</label>
+								<select name="meter_type_id">
+									{% for meter_type in meter_types %}
+										{{input_option(
+											'meter_type_id', meter_type.id,
+											meter_type.code, mtc.meter_type.id)}}
+									{% endfor %}
+								</select>
+								<br>
+								<label>Payment Type</label>
+								<select name="meter_payment_type_id">
+									{% for meter_payment_type in meter_payment_types %}
+										{{input_option(
+											'meter_payment_type_id', meter_payment_type.id,
+											meter_payment_type.code, mtc.meter_payment_type.id)}}
+									{% endfor %}
+								</select>
+
+								<br>
+								<label>
+									TPR Count {{input_text('tpr_count', mtc.tpr_count)}}
+								</label>
+
+								<br>
+								<fieldset>
+									<legend>Valid From</legend>
+									{{input_date('valid_from', mtc.valid_from)}}
+								</fieldset>
+								<fieldset>
+									<legend>Valid to</legend>
+									<label>
+										Ended?
+										{{ input_checkbox( 'has_finished', mtc.valid_to != None)}}
+									</label>
+									<br>
+									{{input_date('valid_to', mtc.valid_to)}}
+								</fieldset>
+								<input type="submit" value="Update">
+							</fieldset>
+						</form>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="layer-section">
+			<div class="section-header">
+				<h2>Delete this MTC</h2>	
+			</div>
+			<div class="section-content">
+				<div class="section-data">
+					<div class="standardForm">
+						<form>
+							<fieldset>
+								<input type="submit" name="delete" value="Delete">
+							</fieldset>
+						</form>
+					</div>
+				</div>
+			</div>
+		</div>
+	{% endif %}
+{% endblock %}
