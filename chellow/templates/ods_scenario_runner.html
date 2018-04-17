@@ -202,9 +202,7 @@
 
 				<p>
 					If a rate script isn't found for a particular date, then the most
-					recent rate script is used. In the case of TNUoS TRIAD dates, years
-					are added on to the dates in the rate script to bring it forward to
-					the TRIAD year that's being calculated.
+					recent rate script is used.
 				</p>
 
 				<p>
@@ -212,6 +210,13 @@
 					of ways. For example, a virtual bill may use TRIAD estimates for all
 					months until triad dates are available for that financial year, in
 					which case it switches to using the actual TRIAD for March.
+				</p>
+
+				<p>
+					TRIAD estimates are calculated using the actual TRIAD from the latest
+				 	historical year for which we have TRIAD dates. Historical kW and
+				 	status are used, together with current LAFs and TRIAD rates, with the
+				 	result apportioned throughout each month.
 				</p>
 
 

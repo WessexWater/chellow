@@ -181,9 +181,11 @@ def get_data_sources(data_source, start_date, finish_date, forecast_date=None):
     if forecast_date is None:
         forecast_date = data_source.forecast_date
 
-    if data_source.start_date == start_date and \
-            data_source.finish_date == finish_date \
-            and forecast_date == data_source.forecast_date:
+    if all(
+            (
+                data_source.start_date == start_date,
+                data_source.finish_date == finish_date,
+                forecast_date == data_source.forecast_date)):
         yield data_source
     elif data_source.site is None:
         if data_source.is_import:

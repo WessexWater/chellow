@@ -33,6 +33,15 @@
         "finish": 21.5,
         "band": "amber"}],
     "tariffs": {
+      "110": {
+        "description": "Small Non Domestic Unrestricted",
+        "gbp-per-mpan-per-day": 0.0691,
+        "gbp-per-kva-per-day": 0,
+        "excess-gbp-per-kva-per-day": 0,
+        "red-gbp-per-kwh": 0.02533,
+        "amber-gbp-per-kwh": 0.02533,
+        "green-gbp-per-kwh": 0.02533,
+        "gbp-per-kvarh": 0},
       "510": {
         "description": "High Voltage HH Metered",
         "gbp-per-mpan-per-day": 0.7295,

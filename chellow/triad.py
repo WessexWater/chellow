@@ -1,6 +1,7 @@
 from dateutil.relativedelta import relativedelta
 from chellow.utils import (
-    HH, hh_after, utc_datetime, get_file_scripts, hh_before, get_file_rates)
+    HH, hh_after, utc_datetime, get_file_scripts, hh_before, get_file_rates,
+    hh_min)
 import chellow.computer
 import chellow.duos
 
@@ -8,6 +9,7 @@ import chellow.duos
 def hh(data_source, rate_period='monthly', est_kw=None):
     for hh in (h for h in data_source.hh_data if h['ct-is-month-end']):
         hh_start = hh['start-date']
+
         month_start = utc_datetime(hh_start.year, hh_start.month)
         month_finish = month_start + relativedelta(months=1) - HH
         month_num = month_start.month
@@ -17,26 +19,41 @@ def hh(data_source, rate_period='monthly', est_kw=None):
         while financial_year_start.month != 4:
             financial_year_start -= relativedelta(months=1)
 
-        last_financial_year_start = financial_year_start - \
-            relativedelta(years=1)
-        financial_year_finish = financial_year_start + \
-            relativedelta(years=1) - HH
+        last_financial_year_start = financial_year_start - relativedelta(
+            years=1)
+        financial_year_finish = financial_year_start + relativedelta(
+            years=1) - HH
 
-        triad_dates = []
+        est_triad_kws = []
         earliest_triad = None
         for dt in get_file_rates(
                 data_source.caches, 'triad_dates',
                 last_financial_year_start)['triad_dates']:
-            triad_dates.append(dt + relativedelta(years=1))
-            if earliest_triad is None or dt < earliest_triad:
-                earliest_triad = dt
-
-        est_triad_kws = []
-        for t_date in triad_dates:
-            for ds in chellow.computer.get_data_sources(
-                    data_source, t_date, t_date, financial_year_start):
+            triad_hh = None
+            earliest_triad = hh_min(earliest_triad, dt)
+            try:
+                ds = next(
+                    chellow.computer.get_data_sources(
+                        data_source, dt, dt, financial_year_start))
                 chellow.duos.duos_vb(ds)
-                est_triad_kws.append(ds.hh_data[0])
+                triad_hh = ds.hh_data[0]
+
+                while dt < financial_year_start:
+                    dt += relativedelta(years=1)
+
+                for ds in chellow.computer.get_data_sources(
+                        data_source, dt, dt, financial_year_start):
+                    chellow.duos.duos_vb(ds)
+                    datum = ds.hh_data[0]
+                    triad_hh['laf'] = datum['laf']
+                    triad_hh['gsp-kw'] = datum['laf'] * datum['msp-kw']
+            except StopIteration:
+                triad_hh = {
+                    'hist-start': dt, 'msp-kw': 0, 'start-date': dt,
+                    'status': 'before start of MPAN',
+                    'laf': 1, 'gsp-kw': 0}
+            est_triad_kws.append(triad_hh)
+
         if data_source.site is None:
             era = data_source.supply.find_era_at(
                 data_source.sess, earliest_triad)
@@ -104,14 +121,10 @@ def hh(data_source, rate_period='monthly', est_kw=None):
                     data_source.caches, 'triad_dates',
                     month_start)['triad_dates']:
 
-                while t_date < (month_start - relativedelta(years=1)):
-                    t_date += relativedelta(years=1)
-
                 try:
                     ds = next(
-                        iter(
-                            chellow.computer.get_data_sources(
-                                data_source, t_date, t_date)))
+                        chellow.computer.get_data_sources(
+                            data_source, t_date, t_date))
                     if data_source.supplier_contract is None or \
                             ds.supplier_contract == \
                             data_source.supplier_contract:
@@ -128,17 +141,34 @@ def hh(data_source, rate_period='monthly', est_kw=None):
                         'start-date': t_date,
                         'status': 'before start of supply',
                         'laf': 'before start of supply', 'gsp-kw': 0}
+
+                while t_date < financial_year_start:
+                    t_date += relativedelta(years=1)
+
+                try:
+                    ds = next(
+                        chellow.computer.get_data_sources(
+                            data_source, t_date, t_date))
+                    if data_source.supplier_contract is None or \
+                            ds.supplier_contract == \
+                            data_source.supplier_contract:
+                        chellow.duos.duos_vb(ds)
+                        thh['laf'] = ds.hh_data[0]['laf']
+                        thh['gsp-kw'] = thh['laf'] * thh['msp-kw']
+                except StopIteration:
+                    pass
+
                 triad_kws.append(thh)
 
             gsp_kw = 0
 
             for i, triad_hh in enumerate(triad_kws):
-                triad_prefix = 'triad-actual-' + str(i + 1)
-                hh[triad_prefix + '-date'] = triad_hh['start-date']
-                hh[triad_prefix + '-msp-kw'] = triad_hh['msp-kw']
-                hh[triad_prefix + '-status'] = triad_hh['status']
-                hh[triad_prefix + '-laf'] = triad_hh['laf']
-                hh[triad_prefix + '-gsp-kw'] = triad_hh['gsp-kw']
+                pref = 'triad-actual-' + str(i + 1)
+                hh[pref + '-date'] = triad_hh['start-date']
+                hh[pref + '-msp-kw'] = triad_hh['msp-kw']
+                hh[pref + '-status'] = triad_hh['status']
+                hh[pref + '-laf'] = triad_hh['laf']
+                hh[pref + '-gsp-kw'] = triad_hh['gsp-kw']
                 gsp_kw += triad_hh['gsp-kw']
 
             hh['triad-actual-gsp-kw'] = gsp_kw / 3
