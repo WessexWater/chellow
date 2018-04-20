@@ -22,7 +22,7 @@ from flask import request, g
 import csv
 from itertools import combinations
 from decimal import Decimal
-from zish import loads
+from zish import loads, ZishLocationException
 
 
 def add_gap(gaps, elem, start_date, finish_date, is_virtual, gbp):
@@ -51,8 +51,13 @@ def add_gap(gaps, elem, start_date, finish_date, is_virtual, gbp):
 
 
 def find_elements(bill):
-    keys = [k for k in loads(bill.breakdown).keys() if k.endswith('-gbp')]
-    return set(k[:-4] for k in keys)
+    try:
+        keys = [k for k in loads(bill.breakdown).keys() if k.endswith('-gbp')]
+        return set(k[:-4] for k in keys)
+    except ZishLocationException as e:
+        raise BadRequest(
+            "Can't parse the breakdown for bill id " + str(bill.id) +
+            " attached to batch id " + str(bill.batch.id) + ": " + str(e))
 
 
 def content(batch_id, bill_id, contract_id, start_date, finish_date, user):
