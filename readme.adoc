@@ -25,12 +25,8 @@ PostgreSQL database. To install Chellow, follow these steps:
 . Install http://www.postgresql.org/[PostgreSQL] 9.5
 . Install Python 3.5 (tested on the http://www.python.org/[CPython 3.5.3]
   interpreter)
-. Create a PostgreSQL database called `chellow` with the character encoding
-  `UTF8`.
-. At the command line run:
-+
- pip install chellow
-+
+. Create a PostgreSQL database: `createdb --encoding=UTF8 chellow`
+. Install Chellow: `pip install chellow`
 . Set up the following environment variables to configure Chellow: +
 +
 |===
@@ -78,10 +74,7 @@ in Windows an environment variable can be set by doing:
 
 === Manual Upgrading
 
-To upgrade to the latest version of Chellow enter the following at the command
-line:
-
- chellow_updater.sh
+To upgrade to the latest version of Chellow do: `pip install --upgrade chellow`
 
 
 === Automatic Upgrading
