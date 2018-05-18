@@ -12560,7 +12560,7 @@ def virtual_bill(supply_source):
             'properties': """
 {
   "enabled": true,
-  "url": "https://www.gov.uk/bank-holidays/england-and-wales.ics"}
+  "url": "http://127.0.0.1:8080/nationalgrid/england-and-wales.ics"}
 """},
         'status_code': 303},
     {
@@ -12577,8 +12577,10 @@ def virtual_bill(supply_source):
         'regexes': [
             r'<ul>\s*<li>\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2} - '
             r'Finished checking bank holidays.</li>',
-            r'Updating rate script starting at',
-            r'<a href="/non_core_contracts/1/auto_importer">Refresh page</a>'],
+            r'Updated rate script starting at',
+            r'<a\s*'
+            r'href="/non_core_contracts/1/auto_importer"\s*'
+            r'>Refresh page</a>'],
         'status_code': 200},
     {
         'name': "Set up RCRC downloader",
@@ -12607,7 +12609,7 @@ def virtual_bill(supply_source):
         'status_code': 200},
     {
         'name': "Is the rate script correct?",
-        'path': '/non_core_rate_scripts/42',
+        'path': '/non_core_rate_scripts/48',
         'regexes': [
             r"&#34;01 00:00 Z&#34;: "
             r"0\.092536082309507475102132933090071710251,"],
@@ -15898,11 +15900,11 @@ def virtual_bill(ds):
             'start_minute': "00"},
         'status_code': 303,
         'regexes': [
-            r"/mop_rate_scripts/44"]},
+            r"/mop_rate_scripts/50"]},
 
     {
         'name': "Delete mop rate script",
-        'path': '/mop_rate_scripts/44/edit',
+        'path': '/mop_rate_scripts/50/edit',
         'method': 'post',
         'data': {
             'delete': "Delete"},
@@ -16234,7 +16236,7 @@ def virtual_bill(supply_source):
             r"/supplier_contracts/21"]},
     {
         'name': "Update the associated rate script.",
-        'path': '/supplier_rate_scripts/45/edit',
+        'path': '/supplier_rate_scripts/51/edit',
         'method': 'post',
         'data': {
             'start_year': "2000",

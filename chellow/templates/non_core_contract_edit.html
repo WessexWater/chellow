@@ -64,7 +64,13 @@
 
 							{{ input_textarea('properties', contract.properties, 20, 80) }}
 							
-							{% if contract.name == 'bsuos' %}
+							{% if contract.name == 'bank_holidays' %}
+							  <h4>Example</h4>
+								<pre>{
+"enabled": true,
+"url": "https://www.gov.uk/bank-holidays/england-and-wales.ics"}
+								</pre>
+							{% elif contract.name == 'bsuos' %}
 							  <h4>Example</h4>
 								<pre>{
     "enabled": true,

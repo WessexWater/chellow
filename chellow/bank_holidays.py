@@ -8,7 +8,7 @@ from dateutil.relativedelta import relativedelta
 import atexit
 import functools
 import requests
-from zish import dumps
+from zish import loads
 
 
 @functools.lru_cache()
@@ -104,22 +104,22 @@ class BankHolidayImporter(threading.Thread):
 
                                 contract.update_rate_script(
                                     sess, latest_rs, latest_rs.start_date,
-                                    year_finish, latest_rs.script)
+                                    year_finish, loads(latest_rs.script))
                                 rs = contract.insert_rate_script(
-                                    sess, year_start, '')
+                                    sess, year_start, {})
 
                             script = {
                                 'bank_holidays': [
                                     v.strftime("%Y-%m-%d")
                                     for v in hols[year]]}
 
-                            self.log(
-                                "Updating rate script starting at " +
-                                hh_format(year_start) + ".")
                             contract.update_rate_script(
                                 sess, rs, rs.start_date, rs.finish_date,
-                                dumps(script))
+                                script)
                             sess.commit()
+                            self.log(
+                                "Updated rate script starting at " +
+                                hh_format(year_start) + ".")
                     else:
                         self.log(
                             "The automatic importer is disabled. To "
