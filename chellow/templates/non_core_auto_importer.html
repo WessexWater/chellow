@@ -1,7 +1,8 @@
 {% extends "base.html" %}
 
 {% block title %}
-	&raquo; Non-core Contracts &raquo; {{contract.name}} &raquo; Automatic Importer
+	&raquo; Non-core Contracts &raquo; {{contract.name}} &raquo;
+ 	Automatic Importer
 {% endblock %}
 
 {% block nav %}
@@ -11,40 +12,42 @@
 {% endblock %}
 
 {% block content %}
-<div class="layer-section">
-	<div class="section-content">
-		<div class="section-data">
-		    <p>
-	            <a href="/non_core_contracts/{{contract.id}}/auto_importer">Refresh page</a>
-	        </p>
-	        {% if importer %}
-		        <table class="DataTable widthAuto">
-			        <tr>
-				        <th>Is Locked?</th>
-				        <td>{{ importer.is_locked() }}</td>
-			        </tr>
-		        </table>
-		        <br/>
-		        {% if not importer.is_locked() %}
-			        <form method="post">
-				        <fieldset>
-					        <legend>Import Now</legend>
-					        <input type="submit" value="Import" name="now">
-				        </fieldset>
-			        </form>
-		        {% endif %}
-
-		        <h4>Log</h4>
+	<div class="layer-section">
+		<div class="section-content">
+			<div class="section-data">
+				<p>
+					<a
+							href="/non_core_contracts/{{contract.id}}/auto_importer"
+							>Refresh page</a>
+					</p>
+					{% if importer %}
+						<table class="DataTable widthAuto">
+							<tr>
+								<th>Is Locked?</th>
+								<td>{{importer.is_locked()}}</td>
+							</tr>
+						</table>
+						<br>
+						{% if not importer.is_locked() %}
+							<form method="post">
+								<fieldset>
+									<legend>Import Now</legend>
+									<input type="submit" value="Import" name="now">
+								</fieldset>
+							</form>
+						{% endif %}
+						<br>
+						<h4>Log</h4>
 			
-		        <ul>
-			        {% for message in importer.messages %}
-				        <li>{{ message }}</li>
-			        {% endfor %}
-		        </ul>
-	        {% else %}
-		        <p>Importer not present.</p>
-	        {% endif %}
+						<ul>
+							{% for message in importer.messages %}
+								<li>{{message}}</li>
+							{% endfor %}
+						</ul>
+					{% else %}
+						<p>Importer not present.</p>
+					{% endif %}
+			</div>
 		</div>
-	</div>
-</div>	
+	</div>	
 {% endblock %}

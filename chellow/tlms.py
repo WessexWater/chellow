@@ -10,7 +10,7 @@ from chellow.utils import HH, hh_format, utc_datetime_now, to_utc, to_ct
 from werkzeug.exceptions import BadRequest
 import atexit
 from datetime import datetime as Datetime
-from decimal import Decimal
+from decimal import Decimal, InvalidOperation
 from zish import loads
 
 
@@ -141,17 +141,27 @@ class TlmImporter(threading.Thread):
                                 Datetime.strptime(values[0], "%d/%m/%Y"))
                             hh_date = to_utc(hh_date_ct)
                             hh_date += relativedelta(minutes=30*int(values[2]))
+                            off_taking_str = values[4]
+                            try:
+                                off_taking = Decimal(off_taking_str)
+                            except InvalidOperation as e:
+                                raise BadRequest(
+                                    "Problem parsing 'off-taking' field '" +
+                                    off_taking_str + "' in the row " + str(
+                                        values) + ".")
+                            delivering = Decimal(values[5])
+
                             if next_month_start <= hh_date <= \
                                     next_month_finish:
                                 month_tlms[key_format(hh_date)] = {
-                                    'off-taking': values[3],
-                                    'delivering': values[4]}
+                                    'off-taking': off_taking,
+                                    'delivering': delivering}
 
                         if key_format(next_month_finish) in month_tlms:
                             self.log("The whole month's data is there.")
                             script = {
                                 'tlms': dict(
-                                    (k, Decimal(month_tlms[k]['off-taking']))
+                                    (k, month_tlms[k]['off-taking'])
                                     for k in month_tlms.keys())}
                             contract = Contract.get_non_core_by_name(
                                 sess, 'tlms')
@@ -174,6 +184,9 @@ class TlmImporter(threading.Thread):
                                 msg += "The last date is " + sorted(
                                     month_tlms.keys())[-1]
                             self.log(msg)
+                except BadRequest as e:
+                    self.log("Problem: " + e.description)
+                    sess.rollback()
                 except BaseException:
                     self.log("Outer problem " + traceback.format_exc())
                     sess.rollback()
