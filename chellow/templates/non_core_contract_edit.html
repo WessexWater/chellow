@@ -26,7 +26,7 @@
 								value="{{contract.id}}"
 							>
 							<input type="submit" name="delete" value="Delete">
-							<input type="reset" value="Cancel" onClick="window.location='/non_core_contracts/{{contract.id}}/edit'" />
+							<a href="/non_core_contracts/{{contract.id}}/edit">Cancel</a>
 						</fieldset>
 					</form>
 				</div>
@@ -74,7 +74,18 @@
 							  <h4>Example</h4>
 								<pre>{
     "enabled": true,
-    "url": "https://www.nationalgrid.com/sites/default/files/documents/Current%20SF%20BSUoS%20Data_81.xls"}</pre>
+    "discover_urls": true,
+
+    /* If discover_urls is true, then the importer goes to
+    https://www.nationalgrid.com/uk/electricity/charging-and-methodology/balancing-services-use-system-bsuos-charges
+    and finds the URLs for the latest data. This can be used in addition
+    to the 'urls' list. */
+								
+    "urls": []
+
+    /* List of URLs that hold BSUoS data */
+
+}</pre>
 							{% elif contract.name == 'tlms' %}
 							  <h4>Example</h4>
 								<pre>{

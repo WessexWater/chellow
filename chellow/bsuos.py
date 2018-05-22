@@ -6,40 +6,31 @@ import threading
 import collections
 from chellow.models import (
     RateScript, Contract, Session, get_non_core_contract_id)
-from chellow.utils import HH, hh_format, utc_datetime_now, to_utc, to_ct
-import chellow.scenario
+from chellow.utils import hh_format, utc_datetime_now, to_utc, to_ct, HH
 from werkzeug.exceptions import BadRequest
 import atexit
 import requests
-from zish import loads
+from zish import loads, dumps
 from decimal import Decimal
+from sqlalchemy import or_
+from sqlalchemy.sql.expression import null
 
 
-create_future_func = chellow.scenario.make_create_future_func_monthly(
-    'bsuos', ['rates_gbp_per_mwh'])
-
-
-def hh(data_source):
+def hh(data_source, run='RF'):
     rate_set = data_source.supplier_rate_sets['bsuos-rate']
 
     try:
-        bsuos_cache = data_source.caches['bsuos']
+        bsuos_cache = data_source.caches['bsuos'][run]
     except KeyError:
-        data_source.caches['bsuos'] = {}
-        bsuos_cache = data_source.caches['bsuos']
+        try:
+            top_cache = data_source.caches['bsuos']
+        except KeyError:
+            top_cache = data_source.caches['bsuos'] = {}
 
         try:
-            future_funcs = data_source.caches['future_funcs']
+            bsuos_cache = top_cache[run]
         except KeyError:
-            future_funcs = {}
-            data_source.caches['future_funcs'] = future_funcs
-
-        db_id = get_non_core_contract_id('bsuos')
-        try:
-            future_funcs[db_id]
-        except KeyError:
-            future_funcs[db_id] = {
-                'start_date': None, 'func': create_future_func(1, 0)}
+            bsuos_cache = top_cache[run] = {}
 
     for h in data_source.hh_data:
         try:
@@ -47,25 +38,34 @@ def hh(data_source):
         except KeyError:
             h_start = h['start-date']
             db_id = get_non_core_contract_id('bsuos')
+
             rates = data_source.hh_rate(db_id, h_start)['rates_gbp_per_mwh']
+
             try:
-                h['bsuos-gbp-per-kwh'] = bsuos_rate = bsuos_cache[h_start] = \
-                    float(rates[h_start.strftime("%d %H:%M Z")] / 1000)
+                bsuos_prices = rates[key_format(h_start)]
             except KeyError:
-                raise BadRequest(
-                    "For the BSUoS rate script at " + hh_format(h_start) +
-                    " the rate cannot be found.")
-            except TypeError as e:
-                raise BadRequest(
-                    "For the BSUoS rate script at " + hh_format(h_start) +
-                    " the rate 'rates_gbp_per_mwh' has the problem: " + str(e))
+                bsuos_prices = sorted(rates.items())[-1][1]
+
+            try:
+                bsuos_price = bsuos_prices[run]
+            except KeyError:
+                try:
+                    bsuos_price = bsuos_prices['RF']
+                except KeyError:
+                    try:
+                        bsuos_price = bsuos_prices['SF']
+                    except KeyError:
+                        bsuos_price = bsuos_prices['II']
+
+            h['bsuos-gbp-per-kwh'] = bsuos_rate = bsuos_cache[h_start] = float(
+                bsuos_price) / 1000
 
         h['bsuos-gbp'] = h['nbp-kwh'] * bsuos_rate
         rate_set.add(bsuos_rate)
 
 
 def key_format(dt):
-    return dt.strftime("%d %H:%M Z")
+    return dt.strftime("%d %H:%M")
 
 
 bsuos_importer = None
@@ -75,7 +75,7 @@ class BsuosImporter(threading.Thread):
     def __init__(self):
         super(BsuosImporter, self).__init__(name="BSUoS Importer")
         self.lock = threading.RLock()
-        self.messages = collections.deque(maxlen=100)
+        self.messages = collections.deque(maxlen=500)
         self.stopped = threading.Event()
         self.going = threading.Event()
         self.PROXY_HOST_KEY = 'proxy.host'
@@ -103,77 +103,38 @@ class BsuosImporter(threading.Thread):
     def run(self):
         while not self.stopped.isSet():
             if self.lock.acquire(False):
-                sess = book = sheet = None
+                sess = self.global_alert = None
+                caches = {}
                 try:
                     sess = Session()
                     self.log("Starting to check BSUoS rates.")
                     contract = Contract.get_non_core_by_name(sess, 'bsuos')
-                    latest_rs = sess.query(RateScript).filter(
-                        RateScript.contract == contract).order_by(
-                        RateScript.start_date.desc()).first()
-                    latest_rs_id = latest_rs.id
-                    this_month_start = latest_rs.start_date + relativedelta(
-                        months=1)
-                    next_month_start = this_month_start + relativedelta(
-                        months=1)
-                    now = utc_datetime_now()
                     props = contract.make_properties()
                     if props.get('enabled', False):
+                        urls = set()
+                        if props.get('discover_urls', False):
+                            res = requests.get(
+                                'https://www.nationalgrid.com/uk/electricity/'
+                                'charging-and-methodology/'
+                                'balancing-services-use-system-bsuos-charges')
+                            src = res.text
+                            for pref in (
+                                    'Current_II%20_BSUoS_Data_',
+                                    'Current_RF_BSUoS_Data_',
+                                    'Current_SF_BSUoS_Data_'):
+                                idx_start = src.find(pref)
+                                idx_quote = src.find('"', idx_start)
+                                title = src[idx_start:idx_quote]
+                                urls.add(
+                                    'https://www.nationalgrid.com/'
+                                    'sites/default/files/documents/' + title)
 
-                        if now > next_month_start:
-                            url = props['url']
-                            self.log(
-                                "Checking to see if data is available from " +
-                                str(this_month_start) + " to " +
-                                str(next_month_start - HH) +
-                                " at " + url)
-                            res = requests.get(url)
-                            self.log(
-                                "Received " + str(res.status_code) + " " +
-                                res.reason)
-                            book = xlrd.open_workbook(
-                                file_contents=res.content)
-                            sheet = book.sheet_by_index(0)
-
-                            month_bsuos = {}
-                            for row_index in range(1, sheet.nrows):
-                                row = sheet.row(row_index)
-                                raw_date = Datetime(
-                                    *xlrd.xldate_as_tuple(
-                                        row[0].value, book.datemode))
-                                hh_date_ct = to_ct(raw_date)
-                                hh_date_ct += relativedelta(
-                                    minutes=30*(int(row[1].value) - 1))
-                                hh_date = to_utc(hh_date_ct)
-                                if not hh_date < this_month_start and \
-                                        hh_date < next_month_start:
-                                    month_bsuos[key_format(hh_date)] = Decimal(
-                                        str(row[2].value))
-
-                            if key_format(next_month_start - HH) in \
-                                    month_bsuos:
-                                self.log("The whole month's data is there.")
-                                script = {
-                                    'rates_gbp_per_mwh': month_bsuos}
-                                contract = Contract.get_non_core_by_name(
-                                    sess, 'bsuos')
-                                rs = RateScript.get_by_id(sess, latest_rs_id)
-                                contract.update_rate_script(
-                                    sess, rs, rs.start_date,
-                                    rs.start_date + relativedelta(months=2) -
-                                    HH, loads(rs.script))
-                                sess.flush()
-                                contract.insert_rate_script(
-                                    sess,
-                                    rs.start_date + relativedelta(months=1),
-                                    script)
-                                sess.commit()
-                                self.log("Added new rate script.")
-                            else:
-                                self.log(
-                                    "There isn't a whole month there yet. The "
-                                    "last date is " +
-                                    sorted(month_bsuos.keys())[-1])
+                        urls.update(set(props.get('urls', [])))
+                        url_list = sorted(urls)
+                        self.log(
+                            "List of URLs to process: " + str(url_list))
+                        for url in url_list:
+                            self.process_url(sess, caches, url, contract)
                     else:
                         self.log(
                             "The automatic importer is disabled. To "
@@ -181,16 +142,118 @@ class BsuosImporter(threading.Thread):
                             "set 'enabled' to True.")
                 except BaseException:
                     self.log("Outer problem " + traceback.format_exc())
+                    self.global_alert = \
+                        "There's a problem with the BSUoS automatic importer."
                     sess.rollback()
                 finally:
-                    book = sheet = None
                     if sess is not None:
                         sess.close()
                     self.lock.release()
                     self.log("Finished checking BSUoS rates.")
 
-            self.going.wait(30 * 60)
+            self.going.wait(60 * 60 * 24)
             self.going.clear()
+
+    def process_url(self, sess, caches, url, contract):
+        self.log("Checking to see if there's any new data at " + url)
+        res = requests.get(url)
+        self.log("Received " + str(res.status_code) + " " + res.reason)
+        book = xlrd.open_workbook(file_contents=res.content)
+        sheet = book.sheet_by_index(0)
+
+        for row_index in range(1, sheet.nrows):
+            row = sheet.row(row_index)
+
+            raw_date_val = row[0].value
+            if isinstance(raw_date_val, float):
+                raw_date = Datetime(
+                    *xlrd.xldate_as_tuple(raw_date_val, book.datemode))
+            elif isinstance(raw_date_val, str):
+                raw_date = Datetime.strptime(raw_date_val, "%d/%m/%Y")
+            else:
+                raise BadRequest(
+                    "Type of date field " + str(raw_date_val) +
+                    " not recognized.")
+
+            hh_date_ct = to_ct(raw_date)
+            hh_date_ct += relativedelta(
+                minutes=30*(int(row[1].value) - 1))
+            hh_date = to_utc(hh_date_ct)
+            price = Decimal(str(row[2].value))
+            run = row[5].value
+
+            try:
+                rs, rates = \
+                    caches['bsuos']['scripts'][hh_date.year][hh_date.month]
+            except KeyError:
+                try:
+                    bsuos_cache = caches['bsuos']
+                except KeyError:
+                    bsuos_cache = caches['bsuos'] = {}
+
+                try:
+                    script_cache = bsuos_cache['scripts']
+                except KeyError:
+                    script_cache = bsuos_cache['scripts'] = {}
+
+                try:
+                    yr_cache = script_cache[hh_date.year]
+                except KeyError:
+                    yr_cache = script_cache[hh_date.year] = {}
+
+                rs = sess.query(RateScript).filter(
+                    RateScript.contract == contract,
+                    RateScript.start_date <= hh_date, or_(
+                        RateScript.finish_date == null(),
+                        RateScript.finish_date >= hh_date)).first()
+                while rs is None:
+                    self.log(
+                        "There's no rate script at " + hh_format(hh_date) +
+                        ".")
+                    latest_rs = sess.query(RateScript).filter(
+                        RateScript.contract == contract).order_by(
+                        RateScript.start_date.desc()).first()
+                    contract.update_rate_script(
+                        sess, latest_rs, latest_rs.start_date,
+                        latest_rs.start_date + relativedelta(months=2) - HH,
+                        loads(latest_rs.script))
+                    new_rs_start = latest_rs.start_date + relativedelta(
+                        months=1)
+                    contract.insert_rate_script(sess, new_rs_start, {})
+                    sess.commit()
+                    self.log(
+                        "Added a rate script starting at " +
+                        hh_format(new_rs_start) + ".")
+
+                    rs = sess.query(RateScript).filter(
+                        RateScript.contract == contract,
+                        RateScript.start_date <= hh_date, or_(
+                            RateScript.finish_date == null(),
+                            RateScript.finish_date >= hh_date)).first()
+
+                rates = loads(rs.script)
+                yr_cache[hh_date.month] = rs, rates
+
+            try:
+                rts = rates['rates_gbp_per_mwh']
+            except KeyError:
+                rts = rates['rates_gbp_per_mwh'] = {}
+
+            key = key_format(hh_date)
+            try:
+                existing = rts[key]
+            except KeyError:
+                existing = rts[key] = {}
+
+            if run not in existing:
+                existing[run] = price
+                rs.script = dumps(rates)
+                self.log(
+                    "Added rate at " + hh_format(hh_date) + " for run " + run +
+                    ".")
+
+        sess.commit()
+        book = sheet = None
 
 
 def get_importer():
