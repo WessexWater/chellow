@@ -505,7 +505,7 @@ def datum_2010_04_01(ds, hh):
                         datum['msp-kw'] ** 2 + max(
                             datum['imp-msp-kvar'], datum['exp-msp-kvar']) **
                         2) ** 0.5)
-                if datum['utc-decimal-hour'] == 0:
+                if datum['ct-decimal-hour'] == 0:
                     days_in_month += 1
 
         excess_kva = max(md_kva - ds.sc, 0)
