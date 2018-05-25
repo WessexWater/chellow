@@ -1,7 +1,6 @@
 from dateutil.relativedelta import relativedelta
 from sqlalchemy import or_, cast, Float
 from sqlalchemy.sql.expression import null
-from sqlalchemy.orm import aliased
 import math
 from werkzeug.exceptions import BadRequest
 from collections import defaultdict
@@ -567,30 +566,13 @@ class GDataSource():
                     if can_insert:
                         g_bills.append(cand_bill)
 
-                prev_type_alias = aliased(GReadType)
-                pres_type_alias = aliased(GReadType)
                 for g_bill in g_bills:
                     units_consumed = 0
-                    for prev_date, prev_value, prev_type, pres_date, \
-                            pres_value, pres_type in sess.query(
-                            GRegisterRead.prev_date,
+                    for prev_value, pres_value in sess.query(
                             cast(GRegisterRead.prev_value, Float),
-                            prev_type_alias.code, GRegisterRead.pres_date,
-                            cast(GRegisterRead.pres_value, Float),
-                            pres_type_alias.code).join(
-                                prev_type_alias, GRegisterRead.prev_type_id ==
-                                prev_type_alias.id).join(
-                            pres_type_alias,
-                            GRegisterRead.pres_type_id ==
-                            pres_type_alias.id).filter(
-                            GRegisterRead.g_bill == g_bill).order_by(
-                                GRegisterRead.pres_date):
-                        advance = pres_value - prev_value
-                        if advance < 0:
-                            self.problem += "Clocked? "
-                            digits = int(math.log10(prev_value)) + 1
-                            advance = 10 ** digits - prev_value + pres_value
-                        units_consumed += advance
+                            cast(GRegisterRead.pres_value, Float)).filter(
+                            GRegisterRead.g_bill == g_bill):
+                        units_consumed += pres_value - prev_value
 
                     bill_s = (
                         g_bill.finish_date - g_bill.start_date +
