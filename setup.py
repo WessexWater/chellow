@@ -41,7 +41,7 @@ setup(
         'elexonportal/*',
         'rate_scripts/*/*.zish']},
     install_requires=[
-        'odio==0.0.15',
+        'odio==0.0.16',
         'pg8000==1.10.6',
         'Flask==0.12',
         'SQLAlchemy==1.1.13',

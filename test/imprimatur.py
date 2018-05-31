@@ -19055,8 +19055,10 @@ def virtual_bill(ds):
             r'office:value-type="string"/>\s*'
             r'<table:table-cell office:string-value="EM2" '
             r'office:value-type="string"/>\s*'
-            r'<table:table-cell office:value="False" '
-            r'office:value-type="float"/>\s*'
+            r'<table:table-cell office:string-value="hwo8th" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell office:boolean-value="false" '
+            r'office:value-type="boolean"/>\s*'
             r'<table:table-cell office:string-value="M3" '
             r'office:value-type="string"/>\s*'
             r'<table:table-cell office:string-value="Total" '
@@ -19133,4 +19135,68 @@ def virtual_bill(ds):
             r'5.433726578764746,1.02264,M3,1.0,39.3,60.66114545454545,'
             r'0.019548,1.1858040713454543,,,,1.1858040713454543,0,'
             r'1.1858040713454543,']},
+
+    {
+        'name': "Gas monthly duration covering bills",
+        'path': '/reports/g_monthly_duration?g_supply_id=1&months=1&'
+        'finish_year=2015&finish_month=09&finish_day=30&finish_hour=23&'
+        'finish_minute=30&compression=False',
+        'status_code': 303},
+    {
+        'path': '/downloads',
+        'tries': {},
+        'status_code': 200,
+        'regexes': [
+            r'0029_FINISHED_adminexamplecom_g_monthly_duration_20150901_'
+            r'0000_for_1_months_g_supply_1\.ods']},
+    {
+        'path': '/downloads/'
+        '0029_FINISHED_adminexamplecom_g_monthly_duration_20150901_0000_for_'
+        '1_months_g_supply_1.ods',
+        'status_code': 200,
+        'regexes': [
+            r'<table:table table:name="Site Level">\s*'
+            r'<table:table-column/>\s*'
+            r'<table:table-row>\s*'
+            r'<table:table-cell office:string-value="creation_date" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell office:string-value="site_id" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell office:string-value="site_name" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell office:string-value="associated_site_ids" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell office:string-value="month" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell office:string-value="kwh" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell office:string-value="gbp" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell office:string-value="billed_kwh" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell office:string-value="billed_gbp" '
+            r'office:value-type="string"/>\s*'
+            r'</table:table-row>\s*'
+            r'<table:table-row>\s*'
+            r'<table:table-cell '
+            r'office:date-value="\d\d\d\d-\d\d-\d\dT\d\d:\d\d:\d\d" '
+            r'office:value-type="date" table:style-name="cell_date"/>\s*'
+            r'<table:table-cell office:string-value="CH017" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell office:string-value="Parbola" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell office:string-value="" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell office:date-value="2015-09-30T23:30:00" '
+            r'office:value-type="date" table:style-name="cell_date"/>\s*'
+            r'<table:table-cell office:value="87352.04945454483" '
+            r'office:value-type="float"/>\s*'
+            r'<table:table-cell office:value="1775.3578627374982" '
+            r'office:value-type="float"/>\s*'
+            r'<table:table-cell office:value="4500901.0" '
+            r'office:value-type="float"/>\s*'
+            r'<table:table-cell office:value="6972.33" '
+            r'office:value-type="float"/>\s*'
+            r'</table:table-row>\s*'
+            r'</table:table>']},
 ]

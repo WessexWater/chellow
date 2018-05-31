@@ -74,13 +74,13 @@ def content(
         g_era_rows = []
 
         era_header_titles = [
-            'creation-date', 'mprn', 'supply_name', 'ldz', 'msn',
-            'is_corrected', 'unit', 'contract', 'site-id', 'site-name',
-            'associated-site-ids', 'month']
+            'creation_date', 'mprn', 'supply_name', 'exit_zone', 'msn',
+            'is_corrected', 'unit', 'contract', 'site_id', 'site_name',
+            'associated_site_ids', 'month']
         site_header_titles = [
-            'creation-date', 'site_id', 'site_name', 'associated_site_ids',
+            'creation_date', 'site_id', 'site_name', 'associated_site_ids',
             'month']
-        summary_titles = ['kwh', 'gbp', 'billed-kwh', 'billed-gbp']
+        summary_titles = ['kwh', 'gbp', 'billed_kwh', 'billed_gbp']
 
         vb_titles = []
         conts = sess.query(GContract).join(GEra).join(GSupply).filter(
@@ -179,17 +179,18 @@ def content(
                             max(bill_start, ss_start)
                             ).total_seconds() + (30 * 60)
                         overlap_proportion = overlap_duration / bill_duration
-                        billed_kwh += overlap_proportion * float(bill.kwh)
-                        billed_gbp += overlap_proportion * float(bill.net)
+                        billed_kwh += overlap_proportion * float(g_bill.kwh)
+                        billed_gbp += overlap_proportion * float(g_bill.net)
 
                     associated_site_ids = ','.join(sorted(g_era_associates))
                     g_era_rows.append(
                         [
                             now, g_supply.mprn, g_supply.name,
-                            g_supply.g_exit_zone.code, g_era.is_corrected,
-                            g_era.g_unit.code, contract.name, site.code,
-                            site.name, associated_site_ids, month_finish, kwh,
-                            gbp, billed_kwh, billed_gbp, None] +
+                            g_supply.g_exit_zone.code, g_era.msn,
+                            g_era.is_corrected, g_era.g_unit.code,
+                            contract.name, site.code, site.name,
+                            associated_site_ids, month_finish, kwh, gbp,
+                            billed_kwh, billed_gbp, None] +
                         [make_val(bill.get(t)) for t in vb_titles])
 
                     site_kwh += kwh
