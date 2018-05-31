@@ -15297,6 +15297,14 @@ def virtual_bill(ds):
             r'Update Rate Script']},
 
     {
+        'name': "View add a batch to a gas contract",
+        'path': '/g_contracts/1/add_batch',
+        'status_code': 200,
+        'regexes': [
+            r'<form\s*'
+            r'action="/g_contracts/1/add_batch" method="post">']},
+
+    {
         'name': "Add a batch to a gas contract",
         'path': '/g_contracts/1/add_batch',
         'method': 'post',
