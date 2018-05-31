@@ -1,7 +1,7 @@
 import csv
 from decimal import Decimal, InvalidOperation
 from io import StringIO
-from chellow.utils import parse_hh_start
+from chellow.utils import parse_hh_start, parse_bool
 from zish import loads, ZishLocationException
 from werkzeug.exceptions import BadRequest
 from itertools import count
@@ -82,7 +82,7 @@ class Parser():
 
                 msn = get_str(row, i, 'Meter Serial Number', self.line_number)
                 unit = get_str(row, i + 1, 'Unit', self.line_number).upper()
-                is_corrected = bool(
+                is_corrected = parse_bool(
                     get_str(row, i + 2, 'Is Corrected?', self.line_number))
                 correction_factor = get_str(
                     row, i + 3, 'Correction Factor', self.line_number)

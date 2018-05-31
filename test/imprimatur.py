@@ -15491,7 +15491,13 @@ def virtual_bill(ds):
             r"<th>0 Pres Value</th>\s*"
             r"<th>0 Pres Type</th>\s*"
             r"</tr>",
-            r"2015-09-01 00:00"]},
+            r"2015-09-01 00:00",
+            r'<td>hwo8tt</td>\s*'
+            r'<td>HCUF</td>\s*'
+            r'<td>\s*'
+            r'No\s*'
+            r'</td>\s*'
+            r'<td>None</td>']},
 
     {
         'name': "View gas bill",

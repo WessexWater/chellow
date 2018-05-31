@@ -53,6 +53,7 @@ import chellow.g_cv
 from xml.dom import Node
 import chellow.hh_importer
 from zish import dumps, loads
+from decimal import Decimal
 
 
 app = Flask('chellow', instance_relative_config=True)
@@ -5701,8 +5702,10 @@ def g_read_add_post(g_bill_id):
 def g_read_edit_get(g_read_id):
     g_read_types = g.sess.query(GReadType).order_by(GReadType.code).all()
     g_read = GRegisterRead.get_by_id(g.sess, g_read_id)
+    g_units = g.sess.query(GUnit).order_by(GUnit.code)
     return render_template(
-        'g_read_edit.html', g_read=g_read, g_read_types=g_read_types)
+        'g_read_edit.html', g_read=g_read, g_read_types=g_read_types,
+        g_units=g_units)
 
 
 @app.route('/g_reads/<int:g_read_id>/edit', methods=['POST'])
@@ -5719,13 +5722,23 @@ def g_read_edit_post(g_read_id):
             pres_value = req_decimal('pres_value')
             pres_type_id = req_int('pres_type_id')
             pres_type = GReadType.get_by_id(g.sess, pres_type_id)
-            units = req_str('units')
-            correction_factor = req_decimal('correction_factor')
+            g_unit_id = req_int('g_unit_id')
+            g_unit = GUnit.get_by_id(g.sess, g_unit_id)
+            is_corrected = req_bool('is_corrected')
+
+            correction_factor_str = req_str('correction_factor')
+            if len(correction_factor_str) > 0:
+                correction_factor = Decimal(correction_factor_str)
+            else:
+                correction_factor = None
+
             calorific_value = req_decimal('calorific_value')
 
             g_read.update(
-                msn, prev_value, prev_date, prev_type, pres_value, pres_date,
-                pres_type, units, correction_factor, calorific_value)
+                msn, g_unit, is_corrected, correction_factor, calorific_value,
+                prev_value, prev_date, prev_type, pres_value, pres_date,
+                pres_type)
+
             g.sess.commit()
             return chellow_redirect("/g_bills/" + str(g_read.g_bill.id), 303)
         elif 'delete' in request.values:
@@ -5735,10 +5748,11 @@ def g_read_edit_post(g_read_id):
     except BadRequest as e:
         flash(e.description)
         g_read_types = g.sess.query(GReadType).order_by(GReadType.code).all()
+        g_units = g.sess.query(GUnit).order_by(GUnit.code)
         return make_response(
             render_template(
-                'g_read_edit.html', g_read=g_read, g_read_types=g_read_types),
-            400)
+                'g_read_edit.html', g_read=g_read, g_read_types=g_read_types,
+                g_units=g_units), 400)
 
 
 @app.route('/g_units')
