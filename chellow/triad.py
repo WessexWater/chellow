@@ -12,9 +12,7 @@ def hh(data_source, rate_period='monthly', est_kw=None):
 
         month_start = utc_datetime(hh_start.year, hh_start.month)
         month_finish = month_start + relativedelta(months=1) - HH
-        month_num = month_start.month
 
-        # Get start of last financial year
         financial_year_start = month_start
         while financial_year_start.month != 4:
             financial_year_start -= relativedelta(months=1)
@@ -46,7 +44,7 @@ def hh(data_source, rate_period='monthly', est_kw=None):
                     chellow.duos.duos_vb(ds)
                     datum = ds.hh_data[0]
                     triad_hh['laf'] = datum['laf']
-                    triad_hh['gsp-kw'] = datum['laf'] * datum['msp-kw']
+                    triad_hh['gsp-kw'] = datum['laf'] * triad_hh['msp-kw']
             except StopIteration:
                 triad_hh = {
                     'hist-start': dt, 'msp-kw': 0, 'start-date': dt,
@@ -115,7 +113,7 @@ def hh(data_source, rate_period='monthly', est_kw=None):
         hh['triad-estimate-gbp'] = est_triad_gbp / total_intervals * \
             est_intervals
 
-        if month_num == 3:
+        if month_start.month == 3:
             triad_kws = []
             for t_date in get_file_rates(
                     data_source.caches, 'triad_dates',
