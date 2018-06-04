@@ -19199,4 +19199,88 @@ def virtual_bill(ds):
             r'office:value-type="float"/>\s*'
             r'</table:table-row>\s*'
             r'</table:table>']},
+
+    {
+        'name': "Edit gas bill",
+        'path': '/g_bills/3/edit',
+        'method': 'post',
+        'data': {
+            'bill_type_id': '3',
+            'reference': '8899900012',
+            'account': 'college_rooms',
+            'issue_year': '2015',
+            'issue_month': '11',
+            'issue_day': '01',
+            'issue_hour': '00',
+            'issue_minute': '00',
+            'start_year': '2015',
+            'start_month': '09',
+            'start_day': '01',
+            'start_hour': '00',
+            'start_minute': '00',
+            'finish_year': '2015',
+            'finish_month': '09',
+            'finish_day': '30',
+            'finish_hour': '00',
+            'finish_minute': '00',
+            'kwh': '4500901',
+            'net_gbp': '6972.33',
+            'vat_gbp': '1003.89',
+            'gross_gbp': '7976.22',
+            'raw_lines': 'reference,mprn,bill_type,account,issue_date,'
+                'start_date,finish_date,kwh,net_gbp,vat_gbp,gross_gbp,'
+                'breakdown,msn,unit,is_corrected,correction_factor,'
+                'calorific_value,prev_date,prev_value,prev_type,pres_date,'
+                'prev_value,pres_type\n'
+                '8899900012,750278673,N,college_rooms,2015-11-01 00:00,'
+                '2015-09-01 00:00,2015-09-30 00:00,4500901,6972.33,1003.89,'
+                '7976.22,{"gas_rate": 0.019448, "gas_gbp": 8936.13,'
+                '"ccl_gbp": 275.32, "vat_0500pc": 0.3, "vat_1500pc": 49.12, '
+                '"vat_1750pc": 55.7, "vat_2000pc": 801},hwo8tt,HCUF,FALSE,,'
+                '39.300811,2015-09-01 00:00,567822,A,2015-10-01 00:00,'
+                '575652,A',
+            'breakdown': '{"ccl_gbp": 275.32, "gas_gbp": 8936.13, '
+                '"gas_rate": 0.019448, "vat_0500pc": 0.3, "vat_1500pc": 49.12,'
+                '"vat_1750pc": 55.7, "vat_2000pc": 801}'},
+        'status_code': 303},
+
+    {
+        'name': "Gas bill check",
+        'path': '/reports/429?g_bill_id=3',
+        'status_code': 303},
+    {
+        'name': "Gas bill check",
+        'path': '/downloads',
+        'tries': {'max': 20, 'period': 1},
+        'regexes': [
+            r"0030_FINISHED_adminexamplecom_g_bill_check\.csv"],
+        'status_code': 200},
+    {
+        'name': "Gas bill check",
+        'path': '/downloads/0030_FINISHED_adminexamplecom_g_bill_check.csv',
+        'status_code': 200,
+        'regexes': [
+            r'batch,bill_reference,bill_type,bill_start_date,'
+            r'bill_finish_date,mprn,supply_name,site_code,site_name,'
+            r'covered_start,covered_finish,covered_bill_ids,'
+            r'covered_units_consumed,virtual_units_consumed,'
+            r'covered_correction_factor,virtual_correction_factor,'
+            r'covered_unit_code,virtual_unit_code,covered_unit_factor,'
+            r'virtual_unit_factor,covered_calorific_value,'
+            r'virtual_calorific_value,covered_kwh,virtual_kwh,'
+            r'covered_gas_rate,virtual_gas_rate,covered_gas_gbp,'
+            r'virtual_gas_gbp,difference_gas_gbp,covered_ccl_rate,'
+            r'virtual_ccl_rate,covered_standing_rate,'
+            r'virtual_standing_rate,covered_standing_gbp,virtual_standing_gbp,'
+            r'difference_standing_gbp,covered_net_gbp,virtual_net_gbp,'
+            r'difference_net_gbp,covered_vat_gbp,virtual_vat_gbp,'
+            r'difference_vat_gbp,covered_gross_gbp,virtual_gross_gbp,'
+            r'difference_gross_gbp\s*',
+            r'TB2,8899900012,N,2015-09-01 00:00,2015-09-30 00:00,750278673,'
+            r'Main Gas Supply,CH017,Parbola,2015-09-01 00:00,2015-09-30 00:00,'
+            r'\[3\],,7829.999999999759,,1.02264,HCUF,M3,2.8317,1.0,39.300811,,'
+            r'4500901,87934.521286\d*,0.019448,0.019548,8936.13,'
+            r'1718.9440220988\d*,7217.185977901\d*,,0.00525288,,,,,,6972.33,'
+            r'1718.9440220988\d*,5253.385977901\d*,1003.89,0,1003.89,7976.22,'
+            r'1718.9440220988\d*,6257.275977901\d*,,']},
 ]

@@ -10,7 +10,7 @@ import csv
 from chellow.models import Session, GBatch, GBill, GEra, Site, SiteGEra
 import chellow.dloads
 from werkzeug.exceptions import BadRequest
-from chellow.utils import hh_before, csv_make_val, req_int, to_utc
+from chellow.utils import hh_min, hh_max, csv_make_val, req_int, to_utc
 import chellow.g_engine
 from flask import request, g
 from chellow.views import chellow_redirect
@@ -109,7 +109,7 @@ def content(g_batch_id, g_bill_id, user):
             while enlarged:
                 enlarged = False
                 for covered_bill in sess.query(GBill).filter(
-                        GBill.g_supply_id == g_supply.id,
+                        GBill.g_supply == g_supply,
                         GBill.start_date <= vals['covered_finish'],
                         GBill.finish_date >= vals['covered_start']).order_by(
                         GBill.issue_date.desc(), GBill.start_date):
@@ -176,23 +176,16 @@ def content(g_batch_id, g_bill_id, user):
 
             for g_era in sess.query(GEra).filter(
                     GEra.g_supply == g_supply,
-                    GEra.start_date <= vals['covered_finish'],
-                    or_(
+                    GEra.start_date <= vals['covered_finish'], or_(
                         GEra.finish_date == null(),
                         GEra.finish_date >= vals['covered_start'])).distinct():
                 site = sess.query(Site).join(SiteGEra).filter(
                     SiteGEra.is_physical == true(),
                     SiteGEra.g_era == g_era).one()
 
-                if vals['covered_start'] > g_era.start_date:
-                    chunk_start = vals['covered_start']
-                else:
-                    chunk_start = g_era.start_date
-
-                if hh_before(vals['covered_finish'], g_era.finish_date):
-                    chunk_finish = vals['covered_finish']
-                else:
-                    chunk_finish = g_era.finish_date
+                chunk_start = hh_max(vals['covered_start'], g_era.start_date)
+                chunk_finish = hh_min(
+                    vals['covered_finish'], g_era.finish_date)
 
                 data_source = chellow.g_engine.GDataSource(
                     sess, chunk_start, chunk_finish, forecast_date, g_era,

@@ -22,14 +22,12 @@ def get_times(sess, caches, start_date, finish_date, forecast_date):
     try:
         s_cache = times_cache[start_date]
     except KeyError:
-        s_cache = {}
-        times_cache[start_date] = s_cache
+        s_cache = times_cache[start_date] = {}
 
     try:
         f_cache = s_cache[finish_date]
     except KeyError:
-        f_cache = {}
-        s_cache[finish_date] = f_cache
+        f_cache = s_cache[finish_date] = {}
 
     try:
         return f_cache[forecast_date]
@@ -169,8 +167,10 @@ def datum_range(sess, caches, years_back, start_date, finish_date):
                         'utc_is_month_end': utc_is_month_end,
                         'ct_is_month_end': ct_is_month_end,
                         'status': 'X', 'kwh': 0, 'hist_kwh': 0,
-                        'units_code': 'M3', 'unit_factor': CORRECTION_FACTOR,
-                        'units_consumed': 0}))
+                        'units_code': 'M3', 'unit_factor': 1,
+                        'units_consumed': 0,
+                        'correction_factor': CORRECTION_FACTOR,
+                        'calorific_value': 0}))
         datum_tuple = tuple(datum_list)
         d_cache[finish_date] = datum_tuple
         return datum_tuple
@@ -249,8 +249,7 @@ class GDataSource():
         self.forecast_date = forecast_date
         self.start_date = start_date
         self.finish_date = finish_date
-        times = get_times(
-            sess, caches, start_date, finish_date, forecast_date)
+        times = get_times(sess, caches, start_date, finish_date, forecast_date)
         self.years_back = times['years-back']
         self.history_start = times['history-start']
         self.history_finish = times['history-finish']
