@@ -35,7 +35,7 @@ def vb(ds):
                         kwh += datum['kwh']
                         gbp += datum['kwh'] * rate
 
-                if kwh > THRESHOLD:
+                if abs(kwh) > THRESHOLD:
                     hh['ccl_kwh'] = kwh
                     hh['ccl_gbp'] = gbp
 
@@ -53,6 +53,6 @@ def vb(ds):
                 kwh += hh['kwh']
                 gbp += hh['kwh'] * rate
 
-        if kwh > THRESHOLD:
+        if abs(kwh) > THRESHOLD:
             ds.hh_data[-1]['ccl_kwh'] = kwh
             ds.hh_data[-1]['ccl_gbp'] = gbp

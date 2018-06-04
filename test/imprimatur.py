@@ -19261,8 +19261,8 @@ def virtual_bill(ds):
         'status_code': 200,
         'regexes': [
             r'batch,bill_reference,bill_type,bill_start_date,'
-            r'bill_finish_date,mprn,supply_name,site_code,site_name,'
-            r'covered_start,covered_finish,covered_bill_ids,'
+            r'bill_finish_date,mprn,supply_name,site_code,'
+            r'site_name,covered_start,covered_finish,covered_bill_ids,'
             r'covered_units_consumed,virtual_units_consumed,'
             r'covered_correction_factor,virtual_correction_factor,'
             r'covered_unit_code,virtual_unit_code,covered_unit_factor,'
@@ -19270,17 +19270,16 @@ def virtual_bill(ds):
             r'virtual_calorific_value,covered_kwh,virtual_kwh,'
             r'covered_gas_rate,virtual_gas_rate,covered_gas_gbp,'
             r'virtual_gas_gbp,difference_gas_gbp,covered_ccl_rate,'
-            r'virtual_ccl_rate,covered_standing_rate,'
-            r'virtual_standing_rate,covered_standing_gbp,virtual_standing_gbp,'
+            r'virtual_ccl_rate,covered_standing_rate,virtual_standing_rate,'
+            r'covered_standing_gbp,virtual_standing_gbp,'
             r'difference_standing_gbp,covered_net_gbp,virtual_net_gbp,'
             r'difference_net_gbp,covered_vat_gbp,virtual_vat_gbp,'
             r'difference_vat_gbp,covered_gross_gbp,virtual_gross_gbp,'
-            r'difference_gross_gbp\s*',
-            r'TB2,8899900012,N,2015-09-01 00:00,2015-09-30 00:00,750278673,'
-            r'Main Gas Supply,CH017,Parbola,2015-09-01 00:00,2015-09-30 00:00,'
-            r'\[3\],,7829.999999999759,,1.02264,HCUF,M3,2.8317,1.0,39.300811,,'
-            r'4500901,87934.521286\d*,0.019448,0.019548,8936.13,'
-            r'1718.9440220988\d*,7217.185977901\d*,,0.00525288,,,,,,6972.33,'
-            r'1718.9440220988\d*,5253.385977901\d*,1003.89,0,1003.89,7976.22,'
-            r'1718.9440220988\d*,6257.275977901\d*,,']},
+            r'difference_gross_gbp,covered_problem,virtual_problem\s*'
+            r'TB2,8899900012,W,2015-09-01 00:00,2015-09-30 00:00,750278673,'
+            r'Main Gas Supply,CH017,Parbola,2015-09-01 00:00,'
+            r'2015-09-30 00:00,\[3\],,0,,1.02264,HCUF,M3,2.8317,1,39.300811,0,'
+            r'4500901,0.0,0.019448,0.019548,8936.13,0.0,8936.13,,'
+            r'0.00525288,,,,,,6972.33,0.0,6972.33,1003.89,0,1003.89,7976.22,'
+            r'0.0,7976.22,,']}
 ]

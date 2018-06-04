@@ -167,10 +167,11 @@ def datum_range(sess, caches, years_back, start_date, finish_date):
                         'utc_is_month_end': utc_is_month_end,
                         'ct_is_month_end': ct_is_month_end,
                         'status': 'X', 'kwh': 0, 'hist_kwh': 0,
-                        'units_code': 'M3', 'unit_factor': 1,
+                        'unit_code': 'M3', 'unit_factor': 1,
                         'units_consumed': 0,
                         'correction_factor': CORRECTION_FACTOR,
-                        'calorific_value': 0}))
+                        'calorific_value': 0,
+                        'avg_cv': 0}))
         datum_tuple = tuple(datum_list)
         d_cache[finish_date] = datum_tuple
         return datum_tuple
