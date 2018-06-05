@@ -119,7 +119,7 @@ class BsuosImporter(threading.Thread):
                                 'balancing-services-use-system-bsuos-charges')
                             src = res.text
                             for pref in (
-                                    'Current_II%20_BSUoS_Data_',
+                                    'Current_II_BSUoS_Data_',
                                     'Current_RF_BSUoS_Data_',
                                     'Current_SF_BSUoS_Data_'):
                                 idx_start = src.find(pref)
