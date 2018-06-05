@@ -15264,7 +15264,9 @@ def virtual_bill(ds):
         'path': '/g_rate_scripts/2/edit',
         'status_code': 200,
         'regexes': [
-            r'<form action="/g_rate_scripts/2/edit" method="post">']},
+            r'<form\s*'
+            r'action="/g_rate_scripts/2/edit"\s*'
+            r'method="post">']},
 
     {
         'name': "Edit the added rate script",
