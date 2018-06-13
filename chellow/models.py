@@ -9,7 +9,7 @@ import datetime
 import ast
 import math
 from sqlalchemy.sql.expression import true, false
-from sqlalchemy.exc import ProgrammingError, SQLAlchemyError
+from sqlalchemy.exc import ProgrammingError, SQLAlchemyError, IntegrityError
 from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.ext.declarative import declarative_base
 import operator
@@ -1162,7 +1162,7 @@ class Site(Base, PersistentClass):
         try:
             sess.add(site)
             sess.flush()
-        except ProgrammingError as e:
+        except IntegrityError as e:
             if e.orig.args[2] == 'duplicate key value violates unique ' + \
                     'constraint "site_code_key"':
                 raise BadRequest("There's already a site with this code.")
@@ -1238,7 +1238,7 @@ class Site(Base, PersistentClass):
         try:
             sess.add(g_supply)
             sess.flush()
-        except ProgrammingError as e:
+        except IntegrityError as e:
             sess.rollback()
             if 'duplicate key value violates unique constraint ' + \
                     '"g_supply_mprn_key"' in str(e):
@@ -1347,7 +1347,7 @@ class User(Base, PersistentClass):
             user = User(email_address, password, user_role, party)
             sess.add(user)
             sess.flush()
-        except ProgrammingError as e:
+        except IntegrityError as e:
             if e.orig.args[2] == 'duplicate key value violates unique ' + \
                     'constraint "user_email_address_key"':
                 raise BadRequest(

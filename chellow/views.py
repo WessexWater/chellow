@@ -11,7 +11,7 @@ from chellow.models import (
     ClockInterval, db_upgrade, Llfc, MeterType, GEra, GSupply, SiteGEra, GBill,
     GContract, GRateScript, GBatch, GRegisterRead, GReadType, VoltageLevel,
     GUnit, GLdz, GExitZone)
-from sqlalchemy.exc import ProgrammingError
+from sqlalchemy.exc import IntegrityError
 import traceback
 from datetime import datetime as Datetime
 import os
@@ -364,7 +364,7 @@ def local_reports_post():
     g.sess.add(report)
     try:
         g.sess.commit()
-    except ProgrammingError as e:
+    except IntegrityError as e:
         if 'duplicate key value violates unique constraint' in str(e):
             return Response(
                 "There's already a report with that name.", status=400)
