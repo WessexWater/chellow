@@ -113,6 +113,9 @@ def content(year, supply_id, user):
                 else:
                     vals.append(str(value))
             writer.writerow(vals)
+
+            # Avoid a long-running transaction
+            sess.rollback()
     except BaseException:
         msg = traceback.format_exc()
         sys.stderr.write(msg)

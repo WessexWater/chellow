@@ -163,6 +163,8 @@ order by hh_base.start_date
             else:
                 tmp_file.write(''.join(outs))
 
+            # Avoid a long-running transaction
+            sess.rollback()
     except BaseException:
         msg = "Problem " + traceback.format_exc()
         if is_zipped:

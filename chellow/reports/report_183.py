@@ -76,6 +76,9 @@ def none_content(site_id, start_date, finish_date, user, file_name):
                 site.code + '_' +
                 finish_date.strftime('%Y%m%d%M%H') + '.csv',
                 buf.getvalue())
+
+            # Avoid long-running transaction
+            sess.rollback()
     except BaseException:
         msg = traceback.format_exc()
         sys.stderr.write(msg)

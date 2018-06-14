@@ -217,6 +217,9 @@ def content(supply_id, start_date, finish_date, user):
                     chunk_finish, forecast_date, caches) + mpan_bit(
                     sess, supply, False, num_hh, eras, chunk_start,
                     chunk_finish, forecast_date, caches))
+
+            # Avoid a long-running transaction
+            sess.rollback()
     except BadRequest as e:
         f.write('Problem:' + e.description)
     except BaseException:

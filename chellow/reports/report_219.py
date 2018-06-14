@@ -75,6 +75,10 @@ def content(year, month, months, supply_id, user):
                     read.previous_value, read.previous_type.code,
                     hh_format(read.present_date), read.present_value,
                     read.present_type.code])
+
+            # Avoid a long-running transaction
+            sess.rollback()
+
     except BadRequest as e:
         w.writerow([e.description])
     except BaseException:

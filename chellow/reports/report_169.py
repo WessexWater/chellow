@@ -87,6 +87,10 @@ def content(
             else:
                 tf.write(''.join(outs))
             outs = []
+
+            # Avoid long-running transaction
+            sess.rollback()
+
         if is_zipped:
             zf.close()
         else:

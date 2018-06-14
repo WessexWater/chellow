@@ -83,6 +83,9 @@ def content(year, site_id, user):
                     'gsp-kw', 'rate', 'gbp']]
 
             writer.writerow(values)
+
+            # Avoid long-running transaction
+            sess.rollback()
     except BadRequest as e:
         writer.writerow([e.description])
     except BaseException:
