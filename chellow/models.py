@@ -4318,11 +4318,34 @@ def db_upgrade_12_to_13(sess, root_path):
     sess.execute("alter table g_supply alter g_exit_zone_id set not null;")
 
 
+def db_upgrade_13_to_14(sess, root_path):
+    for rs_id, rs_script in sess.execute(
+            "select rate_script.id, rate_script.script "
+            "from rate_script, contract "
+            "where rate_script.contract_id = contract.id "
+            "and contract.name = 'tlms';").fetchall():
+        tlms = {}
+        for k, v in loads(rs_script)['tlms'].items():
+            tlm = tlms[k[:-2]] = {}
+            for gsp_group_code in (
+                    'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'J', 'K', 'L', 'M',
+                    'N', 'P'):
+                tlm['_' + gsp_group_code] = {
+                    'DF': {
+                        'delivering': v,
+                        'off_taking': v}}
+        sess.execute(
+            "update rate_script set script = :script where id = :id;",
+            params={
+                'script': dumps({'tlms': tlms}),
+                'id': rs_id})
+
+
 upgrade_funcs = [
     db_upgrade_0_to_1, db_upgrade_1_to_2, db_upgrade_2_to_3, db_upgrade_3_to_4,
     db_upgrade_4_to_5, db_upgrade_5_to_6, db_upgrade_6_to_7, db_upgrade_7_to_8,
     db_upgrade_8_to_9, db_upgrade_9_to_10, db_upgrade_10_to_11,
-    db_upgrade_11_to_12, db_upgrade_12_to_13]
+    db_upgrade_11_to_12, db_upgrade_12_to_13, db_upgrade_13_to_14]
 
 
 def db_upgrade(root_path):

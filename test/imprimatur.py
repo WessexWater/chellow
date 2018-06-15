@@ -266,65 +266,22 @@
     {
         'name': "Check that an TLM import has happened.",
         'path': '/non_core_contracts/7/auto_importer',
-        'tries': {},
+        'tries': {'max': 60, 'period': 1},
         'regexes': [
-            r"Added new rate script starting at 2013-10-01 00:00\."],
+            r" - Found rate at 2014-03-02 08:30 for GSP Group _L and run "
+            r"RF\.",
+            r"Finished checking TLM rates."],
         'status_code': 200},
+
     {
-        'name': "Do an 'import now' on TLM.",
-        'path': '/non_core_contracts/7/auto_importer',
-        'method': 'post',
-        'data': {
-            'now': 'Now'},
-        'status_code': 303},
-    {
-        'name': "Check that an TLM import has happened.",
-        'path': '/non_core_contracts/7/auto_importer',
-        'tries': {},
+        'name': "Check it's been parsed properly",
+        'path': '/non_core_rate_scripts/22',
         'regexes': [
-            r"Added new rate script starting at 2013-11-01 00:00\."],
-        'status_code': 200},
-    {
-        'name': "Do an 'import now' on TLM.",
-        'path': '/non_core_contracts/7/auto_importer',
-        'method': 'post',
-        'data': {
-            'now': 'Now'},
-        'status_code': 303},
-    {
-        'name': "Check that an TLM import has happened.",
-        'path': '/non_core_contracts/7/auto_importer',
-        'tries': {},
-        'regexes': [
-            r"Added new rate script starting at 2013-12-01 00:00\."],
-        'status_code': 200},
-    {
-        'name': "Do an 'import now' on TLM.",
-        'path': '/non_core_contracts/7/auto_importer',
-        'method': 'post',
-        'data': {
-            'now': 'Now'},
-        'status_code': 303},
-    {
-        'name': "Check that an TLM import has happened.",
-        'path': '/non_core_contracts/7/auto_importer',
-        'tries': {},
-        'regexes': [
-            r"Added new rate script starting at 2014-01-01 00:00\."],
-        'status_code': 200},
-    {
-        'name': "Do an 'import now' on TLM.",
-        'path': '/non_core_contracts/7/auto_importer',
-        'method': 'post',
-        'data': {
-            'now': 'Now'},
-        'status_code': 303},
-    {
-        'name': "Check that an TLM import has happened.",
-        'path': '/non_core_contracts/7/auto_importer',
-        'tries': {},
-        'regexes': [
-            r"Added new rate script starting at 2014-02-01 00:00\."],
+            r'&#34;28 23:30&#34;: \{\s*'
+            r'&#34;_A&#34;: \{\s*'
+            r'&#34;RF&#34;: \{\s*'
+            r'&#34;delivering&#34;: 0.9891357,\s*'
+            r'&#34;off_taking&#34;: 1.0122079\}\},'],
         'status_code': 200},
 
     {
@@ -378,7 +335,7 @@ def virtual_bill(ds):
 
     {
         'name': "Check that we can see DC rate script okay. Contract 8.",
-        'path': '/dc_rate_scripts/23',
+        'path': '/dc_rate_scripts/24',
 
         # Check that 'has_finished' field is there
         'regexes': [
@@ -388,7 +345,7 @@ def virtual_bill(ds):
     {
         'name': "Check that we can see the edit view of the DC rate "
         "script okay. Contract 8.",
-        'path': '/dc_rate_scripts/23/edit',
+        'path': '/dc_rate_scripts/24/edit',
 
         # Check that 'has_finished' field is there
         'regexes': [
@@ -398,7 +355,7 @@ def virtual_bill(ds):
 
     {
         'name': "Check that we can update an DC rate script okay",
-        'path': '/dc_rate_scripts/23/edit',
+        'path': '/dc_rate_scripts/24/edit',
         'method': 'post',
         'data': {
             'start_year': "2000",
@@ -409,7 +366,7 @@ def virtual_bill(ds):
             'script': "{}"},
         'status_code': 303,
         'regexes': [
-            r'/dc_rate_scripts/23']},
+            r'/dc_rate_scripts/24']},
 
     {
         'name': "Add another DC contract",
@@ -545,7 +502,7 @@ def virtual_bill(ds):
 
     {
         'name': "Update the associated rate script. Supplier contract 15",
-        'path': '/supplier_rate_scripts/25/edit',
+        'path': '/supplier_rate_scripts/26/edit',
         'method': 'post',
         'data': {
             'start_year': "2000",
@@ -566,15 +523,15 @@ def virtual_bill(ds):
         'status_code': 303},
     {
         'name': "View supplier rate script",
-        'path': '/supplier_rate_scripts/25',
+        'path': '/supplier_rate_scripts/26',
         'regexes': [
-            r'"/supplier_rate_scripts/25/edit"'],
+            r'"/supplier_rate_scripts/26/edit"'],
         'status_code': 200},
     {
         'name': "Edit view of supplier rate script",
-        'path': '/supplier_rate_scripts/25/edit',
+        'path': '/supplier_rate_scripts/26/edit',
         'regexes': [
-            r'"/supplier_rate_scripts/25"'],
+            r'"/supplier_rate_scripts/26"'],
         'status_code': 200},
 
     {
@@ -656,7 +613,7 @@ def virtual_bill_titles():
         'status_code': 303},
     {
         'name': "Update the associated rate script. Supplier contract 39",
-        'path': '/supplier_rate_scripts/27/edit',
+        'path': '/supplier_rate_scripts/28/edit',
         'method': 'post',
         'data': {
             'start_year': "2000",
@@ -676,7 +633,7 @@ def virtual_bill_titles():
 """},
         'status_code': 303,
         'regexes': [
-            r'/supplier_rate_scripts/27']},
+            r'/supplier_rate_scripts/28']},
 
     {
         'name': "Create a new supplier contract",
@@ -2048,12 +2005,12 @@ def virtual_bill_titles():
     {
         'name': "Show confirm-delete supplier rate script"
         "contract.",
-        'path': '/supplier_rate_scripts/25/edit?delete=Delete',
+        'path': '/supplier_rate_scripts/26/edit?delete=Delete',
         'status_code': 200,
         'regexes': [
             r'<form\s*'
             r'method="post"\s*'
-            r'action="/supplier_rate_scripts/25/edit"\s*'
+            r'action="/supplier_rate_scripts/26/edit"\s*'
             r'>\s*'
             r'<fieldset>\s*'
             r'<input type="submit" name="delete" value="Delete">']},
@@ -2061,7 +2018,7 @@ def virtual_bill_titles():
     {
         'name': "Test deleting the only rate script attached to a supplier "
         "contract.",
-        'path': '/supplier_rate_scripts/25/edit',
+        'path': '/supplier_rate_scripts/26/edit',
         'method': 'post',
         'data': {
             'delete': "Delete"},
@@ -2791,7 +2748,7 @@ def virtual_bill(supply_source):
             ',imp-supplier-problem',
             r'22 4862 4512 332,,CH023,Treglisson,11640077,'
             r'2009-03-01 00:00,2009-03-31 23:30,,10,,,10,,,'
-            r'10614.4221\d*,,148925.71000000002,0.00456 | 0.0047,'
+            r'10614.7229832\d*,,148925.71000000002,0.00456 | 0.0047,'
             r'679.10640\d*,5.89,230,31,0.0368,262.384,'
             r'169.72000000000003,31,0.0368,193.616576,'
             r'105487.43999999983,770.0583120000015,43438.26999999999,'
@@ -2799,7 +2756,7 @@ def virtual_bill(supply_source):
             r'46092.12750000003,288.79483406400016,54364.72999999998,'
             r'57735.34326,361.746566729856,0,0,0.0,0,0,0.0,'
             r'51159.730000000054,54331.63325999999,340.4202813538559,'
-            r'0,0,0.0,159627.38110258686,,146.91999204976776,'
+            r'0,0,0.0,160047.0212\d*,,147.22086540\d*,'
             r'2009-01-06 17:00,288.82,A,1.07,309.0374,'
             r'2008-12-01 17:00,384.44,A,1.07,411.35080000000005,'
             r'2008-12-15 17:00,185.36,A,1.07,198.33520000000001,'
@@ -2837,7 +2794,7 @@ def virtual_bill(supply_source):
     {
         'name': "Check we can delete a rate script (when it's not the only "
         "one). Supplier contract 33.",
-        'path': '/supplier_rate_scripts/29/edit',
+        'path': '/supplier_rate_scripts/30/edit',
         'method': 'post',
         'data': {
             'delete': "Delete"},
@@ -4295,11 +4252,11 @@ def virtual_bill(supply_source):
             'imp-supplier-problem',
             r'20 6354 2983 571,,CI004,Lower Treave,141 5532,'
             r'2009-03-01 00:00,2009-03-31 23:30,,10,,,7,,,'
-            r'2274.518581480245\d*,,,0.00456 | 0.0047,,5.89,2300,,,'
+            r'2274.51875\d*,,,0.00456 | 0.0047,,5.89,2300,,,'
             r'2165.0,0,,,,0,0.0,86.9732,0.10262837600000001,'
             r',,14.91,88,86.9732,93.49619,0.585809728064,0,'
             r'0.0,0.0,0,0,0.0,0,0,0.0,0,0.0,0.0,0,0,'
-            r'0.0,94.295292586311,,0.030143376181066044,'
+            r'0.0,94.83563511\d*,,0.0303161074779\d*,'
             r'2009-01-06 17:00,0,X,1.095,0.0,2008-12-01 17:00,0,'
             r'X,1.095,0.0,2008-12-15 17:00,0,X,1.095,0.0,'
             r'0.0,22.19481,0.0,2007-12-17 17:00,0,X,1.095,0.0,'
@@ -6301,21 +6258,21 @@ def virtual_bill(supply_source):
             'start_minute': "00",
             'insert': "Insert"},
         'regexes': [
-            r"/non_core_rate_scripts/33"],
+            r"/non_core_rate_scripts/34"],
         'status_code': 303},
     {
-        'path': '/non_core_rate_scripts/33/edit?delete=Delete',
+        'path': '/non_core_rate_scripts/34/edit?delete=Delete',
         'regexes': [
             r"Are you sure you want to delete this rate script\?"],
         'status_code': 200},
     {
-        'path': '/non_core_rate_scripts/33/edit',
+        'path': '/non_core_rate_scripts/34/edit',
         'method': 'post',
         'data': {
             'delete': "Delete"},
         'status_code': 303},
     {
-        'path': '/non_core_rate_scripts/33',
+        'path': '/non_core_rate_scripts/34',
         'status_code': 404},
     {
         'name': "Try adding a rate script before other rate scripts.",
@@ -6329,10 +6286,10 @@ def virtual_bill(supply_source):
             'start_minute': "00",
             'insert': "Insert"},
         'regexes': [
-            r"/non_core_rate_scripts/34"],
+            r"/non_core_rate_scripts/35"],
         'status_code': 303},
     {
-        'path': '/non_core_rate_scripts/34/edit',
+        'path': '/non_core_rate_scripts/35/edit',
         'regexes': [
             r'<input name="finish_year" maxlength="4" size="4" value="2010">',
 
@@ -6341,7 +6298,7 @@ def virtual_bill(supply_source):
             '<option value="0" selected>00</option>'],
         'status_code': 200},
     {
-        'path': '/non_core_rate_scripts/34/edit',
+        'path': '/non_core_rate_scripts/35/edit',
         'method': 'post',
         'data': {
             'delete': "Delete"},
@@ -7545,26 +7502,26 @@ def virtual_bill(supply_source):
 
     {
         'name': "View a MOP rate script. Contract 38.",
-        'path': '/mop_rate_scripts/26',
+        'path': '/mop_rate_scripts/27',
         'status_code': 200,
         'regexes': [
-            r'<a href="/mop_rate_scripts/26/edit">edit</a>']},
+            r'<a href="/mop_rate_scripts/27/edit">edit</a>']},
 
     {
         'name': "View a MOP rate script edit. Contract 37.",
-        'path': '/mop_rate_scripts/26/edit',
+        'path': '/mop_rate_scripts/27/edit',
         'status_code': 200,
         'regexes': [
             r'<input type="submit" value="Update">']},
 
     {
         'name': "View a MOP rate script confirm delete. Contract 37.",
-        'path': '/mop_rate_scripts/26/edit?&delete=Delete',
+        'path': '/mop_rate_scripts/27/edit?&delete=Delete',
         'status_code': 200,
         'regexes': [
             r'<form\s*'
             r'method="post"\s*'
-            r'action="/mop_rate_scripts/26/edit">']},
+            r'action="/mop_rate_scripts/27/edit">']},
 
     {
         'name': "View supplies duration selector.",
@@ -8790,7 +8747,7 @@ def virtual_bill(supply_source):
 
     {
         'name': "BAU scenario. Remove contents of rate script.",
-        'path': '/supplier_rate_scripts/25/edit',
+        'path': '/supplier_rate_scripts/26/edit',
         'method': 'post',
         'data': {
             'start_year': '2000',
@@ -8869,7 +8826,7 @@ def virtual_bill(supply_source):
 
     {
         'name': "BAU scenario. Reinstate contents of rate script.",
-        'path': '/supplier_rate_scripts/25/edit',
+        'path': '/supplier_rate_scripts/26/edit',
         'method': 'post',
         'data': {
             'start_year': '2000',
@@ -9339,13 +9296,13 @@ def virtual_bill(supply_source):
             r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="263.80\d*" '
             r'office:value-type="float"/>\s*'
-            r'<table:table-cell office:value="116.9665954623\d*" '
+            r'<table:table-cell office:value="116.966601073\d*" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="0" office:value-type="float" '
             r'table:number-columns-repeated="4"/>\s*'
-            r'<table:table-cell office:value="0.02412686081978\d*" '
+            r'<table:table-cell office:value="0.02414945\d*" '
             r'office:value-type="float"/>\s*'
-            r'<table:table-cell office:value="263.8301268608\d*" '
+            r'<table:table-cell office:value="263.83014945\d*" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="0" office:value-type="float" '
             r'table:number-columns-repeated="3"/>\s*'
@@ -9380,7 +9337,7 @@ def virtual_bill(supply_source):
             r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="268.969999999\d*" '
             r'office:value-type="float"/>\s*'
-            r'<table:table-cell office:value="116.22679394985\d*" '
+            r'<table:table-cell office:value="116.226801431\d*" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="0" office:value-type="float" '
             r'table:number-columns-repeated="4"/>\s*'
@@ -10418,13 +10375,13 @@ def virtual_bill(supply_source):
         'regexes': [
             r'22 0883 6932 301,,CI005,Wheal Rodney,4341,'
             r'2014-06-04 00:00,2014-06-04 23:30,,0,,,0,,,'
-            r'116.1359493\d*,,,,,5.89,350,1,0.0269,'
+            r'116.13605\d*,1.008563,,,,5.89,350,1,0.0269,'
             r'9.415000000000001,,,,,0,0.00147,0.0,0,0.00344,0.0,48.9,'
             r'0.25405,12.423045,0.0,0.00399,0.0,1,0.0878,'
             r'0.0878,88,52.5186,0.00021361,0.011218498146,'
-            r'53.239517\d*,,-0.02251932\d*,0,0.0,0.0,0,'
+            r'52.96831677\d*,,-0.02240461668\d*,0,0.0,0.0,0,'
             r'0.0,0.0,48.9,52.5186,0.32906054015999997,,,,,'
-            r',,,,,53.2395\d*,,0.0023446\d*,,,,,,,,,,,,,,,,,,,,,,,,,,'
+            r',,,,,52.96831\d*,,0.00233272\d*,,,,,,,,,,,,,,,,,,,,,,,,,,'
             r',,,,,,,,,,,,,,,,,,,,,,,,,,,,,'],
         'status_code': 200},
     {
@@ -10477,13 +10434,13 @@ def virtual_bill(supply_source):
         'regexes': [
             r'22 0883 6932 301,,CI005,Wheal Rodney,4341,'
             r'2014-06-04 00:00,2014-06-04 23:30,,0,,,0,,,'
-            r'116.1359493\d*,,,,,5.89,350,1,0.0269,'
+            r'116.1360521\d*,1.008563,,,,5.89,350,1,0.0269,'
             r'9.415000000000001,,,,,0,0.00147,0.0,0,0.00344,0.0,48.9,'
             r'0.25405,12.423045,0.0,0.00399,0.0,1,0.0878,'
             r'0.0878,88,52.5186,0.00021361,0.011218498146,'
-            r'53.23951\d*,,-0.02251932\d*,0,0.0,0.0,'
+            r'52.968316771\d*,,-0.02240461668\d*,0,0.0,0.0,'
             r'48.9,52.5186,0.32906054015999997,,,,,,,,,'
-            r',,,,53.23951\d*,,0.0023446\d*,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,'
+            r',,,,52.96831677\d*,,0.00233272\d*,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,'
             r',,,,,,,,,,,,,,,,,,,,,,,,,'],
         'status_code': 200},
 
@@ -11757,12 +11714,12 @@ def virtual_bill(supply_source):
             r'office:value-type="float" table:number-columns-repeated="2"/>\s*'
             r'<table:table-cell office:value="0" office:value-type="float" '
             r'table:number-columns-repeated="7"/>\s*'
-            r'<table:table-cell office:value="-0.518021\d*" '
+            r'<table:table-cell office:value="-0.51779018\d*" '
             r'office:value-type="float" table:number-columns-repeated="2"/>\s*'
             r'<table:table-cell office:value="0" office:value-type="float" '
             r'table:number-columns-repeated="3"/>\s*'
             r'<table:table-cell table:number-columns-repeated="7"/>\s*'
-            r'<table:table-cell office:value="-0.518021514\d*" '
+            r'<table:table-cell office:value="-0.517790188\d*" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell table:number-columns-repeated="2"/>\s*'
             r'<table:table-cell office:value="0.00554" '
@@ -11791,10 +11748,10 @@ def virtual_bill(supply_source):
             r'<table:table-cell office:value="0" office:value-type="float" '
             r'table:number-columns-repeated="2"/>\s*'
             r'<table:table-cell/>\s*'
-            r'<table:table-cell office:value="-48.911797\d*" '
+            r'<table:table-cell office:value="-48.6984\d*" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell/>\s*'
-            r'<table:table-cell office:value="-0.05303701\d*" '
+            r'<table:table-cell office:value="-0.052805692\d*" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell table:number-columns-repeated="18"/>\s*'
             r'<table:table-cell office:date-value="2014-12-04T17:00:00" '
@@ -11911,7 +11868,7 @@ def virtual_bill(supply_source):
             r'<table:table-cell office:string-value="" '
             r'office:value-type="string"/>\s*'
             r'<table:table-cell table:number-columns-repeated="122"/>\s*'
-            r'<table:table-cell office:value="93.9301215\d*" '
+            r'<table:table-cell office:value="93.9298901\d*" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell table:number-columns-repeated="2"/>\s*'
             r'<table:table-cell office:value="0.00554" '
@@ -11959,10 +11916,10 @@ def virtual_bill(supply_source):
             r'table:number-columns-repeated="2"/>\s*'
             r'<table:table-cell office:value="0.0" '
             r'office:value-type="float"/>\s*'
-            r'<table:table-cell office:value="48.9117\d*" '
+            r'<table:table-cell office:value="48.6984\d*" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell/>\s*'
-            r'<table:table-cell office:value="0.053037018\d*" '
+            r'<table:table-cell office:value="0.052805692\d*" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell table:number-columns-repeated="18"/>\s*'
             r'<table:table-cell office:date-value="2014-12-04T17:00:00" '
@@ -12524,7 +12481,7 @@ def virtual_bill(supply_source):
         'status_code': 200},
     {
         'name': "Is the rate script correct?",
-        'path': '/non_core_rate_scripts/49',
+        'path': '/non_core_rate_scripts/50',
         'regexes': [
             r"&#34;01 00:00 Z&#34;: "
             r"0\.092536082309507475102132933090071710251,"],
@@ -13298,9 +13255,9 @@ def virtual_bill(ss):
             r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="0" office:value-type="float" '
             r'table:number-columns-repeated="4"/>\s*'
-            r'<table:table-cell office:value="-0.37235378102\d*" '
+            r'<table:table-cell office:value="-0.372128492\d*" '
             r'office:value-type="float"/>\s*'
-            r'<table:table-cell office:value="752.538746218\d*" '
+            r'<table:table-cell office:value="752.538971\d*" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="0" office:value-type="float" '
             r'table:number-columns-repeated="3"/>\s*'
@@ -15075,14 +15032,14 @@ finally:
         'regexes': [
             r'22 0883 6932 301,22 7824 9120 097,CI005,Wheal Rodney,413,'
             r'2014-03-01 00:00,2014-06-30 23:30,,40,,,0,,,'
-            r'1256.2934493\d*,,'
+            r'1256.2935521\d*,,'
             r',,,5.89,350,122,0.026 \| 0.0269,1138.8649999999982,,'
             r',,,0.0,0.00147 \| 0.00161,0.0,0,0.00287 | 0.00344,0.0,48.9,'
             r'0.2441 \| 0.25405,12.423045,0.0,0.00382 \| 0.00399,0.0,122,'
             r'0.0878 \| 0.0905,10.795299999999976,88,52.5186,'
-            r'0.0001897 \| 0.00021361,0.011218498146,53.239517\d*,,'
-            r'-0.0225193295\d*,0.0,0.0,0.0,48.9,52.5186,'
-            r'0.32906054015999997,0,0.0,0.0,,,,0,0.0,0.0,,,,53.23951\d*,,'
+            r'0.0001897 \| 0.00021361,0.011218498146,52.9683167718\d*,,'
+            r'-0.0224046166\d*,0.0,0.0,0.0,0,0.0,0.0,48.9,52.5186,'
+            r'0.32906054015999997,,,,0,0.0,0.0,,,,53.23951\d*,,'
             r'0.0023446683\d*,2013-11-25 17:00,0,X,1.087,0.0,'
             r'2013-12-06 17:00,0,X,1.087,0.0,2014-01-30 17:00,0,X,1.087,0.0,'
             r'0.0,33.551731,0.0,2012-11-29 17:00 \| 2013-11-25 17:00,'
@@ -15888,11 +15845,11 @@ def virtual_bill(ds):
             'start_minute': "00"},
         'status_code': 303,
         'regexes': [
-            r"/mop_rate_scripts/51"]},
+            r"/mop_rate_scripts/52"]},
 
     {
         'name': "Delete mop rate script",
-        'path': '/mop_rate_scripts/51/edit',
+        'path': '/mop_rate_scripts/52/edit',
         'method': 'post',
         'data': {
             'delete': "Delete"},
@@ -16224,7 +16181,7 @@ def virtual_bill(supply_source):
             r"/supplier_contracts/21"]},
     {
         'name': "Update the associated rate script.",
-        'path': '/supplier_rate_scripts/52/edit',
+        'path': '/supplier_rate_scripts/53/edit',
         'method': 'post',
         'data': {
             'start_year': "2000",
