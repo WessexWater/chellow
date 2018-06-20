@@ -23,6 +23,7 @@ def clog(msg):
 
 
 HH = relativedelta(minutes=30)
+MONTH = relativedelta(months=1)
 
 
 def req_str(name):
@@ -476,6 +477,8 @@ def csv_make_val(v):
     val = make_val(v)
     if isinstance(val, Datetime):
         return hh_format(val)
+    elif val is None:
+        return ''
     else:
         return val
 
