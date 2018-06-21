@@ -261,7 +261,7 @@ def content(
             latest_delta = to_utc(Datetime.min)
 
             found_hh = False
-            for typ in ('used', 'generated', 'parasitic'):
+            for typ in ('used', 'generated', 'parasitic', 'gen_net'):
                 hh_str = site_scenario_hh.get(typ, '')
                 hh_data = site_scenario_hh[typ] = {}
                 for row in csv.reader(StringIO(hh_str)):
@@ -287,6 +287,7 @@ def content(
             scenario_used = site_scenario_hh['used']
             scenario_generated = site_scenario_hh['generated']
             scenario_parasitic = site_scenario_hh['parasitic']
+            scenario_gen_net = site_scenario_hh['gen_net']
 
             month_start = utc_datetime(
                 earliest_delta.year, earliest_delta.month)
@@ -304,7 +305,8 @@ def content(
                         Era.imp_mpan_core != null(), Pc.code != '00',
                         Era.start_date <= chunk_finish, or_(
                             Era.finish_date == null(),
-                            Era.finish_date >= chunk_start)):
+                            Era.finish_date >= chunk_start),
+                        ~Era.channels.any()):
 
                     if supply_id is not None and era.supply_id != supply_id:
                         continue
@@ -316,11 +318,36 @@ def content(
                         sess, ss_start, ss_finish, forecast_from, era, True,
                         report_context)
 
-                    if len(era.channels) == 0:
-                        for hh in ss.hh_data:
-                            sdatum = hh_map[hh['start-date']]
-                            sdatum['import-net-kwh'] += hh['msp-kwh']
-                            sdatum['used-kwh'] += hh['msp-kwh']
+                    for hh in ss.hh_data:
+                        sdatum = hh_map[hh['start-date']]
+                        sdatum['import-net-kwh'] += hh['msp-kwh']
+                        sdatum['used-kwh'] += hh['msp-kwh']
+
+                for era in sess.query(Era).join(SiteEra).join(Pc).join(
+                        Supply).join(Source).filter(
+                        SiteEra.site == site, SiteEra.is_physical == true(),
+                        Era.imp_mpan_core != null(),
+                        Era.start_date <= chunk_finish, or_(
+                            Era.finish_date == null(),
+                            Era.finish_date >= chunk_start),
+                        Source.code == 'gen-net'):
+
+                    if supply_id is not None and era.supply_id != supply_id:
+                        continue
+
+                    ss_start = hh_max(era.start_date, chunk_start)
+                    ss_finish = hh_min(era.finish_date, chunk_finish)
+
+                    ss = SupplySource(
+                        sess, ss_start, ss_finish, forecast_from, era, False,
+                        report_context)
+
+                    for hh in ss.hh_data:
+                        sdatum = hh_map[hh['start-date']]
+                        try:
+                            sdatum['gen-net-kwh'] += hh['msp-kwh']
+                        except KeyError:
+                            sdatum['gen-net-kwh'] = hh['msp-kwh']
 
                 for hh in site_ds.hh_data:
                     hh_start = hh['start-date']
@@ -452,6 +479,20 @@ def content(
                         hh['export-net-kwh'] += exp_net_delt
                         hh['export-gen-kwh'] += exp_gen_delt
                         hh['msp-kwh'] -= imp_net_delt
+
+                    if hh_start in scenario_gen_net:
+                        gen_net_delt = scenario_gen_net[hh_start] - \
+                            hh['gen-net-kwh']
+
+                        try:
+                            delts[False]['gen-net']['site'][hh_start] += \
+                                gen_net_delt
+                        except KeyError:
+                            delts[False]['gen-net']['site'][hh_start] = \
+                                gen_net_delt
+
+                        hh['import-gen-kwh'] += gen_net_delt
+                        hh['export-net-kwh'] += gen_net_delt
 
                     site_deltas['hhs'][hh_start] = hh
                 month_start += relativedelta(months=1)

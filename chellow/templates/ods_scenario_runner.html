@@ -161,8 +161,8 @@
 
 
   /* HH data to use instead of the data in the database. For each site code,
-     you can specify the hh data that's used, generated or parasitic on the
-     site. */
+     you can specify the hh data that's used, generated, parasitic or gen_net
+     on the site. */
 
   "hh_data": {
 
@@ -232,7 +232,8 @@
 				 	is exhausted. Otherwise if <code>scenario_generated</code> &lt;
 					<code>existing_generated</code> then <code>exported_net</code> will
 					be reduced first, and then <code>imported_net</code> will be
-				 	increased. A similar approach is taken with used and parasitic kWh.
+				 	increased. A similar approach is taken with used, parasitic and
+				  gen_net kWh.
 				</p>
 
 				<p>
