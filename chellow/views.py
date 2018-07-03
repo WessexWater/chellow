@@ -803,13 +803,14 @@ def site_edit_get(site_id):
         cops = g.sess.query(Cop).order_by(Cop.code)
         g_contracts = g.sess.query(GContract).order_by(GContract.name)
         g_units = g.sess.query(GUnit).order_by(GUnit.code)
-        g_ldzs = g.sess.query(GLdz).order_by(GLdz.code)
+        g_exit_zones = g.sess.query(GExitZone).order_by(GExitZone.code)
         return render_template(
             'site_edit.html', site=site, sources=sources,
             generator_types=generator_types, gsp_groups=gsp_groups, eras=eras,
             mop_contracts=mop_contracts, dc_contracts=dc_contracts,
             supplier_contracts=supplier_contracts, pcs=pcs, cops=cops,
-            g_contracts=g_contracts, g_units=g_units, g_ldzs=g_ldzs)
+            g_contracts=g_contracts, g_units=g_units,
+            g_exit_zones=g_exit_zones)
     except BadRequest as e:
         g.sess.rollback()
         flash(e.description)
@@ -818,7 +819,8 @@ def site_edit_get(site_id):
             generator_types=generator_types, gsp_groups=gsp_groups, eras=eras,
             mop_contracts=mop_contracts, dc_contracts=dc_contracts,
             supplier_contracts=supplier_contracts, pcs=pcs, cops=cops,
-            g_contracts=g_contracts, g_units=g_units, g_ldzs=g_ldzs)
+            g_contracts=g_contracts, g_units=g_units,
+            g_exit_zones=g_exit_zones)
 
 
 @app.route('/sites/<int:site_id>/edit', methods=['POST'])

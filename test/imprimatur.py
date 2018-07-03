@@ -768,6 +768,8 @@ def virtual_bill_titles():
             r'<form action="/sites/4/edit" method="post">\s*'
             r'<fieldset>\s*'
             r'<legend>Insert a gas supply</legend>',
+            r'<select name="g_exit_zone_id">\s*'
+            r'<option',
             r'<input name="insert_electricity" type="submit" value="Insert">'],
         'status_code': 200},
 
