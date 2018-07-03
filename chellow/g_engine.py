@@ -572,7 +572,14 @@ class GDataSource():
                             cast(GRegisterRead.prev_value, Float),
                             cast(GRegisterRead.pres_value, Float)).filter(
                             GRegisterRead.g_bill == g_bill):
-                        units_consumed += pres_value - prev_value
+                        units_diff = pres_value - prev_value
+                        if units_diff < 0:
+                            total_units = 10 ** len(str(int(prev_value)))
+                            c_units = total_units - prev_value + pres_value
+                            if c_units < abs(units_diff):
+                                units_diff = c_units
+
+                        units_consumed += units_diff
 
                     bill_s = (
                         g_bill.finish_date - g_bill.start_date +
