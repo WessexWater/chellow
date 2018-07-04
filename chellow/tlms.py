@@ -108,70 +108,77 @@ class TlmImporter(threading.Thread):
     def run(self):
         while not self.stopped.isSet():
             if self.lock.acquire(False):
-                sess = None
-                caches = {}
                 try:
-                    sess = Session()
-                    self.log("Starting to check TLMs.")
-                    contract = Contract.get_non_core_by_name(sess, 'tlms')
-
-                    config = Contract.get_non_core_by_name(
-                        sess, 'configuration')
-                    props = config.make_properties()
-
-                    scripting_key = props.get(
-                        ELEXON_PORTAL_SCRIPTING_KEY_KEY)
-                    if scripting_key is None:
-                        raise BadRequest(
-                            "The property " +
-                            ELEXON_PORTAL_SCRIPTING_KEY_KEY +
-                            " cannot be found in the configuration " +
-                            "properties.")
-
-                    contract_props = contract.make_properties()
-                    url_str = ''.join(
-                        (
-                            contract_props['url'],
-                            'file/download/TLM_FILE?key=', scripting_key))
-
-                    r = requests.get(url_str)
-                    parser = csv.reader(
-                        (l.decode() for l in r.iter_lines()),
-                        delimiter=',', quotechar='"')
-                    self.log("Opened " + url_str + ".")
-
-                    next(parser, None)
-                    for values in parser:
-                        if values[3] == '':
-                            for zone in GSP_GROUP_LOOKUP.keys():
-                                values[3] = zone
-                                _process_line(
-                                    caches, sess, contract, self.log, values)
-                        else:
-                            _process_line(
-                                caches, sess, contract, self.log, values)
-
-                    self.log("Saving found rates.")
-                    for yr in caches['tlms']['scripts'].values():
-                        for rs, rates in yr.values():
-                            rs.script = dumps(rates)
-                    sess.commit()
-                    self.log("Rates saved.")
-
-                except BadRequest as e:
-                    self.log("Problem: " + e.description)
-                    sess.rollback()
-                except BaseException:
-                    self.log("Outer problem " + traceback.format_exc())
-                    sess.rollback()
+                    _import_tlms(self.log)
                 finally:
-                    if sess is not None:
-                        sess.close()
                     self.lock.release()
-                    self.log("Finished checking TLM rates.")
 
             self.going.wait(24 * 60 * 60)
             self.going.clear()
+
+
+def _import_tlms(log_func):
+    sess = None
+    caches = {}
+    try:
+        sess = Session()
+        log_func("Starting to check TLMs.")
+        contract = Contract.get_non_core_by_name(sess, 'tlms')
+        contract_props = contract.make_properties()
+        if contract_props.get('enabled', False):
+
+            config = Contract.get_non_core_by_name(
+                sess, 'configuration')
+            props = config.make_properties()
+            scripting_key = props.get(
+                ELEXON_PORTAL_SCRIPTING_KEY_KEY)
+            if scripting_key is None:
+                raise BadRequest(
+                    "The property " +
+                    ELEXON_PORTAL_SCRIPTING_KEY_KEY +
+                    " cannot be found in the configuration properties.")
+
+            url_str = ''.join(
+                (
+                    contract_props['url'],
+                    'file/download/TLM_FILE?key=', scripting_key))
+
+            r = requests.get(url_str)
+            parser = csv.reader(
+                (l.decode() for l in r.iter_lines()),
+                delimiter=',', quotechar='"')
+            log_func("Opened " + url_str + ".")
+
+            next(parser, None)
+            for values in parser:
+                if values[3] == '':
+                    for zone in GSP_GROUP_LOOKUP.keys():
+                        values[3] = zone
+                        _process_line(caches, sess, contract, log_func, values)
+                else:
+                    _process_line(caches, sess, contract, log_func, values)
+
+            log_func("Saving found rates.")
+            for yr in caches['tlms']['scripts'].values():
+                for rs, rates in yr.values():
+                    rs.script = dumps(rates)
+            sess.commit()
+            log_func("Rates saved.")
+        else:
+            log_func(
+                "The importer is disabled. Set 'enabled' to "
+                "'true' in the properties to enable it.")
+
+    except BadRequest as e:
+        log_func("Problem: " + e.description)
+        sess.rollback()
+    except BaseException:
+        log_func("Outer problem " + traceback.format_exc())
+        sess.rollback()
+    finally:
+        if sess is not None:
+            sess.close()
+        log_func("Finished checking TLM rates.")
 
 
 GSP_GROUP_LOOKUP = {
