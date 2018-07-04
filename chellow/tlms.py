@@ -170,7 +170,7 @@ class TlmImporter(threading.Thread):
                     self.lock.release()
                     self.log("Finished checking TLM rates.")
 
-            self.going.wait(30 * 60)
+            self.going.wait(24 * 60 * 60)
             self.going.clear()
 
 
@@ -255,6 +255,7 @@ def _process_line(caches, sess, contract, log_func, values):
 
         rates = loads(rs.script)
         yr_cache[hh_date.month] = rs, rates
+        sess.rollback()
 
     try:
         rts = rates['tlms']
@@ -280,7 +281,6 @@ def _process_line(caches, sess, contract, log_func, values):
         log_func(
             "Found rate at " + hh_format(hh_date) + " for GSP Group " +
             gsp_group_code + " and run " + run + ".")
-    sess.rollback()
 
 
 def get_importer():
