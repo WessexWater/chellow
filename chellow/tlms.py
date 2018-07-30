@@ -117,9 +117,17 @@ class TlmImporter(threading.Thread):
             self.going.clear()
 
 
+def _save_cache(sess, cache):
+    for yr, yr_cache in cache.items():
+        for month, (rs, rates) in tuple(yr_cache.items()):
+            rs.script = dumps(rates)
+            sess.commit()
+            del yr_cache[month]
+
+
 def _import_tlms(log_func):
     sess = None
-    caches = {}
+    cache = {}
     try:
         sess = Session()
         log_func("Starting to check TLMs.")
@@ -127,15 +135,12 @@ def _import_tlms(log_func):
         contract_props = contract.make_properties()
         if contract_props.get('enabled', False):
 
-            config = Contract.get_non_core_by_name(
-                sess, 'configuration')
+            config = Contract.get_non_core_by_name(sess, 'configuration')
             props = config.make_properties()
-            scripting_key = props.get(
-                ELEXON_PORTAL_SCRIPTING_KEY_KEY)
+            scripting_key = props.get(ELEXON_PORTAL_SCRIPTING_KEY_KEY)
             if scripting_key is None:
                 raise BadRequest(
-                    "The property " +
-                    ELEXON_PORTAL_SCRIPTING_KEY_KEY +
+                    "The property " + ELEXON_PORTAL_SCRIPTING_KEY_KEY +
                     " cannot be found in the configuration properties.")
 
             url_str = ''.join(
@@ -150,20 +155,15 @@ def _import_tlms(log_func):
             log_func("Opened " + url_str + ".")
 
             next(parser, None)
-            for values in parser:
+            for i, values in enumerate(parser):
                 if values[3] == '':
                     for zone in GSP_GROUP_LOOKUP.keys():
                         values[3] = zone
-                        _process_line(caches, sess, contract, log_func, values)
+                        _process_line(cache, sess, contract, log_func, values)
                 else:
-                    _process_line(caches, sess, contract, log_func, values)
+                    _process_line(cache, sess, contract, log_func, values)
 
-            log_func("Saving found rates.")
-            for yr in caches['tlms']['scripts'].values():
-                for rs, rates in yr.values():
-                    rs.script = dumps(rates)
-            sess.commit()
-            log_func("Rates saved.")
+            _save_cache(sess, cache)
         else:
             log_func(
                 "The importer is disabled. Set 'enabled' to "
@@ -198,7 +198,7 @@ GSP_GROUP_LOOKUP = {
     '14': '_L'}
 
 
-def _process_line(caches, sess, contract, log_func, values):
+def _process_line(cache, sess, contract, log_func, values):
     hh_date_ct = to_ct(Datetime.strptime(values[0], "%d/%m/%Y"))
     hh_date = to_utc(hh_date_ct)
     hh_date += relativedelta(minutes=30*(int(values[2]) - 1))
@@ -216,22 +216,13 @@ def _process_line(caches, sess, contract, log_func, values):
     delivering = Decimal(values[5])
 
     try:
-        rs, rates = caches['tlms']['scripts'][hh_date.year][hh_date.month]
+        rs, rates = cache[hh_date.year][hh_date.month]
     except KeyError:
+        _save_cache(sess, cache)
         try:
-            tlms_cache = caches['tlms']
+            yr_cache = cache[hh_date.year]
         except KeyError:
-            tlms_cache = caches['tlms'] = {}
-
-        try:
-            script_cache = tlms_cache['scripts']
-        except KeyError:
-            script_cache = tlms_cache['scripts'] = {}
-
-        try:
-            yr_cache = script_cache[hh_date.year]
-        except KeyError:
-            yr_cache = script_cache[hh_date.year] = {}
+            yr_cache = cache[hh_date.year] = {}
 
         rs = sess.query(RateScript).filter(
             RateScript.contract == contract,
