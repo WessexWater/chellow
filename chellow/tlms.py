@@ -119,7 +119,7 @@ class TlmImporter(threading.Thread):
 
 def _save_cache(sess, cache):
     for yr, yr_cache in cache.items():
-        for month, (rs, rates) in tuple(yr_cache.items()):
+        for month, (rs, rates, rts) in tuple(yr_cache.items()):
             rs.script = dumps(rates)
             sess.commit()
             del yr_cache[month]
@@ -216,7 +216,7 @@ def _process_line(cache, sess, contract, log_func, values):
     delivering = Decimal(values[5])
 
     try:
-        rs, rates = cache[hh_date.year][hh_date.month]
+        rs, rates, rts = cache[hh_date.year][hh_date.month]
     except KeyError:
         _save_cache(sess, cache)
         try:
@@ -252,13 +252,14 @@ def _process_line(cache, sess, contract, log_func, values):
                     RateScript.finish_date >= hh_date)).first()
 
         rates = loads(rs.script)
-        yr_cache[hh_date.month] = rs, rates
-        sess.rollback()
 
-    try:
-        rts = rates['tlms']
-    except KeyError:
-        rts = rates['tlms'] = {}
+        try:
+            rts = rates['tlms']
+        except KeyError:
+            rts = rates['tlms'] = {}
+
+        yr_cache[hh_date.month] = rs, rates, rts
+        sess.rollback()
 
     key = key_format(hh_date)
     try:

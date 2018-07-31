@@ -71,6 +71,14 @@ def key_format(dt):
 bsuos_importer = None
 
 
+def _save_cache(sess, cache):
+    for yr, yr_cache in cache.items():
+        for month, (rs, rates, rts) in tuple(yr_cache.items()):
+            rs.script = dumps(rates)
+            sess.commit()
+            del yr_cache[month]
+
+
 class BsuosImporter(threading.Thread):
     def __init__(self):
         super(BsuosImporter, self).__init__(name="BSUoS Importer")
@@ -104,7 +112,6 @@ class BsuosImporter(threading.Thread):
         while not self.stopped.isSet():
             if self.lock.acquire(False):
                 sess = self.global_alert = None
-                caches = {}
                 try:
                     sess = Session()
                     self.log("Starting to check BSUoS rates.")
@@ -134,7 +141,7 @@ class BsuosImporter(threading.Thread):
                         self.log(
                             "List of URLs to process: " + str(url_list))
                         for url in url_list:
-                            self.process_url(sess, caches, url, contract)
+                            self.process_url(sess, url, contract)
                     else:
                         self.log(
                             "The automatic importer is disabled. To "
@@ -154,12 +161,13 @@ class BsuosImporter(threading.Thread):
             self.going.wait(60 * 60 * 24)
             self.going.clear()
 
-    def process_url(self, sess, caches, url, contract):
+    def process_url(self, sess, url, contract):
         self.log("Checking to see if there's any new data at " + url)
         res = requests.get(url)
         self.log("Received " + str(res.status_code) + " " + res.reason)
         book = xlrd.open_workbook(file_contents=res.content)
         sheet = book.sheet_by_index(0)
+        cache = {}
 
         for row_index in range(1, sheet.nrows):
             row = sheet.row(row_index)
@@ -176,30 +184,20 @@ class BsuosImporter(threading.Thread):
                     " not recognized.")
 
             hh_date_ct = to_ct(raw_date)
-            hh_date_ct += relativedelta(
-                minutes=30*(int(row[1].value) - 1))
+            hh_date_ct += relativedelta(minutes=30*(int(row[1].value) - 1))
             hh_date = to_utc(hh_date_ct)
             price = Decimal(str(row[2].value))
             run = row[5].value
 
             try:
-                rs, rates = \
-                    caches['bsuos']['scripts'][hh_date.year][hh_date.month]
+                rs, rates, rts = cache[hh_date.year][hh_date.month]
             except KeyError:
-                try:
-                    bsuos_cache = caches['bsuos']
-                except KeyError:
-                    bsuos_cache = caches['bsuos'] = {}
+                _save_cache(sess, cache)
 
                 try:
-                    script_cache = bsuos_cache['scripts']
+                    yr_cache = cache[hh_date.year]
                 except KeyError:
-                    script_cache = bsuos_cache['scripts'] = {}
-
-                try:
-                    yr_cache = script_cache[hh_date.year]
-                except KeyError:
-                    yr_cache = script_cache[hh_date.year] = {}
+                    yr_cache = cache[hh_date.year] = {}
 
                 rs = sess.query(RateScript).filter(
                     RateScript.contract == contract,
@@ -232,12 +230,11 @@ class BsuosImporter(threading.Thread):
                             RateScript.finish_date >= hh_date)).first()
 
                 rates = loads(rs.script)
-                yr_cache[hh_date.month] = rs, rates
-
-            try:
-                rts = rates['rates_gbp_per_mwh']
-            except KeyError:
-                rts = rates['rates_gbp_per_mwh'] = {}
+                try:
+                    rts = rates['rates_gbp_per_mwh']
+                except KeyError:
+                    rts = rates['rates_gbp_per_mwh'] = {}
+                yr_cache[hh_date.month] = rs, rates, rts
 
             key = key_format(hh_date)
             try:
@@ -247,12 +244,11 @@ class BsuosImporter(threading.Thread):
 
             if run not in existing:
                 existing[run] = price
-                rs.script = dumps(rates)
                 self.log(
                     "Added rate at " + hh_format(hh_date) + " for run " + run +
                     ".")
 
-        sess.commit()
+        _save_cache(sess, cache)
         book = sheet = None
 
 
