@@ -64,6 +64,7 @@ def content(batch_id, bill_id, contract_id, start_date, finish_date, user):
     caches = {}
     tmp_file = sess = bill = None
     forecast_date = to_utc(Datetime.max)
+    sess = None
     try:
         sess = Session()
         running_name, finished_name = chellow.dloads.make_names(
@@ -462,6 +463,9 @@ def content(batch_id, bill_id, contract_id, start_date, finish_date, user):
                 vals['bill-finish-date'] = hh_format(clump['finish_date'])
                 vals['difference-net-gbp'] = clump['gbp']
                 writer.writerow(vals[title] for title in titles)
+
+            # Avoid long-running transactions
+            sess.rollback()
 
     except BadRequest as e:
         if bill is None:
