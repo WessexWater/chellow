@@ -23,7 +23,7 @@
 			}
 			var expanders = document.getElementsByClassName('expander_' + collapseId);
 			for (var i = 0; i < expanders.length; i++) {
-				expanders[i].style.display = 'inline';
+				expanders[i].style.display = 'table-cell';
 			}
 			var collapsers =
 			 	document.getElementsByClassName('collapser_' + collapseId);
@@ -36,7 +36,7 @@
 			var collapsibles = document.getElementsByClassName(
 				'collapsible_' + collapseId);
 			for (var i = 0; i < collapsibles.length; i++) {
-				collapsibles[i].style.display = 'block';
+				collapsibles[i].style.display = 'table-row';
 			}
 			var expanders = document.getElementsByClassName('expander_' + collapseId);
 			for (var i = 0; i < expanders.length; i++) {
@@ -45,7 +45,7 @@
 			var collapsers = document.getElementsByClassName(
 			  'collapser_' + collapseId);
 			for (var i = 0; i < collapsers.length; i++) {
-				collapsers[i].style.display = 'inline';
+				collapsers[i].style.display = 'table-cell';
 			}
 		}    
 	
@@ -233,7 +233,7 @@
 									<tr style="background-color: silver; cursor: pointer;">
 										<td
 											style="text-decoration: none; padding-top: 0px; padding-bottom: 0px; font-size: x-small;"
-											colspan="11"
+											colspan="13"
 											class="expander_{{g_bill_dict.collapse_id}}"
 											onClick="expandBills({{g_bill_dict.collapse_id}})"
 										>
@@ -241,7 +241,7 @@
 										</td>
 										<td
 											style="text-decoration: none; display: none; padding-top: 0px; padding-bottom: 0px; font-size: x-small;"
-											colspan="11"
+											colspan="13"
 											class="collapser_{{g_bill_dict.collapse_id}}"
 											onClick="collapseBills({{g_bill_dict.collapse_id}})"
 										>
