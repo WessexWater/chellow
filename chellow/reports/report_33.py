@@ -5,8 +5,8 @@ from sqlalchemy import or_
 from sqlalchemy.sql.expression import null
 from sqlalchemy.orm import joinedload
 from chellow.models import (
-    Session, Era, Supply, RegisterRead, Bill, ReadType, Batch,
-    MeasurementRequirement, GeneratorType)
+    Session, Era, Supply, RegisterRead, Bill, ReadType, Batch, SiteEra,
+    MeasurementRequirement, GeneratorType, Mtc)
 from chellow.utils import (
     HH, hh_format, CHANNEL_TYPES, req_date, req_int, req_str, parse_mpan_core,
     hh_min)
@@ -52,24 +52,44 @@ def content(running_name, finished_name, date, supply_id, mpan_cores):
         NORMAL_READ_TYPES = ('N', 'C', 'N3')
         year_start = date + HH - relativedelta(years=1)
 
-        eras = sess.query(Era, Supply, GeneratorType).join(Supply).outerjoin(
-            GeneratorType).filter(
-            Era.start_date <= date,
-            or_(Era.finish_date == null(), Era.finish_date >= date)).order_by(
-            Era.supply_id).options(joinedload(Era.site_eras))
+        era_ids = sess.query(Era.id).filter(
+            Era.start_date <= date, or_(
+                Era.finish_date == null(), Era.finish_date >= date)).order_by(
+            Era.supply_id)
 
         if supply_id is not None:
             supply = Supply.get_by_id(sess, supply_id)
 
-            eras = eras.filter(Era.supply == supply)
+            era_ids = era_ids.filter(Era.supply == supply)
 
         if mpan_cores is not None:
-            eras = eras.filter(
+            era_ids = era_ids.filter(
                 or_(
                     Era.imp_mpan_core.in_(mpan_cores),
                     Era.exp_mpan_core.in_(mpan_cores)))
 
-        for era, supply, generator_type in eras:
+        for era_id, in era_ids:
+
+            era, supply, generator_type = sess.query(
+                    Era, Supply, GeneratorType).join(Supply).outerjoin(
+                    GeneratorType).filter(Era.id == era_id).options(
+                    joinedload(Era.channels),
+                    joinedload(Era.cop),
+                    joinedload(Era.dc_contract),
+                    joinedload(Era.exp_llfc),
+                    joinedload(Era.exp_supplier_contract),
+                    joinedload(Era.imp_llfc),
+                    joinedload(Era.imp_supplier_contract),
+                    joinedload(Era.mop_contract),
+                    joinedload(Era.mtc),
+                    joinedload(Era.mtc).joinedload(Mtc.meter_type),
+                    joinedload(Era.pc),
+                    joinedload(Era.site_eras).joinedload(SiteEra.site),
+                    joinedload(Era.ssc),
+                    joinedload(Supply.source),
+                    joinedload(Supply.gsp_group),
+                    joinedload(Supply.dno)).one()
+
             site_codes = []
             site_names = []
             for site_era in era.site_eras:
@@ -103,14 +123,16 @@ def content(running_name, finished_name, date, supply_id, mpan_cores):
                         ReadType.code.in_(NORMAL_READ_TYPES),
                         RegisterRead.previous_date <= date,
                         Bill.supply_id == supply.id).order_by(
-                        RegisterRead.previous_date.desc()).first()
+                        RegisterRead.previous_date.desc()).options(
+                        joinedload(RegisterRead.previous_type)).first()
 
                 latest_pres_normal_read = sess.query(RegisterRead) \
                     .join(Bill).join(RegisterRead.present_type).filter(
                         ReadType.code.in_(NORMAL_READ_TYPES),
                         RegisterRead.present_date <= date,
                         Bill.supply == supply).order_by(
-                        RegisterRead.present_date.desc()).first()
+                        RegisterRead.present_date.desc()).options(
+                        joinedload(RegisterRead.present_type)).first()
 
                 if latest_prev_normal_read is None and \
                         latest_pres_normal_read is None:

@@ -6,8 +6,8 @@ from sqlalchemy.orm import joinedload, subqueryload
 from sqlalchemy.sql.expression import null, true
 import traceback
 from chellow.models import (
-    Batch, Bill, Session, Era, Site, SiteEra, MarketRole, Contract,
-    RegisterRead)
+    Batch, Bill, Session, Era, Site, SiteEra, MarketRole, Contract, Mtc, Llfc,
+    RegisterRead, Supply)
 import chellow.computer
 import chellow.dloads
 import sys
@@ -128,7 +128,15 @@ def content(batch_id, bill_id, contract_id, start_date, finish_date, user):
             while len(bill_ids) > 0:
                 bill_id = list(sorted(bill_ids))[0]
                 bill_ids.remove(bill_id)
-                bill = Bill.get_by_id(sess, bill_id)
+                bill = sess.query(Bill).filter(Bill.id == bill_id).options(
+                    joinedload(Bill.batch),
+                    joinedload(Bill.bill_type),
+                    joinedload(Bill.reads),
+                    joinedload(Bill.supply),
+                    joinedload(Bill.reads).joinedload(
+                        RegisterRead.present_type),
+                    joinedload(Bill.reads).joinedload(
+                        RegisterRead.previous_type)).one()
                 virtual_bill = {'problem': ''}
                 supply = bill.supply
 
@@ -273,7 +281,25 @@ def content(batch_id, bill_id, contract_id, start_date, finish_date, user):
                         Era.supply == supply, Era.start_date <= covered_finish,
                         or_(
                             Era.finish_date == null(),
-                            Era.finish_date >= covered_start)).distinct():
+                            Era.finish_date >= covered_start)
+                        ).distinct().options(
+                        joinedload(Era.channels),
+                        joinedload(Era.cop),
+                        joinedload(Era.dc_contract),
+                        joinedload(Era.exp_llfc),
+                        joinedload(Era.exp_llfc).joinedload(
+                            Llfc.voltage_level),
+                        joinedload(Era.exp_supplier_contract),
+                        joinedload(Era.imp_llfc),
+                        joinedload(Era.imp_llfc).joinedload(
+                            Llfc.voltage_level),
+                        joinedload(Era.imp_supplier_contract),
+                        joinedload(Era.mop_contract),
+                        joinedload(Era.mtc).joinedload(Mtc.meter_type),
+                        joinedload(Era.pc),
+                        joinedload(Era.supply).joinedload(Supply.dno),
+                        joinedload(Era.supply).joinedload(Supply.gsp_group),
+                        joinedload(Era.supply).joinedload(Supply.source)):
 
                     chunk_start = hh_max(covered_start, era.start_date)
                     chunk_finish = hh_min(covered_finish, era.finish_date)

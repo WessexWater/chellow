@@ -497,10 +497,12 @@ def content(
                     site_deltas['hhs'][hh_start] = hh
                 month_start += relativedelta(months=1)
 
+        site_ids = [site.id for site in sites]
         month_start = start_date
         while month_start < finish_date:
             month_finish = month_start + relativedelta(months=1) - HH
-            for site in sites:
+            for site_id in site_ids:
+                site = Site.get_by_id(sess, site_id)
                 site_category = None
                 site_sources = set()
                 site_gen_types = set()
@@ -524,6 +526,7 @@ def content(
                         joinedload(Era.cop),
                         joinedload(Era.supply).joinedload(Supply.dno),
                         joinedload(Era.supply).joinedload(Supply.gsp_group),
+                        joinedload(Era.supply).joinedload(Supply.source),
                         joinedload(Era.mtc).joinedload(Mtc.meter_type),
                         joinedload(Era.pc), joinedload(Era.site_eras)
                         ).order_by(Pc.code):
