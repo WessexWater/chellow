@@ -13,7 +13,7 @@ from chellow.utils import (
 from chellow.computer import hh_rate
 from types import MappingProxyType
 from datetime import timedelta
-from zish import loads
+from zish import loads, dumps
 import chellow.bank_holidays
 
 
@@ -493,7 +493,7 @@ class GDataSource():
                                             chunk_finish)):
                                         break
 
-                self.consumption_info += 'read list - \n' + str(read_list) \
+                self.consumption_info += 'read list - \n' + dumps(read_list) \
                     + "\n"
                 if len(pairs) == 0:
                     pairs.append(
@@ -525,7 +525,7 @@ class GDataSource():
                 if pairs[-1]['finish-date'] > chunk_finish:
                     pairs[-1]['finish-date'] = chunk_finish
 
-                self.consumption_info += 'pairs - \n' + str(pairs)
+                self.consumption_info += 'pairs - \n' + dumps(pairs)
 
                 cf = 1 if hist_g_era.is_corrected else CORRECTION_FACTOR
                 g_unit = hist_g_era.g_unit

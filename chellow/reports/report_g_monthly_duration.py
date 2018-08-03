@@ -190,7 +190,7 @@ def content(
                             g_era.is_corrected, g_era.g_unit.code,
                             contract.name, site.code, site.name,
                             associated_site_ids, month_finish, kwh, gbp,
-                            billed_kwh, billed_gbp, None] +
+                            billed_kwh, billed_gbp] +
                         [make_val(bill.get(t)) for t in vb_titles])
 
                     site_kwh += kwh
@@ -204,9 +204,8 @@ def content(
 
                 site_rows.append(
                     [
-                        now, site.code, site.name, linked_sites,
-                        month_finish, site_kwh, site_gbp, site_billed_kwh,
-                        site_billed_gbp])
+                        now, site.code, site.name, linked_sites, month_finish,
+                        site_kwh, site_gbp, site_billed_kwh, site_billed_gbp])
                 sess.rollback()
             write_spreadsheet(rf, compression, site_rows, g_era_rows)
             month_start += relativedelta(months=1)
