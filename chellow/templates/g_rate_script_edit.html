@@ -1,18 +1,18 @@
 {% extends "base.html" %}
 
 {% block title %}
-	Gas Contracts &raquot; {{g_rate_script.g_contract.name}} &raquot;
- 	Rate Scripts &raquot; {{g_rate_script.start_date|hh_format}} &raquot; Edit
+	Gas Contracts &raquo; {{g_rate_script.g_contract.name}} &raquo;
+ 	Rate Scripts &raquo; {{g_rate_script.start_date|hh_format}} &raquo; Edit
 {% endblock %}
 
 {% block nav %}
-	<a href="/g_contracts">Gas Contracts</a> &raquot;
+	<a href="/g_contracts">Gas Contracts</a> &raquo;
 	<a
 	 		href="/g_contracts/{{g_rate_script.g_contract.id}}"
-			>{{g_rate_script.g_contract.name}}</a> &raquot;
+			>{{g_rate_script.g_contract.name}}</a> &raquo;
 	<a
 	 		href="/g_rate_scripts/{{g_rate_script.id}}"
-			>Rate Script {{g_rate_script.start_date|hh_format}}</a> &raquot; Edit
+			>Rate Script {{g_rate_script.start_date|hh_format}}</a> &raquo; Edit
 {% endblock %}
 
 {% block content %}
@@ -40,20 +40,23 @@
 		</div>
 	{% else %}
 		<div class="layer-section">
+			<div class="section-header">
+				<h2>Update Rate Script</h2>	
+			</div>
 			<div class="section-content">
-				<div class="section-data">
-					<div class="standardForm">
-						<form
-						 		action="/g_rate_scripts/{{g_rate_script.id}}/edit"
-							 	method="post">
-							<fieldset>
-								<legend>Update Rate Script</legend>
-								<br>
+				<div class="standardForm textWidthAuto">
+					<form
+							action="/g_rate_scripts/{{g_rate_script.id}}/edit"
+							method="post">
+						<fieldset>
+							<br>
+							<div class="section-data">
 								<fieldset>
 									<legend>Start date</legend>
 									{{ input_date('start', g_rate_script.start_date) }}
 								</fieldset>
-								<br />
+							</div>
+							<div class="section-data">
 								<fieldset>
 									<legend>Finish date</legend>
 									<label>
@@ -64,25 +67,32 @@
 									</label>
 									{{ input_date('finish', g_rate_script.finish_date) }}
 								</fieldset>
-								<br>
-								<br>
+							</div>
+							<br>
+							<div class="section-data">
 								Script
 								<br>
 								{{ input_textarea('script', g_rate_script.script, 40, 80) }}
 								<br>
-								<br>
 								<input type="submit" value="Update">
 								<input type="reset" value="Reset">
-							</fieldset>
-						</form>
-						<br>
-						<form action="/g_rate_scripts/{{g_rate_script.id}}/edit">
-							<fieldset>
-								<legend>Delete this Rate Script</legend>
-								<input type="submit" name="delete" value="Delete">
-							</fieldset>
-						</form>
-					</div>
+							</div>
+						</fieldset>
+					</form>
+				</div>
+			</div>
+		</div>
+		<div class="layer-section">
+			<div class="section-header">
+				<h2>Delete this Rate Script</h2>	
+			</div>
+			<div class="section-content">
+				<div class="section-data">
+					<form action="/g_rate_scripts/{{g_rate_script.id}}/edit">
+						<fieldset>
+							<input type="submit" name="delete" value="Delete">
+						</fieldset>
+					</form>
 				</div>
 			</div>
 		</div>
