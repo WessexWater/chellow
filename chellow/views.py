@@ -538,7 +538,7 @@ def add_obj(objects, path, leaves):
 
 @app.route('/system/chains')
 def chains_get():
-    gc.collect()
+    unreachable = gc.collect()
     objects = get_objects()
     obj = choice(tuple(objects.values()))
     leaves = []
@@ -548,7 +548,7 @@ def chains_get():
     for leaf in leaves:
         path_tuples = [(id(o), type(o), obj_val(o)) for o in leaf]
         paths.append(path_tuples)
-    return render_template('chain.html', paths=paths)
+    return render_template('chain.html', paths=paths, unreachable=unreachable)
 
 
 @app.route('/system/object_summary')
