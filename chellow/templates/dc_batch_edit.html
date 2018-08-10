@@ -11,8 +11,7 @@
 	&raquo; 
 	<a href="/dc_batches?dc_contract_id={{batch.contract.id}}">Batches</a>
 	&raquo; 
-	<a href="/dc_batches/{{batch.id}}">{{batch.reference}}</a>
-	&raquo; Edit
+	<a href="/dc_batches/{{batch.id}}">{{batch.reference}}</a> &raquo; Edit
 {% endblock %}
 
 {% block content %}
@@ -29,7 +28,7 @@
 						<form method="post">
 							<fieldset>
 								<input type="submit" name="delete" value="Delete">
-								<input type="reset" value="Cancel" onClick="window.location='/dc_batches/{{batch.id}}/edit'" />
+								<a href="/dc_batches/{{batch.id}}/edit">Cancel</a>
 							</fieldset>
 						</form>
 						
@@ -38,6 +37,24 @@
 			</div>
 		</div>
 
+	{% elif request.method == 'GET' and request.values.confirm_delete_bills %}
+		<div class="layer-section">
+			<div class="section-header">
+				<h2>Are you sure you want to delete all the bills in this batch?</h2>	
+			</div>
+			<div class="section-content">
+				<div class="section-data">
+					<div class="standardForm">
+						<form method="post" action="/dc_batches/{{batch.id}}/edit">
+							<fieldset>
+								<input type="submit" name="delete_bills" value="Delete">
+								<a href="/dc_batches/{{batch.id}}/edit">Cancel</a>
+							</fieldset>
+						</form>
+					</div>
+				</div>
+			</div>
+		</div>
 	{% else %}
 
 		<div class="layer-section">
@@ -59,7 +76,8 @@
 								<div class="row">
 			l						<div class="col-sm-4">
 										<label>
-											Description {{input_text('description', batch.description)}}
+											Description
+										 	{{input_text('description', batch.description)}}
 										</label>
 									</div>								    
 								</div>
@@ -67,6 +85,23 @@
 							</fieldset>
 						</form>
 					</div>				
+				</div>
+			</div>
+		</div>
+
+		<div class="layer-section">
+			<div class="section-header">
+				<h2>Delete all the bills in this batch</h2>	
+			</div>
+			<div class="section-content">
+				<div class="section-data">
+					<div class="standardForm">
+						<form action="/dc_batches/{{batch.id}}/edit">
+							<fieldset>
+								<input type="submit" name="confirm_delete_bills" value="Delete">
+							</fieldset>
+						</form>
+					</div>
 				</div>
 			</div>
 		</div>

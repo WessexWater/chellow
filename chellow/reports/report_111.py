@@ -185,8 +185,7 @@ def content(batch_id, bill_id, contract_id, start_date, finish_date, user):
                     covered_elems = find_elements(bill)
                     covered_bills = OrderedDict(
                         (b.id, b) for b in sess.query(Bill).join(Batch).
-                        join(Contract).join(MarketRole).
-                        filter(
+                        join(Contract).join(MarketRole).filter(
                             Bill.supply == supply,
                             Bill.start_date <= covered_finish,
                             Bill.finish_date >= covered_start,
@@ -245,7 +244,9 @@ def content(batch_id, bill_id, contract_id, start_date, finish_date, user):
                         for k, v in loads(covered_bill.breakdown).items():
                             if isinstance(v, Decimal):
                                 v = float(v)
-                            if k.split('-')[-1] in ('rate', 'kva'):
+                            if isinstance(v, list):
+                                covered_rates[k].update(set(v))
+                            elif k.split('-')[-1] in ('rate', 'kva'):
                                 covered_rates[k].add(str(v))
                             elif k != 'raw-lines':
                                 try:

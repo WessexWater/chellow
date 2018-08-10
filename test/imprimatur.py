@@ -7207,9 +7207,9 @@ def virtual_bill(supply_source):
             'cop_id': "5",
             'ssc_code': "",
             'mop_contract_id': "11",
-            'mop_account': "mc-14 7206 6139 971",
+            'mop_account': "14 7206 6139 971/MOP",
             'dc_contract_id': "8",
-            'dc_account': "dc-14 7206 6139 971",
+            'dc_account': "14 7206 6139 971/DC",
             'imp_llfc_code': "365",
             'imp_mpan_core': "14 7206 6139 971",
             'imp_sc': "2300",
@@ -19274,5 +19274,45 @@ def virtual_bill(ds):
             'breakdown': '{}'},
         'status_code': 303,
         'regexes': [
-            r"/g_bills/4"]}
+            r"/g_bills/4"]},
+
+    {
+        'name': "Stark DC bill parser",
+        'path': '/dc_bill_imports',
+        'method': 'post',
+        'data': {
+            'dc_batch_id': "13"},
+        'files': {'import_file': 'test/electricity/bills.dc.stark.xlsx'},
+        'status_code': 303,
+        'regexes': [
+            r"/dc_bill_imports/16"]},
+
+    {
+        'name': "Stark DC bill parser",
+        'path': '/dc_bill_imports/16',
+        'tries': {},
+        'status_code': 200,
+        'regexes': [
+            r"All the bills have been successfully loaded and attached to "
+            "the batch\."]},
+
+    {
+        'name': "Stark MOP bill parser",
+        'path': '/mop_bill_imports',
+        'method': 'post',
+        'data': {
+            'mop_batch_id': "14"},
+        'files': {'import_file': 'test/electricity/bills.mop.stark.xlsx'},
+        'status_code': 303,
+        'regexes': [
+            r"/mop_bill_imports/17"]},
+
+    {
+        'name': "Stark MOP bill parser",
+        'path': '/mop_bill_imports/17',
+        'tries': {},
+        'status_code': 200,
+        'regexes': [
+            r"All the bills have been successfully loaded and attached to "
+            "the batch\."]},
 ]

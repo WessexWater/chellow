@@ -3359,6 +3359,10 @@ def dc_batch_edit_post(batch_id):
             g.sess.commit()
             return chellow_redirect(
                 "/dc_batches?dc_contract_id=" + str(contract.id), 303)
+        elif 'delete_bills' in request.values:
+            g.sess.query(Bill).filter(Bill.batch == batch).delete(False)
+            g.sess.commit()
+            return chellow_redirect('/dc_batches/' + str(batch.id), 303)
         else:
             reference = req_str('reference')
             description = req_str('description')
@@ -3414,10 +3418,8 @@ def dc_bill_import_get(import_id):
         imp_fields = importer.make_fields()
         if 'successful_bills' in imp_fields and \
                 len(imp_fields['successful_bills']) > 0:
-            fields['successful_max_registers'] = \
-                max(
-                    len(bill['reads']) for bill in imp_fields[
-                        'successful_bills'])
+            fields['successful_max_registers'] = max(
+                len(bill['reads']) for bill in imp_fields['successful_bills'])
         fields.update(imp_fields)
         fields['status'] = importer.status()
     return render_template('dc_bill_import.html', **fields)
@@ -3442,7 +3444,7 @@ def dc_bill_get(bill_id):
         columns = set()
         grid = defaultdict(dict)
 
-        for k, v in breakdown_dict.items():
+        for k, v in tuple(breakdown_dict.items()):
             if k.endswith('-gbp'):
                 columns.add('gbp')
                 row_name = k[:-4]
@@ -3450,7 +3452,7 @@ def dc_bill_get(bill_id):
                 grid[row_name]['gbp'] = v
                 del breakdown_dict[k]
 
-        for k, v in breakdown_dict.items():
+        for k, v in tuple(breakdown_dict.items()):
             for row_name in sorted(list(rows), key=len, reverse=True):
                 if k.startswith(row_name + '-'):
                     col_name = k[len(row_name) + 1:]
@@ -3588,7 +3590,7 @@ def mop_batch_edit_post(batch_id):
 
 @app.route('/mop_batches/<int:batch_id>')
 def mop_batch_get(batch_id):
-    batch = Batch.get_by_id(g.sess, batch_id)
+    batch = Batch.get_mop_by_id(g.sess, batch_id)
     bills = g.sess.query(Bill).filter(Bill.batch == batch).order_by(
         Bill.reference).all()
 

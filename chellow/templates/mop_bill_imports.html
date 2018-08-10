@@ -7,49 +7,51 @@
 
 {% block nav %}
 	&raquo; <a href="/mop_contracts">MOP Contracts</a> &raquo; 
-	<a href="/mop_contracts/{{batch.contract.id}}">{{batch.contract.name}}</a> &raquo; 
-	<a href="/mop_batches?mop_contract_id={{batch.contract.id}}">Batches</a> &raquo; 
+	<a href="/mop_contracts/{{batch.contract.id}}">{{batch.contract.name}}</a>
+ 	&raquo; 
+	<a href="/mop_batches?mop_contract_id={{batch.contract.id}}">Batches</a>
+ 	&raquo; 
 	<a href="/mop_batches/{{batch.id}}">{{batch.reference}}</a>
  	&raquo; Bill Imports
 {% endblock %}
 
 {% block content %}
 
-<!-- Layer Section -->
-<div class="layer-section">
-	<!-- Section Header -->
-	<div class="section-header">
-		<h2>Import Bill File</h2>	
-	</div>
-	<!-- End Section Header -->
-	<!-- Section Content -->
-	<div class="section-content">
-		<div class="section-data">
-			<div class="standardForm">
-				<form enctype="multipart/form-data" method="post">
-					<fieldset>
-						<input type="hidden" name="mop_batch_id" value="{{batch.id}}">
-						<input type="file" name="import_file" size="45"
-							value="{{request.values.import_file}}">
-						<input type="submit" value="Import">
-					</fieldset>
-				</form>
+	<!-- Layer Section -->
+	<div class="layer-section">
+		<!-- Section Header -->
+		<div class="section-header">
+			<h2>Import Bill File</h2>	
+		</div>
+		<!-- End Section Header -->
+		<!-- Section Content -->
+		<div class="section-content">
+			<div class="section-data">
+				<div class="standardForm">
+					<form enctype="multipart/form-data" method="post">
+						<fieldset>
+							<input type="hidden" name="mop_batch_id" value="{{batch.id}}">
+							<input type="file" name="import_file" size="45"
+								value="{{request.values.import_file}}">
+							<input type="submit" value="Import">
+						</fieldset>
+					</form>
+				</div>
+			</div>
+			<div class="section-data">
+				{% if importer_ids %}
+					<ul>
+						{% for id in importer_ids %}
+							<li>
+								<a href="/mop_bill_imports/{{id}}">{{id}}</a>
+							</li>
+						{% endfor %}
+					</ul>
+				{% endif %}
 			</div>
 		</div>
-		<div class="section-data">
-			{% if importer_ids %}
-				<ul>
-					{% for id in importer_ids %}
-						<li>
-							<a href="/bill_imports/{{id}}">{{id}}</a>
-						</li>
-					{% endfor %}
-				</ul>
-			{% endif %}
-		</div>
+		<!-- End Section Content -->
 	</div>
-	<!-- End Section Content -->
-</div>
-<!-- End Layer Section -->
+	<!-- End Layer Section -->
 
 {% endblock %}
