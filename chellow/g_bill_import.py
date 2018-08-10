@@ -7,7 +7,7 @@ from werkzeug.exceptions import BadRequest
 import importlib
 from pkgutil import iter_modules
 import chellow
-from chellow.models import Session, GBatch, BillType, GReadType, GUnit
+from chellow.models import Session, GBatch, BillType, GReadType, GUnit, GSupply
 
 
 importer_id = 0
@@ -85,8 +85,9 @@ class GBillImporter(threading.Thread):
                 try:
                     bill_type = BillType.get_by_code(
                         sess, raw_bill['bill_type_code'])
+                    g_supply = GSupply.get_by_mprn(sess, raw_bill['mprn'])
                     g_bill = g_batch.insert_g_bill(
-                        sess, bill_type, raw_bill['mprn'],
+                        sess, g_supply, bill_type,
                         raw_bill['reference'], raw_bill['account'],
                         raw_bill['issue_date'], raw_bill['start_date'],
                         raw_bill['finish_date'], raw_bill['kwh'],

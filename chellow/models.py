@@ -3390,15 +3390,9 @@ class GBatch(Base, PersistentClass):
         sess.delete(self)
 
     def insert_g_bill(
-            self, sess, bill_type, mprn, reference, account, issue_date,
+            self, sess, g_supply, bill_type, reference, account, issue_date,
             start_date, finish_date, kwh, net_gbp, vat_gbp, gross_gbp,
             raw_lines, breakdown):
-
-        g_supply = sess.query(GSupply).filter(GSupply.mprn == mprn).first()
-
-        if g_supply is None:
-            raise BadRequest(
-                "Can't find a supply with MPRN '" + mprn + "'.")
 
         g_bill = GBill(
             self, g_supply, bill_type, reference, account, issue_date,

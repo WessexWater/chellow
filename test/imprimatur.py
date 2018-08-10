@@ -19241,5 +19241,38 @@ def virtual_bill(ds):
             r'2015-09-30 00:00,\[3\],,0,,1.02264,HCUF,M3,2.8317,1,39.300811,0,'
             r'4500901,0.0,0.019448,0.019548,8936.13,0.0,8936.13,,'
             r'0.00525288,,,,,,6972.33,0.0,6972.33,1003.89,0,1003.89,7976.22,'
-            r'0.0,7976.22,,']}
+            r'0.0,7976.22,,']},
+
+    {
+        'name': "Manually add a gas bill",
+        'path': '/g_batches/2/add_bill',
+        'method': 'post',
+        'data': {
+            'bill_type_id': "2",
+            'mprn': "87614362",
+            'reference': "kkhy779",
+            'account': "1",
+            'issue_year': "2017",
+            'issue_month': "02",
+            'issue_day': "03",
+            'issue_hour': "00",
+            'issue_minute': "00",
+            'start_year': "2017",
+            'start_month': "03",
+            'start_day': "01",
+            'start_hour': "00",
+            'start_minute': "00",
+            'finish_year': "2017",
+            'finish_month': "03",
+            'finish_day': "31",
+            'finish_hour': "23",
+            'finish_minute': "30",
+            'kwh': "0.00",
+            'net': "0.00",
+            'vat': "0.00",
+            'gross': "0.00",
+            'breakdown': '{}'},
+        'status_code': 303,
+        'regexes': [
+            r"/g_bills/4"]}
 ]

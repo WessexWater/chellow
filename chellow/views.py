@@ -5502,14 +5502,20 @@ def g_bill_add_get(g_batch_id):
     g_batch = GBatch.get_by_id(g.sess, g_batch_id)
     g_bills = g.sess.query(GBill).filter(GBill.g_batch == g_batch).order_by(
         GBill.start_date)
-    return render_template('g_bill_add.html', g_batch=g_batch, g_bills=g_bills)
+    bill_types = g.sess.query(BillType).order_by(BillType.code).all()
+    return render_template(
+        'g_bill_add.html', g_batch=g_batch, g_bills=g_bills,
+        bill_types=bill_types)
 
 
-@app.route('/g_batches/<int:g_batch_id>/add_bill')
+@app.route('/g_batches/<int:g_batch_id>/add_bill', methods=['POST'])
 def g_bill_add_post(g_batch_id):
     try:
         g_batch = GBatch.get_by_id(g.sess, g_batch_id)
+        bill_type_id = req_int('bill_type_id')
+        bill_type = BillType.get_by_id(g.sess, bill_type_id)
         mprn = req_str('mprn')
+        g_supply = GSupply.get_by_mprn(g.sess, mprn)
         account = req_str('account')
         reference = req_str('reference')
         issue_date = req_date('issue')
@@ -5521,8 +5527,8 @@ def g_bill_add_post(g_batch_id):
         gross = req_decimal('gross')
         breakdown = req_zish("breakdown")
         g_bill = g_batch.insert_g_bill(
-            g.sess, account, reference, issue_date, start_date, finish_date,
-            kwh, net, vat, gross, breakdown, GSupply.get_by_mprn(g.sess, mprn))
+            g.sess, g_supply, bill_type, reference, account, issue_date,
+            start_date, finish_date, kwh, net, vat, gross, '', breakdown)
         g.sess.commit()
         return chellow_redirect("/g_bills/" + str(g_bill.id), 303)
     except BadRequest as e:
@@ -5530,9 +5536,11 @@ def g_bill_add_post(g_batch_id):
         g.sess.rollback()
         g_bills = g.sess.query(GBill).filter(GBill.g_batch == g_batch). \
             order_by(GBill.start_date)
+        bill_types = g.sess.query(BillType).order_by(BillType.code).all()
         return make_response(
             render_template(
-                'g_bill_add.html', g_batch=g_batch, g_bills=g_bills), 400)
+                'g_bill_add.html', g_batch=g_batch, g_bills=g_bills,
+                bill_types=bill_types), 400)
 
 
 @app.route('/g_supplies/<int:g_supply_id>/notes')
@@ -5667,8 +5675,10 @@ def g_bill_edit_post(g_bill_id):
 def g_read_add_get(g_bill_id):
     g_read_types = g.sess.query(GReadType).order_by(GReadType.code)
     g_bill = GBill.get_by_id(g.sess, g_bill_id)
+    g_units = g.sess.query(GUnit).order_by(GUnit.code)
     return render_template(
-        'g_read_add.html', g_bill=g_bill, g_read_types=g_read_types)
+        'g_read_add.html', g_bill=g_bill, g_read_types=g_read_types,
+        g_units=g_units)
 
 
 @app.route('/g_bills/<int:g_bill_id>/add_read', methods=['POST'])
@@ -5676,6 +5686,11 @@ def g_read_add_post(g_bill_id):
     try:
         g_bill = GBill.get_by_id(g.sess, g_bill_id)
         msn = req_str('msn')
+        g_unit_id = req_int('g_unit_id')
+        g_unit = GUnit.get_by_id(g.sess, g_unit_id)
+        is_corrected = req_bool('is_corrected')
+        correction_factor = req_decimal('correction_factor')
+        calorific_value = req_decimal('calorific_value')
         prev_date = req_date('prev_date')
         prev_value = req_decimal('prev_value')
         prev_type_id = req_int('prev_type_id')
@@ -5684,13 +5699,11 @@ def g_read_add_post(g_bill_id):
         pres_value = req_decimal('pres_value')
         pres_type_id = req_int('pres_type_id')
         pres_type = GReadType.get_by_id(g.sess, pres_type_id)
-        units = req_str('units')
-        correction_factor = req_decimal('correction_factor')
-        calorific_value = req_decimal('calorific_value')
 
-        g_bill.insert_read(
-            g.sess, msn, prev_value, prev_date, prev_type, pres_value,
-            pres_date, pres_type, units, correction_factor, calorific_value)
+        g_bill.insert_g_read(
+            g.sess, msn, g_unit, is_corrected, correction_factor,
+            calorific_value, prev_value, prev_date, prev_type, pres_value,
+            pres_date, pres_type)
         g.sess.commit()
         return chellow_redirect("/g_bills/" + str(g_bill.id), 303)
     except BadRequest as e:
