@@ -617,18 +617,18 @@ class GDataSource():
             self.hh_data.append(h)
 
 
-def find_cv(sess, caches, g_cv_id, date, g_ldz_code):
+def find_cv(sess, caches, g_cv_id, dt, g_ldz_code):
     cvs = chellow.computer.hh_rate(
-        sess, caches, g_cv_id, date)['cvs'][g_ldz_code]
+        sess, caches, g_cv_id, dt)['cvs'][g_ldz_code]
     try:
-        cv_props = cvs[date.day]
+        cv_props = cvs[dt.day]
     except KeyError:
         cv_props = sorted(cvs.items())[-1][1]
 
     cv = float(cv_props['cv'])
 
     try:
-        avg_cv = caches['g_engine']['avg_cvs'][date.year][date.month]
+        avg_cv = caches['g_engine']['avg_cvs'][g_ldz_code][dt.year][dt.month]
     except KeyError:
         try:
             gec = caches['g_engine']
@@ -636,19 +636,23 @@ def find_cv(sess, caches, g_cv_id, date, g_ldz_code):
             gec = caches['g_engine'] = {}
 
         try:
-            avg_cvs_cache = gec['avg_cvs']
+            avg_cache = gec['avg_cvs']
         except KeyError:
-            avg_cvs_cache = gec['avg_cvs'] = {}
+            avg_cache = gec['avg_cvs'] = {}
 
         try:
-            year_cache = avg_cvs_cache[date.year]
+            avg_cvs_cache = avg_cache[g_ldz_code]
         except KeyError:
-            year_cache = avg_cvs_cache[date.year] = {}
+            avg_cvs_cache = avg_cache[g_ldz_code] = {}
 
         try:
-            avg_cv = year_cache[date.month]
+            year_cache = avg_cvs_cache[dt.year]
+        except KeyError:
+            year_cache = avg_cvs_cache[dt.year] = {}
+
+        try:
+            avg_cv = year_cache[dt.month]
         except KeyError:
             cv_list = [float(v['cv']) for v in cvs.values()]
-            avg_cv = year_cache[date.month] = sum(cv_list) / len(cv_list)
-
+            avg_cv = year_cache[dt.month] = sum(cv_list) / len(cv_list)
     return cv, avg_cv

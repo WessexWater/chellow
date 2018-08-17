@@ -19339,4 +19339,70 @@ def virtual_bill(ds):
         'regexes': [
             r"All the bills have been successfully loaded and attached to "
             "the batch\."]},
+
+    {
+        'name': "Gas batch check. Bills with different LDZs",
+        'path': '/g_batches/2/add_bill',
+        'method': 'post',
+        'data': {
+            'bill_type_id': "2",
+            'mprn': "750278673",
+            'reference': "765988",
+            'account': "1",
+            'issue_year': "2017",
+            'issue_month': "02",
+            'issue_day': "03",
+            'issue_hour': "00",
+            'issue_minute': "00",
+            'start_year': "2017",
+            'start_month': "03",
+            'start_day': "01",
+            'start_hour': "00",
+            'start_minute': "00",
+            'finish_year': "2017",
+            'finish_month': "03",
+            'finish_day': "31",
+            'finish_hour': "23",
+            'finish_minute': "30",
+            'kwh': "0.00",
+            'net': "0.00",
+            'vat': "0.00",
+            'gross': "0.00",
+            'breakdown': '{}'},
+        'status_code': 303,
+        'regexes': [
+            r"/g_bills/5"]},
+    {
+        'name': "Gas batch check",
+        'path': '/reports/429?g_batch_id=2',
+        'status_code': 303},
+    {
+        'name': "Gas bill check",
+        'path': '/downloads',
+        'tries': {'max': 20, 'period': 1},
+        'regexes': [
+            r"0031_FINISHED_adminexamplecom_g_bill_check\.csv"],
+        'status_code': 200},
+    {
+        'name': "Gas bill check",
+        'path': '/downloads/0031_FINISHED_adminexamplecom_g_bill_check.csv',
+        'status_code': 200,
+        'regexes': [
+            r'TB2,765988,N,2017-03-01 00:00,2017-03-31 23:30,750278673,'
+            r'Main Gas Supply,CH017,Parbola,2017-03-01 00:00,'
+            r'2017-03-31 23:30,\[5\],,0,,1.02264,,M3,,1.0,,39.3,0.00,0.0,,'
+            r'0.019548,,0.0,,,0.00195,,67.8,,67.8,,0.00,67.8,-67.8,0.00,0,0.0,'
+            r'0.00,67.8,-67.8,,\s*'
+            r'TB2,8899900012,W,2015-09-01 00:00,2015-09-30 00:00,750278673,'
+            r'Main Gas Supply,CH017,Parbola,2015-09-01 00:00,2015-09-30 00:00,'
+            r'\[3\],,0,,1.02264,HCUF,M3,2.8317,1,39.300811,0,4500901,0.0,'
+            r'0.019448,0.019548,8936.13,0.0,8936.13,,0.00525288,,,,,,6972.33,'
+            r'0.0,6972.33,1003.89,0,1003.89,7976.22,0.0,7976.22,,\s*'
+            r'TB2,kkhy779,N,2017-03-01 00:00,2017-03-31 23:30,87614362,'
+            r'Main Gas 1,CI017,Roselands,2017-03-01 00:00,2017-03-31 23:30,'
+            r'\[4\],,0,,1.02264,,M3,,1.0,,39.1,0.00,0.0,,0.019548,,0.0,,,'
+            r'0.00195,,67.8,,67.8,,0.00,67.8,-67.8,0.00,0,0.0,0.00,67.8,-67.8,'
+            r','
+        ]
+    },
 ]
