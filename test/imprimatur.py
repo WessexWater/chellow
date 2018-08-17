@@ -266,7 +266,7 @@
     {
         'name': "Check that an TLM import has happened.",
         'path': '/non_core_contracts/7/auto_importer',
-        'tries': {'max': 60, 'period': 1},
+        'tries': {'max': 70, 'period': 1},
         'regexes': [
             r" - Found rate at 2014-03-02 08:30 for GSP Group _L and run "
             r"RF\.",
@@ -4446,13 +4446,13 @@ def virtual_bill(supply_source):
         'path': '/downloads/0014_FINISHED_watkinsexamplecom_bill_check.csv',
         'regexes': [
             r'batch,bill-reference,bill-type,bill-kwh,bill-net-gbp,'
-            r'bill-vat-gbp,bill-start-date,bill-finish-date,bill-mpan-core,'
-            r'site-code,site-name,covered-from,covered-to,covered-bills,'
-            r'metered-kwh,covered-net-gbp,virtual-net-gbp,difference-net-gbp,'
-            r'covered-sum-msp-kwh,virtual-sum-msp-kwh,covered-problem,'
-            r'virtual-problem',
+            r'bill-vat-gbp,bill-start-date,bill-finish-date,imp-mpan-core,'
+            r'exp-mpan-core,site-code,site-name,covered-from,covered-to,'
+            r'covered-bills,metered-kwh,covered-net-gbp,virtual-net-gbp,'
+            r'difference-net-gbp,covered-sum-msp-kwh,virtual-sum-msp-kwh,'
+            r'covered-problem,virtual-problem',
             r'07-008,3423760005,N,253,36.16,1.80,'
-            r'2010-01-19 00:00,2010-04-20 23:30,22 1065 3921 534,'
+            r'2010-01-19 00:00,2010-04-20 23:30,22 1065 3921 534,,'
             r'CI017,Roselands,2010-01-19 00:00,2010-04-20 23:30,10,'
             r'0.0,36.16,0,36.16,253.0,253.0\d*,,'],
         'status_code': 200},
@@ -7745,7 +7745,7 @@ def virtual_bill(supply_source):
         '0037_FINISHED_watkinsexamplecom_bill_check.csv',
         'regexes': [
             r'06-004,00101,N,244,3810.08,355.03,2011-05-01 00:00,'
-            r'2011-06-30 00:00,22 6354 2983 570,CI017,Roselands,'
+            r'2011-06-30 00:00,22 6354 2983 570,,CI017,Roselands,'
             r'2011-05-01 00:00,2011-06-30 00:00,8,0,3810.08,0,3810.08,,,,,'
             r'11.4,0.00485,,,0.0,,,0.0,,,,,,,,,0.0,,,,,,,,,0.0,,,,,0.0,,,,,0.0'
             r',,,,,0.0,,,0.0,,,0.0,,,,,,,0.0,,,,,,,0.0,,,,,,,0.0,,,,,,,0.0,,,,'
@@ -8249,7 +8249,7 @@ def virtual_bill(supply_source):
         'status_code': 200,
         'regexes': [
             r'07-002,3423760010,N,10,9.07,0.21,2012-01-05 00:00,'
-            r'2012-01-10 23:30,22 1065 3921 534,CI017,Roselands,'
+            r'2012-01-10 23:30,22 1065 3921 534,,CI017,Roselands,'
             r'2012-01-05 00:00,2012-01-10 23:30,21,30.\d*,9.07,0,9.07,'
             r'10.0,9.999999\d*,,']},
     {
@@ -8590,7 +8590,7 @@ def virtual_bill(supply_source):
         'status_code': 200,
         'regexes': [
             r'06-002,23618619,N,0,49119.00,8596.00,2007-06-30 00:00,'
-            r'2007-07-31 00:00,22 9974 3438 105,CI005,Wheal Rodney,'
+            r'2007-07-31 00:00,22 9974 3438 105,,CI005,Wheal Rodney,'
             r'2007-06-30 00:00,2007-07-31 00:00,6,1209.0322580\d*,'
             r',,,0.00441,,,0.0,49119.0,0,'
             r'49119.0,8596.0,,8596.0,,,0.0,0.0,4.765\d*,,']},
@@ -8641,7 +8641,7 @@ def virtual_bill(supply_source):
         'status_code': 200,
         'regexes': [
             r'07-002,3423760005,N,150,98.17,15.01,'
-            r'2011-01-05 00:00,2011-01-10 23:30,22 1065 3921 534,'
+            r'2011-01-05 00:00,2011-01-10 23:30,22 1065 3921 534,,'
             r'CI017,Roselands,2011-01-05 00:00,2011-01-10 23:30,13,'
             r'692.9175824\d*,98.17,0,98.17,150.0,14239.0\d*,,']},
 
@@ -8696,7 +8696,7 @@ def virtual_bill(supply_source):
         'status_code': 200,
         'regexes': [
             r'07-002,3423760010,N,10,9.07,0.21,2012-01-05 00:00,'
-            '2012-01-10 23:30,22 1065 3921 534,CI017,Roselands,'
+            '2012-01-10 23:30,22 1065 3921 534,,CI017,Roselands,'
             '2012-01-05 00:00,2012-01-10 23:30,21,0,9.07,0,9.07,'
             '10.0,0,,']},
 
@@ -10667,7 +10667,7 @@ def virtual_bill(supply_source):
         '0079_FINISHED_watkinsexamplecom_bill_check.csv',
         'regexes': [
             r'07-002,3423760010,N,10,9.07,0.21,2012-01-05 00:00,'
-            r'2012-01-10 23:30,22 1065 3921 534,CI017,Roselands,'
+            r'2012-01-10 23:30,22 1065 3921 534,,CI017,Roselands,'
             r'2012-01-05 00:00,2012-01-10 23:30,21,756.0,9.07,0,9.07,10.0,'
             r'252.0\d*,,'],
         'status_code': 200},
@@ -13022,15 +13022,15 @@ def virtual_bill(supply_source):
         '0005_FINISHED_adminexamplecom_bill_check.csv',
         'regexes': [
             r'batch,bill-reference,bill-type,bill-kwh,bill-net-gbp,'
-            r'bill-vat-gbp,bill-start-date,bill-finish-date,bill-mpan-core,'
-            r'site-code,site-name,covered-from,covered-to,covered-bills,'
-            r'metered-kwh,covered-ccl-kwh,virtual-ccl-kwh,covered-ccl-rate,'
-            r'virtual-ccl-rate,covered-ccl-gbp,virtual-ccl-gbp,'
-            r'difference-ccl-gbp,covered-net-gbp,virtual-net-gbp,'
-            r'difference-net-gbp,covered-vat-gbp,virtual-vat-gbp,'
-            r'difference-vat-gbp,covered-gross-gbp,virtual-gross-gbp,'
-            r'difference-gross-gbp,covered-sum-msp-kwh,virtual-sum-msp-kwh,'
-            r'covered-problem,virtual-problem\s*\Z'],
+            r'bill-vat-gbp,bill-start-date,bill-finish-date,imp-mpan-core,'
+            r'exp-mpan-core,site-code,site-name,covered-from,covered-to,'
+            r'covered-bills,metered-kwh,covered-ccl-kwh,virtual-ccl-kwh,'
+            r'covered-ccl-rate,virtual-ccl-rate,covered-ccl-gbp,'
+            r'virtual-ccl-gbp,difference-ccl-gbp,covered-net-gbp,'
+            r'virtual-net-gbp,difference-net-gbp,covered-vat-gbp,'
+            r'virtual-vat-gbp,difference-vat-gbp,covered-gross-gbp,'
+            r'virtual-gross-gbp,difference-gross-gbp,covered-sum-msp-kwh,'
+            r'virtual-sum-msp-kwh,covered-problem,virtual-problem\s*\Z'],
         'status_code': 200},
 
     {
@@ -13178,7 +13178,7 @@ def virtual_bill(ss):
         'path': '/downloads/0007_FINISHED_adminexamplecom_bill_check.csv',
         'regexes': [
             r'07-002,3Pb,F,10,2.00,0.50,2014-12-01 00:00,2014-12-31 23:30,'
-            r'22 9789 0534 938,CI017,Roselands,2014-12-01 00:00,'
+            r'22 9789 0534 938,,CI017,Roselands,2014-12-01 00:00,'
             r'2014-12-31 23:30,23,100.06724\d*,2.0,0,2.0,,'],
         'status_code': 200},
 
@@ -15957,9 +15957,9 @@ def virtual_bill(supply_source):
         'path': '/downloads/0015_FINISHED_adminexamplecom_bill_check.csv',
         'regexes': [
             r'06-004,00080,N,0,4463.08,781.03,2007-02-02 00:00,'
-            r'2007-02-28 23:30,,CH017,Parbola,2007-02-02 00:00,'
-            r'2007-02-28 23:30,7,0,4463.08,0,4463.08,,,,,,0.00441,,,0.0,,,0.0'
-            r',,,,,,,,,0.0,'
+            r'2007-02-28 23:30,,22 0470 7514 535,CH017,Parbola,'
+            r'2007-02-02 00:00,2007-02-28 23:30,7,0,4463.08,0,4463.08,,,,,,'
+            r'0.00441,,,0.0,,,0.0,,,,,,,,,0.0,'
             r',0,,,,,,,0.0,,,,,0.0,,,,,0.0,,,,,0.0,,,0.0,,,0.0,,,,,,,0.0'
             r',,,,,,,0.0,,,,,,,0.0,,,,,'
             r',,0.0,,,,,,,0.0,,,,,,,0.0,,,,,,,0.0,,,,,,,,,,,,,,,,,,,,,,,,,,,,'
@@ -16227,7 +16227,7 @@ def virtual_bill(supply_source):
         'path': '/downloads/'
         '0022_FINISHED_adminexamplecom_bill_check.csv',
         'regexes': [
-            r'99/992,08,N,0,6.40,1.05,2000-10-01 00:00,2000-10-31 23:30,,,,'
+            r'99/992,08,N,0,6.40,1.05,2000-10-01 00:00,2000-10-31 23:30,,,,,'
             r'2000-10-01 00:00,2000-10-31 23:30,17,0,6.4,0,6.4,,'],
         'status_code': 200},
 
@@ -19277,18 +19277,20 @@ def virtual_bill(ds):
             r"/g_bills/4"]},
 
     {
-        'name': "Stark DC bill parser",
+        'name': "Stark settlement DC bill parser",
         'path': '/dc_bill_imports',
         'method': 'post',
         'data': {
             'dc_batch_id': "13"},
-        'files': {'import_file': 'test/electricity/bills.dc.stark.xlsx'},
+        'files': {
+            'import_file': 'test/electricity/bills.settlement.dc.stark.xlsx'
+        },
         'status_code': 303,
         'regexes': [
             r"/dc_bill_imports/16"]},
 
     {
-        'name': "Stark DC bill parser",
+        'name': "Stark settlement DC bill parser",
         'path': '/dc_bill_imports/16',
         'tries': {},
         'status_code': 200,
@@ -19310,6 +19312,28 @@ def virtual_bill(ds):
     {
         'name': "Stark MOP bill parser",
         'path': '/mop_bill_imports/17',
+        'tries': {},
+        'status_code': 200,
+        'regexes': [
+            r"All the bills have been successfully loaded and attached to "
+            "the batch\."]},
+
+    {
+        'name': "Stark non-settlement DC bill parser",
+        'path': '/dc_bill_imports',
+        'method': 'post',
+        'data': {
+            'dc_batch_id': "13"},
+        'files': {
+            'import_file': 'test/electricity/bills.nonsettlement.dc.stark.xlsx'
+        },
+        'status_code': 303,
+        'regexes': [
+            r"/dc_bill_imports/18"]},
+
+    {
+        'name': "Stark non-settlement DC bill parser",
+        'path': '/dc_bill_imports/18',
         'tries': {},
         'status_code': 200,
         'regexes': [

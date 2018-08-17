@@ -40,22 +40,6 @@ def get_int(row, idx):
     return int(get_value(row, idx))
 
 
-def bd_add(bd, el_name, val):
-    if el_name.split('-')[-1] in ('rate', 'kva'):
-        if el_name not in bd:
-            bd[el_name] = set()
-        bd[el_name].add(val)
-    else:
-        if el_name not in bd:
-            bd[el_name] = 0
-        try:
-            bd[el_name] += val
-        except TypeError as e:
-            raise Exception(
-                "Problem with element name " + el_name + " and value '" +
-                str(val) + "': " + str(e))
-
-
 class Parser():
     def __init__(self, f):
         self.book = open_workbook(file_contents=f.read())

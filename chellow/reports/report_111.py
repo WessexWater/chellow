@@ -109,8 +109,8 @@ def content(batch_id, bill_id, contract_id, start_date, finish_date, user):
         titles = [
             'batch', 'bill-reference', 'bill-type', 'bill-kwh', 'bill-net-gbp',
             'bill-vat-gbp', 'bill-start-date', 'bill-finish-date',
-            'bill-mpan-core', 'site-code', 'site-name', 'covered-from',
-            'covered-to', 'covered-bills', 'metered-kwh']
+            'imp-mpan-core', 'exp-mpan-core', 'site-code', 'site-name',
+            'covered-from', 'covered-to', 'covered-bills', 'metered-kwh']
         for t in virtual_bill_titles:
             titles.append('covered-' + t)
             titles.append('virtual-' + t)
@@ -317,7 +317,10 @@ def content(batch_id, bill_id, contract_id, start_date, finish_date, user):
                                 "bill."))
                         continue
 
-                    polarity = contract != era.exp_supplier_contract
+                    if contract.market_role.code == 'X':
+                        polarity = contract != era.exp_supplier_contract
+                    else:
+                        polarity = era.imp_supplier_contract is not None
                     pairs = []
                     last_finish = chunk_start - HH
                     for hd in chellow.computer.datum_range(
@@ -391,11 +394,14 @@ def content(batch_id, bill_id, contract_id, start_date, finish_date, user):
 
                 era = supply.find_era_at(sess, bill_finish)
                 if era is None:
-                    imp_mpan_core = site_code = site_name = None
+                    imp_mpan_core = exp_mpan_core = None
+                    site_code = site_name = None
                     virtual_bill['problem'] += \
                         "This bill finishes before or after the supply. "
                 else:
                     imp_mpan_core = era.imp_mpan_core
+                    exp_mpan_core = era.exp_mpan_core
+
                     site = sess.query(Site).join(SiteEra).filter(
                         SiteEra.is_physical == true(),
                         SiteEra.era == era).one()
@@ -405,8 +411,8 @@ def content(batch_id, bill_id, contract_id, start_date, finish_date, user):
                 values = [
                     bill.batch.reference, bill.reference, bill.bill_type.code,
                     bill.kwh, bill.net, bill.vat, hh_format(bill_start),
-                    hh_format(bill_finish), imp_mpan_core, site_code,
-                    site_name, hh_format(covered_start),
+                    hh_format(bill_finish), imp_mpan_core, exp_mpan_core,
+                    site_code, site_name, hh_format(covered_start),
                     hh_format(covered_finish), ':'.join(
                         str(i).replace(',', '') for i in covered_bills.keys()),
                     metered_kwh]
@@ -484,7 +490,8 @@ def content(batch_id, bill_id, contract_id, start_date, finish_date, user):
                         'missing', clump['element'], 'supplyid',
                         str(supply.id), 'from',
                         hh_format(clump['start_date'])))
-                vals['bill-mpan-core'] = imp_mpan_core
+                vals['imp-mpan-core'] = imp_mpan_core
+                vals['exp-mpan-core'] = exp_mpan_core
                 vals['batch'] = 'missing_bill'
                 vals['bill-start-date'] = hh_format(clump['start_date'])
                 vals['bill-finish-date'] = hh_format(clump['finish_date'])
