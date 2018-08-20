@@ -5,7 +5,7 @@
 {% endblock %}
 
 {% block nav %}
-	&raquo; <a href="/mop_contracts">MOP Contracts</a> &raquo; 
+	<a href="/mop_contracts">MOP Contracts</a> &raquo; 
 	<a href="/mop_contracts/{{contract.id}}">{{contract.name}}</a>
 	&raquo; Edit
 {% endblock %}
@@ -25,7 +25,7 @@
 								<input type="hidden" name="mop_contract_id"
 									value="{{contract.id}}">
 								<input type="submit" name="delete" value="Delete">
-								<a href="/mop_contracts/{{contract.id}}/edit" class="btn">Cancel</a>
+								<a href="/mop_contracts/{{contract.id}}/edit">Cancel</a>
 							</fieldset>
 						</form>
 					</div>
@@ -52,7 +52,10 @@
 										<label>Party</label>
 										<select name="party_id">
 											{% for party in parties %}
-												{{ input_option('party_id', party.id, party.participant.code + ' : ' + party.name, contract.party.id) }}
+												{{
+											 			input_option('party_id', party.id,
+													 	party.participant.code + ' : ' +
+													 	party.name, contract.party.id) }}
 											{% endfor %}
 										</select>
 									</div>
@@ -61,13 +64,20 @@
 										{{input_text('name', contract.name)}}
 									</div>
 								</div>
+								<br>	
 								<label>Charge script</label>
-								
-								{{input_textarea('charge_script', contract.charge_script, 40, 80)}}
-								
+								<br>	
+								{{
+										input_textarea(
+											'charge_script', contract.charge_script, 40, 80)}}
+								<br>	
+								<br>	
 								<label>Properties</label>
+								<br>	
 								{{input_textarea('properties', contract.properties, 40, 80)}}
 								
+								<br>	
+								<br>	
 								<label>Example</label>
 								<code><pre>
 has.importer=yes

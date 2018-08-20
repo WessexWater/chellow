@@ -4095,7 +4095,7 @@ def mop_bill_get(bill_id):
         columns = set()
         grid = defaultdict(dict)
 
-        for k, v in breakdown_dict.items():
+        for k, v in tuple(breakdown_dict.items()):
             if k.endswith('-gbp'):
                 columns.add('gbp')
                 row_name = k[:-4]
@@ -4103,7 +4103,7 @@ def mop_bill_get(bill_id):
                 grid[row_name]['gbp'] = v
                 del breakdown_dict[k]
 
-        for k, v in breakdown_dict.items():
+        for k, v in tuple(breakdown_dict.items()):
             for row_name in sorted(list(rows), key=len, reverse=True):
                 if k.startswith(row_name + '-'):
                     col_name = k[len(row_name) + 1:]

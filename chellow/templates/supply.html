@@ -596,7 +596,7 @@
                     <caption>DC Bills</caption>
                     <thead>
                         <tr>
-                            <th>Edit</th>
+                            <th>View</th>
                             <th>Batch</th>
                             <th>Reference</th>
                             <th>Account</th>
@@ -615,7 +615,7 @@
                         {% set bill = bill_dict['bill'] %}
                         <tr>
                             <td>
-                                [<a href="/dc_bills/{{bill.id}}/edit">edit</a>]
+                                <a href="/dc_bills/{{bill.id}}">view</a>
                             </td>
                             <td>
                                 <a href="/dc_batches/{{bill.batch.id}}">{{bill.batch.reference}}</a>
@@ -644,7 +644,7 @@
                     <caption>MOP Bills</caption>
                     <thead>
                         <tr>
-                            <th>Edit</th>
+                            <th>View</th>
                             <th>Batch</th>
                             <th>Reference</th>
                             <th>Account</th>
@@ -662,9 +662,7 @@
                         {% for bill_dict in era_bundle['mop_bills']['bill_dicts'] %}
                         {% set bill = bill_dict['bill'] %}
 											<tr>
-											<td>
-												[<a href="/mop_bills/{{bill.id}}">edit</a>]
-											</td>
+											<td><a href="/mop_bills/{{bill.id}}">view</a></td>
 											<td>
 												<a href="/mop_batches/{{bill.batch.id}}">{{bill.batch.reference}}</a>
 											</td>
