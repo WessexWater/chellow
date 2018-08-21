@@ -90,6 +90,12 @@ class Parser():
                         Era.finish_date == null(),
                         Era.finish_date > start_date)).order_by(
                     Era.start_date).first()
+                if era is None:
+                    era = sess.query(Era).filter(
+                        or_(
+                            Era.imp_mpan_core == mpan_core,
+                            Era.exp_mpan_core == mpan_core)).order_by(
+                        Era.start_date.desc()).first()
                 account = era.dc_account
 
                 net = round(get_dec(row, 31), 2)
