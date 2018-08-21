@@ -96,7 +96,10 @@ class Parser():
                             Era.imp_mpan_core == mpan_core,
                             Era.exp_mpan_core == mpan_core)).order_by(
                         Era.start_date.desc()).first()
-                account = era.dc_account
+                if era is None:
+                    account = mpan_core + '/DC'
+                else:
+                    account = era.dc_account
 
                 net = round(get_dec(row, 31), 2)
 

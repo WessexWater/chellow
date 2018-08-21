@@ -95,17 +95,19 @@ class Parser():
                         Era.finish_date == null(),
                         Era.finish_date > start_date)).order_by(
                     Era.start_date).first()
+
                 if era is None:
                     era = sess.query(Era).filter(
                         or_(
                             Era.imp_mpan_core == mpan_core,
                             Era.exp_mpan_core == mpan_core)).order_by(
                         Era.start_date.desc()).first()
+
                 if era is None:
-                    raise BadRequest(
-                        "Can't find an era with the mpan core " + mpan_core +
-                        " from.")
-                account = era.dc_account
+                    account = mpan_core + '/DC'
+                else:
+                    account = era.dc_account
+
                 net = METER_RATE / 12
 
                 breakdown = {
