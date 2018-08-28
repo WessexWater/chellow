@@ -404,6 +404,10 @@ class HhImportTask(threading.Thread):
             else:
                 mpan_core = era.imp_mpan_core
 
+            self.log(
+                "Looking at MPAN core {mpan_core}.".format(
+                    mpan_core=mpan_core))
+
             vals = {
                 'chunk_start': chunk_start,
                 'chunk_finish': chunk_finish}
@@ -416,10 +420,14 @@ class HhImportTask(threading.Thread):
                     ". The problem is: " + str(e) + ". This can be fixed by " +
                     "editing the properties of this contract.")
 
-            self.log("Retrieving data for " + mpan_core + " from " + url + ".")
+            self.log("Retrieving data from {url}.".format(url=url))
             res = requests.get(url)
             res.raise_for_status()
             result = requests.get(url).json()
+            if not isinstance(result, dict):
+                raise BadRequest(
+                    "Expecting a JSON object at the top level, but instead " +
+                    "got " + str(result))
             raw_data = []
             for jdatum in result['DataPoints']:
                 raw_data.append(
