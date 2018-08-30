@@ -424,12 +424,16 @@ class HhImportTask(threading.Thread):
             res = requests.get(url)
             res.raise_for_status()
             result = requests.get(url).json()
-            if not isinstance(result, dict):
+            if isinstance(result, dict):
+                result_data = result['DataPoints']
+            elif isinstance(result, list):
+                result_data = result
+            else:
                 raise BadRequest(
                     "Expecting a JSON object at the top level, but instead " +
                     "got " + str(result))
             raw_data = []
-            for jdatum in result['DataPoints']:
+            for jdatum in result_data:
                 raw_data.append(
                     dict(
                         mpan_core=mpan_core,
