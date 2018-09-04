@@ -1,11 +1,13 @@
 {% extends "base.html" %}
 
 {% block title %}
-	LDZs
+	DNs &raquo; {{g_dn.code}} &raquo; LDZs
 {% endblock %}
 
 {% block nav %}
-	LDZs
+	<a href="/g_dns/">LDZs</a> &raquo;
+	<a href="/g_dns/{{g_dn.id}}">{{g_dn.code}}</a> &raquo;
+	<a href="/g_dns/{{g_dn.id}}/g_ldzs">LDZs</a>
 {% endblock %}
 
 {% block content %}

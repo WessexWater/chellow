@@ -272,6 +272,8 @@ class GDataSource():
         self.g_supply = g_era.g_supply
         self.mprn = self.g_supply.mprn
         self.g_exit_zone_code = self.g_supply.g_exit_zone.code
+        self.g_ldz_code = self.g_supply.g_exit_zone.g_ldz.code
+        self.g_dn_code = self.g_supply.g_exit_zone.g_ldz.g_dn.code
         self.account = g_era.account
         self.g_contract = g_era.g_contract
 
@@ -292,7 +294,6 @@ class GDataSource():
                     GEra.start_date).limit(1).all()
 
         g_cv_id = get_non_core_contract_id('g_cv')
-        g_ldz_code = self.g_supply.g_exit_zone.g_ldz.code
         hist_map = {}
 
         for i, hist_g_era in enumerate(hist_g_eras):
@@ -535,7 +536,7 @@ class GDataSource():
                     for hh_date in hh_range(
                             caches, pair['start-date'], pair['finish-date']):
                         cv, avg_cv = find_cv(
-                                sess, caches, g_cv_id, hh_date, g_ldz_code)
+                            sess, caches, g_cv_id, hh_date, self.g_ldz_code)
 
                         hist_map[hh_date] = {
                             'unit_code': unit_code,
@@ -592,7 +593,7 @@ class GDataSource():
                     for hh_date in hh_range(
                             caches, g_bill.start_date, g_bill.finish_date):
                         cv, avg_cv = find_cv(
-                                sess, caches, g_cv_id, hh_date, g_ldz_code)
+                            sess, caches, g_cv_id, hh_date, self.g_ldz_code)
                         hist_map[hh_date] = {
                             'unit_code': unit_code,
                             'unit_factor': unit_factor,

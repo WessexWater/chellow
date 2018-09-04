@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+
+{% block title %}
+	DNs
+{% endblock %}
+
+{% block nav %}
+	DNs
+{% endblock %}
+
+{% block content %}
+	<div class="layer-section">
+		<div class="section-content">
+			<div class="section-data">
+				<table class="DataTable widthAuto noMarginBottom">
+					<thead>
+						<tr>
+							<th>Code</th>
+							<th>Name</th>
+						</tr>
+					</thead>
+					<tbody>
+						{% for g_dn in g_dns %}
+							<tr>
+								<td><a href="/g_dns/{{g_dn.id}}">{{g_dn.code}}</a></td>
+								<td>{{g_dn.name}}</td>
+							</tr>
+						{% endfor %}
+					</tbody>
+				</table>
+			</div>
+		</div>
+	</div>
+{% endblock %}

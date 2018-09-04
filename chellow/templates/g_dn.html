@@ -1,13 +1,11 @@
 {% extends "base.html" %}
 
 {% block title %}
-	DNs &raquo; {{g_ldz.g_dn.code}} &raquo; LDZ {{g_ldz.code}}
+	DNs &raquo; {{g_dn.code}}
 {% endblock %}
 
 {% block nav %}
-	<a href="/g_dns">DNs</a> &raquo;
-	<a href="/g_dns/{{g_ldz.g_dn.id}}">{{g_ldz.g_dn.code}}</a> &raquo;
- 	LDZ {{g_ldz.code}}
+	<a href="/g_dns">DNs</a> &raquo; {{g_dn.code}}
 {% endblock %}
 
 {% block content %}
@@ -17,18 +15,20 @@
 				<table class="DataTable widthAuto noMarginBottom">
 					<tr>
 						<th>Code</th>
-						<td>{{g_ldz.code}}</td>
+						<td>{{g_dn.code}}</td>
+					</tr>
+					<tr>
+						<th>Name</th>
+						<td>{{g_dn.name}}</td>
 					</tr>
 				</table>
 				<br>
 
-				<h4>Exit Zones</h4>
+				<h4>LDZs</h4>
 				<ul>
-					{% for g_exit_zone in g_exit_zones %}
+					{% for g_ldz in g_ldzs %}
 						<li>
-							<a
-							 		href="/g_exit_zones/{{g_exit_zone.id}}"
-									>{{g_exit_zone.code}}</a>
+							<a href="/g_ldzs/{{g_ldz.id}}">{{g_ldz.code}}</a>
 						</li>
 					{% endfor %}
 				</ul>

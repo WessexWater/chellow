@@ -1,20 +1,25 @@
 {% extends "base.html" %}
 
 {% block title %}
-	LDZs &raquo; {{g_exit_zone.g_ldz.code}} &raquo; {{g_exit_zone.code}}
+	DNs &raquo; {{g_exit_zone.g_ldz.g_dn.code}} &raquo;
+ 	LDZ {{g_exit_zone.g_ldz.code}} &raquo; Exit Zone {{g_exit_zone.code}}
 {% endblock %}
 
 {% block nav %}
-	<a href="/g_ldzs">LDZs</a> &raquo;
+	<a href="/g_dns">DNs</a> &raquo;
+	<a
+      href="/g_dns/{{g_exit_zone.g_ldz.g_dn.id}}"
+			>{{g_exit_zone.g_ldz.g_dn.code}}</a> &raquo;
+	LDZ
 	<a href="/g_ldzs/{{g_exit_zone.g_ldz.id}}">{{g_exit_zone.g_ldz.code}}</a>
-	&raquo; {{g_exit_zone.code}}
+	&raquo; Exit Zone {{g_exit_zone.code}}
 {% endblock %}
 
 {% block content %}
 	<div class="layer-section">
 		<div class="section-content">
 			<div class="section-data">
-				<table>
+				<table class="DataTable widthAuto noMarginBottom">
 					<tr>
 						<th>Code</th>
 						<td>{{g_exit_zone.code}}</td>

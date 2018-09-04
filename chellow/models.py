@@ -3723,13 +3723,35 @@ class GUnit(Base, PersistentClass):
         return typ
 
 
+class GDn(Base, PersistentClass):
+    __tablename__ = 'g_dn'
+    id = Column('id', Integer, primary_key=True)
+    code = Column(String, nullable=False, index=True, unique=True)
+    name = Column(String, nullable=False, index=True, unique=True)
+    g_ldzs = relationship("GLdz", backref="g_dn")
+
+    def __init__(self, code, name):
+        self.code = code
+        self.name = name
+
+    @staticmethod
+    def get_by_code(sess, code):
+        code = code.strip()
+        dn = sess.query(GDn).filter_by(code=code).first()
+        if dn is None:
+            raise BadRequest("The GDN with code " + code + " can't be found.")
+        return dn
+
+
 class GLdz(Base, PersistentClass):
     __tablename__ = 'g_ldz'
     id = Column('id', Integer, primary_key=True)
+    g_dn_id = Column(Integer, ForeignKey('g_dn.id'), index=True)
     code = Column(String, nullable=False, index=True, unique=True)
     g_exit_zones = relationship("GExitZone", backref="g_ldz")
 
-    def __init__(self, code):
+    def __init__(self, g_dn, code):
+        self.g_dn = g_dn
         self.code = code
 
     @staticmethod
@@ -3987,29 +4009,63 @@ def db_init(sess, root_path):
         sess.add(GUnit(code, desc, Decimal(factor_str)))
     sess.commit()
 
-    for ldz_code, exit_zone_codes in (
-            ('EA', ['EA1', 'EA2', 'EA3', 'EA4']),
-            ('EM', ['EM1', 'EM2', 'EM3', 'EM4']),
-            ('NT', ['NT1', 'NT2', 'NT3']),
-            ('NW', ['NW1', 'NW2']),
-            ('WM', ['WM1', 'WM2', 'WM3']),
-            ('LC', ['LC']),
-            ('LO', ['LO']),
-            ('LS', ['LS']),
-            ('LT', ['LT']),
-            ('LW', ['LW']),
-            ('SC', ['SC1', 'SC2', 'SC4']),
-            ('SE', ['SE1', 'SE2']),
-            ('SO', ['SO1', 'SO2']),
-            ('NE', ['NE1', 'NE2', 'NE3']),
-            ('NO', ['NO1', 'NO2']),
-            ('SW', ['SW1', 'SW2', 'SW3']),
-            ('WA', ['WA1', 'WA2'])):
-        g_ldz = GLdz(ldz_code)
-        sess.add(g_ldz)
-        for exit_zone_code in exit_zone_codes:
-            g_exit_zone = GExitZone(g_ldz, exit_zone_code)
-            sess.add(g_exit_zone)
+    for code, name in (
+            ('EE', "East of England"),
+            ('LO', "London"),
+            ('NW', "North West"),
+            ('WM', "West Midlands"),
+            ('SC', "Scotland"),
+            ('SO', "Southern"),
+            ('NO', "Northern"),
+            ('WW', "Wales & West")):
+        sess.add(GDn(code, name))
+    sess.commit()
+    sess.flush()
+
+    dns = {
+        'EE': {
+            'EA': ['EA1', 'EA2', 'EA3', 'EA4'],
+            'EM': ['EM1', 'EM2', 'EM3', 'EM4']
+        },
+        'LO': {
+            'NT': ['NT1', 'NT2', 'NT3']
+        },
+        'NW': {
+            'NW': ['NW1', 'NW2']
+        },
+        'WM': {
+            'WM': ['WM1', 'WM2', 'WM3']
+        },
+        'SC': {
+            'LC': ['LC'],
+            'LO': ['LO'],
+            'LS': ['LS'],
+            'LT': ['LT'],
+            'LW': ['LW'],
+            'SC': ['SC1', 'SC2', 'SC4']
+        },
+        'SO': {
+            'SE': ['SE1', 'SE2'],
+            'SO': ['SO1', 'SO2']
+        },
+        'NO': {
+            'NE': ['NE1', 'NE2', 'NE3'],
+            'NO': ['NO1', 'NO2']
+        },
+        'WW': {
+            'SW': ['SW1', 'SW2', 'SW3'],
+            'WN': ['WA1'],
+            'WS': ['WA2']
+        }
+    }
+    for dn_code, dn in sorted(dns.items()):
+        g_dn = GDn.get_by_code(sess, dn_code)
+        for ldz_code, exit_zone_codes in sorted(dn.items()):
+            g_ldz = GLdz(g_dn, ldz_code)
+            sess.add(g_ldz)
+            for exit_zone_code in exit_zone_codes:
+                g_exit_zone = GExitZone(g_ldz, exit_zone_code)
+                sess.add(g_exit_zone)
     sess.commit()
 
     sess.execute(
@@ -4345,11 +4401,61 @@ def db_upgrade_13_to_14(sess, root_path):
                 'id': rs_id})
 
 
+def db_upgrade_14_to_15(sess, root_path):
+    for code, name in (
+            ('EE', "East of England"),
+            ('LO', "London"),
+            ('NW', "North West"),
+            ('WM', "West Midlands"),
+            ('SC', "Scotland"),
+            ('SO', "Southern"),
+            ('NO', "Northern"),
+            ('WW', "Wales & West")):
+        sess.add(GDn(code, name))
+
+    sess.execute("insert into g_ldz (code) values ('WN')")
+    wn_id = sess.execute(
+        "select id from g_ldz where code = 'WN'").fetchone()[0]
+
+    sess.execute("insert into g_ldz (code) values ('WS')")
+    ws_id = sess.execute(
+        "select id from g_ldz where code = 'WS'").fetchone()[0]
+
+    sess.execute(
+        "update g_exit_zone set g_ldz_id = :wn_id where code = 'WA1'",
+        {'wn_id': wn_id})
+    sess.execute(
+        "update g_exit_zone set g_ldz_id = :ws_id where code = 'WA2'",
+        {'ws_id': ws_id})
+
+    sess.execute("delete from g_ldz where code = 'WA'")
+
+    sess.execute("alter table g_ldz add g_dn_id integer references g_dn (id);")
+
+    for dn_code, ldz_codes in {
+            'EE': ['EA', 'EM'],
+            'LO': ['NT'],
+            'NW': ['NW'],
+            'WM': ['WM'],
+            'SC': ['LC', 'LO', 'LS', 'LT', 'LW', 'SC'],
+            'SO': ['SE', 'SO'],
+            'NO': ['NE', 'NO'],
+            'WW': ['SW', 'WN', 'WS']}.items():
+        dn = GDn.get_by_code(sess, dn_code)
+        for ldz_code in ldz_codes:
+            sess.execute(
+                "update g_ldz set g_dn_id = :dn_id where code = :ldz_code",
+                {'dn_id': dn.id, 'ldz_code': ldz_code})
+
+    sess.execute("alter table g_ldz alter g_dn_id set not null")
+
+
 upgrade_funcs = [
     db_upgrade_0_to_1, db_upgrade_1_to_2, db_upgrade_2_to_3, db_upgrade_3_to_4,
     db_upgrade_4_to_5, db_upgrade_5_to_6, db_upgrade_6_to_7, db_upgrade_7_to_8,
     db_upgrade_8_to_9, db_upgrade_9_to_10, db_upgrade_10_to_11,
-    db_upgrade_11_to_12, db_upgrade_12_to_13, db_upgrade_13_to_14]
+    db_upgrade_11_to_12, db_upgrade_12_to_13, db_upgrade_13_to_14,
+    db_upgrade_14_to_15]
 
 
 def db_upgrade(root_path):

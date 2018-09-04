@@ -10,7 +10,7 @@ from chellow.models import (
     RegisterRead, HhDatum, Snag, Batch, ReadType, BillType, MeterPaymentType,
     ClockInterval, db_upgrade, Llfc, MeterType, GEra, GSupply, SiteGEra, GBill,
     GContract, GRateScript, GBatch, GRegisterRead, GReadType, VoltageLevel,
-    GUnit, GLdz, GExitZone)
+    GUnit, GLdz, GExitZone, GDn)
 from sqlalchemy.exc import IntegrityError
 import traceback
 from datetime import datetime as Datetime
@@ -5805,6 +5805,20 @@ def g_reports_get():
     return render_template(
         'g_reports.html', month_start=month_start, month_finish=month_finish,
         now_day=now_day)
+
+
+@app.route('/g_dns')
+def g_dns_get():
+    g_dns = g.sess.query(GDn).order_by(GDn.code)
+    return render_template('g_dns.html', g_dns=g_dns)
+
+
+@app.route('/g_dns/<int:g_dn_id>')
+def g_dn_get(g_dn_id):
+    g_dn = GDn.get_by_id(g.sess, g_dn_id)
+    g_ldzs = g.sess.query(GLdz).filter(
+        GLdz.g_dn == g_dn).order_by(GLdz.code).all()
+    return render_template('g_dn.html', g_dn=g_dn, g_ldzs=g_ldzs)
 
 
 @app.route('/g_ldzs/<int:g_ldz_id>')
