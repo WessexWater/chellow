@@ -227,7 +227,8 @@
         'path': '/non_core_rate_scripts/15',
         'regexes': [
             r'&#34;01 00:00&#34;: {\s*'
-            r'&#34;SF&#34;: 1.66425},'],
+            r'&#34;SF&#34;: 1.66425\s*'
+            r'},'],
         'status_code': 200},
 
     {
@@ -281,7 +282,9 @@
             r'&#34;_A&#34;: \{\s*'
             r'&#34;RF&#34;: \{\s*'
             r'&#34;delivering&#34;: 0.9891357,\s*'
-            r'&#34;off_taking&#34;: 1.0122079\}\},'],
+            r'&#34;off_taking&#34;: 1.0122079\s*'
+            r'\}\s*'
+            r'\},'],
         'status_code': 200},
 
     {
@@ -421,9 +424,11 @@ def virtual_bill(ds):
             r'<textarea name="charge_script" rows="40" cols="80">\s*'
             'def virtual_bill_title',
             r'<textarea name="properties" rows="40" cols="80">\{\s*'
-            r'&#34;props&#34;: 1\}</textarea>',
+            r'&#34;props&#34;: 1\s*'
+            r'\}</textarea>',
             r'<textarea name="state" rows="40" cols="80">\{\s*'
-            r'&#34;stat&#34;: 2\}</textarea>']},
+            r'&#34;stat&#34;: 2\s*'
+            r'\}</textarea>']},
     {
         'name': "Check one can update the participant for an DC contract.",
         'path': '/dc_contracts/9/edit',
@@ -486,7 +491,8 @@ def virtual_bill(ds):
         'regexes': [
             r'<option value="28" selected>',
             r'<textarea name="properties" rows="20" cols="80">\{\s*'
-            r'&#34;hydrogen&#34;: &#34;sonata&#34;\}</textarea>'],
+            r'&#34;hydrogen&#34;: &#34;sonata&#34;\s*'
+            r'\}</textarea>'],
         'status_code': 200},
     {
         'path': '/supplier_contracts/10',
@@ -2081,7 +2087,9 @@ def virtual_bill_titles():
         'status_code': 200,
         'regexes': [
             r"\{\s*&#34;last_import_keys&#34;: \{\s*"
-            r'&#34;.&#34;: &#34;1960-11-30 00:00_example.csv&#34;\}\}',
+            r'&#34;.&#34;: &#34;1960-11-30 00:00_example.csv&#34;\s*'
+            r'\}\s*'
+            r'\}',
 
             # Check link to channel snags
             r"days_hidden",
@@ -16052,7 +16060,9 @@ def virtual_bill(supply_source):
             r'"start-day": 1,\s*'
             r'"start-month": 11,\s*'
             r'"start_hour": 16.5,\s*'
-            r'"weekend": false\}\]',
+            r'"weekend": false\s*'
+            r'\}\s*'
+            r'\]',
 
             r'"005": \{\s*'
             r'"amber-gbp-per-kwh": -0.00480,\s*'
@@ -16062,7 +16072,8 @@ def virtual_bill(supply_source):
             r'"gbp-per-kvarh": 0.00151,\s*'
             r'"gbp-per-mpan-per-day": 1.25890,\s*'
             r'"green-gbp-per-kwh": -0.00480,\s*'
-            r'"red-gbp-per-kwh": -0.00480}',
+            r'"red-gbp-per-kwh": -0.00480\s*'
+            r'\}',
 
             r'"605,606": \{',
             r'"455": \{\s*'
@@ -16073,7 +16084,8 @@ def virtual_bill(supply_source):
             r'"gbp-per-kvarh": 0.00250,\s*',
             r'"gbp-per-mpan-per-day": 0.04170,\s*'
             r'"green-gbp-per-kwh": 0.00079,\s*'
-            r'"red-gbp-per-kwh": 0.08838}',
+            r'"red-gbp-per-kwh": 0.08838\s*'
+            r'\}',
 
             r'"700": \{'],
 
