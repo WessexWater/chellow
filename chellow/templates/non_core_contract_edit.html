@@ -95,6 +95,28 @@
 /* Requires the 'elexonportal_scripting_key' to be set in the 'configuration'
    non-core contract */
 								</pre>
+							{% elif contract.name == 'configuration' %}
+							  <h4>Example</h4>
+								<pre>{
+{
+  "background_colour": "aquamarine",
+  "batch_reports": [
+    1
+  ],
+  "ecoes": {
+    "password": "a",
+    "prefix": "https://ecoes2.co.uk/",
+    "user_name": "a"
+  },
+  "elexonportal_scripting_key": "xxx",
+  "site_links": [
+    {
+      "href": "https://maps.google.com/maps?q=",
+      "name": "Google Maps"
+    }
+  ]
+}
+								</pre>
 							{% endif %}
 							<br>
 							<input type="submit" value="Update">

@@ -202,7 +202,7 @@ def check_permissions(*args, **kwargs):
             '/elexonportal/file/download/BESTVIEWPRICES_FILE', '/ecoes',
             '/elexonportal/file/download/TLM_FILE',
             '/elexonportal/file/download/RCRC_FILE',
-            '/ecoes/login.asp', '/ecoes/saveportfolioMpans.asp', '/hh_api'):
+            '/ecoes/NonDomesticCustomer/ExportPortfolioMPANs', '/hh_api'):
         return
 
     if g.user is not None:
@@ -274,12 +274,12 @@ def elexonportal(fname):
 
 @app.route('/ecoes')
 def ecoes_get():
-    return 'ecoes'
+    return 'ecoes_get'
 
 
-@app.route('/ecoes/login.asp', methods=['POST'])
-def ecoes_login_post():
-    return chellow_redirect('/ecoes/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa')
+@app.route('/ecoes', methods=['POST'])
+def ecoes_post():
+    return 'ecoes_post'
 
 
 @app.route('/hh_api')
@@ -313,7 +313,7 @@ def chellowjs_get():
     return response
 
 
-@app.route('/ecoes/saveportfolioMpans.asp', methods=['GET'])
+@app.route('/ecoes/NonDomesticCustomer/ExportPortfolioMPANs', methods=['GET'])
 def ecoes_mpans_get():
     return Response(
         ','.join(

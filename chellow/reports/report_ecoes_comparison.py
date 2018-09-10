@@ -3,7 +3,6 @@ import csv
 from sqlalchemy.sql.expression import null
 from werkzeug.exceptions import BadRequest
 import requests
-import urllib.parse
 from itertools import chain
 from chellow.models import Contract, Era, Supply, Source, Session, Party
 from chellow.views import chellow_redirect
@@ -46,14 +45,10 @@ def content(user):
         s = requests.Session()
         r = s.get(ecoes_props['prefix'], proxies=proxies)
         r = s.post(
-            ecoes_props['prefix'] + "login.asp",
-            data={
-                'userName': ecoes_props['user_name'],
-                'password': ecoes_props['password'],
-                'beenHereBefore': '1',
-                'forceLogout': '1'}, allow_redirects=False)
-        location = r.headers['Location']
-        guid = urllib.parse.quote_plus(location[19:])
+            ecoes_props['prefix'], data={
+                'Username': ecoes_props['user_name'],
+                'Password': ecoes_props['password'],
+                }, allow_redirects=False)
 
         mpans = [
             v for (v,) in chain(
@@ -69,9 +64,9 @@ def content(user):
                     Source.code != '3rd-party',
                     Era.exp_mpan_core != null()).distinct().order_by(
                     Era.exp_mpan_core))]
-
         r = s.get(
-            ecoes_props['prefix'] + 'saveportfolioMpans.asp?guid=' + guid,
+            ecoes_props['prefix'] +
+            'NonDomesticCustomer/ExportPortfolioMPANs?fileType=csv',
             proxies=proxies)
 
         writer.writerow(
@@ -102,9 +97,10 @@ def content(user):
 
             ecoes = dict(zip(ecoes_titles, values))
 
-            mpan_spaces = ecoes['mpan-core'][:2] + ' ' + \
-                ecoes['mpan-core'][2:6] + ' ' + \
-                ecoes['mpan-core'][6:10] + ' ' + ecoes['mpan-core'][-3:]
+            mpan_spaces = ' '.join(
+                (
+                    ecoes['mpan-core'][:2], ecoes['mpan-core'][2:6],
+                    ecoes['mpan-core'][6:10], ecoes['mpan-core'][-3:]))
 
             ecoes_energisation_status = ecoes['energisation-status']
             disconnected = ecoes_energisation_status == ''
@@ -165,11 +161,14 @@ def content(user):
                 else:
                     ecoes_ssc_int = None
 
-                if ecoes_ssc_int != chellow_ssc_int and not \
-                        (
-                            ecoes_ssc_int is None and
-                            chellow_ssc_int is None):
+                if ecoes_ssc_int != chellow_ssc_int and not (
+                        ecoes_ssc_int is None and chellow_ssc_int is None):
+                    pass
+                    '''
+                    Temporarily commented out because the SSC is missing
+
                     problem += "The SSCs don't match. "
+                    '''
 
                 chellow_supplier = supplier_contract.party.participant.code
                 if chellow_supplier != ecoes['supplier']:
