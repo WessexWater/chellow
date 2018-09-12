@@ -14910,6 +14910,7 @@ finally:
             r'<td>95576.47</td>\s*'
             r'<td>\[\(&#39;aahedc-gbp&#39;, Decimal\(&#39;0.89&#39;\)\),.*'
             r'capacity-gbp.*'
+            r'capacity-gsp-kwh.*'
             r'\(&#39;ccl-gbp&#39;, Decimal\(&#39;100\.0&#39;\)\),.*'
             r'cfd-fit-nbp-kwh&#39;, Decimal\(&#39;81146.67&#39;\).*'
             r'\(&#39;duos-availability-kva&#39;, &#39;220&#39;\).*'
