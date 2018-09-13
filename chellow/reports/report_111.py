@@ -25,13 +25,13 @@ from decimal import Decimal
 from zish import loads, ZishLocationException
 
 
-def add_gap(gaps, elem, start_date, finish_date, is_virtual, gbp):
+def add_gap(caches, gaps, elem, start_date, finish_date, is_virtual, gbp):
     try:
         elgap = gaps[elem]
     except KeyError:
         elgap = gaps[elem] = {}
 
-    hhs = hh_range({}, start_date, finish_date)
+    hhs = hh_range(caches, start_date, finish_date)
     hhgbp = gbp / len(hhs)
 
     for hh_start in hhs:
@@ -264,7 +264,8 @@ def content(batch_id, bill_id, contract_id, start_date, finish_date, user):
                                 elem = k[:-4]
                                 covered_elems.add(elem)
                                 add_gap(
-                                    gaps, elem, covered_bill.start_date,
+                                    caches, gaps, elem,
+                                    covered_bill.start_date,
                                     covered_bill.finish_date, False, v)
 
                         for k, v in covered_rates.items():
@@ -373,7 +374,8 @@ def content(batch_id, bill_id, contract_id, start_date, finish_date, user):
 
                             if k.endswith('-gbp') and k != 'net-gbp':
                                 add_gap(
-                                    gaps, k[:-4], ss_start, ss_finish, True, v)
+                                    caches, gaps, k[:-4], ss_start,
+                                    ss_finish, True, v)
 
                         for k in virtual_bill.keys():
                             if k.endswith('-gbp'):
@@ -461,7 +463,7 @@ def content(batch_id, bill_id, contract_id, start_date, finish_date, user):
                     for k, v in loads(bill.breakdown).items():
                         if k.endswith('-gbp'):
                             add_gap(
-                                gaps, k[:-4], bill.start_date,
+                                caches, gaps, k[:-4], bill.start_date,
                                 bill.finish_date, False, v)
 
             clumps = []
