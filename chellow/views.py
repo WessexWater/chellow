@@ -1206,7 +1206,7 @@ def dc_rate_script_add_post(contract_id):
     try:
         contract = Contract.get_dc_by_id(g.sess, contract_id)
         start_date = req_date('start')
-        rate_script = contract.insert_rate_script(g.sess, start_date, '')
+        rate_script = contract.insert_rate_script(g.sess, start_date, {})
         g.sess.commit()
         return chellow_redirect(
             '/dc_rate_scripts/' + str(rate_script.id), 303)
