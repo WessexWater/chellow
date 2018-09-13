@@ -32,7 +32,7 @@ def add_gap(caches, gaps, elem, start_date, finish_date, is_virtual, gbp):
         elgap = gaps[elem] = {}
 
     hhs = hh_range(caches, start_date, finish_date)
-    hhgbp = gbp / len(hhs)
+    hhgbp = 0 if gbp is None else gbp / len(hhs)
 
     for hh_start in hhs:
         try:
