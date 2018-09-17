@@ -19312,18 +19312,20 @@ def virtual_bill(ds):
             "the batch\."]},
 
     {
-        'name': "Stark MOP bill parser",
+        'name': "Stark MOP bill parser for annual charges",
         'path': '/mop_bill_imports',
         'method': 'post',
         'data': {
             'mop_batch_id': "14"},
-        'files': {'import_file': 'test/electricity/bills.mop.stark.xlsx'},
+        'files': {
+            'import_file': 'test/electricity/bills.annual.mop.stark.xlsx'
+        },
         'status_code': 303,
         'regexes': [
             r"/mop_bill_imports/17"]},
 
     {
-        'name': "Stark MOP bill parser",
+        'name': "Stark MOP bill parser for annual charges",
         'path': '/mop_bill_imports/17',
         'tries': {},
         'status_code': 200,
@@ -19432,4 +19434,30 @@ def virtual_bill(ds):
         'regexes': [
             r"/dc_rate_scripts/56"],
         'status_code': 303},
+
+    {
+        'name': "Stark MOP bill parser for activities",
+        'path': '/mop_bill_imports',
+        'method': 'post',
+        'data': {
+            'mop_batch_id': "14"},
+        'files': {
+            'import_file': 'test/electricity/bills.activity.mop.stark.xlsx'
+        },
+        'status_code': 303,
+        'regexes': [
+            r"/mop_bill_imports/19"
+        ]
+    },
+
+    {
+        'name': "Stark MOP bill parser for activities",
+        'path': '/mop_bill_imports/19',
+        'tries': {},
+        'status_code': 200,
+        'regexes': [
+            r"All the bills have been successfully loaded and attached to "
+            "the batch\."
+        ]
+    },
 ]

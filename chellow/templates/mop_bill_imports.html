@@ -34,6 +34,28 @@
 							<input type="file" name="import_file" size="45"
 								value="{{request.values.import_file}}">
 							<input type="submit" value="Import">
+							<p>Valid file name extensions are {{parser_names}}.</p>
+							<table class="DataTable widthAuto">
+								<caption>The '.csv' Format</caption>
+								<tbody>
+									<tr>
+										<td>
+											# Bill Type (N - Normal, W - Withdrawn or F -Final)
+										</td>
+										<td>Account Reference</td>
+										<td>Mpans</td>
+										<td>Invoice Reference</td>
+										<td>Issue Date (YYYY-mm-dd HH:MM)</td>
+										<td>Start Date (YYYY-mm-dd HH:MM)</td>
+										<td>Finish Date (YYYY-mm-dd HH:MM)</td>
+										<td>kWh</td>
+										<td>Net</td>
+										<td>VAT</td>
+										<td>Gross</td>
+										<td>Breakdown</td>
+									</tr>
+								</tbody>
+							</table>
 						</fieldset>
 					</form>
 				</div>

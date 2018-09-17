@@ -3639,7 +3639,8 @@ def mop_bill_imports_get():
     return render_template(
         'mop_bill_imports.html', importer_ids=sorted(
             chellow.bill_importer.get_bill_import_ids(batch.id),
-            reverse=True), batch=batch)
+            reverse=True), batch=batch,
+        parser_names=chellow.bill_importer.find_parser_names())
 
 
 @app.route('/mop_bill_imports', methods=['POST'])
