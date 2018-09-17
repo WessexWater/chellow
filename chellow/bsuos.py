@@ -121,8 +121,7 @@ class BsuosImporter(threading.Thread):
                         urls = set()
                         if props.get('discover_urls', False):
                             res = requests.get(
-                                'https://www.nationalgrid.com/uk/electricity/'
-                                'charging-and-methodology/'
+                                'https://www.nationalgrideso.com/charging/'
                                 'balancing-services-use-system-bsuos-charges')
                             src = res.text
                             for pref in (
@@ -133,8 +132,8 @@ class BsuosImporter(threading.Thread):
                                 idx_quote = src.find('"', idx_start)
                                 title = src[idx_start:idx_quote]
                                 urls.add(
-                                    'https://www.nationalgrid.com/'
-                                    'sites/default/files/documents/' + title)
+                                    'https://www.nationalgrideso.com/'
+                                    'sites/eso/files/documents/' + title)
 
                         urls.update(set(props.get('urls', [])))
                         url_list = sorted(urls)
