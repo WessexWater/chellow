@@ -1205,7 +1205,7 @@ def general_import_site_snag_ignore(sess, action, vals, args):
                 Snag.is_ignored != false(), Snag.start_date <= finish_date,
                 or_(Snag.finish_date == null(),
                     Snag.finish_date >= start_date)):
-            snag.is_ignored(True)
+            snag.set_is_ignored(True)
 
     elif action == "update":
         raise BadRequest(
@@ -1238,7 +1238,7 @@ def general_import_channel_snag_ignore(sess, action, vals, args):
                 channel_query.filter(Snag.start_date <= finish_date)
 
             for snag in channel_query:
-                snag.is_ignored = True
+                snag.set_is_ignored(True)
 
     elif action == "update":
         raise BadRequest(
