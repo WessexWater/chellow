@@ -15,6 +15,7 @@ from types import MappingProxyType
 from datetime import timedelta
 from zish import loads, dumps
 import chellow.bank_holidays
+from math import floor
 
 
 def get_times(sess, caches, start_date, finish_date, forecast_date):
@@ -655,5 +656,6 @@ def find_cv(sess, caches, g_cv_id, dt, g_ldz_code):
             avg_cv = year_cache[dt.month]
         except KeyError:
             cv_list = [float(v['cv']) for v in cvs.values()]
-            avg_cv = year_cache[dt.month] = sum(cv_list) / len(cv_list)
+            avg_cv = year_cache[dt.month] = floor(
+                (sum(cv_list) / len(cv_list)) * 10) / 10
     return cv, avg_cv
