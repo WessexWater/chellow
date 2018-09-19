@@ -114,6 +114,7 @@ class GBillImporter(threading.Thread):
                     self.successful_bills.append(raw_bill)
                     sess.expunge(g_bill)
                 except BadRequest as e:
+                    sess.rollback()
                     raw_bill['error'] = e.description
                     self.failed_bills.append(raw_bill)
 
