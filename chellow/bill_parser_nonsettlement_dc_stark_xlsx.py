@@ -8,15 +8,25 @@ from sqlalchemy import or_, null
 from chellow.models import Session, Era
 
 
-def get_date(row, name, datemode):
-    val = get_value(row, name)
+def get_date(title_row, row, name, datemode):
+    val = get_value(title_row, row, name)
     if isinstance(val, float):
         return to_utc(Datetime(*xldate_as_tuple(val, datemode)))
     else:
         return None
 
 
-def get_value(row, idx):
+def get_value(title_row, row, name):
+    idx = None
+    name = name.strip().lower()
+    for i, title_cell in enumerate(title_row):
+        if str(title_cell.value).strip().lower() == name:
+            idx = i
+            break
+    if idx is None:
+        raise BadRequest(
+            "The name '{name}' can't be found in the titles "
+            "{title_row}.".format(name=name, title_row=title_row))
     try:
         return row[idx].value
     except IndexError:
@@ -25,19 +35,19 @@ def get_value(row, idx):
             " which is beyond the end of the row. ")
 
 
-def get_str(row, idx):
-    return get_value(row, idx).strip()
+def get_str(title_row, row, name):
+    return get_value(title_row, row, name).strip()
 
 
-def get_dec(row, idx):
+def get_dec(title_row, row, name):
     try:
-        return Decimal(str(get_value(row, idx)))
+        return Decimal(str(get_value(title_row, row, name)))
     except decimal.InvalidOperation:
         return None
 
 
-def get_int(row, idx):
-    return int(get_value(row, idx))
+def get_int(title_row, row, name):
+    return int(get_value(title_row, row, name))
 
 
 METER_RATE = Decimal('60.00')
@@ -72,18 +82,21 @@ class Parser():
             title_row = self.sheet.row(0)
             for row_index in range(1, self.sheet.nrows):
                 row = self.sheet.row(row_index)
-                val = get_value(row, 0)
+                val = get_value(title_row, row, 'mpan ref')
                 if val is None or val == '':
                     break
 
                 self._set_last_line(row_index, val)
-                msn = str(get_value(row, 4)).strip()
-                mpan_core = parse_mpan_core(str(get_int(row, 5)))
-                start_date = get_date(row, 6, self.book.datemode)
+                msn = str(get_value(title_row, row, 'meter')).strip()
+                mpan_core = parse_mpan_core(
+                    str(get_int(title_row, row, 'mpan ref')))
+                start_date = get_date(
+                    title_row, row, 'start', self.book.datemode)
                 issue_date = start_date
-                finish_date = get_date(row, 7, self.book.datemode) + \
-                    Timedelta(days=1) - HH
-                check = get_str(row, 8)
+                finish_date = get_date(
+                    title_row, row, 'end', self.book.datemode) + Timedelta(
+                        days=1) - HH
+                check = get_str(title_row, row, 'check')
                 if check != 'Billed':
                     continue
 

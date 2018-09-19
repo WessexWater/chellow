@@ -19460,4 +19460,31 @@ def virtual_bill(ds):
             "the batch\."
         ]
     },
+
+    {
+        'name': "Stark DC Non-settlement bill parser (old)",
+        'path': '/dc_bill_imports',
+        'method': 'post',
+        'data': {
+            'dc_batch_id': "13"},
+        'files': {
+            'import_file': 'test/electricity/bills_old.nonsettlement.dc.stark.'
+            'xlsx'
+        },
+        'status_code': 303,
+        'regexes': [
+            r"/dc_bill_imports/20"
+        ]
+    },
+
+    {
+        'name': "Stark DC Non-settlement bill parser (old)",
+        'path': '/dc_bill_imports/20',
+        'tries': {},
+        'status_code': 200,
+        'regexes': [
+            r"All the bills have been successfully loaded and attached to "
+            "the batch\."
+        ]
+    }
 ]
