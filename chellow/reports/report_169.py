@@ -45,7 +45,11 @@ def content(
             base_name.append('filter')
 
         outs = []
-        titles = "MPAN Core,Date," + ','.join(map(str, range(48)))
+        titles = ','.join(
+            [
+                'Import MPAN Core', 'Export MPAN Core', 'Import Related?',
+                'Channel Type', 'Date'] + list(map(str, range(48)))
+        )
 
         running_name, finished_name = chellow.dloads.make_names(
             '_'.join(base_name) + ('.zip' if is_zipped else '.csv'), user)
@@ -57,10 +61,19 @@ def content(
 
         for supply in supplies:
             era = supply.find_era_at(sess, finish_date)
-            if era is None or era.imp_mpan_core is None:
-                mpan_core_str = "NA"
+            if era is None:
+                imp_mpan_core_str = exp_mpan_core_str = 'NA'
             else:
-                mpan_core_str = era.imp_mpan_core
+                if era.imp_mpan_core is None:
+                    imp_mpan_core_str = "NA"
+                else:
+                    imp_mpan_core_str = era.imp_mpan_core
+                if era.exp_mpan_core is None:
+                    exp_mpan_core_str = "NA"
+                else:
+                    exp_mpan_core_str = era.exp_mpan_core
+
+            imp_related_str = "TRUE" if imp_related else "FALSE"
 
             hh_data = iter(
                 sess.query(HhDatum).join(Channel).join(Era).filter(
@@ -74,7 +87,8 @@ def content(
             for current_date in hh_range(cache, start_date, finish_date):
                 if current_date.hour == 0 and current_date.minute == 0:
                     outs.append(
-                        "\n" + mpan_core_str + "," +
+                        "\n" + imp_mpan_core_str + "," + exp_mpan_core_str +
+                        "," + imp_related_str + "," + channel_type + "," +
                         current_date.strftime('%Y-%m-%d'))
                 outs.append(",")
 
@@ -82,7 +96,12 @@ def content(
                     outs.append(str(datum.value))
                     datum = next(hh_data, None)
             if is_zipped:
-                fname = mpan_core_str + '_' + str(supply.id) + '.csv'
+                fname = '_'.join(
+                    (
+                        imp_mpan_core_str, exp_mpan_core_str,
+                        str(supply.id) + '.csv'
+                    )
+                )
                 zf.writestr(fname.encode('ascii'), titles + ''.join(outs))
             else:
                 tf.write(''.join(outs))
