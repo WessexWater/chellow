@@ -2,11 +2,11 @@ from datetime import datetime as Datetime
 from dateutil.relativedelta import relativedelta
 import pytz
 import traceback
-from sqlalchemy.sql.expression import true
+from sqlalchemy.sql.expression import true, or_, null
 from chellow.utils import (
     HH, hh_min, hh_max, hh_format, req_int, req_bool, csv_make_val)
 from chellow.views import chellow_redirect
-from chellow.models import Supply, Site, SiteEra, Session
+from chellow.models import Supply, Site, SiteEra, Session, Era
 import chellow.computer
 from flask import g
 import csv
@@ -35,7 +35,36 @@ def content(
         supply = Supply.get_by_id(sess, supply_id)
         forecast_date = chellow.computer.forecast_date()
         day_start = start_date
-        prev_bill_titles = []
+        header_titles = [
+            'MPAN Core', 'Site Code', 'Site Name', 'Account', 'From', 'To'
+        ]
+
+        bill_titles = []
+        # Find titles
+        for era in sess.query(Era).filter(
+                Era.supply == supply, Era.start_date <= finish_date, or_(
+                    Era.finish_date == null(),
+                    Era.finish_date >= start_date)):
+
+            if is_import:
+                cont = era.imp_supplier_contract
+            else:
+                cont = era.exp_supplier_contract
+
+            for title in chellow.computer.contract_func(
+                    caches, cont, 'virtual_bill_titles')():
+                if title not in bill_titles:
+                    bill_titles.append(title)
+
+            ssc = era.ssc
+            if ssc is not None:
+                for mr in ssc.measurement_requirements:
+                    for suffix in ('-kwh', '-rate', '-gbp'):
+                        title = mr.tpr.code + suffix
+                        if title not in bill_titles:
+                            bill_titles.append(title)
+
+        writer.writerow(header_titles + bill_titles)
 
         while not day_start > finish_date:
             day_finish = day_start + relativedelta(days=1) - HH
@@ -48,16 +77,6 @@ def content(
                     sess, chunk_start, chunk_finish, forecast_date, era,
                     is_import, caches)
 
-                sup_con = ss.supplier_contract
-                bill_titles = chellow.computer.contract_func(
-                    caches, sup_con, 'virtual_bill_titles')()
-                if bill_titles != prev_bill_titles:
-                    writer.writerow(
-                        [
-                            'MPAN Core', 'Site Code', 'Site Name', 'Account',
-                            'From', 'To'] + bill_titles)
-                    prev_bill_titles = bill_titles
-
                 site = sess.query(Site).join(SiteEra).filter(
                     SiteEra.era == era, SiteEra.is_physical == true()).one()
                 row = [
@@ -65,7 +84,7 @@ def content(
                     hh_format(ss.start_date), hh_format(ss.finish_date)]
 
                 chellow.computer.contract_func(
-                    caches, sup_con, 'virtual_bill')(ss)
+                    caches, ss.supplier_contract, 'virtual_bill')(ss)
                 bill = ss.supplier_bill
                 for title in bill_titles:
                     if title in bill:
