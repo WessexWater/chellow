@@ -6,15 +6,20 @@ from werkzeug.exceptions import BadRequest
 from io import StringIO
 
 
-def parse_date(date_str, is_finish=False):
-    date_str = date_str.strip()
-    if len(date_str) == 10:
-        dt = utc_datetime_parse(date_str, "%Y-%m-%d")
-        if is_finish:
-            dt = dt + relativedelta(days=1) - HH
-    else:
-        dt = utc_datetime_parse(date_str, "%Y-%m-%d %H:%M")
-    return validate_hh_start(dt)
+def parse_date(row, idx, is_finish=False):
+    date_str = row[idx].strip()
+    try:
+        if len(date_str) == 10:
+            dt = utc_datetime_parse(date_str, "%Y-%m-%d")
+            if is_finish:
+                dt = dt + relativedelta(days=1) - HH
+        else:
+            dt = utc_datetime_parse(date_str, "%Y-%m-%d %H:%M")
+        return validate_hh_start(dt)
+    except ValueError as e:
+        raise BadRequest(
+            "Difficulty parsing a date in the row {row} at position "
+            "{idx}: {e}".format(row=row, idx=idx, e=e))
 
 
 class Parser():
@@ -40,9 +45,9 @@ class Parser():
             account = self.vals[1]
             mpan_strings = self.vals[2].split(",")
             reference = self.vals[3]
-            issue_date = parse_date(self.vals[4])
-            start_date = parse_date(self.vals[5])
-            finish_date = parse_date(self.vals[6], True)
+            issue_date = parse_date(self.vals, 4)
+            start_date = parse_date(self.vals, 5)
+            finish_date = parse_date(self.vals, 6, True)
 
             kwh = self.to_decimal(7, 'kwh')
             net = self.to_decimal(8, 'net', True)
@@ -75,10 +80,10 @@ class Parser():
                         'msn': self.vals[i], 'mpan': self.vals[i + 1],
                         'coefficient': self.to_decimal(i + 2, 'coefficient'),
                         'units': self.vals[i + 3], 'tpr_code': tpr_code,
-                        'prev_date': parse_date(self.vals[i + 5]),
+                        'prev_date': parse_date(self.vals, i + 5),
                         'prev_value': Decimal(self.vals[i + 6]),
                         'prev_type_code': self.vals[i + 7],
-                        'pres_date': parse_date(self.vals[i + 8]),
+                        'pres_date': parse_date(self.vals, i + 8),
                         'pres_value': Decimal(self.vals[i + 9]),
                         'pres_type_code': self.vals[i + 10]})
 
