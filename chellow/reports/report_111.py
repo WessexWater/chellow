@@ -372,7 +372,10 @@ def content(batch_id, bill_id, contract_id, start_date, finish_date, user):
                                     "For key " + str(k) + " and value " +
                                     str(v) + ". " + str(detail))
 
-                            if k.endswith('-gbp') and k != 'net-gbp':
+                            if all(
+                                    (
+                                        k.endswith('-gbp'),
+                                        k != 'net-gbp', v != 0)):
                                 add_gap(
                                     caches, gaps, k[:-4], ss_start,
                                     ss_finish, True, v)
