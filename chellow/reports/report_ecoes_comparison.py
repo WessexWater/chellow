@@ -163,12 +163,7 @@ def content(user):
 
                 if ecoes_ssc_int != chellow_ssc_int and not (
                         ecoes_ssc_int is None and chellow_ssc_int is None):
-                    pass
-                    '''
-                    Temporarily commented out because the SSC is missing
-
                     problem += "The SSCs don't match. "
-                    '''
 
                 chellow_supplier = supplier_contract.party.participant.code
                 if chellow_supplier != ecoes['supplier']:
