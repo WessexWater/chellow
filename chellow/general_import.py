@@ -1213,6 +1213,14 @@ def general_import_site_snag_ignore(sess, action, vals, args):
 
 
 def general_import_channel_snag_ignore(sess, action, vals, args):
+    _channel_snag_update(sess, action, vals, args, True)
+
+
+def general_import_channel_snag_unignore(sess, action, vals, args):
+    _channel_snag_update(sess, action, vals, args, False)
+
+
+def _channel_snag_update(sess, action, vals, args, ignore):
     if action == "insert":
         mpan_core_str = add_arg(args, "MPAN Core", vals, 0)
         mpan_core = parse_mpan_core(mpan_core_str)
@@ -1238,7 +1246,7 @@ def general_import_channel_snag_ignore(sess, action, vals, args):
                 channel_query.filter(Snag.start_date <= finish_date)
 
             for snag in channel_query:
-                snag.set_is_ignored(True)
+                snag.set_is_ignored(ignore)
 
     elif action == "update":
         raise BadRequest(
