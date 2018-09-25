@@ -36,7 +36,8 @@ def content(
         forecast_date = chellow.computer.forecast_date()
         day_start = start_date
         header_titles = [
-            'MPAN Core', 'Site Code', 'Site Name', 'Account', 'From', 'To'
+            'MPAN Core', 'Site Code', 'Site Name', 'Account', 'From', 'To',
+            'Is Forecast?'
         ]
 
         bill_titles = []
@@ -81,7 +82,8 @@ def content(
                     SiteEra.era == era, SiteEra.is_physical == true()).one()
                 row = [
                     ss.mpan_core, site.code, site.name, ss.supplier_account,
-                    hh_format(ss.start_date), hh_format(ss.finish_date)]
+                    hh_format(ss.start_date), hh_format(ss.finish_date),
+                    ss.years_back > 0]
 
                 chellow.computer.contract_func(
                     caches, ss.supplier_contract, 'virtual_bill')(ss)
