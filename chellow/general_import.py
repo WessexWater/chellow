@@ -1236,16 +1236,21 @@ def _channel_snag_update(sess, action, vals, args, ignore):
         finish_date = parse_hh_start(finish_str)
 
         for era in supply.find_eras(sess, start_date, finish_date):
-            channel_query = sess.query(Snag).join(Channel).filter(
-                Channel.era_id == era.id, Channel.imp_related == imp_related,
-                Channel.channel_type == channel_type,
-                Snag.is_ignored == false(), Snag.description == description,
-                or_(Snag.finish_date == null(),
-                    Snag.finish_date >= start_date))
-            if finish_date is not None:
-                channel_query.filter(Snag.start_date <= finish_date)
+            channel = sess.query(Channel).filter(
+                Channel.era == era, Channel.imp_related == imp_related,
+                Channel.channel_type == channel_type).first()
+            if channel is not None:
+                snag_query = sess.query(Snag).filter(
+                    Snag.channel == channel, Snag.is_ignored == (not ignore),
+                    Snag.description == description, or_(
+                        Snag.finish_date == null(),
+                        Snag.finish_date >= start_date
+                    ))
 
-            for snag in channel_query:
+            if finish_date is not None:
+                snag_query = snag_query.filter(Snag.start_date <= finish_date)
+
+            for snag in snag_query:
                 snag.set_is_ignored(ignore)
 
     elif action == "update":
