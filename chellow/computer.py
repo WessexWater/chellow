@@ -136,7 +136,9 @@ def forecast_date():
     return utc_datetime(now.year, now.month, 1)
 
 
-def displaced_era(sess, caches, site, start_date, finish_date, forecast_date):
+def displaced_era(
+        sess, caches, site, start_date, finish_date, forecast_date,
+        has_scenario_generation=False):
     if (start_date.year, start_date.month) != \
             (finish_date.year, finish_date.month):
         raise BadRequest(
@@ -170,69 +172,11 @@ def displaced_era(sess, caches, site, start_date, finish_date, forecast_date):
                 era.pc.code + hh_format(era.start_date) +
                 era.imp_mpan_core] = era
 
-    if has_displaced and len(eras) > 0:
+    if (has_displaced or has_scenario_generation) and len(eras) > 0:
         era = eras[sorted(eras.keys())[0]]
     else:
         era = None
     return era
-
-
-def get_data_sources(data_source, start_date, finish_date, forecast_date=None):
-    if forecast_date is None:
-        forecast_date = data_source.forecast_date
-
-    if all(
-            (
-                data_source.start_date == start_date,
-                data_source.finish_date == finish_date,
-                forecast_date == data_source.forecast_date)):
-        yield data_source
-    elif data_source.site is None:
-        if data_source.is_import:
-            eras = data_source.sess.query(Era).filter(
-                Era.supply == data_source.supply,
-                Era.imp_mpan_core != null(), Era.start_date <= finish_date,
-                or_(Era.finish_date == null(), Era.finish_date >= start_date))
-        else:
-            eras = data_source.sess.query(Era).filter(
-                Era.supply == data_source.supply, Era.exp_mpan_core != null(),
-                Era.start_date <= finish_date,
-                or_(Era.finish_date == null(), Era.finish_date >= start_date))
-
-        for era in eras:
-            chunk_start = hh_max(era.start_date, start_date)
-            chunk_finish = hh_min(era.finish_date, finish_date)
-
-            ds = SupplySource(
-                data_source.sess, chunk_start, chunk_finish, forecast_date,
-                era, data_source.is_import, data_source.caches,
-                data_source.bill, data_source.era_maps, data_source.deltas)
-            yield ds
-
-    else:
-        month_start = utc_datetime(start_date.year, start_date.month)
-        while month_start <= finish_date:
-            month_finish = month_start + relativedelta(months=1) - HH
-            chunk_start = hh_max(month_start, start_date)
-            chunk_finish = hh_min(month_finish, finish_date)
-            if data_source.stream_focus == 'gen-used' and \
-                    data_source.era is not None:
-                era = displaced_era(
-                    data_source.sess, data_source.caches, data_source.site,
-                    chunk_start, chunk_finish, forecast_date)
-                if era is None:
-                    return
-            else:
-                era = data_source.era
-
-            site_ds = SiteSource(
-                data_source.sess, data_source.site, chunk_start, chunk_finish,
-                forecast_date, data_source.caches, era, data_source.era_maps,
-                data_source.deltas)
-            if data_source.stream_focus == '3rd-party-used':
-                site_ds.revolve_to_3rd_party_used()
-            month_start += relativedelta(months=1)
-            yield site_ds
 
 
 def _tpr_dict(sess, caches, tpr_code):
@@ -653,6 +597,42 @@ class SiteSource(DataSource):
             hh['hist-kw'] = hh['hist-kwh'] * 2
         self.stream_focus = 'gen-used'
 
+    def get_data_sources(self, start_date, finish_date, forecast_date=None):
+        if forecast_date is None:
+            forecast_date = self.forecast_date
+
+        if all(
+                (
+                    self.start_date == start_date,
+                    self.finish_date == finish_date,
+                    forecast_date == self.forecast_date)):
+            yield self
+        else:
+            month_start = utc_datetime(start_date.year, start_date.month)
+            while month_start <= finish_date:
+                month_finish = month_start + relativedelta(months=1) - HH
+                chunk_start = hh_max(month_start, start_date)
+                chunk_finish = hh_min(month_finish, finish_date)
+                if self.stream_focus == 'gen-used' and \
+                        self.era is not None and (
+                        self.deltas is None or len(self.deltas['hhs']) == 0):
+                    era = displaced_era(
+                        self.sess, self.caches, self.site, chunk_start,
+                        chunk_finish, forecast_date)
+                    if era is None:
+                        return
+                else:
+                    era = self.era
+
+                site_ds = SiteSource(
+                    self.sess, self.site, chunk_start, chunk_finish,
+                    forecast_date, self.caches, era, self.era_maps,
+                    self.deltas)
+                if self.stream_focus == '3rd-party-used':
+                    site_ds.revolve_to_3rd_party_used()
+                month_start += relativedelta(months=1)
+                yield site_ds
+
 
 ACTUAL_READ_TYPES = ['N', 'N3', 'C', 'X', 'CP']
 
@@ -676,10 +656,15 @@ class SupplySource(DataSource):
 
         self.site = None
         self.supply = era.supply
+        self.supply_name = self.supply.name
         self.source_code = self.supply.source.code
         self.dno = self.supply.dno
         self.dno_code = self.dno.dno_code
         self.era = era
+        if self.supply.generator_type is None:
+            self.generator_type_code = None
+        else:
+            self.generator_type_code = self.supply.generator_type.code
 
         era_map_llfcs = self.era_map_llfcs.get(self.dno_code, {})
         self.is_import = is_import
@@ -704,23 +689,30 @@ class SupplySource(DataSource):
             else:
                 self.supplier_contract = era.imp_supplier_contract
         else:
-            self.mpan_core = era.exp_mpan_core
-
-            if era.exp_llfc.code in era_map_llfcs:
-                llfc_code = era_map_llfcs[era.exp_llfc.code]
+            if era.exp_llfc is None:
+                self.mpan_core = llfc_key = "new_export"
+                llfc_key = "new_export"
+            else:
+                self.mpan_core = era.exp_mpan_core
+                llfc_key = era.exp_llfc.code
+            if llfc_key in era_map_llfcs:
+                llfc_code = era_map_llfcs[llfc_key]
                 self.llfc = self.dno.get_llfc_by_code(
                     sess, llfc_code, start_date)
             else:
                 self.llfc = era.exp_llfc
 
-            self.sc = era.exp_sc
+            self.sc = 0 if era.exp_sc is None else era.exp_sc
             self.supplier_account = era.exp_supplier_account
 
-            if era.exp_supplier_contract.id in self.era_map_supplier_contracts:
+            if era.exp_supplier_contract is None:
+                sup_key = "new_export"
+            else:
+                sup_key = era.exp_supplier_contract.id
+
+            if sup_key in self.era_map_supplier_contracts:
                 self.supplier_contract = Contract.get_supplier_by_id(
-                    sess,
-                    self.era_map_supplier_contracts[
-                        era.exp_supplier_contract.id])
+                    sess, self.era_map_supplier_contracts[sup_key])
             else:
                 self.supplier_contract = era.exp_supplier_contract
 
@@ -742,6 +734,7 @@ class SupplySource(DataSource):
             self.cop_code = era.cop.code
 
         self.id = self.mpan_core
+        self.msn = era.msn
         self.llfc_code = self.llfc.code
         self.voltage_level = self.llfc.voltage_level
         self.voltage_level_code = self.voltage_level.code
@@ -1397,3 +1390,43 @@ order by hh_datum.start_date
 
                 hh['msp-kwh'] += delt
                 hh['msp-kw'] += delt * 2
+
+    def get_data_sources(self, start_date, finish_date, forecast_date=None):
+        if forecast_date is None:
+            forecast_date = self.forecast_date
+
+        if all(
+                (
+                    self.start_date == start_date,
+                    self.finish_date == finish_date,
+                    forecast_date == self.forecast_date)):
+            yield self
+        elif self.mpan_core in ("new_export", "new_import"):
+            yield SupplySource(
+                self.sess, start_date, finish_date, forecast_date, self.era,
+                self.is_import, self.caches, self.bill, self.era_maps,
+                self.deltas)
+        else:
+            if self.is_import:
+                eras = self.sess.query(Era).filter(
+                    Era.supply == self.supply,
+                    Era.imp_mpan_core != null(),
+                    Era.start_date <= finish_date, or_(
+                        Era.finish_date == null(),
+                        Era.finish_date >= start_date))
+            else:
+                eras = self.sess.query(Era).filter(
+                    Era.supply == self.supply, Era.exp_mpan_core != null(),
+                    Era.start_date <= finish_date, or_(
+                        Era.finish_date == null(),
+                        Era.finish_date >= start_date))
+
+            for era in eras:
+                chunk_start = hh_max(era.start_date, start_date)
+                chunk_finish = hh_min(era.finish_date, finish_date)
+
+                ds = SupplySource(
+                    self.sess, chunk_start, chunk_finish, forecast_date, era,
+                    self.is_import, self.caches, self.bill, self.era_maps,
+                    self.deltas)
+                yield ds

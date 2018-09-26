@@ -9,7 +9,7 @@ from collections import defaultdict
 from chellow.models import (
     Session, Contract, Site, Era, SiteEra, Supply, Source, Bill, Mtc, Llfc,
     MeasurementRequirement, Ssc, Tpr, Pc)
-from chellow.computer import SupplySource, contract_func
+from chellow.computer import SupplySource, contract_func, datum_range
 import chellow.computer
 import csv
 import chellow.dloads
@@ -172,6 +172,7 @@ def content(
                     'scenario properties', rate_script['script'])
 
         era_maps = scenario_props.get('era_maps', {})
+
         scenario_hh = scenario_props.get('hh_data', {})
 
         era_header_titles = [
@@ -571,9 +572,60 @@ def content(
                             order, era.imp_mpan_core, era.exp_mpan_core,
                             imp_ss, exp_ss))
 
+                # Check if gen deltas haven't been consumed
+                extra_sss = set()
+                for is_imp in (True, False):
+                    sup_deltas = site_deltas['supply_deltas'][is_imp]['gen']
+                    if len(
+                            list(
+                                t for t in sup_deltas['site'] if
+                                month_start <= t <= month_finish)) > 0:
+                        extra_sss.add(is_imp)
+
                 displaced_era = chellow.computer.displaced_era(
                     sess, report_context, site, month_start, month_finish,
-                    forecast_from)
+                    forecast_from,
+                    has_scenario_generation=len(extra_sss) > 0)
+
+                if len(extra_sss) > 0:
+                    if True in extra_sss:
+                        sup_deltas = site_deltas['supply_deltas'][True]['gen']
+                        imp_ss_name = site.code + "_extra_gen_TRUE"
+                        imp_ss = ScenarioSource(
+                            sess, month_start, month_finish, True,
+                            report_context, sup_deltas,
+                            displaced_era.imp_supplier_contract,
+                            imp_ss_name)
+                    else:
+                        imp_ss_name = imp_ss = None
+                    if False in extra_sss:
+                        exp_ss_name = site.code + "_extra_gen_FALSE"
+                        sup_deltas = site_deltas['supply_deltas'][False]['gen']
+                        exp_ss = ScenarioSource(
+                            sess, month_start, month_finish, False,
+                            report_context, sup_deltas,
+                            displaced_era.imp_supplier_contract,
+                            imp_ss_name)
+                    else:
+                        exp_ss_name = exp_ss = None
+
+                    calcs.append(
+                        (0, imp_ss_name, exp_ss_name, imp_ss, exp_ss))
+
+                # Check if exp net deltas haven't been consumed
+                sup_deltas = site_deltas['supply_deltas'][False]['net']
+                if len(
+                        list(
+                            t for t in sup_deltas['site'] if
+                            month_start <= t <= month_finish)) > 0:
+                    ss_name = site.code + "_extra_net_export"
+                    ss = SupplySource(
+                        sess, month_start, month_finish, forecast_from,
+                        displaced_era, False, report_context,
+                        era_maps=era_maps, deltas=sup_deltas)
+
+                    calcs.append((0, None, ss_name, None, ss))
+
                 site_ds = chellow.computer.SiteSource(
                     sess, site, month_start, month_finish, forecast_from,
                     report_context, displaced_era, deltas=site_deltas)
@@ -635,12 +687,10 @@ def content(
                         order, imp_mpan_core, exp_mpan_core, imp_ss,
                         exp_ss) in enumerate(sorted(calcs, key=str)):
                     if imp_ss is None:
-                        era = exp_ss.era
+                        source_code = exp_ss.source_code
                     else:
-                        era = imp_ss.era
-                    supply = era.supply
-                    source = supply.source
-                    source_code = source.code
+                        source_code = imp_ss.source_code
+
                     site_sources.add(source_code)
                     month_data = {}
                     for name in (
@@ -653,17 +703,19 @@ def content(
 
                     if imp_ss is not None:
                         imp_supplier_contract = imp_ss.supplier_contract
+                        if imp_supplier_contract is not None:
+                            import_vb_function = contract_func(
+                                report_context, imp_supplier_contract,
+                                'virtual_bill')
+                            if import_vb_function is None:
+                                raise BadRequest(
+                                    "The supplier contract " +
+                                    imp_supplier_contract.name +
+                                    " doesn't have the virtual_bill() "
+                                    "function.")
+                            import_vb_function(imp_ss)
+
                         kwh = sum(hh['msp-kwh'] for hh in imp_ss.hh_data)
-                        import_vb_function = contract_func(
-                            report_context, imp_supplier_contract,
-                            'virtual_bill')
-                        if import_vb_function is None:
-                            raise BadRequest(
-                                "The supplier contract " +
-                                imp_supplier_contract.name +
-                                " doesn't have the virtual_bill() "
-                                "function.")
-                        import_vb_function(imp_ss)
                         imp_supplier_bill = imp_ss.supplier_bill
 
                         try:
@@ -705,12 +757,13 @@ def content(
 
                     if exp_ss is not None:
                         exp_supplier_contract = exp_ss.supplier_contract
-                        kwh = sum(hh['msp-kwh'] for hh in exp_ss.hh_data)
-                        export_vb_function = contract_func(
-                            report_context, exp_supplier_contract,
-                            'virtual_bill')
-                        export_vb_function(exp_ss)
+                        if exp_supplier_contract is not None:
+                            export_vb_function = contract_func(
+                                report_context, exp_supplier_contract,
+                                'virtual_bill')
+                            export_vb_function(exp_ss)
 
+                        kwh = sum(hh['msp-kwh'] for hh in exp_ss.hh_data)
                         exp_supplier_bill = exp_ss.supplier_bill
                         try:
                             gbp = exp_supplier_bill['net-gbp']
@@ -747,13 +800,17 @@ def content(
                             month_data['export-gen-kwh'] += kwh
 
                     sss = exp_ss if imp_ss is None else imp_ss
-                    sss.contract_func(sss.dc_contract, 'virtual_bill')(sss)
+                    dc_contract = sss.dc_contract
+                    if dc_contract is not None:
+                        sss.contract_func(dc_contract, 'virtual_bill')(sss)
                     dc_bill = sss.dc_bill
                     gbp = dc_bill['net-gbp']
 
-                    mop_bill_function = sss.contract_func(
-                        sss.mop_contract, 'virtual_bill')
-                    mop_bill_function(sss)
+                    mop_contract = sss.mop_contract
+                    if mop_contract is not None:
+                        mop_bill_function = sss.contract_func(
+                            mop_contract, 'virtual_bill')
+                        mop_bill_function(sss)
                     mop_bill = sss.mop_bill
                     gbp += mop_bill['net-gbp']
 
@@ -764,57 +821,70 @@ def content(
                         month_data['import-net-gbp'] += gbp
                     month_data['used-gbp'] += gbp
 
+                    generator_type = sss.generator_type_code
                     if source_code in ('gen', 'gen-net'):
-                        generator_type = supply.generator_type.code
                         site_gen_types.add(generator_type)
-                    else:
-                        generator_type = None
 
-                    era_category = era.make_meter_category()
+                    era_category = sss.measurement_type
                     if CATEGORY_ORDER[site_category] < \
                             CATEGORY_ORDER[era_category]:
                         site_category = era_category
-                    era_associates = {
-                        s.site.code for s in era.site_eras
-                        if not s.is_physical}
 
-                    for bill in sess.query(Bill).filter(
-                            Bill.supply == supply,
-                            Bill.start_date <= sss.finish_date,
-                            Bill.finish_date >= sss.start_date):
-                        bill_start = bill.start_date
-                        bill_finish = bill.finish_date
-                        bill_duration = (
-                            bill_finish - bill_start).total_seconds() + \
-                            (30 * 60)
-                        overlap_duration = (
-                            min(bill_finish, sss.finish_date) -
-                            max(bill_start, sss.start_date)
-                            ).total_seconds() + (30 * 60)
-                        overlap_proportion = overlap_duration / bill_duration
-                        month_data['billed-import-net-kwh'] += \
-                            overlap_proportion * float(bill.kwh)
-                        month_data['billed-import-net-gbp'] += \
-                            overlap_proportion * float(bill.net)
+                    era_associates = set()
+                    if mop_contract is not None:
+                        era_associates.update(
+                            {
+                                s.site.code for s in era.site_eras
+                                if not s.is_physical
+                            }
+                        )
+
+                        for bill in sess.query(Bill).filter(
+                                Bill.supply == supply,
+                                Bill.start_date <= sss.finish_date,
+                                Bill.finish_date >= sss.start_date):
+                            bill_start = bill.start_date
+                            bill_finish = bill.finish_date
+                            bill_duration = (
+                                bill_finish - bill_start).total_seconds() + \
+                                (30 * 60)
+                            overlap_duration = (
+                                min(bill_finish, sss.finish_date) -
+                                max(bill_start, sss.start_date)
+                                ).total_seconds() + (30 * 60)
+                            overlap_proportion = overlap_duration / \
+                                bill_duration
+                            month_data['billed-import-net-kwh'] += \
+                                overlap_proportion * float(bill.kwh)
+                            month_data['billed-import-net-gbp'] += \
+                                overlap_proportion * float(bill.net)
 
                     if imp_ss is None:
                         imp_supplier_contract_name = None
                         pc_code = exp_ss.pc_code
                     else:
-                        imp_supplier_contract_name = imp_supplier_contract.name
+                        if imp_supplier_contract is None:
+                            imp_supplier_contract_name = ''
+                        else:
+                            imp_supplier_contract_name = \
+                                imp_supplier_contract.name
                         pc_code = imp_ss.pc_code
 
                     if exp_ss is None:
                         exp_supplier_contract_name = None
                     else:
-                        exp_supplier_contract_name = exp_supplier_contract.name
+                        if exp_supplier_contract is None:
+                            exp_supplier_contract_name = ''
+                        else:
+                            exp_supplier_contract_name = \
+                                exp_supplier_contract.name
 
                     out = [
-                        now, era.imp_mpan_core, imp_supplier_contract_name,
-                        era.exp_mpan_core, exp_supplier_contract_name,
-                        era_category, source_code, generator_type, supply.name,
-                        era.msn, pc_code, site.code, site.name,
-                        ','.join(sorted(list(era_associates))),
+                        now, imp_mpan_core, imp_supplier_contract_name,
+                        exp_mpan_core, exp_supplier_contract_name,
+                        era_category, source_code, generator_type,
+                        sss.supply_name, sss.msn, pc_code, site.code,
+                        site.name, ','.join(sorted(list(era_associates))),
                         month_finish] + [
                         month_data[t] for t in summary_titles] + [None] + \
                         make_bill_row(title_dict['mop'], mop_bill) + [None] + \
@@ -899,3 +969,61 @@ def do_get(sess):
             scenario_props, scenario_id, base_name, site_id, supply_id,
             user, compression)).start()
     return chellow_redirect("/downloads", 303)
+
+
+class ScenarioSource():
+    def __init__(
+            self, sess, start_date, finish_date, is_import, caches,
+            deltas, supplier_contract, mpan_core):
+        self.sess = sess
+        self.mpan_core = mpan_core
+        self.supply_name = mpan_core
+        self.start_date = start_date
+        self.is_import = is_import
+        self.caches = caches
+        self.deltas = deltas
+        self.years_back = 0
+        self.source_code = 'gen'
+        self.dno_code = '99'
+        self.llfc_code = '510'
+        self.voltage_level_code = 'LV'
+        self.is_substation = False
+        self.gsp_group_code = "_L"
+        self.supplier_bill = {'net-gbp': 0}
+        self.dc_bill = {'net-gbp': 0}
+        self.mop_bill = {'net-gbp': 0}
+        self.supplier_contract = None
+        self.dc_contract = None
+        self.mop_contract = None
+        self.supplier_rate_sets = defaultdict(set)
+        self.is_displaced = False
+        self.sc = 0
+        self.pc_code = '00'
+        self.mop_rate_sets = defaultdict(set)
+        self.dc_rate_sets = defaultdict(set)
+        self.generator_type_code = 'chp'
+        self.msn = ''
+        self.measurement_type = 'hh'
+        self.hh_data = list(
+            d.copy() for d in datum_range(
+                sess, self.caches, self.years_back, start_date, finish_date))
+        if self.deltas is not None:
+            site_deltas = self.deltas['site']
+
+            try:
+                sup_deltas = self.deltas[self.mpan_core]
+            except KeyError:
+                sup_deltas = self.deltas[self.mpan_core] = {}
+
+            for hh in self.hh_data:
+                hh_start = hh['start-date']
+                if hh_start in sup_deltas:
+                    delt = sup_deltas[hh_start]
+                elif hh_start in site_deltas:
+                    delt = sup_deltas[hh_start] = site_deltas[hh_start]
+                    del site_deltas[hh_start]
+                else:
+                    continue
+
+                hh['msp-kwh'] += delt
+                hh['msp-kw'] += delt * 2

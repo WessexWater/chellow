@@ -7,7 +7,9 @@
         'auth': ('admin@example.com', 'admin'),
         'status_code': 200,
         'regexes': [
-            r'"/chellowcss"']},
+            r'"/chellowcss"'
+        ]
+    },
     {
         'name': "Manipulating users",
         'path': '/users',
@@ -15,21 +17,27 @@
         'data': {
             'email_address': "watkin\\s@example.com",
             'user_role_code': "editor",
-            'password': "alan"},
+            'password': "alan"
+        },
         'status_code': 303,
         'tries': {},
         'regexes': [
-            r"http://localhost:8080/users/2"]},
+            r"http://localhost:8080/users/2"
+        ]
+    },
     {
         'path': '/users',
         'method': 'post',
         'data': {
             'email_address': "lydgate@localhost",
             'user_role_code': "editor",
-            'password': "science"},
+            'password': "science"
+        },
         'status_code': 303,
         'regexes': [
-            r"/users/3"]},
+            r"/users/3"
+        ]
+    },
 
     {
         'path': '/users/3',
@@ -39,7 +47,8 @@
             r'<input type="hidden" name="change_password">\s*',
             r'<form>\s*'
             r'<fieldset>\s*'
-            r'<input type="hidden" name="Delete this user">\s*'],
+            r'<input type="hidden" name="Delete this user">\s*'
+        ],
         'status_code': 200},
 
     {
@@ -49,10 +58,13 @@
         'data': {
             'email_address': "lydgate@localhost",
             'user_role_code': "editor",
-            'password': "science"},
+            'password': "science"
+        },
         'regexes': [
-            r"already a user with this email address"],
-        'status_code': 400},
+            r"already a user with this email address"
+        ],
+        'status_code': 400
+    },
 
     {
         'name': "Test that we're able to change the password",
@@ -2301,8 +2313,7 @@ def displaced_virtual_bill(supply_source):
             month_start = utc_datetime(hh_start.year, hh_start.month, 1)
             ccl_kwh = 0
             ccl_gbp = 0
-            for ds in chellow.computer.get_data_sources(
-                    supply_source, month_start, hh_start):
+            for ds in supply_source.get_data_sources(month_start, hh_start):
                 chellow.ccl.ccl(ds)
                 for h in ds.hh_data:
                     ccl_kwh += h['ccl-kwh']
@@ -2378,8 +2389,7 @@ def virtual_bill(supply_source):
             month_start = utc_datetime(hh_start.year, hh_start.month, 1)
             ccl_kwh = 0
             ccl_gbp = 0
-            for ds in chellow.computer.get_data_sources(
-                    supply_source, month_start, hh_start):
+            for ds in supply_source.get_data_sources(month_start, hh_start):
                 chellow.ccl.ccl(ds)
                 for h in ds.hh_data:
                     ccl_kwh += h['ccl-kwh']
@@ -3878,8 +3888,7 @@ def displaced_virtual_bill(supply_source):
             month_start = utc_datetime(hh_start.year, hh_start.month, 1)
             ccl_kwh = 0
             ccl_gbp = 0
-            for ds in chellow.computer.get_data_sources(
-                    supply_source, month_start, hh_start):
+            for ds in supply_source.get_data_sources(month_start, hh_start):
                 chellow.ccl.ccl(ds)
                 for h in ds.hh_data:
                     ccl_kwh += h['ccl-kwh']
@@ -3951,8 +3960,7 @@ def virtual_bill(supply_source):
             month_start = utc_datetime(hh_start.year, hh_start.month, 1)
             ccl_kwh = 0
             ccl_gbp = 0
-            for ds in chellow.computer.get_data_sources(
-                    supply_source, month_start, hh_start):
+            for ds in supply_source.get_data_sources(month_start, hh_start):
                 chellow.ccl.ccl(ds)
                 for h in ds.hh_data:
                     ccl_kwh += h['ccl-kwh']
@@ -4010,8 +4018,7 @@ def virtual_bill(supply_source):
             month_start = utc_datetime(hh_start.year, hh_start.month, 1)
             ccl_kwh = 0
             ccl_gbp = 0
-            for ds in chellow.computer.get_data_sources(
-                    supply_source, month_start, hh_start):
+            for ds in supply_source.get_data_sources(month_start, hh_start):
                 chellow.ccl.ccl(ds)
                 for h in ds.hh_data:
                     ccl_kwh += h['ccl-kwh']
@@ -12126,12 +12133,8 @@ def virtual_bill(supply_source):
             r'table:number-columns-repeated="6"/>\s*'
             r'<table:table-cell office:value="17" '
             r'office:value-type="float"/>\s*'
-            r'<table:table-cell office:value="0" '
-            r'office:value-type="float"/>\s*'
-            r'<table:table-cell office:value="0.0" '
-            r'office:value-type="float"/>\s*'
-            r'<table:table-cell office:value="11.2" '
-            r'office:value-type="float"/>\s*'
+            r'<table:table-cell office:value="0" office:value-type="float" '
+            r'table:number-columns-repeated="3"/>\s*'
             r'<table:table-cell/>\s*'
             r'<table:table-cell office:value="10" '
             r'office:value-type="float"/>\s*'
@@ -19523,5 +19526,176 @@ def virtual_bill(ds):
             r'</td>\s*'
         ],
         'status_code': 200
+    },
+
+    {
+        'name': "Scenario with new generation",
+        'path': '/supplier_contracts/19/edit',
+        'method': 'post',
+        'data': {
+            'party_id': "106",  # COOP
+            'name': "scenario_used",
+            'start_year': "2000",
+            'start_month': "01",
+            'start_day': "03",
+            'start_hour': "00",
+            'start_minute': "00",
+            'charge_script': "",
+            'properties': """
+{
+  "scenario_start": 2009-08-01T00:00:00Z,
+  "scenario_duration": 1,
+
+  "era_maps": {
+    2000-08-01T00:00:00Z: {
+      "llfcs": {
+        "22": {
+          "new_export": "521"
+        }
+      },
+      "supplier_contracts": {
+        "new_export": 10
+      }
     }
+  },
+
+  "hh_data": {
+    "CI017": {
+      "generated": "
+            2009-08-01 00:00, 40
+            2009-08-15 00:00, 40"
+    }
+  }
+}
+"""},
+        'regexes': [
+            r"/supplier_contracts/19"],
+        'status_code': 303},
+
+    {
+        'name': "Scenario with new generation",
+        'path': '/reports/247?site_id=4&scenario_id=19&compression=False',
+        'status_code': 303},
+    {
+        'name': "Scenario with new generation",
+        'path': '/downloads',
+        'tries': {'max': 30, 'period': 1},
+        'status_code': 200,
+        'regexes': [
+            r"0032_FINISHED_adminexamplecom_scenario_used_20090801_0000_for_1"
+            r"_months_site_CI017\.ods"]},
+    {
+        'name': "Scenario with new generation",
+        'path': '/downloads/'
+        '0032_FINISHED_adminexamplecom_scenario_used_20090801_0000_for_1_'
+        'months_site_CI017.ods',
+        'status_code': 200,
+        'regexes': [
+            r'<office:spreadsheet>\s*'
+            r'<table:table table:name="Site Level">\s*'
+            r'<table:table-column/>\s*'
+            r'<table:table-row>\s*'
+            r'<table:table-cell office:string-value="creation-date" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell office:string-value="site-id" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell office:string-value="site-name" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell office:string-value="associated-site-ids" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell office:string-value="month" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell office:string-value="metering-type" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell office:string-value="sources" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell office:string-value="generator-types" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell office:string-value="import-net-kwh" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell office:string-value="export-net-kwh" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell office:string-value="import-gen-kwh" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell office:string-value="export-gen-kwh" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell office:string-value="import-3rd-party-kwh" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell office:string-value="export-3rd-party-kwh" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell office:string-value="displaced-kwh" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell office:string-value="used-kwh" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell office:string-value="used-3rd-party-kwh" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell office:string-value="import-net-gbp" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell office:string-value="export-net-gbp" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell office:string-value="import-gen-gbp" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell office:string-value="export-gen-gbp" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell office:string-value="import-3rd-party-gbp" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell office:string-value="export-3rd-party-gbp" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell office:string-value="displaced-gbp" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell office:string-value="used-gbp" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell office:string-value="used-3rd-party-gbp" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell office:string-value="billed-import-net-kwh" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell office:string-value="billed-import-net-gbp" '
+            r'office:value-type="string"/>\s*'
+            r'</table:table-row>\s*'
+            r'<table:table-row>\s*'
+            r'<table:table-cell '
+            r'office:date-value="\d\d\d\d-\d\d-\d\dT\d\d:\d\d:\d\d" '
+            r'office:value-type="date" table:style-name="cell_date"/>\s*'
+            r'<table:table-cell office:string-value="CI017" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell office:string-value="Roselands" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell office:string-value="" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell office:date-value="2009-08-31T23:30:00" '
+            r'office:value-type="date" table:style-name="cell_date"/>\s*'
+            r'<table:table-cell office:string-value="hh" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell office:string-value="gen, net" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell office:string-value="chp" '
+            r'office:value-type="string"/>\s*'
+            r'<table:table-cell office:value="4326.415548931821" '
+            r'office:value-type="float"/>\s*'
+            r'<table:table-cell office:value="74.17709885742673" '
+            r'office:value-type="float"/>\s*'
+            r'<table:table-cell office:value="80.0" '
+            r'office:value-type="float"/>\s*'
+            r'<table:table-cell office:value="0" office:value-type="float" '
+            r'table:number-columns-repeated="3"/>\s*'
+            r'<table:table-cell office:value="5.822901142573274" '
+            r'office:value-type="float"/>\s*'
+            r'<table:table-cell office:value="4332.238450074394" '
+            r'office:value-type="float"/>\s*'
+            r'<table:table-cell office:value="0" '
+            r'office:value-type="float"/>\s*'
+            r'<table:table-cell office:value="3428.802108\d*" '
+            r'office:value-type="float"/>\s*'
+            r'<table:table-cell office:value="94.42832606\d*" '
+            r'office:value-type="float"/>\s*'
+            r'<table:table-cell office:value="0" office:value-type="float" '
+            r'table:number-columns-repeated="4"/>\s*'
+            r'<table:table-cell office:value="0.0" '
+            r'office:value-type="float"/>\s*'
+            r'<table:table-cell office:value="3428.802108\d*" '
+            r'office:value-type="float"/>\s*'
+            r'<table:table-cell office:value="0" office:value-type="float" '
+            r'table:number-columns-repeated="3"/>\s*'
+            r'</table:table-row>\s*'
+            r'</table:table>\s*']},
 ]

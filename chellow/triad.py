@@ -31,16 +31,15 @@ def hh(data_source, rate_period='monthly', est_kw=None):
             earliest_triad = hh_min(earliest_triad, dt)
             try:
                 ds = next(
-                    chellow.computer.get_data_sources(
-                        data_source, dt, dt, financial_year_start))
+                    data_source.get_data_sources(dt, dt, financial_year_start))
                 chellow.duos.duos_vb(ds)
                 triad_hh = ds.hh_data[0]
 
                 while dt < financial_year_start:
                     dt += relativedelta(years=1)
 
-                for ds in chellow.computer.get_data_sources(
-                        data_source, dt, dt, financial_year_start):
+                for ds in data_source.get_data_sources(
+                        dt, dt, financial_year_start):
                     chellow.duos.duos_vb(ds)
                     datum = ds.hh_data[0]
                     triad_hh['laf'] = datum['laf']
@@ -102,8 +101,7 @@ def hh(data_source, rate_period='monthly', est_kw=None):
                 dt += relativedelta(days=1)
 
             est_intervals = 0
-            for ds in chellow.computer.get_data_sources(
-                    data_source, month_start, month_finish):
+            for ds in data_source.get_data_sources(month_start, month_finish):
                 for h in ds.hh_data:
                     if h['utc-decimal-hour'] == 0:
                         est_intervals += 1
@@ -120,9 +118,7 @@ def hh(data_source, rate_period='monthly', est_kw=None):
                     month_start)['triad_dates']:
 
                 try:
-                    ds = next(
-                        chellow.computer.get_data_sources(
-                            data_source, t_date, t_date))
+                    ds = next(data_source.get_data_sources(t_date, t_date))
                     if data_source.supplier_contract is None or \
                             ds.supplier_contract == \
                             data_source.supplier_contract:
@@ -144,9 +140,7 @@ def hh(data_source, rate_period='monthly', est_kw=None):
                     t_date += relativedelta(years=1)
 
                 try:
-                    ds = next(
-                        chellow.computer.get_data_sources(
-                            data_source, t_date, t_date))
+                    ds = next(data_source.get_data_sources(t_date, t_date))
                     if data_source.supplier_contract is None or \
                             ds.supplier_contract == \
                             data_source.supplier_contract:

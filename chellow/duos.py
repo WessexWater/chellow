@@ -1,7 +1,6 @@
 from dateutil.relativedelta import relativedelta
 from sqlalchemy import func
 from sqlalchemy.sql.expression import true
-import chellow.computer
 from chellow.utils import hh_format, HH, utc_datetime, get_file_rates
 from werkzeug.exceptions import BadRequest
 from chellow.models import HhDatum, Channel, Era
@@ -70,7 +69,7 @@ def datum_beginning_22(ds, hh):
         md_kva = 0
         month_imp_kvarh = 0
         month_kwh = 0
-        for dsc in chellow.computer.get_data_sources(ds, month_from, month_to):
+        for dsc in ds.get_data_sources(month_from, month_to):
             for h in dsc.hh_data:
                 if h['ct-decimal-hour'] == 0:
                     days_in_month += 1
@@ -322,7 +321,7 @@ def datum_beginning_14(ds, hh):
         imp_msp_kvarh = 0
         msp_kwh = 0
         md_kva = 0
-        for dsc in chellow.computer.get_data_sources(ds, month_from, month_to):
+        for dsc in ds.get_data_sources(month_from, month_to):
             for h in dsc.hh_data:
                 imp_msp_kvarh += h['imp-msp-kvarh']
                 msp_kwh += h['msp-kwh']
@@ -498,7 +497,7 @@ def datum_2010_04_01(ds, hh):
         month_from = month_to - relativedelta(months=1) + HH
         md_kva = 0
         days_in_month = 0
-        for dsc in chellow.computer.get_data_sources(ds, month_from, month_to):
+        for dsc in ds.get_data_sources(month_from, month_to):
             for datum in dsc.hh_data:
                 md_kva = max(
                     md_kva, (
