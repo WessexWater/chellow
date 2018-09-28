@@ -78,7 +78,7 @@ class Parser():
 
                 self._set_last_line(row_index, val)
                 mpan_core = parse_mpan_core(str(get_int(row, 1)))
-                cop = get_str(row, 2)
+                cop = str(get_value(row, 2)).strip()
 
                 settled_str = get_str(row, 3)
                 if settled_str == 'Settled':
