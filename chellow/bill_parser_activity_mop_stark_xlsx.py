@@ -12,8 +12,8 @@ def get_date(row, name, datemode):
     val = get_value(row, name)
     if isinstance(val, float):
         return to_utc(Datetime(*xldate_as_tuple(val, datemode)))
-    else:
-        return None
+
+    raise BadRequest("Can't find a date.")
 
 
 def get_value(row, idx):
