@@ -125,6 +125,8 @@ def content(batch_id, bill_id, contract_id, start_date, finish_date, user):
 
         for supply_id, bill_ids in bill_map.items():
             gaps = {}
+            data_sources = {}
+
             while len(bill_ids) > 0:
                 bill_id = list(sorted(bill_ids))[0]
                 bill_ids.remove(bill_id)
@@ -334,9 +336,17 @@ def content(batch_id, bill_id, contract_id, start_date, finish_date, user):
                         pairs.append((last_finish + HH, hd['start-date']))
 
                     for ss_start, ss_finish in pairs:
-                        data_source = chellow.computer.SupplySource(
-                            sess, ss_start, ss_finish, forecast_date, era,
-                            polarity, caches, primary_covered_bill)
+                        try:
+                            ds_key = (
+                                ss_start, ss_finish, forecast_date, era.id,
+                                polarity, primary_covered_bill.id)
+                            data_source = data_sources[ds_key]
+                        except KeyError:
+                            data_source = data_sources[ds_key] = \
+                                chellow.computer.SupplySource(
+                                sess, ss_start, ss_finish, forecast_date, era,
+                                polarity, caches, primary_covered_bill)
+                            vbf(data_source)
 
                         if data_source.measurement_type == 'hh':
                             metered_kwh += sum(
@@ -347,8 +357,6 @@ def content(batch_id, bill_id, contract_id, start_date, finish_date, user):
                                 polarity, caches)
                             metered_kwh += sum(
                                 h['msp-kwh'] for h in ds.hh_data)
-
-                        vbf(data_source)
 
                         if market_role_code == 'X':
                             vb = data_source.supplier_bill

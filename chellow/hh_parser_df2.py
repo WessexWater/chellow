@@ -59,7 +59,7 @@ class StarkDf2HhParser():
 
                     try:
                         value = decimal.Decimal(fields[2])
-                    except ValueError as e:
+                    except ValueError:
                         raise BadRequest(
                             "Problem parsing the value: " + fields[2])
                     status = fields[3][-1]

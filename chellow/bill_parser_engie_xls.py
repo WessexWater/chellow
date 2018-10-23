@@ -16,7 +16,7 @@ ELEM_MAP = {
         '', 'Price'): 'aahedc-rate',
     ('Assistance for Areas with High Electricity Distribution Costs (AAHEDC)',
         '', 'Amount'): 'aahedc-gbp',
-    ('Balancing Services Use of System (BSUoS)', '', 'Usage'): 'buos-nbp-kwh',
+    ('Balancing Services Use of System (BSUoS)', '', 'Usage'): 'bsuos-nbp-kwh',
     ('Balancing Services Use of System (BSUoS)', '', 'Price'): 'bsuos-rate',
     ('Balancing Services Use of System (BSUoS)', '', 'Amount'): 'bsuos-gbp',
     ('Capacity Market (Actual)', '', 'Usage'): 'capacity-gsp-kwh',
@@ -222,7 +222,7 @@ class Parser():
         return line
 
     def make_raw_bills(self):
-        bills = {}
+        bills = []
         title_row = self.sheet.row(0)
         for row_index in range(1, self.sheet.nrows):
             row = self.sheet.row(row_index)
@@ -259,24 +259,17 @@ class Parser():
                 to_date += relativedelta(days=1) - HH
 
             issue_date = get_date(row, 'Bill Date', self.book.datemode)
-            key = bill_period, from_date, to_date, mpan_core, issue_date
-            try:
-                bill = bills[key]
-            except KeyError:
-                bills[key] = bill = {
-                    'bill_type_code': 'N', 'kwh': Decimal(0),
-                    'vat': Decimal('0.00'), 'net': Decimal('0.00'),
-                    'reads': [],
-                    'breakdown': {'raw_lines': [str(title_row)]},
-                    'account': mpan_core,
-                    'issue_date': issue_date, 'start_date': from_date,
-                    'finish_date': to_date, 'mpans': [mpan_core],
-                    'reference': '_'.join(
-                        (
-                            bill_period, from_date.strftime('%Y%m%d'),
-                            to_date.strftime('%Y%m%d'),
-                            issue_date.strftime('%Y%m%d'),
-                            mpan_core))}
+            bill_number = get_value(row, 'Bill Number')
+            bill = {
+                'bill_type_code': 'N', 'kwh': Decimal(0),
+                'vat': Decimal('0.00'), 'net': Decimal('0.00'), 'reads': [],
+                'breakdown': {'raw_lines': [str(title_row)]},
+                'account': mpan_core, 'issue_date': issue_date,
+                'start_date': from_date, 'finish_date': to_date,
+                'mpans': [mpan_core],
+                'reference': str(bill_number) + '_' + str(row_index + 1)
+            }
+            bills.append(bill)
             bd = bill['breakdown']
 
             usage = get_dec(row, 'Usage')
@@ -339,14 +332,9 @@ class Parser():
             elif description.startswith("Legacy TNUoS Reversal "):
                 bd_add(bd, 'triad-gbp', amount)
 
-        for bill in bills.values():
-            bd = bill['breakdown']
             for k, v in tuple(bd.items()):
                 if isinstance(v, set):
-                    val = ', '.join(sorted(map(str, v)))
-                else:
-                    val = v
-                bd[k] = val
+                    bd[k] = list(v)
             bill['gross'] = bill['net'] + bill['vat']
 
-        return [v for k, v in sorted(bills.items())]
+        return bills

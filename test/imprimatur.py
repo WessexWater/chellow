@@ -434,7 +434,7 @@ def virtual_bill(ds):
         'status_code': 200,
         'regexes': [
             r'<textarea name="charge_script" rows="40" cols="80">\s*'
-            'def virtual_bill_title',
+            r'def virtual_bill_title',
             r'<textarea name="properties" rows="40" cols="80">\{\s*'
             r'&#34;props&#34;: 1\s*'
             r'\}</textarea>',
@@ -510,10 +510,10 @@ def virtual_bill(ds):
         'path': '/supplier_contracts/10',
         'regexes': [
             r'<legend>Download Displaced Virtual Bills</legend>\s*<br/>\s*'
-            'For <input name="months" value="1" maxlength="2" size="2">\s*'
-            'month\(s\) until the end of\s*'
-            '<input name="finish_year" maxlength="4" size="4" '
-            'value="201\d">',
+            r'For <input name="months" value="1" maxlength="2" size="2">\s*'
+            r'month\(s\) until the end of\s*'
+            r'<input name="finish_year" maxlength="4" size="4" '
+            r'value="201\d">',
             r'Rate Scripts\s*\[<a\s*'
             r'href="/supplier_contracts/10/add_rate_script"\s*>add</a>\]'],
         'status_code': 200},
@@ -740,8 +740,8 @@ def virtual_bill_titles():
         # check that it knows that line 1 has a malformed date
         'regexes': [
             r"Can&#39;t parse the date: 2003-0/\*\*d8/03. It needs to be of "
-            "the form yyyy-mm-dd hh:MM. invalid literal for int\(\) with base "
-            "10: "],
+            r"the form yyyy-mm-dd hh:MM. invalid literal for int\(\) with "
+            r"base 10: "],
         'status_code': 200},
 
     {
@@ -798,8 +798,8 @@ def virtual_bill_titles():
         # Is the era displayed?
         'regexes': [
             r"<tr>\s*<td>2003-08-03 00:00</td>\s*<td>Ongoing</td>\s*"
-            "<td>gen</td>\s*<td>2</td>\s*<td>\s*</td>\s*<td>\s*"
-            "22 7907 4116 080\s*</td>\s*</tr>",
+            r"<td>gen</td>\s*<td>2</td>\s*<td>\s*</td>\s*<td>\s*"
+            r"22 7907 4116 080\s*</td>\s*</tr>",
 
             # Does it show the import MPAN?
             r"22 9813 2107 763"],
@@ -861,7 +861,7 @@ def virtual_bill_titles():
             r"start_year",
             r'<option value="8" selected>HH contract</option>',
             r'"imp_supplier_contract_id">\s*'
-            '<option value="10" selected>Half-hourlies 2007',
+            r'<option value="10" selected>Half-hourlies 2007',
 
             # Can we see the MOP account?
             r'"mc-22 9205 6799 106"'],
@@ -968,14 +968,14 @@ def virtual_bill_titles():
         # Check the end date is right
         'regexes': [
             r'<form action="/reports/219">\s*'
-                r'<input type="hidden" name="supply_id" value="5">',
+            r'<input type="hidden" name="supply_id" value="5">',
             r'<a\s*'
             r'title="2003-08-13 23:30"\s*'
             r'>2003-08-13</a>',
             r'<form action="/reports/187" method="post">',
             r'<legend>TRIAD</legend>\s*<input type="hidden" name="supply_id"',
             r'<a href="/supplies/5/months\?'
-            'is_import=true&amp;year=\d{4}&amp;years=1">Import</a>',
+            r'is_import=true&amp;year=\d{4}&amp;years=1">Import</a>',
             r'<a href="/supplies/5/virtual_bill']},
 
     # Supply 5, Era 5
@@ -987,7 +987,7 @@ def virtual_bill_titles():
         'regexes': [
             r"Channel Export\s*REACTIVE_EXP",
             r"<td>2003-08-03 00:00</td>\s*<td>2003-08-13 23:30</td>\s*"
-            "<td>Missing</td>"]},
+            r"<td>Missing</td>"]},
 
     # Check that if the dc contract is changed, the dc contract of the
     # snags change
@@ -1039,7 +1039,7 @@ def virtual_bill_titles():
 
             # Check the snag is there
             r"<td>2003-08-03 00:00</td>\s*<td>2003-08-13 23:30</td>\s*"
-            "<td>Missing</td>"]},
+            r"<td>Missing</td>"]},
 
     {
         'name': "Put it back to how it was. Supply 5",
@@ -1105,7 +1105,7 @@ def virtual_bill_titles():
         # Check it's loaded ok
         'regexes': [
             r"The MPAN core 22 9813 2107 763 is already attached to another "
-            "supply\."],
+            r"supply\."],
         'status_code': 200},
 
     {
@@ -1224,9 +1224,9 @@ def virtual_bill_titles():
         'regexes': [
             r"Channel Export\s*REACTIVE_EXP",
             r'<tr>\s*<td>\s*'
-            '<a href="/channel_snags/4">view</a>\s*'
-            '</td>\s*<td>2003-08-03 00:00</td>\s*<td>Ongoing</td>\s*'
-            '<td>Missing</td>'],
+            r'<a href="/channel_snags/4">view</a>\s*'
+            r'</td>\s*<td>2003-08-03 00:00</td>\s*<td>Ongoing</td>\s*'
+            r'<td>Missing</td>'],
         'status_code': 200},
 
     {
@@ -1294,13 +1294,13 @@ def virtual_bill_titles():
         'regexes': [
             r"Channel Export\s*ACTIVE",
             r'<td>\s*'
-            '<a href="/channel_snags/45">view</a>\s*'
-            '</td>\s*<td>2005-12-15 07:00</td>\s*<td>2005-12-15 08:00</td>\s*'
-            '<td>Estimated</td>',
+            r'<a href="/channel_snags/45">view</a>\s*'
+            r'</td>\s*<td>2005-12-15 07:00</td>\s*<td>2005-12-15 08:00</td>\s*'
+            r'<td>Estimated</td>',
             r'<tr>\s*<td>\s*'
-            '<a href="/channel_snags/3">view</a>\s*'
-            '</td>\s*<td>2003-08-03 00:00</td>\s*<td>2005-12-15 06:30</td>\s*'
-            '<td>Missing</td>'],
+            r'<a href="/channel_snags/3">view</a>\s*'
+            r'</td>\s*<td>2003-08-03 00:00</td>\s*<td>2005-12-15 06:30</td>\s*'
+            r'<td>Missing</td>'],
         'status_code': 200},
     {
         'path': '/dc_contracts/8/hh_imports',
@@ -1322,9 +1322,9 @@ def virtual_bill_titles():
         'regexes': [
             r"Channel Export\s*ACTIVE",
             r'<td>\s*'
-            '<a href="/channel_snags/45">view</a>\s*'
-            '</td>\s*<td>2005-12-15 07:00</td>\s*<td>2005-12-15 09:30</td>\s*'
-            '<td>Estimated</td>'],
+            r'<a href="/channel_snags/45">view</a>\s*'
+            r'</td>\s*<td>2005-12-15 07:00</td>\s*<td>2005-12-15 09:30</td>\s*'
+            r'<td>Estimated</td>'],
         'status_code': 200},
 
     # Test if a CSV HH file can be imported },
@@ -1435,15 +1435,15 @@ def virtual_bill_titles():
             r'</tr>\s*'
             r'<tr>\s*'
             r'<td>\s*'
-            '<a href="/site_snags/43">view</a>\s*'
-            '\[<a href="/site_snags/43/edit">edit</a>\]\s*'
+            r'<a href="/site_snags/43">view</a>\s*'
+            r'\[<a href="/site_snags/43/edit">edit</a>\]\s*'
             r'</td>\s*<td>[^<]*</td>\s*'
-            '<td>\s*'
-            '<a href="/sites/1">CI004</a>\s*'
+            r'<td>\s*'
+            r'<a href="/sites/1">CI004</a>\s*'
             r'</td>\s*<td>Lower Treave</td>\s*'
-            '<td>Export to net &gt; import from generators.</td>\s*'
-            '<td>2005-10-29 23:30</td>\s*<td>\s*2005-10-30 01:00</td>\s*'
-            '</tr>\s*</tbody>'],
+            r'<td>Export to net &gt; import from generators.</td>\s*'
+            r'<td>2005-10-29 23:30</td>\s*<td>\s*2005-10-30 01:00</td>\s*'
+            r'</tr>\s*</tbody>'],
         'status_code': 200},
     {
         'path': '/site_snags/edit',
@@ -1569,8 +1569,8 @@ def virtual_bill_titles():
         'regexes': [
             r'<form action="/supplies/5/hh_data">',
             r"<tr>\s*<td>\s*2010-03-15 12:00\s*</td>\s*<td>0</td>\s*"
-            "<td>A</td>",
-            ],
+            r"<td>A</td>",
+        ],
         'status_code': 200},
 
     # Create a new batch
@@ -1592,7 +1592,7 @@ def virtual_bill_titles():
             'description': "dup batch"},
         'regexes': [
             r"There&#39;s already a batch attached to the contract "
-            "Half-hourlies 2007 with the reference 04-003\."],
+            r"Half-hourlies 2007 with the reference 04-003\."],
         'status_code': 400},
 
     # Create a new import. Supplier contract 31
@@ -1615,7 +1615,7 @@ def virtual_bill_titles():
         'regexes': [
             r"<td>2007-02-28 00:00</td>\s*<td>0.00</td>\s*<td>4463.08</td>",
             r"All the bills have been successfully loaded and attached to the "
-            "batch\."]},
+            r"batch\."]},
 
     # Valid import of supplies
     {
@@ -1669,7 +1669,7 @@ def virtual_bill_titles():
         'status_code': 200,
         'regexes': [
             r"All the bills have been successfully loaded and attached to the "
-            "batch\."]},
+            r"batch\."]},
 
     # Set a previously estimated HH to actual, supply 1, era 1, channel 3
     {
@@ -1688,7 +1688,7 @@ def virtual_bill_titles():
         'regexes': [
             r"Channel Export\s*ACTIVE",
             r"<td>2005-12-15 07:30</td>\s*<td>2005-12-15 09:30</td>\s*"
-            "<td>Estimated</td>"]},
+            r"<td>Estimated</td>"]},
 
     # Change it back. supply 1, era 1.
     {
@@ -1794,7 +1794,7 @@ def virtual_bill_titles():
         'status_code': 200,
         'regexes': [
             r"All the bills have been successfully loaded and attached to the "
-            "batch\."]},
+            r"batch\."]},
 
     # First create the era
     {
@@ -1844,9 +1844,10 @@ def virtual_bill_titles():
         'path': '/channels/32?start_year=2008&start_month=07',
         'regexes': [
             r'<td>\s*'
-            '\[<a href="/hh_data/67/edit">'
-            'edit</a>\]\s*</td>\s*<td>2008-07-07 00:00</td>\s*'
-            '<td>0.247</td>\s*<td>A</td>'],
+            r'\[<a href="/hh_data/67/edit">'
+            r'edit</a>\]\s*</td>\s*<td>2008-07-07 00:00</td>\s*'
+            r'<td>0.247</td>\s*<td>A</td>'
+        ],
         'status_code': 200},
     {
         'name': "Check 'view' link is correct on a supply in the edit world.",
@@ -1967,13 +1968,13 @@ def virtual_bill_titles():
         'status_code': 400,
         'regexes': [
             r"Problem parsing the field dc_contract_id as an integer: "
-            "invalid literal for int\(\) with base 10: .*null"]},
+            r"invalid literal for int\(\) with base 10: .*null"]},
     {
         'name': "Test that profile 05 is displayed for an era. Supply 9",
         'path': '/eras/9/edit',
         'regexes': [
             r'<option value="5" selected>05 - Non-domestic, MD, load factor '
-            '0-20%</option>'],
+            r'0-20%</option>'],
         'status_code': 200},
     {
         'name': "Try adding a party viewer.",
@@ -1994,14 +1995,14 @@ def virtual_bill_titles():
         'auth': ('mishka@localhost', 'fyodor'),
         'regexes': [
             r"<td>\s*22 0470 7514 535\s*</td>\s*<td>\s*<ul>\s*<li>\s*"
-            "CH017 Parbola\s*</li>",
+            r"CH017 Parbola\s*</li>",
             r"There are 46 snag\(s\) older than\s*5 days\s*"
             r"that aren't ignored\.",
             r'<a href="/dc_contracts/8">HH contract</a>',
             r'<li>\s*'
-            '<a href="/channel_snags/1">view</a>\s*'
-            '\[<a href="/channel_snags/1/edit">edit</a>\]\s*'
-            '</li>',
+            r'<a href="/channel_snags/1">view</a>\s*'
+            r'\[<a href="/channel_snags/1/edit">edit</a>\]\s*'
+            r'</li>',
             r'<form action="/reports/233">'],
         'status_code': 200},
     {
@@ -2014,7 +2015,7 @@ def virtual_bill_titles():
             r'<a href="/meter_payment_types">Meter Payment Types</a>',
             r'<a href="/sources">\s*Sources\s*</a>',
             r'<a href="/generator_types">\s*Generator Types\s*'
-            '</a>',
+            r'</a>',
             r'<a\s*'
             r'href="/ods_scenario_runner"\s*'
             r'>\s*'
@@ -2458,9 +2459,9 @@ def virtual_bill(supply_source):
         'path': '/eras/14/edit',
         'regexes': [
             r'<select name="finish_day">\s*<option value="1">01</option>\s*'
-            '<option value="2">02</option>\s*<option value="3">03</option>\s*'
-            '<option value="4">04</option>\s*'
-            '<option value="5" selected>05</option>']},
+            r'<option value="2">02</option>\s*<option value="3">03</option>\s*'
+            r'<option value="4">04</option>\s*'
+            r'<option value="5" selected>05</option>']},
     {
         'name': "Supplies snapshot selector",
         'path': '/csv_supplies_snapshot',
@@ -2563,7 +2564,7 @@ def virtual_bill(supply_source):
         'status_code': 400,
         'regexes': [
             r"There are orphaned HH data between 2003-08-03 00:00 and "
-            "2010-08-02 23:30\."]},
+            r"2010-08-02 23:30\."]},
 
     # Generate similar one for ongoing orphaned data
     {
@@ -2598,7 +2599,7 @@ def virtual_bill(supply_source):
         'status_code': 400,
         'regexes': [
             r"There are orphaned HH data between 2003-08-03 00:30 and "
-            "ongoing\."]},
+            r"ongoing\."]},
 
     # Test deleting of supplier contracts
     {
@@ -2694,78 +2695,78 @@ def virtual_bill(supply_source):
         '0003_FINISHED_watkinsexamplecom_supply_virtual_bills_7.csv',
         'regexes': [
             r'Imp MPAN Core,Exp MPAN Core,Site Code,Site Name,'
-            'Account,From,To,,mop-net-gbp,mop-problem,,'
-            'dc-net-gbp,dc-problem,,imp-supplier-net-gbp,'
-            'imp-supplier-tlm,imp-supplier-ccl-kwh,'
-            'imp-supplier-ccl-rate,imp-supplier-ccl-gbp,'
-            'imp-supplier-data-collection-gbp,'
-            'imp-supplier-duos-availability-kva,'
-            'imp-supplier-duos-availability-days,'
-            'imp-supplier-duos-availability-rate,'
-            'imp-supplier-duos-availability-gbp,'
-            'imp-supplier-duos-excess-availability-kva,'
-            'imp-supplier-duos-excess-availability-days,'
-            'imp-supplier-duos-excess-availability-rate,'
-            'imp-supplier-duos-excess-availability-gbp,'
-            'imp-supplier-duos-day-kwh,imp-supplier-duos-day-gbp,'
-            'imp-supplier-duos-night-kwh,imp-supplier-duos-night-gbp,'
-            'imp-supplier-duos-reactive-rate,'
-            'imp-supplier-duos-reactive-gbp,'
-            'imp-supplier-duos-standing-gbp,imp-supplier-settlement-gbp,'
-            'imp-supplier-night-msp-kwh,imp-supplier-night-gsp-kwh,'
-            'imp-supplier-night-gbp,imp-supplier-other-msp-kwh,'
-            'imp-supplier-other-gsp-kwh,imp-supplier-other-gbp,'
-            'imp-supplier-summer-pk-msp-kwh,'
-            'imp-supplier-summer-pk-gsp-kwh,imp-supplier-summer-pk-gbp,'
-            'imp-supplier-winter-low-pk-msp-kwh,'
-            'imp-supplier-winter-low-pk-gsp-kwh,'
-            'imp-supplier-winter-low-pk-gbp,'
-            'imp-supplier-winter-off-pk-msp-kwh,'
-            'imp-supplier-winter-off-pk-gsp-kwh,'
-            'imp-supplier-winter-off-pk-gbp,'
-            'imp-supplier-winter-pk-msp-kwh,'
-            'imp-supplier-winter-pk-gsp-kwh,imp-supplier-winter-pk-gbp,'
-            'imp-supplier-bsuos-kwh,imp-supplier-bsuos-rate,'
-            'imp-supplier-bsuos-gbp,imp-supplier-triad-actual-1-date,'
-            'imp-supplier-triad-actual-1-msp-kw,'
-            'imp-supplier-triad-actual-1-status,'
-            'imp-supplier-triad-actual-1-laf,'
-            'imp-supplier-triad-actual-1-gsp-kw,'
-            'imp-supplier-triad-actual-2-date,'
-            'imp-supplier-triad-actual-2-msp-kw,'
-            'imp-supplier-triad-actual-2-status,'
-            'imp-supplier-triad-actual-2-laf,'
-            'imp-supplier-triad-actual-2-gsp-kw,'
-            'imp-supplier-triad-actual-3-date,'
-            'imp-supplier-triad-actual-3-msp-kw,'
-            'imp-supplier-triad-actual-3-status,'
-            'imp-supplier-triad-actual-3-laf,'
-            'imp-supplier-triad-actual-3-gsp-kw,'
-            'imp-supplier-triad-actual-gsp-kw,'
-            'imp-supplier-triad-actual-rate,'
-            'imp-supplier-triad-actual-gbp,'
-            'imp-supplier-triad-estimate-1-date,'
-            'imp-supplier-triad-estimate-1-msp-kw,'
-            'imp-supplier-triad-estimate-1-status,'
-            'imp-supplier-triad-estimate-1-laf,'
-            'imp-supplier-triad-estimate-1-gsp-kw,'
-            'imp-supplier-triad-estimate-2-date,'
-            'imp-supplier-triad-estimate-2-msp-kw,'
-            'imp-supplier-triad-estimate-2-status,'
-            'imp-supplier-triad-estimate-2-laf,'
-            'imp-supplier-triad-estimate-2-gsp-kw,'
-            'imp-supplier-triad-estimate-3-date,'
-            'imp-supplier-triad-estimate-3-msp-kw,'
-            'imp-supplier-triad-estimate-3-status,'
-            'imp-supplier-triad-estimate-3-laf,'
-            'imp-supplier-triad-estimate-3-gsp-kw,'
-            'imp-supplier-triad-estimate-gsp-kw,'
-            'imp-supplier-triad-estimate-rate,'
-            'imp-supplier-triad-estimate-months,'
-            'imp-supplier-triad-estimate-gbp,'
-            'imp-supplier-triad-all-estimates-months,'
-            'imp-supplier-triad-all-estimates-gbp'
-            ',imp-supplier-problem',
+            r'Account,From,To,,mop-net-gbp,mop-problem,,'
+            r'dc-net-gbp,dc-problem,,imp-supplier-net-gbp,'
+            r'imp-supplier-tlm,imp-supplier-ccl-kwh,'
+            r'imp-supplier-ccl-rate,imp-supplier-ccl-gbp,'
+            r'imp-supplier-data-collection-gbp,'
+            r'imp-supplier-duos-availability-kva,'
+            r'imp-supplier-duos-availability-days,'
+            r'imp-supplier-duos-availability-rate,'
+            r'imp-supplier-duos-availability-gbp,'
+            r'imp-supplier-duos-excess-availability-kva,'
+            r'imp-supplier-duos-excess-availability-days,'
+            r'imp-supplier-duos-excess-availability-rate,'
+            r'imp-supplier-duos-excess-availability-gbp,'
+            r'imp-supplier-duos-day-kwh,imp-supplier-duos-day-gbp,'
+            r'imp-supplier-duos-night-kwh,imp-supplier-duos-night-gbp,'
+            r'imp-supplier-duos-reactive-rate,'
+            r'imp-supplier-duos-reactive-gbp,'
+            r'imp-supplier-duos-standing-gbp,imp-supplier-settlement-gbp,'
+            r'imp-supplier-night-msp-kwh,imp-supplier-night-gsp-kwh,'
+            r'imp-supplier-night-gbp,imp-supplier-other-msp-kwh,'
+            r'imp-supplier-other-gsp-kwh,imp-supplier-other-gbp,'
+            r'imp-supplier-summer-pk-msp-kwh,'
+            r'imp-supplier-summer-pk-gsp-kwh,imp-supplier-summer-pk-gbp,'
+            r'imp-supplier-winter-low-pk-msp-kwh,'
+            r'imp-supplier-winter-low-pk-gsp-kwh,'
+            r'imp-supplier-winter-low-pk-gbp,'
+            r'imp-supplier-winter-off-pk-msp-kwh,'
+            r'imp-supplier-winter-off-pk-gsp-kwh,'
+            r'imp-supplier-winter-off-pk-gbp,'
+            r'imp-supplier-winter-pk-msp-kwh,'
+            r'imp-supplier-winter-pk-gsp-kwh,imp-supplier-winter-pk-gbp,'
+            r'imp-supplier-bsuos-kwh,imp-supplier-bsuos-rate,'
+            r'imp-supplier-bsuos-gbp,imp-supplier-triad-actual-1-date,'
+            r'imp-supplier-triad-actual-1-msp-kw,'
+            r'imp-supplier-triad-actual-1-status,'
+            r'imp-supplier-triad-actual-1-laf,'
+            r'imp-supplier-triad-actual-1-gsp-kw,'
+            r'imp-supplier-triad-actual-2-date,'
+            r'imp-supplier-triad-actual-2-msp-kw,'
+            r'imp-supplier-triad-actual-2-status,'
+            r'imp-supplier-triad-actual-2-laf,'
+            r'imp-supplier-triad-actual-2-gsp-kw,'
+            r'imp-supplier-triad-actual-3-date,'
+            r'imp-supplier-triad-actual-3-msp-kw,'
+            r'imp-supplier-triad-actual-3-status,'
+            r'imp-supplier-triad-actual-3-laf,'
+            r'imp-supplier-triad-actual-3-gsp-kw,'
+            r'imp-supplier-triad-actual-gsp-kw,'
+            r'imp-supplier-triad-actual-rate,'
+            r'imp-supplier-triad-actual-gbp,'
+            r'imp-supplier-triad-estimate-1-date,'
+            r'imp-supplier-triad-estimate-1-msp-kw,'
+            r'imp-supplier-triad-estimate-1-status,'
+            r'imp-supplier-triad-estimate-1-laf,'
+            r'imp-supplier-triad-estimate-1-gsp-kw,'
+            r'imp-supplier-triad-estimate-2-date,'
+            r'imp-supplier-triad-estimate-2-msp-kw,'
+            r'imp-supplier-triad-estimate-2-status,'
+            r'imp-supplier-triad-estimate-2-laf,'
+            r'imp-supplier-triad-estimate-2-gsp-kw,'
+            r'imp-supplier-triad-estimate-3-date,'
+            r'imp-supplier-triad-estimate-3-msp-kw,'
+            r'imp-supplier-triad-estimate-3-status,'
+            r'imp-supplier-triad-estimate-3-laf,'
+            r'imp-supplier-triad-estimate-3-gsp-kw,'
+            r'imp-supplier-triad-estimate-gsp-kw,'
+            r'imp-supplier-triad-estimate-rate,'
+            r'imp-supplier-triad-estimate-months,'
+            r'imp-supplier-triad-estimate-gbp,'
+            r'imp-supplier-triad-all-estimates-months,'
+            r'imp-supplier-triad-all-estimates-gbp'
+            r',imp-supplier-problem',
             r'22 4862 4512 332,,CH023,Treglisson,11640077,'
             r'2009-03-01 00:00,2009-03-31 23:30,,10,,,10,,,'
             r'10614.7229832\d*,,148925.71000000002,0.00456 | 0.0047,'
@@ -3987,9 +3988,9 @@ def virtual_bill(supply_source):
         'path': '/supplier_contracts/13/edit',
         'method': 'post',
         'data': {
-            'name': "Non half-hourlies 2007",
-            'party_id': "759",  # HYDE
-            'charge_script': """
+            r'name': "Non half-hourlies 2007",
+            r'party_id': "759",  # HYDE
+            r'charge_script': """
 import chellow.ccl
 import chellow.computer
 from chellow.utils import utc_datetime, HH
@@ -4195,78 +4196,78 @@ def virtual_bill(supply_source):
         '0012_FINISHED_watkinsexamplecom_supply_virtual_bills_12.csv',
         'regexes': [
             r'Imp MPAN Core,Exp MPAN Core,Site Code,Site Name,'
-            'Account,From,To,,mop-net-gbp,mop-problem,,'
-            'dc-net-gbp,dc-problem,,imp-supplier-net-gbp,'
-            'imp-supplier-tlm,imp-supplier-ccl-kwh,'
-            'imp-supplier-ccl-rate,imp-supplier-ccl-gbp,'
-            'imp-supplier-data-collection-gbp,'
-            'imp-supplier-duos-availability-kva,'
-            'imp-supplier-duos-availability-days,'
-            'imp-supplier-duos-availability-rate,'
-            'imp-supplier-duos-availability-gbp,'
-            'imp-supplier-duos-excess-availability-kva,'
-            'imp-supplier-duos-excess-availability-days,'
-            'imp-supplier-duos-excess-availability-rate,'
-            'imp-supplier-duos-excess-availability-gbp,'
-            'imp-supplier-duos-day-kwh,imp-supplier-duos-day-gbp,'
-            'imp-supplier-duos-night-kwh,imp-supplier-duos-night-gbp,'
-            'imp-supplier-duos-reactive-rate,'
-            'imp-supplier-duos-reactive-gbp,'
-            'imp-supplier-duos-standing-gbp,imp-supplier-settlement-gbp,'
-            'imp-supplier-night-msp-kwh,imp-supplier-night-gsp-kwh,'
-            'imp-supplier-night-gbp,imp-supplier-other-msp-kwh,'
-            'imp-supplier-other-gsp-kwh,imp-supplier-other-gbp,'
-            'imp-supplier-summer-pk-msp-kwh,'
-            'imp-supplier-summer-pk-gsp-kwh,imp-supplier-summer-pk-gbp,'
-            'imp-supplier-winter-low-pk-msp-kwh,'
-            'imp-supplier-winter-low-pk-gsp-kwh,'
-            'imp-supplier-winter-low-pk-gbp,'
-            'imp-supplier-winter-off-pk-msp-kwh,'
-            'imp-supplier-winter-off-pk-gsp-kwh,'
-            'imp-supplier-winter-off-pk-gbp,'
-            'imp-supplier-winter-pk-msp-kwh,'
-            'imp-supplier-winter-pk-gsp-kwh,imp-supplier-winter-pk-gbp,'
-            'imp-supplier-bsuos-kwh,imp-supplier-bsuos-rate,'
-            'imp-supplier-bsuos-gbp,imp-supplier-triad-actual-1-date,'
-            'imp-supplier-triad-actual-1-msp-kw,'
-            'imp-supplier-triad-actual-1-status,'
-            'imp-supplier-triad-actual-1-laf,'
-            'imp-supplier-triad-actual-1-gsp-kw,'
-            'imp-supplier-triad-actual-2-date,'
-            'imp-supplier-triad-actual-2-msp-kw,'
-            'imp-supplier-triad-actual-2-status,'
-            'imp-supplier-triad-actual-2-laf,'
-            'imp-supplier-triad-actual-2-gsp-kw,'
-            'imp-supplier-triad-actual-3-date,'
-            'imp-supplier-triad-actual-3-msp-kw,'
-            'imp-supplier-triad-actual-3-status,'
-            'imp-supplier-triad-actual-3-laf,'
-            'imp-supplier-triad-actual-3-gsp-kw,'
-            'imp-supplier-triad-actual-gsp-kw,'
-            'imp-supplier-triad-actual-rate,'
-            'imp-supplier-triad-actual-gbp,'
-            'imp-supplier-triad-estimate-1-date,'
-            'imp-supplier-triad-estimate-1-msp-kw,'
-            'imp-supplier-triad-estimate-1-status,'
-            'imp-supplier-triad-estimate-1-laf,'
-            'imp-supplier-triad-estimate-1-gsp-kw,'
-            'imp-supplier-triad-estimate-2-date,'
-            'imp-supplier-triad-estimate-2-msp-kw,'
-            'imp-supplier-triad-estimate-2-status,'
-            'imp-supplier-triad-estimate-2-laf,'
-            'imp-supplier-triad-estimate-2-gsp-kw,'
-            'imp-supplier-triad-estimate-3-date,'
-            'imp-supplier-triad-estimate-3-msp-kw,'
-            'imp-supplier-triad-estimate-3-status,'
-            'imp-supplier-triad-estimate-3-laf,'
-            'imp-supplier-triad-estimate-3-gsp-kw,'
-            'imp-supplier-triad-estimate-gsp-kw,'
-            'imp-supplier-triad-estimate-rate,'
-            'imp-supplier-triad-estimate-months,'
-            'imp-supplier-triad-estimate-gbp,'
-            'imp-supplier-triad-all-estimates-months,'
-            'imp-supplier-triad-all-estimates-gbp,'
-            'imp-supplier-problem',
+            r'Account,From,To,,mop-net-gbp,mop-problem,,'
+            r'dc-net-gbp,dc-problem,,imp-supplier-net-gbp,'
+            r'imp-supplier-tlm,imp-supplier-ccl-kwh,'
+            r'imp-supplier-ccl-rate,imp-supplier-ccl-gbp,'
+            r'imp-supplier-data-collection-gbp,'
+            r'imp-supplier-duos-availability-kva,'
+            r'imp-supplier-duos-availability-days,'
+            r'imp-supplier-duos-availability-rate,'
+            r'imp-supplier-duos-availability-gbp,'
+            r'imp-supplier-duos-excess-availability-kva,'
+            r'imp-supplier-duos-excess-availability-days,'
+            r'imp-supplier-duos-excess-availability-rate,'
+            r'imp-supplier-duos-excess-availability-gbp,'
+            r'imp-supplier-duos-day-kwh,imp-supplier-duos-day-gbp,'
+            r'imp-supplier-duos-night-kwh,imp-supplier-duos-night-gbp,'
+            r'imp-supplier-duos-reactive-rate,'
+            r'imp-supplier-duos-reactive-gbp,'
+            r'imp-supplier-duos-standing-gbp,imp-supplier-settlement-gbp,'
+            r'imp-supplier-night-msp-kwh,imp-supplier-night-gsp-kwh,'
+            r'imp-supplier-night-gbp,imp-supplier-other-msp-kwh,'
+            r'imp-supplier-other-gsp-kwh,imp-supplier-other-gbp,'
+            r'imp-supplier-summer-pk-msp-kwh,'
+            r'imp-supplier-summer-pk-gsp-kwh,imp-supplier-summer-pk-gbp,'
+            r'imp-supplier-winter-low-pk-msp-kwh,'
+            r'imp-supplier-winter-low-pk-gsp-kwh,'
+            r'imp-supplier-winter-low-pk-gbp,'
+            r'imp-supplier-winter-off-pk-msp-kwh,'
+            r'imp-supplier-winter-off-pk-gsp-kwh,'
+            r'imp-supplier-winter-off-pk-gbp,'
+            r'imp-supplier-winter-pk-msp-kwh,'
+            r'imp-supplier-winter-pk-gsp-kwh,imp-supplier-winter-pk-gbp,'
+            r'imp-supplier-bsuos-kwh,imp-supplier-bsuos-rate,'
+            r'imp-supplier-bsuos-gbp,imp-supplier-triad-actual-1-date,'
+            r'imp-supplier-triad-actual-1-msp-kw,'
+            r'imp-supplier-triad-actual-1-status,'
+            r'imp-supplier-triad-actual-1-laf,'
+            r'imp-supplier-triad-actual-1-gsp-kw,'
+            r'imp-supplier-triad-actual-2-date,'
+            r'imp-supplier-triad-actual-2-msp-kw,'
+            r'imp-supplier-triad-actual-2-status,'
+            r'imp-supplier-triad-actual-2-laf,'
+            r'imp-supplier-triad-actual-2-gsp-kw,'
+            r'imp-supplier-triad-actual-3-date,'
+            r'imp-supplier-triad-actual-3-msp-kw,'
+            r'imp-supplier-triad-actual-3-status,'
+            r'imp-supplier-triad-actual-3-laf,'
+            r'imp-supplier-triad-actual-3-gsp-kw,'
+            r'imp-supplier-triad-actual-gsp-kw,'
+            r'imp-supplier-triad-actual-rate,'
+            r'imp-supplier-triad-actual-gbp,'
+            r'imp-supplier-triad-estimate-1-date,'
+            r'imp-supplier-triad-estimate-1-msp-kw,'
+            r'imp-supplier-triad-estimate-1-status,'
+            r'imp-supplier-triad-estimate-1-laf,'
+            r'imp-supplier-triad-estimate-1-gsp-kw,'
+            r'imp-supplier-triad-estimate-2-date,'
+            r'imp-supplier-triad-estimate-2-msp-kw,'
+            r'imp-supplier-triad-estimate-2-status,'
+            r'imp-supplier-triad-estimate-2-laf,'
+            r'imp-supplier-triad-estimate-2-gsp-kw,'
+            r'imp-supplier-triad-estimate-3-date,'
+            r'imp-supplier-triad-estimate-3-msp-kw,'
+            r'imp-supplier-triad-estimate-3-status,'
+            r'imp-supplier-triad-estimate-3-laf,'
+            r'imp-supplier-triad-estimate-3-gsp-kw,'
+            r'imp-supplier-triad-estimate-gsp-kw,'
+            r'imp-supplier-triad-estimate-rate,'
+            r'imp-supplier-triad-estimate-months,'
+            r'imp-supplier-triad-estimate-gbp,'
+            r'imp-supplier-triad-all-estimates-months,'
+            r'imp-supplier-triad-all-estimates-gbp,'
+            r'imp-supplier-problem',
             r'20 6354 2983 571,,CI004,Lower Treave,141 5532,'
             r'2009-03-01 00:00,2009-03-31 23:30,,10,,,7,,,'
             r'2274.51875\d*,,,0.00456 | 0.0047,,5.89,2300,,,'
@@ -4298,7 +4299,7 @@ def virtual_bill(supply_source):
         '0013_FINISHED_watkinsexamplecom_supply_virtual_bills_12.csv',
         'regexes': [
             r'20 6354 2983 571,,CI004,Lower Treave,141 5532,'
-            '2009-06-01 00:00,2009-06-30 23:30,'],
+            r'2009-06-01 00:00,2009-06-30 23:30,'],
         'status_code': 200},
 
     # supply 12, era 16, channel 42
@@ -4428,21 +4429,23 @@ def virtual_bill(supply_source):
             r"<th>R1 Meter Serial Number</th>\s*<th>R1 Coefficient</th>\s*"
             r"<th>R1 Units</th>\s*<th>R1 TPR</th>\s*"
             r"<th>R1 Previous Read Date</th>\s*"
-            "<th>R1 Previous Read Value</th>\s*"
-            "<th>R1 Previous Read Type</th>\s*<th>R1 Present Read Date</th>\s*"
-            "<th>R1 Present Read Value</th>\s*<th>R1 Present Read Type</th>\s*"
-            "<th>Breakdown</th>",
+            r"<th>R1 Previous Read Value</th>\s*"
+            r"<th>R1 Previous Read Type</th>\s*"
+            r"<th>R1 Present Read Date</th>\s*"
+            r"<th>R1 Present Read Value</th>\s*"
+            r"<th>R1 Present Read Type</th>\s*"
+            r"<th>Breakdown</th>",
             r"<td>3423760005</td>\s*<td>SA342376000</td>\s*<td>N</td>\s*"
             r'<td>2210653921534</td>\s*'
-            "<td>2010-05-12 00:00</td>\s*<td>2010-01-19 00:00</td>\s*"
-            "<td>2010-04-20 23:30</td>\s*<td>253</td>\s*<td>36.16</td>\s*"
-            "<td>1.80</td>\s*<td>37.96</td>\s*"
-            "<td>03 801 110 22 1065 3921 534</td>\s*<td>K87D74429</td>\s*"
-            "<td>1</td>\s*<td>kWh</td>\s*<td>00001</td>\s*"
-            "<td>2010-01-18 23:30</td>\s*<td>16963</td>\s*<td>E</td>\s*"
-            "<td>2010-04-20 23:30</td>\s*<td>17216</td>\s*<td>E</td>",
+            r"<td>2010-05-12 00:00</td>\s*<td>2010-01-19 00:00</td>\s*"
+            r"<td>2010-04-20 23:30</td>\s*<td>253</td>\s*<td>36.16</td>\s*"
+            r"<td>1.80</td>\s*<td>37.96</td>\s*"
+            r"<td>03 801 110 22 1065 3921 534</td>\s*<td>K87D74429</td>\s*"
+            r"<td>1</td>\s*<td>kWh</td>\s*<td>00001</td>\s*"
+            r"<td>2010-01-18 23:30</td>\s*<td>16963</td>\s*<td>E</td>\s*"
+            r"<td>2010-04-20 23:30</td>\s*<td>17216</td>\s*<td>E</td>",
             r"All the bills have been successfully loaded and attached to the "
-            "batch\."],
+            r"batch\."],
 
         'status_code': 200},
 
@@ -4596,15 +4599,15 @@ def virtual_bill(supply_source):
             r"<th>Reference</th>\s*<th>Account</th>\s*<th>Bill Type</th>\s*"
             r'<th>MPAN Cores</th>\s*<th>Issue Date</th>\s*'
             r'<th>Start Date</th>\s*'
-            "<th>Finish Date</th>\s*<th>kWh</th>\s*<th>Net</th>\s*"
-            "<th>VAT</th>\s*<th>Gross</th>\s*<th>Breakdown</th>",
+            r"<th>Finish Date</th>\s*<th>kWh</th>\s*<th>Net</th>\s*"
+            r"<th>VAT</th>\s*<th>Gross</th>\s*<th>Breakdown</th>",
             r"<td>KUH773</td>\s*<td>02</td>\s*<td>N</td>\s*<td></td>\s*"
-            "<td>2010-06-09 00:00</td>\s*<td>2010-05-01 00:00</td>\s*"
-            "<td>2010-05-31 23:30</td>\s*<td>32124.5</td>\s*"
+            r"<td>2010-06-09 00:00</td>\s*<td>2010-05-01 00:00</td>\s*"
+            r"<td>2010-05-31 23:30</td>\s*<td>32124.5</td>\s*"
             r'<td>2219.41</td>\s*<td>388.40</td>\s*<td>2607.81</td>\s*'
             r'<td>\[\(&#39;aahedc-gbp&#39;, Decimal\(&#39;5.29&#39;\)\),',
             r"All the bills have been successfully loaded and attached to "
-            "the batch\."],
+            r"the batch\."],
         'status_code': 200},
 
     {
@@ -4613,8 +4616,8 @@ def virtual_bill(supply_source):
         'regexes': [
             r'\[<a href="/supplier_batches/6/edit">edit</a>\]',
             r"<td>2010-06-09 00:00</td>\s*<td>2010-05-01 00:00</td>\s*"
-            "<td>2010-05-31 23:30</td>\s*<td>32124.5</td>\s*"
-            "<td>2219.41</td>\s*<td>388.40</td>\s*<td>2607.81</td>",
+            r"<td>2010-05-31 23:30</td>\s*<td>32124.5</td>\s*"
+            r"<td>2219.41</td>\s*<td>388.40</td>\s*<td>2607.81</td>",
             r'<a\s*href="/reports/111\?batch_id=6"\s*>Check Bills</a>'],
         'status_code': 200},
     {
@@ -5501,44 +5504,44 @@ def virtual_bill(supply_source):
         'status_code': 200,
         'regexes': [
             r"All the bills have been successfully loaded and attached to "
-            "the batch\."]},
+            r"the batch\."]},
 
     # Supplier contract 16, batch 7, bill 10
     {
         'path': '/reads/7/edit',
         'regexes': [
             r'31</option>\s*</select>\s*<select name="present_hour">\s*'
-            '<option value="0">00</option>\s*<option value="1">01</option>\s*'
-            '<option value="2">02</option>\s*<option value="3">03</option>\s*'
-            '<option value="4">04</option>\s*<option value="5">05</option>\s*'
-            '<option value="6">06</option>\s*<option value="7">07</option>\s*'
-            '<option value="8">08</option>\s*<option value="9">09</option>\s*'
-            '<option value="10">10</option>\s*'
-            '<option value="11">11</option>\s*'
-            '<option value="12">12</option>\s*'
-            '<option value="13">13</option>\s*'
-            '<option value="14">14</option>\s*'
-            '<option value="15">15</option>\s*'
-            '<option value="16">16</option>\s*'
-            '<option value="17">17</option>\s*'
-            '<option value="18">18</option>\s*'
-            '<option value="19">19</option>\s*'
-            '<option value="20">20</option>\s*'
-            '<option value="21">21</option>\s*'
-            '<option value="22">22</option>\s*'
-            '<option value="23" selected>23</option>\s*'
-            '</select>:<select name="present_minute">\s*'
-            '<option value="0">00</option>\s*'
-            '<option value="30" selected>30</option>\s*</select>']},
+            r'<option value="0">00</option>\s*<option value="1">01</option>\s*'
+            r'<option value="2">02</option>\s*<option value="3">03</option>\s*'
+            r'<option value="4">04</option>\s*<option value="5">05</option>\s*'
+            r'<option value="6">06</option>\s*<option value="7">07</option>\s*'
+            r'<option value="8">08</option>\s*<option value="9">09</option>\s*'
+            r'<option value="10">10</option>\s*'
+            r'<option value="11">11</option>\s*'
+            r'<option value="12">12</option>\s*'
+            r'<option value="13">13</option>\s*'
+            r'<option value="14">14</option>\s*'
+            r'<option value="15">15</option>\s*'
+            r'<option value="16">16</option>\s*'
+            r'<option value="17">17</option>\s*'
+            r'<option value="18">18</option>\s*'
+            r'<option value="19">19</option>\s*'
+            r'<option value="20">20</option>\s*'
+            r'<option value="21">21</option>\s*'
+            r'<option value="22">22</option>\s*'
+            r'<option value="23" selected>23</option>\s*'
+            r'</select>:<select name="present_minute">\s*'
+            r'<option value="0">00</option>\s*'
+            r'<option value="30" selected>30</option>\s*</select>']},
     {
         'name': "Test viewers' search",
         'path': '/supplies?search_pattern=',
         'regexes': [
             r'<td>\s*'
-            '<a href="/supplies/9">supply</a>\s*'
-            '</td>\s*<td>P96C93722</td>',
+            r'<a href="/supplies/9">supply</a>\s*'
+            r'</td>\s*<td>P96C93722</td>',
             r"<td>\s*</td>\s*<td>\s*</td>\s*<td>\s*</td>\s*<td>\s*"
-            "00 845\s*581\s*22 0470 7514 535\s*</td>"],
+            r"00 845\s*581\s*22 0470 7514 535\s*</td>"],
         'status_code': 200},
 
     {
@@ -5573,7 +5576,7 @@ def virtual_bill(supply_source):
 
             # Check link to supply duration is correct
             r'<form action="/reports/149">\s*<fieldset>\s*'
-            '<input type="hidden" name="supply_id"',
+            r'<input type="hidden" name="supply_id"',
             r'<td rowspan="4">\s*'
             r'<a\s*'
             r'href="/pcs/0"\s*'
@@ -5668,10 +5671,10 @@ def virtual_bill(supply_source):
         'regexes': [
             r'<td>\s*<a href="/reports/111\?bill_id=14">Check</a>\s*</td>',
             r'<td>38992</td>\s*<td>\s*<a title="Estimated"\s*'
-            'href="/read_types/4">E</a>\s*</td>\s*'
-            '<td>2007-01-17 00:00</td>\s*<td>39000\s*</td>\s*<td>\s*'
-            '<a title="Estimated"\s*'
-            'href="/read_types/4">E</a>\s*</td>'],
+            r'href="/read_types/4">E</a>\s*</td>\s*'
+            r'<td>2007-01-17 00:00</td>\s*<td>39000\s*</td>\s*<td>\s*'
+            r'<a title="Estimated"\s*'
+            r'href="/read_types/4">E</a>\s*</td>'],
         'status_code': 200},
     {
         'name': "Check the 'update bill' page.",
@@ -5743,7 +5746,7 @@ def virtual_bill(supply_source):
         'status_code': 200,
         'regexes': [
             r"All the bills have been successfully loaded and attached to "
-            "the batch\."]},
+            r"the batch\."]},
 
     {
         'name': "Add batch to MOP contract",
@@ -5797,7 +5800,7 @@ def virtual_bill(supply_source):
         'status_code': 200,
         'regexes': [
             r"All the bills have been successfully loaded and attached to "
-            "the batch\."]},
+            r"the batch\."]},
     {
         'name': "If a new supply has a blank LLFC field, check it gives a "
         "good error message. Also make sure that site name doesn't change "
@@ -5864,7 +5867,7 @@ def virtual_bill(supply_source):
             'insert_electricity': "Insert"},
         'regexes': [
             r"Problem parsing the field imp_sc as an integer: invalid literal "
-            "for int\(\) with base 10: "],
+            r"for int\(\) with base 10: "],
         'status_code': 400},
     {
         'name': "If a new supply has a blank MTC code field, check it gives "
@@ -6312,7 +6315,7 @@ def virtual_bill(supply_source):
 
             # Check that the start hour of a non-core rate script is correct."
             r'<select name="start_hour">\s*'
-            '<option value="0" selected>00</option>'],
+            r'<option value="0" selected>00</option>'],
         'status_code': 200},
     {
         'path': '/non_core_rate_scripts/35/edit',
@@ -6358,106 +6361,126 @@ def virtual_bill(supply_source):
         'name': "Supplier contract 30, batch 6",
         'path': '/supplier_bills/18/edit',
         'regexes': [
-            r'<select name="start_day">\s*<option value="1">01</option>\s*'
-            '<option value="2">02</option>\s*<option value="3">03</option>\s*'
-            '<option value="4">04</option>\s*<option value="5">05</option>\s*'
-            '<option value="6" selected>06</option>\s*'
-            '<option value="7">07</option>\s*<option value="8">08</option>\s*'
-            '<option value="9">09</option>\s*<option value="10">10</option>\s*'
-            '<option value="11">11</option>\s*'
-            '<option value="12">12</option>\s*'
-            '<option value="13">13</option>\s*'
-            '<option value="14">14</option>\s*'
-            '<option value="15">15</option>\s*'
-            '<option value="16">16</option>\s*'
-            '<option value="17">17</option>\s*'
-            '<option value="18">18</option>\s*'
-            '<option value="19">19</option>\s*'
-            '<option value="20">20</option>\s*'
-            '<option value="21">21</option>\s*'
-            '<option value="22">22</option>\s*'
-            '<option value="23">23</option>\s*'
-            '<option value="24">24</option>\s*'
-            '<option value="25">25</option>\s*'
-            '<option value="26">26</option>\s*'
-            '<option value="27">27</option>\s*'
-            '<option value="28">28</option>\s*'
-            '<option value="29">29</option>\s*'
-            '<option value="30">30</option>\s*'
-            '<option value="31">31</option>\s*'
-            '</select>\s*<select name="start_hour">\s*'
-            '<option value="0" selected>00</option>\s*'
-            '<option value="1">01</option>\s*<option value="2">02</option>\s*'
-            '<option value="3">03</option>\s*<option value="4">04</option>\s*'
-            '<option value="5">05</option>\s*<option value="6">06</option>\s*'
-            '<option value="7">07</option>\s*<option value="8">08</option>\s*'
-            '<option value="9">09</option>\s*<option value="10">10</option>\s*'
-            '<option value="11">11</option>\s*'
-            '<option value="12">12</option>\s*'
-            '<option value="13">13</option>\s*'
-            '<option value="14">14</option>\s*'
-            '<option value="15">15</option>\s*'
-            '<option value="16">16</option>\s*'
-            '<option value="17">17</option>\s*'
-            '<option value="18">18</option>\s*'
-            '<option value="19">19</option>\s*'
-            '<option value="20">20</option>\s*'
-            '<option value="21">21</option>\s*'
-            '<option value="22">22</option>\s*'
-            '<option value="23">23</option>\s*'
-            '</select>:<select name="start_minute">\s*'
-            '<option value="0" selected>00</option>\s*'
-            '<option value="30">30</option>\s*</select>',
-            r'<select name="finish_day">\s*<option value="1">01</option>\s*'
-            '<option value="2">02</option>\s*<option value="3">03</option>\s*'
-            '<option value="4">04</option>\s*<option value="5">05</option>\s*'
-            '<option value="6" selected>06</option>\s*'
-            '<option value="7">07</option>\s*<option value="8">08</option>\s*'
-            '<option value="9">09</option>\s*<option value="10">10</option>\s*'
-            '<option value="11">11</option>\s*'
-            '<option value="12">12</option>\s*'
-            '<option value="13">13</option>\s*'
-            '<option value="14">14</option>\s*'
-            '<option value="15">15</option>\s*'
-            '<option value="16">16</option>\s*'
-            '<option value="17">17</option>\s*'
-            '<option value="18">18</option>\s*'
-            '<option value="19">19</option>\s*'
-            '<option value="20">20</option>\s*'
-            '<option value="21">21</option>\s*'
-            '<option value="22">22</option>\s*'
-            '<option value="23">23</option>\s*'
-            '<option value="24">24</option>\s*'
-            '<option value="25">25</option>\s*'
-            '<option value="26">26</option>\s*'
-            '<option value="27">27</option>\s*'
-            '<option value="28">28</option>\s*'
-            '<option value="29">29</option>\s*'
-            '<option value="30">30</option>\s*'
-            '<option value="31">31</option>\s*'
-            '</select>\s*<select name="finish_hour">\s*'
-            '<option value="0" selected>00</option>\s*'
-            '<option value="1">01</option>\s*<option value="2">02</option>\s*'
-            '<option value="3">03</option>\s*<option value="4">04</option>\s*'
-            '<option value="5">05</option>\s*<option value="6">06</option>\s*'
-            '<option value="7">07</option>\s*<option value="8">08</option>\s*'
-            '<option value="9">09</option>\s*<option value="10">10</option>\s*'
-            '<option value="11">11</option>\s*'
-            '<option value="12">12</option>\s*'
-            '<option value="13">13</option>\s*'
-            '<option value="14">14</option>\s*'
-            '<option value="15">15</option>\s*'
-            '<option value="16">16</option>\s*'
-            '<option value="17">17</option>\s*'
-            '<option value="18">18</option>\s*'
-            '<option value="19">19</option>\s*'
-            '<option value="20">20</option>\s*'
-            '<option value="21">21</option>\s*'
-            '<option value="22">22</option>\s*'
-            '<option value="23">23</option>\s*'
-            '</select>:<select name="finish_minute">\s*'
-            '<option value="0" selected>00</option>\s*'
-            '<option value="30">30</option>\s*</select>'],
+            r'<select name="start_day">\s*'
+            r'<option value="1">01</option>\s*'
+            r'<option value="2">02</option>\s*'
+            r'<option value="3">03</option>\s*'
+            r'<option value="4">04</option>\s*'
+            r'<option value="5">05</option>\s*'
+            r'<option value="6" selected>06</option>\s*'
+            r'<option value="7">07</option>\s*'
+            r'<option value="8">08</option>\s*'
+            r'<option value="9">09</option>\s*'
+            r'<option value="10">10</option>\s*'
+            r'<option value="11">11</option>\s*'
+            r'<option value="12">12</option>\s*'
+            r'<option value="13">13</option>\s*'
+            r'<option value="14">14</option>\s*'
+            r'<option value="15">15</option>\s*'
+            r'<option value="16">16</option>\s*'
+            r'<option value="17">17</option>\s*'
+            r'<option value="18">18</option>\s*'
+            r'<option value="19">19</option>\s*'
+            r'<option value="20">20</option>\s*'
+            r'<option value="21">21</option>\s*'
+            r'<option value="22">22</option>\s*'
+            r'<option value="23">23</option>\s*'
+            r'<option value="24">24</option>\s*'
+            r'<option value="25">25</option>\s*'
+            r'<option value="26">26</option>\s*'
+            r'<option value="27">27</option>\s*'
+            r'<option value="28">28</option>\s*'
+            r'<option value="29">29</option>\s*'
+            r'<option value="30">30</option>\s*'
+            r'<option value="31">31</option>\s*'
+            r'</select>\s*<select name="start_hour">\s*'
+            r'<option value="0" selected>00</option>\s*'
+            r'<option value="1">01</option>\s*'
+            r'<option value="2">02</option>\s*'
+            r'<option value="3">03</option>\s*'
+            r'<option value="4">04</option>\s*'
+            r'<option value="5">05</option>\s*'
+            r'<option value="6">06</option>\s*'
+            r'<option value="7">07</option>\s*'
+            r'<option value="8">08</option>\s*'
+            r'<option value="9">09</option>\s*'
+            r'<option value="10">10</option>\s*'
+            r'<option value="11">11</option>\s*'
+            r'<option value="12">12</option>\s*'
+            r'<option value="13">13</option>\s*'
+            r'<option value="14">14</option>\s*'
+            r'<option value="15">15</option>\s*'
+            r'<option value="16">16</option>\s*'
+            r'<option value="17">17</option>\s*'
+            r'<option value="18">18</option>\s*'
+            r'<option value="19">19</option>\s*'
+            r'<option value="20">20</option>\s*'
+            r'<option value="21">21</option>\s*'
+            r'<option value="22">22</option>\s*'
+            r'<option value="23">23</option>\s*'
+            r'</select>:<select name="start_minute">\s*'
+            r'<option value="0" selected>00</option>\s*'
+            r'<option value="30">30</option>\s*</select>',
+            r'<select name="finish_day">\s*'
+            r'<option value="1">01</option>\s*'
+            r'<option value="2">02</option>\s*'
+            r'<option value="3">03</option>\s*'
+            r'<option value="4">04</option>\s*'
+            r'<option value="5">05</option>\s*'
+            r'<option value="6" selected>06</option>\s*'
+            r'<option value="7">07</option>\s*'
+            r'<option value="8">08</option>\s*'
+            r'<option value="9">09</option>\s*'
+            r'<option value="10">10</option>\s*'
+            r'<option value="11">11</option>\s*'
+            r'<option value="12">12</option>\s*'
+            r'<option value="13">13</option>\s*'
+            r'<option value="14">14</option>\s*'
+            r'<option value="15">15</option>\s*'
+            r'<option value="16">16</option>\s*'
+            r'<option value="17">17</option>\s*'
+            r'<option value="18">18</option>\s*'
+            r'<option value="19">19</option>\s*'
+            r'<option value="20">20</option>\s*'
+            r'<option value="21">21</option>\s*'
+            r'<option value="22">22</option>\s*'
+            r'<option value="23">23</option>\s*'
+            r'<option value="24">24</option>\s*'
+            r'<option value="25">25</option>\s*'
+            r'<option value="26">26</option>\s*'
+            r'<option value="27">27</option>\s*'
+            r'<option value="28">28</option>\s*'
+            r'<option value="29">29</option>\s*'
+            r'<option value="30">30</option>\s*'
+            r'<option value="31">31</option>\s*'
+            r'</select>\s*<select name="finish_hour">\s*'
+            r'<option value="0" selected>00</option>\s*'
+            r'<option value="1">01</option>\s*'
+            r'<option value="2">02</option>\s*'
+            r'<option value="3">03</option>\s*'
+            r'<option value="4">04</option>\s*'
+            r'<option value="5">05</option>\s*'
+            r'<option value="6">06</option>\s*'
+            r'<option value="7">07</option>\s*'
+            r'<option value="8">08</option>\s*'
+            r'<option value="9">09</option>\s*'
+            r'<option value="10">10</option>\s*'
+            r'<option value="11">11</option>\s*'
+            r'<option value="12">12</option>\s*'
+            r'<option value="13">13</option>\s*'
+            r'<option value="14">14</option>\s*'
+            r'<option value="15">15</option>\s*'
+            r'<option value="16">16</option>\s*'
+            r'<option value="17">17</option>\s*'
+            r'<option value="18">18</option>\s*'
+            r'<option value="19">19</option>\s*'
+            r'<option value="20">20</option>\s*'
+            r'<option value="21">21</option>\s*'
+            r'<option value="22">22</option>\s*'
+            r'<option value="23">23</option>\s*'
+            r'</select>:<select name="finish_minute">\s*'
+            r'<option value="0" selected>00</option>\s*'
+            r'<option value="30">30</option>\s*</select>'],
         'status_code': 200},
     {
         'name': "Check that bill with two sets of register reads gets "
@@ -6494,8 +6517,8 @@ def virtual_bill(supply_source):
 
             # Check link to TPR from outer read
             r'<td>\s*'
-            '<a href="/tprs/1">00003</a>\s*'
-            '</td>'],
+            r'<a href="/tprs/1">00003</a>\s*'
+            r'</td>'],
         'status_code': 200},
 
     # Supplier contract 63
@@ -6594,22 +6617,22 @@ def virtual_bill(supply_source):
         'path': '/supplies/5',
         'regexes': [
             r'<td>\s*'
-            '<a href="/dc_batches/8">001-7t'
-            '</a>\s*</td>\s*<td>00031</td>\s*<td>22 0883 6932 301</td>\s*'
-            '<td>2007-09-01 00:00</td>',
+            r'<a href="/dc_batches/8">001-7t'
+            r'</a>\s*</td>\s*<td>00031</td>\s*<td>22 0883 6932 301</td>\s*'
+            r'<td>2007-09-01 00:00</td>',
             r'<td>\s*'
-            '<a href="/mop_batches/9">99/992'
-            '</a>\s*</td>\s*<td>06</td>\s*<td>22 0883 6932 301</td>',
+            r'<a href="/mop_batches/9">99/992'
+            r'</a>\s*</td>\s*<td>06</td>\s*<td>22 0883 6932 301</td>',
 
             # Check that MOP bill before supply start is displayed
             r'<td>\s*'
-            '<a href="/mop_batches/9">99/992'
-            '</a>\s*</td>\s*<td>08</td>\s*<td>22 0883 6932 301</td>',
+            r'<a href="/mop_batches/9">99/992'
+            r'</a>\s*</td>\s*<td>08</td>\s*<td>22 0883 6932 301</td>',
 
             # Check that channel type is displayed
             r'<tr>\s*<td>\s*'
-            '<a href="/channels/16">ACTIVE</a>\s*'
-            '<a href="/channels/17">REACTIVE_IMP</a>\s*</td>'],
+            r'<a href="/channels/16">ACTIVE</a>\s*'
+            r'<a href="/channels/17">REACTIVE_IMP</a>\s*</td>'],
         'status_code': 200},
     {
         'name': "View the notes page.",
@@ -6681,7 +6704,7 @@ def virtual_bill(supply_source):
         'path': '/dc_contracts/8/auto_importer',
         'method': 'post',
         'regexes': [
-            '/dc_contracts/8/auto_importer'],
+            r'/dc_contracts/8/auto_importer'],
         'status_code': 303},
     {
         'name': "Check that file from FTP server has imported properly",
@@ -6713,7 +6736,7 @@ def virtual_bill(supply_source):
         'path': '/non_core_contracts/6/auto_importer',
         'method': 'post',
         'regexes': [
-            '/non_core_contracts/6/auto_importer'],
+            r'/non_core_contracts/6/auto_importer'],
         'status_code': 303},
 
     {
@@ -6915,15 +6938,15 @@ def virtual_bill(supply_source):
         'status_code': 200,
         'regexes': [
             r"supply-id,supply-name,source-code,generator-type,month,pc-code,"
-            "msn,site-code,site-name,metering-type,import-mpan-core,"
-            "metered-import-kwh,metered-import-net-gbp,"
-            "metered-import-estimated-kwh,billed-import-kwh,"
-            "billed-import-net-gbp,export-mpan-core,metered-export-kwh,"
-            "metered-export-estimated-kwh,billed-export-kwh,"
-            "billed-export-net-gbp,problem,timestamp",
+            r"msn,site-code,site-name,metering-type,import-mpan-core,"
+            r"metered-import-kwh,metered-import-net-gbp,"
+            r"metered-import-estimated-kwh,billed-import-kwh,"
+            r"billed-import-net-gbp,export-mpan-core,metered-export-kwh,"
+            r"metered-export-estimated-kwh,billed-export-kwh,"
+            r"billed-export-net-gbp,problem,timestamp",
             r'10,"2","net","","2011-01-31 23:30","03","I02D89150","CI017",'
-            '"Roselands","nhh","22 1065 3921 534","0.0","10.0","0","150.0",'
-            '"98.17","None","0","0","0","0",""']},
+            r'"Roselands","nhh","22 1065 3921 534","0.0","10.0","0","150.0",'
+            r'"98.17","None","0","0","0","0",""']},
     {
         'name': "Try monthly supply duration with a half-hourly.",
         'path': '/reports/177?supply_id=4&months=1&end_year=2010&end_month=05',
@@ -6942,12 +6965,12 @@ def virtual_bill(supply_source):
         'status_code': 200,
         'regexes': [
             r"supply-id,supply-name,source-code,generator-type,month,pc-code,"
-            "msn,site-code,site-name,metering-type,import-mpan-core,"
-            "metered-import-kwh,metered-import-net-gbp,"
-            "metered-import-estimated-kwh,billed-import-kwh,"
-            "billed-import-net-gbp,export-mpan-core,metered-export-kwh,"
-            "metered-export-estimated-kwh,billed-export-kwh,"
-            "billed-export-net-gbp,problem,timestamp",
+            r"msn,site-code,site-name,metering-type,import-mpan-core,"
+            r"metered-import-kwh,metered-import-net-gbp,"
+            r"metered-import-estimated-kwh,billed-import-kwh,"
+            r"billed-import-net-gbp,export-mpan-core,metered-export-kwh,"
+            r"metered-export-estimated-kwh,billed-export-kwh,"
+            r"billed-export-net-gbp,problem,timestamp",
             r'4,"1","net","","2010-05-31 23:30","00","","CI005",'
             r'"Wheal Rodney","hh","22 6158 2968 220","0","189.2268\d*",'
             r'"0","0","0","22 3479 7618 470","0","0","0","0",""']},
@@ -6984,7 +7007,7 @@ def virtual_bill(supply_source):
         'status_code': 200,
         'regexes': [
             r'CH017,Parbola,,sub,,2013-04-01 00:00,'
-            '2013-04-01 23:30,0,0,0,0,0,0,hh']},
+            r'2013-04-01 23:30,0,0,0,0,0,0,hh']},
     {
         'name': "Check CSV Sites HH Data Selector.",
         'path': '/csv_sites_hh_data',
@@ -7078,86 +7101,86 @@ def virtual_bill(supply_source):
         '0025_FINISHED_watkinsexamplecom_supply_virtual_bills_5.csv',
         'regexes': [
             r'Imp MPAN Core,Exp MPAN Core,Site Code,Site Name,'
-            'Account,From,To,,mop-net-gbp,mop-problem,,'
-            'dc-net-gbp,dc-problem,,imp-supplier-net-gbp,'
-            'imp-supplier-tlm,imp-supplier-ccl-kwh,'
-            'imp-supplier-ccl-rate,imp-supplier-ccl-gbp,'
-            'imp-supplier-data-collection-gbp,'
-            'imp-supplier-duos-availability-kva,'
-            'imp-supplier-duos-availability-days,'
-            'imp-supplier-duos-availability-rate,'
-            'imp-supplier-duos-availability-gbp,'
-            'imp-supplier-duos-excess-availability-kva,'
-            'imp-supplier-duos-excess-availability-days,'
-            'imp-supplier-duos-excess-availability-rate,'
-            'imp-supplier-duos-excess-availability-gbp,'
-            'imp-supplier-duos-green-kwh,imp-supplier-duos-green-rate,'
-            'imp-supplier-duos-green-gbp,imp-supplier-duos-amber-kwh,'
-            'imp-supplier-duos-amber-rate,imp-supplier-duos-amber-gbp,'
-            'imp-supplier-duos-red-kwh,imp-supplier-duos-red-rate,'
-            'imp-supplier-duos-red-gbp,imp-supplier-duos-reactive-kvarh,'
-            'imp-supplier-duos-reactive-rate,'
-            'imp-supplier-duos-reactive-gbp,imp-supplier-duos-fixed-days,'
-            'imp-supplier-duos-fixed-rate,imp-supplier-duos-fixed-gbp,'
-            'imp-supplier-settlement-gbp,'
-            'imp-supplier-aahedc-gsp-kwh,imp-supplier-aahedc-rate,'
-            'imp-supplier-aahedc-gbp,imp-supplier-rcrc-kwh,'
-            'imp-supplier-rcrc-rate,imp-supplier-rcrc-gbp,'
-            'imp-supplier-night-msp-kwh,imp-supplier-night-gsp-kwh,'
-            'imp-supplier-night-gbp,imp-supplier-other-msp-kwh,'
-            'imp-supplier-other-gsp-kwh,imp-supplier-other-gbp,'
-            'imp-supplier-summer-pk-msp-kwh,'
-            'imp-supplier-summer-pk-gsp-kwh,imp-supplier-summer-pk-gbp,'
-            'imp-supplier-winter-low-pk-msp-kwh,'
-            'imp-supplier-winter-low-pk-gsp-kwh,'
-            'imp-supplier-winter-low-pk-gbp,'
-            'imp-supplier-winter-off-pk-msp-kwh,'
-            'imp-supplier-winter-off-pk-gsp-kwh,'
-            'imp-supplier-winter-off-pk-gbp,'
-            'imp-supplier-winter-pk-msp-kwh,'
-            'imp-supplier-winter-pk-gsp-kwh,'
-            'imp-supplier-winter-pk-gbp,'
-            'imp-supplier-bsuos-kwh,imp-supplier-bsuos-rate,'
-            'imp-supplier-bsuos-gbp,imp-supplier-triad-actual-1-date,'
-            'imp-supplier-triad-actual-1-msp-kw,'
-            'imp-supplier-triad-actual-1-status,'
-            'imp-supplier-triad-actual-1-laf,'
-            'imp-supplier-triad-actual-1-gsp-kw,'
-            'imp-supplier-triad-actual-2-date,'
-            'imp-supplier-triad-actual-2-msp-kw,'
-            'imp-supplier-triad-actual-2-status,'
-            'imp-supplier-triad-actual-2-laf,'
-            'imp-supplier-triad-actual-2-gsp-kw,'
-            'imp-supplier-triad-actual-3-date,'
-            'imp-supplier-triad-actual-3-msp-kw,'
-            'imp-supplier-triad-actual-3-status,'
-            'imp-supplier-triad-actual-3-laf,'
-            'imp-supplier-triad-actual-3-gsp-kw,'
-            'imp-supplier-triad-actual-gsp-kw,'
-            'imp-supplier-triad-actual-rate,'
-            'imp-supplier-triad-actual-gbp,'
-            'imp-supplier-triad-estimate-1-date,'
-            'imp-supplier-triad-estimate-1-msp-kw,'
-            'imp-supplier-triad-estimate-1-status,'
-            'imp-supplier-triad-estimate-1-laf,'
-            'imp-supplier-triad-estimate-1-gsp-kw,'
-            'imp-supplier-triad-estimate-2-date,'
-            'imp-supplier-triad-estimate-2-msp-kw,'
-            'imp-supplier-triad-estimate-2-status,'
-            'imp-supplier-triad-estimate-2-laf,'
-            'imp-supplier-triad-estimate-2-gsp-kw,'
-            'imp-supplier-triad-estimate-3-date,'
-            'imp-supplier-triad-estimate-3-msp-kw,'
-            'imp-supplier-triad-estimate-3-status,'
-            'imp-supplier-triad-estimate-3-laf,'
-            'imp-supplier-triad-estimate-3-gsp-kw,'
-            'imp-supplier-triad-estimate-gsp-kw,'
-            'imp-supplier-triad-estimate-rate,'
-            'imp-supplier-triad-estimate-months,'
-            'imp-supplier-triad-estimate-gbp,'
-            'imp-supplier-triad-all-estimates-months,'
-            'imp-supplier-triad-all-estimates-gbp,'
-            'imp-supplier-problem',
+            r'Account,From,To,,mop-net-gbp,mop-problem,,'
+            r'dc-net-gbp,dc-problem,,imp-supplier-net-gbp,'
+            r'imp-supplier-tlm,imp-supplier-ccl-kwh,'
+            r'imp-supplier-ccl-rate,imp-supplier-ccl-gbp,'
+            r'imp-supplier-data-collection-gbp,'
+            r'imp-supplier-duos-availability-kva,'
+            r'imp-supplier-duos-availability-days,'
+            r'imp-supplier-duos-availability-rate,'
+            r'imp-supplier-duos-availability-gbp,'
+            r'imp-supplier-duos-excess-availability-kva,'
+            r'imp-supplier-duos-excess-availability-days,'
+            r'imp-supplier-duos-excess-availability-rate,'
+            r'imp-supplier-duos-excess-availability-gbp,'
+            r'imp-supplier-duos-green-kwh,imp-supplier-duos-green-rate,'
+            r'imp-supplier-duos-green-gbp,imp-supplier-duos-amber-kwh,'
+            r'imp-supplier-duos-amber-rate,imp-supplier-duos-amber-gbp,'
+            r'imp-supplier-duos-red-kwh,imp-supplier-duos-red-rate,'
+            r'imp-supplier-duos-red-gbp,imp-supplier-duos-reactive-kvarh,'
+            r'imp-supplier-duos-reactive-rate,'
+            r'imp-supplier-duos-reactive-gbp,imp-supplier-duos-fixed-days,'
+            r'imp-supplier-duos-fixed-rate,imp-supplier-duos-fixed-gbp,'
+            r'imp-supplier-settlement-gbp,'
+            r'imp-supplier-aahedc-gsp-kwh,imp-supplier-aahedc-rate,'
+            r'imp-supplier-aahedc-gbp,imp-supplier-rcrc-kwh,'
+            r'imp-supplier-rcrc-rate,imp-supplier-rcrc-gbp,'
+            r'imp-supplier-night-msp-kwh,imp-supplier-night-gsp-kwh,'
+            r'imp-supplier-night-gbp,imp-supplier-other-msp-kwh,'
+            r'imp-supplier-other-gsp-kwh,imp-supplier-other-gbp,'
+            r'imp-supplier-summer-pk-msp-kwh,'
+            r'imp-supplier-summer-pk-gsp-kwh,imp-supplier-summer-pk-gbp,'
+            r'imp-supplier-winter-low-pk-msp-kwh,'
+            r'imp-supplier-winter-low-pk-gsp-kwh,'
+            r'imp-supplier-winter-low-pk-gbp,'
+            r'imp-supplier-winter-off-pk-msp-kwh,'
+            r'imp-supplier-winter-off-pk-gsp-kwh,'
+            r'imp-supplier-winter-off-pk-gbp,'
+            r'imp-supplier-winter-pk-msp-kwh,'
+            r'imp-supplier-winter-pk-gsp-kwh,'
+            r'imp-supplier-winter-pk-gbp,'
+            r'imp-supplier-bsuos-kwh,imp-supplier-bsuos-rate,'
+            r'imp-supplier-bsuos-gbp,imp-supplier-triad-actual-1-date,'
+            r'imp-supplier-triad-actual-1-msp-kw,'
+            r'imp-supplier-triad-actual-1-status,'
+            r'imp-supplier-triad-actual-1-laf,'
+            r'imp-supplier-triad-actual-1-gsp-kw,'
+            r'imp-supplier-triad-actual-2-date,'
+            r'imp-supplier-triad-actual-2-msp-kw,'
+            r'imp-supplier-triad-actual-2-status,'
+            r'imp-supplier-triad-actual-2-laf,'
+            r'imp-supplier-triad-actual-2-gsp-kw,'
+            r'imp-supplier-triad-actual-3-date,'
+            r'imp-supplier-triad-actual-3-msp-kw,'
+            r'imp-supplier-triad-actual-3-status,'
+            r'imp-supplier-triad-actual-3-laf,'
+            r'imp-supplier-triad-actual-3-gsp-kw,'
+            r'imp-supplier-triad-actual-gsp-kw,'
+            r'imp-supplier-triad-actual-rate,'
+            r'imp-supplier-triad-actual-gbp,'
+            r'imp-supplier-triad-estimate-1-date,'
+            r'imp-supplier-triad-estimate-1-msp-kw,'
+            r'imp-supplier-triad-estimate-1-status,'
+            r'imp-supplier-triad-estimate-1-laf,'
+            r'imp-supplier-triad-estimate-1-gsp-kw,'
+            r'imp-supplier-triad-estimate-2-date,'
+            r'imp-supplier-triad-estimate-2-msp-kw,'
+            r'imp-supplier-triad-estimate-2-status,'
+            r'imp-supplier-triad-estimate-2-laf,'
+            r'imp-supplier-triad-estimate-2-gsp-kw,'
+            r'imp-supplier-triad-estimate-3-date,'
+            r'imp-supplier-triad-estimate-3-msp-kw,'
+            r'imp-supplier-triad-estimate-3-status,'
+            r'imp-supplier-triad-estimate-3-laf,'
+            r'imp-supplier-triad-estimate-3-gsp-kw,'
+            r'imp-supplier-triad-estimate-gsp-kw,'
+            r'imp-supplier-triad-estimate-rate,'
+            r'imp-supplier-triad-estimate-months,'
+            r'imp-supplier-triad-estimate-gbp,'
+            r'imp-supplier-triad-all-estimates-months,'
+            r'imp-supplier-triad-all-estimates-gbp,'
+            r'imp-supplier-problem',
             r'22 0883 6932 301,,CI005,Wheal Rodney,4341,'
             r'2013-04-01 00:00,2013-04-30 23:30,,10,,,0,,,'
             r'369.604999999999\d*,,,0.00524,,5.89,350,30,'
@@ -7165,19 +7188,19 @@ def virtual_bill(supply_source):
             r'0.00161,0.0,0,0.00287,0.0,0,0.2441,0.0,0.0,0.00382,'
             r'0.0,30,0.0905,2.7150000000000003,88,'
             r'0.0,0.0001897,0.0,0.0,,0.0,0,'
-            '0.0,0.0,0,0.0,0.0,0,0.0,0.0,,,,,,,,'
-            ',,0.0,'
-            ',0.0,,,,,,,,,,,,,,,,'
-            ',,,2012-11-29 17:00,0,X,1.087,0.0,'
-            '2012-12-12 17:00,0,X,1.087,0.0,2013-01-16 17:00,0,'
-            'X,1.087,0.0,0.0,33.551731,1,0.0,,,'],
+            r'0.0,0.0,0,0.0,0.0,0,0.0,0.0,,,,,,,,'
+            r',,0.0,'
+            r',0.0,,,,,,,,,,,,,,,,'
+            r',,,2012-11-29 17:00,0,X,1.087,0.0,'
+            r'2012-12-12 17:00,0,X,1.087,0.0,2013-01-16 17:00,0,'
+            r'X,1.087,0.0,0.0,33.551731,1,0.0,,,'],
         'status_code': 200},
     {
         'name': "Try site search",
         'path': '/sites?pattern=',
         'regexes': [
             r'<a href="/sites/8">'
-            'B00LG Bieling</a>'],
+            r'B00LG Bieling</a>'],
         'status_code': 200},
     {
         'name': "Site search with trailing whitespace",
@@ -7198,10 +7221,10 @@ def virtual_bill(supply_source):
         '0026_FINISHED_watkinsexamplecom_supplies_triad.csv',
         'regexes': [
             r'CI017,Roselands,1,net,,22 6354 2983 570,'
-            '2007-01-23 17:00,0,X,1.074,0.0,2006-12-20 17:00,0,'
-            'before start of supply,before start of supply,0,'
-            '2007-02-08 17:30,0,X,1.074,0.0,0.0,5.94264,0.0,'
-            ',,,,,,,,,,,,,,,,,,$'],
+            r'2007-01-23 17:00,0,X,1.074,0.0,2006-12-20 17:00,0,'
+            r'before start of supply,before start of supply,0,'
+            r'2007-02-08 17:30,0,X,1.074,0.0,0.0,5.94264,0.0,'
+            r',,,,,,,,,,,,,,,,,,$'],
         'status_code': 200},
 
     # Insert a 14 supply
@@ -7260,83 +7283,83 @@ def virtual_bill(supply_source):
             r'imp-supplier-ccl-rate,imp-supplier-ccl-gbp,'
             r'imp-supplier-data-collection-gbp,'
             r'imp-supplier-duos-availability-kva,'
-            'imp-supplier-duos-availability-days,'
-            'imp-supplier-duos-availability-rate,'
-            'imp-supplier-duos-availability-gbp,'
-            'imp-supplier-duos-excess-availability-kva,'
-            'imp-supplier-duos-excess-availability-days,'
-            'imp-supplier-duos-excess-availability-rate,'
-            'imp-supplier-duos-excess-availability-gbp,'
-            'imp-supplier-duos-day-kwh,imp-supplier-duos-day-gbp,'
-            'imp-supplier-duos-night-kwh,imp-supplier-duos-night-gbp,'
-            'imp-supplier-duos-reactive-rate,'
-            'imp-supplier-duos-reactive-gbp,'
-            'imp-supplier-duos-standing-gbp,'
-            'imp-supplier-settlement-gbp,imp-supplier-night-msp-kwh,'
-            'imp-supplier-night-gsp-kwh,imp-supplier-night-gbp,'
-            'imp-supplier-other-msp-kwh,imp-supplier-other-gsp-kwh,'
-            'imp-supplier-other-gbp,imp-supplier-summer-pk-msp-kwh,'
-            'imp-supplier-summer-pk-gsp-kwh,imp-supplier-summer-pk-gbp,'
-            'imp-supplier-winter-low-pk-msp-kwh,'
-            'imp-supplier-winter-low-pk-gsp-kwh,'
-            'imp-supplier-winter-low-pk-gbp,'
-            'imp-supplier-winter-off-pk-msp-kwh,'
-            'imp-supplier-winter-off-pk-gsp-kwh,'
-            'imp-supplier-winter-off-pk-gbp,'
-            'imp-supplier-winter-pk-msp-kwh,'
-            'imp-supplier-winter-pk-gsp-kwh,'
-            'imp-supplier-winter-pk-gbp,'
-            'imp-supplier-bsuos-kwh,imp-supplier-bsuos-rate,'
-            'imp-supplier-bsuos-gbp,imp-supplier-triad-actual-1-date,'
-            'imp-supplier-triad-actual-1-msp-kw,'
-            'imp-supplier-triad-actual-1-status,'
-            'imp-supplier-triad-actual-1-laf,'
-            'imp-supplier-triad-actual-1-gsp-kw,'
-            'imp-supplier-triad-actual-2-date,'
-            'imp-supplier-triad-actual-2-msp-kw,'
-            'imp-supplier-triad-actual-2-status,'
-            'imp-supplier-triad-actual-2-laf,'
-            'imp-supplier-triad-actual-2-gsp-kw,'
-            'imp-supplier-triad-actual-3-date,'
-            'imp-supplier-triad-actual-3-msp-kw,'
-            'imp-supplier-triad-actual-3-status,'
-            'imp-supplier-triad-actual-3-laf,'
-            'imp-supplier-triad-actual-3-gsp-kw,'
-            'imp-supplier-triad-actual-gsp-kw,'
-            'imp-supplier-triad-actual-rate,imp-supplier-triad-actual-gbp,'
-            'imp-supplier-triad-estimate-1-date,'
-            'imp-supplier-triad-estimate-1-msp-kw,'
-            'imp-supplier-triad-estimate-1-status,'
-            'imp-supplier-triad-estimate-1-laf,'
-            'imp-supplier-triad-estimate-1-gsp-kw,'
-            'imp-supplier-triad-estimate-2-date,'
-            'imp-supplier-triad-estimate-2-msp-kw,'
-            'imp-supplier-triad-estimate-2-status,'
-            'imp-supplier-triad-estimate-2-laf,'
-            'imp-supplier-triad-estimate-2-gsp-kw,'
-            'imp-supplier-triad-estimate-3-date,'
-            'imp-supplier-triad-estimate-3-msp-kw,'
-            'imp-supplier-triad-estimate-3-status,'
-            'imp-supplier-triad-estimate-3-laf,'
-            'imp-supplier-triad-estimate-3-gsp-kw,'
-            'imp-supplier-triad-estimate-gsp-kw,'
-            'imp-supplier-triad-estimate-rate,'
-            'imp-supplier-triad-estimate-months,'
-            'imp-supplier-triad-estimate-gbp,'
-            'imp-supplier-triad-all-estimates-months,'
-            'imp-supplier-triad-all-estimates-gbp,imp-supplier-problem',
+            r'imp-supplier-duos-availability-days,'
+            r'imp-supplier-duos-availability-rate,'
+            r'imp-supplier-duos-availability-gbp,'
+            r'imp-supplier-duos-excess-availability-kva,'
+            r'imp-supplier-duos-excess-availability-days,'
+            r'imp-supplier-duos-excess-availability-rate,'
+            r'imp-supplier-duos-excess-availability-gbp,'
+            r'imp-supplier-duos-day-kwh,imp-supplier-duos-day-gbp,'
+            r'imp-supplier-duos-night-kwh,imp-supplier-duos-night-gbp,'
+            r'imp-supplier-duos-reactive-rate,'
+            r'imp-supplier-duos-reactive-gbp,'
+            r'imp-supplier-duos-standing-gbp,'
+            r'imp-supplier-settlement-gbp,imp-supplier-night-msp-kwh,'
+            r'imp-supplier-night-gsp-kwh,imp-supplier-night-gbp,'
+            r'imp-supplier-other-msp-kwh,imp-supplier-other-gsp-kwh,'
+            r'imp-supplier-other-gbp,imp-supplier-summer-pk-msp-kwh,'
+            r'imp-supplier-summer-pk-gsp-kwh,imp-supplier-summer-pk-gbp,'
+            r'imp-supplier-winter-low-pk-msp-kwh,'
+            r'imp-supplier-winter-low-pk-gsp-kwh,'
+            r'imp-supplier-winter-low-pk-gbp,'
+            r'imp-supplier-winter-off-pk-msp-kwh,'
+            r'imp-supplier-winter-off-pk-gsp-kwh,'
+            r'imp-supplier-winter-off-pk-gbp,'
+            r'imp-supplier-winter-pk-msp-kwh,'
+            r'imp-supplier-winter-pk-gsp-kwh,'
+            r'imp-supplier-winter-pk-gbp,'
+            r'imp-supplier-bsuos-kwh,imp-supplier-bsuos-rate,'
+            r'imp-supplier-bsuos-gbp,imp-supplier-triad-actual-1-date,'
+            r'imp-supplier-triad-actual-1-msp-kw,'
+            r'imp-supplier-triad-actual-1-status,'
+            r'imp-supplier-triad-actual-1-laf,'
+            r'imp-supplier-triad-actual-1-gsp-kw,'
+            r'imp-supplier-triad-actual-2-date,'
+            r'imp-supplier-triad-actual-2-msp-kw,'
+            r'imp-supplier-triad-actual-2-status,'
+            r'imp-supplier-triad-actual-2-laf,'
+            r'imp-supplier-triad-actual-2-gsp-kw,'
+            r'imp-supplier-triad-actual-3-date,'
+            r'imp-supplier-triad-actual-3-msp-kw,'
+            r'imp-supplier-triad-actual-3-status,'
+            r'imp-supplier-triad-actual-3-laf,'
+            r'imp-supplier-triad-actual-3-gsp-kw,'
+            r'imp-supplier-triad-actual-gsp-kw,'
+            r'imp-supplier-triad-actual-rate,imp-supplier-triad-actual-gbp,'
+            r'imp-supplier-triad-estimate-1-date,'
+            r'imp-supplier-triad-estimate-1-msp-kw,'
+            r'imp-supplier-triad-estimate-1-status,'
+            r'imp-supplier-triad-estimate-1-laf,'
+            r'imp-supplier-triad-estimate-1-gsp-kw,'
+            r'imp-supplier-triad-estimate-2-date,'
+            r'imp-supplier-triad-estimate-2-msp-kw,'
+            r'imp-supplier-triad-estimate-2-status,'
+            r'imp-supplier-triad-estimate-2-laf,'
+            r'imp-supplier-triad-estimate-2-gsp-kw,'
+            r'imp-supplier-triad-estimate-3-date,'
+            r'imp-supplier-triad-estimate-3-msp-kw,'
+            r'imp-supplier-triad-estimate-3-status,'
+            r'imp-supplier-triad-estimate-3-laf,'
+            r'imp-supplier-triad-estimate-3-gsp-kw,'
+            r'imp-supplier-triad-estimate-gsp-kw,'
+            r'imp-supplier-triad-estimate-rate,'
+            r'imp-supplier-triad-estimate-months,'
+            r'imp-supplier-triad-estimate-gbp,'
+            r'imp-supplier-triad-all-estimates-months,'
+            r'imp-supplier-triad-all-estimates-gbp,imp-supplier-problem',
             r'14 7206 6139 971,,CH023,Treglisson,'
-            'sup-14 7206 6139 971,2009-06-01 00:00,2009-06-30 23:30,,'
-            '10,,,0,,,334.3\d*,,,0.0047,,'
+            r'sup-14 7206 6139 971,2009-06-01 00:00,2009-06-30 23:30,,'
+            r'10,,,0,,,334.3\d*,,,0.0047,,'
             r'5.89,,,0.0457,105.11,,,,,0,0.0,0,0.0,'
             r'0.0012,0.0,135.30000000000004,88,0,0.0,0.0,0,'
             r'0.0,0.0,0,0.0,0.0,0,0,0.0,0,0,0.0,0,0,'
             r'0.0,0.0,,0.0,,,,,,,,,,,,,,,'
             r',,,,'
-            '2009-01-06 17:00,0,X,1.037,0.0,2008-12-01 17:00,0,'
-            'X,1.037,0.0,2008-12-15 17:00,0,X,1.037,0.0,0.0,'
-            '20.526611,1,0.0,,,,,,,,,,,,,,,,,,,duos-availability-agreed-kva,'
-            '2300,duos-availability-billed-kva,2300'],
+            r'2009-01-06 17:00,0,X,1.037,0.0,2008-12-01 17:00,0,'
+            r'X,1.037,0.0,2008-12-15 17:00,0,X,1.037,0.0,0.0,'
+            r'20.526611,1,0.0,,,,,,,,,,,,,,,,,,,duos-availability-agreed-kva,'
+            r'2300,duos-availability-billed-kva,2300'],
         'status_code': 200},
     {
         'name': "Report of DC snags",
@@ -7353,7 +7376,7 @@ def virtual_bill(supply_source):
         '0028_FINISHED_watkinsexamplecom_channel_snags.csv',
         'regexes': [
             r'83,22 0883 6932 301,,CI005,Wheal Rodney,Missing,'
-            'True,ACTIVE,2002-01-01 00:00,2003-08-02 23:30,'],
+            r'True,ACTIVE,2002-01-01 00:00,2003-08-02 23:30,'],
         'status_code': 200},
     {
         'name': "Site use graph",
@@ -7490,13 +7513,13 @@ def virtual_bill(supply_source):
         'regexes': [
             r'\.csv".\)',
             r"Duration Start,Duration Finish,Supply Id,Import MPAN Core,"
-            "Export MPAN Core,Batch Reference,Bill Id,Bill Reference,"
-            "Bill Issue Date,Bill Type,Register Read Id,TPR,Coefficient,"
-            "Previous Read Date,Previous Read Value,Previous Read Type,"
-            "Present Read Date,Present Read Value,Present Read Type",
+            r"Export MPAN Core,Batch Reference,Bill Id,Bill Reference,"
+            r"Bill Issue Date,Bill Type,Register Read Id,TPR,Coefficient,"
+            r"Previous Read Date,Previous Read Value,Previous Read Type,"
+            r"Present Read Date,Present Read Value,Present Read Type",
             r'2011-01-01 00:00,2011-01-31 23:30,10,22 1065 3921 534,'
-            ',07-002,13,3423760005,2011-02-02 00:00,N,8,00001,'
-            '1,2011-01-04 23:30,24286,E,2011-01-06 23:30,25927,E']},
+            r',07-002,13,3423760005,2011-02-02 00:00,N,8,00001,'
+            r'1,2011-01-04 23:30,24286,E,2011-01-06 23:30,25927,E']},
 
     {
         'name': "Period where there's a read with no TPR (an MD read)",
@@ -7516,8 +7539,8 @@ def virtual_bill(supply_source):
         'status_code': 200,
         'regexes': [
             r'2007-01-01 00:00,2007-01-31 23:30,10,22 1065 3921 534,'
-            ',06-002,14,SA342376,2007-01-01 00:00,N,12,md,1,'
-            '2007-01-04 00:00,45,E,2007-01-17 00:00,76,E']},
+            r',06-002,14,SA342376,2007-01-01 00:00,N,12,md,1,'
+            r'2007-01-04 00:00,45,E,2007-01-17 00:00,76,E']},
 
     {
         'name': "View a MOP rate script. Contract 38.",
@@ -7652,7 +7675,7 @@ def virtual_bill(supply_source):
         'status_code': 200,
         'regexes': [
             r"All the bills have been successfully loaded and attached to "
-            "the batch\."]},
+            r"the batch\."]},
     {
         'name': "Look at an DC batch",
         'path': '/dc_batches/8',
@@ -7696,7 +7719,7 @@ def virtual_bill(supply_source):
             'delete': 'Delete'},
         'status_code': 303,
         'regexes': [
-            '/dc_batches\?dc_contract_id=8']},
+            r'/dc_batches\?dc_contract_id=8']},
     {
         'name': "Check it's really gone. DC contract 8",
         'path': '/dc_batches/10',
@@ -7741,11 +7764,11 @@ def virtual_bill(supply_source):
             r'Account,From,To,,mop-net-gbp,mop-problem,,'
             r'dc-net-gbp,dc-problem,,imp-supplier-ccl-kwh,'
             r'imp-supplier-ccl-rate,imp-supplier-ccl-gbp,imp-supplier-net-gbp,'
-            'imp-supplier-vat-gbp,imp-supplier-gross-gbp,'
-            'imp-supplier-sum-msp-kwh,imp-supplier-problem',
+            r'imp-supplier-vat-gbp,imp-supplier-gross-gbp,'
+            r'imp-supplier-sum-msp-kwh,imp-supplier-problem',
             r'22 1065 3921 534,,CI017,Roselands,SA342376,'
-            '2010-01-01 00:00,2010-01-03 23:30,,0,,,,,,'
-            ',,,0.0,0.0,0.0,0.0,'],
+            r'2010-01-01 00:00,2010-01-03 23:30,,0,,,,,,'
+            r',,,0.0,0.0,0.0,0.0,'],
         'status_code': 200},
     {
         'name': "A bill check with multiple covered bills",
@@ -7788,17 +7811,17 @@ def virtual_bill(supply_source):
         '0038_FINISHED_watkinsexamplecom_virtual_bills.csv',
         'regexes': [
             r'22 0470 7514 535,CH017,Parbola,010,2013-12-01 00:00,'
-            '2013-12-01 23:30,93.89,,,,,5.89,150,1,'
-            '0.0,0.0,,,,,,,,,0.00147,0.0,,88,0,'
-            '0.0,'
-            '0.0,0,0.0,0.0,0,0,0.0,0,0,0.0,0,0,0.0,'
-            '0,0,0.0,0.0,,0.0,,,,,,,,,'
-            ',,,,,,,,,,,,,,,,,,,,,'
-            ',,,,,,,,,,,duos-amber-gbp,0.0,'
-            'duos-amber-kwh,0,duos-amber-rate,\{-0.00649\},'
-            'duos-fixed-days,1,'
-            'duos-fixed-gbp,0\.0,duos-fixed-rate,\{0\.0\},duos-green-gbp,'
-            '0.0,duos-green-kwh,0,duos-green-rate,\{-0.00649\}'],
+            r'2013-12-01 23:30,93.89,,,,,5.89,150,1,'
+            r'0.0,0.0,,,,,,,,,0.00147,0.0,,88,0,'
+            r'0.0,'
+            r'0.0,0,0.0,0.0,0,0,0.0,0,0,0.0,0,0,0.0,'
+            r'0,0,0.0,0.0,,0.0,,,,,,,,,'
+            r',,,,,,,,,,,,,,,,,,,,,'
+            r',,,,,,,,,,,duos-amber-gbp,0.0,'
+            r'duos-amber-kwh,0,duos-amber-rate,\{-0.00649\},'
+            r'duos-fixed-days,1,'
+            r'duos-fixed-gbp,0\.0,duos-fixed-rate,\{0\.0\},duos-green-gbp,'
+            r'0.0,duos-green-kwh,0,duos-green-rate,\{-0.00649\}'],
         'status_code': 200},
 
     {
@@ -7874,10 +7897,10 @@ def virtual_bill(supply_source):
             r'<a href="/channel_snags/100">view</a>\s*'
             r'\[<a href="/channel_snags/100/edit">edit</a>\]\s*'
             r'</li>\s*</ul>\s*</td>\s*<td>\s*</td>\s*<td>\s*'
-            '22 0470 7514 535\s*</td>\s*<td>\s*<ul>\s*'
-            '<li>CH017 Parbola</li>\s*</ul>\s*</td>\s*<td>Missing</td>\s*'
-            '<td>\s*<ul>\s*<li>\s*Export\s*ACTIVE\s*</li>\s*</ul>\s*</td>\s*'
-            '<td>\s*2004-07-07 00:00 to\s*2005-09-14 23:30\s*</td>\s*</tr>']},
+            r'22 0470 7514 535\s*</td>\s*<td>\s*<ul>\s*'
+            r'<li>CH017 Parbola</li>\s*</ul>\s*</td>\s*<td>Missing</td>\s*'
+            r'<td>\s*<ul>\s*<li>\s*Export\s*ACTIVE\s*</li>\s*</ul>\s*</td>\s*'
+            r'<td>\s*2004-07-07 00:00 to\s*2005-09-14 23:30\s*</td>\s*</tr>']},
 
     # Insert era
     {
@@ -7908,24 +7931,24 @@ def virtual_bill(supply_source):
         'status_code': 200,
         'regexes': [
             r'0,107,22 4862 4512 332,,CH023,Treglisson,'
-            'Missing,True,ACTIVE,2010-02-04 20:30,',
+            r'Missing,True,ACTIVE,2010-02-04 20:30,',
             r'0,3,22 9205 6799 106,22 0470 7514 535,CH017,Parbola,'
-            'Missing,False,ACTIVE,2003-08-03 00:00,2004-07-06 23:30,'
-            '[^,]*,[^,]*,True\s*0,100,,22 0470 7514 535,'
-            'CH017,Parbola,Missing,False,ACTIVE,2004-07-07 00:00,'
-            '2005-09-14 23:30,[^,]*,[^,]*,False\s*0,102,,'
-            '22 0470 7514 535,CH017,Parbola,Missing,False,ACTIVE,'
-            '2005-09-15 00:30,2005-12-15 06:30,[^,]*,[^,]*,False\s*'
-            '0,101,,22 0470 7514 535,CH017,Parbola,Missing,'
-            'False,ACTIVE,2005-12-15 10:00,2008-07-06 23:30,[^,]*,'
-            '[^,]*,False\s*0,56,,22 0470 7514 535,CH017,'
-            'Parbola,Missing,False,ACTIVE,2008-07-07 00:00,'
-            '2008-08-06 23:30,[^,]*,[^,]*,True\s*'
-            '0,79,,22 0470 7514 535,CH017,Parbola,Missing,'
-            'False,ACTIVE,2008-08-07 00:00,2008-09-05 23:30,'
-            '[^,]*,[^,]*,False\s*0,68,,22 0470 7514 535,'
-            'CH017,Parbola,Missing,False,ACTIVE,2008-09-06 00:00,'
-            ',[^,]*,[^,]*,False\s*']},
+            r'Missing,False,ACTIVE,2003-08-03 00:00,2004-07-06 23:30,'
+            r'[^,]*,[^,]*,True\s*0,100,,22 0470 7514 535,'
+            r'CH017,Parbola,Missing,False,ACTIVE,2004-07-07 00:00,'
+            r'2005-09-14 23:30,[^,]*,[^,]*,False\s*0,102,,'
+            r'22 0470 7514 535,CH017,Parbola,Missing,False,ACTIVE,'
+            r'2005-09-15 00:30,2005-12-15 06:30,[^,]*,[^,]*,False\s*'
+            r'0,101,,22 0470 7514 535,CH017,Parbola,Missing,'
+            r'False,ACTIVE,2005-12-15 10:00,2008-07-06 23:30,[^,]*,'
+            r'[^,]*,False\s*0,56,,22 0470 7514 535,CH017,'
+            r'Parbola,Missing,False,ACTIVE,2008-07-07 00:00,'
+            r'2008-08-06 23:30,[^,]*,[^,]*,True\s*'
+            r'0,79,,22 0470 7514 535,CH017,Parbola,Missing,'
+            r'False,ACTIVE,2008-08-07 00:00,2008-09-05 23:30,'
+            r'[^,]*,[^,]*,False\s*0,68,,22 0470 7514 535,'
+            r'CH017,Parbola,Missing,False,ACTIVE,2008-09-06 00:00,'
+            r',[^,]*,[^,]*,False\s*']},
     {
         'name': "Check that an era with imp_sc of 0 is displayed properly in "
         "edit mode. Supply 17",
@@ -8006,11 +8029,11 @@ def virtual_bill(supply_source):
             r'Other Site Ids,Other Site Names',
             r'2012-05-31 23:30,CI017,Roselands,,,6,net,,_L,22,'
             r'LV,hh,no,00,845,5,,,MOP Contract,'
-            'mc-22 6354 2983 570,HH contract,01,,2007-01-01 00:00,'
-            'hh,,,,2007-01-01 00:00,,true,true,false,false,false,true,'
-            '22 6354 2983 570,2300,570,PC 5-8 & HH LV,'
-            'Half-hourlies 2007,141 5532,,2011-06-30 00:00,,,,'
-            ',,,,$']},
+            r'mc-22 6354 2983 570,HH contract,01,,2007-01-01 00:00,'
+            r'hh,,,,2007-01-01 00:00,,true,true,false,false,false,true,'
+            r'22 6354 2983 570,2300,570,PC 5-8 & HH LV,'
+            r'Half-hourlies 2007,141 5532,,2011-06-30 00:00,,,,'
+            r',,,,$']},
 
     {
         'name': "Run supply virtual bill over 2 months",
@@ -8073,7 +8096,7 @@ def virtual_bill(supply_source):
         'finish_month=03',
         'regexes': [
             r"<tr>\s*<td>\s*2014-03-30 00:30\s*</td>\s*<td>0</td>\s*"
-            "<td>A</td>"],
+            r"<td>A</td>"],
         'status_code': 200},
 
     # Create a new batch
@@ -8104,7 +8127,7 @@ def virtual_bill(supply_source):
         'status_code': 200,
         'regexes': [
             r"All the bills have been successfully loaded and attached to "
-            "the batch\."]},
+            r"the batch\."]},
     {
         'path': '/reports/219?supply_id=7&months=1&end_year=2002&end_month=1',
         'status_code': 303},
@@ -8121,8 +8144,8 @@ def virtual_bill(supply_source):
         'status_code': 200,
         'regexes': [
             r'2002-01-01 00:00,2002-01-31 23:30,7,22 4862 4512 332,,'
-            '06-078,20,jg87593jfj,2002-02-02 00:00,N,15,00001,'
-            '1,2002-01-04 23:30,2286,E,2002-01-06 23:30,2927,E']},
+            r'06-078,20,jg87593jfj,2002-02-02 00:00,N,15,00001,'
+            r'1,2002-01-04 23:30,2286,E,2002-01-06 23:30,2927,E']},
 
     # Attach another site to an era. Supply 2
     {
@@ -8164,9 +8187,9 @@ def virtual_bill(supply_source):
             r'22 0883 6932 301,HH contract,22 0883 6932 301,,'
             r'2002-01-01 00:00,hh,,2007-10-31 23:30,2007-10-31 23:30,'
             r'2002-01-01 00:00,,'
-            'true,true,false,false,false,true,22 0883 6932 301,'
-            '350,570,PC 5-8 & HH LV,Half-hourlies 2013,4341,0,,'
-            ',,,,,,,']},
+            r'true,true,false,false,false,true,22 0883 6932 301,'
+            r'350,570,PC 5-8 & HH LV,Half-hourlies 2013,4341,0,,'
+            r',,,,,,,']},
     {
         'name': "Site summary page that has data quality errors.",
         'path': '/sites/1/months?finish_year=2005&finish_month=11',
@@ -8287,15 +8310,15 @@ def virtual_bill(supply_source):
         'status_code': 200,
         'regexes': [
             r"supply-id,supply-name,source-code,generator-type,month,pc-code,"
-            "msn,site-code,site-name,metering-type,import-mpan-core,"
-            "metered-import-kwh,metered-import-net-gbp,"
-            "metered-import-estimated-kwh,billed-import-kwh,"
-            "billed-import-net-gbp,export-mpan-core,metered-export-kwh,"
-            "metered-export-estimated-kwh,billed-export-kwh,"
-            "billed-export-net-gbp,problem,timestamp",
+            r"msn,site-code,site-name,metering-type,import-mpan-core,"
+            r"metered-import-kwh,metered-import-net-gbp,"
+            r"metered-import-estimated-kwh,billed-import-kwh,"
+            r"billed-import-net-gbp,export-mpan-core,metered-export-kwh,"
+            r"metered-export-estimated-kwh,billed-export-kwh,"
+            r"billed-export-net-gbp,problem,timestamp",
             r'1,"Hello","sub","","2008-07-31 23:30","00","","CH017","Parbola",'
-            '"hh","None","18.281","0","0","0","0","22 0470 7514 535","0","0",'
-            '"0","0",""']},
+            r'"hh","None","18.281","0","0","0","0","22 0470 7514 535","0","0",'
+            r'"0","0",""']},
 
     # Supply level hh data CSV, hh per row
     {
@@ -8362,7 +8385,7 @@ def virtual_bill(supply_source):
         # Check good error message
         'regexes': [
             r"The bill start date 2007-01-05 00:00 can&#39;t be after the "
-            "finish date 2007-01-01 00:00."],
+            r"finish date 2007-01-01 00:00."],
         'status_code': 200},
     {
         'name': "Manually insert a bill with errors",
@@ -8442,9 +8465,9 @@ def virtual_bill(supply_source):
         'status_code': 200,
         'regexes': [
             r"<tr>\s*<td>2010-02-01 00:00</td>\s*<td>22 4862 4512 332</td>\s*"
-            "<td>\s*2010-02-04 20:00\s*</td>\s*<td>60.9</td>\s*"
-            "<td>91.4</td>\s*<td>0.55</td>\s*<td>109.8</td>\s*<td>230</td>\s*"
-            "<td>\s*30\s*</td>\s*</tr>"]},
+            r"<td>\s*2010-02-04 20:00\s*</td>\s*<td>60.9</td>\s*"
+            r"<td>91.4</td>\s*<td>0.55</td>\s*<td>109.8</td>\s*<td>230</td>\s*"
+            r"<td>\s*30\s*</td>\s*</tr>"]},
 
     # Add in second batch
     {
@@ -8461,10 +8484,10 @@ def virtual_bill(supply_source):
         'regexes': [
             r'<a\s*href="/dc_contracts/8"\s*>HH contract</a>',
             r'<tr>\s*<td>\s*'
-            '<a href="/dc_batches/13">\s*7\s*'
-            '</a>\s*</td>\s*<td></td>\s*</tr>\s*<tr>\s*<td>\s*'
-            '<a href="/dc_batches/8">\s*'
-            '001-7t\s*</a>\s*</td>\s*<td>dc batch</td>\s*</tr>']},
+            r'<a href="/dc_batches/13">\s*7\s*'
+            r'</a>\s*</td>\s*<td></td>\s*</tr>\s*<tr>\s*<td>\s*'
+            r'<a href="/dc_batches/8">\s*'
+            r'001-7t\s*</a>\s*</td>\s*<td>dc batch</td>\s*</tr>']},
 
     # Add in second batch
     {
@@ -8480,11 +8503,11 @@ def virtual_bill(supply_source):
         'status_code': 200,
         'regexes': [
             r'<tr>\s*<td>\s*'
-            '<a href="/mop_batches/9">\s*'
-            '99/992\s*</a>\s*</td>\s*<td>mop batch</td>\s*</tr>\s*<tr>\s*'
-            '<td>\s*'
-            '<a href="/mop_batches/14">\s*7a\s*'
-            '</a>\s*</td>\s*<td></td>\s*</tr>']},
+            r'<a href="/mop_batches/9">\s*'
+            r'99/992\s*</a>\s*</td>\s*<td>mop batch</td>\s*</tr>\s*<tr>\s*'
+            r'<td>\s*'
+            r'<a href="/mop_batches/14">\s*7a\s*'
+            r'</a>\s*</td>\s*<td></td>\s*</tr>']},
 
     {
         'name': "MTCs",
@@ -8492,28 +8515,28 @@ def virtual_bill(supply_source):
         'status_code': 200,
         'regexes': [
             r'<tr>\s*<td>\s*'
-            '<a href="/mtcs/98">\s*001\s*'
-            '</a>\s*</td>\s*<td>\s*'
-            '<a href="/dnos/805">\s*'
-            '12\s*</a>\s*</td>\s*<td>Economy 7, 23.30 - 06.30</td>\s*<td>\s*'
-            '<a href="/meter_types/15">\s*TP\s*'
-            '</a>\s*</td>\s*<td>2</td>\s*</tr>']},
+            r'<a href="/mtcs/98">\s*001\s*'
+            r'</a>\s*</td>\s*<td>\s*'
+            r'<a href="/dnos/805">\s*'
+            r'12\s*</a>\s*</td>\s*<td>Economy 7, 23.30 - 06.30</td>\s*<td>\s*'
+            r'<a href="/meter_types/15">\s*TP\s*'
+            r'</a>\s*</td>\s*<td>2</td>\s*</tr>']},
 
     {
         'path': '/mtcs/98',
         'status_code': 200,
         'regexes': [
             r'<tr>\s*<th>Code</th>\s*<td>001</td>\s*</tr>\s*<tr>\s*'
-            '<th>DNO</th>\s*<td>\s*'
-            '<a href="/dnos/805">\s*'
-            '12\s*</a>\s*</td>\s*</tr>']},
+            r'<th>DNO</th>\s*<td>\s*'
+            r'<a href="/dnos/805">\s*'
+            r'12\s*</a>\s*</td>\s*</tr>']},
 
     {
         'path': '/mtcs/0',
         'status_code': 200,
         'regexes': [
             r"<tr>\s*<th>Code</th>\s*<td>500</td>\s*</tr>\s*<tr>\s*"
-            "<th>DNO</th>\s*<td>\s*All\s*</td>\s*</tr>"]},
+            r"<th>DNO</th>\s*<td>\s*All\s*</td>\s*</tr>"]},
 
     {
         'path': '/mtcs/0/edit',
@@ -8713,9 +8736,9 @@ def virtual_bill(supply_source):
         'status_code': 200,
         'regexes': [
             r'07-002,3423760010,N,10,9.07,0.21,2012-01-05 00:00,'
-            '2012-01-10 23:30,22 1065 3921 534,,CI017,Roselands,'
-            '2012-01-05 00:00,2012-01-10 23:30,21,0,9.07,0,9.07,'
-            '10.0,0,,']},
+            r'2012-01-10 23:30,22 1065 3921 534,,CI017,Roselands,'
+            r'2012-01-05 00:00,2012-01-10 23:30,21,0,9.07,0,9.07,'
+            r'10.0,0,,']},
 
     # Update register read to make the TPR a teleswitch one },
     {
@@ -9801,7 +9824,7 @@ def virtual_bill(supply_source):
         'files': {'import_file': "test/gi_insert_market_role.csv"},
         'status_code': 303,
         'regexes': [
-            "/general_imports/22"]},
+            r"/general_imports/22"]},
     {
         'name': "MDD Converter. Market role",
         'path': "/general_imports/22",
@@ -9838,7 +9861,7 @@ def virtual_bill(supply_source):
         'files': {'import_file': "test/gi_party.csv"},
         'status_code': 303,
         'regexes': [
-            "/general_imports/23"]},
+            r"/general_imports/23"]},
     {
         'name': "MDD Converter. Party",
         'path': "/general_imports/23",
@@ -9888,7 +9911,7 @@ def virtual_bill(supply_source):
         'files': {'import_file': "test/gi_insert_llfc.csv"},
         'status_code': 303,
         'regexes': [
-            "/general_imports/24"]},
+            r"/general_imports/24"]},
     {
         'name': "GI Insert LLFC. Check it worked.",
         'path': "/general_imports/24",
@@ -9924,7 +9947,7 @@ def virtual_bill(supply_source):
         'files': {'import_file': "test/gi_mtc_meter_type.csv"},
         'status_code': 303,
         'regexes': [
-            "/general_imports/25"]},
+            r"/general_imports/25"]},
     {
         'name': "MDD Converter. Meter Timeswitch Class",
         'path': "/general_imports/25",
@@ -9962,7 +9985,7 @@ def virtual_bill(supply_source):
         'files': {'import_file': "test/gi_meter_timeswitch_class.csv"},
         'status_code': 303,
         'regexes': [
-            "/general_imports/26"]},
+            r"/general_imports/26"]},
     {
         'name': "MDD Converter. Meter Timeswitch Class",
         'path': "/general_imports/26",
@@ -9998,7 +10021,7 @@ def virtual_bill(supply_source):
         'files': {'import_file': "test/gi_insert_mtc_in_pes_area.csv"},
         'status_code': 303,
         'regexes': [
-            "/general_imports/27"]},
+            r"/general_imports/27"]},
     {
         'name': "MDD Converter. Meter Timeswitch Class",
         'path': "/general_imports/27",
@@ -14903,29 +14926,54 @@ finally:
         'tries': {},
         'regexes': [
             r'<tr>\s*'
-            r'<td>2016-08-01 - 2016-08-31_20160731_20160831_20160913_22 9813 '
-            r'2107 763</td>\s*'
+            r'<td>99708221.0_2</td>\s*'
             r'<td>22 9813 2107 763</td>\s*'
             r'<td>N</td>\s*'
             r'<td></td>\s*'
             r'<td>2016-09-13 23:00</td>\s*'
             r'<td>2016-07-31 23:00</td>\s*'
             r'<td>2016-08-31 22:30</td>\s*'
-            r'<td>27997\.33</td>\s*'
-            r'<td>89454\.47</td>\s*'
-            r'<td>6122\.00</td>\s*'
-            r'<td>95576.47</td>\s*'
-            r'<td>\[\(&#39;aahedc-gbp&#39;, Decimal\(&#39;0.89&#39;\)\),.*'
-            r'capacity-gbp.*'
-            r'capacity-gsp-kwh.*'
-            r'\(&#39;ccl-gbp&#39;, Decimal\(&#39;100\.0&#39;\)\),.*'
-            r'cfd-fit-nbp-kwh&#39;, Decimal\(&#39;81146.67&#39;\).*'
-            r'\(&#39;duos-availability-kva&#39;, &#39;220&#39;\).*'
-            r'fit-gbp.*meter-rental-gbp.*'
-            r'reconciliation-gbp.*'
-            r'winter-night-gbp',
+            r'<td>0</td>\s*'
+            r'<td>770.69</td>\s*'
+            r'<td>0.00</td>\s*'
+            r'<td>770.69</td>\s*'
+            r'<td>\[\(&#39;bsuos-gbp&#39;, Decimal\(&#39;770.69&#39;\)\), ',
+
+            r'<tr>\s*'
+            r'<td>99708221.0_8</td>\s*'
+            r'<td>22 9813 2107 763</td>\s*'
+            r'<td>N</td>\s*'
+            r'<td></td>\s*'
+            r'<td>2016-09-13 23:00</td>\s*'
+            r'<td>2016-07-31 23:00</td>\s*'
+            r'<td>2016-08-31 22:30</td>\s*'
+            r'<td>0</td>\s*'
+            r'<td>611.00</td>\s*'
+            r'<td>0.00</td>\s*'
+            r'<td>611.00</td>\s*'
+            r'<td>\[\(&#39;bsuos-gbp&#39;, Decimal\(&#39;611.0&#39;\)\), '
+            r'\(&#39;bsuos-nbp-kwh&#39;, Decimal\(&#39;23971.88&#39;\)\), '
+            r'\(&#39;bsuos-rate&#39;, \[Decimal\(&#39;0.0911&#39;\)\]\), ',
+
+            r'<tr>\s*'
+            r'<td>99708221.0_9</td>\s*'
+            r'<td>22 9813 2107 763</td>\s*'
+            r'<td>N</td>\s*'
+            r'<td></td>\s*'
+            r'<td>2016-09-13 23:00</td>\s*'
+            r'<td>2016-07-31 23:00</td>\s*'
+            r'<td>2016-08-31 22:30</td>\s*'
+            r'<td>0</td>\s*'
+            r'<td>0.89</td>\s*'
+            r'<td>0.00</td>\s*'
+            r'<td>0.89</td>\s*'
+            r'<td>\[\(&#39;aahedc-gbp&#39;, Decimal\(&#39;0.89&#39;\)\), '
+            r'\(&#39;aahedc-gsp-kwh&#39;, Decimal\(&#39;55866.88&#39;\)\), '
+            r'\(&#39;aahedc-rate&#39;, '
+            r'\[Decimal\(&#39;0.0088658712&#39;\)\]\), ',
+
             r"All the bills have been successfully loaded and attached to "
-            "the batch\."],
+            r"the batch\."],
         'status_code': 200},
 
     {
@@ -14935,10 +14983,11 @@ finally:
             r'<td>2016-09-13 23:00</td>\s*'
             r'<td>2016-07-31 23:00</td>\s*'
             r'<td>2016-08-31 22:30</td>\s*'
-            r'<td>27997\.33</td>\s*'
-            r'<td>89454\.47</td>\s*'
-            r'<td>6122\.00</td>\s*'
-            r'<td>95576\.47</td>'],
+            r'<td>0</td>\s*'
+            r'<td>571.25</td>\s*'
+            r'<td>0.00</td>\s*'
+            r'<td>571.25</td>\s*'
+        ],
         'status_code': 200},
 
     {
@@ -15906,7 +15955,7 @@ def virtual_bill(supply_source):
         'path': '/dc_contracts/8/auto_importer',
         'method': 'post',
         'regexes': [
-            '/dc_contracts/8/auto_importer'],
+            r'/dc_contracts/8/auto_importer'],
         'status_code': 303},
 
     {
@@ -15948,7 +15997,7 @@ def virtual_bill(supply_source):
         'path': '/dc_contracts/8/auto_importer',
         'method': 'post',
         'regexes': [
-            '/dc_contracts/8/auto_importer'],
+            r'/dc_contracts/8/auto_importer'],
         'status_code': 303},
 
     {
@@ -16348,45 +16397,7 @@ def virtual_bill(supply_source):
             r'<table:table-cell office:string-value="export-gen-kwh" '
             r'office:value-type="string"/>\s*'
             r'<table:table-cell office:string-value="import-3rd-party-kwh" '
-            r'office:value-type="string"/>\s*',
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+            r'office:value-type="string"/>\s*'
             r'<table:table-cell office:string-value="export-3rd-party-kwh" '
             r'office:value-type="string"/>\s*'
             r'<table:table-cell office:string-value="displaced-kwh" '
@@ -16417,56 +16428,7 @@ def virtual_bill(supply_source):
             r'office:value-type="string"/>\s*'
             r'<table:table-cell office:string-value="billed-import-net-gbp" '
             r'office:value-type="string"/>\s*'
-            r'<table:table-cell/>\s*',
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+            r'<table:table-cell/>\s*'
             r'<table:table-cell office:string-value="mop-net-gbp" '
             r'office:value-type="string"/>\s*'
             r'<table:table-cell office:string-value="mop-problem" '
@@ -16502,60 +16464,7 @@ def virtual_bill(supply_source):
             r'office:value-type="string"/>\s*'
             r'<table:table-cell '
             r'office:string-value="imp-supplier-duos-availability-gbp" '
-            r'office:value-type="string"/>\s*',
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+            r'office:value-type="string"/>\s*'
             r'<table:table-cell '
             r'office:string-value="imp-supplier-duos-excess-availability-kva" '
             r'office:value-type="string"/>\s*'
@@ -16582,41 +16491,7 @@ def virtual_bill(supply_source):
             r'office:value-type="string"/>\s*'
             r'<table:table-cell '
             r'office:string-value="imp-supplier-duos-reactive-rate" '
-            r'office:value-type="string"/>\s*',
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+            r'office:value-type="string"/>\s*'
             r'<table:table-cell '
             r'office:string-value="imp-supplier-duos-reactive-gbp" '
             r'office:value-type="string"/>\s*'
@@ -16642,51 +16517,7 @@ def virtual_bill(supply_source):
             r'office:string-value="imp-supplier-other-gsp-kwh" '
             r'office:value-type="string"/>\s*'
             r'<table:table-cell office:string-value="imp-supplier-other-gbp" '
-            r'office:value-type="string"/>\s*',
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+            r'office:value-type="string"/>\s*'
             r'<table:table-cell '
             r'office:string-value="imp-supplier-summer-pk-msp-kwh" '
             r'office:value-type="string"/>\s*'
@@ -16728,63 +16559,7 @@ def virtual_bill(supply_source):
             r'<table:table-cell office:string-value="imp-supplier-bsuos-rate" '
             r'office:value-type="string"/>\s*'
             r'<table:table-cell office:string-value="imp-supplier-bsuos-gbp" '
-            r'office:value-type="string"/>\s*',
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+            r'office:value-type="string"/>\s*'
             r'<table:table-cell '
             r'office:string-value="imp-supplier-triad-actual-1-date" '
             r'office:value-type="string"/>\s*'
@@ -16814,63 +16589,7 @@ def virtual_bill(supply_source):
             r'office:value-type="string"/>\s*'
             r'<table:table-cell '
             r'office:string-value="imp-supplier-triad-actual-2-gsp-kw" '
-            r'office:value-type="string"/>\s*',
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+            r'office:value-type="string"/>\s*'
             r'<table:table-cell '
             r'office:string-value="imp-supplier-triad-actual-3-date" '
             r'office:value-type="string"/>\s*'
@@ -16900,78 +16619,7 @@ def virtual_bill(supply_source):
             r'office:value-type="string"/>\s*'
             r'<table:table-cell '
             r'office:string-value="imp-supplier-triad-estimate-1-msp-kw" '
-            r'office:value-type="string"/>\s*',
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+            r'office:value-type="string"/>\s*'
             r'<table:table-cell '
             r'office:string-value="imp-supplier-triad-estimate-1-status" '
             r'office:value-type="string"/>\s*'
@@ -17007,47 +16655,7 @@ def virtual_bill(supply_source):
             r'office:value-type="string"/>\s*'
             r'<table:table-cell '
             r'office:string-value="imp-supplier-triad-estimate-3-laf" '
-            r'office:value-type="string"/>\s*',
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+            r'office:value-type="string"/>\s*'
             r'<table:table-cell '
             r'office:string-value="imp-supplier-triad-estimate-3-gsp-kw" '
             r'office:value-type="string"/>\s*'
@@ -17088,65 +16696,7 @@ def virtual_bill(supply_source):
             r'office:value-type="string"/>\s*'
             r'<table:table-cell '
             r'office:string-value="imp-supplier-duos-amber-gbp" '
-            r'office:value-type="string"/>\s*',
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+            r'office:value-type="string"/>\s*'
             r'<table:table-cell '
             r'office:string-value="imp-supplier-duos-red-kwh" '
             r'office:value-type="string"/>\s*'
@@ -17185,53 +16735,7 @@ def virtual_bill(supply_source):
             r'<table:table-cell office:string-value="imp-supplier-vat-gbp" '
             r'office:value-type="string"/>\s*'
             r'<table:table-cell office:string-value="imp-supplier-gross-gbp" '
-            r'office:value-type="string"/>\s*',
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+            r'office:value-type="string"/>\s*'
             r'<table:table-cell '
             r'office:string-value="imp-supplier-sum-msp-kwh" '
             r'office:value-type="string"/>\s*'
@@ -17265,33 +16769,7 @@ def virtual_bill(supply_source):
             r'office:value-type="string"/>\s*'
             r'<table:table-cell office:string-value="imp-supplier-01219-gbp" '
             r'office:value-type="string"/>\s*'
-            r'<table:table-cell/>\s*',
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+            r'<table:table-cell/>\s*'
             r'<table:table-cell '
             r'office:string-value="exp-supplier-net-gbp" '
             r'office:value-type="string"/>\s*'
@@ -17332,36 +16810,7 @@ def virtual_bill(supply_source):
             r'office:value-type="string"/>\s*'
             r'<table:table-cell '
             r'office:string-value="exp-supplier-duos-day-kwh" '
-            r'office:value-type="string"/>\s*',
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+            r'office:value-type="string"/>\s*'
             r'<table:table-cell '
             r'office:string-value="exp-supplier-duos-day-gbp" '
             r'office:value-type="string"/>\s*'
@@ -17393,35 +16842,7 @@ def virtual_bill(supply_source):
             r'office:value-type="string"/>\s*'
             r'<table:table-cell '
             r'office:string-value="exp-supplier-other-msp-kwh" '
-            r'office:value-type="string"/>\s*',
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+            r'office:value-type="string"/>\s*'
             r'<table:table-cell '
             r'office:string-value="exp-supplier-other-gsp-kwh" '
             r'office:value-type="string"/>\s*'
@@ -17456,56 +16877,7 @@ def virtual_bill(supply_source):
             r'office:value-type="string"/>\s*'
             r'<table:table-cell '
             r'office:string-value="exp-supplier-winter-pk-msp-kwh" '
-            r'office:value-type="string"/>\s*',
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+            r'office:value-type="string"/>\s*'
             r'<table:table-cell '
             r'office:string-value="exp-supplier-winter-pk-gsp-kwh" '
             r'office:value-type="string"/>\s*'
@@ -17553,38 +16925,7 @@ def virtual_bill(supply_source):
             r'office:value-type="string"/>\s*'
             r'<table:table-cell '
             r'office:string-value="exp-supplier-triad-actual-3-msp-kw" '
-            r'office:value-type="string"/>\s*',
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+            r'office:value-type="string"/>\s*'
             r'<table:table-cell '
             r'office:string-value="exp-supplier-triad-actual-3-status" '
             r'office:value-type="string"/>\s*'
@@ -17617,36 +16958,7 @@ def virtual_bill(supply_source):
             r'office:value-type="string"/>\s*'
             r'<table:table-cell '
             r'office:string-value="exp-supplier-triad-estimate-1-gsp-kw" '
-            r'office:value-type="string"/>\s*',
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+            r'office:value-type="string"/>\s*'
             r'<table:table-cell '
             r'office:string-value="exp-supplier-triad-estimate-2-date" '
             r'office:value-type="string"/>\s*'
@@ -17676,43 +16988,7 @@ def virtual_bill(supply_source):
             r'office:value-type="string"/>\s*'
             r'<table:table-cell '
             r'office:string-value="exp-supplier-triad-estimate-3-gsp-kw" '
-            r'office:value-type="string"/>\s*',
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+            r'office:value-type="string"/>\s*'
             r'<table:table-cell '
             r'office:string-value="exp-supplier-triad-estimate-gsp-kw" '
             r'office:value-type="string"/>\s*'
@@ -17733,42 +17009,7 @@ def virtual_bill(supply_source):
             r'office:value-type="string"/>\s*'
             r'<table:table-cell office:string-value="exp-supplier-problem" '
             r'office:value-type="string"/>\s*'
-            r'</table:table-row>\s*',
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+            r'</table:table-row>\s*'
             r'<table:table-row>\s*'
             r'<table:table-cell '
             r'office:date-value="\d\d\d\d-\d\d-\d\dT\d\d:\d\d:\d\d" '
@@ -17793,31 +17034,7 @@ def virtual_bill(supply_source):
             r'office:value-type="date" table:style-name="cell_date"/>\s*'
             r'<table:table-cell office:value="0" '
             r'office:value-type="float" '
-            r'table:number-columns-repeated="15"/>\s*',
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+            r'table:number-columns-repeated="15"/>\s*'
             r'<table:table-cell office:value="0.0" '
             r'office:value-type="float" table:number-columns-repeated="2"/>\s*'
             r'<table:table-cell office:value="0" '
@@ -17853,28 +17070,7 @@ def virtual_bill(supply_source):
             r'office:value-type="float" table:number-columns-repeated="3"/>\s*'
             r'<table:table-cell/>\s*'
             r'<table:table-cell office:value="0.0" '
-            r'office:value-type="float"/>\s*',
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+            r'office:value-type="float"/>\s*'
             r'<table:table-cell table:number-columns-repeated="18"/>\s*'
             r'<table:table-cell office:date-value="2010-01-07T17:00:00" '
             r'office:value-type="date" table:style-name="cell_date"/>\s*'
@@ -17903,34 +17099,7 @@ def virtual_bill(supply_source):
             r'<table:table-cell office:string-value="E" '
             r'office:value-type="string"/>\s*'
             r'<table:table-cell office:value="1.078" '
-            r'office:value-type="float"/>\s*',
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+            r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="0.0" '
             r'office:value-type="float" table:number-columns-repeated="2"/>\s*'
             r'<table:table-cell office:value="24.031029" '
@@ -17959,24 +17128,7 @@ def virtual_bill(supply_source):
             r'<table:table-cell office:value="0.16146" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="0.0" '
-            r'office:value-type="float"/>\s*',
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+            r'office:value-type="float"/>\s*'
             r'<table:table-cell table:number-columns-repeated="28"/>\s*'
             r'</table:table-row>\s*'
             r'<table:table-row>\s*'
@@ -17995,23 +17147,7 @@ def virtual_bill(supply_source):
             r'<table:table-cell office:string-value="chp" '
             r'office:value-type="string"/>\s*'
             r'<table:table-cell office:string-value="Hello" '
-            r'office:value-type="string"/>\s*',
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+            r'office:value-type="string"/>\s*'
             r'<table:table-cell office:string-value="" '
             r'office:value-type="string"/>\s*'
             r'<table:table-cell office:string-value="00" '
@@ -18043,24 +17179,7 @@ def virtual_bill(supply_source):
             r'<table:table-cell office:value="0" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell office:string-value="" '
-            r'office:value-type="string"/>\s*',
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+            r'office:value-type="string"/>\s*'
             r'<table:table-cell/>\s*'
             r'<table:table-cell office:value="346.1556\d*" '
             r'office:value-type="float"/>\s*'
@@ -18101,32 +17220,7 @@ def virtual_bill(supply_source):
             r'<table:table-cell office:value="0" '
             r'office:value-type="float" table:number-columns-repeated="2"/>\s*'
             r'<table:table-cell office:value="0.0" '
-            r'office:value-type="float"/>\s*',
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+            r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="0" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="0.0" '
@@ -18152,34 +17246,7 @@ def virtual_bill(supply_source):
             r'<table:table-cell office:date-value="2010-01-25T17:00:00" '
             r'office:value-type="date" table:style-name="cell_date"/>\s*'
             r'<table:table-cell office:value="0" '
-            r'office:value-type="float"/>\s*',
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+            r'office:value-type="float"/>\s*'
             r'<table:table-cell office:string-value="X" '
             r'office:value-type="string"/>\s*'
             r'<table:table-cell office:value="1.07" '
@@ -18206,35 +17273,7 @@ def virtual_bill(supply_source):
             r'<table:table-cell office:string-value="" '
             r'office:value-type="string"/>\s*'
             r'<table:table-cell office:value="0" '
-            r'office:value-type="float"/>\s*',
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+            r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="0.00091" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="0.0" '
@@ -18270,29 +17309,7 @@ def virtual_bill(supply_source):
             r'<table:table-cell office:string-value="hh" '
             r'office:value-type="string"/>\s*'
             r'<table:table-cell office:string-value="displaced" '
-            r'office:value-type="string"/>\s*',
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+            r'office:value-type="string"/>\s*'
             r'<table:table-cell table:number-columns-repeated="4"/>\s*'
             r'<table:table-cell office:string-value="CI005" '
             r'office:value-type="string"/>\s*'
@@ -18317,27 +17334,7 @@ def virtual_bill(supply_source):
             r'office:value-type="float"/>\s*'
             r'<table:table-cell table:number-columns-repeated="18"/>\s*'
             r'<table:table-cell office:value="0" '
-            r'office:value-type="float"/>\s*',
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+            r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="0.0" '
             r'office:value-type="float" table:number-columns-repeated="2"/>\s*'
             r'<table:table-cell office:value="0" '
@@ -18360,25 +17357,7 @@ def virtual_bill(supply_source):
             r'<table:table-cell/>\s*'
             r'<table:table-cell office:value="0.0" '
             r'office:value-type="float"/>\s*'
-            r'<table:table-cell/>\s*',
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+            r'<table:table-cell/>\s*'
             r'<table:table-cell office:value="0.0" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell table:number-columns-repeated="18"/>\s*'
@@ -18409,33 +17388,7 @@ def virtual_bill(supply_source):
             r'<table:table-cell office:string-value="E" '
             r'office:value-type="string"/>\s*'
             r'<table:table-cell office:value="1.078" '
-            r'office:value-type="float"/>\s*',
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+            r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="0.0" '
             r'office:value-type="float" table:number-columns-repeated="2"/>\s*'
             r'<table:table-cell office:value="24.031029" '
@@ -18477,33 +17430,7 @@ def virtual_bill(supply_source):
             r'2007" office:value-type="string"/>\s*'
             r'<table:table-cell table:number-columns-repeated="2"/>\s*'
             r'<table:table-cell office:string-value="hh" '
-            r'office:value-type="string"/>\s*',
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+            r'office:value-type="string"/>\s*'
             r'<table:table-cell office:string-value="gen-net" '
             r'office:value-type="string"/>\s*'
             r'<table:table-cell office:string-value="chp" '
@@ -18525,38 +17452,7 @@ def virtual_bill(supply_source):
             r'<table:table-cell office:value="0" '
             r'office:value-type="float" table:number-columns-repeated="9"/>\s*'
             r'<table:table-cell office:value="331.7428\d*" '
-            r'office:value-type="float"/>\s*',
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+            r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="0" '
             r'office:value-type="float" table:number-columns-repeated="6"/>\s*'
             r'<table:table-cell office:value="331.7428\d*" '
@@ -18573,27 +17469,7 @@ def virtual_bill(supply_source):
             r'office:value-type="float"/>\s*'
             r'<table:table-cell office:string-value="" '
             r'office:value-type="string"/>\s*'
-            r'<table:table-cell/>\s*',
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+            r'<table:table-cell/>\s*'
             r'<table:table-cell office:value="321.7428\d*" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell table:number-columns-repeated="2"/>\s*'
@@ -18629,30 +17505,7 @@ def virtual_bill(supply_source):
             r'<table:table-cell office:value="0" '
             r'office:value-type="float" table:number-columns-repeated="2"/>\s*'
             r'<table:table-cell office:value="0.0" '
-            r'office:value-type="float"/>\s*',
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+            r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="0" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="0.0" '
@@ -18672,30 +17525,7 @@ def virtual_bill(supply_source):
             r'<table:table-cell office:date-value="2010-01-07T17:00:00" '
             r'office:value-type="date" table:style-name="cell_date"/>\s*'
             r'<table:table-cell office:value="0" '
-            r'office:value-type="float"/>\s*',
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+            r'office:value-type="float"/>\s*'
             r'<table:table-cell office:string-value="X" '
             r'office:value-type="string"/>\s*'
             r'<table:table-cell office:value="1.07" '
@@ -18723,33 +17553,7 @@ def virtual_bill(supply_source):
             r'<table:table-cell office:value="0.0" '
             r'office:value-type="float" table:number-columns-repeated="2"/>\s*'
             r'<table:table-cell office:value="24.031029" '
-            r'office:value-type="float"/>\s*',
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+            r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="1" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="0.0" '
@@ -18879,7 +17683,7 @@ def virtual_bill(ds):
         'path': '/dc_contracts/9/auto_importer',
         'method': 'post',
         'regexes': [
-            '/dc_contracts/9/auto_importer'],
+            r'/dc_contracts/9/auto_importer'],
         'status_code': 303},
 
     {
@@ -18977,7 +17781,7 @@ def virtual_bill(ds):
         'path': '/non_core_contracts/4/auto_importer',
         'method': 'post',
         'regexes': [
-            '/non_core_contracts/4/auto_importer'],
+            r'/non_core_contracts/4/auto_importer'],
         'status_code': 303},
 
     {
@@ -19316,7 +18120,7 @@ def virtual_bill(ds):
         'status_code': 200,
         'regexes': [
             r"All the bills have been successfully loaded and attached to "
-            "the batch\."]},
+            r"the batch\."]},
 
     {
         'name': "Stark MOP bill parser for annual charges",
@@ -19338,7 +18142,7 @@ def virtual_bill(ds):
         'status_code': 200,
         'regexes': [
             r"All the bills have been successfully loaded and attached to "
-            "the batch\."]},
+            r"the batch\."]},
 
     {
         'name': "Stark non-settlement DC bill parser",
@@ -19360,7 +18164,7 @@ def virtual_bill(ds):
         'status_code': 200,
         'regexes': [
             r"All the bills have been successfully loaded and attached to "
-            "the batch\."]},
+            r"the batch\."]},
 
     {
         'name': "Gas batch check. Bills with different LDZs",
@@ -19464,7 +18268,7 @@ def virtual_bill(ds):
         'status_code': 200,
         'regexes': [
             r"All the bills have been successfully loaded and attached to "
-            "the batch\."
+            r"the batch\."
         ]
     },
 
@@ -19491,7 +18295,7 @@ def virtual_bill(ds):
         'status_code': 200,
         'regexes': [
             r"All the bills have been successfully loaded and attached to "
-            "the batch\."
+            r"the batch\."
         ]
     },
 
@@ -19697,5 +18501,7 @@ def virtual_bill(ds):
             r'<table:table-cell office:value="0" office:value-type="float" '
             r'table:number-columns-repeated="3"/>\s*'
             r'</table:table-row>\s*'
-            r'</table:table>\s*']},
+            r'</table:table>\s*'
+        ]
+    }
 ]
