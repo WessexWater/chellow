@@ -231,9 +231,6 @@ def content(batch_id, bill_id, contract_id, start_date, finish_date, user):
                             enlarged = True
                             break
 
-                if bill.id not in covered_bills:
-                    continue
-
                 primary_covered_bill = None
                 for covered_bill in covered_bills.values():
                     if covered_bill.id in bill_ids:
