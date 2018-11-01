@@ -3284,6 +3284,31 @@ class GSupply(Base, PersistentClass):
         sess.delete(self)
         sess.flush()
 
+    def delete_g_era(self, sess, g_era):
+        if len(self.g_eras) == 1:
+            raise BadRequest(
+                "The only way to delete the last era is to "
+                "delete the entire supply.")
+
+        prev_g_era = self.find_g_era_at(sess, prev_hh(g_era.start_date))
+        if g_era.finish_date is None:
+            next_g_era = None
+        else:
+            next_g_era = self.find_g_era_at(sess, next_hh(g_era.finish_date))
+
+        if prev_g_era is None:
+            next_g_era.update_dates(
+                sess, g_era.start_date, next_g_era.finish_date)
+        else:
+            prev_g_era.update_dates(
+                sess, prev_g_era.start_date, g_era.finish_date)
+
+        for site_g_era in g_era.site_g_eras:
+            sess.delete(site_g_era)
+        sess.flush()
+        sess.delete(g_era)
+        sess.flush()
+
 
 class GBill(Base, PersistentClass):
     __tablename__ = 'g_bill'

@@ -18508,5 +18508,18 @@ def virtual_bill(ds):
             r'</table:table-row>\s*'
             r'</table:table>\s*'
         ]
+    },
+
+    {
+        'name': "Deleta a gas era",
+        'path': '/g_eras/3/edit',
+        'method': 'post',
+        'data': {
+            'delete': 'Delete'
+        },
+        'status_code': 303,
+        'regexes': [
+            r'/g_supplies/1'
+        ]
     }
 ]

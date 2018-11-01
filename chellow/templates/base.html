@@ -145,76 +145,75 @@
 			<div class="layer-page">
 	
 				<!-- Layer Header -->
-					<div class="layer-header">
-						<div class="container-fluid">
-							<div class="row">
-				        <!-- Logo -->
-								<div
-								 		class="col-sm-3 col-md-2 alignCenter bgBlue headerSameHeight">
-									<p class="panel-logo">
-										<a href="/"><span class="hide"></span></a>
-									</p>
-								</div>
+				<div class="layer-header">
+					<div class="container-fluid">
+						<div class="row">
+							<!-- Logo -->
+							<div
+									class="col-sm-3 col-md-2 alignCenter bgBlue headerSameHeight">
+								<p class="panel-logo">
+									<a href="/"><span class="hide"></span></a>
+								</p>
+							</div>
                     	
-				        <!-- Top Header -->
-								<div class="col-sm-9 col-md-10 top-header headerSameHeight">
-									<div class="pull-left">
-										<p class="panel-breadcrumbs">
-											<!-- <a href="/">Chellow</a> -->
-											{% block nav %}{% endblock %}</p>
+							<!-- Top Header -->
+							<div class="col-sm-9 col-md-10 top-header headerSameHeight">
+								<div class="pull-left">
+									<p class="panel-breadcrumbs">
+										<!-- <a href="/">Chellow</a> -->
+										{% block nav %}{% endblock %}</p>
 						
-									</div>
+								</div>
                             
-									<div class="pull-right layer-profilemenu">
-										<!-- Layer Header Top -->
-										<div class="layer-headertop">
-											<div class="headertop createnew blue">
-												<div class="menu-topbar">
-													<div class="topbar-main">
-														<div class="standardForm siteSearch">
-															<form action="/sites">
-																<fieldset>
-																	<span class="topbarmain-title">
-																		<input
-																	 			type="text" class="input-text"
-																			 	name="pattern" value="Search Sites..."
-																			 	onBlur="if( this.value == '' ) this.value = 'Search Sites...'" onFocus="if( this.value == 'Search Sites...' ) this.value = '';"
-																		>
-																	</span>
-																	<span class="topbarmain-arrow"><button type="submit" class="btn" onClick="removePlaceHolder()"><i class="fa fa-search" aria-hidden="true"></i></button></span>
-																</fieldset>
-															</form>
-														</div>
-													</div>
-												</div>
-											</div>
-											<div class="headertop search blue">
-												<div class="menu-topbar">
-													<div class="topbar-main">
-														<div class="standardForm supplySearch">
-															<form action="/supplies">
-																<fieldset>
-																	<span class="topbarmain-title">
-																		<input type="text" class="input-text" name="search_pattern" value="Search Supplies..." onBlur="if( this.value == '' ) this.value = 'Search Supplies...';" onFocus="if( this.value == 'Search Supplies...' ) this.value = '';">
-																	</span>
-																	<span class="topbarmain-arrow">
-																		<button
-																		 		type="submit" class="btn"
-																			 	onClick="removePlaceHolder()">
-																			<i
-																			 	class="fa fa-search" aria-hidden="true">
-																			</i>
-																		</button>
-																	</span>
-																</fieldset>
-															</form>
-														</div>
+								<div class="pull-right layer-profilemenu">
+									<!-- Layer Header Top -->
+									<div class="layer-headertop">
+										<div class="headertop createnew blue">
+											<div class="menu-topbar">
+												<div class="topbar-main">
+													<div class="standardForm siteSearch">
+														<form action="/sites">
+															<fieldset>
+																<span class="topbarmain-title">
+																	<input
+																			type="text" class="input-text"
+																			name="pattern" value="Search Sites..."
+																			onBlur="if( this.value == '' ) this.value = 'Search Sites...'" onFocus="if( this.value == 'Search Sites...' ) this.value = '';"
+																	>
+																</span>
+																<span class="topbarmain-arrow"><button type="submit" class="btn" onClick="removePlaceHolder()"><i class="fa fa-search" aria-hidden="true"></i></button></span>
+															</fieldset>
+														</form>
 													</div>
 												</div>
 											</div>
 										</div>
-										<!-- End Layer Header Top -->
+										<div class="headertop search blue">
+											<div class="menu-topbar">
+												<div class="topbar-main">
+													<div class="standardForm supplySearch">
+														<form action="/supplies">
+															<fieldset>
+																<span class="topbarmain-title">
+																	<input type="text" class="input-text" name="search_pattern" value="Search Supplies..." onBlur="if( this.value == '' ) this.value = 'Search Supplies...';" onFocus="if( this.value == 'Search Supplies...' ) this.value = '';">
+																</span>
+																<span class="topbarmain-arrow">
+																	<button
+																			type="submit" class="btn"
+																			onClick="removePlaceHolder()">
+																		<i
+																			class="fa fa-search" aria-hidden="true">
+																		</i>
+																	</button>
+																</span>
+															</fieldset>
+														</form>
+													</div>
+												</div>
+											</div>
+										</div>
 									</div>
+									<!-- End Layer Header Top -->
 								</div>
 							</div>
 						</div>
@@ -223,93 +222,94 @@
 	
 	
 	        <!-- Layer Body -->
-            <div class="layer-body menuHide">
+					<div class="layer-body menuHide">
 		        <div class="container-fluid">
-                    <div class="row">           
-                        <!-- Layer Sidebar -->
-                        <div class="layer-sidebar col-sm-2 bgWhite bodySameHeight">
-                            <div class="main-navigation">
-                                <!-- Nav Contracts -->
-                                <nav class="nav-main active">
-                                    <h4><i class="fa fa-file" aria-hidden="true"></i> Contracts</h4>
-                                    <ul class="active">
-                                        <li><a href="/dc_contracts" title="DC">DC</a></li>
-                                        <li><a href="/mop_contracts" title="MOP">MOP</a></li>
-                                        <li><a href="/supplier_contracts" title="Supplier">Supplier</a></li>
-                                        <li><a href="/non_core_contracts" title="Non-Core">Non-Core</a></li>
-                                    </ul>
-                                </nav>
-                                <!-- End Nav Contracts -->
-                                <!-- Nav Editors -->
-                                <nav class="nav-editors">
-                                    <h4><i class="fa fa-cog" aria-hidden="true"></i> For Editors</h4>
-                                    <ul>                                    
-                                        <li><a href="/local_reports_home" title="Local Reports">Local Reports</a></li>
-                                        <li><a href="/general_imports" title="General Import">General Import</a></li>
-                                        <li><a href="/downloads" title="Downloads">Downloads</a></li>
-                                        <li><a href="/reports/ecoes_comparison" title="Comparison against ECOES">Comparison against ECOES</a></li>
-                                        <li><a href="/local_reports" title="Edit Local Reports">Edit Local Reports</a></li>
-                                        <li><a href="/site_snags" title="Site Snags">Site Snags</a></li>
-                                        <li><a href="https://github.com/WessexWater/chellow" title="Docs">Docs</a></li> 
-                                    </ul>
-                                </nav>
-                                <!-- End Nav Editors -->
-                                <!-- Nav Industry -->
-                                <nav class="nav-industry">
-                                    <h4><i class="fa fa-industry" aria-hidden="true"></i> Industry Info</h4>
-                                    <ul>
-                                        <li><a href="/dnos" title="DNOs">DNOs</a></li>
-																				<li><a href="/industry_contracts" title="Industry Rates">Industry Rates</a></li>
-                                        <li><a href="/participants" title="Market Participants">Market Participants</a></li>
-                                        <li><a href="/market_roles" title="Market Roles">Market Roles</a></li>
-                                        <li><a href="/parties" title="Parties">Parties</a></li>
-                                        <li><a href="/pcs" title="Profile Classes">Profile Classes</a></li>
-                                        <li><a href="/mtcs" title="Meter Timeswitch Classes">Meter Timeswitch Classes</a></li>
-                                        <li><a href="/meter_types" title="Meter Types">Meter Types</a></li>
-                                        <li><a href="/meter_payment_types" title="Meter Payments Types">Meter Payments Types</a></li>
-                                        <li><a href="/tprs" title="TPRs">TPRs</a></li>
-                                        <li><a href="/sscs" title="SSCs">SSCs</a></li>
-                                        <li><a href="/gsp_groups" title="GSP Groups">GSP Groups</a></li>
-                                        <li><a href="/cops" title="CoPs">CoPs</a></li>
-                                        <li><a href="/bill_types" title="Bill Types">Bill Types</a></li>
-                                        <li><a href="/read_types" title="Read Types">Read Types</a></li>
-                                        <li><a href="/sources" title="Sources">Sources</a></li>
-                                        <li><a href="/generator_types" title="Generator Types">Generator Types</a></li>
-                                        <li><a href="/reports/163" title="MDD Converter">MDD Converter</a></li>
-                                    </ul>
-                                </nav>
-                                <!-- End Nav Industry -->
+							<div class="row">           
+								<!-- Layer Sidebar -->
+								<div class="layer-sidebar col-sm-2 bgWhite bodySameHeight">
+									<div class="main-navigation">
+										<!-- Nav Contracts -->
+										<nav class="nav-main active">
+											<h4><i class="fa fa-file" aria-hidden="true"></i> Contracts</h4>
+											<ul class="active">
+													<li><a href="/dc_contracts" title="DC">DC</a></li>
+													<li><a href="/mop_contracts" title="MOP">MOP</a></li>
+													<li><a href="/supplier_contracts" title="Supplier">Supplier</a></li>
+													<li><a href="/non_core_contracts" title="Non-Core">Non-Core</a></li>
+											</ul>
+										</nav>
+										<!-- End Nav Contracts -->
+										<!-- Nav Editors -->
+										<nav class="nav-editors">
+											<h4><i class="fa fa-cog" aria-hidden="true"></i> For Editors</h4>
+											<ul>                                    
+												<li><a href="/local_reports_home" title="Local Reports">Local Reports</a></li>
+												<li><a href="/general_imports" title="General Import">General Import</a></li>
+												<li><a href="/downloads" title="Downloads">Downloads</a></li>
+												<li><a href="/reports/ecoes_comparison" title="Comparison against ECOES">Comparison against ECOES</a></li>
+												<li><a href="/local_reports" title="Edit Local Reports">Edit Local Reports</a></li>
+												<li><a href="/site_snags" title="Site Snags">Site Snags</a></li>
+												<li><a href="https://github.com/WessexWater/chellow" title="Docs">Docs</a></li> 
+											</ul>
+										</nav>
+										<!-- End Nav Editors -->
+										<!-- Nav Industry -->
+										<nav class="nav-industry">
+											<h4><i class="fa fa-industry" aria-hidden="true"></i> Industry Info</h4>
+											<ul>
+												<li><a href="/dnos" title="DNOs">DNOs</a></li>
+												<li><a href="/industry_contracts" title="Industry Rates">Industry Rates</a></li>
+												<li><a href="/participants" title="Market Participants">Market Participants</a></li>
+												<li><a href="/market_roles" title="Market Roles">Market Roles</a></li>
+												<li><a href="/parties" title="Parties">Parties</a></li>
+												<li><a href="/pcs" title="Profile Classes">Profile Classes</a></li>
+												<li><a href="/mtcs" title="Meter Timeswitch Classes">Meter Timeswitch Classes</a></li>
+												<li><a href="/meter_types" title="Meter Types">Meter Types</a></li>
+												<li><a href="/meter_payment_types" title="Meter Payments Types">Meter Payments Types</a></li>
+												<li><a href="/tprs" title="TPRs">TPRs</a></li>
+												<li><a href="/sscs" title="SSCs">SSCs</a></li>
+												<li><a href="/gsp_groups" title="GSP Groups">GSP Groups</a></li>
+												<li><a href="/cops" title="CoPs">CoPs</a></li>
+												<li><a href="/bill_types" title="Bill Types">Bill Types</a></li>
+												<li><a href="/read_types" title="Read Types">Read Types</a></li>
+												<li><a href="/sources" title="Sources">Sources</a></li>
+												<li><a href="/generator_types" title="Generator Types">Generator Types</a></li>
+												<li><a href="/reports/163" title="MDD Converter">MDD Converter</a></li>
+											</ul>
+										</nav>
+										<!-- End Nav Industry -->
 
-							<!-- Nav Gas -->
-							<nav class="nav-gas">
-								<h4>
-									<i class="fa fa-fire" aria-hidden="true"></i>
-									Gas
-								</h4>
-								<ul>
-									<li><a href="/g_supplies">Supplies</a></li>
-									<li><a href="/g_contracts">Contracts</a></li>
-									<li><a href="/g_read_types">Read Types</a></li>
-									<li><a href="/g_units">Units</a></li>
-									<li><a href="/g_reports">Reports</a></li>
-									<li><a href="/g_dns">DNs</a></li>
-								</ul>
-							</nav>
-							<!-- End Nav Gas -->
+										<!-- Nav Gas -->
+										<nav class="nav-gas">
+											<h4>
+												<i class="fa fa-fire" aria-hidden="true"></i>
+												Gas
+											</h4>
+											<ul>
+												<li><a href="/g_supplies">Supplies</a></li>
+												<li><a href="/g_contracts">Contracts</a></li>
+												<li><a href="/g_read_types">Read Types</a></li>
+												<li><a href="/g_units">Units</a></li>
+												<li><a href="/g_reports">Reports</a></li>
+												<li><a href="/g_dns">DNs</a></li>
+											</ul>
+										</nav>
+										<!-- End Nav Gas -->
 
-                                <!-- Nav Administration -->
-                                <nav class="nav-administration">
-                                    <h4><i class="fa fa-user" aria-hidden="true"></i> Administration</h4>
-                                    <ul>
-                                        <li><a href="/users" title="Users">Users</a></li>
-                                        <li><a href="/user_roles" title="Users Roles">Users Roles</a></li>
-                                        <li><a href="/system" title="System">System</a></li>
-                                    </ul>
-                                </nav>
-                                <!-- End Nav Administration -->
-                            </div>
-                        </div>
-                        <!-- End Layer Sidebar -->
+										<!-- Nav Administration -->
+										<nav class="nav-administration">
+											<h4><i class="fa fa-user" aria-hidden="true"></i> Administration</h4>
+											<ul>
+												<li><a href="/users" title="Users">Users</a></li>
+												<li><a href="/user_roles" title="Users Roles">Users Roles</a></li>
+												<li><a href="/system" title="System">System</a></li>
+											</ul>
+										</nav>
+										<!-- End Nav Administration -->
+
+									</div>
+								</div>
+								<!-- End Layer Sidebar -->
                                                     
 								<!-- Layer Content -->
 								<div class="col-sm-12 bodySameHeight bgColor">
@@ -360,7 +360,8 @@
 										</div>
 									</div>
 								</div>
-							<!-- Layer Content -->
+								<!-- Layer Content -->
+							</div>
 						</div>		
 					</div>	
 				</div>

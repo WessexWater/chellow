@@ -5571,7 +5571,7 @@ def g_era_edit_post(g_era_id):
         g_era = GEra.get_by_id(g.sess, g_era_id)
 
         if 'delete' in request.values:
-            g_supply = g_era.supply
+            g_supply = g_era.g_supply
             g_supply.delete_g_era(g.sess, g_era)
             g.sess.commit()
             return chellow_redirect('/g_supplies/' + str(g_supply.id), 303)
