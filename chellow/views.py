@@ -19,7 +19,8 @@ from dateutil.relativedelta import relativedelta
 from chellow.utils import (
     HH, req_str, req_int, req_date, parse_mpan_core, req_bool, req_hh_date,
     hh_after, req_decimal, send_response, hh_min, hh_max, hh_format, hh_range,
-    utc_datetime, utc_datetime_now, req_zish, get_file_scripts, to_utc)
+    utc_datetime, utc_datetime_now, req_zish, get_file_scripts, to_utc,
+    csv_make_val)
 from werkzeug.exceptions import BadRequest, NotFound
 import chellow.general_import
 import io
@@ -3133,7 +3134,7 @@ def supplier_bill_get(bill_id):
                 if k.startswith(row_name + '-'):
                     col_name = k[len(row_name) + 1:]
                     columns.add(col_name)
-                    grid[row_name][col_name] = v
+                    grid[row_name][col_name] = csv_make_val(v)
                     del breakdown_dict[k]
                     break
 
@@ -3143,7 +3144,7 @@ def supplier_bill_get(bill_id):
             column_name = pair[-1]
             rows.add(row_name)
             columns.add(column_name)
-            grid[row_name][column_name] = v
+            grid[row_name][column_name] = csv_make_val(v)
 
         column_list = sorted(list(columns))
         for rate_name in [col for col in column_list if col.endswith('rate')]:

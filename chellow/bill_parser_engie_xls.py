@@ -267,7 +267,6 @@ class Parser():
                 'account': mpan_core, 'issue_date': issue_date,
                 'start_date': from_date, 'finish_date': to_date,
                 'mpans': [mpan_core],
-                'reference': str(bill_number) + '_' + str(row_index + 1)
             }
             bills.append(bill)
             bd = bill['breakdown']
@@ -281,8 +280,6 @@ class Parser():
             if usage_units == 'kWh':
                 if product_item_name == 'Renewables Obligation (RO)':
                     bill['kwh'] += round(usage, 2)
-                elif product_item_name == "Unit Rate":
-                    bd_add(bd, 'sum-gsp-kwh', usage)
             description = get_value(row, 'Description')
             if description in ('Standard VAT@20%', 'Reduced VAT@5%'):
                 bill['vat'] += round(amount, 2)
@@ -332,9 +329,14 @@ class Parser():
             elif description.startswith("Legacy TNUoS Reversal "):
                 bd_add(bd, 'triad-gbp', amount)
 
+            reference = str(bill_number) + '_' + str(row_index + 1)
             for k, v in tuple(bd.items()):
                 if isinstance(v, set):
                     bd[k] = list(v)
+                elif k.endswith("-gbp"):
+                    reference += "_" + k[:-4]
+
+            bill['reference'] = reference
             bill['gross'] = bill['net'] + bill['vat']
 
         return bills

@@ -484,7 +484,7 @@ def csv_make_val(v):
 
 
 def make_val(v):
-    if isinstance(v, set):
+    if isinstance(v, (set, list)):
         if len(v) == 1:
             return make_val(v.pop())
         elif 1 < len(v) < 4:
