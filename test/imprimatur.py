@@ -18518,5 +18518,14 @@ def virtual_bill(ds):
         'regexes': [
             r'/g_supplies/1'
         ]
+    },
+
+    {
+        'name': "View add gas read",
+        'path': '/g_bills/4/add_read',
+        'status_code': 200,
+        'regexes': [
+            r'<input type="checkbox" name="is_corrected" value="true">'
+        ]
     }
 ]
