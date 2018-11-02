@@ -13068,13 +13068,10 @@ def virtual_bill(supply_source):
             r'virtual-net-gbp,difference-net-gbp,covered-vat-gbp,'
             r'virtual-vat-gbp,difference-vat-gbp,covered-gross-gbp,'
             r'virtual-gross-gbp,difference-gross-gbp,covered-sum-msp-kwh,'
-            r'virtual-sum-msp-kwh,covered-problem,virtual-problem\s*'
-            r'06-002,SA342376,N,0,3163479.00,553609.00,2007-02-28 00:00,'
-            r'2007-03-01 00:00,22 1065 3921 534,,CI017,Roselands,'
-            r'2007-02-28 00:00,2007-03-01 00:00,,0,,,,,,,0.0,0,0,0.0,0,,0.0,,'
-            r',0.0,0,,,From 2007-02-28 00:00 to 2007-03-01 00:00 the contract '
-            r"of the era doesn't match the contract of the bill.\s*\Z"],
-        'status_code': 200},
+            r'virtual-sum-msp-kwh,covered-problem,virtual-problem\s*\Z'
+        ],
+        'status_code': 200
+    },
 
     {
         'name': "Update a MOP batch",

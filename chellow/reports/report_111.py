@@ -231,6 +231,9 @@ def content(batch_id, bill_id, contract_id, start_date, finish_date, user):
                             enlarged = True
                             break
 
+                if len(covered_bills) == 0:
+                    continue
+
                 primary_covered_bill = None
                 for covered_bill in covered_bills.values():
                     if covered_bill.id in bill_ids:
