@@ -18508,7 +18508,7 @@ def virtual_bill(ds):
     },
 
     {
-        'name': "Deleta a gas era",
+        'name': "Delete a gas era",
         'path': '/g_eras/3/edit',
         'method': 'post',
         'data': {
@@ -18526,6 +18526,19 @@ def virtual_bill(ds):
         'status_code': 200,
         'regexes': [
             r'<input type="checkbox" name="is_corrected" value="true">'
+        ]
+    },
+
+    {
+        'name': "Delete a gas rate script",
+        'path': '/g_rate_scripts/2/edit',
+        'method': 'post',
+        'data': {
+            'delete': 'Delete'
+        },
+        'status_code': 303,
+        'regexes': [
+            r'/g_contracts/1'
         ]
     }
 ]

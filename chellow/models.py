@@ -3575,16 +3575,21 @@ class GContract(Base, PersistentClass):
         sess.delete(self)
 
     def delete_g_rate_script(self, sess, rscript):
+        if rscript.g_contract != self:
+            raise Exception(
+                "The rate script to delete isn't assocated with this "
+                "contract.")
         rscripts = sess.query(GRateScript).filter(
             GRateScript.g_contract == self).order_by(
                 GRateScript.start_date).all()
 
         if len(rscripts) < 2:
             raise BadRequest("You can't delete the last rate script.")
+
         if rscripts[0] == rscript:
-            self.g_start_rate_script = rscripts[1]
+            self.start_g_rate_script = rscripts[1]
         elif rscripts[-1] == rscript:
-            self.g_finish_rate_script = rscripts[-2]
+            self.finish_g_rate_script = rscripts[-2]
 
         sess.flush()
         sess.delete(rscript)
