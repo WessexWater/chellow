@@ -1,7 +1,7 @@
 from dateutil.relativedelta import relativedelta
 from werkzeug.exceptions import BadRequest
 from pytz import timezone, utc
-from decimal import Decimal
+from decimal import Decimal, InvalidOperation
 from collections import defaultdict, deque
 from datetime import datetime as Datetime
 from flask import request, Response
@@ -69,7 +69,11 @@ def req_date(prefix, resolution='minute'):
 
 
 def req_decimal(name):
-    return Decimal(req_str(name))
+    try:
+        return Decimal(req_str(name))
+    except InvalidOperation as e:
+        raise BadRequest(
+            "Problem parsing the field " + name + " as a decimal: " + str(e))
 
 
 def prev_hh(dt):
