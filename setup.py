@@ -49,7 +49,7 @@ setup(
         'python-dateutil==2.4.2',
         'pytz==2016.10',
         'ftputil==3.2',
-        'requests==2.10.0',
+        'requests==2.20.0',
         'waitress==1.0.1',
         'pep3143daemon==0.0.6',
         'pip>=9.0.1',
