@@ -498,12 +498,10 @@ def content(
                     site_deltas['hhs'][hh_start] = hh
                 month_start += relativedelta(months=1)
 
-        site_ids = [site.id for site in sites]
         month_start = start_date
         while month_start < finish_date:
             month_finish = month_start + relativedelta(months=1) - HH
-            for site_id in site_ids:
-                site = Site.get_by_id(sess, site_id)
+            for site in sites:
                 site_category = None
                 site_sources = set()
                 site_gen_types = set()
@@ -688,8 +686,10 @@ def content(
                         exp_ss) in enumerate(sorted(calcs, key=str)):
                     if imp_ss is None:
                         source_code = exp_ss.source_code
+                        supply = exp_ss.supply
                     else:
                         source_code = imp_ss.source_code
+                        supply = imp_ss.supply
 
                     site_sources.add(source_code)
                     month_data = {}
@@ -976,6 +976,7 @@ class ScenarioSource():
             self, sess, start_date, finish_date, is_import, caches,
             deltas, supplier_contract, mpan_core):
         self.sess = sess
+        self.supply = None
         self.mpan_core = mpan_core
         self.supply_name = mpan_core
         self.start_date = start_date

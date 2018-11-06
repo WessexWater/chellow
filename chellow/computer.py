@@ -10,7 +10,7 @@ from werkzeug.exceptions import BadRequest
 from chellow.models import (
     RateScript, Channel, Era, Tpr, MeasurementRequirement, RegisterRead, Bill,
     BillType, ReadType, SiteEra, Supply, Source, HhDatum, Contract,
-    ClockInterval, Mtc)
+    ClockInterval, Mtc, Llfc)
 from chellow.utils import (
     HH, hh_format, hh_max, hh_range, hh_min, utc_datetime, utc_datetime_now,
     to_tz, to_ct, loads, PropDict)
@@ -1420,6 +1420,21 @@ order by hh_datum.start_date
                     Era.start_date <= finish_date, or_(
                         Era.finish_date == null(),
                         Era.finish_date >= start_date))
+            eras = eras.options(
+                joinedload(Era.ssc),
+                joinedload(Era.dc_contract),
+                joinedload(Era.mop_contract),
+                joinedload(Era.imp_supplier_contract),
+                joinedload(Era.exp_supplier_contract),
+                joinedload(Era.channels),
+                joinedload(Era.imp_llfc).joinedload(Llfc.voltage_level),
+                joinedload(Era.exp_llfc).joinedload(Llfc.voltage_level),
+                joinedload(Era.cop),
+                joinedload(Era.supply).joinedload(Supply.dno),
+                joinedload(Era.supply).joinedload(Supply.gsp_group),
+                joinedload(Era.supply).joinedload(Supply.source),
+                joinedload(Era.mtc).joinedload(Mtc.meter_type),
+                joinedload(Era.pc), joinedload(Era.site_eras))
 
             for era in eras:
                 chunk_start = hh_max(era.start_date, start_date)
