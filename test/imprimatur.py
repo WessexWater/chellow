@@ -18544,5 +18544,18 @@ def virtual_bill(ds):
         'regexes': [
             r'/g_contracts/1'
         ]
+    },
+
+    {
+        'name': "Gas read delete",
+        'path': '/g_reads/3/edit',
+        'method': 'post',
+        'data': {
+            'delete': 'Delete'
+        },
+        'status_code': 303,
+        'regexes': [
+            r'/g_bills/3'
+        ]
     }
 ]

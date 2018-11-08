@@ -2987,6 +2987,10 @@ class GRegisterRead(Base, PersistentClass):
         self.pres_date = pres_date
         self.pres_type = pres_type
 
+    def delete(self, sess):
+        sess.delete(self)
+        sess.flush()
+
 
 class SiteGEra(Base, PersistentClass):
     __tablename__ = 'site_g_era'

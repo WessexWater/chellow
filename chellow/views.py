@@ -5761,9 +5761,10 @@ def g_read_edit_post(g_read_id):
             g.sess.commit()
             return chellow_redirect("/g_bills/" + str(g_read.g_bill.id), 303)
         elif 'delete' in request.values:
-            g_read.delete()
+            g_bill = g_read.g_bill
+            g_read.delete(g.sess)
             g.sess.commit()
-            return chellow_redirect('/g_bills/' + str(g_read.g_bill.id), 303)
+            return chellow_redirect('/g_bills/' + str(g_bill.id), 303)
     except BadRequest as e:
         flash(e.description)
         g_read_types = g.sess.query(GReadType).order_by(GReadType.code).all()
