@@ -18557,5 +18557,17 @@ def virtual_bill(ds):
         'regexes': [
             r'/g_bills/3'
         ]
+    },
+
+    {
+        'name': "View gas notes",
+        'path': '/g_supplies/4/notes',
+        'status_code': 200
+    },
+
+    {
+        'name': "View add gas note",
+        'path': '/g_supplies/4/notes/add',
+        'status_code': 200
     }
 ]

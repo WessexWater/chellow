@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+
+{% block title %}
+Gas Supplies &raquo; {{g_supply.id}} &raquo; Notes &raquo; {{note.index}} Edit
+{% endblock %}
+
+{% block nav %}
+	<a href="/g_supplies">Gas Supplies</a>  &raquo;
+	<a href="/g_supplies/{{g_supply.id}}">{{g_supply.id}}</a>  &raquo;
+	<a href="/g_supplies/{{g_supply.id}}/notes">Notes</a>  &raquo;
+ 	{{note.index}} Edit
+{% endblock %}
+
+{% block content %}
+	<div class="layer-section">
+		<div class="section-header">
+			<h2>Notes</h2>
+		</div>
+		<div class="section-content">
+			<div class="section-data">
+				<div class="noWrap widthAuto">
+					<form
+					 		method="post"
+						 	action="/g_supplies/{{g_supply.id}}/notes/{{note.index}}/edit">
+						<fieldset>
+							<legend>Edit Note</legend>
+							Category {{input_text('category', note.category)}}
+							<br>
+							Important? {{input_checkbox('is_important', note.is_important)}}
+							<br>
+							{{input_textarea('body', note.body, 30, 80)}}
+							<br>
+							<input type="submit" name="update" value="Edit">
+						</fieldset>
+					</form>
+					<br>
+					<form
+						 	action="/g_supplies/{{g_supply.id}}/notes/{{note.index}}/edit"
+					 		method="post">
+						<fieldset>
+							<legend>Delete Note</legend>
+							<br>
+							<input type="submit" name="delete" value="Delete">
+						</fieldset>
+					</form>
+				</div>
+			</div>
+		</div>
+	</div>
+{% endblock %}

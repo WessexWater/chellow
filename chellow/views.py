@@ -5550,7 +5550,87 @@ def g_bill_add_post(g_batch_id):
 @app.route('/g_supplies/<int:g_supply_id>/notes')
 def g_supply_notes_get(g_supply_id):
     g_supply = GSupply.get_by_id(g.sess, g_supply_id)
-    return render_template('g_supply_notes.html', g_supply=g_supply)
+
+    if len(g_supply.note.strip()) > 0:
+        note_str = g_supply.note
+    else:
+        note_str = "{'notes': []}"
+    g_supply_note = eval(note_str)
+
+    return render_template(
+        'g_supply_notes.html', g_supply=g_supply, g_supply_note=g_supply_note)
+
+
+@app.route('/g_supplies/<int:g_supply_id>/notes/add')
+def g_supply_note_add_get(g_supply_id):
+    g_supply = GSupply.get_by_id(g.sess, g_supply_id)
+    return render_template('g_supply_note_add.html', g_supply=g_supply)
+
+
+@app.route('/g_supplies/<int:g_supply_id>/notes/add', methods=['POST'])
+def g_supply_note_add_post(g_supply_id):
+    try:
+        g_supply = GSupply.get_by_id(g.sess, g_supply_id)
+        body = req_str('body')
+        category = req_str('category')
+        is_important = req_bool('is_important')
+        if len(g_supply.note.strip()) == 0:
+            g_supply.note = "{'notes': []}"
+        note_dict = eval(g_supply.note)
+        note_dict['notes'].append(
+            {
+                'category': category, 'is_important': is_important,
+                'body': body})
+        g_supply.note = str(note_dict)
+        g.sess.commit()
+        return chellow_redirect('/g_supplies/' + str(g_supply_id), 303)
+    except BadRequest as e:
+        flash(e.description)
+        return make_response(
+            render_template('g_supply_note_add.html', g_supply=g_supply), 400)
+
+
+@app.route('/g_supplies/<int:g_supply_id>/notes/<int:index>/edit')
+def g_supply_note_edit_get(g_supply_id, index):
+    g_supply = GSupply.get_by_id(g.sess, g_supply_id)
+    g_supply_note = eval(g_supply.note)
+    note = g_supply_note['notes'][index]
+    note['index'] = index
+    return render_template(
+        'g_supply_note_edit.html', g_supply=g_supply, note=note)
+
+
+@app.route(
+    '/g_supplies/<int:g_supply_id>/notes/<int:index>/edit', methods=['POST'])
+def g_supply_note_edit_post(g_supply_id, index):
+    try:
+        g_supply = GSupply.get_by_id(g.sess, g_supply_id)
+        g_supply_note = eval(g_supply.note)
+        if 'delete' in request.values:
+            del g_supply_note['notes'][index]
+            g_supply.note = str(g_supply_note)
+            g.sess.commit()
+            return chellow_redirect(
+                "/g_supplies/" + str(g_supply_id) + '/notes', 303)
+        else:
+            category = req_str('category')
+            is_important = req_bool('is_important')
+            body = req_str('body')
+            note = g_supply_note['notes'][index]
+            note['category'] = category
+            note['is_important'] = is_important
+            note['body'] = body
+            g_supply.note = str(g_supply_note)
+            g.sess.commit()
+            return chellow_redirect(
+                '/g_supplies/' + str(g_supply_id) + '/notes', 303)
+    except BadRequest as e:
+        flash(e.description)
+        g_supply_note = eval(g_supply.note)
+        note = g_supply_note['notes'][index]
+        note['index'] = index
+        return render_template(
+            'g_supply_note_edit.html', g_supply=g_supply, note=note)
 
 
 @app.route('/g_eras/<int:g_era_id>/edit')
