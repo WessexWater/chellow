@@ -864,6 +864,7 @@ def site_edit_post(site_id):
                 ssc = Ssc.get_by_code(g.sess, ssc_code)
             else:
                 ssc = None
+            properties = req_zish("properties")
             start_date = req_date("start")
             if 'generator_type_id' in request.form:
                 generator_type_id = req_int("generator_type_id")
@@ -920,8 +921,8 @@ def site_edit_post(site_id):
 
             supply = site.insert_e_supply(
                 g.sess, source, generator_type, name, start_date, None,
-                gsp_group, mop_contract, mop_account, dc_contract,
-                dc_account, msn, pc, mtc_code, cop, ssc, imp_mpan_core,
+                gsp_group, mop_contract, mop_account, dc_contract, dc_account,
+                msn, pc, mtc_code, cop, ssc, properties, imp_mpan_core,
                 imp_llfc_code, imp_supplier_contract, imp_supplier_account,
                 imp_sc, exp_mpan_core, exp_llfc_code, exp_supplier_contract,
                 exp_supplier_account, exp_sc)
@@ -1834,6 +1835,7 @@ def era_edit_post(era_id):
             cop = Cop.get_by_id(g.sess, cop_id)
             ssc_code = req_str("ssc_code")
             ssc_code = ssc_code.strip()
+            properties = req_zish("properties")
             if len(ssc_code) == 0:
                 ssc = None
             else:
@@ -1883,10 +1885,11 @@ def era_edit_post(era_id):
 
             era.supply.update_era(
                 g.sess, era, start_date, finish_date, mop_contract,
-                mop_account, dc_contract, dc_account, msn, pc, mtc, cop,
-                ssc, imp_mpan_core, imp_llfc_code, imp_supplier_contract,
-                imp_supplier_account, imp_sc, exp_mpan_core, exp_llfc_code,
-                exp_supplier_contract, exp_supplier_account, exp_sc)
+                mop_account, dc_contract, dc_account, msn, pc, mtc, cop, ssc,
+                properties, imp_mpan_core, imp_llfc_code,
+                imp_supplier_contract, imp_supplier_account,
+                imp_sc, exp_mpan_core, exp_llfc_code, exp_supplier_contract,
+                exp_supplier_account, exp_sc)
             g.sess.commit()
             return chellow_redirect("/supplies/" + str(era.supply.id), 303)
     except BadRequest as e:

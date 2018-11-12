@@ -1,4 +1,4 @@
 #"Action","Type"
-"insert","supply","CI004","net","",2,_L,2005-08-06 00:00,,MOP Contract,mc-22 0195 4836 192,Dynamat data,dc-22 0195 4836 192,P96C93722,05,535,5,0127,22 0195 4836 192,510,30,"Non half-hourlies 2007","341664"
-"insert","supply","CI017","net","",2,_L,2005-09-06 00:00,,MOP Contract,mc-22 1065 3921 534,Dynamat data,dc-22 1065 3921 534,I02D89150,03,801,5,0393,22 1065 3921 534,110,30,"Non half-hourlies 2007","SA342376"
-"insert","supply","CI005","net","",3,_L,2005-10-06 00:00,,MOP Contract,mc-22 9974 3438 105,Dynamat data,dc-22 9974 3438 105,K87D74429,05,803,5,0154,22 9974 3438 105,540,20,"Non half-hourlies 2007","341665"
+"insert","supply","CI004","net","",2,_L,2005-08-06 00:00,,MOP Contract,mc-22 0195 4836 192,Dynamat data,dc-22 0195 4836 192,P96C93722,05,535,5,0127,{},22 0195 4836 192,510,30,"Non half-hourlies 2007","341664"
+"insert","supply","CI017","net","",2,_L,2005-09-06 00:00,,MOP Contract,mc-22 1065 3921 534,Dynamat data,dc-22 1065 3921 534,I02D89150,03,801,5,0393,{},22 1065 3921 534,110,30,"Non half-hourlies 2007","SA342376"
+"insert","supply","CI005","net","",3,_L,2005-10-06 00:00,,MOP Contract,mc-22 9974 3438 105,Dynamat data,dc-22 9974 3438 105,K87D74429,05,803,5,0154,{},22 9974 3438 105,540,20,"Non half-hourlies 2007","341665"

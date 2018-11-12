@@ -1205,7 +1205,7 @@ class Site(Base, PersistentClass):
     def insert_e_supply(
             self, sess, source, generator_type, supply_name, start_date,
             finish_date, gsp_group, mop_contract, mop_account, dc_contract,
-            dc_account, msn, pc, mtc_code, cop, ssc, imp_mpan_core,
+            dc_account, msn, pc, mtc_code, cop, ssc, properties, imp_mpan_core,
             imp_llfc_code, imp_supplier_contract, imp_supplier_account, imp_sc,
             exp_mpan_core, exp_llfc_code, exp_supplier_contract,
             exp_supplier_account, exp_sc):
@@ -1233,10 +1233,10 @@ class Site(Base, PersistentClass):
         mtc = Mtc.get_by_code(sess, dno, mtc_code)
         supply.insert_era(
             sess, self, [], start_date, finish_date, mop_contract, mop_account,
-            dc_contract, dc_account, msn, pc, mtc, cop, ssc, imp_mpan_core,
-            imp_llfc_code, imp_supplier_contract, imp_supplier_account, imp_sc,
-            exp_mpan_core, exp_llfc_code, exp_supplier_contract,
-            exp_supplier_account, exp_sc, set())
+            dc_contract, dc_account, msn, pc, mtc, cop, ssc, properties,
+            imp_mpan_core, imp_llfc_code, imp_supplier_contract,
+            imp_supplier_account, imp_sc, exp_mpan_core, exp_llfc_code,
+            exp_supplier_contract, exp_supplier_account, exp_sc, set())
         sess.flush()
         return supply
 
@@ -1739,6 +1739,7 @@ class Era(Base, PersistentClass):
     mtc_id = Column(Integer, ForeignKey('mtc.id'), nullable=False)
     cop_id = Column(Integer, ForeignKey('cop.id'), nullable=False)
     ssc_id = Column(Integer, ForeignKey('ssc.id'))
+    properties = Column(Text, nullable=False)
     imp_mpan_core = Column(String)
     imp_llfc_id = Column(Integer, ForeignKey('llfc.id'))
     imp_llfc = relationship("Llfc", primaryjoin="Llfc.id==Era.imp_llfc_id")
@@ -1760,13 +1761,13 @@ class Era(Base, PersistentClass):
     def __init__(
             self, sess, supply, start_date, finish_date, mop_contract,
             mop_account, dc_contract, dc_account, msn, pc, mtc_code, cop, ssc,
-            imp_mpan_core, imp_llfc_code, imp_supplier_contract,
+            properties, imp_mpan_core, imp_llfc_code, imp_supplier_contract,
             imp_supplier_account, imp_sc, exp_mpan_core, exp_llfc_code,
             exp_supplier_contract, exp_supplier_account, exp_sc):
         self.supply = supply
         self.update(
             sess, start_date, finish_date, mop_contract, mop_account,
-            dc_contract, dc_account, msn, pc, mtc_code, cop, ssc,
+            dc_contract, dc_account, msn, pc, mtc_code, cop, ssc, properties,
             imp_mpan_core, imp_llfc_code, imp_supplier_contract,
             imp_supplier_account, imp_sc, exp_mpan_core, exp_llfc_code,
             exp_supplier_contract, exp_supplier_account, exp_sc)
@@ -1812,7 +1813,7 @@ class Era(Base, PersistentClass):
         self.update(
             sess, start_date, finish_date, self.mop_contract, self.mop_account,
             self.dc_contract, self.dc_account, self.msn, self.pc, self.mtc,
-            self.cop, self.ssc, self.imp_mpan_core,
+            self.cop, self.ssc, loads(self.properties), self.imp_mpan_core,
             None if self.imp_llfc is None else self.imp_llfc.code,
             self.imp_supplier_contract, self.imp_supplier_account, self.imp_sc,
             self.exp_mpan_core,
@@ -1821,10 +1822,11 @@ class Era(Base, PersistentClass):
 
     def update(
             self, sess, start_date, finish_date, mop_contract, mop_account,
-            dc_contract, dc_account, msn, pc, mtc, cop, ssc, imp_mpan_core,
-            imp_llfc_code, imp_supplier_contract, imp_supplier_account, imp_sc,
-            exp_mpan_core, exp_llfc_code, exp_supplier_contract,
-            exp_supplier_account, exp_sc, do_check=None):
+            dc_contract, dc_account, msn, pc, mtc, cop, ssc, properties,
+            imp_mpan_core, imp_llfc_code, imp_supplier_contract,
+            imp_supplier_account, imp_sc, exp_mpan_core, exp_llfc_code,
+            exp_supplier_contract, exp_supplier_account, exp_sc,
+            do_check=None):
 
         orig_start_date = self.start_date
         orig_finish_date = self.finish_date
@@ -1853,6 +1855,14 @@ class Era(Base, PersistentClass):
         self.msn = msn
         self.pc = pc
         self.ssc = ssc
+
+        if isinstance(properties, dict):
+            self.properties = dumps(properties)
+        else:
+            raise Exception(
+                "The properties argument must be a dict, rather than " +
+                str(properties) + ".")
+
         locs = locals()
         voltage_level = None
         self.cop = cop
@@ -2379,9 +2389,10 @@ class Supply(Base, PersistentClass):
     def update_era(
             self, sess, era, start_date, finish_date, mop_contract,
             mop_account, dc_contract, dc_account, msn, pc, mtc_code, cop,
-            ssc, imp_mpan_core, imp_llfc_code, imp_supplier_contract,
-            imp_supplier_account, imp_sc, exp_mpan_core, exp_llfc_code,
-            exp_supplier_contract, exp_supplier_account, exp_sc):
+            ssc, properties, imp_mpan_core, imp_llfc_code,
+            imp_supplier_contract, imp_supplier_account, imp_sc, exp_mpan_core,
+            exp_llfc_code, exp_supplier_contract, exp_supplier_account,
+            exp_sc):
         if era.supply != self:
             raise Exception("The era doesn't belong to this supply.")
 
@@ -2476,7 +2487,7 @@ class Supply(Base, PersistentClass):
 
         era.update(
             sess, start_date, finish_date, mop_contract, mop_account,
-            dc_contract, dc_account, msn, pc, mtc_code, cop, ssc,
+            dc_contract, dc_account, msn, pc, mtc_code, cop, ssc, properties,
             imp_mpan_core, imp_llfc_code, imp_supplier_contract,
             imp_supplier_account, imp_sc, exp_mpan_core, exp_llfc_code,
             exp_supplier_contract, exp_supplier_account, exp_sc)
@@ -2534,8 +2545,10 @@ class Supply(Base, PersistentClass):
             template_era.mop_contract, template_era.mop_account,
             template_era.dc_contract, template_era.dc_account,
             template_era.msn, template_era.pc, template_era.mtc,
-            template_era.cop, template_era.ssc, template_era.imp_mpan_core,
-            imp_llfc_code, template_era.imp_supplier_contract,
+            template_era.cop, template_era.ssc,
+            loads(template_era.properties),
+            template_era.imp_mpan_core, imp_llfc_code,
+            template_era.imp_supplier_contract,
             template_era.imp_supplier_account, template_era.imp_sc,
             template_era.exp_mpan_core, exp_llfc_code,
             template_era.exp_supplier_contract,
@@ -2544,10 +2557,11 @@ class Supply(Base, PersistentClass):
 
     def insert_era(
             self, sess, physical_site, logical_sites, start_date, finish_date,
-            mop_contract, mop_account, dc_contract, dc_account, msn, pc,
-            mtc, cop, ssc, imp_mpan_core, imp_llfc_code, imp_supplier_contract,
-            imp_supplier_account, imp_sc, exp_mpan_core, exp_llfc_code,
-            exp_supplier_contract, exp_supplier_account, exp_sc, channel_set):
+            mop_contract, mop_account, dc_contract, dc_account, msn, pc, mtc,
+            cop, ssc, properties, imp_mpan_core, imp_llfc_code,
+            imp_supplier_contract, imp_supplier_account, imp_sc, exp_mpan_core,
+            exp_llfc_code, exp_supplier_contract, exp_supplier_account, exp_sc,
+            channel_set):
         covered_era = None
 
         if len(self.eras) > 0:
@@ -2583,10 +2597,10 @@ class Supply(Base, PersistentClass):
         sess.flush()
         era = Era(
             sess, self, start_date, finish_date, mop_contract, mop_account,
-            dc_contract, dc_account, msn, pc, mtc, cop, ssc, imp_mpan_core,
-            imp_llfc_code, imp_supplier_contract, imp_supplier_account, imp_sc,
-            exp_mpan_core, exp_llfc_code, exp_supplier_contract,
-            exp_supplier_account, exp_sc)
+            dc_contract, dc_account, msn, pc, mtc, cop, ssc, properties,
+            imp_mpan_core, imp_llfc_code, imp_supplier_contract,
+            imp_supplier_account, imp_sc, exp_mpan_core, exp_llfc_code,
+            exp_supplier_contract, exp_supplier_account, exp_sc)
         sess.add(era)
         sess.flush()
 
@@ -4484,12 +4498,18 @@ def db_upgrade_14_to_15(sess, root_path):
     sess.execute("alter table g_ldz alter g_dn_id set not null")
 
 
+def db_upgrade_15_to_16(sess, root_path):
+    sess.execute("alter table era add properties text;")
+    sess.execute("update era set properties = '{}';")
+    sess.execute("alter table era alter properties set not null;")
+
+
 upgrade_funcs = [
     db_upgrade_0_to_1, db_upgrade_1_to_2, db_upgrade_2_to_3, db_upgrade_3_to_4,
     db_upgrade_4_to_5, db_upgrade_5_to_6, db_upgrade_6_to_7, db_upgrade_7_to_8,
     db_upgrade_8_to_9, db_upgrade_9_to_10, db_upgrade_10_to_11,
     db_upgrade_11_to_12, db_upgrade_12_to_13, db_upgrade_13_to_14,
-    db_upgrade_14_to_15]
+    db_upgrade_14_to_15, db_upgrade_15_to_16]
 
 
 def db_upgrade(root_path):
