@@ -29,7 +29,9 @@
 					{% for batch in batches %}
 						<tr>
 							<td>
-								<a href="/supplier_batches/{{batch.id}}">{{batch.reference}}</a>
+								<a
+										href="/supplier_batches/{{batch.id}}?bill_limit=1000"
+								>{{batch.reference}}</a>
 							</td>
 							<td>{{batch.description}}</td>
 						</tr>

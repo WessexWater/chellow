@@ -33,7 +33,23 @@
 					</tr>
 					<tr>
 						<th>Number Of Bills</th>
-						<td>{{ bills|length }}</td>
+						<td>{{ "{:,}".format(num_bills) }}</td>
+					</tr>
+					<tr>
+						<th>Sum net GBP</th>
+						<td>{{ "£{:,}".format(sum_net_gbp) }}</td>
+					</tr>
+					<tr>
+						<th>Sum VAT GBP</th>
+						<td>{{ "£{:,}".format(sum_vat_gbp) }}</td>
+					</tr>
+					<tr>
+						<th>Sum gross GBP</th>
+						<td>{{ "£{:,}".format(sum_gross_gbp) }}</td>
+					</tr>
+					<tr>
+						<th>Sum kWh</th>
+						<td>{{ "{:,}".format(sum_kwh) }}</td>
 					</tr>
 					{% if batch_reports %}
 						<tr>
@@ -76,56 +92,56 @@
 	<div class="layer-section">
 		<div class="section-header">
 			<h2>Bills
-				[<a href="/supplier_batches/{{batch.id}}/add_bill"
-						>add</a>]</h2>	
+				[<a href="/supplier_batches/{{batch.id}}/add_bill">add</a>]
+			</h2>	
 		</div>
 		<div class="section-content">
 			<div class="section-data">
-				<div class="DataTable widthAuto noMarginBottom">
-					<table>
-						<thead>
-							<tr>
-								<th>View</th>
-								<th>Reference</th>
-								<th>Account</th>
-								<th>Issued</th>
-								<th>From</th>
-								<th>To</th>
-								<th>kWh</th>
-								<th>Net</th>
-								<th>VAT</th>
-								<th>Gross</th>
-								<th>Type</th>
-							</tr>
-						</thead>
-						<tbody>
-							{% for bill in bills %}
+				{% if bills %}
+					<div class="DataTable widthAuto noMarginBottom">
+						<table>
+							<thead>
 								<tr>
-									<td>
-										<a
-										 		href="/supplier_bills/{{bill.id}}"
-												>View</a>
-									</td>
-									<td>{{bill.reference}}</td>
-									<td>{{bill.account}}</td>
-									<td>{{bill.issue_date|hh_format}}</td>
-									<td>{{bill.start_date|hh_format}}</td>
-									<td>{{bill.finish_date|hh_format}}</td>
-									<td>{{bill.kwh}}</td>
-									<td>{{bill.net}}</td>
-									<td>{{bill.vat}}</td>
-									<td>{{bill.gross}}</td>
-									<td>
-										<a
-												href="/bill_types/{{bill.bill_type.id}}"
-											 	title="{{bill.bill_type.description}}"
-												>{{bill.bill_type.code}}</a>
-									</td>
+									<th>View</th>
+									<th>Reference</th>
+									<th>Account</th>
+									<th>Issued</th>
+									<th>From</th>
+									<th>To</th>
+									<th>kWh</th>
+									<th>Net</th>
+									<th>VAT</th>
+									<th>Gross</th>
+									<th>Type</th>
 								</tr>
-							{% endfor %}
-						</tbody>
-					</table>
-				</div>
+							</thead>
+							<tbody>
+								{% for bill in bills %}
+									<tr>
+										<td><a href="/supplier_bills/{{bill.id}}">View</a></td>
+										<td>{{bill.reference}}</td>
+										<td>{{bill.account}}</td>
+										<td>{{bill.issue_date|hh_format}}</td>
+										<td>{{bill.start_date|hh_format}}</td>
+										<td>{{bill.finish_date|hh_format}}</td>
+										<td>{{bill.kwh}}</td>
+										<td>{{bill.net}}</td>
+										<td>{{bill.vat}}</td>
+										<td>{{bill.gross}}</td>
+										<td>
+											<a
+													href="/bill_types/{{bill.bill_type.id}}"
+													title="{{bill.bill_type.description}}"
+													>{{bill.bill_type.code}}</a>
+										</td>
+									</tr>
+								{% endfor %}
+							</tbody>
+						</table>
+					</div>
+				{% else %}
+					<p><a href="/supplier_batches/{{batch.id}}">Bills</a></p>
+				{% endif %}
 			</div>
 		</div>
 	</div>

@@ -2526,18 +2526,32 @@ def supplier_batches_get():
 @app.route('/supplier_batches/<int:batch_id>')
 def supplier_batch_get(batch_id):
     batch = Batch.get_by_id(g.sess, batch_id)
-    bills = g.sess.query(Bill).filter(Bill.batch == batch).order_by(
-        Bill.reference, Bill.start_date).options(
-        joinedload(Bill.bill_type)).all()
+
+    num_bills, sum_net_gbp, sum_vat_gbp, sum_gross_gbp, sum_kwh = g.sess.query(
+        func.count(Bill.id), func.sum(Bill.net), func.sum(Bill.vat),
+        func.sum(Bill.gross), func.sum(Bill.kwh)).filter(
+        Bill.batch == batch).one()
+
+    if 'bill_limit' in request.values and num_bills > req_int('bill_limit'):
+        bills = None
+    else:
+        bills = g.sess.query(Bill).filter(Bill.batch == batch).order_by(
+            Bill.reference, Bill.start_date).options(
+            joinedload(Bill.bill_type)).all()
+
     config_contract = Contract.get_non_core_by_name(g.sess, 'configuration')
     properties = config_contract.make_properties()
-    fields = {'batch': batch, 'bills': bills}
     if 'batch_reports' in properties:
         batch_reports = []
         for report_id in properties['batch_reports']:
             batch_reports.append(Report.get_by_id(g.sess, report_id))
-        fields['batch_reports'] = batch_reports
-    return render_template('supplier_batch.html', **fields)
+    else:
+        batch_reports = None
+    return render_template(
+        'supplier_batch.html', batch=batch, bills=bills,
+        batch_reports=batch_reports, num_bills=num_bills,
+        sum_net_gbp=sum_net_gbp, sum_vat_gbp=sum_vat_gbp,
+        sum_gross_gbp=sum_gross_gbp, sum_kwh=sum_kwh)
 
 
 @app.route('/hh_data/<int:datum_id>/edit')
