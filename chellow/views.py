@@ -2534,6 +2534,8 @@ def supplier_batch_get(batch_id):
         func.count(Bill.id), func.sum(Bill.net), func.sum(Bill.vat),
         func.sum(Bill.gross), func.sum(Bill.kwh)).filter(
         Bill.batch == batch).one()
+    if sum_net_gbp is None:
+        sum_net_gbp = sum_vat_gbp = sum_gross_gbp = sum_kwh = 0
 
     if 'bill_limit' in request.values and num_bills > req_int('bill_limit'):
         bills = None

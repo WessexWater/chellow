@@ -8137,10 +8137,20 @@ def virtual_bill(supply_source):
         'method': 'post',
         'data': {
             'reference': "06-078",
-            'description': "Way out batch"},
+            'description': "Way out batch"
+        },
         'status_code': 303,
         'regexes': [
-            r"/supplier_batches/12"]},
+            r"/supplier_batches/12"
+        ]
+    },
+
+    {
+        'name': "View empty batch",
+        'path': '/supplier_batches/12',
+        'status_code': 200
+    },
+
     {
         'path': '/supplier_bill_imports',
         'method': 'post',
