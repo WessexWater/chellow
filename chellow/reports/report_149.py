@@ -24,16 +24,14 @@ NORMAL_READ_TYPES = 'C', 'N', 'N3'
 
 
 def mpan_bit(
-        sess, supply, is_import, num_hh, eras, chunk_start, chunk_finish,
+        sess, supply, is_import, num_hh, era, chunk_start, chunk_finish,
         forecast_date, caches):
     mpan_core_str = llfc_code = sc_str = supplier_contract_name = num_bad = ''
     gsp_kwh = msp_kwh = md = non_actual = 0
     date_at_md = kvarh_at_md = None
 
-    for era in eras:
-        mpan_core = era.imp_mpan_core if is_import else era.exp_mpan_core
-        if mpan_core is None:
-            continue
+    mpan_core = era.imp_mpan_core if is_import else era.exp_mpan_core
+    if mpan_core is not None:
         if num_bad == '':
             num_bad = 0
 
@@ -49,11 +47,8 @@ def mpan_bit(
         llfc_code = llfc.code
         sc_str = str(sc)
 
-        block_start = hh_max(era.start_date, chunk_start)
-        block_finish = hh_min(era.finish_date, chunk_finish)
-
         supply_source = chellow.computer.SupplySource(
-            sess, block_start, block_finish, forecast_date, era, is_import,
+            sess, chunk_start, chunk_finish, forecast_date, era, is_import,
             caches)
 
         chellow.duos.duos_vb(supply_source)
@@ -71,9 +66,8 @@ def mpan_bit(
     if date_at_md is not None:
         kvarh_at_md = sess.query(
             cast(func.max(HhDatum.value), Float)).join(
-            Channel).join(Era).filter(
-            Era.supply == supply,
-            Channel.imp_related == is_import,
+            Channel).filter(
+            Channel.era == era, Channel.imp_related == is_import,
             Channel.channel_type != 'ACTIVE',
             HhDatum.start_date == date_at_md).scalar()
 
@@ -94,7 +88,7 @@ def mpan_bit(
 def content(supply_id, start_date, finish_date, user):
     forecast_date = to_utc(Datetime.max)
     caches = {}
-    f = sess = None
+    f = sess = era = None
     try:
         sess = Session()
         running_name, finished_name = chellow.dloads.make_names(
@@ -103,50 +97,51 @@ def content(supply_id, start_date, finish_date, user):
         w = csv.writer(f, lineterminator='\n')
         w.writerow(
             (
-                "Supply Id", "Supply Name", "Source", "Generator Type",
-                "Site Code", "Site Name", "Associated Site Codes", "From",
-                "To", "PC", "MTC", "CoP", "SSC", "Normal Reads", "Type",
-                "Supply Start", "Supply Finish",
-                "Import LLFC", "Import MPAN Core", "Import Supply Capacity",
-                "Import Supplier", "Import Total MSP kWh",
-                "Import Non-actual MSP kWh", "Import Total GSP kWh",
-                "Import MD / kW", "Import MD Date", "Import MD / kVA",
+                "Era Start", "Era Finish", "Supply Id", "Supply Name",
+                "Source", "Generator Type", "Site Code", "Site Name",
+                "Associated Site Codes", "From", "To", "PC", "MTC", "CoP",
+                "SSC", "Properties", "MOP Contract", "MOP Account",
+                "DC Contract", "DC Account", "Normal Reads", "Type",
+                "Supply Start", "Supply Finish", "Import LLFC",
+                "Import MPAN Core", "Import Supply Capacity",
+                "Import Supplier",
+                "Import Total MSP kWh", "Import Non-actual MSP kWh",
+                "Import Total GSP kWh", "Import MD / kW", "Import MD Date",
+                "Import MD / kVA",
                 "Import Bad HHs", "Export LLFC", "Export MPAN Core",
                 "Export Supply Capacity", "Export Supplier",
                 "Export Total MSP kWh", "Export Non-actual MSP kWh",
                 "Export GSP kWh", "Export MD / kW", "Export MD Date",
                 "Export MD / kVA", "Export Bad HHs"))
 
-        supplies = sess.query(Supply).join(Era).filter(
+        eras = sess.query(Era).filter(
             or_(Era.finish_date == null(), Era.finish_date >= start_date),
-            Era.start_date <= finish_date).order_by(Supply.id).distinct(). \
-            options(
-                joinedload(Supply.source), joinedload(Supply.generator_type))
-
+            Era.start_date <= finish_date).order_by(
+                Era.supply_id, Era.start_date)
         if supply_id is not None:
-            supplies = supplies.filter(
-                Supply.id == Supply.get_by_id(sess, supply_id).id)
+            eras = eras.filter(Era.supply == Supply.get_by_id(sess, supply_id))
 
-        for supply in supplies:
+        eras = eras.options(
+            joinedload(Era.supply),
+            joinedload(Era.supply).joinedload(Supply.source),
+            joinedload(Era.supply).joinedload(Supply.generator_type),
+            joinedload(Era.imp_llfc).joinedload(Llfc.voltage_level),
+            joinedload(Era.exp_llfc).joinedload(Llfc.voltage_level),
+            joinedload(Era.imp_llfc),
+            joinedload(Era.exp_llfc),
+            joinedload(Era.channels),
+            joinedload(Era.site_eras).joinedload(SiteEra.site),
+            joinedload(Era.pc), joinedload(Era.cop),
+            joinedload(Era.mtc).joinedload(Mtc.meter_type),
+            joinedload(Era.imp_supplier_contract),
+            joinedload(Era.exp_supplier_contract),
+            joinedload(Era.ssc),
+            joinedload(Era.site_eras))
+
+        for era in eras:
+            supply = era.supply
             site_codes = set()
             site = None
-            eras = sess.query(Era).filter(
-                Era.supply == supply, Era.start_date <= finish_date,
-                or_(
-                    Era.finish_date == null(),
-                    Era.finish_date >= start_date)).order_by(
-                Era.start_date).options(
-                    joinedload(Era.imp_llfc).joinedload(Llfc.voltage_level),
-                    joinedload(Era.exp_llfc).joinedload(Llfc.voltage_level),
-                    joinedload(Era.channels),
-                    joinedload(Era.site_eras).joinedload(SiteEra.site),
-                    joinedload(Era.pc), joinedload(Era.cop),
-                    joinedload(Era.mtc).joinedload(Mtc.meter_type),
-                    joinedload(Era.imp_supplier_contract),
-                    joinedload(Era.exp_supplier_contract),
-                    joinedload(Era.ssc)).all()
-
-            era = eras[-1]
             for site_era in era.site_eras:
                 if site_era.is_physical:
                     site = site_era.site
@@ -199,7 +194,7 @@ def content(supply_id, start_date, finish_date, user):
 
             supply_type = era.make_meter_category()
 
-            chunk_start = hh_max(eras[0].start_date, start_date)
+            chunk_start = hh_max(era.start_date, start_date)
             chunk_finish = hh_min(era.finish_date, finish_date)
             num_hh = int(
                 (chunk_finish - (chunk_start - HH)).total_seconds() /
@@ -207,21 +202,29 @@ def content(supply_id, start_date, finish_date, user):
 
             w.writerow(
                 [
+                    hh_format(era.start_date),
+                    hh_format(era.finish_date, ongoing_str=''),
                     supply.id, supply.name, supply.source.code, generator_type,
                     site.code, site.name, '| '.join(sorted(site_codes)),
                     hh_format(start_date), hh_format(finish_date), era.pc.code,
-                    era.mtc.code, era.cop.code, ssc_code, len(prime_reads),
-                    supply_type, hh_format(supply_start),
+                    era.mtc.code, era.cop.code, ssc_code, era.properties,
+                    era.mop_contract.name, era.mop_account,
+                    era.dc_contract.name, era.dc_account,
+                    len(prime_reads), supply_type, hh_format(supply_start),
                     hh_format(supply_finish, ongoing_str='')] + mpan_bit(
-                    sess, supply, True, num_hh, eras, chunk_start,
+                    sess, supply, True, num_hh, era, chunk_start,
                     chunk_finish, forecast_date, caches) + mpan_bit(
-                    sess, supply, False, num_hh, eras, chunk_start,
+                    sess, supply, False, num_hh, era, chunk_start,
                     chunk_finish, forecast_date, caches))
 
             # Avoid a long-running transaction
             sess.rollback()
     except BadRequest as e:
-        f.write('Problem:' + e.description)
+        if era is None:
+            pref = "Problem: "
+        else:
+            pref = "Problem with era " + str(era.id) + ": "
+        f.write(pref + e.description)
     except BaseException:
         f.write(traceback.format_exc())
     finally:
