@@ -1345,19 +1345,21 @@ class GeneralImporter(threading.Thread):
                     try:
                         typ_func = typ_funcs[typ]
                         typ_func(sess, action, vals, self.args)
-                        sess.commit()
                     except KeyError:
                         raise BadRequest(
                             "The type " + typ + " is not recognized.")
 
             HhDatum.insert(sess, hh_data)
+            sess.commit()
         except BadRequest as e:
+            sess.rollback()
             try:
                 self.rd_lock.acquire()
                 self.error_message = e.description
             finally:
                 self.rd_lock.release()
         except BaseException:
+            sess.rollback()
             try:
                 self.rd_lock.acquire()
                 self.error_message = traceback.format_exc()

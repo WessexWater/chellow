@@ -18,7 +18,9 @@
 			<p>Still running. Refresh the page to see latest progress.</p>
 	{% else %}
 			{% if error_message %}
-					<p>The import has failed with the message:</p>
+					<p>
+						The import has failed and so the whole import has been rolled
+						back. The reason for the failure is:</p>
 					<pre>{{error_message}}</pre>
 			{% else %}
 					<p>The file has been imported successfully.</p>
