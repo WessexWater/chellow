@@ -870,9 +870,14 @@ def virtual_bill_titles():
             r'<option value="10" selected>Half-hourlies 2007',
 
             # Can we see the MOP account?
-            r'"mc-22 9205 6799 106"'],
+            r'"mc-22 9205 6799 106"',
 
-        'status_code': 200},
+            # Export Supplier Account
+            r'<input name="exp_supplier_account" value="04">'
+        ],
+
+        'status_code': 200
+    },
 
     # Supply 2
     {
