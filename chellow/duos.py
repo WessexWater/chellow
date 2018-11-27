@@ -1,9 +1,11 @@
 from dateutil.relativedelta import relativedelta
 from sqlalchemy import func
 from sqlalchemy.sql.expression import true
-from chellow.utils import hh_format, HH, utc_datetime, get_file_rates
+from chellow.utils import (
+    hh_format, HH, utc_datetime, get_file_rates, to_ct, to_utc)
 from werkzeug.exceptions import BadRequest
 from chellow.models import HhDatum, Channel, Era
+from datetime import datetime as Datetime, timedelta as Timedelta
 
 
 BANDS = ('red', 'amber', 'green')
@@ -345,11 +347,12 @@ def datum_beginning_14(ds, hh):
 def datum_2010_04_01(ds, hh):
     bill = ds.supplier_bill
     start_date = hh['start-date']
+    dno_cache = ds.caches['dno'][ds.dno_code]
 
     try:
-        gsp_group_cache = ds.caches['dno'][ds.dno_code][ds.gsp_group_code]
+        gsp_group_cache = dno_cache[ds.gsp_group_code]
     except KeyError:
-        gsp_group_cache = ds.caches['dno'][ds.dno_code][ds.gsp_group_code] = {}
+        gsp_group_cache = dno_cache[ds.gsp_group_code] = {}
 
     try:
         tariff = gsp_group_cache['tariffs'][ds.llfc_code][start_date]
@@ -409,53 +412,51 @@ def datum_2010_04_01(ds, hh):
             bands_cache[start_date] = band
 
     try:
-        laf = gsp_group_cache['lafs'][ds.voltage_level_code][
-            ds.is_substation][start_date]
+        laf = dno_cache['lafs'][ds.llfc_code][start_date]
     except KeyError:
         try:
-            laf_cache = gsp_group_cache['lafs']
+            laf_cache = dno_cache['lafs']
         except KeyError:
-            laf_cache = gsp_group_cache['lafs'] = {}
+            laf_cache = dno_cache['lafs'] = {}
 
         try:
-            laf_cache_v = laf_cache[ds.voltage_level_code]
+            laf_cache_llfc = laf_cache[ds.llfc_code]
         except KeyError:
-            laf_cache_v = laf_cache[ds.voltage_level_code] = {}
+            laf_cache_llfc = laf_cache[ds.llfc_code] = {}
 
         try:
-            lafs = laf_cache_v[ds.is_substation]
+            laf = laf_cache_llfc[start_date]
         except KeyError:
-            lafs = laf_cache_v[ds.is_substation] = {}
+            rs = get_file_rates(ds.caches, 'lafs_' + ds.dno_code, start_date)
+            hist_date = rs['hist_dates'][start_date]
+            try:
+                hist_map = rs._storage['hist_map']
+            except KeyError:
+                hist_map = rs._storage['hist_map'] = {}
 
-        try:
-            laf = lafs[start_date]
-        except KeyError:
-            vl_key = ds.voltage_level_code.lower() + \
-                ('-sub' if ds.is_substation else '-net')
-            slot_name = 'other'
-            if ds.dno_code == '20':
-                if 0 < hh['ct-decimal-hour'] <= 7:
-                    slot_name = 'night'
-                elif hh['ct-day-of-week'] < 5 and \
-                        hh['ct-month'] in [11, 12, 1, 2]:
-                    if 16 <= hh['ct-decimal-hour'] < 19:
-                        slot_name = 'winter-weekday-peak'
-                    elif 7 < hh['ct-decimal-hour'] < 20:
-                        slot_name = 'winter-weekday-day'
-            else:  # 14, 22, 99, 24
-                if 23 < hh['ct-decimal-hour'] or hh['ct-decimal-hour'] <= 6:
-                    slot_name = 'night'
-                elif hh['ct-day-of-week'] < 5 and \
-                        hh['ct-month'] in [11, 12, 1, 2]:
-                    if 16 <= hh['ct-decimal-hour'] < 19:
-                        slot_name = 'winter-weekday-peak'
-                    elif hh['ct-decimal-hour'] < 16:
-                        slot_name = 'winter-weekday-day'
+            try:
+                laf = hist_map[hist_date]
+            except KeyError:
+                for chunk in rs['tps'][rs['llfc_tp'][ds.llfc_code]].values():
+                    chunk_start_raw = Datetime.strptime(
+                        chunk['start_date'], "%Y%m%d")
+                    chunk_finish_raw = Datetime.strptime(
+                        chunk['finish_date'], "%Y%m%d")
+                    day_start_raw = chunk_start_raw
+                    while day_start_raw <= chunk_finish_raw:
+                        day_start_ct = to_ct(day_start_raw)
+                        day_start = to_utc(day_start_ct)
+                        for slot in chunk['slots']:
+                            for i in range(
+                                    slot['slot_start'] - 1,
+                                    slot['slot_finish']):
+                                dt = day_start + Timedelta(minutes=30*i)
+                                hist_map[dt] = float(slot['laf'])
 
-            lafs[start_date] = laf = float(
-                get_file_rates(
-                    ds.caches, ds.dno_code,
-                    start_date)[ds.gsp_group_code]['lafs'][vl_key][slot_name])
+                        day_start_raw += Timedelta(days=1)
+
+                laf = hist_map[hist_date]
+            laf_cache_llfc[start_date] = laf
 
     hh['laf'] = laf
     hh['gsp-kwh'] = laf * hh['msp-kwh']
