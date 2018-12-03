@@ -44,7 +44,7 @@ setup(
         'odio==0.0.16',
         'pg8000==1.12.1',
         'Flask==1.0.2',
-        'SQLAlchemy==1.2.8',
+        'SQLAlchemy==1.2.14',
         'openpyxl==2.4.8',
         'python-dateutil==2.4.2',
         'pytz==2016.10',

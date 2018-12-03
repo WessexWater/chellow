@@ -117,11 +117,7 @@ def content(supply_id, start_date, finish_date, user):
         eras = sess.query(Era).filter(
             or_(Era.finish_date == null(), Era.finish_date >= start_date),
             Era.start_date <= finish_date).order_by(
-                Era.supply_id, Era.start_date)
-        if supply_id is not None:
-            eras = eras.filter(Era.supply == Supply.get_by_id(sess, supply_id))
-
-        eras = eras.options(
+                Era.supply_id, Era.start_date).options(
             joinedload(Era.supply),
             joinedload(Era.supply).joinedload(Supply.source),
             joinedload(Era.supply).joinedload(Supply.generator_type),
@@ -129,6 +125,8 @@ def content(supply_id, start_date, finish_date, user):
             joinedload(Era.exp_llfc).joinedload(Llfc.voltage_level),
             joinedload(Era.imp_llfc),
             joinedload(Era.exp_llfc),
+            joinedload(Era.mop_contract),
+            joinedload(Era.dc_contract),
             joinedload(Era.channels),
             joinedload(Era.site_eras).joinedload(SiteEra.site),
             joinedload(Era.pc), joinedload(Era.cop),
@@ -137,6 +135,9 @@ def content(supply_id, start_date, finish_date, user):
             joinedload(Era.exp_supplier_contract),
             joinedload(Era.ssc),
             joinedload(Era.site_eras))
+
+        if supply_id is not None:
+            eras = eras.filter(Era.supply == Supply.get_by_id(sess, supply_id))
 
         for era in eras:
             supply = era.supply
