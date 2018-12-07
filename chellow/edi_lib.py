@@ -19,14 +19,17 @@ class EdiParser():
             element.split(':') for element in self.line[4:-1].split("+")]
         return self.line[:3]
 
-    def to_decimal(self, components):
-        result = Decimal(components[0])
-        if len(components) > 1 and components[-1] == "R":
-            result *= Decimal("-1")
-        return result
 
-    def to_date(self, component):
-        return to_utc(Datetime.strptime(component, "%y%m%d"))
+def to_decimal(components):
+    result = Decimal(components[0])
+    if len(components) > 1 and components[-1] == "R":
+        result *= Decimal("-1")
+    return result
 
-    def to_int(self, component):
-        return int(component)
+
+def to_date(component):
+    return to_utc(Datetime.strptime(component, "%y%m%d"))
+
+
+def to_int(component):
+    return int(component)

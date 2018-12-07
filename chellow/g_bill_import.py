@@ -60,15 +60,9 @@ class GBillImporter(threading.Thread):
                 ' - ' + msg)
 
     def status(self):
-        if self.isAlive():
-            if self.bill_num is None:
-                return "Parsing file: I've reached line number " + \
-                    str(self.parser.line_number) + "."
-            else:
-                return "Inserting raw bills: I've reached bill number " + \
-                    str(self.bill_num) + "."
-        else:
-            return ''
+        return "Parsed file up to line number: " + \
+            str(self.parser.line_number) + \
+            ". Inserting raw bills up to bill: " + str(self.bill_num) + "."
 
     def run(self):
         sess = None

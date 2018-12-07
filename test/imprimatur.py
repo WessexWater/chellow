@@ -18651,5 +18651,42 @@ def virtual_bill(ds):
         'name': "View add gas note",
         'path': '/g_supplies/4/notes/add',
         'status_code': 200
+    },
+
+    {
+        'name': "Add a new batch to a gas contract",
+        'path': '/g_contracts/1/add_batch',
+        'method': 'post',
+        'data': {
+            'reference': 'engie_edi',
+            'description': 'Engie EDI'
+        },
+        'status_code': 303,
+        'regexes': [
+            r'/g_batches/4'
+        ]
+    },
+    {
+        'name': "Test gas Engie EDI bill import",
+        'path': '/g_bill_imports',
+        'method': 'post',
+        'data': {
+            'g_batch_id': "4"
+        },
+        'files': {'import_file': 'test/gas/gas.engie.edi'},
+        'status_code': 303,
+        'regexes': [
+            r"/g_bill_imports/3"
+        ]
+    },
+
+    {
+        'name': "View bill import",
+        'path': '/g_bill_imports/3',
+        'tries': {},
+        'status_code': 200,
+        'regexes': [
+            r"successfully"
+        ]
     }
 ]

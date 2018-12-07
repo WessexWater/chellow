@@ -1,7 +1,7 @@
 from decimal import Decimal
 from dateutil.relativedelta import relativedelta
 from collections import defaultdict
-import chellow.edi_lib
+from chellow.edi_lib import EdiParser, to_date, to_decimal
 from chellow.utils import HH
 from werkzeug.exceptions import BadRequest
 from io import StringIO
@@ -133,7 +133,7 @@ tmod_map = {
 
 class Parser():
     def __init__(self, f):
-        self.parser = chellow.edi_lib.EdiParser(
+        self.parser = EdiParser(
             StringIO(str(f.read(), 'utf-8', errors='ignore')))
         self.line_number = None
 
@@ -143,7 +143,7 @@ class Parser():
         for self.line_number, code in enumerate(self.parser):
             if code == "BCD":
                 ivdt = self.parser.elements[0]
-                issue_date = self.parser.to_date(ivdt[0])
+                issue_date = to_date(ivdt[0])
 
                 invn = self.parser.elements[2]
                 reference = invn[0]
@@ -153,9 +153,8 @@ class Parser():
                 bill_type_code = btcd[0]
 
                 sumo = self.parser.elements[7]
-                start_date = self.parser.to_date(sumo[0])
-                finish_date = self.parser.to_date(sumo[1]) + relativedelta(
-                    days=1) - HH
+                start_date = to_date(sumo[0])
+                finish_date = to_date(sumo[1]) + relativedelta(days=1) - HH
 
             elif code == "MHD":
                 type = self.parser.elements[1]
@@ -182,11 +181,11 @@ class Parser():
                     prdt = self.parser.elements[6]
                     pvdt = self.parser.elements[7]
 
-                    pres_read_date = self.parser.to_date(prdt[0]) + \
-                        relativedelta(days=1) - HH
+                    pres_read_date = to_date(prdt[0]) + relativedelta(
+                        days=1) - HH
 
-                    prev_read_date = self.parser.to_date(pvdt[0]) + \
-                        relativedelta(days=1) - HH
+                    prev_read_date = to_date(pvdt[0]) + relativedelta(
+                        days=1) - HH
 
                     tmod = self.parser.elements[3]
                     mtnr = self.parser.elements[4]
@@ -223,7 +222,7 @@ class Parser():
                         tpr_code = None
                     else:
                         units = 'kWh'
-                        kwh += self.parser.to_decimal(cons) / Decimal('1000')
+                        kwh += to_decimal(cons) / Decimal('1000')
 
                     reads.append(
                         {
@@ -249,10 +248,10 @@ class Parser():
                     prdt = self.parser.elements[6]
                     pvdt = self.parser.elements[7]
 
-                    pres_read_date = self.parser.to_date(prdt[0]) + \
-                        relativedelta(days=1) - HH
-                    prev_read_date = self.parser.to_date(pvdt[0]) + \
-                        relativedelta(days=1) - HH
+                    pres_read_date = to_date(prdt[0]) + relativedelta(
+                        days=1) - HH
+                    prev_read_date = to_date(pvdt[0]) + relativedelta(
+                        days=1) - HH
 
                     ndrp = self.parser.elements[8]
                     prrd = self.parser.elements[9]
@@ -283,21 +282,21 @@ class Parser():
                         prefix = 'md-'
                     else:
                         units = 'kWh'
-                        kwh += self.parser.to_decimal(cona) / Decimal('1000')
+                        kwh += to_decimal(cona) / Decimal('1000')
                         prefix = tpr + '-'
 
                     nuct = self.parser.elements[15]
                     breakdown[prefix + 'kwh'] += \
-                        self.parser.to_decimal(nuct) / Decimal('1000')
+                        to_decimal(nuct) / Decimal('1000')
                     cppu = self.parser.elements[18]
                     rate_key = prefix + 'rate'
                     if rate_key not in breakdown:
                         breakdown[rate_key] = set()
                     breakdown[rate_key].add(
-                        self.parser.to_decimal(cppu) / Decimal('100000'))
+                        to_decimal(cppu) / Decimal('100000'))
                     ctot = self.parser.elements[19]
                     breakdown[prefix + 'gbp'] += \
-                        self.parser.to_decimal(ctot) / Decimal('100')
+                        to_decimal(ctot) / Decimal('100')
 
                     reads.append(
                         {
@@ -334,18 +333,18 @@ class Parser():
                     cona = self.parser.elements[13]
                     nuct = self.parser.elements[15]
                     breakdown[kwh_prefix + 'kwh'] += \
-                        self.parser.to_decimal(nuct) / Decimal('1000')
+                        to_decimal(nuct) / Decimal('1000')
                     cppu = self.parser.elements[18]
 
                     rate_key = prefix + 'rate'
                     if rate_key not in breakdown:
                         breakdown[rate_key] = set()
                     breakdown[rate_key].add(
-                        self.parser.to_decimal(cppu) / Decimal('100000'))
+                        to_decimal(cppu) / Decimal('100000'))
 
                     ctot = self.parser.elements[19]
                     breakdown[prefix + 'gbp'] += \
-                        self.parser.to_decimal(ctot) / Decimal('100')
+                        to_decimal(ctot) / Decimal('100')
                 elif consumption_charge_indicator == '4':
                     # tcod = self.parser.elements[2]
                     tmod = self.parser.elements[3]
@@ -355,14 +354,14 @@ class Parser():
                     ndrp = self.parser.elements[8]
                     if len(ndrp[0]) > 0:
                         breakdown['standing-days'] += \
-                            self.parser.to_decimal(ndrp)
+                            to_decimal(ndrp)
                     cona = self.parser.elements[13]
                     nuct = self.parser.elements[15]
                     cppu = self.parser.elements[18]
                     ctot = self.parser.elements[19]
                     if len(ctot[0]) > 0:
                         breakdown['standing-gbp'] += \
-                            self.parser.to_decimal(ctot) / Decimal('100')
+                            to_decimal(ctot) / Decimal('100')
             elif code == "MTR":
                 if message_type == "UTLBIL":
                     for k, v in tuple(breakdown.items()):
@@ -391,11 +390,11 @@ class Parser():
                 mpan_cores.append(''.join((madn[0], madn[1], madn[2])))
             elif code == "VAT":
                 uvla = self.parser.elements[5]
-                net += self.parser.to_decimal(uvla) / Decimal('100')
+                net += to_decimal(uvla) / Decimal('100')
                 uvtt = self.parser.elements[6]
-                vat += self.parser.to_decimal(uvtt) / Decimal('100')
+                vat += to_decimal(uvtt) / Decimal('100')
                 ucsi = self.parser.elements[7]
-                gross += self.parser.to_decimal(ucsi) / Decimal('100')
+                gross += to_decimal(ucsi) / Decimal('100')
 
             if breakdown is not None:
                 breakdown['raw-lines'].append(self.parser.line)

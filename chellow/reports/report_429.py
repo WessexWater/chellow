@@ -142,11 +142,10 @@ def content(g_batch_id, g_bill_id, user):
                     v = bdown.get(title)
 
                     if v is not None:
-                        if title.endswith('_rate') or title in (
-                                'correction_factor', 'calorific_value'):
+                        if isinstance(v, list):
                             if k not in vals:
                                 vals[k] = set()
-                            vals[k].add(v)
+                            vals[k].update(set(v))
                         else:
                             try:
                                 vals[k] += v
@@ -154,7 +153,8 @@ def content(g_batch_id, g_bill_id, user):
                                 vals[k] = v
                             except TypeError:
                                 raise BadRequest(
-                                    "Problem with key " + str(k) +
+                                    "Problem with bill " + str(g_bill.id) +
+                                    " and key " + str(k) +
                                     " and value " + str(v) + " for existing " +
                                     str(vals[k]))
 

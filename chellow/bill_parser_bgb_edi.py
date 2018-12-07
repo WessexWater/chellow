@@ -1,5 +1,5 @@
 from decimal import Decimal
-import chellow.edi_lib
+from chellow.edi_lib import EdiParser, to_date, to_decimal
 from chellow.utils import hh_after
 from io import StringIO
 
@@ -9,7 +9,7 @@ read_type_map = {
 
 class Parser():
     def __init__(self, f):
-        self.parser = chellow.edi_lib.EdiParser(
+        self.parser = EdiParser(
             StringIO(str(f.read(), 'utf-8', errors='ignore')))
         self.line_number = None
 
@@ -26,7 +26,7 @@ class Parser():
 
                 reference = invn[0]
                 bill_type_code = btcd[0]
-                issue_date = self.parser.to_date(ivdt[0])
+                issue_date = to_date(ivdt[0])
             elif code == "MHD":
                 typ = self.parser.elements[1]
                 message_type = typ[0]
@@ -46,12 +46,10 @@ class Parser():
                 charge_type = ccde[2]
                 if consumption_charge_indicator != "5" and \
                         charge_type in ["7", "8", "9"]:
-                    prev_read_date = self.parser.to_date(
-                        self.parser.elements[7][0])
+                    prev_read_date = to_date(self.parser.elements[7][0])
                 if hh_after(start_date, prev_read_date):
                     start_date = prev_read_date
-                register_finish_date = self.parser.to_date(
-                    self.parser.elements[6][0])
+                register_finish_date = to_date(self.parser.elements[6][0])
                 if finish_date is None or finish_date < register_finish_date:
                     finish_date = register_finish_date
                 if charge_type == "7":
@@ -99,7 +97,7 @@ class Parser():
                     madn[0] + " " + madn[1] + madn[2])
             elif code == "VAT":
                 uvla = self.parser.elements[5]
-                net = Decimal('0.00') + self.parser.to_decimal(uvla)
+                net = Decimal('0.00') + to_decimal(uvla)
                 uvtt = self.parser.elements[6]
-                vat = Decimal('0.00') + self.parser.to_decimal(uvtt)
+                vat = Decimal('0.00') + to_decimal(uvtt)
         return raw_bills
