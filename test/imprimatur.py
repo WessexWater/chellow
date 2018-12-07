@@ -794,7 +794,9 @@ def virtual_bill_titles():
             r'<legend>Insert a gas supply</legend>',
             r'<select name="g_exit_zone_id">\s*'
             r'<option',
-            r'<input name="insert_electricity" type="submit" value="Insert">'],
+            r'<input name="insert_electricity" type="submit" value="Insert">',
+            r'name="properties"',
+        ],
         'status_code': 200},
 
     # Can we see a site ok?

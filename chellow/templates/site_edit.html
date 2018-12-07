@@ -228,21 +228,26 @@
 										<div class="col-sm-4">
 											<label>CoP</label>
 											<select name="cop_id">
-													{% for cop in cops %}
-															{{input_option(
-																'cop_id', cop.id, cop.description)}}
-													{% endfor %}
+												{% for cop in cops %}
+													{{input_option('cop_id', cop.id, cop.description)}}
+												{% endfor %}
 											</select>										
 										</div>
 									</div>
-													<div class="row">
-															<div class="col-sm-4">
-																	<label>SSC</label>
+									<div class="row">
+										<div class="col-sm-4">
+											<label>SSC</label>
 											{{input_text('ssc_code')}}
-															</div>
-													</div>
+										</div>
+									</div>
+									<div class="row">
+										<div class="col-sm-4">
+											<label class="aligned">Properties</label>
+											{{input_textarea('properties', '{}', 20, 80)}}
+										</div>
+									</div>
 								</div>
-								<fieldset>
+							<fieldset>
 									<div class="standardForm">
 										<legend>Import</legend>
 										<div class="row">
