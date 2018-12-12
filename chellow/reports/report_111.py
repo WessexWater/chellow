@@ -241,43 +241,41 @@ def content(batch_id, bill_id, contract_id, start_date, finish_date, user):
                     covered_bdown['net-gbp'] += float(covered_bill.net)
                     covered_bdown['vat-gbp'] += float(covered_bill.vat)
                     covered_bdown['sum-msp-kwh'] += float(covered_bill.kwh)
-                    if len(covered_bill.breakdown) > 0:
-                        covered_rates = defaultdict(set)
-                        for k, v in loads(covered_bill.breakdown).items():
-                            if k == 'raw-lines':
-                                try:
-                                    covered_bdown[k] += v
-                                except KeyError:
-                                    covered_bdown[k] = v
-                            else:
-                                if isinstance(v, Decimal):
-                                    v = float(v)
-                                if isinstance(v, list):
-                                    covered_rates[k].update(set(v))
-                                elif k.split('-')[-1] in ('rate', 'kva'):
-                                    covered_rates[k].add(str(v))
+                    covered_rates = defaultdict(set)
+                    for k, v in loads(covered_bill.breakdown).items():
+                        if k in ('raw_lines', 'raw-lines'):
+                            continue
 
-                                try:
-                                    covered_bdown[k] += v
-                                except KeyError:
-                                    covered_bdown[k] = v
-                                except TypeError as detail:
-                                    raise BadRequest(
-                                        "For key " + str(k) + " the value " +
-                                        str(v) + " can't be added to the "
-                                        "existing value " +
-                                        str(covered_bdown[k]) + ". " +
-                                        str(detail))
-                                if k.endswith('-gbp'):
-                                    elem = k[:-4]
-                                    covered_elems.add(elem)
-                                    add_gap(
-                                        caches, gaps, elem,
-                                        covered_bill.start_date,
-                                        covered_bill.finish_date, False, v)
+                        if isinstance(v, list):
+                            covered_rates[k].update(set(v))
+                        else:
+                            if isinstance(v, Decimal):
+                                v = float(v)
+                            try:
+                                covered_bdown[k] += v
+                            except KeyError:
+                                covered_bdown[k] = v
+                            except TypeError as detail:
+                                raise BadRequest(
+                                    "For key " + str(k) + " in " + str(
+                                        [
+                                            b.id for b in
+                                            covered_bills.values()
+                                        ]) + " the value " + str(v) +
+                                    " can't be added to the existing value " +
+                                    str(covered_bdown[k]) + ". " + str(detail))
 
-                        for k, v in covered_rates.items():
-                            covered_bdown[k] = v.pop() if len(v) == 1 else None
+                            if k.endswith('-gbp'):
+                                elem = k[:-4]
+                                covered_elems.add(elem)
+                                add_gap(
+                                    caches, gaps, elem,
+                                    covered_bill.start_date,
+                                    covered_bill.finish_date, False, v)
+
+                    for k, v in covered_rates.items():
+                        covered_bdown[k] = v.pop() if len(v) == 1 else None
+
                     if primary_covered_bill is None or (
                             (
                                 covered_bill.finish_date -
