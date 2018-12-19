@@ -252,9 +252,9 @@
       },
       "customer_capacity": {
         "to_73200_gbp_per_kwh_per_day": 0.000994,
-        "73200_to_732000_gbp_per_kwh_per_day": 0.0000,
+        "73200_to_732000_gbp_per_kwh_per_day": 0.000039,
         "732000_and_over": {
-          "gbp_per_kwh_per_day": 0.0008,
+          "gbp_per_kwh_per_day": 0.000785,
           "exponent": -0.21
         }
       },

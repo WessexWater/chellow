@@ -23,7 +23,7 @@ TCOD_MAP = {
         'PPK': 'transportation_variable'
     },
     'Gas Flexi': {
-        'PPK': 'transportation_variable'
+        'PPK': 'commodity'
     },
     'Flex - Gas Flexi (New)': {
         'PPK': 'commodity'

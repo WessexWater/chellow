@@ -5435,7 +5435,7 @@ def g_bill_get(g_bill_id):
                 if k.startswith(row_name + '_'):
                     col_name = k[len(row_name) + 1:]
                     columns.add(col_name)
-                    grid[row_name][col_name] = v
+                    grid[row_name][col_name] = csv_make_val(v)
                     del breakdown[k]
                     break
 
@@ -5445,7 +5445,7 @@ def g_bill_get(g_bill_id):
             column_name = pair[-1]
             rows.add(row_name)
             columns.add(column_name)
-            grid[row_name][column_name] = v
+            grid[row_name][column_name] = csv_make_val(v)
 
         column_list = sorted(list(columns))
         for rate_name in [col for col in column_list if col.endswith('rate')]:
