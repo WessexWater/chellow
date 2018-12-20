@@ -619,8 +619,9 @@ def get_file_rates(cache, contract_name, dt):
 
             try:
                 rscript = PropDict(
-                    " in the rate script at " + hh_format(dt) + " of the " +
-                    " contract " + contract_name + ".", loads(script))
+                    " in the rate script at " + hh_format(dt) + " of the "
+                    " contract https://chellow/industry_contracts/" +
+                    contract_name + ".", loads(script))
             except ZishException as e:
                 raise BadRequest(
                     "Problem parsing rate script for contract " +
