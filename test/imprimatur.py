@@ -2510,7 +2510,7 @@ def virtual_bill(supply_source):
             r'2005-12-31 23:30,CI005,Wheal Rodney,,,11,net,,_L,'
             r'22,LV,nhh,no,05,803,5,0154,2,MOP Contract,'
             r'mc-22 9974 3438 105,Dynamat data,dc-22 9974 3438 105,'
-            r'K87D74429,2005-10-06 00:00,,,,,2005-10-06 00:00,,false,false,'
+            r'K87D74429,2005-10-06 00:00,,,,,2005-10-06 00:00,,{},false,false,'
             r'false,false,false,false,22 9974 3438 105,20,540,'
             r'PC 5-8 & HH S/S,Non half-hourlies 2007,341665,,,,,,,,,,']},
 
@@ -2539,7 +2539,7 @@ def virtual_bill(supply_source):
             r'DC Account,Meter Serial Number,Meter Installation Date,'
             r'Latest Normal Meter Read Date,Latest Normal Meter Read Type,'
             r'Latest DC Bill Date,Latest MOP Bill Date,Supply Start Date,'
-            r'Supply Finish Date,Import ACTIVE\?,'
+            r'Supply Finish Date,Properties,Import ACTIVE\?,'
             r'Import REACTIVE_IMPORT\?,Import REACTIVE_EXPORT\?,'
             r'Export ACTIVE\?,'
             r'Export REACTIVE_IMPORT\?,Export REACTIVE_EXPORT\?,'
@@ -2555,7 +2555,7 @@ def virtual_bill(supply_source):
             r'2008-09-30 23:30,CH017,Parbola,,,1,net,,_L,22,'
             r'LV,hh,no,00,845,5,,,MOP Contract,'
             r'mc-22 0470 7514 535,HH contract,01,,2003-08-03 00:00,'
-            r'hh,,,,2003-08-03 00:00,,true,true,false,true,false,true,,,'
+            r'hh,,,,2003-08-03 00:00,,\{\},true,true,false,true,false,true,,,'
             r',,,,1.866,,22 0470 7514 535,150,581,'
             r'Export \(LV\),Half-hourlies 2007,010,,'
             r'2007-02-28 23:30']},
@@ -8024,7 +8024,7 @@ def virtual_bill(supply_source):
             r'22,HV,nhh,no,05,535,5,0127,3,MOP Contract,'
             r'mc-22 0195 4836 192,Dynamat data,dc-22 0195 4836 192,'
             r'P96C93722,2005-08-06 00:00,2007-08-01 00:00,N,,,'
-            r'2005-08-06 00:00,,'
+            r'2005-08-06 00:00,,\{\},'
             r'false,false,false,false,false,false,'
             r'22 0195 4836 192,30,510,PC 5-8 & HH HV,'
             r'Non half-hourlies 2007,341664,,2007-08-01 00:00,,,,'
@@ -8050,7 +8050,7 @@ def virtual_bill(supply_source):
             r'22,LV,unmetered,no,08,857,6c,0428,2,'
             r'MOP Contract,mc-22 0195 4836 192,Dynamat data,'
             r'dc-22 0195 4836 192,P96C93722,2005-08-06 00:00,unmetered,'
-            r',,,2005-08-06 00:00,,false,false,false,false,false,false,'
+            r',,,2005-08-06 00:00,,\{\},false,false,false,false,false,false,'
             r'22 0195 4836 192,304,980,NHH UMS Cat B : Dusk to Dawn,'
             r'Non half-hourlies 2007,SA342376,,2007-08-01 00:00,,,'
             r',,,,,$']},
@@ -8076,7 +8076,7 @@ def virtual_bill(supply_source):
             r'2012-05-31 23:30,CI017,Roselands,,,6,net,,_L,22,'
             r'LV,hh,no,00,845,5,,,MOP Contract,'
             r'mc-22 6354 2983 570,HH contract,01,,2007-01-01 00:00,'
-            r'hh,,,,2007-01-01 00:00,,true,true,false,false,false,true,'
+            r'hh,,,,2007-01-01 00:00,,\{\},true,true,false,false,false,true,'
             r'22 6354 2983 570,2300,570,PC 5-8 & HH LV,'
             r'Half-hourlies 2007,141 5532,,2011-06-30 00:00,,,,'
             r',,,,$']},
@@ -8242,7 +8242,7 @@ def virtual_bill(supply_source):
             r'chp,_L,22,LV,hh,no,00,845,5,,,MOP Contract,'
             r'22 0883 6932 301,HH contract,22 0883 6932 301,,'
             r'2002-01-01 00:00,hh,,2007-10-31 23:30,2007-10-31 23:30,'
-            r'2002-01-01 00:00,,'
+            r'2002-01-01 00:00,,\{\},'
             r'true,true,false,false,false,true,22 0883 6932 301,'
             r'350,570,PC 5-8 & HH LV,Half-hourlies 2013,4341,0,,'
             r',,,,,,,']},

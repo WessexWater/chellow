@@ -36,7 +36,7 @@ def content(running_name, finished_name, date, supply_id, mpan_cores):
                 'Meter Installation Date', 'Latest Normal Meter Read Date',
                 'Latest Normal Meter Read Type', 'Latest DC Bill Date',
                 'Latest MOP Bill Date', 'Supply Start Date',
-                'Supply Finish Date', 'Import ACTIVE?',
+                'Supply Finish Date', 'Properties', 'Import ACTIVE?',
                 'Import REACTIVE_IMPORT?', 'Import REACTIVE_EXPORT?',
                 'Export ACTIVE?', 'Export REACTIVE_IMPORT?',
                 'Export REACTIVE_EXPORT?', 'Import MPAN core',
@@ -312,8 +312,8 @@ def content(running_name, finished_name, date, supply_id, mpan_cores):
                     latest_normal_read_date, latest_normal_read_type,
                     latest_dc_bill_date, latest_mop_bill_date,
                     hh_format(supply_start_date),
-                    hh_format(supply_finish_date, ongoing_str='')] +
-                channel_values + [
+                    hh_format(supply_finish_date, ongoing_str=''),
+                    era.properties] + channel_values + [
                     era.imp_mpan_core, era.imp_sc,
                     None if era.imp_llfc is None else era.imp_llfc.code,
                     None if era.imp_llfc is None else era.imp_llfc.description,
