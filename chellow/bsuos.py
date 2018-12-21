@@ -176,7 +176,9 @@ class BsuosImporter(threading.Thread):
                 raw_date = Datetime(
                     *xlrd.xldate_as_tuple(raw_date_val, book.datemode))
             elif isinstance(raw_date_val, str):
-                raw_date = Datetime.strptime(raw_date_val, "%d/%m/%Y")
+                separator = raw_date_val[2]
+                fmat = separator.join(("%d", "%m", "%Y"))
+                raw_date = Datetime.strptime(raw_date_val, fmat)
             else:
                 raise BadRequest(
                     "Type of date field " + str(raw_date_val) +
