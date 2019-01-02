@@ -2038,6 +2038,8 @@ def virtual_bill_titles():
             r'<a href="/sources">\s*Sources\s*</a>',
             r'<a href="/generator_types">\s*Generator Types\s*'
             r'</a>',
+            r'<a href="/csv_supplies_duration"\s*'
+            r'>Download</a>',
             r'<a\s*'
             r'href="/ods_scenario_runner"\s*'
             r'>\s*'
@@ -7609,8 +7611,8 @@ def virtual_bill(supply_source):
             r'action="/mop_rate_scripts/27/edit">']},
 
     {
-        'name': "View eras duration selector.",
-        'path': '/csv_eras_duration',
+        'name': "View supplies duration selector.",
+        'path': '/csv_supplies_duration',
         'status_code': 200,
         'regexes': [
             r"start_year"]},

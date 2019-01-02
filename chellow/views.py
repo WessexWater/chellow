@@ -4255,13 +4255,13 @@ def csv_supplies_snapshot_get():
             now.year, now.month, now.day))
 
 
-@app.route('/csv_eras_duration')
-def csv_eras_duration_get():
+@app.route('/csv_supplies_duration')
+def csv_supplies_duration_get():
     last_month = utc_datetime_now() - relativedelta(months=1)
     last_month_start = utc_datetime(last_month.year, last_month.month)
     last_month_finish = last_month_start + relativedelta(months=1) - HH
     return render_template(
-        'csv_eras_duration.html', last_month_start=last_month_start,
+        'csv_supplies_duration.html', last_month_start=last_month_start,
         last_month_finish=last_month_finish)
 
 
