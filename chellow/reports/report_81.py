@@ -18,7 +18,7 @@ from dateutil.relativedelta import relativedelta
 
 def content(contract_id, end_year, end_month, months, user):
     caches = {}
-    sess = f = None
+    sess = f = supply_source = None
     try:
         sess = Session()
         contract = Contract.get_dc_by_id(sess, contract_id)
@@ -91,7 +91,12 @@ def content(contract_id, end_year, end_month, months, user):
             # Avoid long-running transactions
             sess.rollback()
     except BadRequest as e:
-        f.write("Problem " + e.description + traceback.format_exc() + '\n')
+        msg = 'Problem '
+        if supply_source is not None:
+            msg += "with supply " + supply_source.mpan_core + \
+                " starting at " + hh_format(supply_source.start_date) + " "
+        msg += str(e)
+        writer.writerow([msg])
     except BaseException:
         msg = "Problem " + traceback.format_exc() + '\n'
         f.write(msg)

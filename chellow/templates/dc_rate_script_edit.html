@@ -46,7 +46,9 @@
 					
 					<form method="post">
 						<fieldset>
-							<input type="hidden" name="dc_rate_script_id" value="{{dc_rate_script.id}}">
+							<input
+							    type="hidden" name="dc_rate_script_id"
+									value="{{dc_rate_script.id}}">
 							<div class="section-data">
 									<fieldset>
 										<legend>Start date</legend>
@@ -76,6 +78,13 @@
 						</fieldset>
 					</form>
 				</div>
+				{% if rate_script_example %}
+					<div class="section-data">
+						<br>
+						<h4>Example</h4>
+						<pre>{{rate_script_example}}</pre>
+					</div>
+				{% endif %}
 			</div>
 		</div>
 

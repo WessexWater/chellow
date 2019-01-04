@@ -73,6 +73,7 @@ def before_first_request():
     chellow.dloads.startup(app.instance_path)
     chellow.g_cv.startup()
     chellow.utils.root_path = app.root_path
+    chellow.utils.url_root = request.url_root
 
 
 @app.before_request
@@ -1231,8 +1232,13 @@ def dc_rate_script_get(dc_rate_script_id):
 @app.route('/dc_rate_scripts/<int:dc_rate_script_id>/edit')
 def dc_rate_script_edit_get(dc_rate_script_id):
     dc_rate_script = RateScript.get_dc_by_id(g.sess, dc_rate_script_id)
+    rs_example_func = chellow.computer.contract_func(
+            {}, dc_rate_script.contract, 'rate_script_example')
+    rs_example = None if rs_example_func is None else rs_example_func()
+
     return render_template(
-        'dc_rate_script_edit.html', dc_rate_script=dc_rate_script)
+        'dc_rate_script_edit.html', dc_rate_script=dc_rate_script,
+        rate_script_example=rs_example)
 
 
 @app.route(
@@ -1314,8 +1320,12 @@ def supplier_rate_script_get(rate_script_id):
 @app.route('/supplier_rate_scripts/<int:rate_script_id>/edit')
 def supplier_rate_script_edit_get(rate_script_id):
     rate_script = RateScript.get_supplier_by_id(g.sess, rate_script_id)
+    rs_example_func = chellow.computer.contract_func(
+            {}, rate_script.contract, 'rate_script_example')
+    rs_example = None if rs_example_func is None else rs_example_func()
     return render_template(
-        'supplier_rate_script_edit.html', supplier_rate_script=rate_script)
+        'supplier_rate_script_edit.html', supplier_rate_script=rate_script,
+        rate_script_example=rs_example)
 
 
 @app.route(
@@ -1508,8 +1518,12 @@ def mop_rate_script_get(rate_script_id):
 @app.route('/mop_rate_scripts/<int:rate_script_id>/edit')
 def mop_rate_script_edit_get(rate_script_id):
     rate_script = RateScript.get_mop_by_id(g.sess, rate_script_id)
+    rs_example_func = chellow.computer.contract_func(
+            {}, rate_script.contract, 'rate_script_example')
+    rs_example = None if rs_example_func is None else rs_example_func()
     return render_template(
-        'mop_rate_script_edit.html', rate_script=rate_script)
+        'mop_rate_script_edit.html', rate_script=rate_script,
+        rate_script_example=rs_example)
 
 
 @app.route('/mop_rate_scripts/<int:rate_script_id>/edit', methods=['POST'])
@@ -3807,8 +3821,12 @@ def non_core_rate_script_get(rs_id):
 @app.route('/non_core_rate_scripts/<int:rs_id>/edit')
 def non_core_rate_script_edit_get(rs_id):
     rate_script = RateScript.get_non_core_by_id(g.sess, rs_id)
+    rs_example_func = chellow.computer.contract_func(
+            {}, rate_script.contract, 'rate_script_example')
+    rs_example = None if rs_example_func is None else rs_example_func()
     return render_template(
-        'non_core_rate_script_edit.html', rate_script=rate_script)
+        'non_core_rate_script_edit.html', rate_script=rate_script,
+        rate_script_example=rs_example)
 
 
 @app.route('/non_core_rate_scripts/<int:rs_id>/edit', methods=['POST'])

@@ -12,6 +12,8 @@ import os
 from collections.abc import Mapping
 from zish import loads, ZishException
 
+url_root = None
+
 
 clogs = deque(maxlen=1000)
 
@@ -616,12 +618,11 @@ def get_file_rates(cache, contract_name, dt):
                     cfinish = month_after
                 else:
                     cfinish = hh_min(rs_finish, month_after)
-
             try:
                 rscript = PropDict(
-                    " in the rate script at " + hh_format(dt) + " of the "
-                    " contract https://chellow/industry_contracts/" +
-                    contract_name + ".", loads(script))
+                    " in the rate script " + url_root + 'industry_contracts/' +
+                    contract_name + '/rate_scripts/' +
+                    rs_start.strftime("%Y%m%d%H%M") + ".", loads(script))
             except ZishException as e:
                 raise BadRequest(
                     "Problem parsing rate script for contract " +

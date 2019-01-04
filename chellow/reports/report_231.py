@@ -11,6 +11,7 @@ from chellow.views import chellow_redirect
 import threading
 from flask import g
 from datetime import datetime as Datetime
+from werkzeug.exceptions import BadRequest
 
 
 def make_val(v):
@@ -27,7 +28,7 @@ def make_val(v):
 
 def content(start_date, finish_date, contract_id, user):
     caches = {}
-    sess = None
+    sess = supply_source = None
     try:
         sess = Session()
         running_name, finished_name = chellow.dloads.make_names(
@@ -86,6 +87,14 @@ def content(start_date, finish_date, contract_id, user):
                 out.append(k)
                 out.append(str(bill[k]))
             writer.writerow(out)
+    except BadRequest as e:
+        msg = 'Problem '
+        if supply_source is not None:
+            msg += "with supply " + supply_source.mpan_core + \
+                " starting at " + hh_format(supply_source.start_date) + " "
+        msg += str(e)
+        sys.stderr.write(msg)
+        writer.writerow([msg])
     except BaseException:
         msg = traceback.format_exc()
         sys.stderr.write(msg)

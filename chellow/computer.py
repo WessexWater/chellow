@@ -14,6 +14,7 @@ from chellow.models import (
 from chellow.utils import (
     HH, hh_format, hh_max, hh_range, hh_min, utc_datetime, utc_datetime_now,
     to_tz, to_ct, loads, PropDict)
+import chellow.utils
 import chellow.bank_holidays
 from itertools import combinations
 from types import MappingProxyType
@@ -121,9 +122,23 @@ def hh_rate(sess, caches, contract_id, date):
                 else:
                     cfinish = min(rs.finish_date, month_after)
 
+            market_role_code = rs.contract.market_role.code
+            if market_role_code == "M":
+                seg = 'mop_rate_scripts/'
+            elif market_role_code == "C":
+                seg = 'dc_rate_scripts/'
+            elif market_role_code == "X":
+                seg = 'supplier_rate_scripts/'
+            elif market_role_code == "Z":
+                seg = 'non_core_rate_scripts/'
+            else:
+                raise Exception(
+                    "The market role code " + market_role_code +
+                    " isn't recognized.")
+
             vals = PropDict(
-                "the local rate script for contract " + str(contract_id) +
-                " at " + hh_format(cstart) + ".", loads(rs.script), [])
+                "the rate script " + chellow.utils.url_root + seg +
+                str(rs.id) + ".", loads(rs.script), [])
             for dt in hh_range(caches, cstart, cfinish):
                 if dt not in cont_cache:
                     cont_cache[dt] = vals
