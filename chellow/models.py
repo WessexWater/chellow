@@ -1173,8 +1173,8 @@ class Site(Base, PersistentClass):
             sess.add(site)
             sess.flush()
         except IntegrityError as e:
-            if e.orig.args[2] == 'duplicate key value violates unique ' + \
-                    'constraint "site_code_key"':
+            if 'duplicate key value violates unique ' + \
+                    'constraint "site_code_key"' in str(e):
                 raise BadRequest("There's already a site with this code.")
             else:
                 raise e
@@ -1358,8 +1358,8 @@ class User(Base, PersistentClass):
             sess.add(user)
             sess.flush()
         except IntegrityError as e:
-            if e.orig.args[2] == 'duplicate key value violates unique ' + \
-                    'constraint "user_email_address_key"':
+            if 'duplicate key value violates unique ' + \
+                    'constraint "user_email_address_key"' in str(e):
                 raise BadRequest(
                     "There's already a user with this email address.")
             else:
