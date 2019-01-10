@@ -54,7 +54,7 @@ setup(
         'pep3143daemon==0.0.6',
         'pip>=9.0.1',
         'pysftp==0.2.9',
-        'pympler==0.5',
+        'pympler==0.6',
         'psutil==5.0.1',
         'xlrd==0.9.4',
         'zish==0.1.6'],
