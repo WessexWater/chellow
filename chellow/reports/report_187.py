@@ -3,7 +3,7 @@ from sqlalchemy import or_
 from sqlalchemy.sql.expression import null, true
 from chellow.models import Supply, Era, Session, Site, SiteEra
 from chellow.utils import (
-    req_date, hh_format, req_str, req_int, parse_mpan_core, req_bool)
+    req_date, hh_format, req_str, req_int, parse_mpan_core, req_bool, hh_range)
 import zipfile
 import threading
 import os
@@ -14,7 +14,7 @@ from chellow.views import chellow_redirect
 from datetime import datetime as Datetime
 
 
-def csv_str(*row):
+def csv_str(row):
     frow = []
     for cell in row:
         if cell is None:
@@ -46,7 +46,7 @@ def content(start_date, finish_date, supply_id, mpan_cores, is_zipped, user):
                 "REACTIVE_EXP Status", "REACTIVE_EXP Modified"):
             tls.append(polarity + ' ' + suffix)
 
-    titles = csv_str(*tls)
+    titles = csv_str(tls)
 
     running_name, finished_name = chellow.dloads.make_names(base_name, user)
 
@@ -57,6 +57,7 @@ def content(start_date, finish_date, supply_id, mpan_cores, is_zipped, user):
     sess = None
     try:
         sess = Session()
+        caches = {}
         supplies = sess.query(Supply).join(Era).filter(
             Era.start_date <= finish_date, or_(
                 Era.finish_date == null(),
@@ -85,17 +86,8 @@ def content(start_date, finish_date, supply_id, mpan_cores, is_zipped, user):
                 SiteEra.is_physical == true()).order_by(Era.id).first()
 
             outs = []
-
-            for (
-                    hh_start_date, imp_active, imp_active_status,
-                    imp_active_modified, imp_reactive_imp,
-                    imp_reactive_imp_status, imp_reactive_imp_modified,
-                    imp_reactive_exp, imp_reactive_exp_status,
-                    imp_reactive_exp_modified, exp_active, exp_active_status,
-                    exp_active_modified, exp_reactive_imp,
-                    exp_reactive_imp_status, exp_reactive_imp_modified,
-                    exp_reactive_exp, exp_reactive_exp_status,
-                    exp_reactive_exp_modified) in sess.execute("""
+            data = iter(
+                sess.execute("""
 select hh_base.start_date,
     max(imp_active.value), max(imp_active.status),
     max(imp_active.last_modified),
@@ -140,10 +132,13 @@ group by hh_base.start_date
 order by hh_base.start_date
     """, params={
                     'supply_id': supply.id, 'start_date': start_date,
-                    'finish_date': finish_date}):
-                outs.append(
-                    csv_str(
-                        site.code, era.imp_mpan_core, era.exp_mpan_core,
+                    'finish_date': finish_date}))
+            datum = next(data, None)
+
+            for dt in hh_range(caches, start_date, finish_date):
+                row = [site.code, era.imp_mpan_core, era.exp_mpan_core, dt]
+                if datum is not None:
+                    (
                         hh_start_date, imp_active, imp_active_status,
                         imp_active_modified, imp_reactive_imp,
                         imp_reactive_imp_status, imp_reactive_imp_modified,
@@ -152,7 +147,22 @@ order by hh_base.start_date
                         exp_active_status, exp_active_modified,
                         exp_reactive_imp, exp_reactive_imp_status,
                         exp_reactive_imp_modified, exp_reactive_exp,
-                        exp_reactive_exp_status, exp_reactive_exp_modified))
+                        exp_reactive_exp_status, exp_reactive_exp_modified
+                    ) = datum
+                    if hh_start_date == dt:
+                        datum = next(data, None)
+                        row += [
+                            imp_active, imp_active_status, imp_active_modified,
+                            imp_reactive_imp, imp_reactive_imp_status,
+                            imp_reactive_imp_modified, imp_reactive_exp,
+                            imp_reactive_exp_status, imp_reactive_exp_modified,
+                            exp_active, exp_active_status, exp_active_modified,
+                            exp_reactive_imp, exp_reactive_imp_status,
+                            exp_reactive_imp_modified, exp_reactive_exp,
+                            exp_reactive_exp_status, exp_reactive_exp_modified]
+
+                outs.append(csv_str(row))
+
             if is_zipped:
                 zf.writestr(
                     (

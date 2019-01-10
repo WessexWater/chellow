@@ -8424,7 +8424,7 @@ def virtual_bill(supply_source):
         '0050_FINISHED_watkinsexamplecom_hh_data_row_201001010000.csv',
         'status_code': 200,
         'regexes': [
-            r'"Export REACTIVE_EXP Status","Export REACTIVE_EXP Modified"\s'
+            r'"Export REACTIVE_EXP Status","Export REACTIVE_EXP Modified"\s',
             r'"CH023","22 4862 4512 332","","2010-02-04 20:00","30.4339","A",'
             r'"\d\d\d\d-\d\d-\d\d \d\d:\d\d","","","","","","","","",""']},
 
