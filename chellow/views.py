@@ -3491,7 +3491,7 @@ def dc_bill_get(bill_id):
                 if k.startswith(row_name + '-'):
                     col_name = k[len(row_name) + 1:]
                     columns.add(col_name)
-                    grid[row_name][col_name] = v
+                    grid[row_name][col_name] = csv_make_val(v)
                     del breakdown_dict[k]
                     break
 
@@ -3501,7 +3501,7 @@ def dc_bill_get(bill_id):
             column_name = pair[-1]
             rows.add(row_name)
             columns.add(column_name)
-            grid[row_name][column_name] = v
+            grid[row_name][column_name] = csv_make_val(v)
 
         column_list = sorted(list(columns))
         for rate_name in [col for col in column_list if col.endswith('rate')]:
@@ -4147,7 +4147,7 @@ def mop_bill_get(bill_id):
                 if k.startswith(row_name + '-'):
                     col_name = k[len(row_name) + 1:]
                     columns.add(col_name)
-                    grid[row_name][col_name] = v
+                    grid[row_name][col_name] = csv_make_val(v)
                     del breakdown_dict[k]
                     break
 
@@ -4157,7 +4157,7 @@ def mop_bill_get(bill_id):
             column_name = pair[-1]
             rows.add(row_name)
             columns.add(column_name)
-            grid[row_name][column_name] = v
+            grid[row_name][column_name] = csv_make_val(v)
 
         column_list = sorted(list(columns))
         for rate_name in [col for col in column_list if col.endswith('rate')]:
