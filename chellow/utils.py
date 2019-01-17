@@ -534,7 +534,16 @@ def get_file_script(caches, contract_name, date):
                 else:
                     sfinish = scripts[i + 1][0] - HH
                 if date >= start_date and not hh_after(date, sfinish):
-                    rs = start_date, sfinish, loads(script_str)
+                    try:
+                        rs = start_date, sfinish, loads(script_str)
+                    except ZishException as e:
+                        raise BadRequest(
+                            "In the rate script " + url_root +
+                            'industry_contracts/' + contract_name +
+                            '/rate_scripts/' +
+                            start_date.strftime("%Y%m%d%H%M") +
+                            " there's the problem " + str(e) + ".")
+
                     begin_date = hh_max(date - MONTH, start_date)
                     end_date = hh_min(date + MONTH, sfinish)
                     for hh_date in hh_range(caches, begin_date, end_date):

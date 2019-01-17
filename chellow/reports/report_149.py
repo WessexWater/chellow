@@ -226,7 +226,12 @@ def content(supply_id, start_date, finish_date, user):
         else:
             pref = "Problem with era " + str(era.id) + ": "
         f.write(pref + e.description)
-    except BaseException:
+    except BaseException as e:
+        if era is None:
+            pref = "Problem: "
+        else:
+            pref = "Problem with era " + str(era.id) + ": "
+        f.write(pref + str(e))
         f.write(traceback.format_exc())
     finally:
         sess.close()
