@@ -106,6 +106,16 @@
         "green-gbp-per-kwh": -0.00011,
         "gbp-per-kvarh": 0.00070
       },
+      "100,101,102,103,108,109,110,111,154,155,160": {
+        "amber-gbp-per-kwh": 0.02207,
+        "description": "Domestic Unrestricted",
+        "excess-gbp-per-kva-per-day": 0.00000,
+        "gbp-per-kva-per-day": 0.00000,
+        "gbp-per-kvarh": 0.00000,
+        "gbp-per-mpan-per-day": 0.03220,
+        "green-gbp-per-kwh": 0.02207,
+        "red-gbp-per-kwh": 0.02207
+      },
       "104,105,106,107,156,157,161": {
         "description": "Domestic Two Rate",
         "gbp-per-mpan-per-day": 0.0322,

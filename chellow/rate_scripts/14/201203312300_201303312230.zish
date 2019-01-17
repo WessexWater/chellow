@@ -23,7 +23,27 @@
         "finish": 21,
         "band": "amber"}],
     "tariffs": {
-      "127": {
+      "001": {
+        "description": "Domestic Unrestricted",
+        "gbp-per-mpan-per-day": 0.0482,
+        "gbp-per-kva-per-day": 0,
+        "excess-gbp-per-kva-per-day": 0,
+        "red-gbp-per-kwh": 0.02183,
+        "amber-gbp-per-kwh": 0.02183,
+        "green-gbp-per-kwh": 0.02183,
+        "gbp-per-kvarh": 0
+      },
+      "007,008,009,013,014,015,046,047,049,107,108,109": {
+        "description": "Small Non Domestic Unrestricted",
+        "gbp-per-mpan-per-day": 0.0625,
+        "gbp-per-kva-per-day": 0,
+        "excess-gbp-per-kva-per-day": 0,
+        "red-gbp-per-kwh": 0.01723,
+        "amber-gbp-per-kwh": 0.01723,
+        "green-gbp-per-kwh": 0.01723,
+        "gbp-per-kvarh": 0
+      },
+      "010,011,012,019,020,021,022,025,026,027,034,035,036,110,111,112,127": {
         "description": "LV",
         "gbp-per-mpan-per-day": 0.1013,
         "gbp-per-kva-per-day": 0.0316,

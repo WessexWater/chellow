@@ -501,8 +501,26 @@ def make_val(v):
         return v
 
 
-def get_file_script_latest(contract_name):
-    return list(get_file_scripts(contract_name))[-1]
+def get_file_script_latest(caches, contract_name):
+    try:
+        return caches['contract_names'][contract_name]['rs_latest']
+    except KeyError:
+        try:
+            contract_names = caches['contract_names']
+        except KeyError:
+            contract_names = caches['contract_names'] = {}
+
+        try:
+            cont_cache = contract_names[contract_name]
+        except KeyError:
+            cont_cache = contract_names[contract_name] = {}
+
+        try:
+            cont = cont_cache['rs_latest']
+        except KeyError:
+            cont = list(get_file_scripts(contract_name))[-1]
+            cont_cache['rs_latest'] = cont
+            return cont
 
 
 def get_file_script(caches, contract_name, date):
@@ -654,7 +672,7 @@ def get_file_rates(cache, contract_name, dt):
 
             if rs is None:
                 dt_weekday = dt.weekday()
-                l_rs = get_file_script_latest(contract_name)
+                l_rs = get_file_script_latest(cache, contract_name)
                 l_start, l_finish, l_script = l_rs
                 new_year = l_finish.year
                 rs = get_file_script(
