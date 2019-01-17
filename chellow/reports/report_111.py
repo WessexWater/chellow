@@ -425,6 +425,12 @@ def content(batch_id, bill_id, contract_id, start_date, finish_date, user):
                     site_code = site.code
                     site_name = site.name
 
+                # Find bill to use for header data
+                if bill.id not in covered_bills:
+                    for cbill in covered_bills.values():
+                        if bill.batch == cbill.batch:
+                            bill = cbill
+
                 values = [
                     bill.batch.reference, bill.reference, bill.bill_type.code,
                     bill.kwh, bill.net, bill.vat, hh_format(bill_start),
