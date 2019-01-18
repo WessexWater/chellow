@@ -396,10 +396,18 @@ def content(batch_id, bill_id, contract_id, start_date, finish_date, user):
                             if k.endswith('-gbp'):
                                 vb_elems.add(k[:-4])
 
-                for elem in vb_elems.difference(covered_elems):
-                    for k, v in tuple(virtual_bill.items()):
+                long_map = {}
+                vb_keys = set(virtual_bill.keys())
+                for elem in sorted(vb_elems, key=len, reverse=True):
+                    els = long_map[elem] = set()
+                    for k in tuple(vb_keys):
                         if k.startswith(elem + '-'):
-                            del virtual_bill[k]
+                            els.add(k)
+                            vb_keys.remove(k)
+
+                for elem in vb_elems.difference(covered_elems):
+                    for k in long_map[elem]:
+                        del virtual_bill[k]
 
                 try:
                     del virtual_bill['net-gbp']
