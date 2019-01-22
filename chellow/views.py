@@ -73,7 +73,11 @@ def before_first_request():
     chellow.dloads.startup(app.instance_path)
     chellow.g_cv.startup()
     chellow.utils.root_path = app.root_path
-    chellow.utils.url_root = request.url_root
+
+    if request.url_root.startswith('http'):
+        chellow.utils.url_root = 'https' + request.url_root[4:]
+    else:
+        chellow.utils.url_root = request.url_root
 
 
 @app.before_request
