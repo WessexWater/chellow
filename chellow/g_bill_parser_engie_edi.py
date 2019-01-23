@@ -134,14 +134,13 @@ class Parser():
 
                     conb = self.parser.elements[11]
                     unit = UNIT_MAP[conb[1]]
+                    breakdown['units_consumed'] += \
+                        to_decimal(conb) / Decimal('1000')
 
                     adjf = self.parser.elements[12]
                     correction_factor = Decimal(adjf[1]) / Decimal(100000)
 
-                    cona = self.parser.elements[13]
-                    breakdown['units_consumed'] += \
-                        to_decimal(cona) / Decimal('1000')
-
+                    # cona = self.parser.elements[13]
                     # bpri = self.parser.elements[14]
 
                     nuct = self.parser.elements[15]

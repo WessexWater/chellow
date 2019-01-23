@@ -18819,5 +18819,16 @@ def virtual_bill(ds):
         'regexes': [
             r"successfully"
         ]
+    },
+
+    {
+        'name': "View gas bill imported from Engie EDI",
+        'path': '/g_bills/7',
+        'status_code': 200,
+        'regexes': [
+            r'<tr>\s*'
+            r'<td>units</td>\s*'
+            r'<td>771</td>'
+        ]
     }
 ]
