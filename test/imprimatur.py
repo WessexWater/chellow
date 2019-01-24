@@ -8100,7 +8100,7 @@ def virtual_bill(supply_source):
         '0044_FINISHED_watkinsexamplecom_supply_virtual_bills_7.csv',
         'regexes': [
             r'22 4862 4512 332,,CH023,Treglisson,141 5532,2013-09-29 00:00,'
-            r'2013-11-28 23:30,,20,,,0,,,,0.00524,,0.0,0.0,0.0,0,'],
+            r'2013-11-28 23:30,,20,,,0,,,,0.00524,,0.0,0.0,0.0,0.0,'],
         'status_code': 200},
     {
         'name': "Un-ignore a site snag",
@@ -8690,7 +8690,7 @@ def virtual_bill(supply_source):
         'regexes': [
             r'06-002,23618619,N,0,49119.00,8596.00,2007-06-30 00:00,'
             r'2007-07-31 00:00,22 9974 3438 105,,CI005,Wheal Rodney,'
-            r'2007-06-30 00:00,2007-07-31 00:00,6,1209.0322580\d*,'
+            r'2007-06-30 00:00,2007-07-31 00:00,6,3750.51881\d*,'
             r',,,0.00441,,,0.0,49119.0,0,'
             r'49119.0,8596.0,,8596.0,,,0.0,0.0,4.765\d*,,']},
     {
@@ -10338,11 +10338,11 @@ def virtual_bill(supply_source):
             r'<table:table-cell '
             r'office:date-value="2016-02-29T23:30:00" '
             r'office:value-type="date" table:style-name="cell_date"/>\s*'
-            r'<table:table-cell office:value="18825.5\d*" '
+            r'<table:table-cell office:value="0.0" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="0" '
             r'office:value-type="float" table:number-columns-repeated="6"/>\s*'
-            r'<table:table-cell office:value="18825.5\d*" '
+            r'<table:table-cell office:value="0.0" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="0" '
             r'office:value-type="float"/>\s*'
@@ -10367,21 +10367,15 @@ def virtual_bill(supply_source):
             r'<table:table-cell/>\s*'
             r'<table:table-cell office:value="0.0" '
             r'office:value-type="float"/>\s*'
-            r'<table:table-cell/>\s*'
-            r'<table:table-cell office:value="18825.559999999998" '
-            r'office:value-type="float"/>\s*'
+            r'<table:table-cell table:number-columns-repeated="2"/>\s*'
             r'<table:table-cell office:value="0.00554" '
             r'office:value-type="float"/>\s*'
-            r'<table:table-cell office:value="104.293602\d*" '
-            r'office:value-type="float"/>\s*'
-            r'<table:table-cell table:number-columns-repeated="77"/>\s*'
+            r'<table:table-cell table:number-columns-repeated="78"/>\s*'
             r'<table:table-cell office:string-value="" '
             r'office:value-type="string"/>\s*'
             r'<table:table-cell table:number-columns-repeated="19"/>\s*'
             r'<table:table-cell office:value="0.0" '
-            r'office:value-type="float" table:number-columns-repeated="2"/>\s*'
-            r'<table:table-cell office:value="18825.5\d*" '
-            r'office:value-type="float"/>\s*'
+            r'office:value-type="float" table:number-columns-repeated="3"/>\s*'
             r'<table:table-cell table:number-columns-repeated="15"/>\s*'
             r'</table:table-row>']},
 

@@ -836,7 +836,8 @@ class SupplySource(DataSource):
                                 'hist-kwh': kwh, 'imp-msp-kvarh': 0,
                                 'imp-msp-kvar': 0, 'exp-msp-kvarh': 0,
                                 'exp-msp-kvar': 0}
-            elif self.bill is None and hist_measurement_type == 'nhh':
+
+            elif self.bill is None and hist_measurement_type in ('nhh', 'amr'):
                 read_list = []
                 read_keys = {}
                 pairs = []
@@ -1253,7 +1254,7 @@ class SupplySource(DataSource):
                                 "the time between the register reads.")
 
                 hist_map.update(hhd)
-            elif hist_measurement_type in ('hh', 'amr'):
+            elif hist_measurement_type == 'hh':
                 has_exp_active = False
                 has_imp_related_reactive = False
                 has_exp_related_reactive = False
