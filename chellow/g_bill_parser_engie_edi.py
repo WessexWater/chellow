@@ -93,7 +93,7 @@ class Parser():
                     kwh = Decimal(0)
                     reads = []
                     bill_type_code = None
-                    mprn = []
+                    mprn = None
                     raw_lines = []
                     breakdown = defaultdict(
                         int, {
@@ -113,7 +113,10 @@ class Parser():
                     msn = mtnr[0]
 
                     mloc = self.parser.elements[5]
-                    mprn = mloc[0]
+
+                    # Bug in EDI where MPRN missing in second CCD 1
+                    if mprn is None:
+                        mprn = mloc[0]
 
                     prdt = self.parser.elements[6]
                     pvdt = self.parser.elements[7]
