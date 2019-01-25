@@ -143,7 +143,7 @@
 								<th>To</th>
 								<th>Sites</th>
 								<th title="Meter Serial Number">MSN</th>
-								<th>Corrected Reads?</th>
+								<th>Correction Factor</th>
 								<th>Units</th>
 								<th>Contract</th>
 								<th>Account</th>
@@ -176,13 +176,7 @@
 									{% endif %}
 								</td>
 								<td>{{g_era.msn}}</td>
-								<td>
-									{% if g_era.is_corrected %}
-										yes
-									{% else %}
-										no
-									{% endif %}
-								</td>
+								<td>{{g_era.correction_factor}}</td>
 								<td>
 									<a
 									 		href="/g_units/{{g_era.g_unit.id}}"

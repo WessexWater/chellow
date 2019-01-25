@@ -15575,7 +15575,7 @@ def virtual_bill(ds):
             'start_hour': '00',
             'start_minute': '00',
             'msn': 'hwo8tt',
-            'is_corrected': 'false',
+            'correction_factor': '1.02264',
             'g_unit_id': '5',
             'g_exit_zone_id': '6',
             'mprn': '7502786737',
@@ -15649,7 +15649,7 @@ def virtual_bill(ds):
             'start_hour': '00',
             'start_minute': '00',
             'msn': 'hwo8tt',
-            'is_corrected': 'false',
+            'correction_factor': '1.02264',
             'g_unit_id': '5',
             'mprn': '750278673',
             'g_exit_zone_id': '6',
@@ -15678,7 +15678,7 @@ def virtual_bill(ds):
             'start_hour': '00',
             'start_minute': '00',
             'msn': 'hwo8th',
-            'is_corrected': 'false',
+            'correction_factor': '1.02264',
             'g_unit_id': '5',
             'g_contract_id': 1,
             'account': 'ghoIIl'},
@@ -15727,7 +15727,6 @@ def virtual_bill(ds):
         'regexes': [
             r"<th>0 MSN</th>\s*"
             r"<th>0 Unit</th>\s*"
-            r"<th>0 Is Corrected\?</th>\s*"
             r"<th>0 Correction Factor</th>\s*"
             r"<th>0 Calorific Value</th>\s*"
             r"<th>0 Prev Date</th>\s*"
@@ -15740,10 +15739,7 @@ def virtual_bill(ds):
             r"2015-09-01 00:00",
             r'<td>hwo8tt</td>\s*'
             r'<td>HCUF</td>\s*'
-            r'<td>\s*'
-            r'No\s*'
-            r'</td>\s*'
-            r'<td>None</td>']},
+            r'<td>1.02264</td>']},
 
     {
         'name': "View gas bill",
@@ -15954,14 +15950,16 @@ def virtual_bill(ds):
     {
         'name': "Gas bill check",
         'path': '/reports/429?g_bill_id=3',
-        'status_code': 303},
+        'status_code': 303
+    },
     {
         'name': "Gas bill check",
         'path': '/downloads',
         'tries': {'max': 20, 'period': 1},
         'regexes': [
             r"0014_FINISHED_adminexamplecom_g_bill_check\.csv"],
-        'status_code': 200},
+        'status_code': 200
+    },
     {
         'name': "Gas bill check",
         'path': '/downloads/0014_FINISHED_adminexamplecom_g_bill_check.csv',
@@ -15985,7 +15983,8 @@ def virtual_bill(ds):
             r'difference_gross_gbp\s*',
             r'TB2,8899900012,N,2015-09-01 00:00,2015-09-30 00:00,750278673,'
             r'Main Gas Supply,CH017,Parbola,2015-09-01 00:00,2015-09-30 00:00,'
-            r'3,,7829.999999999759,,1.02264,HCUF,M3,2.8317,1.0,39.300811,,'
+            r'3,,7829.999999999759,1.02264,1.02264,HCUF,M3,2.8317,1.0,'
+            r'39.300811,,'
             r'4500901,87934.521286\d*,0.019448,0.019548,8936.13,'
             r'1718.9440220988\d*,7217.185977901\d*,,0.00525288,,,,,,6972.33,'
             r'1718.9440220988\d*,5253.385977901\d*,1003.89,0,1003.89,7976.22,'
@@ -16005,7 +16004,7 @@ def virtual_bill(ds):
             'mprn': '98472777',
             'g_exit_zone_id': '6',
             'msn': '7ghwsklh',
-            'is_corrected': 'false',
+            'correction_factor': '1.02264',
             'g_unit_id': '5',
             'g_contract_id': '1',
             'account': 'ghuel',
@@ -18021,8 +18020,9 @@ def virtual_bill(ds):
         '0026_FINISHED_adminexamplecom_g_supplies_snapshot.csv',
         'status_code': 200,
         'regexes': [
-            r'2018-03-01 00:00,CH017,Parbola,,,750278673,EM2,hwo8th,no,M3,'
-            r'Total,ghoIIl,2015-09-01 00:00,']},
+            r'2018-03-01 00:00,CH017,Parbola,,,750278673,EM2,hwo8th,1.02264,'
+            r'M3,Total,ghoIIl,2015-09-01 00:00,']
+    },
 
     {
         'name': "Gas monthly duration",
@@ -18055,8 +18055,6 @@ def virtual_bill(ds):
             r'office:value-type="string"/>\s*'
             r'<table:table-cell office:string-value="hwo8th" '
             r'office:value-type="string"/>\s*'
-            r'<table:table-cell office:boolean-value="false" '
-            r'office:value-type="boolean"/>\s*'
             r'<table:table-cell office:string-value="M3" '
             r'office:value-type="string"/>\s*'
             r'<table:table-cell office:string-value="Total" '
@@ -18226,7 +18224,7 @@ def virtual_bill(ds):
             'gross_gbp': '7976.22',
             'raw_lines': 'reference,mprn,bill_type,account,issue_date,'
                 'start_date,finish_date,kwh,net_gbp,vat_gbp,gross_gbp,'
-                'breakdown,msn,unit,is_corrected,correction_factor,'
+                'breakdown,msn,unit,correction_factor,'
                 'calorific_value,prev_date,prev_value,prev_type,pres_date,'
                 'prev_value,pres_type\n'
                 '8899900012,750278673,N,college_rooms,2015-11-01 00:00,'
@@ -18275,7 +18273,7 @@ def virtual_bill(ds):
             r'difference_gross_gbp,covered_problem,virtual_problem\s*'
             r'TB2,8899900012,W,2015-09-01 00:00,2015-09-30 00:00,750278673,'
             r'Main Gas Supply,CH017,Parbola,2015-09-01 00:00,'
-            r'2015-09-30 00:00,3,,0,,1.02264,HCUF,M3,2.8317,1,39.300811,0,'
+            r'2015-09-30 00:00,3,,0,1.02264,1,HCUF,M3,2.8317,1,39.300811,0,'
             r'4500901,0.0,0.019448,0.019548,8936.13,0.0,8936.13,,'
             r'0.00525288,,,,,,6972.33,0.0,6972.33,1003.89,0,1003.89,7976.22,'
             r'0.0,7976.22,,']},
@@ -18434,7 +18432,7 @@ def virtual_bill(ds):
             r'0.00,67.8,-67.8,,\s*'
             r'TB2,8899900012,W,2015-09-01 00:00,2015-09-30 00:00,750278673,'
             r'Main Gas Supply,CH017,Parbola,2015-09-01 00:00,2015-09-30 00:00,'
-            r'3,,0,,1.02264,HCUF,M3,2.8317,1,39.300811,0,4500901,0.0,'
+            r'3,,0,1.02264,1,HCUF,M3,2.8317,1,39.300811,0,4500901,0.0,'
             r'0.019448,0.019548,8936.13,0.0,8936.13,,0.00525288,,,,,,6972.33,'
             r'0.0,6972.33,1003.89,0,1003.89,7976.22,0.0,7976.22,,\s*'
             r'TB2,kkhy779,N,2017-03-01 00:00,2017-03-31 23:30,87614362,'
@@ -18736,7 +18734,6 @@ def virtual_bill(ds):
         'path': '/g_bills/4/add_read',
         'status_code': 200,
         'regexes': [
-            r'<input type="checkbox" name="is_corrected" value="true">'
         ]
     },
 

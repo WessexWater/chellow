@@ -54,7 +54,6 @@ import chellow.g_cv
 from xml.dom import Node
 import chellow.hh_importer
 from zish import dumps, loads
-from decimal import Decimal
 
 
 app = Flask('chellow', instance_relative_config=True)
@@ -937,7 +936,7 @@ def site_edit_post(site_id):
             name = req_str('name')
             msn = req_str('msn')
             mprn = req_str('mprn')
-            is_corrected = req_bool('is_corrected')
+            correction_factor = req_decimal('correction_factor')
             g_unit_id = req_int('g_unit_id')
             g_unit = GUnit.get_by_id(g.sess, g_unit_id)
             g_exit_zone_id = req_int('g_exit_zone_id')
@@ -948,7 +947,7 @@ def site_edit_post(site_id):
             start_date = req_date('start')
             g_supply = site.insert_g_supply(
                 g.sess, mprn, name, g_exit_zone, start_date, None, msn,
-                is_corrected, g_unit, g_contract, account)
+                correction_factor, g_unit, g_contract, account)
             g.sess.commit()
             return chellow_redirect('/g_supplies/' + str(g_supply.id), 303)
 
@@ -5723,14 +5722,14 @@ def g_era_edit_post(g_era_id):
             is_ended = req_bool('is_ended')
             finish_date = req_date('finish') if is_ended else None
             msn = req_str('msn')
-            is_corrected = req_bool('is_corrected')
+            correction_factor = req_decimal('correction_factor')
             g_contract_id = req_int('g_contract_id')
             g_contract = GContract.get_by_id(g.sess, g_contract_id)
             account = req_str('account')
             g_unit_id = req_int('g_unit_id')
             g_unit = GUnit.get_by_id(g.sess, g_unit_id)
             g_era.g_supply.update_g_era(
-                g.sess, g_era, start_date, finish_date, msn, is_corrected,
+                g.sess, g_era, start_date, finish_date, msn, correction_factor,
                 g_unit, g_contract, account)
             g.sess.commit()
             return chellow_redirect(
@@ -5813,7 +5812,6 @@ def g_read_add_post(g_bill_id):
         msn = req_str('msn')
         g_unit_id = req_int('g_unit_id')
         g_unit = GUnit.get_by_id(g.sess, g_unit_id)
-        is_corrected = req_bool('is_corrected')
         correction_factor = req_decimal('correction_factor')
         calorific_value = req_decimal('calorific_value')
         prev_date = req_date('prev_date')
@@ -5826,9 +5824,8 @@ def g_read_add_post(g_bill_id):
         pres_type = GReadType.get_by_id(g.sess, pres_type_id)
 
         g_bill.insert_g_read(
-            g.sess, msn, g_unit, is_corrected, correction_factor,
-            calorific_value, prev_value, prev_date, prev_type, pres_value,
-            pres_date, pres_type)
+            g.sess, msn, g_unit, correction_factor, calorific_value,
+            prev_value, prev_date, prev_type, pres_value, pres_date, pres_type)
         g.sess.commit()
         return chellow_redirect("/g_bills/" + str(g_bill.id), 303)
     except BadRequest as e:
@@ -5864,20 +5861,12 @@ def g_read_edit_post(g_read_id):
             pres_type = GReadType.get_by_id(g.sess, pres_type_id)
             g_unit_id = req_int('g_unit_id')
             g_unit = GUnit.get_by_id(g.sess, g_unit_id)
-            is_corrected = req_bool('is_corrected')
-
-            correction_factor_str = req_str('correction_factor')
-            if len(correction_factor_str) > 0:
-                correction_factor = Decimal(correction_factor_str)
-            else:
-                correction_factor = None
-
+            correction_factor = req_decimal('correction_factor')
             calorific_value = req_decimal('calorific_value')
 
             g_read.update(
-                msn, g_unit, is_corrected, correction_factor, calorific_value,
-                prev_value, prev_date, prev_type, pres_value, pres_date,
-                pres_type)
+                msn, g_unit, correction_factor, calorific_value, prev_value,
+                prev_date, prev_type, pres_value, pres_date, pres_type)
 
             g.sess.commit()
             return chellow_redirect("/g_bills/" + str(g_read.g_bill.id), 303)

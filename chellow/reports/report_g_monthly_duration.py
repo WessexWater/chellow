@@ -74,9 +74,8 @@ def content(
         g_era_rows = []
 
         era_header_titles = [
-            'creation_date', 'mprn', 'supply_name', 'exit_zone', 'msn',
-            'is_corrected', 'unit', 'contract', 'site_id', 'site_name',
-            'associated_site_ids', 'month']
+            'creation_date', 'mprn', 'supply_name', 'exit_zone', 'msn', 'unit',
+            'contract', 'site_id', 'site_name', 'associated_site_ids', 'month']
         site_header_titles = [
             'creation_date', 'site_id', 'site_name', 'associated_site_ids',
             'month']
@@ -187,10 +186,9 @@ def content(
                         [
                             now, g_supply.mprn, g_supply.name,
                             g_supply.g_exit_zone.code, g_era.msn,
-                            g_era.is_corrected, g_era.g_unit.code,
-                            contract.name, site.code, site.name,
-                            associated_site_ids, month_finish, kwh, gbp,
-                            billed_kwh, billed_gbp] +
+                            g_era.g_unit.code, contract.name, site.code,
+                            site.name, associated_site_ids, month_finish, kwh,
+                            gbp, billed_kwh, billed_gbp] +
                         [make_val(bill.get(t)) for t in vb_titles])
 
                     site_kwh += kwh

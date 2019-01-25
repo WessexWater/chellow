@@ -154,7 +154,6 @@ class Parser():
                         {
                             'msn': msn,
                             'unit': unit,
-                            'is_corrected': False,
                             'correction_factor': correction_factor,
                             'prev_date': prev_read_date,
                             'prev_value': prev_read_value,

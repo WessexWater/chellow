@@ -1,7 +1,7 @@
 import csv
 from decimal import Decimal, InvalidOperation
 from io import StringIO
-from chellow.utils import parse_hh_start, parse_bool
+from chellow.utils import parse_hh_start
 from zish import loads, ZishLocationException
 from werkzeug.exceptions import BadRequest
 from itertools import count
@@ -82,41 +82,33 @@ class Parser():
 
                 msn = get_str(row, i, 'Meter Serial Number', self.line_number)
                 unit = get_str(row, i + 1, 'Unit', self.line_number).upper()
-                is_corrected = parse_bool(
-                    get_str(row, i + 2, 'Is Corrected?', self.line_number))
-                correction_factor = get_str(
-                    row, i + 3, 'Correction Factor', self.line_number)
-                if len(correction_factor) > 0:
-                    correction_factor = get_decimal(
-                        row, i + 3, 'Correction Factor', self.line_number)
-                else:
-                    correction_factor = None
+                correction_factor = get_decimal(
+                    row, i + 2, 'Correction Factor', self.line_number)
 
                 calorific_value = get_str(
-                    row, i + 4, 'Calorific Value', self.line_number)
+                    row, i + 3, 'Calorific Value', self.line_number)
                 if len(calorific_value) > 0:
                     calorific_value = get_decimal(
-                        row, i + 4, 'Calorific Value', self.line_number)
+                        row, i + 3, 'Calorific Value', self.line_number)
                 else:
                     calorific_value = None
 
                 prev_date = get_datetime(
-                    row, i + 5, 'Previous Date', self.line_number)
+                    row, i + 4, 'Previous Date', self.line_number)
                 prev_value = get_decimal(
-                    row, i + 6, 'Previous Value', self.line_number)
+                    row, i + 5, 'Previous Value', self.line_number)
                 prev_type = get_str(
-                    row, i + 7, 'Previous Type', self.line_number)
+                    row, i + 6, 'Previous Type', self.line_number)
                 pres_date = get_datetime(
-                    row, i + 8, 'Previous Date', self.line_number)
+                    row, i + 7, 'Previous Date', self.line_number)
                 pres_value = get_decimal(
-                    row, i + 9, 'Present Value', self.line_number)
+                    row, i + 8, 'Present Value', self.line_number)
                 pres_type = get_str(
-                    row, i + 10, 'Present Type', self.line_number)
+                    row, i + 9, 'Present Type', self.line_number)
                 reads.append(
                     {
                         'msn': msn,
                         'unit': unit,
-                        'is_corrected': is_corrected,
                         'correction_factor': correction_factor,
                         'calorific_value': calorific_value,
                         'prev_date': prev_date,
@@ -134,5 +126,6 @@ class Parser():
                     'gross_gbp': gross,
                     'raw_lines': self.titles + '\n' + ','.join(row),
                     'bill_type_code': bill_type, 'start_date': start_date,
-                    'finish_date': finish_date, 'issue_date': issue_date})
+                    'finish_date': finish_date, 'issue_date': issue_date
+                })
         return raw_bills

@@ -97,7 +97,6 @@ class GBillImporter(threading.Thread):
                         g_unit = GUnit.get_by_code(sess, raw_read['unit'])
                         g_read = g_bill.insert_g_read(
                             sess, raw_read['msn'], g_unit,
-                            raw_read['is_corrected'],
                             raw_read['correction_factor'],
                             raw_read['calorific_value'],
                             raw_read['prev_value'], raw_read['prev_date'],

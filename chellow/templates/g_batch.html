@@ -85,7 +85,6 @@
 							{% for i in range(max_reads) %}
 								<th>{{i}} MSN</th>
 								<th>{{i}} Unit</th>
-								<th>{{i}} Is Corrected?</th>
 								<th>{{i}} Correction Factor</th>
 								<th>{{i}} Calorific Value</th>
 								<th>{{i}} Prev Date</th>
@@ -115,13 +114,6 @@
 								{% for read in g_bill.g_reads %}
 									<td>{{read.msn}}</td>
 									<td>{{read.g_unit.code}}</td>
-									<td>
-										{% if read.is_corrected %}
-											Yes
-										{% else %}
-											No
-										{% endif %}
-									</td>
 									<td>{{read.correction_factor}}</td>
 									<td>{{read.calorific_value}}</td>
 									<td>{{read.prev_date|hh_format}}</td>

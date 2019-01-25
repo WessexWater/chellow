@@ -2,7 +2,7 @@ import threading
 import traceback
 import csv
 import datetime
-import decimal
+from decimal import Decimal
 from sqlalchemy import or_, null
 from sqlalchemy.sql.expression import false
 from chellow.utils import (
@@ -435,8 +435,8 @@ def general_import_g_supply(sess, action, vals, args):
         finish_date_str = add_arg(args, "Finish Date", vals, 5)
         finish_date = parse_hh_start(finish_date_str)
         msn = add_arg(args, "Meter Serial Number", vals, 6)
-        is_corrected_str = add_arg(args, "Is Corrected?", vals, 7)
-        is_corrected = parse_bool(is_corrected_str)
+        correction_factor_str = add_arg(args, "Correction Factor", vals, 7)
+        correction_factor = Decimal(correction_factor_str)
         g_unit_code = add_arg(args, "Unit of Measurement", vals, 8)
         g_unit = GUnit.get_by_code(sess, g_unit_code)
         g_contract_name = add_arg(args, "Contract", vals, 9)
@@ -448,7 +448,7 @@ def general_import_g_supply(sess, action, vals, args):
 
         site.insert_g_supply(
             sess, mprn, supply_name, g_exit_zone, start_date, finish_date, msn,
-            is_corrected, g_unit, g_contract, account)
+            correction_factor, g_unit, g_contract, account)
         sess.flush()
     elif action == "update":
         existing_mprn = add_arg(args, "Existing MPRN", vals, 0)
@@ -681,11 +681,11 @@ def general_import_bill(sess, action, vals, args):
         finish_date_str = add_arg(args, "Finish Date", vals, 6)
         finish_date = parse_hh_start(finish_date_str)
         net_str = add_arg(args, "Net", vals, 7)
-        net = decimal.Decimal(net_str)
+        net = Decimal(net_str)
         vat_str = add_arg(args, "Vat", vals, 8)
-        vat = decimal.Decimal(vat_str)
+        vat = Decimal(vat_str)
         gross_str = add_arg(args, "Gross", vals, 9)
-        gross = decimal.Decimal(gross_str)
+        gross = Decimal(gross_str)
         account = add_arg(args, "Account Reference", vals, 10)
         reference = add_arg(args, "Reference", vals, 11)
         type_code = add_arg(args, "Type", vals, 12)
@@ -700,7 +700,7 @@ def general_import_bill(sess, action, vals, args):
                 raise BadRequest(str(e))
 
         kwh_str = add_arg(args, "kWh", vals, 14)
-        kwh = decimal.Decimal(kwh_str)
+        kwh = Decimal(kwh_str)
 
         bill = batch.insert_bill(
             sess, account, reference, issue_date, start_date, finish_date,
@@ -710,7 +710,7 @@ def general_import_bill(sess, action, vals, args):
             msn = add_arg(args, "Meter Serial Number", vals, i)
             mpan_str = add_arg(args, "MPAN", vals, i + 1)
             coefficient_str = add_arg(args, "Coefficient", vals, i + 2)
-            coefficient = decimal.Decimal(coefficient_str)
+            coefficient = Decimal(coefficient_str)
             units = add_arg(args, "Units", vals, i + 3)
             tpr_code = add_arg(args, "TPR", vals, i + 4)
             if len(tpr_code) > 0:
@@ -721,7 +721,7 @@ def general_import_bill(sess, action, vals, args):
             prev_date_str = add_arg(args, "Previous Date", vals, i + 5)
             prev_date = parse_hh_start(prev_date_str)
             prev_value_str = add_arg(args, "Previous Value", vals, i + 6)
-            prev_value = decimal.Decimal(prev_value_str)
+            prev_value = Decimal(prev_value_str)
 
             prev_type_str = add_arg(args, "Previous Type", vals, i + 7)
             prev_type = ReadType.get_by_code(sess, prev_type_str)
@@ -729,7 +729,7 @@ def general_import_bill(sess, action, vals, args):
             pres_date_str = add_arg(args, "Present Date", vals, i + 8)
             pres_date = parse_hh_start(pres_date_str)
             pres_value_str = add_arg(args, "Present Value", vals, i + 9)
-            pres_value = decimal.Decimal(pres_value_str)
+            pres_value = Decimal(pres_value_str)
 
             pres_type_str = add_arg(args, "Present Type", vals, i + 10)
             pres_type = ReadType.get_by_code(sess, pres_type_str)
@@ -771,19 +771,16 @@ def general_import_bill(sess, action, vals, args):
             finish_date = parse_hh_start(finish_date_str)
 
         kwh_str = add_arg(args, "kWh", vals, 6)
-        kwh = bill.kwh if kwh_str == NO_CHANGE else decimal.Decimal(kwh_str)
+        kwh = bill.kwh if kwh_str == NO_CHANGE else Decimal(kwh_str)
 
         net_str = add_arg(args, "Net", vals, 7)
-        net = bill.net if net_str == NO_CHANGE else decimal.Decimal(net_str)
+        net = bill.net if net_str == NO_CHANGE else Decimal(net_str)
 
         vat_str = add_arg(args, "Vat", vals, 8)
-        vat = bill.vat if vat_str == NO_CHANGE else decimal.Decimal(vat_str)
+        vat = bill.vat if vat_str == NO_CHANGE else Decimal(vat_str)
 
         gross_str = add_arg(args, "Gross", vals, 9)
-        if gross_str == NO_CHANGE:
-            gross = bill.gross
-        else:
-            gross = decimal.Decimal(gross_str)
+        gross = bill.gross if gross_str == NO_CHANGE else Decimal(gross_str)
 
         bill_type_code = add_arg(args, "Bill Type", vals, 10)
         if bill_type_code == NO_CHANGE:
@@ -817,7 +814,7 @@ def general_import_register_read(sess, action, vals, args):
         if coefficient_str == NO_CHANGE:
             coefficient = read.coefficient
         else:
-            coefficient = decimal.Decimal(coefficient_str)
+            coefficient = Decimal(coefficient_str)
 
         units = add_arg(args, "Units", vals, 3)
 
@@ -1337,7 +1334,7 @@ class GeneralImporter(threading.Thread):
                                 'channel_type': parse_channel_type(
                                     add_arg(
                                         self.args, "Channel Type", vals, 2)),
-                                'value': decimal.Decimal(
+                                'value': Decimal(
                                     add_arg(self.args, "Value", vals, 3)),
                                 'status': add_arg(
                                     self.args, "Status", vals, 4)})

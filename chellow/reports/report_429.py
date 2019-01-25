@@ -154,9 +154,8 @@ def content(g_batch_id, g_bill_id, user):
                             except TypeError:
                                 raise BadRequest(
                                     "Problem with bill " + str(g_bill.id) +
-                                    " and key " + str(k) +
-                                    " and value " + str(v) + " for existing " +
-                                    str(vals[k]))
+                                    " and key " + str(k) + " and value " +
+                                    str(v) + " for existing " + str(vals[k]))
 
                     if title in (
                             'correction_factor', 'calorific_value',

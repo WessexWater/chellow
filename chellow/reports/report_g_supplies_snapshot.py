@@ -23,7 +23,7 @@ def content(running_name, finished_name, date, g_supply_id):
             (
                 'Date', 'Physical Site Id', 'Physical Site Name',
                 'Other Site Ids', 'Other Site Names', 'MPRN', 'Exit Zone',
-                'Meter Serial Number', 'Is Corrected?', 'Unit', 'Contract',
+                'Meter Serial Number', 'Correction Factor', 'Unit', 'Contract',
                 'Account', 'Supply Start', 'Supply Finish'))
 
         g_eras = sess.query(GEra, GSupply).join(GSupply).filter(
@@ -54,14 +54,14 @@ def content(running_name, finished_name, date, g_supply_id):
             g_supply_start_date = sup_g_eras[0].start_date
             g_supply_finish_date = sup_g_eras[-1].finish_date
 
-            is_corrected = 'yes' if g_era.is_corrected else 'no'
             writer.writerow(
                 ('' if value is None else str(value)) for value in [
                     hh_format(date), physical_site.code, physical_site.name,
                     ', '.join(site_codes), ', '.join(site_names),
                     g_supply.mprn, g_supply.g_exit_zone.code, g_era.msn,
-                    is_corrected, g_era.g_unit.code, g_era.g_contract.name,
-                    g_era.account, hh_format(g_supply_start_date),
+                    g_era.correction_factor, g_era.g_unit.code,
+                    g_era.g_contract.name, g_era.account,
+                    hh_format(g_supply_start_date),
                     hh_format(g_supply_finish_date, ongoing_str='')])
     except BaseException:
         msg = traceback.format_exc()

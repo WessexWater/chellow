@@ -170,9 +170,12 @@ def datum_range(sess, caches, years_back, start_date, finish_date):
                         'status': 'X', 'kwh': 0, 'hist_kwh': 0,
                         'unit_code': 'M3', 'unit_factor': 1,
                         'units_consumed': 0,
-                        'correction_factor': CORRECTION_FACTOR,
+                        'correction_factor': 1,
                         'calorific_value': 0,
-                        'avg_cv': 0}))
+                        'avg_cv': 0
+                    }
+                )
+            )
         datum_tuple = tuple(datum_list)
         d_cache[finish_date] = datum_tuple
         return datum_tuple
@@ -529,7 +532,7 @@ class GDataSource():
 
                 self.consumption_info += 'pairs - \n' + dumps(pairs)
 
-                cf = 1 if hist_g_era.is_corrected else CORRECTION_FACTOR
+                cf = float(hist_g_era.correction_factor)
                 g_unit = hist_g_era.g_unit
                 unit_code, unit_factor = g_unit.code, float(g_unit.factor)
                 for pair in pairs:
@@ -588,7 +591,7 @@ class GDataSource():
                         timedelta(minutes=30)).total_seconds()
                     hh_units_consumed = units_consumed / (bill_s / (60 * 30))
 
-                    cf = 1 if hist_g_era.is_corrected else CORRECTION_FACTOR
+                    cf = float(hist_g_era.correction_factor)
                     g_unit = hist_g_era.g_unit
                     unit_code, unit_factor = g_unit.code, float(g_unit.factor)
                     for hh_date in hh_range(
