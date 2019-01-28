@@ -41,9 +41,9 @@ def vb(ds, kwh_key='kwh'):
 
     elif ds.is_last_g_bill_gen:
         kwh = gbp = 0
-        for ds in chellow.g_engine.get_data_sources(
+        for d in chellow.g_engine.get_data_sources(
                 ds, ds.g_bill_start, ds.g_bill_finish):
-            for hh in ds.hh_data:
+            for hh in d.hh_data:
                 rate = float(
                     get_file_rates(
                         ds.caches, 'g_ccl',
