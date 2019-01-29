@@ -4929,7 +4929,7 @@ def site_gen_graph_get(site_id):
         graph = graphs[graph_name]
         graph['y'] = y
         graph['height'] = sum(
-            max_scls[p] * scl_factor for p in ('pos', 'neg')) + 50
+            max_scls[p] * scl_factor for p in ('pos', 'neg')) + 100
         y += graph['height']
 
         x_axis_px = max_scls['pos'] * scl_factor
@@ -4973,12 +4973,12 @@ def site_gen_graph_get(site_id):
 
     y += 30
     for day_dict in days:
-        day_dict['y'] = graphs['third']['height'] - 10
+        day_dict['y'] = graphs['third']['height'] - 70
 
     height = y + 30
 
     for month_dict in month_points:
-        month_dict['y'] = graphs['third']['height'] + 20
+        month_dict['y'] = graphs['third']['height'] - 40
 
     title = {
         'text': "Electricity at site " + site.code + " " + site.name +

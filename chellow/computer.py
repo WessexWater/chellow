@@ -1043,7 +1043,7 @@ class SupplySource(DataSource):
                                             is_forwards and
                                             read_list[-1]['date'] >
                                             chunk_finish)):
-                                        break
+                                    break
 
                 self.consumption_info += 'read list - \n' + \
                     str(list(list(sorted(r.items())) for r in read_list)) \

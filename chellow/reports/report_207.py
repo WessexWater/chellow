@@ -298,12 +298,12 @@ def content(year, supply_id, user):
                                             'finish-date': pair_finish_date,
                                             'tprs': tprs})
 
-                                    if len(pairs) > 0 and \
-                                            (not is_forwards or (
+                                    if len(pairs) > 0 and (
+                                            not is_forwards or (
                                                 is_forwards and
                                                 read_list[-1]['date'] >
                                                 period_finish)):
-                                            break
+                                        break
 
                     breakdown += 'read list - \n' + str(read_list) + "\n"
                     if len(pairs) == 0:

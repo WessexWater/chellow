@@ -1138,8 +1138,8 @@ def general_import_user(sess, action, vals, args):
                 raise BadRequest(
                     "The password and digest fields can't both be blank.")
         elif len(digest) > 0:
-                raise BadRequest(
-                    "The password and digest fields can't both be filled.")
+            raise BadRequest(
+                "The password and digest fields can't both be filled.")
         else:
             digest = User.digest(password)
 

@@ -496,7 +496,7 @@ class GDataSource():
                                             is_forwards and
                                             read_list[-1]['date'] >
                                             chunk_finish)):
-                                        break
+                                    break
 
                 self.consumption_info += 'read list - \n' + dumps(read_list) \
                     + "\n"

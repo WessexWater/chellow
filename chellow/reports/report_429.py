@@ -79,8 +79,8 @@ def content(g_batch_id, g_bill_id, user):
                     typ_set = read_dict[str(dt) + "-" + g_read.msn]
                     typ_set.add(typ)
                     if len(typ_set) > 1:
-                            problem += " Reads taken on " + str(dt) + \
-                                " have differing read types."
+                        problem += " Reads taken on " + str(dt) + \
+                            " have differing read types."
 
             g_era = g_supply.find_g_era_at(sess, g_bill.finish_date)
             if g_era is None:
