@@ -19,6 +19,7 @@ import chellow.bank_holidays
 from itertools import combinations
 from types import MappingProxyType
 from functools import lru_cache
+from zish import dumps
 
 
 cons_types = ['construction', 'commissioning', 'operation']
@@ -919,11 +920,25 @@ class SupplySource(DataSource):
                             if pres_bill.id != pres_read.bill_id:
                                 continue
 
+                            pres_era = self.supply.find_era_at(sess, pres_date)
+                            pres_era_properties = PropDict(
+                                chellow.utils.url_root + 'eras/' +
+                                str(pres_era.id),
+                                loads(pres_era.properties))
+                            try:
+                                era_coefficient = float(
+                                    pres_era_properties['coefficient'])
+                            except KeyError:
+                                era_coefficient = None
+
                             reads = dict(
                                 (
                                     read.tpr.code,
                                     float(read.present_value) *
-                                    float(read.coefficient))
+                                    (
+                                        float(read.coefficient) if
+                                        era_coefficient is None else
+                                        era_coefficient))
                                 for read in sess.query(RegisterRead).filter(
                                     RegisterRead.units == 0,
                                     RegisterRead.bill == pres_bill,
@@ -958,11 +973,24 @@ class SupplySource(DataSource):
                             if prev_bill.id != prev_read.bill_id:
                                 continue
 
+                            prev_era = self.supply.find_era_at(sess, prev_date)
+                            prev_era_properties = PropDict(
+                                chellow.utils.url_root + 'eras/' +
+                                str(prev_era.id),
+                                loads(prev_era.properties))
+                            try:
+                                era_coefficient = float(
+                                    prev_era_properties['coefficient'])
+                            except KeyError:
+                                era_coefficient = None
+
                             reads = dict(
                                 (
                                     read.tpr.code,
-                                    float(read.previous_value) *
-                                    float(read.coefficient))
+                                    float(read.previous_value) * (
+                                        float(read.coefficient) if
+                                        era_coefficient is None else
+                                        era_coefficient))
                                 for read in sess.query(RegisterRead).filter(
                                     RegisterRead.units == 0,
                                     RegisterRead.bill == prev_bill,
@@ -1046,8 +1074,7 @@ class SupplySource(DataSource):
                                     break
 
                 self.consumption_info += 'read list - \n' + \
-                    str(list(list(sorted(r.items())) for r in read_list)) \
-                    + "\n"
+                    dumps(read_list) + "\n"
                 if len(pairs) == 0:
                     pairs.append(
                         {
@@ -1079,8 +1106,7 @@ class SupplySource(DataSource):
                 if pairs[-1]['finish-date'] > chunk_finish:
                     pairs[-1]['finish-date'] = chunk_finish
 
-                self.consumption_info += 'pairs - \n' + \
-                    str(list(list(sorted(p.items())) for p in pairs))
+                self.consumption_info += 'pairs - \n' + dumps(pairs)
 
                 for pair in pairs:
                     pair_hhs = (
