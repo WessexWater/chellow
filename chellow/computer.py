@@ -921,15 +921,18 @@ class SupplySource(DataSource):
                                 continue
 
                             pres_era = self.supply.find_era_at(sess, pres_date)
-                            pres_era_properties = PropDict(
-                                chellow.utils.url_root + 'eras/' +
-                                str(pres_era.id),
-                                loads(pres_era.properties))
-                            try:
-                                era_coefficient = float(
-                                    pres_era_properties['coefficient'])
-                            except KeyError:
+                            if pres_era is None:
                                 era_coefficient = None
+                            else:
+                                pres_era_properties = PropDict(
+                                    chellow.utils.url_root + 'eras/' +
+                                    str(pres_era.id),
+                                    loads(pres_era.properties))
+                                try:
+                                    era_coefficient = float(
+                                        pres_era_properties['coefficient'])
+                                except KeyError:
+                                    era_coefficient = None
 
                             reads = dict(
                                 (
@@ -974,15 +977,18 @@ class SupplySource(DataSource):
                                 continue
 
                             prev_era = self.supply.find_era_at(sess, prev_date)
-                            prev_era_properties = PropDict(
-                                chellow.utils.url_root + 'eras/' +
-                                str(prev_era.id),
-                                loads(prev_era.properties))
-                            try:
-                                era_coefficient = float(
-                                    prev_era_properties['coefficient'])
-                            except KeyError:
+                            if prev_era is None:
                                 era_coefficient = None
+                            else:
+                                prev_era_properties = PropDict(
+                                    chellow.utils.url_root + 'eras/' +
+                                    str(prev_era.id),
+                                    loads(prev_era.properties))
+                                try:
+                                    era_coefficient = float(
+                                        prev_era_properties['coefficient'])
+                                except KeyError:
+                                    era_coefficient = None
 
                             reads = dict(
                                 (
