@@ -430,9 +430,14 @@ def datum_2010_04_01(ds, hh):
             rs = get_file_rates(ds.caches, 'lafs_' + ds.dno_code, start_date)
             hist_date = rs['hist_dates'][start_date]
             try:
-                hist_map = rs._storage['hist_map']
+                hist_map_llfcs = rs._storage['hist_map']
             except KeyError:
-                hist_map = rs._storage['hist_map'] = {}
+                hist_map_llfcs = rs._storage['hist_map'] = {}
+
+            try:
+                hist_map = hist_map_llfcs[ds.llfc_code]
+            except KeyError:
+                hist_map = hist_map_llfcs[ds.llfc_code] = {}
 
             try:
                 laf = hist_map[hist_date]
