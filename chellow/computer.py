@@ -934,24 +934,24 @@ class SupplySource(DataSource):
                                 except KeyError:
                                     era_coefficient = None
 
-                            reads = dict(
-                                (
-                                    read.tpr.code,
-                                    float(read.present_value) *
-                                    (
-                                        float(read.coefficient) if
-                                        era_coefficient is None else
-                                        era_coefficient))
-                                for read in sess.query(RegisterRead).filter(
+                            reads = {}
+                            coefficients = {}
+                            for read in sess.query(RegisterRead).filter(
                                     RegisterRead.units == 0,
                                     RegisterRead.bill == pres_bill,
                                     RegisterRead.present_date == pres_date,
                                     RegisterRead.msn == pres_msn).options(
-                                    joinedload('tpr')))
+                                    joinedload('tpr')):
+                                code = read.tpr.code
+                                reads[code] = float(read.present_value)
+                                coefficients[code] = float(read.coefficient) \
+                                    if era_coefficient is None else \
+                                    era_coefficient
 
                             prime_pres_read = {
                                 'date': pres_date, 'reads': reads,
-                                'msn': pres_msn}
+                                'coefficients': coefficients, 'msn': pres_msn
+                            }
                             read_keys[read_key] = None
 
                         while prime_prev_read is None:
@@ -990,23 +990,25 @@ class SupplySource(DataSource):
                                 except KeyError:
                                     era_coefficient = None
 
-                            reads = dict(
-                                (
-                                    read.tpr.code,
-                                    float(read.previous_value) * (
-                                        float(read.coefficient) if
-                                        era_coefficient is None else
-                                        era_coefficient))
-                                for read in sess.query(RegisterRead).filter(
+                            reads = {}
+                            coefficients = {}
+                            for read in sess.query(RegisterRead).filter(
                                     RegisterRead.units == 0,
                                     RegisterRead.bill == prev_bill,
                                     RegisterRead.previous_date == prev_date,
                                     RegisterRead.msn == prev_msn).options(
-                                    joinedload('tpr')))
+                                    joinedload('tpr')):
+                                reads[read.tpr.code] = float(
+                                    read.previous_value)
+                                coefficients[read.tpr.code] = float(
+                                    read.coefficient) if \
+                                    era_coefficient is None else \
+                                    era_coefficient
 
                             prime_prev_read = {
                                 'date': prev_date, 'reads': reads,
-                                'msn': prev_msn}
+                                'coefficients': coefficients, 'msn': prev_msn
+                            }
                             read_keys[read_key] = None
 
                         if prime_pres_read is None and prime_prev_read is None:
@@ -1058,11 +1060,16 @@ class SupplySource(DataSource):
                                 for tpr_code, initial_val in \
                                         aft_read['reads'].items():
                                     end_val = fore_read['reads'][tpr_code]
-                                    kwh = end_val - initial_val
 
-                                    if kwh < 0:
+                                    # Clocked?
+                                    if end_val - initial_val < 0:
                                         digits = int(log10(initial_val)) + 1
-                                        kwh = 10 ** digits + kwh
+                                        end_val += 10 ** digits
+
+                                    kwh = end_val * \
+                                        fore_read['coefficients'][tpr_code] \
+                                        - initial_val * \
+                                        aft_read['coefficients'][tpr_code]
 
                                     tprs[tpr_code] = kwh / num_hh
 
