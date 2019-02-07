@@ -399,51 +399,51 @@ class HhImportTask(threading.Thread):
                     Era.finish_date >= window_start)).distinct():
             chunk_start = hh_max(era.start_date, window_start)
             chunk_finish = hh_min(era.finish_date, window_finish)
-            if era.imp_mpan_core is None:
-                mpan_core = era.exp_mpan_core
-            else:
-                mpan_core = era.imp_mpan_core
+            for mpan_core in (era.imp_mpan_core, era.exp_mpan_core):
+                if mpan_core is None:
+                    continue
 
-            self.log(
-                "Looking at MPAN core {mpan_core}.".format(
-                    mpan_core=mpan_core))
+                self.log(
+                    "Looking at MPAN core {mpan_core}.".format(
+                        mpan_core=mpan_core))
 
-            vals = {
-                'chunk_start': chunk_start,
-                'chunk_finish': chunk_finish}
-            vals.update(url_values.get(mpan_core, {}))
-            try:
-                url = url_template.render(vals)
-            except jinja2.exceptions.UndefinedError as e:
-                raise BadRequest(
-                    "Problem rendering the URL template: " + url_template_str +
-                    ". The problem is: " + str(e) + ". This can be fixed by " +
-                    "editing the properties of this contract.")
+                vals = {
+                    'chunk_start': chunk_start,
+                    'chunk_finish': chunk_finish}
+                vals.update(url_values.get(mpan_core, {}))
+                try:
+                    url = url_template.render(vals)
+                except jinja2.exceptions.UndefinedError as e:
+                    raise BadRequest(
+                        "Problem rendering the URL template: " +
+                        url_template_str + ". The problem is: " + str(e) +
+                        ". This can be fixed by " +
+                        "editing the properties of this contract.")
 
-            self.log("Retrieving data from {url}.".format(url=url))
-            res = requests.get(url)
-            res.raise_for_status()
-            result = requests.get(url).json()
-            if isinstance(result, dict):
-                result_data = result['DataPoints']
-            elif isinstance(result, list):
-                result_data = result
-            else:
-                raise BadRequest(
-                    "Expecting a JSON object at the top level, but instead " +
-                    "got " + str(result))
-            raw_data = []
-            for jdatum in result_data:
-                raw_data.append(
-                    dict(
-                        mpan_core=mpan_core,
-                        start_date=utc_datetime(1, 1, 1) + Timedelta(
-                            seconds=jdatum['Time'] / 10000000),
-                        channel_type='ACTIVE',
-                        value=jdatum['Value'],
-                        status='A'))
-            HhDatum.insert(sess, raw_data, contract)
-            sess.commit()
+                self.log("Retrieving data from {url}.".format(url=url))
+                res = requests.get(url)
+                res.raise_for_status()
+                result = requests.get(url).json()
+                if isinstance(result, dict):
+                    result_data = result['DataPoints']
+                elif isinstance(result, list):
+                    result_data = result
+                else:
+                    raise BadRequest(
+                        "Expecting a JSON object at the top level, but "
+                        "instead got " + str(result))
+                raw_data = []
+                for jdatum in result_data:
+                    raw_data.append(
+                        dict(
+                            mpan_core=mpan_core,
+                            start_date=utc_datetime(1, 1, 1) + Timedelta(
+                                seconds=jdatum['Time'] / 10000000),
+                            channel_type='ACTIVE',
+                            value=jdatum['Value'],
+                            status='A'))
+                HhDatum.insert(sess, raw_data, contract)
+                sess.commit()
         self.log("Finished loading.")
         return False
 
