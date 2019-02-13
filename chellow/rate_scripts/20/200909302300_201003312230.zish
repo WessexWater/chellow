@@ -3,25 +3,93 @@
     "002": {
       "gbp-per-kva-per-month": 0.51,
       "fixed-gbp-per-day": 0,
-      "day-gbp-per-kwh": 0},
+      "day-gbp-per-kwh": 0,
+      "capacity-<=200-gbp-per-kva-per-month": 1.13,
+      "capacity->200-gbp-per-kva-per-month": 1.00
+    },
     "006": {
       "gbp-per-kva-per-month": 0.51,
       "fixed-gbp-per-day": 0,
-      "day-gbp-per-kwh": 0},
+      "day-gbp-per-kwh": 0
+    },
+    "100": {
+      "fixed-gbp-per-day": 0.0562,
+      "day-gbp-per-kwh": 0.01645,
+      "capacity-<=200-gbp-per-kva-per-month": 1.13
+    },
+    "104": {
+      "fixed-gbp-per-day": 0.0562,
+      "day-gbp-per-kwh": 0.01645,
+      "capacity-<=200-gbp-per-kva-per-month": 1.13
+    },
+    "105": {
+      "fixed-gbp-per-day": 0.0562,
+      "day-gbp-per-kwh": 0.01645,
+      "capacity-<=200-gbp-per-kva-per-month": 1.13
+    },
+    "115": {
+      "fixed-gbp-per-day": 0.0562,
+      "day-gbp-per-kwh": 0.01645,
+      "capacity-<=200-gbp-per-kva-per-month": 1.13
+    },
     "126": {
       "fixed-gbp-per-day": 0.0562,
-      "day-gbp-per-kwh": 0.01645},
+      "day-gbp-per-kwh": 0.01645,
+      "capacity-<=200-gbp-per-kva-per-month": 1.13
+    },
     "127,473": {
       "fixed-gbp-per-day": 0.0808,
-      "day-gbp-per-kwh": 0.01645},
+      "day-gbp-per-kwh": 0.01645,
+      "capacity-<=200-gbp-per-kva-per-month": 1.13
+    },
     "129": {
       "fixed-gbp-per-day": 0.0632,
       "day-gbp-per-kwh": 0.01737,
-      "night-gbp-per-kwh": 0.00197},
+      "night-gbp-per-kwh": 0.00197,
+      "capacity-<=200-gbp-per-kva-per-month": 1.13
+    },
     "130": {
       "fixed-gbp-per-day": 0.0758,
       "day-gbp-per-kwh": 0.01737,
-      "night-gbp-per-kwh": 0.00197},
+      "night-gbp-per-kwh": 0.00197,
+      "capacity-<=200-gbp-per-kva-per-month": 1.13
+    },
+    "133": {
+      "fixed-gbp-per-day": 0.0758,
+      "day-gbp-per-kwh": 0.01737,
+      "night-gbp-per-kwh": 0.00197,
+      "capacity-<=200-gbp-per-kva-per-month": 1.13
+    },
+    "134": {
+      "fixed-gbp-per-day": 0.0758,
+      "day-gbp-per-kwh": 0.01737,
+      "night-gbp-per-kwh": 0.00197,
+      "capacity-<=200-gbp-per-kva-per-month": 1.13
+    },
+    "135": {
+      "fixed-gbp-per-day": 0.0758,
+      "day-gbp-per-kwh": 0.01737,
+      "night-gbp-per-kwh": 0.00197,
+      "capacity-<=200-gbp-per-kva-per-month": 1.13
+    },
+    "136": {
+      "fixed-gbp-per-day": 0.0758,
+      "day-gbp-per-kwh": 0.01737,
+      "night-gbp-per-kwh": 0.00197,
+      "capacity-<=200-gbp-per-kva-per-month": 1.13
+    },
+    "140": {
+      "fixed-gbp-per-day": 0.0758,
+      "day-gbp-per-kwh": 0.01737,
+      "night-gbp-per-kwh": 0.00197,
+      "capacity-<=200-gbp-per-kva-per-month": 1.13
+    },
+    "142": {
+      "fixed-gbp-per-day": 0.0758,
+      "day-gbp-per-kwh": 0.01737,
+      "night-gbp-per-kwh": 0.00197,
+      "capacity-<=200-gbp-per-kva-per-month": 1.13
+    },
     "401,475": {
       "fixed-gbp-per-month": 18.58,
       "day-gbp-per-kwh": 0.00649,
@@ -30,6 +98,13 @@
       "capacity->200-gbp-per-kva-per-month": 1.00,
       "excess-gbp-per-kva-per-month": 0.45},
     "400,453,470": {
+      "fixed-gbp-per-month": 15.97,
+      "day-gbp-per-kwh": 0.00649,
+      "night-gbp-per-kwh": 0.00126,
+      "capacity-<=200-gbp-per-kva-per-month": 1.13,
+      "capacity->200-gbp-per-kva-per-month": 1.00,
+      "excess-gbp-per-kva-per-month": 0.45},
+    "500": {
       "fixed-gbp-per-month": 15.97,
       "day-gbp-per-kwh": 0.00649,
       "night-gbp-per-kwh": 0.00126,
@@ -54,17 +129,36 @@
       "day-gbp-per-kwh":   0.00544,
       "capacity-<=200-gbp-per-kva-per-month": 1.13,
       "capacity->200-gbp-per-kva-per-month": 1.00,
-      "excess-gbp-per-kva-per-month": 0.45},
+      "excess-gbp-per-kva-per-month": 0.45
+    },
     "655": {
       "fixed-gbp-per-month": 105.18,
       "day-gbp-per-kwh": 0.00406,
       "capacity-<=200-gbp-per-kva-per-month": 0.92,
       "capacity->200-gbp-per-kva-per-month": 0.92,
-      "excess-gbp-per-kva-per-month": 0.43},
+      "excess-gbp-per-kva-per-month": 0.43
+    },
     "909,477": {
-      "gbp-per-kva-per-month": 0.51},
+      "fixed-gbp-per-month": 105.18,
+      "gbp-per-kva-per-month": 0.51,
+      "day-gbp-per-kwh": 0.00406,
+      "capacity-<=200-gbp-per-kva-per-month": 0.92,
+      "capacity->200-gbp-per-kva-per-month": 0.92
+    },
     "910,478": {
-      "gbp-per-kva-per-month": 0.51}},
+      "fixed-gbp-per-month": 105.18,
+      "day-gbp-per-kwh": 0.00406,
+      "capacity-<=200-gbp-per-kva-per-month": 0.92,
+      "capacity->200-gbp-per-kva-per-month": 0.92,
+      "gbp-per-kva-per-month": 0.51
+    },
+    "980": {
+      "day-gbp-per-kwh": 0.00406,
+      "capacity-<=200-gbp-per-kva-per-month": 0.92,
+      "capacity->200-gbp-per-kva-per-month": 0.92,
+      "gbp-per-kva-per-month": 0.51
+    }
+  },
   "lafs": {
     "hv": {
       "peak": 1.043,

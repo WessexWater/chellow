@@ -140,83 +140,87 @@ def content(supply_id, start_date, finish_date, user):
             eras = eras.filter(Era.supply == Supply.get_by_id(sess, supply_id))
 
         for era in eras:
-            supply = era.supply
-            site_codes = set()
-            site = None
-            for site_era in era.site_eras:
-                if site_era.is_physical:
-                    site = site_era.site
+            try:
+                supply = era.supply
+                site_codes = set()
+                site = None
+                for site_era in era.site_eras:
+                    if site_era.is_physical:
+                        site = site_era.site
+                    else:
+                        site_codes.add(site_era.site.code)
+
+                sup_eras = sess.query(Era).filter(
+                    Era.supply == supply).order_by(Era.start_date).all()
+                supply_start = sup_eras[0].start_date
+                supply_finish = sup_eras[-1].finish_date
+
+                if supply.generator_type is None:
+                    generator_type = ''
                 else:
-                    site_codes.add(site_era.site.code)
+                    generator_type = supply.generator_type.code
 
-            sup_eras = sess.query(Era).filter(
-                Era.supply == supply).order_by(Era.start_date).all()
-            supply_start = sup_eras[0].start_date
-            supply_finish = sup_eras[-1].finish_date
+                ssc = era.ssc
+                ssc_code = '' if ssc is None else ssc.code
 
-            if supply.generator_type is None:
-                generator_type = ''
-            else:
-                generator_type = supply.generator_type.code
+                prime_reads = set()
+                for read, rdate in chain(
+                        sess.query(
+                            RegisterRead, RegisterRead.previous_date).join(
+                            RegisterRead.previous_type).join(Bill).join(
+                            BillType).filter(
+                        Bill.supply == supply, BillType.code != 'W',
+                        RegisterRead.previous_date >= start_date,
+                        RegisterRead.previous_date <= finish_date,
+                        ReadType.code.in_(NORMAL_READ_TYPES)).options(
+                            joinedload(RegisterRead.bill)),
 
-            ssc = era.ssc
-            ssc_code = '' if ssc is None else ssc.code
+                        sess.query(
+                            RegisterRead, RegisterRead.present_date).join(
+                            RegisterRead.present_type).join(Bill).join(
+                            BillType).filter(
+                        Bill.supply == supply, BillType.code != 'W',
+                        RegisterRead.present_date >= start_date,
+                        RegisterRead.present_date <= finish_date,
+                        ReadType.code.in_(NORMAL_READ_TYPES)).options(
+                            joinedload(RegisterRead.bill))):
+                    prime_bill = sess.query(Bill).join(BillType).filter(
+                        Bill.supply == supply,
+                        Bill.start_date <= read.bill.finish_date,
+                        Bill.finish_date >= read.bill.start_date,
+                        Bill.reads.any()).order_by(
+                        Bill.issue_date.desc(), BillType.code).first()
+                    if prime_bill.id == read.bill.id:
+                        prime_reads.add(str(rdate) + "_" + read.msn)
 
-            prime_reads = set()
-            for read, rdate in chain(
-                    sess.query(
-                        RegisterRead, RegisterRead.previous_date).join(
-                        RegisterRead.previous_type).join(Bill).join(
-                        BillType).filter(
-                    Bill.supply == supply, BillType.code != 'W',
-                    RegisterRead.previous_date >= start_date,
-                    RegisterRead.previous_date <= finish_date,
-                    ReadType.code.in_(NORMAL_READ_TYPES)).options(
-                        joinedload(RegisterRead.bill)),
+                supply_type = era.meter_category
 
-                    sess.query(
-                        RegisterRead, RegisterRead.present_date).join(
-                        RegisterRead.present_type).join(Bill).join(
-                        BillType).filter(
-                    Bill.supply == supply, BillType.code != 'W',
-                    RegisterRead.present_date >= start_date,
-                    RegisterRead.present_date <= finish_date,
-                    ReadType.code.in_(NORMAL_READ_TYPES)).options(
-                        joinedload(RegisterRead.bill))):
-                prime_bill = sess.query(Bill).join(BillType).filter(
-                    Bill.supply == supply,
-                    Bill.start_date <= read.bill.finish_date,
-                    Bill.finish_date >= read.bill.start_date,
-                    Bill.reads.any()).order_by(
-                    Bill.issue_date.desc(), BillType.code).first()
-                if prime_bill.id == read.bill.id:
-                    prime_reads.add(
-                        str(rdate) + "_" + read.msn)
+                chunk_start = hh_max(era.start_date, start_date)
+                chunk_finish = hh_min(era.finish_date, finish_date)
+                num_hh = int(
+                    (chunk_finish - (chunk_start - HH)).total_seconds() /
+                    (30 * 60))
 
-            supply_type = era.meter_category
-
-            chunk_start = hh_max(era.start_date, start_date)
-            chunk_finish = hh_min(era.finish_date, finish_date)
-            num_hh = int(
-                (chunk_finish - (chunk_start - HH)).total_seconds() /
-                (30 * 60))
-
-            w.writerow(
-                [
-                    hh_format(era.start_date),
-                    hh_format(era.finish_date, ongoing_str=''),
-                    supply.id, supply.name, supply.source.code, generator_type,
-                    site.code, site.name, '| '.join(sorted(site_codes)),
-                    hh_format(start_date), hh_format(finish_date), era.pc.code,
-                    era.mtc.code, era.cop.code, ssc_code, era.properties,
-                    era.mop_contract.name, era.mop_account,
-                    era.dc_contract.name, era.dc_account,
-                    len(prime_reads), supply_type, hh_format(supply_start),
-                    hh_format(supply_finish, ongoing_str='')] + mpan_bit(
-                    sess, supply, True, num_hh, era, chunk_start,
-                    chunk_finish, forecast_date, caches) + mpan_bit(
-                    sess, supply, False, num_hh, era, chunk_start,
-                    chunk_finish, forecast_date, caches))
+                w.writerow(
+                    [
+                        hh_format(era.start_date),
+                        hh_format(era.finish_date, ongoing_str=''),
+                        supply.id, supply.name, supply.source.code,
+                        generator_type, site.code, site.name,
+                        '| '.join(sorted(site_codes)),
+                        hh_format(start_date), hh_format(finish_date),
+                        era.pc.code,
+                        era.mtc.code, era.cop.code, ssc_code, era.properties,
+                        era.mop_contract.name, era.mop_account,
+                        era.dc_contract.name, era.dc_account,
+                        len(prime_reads), supply_type, hh_format(supply_start),
+                        hh_format(supply_finish, ongoing_str='')] + mpan_bit(
+                        sess, supply, True, num_hh, era, chunk_start,
+                        chunk_finish, forecast_date, caches) + mpan_bit(
+                        sess, supply, False, num_hh, era, chunk_start,
+                        chunk_finish, forecast_date, caches))
+            except BadRequest as e:
+                w.writerow(['era ' + str(era.id) + ' ' + str(e)])
 
             # Avoid a long-running transaction
             sess.rollback()
@@ -224,7 +228,8 @@ def content(supply_id, start_date, finish_date, user):
         if era is None:
             pref = "Problem: "
         else:
-            pref = "Problem with era " + str(era.id) + ": "
+            pref = "Problem with era " + chellow.utils.url_root + "eras/" + \
+                str(era.id) + "/edit : "
         f.write(pref + e.description)
     except BaseException as e:
         if era is None:

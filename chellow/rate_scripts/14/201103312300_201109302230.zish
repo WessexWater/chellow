@@ -1,16 +1,5 @@
 {
   "_E": {
-    "lafs": {
-      "lv-net": {
-        "night": 1.051,
-        "winter-weekday-peak": 1.075,
-        "winter-weekday-day": 1.065,
-        "other": 1.087},
-      "hv-net": {
-        "night": 1.017,
-        "winter-weekday-peak": 1.025,
-        "winter-weekday-day": 1.022,
-        "other": 1.030}},
     "bands": [
       {
         "weekend": false,
@@ -23,6 +12,36 @@
         "finish": 21,
         "band": "amber"}],
     "tariffs": {
+      "025": {
+        "description": "LV",
+        "gbp-per-mpan-per-day": 0.0757,
+        "gbp-per-kva-per-day": 0.0264,
+        "excess-gbp-per-kva-per-day": 0.0264,
+        "red-gbp-per-kwh": 0.06891,
+        "amber-gbp-per-kwh": 0.00709,
+        "green-gbp-per-kwh": 0.00046,
+        "gbp-per-kvarh": 0.00319
+      },
+      "026": {
+        "description": "LV",
+        "gbp-per-mpan-per-day": 0.0757,
+        "gbp-per-kva-per-day": 0.0264,
+        "excess-gbp-per-kva-per-day": 0.0264,
+        "red-gbp-per-kwh": 0.06891,
+        "amber-gbp-per-kwh": 0.00709,
+        "green-gbp-per-kwh": 0.00046,
+        "gbp-per-kvarh": 0.00319
+      },
+      "111": {
+        "description": "LV",
+        "gbp-per-mpan-per-day": 0.0757,
+        "gbp-per-kva-per-day": 0.0264,
+        "excess-gbp-per-kva-per-day": 0.0264,
+        "red-gbp-per-kwh": 0.06891,
+        "amber-gbp-per-kwh": 0.00709,
+        "green-gbp-per-kwh": 0.00046,
+        "gbp-per-kvarh": 0.00319
+      },
       "127": {
         "description": "LV",
         "gbp-per-mpan-per-day": 0.0757,
@@ -31,7 +50,8 @@
         "red-gbp-per-kwh": 0.06891,
         "amber-gbp-per-kwh": 0.00709,
         "green-gbp-per-kwh": 0.00046,
-        "gbp-per-kvarh": 0.00319},
+        "gbp-per-kvarh": 0.00319
+      },
       "128": {
         "description": "LV Sub",
         "gbp-per-mpan-per-day": 0.0757,
@@ -58,4 +78,8 @@
         "red-gbp-per-kwh": 0.04029,
         "amber-gbp-per-kwh": 0.00288,
         "green-gbp-per-kwh": 0.00028,
-        "gbp-per-kvarh": 0.00193}}}}
+        "gbp-per-kvarh": 0.00193
+      }
+    }
+  }
+}

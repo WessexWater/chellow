@@ -1,21 +1,5 @@
 {
   "_L": {
-    "lafs": {
-      "lv-net": {
-        "winter-weekday-peak": 1.087,
-        "winter-weekday-day": 1.080,
-        "night": 1.071,
-        "other": 1.074},
-      "lv-sub": {
-        "winter-weekday-peak": 1.078,
-        "winter-weekday-day": 1.072,
-        "night": 1.064,
-        "other": 1.067},
-      "hv-net": {
-        "winter-weekday-peak": 1.065,
-        "winter-weekday-day": 1.058,
-        "night": 1.044,
-        "other": 1.050}},
     "bands": [
       {
         "weekend": true,
@@ -41,7 +25,18 @@
         "red-gbp-per-kwh": 0.02533,
         "amber-gbp-per-kwh": 0.02533,
         "green-gbp-per-kwh": 0.02533,
-        "gbp-per-kvarh": 0},
+        "gbp-per-kvarh": 0
+      },
+      "210": {
+        "description": "Small Non Domestic Two Rate",
+        "gbp-per-mpan-per-day": 0.0691,
+        "gbp-per-kva-per-day": 0,
+        "excess-gbp-per-kva-per-day": 0,
+        "red-gbp-per-kwh": 0.02992,
+        "amber-gbp-per-kwh": 0.00215,
+        "green-gbp-per-kwh": 0.00215,
+        "gbp-per-kvarh": 0
+      },
       "510": {
         "description": "High Voltage HH Metered",
         "gbp-per-mpan-per-day": 0.6567,

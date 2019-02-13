@@ -27,19 +27,18 @@ def datum_beginning_22(ds, hh):
     bill = ds.supplier_bill
 
     rs = get_file_rates(ds.caches, ds.dno_code, hh['start-date'])
-    tariff = rs['tariffs'][ds.llfc_code]
-    lafs = rs['lafs'][VL_LOOKUP[ds.voltage_level_code][ds.is_substation]]
+    try:
+        tariff = rs['tariffs'][ds.llfc_code]
+        lafs = rs['lafs'][VL_LOOKUP[ds.voltage_level_code][ds.is_substation]]
+    except KeyError as e:
+        raise BadRequest(str(e))
 
     if ds.is_import:
         try:
             day_rate = float(tariff['day-gbp-per-kwh'])
-        except KeyError:
-            raise BadRequest(
-                "For the DNO " + ds.dno_code +
-                " and the rate script at date " +
-                hh_format(hh['start-date']) +
-                " and the rate 'tariffs' with the LLFC code " + ds.llfc_code +
-                " the key 'day-gbp-per-kwh' can't be found.")
+        except KeyError as e:
+            raise BadRequest(str(e))
+
         night_rate = float(tariff['night-gbp-per-kwh'])
         if 6 < hh['ct-decimal-hour'] <= 23:
             bill['duos-day-kwh'] += hh['msp-kwh']
@@ -60,7 +59,12 @@ def datum_beginning_22(ds, hh):
             slot_name = 'other'
     else:
         slot_name = 'other'
-    hh['laf'] = float(lafs[slot_name])
+
+    try:
+        hh['laf'] = float(lafs[slot_name])
+    except KeyError as e:
+        raise BadRequest(str(e))
+
     hh['gsp-kwh'] = hh['laf'] * hh['msp-kwh']
     hh['gsp-kw'] = hh['gsp-kwh'] * 2
 
@@ -83,7 +87,10 @@ def datum_beginning_22(ds, hh):
 
         tariff = get_file_rates(
             ds.caches, ds.dno_code, hh['start-date'])['tariffs'][ds.llfc_code]
-        reactive_rate = float(tariff['reactive-gbp-per-kvarh'])
+        try:
+            reactive_rate = float(tariff['reactive-gbp-per-kvarh'])
+        except KeyError as e:
+            raise BadRequest(str(e))
         bill['duos-reactive-rate'] = reactive_rate
 
         if not ds.is_displaced:
@@ -124,7 +131,10 @@ def datum_beginning_20(ds, hh):
         ds.caches, ds.dno_code,
         hh['start-date'])['lafs'][ds.voltage_level_code.lower()]
 
-    day_rate = float(tariff['day-gbp-per-kwh'])
+    try:
+        day_rate = float(tariff['day-gbp-per-kwh'])
+    except KeyError as e:
+        raise BadRequest(str(e))
 
     if 'night-gbp-per-kwh' in tariff:
         night_rate = float(tariff['night-gbp-per-kwh'])
@@ -182,23 +192,34 @@ def datum_beginning_20(ds, hh):
                     if billed_avail % block > 0:
                         billed_avail = (int(billed_avail / block) + 1) * block
                     break
-            le_200_avail_rate = float(
-                tariff['capacity-<=200-gbp-per-kva-per-month'])
+            try:
+                le_200_avail_rate = float(
+                    tariff['capacity-<=200-gbp-per-kva-per-month'])
+            except KeyError as e:
+                raise BadRequest(str(e))
 
             bill['duos-availability-gbp'] += min(200, billed_avail) * \
                 le_200_avail_rate
 
             if billed_avail > 200:
-                gt_200_avail_rate = float(
-                    tariff['capacity->200-gbp-per-kva-per-month'])
+                try:
+                    gt_200_avail_rate = float(
+                        tariff['capacity->200-gbp-per-kva-per-month'])
+                except KeyError as e:
+                    raise BadRequest(str(e))
+
                 bill['duos-availability-gbp'] += (billed_avail - 200) * \
                     gt_200_avail_rate
 
-        if 'fixed-gbp-per-month' in tariff:
-            bill['duos-standing-gbp'] += float(tariff['fixed-gbp-per-month'])
-        else:
-            bill['duos-standing-gbp'] += float(tariff['fixed-gbp-per-day']) * \
-                hh['utc-day']
+        try:
+            if 'fixed-gbp-per-month' in tariff:
+                bill['duos-standing-gbp'] += float(
+                    tariff['fixed-gbp-per-month'])
+            else:
+                bill['duos-standing-gbp'] += float(
+                    tariff['fixed-gbp-per-day']) * hh['utc-day']
+        except KeyError as e:
+            raise BadRequest(str(e))
 
 
 def year_md_095(data_source, finish):
@@ -283,7 +304,11 @@ def datum_beginning_14(ds, hh):
     bill = ds.supplier_bill
 
     rates = get_file_rates(ds.caches, ds.dno_code, hh['start-date'])
-    tariff = rates['tariffs'][ds.llfc_code]
+    try:
+        tariff = rates['tariffs'][ds.llfc_code]
+    except KeyError as e:
+        raise BadRequest(str(e))
+
     if 0 < hh['ct-decimal-hour'] <= 7:
         bill['duos-night-kwh'] += hh['msp-kwh']
         bill['duos-night-gbp'] += hh['msp-kwh'] * float(
@@ -371,9 +396,14 @@ def datum_2010_04_01(ds, hh):
             tariff = tariffs[start_date]
         except KeyError:
             tariff = None
-            for llfcs, tf in get_file_rates(
+            try:
+                tariff_list = get_file_rates(
                     ds.caches, ds.dno_code,
-                    start_date)[ds.gsp_group_code]['tariffs'].items():
+                    start_date)[ds.gsp_group_code]['tariffs']
+            except KeyError as e:
+                raise BadRequest(str(e))
+
+            for llfcs, tf in tariff_list.items():
                 if ds.llfc_code in [cd.strip() for cd in llfcs.split(',')]:
                     tariff = tf
                     break
@@ -400,9 +430,14 @@ def datum_2010_04_01(ds, hh):
             band = 'green'
             ct_hr = hh['ct-decimal-hour']
             weekend = hh['ct-day-of-week'] > 4
-            for slot in get_file_rates(
+            try:
+                slots = get_file_rates(
                     ds.caches, ds.dno_code,
-                    start_date)[ds.gsp_group_code]['bands']:
+                    start_date)[ds.gsp_group_code]['bands']
+            except KeyError as e:
+                raise BadRequest(str(e))
+
+            for slot in slots:
                 slot_weekend = slot['weekend'] == 1
                 if slot_weekend == weekend and \
                         slot['start'] <= ct_hr < slot['finish']:
@@ -442,7 +477,12 @@ def datum_2010_04_01(ds, hh):
             try:
                 laf = hist_map[hist_date]
             except KeyError:
-                for chunk in rs['tps'][rs['llfc_tp'][ds.llfc_code]].values():
+                try:
+                    tp_id = rs['llfc_tp'][ds.llfc_code]
+                except KeyError as e:
+                    raise BadRequest(str(e))
+
+                for chunk in rs['tps'][tp_id].values():
                     chunk_start_raw = Datetime.strptime(
                         chunk['start_date'], "%Y%m%d")
                     chunk_finish_raw = Datetime.strptime(

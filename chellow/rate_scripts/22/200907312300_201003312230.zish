@@ -21,13 +21,22 @@
       "day-gbp-per-kwh": 0.019400,
       "night-gbp-per-kwh": 0.019400,
       "reactive-gbp-per-kvarh": 0,
-      "excess-gbp-per-kva-per-day": 0},
+      "excess-gbp-per-kva-per-day": 0
+    },
     "210": {
       "gbp-per-kva-per-day": 0,
       "day-gbp-per-kwh": 0.026700,
       "night-gbp-per-kwh": 0.004800,
       "reactive-gbp-per-kvarh": 0,
-      "excess-gbp-per-kva-per-day": 0},
+      "excess-gbp-per-kva-per-day": 0
+    },
+    "251": {
+      "gbp-per-kva-per-day": 0,
+      "day-gbp-per-kwh": 0.026700,
+      "night-gbp-per-kwh": 0.004800,
+      "reactive-gbp-per-kvarh": 0,
+      "excess-gbp-per-kva-per-day": 0
+    },
     "510": {
       "gbp-per-kva-per-day": 0.038700,
       "day-gbp-per-kwh": 0.004700,
@@ -45,23 +54,32 @@
       "reactive-gbp-per-kvarh": 0.002300,
       "excess-gbp-per-kva-per-day": 0},
     "524": {
-      "gbp-per-kva-per-day": 0.018600},
+      "gbp-per-kva-per-day": 0.018600,
+      "reactive-gbp-per-kvarh": 0.002300
+    },
     "526": {
-      "gbp-per-kva-per-day": 0.018600},
+      "gbp-per-kva-per-day": 0.018600
+    },
     "527": {
-      "gbp-per-kva-per-day": 0.018600},
+      "gbp-per-kva-per-day": 0.018600,
+      "reactive-gbp-per-kvarh": 0.002300
+    },
     "540": {
       "gbp-per-kva-per-day": 0.038900,
       "day-gbp-per-kwh": 0.008100,
       "night-gbp-per-kwh": 0.002800,
-      "reactive-gbp-per-kvarh": 0.003300},
+      "reactive-gbp-per-kvarh": 0.003300
+    },
     "550": {
       "gbp-per-kva-per-day": 0.038900,
       "day-gbp-per-kwh": 0.008100,
       "night-gbp-per-kwh": 0.002800,
-      "reactive-gbp-per-kvarh": 0.003300},
+      "reactive-gbp-per-kvarh": 0.003300
+    },
     "551": {
-      "gbp-per-kva-per-day": 0.018200},
+      "gbp-per-kva-per-day": 0.018200,
+      "reactive-gbp-per-kvarh": 0.003300
+    },
     "570": {
       "gbp-per-kva-per-day": 0.039000,
       "day-gbp-per-kwh": 0.012700,
@@ -78,4 +96,14 @@
       "day-gbp-per-kwh": 0.012700,
       "night-gbp-per-kwh": 0.004500,
       "reactive-gbp-per-kvarh": 0.004200,
-      "excess-gbp-per-kva-per-day": 0}}}
+      "excess-gbp-per-kva-per-day": 0
+    },
+    "980": {
+      "gbp-per-kva-per-day": 0.039000,
+      "day-gbp-per-kwh": 0.012700,
+      "night-gbp-per-kwh": 0.004500,
+      "reactive-gbp-per-kvarh": 0.004200,
+      "excess-gbp-per-kva-per-day": 0
+    }
+  }
+}

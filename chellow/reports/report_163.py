@@ -6,7 +6,7 @@ from flask import render_template, request, g
 from chellow.models import (
     VoltageLevel, Participant, Party, MarketRole, Llfc, Mtc, MeterType,
     Session)
-from chellow.utils import hh_format, to_utc
+from chellow.utils import hh_format, to_utc, to_ct
 from werkzeug.exceptions import BadRequest
 from sqlalchemy.orm import joinedload
 from sqlalchemy import null
@@ -20,14 +20,16 @@ def parse_date(date_str):
     if len(date_str) == 0:
         return None
     else:
-        return to_utc(Datetime.strptime(date_str, "%d/%m/%Y"))
+        return to_utc(to_ct(Datetime.strptime(date_str, "%d/%m/%Y")))
 
 
 def parse_to_date(date_str):
-    dt = parse_date(date_str)
-    if dt is not None:
+    if len(date_str) == 0:
+        return None
+    else:
+        dt = to_ct(Datetime.strptime(date_str, "%d/%m/%Y"))
         dt += Timedelta(hours=23, minutes=30)
-    return dt
+        return to_utc(dt)
 
 
 def is_common_mtc(code):

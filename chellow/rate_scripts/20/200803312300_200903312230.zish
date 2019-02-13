@@ -1,34 +1,183 @@
 {
   "tariffs": {
+    "002": {
+      "fixed-gbp-per-month": 14.91,
+      "day-gbp-per-kwh": 0.00508,
+      "capacity-<=200-gbp-per-kva-per-month": 1.06,
+      "capacity->200-gbp-per-kva-per-month": 0.93,
+      "excess-gbp-per-kva-per-month": 0.42
+    },
+    "100": {
+      "fixed-gbp-per-month": 14.91,
+      "day-gbp-per-kwh": 0.00508,
+      "capacity-<=200-gbp-per-kva-per-month": 1.06,
+      "capacity->200-gbp-per-kva-per-month": 0.93,
+      "excess-gbp-per-kva-per-month": 0.42
+    },
+    "104": {
+      "fixed-gbp-per-month": 14.91,
+      "day-gbp-per-kwh": 0.00508,
+      "capacity-<=200-gbp-per-kva-per-month": 1.06,
+      "capacity->200-gbp-per-kva-per-month": 0.93,
+      "excess-gbp-per-kva-per-month": 0.42
+    },
+    "105": {
+      "fixed-gbp-per-month": 14.91,
+      "day-gbp-per-kwh": 0.00508,
+      "capacity-<=200-gbp-per-kva-per-month": 1.06,
+      "capacity->200-gbp-per-kva-per-month": 0.93,
+      "excess-gbp-per-kva-per-month": 0.42
+    },
+    "115": {
+      "fixed-gbp-per-month": 14.91,
+      "day-gbp-per-kwh": 0.00508,
+      "capacity-<=200-gbp-per-kva-per-month": 1.06,
+      "capacity->200-gbp-per-kva-per-month": 0.93,
+      "excess-gbp-per-kva-per-month": 0.42
+    },
+    "126": {
+      "fixed-gbp-per-month": 14.91,
+      "day-gbp-per-kwh": 0.00508,
+      "capacity-<=200-gbp-per-kva-per-month": 1.06,
+      "capacity->200-gbp-per-kva-per-month": 0.93,
+      "excess-gbp-per-kva-per-month": 0.42
+    },
+    "127": {
+      "fixed-gbp-per-month": 14.91,
+      "day-gbp-per-kwh": 0.00508,
+      "capacity-<=200-gbp-per-kva-per-month": 1.06,
+      "capacity->200-gbp-per-kva-per-month": 0.93,
+      "excess-gbp-per-kva-per-month": 0.42
+    },
+    "129": {
+      "fixed-gbp-per-month": 14.91,
+      "day-gbp-per-kwh": 0.00508,
+      "capacity-<=200-gbp-per-kva-per-month": 1.06,
+      "capacity->200-gbp-per-kva-per-month": 0.93,
+      "excess-gbp-per-kva-per-month": 0.42
+    },
+    "130": {
+      "fixed-gbp-per-month": 14.91,
+      "day-gbp-per-kwh": 0.00508,
+      "capacity-<=200-gbp-per-kva-per-month": 1.06,
+      "capacity->200-gbp-per-kva-per-month": 0.93,
+      "excess-gbp-per-kva-per-month": 0.42
+    },
+    "133": {
+      "fixed-gbp-per-month": 14.91,
+      "day-gbp-per-kwh": 0.00508,
+      "capacity-<=200-gbp-per-kva-per-month": 1.06,
+      "capacity->200-gbp-per-kva-per-month": 0.93,
+      "excess-gbp-per-kva-per-month": 0.42
+    },
+    "134": {
+      "fixed-gbp-per-month": 14.91,
+      "day-gbp-per-kwh": 0.00508,
+      "capacity-<=200-gbp-per-kva-per-month": 1.06,
+      "capacity->200-gbp-per-kva-per-month": 0.93,
+      "excess-gbp-per-kva-per-month": 0.42
+    },
+    "135": {
+      "fixed-gbp-per-month": 14.91,
+      "day-gbp-per-kwh": 0.00508,
+      "capacity-<=200-gbp-per-kva-per-month": 1.06,
+      "capacity->200-gbp-per-kva-per-month": 0.93,
+      "excess-gbp-per-kva-per-month": 0.42
+    },
+    "136": {
+      "fixed-gbp-per-month": 14.91,
+      "day-gbp-per-kwh": 0.00508,
+      "capacity-<=200-gbp-per-kva-per-month": 1.06,
+      "capacity->200-gbp-per-kva-per-month": 0.93,
+      "excess-gbp-per-kva-per-month": 0.42
+    },
+    "140": {
+      "fixed-gbp-per-month": 14.91,
+      "day-gbp-per-kwh": 0.00508,
+      "capacity-<=200-gbp-per-kva-per-month": 1.06,
+      "capacity->200-gbp-per-kva-per-month": 0.93,
+      "excess-gbp-per-kva-per-month": 0.42
+    },
+    "142": {
+      "fixed-gbp-per-month": 14.91,
+      "day-gbp-per-kwh": 0.00508,
+      "capacity-<=200-gbp-per-kva-per-month": 1.06,
+      "capacity->200-gbp-per-kva-per-month": 0.93,
+      "excess-gbp-per-kva-per-month": 0.42
+    },
     "450": {
       "fixed-gbp-per-month": 14.91,
       "day-gbp-per-kwh": 0.00508,
       "capacity-<=200-gbp-per-kva-per-month": 1.06,
       "capacity->200-gbp-per-kva-per-month": 0.93,
-      "excess-gbp-per-kva-per-month": 0.42},
+      "excess-gbp-per-kva-per-month": 0.42
+    },
+    "400": {
+      "fixed-gbp-per-month": 14.91,
+      "day-gbp-per-kwh": 0.00606,
+      "night-gbp-per-kwh": 0.00118,
+      "capacity-<=200-gbp-per-kva-per-month": 1.06,
+      "capacity->200-gbp-per-kva-per-month": 0.93,
+      "excess-gbp-per-kva-per-month": 0.42
+    },
+    "401": {
+      "fixed-gbp-per-month": 14.91,
+      "day-gbp-per-kwh": 0.00606,
+      "night-gbp-per-kwh": 0.00118,
+      "capacity-<=200-gbp-per-kva-per-month": 1.06,
+      "capacity->200-gbp-per-kva-per-month": 0.93,
+      "excess-gbp-per-kva-per-month": 0.42
+    },
     "453": {
       "fixed-gbp-per-month": 14.91,
       "day-gbp-per-kwh": 0.00606,
       "night-gbp-per-kwh": 0.00118,
       "capacity-<=200-gbp-per-kva-per-month": 1.06,
       "capacity->200-gbp-per-kva-per-month": 0.93,
-      "excess-gbp-per-kva-per-month": 0.42},
+      "excess-gbp-per-kva-per-month": 0.42
+    },
+    "500": {
+      "fixed-gbp-per-month": 51.50,
+      "day-gbp-per-kwh":  0.01157,
+      "capacity-<=200-gbp-per-kva-per-month": 1.06,
+      "capacity->200-gbp-per-kva-per-month": 0.93
+    },
     "520": {
       "fixed-gbp-per-month": 51.50,
-      "day-gbp-per-kwh":  0.01157},
+      "day-gbp-per-kwh":  0.01157
+    },
     "655": {
       "fixed-gbp-per-month": 98.23,
       "day-gbp-per-kwh":   0.00379,
       "capacity-<=200-gbp-per-kva-per-month": 0.86,
       "capacity->200-gbp-per-kva-per-month": 0.86,
-      "excess-gbp-per-kva-per-month": 0.40},
+      "excess-gbp-per-kva-per-month": 0.40
+    },
     "658": {
       "fixed-gbp-per-month": 98.23,
       "day-gbp-per-kwh": 0.00433,
       "night-gbp-per-kwh": 0.00108,
       "capacity-<=200-gbp-per-kva-per-month": 0.86,
       "capacity->200-gbp-per-kva-per-month": 0.86,
-      "excess-gbp-per-kva-per-month": 0.40}},
+      "excess-gbp-per-kva-per-month": 0.40
+    },
+    "909": {
+      "fixed-gbp-per-month": 98.23,
+      "day-gbp-per-kwh": 0.00433,
+      "night-gbp-per-kwh": 0.00108,
+      "capacity-<=200-gbp-per-kva-per-month": 0.86,
+      "capacity->200-gbp-per-kva-per-month": 0.86,
+      "excess-gbp-per-kva-per-month": 0.40
+    },
+    "910": {
+      "fixed-gbp-per-month": 98.23,
+      "day-gbp-per-kwh": 0.00433,
+      "night-gbp-per-kwh": 0.00108,
+      "capacity-<=200-gbp-per-kva-per-month": 0.86,
+      "capacity->200-gbp-per-kva-per-month": 0.86,
+      "excess-gbp-per-kva-per-month": 0.40
+    }
+  },
   "lafs": {
     "hv": {
       "peak": 1.048,

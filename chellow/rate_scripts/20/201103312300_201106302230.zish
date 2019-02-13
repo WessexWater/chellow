@@ -1,26 +1,5 @@
 {
   "_H": {
-    "lafs": {
-      "lv-net": {
-        "peak": 1.089,
-        "winter-weekday": 1.085,
-        "other": 1.078,
-        "night": 1.074},
-      "lv-sub": {
-        "peak": 1.061,
-        "winter-weekday": 1.059,
-        "other": 1.056,
-        "night": 1.057},
-      "hv-net": {
-        "peak": 1.042,
-        "winter-weekday": 1.040,
-        "other": 1.035,
-        "night": 1.029},
-      "hv-sub": {
-        "peak": 1.021,
-        "winter-weekday": 1.020,
-        "other": 1.018,
-        "night": 1.017}},
     "bands": [
       {
         "weekend": false,
@@ -31,7 +10,9 @@
         "weekend": false,
         "start": 9,
         "finish": 20.5,
-        "band": "amber"}],
+        "band": "amber"
+      }
+    ],
     "tariffs": {
       "001,477,909": {
         "description": "LV Generation Intermittent",
@@ -104,7 +85,38 @@
         "red-gbp-per-kwh": -0.02346,
         "amber-gbp-per-kwh": -0.00261,
         "green-gbp-per-kwh": -0.00041,
-        "gbp-per-kvarh": 0.00073},
+        "gbp-per-kvarh": 0.00073
+      },
+      "129": {
+        "description": "HV Sub Generation Non Intermittent",
+        "gbp-per-mpan-per-day": 0.9881,
+        "gbp-per-kva-per-day": 0.00,
+        "excess-gbp-per-kva-per-day": 0.00,
+        "red-gbp-per-kwh": -0.02346,
+        "amber-gbp-per-kwh": -0.00261,
+        "green-gbp-per-kwh": -0.00041,
+        "gbp-per-kvarh": 0.00073
+      },
+      "130": {
+        "description": "HV Sub Generation Non Intermittent",
+        "gbp-per-mpan-per-day": 0.9881,
+        "gbp-per-kva-per-day": 0.00,
+        "excess-gbp-per-kva-per-day": 0.00,
+        "red-gbp-per-kwh": -0.02346,
+        "amber-gbp-per-kwh": -0.00261,
+        "green-gbp-per-kwh": -0.00041,
+        "gbp-per-kvarh": 0.00073
+      },
+      "401": {
+        "description": "HV Sub Generation Non Intermittent",
+        "gbp-per-mpan-per-day": 0.9881,
+        "gbp-per-kva-per-day": 0.00,
+        "excess-gbp-per-kva-per-day": 0.00,
+        "red-gbp-per-kwh": -0.02346,
+        "amber-gbp-per-kwh": -0.00261,
+        "green-gbp-per-kwh": -0.00041,
+        "gbp-per-kvarh": 0.00073
+      },
       "453,470": {
         "description": "LV HH Metered",
         "gbp-per-mpan-per-day": 0.0831,

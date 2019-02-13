@@ -1,26 +1,5 @@
 {
   "_L": {
-    "lafs": {
-      "lv-net": {
-        "winter-weekday-peak": 1.087,
-        "winter-weekday-day": 1.080,
-        "night": 1.072,
-        "other": 1.075},
-      "lv-sub": {
-        "winter-weekday-peak": 1.078,
-        "winter-weekday-day": 1.072,
-        "night": 1.065,
-        "other": 1.068},
-      "hv-net": {
-        "winter-weekday-peak": 1.065,
-        "winter-weekday-day": 1.058,
-        "night": 1.046,
-        "other": 1.051},
-      "hv-sub": {
-        "winter-weekday-peak": 1.042,
-        "winter-weekday-day": 1.038,
-        "night": 1.031,
-        "other": 1.034}},
     "bands": [
       {
         "weekend": true,
@@ -36,7 +15,9 @@
         "weekend": false,
         "start": 7.5,
         "finish": 21.5,
-        "band": "amber"}],
+        "band": "amber"
+      }
+    ],
     "tariffs": {
       "110": {
         "description": "High Voltage HH Metered",
@@ -47,6 +28,26 @@
         "amber-gbp-per-kwh": 0.0004,
         "green-gbp-per-kwh": 0.00058,
         "gbp-per-kvarh": 0.00238},
+      "210": {
+        "description": "Small Non-Domestic Two Rate",
+        "gbp-per-mpan-per-day": 0.0550,
+        "gbp-per-kva-per-day": 0,
+        "excess-gbp-per-kva-per-day": 0,
+        "red-gbp-per-kwh": 0.02533,
+        "amber-gbp-per-kwh": 0.209,
+        "green-gbp-per-kwh": 0.209,
+        "gbp-per-kvarh": 0
+      },
+      "251": {
+        "description": "Small Non-Domestic Off peak (Related MPAN)",
+        "gbp-per-mpan-per-day": 0,
+        "gbp-per-kva-per-day": 0,
+        "excess-gbp-per-kva-per-day": 0,
+        "red-gbp-per-kwh": 0.00219,
+        "amber-gbp-per-kwh": 0.00219,
+        "green-gbp-per-kwh": 0.00219,
+        "gbp-per-kvarh": 0
+      },
       "510": {
         "description": "High Voltage HH Metered",
         "gbp-per-mpan-per-day": 0.6488,
@@ -154,4 +155,18 @@
         "red-gbp-per-kwh": -0.00551,
         "amber-gbp-per-kwh": -0.00551,
         "green-gbp-per-kwh": -0.00551,
-        "gbp-per-kvarh": 0.00137}}}}
+        "gbp-per-kvarh": 0.00137
+      },
+      "980": {
+        "description": "NHH UMS (Unmetered Supplies)",
+        "gbp-per-mpan-per-day": 0,
+        "gbp-per-kva-per-day": 0,
+        "excess-gbp-per-kva-per-day": 0,
+        "red-gbp-per-kwh": 0.03009,
+        "amber-gbp-per-kwh": 0.03009,
+        "green-gbp-per-kwh": 0.03009,
+        "gbp-per-kvarh": 0
+      }
+    }
+  }
+}

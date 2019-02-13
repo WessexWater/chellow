@@ -1,26 +1,18 @@
 {
   "_H": {
-    "lafs": {
-      "lv-net": {
-          "peak": 1.089,
-          "winter-weekday": 1.085,
-          "other": 1.078,
-          "night": 1.074},
-      "lv-sub": {
-          "peak": 1.061,
-          "winter-weekday": 1.059,
-          "other": 1.056,
-          "night": 1.057},
-      "hv-net": {
-          "peak": 1.042,
-          "winter-weekday": 1.040,
-          "other": 1.035,
-          "night": 1.029},
-      "hv-sub": {
-          "peak": 1.021,
-          "winter-weekday": 1.020,
-          "other": 1.018,
-          "night": 1.017}},
+    "bands": [
+      {
+        "weekend": false,
+        "start": 16.5,
+        "finish": 19,
+        "band": "red"},
+      {
+        "weekend": false,
+        "start": 9,
+        "finish": 20.5,
+        "band": "amber"
+      }
+    ],
     "tariffs": {
       "001,477,909": {
         "description": "LV Generation Intermittent",
@@ -129,4 +121,8 @@
         "red-gbp-per-kwh": 0.04367,
         "amber-gbp-per-kwh": 0.00288,
         "green-gbp-per-kwh": 0.00054,
-        "gbp-per-kvarh": 0.00120}}}}
+        "gbp-per-kvarh": 0.00120
+      }
+    }
+  }
+}

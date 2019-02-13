@@ -15,7 +15,7 @@ from sqlalchemy.ext.declarative import declarative_base
 import operator
 from chellow.utils import (
     hh_after, HH, parse_mpan_core, hh_before, next_hh, prev_hh, hh_format,
-    hh_range, utc_datetime, utc_datetime_now, to_utc)
+    hh_range, utc_datetime, utc_datetime_now, to_utc, to_ct)
 from dateutil.relativedelta import relativedelta
 from functools import lru_cache
 from werkzeug.exceptions import BadRequest, NotFound
@@ -4587,12 +4587,25 @@ def db_upgrade_16_to_17(sess, root_path):
         "alter table g_register_read alter correction_factor set not null;")
 
 
+def db_upgrade_17_to_18(sess, root_path):
+    def _conv(dt):
+        if dt is None:
+            return None
+        return to_utc(to_ct(dt.replace(tzinfo=None)))
+
+    for tbl in (Llfc, Party, Mtc):
+        for row in sess.query(tbl):
+            row.valid_from = _conv(row.valid_from)
+            row.valid_to = _conv(row.valid_to)
+
+
 upgrade_funcs = [
     db_upgrade_0_to_1, db_upgrade_1_to_2, db_upgrade_2_to_3, db_upgrade_3_to_4,
     db_upgrade_4_to_5, db_upgrade_5_to_6, db_upgrade_6_to_7, db_upgrade_7_to_8,
     db_upgrade_8_to_9, db_upgrade_9_to_10, db_upgrade_10_to_11,
     db_upgrade_11_to_12, db_upgrade_12_to_13, db_upgrade_13_to_14,
-    db_upgrade_14_to_15, db_upgrade_15_to_16, db_upgrade_16_to_17]
+    db_upgrade_14_to_15, db_upgrade_15_to_16, db_upgrade_16_to_17,
+    db_upgrade_17_to_18]
 
 
 def db_upgrade(root_path):

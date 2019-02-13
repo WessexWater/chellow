@@ -2,6 +2,9 @@ import csv
 import shutil
 import os
 import sys
+from chellow.utils import ct_datetime, to_utc
+from datetime import timedelta as Timedelta
+
 
 mdd_ver = None
 GSP_PREFIX = "GSP_Group_"
@@ -20,11 +23,30 @@ else:
     print("MDD version is " + mdd_ver + ".")
 
 
-def to_iso(dmy):
+def to_date(dmy):
     if len(dmy) == 0:
+        return None
+    else:
+        return ct_datetime(int(dmy[6:]), int(dmy[3:5]), int(dmy[:2]))
+
+
+FMT = "%Y-%m-%d %H:%M:%S+00"
+
+
+def to_vf(dmy):
+    dt = to_date(dmy)
+    if dt is None:
         return ''
     else:
-        return '-'.join([dmy[6:], dmy[3:5], dmy[:2]]) + ' 00:00:00+00'
+        return to_utc(dt).strftime(FMT)
+
+
+def to_vt(dmy):
+    dt = to_date(dmy)
+    if dt is None:
+        return ''
+    else:
+        return to_utc(dt + Timedelta(hours=23, minutes=30)).strftime(FMT)
 
 
 for nm in os.listdir(DOWNLOAD_DIR):
@@ -95,7 +117,7 @@ with open("original/MTC_Meter_Type.csv") as fl, \
 
         meter_type_map[code] = eid
         converted.writerow(
-            [eid, code, description, to_iso(valid_from), to_iso(valid_to)])
+            [eid, code, description, to_vf(valid_from), to_vt(valid_to)])
 
 
 meter_payment_type_map = {}
@@ -113,7 +135,7 @@ with open("original/MTC_Payment_Type.csv") as fl, \
 
         meter_payment_type_map[code] = eid
         converted.writerow(
-            [eid, code, description, to_iso(valid_from), to_iso(valid_to)])
+            [eid, code, description, to_vf(valid_from), to_vt(valid_to)])
 
 
 pc_map = {}
@@ -135,7 +157,7 @@ with open("original/Profile_Class.csv") as fl, \
 
         pc_map[(code, valid_from)] = eid
         converted.writerow(
-            [eid, code, name, to_iso(valid_from), to_iso(valid_to)])
+            [eid, code, name, to_vf(valid_from), to_vt(valid_to)])
 
 
 ssc_map = {}
@@ -156,8 +178,8 @@ with open("original/Standard_Settlement_Configuration.csv") as fl, \
         ssc_map[code] = eid
         converted.writerow(
             [
-                eid, code, description, is_import, to_iso(valid_from),
-                to_iso(valid_to)])
+                eid, code, description, is_import, to_vf(valid_from),
+                to_vt(valid_to)])
 
 tpr_map = {}
 with open("original/Time_Pattern_Regime.csv") as fl, \
@@ -204,8 +226,8 @@ with open("original/Market_Participant_Role.csv") as fl, \
         market_role_id = market_role_map[market_role_code]
         converted.writerow(
             [
-                eid, participant_id, market_role_id, name, to_iso(valid_from),
-                to_iso(valid_to), dno_code])
+                eid, participant_id, market_role_id, name, to_vf(valid_from),
+                to_vt(valid_to), dno_code])
 
     party_id = eid + 1
     participant_code = 'CIDA'
@@ -218,7 +240,7 @@ with open("original/Market_Participant_Role.csv") as fl, \
     converted.writerow(
         [
             party_id, participant_id, market_role_id, 'Virtual DNO',
-            to_iso(valid_from), to_iso(''), '88'])
+            to_vf(valid_from), to_vt(''), '88'])
 
 
 with open("original/Clock_Interval.csv") as fl, \
@@ -276,8 +298,7 @@ with open("original/Line_Loss_Factor_Class.csv") as fl, \
         converter.writerow(
             [
                 eid, dno_lookup[participant_code], code, description, vl_id,
-                is_substation, is_import, to_iso(valid_from),
-                to_iso(valid_to)])
+                is_substation, is_import, to_vf(valid_from), to_vt(valid_to)])
         eid += 1
 
     for participant_code in ('CIDC', 'CIDA'):
@@ -343,7 +364,7 @@ with open("converted/mtc.csv", "w") as conv:
                     [
                         eid, '', mtc_code, description, has_related_meter,
                         has_comms, is_hh, meter_type_id, meter_payment_type_id,
-                        tpr_count, to_iso(valid_from), to_iso(valid_to)])
+                        tpr_count, to_vf(valid_from), to_vf(valid_to)])
                 eid += 1
 
     with open("original/MTC_in_PES_Area.csv") as orig_file:
@@ -371,5 +392,5 @@ with open("converted/mtc.csv", "w") as conv:
                     [
                         eid, dno_id, mtc_code, description, has_related_meter,
                         has_comms, is_hh, meter_type_id, payment_type_id,
-                        tpr_count, to_iso(valid_from), to_iso(valid_to)])
+                        tpr_count, to_vf(valid_from), to_vt(valid_to)])
                 eid += 1

@@ -101,9 +101,7 @@
         'method': 'post',
         'auth': ('godel', 'dancer'),
         'data': {
-            'participant_id': "222",
-
-            # HYDE
+            'participant_id': "482",  # HYDE
             'name': "Non half-hourlies 2007",
             'start_year': "2000",
             'start_month': "01",
@@ -304,7 +302,7 @@
         'path': '/dc_contracts/add',
         'method': 'post',
         'data': {
-            'party_id': "116",  # HHDC DASL
+            'party_id': "127",  # HHDC DASL
             'name': "HH contract",
             'start_year': "2000",
             'start_month': "01",
@@ -321,7 +319,7 @@
         'path': '/dc_contracts/8/edit',
         'method': 'post',
         'data': {
-            'party_id': "116",  # HHDC DASL
+            'party_id': "127",  # HHDC DASL
             'name': "HH contract",
             'charge_script': """
 def virtual_bill_titles():
@@ -388,7 +386,7 @@ def virtual_bill(ds):
         'path': '/dc_contracts/add',
         'method': 'post',
         'data': {
-            'party_id': "116",  # HHDC DASL
+            'party_id': "127",  # HHDC DASL
             'name': "Dynamat data",
             'start_year': "2000",
             'start_month': "01",
@@ -404,7 +402,7 @@ def virtual_bill(ds):
         'path': '/dc_contracts/9/edit',
         'method': 'post',
         'data': {
-            'party_id': "116",  # HHDC DASL
+            'party_id': "127",  # HHDC DASL
             'name': "Dynamat data",
             'charge_script': """
 def virtual_bill_titles():
@@ -446,7 +444,7 @@ def virtual_bill(ds):
         'path': '/dc_contracts/9/edit',
         'method': 'post',
         'data': {
-            'party_id': "1121",  # UKDC
+            'party_id': "1179",  # UKDC HHDC
             'name': "Dynamat data",
             'start_year': "2000",
             'start_month': "01",
@@ -470,7 +468,7 @@ def virtual_bill(ds):
         'path': '/dc_contracts/9/edit',
         'status_code': 200,
         'regexes': [
-            r'option value="1121" selected']},
+            r'option value="1179" selected']},
 
     # Check correct fields present for adding a supplier contract },
     {
@@ -485,7 +483,7 @@ def virtual_bill(ds):
         'path': '/supplier_contracts/add',
         'method': 'post',
         'data': {
-            'participant_id': "33",  # BIZZ
+            'participant_id': "38",  # BIZZ
             'name': "Half-hourlies 2007",
             'start_year': "2000",
             'start_month': "01",
@@ -493,19 +491,24 @@ def virtual_bill(ds):
             'start_hour': "00",
             'start_minute': "00",
             'charge_script': "",
-            'properties': '{"hydrogen": "sonata"}'},
+            'properties': '{"hydrogen": "sonata"}'
+        },
         'regexes': [
-            r"/supplier_contracts/10"]},
+            r"/supplier_contracts/10"
+        ]
+    },
 
     {
         'name': "Check that it's displayed properly",
         'path': '/supplier_contracts/10/edit',
         'regexes': [
-            r'<option value="28" selected>',
+            r'<option value="33" selected>',
             r'<textarea name="properties" rows="20" cols="80">\{\s*'
             r'&#34;hydrogen&#34;: &#34;sonata&#34;\s*'
-            r'\}</textarea>'],
-        'status_code': 200},
+            r'\}</textarea>'
+        ],
+        'status_code': 200
+    },
     {
         'path': '/supplier_contracts/10',
         'regexes': [
@@ -564,7 +567,7 @@ def virtual_bill(ds):
         'path': '/mop_contracts/add',
         'method': 'post',
         'data': {
-            'participant_id': "487",  # LENG
+            'participant_id': "512",  # LENG
             'name': "MOP Contract",
             'start_year': "2000",
             'start_month': "01",
@@ -580,7 +583,7 @@ def virtual_bill(ds):
         'path': '/mop_contracts/11/edit',
         'method': 'post',
         'data': {
-            'party_id': "788",  # LENG
+            'party_id': "824",  # LENG MOP
             'name': "MOP Contract",
             'start_year': "2000",
             'start_month': "01",
@@ -614,7 +617,7 @@ def virtual_bill(ds):
         'path': '/supplier_contracts/add',
         'method': 'post',
         'data': {
-            'participant_id': "70",  # COOP
+            'participant_id': "38",  # COOP
             'name': "Half-hourlies 2013",
             'start_year': "2013",
             'start_month': "01",
@@ -658,7 +661,7 @@ def virtual_bill_titles():
         'path': '/supplier_contracts/add',
         'method': 'post',
         'data': {
-            'participant_id': "459",  # HYDE
+            'participant_id': "482",  # HYDE
             'name': "Non half-hourlies 2007",
             'start_year': "2000",
             'start_month': "01",
@@ -2006,11 +2009,13 @@ def virtual_bill_titles():
             'email_address': "mishka@localhost",
             'password': "fyodor",
             'user_role_code': "party-viewer",
-            'party_id': "116"},  # DASL DC
-
+            'party_id': "127"  # DASL DC
+        },
         'status_code': 303,
         'regexes': [
-            r"/users/5"]},
+            r"/users/5"]
+    },
+
     {
         'name': "Check that the party viewer is able to view snags.",
         'path': '/channel_snags?dc_contract_id=8&days_hidden=5',
@@ -2193,7 +2198,7 @@ def virtual_bill_titles():
         'path': '/supplier_contracts/10/edit',
         'method': 'post',
         'data': {
-            'party_id': "28",  # BIZZ
+            'party_id': "33",  # BIZZ Supplier
             'name': "Half-hourlies 2007",
             'charge_script': """
 def virtual_bill(supply, startDate, finishDate, pw):
@@ -2211,7 +2216,7 @@ def virtual_bill(supply, startDate, finishDate, pw):
         'path': '/supplier_contracts/10/edit',
         'method': 'post',
         'data': {
-            'party_id': "28",  # BIZZ
+            'party_id': "33",  # BIZZ Supplier
             'name': "Half-hourlies 2007",
             'charge_script': """
 from operator import itemgetter
@@ -2635,7 +2640,7 @@ def virtual_bill(supply_source):
         'path': '/supplier_contracts/add',
         'method': 'post',
         'data': {
-            'participant_id': "605",  # RWED
+            'participant_id': "638",  # RWED
             'name': "GDF",
             'start_year': "2000",
             'start_month': "01",
@@ -2667,16 +2672,18 @@ def virtual_bill(supply_source):
         'path': '/dc_contracts/add',
         'method': 'post',
         'data': {
-            'party_id': "1121",  # HHDC UKDC
+            'party_id': "1179",  # HHDC UKDC
             'name': "Siemens Contract",
             'start_year': "2000",
             'start_month': "01",
             'start_day': "03",
             'start_hour': "00",
-            'start_minute': "00"},
+            'start_minute': "00"
+        },
         'status_code': 303,
         'regexes': [
-            r"/dc_contracts/15"]},
+            r"/dc_contracts/15"]
+    },
 
     {
         'name': "Now delete the contract",
@@ -2983,18 +2990,22 @@ def virtual_bill(supply_source):
         'path': '/dnos',
         'status_code': 200,
         'regexes': [
-            r'option']},
+            r'option'
+        ]
+    },
 
     {
         'name': "View a DNO rate script",
-        'path': '/dnos/160/rate_scripts/200001010000',
-        'status_code': 200},
+        'path': '/dnos/173/rate_scripts/200001010000',  # DNO 10
+        'status_code': 200
+    },
 
     {
         'name': "Supplies Monthly Duration",
         'path': '/reports/247?site_id=5&months=1&finish_year=2009&'
         'finish_month=03&compression=False',
-        'status_code': 303},
+        'status_code': 303
+    },
     {
         'path': '/downloads',
         'tries': {'max': 40, 'period': 1},
@@ -3801,7 +3812,7 @@ def virtual_bill(supply_source):
         'path': '/supplier_contracts/12/edit',
         'method': 'post',
         'data': {
-            'party_id': "28",  # BIZZ
+            'party_id': "33",  # BIZZ
             'name': "Half-hourlies 2013",
             'charge_script': """
 from operator import itemgetter
@@ -4021,7 +4032,7 @@ def virtual_bill(supply_source):
         'method': 'post',
         'data': {
             r'name': "Non half-hourlies 2007",
-            r'party_id': "759",  # HYDE
+            r'party_id': "791",  # HYDE
             r'charge_script': """
 import chellow.ccl
 import chellow.computer
@@ -4357,7 +4368,7 @@ def virtual_bill(supply_source):
         'path': '/supplier_contracts/add',
         'method': 'post',
         'data': {
-            'participant_id': "70",  # COOP
+            'participant_id': "81",  # COOP
             'name': "Non half-hourlies 2010",
             'start_year': "2000",
             'start_month': "01",
@@ -6711,7 +6722,7 @@ def virtual_bill(supply_source):
         'path': '/dc_contracts/8/edit',
         'method': 'post',
         'data': {
-            'party_id': "116",  # DASL
+            'party_id': "127",  # DASL
             'name': "HH contract",
             'charge_script': """
 def virtual_bill_titles():
@@ -6943,7 +6954,7 @@ def virtual_bill(supply_source):
         'name': "Parties",
         'path': '/parties',
         'regexes': [
-            r'<a href="/participants/647">SWEB</a>'],
+            r'<a href="/participants/685">SWEB</a>'],
         'status_code': 200},
 
     {
@@ -8575,7 +8586,7 @@ def virtual_bill(supply_source):
             r'<tr>\s*<td>\s*'
             r'<a href="/mtcs/98">\s*001\s*'
             r'</a>\s*</td>\s*<td>\s*'
-            r'<a href="/dnos/805">\s*'
+            r'<a href="/dnos/842">\s*'
             r'12\s*</a>\s*</td>\s*<td>Economy 7, 23.30 - 06.30</td>\s*<td>\s*'
             r'<a href="/meter_types/15">\s*TP\s*'
             r'</a>\s*</td>\s*<td>2</td>\s*</tr>']},
@@ -8586,7 +8597,7 @@ def virtual_bill(supply_source):
         'regexes': [
             r'<tr>\s*<th>Code</th>\s*<td>001</td>\s*</tr>\s*<tr>\s*'
             r'<th>DNO</th>\s*<td>\s*'
-            r'<a href="/dnos/805">\s*'
+            r'<a href="/dnos/842">\s*'
             r'12\s*</a>\s*</td>\s*</tr>']},
 
     {
@@ -8621,8 +8632,10 @@ def virtual_bill(supply_source):
         'method': 'post',
         'data': {
             'imp_related': "true",
-            'channel_type': "ACTIVE"},
-        'status_code': 303},
+            'channel_type': "ACTIVE"
+        },
+        'status_code': 303
+    },
     {
         'path': '/eras/17/edit',
         'method': 'post',
@@ -8865,7 +8878,7 @@ def virtual_bill(supply_source):
         'path': '/supplier_contracts/add',
         'method': 'post',
         'data': {
-            'participant_id': "70",  # COOP
+            'participant_id': "81",  # COOP
             'name': "scenario_bau",
             'start_year': "2000",
             'start_month': "01",
@@ -8990,7 +9003,7 @@ def virtual_bill(supply_source):
         'path': '/supplier_contracts/add',
         'method': 'post',
         'data': {
-            'participant_id': "70",  # COOP
+            'participant_id': "81",  # COOP
             'name': "scenario_bsuos",
             'start_year': "2000",
             'start_month': "01",
@@ -9322,7 +9335,7 @@ def virtual_bill(supply_source):
         'path': '/supplier_contracts/add',
         'method': 'post',
         'data': {
-            'participant_id': "70",  # COOP
+            'participant_id': "81",  # COOP
             'name': "scenario_used",
             'start_year': "2000",
             'start_month': "01",
@@ -9466,25 +9479,28 @@ def virtual_bill(supply_source):
             r'</li>']},
     {
         'name': "Look at a DNO",
-        'path': '/dnos/160',
-        'status_code': 200},
+        'path': '/dnos/173',  # DNO 10
+        'status_code': 200
+    },
 
     {
         'name': "Look at the SSCs",
         'path': '/sscs',
-        'status_code': 200},
+        'status_code': 200
+    },
 
     {
         'name': "Look at an SSC",
         'path': '/sscs/1',
-        'status_code': 200},
+        'status_code': 200
+    },
 
     {
         'name': "Rate start after last rate scripts",
         'path': '/supplier_contracts/18/edit',
         'method': 'post',
         'data': {
-            'party_id': "106",  # COOP
+            'party_id': "117",  # COOP
             'name': "scenario_bsuos",
             'start_year': "2000",
             'start_month': "01",
@@ -10026,14 +10042,18 @@ def virtual_bill(supply_source):
         'path': "/reports/163",
         'method': "post",
         'files': {"file": "test/Market_Participant_Role_232.csv"},
-        'status_code': 303},
+        'status_code': 303
+    },
     {
         'path': '/downloads',
         'tries': {'max': 30, 'period': 1},
         'status_code': 200,
         'regexes': [
             r"0063_FINISHED_watkinsexamplecom_Market_Participant_Role_232_"
-            r"general_import\.csv"]},
+            r"general_import\.csv"
+        ]
+    },
+
     {
         'path': '/downloads/'
         '0063_FINISHED_watkinsexamplecom_Market_Participant_Role_232_general_'
@@ -10041,7 +10061,9 @@ def virtual_bill(supply_source):
         'status_code': 200,
         'regexes':  [
             r'insert,party,M,JOLT,Jolt Metering Services Ltd,'
-            r'2015-08-19 00:00,,']},
+            r'2015-08-18 23:00,,'
+        ]
+    },
 
     {
         'name': "MDD Converter. Party",
@@ -10050,38 +10072,44 @@ def virtual_bill(supply_source):
         'files': {'import_file': "test/gi_party.csv"},
         'status_code': 303,
         'regexes': [
-            r"/general_imports/23"]},
+            r"/general_imports/23"]
+    },
     {
         'name': "MDD Converter. Party",
         'path': "/general_imports/23",
         'tries': {'max': 10, 'period': 1},
         'status_code': 200,
-        'regexes': [r"The file has been imported successfully\."]},
+        'regexes': [r"The file has been imported successfully\."]
+    },
 
     {
         'name': "MDD Converter. Check imported party looks okay",
-        'path': "/participants/752",
+        'path': "/participants/806",
         'status_code': 200,
         'regexes': [
             r'<tr>\s*<td>\s*'
-            r'<a href="/parties/1183">Jolt Metering Services Ltd</a>\s*'
+            r'<a href="/parties/1255">Jolt Metering Services Ltd</a>\s*'
             r'</td>\s*<td>\s*'
             r'<a href="/market_roles/21">Meter Operator</a>\s*'
-            r'</td>\s*<td>\s*</td>\s*</tr>']},
+            r'</td>\s*<td>\s*</td>\s*</tr>'
+        ]
+    },
 
     {
         'name': "MDD Converter. Convert LLFC.",
         'path': "/reports/163",
         'method': "post",
         'files': {"file": "test/Line_Loss_Factor_Class_225.csv"},
-        'status_code': 303},
+        'status_code': 303
+    },
     {
         'path': '/downloads',
         'tries': {'max': 30, 'period': 1},
         'status_code': 200,
         'regexes': [
             r"0064_FINISHED_watkinsexamplecom_Line_Loss_Factor_Class_225_"
-            r"general_import.csv"]},
+            r"general_import.csv"]
+    },
     {
         'path': '/downloads/'
         '0064_FINISHED_watkinsexamplecom_Line_Loss_Factor_Class_225_general_'
@@ -10089,9 +10117,11 @@ def virtual_bill(supply_source):
         'status_code': 200,
         'regexes':  [
             r'insert,llfc,19,889,"PROLOGIS, BEDDINGTON - IMPORT",LV,'
-            r'False,True,2012-04-01 00:00,',
-            r'update,llfc,14,633,2015-04-01 00:00,Spare LV 2,LV,False,True,'
-            r'2015-05-13 23:30']},
+            r'False,True,2012-03-31 23:00,',
+            r'update,llfc,14,633,2015-03-31 23:00,Spare LV 3b,LV,False,True,'
+            r'2015-05-13 22:30'
+        ]
+    },
 
     {
         'name': "GI Insert LLFC",
@@ -10128,7 +10158,9 @@ def virtual_bill(supply_source):
         'status_code': 200,
         'regexes':  [
             r'insert,meter_type,6A,COP6\(a\)  20 days memory,'
-            r'1996-04-02 00:00,']},
+            r'1996-04-01 23:00,'
+        ]
+    },
     {
         'name': "MDD Converter. MTC Meter Type",
         'path': "/general_imports",
@@ -10164,8 +10196,9 @@ def virtual_bill(supply_source):
         'status_code': 200,
         'regexes':  [
             r'update,mtc,,506,Unmetered Reserved - Site Specific,'
-            r'True,False,False,UM,CR,0,1996-04-01 00:00,'
-            r'2010-04-01 23:30']},
+            r'True,False,False,UM,CR,0,1996-03-31 23:00,2010-04-01 22:30'
+        ]
+    },
 
     {
         'name': "MDD Converter. Meter Timeswitch Class",
@@ -10202,7 +10235,9 @@ def virtual_bill(supply_source):
         'status_code': 200,
         'regexes':  [
             r'update,mtc,19,074,Local Authority Heating,False,'
-            r'False,False,LN,CR,1,1996-04-01 00:00,']},
+            r'False,False,LN,CR,1,1996-03-31 23:00,'
+        ]
+    },
     {
         'name': "MDD Converter. MTC in PES Area",
         'path': "/general_imports",
@@ -10216,7 +10251,8 @@ def virtual_bill(supply_source):
         'path': "/general_imports/27",
         'tries': {'max': 10, 'period': 1},
         'status_code': 200,
-        'regexes': [r"The file has been imported successfully\."]},
+        'regexes': [r"The file has been imported successfully\."]
+    },
 
     {
         'name': "CRC Selector",
@@ -10229,7 +10265,7 @@ def virtual_bill(supply_source):
         'path': "/supplier_contracts/16/edit",
         'method': 'post',
         'data': {
-            'party_id': '106',
+            'party_id': '117',  # COOP
             'name': 'Non half-hourlies 2010',
             'charge_script': """import chellow.duos
 
@@ -10273,7 +10309,7 @@ def virtual_bill(supply_source):
         'path': '/supplier_contracts/add',
         'method': 'post',
         'data': {
-            'participant_id': "70",  # COOP
+            'participant_id': "81",  # COOP
             'name': "scenario_leap_day",
             'start_year': "2000",
             'start_month': "01",
@@ -11741,7 +11777,7 @@ def virtual_bill(supply_source):
         'path': "/supplier_contracts/16/edit",
         'method': 'post',
         'data': {
-            'party_id': '106',
+            'party_id': '117',  # COOP
             'name': 'Non half-hourlies 2010',
             'charge_script': """import chellow.duos
 
@@ -12784,24 +12820,29 @@ def virtual_bill(supply_source):
 
     {
         'name': "Look at a LLFC",
-        'path': '/llfcs/6128',
-        'status_code': 200},
+        'path': '/llfcs/48',  # DNO 10, LLFC 001
+        'status_code': 200
+    },
 
     {
         'name': "Look at edit LLFC",
-        'path': '/llfcs/6128/edit',
+        'path': '/llfcs/48/edit',
         'status_code': 200,
         'regexes': [
             r'<a\s*'
-            r'href="/llfcs/6128"\s*'
-            r'>128 2010-03-17 00:00</a>']},
+            r'href="/llfcs/48"\s*'
+            r'>001 2015-03-31 23:00</a>'
+        ]
+    },
 
     {
         'name': "A DNO's LLFCs",
-        'path': '/llfcs?dno_id=160',
+        'path': '/llfcs?dno_id=173',  # DNO 10
         'status_code': 200,
         'regexes': [
-            r'<a href="/dnos">DNOs</a>']},
+            r'<a href="/dnos">DNOs</a>'
+        ]
+    },
 
     {
         'name': "Comparison against ECOES",
@@ -13012,7 +13053,7 @@ def virtual_bill(supply_source):
         'path': "/supplier_contracts/16/edit",
         'method': 'post',
         'data': {
-            'party_id': '106',
+            'party_id': '117',  # COOP
             'name': 'Non half-hourlies 2010',
             'charge_script': """import chellow.duos
 from werkzeug.exceptions import BadRequest
@@ -13078,7 +13119,7 @@ def virtual_bill(supply_source):
         'path': "/supplier_contracts/16/edit",
         'method': 'post',
         'data': {
-            'party_id': '106',
+            'party_id': '117',  # COOP
             'name': 'Non half-hourlies 2010',
             'charge_script': """def virtual_bill_titles():
     return ['net-gbp', 'sum-msp-kwh', 'problem']
@@ -13381,7 +13422,7 @@ def virtual_bill(supply_source):
         'path': "/supplier_contracts/16/edit",
         'method': 'post',
         'data': {
-            'party_id': '106',
+            'party_id': '117',  # COOP
             'name': 'Non half-hourlies 2010',
             'charge_script': """import chellow.duos
 import chellow.triad
@@ -16153,7 +16194,7 @@ def virtual_bill(ds):
         'path': '/dc_contracts/8/edit',
         'method': 'post',
         'data': {
-            'party_id': "116",  # DASL
+            'party_id': "127",  # DASL
             'name': "HH contract",
             'charge_script': """
 def virtual_bill_titles():
@@ -16195,7 +16236,7 @@ def virtual_bill(supply_source):
         'path': '/dc_contracts/8/edit',
         'method': 'post',
         'data': {
-            'party_id': "116",  # DASL
+            'party_id': "127",  # DASL
             'name': "HH contract",
             'charge_script': """
 def virtual_bill_titles():
@@ -16465,7 +16506,7 @@ def virtual_bill(supply_source):
         'path': '/supplier_contracts/add',
         'method': 'post',
         'data': {
-            'participant_id': "28",  # BIZZ
+            'participant_id': "38",  # BIZZ
             'name': "teleswitch",
             'start_year': "2000",
             'start_month': "01",
@@ -16531,7 +16572,7 @@ def virtual_bill(supply_source):
         'path': '/supplier_contracts/18/edit',
         'method': 'post',
         'data': {
-            'party_id': "106",  # COOP
+            'party_id': "117",  # COOP
             'name': "scenario_bsuos",
             'start_year': "2000",
             'start_month': "01",
@@ -17823,18 +17864,23 @@ def virtual_bill(supply_source):
         'tries': {'max': 30, 'period': 1},
         'status_code': 200,
         'regexes': [
-            r"0024_FINISHED_adminexamplecom_llfcs.csv"]},
+            r"0024_FINISHED_adminexamplecom_llfcs.csv"
+        ]
+    },
     {
         'path': '/downloads/0024_FINISHED_adminexamplecom_llfcs.csv',
         'status_code': 200,
         'regexes': [
-            r'0,28,009,LV HH Metered,LV,False,True,2009-04-16 00:00,'
-            r'2014-08-20 00:00']},
+            r'38,28,009,LV HH Metered,LV,False,True,2009-04-15 23:00,'
+            r'2014-08-20 22:30'
+        ]
+    },
 
     {
         'name': "CSV of supplier batch",
         'path': '/supplier_batches/4/csv',
-        'status_code': 200},
+        'status_code': 200
+    },
 
     {
         'name': "Update an DC bill",
@@ -17879,7 +17925,7 @@ def virtual_bill(supply_source):
         'path': '/dc_contracts/9/edit',
         'method': 'post',
         'data': {
-            'party_id': "1121",  # UKDC
+            'party_id': "1179",  # UKDC
             'name': "Dynamat data",
             'charge_script': """
 def virtual_bill_titles():
@@ -17924,7 +17970,7 @@ def virtual_bill(ds):
         'path': '/dc_contracts/add',
         'method': 'post',
         'data': {
-            'party_id': "781",  # NHH LBSL
+            'party_id': "817",  # NHH LBSL
             'name': "NHH DC contract",
             'start_year': "2000",
             'start_month': "01",
@@ -17953,7 +17999,7 @@ def virtual_bill(ds):
         'path': '/supplier_contracts/17/edit',
         'method': 'post',
         'data': {
-            'party_id': "106",  # COOP
+            'party_id': "117",  # COOP
             'name': "scenario_bau",
             'start_year': "2000",
             'start_month': "01",
@@ -18562,7 +18608,7 @@ def virtual_bill(ds):
         'path': '/supplier_contracts/19/edit',
         'method': 'post',
         'data': {
-            'party_id': "106",  # COOP
+            'party_id': "117",  # COOP
             'name': "scenario_used",
             'start_year': "2000",
             'start_month': "01",
