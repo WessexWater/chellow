@@ -193,7 +193,7 @@ def content(supply_id, start_date, finish_date, user):
                     prime_reads.add(
                         str(rdate) + "_" + read.msn)
 
-            supply_type = era.make_meter_category()
+            supply_type = era.meter_category
 
             chunk_start = hh_max(era.start_date, start_date)
             chunk_finish = hh_min(era.finish_date, finish_date)

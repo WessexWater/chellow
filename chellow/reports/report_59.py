@@ -63,7 +63,7 @@ def content(start_date, finish_date, site_id, user):
                 gen_type = supply.generator_type
                 if gen_type is not None:
                     gen_types.add(gen_type.code)
-                era_meter_type = era.make_meter_category()
+                era_meter_type = era.meter_category
                 if METER_ORDER[era_meter_type] < METER_ORDER[metering_type]:
                     metering_type = era_meter_type
 

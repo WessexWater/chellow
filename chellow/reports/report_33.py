@@ -115,7 +115,7 @@ def content(running_name, finished_name, date, supply_id, mpan_cores):
             else:
                 generator_type_str = generator_type.code
 
-            metering_type = era.make_meter_category()
+            metering_type = era.meter_category
 
             if metering_type == 'nhh':
                 latest_prev_normal_read = sess.query(RegisterRead). \

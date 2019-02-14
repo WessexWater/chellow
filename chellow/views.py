@@ -10,7 +10,7 @@ from chellow.models import (
     RegisterRead, HhDatum, Snag, Batch, ReadType, BillType, MeterPaymentType,
     ClockInterval, db_upgrade, Llfc, MeterType, GEra, GSupply, SiteGEra, GBill,
     GContract, GRateScript, GBatch, GRegisterRead, GReadType, VoltageLevel,
-    GUnit, GLdz, GExitZone, GDn)
+    GUnit, GLdz, GExitZone, GDn, METER_TYPES)
 from sqlalchemy.exc import IntegrityError
 import traceback
 from datetime import datetime as Datetime
@@ -4772,6 +4772,19 @@ def gsp_groups_get():
 def gsp_group_get(group_id):
     group = GspGroup.get_by_id(g.sess, group_id)
     return render_template('gsp_group.html', gsp_group=group)
+
+
+@app.route('/dtc_meter_types')
+def dtc_meter_types_get():
+    return render_template('dtc_meter_types.html', dtc_meter_types=METER_TYPES)
+
+
+@app.route('/dtc_meter_types/<code>')
+def dtc_meter_type_get(code):
+    desc = METER_TYPES[code]
+    return render_template(
+        'dtc_meter_type.html',
+        dtc_meter_type_code=code, dtc_meter_type_description=desc)
 
 
 @app.route('/sites/<int:site_id>/gen_graph')

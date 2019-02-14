@@ -669,9 +669,8 @@ def content(
 
                     out = [
                         now, None, disp_supplier_contract.name, None, None,
-                        displaced_era.make_meter_category(), 'displaced', None,
-                        None, None, None, site.code, site.name, '',
-                        month_finish] + [
+                        displaced_era.meter_category, 'displaced', None, None,
+                        None, None, site.code, site.name, '', month_finish] + [
                             month_data[t] for t in summary_titles] + [None] + [
                         None] * len(title_dict['mop']) + [None] + [
                         None] * len(title_dict['dc']) + [None] + make_bill_row(

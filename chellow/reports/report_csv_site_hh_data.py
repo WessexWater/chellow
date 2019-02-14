@@ -48,7 +48,7 @@ def content(sess, start_date, finish_date, site_id, user):
                         joinedload(Era.supply).joinedload(Supply.source),
                         joinedload(Era.supply).joinedload(
                             Supply.generator_type)):
-                mtype = era.make_meter_category()
+                mtype = era.meter_category
                 if metering_type == '' or \
                         TYPE_ORDER[mtype] < TYPE_ORDER[metering_type]:
                     metering_type = mtype

@@ -74,7 +74,7 @@ def content(year, month, months, supply_id, user):
                 source_code = supply.source.code
                 eras = supply.find_eras(sess, month_start, month_finish)
                 era = eras[-1]
-                metering_type = era.make_meter_category()
+                metering_type = era.meter_category
 
                 site = sess.query(Site).join(SiteEra).filter(
                     SiteEra.era == era, SiteEra.is_physical == true()).one()

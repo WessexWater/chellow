@@ -1717,6 +1717,43 @@ class SiteEra(Base, PersistentClass):
         self.is_physical = is_physical
 
 
+METER_TYPES = {
+    "H": "Half Hourly",
+    "K": "Key",
+    "LAG": "Lag",
+    "LEAD": "Lead",
+    "MAIN": "Main",
+    "N": "Non-Half Hourly",
+    "NCAMR": "Non-remotely Configurable Automated Meter Reading",
+    "NSS": "A meter that meets the definition of an ADM but is not compliant "
+    "with any version of SMETS",
+    "RCAMR": "Remotely Configurable Automated Meter Reading without remote "
+    "enable/disable capability",
+    "RCAMY": "Remotely Configurable Automated Meter Reading with remote "
+    "enable/disable capability",
+    "S": "Smartcard Prepayment",
+    "S1": "A meter that is compliant with the Smart Metering Equipment "
+    "Technical Specifications 1 (SMETS1)",
+    "S2A": "A single element meter that is compliant with SMETS2",
+    "S2B": "A twin element meter that is compliant with SMETS2",
+    "S2C": "A polyphase meter that is compliant with SMETS2",
+    "S2AD": "A single element meter with one or more ALCS that is compliant "
+    "with SMETS2",
+    "S2BD": "A twin element meter with one or more ALCS that is compliant "
+    "with SMETS2",
+    "S2CD": "A polyphase meter with one or more ALCS that is compliant with "
+    "SMETS2",
+    "S2ADE": "Single element meter with one or more ALCS and Boost Function "
+    "that is compliant with SMETS2",
+    "S2BDE": "A twin element meter with one or more ALCS and Boost Function "
+    "that is compliant with SMETS2",
+    "S2CDE": "A polyphase meter with one or more ALCS and Boost Function that "
+    "is compliant with SMETS2",
+    "SPECL": "Special",
+    "T": "Token"
+}
+
+
 class Era(Base, PersistentClass):
     __tablename__ = "era"
     id = Column(Integer, primary_key=True)
@@ -1857,6 +1894,15 @@ class Era(Base, PersistentClass):
         self.ssc = ssc
 
         if isinstance(properties, dict):
+            try:
+                meter_type = properties['meter_type']
+                if meter_type not in METER_TYPES:
+                    raise BadRequest(
+                        "The meter type " + meter_type + " must be one of " +
+                        str(METER_TYPES))
+            except KeyError:
+                pass
+
             self.properties = dumps(properties)
         else:
             raise Exception(
@@ -2052,15 +2098,35 @@ class Era(Base, PersistentClass):
         sess.delete(channel)
         sess.flush()
 
-    def make_meter_category(self):
-        if self.pc.code == '00':
-            return 'hh'
-        elif len(self.channels) > 0:
-            return 'amr'
-        elif self.mtc.meter_type.code in ['UM', 'PH']:
-            return 'unmetered'
-        else:
-            return 'nhh'
+    @property
+    def props(self):
+        if not hasattr(self, '_props'):
+            self._props = loads(self.properties)
+        return self._props
+
+    @property
+    def meter_category(self):
+        if not hasattr(self, '_meter_category'):
+            meter_type = self.props.get('meter_type')
+            if meter_type is None:
+                if self.pc.code == '00':
+                    cat = 'hh'
+                elif len(self.channels) > 0:
+                    cat = 'amr'
+                elif self.mtc.meter_type.code in ['UM', 'PH']:
+                    cat = 'unmetered'
+                else:
+                    cat = 'nhh'
+            else:
+                if meter_type == 'H':
+                    cat = 'hh'
+                elif meter_type == 'N':
+                    cat = 'nhh'
+                else:
+                    cat = 'amr'
+
+            self._meter_category = cat
+        return self._meter_category
 
 
 class Channel(Base, PersistentClass):

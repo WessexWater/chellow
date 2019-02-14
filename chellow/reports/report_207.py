@@ -77,7 +77,7 @@ def content(year, supply_id, user):
 
             for era in eras:
 
-                meter_type = era.make_meter_category()
+                meter_type = era.meter_category
 
                 period_start = hh_max(era.start_date, year_start)
                 period_finish = hh_min(era.finish_date, year_finish)

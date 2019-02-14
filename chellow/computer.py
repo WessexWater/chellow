@@ -770,7 +770,7 @@ class SupplySource(DataSource):
 
         self.gsp_group_code = self.supply.gsp_group.code
 
-        self.measurement_type = era.make_meter_category()
+        self.measurement_type = era.meter_category
 
         self.consumption_info = ''
         hist_map = {}
@@ -820,7 +820,7 @@ class SupplySource(DataSource):
 
             chunk_finish = hh_min(self.history_finish, hist_era.finish_date)
 
-            hist_measurement_type = hist_era.make_meter_category()
+            hist_measurement_type = hist_era.meter_category
             if hist_measurement_type == 'unmetered':
 
                 kwh = hist_era.imp_sc * 60 * 30 / (
@@ -1143,7 +1143,7 @@ class SupplySource(DataSource):
                                     'msp-kw': kwh * 2, 'msp-kwh': kwh,
                                     'hist-kwh': kwh, 'imp-msp-kvar': 0,
                                     'imp-msp-kvarh': 0, 'exp-msp-kvar': 0,
-                                    'exp-msp-kvarh': 0})
+                                    'exp-msp-kvarh': 0, 'tpr': tpr_code})
                         hist_map.update(hh_part)
             elif self.bill is not None and hist_measurement_type in (
                     'nhh', 'amr'):
@@ -1283,6 +1283,7 @@ class SupplySource(DataSource):
                                     hhd_datum['msp-kw'] += rate * 2
                                     hhd_datum['msp-kwh'] += rate
                                     hhd_datum['hist-kwh'] += rate
+                                    hhd_datum['tpr'] = tpr_code
                                     if hhd_datum['status'] in ('X', 'A'):
                                         hhd_datum['status'] = h['status']
                         elif kwh > 0:
