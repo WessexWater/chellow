@@ -76,7 +76,7 @@ class Parser():
 
             reads = []
 
-            for i in count(12, 11):
+            for i in count(12, 10):
                 if i > len(row) - 1 or len(''.join(row[i:]).strip()) == 0:
                     break
 

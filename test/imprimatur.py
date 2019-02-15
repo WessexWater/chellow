@@ -15735,11 +15735,23 @@ def virtual_bill(ds):
             r"<th>0 Pres Date</th>\s*"
             r"<th>0 Pres Value</th>\s*"
             r"<th>0 Pres Type</th>\s*"
+            r'<th>1 MSN</th>\s*'
+            r'<th>1 Unit</th>\s*'
+            r'<th>1 Correction Factor</th>\s*'
+            r'<th>1 Calorific Value</th>\s*'
+            r'<th>1 Prev Date</th>\s*'
+            r'<th>1 Prev Value</th>\s*'
+            r'<th>1 Prev Type</th>\s*'
+            r'<th>1 Pres Date</th>\s*'
+            r'<th>1 Pres Value</th>\s*'
+            r'<th>1 Pres Type</th>\s*'
             r"</tr>",
             r"2015-09-01 00:00",
             r'<td>hwo8tt</td>\s*'
             r'<td>HCUF</td>\s*'
-            r'<td>1.02264</td>']},
+            r'<td>1.02264</td>'
+        ]
+    },
 
     {
         'name': "View gas bill",
@@ -15983,12 +15995,12 @@ def virtual_bill(ds):
             r'difference_gross_gbp\s*',
             r'TB2,8899900012,N,2015-09-01 00:00,2015-09-30 00:00,750278673,'
             r'Main Gas Supply,CH017,Parbola,2015-09-01 00:00,2015-09-30 00:00,'
-            r'3,,7829.999999999759,1.02264,1.02264,HCUF,M3,2.8317,1.0,'
+            r'3,,15659.99999999\d*,1.02264,1.02264,HCUF,M3,2.8317,1.0,'
             r'39.300811,,'
-            r'4500901,87934.521286\d*,0.019448,0.019548,8936.13,'
-            r'1718.9440220988\d*,7217.185977901\d*,,0.00525288,,,,,,6972.33,'
-            r'1718.9440220988\d*,5253.385977901\d*,1003.89,0,1003.89,7976.22,'
-            r'1718.9440220988\d*,6257.275977901\d*,,']},
+            r'4500901,175869.04257\d*,0.019448,0.019548,8936.13,'
+            r'3437.888044\d*,5498.2419558\d*,,0.00525288,,,,,,6972.33,'
+            r'3437.8880441\d*,3534.44195580\d*,1003.89,0,1003.89,7976.22,'
+            r'3437.8880441\d*,4538.3319558\d*,,']},
 
     {
         'name': "Delete gas supply. Insert the gas supply",
@@ -18067,13 +18079,13 @@ def virtual_bill(ds):
             r'office:value-type="string"/>\s*'
             r'<table:table-cell office:date-value="2018-03-31T23:30:00" '
             r'office:value-type="date" table:style-name="cell_date"/>\s*'
-            r'<table:table-cell office:value="90263.78443636319" '
+            r'<table:table-cell office:value="87354.00495\d*" '
             r'office:value-type="float"/>\s*'
-            r'<table:table-cell office:value="1832.2764581620822" '
+            r'<table:table-cell office:value="1775.3960887\d*" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="0" office:value-type="float" '
             r'table:number-columns-repeated="2"/>\s*'
-            r'<table:table-cell office:value="8085.385149201755" '
+            r'<table:table-cell office:value="7824.741437\d*" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="1.02264" '
             r'office:value-type="float"/>\s*'
@@ -18083,21 +18095,21 @@ def virtual_bill(ds):
             r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="39.3" '
             r'office:value-type="float"/>\s*'
-            r'<table:table-cell office:value="90263.78443636319" '
+            r'<table:table-cell office:value="87354.0049515\d*" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="0.019548" '
             r'office:value-type="float"/>\s*'
-            r'<table:table-cell office:value="1764.4764581620823" '
+            r'<table:table-cell office:value="1707.5960887\d*" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="0.00198" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="67.8" '
             r'office:value-type="float" table:number-columns-repeated="2"/>\s*'
-            r'<table:table-cell office:value="1832.2764581620822" '
+            r'<table:table-cell office:value="1775.3960887\d*" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="0" '
             r'office:value-type="float"/>\s*'
-            r'<table:table-cell office:value="1832.2764581620822" '
+            r'<table:table-cell office:value="1775.3960887\d*" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell office:string-value="" '
             r'office:value-type="string"/>\s*'
@@ -18127,9 +18139,9 @@ def virtual_bill(ds):
             r'gas_rate,gas_gbp,ccl_rate,standing_rate,standing_gbp,net_gbp,'
             r'vat_gbp,gross_gbp,problem\s*'
             r'750278673,CH017,Parbola,ghoIIl,2018-02-01 00:00,,,'
-            r'5.433726578764746,1.02264,M3,1.0,39.3,60.66114545454545,'
-            r'0.019548,1.1858040713454543,0.00198,,,1.1858040713454543,0,'
-            r'1.1858040713454543,']},
+            r'5.2585627\d*,1.02264,M3,1.0,39.3,58.705648488\d*,'
+            r'0.019548,1.14757801666\d*,0.00198,,,1.1475780166\d*,0,'
+            r'1.147578016\d*,']},
 
     {
         'name': "Gas monthly duration covering bills",
@@ -18752,7 +18764,7 @@ def virtual_bill(ds):
 
     {
         'name': "Gas read delete",
-        'path': '/g_reads/3/edit',
+        'path': '/g_reads/4/edit',
         'method': 'post',
         'data': {
             'delete': 'Delete'
