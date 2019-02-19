@@ -5078,14 +5078,17 @@ def g_supply_get(g_supply_id):
                 g_bills = g_bills.filter(GBill.start_date >= g_era.start_date)
 
             for g_bill in g_bills:
-                g_bill_dict = {'g_bill': g_bill}
-                g_bill_dicts.append(g_bill_dict)
-
-                g_bill_dict['g_reads'] = g.sess.query(GRegisterRead).filter(
-                        GRegisterRead.g_bill == g_bill).order_by(
-                        GRegisterRead.pres_date.desc()).options(
-                        joinedload(GRegisterRead.prev_type),
-                        joinedload(GRegisterRead.pres_type)).all()
+                g_reads = g.sess.query(GRegisterRead).filter(
+                    GRegisterRead.g_bill == g_bill).order_by(
+                    GRegisterRead.pres_date.desc()).options(
+                    joinedload(GRegisterRead.prev_type),
+                    joinedload(GRegisterRead.pres_type)).all()
+                g_bill_dicts.append(
+                    {
+                        'g_bill': g_bill,
+                        'g_reads': g_reads
+                    }
+                )
 
             b_dicts = list(reversed(g_bill_dicts))
             for i, b_dict in enumerate(b_dicts):
