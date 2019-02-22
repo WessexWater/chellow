@@ -118,24 +118,10 @@ class BsuosImporter(threading.Thread):
                     contract = Contract.get_non_core_by_name(sess, 'bsuos')
                     props = contract.make_properties()
                     if props.get('enabled', False):
-                        urls = set()
+                        urls = set(props.get('urls', []))
                         if props.get('discover_urls', False):
-                            res = requests.get(
-                                'https://www.nationalgrideso.com/charging/'
-                                'balancing-services-use-system-bsuos-charges')
-                            src = res.text
-                            for pref in (
-                                    'Current_II_BSUoS_Data_',
-                                    'Current_RF_BSUoS_Data_',
-                                    'Current_SF_BSUoS_Data_'):
-                                idx_start = src.find(pref)
-                                idx_quote = src.find('"', idx_start)
-                                title = src[idx_start:idx_quote]
-                                urls.add(
-                                    'https://www.nationalgrideso.com/'
-                                    'sites/eso/files/documents/' + title)
+                            urls.update(_discover_urls(self.log))
 
-                        urls.update(set(props.get('urls', [])))
                         url_list = sorted(urls)
                         self.log(
                             "List of URLs to process: " + str(url_list))
@@ -251,6 +237,23 @@ class BsuosImporter(threading.Thread):
 
         _save_cache(sess, cache)
         book = sheet = None
+
+
+def _discover_urls(logger):
+    host = 'https://www.nationalgrideso.com'
+    page = host + "/charging/balancing-services-use-system-bsuos-charges"
+    logger("Searching for URLs on " + page)
+    urls = set()
+    res = requests.get(page)
+    src = res.text
+    for pref in (
+            '" title="Current II BSUoS Data"',
+            '" title="Current RF BSUoS Data"',
+            '" title="Current SF BSUoS Data"'):
+        pidx = src.find(pref)
+        aidx = src.rfind('<', 0, pidx)
+        urls.add(host + src[aidx+9:pidx])
+    return urls
 
 
 def get_importer():
