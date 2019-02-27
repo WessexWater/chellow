@@ -4123,10 +4123,10 @@ def db_init(sess, root_path):
     sess.commit()
 
     for code, desc, factor_str in (
-            ("MCUF", "Thousands of cubic feet", '28.317'),
-            ("HCUF", "Hundreds of cubic feet", '2.8317'),
-            ("TCUF", "Tens of cubic feet", '0.28317'),
-            ("OCUF", "One cubic foot", '0.028317'),
+            ("MCUF", "Thousands of cubic feet", '28.3'),
+            ("HCUF", "Hundreds of cubic feet", '2.83'),
+            ("TCUF", "Tens of cubic feet", '0.283'),
+            ("OCUF", "One cubic foot", '0.0283'),
             ("M3", "Cubic metres", '1'),
             ("HM3", "Hundreds of cubic metres", '100'),
             ("TM3", "Tens of cubic metres", '10'),
@@ -4614,13 +4614,23 @@ def db_upgrade_17_to_18(sess, root_path):
             row.valid_to = _conv(row.valid_to)
 
 
+def db_upgrade_18_to_19(sess, root_path):
+    for code, factor in (
+            ("MCUF", '28.3'),
+            ("HCUF", '2.83'),
+            ("TCUF", '0.283'),
+            ("OCUF", '0.0283')):
+        g_unit = sess.query(GUnit).filter(GUnit.code == code).one()
+        g_unit.factor = Decimal(factor)
+
+
 upgrade_funcs = [
     db_upgrade_0_to_1, db_upgrade_1_to_2, db_upgrade_2_to_3, db_upgrade_3_to_4,
     db_upgrade_4_to_5, db_upgrade_5_to_6, db_upgrade_6_to_7, db_upgrade_7_to_8,
     db_upgrade_8_to_9, db_upgrade_9_to_10, db_upgrade_10_to_11,
     db_upgrade_11_to_12, db_upgrade_12_to_13, db_upgrade_13_to_14,
     db_upgrade_14_to_15, db_upgrade_15_to_16, db_upgrade_16_to_17,
-    db_upgrade_17_to_18]
+    db_upgrade_17_to_18, db_upgrade_18_to_19]
 
 
 def db_upgrade(root_path):
