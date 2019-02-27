@@ -486,6 +486,8 @@ class SiteSource(DataSource):
             self.voltage_level_code = self.llfc.voltage_level.code
             self.is_substation = self.llfc.is_substation
             self.gsp_group_code = self.supply.gsp_group.code
+            self.ssc = self.era.ssc
+            self.ssc_code = None if self.ssc is None else self.ssc.code
 
         supply_ids = set(
             s.id for s in sess.query(Supply).join(Era).join(SiteEra).
