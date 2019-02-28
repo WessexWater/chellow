@@ -7,6 +7,27 @@
       "day-gbp-per-kwh": 0.01645,
       "night-gbp-per-kwh": 0.00197
     },
+    "100": {
+      "fixed-gbp-per-day": 0.0562,
+      "capacity-<=200-gbp-per-kva-per-month": 1.13,
+      "capacity->200-gbp-per-kva-per-month": 1.00,
+      "day-gbp-per-kwh": 0.01645,
+      "night-gbp-per-kwh": 0.00197
+    },
+    "104": {
+      "fixed-gbp-per-day": 0.0562,
+      "capacity-<=200-gbp-per-kva-per-month": 1.13,
+      "capacity->200-gbp-per-kva-per-month": 1.00,
+      "day-gbp-per-kwh": 0.01645,
+      "night-gbp-per-kwh": 0.00197
+    },
+    "105": {
+      "fixed-gbp-per-day": 0.0562,
+      "capacity-<=200-gbp-per-kva-per-month": 1.13,
+      "capacity->200-gbp-per-kva-per-month": 1.00,
+      "day-gbp-per-kwh": 0.01645,
+      "night-gbp-per-kwh": 0.00197
+    },
     "126": {
       "fixed-gbp-per-day": 0.0562,
       "capacity-<=200-gbp-per-kva-per-month": 1.13,
@@ -61,6 +82,20 @@
       "day-gbp-per-kwh": 0.01737,
       "night-gbp-per-kwh": 0.00197
     },
+    "140": {
+      "fixed-gbp-per-day": 0.0758,
+      "capacity-<=200-gbp-per-kva-per-month": 1.13,
+      "capacity->200-gbp-per-kva-per-month": 1.00,
+      "day-gbp-per-kwh": 0.01737,
+      "night-gbp-per-kwh": 0.00197
+    },
+    "142": {
+      "fixed-gbp-per-day": 0.0758,
+      "capacity-<=200-gbp-per-kva-per-month": 1.13,
+      "capacity->200-gbp-per-kva-per-month": 1.00,
+      "day-gbp-per-kwh": 0.01737,
+      "night-gbp-per-kwh": 0.00197
+    },
     "400": {
       "fixed-gbp-per-day": 0.0758,
       "capacity-<=200-gbp-per-kva-per-month": 1.13,
@@ -96,6 +131,13 @@
       "capacity->200-gbp-per-kva-per-month": 0.92,
       "excess-gbp-per-kva-per-month": 0.43},
     "450": {
+      "fixed-gbp-per-month": 15.97,
+      "day-gbp-per-kwh":   0.00544,
+      "capacity-<=200-gbp-per-kva-per-month": 1.13,
+      "capacity->200-gbp-per-kva-per-month": 1.00,
+      "excess-gbp-per-kva-per-month": 0.45
+    },
+    "500": {
       "fixed-gbp-per-month": 15.97,
       "day-gbp-per-kwh":   0.00544,
       "capacity-<=200-gbp-per-kva-per-month": 1.13,

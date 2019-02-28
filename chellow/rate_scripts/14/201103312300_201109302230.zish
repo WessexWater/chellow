@@ -12,6 +12,46 @@
         "finish": 21,
         "band": "amber"}],
     "tariffs": {
+      "001": {
+        "description": "LV",
+        "gbp-per-mpan-per-day": 0.0757,
+        "gbp-per-kva-per-day": 0.0264,
+        "excess-gbp-per-kva-per-day": 0.0264,
+        "red-gbp-per-kwh": 0.06891,
+        "amber-gbp-per-kwh": 0.00709,
+        "green-gbp-per-kwh": 0.00046,
+        "gbp-per-kvarh": 0.00319
+      },
+      "007": {
+        "description": "LV",
+        "gbp-per-mpan-per-day": 0.0757,
+        "gbp-per-kva-per-day": 0.0264,
+        "excess-gbp-per-kva-per-day": 0.0264,
+        "red-gbp-per-kwh": 0.06891,
+        "amber-gbp-per-kwh": 0.00709,
+        "green-gbp-per-kwh": 0.00046,
+        "gbp-per-kvarh": 0.00319
+      },
+      "010": {
+        "description": "LV",
+        "gbp-per-mpan-per-day": 0.0757,
+        "gbp-per-kva-per-day": 0.0264,
+        "excess-gbp-per-kva-per-day": 0.0264,
+        "red-gbp-per-kwh": 0.06891,
+        "amber-gbp-per-kwh": 0.00709,
+        "green-gbp-per-kwh": 0.00046,
+        "gbp-per-kvarh": 0.00319
+      },
+      "021": {
+        "description": "LV",
+        "gbp-per-mpan-per-day": 0.0757,
+        "gbp-per-kva-per-day": 0.0264,
+        "excess-gbp-per-kva-per-day": 0.0264,
+        "red-gbp-per-kwh": 0.06891,
+        "amber-gbp-per-kwh": 0.00709,
+        "green-gbp-per-kwh": 0.00046,
+        "gbp-per-kvarh": 0.00319
+      },
       "025": {
         "description": "LV",
         "gbp-per-mpan-per-day": 0.0757,
@@ -23,6 +63,36 @@
         "gbp-per-kvarh": 0.00319
       },
       "026": {
+        "description": "LV",
+        "gbp-per-mpan-per-day": 0.0757,
+        "gbp-per-kva-per-day": 0.0264,
+        "excess-gbp-per-kva-per-day": 0.0264,
+        "red-gbp-per-kwh": 0.06891,
+        "amber-gbp-per-kwh": 0.00709,
+        "green-gbp-per-kwh": 0.00046,
+        "gbp-per-kvarh": 0.00319
+      },
+      "107": {
+        "description": "LV",
+        "gbp-per-mpan-per-day": 0.0757,
+        "gbp-per-kva-per-day": 0.0264,
+        "excess-gbp-per-kva-per-day": 0.0264,
+        "red-gbp-per-kwh": 0.06891,
+        "amber-gbp-per-kwh": 0.00709,
+        "green-gbp-per-kwh": 0.00046,
+        "gbp-per-kvarh": 0.00319
+      },
+      "108": {
+        "description": "LV",
+        "gbp-per-mpan-per-day": 0.0757,
+        "gbp-per-kva-per-day": 0.0264,
+        "excess-gbp-per-kva-per-day": 0.0264,
+        "red-gbp-per-kwh": 0.06891,
+        "amber-gbp-per-kwh": 0.00709,
+        "green-gbp-per-kwh": 0.00046,
+        "gbp-per-kvarh": 0.00319
+      },
+      "110": {
         "description": "LV",
         "gbp-per-mpan-per-day": 0.0757,
         "gbp-per-kva-per-day": 0.0264,

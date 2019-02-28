@@ -85,7 +85,57 @@
         "green-gbp-per-kwh": -0.00046,
         "gbp-per-kvarh": 0.00082
       },
+      "100": {
+        "description": "HV Sub Generation Non Intermittent",
+        "gbp-per-mpan-per-day": 0.9868,
+        "gbp-per-kva-per-day": 0.00,
+        "excess-gbp-per-kva-per-day": 0.00,
+        "red-gbp-per-kwh": -0.02634,
+        "amber-gbp-per-kwh": -0.00295,
+        "green-gbp-per-kwh": -0.00046,
+        "gbp-per-kvarh": 0.00082
+      },
+      "101": {
+        "description": "HV Sub Generation Non Intermittent",
+        "gbp-per-mpan-per-day": 0.9868,
+        "gbp-per-kva-per-day": 0.00,
+        "excess-gbp-per-kva-per-day": 0.00,
+        "red-gbp-per-kwh": -0.02634,
+        "amber-gbp-per-kwh": -0.00295,
+        "green-gbp-per-kwh": -0.00046,
+        "gbp-per-kvarh": 0.00082
+      },
+      "104": {
+        "description": "HV Sub Generation Non Intermittent",
+        "gbp-per-mpan-per-day": 0.9868,
+        "gbp-per-kva-per-day": 0.00,
+        "excess-gbp-per-kva-per-day": 0.00,
+        "red-gbp-per-kwh": -0.02634,
+        "amber-gbp-per-kwh": -0.00295,
+        "green-gbp-per-kwh": -0.00046,
+        "gbp-per-kvarh": 0.00082
+      },
+      "105": {
+        "description": "HV Sub Generation Non Intermittent",
+        "gbp-per-mpan-per-day": 0.9868,
+        "gbp-per-kva-per-day": 0.00,
+        "excess-gbp-per-kva-per-day": 0.00,
+        "red-gbp-per-kwh": -0.02634,
+        "amber-gbp-per-kwh": -0.00295,
+        "green-gbp-per-kwh": -0.00046,
+        "gbp-per-kvarh": 0.00082
+      },
       "126": {
+        "description": "HV Sub Generation Non Intermittent",
+        "gbp-per-mpan-per-day": 0.9868,
+        "gbp-per-kva-per-day": 0.00,
+        "excess-gbp-per-kva-per-day": 0.00,
+        "red-gbp-per-kwh": -0.02634,
+        "amber-gbp-per-kwh": -0.00295,
+        "green-gbp-per-kwh": -0.00046,
+        "gbp-per-kvarh": 0.00082
+      },
+      "127": {
         "description": "HV Sub Generation Non Intermittent",
         "gbp-per-mpan-per-day": 0.9868,
         "gbp-per-kva-per-day": 0.00,
@@ -146,6 +196,36 @@
         "gbp-per-kvarh": 0.00082
       },
       "136": {
+        "description": "HV Sub Generation Non Intermittent",
+        "gbp-per-mpan-per-day": 0.9868,
+        "gbp-per-kva-per-day": 0.00,
+        "excess-gbp-per-kva-per-day": 0.00,
+        "red-gbp-per-kwh": -0.02634,
+        "amber-gbp-per-kwh": -0.00295,
+        "green-gbp-per-kwh": -0.00046,
+        "gbp-per-kvarh": 0.00082
+      },
+      "140": {
+        "description": "HV Sub Generation Non Intermittent",
+        "gbp-per-mpan-per-day": 0.9868,
+        "gbp-per-kva-per-day": 0.00,
+        "excess-gbp-per-kva-per-day": 0.00,
+        "red-gbp-per-kwh": -0.02634,
+        "amber-gbp-per-kwh": -0.00295,
+        "green-gbp-per-kwh": -0.00046,
+        "gbp-per-kvarh": 0.00082
+      },
+      "142": {
+        "description": "HV Sub Generation Non Intermittent",
+        "gbp-per-mpan-per-day": 0.9868,
+        "gbp-per-kva-per-day": 0.00,
+        "excess-gbp-per-kva-per-day": 0.00,
+        "red-gbp-per-kwh": -0.02634,
+        "amber-gbp-per-kwh": -0.00295,
+        "green-gbp-per-kwh": -0.00046,
+        "gbp-per-kvarh": 0.00082
+      },
+      "400": {
         "description": "HV Sub Generation Non Intermittent",
         "gbp-per-mpan-per-day": 0.9868,
         "gbp-per-kva-per-day": 0.00,
