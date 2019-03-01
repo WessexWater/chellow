@@ -26,6 +26,7 @@ def clog(msg):
 
 HH = relativedelta(minutes=30)
 MONTH = relativedelta(months=1)
+YEAR = relativedelta(years=1)
 
 
 def req_str(name):
@@ -542,42 +543,39 @@ def get_file_script(caches, contract_name, date):
         except KeyError:
             cont = cont_cache['rs'] = {}
 
-        try:
-            return cont[date]
-        except KeyError:
-            scripts = get_file_scripts(contract_name)
-            for i, (start_date, finish_date, script_str) in enumerate(scripts):
-                if i + 1 == len(scripts):
-                    sfinish = finish_date
-                else:
-                    sfinish = scripts[i + 1][0] - HH
-                if date >= start_date and not hh_after(date, sfinish):
-                    try:
-                        rs = start_date, sfinish, loads(script_str)
-                    except ZishException as e:
-                        raise BadRequest(
-                            "In the rate script " + url_root +
-                            'industry_contracts/' + contract_name +
-                            '/rate_scripts/' +
-                            start_date.strftime("%Y%m%d%H%M") +
-                            " there's the problem " + str(e) + ".")
+        scripts = get_file_scripts(contract_name)
+        for i, (start_date, finish_date, script_str) in enumerate(scripts):
+            if i + 1 == len(scripts):
+                sfinish = finish_date
+            else:
+                sfinish = scripts[i + 1][0] - HH
+            if date >= start_date and not hh_after(date, sfinish):
+                try:
+                    rs = start_date, sfinish, loads(script_str)
+                except ZishException as e:
+                    raise BadRequest(
+                        "In the rate script " + url_root +
+                        'industry_contracts/' + contract_name +
+                        '/rate_scripts/' +
+                        start_date.strftime("%Y%m%d%H%M") +
+                        " there's the problem " + str(e) + ".")
 
-                    begin_date = hh_max(date - MONTH, start_date)
-                    end_date = hh_min(date + MONTH, sfinish)
-                    for hh_date in hh_range(caches, begin_date, end_date):
-                        cont[hh_date] = rs
+                begin_date = hh_max(date - YEAR, start_date)
+                end_date = hh_min(date + YEAR, sfinish)
+                for hh_date in hh_range(caches, begin_date, end_date):
+                    cont[hh_date] = rs
 
-            scripts_start = scripts[0][0]
-            if date < scripts_start:
-                end_date = hh_min(date + MONTH, scripts_start - HH)
-                for hh_date in hh_range(caches, date - MONTH, end_date):
-                    cont[hh_date] = None
+        scripts_start = scripts[0][0]
+        if date < scripts_start:
+            end_date = hh_min(date + YEAR, scripts_start - HH)
+            for hh_date in hh_range(caches, date - YEAR, end_date):
+                cont[hh_date] = None
 
-            scripts_finish = scripts[-1][1]
-            if hh_after(date, scripts_finish):
-                start_date = hh_max(date - MONTH, scripts_finish + HH)
-                for hh_date in hh_range(caches, start_date, date + MONTH):
-                    cont[hh_date] = None
+        scripts_finish = scripts[-1][1]
+        if hh_after(date, scripts_finish):
+            start_date = hh_max(date - YEAR, scripts_finish + HH)
+            for hh_date in hh_range(caches, start_date, date + YEAR):
+                cont[hh_date] = None
 
         return cont[date]
 

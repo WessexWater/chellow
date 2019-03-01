@@ -13,7 +13,7 @@ from chellow.models import (
     ClockInterval, Mtc, Llfc)
 from chellow.utils import (
     HH, hh_format, hh_max, hh_range, hh_min, utc_datetime, utc_datetime_now,
-    to_tz, to_ct, loads, PropDict)
+    to_tz, to_ct, loads, PropDict, YEAR)
 import chellow.utils
 import chellow.bank_holidays
 from itertools import combinations
@@ -95,10 +95,8 @@ def hh_rate(sess, caches, contract_id, date):
         try:
             return cont_cache[date]
         except KeyError:
-            month_after = date + relativedelta(months=1) + relativedelta(
-                days=1)
-            month_before = date - relativedelta(months=1) - relativedelta(
-                days=1)
+            year_after = date + YEAR
+            year_before = date - YEAR
 
             rs = sess.query(RateScript).filter(
                 RateScript.contract_id == contract_id,
@@ -111,17 +109,17 @@ def hh_rate(sess, caches, contract_id, date):
                     RateScript.contract_id == contract_id).order_by(
                     RateScript.start_date.desc()).first()
                 if date < rs.start_date:
-                    cstart = month_before
-                    cfinish = min(month_after, rs.start_date - HH)
+                    cstart = year_before
+                    cfinish = min(year_after, rs.start_date - HH)
                 else:
-                    cstart = max(rs.finish_date + HH, month_before)
-                    cfinish = month_after
+                    cstart = max(rs.finish_date + HH, year_before)
+                    cfinish = year_after
             else:
-                cstart = max(rs.start_date, month_before)
+                cstart = max(rs.start_date, year_before)
                 if rs.finish_date is None:
-                    cfinish = month_after
+                    cfinish = year_after
                 else:
-                    cfinish = min(rs.finish_date, month_after)
+                    cfinish = min(rs.finish_date, year_after)
 
             market_role_code = rs.contract.market_role.code
             if market_role_code == "M":
