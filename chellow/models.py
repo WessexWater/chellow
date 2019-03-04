@@ -1847,15 +1847,20 @@ class Era(Base, PersistentClass):
         return chan
 
     def update_dates(self, sess, start_date, finish_date):
-        self.update(
-            sess, start_date, finish_date, self.mop_contract, self.mop_account,
-            self.dc_contract, self.dc_account, self.msn, self.pc, self.mtc,
-            self.cop, self.ssc, loads(self.properties), self.imp_mpan_core,
-            None if self.imp_llfc is None else self.imp_llfc.code,
-            self.imp_supplier_contract, self.imp_supplier_account, self.imp_sc,
-            self.exp_mpan_core,
-            None if self.exp_llfc is None else self.exp_llfc.code,
-            self.exp_supplier_contract, self.exp_supplier_account, self.exp_sc)
+        if start_date == self.start_date and finish_date == self.finish_date:
+            return
+        else:
+            self.update(
+                sess, start_date, finish_date, self.mop_contract,
+                self.mop_account, self.dc_contract, self.dc_account, self.msn,
+                self.pc, self.mtc, self.cop, self.ssc, loads(self.properties),
+                self.imp_mpan_core,
+                None if self.imp_llfc is None else self.imp_llfc.code,
+                self.imp_supplier_contract, self.imp_supplier_account,
+                self.imp_sc, self.exp_mpan_core,
+                None if self.exp_llfc is None else self.exp_llfc.code,
+                self.exp_supplier_contract, self.exp_supplier_account,
+                self.exp_sc)
 
     def update(
             self, sess, start_date, finish_date, mop_contract, mop_account,
@@ -3136,9 +3141,13 @@ class GEra(Base, PersistentClass):
         sess.flush()
 
     def update_dates(self, sess, start_date, finish_date):
-        self.update(
-            sess, start_date, finish_date, self.msn, self.correction_factor,
-            self.g_unit, self.g_contract, self.account)
+        if start_date == self.start_date and finish_date == self.finish_date:
+            return
+        else:
+            self.update(
+                sess, start_date, finish_date, self.msn,
+                self.correction_factor, self.g_unit, self.g_contract,
+                self.account)
 
     def update(
             self, sess, start_date, finish_date, msn, correction_factor,
