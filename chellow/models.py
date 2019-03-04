@@ -1941,7 +1941,7 @@ class Era(Base, PersistentClass):
             if mcore[:2] != self.supply.dno.dno_code:
                 raise BadRequest(
                     "The DNO code of the MPAN core " + mcore +
-                    "doesn't match the DNO code of the supply.")
+                    " doesn't match the DNO code of the supply.")
 
             setattr(self, polarity + '_mpan_core', mcore)
 
@@ -1964,6 +1964,12 @@ class Era(Base, PersistentClass):
             llfc_code = locs[polarity + '_llfc_code']
             llfc = self.supply.dno.get_llfc_by_code(
                 sess, llfc_code, start_date)
+            if hh_before(llfc.valid_to, finish_date):
+                raise BadRequest(
+                    "The " + polarity + " line loss factor " + llfc_code +
+                    " is only valid until " + hh_format(llfc.valid_to) +
+                    " but the era ends at " + hh_format(finish_date) + ".")
+
             if llfc.is_import != ('imp' == polarity):
                 raise BadRequest(
                     "The " + polarity + " line loss factor " + llfc.code +
