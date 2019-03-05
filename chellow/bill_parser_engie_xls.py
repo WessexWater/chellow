@@ -170,6 +170,130 @@ def bd_add(bd, el_name, val):
                 str(val) + "': " + str(e))
 
 
+def _parse_row(row, row_index, datemode, title_row):
+    mpan_core = parse_mpan_core(
+        str(int(get_value(row, 'Meter Point'))))
+    bill_period = get_value(row, 'Bill Period')
+    if '-' in bill_period:
+        period_start, period_finish = [
+            to_utc(to_ct(Datetime.strptime(d, '%Y-%m-%d')))
+            for d in bill_period.split(' - ')]
+        period_finish += relativedelta(days=1) - HH
+    else:
+        period_start, period_finish = None, None
+
+    from_date = get_date(row, 'From Date', datemode)
+    if from_date is None:
+        if period_start is None:
+            raise BadRequest(
+                "Can't find a bill finish date in row " + str(row_index) + ".")
+        else:
+            from_date = period_start
+
+    to_date = get_date(row, 'To Date', datemode)
+    if to_date is None:
+        if period_finish is None:
+            raise BadRequest(
+                "Can't find a bill finish date in row " +
+                str(row_index) + " .")
+        else:
+            to_date = period_finish
+
+    else:
+        to_date += relativedelta(days=1) - HH
+
+    issue_date = get_date(row, 'Bill Date', datemode)
+    bill_number = get_value(row, 'Bill Number')
+    bill = {
+        'bill_type_code': 'N', 'kwh': Decimal(0),
+        'vat': Decimal('0.00'), 'net': Decimal('0.00'), 'reads': [],
+        'breakdown': {'raw_lines': [str(title_row)]},
+        'account': mpan_core, 'issue_date': issue_date,
+        'start_date': from_date, 'finish_date': to_date,
+        'mpans': [mpan_core],
+    }
+    bd = bill['breakdown']
+
+    usage = get_dec(row, 'Usage')
+    # usage_units = get_value(row, 'Usage Unit')
+    price = get_dec(row, 'Price')
+    amount = get_dec(row, 'Amount')
+    product_item_name = get_value(row, 'Product Item Name')
+    rate_name = get_value(row, 'Rate Name')
+    if product_item_name == 'Renewables Obligation (RO)':
+        bill['kwh'] += round(usage, 2)
+    description = get_value(row, 'Description')
+    product_class = get_value(row, 'Product Item Class')
+    if description in ('Standard VAT@20%', 'Reduced VAT@5%'):
+        bill['vat'] += round(amount, 2)
+    else:
+        bill['net'] += round(amount, 2)
+
+        path = [product_class, description, rate_name]
+        names = _find_names(ELEM_MAP, path)
+
+        if names is None:
+            duos_avail_prefix = "DUoS Availability ("
+            duos_excess_avail_prefix = "DUoS Excess Availability ("
+            if description.startswith("DUoS Availability"):
+                if description.startswith(duos_avail_prefix):
+                    bd_add(
+                        bd, 'duos-availability-kva',
+                        int(description[len(duos_avail_prefix):-5]))
+                bd_add(bd, 'duos-availability-days', usage)
+                bd_add(bd, 'duos-availability-rate', price)
+                bd_add(bd, 'duos-availability-gbp', amount)
+            elif description.startswith("DUoS Excess Availability"):
+                if description.startswith(duos_excess_avail_prefix):
+                    kva = int(
+                        description[len(duos_excess_avail_prefix):-5])
+                    bd_add(bd, 'duos-excess-availability-kva', kva)
+                bd_add(bd, 'duos-excess-availability-days', usage)
+                bd_add(bd, 'duos-excess-availability-rate', price)
+                bd_add(bd, 'duos-excess-availability-gbp', amount)
+            elif description.startswith('BSUoS Black Start '):
+                bd_add(bd, 'black-start-gbp', amount)
+            elif description.startswith('BSUoS Reconciliation - '):
+                if usage is not None:
+                    bd_add(bd, 'bsuos-nbp-kwh', usage)
+                if price is not None:
+                    bd_add(bd, 'bsuos-rate', price)
+                bd_add(bd, 'bsuos-gbp', amount)
+            elif description.startswith("FiT Rec - "):
+                bd_add(bd, 'fit-gbp', amount)
+            elif description.startswith("CfD FiT Rec - "):
+                bd_add(bd, 'cfd-fit-gbp', amount)
+            elif description.startswith("Flex "):
+                bd_add(bd, 'reconciliation-gbp', amount)
+            elif description.startswith("Legacy TNUoS Reversal "):
+                bd_add(bd, 'triad-gbp', amount)
+            elif description.startswith("Hand Held Read -"):
+                bd_add(bd, 'meter-rental-gbp', amount)
+            elif description.startswith("OOC MOP - "):
+                bd_add(bd, 'meter-rental-gbp', amount)
+            elif description.startswith("KVa Adjustment "):
+                bd_add(bd, 'duos-availability-gbp', amount)
+            else:
+                raise BadRequest(
+                    "For the path " + str(path) +
+                    " the parser can't work out the element.")
+        else:
+            for elem_k, elem_v in zip(names, (usage, price, amount)):
+                if elem_k is not None:
+                    bd_add(bd, elem_k, elem_v)
+
+    reference = str(bill_number) + '_' + str(row_index + 1)
+    for k, v in tuple(bd.items()):
+        if isinstance(v, set):
+            bd[k] = list(v)
+        elif k.endswith("-gbp"):
+            reference += "_" + k[:-4]
+
+    bill['reference'] = reference
+    bill['gross'] = bill['net'] + bill['vat']
+    return bill
+
+
 class Parser():
     def __init__(self, f):
         self.book = open_workbook(file_contents=f.read())
@@ -197,128 +321,6 @@ class Parser():
         title_row = self.sheet.row(0)
         for row_index in range(1, self.sheet.nrows):
             row = self.sheet.row(row_index)
-            mpan_core = parse_mpan_core(
-                str(int(get_value(row, 'Meter Point'))))
-            bill_period = get_value(row, 'Bill Period')
-            if '-' in bill_period:
-                period_start, period_finish = [
-                    to_utc(to_ct(Datetime.strptime(d, '%Y-%m-%d')))
-                    for d in bill_period.split(' - ')]
-                period_finish += relativedelta(days=1) - HH
-            else:
-                period_start, period_finish = None, None
-
-            from_date = get_date(row, 'From Date', self.book.datemode)
-            if from_date is None:
-                if period_start is None:
-                    raise BadRequest(
-                        "Can't find a bill finish date in row " +
-                        str(row_index) + ".")
-                else:
-                    from_date = period_start
-
-            to_date = get_date(row, 'To Date', self.book.datemode)
-            if to_date is None:
-                if period_finish is None:
-                    raise BadRequest(
-                        "Can't find a bill finish date in row " +
-                        str(row_index) + " .")
-                else:
-                    to_date = period_finish
-
-            else:
-                to_date += relativedelta(days=1) - HH
-
-            issue_date = get_date(row, 'Bill Date', self.book.datemode)
-            bill_number = get_value(row, 'Bill Number')
-            bill = {
-                'bill_type_code': 'N', 'kwh': Decimal(0),
-                'vat': Decimal('0.00'), 'net': Decimal('0.00'), 'reads': [],
-                'breakdown': {'raw_lines': [str(title_row)]},
-                'account': mpan_core, 'issue_date': issue_date,
-                'start_date': from_date, 'finish_date': to_date,
-                'mpans': [mpan_core],
-            }
-            bills.append(bill)
-            bd = bill['breakdown']
-
-            usage = get_dec(row, 'Usage')
-            usage_units = get_value(row, 'Usage Unit')
-            price = get_dec(row, 'Price')
-            amount = get_dec(row, 'Amount')
-            product_item_name = get_value(row, 'Product Item Name')
-            rate_name = get_value(row, 'Rate Name')
-            if usage_units == 'kWh':
-                if product_item_name == 'Renewables Obligation (RO)':
-                    bill['kwh'] += round(usage, 2)
-            description = get_value(row, 'Description')
-            product_class = get_value(row, 'Product Item Class')
-            if description in ('Standard VAT@20%', 'Reduced VAT@5%'):
-                bill['vat'] += round(amount, 2)
-            else:
-                bill['net'] += round(amount, 2)
-
-                path = [product_class, description, rate_name]
-                names = _find_names(ELEM_MAP, path)
-
-                if names is None:
-                    duos_avail_prefix = "DUoS Availability ("
-                    duos_excess_avail_prefix = "DUoS Excess Availability ("
-                    if description.startswith("DUoS Availability"):
-                        if description.startswith(duos_avail_prefix):
-                            bd_add(
-                                bd, 'duos-availability-kva',
-                                int(description[len(duos_avail_prefix):-5]))
-                        bd_add(bd, 'duos-availability-days', usage)
-                        bd_add(bd, 'duos-availability-rate', price)
-                        bd_add(bd, 'duos-availability-gbp', amount)
-                    elif description.startswith("DUoS Excess Availability"):
-                        if description.startswith(duos_excess_avail_prefix):
-                            kva = int(
-                                description[len(duos_excess_avail_prefix):-5])
-                            bd_add(bd, 'duos-excess-availability-kva', kva)
-                        bd_add(bd, 'duos-excess-availability-days', usage)
-                        bd_add(bd, 'duos-excess-availability-rate', price)
-                        bd_add(bd, 'duos-excess-availability-gbp', amount)
-                    elif description.startswith('BSUoS Black Start '):
-                        bd_add(bd, 'black-start-gbp', amount)
-                    elif description.startswith('BSUoS Reconciliation - '):
-                        if usage is not None:
-                            bd_add(bd, 'bsuos-nbp-kwh', usage)
-                        if price is not None:
-                            bd_add(bd, 'bsuos-rate', price)
-                        bd_add(bd, 'bsuos-gbp', amount)
-                    elif description.startswith("FiT Rec - "):
-                        bd_add(bd, 'fit-gbp', amount)
-                    elif description.startswith("CfD FiT Rec - "):
-                        bd_add(bd, 'cfd-fit-gbp', amount)
-                    elif description.startswith("Flex "):
-                        bd_add(bd, 'reconciliation-gbp', amount)
-                    elif description.startswith("Legacy TNUoS Reversal "):
-                        bd_add(bd, 'triad-gbp', amount)
-                    elif description.startswith("Hand Held Read -"):
-                        bd_add(bd, 'meter-rental-gbp', amount)
-                    elif description.startswith("OOC MOP - "):
-                        bd_add(bd, 'meter-rental-gbp', amount)
-                    elif description.startswith("KVa Adjustment "):
-                        bd_add(bd, 'duos-availability-gbp', amount)
-                    else:
-                        raise BadRequest(
-                            "For the path " + str(path) +
-                            " the parser can't work out the element.")
-                else:
-                    for elem_k, elem_v in zip(names, (usage, price, amount)):
-                        if elem_k is not None:
-                            bd_add(bd, elem_k, elem_v)
-
-            reference = str(bill_number) + '_' + str(row_index + 1)
-            for k, v in tuple(bd.items()):
-                if isinstance(v, set):
-                    bd[k] = list(v)
-                elif k.endswith("-gbp"):
-                    reference += "_" + k[:-4]
-
-            bill['reference'] = reference
-            bill['gross'] = bill['net'] + bill['vat']
-
+            datemode = self.book.datemode
+            bills.append(_parse_row(row, row_index, datemode, title_row))
         return bills
