@@ -16,6 +16,13 @@
       "night": 1.067,
       "other": 1.069}},
   "tariffs": {
+    "010": {
+      "gbp-per-kva-per-day": 0,
+      "day-gbp-per-kwh": 0.019400,
+      "night-gbp-per-kwh": 0.019400,
+      "reactive-gbp-per-kvarh": 0,
+      "excess-gbp-per-kva-per-day": 0
+    },
     "110": {
       "gbp-per-kva-per-day": 0,
       "day-gbp-per-kwh": 0.019400,

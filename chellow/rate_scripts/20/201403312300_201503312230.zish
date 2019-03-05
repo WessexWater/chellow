@@ -100,6 +100,16 @@
         "green-gbp-per-kwh": -0.00367,
         "gbp-per-kvarh": 0.00149
       },
+      "115": {
+        "description": "HV Generation Intermittent",
+        "gbp-per-mpan-per-day": 1.1710,
+        "gbp-per-kva-per-day": 0.00,
+        "excess-gbp-per-kva-per-day": 0.00,
+        "red-gbp-per-kwh": -0.00367,
+        "amber-gbp-per-kwh": -0.00367,
+        "green-gbp-per-kwh": -0.00367,
+        "gbp-per-kvarh": 0.00149
+      },
       "126": {
         "description": "HV Generation Intermittent",
         "gbp-per-mpan-per-day": 1.1710,
