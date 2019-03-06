@@ -476,7 +476,7 @@ class GDataSource():
                             if aft_read['msn'] == fore_read['msn']:
                                 num_hh = (
                                     fore_read['date'] - aft_read['date']
-                                    ).total_seconds() / (30 * 60) + 1
+                                    ).total_seconds() / (30 * 60)
 
                                 units = fore_read['value'] - aft_read['value']
 
@@ -488,7 +488,7 @@ class GDataSource():
                                 pairs.append(
                                     {
                                         'start-date': aft_read['date'],
-                                        'finish-date': fore_read['date'] + HH,
+                                        'finish-date': fore_read['date'] - HH,
                                         'units': units / num_hh})
 
                                 if len(pairs) > 0 and (

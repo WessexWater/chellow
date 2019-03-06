@@ -121,11 +121,8 @@ class Parser():
                     prdt = self.parser.elements[6]
                     pvdt = self.parser.elements[7]
 
-                    pres_read_date = to_date(prdt[0]) + \
-                        relativedelta(days=1) - HH
-
-                    prev_read_date = to_date(pvdt[0]) + \
-                        relativedelta(days=1) - HH
+                    pres_read_date = to_date(prdt[0])
+                    prev_read_date = to_date(pvdt[0])
 
                     prrd = self.parser.elements[9]
                     pres_read_value = Decimal(prrd[0])
