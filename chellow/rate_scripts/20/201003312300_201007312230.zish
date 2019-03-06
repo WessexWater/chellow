@@ -125,6 +125,16 @@
         "green-gbp-per-kwh": -0.00046,
         "gbp-per-kvarh": 0.00082
       },
+      "115": {
+        "description": "HV Sub Generation Non Intermittent",
+        "gbp-per-mpan-per-day": 0.9868,
+        "gbp-per-kva-per-day": 0.00,
+        "excess-gbp-per-kva-per-day": 0.00,
+        "red-gbp-per-kwh": -0.02634,
+        "amber-gbp-per-kwh": -0.00295,
+        "green-gbp-per-kwh": -0.00046,
+        "gbp-per-kvarh": 0.00082
+      },
       "126": {
         "description": "HV Sub Generation Non Intermittent",
         "gbp-per-mpan-per-day": 0.9868,
