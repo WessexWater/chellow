@@ -39,6 +39,16 @@
         "green-gbp-per-kwh": 0.00058,
         "gbp-per-kvarh": 0.00238
       },
+      "251": {
+        "description": "High Voltage HH Metered",
+        "gbp-per-mpan-per-day": 0.6485,
+        "gbp-per-kva-per-day": 0.017,
+        "excess-gbp-per-kva-per-day": 0.017,
+        "red-gbp-per-kwh": 0.16342,
+        "amber-gbp-per-kwh": 0.0004,
+        "green-gbp-per-kwh": 0.00058,
+        "gbp-per-kvarh": 0.00238
+      },
       "510": {
         "description": "High Voltage HH Metered",
         "gbp-per-mpan-per-day": 0.6485,
