@@ -1042,109 +1042,22 @@ class SupplySource(DataSource):
                                     prime_pres_read = None
 
                         if len(read_list) > 1:
-                            if is_forwards:
-                                aft_read = read_list[-2]
-                                fore_read = read_list[-1]
-                            else:
-                                aft_read = read_list[-1]
-                                fore_read = read_list[-2]
-
-                            if aft_read['msn'] == fore_read['msn'] and \
-                                    aft_read['reads'].keys() == \
-                                    fore_read['reads'].keys():
-                                num_hh = (
-                                    fore_read['date'] - aft_read['date']
-                                    ).total_seconds() / (30 * 60)
-
-                                tprs = {}
-                                for tpr_code, initial_val in \
-                                        aft_read['reads'].items():
-                                    end_val = fore_read['reads'][tpr_code]
-
-                                    # Clocked?
-                                    if end_val - initial_val < 0:
-                                        digits = int(log10(initial_val)) + 1
-                                        end_val += 10 ** digits
-
-                                    kwh = end_val * \
-                                        fore_read['coefficients'][tpr_code] \
-                                        - initial_val * \
-                                        aft_read['coefficients'][tpr_code]
-
-                                    tprs[tpr_code] = kwh / num_hh
-
-                                pairs.append(
-                                    {
-                                        'start-date': aft_read['date'],
-                                        'finish-date': fore_read['date'] + HH,
-                                        'tprs': tprs})
-
-                                if len(pairs) > 0 and (
-                                        not is_forwards or (
-                                            is_forwards and
-                                            read_list[-1]['date'] >
-                                            chunk_finish)):
+                            pair = _find_pair(is_forwards, read_list)
+                            if pair is not None:
+                                pairs.append(pair)
+                                if not is_forwards or (
+                                        is_forwards and read_list[-1]['date'] >
+                                        chunk_finish):
                                     break
 
                 self.consumption_info += 'read list - \n' + \
                     dumps(read_list) + "\n"
-                if len(pairs) == 0:
-                    pairs.append(
-                        {
-                            'start-date': chunk_start,
-                            'finish-date': chunk_finish,
-                            'tprs': {'00001': 0}})
-
-                # smooth
-                for i in range(1, len(pairs)):
-                    pairs[i - 1]['finish-date'] = pairs[i]['start-date'] - HH
-
-                # stretch
-                if pairs[0]['start-date'] > chunk_start:
-                    pairs[0]['start-date'] = chunk_start
-
-                if pairs[-1]['finish-date'] < chunk_finish:
-                    pairs[-1]['finish-date'] = chunk_finish
-
-                # chop
-                pairs = [
-                    pair for pair in pairs
-                    if not pair['start-date'] > chunk_finish and not
-                    pair['finish-date'] < chunk_start]
-
-                # squash
-                if pairs[0]['start-date'] < chunk_start:
-                    pairs[0]['start-date'] = chunk_start
-
-                if pairs[-1]['finish-date'] > chunk_finish:
-                    pairs[-1]['finish-date'] = chunk_finish
-
+                hhs = _find_hhs(
+                    self.caches, self.sess, pairs, chunk_start, chunk_finish)
+                hist_map.update(hhs)
                 self.consumption_info += 'pairs - \n' + dumps(pairs)
+                print(self.consumption_info)
 
-                for pair in pairs:
-                    pair_hhs = (
-                        pair['finish-date'] + HH - pair['start-date']
-                        ).total_seconds() / (60 * 30)
-                    for tpr_code, pair_kwh in pair['tprs'].items():
-                        hh_part = {}
-
-                        for hh_date in hh_range(
-                                self.caches, pair['start-date'],
-                                pair['finish-date']):
-                            if is_tpr(sess, self.caches, tpr_code, hh_date):
-                                hh_part[hh_date] = {}
-
-                        kwh = pair_kwh * pair_hhs / len(hh_part) \
-                            if len(hh_part) > 0 else 0
-
-                        for datum in hh_part.values():
-                            datum.update(
-                                {
-                                    'msp-kw': kwh * 2, 'msp-kwh': kwh,
-                                    'hist-kwh': kwh, 'imp-msp-kvar': 0,
-                                    'imp-msp-kvarh': 0, 'exp-msp-kvar': 0,
-                                    'exp-msp-kvarh': 0, 'tpr': tpr_code})
-                        hist_map.update(hh_part)
             elif self.bill is not None and hist_measurement_type in (
                     'nhh', 'amr'):
                 hhd = {}
@@ -1501,3 +1414,79 @@ order by hh_datum.start_date
                     self.is_import, self.caches, self.bill, self.era_maps,
                     self.deltas)
                 yield ds
+
+
+def _find_pair(is_forwards, read_list):
+    if is_forwards:
+        back, front = read_list[-2], read_list[-1]
+    else:
+        back, front = read_list[-1], read_list[-2]
+
+    back_reads = back['reads']
+    front_reads = front['reads']
+    back_date = back['date']
+    front_date = front['date']
+
+    if back['msn'] == front['msn'] and back_reads.keys() == front_reads.keys():
+        num_hh = (front_date - back_date).total_seconds() / (30 * 60)
+
+        tprs = {}
+        for tpr_code, initial_val in back_reads.items():
+            end_val = front_reads[tpr_code]
+
+            # Clocked?
+            if end_val - initial_val < 0:
+                digits = int(log10(initial_val)) + 1
+                end_val += 10 ** digits
+
+            kwh = end_val * front['coefficients'][tpr_code] - \
+                initial_val * back['coefficients'][tpr_code]
+
+            tprs[tpr_code] = kwh / num_hh
+
+        return {
+            'start-date': back_date,
+            'tprs': tprs
+        }
+
+
+def _find_hhs(caches, sess, pairs, chunk_start, chunk_finish):
+    if len(pairs) == 0:
+        pairs.append(
+            {
+                'start-date': chunk_start,
+                'tprs': {'00001': 0}
+            })
+
+    # set finish dates
+    for i in range(1, len(pairs)):
+        pairs[i - 1]['finish-date'] = pairs[i]['start-date'] - HH
+    pairs[-1]['finish-date'] = chunk_finish
+
+    # chop
+    if pairs[0]['finish-date'] < chunk_start:
+        del pairs[0]
+
+    # set start date
+    pairs[0]['start-date'] = chunk_start
+
+    hhs = {}
+    for pair in pairs:
+        pair_start = pair['start-date']
+        pair_finish = pair['finish-date']
+        pair_hhs = (pair_finish + HH - pair_start).total_seconds() / (60 * 30)
+        d_range = hh_range(caches, pair_start, pair_finish)
+        for tpr_code, pair_kwh in pair['tprs'].items():
+            dates = [d for d in d_range if is_tpr(sess, caches, tpr_code, d)]
+
+            len_dates = len(dates)
+
+            kwh = pair_kwh * pair_hhs / len_dates if len_dates > 0 else 0
+
+            for date in dates:
+                hhs[date] = {
+                    'msp-kw': kwh * 2, 'msp-kwh': kwh, 'hist-kwh': kwh,
+                    'imp-msp-kvar': 0, 'imp-msp-kvarh': 0, 'exp-msp-kvar': 0,
+                    'exp-msp-kvarh': 0, 'tpr': tpr_code
+                }
+    return hhs
