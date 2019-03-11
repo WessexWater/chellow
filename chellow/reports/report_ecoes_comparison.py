@@ -197,14 +197,7 @@ def content(user):
                 if chellow_msn != ecoes['msn']:
                     problem += "The meter serial numbers don't match. "
 
-                if chellow_pc == '00':
-                    chellow_meter_type = 'H'
-                elif len(era.channels) > 0:
-                    chellow_meter_type = 'RCAMR'
-                elif era.mtc.meter_type.code in ['UM', 'PH']:
-                    chellow_meter_type = ''
-                else:
-                    chellow_meter_type = 'N'
+                chellow_meter_type = _meter_type(era)
 
                 if chellow_meter_type != ecoes['meter-type']:
                     problem += "The meter types don't match. See " \
@@ -261,10 +254,7 @@ def content(user):
 
             msn = '' if era.msn is None else era.msn
 
-            if era.pc.code == '00':
-                meter_type = 'H'
-            else:
-                meter_type = 'RCAMR' if len(era.channels) > 0 else 'N'
+            meter_type = _meter_type(era)
 
             writer.writerow(
                 [
@@ -283,6 +273,21 @@ def content(user):
         if f is not None:
             f.close()
             os.rename(running_name, finished_name)
+
+
+def _meter_type(era):
+    props = era.props
+    try:
+        return props['meter_type']
+    except KeyError:
+        if era.pc.code == '00':
+            return 'H'
+        elif len(era.channels) > 0:
+            return 'RCAMR'
+        elif era.mtc.meter_type.code in ['UM', 'PH']:
+            return ''
+        else:
+            return 'N'
 
 
 def do_get(sess):
