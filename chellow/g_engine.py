@@ -488,47 +488,29 @@ class GDataSource():
                                 pairs.append(
                                     {
                                         'start-date': aft_read['date'],
-                                        'finish-date': fore_read['date'] - HH,
                                         'units': units / num_hh})
 
-                                if len(pairs) > 0 and (
-                                        not is_forwards or (
-                                            is_forwards and
-                                            read_list[-1]['date'] >
-                                            chunk_finish)):
+                                if not is_forwards or (
+                                        is_forwards and
+                                        read_list[-1]['date'] > chunk_finish):
                                     break
 
                 self.consumption_info += 'read list - \n' + dumps(read_list) \
                     + "\n"
                 if len(pairs) == 0:
-                    pairs.append(
-                        {
-                            'start-date': chunk_start,
-                            'finish-date': chunk_finish, 'units': 0})
+                    pairs.append({'start-date': chunk_start, 'units': 0})
 
-                # smooth
+                # set finish dates
                 for i in range(1, len(pairs)):
                     pairs[i - 1]['finish-date'] = pairs[i]['start-date'] - HH
-
-                # stretch
-                if pairs[0]['start-date'] > chunk_start:
-                    pairs[0]['start-date'] = chunk_start
-
-                if pairs[-1]['finish-date'] < chunk_finish:
-                    pairs[-1]['finish-date'] = chunk_finish
+                pairs[-1]['finish-date'] = chunk_finish
 
                 # chop
-                pairs = [
-                    pair for pair in pairs
-                    if not pair['start-date'] > chunk_finish and not
-                    pair['finish-date'] < chunk_start]
+                if pairs[0]['finish-date'] < chunk_start:
+                    del pairs[0]
 
-                # squash
-                if pairs[0]['start-date'] < chunk_start:
-                    pairs[0]['start-date'] = chunk_start
-
-                if pairs[-1]['finish-date'] > chunk_finish:
-                    pairs[-1]['finish-date'] = chunk_finish
+                # set start date
+                pairs[0]['start-date'] = chunk_start
 
                 self.consumption_info += 'pairs - \n' + dumps(pairs)
 
@@ -548,7 +530,8 @@ class GDataSource():
                             'units_consumed': units,
                             'correction_factor': cf,
                             'calorific_value': cv,
-                            'avg_cv': avg_cv}
+                            'avg_cv': avg_cv
+                        }
 
             else:
                 g_bills = []

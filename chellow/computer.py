@@ -1056,7 +1056,6 @@ class SupplySource(DataSource):
                     self.caches, self.sess, pairs, chunk_start, chunk_finish)
                 hist_map.update(hhs)
                 self.consumption_info += 'pairs - \n' + dumps(pairs)
-                print(self.consumption_info)
 
             elif self.bill is not None and hist_measurement_type in (
                     'nhh', 'amr'):
