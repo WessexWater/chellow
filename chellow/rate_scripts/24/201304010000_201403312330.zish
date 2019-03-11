@@ -16,27 +16,6 @@
         "finish": 21,
         "start": 19,
         "weekend": false}],
-    "lafs": {
-      "hv-net": {
-        "night": 1.03200,
-        "other": 1.03900,
-        "winter-weekday-day": 1.04700,
-        "winter-weekday-peak": 1.05100},
-      "hv-sub": {
-        "night": 1.01800,
-        "other": 1.02000,
-        "winter-weekday-day": 1.02200,
-        "winter-weekday-peak": 1.02300},
-      "lv-net": {
-        "night": 1.06700,
-        "other": 1.07200,
-        "winter-weekday-day": 1.08100,
-        "winter-weekday-peak": 1.08700},
-      "lv-sub": {
-        "night": 1.05600,
-        "other": 1.06000,
-        "winter-weekday-day": 1.06600,
-        "winter-weekday-peak": 1.07000}},
     "tariffs": {
       "": {
         "amber-gbp-per-kwh": -0.00302,
@@ -46,7 +25,18 @@
         "gbp-per-kvarh": 0.00200,
         "gbp-per-mpan-per-day": 0.00000,
         "green-gbp-per-kwh": -0.00037,
-        "red-gbp-per-kwh": -0.03919},
+        "red-gbp-per-kwh": -0.03919
+      },
+      "210": {
+        "amber-gbp-per-kwh": -0.00302,
+        "description": "LV Sub Generation Non-Intermittent",
+        "excess-gbp-per-kva-per-day": 0.00000,
+        "gbp-per-kva-per-day": 0.00000,
+        "gbp-per-kvarh": 0.00200,
+        "gbp-per-mpan-per-day": 0.00000,
+        "green-gbp-per-kwh": -0.00037,
+        "red-gbp-per-kwh": -0.03919
+      },
       "400,401,402,403": {
         "amber-gbp-per-kwh": 0.00822,
         "description": "LV Network Domestic",

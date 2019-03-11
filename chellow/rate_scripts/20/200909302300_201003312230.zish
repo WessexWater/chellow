@@ -17,6 +17,11 @@
       "day-gbp-per-kwh": 0.01645,
       "capacity-<=200-gbp-per-kva-per-month": 1.13
     },
+    "101": {
+      "fixed-gbp-per-day": 0.0562,
+      "day-gbp-per-kwh": 0.01645,
+      "capacity-<=200-gbp-per-kva-per-month": 1.13
+    },
     "104": {
       "fixed-gbp-per-day": 0.0562,
       "day-gbp-per-kwh": 0.01645,

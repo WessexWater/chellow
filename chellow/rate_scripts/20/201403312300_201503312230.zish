@@ -200,6 +200,16 @@
         "green-gbp-per-kwh": -0.00013,
         "gbp-per-kvarh": 0.00149
       },
+      "142": {
+        "description": "Unknown",
+        "gbp-per-mpan-per-day": 1.1710,
+        "gbp-per-kva-per-day": 0.00,
+        "excess-gbp-per-kva-per-day": 0.00,
+        "red-gbp-per-kwh": -0.03692,
+        "amber-gbp-per-kwh": -0.00310,
+        "green-gbp-per-kwh": -0.00013,
+        "gbp-per-kvarh": 0.00149
+      },
       "400": {
         "description": "Unknown",
         "gbp-per-mpan-per-day": 1.1710,

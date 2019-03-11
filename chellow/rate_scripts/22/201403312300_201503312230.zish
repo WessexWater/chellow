@@ -57,6 +57,16 @@
         "green-gbp-per-kwh": 0.00215,
         "gbp-per-kvarh": 0
       },
+      "251": {
+        "description": "Small Non Domestic Two Rate",
+        "gbp-per-mpan-per-day": 0.0691,
+        "gbp-per-kva-per-day": 0,
+        "excess-gbp-per-kva-per-day": 0,
+        "red-gbp-per-kwh": 0.02992,
+        "amber-gbp-per-kwh": 0.00215,
+        "green-gbp-per-kwh": 0.00215,
+        "gbp-per-kvarh": 0
+      },
       "510": {
         "description": "High Voltage HH Metered",
         "gbp-per-mpan-per-day": 0.6567,
