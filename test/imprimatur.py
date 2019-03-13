@@ -15485,6 +15485,11 @@ def virtual_bill(ds):
             g_rates(ds.sess, ds.caches, db_id, hh['start_date'])['gas_rate'])
         ds.rate_sets['gas_rate'].add(gas_rate)
         bill['gas_gbp'] += gas_rate * kwh
+        bill['ccl_kwh'] += kwh
+        ccl_rate = hh['ccl']
+        ds.rate_sets['ccl_rate'].add(ccl_rate)
+        bill['ccl_kwh'] += kwh
+        bill['ccl_gbp'] += kwh * ccl_rate
         if hh['utc_is_month_end']:
             standing_rate = float(
                 g_rates(
@@ -16041,8 +16046,8 @@ def virtual_bill(ds):
             r'3,,15659.99999999\d*,1.02264,1.02264,HCUF,M3,2.83,1.0,'
             r'39.300811,,4500901,175869.04257\d*,0.019448,0.019548,8936.13,'
             r'3437.888044\d*,5498.2419558\d*,,0.00525288,,,,,,6972.33,'
-            r'3437.8880441\d*,3534.44195580\d*,1003.89,0,1003.89,7976.22,'
-            r'3437.8880441\d*,4538.3319558\d*,,']},
+            r'4361.707020\d*,2610.622979\d*,1003.89,0,1003.89,7976.22,'
+            r'4361.707020543212\d*,3614.5129794\d*,,']},
 
     {
         'name': "Delete gas supply. Insert the gas supply",
@@ -18128,7 +18133,7 @@ def virtual_bill(ds):
             r'office:value-type="date" table:style-name="cell_date"/>\s*'
             r'<table:table-cell office:value="87412.710\d*" '
             r'office:value-type="float"/>\s*'
-            r'<table:table-cell office:value="1776.5436668\d*" '
+            r'<table:table-cell office:value="1949.6208337\d*" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="0" office:value-type="float" '
             r'table:number-columns-repeated="2"/>\s*'
@@ -18152,15 +18157,17 @@ def virtual_bill(ds):
             r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="67.8" '
             r'office:value-type="float" table:number-columns-repeated="2"/>\s*'
-            r'<table:table-cell office:value="1776.5436668\d*" '
+            r'<table:table-cell office:value="1949.6208337\d*" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="0" '
             r'office:value-type="float"/>\s*'
-            r'<table:table-cell office:value="1776.5436668\d*" '
+            r'<table:table-cell office:value="1949.62083379\d*" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell office:string-value="" '
             r'office:value-type="string"/>\s*'
-            r'</table:table-row>']},
+            r'</table:table-row>'
+        ]
+    },
 
     {
         'name': "Gas virtual bill by HH",
@@ -18175,7 +18182,9 @@ def virtual_bill(ds):
         'status_code': 200,
         'regexes': [
             r'0028_FINISHED_adminexamplecom_'
-            r'g_supply_virtual_bills_hh_1\.csv']},
+            r'g_supply_virtual_bills_hh_1\.csv'
+        ]
+    },
     {
         'path': '/downloads/'
         '0028_FINISHED_adminexamplecom_g_supply_virtual_bills_hh_1.csv',
@@ -18187,8 +18196,10 @@ def virtual_bill(ds):
             r'vat_gbp,gross_gbp,problem\s*'
             r'750278673,CH017,Parbola,ghoIIl,2018-02-01 00:00,,,'
             r'5.26209677\d*,1.02264,M3,1.0,39.3,58.7451012096\d*,'
-            r'0.019548,1.14834923\d*,0.00198,,,1.148349238\d*,0,'
-            r'1.148349238\d*,']},
+            r'0.019548,1.14834923\d*,0.00198,,,1.264664538841\d*,0,'
+            r'1.2646645388\d*,'
+        ]
+    },
 
     {
         'name': "Gas monthly duration covering bills",
@@ -18245,7 +18256,7 @@ def virtual_bill(ds):
             r'office:value-type="date" table:style-name="cell_date"/>\s*'
             r'<table:table-cell office:value="87412.7105\d*" '
             r'office:value-type="float"/>\s*'
-            r'<table:table-cell office:value="1776.5436668\d*" '
+            r'<table:table-cell office:value="2235.71214606\d*" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="4500901.0" '
             r'office:value-type="float"/>\s*'
