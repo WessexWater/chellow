@@ -158,6 +158,16 @@
         "amber-gbp-per-kwh": -0.00667,        
         "green-gbp-per-kwh": -0.00667,        
         "gbp-per-kvarh": 0.00151
+      },
+      "980": {                                        
+        "description": "LV Generation Intermittent",    
+        "gbp-per-mpan-per-day": 0,    
+        "gbp-per-kva-per-day": 0,        
+        "excess-gbp-per-kva-per-day": 0,        
+        "red-gbp-per-kwh": -0.00667,        
+        "amber-gbp-per-kwh": -0.00667,        
+        "green-gbp-per-kwh": -0.00667,        
+        "gbp-per-kvarh": 0.00151
       }
     }
   }
