@@ -54,14 +54,14 @@ def content(user):
             v for (v,) in chain(
                 sess.query(Era.imp_mpan_core).join(Supply, Source).
                 join(Supply.dno).filter(
-                    Party.dno_code != '99', Era.finish_date == null(),
-                    Source.code != '3rd-party',
+                    Party.dno_code.notin_(('88', '99')),
+                    Era.finish_date == null(), Source.code != '3rd-party',
                     Era.imp_mpan_core != null()).distinct().order_by(
                     Era.imp_mpan_core),
                 sess.query(Era.exp_mpan_core).join(Supply, Source)
                 .join(Supply.dno).filter(
-                    Party.dno_code != '99', Era.finish_date == null(),
-                    Source.code != '3rd-party',
+                    Party.dno_code.notin_(('88', '99')),
+                    Era.finish_date == null(), Source.code != '3rd-party',
                     Era.exp_mpan_core != null()).distinct().order_by(
                     Era.exp_mpan_core))]
         r = s.get(
