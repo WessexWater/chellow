@@ -78,13 +78,6 @@ class Parser():
 
                 self._set_last_line(row_index, val)
                 mpan_core = parse_mpan_core(str(get_int(row, 1)))
-                cop = str(get_value(row, 2)).strip()
-
-                settled_str = get_str(row, 3)
-                if settled_str == 'Settled':
-                    settlement_status = 'settlement'
-                else:
-                    settlement_status = 'non_settlement'
 
                 start_date = finish_date = get_date(row, 5, self.book.datemode)
                 activity_name_raw = get_str(row, 6)
@@ -114,8 +107,7 @@ class Parser():
                     account = era.mop_account
 
                 breakdown = {
-                    'raw-lines': [str(title_row)], 'cop': cop,
-                    'settlement-status': [settlement_status],
+                    'raw-lines': [str(title_row)],
                     'activity-name': [activity_name], 'activity-gbp': net
                 }
 

@@ -464,6 +464,12 @@ class Bill(Base, PersistentClass):
             account, reference, issue_date, start_date, finish_date, kwh, net,
             vat, gross, bill_type, breakdown)
 
+    @property
+    def bd(self):
+        if not hasattr(self, '_bd'):
+            self._bd = loads(self.breakdown)
+        return self._bd
+
     def update(
             self, account, reference, issue_date, start_date, finish_date, kwh,
             net, vat, gross, bill_type, breakdown):
