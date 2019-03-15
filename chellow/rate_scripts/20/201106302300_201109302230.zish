@@ -265,6 +265,16 @@
         "amber-gbp-per-kwh": 0.00530,
         "green-gbp-per-kwh": 0.001,
         "gbp-per-kvarh": 0.00199},
+      "500": {
+        "description": "LVS HH Metered",
+        "gbp-per-mpan-per-day": 0.0325,
+        "gbp-per-kva-per-day": 0.0432,
+        "excess-gbp-per-kva-per-day": 0.0432,
+        "red-gbp-per-kwh": 0.0569,
+        "amber-gbp-per-kwh": 0.00530,
+        "green-gbp-per-kwh": 0.001,
+        "gbp-per-kvarh": 0.00199
+      },
       "658,476": {
         "description": "HV HH Metered",
         "gbp-per-mpan-per-day": 0.7920,
