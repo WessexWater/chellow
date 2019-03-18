@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block title %}
+	&raquo; DTC Meter Types &raquo; {{dtc_meter_type_code}}
+{% endblock %}
+
+{% block nav %}
+	&raquo; <a href="/dtc_meter_types">DTC Meter Types</a> &raquo;
+ 	{{dtc_meter_type_code}}
+{% endblock %}
+
+{% block content %}
+	<!-- Layer Section -->
+	<div class="layer-section">
+		<!-- Section Header -->
+		<div class="section-header">
+			<h2>{{dtc_meter_type_code}}</h2>	
+		</div>
+		<!-- End Section Header -->
+		<!-- Section Content -->
+		<div class="section-content">
+			<div class="section-data">
+				<table class="DataTable widthAuto">
+					<tr>
+						<th>Code</th>
+						<td>{{dtc_meter_type_code}}</td>
+					</tr>
+					<tr>
+							<th>Description</th>
+							<td>{{dtc_meter_type_description}}</td>
+					</tr>
+				</table>
+			</div>
+		</div>
+		<!-- End Section Content -->
+	</div>
+	<!-- End Layer Section -->
+{% endblock %}

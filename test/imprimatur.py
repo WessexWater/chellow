@@ -18891,5 +18891,11 @@ def virtual_bill(ds):
             r'<td>units</td>\s*'
             r'<td>771</td>'
         ]
+    },
+
+    {
+        'name': "DTC meter types",
+        'path': '/dtc_meter_types',
+        'status_code': 200
     }
 ]
