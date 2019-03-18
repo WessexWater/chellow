@@ -214,7 +214,9 @@ def check_permissions(*args, **kwargs):
         role = g.user.user_role
         role_code = role.code
 
-        if role_code == "viewer" and method in ("GET", "HEAD"):
+        if role_code == "viewer" and (
+                method in ("GET", "HEAD") or path in (
+                    '/reports/169', '/reports/187')):
             return
         elif role_code == "editor":
             return
@@ -229,8 +231,7 @@ def check_permissions(*args, **kwargs):
                             request.full_path.startswith("/channel_snags?"):
                         return
                 elif market_role_code == 'X':
-                    if path.startswith(
-                            "/supplier_contracts/" + party.id):
+                    if path.startswith("/supplier_contracts/" + party.id):
                         return
 
     if g.user is None and g.sess.query(User).count() == 0:
