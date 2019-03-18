@@ -15605,6 +15605,7 @@ def virtual_bill(ds):
         'path': '/sites/7/edit',
         'status_code': 200,
         'regexes': [
+            r'<input name="correction_factor" value="1.02264">',
             r'<select name="g_contract_id">\s*'
             r'<option value="1">Total</option>\s*'
             r'</select>']},
