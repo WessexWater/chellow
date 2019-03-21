@@ -328,6 +328,7 @@ def content(batch_id, bill_id, contract_id, start_date, finish_date, user):
                         polarity = contract != era.exp_supplier_contract
                     else:
                         polarity = era.imp_supplier_contract is not None
+                    '''
                     pairs = []
                     last_finish = chunk_start - HH
                     for hd in chellow.computer.datum_range(
@@ -340,61 +341,59 @@ def content(batch_id, bill_id, contract_id, start_date, finish_date, user):
                         pairs.append((last_finish + HH, hd['start-date']))
 
                     for ss_start, ss_finish in pairs:
+                    '''
+                    try:
+                        ds_key = (
+                            chunk_start, chunk_finish, forecast_date, era.id,
+                            polarity, primary_covered_bill.id)
+                        data_source = data_sources[ds_key]
+                    except KeyError:
+                        data_source = data_sources[ds_key] = \
+                            chellow.computer.SupplySource(
+                            sess, chunk_start, chunk_finish, forecast_date,
+                            era, polarity, caches, primary_covered_bill)
+                        vbf(data_source)
+
+                    if data_source.measurement_type == 'hh':
+                        metered_kwh += sum(
+                            h['msp-kwh'] for h in data_source.hh_data)
+                    else:
+                        ds = chellow.computer.SupplySource(
+                            sess, chunk_start, chunk_finish, forecast_date,
+                            era, polarity, caches)
+                        metered_kwh += sum(
+                            h['msp-kwh'] for h in ds.hh_data)
+
+                    if market_role_code == 'X':
+                        vb = data_source.supplier_bill
+                    elif market_role_code == 'C':
+                        vb = data_source.dc_bill
+                    elif market_role_code == 'M':
+                        vb = data_source.mop_bill
+                    else:
+                        raise BadRequest("Odd market role.")
+
+                    for k, v in vb.items():
                         try:
-                            ds_key = (
-                                ss_start, ss_finish, forecast_date, era.id,
-                                polarity, primary_covered_bill.id)
-                            data_source = data_sources[ds_key]
+                            if isinstance(v, set):
+                                virtual_bill[k].update(v)
+                            else:
+                                virtual_bill[k] += v
                         except KeyError:
-                            data_source = data_sources[ds_key] = \
-                                chellow.computer.SupplySource(
-                                sess, ss_start, ss_finish, forecast_date, era,
-                                polarity, caches, primary_covered_bill)
-                            vbf(data_source)
+                            virtual_bill[k] = v
+                        except TypeError as detail:
+                            raise BadRequest(
+                                "For key " + str(k) + " and value " +
+                                str(v) + ". " + str(detail))
 
-                        if data_source.measurement_type == 'hh':
-                            metered_kwh += sum(
-                                h['msp-kwh'] for h in data_source.hh_data)
-                        else:
-                            ds = chellow.computer.SupplySource(
-                                sess, ss_start, ss_finish, forecast_date, era,
-                                polarity, caches)
-                            metered_kwh += sum(
-                                h['msp-kwh'] for h in ds.hh_data)
+                        if all((k.endswith('-gbp'), k != 'net-gbp', v != 0)):
+                            add_gap(
+                                caches, gaps, k[:-4], chunk_start,
+                                chunk_finish, True, v)
 
-                        if market_role_code == 'X':
-                            vb = data_source.supplier_bill
-                        elif market_role_code == 'C':
-                            vb = data_source.dc_bill
-                        elif market_role_code == 'M':
-                            vb = data_source.mop_bill
-                        else:
-                            raise BadRequest("Odd market role.")
-
-                        for k, v in vb.items():
-                            try:
-                                if isinstance(v, set):
-                                    virtual_bill[k].update(v)
-                                else:
-                                    virtual_bill[k] += v
-                            except KeyError:
-                                virtual_bill[k] = v
-                            except TypeError as detail:
-                                raise BadRequest(
-                                    "For key " + str(k) + " and value " +
-                                    str(v) + ". " + str(detail))
-
-                            if all(
-                                    (
-                                        k.endswith('-gbp'),
-                                        k != 'net-gbp', v != 0)):
-                                add_gap(
-                                    caches, gaps, k[:-4], ss_start,
-                                    ss_finish, True, v)
-
-                        for k in virtual_bill.keys():
-                            if k.endswith('-gbp'):
-                                vb_elems.add(k[:-4])
+                    for k in virtual_bill.keys():
+                        if k.endswith('-gbp'):
+                            vb_elems.add(k[:-4])
 
                 long_map = {}
                 vb_keys = set(virtual_bill.keys())
