@@ -1054,6 +1054,7 @@ class SupplySource(DataSource):
                     dumps(read_list) + "\n"
                 hhs = _find_hhs(
                     self.caches, self.sess, pairs, chunk_start, chunk_finish)
+                _set_status(hhs, read_list, forecast_date)
                 hist_map.update(hhs)
                 self.consumption_info += 'pairs - \n' + dumps(pairs)
 
@@ -1489,3 +1490,15 @@ def _find_hhs(caches, sess, pairs, chunk_start, chunk_finish):
                     'exp-msp-kvarh': 0, 'tpr': tpr_code
                 }
     return hhs
+
+
+def _set_status(hhs, read_list, forecast_date):
+    THRESHOLD = 31 * 48 * 30 * 60
+    rl = [r for r in read_list if r['date'] <= forecast_date]
+    for k, v in hhs.items():
+        try:
+            periods = (abs(r['date'] - k).total_seconds() for r in rl)
+            next(p for p in periods if p <= THRESHOLD)
+            v['status'] = 'A'
+        except StopIteration:
+            v['status'] = 'E'
