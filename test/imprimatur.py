@@ -926,8 +926,11 @@ def virtual_bill_titles():
     {
         'path': '/eras/8/edit?delete=Delete',
         'regexes': [
-            r"Are you sure you want to delete this"],
-        'status_code': 200},
+            r"Are you sure you want to delete this",
+            r'<form method="post" action="/eras/8/edit">'
+        ],
+        'status_code': 200
+    },
 
     {
         'name': "When a supply era is ended, check that the snags are "
