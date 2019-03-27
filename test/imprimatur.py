@@ -9606,36 +9606,7 @@ def virtual_bill(supply_source):
             r'office:value-type="float"/>\s*'
             r'<table:table-cell office:string-value="" '
             r'office:value-type="string"/>\s*'
-            r'<table:table-cell/>\s*',
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+            r'<table:table-cell/>\s*'
             r'<table:table-cell office:value="0" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell office:string-value="" '
@@ -9682,55 +9653,12 @@ def virtual_bill(supply_source):
             r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="0.0" '
             r'office:value-type="float" table:number-columns-repeated="3"/>\s*'
-            r'<table:table-cell/>\s*',
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+            r'<table:table-cell/>\s*'
             r'<table:table-cell office:value="0.0" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell table:number-columns-repeated="18"/>\s*'
             r'<table:table-cell '
-            r'office:date-value="2017-12-11T17:00:00" '
+            r'office:date-value="2018-11-22T17:00:00" '
             r'office:value-type="date" table:style-name="cell_date"/>\s*'
             r'<table:table-cell office:value="0" '
             r'office:value-type="float"/>\s*'
@@ -9741,7 +9669,7 @@ def virtual_bill(supply_source):
             r'<table:table-cell office:value="0.0" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell '
-            r'office:date-value="2018-02-05T17:30:00" '
+            r'office:date-value="2018-12-10T17:00:00" '
             r'office:value-type="date" table:style-name="cell_date"/>\s*'
             r'<table:table-cell office:value="0" '
             r'office:value-type="float"/>\s*'
@@ -9752,7 +9680,7 @@ def virtual_bill(supply_source):
             r'<table:table-cell office:value="0.0" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell '
-            r'office:date-value="2018-02-26T18:00:00" '
+            r'office:date-value="2019-01-23T17:30:00" '
             r'office:value-type="date" table:style-name="cell_date"/>\s*'
             r'<table:table-cell office:value="0" '
             r'office:value-type="float"/>\s*'
@@ -9772,39 +9700,7 @@ def virtual_bill(supply_source):
             r'<table:table-cell office:string-value="" '
             r'office:value-type="string"/>\s*'
             r'<table:table-cell office:value="0" '
-            r'office:value-type="float"/>\s*',
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+            r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="0.01343" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="0.0" '
@@ -9856,32 +9752,7 @@ def virtual_bill(supply_source):
             r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="0.0" '
             r'office:value-type="float"/>\s*'
-            r'<table:table-cell/>\s*',
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+            r'<table:table-cell/>\s*'
             r'<table:table-cell office:value="88" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="0" '
@@ -9913,7 +9784,7 @@ def virtual_bill(supply_source):
             r'office:value-type="float"/>\s*'
             r'<table:table-cell table:number-columns-repeated="18"/>\s*'
             r'<table:table-cell '
-            r'office:date-value="2017-12-11T17:00:00" '
+            r'office:date-value="2018-11-22T17:00:00" '
             r'office:value-type="date" table:style-name="cell_date"/>\s*'
             r'<table:table-cell office:value="0" '
             r'office:value-type="float"/>\s*'
@@ -9924,7 +9795,7 @@ def virtual_bill(supply_source):
             r'<table:table-cell office:value="0.0" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell '
-            r'office:date-value="2018-02-05T17:30:00" '
+            r'office:date-value="2018-12-10T17:00:00" '
             r'office:value-type="date" table:style-name="cell_date"/>\s*'
             r'<table:table-cell office:value="0" '
             r'office:value-type="float"/>\s*'
@@ -9935,7 +9806,7 @@ def virtual_bill(supply_source):
             r'<table:table-cell office:value="0.0" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell '
-            r'office:date-value="2018-02-26T18:00:00" '
+            r'office:date-value="2019-01-23T17:30:00" '
             r'office:value-type="date" table:style-name="cell_date"/>\s*'
             r'<table:table-cell office:value="0" '
             r'office:value-type="float"/>\s*'
@@ -9954,7 +9825,9 @@ def virtual_bill(supply_source):
             r'<table:table-cell table:number-columns-repeated="2"/>\s*'
             r'<table:table-cell office:string-value="" '
             r'office:value-type="string"/>\s*'
-            r'</table:table-row>']},
+            r'</table:table-row>'
+        ]
+    },
 
     {
         'name': "GI Delete LLFC",
@@ -11122,7 +10995,7 @@ def virtual_bill(supply_source):
             r'<table:table-cell office:value="0.0" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell table:number-columns-repeated="18"/>\s*'
-            r'<table:table-cell office:date-value="2017-12-11T17:00:00" '
+            r'<table:table-cell office:date-value="2018-11-22T17:00:00" '
             r'office:value-type="date" table:style-name="cell_date"/>\s*'
             r'<table:table-cell office:value="0" '
             r'office:value-type="float"/>\s*'
@@ -11132,7 +11005,7 @@ def virtual_bill(supply_source):
             r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="0" '
             r'office:value-type="float"/>\s*'
-            r'<table:table-cell office:date-value="2018-02-05T17:30:00" '
+            r'<table:table-cell office:date-value="2018-12-10T17:00:00" '
             r'office:value-type="date" table:style-name="cell_date"/>\s*'
             r'<table:table-cell office:value="0" '
             r'office:value-type="float"/>\s*'
@@ -11142,7 +11015,7 @@ def virtual_bill(supply_source):
             r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="0" '
             r'office:value-type="float"/>\s*'
-            r'<table:table-cell office:date-value="2018-02-26T18:00:00" '
+            r'<table:table-cell office:date-value="2019-01-23T17:30:00" '
             r'office:value-type="date" table:style-name="cell_date"/>\s*'
             r'<table:table-cell office:value="0" '
             r'office:value-type="float"/>\s*'
