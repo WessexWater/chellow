@@ -1,0 +1,6617 @@
+{
+  "llfc_tp": {
+    "010": 0,
+    "011": 2,
+    "020": 0,
+    "030": 12,
+    "031": 2,
+    "040": 0,
+    "041": 2,
+    "050": 25,
+    "051": 2,
+    "060": 0,
+    "061": 2,
+    "068": 0,
+    "070": 19,
+    "078": 19,
+    "080": 0,
+    "081": 2,
+    "088": 0,
+    "090": 39,
+    "091": 2,
+    "098": 42,
+    "100": 0,
+    "108": 0,
+    "109": 1,
+    "110": 0,
+    "118": 3,
+    "119": 1,
+    "120": 4,
+    "128": 0,
+    "129": 1,
+    "131": 2,
+    "138": 5,
+    "139": 1,
+    "140": 0,
+    "148": 6,
+    "149": 1,
+    "150": 7,
+    "158": 6,
+    "159": 1,
+    "160": 0,
+    "161": 2,
+    "168": 6,
+    "169": 1,
+    "170": 8,
+    "171": 2,
+    "177": 9,
+    "178": 6,
+    "179": 1,
+    "180": 10,
+    "187": 0,
+    "188": 6,
+    "189": 1,
+    "190": 11,
+    "191": 2,
+    "197": 12,
+    "198": 6,
+    "199": 1,
+    "200": 0,
+    "207": 0,
+    "208": 6,
+    "209": 1,
+    "210": 0,
+    "217": 0,
+    "218": 6,
+    "219": 1,
+    "220": 0,
+    "227": 9,
+    "228": 6,
+    "229": 1,
+    "230": 13,
+    "237": 0,
+    "238": 6,
+    "239": 1,
+    "241": 2,
+    "242": 14,
+    "247": 11,
+    "248": 6,
+    "249": 1,
+    "257": 0,
+    "258": 6,
+    "259": 1,
+    "260": 0,
+    "267": 7,
+    "268": 6,
+    "269": 1,
+    "270": 9,
+    "277": 0,
+    "278": 6,
+    "280": 0,
+    "287": 5,
+    "288": 6,
+    "289": 1,
+    "290": 15,
+    "297": 0,
+    "298": 6,
+    "299": 1,
+    "307": 0,
+    "308": 6,
+    "309": 1,
+    "317": 5,
+    "318": 6,
+    "319": 1,
+    "320": 10,
+    "327": 0,
+    "328": 6,
+    "329": 1,
+    "337": 5,
+    "338": 6,
+    "339": 1,
+    "340": 0,
+    "347": 0,
+    "349": 1,
+    "350": 16,
+    "357": 3,
+    "359": 1,
+    "360": 12,
+    "367": 17,
+    "369": 1,
+    "370": 0,
+    "377": 18,
+    "379": 1,
+    "387": 17,
+    "389": 1,
+    "397": 18,
+    "407": 19,
+    "410": 0,
+    "417": 0,
+    "419": 1,
+    "420": 9,
+    "427": 20,
+    "430": 0,
+    "431": 2,
+    "432": 14,
+    "437": 13,
+    "439": 1,
+    "440": 12,
+    "441": 2,
+    "450": 21,
+    "451": 2,
+    "457": 4,
+    "459": 1,
+    "460": 0,
+    "467": 0,
+    "469": 1,
+    "470": 0,
+    "477": 19,
+    "479": 1,
+    "480": 0,
+    "481": 2,
+    "482": 14,
+    "483": 22,
+    "487": 23,
+    "489": 1,
+    "490": 24,
+    "497": 24,
+    "499": 1,
+    "500": 4,
+    "507": 11,
+    "509": 1,
+    "510": 26,
+    "511": 2,
+    "517": 0,
+    "519": 1,
+    "520": 27,
+    "527": 28,
+    "529": 1,
+    "530": 13,
+    "531": 2,
+    "539": 1,
+    "540": 29,
+    "549": 1,
+    "550": 30,
+    "579": 1,
+    "581": 2,
+    "589": 1,
+    "590": 11,
+    "591": 2,
+    "599": 1,
+    "600": 0,
+    "609": 1,
+    "610": 31,
+    "619": 1,
+    "629": 1,
+    "631": 2,
+    "639": 1,
+    "640": 32,
+    "649": 1,
+    "650": 25,
+    "659": 1,
+    "660": 33,
+    "661": 2,
+    "669": 1,
+    "670": 34,
+    "679": 1,
+    "680": 11,
+    "689": 1,
+    "690": 28,
+    "699": 1,
+    "700": 35,
+    "709": 1,
+    "710": 0,
+    "719": 1,
+    "720": 0,
+    "729": 1,
+    "730": 0,
+    "739": 1,
+    "740": 36,
+    "749": 1,
+    "750": 36,
+    "751": 2,
+    "752": 14,
+    "753": 22,
+    "759": 1,
+    "761": 2,
+    "769": 1,
+    "770": 11,
+    "771": 2,
+    "779": 1,
+    "781": 2,
+    "789": 1,
+    "791": 2,
+    "799": 1,
+    "801": 2,
+    "802": 14,
+    "803": 22,
+    "809": 1,
+    "810": 37,
+    "811": 2,
+    "820": 36,
+    "821": 2,
+    "830": 38,
+    "831": 2,
+    "840": 0,
+    "841": 2,
+    "842": 14,
+    "843": 22,
+    "850": 29,
+    "851": 2,
+    "861": 2,
+    "900": 40,
+    "901": 2,
+    "910": 8,
+    "920": 0,
+    "950": 37,
+    "960": 0,
+    "961": 2,
+    "962": 14,
+    "970": 41,
+    "971": 2,
+    "972": 14,
+    "973": 22,
+    "980": 0,
+    "981": 2,
+    "982": 14,
+    "983": 22,
+    "990": 5
+  },
+  "tps": {
+    0: {
+      "20190401": {
+        "finish_date": "20191026",
+        "slots": [
+          {
+            "laf": 1.000,
+            "slot_finish": 48,
+            "slot_start": 1
+          }
+        ],
+        "start_date": "20190401"
+      },
+      "20191027": {
+        "finish_date": "20191027",
+        "slots": [
+          {
+            "laf": 1.000,
+            "slot_finish": 50,
+            "slot_start": 1
+          }
+        ],
+        "start_date": "20191027"
+      },
+      "20191028": {
+        "finish_date": "20200328",
+        "slots": [
+          {
+            "laf": 1.000,
+            "slot_finish": 48,
+            "slot_start": 1
+          }
+        ],
+        "start_date": "20191028"
+      },
+      "20200329": {
+        "finish_date": "20200329",
+        "slots": [
+          {
+            "laf": 1.000,
+            "slot_finish": 46,
+            "slot_start": 1
+          }
+        ],
+        "start_date": "20200329"
+      },
+      "20200330": {
+        "finish_date": "20200331",
+        "slots": [
+          {
+            "laf": 1.000,
+            "slot_finish": 48,
+            "slot_start": 1
+          }
+        ],
+        "start_date": "20200330"
+      }
+    },
+    1: {
+      "20190401": {
+        "finish_date": "20191026",
+        "slots": [
+          {
+            "laf": 1.022,
+            "slot_finish": 14,
+            "slot_start": 1
+          },
+          {
+            "laf": 1.024,
+            "slot_finish": 48,
+            "slot_start": 15
+          }
+        ],
+        "start_date": "20190401"
+      },
+      "20191027": {
+        "finish_date": "20191027",
+        "slots": [
+          {
+            "laf": 1.022,
+            "slot_finish": 16,
+            "slot_start": 1
+          },
+          {
+            "laf": 1.024,
+            "slot_finish": 50,
+            "slot_start": 17
+          }
+        ],
+        "start_date": "20191027"
+      },
+      "20191028": {
+        "finish_date": "20191031",
+        "slots": [
+          {
+            "laf": 1.022,
+            "slot_finish": 14,
+            "slot_start": 1
+          },
+          {
+            "laf": 1.024,
+            "slot_finish": 48,
+            "slot_start": 15
+          }
+        ],
+        "start_date": "20191028"
+      },
+      "20191101": {
+        "finish_date": "20191101",
+        "slots": [
+          {
+            "laf": 1.022,
+            "slot_finish": 14,
+            "slot_start": 1
+          },
+          {
+            "laf": 1.025,
+            "slot_finish": 32,
+            "slot_start": 15
+          },
+          {
+            "laf": 1.027,
+            "slot_finish": 38,
+            "slot_start": 33
+          },
+          {
+            "laf": 1.025,
+            "slot_finish": 48,
+            "slot_start": 39
+          }
+        ],
+        "start_date": "20191101"
+      },
+      "20191102": {
+        "finish_date": "20191103",
+        "slots": [
+          {
+            "laf": 1.022,
+            "slot_finish": 14,
+            "slot_start": 1
+          },
+          {
+            "laf": 1.024,
+            "slot_finish": 48,
+            "slot_start": 15
+          }
+        ],
+        "start_date": "20191102"
+      },
+      "20191104": {
+        "finish_date": "20191108",
+        "slots": [
+          {
+            "laf": 1.022,
+            "slot_finish": 14,
+            "slot_start": 1
+          },
+          {
+            "laf": 1.025,
+            "slot_finish": 32,
+            "slot_start": 15
+          },
+          {
+            "laf": 1.027,
+            "slot_finish": 38,
+            "slot_start": 33
+          },
+          {
+            "laf": 1.025,
+            "slot_finish": 48,
+            "slot_start": 39
+          }
+        ],
+        "start_date": "20191104"
+      },
+      "20191109": {
+        "finish_date": "20191110",
+        "slots": [
+          {
+            "laf": 1.022,
+            "slot_finish": 14,
+            "slot_start": 1
+          },
+          {
+            "laf": 1.024,
+            "slot_finish": 48,
+            "slot_start": 15
+          }
+        ],
+        "start_date": "20191109"
+      },
+      "20191111": {
+        "finish_date": "20191115",
+        "slots": [
+          {
+            "laf": 1.022,
+            "slot_finish": 14,
+            "slot_start": 1
+          },
+          {
+            "laf": 1.025,
+            "slot_finish": 32,
+            "slot_start": 15
+          },
+          {
+            "laf": 1.027,
+            "slot_finish": 38,
+            "slot_start": 33
+          },
+          {
+            "laf": 1.025,
+            "slot_finish": 48,
+            "slot_start": 39
+          }
+        ],
+        "start_date": "20191111"
+      },
+      "20191116": {
+        "finish_date": "20191117",
+        "slots": [
+          {
+            "laf": 1.022,
+            "slot_finish": 14,
+            "slot_start": 1
+          },
+          {
+            "laf": 1.024,
+            "slot_finish": 48,
+            "slot_start": 15
+          }
+        ],
+        "start_date": "20191116"
+      },
+      "20191118": {
+        "finish_date": "20191122",
+        "slots": [
+          {
+            "laf": 1.022,
+            "slot_finish": 14,
+            "slot_start": 1
+          },
+          {
+            "laf": 1.025,
+            "slot_finish": 32,
+            "slot_start": 15
+          },
+          {
+            "laf": 1.027,
+            "slot_finish": 38,
+            "slot_start": 33
+          },
+          {
+            "laf": 1.025,
+            "slot_finish": 48,
+            "slot_start": 39
+          }
+        ],
+        "start_date": "20191118"
+      },
+      "20191123": {
+        "finish_date": "20191124",
+        "slots": [
+          {
+            "laf": 1.022,
+            "slot_finish": 14,
+            "slot_start": 1
+          },
+          {
+            "laf": 1.024,
+            "slot_finish": 48,
+            "slot_start": 15
+          }
+        ],
+        "start_date": "20191123"
+      },
+      "20191125": {
+        "finish_date": "20191129",
+        "slots": [
+          {
+            "laf": 1.022,
+            "slot_finish": 14,
+            "slot_start": 1
+          },
+          {
+            "laf": 1.025,
+            "slot_finish": 32,
+            "slot_start": 15
+          },
+          {
+            "laf": 1.027,
+            "slot_finish": 38,
+            "slot_start": 33
+          },
+          {
+            "laf": 1.025,
+            "slot_finish": 48,
+            "slot_start": 39
+          }
+        ],
+        "start_date": "20191125"
+      },
+      "20191130": {
+        "finish_date": "20191201",
+        "slots": [
+          {
+            "laf": 1.022,
+            "slot_finish": 14,
+            "slot_start": 1
+          },
+          {
+            "laf": 1.024,
+            "slot_finish": 48,
+            "slot_start": 15
+          }
+        ],
+        "start_date": "20191130"
+      },
+      "20191202": {
+        "finish_date": "20191206",
+        "slots": [
+          {
+            "laf": 1.022,
+            "slot_finish": 14,
+            "slot_start": 1
+          },
+          {
+            "laf": 1.025,
+            "slot_finish": 32,
+            "slot_start": 15
+          },
+          {
+            "laf": 1.027,
+            "slot_finish": 38,
+            "slot_start": 33
+          },
+          {
+            "laf": 1.025,
+            "slot_finish": 48,
+            "slot_start": 39
+          }
+        ],
+        "start_date": "20191202"
+      },
+      "20191207": {
+        "finish_date": "20191208",
+        "slots": [
+          {
+            "laf": 1.022,
+            "slot_finish": 14,
+            "slot_start": 1
+          },
+          {
+            "laf": 1.024,
+            "slot_finish": 48,
+            "slot_start": 15
+          }
+        ],
+        "start_date": "20191207"
+      },
+      "20191209": {
+        "finish_date": "20191213",
+        "slots": [
+          {
+            "laf": 1.022,
+            "slot_finish": 14,
+            "slot_start": 1
+          },
+          {
+            "laf": 1.025,
+            "slot_finish": 32,
+            "slot_start": 15
+          },
+          {
+            "laf": 1.027,
+            "slot_finish": 38,
+            "slot_start": 33
+          },
+          {
+            "laf": 1.025,
+            "slot_finish": 48,
+            "slot_start": 39
+          }
+        ],
+        "start_date": "20191209"
+      },
+      "20191214": {
+        "finish_date": "20191215",
+        "slots": [
+          {
+            "laf": 1.022,
+            "slot_finish": 14,
+            "slot_start": 1
+          },
+          {
+            "laf": 1.024,
+            "slot_finish": 48,
+            "slot_start": 15
+          }
+        ],
+        "start_date": "20191214"
+      },
+      "20191216": {
+        "finish_date": "20191220",
+        "slots": [
+          {
+            "laf": 1.022,
+            "slot_finish": 14,
+            "slot_start": 1
+          },
+          {
+            "laf": 1.025,
+            "slot_finish": 32,
+            "slot_start": 15
+          },
+          {
+            "laf": 1.027,
+            "slot_finish": 38,
+            "slot_start": 33
+          },
+          {
+            "laf": 1.025,
+            "slot_finish": 48,
+            "slot_start": 39
+          }
+        ],
+        "start_date": "20191216"
+      },
+      "20191221": {
+        "finish_date": "20191222",
+        "slots": [
+          {
+            "laf": 1.022,
+            "slot_finish": 14,
+            "slot_start": 1
+          },
+          {
+            "laf": 1.024,
+            "slot_finish": 48,
+            "slot_start": 15
+          }
+        ],
+        "start_date": "20191221"
+      },
+      "20191223": {
+        "finish_date": "20191227",
+        "slots": [
+          {
+            "laf": 1.022,
+            "slot_finish": 14,
+            "slot_start": 1
+          },
+          {
+            "laf": 1.025,
+            "slot_finish": 32,
+            "slot_start": 15
+          },
+          {
+            "laf": 1.027,
+            "slot_finish": 38,
+            "slot_start": 33
+          },
+          {
+            "laf": 1.025,
+            "slot_finish": 48,
+            "slot_start": 39
+          }
+        ],
+        "start_date": "20191223"
+      },
+      "20191228": {
+        "finish_date": "20191229",
+        "slots": [
+          {
+            "laf": 1.022,
+            "slot_finish": 14,
+            "slot_start": 1
+          },
+          {
+            "laf": 1.024,
+            "slot_finish": 48,
+            "slot_start": 15
+          }
+        ],
+        "start_date": "20191228"
+      },
+      "20191230": {
+        "finish_date": "20200103",
+        "slots": [
+          {
+            "laf": 1.022,
+            "slot_finish": 14,
+            "slot_start": 1
+          },
+          {
+            "laf": 1.025,
+            "slot_finish": 32,
+            "slot_start": 15
+          },
+          {
+            "laf": 1.027,
+            "slot_finish": 38,
+            "slot_start": 33
+          },
+          {
+            "laf": 1.025,
+            "slot_finish": 48,
+            "slot_start": 39
+          }
+        ],
+        "start_date": "20191230"
+      },
+      "20200104": {
+        "finish_date": "20200105",
+        "slots": [
+          {
+            "laf": 1.022,
+            "slot_finish": 14,
+            "slot_start": 1
+          },
+          {
+            "laf": 1.024,
+            "slot_finish": 48,
+            "slot_start": 15
+          }
+        ],
+        "start_date": "20200104"
+      },
+      "20200106": {
+        "finish_date": "20200110",
+        "slots": [
+          {
+            "laf": 1.022,
+            "slot_finish": 14,
+            "slot_start": 1
+          },
+          {
+            "laf": 1.025,
+            "slot_finish": 32,
+            "slot_start": 15
+          },
+          {
+            "laf": 1.027,
+            "slot_finish": 38,
+            "slot_start": 33
+          },
+          {
+            "laf": 1.025,
+            "slot_finish": 48,
+            "slot_start": 39
+          }
+        ],
+        "start_date": "20200106"
+      },
+      "20200111": {
+        "finish_date": "20200112",
+        "slots": [
+          {
+            "laf": 1.022,
+            "slot_finish": 14,
+            "slot_start": 1
+          },
+          {
+            "laf": 1.024,
+            "slot_finish": 48,
+            "slot_start": 15
+          }
+        ],
+        "start_date": "20200111"
+      },
+      "20200113": {
+        "finish_date": "20200117",
+        "slots": [
+          {
+            "laf": 1.022,
+            "slot_finish": 14,
+            "slot_start": 1
+          },
+          {
+            "laf": 1.025,
+            "slot_finish": 32,
+            "slot_start": 15
+          },
+          {
+            "laf": 1.027,
+            "slot_finish": 38,
+            "slot_start": 33
+          },
+          {
+            "laf": 1.025,
+            "slot_finish": 48,
+            "slot_start": 39
+          }
+        ],
+        "start_date": "20200113"
+      },
+      "20200118": {
+        "finish_date": "20200119",
+        "slots": [
+          {
+            "laf": 1.022,
+            "slot_finish": 14,
+            "slot_start": 1
+          },
+          {
+            "laf": 1.024,
+            "slot_finish": 48,
+            "slot_start": 15
+          }
+        ],
+        "start_date": "20200118"
+      },
+      "20200120": {
+        "finish_date": "20200124",
+        "slots": [
+          {
+            "laf": 1.022,
+            "slot_finish": 14,
+            "slot_start": 1
+          },
+          {
+            "laf": 1.025,
+            "slot_finish": 32,
+            "slot_start": 15
+          },
+          {
+            "laf": 1.027,
+            "slot_finish": 38,
+            "slot_start": 33
+          },
+          {
+            "laf": 1.025,
+            "slot_finish": 48,
+            "slot_start": 39
+          }
+        ],
+        "start_date": "20200120"
+      },
+      "20200125": {
+        "finish_date": "20200126",
+        "slots": [
+          {
+            "laf": 1.022,
+            "slot_finish": 14,
+            "slot_start": 1
+          },
+          {
+            "laf": 1.024,
+            "slot_finish": 48,
+            "slot_start": 15
+          }
+        ],
+        "start_date": "20200125"
+      },
+      "20200127": {
+        "finish_date": "20200131",
+        "slots": [
+          {
+            "laf": 1.022,
+            "slot_finish": 14,
+            "slot_start": 1
+          },
+          {
+            "laf": 1.025,
+            "slot_finish": 32,
+            "slot_start": 15
+          },
+          {
+            "laf": 1.027,
+            "slot_finish": 38,
+            "slot_start": 33
+          },
+          {
+            "laf": 1.025,
+            "slot_finish": 48,
+            "slot_start": 39
+          }
+        ],
+        "start_date": "20200127"
+      },
+      "20200201": {
+        "finish_date": "20200202",
+        "slots": [
+          {
+            "laf": 1.022,
+            "slot_finish": 14,
+            "slot_start": 1
+          },
+          {
+            "laf": 1.024,
+            "slot_finish": 48,
+            "slot_start": 15
+          }
+        ],
+        "start_date": "20200201"
+      },
+      "20200203": {
+        "finish_date": "20200207",
+        "slots": [
+          {
+            "laf": 1.022,
+            "slot_finish": 14,
+            "slot_start": 1
+          },
+          {
+            "laf": 1.025,
+            "slot_finish": 32,
+            "slot_start": 15
+          },
+          {
+            "laf": 1.027,
+            "slot_finish": 38,
+            "slot_start": 33
+          },
+          {
+            "laf": 1.025,
+            "slot_finish": 48,
+            "slot_start": 39
+          }
+        ],
+        "start_date": "20200203"
+      },
+      "20200208": {
+        "finish_date": "20200209",
+        "slots": [
+          {
+            "laf": 1.022,
+            "slot_finish": 14,
+            "slot_start": 1
+          },
+          {
+            "laf": 1.024,
+            "slot_finish": 48,
+            "slot_start": 15
+          }
+        ],
+        "start_date": "20200208"
+      },
+      "20200210": {
+        "finish_date": "20200214",
+        "slots": [
+          {
+            "laf": 1.022,
+            "slot_finish": 14,
+            "slot_start": 1
+          },
+          {
+            "laf": 1.025,
+            "slot_finish": 32,
+            "slot_start": 15
+          },
+          {
+            "laf": 1.027,
+            "slot_finish": 38,
+            "slot_start": 33
+          },
+          {
+            "laf": 1.025,
+            "slot_finish": 48,
+            "slot_start": 39
+          }
+        ],
+        "start_date": "20200210"
+      },
+      "20200215": {
+        "finish_date": "20200216",
+        "slots": [
+          {
+            "laf": 1.022,
+            "slot_finish": 14,
+            "slot_start": 1
+          },
+          {
+            "laf": 1.024,
+            "slot_finish": 48,
+            "slot_start": 15
+          }
+        ],
+        "start_date": "20200215"
+      },
+      "20200217": {
+        "finish_date": "20200221",
+        "slots": [
+          {
+            "laf": 1.022,
+            "slot_finish": 14,
+            "slot_start": 1
+          },
+          {
+            "laf": 1.025,
+            "slot_finish": 32,
+            "slot_start": 15
+          },
+          {
+            "laf": 1.027,
+            "slot_finish": 38,
+            "slot_start": 33
+          },
+          {
+            "laf": 1.025,
+            "slot_finish": 48,
+            "slot_start": 39
+          }
+        ],
+        "start_date": "20200217"
+      },
+      "20200222": {
+        "finish_date": "20200223",
+        "slots": [
+          {
+            "laf": 1.022,
+            "slot_finish": 14,
+            "slot_start": 1
+          },
+          {
+            "laf": 1.024,
+            "slot_finish": 48,
+            "slot_start": 15
+          }
+        ],
+        "start_date": "20200222"
+      },
+      "20200224": {
+        "finish_date": "20200228",
+        "slots": [
+          {
+            "laf": 1.022,
+            "slot_finish": 14,
+            "slot_start": 1
+          },
+          {
+            "laf": 1.025,
+            "slot_finish": 32,
+            "slot_start": 15
+          },
+          {
+            "laf": 1.027,
+            "slot_finish": 38,
+            "slot_start": 33
+          },
+          {
+            "laf": 1.025,
+            "slot_finish": 48,
+            "slot_start": 39
+          }
+        ],
+        "start_date": "20200224"
+      },
+      "20200229": {
+        "finish_date": "20200328",
+        "slots": [
+          {
+            "laf": 1.022,
+            "slot_finish": 14,
+            "slot_start": 1
+          },
+          {
+            "laf": 1.024,
+            "slot_finish": 48,
+            "slot_start": 15
+          }
+        ],
+        "start_date": "20200229"
+      },
+      "20200329": {
+        "finish_date": "20200329",
+        "slots": [
+          {
+            "laf": 1.022,
+            "slot_finish": 12,
+            "slot_start": 1
+          },
+          {
+            "laf": 1.024,
+            "slot_finish": 46,
+            "slot_start": 13
+          }
+        ],
+        "start_date": "20200329"
+      },
+      "20200330": {
+        "finish_date": "20200331",
+        "slots": [
+          {
+            "laf": 1.022,
+            "slot_finish": 14,
+            "slot_start": 1
+          },
+          {
+            "laf": 1.024,
+            "slot_finish": 48,
+            "slot_start": 15
+          }
+        ],
+        "start_date": "20200330"
+      }
+    },
+    2: {
+      "20190401": {
+        "finish_date": "20191026",
+        "slots": [
+          {
+            "laf": 1.084,
+            "slot_finish": 14,
+            "slot_start": 1
+          },
+          {
+            "laf": 1.091,
+            "slot_finish": 48,
+            "slot_start": 15
+          }
+        ],
+        "start_date": "20190401"
+      },
+      "20191027": {
+        "finish_date": "20191027",
+        "slots": [
+          {
+            "laf": 1.084,
+            "slot_finish": 16,
+            "slot_start": 1
+          },
+          {
+            "laf": 1.091,
+            "slot_finish": 50,
+            "slot_start": 17
+          }
+        ],
+        "start_date": "20191027"
+      },
+      "20191028": {
+        "finish_date": "20191031",
+        "slots": [
+          {
+            "laf": 1.084,
+            "slot_finish": 14,
+            "slot_start": 1
+          },
+          {
+            "laf": 1.091,
+            "slot_finish": 48,
+            "slot_start": 15
+          }
+        ],
+        "start_date": "20191028"
+      },
+      "20191101": {
+        "finish_date": "20191101",
+        "slots": [
+          {
+            "laf": 1.084,
+            "slot_finish": 14,
+            "slot_start": 1
+          },
+          {
+            "laf": 1.096,
+            "slot_finish": 32,
+            "slot_start": 15
+          },
+          {
+            "laf": 1.108,
+            "slot_finish": 38,
+            "slot_start": 33
+          },
+          {
+            "laf": 1.096,
+            "slot_finish": 48,
+            "slot_start": 39
+          }
+        ],
+        "start_date": "20191101"
+      },
+      "20191102": {
+        "finish_date": "20191103",
+        "slots": [
+          {
+            "laf": 1.084,
+            "slot_finish": 14,
+            "slot_start": 1
+          },
+          {
+            "laf": 1.091,
+            "slot_finish": 48,
+            "slot_start": 15
+          }
+        ],
+        "start_date": "20191102"
+      },
+      "20191104": {
+        "finish_date": "20191108",
+        "slots": [
+          {
+            "laf": 1.084,
+            "slot_finish": 14,
+            "slot_start": 1
+          },
+          {
+            "laf": 1.096,
+            "slot_finish": 32,
+            "slot_start": 15
+          },
+          {
+            "laf": 1.108,
+            "slot_finish": 38,
+            "slot_start": 33
+          },
+          {
+            "laf": 1.096,
+            "slot_finish": 48,
+            "slot_start": 39
+          }
+        ],
+        "start_date": "20191104"
+      },
+      "20191109": {
+        "finish_date": "20191110",
+        "slots": [
+          {
+            "laf": 1.084,
+            "slot_finish": 14,
+            "slot_start": 1
+          },
+          {
+            "laf": 1.091,
+            "slot_finish": 48,
+            "slot_start": 15
+          }
+        ],
+        "start_date": "20191109"
+      },
+      "20191111": {
+        "finish_date": "20191115",
+        "slots": [
+          {
+            "laf": 1.084,
+            "slot_finish": 14,
+            "slot_start": 1
+          },
+          {
+            "laf": 1.096,
+            "slot_finish": 32,
+            "slot_start": 15
+          },
+          {
+            "laf": 1.108,
+            "slot_finish": 38,
+            "slot_start": 33
+          },
+          {
+            "laf": 1.096,
+            "slot_finish": 48,
+            "slot_start": 39
+          }
+        ],
+        "start_date": "20191111"
+      },
+      "20191116": {
+        "finish_date": "20191117",
+        "slots": [
+          {
+            "laf": 1.084,
+            "slot_finish": 14,
+            "slot_start": 1
+          },
+          {
+            "laf": 1.091,
+            "slot_finish": 48,
+            "slot_start": 15
+          }
+        ],
+        "start_date": "20191116"
+      },
+      "20191118": {
+        "finish_date": "20191122",
+        "slots": [
+          {
+            "laf": 1.084,
+            "slot_finish": 14,
+            "slot_start": 1
+          },
+          {
+            "laf": 1.096,
+            "slot_finish": 32,
+            "slot_start": 15
+          },
+          {
+            "laf": 1.108,
+            "slot_finish": 38,
+            "slot_start": 33
+          },
+          {
+            "laf": 1.096,
+            "slot_finish": 48,
+            "slot_start": 39
+          }
+        ],
+        "start_date": "20191118"
+      },
+      "20191123": {
+        "finish_date": "20191124",
+        "slots": [
+          {
+            "laf": 1.084,
+            "slot_finish": 14,
+            "slot_start": 1
+          },
+          {
+            "laf": 1.091,
+            "slot_finish": 48,
+            "slot_start": 15
+          }
+        ],
+        "start_date": "20191123"
+      },
+      "20191125": {
+        "finish_date": "20191129",
+        "slots": [
+          {
+            "laf": 1.084,
+            "slot_finish": 14,
+            "slot_start": 1
+          },
+          {
+            "laf": 1.096,
+            "slot_finish": 32,
+            "slot_start": 15
+          },
+          {
+            "laf": 1.108,
+            "slot_finish": 38,
+            "slot_start": 33
+          },
+          {
+            "laf": 1.096,
+            "slot_finish": 48,
+            "slot_start": 39
+          }
+        ],
+        "start_date": "20191125"
+      },
+      "20191130": {
+        "finish_date": "20191201",
+        "slots": [
+          {
+            "laf": 1.084,
+            "slot_finish": 14,
+            "slot_start": 1
+          },
+          {
+            "laf": 1.091,
+            "slot_finish": 48,
+            "slot_start": 15
+          }
+        ],
+        "start_date": "20191130"
+      },
+      "20191202": {
+        "finish_date": "20191206",
+        "slots": [
+          {
+            "laf": 1.084,
+            "slot_finish": 14,
+            "slot_start": 1
+          },
+          {
+            "laf": 1.096,
+            "slot_finish": 32,
+            "slot_start": 15
+          },
+          {
+            "laf": 1.108,
+            "slot_finish": 38,
+            "slot_start": 33
+          },
+          {
+            "laf": 1.096,
+            "slot_finish": 48,
+            "slot_start": 39
+          }
+        ],
+        "start_date": "20191202"
+      },
+      "20191207": {
+        "finish_date": "20191208",
+        "slots": [
+          {
+            "laf": 1.084,
+            "slot_finish": 14,
+            "slot_start": 1
+          },
+          {
+            "laf": 1.091,
+            "slot_finish": 48,
+            "slot_start": 15
+          }
+        ],
+        "start_date": "20191207"
+      },
+      "20191209": {
+        "finish_date": "20191213",
+        "slots": [
+          {
+            "laf": 1.084,
+            "slot_finish": 14,
+            "slot_start": 1
+          },
+          {
+            "laf": 1.096,
+            "slot_finish": 32,
+            "slot_start": 15
+          },
+          {
+            "laf": 1.108,
+            "slot_finish": 38,
+            "slot_start": 33
+          },
+          {
+            "laf": 1.096,
+            "slot_finish": 48,
+            "slot_start": 39
+          }
+        ],
+        "start_date": "20191209"
+      },
+      "20191214": {
+        "finish_date": "20191215",
+        "slots": [
+          {
+            "laf": 1.084,
+            "slot_finish": 14,
+            "slot_start": 1
+          },
+          {
+            "laf": 1.091,
+            "slot_finish": 48,
+            "slot_start": 15
+          }
+        ],
+        "start_date": "20191214"
+      },
+      "20191216": {
+        "finish_date": "20191220",
+        "slots": [
+          {
+            "laf": 1.084,
+            "slot_finish": 14,
+            "slot_start": 1
+          },
+          {
+            "laf": 1.096,
+            "slot_finish": 32,
+            "slot_start": 15
+          },
+          {
+            "laf": 1.108,
+            "slot_finish": 38,
+            "slot_start": 33
+          },
+          {
+            "laf": 1.096,
+            "slot_finish": 48,
+            "slot_start": 39
+          }
+        ],
+        "start_date": "20191216"
+      },
+      "20191221": {
+        "finish_date": "20191222",
+        "slots": [
+          {
+            "laf": 1.084,
+            "slot_finish": 14,
+            "slot_start": 1
+          },
+          {
+            "laf": 1.091,
+            "slot_finish": 48,
+            "slot_start": 15
+          }
+        ],
+        "start_date": "20191221"
+      },
+      "20191223": {
+        "finish_date": "20191227",
+        "slots": [
+          {
+            "laf": 1.084,
+            "slot_finish": 14,
+            "slot_start": 1
+          },
+          {
+            "laf": 1.096,
+            "slot_finish": 32,
+            "slot_start": 15
+          },
+          {
+            "laf": 1.108,
+            "slot_finish": 38,
+            "slot_start": 33
+          },
+          {
+            "laf": 1.096,
+            "slot_finish": 48,
+            "slot_start": 39
+          }
+        ],
+        "start_date": "20191223"
+      },
+      "20191228": {
+        "finish_date": "20191229",
+        "slots": [
+          {
+            "laf": 1.084,
+            "slot_finish": 14,
+            "slot_start": 1
+          },
+          {
+            "laf": 1.091,
+            "slot_finish": 48,
+            "slot_start": 15
+          }
+        ],
+        "start_date": "20191228"
+      },
+      "20191230": {
+        "finish_date": "20200103",
+        "slots": [
+          {
+            "laf": 1.084,
+            "slot_finish": 14,
+            "slot_start": 1
+          },
+          {
+            "laf": 1.096,
+            "slot_finish": 32,
+            "slot_start": 15
+          },
+          {
+            "laf": 1.108,
+            "slot_finish": 38,
+            "slot_start": 33
+          },
+          {
+            "laf": 1.096,
+            "slot_finish": 48,
+            "slot_start": 39
+          }
+        ],
+        "start_date": "20191230"
+      },
+      "20200104": {
+        "finish_date": "20200105",
+        "slots": [
+          {
+            "laf": 1.084,
+            "slot_finish": 14,
+            "slot_start": 1
+          },
+          {
+            "laf": 1.091,
+            "slot_finish": 48,
+            "slot_start": 15
+          }
+        ],
+        "start_date": "20200104"
+      },
+      "20200106": {
+        "finish_date": "20200110",
+        "slots": [
+          {
+            "laf": 1.084,
+            "slot_finish": 14,
+            "slot_start": 1
+          },
+          {
+            "laf": 1.096,
+            "slot_finish": 32,
+            "slot_start": 15
+          },
+          {
+            "laf": 1.108,
+            "slot_finish": 38,
+            "slot_start": 33
+          },
+          {
+            "laf": 1.096,
+            "slot_finish": 48,
+            "slot_start": 39
+          }
+        ],
+        "start_date": "20200106"
+      },
+      "20200111": {
+        "finish_date": "20200112",
+        "slots": [
+          {
+            "laf": 1.084,
+            "slot_finish": 14,
+            "slot_start": 1
+          },
+          {
+            "laf": 1.091,
+            "slot_finish": 48,
+            "slot_start": 15
+          }
+        ],
+        "start_date": "20200111"
+      },
+      "20200113": {
+        "finish_date": "20200117",
+        "slots": [
+          {
+            "laf": 1.084,
+            "slot_finish": 14,
+            "slot_start": 1
+          },
+          {
+            "laf": 1.096,
+            "slot_finish": 32,
+            "slot_start": 15
+          },
+          {
+            "laf": 1.108,
+            "slot_finish": 38,
+            "slot_start": 33
+          },
+          {
+            "laf": 1.096,
+            "slot_finish": 48,
+            "slot_start": 39
+          }
+        ],
+        "start_date": "20200113"
+      },
+      "20200118": {
+        "finish_date": "20200119",
+        "slots": [
+          {
+            "laf": 1.084,
+            "slot_finish": 14,
+            "slot_start": 1
+          },
+          {
+            "laf": 1.091,
+            "slot_finish": 48,
+            "slot_start": 15
+          }
+        ],
+        "start_date": "20200118"
+      },
+      "20200120": {
+        "finish_date": "20200124",
+        "slots": [
+          {
+            "laf": 1.084,
+            "slot_finish": 14,
+            "slot_start": 1
+          },
+          {
+            "laf": 1.096,
+            "slot_finish": 32,
+            "slot_start": 15
+          },
+          {
+            "laf": 1.108,
+            "slot_finish": 38,
+            "slot_start": 33
+          },
+          {
+            "laf": 1.096,
+            "slot_finish": 48,
+            "slot_start": 39
+          }
+        ],
+        "start_date": "20200120"
+      },
+      "20200125": {
+        "finish_date": "20200126",
+        "slots": [
+          {
+            "laf": 1.084,
+            "slot_finish": 14,
+            "slot_start": 1
+          },
+          {
+            "laf": 1.091,
+            "slot_finish": 48,
+            "slot_start": 15
+          }
+        ],
+        "start_date": "20200125"
+      },
+      "20200127": {
+        "finish_date": "20200131",
+        "slots": [
+          {
+            "laf": 1.084,
+            "slot_finish": 14,
+            "slot_start": 1
+          },
+          {
+            "laf": 1.096,
+            "slot_finish": 32,
+            "slot_start": 15
+          },
+          {
+            "laf": 1.108,
+            "slot_finish": 38,
+            "slot_start": 33
+          },
+          {
+            "laf": 1.096,
+            "slot_finish": 48,
+            "slot_start": 39
+          }
+        ],
+        "start_date": "20200127"
+      },
+      "20200201": {
+        "finish_date": "20200202",
+        "slots": [
+          {
+            "laf": 1.084,
+            "slot_finish": 14,
+            "slot_start": 1
+          },
+          {
+            "laf": 1.091,
+            "slot_finish": 48,
+            "slot_start": 15
+          }
+        ],
+        "start_date": "20200201"
+      },
+      "20200203": {
+        "finish_date": "20200207",
+        "slots": [
+          {
+            "laf": 1.084,
+            "slot_finish": 14,
+            "slot_start": 1
+          },
+          {
+            "laf": 1.096,
+            "slot_finish": 32,
+            "slot_start": 15
+          },
+          {
+            "laf": 1.108,
+            "slot_finish": 38,
+            "slot_start": 33
+          },
+          {
+            "laf": 1.096,
+            "slot_finish": 48,
+            "slot_start": 39
+          }
+        ],
+        "start_date": "20200203"
+      },
+      "20200208": {
+        "finish_date": "20200209",
+        "slots": [
+          {
+            "laf": 1.084,
+            "slot_finish": 14,
+            "slot_start": 1
+          },
+          {
+            "laf": 1.091,
+            "slot_finish": 48,
+            "slot_start": 15
+          }
+        ],
+        "start_date": "20200208"
+      },
+      "20200210": {
+        "finish_date": "20200214",
+        "slots": [
+          {
+            "laf": 1.084,
+            "slot_finish": 14,
+            "slot_start": 1
+          },
+          {
+            "laf": 1.096,
+            "slot_finish": 32,
+            "slot_start": 15
+          },
+          {
+            "laf": 1.108,
+            "slot_finish": 38,
+            "slot_start": 33
+          },
+          {
+            "laf": 1.096,
+            "slot_finish": 48,
+            "slot_start": 39
+          }
+        ],
+        "start_date": "20200210"
+      },
+      "20200215": {
+        "finish_date": "20200216",
+        "slots": [
+          {
+            "laf": 1.084,
+            "slot_finish": 14,
+            "slot_start": 1
+          },
+          {
+            "laf": 1.091,
+            "slot_finish": 48,
+            "slot_start": 15
+          }
+        ],
+        "start_date": "20200215"
+      },
+      "20200217": {
+        "finish_date": "20200221",
+        "slots": [
+          {
+            "laf": 1.084,
+            "slot_finish": 14,
+            "slot_start": 1
+          },
+          {
+            "laf": 1.096,
+            "slot_finish": 32,
+            "slot_start": 15
+          },
+          {
+            "laf": 1.108,
+            "slot_finish": 38,
+            "slot_start": 33
+          },
+          {
+            "laf": 1.096,
+            "slot_finish": 48,
+            "slot_start": 39
+          }
+        ],
+        "start_date": "20200217"
+      },
+      "20200222": {
+        "finish_date": "20200223",
+        "slots": [
+          {
+            "laf": 1.084,
+            "slot_finish": 14,
+            "slot_start": 1
+          },
+          {
+            "laf": 1.091,
+            "slot_finish": 48,
+            "slot_start": 15
+          }
+        ],
+        "start_date": "20200222"
+      },
+      "20200224": {
+        "finish_date": "20200228",
+        "slots": [
+          {
+            "laf": 1.084,
+            "slot_finish": 14,
+            "slot_start": 1
+          },
+          {
+            "laf": 1.096,
+            "slot_finish": 32,
+            "slot_start": 15
+          },
+          {
+            "laf": 1.108,
+            "slot_finish": 38,
+            "slot_start": 33
+          },
+          {
+            "laf": 1.096,
+            "slot_finish": 48,
+            "slot_start": 39
+          }
+        ],
+        "start_date": "20200224"
+      },
+      "20200229": {
+        "finish_date": "20200328",
+        "slots": [
+          {
+            "laf": 1.084,
+            "slot_finish": 14,
+            "slot_start": 1
+          },
+          {
+            "laf": 1.091,
+            "slot_finish": 48,
+            "slot_start": 15
+          }
+        ],
+        "start_date": "20200229"
+      },
+      "20200329": {
+        "finish_date": "20200329",
+        "slots": [
+          {
+            "laf": 1.084,
+            "slot_finish": 12,
+            "slot_start": 1
+          },
+          {
+            "laf": 1.091,
+            "slot_finish": 46,
+            "slot_start": 13
+          }
+        ],
+        "start_date": "20200329"
+      },
+      "20200330": {
+        "finish_date": "20200331",
+        "slots": [
+          {
+            "laf": 1.084,
+            "slot_finish": 14,
+            "slot_start": 1
+          },
+          {
+            "laf": 1.091,
+            "slot_finish": 48,
+            "slot_start": 15
+          }
+        ],
+        "start_date": "20200330"
+      }
+    },
+    3: {
+      "20190401": {
+        "finish_date": "20191026",
+        "slots": [
+          {
+            "laf": 0.997,
+            "slot_finish": 48,
+            "slot_start": 1
+          }
+        ],
+        "start_date": "20190401"
+      },
+      "20191027": {
+        "finish_date": "20191027",
+        "slots": [
+          {
+            "laf": 0.997,
+            "slot_finish": 50,
+            "slot_start": 1
+          }
+        ],
+        "start_date": "20191027"
+      },
+      "20191028": {
+        "finish_date": "20200328",
+        "slots": [
+          {
+            "laf": 0.997,
+            "slot_finish": 48,
+            "slot_start": 1
+          }
+        ],
+        "start_date": "20191028"
+      },
+      "20200329": {
+        "finish_date": "20200329",
+        "slots": [
+          {
+            "laf": 0.997,
+            "slot_finish": 46,
+            "slot_start": 1
+          }
+        ],
+        "start_date": "20200329"
+      },
+      "20200330": {
+        "finish_date": "20200331",
+        "slots": [
+          {
+            "laf": 0.997,
+            "slot_finish": 48,
+            "slot_start": 1
+          }
+        ],
+        "start_date": "20200330"
+      }
+    },
+    4: {
+      "20190401": {
+        "finish_date": "20191026",
+        "slots": [
+          {
+            "laf": 1.002,
+            "slot_finish": 48,
+            "slot_start": 1
+          }
+        ],
+        "start_date": "20190401"
+      },
+      "20191027": {
+        "finish_date": "20191027",
+        "slots": [
+          {
+            "laf": 1.002,
+            "slot_finish": 50,
+            "slot_start": 1
+          }
+        ],
+        "start_date": "20191027"
+      },
+      "20191028": {
+        "finish_date": "20200328",
+        "slots": [
+          {
+            "laf": 1.002,
+            "slot_finish": 48,
+            "slot_start": 1
+          }
+        ],
+        "start_date": "20191028"
+      },
+      "20200329": {
+        "finish_date": "20200329",
+        "slots": [
+          {
+            "laf": 1.002,
+            "slot_finish": 46,
+            "slot_start": 1
+          }
+        ],
+        "start_date": "20200329"
+      },
+      "20200330": {
+        "finish_date": "20200331",
+        "slots": [
+          {
+            "laf": 1.002,
+            "slot_finish": 48,
+            "slot_start": 1
+          }
+        ],
+        "start_date": "20200330"
+      }
+    },
+    5: {
+      "20190401": {
+        "finish_date": "20191026",
+        "slots": [
+          {
+            "laf": 0.998,
+            "slot_finish": 48,
+            "slot_start": 1
+          }
+        ],
+        "start_date": "20190401"
+      },
+      "20191027": {
+        "finish_date": "20191027",
+        "slots": [
+          {
+            "laf": 0.998,
+            "slot_finish": 50,
+            "slot_start": 1
+          }
+        ],
+        "start_date": "20191027"
+      },
+      "20191028": {
+        "finish_date": "20200328",
+        "slots": [
+          {
+            "laf": 0.998,
+            "slot_finish": 48,
+            "slot_start": 1
+          }
+        ],
+        "start_date": "20191028"
+      },
+      "20200329": {
+        "finish_date": "20200329",
+        "slots": [
+          {
+            "laf": 0.998,
+            "slot_finish": 46,
+            "slot_start": 1
+          }
+        ],
+        "start_date": "20200329"
+      },
+      "20200330": {
+        "finish_date": "20200331",
+        "slots": [
+          {
+            "laf": 0.998,
+            "slot_finish": 48,
+            "slot_start": 1
+          }
+        ],
+        "start_date": "20200330"
+      }
+    },
+    6: {
+      "20190401": {
+        "finish_date": "20191026",
+        "slots": [
+          {
+            "laf": 1.019,
+            "slot_finish": 14,
+            "slot_start": 1
+          },
+          {
+            "laf": 1.021,
+            "slot_finish": 48,
+            "slot_start": 15
+          }
+        ],
+        "start_date": "20190401"
+      },
+      "20191027": {
+        "finish_date": "20191027",
+        "slots": [
+          {
+            "laf": 1.019,
+            "slot_finish": 16,
+            "slot_start": 1
+          },
+          {
+            "laf": 1.021,
+            "slot_finish": 50,
+            "slot_start": 17
+          }
+        ],
+        "start_date": "20191027"
+      },
+      "20191028": {
+        "finish_date": "20191031",
+        "slots": [
+          {
+            "laf": 1.019,
+            "slot_finish": 14,
+            "slot_start": 1
+          },
+          {
+            "laf": 1.021,
+            "slot_finish": 48,
+            "slot_start": 15
+          }
+        ],
+        "start_date": "20191028"
+      },
+      "20191101": {
+        "finish_date": "20191101",
+        "slots": [
+          {
+            "laf": 1.019,
+            "slot_finish": 14,
+            "slot_start": 1
+          },
+          {
+            "laf": 1.022,
+            "slot_finish": 32,
+            "slot_start": 15
+          },
+          {
+            "laf": 1.024,
+            "slot_finish": 38,
+            "slot_start": 33
+          },
+          {
+            "laf": 1.022,
+            "slot_finish": 48,
+            "slot_start": 39
+          }
+        ],
+        "start_date": "20191101"
+      },
+      "20191102": {
+        "finish_date": "20191103",
+        "slots": [
+          {
+            "laf": 1.019,
+            "slot_finish": 14,
+            "slot_start": 1
+          },
+          {
+            "laf": 1.021,
+            "slot_finish": 48,
+            "slot_start": 15
+          }
+        ],
+        "start_date": "20191102"
+      },
+      "20191104": {
+        "finish_date": "20191108",
+        "slots": [
+          {
+            "laf": 1.019,
+            "slot_finish": 14,
+            "slot_start": 1
+          },
+          {
+            "laf": 1.022,
+            "slot_finish": 32,
+            "slot_start": 15
+          },
+          {
+            "laf": 1.024,
+            "slot_finish": 38,
+            "slot_start": 33
+          },
+          {
+            "laf": 1.022,
+            "slot_finish": 48,
+            "slot_start": 39
+          }
+        ],
+        "start_date": "20191104"
+      },
+      "20191109": {
+        "finish_date": "20191110",
+        "slots": [
+          {
+            "laf": 1.019,
+            "slot_finish": 14,
+            "slot_start": 1
+          },
+          {
+            "laf": 1.021,
+            "slot_finish": 48,
+            "slot_start": 15
+          }
+        ],
+        "start_date": "20191109"
+      },
+      "20191111": {
+        "finish_date": "20191115",
+        "slots": [
+          {
+            "laf": 1.019,
+            "slot_finish": 14,
+            "slot_start": 1
+          },
+          {
+            "laf": 1.022,
+            "slot_finish": 32,
+            "slot_start": 15
+          },
+          {
+            "laf": 1.024,
+            "slot_finish": 38,
+            "slot_start": 33
+          },
+          {
+            "laf": 1.022,
+            "slot_finish": 48,
+            "slot_start": 39
+          }
+        ],
+        "start_date": "20191111"
+      },
+      "20191116": {
+        "finish_date": "20191117",
+        "slots": [
+          {
+            "laf": 1.019,
+            "slot_finish": 14,
+            "slot_start": 1
+          },
+          {
+            "laf": 1.021,
+            "slot_finish": 48,
+            "slot_start": 15
+          }
+        ],
+        "start_date": "20191116"
+      },
+      "20191118": {
+        "finish_date": "20191122",
+        "slots": [
+          {
+            "laf": 1.019,
+            "slot_finish": 14,
+            "slot_start": 1
+          },
+          {
+            "laf": 1.022,
+            "slot_finish": 32,
+            "slot_start": 15
+          },
+          {
+            "laf": 1.024,
+            "slot_finish": 38,
+            "slot_start": 33
+          },
+          {
+            "laf": 1.022,
+            "slot_finish": 48,
+            "slot_start": 39
+          }
+        ],
+        "start_date": "20191118"
+      },
+      "20191123": {
+        "finish_date": "20191124",
+        "slots": [
+          {
+            "laf": 1.019,
+            "slot_finish": 14,
+            "slot_start": 1
+          },
+          {
+            "laf": 1.021,
+            "slot_finish": 48,
+            "slot_start": 15
+          }
+        ],
+        "start_date": "20191123"
+      },
+      "20191125": {
+        "finish_date": "20191129",
+        "slots": [
+          {
+            "laf": 1.019,
+            "slot_finish": 14,
+            "slot_start": 1
+          },
+          {
+            "laf": 1.022,
+            "slot_finish": 32,
+            "slot_start": 15
+          },
+          {
+            "laf": 1.024,
+            "slot_finish": 38,
+            "slot_start": 33
+          },
+          {
+            "laf": 1.022,
+            "slot_finish": 48,
+            "slot_start": 39
+          }
+        ],
+        "start_date": "20191125"
+      },
+      "20191130": {
+        "finish_date": "20191201",
+        "slots": [
+          {
+            "laf": 1.019,
+            "slot_finish": 14,
+            "slot_start": 1
+          },
+          {
+            "laf": 1.021,
+            "slot_finish": 48,
+            "slot_start": 15
+          }
+        ],
+        "start_date": "20191130"
+      },
+      "20191202": {
+        "finish_date": "20191206",
+        "slots": [
+          {
+            "laf": 1.019,
+            "slot_finish": 14,
+            "slot_start": 1
+          },
+          {
+            "laf": 1.022,
+            "slot_finish": 32,
+            "slot_start": 15
+          },
+          {
+            "laf": 1.024,
+            "slot_finish": 38,
+            "slot_start": 33
+          },
+          {
+            "laf": 1.022,
+            "slot_finish": 48,
+            "slot_start": 39
+          }
+        ],
+        "start_date": "20191202"
+      },
+      "20191207": {
+        "finish_date": "20191208",
+        "slots": [
+          {
+            "laf": 1.019,
+            "slot_finish": 14,
+            "slot_start": 1
+          },
+          {
+            "laf": 1.021,
+            "slot_finish": 48,
+            "slot_start": 15
+          }
+        ],
+        "start_date": "20191207"
+      },
+      "20191209": {
+        "finish_date": "20191213",
+        "slots": [
+          {
+            "laf": 1.019,
+            "slot_finish": 14,
+            "slot_start": 1
+          },
+          {
+            "laf": 1.022,
+            "slot_finish": 32,
+            "slot_start": 15
+          },
+          {
+            "laf": 1.024,
+            "slot_finish": 38,
+            "slot_start": 33
+          },
+          {
+            "laf": 1.022,
+            "slot_finish": 48,
+            "slot_start": 39
+          }
+        ],
+        "start_date": "20191209"
+      },
+      "20191214": {
+        "finish_date": "20191215",
+        "slots": [
+          {
+            "laf": 1.019,
+            "slot_finish": 14,
+            "slot_start": 1
+          },
+          {
+            "laf": 1.021,
+            "slot_finish": 48,
+            "slot_start": 15
+          }
+        ],
+        "start_date": "20191214"
+      },
+      "20191216": {
+        "finish_date": "20191220",
+        "slots": [
+          {
+            "laf": 1.019,
+            "slot_finish": 14,
+            "slot_start": 1
+          },
+          {
+            "laf": 1.022,
+            "slot_finish": 32,
+            "slot_start": 15
+          },
+          {
+            "laf": 1.024,
+            "slot_finish": 38,
+            "slot_start": 33
+          },
+          {
+            "laf": 1.022,
+            "slot_finish": 48,
+            "slot_start": 39
+          }
+        ],
+        "start_date": "20191216"
+      },
+      "20191221": {
+        "finish_date": "20191222",
+        "slots": [
+          {
+            "laf": 1.019,
+            "slot_finish": 14,
+            "slot_start": 1
+          },
+          {
+            "laf": 1.021,
+            "slot_finish": 48,
+            "slot_start": 15
+          }
+        ],
+        "start_date": "20191221"
+      },
+      "20191223": {
+        "finish_date": "20191227",
+        "slots": [
+          {
+            "laf": 1.019,
+            "slot_finish": 14,
+            "slot_start": 1
+          },
+          {
+            "laf": 1.022,
+            "slot_finish": 32,
+            "slot_start": 15
+          },
+          {
+            "laf": 1.024,
+            "slot_finish": 38,
+            "slot_start": 33
+          },
+          {
+            "laf": 1.022,
+            "slot_finish": 48,
+            "slot_start": 39
+          }
+        ],
+        "start_date": "20191223"
+      },
+      "20191228": {
+        "finish_date": "20191229",
+        "slots": [
+          {
+            "laf": 1.019,
+            "slot_finish": 14,
+            "slot_start": 1
+          },
+          {
+            "laf": 1.021,
+            "slot_finish": 48,
+            "slot_start": 15
+          }
+        ],
+        "start_date": "20191228"
+      },
+      "20191230": {
+        "finish_date": "20200103",
+        "slots": [
+          {
+            "laf": 1.019,
+            "slot_finish": 14,
+            "slot_start": 1
+          },
+          {
+            "laf": 1.022,
+            "slot_finish": 32,
+            "slot_start": 15
+          },
+          {
+            "laf": 1.024,
+            "slot_finish": 38,
+            "slot_start": 33
+          },
+          {
+            "laf": 1.022,
+            "slot_finish": 48,
+            "slot_start": 39
+          }
+        ],
+        "start_date": "20191230"
+      },
+      "20200104": {
+        "finish_date": "20200105",
+        "slots": [
+          {
+            "laf": 1.019,
+            "slot_finish": 14,
+            "slot_start": 1
+          },
+          {
+            "laf": 1.021,
+            "slot_finish": 48,
+            "slot_start": 15
+          }
+        ],
+        "start_date": "20200104"
+      },
+      "20200106": {
+        "finish_date": "20200110",
+        "slots": [
+          {
+            "laf": 1.019,
+            "slot_finish": 14,
+            "slot_start": 1
+          },
+          {
+            "laf": 1.022,
+            "slot_finish": 32,
+            "slot_start": 15
+          },
+          {
+            "laf": 1.024,
+            "slot_finish": 38,
+            "slot_start": 33
+          },
+          {
+            "laf": 1.022,
+            "slot_finish": 48,
+            "slot_start": 39
+          }
+        ],
+        "start_date": "20200106"
+      },
+      "20200111": {
+        "finish_date": "20200112",
+        "slots": [
+          {
+            "laf": 1.019,
+            "slot_finish": 14,
+            "slot_start": 1
+          },
+          {
+            "laf": 1.021,
+            "slot_finish": 48,
+            "slot_start": 15
+          }
+        ],
+        "start_date": "20200111"
+      },
+      "20200113": {
+        "finish_date": "20200117",
+        "slots": [
+          {
+            "laf": 1.019,
+            "slot_finish": 14,
+            "slot_start": 1
+          },
+          {
+            "laf": 1.022,
+            "slot_finish": 32,
+            "slot_start": 15
+          },
+          {
+            "laf": 1.024,
+            "slot_finish": 38,
+            "slot_start": 33
+          },
+          {
+            "laf": 1.022,
+            "slot_finish": 48,
+            "slot_start": 39
+          }
+        ],
+        "start_date": "20200113"
+      },
+      "20200118": {
+        "finish_date": "20200119",
+        "slots": [
+          {
+            "laf": 1.019,
+            "slot_finish": 14,
+            "slot_start": 1
+          },
+          {
+            "laf": 1.021,
+            "slot_finish": 48,
+            "slot_start": 15
+          }
+        ],
+        "start_date": "20200118"
+      },
+      "20200120": {
+        "finish_date": "20200124",
+        "slots": [
+          {
+            "laf": 1.019,
+            "slot_finish": 14,
+            "slot_start": 1
+          },
+          {
+            "laf": 1.022,
+            "slot_finish": 32,
+            "slot_start": 15
+          },
+          {
+            "laf": 1.024,
+            "slot_finish": 38,
+            "slot_start": 33
+          },
+          {
+            "laf": 1.022,
+            "slot_finish": 48,
+            "slot_start": 39
+          }
+        ],
+        "start_date": "20200120"
+      },
+      "20200125": {
+        "finish_date": "20200126",
+        "slots": [
+          {
+            "laf": 1.019,
+            "slot_finish": 14,
+            "slot_start": 1
+          },
+          {
+            "laf": 1.021,
+            "slot_finish": 48,
+            "slot_start": 15
+          }
+        ],
+        "start_date": "20200125"
+      },
+      "20200127": {
+        "finish_date": "20200131",
+        "slots": [
+          {
+            "laf": 1.019,
+            "slot_finish": 14,
+            "slot_start": 1
+          },
+          {
+            "laf": 1.022,
+            "slot_finish": 32,
+            "slot_start": 15
+          },
+          {
+            "laf": 1.024,
+            "slot_finish": 38,
+            "slot_start": 33
+          },
+          {
+            "laf": 1.022,
+            "slot_finish": 48,
+            "slot_start": 39
+          }
+        ],
+        "start_date": "20200127"
+      },
+      "20200201": {
+        "finish_date": "20200202",
+        "slots": [
+          {
+            "laf": 1.019,
+            "slot_finish": 14,
+            "slot_start": 1
+          },
+          {
+            "laf": 1.021,
+            "slot_finish": 48,
+            "slot_start": 15
+          }
+        ],
+        "start_date": "20200201"
+      },
+      "20200203": {
+        "finish_date": "20200207",
+        "slots": [
+          {
+            "laf": 1.019,
+            "slot_finish": 14,
+            "slot_start": 1
+          },
+          {
+            "laf": 1.022,
+            "slot_finish": 32,
+            "slot_start": 15
+          },
+          {
+            "laf": 1.024,
+            "slot_finish": 38,
+            "slot_start": 33
+          },
+          {
+            "laf": 1.022,
+            "slot_finish": 48,
+            "slot_start": 39
+          }
+        ],
+        "start_date": "20200203"
+      },
+      "20200208": {
+        "finish_date": "20200209",
+        "slots": [
+          {
+            "laf": 1.019,
+            "slot_finish": 14,
+            "slot_start": 1
+          },
+          {
+            "laf": 1.021,
+            "slot_finish": 48,
+            "slot_start": 15
+          }
+        ],
+        "start_date": "20200208"
+      },
+      "20200210": {
+        "finish_date": "20200214",
+        "slots": [
+          {
+            "laf": 1.019,
+            "slot_finish": 14,
+            "slot_start": 1
+          },
+          {
+            "laf": 1.022,
+            "slot_finish": 32,
+            "slot_start": 15
+          },
+          {
+            "laf": 1.024,
+            "slot_finish": 38,
+            "slot_start": 33
+          },
+          {
+            "laf": 1.022,
+            "slot_finish": 48,
+            "slot_start": 39
+          }
+        ],
+        "start_date": "20200210"
+      },
+      "20200215": {
+        "finish_date": "20200216",
+        "slots": [
+          {
+            "laf": 1.019,
+            "slot_finish": 14,
+            "slot_start": 1
+          },
+          {
+            "laf": 1.021,
+            "slot_finish": 48,
+            "slot_start": 15
+          }
+        ],
+        "start_date": "20200215"
+      },
+      "20200217": {
+        "finish_date": "20200221",
+        "slots": [
+          {
+            "laf": 1.019,
+            "slot_finish": 14,
+            "slot_start": 1
+          },
+          {
+            "laf": 1.022,
+            "slot_finish": 32,
+            "slot_start": 15
+          },
+          {
+            "laf": 1.024,
+            "slot_finish": 38,
+            "slot_start": 33
+          },
+          {
+            "laf": 1.022,
+            "slot_finish": 48,
+            "slot_start": 39
+          }
+        ],
+        "start_date": "20200217"
+      },
+      "20200222": {
+        "finish_date": "20200223",
+        "slots": [
+          {
+            "laf": 1.019,
+            "slot_finish": 14,
+            "slot_start": 1
+          },
+          {
+            "laf": 1.021,
+            "slot_finish": 48,
+            "slot_start": 15
+          }
+        ],
+        "start_date": "20200222"
+      },
+      "20200224": {
+        "finish_date": "20200228",
+        "slots": [
+          {
+            "laf": 1.019,
+            "slot_finish": 14,
+            "slot_start": 1
+          },
+          {
+            "laf": 1.022,
+            "slot_finish": 32,
+            "slot_start": 15
+          },
+          {
+            "laf": 1.024,
+            "slot_finish": 38,
+            "slot_start": 33
+          },
+          {
+            "laf": 1.022,
+            "slot_finish": 48,
+            "slot_start": 39
+          }
+        ],
+        "start_date": "20200224"
+      },
+      "20200229": {
+        "finish_date": "20200328",
+        "slots": [
+          {
+            "laf": 1.019,
+            "slot_finish": 14,
+            "slot_start": 1
+          },
+          {
+            "laf": 1.021,
+            "slot_finish": 48,
+            "slot_start": 15
+          }
+        ],
+        "start_date": "20200229"
+      },
+      "20200329": {
+        "finish_date": "20200329",
+        "slots": [
+          {
+            "laf": 1.019,
+            "slot_finish": 12,
+            "slot_start": 1
+          },
+          {
+            "laf": 1.021,
+            "slot_finish": 46,
+            "slot_start": 13
+          }
+        ],
+        "start_date": "20200329"
+      },
+      "20200330": {
+        "finish_date": "20200331",
+        "slots": [
+          {
+            "laf": 1.019,
+            "slot_finish": 14,
+            "slot_start": 1
+          },
+          {
+            "laf": 1.021,
+            "slot_finish": 48,
+            "slot_start": 15
+          }
+        ],
+        "start_date": "20200330"
+      }
+    },
+    7: {
+      "20190401": {
+        "finish_date": "20191026",
+        "slots": [
+          {
+            "laf": 0.991,
+            "slot_finish": 48,
+            "slot_start": 1
+          }
+        ],
+        "start_date": "20190401"
+      },
+      "20191027": {
+        "finish_date": "20191027",
+        "slots": [
+          {
+            "laf": 0.991,
+            "slot_finish": 50,
+            "slot_start": 1
+          }
+        ],
+        "start_date": "20191027"
+      },
+      "20191028": {
+        "finish_date": "20200328",
+        "slots": [
+          {
+            "laf": 0.991,
+            "slot_finish": 48,
+            "slot_start": 1
+          }
+        ],
+        "start_date": "20191028"
+      },
+      "20200329": {
+        "finish_date": "20200329",
+        "slots": [
+          {
+            "laf": 0.991,
+            "slot_finish": 46,
+            "slot_start": 1
+          }
+        ],
+        "start_date": "20200329"
+      },
+      "20200330": {
+        "finish_date": "20200331",
+        "slots": [
+          {
+            "laf": 0.991,
+            "slot_finish": 48,
+            "slot_start": 1
+          }
+        ],
+        "start_date": "20200330"
+      }
+    },
+    8: {
+      "20190401": {
+        "finish_date": "20191026",
+        "slots": [
+          {
+            "laf": 1.010,
+            "slot_finish": 48,
+            "slot_start": 1
+          }
+        ],
+        "start_date": "20190401"
+      },
+      "20191027": {
+        "finish_date": "20191027",
+        "slots": [
+          {
+            "laf": 1.010,
+            "slot_finish": 50,
+            "slot_start": 1
+          }
+        ],
+        "start_date": "20191027"
+      },
+      "20191028": {
+        "finish_date": "20200328",
+        "slots": [
+          {
+            "laf": 1.010,
+            "slot_finish": 48,
+            "slot_start": 1
+          }
+        ],
+        "start_date": "20191028"
+      },
+      "20200329": {
+        "finish_date": "20200329",
+        "slots": [
+          {
+            "laf": 1.010,
+            "slot_finish": 46,
+            "slot_start": 1
+          }
+        ],
+        "start_date": "20200329"
+      },
+      "20200330": {
+        "finish_date": "20200331",
+        "slots": [
+          {
+            "laf": 1.010,
+            "slot_finish": 48,
+            "slot_start": 1
+          }
+        ],
+        "start_date": "20200330"
+      }
+    },
+    9: {
+      "20190401": {
+        "finish_date": "20191026",
+        "slots": [
+          {
+            "laf": 0.994,
+            "slot_finish": 48,
+            "slot_start": 1
+          }
+        ],
+        "start_date": "20190401"
+      },
+      "20191027": {
+        "finish_date": "20191027",
+        "slots": [
+          {
+            "laf": 0.994,
+            "slot_finish": 50,
+            "slot_start": 1
+          }
+        ],
+        "start_date": "20191027"
+      },
+      "20191028": {
+        "finish_date": "20200328",
+        "slots": [
+          {
+            "laf": 0.994,
+            "slot_finish": 48,
+            "slot_start": 1
+          }
+        ],
+        "start_date": "20191028"
+      },
+      "20200329": {
+        "finish_date": "20200329",
+        "slots": [
+          {
+            "laf": 0.994,
+            "slot_finish": 46,
+            "slot_start": 1
+          }
+        ],
+        "start_date": "20200329"
+      },
+      "20200330": {
+        "finish_date": "20200331",
+        "slots": [
+          {
+            "laf": 0.994,
+            "slot_finish": 48,
+            "slot_start": 1
+          }
+        ],
+        "start_date": "20200330"
+      }
+    },
+    10: {
+      "20190401": {
+        "finish_date": "20191026",
+        "slots": [
+          {
+            "laf": 1.005,
+            "slot_finish": 48,
+            "slot_start": 1
+          }
+        ],
+        "start_date": "20190401"
+      },
+      "20191027": {
+        "finish_date": "20191027",
+        "slots": [
+          {
+            "laf": 1.005,
+            "slot_finish": 50,
+            "slot_start": 1
+          }
+        ],
+        "start_date": "20191027"
+      },
+      "20191028": {
+        "finish_date": "20200328",
+        "slots": [
+          {
+            "laf": 1.005,
+            "slot_finish": 48,
+            "slot_start": 1
+          }
+        ],
+        "start_date": "20191028"
+      },
+      "20200329": {
+        "finish_date": "20200329",
+        "slots": [
+          {
+            "laf": 1.005,
+            "slot_finish": 46,
+            "slot_start": 1
+          }
+        ],
+        "start_date": "20200329"
+      },
+      "20200330": {
+        "finish_date": "20200331",
+        "slots": [
+          {
+            "laf": 1.005,
+            "slot_finish": 48,
+            "slot_start": 1
+          }
+        ],
+        "start_date": "20200330"
+      }
+    },
+    11: {
+      "20190401": {
+        "finish_date": "20191026",
+        "slots": [
+          {
+            "laf": 0.999,
+            "slot_finish": 48,
+            "slot_start": 1
+          }
+        ],
+        "start_date": "20190401"
+      },
+      "20191027": {
+        "finish_date": "20191027",
+        "slots": [
+          {
+            "laf": 0.999,
+            "slot_finish": 50,
+            "slot_start": 1
+          }
+        ],
+        "start_date": "20191027"
+      },
+      "20191028": {
+        "finish_date": "20200328",
+        "slots": [
+          {
+            "laf": 0.999,
+            "slot_finish": 48,
+            "slot_start": 1
+          }
+        ],
+        "start_date": "20191028"
+      },
+      "20200329": {
+        "finish_date": "20200329",
+        "slots": [
+          {
+            "laf": 0.999,
+            "slot_finish": 46,
+            "slot_start": 1
+          }
+        ],
+        "start_date": "20200329"
+      },
+      "20200330": {
+        "finish_date": "20200331",
+        "slots": [
+          {
+            "laf": 0.999,
+            "slot_finish": 48,
+            "slot_start": 1
+          }
+        ],
+        "start_date": "20200330"
+      }
+    },
+    12: {
+      "20190401": {
+        "finish_date": "20191026",
+        "slots": [
+          {
+            "laf": 0.992,
+            "slot_finish": 48,
+            "slot_start": 1
+          }
+        ],
+        "start_date": "20190401"
+      },
+      "20191027": {
+        "finish_date": "20191027",
+        "slots": [
+          {
+            "laf": 0.992,
+            "slot_finish": 50,
+            "slot_start": 1
+          }
+        ],
+        "start_date": "20191027"
+      },
+      "20191028": {
+        "finish_date": "20200328",
+        "slots": [
+          {
+            "laf": 0.992,
+            "slot_finish": 48,
+            "slot_start": 1
+          }
+        ],
+        "start_date": "20191028"
+      },
+      "20200329": {
+        "finish_date": "20200329",
+        "slots": [
+          {
+            "laf": 0.992,
+            "slot_finish": 46,
+            "slot_start": 1
+          }
+        ],
+        "start_date": "20200329"
+      },
+      "20200330": {
+        "finish_date": "20200331",
+        "slots": [
+          {
+            "laf": 0.992,
+            "slot_finish": 48,
+            "slot_start": 1
+          }
+        ],
+        "start_date": "20200330"
+      }
+    },
+    13: {
+      "20190401": {
+        "finish_date": "20191026",
+        "slots": [
+          {
+            "laf": 1.013,
+            "slot_finish": 48,
+            "slot_start": 1
+          }
+        ],
+        "start_date": "20190401"
+      },
+      "20191027": {
+        "finish_date": "20191027",
+        "slots": [
+          {
+            "laf": 1.013,
+            "slot_finish": 50,
+            "slot_start": 1
+          }
+        ],
+        "start_date": "20191027"
+      },
+      "20191028": {
+        "finish_date": "20200328",
+        "slots": [
+          {
+            "laf": 1.013,
+            "slot_finish": 48,
+            "slot_start": 1
+          }
+        ],
+        "start_date": "20191028"
+      },
+      "20200329": {
+        "finish_date": "20200329",
+        "slots": [
+          {
+            "laf": 1.013,
+            "slot_finish": 46,
+            "slot_start": 1
+          }
+        ],
+        "start_date": "20200329"
+      },
+      "20200330": {
+        "finish_date": "20200331",
+        "slots": [
+          {
+            "laf": 1.013,
+            "slot_finish": 48,
+            "slot_start": 1
+          }
+        ],
+        "start_date": "20200330"
+      }
+    },
+    14: {
+      "20190401": {
+        "finish_date": "20191026",
+        "slots": [
+          {
+            "laf": 1.046,
+            "slot_finish": 14,
+            "slot_start": 1
+          },
+          {
+            "laf": 1.049,
+            "slot_finish": 48,
+            "slot_start": 15
+          }
+        ],
+        "start_date": "20190401"
+      },
+      "20191027": {
+        "finish_date": "20191027",
+        "slots": [
+          {
+            "laf": 1.046,
+            "slot_finish": 16,
+            "slot_start": 1
+          },
+          {
+            "laf": 1.049,
+            "slot_finish": 50,
+            "slot_start": 17
+          }
+        ],
+        "start_date": "20191027"
+      },
+      "20191028": {
+        "finish_date": "20191031",
+        "slots": [
+          {
+            "laf": 1.046,
+            "slot_finish": 14,
+            "slot_start": 1
+          },
+          {
+            "laf": 1.049,
+            "slot_finish": 48,
+            "slot_start": 15
+          }
+        ],
+        "start_date": "20191028"
+      },
+      "20191101": {
+        "finish_date": "20191101",
+        "slots": [
+          {
+            "laf": 1.046,
+            "slot_finish": 14,
+            "slot_start": 1
+          },
+          {
+            "laf": 1.051,
+            "slot_finish": 32,
+            "slot_start": 15
+          },
+          {
+            "laf": 1.053,
+            "slot_finish": 38,
+            "slot_start": 33
+          },
+          {
+            "laf": 1.051,
+            "slot_finish": 48,
+            "slot_start": 39
+          }
+        ],
+        "start_date": "20191101"
+      },
+      "20191102": {
+        "finish_date": "20191103",
+        "slots": [
+          {
+            "laf": 1.046,
+            "slot_finish": 14,
+            "slot_start": 1
+          },
+          {
+            "laf": 1.049,
+            "slot_finish": 48,
+            "slot_start": 15
+          }
+        ],
+        "start_date": "20191102"
+      },
+      "20191104": {
+        "finish_date": "20191108",
+        "slots": [
+          {
+            "laf": 1.046,
+            "slot_finish": 14,
+            "slot_start": 1
+          },
+          {
+            "laf": 1.051,
+            "slot_finish": 32,
+            "slot_start": 15
+          },
+          {
+            "laf": 1.053,
+            "slot_finish": 38,
+            "slot_start": 33
+          },
+          {
+            "laf": 1.051,
+            "slot_finish": 48,
+            "slot_start": 39
+          }
+        ],
+        "start_date": "20191104"
+      },
+      "20191109": {
+        "finish_date": "20191110",
+        "slots": [
+          {
+            "laf": 1.046,
+            "slot_finish": 14,
+            "slot_start": 1
+          },
+          {
+            "laf": 1.049,
+            "slot_finish": 48,
+            "slot_start": 15
+          }
+        ],
+        "start_date": "20191109"
+      },
+      "20191111": {
+        "finish_date": "20191115",
+        "slots": [
+          {
+            "laf": 1.046,
+            "slot_finish": 14,
+            "slot_start": 1
+          },
+          {
+            "laf": 1.051,
+            "slot_finish": 32,
+            "slot_start": 15
+          },
+          {
+            "laf": 1.053,
+            "slot_finish": 38,
+            "slot_start": 33
+          },
+          {
+            "laf": 1.051,
+            "slot_finish": 48,
+            "slot_start": 39
+          }
+        ],
+        "start_date": "20191111"
+      },
+      "20191116": {
+        "finish_date": "20191117",
+        "slots": [
+          {
+            "laf": 1.046,
+            "slot_finish": 14,
+            "slot_start": 1
+          },
+          {
+            "laf": 1.049,
+            "slot_finish": 48,
+            "slot_start": 15
+          }
+        ],
+        "start_date": "20191116"
+      },
+      "20191118": {
+        "finish_date": "20191122",
+        "slots": [
+          {
+            "laf": 1.046,
+            "slot_finish": 14,
+            "slot_start": 1
+          },
+          {
+            "laf": 1.051,
+            "slot_finish": 32,
+            "slot_start": 15
+          },
+          {
+            "laf": 1.053,
+            "slot_finish": 38,
+            "slot_start": 33
+          },
+          {
+            "laf": 1.051,
+            "slot_finish": 48,
+            "slot_start": 39
+          }
+        ],
+        "start_date": "20191118"
+      },
+      "20191123": {
+        "finish_date": "20191124",
+        "slots": [
+          {
+            "laf": 1.046,
+            "slot_finish": 14,
+            "slot_start": 1
+          },
+          {
+            "laf": 1.049,
+            "slot_finish": 48,
+            "slot_start": 15
+          }
+        ],
+        "start_date": "20191123"
+      },
+      "20191125": {
+        "finish_date": "20191129",
+        "slots": [
+          {
+            "laf": 1.046,
+            "slot_finish": 14,
+            "slot_start": 1
+          },
+          {
+            "laf": 1.051,
+            "slot_finish": 32,
+            "slot_start": 15
+          },
+          {
+            "laf": 1.053,
+            "slot_finish": 38,
+            "slot_start": 33
+          },
+          {
+            "laf": 1.051,
+            "slot_finish": 48,
+            "slot_start": 39
+          }
+        ],
+        "start_date": "20191125"
+      },
+      "20191130": {
+        "finish_date": "20191201",
+        "slots": [
+          {
+            "laf": 1.046,
+            "slot_finish": 14,
+            "slot_start": 1
+          },
+          {
+            "laf": 1.049,
+            "slot_finish": 48,
+            "slot_start": 15
+          }
+        ],
+        "start_date": "20191130"
+      },
+      "20191202": {
+        "finish_date": "20191206",
+        "slots": [
+          {
+            "laf": 1.046,
+            "slot_finish": 14,
+            "slot_start": 1
+          },
+          {
+            "laf": 1.051,
+            "slot_finish": 32,
+            "slot_start": 15
+          },
+          {
+            "laf": 1.053,
+            "slot_finish": 38,
+            "slot_start": 33
+          },
+          {
+            "laf": 1.051,
+            "slot_finish": 48,
+            "slot_start": 39
+          }
+        ],
+        "start_date": "20191202"
+      },
+      "20191207": {
+        "finish_date": "20191208",
+        "slots": [
+          {
+            "laf": 1.046,
+            "slot_finish": 14,
+            "slot_start": 1
+          },
+          {
+            "laf": 1.049,
+            "slot_finish": 48,
+            "slot_start": 15
+          }
+        ],
+        "start_date": "20191207"
+      },
+      "20191209": {
+        "finish_date": "20191213",
+        "slots": [
+          {
+            "laf": 1.046,
+            "slot_finish": 14,
+            "slot_start": 1
+          },
+          {
+            "laf": 1.051,
+            "slot_finish": 32,
+            "slot_start": 15
+          },
+          {
+            "laf": 1.053,
+            "slot_finish": 38,
+            "slot_start": 33
+          },
+          {
+            "laf": 1.051,
+            "slot_finish": 48,
+            "slot_start": 39
+          }
+        ],
+        "start_date": "20191209"
+      },
+      "20191214": {
+        "finish_date": "20191215",
+        "slots": [
+          {
+            "laf": 1.046,
+            "slot_finish": 14,
+            "slot_start": 1
+          },
+          {
+            "laf": 1.049,
+            "slot_finish": 48,
+            "slot_start": 15
+          }
+        ],
+        "start_date": "20191214"
+      },
+      "20191216": {
+        "finish_date": "20191220",
+        "slots": [
+          {
+            "laf": 1.046,
+            "slot_finish": 14,
+            "slot_start": 1
+          },
+          {
+            "laf": 1.051,
+            "slot_finish": 32,
+            "slot_start": 15
+          },
+          {
+            "laf": 1.053,
+            "slot_finish": 38,
+            "slot_start": 33
+          },
+          {
+            "laf": 1.051,
+            "slot_finish": 48,
+            "slot_start": 39
+          }
+        ],
+        "start_date": "20191216"
+      },
+      "20191221": {
+        "finish_date": "20191222",
+        "slots": [
+          {
+            "laf": 1.046,
+            "slot_finish": 14,
+            "slot_start": 1
+          },
+          {
+            "laf": 1.049,
+            "slot_finish": 48,
+            "slot_start": 15
+          }
+        ],
+        "start_date": "20191221"
+      },
+      "20191223": {
+        "finish_date": "20191227",
+        "slots": [
+          {
+            "laf": 1.046,
+            "slot_finish": 14,
+            "slot_start": 1
+          },
+          {
+            "laf": 1.051,
+            "slot_finish": 32,
+            "slot_start": 15
+          },
+          {
+            "laf": 1.053,
+            "slot_finish": 38,
+            "slot_start": 33
+          },
+          {
+            "laf": 1.051,
+            "slot_finish": 48,
+            "slot_start": 39
+          }
+        ],
+        "start_date": "20191223"
+      },
+      "20191228": {
+        "finish_date": "20191229",
+        "slots": [
+          {
+            "laf": 1.046,
+            "slot_finish": 14,
+            "slot_start": 1
+          },
+          {
+            "laf": 1.049,
+            "slot_finish": 48,
+            "slot_start": 15
+          }
+        ],
+        "start_date": "20191228"
+      },
+      "20191230": {
+        "finish_date": "20200103",
+        "slots": [
+          {
+            "laf": 1.046,
+            "slot_finish": 14,
+            "slot_start": 1
+          },
+          {
+            "laf": 1.051,
+            "slot_finish": 32,
+            "slot_start": 15
+          },
+          {
+            "laf": 1.053,
+            "slot_finish": 38,
+            "slot_start": 33
+          },
+          {
+            "laf": 1.051,
+            "slot_finish": 48,
+            "slot_start": 39
+          }
+        ],
+        "start_date": "20191230"
+      },
+      "20200104": {
+        "finish_date": "20200105",
+        "slots": [
+          {
+            "laf": 1.046,
+            "slot_finish": 14,
+            "slot_start": 1
+          },
+          {
+            "laf": 1.049,
+            "slot_finish": 48,
+            "slot_start": 15
+          }
+        ],
+        "start_date": "20200104"
+      },
+      "20200106": {
+        "finish_date": "20200110",
+        "slots": [
+          {
+            "laf": 1.046,
+            "slot_finish": 14,
+            "slot_start": 1
+          },
+          {
+            "laf": 1.051,
+            "slot_finish": 32,
+            "slot_start": 15
+          },
+          {
+            "laf": 1.053,
+            "slot_finish": 38,
+            "slot_start": 33
+          },
+          {
+            "laf": 1.051,
+            "slot_finish": 48,
+            "slot_start": 39
+          }
+        ],
+        "start_date": "20200106"
+      },
+      "20200111": {
+        "finish_date": "20200112",
+        "slots": [
+          {
+            "laf": 1.046,
+            "slot_finish": 14,
+            "slot_start": 1
+          },
+          {
+            "laf": 1.049,
+            "slot_finish": 48,
+            "slot_start": 15
+          }
+        ],
+        "start_date": "20200111"
+      },
+      "20200113": {
+        "finish_date": "20200117",
+        "slots": [
+          {
+            "laf": 1.046,
+            "slot_finish": 14,
+            "slot_start": 1
+          },
+          {
+            "laf": 1.051,
+            "slot_finish": 32,
+            "slot_start": 15
+          },
+          {
+            "laf": 1.053,
+            "slot_finish": 38,
+            "slot_start": 33
+          },
+          {
+            "laf": 1.051,
+            "slot_finish": 48,
+            "slot_start": 39
+          }
+        ],
+        "start_date": "20200113"
+      },
+      "20200118": {
+        "finish_date": "20200119",
+        "slots": [
+          {
+            "laf": 1.046,
+            "slot_finish": 14,
+            "slot_start": 1
+          },
+          {
+            "laf": 1.049,
+            "slot_finish": 48,
+            "slot_start": 15
+          }
+        ],
+        "start_date": "20200118"
+      },
+      "20200120": {
+        "finish_date": "20200124",
+        "slots": [
+          {
+            "laf": 1.046,
+            "slot_finish": 14,
+            "slot_start": 1
+          },
+          {
+            "laf": 1.051,
+            "slot_finish": 32,
+            "slot_start": 15
+          },
+          {
+            "laf": 1.053,
+            "slot_finish": 38,
+            "slot_start": 33
+          },
+          {
+            "laf": 1.051,
+            "slot_finish": 48,
+            "slot_start": 39
+          }
+        ],
+        "start_date": "20200120"
+      },
+      "20200125": {
+        "finish_date": "20200126",
+        "slots": [
+          {
+            "laf": 1.046,
+            "slot_finish": 14,
+            "slot_start": 1
+          },
+          {
+            "laf": 1.049,
+            "slot_finish": 48,
+            "slot_start": 15
+          }
+        ],
+        "start_date": "20200125"
+      },
+      "20200127": {
+        "finish_date": "20200131",
+        "slots": [
+          {
+            "laf": 1.046,
+            "slot_finish": 14,
+            "slot_start": 1
+          },
+          {
+            "laf": 1.051,
+            "slot_finish": 32,
+            "slot_start": 15
+          },
+          {
+            "laf": 1.053,
+            "slot_finish": 38,
+            "slot_start": 33
+          },
+          {
+            "laf": 1.051,
+            "slot_finish": 48,
+            "slot_start": 39
+          }
+        ],
+        "start_date": "20200127"
+      },
+      "20200201": {
+        "finish_date": "20200202",
+        "slots": [
+          {
+            "laf": 1.046,
+            "slot_finish": 14,
+            "slot_start": 1
+          },
+          {
+            "laf": 1.049,
+            "slot_finish": 48,
+            "slot_start": 15
+          }
+        ],
+        "start_date": "20200201"
+      },
+      "20200203": {
+        "finish_date": "20200207",
+        "slots": [
+          {
+            "laf": 1.046,
+            "slot_finish": 14,
+            "slot_start": 1
+          },
+          {
+            "laf": 1.051,
+            "slot_finish": 32,
+            "slot_start": 15
+          },
+          {
+            "laf": 1.053,
+            "slot_finish": 38,
+            "slot_start": 33
+          },
+          {
+            "laf": 1.051,
+            "slot_finish": 48,
+            "slot_start": 39
+          }
+        ],
+        "start_date": "20200203"
+      },
+      "20200208": {
+        "finish_date": "20200209",
+        "slots": [
+          {
+            "laf": 1.046,
+            "slot_finish": 14,
+            "slot_start": 1
+          },
+          {
+            "laf": 1.049,
+            "slot_finish": 48,
+            "slot_start": 15
+          }
+        ],
+        "start_date": "20200208"
+      },
+      "20200210": {
+        "finish_date": "20200214",
+        "slots": [
+          {
+            "laf": 1.046,
+            "slot_finish": 14,
+            "slot_start": 1
+          },
+          {
+            "laf": 1.051,
+            "slot_finish": 32,
+            "slot_start": 15
+          },
+          {
+            "laf": 1.053,
+            "slot_finish": 38,
+            "slot_start": 33
+          },
+          {
+            "laf": 1.051,
+            "slot_finish": 48,
+            "slot_start": 39
+          }
+        ],
+        "start_date": "20200210"
+      },
+      "20200215": {
+        "finish_date": "20200216",
+        "slots": [
+          {
+            "laf": 1.046,
+            "slot_finish": 14,
+            "slot_start": 1
+          },
+          {
+            "laf": 1.049,
+            "slot_finish": 48,
+            "slot_start": 15
+          }
+        ],
+        "start_date": "20200215"
+      },
+      "20200217": {
+        "finish_date": "20200221",
+        "slots": [
+          {
+            "laf": 1.046,
+            "slot_finish": 14,
+            "slot_start": 1
+          },
+          {
+            "laf": 1.051,
+            "slot_finish": 32,
+            "slot_start": 15
+          },
+          {
+            "laf": 1.053,
+            "slot_finish": 38,
+            "slot_start": 33
+          },
+          {
+            "laf": 1.051,
+            "slot_finish": 48,
+            "slot_start": 39
+          }
+        ],
+        "start_date": "20200217"
+      },
+      "20200222": {
+        "finish_date": "20200223",
+        "slots": [
+          {
+            "laf": 1.046,
+            "slot_finish": 14,
+            "slot_start": 1
+          },
+          {
+            "laf": 1.049,
+            "slot_finish": 48,
+            "slot_start": 15
+          }
+        ],
+        "start_date": "20200222"
+      },
+      "20200224": {
+        "finish_date": "20200228",
+        "slots": [
+          {
+            "laf": 1.046,
+            "slot_finish": 14,
+            "slot_start": 1
+          },
+          {
+            "laf": 1.051,
+            "slot_finish": 32,
+            "slot_start": 15
+          },
+          {
+            "laf": 1.053,
+            "slot_finish": 38,
+            "slot_start": 33
+          },
+          {
+            "laf": 1.051,
+            "slot_finish": 48,
+            "slot_start": 39
+          }
+        ],
+        "start_date": "20200224"
+      },
+      "20200229": {
+        "finish_date": "20200328",
+        "slots": [
+          {
+            "laf": 1.046,
+            "slot_finish": 14,
+            "slot_start": 1
+          },
+          {
+            "laf": 1.049,
+            "slot_finish": 48,
+            "slot_start": 15
+          }
+        ],
+        "start_date": "20200229"
+      },
+      "20200329": {
+        "finish_date": "20200329",
+        "slots": [
+          {
+            "laf": 1.046,
+            "slot_finish": 12,
+            "slot_start": 1
+          },
+          {
+            "laf": 1.049,
+            "slot_finish": 46,
+            "slot_start": 13
+          }
+        ],
+        "start_date": "20200329"
+      },
+      "20200330": {
+        "finish_date": "20200331",
+        "slots": [
+          {
+            "laf": 1.046,
+            "slot_finish": 14,
+            "slot_start": 1
+          },
+          {
+            "laf": 1.049,
+            "slot_finish": 48,
+            "slot_start": 15
+          }
+        ],
+        "start_date": "20200330"
+      }
+    },
+    15: {
+      "20190401": {
+        "finish_date": "20191026",
+        "slots": [
+          {
+            "laf": 0.989,
+            "slot_finish": 48,
+            "slot_start": 1
+          }
+        ],
+        "start_date": "20190401"
+      },
+      "20191027": {
+        "finish_date": "20191027",
+        "slots": [
+          {
+            "laf": 0.989,
+            "slot_finish": 50,
+            "slot_start": 1
+          }
+        ],
+        "start_date": "20191027"
+      },
+      "20191028": {
+        "finish_date": "20200328",
+        "slots": [
+          {
+            "laf": 0.989,
+            "slot_finish": 48,
+            "slot_start": 1
+          }
+        ],
+        "start_date": "20191028"
+      },
+      "20200329": {
+        "finish_date": "20200329",
+        "slots": [
+          {
+            "laf": 0.989,
+            "slot_finish": 46,
+            "slot_start": 1
+          }
+        ],
+        "start_date": "20200329"
+      },
+      "20200330": {
+        "finish_date": "20200331",
+        "slots": [
+          {
+            "laf": 0.989,
+            "slot_finish": 48,
+            "slot_start": 1
+          }
+        ],
+        "start_date": "20200330"
+      }
+    },
+    16: {
+      "20190401": {
+        "finish_date": "20191026",
+        "slots": [
+          {
+            "laf": 0.977,
+            "slot_finish": 48,
+            "slot_start": 1
+          }
+        ],
+        "start_date": "20190401"
+      },
+      "20191027": {
+        "finish_date": "20191027",
+        "slots": [
+          {
+            "laf": 0.977,
+            "slot_finish": 50,
+            "slot_start": 1
+          }
+        ],
+        "start_date": "20191027"
+      },
+      "20191028": {
+        "finish_date": "20200328",
+        "slots": [
+          {
+            "laf": 0.977,
+            "slot_finish": 48,
+            "slot_start": 1
+          }
+        ],
+        "start_date": "20191028"
+      },
+      "20200329": {
+        "finish_date": "20200329",
+        "slots": [
+          {
+            "laf": 0.977,
+            "slot_finish": 46,
+            "slot_start": 1
+          }
+        ],
+        "start_date": "20200329"
+      },
+      "20200330": {
+        "finish_date": "20200331",
+        "slots": [
+          {
+            "laf": 0.977,
+            "slot_finish": 48,
+            "slot_start": 1
+          }
+        ],
+        "start_date": "20200330"
+      }
+    },
+    17: {
+      "20190401": {
+        "finish_date": "20191026",
+        "slots": [
+          {
+            "laf": 1.006,
+            "slot_finish": 48,
+            "slot_start": 1
+          }
+        ],
+        "start_date": "20190401"
+      },
+      "20191027": {
+        "finish_date": "20191027",
+        "slots": [
+          {
+            "laf": 1.006,
+            "slot_finish": 50,
+            "slot_start": 1
+          }
+        ],
+        "start_date": "20191027"
+      },
+      "20191028": {
+        "finish_date": "20200328",
+        "slots": [
+          {
+            "laf": 1.006,
+            "slot_finish": 48,
+            "slot_start": 1
+          }
+        ],
+        "start_date": "20191028"
+      },
+      "20200329": {
+        "finish_date": "20200329",
+        "slots": [
+          {
+            "laf": 1.006,
+            "slot_finish": 46,
+            "slot_start": 1
+          }
+        ],
+        "start_date": "20200329"
+      },
+      "20200330": {
+        "finish_date": "20200331",
+        "slots": [
+          {
+            "laf": 1.006,
+            "slot_finish": 48,
+            "slot_start": 1
+          }
+        ],
+        "start_date": "20200330"
+      }
+    },
+    18: {
+      "20190401": {
+        "finish_date": "20191026",
+        "slots": [
+          {
+            "laf": 0.909,
+            "slot_finish": 48,
+            "slot_start": 1
+          }
+        ],
+        "start_date": "20190401"
+      },
+      "20191027": {
+        "finish_date": "20191027",
+        "slots": [
+          {
+            "laf": 0.909,
+            "slot_finish": 50,
+            "slot_start": 1
+          }
+        ],
+        "start_date": "20191027"
+      },
+      "20191028": {
+        "finish_date": "20200328",
+        "slots": [
+          {
+            "laf": 0.909,
+            "slot_finish": 48,
+            "slot_start": 1
+          }
+        ],
+        "start_date": "20191028"
+      },
+      "20200329": {
+        "finish_date": "20200329",
+        "slots": [
+          {
+            "laf": 0.909,
+            "slot_finish": 46,
+            "slot_start": 1
+          }
+        ],
+        "start_date": "20200329"
+      },
+      "20200330": {
+        "finish_date": "20200331",
+        "slots": [
+          {
+            "laf": 0.909,
+            "slot_finish": 48,
+            "slot_start": 1
+          }
+        ],
+        "start_date": "20200330"
+      }
+    },
+    19: {
+      "20190401": {
+        "finish_date": "20191026",
+        "slots": [
+          {
+            "laf": 0.996,
+            "slot_finish": 48,
+            "slot_start": 1
+          }
+        ],
+        "start_date": "20190401"
+      },
+      "20191027": {
+        "finish_date": "20191027",
+        "slots": [
+          {
+            "laf": 0.996,
+            "slot_finish": 50,
+            "slot_start": 1
+          }
+        ],
+        "start_date": "20191027"
+      },
+      "20191028": {
+        "finish_date": "20200328",
+        "slots": [
+          {
+            "laf": 0.996,
+            "slot_finish": 48,
+            "slot_start": 1
+          }
+        ],
+        "start_date": "20191028"
+      },
+      "20200329": {
+        "finish_date": "20200329",
+        "slots": [
+          {
+            "laf": 0.996,
+            "slot_finish": 46,
+            "slot_start": 1
+          }
+        ],
+        "start_date": "20200329"
+      },
+      "20200330": {
+        "finish_date": "20200331",
+        "slots": [
+          {
+            "laf": 0.996,
+            "slot_finish": 48,
+            "slot_start": 1
+          }
+        ],
+        "start_date": "20200330"
+      }
+    },
+    20: {
+      "20190401": {
+        "finish_date": "20191026",
+        "slots": [
+          {
+            "laf": 0.987,
+            "slot_finish": 48,
+            "slot_start": 1
+          }
+        ],
+        "start_date": "20190401"
+      },
+      "20191027": {
+        "finish_date": "20191027",
+        "slots": [
+          {
+            "laf": 0.987,
+            "slot_finish": 50,
+            "slot_start": 1
+          }
+        ],
+        "start_date": "20191027"
+      },
+      "20191028": {
+        "finish_date": "20200328",
+        "slots": [
+          {
+            "laf": 0.987,
+            "slot_finish": 48,
+            "slot_start": 1
+          }
+        ],
+        "start_date": "20191028"
+      },
+      "20200329": {
+        "finish_date": "20200329",
+        "slots": [
+          {
+            "laf": 0.987,
+            "slot_finish": 46,
+            "slot_start": 1
+          }
+        ],
+        "start_date": "20200329"
+      },
+      "20200330": {
+        "finish_date": "20200331",
+        "slots": [
+          {
+            "laf": 0.987,
+            "slot_finish": 48,
+            "slot_start": 1
+          }
+        ],
+        "start_date": "20200330"
+      }
+    },
+    21: {
+      "20190401": {
+        "finish_date": "20191026",
+        "slots": [
+          {
+            "laf": 1.014,
+            "slot_finish": 48,
+            "slot_start": 1
+          }
+        ],
+        "start_date": "20190401"
+      },
+      "20191027": {
+        "finish_date": "20191027",
+        "slots": [
+          {
+            "laf": 1.014,
+            "slot_finish": 50,
+            "slot_start": 1
+          }
+        ],
+        "start_date": "20191027"
+      },
+      "20191028": {
+        "finish_date": "20200328",
+        "slots": [
+          {
+            "laf": 1.014,
+            "slot_finish": 48,
+            "slot_start": 1
+          }
+        ],
+        "start_date": "20191028"
+      },
+      "20200329": {
+        "finish_date": "20200329",
+        "slots": [
+          {
+            "laf": 1.014,
+            "slot_finish": 46,
+            "slot_start": 1
+          }
+        ],
+        "start_date": "20200329"
+      },
+      "20200330": {
+        "finish_date": "20200331",
+        "slots": [
+          {
+            "laf": 1.014,
+            "slot_finish": 48,
+            "slot_start": 1
+          }
+        ],
+        "start_date": "20200330"
+      }
+    },
+    22: {
+      "20190401": {
+        "finish_date": "20191026",
+        "slots": [
+          {
+            "laf": 1.030,
+            "slot_finish": 14,
+            "slot_start": 1
+          },
+          {
+            "laf": 1.034,
+            "slot_finish": 48,
+            "slot_start": 15
+          }
+        ],
+        "start_date": "20190401"
+      },
+      "20191027": {
+        "finish_date": "20191027",
+        "slots": [
+          {
+            "laf": 1.030,
+            "slot_finish": 16,
+            "slot_start": 1
+          },
+          {
+            "laf": 1.034,
+            "slot_finish": 50,
+            "slot_start": 17
+          }
+        ],
+        "start_date": "20191027"
+      },
+      "20191028": {
+        "finish_date": "20191031",
+        "slots": [
+          {
+            "laf": 1.030,
+            "slot_finish": 14,
+            "slot_start": 1
+          },
+          {
+            "laf": 1.034,
+            "slot_finish": 48,
+            "slot_start": 15
+          }
+        ],
+        "start_date": "20191028"
+      },
+      "20191101": {
+        "finish_date": "20191101",
+        "slots": [
+          {
+            "laf": 1.030,
+            "slot_finish": 14,
+            "slot_start": 1
+          },
+          {
+            "laf": 1.036,
+            "slot_finish": 32,
+            "slot_start": 15
+          },
+          {
+            "laf": 1.039,
+            "slot_finish": 38,
+            "slot_start": 33
+          },
+          {
+            "laf": 1.036,
+            "slot_finish": 48,
+            "slot_start": 39
+          }
+        ],
+        "start_date": "20191101"
+      },
+      "20191102": {
+        "finish_date": "20191103",
+        "slots": [
+          {
+            "laf": 1.030,
+            "slot_finish": 14,
+            "slot_start": 1
+          },
+          {
+            "laf": 1.034,
+            "slot_finish": 48,
+            "slot_start": 15
+          }
+        ],
+        "start_date": "20191102"
+      },
+      "20191104": {
+        "finish_date": "20191108",
+        "slots": [
+          {
+            "laf": 1.030,
+            "slot_finish": 14,
+            "slot_start": 1
+          },
+          {
+            "laf": 1.036,
+            "slot_finish": 32,
+            "slot_start": 15
+          },
+          {
+            "laf": 1.039,
+            "slot_finish": 38,
+            "slot_start": 33
+          },
+          {
+            "laf": 1.036,
+            "slot_finish": 48,
+            "slot_start": 39
+          }
+        ],
+        "start_date": "20191104"
+      },
+      "20191109": {
+        "finish_date": "20191110",
+        "slots": [
+          {
+            "laf": 1.030,
+            "slot_finish": 14,
+            "slot_start": 1
+          },
+          {
+            "laf": 1.034,
+            "slot_finish": 48,
+            "slot_start": 15
+          }
+        ],
+        "start_date": "20191109"
+      },
+      "20191111": {
+        "finish_date": "20191115",
+        "slots": [
+          {
+            "laf": 1.030,
+            "slot_finish": 14,
+            "slot_start": 1
+          },
+          {
+            "laf": 1.036,
+            "slot_finish": 32,
+            "slot_start": 15
+          },
+          {
+            "laf": 1.039,
+            "slot_finish": 38,
+            "slot_start": 33
+          },
+          {
+            "laf": 1.036,
+            "slot_finish": 48,
+            "slot_start": 39
+          }
+        ],
+        "start_date": "20191111"
+      },
+      "20191116": {
+        "finish_date": "20191117",
+        "slots": [
+          {
+            "laf": 1.030,
+            "slot_finish": 14,
+            "slot_start": 1
+          },
+          {
+            "laf": 1.034,
+            "slot_finish": 48,
+            "slot_start": 15
+          }
+        ],
+        "start_date": "20191116"
+      },
+      "20191118": {
+        "finish_date": "20191122",
+        "slots": [
+          {
+            "laf": 1.030,
+            "slot_finish": 14,
+            "slot_start": 1
+          },
+          {
+            "laf": 1.036,
+            "slot_finish": 32,
+            "slot_start": 15
+          },
+          {
+            "laf": 1.039,
+            "slot_finish": 38,
+            "slot_start": 33
+          },
+          {
+            "laf": 1.036,
+            "slot_finish": 48,
+            "slot_start": 39
+          }
+        ],
+        "start_date": "20191118"
+      },
+      "20191123": {
+        "finish_date": "20191124",
+        "slots": [
+          {
+            "laf": 1.030,
+            "slot_finish": 14,
+            "slot_start": 1
+          },
+          {
+            "laf": 1.034,
+            "slot_finish": 48,
+            "slot_start": 15
+          }
+        ],
+        "start_date": "20191123"
+      },
+      "20191125": {
+        "finish_date": "20191129",
+        "slots": [
+          {
+            "laf": 1.030,
+            "slot_finish": 14,
+            "slot_start": 1
+          },
+          {
+            "laf": 1.036,
+            "slot_finish": 32,
+            "slot_start": 15
+          },
+          {
+            "laf": 1.039,
+            "slot_finish": 38,
+            "slot_start": 33
+          },
+          {
+            "laf": 1.036,
+            "slot_finish": 48,
+            "slot_start": 39
+          }
+        ],
+        "start_date": "20191125"
+      },
+      "20191130": {
+        "finish_date": "20191201",
+        "slots": [
+          {
+            "laf": 1.030,
+            "slot_finish": 14,
+            "slot_start": 1
+          },
+          {
+            "laf": 1.034,
+            "slot_finish": 48,
+            "slot_start": 15
+          }
+        ],
+        "start_date": "20191130"
+      },
+      "20191202": {
+        "finish_date": "20191206",
+        "slots": [
+          {
+            "laf": 1.030,
+            "slot_finish": 14,
+            "slot_start": 1
+          },
+          {
+            "laf": 1.036,
+            "slot_finish": 32,
+            "slot_start": 15
+          },
+          {
+            "laf": 1.039,
+            "slot_finish": 38,
+            "slot_start": 33
+          },
+          {
+            "laf": 1.036,
+            "slot_finish": 48,
+            "slot_start": 39
+          }
+        ],
+        "start_date": "20191202"
+      },
+      "20191207": {
+        "finish_date": "20191208",
+        "slots": [
+          {
+            "laf": 1.030,
+            "slot_finish": 14,
+            "slot_start": 1
+          },
+          {
+            "laf": 1.034,
+            "slot_finish": 48,
+            "slot_start": 15
+          }
+        ],
+        "start_date": "20191207"
+      },
+      "20191209": {
+        "finish_date": "20191213",
+        "slots": [
+          {
+            "laf": 1.030,
+            "slot_finish": 14,
+            "slot_start": 1
+          },
+          {
+            "laf": 1.036,
+            "slot_finish": 32,
+            "slot_start": 15
+          },
+          {
+            "laf": 1.039,
+            "slot_finish": 38,
+            "slot_start": 33
+          },
+          {
+            "laf": 1.036,
+            "slot_finish": 48,
+            "slot_start": 39
+          }
+        ],
+        "start_date": "20191209"
+      },
+      "20191214": {
+        "finish_date": "20191215",
+        "slots": [
+          {
+            "laf": 1.030,
+            "slot_finish": 14,
+            "slot_start": 1
+          },
+          {
+            "laf": 1.034,
+            "slot_finish": 48,
+            "slot_start": 15
+          }
+        ],
+        "start_date": "20191214"
+      },
+      "20191216": {
+        "finish_date": "20191220",
+        "slots": [
+          {
+            "laf": 1.030,
+            "slot_finish": 14,
+            "slot_start": 1
+          },
+          {
+            "laf": 1.036,
+            "slot_finish": 32,
+            "slot_start": 15
+          },
+          {
+            "laf": 1.039,
+            "slot_finish": 38,
+            "slot_start": 33
+          },
+          {
+            "laf": 1.036,
+            "slot_finish": 48,
+            "slot_start": 39
+          }
+        ],
+        "start_date": "20191216"
+      },
+      "20191221": {
+        "finish_date": "20191222",
+        "slots": [
+          {
+            "laf": 1.030,
+            "slot_finish": 14,
+            "slot_start": 1
+          },
+          {
+            "laf": 1.034,
+            "slot_finish": 48,
+            "slot_start": 15
+          }
+        ],
+        "start_date": "20191221"
+      },
+      "20191223": {
+        "finish_date": "20191227",
+        "slots": [
+          {
+            "laf": 1.030,
+            "slot_finish": 14,
+            "slot_start": 1
+          },
+          {
+            "laf": 1.036,
+            "slot_finish": 32,
+            "slot_start": 15
+          },
+          {
+            "laf": 1.039,
+            "slot_finish": 38,
+            "slot_start": 33
+          },
+          {
+            "laf": 1.036,
+            "slot_finish": 48,
+            "slot_start": 39
+          }
+        ],
+        "start_date": "20191223"
+      },
+      "20191228": {
+        "finish_date": "20191229",
+        "slots": [
+          {
+            "laf": 1.030,
+            "slot_finish": 14,
+            "slot_start": 1
+          },
+          {
+            "laf": 1.034,
+            "slot_finish": 48,
+            "slot_start": 15
+          }
+        ],
+        "start_date": "20191228"
+      },
+      "20191230": {
+        "finish_date": "20200103",
+        "slots": [
+          {
+            "laf": 1.030,
+            "slot_finish": 14,
+            "slot_start": 1
+          },
+          {
+            "laf": 1.036,
+            "slot_finish": 32,
+            "slot_start": 15
+          },
+          {
+            "laf": 1.039,
+            "slot_finish": 38,
+            "slot_start": 33
+          },
+          {
+            "laf": 1.036,
+            "slot_finish": 48,
+            "slot_start": 39
+          }
+        ],
+        "start_date": "20191230"
+      },
+      "20200104": {
+        "finish_date": "20200105",
+        "slots": [
+          {
+            "laf": 1.030,
+            "slot_finish": 14,
+            "slot_start": 1
+          },
+          {
+            "laf": 1.034,
+            "slot_finish": 48,
+            "slot_start": 15
+          }
+        ],
+        "start_date": "20200104"
+      },
+      "20200106": {
+        "finish_date": "20200110",
+        "slots": [
+          {
+            "laf": 1.030,
+            "slot_finish": 14,
+            "slot_start": 1
+          },
+          {
+            "laf": 1.036,
+            "slot_finish": 32,
+            "slot_start": 15
+          },
+          {
+            "laf": 1.039,
+            "slot_finish": 38,
+            "slot_start": 33
+          },
+          {
+            "laf": 1.036,
+            "slot_finish": 48,
+            "slot_start": 39
+          }
+        ],
+        "start_date": "20200106"
+      },
+      "20200111": {
+        "finish_date": "20200112",
+        "slots": [
+          {
+            "laf": 1.030,
+            "slot_finish": 14,
+            "slot_start": 1
+          },
+          {
+            "laf": 1.034,
+            "slot_finish": 48,
+            "slot_start": 15
+          }
+        ],
+        "start_date": "20200111"
+      },
+      "20200113": {
+        "finish_date": "20200117",
+        "slots": [
+          {
+            "laf": 1.030,
+            "slot_finish": 14,
+            "slot_start": 1
+          },
+          {
+            "laf": 1.036,
+            "slot_finish": 32,
+            "slot_start": 15
+          },
+          {
+            "laf": 1.039,
+            "slot_finish": 38,
+            "slot_start": 33
+          },
+          {
+            "laf": 1.036,
+            "slot_finish": 48,
+            "slot_start": 39
+          }
+        ],
+        "start_date": "20200113"
+      },
+      "20200118": {
+        "finish_date": "20200119",
+        "slots": [
+          {
+            "laf": 1.030,
+            "slot_finish": 14,
+            "slot_start": 1
+          },
+          {
+            "laf": 1.034,
+            "slot_finish": 48,
+            "slot_start": 15
+          }
+        ],
+        "start_date": "20200118"
+      },
+      "20200120": {
+        "finish_date": "20200124",
+        "slots": [
+          {
+            "laf": 1.030,
+            "slot_finish": 14,
+            "slot_start": 1
+          },
+          {
+            "laf": 1.036,
+            "slot_finish": 32,
+            "slot_start": 15
+          },
+          {
+            "laf": 1.039,
+            "slot_finish": 38,
+            "slot_start": 33
+          },
+          {
+            "laf": 1.036,
+            "slot_finish": 48,
+            "slot_start": 39
+          }
+        ],
+        "start_date": "20200120"
+      },
+      "20200125": {
+        "finish_date": "20200126",
+        "slots": [
+          {
+            "laf": 1.030,
+            "slot_finish": 14,
+            "slot_start": 1
+          },
+          {
+            "laf": 1.034,
+            "slot_finish": 48,
+            "slot_start": 15
+          }
+        ],
+        "start_date": "20200125"
+      },
+      "20200127": {
+        "finish_date": "20200131",
+        "slots": [
+          {
+            "laf": 1.030,
+            "slot_finish": 14,
+            "slot_start": 1
+          },
+          {
+            "laf": 1.036,
+            "slot_finish": 32,
+            "slot_start": 15
+          },
+          {
+            "laf": 1.039,
+            "slot_finish": 38,
+            "slot_start": 33
+          },
+          {
+            "laf": 1.036,
+            "slot_finish": 48,
+            "slot_start": 39
+          }
+        ],
+        "start_date": "20200127"
+      },
+      "20200201": {
+        "finish_date": "20200202",
+        "slots": [
+          {
+            "laf": 1.030,
+            "slot_finish": 14,
+            "slot_start": 1
+          },
+          {
+            "laf": 1.034,
+            "slot_finish": 48,
+            "slot_start": 15
+          }
+        ],
+        "start_date": "20200201"
+      },
+      "20200203": {
+        "finish_date": "20200207",
+        "slots": [
+          {
+            "laf": 1.030,
+            "slot_finish": 14,
+            "slot_start": 1
+          },
+          {
+            "laf": 1.036,
+            "slot_finish": 32,
+            "slot_start": 15
+          },
+          {
+            "laf": 1.039,
+            "slot_finish": 38,
+            "slot_start": 33
+          },
+          {
+            "laf": 1.036,
+            "slot_finish": 48,
+            "slot_start": 39
+          }
+        ],
+        "start_date": "20200203"
+      },
+      "20200208": {
+        "finish_date": "20200209",
+        "slots": [
+          {
+            "laf": 1.030,
+            "slot_finish": 14,
+            "slot_start": 1
+          },
+          {
+            "laf": 1.034,
+            "slot_finish": 48,
+            "slot_start": 15
+          }
+        ],
+        "start_date": "20200208"
+      },
+      "20200210": {
+        "finish_date": "20200214",
+        "slots": [
+          {
+            "laf": 1.030,
+            "slot_finish": 14,
+            "slot_start": 1
+          },
+          {
+            "laf": 1.036,
+            "slot_finish": 32,
+            "slot_start": 15
+          },
+          {
+            "laf": 1.039,
+            "slot_finish": 38,
+            "slot_start": 33
+          },
+          {
+            "laf": 1.036,
+            "slot_finish": 48,
+            "slot_start": 39
+          }
+        ],
+        "start_date": "20200210"
+      },
+      "20200215": {
+        "finish_date": "20200216",
+        "slots": [
+          {
+            "laf": 1.030,
+            "slot_finish": 14,
+            "slot_start": 1
+          },
+          {
+            "laf": 1.034,
+            "slot_finish": 48,
+            "slot_start": 15
+          }
+        ],
+        "start_date": "20200215"
+      },
+      "20200217": {
+        "finish_date": "20200221",
+        "slots": [
+          {
+            "laf": 1.030,
+            "slot_finish": 14,
+            "slot_start": 1
+          },
+          {
+            "laf": 1.036,
+            "slot_finish": 32,
+            "slot_start": 15
+          },
+          {
+            "laf": 1.039,
+            "slot_finish": 38,
+            "slot_start": 33
+          },
+          {
+            "laf": 1.036,
+            "slot_finish": 48,
+            "slot_start": 39
+          }
+        ],
+        "start_date": "20200217"
+      },
+      "20200222": {
+        "finish_date": "20200223",
+        "slots": [
+          {
+            "laf": 1.030,
+            "slot_finish": 14,
+            "slot_start": 1
+          },
+          {
+            "laf": 1.034,
+            "slot_finish": 48,
+            "slot_start": 15
+          }
+        ],
+        "start_date": "20200222"
+      },
+      "20200224": {
+        "finish_date": "20200228",
+        "slots": [
+          {
+            "laf": 1.030,
+            "slot_finish": 14,
+            "slot_start": 1
+          },
+          {
+            "laf": 1.036,
+            "slot_finish": 32,
+            "slot_start": 15
+          },
+          {
+            "laf": 1.039,
+            "slot_finish": 38,
+            "slot_start": 33
+          },
+          {
+            "laf": 1.036,
+            "slot_finish": 48,
+            "slot_start": 39
+          }
+        ],
+        "start_date": "20200224"
+      },
+      "20200229": {
+        "finish_date": "20200328",
+        "slots": [
+          {
+            "laf": 1.030,
+            "slot_finish": 14,
+            "slot_start": 1
+          },
+          {
+            "laf": 1.034,
+            "slot_finish": 48,
+            "slot_start": 15
+          }
+        ],
+        "start_date": "20200229"
+      },
+      "20200329": {
+        "finish_date": "20200329",
+        "slots": [
+          {
+            "laf": 1.030,
+            "slot_finish": 12,
+            "slot_start": 1
+          },
+          {
+            "laf": 1.034,
+            "slot_finish": 46,
+            "slot_start": 13
+          }
+        ],
+        "start_date": "20200329"
+      },
+      "20200330": {
+        "finish_date": "20200331",
+        "slots": [
+          {
+            "laf": 1.030,
+            "slot_finish": 14,
+            "slot_start": 1
+          },
+          {
+            "laf": 1.034,
+            "slot_finish": 48,
+            "slot_start": 15
+          }
+        ],
+        "start_date": "20200330"
+      }
+    },
+    23: {
+      "20190401": {
+        "finish_date": "20191026",
+        "slots": [
+          {
+            "laf": 1.004,
+            "slot_finish": 48,
+            "slot_start": 1
+          }
+        ],
+        "start_date": "20190401"
+      },
+      "20191027": {
+        "finish_date": "20191027",
+        "slots": [
+          {
+            "laf": 1.004,
+            "slot_finish": 50,
+            "slot_start": 1
+          }
+        ],
+        "start_date": "20191027"
+      },
+      "20191028": {
+        "finish_date": "20200328",
+        "slots": [
+          {
+            "laf": 1.004,
+            "slot_finish": 48,
+            "slot_start": 1
+          }
+        ],
+        "start_date": "20191028"
+      },
+      "20200329": {
+        "finish_date": "20200329",
+        "slots": [
+          {
+            "laf": 1.004,
+            "slot_finish": 46,
+            "slot_start": 1
+          }
+        ],
+        "start_date": "20200329"
+      },
+      "20200330": {
+        "finish_date": "20200331",
+        "slots": [
+          {
+            "laf": 1.004,
+            "slot_finish": 48,
+            "slot_start": 1
+          }
+        ],
+        "start_date": "20200330"
+      }
+    },
+    24: {
+      "20190401": {
+        "finish_date": "20191026",
+        "slots": [
+          {
+            "laf": 0.993,
+            "slot_finish": 48,
+            "slot_start": 1
+          }
+        ],
+        "start_date": "20190401"
+      },
+      "20191027": {
+        "finish_date": "20191027",
+        "slots": [
+          {
+            "laf": 0.993,
+            "slot_finish": 50,
+            "slot_start": 1
+          }
+        ],
+        "start_date": "20191027"
+      },
+      "20191028": {
+        "finish_date": "20200328",
+        "slots": [
+          {
+            "laf": 0.993,
+            "slot_finish": 48,
+            "slot_start": 1
+          }
+        ],
+        "start_date": "20191028"
+      },
+      "20200329": {
+        "finish_date": "20200329",
+        "slots": [
+          {
+            "laf": 0.993,
+            "slot_finish": 46,
+            "slot_start": 1
+          }
+        ],
+        "start_date": "20200329"
+      },
+      "20200330": {
+        "finish_date": "20200331",
+        "slots": [
+          {
+            "laf": 0.993,
+            "slot_finish": 48,
+            "slot_start": 1
+          }
+        ],
+        "start_date": "20200330"
+      }
+    },
+    25: {
+      "20190401": {
+        "finish_date": "20191026",
+        "slots": [
+          {
+            "laf": 1.012,
+            "slot_finish": 48,
+            "slot_start": 1
+          }
+        ],
+        "start_date": "20190401"
+      },
+      "20191027": {
+        "finish_date": "20191027",
+        "slots": [
+          {
+            "laf": 1.012,
+            "slot_finish": 50,
+            "slot_start": 1
+          }
+        ],
+        "start_date": "20191027"
+      },
+      "20191028": {
+        "finish_date": "20200328",
+        "slots": [
+          {
+            "laf": 1.012,
+            "slot_finish": 48,
+            "slot_start": 1
+          }
+        ],
+        "start_date": "20191028"
+      },
+      "20200329": {
+        "finish_date": "20200329",
+        "slots": [
+          {
+            "laf": 1.012,
+            "slot_finish": 46,
+            "slot_start": 1
+          }
+        ],
+        "start_date": "20200329"
+      },
+      "20200330": {
+        "finish_date": "20200331",
+        "slots": [
+          {
+            "laf": 1.012,
+            "slot_finish": 48,
+            "slot_start": 1
+          }
+        ],
+        "start_date": "20200330"
+      }
+    },
+    26: {
+      "20190401": {
+        "finish_date": "20191026",
+        "slots": [
+          {
+            "laf": 1.073,
+            "slot_finish": 48,
+            "slot_start": 1
+          }
+        ],
+        "start_date": "20190401"
+      },
+      "20191027": {
+        "finish_date": "20191027",
+        "slots": [
+          {
+            "laf": 1.073,
+            "slot_finish": 50,
+            "slot_start": 1
+          }
+        ],
+        "start_date": "20191027"
+      },
+      "20191028": {
+        "finish_date": "20200328",
+        "slots": [
+          {
+            "laf": 1.073,
+            "slot_finish": 48,
+            "slot_start": 1
+          }
+        ],
+        "start_date": "20191028"
+      },
+      "20200329": {
+        "finish_date": "20200329",
+        "slots": [
+          {
+            "laf": 1.073,
+            "slot_finish": 46,
+            "slot_start": 1
+          }
+        ],
+        "start_date": "20200329"
+      },
+      "20200330": {
+        "finish_date": "20200331",
+        "slots": [
+          {
+            "laf": 1.073,
+            "slot_finish": 48,
+            "slot_start": 1
+          }
+        ],
+        "start_date": "20200330"
+      }
+    },
+    27: {
+      "20190401": {
+        "finish_date": "20191026",
+        "slots": [
+          {
+            "laf": 1.007,
+            "slot_finish": 48,
+            "slot_start": 1
+          }
+        ],
+        "start_date": "20190401"
+      },
+      "20191027": {
+        "finish_date": "20191027",
+        "slots": [
+          {
+            "laf": 1.007,
+            "slot_finish": 50,
+            "slot_start": 1
+          }
+        ],
+        "start_date": "20191027"
+      },
+      "20191028": {
+        "finish_date": "20200328",
+        "slots": [
+          {
+            "laf": 1.007,
+            "slot_finish": 48,
+            "slot_start": 1
+          }
+        ],
+        "start_date": "20191028"
+      },
+      "20200329": {
+        "finish_date": "20200329",
+        "slots": [
+          {
+            "laf": 1.007,
+            "slot_finish": 46,
+            "slot_start": 1
+          }
+        ],
+        "start_date": "20200329"
+      },
+      "20200330": {
+        "finish_date": "20200331",
+        "slots": [
+          {
+            "laf": 1.007,
+            "slot_finish": 48,
+            "slot_start": 1
+          }
+        ],
+        "start_date": "20200330"
+      }
+    },
+    28: {
+      "20190401": {
+        "finish_date": "20191026",
+        "slots": [
+          {
+            "laf": 0.990,
+            "slot_finish": 48,
+            "slot_start": 1
+          }
+        ],
+        "start_date": "20190401"
+      },
+      "20191027": {
+        "finish_date": "20191027",
+        "slots": [
+          {
+            "laf": 0.990,
+            "slot_finish": 50,
+            "slot_start": 1
+          }
+        ],
+        "start_date": "20191027"
+      },
+      "20191028": {
+        "finish_date": "20200328",
+        "slots": [
+          {
+            "laf": 0.990,
+            "slot_finish": 48,
+            "slot_start": 1
+          }
+        ],
+        "start_date": "20191028"
+      },
+      "20200329": {
+        "finish_date": "20200329",
+        "slots": [
+          {
+            "laf": 0.990,
+            "slot_finish": 46,
+            "slot_start": 1
+          }
+        ],
+        "start_date": "20200329"
+      },
+      "20200330": {
+        "finish_date": "20200331",
+        "slots": [
+          {
+            "laf": 0.990,
+            "slot_finish": 48,
+            "slot_start": 1
+          }
+        ],
+        "start_date": "20200330"
+      }
+    },
+    29: {
+      "20190401": {
+        "finish_date": "20191026",
+        "slots": [
+          {
+            "laf": 1.019,
+            "slot_finish": 48,
+            "slot_start": 1
+          }
+        ],
+        "start_date": "20190401"
+      },
+      "20191027": {
+        "finish_date": "20191027",
+        "slots": [
+          {
+            "laf": 1.019,
+            "slot_finish": 50,
+            "slot_start": 1
+          }
+        ],
+        "start_date": "20191027"
+      },
+      "20191028": {
+        "finish_date": "20200328",
+        "slots": [
+          {
+            "laf": 1.019,
+            "slot_finish": 48,
+            "slot_start": 1
+          }
+        ],
+        "start_date": "20191028"
+      },
+      "20200329": {
+        "finish_date": "20200329",
+        "slots": [
+          {
+            "laf": 1.019,
+            "slot_finish": 46,
+            "slot_start": 1
+          }
+        ],
+        "start_date": "20200329"
+      },
+      "20200330": {
+        "finish_date": "20200331",
+        "slots": [
+          {
+            "laf": 1.019,
+            "slot_finish": 48,
+            "slot_start": 1
+          }
+        ],
+        "start_date": "20200330"
+      }
+    },
+    30: {
+      "20190401": {
+        "finish_date": "20191026",
+        "slots": [
+          {
+            "laf": 1.077,
+            "slot_finish": 48,
+            "slot_start": 1
+          }
+        ],
+        "start_date": "20190401"
+      },
+      "20191027": {
+        "finish_date": "20191027",
+        "slots": [
+          {
+            "laf": 1.077,
+            "slot_finish": 50,
+            "slot_start": 1
+          }
+        ],
+        "start_date": "20191027"
+      },
+      "20191028": {
+        "finish_date": "20200328",
+        "slots": [
+          {
+            "laf": 1.077,
+            "slot_finish": 48,
+            "slot_start": 1
+          }
+        ],
+        "start_date": "20191028"
+      },
+      "20200329": {
+        "finish_date": "20200329",
+        "slots": [
+          {
+            "laf": 1.077,
+            "slot_finish": 46,
+            "slot_start": 1
+          }
+        ],
+        "start_date": "20200329"
+      },
+      "20200330": {
+        "finish_date": "20200331",
+        "slots": [
+          {
+            "laf": 1.077,
+            "slot_finish": 48,
+            "slot_start": 1
+          }
+        ],
+        "start_date": "20200330"
+      }
+    },
+    31: {
+      "20190401": {
+        "finish_date": "20191026",
+        "slots": [
+          {
+            "laf": 1.032,
+            "slot_finish": 48,
+            "slot_start": 1
+          }
+        ],
+        "start_date": "20190401"
+      },
+      "20191027": {
+        "finish_date": "20191027",
+        "slots": [
+          {
+            "laf": 1.032,
+            "slot_finish": 50,
+            "slot_start": 1
+          }
+        ],
+        "start_date": "20191027"
+      },
+      "20191028": {
+        "finish_date": "20200328",
+        "slots": [
+          {
+            "laf": 1.032,
+            "slot_finish": 48,
+            "slot_start": 1
+          }
+        ],
+        "start_date": "20191028"
+      },
+      "20200329": {
+        "finish_date": "20200329",
+        "slots": [
+          {
+            "laf": 1.032,
+            "slot_finish": 46,
+            "slot_start": 1
+          }
+        ],
+        "start_date": "20200329"
+      },
+      "20200330": {
+        "finish_date": "20200331",
+        "slots": [
+          {
+            "laf": 1.032,
+            "slot_finish": 48,
+            "slot_start": 1
+          }
+        ],
+        "start_date": "20200330"
+      }
+    },
+    32: {
+      "20190401": {
+        "finish_date": "20191026",
+        "slots": [
+          {
+            "laf": 1.024,
+            "slot_finish": 48,
+            "slot_start": 1
+          }
+        ],
+        "start_date": "20190401"
+      },
+      "20191027": {
+        "finish_date": "20191027",
+        "slots": [
+          {
+            "laf": 1.024,
+            "slot_finish": 50,
+            "slot_start": 1
+          }
+        ],
+        "start_date": "20191027"
+      },
+      "20191028": {
+        "finish_date": "20200328",
+        "slots": [
+          {
+            "laf": 1.024,
+            "slot_finish": 48,
+            "slot_start": 1
+          }
+        ],
+        "start_date": "20191028"
+      },
+      "20200329": {
+        "finish_date": "20200329",
+        "slots": [
+          {
+            "laf": 1.024,
+            "slot_finish": 46,
+            "slot_start": 1
+          }
+        ],
+        "start_date": "20200329"
+      },
+      "20200330": {
+        "finish_date": "20200331",
+        "slots": [
+          {
+            "laf": 1.024,
+            "slot_finish": 48,
+            "slot_start": 1
+          }
+        ],
+        "start_date": "20200330"
+      }
+    },
+    33: {
+      "20190401": {
+        "finish_date": "20191026",
+        "slots": [
+          {
+            "laf": 1.053,
+            "slot_finish": 48,
+            "slot_start": 1
+          }
+        ],
+        "start_date": "20190401"
+      },
+      "20191027": {
+        "finish_date": "20191027",
+        "slots": [
+          {
+            "laf": 1.053,
+            "slot_finish": 50,
+            "slot_start": 1
+          }
+        ],
+        "start_date": "20191027"
+      },
+      "20191028": {
+        "finish_date": "20200328",
+        "slots": [
+          {
+            "laf": 1.053,
+            "slot_finish": 48,
+            "slot_start": 1
+          }
+        ],
+        "start_date": "20191028"
+      },
+      "20200329": {
+        "finish_date": "20200329",
+        "slots": [
+          {
+            "laf": 1.053,
+            "slot_finish": 46,
+            "slot_start": 1
+          }
+        ],
+        "start_date": "20200329"
+      },
+      "20200330": {
+        "finish_date": "20200331",
+        "slots": [
+          {
+            "laf": 1.053,
+            "slot_finish": 48,
+            "slot_start": 1
+          }
+        ],
+        "start_date": "20200330"
+      }
+    },
+    34: {
+      "20190401": {
+        "finish_date": "20191026",
+        "slots": [
+          {
+            "laf": 1.003,
+            "slot_finish": 48,
+            "slot_start": 1
+          }
+        ],
+        "start_date": "20190401"
+      },
+      "20191027": {
+        "finish_date": "20191027",
+        "slots": [
+          {
+            "laf": 1.003,
+            "slot_finish": 50,
+            "slot_start": 1
+          }
+        ],
+        "start_date": "20191027"
+      },
+      "20191028": {
+        "finish_date": "20200328",
+        "slots": [
+          {
+            "laf": 1.003,
+            "slot_finish": 48,
+            "slot_start": 1
+          }
+        ],
+        "start_date": "20191028"
+      },
+      "20200329": {
+        "finish_date": "20200329",
+        "slots": [
+          {
+            "laf": 1.003,
+            "slot_finish": 46,
+            "slot_start": 1
+          }
+        ],
+        "start_date": "20200329"
+      },
+      "20200330": {
+        "finish_date": "20200331",
+        "slots": [
+          {
+            "laf": 1.003,
+            "slot_finish": 48,
+            "slot_start": 1
+          }
+        ],
+        "start_date": "20200330"
+      }
+    },
+    35: {
+      "20190401": {
+        "finish_date": "20191026",
+        "slots": [
+          {
+            "laf": 1.015,
+            "slot_finish": 48,
+            "slot_start": 1
+          }
+        ],
+        "start_date": "20190401"
+      },
+      "20191027": {
+        "finish_date": "20191027",
+        "slots": [
+          {
+            "laf": 1.015,
+            "slot_finish": 50,
+            "slot_start": 1
+          }
+        ],
+        "start_date": "20191027"
+      },
+      "20191028": {
+        "finish_date": "20200328",
+        "slots": [
+          {
+            "laf": 1.015,
+            "slot_finish": 48,
+            "slot_start": 1
+          }
+        ],
+        "start_date": "20191028"
+      },
+      "20200329": {
+        "finish_date": "20200329",
+        "slots": [
+          {
+            "laf": 1.015,
+            "slot_finish": 46,
+            "slot_start": 1
+          }
+        ],
+        "start_date": "20200329"
+      },
+      "20200330": {
+        "finish_date": "20200331",
+        "slots": [
+          {
+            "laf": 1.015,
+            "slot_finish": 48,
+            "slot_start": 1
+          }
+        ],
+        "start_date": "20200330"
+      }
+    },
+    36: {
+      "20190401": {
+        "finish_date": "20191026",
+        "slots": [
+          {
+            "laf": 1.001,
+            "slot_finish": 48,
+            "slot_start": 1
+          }
+        ],
+        "start_date": "20190401"
+      },
+      "20191027": {
+        "finish_date": "20191027",
+        "slots": [
+          {
+            "laf": 1.001,
+            "slot_finish": 50,
+            "slot_start": 1
+          }
+        ],
+        "start_date": "20191027"
+      },
+      "20191028": {
+        "finish_date": "20200328",
+        "slots": [
+          {
+            "laf": 1.001,
+            "slot_finish": 48,
+            "slot_start": 1
+          }
+        ],
+        "start_date": "20191028"
+      },
+      "20200329": {
+        "finish_date": "20200329",
+        "slots": [
+          {
+            "laf": 1.001,
+            "slot_finish": 46,
+            "slot_start": 1
+          }
+        ],
+        "start_date": "20200329"
+      },
+      "20200330": {
+        "finish_date": "20200331",
+        "slots": [
+          {
+            "laf": 1.001,
+            "slot_finish": 48,
+            "slot_start": 1
+          }
+        ],
+        "start_date": "20200330"
+      }
+    },
+    37: {
+      "20190401": {
+        "finish_date": "20191026",
+        "slots": [
+          {
+            "laf": 1.008,
+            "slot_finish": 48,
+            "slot_start": 1
+          }
+        ],
+        "start_date": "20190401"
+      },
+      "20191027": {
+        "finish_date": "20191027",
+        "slots": [
+          {
+            "laf": 1.008,
+            "slot_finish": 50,
+            "slot_start": 1
+          }
+        ],
+        "start_date": "20191027"
+      },
+      "20191028": {
+        "finish_date": "20200328",
+        "slots": [
+          {
+            "laf": 1.008,
+            "slot_finish": 48,
+            "slot_start": 1
+          }
+        ],
+        "start_date": "20191028"
+      },
+      "20200329": {
+        "finish_date": "20200329",
+        "slots": [
+          {
+            "laf": 1.008,
+            "slot_finish": 46,
+            "slot_start": 1
+          }
+        ],
+        "start_date": "20200329"
+      },
+      "20200330": {
+        "finish_date": "20200331",
+        "slots": [
+          {
+            "laf": 1.008,
+            "slot_finish": 48,
+            "slot_start": 1
+          }
+        ],
+        "start_date": "20200330"
+      }
+    },
+    38: {
+      "20190401": {
+        "finish_date": "20191026",
+        "slots": [
+          {
+            "laf": 1.011,
+            "slot_finish": 48,
+            "slot_start": 1
+          }
+        ],
+        "start_date": "20190401"
+      },
+      "20191027": {
+        "finish_date": "20191027",
+        "slots": [
+          {
+            "laf": 1.011,
+            "slot_finish": 50,
+            "slot_start": 1
+          }
+        ],
+        "start_date": "20191027"
+      },
+      "20191028": {
+        "finish_date": "20200328",
+        "slots": [
+          {
+            "laf": 1.011,
+            "slot_finish": 48,
+            "slot_start": 1
+          }
+        ],
+        "start_date": "20191028"
+      },
+      "20200329": {
+        "finish_date": "20200329",
+        "slots": [
+          {
+            "laf": 1.011,
+            "slot_finish": 46,
+            "slot_start": 1
+          }
+        ],
+        "start_date": "20200329"
+      },
+      "20200330": {
+        "finish_date": "20200331",
+        "slots": [
+          {
+            "laf": 1.011,
+            "slot_finish": 48,
+            "slot_start": 1
+          }
+        ],
+        "start_date": "20200330"
+      }
+    },
+    39: {
+      "20190401": {
+        "finish_date": "20191026",
+        "slots": [
+          {
+            "laf": 0.982,
+            "slot_finish": 48,
+            "slot_start": 1
+          }
+        ],
+        "start_date": "20190401"
+      },
+      "20191027": {
+        "finish_date": "20191027",
+        "slots": [
+          {
+            "laf": 0.982,
+            "slot_finish": 50,
+            "slot_start": 1
+          }
+        ],
+        "start_date": "20191027"
+      },
+      "20191028": {
+        "finish_date": "20200328",
+        "slots": [
+          {
+            "laf": 0.982,
+            "slot_finish": 48,
+            "slot_start": 1
+          }
+        ],
+        "start_date": "20191028"
+      },
+      "20200329": {
+        "finish_date": "20200329",
+        "slots": [
+          {
+            "laf": 0.982,
+            "slot_finish": 46,
+            "slot_start": 1
+          }
+        ],
+        "start_date": "20200329"
+      },
+      "20200330": {
+        "finish_date": "20200331",
+        "slots": [
+          {
+            "laf": 0.982,
+            "slot_finish": 48,
+            "slot_start": 1
+          }
+        ],
+        "start_date": "20200330"
+      }
+    },
+    40: {
+      "20190401": {
+        "finish_date": "20191026",
+        "slots": [
+          {
+            "laf": 1.035,
+            "slot_finish": 48,
+            "slot_start": 1
+          }
+        ],
+        "start_date": "20190401"
+      },
+      "20191027": {
+        "finish_date": "20191027",
+        "slots": [
+          {
+            "laf": 1.035,
+            "slot_finish": 50,
+            "slot_start": 1
+          }
+        ],
+        "start_date": "20191027"
+      },
+      "20191028": {
+        "finish_date": "20200328",
+        "slots": [
+          {
+            "laf": 1.035,
+            "slot_finish": 48,
+            "slot_start": 1
+          }
+        ],
+        "start_date": "20191028"
+      },
+      "20200329": {
+        "finish_date": "20200329",
+        "slots": [
+          {
+            "laf": 1.035,
+            "slot_finish": 46,
+            "slot_start": 1
+          }
+        ],
+        "start_date": "20200329"
+      },
+      "20200330": {
+        "finish_date": "20200331",
+        "slots": [
+          {
+            "laf": 1.035,
+            "slot_finish": 48,
+            "slot_start": 1
+          }
+        ],
+        "start_date": "20200330"
+      }
+    },
+    41: {
+      "20190401": {
+        "finish_date": "20191026",
+        "slots": [
+          {
+            "laf": 0.995,
+            "slot_finish": 48,
+            "slot_start": 1
+          }
+        ],
+        "start_date": "20190401"
+      },
+      "20191027": {
+        "finish_date": "20191027",
+        "slots": [
+          {
+            "laf": 0.995,
+            "slot_finish": 50,
+            "slot_start": 1
+          }
+        ],
+        "start_date": "20191027"
+      },
+      "20191028": {
+        "finish_date": "20200328",
+        "slots": [
+          {
+            "laf": 0.995,
+            "slot_finish": 48,
+            "slot_start": 1
+          }
+        ],
+        "start_date": "20191028"
+      },
+      "20200329": {
+        "finish_date": "20200329",
+        "slots": [
+          {
+            "laf": 0.995,
+            "slot_finish": 46,
+            "slot_start": 1
+          }
+        ],
+        "start_date": "20200329"
+      },
+      "20200330": {
+        "finish_date": "20200331",
+        "slots": [
+          {
+            "laf": 0.995,
+            "slot_finish": 48,
+            "slot_start": 1
+          }
+        ],
+        "start_date": "20200330"
+      }
+    },
+    42: {
+      "20190401": {
+        "finish_date": "20191026",
+        "slots": [
+          {
+            "laf": 0.983,
+            "slot_finish": 48,
+            "slot_start": 1
+          }
+        ],
+        "start_date": "20190401"
+      },
+      "20191027": {
+        "finish_date": "20191027",
+        "slots": [
+          {
+            "laf": 0.983,
+            "slot_finish": 50,
+            "slot_start": 1
+          }
+        ],
+        "start_date": "20191027"
+      },
+      "20191028": {
+        "finish_date": "20200328",
+        "slots": [
+          {
+            "laf": 0.983,
+            "slot_finish": 48,
+            "slot_start": 1
+          }
+        ],
+        "start_date": "20191028"
+      },
+      "20200329": {
+        "finish_date": "20200329",
+        "slots": [
+          {
+            "laf": 0.983,
+            "slot_finish": 46,
+            "slot_start": 1
+          }
+        ],
+        "start_date": "20200329"
+      },
+      "20200330": {
+        "finish_date": "20200331",
+        "slots": [
+          {
+            "laf": 0.983,
+            "slot_finish": 48,
+            "slot_start": 1
+          }
+        ],
+        "start_date": "20200330"
+      }
+    }
+  }
+}
