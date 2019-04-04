@@ -9,7 +9,7 @@ from chellow.models import (
     get_non_core_contract_id, GRateScript)
 from chellow.utils import (
     HH, hh_max, get_file_rates, hh_min, hh_range, to_ct, utc_datetime_now,
-    utc_datetime, PropDict, hh_format)
+    utc_datetime, PropDict, hh_format, hh_before, hh_after)
 from chellow.computer import hh_rate
 from types import MappingProxyType
 from datetime import timedelta
@@ -497,41 +497,11 @@ class GDataSource():
 
                 self.consumption_info += 'read list - \n' + dumps(read_list) \
                     + "\n"
-                if len(pairs) == 0:
-                    pairs.append({'start-date': chunk_start, 'units': 0})
-
-                # set finish dates
-                for i in range(1, len(pairs)):
-                    pairs[i - 1]['finish-date'] = pairs[i]['start-date'] - HH
-                pairs[-1]['finish-date'] = chunk_finish
-
-                # chop
-                if pairs[0]['finish-date'] < chunk_start:
-                    del pairs[0]
-
-                # set start date
-                pairs[0]['start-date'] = chunk_start
-
+                hhs = _find_hhs(
+                    sess, caches, hist_g_era, pairs, chunk_start, chunk_finish,
+                    g_cv_id, self.g_ldz_code)
+                hist_map.update(hhs)
                 self.consumption_info += 'pairs - \n' + dumps(pairs)
-
-                cf = float(hist_g_era.correction_factor)
-                g_unit = hist_g_era.g_unit
-                unit_code, unit_factor = g_unit.code, float(g_unit.factor)
-                for pair in pairs:
-                    units = pair['units']
-                    for hh_date in hh_range(
-                            caches, pair['start-date'], pair['finish-date']):
-                        cv, avg_cv = find_cv(
-                            sess, caches, g_cv_id, hh_date, self.g_ldz_code)
-
-                        hist_map[hh_date] = {
-                            'unit_code': unit_code,
-                            'unit_factor': unit_factor,
-                            'units_consumed': units,
-                            'correction_factor': cf,
-                            'calorific_value': cv,
-                            'avg_cv': avg_cv
-                        }
 
             else:
                 g_bills = []
@@ -645,3 +615,46 @@ def find_cv(sess, caches, g_cv_id, dt, g_ldz_code):
             avg_cv = year_cache[dt.month] = floor(
                 (sum(cv_list) / len(cv_list)) * 10) / 10
     return cv, avg_cv
+
+
+def _find_hhs(
+        sess, caches, hist_g_era, pairs, chunk_start, chunk_finish, g_cv_id,
+        g_ldz_code):
+    hhs = {}
+    if len(pairs) == 0:
+        pairs.append({'start-date': chunk_start, 'units': 0})
+
+    # set finish dates
+    for i in range(1, len(pairs)):
+        pairs[i - 1]['finish-date'] = pairs[i]['start-date'] - HH
+    pairs[-1]['finish-date'] = None
+
+    # chop
+    if hh_before(pairs[0]['finish-date'], chunk_start):
+        del pairs[0]
+
+    if hh_after(pairs[-1]['start-date'], chunk_finish):
+        del pairs[-1]
+
+    # set start date
+    pairs[0]['start-date'] = chunk_start
+    pairs[-1]['finish-date'] = chunk_finish
+
+    cf = float(hist_g_era.correction_factor)
+    g_unit = hist_g_era.g_unit
+    unit_code, unit_factor = g_unit.code, float(g_unit.factor)
+    for pair in pairs:
+        units = pair['units']
+        for hh_date in hh_range(
+                caches, pair['start-date'], pair['finish-date']):
+            cv, avg_cv = find_cv(sess, caches, g_cv_id, hh_date, g_ldz_code)
+
+            hhs[hh_date] = {
+                'unit_code': unit_code,
+                'unit_factor': unit_factor,
+                'units_consumed': units,
+                'correction_factor': cf,
+                'calorific_value': cv,
+                'avg_cv': avg_cv
+            }
+    return hhs
