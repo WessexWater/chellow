@@ -10,7 +10,7 @@ from werkzeug.exceptions import BadRequest
 from chellow.models import (
     RateScript, Channel, Era, Tpr, MeasurementRequirement, RegisterRead, Bill,
     BillType, ReadType, SiteEra, Supply, Source, HhDatum, Contract,
-    ClockInterval, Mtc, Llfc)
+    ClockInterval, Mtc, Llfc, hh_before, hh_after)
 from chellow.utils import (
     HH, hh_format, hh_max, hh_range, hh_min, utc_datetime, utc_datetime_now,
     to_tz, to_ct, loads, PropDict, YEAR)
@@ -1461,14 +1461,23 @@ def _find_hhs(caches, sess, pairs, chunk_start, chunk_finish):
     # set finish dates
     for i in range(1, len(pairs)):
         pairs[i - 1]['finish-date'] = pairs[i]['start-date'] - HH
-    pairs[-1]['finish-date'] = chunk_finish
+    pairs[-1]['finish-date'] = None
+
+    # stretch
+    if hh_after(pairs[0]['start-date'], chunk_start):
+        pairs[0]['start-date'] = chunk_start
 
     # chop
-    if pairs[0]['finish-date'] < chunk_start:
+    if hh_before(pairs[0]['finish-date'], chunk_start):
         del pairs[0]
+    if hh_after(pairs[-1]['start-date'], chunk_finish):
+        del pairs[-1]
 
-    # set start date
-    pairs[0]['start-date'] = chunk_start
+    # squash
+    if hh_before(pairs[0]['start-date'], chunk_start):
+        pairs[0]['start-date'] = chunk_start
+    if hh_after(pairs[-1]['finish-date'], chunk_finish):
+        pairs[-1]['finish-date'] = chunk_finish
 
     hhs = {}
     for pair in pairs:

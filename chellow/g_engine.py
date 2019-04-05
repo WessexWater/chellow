@@ -629,16 +629,21 @@ def _find_hhs(
         pairs[i - 1]['finish-date'] = pairs[i]['start-date'] - HH
     pairs[-1]['finish-date'] = None
 
+    # stretch
+    if hh_after(pairs[0]['start-date'], chunk_start):
+        pairs[0]['start-date'] = chunk_start
+
     # chop
     if hh_before(pairs[0]['finish-date'], chunk_start):
         del pairs[0]
-
     if hh_after(pairs[-1]['start-date'], chunk_finish):
         del pairs[-1]
 
-    # set start date
-    pairs[0]['start-date'] = chunk_start
-    pairs[-1]['finish-date'] = chunk_finish
+    # squash
+    if hh_before(pairs[0]['start-date'], chunk_start):
+        pairs[0]['start-date'] = chunk_start
+    if hh_after(pairs[-1]['finish-date'], chunk_finish):
+        pairs[-1]['finish-date'] = chunk_finish
 
     cf = float(hist_g_era.correction_factor)
     g_unit = hist_g_era.g_unit
