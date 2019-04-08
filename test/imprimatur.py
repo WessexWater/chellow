@@ -9946,7 +9946,7 @@ def virtual_bill(supply_source):
             r'<table:table-cell office:value="0.0" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell table:number-columns-repeated="19"/>\s*'
-            r'<table:table-cell office:value="110.63\d*" '
+            r'<table:table-cell office:value="110.6\d*" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell table:number-columns-repeated="2"/>\s*'
             r'<table:table-cell office:value="0.00847" '
