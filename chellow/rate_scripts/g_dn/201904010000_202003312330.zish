@@ -1,0 +1,384 @@
+{
+  "gdn": {
+    "EE": {
+      "system_commodity": {
+        "to_73200_gbp_per_kwh": 0.000290,
+        "73200_to_732000_gbp_per_kwh": 0.000231,
+        "732000_and_over": {
+          "gbp_per_kwh": 0.001840,
+          "exponent": -0.2376,
+          "minimum_gbp_per_kwh": 0.0025
+        }
+      },
+      "system_capacity": {
+        "to_73200_gbp_per_kwh_per_day": 0.001774,
+        "73200_to_732000_gbp_per_kwh_per_day": 0.001417,
+        "732000_and_over": {
+          "gbp_per_kwh_per_day": 0.009053,
+          "exponent": -0.2155,
+          "minimum_gbp_per_kwh_per_day": 0.000173
+        }
+      },
+      "customer_capacity": {
+        "to_73200_gbp_per_kwh_per_day": 0.000992,
+        "73200_to_732000_gbp_per_kwh_per_day": 0.000033,
+        "732000_and_over": {
+          "gbp_per_kwh_per_day": 0.000703,
+          "exponent": -0.2100
+        }
+      },
+      "customer_fixed": {
+        "73200_to_732000_biannual_gbp_per_day": 0.291027,
+        "73200_to_732000_monthly_gbp_per_day": 0.309879
+      },
+      "cesp_administration_gbp_per_mprn": 0.00
+    },
+    "LO": {
+      "system_commodity": {
+        "to_73200_gbp_per_kwh": 0.000336,
+        "73200_to_732000_gbp_per_kwh": 0.000298,
+        "732000_and_over": {
+          "gbp_per_kwh": 0.001938,
+          "exponent": -0.2147,
+          "minimum_gbp_per_kwh": 0.000028
+        }
+      },
+      "system_capacity": {
+        "to_73200_gbp_per_kwh_per_day": 0.002003,
+        "73200_to_732000_gbp_per_kwh_per_day": 0.001786,
+        "732000_and_over": {
+          "gbp_per_kwh_per_day": 0.011415,
+          "exponent": -0.2133,
+          "minimum_gbp_per_kwh_per_day": 0.000196
+        }
+      },
+      "customer_capacity": {
+        "to_73200_gbp_per_kwh_per_day": 0.001249,
+        "73200_to_732000_gbp_per_kwh_per_day": 0.000044,
+        "732000_and_over": {
+          "gbp_per_kwh_per_day": 0.000961,
+          "exponent": -0.21
+        }
+      },
+      "customer_fixed": {
+        "73200_to_732000_biannual_gbp_per_day": 0.394219,
+        "73200_to_732000_monthly_gbp_per_day": 0.419754
+      },
+      "cesp_administration_gbp_per_mprn": 0.00
+    },
+    "NW": {
+      "system_commodity": {
+        "to_73200_gbp_per_kwh": 0.000338,
+        "73200_to_732000_gbp_per_kwh": 0.000284,
+        "732000_and_over": {
+          "gbp_per_kwh": 0.002463,
+          "exponent": -0.2586,
+          "minimum_gbp_per_kwh": 0.000030
+        }
+      },
+      "system_capacity": {
+        "to_73200_gbp_per_kwh_per_day": 0.002053,
+        "73200_to_732000_gbp_per_kwh_per_day": 0.001711,
+        "732000_and_over": {
+          "gbp_per_kwh_per_day": 0.013498,
+          "exponent": -0.2483,
+          "minimum_gbp_per_kwh_per_day": 0.000190
+        }
+      },
+      "customer_capacity": {
+        "to_73200_gbp_per_kwh_per_day": 0.00096,
+        "73200_to_732000_gbp_per_kwh_per_day": 0.000029,
+        "732000_and_over": {
+          "gbp_per_kwh_per_day": 0.000662,
+          "exponent": -0.21
+        }
+      },
+      "customer_fixed": {
+        "73200_to_732000_biannual_gbp_per_day": 0.272699,
+        "73200_to_732000_monthly_gbp_per_day": 0.290367
+      },
+      "cesp_administration_gbp_per_mprn": 0.00
+    },
+    "WM": {
+      "system_commodity": {
+        "to_73200_gbp_per_kwh": 0.000333,
+        "73200_to_732000_gbp_per_kwh": 0.000298,
+        "732000_and_over": {
+          "gbp_per_kwh": 0.004006,
+          "exponent": -0.2911,
+          "minimum_gbp_per_kwh": 0.000029
+        }
+      },
+      "system_capacity": {
+        "to_73200_gbp_per_kwh_per_day": 0.001935,
+        "73200_to_732000_gbp_per_kwh_per_day": 0.001744,
+        "732000_and_over": {
+          "gbp_per_kwh_per_day": 0.021374,
+          "exponent": -0.2817,
+          "minimum_gbp_per_kwh_per_day": 0.00019
+        }
+      },
+      "customer_capacity": {
+        "to_73200_gbp_per_kwh_per_day": 0.000918,
+        "73200_to_732000_gbp_per_kwh_per_day": 0.000031,
+        "732000_and_over": {
+          "gbp_per_kwh_per_day": 0.000703,
+          "exponent": -0.21
+        }
+      },
+      "customer_fixed": {
+        "73200_to_732000_biannual_gbp_per_day": 0.290936,
+        "73200_to_732000_monthly_gbp_per_day": 0.309780
+      },
+      "cesp_administration_gbp_per_mprn": 0.00
+    },
+    "SC": {
+      "system_commodity": {
+        "to_73200_gbp_per_kwh": 0.000306,
+        "73200_to_732000_gbp_per_kwh": 0.000273,
+        "732000_and_over": {
+          "gbp_per_kwh": 0.002237,
+          "exponent": -0.2597,
+          "minimum_gbp_per_kwh": 0.000014
+        }
+      },
+      "system_capacity": {
+        "to_73200_gbp_per_kwh_per_day": 0.002104,
+        "73200_to_732000_gbp_per_kwh_per_day": 0.001894,
+        "732000_and_over": {
+          "gbp_per_kwh_per_day": 0.012227,
+          "exponent": -0.2338,
+          "minimum_gbp_per_kwh_per_day": 0.000093
+        }
+      },
+      "customer_capacity": {
+        "to_73200_gbp_per_kwh_per_day": 0.001193,
+        "73200_to_732000_gbp_per_kwh_per_day": 0.000039,
+        "732000_and_over": {
+          "gbp_per_kwh_per_day": 0.000803,
+          "exponent": -0.21
+        }
+      },
+      "customer_fixed": {
+        "73200_to_732000_biannual_gbp_per_day": 0.329499,
+        "73200_to_732000_monthly_gbp_per_day": 0.350846
+      },
+      "cesp_administration_gbp_per_mprn": 0.00
+    },
+    "SO": {
+      "system_commodity": {
+        "to_73200_gbp_per_kwh": 0.000367,
+        "73200_to_732000_gbp_per_kwh": 0.000288,
+        "732000_and_over": {
+          "gbp_per_kwh": 0.004363,
+          "exponent": -0.3129,
+          "minimum_gbp_per_kwh": 0.000009
+        }
+      },
+      "system_capacity": {
+        "to_73200_gbp_per_kwh_per_day": 0.002055,
+        "73200_to_732000_gbp_per_kwh_per_day": 0.001631,
+        "732000_and_over": {
+          "gbp_per_kwh_per_day": 0.021413,
+          "exponent": -0.2970,
+          "minimum_gbp_per_kwh_per_day": 0.000042
+        }
+      },
+      "customer_capacity": {
+        "to_73200_gbp_per_kwh_per_day": 0.000951,
+        "73200_to_732000_gbp_per_kwh_per_day": 0.000037,
+        "732000_and_over": {
+          "gbp_per_kwh_per_day": 0.000796,
+          "exponent": -0.21
+        }
+      },
+      "customer_fixed": {
+        "73200_to_732000_biannual_gbp_per_day": 0.327696,
+        "73200_to_732000_monthly_gbp_per_day": 0.348926
+      },
+      "cesp_administration_gbp_per_mprn": 0.00
+    },
+    "NO": {
+      "system_commodity": {
+        "to_73200_gbp_per_kwh": 0.000333,
+        "73200_to_732000_gbp_per_kwh": 0.000285,
+        "732000_and_over": {
+          "gbp_per_kwh": 0.003663,
+          "exponent": -0.2940,
+          "minimum_gbp_per_kwh": 0.000011
+        }
+      },
+      "system_capacity": {
+        "to_73200_gbp_per_kwh_per_day": 0.002113,
+        "73200_to_732000_gbp_per_kwh_per_day": 0.001816,
+        "732000_and_over": {
+          "gbp_per_kwh_per_day": 0.021302,
+          "exponent": -0.2834,
+          "minimum_gbp_per_kwh_per_day": 0.0055
+        }
+      },
+      "customer_capacity": {
+        "to_73200_gbp_per_kwh_per_day": 0.001128,
+        "73200_to_732000_gbp_per_kwh_per_day": 0.000041,
+        "732000_and_over": {
+          "gbp_per_kwh_per_day": 0.000861,
+          "exponent": -0.21
+        }
+      },
+      "customer_fixed": {
+        "73200_to_732000_biannual_gbp_per_day": 0.354371,
+        "73200_to_732000_monthly_gbp_per_day": 0.377323
+      },
+      "cesp_administration_gbp_per_mprn": 0.00
+    },
+    "WW": {
+      "system_commodity": {
+        "to_73200_gbp_per_kwh": 0.000346,
+        "73200_to_732000_gbp_per_kwh": 0.000302,
+        "732000_and_over": {
+          "gbp_per_kwh": 0.003508,
+          "exponent": -0.2775,
+          "minimum_gbp_per_kwh": 0.000025
+        }
+      },
+      "system_capacity": {
+        "to_73200_gbp_per_kwh_per_day": 0.001993,
+        "73200_to_732000_gbp_per_kwh_per_day": 0.001729,
+        "732000_and_over": {
+          "gbp_per_kwh_per_day": 0.015485,
+          "exponent": -0.2513,
+          "minimum_gbp_per_kwh_per_day": 0.000147
+        }
+      },
+      "customer_capacity": {
+        "to_73200_gbp_per_kwh_per_day": 0.001068,
+        "73200_to_732000_gbp_per_kwh_per_day": 0.000042,
+        "732000_and_over": {
+          "gbp_per_kwh_per_day": 0.000843,
+          "exponent": -0.21
+        }
+      },
+      "customer_fixed": {
+        "73200_to_732000_biannual_gbp_per_day": 0.331802,
+        "73200_to_732000_monthly_gbp_per_day": 0.353297
+      },
+      "cesp_administration_gbp_per_mprn": 0.00
+    }
+  },
+  "exit_zones": {
+    "EA1": {
+       "exit_capacity_gbp_per_kwh_per_day": 0.000058
+    },
+    "EA2": {
+       "exit_capacity_gbp_per_kwh_per_day": 0.000057
+    },
+    "EA3": {
+       "exit_capacity_gbp_per_kwh_per_day": 0.000021
+    },
+    "EA4": {
+       "exit_capacity_gbp_per_kwh_per_day": 0.000117
+    },
+    "EM1": {
+       "exit_capacity_gbp_per_kwh_per_day": 0.000009
+    },
+    "EM2": {
+       "exit_capacity_gbp_per_kwh_per_day": 0.000046
+    },
+    "EM3": {
+       "exit_capacity_gbp_per_kwh_per_day": 0.000151
+    },
+    "EM4": {
+       "exit_capacity_gbp_per_kwh_per_day": 0.00011
+    },
+    "NT1": {
+       "exit_capacity_gbp_per_kwh_per_day": 0.00023
+    },
+    "NT2": {
+       "exit_capacity_gbp_per_kwh_per_day": 0.000122
+    },
+    "NT3": {
+       "exit_capacity_gbp_per_kwh_per_day": 0.00013
+    },
+    "NW1": {
+       "exit_capacity_gbp_per_kwh_per_day": 0.000198
+    },
+    "NW2": {
+       "exit_capacity_gbp_per_kwh_per_day": 0.000256
+    },
+    "WM1": {
+       "exit_capacity_gbp_per_kwh_per_day": 0.000204
+    },
+    "WM2": {
+       "exit_capacity_gbp_per_kwh_per_day": 0.000176
+    },
+    "WM3": {
+       "exit_capacity_gbp_per_kwh_per_day": 0.000117
+    },
+    "LC": {
+       "exit_capacity_gbp_per_kwh_per_day": 0.000002
+    },
+    "LO": {
+       "exit_capacity_gbp_per_kwh_per_day": 0.000002
+    },
+    "LS": {
+       "exit_capacity_gbp_per_kwh_per_day": 0.000016
+    },
+    "LT": {
+       "exit_capacity_gbp_per_kwh_per_day": 0.000002
+    },
+    "LW": {
+       "exit_capacity_gbp_per_kwh_per_day": 0.000002
+    },
+    "SC1": {
+       "exit_capacity_gbp_per_kwh_per_day": 0.000001
+    },
+    "SC2": {
+       "exit_capacity_gbp_per_kwh_per_day": 0.000003
+    },
+    "SC4": {
+       "exit_capacity_gbp_per_kwh_per_day": 0.000001
+    },
+    "SE1": {
+       "exit_capacity_gbp_per_kwh_per_day": 0.00016
+    },
+    "SE2": {
+       "exit_capacity_gbp_per_kwh_per_day": 0.00016
+    },
+    "SO1": {
+       "exit_capacity_gbp_per_kwh_per_day": 0.00021
+    },
+    "SO2": {
+       "exit_capacity_gbp_per_kwh_per_day": 0.000357
+    },
+    "NE1": {
+       "exit_capacity_gbp_per_kwh_per_day": 0.000074
+    },
+    "NE2": {
+       "exit_capacity_gbp_per_kwh_per_day": 0.000009
+    },
+    "NE3": {
+       "exit_capacity_gbp_per_kwh_per_day": 0.000009
+    },
+    "NO1": {
+       "exit_capacity_gbp_per_kwh_per_day": 0.000017
+    },
+    "NO2": {
+       "exit_capacity_gbp_per_kwh_per_day": 0.000072
+    },
+    "SW1": {
+       "exit_capacity_gbp_per_kwh_per_day": 0.000126
+    },
+    "SW2": {
+       "exit_capacity_gbp_per_kwh_per_day": 0.000413
+    },
+    "SW3": {
+       "exit_capacity_gbp_per_kwh_per_day": 0.000472
+    },
+    "WA1": {
+       "exit_capacity_gbp_per_kwh_per_day": 0.000545
+    },
+    "WA2": {
+       "exit_capacity_gbp_per_kwh_per_day": 0.000033
+    }
+  }
+}
