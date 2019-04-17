@@ -171,8 +171,13 @@ def bd_add(bd, el_name, val):
 
 
 def _parse_row(row, row_index, datemode, title_row):
-    mpan_core = parse_mpan_core(
-        str(int(get_value(row, 'Meter Point'))))
+    val = get_value(row, 'Meter Point')
+    try:
+        mpan_core = parse_mpan_core(str(int(val)))
+    except ValueError as e:
+        raise BadRequest(
+            "Can't parse the MPAN core in column 'Meter Point' at row " +
+            str(row_index + 1) + " with value '" + str(val) + "' : " + str(e))
     bill_period = get_value(row, 'Bill Period')
     if '-' in bill_period:
         period_start, period_finish = [
@@ -261,6 +266,8 @@ def _parse_row(row, row_index, datemode, title_row):
                 bd_add(bd, 'bsuos-gbp', amount)
             elif description.startswith("FiT Rec - "):
                 bd_add(bd, 'fit-gbp', amount)
+            elif description.startswith("FiT Reconciliation "):
+                bd_add(bd, 'fit-gbp', amount)
             elif description.startswith("CfD FiT Rec - "):
                 bd_add(bd, 'cfd-fit-gbp', amount)
             elif description.startswith("Flex "):
@@ -269,6 +276,8 @@ def _parse_row(row, row_index, datemode, title_row):
                 bd_add(bd, 'triad-gbp', amount)
             elif description.startswith("Hand Held Read -"):
                 bd_add(bd, 'meter-rental-gbp', amount)
+            elif description.startswith("RO Mutualisation "):
+                bd_add(bd, 'ro-gbp', amount)
             elif description.startswith("OOC MOP - "):
                 bd_add(bd, 'meter-rental-gbp', amount)
             elif description.startswith("KVa Adjustment "):
