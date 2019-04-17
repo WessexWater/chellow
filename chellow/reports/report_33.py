@@ -71,8 +71,11 @@ def content(running_name, finished_name, date, supply_id, mpan_cores):
         for era_id, in era_ids:
 
             era, supply, generator_type = sess.query(
-                    Era, Supply, GeneratorType).join(Supply).outerjoin(
-                    GeneratorType).filter(Era.id == era_id).options(
+                    Era, Supply, GeneratorType).join(
+                    Supply, Era.supply_id == Supply.id).outerjoin(
+                    GeneratorType,
+                    Supply.generator_type_id == GeneratorType.id).filter(
+                    Era.id == era_id).options(
                     joinedload(Era.channels),
                     joinedload(Era.cop),
                     joinedload(Era.dc_contract),
@@ -86,9 +89,9 @@ def content(running_name, finished_name, date, supply_id, mpan_cores):
                     joinedload(Era.pc),
                     joinedload(Era.site_eras).joinedload(SiteEra.site),
                     joinedload(Era.ssc),
-                    joinedload(Supply.source),
-                    joinedload(Supply.gsp_group),
-                    joinedload(Supply.dno)).one()
+                    joinedload(Era.supply).joinedload(Supply.source),
+                    joinedload(Era.supply).joinedload(Supply.gsp_group),
+                    joinedload(Era.supply).joinedload(Supply.dno)).one()
 
             site_codes = []
             site_names = []

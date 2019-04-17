@@ -39,7 +39,11 @@ def content(contract_id, days_hidden, user):
 
         for snag, channel, era, supply, site_era, site in sess.query(
                 Snag, Channel, Era, Supply, SiteEra, Site).join(
-                Channel, Era, Supply, SiteEra, Site).filter(
+                Channel, Snag.channel_id == Channel.id).join(
+                Era, Channel.era_id == Era.id).join(
+                Supply, Era.supply_id == Supply.id).join(
+                SiteEra, Era.site_eras).join(
+                Site, SiteEra.site_id == Site.id).filter(
                 SiteEra.is_physical == true(), Era.dc_contract == contract,
                 Snag.start_date < cutoff_date).order_by(
                 Site.code, Supply.id, Channel.imp_related,
