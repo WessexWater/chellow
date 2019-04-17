@@ -2,7 +2,7 @@ from dateutil.relativedelta import relativedelta
 from sqlalchemy import func
 from sqlalchemy.sql.expression import true
 from chellow.utils import (
-    hh_format, HH, utc_datetime, get_file_rates, to_ct, to_utc)
+    hh_format, HH, utc_datetime, get_file_rates, to_ct, to_utc, ct_datetime)
 from werkzeug.exceptions import BadRequest
 from chellow.models import HhDatum, Channel, Era
 from datetime import datetime as Datetime, timedelta as Timedelta
@@ -540,7 +540,7 @@ def datum_2010_04_01(ds, hh):
 
     if hh['ct-is-month-end'] and not ds.is_displaced:
         month_to = start_date
-        month_from = month_to - relativedelta(months=1) + HH
+        month_from = to_utc(ct_datetime(hh['ct-year'], hh['ct-month'], 1))
         md_kva = 0
         days_in_month = 0
         for dsc in ds.get_data_sources(month_from, month_to):
@@ -571,19 +571,22 @@ CUTOFF_DATE = utc_datetime(2010, 3, 31, 23, 0)
 
 def duos_vb(ds):
     try:
-        dno_caches = ds.caches['dno']
+        data_func_cache = ds.caches['dno'][ds.dno_code]['data_funcs']
     except KeyError:
-        dno_caches = ds.caches['dno'] = {}
+        try:
+            dno_caches = ds.caches['dno']
+        except KeyError:
+            dno_caches = ds.caches['dno'] = {}
 
-    try:
-        dno_cache = dno_caches[ds.dno_code]
-    except KeyError:
-        dno_cache = dno_caches[ds.dno_code] = {}
+        try:
+            dno_cache = dno_caches[ds.dno_code]
+        except KeyError:
+            dno_cache = dno_caches[ds.dno_code] = {}
 
-    try:
-        data_func_cache = dno_cache['data_funcs']
-    except KeyError:
-        data_func_cache = dno_cache['data_funcs'] = {}
+        try:
+            data_func_cache = dno_cache['data_funcs']
+        except KeyError:
+            data_func_cache = dno_cache['data_funcs'] = {}
 
     for hh in ds.hh_data:
         try:
