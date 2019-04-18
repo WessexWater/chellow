@@ -83,7 +83,13 @@ class Parser():
                 activity_name_raw = get_str(row, 6)
                 activity_name = activity_name_raw.lower().replace(' ', '_')
 
-                net = round(get_dec(row, 8), 2)
+                net_dec = get_dec(row, 8)
+                if net_dec is None:
+                    raise BadRequest(
+                        "Can't find a decimal at column I, expecting the net "
+                        "GBP.")
+
+                net = round(net_dec, 2)
 
                 era = sess.query(Era).filter(
                     or_(
