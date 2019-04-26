@@ -838,7 +838,9 @@ class SupplySource(DataSource):
                                 'msp-kw': kwh * 2, 'msp-kwh': kwh,
                                 'hist-kwh': kwh, 'imp-msp-kvarh': 0,
                                 'imp-msp-kvar': 0, 'exp-msp-kvarh': 0,
-                                'exp-msp-kvar': 0, 'status': 'A'}
+                                'exp-msp-kvar': 0, 'status': 'A',
+                                'tpr': tpr.code
+                            }
 
             elif self.bill is None and hist_measurement_type in ('nhh', 'amr'):
                 read_list = []
