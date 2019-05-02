@@ -183,8 +183,10 @@ def displaced_era(
 
         if source_code in ('net', 'gen-net') and era.imp_mpan_core is not None:
             eras[
-                era.pc.code + hh_format(era.start_date) +
-                era.imp_mpan_core] = era
+                '_'.join(
+                    (
+                        era.pc.code, str(era.exp_mpan_core is None),
+                        hh_format(era.start_date), era.imp_mpan_core))] = era
 
     if (has_displaced or has_scenario_generation) and len(eras) > 0:
         era = eras[sorted(eras.keys())[0]]
