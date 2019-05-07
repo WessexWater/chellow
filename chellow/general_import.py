@@ -12,7 +12,8 @@ from chellow.models import (
     Site, Era, Supply, HhDatum, Source, GeneratorType, GspGroup, Contract, Pc,
     Cop, Ssc, Snag, Channel, Mtc, BillType, Tpr, ReadType, Participant, Bill,
     RegisterRead, UserRole, Party, User, VoltageLevel, Llfc, MarketRole,
-    MeterType, MeterPaymentType, Session, GContract, GSupply, GUnit, GExitZone)
+    MeterType, MeterPaymentType, Session, GContract, GSupply, GUnit, GExitZone,
+    GReadType)
 from werkzeug.exceptions import BadRequest
 from zish import loads, ZishException
 
@@ -467,6 +468,26 @@ def general_import_g_supply(sess, action, vals, args):
         sess.flush()
 
 
+def general_import_g_batch(sess, action, vals, args):
+    if action == "insert":
+        contract_name = add_arg(args, "Contract Name", vals, 0)
+        g_contract = GContract.get_by_name(sess, contract_name)
+
+        reference = add_arg(args, "Reference", vals, 1)
+        description = add_arg(args, "Description", vals, 2)
+        g_contract.insert_g_batch(sess, reference, description)
+
+    elif action == "update":
+        contract_name = add_arg(args, "Contract Name", vals, 0)
+        g_contract = GContract.get_by_name(sess, contract_name)
+
+        old_reference = add_arg(args, "Old Reference", vals, 1)
+        g_batch = g_contract.get_batch(sess, old_reference)
+        new_reference = add_arg(args, "New Reference", vals, 2)
+        description = add_arg(args, "Description", vals, 3)
+        g_batch.update(sess, new_reference, description)
+
+
 def general_import_party(sess, action, vals, args):
     if action == "insert":
         market_role_code = add_arg(args, "Market Role Code", vals, 0)
@@ -795,6 +816,85 @@ def general_import_bill(sess, action, vals, args):
         bill.update(
             account, reference, issue_date, start_date, finish_date, kwh, net,
             vat, gross, bill_type, breakdown)
+
+
+def general_import_g_bill(sess, action, vals, args):
+    if action == "insert":
+        contract_name = add_arg(args, "Contract Name", vals, 0)
+
+        g_contract = GContract.get_by_name(sess, contract_name)
+
+        batch_reference = add_arg(args, "Batch Reference", vals, 1)
+
+        g_batch = g_contract.get_g_batch_by_reference(sess, batch_reference)
+
+        mprn = add_arg(args, "MPRN", vals, 2)
+        g_supply = GSupply.get_by_mprn(sess, mprn)
+
+        issue_date_str = add_arg(args, "Issue Date", vals, 3)
+        issue_date = parse_hh_start(issue_date_str)
+        start_date_str = add_arg(args, "Start Date", vals, 4)
+        start_date = parse_hh_start(start_date_str)
+        finish_date_str = add_arg(args, "Finish Date", vals, 5)
+        finish_date = parse_hh_start(finish_date_str)
+        net_gbp_str = add_arg(args, "Net GBP", vals, 6)
+        net_gbp = Decimal(net_gbp_str)
+        vat_gbp_str = add_arg(args, "Vat GBP", vals, 7)
+        vat_gbp = Decimal(vat_gbp_str)
+        gross_gbp_str = add_arg(args, "Gross GBP", vals, 8)
+        gross_gbp = Decimal(gross_gbp_str)
+        account = add_arg(args, "Account Reference", vals, 9)
+        reference = add_arg(args, "Reference", vals, 10)
+        bill_type_code = add_arg(args, "Type", vals, 11)
+        bill_type = BillType.get_by_code(sess, bill_type_code)
+        breakdown_str = add_arg(args, "Breakdown", vals, 12)
+        if len(breakdown_str) == 0:
+            breakdown = {}
+        else:
+            try:
+                breakdown = eval(breakdown_str)
+            except SyntaxError as e:
+                raise BadRequest(str(e))
+
+        kwh_str = add_arg(args, "kWh", vals, 13)
+        kwh = Decimal(kwh_str)
+
+        g_bill = g_batch.insert_g_bill(
+            sess, g_supply, bill_type, reference, account, issue_date,
+            start_date, finish_date, kwh, net_gbp, vat_gbp, gross_gbp,
+            '', breakdown)
+
+        for i in range(14, len(vals), 10):
+            msn = add_arg(args, "Meter Serial Number", vals, i)
+            g_unit_code = add_arg(args, "Unit", vals, i + 1)
+            g_unit = GUnit.get_by_code(sess, g_unit_code)
+            correction_factor_str = add_arg(
+                args, "Correction Factor", vals, i + 2)
+            correction_factor = Decimal(correction_factor_str)
+            calorific_value_str = add_arg(
+                args, "Calorific Value", vals, i + 3)
+            calorific_value = Decimal(calorific_value_str)
+
+            prev_date_str = add_arg(args, "Previous Date", vals, i + 4)
+            prev_date = parse_hh_start(prev_date_str)
+            prev_value_str = add_arg(args, "Previous Value", vals, i + 5)
+            prev_value = Decimal(prev_value_str)
+
+            prev_type_str = add_arg(args, "Previous Type", vals, i + 6)
+            prev_type = GReadType.get_by_code(sess, prev_type_str)
+
+            pres_date_str = add_arg(args, "Present Date", vals, i + 7)
+            pres_date = parse_hh_start(pres_date_str)
+            pres_value_str = add_arg(args, "Present Value", vals, i + 8)
+            pres_value = Decimal(pres_value_str)
+
+            pres_type_str = add_arg(args, "Present Type", vals, i + 9)
+            pres_type = GReadType.get_by_code(sess, pres_type_str)
+
+            g_bill.insert_g_read(
+                sess, msn, g_unit, correction_factor, calorific_value,
+                prev_value, prev_date, prev_type, pres_value, pres_date,
+                pres_type)
 
 
 def general_import_register_read(sess, action, vals, args):

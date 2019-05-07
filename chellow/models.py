@@ -3768,6 +3768,17 @@ class GContract(Base, PersistentClass):
     def make_state(self):
         return loads(self.state)
 
+    def find_g_batch_by_reference(self, sess, reference):
+        return sess.query(GBatch).filter(
+            GBatch.g_contract == self, GBatch.reference == reference).first()
+
+    def get_g_batch_by_reference(self, sess, reference):
+        batch = self.find_g_batch_by_reference(sess, reference)
+        if batch is None:
+            raise BadRequest(
+                "Can't find the batch with reference " + str(reference))
+        return batch
+
     @staticmethod
     def insert(
             sess, name, charge_script, properties, start_date,
