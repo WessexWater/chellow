@@ -248,7 +248,9 @@ def check_permissions(*args, **kwargs):
             'You have to login with proper credentials', 401,
             {'WWW-Authenticate': 'Basic realm="Chellow"'})
 
-    return Response('Forbidden', 403)
+    config = Contract.get_non_core_by_name(g.sess, 'configuration')
+    return make_response(
+        render_template('403.html', properties=config.make_properties()), 403)
 
 
 @app.route('/nationalgrid/<fname>', methods=['GET', 'POST'])

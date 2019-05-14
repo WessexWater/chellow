@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block title %}
+	&raquo; Insufficient Permissions
+{% endblock %}
+
+{% block nav %}
+	&raquo; Insufficient Permissions
+{% endblock %}
+
+{% block content %}
+<!-- Layer Section -->
+	<div class="layer-section">
+		<!-- Section Header -->
+		<div class="section-header">
+			<h2>Insufficient Permissions</h2>
+		</div>
+		<!-- End Section Header -->
+
+		<!-- Section Content -->
+		<div class="section-content">
+			<div class="section-data">
+				{% set msg = properties.forbidden_message %}
+				<p>{% if msg %}{{msg}}{% else %}Insufficient Permissions{% endif %}</p>
+			</div>
+		</div>
+		<!-- End Section Content -->
+	</div>
+{% endblock %}

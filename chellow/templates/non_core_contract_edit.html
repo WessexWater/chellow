@@ -97,7 +97,7 @@
 								</pre>
 							{% elif contract.name == 'configuration' %}
 							  <h4>Example</h4>
-								<pre>{
+								<pre>
 {
   "background_colour": "aquamarine",
   "batch_reports": [
@@ -114,7 +114,10 @@
       "href": "https://maps.google.com/maps?q=",
       "name": "Google Maps"
     }
-  ]
+  ],
+
+  // Custom error message for forbidden pages
+  "forbidden_message": "I'm afraid you don't have permission to do this."
 }
 								</pre>
 							{% endif %}
