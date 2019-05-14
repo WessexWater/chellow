@@ -1,13 +1,12 @@
 from datetime import datetime as Datetime
 from sqlalchemy import or_
 from sqlalchemy.sql.expression import null, true
-import pytz
 import traceback
 from chellow.models import Era, Supply, Source, Pc, Site, SiteEra, Session
 import chellow.duos
 import chellow.triad
 import chellow.computer
-from chellow.utils import HH, hh_format, req_int
+from chellow.utils import HH, hh_format, req_int, utc_datetime
 from flask import request, g
 import chellow.dloads
 import csv
@@ -27,8 +26,9 @@ def content(year, supply_id, user):
         f = open(running_name, mode='w', newline='')
         writer = csv.writer(f, lineterminator='\n')
 
-        march_start = Datetime(year, 3, 1, tzinfo=pytz.utc)
-        march_finish = Datetime(year, 4, 1, tzinfo=pytz.utc) - HH
+        march_start = utc_datetime(year, 3, 1)
+        march_finish = utc_datetime(year, 4, 1) - HH
+        financial_year_start = utc_datetime(year - 1, 4, 1)
 
         def triad_csv(supply_source):
             if supply_source is None or \
@@ -72,8 +72,9 @@ def content(year, supply_id, user):
 
         forecast_date = chellow.computer.forecast_date()
         eras = sess.query(Era).join(Supply).join(Source).join(Pc).filter(
-            Era.start_date <= march_finish,
-            or_(Era.finish_date == null(), Era.finish_date >= march_start),
+            Era.start_date <= march_finish, or_(
+                Era.finish_date == null(),
+                Era.finish_date >= financial_year_start),
             Source.code.in_(('net', 'gen-net')),
             Pc.code == '00').order_by(Supply.id)
 
@@ -106,8 +107,8 @@ def content(year, supply_id, user):
             vals = []
             for value in [
                     site.code, site.name, supply.name, supply.source.code,
-                    gen_type] + triad_csv(imp_supply_source) + \
-                    triad_csv(exp_supply_source):
+                    gen_type] + triad_csv(imp_supply_source) + triad_csv(
+                        exp_supply_source):
                 if isinstance(value, Datetime):
                     vals.append(hh_format(value))
                 else:
