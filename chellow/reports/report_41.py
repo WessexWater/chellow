@@ -16,6 +16,19 @@ from chellow.views import chellow_redirect
 import threading
 
 
+def _make_eras(sess, year_start, year_finish, supply_id):
+    eras = sess.query(Era).join(Supply).join(Source).join(Pc).filter(
+        Era.start_date <= year_finish, or_(
+            Era.finish_date == null(), Era.finish_date >= year_start),
+        Source.code.in_(('net', 'gen-net')),
+        Pc.code == '00').order_by(Supply.id)
+
+    if supply_id is not None:
+        eras = eras.filter(Supply.id == supply_id)
+
+    return eras
+
+
 def content(year, supply_id, user):
     caches = {}
     sess = f = writer = None
@@ -71,15 +84,7 @@ def content(year, supply_id, user):
                 "Export GSP kW", "Export Rate GBP / kW", "Export GBP"))
 
         forecast_date = chellow.computer.forecast_date()
-        eras = sess.query(Era).join(Supply).join(Source).join(Pc).filter(
-            Era.start_date <= march_finish, or_(
-                Era.finish_date == null(),
-                Era.finish_date >= financial_year_start),
-            Source.code.in_(('net', 'gen-net')),
-            Pc.code == '00').order_by(Supply.id)
-
-        if supply_id is not None:
-            eras = eras.filter(Supply.id == supply_id)
+        eras = _make_eras(sess, financial_year_start, march_finish, supply_id)
 
         for era in eras:
             site = sess.query(Site).join(SiteEra).filter(
