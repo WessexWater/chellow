@@ -16,6 +16,7 @@ from chellow.models import (
 from flask import request, g
 from chellow.views import chellow_redirect
 import csv
+from zish import dumps
 
 
 def content(year, supply_id, user):
@@ -91,7 +92,7 @@ def content(year, supply_id, user):
                     SiteEra.is_physical == true(),
                     SiteEra.era_id == era.id).one()
 
-                if meter_type == 'nhh':
+                if meter_type in ('nhh', 'amr'):
 
                     read_list = []
                     read_keys = {}
@@ -305,13 +306,15 @@ def content(year, supply_id, user):
                                                 period_finish)):
                                         break
 
-                    breakdown += 'read list - \n' + str(read_list) + "\n"
+                    breakdown += 'read list - \n' + dumps(read_list) + "\n"
                     if len(pairs) == 0:
                         pairs.append(
                             {
                                 'start-date': period_start,
                                 'finish-date': period_finish,
-                                'tprs': {'00001': 0}})
+                                'tprs': {'00001': 0}
+                            }
+                        )
                     else:
                         for pair in pairs:
                             pair_start = pair['start-date']
@@ -363,9 +366,9 @@ def content(year, supply_id, user):
                         for tpr_code, pair_kwh in pair['tprs'].items():
                             total_kwh[meter_type] += pair_kwh * pair_hhs
 
-                    breakdown += 'pairs - \n' + str(pairs)
+                    breakdown += 'pairs - \n' + dumps(pairs)
 
-                elif meter_type in ('hh', 'amr'):
+                elif meter_type == 'hh':
                     period_kwhs = list(
                         float(v[0]) for v in sess.query(HhDatum.value).
                         join(Channel).filter(

@@ -36,16 +36,9 @@
 								<dd>
 									Measurement classes C (Half Hourly Metered in 100kW premises)
 									and E (Half Hourly Metered not 100kW).
-								<dt>AMR</dt>
+								<dt>NHH and AMR</dt>
 								<dd>
-									Measurement class A (Non Half Hourly Metered) but HH
-									non-settlement data used rather than settlement register
-								 	reads.
-								</dd>
-								<dt>NHH</dt>
-								<dd>
-									Measurement class A (Non Half Hourly Metered) but with
-								 	register reads only.
+									Measurement class A (Non Half Hourly Metered).
 								</dd>
 								<dt>Unmetered</dt>
 								<dd>
@@ -56,7 +49,7 @@
 								The report works out the number of days with actual data for
 							 	each category and totals them up to give the 'Total Actual
 							 	Days'. It then works out the maximum possible number of days
-							 	with actual data for each supply category (HH, AMR, NHH or
+							 	with actual data for each supply category (HH, AMR &amp; NHH or
 							 	Unmetered) and totals them up to give the 'Total Max Actual
 							 	Days'. If (actual / maximum) &gt;= 183 / 365, the supply is
 							 	classed as 'Actual' for the CRC period, otherwise it is classed
@@ -123,7 +116,7 @@
 						</div>
 						<div>
 							<p>
-								For AMR and HH categories, the kWh figure is found by summing:
+								For the HH category, the kWh figure is found by summing:
 							</p>
 							<ul>
 								<li>
