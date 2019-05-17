@@ -1769,6 +1769,7 @@ def supply_edit_post(supply_id):
             g.sess.commit()
             return chellow_redirect("/supplies/" + str(supply.id), 303)
     except BadRequest as e:
+        g.sess.rollback()
         flash(e.description)
         sources = g.sess.query(Source).order_by(Source.code)
         generator_types = g.sess.query(GeneratorType). \

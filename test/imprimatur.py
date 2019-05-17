@@ -904,10 +904,13 @@ def virtual_bill_titles():
             'start_day': "20",
             'start_hour': "00",
             'start_minute': "00",
-            'insert_era': "Insert", },
+            'insert_era': "Insert"
+        },
         'regexes': [
-            r"/supplies/2"],
-        'status_code': 303},
+            r"/supplies/2"
+        ],
+        'status_code': 303
+    },
 
     # Let's check it's carried forward the import mpan. Supply 2
     {
@@ -1833,10 +1836,13 @@ def virtual_bill_titles():
             'start_day': "20",
             'start_hour': "00",
             'start_minute': "00",
-            'insert_era': "Insert"},
+            'insert_era': "Insert"
+        },
         'regexes': [
-            r"/supplies/9"],
-        'status_code': 303},
+            r"/supplies/9"
+        ],
+        'status_code': 303
+    },
 
     {
         'path': '/eras/12/edit',
@@ -1860,10 +1866,13 @@ def virtual_bill_titles():
             'start_day': "7",
             'start_hour': "00",
             'start_minute': "00",
-            'insert_era': "Insert"},
+            'insert_era': "Insert"
+        },
         'regexes': [
-            r"/supplies/1"],
-        'status_code': 303},
+            r"/supplies/1"
+        ],
+        'status_code': 303
+    },
 
     {
         'name': "supply 1, era 13",
@@ -2156,8 +2165,11 @@ def virtual_bill_titles():
             'start_day': "07",
             'start_hour': "00",
             'start_minute': "00",
-            'insert_era': "insert_era"},
-        'status_code': 303},
+            'insert_era': "insert_era"
+        },
+        'status_code': 303
+    },
+
     {
         'path': '/supplies/1/edit',
         'method': 'post',
@@ -2167,8 +2179,11 @@ def virtual_bill_titles():
             'start_day': "07",
             'start_hour': "00",
             'start_minute': "00",
-            'insert_era': "insert_era"},
-        'status_code': 303},
+            'insert_era': "insert_era"
+        },
+        'status_code': 303
+    },
+
     {
         'path': '/supplies/1/edit',
         'regexes': [
@@ -4413,10 +4428,13 @@ def virtual_bill(supply_source):
             'start_day': "01",
             'start_hour': "00",
             'start_minute': "00",
-            'insert_era': "Insert"},
+            'insert_era': "Insert"
+        },
         'regexes': [
-            r"/supplies/10"],
-        'status_code': 303},
+            r"/supplies/10"
+        ],
+        'status_code': 303
+    },
 
     {
         'path': '/eras/17/edit',
@@ -6665,10 +6683,14 @@ def virtual_bill(supply_source):
             'start_day': "06",
             'start_hour': "00",
             'start_minute': "00",
-            'insert_era': "Insert"},
+            'insert_era': "Insert"
+        },
         'regexes': [
-            r"There&#39;s already an era with that start date\."],
-        'status_code': 400},
+            r"There&#39;s already an era with that start date\."
+        ],
+        'status_code': 400
+    },
+
     {
         'name': "Check MOP and DC bills are displaying correctly",
         'path': '/supplies/5',
@@ -7112,10 +7134,13 @@ def virtual_bill(supply_source):
             'start_day': "01",
             'start_hour': "00",
             'start_minute': "00",
-            'insert_era': "Insert"},
+            'insert_era': "Insert"
+        },
         'regexes': [
-            r"/supplies/5"],
-        'status_code': 303},
+            r"/supplies/5"
+        ],
+        'status_code': 303
+    },
 
     # Supply 5
     {
@@ -7699,8 +7724,11 @@ def virtual_bill(supply_source):
             'start_day': "04",
             'start_hour': "00",
             'start_minute': "00",
-            'insert_era': "insert_era"},
-        'status_code': 303},
+            'insert_era': "insert_era"
+        },
+        'status_code': 303
+    },
+
     {
         'name': "Check user roles page.",
         'path': '/user_roles',
@@ -7978,8 +8006,11 @@ def virtual_bill(supply_source):
             'start_day': "02",
             'start_hour': "00",
             'start_minute': "00",
-            'insert_era': "insert_era"},
-        'status_code': 303},
+            'insert_era': "insert_era"
+        },
+        'status_code': 303
+    },
+
     {
         'path': '/reports/233?dc_contract_id=8&days_hidden=0',
         'status_code': 303},
@@ -8679,10 +8710,13 @@ def virtual_bill(supply_source):
             'start_day': "10",
             'start_hour': "00",
             'start_minute': "00",
-            'insert_era': "Insert"},
+            'insert_era': "Insert"
+        },
         'regexes': [
-            r"/supplies/11"],
-        'status_code': 303},
+            r"/supplies/11"
+        ],
+        'status_code': 303
+    },
 
     # Add a channel to the new era
     {
