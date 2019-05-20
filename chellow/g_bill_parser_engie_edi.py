@@ -39,6 +39,9 @@ TCOD_MAP = {
     },
     'Consumption Based Administration': {
         'PPK': 'admin_variable'
+    },
+    'Swing': {
+        'PPK': 'swing'
     }
 }
 
