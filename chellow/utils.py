@@ -495,7 +495,8 @@ def make_val(v):
         if len(v) == 1:
             return make_val(v.pop())
         elif 1 < len(v) < 4:
-            return ' | '.join(str(csv_make_val(el)) for el in sorted(v))
+            vals = set(str(val) for val in v)
+            return ' | '.join(str(csv_make_val(el)) for el in sorted(vals))
         else:
             return None
     else:
