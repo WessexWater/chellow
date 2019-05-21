@@ -292,26 +292,6 @@ def tab_ehv(sheet, gsp_rates):
                                 'finish_hour': slot['finish']})
 
 
-def tab_laf(sheet, gsp_rates):
-    lafs = gsp_rates['lafs'] = {}
-    period_lookup = {}
-    for row in sheet.iter_rows():
-        val_0 = get_value(row, 0)
-        val_0 = None if val_0 is None else ' '.join(str(val_0).lower().split())
-        if val_0 in VL_MAP:
-            laf_periods = {}
-            for i in range(4):
-                if get_value(row, i+1) is not None:
-                    laf_periods[period_lookup[i]] = get_decimal(row, i+1)
-
-            lafs[VL_MAP[val_0]] = laf_periods
-        val_1 = get_value(row, 1)
-        if isinstance(val_1, str) and val_1.lower() in PERIOD_MAP:
-            for i in range(4):
-                key = get_value(row, i+1).lower()
-                period_lookup[i] = PERIOD_MAP[key]
-
-
 def content(user, file_name, file_like, gsp_group_id):
     f = sess = None
     try:
@@ -333,8 +313,6 @@ def content(user, file_name, file_like, gsp_group_id):
             title = sheet.title.strip().lower()
             if title.startswith('annex 1 '):
                 tab_lv_hv(sheet, gsp_rates)
-            elif title.startswith('annex 5 '):
-                tab_laf(sheet, gsp_rates)
             elif title.startswith('annex 2 '):
                 tab_ehv(sheet, gsp_rates)
 

@@ -16594,18 +16594,21 @@ def virtual_bill(supply_source):
         'method': 'post',
         'files': {'dno_file': 'test/dno_20_rates_2017.xlsx'},
         'data': {
-            'gsp_group_id': '7',
-            'llfc_tab': '1',
-            'laf_tab': '7'},
+            'gsp_group_id': '7'
+        },
         'status_code': 303,
         'regexes': [
-            r"/downloads"]},
+            r"/downloads"
+        ]
+    },
     {
         'path': '/downloads',
         'tries': {'max': 20, 'period': 1},
         'regexes': [
-            r"0017_FINISHED_adminexamplecom_dno_rates.zish"],
-        'status_code': 200},
+            r"0017_FINISHED_adminexamplecom_dno_rates.zish"
+        ],
+        'status_code': 200
+    },
     {
         'path': '/downloads/'
         '0017_FINISHED_adminexamplecom_dno_rates.zish',
@@ -16648,34 +16651,34 @@ def virtual_bill(supply_source):
             r'"700": \{'],
 
 
-        'status_code': 200},
+        'status_code': 200
+    },
     {
         'name': "DNO rate parser",
         'path': '/reports/dno_rate_parser',
         'method': 'post',
         'files': {'dno_file': 'test/dno_24_L_rates_2017.xlsx'},
         'data': {
-            'gsp_group_id': '2',
-            'llfc_tab': '1',
-            'laf_tab': '7'},
+            'gsp_group_id': '2'
+        },
         'status_code': 303,
         'regexes': [
-            r"/downloads"]},
+            r"/downloads"
+        ]
+    },
     {
         'path': '/downloads',
         'tries': {'max': 20, 'period': 1},
         'regexes': [
-            r"0018_FINISHED_adminexamplecom_dno_rates.zish"],
-        'status_code': 200},
+            r"0018_FINISHED_adminexamplecom_dno_rates.zish"
+        ],
+        'status_code': 200
+    },
     {
         'path': '/downloads/'
         '0018_FINISHED_adminexamplecom_dno_rates.zish',
-        'regexes': [
-            r'"601,603": \{',
-
-            r'"night": 1.07000,\s*',
-            r'"other": 1.07300,\s*'],
-        'status_code': 200},
+        'status_code': 200
+    },
 
     {
         'name': "CRC report for unmetered supply.",
