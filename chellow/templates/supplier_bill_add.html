@@ -33,130 +33,147 @@
 	    <!-- Section Content -->
 	    <div class="section-content">
 		<div class="section-data">
-		   <form action="" method="post">
-		        <fieldset>
-		            <input type="hidden" name="supplier_batch_id" value="{{batch.id}}">
-		            
-		            <div class="standardForm">
-		                <div class="row">
-		                    <div class="col-sm-2">
-		                        <label>MPAN Core</label>
-		                    </div>
-		                    <div class="col-sm-4">
-								{{input_text('mpan_core')}}
-		                    </div>
-		                </div>
-		                <div class="row">
-		                    <div class="col-sm-2">
-		                        <label>Reference</label>
-		                    </div>
-		                    <div class="col-sm-4">
-								{{input_text('reference')}}
-		                    </div>
-		                </div>
-		            </div>
-		            
-		            <div class="standardForm textWidthAuto">
-		            	<fieldset>
-		            	    <div class="row">
-    		                    <div class="col-sm-2">
-    		                        <label>Issue Date</label>
-    		                    </div>
-    		                    <div class="col-sm-4">
-    		                        {{input_date('issue')}}
-    		                    </div>
-    		                </div>
-				        </fieldset>
-				        
-				        <fieldset>
-				            <div class="row">
-    		                    <div class="col-sm-2">
-    		                        <label>Start Date</label>
-    		                    </div>
-    		                    <div class="col-sm-4">
-    		                        {{input_date('start')}}
-    		                    </div>
-    		                </div>
-				        </fieldset>
-				        
-				        <fieldset>
-				            <div class="row">
-    		                    <div class="col-sm-2">
-    		                        <label>Finish Date</label>
-    		                    </div>
-    		                    <div class="col-sm-4">
-    		                        {{input_date('finish')}}
-    		                    </div>
-    		                </div>
-				        </fieldset>
-		            </div>
-		            		            
-		            <div class="standardForm">
-		                <div class="row">
-		                    <div class="col-sm-2">
-		                        <label>kWh</label>
-		                    </div>
-		                    <div class="col-sm-4">
-		                        {{input_text('kwh', '0')}}
-		                    </div>
-		                </div>
-		                <div class="row">
-		                    <div class="col-sm-2">
-		                        <label>Net</label>
-		                    </div>
-		                    <div class="col-sm-4">
-		                        {{input_text('net', '0')}}
-		                    </div>
-		                </div>   
-		                <div class="row">
-		                    <div class="col-sm-2">
-		                        <label>VAT</label>
-		                    </div>
-		                    <div class="col-sm-4">
-            					{{input_text('vat', '0')}}
-		                    </div>
-		                </div>
-		                <div class="row">
-		                    <div class="col-sm-2">
-		                        <label>Gross</label>
-		                    </div>
-		                    <div class="col-sm-4">
-		                        {{input_text('gross', '0')}}
-		                    </div>
-		                </div>
-		                <div class="row">
-		                    <div class="col-sm-2">
-		                        <label>Account</label>
-		                    </div>
-		                    <div class="col-sm-4">
-            					{{input_text('account', '0')}}
-		                    </div>
-		                </div>
-		                <div class="row">
-		                    <div class="col-sm-2">
-    		                    <label>Type</label> 
-    		                </div>
-		                    <div class="col-sm-4">
-            					<select name="bill_type_id">
-									{% for bill_type in bill_types %}
-										{{input_option('bill_type_id', bill_type.id, bill_type.code, bill_type.description)}}
-									{% endfor %}
-								</select>
-		                    </div>
-		                </div>
-		                <div class="row">
-		                    <div class="col-sm-2">
-		                        <label>Breakdown</label>
-		                    </div>
-		                    <div class="col-sm-4">
-            					{{input_text('breakdown', '{}')}}
-		                    </div>
-		                </div>
+			{% if supply %}
+				<form action="/supplier_batches/{{batch.id}}/add_bill" method="post">
+					<fieldset>
+							<div class="standardForm">
+								<div class="row">
+									<div class="col-sm-2">
+											<label>MPAN Core</label>
+									</div>
+									<div class="col-sm-4">
+										{{input_text('mpan_core')}}
+									</div>
+								</div>
+								<div class="row">
+									<div class="col-sm-2">
+											<label>Reference</label>
+									</div>
+									<div class="col-sm-4">
+										{{input_text('reference')}}
+									</div>
+								</div>
+							</div>
+									
+									<div class="standardForm textWidthAuto">
+										<fieldset>
+												<div class="row">
+															<div class="col-sm-2">
+																	<label>Issue Date</label>
+															</div>
+															<div class="col-sm-4">
+																	{{input_date('issue')}}
+															</div>
+													</div>
+									</fieldset>
+									
+									<fieldset>
+											<div class="row">
+															<div class="col-sm-2">
+																	<label>Start Date</label>
+															</div>
+															<div class="col-sm-4">
+																{{input_date('start', start_date)}}
+															</div>
+													</div>
+									</fieldset>
+									
+									<fieldset>
+											<div class="row">
+															<div class="col-sm-2">
+																	<label>Finish Date</label>
+															</div>
+															<div class="col-sm-4">
+																	{{input_date('finish')}}
+															</div>
+													</div>
+									</fieldset>
+									</div>
+																	
+									<div class="standardForm">
+											<div class="row">
+													<div class="col-sm-2">
+															<label>kWh</label>
+													</div>
+													<div class="col-sm-4">
+															{{input_text('kwh', '0')}}
+													</div>
+											</div>
+											<div class="row">
+													<div class="col-sm-2">
+															<label>Net</label>
+													</div>
+													<div class="col-sm-4">
+															{{input_text('net', '0')}}
+													</div>
+											</div>   
+											<div class="row">
+													<div class="col-sm-2">
+															<label>VAT</label>
+													</div>
+													<div class="col-sm-4">
+												{{input_text('vat', '0')}}
+													</div>
+											</div>
+											<div class="row">
+													<div class="col-sm-2">
+															<label>Gross</label>
+													</div>
+													<div class="col-sm-4">
+															{{input_text('gross', '0')}}
+													</div>
+											</div>
+											<div class="row">
+													<div class="col-sm-2">
+															<label>Account</label>
+													</div>
+													<div class="col-sm-4">
+												{{input_text('account', account)}}
+													</div>
+											</div>
+											<div class="row">
+													<div class="col-sm-2">
+															<label>Type</label> 
+													</div>
+													<div class="col-sm-4">
+												<select name="bill_type_id">
+										{% for bill_type in bill_types %}
+										<p>{{normal_bill_type_id}} {{bill_type.id}}</p>
+											{{input_option('bill_type_id', bill_type.id, bill_type.code, normal_bill_type_id)}}
+										{% endfor %}
+									</select>
+													</div>
+											</div>
+											<div class="row">
+													<div class="col-sm-2">
+															<label>Breakdown</label>
+													</div>
+													<div class="col-sm-4">
+												{{input_text('breakdown', '{}')}}
+													</div>
+											</div>
 
-		                <input type="submit" value="Add">
-		            </div>
-		        </fieldset>
-		    </form>
+											<input type="submit" value="Add">
+									</div>
+							</fieldset>
+					</form>
+			{% else %}
+				<form action="/supplier_batches/{{batch.id}}/add_bill">
+					<fieldset>
+						<div class="standardForm">
+							<div class="row">
+								<div class="col-sm-2">
+									<label>MPAN Core</label>
+								</div>
+								<div class="col-sm-4">
+									{{input_text('mpan_core')}}
+								</div>
+								<input type="submit" value="Find Supply">
+							</div>
+						</div>
+					</fieldset>
+				</form>
+			{% endif %}
 		</div>
 	    </div>
 	    <!-- End Section Content -->

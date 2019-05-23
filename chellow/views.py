@@ -3869,11 +3869,33 @@ def non_core_rate_script_edit_post(rs_id):
 def supplier_bill_add_get(batch_id):
     batch = Batch.get_by_id(g.sess, batch_id)
     bill_types = g.sess.query(BillType).order_by(BillType.code)
-    bills = g.sess.query(Bill).filter(Bill.batch == batch).order_by(
-        Bill.start_date)
-    return render_template(
-        'supplier_bill_add.html', batch=batch, bill_types=bill_types,
-        bills=bills)
+    supply = start_date = account = None
+    normal_bill_type_id = g.sess.query(BillType.id).filter(
+        BillType.code == 'N').scalar()
+    try:
+        if 'mpan_core' in request.values:
+            mpan_core_raw = req_str('mpan_core')
+            mpan_core = mpan_core_raw.strip()
+            supply = Supply.get_by_mpan_core(g.sess, mpan_core)
+            latest_bill = g.sess.query(Bill).join(Batch).join(Contract).join(
+                MarketRole).filter(
+                Bill.supply == supply, MarketRole.code == 'X').order_by(
+                Bill.start_date.desc()).first()
+            if latest_bill is not None:
+                start_date = latest_bill.finish_date + HH
+                account = latest_bill.account
+        return render_template(
+            'supplier_bill_add.html', batch=batch, bill_types=bill_types,
+            start_date=start_date, account=account, supply=supply,
+            normal_bill_type_id=normal_bill_type_id)
+    except BadRequest as e:
+        g.sess.rollback()
+        flash(e.description)
+        return make_response(
+            render_template(
+                'supplier_bill_add.html', batch=batch, bill_types=bill_types,
+                supply=supply, start_date=start_date, account=account,
+                normal_bill_type_id=normal_bill_type_id), 400)
 
 
 @app.route('/supplier_batches/<int:batch_id>/add_bill', methods=['POST'])
