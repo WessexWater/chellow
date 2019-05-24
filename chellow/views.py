@@ -20,7 +20,7 @@ from chellow.utils import (
     HH, req_str, req_int, req_date, parse_mpan_core, req_bool, req_hh_date,
     hh_after, req_decimal, send_response, hh_min, hh_max, hh_format, hh_range,
     utc_datetime, utc_datetime_now, req_zish, get_file_scripts, to_utc,
-    csv_make_val)
+    csv_make_val, PropDict)
 from werkzeug.exceptions import BadRequest, NotFound
 import chellow.general_import
 import io
@@ -4684,10 +4684,45 @@ def csv_supplies_triad_get():
 @app.route('/supplier_bills/<int:bill_id>/add_read')
 def read_add_get(bill_id):
     read_types = g.sess.query(ReadType).order_by(ReadType.code)
+    estimated_read_type_id = g.sess.query(ReadType.id).filter(
+        ReadType.code == 'E').scalar()
     tprs = g.sess.query(Tpr).order_by(Tpr.code)
     bill = Bill.get_by_id(g.sess, bill_id)
+    coefficient = 1
+    mpan_str = msn = previous_date = previous_value = previous_type = None
+
+    era = bill.supply.find_era_at(g.sess, bill.start_date)
+    if era is not None:
+        era_properties = PropDict(
+            chellow.utils.url_root + 'eras/' + str(era.id),
+            loads(era.properties))
+        try:
+            coefficient = float(era_properties['coefficient'])
+        except KeyError:
+            pass
+        mpan_str = era.imp_mpan_core
+        msn = era.msn
+
+    prev_bill = g.sess.query(Bill).join(Supply).join(Batch).join(
+        Contract).join(MarketRole).filter(
+        Bill.supply == bill.supply, MarketRole.code == 'X',
+        Bill.start_date < bill.start_date).order_by(
+        Bill.start_date.desc()).first()
+    if prev_bill is not None:
+        prev_read = g.sess.query(RegisterRead).filter(
+            RegisterRead.bill == prev_bill).order_by(
+            RegisterRead.present_date.desc()).first()
+        if prev_read is not None:
+            previous_date = prev_read.present_date
+            previous_value = prev_read.present_value
+            previous_type = prev_read.present_type
+
     return render_template(
-        'read_add.html', bill=bill, read_types=read_types, tprs=tprs)
+        'read_add.html', bill=bill, read_types=read_types, tprs=tprs,
+        coefficient=coefficient, mpan_str=mpan_str, msn=msn,
+        previous_date=previous_date, previous_value=previous_value,
+        previous_type_id=previous_type.id,
+        estimated_read_type_id=estimated_read_type_id)
 
 
 @app.route('/supplier_bills/<int:bill_id>/add_read', methods=["POST"])
