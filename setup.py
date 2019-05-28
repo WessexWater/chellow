@@ -47,7 +47,7 @@ setup(
         'SQLAlchemy==1.3.3',
         'openpyxl==2.4.8',
         'python-dateutil==2.4.2',
-        'pytz==2016.10',
+        'pytz==2019.1',
         'ftputil==3.2',
         'requests==2.20.0',
         'waitress==1.0.1',
