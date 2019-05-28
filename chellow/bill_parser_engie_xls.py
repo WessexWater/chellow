@@ -125,9 +125,14 @@ COLUMN_MAP = dict(zip(COLUMNS, count()))
 
 
 def get_date(row, name, datemode):
+    dt = get_date_naive(row, name, datemode)
+    return dt if dt is None else to_utc(to_ct(dt))
+
+
+def get_date_naive(row, name, datemode):
     val = get_value(row, name)
     if isinstance(val, float):
-        return to_utc(to_ct(Datetime(*xldate_as_tuple(val, datemode))))
+        return Datetime(*xldate_as_tuple(val, datemode))
     else:
         return None
 
@@ -180,10 +185,11 @@ def _parse_row(row, row_index, datemode, title_row):
             str(row_index + 1) + " with value '" + str(val) + "' : " + str(e))
     bill_period = get_value(row, 'Bill Period')
     if '-' in bill_period:
-        period_start, period_finish = [
-            to_utc(to_ct(Datetime.strptime(d, '%Y-%m-%d')))
-            for d in bill_period.split(' - ')]
-        period_finish += relativedelta(days=1) - HH
+        period_start_naive, period_finish_naive = [
+            Datetime.strptime(v, '%Y-%m-%d') for v in bill_period.split(' - ')]
+        period_start = to_utc(to_ct(period_start_naive))
+        period_finish = to_utc(
+            to_ct(period_finish_naive + relativedelta(days=1) - HH))
     else:
         period_start, period_finish = None, None
 
@@ -195,17 +201,17 @@ def _parse_row(row, row_index, datemode, title_row):
         else:
             from_date = period_start
 
-    to_date = get_date(row, 'To Date', datemode)
-    if to_date is None:
+    to_date_naive = get_date_naive(row, 'To Date', datemode)
+    if to_date_naive is None:
         if period_finish is None:
             raise BadRequest(
-                "Can't find a bill finish date in row " +
-                str(row_index) + " .")
+                "Can't find a bill finish date in row " + str(row_index) +
+                " .")
         else:
             to_date = period_finish
 
     else:
-        to_date += relativedelta(days=1) - HH
+        to_date = to_utc(to_ct(to_date_naive + relativedelta(days=1) - HH))
 
     issue_date = get_date(row, 'Bill Date', datemode)
     bill_number = get_value(row, 'Bill Number')
