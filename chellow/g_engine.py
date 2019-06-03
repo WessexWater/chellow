@@ -315,47 +315,78 @@ class GDataSource():
                 read_keys = set()
                 pairs = []
 
-                prior_pres_g_reads = iter(
-                    sess.query(GRegisterRead).join(GBill).join(BillType)
-                    .join(GRegisterRead.pres_type).filter(
-                        GReadType.code.in_(ACTUAL_READ_TYPES),
-                        GBill.g_supply == self.g_supply,
-                        GRegisterRead.pres_date < chunk_start,
-                        BillType.code != 'W').order_by(
-                        GRegisterRead.pres_date.desc()))
-                prior_prev_g_reads = iter(
-                    sess.query(GRegisterRead).join(GBill).join(BillType)
-                    .join(GRegisterRead.prev_type).filter(
-                        GReadType.code.in_(ACTUAL_READ_TYPES),
-                        GBill.g_supply == self.g_supply,
-                        GRegisterRead.prev_date < chunk_start,
-                        BillType.code != 'W').order_by(
-                        GRegisterRead.prev_date.desc()))
-                next_pres_g_reads = iter(
-                    sess.query(GRegisterRead).join(GBill).join(BillType)
-                    .join(GRegisterRead.pres_type).filter(
-                        GReadType.code.in_(ACTUAL_READ_TYPES),
-                        GBill.g_supply == self.g_supply,
-                        GRegisterRead.pres_date >= chunk_start,
-                        BillType.code != 'W').order_by(
-                        GRegisterRead.pres_date))
-                next_prev_g_reads = iter(
-                    sess.query(GRegisterRead).join(GBill).join(BillType)
-                    .join(GRegisterRead.prev_type).filter(
-                        GReadType.code.in_(ACTUAL_READ_TYPES),
-                        GBill.g_supply == self.g_supply,
-                        GRegisterRead.prev_date >= chunk_start,
-                        BillType.code != 'W').order_by(
-                        GRegisterRead.prev_date))
+                def prior_pres_g_reads():
+                    last_date = chunk_start
+                    while True:
+                        r = sess.query(GRegisterRead).join(GBill).join(
+                            BillType).join(GRegisterRead.pres_type).filter(
+                            GReadType.code.in_(ACTUAL_READ_TYPES),
+                            GBill.g_supply == self.g_supply,
+                            GRegisterRead.pres_date < last_date,
+                            BillType.code != 'W').order_by(
+                            GRegisterRead.pres_date.desc()).first()
+                        if r is None:
+                            break
+                        else:
+                            last_date = r.pres_date
+                            yield r
+
+                def prior_prev_g_reads():
+                    last_date = chunk_start
+                    while True:
+                        r = sess.query(GRegisterRead).join(GBill).join(
+                            BillType).join(GRegisterRead.prev_type).filter(
+                            GReadType.code.in_(ACTUAL_READ_TYPES),
+                            GBill.g_supply == self.g_supply,
+                            GRegisterRead.prev_date < last_date,
+                            BillType.code != 'W').order_by(
+                            GRegisterRead.prev_date.desc()).first()
+                        if r is None:
+                            break
+                        else:
+                            last_date = r.prev_date
+                            yield r
+
+                def next_pres_g_reads():
+                    last_date = chunk_start
+                    while True:
+                        r = sess.query(GRegisterRead).join(GBill).join(
+                            BillType).join(GRegisterRead.pres_type).filter(
+                            GReadType.code.in_(ACTUAL_READ_TYPES),
+                            GBill.g_supply == self.g_supply,
+                            GRegisterRead.pres_date >= last_date,
+                            BillType.code != 'W').order_by(
+                            GRegisterRead.pres_date).first()
+                        if r is None:
+                            break
+                        else:
+                            last_date = r.pres_date + HH
+                            yield r
+
+                def next_prev_g_reads():
+                    last_date = chunk_start
+                    while True:
+                        r = sess.query(GRegisterRead).join(GBill).join(
+                            BillType).join(GRegisterRead.prev_type).filter(
+                            GReadType.code.in_(ACTUAL_READ_TYPES),
+                            GBill.g_supply == self.g_supply,
+                            GRegisterRead.prev_date >= last_date,
+                            BillType.code != 'W').order_by(
+                            GRegisterRead.prev_date).first()
+                        if r is None:
+                            break
+                        else:
+                            last_date = r.prev_date + HH
+                            yield r
 
                 for is_forwards in (False, True):
                     if is_forwards:
-                        pres_g_reads = next_pres_g_reads
-                        prev_g_reads = next_prev_g_reads
+                        pres_g_reads = iter(next_pres_g_reads())
+                        prev_g_reads = iter(next_prev_g_reads())
                         read_list.reverse()
                     else:
-                        pres_g_reads = prior_pres_g_reads
-                        prev_g_reads = prior_prev_g_reads
+                        pres_g_reads = iter(prior_pres_g_reads())
+                        prev_g_reads = iter(prior_prev_g_reads())
 
                     prime_pres_g_read = None
                     prime_prev_g_read = None

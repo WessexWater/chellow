@@ -7686,7 +7686,8 @@ def virtual_bill(supply_source):
         'tries': {'max': 20, 'period': 1},
         'regexes': [
             r"0034_FINISHED_watkinsexamplecom_supplies_duration\.csv"],
-        'status_code': 200},
+        'status_code': 200
+    },
     {
         'path': '/downloads/'
         '0034_FINISHED_watkinsexamplecom_supplies_duration.csv',

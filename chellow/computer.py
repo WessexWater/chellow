@@ -847,55 +847,86 @@ class SupplySource(DataSource):
                 read_keys = {}
                 pairs = []
 
-                prior_pres_reads = iter(
-                    sess.query(RegisterRead).join(Bill).join(BillType)
-                    .join(RegisterRead.present_type).filter(
-                        RegisterRead.units == 0,
-                        ReadType.code.in_(ACTUAL_READ_TYPES),
-                        Bill.supply == self.supply,
-                        RegisterRead.present_date < chunk_start,
-                        BillType.code != 'W').order_by(
-                        RegisterRead.present_date.desc()).options(
-                            joinedload(RegisterRead.bill)))
-                prior_prev_reads = iter(
-                    sess.query(RegisterRead).join(Bill).join(BillType)
-                    .join(RegisterRead.previous_type).filter(
-                        RegisterRead.units == 0,
-                        ReadType.code.in_(ACTUAL_READ_TYPES),
-                        Bill.supply == self.supply,
-                        RegisterRead.previous_date < chunk_start,
-                        BillType.code != 'W').order_by(
-                        RegisterRead.previous_date.desc()).options(
-                            joinedload(RegisterRead.bill)))
-                next_pres_reads = iter(
-                    sess.query(RegisterRead).join(Bill).join(BillType)
-                    .join(RegisterRead.present_type).filter(
-                        RegisterRead.units == 0,
-                        ReadType.code.in_(ACTUAL_READ_TYPES),
-                        Bill.supply == self.supply,
-                        RegisterRead.present_date >= chunk_start,
-                        BillType.code != 'W').order_by(
-                        RegisterRead.present_date).options(
-                            joinedload(RegisterRead.bill)))
-                next_prev_reads = iter(
-                    sess.query(RegisterRead).join(Bill).join(BillType)
-                    .join(RegisterRead.previous_type).filter(
-                        RegisterRead.units == 0,
-                        ReadType.code.in_(ACTUAL_READ_TYPES),
-                        Bill.supply == self.supply,
-                        RegisterRead.previous_date >= chunk_start,
-                        BillType.code != 'W').order_by(
-                        RegisterRead.previous_date).options(
-                            joinedload(RegisterRead.bill)))
+                def prior_pres_reads():
+                    last_date = chunk_start
+                    while True:
+                        r = sess.query(RegisterRead).join(Bill).join(
+                            BillType).join(RegisterRead.present_type).filter(
+                            RegisterRead.units == 0,
+                            ReadType.code.in_(ACTUAL_READ_TYPES),
+                            Bill.supply == self.supply,
+                            RegisterRead.present_date < last_date,
+                            BillType.code != 'W').order_by(
+                            RegisterRead.present_date.desc()).options(
+                            joinedload(RegisterRead.bill)).first()
+                        if r is None:
+                            break
+                        else:
+                            last_date = r.present_date
+                            yield r
+
+                def prior_prev_reads():
+                    last_date = chunk_start
+                    while True:
+                        r = sess.query(RegisterRead).join(Bill).join(
+                            BillType).join(RegisterRead.previous_type).filter(
+                            RegisterRead.units == 0,
+                            ReadType.code.in_(ACTUAL_READ_TYPES),
+                            Bill.supply == self.supply,
+                            RegisterRead.previous_date < last_date,
+                            BillType.code != 'W').order_by(
+                            RegisterRead.previous_date.desc()).options(
+                            joinedload(RegisterRead.bill)).first()
+                        if r is None:
+                            break
+                        else:
+                            last_date = r.previous_date
+                            yield r
+
+                def next_pres_reads():
+                    last_date = chunk_start
+                    while True:
+                        r = sess.query(RegisterRead).join(Bill).join(
+                            BillType).join(RegisterRead.present_type).filter(
+                            RegisterRead.units == 0,
+                            ReadType.code.in_(ACTUAL_READ_TYPES),
+                            Bill.supply == self.supply,
+                            RegisterRead.present_date >= last_date,
+                            BillType.code != 'W').order_by(
+                            RegisterRead.present_date).options(
+                            joinedload(RegisterRead.bill)).first()
+                        if r is None:
+                            break
+                        else:
+                            last_date = r.present_date + HH
+                            yield r
+
+                def next_prev_reads():
+                    last_date = chunk_start
+                    while True:
+                        r = sess.query(RegisterRead).join(Bill).join(
+                            BillType).join(RegisterRead.previous_type).filter(
+                            RegisterRead.units == 0,
+                            ReadType.code.in_(ACTUAL_READ_TYPES),
+                            Bill.supply == self.supply,
+                            RegisterRead.previous_date >= last_date,
+                            BillType.code != 'W').order_by(
+                            RegisterRead.previous_date).options(
+                            joinedload(RegisterRead.bill)).first()
+                        if r is None:
+                            break
+                        else:
+                            last_date = r.previous_date + HH
+                            yield r
 
                 for is_forwards in [False, True]:
                     if is_forwards:
-                        pres_reads = next_pres_reads
-                        prev_reads = next_prev_reads
+                        pres_reads = iter(next_pres_reads())
+                        prev_reads = iter(next_prev_reads())
                         read_list.reverse()
                     else:
-                        pres_reads = prior_pres_reads
-                        prev_reads = prior_prev_reads
+                        pres_reads = iter(prior_pres_reads())
+                        prev_reads = iter(prior_prev_reads())
 
                     prime_pres_read = None
                     prime_prev_read = None
