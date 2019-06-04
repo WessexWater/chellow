@@ -2,7 +2,7 @@ import traceback
 from sqlalchemy import or_
 from sqlalchemy.sql.expression import null, true
 from chellow.models import Supply, Era, Site, SiteEra, Session
-from chellow.utils import hh_format, hh_range, req_int, req_date
+from chellow.utils import hh_format, hh_range, req_int, req_date, csv_make_val
 import chellow.computer
 import csv
 from flask import g
@@ -54,11 +54,11 @@ def content(supply_id, start_date, finish_date, user):
             ds.contract_func(era.mop_contract, 'virtual_bill')(ds)
             bill = ds.mop_bill
             for title in mop_titles:
-                output_line.append(bill.get(title, ''))
+                output_line.append(csv_make_val(bill.get(title, '')))
                 if title in bill:
                     del bill[title]
             for k in sorted(bill.keys()):
-                output_line.extend([k, bill[k]])
+                output_line.extend([k, csv_make_val(bill[k])])
 
             output_line.append('')
             dc_titles = ds.contract_func(
@@ -69,11 +69,12 @@ def content(supply_id, start_date, finish_date, user):
             ds.contract_func(era.dc_contract, 'virtual_bill')(ds)
             bill = ds.dc_bill
             for title in dc_titles:
-                output_line.append(bill.get(title, ''))
+                output_line.append(csv_make_val(bill.get(title, '')))
                 if title in bill:
                     del bill[title]
+
             for k in sorted(bill.keys()):
-                output_line.extend([k, bill[k]])
+                output_line.extend([k, csv_make_val(bill[k])])
 
             if era.imp_supplier_contract is not None:
                 contract = era.imp_supplier_contract
@@ -86,12 +87,12 @@ def content(supply_id, start_date, finish_date, user):
                 ds.contract_func(contract, 'virtual_bill')(ds)
                 bill = ds.supplier_bill
                 for title in supplier_titles:
-                    output_line.append(bill.get(title, ''))
+                    output_line.append(csv_make_val(bill.get(title, '')))
                     if title in bill:
                         del bill[title]
 
                 for k in sorted(bill.keys()):
-                    output_line.extend([k, bill[k]])
+                    output_line.extend([k, csv_make_val(bill[k])])
 
             if era.exp_supplier_contract is not None:
                 contract = era.exp_supplier_contract
@@ -107,12 +108,12 @@ def content(supply_id, start_date, finish_date, user):
                 ds.contract_func(contract, 'virtual_bill')(ds)
                 bill = ds.supplier_bill
                 for title in supplier_titles:
-                    output_line.append(bill.get(title, ''))
+                    output_line.append(csv_make_val(bill.get(title, '')))
                     if title in bill:
                         del bill[title]
 
                 for k in sorted(bill.keys()):
-                    output_line.extend([k, bill[k]])
+                    output_line.extend([k, csv_make_val(bill[k])])
 
             if titles != prev_titles:
                 prev_titles = titles
