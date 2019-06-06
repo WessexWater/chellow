@@ -302,7 +302,8 @@ prefix = '''
             {%- endif -%}>{{ desc }}</option>
 {%- endmacro -%}
 
-{% macro input_text(name, initial=None, size=None, maxlength=None) %}
+{% macro input_text(
+    name, initial=None, size=None, maxlength=None, placeholder=None) %}
     <input name="{{ name }}" value="
         {%- if request.values.name -%}
             {{ request.values.name }}
@@ -310,11 +311,13 @@ prefix = '''
             {{initial}}
         {%- endif -%}"
         {%- if size %} size="{{ size }}"{% endif %}
+        {%- if placeholder %} placeholder="{{ placeholder }}"{% endif %}
         {%- if maxlength %} maxlength="{{ maxlength }}"{% endif %}>
 {%- endmacro -%}
 
-{% macro input_textarea(name, initial, rows, cols) -%}
-  <textarea name="{{ name }}" rows="{{ rows }}" cols="{{ cols }}">
+{% macro input_textarea(name, initial, rows, cols, placeholder=None) -%}
+  <textarea name="{{ name }}" rows="{{ rows }}" cols="{{ cols }}"
+    {%- if placeholder %} placeholder="{{ placeholder }}"{% endif %}>
     {%- if request.values.name -%}
       {{ request.values.name }}
     {%- else -%}
