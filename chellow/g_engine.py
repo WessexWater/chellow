@@ -5,8 +5,8 @@ import math
 from werkzeug.exceptions import BadRequest
 from collections import defaultdict
 from chellow.models import (
-    GEra, GRegisterRead, GBill, BillType, GReadType, GBatch,
-    get_non_core_contract_id, GRateScript)
+    GEra, GRegisterRead, GBill, BillType, GReadType, get_non_core_contract_id,
+    GRateScript)
 from chellow.utils import (
     HH, hh_max, get_file_rates, hh_min, hh_range, to_ct, utc_datetime_now,
     utc_datetime, PropDict, hh_format, hh_before, hh_after)
@@ -535,60 +535,9 @@ class GDataSource():
                 self.consumption_info += 'pairs - \n' + dumps(pairs)
 
             else:
-                g_bills = []
-                for cand_bill in sess.query(GBill).join(GBatch) \
-                        .join(BillType).filter(
-                            GBill.g_supply == self.g_supply,
-                            GBill.g_reads.any(),
-                            GBatch.g_contract == self.g_contract,
-                            GBill.start_date <= chunk_finish,
-                            GBill.finish_date >= chunk_start,
-                            BillType.code != 'W').order_by(
-                            GBill.issue_date.desc(), GBill.start_date):
-                    can_insert = True
-                    for g_bill in g_bills:
-                        if not cand_bill.start_date > g_bill.finish_date \
-                                and not cand_bill.finish_date < \
-                                g_bill.start_date:
-                            can_insert = False
-                            break
-                    if can_insert:
-                        g_bills.append(cand_bill)
-
-                for g_bill in g_bills:
-                    units_consumed = 0
-                    for prev_value, pres_value in sess.query(
-                            cast(GRegisterRead.prev_value, Float),
-                            cast(GRegisterRead.pres_value, Float)).filter(
-                            GRegisterRead.g_bill == g_bill):
-                        units_diff = pres_value - prev_value
-                        if units_diff < 0:
-                            total_units = 10 ** len(str(int(prev_value)))
-                            c_units = total_units - prev_value + pres_value
-                            if c_units < abs(units_diff):
-                                units_diff = c_units
-
-                        units_consumed += units_diff
-
-                    bill_s = (
-                        g_bill.finish_date - g_bill.start_date +
-                        timedelta(minutes=30)).total_seconds()
-                    hh_units_consumed = units_consumed / (bill_s / (60 * 30))
-
-                    cf = float(hist_g_era.correction_factor)
-                    g_unit = hist_g_era.g_unit
-                    unit_code, unit_factor = g_unit.code, float(g_unit.factor)
-                    for hh_date in hh_range(
-                            caches, g_bill.start_date, g_bill.finish_date):
-                        cv, avg_cv = find_cv(
-                            sess, caches, g_cv_id, hh_date, self.g_ldz_code)
-                        hist_map[hh_date] = {
-                            'unit_code': unit_code,
-                            'unit_factor': unit_factor,
-                            'units_consumed': hh_units_consumed,
-                            'correction_factor': cf,
-                            'calorific_value': cv,
-                            'avg_cv': avg_cv}
+                _bill_kwh(
+                    sess, self.caches, self.g_supply, hist_g_era, chunk_start,
+                    chunk_finish, g_cv_id, hist_map, self.g_ldz_code)
 
         for d in datum_range(
                 sess, self.caches, self.years_back, start_date, finish_date):
@@ -604,6 +553,60 @@ class GDataSource():
                     self.caches, 'g_ug',
                     h['start_date'])['ug_gbp_per_kwh'][self.g_exit_zone_code])
             self.hh_data.append(h)
+
+
+def _bill_kwh(
+        sess, caches, g_supply, hist_g_era, chunk_start, chunk_finish,
+        g_cv_id, hist_map, g_ldz_code):
+    g_bills = []
+    for cand_bill in sess.query(GBill).join(BillType).filter(
+                GBill.g_supply == g_supply, GBill.g_reads.any(),
+                GBill.start_date <= chunk_finish,
+                GBill.finish_date >= chunk_start,
+                BillType.code != 'W').order_by(
+                GBill.issue_date.desc(), GBill.start_date):
+        can_insert = True
+        for g_bill in g_bills:
+            if not cand_bill.start_date > g_bill.finish_date \
+                    and not cand_bill.finish_date < g_bill.start_date:
+                can_insert = False
+                break
+        if can_insert:
+            g_bills.append(cand_bill)
+
+    for g_bill in g_bills:
+        units_consumed = 0
+        for prev_value, pres_value in sess.query(
+                cast(GRegisterRead.prev_value, Float),
+                cast(GRegisterRead.pres_value, Float)).filter(
+                GRegisterRead.g_bill == g_bill):
+            units_diff = pres_value - prev_value
+            if units_diff < 0:
+                total_units = 10 ** len(str(int(prev_value)))
+                c_units = total_units - prev_value + pres_value
+                if c_units < abs(units_diff):
+                    units_diff = c_units
+
+            units_consumed += units_diff
+
+        bill_s = (
+            g_bill.finish_date - g_bill.start_date +
+            timedelta(minutes=30)).total_seconds()
+        hh_units_consumed = units_consumed / (bill_s / (60 * 30))
+
+        cf = float(hist_g_era.correction_factor)
+        g_unit = hist_g_era.g_unit
+        unit_code, unit_factor = g_unit.code, float(g_unit.factor)
+        for hh_date in hh_range(caches, g_bill.start_date, g_bill.finish_date):
+            cv, avg_cv = find_cv(sess, caches, g_cv_id, hh_date, g_ldz_code)
+            hist_map[hh_date] = {
+                'unit_code': unit_code,
+                'unit_factor': unit_factor,
+                'units_consumed': hh_units_consumed,
+                'correction_factor': cf,
+                'calorific_value': cv,
+                'avg_cv': avg_cv
+            }
 
 
 def find_cv(sess, caches, g_cv_id, dt, g_ldz_code):
