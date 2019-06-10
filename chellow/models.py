@@ -694,6 +694,7 @@ class Party(Base, PersistentClass):
         UniqueConstraint('market_role_id', 'participant_id', 'valid_from'),)
 
     def find_llfc_by_code(self, sess, code, date):
+        code = code.zfill(3)
         llfc_query = sess.query(Llfc).filter(
                 Llfc.dno == self, Llfc.code == code)
         if date is None:
