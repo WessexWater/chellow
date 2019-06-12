@@ -19,7 +19,7 @@ import odio
 import sys
 from werkzeug.exceptions import BadRequest
 from chellow.utils import (
-    hh_format, HH, hh_max, hh_min, req_int, req_bool, make_val,
+    hh_format, HH, hh_max, hh_min, req_int, req_str, req_bool, make_val,
     utc_datetime_now, to_utc, utc_datetime, hh_range, PropDict, parse_hh_start)
 from flask import request, g
 from chellow.views import chellow_redirect
@@ -53,9 +53,10 @@ def get_map_list(properties, name):
 
 def content(
         scenario_props, scenario_id, base_name, site_id, supply_id, user,
-        compression):
+        compression, site_codes):
     now = utc_datetime_now()
     report_context = {}
+    print(site_codes)
 
     try:
         comp = report_context['computer']
@@ -117,6 +118,9 @@ def content(
             base_name.append('supply')
             base_name.append(str(supply.id))
             sites = sites.join(SiteEra).join(Era).filter(Era.supply == supply)
+        if site_codes is not None:
+            base_name.append("sitecodes")
+            sites = sites.filter(Site.code.in_(site_codes))
 
         running_name, finished_name = chellow.dloads.make_names(
             '_'.join(base_name) + '.ods', user)
@@ -956,6 +960,11 @@ def do_get(sess):
         base_name.append('monthly_duration')
 
     site_id = req_int('site_id') if 'site_id' in request.values else None
+    if 'site_codes' in request.values:
+        site_codes = req_str('site_codes').splitlines()
+    else:
+        site_codes = None
+
     supply_id = req_int('supply_id') if 'supply_id' in request.values else None
     if 'compression' in request.values:
         compression = req_bool('compression')
@@ -966,7 +975,7 @@ def do_get(sess):
     threading.Thread(
         target=content, args=(
             scenario_props, scenario_id, base_name, site_id, supply_id,
-            user, compression)).start()
+            user, compression, site_codes)).start()
     return chellow_redirect("/downloads", 303)
 
 
