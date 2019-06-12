@@ -276,7 +276,7 @@ def _parse_row(row, row_index, datemode, title_row):
                 bd_add(bd, 'fit-gbp', amount)
             elif description.startswith("CfD FiT Rec - "):
                 bd_add(bd, 'cfd-fit-gbp', amount)
-            elif description.startswith("Flex "):
+            elif description.startswith("Flex"):
                 bd_add(bd, 'reconciliation-gbp', amount)
             elif description.startswith("Legacy TNUoS Reversal "):
                 bd_add(bd, 'triad-gbp', amount)
