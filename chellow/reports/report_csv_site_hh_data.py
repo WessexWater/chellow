@@ -26,8 +26,9 @@ def content(sess, start_date, finish_date, site_id, user):
         writer.writerow(
             (
                 "Site Id", "Site Name", "Associated Site Ids", "Sources",
-                "Generator Types", "Date", "Imported kWh", "Displaced kWh",
-                "Exported kWh", "Used kWh", "Parasitic kWh", "Generated kWh",
+                "Generator Types", "HH Start UTC", "Imported kWh",
+                "Displaced kWh", "Exported kWh", "Used kWh", "Parasitic kWh",
+                "Generated kWh", "3rd Party Import", "3rd Party Export",
                 "Meter Type"))
 
         sites = sess.query(Site).order_by(Site.code)
@@ -67,8 +68,11 @@ def content(sess, start_date, finish_date, site_id, user):
                         site.code, site.name, assoc_str, sources_str,
                         generators_str, hh_format(hh['start_date']),
                         hh['imp_net'], hh['displaced'], hh['exp_net'],
-                        hh['used'], hh['exp_gen'], hh['imp_gen'],
-                        metering_type))
+                        hh['used'], hh['exp_gen'], hh['imp_gen'], hh['imp_3p'],
+                        hh['exp_3p'], metering_type
+                    )
+                )
+
     except BaseException:
         msg = traceback.format_exc()
         sys.stderr.write(msg)
