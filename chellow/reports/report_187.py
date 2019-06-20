@@ -37,7 +37,7 @@ def content(start_date, finish_date, supply_id, mpan_cores, is_zipped, user):
     base_name = "hh_data_row_" + start_date.strftime("%Y%m%d%H%M") + \
         file_extension
 
-    tls = ["Site Code", "Imp MPAN Core", "Exp Mpan Core", "Start Date"]
+    tls = ["Site Code", "Imp MPAN Core", "Exp Mpan Core", "HH Start UTC"]
     for polarity in ('Import', 'Export'):
         for suffix in (
                 "ACTIVE kWh", "ACTIVE Status", "ACTIVE Modified",

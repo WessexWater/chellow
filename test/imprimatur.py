@@ -10685,7 +10685,7 @@ def virtual_bill(supply_source):
             r"\('Server', '[^']*'\)\s*"
             r"\('Transfer-Encoding', 'chunked'\)\s*"
             r'Import MPAN Core,Export MPAN Core,Import Related\?,Channel Type,'
-            r'Date,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,'
+            r'HH Start UTC,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,'
             r'19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,'
             r'40,41,42,43,44,45,46,47\s*'
             r'NA,22 0470 7514 535,TRUE,ACTIVE,2008-07-01,*\s*'

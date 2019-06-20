@@ -22,7 +22,8 @@ def content(start_date, finish_date, site_id, typ, user):
         f = open(running_name, mode='w', newline='')
         writer = csv.writer(f, lineterminator='\n')
         writer.writerow(
-            ('Site Code', 'Type', 'Date') + tuple(map(str, range(1, 49))))
+            ('Site Code', 'Type', 'HH Start UTC') +
+            tuple(map(str, range(1, 49))))
         site = Site.get_by_id(sess, site_id)
         line = None
         for hh in site.hh_data(sess, start_date, finish_date):

@@ -48,7 +48,7 @@ def content(
         titles = ','.join(
             [
                 'Import MPAN Core', 'Export MPAN Core', 'Import Related?',
-                'Channel Type', 'Date'] + list(map(str, range(48)))
+                'Channel Type', 'HH Start UTC'] + list(map(str, range(48)))
         )
 
         running_name, finished_name = chellow.dloads.make_names(
