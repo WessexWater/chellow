@@ -88,9 +88,23 @@ class Parser():
                     raise BadRequest(
                         "Can't find a decimal at column I, expecting the net "
                         "GBP.")
-
                 net = round(net_dec, 2)
 
+                vat_dec = get_dec(row, 9)
+                if vat_dec is None:
+                    raise BadRequest(
+                        "Can't find a decimal at column J, expecting the VAT "
+                        "GBP.")
+
+                vat = round(vat_dec, 2)
+
+                gross_dec = get_dec(row, 10)
+                if gross_dec is None:
+                    raise BadRequest(
+                        "Can't find a decimal at column K, expecting the "
+                        "gross GBP.")
+
+                gross = round(gross_dec, 2)
                 era = sess.query(Era).filter(
                     or_(
                         Era.imp_mpan_core == mpan_core,
@@ -119,12 +133,12 @@ class Parser():
 
                 bills.append(
                     {
-                        'bill_type_code': 'N', 'kwh': Decimal(0),
-                        'vat': Decimal('0.00'), 'net': net, 'gross': net,
-                        'reads': [], 'breakdown': breakdown,
-                        'account': account, 'issue_date': issue_date,
-                        'start_date': start_date, 'finish_date': finish_date,
-                        'mpans': [mpan_core], 'reference': '_'.join(
+                        'bill_type_code': 'N', 'kwh': Decimal(0), 'vat': vat,
+                        'net': net, 'gross': gross, 'reads': [],
+                        'breakdown': breakdown, 'account': account,
+                        'issue_date': issue_date, 'start_date': start_date,
+                        'finish_date': finish_date, 'mpans': [mpan_core],
+                        'reference': '_'.join(
                             (
                                 start_date.strftime('%Y%m%d'),
                                 finish_date.strftime('%Y%m%d'),
