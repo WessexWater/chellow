@@ -91,6 +91,8 @@ class Parser():
                     days=1) - HH
                 meter_rate = get_dec(row, 7)
                 net = round(get_dec(row, 8), 2)
+                vat = round(get_dec(row, 9), 2)
+                gross = round(get_dec(row, 10), 2)
 
                 era = sess.query(Era).filter(
                     or_(
@@ -121,12 +123,12 @@ class Parser():
 
                 bills.append(
                     {
-                        'bill_type_code': 'N', 'kwh': Decimal(0),
-                        'vat': Decimal('0.00'), 'net': net, 'gross': net,
-                        'reads': [], 'breakdown': breakdown,
-                        'account': account, 'issue_date': issue_date,
-                        'start_date': start_date, 'finish_date': finish_date,
-                        'mpans': [mpan_core], 'reference': '_'.join(
+                        'bill_type_code': 'N', 'kwh': Decimal(0), 'net': net,
+                        'vat': vat, 'gross': gross, 'reads': [],
+                        'breakdown': breakdown, 'account': account,
+                        'issue_date': issue_date, 'start_date': start_date,
+                        'finish_date': finish_date, 'mpans': [mpan_core],
+                        'reference': '_'.join(
                             (
                                 start_date.strftime('%Y%m%d'),
                                 finish_date.strftime('%Y%m%d'),
