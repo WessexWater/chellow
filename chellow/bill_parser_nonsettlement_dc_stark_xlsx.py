@@ -122,6 +122,7 @@ class Parser():
                     account = era.dc_account
 
                 net = METER_RATE / 12
+                vat = round(net * Decimal('0.2'), 2)
 
                 breakdown = {
                     'raw_lines': [str(title_row)], 'cop': ['5'],
@@ -131,12 +132,12 @@ class Parser():
 
                 bills.append(
                     {
-                        'bill_type_code': 'N', 'kwh': Decimal(0),
-                        'vat': Decimal('0.00'), 'net': net, 'gross': net,
-                        'reads': [], 'breakdown': breakdown,
-                        'account': account, 'issue_date': issue_date,
-                        'start_date': start_date, 'finish_date': finish_date,
-                        'mpans': [mpan_core], 'reference': '_'.join(
+                        'bill_type_code': 'N', 'kwh': Decimal(0), 'vat': vat,
+                        'net': net, 'gross': net + vat, 'reads': [],
+                        'breakdown': breakdown, 'account': account,
+                        'issue_date': issue_date, 'start_date': start_date,
+                        'finish_date': finish_date, 'mpans': [mpan_core],
+                        'reference': '_'.join(
                             (
                                 start_date.strftime('%Y%m%d'),
                                 finish_date.strftime('%Y%m%d'),
