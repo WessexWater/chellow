@@ -4539,7 +4539,7 @@ def virtual_bill(supply_source):
             r'07-008,3423760005,N,253,36.16,1.80,'
             r'2010-01-19 00:00,2010-04-20 23:30,22 1065 3921 534,,'
             r'CI017,Roselands,2010-01-19 00:00,2010-04-20 23:30,10,'
-            r'0.0,36.16,0,36.16,253.0,252.99999\d*,,'
+            r'0,36.16,0,36.16,253.0,252.99999\d*,,'
         ],
         'status_code': 200
     },
@@ -5547,7 +5547,7 @@ def virtual_bill(supply_source):
             r'imp-supplier-sum-msp-kwh,imp-supplier-problem',
             r'22 9974 3438 105,,CI005,Wheal Rodney,SA341665,'
             r'2010-04-01 00:00,2010-04-13 23:30,,0,,,,,,'
-            r',0.0047,,0.0,0.0,0.0,0.0,'],
+            r',0.0047,,0.0,0.0,0.0,0,'],
         'status_code': 200},
     {
         'name': "NHH CSV import",
@@ -6234,14 +6234,8 @@ def virtual_bill(supply_source):
             r'<table:table-cell '
             r'office:date-value="2010-07-31T23:30:00" '
             r'office:value-type="date" table:style-name="cell_date"/>\s*'
-            r'<table:table-cell office:value="0.0" '
-            r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="0" '
-            r'office:value-type="float" table:number-columns-repeated="6"/>\s*'
-            r'<table:table-cell office:value="0.0" '
-            r'office:value-type="float"/>\s*'
-            r'<table:table-cell office:value="0" '
-            r'office:value-type="float"/>\s*'
+            r'office:value-type="float" table:number-columns-repeated="9"/>\s*'
             r'<table:table-cell office:value="20.0" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="0" '
@@ -6267,7 +6261,7 @@ def virtual_bill(supply_source):
             r'<table:table-cell office:string-value="" '
             r'office:value-type="string"/>\s*'
             r'<table:table-cell table:number-columns-repeated="21"/>\s*'
-            r'<table:table-cell office:value="0.0" '
+            r'<table:table-cell office:value="0" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell table:number-columns-repeated="12"/>\s*'
             r'</table:table-row>\s*'
@@ -6302,15 +6296,7 @@ def virtual_bill(supply_source):
             r'office:value-type="date" table:style-name="cell_date"/>\s*'
             r'<table:table-cell office:value="0" '
             r'office:value-type="float" '
-            r'table:number-columns-repeated="4"/>\s*'
-            r'<table:table-cell office:value="0.0" '
-            r'office:value-type="float"/>\s*'
-            r'<table:table-cell office:value="0" office:value-type="float" '
-            r'table:number-columns-repeated="2"/>\s*'
-            r'<table:table-cell office:value="0.0" office:value-type="float" '
-            r'table:number-columns-repeated="2"/>\s*'
-            r'<table:table-cell office:value="0" office:value-type="float" '
-            r'table:number-columns-repeated="4"/>\s*'
+            r'table:number-columns-repeated="13"/>\s*'
             r'<table:table-cell office:value="20.0" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="0" '
@@ -6336,12 +6322,15 @@ def virtual_bill(supply_source):
             r'<table:table-cell office:string-value="" '
             r'office:value-type="string"/>\s*'
             r'<table:table-cell table:number-columns-repeated="21"/>\s*'
-            r'<table:table-cell office:value="0.0" '
+            r'<table:table-cell office:value="0" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell table:number-columns-repeated="12"/>\s*'
             r'</table:table-row>\s*'
-            r'</table:table>'],
-        'status_code': 200},
+            r'</table:table>'
+        ],
+        'status_code': 200
+    },
+
     {
         'name': "Try creating and deleting a rate script for a non-core "
         "contract (configuration).",
@@ -7028,7 +7017,7 @@ def virtual_bill(supply_source):
             r"metered-export-estimated-kwh,billed-export-kwh,"
             r"billed-export-net-gbp,problem,timestamp",
             r'10,"2","net","","2011-01-31 23:30","03","I02D89150","CI017",'
-            r'"Roselands","nhh","22 1065 3921 534","0.0","10.0","0","150.0",'
+            r'"Roselands","nhh","22 1065 3921 534","0","10.0","0","150.0",'
             r'"98.17","None","0","0","0","0",""']},
     {
         'name': "Try monthly supply duration with a half-hourly.",
@@ -7862,8 +7851,10 @@ def virtual_bill(supply_source):
             r'imp-supplier-sum-msp-kwh,imp-supplier-problem',
             r'22 1065 3921 534,,CI017,Roselands,SA342376,'
             r'2010-01-01 00:00,2010-01-03 23:30,,0,,,,,,'
-            r',,,0.0,0.0,0.0,0.0,'],
-        'status_code': 200},
+            r',,,0.0,0.0,0.0,0,'
+        ],
+        'status_code': 200
+    },
     {
         'name': "A bill check with multiple covered bills",
         'path': '/reports/111?bill_id=8',
@@ -8150,8 +8141,10 @@ def virtual_bill(supply_source):
         '0044_FINISHED_watkinsexamplecom_supply_virtual_bills_7.csv',
         'regexes': [
             r'22 4862 4512 332,,CH023,Treglisson,141 5532,2013-09-29 00:00,'
-            r'2013-11-28 23:30,,20,,,0,,,,0.00524,,0.0,0.0,0.0,0.0,'],
-        'status_code': 200},
+            r'2013-11-28 23:30,,20,,,0,,,,0.00524,,0.0,0.0,0.0,0,'
+        ],
+        'status_code': 200
+    },
     {
         'name': "Un-ignore a site snag",
         'path': '/site_snags/36/edit',
@@ -10605,14 +10598,8 @@ def virtual_bill(supply_source):
             r'<table:table-cell '
             r'office:date-value="2016-02-29T23:30:00" '
             r'office:value-type="date" table:style-name="cell_date"/>\s*'
-            r'<table:table-cell office:value="0.0" '
-            r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="0" '
-            r'office:value-type="float" table:number-columns-repeated="6"/>\s*'
-            r'<table:table-cell office:value="0.0" '
-            r'office:value-type="float"/>\s*'
-            r'<table:table-cell office:value="0" '
-            r'office:value-type="float"/>\s*'
+            r'office:value-type="float" table:number-columns-repeated="9"/>\s*'
             r'<table:table-cell office:value="10.0" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="0" '
@@ -10642,9 +10629,13 @@ def virtual_bill(supply_source):
             r'office:value-type="string"/>\s*'
             r'<table:table-cell table:number-columns-repeated="19"/>\s*'
             r'<table:table-cell office:value="0.0" '
-            r'office:value-type="float" table:number-columns-repeated="3"/>\s*'
+            r'office:value-type="float" table:number-columns-repeated="2"/>\s*'
+            r'<table:table-cell office:value="0" '
+            r'office:value-type="float"/>\s*'
             r'<table:table-cell table:number-columns-repeated="15"/>\s*'
-            r'</table:table-row>']},
+            r'</table:table-row>'
+        ]
+    },
 
     {
         'name': "Check CSV Supplies HH Data. With mpan_cores",

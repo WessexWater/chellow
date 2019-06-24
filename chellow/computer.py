@@ -1077,7 +1077,8 @@ class SupplySource(DataSource):
                                     prime_pres_read = None
 
                         if len(read_list) > 1:
-                            pair = _find_pair(is_forwards, read_list)
+                            pair = _find_pair(
+                                sess, caches, is_forwards, read_list)
                             if pair is not None:
                                 pairs.append(pair)
                                 if not is_forwards or (
@@ -1451,7 +1452,7 @@ order by hh_datum.start_date
                 yield ds
 
 
-def _find_pair(is_forwards, read_list):
+def _find_pair(sess, caches, is_forwards, read_list):
     if is_forwards:
         back, front = read_list[-2], read_list[-1]
     else:
@@ -1463,11 +1464,12 @@ def _find_pair(is_forwards, read_list):
     front_date = front['date']
 
     if back['msn'] == front['msn'] and back_reads.keys() == front_reads.keys():
-        num_hh = (front_date - back_date).total_seconds() / (30 * 60)
+        r = hh_range(caches, back_date, front_date - HH)
 
         tprs = {}
         for tpr_code, initial_val in back_reads.items():
             end_val = front_reads[tpr_code]
+            num_hh = len([d for d in r if is_tpr(sess, caches, tpr_code, d)])
 
             # Clocked?
             if end_val - initial_val < 0:
@@ -1477,7 +1479,7 @@ def _find_pair(is_forwards, read_list):
             kwh = end_val * front['coefficients'][tpr_code] - \
                 initial_val * back['coefficients'][tpr_code]
 
-            tprs[tpr_code] = kwh / num_hh
+            tprs[tpr_code] = kwh / num_hh if num_hh > 0 else 0
 
         return {
             'start-date': back_date,
@@ -1516,16 +1518,9 @@ def _find_hhs(caches, sess, pairs, chunk_start, chunk_finish):
 
     hhs = {}
     for pair in pairs:
-        pair_start = pair['start-date']
-        pair_finish = pair['finish-date']
-        pair_hhs = (pair_finish + HH - pair_start).total_seconds() / (60 * 30)
-        d_range = hh_range(caches, pair_start, pair_finish)
-        for tpr_code, pair_kwh in pair['tprs'].items():
+        d_range = hh_range(caches, pair['start-date'], pair['finish-date'])
+        for tpr_code, kwh in pair['tprs'].items():
             dates = [d for d in d_range if is_tpr(sess, caches, tpr_code, d)]
-
-            len_dates = len(dates)
-
-            kwh = pair_kwh * pair_hhs / len_dates if len_dates > 0 else 0
 
             for date in dates:
                 hhs[date] = {

@@ -3,6 +3,8 @@ import chellow.computer
 
 
 def test_find_pair(mocker):
+    sess = mocker.Mock()
+    caches = {}
     is_forwards = True
     first_read = {
         'date': utc_datetime(2010, 1, 1),
@@ -15,7 +17,7 @@ def test_find_pair(mocker):
         'msn': 'kh'
     }
     read_list = [first_read, second_read]
-    pair = chellow.computer._find_pair(is_forwards, read_list)
+    pair = chellow.computer._find_pair(sess, caches, is_forwards, read_list)
     assert pair['start-date'] == utc_datetime(2010, 1, 1)
 
 
