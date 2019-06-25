@@ -120,7 +120,7 @@ def content(running_name, finished_name, date, supply_id, mpan_cores):
 
             metering_type = era.meter_category
 
-            if metering_type == 'nhh':
+            if metering_type in ('nhh', 'amr'):
                 latest_prev_normal_read = sess.query(RegisterRead). \
                     join(Bill).join(RegisterRead.previous_type).filter(
                         ReadType.code.in_(NORMAL_READ_TYPES),
