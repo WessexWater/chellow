@@ -3021,7 +3021,7 @@ def virtual_bill(supply_source):
     {
         'name': "Supplies Monthly Duration",
         'path': '/reports/247?site_id=5&months=1&finish_year=2009&'
-        'finish_month=03&compression=False',
+        'finish_month=03&compression=False&site_codes=',
         'status_code': 303
     },
     {

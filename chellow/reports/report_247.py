@@ -299,7 +299,6 @@ def content(
         compression, site_codes):
     now = utc_datetime_now()
     report_context = {}
-    print(site_codes)
 
     try:
         comp = report_context['computer']
@@ -361,7 +360,7 @@ def content(
             base_name.append('supply')
             base_name.append(str(supply.id))
             sites = sites.join(SiteEra).join(Era).filter(Era.supply == supply)
-        if site_codes is not None:
+        if len(site_codes) > 0:
             base_name.append("sitecodes")
             sites = sites.filter(Site.code.in_(site_codes))
 
@@ -957,7 +956,7 @@ def do_get(sess):
     if 'site_codes' in request.values:
         site_codes = req_str('site_codes').splitlines()
     else:
-        site_codes = None
+        site_codes = []
 
     supply_id = req_int('supply_id') if 'supply_id' in request.values else None
     if 'compression' in request.values:
