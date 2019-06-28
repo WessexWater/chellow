@@ -1901,7 +1901,7 @@ class Era(Base, PersistentClass):
         if len(dc_account) == 0:
             raise BadRequest("An era must have a DC account reference.")
 
-        self.msn = msn
+        self.msn = msn.strip()
         self.pc = pc
         self.ssc = ssc
 
