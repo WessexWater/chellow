@@ -246,7 +246,7 @@ class Parser():
                 vatp = self.parser.elements[4]
                 if 'vat_rate' not in breakdown:
                     breakdown['vat_rate'] = set()
-                breakdown['vat_rate'].add(vatp[0])
+                breakdown['vat_rate'].add(to_decimal(vatp) / Decimal(100000))
 
                 uvla = self.parser.elements[5]
                 net += to_decimal(uvla) / Decimal('100')
