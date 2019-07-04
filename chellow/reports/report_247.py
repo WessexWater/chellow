@@ -96,8 +96,7 @@ def _make_site_deltas(
     scenario_parasitic = site_scenario_hh['parasitic']
     scenario_gen_net = site_scenario_hh['gen_net']
 
-    month_start = utc_datetime(
-        earliest_delta.year, earliest_delta.month)
+    month_start = utc_datetime(earliest_delta.year, earliest_delta.month)
     while month_start <= latest_delta:
         month_finish = month_start + relativedelta(months=1) - HH
         chunk_start = hh_max(month_start, earliest_delta)
