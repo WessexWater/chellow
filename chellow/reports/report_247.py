@@ -81,11 +81,16 @@ def _make_site_deltas(
                     "Can't interpret the row " + str(cells) +
                     " it should be of the form 'timestamp, kWh'")
 
-            date_str, kw_str = cells
+            date_str, kwh_str = cells
             ts = parse_hh_start(date_str)
             earliest_delta = min(ts, earliest_delta)
             latest_delta = max(ts, latest_delta)
-            hh_data[ts] = float(kw_str)
+            try:
+                hh_data[ts] = float(kwh_str)
+            except ValueError as e:
+                raise BadRequest(
+                    "When looking at " + typ + " hh data, can't parse the "
+                    "kWh at " + date_str + ": " + str(e))
             found_hh = True
 
     if not found_hh:
