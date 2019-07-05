@@ -843,7 +843,7 @@ class SupplySource(DataSource):
                             }
 
             elif self.bill is None and hist_measurement_type in ('nhh', 'amr'):
-                _no_bill_nhh(
+                self.consumption_info += _no_bill_nhh(
                     sess, caches, self.supply, chunk_start, chunk_finish,
                     hist_map, forecast_date)
             elif self.bill is not None and hist_measurement_type in (
