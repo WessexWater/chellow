@@ -846,6 +846,7 @@ class SupplySource(DataSource):
                 self.consumption_info += _no_bill_nhh(
                     sess, caches, self.supply, chunk_start, chunk_finish,
                     hist_map, forecast_date)
+                print(self.consumption_info)
             elif self.bill is not None and hist_measurement_type in (
                     'nhh', 'amr'):
                 hhd = {}
@@ -1205,6 +1206,9 @@ order by hh_datum.start_date
 
 
 def _find_pair(sess, caches, is_forwards, read_list):
+    if len(read_list) < 2:
+        return
+
     if is_forwards:
         back, front = read_list[-2], read_list[-1]
     else:
@@ -1295,218 +1299,133 @@ def _set_status(hhs, read_list, forecast_date):
             v['status'] = 'E'
 
 
-def _query_generator(query):
+def _read_generator(sess, supply, start, is_forwards, is_prev):
     offset = 0
+
+    if is_prev:
+        r_typ = RegisterRead.previous_type
+        r_dt = RegisterRead.previous_date
+        r_vl = RegisterRead.previous_value
+    else:
+        r_typ = RegisterRead.present_type
+        r_dt = RegisterRead.present_date
+        r_vl = RegisterRead.present_value
+
+    q = sess.query(RegisterRead).join(Bill).join(BillType).join(r_typ).filter(
+        RegisterRead.units == 0, ReadType.code.in_(ACTUAL_READ_TYPES),
+        Bill.supply == supply, BillType.code != 'W').options(
+            joinedload(RegisterRead.bill))
+
+    if is_forwards:
+        q = q.filter(r_dt >= start).order_by(r_dt)
+    else:
+        q = q.filter(r_dt < start).order_by(r_dt.desc())
+
     while True:
-        r = query.offset(offset).first()
+        r = q.offset(offset).first()
         if r is None:
             break
+
+        offset += 1
+
+        if is_prev:
+            dt = r.previous_date
         else:
-            offset += 1
-            yield r
+            dt = r.present_date
+
+        bill = sess.query(Bill).join(BillType).filter(
+            Bill.supply == supply, Bill.reads.any(),
+            Bill.finish_date >= r.bill.start_date,
+            Bill.start_date <= r.bill.finish_date,
+            BillType.code != 'W').order_by(
+            Bill.issue_date.desc(), BillType.code).first()
+
+        if bill.id != r.bill.id:
+            continue
+
+        era = supply.find_era_at(sess, dt)
+        if era is None:
+            era_coeff = None
+        else:
+            era_properties = PropDict(
+                chellow.utils.url_root + 'eras/' + str(era.id),
+                loads(era.properties))
+            try:
+                era_coeff = float(era_properties['coefficient'])
+            except KeyError:
+                era_coeff = None
+
+        reads = {}
+        coeffs = {}
+        for coeff, value, tpr_code in sess.query(
+                cast(RegisterRead.coefficient, Float), cast(r_vl, Float),
+                Tpr.code).filter(
+                RegisterRead.units == 0, RegisterRead.bill == r.bill,
+                RegisterRead.msn == r.msn, RegisterRead.tpr_id == Tpr.id,
+                r_dt == dt):
+            reads[tpr_code] = value
+            coeffs[tpr_code] = coeff if era_coeff is None else era_coeff
+
+        read = {
+            'date': dt, 'reads': reads, 'coefficients': coeffs, 'msn': r.msn
+        }
+        # print("read gen", read)
+        yield read
 
 
 def _no_bill_nhh(sess, caches, supply, start, finish, hist_map, forecast_date):
     read_list = []
-    read_keys = {}
     pairs = []
+    read_keys = set()
 
-    prior_pres_reads = _query_generator(
-        sess.query(RegisterRead).join(Bill).join(BillType).join(
-            RegisterRead.present_type).filter(
-            RegisterRead.units == 0, ReadType.code.in_(ACTUAL_READ_TYPES),
-            Bill.supply == supply, RegisterRead.present_date < start,
-            BillType.code != 'W').order_by(
-            RegisterRead.present_date.desc()).options(
-            joinedload(RegisterRead.bill)))
-
-    prior_prev_reads = _query_generator(
-        sess.query(RegisterRead).join(Bill).join(BillType).join(
-            RegisterRead.previous_type).filter(
-            RegisterRead.units == 0, ReadType.code.in_(ACTUAL_READ_TYPES),
-            Bill.supply == supply, RegisterRead.previous_date < start,
-            BillType.code != 'W').order_by(
-            RegisterRead.previous_date.desc()).options(
-            joinedload(RegisterRead.bill)))
-
-    next_pres_reads = _query_generator(
-        sess.query(RegisterRead).join(Bill).join(BillType).join(
-            RegisterRead.present_type).filter(
-            RegisterRead.units == 0, ReadType.code.in_(ACTUAL_READ_TYPES),
-            Bill.supply == supply, RegisterRead.present_date >= start,
-            BillType.code != 'W').order_by(RegisterRead.present_date).options(
-            joinedload(RegisterRead.bill)))
-
-    next_prev_reads = _query_generator(
-        sess.query(RegisterRead).join(Bill).join(BillType).join(
-            RegisterRead.previous_type).filter(
-            RegisterRead.units == 0, ReadType.code.in_(ACTUAL_READ_TYPES),
-            Bill.supply == supply, RegisterRead.previous_date >= start,
-            BillType.code != 'W').order_by(RegisterRead.previous_date).options(
-            joinedload(RegisterRead.bill)))
-
-    for is_forwards in [False, True]:
+    for is_forwards in (False, True):
+        prev_reads = iter(
+            _read_generator(sess, supply, start, is_forwards, True))
+        pres_reads = iter(
+            _read_generator(sess, supply, start, is_forwards, False))
         if is_forwards:
-            pres_reads = iter(next_pres_reads)
-            prev_reads = iter(next_prev_reads)
             read_list.reverse()
-        else:
-            pres_reads = iter(prior_pres_reads)
-            prev_reads = iter(prior_prev_reads)
 
-        prime_pres_read = None
-        prime_prev_read = None
-        while True:
+        for read in _make_reads(is_forwards, prev_reads, pres_reads):
+            print("read form make", read)
+            read_key = read['date'], read['msn']
+            if read_key in read_keys:
+                continue
+            read_keys.add(read_key)
 
-            while prime_pres_read is None:
-                try:
-                    pres_read = next(pres_reads)
-                except StopIteration:
+            read_list.append(read)
+            pair = _find_pair(sess, caches, is_forwards, read_list)
+            if pair is not None:
+                pairs.append(pair)
+                if not is_forwards or (
+                        is_forwards and read_list[-1]['date'] > finish):
                     break
-
-                pres_date = pres_read.present_date
-                pres_msn = pres_read.msn
-                read_key = '_'.join([str(pres_date), pres_msn])
-                if read_key in read_keys:
-                    continue
-
-                pres_bill = sess.query(Bill).join(BillType).filter(
-                    Bill.supply == supply, Bill.reads.any(),
-                    Bill.finish_date >= pres_read.bill.start_date,
-                    Bill.start_date <= pres_read.bill.finish_date,
-                    BillType.code != 'W').order_by(
-                    Bill.issue_date.desc(), BillType.code).first()
-
-                if pres_bill.id != pres_read.bill_id:
-                    continue
-
-                pres_era = supply.find_era_at(sess, pres_date)
-                if pres_era is None:
-                    era_coefficient = None
-                else:
-                    pres_era_properties = PropDict(
-                        chellow.utils.url_root + 'eras/' + str(pres_era.id),
-                        loads(pres_era.properties))
-                    try:
-                        era_coefficient = float(
-                            pres_era_properties['coefficient'])
-                    except KeyError:
-                        era_coefficient = None
-
-                reads = {}
-                coefficients = {}
-                for read in sess.query(RegisterRead).filter(
-                        RegisterRead.units == 0,
-                        RegisterRead.bill == pres_bill,
-                        RegisterRead.present_date == pres_date,
-                        RegisterRead.msn == pres_msn).options(
-                        joinedload('tpr')):
-                    code = read.tpr.code
-                    reads[code] = float(read.present_value)
-                    coefficients[code] = float(read.coefficient) \
-                        if era_coefficient is None else era_coefficient
-
-                prime_pres_read = {
-                    'date': pres_date, 'reads': reads,
-                    'coefficients': coefficients, 'msn': pres_msn
-                }
-                read_keys[read_key] = None
-
-            while prime_prev_read is None:
-
-                try:
-                    prev_read = next(prev_reads)
-                except StopIteration:
-                    break
-
-                prev_date = prev_read.previous_date
-                prev_msn = prev_read.msn
-                read_key = '_'.join([str(prev_date), prev_msn])
-                if read_key in read_keys:
-                    continue
-
-                prev_bill = sess.query(Bill).join(BillType).filter(
-                    Bill.supply == supply, Bill.reads.any(),
-                    Bill.finish_date >= prev_read.bill.start_date,
-                    Bill.start_date <= prev_read.bill.finish_date,
-                    BillType.code != 'W').order_by(
-                    Bill.issue_date.desc(), BillType.code).first()
-                if prev_bill.id != prev_read.bill_id:
-                    continue
-
-                prev_era = supply.find_era_at(sess, prev_date)
-                if prev_era is None:
-                    era_coefficient = None
-                else:
-                    prev_era_properties = PropDict(
-                        chellow.utils.url_root + 'eras/' + str(prev_era.id),
-                        loads(prev_era.properties))
-                    try:
-                        era_coefficient = float(
-                            prev_era_properties['coefficient'])
-                    except KeyError:
-                        era_coefficient = None
-
-                reads = {}
-                coefficients = {}
-                for read in sess.query(RegisterRead).filter(
-                        RegisterRead.units == 0,
-                        RegisterRead.bill == prev_bill,
-                        RegisterRead.previous_date == prev_date,
-                        RegisterRead.msn == prev_msn).options(
-                        joinedload('tpr')):
-                    reads[read.tpr.code] = float(read.previous_value)
-                    coefficients[read.tpr.code] = float(
-                        read.coefficient) if \
-                        era_coefficient is None else era_coefficient
-
-                prime_prev_read = {
-                    'date': prev_date, 'reads': reads,
-                    'coefficients': coefficients, 'msn': prev_msn
-                }
-                read_keys[read_key] = None
-
-            if prime_pres_read is None and prime_prev_read is None:
-                break
-            elif prime_pres_read is None:
-                read_list.append(prime_prev_read)
-                prime_prev_read = None
-            elif prime_prev_read is None:
-                read_list.append(prime_pres_read)
-                prime_pres_read = None
-            else:
-                if is_forwards:
-                    if prime_prev_read['date'] == \
-                            prime_pres_read['date'] or \
-                            prime_pres_read['date'] < \
-                            prime_prev_read['date']:
-                        read_list.append(prime_pres_read)
-                        prime_pres_read = None
-                    else:
-                        read_list.append(prime_prev_read)
-                        prime_prev_read = None
-                else:
-                    if prime_prev_read['date'] == \
-                            prime_pres_read['date'] or \
-                            prime_prev_read['date'] > \
-                            prime_pres_read['date']:
-                        read_list.append(prime_prev_read)
-                        prime_prev_read = None
-                    else:
-                        read_list.append(prime_pres_read)
-                        prime_pres_read = None
-
-            if len(read_list) > 1:
-                pair = _find_pair(
-                    sess, caches, is_forwards, read_list)
-                if pair is not None:
-                    pairs.append(pair)
-                    if not is_forwards or (
-                            is_forwards and read_list[-1]['date'] > finish):
-                        break
 
     consumption_info = 'read list - \n' + dumps(read_list) + "\n"
     hhs = _find_hhs(caches, sess, pairs, start, finish)
     _set_status(hhs, read_list, forecast_date)
     hist_map.update(hhs)
     return consumption_info + 'pairs - \n' + dumps(pairs)
+
+
+def _make_reads(forwards, prev_reads, pres_reads):
+    prev_read = next(prev_reads, None)
+    pres_read = next(pres_reads, None)
+    while prev_read is not None or pres_read is not None:
+
+        if prev_read is None:
+            yield pres_read
+            pres_read = next(pres_reads, None)
+
+        elif pres_read is None:
+            yield prev_read
+            prev_read = next(prev_reads, None)
+
+        else:
+            if (forwards and prev_read['date'] < pres_read['date']) or (
+                    not forwards and prev_read['date'] >= pres_read['date']):
+                yield prev_read
+                prev_read = next(prev_reads, None)
+            else:
+                yield pres_read
+                pres_read = next(pres_reads, None)

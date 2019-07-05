@@ -92,3 +92,42 @@ def test_set_status(mocker):
             'status': 'A'
         }
     }
+
+
+def test_make_reads_forwards(mocker):
+    is_forwards = True
+    msn = 'k'
+    read_a = {'date': utc_datetime(2018, 3, 10), 'msn': msn}
+    read_b = {'date': utc_datetime(2018, 3, 13), 'msn': msn}
+    prev_reads = iter([read_a])
+    pres_reads = iter([read_b])
+    actual = list(
+        chellow.computer._make_reads(is_forwards, prev_reads, pres_reads))
+    expected = [read_a, read_b]
+    assert actual == expected
+
+
+def test_make_reads_forwards_meter_change(mocker):
+    is_forwards = True
+    dt = utc_datetime(2018, 3, 1)
+    read_a = {'date': dt, 'msn': 'a'}
+    read_b = {'date': dt, 'msn': 'b'}
+    prev_reads = iter([read_a])
+    pres_reads = iter([read_b])
+    actual = list(
+        chellow.computer._make_reads(is_forwards, prev_reads, pres_reads))
+    expected = [read_b, read_a]
+    assert actual == expected
+
+
+def test_make_reads_backwards(mocker):
+    is_forwards = False
+    msn = 'k'
+    read_a = {'date': utc_datetime(2018, 3, 10), 'msn': msn}
+    read_b = {'date': utc_datetime(2018, 3, 13), 'msn': msn}
+    prev_reads = iter([read_a])
+    pres_reads = iter([read_b])
+    actual = list(
+        chellow.computer._make_reads(is_forwards, prev_reads, pres_reads))
+    expected = [read_b, read_a]
+    assert actual == expected
