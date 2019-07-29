@@ -15464,26 +15464,32 @@ finally:
             r'<td>0.00</td>\s*'
             r'<td>571.25</td>\s*'
         ],
-        'status_code': 200},
+        'status_code': 200
+    },
 
     {
         'name': "Engie XLS Bills",
         'path': '/supplier_bill_imports',
         'method': 'post',
         'data': {
-            'supplier_batch_id': '17'},
+            'supplier_batch_id': '17'
+        },
         'files': {'import_file': 'test/bills_fail.engie.xls'},
         'status_code': 303,
         'regexes': [
-            r"/supplier_bill_imports/14"]},
+            r"/supplier_bill_imports/14"
+        ]
+    },
 
     {
         'name': "Engie XLS Bills",
         'path': '/supplier_bill_imports/14',
         'tries': {},
         'regexes': [
-            r'Can&#39;t find a bill finish date in row 4\.'],
-        'status_code': 200},
+            r'Problem: On row 5: Can&#39;t find a bill start date\.'
+        ],
+        'status_code': 200
+    },
 
     {
         'name': "Contract level MOP virtual bills, straddling eras",

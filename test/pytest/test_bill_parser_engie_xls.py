@@ -1,6 +1,8 @@
 from chellow.utils import utc_datetime
 import chellow.bill_parser_engie_xls
 import xlrd.sheet
+import pytest
+from werkzeug.exceptions import BadRequest
 
 
 def test_parse_row(mocker):
@@ -46,5 +48,15 @@ def test_parse_row(mocker):
 
     bill = chellow.bill_parser_engie_xls._parse_row(
         row, row_index, datemode, title_row)
-    print(bill)
     assert bill['finish_date'] == utc_datetime(2019, 3, 31, 22, 30)
+
+
+def test_bd_add():
+    el_name = 'duos_red'
+    bd = {
+        el_name: 0
+    }
+    val = None
+
+    with pytest.raises(BadRequest):
+        chellow.bill_parser_engie_xls._bd_add(bd, el_name, val)

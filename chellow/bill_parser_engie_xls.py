@@ -143,8 +143,7 @@ def get_value(row, name):
         val = row[idx].value
     except IndexError:
         raise BadRequest(
-            "For the row " + str(row) + " and name '" + name +
-            "', the index is " + str(idx) +
+            "For the name '" + name + "', the index is " + str(idx) +
             " which is beyond the end of the row. ")
     if isinstance(val, str):
         return val.strip()
@@ -159,7 +158,7 @@ def get_dec(row, name):
         return None
 
 
-def bd_add(bd, el_name, val):
+def _bd_add(bd, el_name, val):
     if el_name.split('-')[-1] in ('rate', 'kva'):
         if el_name not in bd:
             bd[el_name] = set()
@@ -170,7 +169,7 @@ def bd_add(bd, el_name, val):
         try:
             bd[el_name] += val
         except TypeError as e:
-            raise Exception(
+            raise BadRequest(
                 "Problem with element name " + el_name + " and value '" +
                 str(val) + "': " + str(e))
 
@@ -181,8 +180,9 @@ def _parse_row(row, row_index, datemode, title_row):
         mpan_core = parse_mpan_core(str(int(val)))
     except ValueError as e:
         raise BadRequest(
-            "Can't parse the MPAN core in column 'Meter Point' at row " +
-            str(row_index + 1) + " with value '" + str(val) + "' : " + str(e))
+            "Can't parse the MPAN core in column 'Meter Point' with value '" +
+            str(val) + "' : " + str(e))
+
     bill_period = get_value(row, 'Bill Period')
     if '-' in bill_period:
         period_start_naive, period_finish_naive = [
@@ -196,17 +196,14 @@ def _parse_row(row, row_index, datemode, title_row):
     from_date = get_date(row, 'From Date', datemode)
     if from_date is None:
         if period_start is None:
-            raise BadRequest(
-                "Can't find a bill finish date in row " + str(row_index) + ".")
+            raise BadRequest("Can't find a bill start date.")
         else:
             from_date = period_start
 
     to_date_naive = get_date_naive(row, 'To Date', datemode)
     if to_date_naive is None:
         if period_finish is None:
-            raise BadRequest(
-                "Can't find a bill finish date in row " + str(row_index) +
-                " .")
+            raise BadRequest("Can't find a bill finish date.")
         else:
             to_date = period_finish
 
@@ -246,48 +243,51 @@ def _parse_row(row, row_index, datemode, title_row):
         if names is None:
             duos_avail_prefix = "DUoS Availability ("
             duos_excess_avail_prefix = "DUoS Excess Availability ("
-            if description.startswith("DUoS Availability"):
+
+            if description.startswith("DUoS Availability Adjustment "):
+                _bd_add(bd, 'duos-availability-gbp', amount)
+            elif description.startswith("DUoS Availability"):
                 if description.startswith(duos_avail_prefix):
-                    bd_add(
+                    _bd_add(
                         bd, 'duos-availability-kva',
                         int(description[len(duos_avail_prefix):-5]))
-                bd_add(bd, 'duos-availability-days', usage)
-                bd_add(bd, 'duos-availability-rate', price)
-                bd_add(bd, 'duos-availability-gbp', amount)
+                _bd_add(bd, 'duos-availability-days', usage)
+                _bd_add(bd, 'duos-availability-rate', price)
+                _bd_add(bd, 'duos-availability-gbp', amount)
             elif description.startswith("DUoS Excess Availability"):
                 if description.startswith(duos_excess_avail_prefix):
                     kva = int(
                         description[len(duos_excess_avail_prefix):-5])
-                    bd_add(bd, 'duos-excess-availability-kva', kva)
-                bd_add(bd, 'duos-excess-availability-days', usage)
-                bd_add(bd, 'duos-excess-availability-rate', price)
-                bd_add(bd, 'duos-excess-availability-gbp', amount)
+                    _bd_add(bd, 'duos-excess-availability-kva', kva)
+                _bd_add(bd, 'duos-excess-availability-days', usage)
+                _bd_add(bd, 'duos-excess-availability-rate', price)
+                _bd_add(bd, 'duos-excess-availability-gbp', amount)
             elif description.startswith('BSUoS Black Start '):
-                bd_add(bd, 'black-start-gbp', amount)
+                _bd_add(bd, 'black-start-gbp', amount)
             elif description.startswith('BSUoS Reconciliation - '):
                 if usage is not None:
-                    bd_add(bd, 'bsuos-nbp-kwh', usage)
+                    _bd_add(bd, 'bsuos-nbp-kwh', usage)
                 if price is not None:
-                    bd_add(bd, 'bsuos-rate', price)
-                bd_add(bd, 'bsuos-gbp', amount)
+                    _bd_add(bd, 'bsuos-rate', price)
+                _bd_add(bd, 'bsuos-gbp', amount)
             elif description.startswith("FiT Rec - "):
-                bd_add(bd, 'fit-gbp', amount)
+                _bd_add(bd, 'fit-gbp', amount)
             elif description.startswith("FiT Reconciliation "):
-                bd_add(bd, 'fit-gbp', amount)
+                _bd_add(bd, 'fit-gbp', amount)
             elif description.startswith("CfD FiT Rec - "):
-                bd_add(bd, 'cfd-fit-gbp', amount)
+                _bd_add(bd, 'cfd-fit-gbp', amount)
             elif description.startswith("Flex"):
-                bd_add(bd, 'reconciliation-gbp', amount)
+                _bd_add(bd, 'reconciliation-gbp', amount)
             elif description.startswith("Legacy TNUoS Reversal "):
-                bd_add(bd, 'triad-gbp', amount)
+                _bd_add(bd, 'triad-gbp', amount)
             elif description.startswith("Hand Held Read -"):
-                bd_add(bd, 'meter-rental-gbp', amount)
+                _bd_add(bd, 'meter-rental-gbp', amount)
             elif description.startswith("RO Mutualisation "):
-                bd_add(bd, 'ro-gbp', amount)
+                _bd_add(bd, 'ro-gbp', amount)
             elif description.startswith("OOC MOP - "):
-                bd_add(bd, 'meter-rental-gbp', amount)
+                _bd_add(bd, 'meter-rental-gbp', amount)
             elif description.startswith("KVa Adjustment "):
-                bd_add(bd, 'duos-availability-gbp', amount)
+                _bd_add(bd, 'duos-availability-gbp', amount)
             else:
                 raise BadRequest(
                     "For the path " + str(path) +
@@ -295,7 +295,7 @@ def _parse_row(row, row_index, datemode, title_row):
         else:
             for elem_k, elem_v in zip(names, (usage, price, amount)):
                 if elem_k is not None:
-                    bd_add(bd, elem_k, elem_v)
+                    _bd_add(bd, elem_k, elem_v)
 
     reference = str(bill_number) + '_' + str(row_index + 1)
     for k, v in tuple(bd.items()):
@@ -337,5 +337,9 @@ class Parser():
         for row_index in range(1, self.sheet.nrows):
             row = self.sheet.row(row_index)
             datemode = self.book.datemode
-            bills.append(_parse_row(row, row_index, datemode, title_row))
+            try:
+                bills.append(_parse_row(row, row_index, datemode, title_row))
+            except BadRequest as e:
+                raise BadRequest(
+                    "On row " + str(row_index + 1) + ": " + str(e.description))
         return bills
