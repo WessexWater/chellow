@@ -1,7 +1,6 @@
 from dateutil.relativedelta import relativedelta
 from sqlalchemy import or_, cast, Float
 from sqlalchemy.sql.expression import null
-import math
 from werkzeug.exceptions import BadRequest
 from collections import defaultdict
 from chellow.models import (
@@ -15,7 +14,7 @@ from types import MappingProxyType
 from datetime import timedelta
 from zish import loads, dumps
 import chellow.bank_holidays
-from math import floor
+from math import floor, log10
 
 
 def get_times(sess, caches, start_date, finish_date, forecast_date):
@@ -245,15 +244,51 @@ def g_rates(sess, caches, g_contract_id, date):
             return vals
 
 
-def _query_generator(query):
+def _read_generator(sess, g_supply, start, is_forwards, is_prev):
     offset = 0
+
+    if is_prev:
+        r_typ = GRegisterRead.prev_type
+        r_dt = GRegisterRead.prev_date
+    else:
+        r_typ = GRegisterRead.pres_type
+        r_dt = GRegisterRead.pres_date
+
+    q = sess.query(GRegisterRead).join(GBill).join(BillType).join(
+        r_typ).filter(
+        GReadType.code.in_(ACTUAL_READ_TYPES), GBill.g_supply == g_supply,
+        BillType.code != 'W')
+
+    if is_forwards:
+        q = q.filter(r_dt >= start).order_by(r_dt)
+    else:
+        q = q.filter(r_dt < start).order_by(r_dt.desc())
+
     while True:
-        r = query.offset(offset).first()
+        r = q.offset(offset).first()
         if r is None:
             break
+
+        offset += 1
+
+        if is_prev:
+            dt = r.prev_date
+            vl = r.prev_value
         else:
-            offset += 1
-            yield r
+            dt = r.pres_date
+            vl = r.pres_value
+
+        g_bill = sess.query(GBill).join(BillType).filter(
+            GBill.g_supply == g_supply, GBill.g_reads.any(),
+            GBill.finish_date >= r.g_bill.start_date,
+            GBill.start_date <= r.g_bill.finish_date,
+            BillType.code != 'W').order_by(
+            GBill.issue_date.desc(), BillType.code).first()
+
+        if g_bill.id != r.g_bill.id:
+            continue
+
+        yield {'date': dt, 'value': vl, 'msn': r.msn}
 
 
 class GDataSource():
@@ -324,7 +359,8 @@ class GDataSource():
             if self.g_bill is None:
                 self.consumption_info += _no_bill_kwh(
                     sess, caches, self.g_supply, chunk_start, chunk_finish,
-                    hist_g_era, g_cv_id, self.g_ldz_code, hist_map)
+                    hist_g_era, g_cv_id, self.g_ldz_code, hist_map,
+                    forecast_date)
             else:
                 _bill_kwh(
                     sess, self.caches, self.g_supply, hist_g_era, chunk_start,
@@ -348,183 +384,66 @@ class GDataSource():
 
 def _no_bill_kwh(
         sess, caches, g_supply, start, finish, g_era, g_cv_id, g_ldz_code,
-        hist_map):
+        hist_map, forecast_date):
     read_list = []
-    read_keys = set()
     pairs = []
-
-    prior_pres_g_reads = _query_generator(
-        sess.query(GRegisterRead).join(GBill).join(BillType).join(
-            GRegisterRead.pres_type).filter(
-            GReadType.code.in_(ACTUAL_READ_TYPES), GBill.g_supply == g_supply,
-            GRegisterRead.pres_date < start, BillType.code != 'W').order_by(
-            GRegisterRead.pres_date.desc()))
-
-    prior_prev_g_reads = _query_generator(
-        sess.query(GRegisterRead).join(GBill).join(BillType).join(
-            GRegisterRead.prev_type).filter(
-            GReadType.code.in_(ACTUAL_READ_TYPES), GBill.g_supply == g_supply,
-            GRegisterRead.prev_date < start, BillType.code != 'W').order_by(
-            GRegisterRead.prev_date.desc()))
-
-    next_pres_g_reads = _query_generator(
-        sess.query(GRegisterRead).join(GBill).join(BillType).join(
-            GRegisterRead.pres_type).filter(
-            GReadType.code.in_(ACTUAL_READ_TYPES), GBill.g_supply == g_supply,
-            GRegisterRead.pres_date >= start, BillType.code != 'W').order_by(
-            GRegisterRead.pres_date))
-
-    next_prev_g_reads = _query_generator(
-        sess.query(GRegisterRead).join(GBill).join(BillType).join(
-            GRegisterRead.prev_type).filter(
-            GReadType.code.in_(ACTUAL_READ_TYPES), GBill.g_supply == g_supply,
-            GRegisterRead.prev_date >= start, BillType.code != 'W').order_by(
-            GRegisterRead.prev_date))
+    read_keys = set()
 
     for is_forwards in (False, True):
+        prev_reads = iter(
+            _read_generator(sess, g_supply, start, is_forwards, True))
+        pres_reads = iter(
+            _read_generator(sess, g_supply, start, is_forwards, False))
         if is_forwards:
-            pres_g_reads = iter(next_pres_g_reads)
-            prev_g_reads = iter(next_prev_g_reads)
             read_list.reverse()
-        else:
-            pres_g_reads = iter(prior_pres_g_reads)
-            prev_g_reads = iter(prior_prev_g_reads)
 
-        prime_pres_g_read = None
-        prime_prev_g_read = None
-        while True:
-            while prime_pres_g_read is None:
-                try:
-                    pres_g_read = next(pres_g_reads)
-                except StopIteration:
+        for read in _make_reads(is_forwards, prev_reads, pres_reads):
+            read_key = read['date'], read['msn']
+            if read_key in read_keys:
+                continue
+            read_keys.add(read_key)
+
+            read_list.append(read)
+            pair = _find_pair(is_forwards, read_list)
+            if pair is not None:
+                pairs.append(pair)
+                if not is_forwards or (
+                        is_forwards and read_list[-1]['date'] > finish):
                     break
-
-                pres_date = pres_g_read.pres_date
-                pres_msn = pres_g_read.msn
-                read_key = '_'.join([str(pres_date), pres_msn])
-                if read_key in read_keys:
-                    continue
-
-                pres_g_bill = sess.query(GBill).join(
-                    BillType).filter(
-                    GBill.g_supply == g_supply,
-                    GBill.finish_date >= pres_g_read.g_bill.start_date,
-                    GBill.start_date <= pres_g_read.g_bill.finish_date,
-                    BillType.code != 'W').order_by(
-                    GBill.issue_date.desc(), BillType.code).first()
-
-                if pres_g_bill != pres_g_read.g_bill:
-                    continue
-
-                value = sess.query(
-                    cast(GRegisterRead.pres_value, Float)).filter(
-                    GRegisterRead.g_bill == pres_g_bill,
-                    GRegisterRead.pres_date == pres_date,
-                    GRegisterRead.msn == pres_msn).scalar()
-
-                prime_pres_g_read = {
-                    'date': pres_date, 'value': value, 'msn': pres_msn
-                }
-                read_keys.add(read_key)
-
-            while prime_prev_g_read is None:
-
-                try:
-                    prev_g_read = next(prev_g_reads)
-                except StopIteration:
-                    break
-
-                prev_date = prev_g_read.prev_date
-                prev_msn = prev_g_read.msn
-                read_key = '_'.join([str(prev_date), prev_msn])
-                if read_key in read_keys:
-                    continue
-
-                prev_g_bill = sess.query(GBill).join(BillType).filter(
-                    GBill.g_supply == g_supply,
-                    GBill.finish_date >= prev_g_read.g_bill.start_date,
-                    GBill.start_date <= prev_g_read.g_bill.finish_date,
-                    BillType.code != 'W').order_by(
-                    GBill.issue_date.desc(), BillType.code).first()
-                if prev_g_bill != prev_g_read.g_bill:
-                    continue
-
-                value = sess.query(
-                    cast(GRegisterRead.prev_value, Float)).filter(
-                    GRegisterRead.g_bill == prev_g_bill,
-                    GRegisterRead.prev_date == prev_date,
-                    GRegisterRead.msn == prev_msn).scalar()
-
-                prime_prev_g_read = {
-                    'date': prev_date, 'value': value, 'msn': prev_msn
-                }
-                read_keys.add(read_key)
-
-            if prime_pres_g_read is None and prime_prev_g_read is None:
-                break
-            elif prime_pres_g_read is None:
-                read_list.append(prime_prev_g_read)
-                prime_prev_g_read = None
-            elif prime_prev_g_read is None:
-                read_list.append(prime_pres_g_read)
-                prime_pres_g_read = None
-            else:
-                if is_forwards:
-                    if prime_prev_g_read['date'] == \
-                            prime_pres_g_read['date'] or \
-                            prime_pres_g_read['date'] < \
-                            prime_prev_g_read['date']:
-                        read_list.append(prime_pres_g_read)
-                        prime_pres_g_read = None
-                    else:
-                        read_list.append(prime_prev_g_read)
-                        prime_prev_g_read = None
-                else:
-                    if prime_prev_g_read['date'] == \
-                            prime_pres_g_read['date'] or \
-                            prime_prev_g_read['date'] > \
-                            prime_pres_g_read['date']:
-                        read_list.append(prime_prev_g_read)
-                        prime_prev_g_read = None
-                    else:
-                        read_list.append(prime_pres_g_read)
-                        prime_pres_g_read = None
-
-            if len(read_list) > 1:
-                if is_forwards:
-                    aft_read = read_list[-2]
-                    fore_read = read_list[-1]
-                else:
-                    aft_read = read_list[-1]
-                    fore_read = read_list[-2]
-
-                if aft_read['msn'] == fore_read['msn']:
-                    num_hh = (
-                        fore_read['date'] - aft_read['date']
-                        ).total_seconds() / (30 * 60)
-
-                    units = fore_read['value'] - aft_read['value']
-
-                    if units < 0:
-                        digits = int(math.log10(aft_read['value'])) + 1
-                        units = 10 ** digits + units
-
-                    pairs.append(
-                        {
-                            'start-date': aft_read['date'],
-                            'units': units / num_hh
-                        }
-                    )
-
-                    if not is_forwards or (
-                            is_forwards and read_list[-1]['date'] > finish):
-                        break
 
     consumption_info = 'read list - \n' + dumps(read_list) + "\n"
     hhs = _find_hhs(
         sess, caches, g_era, pairs, start, finish, g_cv_id, g_ldz_code)
+    _set_status(hhs, read_list, forecast_date)
     hist_map.update(hhs)
     return consumption_info + 'pairs - \n' + dumps(pairs)
+
+
+def _find_pair(is_forwards, read_list):
+    if len(read_list) < 2:
+        return
+
+    if is_forwards:
+        back, front = read_list[-2], read_list[-1]
+    else:
+        back, front = read_list[-1], read_list[-2]
+
+    back_date, back_value = back['date'], back['value']
+    front_date, front_value = front['date'], front['value']
+
+    if back['msn'] == front['msn']:
+        units = float(front_value - back_value)
+        num_hh = (front_date - back_date).total_seconds() / (30 * 60)
+
+        # Clocked?
+        if units < 0:
+            digits = int(log10(back_value)) + 1
+            units += 10 ** digits
+
+        return {
+            'start-date': back_date,
+            'units': units / num_hh
+        }
 
 
 def _bill_kwh(
@@ -669,3 +588,38 @@ def _find_hhs(
                 'avg_cv': avg_cv
             }
     return hhs
+
+
+def _make_reads(forwards, prev_reads, pres_reads):
+    prev_read = next(prev_reads, None)
+    pres_read = next(pres_reads, None)
+    while prev_read is not None or pres_read is not None:
+
+        if prev_read is None:
+            yield pres_read
+            pres_read = next(pres_reads, None)
+
+        elif pres_read is None:
+            yield prev_read
+            prev_read = next(prev_reads, None)
+
+        else:
+            if (forwards and prev_read['date'] < pres_read['date']) or (
+                    not forwards and prev_read['date'] >= pres_read['date']):
+                yield prev_read
+                prev_read = next(prev_reads, None)
+            else:
+                yield pres_read
+                pres_read = next(pres_reads, None)
+
+
+def _set_status(hhs, read_list, forecast_date):
+    THRESHOLD = 31 * 48 * 30 * 60
+    rl = [r for r in read_list if r['date'] <= forecast_date]
+    for k, v in hhs.items():
+        try:
+            periods = (abs(r['date'] - k).total_seconds() for r in rl)
+            next(p for p in periods if p <= THRESHOLD)
+            v['status'] = 'A'
+        except StopIteration:
+            v['status'] = 'E'
