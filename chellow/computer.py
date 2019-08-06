@@ -846,7 +846,6 @@ class SupplySource(DataSource):
                 self.consumption_info += _no_bill_nhh(
                     sess, caches, self.supply, chunk_start, chunk_finish,
                     hist_map, forecast_date)
-                print(self.consumption_info)
             elif self.bill is not None and hist_measurement_type in (
                     'nhh', 'amr'):
                 hhd = {}
@@ -1366,11 +1365,9 @@ def _read_generator(sess, supply, start, is_forwards, is_prev):
             reads[tpr_code] = value
             coeffs[tpr_code] = coeff if era_coeff is None else era_coeff
 
-        read = {
+        yield {
             'date': dt, 'reads': reads, 'coefficients': coeffs, 'msn': r.msn
         }
-        # print("read gen", read)
-        yield read
 
 
 def _no_bill_nhh(sess, caches, supply, start, finish, hist_map, forecast_date):
@@ -1387,7 +1384,6 @@ def _no_bill_nhh(sess, caches, supply, start, finish, hist_map, forecast_date):
             read_list.reverse()
 
         for read in _make_reads(is_forwards, prev_reads, pres_reads):
-            print("read form make", read)
             read_key = read['date'], read['msn']
             if read_key in read_keys:
                 continue

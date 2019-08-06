@@ -675,6 +675,16 @@ def general_import_market_role(sess, action, vals, args):
         sess.flush()
 
 
+def _parse_breakdown(breakdown_str):
+    if len(breakdown_str) == 0:
+        return {}
+    else:
+        try:
+            return loads(breakdown_str)
+        except SyntaxError as e:
+            raise BadRequest("Problem parsing the breakdown: " + str(e))
+
+
 def general_import_bill(sess, action, vals, args):
     if action == "insert":
         role_name = add_arg(args, "Role Name", vals, 0).lower()
@@ -712,13 +722,7 @@ def general_import_bill(sess, action, vals, args):
         type_code = add_arg(args, "Type", vals, 12)
         typ = BillType.get_by_code(sess, type_code)
         breakdown_str = add_arg(args, "Breakdown", vals, 13)
-        if len(breakdown_str) == 0:
-            breakdown = {}
-        else:
-            try:
-                breakdown = loads(breakdown_str)
-            except SyntaxError as e:
-                raise BadRequest("Problem parsing the breakdown: " + str(e))
+        breakdown = _parse_breakdown(breakdown_str)
 
         kwh_str = add_arg(args, "kWh", vals, 14)
         kwh = Decimal(kwh_str)
@@ -848,13 +852,7 @@ def general_import_g_bill(sess, action, vals, args):
         bill_type_code = add_arg(args, "Type", vals, 11)
         bill_type = BillType.get_by_code(sess, bill_type_code)
         breakdown_str = add_arg(args, "Breakdown", vals, 12)
-        if len(breakdown_str) == 0:
-            breakdown = {}
-        else:
-            try:
-                breakdown = loads(breakdown_str)
-            except ZishException as e:
-                raise BadRequest("Problem parsing the breakdown", str(e))
+        breakdown = _parse_breakdown(breakdown_str)
 
         kwh_str = add_arg(args, "kWh", vals, 13)
         kwh = Decimal(kwh_str)

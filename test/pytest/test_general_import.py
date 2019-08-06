@@ -83,3 +83,10 @@ def test_general_import_g_bill_reads(mocker):
     bill.insert_g_read.assert_called_with(
         sess, msn, g_unit, correction_factor, calorific_value, prev_value,
         prev_date, prev_type, pres_value, pres_date, pres_type)
+
+
+def test_parse_breakdown():
+    breakdown_str = '{"date": 2009-05-12T03:00:00Z}'
+    expected = {'date': utc_datetime(2009, 5, 12, 3)}
+    actual = chellow.general_import._parse_breakdown(breakdown_str)
+    assert actual == expected
