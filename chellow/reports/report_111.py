@@ -16,7 +16,7 @@ import threading
 from werkzeug.exceptions import BadRequest
 from chellow.utils import (
     HH, hh_format, hh_min, hh_max, req_int, csv_make_val, to_utc, req_date,
-    hh_range)
+    hh_range, req_str, parse_mpan_core)
 from chellow.views import chellow_redirect
 from flask import request, g
 import csv
@@ -60,7 +60,9 @@ def find_elements(bill):
             " attached to batch id " + str(bill.batch.id) + ": " + str(e))
 
 
-def content(batch_id, bill_id, contract_id, start_date, finish_date, user):
+def content(
+        batch_id, bill_id, contract_id, start_date, finish_date, user,
+        mpan_cores):
     caches = {}
     tmp_file = sess = bill = None
     forecast_date = to_utc(Datetime.max)
@@ -90,6 +92,19 @@ def content(batch_id, bill_id, contract_id, start_date, finish_date, user):
             bills = bills.join(Batch).filter(
                 Batch.contract == contract, Bill.start_date <= finish_date,
                 Bill.finish_date >= start_date)
+            if len(mpan_cores) > 0:
+                mpan_cores = list(map(parse_mpan_core, mpan_cores))
+                supply_ids = [
+                    i[0] for i in sess.query(Era.supply_id).filter(
+                        Era.start_date <= finish_date, or_(
+                            Era.finish_date == null(),
+                            Era.finish_date >= start_date),
+                        or_(
+                            Era.imp_mpan_core.in_(mpan_cores),
+                            Era.exp_mpan_core.in_(mpan_cores))
+                        ).distinct()
+                ]
+                bills = bills.join(Supply).filter(Supply.id.in_(supply_ids))
 
         market_role_code = contract.market_role.code
         vbf = chellow.computer.contract_func(caches, contract, 'virtual_bill')
@@ -553,6 +568,7 @@ def content(batch_id, bill_id, contract_id, start_date, finish_date, user):
 
 def do_get(sess):
     batch_id = bill_id = contract_id = start_date = finish_date = None
+    mpan_cores = []
     if 'batch_id' in request.values:
         batch_id = req_int("batch_id")
     elif 'bill_id' in request.values:
@@ -561,11 +577,15 @@ def do_get(sess):
         contract_id = req_int("contract_id")
         start_date = req_date("start_date")
         finish_date = req_date("finish_date")
+        if 'mpan_cores' in request.values:
+            mpan_cores = req_str('mpan_cores').splitlines()
     else:
         raise BadRequest(
             "The bill check needs a batch_id, a bill_id or a start_date "
             "and finish_date.")
 
-    args = batch_id, bill_id, contract_id, start_date, finish_date, g.user
+    args = (
+        batch_id, bill_id, contract_id, start_date, finish_date, g.user,
+        mpan_cores)
     threading.Thread(target=content, args=args).start()
     return chellow_redirect('/downloads', 303)

@@ -123,6 +123,11 @@
 							<br>
 							From {{input_date('start_date', month_start)}} to
 							{{input_date('finish_date', month_finish)}}
+							<br>
+							<label>MPAN Cores</label><br>
+							{{input_textarea('mpan_cores', '', 5, 40, placeholder='One on each line, includes all if left blank')}}
+							<br>
+							<br>
 							<input type="submit" value="Download">
 						</fieldset>
 					</form>
