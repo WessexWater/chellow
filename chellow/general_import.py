@@ -716,9 +716,9 @@ def general_import_bill(sess, action, vals, args):
             breakdown = {}
         else:
             try:
-                breakdown = eval(breakdown_str)
+                breakdown = loads(breakdown_str)
             except SyntaxError as e:
-                raise BadRequest(str(e))
+                raise BadRequest("Problem parsing the breakdown: " + str(e))
 
         kwh_str = add_arg(args, "kWh", vals, 14)
         kwh = Decimal(kwh_str)
@@ -852,9 +852,9 @@ def general_import_g_bill(sess, action, vals, args):
             breakdown = {}
         else:
             try:
-                breakdown = eval(breakdown_str)
-            except SyntaxError as e:
-                raise BadRequest(str(e))
+                breakdown = loads(breakdown_str)
+            except ZishException as e:
+                raise BadRequest("Problem parsing the breakdown", str(e))
 
         kwh_str = add_arg(args, "kWh", vals, 13)
         kwh = Decimal(kwh_str)
