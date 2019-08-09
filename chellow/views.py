@@ -4691,7 +4691,7 @@ def read_add_get(bill_id):
     tprs = g.sess.query(Tpr).order_by(Tpr.code)
     bill = Bill.get_by_id(g.sess, bill_id)
     coefficient = 1
-    mpan_str = msn = previous_date = previous_value = previous_type = None
+    mpan_str = msn = previous_date = previous_value = previous_type_id = None
 
     era = bill.supply.find_era_at(g.sess, bill.start_date)
     if era is not None:
@@ -4710,6 +4710,7 @@ def read_add_get(bill_id):
         Bill.supply == bill.supply, MarketRole.code == 'X',
         Bill.start_date < bill.start_date).order_by(
         Bill.start_date.desc()).first()
+
     if prev_bill is not None:
         prev_read = g.sess.query(RegisterRead).filter(
             RegisterRead.bill == prev_bill).order_by(
@@ -4717,13 +4718,13 @@ def read_add_get(bill_id):
         if prev_read is not None:
             previous_date = prev_read.present_date
             previous_value = prev_read.present_value
-            previous_type = prev_read.present_type
+            previous_type_id = prev_read.present_type.id
 
     return render_template(
         'read_add.html', bill=bill, read_types=read_types, tprs=tprs,
         coefficient=coefficient, mpan_str=mpan_str, msn=msn,
         previous_date=previous_date, previous_value=previous_value,
-        previous_type_id=previous_type.id,
+        previous_type_id=previous_type_id,
         estimated_read_type_id=estimated_read_type_id)
 
 
