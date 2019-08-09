@@ -382,9 +382,9 @@ class DataSource():
         self.mop_bill = defaultdict(int, {'problem': ''})
         self.dc_bill = defaultdict(int, {'problem': ''})
         self.hh_data = []
-        self.supplier_rate_sets = defaultdict(set)
-        self.mop_rate_sets = defaultdict(set)
-        self.dc_rate_sets = defaultdict(set)
+        self.supplier_bill_hhs = {}
+        self.mop_bill_hhs = {}
+        self.dc_bill_hhs = {}
 
         self.era_maps = {} if era_maps is None else era_maps
         era_map = {}
@@ -584,6 +584,9 @@ class SiteSource(DataSource):
             datum = dtm.copy()
             datum.update(hist_map[datum['hist-start']])
             self.hh_data.append(datum)
+            self.supplier_bill_hhs[dtm['start-date']] = {}
+            self.mop_bill_hhs[dtm['start-date']] = {}
+            self.dc_bill_hhs[dtm['start-date']] = {}
 
         if self.deltas is not None:
             for hh in self.hh_data:
@@ -1123,9 +1126,16 @@ order by hh_datum.start_date
             else:
                 raise BadRequest("gen type not recognized")
 
-        self.hh_data.extend(
-            {**d, **hist_map.get(d['hist-start'], {})} for d in datum_range(
-                sess, self.caches, self.years_back, start_date, finish_date))
+        for d in datum_range(
+                sess, self.caches, self.years_back, start_date, finish_date):
+            datum = d.copy()
+            datum.update(hist_map.get(d['hist-start'], {}))
+            self.hh_data.append(datum)
+
+            d_start = d['start-date']
+            self.supplier_bill_hhs[d_start] = {}
+            self.mop_bill_hhs[d_start] = {}
+            self.dc_bill_hhs[d_start] = {}
 
         if self.deltas is not None:
             site_deltas = self.deltas['site']

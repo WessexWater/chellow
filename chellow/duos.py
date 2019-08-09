@@ -24,8 +24,6 @@ VL_LOOKUP = {
 
 
 def datum_beginning_22(ds, hh):
-    bill = ds.supplier_bill
-
     rs = get_file_rates(ds.caches, ds.dno_code, hh['start-date'])
     try:
         tariff = rs['tariffs'][ds.llfc_code]
@@ -41,11 +39,11 @@ def datum_beginning_22(ds, hh):
 
         night_rate = float(tariff['night-gbp-per-kwh'])
         if 6 < hh['ct-decimal-hour'] <= 23:
-            bill['duos-day-kwh'] += hh['msp-kwh']
-            bill['duos-day-gbp'] += hh['msp-kwh'] * day_rate
+            hh['duos-day-kwh'] = hh['msp-kwh']
+            hh['duos-day-gbp'] = hh['msp-kwh'] * day_rate
         else:
-            bill['duos-night-kwh'] += hh['msp-kwh']
-            bill['duos-night-gbp'] += hh['msp-kwh'] * night_rate
+            hh['duos-night-kwh'] = hh['msp-kwh']
+            hh['duos-night-gbp'] = hh['msp-kwh'] * night_rate
 
     if 23 < hh['ct-decimal-hour'] <= 6:
         slot_name = 'night'
@@ -91,30 +89,27 @@ def datum_beginning_22(ds, hh):
             reactive_rate = float(tariff['reactive-gbp-per-kvarh'])
         except KeyError as e:
             raise BadRequest(str(e))
-        bill['duos-reactive-rate'] = reactive_rate
+        hh['duos-reactive-rate'] = reactive_rate
 
         if not ds.is_displaced:
-            bill['duos-availability-kva'] = ds.sc
-            bill['duos-excess-availability-kva'] = max(md_kva - ds.sc, 0)
+            hh['duos-availability-kva'] = ds.sc
+            hh['duos-excess-availability-kva'] = max(md_kva - ds.sc, 0)
             for prefix in ['', 'excess-']:
                 tariff_key = prefix + 'gbp-per-kva-per-day'
                 if tariff_key in tariff:
                     rate_key = 'duos-' + prefix + 'availability-rate'
-                    bill[rate_key] = float(tariff[tariff_key])
-                    bill['duos-' + prefix + 'availability-days'] = \
-                        days_in_month
-                    bill['duos-' + prefix + 'availability-gbp'] = \
-                        bill[rate_key] * \
-                        bill['duos-' + prefix + 'availability-kva'] * \
-                        bill['duos-' + prefix + 'availability-days']
+                    hh[rate_key] = float(tariff[tariff_key])
+                    hh['duos-' + prefix + 'availability-days'] = days_in_month
+                    hh['duos-' + prefix + 'availability-gbp'] = \
+                        hh[rate_key] * \
+                        hh['duos-' + prefix + 'availability-kva'] * \
+                        hh['duos-' + prefix + 'availability-days']
 
-        bill['duos-reactive-gbp'] += max(0, month_imp_kvarh - month_kwh / 2) \
+        hh['duos-reactive-gbp'] = max(0, month_imp_kvarh - month_kwh / 2) \
             * reactive_rate
 
 
 def datum_beginning_20(ds, hh):
-    bill = ds.supplier_bill
-
     tariff = None
     for k, tf in get_file_rates(
             ds.caches, ds.dno_code, hh['start-date'])['tariffs'].items():
@@ -139,14 +134,14 @@ def datum_beginning_20(ds, hh):
     if 'night-gbp-per-kwh' in tariff:
         night_rate = float(tariff['night-gbp-per-kwh'])
         if 0 < hh['ct-decimal-hour'] <= 7:
-            bill['duos-night-kwh'] += hh['msp-kwh']
-            bill['duos-night-gbp'] += hh['msp-kwh'] * night_rate
+            hh['duos-night-kwh'] = hh['msp-kwh']
+            hh['duos-night-gbp'] = hh['msp-kwh'] * night_rate
         else:
-            bill['duos-day-kwh'] += hh['msp-kwh']
-            bill['duos-day-gbp'] += hh['msp-kwh'] * day_rate
+            hh['duos-day-kwh'] = hh['msp-kwh']
+            hh['duos-day-gbp'] = hh['msp-kwh'] * day_rate
     else:
-        bill['duos-day-kwh'] += hh['msp-kwh']
-        bill['duos-day-gbp'] += hh['msp-kwh'] * day_rate
+        hh['duos-day-kwh'] = hh['msp-kwh']
+        hh['duos-day-gbp'] = hh['msp-kwh'] * day_rate
 
     if 0 < hh['ct-decimal-hour'] <= 7:
         slot_name = 'night'
@@ -180,10 +175,10 @@ def datum_beginning_20(ds, hh):
         if not ds.is_displaced:
             year_md_kva_095 = year_md_095(ds, ds.finish_date)
 
-            bill['duos-excess-availability-kva'] = max(
+            hh['duos-excess-availability-kva'] = max(
                 year_md_kva_095 - ds.sc, 0)
             billed_avail = max(ds.sc, year_md_kva_095)
-            bill['duos-availability-kva'] = ds.sc
+            hh['duos-availability-kva'] = ds.sc
 
             for threshold, block in [
                     (15, 15), (100, 5), (250, 10), (500, 25), (1000, 50),
@@ -198,7 +193,7 @@ def datum_beginning_20(ds, hh):
             except KeyError as e:
                 raise BadRequest(str(e))
 
-            bill['duos-availability-gbp'] += min(200, billed_avail) * \
+            hh['duos-availability-gbp'] = min(200, billed_avail) * \
                 le_200_avail_rate
 
             if billed_avail > 200:
@@ -208,15 +203,14 @@ def datum_beginning_20(ds, hh):
                 except KeyError as e:
                     raise BadRequest(str(e))
 
-                bill['duos-availability-gbp'] += (billed_avail - 200) * \
+                hh['duos-availability-gbp'] += (billed_avail - 200) * \
                     gt_200_avail_rate
 
         try:
             if 'fixed-gbp-per-month' in tariff:
-                bill['duos-standing-gbp'] += float(
-                    tariff['fixed-gbp-per-month'])
+                hh['duos-standing-gbp'] = float(tariff['fixed-gbp-per-month'])
             else:
-                bill['duos-standing-gbp'] += float(
+                hh['duos-standing-gbp'] = float(
                     tariff['fixed-gbp-per-day']) * hh['utc-day']
         except KeyError as e:
             raise BadRequest(str(e))
@@ -301,8 +295,6 @@ def year_md_095_site(data_source, finish, pw):
 
 
 def datum_beginning_14(ds, hh):
-    bill = ds.supplier_bill
-
     rates = get_file_rates(ds.caches, ds.dno_code, hh['start-date'])
     try:
         tariff = rates['tariffs'][ds.llfc_code]
@@ -310,13 +302,12 @@ def datum_beginning_14(ds, hh):
         raise BadRequest(str(e))
 
     if 0 < hh['ct-decimal-hour'] <= 7:
-        bill['duos-night-kwh'] += hh['msp-kwh']
-        bill['duos-night-gbp'] += hh['msp-kwh'] * float(
+        hh['duos-night-kwh'] = hh['msp-kwh']
+        hh['duos-night-gbp'] = hh['msp-kwh'] * float(
             tariff['night-gbp-per-kwh'])
     else:
-        bill['duos-day-kwh'] += hh['msp-kwh']
-        bill['duos-day-gbp'] += hh['msp-kwh'] * float(
-            tariff['day-gbp-per-kwh'])
+        hh['duos-day-kwh'] = hh['msp-kwh']
+        hh['duos-day-gbp'] = hh['msp-kwh'] * float(tariff['day-gbp-per-kwh'])
 
     if 0 < hh['ct-decimal-hour'] <= 7:
         slot = 'night'
@@ -337,14 +328,14 @@ def datum_beginning_14(ds, hh):
     hh['gsp-kw'] = hh['gsp-kwh'] * 2
 
     if hh['utc-decimal-hour'] == 0:
-        bill['duos-standing-gbp'] += float(tariff['fixed-gbp-per-day'])
+        hh['duos-standing-gbp'] = float(tariff['fixed-gbp-per-day'])
 
     if hh['ct-is-month-end']:
         month_to = hh['start-date']
         month_from = month_to - relativedelta(months=1) + HH
         availability = ds.sc
         reactive_rate = float(tariff['reactive-gbp-per-kvarh'])
-        bill['duos-reactive-rate'] = reactive_rate
+        hh['duos-reactive-rate'] = reactive_rate
         imp_msp_kvarh = 0
         msp_kwh = 0
         md_kva = 0
@@ -357,20 +348,19 @@ def datum_beginning_14(ds, hh):
                         h['msp-kw'] ** 2 + (
                             h['imp-msp-kvar'] + h['exp-msp-kvar']) ** 2) **
                     0.5)
-        bill['duos-reactive-gbp'] = max(
+        hh['duos-reactive-gbp'] = max(
             0, imp_msp_kvarh - msp_kwh / 3) * reactive_rate
         if not ds.is_displaced:
             availability_rate = float(
                 tariff['availability-gbp-per-kva-per-day'])
-            bill['duos-availability-rate'] = availability_rate
+            hh['duos-availability-rate'] = availability_rate
             billed_avail = max(availability, md_kva)
-            bill['duos-availability-gbp'] += availability_rate * billed_avail
-            bill['duos-availability-agreed-kva'] = ds.sc
-            bill['duos-availability-billed-kva'] = billed_avail
+            hh['duos-availability-gbp'] = availability_rate * billed_avail
+            hh['duos-availability-agreed-kva'] = ds.sc
+            hh['duos-availability-billed-kva'] = billed_avail
 
 
 def datum_2010_04_01(ds, hh):
-    bill = ds.supplier_bill
     start_date = hh['start-date']
     dno_cache = ds.caches['dno'][ds.dno_code]
 
@@ -511,32 +501,32 @@ def datum_2010_04_01(ds, hh):
         max(
             hh['imp-msp-kvarh'],
             hh['exp-msp-kvarh']) - (0.95 ** -2 - 1) ** 0.5 * hh['msp-kwh'], 0)
-    bill['duos-reactive-kvarh'] += kvarh
+    hh['duos-reactive-kvarh'] = kvarh
 
     duos_reactive_rate = tariff['gbp-per-kvarh']
     if duos_reactive_rate is not None:
         duos_reactive_rate = float(duos_reactive_rate)
         if duos_reactive_rate != 0:
-            ds.supplier_rate_sets['duos-reactive-rate'].add(duos_reactive_rate)
-            bill['duos-reactive-gbp'] += kvarh * duos_reactive_rate
+            hh['duos-reactive-rate'] = duos_reactive_rate
+            hh['duos-reactive-gbp'] = kvarh * duos_reactive_rate
 
     rate = float(tariff[KEYS[band]['tariff-rate']])
-    ds.supplier_rate_sets[KEYS[band]['bill-rate']].add(rate)
-    bill[KEYS[band]['kwh']] += hh['msp-kwh']
-    bill[KEYS[band]['gbp']] += rate * hh['msp-kwh']
+    hh[KEYS[band]['bill-rate']] = rate
+    hh[KEYS[band]['kwh']] = hh['msp-kwh']
+    hh[KEYS[band]['gbp']] = rate * hh['msp-kwh']
 
     if hh['ct-decimal-hour'] == 23.5 and not ds.is_displaced:
-        bill['duos-fixed-days'] += 1
+        hh['duos-fixed-days'] = 1
         rate = float(tariff['gbp-per-mpan-per-day'])
-        ds.supplier_rate_sets['duos-fixed-rate'].add(rate)
-        bill['duos-fixed-gbp'] += rate
+        hh['duos-fixed-rate'] = rate
+        hh['duos-fixed-gbp'] = rate
 
-        bill['duos-availability-days'] += 1
+        hh['duos-availability-days'] = 1
         kva = ds.sc
-        ds.supplier_rate_sets['duos-availability-kva'].add(kva)
+        hh['duos-availability-kva'] = kva
         rate = float(tariff['gbp-per-kva-per-day'])
-        ds.supplier_rate_sets['duos-availability-rate'].add(rate)
-        bill['duos-availability-gbp'] += rate * kva
+        hh['duos-availability-rate'] = rate
+        hh['duos-availability-gbp'] = rate * kva
 
     if hh['ct-is-month-end'] and not ds.is_displaced:
         month_to = start_date
@@ -557,12 +547,11 @@ def datum_2010_04_01(ds, hh):
 
         if 'excess-gbp-per-kva-per-day' in tariff and excess_kva != 0:
             rate = float(tariff['excess-gbp-per-kva-per-day'])
-            ds.supplier_rate_sets['duos-excess-availability-kva'].add(
-                excess_kva)
+            hh['duos-excess-availability-kva'] = excess_kva
             rate = float(tariff['excess-gbp-per-kva-per-day'])
-            ds.supplier_rate_sets['duos-excess-availability-rate'].add(rate)
-            bill['duos-excess-availability-days'] += days_in_month
-            bill['duos-excess-availability-gbp'] += rate * excess_kva * \
+            hh['duos-excess-availability-rate'] = rate
+            hh['duos-excess-availability-days'] = days_in_month
+            hh['duos-excess-availability-gbp'] = rate * excess_kva * \
                 days_in_month
 
 

@@ -17,8 +17,6 @@ from sqlalchemy.sql.expression import null
 
 
 def hh(data_source, run='RF'):
-    rate_set = data_source.supplier_rate_sets['bsuos-rate']
-
     try:
         bsuos_cache = data_source.caches['bsuos'][run]
     except KeyError:
@@ -34,7 +32,7 @@ def hh(data_source, run='RF'):
 
     for h in data_source.hh_data:
         try:
-            h['bsuos-gbp-per-kwh'] = bsuos_rate = bsuos_cache[h['start-date']]
+            h['bsuos-rate'] = bsuos_rate = bsuos_cache[h['start-date']]
         except KeyError:
             h_start = h['start-date']
             db_id = get_non_core_contract_id('bsuos')
@@ -57,11 +55,11 @@ def hh(data_source, run='RF'):
                     except KeyError:
                         bsuos_price = bsuos_prices['II']
 
-            h['bsuos-gbp-per-kwh'] = bsuos_rate = bsuos_cache[h_start] = float(
+            h['bsuos-rate'] = bsuos_rate = bsuos_cache[h_start] = float(
                 bsuos_price) / 1000
 
+        h['bsuos-kwh'] = h['nbp-kwh']
         h['bsuos-gbp'] = h['nbp-kwh'] * bsuos_rate
-        rate_set.add(bsuos_rate)
 
 
 def key_format(dt):

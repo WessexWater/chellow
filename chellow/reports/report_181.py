@@ -1,7 +1,8 @@
 from sqlalchemy import or_
 from sqlalchemy.sql.expression import null
 import traceback
-from chellow.utils import HH, hh_format, req_int, utc_datetime, MONTH
+from chellow.utils import (
+    HH, csv_make_val, req_int, utc_datetime, MONTH, reduce_bill_hhs)
 from chellow.models import Site, SiteEra, Era, Supply, Source, Session
 import chellow.computer
 import chellow.duos
@@ -50,6 +51,22 @@ def _write_sites(sess, caches, writer, year, site_id):
 
     sites = _make_sites(
         sess, year_start, march_finish, site_id, ('gen', 'gen-net'))
+
+    scalar_names = {
+        'triad-actual-gsp-kw', 'triad-actual-gbp'
+    }
+
+    rate_names = {
+        'triad-actual-rate', 'triad-estimate-rate'
+    }
+
+    for i in range(1, 4):
+        pref = 'triad-actual-' + str(i) + '-'
+        for suf in ('msp-kw', 'gsp-kw'):
+            scalar_names.add(pref + suf)
+        for suf in ('date', 'status', 'laf'):
+            rate_names.add(pref + suf)
+
     for site in sites:
         displaced_era = None
         for i in range(12):
@@ -68,22 +85,24 @@ def _write_sites(sess, caches, writer, year, site_id):
             displaced_era)
         chellow.duos.duos_vb(site_ds)
         chellow.triad.hh(site_ds)
-        chellow.triad.bill(site_ds)
 
-        bill = site_ds.supplier_bill
-        for rname, rset in site_ds.supplier_rate_sets.items():
-            if len(rset) == 1:
-                bill[rname] = rset.pop()
+        for hh in site_ds.hh_data:
+            bill_hh = site_ds.supplier_bill_hhs[hh['start-date']]
+            for k in scalar_names & hh.keys():
+                bill_hh[k] = hh[k]
+
+            for k in rate_names & hh.keys():
+                bill_hh[k] = {hh[k]}
+
+        bill = reduce_bill_hhs(site_ds.supplier_bill_hhs)
         values = [site.code, site.name]
         for i in range(1, 4):
-            triad_prefix = 'triad-actual-' + str(i)
-            values.append(hh_format(bill[triad_prefix + '-date']))
-            for suffix in ['-msp-kw', '-laf', '-gsp-kw']:
-                values.append(bill[triad_prefix + suffix])
+            triad_prefix = 'triad-actual-' + str(i) + '-'
+            for suffix in ('date', 'msp-kw', 'laf', 'gsp-kw'):
+                values.append(csv_make_val(bill[triad_prefix + suffix]))
 
-        values += [
-            str(bill['triad-actual-' + suf]) for suf in [
-                'gsp-kw', 'rate', 'gbp']]
+        for suffix in ('gsp-kw', 'rate', 'gbp'):
+            values.append(csv_make_val(bill['triad-actual-' + suffix]))
 
         writer.writerow(values)
 

@@ -498,8 +498,8 @@ def make_val(v):
         if len(v) == 1:
             return make_val(v.pop())
         elif 1 < len(v) < 4:
-            vals = set(str(val) for val in v)
-            return ' | '.join(str(csv_make_val(el)) for el in sorted(vals))
+            vals = set(str(csv_make_val(val)) for val in v)
+            return ' | '.join(sorted(vals))
         else:
             return None
     else:
@@ -734,3 +734,22 @@ def get_file_rates(cache, contract_name, dt):
 
             cont[dt] = rscript
             return rscript
+
+
+def reduce_bill_hhs(bill_hhs):
+    bill = {}
+    for bill_hh in bill_hhs.values():
+        for k, v in bill_hh.items():
+            if isinstance(v, set):
+                if k in bill:
+                    bill[k].update(v)
+                else:
+                    bill[k] = v
+
+            else:
+                if k in bill:
+                    bill[k] += v
+                else:
+                    bill[k] = v
+
+    return bill

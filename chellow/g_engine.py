@@ -300,6 +300,7 @@ class GDataSource():
         self.forecast_date = forecast_date
         self.start_date = start_date
         self.finish_date = finish_date
+        self.bill_hhs = {}
         times = get_times(sess, caches, start_date, finish_date, forecast_date)
         self.years_back = times['years-back']
         self.history_start = times['history-start']
@@ -380,6 +381,7 @@ class GDataSource():
                     self.caches, 'g_ug',
                     h['start_date'])['ug_gbp_per_kwh'][self.g_exit_zone_code])
             self.hh_data.append(h)
+            self.bill_hhs[d['start_date']] = {}
 
 
 def _no_bill_kwh(

@@ -6,7 +6,8 @@ from chellow.models import Era, Supply, Source, Pc, Site, SiteEra, Session
 import chellow.duos
 import chellow.triad
 import chellow.computer
-from chellow.utils import HH, hh_format, req_int, utc_datetime
+from chellow.utils import (
+    HH, hh_format, req_int, utc_datetime, reduce_bill_hhs, csv_make_val)
 from flask import request, g
 import chellow.dloads
 import csv
@@ -43,6 +44,24 @@ def content(year, supply_id, user):
         march_finish = utc_datetime(year, 4, 1) - HH
         financial_year_start = utc_datetime(year - 1, 4, 1)
 
+        scalar_names = {
+            'triad-actual-gsp-kw', 'triad-actual-gbp', 'triad-estimate-gsp-kw',
+            'triad-estimate-months', 'triad-estimate-gbp',
+            'triad-all-estimates-months', 'triad-all-estimates-gbp'
+        }
+
+        rate_names = {
+            'triad-actual-rate', 'triad-estimate-rate'
+        }
+
+        for i in range(1, 4):
+            for p in ('triad-actual-', 'triad-estimate-'):
+                act_pref = p + str(i) + '-'
+                for suf in ('msp-kw', 'gsp-kw'):
+                    scalar_names.add(act_pref + suf)
+                for suf in ('date', 'status', 'laf'):
+                    rate_names.add(act_pref + suf)
+
         def triad_csv(supply_source):
             if supply_source is None or \
                     supply_source.mpan_core.startswith('99'):
@@ -50,20 +69,24 @@ def content(year, supply_id, user):
 
             chellow.duos.duos_vb(supply_source)
             chellow.triad.hh(supply_source)
-            chellow.triad.bill(supply_source)
-            bill = supply_source.supplier_bill
-            for rname, rset in supply_source.supplier_rate_sets.items():
-                if len(rset) == 1:
-                    bill[rname] = rset.pop()
+            for hh in supply_source.hh_data:
+                bill_hh = supply_source.supplier_bill_hhs[hh['start-date']]
+                for k in scalar_names & hh.keys():
+                    bill_hh[k] = hh[k]
+
+                for k in rate_names & hh.keys():
+                    bill_hh[k] = {hh[k]}
+            bill = reduce_bill_hhs(supply_source.supplier_bill_hhs)
             values = [supply_source.mpan_core]
             for i in range(1, 4):
                 triad_prefix = 'triad-actual-' + str(i)
                 for suffix in [
                         '-date', '-msp-kw', '-status', '-laf', '-gsp-kw']:
-                    values.append(bill[triad_prefix + suffix])
+                    values.append(csv_make_val(bill[triad_prefix + suffix]))
 
             suffixes = ['gsp-kw', 'rate', 'gbp']
-            values += [bill['triad-actual-' + suf] for suf in suffixes]
+            values += [
+                csv_make_val(bill['triad-actual-' + suf]) for suf in suffixes]
             return values
 
         writer.writerow(

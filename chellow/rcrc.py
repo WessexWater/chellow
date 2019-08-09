@@ -17,39 +17,33 @@ ELEXON_PORTAL_SCRIPTING_KEY_KEY = 'elexonportal_scripting_key'
 
 
 def hh(data_source):
-    bill = data_source.supplier_bill
-
     try:
         cache = data_source.caches['rcrc']
     except KeyError:
-        cache = {}
-        data_source.caches['rcrc'] = cache
-
-    rate_set = data_source.supplier_rate_sets['rcrc-rate']
+        cache = data_source.caches['rcrc'] = {}
 
     for hh in data_source.hh_data:
         try:
-            hh['rcrc-gbp-per-kwh'] = rcrc = cache[hh['start-date']]
+            hh['rcrc-rate'] = rcrc = cache[hh['start-date']]
         except KeyError:
             h_start = hh['start-date']
             db_id = get_non_core_contract_id('rcrc')
             rates = data_source.hh_rate(db_id, h_start)['rates']
             try:
-                hh['rcrc-gbp-per-kwh'] = rcrc = cache[h_start] = float(
+                hh['rcrc-rate'] = rcrc = cache[h_start] = float(
                     rates[key_format(h_start)]) / 1000
             except KeyError:
                 try:
                     dt = h_start - relativedelta(days=3)
-                    hh['rcrc-gbp-per-kwh'] = rcrc = cache[h_start] = float(
+                    hh['rcrc-rate'] = rcrc = cache[h_start] = float(
                         rates[key_format(dt)]) / 1000
                 except KeyError:
                     raise BadRequest(
                         "For the RCRC rate script at " + hh_format(dt) +
                         " the rate cannot be found.")
 
-        rate_set.add(rcrc)
-        bill['rcrc-kwh'] += hh['nbp-kwh']
-        bill['rcrc-gbp'] += hh['nbp-kwh'] * rcrc
+        hh['rcrc-kwh'] = hh['nbp-kwh']
+        hh['rcrc-gbp'] = hh['nbp-kwh'] * rcrc
 
 
 rcrc_importer = None

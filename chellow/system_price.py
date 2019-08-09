@@ -22,9 +22,6 @@ def key_format(dt):
 
 
 def hh(data_source):
-    ssp_rate_set = data_source.supplier_rate_sets['ssp-rate']
-    sbp_rate_set = data_source.supplier_rate_sets['sbp-rate']
-
     for h in data_source.hh_data:
         try:
             sbp, ssp = data_source.caches['system_price'][h['start-date']]
@@ -59,11 +56,9 @@ def hh(data_source):
 
         h['sbp'] = sbp
         h['sbp-gbp'] = h['nbp-kwh'] * sbp
-        sbp_rate_set.add(sbp)
 
         h['ssp'] = ssp
         h['ssp-gbp'] = h['nbp-kwh'] * ssp
-        ssp_rate_set.add(ssp)
 
 
 system_price_importer = None

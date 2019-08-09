@@ -26,7 +26,6 @@ def key_format(dt):
 
 
 def hh(data_source, run='DF'):
-    rate_set = data_source.supplier_rate_sets['tlm']
     gsp_group_code = data_source.gsp_group_code
     use_runs = RUNS[RUNS.index(run):]
 
@@ -77,7 +76,6 @@ def hh(data_source, run='DF'):
 
             gsp_cache[run] = tlm
 
-        rate_set.add(tlm)
         h['nbp-kwh'] = h['gsp-kwh'] * tlm
 
 

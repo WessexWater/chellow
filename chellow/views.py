@@ -4451,9 +4451,11 @@ def supply_virtual_bill_get(supply_id):
                     del bill[title]
                     continue
                 headings.append(title)
-                data.append(bill[title])
                 if title in bill:
+                    data.append(bill[title])
                     del bill[title]
+                else:
+                    data.append('')
 
             for k in sorted(bill.keys()):
                 headings.append(k)

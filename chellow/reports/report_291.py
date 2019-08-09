@@ -46,7 +46,8 @@ def content(supply_id, file_name, start_date, finish_date, user):
 
             titles = [
                 'Imp MPAN Core', 'Exp MPAN Core', 'Site Code', 'Site Name',
-                'Account', 'From', 'To', '']
+                'Account', 'From', 'To', ''
+            ]
 
             output_line = [
                 era.imp_mpan_core, era.exp_mpan_core, site.code,
