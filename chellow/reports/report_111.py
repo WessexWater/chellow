@@ -343,20 +343,7 @@ def content(
                         polarity = contract != era.exp_supplier_contract
                     else:
                         polarity = era.imp_supplier_contract is not None
-                    '''
-                    pairs = []
-                    last_finish = chunk_start - HH
-                    for hd in chellow.computer.datum_range(
-                            sess, caches, 0, chunk_start, chunk_finish):
-                        if hd['utc-is-month-end'] or hd['ct-is-month-end']:
-                            end_date = hd['start-date']
-                            pairs.append((last_finish + HH, end_date))
-                            last_finish = end_date
-                    if hd['start-date'] > last_finish:
-                        pairs.append((last_finish + HH, hd['start-date']))
 
-                    for ss_start, ss_finish in pairs:
-                    '''
                     try:
                         ds_key = (
                             chunk_start, chunk_finish, forecast_date, era.id,
@@ -556,9 +543,13 @@ def content(
             prefix = "Problem with bill " + str(bill.id) + ':'
         tmp_file.write(prefix + e.description)
     except BaseException:
+        if bill is None:
+            prefix = "Problem: "
+        else:
+            prefix = "Problem with bill " + str(bill.id) + ':'
         msg = traceback.format_exc()
         sys.stderr.write(msg + '\n')
-        tmp_file.write("Problem " + msg)
+        tmp_file.write(prefix + msg)
     finally:
         if sess is not None:
             sess.close()
