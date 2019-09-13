@@ -9,84 +9,131 @@ from dateutil.relativedelta import relativedelta
 from werkzeug.exceptions import BadRequest
 
 ELEM_MAP = {
-    'Meter - UK Electricity - AAHEDC Pass-Thru': (
-        'aahedc-gsp-kwh', 'aahedc-rate', 'aahedc-gbp'),
-    'Meter - UK Electricity - BSUoS Pass-Thru': (
-        'bsuos-nbp-kwh', 'bsuos-rate', 'bsuos-gbp'),
-    'Meter - UK Electricity - Capacity Market Pass-Thru': (
-        'capacity-gsp-kwh', 'capacity-rate', 'capacity-gbp'),
-    'Meter - UK Electricity - CfD FiT Pass-Thru':
-        ('cfd-fit-nbp-kwh', 'cfd-fit-rate', 'cfd-fit-gbp'),
+    None: None,
+    'Meter - UK Electricity - AAHEDC Pass-Thru': {
+        None: ['aahedc-gbp', 'aahedc-rate', 'aahedc-gsp-kwh']
+    },
+    'Meter - UK Electricity - BSUoS Pass-Thru': {
+        None: ['bsuos-gbp', 'bsuos-rate', 'bsuos-nbp-kwh']
+    },
+    'Meter - UK Electricity - Capacity Market Pass-Thru': {
+        None: ['capacity-gbp', 'capacity-rate', 'capacity-gsp-kwh'],
+        'Reverse Capacity Market Estimate': {
+            None: ['capacity-gbp']
+        }
+    },
+    'Meter - UK Electricity - CfD FiT Pass-Thru': {
+        None: ['cfd-fit-gbp', 'cfd-fit-rate', 'cfd-fit-nbp-kwh']
+    },
     'Meter - UK Electricity - CCL': {
-        'CCL': ('ccl-kwh', 'ccl-rate', 'ccl-gbp'),
-        'Levy Exempt Energy': ('lec-kwh', 'lec-rate', 'lec-gbp')
+        None: ['ccl-gbp', 'ccl-rate', 'ccl-kwh'],
+        'CCL': {
+            None: ['ccl-gbp', 'ccl-rate', 'ccl-kwh']
+        },
+        'Levy Exempt Energy': {
+            None: ['lec-gbp', 'lec-rate', 'lec-kwh']
+        }
     },
     'Meter - UK Electricity - DUoS': {
-        'DUoS Unit Charge 3':
-            ('duos-green-kwh', 'duos-green-rate', 'duos-green-gbp'),
-        'DUoS Unit Charge 2':
-            ('duos-amber-kwh', 'duos-amber-rate', 'duos-amber-gbp'),
-        'DUoS Unit Charge 1':
-            ('duos-red-kwh', 'duos-red-rate', 'duos-red-gbp'),
-        'DUoS Standing Charge':
-            ('duos-fixed-days', 'duos-fixed-rate', 'duos-fixed-gbp'),
-        'DUoS Reactive': (
-            'duos-reactive-kvarh', 'duos-reactive-rate', 'duos-reactive-gbp')
-    },
-    'Meter - UK Electricity - FiT Pass-Thru':
-        ('fit-msp-kwh', 'fit-rate', 'fit-gbp'),
-    'Pass Thru - UK Electricity Cost Component':
-        ('meter-rental-days', 'meter-rental-rate', 'meter-rental-gbp'),
-    'Meter - UK Electricity - RO Pass-Thru':
-        ('ro-msp-kwh', 'ro-rate', 'ro-gbp'),
-    'Meter - UK Electricity - TUoS':
-        ('triad-gsp-kw', 'triad-rate', 'triad-gbp'),
-    'Meter - UK Electricity - Standard': {
-        'Unit Rate': {
-            'Summer Weekday': (
-                'summer-weekday-gsp-kwh', 'summer-weekday-rate',
-                'summer-weekday-gbp'),
-            'Peak': ('peak-gsp-kwh', 'peak-rate', 'peak-gbp'),
-            'Peak Shoulder': (
-                'peak-shoulder-gsp-kwh', 'peak-shoulder-rate',
-                'peak-shoulder-gbp'),
-            'Summer Night': (
-                'summer-night-gsp-kwh', 'summer-night-rate',
-                'summer-night-gbp'),
-            'Summer Weekend & Bank Holiday': (
-                'summer-weekend-gsp-kwh', 'summer-weekend-rate',
-                'summer-weekend-gbp'),
-            'Night': ('night-gsp-kwh', 'night-rate', 'night-gbp'),
-            'Winter Weekday': (
-                'winter-weekday-gsp-kwh', 'winter-weekday-rate',
-                'winter-weekday-gbp'),
-            'Winter Weekend & Bank Holiday': (
-                'winter-weekend-gsp-kwh', 'winter-weekend-rate',
-                'winter-weekend-gbp'),
-            'Winter Night': (
-                'winter-night-gsp-kwh', 'winter-night-rate',
-                'winter-night-gbp'),
-            'Day': ('day-gsp-kwh', 'day-rate', 'day-gbp'),
-            'Night': ('night-gsp-kwh', 'night-rate', 'night-gbp')
+        None: None,
+        'DUoS Unit Charge 3': {
+            None: ('duos-green-gbp', 'duos-green-rate', 'duos-green-kwh')
         },
-        'Reverse BSUoS in Unit Rate': (
-            'bsuos-reverse-nbp-kwh', 'bsuos-reverse-rate',
-            'bsuos-reverse-gbp')
+        'DUoS Unit Charge 2': {
+            None: ('duos-amber-gbp', 'duos-amber-rate', 'duos-amber-kwh')
+        },
+        'DUoS Unit Charge 1': {
+            None: ('duos-red-gbp', 'duos-red-kwh', 'duos-red-rate')
+        },
+        'DUoS Standing Charge': {
+            None: ('duos-fixed-gbp', 'duos-fixed-rate', 'duos-fixed-days')
+        },
+        'DUoS Reactive': {
+            None: (
+                'duos-reactive-gbp', 'duos-reactive-rate',
+                'duos-reactive-kvarh')
+        }
     },
-    'Meter - UK Gas - CCL': ('ccl-kwh', 'ccl-rate', 'ccl-gbp')
+    'Meter - UK Electricity - FiT Pass-Thru': {
+        None: ('fit-gbp', 'fit-rate', 'fit-msp-kwh')
+    },
+    'Pass Thru - UK Electricity Cost Component': {
+        None: ('meter-rental-gbp', 'meter-rental-rate', 'meter-rental-days')
+    },
+    'Meter - UK Electricity - RO Pass-Thru': {
+        None: ('ro-gbp', 'ro-rate', 'ro-msp-kwh')
+    },
+    'Meter - UK Electricity - TUoS': {
+        None: ('triad-gbp', 'triad-rate', 'triad-gsp-kw')
+    },
+    'Meter - UK Electricity - Standard': {
+        None: None,
+        'Unit Rate': {
+            'Summer Weekday': {
+                None: (
+                    'summer-weekday-gbp', 'summer-weekday-rate',
+                    'summer-weekday-gsp-kwh')
+            },
+            'Peak': {
+                None: ('peak-gbp', 'peak-rate', 'peak-gsp-kwh')
+            },
+            'Peak Shoulder': {
+                None: (
+                    'peak-shoulder-gbp', 'peak-shoulder-gsp-kwh',
+                    'peak-shoulder-rate')
+            },
+            'Summer Night': {
+                None: (
+                    'summer-night-gbp', 'summer-night-rate',
+                    'summer-night-gsp-kwh')
+            },
+            'Summer Weekend & Bank Holiday': {
+                None: (
+                    'summer-weekend-gbp', 'summer-weekend-rate',
+                    'summer-weekend-gsp-kwh')
+            },
+            'Night': {
+                None: ('night-gbp', 'night-rate', 'night-gsp-kwh')
+            },
+            'Winter Weekday': {
+                None: (
+                    'winter-weekday-gbp', 'winter-weekday-rate',
+                    'winter-weekday-gsp-kwh')
+            },
+            'Winter Weekend & Bank Holiday': {
+                None: (
+                    'winter-weekend-gbp', 'winter-weekend-rate',
+                    'winter-weekend-gsp-kwh')
+            },
+            'Winter Night': {
+                None: (
+                    'winter-night-gbp', 'winter-night-rate',
+                    'winter-night-gsp-kwh')
+            },
+            'Day': {
+                None: ('day-gbp', 'day-rate', 'day-gsp-kwh')
+            }
+        },
+        'Reverse BSUoS in Unit Rate': {
+            None: (
+                'bsuos-reverse-gbp', 'bsuos-reverse-rate',
+                'bsuos-reverse-nbp-kwh')
+        }
+    },
+    'Meter - UK Gas - CCL': {
+        None: ('ccl-gbp', 'ccl-rate', 'ccl-kwh')
+    }
 }
 
 
 def _find_names(tree, path):
-    try:
-        tr = tree[path[0]]
-    except KeyError:
-        return None
+    if len(path) > 0:
+        try:
+            return _find_names(tree[path[0]], path[1:])
+        except KeyError:
+            pass
 
-    if isinstance(tr, tuple):
-        return tr
-    else:
-        return _find_names(tr, path[1:])
+    return tree[None]
 
 
 COLUMNS = [
@@ -240,62 +287,61 @@ def _parse_row(row, row_index, datemode, title_row):
         path = [product_class, description, rate_name]
         names = _find_names(ELEM_MAP, path)
 
-        if names is None:
-            duos_avail_prefix = "DUoS Availability ("
-            duos_excess_avail_prefix = "DUoS Excess Availability ("
+        duos_avail_prefix = "DUoS Availability ("
+        duos_excess_avail_prefix = "DUoS Excess Availability ("
 
-            if description.startswith("DUoS Availability Adjustment "):
-                _bd_add(bd, 'duos-availability-gbp', amount)
-            elif description.startswith("DUoS Availability"):
-                if description.startswith(duos_avail_prefix):
-                    _bd_add(
-                        bd, 'duos-availability-kva',
-                        int(description[len(duos_avail_prefix):-5]))
-                _bd_add(bd, 'duos-availability-days', usage)
-                _bd_add(bd, 'duos-availability-rate', price)
-                _bd_add(bd, 'duos-availability-gbp', amount)
-            elif description.startswith("DUoS Excess Availability"):
-                if description.startswith(duos_excess_avail_prefix):
-                    kva = int(
-                        description[len(duos_excess_avail_prefix):-5])
-                    _bd_add(bd, 'duos-excess-availability-kva', kva)
-                _bd_add(bd, 'duos-excess-availability-days', usage)
-                _bd_add(bd, 'duos-excess-availability-rate', price)
-                _bd_add(bd, 'duos-excess-availability-gbp', amount)
-            elif description.startswith('BSUoS Black Start '):
-                _bd_add(bd, 'black-start-gbp', amount)
-            elif description.startswith('BSUoS Reconciliation - '):
-                if usage is not None:
-                    _bd_add(bd, 'bsuos-nbp-kwh', usage)
-                if price is not None:
-                    _bd_add(bd, 'bsuos-rate', price)
-                _bd_add(bd, 'bsuos-gbp', amount)
-            elif description.startswith("FiT Rec - "):
-                _bd_add(bd, 'fit-gbp', amount)
-            elif description.startswith("FiT Reconciliation "):
-                _bd_add(bd, 'fit-gbp', amount)
-            elif description.startswith("CfD FiT Rec - "):
-                _bd_add(bd, 'cfd-fit-gbp', amount)
-            elif description.startswith("Flex"):
-                _bd_add(bd, 'reconciliation-gbp', amount)
-            elif description.startswith("Legacy TNUoS Reversal "):
-                _bd_add(bd, 'triad-gbp', amount)
-            elif description.startswith("Hand Held Read -"):
-                _bd_add(bd, 'meter-rental-gbp', amount)
-            elif description.startswith("RO Mutualisation "):
-                _bd_add(bd, 'ro-gbp', amount)
-            elif description.startswith("OOC MOP - "):
-                _bd_add(bd, 'meter-rental-gbp', amount)
-            elif description.startswith("KVa Adjustment "):
-                _bd_add(bd, 'duos-availability-gbp', amount)
-            else:
-                raise BadRequest(
-                    "For the path " + str(path) +
-                    " the parser can't work out the element.")
-        else:
-            for elem_k, elem_v in zip(names, (usage, price, amount)):
+        if description.startswith("DUoS Availability Adjustment "):
+            _bd_add(bd, 'duos-availability-gbp', amount)
+        elif description.startswith("DUoS Availability"):
+            if description.startswith(duos_avail_prefix):
+                _bd_add(
+                    bd, 'duos-availability-kva',
+                    int(description[len(duos_avail_prefix):-5]))
+            _bd_add(bd, 'duos-availability-days', usage)
+            _bd_add(bd, 'duos-availability-rate', price)
+            _bd_add(bd, 'duos-availability-gbp', amount)
+        elif description.startswith("DUoS Excess Availability"):
+            if description.startswith(duos_excess_avail_prefix):
+                kva = int(
+                    description[len(duos_excess_avail_prefix):-5])
+                _bd_add(bd, 'duos-excess-availability-kva', kva)
+            _bd_add(bd, 'duos-excess-availability-days', usage)
+            _bd_add(bd, 'duos-excess-availability-rate', price)
+            _bd_add(bd, 'duos-excess-availability-gbp', amount)
+        elif description.startswith('BSUoS Black Start '):
+            _bd_add(bd, 'black-start-gbp', amount)
+        elif description.startswith('BSUoS Reconciliation - '):
+            if usage is not None:
+                _bd_add(bd, 'bsuos-nbp-kwh', usage)
+            if price is not None:
+                _bd_add(bd, 'bsuos-rate', price)
+            _bd_add(bd, 'bsuos-gbp', amount)
+        elif description.startswith("FiT Rec - "):
+            _bd_add(bd, 'fit-gbp', amount)
+        elif description.startswith("FiT Reconciliation "):
+            _bd_add(bd, 'fit-gbp', amount)
+        elif description.startswith("CfD FiT Rec - "):
+            _bd_add(bd, 'cfd-fit-gbp', amount)
+        elif description.startswith("Flex"):
+            _bd_add(bd, 'reconciliation-gbp', amount)
+        elif description.startswith("Legacy TNUoS Reversal "):
+            _bd_add(bd, 'triad-gbp', amount)
+        elif description.startswith("Hand Held Read -"):
+            _bd_add(bd, 'meter-rental-gbp', amount)
+        elif description.startswith("RO Mutualisation "):
+            _bd_add(bd, 'ro-gbp', amount)
+        elif description.startswith("OOC MOP - "):
+            _bd_add(bd, 'meter-rental-gbp', amount)
+        elif description.startswith("KVa Adjustment "):
+            _bd_add(bd, 'duos-availability-gbp', amount)
+        elif names is not None:
+            for elem_k, elem_v in zip(names, (amount, price, usage)):
                 if elem_k is not None:
                     _bd_add(bd, elem_k, elem_v)
+        else:
+            raise BadRequest(
+                "For the path " + str(path) +
+                " the parser can't work out the element.")
 
     reference = str(bill_number) + '_' + str(row_index + 1)
     for k, v in tuple(bd.items()):

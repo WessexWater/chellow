@@ -15394,7 +15394,9 @@ finally:
         'files': {'import_file': 'test/bills.engie.xls'},
         'status_code': 303,
         'regexes': [
-            r"/supplier_bill_imports/13"]},
+            r"/supplier_bill_imports/13"
+        ]
+    },
 
     {
         'name': "Engie XLS Bills",
