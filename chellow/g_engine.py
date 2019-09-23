@@ -500,7 +500,9 @@ def _bill_kwh(
             timedelta(minutes=30)).total_seconds()
         hh_units_consumed = units_consumed / (bill_s / (60 * 30))
 
-        for hh_date in hh_range(caches, g_bill.start_date, g_bill.finish_date):
+        block_start = hh_max(g_bill.start_date, chunk_start)
+        block_finish = hh_min(g_bill.finish_date, chunk_finish)
+        for hh_date in hh_range(caches, block_start, block_finish):
             hist_map[hh_date]['units_consumed'] = hh_units_consumed
 
 
