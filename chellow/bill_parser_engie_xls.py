@@ -17,7 +17,7 @@ ELEM_MAP = {
         None: ['bsuos-gbp', 'bsuos-rate', 'bsuos-nbp-kwh']
     },
     'Meter - UK Electricity - Capacity Market Pass-Thru': {
-        None: ['capacity-gbp', 'capacity-rate', 'capacity-gsp-kwh'],
+        None: ['capacity-gbp', 'capacity-rate', 'capacity-kwh'],
         'Reverse Capacity Market Estimate': {
             None: ['capacity-gbp']
         }
