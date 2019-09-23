@@ -449,6 +449,21 @@ def _find_pair(is_forwards, read_list):
 def _bill_kwh(
         sess, caches, g_supply, hist_g_era, chunk_start, chunk_finish,
         g_cv_id, hist_map, g_ldz_code):
+
+    cf = float(hist_g_era.correction_factor)
+    g_unit = hist_g_era.g_unit
+    unit_code, unit_factor = g_unit.code, float(g_unit.factor)
+
+    for hh_date in hh_range(caches, chunk_start, chunk_finish):
+        cv, avg_cv = find_cv(sess, caches, g_cv_id, hh_date, g_ldz_code)
+        hist_map[hh_date] = {
+            'unit_code': unit_code,
+            'unit_factor': unit_factor,
+            'correction_factor': cf,
+            'calorific_value': cv,
+            'avg_cv': avg_cv
+        }
+
     g_bills = []
     for cand_bill in sess.query(GBill).join(BillType).filter(
                 GBill.g_supply == g_supply, GBill.g_reads.any(),
@@ -485,19 +500,8 @@ def _bill_kwh(
             timedelta(minutes=30)).total_seconds()
         hh_units_consumed = units_consumed / (bill_s / (60 * 30))
 
-        cf = float(hist_g_era.correction_factor)
-        g_unit = hist_g_era.g_unit
-        unit_code, unit_factor = g_unit.code, float(g_unit.factor)
         for hh_date in hh_range(caches, g_bill.start_date, g_bill.finish_date):
-            cv, avg_cv = find_cv(sess, caches, g_cv_id, hh_date, g_ldz_code)
-            hist_map[hh_date] = {
-                'unit_code': unit_code,
-                'unit_factor': unit_factor,
-                'units_consumed': hh_units_consumed,
-                'correction_factor': cf,
-                'calorific_value': cv,
-                'avg_cv': avg_cv
-            }
+            hist_map[hh_date]['units_consumed'] = hh_units_consumed
 
 
 def find_cv(sess, caches, g_cv_id, dt, g_ldz_code):
