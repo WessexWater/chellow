@@ -18584,8 +18584,10 @@ def virtual_bill(ds):
         'path': '/downloads',
         'tries': {'max': 20, 'period': 1},
         'regexes': [
-            r"0030_FINISHED_adminexamplecom_g_bill_check\.csv"],
-        'status_code': 200},
+            r"0030_FINISHED_adminexamplecom_g_bill_check\.csv"
+        ],
+        'status_code': 200
+    },
     {
         'name': "Gas bill check",
         'path': '/downloads/0030_FINISHED_adminexamplecom_g_bill_check.csv',
@@ -18609,10 +18611,12 @@ def virtual_bill(ds):
             r'difference_gross_gbp,covered_problem,virtual_problem\s*'
             r'TB2,8899900012,W,2015-09-01 00:00,2015-09-30 00:00,750278673,'
             r'Main Gas Supply,CH017,Parbola,2015-09-01 00:00,'
-            r'2015-09-30 00:00,3,,0,1.02264,1,HCUF,M3,2.83,1,39.300811,0,'
-            r'4500901,0.0,0.019448,0.019548,8936.13,0.0,8936.13,,'
+            r'2015-09-30 00:00,3,,0,1.02264,1.02264,HCUF,M3,2.83,1,39.300811,'
+            r'0,4500901,0.0,0.019448,0.019548,8936.13,0.0,8936.13,,'
             r'0.00525288,,,,,,6972.33,0.0,6972.33,1003.89,0,1003.89,7976.22,'
-            r'0.0,7976.22,,']},
+            r'0.0,7976.22,,'
+        ]
+    },
 
     {
         'name': "Manually add a gas bill",
