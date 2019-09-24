@@ -18,6 +18,8 @@ from zish import loads, dumps
 
 ELEXON_PORTAL_SCRIPTING_KEY_KEY = 'elexonportal_scripting_key'
 
+RUNS = ['DF', 'RF', 'R3', 'R2', 'R1', 'SF', 'II']
+
 
 def key_format(dt):
     return dt.strftime("%d %H:%M")
@@ -26,6 +28,7 @@ def key_format(dt):
 def hh(data_source, run='DF'):
     rate_set = data_source.supplier_rate_sets['tlm']
     gsp_group_code = data_source.gsp_group_code
+    use_runs = RUNS[RUNS.index(run):]
 
     try:
         cache = data_source.caches['tlms']
@@ -51,9 +54,14 @@ def hh(data_source, run='DF'):
             except KeyError:
                 gsp_rate = sorted(rate.items())[-1][1]
 
-            try:
-                h['tlm'] = tlm = float(gsp_rate[run]['off_taking'])
-            except KeyError:
+            tlm = None
+            for use_run in use_runs:
+                try:
+                    h['tlm'] = tlm = float(gsp_rate[use_run]['off_taking'])
+                except KeyError:
+                    pass
+
+            if tlm is None:
                 h['tlm'] = tlm = float(
                     sorted(gsp_rate.items())[-1][1]['off_taking'])
 
