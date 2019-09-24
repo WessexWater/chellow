@@ -3673,6 +3673,14 @@ class GContract(Base, PersistentClass):
                     "attached to this contract.")
 
     def delete(self, sess):
+        if len(self.g_batches) > 0:
+            raise BadRequest(
+                "You can't delete a contract that still has batches attached "
+                "to it.")
+        if sess.query(GEra).filter(GEra.g_contract == self).count() > 0:
+            raise BadRequest(
+                "You can't delete a contract that is still used in an era.")
+
         self.g_rate_scripts[:] = []
         sess.delete(self)
 

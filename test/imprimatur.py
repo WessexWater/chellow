@@ -15662,19 +15662,27 @@ finally:
         'regexes': [
             r'<td>Total</td>',
             r'<h3 id="properties">Properties</h3>\s*'
-            r'<pre>\{\}</pre>']},
+            r'<pre>\{\}</pre>'
+        ]
+    },
 
     {
         'name': "View gas contract rate script",
         'path': '/g_rate_scripts/1',
-        'status_code': 200},
+        'status_code': 200
+    },
 
     {
         'name': "View edit gas contract",
         'path': '/g_contracts/1/edit',
         'status_code': 200,
         'regexes': [
-            r'Total']},
+            r'Total',
+            r'<form action="/g_contracts/1/edit">\s*'
+            r'<fieldset>\s*'
+            r'<legend>Delete this contract</legend>'
+        ]
+    },
 
     {
         'name': "Edit gas contract",
