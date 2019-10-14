@@ -1598,6 +1598,7 @@ class Mtc(Base, PersistentClass):
 
     @staticmethod
     def find_by_code(sess, dno, code):
+        code = code.zfill(3)
         dno = dno if Mtc.has_dno(code) else None
         return sess.query(Mtc).filter_by(dno=dno, code=code).first()
 

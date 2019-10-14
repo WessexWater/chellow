@@ -1,4 +1,4 @@
-from chellow.models import Era
+from chellow.models import Era, Mtc
 from chellow.utils import utc_datetime
 
 
@@ -44,3 +44,15 @@ def test_Era_update(mocker):
         imp_supplier_account, imp_sc, exp_mpan_core, exp_llfc_code,
         exp_supplier_contract, exp_supplier_account, exp_sc)
     assert era.msn == 'yhlk'
+
+
+def test_MTC_find_by_code(mocker):
+    q_mock = mocker.Mock()
+    q_mock.filter_by = mocker.Mock(return_value=mocker.Mock())
+    sess = mocker.Mock()
+    sess.query.return_value = q_mock
+    dno = mocker.Mock()
+    code = '34'
+
+    Mtc.find_by_code(sess, dno, code)
+    q_mock.filter_by.assert_called_with(dno=dno, code='034')
