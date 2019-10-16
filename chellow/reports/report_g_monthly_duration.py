@@ -53,7 +53,8 @@ def content(
 
         forecast_from = chellow.computer.forecast_date()
 
-        sites = sess.query(Site).distinct().order_by(Site.code)
+        sites = sess.query(Site).join(SiteGEra).join(GEra).filter(
+            SiteGEra.is_physical == true()).distinct().order_by(Site.code)
         if site_id is not None:
             site = Site.get_by_id(sess, site_id)
             sites = sites.filter(Site.id == site.id)
@@ -63,8 +64,7 @@ def content(
             g_supply = GSupply.get_by_id(sess, g_supply_id)
             base_name.append('g_supply')
             base_name.append(str(g_supply.id))
-            sites = sites.join(SiteGEra).join(GEra).filter(
-                GEra.g_supply == g_supply)
+            sites = sites.filter(GEra.g_supply == g_supply)
 
         running_name, finished_name = chellow.dloads.make_names(
             '_'.join(base_name) + '.ods', user)
@@ -103,19 +103,21 @@ def content(
         g_era_rows.append(era_header_titles + summary_titles + vb_titles)
         site_rows.append(site_header_titles + summary_titles)
 
-        sites = sites.all()
         month_start = start_date
         while month_start < finish_date:
             month_finish = month_start + relativedelta(months=1) - HH
-            for site in sites:
+            for site in sites.filter(
+                    GEra.start_date <= month_finish, or_(
+                        GEra.finish_date == null(),
+                        GEra.finish_date >= month_start)):
                 site_kwh = site_gbp = site_billed_kwh = site_billed_gbp = 0
+
                 for g_era in sess.query(GEra).join(SiteGEra).filter(
                         SiteGEra.site == site, SiteGEra.is_physical == true(),
                         GEra.start_date <= month_finish, or_(
                             GEra.finish_date == null(),
                             GEra.finish_date >= month_start)).options(
-                        joinedload(GEra.g_contract),
-                        joinedload(GEra.g_supply),
+                        joinedload(GEra.g_contract), joinedload(GEra.g_supply),
                         joinedload(GEra.g_supply).joinedload(
                             GSupply.g_exit_zone)).order_by(GEra.id):
 
