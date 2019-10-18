@@ -21,7 +21,7 @@ from werkzeug.exceptions import BadRequest
 from chellow.utils import (
     hh_format, HH, hh_max, hh_min, req_int, req_str, req_bool, make_val,
     utc_datetime_now, to_utc, utc_datetime, hh_range, PropDict, parse_hh_start)
-from flask import request, g
+from flask import request, g, flash, make_response, render_template
 from chellow.views import chellow_redirect
 
 
@@ -938,24 +938,44 @@ def do_get(sess):
         scenario_id = None
         base_name.append('monthly_duration')
 
-    site_id = req_int('site_id') if 'site_id' in request.values else None
-    if 'site_codes' in request.values:
-        site_codes = req_str('site_codes').splitlines()
-    else:
-        site_codes = []
+    try:
+        site_id = req_int('site_id') if 'site_id' in request.values else None
+        if 'site_codes' in request.values:
+            site_codes = req_str('site_codes').splitlines()
 
-    supply_id = req_int('supply_id') if 'supply_id' in request.values else None
-    if 'compression' in request.values:
-        compression = req_bool('compression')
-    else:
-        compression = True
-    user = g.user
+            # Check sites codes are valid
+            for site_code in site_codes:
+                Site.get_by_code(sess, site_code)
 
-    threading.Thread(
-        target=content, args=(
-            scenario_props, scenario_id, base_name, site_id, supply_id,
-            user, compression, site_codes)).start()
-    return chellow_redirect("/downloads", 303)
+        else:
+            site_codes = []
+
+        if 'supply_id' in request.values:
+            supply_id = req_int('supply_id')
+        else:
+            supply_id = None
+
+        if 'compression' in request.values:
+            compression = req_bool('compression')
+        else:
+            compression = True
+        user = g.user
+
+        threading.Thread(
+            target=content, args=(
+                scenario_props, scenario_id, base_name, site_id, supply_id,
+                user, compression, site_codes)).start()
+        return chellow_redirect("/downloads", 303)
+    except BadRequest as e:
+        flash(e.description)
+        now = Datetime.utcnow()
+        month_start = Datetime(now.year, now.month, 1) - relativedelta(
+            months=1)
+        month_finish = Datetime(now.year, now.month, 1) - HH
+        return make_response(
+            render_template(
+                'ods_monthly_duration.html', month_start=month_start,
+                month_finish=month_finish), 400)
 
 
 class ScenarioSource():
