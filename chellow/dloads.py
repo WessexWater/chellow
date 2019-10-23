@@ -11,7 +11,7 @@ download_id = 0
 lock = threading.Lock()
 
 download_path = None
-SERIAL_DIGITS = 4
+SERIAL_DIGITS = 5
 
 
 def startup(instance_path):
