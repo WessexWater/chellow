@@ -571,19 +571,24 @@ def virtual_bill(ds):
   "night": 0.0062656,
   "other": 0.0062656}}
 """},
-        'status_code': 303},
+        'status_code': 303
+    },
     {
         'name': "View supplier rate script",
         'path': '/supplier_rate_scripts/26',
         'regexes': [
-            r'"/supplier_rate_scripts/26/edit"'],
-        'status_code': 200},
+            r'"/supplier_rate_scripts/26/edit"'
+        ],
+        'status_code': 200
+    },
     {
         'name': "Edit view of supplier rate script",
         'path': '/supplier_rate_scripts/26/edit',
         'regexes': [
-            r'"/supplier_rate_scripts/26"'],
-        'status_code': 200},
+            r'"/supplier_rate_scripts/26"'
+        ],
+        'status_code': 200
+    },
 
     {
         'name': "View add MOP contract",
@@ -2292,7 +2297,8 @@ def virtual_bill(supply, startDate, finishDate, pw):
             'charge_script': """
 from operator import itemgetter
 from dateutil.relativedelta import relativedelta
-from chellow.utils import HH, utc_datetime, reduce_bill_hhs
+from chellow.utils import (
+    HH, utc_datetime, reduce_bill_hhs, ct_datetime, to_utc)
 import chellow.triad
 import chellow.computer
 import chellow.ccl
@@ -2437,8 +2443,8 @@ def displaced_virtual_bill(ds):
         for k in rate_names & hh.keys():
             bill_hh[k] = {hh[k]}
 
-        if hh['utc-is-month-end']:
-            month_start = utc_datetime(hh_start.year, hh_start.month, 1)
+        if hh['ct-is-month-end']:
+            month_start = to_utc(ct_datetime(hh['ct-year'], hh['ct-month'], 1))
             ccl_kwh = ccl_gbp = 0
             ccl_rate = set()
             for d in ds.get_data_sources(month_start, hh_start):
@@ -2545,10 +2551,9 @@ def virtual_bill(ds):
         for k in rate_names & hh.keys():
             bill_hh[k] = {hh[k]}
 
-        if hh['utc-is-month-end']:
-            month_start = utc_datetime(hh_start.year, hh_start.month, 1)
-            ccl_kwh = 0
-            ccl_gbp = 0
+        if hh['ct-is-month-end']:
+            month_start = to_utc(ct_datetime(hh['ct-year'], hh['ct-month']))
+            ccl_kwh = ccl_gbp = 0
             for d in ds.get_data_sources(month_start, hh_start):
                 chellow.ccl.ccl(d)
                 for h in d.hh_data:
@@ -2823,25 +2828,32 @@ def virtual_bill(ds):
         'files': {'import_file': 'test/hh_data_long.csv'},
         'status_code': 303,
         'regexes': [
-            r"/general_imports/12"]},
+            r"/general_imports/12"
+        ]
+    },
     {
         'path': '/general_imports/12',
         'tries': {'max': 20, 'period': 1},
         'status_code': 200,
         'regexes': [
-            r"The file has been imported successfully\."]},
+            r"The file has been imported successfully\."
+        ]
+    },
 
     {
         'path': '/reports/291?supply_id=7&start_year=2009&start_month=03&'
         'start_day=01&start_hour=00&start_minute=0&finish_year=2009&'
         'finish_month=03&finish_day=31&finish_hour=23&finish_minute=30',
-        'status_code': 303},
+        'status_code': 303
+    },
     {
         'path': '/downloads',
         'tries': {'max': 20},
         'regexes': [
-            r"00003_FINISHED_watkinsexamplecom_supply_virtual_bills_7\.csv"],
-        'status_code': 200},
+            r"00003_FINISHED_watkinsexamplecom_supply_virtual_bills_7\.csv"
+        ],
+        'status_code': 200
+    },
     {
         'path': '/downloads/'
         '00003_FINISHED_watkinsexamplecom_supply_virtual_bills_7.csv',
@@ -2921,8 +2933,8 @@ def virtual_bill(ds):
             r',imp-supplier-problem',
             r'22 4862 4512 332,,CH023,Treglisson,11640077,'
             r'2009-03-01 00:00,2009-03-31 23:30,,10,,,10,,,'
-            r'10614.7229832\d*,,148925.71000000002,0.00456 | 0.0047,'
-            r'679.10640\d*,5.89,230,31,0.0368,262.384,'
+            r'10614.5494\d*,,148888.78\d*,0.00456,'
+            r'678.93283\d*,5.89,230,31,0.0368,262.384,'
             r'169.72000000000003,31,0.0368,193.616576,'
             r'105487.44\d*,770.058312\d*,43438.26999999999,'
             r'112.946888\d*,0.0033,0.0,,88,43401.25\d*,'
@@ -3131,8 +3143,10 @@ def virtual_bill(ds):
         'tries': {'max': 40, 'period': 1},
         'regexes': [
             r'00009_FINISHED_watkinsexamplecom_monthly_'
-            r'duration_20090301_0000_for_1_months_site_CH023\.ods'],
-        'status_code': 200},
+            r'duration_20090301_0000_for_1_months_site_CH023\.ods'
+        ],
+        'status_code': 200
+    },
     {
         'name': "CSV Sites TRIAD",
         'path': '/reports/181?site_id=3&year=2010',
@@ -3155,18 +3169,21 @@ def virtual_bill(ds):
         'name': "Monthly Duration - no virtual bill function",
         'path': '/reports/247?site_id=4&months=1&finish_year=2009&'
         'finish_month=04&compression=False',
-        'status_code': 303},
+        'status_code': 303
+    },
     {
         'path': '/downloads',
         'tries': {'max': 30, 'period': 1},
         'regexes': [
             r'00011_FINISHED_watkinsexamplecom_monthly_'
-            r'duration_20090401_0000_for_1_months_site_CI017\.ods'],
-        'status_code': 200},
+            r'duration_20090331_2300_for_1_months_site_CI017\.ods'
+        ],
+        'status_code': 200
+    },
     {
         'path': '/downloads/'
         '00011_FINISHED_watkinsexamplecom_monthly_'
-        'duration_20090401_0000_for_1_months_site_CI017.ods',
+        'duration_20090331_2300_for_1_months_site_CI017.ods',
         'status_code': 200,
         'regexes': [
             r'<table:table table:name="Era Level">\s*'
@@ -3789,7 +3806,7 @@ def virtual_bill(ds):
             r'<table:table-cell office:string-value="" '
             r'office:value-type="string"/>\s*'
             r'<table:table-cell '
-            r'office:date-value="2009-04-30T23:30:00" '
+            r'office:date-value="2009-04-30T22:30:00" '
             r'office:value-type="date" table:style-name="cell_date"/>\s*'
             r'<table:table-cell office:value="0" '
             r'office:value-type="float" table:number-columns-repeated="9"/>\s*'
@@ -3815,7 +3832,41 @@ def virtual_bill(ds):
             r'<table:table-cell table:number-columns-repeated="2"/>\s*'
             r'<table:table-cell office:value="0.0047" '
             r'office:value-type="float"/>\s*'
-            r'<table:table-cell/>\s*'
+            r'<table:table-cell/>\s*',
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
             r'<table:table-cell office:value="5.89" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="2300" '
@@ -3861,7 +3912,36 @@ def virtual_bill(ds):
             r'office:value-type="float" table:number-columns-repeated="2"/>\s*'
             r'<table:table-cell table:number-columns-repeated="9"/>\s*'
             r'<table:table-cell office:value="0.0" '
-            r'office:value-type="float"/>\s*'
+            r'office:value-type="float"/>\s*',
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
             r'<table:table-cell/>\s*'
             r'<table:table-cell office:value="0.0" '
             r'office:value-type="float"/>\s*'
@@ -3932,7 +4012,7 @@ import chellow.rcrc
 import chellow.bsuos
 import chellow.aahedc
 import chellow.ro
-from chellow.utils import utc_datetime, reduce_bill_hhs
+from chellow.utils import utc_datetime, reduce_bill_hhs, to_utc, ct_datetime
 import chellow.computer
 
 
@@ -4071,8 +4151,9 @@ def displaced_virtual_bill(ds):
         for k in rate_names & datum.keys():
             bill_hh[k] = {datum[k]}
 
-        if datum['utc-is-month-end']:
-            month_start = utc_datetime(hh_start.year, hh_start.month, 1)
+        if datum['ct-is-month-end']:
+            month_start = to_utc(
+                ct_datetime(datum['ct-year'], datum['ct-month'], 1))
             ccl_kwh = ccl_gbp = 0
             ccl_rate = set()
             for d in ds.get_data_sources(month_start, hh_start):
@@ -4496,7 +4577,7 @@ def virtual_bill(ds):
             r'imp-supplier-problem',
             r'20 6354 2983 571,,CI004,Lower Treave,141 5532,'
             r'2009-03-01 00:00,2009-03-31 23:30,,10,,,7,,,'
-            r'2274.51875\d*,,,0.00456 | 0.0047,,5.89,2300,,,'
+            r'2274.51875\d*,,,0.00456,,5.89,2300,,,'
             r'2165.0,0,,,,0,0.0,86.9732,0.10262837600000001,'
             r',,14.91,88,86.9732,93.49619,0.585809728064,0,'
             r'0.0,0.0,,,,,,,0,0.0,0.0,,,'
@@ -4867,18 +4948,20 @@ def virtual_bill(ds):
         'name': "Test displaced virtual bill.",
         'path': '/reports/247?site_id=1&months=1&finish_year=2010&'
         'finish_month=06&compression=False',
-        'status_code': 303},
+        'status_code': 303
+    },
     {
         'path': '/downloads',
         'tries': {'max': 60, 'period': 1},
         'regexes': [
-            r'00015_FINISHED_watkinsexamplecom_monthly_duration_20100601_0000_'
-            r'for_1_months_site_CI004\.ods'],
+            r'00015_FINISHED_watkinsexamplecom_monthly_duration_20100531_2300_'
+            r'for_1_months_site_CI004\.ods'
+        ],
         'status_code': 200
     },
     {
         'path': '/downloads/'
-        '00015_FINISHED_watkinsexamplecom_monthly_duration_20100601_0000_'
+        '00015_FINISHED_watkinsexamplecom_monthly_duration_20100531_2300_'
         'for_1_months_site_CI004.ods',
         'regexes': [
             r'<table:table-row>\s*'
@@ -5531,47 +5614,9 @@ def virtual_bill(ds):
             r'office:value-type="string"/>\s*'
             r'<table:table-cell office:string-value="exp-supplier-problem" '
             r'office:value-type="string"/>\s*'
-            r'</table:table-row>\s*',
+            r'</table:table-row>\s*'
+            r'<table:table-row>\s*',
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-            r'<table:table-row>\s*'
             r'<table:table-cell '
             r'office:date-value="\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d" '
             r'office:value-type="date" table:style-name="cell_date"/>\s*'
@@ -5590,7 +5635,7 @@ def virtual_bill(ds):
             r'office:value-type="string"/>\s*'
             r'<table:table-cell office:string-value="" '
             r'office:value-type="string"/>\s*'
-            r'<table:table-cell office:date-value="2010-06-30T23:30:00" '
+            r'<table:table-cell office:date-value="2010-06-30T22:30:00" '
             r'office:value-type="date" table:style-name="cell_date"/>\s*'
             r'<table:table-cell office:value="0" office:value-type="float" '
             r'table:number-columns-repeated="15"/>\s*'
@@ -5600,32 +5645,7 @@ def virtual_bill(ds):
             r'table:number-columns-repeated="3"/>\s*'
             r'<table:table-cell table:number-columns-repeated="7"/>\s*'
             r'<table:table-cell office:value="0.0" '
-            r'office:value-type="float"/>\s*',
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+            r'office:value-type="float"/>\s*'
             r'<table:table-cell table:number-columns-repeated="18"/>\s*'
             r'<table:table-cell office:value="0.0" '
             r'office:value-type="float"/>\s*'
@@ -5658,25 +5678,7 @@ def virtual_bill(ds):
             r'<table:table-cell office:value="1.078" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="0.0" '
-            r'office:value-type="float"/>\s*',
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+            r'office:value-type="float"/>\s*'
             r'<table:table-cell office:date-value="2010-01-25T17:00:00" '
             r'office:value-type="date" table:style-name="cell_date"/>\s*'
             r'<table:table-cell office:value="0" '
@@ -5735,23 +5737,27 @@ def virtual_bill(ds):
         'name': "Try a 12 month run",
         'path': '/reports/247?site_id=1&months=12&finish_year=2011&'
         'finish_month=06&compression=False',
-        'status_code': 303},
+        'status_code': 303
+    },
     {
         'path': '/downloads',
         'tries': {'max': 210, 'period': 1},
         'regexes': [
-            r'00016_FINISHED_watkinsexamplecom_monthly_duration_20100701_0000_'
+            r'00016_FINISHED_watkinsexamplecom_monthly_duration_20100630_2300_'
             r'for_12_months_site_CI004\.ods'
         ],
-        'status_code': 200},
+        'status_code': 200
+    },
     {
         'path': '/downloads/'
-        '00016_FINISHED_watkinsexamplecom_monthly_duration_20100701_0000_for_'
+        '00016_FINISHED_watkinsexamplecom_monthly_duration_20100630_2300_for_'
         '12_months_site_CI004.ods',
         'regexes': [
-            r'<table:table-cell office:date-value="2011-06-30T23:30:00" '
-            r'office:value-type="date" table:style-name="cell_date"/>'],
-        'status_code': 200},
+            r'<table:table-cell office:date-value="2011-06-30T22:30:00" '
+            r'office:value-type="date" table:style-name="cell_date"/>'
+        ],
+        'status_code': 200
+    },
 
     {
         'name': "Test bulk ignore.",
@@ -6282,14 +6288,14 @@ def virtual_bill(ds):
         'tries': {'max': 30, 'period': 1},
         'regexes': [
             r'00018_FINISHED_watkinsexamplecom_monthly_'
-            r'duration_20100701_0000_for_1_months_site_CI017\.ods'
+            r'duration_20100630_2300_for_1_months_site_CI017\.ods'
         ],
         'status_code': 200
     },
     {
         'path': '/downloads/'
         '00018_FINISHED_watkinsexamplecom_monthly_'
-        'duration_20100701_0000_for_1_months_site_CI017.ods',
+        'duration_20100630_2300_for_1_months_site_CI017.ods',
         'regexes': [
             r'<table:table-row>\s*'
             r'<table:table-cell '
@@ -6318,7 +6324,7 @@ def virtual_bill(ds):
             r'<table:table-cell office:string-value="" '
             r'office:value-type="string"/>\s*'
             r'<table:table-cell '
-            r'office:date-value="2010-07-31T23:30:00" '
+            r'office:date-value="2010-07-31T22:30:00" '
             r'office:value-type="date" table:style-name="cell_date"/>\s*'
             r'<table:table-cell office:value="0" '
             r'office:value-type="float" table:number-columns-repeated="9"/>\s*'
@@ -6629,7 +6635,7 @@ def virtual_bill(ds):
             r'<table:table-cell office:string-value="" '
             r'office:value-type="string"/>\s*'
             r'<table:table-cell '
-            r'office:date-value="2010-07-31T23:30:00" '
+            r'office:date-value="2010-07-31T22:30:00" '
             r'office:value-type="date" table:style-name="cell_date"/>\s*'
             r'<table:table-cell office:value="0" '
             r'office:value-type="float" table:number-columns-repeated="9"/>\s*'
@@ -6774,7 +6780,7 @@ def virtual_bill(ds):
             r'<table:table-cell office:string-value="" '
             r'office:value-type="string"/>\s*'
             r'<table:table-cell '
-            r'office:date-value="2010-07-31T23:30:00" '
+            r'office:date-value="2010-07-31T22:30:00" '
             r'office:value-type="date" table:style-name="cell_date"/>\s*'
             r'<table:table-cell office:value="0" '
             r'office:value-type="float" '
@@ -7710,8 +7716,10 @@ def virtual_bill(ds):
         'path': '/downloads',
         'tries': {},
         'regexes': [
-            r"00025_FINISHED_watkinsexamplecom_supply_virtual_bills_5\.csv"],
-        'status_code': 200},
+            r"00025_FINISHED_watkinsexamplecom_supply_virtual_bills_5\.csv"
+        ],
+        'status_code': 200
+    },
     {
         'path': '/downloads/'
         '00025_FINISHED_watkinsexamplecom_supply_virtual_bills_5.csv',
@@ -9511,8 +9519,8 @@ def virtual_bill(ds):
   "local_rates": [
     {
       "contract_id": 10,
-      "start_date": 2015-06-01T00:00:00Z,
-      "finish_date": 2015-06-30T23:30:00Z,
+      "start_date": 2015-05-31T23:00:00Z,
+      "finish_date": 2015-06-30T22:30:00Z,
       "script": {
         "*": {
           "night": 0.0062656,
@@ -9520,36 +9528,49 @@ def virtual_bill(ds):
           "summer-pk": 0.0062656,
           "winter-low-pk": 0.0501474,
           "winter-off-pk": 0.0062656,
-          "winter-pk": 0.0193918}}}],
+          "winter-pk": 0.0193918
+        }
+      }
+    }
+  ],
 
-  "scenario_start": 2015-06-01T00:00:00Z,
-  "scenario_duration": 1}""", },
+  "scenario_start_year": 2015,
+  "scenario_start_month": 6,
+  "scenario_duration": 1
+}""", },
         'regexes': [
-            r"/supplier_contracts/17"],
-        'status_code': 303},
+            r"/supplier_contracts/17"
+        ],
+        'status_code': 303
+    },
     {
         'name': "Scenario runner",
         'path': '/ods_scenario_runner',
         'regexes': [
             r'<a href="/reports/247\?scenario_id=17">\s*'
             r'Run\s*'
-            r'</a>'],
-        'status_code': 200},
+            r'</a>'
+        ],
+        'status_code': 200
+    },
 
     {
         'name': "Run scenario for a site where there are no site groups",
         'path': '/reports/247?site_id=1&scenario_id=17&compression=False',
-        'status_code': 303},
+        'status_code': 303
+    },
     {
         'path': '/downloads',
         'tries': {'max': 70, 'period': 1},
         'status_code': 200,
         'regexes': [
-            r"00056_FINISHED_watkinsexamplecom_scenario_bau_20150601_0000_for_"
-            r"1_months_site_CI004\.ods"]},
+            r"00056_FINISHED_watkinsexamplecom_scenario_bau_20150531_2300_for_"
+            r"1_months_site_CI004\.ods"
+        ]
+    },
     {
         'path': '/downloads/'
-        '00056_FINISHED_watkinsexamplecom_scenario_bau_20150601_0000_for_'
+        '00056_FINISHED_watkinsexamplecom_scenario_bau_20150531_2300_for_'
         '1_months_site_CI004.ods',
         'status_code': 200,
 
@@ -9557,7 +9578,9 @@ def virtual_bill(ds):
             r'CI005',
             r'<table:table-cell office:string-value="exp-supplier-problem" '
             r'office:value-type="string"/>\s*'
-            r'</table:table-row>']},
+            r'</table:table-row>'
+        ]
+    },
 
     {
         'name': "BAU scenario. Reinstate contents of rate script.",
@@ -9576,46 +9599,61 @@ def virtual_bill(ds):
                   "summer-pk": 0.0062656,
                   "winter-low-pk": 0.0501474,
                   "winter-off-pk": 0.0062656,
-                  "winter-pk": 0.0193918}}"""},
-        'status_code': 303},
+                  "winter-pk": 0.0193918
+                }
+            }"""
+        },
+        'status_code': 303
+    },
 
     {
         'name': "Run scenario for a site where there are site groups",
         'path': '/reports/247?site_id=3&scenario_id=17&compression=False',
-        'status_code': 303},
+        'status_code': 303
+    },
     {
         'path': '/downloads',
         'tries': {'max': 30, 'period': 1},
         'status_code': 200,
         'regexes': [
-            r"00057_FINISHED_watkinsexamplecom_scenario_bau_20150601_0000_for_"
-            r"1_months_site_CI005\.ods"]},
+            r"00057_FINISHED_watkinsexamplecom_scenario_bau_20150531_2300_for_"
+            r"1_months_site_CI005\.ods"
+        ]
+    },
     {
         'path': '/downloads/'
-        '00057_FINISHED_watkinsexamplecom_scenario_bau_20150601_0000_for_'
+        '00057_FINISHED_watkinsexamplecom_scenario_bau_20150531_2300_for_'
         '1_months_site_CI005.ods',
         'status_code': 200,
         'regexes': [
-            r"CI005"]},
+            r"CI005"
+        ]
+    },
 
     {
         'name': "Check BSUoS automatic import page",
         'path': '/non_core_contracts/2/auto_importer',
         'status_code': 200,
         'regexes': [
-            r"Is Locked\?"]},
+            r"Is Locked\?"
+        ]
+    },
     {
         'name': "Check RCRC automatic import page",
         'path': '/non_core_contracts/5/auto_importer',
         'status_code': 200,
         'regexes': [
-            r"Is Locked\?"]},
+            r"Is Locked\?"
+        ]
+    },
     {
         'name': "Check TLM automatic import page",
         'path': '/non_core_contracts/7/auto_importer',
         'status_code': 200,
         'regexes': [
-            r"Is Locked\?"]},
+            r"Is Locked\?"
+        ]
+    },
 
     # Add a scenario
     {
@@ -9633,7 +9671,8 @@ def virtual_bill(ds):
             'charge_script': "",
             'properties': """
 {
-  "scenario_start": 2011-01-01T00:00:00Z,
+  "scenario_start_year": 2011,
+  "scenario_start_month": 1,
   "scenario_duration": 1,
 
   "local_rates": [
@@ -9952,39 +9991,47 @@ def virtual_bill(ds):
             'charge_script': "",
             'properties': r"""
 {
-    "scenario_start": 2005-09-01T00:00:00Z,
+    "scenario_start_year": 2005,
+    "scenario_start_month": 9,
     "scenario_duration": 2,
     "forecast_from": 2006-01-01T00:00:00Z,
 
     "hh_data": {
       "CI005": {
         "used": "
-          2005-09-01 00:00, 0.5",
+          2005-08-31 23:00, 0.5",
         "generated": "
-            2005-09-01 00:00, 2
-            2005-09-15 00:00, 2
-            2005-10-01 00:00, 2
-            2006-09-01 00:00, 0"}}}"""},
+            2005-08-31 23:00, 2
+            2005-09-14 23:00, 2
+            2005-09-30 23:00, 2
+            2006-08-31 23:00, 0"
+      }
+    }
+}"""
+        },
         'regexes': [
-            r"/supplier_contracts/19"],
-        'status_code': 303},
+            r"/supplier_contracts/19"
+        ],
+        'status_code': 303
+    },
 
     {
         'name': "Run scenario for a site",
         'path': '/reports/247?site_id=3&scenario_id=19&compression=False',
-        'status_code': 303},
+        'status_code': 303
+    },
     {
         'path': '/downloads',
         'tries': {'max': 30, 'period': 1},
         'status_code': 200,
         'regexes': [
-            r'00059_FINISHED_watkinsexamplecom_scenario_used_20050901_0000_'
+            r'00059_FINISHED_watkinsexamplecom_scenario_used_20050831_2300_'
             r'for_2_months_site_CI005\.ods'
         ]
     },
     {
         'path': '/downloads/'
-        '00059_FINISHED_watkinsexamplecom_scenario_used_20050901_0000_for_'
+        '00059_FINISHED_watkinsexamplecom_scenario_used_20050831_2300_for_'
         '2_months_site_CI005.ods',
         'status_code': 200,
         'regexes': [
@@ -9998,7 +10045,7 @@ def virtual_bill(ds):
             r'office:value-type="string"/>\s*'
             r'<table:table-cell office:string-value="CI004" '
             r'office:value-type="string"/>\s*'
-            r'<table:table-cell office:date-value="2005-09-30T23:30:00" '
+            r'<table:table-cell office:date-value="2005-09-30T22:30:00" '
             r'office:value-type="date" table:style-name="cell_date"/>\s*'
             r'<table:table-cell office:string-value="hh" '
             r'office:value-type="string"/>\s*'
@@ -10008,35 +10055,9 @@ def virtual_bill(ds):
             r'office:value-type="string"/>\s*'
             r'<table:table-cell office:value="0.0" '
             r'office:value-type="float"/>\s*'
-            r'<table:table-cell office:value="1.5" '
-            r'office:value-type="float"/>\s*',
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-            r'<table:table-cell office:value="4.0" '
+            r'<table:table-cell office:value="4.5" '
+            r'office:value-type="float"/>\s*'
+            r'<table:table-cell office:value="7.0" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="0" office:value-type="float" '
             r'table:number-columns-repeated="3"/>\s*'
@@ -10046,60 +10067,17 @@ def virtual_bill(ds):
             r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="263.80\d*" '
             r'office:value-type="float"/>\s*'
-            r'<table:table-cell office:value="116.966601073\d*" '
+            r'<table:table-cell office:value="116.990034\d*" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="0" office:value-type="float" '
             r'table:number-columns-repeated="4"/>\s*'
-            r'<table:table-cell office:value="0.02414945\d*" '
+            r'<table:table-cell office:value="0.02395201\d*" '
             r'office:value-type="float"/>\s*'
-            r'<table:table-cell office:value="263.83014945\d*" '
+            r'<table:table-cell office:value="263.82995\d*" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="0" office:value-type="float" '
             r'table:number-columns-repeated="3"/>\s*'
-            r'</table:table-row>\s*',
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+            r'</table:table-row>\s*'
             r'<table:table-row>\s*'
             r'<table:table-cell '
             r'office:date-value="\d\d\d\d-\d\d-\d\dT\d\d:\d\d:\d\d" '
@@ -10123,53 +10101,20 @@ def virtual_bill(ds):
             r'<table:table-cell office:value="2.0" office:value-type="float" '
             r'table:number-columns-repeated="2"/>\s*'
             r'<table:table-cell office:value="0" office:value-type="float" '
-            r'table:number-columns-repeated="4"/>\s*',
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+            r'table:number-columns-repeated="4"/>\s*'
             r'<table:table-cell office:value="3506.193548387\d*" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="0" '
             r'office:value-type="float"/>\s*'
-            r'<table:table-cell office:value="284.432313\d*" '
+            r'<table:table-cell office:value="398.322313\d*" '
             r'office:value-type="float"/>\s*'
-            r'<table:table-cell office:value="116.226801431\d*" '
+            r'<table:table-cell office:value="116.22599\d*" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="0" office:value-type="float" '
             r'table:number-columns-repeated="4"/>\s*'
             r'<table:table-cell office:value="0.0" '
             r'office:value-type="float"/>\s*'
-            r'<table:table-cell office:value="284.4323\d*" '
+            r'<table:table-cell office:value="398.32231\d*" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="0" office:value-type="float" '
             r'table:number-columns-repeated="3"/>\s*'
@@ -10183,13 +10128,16 @@ def virtual_bill(ds):
         'method': 'post',
         'data': {
             'site_id': "1",
-            'detach': "Detach"},
+            'detach': "Detach"
+        },
         'status_code': 400,
         'regexes': [
             r'<li>\s*'
             r'You can&#39;t detach an era from the site where it is '
             r'physically located.\s*'
-            r'</li>']},
+            r'</li>'
+        ]
+    },
     {
         'name': "Look at a DNO",
         'path': '/dnos/173',  # DNO 10
@@ -10238,27 +10186,33 @@ def virtual_bill(ds):
         "multiplier": 1,
         "constant": 0.1},
 
-    "scenario_start": 5011-01-01T00:00:00Z,
+    "scenario_start_year": 5011,
+    "scenario_start_month": 1,
     "scenario_duration": 1,
     "resolution": "hh",
 
     "kw_changes": ""}
 """},
         'regexes': [
-            r"/supplier_contracts/18"],
-        'status_code': 303},
+            r"/supplier_contracts/18"
+        ],
+        'status_code': 303
+    },
 
     # Run scenario for a site
     {
         'path': '/reports/247?site_id=3&scenario_id=18&compression=False',
-        'status_code': 303},
+        'status_code': 303
+    },
     {
         'path': '/downloads',
         'tries': {'max': 30, 'period': 1},
         'status_code': 200,
         'regexes': [
             r"00060_FINISHED_watkinsexamplecom_scenario_bsuos_50110101_0000_"
-            r"for_1_months_site_CI005\.ods"]},
+            r"for_1_months_site_CI005\.ods"
+        ]
+    },
     {
         'path': '/downloads/'
         '00060_FINISHED_watkinsexamplecom_scenario_bsuos_50110101_0000_'
@@ -10293,32 +10247,7 @@ def virtual_bill(ds):
             r'<table:table-cell office:string-value="Wheal Rodney" '
             r'office:value-type="string"/>\s*'
             r'<table:table-cell office:string-value="" '
-            r'office:value-type="string"/>\s*',
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+            r'office:value-type="string"/>\s*'
             r'<table:table-cell '
             r'office:date-value="5011-01-31T23:30:00" '
             r'office:value-type="date" table:style-name="cell_date"/>\s*'
@@ -10345,50 +10274,7 @@ def virtual_bill(ds):
             r'<table:table-cell table:number-columns-repeated="2"/>\s*'
             r'<table:table-cell office:value="230.252\d*" '
             r'office:value-type="float"/>\s*'
-            r'<table:table-cell table:number-columns-repeated="4"/>\s*',
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+            r'<table:table-cell table:number-columns-repeated="4"/>\s*'
             r'<table:table-cell office:value="5.89" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="130" '
@@ -10412,37 +10298,7 @@ def virtual_bill(ds):
             r'<table:table-cell office:value="0.0" '
             r'office:value-type="float" table:number-columns-repeated="2"/>\s*'
             r'<table:table-cell office:value="0" '
-            r'office:value-type="float"/>\s*',
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+            r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="0.0" '
             r'office:value-type="float" table:number-columns-repeated="2"/>\s*'
             r'<table:table-cell table:number-columns-repeated="6"/>\s*'
@@ -10473,41 +10329,7 @@ def virtual_bill(ds):
             r'office:date-value="2018-12-10T17:00:00" '
             r'office:value-type="date" table:style-name="cell_date"/>\s*'
             r'<table:table-cell office:value="0" '
-            r'office:value-type="float"/>\s*',
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+            r'office:value-type="float"/>\s*'
             r'<table:table-cell office:string-value="X" '
             r'office:value-type="string"/>\s*'
             r'<table:table-cell office:value="1.038" '
@@ -10533,48 +10355,7 @@ def virtual_bill(ds):
             r'office:value-type="float"/>\s*'
             r'<table:table-cell table:number-columns-repeated="3"/>\s*'
             r'<table:table-cell office:value="0" '
-            r'office:value-type="float"/>\s*',
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+            r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="0.01346" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="0.0" '
@@ -10607,47 +10388,7 @@ def virtual_bill(ds):
             r'<table:table-cell/>\s*'
             r'<table:table-cell office:value="0.0" '
             r'office:value-type="float"/>\s*'
-            r'<table:table-cell table:number-columns-repeated="19"/>\s*',
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+            r'<table:table-cell table:number-columns-repeated="19"/>\s*'
             r'<table:table-cell office:value="110.6\d*" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell table:number-columns-repeated="2"/>\s*'
@@ -10675,61 +10416,7 @@ def virtual_bill(ds):
             r'<table:table-cell office:value="0.0" '
             r'office:value-type="float" table:number-columns-repeated="2"/>\s*'
             r'<table:table-cell office:value="0" '
-            r'office:value-type="float"/>\s*',
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+            r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="0.0" '
             r'office:value-type="float" table:number-columns-repeated="2"/>\s*'
             r'<table:table-cell table:number-columns-repeated="6"/>\s*'
@@ -10749,33 +10436,7 @@ def virtual_bill(ds):
             r'office:date-value="2018-11-22T17:00:00" '
             r'office:value-type="date" table:style-name="cell_date"/>\s*'
             r'<table:table-cell office:value="0" '
-            r'office:value-type="float"/>\s*',
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+            r'office:value-type="float"/>\s*'
             r'<table:table-cell office:string-value="X" '
             r'office:value-type="string"/>\s*'
             r'<table:table-cell office:value="1.038" '
@@ -10797,30 +10458,7 @@ def virtual_bill(ds):
             r'office:date-value="2019-01-23T17:30:00" '
             r'office:value-type="date" table:style-name="cell_date"/>\s*'
             r'<table:table-cell office:value="0" '
-            r'office:value-type="float"/>\s*',
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+            r'office:value-type="float"/>\s*'
             r'<table:table-cell office:string-value="X" '
             r'office:value-type="string"/>\s*'
             r'<table:table-cell office:value="1.038" '
@@ -10910,14 +10548,18 @@ def virtual_bill(ds):
         'status_code': 200,
         'regexes': [
             r"00062_FINISHED_watkinsexamplecom_Market_Role_234_general_"
-            r"import\.csv"]},
+            r"import\.csv"
+        ]
+    },
     {
         'path': '/downloads/'
         '00062_FINISHED_watkinsexamplecom_Market_Role_234_general_import.csv',
         'status_code': 200,
         'regexes':  [
             r'insert,market_role,7,Fusion Balancer',
-            r'update,market_role,S,Settlement System Controller']},
+            r'update,market_role,S,Settlement System Controller'
+        ]
+    },
 
     {
         'name': "MDD Converter. Market role",
@@ -10926,13 +10568,16 @@ def virtual_bill(ds):
         'files': {'import_file': "test/gi_insert_market_role.csv"},
         'status_code': 303,
         'regexes': [
-            r"/general_imports/22"]},
+            r"/general_imports/22"
+        ]
+    },
     {
         'name': "MDD Converter. Market role",
         'path': "/general_imports/22",
         'tries': {'max': 10, 'period': 1},
         'status_code': 200,
-        'regexes': [r"The file has been imported successfully\."]},
+        'regexes': [r"The file has been imported successfully\."]
+    },
 
     {
         'name': "MDD Converter. Party",
@@ -11027,27 +10672,33 @@ def virtual_bill(ds):
         'files': {'import_file': "test/gi_insert_llfc.csv"},
         'status_code': 303,
         'regexes': [
-            r"/general_imports/24"]},
+            r"/general_imports/24"
+        ]
+    },
     {
         'name': "GI Insert LLFC. Check it worked.",
         'path': "/general_imports/24",
         'tries': {'max': 10, 'period': 1},
         'status_code': 200,
-        'regexes': [r"The file has been imported successfully\."]},
+        'regexes': [r"The file has been imported successfully\."]
+    },
 
     {
         'name': "MDD Converter. MTC Meter Type",
         'path': "/reports/163",
         'method': "post",
         'files': {"file": "test/MTC_Meter_Type_234.csv"},
-        'status_code': 303},
+        'status_code': 303
+    },
     {
         'path': '/downloads',
         'tries': {'max': 30, 'period': 1},
         'status_code': 200,
         'regexes': [
             r"0065_FINISHED_watkinsexamplecom_MTC_Meter_Type_234_general_"
-            r"import\.csv"]},
+            r"import\.csv"
+        ]
+    },
     {
         'path': '/downloads/'
         '00065_FINISHED_watkinsexamplecom_MTC_Meter_Type_234_general_'
@@ -11065,27 +10716,33 @@ def virtual_bill(ds):
         'files': {'import_file': "test/gi_mtc_meter_type.csv"},
         'status_code': 303,
         'regexes': [
-            r"/general_imports/25"]},
+            r"/general_imports/25"
+        ]
+    },
     {
         'name': "MDD Converter. Meter Timeswitch Class",
         'path': "/general_imports/25",
         'tries': {'max': 10, 'period': 1},
         'status_code': 200,
-        'regexes': [r"The file has been imported successfully\."]},
+        'regexes': [r"The file has been imported successfully\."]
+    },
 
     {
         'name': "MDD Converter. Meter Timeswitch Class",
         'path': "/reports/163",
         'method': "post",
         'files': {"file": "test/Meter_Timeswitch_Class_233.csv"},
-        'status_code': 303},
+        'status_code': 303
+    },
     {
         'path': '/downloads',
         'tries': {'max': 30, 'period': 1},
         'status_code': 200,
         'regexes': [
             r"00066_FINISHED_watkinsexamplecom_Meter_Timeswitch_Class_233_"
-            r"general_import\.csv"]},
+            r"general_import\.csv"
+        ]
+    },
     {
         'path': '/downloads/'
         '00066_FINISHED_watkinsexamplecom_Meter_Timeswitch_Class_233_general_'
@@ -11104,13 +10761,16 @@ def virtual_bill(ds):
         'files': {'import_file': "test/gi_meter_timeswitch_class.csv"},
         'status_code': 303,
         'regexes': [
-            r"/general_imports/26"]},
+            r"/general_imports/26"
+        ]
+    },
     {
         'name': "MDD Converter. Meter Timeswitch Class",
         'path': "/general_imports/26",
         'tries': {'max': 10, 'period': 1},
         'status_code': 200,
-        'regexes': [r"The file has been imported successfully\."]},
+        'regexes': [r"The file has been imported successfully\."]
+    },
 
     {
         'name': "MDD Converter. MTC in PES area",
@@ -11124,7 +10784,9 @@ def virtual_bill(ds):
         'status_code': 200,
         'regexes': [
             r"00067_FINISHED_watkinsexamplecom_MTC_in_PES_Area_233_general_"
-            r"import\.csv"]},
+            r"import\.csv"
+        ]
+    },
     {
         'path': '/downloads/'
         '00067_FINISHED_watkinsexamplecom_MTC_in_PES_Area_233_general_'
@@ -11142,7 +10804,9 @@ def virtual_bill(ds):
         'files': {'import_file': "test/gi_insert_mtc_in_pes_area.csv"},
         'status_code': 303,
         'regexes': [
-            r"/general_imports/27"]},
+            r"/general_imports/27"
+        ]
+    },
     {
         'name': "MDD Converter. Meter Timeswitch Class",
         'path': "/general_imports/27",
@@ -11244,8 +10908,10 @@ def virtual_bill(ds):
             'properties': """
 {
   "forecast_from": 2009-04-01T00:00:00Z,
-  "scenario_start": 2016-02-01T00:00:00Z,
-  "scenario_duration": 1}
+  "scenario_start_year": 2016,
+  "scenario_start_month": 2,
+  "scenario_duration": 1
+}
 """, },
         'regexes': [
             r"/supplier_contracts/20"],
@@ -12016,13 +11682,15 @@ def virtual_bill(ds):
         'path': '/downloads',
         'tries': {'max': 20},
         'regexes': [
-            r'00082_FINISHED_watkinsexamplecom_monthly_duration_20030801_0000_'
-            r'for_1_months_site_CI005\.ods'],
-        'status_code': 200},
+            r'00082_FINISHED_watkinsexamplecom_monthly_duration_20030731_2300_'
+            r'for_1_months_site_CI005\.ods'
+        ],
+        'status_code': 200
+    },
     {
         'name': "Eras starting after report period.",
         'path': '/downloads/'
-        '00082_FINISHED_watkinsexamplecom_monthly_duration_20030801_0000_'
+        '00082_FINISHED_watkinsexamplecom_monthly_duration_20030731_2300_'
         'for_1_months_site_CI005.ods',
         'regexes': [
             r'<table:table-row>\s*'
@@ -12044,7 +11712,7 @@ def virtual_bill(ds):
             r'office:value-type="string"/>\s*'
             r'<table:table-cell office:string-value="" '
             r'office:value-type="string"/>\s*'
-            r'<table:table-cell office:date-value="2003-08-31T23:30:00" '
+            r'<table:table-cell office:date-value="2003-08-31T22:30:00" '
             r'office:value-type="date" table:style-name="cell_date"/>\s*'
             r'<table:table-cell office:value="0" office:value-type="float" '
             r'table:number-columns-repeated="15"/>\s*'
@@ -12952,7 +12620,7 @@ def virtual_bill(ds):
         'tries': {},
         'regexes': [
             r'00089_FINISHED_watkinsexamplecom_monthly_'
-            r'duration_20150501_0000_for_1_months_supply_5\.ods'
+            r'duration_20150430_2300_for_1_months_supply_5\.ods'
         ],
         'status_code': 200
     },
@@ -12960,7 +12628,7 @@ def virtual_bill(ds):
         'name': "Monthly duration report for a gen-net supply",
         'path': '/downloads/'
         '00089_FINISHED_watkinsexamplecom_monthly_'
-        'duration_20150501_0000_for_1_months_supply_5.ods',
+        'duration_20150430_2300_for_1_months_supply_5.ods',
         'status_code': 200,
         'regexes': [
             r'chp'
@@ -12999,14 +12667,16 @@ def virtual_bill(ds):
         'path': '/reports/149?supply_id=10&start_year=2009&start_month=04&'
         'start_day=01&start_hour=00&start_minute=00&finish_year=2009&'
         'finish_month=04&finish_day=10&finish_hour=23&finish_minute=30',
-        'status_code': 303},
+        'status_code': 303
+    },
     {
         'name': "Supplies duration normal reads with prev, pres the same.",
         'path': '/downloads',
         'tries': {},
         'regexes': [
             r"00090_FINISHED_watkinsexamplecom_supplies_duration\.csv"],
-        'status_code': 200},
+        'status_code': 200
+    },
     {
         'name': "Supplies duration normal reads with prev, pres the same.",
         'path': '/downloads/'
@@ -13035,26 +12705,31 @@ def virtual_bill(ds):
             'start_minute': "00",
             'insert': "Insert",
             'value': "45",
-            'status': "A", },
-        'status_code': 303},
+            'status': "A",
+        },
+        'status_code': 303
+    },
     {
         'name': "Monthly Duration report - displaced kWh",
         'path': '/reports/247?site_id=1&months=1&finish_year=2015&'
         'finish_month=05&compression=False',
-        'status_code': 303},
+        'status_code': 303
+    },
     {
         'name': "Monthly Duration report - displaced kWh",
         'path': '/downloads',
         'tries': {'max': 30, 'period': 1},
         'regexes': [
             r'00091_FINISHED_watkinsexamplecom_monthly_'
-            r'duration_20150501_0000_for_1_months_site_CI004\.ods'],
-        'status_code': 200},
+            r'duration_20150430_2300_for_1_months_site_CI004\.ods'
+        ],
+        'status_code': 200
+    },
     {
         'name': "Monthly Duration report - displaced kWh",
         'path': '/downloads/'
         '00091_FINISHED_watkinsexamplecom_monthly_'
-        'duration_20150501_0000_for_1_months_site_CI004.ods',
+        'duration_20150430_2300_for_1_months_site_CI004.ods',
         'status_code': 200,
         'regexes': [
             r'<table:table-row>\s*'
@@ -13076,7 +12751,7 @@ def virtual_bill(ds):
             r'office:value-type="string"/>\s*'
             r'<table:table-cell office:string-value="" '
             r'office:value-type="string"/>\s*'
-            r'<table:table-cell office:date-value="2015-05-31T23:30:00" '
+            r'<table:table-cell office:date-value="2015-05-31T22:30:00" '
             r'office:value-type="date" table:style-name="cell_date"/>\s*'
             r'<table:table-cell office:value="0" office:value-type="float" '
             r'table:number-columns-repeated="6"/>\s*'
@@ -13204,7 +12879,7 @@ def virtual_bill(ds):
             r'office:value-type="string"/>\s*'
             r'<table:table-cell office:string-value="" '
             r'office:value-type="string"/>\s*'
-            r'<table:table-cell office:date-value="2015-05-31T23:30:00" '
+            r'<table:table-cell office:date-value="2015-05-31T22:30:00" '
             r'office:value-type="date" table:style-name="cell_date"/>\s*'
             r'<table:table-cell office:value="0" office:value-type="float" '
             r'table:number-columns-repeated="3"/>\s*'
@@ -13325,7 +13000,7 @@ def virtual_bill(ds):
         'tries': {'max': 30, 'period': 1},
         'regexes': [
             r'00092_FINISHED_watkinsexamplecom_monthly_'
-            r'duration_20030801_0000_for_1_months_supply_7\.ods'
+            r'duration_20030731_2300_for_1_months_supply_7\.ods'
         ],
         'status_code': 200
     },
@@ -13333,10 +13008,12 @@ def virtual_bill(ds):
         'name': "Monthly duration supply starts after period",
         'path': '/downloads/'
         '00092_FINISHED_watkinsexamplecom_monthly_'
-        'duration_20030801_0000_for_1_months_supply_7.ods',
+        'duration_20030731_2300_for_1_months_supply_7.ods',
         'status_code': 200,
         'regexes': [
-            r'22 4862 4512 332']},
+            r'22 4862 4512 332'
+        ]
+    },
 
     {
         'name': "Metered report: correct MOP / DC costs",
@@ -13378,7 +13055,9 @@ def virtual_bill(ds):
             'description': "Thus spoke."},
         'status_code': 303,
         'regexes': [
-            r"/dc_batches/15"]},
+            r"/dc_batches/15"
+        ]
+    },
     {
         'name': "Monthly duration report, billed: add bill to batch",
         'path': '/dc_batches/14/add_bill',
@@ -13410,25 +13089,30 @@ def virtual_bill(ds):
             'breakdown': '{}'},
         'status_code': 303,
         'regexes': [
-            r"/dc_bills/24"]},
+            r"/dc_bills/24"
+        ]
+    },
     {
         'name': "Monthly duration report, billed",
         'path': '/reports/247?site_id=1&months=1&finish_year=2015&'
         'finish_month=08&compression=False',
-        'status_code': 303},
+        'status_code': 303
+    },
     {
         'name': "Monthly duration report, billed",
         'path': '/downloads',
         'tries': {'max': 30, 'period': 1},
         'regexes': [
             r'00093_FINISHED_watkinsexamplecom_monthly_'
-            r'duration_20150801_0000_for_1_months_site_CI004\.ods'],
-        'status_code': 200},
+            r'duration_20150731_2300_for_1_months_site_CI004\.ods'
+        ],
+        'status_code': 200
+    },
     {
         'name': "Monthly duration report, billed",
         'path': '/downloads/'
         '00093_FINISHED_watkinsexamplecom_monthly_'
-        'duration_20150801_0000_for_1_months_site_CI004.ods',
+        'duration_20150731_2300_for_1_months_site_CI004.ods',
         'status_code': 200,
         'regexes': [
             r'<table:table-row>\s*'
@@ -13458,7 +13142,7 @@ def virtual_bill(ds):
             r'office:value-type="string"/>\s*'
             r'<table:table-cell office:string-value="" '
             r'office:value-type="string"/>\s*'
-            r'<table:table-cell office:date-value="2015-08-31T23:30:00" '
+            r'<table:table-cell office:date-value="2015-08-31T22:30:00" '
             r'office:value-type="date" table:style-name="cell_date"/>\s*'
             r'<table:table-cell office:value="0" office:value-type="float" '
             r'table:number-columns-repeated="9"/>\s*'
@@ -13472,7 +13156,7 @@ def virtual_bill(ds):
             r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="0.0" '
             r'office:value-type="float"/>\s*'
-            r'<table:table-cell office:value="11.2" '
+            r'<table:table-cell office:value="11.184946\d*" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell/>\s*'
             r'<table:table-cell office:value="10" '
@@ -13651,7 +13335,8 @@ def virtual_bill(ds):
             'exp_supplier_contract_id': "12",
             'exp_supplier_account': "669"
         },
-        'status_code': 303},
+        'status_code': 303
+    },
     {
         'name': "TRIAD, no historical data, but eras exist",
         'path': '/reports/291?supply_id=5&start_year=2014&start_month=01&'
@@ -13663,12 +13348,14 @@ def virtual_bill(ds):
         'tries': {},
         'regexes': [
             r"00094_FINISHED_watkinsexamplecom_supply_virtual_bills_5\.csv"],
-        'status_code': 200},
+        'status_code': 200
+    },
     {
         'path': '/downloads/'
         '00094_FINISHED_watkinsexamplecom_supply_virtual_bills_5.csv',
         'regexes': [r'22 7824 9120 097'],
-        'status_code': 200},
+        'status_code': 200
+    },
 
     {
         'name': "Supply level virtual bill, with readfull bill covered "
@@ -13682,27 +13369,33 @@ def virtual_bill(ds):
         'tries': {},
         'regexes': [
             r"00095_FINISHED_watkinsexamplecom_supply_virtual_bills_10\.csv"],
-        'status_code': 200},
+        'status_code': 200
+    },
     {
         'path': '/downloads/'
         '00095_FINISHED_watkinsexamplecom_supply_virtual_bills_10.csv',
         'regexes': [
-            r'3409.15883838'],
-        'status_code': 200},
+            r'3409.15883838'
+        ],
+        'status_code': 200
+    },
 
     {
         'name': "Test displaced virtual bill with generation",
         'path': '/reports/247?site_id=3&months=1&finish_year=2005&'
         'finish_month=11&compression=False',
-        'status_code': 303},
+        'status_code': 303
+    },
     {
         'name': "Test displaced virtual bill with generation",
         'path': '/downloads',
         'tries': {'max': 20},
         'regexes': [
             r'00096_FINISHED_watkinsexamplecom_monthly_duration_20051101_0000_'
-            r'for_1_months_site_CI005\.ods'],
-        'status_code': 200},
+            r'for_1_months_site_CI005\.ods'
+        ],
+        'status_code': 200
+    },
     {
         'name': "Test displaced virtual bill with generation",
         'path': '/downloads/'
@@ -13717,7 +13410,8 @@ def virtual_bill(ds):
     {
         'name': "GSP Groups",
         'path': '/gsp_groups',
-        'status_code': 200},
+        'status_code': 200
+    },
 
     {
         'name': 'Wildcard user. Add config.',
@@ -13745,13 +13439,16 @@ def virtual_bill(ds):
         'method': 'post',
         'data': {
             'email_address': "watkins@example.com",
-            'user_role_code': "viewer"},
-        'status_code': 303},
+            'user_role_code': "viewer"
+        },
+        'status_code': 303
+    },
     {
         'name': 'Wildcard user. Try viewing a page as unknown person',
         'path': '/gsp_groups',
         'auth': None,
-        'status_code': 200},
+        'status_code': 200
+    },
     {
         'name': "Wildcard user. Check 401 still occurs.",
         'path': '/sites/8/edit',
@@ -13759,8 +13456,10 @@ def virtual_bill(ds):
         'data': {
             'site_name': "Ishmael",
             'code': "MOBY",
-            'update': "Update"},
-        'status_code': 401},
+            'update': "Update"
+        },
+        'status_code': 401
+    },
 
     {
         'name': "Update a local report",
@@ -13770,19 +13469,23 @@ def virtual_bill(ds):
         'data': {
             'name': 'Minority Report',
             'script': "response = 'Henriki'",
-            'template': ''},
-        'status_code': 303},
+            'template': ''
+        },
+        'status_code': 303
+    },
     {
         'name': "Run a local report",
         'path': '/local_reports/1/output',
         'status_code': 200,
         'regexes': [
-            r'Henriki']},
+            r'Henriki']
+    },
     {
         'name': "Delete downloaded reports",
         'path': '/downloads',
         'method': 'post',
-        'status_code': 303},
+        'status_code': 303
+    },
 
     {
         'name': "Enable bank_holidays downloader",
@@ -14427,18 +14130,20 @@ def virtual_bill(ds):
         'name': "Monthly duration Report: gen-net",
         'path': '/reports/247?supply_id=5&months=1&finish_year=2014&'
         'finish_month=06&compression=False',
-        'status_code': 303},
+        'status_code': 303
+    },
     {
         'path': '/downloads',
         'tries': {'max': 40, 'period': 1},
         'regexes': [
             r'00006_FINISHED_adminexamplecom_monthly_'
-            r'duration_20140601_0000_for_1_months_supply_5\.ods'],
-        'status_code': 200},
+            r'duration_20140531_2300_for_1_months_supply_5\.ods'],
+        'status_code': 200
+    },
     {
         'path': '/downloads/'
         '00006_FINISHED_adminexamplecom_monthly_duration_'
-        '20140601_0000_for_1_months_supply_5.ods',
+        '20140531_2300_for_1_months_supply_5.ods',
         'regexes': [
             r'<table:table-row>\s*'
             r'<table:table-cell '
@@ -14470,7 +14175,7 @@ def virtual_bill(ds):
             r'office:value-type="string"/>\s*'
             r'<table:table-cell office:string-value="" '
             r'office:value-type="string"/>\s*'
-            r'<table:table-cell office:date-value="2014-06-30T23:30:00" '
+            r'<table:table-cell office:date-value="2014-06-30T22:30:00" '
             r'office:value-type="date" table:style-name="cell_date"/>\s*'
             r'<table:table-cell office:value="48.9" '
             r'office:value-type="float"/>\s*'
@@ -14620,13 +14325,13 @@ def virtual_bill(ss):
         'tries': {'max': 30, 'period': 1},
         'regexes': [
             r'00008_FINISHED_adminexamplecom_monthly_'
-            r'duration_20150501_0000_for_1_months_site_CI004\.ods'],
+            r'duration_20150430_2300_for_1_months_site_CI004\.ods'],
         'status_code': 200},
     {
         'name': "Monthly duration report for site with only generation",
         'path': '/downloads/'
         '00008_FINISHED_adminexamplecom_monthly_'
-        'duration_20150501_0000_for_1_months_site_CI004.ods',
+        'duration_20150430_2300_for_1_months_site_CI004.ods',
         'status_code': 200,
         'regexes': [
             r'<table:table-row>\s*'
@@ -14639,7 +14344,7 @@ def virtual_bill(ss):
             r'office:value-type="string"/>\s*'
             r'<table:table-cell office:string-value="CI005" '
             r'office:value-type="string"/>\s*'
-            r'<table:table-cell office:date-value="2015-05-31T23:30:00" '
+            r'<table:table-cell office:date-value="2015-05-31T22:30:00" '
             r'office:value-type="date" table:style-name="cell_date"/>\s*'
             r'<table:table-cell office:string-value="hh" '
             r'office:value-type="string"/>\s*'
@@ -14681,20 +14386,23 @@ def virtual_bill(ss):
         'name': "Monthly duration report for site with no supplies",
         'path': '/reports/247?site_id=8&months=1&finish_year=2015&'
         'finish_month=05&compression=False',
-        'status_code': 303},
+        'status_code': 303
+    },
     {
         'name': "Monthly duration report for site with no supplies",
         'path': '/downloads',
         'tries': {'max': 30, 'period': 1},
         'regexes': [
             r'00009_FINISHED_adminexamplecom_monthly_'
-            r'duration_20150501_0000_for_1_months_site_MOBY\.ods'],
-        'status_code': 200},
+            r'duration_20150430_2300_for_1_months_site_MOBY\.ods'
+        ],
+        'status_code': 200
+    },
     {
         'name': "Monthly duration report for site with no supplies",
         'path': '/downloads/'
         '00009_FINISHED_adminexamplecom_monthly_'
-        'duration_20150501_0000_for_1_months_site_MOBY.ods',
+        'duration_20150430_2300_for_1_months_site_MOBY.ods',
         'status_code': 200,
         'regexes': [
             r'<table:table-row>\s*'
@@ -14707,7 +14415,7 @@ def virtual_bill(ss):
             r'office:value-type="string"/>\s*'
             r'<table:table-cell office:string-value="" '
             r'office:value-type="string"/>\s*'
-            r'<table:table-cell office:date-value="2015-05-31T23:30:00" '
+            r'<table:table-cell office:date-value="2015-05-31T22:30:00" '
             r'office:value-type="date" table:style-name="cell_date"/>\s*'
             r'<table:table-cell/>\s*'
             r'<table:table-cell office:string-value="" '
@@ -14715,7 +14423,9 @@ def virtual_bill(ss):
             r'table:number-columns-repeated="2"/>\s*'
             r'<table:table-cell office:value="0" office:value-type="float" '
             r'table:number-columns-repeated="20"/>\s*'
-            r'</table:table-row>']},
+            r'</table:table-row>'
+        ]
+    },
 
     {
         'name': "Site level HH data, row per hh",
@@ -17761,7 +17471,8 @@ def virtual_bill(supply_source):
       "multiplier": 1,
       "constant": 0.1}},
 
-  "scenario_start": 2011-01-01T00:00:00Z,
+  "scenario_start_year": 2011,
+  "scenario_start_month": 1,
   "scenario_duration": 2,
   "resolution": "month",
 
@@ -19176,7 +18887,8 @@ def virtual_bill(ds):
             'properties': """
 {
   "local_rates": {},
-  "scenario_start": 2015-06-01T00:00:00Z,
+  "scenario_start_year": 2015,
+  "scenario_start_month": 6,
   "scenario_duration": 1}""", },
         'regexes': [
             r"/supplier_contracts/17"
@@ -19194,13 +18906,13 @@ def virtual_bill(ds):
         'tries': {},
         'status_code': 200,
         'regexes': [
-            r"00025_FINISHED_adminexamplecom_scenario_bau_20150601_0000_for_1_"
+            r"00025_FINISHED_adminexamplecom_scenario_bau_20150531_2300_for_1_"
             r"months_site_CI004\.ods"
         ]
     },
     {
         'path': '/downloads/'
-        '00025_FINISHED_adminexamplecom_scenario_bau_20150601_0000_for_1_'
+        '00025_FINISHED_adminexamplecom_scenario_bau_20150531_2300_for_1_'
         'months_site_CI004.ods',
         'status_code': 200,
 
@@ -19253,14 +18965,17 @@ def virtual_bill(ds):
         'tries': {},
         'status_code': 200,
         'regexes': [
-            r"00026_FINISHED_adminexamplecom_g_supplies_snapshot\.csv"]},
+            r"00026_FINISHED_adminexamplecom_g_supplies_snapshot\.csv"
+        ]
+    },
     {
         'path': '/downloads/'
         '00026_FINISHED_adminexamplecom_g_supplies_snapshot.csv',
         'status_code': 200,
         'regexes': [
             r'2018-03-01 00:00,CH017,Parbola,,,750278673,EM2,hwo8th,1.02264,'
-            r'M3,Total,ghoIIl,2015-09-01 00:00,']
+            r'M3,Total,ghoIIl,2015-09-01 00:00,'
+        ]
     },
 
     {
@@ -19268,14 +18983,17 @@ def virtual_bill(ds):
         'path': '/reports/g_monthly_duration?g_supply_id=1&months=1&'
         'finish_year=2018&finish_month=03&finish_day=01&finish_hour=00&'
         'finish_minute=00&compression=False',
-        'status_code': 303},
+        'status_code': 303
+    },
     {
         'path': '/downloads',
         'tries': {},
         'status_code': 200,
         'regexes': [
             r'00027_FINISHED_adminexamplecom_g_monthly_duration_20180301_'
-            r'0000_for_1_months_g_supply_1\.ods']},
+            r'0000_for_1_months_g_supply_1\.ods'
+        ]
+    },
     {
         'path': '/downloads/'
         '00027_FINISHED_adminexamplecom_g_monthly_duration_20180301_0000_'
@@ -19863,7 +19581,8 @@ def virtual_bill(ds):
             'charge_script': "",
             'properties': """
 {
-  "scenario_start": 2009-08-01T00:00:00Z,
+  "scenario_start_year": 2009,
+  "scenario_start_month": 8,
   "scenario_duration": 1,
 
   "era_maps": {
@@ -19895,19 +19614,22 @@ def virtual_bill(ds):
     {
         'name': "Scenario with new generation",
         'path': '/reports/247?site_id=4&scenario_id=19&compression=False',
-        'status_code': 303},
+        'status_code': 303
+    },
     {
         'name': "Scenario with new generation",
         'path': '/downloads',
         'tries': {'max': 30, 'period': 1},
         'status_code': 200,
         'regexes': [
-            r"00032_FINISHED_adminexamplecom_scenario_used_20090801_0000_for_1"
-            r"_months_site_CI017\.ods"]},
+            r"00032_FINISHED_adminexamplecom_scenario_used_20090731_2300_for_1"
+            r"_months_site_CI017\.ods"
+        ]
+    },
     {
         'name': "Scenario with new generation",
         'path': '/downloads/'
-        '00032_FINISHED_adminexamplecom_scenario_used_20090801_0000_for_1_'
+        '00032_FINISHED_adminexamplecom_scenario_used_20090731_2300_for_1_'
         'months_site_CI017.ods',
         'status_code': 200,
         'regexes': [
@@ -19982,7 +19704,7 @@ def virtual_bill(ds):
             r'office:value-type="string"/>\s*'
             r'<table:table-cell office:string-value="" '
             r'office:value-type="string"/>\s*'
-            r'<table:table-cell office:date-value="2009-08-31T23:30:00" '
+            r'<table:table-cell office:date-value="2009-08-31T22:30:00" '
             r'office:value-type="date" table:style-name="cell_date"/>\s*'
             r'<table:table-cell office:string-value="hh" '
             r'office:value-type="string"/>\s*'

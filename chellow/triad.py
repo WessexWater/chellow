@@ -1,7 +1,7 @@
 from dateutil.relativedelta import relativedelta
 from chellow.utils import (
-    HH, hh_after, utc_datetime, get_file_scripts, hh_before, get_file_rates,
-    hh_min)
+    to_ct, hh_after, c_months_u, get_file_scripts, hh_before, get_file_rates,
+    hh_min, to_utc, ct_datetime)
 import chellow.computer
 import chellow.duos
 
@@ -13,17 +13,16 @@ def hh(ds, rate_period='monthly', est_kw=None):
 
 
 def _process_hh(ds, rate_period, est_kw, hh):
-    hh_start = hh['start-date']
+    month_start, month_finish = next(c_months_u(hh['ct-year'], hh['ct-month']))
 
-    month_start = utc_datetime(hh_start.year, hh_start.month)
-    month_finish = month_start + relativedelta(months=1) - HH
-
-    financial_year_start = month_start
-    while financial_year_start.month != 4:
-        financial_year_start -= relativedelta(months=1)
-
-    last_financial_year_start = financial_year_start - relativedelta(years=1)
-    financial_year_finish = financial_year_start + relativedelta(years=1) - HH
+    month_start_ct = to_ct(month_start)
+    if month_start_ct.month > 3:
+        year = month_start_ct.year
+    else:
+        year = month_start_ct.year - 1
+    financial_year_start = to_utc(ct_datetime(year, 4, 1))
+    last_financial_year_start = to_utc(ct_datetime(year - 1, 4, 1))
+    financial_year_finish = to_utc(ct_datetime(year + 1, 3, 31, 23, 30))
 
     est_triad_kws = []
     earliest_triad = None
@@ -102,14 +101,14 @@ def _process_hh(ds, rate_period, est_kw, hh):
         est_intervals = 0
         for d in ds.get_data_sources(month_start, month_finish):
             for h in d.hh_data:
-                if h['utc-decimal-hour'] == 0:
+                if h['ct-decimal-hour'] == 0:
                     est_intervals += 1
 
         hh['triad-estimate-days'] = est_intervals
 
     hh['triad-estimate-gbp'] = est_triad_gbp / total_intervals * est_intervals
 
-    if month_start.month == 3:
+    if hh['ct-month'] == 3:
         triad_kws = []
         for t_date in get_file_rates(
                 ds.caches, 'triad_dates', month_start)['triad_dates']:
@@ -162,14 +161,14 @@ def _process_hh(ds, rate_period, est_kw, hh):
         for start_date, finish_date, script in get_file_scripts('triad_rates'):
             if start_date <= financial_year_finish and not hh_before(
                     finish_date, financial_year_start):
-                start_month = start_date.month
+                start_month = to_ct(start_date).month
                 if start_month < 4:
                     start_month += 12
 
                 if finish_date is None:
-                    finish_month = financial_year_finish.month
+                    finish_month = 3
                 else:
-                    finish_month = finish_date.month
+                    finish_month = to_ct(finish_date).month
 
                 if finish_month < 4:
                     finish_month += 12

@@ -1,4 +1,4 @@
-from chellow.utils import utc_datetime
+from chellow.utils import ct_datetime, to_utc, utc_datetime
 import chellow.reports.report_181
 import chellow.computer
 
@@ -8,9 +8,9 @@ def test_write_sites(mocker):
     caches = {}
     writer = mocker.Mock()
     year = 2010
-    year_start = utc_datetime(year - 1, 4, 1)
-    year_finish = utc_datetime(year, 3, 31, 23, 30)
-    month_start = utc_datetime(year, 3, 1)
+    year_start = to_utc(ct_datetime(year - 1, 4, 1))
+    year_finish = to_utc(ct_datetime(year, 3, 31, 23, 30))
+    month_start = to_utc(utc_datetime(year, 3, 1))
 
     site_id = None
     site = mocker.Mock()

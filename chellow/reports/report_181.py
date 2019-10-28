@@ -2,7 +2,8 @@ from sqlalchemy import or_
 from sqlalchemy.sql.expression import null
 import traceback
 from chellow.utils import (
-    HH, csv_make_val, req_int, utc_datetime, MONTH, reduce_bill_hhs)
+    HH, csv_make_val, req_int, ct_datetime, reduce_bill_hhs, to_utc,
+    c_months_u)
 from chellow.models import Site, SiteEra, Era, Supply, Source, Session
 import chellow.computer
 import chellow.duos
@@ -14,7 +15,6 @@ import os
 from chellow.views import chellow_redirect
 import threading
 from werkzeug.exceptions import BadRequest
-from dateutil.relativedelta import relativedelta
 
 
 def _make_sites(sess, year_start, year_finish, site_id, source_codes):
@@ -32,25 +32,28 @@ def _make_sites(sess, year_start, year_finish, site_id, source_codes):
 
 
 def _write_sites(sess, caches, writer, year, site_id):
-    writer.writerow(
-        (
-            "Site Code", "Site Name", "Displaced TRIAD 1 Date",
-            "Displaced TRIAD 1 MSP kW", "Displaced TRIAD LAF",
-            "Displaced TRIAD 1 GSP kW", "Displaced TRIAD 2 Date",
-            "Displaced TRIAD 2 MSP kW", "Displaced TRIAD 2 LAF",
-            "Displaced TRIAD 2 GSP kW", "Displaced TRIAD 3 Date",
-            "Displaced TRIAD 3 MSP kW", "Displaced TRIAD 3 LAF",
-            "Displaced TRIAD 3 GSP kW", "Displaced GSP kW",
-            "Displaced Rate GBP / kW", "GBP"))
+    titles = (
+        "Site Code", "Site Name", "Displaced TRIAD 1 Date",
+        "Displaced TRIAD 1 MSP kW", "Displaced TRIAD LAF",
+        "Displaced TRIAD 1 GSP kW", "Displaced TRIAD 2 Date",
+        "Displaced TRIAD 2 MSP kW", "Displaced TRIAD 2 LAF",
+        "Displaced TRIAD 2 GSP kW", "Displaced TRIAD 3 Date",
+        "Displaced TRIAD 3 MSP kW", "Displaced TRIAD 3 LAF",
+        "Displaced TRIAD 3 GSP kW", "Displaced GSP kW",
+        "Displaced Rate GBP / kW", "GBP"
+    )
+    writer.writerow(titles)
 
-    march_finish = utc_datetime(year, 4, 1) - HH
-    march_start = utc_datetime(year, 3, 1)
-    year_start = utc_datetime(year - 1, 4, 1)
+    march_finish_ct = ct_datetime(year, 4, 1) - HH
+    march_finish_utc = to_utc(march_finish_ct)
+    march_start_ct = ct_datetime(year, 3, 1)
+    march_start_utc = to_utc(march_start_ct)
+    year_start = to_utc(ct_datetime(year - 1, 4, 1))
 
     forecast_date = chellow.computer.forecast_date()
 
     sites = _make_sites(
-        sess, year_start, march_finish, site_id, ('gen', 'gen-net'))
+        sess, year_start, march_finish_utc, site_id, ('gen', 'gen-net'))
 
     scalar_names = {
         'triad-actual-gsp-kw', 'triad-actual-gbp'
@@ -69,9 +72,8 @@ def _write_sites(sess, caches, writer, year, site_id):
 
     for site in sites:
         displaced_era = None
-        for i in range(12):
-            month_start = march_start - relativedelta(months=i)
-            month_finish = month_start + MONTH - HH
+        for month_start, month_finish in sorted(
+                c_months_u(year - 1, 4, 12), reverse=True):
             displaced_era = chellow.computer.displaced_era(
                 sess, caches, site, month_start, month_finish, forecast_date)
             if displaced_era is not None:
@@ -81,8 +83,8 @@ def _write_sites(sess, caches, writer, year, site_id):
             break
 
         site_ds = chellow.computer.SiteSource(
-            sess, site, march_start, march_finish, forecast_date, caches,
-            displaced_era)
+            sess, site, march_start_utc, march_finish_utc, forecast_date,
+            caches, displaced_era)
         chellow.duos.duos_vb(site_ds)
         chellow.triad.hh(site_ds)
 

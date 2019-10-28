@@ -11,6 +11,7 @@ import traceback
 import os
 from collections.abc import Mapping
 from zish import loads, ZishException
+from itertools import count
 
 url_root = None
 
@@ -479,8 +480,39 @@ def utc_datetime_now():
     return Datetime.utcnow().replace(tzinfo=utc)
 
 
+def ct_datetime_now():
+    return to_ct(utc_datetime_now())
+
+
 def utc_datetime_parse(date_str, format_str):
     return Datetime.strptime(date_str, format_str).replace(tzinfo=utc)
+
+
+def u_months_u(year_start, month_start, months=None):
+    if months is None:
+        counter = count()
+    else:
+        counter = range(months)
+    for i in counter:
+        u_month_start_u = utc_datetime(year_start, month_start) + \
+            relativedelta(months=i)
+        u_month_finish_u = utc_datetime(year_start, month_start) + \
+            relativedelta(months=i+1) - HH
+        yield u_month_start_u, u_month_finish_u
+
+
+def c_months_u(year_start, month_start, months=None):
+    for u_month_start_u, u_month_finish_u in u_months_u(
+            year_start, month_start, months):
+        c_month_start_c = ct_datetime(
+            u_month_start_u.year, u_month_start_u.month)
+        c_month_start_u = to_utc(c_month_start_c)
+
+        c_month_finish_c = ct_datetime(
+            u_month_finish_u.year, u_month_finish_u.month,
+            u_month_finish_u.day, 23, 30)
+        c_month_finish_u = to_utc(c_month_finish_c)
+        yield c_month_start_u, c_month_finish_u
 
 
 def csv_make_val(v):

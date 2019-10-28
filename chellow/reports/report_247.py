@@ -20,7 +20,8 @@ import sys
 from werkzeug.exceptions import BadRequest
 from chellow.utils import (
     hh_format, HH, hh_max, hh_min, req_int, req_str, req_bool, make_val,
-    utc_datetime_now, to_utc, utc_datetime, hh_range, PropDict, parse_hh_start)
+    utc_datetime_now, to_utc, hh_range, PropDict, parse_hh_start, to_ct,
+    ct_datetime, c_months_u)
 from flask import request, g, flash, make_response, render_template
 from chellow.views import chellow_redirect
 
@@ -101,11 +102,14 @@ def _make_site_deltas(
     scenario_parasitic = site_scenario_hh['parasitic']
     scenario_gen_net = site_scenario_hh['gen_net']
 
-    month_start = utc_datetime(earliest_delta.year, earliest_delta.month)
-    while month_start <= latest_delta:
-        month_finish = month_start + relativedelta(months=1) - HH
+    earliest_delta_ct = to_ct(earliest_delta)
+    for month_start, month_finish in c_months_u(
+            earliest_delta_ct.year, earliest_delta_ct.month):
+        if month_start > latest_delta:
+            break
         chunk_start = hh_max(month_start, earliest_delta)
         chunk_finish = hh_min(month_finish, latest_delta)
+
         site_ds = chellow.computer.SiteSource(
             sess, site, chunk_start, chunk_finish, forecast_from,
             report_context)
@@ -288,7 +292,6 @@ def _make_site_deltas(
                 hh['export-net-kwh'] += gen_net_delt
 
             site_deltas['hhs'][hh_start] = hh
-        month_start += relativedelta(months=1)
 
     sup_deltas = site_deltas['supply_deltas'][False]['net']['site']
     if all(v == 0 for v in sup_deltas.values()):
@@ -677,9 +680,8 @@ def _process_site(
 
 
 def content(
-        scenario_props, scenario_id, base_name, site_id, supply_id, user,
-        compression, site_codes):
-    now = utc_datetime_now()
+        scenario_props, base_name, site_id, supply_id, user, compression,
+        site_codes, now):
     report_context = {}
 
     try:
@@ -700,26 +702,22 @@ def content(
     sess = None
     try:
         sess = Session()
-        if scenario_props is None:
-            scenario_contract = Contract.get_supplier_by_id(sess, scenario_id)
-            scenario_props = scenario_contract.make_properties()
-            base_name.append(scenario_contract.name)
 
-        start_date = scenario_props['scenario_start']
-        if start_date is None:
-            start_date = utc_datetime(now.year, now.month, 1)
-        else:
-            start_date = to_utc(start_date)
+        start_year = scenario_props['scenario_start_year']
+        start_month = scenario_props['scenario_start_month']
+        start_date_ct = ct_datetime(start_year, start_month)
+        start_date_utc = to_utc(start_date_ct)
 
         base_name.append(
-            hh_format(start_date).replace(' ', '_').replace(':', '').
+            hh_format(start_date_utc).replace(' ', '_').replace(':', '').
             replace('-', ''))
 
         months = scenario_props['scenario_duration']
         base_name.append('for')
         base_name.append(str(months))
         base_name.append('months')
-        finish_date = start_date + relativedelta(months=months)
+        finish_date_utc = to_utc(
+            start_date_ct + relativedelta(months=months)) - HH
 
         if 'forecast_from' in scenario_props:
             forecast_from = scenario_props['forecast_from']
@@ -830,9 +828,9 @@ def content(
             title_dict[cont_type] = titles
             conts = sess.query(Contract).join(con_attr).join(Era.supply). \
                 join(Source).filter(
-                    Era.start_date <= finish_date, or_(
+                    Era.start_date <= finish_date_utc, or_(
                         Era.finish_date == null(),
-                        Era.finish_date >= start_date),
+                        Era.finish_date >= start_date_utc),
                     Source.code.in_(('net', '3rd-party'))
                 ).distinct().order_by(Contract.id)
             if supply_id is not None:
@@ -851,9 +849,9 @@ def content(
 
         tpr_query = sess.query(Tpr).join(MeasurementRequirement).join(Ssc). \
             join(Era).filter(
-                Era.start_date <= finish_date, or_(
+                Era.start_date <= finish_date_utc, or_(
                     Era.finish_date == null(),
-                    Era.finish_date >= start_date)
+                    Era.finish_date >= start_date_utc)
             ).order_by(Tpr.code).distinct()
         for tpr in tpr_query.filter(Era.imp_supplier_contract != null()):
             for suffix in ('-kwh', '-rate', '-gbp'):
@@ -877,9 +875,10 @@ def content(
                 sess, report_context, site, scenario_hh, forecast_from,
                 supply_id)
 
-        month_start = start_date
-        while month_start < finish_date:
-            month_finish = month_start + relativedelta(months=1) - HH
+        for month_start, month_finish in c_months_u(
+                start_date_ct.year, start_date_ct.month):
+            if month_start > finish_date_utc:
+                break
             for site in sites:
                 if by_hh:
                     sf = [
@@ -895,7 +894,6 @@ def content(
                         summary_titles, title_dict, era_rows, site_rows)
 
             write_spreadsheet(rf, compression, site_rows, era_rows)
-            month_start += relativedelta(months=1)
     except BadRequest as e:
         msg = e.description + traceback.format_exc()
         sys.stderr.write(msg + '\n')
@@ -923,19 +921,32 @@ def content(
 def do_get(sess):
 
     base_name = []
+    now = utc_datetime_now()
 
     if 'scenario_id' in request.values:
         scenario_id = req_int('scenario_id')
-        scenario_props = None
+        scenario_contract = Contract.get_supplier_by_id(sess, scenario_id)
+        scenario_props = scenario_contract.make_properties()
+        base_name.append(scenario_contract.name)
+
+        start_year = scenario_props['scenario_start_year']
+        start_month = scenario_props['scenario_start_month']
+        start_date_ct = ct_datetime(now.year, now.month, 1)
+        if start_year is None:
+            scenario_props['scenario_start_year'] = start_date_ct.year
+        if start_month is None:
+            scenario_props['scenario_start_month'] = start_date_ct.month
     else:
         year = req_int("finish_year")
         month = req_int("finish_month")
         months = req_int("months")
-        start_date = Datetime(year, month, 1) - \
-            relativedelta(months=months - 1)
+        start_date = ct_datetime(year, month, 1) - relativedelta(
+            months=months - 1)
         scenario_props = {
-            'scenario_start': start_date, 'scenario_duration': months}
-        scenario_id = None
+            'scenario_start_year': start_date.year,
+            'scenario_start_month': start_date.month,
+            'scenario_duration': months
+        }
         base_name.append('monthly_duration')
 
     try:
@@ -961,10 +972,10 @@ def do_get(sess):
             compression = True
         user = g.user
 
-        threading.Thread(
-            target=content, args=(
-                scenario_props, scenario_id, base_name, site_id, supply_id,
-                user, compression, site_codes)).start()
+        args = (
+            scenario_props, base_name, site_id, supply_id, user, compression,
+            site_codes, now)
+        threading.Thread(target=content, args=args).start()
         return chellow_redirect("/downloads", 303)
     except BadRequest as e:
         flash(e.description)

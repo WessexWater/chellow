@@ -13,7 +13,8 @@ from chellow.models import (
     ClockInterval, Mtc, Llfc, hh_before, hh_after)
 from chellow.utils import (
     HH, hh_format, hh_max, hh_range, hh_min, utc_datetime, utc_datetime_now,
-    to_tz, to_ct, loads, PropDict, YEAR)
+    to_tz, to_ct, loads, PropDict, YEAR, ct_datetime, ct_datetime_now, to_utc,
+    c_months_u)
 import chellow.utils
 import chellow.bank_holidays
 from itertools import combinations, count
@@ -146,22 +147,23 @@ def hh_rate(sess, caches, contract_id, date):
 
 
 def forecast_date():
-    now = utc_datetime_now()
-    return utc_datetime(now.year, now.month, 1)
+    now = ct_datetime_now()
+    return to_utc(ct_datetime(now.year, now.month, 1))
 
 
 def displaced_era(
         sess, caches, site, start_date, finish_date, forecast_date,
         has_scenario_generation=False):
-    if (start_date.year, start_date.month) != \
-            (finish_date.year, finish_date.month):
+    start_date_ct = to_ct(start_date)
+    finish_date_ct = to_ct(finish_date)
+    if (start_date_ct.year, start_date_ct.month) != \
+            (finish_date_ct.year, finish_date_ct.month):
         raise BadRequest(
             "The start and end dates of a displaced period must be within the "
             "same month")
     t = get_times(start_date, finish_date, forecast_date)
-    hist_start = t['history-start']
-    month_start = utc_datetime(hist_start.year, hist_start.month)
-    month_finish = month_start + relativedelta(months=1) - HH
+    hs = to_ct(t['history-start'])
+    month_start, month_finish = next(c_months_u(hs.year, hs.month, 1))
     has_displaced = False
     eras = {}
     for site_era in sess.query(SiteEra).join(Era).join(Supply).join(Source). \
