@@ -15,6 +15,7 @@ from datetime import timedelta
 from zish import loads, dumps
 import chellow.bank_holidays
 from math import floor, log10
+from itertools import count
 
 
 def get_times(sess, caches, start_date, finish_date, forecast_date):
@@ -245,8 +246,6 @@ def g_rates(sess, caches, g_contract_id, date):
 
 
 def _read_generator(sess, g_supply, start, is_forwards, is_prev):
-    offset = 0
-
     if is_prev:
         r_typ = GRegisterRead.prev_type
         r_dt = GRegisterRead.prev_date
@@ -260,16 +259,14 @@ def _read_generator(sess, g_supply, start, is_forwards, is_prev):
         BillType.code != 'W')
 
     if is_forwards:
-        q = q.filter(r_dt >= start).order_by(r_dt)
+        q = q.filter(r_dt >= start).order_by(r_dt, GRegisterRead.id)
     else:
-        q = q.filter(r_dt < start).order_by(r_dt.desc())
+        q = q.filter(r_dt < start).order_by(r_dt.desc(), GRegisterRead.id)
 
-    while True:
+    for offset in count():
         r = q.offset(offset).first()
         if r is None:
             break
-
-        offset += 1
 
         if is_prev:
             dt = r.prev_date

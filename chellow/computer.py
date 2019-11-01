@@ -16,7 +16,7 @@ from chellow.utils import (
     to_tz, to_ct, loads, PropDict, YEAR)
 import chellow.utils
 import chellow.bank_holidays
-from itertools import combinations
+from itertools import combinations, count
 from types import MappingProxyType
 from functools import lru_cache
 from zish import dumps
@@ -1309,8 +1309,6 @@ def _set_status(hhs, read_list, forecast_date):
 
 
 def _read_generator(sess, supply, start, is_forwards, is_prev):
-    offset = 0
-
     if is_prev:
         r_typ = RegisterRead.previous_type
         r_dt = RegisterRead.previous_date
@@ -1326,16 +1324,14 @@ def _read_generator(sess, supply, start, is_forwards, is_prev):
             joinedload(RegisterRead.bill))
 
     if is_forwards:
-        q = q.filter(r_dt >= start).order_by(r_dt)
+        q = q.filter(r_dt >= start).order_by(r_dt, RegisterRead.id)
     else:
-        q = q.filter(r_dt < start).order_by(r_dt.desc())
+        q = q.filter(r_dt < start).order_by(r_dt.desc(), RegisterRead.id)
 
-    while True:
+    for offset in count():
         r = q.offset(offset).first()
         if r is None:
             break
-
-        offset += 1
 
         if is_prev:
             dt = r.previous_date
