@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+
+{% block title %}
+	EDI Viewer
+{% endblock %}
+
+{% block nav %}
+	EDI Viewer
+{% endblock %}
+
+{% block content %}
+	<!-- Layer Section -->
+	<div class="layer-section">
+		<!-- Section Header -->
+		<div class="section-header">
+			<h2>View EDI File</h2>	
+		</div>
+		<!-- End Section Header -->
+		
+		<!-- Section Content -->
+		<div class="section-content">
+			<div class="section-data">
+				<div class="standardForm">
+					<form
+							enctype="multipart/form-data" method="post"
+							action="/edi_viewer">
+						<fieldset>
+							<input
+									type="file" name="edi_file" size="45"
+									value="{{request.values.edi_file}}">
+							<input type="submit" value="View">
+						</fieldset>
+					</form>
+
+					{% if segments %}
+						<p>Parsed {{file_name}}</p>
+						{% for segment in segments %}
+							<table class="DataTable widthAuto">
+								<caption>{{segment.name}} - {{segment.description}}</caption>
+								<thead>
+									<tr>
+										{% for title in segment.titles_element %}
+											<th
+													colspan="{{title.colspan}}"
+													rowspan="{{title.rowspan}}"
+													>{{title.value}}</th>
+										{% endfor %}
+									</tr>
+									<tr>
+										{% for title in segment.titles_component %}
+											<th >{{title}}</th>
+										{% endfor %}
+									</tr>
+								</thead>
+								<tbody>
+									<tr>
+										{% for val in segment.vals %}
+											<td>{{val}}</td>
+										{% endfor %}
+									</tr>
+								</tbody>
+							</table>
+							<pre>{{segment.raw_line}}</pre>
+						{% endfor %}
+					{% endif %}
+				</div>
+			</div>
+		</div>
+		<!-- End Section Content -->
+	</div>
+	<!-- End Layer Section -->
+
+{% endblock %}
