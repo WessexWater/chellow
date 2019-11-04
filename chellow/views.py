@@ -163,7 +163,7 @@ def check_permissions(*args, **kwargs):
     ad_props = props.get('ad_authentication', {})
     ad_auth_on = ad_props.get('on', False)
     if ad_auth_on:
-        username = request.headers['X-Isrw-Proxy-Logon-User']
+        username = request.headers['X-Isrw-Proxy-Logon-User'].upper()
         user = g.sess.query(User).filter(
             User.email_address == username).first()
         if user is None:
@@ -953,6 +953,10 @@ def site_edit_post(site_id):
                 correction_factor, g_unit, g_contract, account)
             g.sess.commit()
             return chellow_redirect('/g_supplies/' + str(g_supply.id), 303)
+        else:
+            raise BadRequest(
+                "The request must contain one of the following parameter "
+                "names: delete, update, insert_electricity, insert_gas.")
 
     except BadRequest as e:
         g.sess.rollback()

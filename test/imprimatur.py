@@ -2066,7 +2066,7 @@ def virtual_bill_titles():
         'path': '/users',
         'method': 'post',
         'data': {
-            'email_address': "mishka@localhost",
+            'email_address': "MISHKA@LOCALHOST",
             'password': "fyodor",
             'user_role_code': "party-viewer",
             'party_id': "127"  # DASL DC
@@ -2079,7 +2079,7 @@ def virtual_bill_titles():
     {
         'name': "Check that the party viewer is able to view snags.",
         'path': '/channel_snags?dc_contract_id=8&days_hidden=5',
-        'auth': ('mishka@localhost', 'fyodor'),
+        'auth': ('MISHKA@LOCALHOST', 'fyodor'),
         'regexes': [
             r"<td>\s*22 0470 7514 535\s*</td>\s*<td>\s*<ul>\s*<li>\s*"
             r"CH017 Parbola\s*</li>",
@@ -2090,8 +2090,10 @@ def virtual_bill_titles():
             r'<a href="/channel_snags/1">view</a>\s*'
             r'\[<a href="/channel_snags/1/edit">edit</a>\]\s*'
             r'</li>',
-            r'<form action="/reports/233">'],
-        'status_code': 200},
+            r'<form action="/reports/233">'
+        ],
+        'status_code': 200
+    },
     {
         'name': "Make sure everything's there on the home page.",
         'path': '/',
@@ -2110,7 +2112,8 @@ def virtual_bill_titles():
             r'>\s*'
             r'Scenario Runner\s*'
             r'</a>'],
-        'status_code': 200},
+        'status_code': 200
+    },
 
     {
         'name': "Show confirm-delete supplier rate script"
@@ -14226,11 +14229,14 @@ def virtual_bill(ds):
     "ecoes": {
         "user_name": "a",
         "password": "a",
-        "prefix": "http://localhost:8080/ecoes/"},
+        "prefix": "http://localhost:8080/ecoes/"
+    },
     "background_colour": "aquamarine",
     "ad_authentication": {
         "on": true,
-        "default_user": "admin@example.com"}}
+        "default_user": "admin@example.com"
+    }
+}
 """, },
         'status_code': 303},
     {
@@ -14239,18 +14245,22 @@ def virtual_bill(ds):
         'auth': None,
         'headers': {
             'X-Isrw-Proxy-Logon-User': 'admin@example.com'},
-        'status_code': 200},
+        'status_code': 200
+    },
     {
         'name': "Reverse proxy authentication. Forbidden.",
         'path': '/sites/7/edit',
         'method': 'post',
         'data': {
             'code': "CH017",
-            'name': "Parbola"},
+            'name': "Parbola"
+        },
         'auth': None,
         'headers': {
-            'X-Isrw-Proxy-Logon-User': 'watkins@example.com'},
-        'status_code': 403},
+            'X-Isrw-Proxy-Logon-User': 'MISHKA@LOCALHOST'
+        },
+        'status_code': 403
+    },
     {
         'name': "Reverse proxy authentication: revert to basic auth",
         'path': '/non_core_contracts/3/edit',
