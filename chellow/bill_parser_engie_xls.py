@@ -10,6 +10,9 @@ from werkzeug.exceptions import BadRequest
 
 ELEM_MAP = {
     None: None,
+    'Charge - Recurring': {
+        None: ('duos-fixed-gbp', 'duos-fixed-rate', 'duos-fixed-days')
+    },
     'Meter - UK Electricity - AAHEDC Pass-Thru': {
         None: ['aahedc-gbp', 'aahedc-rate', 'aahedc-gsp-kwh']
     },
@@ -42,10 +45,19 @@ ELEM_MAP = {
         'DUoS Unit Charge 2': {
             None: ('duos-amber-gbp', 'duos-amber-rate', 'duos-amber-kwh')
         },
+        'DUoS Unit Rate 2': {
+            None: ('duos-amber-gbp', 'duos-amber-rate', 'duos-amber-kwh')
+        },
         'DUoS Unit Charge 1': {
             None: ('duos-red-gbp', 'duos-red-kwh', 'duos-red-rate')
         },
+        'DUoS Unit Rate 1': {
+            None: ('duos-red-gbp', 'duos-red-kwh', 'duos-red-rate')
+        },
         'DUoS Standing Charge': {
+            None: ('duos-fixed-gbp', 'duos-fixed-rate', 'duos-fixed-days')
+        },
+        'DUoS Fixed': {
             None: ('duos-fixed-gbp', 'duos-fixed-rate', 'duos-fixed-days')
         },
         'DUoS Reactive': {
@@ -112,7 +124,13 @@ ELEM_MAP = {
             },
             'Day': {
                 None: ('day-gbp', 'day-rate', 'day-gsp-kwh')
-            }
+            },
+            'Single': {
+                None: ('day-gbp', 'day-rate', 'day-gsp-kwh')
+            },
+            'Off Peak / Weekends': {
+                None: ('day-gbp', 'day-rate', 'day-gsp-kwh')
+            },
         },
         'Reverse BSUoS in Unit Rate': {
             None: (
