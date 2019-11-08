@@ -214,7 +214,7 @@
         "732000_and_over": {
           "gbp_per_kwh_per_day": 0.021302,
           "exponent": -0.2834,
-          "minimum_gbp_per_kwh_per_day": 0.0055
+          "minimum_gbp_per_kwh_per_day": 0.000055
         }
       },
       "customer_capacity": {
@@ -267,118 +267,118 @@
   },
   "exit_zones": {
     "EA1": {
-       "exit_capacity_gbp_per_kwh_per_day": 0.000058
+      "exit_capacity_gbp_per_kwh_per_day": 0.000058
     },
     "EA2": {
-       "exit_capacity_gbp_per_kwh_per_day": 0.000057
+      "exit_capacity_gbp_per_kwh_per_day": 0.000057
     },
     "EA3": {
-       "exit_capacity_gbp_per_kwh_per_day": 0.000021
+      "exit_capacity_gbp_per_kwh_per_day": 0.000021
     },
     "EA4": {
-       "exit_capacity_gbp_per_kwh_per_day": 0.000117
+      "exit_capacity_gbp_per_kwh_per_day": 0.000117
     },
     "EM1": {
-       "exit_capacity_gbp_per_kwh_per_day": 0.000009
+      "exit_capacity_gbp_per_kwh_per_day": 0.000009
     },
     "EM2": {
-       "exit_capacity_gbp_per_kwh_per_day": 0.000046
+      "exit_capacity_gbp_per_kwh_per_day": 0.000046
     },
     "EM3": {
-       "exit_capacity_gbp_per_kwh_per_day": 0.000151
+      "exit_capacity_gbp_per_kwh_per_day": 0.000151
     },
     "EM4": {
-       "exit_capacity_gbp_per_kwh_per_day": 0.00011
+      "exit_capacity_gbp_per_kwh_per_day": 0.000110
     },
     "NT1": {
-       "exit_capacity_gbp_per_kwh_per_day": 0.00023
+      "exit_capacity_gbp_per_kwh_per_day": 0.000230
     },
     "NT2": {
-       "exit_capacity_gbp_per_kwh_per_day": 0.000122
+      "exit_capacity_gbp_per_kwh_per_day": 0.000122
     },
     "NT3": {
-       "exit_capacity_gbp_per_kwh_per_day": 0.00013
+      "exit_capacity_gbp_per_kwh_per_day": 0.000130
     },
     "NW1": {
-       "exit_capacity_gbp_per_kwh_per_day": 0.000198
+      "exit_capacity_gbp_per_kwh_per_day": 0.000198
     },
     "NW2": {
-       "exit_capacity_gbp_per_kwh_per_day": 0.000256
+      "exit_capacity_gbp_per_kwh_per_day": 0.000256
     },
     "WM1": {
-       "exit_capacity_gbp_per_kwh_per_day": 0.000204
+      "exit_capacity_gbp_per_kwh_per_day": 0.000204
     },
     "WM2": {
-       "exit_capacity_gbp_per_kwh_per_day": 0.000176
+      "exit_capacity_gbp_per_kwh_per_day": 0.000176
     },
     "WM3": {
-       "exit_capacity_gbp_per_kwh_per_day": 0.000117
+      "exit_capacity_gbp_per_kwh_per_day": 0.000117
     },
     "LC": {
-       "exit_capacity_gbp_per_kwh_per_day": 0.000002
+      "exit_capacity_gbp_per_kwh_per_day": 0.000002
     },
     "LO": {
-       "exit_capacity_gbp_per_kwh_per_day": 0.000002
+      "exit_capacity_gbp_per_kwh_per_day": 0.000002
     },
     "LS": {
-       "exit_capacity_gbp_per_kwh_per_day": 0.000016
+      "exit_capacity_gbp_per_kwh_per_day": 0.000016
     },
     "LT": {
-       "exit_capacity_gbp_per_kwh_per_day": 0.000002
+      "exit_capacity_gbp_per_kwh_per_day": 0.000002
     },
     "LW": {
-       "exit_capacity_gbp_per_kwh_per_day": 0.000002
+      "exit_capacity_gbp_per_kwh_per_day": 0.000002
     },
     "SC1": {
-       "exit_capacity_gbp_per_kwh_per_day": 0.000001
+      "exit_capacity_gbp_per_kwh_per_day": 0.000001
     },
     "SC2": {
-       "exit_capacity_gbp_per_kwh_per_day": 0.000003
+      "exit_capacity_gbp_per_kwh_per_day": 0.000003
     },
     "SC4": {
-       "exit_capacity_gbp_per_kwh_per_day": 0.000001
+      "exit_capacity_gbp_per_kwh_per_day": 0.000001
     },
     "SE1": {
-       "exit_capacity_gbp_per_kwh_per_day": 0.00016
+      "exit_capacity_gbp_per_kwh_per_day": 0.000160
     },
     "SE2": {
-       "exit_capacity_gbp_per_kwh_per_day": 0.00016
+      "exit_capacity_gbp_per_kwh_per_day": 0.000160
     },
     "SO1": {
-       "exit_capacity_gbp_per_kwh_per_day": 0.00021
+      "exit_capacity_gbp_per_kwh_per_day": 0.000210
     },
     "SO2": {
-       "exit_capacity_gbp_per_kwh_per_day": 0.000357
+      "exit_capacity_gbp_per_kwh_per_day": 0.000357
     },
     "NE1": {
-       "exit_capacity_gbp_per_kwh_per_day": 0.000074
+      "exit_capacity_gbp_per_kwh_per_day": 0.000074
     },
     "NE2": {
-       "exit_capacity_gbp_per_kwh_per_day": 0.000009
+      "exit_capacity_gbp_per_kwh_per_day": 0.000009
     },
     "NE3": {
-       "exit_capacity_gbp_per_kwh_per_day": 0.000009
+      "exit_capacity_gbp_per_kwh_per_day": 0.000009
     },
     "NO1": {
-       "exit_capacity_gbp_per_kwh_per_day": 0.000017
+      "exit_capacity_gbp_per_kwh_per_day": 0.000017
     },
     "NO2": {
-       "exit_capacity_gbp_per_kwh_per_day": 0.000072
+      "exit_capacity_gbp_per_kwh_per_day": 0.000072
     },
     "SW1": {
-       "exit_capacity_gbp_per_kwh_per_day": 0.000126
+      "exit_capacity_gbp_per_kwh_per_day": 0.000126
     },
     "SW2": {
-       "exit_capacity_gbp_per_kwh_per_day": 0.000413
+      "exit_capacity_gbp_per_kwh_per_day": 0.000413
     },
     "SW3": {
-       "exit_capacity_gbp_per_kwh_per_day": 0.000472
+      "exit_capacity_gbp_per_kwh_per_day": 0.000472
     },
     "WA1": {
-       "exit_capacity_gbp_per_kwh_per_day": 0.000545
+      "exit_capacity_gbp_per_kwh_per_day": 0.000545
     },
     "WA2": {
-       "exit_capacity_gbp_per_kwh_per_day": 0.000033
+      "exit_capacity_gbp_per_kwh_per_day": 0.000033
     }
   }
 }
