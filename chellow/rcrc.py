@@ -122,7 +122,7 @@ class RcrcImporter(threading.Thread):
                                 'file/download/RCRC_FILE?key=',
                                 scripting_key))
 
-                        r = requests.get(url_str)
+                        r = requests.get(url_str, timeout=60)
                         parser = csv.reader(
                             (l.decode() for l in r.iter_lines()),
                             delimiter=',', quotechar='"')
