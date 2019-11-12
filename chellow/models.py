@@ -2139,7 +2139,7 @@ class Era(Base, PersistentClass):
             else:
                 if meter_type == 'H':
                     cat = 'hh'
-                elif meter_type == 'N':
+                elif meter_type == 'N' or len(self.channels) == 0:
                     cat = 'nhh'
                 else:
                     cat = 'amr'
