@@ -5,6 +5,11 @@ import versioneer
 import time
 import sys
 
+from os import path
+this_directory = path.abspath(path.dirname(__file__))
+with open(path.join(this_directory, 'README.md'), encoding='utf-8') as f:
+    long_description = f.read()
+
 
 if "--test" in sys.argv:
     versioneer.tstamp = str(int(time.time()))
@@ -15,6 +20,8 @@ setup(
     name='chellow',
     version=versioneer.get_version(),
     description='Web Application for checking UK utility bills.',
+    long_description=long_description,
+    long_description_content_type='text/markdown',
     author='Tony Locke',
     author_email='tlocke@tlocke.org.uk',
     url='https://github.com/WessexWater/chellow',
