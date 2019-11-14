@@ -1183,6 +1183,9 @@ class Site(Base, PersistentClass):
             if 'duplicate key value violates unique ' + \
                     'constraint "site_code_key"' in str(e):
                 raise BadRequest("There's already a site with this code.")
+            if 'duplicate key value violates unique ' + \
+                    'constraint "site_name_key"' in str(e):
+                raise BadRequest("There's already a site with this name.")
             else:
                 raise e
         return site
