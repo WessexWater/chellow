@@ -26,10 +26,8 @@
 						<form method="post">
 							<fieldset>
 								<input type="submit" name="delete" value="Delete">
-								<input
-							 			type="reset" value="Cancel"
-									 	onClick="window.location='/users/{{user.id}}'" />
 							</fieldset>
+							<a href="/users/{{user.id}}">Cancel</a>
 						</form>
 					</div>
     		</div>
@@ -57,7 +55,7 @@
 								<div class="row">
 									<div class="col-sm-6">
 										<label>
-											Email Address
+											Username
 										</label>
 										<input name="email_address" size="100" value="
 									      {%- if request.values.email_address -%}
@@ -142,60 +140,62 @@
 				<!-- End Section Content -->
 			</div>
 			<!-- End Layer Section -->
+
+		{% if not ad_auth_on %}
 			<!-- Layer Section -->
-    <div class="layer-section">
-    	<!-- Section Header -->
-    	<div class="section-header">
-    		<h2>Change password</h2>	
-    	</div>
-    	<!-- End Section Header -->
-    	<!-- Section Content -->
-    	<div class="section-content">
-    		<div class="section-data">
-    		    <div class="standardForm">
-    		        <form method="post">
-            			<fieldset>
-            			    <input type="hidden" name="change_password">
-                			<div class="row">
-                			    <div class="col-sm-3">
-                			        <label>
-                    					Current password
-                    				</label>
-                			    </div>
-                			    <div class="col-sm-5">
-                			        <input type="password" name="current_password">
-                			    </div>
-                			</div>
-                			<div class="row">
-                			    <div class="col-sm-3">
-                			        <label>
-                    					New password
-                    				</label>
-                			    </div>
-                			    <div class="col-sm-5">
-                			        <input type="password" name="new_password">
-                			    </div>
-                			</div>
-                			<div class="row">
-                			    <div class="col-sm-3">
-                			        <label>
-                    					Confirm new Password
-                    				</label>
-                			    </div>
-                			    <div class="col-sm-5">
-                			        <input type="password" name="confirm_new_password">
-                			    </div>
-                			</div>
-            				<input type="submit" value="Change">
-            			</fieldset>
-            		</form>
-    		    </div>
-    		</div>
-    	</div>
-    	<!-- End Section Content -->
-    </div>
-    <!-- End Layer Section -->
-	
+			<div class="layer-section">
+				<!-- Section Header -->
+				<div class="section-header">
+					<h2>Change password</h2>	
+				</div>
+					<!-- End Section Header -->
+					<!-- Section Content -->
+					<div class="section-content">
+						<div class="section-data">
+								<div class="standardForm">
+										<form method="post">
+											<fieldset>
+													<input type="hidden" name="change_password">
+													<div class="row">
+															<div class="col-sm-3">
+																	<label>
+																	Current password
+																</label>
+															</div>
+															<div class="col-sm-5">
+																<input type="password" name="current_password">
+															</div>
+													</div>
+													<div class="row">
+															<div class="col-sm-3">
+																	<label>
+																	New password
+																</label>
+															</div>
+															<div class="col-sm-5">
+																	<input type="password" name="new_password">
+															</div>
+													</div>
+													<div class="row">
+														<div class="col-sm-3">
+															<label>
+																Confirm new Password
+															</label>
+														</div>
+													<div class="col-sm-5">
+												<input type="password" name="confirm_new_password">
+											</div>
+										</div>
+									<input type="submit" value="Change">
+								</fieldset>
+							</form>
+						</div>
+					</div>
+				</div>
+				<!-- End Section Content -->
+			</div>
+			<!-- End Layer Section -->
+		{% endif %}	
 		<!-- Layer Section -->
     <div class="layer-section">
     	<!-- Section Header -->
@@ -206,14 +206,14 @@
     	<!-- Section Content -->
     	<div class="section-content">
     		<div class="section-data">
-    		    <div class="standardForm">
-    		        <form>
-            			<fieldset>
-            			    <input type="hidden" name="Delete this user">
-            				<input type="submit" name="delete" value="Delete">
-            			</fieldset>
-            		</form>
-    		    </div>
+    		  <div class="standardForm">
+    		    <form>
+            	<fieldset>
+            	  <input type="hidden" name="Delete this user">
+            		<input type="submit" name="delete" value="Delete">
+            	</fieldset>
+         	  </form>
+    		  </div>
     		</div>
     	</div>
     	<!-- End Section Content -->

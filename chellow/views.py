@@ -672,13 +672,28 @@ def users_get():
     users = g.sess.query(User).order_by(User.email_address).all()
     parties = g.sess.query(Party).join(MarketRole).join(Participant).order_by(
         MarketRole.code, Participant.code).all()
-    return render_template('users.html', users=users, parties=parties)
+
+    config_contract = Contract.get_non_core_by_name(g.sess, 'configuration')
+    props = config_contract.make_properties()
+    ad_props = props.get('ad_authentication', {})
+    ad_auth_on = ad_props.get('on', False)
+    return render_template(
+        'users.html', users=users, parties=parties, ad_auth_on=ad_auth_on)
 
 
 @app.route('/users', methods=['POST'])
 def users_post():
     email_address = req_str('email_address')
-    password = req_str('password')
+
+    config_contract = Contract.get_non_core_by_name(g.sess, 'configuration')
+    props = config_contract.make_properties()
+    ad_props = props.get('ad_authentication', {})
+    ad_auth_on = ad_props.get('on', False)
+
+    if ad_auth_on:
+        password = ''
+    else:
+        password = req_str('password')
     user_role_code = req_str('user_role_code')
     role = UserRole.get_by_code(g.sess, user_role_code)
     try:
@@ -696,7 +711,9 @@ def users_post():
         parties = g.sess.query(Party).join(MarketRole).join(Participant). \
             order_by(MarketRole.code, Participant.code).all()
         return make_response(
-            render_template('users.html', users=users, parties=parties), 400)
+            render_template(
+                'users.html', users=users, parties=parties,
+                ad_auth_on=ad_auth_on), 400)
 
 
 @app.route('/users/<int:user_id>', methods=['POST'])
@@ -736,8 +753,15 @@ def user_post(user_id):
         flash(e.description)
         parties = g.sess.query(Party).join(MarketRole).join(Participant). \
             order_by(MarketRole.code, Participant.code)
+        config_contract = Contract.get_non_core_by_name(
+            g.sess, 'configuration')
+        props = config_contract.make_properties()
+        ad_props = props.get('ad_authentication', {})
+        ad_auth_on = ad_props.get('on', False)
         return make_response(
-            render_template('user.html',  parties=parties, user=user), 400)
+            render_template(
+                'user.html',  parties=parties, user=user,
+                ad_auth_on=ad_auth_on), 400)
 
 
 @app.route('/users/<int:user_id>')
@@ -745,7 +769,12 @@ def user_get(user_id):
     parties = g.sess.query(Party).join(MarketRole).join(Participant).order_by(
         MarketRole.code, Participant.code)
     user = User.get_by_id(g.sess, user_id)
-    return render_template('user.html', parties=parties, user=user)
+    config_contract = Contract.get_non_core_by_name(g.sess, 'configuration')
+    props = config_contract.make_properties()
+    ad_props = props.get('ad_authentication', {})
+    ad_auth_on = ad_props.get('on', False)
+    return render_template(
+        'user.html', parties=parties, user=user, ad_auth_on=ad_auth_on)
 
 
 @app.route('/general_imports')
