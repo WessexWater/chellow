@@ -774,11 +774,11 @@ def content(
                     "'start_date' key of the contract " + str(contract_id) +
                     " in the 'local_rates' map.")
 
+            props = PropDict('scenario properties', rate_script['script'])
             for dt in hh_range(
                     report_context, rate_script_start,
                     rate_script['finish_date']):
-                cont_cache[dt] = PropDict(
-                    'scenario properties', rate_script['script'])
+                cont_cache[dt] = props
 
         for rate_script in get_map_list(scenario_props, 'industry_rates'):
             contract_name = rate_script['contract_name']

@@ -10,7 +10,7 @@ from werkzeug.exceptions import BadRequest
 from chellow.models import (
     RateScript, Channel, Era, Tpr, MeasurementRequirement, RegisterRead, Bill,
     BillType, ReadType, SiteEra, Supply, Source, HhDatum, Contract,
-    ClockInterval, Mtc, Llfc, hh_before, hh_after)
+    ClockInterval, Mtc, Llfc, hh_before, hh_after, Ssc)
 from chellow.utils import (
     HH, hh_format, hh_max, hh_range, hh_min, utc_datetime, utc_datetime_now,
     to_tz, to_ct, loads, PropDict, YEAR, ct_datetime, ct_datetime_now, to_utc,
@@ -397,6 +397,7 @@ class DataSource():
         self.era_map = PropDict("scenario properties", era_map)
         self.era_map_llfcs = self.era_map.get('llfcs', {})
         self.era_map_pcs = self.era_map.get('pcs', {})
+        self.era_map_sscs = self.era_map.get('sscs', {})
         self.era_map_supplier_contracts = self.era_map.get(
             'supplier_contracts', {})
         self.era_map_dc_contracts = self.era_map.get('dc_contracts', {})
@@ -453,6 +454,12 @@ class SiteSource(DataSource):
                 self.pc_code = self.era_map_pcs[era.pc.code]
             else:
                 self.pc_code = era.pc.code
+
+            era_ssc_code = None if era.ssc is None else era.ssc.code
+            if era_ssc_code in self.era_map_sscs:
+                self.ssc_code = self.era_map_sscs[era_ssc_code]
+            else:
+                self.ssc_code = era_ssc_code
 
             if era.cop.code in self.era_map_cops:
                 self.cop_code = self.era_map_cops[era.cop.code]
@@ -766,14 +773,23 @@ class SupplySource(DataSource):
         self.mtc = self.era.mtc
         self.meter_type = self.mtc.meter_type
         self.meter_type_code = self.meter_type.code
-        self.ssc = self.era.ssc
-
-        self.ssc_code = None if self.ssc is None else self.ssc.code
 
         if era.pc.code in self.era_map_pcs:
             self.pc_code = self.era_map_pcs[era.pc.code]
         else:
             self.pc_code = era.pc.code
+
+        era_ssc_code = None if era.ssc is None else era.ssc.code
+        if era_ssc_code in self.era_map_sscs:
+            ssc_code = self.era_map_sscs[era_ssc_code]
+            if ssc_code is None:
+                self.ssc = None
+            else:
+                self.ssc = Ssc.get_by_code(sess, ssc_code)
+        else:
+            self.ssc = era.ssc
+
+        self.ssc_code = None if self.ssc is None else self.ssc.code
 
         self.gsp_group_code = self.supply.gsp_group.code
 

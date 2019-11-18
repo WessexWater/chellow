@@ -663,7 +663,8 @@ class PropDict(Mapping):
                         if isinstance(val, Mapping):
                             v[i] = PropDict(
                                 location, val,
-                                parent_keys + ['<list item ' + str(i) + '>'])
+                                self._parent_keys +
+                                ['<list item ' + str(i) + '>'])
         self._storage = storage
 
     def __getitem__(self, key):
