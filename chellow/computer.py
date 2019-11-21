@@ -163,7 +163,8 @@ def displaced_era(
             "same month")
     t = get_times(start_date, finish_date, forecast_date)
     hs = to_ct(t['history-start'])
-    month_start, month_finish = next(c_months_u(hs.year, hs.month, 1))
+    month_start, month_finish = next(
+        c_months_u(start_year=hs.year, start_month=hs.month))
     has_displaced = False
     eras = {}
     for site_era in sess.query(SiteEra).join(Era).join(Supply).join(Source). \

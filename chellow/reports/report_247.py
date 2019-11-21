@@ -21,7 +21,7 @@ from werkzeug.exceptions import BadRequest
 from chellow.utils import (
     hh_format, HH, hh_max, hh_min, req_int, req_str, req_bool, make_val,
     utc_datetime_now, to_utc, hh_range, PropDict, parse_hh_start, to_ct,
-    ct_datetime, c_months_u)
+    ct_datetime, c_months_c, c_months_u)
 from flask import request, g, flash, make_response, render_template
 from chellow.views import chellow_redirect
 
@@ -104,7 +104,7 @@ def _make_site_deltas(
 
     earliest_delta_ct = to_ct(earliest_delta)
     for month_start, month_finish in c_months_u(
-            earliest_delta_ct.year, earliest_delta_ct.month):
+            earliest_delta_ct.year, earliest_delta_ct.month, months=None):
         if month_start > latest_delta:
             break
         chunk_start = hh_max(month_start, earliest_delta)
@@ -705,19 +705,21 @@ def content(
 
         start_year = scenario_props['scenario_start_year']
         start_month = scenario_props['scenario_start_month']
-        start_date_ct = ct_datetime(start_year, start_month)
-        start_date_utc = to_utc(start_date_ct)
+        months = scenario_props['scenario_duration']
+
+        month_pairs = list(
+            c_months_u(
+                start_year=start_year, start_month=start_month, months=months))
+        start_date_utc = month_pairs[0][0]
+        finish_date_utc = month_pairs[-1][-1]
 
         base_name.append(
             hh_format(start_date_utc).replace(' ', '_').replace(':', '').
             replace('-', ''))
 
-        months = scenario_props['scenario_duration']
         base_name.append('for')
         base_name.append(str(months))
         base_name.append('months')
-        finish_date_utc = to_utc(
-            start_date_ct + relativedelta(months=months)) - HH
 
         if 'forecast_from' in scenario_props:
             forecast_from = scenario_props['forecast_from']
@@ -875,10 +877,7 @@ def content(
                 sess, report_context, site, scenario_hh, forecast_from,
                 supply_id)
 
-        for month_start, month_finish in c_months_u(
-                start_date_ct.year, start_date_ct.month):
-            if month_start > finish_date_utc:
-                break
+        for month_start, month_finish in month_pairs:
             for site in sites:
                 if by_hh:
                     sf = [
@@ -940,8 +939,8 @@ def do_get(sess):
         year = req_int("finish_year")
         month = req_int("finish_month")
         months = req_int("months")
-        start_date = ct_datetime(year, month, 1) - relativedelta(
-            months=months - 1)
+        start_date, _ = next(
+            c_months_c(finish_year=year, finish_month=month, months=months))
         scenario_props = {
             'scenario_start_year': start_date.year,
             'scenario_start_month': start_date.month,

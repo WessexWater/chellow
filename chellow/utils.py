@@ -488,31 +488,45 @@ def utc_datetime_parse(date_str, format_str):
     return Datetime.strptime(date_str, format_str).replace(tzinfo=utc)
 
 
-def u_months_u(year_start, month_start, months=None):
-    if months is None:
-        counter = count()
+def u_months_u(
+        start_year=None, start_month=None, finish_year=None, finish_month=None,
+        months=1):
+
+    if start_year is None:
+        start = utc_datetime(finish_year, finish_month) - \
+            relativedelta(months=months - 1)
     else:
-        counter = range(months)
+        start = utc_datetime(start_year, start_month)
+
+    counter = count() if months is None else range(months)
     for i in counter:
-        u_month_start_u = utc_datetime(year_start, month_start) + \
-            relativedelta(months=i)
-        u_month_finish_u = utc_datetime(year_start, month_start) + \
-            relativedelta(months=i+1) - HH
+        u_month_start_u = start + relativedelta(months=i)
+        u_month_finish_u = start + relativedelta(months=i+1) - HH
         yield u_month_start_u, u_month_finish_u
 
 
-def c_months_u(year_start, month_start, months=None):
-    for u_month_start_u, u_month_finish_u in u_months_u(
-            year_start, month_start, months):
-        c_month_start_c = ct_datetime(
-            u_month_start_u.year, u_month_start_u.month)
-        c_month_start_u = to_utc(c_month_start_c)
+def c_months_u(
+        start_year=None, start_month=None, finish_year=None, finish_month=None,
+        months=1):
 
-        c_month_finish_c = ct_datetime(
-            u_month_finish_u.year, u_month_finish_u.month,
-            u_month_finish_u.day, 23, 30)
-        c_month_finish_u = to_utc(c_month_finish_c)
-        yield c_month_start_u, c_month_finish_u
+    for c_m_start_c, c_m_finish_c in c_months_c(
+            start_year=start_year, start_month=start_month,
+            finish_year=finish_year, finish_month=finish_month, months=months):
+        yield to_utc(c_m_start_c), to_utc(c_m_finish_c)
+
+
+def c_months_c(
+        start_year=None, start_month=None, finish_year=None, finish_month=None,
+        months=1):
+
+    for u_m_start_u, u_m_finish_u in u_months_u(
+            start_year=start_year, start_month=start_month,
+            finish_year=finish_year, finish_month=finish_month, months=months):
+        c_m_start_c = ct_datetime(u_m_start_u.year, u_m_start_u.month)
+        c_m_finish_c = ct_datetime(
+            u_m_finish_u.year, u_m_finish_u.month, u_m_finish_u.day, 23, 30)
+
+        yield c_m_start_c, c_m_finish_c
 
 
 def csv_make_val(v):

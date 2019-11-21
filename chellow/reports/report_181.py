@@ -73,7 +73,8 @@ def _write_sites(sess, caches, writer, year, site_id):
     for site in sites:
         displaced_era = None
         for month_start, month_finish in sorted(
-                c_months_u(year - 1, 4, 12), reverse=True):
+                c_months_u(start_year=year - 1, start_month=4, months=12),
+                reverse=True):
             displaced_era = chellow.computer.displaced_era(
                 sess, caches, site, month_start, month_finish, forecast_date)
             if displaced_era is not None:

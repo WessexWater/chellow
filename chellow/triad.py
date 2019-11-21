@@ -13,7 +13,8 @@ def hh(ds, rate_period='monthly', est_kw=None):
 
 
 def _process_hh(ds, rate_period, est_kw, hh):
-    month_start, month_finish = next(c_months_u(hh['ct-year'], hh['ct-month']))
+    month_start, month_finish = next(
+        c_months_u(start_year=hh['ct-year'], start_month=hh['ct-month']))
 
     month_start_ct = to_ct(month_start)
     if month_start_ct.month > 3:
