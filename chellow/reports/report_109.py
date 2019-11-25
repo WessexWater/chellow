@@ -1,12 +1,10 @@
 from datetime import datetime as Datetime
-from dateutil.relativedelta import relativedelta
-import pytz
 from sqlalchemy import or_
 from sqlalchemy.sql.expression import null
 import traceback
 from chellow.models import (
     Contract, Site, SiteEra, Era, Supply, Source, Session)
-from chellow.utils import HH, hh_format, req_int, hh_range
+from chellow.utils import hh_format, req_int, hh_range, c_months_u
 import chellow.computer
 import chellow.dloads
 import csv
@@ -42,11 +40,10 @@ def content(contract_id, end_year, end_month, months, user):
             'Site Code', 'Site Name', 'Associated Site Ids', 'From', 'To',
             'Gen Types', 'CHP kWh', 'LM kWh', 'Turbine kWh', 'PV kWh']
 
-        finish_date = Datetime(end_year, end_month, 1, tzinfo=pytz.utc) + \
-            relativedelta(months=1) - HH
-
-        start_date = Datetime(end_year, end_month, 1, tzinfo=pytz.utc) - \
-            relativedelta(months=months-1)
+        month_list = list(
+            c_months_u(
+                finish_year=end_year, finish_month=end_month, months=months))
+        start_date, finish_date = month_list[0][0], month_list[-1][-1]
 
         forecast_date = chellow.computer.forecast_date()
 
@@ -68,9 +65,7 @@ def content(contract_id, end_year, end_month, months, user):
         writer.writerow(titles)
 
         for site in sites:
-            month_start = start_date
-            month_finish = month_start + relativedelta(months=1) - HH
-            for i in range(months):
+            for month_start, month_finish in month_list:
                 displaced_era = chellow.computer.displaced_era(
                     sess, caches, site, month_start, month_finish,
                     forecast_date)
@@ -200,9 +195,6 @@ def content(contract_id, end_year, end_month, months, user):
                     vals.append(k)
                     vals.append(str(bill[k]))
                 writer.writerow(vals)
-
-                month_start += relativedelta(months=1)
-                month_finish = month_start + relativedelta(months=1) - HH
     except BaseException:
         msg = traceback.format_exc()
         sys.stderr.write(msg)
@@ -220,6 +212,6 @@ def do_get(sess):
     end_month = req_int('finish_month')
     months = req_int('months')
     contract_id = req_int('supplier_contract_id')
-    args = (contract_id, end_year, end_month, months, g.user)
+    args = contract_id, end_year, end_month, months, g.user
     threading.Thread(target=content, args=args).start()
     return chellow_redirect("/downloads", 303)
