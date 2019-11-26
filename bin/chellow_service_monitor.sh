@@ -1,14 +1,14 @@
 #!/usr/bin/env bash
 
 if [[ $* == *--test* ]] ; then
-	if pip list --outdated --extra-index-url https://testpypi.python.org/pypi --format=columns | grep chellow ; then
+	if pip list --outdated --extra-index-url https://test.pypi.org/simple/ --format=columns | grep chellow ; then
 		echo "Found a new Chellow version."
 
 		echo "Stopping Chellow"
 		/sbin/initctl stop chellow
 
 		echo "Doing a pip upgrade of Chellow."
-		pip install chellow --upgrade --extra-index-url https://testpypi.python.org/pypi
+		pip install chellow --upgrade --extra-index-url https://test.pypi.org/simple/
 
 		echo "Starting Chellow"
 		/sbin/initctl start chellow
