@@ -149,7 +149,12 @@ def chellow_redirect(path, code=None):
         props = config_contract.make_properties()
         scheme = props.get('redirect_scheme', 'http')
 
-    location = scheme + '://' + request.host + path
+    try:
+        host = request.headers['X-Forwarded-Host']
+    except KeyError:
+        host = request.host
+
+    location = scheme + '://' + host + path
     if code is None:
         return redirect(location)
     else:
