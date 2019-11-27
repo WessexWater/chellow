@@ -1,12 +1,9 @@
-from datetime import datetime as Datetime
-import datetime
 from dateutil.relativedelta import relativedelta
-import pytz
 from sqlalchemy.sql.expression import true
 import traceback
 from chellow.models import (
     Contract, Snag, Channel, Era, Supply, SiteEra, Site, Session)
-from chellow.utils import req_int
+from chellow.utils import req_int, csv_make_val, utc_datetime_now, hh_before
 from chellow.views import chellow_redirect
 import chellow.dloads
 import csv
@@ -24,17 +21,17 @@ def content(contract_id, days_hidden, user):
             'channel_snags.csv', user)
         f = open(running_name, mode='w', newline='')
         writer = csv.writer(f, lineterminator='\n')
-        writer.writerow(
-            (
-                'Hidden Days', 'Chellow Id', 'Imp MPAN Core', 'Exp MPAN Core',
-                'Site Code', 'Site Name', 'Snag Description',
-                'Import Related?', 'Channel Type', 'Start Date', 'Finish Date',
-                'Days Since Snag Finished', 'Duration Of Snag (Days)',
-                'Is Ignored?'))
+        titles = (
+            'Hidden Days', 'Chellow Id', 'Imp MPAN Core', 'Exp MPAN Core',
+            'Site Code', 'Site Name', 'Snag Description', 'Import Related?',
+            'Channel Type', 'Start Date', 'Finish Date', 'Is Ignored?',
+            'Days Since Snag Finished', 'Duration Of Snag (Days)'
+        )
+        writer.writerow(titles)
 
         contract = Contract.get_dc_by_id(sess, contract_id)
 
-        now = Datetime.now(pytz.utc)
+        now = utc_datetime_now()
         cutoff_date = now - relativedelta(days=days_hidden)
 
         for snag, channel, era, supply, site_era, site in sess.query(
@@ -49,28 +46,41 @@ def content(contract_id, days_hidden, user):
                 Site.code, Supply.id, Channel.imp_related,
                 Channel.channel_type, Snag.description,
                 Snag.start_date, Snag.id):
+
             snag_start = snag.start_date
             snag_finish = snag.finish_date
-            if snag_finish is None:
-                snag_finish_str = ''
-                duration = now - snag_start
-                age_of_snag = datetime.timedelta(0)
-            else:
-                snag_finish_str = snag_finish.strftime("%Y-%m-%d %H:%M")
-                duration = snag_finish - snag_start
-                age_of_snag = now - snag_finish
+            imp_mc = '' if era.imp_mpan_core is None else era.imp_mpan_core
+            exp_mc = '' if era.exp_mpan_core is None else era.exp_mpan_core
 
-            writer.writerow(
-                (
-                    str(days_hidden), str(snag.id),
-                    '' if era.imp_mpan_core is None else era.imp_mpan_core,
-                    '' if era.exp_mpan_core is None else era.exp_mpan_core,
-                    site.code, site.name, snag.description,
-                    str(channel.imp_related), channel.channel_type,
-                    snag_start.strftime("%Y-%m-%d %H:%M"), snag_finish_str,
-                    str(age_of_snag.days + age_of_snag.seconds / (3600 * 24)),
-                    str(duration.days + duration.seconds / (3600 * 24)),
-                    str(snag.is_ignored)))
+            if snag_finish is None:
+                duration = now - snag_start
+                age_of_snag = None
+            else:
+                duration = snag_finish - snag_start
+                if hh_before(cutoff_date, snag_finish):
+                    age_of_snag = None
+                else:
+                    delta = now - snag_finish
+                    age_of_snag = delta.days
+
+            vals = {
+                'Hidden Days': days_hidden,
+                'Chellow Id': snag.id,
+                'Imp MPAN Core': imp_mc,
+                'Exp MPAN Core': exp_mc,
+                'Site Code': site.code,
+                'Site Name': site.name,
+                'Snag Description': snag.description,
+                'Import Related?': channel.imp_related,
+                'Channel Type': channel.channel_type,
+                'Start Date': snag_start,
+                'Finish Date': snag_finish,
+                'Is Ignored?': snag.is_ignored,
+                'Days Since Snag Finished': age_of_snag,
+                'Duration Of Snag (Days)': duration.days
+            }
+
+            writer.writerow(csv_make_val(vals[t]) for t in titles)
     except BaseException:
         msg = traceback.format_exc()
         sys.stderr.write(msg)

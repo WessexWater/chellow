@@ -8601,23 +8601,22 @@ def virtual_bill(ds):
         'regexes': [
             r'0,107,22 4862 4512 332,,CH023,Treglisson,'
             r'Missing,True,ACTIVE,2010-02-04 20:30,',
-            r'0,3,22 9205 6799 106,22 0470 7514 535,CH017,Parbola,'
-            r'Missing,False,ACTIVE,2003-08-03 00:00,2004-07-06 23:30,'
-            r'[^,]*,[^,]*,True\s*0,100,,22 0470 7514 535,'
-            r'CH017,Parbola,Missing,False,ACTIVE,2004-07-07 00:00,'
-            r'2005-09-14 23:30,[^,]*,[^,]*,False\s*0,102,,'
-            r'22 0470 7514 535,CH017,Parbola,Missing,False,ACTIVE,'
-            r'2005-09-15 00:30,2005-12-15 06:30,[^,]*,[^,]*,False\s*'
-            r'0,101,,22 0470 7514 535,CH017,Parbola,Missing,'
-            r'False,ACTIVE,2005-12-15 10:00,2008-07-06 23:30,[^,]*,'
-            r'[^,]*,False\s*0,56,,22 0470 7514 535,CH017,'
-            r'Parbola,Missing,False,ACTIVE,2008-07-07 00:00,'
-            r'2008-08-06 23:30,[^,]*,[^,]*,True\s*'
-            r'0,79,,22 0470 7514 535,CH017,Parbola,Missing,'
-            r'False,ACTIVE,2008-08-07 00:00,2008-09-05 23:30,'
-            r'[^,]*,[^,]*,False\s*0,68,,22 0470 7514 535,'
-            r'CH017,Parbola,Missing,False,ACTIVE,2008-09-06 00:00,'
-            r',[^,]*,[^,]*,False\s*']},
+            r'0,3,22 9205 6799 106,22 0470 7514 535,CH017,Parbola,Missing,'
+            r'False,ACTIVE,2003-08-03 00:00,2004-07-06 23:30,True,5621,338\s*'
+            r'0,100,,22 0470 7514 535,CH017,Parbola,Missing,False,ACTIVE,'
+            r'2004-07-07 00:00,2005-09-14 23:30,False,5186,434\s*'
+            r'0,102,,22 0470 7514 535,CH017,Parbola,Missing,False,ACTIVE,'
+            r'2005-09-15 00:30,2005-12-15 06:30,False,5095,91\s*'
+            r'0,101,,22 0470 7514 535,CH017,Parbola,Missing,False,ACTIVE,'
+            r'2005-12-15 10:00,2008-07-06 23:30,False,4160,934\s*'
+            r'0,56,,22 0470 7514 535,CH017,Parbola,Missing,False,ACTIVE,'
+            r'2008-07-07 00:00,2008-08-06 23:30,True,4129,30\s*'
+            r'0,79,,22 0470 7514 535,CH017,Parbola,Missing,False,ACTIVE,'
+            r'2008-08-07 00:00,2008-09-05 23:30,False,4099,29\s*'
+            r'0,68,,22 0470 7514 535,CH017,Parbola,Missing,False,ACTIVE,'
+            r'2008-09-06 00:00,,False,,4099\s*'
+        ]
+    },
     {
         'name': "Check that an era with imp_sc of 0 is displayed properly in "
         "edit mode. Supply 17",
