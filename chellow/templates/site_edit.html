@@ -394,6 +394,17 @@
 											 	g_unit.code + ' ' + g_unit.description)}}
 									{% endfor %}
 								</select>
+								<br>
+								<label>Reading Frequency</label>
+								<select name="g_reading_frequency_id">
+									{% for g_reading_frequency in g_reading_frequencies %}
+										{{
+											input_option(
+												'g_reading_frequency_id', g_reading_frequency.id,
+												g_reading_frequency.code + ' ' +
+												g_reading_frequency.description)}}
+									{% endfor %}
+								</select>
 								<input name="insert_gas" type="submit" value="Insert">
 							</fieldset>
 						</form>

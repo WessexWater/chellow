@@ -10,7 +10,7 @@ from chellow.models import (
     RegisterRead, HhDatum, Snag, Batch, ReadType, BillType, MeterPaymentType,
     ClockInterval, db_upgrade, Llfc, MeterType, GEra, GSupply, SiteGEra, GBill,
     GContract, GRateScript, GBatch, GRegisterRead, GReadType, VoltageLevel,
-    GUnit, GLdz, GExitZone, GDn, METER_TYPES)
+    GUnit, GLdz, GExitZone, GDn, METER_TYPES, GReadingFrequency)
 from sqlalchemy.exc import IntegrityError
 import traceback
 from datetime import datetime as Datetime
@@ -954,13 +954,16 @@ def site_edit_get(site_id):
         g_contracts = g.sess.query(GContract).order_by(GContract.name)
         g_units = g.sess.query(GUnit).order_by(GUnit.code)
         g_exit_zones = g.sess.query(GExitZone).order_by(GExitZone.code)
+        g_reading_frequencies = g.sess.query(GReadingFrequency).order_by(
+            GReadingFrequency.code)
         return render_template(
             'site_edit.html', site=site, sources=sources,
             generator_types=generator_types, gsp_groups=gsp_groups, eras=eras,
             mop_contracts=mop_contracts, dc_contracts=dc_contracts,
             supplier_contracts=supplier_contracts, pcs=pcs, cops=cops,
             g_contracts=g_contracts, g_units=g_units,
-            g_exit_zones=g_exit_zones)
+            g_exit_zones=g_exit_zones,
+            g_reading_frequencies=g_reading_frequencies)
     except BadRequest as e:
         g.sess.rollback()
         flash(e.description)
@@ -970,7 +973,8 @@ def site_edit_get(site_id):
             mop_contracts=mop_contracts, dc_contracts=dc_contracts,
             supplier_contracts=supplier_contracts, pcs=pcs, cops=cops,
             g_contracts=g_contracts, g_units=g_units,
-            g_exit_zones=g_exit_zones)
+            g_exit_zones=g_exit_zones,
+            g_reading_frequencies=g_reading_frequencies)
 
 
 @app.route('/sites/<int:site_id>/edit', methods=['POST'])
@@ -1089,10 +1093,14 @@ def site_edit_post(site_id):
             g_contract_id = req_int('g_contract_id')
             g_contract = GContract.get_by_id(g.sess, g_contract_id)
             account = req_str('account')
+            g_reading_frequency_id = req_int('g_reading_frequency_id')
+            g_reading_frequency = GReadingFrequency.get_by_id(
+                g.sess, g_reading_frequency_id)
             start_date = req_date('start')
             g_supply = site.insert_g_supply(
                 g.sess, mprn, name, g_exit_zone, start_date, None, msn,
-                correction_factor, g_unit, g_contract, account)
+                correction_factor, g_unit, g_contract, account,
+                g_reading_frequency)
             g.sess.commit()
             return chellow_redirect('/g_supplies/' + str(g_supply.id), 303)
         else:
@@ -1120,6 +1128,8 @@ def site_edit_post(site_id):
         g_contracts = g.sess.query(GContract).order_by(GContract.name)
         g_units = g.sess.query(GUnit).order_by(GUnit.code)
         g_exit_zones = g.sess.query(GExitZone).order_by(GExitZone.code)
+        g_reading_frequencies = g.sess.query(GReadingFrequency).order_by(
+            GReadingFrequency.code)
         return make_response(
             render_template(
                 'site_edit.html', site=site, sources=sources,
@@ -1128,7 +1138,8 @@ def site_edit_post(site_id):
                 dc_contracts=dc_contracts,
                 supplier_contracts=supplier_contracts, pcs=pcs, cops=cops,
                 g_contracts=g_contracts, g_units=g_units,
-                g_exit_zones=g_exit_zones), 400)
+                g_exit_zones=g_exit_zones,
+                g_reading_frequencies=g_reading_frequencies), 400)
 
 
 @app.route('/sites/add', methods=['POST'])
@@ -5906,10 +5917,12 @@ def g_era_edit_get(g_era_id):
     site_g_eras = g.sess.query(SiteGEra).join(Site).filter(
         SiteGEra.g_era == g_era).order_by(Site.code).all()
     g_units = g.sess.query(GUnit).order_by(GUnit.code).all()
+    g_reading_frequencies = g.sess.query(GReadingFrequency).order_by(
+        GReadingFrequency.code).all()
     return render_template(
         'g_era_edit.html', g_era=g_era,
         supplier_g_contracts=supplier_g_contracts, site_g_eras=site_g_eras,
-        g_units=g_units)
+        g_units=g_units, g_reading_frequencies=g_reading_frequencies)
 
 
 @app.route('/g_eras/<int:g_era_id>/edit', methods=['POST'])
@@ -5954,9 +5967,12 @@ def g_era_edit_post(g_era_id):
             account = req_str('account')
             g_unit_id = req_int('g_unit_id')
             g_unit = GUnit.get_by_id(g.sess, g_unit_id)
+            g_reading_frequency_id = req_int('g_reading_frequency_id')
+            g_reading_frequency = GReadingFrequency.get_by_id(
+                g.sess, g_reading_frequency_id)
             g_era.g_supply.update_g_era(
                 g.sess, g_era, start_date, finish_date, msn, correction_factor,
-                g_unit, g_contract, account)
+                g_unit, g_contract, account, g_reading_frequency)
             g.sess.commit()
             return chellow_redirect(
                 '/g_supplies/' + str(g_era.g_supply.id), 303)
@@ -5966,11 +5982,14 @@ def g_era_edit_post(g_era_id):
         site_g_eras = g.sess.query(SiteGEra).join(Site).filter(
             SiteGEra.g_era == g_era).order_by(Site.code).all()
         g_units = g.sess.query(GUnit).order_by(GUnit.code).all()
+        g_reading_frequencies = g.sess.query(GReadingFrequency).order_by(
+            GReadingFrequency.code).all()
         return make_response(
             render_template(
                 'g_era_edit.html', g_era=g_era,
                 supplier_g_contracts=supplier_g_contracts,
-                site_g_eras=site_g_eras, g_units=g_units), 400)
+                site_g_eras=site_g_eras, g_units=g_units,
+                g_reading_frequencies=g_reading_frequencies), 400)
 
 
 @app.route('/g_bills/<int:g_bill_id>/edit')
@@ -6173,6 +6192,23 @@ def g_ldz_get(g_ldz_id):
 def g_ldzs_get():
     g_ldzs = g.sess.query(GLdz).order_by(GLdz.code)
     return render_template('g_ldzs.html', g_ldzs=g_ldzs)
+
+
+@app.route('/g_reading_frequencies/<int:g_reading_frequency_id>')
+def g_reading_frequency_get(g_reading_frequency_id):
+    g_reading_frequency = GReadingFrequency.get_by_id(
+        g.sess, g_reading_frequency_id)
+    return render_template(
+        'g_reading_frequency.html', g_reading_frequency=g_reading_frequency)
+
+
+@app.route('/g_reading_frequencies')
+def g_reading_frequencies_get():
+    g_reading_frequencies = g.sess.query(GReadingFrequency).order_by(
+        GReadingFrequency.code)
+    return render_template(
+        'g_reading_frequencies.html',
+        g_reading_frequencies=g_reading_frequencies)
 
 
 @app.route('/g_exit_zones/<int:g_exit_zone_id>')

@@ -13,7 +13,7 @@ from chellow.models import (
     Cop, Ssc, Snag, Channel, Mtc, BillType, Tpr, ReadType, Participant, Bill,
     RegisterRead, UserRole, Party, User, VoltageLevel, Llfc, MarketRole,
     MeterType, MeterPaymentType, Session, GContract, GSupply, GUnit, GExitZone,
-    GReadType)
+    GReadType, GReadingFrequency)
 from werkzeug.exceptions import BadRequest
 from zish import loads, ZishException
 
@@ -446,10 +446,14 @@ def general_import_g_supply(sess, action, vals, args):
         else:
             g_contract = None
         account = add_arg(args, "Account", vals, 10)
+        g_reading_frequency_code = add_arg(args, "Reading Frequency", vals, 11)
+        g_reading_frequency = GReadingFrequency.get_by_code(
+            sess, g_reading_frequency_code)
 
         site.insert_g_supply(
             sess, mprn, supply_name, g_exit_zone, start_date, finish_date, msn,
-            correction_factor, g_unit, g_contract, account)
+            correction_factor, g_unit, g_contract, account,
+            g_reading_frequency)
         sess.flush()
     elif action == "update":
         existing_mprn = add_arg(args, "Existing MPRN", vals, 0)

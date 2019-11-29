@@ -49,7 +49,7 @@ setup(
         'rate_scripts/*/*.zish']},
     install_requires=[
         'odio==0.0.16',
-        'pg8000==1.12.4',
+        'pg8000==1.13.2',
         'Flask==1.0.2',
         'SQLAlchemy==1.3.3',
         'openpyxl==2.4.8',

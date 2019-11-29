@@ -166,7 +166,16 @@
 							<label class="aligned">Account</label>
 							{{input_text('account', g_era.account)}}
 							<br>
-							</fieldset>
+							<label class="aligned">Reading Frequency</label>
+							<select name="g_reading_frequency_id">
+								{% for g_reading_frequency in g_reading_frequencies %}
+									{{input_option(
+										'g_reading_frequency_id', g_reading_frequency.id,
+										g_reading_frequency.code + ' - ' +
+										g_reading_frequency.description,
+										g_era.g_reading_frequency.id)}}
+								{% endfor %}
+							</select>
 							<br>
 							<input type="submit" value="Update">
 						</fieldset>

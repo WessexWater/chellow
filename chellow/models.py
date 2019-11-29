@@ -1252,7 +1252,8 @@ class Site(Base, PersistentClass):
 
     def insert_g_supply(
             self, sess, mprn, supply_name, g_ldz, start_date, finish_date, msn,
-            correction_factor, g_unit, g_contract, account):
+            correction_factor, g_unit, g_contract, account,
+            g_reading_frequency):
         g_supply = GSupply(mprn, supply_name, g_ldz, '')
 
         try:
@@ -1269,7 +1270,7 @@ class Site(Base, PersistentClass):
 
         g_supply.insert_g_era(
             sess, self, [], start_date, finish_date, msn, correction_factor,
-            g_unit, g_contract, account)
+            g_unit, g_contract, account, g_reading_frequency)
         sess.flush()
         return g_supply
 
@@ -3122,14 +3123,20 @@ class GEra(Base, PersistentClass):
     g_contract = relationship(
         "GContract", primaryjoin="GContract.id==GEra.g_contract_id")
     account = Column(String, nullable=False)
+    g_reading_frequency_id = Column(
+        Integer, ForeignKey('g_reading_frequency.id'), nullable=False,
+        index=True)
+    g_reading_frequency = relationship(
+        "GReadingFrequency",
+        primaryjoin="GReadingFrequency.id==GEra.g_reading_frequency_id")
 
     def __init__(
             self, sess, g_supply, start_date, finish_date, msn,
-            correction_factor, g_unit, contract, account):
+            correction_factor, g_unit, contract, account, g_reading_frequency):
         self.g_supply = g_supply
         self.update(
             sess, start_date, finish_date, msn, correction_factor, g_unit,
-            contract, account)
+            contract, account, g_reading_frequency)
 
     def attach_site(self, sess, site, is_location=False):
         if sess.query(SiteGEra).filter(
@@ -3164,11 +3171,11 @@ class GEra(Base, PersistentClass):
             self.update(
                 sess, start_date, finish_date, self.msn,
                 self.correction_factor, self.g_unit, self.g_contract,
-                self.account)
+                self.account, self.g_reading_frequency)
 
     def update(
             self, sess, start_date, finish_date, msn, correction_factor,
-            g_unit, g_contract, account):
+            g_unit, g_contract, account, g_reading_frequency):
 
         if hh_after(start_date, finish_date):
             raise BadRequest(
@@ -3181,6 +3188,7 @@ class GEra(Base, PersistentClass):
         self.g_unit = g_unit
         self.g_contract = g_contract
         self.account = account
+        self.g_reading_frequency = g_reading_frequency
 
         if g_contract.start_g_rate_script.start_date > start_date:
             raise BadRequest(
@@ -3260,11 +3268,12 @@ class GSupply(Base, PersistentClass):
         return self.insert_g_era(
             sess, physical_site, logical_sites, start_date, g_era.finish_date,
             g_era.msn, g_era.correction_factor, g_era.g_unit, g_era.g_contract,
-            g_era.account)
+            g_era.account, g_era.g_reading_frequency)
 
     def insert_g_era(
             self, sess, physical_site, logical_sites, start_date, finish_date,
-            msn, correction_factor, g_unit, g_contract, account):
+            msn, correction_factor, g_unit, g_contract, account,
+            g_reading_frequency):
         covered_g_era = None
         last_g_era = sess.query(GEra).filter(GEra.g_supply == self).order_by(
             GEra.start_date.desc()).first()
@@ -3290,7 +3299,7 @@ class GSupply(Base, PersistentClass):
         sess.flush()
         g_era = GEra(
             sess, self, start_date, finish_date, msn, correction_factor,
-            g_unit, g_contract, account)
+            g_unit, g_contract, account, g_reading_frequency)
         sess.add(g_era)
         sess.flush()
 
@@ -3333,7 +3342,7 @@ class GSupply(Base, PersistentClass):
 
     def update_g_era(
             self, sess, g_era, start_date, finish_date, msn, correction_factor,
-            g_unit, g_contract, account):
+            g_unit, g_contract, account, g_reading_frequency):
         if g_era.g_supply != self:
             raise Exception("The era doesn't belong to this supply.")
 
@@ -3345,7 +3354,7 @@ class GSupply(Base, PersistentClass):
 
         g_era.update(
             sess, start_date, finish_date, msn, correction_factor, g_unit,
-            g_contract, account)
+            g_contract, account, g_reading_frequency)
 
         if prev_g_era is not None:
             prev_g_era.update_dates(
@@ -3543,6 +3552,26 @@ class GBatch(Base, PersistentClass):
         sess.add(g_bill)
         sess.flush()
         return g_bill
+
+
+class GReadingFrequency(Base, PersistentClass):
+    __tablename__ = 'g_reading_frequency'
+    id = Column('id', Integer, primary_key=True)
+    code = Column(String, nullable=False)
+    description = Column(String, nullable=False)
+
+    def __init__(self, code, description):
+        self.code = code
+        self.description = description
+
+    @staticmethod
+    def get_by_code(sess, code):
+        code = code.strip()
+        freq = sess.query(GReadingFrequency).filter_by(code=code).first()
+        if freq is None:
+            raise BadRequest(
+                "The Reading Frequency with code " + code + " can't be found.")
+        return freq
 
 
 class GContract(Base, PersistentClass):
@@ -4223,6 +4252,11 @@ def db_init(sess, root_path):
                 sess.add(g_exit_zone)
     sess.commit()
 
+    for code, description in (('A', "Annual"), ('M', "Monthly")):
+        sess.add(GReadingFrequency(code, description))
+    sess.commit()
+    sess.flush()
+
     sess.execute(
         "alter database " + db_name +
         " set default_transaction_deferrable = on")
@@ -4654,13 +4688,29 @@ def db_upgrade_18_to_19(sess, root_path):
         g_unit.factor = Decimal(factor)
 
 
+def db_upgrade_19_to_20(sess, root_path):
+    for code, description in (('A', "Annual"), ('M', "Monthly")):
+        sess.add(GReadingFrequency(code, description))
+    sess.flush()
+
+    sess.execute(
+        "alter table g_era "
+        "add g_reading_frequency_id integer "
+        "references g_reading_frequency (id);")
+    sess.execute(
+        "update g_era set g_reading_frequency_id = "
+        "(select id from g_reading_frequency where code = 'A');")
+    sess.execute(
+        "alter table g_era alter g_reading_frequency_id set not null;")
+
+
 upgrade_funcs = [
     db_upgrade_0_to_1, db_upgrade_1_to_2, db_upgrade_2_to_3, db_upgrade_3_to_4,
     db_upgrade_4_to_5, db_upgrade_5_to_6, db_upgrade_6_to_7, db_upgrade_7_to_8,
     db_upgrade_8_to_9, db_upgrade_9_to_10, db_upgrade_10_to_11,
     db_upgrade_11_to_12, db_upgrade_12_to_13, db_upgrade_13_to_14,
     db_upgrade_14_to_15, db_upgrade_15_to_16, db_upgrade_16_to_17,
-    db_upgrade_17_to_18, db_upgrade_18_to_19]
+    db_upgrade_17_to_18, db_upgrade_18_to_19, db_upgrade_19_to_20]
 
 
 def db_upgrade(root_path):

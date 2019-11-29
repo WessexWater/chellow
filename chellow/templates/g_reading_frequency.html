@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block title %}
+	&raquo; Reading Frequencies &raquo; {{g_reading_frequency.code}}
+{% endblock %}
+
+{% block nav %}
+	<a href="/g_reading_frequencies">Reading Frequencies</a> &raquo;
+ 	{{g_reading_frequency.code}}
+{% endblock %}
+
+	{% block content %}
+	<!-- Layer Section -->
+	<div class="layer-section">
+		<!-- Section Header -->
+		<div class="section-header">
+			<h2>{{g_reading_frequency.code}}</h2>	
+		</div>
+		<!-- End Section Header -->
+		<!-- Section Content -->
+		<div class="section-content">
+			<div class="section-data">
+				<table class="DataTable widthAuto">
+					<tr>
+						<th>Code</th>
+						<td>{{g_reading_frequency.code}}</td>
+					</tr>
+					<tr>
+							<th>Description</th>
+							<td>{{g_reading_frequency.description}}</td>
+					</tr>
+				</table>
+			</div>
+		</div>
+		<!-- End Section Content -->
+	</div>
+	<!-- End Layer Section -->
+
+	
+{% endblock %}

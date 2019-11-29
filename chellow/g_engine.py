@@ -323,6 +323,8 @@ class GDataSource():
         self.g_ldz_code = self.g_supply.g_exit_zone.g_ldz.code
         self.g_dn_code = self.g_supply.g_exit_zone.g_ldz.g_dn.code
         self.account = g_era.account
+        self.g_reading_frequency = g_era.g_reading_frequency
+        self.g_reading_frequency_code = self.g_reading_frequency.code
         self.g_contract = g_era.g_contract
 
         self.consumption_info = ''

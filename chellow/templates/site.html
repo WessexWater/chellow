@@ -5,8 +5,8 @@
 {% endblock %}
 
 {% block nav %}
-	&raquo; <a href="/sites">Sites</a> &raquo; {{site.name}}
-	[<a href="/sites/{{site.id}}/edit">edit</a>]
+	<a href="/sites">Sites</a> &raquo;
+ 	{{site.name}} [<a href="/sites/{{site.id}}/edit">edit</a>]
 {% endblock %}
 
 {% block content %}
@@ -197,7 +197,7 @@
 							For {{input_text('months', '1', 2, 2)}}
 							month(s) until the end of
 						 	{{input_date('finish', last_month_finish, resolution='month')}}
-							UTC <input type="submit" value="Download">
+							clock-time <input type="submit" value="Download">
 						</fieldset>
 					</form>			
 				</div>
@@ -281,6 +281,7 @@
 							<th>Physical Location</th>
 							<th>Also Supplies</th>
 							<th>Meter Serial Number</th>
+							<th>Reading Frequency</th>
 						</tr>
 					</thead>
 					<tbody>
@@ -325,6 +326,11 @@
 									{% endfor %}
 								</td>
 								<td>{{last_g_era.msn}}</td>
+								<td>
+									<a title="{{last_g_era.g_reading_frequency.description}}">
+										{{last_g_era.g_reading_frequency.code}}
+									</a>
+								</td>
 							</tr>
 						{% endfor %}
 					</tbody>

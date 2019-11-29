@@ -147,6 +147,7 @@
 								<th>Units</th>
 								<th>Contract</th>
 								<th>Account</th>
+								<th>Reading Frequency</th>
 							</tr>
 						</thead>
 						<tbody>
@@ -196,6 +197,11 @@
 										{%- endfor -%}
 										)
 									{% endif %}
+								</td>
+								<td>
+									<a  title="{{g_era.g_reading_frequency.description}}"
+									 		href="/g_reading_frequencies/{{g_era.g_reading_frequency.id}}"
+											>{{g_era.g_reading_frequency.code}}</a>
 								</td>
 							</tr>
 						</tbody>

@@ -53,7 +53,7 @@ def vb(ds):
                 system_capacity_rates[pref + 'gbp_per_kwh_per_day'])
             dn_customer_capacity_rate = float(
                 customer_capacity_rates[pref + 'gbp_per_kwh_per_day'])
-            if aq < 293000:
+            if ds.g_reading_frequency_code == 'A':
                 dn_customer_fixed_rate = float(
                     customer_fixed_rates[pref + "biannual_gbp_per_day"])
             else:

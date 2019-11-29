@@ -16514,7 +16514,9 @@ def virtual_bill(ds):
             r'<input name="correction_factor" value="1.02264">',
             r'<select name="g_contract_id">\s*'
             r'<option value="1">Total</option>\s*'
-            r'</select>']},
+            r'</select>'
+        ]
+    },
 
     {
         'name': "Insert a gas supply",
@@ -16534,10 +16536,14 @@ def virtual_bill(ds):
             'mprn': '7502786737',
             'g_contract_id': '1',
             'account': 'ghoIIl',
-            'insert_gas': 'Insert Gas'},
+            'g_reading_frequency_id': '1',
+            'insert_gas': 'Insert Gas'
+        },
         'status_code': 303,
         'regexes': [
-            r'/g_supplies/1']},
+            r'/g_supplies/1'
+        ]
+    },
 
     {
         'name': "View a gas supply",
@@ -16608,17 +16614,27 @@ def virtual_bill(ds):
             'g_exit_zone_id': '6',
             'g_contract_id': '1',
             'account': 'ghoIIl',
-            'insert_gas': 'Insert Gas'},
+            'g_reading_frequency_id': '1',
+            'insert_gas': 'Insert Gas'
+        },
         'status_code': 400,
         'regexes': [
-            r'There&#39;s already a gas supply with that MPRN\.']},
+            r'There&#39;s already a gas supply with that MPRN\.'
+        ]
+    },
 
     {
         'name': "Edit view of gas era",
         'path': '/g_eras/1/edit',
         'status_code': 200,
         'regexes': [
-            r'hwo8tt']},
+            r'hwo8tt',
+            r'<select name="g_reading_frequency_id">\s*'
+            r'<option value="1" selected>A - Annual</option>\s*'
+            r'<option value="2">M - Monthly</option>\s*'
+            r'</select>'
+        ]
+    },
 
     {
         'name': "Edit gas era",
@@ -16634,24 +16650,32 @@ def virtual_bill(ds):
             'correction_factor': '1.02264',
             'g_unit_id': '5',
             'g_contract_id': 1,
-            'account': 'ghoIIl'},
+            'account': 'ghoIIl',
+            'g_reading_frequency_id': '1'
+        },
         'status_code': 303,
         'regexes': [
-            r'/g_supplies/1']},
+            r'/g_supplies/1'
+        ]
+    },
 
     {
         'name': "Check era has been updated properly",
         'path': '/g_supplies/1',
         'status_code': 200,
         'regexes': [
-            r'hwo8th']},
+            r'hwo8th'
+        ]
+    },
 
     {
         'name': "Show import gas bills",
         'path': '/g_bill_imports?g_batch_id=1',
         'status_code': 200,
         'regexes': [
-            r'Total']},
+            r'Total'
+        ]
+    },
 
     {
         'name': "Test gas CSV bill import",
@@ -16662,7 +16686,9 @@ def virtual_bill(ds):
         'files': {'import_file': 'test/gas/gas_bills.csv'},
         'status_code': 303,
         'regexes': [
-            r"/g_bill_imports/0"]},
+            r"/g_bill_imports/0"
+        ]
+    },
 
     {
         'name': "View bill import",
@@ -16671,7 +16697,9 @@ def virtual_bill(ds):
         'status_code': 200,
         'regexes': [
             r"successfully",
-            r'39\.300811</td>\s*</tr>\s*</tbody>']},
+            r'39\.300811</td>\s*</tr>\s*</tbody>'
+        ]
+    },
 
     {
         'name': "Gas bill shown correctly in batch",
@@ -16712,7 +16740,9 @@ def virtual_bill(ds):
         'status_code': 200,
         'regexes': [
             r'<tr>\s*'
-            r'<td>ccl</td>']},
+            r'<td>ccl</td>'
+        ]
+    },
 
     {
         'name': "View edit gas bill",
@@ -16720,8 +16750,10 @@ def virtual_bill(ds):
         'regexes': [
             r'<form action="/g_bills/1/edit">\s*'
             r'<fieldset>\s*'
-            r'<legend>Delete This Bill</legend>'],
-        'status_code': 200},
+            r'<legend>Delete This Bill</legend>'
+        ],
+        'status_code': 200
+    },
 
     {
         'name': "Edit gas bill",
@@ -16773,8 +16805,10 @@ def virtual_bill(ds):
         'path': '/g_bills/1/edit',
         'method': 'post',
         'data': {
-            'delete': 'delete'},
-        'status_code': 303},
+            'delete': 'delete'
+        },
+        'status_code': 303
+    },
 
     {
         'name': "Insert bills with negative register reads",
@@ -16785,14 +16819,18 @@ def virtual_bill(ds):
         'files': {'import_file': 'test/bills-nhh-negative.csv'},
         'status_code': 303,
         'regexes': [
-            r"/supplier_bill_imports/15"]},
+            r"/supplier_bill_imports/15"
+        ]
+    },
     {
         'name': "Insert bills with negative register reads",
         'path': '/supplier_bill_imports/15',
         'tries': {},
         'status_code': 200,
         'regexes': [
-            r"Negative register reads aren&#39;t allowed"]},
+            r"Negative register reads aren&#39;t allowed"
+        ]
+    },
 
     {
         'name': "Delete an electricity register read",
@@ -16801,15 +16839,19 @@ def virtual_bill(ds):
         'data': {
             'delete': 'Delete'},
         'regexes': [
-            r'/supplier_bills/20']},
+            r'/supplier_bills/20'
+        ]
+    },
 
     {
         'name': "Delete bills of gas batch",
         'path': '/g_batches/1/edit',
         'method': 'post',
         'data': {
-            'delete_bills': 'Delete Bills'},
-        'status_code': 303},
+            'delete_bills': 'Delete Bills'
+        },
+        'status_code': 303
+    },
 
     {
         'name': "Delete gas batch",
@@ -16819,7 +16861,9 @@ def virtual_bill(ds):
             'delete': 'delete'},
         'status_code': 303,
         'regexes': [
-            r"/g_batches\?g_contract_id=1"]},
+            r"/g_batches\?g_contract_id=1"
+        ]
+    },
 
     {
         'name': "Add a new batch to a gas contract",
@@ -16827,10 +16871,13 @@ def virtual_bill(ds):
         'method': 'post',
         'data': {
             'reference': 'TB2',
-            'description': 'Total Batch 2'},
+            'description': 'Total Batch 2'
+        },
         'status_code': 303,
         'regexes': [
-            r'/g_batches/2']},
+            r'/g_batches/2'
+        ]
+    },
 
     {
         'name': "Import CSV gas bills that will fail",
@@ -16841,7 +16888,9 @@ def virtual_bill(ds):
         'files': {'import_file': 'test/gas/gas_bills_fail.csv'},
         'status_code': 303,
         'regexes': [
-            r"/g_bill_imports/1"]},
+            r"/g_bill_imports/1"
+        ]
+    },
 
     {
         'name': "View failed gas bill import",
@@ -16849,7 +16898,9 @@ def virtual_bill(ds):
         'tries': {},
         'status_code': 200,
         'regexes': [
-            r'Net GBP']},
+            r'Net GBP'
+        ]
+    },
 
     {
         'name': "Check that the imported bill has been rolled back.",
@@ -16888,14 +16939,17 @@ def virtual_bill(ds):
         'files': {'import_file': 'test/gas/gas_bills.csv'},
         'status_code': 303,
         'regexes': [
-            r"/g_bill_imports/2"]},
+            r"/g_bill_imports/2"
+        ]
+    },
 
     {
         'name': "Gas: View bill import",
         'path': '/g_bill_imports/2',
         'tries': {},
         'status_code': 200,
-        'regexes': [r'successfully']},
+        'regexes': [r'successfully']
+    },
     {
         'name': "Edit the added rate script",
         'path': '/g_rate_scripts/1/edit',
@@ -16913,7 +16967,8 @@ def virtual_bill(ds):
             'finish_hour': '23',
             'finish_minute': '30',
             'script': '{"gas_rate": 0.019548, "standing_rate": 67.80}'},
-        'status_code': 303},
+        'status_code': 303
+    },
     {
         'name': "Gas bill check",
         'path': '/reports/429?g_bill_id=3',
@@ -16924,7 +16979,8 @@ def virtual_bill(ds):
         'path': '/downloads',
         'tries': {'max': 20, 'period': 1},
         'regexes': [
-            r"00014_FINISHED_adminexamplecom_g_bill_check\.csv"],
+            r"00014_FINISHED_adminexamplecom_g_bill_check\.csv"
+        ],
         'status_code': 200
     },
     {
@@ -16976,6 +17032,7 @@ def virtual_bill(ds):
             'g_unit_id': '5',
             'g_contract_id': '1',
             'account': 'ghuel',
+            'g_reading_frequency_id': '1',
             'insert_gas': 'Insert Gas'
         },
         'status_code': 303,
