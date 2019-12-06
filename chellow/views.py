@@ -2316,9 +2316,10 @@ def supply_get(supply_id):
                     next_bill = next_b_dict['bill']
                     if (
                             bill.start_date, bill.finish_date, bill.kwh,
-                            bill.net) == (
+                            bill.net, bill.vat) == (
                             next_bill.start_date, next_bill.finish_date,
-                            -1 * next_bill.kwh, -1 * next_bill.net) and \
+                            -1 * next_bill.kwh, -1 * next_bill.net,
+                            next_bill.vat) and \
                             'collapsible' not in b_dict:
                         b_dict['collapsible'] = True
                         next_b_dict['first_collapsible'] = True
