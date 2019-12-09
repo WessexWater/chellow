@@ -1,0 +1,129 @@
+{% extends "base.html" %}
+
+{% block title %}
+	&raquo; Scenarios
+{% endblock %}
+
+{% block nav %}
+	Scenarios [<a href="/scenarios/add">add</a>]
+{% endblock %}
+
+{% block content %}
+	<!-- Layer Section -->
+	<div class="layer-section">
+		<!-- Section Header -->
+		<div class="section-header">
+			<h2>Scenarios</h2>	
+		</div>
+		<!-- End Section Header -->
+		<!-- Section Content -->
+		<div class="section-content">
+			<div class="section-data">
+				<table class="DataTable widthAuto">
+					<thead>
+						<tr>
+							<th>Scenario</th>
+							<th>Run</th>
+							<th>View</th>
+							<th>Edit</th>
+							<th>Scenario Start Year</th>
+							<th>Scenario Start Month</th>
+							<th>Scenario Duration</th>
+						</tr>
+					</thead>
+					<tbody>
+						{% for scenario in scenarios %}
+							<tr>
+								<td>{{scenario.name}}</td>
+								<td>
+									<a href="/reports/247?scenario_id={{scenario.id}}">
+										Run
+									</a>
+								<td>
+									<a href="/scenarios/{{scenario.id}}">
+										View
+									</a>
+								</td>
+								<td>
+									[<a href="/scenarios/{{scenario.id}}/edit">edit</a>]
+								</td>
+								<td>{{scenario.props.scenario_start_year}}</td>
+								<td>{{scenario.props.scenario_start_month}}</td>
+								<td>{{scenario.props.scenario_duration}}</td>
+							</tr>
+						{% endfor %}
+					</tbody>
+				</table>
+			</div>
+		</div>
+		<!-- End Section Content -->
+	</div>
+	<!-- End Layer Section -->
+
+	<div class="layer-section">
+		<!-- Section Header -->
+		<div class="section-header">
+			<h2>Notes</h2>	
+		</div>
+		<!-- End Section Header -->
+		<!-- Section Content -->
+		<div class="section-content">
+			<div class="section-data">
+				<h4>HH Data</h4>
+
+				<h5>Default forecasting</h5>
+
+				<p>
+					Before the <code>forecast_date</code> Chellow uses data in the
+					database (if any), and after that date it uses data from the same
+					month but in the year before the <code>forecast_date</code>.
+				</p>
+
+				<p>
+					If a rate script isn't found for a particular date, then the most
+					recent rate script is used.
+				</p>
+
+				<p>
+					Virtual bills can include TRIAD estimates and actuals in a variety
+					of ways. For example, a virtual bill may use TRIAD estimates for all
+					months until triad dates are available for that financial year, in
+					which case it switches to using the actual TRIAD for March.
+				</p>
+
+				<p>
+					TRIAD estimates are calculated using the actual TRIAD from the latest
+				 	historical year for which we have TRIAD dates. Historical kW and
+				 	status are used, together with current LAFs and TRIAD rates, with the
+				 	result apportioned throughout each month.
+				</p>
+
+
+				<h5>Applying HH data in the scenario runner</h5>
+
+				<p>
+					Taking 'generated' as an example, for each half-hour Chellow will
+				 	calculate the difference between the <code>scenario_generated</code>
+				 	and the <code>existing_generated</code>. If
+				 	<code>scenario_generated</code> &gt;= <code>existing_generated</code>
+					then any <code>imported_net</code> will be reduced first, then
+					<code>exported_net</code> will be increased until all the difference
+				 	is exhausted. Otherwise if <code>scenario_generated</code> &lt;
+					<code>existing_generated</code> then <code>exported_net</code> will
+					be reduced first, and then <code>imported_net</code> will be
+				 	increased. A similar approach is taken with used, parasitic and
+				  gen_net kWh.
+				</p>
+
+				<p>
+					The method is the same for months after the
+					<code>forecast_date</code> but with the
+				 	<code>existing_generated</code> being found from the default
+				 	forecast.
+				</p>
+			</div>
+		</div>
+		<!-- End Section Content -->
+	</div>
+	<!-- End Layer Section -->
+{% endblock %}

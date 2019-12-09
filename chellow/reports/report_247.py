@@ -8,7 +8,7 @@ from sqlalchemy.orm import joinedload
 from collections import defaultdict
 from chellow.models import (
     Session, Contract, Site, Era, SiteEra, Supply, Source, Bill, Mtc, Llfc,
-    MeasurementRequirement, Ssc, Tpr, Pc)
+    MeasurementRequirement, Ssc, Tpr, Pc, Scenario)
 from chellow.computer import SupplySource, contract_func, datum_range
 import chellow.computer
 import csv
@@ -924,9 +924,9 @@ def do_get(sess):
 
     if 'scenario_id' in request.values:
         scenario_id = req_int('scenario_id')
-        scenario_contract = Contract.get_supplier_by_id(sess, scenario_id)
-        scenario_props = scenario_contract.make_properties()
-        base_name.append(scenario_contract.name)
+        scenario = Scenario.get_by_id(sess, scenario_id)
+        scenario_props = scenario.props
+        base_name.append(scenario.name)
 
         start_year = scenario_props['scenario_start_year']
         start_month = scenario_props['scenario_start_month']

@@ -1,0 +1,276 @@
+{% extends "base.html" %}
+
+{% block title %}
+	&raquo; Scenarios &raquo; {{scenario.name}}
+{% endblock %}
+
+{% block nav %}
+		<a href="/scenarios">Scenarios</a> &raquo; 
+		<a href="/scenarios/{{scenario.id}}">{{scenario.name}}</a> &raquo; Edit
+{% endblock %}
+
+{% block content %}
+
+	{% if request.method == 'GET' and request.values.delete %}
+		<div class="layer-section">
+			<div class="section-header">
+				<h2>Are you sure you want to delete this scenario?</h2>	
+			</div>
+			<div class="section-content">
+				<div class="section-data">
+					<div class="standardForm">
+						<form method="post">
+							<fieldset>
+								<input type="hidden" name="scenario_id" value="{{scenario.id}}">
+								<input type="submit" name="delete" value="Delete">
+								<a class="btn" href="/scenarios/{{scenario.id}}/edit">Cancel</a>
+							</fieldset>
+						</form>
+					</div>
+				</div>
+			</div>
+		</div>
+	
+	{% else %}
+	
+		<div class="layer-section">
+			<div class="section-header">
+				<h2>Update Scenario</h2>	
+			</div>
+			<div class="section-content">
+				<div class="section-data">
+					<div class="standardForm">
+						<form method="post" action="/scenarios/{{scenario.id}}/edit">
+							<fieldset>
+							<input type="hidden" name="scenario_id" value="{{scenario.id}}">
+								<div class="row">
+									<div class="col-sm-6">
+										<label>Name</label>
+										{{input_text('name', scenario.name)}}
+									</div>
+								</div>	
+								<br>
+								Properties
+								<br>
+								{{input_textarea('properties', scenario.properties, 20, 80)}}
+								<br />
+								<br />
+								<input type="submit" value="Update">
+							</fieldset>
+						</form>
+					</div>
+				</div>
+			</div>
+		</div>
+		
+		<div class="layer-section">
+			<div class="section-header">
+				<h2>Delete this scenario</h2>	
+			</div>
+			<div class="section-content">
+				<div class="section-data">
+					<div class="standardForm">
+						<form>
+							<fieldset>
+								<input type="hidden" name="scenario_id" value="{{scenario.id}}">
+								<input type="submit" name="delete" value="Delete">
+							</fieldset>
+						</form>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- Layer Section -->
+		<div class="layer-section">
+			<!-- Section Header -->
+			<div class="section-header">
+				<h2>Docs</h2>	
+			</div>
+			<!-- End Section Header -->
+
+			<!-- Section Content -->
+			<div class="section-content">
+				<div class="section-data">
+					<h3>Template Scenario Properties</h3>
+
+					<pre>
+{
+  "scenario_start_year": 2011,  /* clock-time year, or null for current year */
+  "scenario_start_month": 1,  /* clock-time month or null for this month */
+  "scenario_duration": 1,  /* Number of months */
+
+  "by_hh": false,  /* To show a line per half hour rather than each month */
+
+  /* Industry rates - those you can't edit in Chellow */
+
+  "industry_rates": [
+    {
+      "contract_name": "ccl",
+      "start_date": 2014-10-01T00:00:00Z,
+      "finish_date": 2015-05-01T00:00:00Z,
+      "script": {
+        "ccl_gbp_per_msp_kwh": 0.00568
+      }
+    },
+
+    {
+      "contract_name": "aahedc",
+      "start_date": 2015-01-01T00:00:00Z,
+      "finish_date": 2016-09-04T00:00:00Z,
+      "script": {
+        "aahedc_gbp_per_gsp_kwh": 0.00023116
+      }
+    }
+  ],
+
+
+  /* Local rates - those that you can edit in Chellow */
+
+  "local_rates": [
+    {
+      "contract_id": 46,
+      "start_date": 2014-10-01T00:00:00Z,
+      "finish_date": 2015-05-01T00:00:00Z,
+      "script": {
+        "gbp_per_msp_kwh": 0.667
+      }
+    },
+
+    {
+      "contract_id": 3,
+      "start_date": 2015-01-01T00:00:00Z,
+      "finish_date": 2015-03-01T00:00:00Z,
+      "script": {
+        "gbp_per_gsp_kwh": 5.77
+      }
+    }
+  ],
+
+
+  "era_maps": {
+    2012-09-01T00:00:00Z: {
+      "llfcs": {
+        "20": {
+          "409": "607",
+          "090": "502"
+        },
+        "22": {
+          "711": "003",
+          "new_export": "003"
+        }
+      },
+      "pcs": {
+        "03": "00",
+        "04": "00"
+      },
+      "sscs": {
+        "0038": "0336"
+      },
+      "cops": {
+        "6c": "5"
+      },
+      "supplier_contracts": {
+        74: 3,
+        "new_export": 3,
+        9: 51
+      },
+      "sc": 400
+    }
+  },
+
+
+  /* HH data to use instead of the data in the database. For each site code,
+     you can specify the hh data that's used, generated, parasitic or gen_net
+     on the site. */
+
+  "hh_data": {
+
+    /* For site code 12098 */
+
+    "12098": {
+      "used": "
+        2017-10-04 19:00, 78.0
+        2017-10-04 19:30, 74.8
+        2017-10-04 20:00, 65.3",
+      "generated": "
+        2017-10-04 19:00, 8.0
+        2017-10-04 19:30, 8.7
+        2017-10-04 20:00, 8.5",
+      "parasitic": "
+        2017-10-04 19:00, 2.0
+        2017-10-04 19:30, 2.1
+        2017-10-04 20:00, 2.0"
+    },
+
+    /* For site code 59987 */
+
+    "59987": {
+      "generated": "
+        2017-10-09 10:00, 3.0
+        2017-10-09 10:30, 2.7
+        2017-10-09 11:00, 3.5"
+    }
+  }
+}</pre>
+
+					<h3>HH Data</h3>
+
+					<h4>Default forecasting</h4>
+
+					<p>
+						Before the <code>forecast_date</code> Chellow uses data in the
+						database (if any), and after that date it uses data from the same
+						month but in the year before the <code>forecast_date</code>.
+					</p>
+
+					<p>
+						If a rate script isn't found for a particular date, then the most
+						recent rate script is used.
+					</p>
+
+					<p>
+						Virtual bills can include TRIAD estimates and actuals in a variety
+						of ways. For example, a virtual bill may use TRIAD estimates for all
+						months until triad dates are available for that financial year, in
+						which case it switches to using the actual TRIAD for March.
+					</p>
+
+					<p>
+						TRIAD estimates are calculated using the actual TRIAD from the
+					 	latest historical year for which we have TRIAD dates. Historical kW
+					 	and status are used, together with current LAFs and TRIAD rates,
+					 	with the result apportioned throughout each month.
+					</p>
+
+
+					<h4>Applying HH data in the scenario runner</h4>
+
+					<p>
+						Taking 'generated' as an example, for each half-hour Chellow will
+						calculate the difference between the <code>scenario_generated</code>
+						and the <code>existing_generated</code>. If
+					 	<code>scenario_generated</code>
+					 	&gt;= <code>existing_generated</code> then any
+					 	<code>imported_net</code> will be reduced first, then
+						<code>exported_net</code> will be increased until all the difference
+						is exhausted. Otherwise if <code>scenario_generated</code> &lt;
+						<code>existing_generated</code> then <code>exported_net</code> will
+						be reduced first, and then <code>imported_net</code> will be
+						increased. A similar approach is taken with used, parasitic and
+						gen_net kWh.
+					</p>
+
+					<p>
+						The method is the same for months after the
+						<code>forecast_date</code> but with the
+						<code>existing_generated</code> being found from the default
+						forecast.
+					</p>
+				</div>
+			</div>
+			<!-- End Section Content -->
+		</div>
+		<!-- End Layer Section -->
+	{% endif %}
+{% endblock %}

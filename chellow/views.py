@@ -10,7 +10,7 @@ from chellow.models import (
     RegisterRead, HhDatum, Snag, Batch, ReadType, BillType, MeterPaymentType,
     ClockInterval, db_upgrade, Llfc, MeterType, GEra, GSupply, SiteGEra, GBill,
     GContract, GRateScript, GBatch, GRegisterRead, GReadType, VoltageLevel,
-    GUnit, GLdz, GExitZone, GDn, METER_TYPES, GReadingFrequency)
+    GUnit, GLdz, GExitZone, GDn, METER_TYPES, GReadingFrequency, Scenario)
 from sqlalchemy.exc import IntegrityError
 import traceback
 from datetime import datetime as Datetime
@@ -2914,9 +2914,7 @@ def site_get(site_id):
 
     properties = configuration_contract.make_properties()
     other_sites = site.find_linked_sites(g.sess, now, now)
-    scenarios = g.sess.query(Contract).join(MarketRole).filter(
-        MarketRole.code == 'X', Contract.name.like('scenario_%')).order_by(
-        Contract.name).all()
+    scenarios = g.sess.query(Scenario).order_by(Scenario.name).all()
     return render_template(
         'site.html', site=site, groups=groups, properties=properties,
         other_sites=other_sites, month_start=month_start,
@@ -4521,17 +4519,71 @@ def ods_monthly_duration_get():
         month_finish=month_finish)
 
 
-@app.route('/ods_scenario_runner')
-def ods_scenario_runner_get():
-    db_contracts = [
-        Contract.get_non_core_by_name(g.sess, name)
-        for name in sorted(('bsuos', 'tlms', 'rcrc'))]
-    scenarios = g.sess.query(Contract).join(MarketRole).filter(
-        MarketRole.code == 'X', Contract.name.like('scenario_%')).order_by(
-        Contract.name).all()
-    return render_template(
-        'ods_scenario_runner.html', db_contracts=db_contracts,
-        scenarios=scenarios)
+@app.route('/scenarios')
+def scenarios_get():
+    scenarios = g.sess.query(Scenario).order_by(Scenario.name).all()
+    return render_template('scenarios.html', scenarios=scenarios)
+
+
+@app.route('/scenarios/add', methods=['POST'])
+def scenario_add_post():
+    try:
+        name = req_str("name")
+        properties = req_zish("properties")
+        scenario = Scenario.insert(g.sess, name, properties)
+        g.sess.commit()
+        return chellow_redirect("/scenarios/" + str(scenario.id), 303)
+    except BadRequest as e:
+        g.sess.rollback()
+        flash(e.description)
+        scenarios = g.sess.query(Scenario).order_by(Scenario.name)
+        return make_response(
+            render_template('scenario_add.html', scenarios=scenarios), 400)
+
+
+@app.route('/scenarios/add')
+def scenario_add_get():
+    now = utc_datetime_now()
+    props = {
+        'scenario_start_month': now.month,
+        'scenario_start_year': now.year,
+        'scenario_duration': 1
+    }
+    return render_template('scenario_add.html', initial_props=dumps(props))
+
+
+@app.route('/scenarios/<int:scenario_id>')
+def scenario_get(scenario_id):
+    scenario = Scenario.get_by_id(g.sess, scenario_id)
+    return render_template('scenario.html', scenario=scenario)
+
+
+@app.route('/scenarios/<int:scenario_id>/edit')
+def scenario_edit_get(scenario_id):
+    scenario = Scenario.get_by_id(g.sess, scenario_id)
+    return render_template('scenario_edit.html', scenario=scenario)
+
+
+@app.route('/scenarios/<int:scenario_id>/edit', methods=['POST'])
+def scenario_edit_post(scenario_id):
+    try:
+        scenario = Scenario.get_by_id(g.sess, scenario_id)
+        if 'delete' in request.form:
+            scenario.delete(g.sess)
+            g.sess.commit()
+            return chellow_redirect('/scenarios', 303)
+        else:
+            name = req_str('name')
+            properties = req_zish('properties')
+            scenario.update(name, properties)
+            g.sess.commit()
+            return chellow_redirect('/scenarios/' + str(scenario.id), 303)
+    except BadRequest as e:
+        g.sess.rollback()
+        description = e.description
+        flash(description)
+        return make_response(
+            render_template('scenario_edit.html', scenario=scenario, ), 400)
 
 
 @app.route('/site_snags/<int:snag_id>/edit')

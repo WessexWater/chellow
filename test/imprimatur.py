@@ -2113,10 +2113,11 @@ def virtual_bill_titles():
             r'<a href="/csv_supplies_duration"\s*'
             r'>Download</a>',
             r'<a\s*'
-            r'href="/ods_scenario_runner"\s*'
+            r'href="/scenarios"\s*'
             r'>\s*'
-            r'Scenario Runner\s*'
-            r'</a>'],
+            r'Scenarios\s*'
+            r'</a>'
+        ],
         'status_code': 200
     },
 
@@ -9430,8 +9431,10 @@ def virtual_bill(ds):
         'path': '/channels/56/edit',
         'method': 'post',
         'data': {
-            'delete': 'Delete'},
-        'status_code': 303},
+            'delete': 'Delete'
+        },
+        'status_code': 303
+    },
 
     {
         'name': "Check the bill",
@@ -9442,7 +9445,9 @@ def virtual_bill(ds):
         'tries': {'max': 20, 'period': 1},
         'status_code': 200,
         'regexes': [
-            r"00054_FINISHED_watkinsexamplecom_bill_check\.csv"]},
+            r"00054_FINISHED_watkinsexamplecom_bill_check\.csv"
+        ]
+    },
     {
         'path': '/downloads/00054_FINISHED_watkinsexamplecom_bill_check.csv',
         'status_code': 200,
@@ -9450,7 +9455,9 @@ def virtual_bill(ds):
             r'07-002,3423760010,N,10,9.07,0.21,2012-01-05 00:00,'
             r'2012-01-10 23:30,22 1065 3921 534,,CI017,Roselands,'
             r'2012-01-05 00:00,2012-01-10 23:30,21,0,9.07,0,9.07,'
-            r'10.0,0,,']},
+            r'10.0,0,,'
+        ]
+    },
 
     # Update register read to make the TPR a teleswitch one },
     {
@@ -9477,11 +9484,14 @@ def virtual_bill(ds):
             'present_minute': "30",
             'present_value': "15924",
             'present_type_id': "1",
-            'update': "Update"},
-        'status_code': 303},
+            'update': "Update"
+        },
+        'status_code': 303
+    },
     {
         'path': '/reports/207?supply_id=10&year=2009',
-        'status_code': 303},
+        'status_code': 303
+    },
     {
         'path': '/downloads',
         'tries': {'max': 20, 'period': 1},
@@ -9497,7 +9507,9 @@ def virtual_bill(ds):
             r'Roselands,2009-04-01 00:00,'
             r'2010-03-31 23:30,.*?,0,0,277.0,0,0,0,365.0,'
             r'0,277.0,365.0,Actual,0,0,2164.9638989169675,0,'
-            r'0,0,2164.9638989169675']},
+            r'0,0,2164.9638989169675'
+        ]
+    },
 
     {
         'name': "BAU scenario. Remove contents of rate script.",
@@ -9514,17 +9526,10 @@ def virtual_bill(ds):
 
     {
         'name': "Run a BAU scenario. Add scenario",
-        'path': '/supplier_contracts/add',
+        'path': '/scenarios/add',
         'method': 'post',
         'data': {
-            'participant_id': "81",  # COOP
             'name': "scenario_bau",
-            'start_year': "2000",
-            'start_month': "01",
-            'start_day': "03",
-            'start_hour': "00",
-            'start_minute': "00",
-            'charge_script': "",
             'properties': """
 {
   "local_rates": [
@@ -9550,15 +9555,15 @@ def virtual_bill(ds):
   "scenario_duration": 1
 }""", },
         'regexes': [
-            r"/supplier_contracts/17"
+            r"/scenarios/1"
         ],
         'status_code': 303
     },
     {
-        'name': "Scenario runner",
-        'path': '/ods_scenario_runner',
+        'name': "Scenarios",
+        'path': '/scenarios',
         'regexes': [
-            r'<a href="/reports/247\?scenario_id=17">\s*'
+            r'<a href="/reports/247\?scenario_id=1">\s*'
             r'Run\s*'
             r'</a>'
         ],
@@ -9567,7 +9572,7 @@ def virtual_bill(ds):
 
     {
         'name': "Run scenario for a site where there are no site groups",
-        'path': '/reports/247?site_id=1&scenario_id=17&compression=False',
+        'path': '/reports/247?site_id=1&scenario_id=1&compression=False',
         'status_code': 303
     },
     {
@@ -9619,7 +9624,7 @@ def virtual_bill(ds):
 
     {
         'name': "Run scenario for a site where there are site groups",
-        'path': '/reports/247?site_id=3&scenario_id=17&compression=False',
+        'path': '/reports/247?site_id=3&scenario_id=1&compression=False',
         'status_code': 303
     },
     {
@@ -9669,17 +9674,10 @@ def virtual_bill(ds):
     # Add a scenario
     {
         'name': "Run an increased BSUoS scenario",
-        'path': '/supplier_contracts/add',
+        'path': '/scenarios/add',
         'method': 'post',
         'data': {
-            'participant_id': "81",  # COOP
             'name': "scenario_bsuos",
-            'start_year': "2000",
-            'start_month': "01",
-            'start_day': "03",
-            'start_hour': "00",
-            'start_minute': "00",
-            'charge_script': "",
             'properties': """
 {
   "scenario_start_year": 2011,
@@ -9708,20 +9706,25 @@ def virtual_bill(ds):
       "script": {
           "aahedc_gbp_per_gsp_kwh": 0.10016297}}]}"""},
         'regexes': [
-            r"/supplier_contracts/18"],
-        'status_code': 303},
+            r"/scenarios/2"
+        ],
+        'status_code': 303
+    },
 
     {
         'name': "Run scenario for a site",
-        'path': '/reports/247?site_id=3&scenario_id=18&compression=False',
-        'status_code': 303},
+        'path': '/reports/247?site_id=3&scenario_id=2&compression=False',
+        'status_code': 303
+    },
     {
         'path': '/downloads',
         'tries': {'max': 30, 'period': 1},
         'status_code': 200,
         'regexes': [
             r"00058_FINISHED_watkinsexamplecom_scenario_bsuos_20110101_0000_"
-            r"for_1_months_site_CI005\.ods"]},
+            r"for_1_months_site_CI005\.ods"
+        ]
+    },
     {
         'path': '/downloads/'
         '00058_FINISHED_watkinsexamplecom_scenario_bsuos_20110101_0000_for_'
@@ -9989,17 +9992,10 @@ def virtual_bill(ds):
     # Add a scenario
     {
         'name': "Run a used and generated scenario",
-        'path': '/supplier_contracts/add',
+        'path': '/scenarios/add',
         'method': 'post',
         'data': {
-            'participant_id': "81",  # COOP
             'name': "scenario_used",
-            'start_year': "2000",
-            'start_month': "01",
-            'start_day': "03",
-            'start_hour': "00",
-            'start_minute': "00",
-            'charge_script': "",
             'properties': r"""
 {
     "scenario_start_year": 2005,
@@ -10021,14 +10017,14 @@ def virtual_bill(ds):
 }"""
         },
         'regexes': [
-            r"/supplier_contracts/19"
+            r"/scenarios/3"
         ],
         'status_code': 303
     },
 
     {
         'name': "Run scenario for a site",
-        'path': '/reports/247?site_id=3&scenario_id=19&compression=False',
+        'path': '/reports/247?site_id=3&scenario_id=3&compression=False',
         'status_code': 303
     },
     {
@@ -10169,17 +10165,10 @@ def virtual_bill(ds):
 
     {
         'name': "Rate start after last rate scripts",
-        'path': '/supplier_contracts/18/edit',
+        'path': '/scenarios/2/edit',
         'method': 'post',
         'data': {
-            'party_id': "117",  # COOP
             'name': "scenario_bsuos",
-            'start_year': "2000",
-            'start_month': "01",
-            'start_day': "03",
-            'start_hour': "00",
-            'start_minute': "00",
-            'charge_script': "",
             'properties': """
 {
     "bsuos" : {
@@ -10205,14 +10194,14 @@ def virtual_bill(ds):
     "kw_changes": ""}
 """},
         'regexes': [
-            r"/supplier_contracts/18"
+            r"/scenarios/2"
         ],
         'status_code': 303
     },
 
     # Run scenario for a site
     {
-        'path': '/reports/247?site_id=3&scenario_id=18&compression=False',
+        'path': '/reports/247?site_id=3&scenario_id=2&compression=False',
         'status_code': 303
     },
     {
@@ -10625,7 +10614,8 @@ def virtual_bill(ds):
         'files': {'import_file': "test/gi_party.csv"},
         'status_code': 303,
         'regexes': [
-            r"/general_imports/23"]
+            r"/general_imports/23"
+        ]
     },
     {
         'name': "MDD Converter. Party",
@@ -10661,7 +10651,8 @@ def virtual_bill(ds):
         'status_code': 200,
         'regexes': [
             r"00064_FINISHED_watkinsexamplecom_Line_Loss_Factor_Class_225_"
-            r"general_import.csv"]
+            r"general_import.csv"
+        ]
     },
     {
         'path': '/downloads/'
@@ -10788,7 +10779,8 @@ def virtual_bill(ds):
         'path': "/reports/163",
         'method': "post",
         'files': {"file": "test/MTC_in_PES_Area_233.csv"},
-        'status_code': 303},
+        'status_code': 303
+    },
     {
         'path': '/downloads',
         'tries': {'max': 30, 'period': 1},
@@ -10900,22 +10892,17 @@ def virtual_bill(ds):
         'path': '/downloads/'
         '00068_FINISHED_watkinsexamplecom_supply_virtual_bills_16.csv',
         'regexes': [
-            r'Imp MPAN Core,Exp MPAN Core,Site Code,Site Name,'],
-        'status_code': 200},
+            r'Imp MPAN Core,Exp MPAN Core,Site Code,Site Name,'
+        ],
+        'status_code': 200
+    },
 
     {
         'name': "Leap day forecast. Create scenario",
-        'path': '/supplier_contracts/add',
+        'path': '/scenarios/add',
         'method': 'post',
         'data': {
-            'participant_id': "81",  # COOP
             'name': "scenario_leap_day",
-            'start_year': "2000",
-            'start_month': "01",
-            'start_day': "03",
-            'start_hour': "00",
-            'start_minute': "00",
-            'charge_script': "",
             'properties': """
 {
   "forecast_from": 2009-04-01T00:00:00Z,
@@ -10925,13 +10912,16 @@ def virtual_bill(ds):
 }
 """, },
         'regexes': [
-            r"/supplier_contracts/20"],
-        'status_code': 303},
+            r"/scenarios/4"
+        ],
+        'status_code': 303
+    },
 
     {
         'name': "Leap day forecast. Run scenario for a site",
-        'path': '/reports/247?site_id=5&scenario_id=20&compression=False',
-        'status_code': 303},
+        'path': '/reports/247?site_id=5&scenario_id=4&compression=False',
+        'status_code': 303
+    },
     {
         'path': '/downloads',
         'tries': {'max': 30, 'period': 1},
@@ -11060,14 +11050,17 @@ def virtual_bill(ds):
             'start_hour': '0', 'start_minute': '0', 'finish_year': '2008',
             'finish_month': '08', 'finish_day': '1', 'finish_hour': '23',
             'finish_minute': '30'},
-        'status_code': 303},
+        'status_code': 303
+    },
     {
         'path': '/downloads',
         'tries': {'max': 20, 'period': 1},
         'status_code': 200,
         'regexes': [
             r"00070_FINISHED_watkinsexamplecom_supplies_hh_data_200808012330_"
-            r"filter\.csv"]},
+            r"filter\.csv"
+        ]
+    },
     {
         'path': '/downloads/'
         '00070_FINISHED_watkinsexamplecom_supplies_hh_data_200808012330_'
@@ -11138,22 +11131,28 @@ def virtual_bill(ds):
         'files': {'import_file': 'test/era-insert-2.csv'},
         'status_code': 303,
         'regexes': [
-            r"/general_imports/28"]},
+            r"/general_imports/28"
+        ]
+    },
     {
         'path': '/general_imports/28',
         'tries': {},
 
         # Check it's loaded ok
         'regexes': [
-            r"The file has been imported successfully"],
-        'status_code': 200},
+            r"The file has been imported successfully"
+        ],
+        'status_code': 200
+    },
 
     {
         'name': "Supplies TRIAD selector",
         'path': '/csv_supplies_triad',
         'status_code': 200,
         'regexes': [
-            r"<!DOCTYPE html>"]},
+            r"<!DOCTYPE html>"
+        ]
+    },
 
     {
         'name': "Sites TRIAD selector",
@@ -13555,25 +13554,31 @@ def virtual_bill(ds):
         'status_code': 200},
     {
         'name': "Is the rate script correct?",
-        'path': '/non_core_rate_scripts/50',
+        'path': '/non_core_rate_scripts/46',
         'regexes': [
             r"&#34;01 00:00 Z&#34;: "
-            r"0\.092536082309507475102132933090071710251,"],
-        'status_code': 200},
+            r"0\.092536082309507475102132933090071710251,"
+        ],
+        'status_code': 200
+    },
     {
         'name': "Do an 'import now' on RCRC.",
         'path': '/non_core_contracts/5/auto_importer',
         'method': 'post',
         'data': {
-            'now': 'Now'},
-        'status_code': 303},
+            'now': 'Now'
+        },
+        'status_code': 303
+    },
     {
         'name': "Check that an RCRC import has happened.",
         'path': '/non_core_contracts/5/auto_importer',
         'tries': {},
         'regexes': [
-            r"Added a new rate script starting at 2016-02-01 00:00\."],
-        'status_code': 200},
+            r"Added a new rate script starting at 2016-02-01 00:00\."
+        ],
+        'status_code': 200
+    },
 
     {
         'name': "Bill import error. Supplier contract",
@@ -13584,7 +13589,9 @@ def virtual_bill(ds):
         'files': {'import_file': 'test/bills_fail.csv'},
         'status_code': 303,
         'regexes': [
-            r"/supplier_bill_imports/11"]},
+            r"/supplier_bill_imports/11"
+        ]
+    },
     {
         'name': "Supplier contract 11, batch 4",
         'path': '/supplier_bill_imports/11',
@@ -13592,7 +13599,9 @@ def virtual_bill(ds):
         'status_code': 200,
         'regexes': [
             r"Can&#39;t find an era with contract &#39;Half-hourlies 2007&#39;"
-            r" and account &#39;Landau&#39;\."]},
+            r" and account &#39;Landau&#39;\."
+        ]
+    },
 
     {
         'name': "CSV Sites Duration",
@@ -17123,20 +17132,26 @@ def virtual_bill(ds):
             'start_month': "03",
             'start_day': "01",
             'start_hour': "00",
-            'start_minute': "00"},
+            'start_minute': "00"
+        },
         'status_code': 303,
         'regexes': [
-            r"/mop_rate_scripts/52"]},
+            r"/mop_rate_scripts/48"
+        ]
+    },
 
     {
         'name': "Delete mop rate script",
-        'path': '/mop_rate_scripts/52/edit',
+        'path': '/mop_rate_scripts/48/edit',
         'method': 'post',
         'data': {
-            'delete': "Delete"},
+            'delete': "Delete"
+        },
         'status_code': 303,
         'regexes': [
-            r"/mop_contracts/11"]},
+            r"/mop_contracts/11"
+        ]
+    },
     {
         'name': "Cause an error in auto importer.",
         'path': '/dc_contracts/8/edit',
@@ -17467,10 +17482,12 @@ def virtual_bill(supply_source):
             'charge_script': "",
             'properties': '{}'},
         'regexes': [
-            r"/supplier_contracts/21"]},
+            r"/supplier_contracts/17"
+        ]
+    },
     {
         'name': "Update the associated rate script.",
-        'path': '/supplier_rate_scripts/53/edit',
+        'path': '/supplier_rate_scripts/49/edit',
         'method': 'post',
         'data': {
             'start_year': "2000",
@@ -17520,17 +17537,10 @@ def virtual_bill(supply_source):
 
     {
         'name': "Two month scenario with LLFC map",
-        'path': '/supplier_contracts/18/edit',
+        'path': '/scenarios/2/edit',
         'method': 'post',
         'data': {
-            'party_id': "117",  # COOP
             'name': "scenario_bsuos",
-            'start_year': "2000",
-            'start_month': "01",
-            'start_day': "03",
-            'start_hour': "00",
-            'start_minute': "00",
-            'charge_script': "",
             'properties': """
 {
   "rates": {
@@ -17554,20 +17564,25 @@ def virtual_bill(supply_source):
   "kw_changes": ""}
 """},
         'regexes': [
-            r"/supplier_contracts/18"],
-        'status_code': 303},
+            r"/scenarios/2"
+        ],
+        'status_code': 303
+    },
 
     {
         'name': "Run scenario for a site",
-        'path': '/reports/247?site_id=3&scenario_id=18&compression=False',
-        'status_code': 303},
+        'path': '/reports/247?site_id=3&scenario_id=2&compression=False',
+        'status_code': 303
+    },
     {
         'path': '/downloads',
         'tries': {'max': 30, 'period': 1},
         'status_code': 200,
         'regexes': [
             r"00023_FINISHED_adminexamplecom_scenario_bsuos_20110101_0000_"
-            r"for_2_months_site_CI005\.ods"]},
+            r"for_2_months_site_CI005\.ods"
+        ]
+    },
     {
         'path': '/downloads/'
         '00023_FINISHED_adminexamplecom_scenario_bsuos_20110101_0000_for_2_'
@@ -18920,18 +18935,18 @@ def virtual_bill(ds):
             'has_finished': "false"},
         'status_code': 303,
         'regexes': [
-            r"/dc_contracts/22"
+            r"/dc_contracts/18"
         ]
     },
     {
         'name': "View NHH DC contract",
-        'path': '/dc_contracts/22',
+        'path': '/dc_contracts/18',
         'status_code': 200
     },
 
     {
         'name': "NHH DC contract error on updating",
-        'path': '/dc_contracts/22/edit',
+        'path': '/dc_contracts/18/edit',
         'method': 'post',
         'status_code': 400,
         'regexes': [
@@ -18941,17 +18956,10 @@ def virtual_bill(ds):
 
     {
         'name': "Malformed scenario properties",
-        'path': '/supplier_contracts/17/edit',
+        'path': '/scenarios/1/edit',
         'method': 'post',
         'data': {
-            'party_id': "117",  # COOP
             'name': "scenario_bau",
-            'start_year': "2000",
-            'start_month': "01",
-            'start_day': "03",
-            'start_hour': "00",
-            'start_minute': "00",
-            'charge_script': "",
             'properties': """
 {
   "local_rates": {},
@@ -18959,14 +18967,14 @@ def virtual_bill(ds):
   "scenario_start_month": 6,
   "scenario_duration": 1}""", },
         'regexes': [
-            r"/supplier_contracts/17"
+            r"/scenarios/1"
         ],
         'status_code': 303
     },
 
     {
         'name': "Malformed scenario properties",
-        'path': '/reports/247?site_id=1&scenario_id=17&compression=False',
+        'path': '/reports/247?site_id=1&scenario_id=1&compression=False',
         'status_code': 303
     },
     {
@@ -19543,17 +19551,21 @@ def virtual_bill(ds):
             'start_day': "01",
             'start_hour': "00",
             'start_minute': "00",
-            'insert': "Insert"},
+            'insert': "Insert"
+        },
         'regexes': [
-            r"/dc_rate_scripts/56"],
-        'status_code': 303},
+            r"/dc_rate_scripts/52"
+        ],
+        'status_code': 303
+    },
 
     {
         'name': "Stark MOP bill parser for activities",
         'path': '/mop_bill_imports',
         'method': 'post',
         'data': {
-            'mop_batch_id': "14"},
+            'mop_batch_id': "14"
+        },
         'files': {
             'import_file': 'test/electricity/bills.activity.mop.stark.xlsx'
         },
@@ -19636,17 +19648,10 @@ def virtual_bill(ds):
 
     {
         'name': "Scenario with new generation",
-        'path': '/supplier_contracts/19/edit',
+        'path': '/scenarios/3/edit',
         'method': 'post',
         'data': {
-            'party_id': "117",  # COOP
             'name': "scenario_used",
-            'start_year': "2000",
-            'start_month': "01",
-            'start_day': "03",
-            'start_hour': "00",
-            'start_minute': "00",
-            'charge_script': "",
             'properties': """
 {
   "scenario_start_year": 2009,
@@ -19676,12 +19681,14 @@ def virtual_bill(ds):
 }
 """},
         'regexes': [
-            r"/supplier_contracts/19"],
-        'status_code': 303},
+            r"/scenarios/3"
+        ],
+        'status_code': 303
+    },
 
     {
         'name': "Scenario with new generation",
-        'path': '/reports/247?site_id=4&scenario_id=19&compression=False',
+        'path': '/reports/247?site_id=4&scenario_id=3&compression=False',
         'status_code': 303
     },
     {

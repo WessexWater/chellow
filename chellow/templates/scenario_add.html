@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+
+{% block title %}
+	&raquo; Scenarios &raquo; Add
+{% endblock %}
+
+{% block nav %}
+	<a href="/scenarios">Scenarios</a> &raquo; Add
+{% endblock %}
+
+{% block content %}
+	<div class="layer-section">
+		<div class="section-header">
+			<h2>Add a scenario</h2>	
+		</div>
+		<div class="section-content">
+			<div class="section-data">
+				<div class="standardForm">
+					<form action="/scenarios/add" method="post">
+						<fieldset>
+							<label>Name</label> {{input_text('name')}}
+							<br>
+							<label>Properties</label>
+							<br>
+							{{input_textarea('properties', initial_props, 20, 80)}}
+							<br>
+							<input type="submit" value="Add">
+						</fieldset>	
+					</form>
+				</div>
+			</div>
+		</div>
+	</div>
+{% endblock %}

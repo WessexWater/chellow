@@ -3039,6 +3039,58 @@ class SiteGroup():
                 resolve_2_finish)
 
 
+class Scenario(Base, PersistentClass):
+
+    @staticmethod
+    def find_by_name(sess, name):
+        return sess.query(Scenario).filter(Scenario.name == name).first()
+
+    @staticmethod
+    def get_by_name(sess, name):
+        scenario = Scenario.find_by_name(sess, name)
+        if scenario is None:
+            raise NotFound(
+                "There isn't a scenario with the name '" + name + "'.")
+        return scenario
+
+    @staticmethod
+    def insert(sess, name, properties):
+        scenario = Scenario(name, properties)
+        sess.add(scenario)
+        return scenario
+
+    __tablename__ = 'scenario'
+    id = Column(Integer, primary_key=True)
+    name = Column(String, unique=True, nullable=False)
+    properties = Column(Text, nullable=False)
+
+    def __init__(self, name, properties):
+        self.update(name, properties)
+
+    def update(self, name, properties):
+        name = name.strip()
+        if len(name) == 0:
+            raise BadRequest("The scenario name can't be blank.")
+        self.name = name
+        self.properties = dumps(properties)
+        for required in (
+                'scenario_start_year', 'scenario_start_month',
+                'scenario_duration'):
+            if required not in self.properties:
+                raise BadRequest(
+                    "The field '" + required + "' is required in the "
+                    "scenario properties")
+
+    def delete(self, sess):
+        sess.delete(self)
+
+    @property
+    def props(self):
+        if not hasattr(self, '_props'):
+            self._props = loads(self.properties)
+        return self._props
+
+
 class GRegisterRead(Base, PersistentClass):
     __tablename__ = 'g_register_read'
     id = Column('id', Integer, primary_key=True)

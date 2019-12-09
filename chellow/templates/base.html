@@ -180,11 +180,11 @@
 																<span class="topbarmain-title">
 																	<input
 																			type="text" class="input-text"
-																			name="pattern" value="Search Sites..."
-																			onBlur="if( this.value == '' ) this.value = 'Search Sites...'" onFocus="if( this.value == 'Search Sites...' ) this.value = '';"
+																			name="pattern"
+                                      placeholder="Search Sites..."
 																	>
 																</span>
-																<span class="topbarmain-arrow"><button type="submit" class="btn" onClick="removePlaceHolder()"><i class="fa fa-search" aria-hidden="true"></i></button></span>
+																<span class="topbarmain-arrow"><button type="submit" class="btn">&#x1F50D;</button></span>
 															</fieldset>
 														</form>
 													</div>
@@ -198,15 +198,12 @@
 														<form action="/supplies">
 															<fieldset>
 																<span class="topbarmain-title">
-																	<input type="text" class="input-text" name="search_pattern" value="Search Supplies..." onBlur="if( this.value == '' ) this.value = 'Search Supplies...';" onFocus="if( this.value == 'Search Supplies...' ) this.value = '';">
+																	<input type="text" class="input-text" name="search_pattern" placeholder="Search Supplies...">
 																</span>
 																<span class="topbarmain-arrow">
 																	<button
-																			type="submit" class="btn"
-																			onClick="removePlaceHolder()">
-																		<i
-																			class="fa fa-search" aria-hidden="true">
-																		</i>
+																			type="submit" class="btn" >
+                                      &#x1F50D;
 																	</button>
 																</span>
 															</fieldset>
@@ -252,6 +249,9 @@
 												<li><a href="/reports/ecoes_comparison" title="Comparison against ECOES">Comparison against ECOES</a></li>
 												<li><a href="/local_reports" title="Edit Local Reports">Edit Local Reports</a></li>
 												<li><a href="/site_snags" title="Site Snags">Site Snags</a></li>
+												<li>
+                          <a href="/scenarios" title="Scenarios">Scenarios</a>
+                        </li>
 												<li><a href="https://github.com/WessexWater/chellow" title="Docs">Docs</a></li> 
 											</ul>
 										</nav>

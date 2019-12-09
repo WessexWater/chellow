@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block title %}
+	&raquo; Scenarios &raquo; {{scenario.name}}
+{% endblock %}
+
+{% block nav %}
+	<a href="/scenarios">Scenarios</a> &raquo; {{scenario.name}} 
+ 	[<a href="/scenarios/{{scenario.id}}/edit">edit</a>]
+{% endblock %}
+
+{% block content %}
+	<div class="layer-section">
+		<div class="section-header">
+			<h2>Scenario</h2>	
+		</div>
+		<div class="section-content">
+			<div class="section-data">
+				<table class="DataTable widthAuto noMarginBottom">
+					<tbody>
+						<tr>
+							<th>Name</th>
+							<td>{{scenario.name }}</td>
+						</tr>
+						<tr>
+							<th>Run</th>
+							<td>
+								<a href="/reports/247?scenario_id={{scenario.id}}">Run</a>
+							</td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+		</div>
+	</div>
+
+	<div class="layer-section">
+		<div class="section-header">
+			<h2>Properties</h2>	
+		</div>
+		<div class="section-content">
+			<div class="section-data">
+			<pre>{{scenario.properties}}</pre>
+			</div>
+		</div>
+	</div>
+{% endblock %}
