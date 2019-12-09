@@ -1,7 +1,7 @@
 from decimal import Decimal
 import decimal
 from datetime import datetime as Datetime
-from chellow.utils import parse_mpan_core, to_utc
+from chellow.utils import parse_mpan_core, to_utc, to_ct
 from xlrd import xldate_as_tuple, open_workbook
 from werkzeug.exceptions import BadRequest
 from chellow.models import Session, Era
@@ -11,7 +11,7 @@ from sqlalchemy import or_, null
 def get_date(row, name, datemode):
     val = get_value(row, name)
     if isinstance(val, float):
-        return to_utc(Datetime(*xldate_as_tuple(val, datemode)))
+        return to_utc(to_ct(Datetime(*xldate_as_tuple(val, datemode))))
 
     raise BadRequest("Can't find a date.")
 

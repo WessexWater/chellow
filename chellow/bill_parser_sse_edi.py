@@ -1,10 +1,10 @@
 from decimal import Decimal
-from dateutil.relativedelta import relativedelta
 from collections import defaultdict
-from chellow.edi_lib import EdiParser, to_date, to_decimal
-from chellow.utils import HH
+from chellow.edi_lib import EdiParser, to_decimal
+from chellow.utils import to_ct, to_utc, ct_datetime
 from werkzeug.exceptions import BadRequest
 from io import StringIO
+from datetime import datetime as Datetime
 
 
 read_type_map = {
@@ -131,6 +131,19 @@ tmod_map = {
     'MDM2': 'kVA'}
 
 
+def to_ct_date(component):
+    return to_ct(Datetime.strptime(component, "%y%m%d"))
+
+
+def to_start_date(component):
+    return to_utc(to_ct_date(component))
+
+
+def to_finish_date(component):
+    d = to_ct_date(component)
+    return to_utc(ct_datetime(d.year, d.month, d.day, 23, 30))
+
+
 class Parser():
     def __init__(self, f):
         self.parser = EdiParser(
@@ -143,7 +156,7 @@ class Parser():
         for self.line_number, code in enumerate(self.parser):
             if code == "BCD":
                 ivdt = self.parser.elements[0]
-                issue_date = to_date(ivdt[0])
+                issue_date = to_utc(to_ct_date(ivdt[0]))
 
                 invn = self.parser.elements[2]
                 reference = invn[0]
@@ -153,8 +166,8 @@ class Parser():
                 bill_type_code = btcd[0]
 
                 sumo = self.parser.elements[7]
-                start_date = to_date(sumo[0])
-                finish_date = to_date(sumo[1]) + relativedelta(days=1) - HH
+                start_date = to_start_date(sumo[0])
+                finish_date = to_finish_date(sumo[1])
 
             elif code == "MHD":
                 type = self.parser.elements[1]
@@ -181,11 +194,8 @@ class Parser():
                     prdt = self.parser.elements[6]
                     pvdt = self.parser.elements[7]
 
-                    pres_read_date = to_date(prdt[0]) + relativedelta(
-                        days=1) - HH
-
-                    prev_read_date = to_date(pvdt[0]) + relativedelta(
-                        days=1) - HH
+                    pres_read_date = to_finish_date(prdt[0])
+                    prev_read_date = to_finish_date(pvdt[0])
 
                     tmod = self.parser.elements[3]
                     mtnr = self.parser.elements[4]
@@ -248,10 +258,8 @@ class Parser():
                     prdt = self.parser.elements[6]
                     pvdt = self.parser.elements[7]
 
-                    pres_read_date = to_date(prdt[0]) + relativedelta(
-                        days=1) - HH
-                    prev_read_date = to_date(pvdt[0]) + relativedelta(
-                        days=1) - HH
+                    pres_read_date = to_finish_date(prdt[0])
+                    prev_read_date = to_finish_date(pvdt[0])
 
                     ndrp = self.parser.elements[8]
                     prrd = self.parser.elements[9]

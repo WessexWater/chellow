@@ -4731,11 +4731,14 @@ def virtual_bill(ds):
         'path': '/supplier_bill_imports',
         'method': 'post',
         'data': {
-            'supplier_batch_id': "5"},
+            'supplier_batch_id': "5"
+        },
         'files': {'import_file': 'test/bills.sse.edi'},
         'status_code': 303,
         'regexes': [
-            r"/supplier_bill_imports/3"]},
+            r"/supplier_bill_imports/3"
+        ]
+    },
 
     # Supplier contract 42.
     {
@@ -4758,15 +4761,20 @@ def virtual_bill(ds):
             r"<th>Breakdown</th>",
             r"<td>3423760005</td>\s*<td>SA342376000</td>\s*<td>N</td>\s*"
             r'<td>2210653921534</td>\s*'
-            r"<td>2010-05-12 00:00</td>\s*<td>2010-01-19 00:00</td>\s*"
-            r"<td>2010-04-20 23:30</td>\s*<td>253</td>\s*<td>36.16</td>\s*"
-            r"<td>1.80</td>\s*<td>37.96</td>\s*"
+            r'<td>2010-05-11 23:00</td>\s*'
+            r'<td>2010-01-19 00:00</td>\s*'
+            r'<td>2010-04-20 22:30</td>\s*'
+            r'<td>253</td>\s*'
+            r'<td>36.16</td>\s*'
+            r'<td>1.80</td>\s*'
+            r'<td>37.96</td>\s*'
             r"<td>03 801 110 22 1065 3921 534</td>\s*<td>K87D74429</td>\s*"
             r"<td>1</td>\s*<td>kWh</td>\s*<td>00001</td>\s*"
             r"<td>2010-01-18 23:30</td>\s*<td>16963</td>\s*<td>E</td>\s*"
-            r"<td>2010-04-20 23:30</td>\s*<td>17216</td>\s*<td>E</td>",
+            r"<td>2010-04-20 22:30</td>\s*<td>17216</td>\s*<td>E</td>",
             r"All the bills have been successfully loaded and attached to the "
-            r"batch\."],
+            r"batch\."
+        ],
 
         'status_code': 200},
 
@@ -4779,8 +4787,10 @@ def virtual_bill(ds):
         'path': '/downloads',
         'tries': {'max': 40, 'period': 1},
         'regexes': [
-            r"00014_FINISHED_watkinsexamplecom_bill_check\.csv"],
-        'status_code': 200},
+            r"00014_FINISHED_watkinsexamplecom_bill_check\.csv"
+        ],
+        'status_code': 200
+    },
     {
         'path': '/downloads/00014_FINISHED_watkinsexamplecom_bill_check.csv',
         'regexes': [
@@ -4791,8 +4801,8 @@ def virtual_bill(ds):
             r'difference-net-gbp,covered-sum-msp-kwh,virtual-sum-msp-kwh,'
             r'covered-problem,virtual-problem',
             r'07-008,3423760005,N,253,36.16,1.80,'
-            r'2010-01-19 00:00,2010-04-20 23:30,22 1065 3921 534,,'
-            r'CI017,Roselands,2010-01-19 00:00,2010-04-20 23:30,10,'
+            r'2010-01-19 00:00,2010-04-20 22:30,22 1065 3921 534,,'
+            r'CI017,Roselands,2010-01-19 00:00,2010-04-20 22:30,10,'
             r'0,36.16,0,36.16,253.0,252.99999\d*,,'
         ],
         'status_code': 200
@@ -6022,7 +6032,10 @@ def virtual_bill(ds):
         'path': '/supplier_batches/5',
         'status_code': 200,
         'regexes': [
-            r"<td>2010-01-19 00:00</td>\s*<td>2010-04-20 23:30</td>"]},
+            r'<td>2010-01-19 00:00</td>\s*'
+            r'<td>2010-04-20 22:30</td>'
+        ]
+    },
     {
         'name': "Test supply era update for a supply with 2 mpans.",
         'path': '/general_imports',
@@ -9328,9 +9341,8 @@ def virtual_bill(ds):
         'regexes': [
             r'06-002,23618619,N,0,49119.00,8596.00,2007-06-30 00:00,'
             r'2007-07-31 00:00,22 9974 3438 105,,CI005,Wheal Rodney,'
-            r'2007-06-30 00:00,2007-07-31 00:00,6,3750.51881\d*,'
-            r',,,,,,0.0,49119.0,0,'
-            r'49119.0,8596.0,,8596.0,,,0.0,0.0,4.765\d*,,'
+            r'2007-06-30 00:00,2007-07-31 00:00,6,3745.484563\d*,'
+            r',,,,,,0.0,49119.0,0,49119.0,8596.0,,8596.0,,,0.0,0.0,4.765\d*,,'
         ]
     },
     {
@@ -10076,54 +10088,7 @@ def virtual_bill(ds):
             r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="0" office:value-type="float" '
             r'table:number-columns-repeated="3"/>\s*'
-            r'</table:table-row>\s*',
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+            r'</table:table-row>\s*'
             r'<table:table-row>\s*'
             r'<table:table-cell '
             r'office:date-value="\d\d\d\d-\d\d-\d\dT\d\d:\d\d:\d\d" '
@@ -10142,17 +10107,17 @@ def virtual_bill(ds):
             r'office:value-type="string"/>\s*'
             r'<table:table-cell office:string-value="chp" '
             r'office:value-type="string"/>\s*'
-            r'<table:table-cell office:value="3506.1935483872066" '
+            r'<table:table-cell office:value="3501.48724\d*" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="2.0" office:value-type="float" '
             r'table:number-columns-repeated="2"/>\s*'
             r'<table:table-cell office:value="0" office:value-type="float" '
             r'table:number-columns-repeated="4"/>\s*'
-            r'<table:table-cell office:value="3506.193548387\d*" '
+            r'<table:table-cell office:value="3501.487248\d*" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="0" '
             r'office:value-type="float"/>\s*'
-            r'<table:table-cell office:value="398.322313\d*" '
+            r'<table:table-cell office:value="398.3015\d*" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="116.22599\d*" '
             r'office:value-type="float"/>\s*'
@@ -10160,7 +10125,7 @@ def virtual_bill(ds):
             r'table:number-columns-repeated="4"/>\s*'
             r'<table:table-cell office:value="0.0" '
             r'office:value-type="float"/>\s*'
-            r'<table:table-cell office:value="398.32231\d*" '
+            r'<table:table-cell office:value="398.30155\d*" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="0" office:value-type="float" '
             r'table:number-columns-repeated="3"/>\s*'

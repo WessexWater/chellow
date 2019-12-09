@@ -1,19 +1,25 @@
-from decimal import Decimal
-import decimal
-from datetime import datetime as Datetime, timedelta as Timedelta
-from chellow.utils import parse_mpan_core, to_utc, HH
+from decimal import Decimal, InvalidOperation
+from chellow.utils import parse_mpan_core, to_utc, ct_datetime
 from xlrd import xldate_as_tuple, open_workbook
 from werkzeug.exceptions import BadRequest
 from chellow.models import Session, Era
 from sqlalchemy import or_, null
+from datetime import datetime as Datetime
 
 
-def get_date(row, name, datemode):
+def get_date_ct(row, name, datemode):
     val = get_value(row, name)
     if isinstance(val, float):
         return to_utc(Datetime(*xldate_as_tuple(val, datemode)))
-    else:
-        return None
+
+
+def get_start_date(row, name, datemode):
+    return to_utc(get_date_ct(row, name, datemode))
+
+
+def get_finish_date(row, name, datemode):
+    d = get_date_ct(row, name, datemode)
+    return to_utc(ct_datetime(d.year, d.month, d.day, 23, 30))
 
 
 def get_value(row, idx):
@@ -32,7 +38,7 @@ def get_str(row, idx):
 def get_dec(row, idx):
     try:
         return Decimal(str(get_value(row, idx)))
-    except decimal.InvalidOperation:
+    except InvalidOperation:
         return None
 
 
@@ -66,7 +72,8 @@ class Parser():
             sess = Session()
             bills = []
             title_row = self.sheet.row(10)
-            issue_date = get_date(self.sheet.row(5), 2, self.book.datemode)
+            issue_date = get_start_date(
+                self.sheet.row(5), 2, self.book.datemode)
             if issue_date is None:
                 raise BadRequest("Expected to find the issue date at cell C6.")
 
@@ -86,9 +93,9 @@ class Parser():
                 else:
                     settlement_status = 'non_settlement'
 
-                start_date = get_date(row, 5, self.book.datemode)
-                finish_date = get_date(row, 6, self.book.datemode) + Timedelta(
-                    days=1) - HH
+                start_date = get_start_date(row, 5, self.book.datemode)
+                finish_date = get_finish_date(row, 6, self.book.datemode)
+
                 meter_rate = get_dec(row, 7)
                 net = round(get_dec(row, 8), 2)
                 vat = round(get_dec(row, 9), 2)

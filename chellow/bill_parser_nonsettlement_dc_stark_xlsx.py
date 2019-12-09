@@ -1,19 +1,26 @@
 from decimal import Decimal
 import decimal
-from datetime import datetime as Datetime, timedelta as Timedelta
-from chellow.utils import parse_mpan_core, to_utc, HH
+from datetime import datetime as Datetime
+from chellow.utils import parse_mpan_core, to_utc, to_ct, ct_datetime
 from xlrd import xldate_as_tuple, open_workbook
 from werkzeug.exceptions import BadRequest
 from sqlalchemy import or_, null
 from chellow.models import Session, Era
 
 
-def get_date(title_row, row, name, datemode):
+def get_ct_date(title_row, row, name, datemode):
     val = get_value(title_row, row, name)
     if isinstance(val, float):
-        return to_utc(Datetime(*xldate_as_tuple(val, datemode)))
-    else:
-        return None
+        return to_ct(Datetime(*xldate_as_tuple(val, datemode)))
+
+
+def get_start_date(title_row, row, name, datemode):
+    return to_utc(get_ct_date(title_row, row, name, datemode))
+
+
+def get_finish_date(title_row, row, name, datemode):
+    d = get_ct_date(title_row, row, name, datemode)
+    return to_utc(ct_datetime(d.year, d.month, d.day, 23, 30))
 
 
 def get_value(title_row, row, name):
@@ -90,12 +97,11 @@ class Parser():
                 msn = str(get_value(title_row, row, 'meter')).strip()
                 mpan_core = parse_mpan_core(
                     str(get_int(title_row, row, 'mpan ref')))
-                start_date = get_date(
+                start_date = get_start_date(
                     title_row, row, 'start', self.book.datemode)
                 issue_date = start_date
-                finish_date = get_date(
-                    title_row, row, 'end', self.book.datemode) + Timedelta(
-                        days=1) - HH
+                finish_date = get_finish_date(
+                    title_row, row, 'end', self.book.datemode)
                 check = get_str(title_row, row, 'check')
                 if check != 'Billed':
                     continue

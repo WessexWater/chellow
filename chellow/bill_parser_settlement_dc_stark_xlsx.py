@@ -1,19 +1,21 @@
 from decimal import Decimal
 import decimal
-from datetime import datetime as Datetime, timedelta as Timedelta
-from chellow.utils import parse_mpan_core, to_utc, hh_format, HH
+from datetime import datetime as Datetime
+from chellow.utils import parse_mpan_core, to_utc, hh_format, to_ct
 from xlrd import xldate_as_tuple, open_workbook
 from werkzeug.exceptions import BadRequest
 from sqlalchemy import or_, null
 from chellow.models import Session, Era
 
 
-def get_date(row, name, datemode):
+def get_ct_date(row, name, datemode):
     val = get_value(row, name)
     if isinstance(val, float):
-        return to_utc(Datetime(*xldate_as_tuple(val, datemode)))
-    else:
-        return None
+        return to_ct(Datetime(*xldate_as_tuple(val, datemode)))
+
+
+def get_start_date(row, name, datemode):
+    return to_utc(get_ct_date(row, name, datemode))
 
 
 def get_value(row, idx):
@@ -78,9 +80,8 @@ class Parser():
 
                 self._set_last_line(row_index, val)
                 mpan_core = parse_mpan_core(str(get_int(row, 1)))
-                start_date = get_date(row, 3, self.book.datemode)
-                finish_date = get_date(row, 4, self.book.datemode) + \
-                    Timedelta(days=1) - HH
+                start_date = get_start_date(row, 3, self.book.datemode)
+                finish_date = get_start_date(row, 4, self.book.datemode)
 
                 era = sess.query(Era).filter(
                     or_(
@@ -119,7 +120,8 @@ class Parser():
                 annual_visits = get_int(row, 27)
                 annual_rate = get_dec(row, 28)
                 annual_gbp = get_dec(row, 29)
-                annual_date = hh_format(get_date(row, 30, self.book.datemode))
+                annual_date = hh_format(
+                    get_start_date(row, 30, self.book.datemode))
 
                 if cop_3_meters > 0:
                     cop = '3'
