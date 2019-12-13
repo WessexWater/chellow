@@ -369,6 +369,7 @@ class DataSource():
     def __init__(
             self, sess, start_date, finish_date, forecast_date, caches,
             era_maps, deltas=None):
+        self.full_channels = True
         self.sess = sess
         self.caches = caches
         self.forecast_date = forecast_date
@@ -1035,6 +1036,7 @@ class SupplySource(DataSource):
                 if has_exp_active and not has_exp_related_reactive \
                         and has_imp_related_reactive:
                     #  old style
+                    self.full_channels = False
                     data = iter(sess.execute("""
 select sum(cast(coalesce(kwh.value, 0) as double precision)),
     sum(cast(coalesce(anti_kwh.value, 0) as double precision)),
@@ -1075,10 +1077,6 @@ order by hh_datum.start_date
                     for hh_date in hh_range(
                             self.caches, chunk_start, chunk_finish):
                         if hh_date == hist_start:
-                            if not (msp_kwh > 0 and anti_msp_kwh == 0):
-                                imp_kvarh = 0
-                                exp_kvarh = 0
-
                             hist_map[hh_date] = {
                                 'status': status,
                                 'imp-msp-kvarh': imp_kvarh,
