@@ -72,6 +72,21 @@ def req_date(prefix, resolution='minute'):
             req_int(prefix + '_day'))
 
 
+def req_date_ct(prefix, resolution='minute'):
+    year = req_int(prefix + '_year')
+    month = req_int(prefix + '_month')
+    day = req_int(prefix + '_day')
+
+    if resolution == 'day':
+        d = ct_datetime(year, month, day)
+    elif resolution == 'minute':
+        hour = req_int(prefix + '_hour')
+        minute = req_int(prefix + '_minute')
+        d = ct_datetime(year, month, day, hour, minute)
+
+    return to_utc(d)
+
+
 def req_decimal(name):
     try:
         return Decimal(req_str(name))
@@ -173,6 +188,21 @@ def parse_bool(bool_str):
 
 def hh_format(dt, ongoing_str='ongoing'):
     return ongoing_str if dt is None else dt.strftime("%Y-%m-%d %H:%M")
+
+
+def hh_format_ct(dt, ongoing_str='ongoing'):
+    if dt is None:
+        return ongoing_str, ongoing_str
+    else:
+        d = to_ct(dt)
+        dc = ct_datetime(d.year, d.month, d.day)
+        du = to_utc(dc)
+        hh = 0
+        while dc.day == d.day and du <= dt:
+            hh += 1
+            du += HH
+            dc = to_ct(du)
+        return d.strftime("%Y-%m-%d %H:%M"), hh
 
 
 CHANNEL_TYPES = 'ACTIVE', 'REACTIVE_IMP', 'REACTIVE_EXP'
