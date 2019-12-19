@@ -20,7 +20,7 @@ from chellow.utils import (
     HH, req_str, req_int, req_date, parse_mpan_core, req_bool, req_hh_date,
     hh_after, req_decimal, send_response, hh_min, hh_max, hh_format, hh_range,
     utc_datetime, utc_datetime_now, req_zish, get_file_scripts, to_utc,
-    csv_make_val, PropDict)
+    csv_make_val, PropDict, to_ct, c_months_u, ct_datetime_now)
 from werkzeug.exceptions import BadRequest, NotFound
 import chellow.general_import
 import io
@@ -127,12 +127,20 @@ TEMPLATE_FORMATS = {
 
 @app.template_filter('hh_format')
 def hh_format_filter(dt, modifier='full'):
-    return "Ongoing" if dt is None else dt.strftime(TEMPLATE_FORMATS[modifier])
+    if dt is None:
+        return "Ongoing"
+    else:
+        return to_ct(dt).strftime(TEMPLATE_FORMATS[modifier])
 
 
 @app.template_filter('now_if_none')
 def now_if_none(dt):
-    return Datetime.utcnow() if dt is None else dt
+    return utc_datetime_now() if dt is None else dt
+
+
+@app.template_filter('to_ct')
+def to_ct_filter(dt):
+    return to_ct(dt)
 
 
 @app.template_filter('dumps')
@@ -2788,8 +2796,8 @@ def site_hh_data_get(site_id):
 
     year = req_int('year')
     month = req_int('month')
-    start_date = utc_datetime(year, month)
-    finish_date = start_date + relativedelta(months=1) - HH
+    start_date, finish_date = next(
+        c_months_u(start_year=year, start_month=month, months=1))
 
     supplies = g.sess.query(Supply).join(Era).join(SiteEra).join(Source). \
         filter(
@@ -5075,15 +5083,15 @@ def site_gen_graph_get(site_id):
         finish_month = req_int("finish_month")
         months = req_int("months")
     else:
-        now = Datetime.utcnow()
+        now = ct_datetime_now()
         finish_year = now.year
         finish_month = now.month
         months = 1
 
-    finish_date = utc_datetime(finish_year, finish_month) + \
-        relativedelta(months=1) - HH
-    start_date = utc_datetime(finish_year, finish_month) - \
-        relativedelta(months=months-1)
+    month_list = list(
+        c_months_u(
+            finish_year=finish_year, finish_month=finish_month, months=months))
+    start_date, finish_date = month_list[0][0], month_list[-1][-1]
 
     site = Site.get_by_id(g.sess, site_id)
 
@@ -5124,20 +5132,22 @@ def site_gen_graph_get(site_id):
             rs, (None, None, None, None, None, None, None))
 
     for hh_date in hh_range(cache, start_date, finish_date):
+        hh_date_ct = to_ct(hh_date)
         rvals = dict((n, {'pos': 0, 'neg': 0}) for n in graph_names)
 
-        if hh_date.hour == 0 and hh_date.minute == 0:
-            day = hh_date.day
+        if hh_date_ct.hour == 0 and hh_date_ct.minute == 0:
+            day = hh_date_ct.day
             days.append(
                 {
                     'text': str(day), 'x': x + 20,
-                    'colour': 'red' if hh_date.weekday() > 4 else 'black'})
+                    'colour': 'red' if hh_date_ct.weekday() > 4 else 'black'})
 
             for g_name, graph in graphs.items():
                 graph['ticks'].append({'x': x})
 
             if day == 15:
-                month_points.append({'x': x, 'text': hh_date.strftime("%B")})
+                month_points.append(
+                    {'x': x, 'text': hh_date_ct.strftime("%B")})
 
         while hhd_start_date == hh_date:
             to_adds = []
@@ -5276,7 +5286,7 @@ def site_gen_graph_get(site_id):
     title = {
         'text': "Electricity at site " + site.code + " " + site.name +
         " for " + str(months) + " month" + ('s' if months > 1 else '') +
-        " up to and including " + (finish_date - HH).strftime("%B %Y"),
+        " up to and including " + (to_ct(finish_date) - HH).strftime("%B %Y"),
         'x': 30, 'y': 20}
 
     return render_template(

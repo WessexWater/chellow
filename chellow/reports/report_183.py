@@ -4,7 +4,8 @@ from sqlalchemy.sql.expression import true, null
 from sqlalchemy import or_
 from sqlalchemy.orm import joinedload
 from chellow.models import Site, SiteEra, Era, Session, Supply
-from chellow.utils import hh_format, req_date, req_int, HH
+from chellow.utils import (
+    hh_format, req_date, req_int, to_utc, ct_datetime, to_ct)
 from flask import request, g
 import chellow.dloads
 import sys
@@ -13,7 +14,6 @@ import csv
 from chellow.views import chellow_redirect
 import threading
 from io import StringIO
-from dateutil.relativedelta import relativedelta
 
 
 def none_content(site_id, start_date, finish_date, user, file_name):
@@ -37,7 +37,7 @@ def none_content(site_id, start_date, finish_date, user, file_name):
                 [
                     "Site Code", "Site Name", "Associated Site Codes",
                     "Sources", "Generator Types", "From", "To", "Type",
-                    "Date"] + list(map(str, range(1, 49))))
+                    "Date"] + list(map(str, range(1, 51))))
             associates = ' '.join(
                 s.code for s in site.find_linked_sites(
                     sess, start_date, finish_date))
@@ -58,14 +58,14 @@ def none_content(site_id, start_date, finish_date, user, file_name):
             gen_types_str = ', '.join(sorted(gen_types))
             row = None
             for hh in site.hh_data(sess, start_date, finish_date):
-                hh_start = hh['start_date']
-                if hh_start.hour == 0 and hh_start.minute == 0:
+                ct_start_date = to_ct(hh['start_date'])
+                if ct_start_date.hour == 0 and ct_start_date.minute == 0:
                     if row is not None:
                         writer.writerow(row)
                     row = [
                         site.code, site.name, associates, source_codes_str,
                         gen_types_str, start_date_str, finish_date_str,
-                        'used', hh_start.strftime('%Y-%m-%d')]
+                        'used', ct_start_date.strftime('%Y-%m-%d')]
                 used_gen_kwh = hh['imp_gen'] - hh['exp_net'] - hh['exp_gen']
                 used_3p_kwh = hh['imp_3p'] - hh['exp_3p']
                 used_kwh = hh['imp_net'] + used_gen_kwh + used_3p_kwh
@@ -109,7 +109,7 @@ def site_content(site_id, start_date, finish_date, user, file_name):
                 [
                     "Site Code", "Site Name", "Associated Site Codes",
                     "Sources", "Generator Types", "From", "To", "Type",
-                    "Date"] + list(map(str, range(1, 49))))
+                    "Date"] + list(map(str, range(1, 51))))
             associates = ' '.join(
                 s.code for s in site.find_linked_sites(
                     sess, start_date, finish_date))
@@ -130,14 +130,14 @@ def site_content(site_id, start_date, finish_date, user, file_name):
             gen_types_str = ', '.join(sorted(gen_types))
             vals = None
             for hh in site.hh_data(sess, start_date, finish_date):
-                hh_start = hh['start_date']
-                if hh_start.hour == 0 and hh_start.minute == 0:
+                hh_start_ct = to_ct(hh['start_date'])
+                if hh_start_ct.hour == 0 and hh_start_ct.minute == 0:
                     if vals is not None:
                         writer.writerow(vals)
                     vals = [
                         site.code, site.name, associates, source_codes_str,
                         gen_types_str, start_date_str, finish_date_str, 'used',
-                        hh_start.strftime('%Y-%m-%d')]
+                        hh_start_ct.strftime('%Y-%m-%d')]
                 used_gen_kwh = hh['imp_gen'] - hh['exp_net'] - hh['exp_gen']
                 used_3p_kwh = hh['imp_3p'] - hh['exp_3p']
                 used_kwh = hh['imp_net'] + used_gen_kwh + used_3p_kwh
@@ -158,17 +158,20 @@ def site_content(site_id, start_date, finish_date, user, file_name):
 
 def do_get(sess):
     start_date = req_date('start', 'day')
-    finish_date = req_date('finish', 'day')
-    finish_date = finish_date + relativedelta(days=1) - HH
+    finish_year = req_int('finish_year')
+    finish_month = req_int('finish_month')
+    finish_day = req_int('finish_day')
+    finish_date_ct = ct_datetime(finish_year, finish_month, finish_day, 23, 30)
+    finish_date = to_utc(finish_date_ct)
 
+    finish_date_str = finish_date_ct.strftime('%Y%m%d%H%M')
     if 'site_id' in request.values:
         site_id = req_int('site_id')
-        file_name = "sites_hh_data_" + str(site_id) + "_" + \
-            finish_date.strftime('%Y%m%d%H%M') + ".csv"
+        file_name = "sites_hh_data_" + str(site_id) + "_" + finish_date_str + \
+            ".csv"
     else:
         site_id = None
-        file_name = "supplies_hh_data_" + \
-            finish_date.strftime('%Y%m%d%H%M') + ".zip"
+        file_name = "supplies_hh_data_" + finish_date_str + ".zip"
 
     content = none_content if site_id is None else site_content
     args = (site_id, start_date, finish_date, g.user, file_name)

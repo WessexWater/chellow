@@ -13,7 +13,7 @@
     {% set minute_field = 'minute' %}
   {% endif %}
 
-  {% set initial = initial|now_if_none %}
+  {% set initial = initial|now_if_none|to_ct %}
 
   <input name="{{ year_field }}" maxlength="4" size="4" value="
     {%- if request.values[year_field] -%}

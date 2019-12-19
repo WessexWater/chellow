@@ -5,7 +5,7 @@ import traceback
 from chellow.models import Session, Contract, Era
 import chellow.computer
 from chellow.utils import (
-    HH, hh_min, hh_max, hh_format, req_int, utc_datetime, MONTH, csv_make_val)
+    hh_min, hh_max, hh_format, req_int, csv_make_val, c_months_u)
 from werkzeug.exceptions import BadRequest
 import os
 from flask import g
@@ -13,7 +13,6 @@ import threading
 from chellow.views import chellow_redirect
 import csv
 import chellow.dloads
-from dateutil.relativedelta import relativedelta
 
 
 def content(contract_id, end_year, end_month, months, user):
@@ -23,9 +22,10 @@ def content(contract_id, end_year, end_month, months, user):
         sess = Session()
         contract = Contract.get_dc_by_id(sess, contract_id)
 
-        finish_date = utc_datetime(end_year, end_month, 1) + MONTH - HH
-        start_date = utc_datetime(end_year, end_month, 1) - relativedelta(
-            months=months - 1)
+        month_list = list(
+            c_months_u(
+                finish_year=end_year, finish_month=end_month, months=months))
+        start_date, finish_date = month_list[0][0], month_list[-1][-1]
 
         forecast_date = chellow.computer.forecast_date()
         running_name, finished_name = chellow.dloads.make_names(
@@ -113,9 +113,6 @@ def do_get(sess):
     months = req_int("months")
     contract_id = req_int('dc_contract_id')
 
-    user = g.user
-
-    threading.Thread(
-        target=content, args=(contract_id, end_year, end_month, months, user)
-        ).start()
+    args = contract_id, end_year, end_month, months, g.user
+    threading.Thread(target=content, args=args).start()
     return chellow_redirect("/downloads", 303)

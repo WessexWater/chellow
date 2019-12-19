@@ -1,6 +1,5 @@
 import os
 import traceback
-from dateutil.relativedelta import relativedelta
 from sqlalchemy import or_, true
 from sqlalchemy.sql.expression import null
 from sqlalchemy.orm import joinedload
@@ -15,8 +14,8 @@ import odio
 import sys
 from werkzeug.exceptions import BadRequest
 from chellow.utils import (
-    hh_format, HH, hh_max, hh_min, req_int, req_bool, make_val,
-    utc_datetime_now, utc_datetime)
+    hh_format, hh_max, hh_min, req_int, req_bool, make_val, ct_datetime_now,
+    c_months_u)
 from flask import request, g
 from chellow.views import chellow_redirect
 
@@ -34,22 +33,23 @@ def write_spreadsheet(fl, compressed, site_rows, era_rows):
 
 
 def content(
-        base_name, site_id, g_supply_id, user, compression, start_date,
+        site_id, g_supply_id, user, compression, finish_year, finish_month,
         months):
-    now = utc_datetime_now()
+    now = ct_datetime_now()
     report_context = {}
     sess = None
+    month_list = list(
+        c_months_u(
+            finish_year=finish_year, finish_month=finish_month, months=months))
+    start_date, finish_date = month_list[0][0], month_list[-1][-1]
 
     try:
         sess = Session()
-        base_name.append(
+        base_name = [
+            'g_monthly_duration',
             hh_format(start_date).replace(' ', '_').replace(':', '').
-            replace('-', ''))
-
-        base_name.append('for')
-        base_name.append(str(months))
-        base_name.append('months')
-        finish_date = start_date + relativedelta(months=months)
+            replace('-', ''), 'for', str(months), 'months'
+        ]
 
         forecast_from = chellow.computer.forecast_date()
 
@@ -103,9 +103,7 @@ def content(
         g_era_rows.append(era_header_titles + summary_titles + vb_titles)
         site_rows.append(site_header_titles + summary_titles)
 
-        month_start = start_date
-        while month_start < finish_date:
-            month_finish = month_start + relativedelta(months=1) - HH
+        for month_start, month_finish in month_list:
             for site in sites.filter(
                     GEra.start_date <= month_finish, or_(
                         GEra.finish_date == null(),
@@ -186,12 +184,15 @@ def content(
                     associated_site_ids = ','.join(sorted(g_era_associates))
                     g_era_rows.append(
                         [
-                            now, g_supply.mprn, g_supply.name,
-                            g_supply.g_exit_zone.code, g_era.msn,
-                            g_era.g_unit.code, contract.name, site.code,
-                            site.name, associated_site_ids, month_finish, kwh,
-                            gbp, billed_kwh, billed_gbp] +
-                        [make_val(bill.get(t)) for t in vb_titles])
+                            make_val(v) for v in [
+                                now, g_supply.mprn, g_supply.name,
+                                g_supply.g_exit_zone.code, g_era.msn,
+                                g_era.g_unit.code, contract.name, site.code,
+                                site.name, associated_site_ids, month_finish,
+                                kwh, gbp, billed_kwh, billed_gbp]
+                        ] +
+                        [make_val(bill.get(t)) for t in vb_titles]
+                    )
 
                     site_kwh += kwh
                     site_gbp += gbp
@@ -204,11 +205,15 @@ def content(
 
                 site_rows.append(
                     [
-                        now, site.code, site.name, linked_sites, month_finish,
-                        site_kwh, site_gbp, site_billed_kwh, site_billed_gbp])
+                        make_val(v) for v in [
+                            now, site.code, site.name, linked_sites,
+                            month_finish, site_kwh, site_gbp, site_billed_kwh,
+                            site_billed_gbp]
+                    ]
+                )
                 sess.rollback()
             write_spreadsheet(rf, compression, site_rows, g_era_rows)
-            month_start += relativedelta(months=1)
+
     except BadRequest as e:
         msg = e.description + traceback.format_exc()
         sys.stderr.write(msg + '\n')
@@ -234,13 +239,9 @@ def content(
 
 
 def do_get(sess):
-    base_name = []
-    year = req_int("finish_year")
-    month = req_int("finish_month")
+    finish_year = req_int("finish_year")
+    finish_month = req_int("finish_month")
     months = req_int("months")
-    start_date = utc_datetime(year, month, 1) - relativedelta(
-        months=months - 1)
-    base_name.append('g_monthly_duration')
 
     site_id = req_int('site_id') if 'site_id' in request.values else None
 
@@ -255,9 +256,9 @@ def do_get(sess):
         compression = True
 
     user = g.user
+    args = (
+        site_id, g_supply_id, user, compression, finish_year, finish_month,
+        months)
 
-    threading.Thread(
-        target=content, args=(
-            base_name, site_id, g_supply_id, user, compression, start_date,
-            months)).start()
+    threading.Thread(target=content, args=args).start()
     return chellow_redirect("/downloads", 303)

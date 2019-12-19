@@ -1,6 +1,6 @@
 import traceback
 from flask import request, g
-from chellow.utils import req_date, req_int, hh_format
+from chellow.utils import req_date, req_int, write_row
 from chellow.models import Site, Era, SiteEra, Source, Supply, Session
 from sqlalchemy import true, or_, null
 from sqlalchemy.orm import joinedload
@@ -23,13 +23,13 @@ def content(sess, start_date, finish_date, site_id, user):
             "site_hh_data.csv", user)
         f = open(running_name, mode='w', newline='')
         writer = csv.writer(f, lineterminator='\n')
-        writer.writerow(
-            (
-                "Site Id", "Site Name", "Associated Site Ids", "Sources",
-                "Generator Types", "HH Start UTC", "Imported kWh",
-                "Displaced kWh", "Exported kWh", "Used kWh", "Parasitic kWh",
-                "Generated kWh", "3rd Party Import", "3rd Party Export",
-                "Meter Type"))
+        write_row(
+            writer, "Site Id", "Site Name", "Associated Site Ids", "Sources",
+            "Generator Types", "HH Start Clock-Time", "Imported kWh",
+            "Displaced kWh", "Exported kWh", "Used kWh", "Parasitic kWh",
+            "Generated kWh", "3rd Party Import", "3rd Party Export",
+            "Meter Type"
+        )
 
         sites = sess.query(Site).order_by(Site.code)
         if site_id is not None:
@@ -63,14 +63,11 @@ def content(sess, start_date, finish_date, site_id, user):
             generators_str = ','.join(sorted(list(generator_types)))
 
             for hh in site.hh_data(sess, start_date, finish_date):
-                writer.writerow(
-                    (
-                        site.code, site.name, assoc_str, sources_str,
-                        generators_str, hh_format(hh['start_date']),
-                        hh['imp_net'], hh['displaced'], hh['exp_net'],
-                        hh['used'], hh['exp_gen'], hh['imp_gen'], hh['imp_3p'],
-                        hh['exp_3p'], metering_type
-                    )
+                write_row(
+                    writer, site.code, site.name, assoc_str, sources_str,
+                    generators_str, hh['start_date'], hh['imp_net'],
+                    hh['displaced'], hh['exp_net'], hh['used'], hh['exp_gen'],
+                    hh['imp_gen'], hh['imp_3p'], hh['exp_3p'], metering_type
                 )
 
     except BaseException:

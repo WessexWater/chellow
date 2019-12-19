@@ -3,7 +3,8 @@ from sqlalchemy import or_
 from sqlalchemy.sql.expression import null, true
 from chellow.models import Supply, Era, Session, Site, SiteEra
 from chellow.utils import (
-    req_date, hh_format, req_str, req_int, parse_mpan_core, req_bool, hh_range)
+    req_date, hh_format, req_str, req_int, parse_mpan_core, req_bool, hh_range,
+    to_ct)
 import zipfile
 import threading
 import os
@@ -34,10 +35,11 @@ def content(start_date, finish_date, supply_id, mpan_cores, is_zipped, user):
     else:
         file_extension = ".csv"
 
-    base_name = "hh_data_row_" + start_date.strftime("%Y%m%d%H%M") + \
+    base_name = "hh_data_row_" + to_ct(start_date).strftime("%Y%m%d%H%M") + \
         file_extension
 
-    tls = ["Site Code", "Imp MPAN Core", "Exp Mpan Core", "HH Start UTC"]
+    tls = [
+        "Site Code", "Imp MPAN Core", "Exp Mpan Core", "HH Start Clock-Time"]
     for polarity in ('Import', 'Export'):
         for suffix in (
                 "ACTIVE kWh", "ACTIVE Status", "ACTIVE Modified",

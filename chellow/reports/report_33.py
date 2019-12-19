@@ -25,29 +25,29 @@ def content(running_name, finished_name, date, supply_id, mpan_cores):
         sess = Session()
         f = open(running_name, mode='w', newline='')
         writer = csv.writer(f, lineterminator='\n')
-        writer.writerow(
-            (
-                'Date', 'Physical Site Id', 'Physical Site Name',
-                'Other Site Ids', 'Other Site Names', 'Supply Id', 'Source',
-                'Generator Type', 'GSP Group', 'DNO Name', 'Voltage Level',
-                'Metering Type', 'Mandatory HH', 'PC', 'MTC', 'CoP', 'SSC',
-                'Number Of Registers', 'MOP Contract', 'Mop Account',
-                'DC Contract', 'DC Account', 'Meter Serial Number',
-                'Meter Installation Date', 'Latest Normal Meter Read Date',
-                'Latest Normal Meter Read Type', 'Latest DC Bill Date',
-                'Latest MOP Bill Date', 'Supply Start Date',
-                'Supply Finish Date', 'Properties', 'Import ACTIVE?',
-                'Import REACTIVE_IMPORT?', 'Import REACTIVE_EXPORT?',
-                'Export ACTIVE?', 'Export REACTIVE_IMPORT?',
-                'Export REACTIVE_EXPORT?', 'Import MPAN core',
-                'Import Agreed Supply Capacity (kVA)', 'Import LLFC Code',
-                'Import LLFC Description', 'Import Supplier Contract',
-                'Import Supplier Account', 'Import Mandatory kW',
-                'Latest Import Supplier Bill Date', 'Export MPAN core',
-                'Export Agreed Supply Capacity (kVA)', 'Export LLFC Code',
-                'Export LLFC Description', 'Export Supplier Contract',
-                'Export Supplier Account', 'Export Mandatory kW',
-                'Latest Export Supplier Bill Date'))
+        titles = (
+            'Date', 'Physical Site Id', 'Physical Site Name', 'Other Site Ids',
+            'Other Site Names', 'Supply Id', 'Source', 'Generator Type',
+            'GSP Group', 'DNO Name', 'Voltage Level', 'Metering Type',
+            'Mandatory HH', 'PC', 'MTC', 'CoP', 'SSC', 'Number Of Registers',
+            'MOP Contract', 'Mop Account', 'DC Contract', 'DC Account',
+            'Meter Serial Number', 'Meter Installation Date',
+            'Latest Normal Meter Read Date', 'Latest Normal Meter Read Type',
+            'Latest DC Bill Date', 'Latest MOP Bill Date', 'Supply Start Date',
+            'Supply Finish Date', 'Properties', 'Import ACTIVE?',
+            'Import REACTIVE_IMPORT?', 'Import REACTIVE_EXPORT?',
+            'Export ACTIVE?', 'Export REACTIVE_IMPORT?',
+            'Export REACTIVE_EXPORT?', 'Import MPAN core',
+            'Import Agreed Supply Capacity (kVA)', 'Import LLFC Code',
+            'Import LLFC Description', 'Import Supplier Contract',
+            'Import Supplier Account', 'Import Mandatory kW',
+            'Latest Import Supplier Bill Date', 'Export MPAN core',
+            'Export Agreed Supply Capacity (kVA)', 'Export LLFC Code',
+            'Export LLFC Description', 'Export Supplier Contract',
+            'Export Supplier Account', 'Export Mandatory kW',
+            'Latest Export Supplier Bill Date'
+        )
+        writer.writerow(titles)
 
         NORMAL_READ_TYPES = ('N', 'C', 'N3')
         year_start = date + HH - relativedelta(years=1)

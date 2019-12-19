@@ -1,7 +1,7 @@
 from decimal import Decimal
 from datetime import datetime as Datetime
 from werkzeug.exceptions import BadRequest
-from chellow.utils import to_utc
+from chellow.utils import to_utc, to_ct
 
 
 class EdiParser():
@@ -28,7 +28,7 @@ def to_decimal(components):
 
 
 def to_date(component):
-    return to_utc(Datetime.strptime(component, "%y%m%d"))
+    return to_utc(to_ct(Datetime.strptime(component, "%y%m%d")))
 
 
 def to_int(component):

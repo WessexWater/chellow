@@ -60,18 +60,6 @@ def req_zish(name):
 
 
 def req_date(prefix, resolution='minute'):
-    if resolution == 'minute':
-        return utc_datetime(
-            req_int(prefix + '_year'), req_int(prefix + '_month'),
-            req_int(prefix + '_day'), req_int(prefix + '_hour'),
-            req_int(prefix + '_minute'))
-    elif resolution == 'day':
-        return utc_datetime(
-            req_int(prefix + '_year'), req_int(prefix + '_month'),
-            req_int(prefix + '_day'))
-
-
-def req_date_ct(prefix, resolution='minute'):
     year = req_int(prefix + '_year')
     month = req_int(prefix + '_month')
     day = req_int(prefix + '_day')
@@ -145,12 +133,17 @@ def parse_hh_start(start_date_str):
         month = int(start_date_str[5:7])
         day = int(start_date_str[8:10])
         hour = int(start_date_str[11:13])
-        minute = int(start_date_str[14:])
-        return validate_hh_start(utc_datetime(year, month, day, hour, minute))
+        minute = int(start_date_str[14:16])
+        if start_date_str[-1] == 'Z':
+            dt = utc_datetime(year, month, day, hour, minute)
+        else:
+            dt = to_utc(ct_datetime(year, month, day, hour, minute))
+        return validate_hh_start(dt)
     except ValueError as e:
         raise BadRequest(
-            "Can't parse the date: " + start_date_str +
-            ". It needs to be of the form yyyy-mm-dd hh:MM. " + str(e))
+            "Can't parse the date: " + start_date_str + ". It needs to be of "
+            "the form yyyy-mm-dd hh:MM with an optional Z on the end. "
+            + str(e))
 
 
 def parse_mpan_core(mcore):
@@ -185,23 +178,27 @@ def parse_bool(bool_str):
             "A boolean must be 'true' or 'false', but got '" + bool_str + "'.")
 
 
-def hh_format(dt, ongoing_str='ongoing'):
-    return ongoing_str if dt is None else dt.strftime("%Y-%m-%d %H:%M")
-
-
-def hh_format_ct(dt, ongoing_str='ongoing'):
+def hh_format(dt, ongoing_str='ongoing', with_hh=False):
     if dt is None:
-        return ongoing_str, ongoing_str
+        return (ongoing_str, ongoing_str) if with_hh else ongoing_str
     else:
-        d = to_ct(dt)
-        dc = ct_datetime(d.year, d.month, d.day)
-        du = to_utc(dc)
-        hh = 0
-        while dc.day == d.day and du <= dt:
-            hh += 1
-            du += HH
-            dc = to_ct(du)
-        return d.strftime("%Y-%m-%d %H:%M"), hh
+        if dt.tzinfo is None:
+            ts = to_utc(dt)
+        else:
+            ts = dt
+        d = to_ct(ts)
+        dt_str = d.strftime("%Y-%m-%d %H:%M")
+        if with_hh:
+            dc = ct_datetime(d.year, d.month, d.day)
+            du = to_utc(dc)
+            hh = 0
+            while dc.day == d.day and du <= ts:
+                hh += 1
+                du += HH
+                dc = to_ct(du)
+            return dt_str, hh
+        else:
+            return dt_str
 
 
 CHANNEL_TYPES = 'ACTIVE', 'REACTIVE_IMP', 'REACTIVE_EXP'
@@ -566,13 +563,20 @@ def c_months_c(
 
 
 def csv_make_val(v):
-    val = make_val(v)
-    if isinstance(val, Datetime):
-        return hh_format(val)
-    elif val is None:
+    if isinstance(v, (set, list)):
+        if len(v) == 1:
+            return csv_make_val(v.pop())
+        elif 1 < len(v) < 4:
+            vals = set(str(csv_make_val(val)) for val in v)
+            return ' | '.join(sorted(vals))
+        else:
+            return ''
+    elif isinstance(v, Datetime):
+        return hh_format(v)
+    elif v is None:
         return ''
     else:
-        return val
+        return v
 
 
 def make_val(v):
@@ -584,6 +588,8 @@ def make_val(v):
             return ' | '.join(sorted(vals))
         else:
             return None
+    elif isinstance(v, Datetime):
+        return to_ct(v)
     else:
         return v
 
@@ -836,3 +842,7 @@ def reduce_bill_hhs(bill_hhs):
                     bill[k] = v
 
     return bill
+
+
+def write_row(writer, *vals):
+    writer.writerow(csv_make_val(v) for v in vals)

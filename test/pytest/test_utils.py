@@ -1,6 +1,8 @@
+from datetime import datetime as Datetime
+from pytz import utc
 from chellow.utils import (
     PropDict, make_val, to_utc, ct_datetime, c_months_u, utc_datetime,
-    hh_format_ct, u_months_u)
+    hh_format, u_months_u, parse_hh_start)
 
 
 def test_make_val():
@@ -8,12 +10,30 @@ def test_make_val():
     make_val(v)
 
 
-def test_PropDict():
+def test_PropDict_create():
     location = 'loc'
     props = {
         0: [{0: 1}]
     }
     PropDict(location, props)
+
+
+def test_PropDict_get():
+    assert PropDict(
+        'cont ' + str(Datetime(2017, 1, 1)), {}, []).get('akey') is None
+
+
+def test_PropDict():
+    assert PropDict('', {'*': 5})[1] == 5
+
+
+def test_PropDict_nested():
+    assert PropDict('', {1: {'*': 5}})[1][1] == 5
+
+
+def test_to_utc():
+    dt_utc = to_utc(ct_datetime(2014, 9, 6, 1))
+    assert dt_utc == Datetime(2014, 9, 6, 0, 0, tzinfo=utc)
 
 
 def test_c_months_u():
@@ -54,17 +74,34 @@ def test_u_months_u_start_none():
 
 def test_hh_format_ct():
     dt = utc_datetime(2019, 6, 30)
-    actual = hh_format_ct(dt)
+    actual = hh_format(dt)
+    assert actual == ('2019-06-30 01:00')
+
+
+def test_hh_format_hh():
+    dt = utc_datetime(2019, 6, 30)
+    actual = hh_format(dt, with_hh=True)
     assert actual == ('2019-06-30 01:00', 3)
 
 
-def test_hh_format_ct_46():
+def test_hh_format_hh_46():
     dt = to_utc(ct_datetime(2019, 3, 31, 23, 30))
-    actual = hh_format_ct(dt)
+    actual = hh_format(dt, with_hh=True)
     assert actual == ('2019-03-31 23:30', 46)
 
 
-def test_hh_format_ct_50():
+def test_hh_format_hh_50():
     dt = to_utc(ct_datetime(2019, 10, 27, 23, 30))
-    actual = hh_format_ct(dt)
+    actual = hh_format(dt, with_hh=True)
     assert actual == ('2019-10-27 23:30', 50)
+
+
+def test_hh_format_none():
+    dt = None
+    actual = hh_format(dt)
+    assert actual == 'ongoing'
+
+
+def test_parse_hh_start():
+    actual = parse_hh_start("2019-01-01 00:00Z")
+    assert actual == utc_datetime(2019, 1, 1)

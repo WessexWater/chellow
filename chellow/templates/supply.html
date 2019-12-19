@@ -719,8 +719,8 @@
 							<fieldset>
 								<input type="hidden" name="supply_id" value="{{supply.id}}">
 								<legend>Virtual Bills</legend>
-								From {{input_date('start', last_month_start)}} UTC to
-								{{input_date('finish', last_month_finish)}} UTC
+								From {{input_date('start', last_month_start)}} to
+								{{input_date('finish', last_month_finish)}}
 								<input type="submit" value="Download">
 							</fieldset>
 						</form>
@@ -734,8 +734,8 @@
 									<option value="true">Import</option>
 									<option value="false">Export</option>
 								</select>
-								from {{input_date('start', last_month_start, 'day')}} UTC
-								to {{input_date('finish', last_month_finish, 'day')}} UTC
+								from {{input_date('start', last_month_start, 'day')}}
+								to {{input_date('finish', last_month_finish, 'day')}}
 								<input type="submit" value="Download">
 								(Note that unless a month is entirely in the past, all the days
 								for that month will be estimates)
@@ -747,8 +747,8 @@
 							<fieldset>
 								<input type="hidden" name="supply_id" value="{{supply.id}}">
 								<legend>Virtual Bills By Half-Hour</legend>
-								From {{input_date('start', last_month_start)}} UTC to
-								{{input_date('finish', last_month_finish)}} UTC
+								From {{input_date('start', last_month_start)}} to
+								{{input_date('finish', last_month_finish)}}
 								<input type="submit" value="Download">
 							</fieldset>
 						</form>
@@ -756,7 +756,7 @@
 					<div class="section-data ">
 						<form action="/reports/169">
 							<fieldset>
-								<legend>HH Data: 48 Column Format</legend>
+								<legend>HH Data: Day Per Row</legend>
 								<input type="hidden" name="supply_id" value="{{supply.id}}">
 								<select name="imp_related">
 									<option value="true">Import</option>
@@ -767,8 +767,9 @@
 									<option value="REACTIVE_IMP">REACTIVE_IMP</option>
 									<option value="REACTIVE_EXP">REACTIVE_EXP</option>
 								</select>
-								from {{ input_date('start', last_month_start) }} UTC to
-								{{ input_date('finish', last_month_finish) }} UTC
+								from {{
+								input_date('start', last_month_start, resolution='day') }} to
+								{{ input_date('finish', last_month_finish, resolution='day') }}
 								<input type="submit" value="Download">
 							</fieldset>
 						</form>
@@ -778,8 +779,8 @@
 							<fieldset>
 								<legend>HH Data: HH Per Row</legend>
 								<input type="hidden" name="supply_id" value="{{supply.id}}">
-								From {{ input_date('start', last_month_start) }} UTC to
-								{{ input_date('finish', last_month_finish) }} UTC
+								From {{ input_date('start', last_month_start) }} to
+								{{ input_date('finish', last_month_finish) }}
 								<input type="submit" value="Download">
 							</fieldset>
 						</form>
@@ -803,8 +804,8 @@
 								<input type="hidden" name="supply_id" value="{{supply.id}}">
 								<legend>Duration</legend>
 								<p>
-									From {{ input_date('start', last_month_start) }} UTC
-									to {{ input_date('finish', last_month_finish) }} UTC
+									From {{ input_date('start', last_month_start) }}
+									to {{ input_date('finish', last_month_finish) }}
 									<input type="submit" value="Download">
 								</p>
 							</fieldset>
@@ -818,7 +819,7 @@
 								<br />
 								For <input name="months" maxlength="2" size="2" value="1">
 								month(s) finishing at the end of
-								{{ input_date('finish', last_month_finish, 'month') }} UTC
+								{{ input_date('finish', last_month_finish, 'month') }}
 								<input type="submit" value="Download">
 							</fieldset>
 						</form>
@@ -829,7 +830,7 @@
 							<fieldset>
 								<legend>Snapshot</legend>
 								<br>
-								For {{ input_date('date', last_month_finish) }} UTC
+								For {{ input_date('date', last_month_finish) }}
 								<input type="submit" value="Download">
 							</fieldset>
 						</form>
@@ -843,7 +844,7 @@
 							<br>
 							For <input name="months" maxlength="2" size="2" value="1">
 							month(s) finishing at the end of
-							{{ input_date('end', last_month_finish, 'month') }} UTC
+							{{ input_date('end', last_month_finish, 'month') }}
 							<input type="submit" value="Download">
 						</fieldset>
 					</form>

@@ -197,7 +197,7 @@
 							For {{input_text('months', '1', 2, 2)}}
 							month(s) until the end of
 						 	{{input_date('finish', last_month_finish, resolution='month')}}
-							clock-time <input type="submit" value="Download">
+							<input type="submit" value="Download">
 						</fieldset>
 					</form>			
 				</div>
@@ -208,7 +208,7 @@
 								<legend>Download Displaced TRIAD CSV</legend>
 								For financial year ending March
 								{{input_date(None, last_month_finish, resolution='year')}}
-								UTC <input type="submit" value="Download">
+								<input type="submit" value="Download">
 							</fieldset>
 						</form>			
 				</div>
@@ -228,7 +228,7 @@
 							for {{input_text('months', '1', 2, 2)}}
 							month(s) until the end of
 						 	{{input_date('finish', last_month_finish, resolution='month')}}
-							UTC <input type="submit" value="Download">
+							<input type="submit" value="Download">
 						</fieldset>
 					</form>
 				</div>
@@ -238,8 +238,8 @@
 							<input type="hidden" name="site_id" value="{{site.id}}">
 							<legend>HH Data: HH Per Row Format</legend>
 							<p>
-								From {{input_date('start', last_month_start)}} UTC to
-								{{input_date('finish', last_month_finish)}} UTC
+								From {{input_date('start', last_month_start)}} to
+								{{input_date('finish', last_month_finish)}}
 								<input type="submit" value="Download">
 							</p>
 						</fieldset>
@@ -343,7 +343,7 @@
 						<br>
 						For {{input_text('months', '1', 2, 2)}} month(s) until the end of
 						{{input_date('finish', last_month_finish, resolution='month')}}
-						UTC <input type="submit" value="Download">
+						<input type="submit" value="Download">
 					</fieldset>
 				</form>			
 

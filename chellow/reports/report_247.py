@@ -667,15 +667,15 @@ def _process_site(
             site_month_data[k] += v
         era_rows.append(out)
 
-    site_rows.append(
-        [
-            now, site.code, site.name, ', '.join(
-                s.code for s in site.find_linked_sites(
-                    sess, start_date, finish_date)),
-            finish_date, site_category,
-            ', '.join(sorted(list(site_sources))),
-            ', '.join(sorted(list(site_gen_types)))] +
-        [site_month_data[k] for k in summary_titles])
+    site_row = [
+        now, site.code, site.name,
+        ', '.join(s.code for s in site.find_linked_sites(
+                sess, start_date, finish_date)),
+        finish_date, site_category, ', '.join(sorted(list(site_sources))),
+        ', '.join(sorted(list(site_gen_types)))] + [
+        site_month_data[k] for k in summary_titles]
+
+    site_rows.append([make_val(v) for v in site_row])
     sess.rollback()
 
 

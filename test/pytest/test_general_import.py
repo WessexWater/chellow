@@ -72,8 +72,8 @@ def test_general_import_g_bill_reads(mocker):
 
     action = 'insert'
     vals = [
-        'CH4U', 'batch 8883', '759288812', '2019-09-08 00:00',
-        '2019-10-01 00:00', '2019-10-31 23:30', '0.00', '0.00', '0.00',
+        'CH4U', 'batch 8883', '759288812', '2019-09-08 01:00',
+        '2019-10-01 01:00', '2019-10-31 23:30', '0.00', '0.00', '0.00',
         '77hwgtlll', '7876hrwlju', 'N', '{}', '0', msn, g_unit_code,
         str(correction_factor), str(calorific_value), hh_format(prev_date),
         str(prev_value), prev_type_code, hh_format(pres_date), str(pres_value),
