@@ -217,6 +217,10 @@ def check_permissions(*args, **kwargs):
         return
 
     if g.user is not None:
+        if 'X-Isrw-Proxy-Logon-User' in request.headers:
+            g.user.proxy_username = \
+                request.headers['X-Isrw-Proxy-Logon-User'].upper()
+
         role = g.user.user_role
         role_code = role.code
 

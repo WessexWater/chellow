@@ -7,6 +7,7 @@ import os.path
 import time
 import atexit
 
+
 download_id = 0
 lock = threading.Lock()
 
@@ -47,8 +48,11 @@ def make_names(base, user):
     if user is None:
         uname = ''
     else:
-        addr = user.email_address
-        uname = addr.replace('@', '').replace('.', '').replace('\\', '')
+        if hasattr(user, 'proxy_username'):
+            un = user.proxy_username
+        else:
+            un = user.email_address
+        uname = un.replace('@', '').replace('.', '').replace('\\', '')
 
     names = tuple(
         '_'.join((serial, v, uname, base)) for v in ('RUNNING', 'FINISHED'))
