@@ -27,26 +27,30 @@ setup(
     url='https://github.com/WessexWater/chellow',
     cmdclass=versioneer.get_cmdclass(),
     packages=[
-        'chellow', 'chellow.reports'],
-    package_data={'chellow': [
-        'non_core_contracts/*/*.zish',
-        'non_core_contracts/*/rate_scripts/*.zish',
-        'mdd/converted/*.csv',
-        'templates/*.html',
-        'templates/css/*.css',
-        'templates/js/*.js',
-        'templates/*.css',
-        'static/images/**',
-        'static/css/**',
-        'static/js/**',
-        'static/font-awesome-4.6.3/**',
-        'static/font-awesome-4.6.3/css/**',
-        'static/font-awesome-4.6.3/fonts/**',
-        'static/font-awesome-4.6.3/less/**',
-        'static/font-awesome-4.6.3/scss/**',
-        'nationalgrid/*',
-        'elexonportal/*',
-        'rate_scripts/*/*.zish']},
+        'chellow', 'chellow.reports'
+    ],
+    package_data={
+        'chellow': [
+            'non_core_contracts/*/*.zish',
+            'non_core_contracts/*/rate_scripts/*.zish',
+            'mdd/converted/*.csv',
+            'templates/*.html',
+            'templates/css/*.css',
+            'templates/js/*.js',
+            'templates/*.css',
+            'static/images/**',
+            'static/css/**',
+            'static/js/**',
+            'static/font-awesome-4.6.3/**',
+            'static/font-awesome-4.6.3/css/**',
+            'static/font-awesome-4.6.3/fonts/**',
+            'static/font-awesome-4.6.3/less/**',
+            'static/font-awesome-4.6.3/scss/**',
+            'nationalgrid/*',
+            'elexonportal/*',
+            'rate_scripts/*/*.zish'
+        ]
+    },
     install_requires=[
         'odio==0.0.16',
         'pg8000==1.13.2',
@@ -57,17 +61,21 @@ setup(
         'pytz==2019.1',
         'ftputil==3.2',
         'requests==2.20.0',
-        'waitress==1.0.1',
+        'waitress==1.4.0',
         'pep3143daemon==0.0.6',
         'pip>=9.0.1',
         'pysftp==0.2.9',
         'pympler==0.7',
         'psutil==5.0.1',
         'xlrd==0.9.4',
-        'zish==0.1.6'],
+        'zish==0.1.6'
+    ],
     data_files=[('config', ['config/chellow.conf'])],
     entry_points={
         'console_scripts': [
             'chellow = chellow.commands:chellow_command',
-            'chellow_test_setup = chellow.commands:chellow_test_setup']},
-    scripts=['bin/chellow_service_monitor.sh', 'bin/chellow_start.sh'])
+            'chellow_test_setup = chellow.commands:chellow_test_setup'
+        ]
+    },
+    scripts=['bin/chellow_service_monitor.sh', 'bin/chellow_start.sh']
+)
