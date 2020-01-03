@@ -11,7 +11,6 @@ import traceback
 import os
 from collections.abc import Mapping
 from zish import loads, ZishException
-from itertools import count
 
 url_root = None
 
@@ -523,16 +522,23 @@ def u_months_u(
         months=1):
 
     if start_year is None:
-        start = utc_datetime(finish_year, finish_month) - \
-            relativedelta(months=months - 1)
+        start = utc_datetime(finish_year, finish_month) - relativedelta(
+            months=months - 1)
     else:
         start = utc_datetime(start_year, start_month)
 
-    counter = count() if months is None else range(months)
-    for i in counter:
-        u_month_start_u = start + relativedelta(months=i)
-        u_month_finish_u = start + relativedelta(months=i+1) - HH
-        yield u_month_start_u, u_month_finish_u
+    if finish_year is None:
+        if months is None:
+            finish = None
+        else:
+            finish = start + relativedelta(months=months) - HH
+    else:
+        finish = utc_datetime(finish_year, finish_month) + MONTH - HH
+
+    dt = start
+    while hh_before(dt, finish):
+        yield dt, dt + MONTH - HH
+        dt += MONTH
 
 
 def c_months_u(
