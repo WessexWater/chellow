@@ -14,9 +14,14 @@ read_type_map = {
 
 
 TCOD_MAP = {
+    '030025': ('ccl-gbp', 'ccl-rate', 'ccl-kwh'),
+    '345065': (
+        'summer-weekend-gbp', 'summer-weekend-rate', 'summer-weekend-kwh'),
+    '350293': ('capacity-gbp', 'capacity-rate', 'capacity-kwh'),
+    '425779': ('ro-gbp', 'ro-rate', 'ro-kwh'),
+    '534342': ('reconciliation-gbp', None, None),
     '584867': ('aahedc-gbp', 'aahedc-rate', 'aahedc-kwh'),
     '989534': ('bsuos-gbp', 'bsuos-rate', 'bsuos-kwh'),
-    '350293': ('capacity-gbp', 'capacity-rate', 'capacity-kwh'),
     '579387': ('capacity-gbp', 'capacity-rate', 'capacity-kwh'),
     '558147': ('capacity-gbp', 'capacity-rate', 'capacity-kwh'),
     '066540': ('ccl-gbp', 'ccl-rate', 'ccl-kwh'),
@@ -59,6 +64,7 @@ TCOD_MAP = {
         'winter-weekday-gbp', 'winter-weekday-rate', 'winter-weekday-kwh'),
     '638187': (
         'winter-weekend-gbp', 'winter-weekend-rate', 'winter-weekend-kwh'),
+    '700285': ('duo-fixed-gbp', 'duos-fixed-rate', 'duos-fixed-days'),
 }
 
 
@@ -264,6 +270,8 @@ def _process_segment(code, elements, line, headers):
                 el_cons = _to_decimal(cons, '100')
                 kwh = el_cons
                 breakdown[eln_cons] = el_cons
+            else:
+                kwh = Decimal('0')
 
             if eln_rate is not None:
                 rate = _to_decimal(elements['BPRI'], '100000')

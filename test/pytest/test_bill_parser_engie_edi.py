@@ -202,6 +202,51 @@ def test_process_segment_CCD3(mocker):
     assert headers == expected_headers
 
 
+def test_process_segment_CCD3_ro(mocker):
+    code = 'CCD'
+    elements = {
+        'CCDE': ['3', 'ADD'],
+        'TCOD': ['425779', 'RO Mutualisation'],
+        'TMOD': [],
+        'MTNR': [],
+        'MLOC': ['22767395756734'],
+        'PRDT': [],
+        'PVDT': [],
+        'NDRP': [],
+        'PRRD': [],
+        'CONS': ['', ''],
+        'CONB': [],
+        'ADJF': ['UG'],
+        'CONA': [],
+        'BPRI': ['974'],
+        'NUCT': ['877457492', 'KWH'],
+        'CSDT': ['191001'],
+        'CEDT': ['191101'],
+        'CPPU': ['748'],
+        'CTOT': ['76981'],
+    }
+    line = ''
+
+    issue_date = utc_datetime(2019, 9, 3)
+    reference = 'hgtuer8'
+    headers = {
+        'issue_date': issue_date,
+        'reference': reference,
+        'bill_type_code': 'N'
+    }
+    chellow.bill_parser_engie_edi._process_segment(
+        code, elements, line, headers)
+    expected_headers = {
+        'mpan_core': '22 7673 9575 6734',
+        'bill_start_date': to_utc(ct_datetime(2019, 10, 1)),
+        'bill_finish_date': to_utc(ct_datetime(2019, 10, 31, 23, 30)),
+        'issue_date': issue_date,
+        'reference': reference,
+        'bill_type_code': 'N'
+    }
+    assert headers == expected_headers
+
+
 def test_process_segment_MHD(mocker):
     code = 'MHD'
     elements = {
