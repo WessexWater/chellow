@@ -1399,9 +1399,20 @@ def dc_rate_script_add_post(contract_id):
 
 @app.route('/dc_rate_scripts/<int:dc_rate_script_id>')
 def dc_rate_script_get(dc_rate_script_id):
-    dc_rate_script = RateScript.get_dc_by_id(g.sess, dc_rate_script_id)
+    rate_script = RateScript.get_dc_by_id(g.sess, dc_rate_script_id)
+    contract = rate_script.contract
+    next_rate_script = g.sess.query(RateScript).filter(
+        RateScript.contract == contract,
+        RateScript.start_date > rate_script.start_date).order_by(
+        RateScript.start_date).first()
+    previous_rate_script = g.sess.query(RateScript).filter(
+        RateScript.contract == contract,
+        RateScript.start_date < rate_script.start_date).order_by(
+        RateScript.start_date.desc()).first()
     return render_template(
-        'dc_rate_script.html', dc_rate_script=dc_rate_script)
+        'dc_rate_script.html', dc_rate_script=rate_script,
+        previous_rate_script=previous_rate_script,
+        next_rate_script=next_rate_script)
 
 
 @app.route('/dc_rate_scripts/<int:dc_rate_script_id>/edit')
@@ -1488,8 +1499,18 @@ def supplier_contract_edit_post(contract_id):
 @app.route('/supplier_rate_scripts/<int:rate_script_id>')
 def supplier_rate_script_get(rate_script_id):
     rate_script = RateScript.get_supplier_by_id(g.sess, rate_script_id)
+    contract = rate_script.contract
+    next_rate_script = g.sess.query(RateScript).filter(
+        RateScript.contract == contract,
+        RateScript.start_date > rate_script.start_date).order_by(
+        RateScript.start_date).first()
+    previous_rate_script = g.sess.query(RateScript).filter(
+        RateScript.contract == contract,
+        RateScript.start_date < rate_script.start_date).order_by(
+        RateScript.start_date.desc()).first()
     return render_template(
-        'supplier_rate_script.html', rate_script=rate_script)
+        'supplier_rate_script.html', previous_rate_script=previous_rate_script,
+        next_rate_script=next_rate_script, rate_script=rate_script)
 
 
 @app.route('/supplier_rate_scripts/<int:rate_script_id>/edit')
@@ -1687,7 +1708,19 @@ def mop_contract_edit_post(contract_id):
 @app.route('/mop_rate_scripts/<int:rate_script_id>')
 def mop_rate_script_get(rate_script_id):
     rate_script = RateScript.get_mop_by_id(g.sess, rate_script_id)
-    return render_template('mop_rate_script.html', rate_script=rate_script)
+    contract = rate_script.contract
+    next_rate_script = g.sess.query(RateScript).filter(
+        RateScript.contract == contract,
+        RateScript.start_date > rate_script.start_date).order_by(
+        RateScript.start_date).first()
+    previous_rate_script = g.sess.query(RateScript).filter(
+        RateScript.contract == contract,
+        RateScript.start_date < rate_script.start_date).order_by(
+        RateScript.start_date.desc()).first()
+    return render_template(
+        'mop_rate_script.html', rate_script=rate_script,
+        previous_rate_script=previous_rate_script,
+        next_rate_script=next_rate_script)
 
 
 @app.route('/mop_rate_scripts/<int:rate_script_id>/edit')
@@ -3991,8 +4024,19 @@ def non_core_rate_script_add_post(contract_id):
 @app.route('/non_core_rate_scripts/<int:rs_id>')
 def non_core_rate_script_get(rs_id):
     rate_script = RateScript.get_non_core_by_id(g.sess, rs_id)
+    contract = rate_script.contract
+    next_rate_script = g.sess.query(RateScript).filter(
+        RateScript.contract == contract,
+        RateScript.start_date > rate_script.start_date).order_by(
+        RateScript.start_date).first()
+    previous_rate_script = g.sess.query(RateScript).filter(
+        RateScript.contract == contract,
+        RateScript.start_date < rate_script.start_date).order_by(
+        RateScript.start_date.desc()).first()
     return render_template(
-        'non_core_rate_script.html', rate_script=rate_script)
+        'non_core_rate_script.html', rate_script=rate_script,
+        previous_rate_script=previous_rate_script,
+        next_rate_script=next_rate_script)
 
 
 @app.route('/non_core_rate_scripts/<int:rs_id>/edit')

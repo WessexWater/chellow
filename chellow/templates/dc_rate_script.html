@@ -28,6 +28,26 @@
 						<th>Finish Date</th>
 						<td>{{dc_rate_script.finish_date|hh_format }}</td>
 					</tr>
+					<tr>
+						<td>
+							{% if previous_rate_script %}
+								<a
+									href="/dc_rate_scripts/{{previous_rate_script.id}}"
+									>Previous Rate Script</a>
+							{% else %}
+								No Previous Rate Script
+							{% endif %}
+						</td>
+						<td>
+							{% if next_rate_script %}
+								<a
+									href="/dc_rate_scripts/{{next_rate_script.id}}"
+									>Next Rate Script</a>
+							{% else %}
+								No Next Rate Script
+							{% endif %}
+						</td>
+					</tr>
 				</table>
 			</div>
 		</div>
