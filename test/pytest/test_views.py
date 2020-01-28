@@ -78,11 +78,12 @@ def test_read_add_get(mocker):
     mock_bill = mocker.Mock()
     MockBill.get_by_id.return_value = mock_bill
     mock_bill.supply.find_era_at.return_value = None
-    mock_bill.start_date = dt
+    mock_bill.finish_date = dt
 
     MockRegisterRead = mocker.patch(
         'chellow.views.RegisterRead', autospec=True)
     MockRegisterRead.bill = mocker.Mock()
+    MockRegisterRead.present_date = dt
 
     mocker.patch('chellow.views.render_template', autospec=True)
 

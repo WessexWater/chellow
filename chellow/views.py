@@ -4975,20 +4975,14 @@ def read_add_get(bill_id):
         mpan_str = era.imp_mpan_core
         msn = era.msn
 
-    prev_bill = g.sess.query(Bill).join(Supply).join(Batch).join(
-        Contract).join(MarketRole).filter(
-        Bill.supply == bill.supply, MarketRole.code == 'X',
-        Bill.start_date < bill.start_date).order_by(
-        Bill.start_date.desc()).first()
-
-    if prev_bill is not None:
-        prev_read = g.sess.query(RegisterRead).filter(
-            RegisterRead.bill == prev_bill).order_by(
-            RegisterRead.present_date.desc()).first()
-        if prev_read is not None:
-            previous_date = prev_read.present_date
-            previous_value = prev_read.present_value
-            previous_type_id = prev_read.present_type.id
+    prev_read = g.sess.query(RegisterRead).join(Bill).filter(
+        Bill.supply == bill.supply,
+        RegisterRead.present_date <= bill.finish_date).order_by(
+        RegisterRead.present_date.desc()).first()
+    if prev_read is not None:
+        previous_date = prev_read.present_date
+        previous_value = prev_read.present_value
+        previous_type_id = prev_read.present_type.id
 
     return render_template(
         'read_add.html', bill=bill, read_types=read_types, tprs=tprs,
