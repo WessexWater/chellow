@@ -141,7 +141,7 @@ def test_process_segment_CCD2(mocker):
         'gross': Decimal('769.81'),
         'breakdown': {
             'raw-lines': '',
-            'aahedc-kwh': Decimal('8774574.92'),
+            'aahedc-kwh': Decimal('877457.492'),
             'aahedc-rate': [Decimal('0.00974')],
             'aahedc-gbp': Decimal('769.81')
         },
@@ -149,6 +149,7 @@ def test_process_segment_CCD2(mocker):
     }
 
     assert headers == expected_headers
+    print(bill)
     assert bill == expected_bill
     assert isinstance(bill['kwh'], Decimal)
     assert isinstance(bill['net'], Decimal)

@@ -206,9 +206,8 @@ def _process_segment(code, elements, line, headers):
             cons = elements['CONS']
             kwh = None
             if eln_cons is not None and len(cons[0]) > 0:
-                el_cons = _to_decimal(cons, '100')
-                kwh = el_cons
-                breakdown[eln_cons] = el_cons
+                el_cons = _to_decimal(cons, '1000')
+                breakdown[eln_cons] = kwh = el_cons
 
             if eln_rate is not None:
                 rate = _to_decimal(elements['BPRI'], '100000')
@@ -267,9 +266,8 @@ def _process_segment(code, elements, line, headers):
 
             cons = elements['CONS']
             if eln_cons is not None and len(cons[0]) > 0:
-                el_cons = _to_decimal(cons, '100')
-                kwh = el_cons
-                breakdown[eln_cons] = el_cons
+                el_cons = _to_decimal(cons, '1000')
+                breakdown[eln_cons] = kwh = el_cons
             else:
                 kwh = Decimal('0')
 
@@ -330,9 +328,8 @@ def _process_segment(code, elements, line, headers):
 
             cons = elements['CONS']
             if eln_cons is not None and len(cons[0]) > 0:
-                el_cons = _to_decimal(cons, '100')
-                kwh = el_cons
-                breakdown[eln_cons] = el_cons
+                el_cons = _to_decimal(cons, '1000')
+                breakdown[eln_cons] = kwh = el_cons
 
             if eln_rate is not None:
                 rate = _to_decimal(elements['BPRI'], '100000')
