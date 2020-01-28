@@ -6,7 +6,7 @@ from flask import render_template, request, g
 from chellow.models import (
     VoltageLevel, Participant, Party, MarketRole, Llfc, Mtc, MeterType,
     Session)
-from chellow.utils import hh_format, to_utc, to_ct
+from chellow.utils import hh_format, to_utc, to_ct, ct_datetime
 from werkzeug.exceptions import BadRequest
 from sqlalchemy.orm import joinedload
 from sqlalchemy import null
@@ -40,6 +40,15 @@ def do_get(sess):
     return render_template('report_163.html')
 
 
+VOLTAGE_MAP = {
+    '24': {
+        '602': {
+            to_utc(ct_datetime(2010, 4, 1)): 'LV'
+        }
+    }
+}
+
+
 def content(table, version, fin, user):
     sess = None
     try:
@@ -70,12 +79,6 @@ def content(table, version, fin, user):
                         '_SS', ' SS', ' S/S',  '(S/S)', 'sub', 'Sub'))
 
                 valid_to = parse_to_date(values[7])
-                voltage_level_code = 'LV'
-                description_upper = description.upper()
-                for vl_code in VOLTAGE_LEVEL_CODES:
-                    if vl_code in description_upper:
-                        voltage_level_code = vl_code
-                        break
 
                 try:
                     dno = DNO_MAP[participant_code]
@@ -85,6 +88,17 @@ def content(table, version, fin, user):
                             "# There is no DNO with participant code ",
                             participant_code))
                     continue
+
+                try:
+                    voltage_level_code = VOLTAGE_MAP[dno.dno_code][llfc_code][
+                        valid_from]
+                except KeyError:
+                    voltage_level_code = 'LV'
+                    description_upper = description.upper()
+                    for vl_code in VOLTAGE_LEVEL_CODES:
+                        if vl_code in description_upper:
+                            voltage_level_code = vl_code
+                            break
 
                 llfc = sess.query(Llfc).filter(
                     Llfc.dno == dno, Llfc.code == llfc_code,
