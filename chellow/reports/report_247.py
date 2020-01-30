@@ -39,7 +39,7 @@ def write_spreadsheet(fl, compressed, site_rows, era_rows):
 
 
 def make_bill_row(titles, bill):
-    return [make_val(bill.get(t)) for t in titles]
+    return [bill.get(t) for t in titles]
 
 
 def get_map_list(properties, name):
@@ -460,7 +460,7 @@ def _process_site(
             None] * len(title_dict['dc']) + [None] + make_bill_row(
                 title_dict['imp-supplier'], disp_supplier_bill)
 
-        era_rows.append(out)
+        era_rows.append([make_val(v) for v in out])
         for k, v in month_data.items():
             site_month_data[k] += v
 
@@ -665,7 +665,7 @@ def _process_site(
 
         for k, v in month_data.items():
             site_month_data[k] += v
-        era_rows.append(out)
+        era_rows.append([make_val(v) for v in out])
 
     site_row = [
         now, site.code, site.name,
