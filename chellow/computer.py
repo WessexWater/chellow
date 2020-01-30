@@ -1120,9 +1120,9 @@ order by hh_datum.start_date
                             "    and channel.imp_related = " +
                             str(self.is_import) +
                             "    and hh_datum.start_date >= '" +
-                            hh_format(chunk_start) + "+00'"
+                            chunk_start.strftime("%Y-%m-%d %H:%M") + "+00'"
                             "    and hh_datum.start_date <= '" +
-                            hh_format(chunk_finish) + "+00'"
+                            chunk_finish.strftime("%Y-%m-%d %H:%M") + "+00'"
                             "    order by 1,3"})
                     for (
                             hist_start, status, msp_kwh, imp_kvarh,
