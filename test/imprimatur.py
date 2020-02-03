@@ -548,10 +548,12 @@ def virtual_bill(ds):
             r'For <input name="months" value="1" maxlength="2" size="2">\s*'
             r'month\(s\) until the end of\s*'
             r'<input name="finish_year" maxlength="4" size="4" '
-            r'value="201\d">',
+            r'value="\d*">',
             r'Rate Scripts\s*\[<a\s*'
-            r'href="/supplier_contracts/10/add_rate_script"\s*>add</a>\]'],
-        'status_code': 200},
+            r'href="/supplier_contracts/10/add_rate_script"\s*>add</a>\]'
+        ],
+        'status_code': 200
+    },
 
     {
         'name': "Update the associated rate script. Supplier contract 15",
