@@ -61,7 +61,7 @@ setup(
         'pytz==2019.1',
         'ftputil==3.2',
         'requests==2.20.0',
-        'waitress==1.4.2',
+        'waitress==1.4.3',
         'pep3143daemon==0.0.6',
         'pip>=9.0.1',
         'pysftp==0.2.9',
