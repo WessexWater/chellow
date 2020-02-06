@@ -3348,7 +3348,17 @@ def supplier_bill_get(bill_id):
     register_reads = g.sess.query(RegisterRead).filter(
         RegisterRead.bill == bill).order_by(
         RegisterRead.present_date.desc())
-    fields = {'bill': bill, 'register_reads': register_reads}
+
+    rate_scripts = g.sess.query(RateScript).filter(
+        RateScript.contract == bill.batch.contract,
+        RateScript.start_date <= bill.finish_date, or_(
+            RateScript.finish_date == null(),
+            RateScript.finish_date >= bill.start_date)).all()
+    fields = {
+        'bill': bill,
+        'register_reads': register_reads,
+        'rate_scripts': rate_scripts
+    }
     try:
         breakdown_dict = loads(bill.breakdown)
 
