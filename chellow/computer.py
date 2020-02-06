@@ -846,6 +846,11 @@ class SupplySource(DataSource):
             chunk_finish = hh_min(self.history_finish, hist_era.finish_date)
 
             hist_measurement_type = hist_era.meter_category
+
+            if hist_measurement_type == 'amr' and self.era_map.get(
+                    'use_amr_hh_data', False):
+                hist_measurement_type = 'hh'
+
             if hist_measurement_type == 'unmetered':
 
                 kwh = hist_era.imp_sc * 60 * 30 / (
