@@ -2137,6 +2137,68 @@ def era_edit_post(era_id):
             400)
 
 
+@app.route('/eras/<int:era_id>/add_supplier_bill')
+def era_supplier_bill_add_get(era_id):
+    era = Era.get_by_id(g.sess, era_id)
+    bill_types = g.sess.query(BillType).order_by(BillType.code)
+    supply = start_date = account = None
+    normal_bill_type_id = g.sess.query(BillType.id).filter(
+        BillType.code == 'N').scalar()
+    latest_bill = g.sess.query(Bill).join(Batch).join(Contract).join(
+        MarketRole).filter(
+        Bill.supply == supply, MarketRole.code == 'X').order_by(
+        Bill.start_date.desc()).first()
+    if latest_bill is not None:
+        start_date = latest_bill.finish_date + HH
+        account = latest_bill.account
+    return render_template(
+        'era_supplier_bill_add.html', era=era, bill_types=bill_types,
+        start_date=start_date, account=account,
+        normal_bill_type_id=normal_bill_type_id)
+
+
+@app.route('/eras/<int:era_id>/add_supplier_bill', methods=['POST'])
+def era_supplier_bill_add_post(era_id):
+    try:
+        era = Era.get_by_id(g.sess, era_id)
+
+        batch_reference = req_str('batch_reference')
+        batch_description = req_str('batch_description')
+
+        batch = era.imp_supplier_contract.insert_batch(
+            g.sess, batch_reference, batch_description)
+
+        account = req_str('account')
+        bill_reference = req_str('bill_reference')
+        issue_date = req_date('issue')
+        start_date = req_hh_date('start')
+        finish_date = req_hh_date('finish')
+        kwh = req_decimal('kwh')
+        net = req_decimal('net')
+        vat = req_decimal('vat')
+        gross = req_decimal('gross')
+        bill_type_id = req_int('bill_type_id')
+        bill_type = BillType.get_by_id(g.sess, bill_type_id)
+        breakdown_str = req_str('breakdown')
+        breakdown = loads(breakdown_str)
+        bill_type = BillType.get_by_id(g.sess, bill_type_id)
+        batch.insert_bill(
+            g.sess, account, bill_reference, issue_date, start_date,
+            finish_date, kwh, net, vat, gross, bill_type, breakdown,
+            era.supply)
+        g.sess.commit()
+        return chellow_redirect('/supplies/' + str(era.supply.id), 303)
+    except BadRequest as e:
+        g.sess.rollback()
+        flash(e.description)
+        bill_types = g.sess.query(BillType).order_by(BillType.code)
+        return make_response(
+            render_template(
+                'era_supplier_bill_add.html', era=era, bill_types=bill_types,
+                start_date=None, account=None),
+            400)
+
+
 @app.route('/supplies')
 def supplies_get():
     if 'search_pattern' in request.args:

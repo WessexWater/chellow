@@ -314,7 +314,10 @@
             <div class="noWrap">
                 <table class="DataTable widthAuto noMarginBottom">
                     {% set imp_bills = era_bundle['imp_bills'] %}
-                    <caption>Import Supplier Bills</caption>
+                    <caption>
+											Import Supplier Bills
+											[<a href="/eras/{{era.id}}/add_supplier_bill">add</a>]
+										</caption>
                     <thead>
                         <tr>
                             <th rowspan="2">View</th>

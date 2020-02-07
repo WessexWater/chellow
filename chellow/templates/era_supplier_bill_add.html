@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+
+{% block title %}
+	&raquo; Supplies &raquo; {{era.supply.id}} &raquo;
+	Add Import Supplier Batch And Bill
+{% endblock %}
+
+{% block inside_head %}
+	<style>
+    fieldset.grid {
+      display: inline-grid;
+      grid-template-columns: auto auto;
+      column-gap: 1em;
+    }
+	</style>
+{% endblock %}
+
+{% block nav %}
+	<a href="/supplies">Supplies</a> &raquo; 
+	<a href="/supplies/{{era.supply.id}}">{{era.supply.name}}</a> &raquo; 
+	Era {{era.start_date|hh_format}} Add Import Supplier Batch And Bill
+{% endblock %}
+
+{% block content %}
+<!-- Layer Section -->
+	<div class="layer-section">
+		<!-- Section Header -->
+		<div class="section-header">
+			<h2>Add An Import Supplier Batch And Bill</h2>
+		</div>
+		<!-- End Section Header -->
+		<!-- Section Content -->
+		<div class="section-content">
+			<div class="section-data">
+				<table class="DataTable widthAuto">
+					<tr>
+						<th>Import Supplier Contract</th>
+						<td>{{era.imp_supplier_contract.name}}</td>
+					</tr>
+					<tr>
+						<th>Import MPAN Core</th>
+						<td>{{era.imp_mpan_core}}</td>
+					</tr>
+				</table>
+				<form action="/eras/{{era.id}}/add_supplier_bill" method="post">
+					<fieldset>
+						<fieldset class="grid">
+							<legend>Batch</legend>
+							<label>Reference</label> {{input_text('batch_reference', size=20)}}
+							<label>Description</label> {{input_text('batch_description')}}
+						</fieldset>
+						<br>
+						<fieldset class="grid">
+							<legend>Bill</legend>
+							<label>Reference</label> {{input_text('bill_reference', size_20)}}
+									
+							<label>Issue Date</label>
+							<fieldset>
+								{{input_date('issue')}}
+							</fieldset>
+									
+							<label>Start Date</label>
+							<fieldset>
+								{{input_date('start', start_date)}}
+							</fieldset>
+									
+							<label>Finish Date</label>
+							<fieldset>
+								{{input_date('finish')}}
+							</fieldset>
+																	
+							<label>kWh</label> {{input_text('kwh', '0')}}
+							<label>Net</label> {{input_text('net', '0.00')}}
+							<label>VAT</label> {{input_text('vat', '0.00')}}
+							<label>Gross</label> {{input_text('gross', '0.00')}}
+							<label>Account</label> {{input_text('account', account)}}
+							<label>Type</label>
+							<select name="bill_type_id">
+								{% for bill_type in bill_types %}
+									<p>{{normal_bill_type_id}} {{bill_type.id}}</p>
+										{{input_option('bill_type_id', bill_type.id, bill_type.code, normal_bill_type_id)}}
+								{% endfor %}
+							</select>
+							<label>Breakdown</label>
+							{{input_text('breakdown', '{}')}}
+						</fieldset>
+						<br>
+						<br>
+						<input type="submit" value="Add">
+					</fieldset>
+				</form>
+			</div>
+		</div>
+		<!-- End Section Content -->
+	</div>
+	<!-- End Layer Section -->
+	
+{% endblock %}
