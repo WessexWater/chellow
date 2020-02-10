@@ -500,14 +500,14 @@ class SiteSource(DataSource):
             self.ssc = self.era.ssc
             self.ssc_code = None if self.ssc is None else self.ssc.code
 
-        supply_ids = set(
-            s.id for s in sess.query(Supply).join(Era).join(SiteEra).
+        self.era_ids = set(
+            s.id for s in sess.query(Era).join(SiteEra).join(Supply).
             join(Source).filter(
                 SiteEra.site == site, Era.start_date <= self.history_finish,
                 SiteEra.is_physical, Source.code != 'sub', or_(
                     Era.finish_date == null(),
-                    Era.finish_date >= self.history_start)).distinct().all())
-        if len(supply_ids) == 0:
+                    Era.finish_date >= self.history_start)).all())
+        if len(self.era_ids) == 0:
             rs = iter([])
         else:
             rs = iter(
@@ -518,7 +518,7 @@ class SiteSource(DataSource):
                     Channel.channel_type == 'ACTIVE',
                     HhDatum.start_date >= self.history_start,
                     HhDatum.start_date <= self.history_finish,
-                    Supply.id.in_(list(supply_ids))).order_by(
+                    Era.id.in_(list(self.era_ids))).order_by(
                         HhDatum.start_date))
 
         hh_value, hh_start_date, imp_related, source_code = next(
