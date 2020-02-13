@@ -177,6 +177,18 @@
       },
       "sc": 400,
 
+      /* Properties are combined with the existing era properties, with the
+         ones here overwriting any duplicates */
+      "properties_overwrite": {
+        "comms_type": "GSM"
+      },
+
+      /* Properties are combined with the existing era properties, with the
+         ones here being overwritten by any duplicates */
+      "properties_overwritten": {
+        "meter_type": "H"
+      },
+
       /* Use hh data  rather than register reads for AMRs */
       "use_amr_hh_data": false
     }

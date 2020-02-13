@@ -493,6 +493,11 @@ class SiteSource(DataSource):
             else:
                 self.sc = era.imp_sc
 
+            self.properties = self.era_map.get('properties_overwritten', {})
+            self.properties.update(era.props)
+            self.properties.update(
+                self.era_map.get('properties_overwrite', {}))
+
             self.is_import = True
             self.voltage_level_code = self.llfc.voltage_level.code
             self.is_substation = self.llfc.is_substation
@@ -764,6 +769,11 @@ class SupplySource(DataSource):
             self.cop_code = self.era_map_cops[era.cop.code]
         else:
             self.cop_code = era.cop.code
+
+        self.properties = dict(self.era_map.get('properties_overwritten', {}))
+        self.properties.update(era.props)
+        self.properties.update(
+            self.era_map.get('properties_overwrite', {}))
 
         self.id = self.mpan_core
         self.msn = era.msn
