@@ -103,7 +103,8 @@
 {%- endmacro -%}
 
 {% macro input_textarea(name, initial, rows, cols, placeholder=None) -%}
-  <textarea name="{{ name }}" rows="{{ rows }}" cols="{{ cols }}"
+  <textarea id="{{ name }}" name="{{ name }}" rows="{{ rows }}"
+    cols="{{ cols }}"
     {%- if placeholder %} placeholder="{{ placeholder }}"{% endif %}>
     {%- if request.values[name] -%}
       {{ request.values[name] }}

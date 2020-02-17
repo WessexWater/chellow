@@ -453,13 +453,16 @@ def virtual_bill(ds):
         'path': '/dc_contracts/9/edit',
         'status_code': 200,
         'regexes': [
-            r'<textarea name="charge_script" rows="40" cols="80">\s*'
+            r'<textarea id="charge_script" name="charge_script" rows="40"\s*'
+            r'cols="80">\s*'
             r'from chellow.utils import reduce_bill_hhs\s*'
             r'def virtual_bill_title',
-            r'<textarea name="properties" rows="40" cols="80">\{\s*'
+            r'<textarea id="properties" name="properties" rows="40"\s*'
+            r'cols="80">\{\s*'
             r'&#34;props&#34;: 1\s*'
             r'\}</textarea>',
-            r'<textarea name="state" rows="40" cols="80">\{\s*'
+            r'<textarea id="state" name="state" rows="40"\s*'
+            r'cols="80">\{\s*'
             r'&#34;stat&#34;: 2\s*'
             r'\}</textarea>'
         ]
@@ -535,7 +538,8 @@ def virtual_bill(ds):
         'path': '/supplier_contracts/10/edit',
         'regexes': [
             r'<option value="33" selected>',
-            r'<textarea name="properties" rows="20" cols="80">\{\s*'
+            r'<textarea id="properties" name="properties" rows="20"\s*'
+            r'cols="80">\{\s*'
             r'&#34;hydrogen&#34;: &#34;sonata&#34;\s*'
             r'\}</textarea>'
         ],
