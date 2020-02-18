@@ -67,12 +67,9 @@ def content(
     tmp_file = sess = bill = None
     forecast_date = to_utc(Datetime.max)
     sess = None
+    fname_additional = ''
     try:
         sess = Session()
-        running_name, finished_name = chellow.dloads.make_names(
-            'bill_check.csv', user)
-        tmp_file = open(running_name, mode='w', newline='')
-        writer = csv.writer(tmp_file, lineterminator='\n')
         bills = sess.query(Bill).order_by(
             Bill.supply_id, Bill.reference).options(
             joinedload(Bill.supply),
@@ -83,10 +80,12 @@ def content(
             batch = Batch.get_by_id(sess, batch_id)
             bills = bills.filter(Bill.batch == batch)
             contract = batch.contract
+            fname_additional = '_batch_' + batch.reference
         elif bill_id is not None:
             bill = Bill.get_by_id(sess, bill_id)
             bills = bills.filter(Bill.id == bill.id)
             contract = bill.batch.contract
+            fname_additional = '_bill_' + str(bill.id)
         elif contract_id is not None:
             contract = Contract.get_by_id(sess, contract_id)
             bills = bills.join(Batch).filter(
@@ -105,6 +104,12 @@ def content(
                         ).distinct()
                 ]
                 bills = bills.join(Supply).filter(Supply.id.in_(supply_ids))
+            fname_additional = '_contract_' + str(contract.id)
+
+        running_name, finished_name = chellow.dloads.make_names(
+            'bill_check' + fname_additional + '.csv', user)
+        tmp_file = open(running_name, mode='w', newline='')
+        writer = csv.writer(tmp_file, lineterminator='\n')
 
         vbf = chellow.computer.contract_func(caches, contract, 'virtual_bill')
         if vbf is None:
