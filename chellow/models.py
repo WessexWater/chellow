@@ -33,7 +33,8 @@ config = {
     'PGPASSWORD': 'postgres',
     'PGHOST': 'localhost',
     'PGDATABASE': 'chellow',
-    'PGPORT': '5432'}
+    'PGPORT': '5432'
+}
 
 
 if 'RDS_HOSTNAME' in os.environ:
@@ -4756,13 +4757,25 @@ def db_upgrade_19_to_20(sess, root_path):
         "alter table g_era alter g_reading_frequency_id set not null;")
 
 
+def db_upgrade_20_to_21(sess, root_path):
+    market_role_id = sess.execute(
+        "select id from market_role where code = 'Z'").fetchone()[0]
+    sess.execute(
+        "update contract set charge_script = '' where "
+        "market_role_id = :market_role_id and name = 'bsuos';",
+        {
+            'market_role_id': market_role_id
+        })
+
+
 upgrade_funcs = [
     db_upgrade_0_to_1, db_upgrade_1_to_2, db_upgrade_2_to_3, db_upgrade_3_to_4,
     db_upgrade_4_to_5, db_upgrade_5_to_6, db_upgrade_6_to_7, db_upgrade_7_to_8,
     db_upgrade_8_to_9, db_upgrade_9_to_10, db_upgrade_10_to_11,
     db_upgrade_11_to_12, db_upgrade_12_to_13, db_upgrade_13_to_14,
     db_upgrade_14_to_15, db_upgrade_15_to_16, db_upgrade_16_to_17,
-    db_upgrade_17_to_18, db_upgrade_18_to_19, db_upgrade_19_to_20]
+    db_upgrade_17_to_18, db_upgrade_18_to_19, db_upgrade_19_to_20,
+    db_upgrade_20_to_21]
 
 
 def db_upgrade(root_path):
