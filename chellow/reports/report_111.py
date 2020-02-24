@@ -76,6 +76,17 @@ def content(
             subqueryload(Bill.reads).joinedload(RegisterRead.present_type),
             subqueryload(Bill.reads).joinedload(RegisterRead.previous_type),
             joinedload(Bill.batch))
+
+        if len(mpan_cores) > 0:
+            mpan_cores = list(map(parse_mpan_core, mpan_cores))
+            supply_ids = [
+                i[0] for i in sess.query(Era.supply_id).filter(
+                    or_(
+                        Era.imp_mpan_core.in_(mpan_cores),
+                        Era.exp_mpan_core.in_(mpan_cores))).distinct()
+            ]
+            bills = bills.join(Supply).filter(Supply.id.in_(supply_ids))
+
         if batch_id is not None:
             batch = Batch.get_by_id(sess, batch_id)
             bills = bills.filter(Bill.batch == batch)
@@ -91,19 +102,6 @@ def content(
             bills = bills.join(Batch).filter(
                 Batch.contract == contract, Bill.start_date <= finish_date,
                 Bill.finish_date >= start_date)
-            if len(mpan_cores) > 0:
-                mpan_cores = list(map(parse_mpan_core, mpan_cores))
-                supply_ids = [
-                    i[0] for i in sess.query(Era.supply_id).filter(
-                        Era.start_date <= finish_date, or_(
-                            Era.finish_date == null(),
-                            Era.finish_date >= start_date),
-                        or_(
-                            Era.imp_mpan_core.in_(mpan_cores),
-                            Era.exp_mpan_core.in_(mpan_cores))
-                        ).distinct()
-                ]
-                bills = bills.join(Supply).filter(Supply.id.in_(supply_ids))
             fname_additional = '_contract_' + str(contract.id)
 
         running_name, finished_name = chellow.dloads.make_names(
@@ -170,7 +168,11 @@ def content(
 
 def do_get(sess):
     batch_id = bill_id = contract_id = start_date = finish_date = None
-    mpan_cores = []
+    if 'mpan_cores' in request.values:
+        mpan_cores = req_str('mpan_cores').splitlines()
+    else:
+        mpan_cores = []
+
     if 'batch_id' in request.values:
         batch_id = req_int("batch_id")
     elif 'bill_id' in request.values:
@@ -179,8 +181,6 @@ def do_get(sess):
         contract_id = req_int("contract_id")
         start_date = req_date("start_date")
         finish_date = req_date("finish_date")
-        if 'mpan_cores' in request.values:
-            mpan_cores = req_str('mpan_cores').splitlines()
     else:
         raise BadRequest(
             "The bill check needs a batch_id, a bill_id or a start_date "

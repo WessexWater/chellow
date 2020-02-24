@@ -139,12 +139,16 @@
         'status_code': 200,
         'regexes': [
             r"Minority Report",
-            r'<a href="/local_reports/1">View</a>']},
+            r'<a href="/local_reports/1">View</a>'
+        ]
+    },
     {
         'path': '/local_reports/1',
         'status_code': 200,
         'regexes': [
-            r"Minority Report"]},
+            r"Minority Report"
+        ]
+    },
     {
         'name': "Check duplicate report name gives good error message",
         'path': '/local_reports',
@@ -153,7 +157,9 @@
             'name': "Minority Report"},
         'status_code': 400,
         'regexes': [
-            r"There's already a report with that name\."]},
+            r"There's already a report with that name\."
+        ]
+    },
 
     {
         'name': "Valid general import of sites",
@@ -5080,7 +5086,9 @@ def virtual_bill(ds):
             r"<td>2010-06-09 01:00</td>\s*<td>2010-05-01 01:00</td>\s*"
             r"<td>2010-06-01 00:30</td>\s*<td>32124.5</td>\s*"
             r"<td>2219.41</td>\s*<td>388.40</td>\s*<td>2607.81</td>",
-            r'<a\s*href="/reports/111\?batch_id=6"\s*>Check Bills</a>'
+            r'<form action="/reports/111">\s*'
+            r'<fieldset>\s*'
+            r'<input type="hidden" name="batch_id" value="6">'
         ],
         'status_code': 200
     },
@@ -21214,6 +21222,28 @@ def virtual_bill(ds):
     {
         'name': "DTC meter types",
         'path': '/dtc_meter_types',
+        'status_code': 200
+    },
+
+    {
+
+        'name': "Supplier batch with MPAN cores",
+        'path': '/reports/111?batch_id=7&mpan_cores=22+1065+3921+534',
+        'status_code': 303
+    },
+    {
+        'name': "Supplier batch with MPAN cores",
+        'path': '/downloads',
+        'tries': {},
+        'regexes': [
+            r"00033_FINISHED_adminexamplecom_bill_check_batch_07-002\.csv"
+        ],
+        'status_code': 200
+    },
+    {
+        'name': "Supplier batch with MPAN cores",
+        'path': '/downloads/'
+        '00033_FINISHED_adminexamplecom_bill_check_batch_07-002.csv',
         'status_code': 200
     }
 ]

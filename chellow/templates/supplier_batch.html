@@ -71,11 +71,6 @@
 				<ul>
 					<li>
 						<a
-								href="/reports/111?batch_id={{batch.id}}"
-								>Check Bills</a>
-					</li>
-					<li>
-						<a
 								href="/supplier_bill_imports?supplier_batch_id={{batch.id}}"
 								>Bill Imports</a>
 					</li>
@@ -86,6 +81,20 @@
 					</li>
 				</ul>
 			</div>
+				<div class="section-data">
+					<form action="/reports/111">
+						<fieldset>
+							<input type="hidden" name="batch_id" value="{{batch.id}}">
+							<legend>Download Bill Check</legend>
+							<br>
+							<label>MPAN Cores</label><br>
+							{{input_textarea('mpan_cores', '', 5, 40, placeholder='One on each line, includes all if left blank')}}
+							<br>
+							<br>
+							<input type="submit" value="Download">
+						</fieldset>
+					</form>
+				</div>
 		</div>
 	</div>
 
