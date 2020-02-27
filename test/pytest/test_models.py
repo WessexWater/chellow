@@ -1,4 +1,4 @@
-from chellow.models import Era, Mtc
+from chellow.models import Era, Mtc, Contract
 from chellow.utils import utc_datetime
 import pytest
 from werkzeug.exceptions import BadRequest
@@ -95,3 +95,72 @@ def test_update_Era_llfc_valid_to(mocker):
             imp_llfc_code, imp_supplier_contract, mocker.Mock(), mocker.Mock(),
             mocker.Mock(), mocker.Mock(), mocker.Mock(), mocker.Mock(),
             mocker.Mock(), mocker.Mock())
+
+
+def test_Contract_get_next_batch_details(mocker):
+    MockBatch = mocker.patch('chellow.models.Batch', autospec=True)
+    MockBatch.contract = mocker.Mock()
+    instance = mocker.Mock()
+
+    batch_description = "A King"
+    batch = mocker.Mock()
+    batch.reference = "king-098"
+    batch.description = batch_description
+
+    returns = iter([batch])
+
+    class Sess():
+        def query(self, *args):
+            return self
+
+        def join(self, *args):
+            return self
+
+        def order_by(self, *args):
+            return self
+
+        def filter(self, *args):
+            return self
+
+        def first(self, *args):
+            return next(returns)
+
+    sess = Sess()
+    ref, desc = Contract.get_next_batch_details(instance, sess)
+    assert ref == "king-099"
+    assert desc == batch_description
+
+
+def test_Contract_get_next_batch_details__no_suffix(mocker):
+    MockBatch = mocker.patch('chellow.models.Batch', autospec=True)
+    MockBatch.contract = mocker.Mock()
+    instance = mocker.Mock()
+
+    batch_reference = "king"
+    batch_description = "A King"
+    batch = mocker.Mock()
+    batch.reference = batch_reference
+    batch.description = batch_description
+
+    returns = iter([batch])
+
+    class Sess():
+        def query(self, *args):
+            return self
+
+        def join(self, *args):
+            return self
+
+        def order_by(self, *args):
+            return self
+
+        def filter(self, *args):
+            return self
+
+        def first(self, *args):
+            return next(returns)
+
+    sess = Sess()
+    ref, desc = Contract.get_next_batch_details(instance, sess)
+    assert ref == batch_reference
+    assert desc == batch_description

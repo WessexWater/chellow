@@ -2141,20 +2141,28 @@ def era_edit_post(era_id):
 def era_supplier_bill_add_get(era_id):
     era = Era.get_by_id(g.sess, era_id)
     bill_types = g.sess.query(BillType).order_by(BillType.code)
-    supply = start_date = account = None
+    start_date = account = None
     normal_bill_type_id = g.sess.query(BillType.id).filter(
         BillType.code == 'N').scalar()
     latest_bill = g.sess.query(Bill).join(Batch).join(Contract).join(
         MarketRole).filter(
-        Bill.supply == supply, MarketRole.code == 'X').order_by(
+        Bill.supply == era.supply, MarketRole.code == 'X').order_by(
         Bill.start_date.desc()).first()
-    if latest_bill is not None:
+
+    if latest_bill is None:
+        next_batch_reference = next_batch_description = ''
+    else:
         start_date = latest_bill.finish_date + HH
         account = latest_bill.account
+        next_batch_reference, next_batch_description = \
+            latest_bill.batch.contract.get_next_batch_details(g.sess)
+
     return render_template(
         'era_supplier_bill_add.html', era=era, bill_types=bill_types,
         start_date=start_date, account=account,
-        normal_bill_type_id=normal_bill_type_id)
+        normal_bill_type_id=normal_bill_type_id,
+        next_batch_reference=next_batch_reference,
+        next_batch_description=next_batch_description)
 
 
 @app.route('/eras/<int:era_id>/add_supplier_bill', methods=['POST'])
@@ -2724,8 +2732,12 @@ def supplier_batch_add_get(contract_id):
     contract = Contract.get_supplier_by_id(g.sess, contract_id)
     batches = g.sess.query(Batch).filter(
         Batch.contract == contract).order_by(Batch.reference.desc())
+    next_batch_reference, next_batch_description = \
+        contract.get_next_batch_details(g.sess)
     return render_template(
-        'supplier_batch_add.html', contract=contract, batches=batches)
+        'supplier_batch_add.html', contract=contract, batches=batches,
+        next_batch_reference=next_batch_reference,
+        next_batch_description=next_batch_description)
 
 
 @app.route('/supplier_contracts/<int:contract_id>/add_batch', methods=['POST'])

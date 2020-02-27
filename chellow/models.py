@@ -26,6 +26,7 @@ from binascii import hexlify, unhexlify
 from decimal import Decimal
 from zish import dumps, loads, ZishException
 from collections.abc import Mapping
+from itertools import takewhile
 
 
 config = {
@@ -1091,6 +1092,24 @@ class Contract(Base, PersistentClass):
             raise BadRequest(
                 "The batch '" + reference + "' can't be found.")
         return batch
+
+    def get_next_batch_details(self, sess):
+        batch = sess.query(Batch).filter(Batch.contract == self).order_by(
+            Batch.reference.desc()).first()
+        if batch is None:
+            ref = desc = ""
+        else:
+            last = batch.reference
+            digits = ''.join(list(takewhile(str.isdigit, last[::-1]))[::-1])
+            prefix = last[:len(last) - len(digits)]
+            if len(digits) > 0:
+                suffix = str(int(digits) + 1).zfill(len(digits))
+            else:
+                suffix = ''
+            ref = prefix + suffix
+            desc = batch.description
+
+        return ref, desc
 
 
 class Site(Base, PersistentClass):

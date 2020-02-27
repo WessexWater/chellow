@@ -22,7 +22,7 @@
 {% endblock %}
 
 {% block content %}
-<!-- Layer Section -->
+	<!-- Layer Section -->
 	<div class="layer-section">
 		<!-- Section Header -->
 		<div class="section-header">
@@ -46,8 +46,12 @@
 					<fieldset>
 						<fieldset class="grid">
 							<legend>Batch</legend>
-							<label>Reference</label> {{input_text('batch_reference', size=20)}}
-							<label>Description</label> {{input_text('batch_description')}}
+							<label>Reference</label>
+							{{input_text(
+							  'batch_reference', next_batch_reference, size=20)}}
+							<label>Description</label>
+							{{input_text(
+								'batch_description', placeholder=next_batch_description)}}
 						</fieldset>
 						<br>
 						<fieldset class="grid">

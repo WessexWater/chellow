@@ -33,12 +33,15 @@
 						<input type="hidden" name="supplier_contract_id" value="{{contract.id}}">
 						<div class="row">
 							<div class="col-sm-4">
-								<label>Reference</label> {{ input_text('reference', '') }}
+								<label>Reference</label>
+							 	{{ input_text('reference', next_batch_reference) }}
 							</div>
 						</div>			
 						<div class="row">
 							<div class="col-sm-4">
-								<label>Description</label> {{ input_text('description', '') }}
+								<label>Description</label>
+							 	{{ input_text(
+									'description', '', placeholder=next_batch_description) }}
 							</div>
 						</div>  			
 						<input type="submit" value="Add">
