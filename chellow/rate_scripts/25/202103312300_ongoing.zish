@@ -1,0 +1,2727 @@
+{
+  "_A": {
+    "bands": [
+      {
+        "band": "red",
+        "finish": 19,
+        "start": 16,
+        "weekend": false
+      },
+      {
+        "band": "amber",
+        "finish": 16,
+        "start": 7,
+        "weekend": false
+      },
+      {
+        "band": "amber",
+        "finish": 23,
+        "start": 19,
+        "weekend": false
+      }
+    ],
+    "super_red": [],
+    "tariffs": {
+      "020,061,107_00": {
+        "amber-gbp-per-kwh": 0.00485,
+        "description": "LV Site Specific",
+        "excess-gbp-per-kva-per-day": 0.07310,
+        "gbp-per-kva-per-day": 0.03490,
+        "gbp-per-kvarh": 0.00323,
+        "gbp-per-mpan-per-day": 0.10770,
+        "green-gbp-per-kwh": 0.00224,
+        "red-gbp-per-kwh": 0.09860
+      },
+      "021,674_00": {
+        "amber-gbp-per-kwh": 0.00360,
+        "description": "LV Sub Site Specific",
+        "excess-gbp-per-kva-per-day": 0.06350,
+        "gbp-per-kva-per-day": 0.04850,
+        "gbp-per-kvarh": 0.00210,
+        "gbp-per-mpan-per-day": 0.07970,
+        "green-gbp-per-kwh": 0.00203,
+        "red-gbp-per-kwh": 0.07039
+      },
+      "059,065,675
+122,056,676
+66,067,677
+68,072,678
+123,060,679_01,08,00": {
+        "amber-gbp-per-kwh": 0.01326,
+        "description": "Unmetered Supplies",
+        "excess-gbp-per-kva-per-day": 0.00000,
+        "gbp-per-kva-per-day": 0.00000,
+        "gbp-per-kvarh": 0.00000,
+        "gbp-per-mpan-per-day": 0.00000,
+        "green-gbp-per-kwh": 0.00894,
+        "red-gbp-per-kwh": 0.41646
+      },
+      "062,012_00": {
+        "amber-gbp-per-kwh": 0.00307,
+        "description": "HV Site Specific",
+        "excess-gbp-per-kva-per-day": 0.05630,
+        "gbp-per-kva-per-day": 0.04010,
+        "gbp-per-kvarh": 0.00169,
+        "gbp-per-mpan-per-day": 1.06150,
+        "green-gbp-per-kwh": 0.00195,
+        "red-gbp-per-kwh": 0.05798
+      },
+      "064,177,178,183_00": {
+        "amber-gbp-per-kwh": -0.00164,
+        "description": "HV Generation Site Specific",
+        "excess-gbp-per-kva-per-day": 0.00000,
+        "gbp-per-kva-per-day": 0.00000,
+        "gbp-per-kvarh": 0.00210,
+        "gbp-per-mpan-per-day": 0.08970,
+        "green-gbp-per-kwh": -0.00025,
+        "red-gbp-per-kwh": -0.06242
+      },
+      "069,050,023,057,051,173,294,296,175_01,02,00": {
+        "amber-gbp-per-kwh": 0.00710,
+        "description": "Domestic Aggregated",
+        "excess-gbp-per-kva-per-day": 0.00000,
+        "gbp-per-kva-per-day": 0.00000,
+        "gbp-per-kvarh": 0.00000,
+        "gbp-per-mpan-per-day": 0.03970,
+        "green-gbp-per-kwh": 0.00261,
+        "red-gbp-per-kwh": 0.15577
+      },
+      "070,052,024,058,053,042,071,055,101,378,379,673_03,04,05,06,07,08,00": {
+        "amber-gbp-per-kwh": 0.00676,
+        "description": "Non-Domestic Aggregated",
+        "excess-gbp-per-kva-per-day": 0.00000,
+        "gbp-per-kva-per-day": 0.00000,
+        "gbp-per-kvarh": 0.00000,
+        "gbp-per-mpan-per-day": 0.04110,
+        "green-gbp-per-kwh": 0.00255,
+        "red-gbp-per-kwh": 0.14585
+      },
+      "126,063,680_08,00": {
+        "amber-gbp-per-kwh": -0.00329,
+        "description": "LV Generation Aggregated",
+        "excess-gbp-per-kva-per-day": 0.00000,
+        "gbp-per-kva-per-day": 0.00000,
+        "gbp-per-kvarh": 0.00000,
+        "gbp-per-mpan-per-day": 0.00000,
+        "green-gbp-per-kwh": -0.00052,
+        "red-gbp-per-kwh": -0.09468
+      },
+      "127,073,682,128,172,683_00": {
+        "amber-gbp-per-kwh": -0.00329,
+        "description": "LV Generation Site Specific",
+        "excess-gbp-per-kva-per-day": 0.00000,
+        "gbp-per-kva-per-day": 0.00000,
+        "gbp-per-kvarh": 0.00293,
+        "gbp-per-mpan-per-day": 0.00000,
+        "green-gbp-per-kwh": -0.00052,
+        "red-gbp-per-kwh": -0.09468
+      },
+      "174,684,176,685_00": {
+        "amber-gbp-per-kwh": -0.00279,
+        "description": "LV Sub Generation Site Specific",
+        "excess-gbp-per-kva-per-day": 0.00000,
+        "gbp-per-kva-per-day": 0.00000,
+        "gbp-per-kvarh": 0.00259,
+        "gbp-per-mpan-per-day": 0.00000,
+        "green-gbp-per-kwh": -0.00044,
+        "red-gbp-per-kwh": -0.08450
+      },
+      "864,681_00": {
+        "amber-gbp-per-kwh": -0.00279,
+        "description": "LV Sub Generation Aggregated",
+        "excess-gbp-per-kva-per-day": 0.00000,
+        "gbp-per-kva-per-day": 0.00000,
+        "gbp-per-kvarh": 0.00000,
+        "gbp-per-mpan-per-day": 0.00000,
+        "green-gbp-per-kwh": -0.00044,
+        "red-gbp-per-kwh": -0.08450
+      },
+      "_00": {
+        "amber-gbp-per-kwh": -0.00164,
+        "description": "HV Generation Site Specific no RP charge",
+        "excess-gbp-per-kva-per-day": 0.00000,
+        "gbp-per-kva-per-day": 0.00000,
+        "gbp-per-kvarh": 0.00000,
+        "gbp-per-mpan-per-day": 0.08970,
+        "green-gbp-per-kwh": -0.00025,
+        "red-gbp-per-kwh": -0.06242
+      },
+      "_02": {
+        "amber-gbp-per-kwh": 0.00710,
+        "description": "Domestic Aggregated (related MPAN)",
+        "excess-gbp-per-kva-per-day": 0.00000,
+        "gbp-per-kva-per-day": 0.00000,
+        "gbp-per-kvarh": 0.00000,
+        "gbp-per-mpan-per-day": 0.00000,
+        "green-gbp-per-kwh": 0.00261,
+        "red-gbp-per-kwh": 0.15577
+      },
+      "_04": {
+        "amber-gbp-per-kwh": 0.00676,
+        "description": "Non-Domestic Aggregated (related MPAN)",
+        "excess-gbp-per-kva-per-day": 0.00000,
+        "gbp-per-kva-per-day": 0.00000,
+        "gbp-per-kvarh": 0.00000,
+        "gbp-per-mpan-per-day": 0.00000,
+        "green-gbp-per-kwh": 0.00255,
+        "red-gbp-per-kwh": 0.14585
+      }
+    }
+  }
+  "_E": {
+    "bands": [
+      {
+        "band": "red",
+        "finish": 19,
+        "start": 16,
+        "weekend": false
+      },
+      {
+        "band": "amber",
+        "finish": 16,
+        "start": 7.5,
+        "weekend": false
+      },
+      {
+        "band": "amber",
+        "finish": 21,
+        "start": 19,
+        "weekend": false
+      }
+    ],
+    "super_red": [
+      {
+        "finish-day": "last",
+        "finish-month": 2,
+        "finish_hour": 19,
+        "start-day": 1,
+        "start-month": 11,
+        "start_hour": 16,
+        "weekend": false
+      }
+    ],
+    "tariffs": {
+      "025,031,730
+248,032,731
+78,119,732
+124,135,733
+249,033,734_00,01,08": {
+        "amber-gbp-per-kwh": 0.02511,
+        "description": "Unmetered Supplies",
+        "excess-gbp-per-kva-per-day": 0.00000,
+        "gbp-per-kva-per-day": 0.00000,
+        "gbp-per-kvarh": 0.00000,
+        "gbp-per-mpan-per-day": 0.00000,
+        "green-gbp-per-kwh": 0.02030,
+        "red-gbp-per-kwh": 0.16609
+      },
+      "035,245_00": {
+        "amber-gbp-per-kwh": 0.01295,
+        "description": "HV Site Specific",
+        "excess-gbp-per-kva-per-day": 0.06800,
+        "gbp-per-kva-per-day": 0.05160,
+        "gbp-per-kvarh": 0.00056,
+        "gbp-per-mpan-per-day": 0.89740,
+        "green-gbp-per-kwh": 0.01097,
+        "red-gbp-per-kwh": 0.02544
+      },
+      "037,270,271,272_00": {
+        "amber-gbp-per-kwh": -0.00274,
+        "description": "HV Generation Site Specific",
+        "excess-gbp-per-kva-per-day": 0.00000,
+        "gbp-per-kva-per-day": 0.00000,
+        "gbp-per-kvarh": 0.00121,
+        "gbp-per-mpan-per-day": 0.56050,
+        "green-gbp-per-kwh": -0.00014,
+        "red-gbp-per-kwh": -0.01976
+      },
+      "221,030,220,222,223,243,217,218,644_01,02,05,06,07,08": {
+        "amber-gbp-per-kwh": 0.01903,
+        "description": "Domestic Aggregated",
+        "excess-gbp-per-kva-per-day": 0.00000,
+        "gbp-per-kva-per-day": 0.00000,
+        "gbp-per-kvarh": 0.00000,
+        "gbp-per-mpan-per-day": 0.04970,
+        "green-gbp-per-kwh": 0.01169,
+        "red-gbp-per-kwh": 0.07704
+      },
+      "224,225,266,226,227,268,228,229,041,219,239,727_03,04,05,06,07,08": {
+        "amber-gbp-per-kwh": 0.02013,
+        "description": "Non-Domestic Aggregated",
+        "excess-gbp-per-kva-per-day": 0.00000,
+        "gbp-per-kva-per-day": 0.00000,
+        "gbp-per-kvarh": 0.00000,
+        "gbp-per-mpan-per-day": 0.09070,
+        "green-gbp-per-kwh": 0.01179,
+        "red-gbp-per-kwh": 0.08601
+      },
+      "242,034,728_00": {
+        "amber-gbp-per-kwh": 0.01700,
+        "description": "LV Site Specific",
+        "excess-gbp-per-kva-per-day": 0.07880,
+        "gbp-per-kva-per-day": 0.04350,
+        "gbp-per-kvarh": 0.00199,
+        "gbp-per-mpan-per-day": 0.12610,
+        "green-gbp-per-kwh": 0.01141,
+        "red-gbp-per-kwh": 0.05898
+      },
+      "244,729_00": {
+        "amber-gbp-per-kwh": 0.01511,
+        "description": "LV Sub Site Specific",
+        "excess-gbp-per-kva-per-day": 0.06730,
+        "gbp-per-kva-per-day": 0.04870,
+        "gbp-per-kvarh": 0.00127,
+        "gbp-per-mpan-per-day": 0.09880,
+        "green-gbp-per-kwh": 0.01112,
+        "red-gbp-per-kwh": 0.04137
+      },
+      "261,036,735_00": {
+        "amber-gbp-per-kwh": -0.00566,
+        "description": "LV Generation Aggregated",
+        "excess-gbp-per-kva-per-day": 0.00000,
+        "gbp-per-kva-per-day": 0.00000,
+        "gbp-per-kvarh": 0.00000,
+        "gbp-per-mpan-per-day": 0.00000,
+        "green-gbp-per-kwh": -0.00055,
+        "red-gbp-per-kwh": -0.04600
+      },
+      "262,263,737,264,265,738_00": {
+        "amber-gbp-per-kwh": -0.00566,
+        "description": "LV Generation Site Specific",
+        "excess-gbp-per-kva-per-day": 0.00000,
+        "gbp-per-kva-per-day": 0.00000,
+        "gbp-per-kvarh": 0.00199,
+        "gbp-per-mpan-per-day": 0.00000,
+        "green-gbp-per-kwh": -0.00055,
+        "red-gbp-per-kwh": -0.04600
+      },
+      "267,739,269,740_00": {
+        "amber-gbp-per-kwh": -0.00480,
+        "description": "LV Sub Generation Site Specific",
+        "excess-gbp-per-kva-per-day": 0.00000,
+        "gbp-per-kva-per-day": 0.00000,
+        "gbp-per-kvarh": 0.00155,
+        "gbp-per-mpan-per-day": 0.00000,
+        "green-gbp-per-kwh": -0.00043,
+        "red-gbp-per-kwh": -0.03828
+      },
+      "267,739,643,736_00": {
+        "amber-gbp-per-kwh": -0.00480,
+        "description": "LV Sub Generation Aggregated",
+        "excess-gbp-per-kva-per-day": 0.00000,
+        "gbp-per-kva-per-day": 0.00000,
+        "gbp-per-kvarh": 0.00000,
+        "gbp-per-mpan-per-day": 0.00000,
+        "green-gbp-per-kwh": -0.00043,
+        "red-gbp-per-kwh": -0.03828
+      },
+      "ESP Electricity does not currently have EHV Designated EHV properties.": {
+        "excess-gbp-per-kva-per-day": 0.00000,
+        "gbp-per-day": 0.00000,
+        "gbp-per-kva-per-day": 0.00000,
+        "gbp-per-kwh": null
+      },
+      "_00": {
+        "amber-gbp-per-kwh": -0.00274,
+        "description": "HV Generation Site Specific no RP charge",
+        "excess-gbp-per-kva-per-day": 0.00000,
+        "gbp-per-kva-per-day": 0.00000,
+        "gbp-per-kvarh": 0.00000,
+        "gbp-per-mpan-per-day": 0.56050,
+        "green-gbp-per-kwh": -0.00014,
+        "red-gbp-per-kwh": -0.01976
+      },
+      "_02": {
+        "amber-gbp-per-kwh": 0.01903,
+        "description": "Domestic Aggregated (related MPAN)",
+        "excess-gbp-per-kva-per-day": 0.00000,
+        "gbp-per-kva-per-day": 0.00000,
+        "gbp-per-kvarh": 0.00000,
+        "gbp-per-mpan-per-day": 0.00000,
+        "green-gbp-per-kwh": 0.01169,
+        "red-gbp-per-kwh": 0.07704
+      },
+      "_04": {
+        "amber-gbp-per-kwh": 0.02013,
+        "description": "Non-Domestic Aggregated (related MPAN)",
+        "excess-gbp-per-kva-per-day": 0.00000,
+        "gbp-per-kva-per-day": 0.00000,
+        "gbp-per-kvarh": 0.00000,
+        "gbp-per-mpan-per-day": 0.00000,
+        "green-gbp-per-kwh": 0.01179,
+        "red-gbp-per-kwh": 0.08601
+      }
+    }
+  }
+  "_H": {
+    "bands": [
+      {
+        "band": "red",
+        "finish": 19.5,
+        "start": 16.5,
+        "weekend": false
+      },
+      {
+        "band": "amber",
+        "finish": 16.5,
+        "start": 7,
+        "weekend": false
+      },
+      {
+        "band": "amber",
+        "finish": 22,
+        "start": 19.5,
+        "weekend": false
+      },
+      {
+        "band": "amber",
+        "finish": 21.5,
+        "start": 9.5,
+        "weekend": true
+      }
+    ],
+    "super_red": [],
+    "tariffs": {
+      "131,383_00": {
+        "amber-gbp-per-kwh": 0.00646,
+        "description": "HV Site Specific",
+        "excess-gbp-per-kva-per-day": 0.06610,
+        "gbp-per-kva-per-day": 0.05400,
+        "gbp-per-kvarh": 0.00090,
+        "gbp-per-mpan-per-day": 1.73300,
+        "green-gbp-per-kwh": 0.00458,
+        "red-gbp-per-kwh": 0.03698
+      },
+      "349": {
+        "excess-gbp-per-kva-per-day": 0.01940,
+        "gbp-per-day": 0.20820,
+        "gbp-per-kva-per-day": 0.01940,
+        "gbp-per-kwh": 0.02139
+      },
+      "368,120,376,369,121,381,399,400,632_01,02,05,06,07,08": {
+        "amber-gbp-per-kwh": 0.01410,
+        "description": "Domestic Aggregated",
+        "excess-gbp-per-kva-per-day": 0.00000,
+        "gbp-per-kva-per-day": 0.00000,
+        "gbp-per-kvarh": 0.00000,
+        "gbp-per-mpan-per-day": 0.04060,
+        "green-gbp-per-kwh": 0.00502,
+        "red-gbp-per-kwh": 0.09017
+      },
+      "369": {
+        "excess-gbp-per-kva-per-day": 0.00050,
+        "gbp-per-day": 5.70600,
+        "gbp-per-kva-per-day": 0.00050,
+        "gbp-per-kwh": 0.00000
+      },
+      "370,371,391,372,373,393,374,375,401,402,636,377_03,04,05,06,07,08": {
+        "amber-gbp-per-kwh": 0.01429,
+        "description": "Non-Domestic Aggregated",
+        "excess-gbp-per-kva-per-day": 0.00000,
+        "gbp-per-kva-per-day": 0.00000,
+        "gbp-per-kvarh": 0.00000,
+        "gbp-per-mpan-per-day": 0.06040,
+        "green-gbp-per-kwh": 0.00503,
+        "red-gbp-per-kwh": 0.09183
+      },
+      "380,130,652_00": {
+        "amber-gbp-per-kwh": 0.01069,
+        "description": "LV Site Specific",
+        "excess-gbp-per-kva-per-day": 0.04780,
+        "gbp-per-kva-per-day": 0.02690,
+        "gbp-per-kvarh": 0.00215,
+        "gbp-per-mpan-per-day": 0.20390,
+        "green-gbp-per-kwh": 0.00482,
+        "red-gbp-per-kwh": 0.06817
+      },
+      "382,769_00": {
+        "amber-gbp-per-kwh": 0.00725,
+        "description": "LV Sub Site Specific",
+        "excess-gbp-per-kva-per-day": 0.06020,
+        "gbp-per-kva-per-day": 0.04530,
+        "gbp-per-kvarh": 0.00120,
+        "gbp-per-mpan-per-day": 0.32740,
+        "green-gbp-per-kwh": 0.00462,
+        "red-gbp-per-kwh": 0.04499
+      },
+      "388,132,775_00": {
+        "amber-gbp-per-kwh": -0.00639,
+        "description": "LV Generation Aggregated",
+        "excess-gbp-per-kva-per-day": 0.00000,
+        "gbp-per-kva-per-day": 0.00000,
+        "gbp-per-kvarh": 0.00000,
+        "gbp-per-mpan-per-day": 0.00000,
+        "green-gbp-per-kwh": -0.00032,
+        "red-gbp-per-kwh": -0.05720
+      },
+      "389,133,777,390,134,778_00": {
+        "amber-gbp-per-kwh": -0.00639,
+        "description": "LV Generation Site Specific",
+        "excess-gbp-per-kva-per-day": 0.00000,
+        "gbp-per-kva-per-day": 0.00000,
+        "gbp-per-kvarh": 0.00198,
+        "gbp-per-mpan-per-day": 0.00000,
+        "green-gbp-per-kwh": -0.00032,
+        "red-gbp-per-kwh": -0.05720
+      },
+      "392,779,394,780_00": {
+        "amber-gbp-per-kwh": -0.00521,
+        "description": "LV Sub Generation Site Specific",
+        "excess-gbp-per-kva-per-day": 0.00000,
+        "gbp-per-kva-per-day": 0.00000,
+        "gbp-per-kvarh": 0.00176,
+        "gbp-per-mpan-per-day": 0.00000,
+        "green-gbp-per-kwh": -0.00025,
+        "red-gbp-per-kwh": -0.05090
+      },
+      "395,396,397,398_00": {
+        "amber-gbp-per-kwh": -0.00262,
+        "description": "HV Generation Site Specific",
+        "excess-gbp-per-kva-per-day": 0.00000,
+        "gbp-per-kva-per-day": 0.00000,
+        "gbp-per-kvarh": 0.00153,
+        "gbp-per-mpan-per-day": 2.91750,
+        "green-gbp-per-kwh": -0.00008,
+        "red-gbp-per-kwh": -0.03917
+      },
+      "402": {
+        "excess-gbp-per-kva-per-day": 0.00050,
+        "gbp-per-day": 7.78340,
+        "gbp-per-kva-per-day": 0.00050,
+        "gbp-per-kwh": 0.00000
+      },
+      "403": {
+        "excess-gbp-per-kva-per-day": 0.00050,
+        "gbp-per-day": 13.38200,
+        "gbp-per-kva-per-day": 0.00050,
+        "gbp-per-kwh": 0.00000
+      },
+      "404": {
+        "excess-gbp-per-kva-per-day": 0.00050,
+        "gbp-per-day": 4.53200,
+        "gbp-per-kva-per-day": 0.00050,
+        "gbp-per-kwh": 0.00000
+      },
+      "450": {
+        "excess-gbp-per-kva-per-day": 0.00050,
+        "gbp-per-day": 5.32880,
+        "gbp-per-kva-per-day": 0.00050,
+        "gbp-per-kwh": 0.00000
+      },
+      "451": {
+        "excess-gbp-per-kva-per-day": 0.00050,
+        "gbp-per-day": 41.94070,
+        "gbp-per-kva-per-day": 0.00050,
+        "gbp-per-kwh": 0.00000
+      },
+      "452": {
+        "excess-gbp-per-kva-per-day": 0.01620,
+        "gbp-per-day": 0.25620,
+        "gbp-per-kva-per-day": 0.01620,
+        "gbp-per-kwh": 0.00255
+      },
+      "458": {
+        "excess-gbp-per-kva-per-day": 0.01350,
+        "gbp-per-day": 0.13170,
+        "gbp-per-kva-per-day": 0.01350,
+        "gbp-per-kwh": 0.01631
+      },
+      "459": {
+        "excess-gbp-per-kva-per-day": 0.01270,
+        "gbp-per-day": 0.06590,
+        "gbp-per-kva-per-day": 0.01270,
+        "gbp-per-kwh": 0.04448
+      },
+      "460": {
+        "excess-gbp-per-kva-per-day": 0.01620,
+        "gbp-per-day": 0.11820,
+        "gbp-per-kva-per-day": 0.01620,
+        "gbp-per-kwh": 0.04316
+      },
+      "465": {
+        "excess-gbp-per-kva-per-day": 0.01030,
+        "gbp-per-day": 0.13080,
+        "gbp-per-kva-per-day": 0.01030,
+        "gbp-per-kwh": 0.00000
+      },
+      "467": {
+        "excess-gbp-per-kva-per-day": 0.00050,
+        "gbp-per-day": 6.64830,
+        "gbp-per-kva-per-day": 0.00050,
+        "gbp-per-kwh": 0.00000
+      },
+      "468": {
+        "excess-gbp-per-kva-per-day": 0.00050,
+        "gbp-per-day": 9.46650,
+        "gbp-per-kva-per-day": 0.00050,
+        "gbp-per-kwh": 0.00000
+      },
+      "504": {
+        "excess-gbp-per-kva-per-day": 0.00050,
+        "gbp-per-day": 36.43860,
+        "gbp-per-kva-per-day": 0.00050,
+        "gbp-per-kwh": 0.00000
+      },
+      "524": {
+        "excess-gbp-per-kva-per-day": 0.01870,
+        "gbp-per-day": 0.01820,
+        "gbp-per-kva-per-day": 0.01870,
+        "gbp-per-kwh": 0.00000
+      },
+      "525": {
+        "excess-gbp-per-kva-per-day": 0.01950,
+        "gbp-per-day": 0.20340,
+        "gbp-per-kva-per-day": 0.01950,
+        "gbp-per-kwh": 0.00256
+      },
+      "527": {
+        "excess-gbp-per-kva-per-day": 0.02300,
+        "gbp-per-day": 0.04950,
+        "gbp-per-kva-per-day": 0.02300,
+        "gbp-per-kwh": 0.00000
+      },
+      "528": {
+        "excess-gbp-per-kva-per-day": 0.01600,
+        "gbp-per-day": 0.07380,
+        "gbp-per-kva-per-day": 0.01600,
+        "gbp-per-kwh": 0.00000
+      },
+      "529": {
+        "excess-gbp-per-kva-per-day": 0.01170,
+        "gbp-per-day": 0.22260,
+        "gbp-per-kva-per-day": 0.01170,
+        "gbp-per-kwh": 0.00000
+      },
+      "585": {
+        "excess-gbp-per-kva-per-day": 0.01360,
+        "gbp-per-day": 0.08260,
+        "gbp-per-kva-per-day": 0.01360,
+        "gbp-per-kwh": 0.04462
+      },
+      "595": {
+        "excess-gbp-per-kva-per-day": 0.01000,
+        "gbp-per-day": 0.16410,
+        "gbp-per-kva-per-day": 0.01000,
+        "gbp-per-kwh": 0.01688
+      },
+      "596": {
+        "excess-gbp-per-kva-per-day": 0.01430,
+        "gbp-per-day": 0.04510,
+        "gbp-per-kva-per-day": 0.01430,
+        "gbp-per-kwh": 0.01738
+      },
+      "597": {
+        "excess-gbp-per-kva-per-day": 0.02830,
+        "gbp-per-day": 0.04950,
+        "gbp-per-kva-per-day": 0.02830,
+        "gbp-per-kwh": 0.00000
+      },
+      "598": {
+        "excess-gbp-per-kva-per-day": 0.02950,
+        "gbp-per-day": 0.07350,
+        "gbp-per-kva-per-day": 0.02950,
+        "gbp-per-kwh": 0.00259
+      },
+      "599": {
+        "excess-gbp-per-kva-per-day": 0.02460,
+        "gbp-per-day": 0.52870,
+        "gbp-per-kva-per-day": 0.02460,
+        "gbp-per-kwh": 0.04475
+      },
+      "600": {
+        "excess-gbp-per-kva-per-day": 0.00050,
+        "gbp-per-day": 17.45220,
+        "gbp-per-kva-per-day": 0.00050,
+        "gbp-per-kwh": 0.00000
+      },
+      "601": {
+        "excess-gbp-per-kva-per-day": 0.00050,
+        "gbp-per-day": 5.88650,
+        "gbp-per-kva-per-day": 0.00050,
+        "gbp-per-kwh": 0.00000
+      },
+      "602": {
+        "excess-gbp-per-kva-per-day": 0.00050,
+        "gbp-per-day": 5.24820,
+        "gbp-per-kva-per-day": 0.00050,
+        "gbp-per-kwh": 0.00000
+      },
+      "603": {
+        "excess-gbp-per-kva-per-day": 0.00050,
+        "gbp-per-day": 7.88830,
+        "gbp-per-kva-per-day": 0.00050,
+        "gbp-per-kwh": 0.00000
+      },
+      "604": {
+        "excess-gbp-per-kva-per-day": 0.00050,
+        "gbp-per-day": 12.72200,
+        "gbp-per-kva-per-day": 0.00050,
+        "gbp-per-kwh": 0.00000
+      },
+      "607": {
+        "excess-gbp-per-kva-per-day": 0.00050,
+        "gbp-per-day": 4.50080,
+        "gbp-per-kva-per-day": 0.00050,
+        "gbp-per-kwh": 0.00000
+      },
+      "608": {
+        "excess-gbp-per-kva-per-day": 0.00050,
+        "gbp-per-day": 16.30690,
+        "gbp-per-kva-per-day": 0.00050,
+        "gbp-per-kwh": 0.00000
+      },
+      "609": {
+        "excess-gbp-per-kva-per-day": 0.00050,
+        "gbp-per-day": 52.86550,
+        "gbp-per-kva-per-day": 0.00050,
+        "gbp-per-kwh": 0.00000
+      },
+      "611": {
+        "excess-gbp-per-kva-per-day": 0.00050,
+        "gbp-per-day": 4.47570,
+        "gbp-per-kva-per-day": 0.00050,
+        "gbp-per-kwh": 0.00000
+      },
+      "612": {
+        "excess-gbp-per-kva-per-day": 0.00050,
+        "gbp-per-day": 13.99670,
+        "gbp-per-kva-per-day": 0.00050,
+        "gbp-per-kwh": 0.00000
+      },
+      "613": {
+        "excess-gbp-per-kva-per-day": 0.00050,
+        "gbp-per-day": 4.68380,
+        "gbp-per-kva-per-day": 0.00050,
+        "gbp-per-kwh": 0.00000
+      },
+      "614": {
+        "excess-gbp-per-kva-per-day": 0.00050,
+        "gbp-per-day": 4.51550,
+        "gbp-per-kva-per-day": 0.00050,
+        "gbp-per-kwh": 0.00000
+      },
+      "615": {
+        "excess-gbp-per-kva-per-day": 0.00050,
+        "gbp-per-day": 10.46910,
+        "gbp-per-kva-per-day": 0.00050,
+        "gbp-per-kwh": 0.00000
+      },
+      "616": {
+        "excess-gbp-per-kva-per-day": 0.00050,
+        "gbp-per-day": 8.08560,
+        "gbp-per-kva-per-day": 0.00050,
+        "gbp-per-kwh": 0.00000
+      },
+      "617": {
+        "excess-gbp-per-kva-per-day": 0.00050,
+        "gbp-per-day": 7.83900,
+        "gbp-per-kva-per-day": 0.00050,
+        "gbp-per-kwh": 0.00000
+      },
+      "618": {
+        "excess-gbp-per-kva-per-day": 0.00050,
+        "gbp-per-day": 20.08510,
+        "gbp-per-kva-per-day": 0.00050,
+        "gbp-per-kwh": 0.00000
+      },
+      "619": {
+        "excess-gbp-per-kva-per-day": 0.00050,
+        "gbp-per-day": 4.51270,
+        "gbp-per-kva-per-day": 0.00050,
+        "gbp-per-kwh": 0.00000
+      },
+      "620": {
+        "excess-gbp-per-kva-per-day": 0.00050,
+        "gbp-per-day": 8.83580,
+        "gbp-per-kva-per-day": 0.00050,
+        "gbp-per-kwh": 0.00000
+      },
+      "621": {
+        "excess-gbp-per-kva-per-day": 0.00050,
+        "gbp-per-day": 4.50520,
+        "gbp-per-kva-per-day": 0.00050,
+        "gbp-per-kwh": 0.00000
+      },
+      "622": {
+        "excess-gbp-per-kva-per-day": 0.00050,
+        "gbp-per-day": 19.06270,
+        "gbp-per-kva-per-day": 0.00050,
+        "gbp-per-kwh": 0.00000
+      },
+      "623": {
+        "excess-gbp-per-kva-per-day": 0.00050,
+        "gbp-per-day": 36.43860,
+        "gbp-per-kva-per-day": 0.00050,
+        "gbp-per-kwh": 0.00000
+      },
+      "624": {
+        "excess-gbp-per-kva-per-day": 0.00050,
+        "gbp-per-day": 12.26680,
+        "gbp-per-kva-per-day": 0.00050,
+        "gbp-per-kwh": 0.00000
+      },
+      "625": {
+        "excess-gbp-per-kva-per-day": 0.00050,
+        "gbp-per-day": 2.74950,
+        "gbp-per-kva-per-day": 0.00050,
+        "gbp-per-kwh": 0.00000
+      },
+      "626": {
+        "excess-gbp-per-kva-per-day": 0.00050,
+        "gbp-per-day": 4.50520,
+        "gbp-per-kva-per-day": 0.00050,
+        "gbp-per-kwh": 0.00000
+      },
+      "627": {
+        "excess-gbp-per-kva-per-day": 0.00050,
+        "gbp-per-day": 4.52650,
+        "gbp-per-kva-per-day": 0.00050,
+        "gbp-per-kwh": 0.00000
+      },
+      "628": {
+        "excess-gbp-per-kva-per-day": 0.00050,
+        "gbp-per-day": 25.03610,
+        "gbp-per-kva-per-day": 0.00050,
+        "gbp-per-kwh": 0.00000
+      },
+      "628,629,770,386,125,771,630,631,772,634,635,773,387,129,774_00,01,08": {
+        "amber-gbp-per-kwh": 0.03033,
+        "description": "Unmetered Supplies",
+        "excess-gbp-per-kva-per-day": 0.00000,
+        "gbp-per-kva-per-day": 0.00000,
+        "gbp-per-kvarh": 0.00000,
+        "gbp-per-mpan-per-day": 0.00000,
+        "green-gbp-per-kwh": 0.02302,
+        "red-gbp-per-kwh": 0.13515
+      },
+      "629": {
+        "excess-gbp-per-kva-per-day": 0.00050,
+        "gbp-per-day": 26.53140,
+        "gbp-per-kva-per-day": 0.00050,
+        "gbp-per-kwh": 0.00000
+      },
+      "630": {
+        "excess-gbp-per-kva-per-day": 0.00050,
+        "gbp-per-day": 4.53220,
+        "gbp-per-kva-per-day": 0.00050,
+        "gbp-per-kwh": 0.00000
+      },
+      "631": {
+        "excess-gbp-per-kva-per-day": 0.00050,
+        "gbp-per-day": 2.08220,
+        "gbp-per-kva-per-day": 0.00050,
+        "gbp-per-kwh": 0.00000
+      },
+      "632": {
+        "excess-gbp-per-kva-per-day": 0.00050,
+        "gbp-per-day": 4.53350,
+        "gbp-per-kva-per-day": 0.00050,
+        "gbp-per-kwh": 0.00000
+      },
+      "633": {
+        "excess-gbp-per-kva-per-day": 0.00050,
+        "gbp-per-day": 3.05450,
+        "gbp-per-kva-per-day": 0.00050,
+        "gbp-per-kwh": 0.00000
+      },
+      "634": {
+        "excess-gbp-per-kva-per-day": 0.00050,
+        "gbp-per-day": 3.07680,
+        "gbp-per-kva-per-day": 0.00050,
+        "gbp-per-kwh": 0.00000
+      },
+      "635": {
+        "excess-gbp-per-kva-per-day": 0.00050,
+        "gbp-per-day": 20.89750,
+        "gbp-per-kva-per-day": 0.00050,
+        "gbp-per-kwh": 0.00000
+      },
+      "636": {
+        "excess-gbp-per-kva-per-day": 0.00050,
+        "gbp-per-day": 5.84970,
+        "gbp-per-kva-per-day": 0.00050,
+        "gbp-per-kwh": 0.00000
+      },
+      "637": {
+        "excess-gbp-per-kva-per-day": 0.00050,
+        "gbp-per-day": 21.72450,
+        "gbp-per-kva-per-day": 0.00050,
+        "gbp-per-kwh": 0.00000
+      },
+      "638": {
+        "excess-gbp-per-kva-per-day": 0.00050,
+        "gbp-per-day": 20.53990,
+        "gbp-per-kva-per-day": 0.00050,
+        "gbp-per-kwh": 0.00000
+      },
+      "639": {
+        "excess-gbp-per-kva-per-day": 0.00050,
+        "gbp-per-day": 16.35860,
+        "gbp-per-kva-per-day": 0.00050,
+        "gbp-per-kwh": 0.00000
+      },
+      "640": {
+        "excess-gbp-per-kva-per-day": 0.00050,
+        "gbp-per-day": 4.48390,
+        "gbp-per-kva-per-day": 0.00050,
+        "gbp-per-kwh": 0.00000
+      },
+      "641": {
+        "excess-gbp-per-kva-per-day": 0.00050,
+        "gbp-per-day": 3.04980,
+        "gbp-per-kva-per-day": 0.00050,
+        "gbp-per-kwh": 0.00000
+      },
+      "642": {
+        "excess-gbp-per-kva-per-day": 0.00050,
+        "gbp-per-day": 9.57990,
+        "gbp-per-kva-per-day": 0.00050,
+        "gbp-per-kwh": 0.00000
+      },
+      "643": {
+        "excess-gbp-per-kva-per-day": 0.00050,
+        "gbp-per-day": 3.26260,
+        "gbp-per-kva-per-day": 0.00050,
+        "gbp-per-kwh": 0.00000
+      },
+      "644": {
+        "excess-gbp-per-kva-per-day": 0.00050,
+        "gbp-per-day": 3.08750,
+        "gbp-per-kva-per-day": 0.00050,
+        "gbp-per-kwh": 0.00000
+      },
+      "645": {
+        "excess-gbp-per-kva-per-day": 0.00050,
+        "gbp-per-day": 20.74170,
+        "gbp-per-kva-per-day": 0.00050,
+        "gbp-per-kwh": 0.00000
+      },
+      "646": {
+        "excess-gbp-per-kva-per-day": 0.00050,
+        "gbp-per-day": 10.12600,
+        "gbp-per-kva-per-day": 0.00050,
+        "gbp-per-kwh": 0.00000
+      },
+      "647": {
+        "excess-gbp-per-kva-per-day": 0.00050,
+        "gbp-per-day": 12.20460,
+        "gbp-per-kva-per-day": 0.00050,
+        "gbp-per-kwh": 0.00000
+      },
+      "648": {
+        "excess-gbp-per-kva-per-day": 0.00050,
+        "gbp-per-day": 9.60220,
+        "gbp-per-kva-per-day": 0.00050,
+        "gbp-per-kwh": 0.00000
+      },
+      "649": {
+        "excess-gbp-per-kva-per-day": 0.00050,
+        "gbp-per-day": 4.01040,
+        "gbp-per-kva-per-day": 0.00050,
+        "gbp-per-kwh": 0.00000
+      },
+      "650": {
+        "excess-gbp-per-kva-per-day": 0.02530,
+        "gbp-per-day": 0.08730,
+        "gbp-per-kva-per-day": 0.02530,
+        "gbp-per-kwh": 0.02160
+      },
+      "651": {
+        "excess-gbp-per-kva-per-day": 0.03350,
+        "gbp-per-day": 0.01680,
+        "gbp-per-kva-per-day": 0.03350,
+        "gbp-per-kwh": 0.01178
+      },
+      "651,776_00": {
+        "amber-gbp-per-kwh": -0.00521,
+        "description": "LV Sub Generation Aggregated",
+        "excess-gbp-per-kva-per-day": 0.00000,
+        "gbp-per-kva-per-day": 0.00000,
+        "gbp-per-kvarh": 0.00000,
+        "gbp-per-mpan-per-day": 0.00000,
+        "green-gbp-per-kwh": -0.00025,
+        "red-gbp-per-kwh": -0.05090
+      },
+      "652": {
+        "excess-gbp-per-kva-per-day": 0.01110,
+        "gbp-per-day": 0.15900,
+        "gbp-per-kva-per-day": 0.01110,
+        "gbp-per-kwh": 0.01646
+      },
+      "653": {
+        "excess-gbp-per-kva-per-day": 0.01190,
+        "gbp-per-day": 0.08960,
+        "gbp-per-kva-per-day": 0.01190,
+        "gbp-per-kwh": 0.01720
+      },
+      "654": {
+        "excess-gbp-per-kva-per-day": 0.01870,
+        "gbp-per-day": 0.08190,
+        "gbp-per-kva-per-day": 0.01870,
+        "gbp-per-kwh": 0.04414
+      },
+      "655": {
+        "excess-gbp-per-kva-per-day": 0.04360,
+        "gbp-per-day": 0.03550,
+        "gbp-per-kva-per-day": 0.04360,
+        "gbp-per-kwh": 0.00000
+      },
+      "656": {
+        "excess-gbp-per-kva-per-day": 0.02440,
+        "gbp-per-day": 0.05360,
+        "gbp-per-kva-per-day": 0.02440,
+        "gbp-per-kwh": 0.04465
+      },
+      "657": {
+        "excess-gbp-per-kva-per-day": 0.02100,
+        "gbp-per-day": 0.28210,
+        "gbp-per-kva-per-day": 0.02100,
+        "gbp-per-kwh": 0.00000
+      },
+      "659": {
+        "excess-gbp-per-kva-per-day": 0.01110,
+        "gbp-per-day": 0.04360,
+        "gbp-per-kva-per-day": 0.01110,
+        "gbp-per-kwh": 0.00000
+      },
+      "660": {
+        "excess-gbp-per-kva-per-day": 0.01730,
+        "gbp-per-day": 0.07840,
+        "gbp-per-kva-per-day": 0.01730,
+        "gbp-per-kwh": 0.01701
+      },
+      "661": {
+        "excess-gbp-per-kva-per-day": 0.01140,
+        "gbp-per-day": 0.07000,
+        "gbp-per-kva-per-day": 0.01140,
+        "gbp-per-kwh": 0.01648
+      },
+      "662": {
+        "excess-gbp-per-kva-per-day": 0.01770,
+        "gbp-per-day": 0.08390,
+        "gbp-per-kva-per-day": 0.01770,
+        "gbp-per-kwh": 0.04494
+      },
+      "663": {
+        "excess-gbp-per-kva-per-day": 0.02030,
+        "gbp-per-day": 0.04150,
+        "gbp-per-kva-per-day": 0.02030,
+        "gbp-per-kwh": 0.04459
+      },
+      "664": {
+        "excess-gbp-per-kva-per-day": 0.01020,
+        "gbp-per-day": 0.24470,
+        "gbp-per-kva-per-day": 0.01020,
+        "gbp-per-kwh": 0.00000
+      },
+      "665": {
+        "excess-gbp-per-kva-per-day": 0.01340,
+        "gbp-per-day": 0.21590,
+        "gbp-per-kva-per-day": 0.01340,
+        "gbp-per-kwh": 0.01674
+      },
+      "666": {
+        "excess-gbp-per-kva-per-day": 0.01330,
+        "gbp-per-day": 0.29170,
+        "gbp-per-kva-per-day": 0.01330,
+        "gbp-per-kwh": 0.04434
+      },
+      "667": {
+        "excess-gbp-per-kva-per-day": 0.02010,
+        "gbp-per-day": 0.10310,
+        "gbp-per-kva-per-day": 0.02010,
+        "gbp-per-kwh": 0.01174
+      },
+      "668": {
+        "excess-gbp-per-kva-per-day": 0.01570,
+        "gbp-per-day": 0.28240,
+        "gbp-per-kva-per-day": 0.01570,
+        "gbp-per-kwh": 0.04472
+      },
+      "669": {
+        "excess-gbp-per-kva-per-day": 0.01060,
+        "gbp-per-day": 0.12970,
+        "gbp-per-kva-per-day": 0.01060,
+        "gbp-per-kwh": 0.04453
+      },
+      "670": {
+        "excess-gbp-per-kva-per-day": 0.01530,
+        "gbp-per-day": 0.09010,
+        "gbp-per-kva-per-day": 0.01530,
+        "gbp-per-kwh": 0.02121
+      },
+      "671": {
+        "excess-gbp-per-kva-per-day": 0.01480,
+        "gbp-per-day": 0.14020,
+        "gbp-per-kva-per-day": 0.01480,
+        "gbp-per-kwh": 0.01709
+      },
+      "672": {
+        "excess-gbp-per-kva-per-day": 0.03890,
+        "gbp-per-day": 0.05980,
+        "gbp-per-kva-per-day": 0.03890,
+        "gbp-per-kwh": 0.02827
+      },
+      "673": {
+        "excess-gbp-per-kva-per-day": 0.00970,
+        "gbp-per-day": 0.27880,
+        "gbp-per-kva-per-day": 0.00970,
+        "gbp-per-kwh": 0.00000
+      },
+      "674": {
+        "excess-gbp-per-kva-per-day": 0.01200,
+        "gbp-per-day": 0.02970,
+        "gbp-per-kva-per-day": 0.01200,
+        "gbp-per-kwh": 0.01688
+      },
+      "675": {
+        "excess-gbp-per-kva-per-day": 0.01970,
+        "gbp-per-day": 0.02710,
+        "gbp-per-kva-per-day": 0.01970,
+        "gbp-per-kwh": 0.01734
+      },
+      "676": {
+        "excess-gbp-per-kva-per-day": 0.01470,
+        "gbp-per-day": 0.05000,
+        "gbp-per-kva-per-day": 0.01470,
+        "gbp-per-kwh": 0.01702
+      },
+      "677": {
+        "excess-gbp-per-kva-per-day": 0.00890,
+        "gbp-per-day": 0.06720,
+        "gbp-per-kva-per-day": 0.00890,
+        "gbp-per-kwh": 0.00000
+      },
+      "678": {
+        "excess-gbp-per-kva-per-day": 0.01420,
+        "gbp-per-day": 0.07460,
+        "gbp-per-kva-per-day": 0.01420,
+        "gbp-per-kwh": 0.00000
+      },
+      "679": {
+        "excess-gbp-per-kva-per-day": 0.02000,
+        "gbp-per-day": 0.13940,
+        "gbp-per-kva-per-day": 0.02000,
+        "gbp-per-kwh": 0.02164
+      },
+      "680": {
+        "excess-gbp-per-kva-per-day": 0.01530,
+        "gbp-per-day": 0.02950,
+        "gbp-per-kva-per-day": 0.01530,
+        "gbp-per-kwh": 0.01703
+      },
+      "681": {
+        "excess-gbp-per-kva-per-day": 0.01560,
+        "gbp-per-day": 0.27560,
+        "gbp-per-kva-per-day": 0.01560,
+        "gbp-per-kwh": 0.04574
+      },
+      "682": {
+        "excess-gbp-per-kva-per-day": 0.01200,
+        "gbp-per-day": 0.03120,
+        "gbp-per-kva-per-day": 0.01200,
+        "gbp-per-kwh": 0.01674
+      },
+      "683": {
+        "excess-gbp-per-kva-per-day": 0.02420,
+        "gbp-per-day": 0.04260,
+        "gbp-per-kva-per-day": 0.02420,
+        "gbp-per-kwh": 0.02160
+      },
+      "684": {
+        "excess-gbp-per-kva-per-day": 0.01490,
+        "gbp-per-day": 0.13960,
+        "gbp-per-kva-per-day": 0.01490,
+        "gbp-per-kwh": 0.01707
+      },
+      "685": {
+        "excess-gbp-per-kva-per-day": 0.01830,
+        "gbp-per-day": 0.03370,
+        "gbp-per-kva-per-day": 0.01830,
+        "gbp-per-kwh": 0.01697
+      },
+      "686": {
+        "excess-gbp-per-kva-per-day": 0.02650,
+        "gbp-per-day": 0.04130,
+        "gbp-per-kva-per-day": 0.02650,
+        "gbp-per-kwh": 0.04481
+      },
+      "687": {
+        "excess-gbp-per-kva-per-day": 0.02550,
+        "gbp-per-day": 0.01510,
+        "gbp-per-kva-per-day": 0.02550,
+        "gbp-per-kwh": 0.04481
+      },
+      "688": {
+        "excess-gbp-per-kva-per-day": 0.02960,
+        "gbp-per-day": 0.00650,
+        "gbp-per-kva-per-day": 0.02960,
+        "gbp-per-kwh": 0.02157
+      },
+      "689": {
+        "excess-gbp-per-kva-per-day": 0.01310,
+        "gbp-per-day": 14.28720,
+        "gbp-per-kva-per-day": 0.01310,
+        "gbp-per-kwh": 0.00000
+      },
+      "690": {
+        "excess-gbp-per-kva-per-day": 0.01440,
+        "gbp-per-day": 0.05570,
+        "gbp-per-kva-per-day": 0.01440,
+        "gbp-per-kwh": 0.00000
+      },
+      "691": {
+        "excess-gbp-per-kva-per-day": 0.05180,
+        "gbp-per-day": 0.00910,
+        "gbp-per-kva-per-day": 0.05180,
+        "gbp-per-kwh": 0.00000
+      },
+      "692": {
+        "excess-gbp-per-kva-per-day": 0.01590,
+        "gbp-per-day": 0.54620,
+        "gbp-per-kva-per-day": 0.01590,
+        "gbp-per-kwh": 0.00000
+      },
+      "693": {
+        "excess-gbp-per-kva-per-day": 0.02400,
+        "gbp-per-day": 0.01440,
+        "gbp-per-kva-per-day": 0.02400,
+        "gbp-per-kwh": 0.02162
+      },
+      "694": {
+        "excess-gbp-per-kva-per-day": 0.01120,
+        "gbp-per-day": 0.17560,
+        "gbp-per-kva-per-day": 0.01120,
+        "gbp-per-kwh": 0.01709
+      },
+      "695": {
+        "excess-gbp-per-kva-per-day": 0.01320,
+        "gbp-per-day": 0.37900,
+        "gbp-per-kva-per-day": 0.01320,
+        "gbp-per-kwh": 0.00000
+      },
+      "696": {
+        "excess-gbp-per-kva-per-day": 0.01860,
+        "gbp-per-day": 0.47160,
+        "gbp-per-kva-per-day": 0.01860,
+        "gbp-per-kwh": 0.01706
+      },
+      "697": {
+        "excess-gbp-per-kva-per-day": 0.01650,
+        "gbp-per-day": 0.10240,
+        "gbp-per-kva-per-day": 0.01650,
+        "gbp-per-kwh": 0.00000
+      },
+      "698": {
+        "excess-gbp-per-kva-per-day": 0.00900,
+        "gbp-per-day": 0.93860,
+        "gbp-per-kva-per-day": 0.00900,
+        "gbp-per-kwh": 0.01592
+      },
+      "699": {
+        "excess-gbp-per-kva-per-day": 0.02430,
+        "gbp-per-day": 0.32210,
+        "gbp-per-kva-per-day": 0.02430,
+        "gbp-per-kwh": 0.00000
+      },
+      "703": {
+        "excess-gbp-per-kva-per-day": 0.01120,
+        "gbp-per-day": 435.50160,
+        "gbp-per-kva-per-day": 0.01120,
+        "gbp-per-kwh": 0.00000
+      },
+      "705": {
+        "excess-gbp-per-kva-per-day": 0.03920,
+        "gbp-per-day": 2.02220,
+        "gbp-per-kva-per-day": 0.03920,
+        "gbp-per-kwh": 0.00000
+      },
+      "7095": {
+        "excess-gbp-per-kva-per-day": 0.00050,
+        "gbp-per-day": 51.09630,
+        "gbp-per-kva-per-day": 0.00050,
+        "gbp-per-kwh": 0.00000
+      },
+      "7097": {
+        "excess-gbp-per-kva-per-day": 0.01700,
+        "gbp-per-day": 205.31750,
+        "gbp-per-kva-per-day": 0.01700,
+        "gbp-per-kwh": 0.00000
+      },
+      "7098": {
+        "excess-gbp-per-kva-per-day": 0.01760,
+        "gbp-per-day": 0.09020,
+        "gbp-per-kva-per-day": 0.01760,
+        "gbp-per-kwh": 0.00000
+      },
+      "720": {
+        "excess-gbp-per-kva-per-day": 0.03420,
+        "gbp-per-day": 0.06970,
+        "gbp-per-kva-per-day": 0.03420,
+        "gbp-per-kwh": 0.00000
+      },
+      "721": {
+        "excess-gbp-per-kva-per-day": 0.02110,
+        "gbp-per-day": 5.00490,
+        "gbp-per-kva-per-day": 0.02110,
+        "gbp-per-kwh": 0.00000
+      },
+      "722": {
+        "excess-gbp-per-kva-per-day": 0.01010,
+        "gbp-per-day": 22.46940,
+        "gbp-per-kva-per-day": 0.01010,
+        "gbp-per-kwh": 0.00000
+      },
+      "723": {
+        "excess-gbp-per-kva-per-day": 0.00990,
+        "gbp-per-day": 1.30120,
+        "gbp-per-kva-per-day": 0.00990,
+        "gbp-per-kwh": 0.00000
+      },
+      "724": {
+        "excess-gbp-per-kva-per-day": 0.01380,
+        "gbp-per-day": 0.27880,
+        "gbp-per-kva-per-day": 0.01380,
+        "gbp-per-kwh": 0.01697
+      },
+      "725": {
+        "excess-gbp-per-kva-per-day": 0.02260,
+        "gbp-per-day": 0.06640,
+        "gbp-per-kva-per-day": 0.02260,
+        "gbp-per-kwh": 0.00000
+      },
+      "726": {
+        "excess-gbp-per-kva-per-day": 0.01170,
+        "gbp-per-day": 0.05320,
+        "gbp-per-kva-per-day": 0.01170,
+        "gbp-per-kwh": 0.02127
+      },
+      "727": {
+        "excess-gbp-per-kva-per-day": 0.02170,
+        "gbp-per-day": 0.15700,
+        "gbp-per-kva-per-day": 0.02170,
+        "gbp-per-kwh": 0.04376
+      },
+      "728": {
+        "excess-gbp-per-kva-per-day": 0.02730,
+        "gbp-per-day": 0.04660,
+        "gbp-per-kva-per-day": 0.02730,
+        "gbp-per-kwh": 0.04479
+      },
+      "729": {
+        "excess-gbp-per-kva-per-day": 0.02030,
+        "gbp-per-day": 155.03480,
+        "gbp-per-kva-per-day": 0.02030,
+        "gbp-per-kwh": 0.01687
+      },
+      "730": {
+        "excess-gbp-per-kva-per-day": 0.04370,
+        "gbp-per-day": 0.02250,
+        "gbp-per-kva-per-day": 0.04370,
+        "gbp-per-kwh": 0.00000
+      },
+      "731": {
+        "excess-gbp-per-kva-per-day": 0.01330,
+        "gbp-per-day": 0.38520,
+        "gbp-per-kva-per-day": 0.01330,
+        "gbp-per-kwh": 0.00000
+      },
+      "7310": {
+        "excess-gbp-per-kva-per-day": 0.00050,
+        "gbp-per-day": 12.38410,
+        "gbp-per-kva-per-day": 0.00050,
+        "gbp-per-kwh": 0.00000
+      },
+      "7311": {
+        "excess-gbp-per-kva-per-day": 0.06020,
+        "gbp-per-day": 0.82560,
+        "gbp-per-kva-per-day": 0.06020,
+        "gbp-per-kwh": 0.02214
+      },
+      "732": {
+        "excess-gbp-per-kva-per-day": 0.01310,
+        "gbp-per-day": 0.01980,
+        "gbp-per-kva-per-day": 0.01310,
+        "gbp-per-kwh": 0.00000
+      },
+      "733": {
+        "excess-gbp-per-kva-per-day": 0.00990,
+        "gbp-per-day": 0.48060,
+        "gbp-per-kva-per-day": 0.00990,
+        "gbp-per-kwh": 0.00000
+      },
+      "7372": {
+        "excess-gbp-per-kva-per-day": 0.01380,
+        "gbp-per-day": 0.27450,
+        "gbp-per-kva-per-day": 0.01380,
+        "gbp-per-kwh": 0.02790
+      },
+      "7373": {
+        "excess-gbp-per-kva-per-day": 0.00050,
+        "gbp-per-day": 6.10030,
+        "gbp-per-kva-per-day": 0.00050,
+        "gbp-per-kwh": 0.00000
+      },
+      "739": {
+        "excess-gbp-per-kva-per-day": 0.06870,
+        "gbp-per-day": 180.54380,
+        "gbp-per-kva-per-day": 0.06870,
+        "gbp-per-kwh": 0.01833
+      },
+      "741": {
+        "excess-gbp-per-kva-per-day": 0.00050,
+        "gbp-per-day": 0.98860,
+        "gbp-per-kva-per-day": 0.00050,
+        "gbp-per-kwh": 0.00000
+      },
+      "742": {
+        "excess-gbp-per-kva-per-day": 0.00050,
+        "gbp-per-day": 0.62590,
+        "gbp-per-kva-per-day": 0.00050,
+        "gbp-per-kwh": 0.00000
+      },
+      "743": {
+        "excess-gbp-per-kva-per-day": 0.00050,
+        "gbp-per-day": 0.99130,
+        "gbp-per-kva-per-day": 0.00050,
+        "gbp-per-kwh": 0.00000
+      },
+      "744": {
+        "excess-gbp-per-kva-per-day": 0.00050,
+        "gbp-per-day": 21.83970,
+        "gbp-per-kva-per-day": 0.00050,
+        "gbp-per-kwh": 0.00000
+      },
+      "745": {
+        "excess-gbp-per-kva-per-day": 0.02410,
+        "gbp-per-day": 63.36030,
+        "gbp-per-kva-per-day": 0.02410,
+        "gbp-per-kwh": 0.04433
+      },
+      "749": {
+        "excess-gbp-per-kva-per-day": 0.00050,
+        "gbp-per-day": 2.99750,
+        "gbp-per-kva-per-day": 0.00050,
+        "gbp-per-kwh": 0.00000
+      },
+      "765": {
+        "excess-gbp-per-kva-per-day": 0.00990,
+        "gbp-per-day": 0.19460,
+        "gbp-per-kva-per-day": 0.00990,
+        "gbp-per-kwh": 0.00000
+      },
+      "766": {
+        "excess-gbp-per-kva-per-day": 0.01300,
+        "gbp-per-day": 0.17940,
+        "gbp-per-kva-per-day": 0.01300,
+        "gbp-per-kwh": 0.01729
+      },
+      "767": {
+        "excess-gbp-per-kva-per-day": 0.01320,
+        "gbp-per-day": 0.04430,
+        "gbp-per-kva-per-day": 0.01320,
+        "gbp-per-kwh": 0.01691
+      },
+      "768": {
+        "excess-gbp-per-kva-per-day": 0.00960,
+        "gbp-per-day": 0.27050,
+        "gbp-per-kva-per-day": 0.00960,
+        "gbp-per-kwh": 0.01591
+      },
+      "769": {
+        "excess-gbp-per-kva-per-day": 0.01020,
+        "gbp-per-day": 0.04370,
+        "gbp-per-kva-per-day": 0.01020,
+        "gbp-per-kwh": 0.04424
+      },
+      "771": {
+        "excess-gbp-per-kva-per-day": 0.01530,
+        "gbp-per-day": 0.06680,
+        "gbp-per-kva-per-day": 0.01530,
+        "gbp-per-kwh": 0.04412
+      },
+      "772": {
+        "excess-gbp-per-kva-per-day": 0.01040,
+        "gbp-per-day": 0.19460,
+        "gbp-per-kva-per-day": 0.01040,
+        "gbp-per-kwh": 0.00000
+      },
+      "774": {
+        "excess-gbp-per-kva-per-day": 0.02970,
+        "gbp-per-day": 0.01540,
+        "gbp-per-kva-per-day": 0.02970,
+        "gbp-per-kwh": 0.00000
+      },
+      "775": {
+        "excess-gbp-per-kva-per-day": 0.01380,
+        "gbp-per-day": 0.10600,
+        "gbp-per-kva-per-day": 0.01380,
+        "gbp-per-kwh": 0.01694
+      },
+      "777": {
+        "excess-gbp-per-kva-per-day": 0.00050,
+        "gbp-per-day": 4.48300,
+        "gbp-per-kva-per-day": 0.00050,
+        "gbp-per-kwh": 0.00000
+      },
+      "778": {
+        "excess-gbp-per-kva-per-day": 0.00050,
+        "gbp-per-day": 4.47570,
+        "gbp-per-kva-per-day": 0.00050,
+        "gbp-per-kwh": 0.00000
+      },
+      "779": {
+        "excess-gbp-per-kva-per-day": 0.00050,
+        "gbp-per-day": 13.92730,
+        "gbp-per-kva-per-day": 0.00050,
+        "gbp-per-kwh": 0.00000
+      },
+      "780": {
+        "excess-gbp-per-kva-per-day": 0.00050,
+        "gbp-per-day": 3.07350,
+        "gbp-per-kva-per-day": 0.00050,
+        "gbp-per-kwh": 0.00000
+      },
+      "781": {
+        "excess-gbp-per-kva-per-day": 0.00050,
+        "gbp-per-day": 6.48470,
+        "gbp-per-kva-per-day": 0.00050,
+        "gbp-per-kwh": 0.00000
+      },
+      "782": {
+        "excess-gbp-per-kva-per-day": 0.00050,
+        "gbp-per-day": 3.07170,
+        "gbp-per-kva-per-day": 0.00050,
+        "gbp-per-kwh": 0.00000
+      },
+      "783": {
+        "excess-gbp-per-kva-per-day": 0.00050,
+        "gbp-per-day": 9.28840,
+        "gbp-per-kva-per-day": 0.00050,
+        "gbp-per-kwh": 0.00000
+      },
+      "784": {
+        "excess-gbp-per-kva-per-day": 0.00050,
+        "gbp-per-day": 13.07010,
+        "gbp-per-kva-per-day": 0.00050,
+        "gbp-per-kwh": 0.00000
+      },
+      "785": {
+        "excess-gbp-per-kva-per-day": 0.00050,
+        "gbp-per-day": 4.51660,
+        "gbp-per-kva-per-day": 0.00050,
+        "gbp-per-kwh": 0.00000
+      },
+      "786": {
+        "excess-gbp-per-kva-per-day": 0.00050,
+        "gbp-per-day": 4.50900,
+        "gbp-per-kva-per-day": 0.00050,
+        "gbp-per-kwh": 0.00000
+      },
+      "787": {
+        "excess-gbp-per-kva-per-day": 0.00050,
+        "gbp-per-day": 4.53520,
+        "gbp-per-kva-per-day": 0.00050,
+        "gbp-per-kwh": 0.00000
+      },
+      "788": {
+        "excess-gbp-per-kva-per-day": 0.00050,
+        "gbp-per-day": 3.09650,
+        "gbp-per-kva-per-day": 0.00050,
+        "gbp-per-kwh": 0.00000
+      },
+      "789": {
+        "excess-gbp-per-kva-per-day": 0.00050,
+        "gbp-per-day": 88.44440,
+        "gbp-per-kva-per-day": 0.00050,
+        "gbp-per-kwh": 0.00000
+      },
+      "790": {
+        "excess-gbp-per-kva-per-day": 0.00050,
+        "gbp-per-day": 9.27540,
+        "gbp-per-kva-per-day": 0.00050,
+        "gbp-per-kwh": 0.00000
+      },
+      "791": {
+        "excess-gbp-per-kva-per-day": 0.00050,
+        "gbp-per-day": 4.54120,
+        "gbp-per-kva-per-day": 0.00050,
+        "gbp-per-kwh": 0.00000
+      },
+      "792": {
+        "excess-gbp-per-kva-per-day": 0.00050,
+        "gbp-per-day": 63.71840,
+        "gbp-per-kva-per-day": 0.00050,
+        "gbp-per-kwh": 0.00000
+      },
+      "793": {
+        "excess-gbp-per-kva-per-day": 0.00050,
+        "gbp-per-day": 4.53590,
+        "gbp-per-kva-per-day": 0.00050,
+        "gbp-per-kwh": 0.00000
+      },
+      "794": {
+        "excess-gbp-per-kva-per-day": 0.00050,
+        "gbp-per-day": 16.46190,
+        "gbp-per-kva-per-day": 0.00050,
+        "gbp-per-kwh": 0.00000
+      },
+      "795": {
+        "excess-gbp-per-kva-per-day": 0.00050,
+        "gbp-per-day": 77.86700,
+        "gbp-per-kva-per-day": 0.00050,
+        "gbp-per-kwh": 0.00000
+      },
+      "796": {
+        "excess-gbp-per-kva-per-day": 0.00050,
+        "gbp-per-day": 37.72440,
+        "gbp-per-kva-per-day": 0.00050,
+        "gbp-per-kwh": 0.00000
+      },
+      "797": {
+        "excess-gbp-per-kva-per-day": 0.00050,
+        "gbp-per-day": 7.87560,
+        "gbp-per-kva-per-day": 0.00050,
+        "gbp-per-kwh": 0.00000
+      },
+      "798": {
+        "excess-gbp-per-kva-per-day": 0.00050,
+        "gbp-per-day": 7.03940,
+        "gbp-per-kva-per-day": 0.00050,
+        "gbp-per-kwh": 0.00000
+      },
+      "799": {
+        "excess-gbp-per-kva-per-day": 0.00050,
+        "gbp-per-day": 96.97070,
+        "gbp-per-kva-per-day": 0.00050,
+        "gbp-per-kwh": 0.00000
+      },
+      "831": {
+        "excess-gbp-per-kva-per-day": 0.01440,
+        "gbp-per-day": 0.22550,
+        "gbp-per-kva-per-day": 0.01440,
+        "gbp-per-kwh": 0.00000
+      },
+      "832": {
+        "excess-gbp-per-kva-per-day": 0.03960,
+        "gbp-per-day": 0.03940,
+        "gbp-per-kva-per-day": 0.03960,
+        "gbp-per-kwh": 0.04492
+      },
+      "833": {
+        "excess-gbp-per-kva-per-day": 0.01690,
+        "gbp-per-day": 81.40770,
+        "gbp-per-kva-per-day": 0.01690,
+        "gbp-per-kwh": 0.00000
+      },
+      "834": {
+        "excess-gbp-per-kva-per-day": 0.03420,
+        "gbp-per-day": 44.94780,
+        "gbp-per-kva-per-day": 0.03420,
+        "gbp-per-kwh": 0.00000
+      },
+      "838": {
+        "excess-gbp-per-kva-per-day": 0.01080,
+        "gbp-per-day": 0.47240,
+        "gbp-per-kva-per-day": 0.01080,
+        "gbp-per-kwh": 0.01684
+      },
+      "843": {
+        "excess-gbp-per-kva-per-day": 0.01110,
+        "gbp-per-day": 0.04260,
+        "gbp-per-kva-per-day": 0.01110,
+        "gbp-per-kwh": 0.00000
+      },
+      "848": {
+        "excess-gbp-per-kva-per-day": 0.01270,
+        "gbp-per-day": 0.76380,
+        "gbp-per-kva-per-day": 0.01270,
+        "gbp-per-kwh": 0.00240
+      },
+      "850": {
+        "excess-gbp-per-kva-per-day": 0.01020,
+        "gbp-per-day": 0.11140,
+        "gbp-per-kva-per-day": 0.01020,
+        "gbp-per-kwh": 0.01658
+      },
+      "867": {
+        "excess-gbp-per-kva-per-day": 0.01460,
+        "gbp-per-day": 0.04510,
+        "gbp-per-kva-per-day": 0.01460,
+        "gbp-per-kwh": 0.00000
+      },
+      "868": {
+        "excess-gbp-per-kva-per-day": 0.02570,
+        "gbp-per-day": 0.09900,
+        "gbp-per-kva-per-day": 0.02570,
+        "gbp-per-kwh": 0.00000
+      },
+      "869": {
+        "excess-gbp-per-kva-per-day": 0.01590,
+        "gbp-per-day": 0.02940,
+        "gbp-per-kva-per-day": 0.01590,
+        "gbp-per-kwh": 0.03234
+      },
+      "870": {
+        "excess-gbp-per-kva-per-day": 0.01340,
+        "gbp-per-day": 0.05090,
+        "gbp-per-kva-per-day": 0.01340,
+        "gbp-per-kwh": 0.00000
+      },
+      "871": {
+        "excess-gbp-per-kva-per-day": 0.02230,
+        "gbp-per-day": 0.07570,
+        "gbp-per-kva-per-day": 0.02230,
+        "gbp-per-kwh": 0.00000
+      },
+      "872": {
+        "excess-gbp-per-kva-per-day": 0.01110,
+        "gbp-per-day": 0.07460,
+        "gbp-per-kva-per-day": 0.01110,
+        "gbp-per-kwh": 0.01702
+      },
+      "873": {
+        "excess-gbp-per-kva-per-day": 0.01910,
+        "gbp-per-day": 0.07000,
+        "gbp-per-kva-per-day": 0.01910,
+        "gbp-per-kwh": 0.04459
+      },
+      "874": {
+        "excess-gbp-per-kva-per-day": 0.01430,
+        "gbp-per-day": 0.04680,
+        "gbp-per-kva-per-day": 0.01430,
+        "gbp-per-kwh": 0.00000
+      },
+      "875": {
+        "excess-gbp-per-kva-per-day": 0.03140,
+        "gbp-per-day": 0.03470,
+        "gbp-per-kva-per-day": 0.03140,
+        "gbp-per-kwh": 0.04480
+      },
+      "876": {
+        "excess-gbp-per-kva-per-day": 0.02720,
+        "gbp-per-day": 0.04360,
+        "gbp-per-kva-per-day": 0.02720,
+        "gbp-per-kwh": 0.04467
+      },
+      "877": {
+        "excess-gbp-per-kva-per-day": 0.01130,
+        "gbp-per-day": 0.17200,
+        "gbp-per-kva-per-day": 0.01130,
+        "gbp-per-kwh": 0.00000
+      },
+      "878": {
+        "excess-gbp-per-kva-per-day": 0.01260,
+        "gbp-per-day": 0.13900,
+        "gbp-per-kva-per-day": 0.01260,
+        "gbp-per-kwh": 0.04381
+      },
+      "879": {
+        "excess-gbp-per-kva-per-day": 0.01220,
+        "gbp-per-day": 0.11050,
+        "gbp-per-kva-per-day": 0.01220,
+        "gbp-per-kwh": 0.00000
+      },
+      "880": {
+        "excess-gbp-per-kva-per-day": 0.02710,
+        "gbp-per-day": 0.03760,
+        "gbp-per-kva-per-day": 0.02710,
+        "gbp-per-kwh": 0.00000
+      },
+      "881": {
+        "excess-gbp-per-kva-per-day": 0.02020,
+        "gbp-per-day": 0.04420,
+        "gbp-per-kva-per-day": 0.02020,
+        "gbp-per-kwh": 0.01158
+      },
+      "882": {
+        "excess-gbp-per-kva-per-day": 0.01350,
+        "gbp-per-day": 0.04510,
+        "gbp-per-kva-per-day": 0.01350,
+        "gbp-per-kwh": 0.00000
+      },
+      "883": {
+        "excess-gbp-per-kva-per-day": 0.01460,
+        "gbp-per-day": 0.19060,
+        "gbp-per-kva-per-day": 0.01460,
+        "gbp-per-kwh": 0.00000
+      },
+      "884": {
+        "excess-gbp-per-kva-per-day": 0.01710,
+        "gbp-per-day": 0.20820,
+        "gbp-per-kva-per-day": 0.01710,
+        "gbp-per-kwh": 0.02147
+      },
+      "885": {
+        "excess-gbp-per-kva-per-day": 0.03590,
+        "gbp-per-day": 0.04090,
+        "gbp-per-kva-per-day": 0.03590,
+        "gbp-per-kwh": 0.00000
+      },
+      "886": {
+        "excess-gbp-per-kva-per-day": 0.01710,
+        "gbp-per-day": 0.03460,
+        "gbp-per-kva-per-day": 0.01710,
+        "gbp-per-kwh": 0.04469
+      },
+      "887": {
+        "excess-gbp-per-kva-per-day": 0.01640,
+        "gbp-per-day": 0.34700,
+        "gbp-per-kva-per-day": 0.01640,
+        "gbp-per-kwh": 0.04481
+      },
+      "888": {
+        "excess-gbp-per-kva-per-day": 0.01340,
+        "gbp-per-day": 0.02380,
+        "gbp-per-kva-per-day": 0.01340,
+        "gbp-per-kwh": 0.04469
+      },
+      "889": {
+        "excess-gbp-per-kva-per-day": 0.01540,
+        "gbp-per-day": 0.26080,
+        "gbp-per-kva-per-day": 0.01540,
+        "gbp-per-kwh": 0.01697
+      },
+      "890": {
+        "excess-gbp-per-kva-per-day": 0.01210,
+        "gbp-per-day": 0.52450,
+        "gbp-per-kva-per-day": 0.01210,
+        "gbp-per-kwh": 0.01713
+      },
+      "891": {
+        "excess-gbp-per-kva-per-day": 0.02600,
+        "gbp-per-day": 26.10430,
+        "gbp-per-kva-per-day": 0.02600,
+        "gbp-per-kwh": 0.00000
+      },
+      "892": {
+        "excess-gbp-per-kva-per-day": 0.02460,
+        "gbp-per-day": 0.01810,
+        "gbp-per-kva-per-day": 0.02460,
+        "gbp-per-kwh": 0.01708
+      },
+      "893": {
+        "excess-gbp-per-kva-per-day": 0.01260,
+        "gbp-per-day": 0.03380,
+        "gbp-per-kva-per-day": 0.01260,
+        "gbp-per-kwh": 0.01680
+      },
+      "894": {
+        "excess-gbp-per-kva-per-day": 0.01920,
+        "gbp-per-day": 0.01680,
+        "gbp-per-kva-per-day": 0.01920,
+        "gbp-per-kwh": 0.02816
+      },
+      "895": {
+        "excess-gbp-per-kva-per-day": 0.01120,
+        "gbp-per-day": 0.04850,
+        "gbp-per-kva-per-day": 0.01120,
+        "gbp-per-kwh": 0.00000
+      },
+      "896": {
+        "excess-gbp-per-kva-per-day": 0.01600,
+        "gbp-per-day": 0.02620,
+        "gbp-per-kva-per-day": 0.01600,
+        "gbp-per-kwh": 0.01144
+      },
+      "897": {
+        "excess-gbp-per-kva-per-day": 0.04660,
+        "gbp-per-day": 153.24870,
+        "gbp-per-kva-per-day": 0.04660,
+        "gbp-per-kwh": 0.03071
+      },
+      "898": {
+        "excess-gbp-per-kva-per-day": 0.02900,
+        "gbp-per-day": 155.23900,
+        "gbp-per-kva-per-day": 0.02900,
+        "gbp-per-kwh": 0.00000
+      },
+      "899": {
+        "excess-gbp-per-kva-per-day": 0.00860,
+        "gbp-per-day": 108.54370,
+        "gbp-per-kva-per-day": 0.00860,
+        "gbp-per-kwh": 0.00000
+      },
+      "900": {
+        "excess-gbp-per-kva-per-day": 0.01020,
+        "gbp-per-day": 0.09270,
+        "gbp-per-kva-per-day": 0.01020,
+        "gbp-per-kwh": 0.04304
+      },
+      "901": {
+        "excess-gbp-per-kva-per-day": 0.05110,
+        "gbp-per-day": 0.10200,
+        "gbp-per-kva-per-day": 0.05110,
+        "gbp-per-kwh": 0.02167
+      },
+      "904": {
+        "excess-gbp-per-kva-per-day": 0.01660,
+        "gbp-per-day": 2.84590,
+        "gbp-per-kva-per-day": 0.01660,
+        "gbp-per-kwh": 0.01707
+      },
+      "905": {
+        "excess-gbp-per-kva-per-day": 0.01330,
+        "gbp-per-day": 0.03750,
+        "gbp-per-kva-per-day": 0.01330,
+        "gbp-per-kwh": 0.01733
+      },
+      "906": {
+        "excess-gbp-per-kva-per-day": 0.03250,
+        "gbp-per-day": 0.02990,
+        "gbp-per-kva-per-day": 0.03250,
+        "gbp-per-kwh": 0.00000
+      },
+      "907": {
+        "excess-gbp-per-kva-per-day": 0.00930,
+        "gbp-per-day": 0.46290,
+        "gbp-per-kva-per-day": 0.00930,
+        "gbp-per-kwh": 0.01650
+      },
+      "908": {
+        "excess-gbp-per-kva-per-day": 0.02000,
+        "gbp-per-day": 0.20820,
+        "gbp-per-kva-per-day": 0.02000,
+        "gbp-per-kwh": 0.01167
+      },
+      "911": {
+        "excess-gbp-per-kva-per-day": 0.00050,
+        "gbp-per-day": 4.48030,
+        "gbp-per-kva-per-day": 0.00050,
+        "gbp-per-kwh": 0.00000
+      },
+      "912": {
+        "excess-gbp-per-kva-per-day": 0.00050,
+        "gbp-per-day": 13.42470,
+        "gbp-per-kva-per-day": 0.00050,
+        "gbp-per-kwh": 0.00000
+      },
+      "913": {
+        "excess-gbp-per-kva-per-day": 0.00050,
+        "gbp-per-day": 9.13380,
+        "gbp-per-kva-per-day": 0.00050,
+        "gbp-per-kwh": 0.00000
+      },
+      "914": {
+        "excess-gbp-per-kva-per-day": 0.00050,
+        "gbp-per-day": 12.52290,
+        "gbp-per-kva-per-day": 0.00050,
+        "gbp-per-kwh": 0.00000
+      },
+      "915": {
+        "excess-gbp-per-kva-per-day": 0.00050,
+        "gbp-per-day": 12.09180,
+        "gbp-per-kva-per-day": 0.00050,
+        "gbp-per-kwh": 0.00000
+      },
+      "916": {
+        "excess-gbp-per-kva-per-day": 0.00050,
+        "gbp-per-day": 18.96160,
+        "gbp-per-kva-per-day": 0.00050,
+        "gbp-per-kwh": 0.00000
+      },
+      "933": {
+        "excess-gbp-per-kva-per-day": 0.00050,
+        "gbp-per-day": 19.07370,
+        "gbp-per-kva-per-day": 0.00050,
+        "gbp-per-kwh": 0.00000
+      },
+      "935": {
+        "excess-gbp-per-kva-per-day": 0.00050,
+        "gbp-per-day": 51.83250,
+        "gbp-per-kva-per-day": 0.00050,
+        "gbp-per-kwh": 0.00000
+      },
+      "936": {
+        "excess-gbp-per-kva-per-day": 0.00050,
+        "gbp-per-day": 4.50030,
+        "gbp-per-kva-per-day": 0.00050,
+        "gbp-per-kwh": 0.00000
+      },
+      "945": {
+        "excess-gbp-per-kva-per-day": 0.00050,
+        "gbp-per-day": 4.52310,
+        "gbp-per-kva-per-day": 0.00050,
+        "gbp-per-kwh": 0.00000
+      },
+      "946": {
+        "excess-gbp-per-kva-per-day": 0.00050,
+        "gbp-per-day": 4.50520,
+        "gbp-per-kva-per-day": 0.00050,
+        "gbp-per-kwh": 0.00000
+      },
+      "947": {
+        "excess-gbp-per-kva-per-day": 0.00050,
+        "gbp-per-day": 9.89510,
+        "gbp-per-kva-per-day": 0.00050,
+        "gbp-per-kwh": 0.00000
+      },
+      "948": {
+        "excess-gbp-per-kva-per-day": 0.00050,
+        "gbp-per-day": 7.04660,
+        "gbp-per-kva-per-day": 0.00050,
+        "gbp-per-kwh": 0.00000
+      },
+      "949": {
+        "excess-gbp-per-kva-per-day": 0.00050,
+        "gbp-per-day": 7.12430,
+        "gbp-per-kva-per-day": 0.00050,
+        "gbp-per-kwh": 0.00000
+      },
+      "950": {
+        "excess-gbp-per-kva-per-day": 0.00050,
+        "gbp-per-day": 7.41260,
+        "gbp-per-kva-per-day": 0.00050,
+        "gbp-per-kwh": 0.00000
+      },
+      "951": {
+        "excess-gbp-per-kva-per-day": 0.00050,
+        "gbp-per-day": 5.34050,
+        "gbp-per-kva-per-day": 0.00050,
+        "gbp-per-kwh": 0.00000
+      },
+      "952": {
+        "excess-gbp-per-kva-per-day": 0.00050,
+        "gbp-per-day": 22.77590,
+        "gbp-per-kva-per-day": 0.00050,
+        "gbp-per-kwh": 0.00000
+      },
+      "953": {
+        "excess-gbp-per-kva-per-day": 0.00050,
+        "gbp-per-day": 157.76650,
+        "gbp-per-kva-per-day": 0.00050,
+        "gbp-per-kwh": 0.00000
+      },
+      "954": {
+        "excess-gbp-per-kva-per-day": 0.00050,
+        "gbp-per-day": 13.07900,
+        "gbp-per-kva-per-day": 0.00050,
+        "gbp-per-kwh": 0.00000
+      },
+      "955": {
+        "excess-gbp-per-kva-per-day": 0.00050,
+        "gbp-per-day": 8.25410,
+        "gbp-per-kva-per-day": 0.00050,
+        "gbp-per-kwh": 0.00000
+      },
+      "956": {
+        "excess-gbp-per-kva-per-day": 0.00050,
+        "gbp-per-day": 35.94040,
+        "gbp-per-kva-per-day": 0.00050,
+        "gbp-per-kwh": 0.00000
+      },
+      "957": {
+        "excess-gbp-per-kva-per-day": 0.00050,
+        "gbp-per-day": 2.82090,
+        "gbp-per-kva-per-day": 0.00050,
+        "gbp-per-kwh": 0.00000
+      },
+      "958": {
+        "excess-gbp-per-kva-per-day": 0.00050,
+        "gbp-per-day": 4.41850,
+        "gbp-per-kva-per-day": 0.00050,
+        "gbp-per-kwh": 0.00000
+      },
+      "959": {
+        "excess-gbp-per-kva-per-day": 0.00050,
+        "gbp-per-day": 4.48430,
+        "gbp-per-kva-per-day": 0.00050,
+        "gbp-per-kwh": 0.00000
+      },
+      "960": {
+        "excess-gbp-per-kva-per-day": 0.00050,
+        "gbp-per-day": 4.43210,
+        "gbp-per-kva-per-day": 0.00050,
+        "gbp-per-kwh": 0.00000
+      },
+      "962": {
+        "excess-gbp-per-kva-per-day": 0.00050,
+        "gbp-per-day": 5.35780,
+        "gbp-per-kva-per-day": 0.00050,
+        "gbp-per-kwh": 0.00000
+      },
+      "963": {
+        "excess-gbp-per-kva-per-day": 0.00050,
+        "gbp-per-day": 6.18150,
+        "gbp-per-kva-per-day": 0.00050,
+        "gbp-per-kwh": 0.00000
+      },
+      "964": {
+        "excess-gbp-per-kva-per-day": 0.00050,
+        "gbp-per-day": 17.74580,
+        "gbp-per-kva-per-day": 0.00050,
+        "gbp-per-kwh": 0.00000
+      },
+      "966": {
+        "excess-gbp-per-kva-per-day": 0.00050,
+        "gbp-per-day": 14.74420,
+        "gbp-per-kva-per-day": 0.00050,
+        "gbp-per-kwh": 0.00000
+      },
+      "968": {
+        "excess-gbp-per-kva-per-day": 0.00050,
+        "gbp-per-day": 16.35500,
+        "gbp-per-kva-per-day": 0.00050,
+        "gbp-per-kwh": 0.00000
+      },
+      "970": {
+        "excess-gbp-per-kva-per-day": 0.00050,
+        "gbp-per-day": 4.46020,
+        "gbp-per-kva-per-day": 0.00050,
+        "gbp-per-kwh": 0.00000
+      },
+      "971": {
+        "excess-gbp-per-kva-per-day": 0.00050,
+        "gbp-per-day": 30.83950,
+        "gbp-per-kva-per-day": 0.00050,
+        "gbp-per-kwh": 0.00000
+      },
+      "972": {
+        "excess-gbp-per-kva-per-day": 0.00050,
+        "gbp-per-day": 26.59010,
+        "gbp-per-kva-per-day": 0.00050,
+        "gbp-per-kwh": 0.00000
+      },
+      "974": {
+        "excess-gbp-per-kva-per-day": 0.00050,
+        "gbp-per-day": 3.07320,
+        "gbp-per-kva-per-day": 0.00050,
+        "gbp-per-kwh": 0.00000
+      },
+      "978": {
+        "excess-gbp-per-kva-per-day": 0.00050,
+        "gbp-per-day": 17.94390,
+        "gbp-per-kva-per-day": 0.00050,
+        "gbp-per-kwh": 0.00000
+      },
+      "980": {
+        "excess-gbp-per-kva-per-day": 0.00050,
+        "gbp-per-day": 5.41450,
+        "gbp-per-kva-per-day": 0.00050,
+        "gbp-per-kwh": 0.00000
+      },
+      "981": {
+        "excess-gbp-per-kva-per-day": 0.00050,
+        "gbp-per-day": 3.02730,
+        "gbp-per-kva-per-day": 0.00050,
+        "gbp-per-kwh": 0.00000
+      },
+      "983": {
+        "excess-gbp-per-kva-per-day": 0.00050,
+        "gbp-per-day": 7.78340,
+        "gbp-per-kva-per-day": 0.00050,
+        "gbp-per-kwh": 0.00000
+      },
+      "984": {
+        "excess-gbp-per-kva-per-day": 0.00050,
+        "gbp-per-day": 3.05930,
+        "gbp-per-kva-per-day": 0.00050,
+        "gbp-per-kwh": 0.00000
+      },
+      "986": {
+        "excess-gbp-per-kva-per-day": 0.00050,
+        "gbp-per-day": 5.30120,
+        "gbp-per-kva-per-day": 0.00050,
+        "gbp-per-kwh": 0.00000
+      },
+      "988": {
+        "excess-gbp-per-kva-per-day": 0.00050,
+        "gbp-per-day": 7.03310,
+        "gbp-per-kva-per-day": 0.00050,
+        "gbp-per-kwh": 0.00000
+      },
+      "989": {
+        "excess-gbp-per-kva-per-day": 0.00050,
+        "gbp-per-day": 31.16300,
+        "gbp-per-kva-per-day": 0.00050,
+        "gbp-per-kwh": 0.00000
+      },
+      "991": {
+        "excess-gbp-per-kva-per-day": 0.00050,
+        "gbp-per-day": 57.82570,
+        "gbp-per-kva-per-day": 0.00050,
+        "gbp-per-kwh": 0.00000
+      },
+      "992": {
+        "excess-gbp-per-kva-per-day": 0.00050,
+        "gbp-per-day": 74.02030,
+        "gbp-per-kva-per-day": 0.00050,
+        "gbp-per-kwh": 0.00000
+      },
+      "994": {
+        "excess-gbp-per-kva-per-day": 0.00050,
+        "gbp-per-day": 2.56130,
+        "gbp-per-kva-per-day": 0.00050,
+        "gbp-per-kwh": 0.00000
+      },
+      "995": {
+        "excess-gbp-per-kva-per-day": 0.00050,
+        "gbp-per-day": 5.36970,
+        "gbp-per-kva-per-day": 0.00050,
+        "gbp-per-kwh": 0.00000
+      },
+      "996": {
+        "excess-gbp-per-kva-per-day": 0.00050,
+        "gbp-per-day": 5.37730,
+        "gbp-per-kva-per-day": 0.00050,
+        "gbp-per-kwh": 0.00000
+      },
+      "997": {
+        "excess-gbp-per-kva-per-day": 0.00050,
+        "gbp-per-day": 8.41710,
+        "gbp-per-kva-per-day": 0.00050,
+        "gbp-per-kwh": 0.00000
+      },
+      "998": {
+        "excess-gbp-per-kva-per-day": 0.00050,
+        "gbp-per-day": 88.50120,
+        "gbp-per-kva-per-day": 0.00050,
+        "gbp-per-kwh": 0.00000
+      },
+      "999": {
+        "excess-gbp-per-kva-per-day": 0.00050,
+        "gbp-per-day": 4.08790,
+        "gbp-per-kva-per-day": 0.00050,
+        "gbp-per-kwh": 0.00000
+      },
+      "Y00": {
+        "excess-gbp-per-kva-per-day": 0.01480,
+        "gbp-per-day": 0.12190,
+        "gbp-per-kva-per-day": 0.01480,
+        "gbp-per-kwh": 0.00255
+      },
+      "Y01": {
+        "excess-gbp-per-kva-per-day": 0.00900,
+        "gbp-per-day": 0.16880,
+        "gbp-per-kva-per-day": 0.00900,
+        "gbp-per-kwh": 0.01785
+      },
+      "Y02": {
+        "excess-gbp-per-kva-per-day": 0.02020,
+        "gbp-per-day": 0.02420,
+        "gbp-per-kva-per-day": 0.02020,
+        "gbp-per-kwh": 0.00000
+      },
+      "Y03": {
+        "excess-gbp-per-kva-per-day": 0.01760,
+        "gbp-per-day": 0.02310,
+        "gbp-per-kva-per-day": 0.01760,
+        "gbp-per-kwh": 0.04491
+      },
+      "Y04": {
+        "excess-gbp-per-kva-per-day": 0.01470,
+        "gbp-per-day": 0.13680,
+        "gbp-per-kva-per-day": 0.01470,
+        "gbp-per-kwh": 0.01744
+      },
+      "Y05": {
+        "excess-gbp-per-kva-per-day": 0.01060,
+        "gbp-per-day": 0.08260,
+        "gbp-per-kva-per-day": 0.01060,
+        "gbp-per-kwh": 0.00000
+      },
+      "Y06": {
+        "excess-gbp-per-kva-per-day": 0.00910,
+        "gbp-per-day": 0.12650,
+        "gbp-per-kva-per-day": 0.00910,
+        "gbp-per-kwh": 0.01937
+      },
+      "Y07": {
+        "excess-gbp-per-kva-per-day": 0.00910,
+        "gbp-per-day": 0.13010,
+        "gbp-per-kva-per-day": 0.00910,
+        "gbp-per-kwh": 0.01914
+      },
+      "Y08": {
+        "excess-gbp-per-kva-per-day": 0.01070,
+        "gbp-per-day": 0.21350,
+        "gbp-per-kva-per-day": 0.01070,
+        "gbp-per-kwh": 0.01657
+      },
+      "Y09": {
+        "excess-gbp-per-kva-per-day": 0.00890,
+        "gbp-per-day": 0.41740,
+        "gbp-per-kva-per-day": 0.00890,
+        "gbp-per-kwh": 0.00000
+      },
+      "Y10": {
+        "excess-gbp-per-kva-per-day": 0.01300,
+        "gbp-per-day": 0.25920,
+        "gbp-per-kva-per-day": 0.01300,
+        "gbp-per-kwh": 0.00000
+      },
+      "Y11": {
+        "excess-gbp-per-kva-per-day": 0.02740,
+        "gbp-per-day": 0.01540,
+        "gbp-per-kva-per-day": 0.02740,
+        "gbp-per-kwh": 0.00000
+      },
+      "Y12": {
+        "excess-gbp-per-kva-per-day": 0.02560,
+        "gbp-per-day": 6.20600,
+        "gbp-per-kva-per-day": 0.02560,
+        "gbp-per-kwh": 0.04774
+      },
+      "Y13": {
+        "excess-gbp-per-kva-per-day": 0.01400,
+        "gbp-per-day": 0.11950,
+        "gbp-per-kva-per-day": 0.01400,
+        "gbp-per-kwh": 0.02126
+      },
+      "Y14": {
+        "excess-gbp-per-kva-per-day": 0.01920,
+        "gbp-per-day": 0.04960,
+        "gbp-per-kva-per-day": 0.01920,
+        "gbp-per-kwh": 0.00000
+      },
+      "Y15": {
+        "excess-gbp-per-kva-per-day": 0.00950,
+        "gbp-per-day": 0.06410,
+        "gbp-per-kva-per-day": 0.00950,
+        "gbp-per-kwh": 0.04424
+      },
+      "Y16": {
+        "excess-gbp-per-kva-per-day": 0.01650,
+        "gbp-per-day": 0.01990,
+        "gbp-per-kva-per-day": 0.01650,
+        "gbp-per-kwh": 0.00000
+      },
+      "Y17": {
+        "excess-gbp-per-kva-per-day": 0.02100,
+        "gbp-per-day": 0.28210,
+        "gbp-per-kva-per-day": 0.02100,
+        "gbp-per-kwh": 0.00000
+      },
+      "Y20": {
+        "excess-gbp-per-kva-per-day": 0.01010,
+        "gbp-per-day": 0.24560,
+        "gbp-per-kva-per-day": 0.01010,
+        "gbp-per-kwh": 0.01686
+      },
+      "Y21": {
+        "excess-gbp-per-kva-per-day": 0.01260,
+        "gbp-per-day": 0.03380,
+        "gbp-per-kva-per-day": 0.01260,
+        "gbp-per-kwh": 0.01680
+      },
+      "Y22": {
+        "excess-gbp-per-kva-per-day": 0.01200,
+        "gbp-per-day": 0.12690,
+        "gbp-per-kva-per-day": 0.01200,
+        "gbp-per-kwh": 0.02990
+      },
+      "Y23": {
+        "excess-gbp-per-kva-per-day": 0.01020,
+        "gbp-per-day": 0.75050,
+        "gbp-per-kva-per-day": 0.01020,
+        "gbp-per-kwh": 0.04304
+      },
+      "Y24": {
+        "excess-gbp-per-kva-per-day": 0.01650,
+        "gbp-per-day": 0.01980,
+        "gbp-per-kva-per-day": 0.01650,
+        "gbp-per-kwh": 0.00000
+      },
+      "Y25": {
+        "excess-gbp-per-kva-per-day": 0.01020,
+        "gbp-per-day": 1.25760,
+        "gbp-per-kva-per-day": 0.01020,
+        "gbp-per-kwh": 0.01684
+      },
+      "Y26": {
+        "excess-gbp-per-kva-per-day": 0.01640,
+        "gbp-per-day": 0.06470,
+        "gbp-per-kva-per-day": 0.01640,
+        "gbp-per-kwh": 0.00255
+      },
+      "Y27": {
+        "excess-gbp-per-kva-per-day": 0.01210,
+        "gbp-per-day": 0.21660,
+        "gbp-per-kva-per-day": 0.01210,
+        "gbp-per-kwh": 0.01920
+      },
+      "Y28": {
+        "excess-gbp-per-kva-per-day": 0.01710,
+        "gbp-per-day": 0.02390,
+        "gbp-per-kva-per-day": 0.01710,
+        "gbp-per-kwh": 0.04469
+      },
+      "Z00": {
+        "excess-gbp-per-kva-per-day": 0.00050,
+        "gbp-per-day": 12.18590,
+        "gbp-per-kva-per-day": 0.00050,
+        "gbp-per-kwh": 0.00000
+      },
+      "Z01": {
+        "excess-gbp-per-kva-per-day": 0.00050,
+        "gbp-per-day": 2.93420,
+        "gbp-per-kva-per-day": 0.00050,
+        "gbp-per-kwh": 0.00000
+      },
+      "Z02": {
+        "excess-gbp-per-kva-per-day": 0.00050,
+        "gbp-per-day": 5.81150,
+        "gbp-per-kva-per-day": 0.00050,
+        "gbp-per-kwh": 0.00000
+      },
+      "Z03": {
+        "excess-gbp-per-kva-per-day": 0.00050,
+        "gbp-per-day": 5.38410,
+        "gbp-per-kva-per-day": 0.00050,
+        "gbp-per-kwh": 0.00000
+      },
+      "Z04": {
+        "excess-gbp-per-kva-per-day": 0.00050,
+        "gbp-per-day": 5.47330,
+        "gbp-per-kva-per-day": 0.00050,
+        "gbp-per-kwh": 0.00000
+      },
+      "Z05": {
+        "excess-gbp-per-kva-per-day": 0.00050,
+        "gbp-per-day": 5.32460,
+        "gbp-per-kva-per-day": 0.00050,
+        "gbp-per-kwh": 0.00000
+      },
+      "Z06": {
+        "excess-gbp-per-kva-per-day": 0.00050,
+        "gbp-per-day": 2.97650,
+        "gbp-per-kva-per-day": 0.00050,
+        "gbp-per-kwh": 0.00000
+      },
+      "Z07": {
+        "excess-gbp-per-kva-per-day": 0.00050,
+        "gbp-per-day": 2.97290,
+        "gbp-per-kva-per-day": 0.00050,
+        "gbp-per-kwh": 0.00000
+      },
+      "Z08": {
+        "excess-gbp-per-kva-per-day": 0.00050,
+        "gbp-per-day": 7.76450,
+        "gbp-per-kva-per-day": 0.00050,
+        "gbp-per-kwh": 0.00000
+      },
+      "Z09": {
+        "excess-gbp-per-kva-per-day": 0.00050,
+        "gbp-per-day": 17.57310,
+        "gbp-per-kva-per-day": 0.00050,
+        "gbp-per-kwh": 0.00000
+      },
+      "Z10": {
+        "excess-gbp-per-kva-per-day": 0.00050,
+        "gbp-per-day": 28.74100,
+        "gbp-per-kva-per-day": 0.00050,
+        "gbp-per-kwh": 0.00000
+      },
+      "Z11": {
+        "excess-gbp-per-kva-per-day": 0.00050,
+        "gbp-per-day": 3.08750,
+        "gbp-per-kva-per-day": 0.00050,
+        "gbp-per-kwh": 0.00000
+      },
+      "Z13": {
+        "excess-gbp-per-kva-per-day": 0.00050,
+        "gbp-per-day": 2.26980,
+        "gbp-per-kva-per-day": 0.00050,
+        "gbp-per-kwh": 0.00000
+      },
+      "Z14": {
+        "excess-gbp-per-kva-per-day": 0.00050,
+        "gbp-per-day": 7.92840,
+        "gbp-per-kva-per-day": 0.00050,
+        "gbp-per-kwh": 0.00000
+      },
+      "Z15": {
+        "excess-gbp-per-kva-per-day": 0.00050,
+        "gbp-per-day": 5.34310,
+        "gbp-per-kva-per-day": 0.00050,
+        "gbp-per-kwh": 0.00000
+      },
+      "Z16": {
+        "excess-gbp-per-kva-per-day": 0.00050,
+        "gbp-per-day": 3.17970,
+        "gbp-per-kva-per-day": 0.00050,
+        "gbp-per-kwh": 0.00000
+      },
+      "Z17": {
+        "excess-gbp-per-kva-per-day": 0.00050,
+        "gbp-per-day": 2.82090,
+        "gbp-per-kva-per-day": 0.00050,
+        "gbp-per-kwh": 0.00000
+      },
+      "Z20": {
+        "excess-gbp-per-kva-per-day": 0.00050,
+        "gbp-per-day": 10.23460,
+        "gbp-per-kva-per-day": 0.00050,
+        "gbp-per-kwh": 0.00000
+      },
+      "Z21": {
+        "excess-gbp-per-kva-per-day": 0.00050,
+        "gbp-per-day": 2.08220,
+        "gbp-per-kva-per-day": 0.00050,
+        "gbp-per-kwh": 0.00000
+      },
+      "Z22": {
+        "excess-gbp-per-kva-per-day": 0.00050,
+        "gbp-per-day": 3.04580,
+        "gbp-per-kva-per-day": 0.00050,
+        "gbp-per-kwh": 0.00000
+      },
+      "Z23": {
+        "excess-gbp-per-kva-per-day": 0.00050,
+        "gbp-per-day": 0.75050,
+        "gbp-per-kva-per-day": 0.00050,
+        "gbp-per-kwh": 0.00000
+      },
+      "Z24": {
+        "excess-gbp-per-kva-per-day": 0.00050,
+        "gbp-per-day": 2.18790,
+        "gbp-per-kva-per-day": 0.00050,
+        "gbp-per-kwh": 0.00000
+      },
+      "Z25": {
+        "excess-gbp-per-kva-per-day": 0.00050,
+        "gbp-per-day": 1.25760,
+        "gbp-per-kva-per-day": 0.00050,
+        "gbp-per-kwh": 0.00000
+      },
+      "Z26": {
+        "excess-gbp-per-kva-per-day": 0.00050,
+        "gbp-per-day": 5.34250,
+        "gbp-per-kva-per-day": 0.00050,
+        "gbp-per-kwh": 0.00000
+      },
+      "Z27": {
+        "excess-gbp-per-kva-per-day": 0.00050,
+        "gbp-per-day": 8.66340,
+        "gbp-per-kva-per-day": 0.00050,
+        "gbp-per-kwh": 0.00000
+      },
+      "Z28": {
+        "excess-gbp-per-kva-per-day": 0.00050,
+        "gbp-per-day": 3.45620,
+        "gbp-per-kva-per-day": 0.00050,
+        "gbp-per-kwh": 0.00000
+      },
+      "_00": {
+        "amber-gbp-per-kwh": -0.00262,
+        "description": "HV Generation Site Specific no RP charge",
+        "excess-gbp-per-kva-per-day": 0.00000,
+        "gbp-per-kva-per-day": 0.00000,
+        "gbp-per-kvarh": 0.00000,
+        "gbp-per-mpan-per-day": 2.91750,
+        "green-gbp-per-kwh": -0.00008,
+        "red-gbp-per-kwh": -0.03917
+      },
+      "_02": {
+        "amber-gbp-per-kwh": 0.01410,
+        "description": "Domestic Aggregated (related MPAN)",
+        "excess-gbp-per-kva-per-day": 0.00000,
+        "gbp-per-kva-per-day": 0.00000,
+        "gbp-per-kvarh": 0.00000,
+        "gbp-per-mpan-per-day": 0.00000,
+        "green-gbp-per-kwh": 0.00502,
+        "red-gbp-per-kwh": 0.09017
+      },
+      "_04": {
+        "amber-gbp-per-kwh": 0.01429,
+        "description": "Non-Domestic Aggregated (related MPAN)",
+        "excess-gbp-per-kva-per-day": 0.00000,
+        "gbp-per-kva-per-day": 0.00000,
+        "gbp-per-kvarh": 0.00000,
+        "gbp-per-mpan-per-day": 0.00000,
+        "green-gbp-per-kwh": 0.00503,
+        "red-gbp-per-kwh": 0.09183
+      }
+    }
+  }
+  "_L": {
+    "bands": [
+      {
+        "band": "red",
+        "finish": 19,
+        "start": 17,
+        "weekend": false
+      },
+      {
+        "band": "amber",
+        "finish": 17,
+        "start": 7.5,
+        "weekend": false
+      },
+      {
+        "band": "amber",
+        "finish": 21.5,
+        "start": 19,
+        "weekend": false
+      },
+      {
+        "band": "amber",
+        "finish": 19.5,
+        "start": 16.5,
+        "weekend": true
+      }
+    ],
+    "super_red": [
+      {
+        "finish-day": 21,
+        "finish-month": 12,
+        "finish_hour": 19,
+        "start-day": 1,
+        "start-month": 11,
+        "start_hour": 17,
+        "weekend": false
+      },
+      {
+        "finish-day": "last",
+        "finish-month": 2,
+        "finish_hour": 19,
+        "start-day": 5,
+        "start-month": 1,
+        "start_hour": 17,
+        "weekend": false
+      }
+    ],
+    "tariffs": {
+      "285,490_00": {
+        "amber-gbp-per-kwh": 0.01484,
+        "description": "HV Site Specific",
+        "excess-gbp-per-kva-per-day": 0.06740,
+        "gbp-per-kva-per-day": 0.02950,
+        "gbp-per-kvarh": 0.00054,
+        "gbp-per-mpan-per-day": 0.95300,
+        "green-gbp-per-kwh": 0.01368,
+        "red-gbp-per-kwh": 0.06084
+      },
+      "288,503,504,505_00": {
+        "amber-gbp-per-kwh": -0.00169,
+        "description": "HV Generation Site Specific",
+        "excess-gbp-per-kva-per-day": 0.00000,
+        "gbp-per-kva-per-day": 0.00000,
+        "gbp-per-kvarh": 0.00080,
+        "gbp-per-mpan-per-day": 0.59490,
+        "green-gbp-per-kwh": -0.00018,
+        "red-gbp-per-kwh": -0.05206
+      },
+      "475,280,484,476,477,486,491,492,501_01,02,05,06,07,08": {
+        "amber-gbp-per-kwh": 0.02081,
+        "description": "Domestic Aggregated",
+        "excess-gbp-per-kva-per-day": 0.00000,
+        "gbp-per-kva-per-day": 0.00000,
+        "gbp-per-kvarh": 0.00000,
+        "gbp-per-mpan-per-day": 0.05500,
+        "green-gbp-per-kwh": 0.01441,
+        "red-gbp-per-kwh": 0.15692
+      },
+      "478,479,488,480,481,499,482,483,521,522,638,485_03,04,05,06,07,08": {
+        "amber-gbp-per-kwh": 0.01998,
+        "description": "Non-Domestic Aggregated",
+        "excess-gbp-per-kva-per-day": 0.00000,
+        "gbp-per-kva-per-day": 0.00000,
+        "gbp-per-kvarh": 0.00000,
+        "gbp-per-mpan-per-day": 0.09850,
+        "green-gbp-per-kwh": 0.01431,
+        "red-gbp-per-kwh": 0.14039
+      },
+      "487,284,812_00": {
+        "amber-gbp-per-kwh": 0.01728,
+        "description": "LV Site Specific",
+        "excess-gbp-per-kva-per-day": 0.08320,
+        "gbp-per-kva-per-day": 0.03870,
+        "gbp-per-kvarh": 0.00117,
+        "gbp-per-mpan-per-day": 0.13440,
+        "green-gbp-per-kwh": 0.01399,
+        "red-gbp-per-kwh": 0.09502
+      },
+      "489,811_00": {
+        "amber-gbp-per-kwh": 0.01584,
+        "description": "LV Sub Site Specific",
+        "excess-gbp-per-kva-per-day": 0.06880,
+        "gbp-per-kva-per-day": 0.03520,
+        "gbp-per-kvarh": 0.00080,
+        "gbp-per-mpan-per-day": 0.10540,
+        "green-gbp-per-kwh": 0.01380,
+        "red-gbp-per-kwh": 0.07717
+      },
+      "495,286,818_00": {
+        "amber-gbp-per-kwh": -0.00427,
+        "description": "LV Generation Aggregated",
+        "excess-gbp-per-kva-per-day": 0.00000,
+        "gbp-per-kva-per-day": 0.00000,
+        "gbp-per-kvarh": 0.00000,
+        "gbp-per-mpan-per-day": 0.00000,
+        "green-gbp-per-kwh": -0.00051,
+        "red-gbp-per-kwh": -0.08427
+      },
+      "496,287,820,497,498,821_00": {
+        "amber-gbp-per-kwh": -0.00427,
+        "description": "LV Generation Site Specific",
+        "excess-gbp-per-kva-per-day": 0.00000,
+        "gbp-per-kva-per-day": 0.00000,
+        "gbp-per-kvarh": 0.00130,
+        "gbp-per-mpan-per-day": 0.00000,
+        "green-gbp-per-kwh": -0.00051,
+        "red-gbp-per-kwh": -0.08427
+      },
+      "500,822,502,823_00": {
+        "amber-gbp-per-kwh": -0.00365,
+        "description": "LV Sub Generation Site Specific",
+        "excess-gbp-per-kva-per-day": 0.00000,
+        "gbp-per-kva-per-day": 0.00000,
+        "gbp-per-kvarh": 0.00105,
+        "gbp-per-mpan-per-day": 0.00000,
+        "green-gbp-per-kwh": -0.00043,
+        "red-gbp-per-kwh": -0.07668
+      },
+      "506,507,813,493,282,814,508,509,815,659,660,816,494,283,817_00,01,08": {
+        "amber-gbp-per-kwh": 0.03310,
+        "description": "Unmetered Supplies",
+        "excess-gbp-per-kva-per-day": 0.00000,
+        "gbp-per-kva-per-day": 0.00000,
+        "gbp-per-kvarh": 0.00000,
+        "gbp-per-mpan-per-day": 0.00000,
+        "green-gbp-per-kwh": 0.02365,
+        "red-gbp-per-kwh": 0.31732
+      },
+      "637,819_00": {
+        "amber-gbp-per-kwh": -0.00365,
+        "description": "LV Sub Generation Aggregated",
+        "excess-gbp-per-kva-per-day": 0.00000,
+        "gbp-per-kva-per-day": 0.00000,
+        "gbp-per-kvarh": 0.00000,
+        "gbp-per-mpan-per-day": 0.00000,
+        "green-gbp-per-kwh": -0.00043,
+        "red-gbp-per-kwh": -0.07668
+      },
+      "_00": {
+        "amber-gbp-per-kwh": -0.00169,
+        "description": "HV Generation Site Specific no RP charge",
+        "excess-gbp-per-kva-per-day": 0.00000,
+        "gbp-per-kva-per-day": 0.00000,
+        "gbp-per-kvarh": 0.00000,
+        "gbp-per-mpan-per-day": 0.59490,
+        "green-gbp-per-kwh": -0.00018,
+        "red-gbp-per-kwh": -0.05206
+      },
+      "_02": {
+        "amber-gbp-per-kwh": 0.02081,
+        "description": "Domestic Aggregated (related MPAN)",
+        "excess-gbp-per-kva-per-day": 0.00000,
+        "gbp-per-kva-per-day": 0.00000,
+        "gbp-per-kvarh": 0.00000,
+        "gbp-per-mpan-per-day": 0.00000,
+        "green-gbp-per-kwh": 0.01441,
+        "red-gbp-per-kwh": 0.15692
+      },
+      "_04": {
+        "amber-gbp-per-kwh": 0.01998,
+        "description": "Non-Domestic Aggregated (related MPAN)",
+        "excess-gbp-per-kva-per-day": 0.00000,
+        "gbp-per-kva-per-day": 0.00000,
+        "gbp-per-kvarh": 0.00000,
+        "gbp-per-mpan-per-day": 0.00000,
+        "green-gbp-per-kwh": 0.01431,
+        "red-gbp-per-kwh": 0.14039
+      }
+    }
+  }
+}

@@ -81,27 +81,29 @@ def to_llfcs(row, idx):
     return [v.zfill(3) for v in llfcs]
 
 
-VL_MAP = {
-    'low voltage network': 'lv-net',
-    'low-voltage network': 'lv-net',
-    'low voltage substation': 'lv-sub',
-    'low-voltage substation': 'lv-sub',
-    'high voltage network': 'hv-net',
-    'high-voltage network': 'hv-net',
-    'high voltage substation': 'hv-sub',
-    'high-voltage substation': 'hv-sub',
-    '33kv generic': '33kv',
-    '132/33kv generic': '132kv_33kv',
-    '132kv generic': '132kv'}
-
-
-PERIOD_MAP = {
-    'peak': 'winter-weekday-peak',
-    'winter': 'winter-weekday-day',
-    'night': 'night',
-    'other': 'other',
-    'winter weekday peak': 'winter-weekday-peak',
-    'winter weekday': 'winter-weekday-day'}
+def to_pcs(row, idx):
+    val = get_value(row, idx)
+    llfcs = []
+    if isinstance(val, str):
+        for v in map(str.strip, val.replace('or', ',').split(',')):
+            if len(v) > 0:
+                if '-' in v:
+                    start, finish = v.split('-')
+                    for i in range(int(start), int(finish) + 1):
+                        llfcs.append(str(i))
+                else:
+                    llfcs.append(v)
+    elif isinstance(val, Decimal):
+        llfcs.append(str(int(val)))
+    elif isinstance(val, float):
+        llfcs_str = str(int(val))
+        for i in range(0, len(llfcs_str), 3):
+            llfcs.append(llfcs_str[i:i+3])
+    elif isinstance(val, int):
+        val_str = str(val)
+        for i in range(0, len(val_str), 3):
+            llfcs.append(val_str[i:i+3])
+    return [v.zfill(2) for v in llfcs]
 
 
 BAND_WEEKEND = {
@@ -166,25 +168,27 @@ def tab_lv_hv(sheet, gsp_rates):
         val_0 = None if val is None else ' '.join(val.split())
         if in_tariffs:
             if val_0 is None or len(val_0) == 0:
-                continue
-
-            llfcs_str = ','.join(chain(to_llfcs(row, 1), to_llfcs(row, 10)))
-            tariffs[llfcs_str] = {
-                'description': val_0,
-                'gbp-per-mpan-per-day': get_zero_rate(
-                    row, col_match(title_row, 'fixed')),
-                'gbp-per-kva-per-day': get_zero_rate(
-                    row, col_match(title_row, '^capacity')),
-                'excess-gbp-per-kva-per-day': get_zero_rate(
-                    row, col_match(title_row, 'exce')),
-                'red-gbp-per-kwh': get_rag_rate(
-                    row, col_match(title_row, 'red')),
-                'amber-gbp-per-kwh': get_rag_rate(
-                    row, col_match(title_row, 'amber')),
-                'green-gbp-per-kwh': get_rag_rate(
-                    row, col_match(title_row, 'green')),
-                'gbp-per-kvarh': get_zero_rate(
-                    row, col_match(title_row, 'reactive'))}
+                in_tariffs = False
+            else:
+                llfcs_str = ','.join(
+                    chain(to_llfcs(row, 1), to_llfcs(row, 10)))
+                pcs_str = ','.join(to_pcs(row, 2))
+                tariffs[llfcs_str + '_' + pcs_str] = {
+                    'description': val_0,
+                    'gbp-per-mpan-per-day': get_zero_rate(
+                        row, col_match(title_row, 'fixed')),
+                    'gbp-per-kva-per-day': get_zero_rate(
+                        row, col_match(title_row, '^capacity')),
+                    'excess-gbp-per-kva-per-day': get_zero_rate(
+                        row, col_match(title_row, 'exce')),
+                    'red-gbp-per-kwh': get_rag_rate(
+                        row, col_match(title_row, 'red')),
+                    'amber-gbp-per-kwh': get_rag_rate(
+                        row, col_match(title_row, 'amber')),
+                    'green-gbp-per-kwh': get_rag_rate(
+                        row, col_match(title_row, 'green')),
+                    'gbp-per-kvarh': get_zero_rate(
+                        row, col_match(title_row, 'reactive'))}
 
         elif val_0 == 'Tariff name' or get_value(row, 1) == "Open LLFCs":
             in_tariffs = True
@@ -317,9 +321,10 @@ def content(user, file_name, file_like, gsp_group_id):
                 tab_ehv(sheet, gsp_rates)
 
         rs = {
-            gsp_group.code: gsp_rates}
-
+            gsp_group.code: gsp_rates
+        }
         f.write(dumps(rs))
+
     except BaseException:
         f.write(traceback.format_exc())
     finally:

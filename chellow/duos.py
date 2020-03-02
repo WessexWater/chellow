@@ -364,8 +364,7 @@ def datum_2010_04_01(ds, hh):
     start_date = hh['start-date']
     dno_cache = ds.caches['dno'][ds.dno_code]
 
-    if not ds.full_channels and not (
-            hh['msp-kwh'] > 0 and hh['anti-msp-kwh'] == 0):
+    if not ds.full_channels and hh['msp-kwh'] == 0:
         imp_msp_kvarh, exp_msp_kvarh = 0, 0
     else:
         imp_msp_kvarh, exp_msp_kvarh = hh['imp-msp-kvarh'], hh['exp-msp-kvarh']
@@ -399,10 +398,19 @@ def datum_2010_04_01(ds, hh):
             except KeyError as e:
                 raise BadRequest(str(e))
 
-            for llfcs, tf in tariff_list.items():
-                if ds.llfc_code in [cd.strip() for cd in llfcs.split(',')]:
+            for llfcs_pcs, tf in tariff_list.items():
+                key = llfcs_pcs.split('_')
+                llfcs = [v.strip() for v in key[0].split(',')]
+                if len(key) == 2:
+                    pcs = [v.strip() for v in key[1].split(',')]
+                else:
+                    pcs = None
+
+                if ds.llfc_code in llfcs and (
+                        pcs is None or ds.pc_code in pcs):
                     tariff = tf
                     break
+
             if tariff is None:
                 raise BadRequest(
                     "For the DNO " + ds.dno_code + " and timestamp " +
@@ -565,7 +573,8 @@ def datum_2012_02_23(ds, hh):
     start_date = hh['start-date']
     dno_cache = ds.caches['dno'][ds.dno_code]
 
-    if not ds.full_channels and hh['msp-kwh'] == 0:
+    if not ds.full_channels and not (
+            hh['msp-kwh'] > 0 and hh['anti-msp-kwh'] == 0):
         imp_msp_kvarh, exp_msp_kvarh = 0, 0
     else:
         imp_msp_kvarh, exp_msp_kvarh = hh['imp-msp-kvarh'], hh['exp-msp-kvarh']
@@ -576,17 +585,23 @@ def datum_2012_02_23(ds, hh):
         gsp_group_cache = dno_cache[ds.gsp_group_code] = {}
 
     try:
-        tariff = gsp_group_cache['tariffs'][ds.llfc_code][start_date]
+        tariff = gsp_group_cache['tariffs'][ds.pc_code][ds.llfc_code][
+            start_date]
     except KeyError:
         try:
-            tariff_cache = gsp_group_cache['tariffs']
+            tariffs_cache = gsp_group_cache['tariffs']
         except KeyError:
-            tariff_cache = gsp_group_cache['tariffs'] = {}
+            tariffs_cache = gsp_group_cache['tariffs'] = {}
 
         try:
-            tariffs = tariff_cache[ds.llfc_code]
+            pc_cache = tariffs_cache[ds.pc_code]
         except KeyError:
-            tariffs = tariff_cache[ds.llfc_code] = {}
+            pc_cache = tariffs_cache[ds.pc_code] = {}
+
+        try:
+            tariffs = pc_cache[ds.llfc_code]
+        except KeyError:
+            tariffs = pc_cache[ds.llfc_code] = {}
 
         try:
             tariff = tariffs[start_date]
@@ -599,15 +614,25 @@ def datum_2012_02_23(ds, hh):
             except KeyError as e:
                 raise BadRequest(str(e))
 
-            for llfcs, tf in tariff_list.items():
-                if ds.llfc_code in [cd.strip() for cd in llfcs.split(',')]:
+            for llfcs_pcs, tf in tariff_list.items():
+                key = llfcs_pcs.split('_')
+                llfcs = [v.strip() for v in key[0].split(',')]
+                if len(key) == 2:
+                    pcs = [v.strip() for v in key[1].split(',')]
+                else:
+                    pcs = None
+
+                if ds.llfc_code in llfcs and (
+                        pcs is None or ds.pc_code in pcs):
                     tariff = tf
                     break
+
             if tariff is None:
                 raise BadRequest(
                     "For the DNO " + ds.dno_code + " and timestamp " +
                     hh_format(start_date) + " and GSP group " +
                     ds.gsp_group_code + ", the LLFC '" + ds.llfc_code +
+                    " with PC " + ds.pc_code +
                     "' can't be found in the 'tariffs' section.")
 
             tariffs[start_date] = tariff
@@ -798,9 +823,9 @@ def duos_vb(ds):
                 else:
                     raise Exception('Not recognized')
             elif hh['start-date'] < CUTOFF_DATE_2:
-                data_func = datum_2012_02_23
-            else:
                 data_func = datum_2010_04_01
+            else:
+                data_func = datum_2012_02_23
 
             data_func_cache[hh['start-date']] = data_func
             data_func(ds, hh)
