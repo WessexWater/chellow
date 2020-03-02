@@ -4,80 +4,62 @@
 	&raquo; DC Contracts &raquo; {{ contract.name }} &raquo; Batches &raquo; Add
 {% endblock %}
 
-{% block inside_head %}
-	<style>
-		label {
-			width: 6em;
-			float: left;
-		}
-	</style>
-{% endblock %}
-
 {% block nav %}
-	&raquo; <a href="/dc_contracts">DC Contracts</a> &raquo; 
+	<a href="/dc_contracts">DC Contracts</a> &raquo; 
 	<a href="/dc_contracts/{{contract.id}}">{{contract.name}}</a> &raquo; 
 	<a href="/dc_batches?dc_contract_id={{contract.id}}">Batches</a> &raquo; 
 	Add
 {% endblock %}
 
 {% block content %}
-<div class="layer-section">
-	<div class="section-header">
-		<h2>Add a batch</h2>
-	</div>
-	<div class="section-content">
-		<div class="section-data">
-			<input type="hidden" name="dc_contract_id" value="{{ contract.id }}">
-			<div class="standardForm">
-				<form method="post">
-					<fieldset>
-						<div class="row">
-							<div class="col-sm-4">
-								<label>Reference</label> {{input_text('reference', '')}}						
-							</div>
+	<div class="layer-section">
+		<div class="section-header">
+			<h2>Add a batch</h2>
+		</div>
+		<div class="section-content">
+			<div class="section-data">
+				<input type="hidden" name="dc_contract_id" value="{{ contract.id }}">
+				<form action="/dc_contracts/{{contract_id}}/add_batch" method="post">
+					<fieldset class="grid">
+						<label>Reference</label>
+						{{input_text('reference', next_batch_reference, required=True)}}
 							
-						</div>
-						<div class="row">
-						    <div class="col-sm-4">
-								<label>Description</label> {{input_text('description', '')}}
-							</div>
-						</div>
+						<label>Description</label>
+						{{input_text('description', '',
+						placeholder=next_batch_description)}}
+
 						<input type="submit" value="Add">
 					</fieldset>
 				</form>
-			</div>
-		</div>	
+			</div>	
+		</div>
 	</div>
-</div>
 
-<div class="layer-section">
-	<div class="section-header">
-		<h2>Existing Batches</h2>
-	</div>	
-	<div class="section-content">
-		<div class="section-data">
-			<div class="noWrap">
-				<table class="DataTable widthAuto noMarginBottom">
-					<thead>
-						<tr>
-							<th>Reference</th>
-							<th>Description</th>
-						</tr>
-					</thead>
-					<tbody>
-						{% for batch in batches %}
+	<div class="layer-section">
+		<div class="section-header">
+			<h2>Existing Batches</h2>
+		</div>	
+		<div class="section-content">
+			<div class="section-data">
+				<div class="noWrap">
+					<table class="DataTable widthAuto noMarginBottom">
+						<thead>
 							<tr>
-								<td>{{batch.reference}}</td>
-								<td>{{batch.description}}</td>
+								<th>Reference</th>
+								<th>Description</th>
 							</tr>
-						{% endfor %}
-					</tbody>
-				</table>
+						</thead>
+						<tbody>
+							{% for batch in batches %}
+								<tr>
+									<td>{{batch.reference}}</td>
+									<td>{{batch.description}}</td>
+								</tr>
+							{% endfor %}
+						</tbody>
+					</table>
+				</div>
 			</div>
 		</div>
 	</div>
-</div>
-
-
-	
 {% endblock %}

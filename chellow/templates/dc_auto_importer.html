@@ -1,11 +1,12 @@
 {% extends "base.html" %}
 
 {% block title %}
-	&raquo; DC Contracts &raquo; {{contract.name}} &raquo; Automatic HH Data Downloader
+	&raquo; DC Contracts &raquo; {{contract.name}} &raquo;
+ 	Automatic HH Data Downloader
 {% endblock %}
 
 {% block nav %}
-	&raquo; <a href="/dc_contracts">DC Contracts</a> &raquo; 
+	<a href="/dc_contracts">DC Contracts</a> &raquo; 
 	<a href="/dc_contracts/{{contract.id}}">{{contract.name}}</a> &raquo; 
 	Automatic HH Data Downloader
 {% endblock %}

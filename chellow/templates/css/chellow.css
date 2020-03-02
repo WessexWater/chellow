@@ -41,6 +41,13 @@ h4 {
 p {
     
 }
+
+fieldset.grid {
+  display: inline-grid;
+  grid-template-columns: auto auto;
+  column-gap: 1em;
+}
+
 label {
     font-weight: 100;
 }

@@ -3648,8 +3648,12 @@ def dc_batch_add_get(contract_id):
     contract = Contract.get_dc_by_id(g.sess, contract_id)
     batches = g.sess.query(Batch).filter(Batch.contract == contract).order_by(
         Batch.reference.desc())
+    next_batch_reference, next_batch_description = \
+        contract.get_next_batch_details(g.sess)
     return render_template(
-        'dc_batch_add.html', contract=contract, batches=batches)
+        'dc_batch_add.html', contract=contract, batches=batches,
+        next_batch_reference=next_batch_reference,
+        next_batch_description=next_batch_description)
 
 
 @app.route('/dc_contracts/<int:contract_id>/add_batch', methods=['POST'])
@@ -3863,8 +3867,12 @@ def mop_batch_add_get(contract_id):
     contract = Contract.get_mop_by_id(g.sess, contract_id)
     batches = g.sess.query(Batch).filter(Batch.contract == contract).order_by(
         Batch.reference.desc())
+    next_batch_reference, next_batch_description = \
+        contract.get_next_batch_details(g.sess)
     return render_template(
-        'mop_batch_add.html', contract=contract, batches=batches)
+        'mop_batch_add.html', contract=contract, batches=batches,
+        next_batch_reference=next_batch_reference,
+        next_batch_description=next_batch_description)
 
 
 @app.route('/mop_contracts/<int:contract_id>/add_batch', methods=['POST'])

@@ -90,7 +90,8 @@
 {%- endmacro -%}
 
 {% macro input_text(
-  name, initial=None, size=None, maxlength=None, placeholder=None) %}
+  name, initial=None, size=None, maxlength=None, placeholder=None,
+  required=None) %}
     <input name="{{name}}" value="
         {%- if request.values[name] -%}
             {{ request.values[name] }}
@@ -99,6 +100,7 @@
         {%- endif -%}"
         {%- if size %} size="{{ size }}"{% endif %}
         {%- if placeholder %} placeholder="{{ placeholder }}"{% endif %}
+        {%- if required %} required="required"{% endif %}
         {%- if maxlength %} maxlength="{{ maxlength }}"{% endif %}>
 {%- endmacro -%}
 
