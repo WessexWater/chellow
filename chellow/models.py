@@ -2037,7 +2037,7 @@ class Era(Base, PersistentClass):
 
         if hh_before(dc_contract.finish_date(), finish_date):
             raise BadRequest(
-                "The DC contract " + dc_contract.id +
+                "The DC contract " + str(dc_contract.id) +
                 " finishes before the era.")
 
         if mop_contract.start_date() > start_date:
@@ -2046,7 +2046,7 @@ class Era(Base, PersistentClass):
 
         if hh_before(mop_contract.finish_date(), finish_date):
             raise BadRequest(
-                "The MOP contract " + mop_contract.id +
+                "The MOP contract " + str(mop_contract.id) +
                 " finishes before the era.")
 
         if pc.code == '00' and ssc is not None:

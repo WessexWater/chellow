@@ -91,7 +91,7 @@
 
 {% macro input_text(
   name, initial=None, size=None, maxlength=None, placeholder=None,
-  required=None) %}
+  required=None, pattern=None) %}
     <input name="{{name}}" value="
         {%- if request.values[name] -%}
             {{ request.values[name] }}
@@ -101,7 +101,23 @@
         {%- if size %} size="{{ size }}"{% endif %}
         {%- if placeholder %} placeholder="{{ placeholder }}"{% endif %}
         {%- if required %} required="required"{% endif %}
+        {%- if pattern %} pattern="{{pattern}}"{% endif %}
         {%- if maxlength %} maxlength="{{ maxlength }}"{% endif %}>
+{%- endmacro -%}
+
+{% macro input_number(
+  name, initial=None, size=None, maxlength=None, placeholder=None,
+  required=None) %}
+    <input type="number" name="{{name}}" value="
+        {%- if request.values[name] -%}
+            {{ request.values[name] }}
+        {%- elif initial is not none -%}
+            {{initial}}
+        {%- endif -%}"
+        {%- if size %} size="{{ size }}"{% endif %}
+        {%- if placeholder %} placeholder="{{ placeholder }}"{% endif %}
+        {%- if maxlength %} maxlength="{{ maxlength }}"{% endif %}
+        {%- if required %} required="required"{% endif %}>
 {%- endmacro -%}
 
 {% macro input_textarea(name, initial, rows, cols, placeholder=None) -%}

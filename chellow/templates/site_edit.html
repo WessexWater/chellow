@@ -157,7 +157,7 @@
 									</div>
 									<div class="col-sm-4">
 										<label>Name</label>
-										{{input_text('name')}}
+										{{input_text('name', required=True)}}
 									</div>
 								</div>
 							</div>
@@ -223,7 +223,8 @@
 										</div>
 										<div class="col-sm-4">
 											<label>MTC Code</label>
-											{{input_text('mtc_code')}}
+											{{input_text('mtc_code', pattern='[0-9]*',
+											maxlength='3')}}
 										</div>
 										<div class="col-sm-4">
 											<label>CoP</label>
@@ -253,15 +254,17 @@
 										<div class="row">
 											<div class="col-sm-4">
 												<label>Mpan Core</label>
-												{{input_text('imp_mpan_core', '', 35)}}
+												{{input_text('imp_mpan_core', '', 35,
+												pattern='[0-9 ]*')}}
 											</div>
 											<div class="col-sm-4">
 												<label>LLFC</label>
-												{{input_text('imp_llfc_code')}}
+												{{input_text('imp_llfc_code', pattern='[0-9]*',
+												maxlength='3')}}
 											</div>
 											<div class="col-sm-4">
 												<label>Supply Capacity</label>
-												{{input_text('imp_sc')}}
+												{{input_number('imp_sc', '0', required=True)}}
 											</div>
 										</div>
 										<div class="row">
@@ -292,15 +295,17 @@
 										<div class="row">
 											<div class="col-sm-4">
 												<label>Mpan Core</label>
-												{{input_text('exp_mpan_core', '', 35)}}
+												{{input_text('exp_mpan_core', '', 35,
+												pattern='[0-9 ]*')}}
 											</div>
 											<div class="col-sm-4">
 												<label>LLFC</label>
-												{{input_text('exp_llfc_code')}}											
+												{{input_text('exp_llfc_code', maxlength='3',
+												pattern='[0-9]*')}}											
 											</div>
 											<div class="col-sm-4">
 												<label>Supply Capacity</label>
-												{{input_text('exp_sc')}}
+												{{input_number('exp_sc', '0', required=True)}}
 											</div>
 										</div>
 										<div class="row">
